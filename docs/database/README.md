@@ -1,322 +1,205 @@
 # DANTE Database System of Record
 
-- **Status:** CURRENT / MATERIALIZED / CP6 CLOSED / INTEGRATED IN `main`
-- **Scope:** DANTE PostgreSQL architecture, Dictionary, mappings, migrations, generated reference, direct proof and documentation consistency
+- **Status:** CURRENT / MATERIALIZED
 - **PostgreSQL:** 18.6
-- **Alembic head:** `20260826_08`
+- **Alembic head in this tree:** `20260830_09`
+- **Schema:** `dante`
+- **Scope:** current DANTE PostgreSQL architecture, Dictionary, mappings, migrations, lifecycle/recovery integrity, direct proof and documentation consistency
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 - **Architecture decision:** `../decisions/ADR-010-postgresql-persistence-constitution.md`
-- **Final CP6 acceptance:** `../development/backend-cp6-05-whole-database-qa.md`
 
 ## 1. Purpose
 
-This directory is the durable entry point for understanding the DANTE database itself.
+This directory is the durable current entry point for the DANTE database.
 
-A developer should be able to start here and answer, without reconstructing chat history:
-
-```text
-what database objects exist?
-why does each object exist?
-what does every persisted field mean?
-how are objects related?
-what integrity does PostgreSQL enforce?
-how are identity, references, current state and history represented?
-what is canonical vs provider/derived/technical state?
-what migration created or changed an object?
-what SQLAlchemy mapping represents it?
-what tests prove its invariants?
-what remains intentionally unmaterialized and why?
-```
-
-This database documentation does not replace Domain, Logical, Physical or the PostgreSQL Persistence Constitution. Those remain semantic/design/rationale authorities. This system of record is the **current operational and structural reference for the database produced from them**.
-
-## 2. Current materialized baseline
-
-The accepted CP6 database is materialized and directly verified.
+A developer must be able to determine from this repository, without chat history:
 
 ```text
-tables               68
-views                 5
-routines             14
-triggers              75
-physical indexes     95
-foreign keys          68
-CHECK constraints    120
-
-custom enum/domain     0
-sequences              0
-materialized views     0
-RLS policies           0
+what database objects exist now
+why they exist
+what persisted fields mean
+how identity/references/current/history are represented
+what PostgreSQL integrity and ACL are enforced
+how retirement/redaction and recovery reconciliation work
+what migration/mapping/tests implement and prove the contract
 ```
 
-The current machine-readable Dictionary contains:
+Git/Alembic preserve chronology. Current database docs describe the accepted current contract, not obsolete implementation checkpoints.
+
+## 2. Current materialized database
 
 ```text
-68 table entries
-5 view entries
-14 routine entries
-87 standalone entries total
+PostgreSQL           18.6
+Alembic              20260830_09
+schema               dante
+
+tables               69
+views                  5
+routines              15
+triggers              76
+physical indexes      97
+foreign keys           69
+CHECK constraints     123
+
+custom enum/domain      0
+sequences               0
+materialized views      0
+partitioned tables      0
+RLS policies            0
 ```
 
-`docs/database/dictionary/scope.json` records `status = materialized` and CP6-M01..M07 as complete.
-
-## 3. Database documentation model
-
-DANTE uses a repository-native database documentation system:
+Required extensions:
 
 ```text
-human-readable architecture/reference
-+
-machine-readable Database Dictionary
-+
-generated structural reference where reliable
-+
-derived diagrams where useful
-+
-Alembic migration history
-+
-SQLAlchemy metadata/mappings
-+
-real PostgreSQL introspection
-+
-direct database tests
+postgis             3.6.4
+vector              0.8.6
+pg_trgm             1.6
+unaccent            1.1
+pg_stat_statements  1.12
 ```
 
-No external enterprise catalog product is required merely to imitate organizational scale. Future tooling may consume the structured Dictionary without redefining database meaning.
-
-## 4. Current directory roles
+The pre-recovery protected-main CP6 baseline remains historical evidence:
 
 ```text
-docs/database/
-├── README.md
-├── dante-postgresql-database.md
-├── dante-postgresql-database-part-2.md
-├── ...
-├── dante-postgresql-database-part-19.md
-├── dictionary/
-│   ├── README.md
-│   ├── scope.json
-│   ├── schema/
-│   ├── tables/
-│   ├── views/
-│   └── routines/
-├── generated/    when generated current artifacts exist
-├── diagrams/     when useful/current diagrams exist
-└── evolution/    only for complex evolutions requiring durable rollout rationale
+20260826_08 / 68|5|14|75|95|68|120|0|0|0
 ```
 
-Empty ceremonial directories are forbidden.
+The Recovery workstream adds the bounded forward evolution:
 
-### Human-readable Database Architecture & Reference
+```text
+20260830_09 / 69|5|15|76|97|69|123|0|0|0
+```
 
-The current human-readable reference is still physically represented by `dante-postgresql-database.md` plus Parts 2–19. Those files were accumulated during CP6 and together contain the accepted detailed derivation, object model and repair history.
+Integration status is determined by live Git refs.
 
-They are **one logical reference**, not 19 independent authorities. Until a dedicated lossless compaction/reorganization is completed, readers and tooling that depend on detailed blueprint provenance must treat the complete set as the source payload.
+## 3. Recovery/lifecycle addition
 
-The documentation-cleanup workstream may later recompose this frozen reference into fewer/topic-based read-only files, but only under the repository's lossless knowledge-coverage policy. No accepted requirement, invariant, rationale or important evidence may disappear merely to reduce file count.
+`20260830_09` materializes the WL-H10 / SC-011 retirement and anti-resurrection contract.
 
-### `dictionary/`
+Canonical PostgreSQL adds:
 
-Machine-readable current object metadata. Every materialized DANTE table, view and routine has a structured entry; table-owned subobjects such as FK/CHECK/index/trigger metadata are embedded under their owning entries.
+```text
+dante.material_state_retirement
+```
 
-### `generated/`
+Supported materialized facets:
 
-Artifacts derived from SQLAlchemy metadata and/or real PostgreSQL introspection where automation is reliable. Generated output is never edited as an alternate manual authority.
+```text
+schedule.placement
+actual.realization
+session.timing
+routine.recurrence
+event.recurrence
+```
 
-### `diagrams/`
+For an explicitly retired MaterialState:
 
-ER/topology diagrams should be generated or mechanically derived where practical. A manually maintained diagram must not become an independent source of schema truth.
+```text
+MaterialStateRef address/envelope remains truthful
+permitted current/history continuity remains truthful
+retirement reason/time/suppression identity remain explicit
+protected payload must be absent
+payload reinsertion is rejected by database-local integrity
+```
 
-### `evolution/`
+This is not a universal soft-delete model and does not introduce a generic Entity/Thing root.
 
-Used only for migrations/evolutions complex enough to need durable rollout/backfill/cutover/recovery explanation beyond executable Alembic revisions and tests.
+## 4. Recovery suppression ledger boundary
+
+The external suppression ledger is **technical disaster-recovery evidence only**. PostgreSQL remains the sole canonical DANTE persistence surface.
+
+Protocol v1:
+
+```text
+PREPARED durable suppression intent
+→ canonical PostgreSQL retirement/redaction transaction
+→ canonical DB read-back verification
+→ COMMITTED marker bound to PREPARED SHA-256
+```
+
+Recovery blocks on ambiguity/tamper, including:
+
+```text
+missing/unavailable records directory
+unexpected entry
+duplicate MaterialStateRef target
+PREPARED without COMMITTED
+COMMITTED without PREPARED
+identity/target mismatch
+hash mismatch
+invalid/non-canonical record
+```
+
+The ledger must survive the relevant database-loss boundary independently from PGDATA and from the pgBackRest database-backup repository. Its retention must cover the complete resurrection horizon of retained database/WAL/object versions.
 
 ## 5. Authority model
 
-The representations have different jobs and must not silently diverge:
-
 ```text
 closed Domain / Logical / Physical
-→ semantic and architectural source
+→ semantic + architectural authority
 
-CP6-02 Constitution + ADR-010
+PostgreSQL Persistence Constitution + ADR-010
 → reusable PostgreSQL doctrine
 
 Alembic
-→ deployed application-schema evolution authority
+→ deployed schema evolution authority
 
 SQLAlchemy MetaData / mappings
-→ application mapping of the deployed database contract
+→ application representation of deployed schema
 
 real PostgreSQL introspection
 → observed materialized schema
 
 Database Architecture & Reference
-→ human-readable database meaning and design traceability
+→ human-readable current database meaning
 
 Database Dictionary
-→ structured current object metadata
+→ machine-readable current object contract
 
-generated reference / diagrams
-→ derived structural views
-
-direct tests
-→ executable proof of required invariants
+direct tests / recovery harnesses
+→ executable proof
 ```
 
-A mismatch is a defect to investigate, not permission to choose whichever representation is convenient.
-
-## 6. Permanent consistency invariant
-
-At CP6 closure and after every later structural database change, the following must describe the same accepted database contract:
+Permanent reconciliation invariant:
 
 ```text
 DATABASE ARCHITECTURE & REFERENCE
-        ≈
-DATABASE DICTIONARY
-        ≈
-SQLALCHEMY METADATA / MAPPINGS
-        ≈
-ALEMBIC HEAD
-        ≈
-REAL POSTGRESQL SCHEMA
+≈ DATABASE DICTIONARY
+≈ SQLALCHEMY METADATA / MAPPINGS
+≈ ALEMBIC HEAD
+≈ REAL POSTGRESQL SCHEMA
 ```
 
-`≈` means semantically and structurally consistent for the facts each representation owns; it does not mean identical serialization.
+A mismatch is a defect.
 
-Examples of defects:
+## 6. Security baseline
 
 ```text
-real table exists but Dictionary entry is missing
-mapped column is absent from Alembic-produced schema
-FK documented but PostgreSQL does not enforce it
-constraint exists in PostgreSQL but its semantic reason is undocumented
-manual diagram disagrees with current schema
-migration changes a table but current reference still describes the old shape
-current reference calls provider/derived state canonical
+dante_owner      NOLOGIN ownership identity
+dante_migrator   LOGIN migration identity
+dante_runtime    LOGIN application runtime identity
 ```
 
-## 7. Database Dictionary contract
-
-The materialized Dictionary v1 must account for these classes of information where applicable.
+Current posture includes:
 
 ```text
-identity
-- schema name
-- object name
-- object type
-- persistence role
-- short purpose
-
-semantic traceability
-- Domain / Logical source where applicable
-- representation family / cross-cutting construct
-- canonical vs contextual vs relation vs state/history vs provider/derived/technical role
-
-implementation traceability
-- introducing migration
-- later structural migrations where material
-- SQLAlchemy mapping
-- owning backend boundary/module once one exists
-
-columns
-- column name
-- PostgreSQL type
-- nullability
-- default/generation rule
-- exact persisted meaning
-- accepted value/range semantics where applicable
-
-keys and relationships
-- primary key
-- stable-address contract where applicable
-- foreign keys
-- target family
-- cardinality
-- delete/update behavior
-- semantic reason for the relationship
-
-integrity
-- UNIQUE
-- CHECK
-- EXCLUDE/range constraints where used
-- trigger/function-backed integrity only where declarative enforcement is insufficient
-- cross-row/reference-family invariants
-
-indexes
-- columns/expressions
-- method
-- uniqueness where applicable
-- structural/query reason
-- no speculative index merely for completeness
-
-state/history
-- MaterialStateRef behavior
-- current-state binding
-- chronology semantics
-- correction/replacement/reconciliation lineage
-- immutability policy where applicable
-
-lifecycle
-- retention
-- redaction
-- tombstone/retirement continuity
-- deletion behavior
-
-security
-- owner/migrator/runtime privilege posture
-- sensitive handling only where an accepted classification exists
-
-proof
-- direct tests
-- relevant obligations
-- staged evidence only when it cannot yet be executed truthfully
+DANTE objects owned by dante_owner
+PUBLIC denied unless explicitly justified
+runtime denied access to dante.alembic_version
+runtime privileges bounded per object/column
+material_state_retirement runtime access = SELECT only
+integrity routines not directly executable by runtime
 ```
 
-An inapplicable category may be explicitly marked as not applicable by the Dictionary schema. Required facts must not disappear through omission.
-
-See `dictionary/README.md` for the current materialized Dictionary contract.
-
-## 8. Human-readable reference obligations
-
-The long-lived reference must support both top-down and object-level reading, including:
-
-```text
-database purpose and authority
-schema/object organization
-identity topology
-reference topology
-canonical/current/material-history topology
-relation topology
-temporal representation
-governance/provenance topology
-provider/integration separation
-derived/query/search separation
-account/security persistence boundary
-retention/redaction/tombstone model
-privileges/ownership
-dependency/materialization topology
-table/family catalog
-constraint/reference integrity catalog
-index strategy/catalog
-migration/evolution traceability
-SQLAlchemy traceability
-direct-test/evidence traceability
-explicitly deferred/non-materialized constructs
-```
-
-For a concrete object, an engineer must be able to find its purpose, semantic origin, columns, types, keys, relationships, constraints, history/lifecycle behavior, indexes, migration, mapping and tests without database archaeology.
-
-## 9. DANTE-specific non-collapse obligations
-
-Database documentation must keep these technical-vs-semantic boundaries explicit:
+## 7. Non-collapse obligations
 
 ```text
 technical address anchor != semantic Entity/Thing
-technical material-state control != universal Fact/Version owner
 NativeRef != ScopedRecordRef != MaterialStateRef != ExternalRef
 current accepted state != newest inserted row
 material history != universal event sourcing
+retirement tombstone != generic soft-delete row
+recovery suppression evidence != second canonical database
 provider state != canonical DANTE state
 derived/search state != canonical DANTE truth
 Person != Account != Principal != Actor
@@ -325,62 +208,26 @@ absence / unknown != explicit negative
 idempotency != semantic identity
 ```
 
-A schema reader should not have to infer these distinctions from naming alone.
+## 8. Same-change rule
 
-## 10. Same-change documentation rule
-
-A structural database change is incomplete unless the same reviewed change updates all affected current representations.
-
-As applicable, a database change includes together:
+A structural database change is incomplete unless the same reviewed change updates, as applicable:
 
 ```text
 Alembic migration
-SQLAlchemy metadata/mapping
-Database Dictionary entry/update
-human-readable database reference when meaning/topology changes
-generated reference/diagram regeneration
+SQLAlchemy metadata/mappings
+Database Dictionary
+human-readable current database reference
+generated artifacts/diagrams where governed
 direct tests
-workstream/status documentation when milestone state changes
+recovery/operational harnesses affected by head/topology
+current workstream/project documentation
 ```
 
-A new table introduced without its Dictionary entry is incomplete.
+Applied migrations are immutable. Current docs must not intentionally retain a superseded head/topology/status as if it were present truth.
 
-A structural table change without corresponding Dictionary/reference reconciliation is incomplete.
+## 9. Current QA contract
 
-Documentation may be generated for facts that can be derived reliably, but semantic purpose, invariants and rationale must not be replaced by generated DDL output.
-
-## 11. Generated-artifact rule
-
-Prefer generation for facts PostgreSQL/SQLAlchemy can state exactly:
-
-```text
-object inventory
-columns/types/nullability
-PK/FK/UNIQUE/CHECK metadata where introspectable
-indexes
-basic dependency graph
-ER relationships
-migration head/current revision
-```
-
-Prefer human-authored current reference/Dictionary fields for facts the schema cannot explain by itself:
-
-```text
-why an object exists
-what semantic concept/facet it represents
-why a reference contract is bounded a certain way
-why a constraint exists
-what current/history distinction means
-what is canonical vs provider/derived
-what lifecycle behavior means
-what must never be inferred from absence/order/UUID/etc.
-```
-
-Generation must reduce drift, not create another competing authority.
-
-## 12. Automated QA contract
-
-Current and future QA must detect conditions such as:
+QA must detect at least:
 
 ```text
 undocumented real table/view/routine
@@ -388,89 +235,137 @@ stale Dictionary object
 column/type/nullability/default drift
 PK/FK/UQ/CHECK/index drift
 trigger/routine/view drift
-SQLAlchemy-vs-Alembic schema drift
-missing Dictionary entry for a real object
-invalid generated reference
-diagram generation failure where diagrams are governed
+SQLAlchemy-vs-Alembic drift
 migration head mismatch
 owner/ACL drift
-extension-owned false positives
+retired MaterialState with protected payload
+payload reinsertion after retirement
+ambiguous/tampered suppression records
+recovery target still in recovery when presented as accepted
+structurally bootable but semantically unacceptable restore
 ```
 
-Semantic descriptions cannot be fully generated and remain subject to review.
+`pg_isready` alone is never a traffic-reopen proof. Recovery acceptance requires `pg_is_in_recovery() = false`, current structural/security/semantic verification and completed suppression reconciliation.
 
-CP6-05 proved the baseline by reconciling Dictionary ↔ SQLAlchemy ↔ Alembic ↔ live PostgreSQL plus final topology/security and direct concurrency/integrity evidence.
+## 10. Current recovery proof
 
-## 13. Current security baseline
-
-The materialized baseline preserves explicit owner/migrator/runtime separation:
+Direct LOCAL proof includes:
 
 ```text
-dante_owner      NOLOGIN ownership identity
-dante_migrator   LOGIN migration identity
-dante_runtime    LOGIN application runtime identity
+pgBackRest foundation                         PASS
+continuous WAL + FULL backup                  PASS
+destructive isolated restore                  PASS
+deterministic named-target PITR               PASS
+negative failure matrix N1–N7                 PASS
+SC-011 definitive anti-resurrection           PASS
+whole CP07 operator recovery rehearsal        PASS
+database-local reopen                         PASS
+whole backend suite at CP07 implementation    PASS
+fresh-clone bootstrap                         PASS
+bootstrap idempotence                         PASS
+branch-agnostic runner                        PASS
+exact pushed implementation HEAD CP07         PASS
+remote backup provider                        TBD / NOT ACTIVATED
+production/cloud recovery                     NOT CLAIMED
 ```
 
-Current proof includes exact DANTE role-membership topology, owner no-password posture, bounded runtime grants, denied runtime access to `dante.alembic_version`, hardened routine search paths and direct negative security evidence.
-
-Security documentation must describe actual grants and invariants rather than broad `read/write` labels.
-
-## 14. CP6 historical lifecycle
-
-CP6 is closed. Its phases are historical evidence, not current next steps:
+Permanent operator entry points:
 
 ```text
-CP6-01  concrete persistence coverage          CLOSED / GATE 01 PASS
-CP6-02  PostgreSQL Persistence Constitution    CLOSED / GATE 02 PASS
-CP6-03  whole database blueprint               CLOSED / GATE 03 PASS
-CP6-04  materialization                        CLOSED / MATERIALIZATION PASS
-CP6-05  whole-database direct QA               CLOSED / DIRECT QA PASS
+infra/local/postgres/recovery/bootstrap-local-recovery.sh
+infra/local/postgres/recovery/cp07-whole-recovery-rehearsal.sh
+docs/operations/postgres-recovery-runbook.md
 ```
 
-The branch-level history is retained under:
+### Reproducible LOCAL exact-head proof
 
-`../archive/branches/2026-08-feature-logical-postgresql.md`
-
-Detailed final acceptance remains in:
-
-`../development/backend-cp6-05-whole-database-qa.md`
-
-CP6 design-stage statements such as `Gate 03 not earned`, `CP6-04 not started`, `Dictionary entries not yet materialized` or `protected-main alignment next` are historical and must not be used as current routing.
-
-## 15. Future database evolution rule
-
-After CP6, the same discipline remains permanent.
-
-Every later product vertical or schema evolution treats database documentation as part of the database change itself.
-
-For ordinary changes, Git/Alembic history is the chronology; current reference documentation remains current rather than accumulating obsolete implementation stories.
-
-For complex migrations, preserve necessary rollout/backfill/verification/recovery rationale under an appropriate durable evolution/ADR/evidence source.
-
-Applied Alembic revisions remain immutable; later corrections use new forward revisions.
-
-## 16. Documentation lifecycle
-
-Frozen/read-only multi-part references may be compacted when this genuinely improves maintainability, but only through the lossless knowledge-coverage rules in:
-
-`../development/documentation-lifecycle-policy.md`
-
-Compaction must preserve still-valid substantive information, accepted decisions, invariants, requirements, continuing rationale and important evidence. Obsolete status wrappers, duplicate routing and superseded operational chronology may be removed once coverage is proven.
-
-## 17. Acceptance bar
-
-The DANTE Database System of Record is successful when a new engineer can begin here and, without conversation memory:
+Implementation/runtime proof HEAD:
 
 ```text
-understand the database architecture
-locate every real persisted object
-understand why it exists
-understand its columns and relationships
-understand the integrity PostgreSQL enforces
-trace it to migration + SQLAlchemy mapping
-locate the tests that prove it
-understand current/history/provider/derived boundaries
-identify what is intentionally deferred and why
+789e946a8f096b52f2a440b967120cc3e0a340a3
 ```
 
-The goal is not documentation volume. The goal is a database that is understandable, inspectable, reviewable and maintainable at large-system engineering standards.
+Proof summary:
+
+```text
+validation clone without recovery secrets                PASS
+first bootstrap created exactly three LOCAL secrets      PASS
+second bootstrap preserved secret contents               PASS
+secret mode 0600 / ignored / untracked                   PASS
+repository Compose validation                            PASS
+repository-built pinned recovery image                   PASS
+branch-name independence                                 PASS
+clean attached branch + configured upstream gate         PASS
+whole backend QA                                          PASS
+pre-push whole CP07 rehearsal                            PASS
+exact pushed implementation HEAD whole CP07              PASS
+database-local reopen                                    PASS
+deterministic PITR A-present / B-absent                  PASS
+old protected X physical resurrection                    PROVEN
+ledger reconciliation                                    PASS
+payload reinsertion after retirement                     REJECTED
+normal LOCAL / retained recovery / CP05 non-interference PASS
+disposable cleanup                                       PASS
+```
+
+Exact pushed-run LOCAL observations:
+
+```text
+backup label                              20260831-120208F
+backup duration                           53.964433 s
+backup repository size                    5743173 bytes
+WAL archive freshness at disaster         0.834662 s
+restore-point age at disaster             3.629809 s
+physical restore                          7.650652 s
+PITR replay to target                     0.144582 s
+recovery to ready                         0.382306 s
+semantic reconciliation                   1.021309 s
+structural/security acceptance            0.910673 s
+PGDATA loss → database-local reopen       16.261533 s
+```
+
+These are LOCAL rehearsal observations, not production RPO/RTO targets.
+
+## 11. Directory / maintenance map
+
+```text
+current database meaning
+→ docs/database/README.md
+→ docs/database/dante-postgresql-database.md + current continuation parts
+
+machine-readable database contract
+→ docs/database/dictionary/
+
+forward schema evolution
+→ apps/backend/alembic/versions/
+
+SQLAlchemy deployed-schema representation
+→ apps/backend/src/dante/platform/database/mappings/
+→ apps/backend/src/dante/platform/database/metadata.py
+
+database / recovery acceptance tests
+→ apps/backend/tests/
+
+suppression-ledger implementation
+→ apps/backend/src/dante/platform/recovery/suppression_ledger.py
+→ infra/local/postgres/recovery/recovery-suppression-record-v1.schema.json
+
+PostgreSQL / pgBackRest image/config
+→ infra/local/postgres/
+
+Compose topology / LOCAL secrets boundary
+→ infra/compose/
+
+recovery bootstrap + executable rehearsals
+→ infra/local/postgres/recovery/
+
+operator procedure
+→ docs/operations/postgres-recovery-runbook.md
+
+closed Recovery branch history
+→ docs/archive/branches/2026-08-feature-postgres-recovery.md (NON-AUTHORITATIVE)
+```
+
+## 12. Acceptance bar
+
+The database System of Record succeeds when a new engineer can use the repository alone to understand current architecture, locate every real persisted object, trace objects to migration/mapping/tests, understand integrity/ACL/current/history/lifecycle semantics, understand anti-resurrection behavior, distinguish canonical from provider/derived/recovery state and execute the current database/recovery acceptance procedures.

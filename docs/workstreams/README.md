@@ -1,144 +1,130 @@
 # DANTE Workstream Records
 
 - **Status:** CURRENT INDEX
-- **Rule:** protected `main` stores durable workstream records/evidence, not active live/session handoffs
+- **Rule:** current subsystem/workstream files describe present truth; Git/PR/archive preserve chronology.
 
-## Purpose
+## Current authority
 
-This directory indexes durable workstream records that remain useful after a branch or phase is closed. It is not the permanent home for chat/session save-games.
-
-Temporary branch-operational files may exist on an active feature branch when they materially improve continuity, but before protected-main integration they must pass `../development/documentation-lifecycle-policy.md`:
-
-```text
-active branch handoffs
-→ knowledge coverage
-→ current truth moved to durable current docs
-→ important rationale/evidence retained
-→ optional ONE consolidated branch-history record
-→ temporary handoffs removed
-```
-
-## Current project/workstream state
-
-Protected-main current truth is owned by:
+Protected-main project truth is owned by:
 
 - `../PROJECT-STATUS.md`
 - `../ROADMAP.md`
 
-Current high-level state:
+Branch-local workstream files may describe newer unmerged implementation only inside their own bounded branch. They never silently become protected-main truth.
 
-```text
-Domain Model                       CLOSED
-Logical Model                      CLOSED
-Pre-Physical coherence             CLOSED
-Physical target                    CLOSED / ACCEPTED
-Engineering Foundation             CLOSED / ACCEPTED
-Frontend Foundation                CLOSED / INTEGRATED
-Frontend Materialization           CLOSED / PASS / INTEGRATED
-Backend CP1–CP5 Scaffold           CLOSED / DIRECT QA / INTEGRATED
-Backend CP6 Database               CLOSED / DIRECT QA / INTEGRATED VIA PR #42
-Access pre-backend frontend        CLOSED / ACCEPTED / branch closure integration
-Full-stack Access/Auth vertical    NOT STARTED ON A DEDICATED BRANCH
-```
+## Current durable subsystem entry points
 
-## Durable closed/integrated records
+### Database
+
+- `../database/README.md` — current DANTE PostgreSQL System of Record.
+- `../database/dante-postgresql-database.md` + current continuation parts — human-readable database reference.
+- `../database/dictionary/` — machine-readable current database contract.
 
 ### Backend
 
-- `backend-scaffold.md` — CP1–CP5 production backend scaffold closure/integration evidence, integrated via PR #24.
-- `../archive/branches/2026-08-feature-logical-postgresql.md` — consolidated non-authoritative CP6 branch history.
-
-Current CP6/database truth lives in:
-
-- `../database/README.md`
-- `../database/dictionary/`
-- `../development/backend-cp6-05-whole-database-qa.md`
+- `backend-scaffold.md` — accepted backend foundation/closure record.
 
 ### Frontend
 
-- `frontend-foundation.md` — frontend engineering foundation design/architecture closure, integrated via PR #22.
-- `frontend-materialization.md` — closed production materialization evidence, integrated via PR #28.
-- `frontend-materialization-integration.md` — durable integration/calibration/future-activation evidence for PR #28.
-- `../frontend/access.md` — current durable contract for the accepted pre-backend Access frontend materialization.
-- `../archive/branches/2026-08-feature-access-frontend.md` — consolidated non-authoritative history for `feature/access-frontend`.
+- `frontend-foundation.md`
+- `frontend-materialization.md`
+- `frontend-materialization-integration.md`
+- `../frontend/access.md`
 
-The Access branch-local workstream record and live handoff are intentionally not retained after knowledge consolidation. The later full-stack Access/Auth product vertical must start from current protected `main` on a fresh bounded branch; the closed `feature/access-frontend` branch is not a permanent reusable frontend line.
+### Engineering / architecture
 
-### Engineering / architecture preparation
-
-- `engineering-foundation.md` — closed engineering foundation, integrated via PR #21.
-- `physical-model.md` — closed/selected Physical target, integrated via PR #15.
-- `pre-physical-coherence.md` — definitive pre-Physical coherence closure, integrated via PR #13 with later alignment as recorded.
+- `engineering-foundation.md`
+- `physical-model.md`
+- `pre-physical-coherence.md`
 
 ### Domain / Logical
 
-Domain and Logical workstream continuations are historical operational records for phases that are now closed. Their semantic current truth is owned by:
+Current semantic authority lives in:
 
 - `../domain/README.md`
 - `../logical-model/README.md`
 
-The documentation knowledge audit retained detailed continuation/register material only where unique requirements, rationale, assumptions, rejected alternatives, traceability or validation evidence made destructive compaction unsafe. Historical workstream files never override the newer current entry points.
+## PostgreSQL Recovery
 
-## Historical/superseded planning
+The LOCAL PostgreSQL Recovery workstream is closed. It no longer needs an active workstream file or execution-plan overlay in current navigation.
 
-- `backend-foundation.md` — historical pre-Engineering-Foundation planning; not current backend implementation authority.
+Current durable operational authority:
 
-Historical planning records may later move to `docs/archive/` or leave the working tree if knowledge coverage proves Git/current authorities are sufficient.
+```text
+database contract   ../database/README.md
+operator runbook    ../operations/postgres-recovery-runbook.md
+bootstrap           ../../infra/local/postgres/recovery/bootstrap-local-recovery.sh
+whole rehearsal     ../../infra/local/postgres/recovery/cp07-whole-recovery-rehearsal.sh
+```
 
-## `today-home.md`
+Closed branch history:
 
-`today-home.md` is a separate Home/Today product/UX workstream record. Its authority is limited to the scope explicitly stated by that file; it does not override production engineering, current frontend vertical or backend/database authority.
+- `../archive/branches/2026-08-feature-postgres-recovery.md` — **NON-AUTHORITATIVE**
 
-## Active branch-local workstreams
+Closure truth retained by current authorities:
 
-No post-CP6 full-stack product vertical is recorded as active by this index at Access-frontend closure time.
+```text
+PostgreSQL                              18.6
+Recovery-tree Alembic                   20260830_09
+Recovery-tree topology                  69|5|15|76|97|69|123|0|0|0
+CP01–CP07                               LOCAL PASS / CLOSED
+exact reusable-runner proof HEAD        789e946a8f096b52f2a440b967120cc3e0a340a3
+closure documentation anchor            10a4dab17f2c968fc918211dfe6476245d7f23d7
+remote backup provider                  TBD / NOT ACTIVATED
+production/cloud recovery               NOT CLAIMED
+```
 
-When a new vertical starts, it may have one durable branch-local record plus temporary live/session notes only when they materially improve continuity. Before integration, all temporary handoffs must again pass the documentation lifecycle gate.
+Permanent rules:
+
+```text
+PostgreSQL = sole canonical persistence authority
+backup repository != canonical truth
+restored bytes != accepted semantic truth
+pg_isready != traffic-open proof
+pg_is_in_recovery=false + semantic acceptance required
+old backup restore != permission to resurrect retired payload
+recovery suppression ledger != second canonical database
+successful LOCAL proof != remote/cloud production proof
+```
+
+The permanent bootstrap/runner is branch-agnostic and fails closed unless the current branch is attached, clean, has a configured upstream and exact `HEAD == upstream` after fetch.
+
+Detailed CP01–CP07 chronology, proof heads, failure findings, measurements and the disposition of removed active-workstream documents are retained in the single Recovery branch-history record plus Git history.
+
+## Current bounded unmerged workstreams
+
+At the 2026-08-31 reconciliation, current project authority records bounded unmerged work including:
+
+```text
+feature/access-auth             active product vertical
+feature/home-react              active frontend workstream
+feature/platform-observability  active platform workstream
+feature/postgres-recovery       LOCAL Recovery closed / integration candidate
+```
+
+Live Git refs and each branch's own durable authority outrank this index for later movement.
 
 ## Operational continuation rule
 
-Before continuing work:
+Before continuing an active workstream:
 
-1. read `../PROJECT-STATUS.md` and `../ROADMAP.md`;
-2. read development operating/safety/lifecycle policy;
-3. verify exact current branch and relation to `main`;
-4. if the target workstream is active and unmerged, read its branch-local durable record;
-5. use a temporary handoff only when the active branch genuinely needs one;
-6. consume the relevant accepted model/architecture/reference/code/tests;
-7. do not let an old workstream record override newer current truth.
+1. verify exact branch/worktree/remote relation;
+2. read current global/subsystem authority;
+3. read the active branch-local workstream record when one legitimately exists;
+4. prefer repository/code/tests over conversation memory;
+5. do not write to protected `main` outside the repository integration path;
+6. do not treat selected/unimplemented capability as PASS;
+7. keep current docs aligned with materialized repository truth;
+8. remove live/session/resume handoffs before integration.
 
-## Closed-workstream rule
-
-Once a workstream is integrated:
-
-```text
-current semantics / architecture
-→ current subsystem docs / ADRs
-
-implementation truth
-→ code / migrations / tests
-
-important acceptance evidence
-→ durable QA / validation record
-
-useful branch narrative
-→ at most one branch-history record
-
-chat/session continuation detail
-→ Git history only
-```
-
-A closed workstream is not a reusable permanent feature branch and does not remain active merely because its historical record still exists.
-
-## Current carry-forward engineering rules
+## Carry-forward engineering rules
 
 ```text
 SELECTED != IMPLEMENTED
-SELECTED != DIRECT PASS
+IMPLEMENTED != PROVEN
+PROVEN != CLOSED UNTIL THE CHECKPOINT CONTRACT IS SATISFIED
 UNMERGED BRANCH TRUTH != protected-main TRUTH
 VERSION-SENSITIVE CLAIMS REQUIRE CURRENT EVIDENCE
-TEMPORARY HANDOFF != DURABLE DOCUMENTATION
-CURRENT SPECIFICATION != CHRONOLOGICAL DIARY
+CURRENT DOCUMENTATION != DEPRECATED SNAPSHOT
+TEMPORARY HANDOFF != DURABLE main DOCUMENTATION
 ```
-
-Durable architecture changes belong in current specs/ADRs. Historical workstream records never override later accepted current truth.

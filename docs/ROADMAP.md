@@ -1,7 +1,7 @@
 # DANTE Roadmap
 
 - **Status:** CURRENT
-- **Last reconciled:** 2026-08-26
+- **Last reconciled:** 2026-08-31
 - **Protected `main`:** integrated source authority; read the live Git ref for the current SHA
 
 ## 1. Completed foundations
@@ -61,7 +61,7 @@ CP6      CLOSED / CONCRETE POSTGRESQL DATABASE PASS
          INTEGRATED VIA PR #42
 ```
 
-Current materialized baseline:
+Pre-recovery protected-main CP6 baseline:
 
 ```text
 PostgreSQL          18.6
@@ -74,6 +74,22 @@ Alembic             20260826_08
 68 foreign keys
 120 CHECK constraints
 ```
+
+Post-CP6 recovery evolution in this tree:
+
+```text
+Alembic             20260830_09
+69 tables
+5 views
+15 routines
+76 triggers
+97 physical indexes
+69 foreign keys
+123 CHECK constraints
+CP01–CP07           LOCAL PASS / CLOSED
+```
+
+The newer database/recovery contract remains branch-local until integrated; live Git refs determine protected-main state.
 
 CP6 is historical implementation/acceptance work now. Do not route new work through old Gate 03, DB-U*, CP6-04 or protected-main-alignment steps.
 
@@ -104,32 +120,18 @@ It intentionally stops backend-authoritative transitions instead of fabricating 
 
 Closing this workstream does not mean real Access/Auth is complete.
 
-## 4. Next implementation — full-stack Access/Auth vertical
+## 4. Active bounded unmerged workstreams
 
-The next product implementation boundary is a **new bounded full-stack Access/Auth vertical created from current protected `main`** when explicitly started.
-
-Its expected responsibilities include, as applicable to the final contract:
+The project is no longer waiting to start its first post-CP6 vertical. At the 2026-08-31 reconciliation, bounded unmerged work includes:
 
 ```text
-account creation / credential authentication
-verification + recovery proof handling
-Google / Apple transaction validation
-secure account linking
-session lifecycle / bootstrap / expiry / revocation
-reauthentication
-server rate-limit/error mapping
-stable Auth OpenAPI
-generated typed client
-frontend/backend integration
-full-stack isolated E2E
-real authenticated Home handoff
-release/legal gates
-native Mobile Access when its implementation gate opens
+feature/access-auth             active full-stack product work
+feature/home-react              active frontend work
+feature/platform-observability  active platform work
+feature/postgres-recovery       CP01–CP07 LOCAL PASS / CLOSED / integration candidate
 ```
 
-The vertical may touch backend, frontend, generated API client and tests together. Do not split one product vertical into permanent backend/frontend branches merely because the files live in different technical layers.
-
-Frontend changes required by the real Auth contract belong to that vertical. Independent later visual polish may use a small short-lived UI branch from then-current `main`.
+These branches are intentionally independent and own only their bounded truth until integration. Do not collapse them into a single mega-branch and do not rewrite protected-main truth from an unmerged branch.
 
 ## 5. Database evolution after CP6
 
@@ -170,8 +172,11 @@ Restate
 PgBouncer
 → concrete connection-management need + direct validation
 
-pgBackRest + AWS S3
-→ recovery/production boundary or real recovery rehearsal
+pgBackRest LOCAL recovery
+→ implemented and directly rehearsed
+
+remote backup provider
+→ TBD; trigger only at a real production deployment boundary
 ```
 
 A selected component is not implemented merely because it appears in architecture.
@@ -204,7 +209,7 @@ Still trigger-bound/not currently complete:
 production backend compute provider / sizing
 IaC engine and production infrastructure rollout
 production registry/release pipeline where not yet required
-recovery/PITR rehearsal
+remote-provider production recovery/retention acceptance
 real V1→V2 business-schema evolution rehearsal
 PowerSync product activation
 Restate product activation
@@ -252,14 +257,13 @@ TEMPORARY HANDOFF != DURABLE main DOCUMENTATION
 ## 11. Immediate sequence
 
 ```text
-1. integrate the closed Access frontend baseline into protected main after final hosted CI
-2. close/delete feature/access-frontend; do not reuse it as a permanent layer branch
-3. create the next full-stack Access/Auth vertical from current protected main under an explicit gate
-4. implement backend Auth → stable OpenAPI → generated client → real frontend integration
-5. run full-stack semantic/security/E2E acceptance before closing Access/Auth
-6. use separate short-lived UI polish branches only for independent later design refinement
-7. activate specialist/runtime capabilities only at their real trigger
-8. apply the documentation lifecycle policy continuously
+1. finish and integrate each active bounded workstream only after its own acceptance gate
+2. treat feature/postgres-recovery as a closed LOCAL recovery integration candidate
+3. continue feature/access-auth, feature/home-react and feature/platform-observability independently
+4. evolve the database only through same-change forward migrations when a real vertical requires it
+5. keep remote backup/cloud recovery deferred until production deployment creates a real need
+6. apply documentation lifecycle cleanup before each branch integration
+7. use live Git refs and branch-local authority rather than stale global assumptions
 ```
 
 This roadmap intentionally does not pre-create future branches, migrations, APIs or infrastructure before their concrete scope is authorized.
