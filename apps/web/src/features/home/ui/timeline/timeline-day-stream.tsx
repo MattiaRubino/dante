@@ -208,9 +208,11 @@ function TimelineEventCard({
       data-group-lane={layout.groupLane}
       data-group-lanes={layout.groupLaneCount}
       style={style}
+      draggable={false}
       tabIndex={0}
       aria-label={`${event.title}, ${formatTimelineMinute(event.startMinute)}–${formatTimelineMinute(event.endMinute)}`}
       aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight"
+      onDragStart={(dragEvent) => dragEvent.preventDefault()}
       onKeyDown={keyboardMove}
       onPointerDown={(pointerEvent) =>
         onPointerPress(pointerEvent, dateKey, event)
@@ -678,7 +680,7 @@ export function TimelineDayStream({
     dateKey: string,
     event: TimelineEvent,
   ) => {
-    if (pointerEvent.button !== 0) {
+    if (!pointerEvent.isPrimary || pointerEvent.button !== 0) {
       return;
     }
     const target = pointerEvent.target;
@@ -692,11 +694,12 @@ export function TimelineDayStream({
     cancelDrag();
     const card = pointerEvent.currentTarget;
     const rect = card.getBoundingClientRect();
+    const pointerId = pointerEvent.pointerId;
     runtimeRef.current = {
       card,
       event,
       fromDateKey: dateKey,
-      pointerId: pointerEvent.pointerId,
+      pointerId,
       startX: pointerEvent.clientX,
       startY: pointerEvent.clientY,
       clientX: pointerEvent.clientX,
@@ -707,6 +710,13 @@ export function TimelineDayStream({
       dragging: false,
       lastAutoFrame: 0,
     };
+
+    try {
+      card.setPointerCapture(pointerId);
+    } catch {
+      cancelDrag();
+      return;
+    }
 
     const move = (eventMove: PointerEvent) => {
       const runtime = runtimeRef.current;
@@ -723,6 +733,9 @@ export function TimelineDayStream({
         ) >= TIMELINE_POLICY.drag.activationDistancePx
       ) {
         beginDragVisual();
+      }
+      if (runtime.dragging) {
+        eventMove.preventDefault();
       }
       updateOverlay();
     };
@@ -743,9 +756,20 @@ export function TimelineDayStream({
         cancelDrag();
       }
     };
+    const lostCapture = (lostEvent: PointerEvent) => {
+      if (runtimeRef.current?.pointerId === lostEvent.pointerId) {
+        cancelDrag();
+      }
+    };
     const keyCancel = (keyEvent: globalThis.KeyboardEvent) => {
       if (keyEvent.key === 'Escape' && runtimeRef.current) {
         keyEvent.preventDefault();
+        cancelDrag();
+      }
+    };
+    const windowCancel = () => cancelDrag();
+    const visibilityCancel = () => {
+      if (document.visibilityState === 'hidden') {
         cancelDrag();
       }
     };
@@ -754,12 +778,21 @@ export function TimelineDayStream({
       document.removeEventListener('pointerup', finish, true);
       document.removeEventListener('pointercancel', cancel, true);
       document.removeEventListener('keydown', keyCancel, true);
+      document.removeEventListener('visibilitychange', visibilityCancel, true);
+      window.removeEventListener('blur', windowCancel, true);
+      card.removeEventListener('lostpointercapture', lostCapture, true);
+      if (card.hasPointerCapture(pointerId)) {
+        card.releasePointerCapture(pointerId);
+      }
     };
     dragCleanupRef.current = cleanup;
     document.addEventListener('pointermove', move, true);
     document.addEventListener('pointerup', finish, true);
     document.addEventListener('pointercancel', cancel, true);
     document.addEventListener('keydown', keyCancel, true);
+    document.addEventListener('visibilitychange', visibilityCancel, true);
+    window.addEventListener('blur', windowCancel, true);
+    card.addEventListener('lostpointercapture', lostCapture, true);
   };
 
   const keyboardMove = (
