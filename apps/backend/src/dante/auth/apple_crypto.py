@@ -27,16 +27,29 @@ class EncryptedAppleGrant:
     ciphertext: bytes
 
 
-def apple_grant_aad(*, grant_ref: UUID, client_id: str) -> bytes:
-    if not client_id or client_id.strip() != client_id or any(char in client_id for char in "\r\n"):
-        raise AppleGrantCryptoError("Apple client_id must be canonical")
-    return (
-        _AAD_PREFIX
-        + str(grant_ref).encode("ascii")
-        + b":"
-        + APPLE_GRANT_ISSUER.encode("ascii")
-        + b":"
-        + client_id.encode("utf-8")
+def _canonical_identity(value: str, *, name: str, maximum: int) -> bytes:
+    if (
+        not value
+        or value.strip() != value
+        or len(value) > maximum
+        or any(char in value for char in "\r\n\x00")
+    ):
+        raise AppleGrantCryptoError(f"Apple {name} must be canonical")
+    return value.encode("utf-8")
+
+
+def apple_grant_aad(*, grant_ref: UUID, subject: str, client_id: str) -> bytes:
+    """Bind ciphertext to the exact durable grant/provider/client identity."""
+    subject_bytes = _canonical_identity(subject, name="subject", maximum=255)
+    client_id_bytes = _canonical_identity(client_id, name="client_id", maximum=255)
+    return b":".join(
+        (
+            _AAD_PREFIX.rstrip(b":"),
+            str(grant_ref).encode("ascii"),
+            APPLE_GRANT_ISSUER.encode("ascii"),
+            subject_bytes,
+            client_id_bytes,
+        )
     )
 
 
@@ -52,13 +65,18 @@ class AppleGrantCipher:
         self._current_key_id = current_key_id
 
     def encrypt(
-        self, *, plaintext: SecretStr, grant_ref: UUID, client_id: str
+        self,
+        *,
+        plaintext: SecretStr,
+        grant_ref: UUID,
+        subject: str,
+        client_id: str,
     ) -> EncryptedAppleGrant:
         raw = plaintext.get_secret_value().encode("utf-8")
         if not raw or len(raw) > _MAX_SECRET_BYTES:
             raise AppleGrantCryptoError("Apple grant secret is empty or oversized")
         nonce = secrets.token_bytes(_NONCE_BYTES)
-        aad = apple_grant_aad(grant_ref=grant_ref, client_id=client_id)
+        aad = apple_grant_aad(grant_ref=grant_ref, subject=subject, client_id=client_id)
         ciphertext = AESGCM(self._key_ring[self._current_key_id]).encrypt(nonce, raw, aad)
         return EncryptedAppleGrant(key_id=self._current_key_id, nonce=nonce, ciphertext=ciphertext)
 
@@ -69,6 +87,7 @@ class AppleGrantCipher:
         nonce: bytes,
         ciphertext: bytes,
         grant_ref: UUID,
+        subject: str,
         client_id: str,
     ) -> SecretStr:
         key = self._key_ring.get(key_id)
@@ -76,7 +95,7 @@ class AppleGrantCipher:
             raise AppleGrantCryptoError("Apple grant references an unknown encryption key")
         if len(nonce) != _NONCE_BYTES or not ciphertext or len(ciphertext) > _MAX_SECRET_BYTES + 32:
             raise AppleGrantCryptoError("Apple grant ciphertext envelope is malformed")
-        aad = apple_grant_aad(grant_ref=grant_ref, client_id=client_id)
+        aad = apple_grant_aad(grant_ref=grant_ref, subject=subject, client_id=client_id)
         try:
             plaintext = AESGCM(key).decrypt(nonce, ciphertext, aad)
             decoded = plaintext.decode("utf-8")
