@@ -74,6 +74,7 @@ class Settings:
     allow_write: bool
     with_synthetic: bool
     cleanup_synthetic: bool
+    environment: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -229,6 +230,11 @@ def _parse_args() -> Settings:
         help="existing, already-tested Grafana contact-point name",
     )
     parser.add_argument(
+        "--environment",
+        default=os.environ.get("DANTE_OBSERVABILITY_ENVIRONMENT", "local"),
+        help="telemetry environment label to materialize (default: local)",
+    )
+    parser.add_argument(
         "--allow-write",
         action="store_true",
         help="required acknowledgement before dashboard/rule writes",
@@ -252,6 +258,8 @@ def _parse_args() -> Settings:
         parser.error("synthetic-rule changes require --allow-write")
     if args.cleanup_synthetic and args.with_synthetic:
         parser.error("--cleanup-synthetic and --with-synthetic are mutually exclusive")
+    if not re.fullmatch(r"[a-z0-9][a-z0-9_-]{0,31}", args.environment):
+        parser.error("--environment must be a bounded lowercase telemetry label")
     return Settings(
         grafana_url=_validate_grafana_url(args.grafana_url),
         token_file=args.token_file.resolve(),
@@ -264,6 +272,7 @@ def _parse_args() -> Settings:
         allow_write=args.allow_write,
         with_synthetic=args.with_synthetic,
         cleanup_synthetic=args.cleanup_synthetic,
+        environment=args.environment,
     )
 
 
@@ -503,7 +512,10 @@ def _threshold_model(
 
 
 def _rule_payload(
-    rule: Mapping[str, Any], prometheus_uid: str, receiver: str | None
+    rule: Mapping[str, Any],
+    prometheus_uid: str,
+    receiver: str | None,
+    environment: str,
 ) -> dict[str, Any]:
     identifier = rule.get("id")
     evaluator = rule.get("evaluator")
@@ -531,7 +543,7 @@ def _rule_payload(
                 "model": {
                     "datasource": {"type": "prometheus", "uid": prometheus_uid},
                     "editorMode": "code",
-                    "expr": rule["expr"],
+                    "expr": str(rule["expr"]).replace('\\\"prod\\\"', f'\\\"{environment}\\\"'),
                     "instant": True,
                     "intervalMs": 1000,
                     "legendFormat": "__auto",
@@ -574,7 +586,7 @@ def _rule_payload(
         },
         "labels": {
             "application": "dante",
-            "environment": "prod",
+            "environment": environment,
             "severity": rule["severity"],
         },
         "isPaused": False,
@@ -609,6 +621,7 @@ def _synthetic_rule(prometheus_uid: str, receiver: str) -> dict[str, Any]:
         },
         prometheus_uid,
         receiver,
+        "local",
     )
     payload["ruleGroup"] = _SYNTHETIC_GROUP
     payload["labels"] = {
@@ -716,6 +729,7 @@ def _apply_alerts(
     receiver: str | None,
     allow_write: bool,
     with_synthetic: bool,
+    environment: str,
     backup_directory: Path,
 ) -> None:
     catalog = _read_json(_ALERT_CATALOG)
@@ -731,7 +745,7 @@ def _apply_alerts(
             _fail("alert catalog contains a non-object rule")
         _upsert_rule(
             client,
-            _rule_payload(rule, prometheus_uid, receiver),
+            _rule_payload(rule, prometheus_uid, receiver, environment),
             allow_write,
             backup_directory,
         )
@@ -797,6 +811,7 @@ def main() -> int:
             settings.receiver,
             settings.allow_write,
             settings.with_synthetic,
+            settings.environment,
             backup_directory,
         )
         mode = "APPLY" if settings.allow_write else "PLAN"
