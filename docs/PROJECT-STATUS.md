@@ -4,9 +4,11 @@
 - **Last reconciled:** 2026-08-31
 - **Protected `main`:** integrated source authority; Access/Auth remains branch-local until explicit merge gate
 - **Active product vertical:** Access/Auth
-- **Current macro-phase:** M5 — Google + Apple + Passkeys + Explicit Linking — **ACTIVE**
-- **Last completed execution block:** **GROUP 1 — M5-E + M5-G — Authenticator Lifecycle + Password/Passwordless Adaptation — COMPLETE / ENGINEERING PASS**
-- **Next execution block:** **GROUP 2 — M5-F — WebAuthn / Passkeys — NEXT**
+- **Current macro-phase:** M5 — Multi-authenticator Account Layer — **ACTIVE**
+- **Last accepted execution block:** **GROUP 1 — M5-E + M5-G — COMPLETE / ENGINEERING PASS**
+- **Current execution block:** **GROUP 2 — M5-F — WebAuthn / Passkeys — IMPLEMENTATION CANDIDATE ACTIVE / QA PENDING**
+- **M5-F PRE-SCOPE:** `64849f2cd60f1d7275344519efdf735eb9c1af95`
+- **Current M5-F candidate HEAD:** `0da2d516be8d46b24318404bec494f61a9d9ddc1`
 - **Forward execution authority:** `workstreams/access-auth-m4-m7-execution-plan.md`
 - **M5 exact design authority:** `architecture/access-auth-m5-persistence-api-contract.md`
 - **M5 live handoff:** `workstreams/access-auth-m5-live-handoff-2026-08-29.md`
@@ -42,9 +44,9 @@ ACTIVE
 ├── M5-B provider/JWK/JOSE/AEAD/WebAuthn infrastructure      COMPLETE / ENGINEERING PASS
 ├── M5-C Google authentication                               COMPLETE / ENGINEERING PASS
 ├── M5-D Apple authentication + grant lifecycle              COMPLETE / ENGINEERING PASS
-└── Remaining grouped execution                              3 GROUPS
+└── grouped execution
     ├── GROUP 1  M5-E + M5-G  authenticator lifecycle + password/passwordless   COMPLETE / ENGINEERING PASS
-    ├── GROUP 2  M5-F         passkeys/WebAuthn                                  NEXT
+    ├── GROUP 2  M5-F         passkeys/WebAuthn                                  ACTIVE / CANDIDATE / QA PENDING
     ├── GROUP 3  M5-H + M5-I  public FastAPI + OpenAPI/governed client           PLANNED
     └── GROUP 4  M5-J + M5-K+ Access Web + security/provider/browser/UAT         PLANNED
 
@@ -83,6 +85,9 @@ M5-D documentation closure
 
 M5-E + M5-G accepted code / formatter checkpoint
 1c4b7c988eaae130d6a90d43940a42e2a550870d
+
+M5-E + M5-G documentation / M5-F PRE-SCOPE
+64849f2cd60f1d7275344519efdf735eb9c1af95
 ```
 
 Group 1 / M5-E + M5-G accepted proof:
@@ -124,6 +129,8 @@ GRANT DELETE ON dante.password_credential TO dante_runtime
 
 It changes no table shape, mapping, constraint or index. Dictionary/catalog/migration/privilege parity was proved in the Group-1 PostgreSQL regression.
 
+M5-F currently requires **no schema/Alembic/Dictionary change**. The accepted M5-A persistence already supplies `webauthn_account`, `passkey_credential` and `webauthn_challenge` with the required least-privilege runtime ACL. Any future discovered physical insufficiency must be separately re-gated rather than silently widened.
+
 Permanent structural invariant:
 
 ```text
@@ -146,11 +153,13 @@ provider identity key = issuer + subject
 provider email != Account/link authority
 provider authentication != provider-data integration authorization
 provider token/assertion != DANTE AuthSession
+passkey credential != Account
+WebAuthn user_handle = opaque discoverable Account binding, not email/account UUID
 passwordless Account is valid
 verification != setup completion
 reauthentication != initial signin
 method != factor != assurance
-frontend/provider callback != backend-authoritative success
+frontend/provider/browser callback != backend-authoritative success
 unknown/loading != signed-out/signed-in/error
 ```
 
@@ -168,39 +177,132 @@ wide credentialed CORS
 fake frontend Auth success
 persisted browser Auth cache
 provider profile fields dumped into Account
+hand-rolled WebAuthn/COSE/signature verification
+biometric/PIN/device fingerprint persistence
 ```
 
-## 5. Exact next block — Group 2 / M5-F
+## 5. M5-F implementation candidate — current remote truth
 
-**Purpose:** add WebAuthn/passkeys as another direct authenticator under the Account-wide lifecycle and anti-lockout model already proved by Group 1.
+M5-F PRE-SCOPE:
 
 ```text
-stable opaque WebAuthnAccount user_handle
-registration begin/complete
-discoverable username-less authentication
-passkey reauthentication
-multiple credentials
-UV required / resident credential direction / attestation none
-credential_id lifetime uniqueness
-COSE algorithm persistence
-signCount + backup state update policy
-label/update/remove
-logical revoke
-Group-1 anti-lockout integration
-canonical DANTE AuthSession only
+64849f2cd60f1d7275344519efdf735eb9c1af95
 ```
 
-Still out of scope for Group 2:
+Current remote candidate HEAD:
 
 ```text
-M5-H public FastAPI materialization
-M5-I deterministic OpenAPI / Orval client
-M5-J Access Web implementation
-M5-K+ real provider/browser/UAT acceptance
-provider-data integration scopes
+0da2d516be8d46b24318404bec494f61a9d9ddc1
 ```
 
-## 6. Branch/worktree safety
+Remote compare is `ahead 19 / behind 0` and contains exactly these 10 M5-F files:
+
+```text
+M  apps/backend/.env.example
+M  apps/backend/src/dante/auth/contracts.py
+A  apps/backend/src/dante/auth/passkey_flow.py
+M  apps/backend/src/dante/auth/proofs.py
+M  apps/backend/src/dante/auth/provider_flow_runtime.py
+M  apps/backend/src/dante/auth/webauthn.py
+M  apps/backend/src/dante/platform/config/auth_provider.py
+A  apps/backend/tests/integration/auth/test_m5_passkeys.py
+A  apps/backend/tests/test_auth_passkey_flow.py
+M  apps/backend/tests/test_auth_webauthn.py
+```
+
+No migration, Dictionary, SQLAlchemy mapping, public FastAPI, OpenAPI/client, frontend or Google/Apple protocol-core file is in the M5-F delta.
+
+Candidate behavior already materialized includes:
+
+```text
+real python-fido2 2.2.1 registration/assertion verification
+resident credential REQUIRED
+user verification REQUIRED
+attestation NONE
+exact configured RP ID/origin
+stable random 32-byte WebAuthn user_handle
+verifier-only 32-byte challenge persistence
+single-use challenge claim committed before cryptographic verification
+cryptographic verification outside DB mutation transaction
+COSE public-key persistence + algorithm consistency checks
+discoverable username-less passkey signin
+fresh canonical DANTE AuthSession on passkey signin
+passkey reauthentication on same AuthSession + bearer rotation
+safe active-passkey management projection
+label-only update
+logical passkey revoke
+Group-1 Account-wide anti-lockout reuse
+monotonic sign-count storage
+backup eligibility immutable / backup state current signal
+bounded transport/label/resource policy
+WebAuthn disabled-default lazy runtime composition
+RP ID DNS/localhost validation, IP rejection, HTTPS origins and same-RP origin family
+software ES256 authenticator proof through the real fido2 verifier
+```
+
+An earlier candidate bug was already fixed before this snapshot: `begin_registration()` no longer requests `FOR UPDATE` on `webauthn_account`; the Account security lock already serializes user-handle creation and the accepted runtime ACL intentionally has only `SELECT + INSERT` there.
+
+## 6. M5-F is NOT accepted yet
+
+Do not mark M5-F COMPLETE/ENGINEERING PASS from implementation presence alone. No authoritative local Ruff/mypy/pytest/build run has yet been recorded for the current M5-F candidate.
+
+The final audit also identified remaining closure work:
+
+```text
+1. harden ambiguous authentication/reauthentication reconciliation
+   - tolerate a later valid assertion advancing mutable credential observations
+   - immutable credential identity/key/algorithm/backup-eligibility must remain exact
+   - sign_count must be >= the reconciled assertion
+   - last_used_at/updated_at may be later than the ambiguous operation
+   - current backup_state must not be required to equal an older assertion after later valid use
+   - exact generated AuthSession ref/secret/timestamps remain the authority for signin outcome
+
+2. move passkey signin mutation timestamp/expiry formation to the serialized finalization point
+   after the Account security lock, so authoritative chronology follows the committed mutation boundary
+
+3. complete focused real-PostgreSQL/race proof, especially:
+   - same credential attempted across two Accounts
+   - passkey authentication vs passkey removal
+   - Account disable vs passkey signin
+   - passkey reauth vs concurrent bearer rotation
+   - passkey removal vs password removal
+   - concurrent valid assertions / signCount advancement / backup-state advancement
+   - operation-specific ambiguous terminal commit reconciliation
+
+4. prove runtime composition explicitly:
+   - WebAuthn disabled does not require/read a WebAuthn policy and exposes no passkey service
+   - WebAuthn enabled with validated policy creates exactly one passkey service through existing runtime ownership
+
+5. run local candidate QA only after the above writes are complete
+```
+
+The frozen security policy remains: a non-increasing signature counter is a **risk signal**, not unconditional authentication failure or Account lock. A safe non-secret warning/telemetry hook may be added during final M5-F hardening; do not turn this into a new blocking counter policy.
+
+## 7. Exact continuation pointer
+
+A new chat must continue **M5-F**, not start M5-H/I and not reopen Group 1.
+
+Required sequence:
+
+```text
+verify branch HEAD/current compare
+→ review this status + live handoff + M5 frozen contracts
+→ fix the known M5-F reconciliation/chronology hardening
+→ add the missing deterministic runtime/PostgreSQL race proof
+→ PRE-SCOPE 64849f2... → candidate scope audit (still only approved M5-F paths)
+→ STOP WRITES
+→ user pulls and runs local Ruff/mypy/fast/focused-PG/build QA
+→ assistant fixes any defects; user does not patch code manually
+→ full PostgreSQL regression once candidate is green
+→ materialize local formatter/autofix output exactly
+→ final PRE-SCOPE scope/architecture audit
+→ only then update closure docs and mark M5-F COMPLETE / ENGINEERING PASS
+→ Group 3 / M5-H + M5-I becomes NEXT
+```
+
+Real Chromium/Firefox/WebKit WebAuthn behavior remains Group 4 because public FastAPI/Web surfaces do not yet exist. Do not claim browser/production WebAuthn acceptance in M5-F.
+
+## 8. Branch/worktree safety
 
 Continue exactly unless explicitly changed by the user:
 
