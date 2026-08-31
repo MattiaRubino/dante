@@ -8,6 +8,7 @@ on:
     branches:
       - main
       - feature/home-react
+      - feature/home-timeline
 
 permissions: {}
 
@@ -46,11 +47,11 @@ jobs:
           python3 tests/prototypes/world-focus-preprod-contracts.py
 
       - name: Format check
-        if: ${{ github.ref != 'refs/heads/feature/home-react' }}
+        if: ${{ github.ref != 'refs/heads/feature/home-react' && github.ref != 'refs/heads/feature/home-timeline' }}
         run: pnpm format:check
 
-      - name: Format check for active Home branch
-        if: ${{ github.ref == 'refs/heads/feature/home-react' }}
+      - name: Format check for active Home workstreams
+        if: ${{ github.ref == 'refs/heads/feature/home-react' || github.ref == 'refs/heads/feature/home-timeline' }}
         shell: bash
         run: |
           mapfile -d '' files < <(
