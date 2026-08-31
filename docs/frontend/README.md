@@ -7,16 +7,17 @@ This directory contains durable product-facing frontend contracts carried from a
 ## Read order
 
 1. `docs/frontend/access.md` — current materialized Access Web baseline and remaining full-stack boundary
-2. `docs/frontend/home/production-depth-handoff.md` — current Home phase, working strategy and new-chat bootstrap
-3. `docs/frontend/home/current-checkpoint.md`
-4. `docs/frontend/home/contract.md`
-5. `docs/frontend/ui-registry.md`
-6. `docs/frontend/design-tokens.md`
-7. `docs/frontend/terminology.md`
-8. `docs/frontend/localization.md`
-9. `docs/frontend/production-readiness/component-architecture.md`
-10. `docs/frontend/production-readiness/backend-integration-contract.md`
-11. `docs/frontend/production-readiness/quality-gates.md`
+2. `docs/frontend/home/home-structural-contract.md` — frozen Whole-Home H0 macro structure, ownership and responsive composition
+3. `docs/frontend/home/production-depth-handoff.md` — current Home phase, working strategy and new-chat bootstrap
+4. `docs/frontend/home/current-checkpoint.md`
+5. `docs/frontend/home/contract.md`
+6. `docs/frontend/ui-registry.md`
+7. `docs/frontend/design-tokens.md`
+8. `docs/frontend/terminology.md`
+9. `docs/frontend/localization.md`
+10. `docs/frontend/production-readiness/component-architecture.md`
+11. `docs/frontend/production-readiness/backend-integration-contract.md`
+12. `docs/frontend/production-readiness/quality-gates.md`
 
 Engineering/runtime authority remains the materialized frontend workspace, repository architecture, CI and local-development documentation. Product contracts do not replace those engineering authorities.
 
@@ -30,14 +31,24 @@ The completed frontend work deliberately does **not** claim real Auth backend be
 
 The accepted Home prototype is an executable UX/reference specification, **not** code to transliterate line-by-line into React.
 
+The Whole-Home macro skeleton is additionally change-controlled by H0. Child feature work consumes that skeleton and may not silently change region ownership, macro hierarchy or responsive composition merely because a local implementation would be easier.
+
 Implementation must:
 
 - preserve the accepted visual and behavioral contract before introducing redesigns;
+- preserve the frozen H0 Whole-Home structural contract unless an explicit user-approved change reopens it;
 - use the React/TypeScript architecture already materialized in the repository;
 - componentize by ownership boundary rather than arbitrary pieces of the old monolith;
 - separate view models from backend DTOs/domain/persistence shapes;
-- preserve semantic IDs, localization keys and machine-readable Home-stage contracts;
+- preserve semantic IDs, localization keys and machine-readable Home-stage/Whole-Home contracts;
 - keep semantic World/group/event colors distinct from generic DANTE chrome.
+
+Machine-readable H0 authority lives in:
+
+- `prototypes/frontend/shared/contracts/home-structure.contract.json`;
+- `prototypes/frontend/shared/contracts/home-shell-responsive.matrix.json`.
+
+Those contracts are blocking CI through `tests/prototypes/frontend-preprod-contracts.py`; runtime structure and geometry are additionally protected by React and Playwright regression tests.
 
 ## Deliberately not imported from exploratory branches
 
