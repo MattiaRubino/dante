@@ -49,6 +49,14 @@ type TimelineCardGeometry = Readonly<{
   width: number;
 }>;
 
+export type TimelineExpandedTrackGeometry = Readonly<{
+  chromeWidth: number;
+  expandedTrackWidth: number;
+  expandedInnerWidth: number;
+  groupWidth: number;
+  groupHeaderTrackWidth: number;
+}>;
+
 const timelineCardContentWidthCache = new WeakMap<
   HTMLElement,
   TimelineCardContentMeasurement
@@ -132,6 +140,40 @@ export function timelineCompactCardWidth(
     minimumVisibleWidth,
     Math.min(intrinsic, safeSlotMaximum),
   );
+}
+
+/**
+ * One geometry contract owns the expanded event canvas and the group header.
+ * The group scroller starts after the left event inset and carries the right
+ * event gutter inside its track, so its horizontal scroll range is exactly the
+ * same as the expanded timeline grid.
+ */
+export function timelineExpandedTrackGeometry(
+  viewportWidth: number,
+  groupCount: number,
+): TimelineExpandedTrackGeometry {
+  const layout = TIMELINE_POLICY.layout;
+  const safeViewportWidth = Number.isFinite(viewportWidth)
+    ? Math.max(1, viewportWidth)
+    : 1;
+  const safeGroupCount = Math.max(1, Math.floor(groupCount));
+  const chromeWidth = layout.eventsLeftInsetPx + layout.eventsRightInsetPx;
+  const compactInnerWidth = Math.max(1, safeViewportWidth - chromeWidth);
+  const expandedInnerWidth = Math.max(
+    compactInnerWidth,
+    safeGroupCount * layout.groupMinWidthPx,
+  );
+  const expandedTrackWidth = chromeWidth + expandedInnerWidth;
+  const groupWidth = expandedInnerWidth / safeGroupCount;
+  const groupHeaderTrackWidth = expandedInnerWidth + layout.eventsRightInsetPx;
+
+  return {
+    chromeWidth,
+    expandedTrackWidth,
+    expandedInnerWidth,
+    groupWidth,
+    groupHeaderTrackWidth,
+  };
 }
 
 export function parseTimelineViewedDate(
@@ -258,22 +300,12 @@ export function applyTimelineExpansion(
     ? clampTimelineRuntime(progress, 0, 1)
     : 0;
   const viewportWidth = Math.max(1, grid.clientWidth);
-  const expandedTrack = Math.max(
-    viewportWidth,
-    expansion.trackChromeWidthPx + groupCount * layout.groupMinWidthPx,
-  );
+  const expanded = timelineExpandedTrackGeometry(viewportWidth, groupCount);
   const trackWidth =
-    viewportWidth + (expandedTrack - viewportWidth) * normalizedProgress;
-  const compactInner = Math.max(
-    1,
-    viewportWidth - expansion.trackChromeWidthPx,
-  );
-  const expandedInner = Math.max(
-    1,
-    expandedTrack - expansion.trackChromeWidthPx,
-  );
+    viewportWidth +
+    (expanded.expandedTrackWidth - viewportWidth) * normalizedProgress;
+  const compactInner = Math.max(1, viewportWidth - expanded.chromeWidth);
   const safeGroupCount = Math.max(1, groupCount);
-  const groupWidth = expandedInner / safeGroupCount;
 
   root.style.setProperty(
     '--timeline-group-opacity',
@@ -291,6 +323,22 @@ export function applyTimelineExpansion(
     String(normalizedProgress),
   );
   root.style.setProperty('--timeline-group-count', String(safeGroupCount));
+  root.style.setProperty(
+    '--timeline-events-left-inset',
+    `${layout.eventsLeftInsetPx}px`,
+  );
+  root.style.setProperty(
+    '--timeline-events-right-inset',
+    `${layout.eventsRightInsetPx}px`,
+  );
+  root.style.setProperty(
+    '--timeline-expanded-group-width',
+    `${expanded.groupWidth}px`,
+  );
+  root.style.setProperty(
+    '--timeline-expanded-group-track-width',
+    `${expanded.groupHeaderTrackWidth}px`,
+  );
 
   const nextTrackWidth = `${trackWidth}px`;
   const stream = root.querySelector<HTMLElement>('.timeline-day-stream');
@@ -339,10 +387,11 @@ export function applyTimelineExpansion(
       slotMaximumA,
     );
     const leftB =
-      groupIndex * groupWidth + (groupLane / groupLanes) * groupWidth;
+      groupIndex * expanded.groupWidth +
+      (groupLane / groupLanes) * expanded.groupWidth;
     const widthB = Math.max(
       expansion.cardMinWidthPx,
-      groupWidth / groupLanes - expansion.cardLaneGapPx,
+      expanded.groupWidth / groupLanes - expansion.cardLaneGapPx,
     );
 
     geometries.push({
