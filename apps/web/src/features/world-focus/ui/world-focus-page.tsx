@@ -14,14 +14,22 @@ import {
 } from '../model/world-focus-transition';
 import type { WorldFocusWorld } from '../model/world-focus-fixtures';
 import './world-focus.css';
+import './world-focus-states.css';
 
 export type WorldFocusCloseRequest = Readonly<{
   preferHistory: boolean;
 }>;
 
+export type WorldFocusShellStatus =
+  | 'loading'
+  | 'ready'
+  | 'error'
+  | 'unavailable';
+
 type WorldFocusPageProps = Readonly<{
   world: WorldFocusWorld;
   source: WorldFocusEntrySource;
+  status?: WorldFocusShellStatus;
   onClose: (request: WorldFocusCloseRequest) => void;
 }>;
 
@@ -76,6 +84,7 @@ function resolveGeometry(
 export function WorldFocusPage({
   world,
   source,
+  status = 'ready',
   onClose,
 }: WorldFocusPageProps) {
   const { t } = useTranslation('common');
@@ -91,6 +100,14 @@ export function WorldFocusPage({
   const description = t(
     ($) => $.common.worldFocus.worlds[world.id].description,
   );
+  const statusMessage =
+    status === 'loading'
+      ? t(($) => $.common.worldFocus.states.loading, { world: label })
+      : status === 'error'
+        ? t(($) => $.common.worldFocus.states.error, { world: label })
+        : status === 'unavailable'
+          ? t(($) => $.common.worldFocus.states.unavailable, { world: label })
+          : null;
   const closeRequest = useMemo<WorldFocusCloseRequest>(
     () => ({ preferHistory: entry !== null }),
     [entry],
@@ -126,9 +143,11 @@ export function WorldFocusPage({
     return () => {
       root.style.overflow = previousOverflow;
       const previousFocus = previousFocusRef.current;
-      if (previousFocus?.isConnected === true) {
-        previousFocus.focus({ preventScroll: true });
-      }
+      queueMicrotask(() => {
+        if (previousFocus?.isConnected === true) {
+          previousFocus.focus({ preventScroll: true });
+        }
+      });
     };
   }, []);
 
@@ -152,6 +171,7 @@ export function WorldFocusPage({
       className="world-focus-shell"
       data-world-focus-id={world.id}
       data-world-focus-source={source}
+      data-world-focus-status={status}
       data-entry-origin={entry === null ? 'fallback' : 'live'}
       data-motion={world.theme.motionCharacter}
       data-texture={world.theme.texture}
@@ -201,8 +221,17 @@ export function WorldFocusPage({
         aria-label={t(($) => $.common.worldFocus.canvasLabel, {
           world: label,
         })}
+        aria-busy={status === 'loading' ? true : undefined}
       >
         <div className="world-focus-canvas-boundary" aria-hidden="true" />
+        {statusMessage === null ? null : (
+          <p
+            className="world-focus-state"
+            role={status === 'loading' ? 'status' : 'alert'}
+          >
+            {statusMessage}
+          </p>
+        )}
       </section>
     </main>
   );

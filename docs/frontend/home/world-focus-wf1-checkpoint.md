@@ -1,7 +1,7 @@
 # DANTE — World Focus WF1 Checkpoint
 
 **Status:** IMPLEMENTATION CANDIDATE / AUTOMATED + USER QA PENDING  
-**Date:** 2026-08-30  
+**Date:** 2026-08-31  
 **Branch:** `feature/home-react`  
 **Scope:** WF1 route/shell/entry-transition foundation only
 
@@ -44,6 +44,19 @@ The underlay is:
 The persistent AppShell/Topbar also remains mounted so shell geometry does not change, but is hidden from interaction while a validated World Focus state is active.
 
 Browser history owns live-entry back behavior. A direct/deep-link load without a live opener snapshot has a deterministic fallback close that removes only `focus`.
+
+World Focus explicitly represents the WF1 shell lifecycle states:
+
+```text
+loading
+ready
+error
+unavailable
+```
+
+`loading` is exposed with `aria-busy` plus a status message. `error` and `unavailable` remain distinct alert states and do not masquerade as empty content.
+
+Focus moves into the immersive surface on entry. On exit, restoration is deferred until the still-mounted underlay has left its `inert` state, then returns to the live opener when it still exists.
 
 ## 3. Home entry behavior
 
@@ -124,6 +137,7 @@ WF1 intentionally contains only:
 - back control;
 - World identity/title/description;
 - empty semantic World canvas boundary;
+- explicit loading/error/unavailable shell presentation;
 - transition/theme infrastructure.
 
 No production widget composition, AI conversation, Insight, personalization, or backend integration is part of WF1.
@@ -136,9 +150,11 @@ WF1 adds automated specifications for:
 - back/Escape close semantics;
 - select-first/open-second Home behavior;
 - Home state preservation through browser back;
+- opener focus restoration;
 - pointer drag not opening World Focus;
 - keyboard entry;
 - direct `/home?focus=...` fallback;
+- loading/error/unavailable shell-state semantics;
 - reduced-motion usability.
 
 These tests are **authored but not claimed green by this checkpoint** until executed in the real worktree.
@@ -169,12 +185,13 @@ At minimum validate:
 2. browser/back control returns to the same Home state;
 3. AI collapsed/expanded state survives;
 4. active World remains selected after return;
-5. dragging a World does not open the focus;
-6. keyboard activation works select-first/open-second;
-7. direct `/home?focus=music` is usable;
-8. reduced-motion route remains clear and usable;
-9. compact and large desktop do not clip the shell;
-10. transition quality is high enough without adding heavier rendering technology.
+5. focus returns to the opener after close/back;
+6. dragging a World does not open the focus;
+7. keyboard activation works select-first/open-second;
+8. direct `/home?focus=music` is usable;
+9. reduced-motion route remains clear and usable;
+10. compact and large desktop do not clip the shell;
+11. transition quality is high enough without adding heavier rendering technology.
 
 ## 10. Exclusions retained
 

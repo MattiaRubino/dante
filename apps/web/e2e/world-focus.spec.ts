@@ -22,6 +22,10 @@ test('Home opens the centered World into the immersive focus and browser back pr
     'data-entry-origin',
     'live',
   );
+  await expect(page.locator('.world-focus-shell')).toHaveAttribute(
+    'data-world-focus-status',
+    'ready',
+  );
   await expect(page.locator('[data-app-region="topbar"]')).toBeHidden();
 
   await page.goBack();
@@ -29,6 +33,7 @@ test('Home opens the centered World into the immersive focus and browser back pr
   await expect(page.getByRole('main', { name: 'Mondo Musica' })).toHaveCount(0);
   await expect(homeShell).toHaveAttribute('data-home-ai-state', 'collapsed');
   await expect(music).toHaveAttribute('aria-current', 'true');
+  await expect(music).toBeFocused();
   await expect(page.locator('[data-app-region="topbar"]')).toBeVisible();
 });
 
@@ -75,6 +80,7 @@ test('direct World Focus URL has a safe fallback entry and close path', async ({
   const focus = page.locator('.world-focus-shell');
   await expect(focus).toBeVisible();
   await expect(focus).toHaveAttribute('data-entry-origin', 'fallback');
+  await expect(focus).toHaveAttribute('data-world-focus-status', 'ready');
   await expect(page.getByRole('main', { name: 'Mondo Viaggi' })).toBeVisible();
 
   await page.getByRole('button', { name: 'Torna indietro' }).click();

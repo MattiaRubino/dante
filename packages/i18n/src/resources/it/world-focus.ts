@@ -3,6 +3,11 @@ export const worldFocus = {
   back: 'Torna indietro',
   mainLabel: 'Mondo {{world}}',
   canvasLabel: 'Spazio del Mondo {{world}}',
+  states: {
+    loading: 'Caricamento del Mondo {{world}}',
+    error: 'Impossibile aprire il Mondo {{world}}',
+    unavailable: 'Mondo {{world}} non disponibile',
+  },
   worlds: {
     body: {
       label: 'Corpo',

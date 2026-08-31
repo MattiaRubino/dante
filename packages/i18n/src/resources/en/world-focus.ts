@@ -5,6 +5,11 @@ export const worldFocus = {
   back: 'Go back',
   mainLabel: '{{world}} World',
   canvasLabel: '{{world}} World space',
+  states: {
+    loading: 'Loading the {{world}} World',
+    error: 'Unable to open the {{world}} World',
+    unavailable: '{{world}} World unavailable',
+  },
   worlds: {
     body: {
       label: 'Body',

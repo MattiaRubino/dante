@@ -88,4 +88,76 @@ describe('WorldFocusPage', () => {
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(onClose).toHaveBeenCalledWith({ preferHistory: false });
   });
+
+  it('renders truthful loading, error and unavailable shell states', () => {
+    const onClose = vi.fn();
+    const world = requireWorld('music');
+    const { container, rerender } = render(
+      <WorldFocusPage
+        world={world}
+        source="home"
+        status="loading"
+        onClose={onClose}
+      />,
+    );
+
+    const shell = container.querySelector('.world-focus-shell');
+    expect(shell?.getAttribute('data-world-focus-status')).toBe('loading');
+    expect(screen.getByRole('status').textContent).toBe(
+      'Caricamento del Mondo Musica',
+    );
+
+    rerender(
+      <WorldFocusPage
+        world={world}
+        source="home"
+        status="error"
+        onClose={onClose}
+      />,
+    );
+    expect(shell?.getAttribute('data-world-focus-status')).toBe('error');
+    expect(screen.getByRole('alert').textContent).toBe(
+      'Impossibile aprire il Mondo Musica',
+    );
+
+    rerender(
+      <WorldFocusPage
+        world={world}
+        source="home"
+        status="unavailable"
+        onClose={onClose}
+      />,
+    );
+    expect(shell?.getAttribute('data-world-focus-status')).toBe('unavailable');
+    expect(screen.getByRole('alert').textContent).toBe(
+      'Mondo Musica non disponibile',
+    );
+  });
+
+  it('restores focus to the live opener after the focus surface unmounts', async () => {
+    const onClose = vi.fn();
+    const world = requireWorld('music');
+    const { rerender } = render(
+      <button type="button">Apri Musica</button>,
+    );
+    const opener = screen.getByRole('button', { name: 'Apri Musica' });
+    opener.focus();
+    expect(document.activeElement).toBe(opener);
+
+    rerender(
+      <>
+        <button type="button">Apri Musica</button>
+        <WorldFocusPage world={world} source="home" onClose={onClose} />
+      </>,
+    );
+    expect(document.activeElement).toBe(
+      screen.getByRole('main', { name: 'Mondo Musica' }),
+    );
+
+    rerender(<button type="button">Apri Musica</button>);
+    await Promise.resolve();
+    expect(document.activeElement).toBe(
+      screen.getByRole('button', { name: 'Apri Musica' }),
+    );
+  });
 });
