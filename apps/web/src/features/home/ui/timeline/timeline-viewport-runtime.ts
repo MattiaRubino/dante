@@ -199,28 +199,30 @@ export function findTimelineDayAtOffset(
 
 function measureTimelineCardContentWidth(card: HTMLElement): number {
   /*
-   * textContent and the explicit rendered height form a cheap invalidation key:
-   * locale/content/subitem changes and zoom-driven typography changes invalidate
-   * the cache, while expansion frames reuse the same intrinsic measurement.
+   * Only the stable top-level identity/time/context rows participate in compact
+   * width. Subitem expansion must not resize the card horizontally. The top
+   * text plus explicit height form a cheap invalidation key for locale/content
+   * and zoom changes while expansion frames reuse the cached measurement.
    */
-  const signature = `${card.style.height}\u0000${card.textContent ?? ''}`;
+  const top = card.querySelector<HTMLElement>('.timeline-event-card__top');
+  const signature = `${card.style.height}\u0000${top?.textContent ?? ''}`;
   const cached = timelineCardContentWidthCache.get(card);
   if (cached?.signature === signature) {
     return cached.width;
   }
 
-  const elements = card.querySelectorAll<HTMLElement>(
+  const elements = top?.querySelectorAll<HTMLElement>(
     [
       '.timeline-event-card__title',
       '.timeline-event-card__time',
       '.timeline-event-card__meta',
-      '.timeline-event-card__subitem span',
-      '.timeline-event-card__expander',
     ].join(', '),
   );
   let maximum = 0;
-  for (const element of elements) {
-    maximum = Math.max(maximum, element.scrollWidth);
+  if (elements) {
+    for (const element of elements) {
+      maximum = Math.max(maximum, element.scrollWidth);
+    }
   }
 
   timelineCardContentWidthCache.set(card, { signature, width: maximum });
