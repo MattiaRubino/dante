@@ -87,6 +87,16 @@ export const TIMELINE_POLICY = {
     horizontalSyncTolerancePx: 0.5,
     eventRevealInsetPx: 16,
   },
+  scrubber: {
+    edgeInsetPx: 8,
+    deadZoneRatio: 0.07,
+    minPxPerSecond: 180,
+    maxPxPerSecond: 4200,
+    velocityExponent: 1.65,
+    maxFrameSeconds: 0.05,
+    keyboardStepPx: 72,
+    keyboardPageRatio: 0.82,
+  },
   feedback: {
     toastDurationMs: 5000,
   },

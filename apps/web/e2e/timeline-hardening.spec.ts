@@ -220,6 +220,95 @@ test('keyboard nudges cross midnight, retain focus, and Undo restores the origin
   await expectCardInsideTimelineViewport(card, grid);
 });
 
+test('relative temporal scrubber keeps advancing while held without a native-thumb reset', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 760 });
+  await page.goto('/home');
+
+  const grid = page.locator('.timeline-grid');
+  const scrubber = page.locator('[data-temporal-scrubber="relative"]');
+  const thumb = scrubber.locator('.timeline-temporal-scrubber__thumb');
+
+  await expect(grid).toHaveAttribute('data-temporal-scroll', 'relative');
+  await expect(scrubber).toHaveCount(1);
+  await expect(thumb).toHaveCount(1);
+
+  const initialDates = await renderedTimelineDates(page);
+  const mountedCount = initialDates.length;
+  const initialFirst = initialDates[0] ?? '';
+
+  const box = await scrubber.boundingBox();
+  expect(box).not.toBeNull();
+  if (!box) {
+    return;
+  }
+
+  const x = box.x + box.width / 2;
+  const neutralY = box.y + box.height * 0.34;
+  const bottomY = box.y + box.height - 3;
+
+  await page.mouse.move(x, neutralY);
+  await page.mouse.down();
+  await page.mouse.move(x, bottomY, { steps: 8 });
+  await expect(scrubber).toHaveAttribute('data-active', 'true');
+
+  await expect
+    .poll(async () => (await renderedTimelineDates(page))[0] ?? '')
+    .not.toBe(initialFirst);
+
+  const firstAfterInitialAdvance = (await renderedTimelineDates(page))[0] ?? '';
+
+  await expect
+    .poll(async () => (await renderedTimelineDates(page))[0] ?? '')
+    .not.toBe(firstAfterInitialAdvance);
+
+  const firstWhileHeld = (await renderedTimelineDates(page))[0] ?? '';
+  expect(dayDistance(initialFirst, firstWhileHeld)).toBeGreaterThan(2);
+  expect(await renderedTimelineDates(page)).toHaveLength(mountedCount);
+
+  await page.mouse.move(x, box.y + box.height + 100);
+  const firstBeforeOutsideHold = (await renderedTimelineDates(page))[0] ?? '';
+  await expect
+    .poll(async () => (await renderedTimelineDates(page))[0] ?? '')
+    .not.toBe(firstBeforeOutsideHold);
+
+  await page.mouse.up();
+  await expect(scrubber).not.toHaveAttribute('data-active', 'true');
+  await expect
+    .poll(() => thumb.evaluate((element) => element.style.transform))
+    .toBe('');
+  await expect(thumb).toHaveCount(1);
+
+  await page.locator('.dante-timeline-now').click();
+  await expect
+    .poll(async () => renderedTimelineDates(page))
+    .toContain('2026-08-04');
+});
+
+test('Timeline viewport remains keyboard-scrollable without relying on a native vertical thumb', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 760 });
+  await page.goto('/home');
+
+  const grid = page.locator('.timeline-grid');
+  await grid.focus();
+  await expect(grid).toBeFocused();
+
+  const before = await grid.evaluate((element) => element.scrollTop);
+  await page.keyboard.press('PageDown');
+  await expect
+    .poll(() => grid.evaluate((element) => element.scrollTop))
+    .toBeGreaterThan(before);
+
+  const afterDown = await grid.evaluate((element) => element.scrollTop);
+  await page.keyboard.press('ArrowUp');
+  await expect
+    .poll(() => grid.evaluate((element) => element.scrollTop))
+    .toBeLessThan(afterDown);
+});
+
 test('continuous scroll recycles a bounded window far beyond the old hard limit and Now recovers', async ({
   page,
 }) => {
