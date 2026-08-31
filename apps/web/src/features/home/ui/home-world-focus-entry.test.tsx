@@ -10,6 +10,7 @@ import {
 } from 'vitest';
 
 import { i18n } from '../../../bootstrap/i18n';
+import type { HomeWorldOpenIntent } from '../model/home-world-focus';
 import { HomePage } from './home-page';
 
 beforeAll(async () => {
@@ -48,7 +49,7 @@ afterAll(() => {
 
 describe('Home World Focus entry', () => {
   it('opens only when the selected World is activated again', () => {
-    const onOpenWorldFocus = vi.fn();
+    const onOpenWorldFocus = vi.fn<(intent: HomeWorldOpenIntent) => void>();
     render(<HomePage onOpenWorldFocus={onOpenWorldFocus} />);
 
     const music = screen.getByRole('listitem', { name: 'Musica' });
@@ -59,14 +60,17 @@ describe('Home World Focus entry', () => {
 
     fireEvent.click(music);
     expect(onOpenWorldFocus).toHaveBeenCalledTimes(1);
-    expect(onOpenWorldFocus).toHaveBeenCalledWith({
-      label: 'Musica',
-      origin: {
-        left: expect.any(Number),
-        top: expect.any(Number),
-        width: expect.any(Number),
-        height: expect.any(Number),
-      },
-    });
+
+    const intent = onOpenWorldFocus.mock.calls[0]?.[0];
+    expect(intent).toBeDefined();
+    if (intent === undefined) {
+      throw new Error('Expected a World Focus open intent');
+    }
+
+    expect(intent.label).toBe('Musica');
+    expect(Number.isFinite(intent.origin.left)).toBe(true);
+    expect(Number.isFinite(intent.origin.top)).toBe(true);
+    expect(Number.isFinite(intent.origin.width)).toBe(true);
+    expect(Number.isFinite(intent.origin.height)).toBe(true);
   });
 });

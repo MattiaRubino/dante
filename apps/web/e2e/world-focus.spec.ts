@@ -12,7 +12,10 @@ test('Home opens the centered World into the immersive focus and browser back pr
   await expect(homeShell).toHaveAttribute('data-home-ai-state', 'collapsed');
 
   await page.getByRole('button', { name: 'Espandi timeline' }).click();
-  await expect(homeShell).toHaveAttribute('data-home-timeline-state', 'expanded');
+  await expect(homeShell).toHaveAttribute(
+    'data-home-timeline-state',
+    'expanded',
+  );
 
   const music = page.locator('.home-world[aria-label="Musica"]');
   await music.click();
@@ -35,7 +38,10 @@ test('Home opens the centered World into the immersive focus and browser back pr
   await expect(page).toHaveURL(/\/home$/);
   await expect(page.getByRole('main', { name: 'Mondo Musica' })).toHaveCount(0);
   await expect(homeShell).toHaveAttribute('data-home-ai-state', 'collapsed');
-  await expect(homeShell).toHaveAttribute('data-home-timeline-state', 'expanded');
+  await expect(homeShell).toHaveAttribute(
+    'data-home-timeline-state',
+    'expanded',
+  );
   await expect(music).toHaveAttribute('aria-current', 'true');
   await expect(music).toBeFocused();
   await expect(page.locator('[data-app-region="topbar"]')).toBeVisible();
@@ -66,14 +72,14 @@ test('keyboard activation selects first and opens the centered World second', as
 }) => {
   await page.goto('/home');
 
-  const study = page.locator('.home-world[aria-label="Studio"]');
-  await study.focus();
+  const music = page.locator('.home-world[aria-label="Musica"]');
+  await music.focus();
   await page.keyboard.press('Enter');
-  await expect(study).toHaveAttribute('aria-current', 'true');
+  await expect(music).toHaveAttribute('aria-current', 'true');
 
   await page.keyboard.press('Enter');
-  await expect(page).toHaveURL(/\/home\?focus=study$/);
-  await expect(page.getByRole('main', { name: 'Mondo Studio' })).toBeVisible();
+  await expect(page).toHaveURL(/\/home\?focus=music$/);
+  await expect(page.getByRole('main', { name: 'Mondo Musica' })).toBeVisible();
 });
 
 test('direct World Focus URL has a safe fallback entry and close path', async ({
