@@ -1,0 +1,63 @@
+{
+  "format": "dante-world-focus-responsive-matrix-v1",
+  "contractVersion": "1.0.0",
+  "structureContract": "world-focus-structure.contract.json",
+  "pressureViewportsPx": [
+    1856,
+    1600,
+    1366,
+    1200,
+    1024,
+    901,
+    900,
+    760,
+    721,
+    720,
+    719,
+    390
+  ],
+  "modes": {
+    "WF0-STANDARD": {
+      "minWidthPx": 721,
+      "requiredRegions": [
+        "worldFocus.shell",
+        "worldFocus.visualFrame",
+        "worldFocus.workspace",
+        "worldFocus.shellControls"
+      ],
+      "macroComposition": "unchanged",
+      "workspaceTuning": "standard"
+    },
+    "WF0-COMPACT": {
+      "maxWidthPx": 720,
+      "requiredRegions": [
+        "worldFocus.shell",
+        "worldFocus.visualFrame",
+        "worldFocus.workspace",
+        "worldFocus.shellControls"
+      ],
+      "macroComposition": "unchanged",
+      "workspaceTuning": "compact-insets-only"
+    }
+  },
+  "browserInvariants": [
+    "global-topbar-remains-visible-and-outside-world-focus",
+    "world-focus-is-dedicated-route-not-home-overlay",
+    "no-unexpected-horizontal-page-overflow",
+    "visual-frame-bounds-match-world-focus-shell-bounds",
+    "workspace-remains-rectangular-and-contained-by-route-surface",
+    "visual-frame-does-not-clip-workspace",
+    "origin-ellipse-remains-centered-and-laterally-tangent-by-contract",
+    "standard-compact-boundary-does-not-create-new-macro-composition"
+  ],
+  "representativeGeometryViewportsPx": [
+    1856,
+    1600,
+    1366,
+    1024,
+    901,
+    721,
+    720,
+    390
+  ]
+}
