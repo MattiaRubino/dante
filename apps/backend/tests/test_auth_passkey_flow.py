@@ -131,7 +131,7 @@ def test_webauthn_rp_and_origins_are_https_and_same_rp_family() -> None:
             rp_id="dante.test",
             expected_origins=("http://dante.test",),
         )
-    with pytest.raises(ValidationError, match="subdomain|RP ID"):
+    with pytest.raises(ValidationError, match=r"subdomain|RP ID"):
         WebAuthnSettings(
             rp_id="dante.test",
             expected_origins=("https://evil.test",),
