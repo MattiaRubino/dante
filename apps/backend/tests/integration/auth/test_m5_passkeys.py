@@ -26,6 +26,7 @@ from fido2.webauthn import (
 from pydantic import SecretStr
 from sqlalchemy import func, select
 
+from dante.auth.authenticator_lifecycle import AuthenticatorLifecycleService
 from dante.auth.contracts import (
     AdmittedSession,
     AuthenticatorRemovalBlockedError,
@@ -39,11 +40,16 @@ from dante.auth.passkey_flow import PasskeyFlowLimiters, PasskeyFlowService
 from dante.auth.sessions import generate_session_secret, session_secret_verifier
 from dante.auth.webauthn import WebAuthnPolicy
 from dante.platform.config.auth import AuthSettings, SmtpSecurity
-from dante.platform.config.auth_provider import AuthProviderSettings, WebAuthnSettings
+from dante.platform.config.auth_provider import (
+    GOOGLE_ISSUER,
+    AuthProviderSettings,
+    WebAuthnSettings,
+)
 from dante.platform.database.mappings.auth import (
     AccountRow,
     AuthSessionRow,
     EmailIdentityRow,
+    ExternalIdentityRow,
     PasskeyCredentialRow,
     PasswordCredentialRow,
     WebAuthnAccountRow,
@@ -196,6 +202,37 @@ async def _seed_account(
     async with runtime.session_factory() as session, session.begin():
         session.add_all(rows)
     return account_ref, email_ref, sessions
+
+
+async def _seed_provider(
+    runtime: DatabaseRuntime,
+    *,
+    account_ref: UUID,
+    email_ref: UUID,
+    subject: str,
+) -> UUID:
+    external_identity_ref = uuid7()
+    now = datetime.now(UTC)
+    async with runtime.session_factory() as session, session.begin():
+        session.add(
+            ExternalIdentityRow(
+                external_identity_ref=external_identity_ref,
+                account_ref=account_ref,
+                email_identity_ref=email_ref,
+                provider_code="google",
+                issuer=GOOGLE_ISSUER,
+                subject=subject,
+                provider_email_address=f"{subject}@example.com",
+                provider_email_private=False,
+                status_code="active",
+                created_at=now,
+                status_changed_at=now,
+                last_authenticated_at=now,
+                revoked_at=None,
+                revocation_reason_code=None,
+            )
+        )
+    return external_identity_ref
 
 
 def _public_key_options(options: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -355,23 +392,36 @@ async def test_real_fido2_registration_authentication_reauth_replay_and_removal(
         assert passkeys[0].backup_eligible is True
         assert passkeys[0].transports == ["internal", "hybrid"]
 
+        registered_admitted = AdmittedSession(
+            principal=registered.principal,
+            expires_at=registered.expires_at,
+            csrf_token=registered.csrf_token,
+        )
+        projected = await service.list_passkeys(admitted=registered_admitted)
+        assert len(projected) == 1
+        assert projected[0].passkey_credential_ref == passkeys[0].passkey_credential_ref
+        assert projected[0].label == "Laptop passkey"
+        assert projected[0].transports == ("internal", "hybrid")
+        assert projected[0].backup_eligible is True
+
+        await service.update_label(
+            admitted=registered_admitted,
+            presented_session_secret=registered.session_secret.get_secret_value(),
+            passkey_credential_ref=passkeys[0].passkey_credential_ref,
+            label="Travel laptop",
+        )
+        projected = await service.list_passkeys(admitted=registered_admitted)
+        assert projected[0].label == "Travel laptop"
+
         second_begin = await service.begin_registration(
-            admitted=AdmittedSession(
-                principal=registered.principal,
-                expires_at=registered.expires_at,
-                csrf_token=registered.csrf_token,
-            ),
+            admitted=registered_admitted,
             presented_session_secret=registered.session_secret.get_secret_value(),
             expected_origin=_ORIGIN,
         )
         second_challenge, _same_user_handle = _registration_values(second_begin.options)
         with pytest.raises(PasskeyAlreadyRegisteredError):
             await service.complete_registration(
-                admitted=AdmittedSession(
-                    principal=registered.principal,
-                    expires_at=registered.expires_at,
-                    csrf_token=registered.csrf_token,
-                ),
+                admitted=registered_admitted,
                 presented_session_secret=registered.session_secret.get_secret_value(),
                 webauthn_challenge_ref=second_begin.webauthn_challenge_ref,
                 response=_registration_response(
@@ -534,3 +584,100 @@ async def test_concurrent_passkey_removals_preserve_last_authenticator(
                 select(func.count()).select_from(WebAuthnChallengeRow)
             )
         assert challenge_count == 0
+
+
+@pytest.mark.asyncio
+async def test_passkey_removal_and_provider_unlink_share_account_wide_lock(
+    migrated_database: Any,
+) -> None:
+    async with _service(migrated_database) as (service, runtime):
+        account_ref, email_ref, sessions = await _seed_account(
+            runtime,
+            email="passkey-provider-race@example.com",
+            password_present=False,
+            session_count=2,
+        )
+        provider_ref = await _seed_provider(
+            runtime,
+            account_ref=account_ref,
+            email_ref=email_ref,
+            subject="passkey-provider-race",
+        )
+        now = datetime.now(UTC)
+        passkey_ref = uuid7()
+        async with runtime.session_factory() as session, session.begin():
+            session.add(
+                WebAuthnAccountRow(
+                    account_ref=account_ref,
+                    user_handle=b"p" * 32,
+                    created_at=now,
+                )
+            )
+            session.add(
+                PasskeyCredentialRow(
+                    passkey_credential_ref=passkey_ref,
+                    account_ref=account_ref,
+                    credential_id=b"passkey-provider-race",
+                    credential_public_key=b"synthetic-public-key",
+                    cose_algorithm=-7,
+                    sign_count=0,
+                    backup_eligible=True,
+                    backup_state=False,
+                    transports=[],
+                    label="Passkey",
+                    status_code="active",
+                    created_at=now,
+                    updated_at=now,
+                    last_used_at=None,
+                    revoked_at=None,
+                    revocation_reason_code=None,
+                )
+            )
+
+        authenticators = AuthenticatorLifecycleService(
+            session_factory=runtime.session_factory,
+            settings=_settings(),
+            apple_reconciler=None,
+        )
+
+        async def remove_passkey() -> object:
+            try:
+                return await service.remove_passkey(
+                    admitted=sessions[0].admitted,
+                    presented_session_secret=sessions[0].secret.get_secret_value(),
+                    passkey_credential_ref=passkey_ref,
+                )
+            except AuthenticatorRemovalBlockedError as exc:
+                return exc
+
+        async def unlink_provider() -> object:
+            try:
+                return await authenticators.unlink_provider(
+                    admitted=sessions[1].admitted,
+                    presented_session_secret=sessions[1].secret.get_secret_value(),
+                    external_identity_ref=provider_ref,
+                )
+            except AuthenticatorRemovalBlockedError as exc:
+                return exc
+
+        outcomes = await asyncio.gather(remove_passkey(), unlink_provider())
+        assert sum(isinstance(outcome, AuthenticatorRemovalBlockedError) for outcome in outcomes) == 1
+
+        async with runtime.session_factory() as session, session.begin():
+            active_passkeys = await session.scalar(
+                select(func.count())
+                .select_from(PasskeyCredentialRow)
+                .where(
+                    PasskeyCredentialRow.account_ref == account_ref,
+                    PasskeyCredentialRow.status_code == "active",
+                )
+            )
+            active_providers = await session.scalar(
+                select(func.count())
+                .select_from(ExternalIdentityRow)
+                .where(
+                    ExternalIdentityRow.account_ref == account_ref,
+                    ExternalIdentityRow.status_code == "active",
+                )
+            )
+        assert int(active_passkeys or 0) + int(active_providers or 0) == 1
