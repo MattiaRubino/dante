@@ -1,7 +1,7 @@
 # DANTE Documentation Index
 
 - **Status:** CURRENT NAVIGATION / AUTHORITY INDEX
-- **Last reconciled:** 2026-08-26
+- **Last reconciled:** 2026-08-31
 
 This directory is the durable documentation surface for DANTE. Current specifications describe the present directly; historical evidence, phase-time continuations and completed workstream records do not silently override current truth.
 
@@ -47,10 +47,13 @@ FRONTEND MATERIALIZATION             CLOSED / PASS / INTEGRATED VIA PR #28
 BACKEND CP1–CP5 SCAFFOLD             CLOSED / DIRECT QA / INTEGRATED VIA PR #24
 BACKEND CP6 DATABASE                 CLOSED / DIRECT QA / INTEGRATED VIA PR #42
 CURRENT POSTGRESQL                   18.6
-CURRENT ALEMBIC HEAD                 20260826_08
-CURRENT DATABASE TOPOLOGY            68/5/14/75/95/68/120
+PRE-RECOVERY MAIN ALEMBIC BASELINE   20260826_08
+PRE-RECOVERY MAIN DB TOPOLOGY        68/5/14/75/95/68/120
+RECOVERY EVOLUTION IN THIS TREE      20260830_09 / 69/5/15/76/97/69/123
+POSTGRESQL LOCAL RECOVERY            CP01–CP07 LOCAL PASS / CLOSED
+REMOTE BACKUP PROVIDER               TBD / NOT ACTIVATED
 ACCESS PRE-BACKEND FRONTEND          CLOSED / ACCEPTED / RELEASE-HARDENED
-FULL ACCESS/AUTH PRODUCT VERTICAL    NOT CLOSED / NEXT FULL-STACK VERTICAL NOT STARTED
+FULL ACCESS/AUTH PRODUCT VERTICAL    ACTIVE UNMERGED WORKSTREAM / NOT CLAIMED CLOSED
 ```
 
 For exact current state, read `PROJECT-STATUS.md` rather than reconstructing status from historical workstream/checkpoint files.
@@ -214,28 +217,23 @@ Start here:
 - `database/dictionary/README.md`
 - `database/dictionary/scope.json`
 
-Current baseline:
+Current database contract in this tree:
 
 ```text
 PostgreSQL          18.6
-Alembic             20260826_08
-68 tables
+Alembic             20260830_09
+69 tables
 5 views
-14 routines
-75 triggers
-95 physical indexes
-68 foreign keys
-120 CHECK constraints
+15 routines
+76 triggers
+97 physical indexes
+69 foreign keys
+123 CHECK constraints
 ```
 
-The machine-readable Dictionary is materialized with:
+The pre-recovery protected-main CP6 baseline was `20260826_08 / 68|5|14|75|95|68|120`. Integration status is determined by live Git refs.
 
-```text
-68 table entries
-5 view entries
-14 routine entries
-87 standalone entries
-```
+The machine-readable Dictionary is reconciled to the current `20260830_09` contract.
 
 Permanent consistency invariant:
 
@@ -279,7 +277,7 @@ Durable backend contracts include:
 
 CP1–CP6 are closed. Text saying CP6-03 is active, Gate 03 is unearned, CP6-04 is next or protected-main integration is pending is historical unless explicitly scoped to the phase-time record.
 
-The next backend implementation is a new post-CP6 product vertical started from current `main` under an explicit bounded branch.
+Post-CP6 backend work is already active on bounded unmerged workstreams where authorized; `feature/access-auth` is one such current branch. Branch-local authority owns its exact state until integration.
 
 ## 12. Frontend
 
@@ -314,7 +312,7 @@ Current authority:
 - `frontend/access.md`
 - current `../apps/web/src/features/access/` implementation/tests
 
-The whole Access/Auth product vertical is **not closed**. Real backend authentication/session/provider/recovery behavior, stable Auth OpenAPI/client integration, full-stack E2E and the applicable release/legal/mobile gates remain future full-stack work.
+The whole Access/Auth product vertical is **not claimed closed by this index**. A real unmerged `feature/access-auth` workstream is active; use its branch-local durable docs/code/tests for its exact implementation state.
 
 Historical branch narrative:
 
@@ -333,6 +331,8 @@ On protected `main`, workstream files are durable records/evidence, not active c
 Closed records include Domain, Logical, Pre-Physical, Physical, Engineering Foundation, Frontend Foundation/Materialization and backend scaffold/CP6 history as applicable.
 
 Active unmerged workstream records remain branch-local until integration.
+
+At the 2026-08-31 reconciliation, bounded unmerged work includes `feature/access-auth`, `feature/home-react`, `feature/platform-observability`, while `feature/postgres-recovery` has completed CP01–CP07 locally and is an integration candidate. Live Git refs are authoritative for later changes.
 
 ## 14. Development governance
 

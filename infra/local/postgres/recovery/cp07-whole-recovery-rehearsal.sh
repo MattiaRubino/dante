@@ -4,8 +4,8 @@ set -Eeuo pipefail
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd -- "${SCRIPT_DIR}/../../../.." && pwd)"
 
-BRANCH="feature/postgres-recovery"
-IMAGE="dante-postgres-recovery:18.6-pgbackrest-2.59.1"
+BOOTSTRAP="${SCRIPT_DIR}/bootstrap-local-recovery.sh"
+IMAGE="${DANTE_RECOVERY_IMAGE:-dante-postgres-recovery:18.6-pgbackrest-2.59.1}"
 EXPECTED_ALEMBIC="20260830_09"
 EXPECTED_TOPOLOGY="69|5|15|76|97|69|123|0|0|0"
 EXPECTED_EXTENSIONS="pg_stat_statements=1.12,pg_trgm=1.6,postgis=3.6.4,unaccent=1.1,vector=0.8.6"
@@ -261,12 +261,19 @@ echo "=== DANTE CP07 — WHOLE LOCAL OPERATOR RECOVERY REHEARSAL ==="
 echo "Disposable-only PostgreSQL / repository / suppression-ledger topology."
 echo "Remote/cloud provider: TBD / not activated / not exercised."
 
-test "$(git branch --show-current)" = "$BRANCH" || die "wrong Git branch"
-test "$(git rev-parse HEAD)" = "$(git rev-parse "origin/$BRANCH")" || die "local HEAD differs from origin"
+test -x "$BOOTSTRAP" || die "missing executable recovery bootstrap: $BOOTSTRAP"
+bash "$BOOTSTRAP"
+
+GIT_BRANCH="$(git symbolic-ref --quiet --short HEAD 2>/dev/null || true)"
+test -n "$GIT_BRANCH" || die "detached HEAD is not accepted"
+GIT_UPSTREAM="$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null || true)"
+test -n "$GIT_UPSTREAM" || die "current branch has no upstream"
 test -z "$(git status --porcelain)" || die "worktree is not clean"
 PROOF_HEAD="$(git rev-parse HEAD)"
+UPSTREAM_HEAD="$(git rev-parse "$GIT_UPSTREAM")"
+test "$PROOF_HEAD" = "$UPSTREAM_HEAD" || die "local HEAD differs from upstream $GIT_UPSTREAM"
 
-docker image inspect "$IMAGE" >/dev/null 2>&1 || die "missing image $IMAGE"
+docker image inspect "$IMAGE" >/dev/null 2>&1 || die "recovery bootstrap did not materialize image $IMAGE"
 for secret in "$ADMIN_SECRET" "$MIGRATOR_SECRET" "$RUNTIME_SECRET"; do
   test -s "$secret" || die "missing $secret"
   git check-ignore -q "$secret" || die "$secret is not ignored"
@@ -819,6 +826,9 @@ echo "S13 — WRITE LOCAL EVIDENCE REPORT"
 
 export CP07_RUN_ID="$RUN_ID"
 export CP07_PROOF_HEAD="$PROOF_HEAD"
+export CP07_GIT_BRANCH="$GIT_BRANCH"
+export CP07_GIT_UPSTREAM="$GIT_UPSTREAM"
+export CP07_RECOVERY_IMAGE="$IMAGE"
 export CP07_B0="$B0"
 export CP07_BACKUP_SECONDS="$BACKUP_SECONDS"
 export CP07_BACKUP_SIZE_BYTES="$BACKUP_SIZE_BYTES"
@@ -862,6 +872,9 @@ report = {
     "completed_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
     "run_id": os.environ["CP07_RUN_ID"],
     "git_proof_head": os.environ["CP07_PROOF_HEAD"],
+    "git_branch": os.environ["CP07_GIT_BRANCH"],
+    "git_upstream": os.environ["CP07_GIT_UPSTREAM"],
+    "recovery_image": os.environ["CP07_RECOVERY_IMAGE"],
     "database": {
         "postgresql_server_version_num": 180006,
         "alembic_head": "20260830_09",
@@ -968,6 +981,9 @@ SUCCESS=1
 echo
 echo "=== CP07 WHOLE LOCAL OPERATOR RECOVERY: PASS ==="
 echo "PROOF HEAD:                         $PROOF_HEAD"
+echo "GIT BRANCH:                         $GIT_BRANCH"
+echo "GIT UPSTREAM:                       $GIT_UPSTREAM"
+echo "RECOVERY IMAGE:                     $IMAGE"
 echo "BACKUP:                             $B0"
 echo "BACKUP_SECONDS:                     $BACKUP_SECONDS"
 echo "BACKUP_SIZE_BYTES:                  $BACKUP_SIZE_BYTES"

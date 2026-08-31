@@ -70,23 +70,31 @@ Operator recovery may begin only when:
 
 ```text
 incident/rehearsal scope is explicit
-correct repository/branch is selected
+an attached Git branch with configured upstream is selected
 worktree is clean
-local HEAD == remote branch HEAD
-PostgreSQL recovery image is present
-required ignored local credentials exist
+local HEAD == configured upstream HEAD after fetch
+WSL/Linux + uv + Docker/Compose machine prerequisites are available
+repository recovery bootstrap can materialize image + ignored LOCAL credentials
 backup/WAL repository identity is known
 suppression ledger identity is known
 restore target remains isolated from application traffic
 ```
 
-For the CP07 local rehearsal:
+For repository-level prerequisite bootstrap only:
+
+```bash
+bash infra/local/postgres/recovery/bootstrap-local-recovery.sh
+```
+
+For the complete CP07 local rehearsal:
 
 ```bash
 bash infra/local/postgres/recovery/cp07-whole-recovery-rehearsal.sh
 ```
 
-The script is non-interactive because every destructive target is generated uniquely for that run.
+CP07 invokes the bootstrap automatically. Neither command requires the historical `feature/postgres-recovery` branch name; both fail closed unless the current attached branch is clean and exactly aligned with its configured upstream.
+
+The CP07 destructive topology is non-interactive because every mutation target is generated uniquely for that run.
 
 ## 4. Restore versus PITR decision
 
@@ -238,7 +246,8 @@ infra/compose/secrets/postgres_recovery_cp07_report.json.local
 It contains:
 
 ```text
-Git proof HEAD
+Git proof HEAD + current branch/upstream
+recovery image identity
 PostgreSQL/Alembic/topology
 backup label/duration/size
 WAL archive freshness
@@ -256,7 +265,7 @@ remote-provider status
 
 These are local observations, never invented production RPO/RTO targets.
 
-### CP07 exact local evidence
+### CP07 initial exact local evidence
 
 Implementation/runtime proof HEAD:
 
@@ -343,3 +352,10 @@ suppression evidence retained for the full resurrection horizon
 ```
 
 Provider-specific implementation, costs, credentials, production RPO/RTO and production recovery acceptance are deferred until DANTE actually needs production deployment.
+
+
+## 13. Reusable-runner proof
+
+The repository now owns a branch-agnostic, idempotent fresh-clone bootstrap and CP07 invokes it automatically. Exact-head runtime acceptance of that hardened runner is recorded here only after the implementation commit itself is pushed and rerun.
+
+<!-- RECOVERY-REPRODUCIBILITY-PROOF: PENDING -->

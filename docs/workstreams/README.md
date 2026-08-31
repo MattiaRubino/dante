@@ -46,19 +46,23 @@ Current semantic authority lives in:
 
 ## PostgreSQL recovery workstream
 
+Closure/integration-candidate record:
+
 ```text
 repo       MattiaRubino/dante
 branch     feature/postgres-recovery
 worktree   /home/mattia/projects/dante-postgres-recovery
 ```
 
+The permanent bootstrap/CP07 runner does **not** depend on that branch/worktree name; it accepts any clean attached branch exactly aligned with its configured upstream.
+
 Read in this order:
 
 1. `postgres-recovery.md`
 2. `postgres-recovery-execution-plan.md`
-3. `postgres-recovery-live-handoff-2026-08-29.md`
-4. `../database/README.md`
-5. `../database/dante-postgresql-database-part-19.md`
+3. `../database/README.md`
+4. `../database/dante-postgresql-database-part-19.md`
+5. `../operations/postgres-recovery-runbook.md`
 
 Current recovery state:
 
@@ -116,18 +120,20 @@ Git worktree non-interference             PASS
 SC-011 readback/teardown clean             PASS
 ```
 
-Current checkpoint truth:
+Current recovery truth:
 
 ```text
 CP06 = LOCAL PASS / CLOSED
 SC-011 = PASS
-CP07 = NEXT / NOT STARTED
+CP07 = LOCAL PASS / CLOSED
+database-local reopen = PASS
 remote backup provider = TBD / NOT ACTIVATED
+production/cloud recovery = NOT CLAIMED
 ```
 
-This LOCAL closure does not prove remote/cloud production recovery, production RPO/RTO, remote object-store recovery, PowerSync/search/vector recovery implementation or the whole CP07 operator rehearsal.
+The recovery workstream is closed for the current LOCAL project phase. Remote-provider production recovery remains a future deployment checkpoint, not an unfinished CP07 item.
 
-## Recovery permanent rules## Recovery permanent rules
+## Recovery permanent rules
 
 ```text
 PostgreSQL = sole canonical persistence authority
@@ -205,6 +211,10 @@ PGDATA loss → database-local reopen       15.614213 s
 ```
 
 These are LOCAL rehearsal observations only. They are not production RPO/RTO targets.
+
+The permanent runner is being hardened for branch-agnostic fresh-clone reuse; exact-head proof is recorded below after the hardened implementation itself is rerun.
+
+<!-- RECOVERY-REPRODUCIBILITY-PROOF: PENDING -->
 
 
 ## Operational continuation rule

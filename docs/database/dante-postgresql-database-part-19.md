@@ -463,7 +463,7 @@ SC-011 PASS
 CP07 LOCAL PASS / CLOSED
 ```
 
-This does not claim remote/cloud production acceptance, production RPO/RTO, remote object-store recovery, derived-store recovery implementation or whole CP07 operator-rehearsal proof.
+This LOCAL recovery proof does not claim remote/cloud production acceptance, production RPO/RTO, remote object-store recovery or derived-store recovery implementation.
 
 
 ### 56.16 Whole local operator recovery boundary
@@ -484,7 +484,7 @@ database-local reopen gate passes
 
 Remote/cloud-provider recovery is deferred and not claimed by this database-local proof.
 
-### CP07 exact local evidence
+### CP07 initial exact local evidence
 
 Implementation/runtime proof HEAD:
 
@@ -527,3 +527,10 @@ PGDATA loss → database-local reopen       15.614213 s
 ```
 
 These are LOCAL rehearsal observations only. They are not production RPO/RTO targets.
+
+
+### 56.17 Reusable-runner hardening
+
+The current post-closure hardening makes the executable LOCAL recovery procedure independent from the historical feature-branch name and bootstraps repository-level prerequisites idempotently. Database schema/semantics remain unchanged.
+
+<!-- RECOVERY-REPRODUCIBILITY-PROOF: PENDING -->

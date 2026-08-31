@@ -275,20 +275,33 @@ structurally bootable but semantically unacceptable restore
 
 ## 11. Current proof state
 
-Direct local recovery evidence currently proves:
+Direct current recovery proof includes:
 
 ```text
 pgBackRest foundation                         PASS
 continuous WAL + FULL backup                  PASS
 destructive isolated restore                  PASS
 deterministic named-target PITR               PASS
-negative failure matrix                       LOCAL PASS candidate
-SC-011 mechanism prototype                    LOCAL PASS candidate
+negative failure matrix N1–N7                 PASS
+SC-011 definitive anti-resurrection           PASS
+whole CP07 operator recovery rehearsal        PASS
+database-local reopen                         PASS
+whole backend suite at CP07 implementation    PASS
+remote backup provider                        TBD / NOT ACTIVATED
+production/cloud recovery                     NOT CLAIMED
 ```
 
-The versioned `20260830_09` implementation is not considered fully closed until fresh migration/DB QA and the definitive versioned SC-011 destructive harness pass on the exact branch HEAD.
+The current reusable operator entry points are:
 
-Remote AWS selected-stack evidence and whole operator recovery closure belong to the PostgreSQL recovery workstream and are not implied by local proofs.
+```text
+infra/local/postgres/recovery/bootstrap-local-recovery.sh
+infra/local/postgres/recovery/cp07-whole-recovery-rehearsal.sh
+docs/operations/postgres-recovery-runbook.md
+```
+
+The post-closure fresh-clone/branch-agnostic hardening must be rerun on its exact pushed implementation HEAD before its new proof is recorded below.
+
+<!-- RECOVERY-REPRODUCIBILITY-PROOF: PENDING -->
 
 ## 12. Acceptance bar
 
@@ -306,3 +319,49 @@ run the current database/recovery acceptance procedures
 ```
 
 The goal is not documentation volume. The goal is one coherent, inspectable, current database contract.
+
+
+## 13. Database/recovery maintenance map
+
+Use the owning surface rather than patching whichever file is easiest:
+
+```text
+database meaning / current human contract
+→ docs/database/README.md
+→ docs/database/dante-postgresql-database.md + current continuation part
+
+forward schema evolution
+→ apps/backend/alembic/versions/
+
+SQLAlchemy deployed-schema representation
+→ apps/backend/src/dante/platform/database/mappings/
+→ apps/backend/src/dante/platform/database/metadata.py as applicable
+
+machine-readable database contract
+→ docs/database/dictionary/
+
+database / recovery acceptance tests
+→ apps/backend/tests/
+
+suppression-ledger implementation
+→ apps/backend/src/dante/platform/recovery/suppression_ledger.py
+→ infra/local/postgres/recovery/recovery-suppression-record-v1.schema.json
+
+PostgreSQL / pgBackRest image and config
+→ infra/local/postgres/
+
+Compose topology / LOCAL secrets boundary
+→ infra/compose/
+
+recovery bootstrap + executable rehearsals
+→ infra/local/postgres/recovery/
+
+operator procedure
+→ docs/operations/postgres-recovery-runbook.md
+
+recovery status / proof / closure
+→ docs/workstreams/postgres-recovery.md
+→ docs/workstreams/postgres-recovery-execution-plan.md
+```
+
+A structural or semantic change must still obey the same-change rule; this map is navigation, not permission to update only one representation.

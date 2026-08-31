@@ -99,6 +99,22 @@ The test harness uses disposable PostgreSQL state, generated test credentials an
 
 ## 4. Isolated recovery topology
 
+### Fresh-clone recovery bootstrap
+
+Repository-level recovery prerequisites are materialized by:
+
+```bash
+bash infra/local/postgres/recovery/bootstrap-local-recovery.sh
+```
+
+It is idempotent, branch-agnostic and fail-closed. It requires a clean attached Git branch with a configured upstream and exact HEAD/upstream equality, creates missing LOCAL recovery secrets without overwriting existing non-empty values, validates mode/ignore policy and Compose, then builds the pinned recovery image from `infra/local/postgres/Dockerfile`.
+
+The whole CP07 rehearsal invokes this bootstrap automatically.
+
+<!-- RECOVERY-REPRODUCIBILITY-PROOF: PENDING -->
+
+
+
 Recovery uses:
 
 ```text

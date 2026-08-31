@@ -40,18 +40,25 @@ CLOSED / DIRECT QA PASS / INTEGRATED VIA PR #42
 CURRENT POSTGRESQL
 18.6
 
-CURRENT DANTE DATABASE
+PRE-RECOVERY PROTECTED-MAIN DATABASE BASELINE
 Alembic 20260826_08
 68 tables / 5 views / 14 routines / 75 triggers /
 95 physical indexes / 68 FKs / 120 CHECKs
+
+POST-CP6 RECOVERY EVOLUTION IN THIS TREE
+Alembic 20260830_09
+69 tables / 5 views / 15 routines / 76 triggers /
+97 physical indexes / 69 FKs / 123 CHECKs
+PostgreSQL recovery CP01–CP07 LOCAL PASS / CLOSED
+remote backup provider TBD / NOT ACTIVATED
 
 ACCESS PRE-BACKEND FRONTEND
 CLOSED / ACCEPTED / RELEASE-HARDENED
 AF-01D PASS / AF-02A PASS / AF-02B PASS / AF-03A PASS
 
 FULL ACCESS/AUTH PRODUCT VERTICAL
-NOT CLOSED / REAL BACKEND AUTH NOT IMPLEMENTED
-NEXT DEDICATED FULL-STACK VERTICAL NOT YET STARTED
+ACTIVE UNMERGED WORKSTREAM EXISTS / NOT CLAIMED CLOSED
+branch-local truth lives on feature/access-auth
 ```
 
 For exact current truth use `docs/PROJECT-STATUS.md`. Do not reconstruct current state from old phase documents, historical workstream continuations or conversation memory.
@@ -129,7 +136,7 @@ Backend entry point:
 
 CP6 is complete and integrated into protected `main` through PR #42.
 
-Current baseline:
+The pre-recovery protected-main CP6 baseline was:
 
 ```text
 PostgreSQL          18.6
@@ -148,6 +155,21 @@ sequences             0
 materialized views    0
 RLS policies          0
 ```
+
+The post-CP6 recovery evolution materialized in this tree is:
+
+```text
+Alembic head        20260830_09
+tables              69
+views                5
+routines             15
+triggers             76
+physical indexes    97
+foreign keys         69
+CHECK constraints   123
+```
+
+The `20260830_09` evolution remains branch-local until integrated into protected `main`; after integration it becomes the protected-main baseline. Read the live Git refs rather than inferring integration status from this paragraph.
 
 Final CP6 acceptance included:
 
@@ -232,7 +254,7 @@ Current protected-main frontend docs start at:
 
 ## Access frontend baseline
 
-The completed pre-backend Access frontend materialization is the accepted Web baseline for the later full-stack Access/Auth vertical.
+The completed pre-backend Access frontend materialization is the accepted Web baseline consumed by the active unmerged full-stack Access/Auth workstream.
 
 Accepted checkpoints:
 
@@ -251,17 +273,24 @@ Current durable Access frontend authority:
 
 The frontend deliberately stops backend-authoritative transitions rather than fabricating account/session/authentication success.
 
-The whole Access/Auth product vertical is **not closed**. Remaining product work includes real backend Auth/account/session/provider/recovery behavior, stable OpenAPI, generated client integration, full-stack E2E, real authenticated Home handoff and applicable release/legal/mobile gates.
+The whole Access/Auth product vertical is **not claimed closed here**. An active unmerged `feature/access-auth` workstream exists; its branch-local docs, code and tests own the newer Auth state. This global file must not freeze its sub-checkpoints.
 
 ## Post-CP6 product direction
 
-There is no remaining CP6 design/materialization/merge step.
+There is no remaining CP6 design/materialization step. Post-CP6 work proceeds through bounded product/platform workstreams and normal forward schema evolution when genuinely required.
 
-The next implementation boundary is a new bounded **full-stack product vertical** created from current protected `main` when explicitly started. For Access/Auth, that branch may modify backend and frontend together where the real contract requires it rather than maintaining permanent backend/frontend branch lines.
+At the 2026-08-31 reconciliation, active unmerged workstreams include:
 
-A product vertical consumes the existing database and may evolve it only when a genuine new requirement appears. Normal evolution uses forward Alembic migrations and the same-change Database System-of-Record rule; CP6 is not reopened.
+```text
+feature/access-auth
+feature/home-react
+feature/platform-observability
+feature/postgres-recovery   LOCAL recovery CLOSED / integration candidate
+```
 
-Pure later UX polish may use a short-lived UI branch from then-current `main` when it is independent of the active product vertical.
+Each branch owns only its bounded unmerged truth. Protected `main` remains the integrated authority; live Git refs determine whether/when any branch has been integrated.
+
+A product vertical consumes the existing database and evolves it only through reviewed forward migrations plus the same-change Database System-of-Record rule. CP6 is not reopened.
 
 ## Capability-triggered components
 
@@ -286,8 +315,11 @@ Restate
 PgBouncer
 → demonstrated connection-management need
 
-pgBackRest + AWS S3
-→ recovery/production boundary or real rehearsal
+pgBackRest LOCAL recovery
+→ implemented and directly rehearsed in the closed recovery workstream
+
+remote backup provider
+→ TBD; activate and prove only at the real production deployment boundary
 ```
 
 Selected architecture is not the same thing as activated implementation or direct PASS.

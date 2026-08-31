@@ -1,10 +1,10 @@
 # DANTE — Project Status
 
 - **Status:** CURRENT TRUTH
-- **Last reconciled:** 2026-08-26
+- **Last reconciled:** 2026-08-31
 - **Protected `main`:** integrated source authority; read the live Git ref for the current SHA
 - **Backend CP6 integration:** PR #42 MERGED
-- **Current product boundary:** pre-backend Access frontend materialization CLOSED / accepted; next full-stack Access/Auth vertical not yet started on a dedicated branch
+- **Current product boundary:** protected `main` remains integrated authority; Access/Auth, Home React and platform observability have active bounded unmerged workstreams; PostgreSQL recovery CP01–CP07 is locally closed on its integration-candidate branch
 
 ## 1. Executive state
 
@@ -59,11 +59,18 @@ CP6-05 CLOSED / DIRECT QA PASS
 CURRENT POSTGRESQL TECHNICAL PATCH
 18.6
 
-CURRENT DANTE BUSINESS DATABASE
+PRE-RECOVERY PROTECTED-MAIN BUSINESS DATABASE BASELINE
 MATERIALIZED / MAPPED / DICTIONARY-RECONCILED / DIRECTLY TESTED
 ALEMBIC 20260826_08
 68 tables / 5 views / 14 routines / 75 triggers /
 95 indexes / 68 FKs / 120 CHECKs
+
+POST-CP6 RECOVERY EVOLUTION IN THIS TREE
+ALEMBIC 20260830_09
+69 tables / 5 views / 15 routines / 76 triggers /
+97 indexes / 69 FKs / 123 CHECKs
+CP01–CP07 LOCAL PASS / CLOSED
+remote backup provider TBD / NOT ACTIVATED
 
 ACCESS PRE-BACKEND FRONTEND
 CLOSED / ACCEPTED / RELEASE-HARDENED
@@ -73,8 +80,12 @@ AF-02B PASS
 AF-03A PASS
 
 FULL ACCESS/AUTH PRODUCT VERTICAL
-NOT CLOSED / REAL BACKEND AUTH NOT IMPLEMENTED
-NEXT DEDICATED FULL-STACK VERTICAL NOT YET STARTED
+ACTIVE UNMERGED WORKSTREAM / NOT CLAIMED CLOSED HERE
+feature/access-auth owns branch-local implementation truth
+
+PARALLEL ACTIVE UNMERGED WORKSTREAMS
+feature/home-react
+feature/platform-observability
 ```
 
 Architecture/design closure is not the same as runtime/product completion. Closing the Access frontend workstream establishes the accepted frontend baseline; it does not claim real Auth/session/provider behavior.
@@ -145,6 +156,26 @@ Durable evidence:
 - `database/README.md`
 - `database/dictionary/`
 - `archive/branches/2026-08-feature-logical-postgresql.md` — non-authoritative branch history
+
+
+### 2.1 Post-CP6 recovery evolution in this tree
+
+The recovery workstream adds one forward database evolution and a fully rehearsed LOCAL recovery system without rewriting the integrated CP6 history:
+
+```text
+Alembic head                         20260830_09
+topology                             69|5|15|76|97|69|123|0|0|0
+material_state_retirement            materialized
+suppression ledger                   versioned / fail-closed
+CP01–CP07                            LOCAL PASS / CLOSED
+whole operator rehearsal             PASS
+database-local reopen                PASS
+remote backup provider               TBD / NOT ACTIVATED
+production/cloud recovery            NOT CLAIMED
+```
+
+This is the current contract of the recovery tree. Until integration, protected `main` retains its earlier integrated CP6 database baseline. After integration, live Git—not this phase-time sentence—determines the protected-main state.
+
 
 ## 3. Persistence authority
 
@@ -283,8 +314,11 @@ CP2 / CP3 ORIGINAL DIRECT EVIDENCE
 CURRENT REPOSITORY PATCH
 18.6
 
-CURRENT MATERIALIZED DANTE DATABASE
+PRE-RECOVERY PROTECTED-MAIN DANTE DATABASE BASELINE
 18.6 / Alembic 20260826_08
+
+POST-CP6 RECOVERY EVOLUTION IN THIS TREE
+18.6 / Alembic 20260830_09 / 69|5|15|76|97|69|123|0|0|0
 ```
 
 Patch maintenance inside major line 18 does not reopen the accepted database architecture or rewrite historical direct evidence.
@@ -308,17 +342,22 @@ Current durable authority:
 - current `apps/web` Access code/tests
 - `archive/branches/2026-08-feature-access-frontend.md` for non-authoritative branch history
 
-The accepted frontend remains intentionally backend-incomplete. Real account creation/authentication, verification/recovery mutation, provider validation/linking, sessions, reauthentication, server error/rate-limit mapping, stable Auth OpenAPI, generated Auth client integration, full-stack E2E, real Home handoff, legal destinations and native Mobile Access are not claimed complete.
+The accepted pre-backend frontend remains the baseline. A real `feature/access-auth` workstream is now active and unmerged, so this global status document does not freeze a list of still-missing Auth subfeatures; use that branch's durable docs/code/tests for exact progress. The vertical is not claimed closed until its own gates earn closure.
 
-## 9. Next product implementation boundary
+## 9. Current bounded unmerged workstreams
 
-There is no active CP6 continuation. CP6 is complete.
+Protected `main` remains integrated authority. Current branch-local work observed at the 2026-08-31 reconciliation includes:
 
-The next concrete product implementation should be a **full-stack Access/Auth vertical** created from current protected `main` under a fresh bounded branch when explicitly started. Branches should follow product verticals rather than permanent backend/frontend layer lines.
+```text
+feature/access-auth             active unmerged product vertical
+feature/home-react              active unmerged frontend workstream
+feature/platform-observability  active unmerged platform workstream
+feature/postgres-recovery       LOCAL recovery closed / integration candidate
+```
 
-That vertical may modify backend and frontend together where the real contract requires it. Pure later UX polish may use a separate short-lived UI branch from then-current `main` when it is independent of the vertical.
+Do not infer one branch's implementation from another branch or from this global summary. Each bounded branch owns its own newer truth until integration.
 
-A later vertical may expose a legitimate database evolution requirement. That becomes a normal reviewed forward migration synchronized with the Database System of Record; it does not reopen CP6.
+A legitimate schema evolution continues to use a reviewed forward Alembic migration synchronized with mappings, Dictionary, human-readable database reference and tests. CP6 is not reopened.
 
 ## 10. Capability-triggered components
 
@@ -340,8 +379,11 @@ OR-Tools
 Restate
 → first real Class-B durable workflow
 
-pgBackRest + AWS S3
-→ recovery/production boundary or real recovery rehearsal
+pgBackRest LOCAL recovery
+→ implemented / whole LOCAL operator rehearsal PASS on the recovery workstream
+
+remote backup provider
+→ TBD; production activation/proof deferred until deployment requires it
 ```
 
 Selected architecture does not imply activated runtime capability.
@@ -364,11 +406,11 @@ See:
 Do not claim work that has not actually run or been implemented:
 
 ```text
-FULL-STACK ACCESS/AUTH VERTICAL                  NOT STARTED
-ACCESS REAL BACKEND/FULL-STACK CLOSURE           NOT COMPLETE
-NATIVE MOBILE ACCESS                             NOT IMPLEMENTED
+FULL-STACK ACCESS/AUTH CLOSURE                     NOT CLAIMED
+NATIVE MOBILE ACCESS                             NOT CLAIMED COMPLETE
 DIRECT BUSINESS HG-01..HG-12                     NOT BLANKET-PASSED
-RESTORE/PITR REHEARSAL                           NOT RUN
+PRODUCTION/CLOUD RECOVERY                        NOT CLAIMED
+REMOTE BACKUP PROVIDER                           TBD / NOT ACTIVATED
 REAL V1→V2 BUSINESS-SCHEMA EVOLUTION             NOT RUN
 POWERSYNC DIRECT PRODUCT TEST                    NOT RUN
 RESTATE DIRECT PRODUCT TEST                      NOT RUN

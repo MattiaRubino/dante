@@ -88,6 +88,23 @@ unaccent            1.1
 pg_stat_statements  1.12
 ```
 
+
+
+### 3.1 Recovery operational entry points
+
+The database semantics remain independent from the operator tooling, but the current repository owns a reproducible LOCAL recovery procedure:
+
+```text
+bootstrap  infra/local/postgres/recovery/bootstrap-local-recovery.sh
+runner     infra/local/postgres/recovery/cp07-whole-recovery-rehearsal.sh
+runbook    docs/operations/postgres-recovery-runbook.md
+```
+
+The runner is branch-agnostic and fail-closed on Git/upstream alignment. The bootstrap may create missing ignored LOCAL credentials and build the pinned recovery image, but it does not make the suppression ledger or backup repository canonical application state.
+
+<!-- RECOVERY-REPRODUCIBILITY-PROOF: PENDING -->
+
+
 ## 4. Semantic/non-collapse architecture
 
 DANTE persists specific semantic families rather than collapsing them into generic roots.

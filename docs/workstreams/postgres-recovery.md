@@ -1,44 +1,35 @@
 # DANTE — PostgreSQL Recovery Workstream
 
-- **Status:** LOCAL RECOVERY WORKSTREAM CLOSED / CP07 LOCAL PASS / REMOTE PROVIDER DEFERRED
+- **Status:** LOCAL RECOVERY WORKSTREAM CLOSED / CP07 LOCAL PASS / REPRODUCIBILITY HARDENING IMPLEMENTED / EXACT-HEAD REPROOF PENDING
 - **Repository:** `MattiaRubino/dante`
-- **Branch:** `feature/postgres-recovery`
-- **Worktree:** `/home/mattia/projects/dante-postgres-recovery`
+- **Closure branch:** `feature/postgres-recovery` — phase-time integration candidate, not a runtime requirement
+- **Closure worktree:** `/home/mattia/projects/dante-postgres-recovery` — phase-time only
 - **PostgreSQL:** 18.6
 - **Current DANTE Alembic head on this branch:** `20260830_09`
 - **Current DANTE topology:** `69|5|15|76|97|69|123|0|0|0`
 - **pgBackRest:** 2.59.1 / PGDG `2.59.1-1.pgdg13+1`
 - **Current checkpoint:** CP07 Whole Local Recovery QA + Operator Runbook — LOCAL PASS / CLOSED
 - **Execution plan:** `postgres-recovery-execution-plan.md`
-- **Live continuation:** `postgres-recovery-live-handoff-2026-08-29.md`
 
 > Repository truth beats conversation memory. PostgreSQL remains the sole canonical DANTE persistence authority. Backup/restore tooling, suppression evidence and derived stores do not become alternate canonical truth.
 
 ---
 
-## 1. Continuation boundary
+## 1. Integration and reusable execution boundary
 
-Continue only on:
+The workstream is locally closed. `feature/postgres-recovery` and `/home/mattia/projects/dante-postgres-recovery` identify the phase-time integration candidate only; they are not permanent execution requirements.
+
+Permanent recovery entry points:
 
 ```text
-branch     feature/postgres-recovery
-worktree   /home/mattia/projects/dante-postgres-recovery
+bootstrap  infra/local/postgres/recovery/bootstrap-local-recovery.sh
+runner     infra/local/postgres/recovery/cp07-whole-recovery-rehearsal.sh
+runbook    docs/operations/postgres-recovery-runbook.md
 ```
 
-Do not detach/reset/rebase another occupied DANTE worktree. Never write directly to protected `main`.
+Both executable entry points are branch-agnostic and fail closed unless the current branch is attached, clean, has a configured upstream and `HEAD == upstream` after fetch. This allows the same repository procedure to remain valid after merge and feature-branch deletion.
 
-Before local proof:
-
-```bash
-pwd
-git status --short --branch
-git rev-parse HEAD
-git rev-parse origin/feature/postgres-recovery
-git rev-parse origin/main
-git worktree list --porcelain
-```
-
-Local proof requires local HEAD == remote branch HEAD and a clean worktree.
+Before writes or integration, repository engineering safety and the explicit Git write gate remain binding.
 
 ## 2. Authority / read order
 
@@ -549,7 +540,7 @@ Closure requires:
 [x] no production/cloud recovery claim
 ```
 
-### CP07 exact local evidence
+### CP07 initial exact local evidence
 
 Implementation/runtime proof HEAD:
 
@@ -595,3 +586,25 @@ These are LOCAL rehearsal observations only. They are not production RPO/RTO tar
 
 
 When this checklist is directly proven, the PostgreSQL recovery workstream may close **for the current LOCAL project phase**. Remote-provider production recovery remains a future deployment checkpoint, not an unfinished CP07 item.
+
+
+## 16. Post-closure reproducibility hardening
+
+The closed recovery behavior is not being semantically redesigned. This hardening makes the already-proven LOCAL procedure self-contained for a fresh clone after machine prerequisites exist:
+
+```text
+branch-agnostic Git/upstream gate
+idempotent ignored LOCAL-secret bootstrap
+no overwrite of existing non-empty secrets
+0600 secret mode
+Compose validation
+repository-built pinned recovery image
+CP07 automatic bootstrap
+same disposable backup/WAL/PITR/anti-resurrection/reopen proof
+```
+
+No migration, mapping, Dictionary, suppression-ledger or Domain/Logical/Physical semantic change belongs to this hardening.
+
+Exact-head proof remains unearned until the hardened implementation commit is pushed and CP07 is rerun on that exact remote HEAD.
+
+<!-- RECOVERY-REPRODUCIBILITY-PROOF: PENDING -->

@@ -417,16 +417,14 @@ Git worktree non-interference             PASS
 SC-011 readback/teardown clean             PASS
 ```
 
-Current checkpoint truth:
+CP06 closure outcome:
 
 ```text
 CP06 = LOCAL PASS / CLOSED
 SC-011 = PASS
-CP07 = NEXT / NOT STARTED
-remote backup provider = TBD / NOT ACTIVATED
 ```
 
-This LOCAL closure does not prove remote/cloud production recovery, production RPO/RTO, remote object-store recovery, PowerSync/search/vector recovery implementation or the whole CP07 operator rehearsal.
+CP07 status is owned by Section 9 and is now LOCAL PASS / CLOSED. Remote/cloud production recovery remains outside the LOCAL workstream.
 
 ## 9. CP07 — Whole Local Recovery QA + Runbook + Local Closure
 
@@ -509,7 +507,7 @@ These are observations only, not production RPO/RTO targets.
 [x] production/cloud recovery = NOT CLAIMED
 ```
 
-### CP07 exact local evidence
+### CP07 initial exact local evidence
 
 Implementation/runtime proof HEAD:
 
@@ -555,3 +553,39 @@ These are LOCAL rehearsal observations only. They are not production RPO/RTO tar
 
 
 Remote-provider implementation is deliberately outside current CP07. A future provider must be selected and proven only when DANTE actually approaches production deployment.
+
+
+## 10. Post-closure reproducibility hardening
+
+Goal:
+
+```text
+fresh clone + machine prerequisites
+→ repository bootstrap
+→ missing LOCAL secrets created exactly once
+→ existing secret contents never overwritten
+→ recovery image rebuilt from pinned repository Dockerfile
+→ CP07 runs on any clean attached branch aligned with its upstream
+→ no manual CP01–CP06 replay required
+```
+
+Acceptance:
+
+```text
+[ ] bootstrap syntax/static audit PASS
+[ ] runner syntax/static audit PASS
+[ ] validation clone starts without recovery secrets
+[ ] first bootstrap creates all three LOCAL secrets
+[ ] second bootstrap preserves exact secret hashes
+[ ] validation clone builds a dedicated recovery image
+[ ] whole backend QA PASS on the hardened tree
+[ ] whole CP07 rehearsal PASS on the hardened validation tree
+[ ] implementation commit pushed only after pre-push proof
+[ ] exact pushed implementation HEAD bootstrap PASS
+[ ] exact pushed implementation HEAD CP07 PASS
+[ ] durable docs record the new proof HEAD/report
+[ ] temporary live handoff removed
+[ ] remote backup provider remains TBD / NOT ACTIVATED
+```
+
+<!-- RECOVERY-REPRODUCIBILITY-PROOF: PENDING -->
