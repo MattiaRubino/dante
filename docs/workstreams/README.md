@@ -76,8 +76,8 @@ SC-011 mechanism prototype              DIRECT LOCAL PASS
 SC-011 versioned final harness          LOCAL PASS
 current DB evolution                    Alembic 20260830_09
 current DB topology                     69|5|15|76|97|69|123|0|0|0
-CP07 Whole Recovery QA + Runbook        NEXT / NOT STARTED
-AWS S3 selected topology                NOT ACTIVATED
+CP07 Whole Recovery QA + Runbook        IMPLEMENTED / FINAL LOCAL REHEARSAL PENDING
+remote backup provider                  TBD / NOT ACTIVATED
 ```
 
 CP06 is **LOCAL PASS / CLOSED** on the directly exercised local contract. The implementation/runtime proof head is `a1a6323210b3d7af66284006a754759fa9d08028`; the closure commit itself is documentation-only and therefore has a later SHA.
@@ -122,10 +122,10 @@ Current checkpoint truth:
 CP06 = LOCAL PASS / CLOSED
 SC-011 = PASS
 CP07 = NEXT / NOT STARTED
-AWS selected production recovery = NOT YET PROVEN
+remote backup provider = TBD / NOT ACTIVATED
 ```
 
-This LOCAL closure does not prove AWS S3 activation, Versioning/Object Lock production acceptance, production RPO/RTO, R2 recovery, PowerSync/search/vector recovery implementation or the whole CP07 operator rehearsal.
+This LOCAL closure does not prove remote/cloud production recovery, production RPO/RTO, remote object-store recovery, PowerSync/search/vector recovery implementation or the whole CP07 operator rehearsal.
 
 ## Recovery permanent rules## Recovery permanent rules
 
@@ -138,7 +138,7 @@ pg_is_in_recovery=false + semantic acceptance required
 old backup restore != permission to resurrect retired payload
 recovery suppression ledger != second canonical database
 stale derived/search/vector/sync state != authority
-successful LOCAL proof != selected AWS production proof
+successful LOCAL proof != remote/cloud production proof
 ```
 
 The recovery suppression ledger uses:
@@ -154,17 +154,15 @@ Ambiguous/tampered suppression evidence blocks recovery.
 
 ## Production boundary
 
-The selected production recovery topology remains:
-
 ```text
-pgBackRest
-→ AWS S3 Standard eu-south-1
-→ Versioning
-→ Object Lock GOVERNANCE
-→ finite policy-bound retention
+remote backup provider      TBD
+remote provider activated   NO
+production/cloud recovery   NOT CLAIMED
 ```
 
-It is **not activated or directly proven** by the current LOCAL workstream evidence.
+The local recovery workstream must close independently of a cloud vendor. A future remote provider is selected only when deployment requires it and only after provider-specific backup/WAL/restore/PITR acceptance.
+
+<!-- CP07-LOCAL-EVIDENCE: PENDING -->
 
 ## Operational continuation rule
 

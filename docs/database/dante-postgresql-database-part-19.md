@@ -357,21 +357,22 @@ It may not expire while any retained object can still reintroduce the protected 
 ```text
 pgBackRest FULL/diff/incremental backup
 archived WAL required by a retained recovery point
-S3 versioned backup objects
+remote versioned backup objects
 object-store versions/backups that can reintroduce referenced protected state
 ```
 
-Production retention must therefore reconcile:
+Future remote-provider retention must therefore reconcile:
 
 ```text
 pgBackRest retention
-S3 Versioning
-Object Lock GOVERNANCE
-S3 lifecycle
+remote versioning / immutability capability
+remote lifecycle / finite retention
 privacy/deletion policy
 PITR continuity
 suppression-ledger retention
 ```
+
+No remote provider is selected or activated in the current project phase.
 
 ### 56.12 Security posture
 
@@ -459,7 +460,28 @@ Therefore:
 ```text
 CP06 LOCAL PASS / CLOSED
 SC-011 PASS
-CP07 NEXT / NOT STARTED
+CP07 IMPLEMENTED / FINAL LOCAL REHEARSAL PENDING
 ```
 
-This does not claim AWS selected-stack acceptance, production RPO/RTO, R2 recovery, derived-store recovery implementation or whole CP07 operator-rehearsal proof.
+This does not claim remote/cloud production acceptance, production RPO/RTO, remote object-store recovery, derived-store recovery implementation or whole CP07 operator-rehearsal proof.
+
+
+### 56.16 Whole local operator recovery boundary
+
+CP07 exercises the existing database contract end-to-end on a unique disposable PostgreSQL/pgBackRest/suppression-ledger topology. It does not add a new database semantic or schema object.
+
+Acceptance requires the restored target to remain isolated until:
+
+```text
+PITR target reached and promoted
+current schema/security contract exact
+committed suppression evidence reconciled
+zero retired protected payload remains
+payload reinsertion rejects
+runtime path passes
+database-local reopen gate passes
+```
+
+Remote/cloud-provider recovery is deferred and not claimed by this database-local proof.
+
+<!-- CP07-LOCAL-EVIDENCE: PENDING -->

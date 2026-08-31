@@ -145,7 +145,7 @@ Local pgBackRest configuration uses:
 repo1-retention-full=2
 ```
 
-That value is **LOCAL harness policy only**. It is not the production AWS retention contract.
+That value is **LOCAL harness policy only**. It is not a future remote-provider retention contract.
 
 ## 5. Recovery safety boundary
 
@@ -263,6 +263,22 @@ bash infra/local/postgres/recovery/cp06-sc011-anti-resurrection-check.sh
 
 This creates an entirely disposable source/B0/ledger topology, upgrades that source to the current repository head, proves physical resurrection from B0 and reconciles it using the versioned PREPARED/COMMITTED suppression ledger.
 
+### CP07 whole local operator rehearsal
+
+```bash
+bash infra/local/postgres/recovery/cp07-whole-recovery-rehearsal.sh
+```
+
+This is a single disposable end-to-end rehearsal: healthy current PostgreSQL → FULL/WAL → deterministic PITR point → later retirement → total disposable PGDATA loss → restore/PITR → anti-resurrection reconciliation → structural/security/runtime acceptance → database-local reopen decision.
+
+It writes ignored local evidence to:
+
+```text
+infra/compose/secrets/postgres_recovery_cp07_report.json.local
+```
+
+<!-- CP07-LOCAL-EVIDENCE: PENDING -->
+
 ## 8. Suppression ledger contract
 
 The external recovery suppression ledger is independent from both canonical PGDATA and the database backup repository.
@@ -280,23 +296,31 @@ Ambiguous/tampered state blocks recovery.
 
 The ledger is technical disaster-recovery evidence only; PostgreSQL remains canonical.
 
-## 9. Production boundary
+## 9. Future remote-provider boundary
 
-Current local POSIX proof is not production AWS proof.
-
-Production recovery acceptance still requires the selected topology to be activated and directly tested:
+The current LOCAL recovery system is deliberately provider-neutral.
 
 ```text
-AWS S3 Standard eu-south-1
-Versioning
-Object Lock GOVERNANCE
-finite policy-bound retention
-scoped backup identity
-real backup/WAL objects
-real restore/PITR readback
+remote backup provider      TBD
+remote provider activated   NO
+production/cloud recovery   NOT CLAIMED
 ```
 
-Production suppression-ledger storage/retention and object-store reconciliation remain separate activation/acceptance work.
+A future provider must satisfy the required capabilities when production deployment actually needs them:
+
+```text
+pgBackRest-compatible recovery path
+durable remote storage
+versioning / immutability appropriate to policy
+finite retention
+independent least-privilege credentials
+required region/data-residency properties
+backup + WAL readback
+restore + PITR proof
+suppression evidence retained across the full resurrection horizon
+```
+
+Provider selection, credentials, costs and production acceptance are deferred.
 
 ## 10. Authority
 

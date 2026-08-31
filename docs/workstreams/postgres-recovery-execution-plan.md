@@ -1,6 +1,6 @@
 # DANTE — PostgreSQL Recovery Execution Plan
 
-- **Status:** CURRENT EXECUTION PLAN / CP06 LOCAL PASS / CLOSED / CP07 NEXT
+- **Status:** CURRENT EXECUTION PLAN / CP07 IMPLEMENTED / FINAL LOCAL REHEARSAL PENDING
 - **Repository:** `MattiaRubino/dante`
 - **Branch:** `feature/postgres-recovery`
 - **Primary workstream:** `postgres-recovery.md`
@@ -22,7 +22,7 @@ configuration separate from secrets
 real PostgreSQL evidence before database claims
 restored bytes != accepted semantic state
 pg_isready != traffic reopen
-local POSIX proof != AWS proof
+local POSIX proof != remote/cloud production proof
 old backup restore != permission to resurrect later-retired data
 ```
 
@@ -47,10 +47,10 @@ CP06 Failure + Semantic Recovery          LOCAL PASS / CLOSED
    ├── derived-state reopen boundary      defined
    └── object-store reopen boundary       defined
    ↓
-CP07 Whole Recovery QA + Runbook          NEXT / NOT STARTED
+CP07 Whole Recovery QA + Runbook          IMPLEMENTED / FINAL LOCAL REHEARSAL PENDING
    ├── whole operator rehearsal
    ├── measured end-to-end evidence
-   ├── real AWS selected-stack acceptance
+   ├── provider-neutral local operator proof
    └── final integration closure
 ```
 
@@ -68,8 +68,8 @@ LOCAL repo                     POSIX / dedicated volume
 repo path                      /var/lib/pgbackrest
 recovery Compose project       dante-postgres-recovery
 recovery host port             127.0.0.1:55432
-AWS selected topology          S3 Standard eu-south-1 + Versioning + Object Lock GOVERNANCE
-AWS activation                 deferred
+remote backup provider          TBD / capability-driven
+remote-provider activation      deferred
 numeric production RPO/RTO     not invented
 ```
 
@@ -423,72 +423,92 @@ Current checkpoint truth:
 CP06 = LOCAL PASS / CLOSED
 SC-011 = PASS
 CP07 = NEXT / NOT STARTED
-AWS selected production recovery = NOT YET PROVEN
+remote backup provider = TBD / NOT ACTIVATED
 ```
 
-This LOCAL closure does not prove AWS S3 activation, Versioning/Object Lock production acceptance, production RPO/RTO, R2 recovery, PowerSync/search/vector recovery implementation or the whole CP07 operator rehearsal.
+This LOCAL closure does not prove remote/cloud production recovery, production RPO/RTO, remote object-store recovery, PowerSync/search/vector recovery implementation or the whole CP07 operator rehearsal.
 
-## 9. CP07 — Whole Recovery QA + Runbook + Closure## 9. CP07 — Whole Recovery QA + Runbook + Closure
+## 9. CP07 — Whole Local Recovery QA + Runbook + Local Closure
 
-CP07 starts only after CP06 is actually closed.
+CP07 is implemented as a **single integrated disposable rehearsal**, not as a wrapper that merely replays CP04/CP05/CP06 independently.
 
-Required whole flow:
+Versioned harness:
 
 ```text
-healthy PostgreSQL
-→ continuous WAL + usable backup
-→ simulated complete DB loss
-→ repository/credentials identified
-→ clean PostgreSQL target
-→ restore/PITR
-→ PostgreSQL promotion/readiness
-→ current structural/security verification
-→ anti-resurrection reconciliation
-→ derived/object reopen gates
-→ application readiness decision
+infra/local/postgres/recovery/cp07-whole-recovery-rehearsal.sh
 ```
 
-Production selected-stack acceptance additionally requires real:
+Runbook:
 
 ```text
-AWS S3 Standard eu-south-1
-Versioning
-Object Lock GOVERNANCE
-finite retention
-scoped backup identity
-real backup objects
-real WAL objects
-real restore/PITR readback
+docs/operations/postgres-recovery-runbook.md
 ```
 
-CP07 also captures measured:
+Required exact flow:
 
 ```text
-backup duration/size
-WAL archive freshness
+fresh healthy PostgreSQL 18.6
+→ provisioning + Alembic 20260830_09
+→ structural/security acceptance
+→ real Session MaterialState + protected X
+→ FULL B0 containing X
+→ A commit
+→ deterministic restore point R1
+→ B commit after R1
+→ PREPARED suppression
+→ canonical retirement removes X
+→ COMMITTED suppression after DB verification
+→ final WAL archive verification
+→ total disposable PGDATA loss
+→ independent B0 repository + suppression ledger survive
+→ exact B0 restore + named PITR to R1
+→ promote
+→ A present / B absent
+→ X physically resurrected / tombstone absent
+→ target remains isolated
+→ committed-ledger reconciliation
+→ tombstone present / X absent
+→ payload reinsertion rejected
+→ topology/owners/roles/ACL/extensions/runtime acceptance
+→ database-local reopen PASS
+→ disposable cleanup
+```
+
+Measured LOCAL observations required:
+
+```text
+backup duration + repository size
+WAL archive freshness at disaster
+restore-point age at disaster
 physical restore duration
-PITR replay duration
-semantic reconciliation duration
-operator end-to-end recovery duration
-actual recovery-point/data-loss window
+PITR replay-to-target
+recovery-to-ready
+semantic reconciliation
+structural/security acceptance
+PGDATA-loss → database-local-reopen
 ```
 
-No production numeric RPO/RTO value is invented before measured evidence.
+These are observations only, not production RPO/RTO targets.
 
-## 10. CP07 closure bar
+### CP07 closure checklist
 
 ```text
-[ ] CP01–CP06 evidence reconciled
-[ ] whole LOCAL rehearsal PASS
-[ ] SC-011 retained PASS
-[ ] real selected AWS topology PASS
-[ ] security/retention/Object Lock checks PASS
-[ ] object/derived recovery gates operator-usable
-[ ] measured recovery evidence captured
-[ ] operator runbook rehearsal PASS
-[ ] current durable docs aligned
-[ ] no recovery secret committed
-[ ] no unrelated capability activated
+[ ] implementation tree passes Ruff / mypy / whole backend pytest
+[ ] pre-push disposable whole rehearsal PASS
+[ ] implementation commit pushed after proof
+[ ] exact pushed implementation HEAD whole rehearsal PASS
+[ ] ignored JSON evidence report valid
+[ ] database-local reopen PASS
+[ ] anti-resurrection reconciliation PASS
+[ ] deterministic A-present / B-absent PITR PASS
+[ ] non-interference PASS
+[ ] disposable cleanup PASS
+[ ] operator runbook reconciled
+[ ] current durable docs reconciled
+[ ] remote backup provider = TBD / NOT ACTIVATED
+[ ] production/cloud recovery = NOT CLAIMED
 ```
 
-Only then may the PostgreSQL recovery workstream be integration-ready/closed.
+<!-- CP07-LOCAL-EVIDENCE: PENDING -->
+
+Remote-provider implementation is deliberately outside current CP07. A future provider must be selected and proven only when DANTE actually approaches production deployment.

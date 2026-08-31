@@ -1,6 +1,6 @@
 # DANTE — PostgreSQL Recovery Workstream
 
-- **Status:** ACTIVE / CP06 LOCAL PASS / CLOSED / CP07 NEXT
+- **Status:** ACTIVE / CP06 LOCAL PASS / CLOSED / CP07 IMPLEMENTED / FINAL LOCAL REHEARSAL PENDING
 - **Repository:** `MattiaRubino/dante`
 - **Branch:** `feature/postgres-recovery`
 - **Worktree:** `/home/mattia/projects/dante-postgres-recovery`
@@ -8,7 +8,7 @@
 - **Current DANTE Alembic head on this branch:** `20260830_09`
 - **Current DANTE topology:** `69|5|15|76|97|69|123|0|0|0`
 - **pgBackRest:** 2.59.1 / PGDG `2.59.1-1.pgdg13+1`
-- **Current checkpoint:** CP06 Failure Injection + Semantic Recovery / Anti-Resurrection — LOCAL PASS / CLOSED; CP07 next
+- **Current checkpoint:** CP07 Whole Local Recovery QA + Operator Runbook — IMPLEMENTED / FINAL LOCAL REHEARSAL PENDING
 - **Execution plan:** `postgres-recovery-execution-plan.md`
 - **Live continuation:** `postgres-recovery-live-handoff-2026-08-29.md`
 
@@ -69,7 +69,7 @@ successful PITR != semantic recovery PASS
 pg_isready != traffic-open proof
 restore != permission to resurrect later-retired payload
 selected != implemented != directly proven
-local POSIX proof != AWS selected-stack proof
+local POSIX proof != remote/cloud production proof
 ```
 
 DANTE semantic invariants remain active during recovery, including:
@@ -110,19 +110,17 @@ archive_library                  unset
 
 `repo1-retention-full=2` is only a deterministic LOCAL harness policy.
 
-## 5. Selected production target
+## 5. Future remote-provider boundary
+
+No remote backup provider is selected or activated in the current project phase.
 
 ```text
-pgBackRest
-→ AWS S3 Standard eu-south-1
-→ S3 Versioning
-→ Object Lock GOVERNANCE
-→ finite policy-bound retention
+remote backup provider      TBD
+remote provider activated   NO
+production/cloud recovery   NOT CLAIMED
 ```
 
-Production activation is **not yet implemented or directly proven**.
-
-Normal backup identity must remain scoped and must not have ordinary `s3:BypassGovernanceRetention`. Governance bypass, if ever required, belongs to separate break-glass administration.
+Future provider selection is capability-driven: pgBackRest-compatible recovery, durable remote storage, appropriate versioning/immutability, finite retention, least-privilege credentials, required residency properties, backup/WAL readback and real restore/PITR proof.
 
 ## 6. Current checkpoint matrix
 
@@ -139,8 +137,8 @@ Failure Matrix versioned final harness  LOCAL PASS
 SC-011 mechanism prototype              LOCAL PASS
 SC-011 versioned implementation         MATERIALIZED
 SC-011 definitive versioned harness     LOCAL PASS
-CP07 Whole Recovery QA + Runbook        NEXT / NOT STARTED
-AWS selected-stack acceptance           NOT RUN
+CP07 Whole Recovery QA + Runbook        IMPLEMENTED / FINAL LOCAL REHEARSAL PENDING
+remote-provider production acceptance           NOT RUN
 ```
 
 CP06 direct local proof completed on implementation/runtime head `a1a6323210b3d7af66284006a754759fa9d08028`. The documentation-only closure commit intentionally has a later SHA.
@@ -492,25 +490,65 @@ Current checkpoint truth:
 ```text
 CP06 = LOCAL PASS / CLOSED
 SC-011 = PASS
-CP07 = NEXT / NOT STARTED
-AWS selected production recovery = NOT YET PROVEN
+CP07 = IMPLEMENTED / FINAL LOCAL REHEARSAL PENDING
+remote backup provider = TBD / NOT ACTIVATED
 ```
 
-This LOCAL closure does not prove AWS S3 activation, Versioning/Object Lock production acceptance, production RPO/RTO, R2 recovery, PowerSync/search/vector recovery implementation or the whole CP07 operator rehearsal.
+CP06 local closure does not prove production/cloud recovery, production RPO/RTO, remote object-store recovery, PowerSync/search/vector recovery implementation or the CP07 integrated operator rehearsal.
 
-## 15. CP07 next boundary## 15. CP07 next boundary
+## 15. CP07 — whole local recovery QA + operator runbook
 
-CP07 will own:
+CP07 owns one integrated, disposable, operator-grade local rehearsal:
 
 ```text
-whole clean operator-grade recovery rehearsal
-measured end-to-end recovery evidence
-operator runbook
-real AWS selected-stack activation/acceptance
-Versioning/Object Lock/security/retention proof
-selected-cloud backup/WAL/restore/PITR readback
-object/derived reopen procedures
-final recovery workstream closure/integration
+healthy current PostgreSQL
+→ verified FULL + continuous WAL
+→ deterministic restore point
+→ later writes + canonical retirement
+→ independently durable suppression evidence
+→ complete disposable PGDATA loss
+→ clean B0 restore + PITR
+→ promotion/readiness
+→ deterministic A-present / B-absent proof
+→ physical resurrection of old protected X
+→ ledger-driven anti-resurrection reconciliation
+→ structural/security/runtime acceptance
+→ database-local reopen decision
+→ measured evidence
+→ complete disposable cleanup
 ```
 
-Do not start AWS activation without its own explicit implementation/write gate.
+Versioned harness:
+
+```text
+infra/local/postgres/recovery/cp07-whole-recovery-rehearsal.sh
+```
+
+Operator runbook:
+
+```text
+docs/operations/postgres-recovery-runbook.md
+```
+
+Closure requires:
+
+```text
+[ ] exact implementation HEAD proven
+[ ] whole backend QA PASS on the implementation tree
+[ ] whole CP07 rehearsal PASS
+[ ] database-local reopen PASS
+[ ] anti-resurrection retained PASS
+[ ] deterministic PITR A-present / B-absent PASS
+[ ] measured local evidence captured
+[ ] ordinary local volumes untouched
+[ ] retained recovery repository untouched
+[ ] retained CP05 target untouched
+[ ] disposable CP07 resources fully cleaned
+[ ] operator runbook reconciled with executable flow
+[ ] remote backup provider remains TBD / not activated
+[ ] no production/cloud recovery claim
+```
+
+<!-- CP07-LOCAL-EVIDENCE: PENDING -->
+
+When this checklist is directly proven, the PostgreSQL recovery workstream may close **for the current LOCAL project phase**. Remote-provider production recovery remains a future deployment checkpoint, not an unfinished CP07 item.

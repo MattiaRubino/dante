@@ -1,6 +1,6 @@
 # DANTE — PostgreSQL Recovery Live Handoff
 
-- **Status:** CURRENT LIVE HANDOFF / CP06 LOCAL PASS / CLOSED / CP07 NEXT
+- **Status:** CURRENT LIVE HANDOFF / CP07 IMPLEMENTED / FINAL LOCAL REHEARSAL PENDING
 - **Repository:** `MattiaRubino/dante`
 - **Branch:** `feature/postgres-recovery`
 - **Worktree:** `/home/mattia/projects/dante-postgres-recovery`
@@ -10,7 +10,7 @@
 - **CP01–CP05:** directly proven LOCAL PASS
 - **CP06:** LOCAL PASS / CLOSED
 - **SC-011:** PASS — definitive versioned harness directly proven
-- **CP07:** not started
+- **CP07:** implemented; final whole local rehearsal pending
 
 > This file is only the active branch continuation checkpoint. Repository/code/tests beat this handoff if they disagree. Remove/consolidate it before protected-main integration once durable current documents cover all necessary information.
 
@@ -54,7 +54,9 @@ Require a clean worktree and local HEAD == remote branch HEAD.
 11. `apps/backend/tests/unit/platform/recovery/test_suppression_ledger.py`
 12. `infra/local/postgres/recovery/cp06-failure-matrix-check.sh`
 13. `infra/local/postgres/recovery/cp06-sc011-anti-resurrection-check.sh`
-14. `docs/development/agent-operating-manual.md`
+14. `infra/local/postgres/recovery/cp07-whole-recovery-rehearsal.sh`
+15. `docs/operations/postgres-recovery-runbook.md`
+16. `docs/development/agent-operating-manual.md`
 
 Do not redesign the database/recovery semantics from scratch.
 
@@ -73,17 +75,15 @@ PostgreSQL volume            dante-postgres-recovery_postgres-data
 repository volume            dante-postgres-recovery_pgbackrest-repository
 ```
 
-Selected production topology remains:
+Remote production backup is intentionally undecided:
 
 ```text
-pgBackRest
-→ AWS S3 Standard eu-south-1
-→ Versioning
-→ Object Lock GOVERNANCE
-→ finite policy-bound retention
+remote backup provider      TBD
+remote provider activated   NO
+production/cloud recovery   NOT CLAIMED
 ```
 
-AWS remains **NOT ACTIVATED**.
+Provider selection is deferred until deployment actually requires it.
 
 ## 4. Current checkpoint matrix
 
@@ -99,8 +99,8 @@ CP06 Failure Injection + Semantic        LOCAL PASS / CLOSED
 Failure Matrix versioned final harness   LOCAL PASS
 SC-011 mechanism prototype               LOCAL PASS
 SC-011 versioned final harness           LOCAL PASS
-CP07 Whole Recovery QA + Runbook         NEXT / NOT STARTED
-AWS selected recovery topology           NOT ACTIVATED
+CP07 Whole Recovery QA + Runbook         IMPLEMENTED / FINAL LOCAL REHEARSAL PENDING
+remote backup provider                   TBD / NOT ACTIVATED
 ```
 
 ## 5. Direct retained CP05 state
@@ -309,12 +309,12 @@ Current checkpoint truth:
 CP06 = LOCAL PASS / CLOSED
 SC-011 = PASS
 CP07 = NEXT / NOT STARTED
-AWS selected production recovery = NOT YET PROVEN
+remote backup provider = TBD / NOT ACTIVATED
 ```
 
-This LOCAL closure does not prove AWS S3 activation, Versioning/Object Lock production acceptance, production RPO/RTO, R2 recovery, PowerSync/search/vector recovery implementation or the whole CP07 operator rehearsal.
+This LOCAL closure does not prove remote/cloud production recovery, production RPO/RTO, remote object-store recovery, PowerSync/search/vector recovery implementation or the whole CP07 operator rehearsal.
 
-The next recovery implementation boundary is CP07. Any CP07 code/infra/AWS activation still requires its own explicit gate.
+The next recovery implementation boundary is CP07. Any CP07 code/infra/remote-provider activation still requires its own explicit gate.
 
 ## 12. CP06 closure rule
 
@@ -324,21 +324,30 @@ SC-011 PASS
 CP07 NEXT / NOT STARTED
 ```
 
-The closure is LOCAL only. AWS selected-stack acceptance and the whole CP07 operator rehearsal remain unproven.
+The closure is LOCAL only. Remote/cloud production acceptance and the whole CP07 operator rehearsal remain unproven.
 
-## 13. CP07 boundary## 13. CP07 boundary
+## 13. CP07 current boundary
 
-CP07 owns:
+CP07 is now materialized as one provider-neutral local operator rehearsal plus a matching runbook.
 
 ```text
-whole clean operator rehearsal
-measured end-to-end recovery evidence
-operator runbook
-real AWS selected-stack activation/acceptance
-Versioning / Object Lock / retention/security proof
-real cloud backup/WAL/restore/PITR readback
-derived/object reopen procedure
-final recovery integration closure
+harness   infra/local/postgres/recovery/cp07-whole-recovery-rehearsal.sh
+runbook   docs/operations/postgres-recovery-runbook.md
+report    infra/compose/secrets/postgres_recovery_cp07_report.json.local
 ```
 
-Do not activate AWS or production recovery infrastructure from this handoff without a separate explicit gate.
+Required closure state:
+
+```text
+whole local rehearsal       PASS
+database-local reopen       PASS
+SC-011 / anti-resurrection  PASS
+non-interference            PASS
+operator runbook            REHEARSED
+remote backup provider      TBD / NOT ACTIVATED
+production/cloud recovery   NOT CLAIMED
+```
+
+<!-- CP07-LOCAL-EVIDENCE: PENDING -->
+
+Do not activate or purchase a remote provider as part of CP07.
