@@ -1,10 +1,11 @@
 # DANTE — Access/Auth M5 Live Handoff — 2026-08-29
 
-- **Status:** CURRENT CONTINUATION SAVE-GAME / M5.1–M5-B COMPLETE / M5-C NEXT
+- **Status:** CURRENT CONTINUATION SAVE-GAME / M5.1–M5-C COMPLETE / M5-D NEXT
 - **Vertical:** Access/Auth
 - **Repository:** `MattiaRubino/dante`
 - **Branch:** `feature/access-auth`
 - **Worktree:** `/home/mattia/projects/dante`
+- **M5-C accepted implementation checkpoint:** `e6f738a1ea3f5152caa7d99f1d6ccd108747c806`
 - **M5-B accepted implementation checkpoint:** `e2d40a7666e3c0130afecd8113b8063390b86b9d`
 - **M5-A accepted implementation checkpoint:** `7e40e02d301b0812b3f55e0d9d4ce6439e420b2a`
 - **M4 implementation checkpoint:** `c95e3b2ca664725bcacc374cb5ba6ed49409fe2b`
@@ -14,7 +15,7 @@
 - **M5.2 exact persistence/API authority:** `../architecture/access-auth-m5-persistence-api-contract.md`
 - **Forward plan:** `access-auth-m4-m7-execution-plan.md`
 
-> This file is the live save-game for continuation. Repository truth wins if the branch has moved after this handoff. A new chat should not replay the conversation or redo broad M5 research; it should verify current branch state, read the authorities above, and continue from M5-C.
+> This file is the live save-game for continuation. Repository truth wins if the branch has moved after this handoff. A new chat should not replay the conversation or redo broad M5 research; it should verify current branch state, read the authorities above, and continue from M5-D.
 
 ---
 
@@ -66,7 +67,7 @@ Recommended read order:
 11. current Access/Auth Dictionary entries
 12. CP6 persistence constitution
 13. `docs/frontend/access.md`
-14. current backend implementation/tests for the exact M5-C slice
+14. current backend implementation/tests for the exact M5-D slice
 
 ---
 
@@ -89,7 +90,7 @@ real boundary proof rather than mock-only confidence
 no gratuitous enterprise theatre/overengineering without consumer value
 ```
 
-Testing preference retained from M4/M5-A/M5-B:
+Testing preference retained from M4/M5-A/M5-B/M5-C:
 
 ```text
 prove each invariant at the truthful layer
@@ -225,7 +226,8 @@ M5.1 architecture/security freeze           COMPLETE
 M5.2 persistence/API design                 COMPLETE
 M5-A persistence implementation             COMPLETE / POSTGRESQL PROVEN
 M5-B dependency/runtime infrastructure      COMPLETE / ENGINEERING PASS
-M5-C Google authentication                  NEXT
+M5-C Google authentication                  COMPLETE / ENGINEERING PASS
+M5-D Apple authentication                   NEXT
 M5 OpenAPI/client materialization           NOT STARTED
 M5 Web runtime integration                  NOT STARTED
 ```
@@ -237,7 +239,7 @@ docs/architecture/access-auth-m5-contract.md
 docs/architecture/access-auth-m5-persistence-api-contract.md
 ```
 
-Do not perform another broad “what should Google/Apple/passkeys do?” discovery sweep unless provider standards materially changed. M5-C starts from the frozen contracts, accepted M5-A persistence reality and accepted M5-B trust/runtime foundation.
+Do not perform another broad “what should Google/Apple/passkeys do?” discovery sweep unless provider standards materially changed. M5-D starts from the frozen contracts, accepted M5-A persistence reality, accepted M5-B trust/runtime foundation and accepted M5-C provider-flow patterns.
 
 ---
 
@@ -486,51 +488,102 @@ No PostgreSQL rerun was required because M5-B changes no schema/Alembic/Dictiona
 
 ---
 
-# 10. Exact next work — M5-C
+# 10. M5-C accepted Google backend slice
 
 ```text
 M5-C — Google Authentication + Account Creation / Collision
-NEXT
+COMPLETE / ENGINEERING PASS
 ```
 
-M5-C must consume the accepted M5-B runtime without creating a second provider/session authority.
+Accepted implementation checkpoint:
+
+```text
+e6f738a1ea3f5152caa7d99f1d6ccd108747c806
+chore(auth): finalize M5-C formatting
+```
+
+Accepted behavior:
+
+```text
+Google OIDC trust boundary over M5-B JWK/JOSE runtime
+canonical issuer + issuer/subject identity authority
+state/nonce verifier-only ExternalAuthTransaction
+single claim / replay rejection
+known ExternalIdentity signin
+provider-authoritative mailbox → passwordless Account
+third-party mailbox → DANTE provider-enrollment OTP
+existing EmailIdentity collision → link_required, never silent merge
+Google link/reauth exact session binding + bearer rotation
+profile bootstrap staging only
+bounded ingress limits
+commit ambiguity and uniqueness-race reconciliation
+```
+
+Accepted proof:
+
+```text
+uv lock --check                              PASS
+Ruff format / format-check / lint            PASS
+mypy strict                                  PASS / 79 source files
+backend fast                                 148 / 148 PASS
+focused real PostgreSQL M5-C                  7 / 7 PASS
+backend build                                PASS / sdist + wheel
+git diff --check                             PASS
+```
+
+M5-C does not yet expose public routes/Web UI and does not claim real Google browser/provider acceptance.
+
+---
+
+# 11. Exact next work — M5-D
+
+```text
+M5-D — Apple Authentication + Grant / Notification Lifecycle
+NEXT
+```
 
 Exact product boundary:
 
 ```text
-Google GIS/OIDC authentication
-begin/complete transaction lifecycle
-provider ID-token cryptographic verification via trusted JWK runtime
-provider claim semantics: issuer/audience/azp/nonce/expiry/subject
+Apple authorization begin URL
+form_post callback semantics
+claim ExternalAuthTransaction before code exchange
+server-side authorization-code exchange
+ID-token/JWK verification through accepted M5-B runtime
+issuer/audience/nonce/expiry/subject validation
 known ExternalIdentity signin
-new Account path only under frozen mailbox-authority rules
-email collision → explicit link_required state, never silent merge
-provider enrollment state when mailbox authority is insufficient
-provider reauthentication and Settings-link semantics only as frozen by M5 contract
-canonical DANTE AuthSession issuance only
-provider bootstrap staging without overwriting DANTE-owned values
+new Account / collision / provider enrollment
+provider reauthentication and Settings-link semantics as frozen
+one-shot Apple name staging
+Hide My Email / provider-email-private semantics
+pending AppleAuthGrant persistence after successful code exchange
+pending → active exact ExternalIdentity binding after Account/link finalization
+revocation_pending → remote revoke outside DB tx → revoked
+signed server notification verification
+email-disabled/email-enabled event-time ordering
+consent-revoked/account-deleted reconciliation
+canonical DANTE AuthSession only
 ```
 
 Still out of scope until later slices:
 
 ```text
-Apple callback/code exchange/grant notifications
 provider unlink/authenticator management
 full WebAuthn ceremonies
 password lifecycle adaptation
 public M5 FastAPI/OpenAPI/generated client
 Access Web UI
 real provider/browser final M5 acceptance
-Gmail/Calendar/Drive integration scopes
+Gmail/Calendar/Drive or other provider-data scopes
 ```
 
 ---
 
-# 11. Forward execution
+# 12. Forward execution
 
 ```text
-M5-C  Google authentication                        NEXT
-M5-D  Apple auth + grant/notifications             PLANNED
+M5-C  Google authentication                        COMPLETE / ENGINEERING PASS
+M5-D  Apple auth + grant/notifications             NEXT
 M5-E  explicit linking/authenticator lifecycle     PLANNED
 M5-F  WebAuthn/passkeys                            PLANNED
 M5-G  passwordless password/recovery adaptation    PLANNED
@@ -544,7 +597,7 @@ M7    Security + Observability + final handoff      PLANNED
 
 ---
 
-# 12. Testing / acceptance posture
+# 13. Testing / acceptance posture
 
 Mandatory layers through later M5:
 
@@ -575,7 +628,7 @@ explicit user acceptance
 
 ---
 
-# 13. Whole-vertical state
+# 14. Whole-vertical state
 
 ```text
 M1 CLOSED
@@ -587,7 +640,8 @@ M5 ACTIVE
   M5.2 COMPLETE
   M5-A COMPLETE / POSTGRESQL PROVEN
   M5-B COMPLETE / ENGINEERING PASS
-  M5-C NEXT
+  M5-C COMPLETE / ENGINEERING PASS
+  M5-D NEXT
 M6 PLANNED
 M7 PLANNED / FINAL GATE
 
