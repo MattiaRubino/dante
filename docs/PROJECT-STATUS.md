@@ -1,7 +1,7 @@
 # DANTE — Project Status
 
 - **Status:** CURRENT TRUTH FOR `feature/access-auth`
-- **Last reconciled:** 2026-08-30
+- **Last reconciled:** 2026-08-31
 - **Protected `main`:** integrated source authority; Access/Auth remains branch-local until explicit merge gate
 - **Active product vertical:** Access/Auth
 - **Last closed macro-phase:** M4 — Signup + Verification + Recovery + Reset + Reauth — **CLOSED / ENGINEERING PASS / USER ACCEPTED**
@@ -10,7 +10,9 @@
 - **M5.2:** exact persistence + API design — **COMPLETE**
 - **M5-A:** persistence foundations — **COMPLETE / REAL POSTGRESQL PROVEN**
 - **M5-B:** provider/JWK/JOSE/AEAD/WebAuthn policy infrastructure — **COMPLETE / ENGINEERING PASS**
-- **Next exact step:** M5-C — Google authentication + Account creation/collision — **NEXT**
+- **M5-C:** Google authentication + Account creation/collision — **COMPLETE / ENGINEERING PASS**
+- **Next exact step:** M5-D — Apple authentication + grant/notification lifecycle — **NEXT**
+- **M5-C accepted implementation checkpoint:** `e6f738a1ea3f5152caa7d99f1d6ccd108747c806`
 - **M5-B accepted implementation checkpoint:** `e2d40a7666e3c0130afecd8113b8063390b86b9d`
 - **M5-A accepted implementation checkpoint:** `7e40e02d301b0812b3f55e0d9d4ce6439e420b2a`
 - **Final accepted M4 implementation checkpoint:** `c95e3b2ca664725bcacc374cb5ba6ed49409fe2b`
@@ -51,7 +53,8 @@ ACTIVE
 ├── M5.2 exact persistence + API design          COMPLETE
 ├── M5-A persistence foundations                 COMPLETE / POSTGRESQL PROVEN
 ├── M5-B provider/JWK/JOSE/AEAD infrastructure   COMPLETE / ENGINEERING PASS
-└── M5-C Google authentication                    NEXT
+├── M5-C Google authentication                    COMPLETE / ENGINEERING PASS
+└── M5-D Apple authentication                     NEXT
 
 Access/Auth M6 — Native Mobile Access
 PLANNED
@@ -63,7 +66,7 @@ Whole Access/Auth vertical
 ACTIVE / NOT CLOSED
 ```
 
-M1–M4 remain closed unless direct defect evidence justifies a bounded reopen. M5-A proves the persistence foundation; M5-B proves the shared provider/JWK/JOSE/AEAD/WebAuthn-policy infrastructure. Neither claims that Google/Apple end-user flows, public M5 API, generated client, Web integration or provider/browser acceptance already exists.
+M1–M4 remain closed unless direct defect evidence justifies a bounded reopen. M5-A proves the persistence foundation; M5-B proves the shared provider/JWK/JOSE/AEAD/WebAuthn-policy infrastructure; M5-C proves the backend Google authentication/application/persistence slice. This does not claim Apple, complete passkeys, public M5 API, generated client, Web integration, real Google browser/provider UAT or whole-M5 acceptance already exists.
 
 ---
 
@@ -406,18 +409,68 @@ final branch materialization                 PASS
 
 PostgreSQL was intentionally **not rerun** for M5-B: this slice changes no schema, Alembic, Dictionary or DB contract and direct regression evidence did not justify reopening the already accepted M5-A PostgreSQL gate.
 
-M5-B does **not** claim Google Account signin/account creation/collision, Apple callback/code exchange/lifecycle, explicit linking, complete passkey ceremonies, public M5 API/OpenAPI/client, Web integration or provider/browser UAT.
+---
+
+## 8. M5-C — COMPLETE / ENGINEERING PASS
+
+M5-C Google authentication application/persistence is **COMPLETE / ENGINEERING PASS**.
+
+Accepted implementation checkpoint:
+
+```text
+e6f738a1ea3f5152caa7d99f1d6ccd108747c806
+chore(auth): finalize M5-C formatting
+```
+
+Implemented and accepted:
+
+```text
+Google OIDC trust boundary over the accepted M5-B JOSE/JWK runtime
+canonical Google issuer normalization and exact issuer+subject identity authority
+issuer/audience/azp/nonce/exp/iat/nbf/subject validation
+Gmail / Workspace / third-party-mailbox authority classification
+server-authoritative ExternalAuthTransaction with state+nonce verifier-only persistence
+single-claim transaction semantics before provider verification continuation
+known ExternalIdentity signin → canonical DANTE AuthSession
+provider-authoritative mailbox → passwordless Account + verified EmailIdentity + ExternalIdentity
+third-party mailbox → DANTE provider-enrollment OTP before Account creation
+existing EmailIdentity collision → explicit link_required, never silent merge
+provider link/reauth exact AuthSession binding and bearer rotation
+one-shot account_profile_bootstrap staging without future provider overwrite authority
+purpose-separated provider-enrollment OTP verifier
+bounded provider begin/complete/enrollment ingress rate limits
+ambiguous commit reconciliation and uniqueness-race convergence
+no Google bearer/ID token persistence or logging
+provider network work outside DB transactions
+```
+
+Accepted closeout proof:
+
+```text
+uv lock --check                              PASS
+Ruff format / format-check / lint            PASS
+mypy strict                                  PASS / 79 source files
+backend fast                                 148 / 148 PASS
+focused real PostgreSQL M5-C                  7 / 7 PASS
+backend build                                PASS / sdist + wheel
+git diff --check                             PASS
+final formatter materialization              PASS
+```
+
+The focused PostgreSQL suite proves transaction verifier-only persistence/replay rejection, passwordless Account creation and identity reuse, email collision without silent merge, third-party mailbox enrollment, enrollment collision→link transition, concurrent same Google identity convergence, and Google link/reauth session behavior.
+
+M5-C does **not** claim public FastAPI M5 routes, OpenAPI/generated client, Access Web Google UI, real Google browser/provider UAT, Apple, complete provider management or passkeys. Those remain later M5 slices.
 
 Exact next slice:
 
 ```text
-M5-C — Google Authentication + Account Creation / Collision
+M5-D — Apple Authentication + Grant / Notification Lifecycle
 NEXT
 ```
 
 ---
 
-## 8. M5 proof/deployment posture
+## 9. M5 proof/deployment posture
 
 ```text
 provider CI = deterministic protocol-faithful local substitutes
@@ -434,7 +487,7 @@ Provider/JWK/token/network work stays outside DB transactions. No blind retry of
 
 ---
 
-## 9. M5/M7 boundary
+## 10. M5/M7 boundary
 
 M5 correctness includes provider/passkey lifecycle, linking, anti-lockout, provider revoke/account-change handling and correct security-management metadata.
 
@@ -444,7 +497,7 @@ M7 is not permission to leave M5 correctness incomplete.
 
 ---
 
-## 10. Branch/worktree safety
+## 11. Branch/worktree safety
 
 Continue exactly unless explicitly changed by the user:
 
