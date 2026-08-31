@@ -1,3 +1,23 @@
+[data-world-focus-underlay='home'] {
+  --world-focus-camera-origin-x: 50%;
+  --world-focus-camera-origin-y: 42vh;
+  --world-focus-camera-shift-x: 0px;
+  --world-focus-camera-shift-y: 0px;
+  --world-focus-camera-shift-x-18: 0px;
+  --world-focus-camera-shift-y-18: 0px;
+  --world-focus-camera-shift-x-62: 0px;
+  --world-focus-camera-shift-y-62: 0px;
+
+  transform-origin: var(--world-focus-camera-origin-x)
+    var(--world-focus-camera-origin-y);
+}
+
+[data-world-focus-underlay='home'][data-world-focus-camera='active'] {
+  will-change: transform, opacity, filter;
+  animation: world-focus-camera-push 1.24s cubic-bezier(0.16, 0.84, 0.18, 1)
+    both;
+}
+
 .world-focus-shell {
   --world-focus-accent: #8a74ff;
   --world-focus-ambient-intensity: 0.75;
@@ -12,7 +32,7 @@
   overflow: auto;
   min-width: 0;
   color: var(--dante-theme-home-text-primary);
-  background: transparent;
+  background: #040812;
   isolation: isolate;
   outline: none;
 }
@@ -39,18 +59,19 @@
   overflow: hidden;
   background:
     radial-gradient(
-      circle at 50% 34%,
-      color-mix(in srgb, var(--world-focus-accent) 14%, transparent),
+      circle at 50% 33%,
+      color-mix(in srgb, var(--world-focus-accent) 17%, transparent),
       transparent 43%
     ),
-    radial-gradient(circle at 15% 18%, rgba(84, 65, 155, 0.2), transparent 38%),
-    linear-gradient(148deg, #040812 0%, #07101f 48%, #04070d 100%);
+    radial-gradient(circle at 18% 18%, rgba(84, 65, 155, 0.2), transparent 38%),
+    radial-gradient(circle at 84% 32%, rgba(255, 118, 51, 0.08), transparent 38%),
+    linear-gradient(148deg, #030711 0%, #07101f 48%, #03060c 100%);
   opacity: 1;
   transform: scale(1);
 }
 
-.world-focus-shell[data-entry-phase='entering'] .world-focus-ambient {
-  animation: world-focus-ambient-enter 920ms cubic-bezier(0.16, 0.78, 0.22, 1)
+.world-focus-shell[data-entry-phase='transition'] .world-focus-ambient {
+  animation: world-focus-ambient-enter 1.1s cubic-bezier(0.16, 0.78, 0.22, 1)
     both;
 }
 
@@ -62,45 +83,45 @@
 .world-focus-ambient-field {
   background:
     radial-gradient(
-      ellipse at 50% 42%,
-      color-mix(in srgb, var(--world-focus-accent) 10%, transparent),
-      transparent 50%
+      ellipse at 50% 39%,
+      color-mix(in srgb, var(--world-focus-accent) 11%, transparent),
+      transparent 49%
     ),
     repeating-radial-gradient(
-      ellipse at 50% 42%,
-      rgba(255, 255, 255, 0.02) 0 1px,
-      transparent 1px 40px
+      ellipse at 50% 39%,
+      rgba(255, 255, 255, 0.018) 0 1px,
+      transparent 1px 42px
     );
-  opacity: calc(0.28 + var(--world-focus-ambient-intensity) * 0.32);
-  mask-image: radial-gradient(circle at 50% 42%, black 0 12%, transparent 74%);
+  opacity: calc(0.28 + var(--world-focus-ambient-intensity) * 0.33);
+  mask-image: radial-gradient(circle at 50% 39%, black 0 13%, transparent 76%);
 }
 
 .world-focus-shell[data-texture='wave'] .world-focus-ambient-field {
   background:
     repeating-radial-gradient(
-      ellipse at 50% 42%,
+      ellipse at 50% 39%,
       color-mix(in srgb, var(--world-focus-accent) 10%, transparent) 0 1px,
       transparent 1px 31px
     ),
     radial-gradient(
-      ellipse at 50% 42%,
-      color-mix(in srgb, var(--world-focus-accent) 10%, transparent),
-      transparent 54%
+      ellipse at 50% 39%,
+      color-mix(in srgb, var(--world-focus-accent) 11%, transparent),
+      transparent 55%
     );
 }
 
 .world-focus-shell[data-texture='grid'] .world-focus-ambient-field {
   background:
-    linear-gradient(rgba(255, 255, 255, 0.024) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.024) 1px, transparent 1px),
+    linear-gradient(rgba(255, 255, 255, 0.021) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.021) 1px, transparent 1px),
     radial-gradient(
-      ellipse at 50% 42%,
+      ellipse at 50% 39%,
       color-mix(in srgb, var(--world-focus-accent) 10%, transparent),
-      transparent 52%
+      transparent 53%
     );
   background-size:
-    46px 46px,
-    46px 46px,
+    48px 48px,
+    48px 48px,
     auto;
 }
 
@@ -118,12 +139,12 @@
   background-size:
     137px 127px,
     191px 173px;
-  mask-image: radial-gradient(circle at 50% 42%, black 0 18%, transparent 78%);
+  mask-image: radial-gradient(circle at 50% 40%, black 0 18%, transparent 82%);
   opacity: calc(0.08 + var(--world-focus-particle-density) * 0.32);
 }
 
 .world-focus-entry-effect {
-  z-index: 10;
+  z-index: 12;
   display: block;
   width: 100%;
   height: calc(100dvh - var(--app-shell-topbar-height));
@@ -132,17 +153,104 @@
 .world-focus-entry-effect[data-world-focus-entry-renderer='fallback'] {
   background:
     radial-gradient(
-      circle at 50% 50%,
-      color-mix(in srgb, var(--world-focus-accent) 72%, white) 0 2%,
-      color-mix(in srgb, var(--world-focus-accent) 38%, transparent) 9%,
-      transparent 21%
+      circle at 50% 46%,
+      transparent 0 17%,
+      color-mix(in srgb, var(--world-focus-accent) 76%, white) 18% 19%,
+      color-mix(in srgb, var(--world-focus-accent) 42%, transparent) 22%,
+      transparent 29%
     ),
     radial-gradient(
-      circle at 50% 50%,
+      circle at 50% 46%,
       color-mix(in srgb, var(--world-focus-accent) 24%, transparent),
       transparent 58%
     );
-  animation: world-focus-fallback-entry 1.08s cubic-bezier(0.16, 0.78, 0.22, 1)
+  animation: world-focus-fallback-entry 1.24s cubic-bezier(0.16, 0.82, 0.18, 1)
+    both;
+}
+
+.world-focus-anchor {
+  position: absolute;
+  z-index: 5;
+  top: clamp(18px, 3.2vh, 38px);
+  left: 50%;
+  width: clamp(340px, 44vw, 690px);
+  aspect-ratio: 1;
+  transform: translateX(-50%);
+  pointer-events: none;
+  opacity: 0.92;
+}
+
+.world-focus-anchor-aura,
+.world-focus-anchor-ring,
+.world-focus-anchor-core {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.world-focus-anchor-aura {
+  inset: -12%;
+  background:
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--world-focus-accent) 16%, transparent),
+      transparent 63%
+    ),
+    conic-gradient(
+      from 212deg,
+      transparent 0 7%,
+      color-mix(in srgb, var(--world-focus-accent) 14%, transparent) 15%,
+      transparent 31% 54%,
+      rgba(255, 113, 45, 0.1) 68%,
+      transparent 82%
+    );
+  filter: blur(18px);
+  opacity: calc(0.58 + var(--world-focus-ambient-intensity) * 0.22);
+}
+
+.world-focus-anchor-ring {
+  inset: 4%;
+  padding: clamp(8px, 1.2vw, 16px);
+  background: conic-gradient(
+    from 218deg,
+    color-mix(in srgb, var(--world-focus-accent) 92%, #875cff) 0deg,
+    #d7b8ff 56deg,
+    color-mix(in srgb, var(--world-focus-accent) 74%, #5977ff) 122deg,
+    rgba(69, 78, 190, 0.26) 173deg,
+    #ff6a22 236deg,
+    #ffd285 276deg,
+    color-mix(in srgb, var(--world-focus-accent) 88%, #a757ff) 332deg,
+    color-mix(in srgb, var(--world-focus-accent) 92%, #875cff) 360deg
+  );
+  box-shadow:
+    0 0 34px color-mix(in srgb, var(--world-focus-accent) 42%, transparent),
+    0 0 84px color-mix(in srgb, var(--world-focus-accent) 18%, transparent);
+  -webkit-mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - clamp(22px, 3vw, 44px)),
+    #000 calc(100% - clamp(21px, 2.9vw, 43px))
+  );
+  mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - clamp(22px, 3vw, 44px)),
+    #000 calc(100% - clamp(21px, 2.9vw, 43px))
+  );
+}
+
+.world-focus-anchor-core {
+  inset: 14%;
+  border: 1px solid color-mix(in srgb, var(--world-focus-accent) 28%, transparent);
+  background:
+    radial-gradient(circle at 49% 46%, rgba(22, 31, 66, 0.18), transparent 26%),
+    radial-gradient(circle at 58% 62%, rgba(105, 43, 184, 0.2), transparent 43%),
+    radial-gradient(circle at 42% 35%, rgba(255, 112, 48, 0.09), transparent 35%),
+    linear-gradient(148deg, rgba(3, 8, 22, 0.82), rgba(5, 8, 19, 0.96));
+  box-shadow:
+    inset 0 0 78px rgba(0, 0, 0, 0.7),
+    inset 0 0 26px color-mix(in srgb, var(--world-focus-accent) 12%, transparent);
+}
+
+.world-focus-shell[data-entry-phase='transition'] .world-focus-anchor {
+  animation: world-focus-anchor-arrive 520ms 690ms cubic-bezier(0.16, 0.82, 0.18, 1)
     both;
 }
 
@@ -175,10 +283,10 @@
     transform 150ms ease;
 }
 
-.world-focus-shell[data-entry-phase='entering'] .world-focus-back,
-.world-focus-shell[data-entry-phase='entering'] .world-focus-identity,
-.world-focus-shell[data-entry-phase='entering'] .world-focus-canvas {
-  animation: world-focus-content-enter 620ms 460ms cubic-bezier(0.16, 0.78, 0.22, 1)
+.world-focus-shell[data-entry-phase='transition'] .world-focus-back,
+.world-focus-shell[data-entry-phase='transition'] .world-focus-identity,
+.world-focus-shell[data-entry-phase='transition'] .world-focus-canvas {
+  animation: world-focus-content-enter 500ms 790ms cubic-bezier(0.16, 0.8, 0.2, 1)
     both;
 }
 
@@ -241,7 +349,7 @@
   z-index: 20;
   width: min(1180px, calc(100% - 56px));
   min-height: clamp(300px, 48vh, 560px);
-  margin: clamp(280px, 42vh, 450px) auto 48px;
+  margin: clamp(300px, 44vh, 470px) auto 48px;
   pointer-events: none;
 }
 
@@ -253,13 +361,55 @@
   opacity: 0.42;
 }
 
-@keyframes world-focus-ambient-enter {
+@keyframes world-focus-camera-push {
   0% {
-    opacity: 0;
-    transform: scale(1.045);
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: brightness(1) saturate(1);
   }
-  44% {
-    opacity: 0.18;
+  24% {
+    opacity: 1;
+    transform:
+      translate3d(
+        var(--world-focus-camera-shift-x-18),
+        var(--world-focus-camera-shift-y-18),
+        0
+      )
+      scale(1.035);
+    filter: brightness(0.94) saturate(1.04);
+  }
+  56% {
+    opacity: 0.76;
+    transform:
+      translate3d(
+        var(--world-focus-camera-shift-x-62),
+        var(--world-focus-camera-shift-y-62),
+        0
+      )
+      scale(1.13);
+    filter: brightness(0.72) saturate(1.08);
+  }
+  100% {
+    opacity: 0.06;
+    transform:
+      translate3d(
+        var(--world-focus-camera-shift-x),
+        var(--world-focus-camera-shift-y),
+        0
+      )
+      scale(1.27);
+    filter: brightness(0.34) saturate(1.12);
+  }
+}
+
+@keyframes world-focus-ambient-enter {
+  0%,
+  36% {
+    opacity: 0;
+    transform: scale(1.055);
+  }
+  68% {
+    opacity: 0.34;
   }
   100% {
     opacity: 1;
@@ -267,11 +417,24 @@
   }
 }
 
+@keyframes world-focus-anchor-arrive {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) scale(1.22);
+    filter: blur(14px) brightness(1.45);
+  }
+  to {
+    opacity: 0.92;
+    transform: translateX(-50%) scale(1);
+    filter: blur(0) brightness(1);
+  }
+}
+
 @keyframes world-focus-content-enter {
   from {
     opacity: 0;
-    transform: translate3d(0, 16px, 0) scale(0.985);
-    filter: blur(8px);
+    transform: translate3d(0, 14px, 0) scale(0.988);
+    filter: blur(7px);
   }
   to {
     opacity: 1;
@@ -283,18 +446,27 @@
 @keyframes world-focus-fallback-entry {
   0% {
     opacity: 0;
-    transform: scale(0.28);
+    transform: scale(0.22);
   }
-  52% {
-    opacity: 0.94;
+  18% {
+    opacity: 0.95;
+  }
+  58% {
+    opacity: 1;
+    transform: scale(1.45);
   }
   100% {
     opacity: 0;
-    transform: scale(5.2);
+    transform: scale(5.8);
   }
 }
 
 @media (max-width: 760px) {
+  .world-focus-anchor {
+    top: 44px;
+    width: min(88vw, 520px);
+  }
+
   .world-focus-back {
     top: calc(var(--app-shell-topbar-height) + max(16px, env(safe-area-inset-top)));
     left: max(16px, env(safe-area-inset-left));
@@ -319,15 +491,17 @@
 
   .world-focus-canvas {
     width: calc(100% - 32px);
-    margin-top: 52vh;
+    margin-top: 54vh;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .world-focus-shell[data-entry-phase='entering'] .world-focus-ambient,
-  .world-focus-shell[data-entry-phase='entering'] .world-focus-back,
-  .world-focus-shell[data-entry-phase='entering'] .world-focus-identity,
-  .world-focus-shell[data-entry-phase='entering'] .world-focus-canvas,
+  [data-world-focus-underlay='home'][data-world-focus-camera='active'],
+  .world-focus-shell[data-entry-phase='transition'] .world-focus-ambient,
+  .world-focus-shell[data-entry-phase='transition'] .world-focus-anchor,
+  .world-focus-shell[data-entry-phase='transition'] .world-focus-back,
+  .world-focus-shell[data-entry-phase='transition'] .world-focus-identity,
+  .world-focus-shell[data-entry-phase='transition'] .world-focus-canvas,
   .world-focus-entry-effect[data-world-focus-entry-renderer='fallback'] {
     animation: none !important;
   }

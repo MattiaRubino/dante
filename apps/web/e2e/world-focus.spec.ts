@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test.use({ locale: 'it-IT' });
 
-test('Home opens the centered World into the immersive focus and browser back preserves Home state', async ({
+test('Home opens the centered World on double click and browser back preserves Home state', async ({
   page,
 }) => {
   await page.goto('/home');
@@ -21,26 +21,22 @@ test('Home opens the centered World into the immersive focus and browser back pr
   await music.click();
   await expect(music).toHaveAttribute('aria-current', 'true');
 
-  await music.click();
+  await music.dblclick();
   await expect(page).toHaveURL(/\/home\?focus=music$/);
-  const focus = page.locator('.world-focus-shell');
-  const topbar = page.locator('[data-app-region="topbar"]');
   await expect(page.getByRole('main', { name: 'Mondo Musica' })).toBeVisible();
-  await expect(focus).toHaveAttribute('data-entry-origin', 'live');
-  await expect(focus).toHaveAttribute('data-world-focus-status', 'ready');
-  await expect(topbar).toBeVisible();
-  await expect(focus).toHaveAttribute('data-entry-phase', 'entering');
-  await expect(focus).toHaveAttribute('data-entry-phase', 'settled', {
-    timeout: 3_000,
-  });
-
-  const topbarBox = await topbar.boundingBox();
-  const focusBox = await focus.boundingBox();
-  expect(topbarBox).not.toBeNull();
-  expect(focusBox).not.toBeNull();
-  if (topbarBox !== null && focusBox !== null) {
-    expect(focusBox.y).toBeGreaterThanOrEqual(topbarBox.y + topbarBox.height - 1);
-  }
+  await expect(page.locator('.world-focus-shell')).toHaveAttribute(
+    'data-entry-origin',
+    'live',
+  );
+  await expect(page.locator('.world-focus-shell')).toHaveAttribute(
+    'data-world-focus-status',
+    'ready',
+  );
+  await expect(page.locator('.world-focus-shell')).toHaveAttribute(
+    'data-entry-presentation',
+    'immersive',
+  );
+  await expect(page.locator('[data-app-region="topbar"]')).toBeVisible();
 
   await page.goBack();
   await expect(page).toHaveURL(/\/home$/);
@@ -52,7 +48,7 @@ test('Home opens the centered World into the immersive focus and browser back pr
   );
   await expect(music).toHaveAttribute('aria-current', 'true');
   await expect(music).toBeFocused();
-  await expect(topbar).toBeVisible();
+  await expect(page.locator('[data-app-region="topbar"]')).toBeVisible();
 });
 
 test('dragging the active World does not enter World Focus', async ({ page }) => {
@@ -90,7 +86,7 @@ test('keyboard activation selects first and opens the centered World second', as
   await expect(page.getByRole('main', { name: 'Mondo Musica' })).toBeVisible();
 });
 
-test('direct World Focus URL has a safe fallback entry and close path', async ({
+test('direct World Focus URL has a safe instant fallback entry and close path', async ({
   page,
 }) => {
   await page.goto('/home?focus=travel');
@@ -98,7 +94,7 @@ test('direct World Focus URL has a safe fallback entry and close path', async ({
   const focus = page.locator('.world-focus-shell');
   await expect(focus).toBeVisible();
   await expect(focus).toHaveAttribute('data-entry-origin', 'fallback');
-  await expect(focus).toHaveAttribute('data-entry-phase', 'settled');
+  await expect(focus).toHaveAttribute('data-entry-presentation', 'instant');
   await expect(focus).toHaveAttribute('data-world-focus-status', 'ready');
   await expect(page.getByRole('main', { name: 'Mondo Viaggi' })).toBeVisible();
   await expect(page.locator('[data-app-region="topbar"]')).toBeVisible();
@@ -106,6 +102,29 @@ test('direct World Focus URL has a safe fallback entry and close path', async ({
   await page.getByRole('button', { name: 'Torna indietro' }).click();
   await expect(page).toHaveURL(/\/home$/);
   await expect(focus).toHaveCount(0);
+});
+
+test('the persisted instant preference skips the ornamental transition', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem(
+      'dante.preferences.world-focus-motion.v1',
+      'instant',
+    );
+  });
+  await page.goto('/home');
+
+  const music = page.locator('.home-world[aria-label="Musica"]');
+  await music.click();
+  await expect(music).toHaveAttribute('aria-current', 'true');
+  await music.dblclick();
+
+  const focus = page.locator('.world-focus-shell');
+  await expect(focus).toHaveAttribute('data-entry-presentation', 'instant');
+  await expect(focus).toHaveAttribute('data-entry-phase', 'end');
+  await expect(page.locator('.world-focus-entry-effect')).toHaveCount(0);
+  await expect(page.locator('[data-app-region="topbar"]')).toBeVisible();
 });
 
 test('reduced motion keeps World Focus usable without ornamental animation', async ({
@@ -116,7 +135,7 @@ test('reduced motion keeps World Focus usable without ornamental animation', asy
 
   const focus = page.locator('.world-focus-shell');
   await expect(focus).toBeVisible();
-  await expect(focus).toHaveAttribute('data-entry-phase', 'settled');
+  await expect(focus).toHaveAttribute('data-entry-presentation', 'instant');
   await expect(page.locator('.world-focus-entry-effect')).toHaveCount(0);
 
   await page.keyboard.press('Escape');

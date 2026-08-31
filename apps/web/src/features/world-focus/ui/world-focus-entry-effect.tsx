@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { WorldFocusEntrySnapshot } from '../model/world-focus-transition';
 import type { WorldFocusWorld } from '../model/world-focus-fixtures';
 
-const ENTRY_DURATION_MS = 1_080;
+const ENTRY_DURATION_MS = 1_240;
 const MAX_DEVICE_PIXEL_RATIO = 1.5;
 
 const VERTEX_SHADER = `#version 300 es
@@ -25,6 +25,8 @@ out vec4 outColor;
 
 uniform vec2 uResolution;
 uniform vec2 uOrigin;
+uniform vec2 uTarget;
+uniform float uOriginRadius;
 uniform float uProgress;
 uniform float uTime;
 uniform vec3 uAccent;
@@ -68,9 +70,14 @@ float fbm(vec2 p) {
   return value;
 }
 
-float easeOutCubic(float value) {
-  float inverse = 1.0 - value;
-  return 1.0 - inverse * inverse * inverse;
+float easeInOutCubic(float value) {
+  return value < 0.5
+    ? 4.0 * value * value * value
+    : 1.0 - pow(-2.0 * value + 2.0, 3.0) * 0.5;
+}
+
+float easeOutQuint(float value) {
+  return 1.0 - pow(1.0 - value, 5.0);
 }
 
 void main() {
@@ -78,93 +85,109 @@ void main() {
   uv.y = 1.0 - uv.y;
 
   float progress = clamp(uProgress, 0.0, 1.0);
-  float eased = easeOutCubic(progress);
-  float aspect = uResolution.x / max(uResolution.y, 1.0);
+  float focusProgress = smoothstep(0.0, 0.31, progress);
+  float ignition = smoothstep(0.08, 0.34, progress);
+  float opening = smoothstep(0.22, 0.84, progress);
+  float breach = smoothstep(0.58, 0.96, progress);
+  float fadeOut = 1.0 - smoothstep(0.88, 1.0, progress);
 
-  vec2 p = uv - uOrigin;
+  vec2 center = mix(uOrigin, uTarget, easeInOutCubic(focusProgress));
+  float aspect = uResolution.x / max(uResolution.y, 1.0);
+  vec2 p = uv - center;
   p.x *= aspect;
 
-  float radiusFromOrigin = max(length(p), 0.0001);
+  float distanceFromCenter = max(length(p), 0.0001);
   float angle = atan(p.y, p.x);
-  float radius = mix(0.018, 1.52, pow(eased, 0.72));
+
+  float seedRadius = max(uOriginRadius, 0.018);
+  float lockedRadius = mix(seedRadius, 0.185, easeOutQuint(focusProgress));
+  float portalRadius = mix(lockedRadius, 1.34, pow(opening, 0.82));
 
   float angularNoise = fbm(
     vec2(
-      angle * 1.45 + uTime * 0.08 * uMotion,
-      radiusFromOrigin * 8.0 - uTime * 0.45
+      angle * (1.55 + uMotion * 0.11) - uTime * (0.34 + uMotion * 0.08),
+      distanceFromCenter * (8.5 + uDensity * 2.5) - uTime * 0.52
     )
   );
-  float fineNoise = fbm(p * (8.0 + uDensity * 5.0) - uTime * 0.18);
-  float turbulence =
-    (angularNoise - 0.5) * 0.075 + (fineNoise - 0.5) * 0.028;
-  turbulence *= 0.55 + sin(progress * PI) * 0.75;
-
-  float distortedRadius = radiusFromOrigin + turbulence;
-  float edgeDistance = abs(distortedRadius - radius);
-  float ringWidth = mix(0.012, 0.044, sin(progress * PI));
-  float ring =
-    1.0 - smoothstep(ringWidth, ringWidth * 2.6, edgeDistance);
-  float innerRing =
-    1.0 -
-    smoothstep(
-      ringWidth * 0.35,
-      ringWidth * 1.15,
-      abs(distortedRadius - radius * 0.965)
-    );
-  float inside =
-    1.0 -
-    smoothstep(radius - 0.035, radius + 0.018, distortedRadius);
-
-  float polarY = log(radiusFromOrigin + 0.035);
-  float radialBands = fract(
-    polarY * (5.2 + uMotion * 0.7) -
-      uTime * (1.45 + uMotion * 0.35)
+  float fineNoise = fbm(
+    p * (9.0 + uDensity * 5.5) + vec2(uTime * 0.12, -uTime * 0.22)
   );
-  float streakBand = pow(1.0 - abs(radialBands - 0.5) * 2.0, 11.0);
+  float turbulence = (angularNoise - 0.5) * mix(0.012, 0.082, opening);
+  turbulence += (fineNoise - 0.5) * mix(0.006, 0.035, ignition);
 
+  float distortedRadius = distanceFromCenter + turbulence;
+  float ringWidth = mix(0.009, 0.043, sin(opening * PI));
+  float ringDistance = abs(distortedRadius - portalRadius);
+  float outerRing = 1.0 - smoothstep(ringWidth, ringWidth * 2.35, ringDistance);
+  float innerRing = 1.0 - smoothstep(
+    ringWidth * 0.28,
+    ringWidth * 1.08,
+    abs(distortedRadius - portalRadius * 0.968)
+  );
+
+  float inside = 1.0 - smoothstep(
+    portalRadius - ringWidth * 1.4,
+    portalRadius + ringWidth * 0.4,
+    distortedRadius
+  );
+
+  float normalizedRadius = distanceFromCenter / max(portalRadius, 0.001);
+  float tunnelDepth = log(distanceFromCenter + 0.028);
+  float spiralPhase =
+    angle * (4.6 + uMotion * 0.7) -
+    tunnelDepth * (13.5 + uMotion * 1.8) -
+    uTime * (2.2 + uMotion * 0.52);
+  float spiral = 0.5 + 0.5 * sin(spiralPhase);
+  spiral = pow(spiral, 5.5) * inside;
+  spiral *= 1.0 - smoothstep(0.13, 1.04, normalizedRadius);
+
+  float secondarySpiral = 0.5 + 0.5 * sin(
+    -angle * (7.0 + uDensity * 2.0) - tunnelDepth * 18.0 + uTime * 2.8
+  );
+  secondarySpiral = pow(secondarySpiral, 9.0) * inside * 0.46;
+
+  float radialBand = fract(
+    tunnelDepth * (5.4 + uMotion * 0.6) -
+    uTime * (1.62 + uMotion * 0.24)
+  );
+  float streakShape = pow(1.0 - abs(radialBand - 0.5) * 2.0, 13.0);
   float spokePhase = angle / TAU + 0.5;
-  float spokeCell = floor(spokePhase * mix(68.0, 112.0, uDensity));
-  float starSeed = hash21(vec2(spokeCell, floor(polarY * 22.0)));
-  float starMask = smoothstep(0.84, 0.995, starSeed);
-  float streaks = streakBand * starMask * inside;
+  float spokeCell = floor(spokePhase * mix(72.0, 126.0, uDensity));
+  float streakSeed = hash21(vec2(spokeCell, floor(tunnelDepth * 24.0)));
+  float streaks = streakShape * smoothstep(0.79, 0.995, streakSeed) * inside;
+  streaks *= 1.0 - smoothstep(0.19, 1.08, normalizedRadius);
 
-  float vortex =
-    0.5 +
-    0.5 *
-      sin(
-        angle * (5.0 + uMotion) -
-          polarY * 13.0 -
-          uTime * (2.2 + uMotion * 0.5)
-      );
-  vortex = pow(vortex, 5.0) * inside;
-  vortex *=
-    1.0 -
-    smoothstep(radius * 0.08, radius + 0.05, radiusFromOrigin);
+  float sparkCell = floor(spokePhase * mix(100.0, 170.0, uDensity));
+  float sparkSeed = hash21(vec2(sparkCell, floor(distanceFromCenter * 86.0)));
+  float sparks = smoothstep(0.91, 0.998, sparkSeed);
+  sparks *= outerRing * (0.55 + uDensity * 0.7);
 
-  float activationFlash = exp(-pow((progress - 0.48) / 0.13, 2.0));
-  float coreGlow = exp(-radiusFromOrigin * (3.0 + 1.8 * progress));
+  float ignitionFlash = exp(-pow((progress - 0.27) / 0.105, 2.0));
+  float breachFlash = exp(-pow((progress - 0.69) / 0.16, 2.0));
+  float core = exp(-distanceFromCenter * mix(11.0, 2.8, opening));
+  float aperture = smoothstep(0.36, 0.94, opening);
 
-  vec3 cold = vec3(0.12, 0.58, 1.0);
-  vec3 violet = vec3(0.46, 0.24, 1.0);
-  vec3 energy = mix(violet, uAccent, 0.72);
-  vec3 edgeColor = mix(cold, uAccent, 0.62);
+  vec3 cold = vec3(0.18, 0.55, 1.0);
+  vec3 violet = vec3(0.48, 0.22, 1.0);
+  vec3 hot = vec3(1.0, 0.49, 0.16);
+  vec3 portalColor = mix(violet, uAccent, 0.68);
+  vec3 edgeColor = mix(cold, uAccent, 0.58);
+  vec3 hotEdge = mix(portalColor, hot, 0.24 + 0.18 * uMotion);
 
-  vec3 color = vec3(0.012, 0.025, 0.06) * inside;
-  color += energy * inside * (0.18 + vortex * 0.34) * uIntensity;
-  color += edgeColor * ring * (1.2 + activationFlash * 1.4);
-  color += vec3(0.58, 0.83, 1.0) * innerRing * 0.72;
-  color +=
-    mix(uAccent, vec3(1.0), 0.48) *
-    streaks *
-    (0.85 + uDensity * 0.7);
-  color += edgeColor * coreGlow * activationFlash * 0.62;
+  vec3 color = vec3(0.005, 0.012, 0.032) * inside;
+  color += portalColor * inside * (0.09 + spiral * 0.52) * uIntensity;
+  color += edgeColor * secondarySpiral * (0.26 + uIntensity * 0.22);
+  color += hotEdge * outerRing * (1.18 + ignitionFlash * 1.42);
+  color += mix(vec3(0.72, 0.88, 1.0), uAccent, 0.28) * innerRing * 0.84;
+  color += mix(uAccent, vec3(1.0), 0.56) * streaks * (0.72 + uDensity * 0.82);
+  color += vec3(1.0, 0.82, 0.62) * sparks * 0.72;
+  color += edgeColor * core * ignitionFlash * 0.78;
+  color += mix(portalColor, vec3(1.0), 0.34) * breachFlash * inside * 0.18;
 
-  float worldWash =
-    inside * smoothstep(0.16, 0.72, progress) * 0.84;
-  float effectFade = 1.0 - smoothstep(0.82, 1.0, progress);
-  float alpha = max(worldWash, ring * 0.94 + innerRing * 0.54);
-  alpha += streaks * 0.48 + coreGlow * activationFlash * 0.18;
-  alpha = clamp(alpha * effectFade, 0.0, 0.97);
+  float worldWash = inside * aperture * mix(0.28, 0.92, breach);
+  float alpha = max(worldWash, outerRing * 0.96 + innerRing * 0.62);
+  alpha += streaks * 0.46 + sparks * 0.34 + core * ignitionFlash * 0.24;
+  alpha = clamp(alpha * fadeOut, 0.0, 0.985);
 
   outColor = vec4(color, alpha);
 }
@@ -312,6 +335,7 @@ export function WorldFocusEntryEffect({
       alpha: true,
       antialias: false,
       depth: false,
+      desynchronized: true,
       failIfMajorPerformanceCaveat: true,
       powerPreference: 'high-performance',
       premultipliedAlpha: false,
@@ -338,6 +362,11 @@ export function WorldFocusEntryEffect({
       'uResolution',
     );
     const originLocation = gl.getUniformLocation(resources.program, 'uOrigin');
+    const targetLocation = gl.getUniformLocation(resources.program, 'uTarget');
+    const originRadiusLocation = gl.getUniformLocation(
+      resources.program,
+      'uOriginRadius',
+    );
     const progressLocation = gl.getUniformLocation(
       resources.program,
       'uProgress',
@@ -356,6 +385,7 @@ export function WorldFocusEntryEffect({
     const accent = parseHexColor(world.accent);
     const startedAt = performance.now();
     let animationFrame = 0;
+    let completed = false;
 
     gl.useProgram(resources.program);
     gl.bindVertexArray(resources.vertexArray);
@@ -386,6 +416,12 @@ export function WorldFocusEntryEffect({
         0,
         1,
       );
+      const aspect = width / Math.max(height, 1);
+      const originRadius =
+        Math.max(
+          (entry.origin.width / Math.max(bounds.width, 1)) * aspect,
+          entry.origin.height / Math.max(bounds.height, 1),
+        ) * 0.5;
 
       if (canvas.width !== width || canvas.height !== height) {
         canvas.width = width;
@@ -395,6 +431,8 @@ export function WorldFocusEntryEffect({
 
       gl.uniform2f(resolutionLocation, canvas.width, canvas.height);
       gl.uniform2f(originLocation, originX, originY);
+      gl.uniform2f(targetLocation, 0.5, 0.46);
+      gl.uniform1f(originRadiusLocation, clamp(originRadius, 0.018, 0.16));
     };
 
     const render = (now: number) => {
@@ -411,7 +449,10 @@ export function WorldFocusEntryEffect({
         return;
       }
 
-      completionRef.current();
+      if (!completed) {
+        completed = true;
+        completionRef.current();
+      }
     };
 
     resize();

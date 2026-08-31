@@ -35,6 +35,7 @@ type ViewedDateMirror = Readonly<{
 
 type WorldFocusPointerPress = {
   pointerId: number;
+  pointerType: string;
   startX: number;
   startY: number;
   element: HTMLElement;
@@ -152,6 +153,7 @@ export function HomeShell({
           ? null
           : {
               pointerId: event.pointerId,
+              pointerType: event.pointerType,
               startX: event.clientX,
               startY: event.clientY,
               element,
@@ -165,7 +167,11 @@ export function HomeShell({
       const press = worldFocusPressRef.current;
       worldFocusPressRef.current = null;
 
-      if (press === null || press.pointerId !== event.pointerId) {
+      if (
+        press === null ||
+        press.pointerId !== event.pointerId ||
+        press.pointerType === 'mouse'
+      ) {
         return;
       }
 
@@ -194,8 +200,25 @@ export function HomeShell({
     [],
   );
 
+  const handleWorldFocusDoubleClickCapture = useCallback(
+    (event: ReactMouseEvent<HTMLDivElement>) => {
+      if (event.button !== 0) {
+        return;
+      }
+
+      const element = getActiveWorldButton(event.target);
+      if (element !== null) {
+        emitWorldFocusIntent(element);
+      }
+    },
+    [emitWorldFocusIntent],
+  );
+
   const handleWorldFocusClickCapture = useCallback(
     (event: ReactMouseEvent<HTMLDivElement>) => {
+      // React emits detail=0 for keyboard activation. Mouse entry is
+      // deliberately reserved for an actual double click, while keyboard
+      // keeps the accessible select-first/open-selected interaction.
       if (event.detail !== 0) {
         return;
       }
@@ -286,6 +309,7 @@ export function HomeShell({
               onPointerDownCapture={handleWorldFocusPointerDownCapture}
               onPointerUpCapture={handleWorldFocusPointerUpCapture}
               onPointerCancelCapture={handleWorldFocusPointerCancelCapture}
+              onDoubleClickCapture={handleWorldFocusDoubleClickCapture}
               onClickCapture={handleWorldFocusClickCapture}
             >
               <Orientation />

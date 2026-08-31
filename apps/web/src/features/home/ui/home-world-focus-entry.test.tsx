@@ -48,7 +48,7 @@ afterAll(() => {
 });
 
 describe('Home World Focus entry', () => {
-  it('opens only when the selected World is activated again', () => {
+  it('keeps single click for selection and opens the active World on double click', () => {
     const onOpenWorldFocus = vi.fn<(intent: HomeWorldOpenIntent) => void>();
     render(<HomePage onOpenWorldFocus={onOpenWorldFocus} />);
 
@@ -58,7 +58,7 @@ describe('Home World Focus entry', () => {
     expect(onOpenWorldFocus).not.toHaveBeenCalled();
     expect(music.getAttribute('aria-current')).toBe('true');
 
-    fireEvent.click(music);
+    fireEvent.doubleClick(music);
     expect(onOpenWorldFocus).toHaveBeenCalledTimes(1);
 
     const intent = onOpenWorldFocus.mock.calls[0]?.[0];
@@ -72,5 +72,19 @@ describe('Home World Focus entry', () => {
     expect(Number.isFinite(intent.origin.top)).toBe(true);
     expect(Number.isFinite(intent.origin.width)).toBe(true);
     expect(Number.isFinite(intent.origin.height)).toBe(true);
+  });
+
+  it('keeps keyboard activation independent from the mouse double-click gesture', () => {
+    const onOpenWorldFocus = vi.fn<(intent: HomeWorldOpenIntent) => void>();
+    render(<HomePage onOpenWorldFocus={onOpenWorldFocus} />);
+
+    const music = screen.getByRole('listitem', { name: 'Musica' });
+
+    fireEvent.click(music, { detail: 0 });
+    expect(music.getAttribute('aria-current')).toBe('true');
+    expect(onOpenWorldFocus).not.toHaveBeenCalled();
+
+    fireEvent.click(music, { detail: 0 });
+    expect(onOpenWorldFocus).toHaveBeenCalledTimes(1);
   });
 });
