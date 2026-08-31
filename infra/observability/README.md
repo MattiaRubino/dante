@@ -101,8 +101,10 @@ the stored panel/query signature and writes a private pre-change backup.
 They refresh every minute by default. Use the 30-second option only during an
 active incident. A zero request rate is normal for a quiet LOCAL service; a
 missing Faro series is normal where Web telemetry is intentionally disabled.
-Absent dashboard signals render as neutral `NO SIGNAL`, not as green/healthy.
-The import and visual-acceptance procedure remains in the operator runbook.
+Never-emitted event-only signals may render as neutral `NO SIGNAL` or Grafana's
+native `No data`; neither is evidence of a healthy zero. Required liveness
+signals remain explicit. The import and visual-acceptance procedure remains in
+the operator runbook.
 
 ## Run and verify
 
