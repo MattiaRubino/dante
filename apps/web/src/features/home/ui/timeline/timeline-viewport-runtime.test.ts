@@ -3,22 +3,25 @@ import { describe, expect, it } from 'vitest';
 import { TIMELINE_PROTOTYPE_TODAY } from './model/timeline-fixtures';
 import { TIMELINE_POLICY } from './model/timeline-policy';
 import { createInitialTimelineState } from './model/timeline-state';
+import { addTimelineDays } from './model/timeline-temporal';
 import {
   buildTimelineRenderedDays,
+  captureTimelineViewportAnchor,
   findTimelineDayAtOffset,
   parseTimelineViewedDate,
   timelineCompactCardWidth,
   timelineExpandedTrackGeometry,
   timelineIntrinsicCardWidth,
   timelineNowViewportOffset,
+  timelineScrollTopForViewportAnchor,
 } from './timeline-viewport-runtime';
 
 function buildReferenceDays() {
   const state = createInitialTimelineState(TIMELINE_PROTOTYPE_TODAY);
   return buildTimelineRenderedDays(
     TIMELINE_PROTOTYPE_TODAY,
-    TIMELINE_POLICY.window.initialPastDays,
-    TIMELINE_POLICY.window.initialFutureDays,
+    TIMELINE_POLICY.window.pastBufferDays,
+    TIMELINE_POLICY.window.futureBufferDays,
     {
       eventsByDate: state.eventsByDate,
       groups: state.groups,
@@ -37,12 +40,12 @@ describe('timeline viewport runtime', () => {
     expect(parseTimelineViewedDate('not-a-date')).toBeNull();
   });
 
-  it('builds the bounded Phase 1 day window with cumulative offsets', () => {
+  it('builds the bounded rolling day window with cumulative offsets', () => {
     const days = buildReferenceDays();
 
     expect(days).toHaveLength(
-      TIMELINE_POLICY.window.initialPastDays +
-        TIMELINE_POLICY.window.initialFutureDays +
+      TIMELINE_POLICY.window.pastBufferDays +
+        TIMELINE_POLICY.window.futureBufferDays +
         1,
     );
     expect(days[0]?.date.toString()).toBe('2026-08-03');
@@ -79,6 +82,92 @@ describe('timeline viewport runtime', () => {
     expect(
       findTimelineDayAtOffset(days, Number.MAX_SAFE_INTEGER)?.dateKey,
     ).toBe(days.at(-1)?.dateKey);
+  });
+
+  it('restores the same semantic viewport point after the rolling window shifts', () => {
+    const state = createInitialTimelineState(TIMELINE_PROTOTYPE_TODAY);
+    const inputs = {
+      eventsByDate: state.eventsByDate,
+      groups: state.groups,
+      zoom: state.zoom,
+      expandedEventIds: state.expandedEventIds,
+    };
+    const before = buildTimelineRenderedDays(
+      TIMELINE_PROTOTYPE_TODAY,
+      TIMELINE_POLICY.window.pastBufferDays,
+      TIMELINE_POLICY.window.futureBufferDays,
+      inputs,
+    );
+    const targetDay = before.at(-1);
+    expect(targetDay).toBeDefined();
+    if (!targetDay) {
+      return;
+    }
+
+    const viewportOffset = 137;
+    const originalScrollTop =
+      targetDay.offsetTop + targetDay.mapper.map(18 * 60 + 17) - viewportOffset;
+    const viewportAnchor = captureTimelineViewportAnchor(
+      before,
+      originalScrollTop,
+      viewportOffset,
+    );
+    expect(viewportAnchor).not.toBeNull();
+    if (!viewportAnchor) {
+      return;
+    }
+
+    const after = buildTimelineRenderedDays(
+      addTimelineDays(
+        TIMELINE_PROTOTYPE_TODAY,
+        TIMELINE_POLICY.window.shiftByDays,
+      ),
+      TIMELINE_POLICY.window.pastBufferDays,
+      TIMELINE_POLICY.window.futureBufferDays,
+      inputs,
+    );
+    const restoredScrollTop = timelineScrollTopForViewportAnchor(
+      after,
+      viewportAnchor,
+    );
+    expect(restoredScrollTop).not.toBeNull();
+    if (restoredScrollTop === null) {
+      return;
+    }
+
+    const restoredAnchor = captureTimelineViewportAnchor(
+      after,
+      restoredScrollTop,
+      viewportOffset,
+    );
+    expect(restoredAnchor?.dateKey).toBe(viewportAnchor.dateKey);
+    expect(restoredAnchor?.minute).toBeCloseTo(viewportAnchor.minute, 6);
+    expect(restoredAnchor?.viewportOffset).toBe(viewportOffset);
+  });
+
+  it('keeps the mounted window size constant even for distant anchors', () => {
+    const state = createInitialTimelineState(TIMELINE_PROTOTYPE_TODAY);
+    const inputs = {
+      eventsByDate: state.eventsByDate,
+      groups: state.groups,
+      zoom: state.zoom,
+      expandedEventIds: state.expandedEventIds,
+    };
+    const expectedCount =
+      TIMELINE_POLICY.window.pastBufferDays +
+      TIMELINE_POLICY.window.futureBufferDays +
+      1;
+
+    for (const offset of [-730, -365, -31, 0, 31, 365, 730]) {
+      const days = buildTimelineRenderedDays(
+        addTimelineDays(TIMELINE_PROTOTYPE_TODAY, offset),
+        TIMELINE_POLICY.window.pastBufferDays,
+        TIMELINE_POLICY.window.futureBufferDays,
+        inputs,
+      );
+      expect(days).toHaveLength(expectedCount);
+      expect(days.every((day) => Number.isFinite(day.height))).toBe(true);
+    }
   });
 
   it('keeps the Now viewport anchor policy-owned', () => {
@@ -131,17 +220,14 @@ describe('timeline viewport runtime', () => {
     const viewportWidth = 1440;
     const geometry = timelineExpandedTrackGeometry(viewportWidth, 6);
     const gridScrollableWidth = geometry.expandedTrackWidth - viewportWidth;
-    const groupScrollerViewportWidth =
-      viewportWidth - layout.eventsLeftInsetPx;
+    const groupScrollerViewportWidth = viewportWidth - layout.eventsLeftInsetPx;
     const headerScrollableWidth =
       geometry.groupHeaderTrackWidth - groupScrollerViewportWidth;
 
     expect(geometry.chromeWidth).toBe(
       layout.eventsLeftInsetPx + layout.eventsRightInsetPx,
     );
-    expect(geometry.groupWidth).toBeGreaterThanOrEqual(
-      layout.groupMinWidthPx,
-    );
+    expect(geometry.groupWidth).toBeGreaterThanOrEqual(layout.groupMinWidthPx);
     expect(headerScrollableWidth).toBeCloseTo(gridScrollableWidth, 6);
   });
 
@@ -152,9 +238,7 @@ describe('timeline viewport runtime', () => {
 
     expect(geometry.expandedTrackWidth).toBe(viewportWidth);
     expect(geometry.groupWidth).toBeCloseTo(
-      (viewportWidth -
-        layout.eventsLeftInsetPx -
-        layout.eventsRightInsetPx) /
+      (viewportWidth - layout.eventsLeftInsetPx - layout.eventsRightInsetPx) /
         6,
       6,
     );

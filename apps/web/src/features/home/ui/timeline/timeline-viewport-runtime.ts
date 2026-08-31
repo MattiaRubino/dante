@@ -4,6 +4,7 @@ import { createTimelineTimeMapper } from './model/timeline-density';
 import { createTimelinePrototypeEventsForDate } from './model/timeline-fixtures';
 import { computeTimelineEventLayouts } from './model/timeline-layout';
 import {
+  TIMELINE_MINUTES_PER_DAY,
   TIMELINE_POLICY,
   timelineSupportsExpandedLayout,
 } from './model/timeline-policy';
@@ -136,10 +137,7 @@ export function timelineCompactCardWidth(
     Math.min(safeAvailableWidth, slotMaximumWidth),
   );
 
-  return Math.max(
-    minimumVisibleWidth,
-    Math.min(intrinsic, safeSlotMaximum),
-  );
+  return Math.max(minimumVisibleWidth, Math.min(intrinsic, safeSlotMaximum));
 }
 
 /**
@@ -239,6 +237,70 @@ export function findTimelineDayAtOffset(
       ? (days[0] ?? null)
       : (days.at(-1) ?? null))
   );
+}
+
+export type TimelineViewportAnchor = Readonly<{
+  dateKey: string;
+  minute: number;
+  viewportOffset: number;
+}>;
+
+export function captureTimelineViewportAnchor(
+  days: readonly TimelineRenderedDay[],
+  scrollTop: number,
+  viewportOffset = 0,
+): TimelineViewportAnchor | null {
+  if (days.length === 0) {
+    return null;
+  }
+
+  const safeScrollTop = Number.isFinite(scrollTop) ? Math.max(0, scrollTop) : 0;
+  const safeViewportOffset = Number.isFinite(viewportOffset)
+    ? Math.max(0, viewportOffset)
+    : 0;
+  const contentOffset = safeScrollTop + safeViewportOffset;
+  const day = findTimelineDayAtOffset(days, contentOffset);
+  if (!day) {
+    return null;
+  }
+
+  const localOffset = clampTimelineRuntime(
+    contentOffset - day.offsetTop,
+    0,
+    day.height,
+  );
+  const minute = clampTimelineRuntime(
+    day.mapper.inv(localOffset),
+    0,
+    TIMELINE_MINUTES_PER_DAY,
+  );
+
+  return {
+    dateKey: day.dateKey,
+    minute,
+    viewportOffset: safeViewportOffset,
+  };
+}
+
+export function timelineScrollTopForViewportAnchor(
+  days: readonly TimelineRenderedDay[],
+  anchor: TimelineViewportAnchor,
+): number | null {
+  const day = days.find((candidate) => candidate.dateKey === anchor.dateKey);
+  if (!day) {
+    return null;
+  }
+
+  const minute = clampTimelineRuntime(
+    Number.isFinite(anchor.minute) ? anchor.minute : 0,
+    0,
+    TIMELINE_MINUTES_PER_DAY,
+  );
+  const viewportOffset = Number.isFinite(anchor.viewportOffset)
+    ? Math.max(0, anchor.viewportOffset)
+    : 0;
+
+  return Math.max(0, day.offsetTop + day.mapper.map(minute) - viewportOffset);
 }
 
 function measureTimelineCardContentWidth(card: HTMLElement): number {
@@ -380,10 +442,7 @@ export function applyTimelineExpansion(
     );
     const slotMaximumA =
       compactWidthPercent > 0
-        ? Math.min(
-            availableA,
-            (compactWidthPercent / 100) * compactInner,
-          )
+        ? Math.min(availableA, (compactWidthPercent / 100) * compactInner)
         : null;
     const widthA = timelineCompactCardWidth(
       measureTimelineCardContentWidth(card),
@@ -406,11 +465,7 @@ export function applyTimelineExpansion(
   }
 
   for (const geometry of geometries) {
-    setPixelStyle(
-      geometry.card,
-      'left',
-      geometry.left + expansion.cardInsetPx,
-    );
+    setPixelStyle(geometry.card, 'left', geometry.left + expansion.cardInsetPx);
     setPixelStyle(
       geometry.card,
       'width',

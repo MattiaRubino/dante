@@ -1,4 +1,4 @@
-import { expect, test, type Locator } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 
 test.use({ locale: 'it-IT' });
 
@@ -26,8 +26,27 @@ async function expectCardInsideTimelineViewport(
 async function timelineDateFor(card: Locator): Promise<string | null> {
   return card.evaluate(
     (element) =>
-      element.closest<HTMLElement>('[data-timeline-date]')?.dataset.timelineDate ??
-      null,
+      element.closest<HTMLElement>('[data-timeline-date]')?.dataset
+        .timelineDate ?? null,
+  );
+}
+
+async function renderedTimelineDates(page: Page): Promise<string[]> {
+  return page
+    .locator('[data-timeline-date]')
+    .evaluateAll((elements) =>
+      elements
+        .map((element) => (element as HTMLElement).dataset.timelineDate ?? '')
+        .filter(Boolean),
+    );
+}
+
+function dayDistance(fromDateKey: string, toDateKey: string): number {
+  const millisecondsPerDay = 24 * 60 * 60 * 1000;
+  return Math.round(
+    (Date.parse(`${toDateKey}T00:00:00Z`) -
+      Date.parse(`${fromDateKey}T00:00:00Z`)) /
+      millisecondsPerDay,
   );
 }
 
@@ -94,7 +113,10 @@ test('keyboard nudge sequences stay visible and Undo returns to the sequence ori
   const undoButton = page.locator('.timeline-move-toast.is-on button');
   await expect(undoButton).toBeVisible();
   await undoButton.click();
-  await expect(lowerCard).toHaveAttribute('aria-label', lowerOriginalLabel ?? '');
+  await expect(lowerCard).toHaveAttribute(
+    'aria-label',
+    lowerOriginalLabel ?? '',
+  );
   await expectCardInsideTimelineViewport(lowerCard, grid);
 
   const upperCard = page.locator('[data-timeline-event="1"]');
@@ -113,7 +135,10 @@ test('keyboard nudge sequences stay visible and Undo returns to the sequence ori
 
   await expect(undoButton).toBeVisible();
   await undoButton.click();
-  await expect(upperCard).toHaveAttribute('aria-label', upperOriginalLabel ?? '');
+  await expect(upperCard).toHaveAttribute(
+    'aria-label',
+    upperOriginalLabel ?? '',
+  );
   await expectCardInsideTimelineViewport(upperCard, grid);
 });
 
@@ -192,6 +217,111 @@ test('keyboard nudges cross midnight, retain focus, and Undo restores the origin
 
   await expect.poll(() => timelineDateFor(card)).toBe('2026-08-04');
   await expect(card).toHaveAttribute('aria-label', sequenceOriginLabel ?? '');
+  await expectCardInsideTimelineViewport(card, grid);
+});
+
+test('continuous scroll recycles a bounded window far beyond the old hard limit and Now recovers', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 760 });
+  await page.goto('/home');
+
+  const grid = page.locator('.timeline-grid');
+  await expect(grid).toBeVisible();
+
+  const initialDates = await renderedTimelineDates(page);
+  expect(initialDates.length).toBeGreaterThan(0);
+  const mountedCount = initialDates.length;
+  const initialFirst = initialDates[0];
+  expect(initialFirst).toBeTruthy();
+
+  let previousFirst = initialFirst ?? '';
+  for (let index = 0; index < 10; index += 1) {
+    await grid.evaluate((element) => {
+      element.scrollTop = Math.max(
+        0,
+        element.scrollHeight - element.clientHeight - 1,
+      );
+    });
+    await expect
+      .poll(async () => (await renderedTimelineDates(page))[0] ?? '')
+      .not.toBe(previousFirst);
+
+    const dates = await renderedTimelineDates(page);
+    expect(dates).toHaveLength(mountedCount);
+    previousFirst = dates[0] ?? '';
+  }
+
+  const futureDates = await renderedTimelineDates(page);
+  const futureFirst = futureDates[0] ?? '';
+  expect(dayDistance(initialFirst ?? '', futureFirst)).toBeGreaterThan(14);
+  await expect(
+    page.locator('.dante-timeline-week [aria-current="date"]'),
+  ).toHaveCount(1);
+
+  await page.locator('.dante-timeline-now').click();
+  await expect
+    .poll(async () => renderedTimelineDates(page))
+    .toContain('2026-08-04');
+  await expect(page.locator('.timeline-now-line')).toBeVisible();
+
+  const resetDates = await renderedTimelineDates(page);
+  previousFirst = resetDates[0] ?? '';
+  for (let index = 0; index < 10; index += 1) {
+    await grid.evaluate((element) => {
+      element.scrollTop = 1;
+    });
+    await expect
+      .poll(async () => (await renderedTimelineDates(page))[0] ?? '')
+      .not.toBe(previousFirst);
+
+    const dates = await renderedTimelineDates(page);
+    expect(dates).toHaveLength(mountedCount);
+    previousFirst = dates[0] ?? '';
+  }
+
+  const pastDates = await renderedTimelineDates(page);
+  const pastFirst = pastDates[0] ?? '';
+  expect(dayDistance(pastFirst, resetDates[0] ?? '')).toBeGreaterThan(14);
+
+  await page.locator('.dante-timeline-now').click();
+  await expect
+    .poll(async () => renderedTimelineDates(page))
+    .toContain('2026-08-04');
+  await expect(page.locator('.timeline-now-line')).toBeVisible();
+});
+
+test('keyboard movement across a mounted-window edge reanchors without losing the card', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 760 });
+  await page.goto('/home');
+
+  const grid = page.locator('.timeline-grid');
+  const card = page.locator('[data-timeline-event="302"]');
+  await expect(card).toHaveCount(1);
+  expect(await timelineDateFor(card)).toBe('2026-08-07');
+
+  await card.evaluate((element) => {
+    (element as HTMLElement).focus({
+      preventScroll: true,
+      focusVisible: true,
+    });
+  });
+  await page.keyboard.press('Alt+ArrowRight');
+
+  await expect.poll(() => timelineDateFor(card)).toBe('2026-08-08');
+  await expect(card).toBeFocused();
+  await expectCardInsideTimelineViewport(card, grid);
+  await expect
+    .poll(async () => renderedTimelineDates(page))
+    .toContain('2026-08-08');
+
+  const undoButton = page.locator('.timeline-move-toast.is-on button');
+  await expect(undoButton).toBeVisible();
+  await undoButton.click();
+
+  await expect.poll(() => timelineDateFor(card)).toBe('2026-08-07');
   await expectCardInsideTimelineViewport(card, grid);
 });
 
