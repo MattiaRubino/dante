@@ -241,3 +241,97 @@ test('expanded group header, event columns and horizontal scroll stay mathematic
     .poll(() => groupScroller.evaluate((element) => element.scrollLeft))
     .toBeCloseTo(targetScroll, 0);
 });
+
+test('a same-day drag commits once and Undo restores the exact event state', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/home');
+
+  const card = page.locator('[data-timeline-event="12"]');
+  await card.scrollIntoViewIfNeeded();
+  await expect(card).toHaveCount(1);
+
+  const originalLabel = await card.getAttribute('aria-label');
+  expect(originalLabel).not.toBeNull();
+
+  const box = await card.boundingBox();
+  expect(box).not.toBeNull();
+  if (!box) {
+    throw new Error('Expected same-day drag geometry');
+  }
+
+  const startX = box.x + Math.max(12, box.width - 16);
+  const startY =
+    box.y + Math.min(box.height - 12, Math.max(18, box.height * 0.62));
+
+  await page.mouse.move(startX, startY);
+  await page.mouse.down();
+  await page.mouse.move(startX, startY + 52, { steps: 5 });
+  await expect(page.locator('.timeline-event-drag-overlay')).toHaveCount(1);
+  await page.mouse.up();
+
+  await expect(page.locator('.timeline-event-drag-overlay')).toHaveCount(0);
+  await expect(card).toHaveCount(1);
+  await expect(card).not.toHaveAttribute('aria-label', originalLabel ?? '');
+
+  const undoButton = page.locator('.timeline-move-toast.is-on button');
+  await expect(undoButton).toBeVisible();
+  await undoButton.click();
+
+  await expect(card).toHaveCount(1);
+  await expect(card).toHaveAttribute('aria-label', originalLabel ?? '');
+  await expect(page.locator('.timeline-move-toast')).not.toHaveClass(/is-on/);
+});
+
+test('keyboard next-day move preserves identity and Undo restores the original day', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/home');
+
+  const card = page.locator('[data-timeline-event="12"]');
+  await card.scrollIntoViewIfNeeded();
+  await expect(card).toHaveCount(1);
+
+  const originalLabel = await card.getAttribute('aria-label');
+  expect(originalLabel).not.toBeNull();
+
+  const originalDay = await card.evaluate(
+    (element) =>
+      element.closest<HTMLElement>('[data-timeline-date]')?.dataset.timelineDate ??
+      null,
+  );
+  expect(originalDay).toBe('2026-08-04');
+
+  await card.focus();
+  await card.press('Alt+ArrowRight');
+
+  await expect(card).toHaveCount(1);
+  await expect
+    .poll(() =>
+      card.evaluate(
+        (element) =>
+          element.closest<HTMLElement>('[data-timeline-date]')?.dataset
+            .timelineDate ?? null,
+      ),
+    )
+    .toBe('2026-08-05');
+  await expect(card).toHaveAttribute('aria-label', originalLabel ?? '');
+
+  const undoButton = page.locator('.timeline-move-toast.is-on button');
+  await expect(undoButton).toBeVisible();
+  await undoButton.click();
+
+  await expect(card).toHaveCount(1);
+  await expect
+    .poll(() =>
+      card.evaluate(
+        (element) =>
+          element.closest<HTMLElement>('[data-timeline-date]')?.dataset
+            .timelineDate ?? null,
+      ),
+    )
+    .toBe('2026-08-04');
+  await expect(card).toHaveAttribute('aria-label', originalLabel ?? '');
+});
