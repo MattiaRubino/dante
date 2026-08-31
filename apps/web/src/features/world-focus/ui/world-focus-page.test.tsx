@@ -39,7 +39,7 @@ function requireWorld(id: 'music' | 'travel') {
 }
 
 describe('WorldFocusPage', () => {
-  it('renders the locked WF-G1 frame and rectangular workspace', () => {
+  it('renders the WF-G2 candidate as exactly three concentric circle guides', () => {
     primeWorldFocusEntry({
       worldId: 'music',
       source: 'home',
@@ -57,24 +57,28 @@ describe('WorldFocusPage', () => {
 
     const shell = screen.getByRole('main', { name: 'Mondo Musica' });
     expect(shell.getAttribute('data-world-focus-geometry-version')).toBe(
-      'wf-g1',
+      'wf-g2-candidate',
     );
     expect(shell.getAttribute('data-entry-origin')).toBe('live');
-    expect(container.querySelectorAll('.world-focus-guide-rail')).toHaveLength(
-      2,
+    expect(container.querySelectorAll('.world-focus-circle-guides')).toHaveLength(
+      1,
     );
     expect(container.querySelectorAll('[data-guide-line="outer"]')).toHaveLength(
-      2,
+      1,
     );
     expect(container.querySelectorAll('[data-guide-line="origin"]')).toHaveLength(
-      2,
+      1,
     );
     expect(container.querySelectorAll('[data-guide-line="inner"]')).toHaveLength(
-      2,
+      1,
+    );
+    expect(container.querySelectorAll('.world-focus-circle-guides circle')).toHaveLength(
+      3,
     );
     expect(
       container.querySelector('[data-world-focus-region="workspace"]'),
     ).toBeTruthy();
+    expect(container.querySelector('.world-focus-guide-rail')).toBeNull();
     expect(container.querySelector('.world-focus-portal')).toBeNull();
     expect(container.querySelector('.world-focus-entry-effect')).toBeNull();
 
@@ -96,7 +100,7 @@ describe('WorldFocusPage', () => {
     const shell = container.querySelector('.world-focus-shell');
     expect(shell?.getAttribute('data-entry-origin')).toBe('fallback');
     expect(shell?.getAttribute('data-world-focus-geometry-version')).toBe(
-      'wf-g1',
+      'wf-g2-candidate',
     );
 
     fireEvent.keyDown(document, { key: 'Escape' });
@@ -159,7 +163,7 @@ describe('WorldFocusPage', () => {
       const { unmount } = render(
         <WorldFocusPage
           world={requireWorld('music')}
-          source="worlds"
+          source="home"
           onClose={vi.fn()}
         />,
       );
