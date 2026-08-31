@@ -1,9 +1,9 @@
 # DANTE — World Focus WF1 Checkpoint
 
-**Status:** WF-G1 GEOMETRY CANDIDATE / USER VISUAL QA PENDING  
+**Status:** WF-G3 GEOMETRY CANDIDATE / USER VISUAL QA PENDING  
 **Date:** 2026-08-31  
 **Branch:** `feature/home-react`  
-**Scope:** dedicated World Focus route + locked structural geometry
+**Scope:** dedicated World Focus route + structural geometry candidate
 
 This checkpoint supersedes the earlier `/home?focus=...` overlay implementation and the earlier transition experiments.
 
@@ -37,7 +37,7 @@ subsequent activation on the centered World
 
 Pointer drag must not open World Focus. Keyboard activation preserves the same select-then-open semantics.
 
-## 3. WF-G1 geometry lock
+## 3. WF-G3 candidate geometry
 
 The geometry authority is:
 
@@ -48,39 +48,40 @@ apps/web/src/features/world-focus/model/world-focus-geometry.ts
 Geometry version:
 
 ```text
-wf-g1
+wf-g3-candidate
 ```
 
 The World Focus route is intentionally plain during this gate:
 
 - white route surface below the Topbar;
-- three curved black guide lines on the left;
-- three mirrored curved black guide lines on the right;
-- `outer` and `inner` define the future visual-frame band;
-- `origin` is the canonical future animation/asset reference line;
-- one real rectangular workspace remains between the two side bands;
+- three concentric SVG ellipse guides centered on the route;
+- `outer` extends slightly outside the lateral route edge;
+- `origin` is tangent to the left/right route edge at mid-height and is the canonical future animation/asset reference line;
+- `inner` remains slightly inside;
+- the vertical radii are taller than the route half-height so the visible corner arcs are elongated rather than circular;
+- one real rectangular workspace remains independent from those visual guides;
 - the workspace is blue only as temporary geometry/debug visualization.
 
 The workspace is never clipped to a circle or ellipse.
 
 ## 4. Geometry change control
 
-Once the user visually approves WF-G1, it is frozen.
+WF-G3 remains a candidate until the user visually approves it.
 
-Any later geometry change requires:
+Once approved it is promoted to a locked geometry version. Any later geometry change requires:
 
 1. explicit user/product approval;
 2. intentional edit to the geometry authority;
-3. geometry version bump (`wf-g2`, ...);
+3. geometry version bump;
 4. contract test update;
 5. responsive/E2E revalidation;
 6. documentation update in the same change.
 
-Cosmic styling, particles, magic-circle treatment, image/shader assets and optional entry animation are presentation layers. They may use the WF-G1 bands but may not silently move them or redefine the workspace.
+Cosmic styling, particles, magic-circle treatment, image/shader assets and optional entry animation are presentation layers. They may use the approved ellipse band but may not silently move it or redefine the workspace.
 
 ## 5. Responsive pressure
 
-The locked desktop pressure widths are:
+The desktop pressure widths are:
 
 ```text
 1600
@@ -93,9 +94,9 @@ Compact behavior is separately bounded below `720px`.
 
 At every pressure width:
 
-- both guide rails remain inside the route surface;
-- the rectangular workspace remains between the guide rails;
-- no geometry overlaps unexpectedly;
+- the origin ellipse remains centered and tangent to the lateral route edges at mid-height;
+- outer remains outside the origin line and inner remains inside it;
+- the rectangular workspace stays independently bounded;
 - no horizontal overflow is allowed.
 
 ## 6. Current content boundary
@@ -124,7 +125,7 @@ Home
 
 without an intermediate ornamental transition.
 
-An optional transition may be designed later, but only after WF-G1 geometry is approved and without making navigation depend on it.
+An optional transition may be designed later, but only after the structural geometry is approved and without making navigation depend on it.
 
 ## 8. Current World identity status
 
@@ -138,7 +139,7 @@ World Focus fixture id
 != persisted World entity
 ```
 
-No World Domain primitive or database change is introduced by WF-G1.
+No World Domain primitive or database change is introduced by WF1.
 
 ## 9. Visual gate now required
 
@@ -147,10 +148,12 @@ Before adding any cosmic/Dr-Strange-style skin, verify in the real browser:
 1. Home opens a dedicated `/worlds/:worldId` page;
 2. the Topbar remains exactly the global Topbar;
 3. the area below it is white;
-4. exactly three guide curves appear on each side;
-5. the central/origin guide is visually stronger;
-6. the blue rectangular workspace remains wholly inside the two guide bands;
-7. resizing across the pressure widths behaves predictably;
-8. nothing overflows, stretches arbitrarily or changes geometry ownership.
+4. exactly three concentric ellipse guides are visible;
+5. the central/origin guide reaches the left/right route edge at side mid-height;
+6. the outer guide is farther outside and the inner guide farther inside;
+7. the corner arcs look smooth and intentionally oval;
+8. the blue rectangular workspace remains independent from the visual frame;
+9. resizing across the pressure widths behaves predictably;
+10. nothing overflows or changes geometry ownership.
 
-Only after this visual gate is approved can the WF-G1 geometry be marked LOCKED and presentation work resume.
+Only after this visual gate is approved can the geometry be marked LOCKED and presentation work resume.
