@@ -8,6 +8,7 @@ import {
   findTimelineDayAtOffset,
   parseTimelineViewedDate,
   timelineCompactCardWidth,
+  timelineExpandedTrackGeometry,
   timelineIntrinsicCardWidth,
   timelineNowViewportOffset,
 } from './timeline-viewport-runtime';
@@ -125,12 +126,54 @@ describe('timeline viewport runtime', () => {
     expect(constrained).toBeLessThan(isolated);
   });
 
+  it('keeps expanded header and event canvas on the same scroll range', () => {
+    const layout = TIMELINE_POLICY.layout;
+    const viewportWidth = 1440;
+    const geometry = timelineExpandedTrackGeometry(viewportWidth, 6);
+    const gridScrollableWidth = geometry.expandedTrackWidth - viewportWidth;
+    const groupScrollerViewportWidth =
+      viewportWidth - layout.eventsLeftInsetPx;
+    const headerScrollableWidth =
+      geometry.groupHeaderTrackWidth - groupScrollerViewportWidth;
+
+    expect(geometry.chromeWidth).toBe(
+      layout.eventsLeftInsetPx + layout.eventsRightInsetPx,
+    );
+    expect(geometry.groupWidth).toBeGreaterThanOrEqual(
+      layout.groupMinWidthPx,
+    );
+    expect(headerScrollableWidth).toBeCloseTo(gridScrollableWidth, 6);
+  });
+
+  it('distributes expanded columns evenly on wide viewports without header drift', () => {
+    const layout = TIMELINE_POLICY.layout;
+    const viewportWidth = 1920;
+    const geometry = timelineExpandedTrackGeometry(viewportWidth, 6);
+
+    expect(geometry.expandedTrackWidth).toBe(viewportWidth);
+    expect(geometry.groupWidth).toBeCloseTo(
+      (viewportWidth -
+        layout.eventsLeftInsetPx -
+        layout.eventsRightInsetPx) /
+        6,
+      6,
+    );
+    expect(geometry.groupHeaderTrackWidth).toBe(
+      geometry.expandedInnerWidth + layout.eventsRightInsetPx,
+    );
+  });
+
   it('sanitizes invalid measurement inputs instead of emitting NaN geometry', () => {
     expect(Number.isFinite(timelineIntrinsicCardWidth(Number.NaN, 900))).toBe(
       true,
     );
     expect(
       Number.isFinite(timelineCompactCardWidth(200, Number.NaN, Number.NaN)),
+    ).toBe(true);
+    expect(
+      Number.isFinite(
+        timelineExpandedTrackGeometry(Number.NaN, Number.NaN).groupWidth,
+      ),
     ).toBe(true);
   });
 });
