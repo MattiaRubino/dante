@@ -493,8 +493,7 @@ class ProviderFlowService:
                 challenge.failed_verification_attempts += 1
                 challenge.updated_at = now
                 exhausted = (
-                    challenge.failed_verification_attempts
-                    >= _PROVIDER_ENROLLMENT_OTP_MAX_ATTEMPTS
+                    challenge.failed_verification_attempts >= _PROVIDER_ENROLLMENT_OTP_MAX_ATTEMPTS
                 )
                 await database_session.commit()
                 if exhausted:

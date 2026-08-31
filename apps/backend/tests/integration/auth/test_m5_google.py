@@ -542,7 +542,10 @@ async def test_concurrent_same_google_identity_converges_on_one_account(
 
         assert isinstance(first_result, ProviderAuthenticated)
         assert isinstance(second_result, ProviderAuthenticated)
-        assert first_result.session.principal.account_ref == second_result.session.principal.account_ref
+        assert (
+            first_result.session.principal.account_ref
+            == second_result.session.principal.account_ref
+        )
         assert await _count(runtime, AccountRow) == 1
         assert await _count(runtime, EmailIdentityRow) == 1
         assert await _count(runtime, ExternalIdentityRow) == 1
@@ -586,7 +589,9 @@ async def test_authenticated_google_link_and_reauth_rotate_same_session_bearer(
         assert isinstance(linked, ProviderAuthenticated)
         assert linked.session.principal.account_ref == account_ref
         assert linked.session.principal.auth_session_ref == original_session_ref
-        assert linked.session.session_secret.get_secret_value() != original_secret.get_secret_value()
+        assert (
+            linked.session.session_secret.get_secret_value() != original_secret.get_secret_value()
+        )
         assert await _count(runtime, ExternalIdentityRow) == 1
 
         verifier.evidence = evidence
@@ -613,5 +618,8 @@ async def test_authenticated_google_link_and_reauth_rotate_same_session_bearer(
             reauthenticated.session.session_secret.get_secret_value()
             != linked.session.session_secret.get_secret_value()
         )
-        assert reauthenticated.session.principal.recent_auth_at >= linked.session.principal.recent_auth_at
+        assert (
+            reauthenticated.session.principal.recent_auth_at
+            >= linked.session.principal.recent_auth_at
+        )
         assert await _count(runtime, AuthSessionRow) == 1

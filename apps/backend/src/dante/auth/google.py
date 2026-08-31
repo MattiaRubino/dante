@@ -231,10 +231,9 @@ class GoogleTokenVerifier:
         else:
             raise GoogleProofError("Google aud claim is invalid")
 
-        if (
-            any(not item or item.strip() != item or len(item) > 512 for item in values)
-            or len(set(values)) != len(values)
-        ):
+        if any(not item or item.strip() != item or len(item) > 512 for item in values) or len(
+            set(values)
+        ) != len(values):
             raise GoogleProofError("Google aud claim is invalid")
         return values
 
