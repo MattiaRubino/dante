@@ -51,7 +51,7 @@ class SigninRateLimitedError(AuthError):
 
 
 class LifecycleRateLimitedError(AuthError):
-    """A bounded M4 lifecycle ingress guard refused more work."""
+    """A bounded Auth lifecycle ingress guard refused more work."""
 
     def __init__(self, *, code: str, retry_after_seconds: int) -> None:
         super().__init__("auth lifecycle rate limited")
@@ -113,6 +113,26 @@ class ProviderEnrollmentVerificationInvalidOrExpiredError(AuthError):
 
 class ProviderEnrollmentAttemptsExhaustedError(AuthError):
     """Provider enrollment mailbox proof exhausted its online guess budget."""
+
+
+class ProviderLinkInvalidOrExpiredError(AuthError):
+    """Provider-first link continuation state is unavailable, expired or consumed."""
+
+
+class ProviderLinkAccountMismatchError(AuthError):
+    """Provider-first link state targets a different authenticated Account."""
+
+
+class PasswordAlreadyEstablishedError(AuthError):
+    """The Account already has a current PasswordCredential."""
+
+
+class AuthenticatorRemovalBlockedError(AuthError):
+    """Removing an authenticator would violate the Account anti-lockout invariant."""
+
+
+class AuthStateChangedError(AuthError):
+    """Security state changed after the caller formed its intended mutation."""
 
 
 class ProviderUnavailableError(AuthError):
@@ -242,6 +262,35 @@ class ProviderEnrollmentRequired:
     expires_at: datetime
     email_address: str | None
     verification_expires_at: datetime | None
+
+
+@dataclass(frozen=True, slots=True)
+class ProviderLinkState:
+    """Safe provider-first link metadata after continuation-capability validation."""
+
+    external_link_challenge_ref: UUID
+    provider_code: str
+    expires_at: datetime
+
+
+@dataclass(frozen=True, slots=True)
+class AuthenticationProviderMethod:
+    """One active provider authenticator exposed without provider subject/security secrets."""
+
+    external_identity_ref: UUID
+    provider_code: str
+    provider_email_address: str | None
+    provider_email_private: bool | None
+
+
+@dataclass(frozen=True, slots=True)
+class AuthenticationMethods:
+    """Current Account-wide authenticator inventory for security/settings surfaces."""
+
+    password_established: bool
+    providers: tuple[AuthenticationProviderMethod, ...]
+    active_passkey_count: int
+    recovery_eligible_email_count: int
 
 
 type ProviderAuthenticationResult = (
