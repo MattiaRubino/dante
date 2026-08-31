@@ -655,20 +655,28 @@ export function TimelineDayStream({
     const minute = targetDay.mapper.inv(localY);
     const snap = timelineDragSnapMinutes(stateRef.current.zoom);
     const snappedMinute = Math.round(minute / snap) * snap;
-
-    onMoveEvent({
-      fromDateKey: runtime.fromDateKey,
-      toDateKey: targetDay.dateKey,
-      eventId: runtime.event.id,
-      startMinute: snappedMinute,
-    });
-    suppressClickRef.current = runtime.event.id;
     const duration = runtime.event.endMinute - runtime.event.startMinute;
     const bounded = clamp(
       snappedMinute,
       0,
       TIMELINE_MINUTES_PER_DAY - duration,
     );
+
+    suppressClickRef.current = runtime.event.id;
+    if (
+      targetDay.dateKey === runtime.fromDateKey &&
+      bounded === runtime.event.startMinute
+    ) {
+      finishDragVisual();
+      return;
+    }
+
+    onMoveEvent({
+      fromDateKey: runtime.fromDateKey,
+      toDateKey: targetDay.dateKey,
+      eventId: runtime.event.id,
+      startMinute: bounded,
+    });
     onMoveFeedback(
       `${t(($) => $.common.home.timeline.feedback.moved)} ${formatTimelineMinute(bounded)}–${formatTimelineMinute(bounded + duration)}`,
     );
@@ -813,11 +821,21 @@ export function TimelineDayStream({
     }
 
     const delta = direction === 'later' ? snap : -snap;
+    const duration = event.endMinute - event.startMinute;
+    const bounded = clamp(
+      event.startMinute + delta,
+      0,
+      TIMELINE_MINUTES_PER_DAY - duration,
+    );
+    if (bounded === event.startMinute) {
+      return;
+    }
+
     onMoveEvent({
       fromDateKey: dateKey,
       toDateKey: dateKey,
       eventId: event.id,
-      startMinute: event.startMinute + delta,
+      startMinute: bounded,
     });
     onMoveFeedback(t(($) => $.common.home.timeline.feedback.movedTime));
   };
