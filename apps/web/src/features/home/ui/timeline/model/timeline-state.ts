@@ -20,11 +20,14 @@ export type TimelineViewOptions = Readonly<{
   showMilestones: boolean;
 }>;
 
+type TimelineUndoGroup = 'single' | 'keyboard-nudge';
+
 type TimelineUndoSnapshot = Readonly<{
   eventId: TimelineEventId;
   beforeDateKey: string;
   beforeEvent: TimelineEvent;
   afterDateKey: string;
+  group: TimelineUndoGroup;
 }>;
 
 export type TimelineState = Readonly<{
@@ -74,6 +77,7 @@ export type TimelineAction =
       toDateKey: string;
       eventId: TimelineEventId;
       startMinute: number;
+      undoGroup?: 'keyboard-nudge';
     }>
   | Readonly<{ type: 'undo-last-event-change' }>;
 
@@ -189,7 +193,34 @@ function updateEventTime(
       beforeDateKey: action.dateKey,
       beforeEvent: current,
       afterDateKey: action.dateKey,
+      group: 'single',
     },
+  };
+}
+
+function moveUndoSnapshot(
+  state: TimelineState,
+  current: TimelineEvent,
+  action: Extract<TimelineAction, { type: 'move-event' }>,
+): TimelineUndoSnapshot {
+  if (
+    action.undoGroup === 'keyboard-nudge' &&
+    state.undo?.group === 'keyboard-nudge' &&
+    state.undo.eventId === current.id &&
+    state.undo.afterDateKey === action.fromDateKey
+  ) {
+    return {
+      ...state.undo,
+      afterDateKey: action.toDateKey,
+    };
+  }
+
+  return {
+    eventId: current.id,
+    beforeDateKey: action.fromDateKey,
+    beforeEvent: current,
+    afterDateKey: action.toDateKey,
+    group: action.undoGroup ?? 'single',
   };
 }
 
@@ -222,6 +253,8 @@ function moveEvent(
     return state;
   }
 
+  const undo = moveUndoSnapshot(state, current, action);
+
   if (action.fromDateKey === action.toDateKey) {
     const nextEvents = sourceEvents.map((event) =>
       event.id === action.eventId ? movedEvent : event,
@@ -229,12 +262,7 @@ function moveEvent(
     return {
       ...state,
       eventsByDate: replaceDateEvents(state, action.fromDateKey, nextEvents),
-      undo: {
-        eventId: current.id,
-        beforeDateKey: action.fromDateKey,
-        beforeEvent: current,
-        afterDateKey: action.toDateKey,
-      },
+      undo,
     };
   }
 
@@ -256,12 +284,7 @@ function moveEvent(
       ...withSourceUpdated,
       [action.toDateKey]: sortEvents([...targetEvents, movedEvent]),
     },
-    undo: {
-      eventId: current.id,
-      beforeDateKey: action.fromDateKey,
-      beforeEvent: current,
-      afterDateKey: action.toDateKey,
-    },
+    undo,
   };
 }
 
