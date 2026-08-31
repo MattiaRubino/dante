@@ -46,6 +46,7 @@ type TimelineEventMove = Readonly<{
   toDateKey: string;
   eventId: string;
   startMinute: number;
+  undoGroup?: 'keyboard-nudge';
 }>;
 
 type TimelineDayStreamProps = Readonly<{
@@ -859,42 +860,63 @@ export function TimelineDayStream({
     dateKey: string,
     direction: 'earlier' | 'later' | 'previous-day' | 'next-day',
   ) => {
+    const commitKeyboardMove = (
+      toDateKey: string,
+      startMinute: number,
+      feedback: string,
+    ) => {
+      onMoveEvent({
+        fromDateKey: dateKey,
+        toDateKey,
+        eventId: event.id,
+        startMinute,
+        undoGroup: 'keyboard-nudge',
+      });
+      onMoveFeedback(feedback);
+      scheduleEventReveal(event.id);
+    };
+
     const snap = timelineDragSnapMinutes(state.zoom);
     if (direction === 'previous-day' || direction === 'next-day') {
       const delta = direction === 'next-day' ? 1 : -1;
       const toDateKey = timelineDateKey(
         addTimelineDays(parseTimelineDate(dateKey), delta),
       );
-      onMoveEvent({
-        fromDateKey: dateKey,
-        toDateKey: toDateKey,
-        eventId: event.id,
-        startMinute: event.startMinute,
-      });
-      onMoveFeedback(t(($) => $.common.home.timeline.feedback.movedDay));
-      scheduleEventReveal(event.id);
+      commitKeyboardMove(
+        toDateKey,
+        event.startMinute,
+        t(($) => $.common.home.timeline.feedback.movedDay),
+      );
       return;
     }
 
-    const delta = direction === 'later' ? snap : -snap;
     const duration = event.endMinute - event.startMinute;
-    const bounded = clamp(
-      event.startMinute + delta,
-      0,
-      TIMELINE_MINUTES_PER_DAY - duration,
-    );
-    if (bounded === event.startMinute) {
+    const delta = direction === 'later' ? snap : -snap;
+    const candidateStart = event.startMinute + delta;
+
+    if (candidateStart < 0) {
+      commitKeyboardMove(
+        timelineDateKey(addTimelineDays(parseTimelineDate(dateKey), -1)),
+        Math.max(0, TIMELINE_MINUTES_PER_DAY - duration),
+        t(($) => $.common.home.timeline.feedback.movedDay),
+      );
       return;
     }
 
-    onMoveEvent({
-      fromDateKey: dateKey,
-      toDateKey: dateKey,
-      eventId: event.id,
-      startMinute: bounded,
-    });
-    onMoveFeedback(t(($) => $.common.home.timeline.feedback.movedTime));
-    scheduleEventReveal(event.id);
+    if (candidateStart + duration > TIMELINE_MINUTES_PER_DAY) {
+      commitKeyboardMove(
+        timelineDateKey(addTimelineDays(parseTimelineDate(dateKey), 1)),
+        0,
+        t(($) => $.common.home.timeline.feedback.movedDay),
+      );
+      return;
+    }
+
+    commitKeyboardMove(
+      dateKey,
+      candidateStart,
+      t(($) => $.common.home.timeline.feedback.movedTime),
+    );
   };
 
   useEffect(() => {
