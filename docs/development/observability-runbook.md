@@ -270,15 +270,63 @@ If provider-side OTLP translation produces a different metric suffix/label name,
 stop dashboard/alert materialization, capture the observed exact name and update
 source-controlled queries plus tests in one change.
 
-## 9. Import dashboards and alerts
+## 9. Import, use dashboards and materialize alerts
 
-Import both JSON dashboards through Grafana's dashboard import UI and map the
-requested Prometheus/Loki/Tempo data sources:
+The repository owns dashboard JSON, not a hidden provider-side dashboard state.
+Import both files through Grafana's **Dashboards → New → Import** UI:
 
 ```text
 infra/observability/grafana/dashboards/dante-service-overview.json
 infra/observability/grafana/dashboards/dante-telemetry-pipeline.json
 ```
+
+For `DANTE · Service overview`, preserve the supplied name and UID, then map:
+
+| Import field | Required datasource type |
+|---|---|
+| `DS_PROMETHEUS` | Grafana Cloud Metrics / Prometheus |
+| `DS_LOKI` | Grafana Cloud Logs / Loki |
+| `DS_TEMPO` | Grafana Cloud Traces / Tempo |
+
+For `DANTE · Telemetry pipeline & budget`, preserve its supplied name and UID
+and map only `DS_PROMETHEUS` and `DS_LOKI` to the equivalent datasource types.
+Do not record a stack-specific datasource display name in source: Grafana Cloud
+names vary by stack, whereas the plugin type is the stable contract.
+
+Both dashboards open on `local`, last six hours, with a one-minute refresh.
+Select another environment only when that environment's runtime identity and
+datasources have actually been activated. Use 30 seconds only while actively
+investigating; it is not the normal refresh interval.
+
+### 9.1 Dashboard triage and visual acceptance
+
+Read `DANTE · Service overview` top-to-bottom:
+
+1. `Backend readiness` must be `READY`; a quiet request-rate card is normal in
+   LOCAL and is not a readiness failure.
+2. `Backend 5xx ratio` is green below 2%, yellow from 2% to below 10%, red at
+   10% or higher. `Backend latency p95` is green below 0.5 seconds, yellow from
+   0.5 to below 1 second, red at 1 second or higher.
+3. Database readiness errors and KDF rejections must be zero. If non-zero, use
+   the Auth/Database panels below before opening the redacted log/trace panels.
+4. Empty warning/error logs and error traces are healthy when the upper signals
+   are green; they are investigation surfaces, not required activity.
+
+Read `DANTE · Telemetry pipeline & budget` separately from product health:
+
+1. `Alloy` must be `UP`; collector RSS must remain below its configured warning
+   threshold.
+2. Metrics delivery failures, log drops and Faro exporter errors must remain
+   zero. An absent Faro series is expected in environments where browser
+   telemetry is deliberately off.
+3. Use exporter failures, queue depth and the three delivery charts to diagnose
+   a telemetry problem. Use the budget row for quota/cost review, not as a
+   reason to blindly reduce availability/error instrumentation.
+
+Visual acceptance requires both dashboards to load without datasource errors,
+the environment selector to filter live data, and the applicable live signals
+to match Explore. Capture that evidence before marking dashboard acceptance
+complete in the workstream record.
 
 The alert source contract is:
 

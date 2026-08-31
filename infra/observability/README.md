@@ -76,6 +76,29 @@ terminal bounded sanitizer before export.
 
 No paid Grafana feature is required by this baseline. Quotas and retention remain controlled by the selected Cloud Free plan, so the budget dashboard and runbook define the operating guardrails instead of assuming unlimited ingestion.
 
+## Grafana operational views
+
+The repository owns two importable dashboard sources:
+
+```text
+grafana/dashboards/dante-service-overview.json
+grafana/dashboards/dante-telemetry-pipeline.json
+```
+
+`DANTE · Service overview` is the product-runtime decision surface: it starts
+with readiness, traffic, 5xx, latency, database readiness and KDF pressure,
+then provides bounded Auth/Database diagnostics and redacted logs/traces.
+`DANTE · Telemetry pipeline & budget` is the collector decision surface: it
+starts with Alloy/delivery health, then shows queues, failures and Free-plan
+ingestion budget. They are imported through Grafana's UI with the requested
+Prometheus/Loki/Tempo datasources; preserve their stable UIDs and map by
+datasource type, never by a copied local datasource name.
+
+They refresh every minute by default. Use the 30-second option only during an
+active incident. A zero request rate is normal for a quiet LOCAL service; a
+missing Faro series is normal where Web telemetry is intentionally disabled.
+The import and visual-acceptance procedure remains in the operator runbook.
+
 ## Run and verify
 
 ```bash

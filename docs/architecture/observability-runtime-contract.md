@@ -1,6 +1,6 @@
 # DANTE Observability Runtime Contract
 
-- **Status:** BRANCH-LOCAL CURRENT / IMPLEMENTED / FINAL REMOTE GATES PENDING
+- **Status:** BRANCH-LOCAL CURRENT / SOURCE CLOSURE COMPLETE / OPERATIONAL ACCEPTANCE PENDING
 - **Branch:** `feature/platform-observability`
 - **Pinned source baseline:** `dc5ee595c6291d980dc15f582dd094a399631557`
 - **Target:** OpenTelemetry + Grafana Alloy + Grafana Cloud Free EU
@@ -319,6 +319,19 @@ setup/verification/incident runbook
 static artifact validator
 pinned Alloy binary validation in Backend CI
 ```
+
+The dashboards have distinct, non-overlapping operating purposes:
+
+| Dashboard | Primary question | First-row signals | Do not infer |
+|---|---|---|---|
+| `DANTE · Service overview` | Is the product runtime available or degraded? | black-box readiness, traffic, 5xx ratio, p95 latency, database readiness errors, KDF rejections | a quiet LOCAL service is unavailable merely because request rate is zero |
+| `DANTE · Telemetry pipeline & budget` | Can operators trust telemetry delivery within the Free-plan envelope? | Alloy presence, collector RSS, metric delivery failures, log drops, Faro exporter errors | product failure merely because browser telemetry is intentionally disabled or a Faro series is absent |
+
+The default dashboard refresh is one minute. The operator may select a
+30-second refresh during an active incident; this affects dashboard queries
+only, not the governed 30-second metric/scrape export cadence. Source dashboards
+are descriptive operational views, not canonical history, alert-rule
+substitutes or an authority to change product/database behavior.
 
 The alert catalog is source truth for expressions/severity/no-data behavior.
 It is materialized in a real Grafana Cloud stack only after the first target

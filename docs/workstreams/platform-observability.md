@@ -119,6 +119,28 @@ The closure runner completed all 12 gates with
 is therefore earned; the remaining items below are real-stack operational
 acceptance, not unverified code work.
 
+## Dashboard design revision — 2026-08-31
+
+Commit `f818b4bf9cefc0da777071839ee36342786e8cae` promotes the two
+source-controlled Grafana dashboards from a useful query collection to the
+intended operator console. It changes dashboard JSON only; no application,
+database, migration, observer-ACL or telemetry collection contract changed.
+
+| Dashboard | Decision strip | Diagnostic flow |
+|---|---|---|
+| `DANTE · Service overview` | readiness, request rate, 5xx ratio, p95 latency, DB readiness errors, KDF rejections | route traffic → Auth → PostgreSQL → redacted logs/traces |
+| `DANTE · Telemetry pipeline & budget` | Alloy, collector memory, metrics failures, log drops, Faro exporter errors | OTLP queues/exporters → delivery → ingestion budget → backend warnings |
+
+Both dashboards default to a one-minute refresh, expose an explicit
+environment selector and retain 30-second refresh as an operator-selected
+incident option. A zero-valued quiet-service signal is not an error; a missing
+Faro series is expected where browser telemetry is deliberately disabled. A
+non-zero delivery-loss, readiness-error or KDF-rejection signal is actionable.
+
+The dashboard import flow has been started against the real Grafana stack, but
+visual acceptance is not yet claimed until both dashboards are imported with
+their exact datasources and checked against live signals.
+
 ## Remaining acceptance
 
 | Evidence | State |
@@ -126,7 +148,7 @@ acceptance, not unverified code work.
 | Full backend regression and current-tree quality-gate rerun | PASS; final canonical source-closure run |
 | Full web quality gates | PASS locally; 58 tests, lint, typecheck, production build and bundle budget |
 | Faro/browser activation | PASS operationally; final release-identity smoke remains part of integration acceptance |
-| Source-controlled dashboard import and visual smoke | pending |
+| Source-controlled dashboard import and visual smoke | IN PROGRESS; operator-console source revision published, real-stack import/visual check remains required |
 | Alert evaluation and delivery to a configured contact point | pending |
 | Explicit redaction/correlation acceptance query | PASS on activation checkpoint; repeat for the integration release |
 | Collector-outage proof: application remains available | pending |
