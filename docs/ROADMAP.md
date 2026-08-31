@@ -5,8 +5,8 @@
 - **Protected `main`:** integrated source authority; Access/Auth remains branch-local until explicit merge gate
 - **Active vertical:** Access/Auth
 - **Current macro-phase:** M5 — Multi-authenticator Account Layer — **ACTIVE**
-- **Last completed slice:** M5-D — Apple Authentication + Grant / Notification Lifecycle — **COMPLETE / ENGINEERING PASS**
-- **Next execution block:** **M5-E + M5-G — Authenticator Lifecycle + Password/Passwordless Adaptation**
+- **Last completed execution block:** **GROUP 1 — M5-E + M5-G — COMPLETE / ENGINEERING PASS**
+- **Next execution block:** **GROUP 2 — M5-F — WebAuthn / Passkeys**
 
 ## 1. Current sequence
 
@@ -55,11 +55,11 @@ M5-D — Apple Authentication + Grant Lifecycle
           ↓
 GROUP 1 — M5-E + M5-G
 Authenticator Lifecycle + Password/Passwordless
-        NEXT
+        COMPLETE / ENGINEERING PASS
           ↓
 GROUP 2 — M5-F
 WebAuthn / Passkeys
-        PLANNED
+        NEXT
           ↓
 GROUP 3 — M5-H + M5-I
 Public FastAPI + Deterministic OpenAPI / Governed Client
@@ -76,7 +76,7 @@ M7 — Security Hardening + Observability + Authenticated Handoff
         PLANNED / FINAL WHOLE-VERTICAL GATE
 ```
 
-The historical labels `M5-E` through `M5-K+` remain the frozen semantic decomposition used by the architecture/API contract. They are no longer separate execution gates. The grouped order above is the only current execution order.
+The historical labels `M5-E` through `M5-K+` remain the frozen semantic decomposition used by the architecture/API contract. They are not separate execution gates. The grouped order above is the only current execution order.
 
 ## 2. Accepted M5 foundation
 
@@ -93,15 +93,15 @@ e6f738a1ea3f5152caa7d99f1d6ccd108747c806
 M5-D Apple checkpoint
 7d13b712f032e8d41d7cf03d406555fd9f3c0160
 
-M5-D docs closure
-1cc331851d52d39f42e922147f300e0370649670
+GROUP 1 / M5-E + M5-G code checkpoint
+1c4b7c988eaae130d6a90d43940a42e2a550870d
 ```
 
-Current DB truth remains:
+Current accepted DB truth:
 
 ```text
 PostgreSQL          18.6
-Alembic             20260830_12
+Alembic             20260831_13
 83 tables
 5 views
 15 routines
@@ -112,27 +112,27 @@ Alembic             20260830_12
 103 standalone Dictionary entries
 ```
 
-M5-D closeout evidence:
+`20260831_13` is ACL-only and grants the governed runtime DELETE required for safe password removal; no schema shape/mapping/index/constraint change.
+
+Group-1 closeout evidence:
 
 ```text
-uv lock --check                              PASS
+uv lock --check                              PASS / 57 packages
 Ruff format/check/lint                       PASS
-mypy                                         PASS
-backend fast                                 171 / 171 PASS
-focused PostgreSQL M5-D                       9 / 9 PASS
-full PostgreSQL regression                   111 / 111 PASS
+mypy src                                     PASS / 50 source files
+backend fast                                 179 / 179 PASS
+focused PostgreSQL Group 1                   16 / 16 PASS
+full PostgreSQL regression                   120 / 120 PASS
 backend build                                PASS
 git diff --check                             PASS
 scope audit                                  PASS
 ```
 
-## 3. Group 1 — M5-E + M5-G — NEXT
+## 3. Group 1 — M5-E + M5-G — COMPLETE
 
 **Authenticator Lifecycle + Password / Passwordless Adaptation**
 
-These slices are executed together because anti-lockout, provider removal, password establishment/removal and recovery reachability are one Account-wide security problem.
-
-Required result:
+Accepted result:
 
 ```text
 provider-neutral authentication-method inventory
@@ -141,20 +141,20 @@ safe provider unlink / logical revoke
 Apple grant revocation reconciliation when unlinking Apple
 backend-authoritative direct-authenticator counting
 Account security lock around authenticator mutations
-anti-lockout recheck inside the authoritative transaction
+anti-lockout recheck inside authoritative transaction
 verified/recovery-eligible EmailIdentity requirement for passwordless safety
 establish first password using existing Argon2id/HIBP/pepper policy
 safe remove password
-M4 reset adapts to create-or-replace password
+M4 reset adapted to create-or-replace password
 normal password mutation invalidates stale recovery proof
 security-sensitive retained session rotates exact bearer
-concurrent link/unlink/password mutations converge safely
+concurrent provider/password removal converges safely
 operation-specific ambiguous-commit reconciliation only
 ```
 
-No passkey implementation in Group 1. Passkeys join the same lifecycle through Group 2 after the provider/password model is stable.
+Do not reopen this block absent direct defect evidence.
 
-## 4. Group 2 — M5-F
+## 4. Group 2 — M5-F — NEXT
 
 **WebAuthn / Passkeys**
 
@@ -192,8 +192,6 @@ application services from Groups 1–2
 → governed @dante/api-client
 → drift / determinism / generated-client tests
 ```
-
-No frontend raw-fetch bypass and no alternate auth API semantics.
 
 ## 6. Group 4 — M5-J + M5-K+
 
