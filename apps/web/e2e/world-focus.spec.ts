@@ -17,11 +17,11 @@ test('Home opens a centered World on the dedicated World Focus route', async ({
   await expect(page.getByRole('main', { name: 'Mondo Musica' })).toBeVisible();
   await expect(focus).toHaveAttribute(
     'data-world-focus-geometry-version',
-    'wf-g2-candidate',
+    'wf-g3-candidate',
   );
   await expect(page.locator('[data-app-region="topbar"]')).toBeVisible();
-  await expect(page.locator('.world-focus-circle-guides')).toHaveCount(1);
-  await expect(page.locator('.world-focus-circle-guides circle')).toHaveCount(3);
+  await expect(page.locator('.world-focus-ellipse-guides')).toHaveCount(1);
+  await expect(page.locator('.world-focus-ellipse-guides ellipse')).toHaveCount(3);
   await expect(page.locator('[data-world-focus-region="workspace"]')).toBeVisible();
 
   const background = await focus.evaluate(
@@ -91,7 +91,7 @@ test('direct World Focus URL opens the same geometry and has a safe close path',
   await expect(focus).toHaveAttribute('data-entry-origin', 'fallback');
   await expect(focus).toHaveAttribute(
     'data-world-focus-geometry-version',
-    'wf-g2-candidate',
+    'wf-g3-candidate',
   );
   await expect(page.locator('[data-app-region="topbar"]')).toBeVisible();
 
@@ -99,7 +99,7 @@ test('direct World Focus URL opens the same geometry and has a safe close path',
   await expect(page).toHaveURL(/\/worlds$/);
 });
 
-test('WF-G2 candidate keeps the workspace bounded independently of the visual circles', async ({
+test('WF-G3 candidate keeps the workspace bounded independently of the visual ellipses', async ({
   page,
 }) => {
   for (const width of [1600, 1366, 1024, 901]) {
@@ -110,13 +110,13 @@ test('WF-G2 candidate keeps the workspace bounded independently of the visual ci
     const workspace = await page
       .locator('[data-world-focus-region="workspace"]')
       .boundingBox();
-    const guides = await page.locator('.world-focus-circle-guides').boundingBox();
+    const guides = await page.locator('.world-focus-ellipse-guides').boundingBox();
 
     expect(shell).not.toBeNull();
     expect(workspace).not.toBeNull();
     expect(guides).not.toBeNull();
     if (shell === null || workspace === null || guides === null) {
-      throw new Error(`Missing WF-G2 candidate geometry at ${width}px`);
+      throw new Error(`Missing WF-G3 candidate geometry at ${width}px`);
     }
 
     expect(workspace.width).toBeGreaterThan(320);
