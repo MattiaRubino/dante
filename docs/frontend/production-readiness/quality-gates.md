@@ -32,6 +32,18 @@ scope + frozen-contract check
 
 A deliberate contract change follows the same sequence but starts with explicit user authorization and records which frozen expectations are being replaced.
 
+## Whole-Home H0 structural freeze
+
+The accepted Home macro-composition is governed by:
+
+- `docs/frontend/home/home-structural-contract.md`;
+- `prototypes/frontend/shared/contracts/home-structure.contract.json`;
+- `prototypes/frontend/shared/contracts/home-shell-responsive.matrix.json`.
+
+This H0 boundary sits above child-surface contracts. A Timeline, AI, Mondi, Segnali, Capture, Resolution or responsive bug-fix scope must consume the Home skeleton rather than silently renegotiate it.
+
+An intentional change to Home region ownership, hierarchy, macro composition, structural breakpoints or cross-region expansion/collapse behavior requires explicit user approval before production writes and a deliberate H0 contract version/change.
+
 ## Gate classes
 
 ### Q0 — contract/static
@@ -40,6 +52,7 @@ A deliberate contract change follows the same sequence but starts with explicit 
 - contract versions agree;
 - fixture identities are unique;
 - required states/events/invariants exist;
+- Whole-Home H0 region ownership and responsive-mode contracts agree;
 - touched localization/token/registry/contract documentation remains synchronized;
 - lint/type/build checks apply when the production toolchain exists.
 
@@ -56,9 +69,13 @@ For each durable component/state:
 
 Accepted interaction sequences become executable regression contracts. The tests should assert user-visible semantics rather than incidental implementation details.
 
+For the frozen Whole-Home skeleton, Q1 also verifies that required regions remain in the real React tree under the approved owners and that Home does not re-own the Global AppShell/Topbar.
+
 ### Q2 — responsive geometry
 
-Current Home desktop guard matrix:
+There are two complementary Home guard matrices.
+
+#### Stage matrix
 
 ```text
 viewport widths: 1856, 1600, 1366, 1200, 1024, 901
@@ -76,6 +93,30 @@ At minimum verify:
 - timeline/context rail remain outside stage geometry ownership;
 - Continuity target items fit the desktop matrix;
 - Signals shows at most 3 complete visible items.
+
+#### Whole-Home H0 pressure matrix
+
+```text
+pressure widths:
+1856, 1600, 1366, 1200, 1121, 1120, 1024, 901, 900, 760, 390
+
+macro modes:
+H0-WIDE        >= 1121
+H0-COMPRESSED  901..1120
+H0-COMPACT     <= 900
+```
+
+At minimum verify:
+
+- shared AppShell/Topbar exists outside Home ownership;
+- every required Home region remains present exactly once in the runtime tree;
+- no unexpected horizontal page overflow at pressure/boundary widths;
+- H0-WIDE keeps AI beside Upper Workspace and Timeline beside Context Rail;
+- H0-COMPRESSED keeps AI beside Upper Workspace, hides the current web rail representation and gives Timeline the available Today width;
+- H0-COMPACT stacks AI above Upper Workspace and Orientation above Central Stage;
+- AI collapse/expand is geometrically reversible at representative desktop widths;
+- Stage mode switch cannot reauthor Whole-Home macro geometry;
+- Timeline expansion at supported wide widths may consume Today rail space but cannot reauthor Hero geometry.
 
 Golden screenshots and bounding-box assertions are complementary: screenshots catch visual drift; geometry assertions explain it.
 
@@ -147,7 +188,9 @@ Active feature branches that receive direct implementation commits should run th
 
 ## Current executable guards
 
-- `tests/prototypes/frontend-preprod-contracts.py` checks the v0 machine-readable contracts/fixtures for drift.
+- `tests/prototypes/frontend-preprod-contracts.py` checks Stage and Whole-Home machine-readable contracts/fixtures for drift.
+- `apps/web/src/features/home/ui/home-page.test.tsx` protects the real React Home ownership tree and AppShell boundary.
+- `apps/web/e2e/home-structure.spec.ts` protects H0 Whole-Home pressure-width geometry, macro responsive modes and cross-region invariants.
 - `apps/web/e2e/timeline-interactions.spec.ts` protects the current Home Timeline interaction and geometry contract.
 - `feature/home-react` runs Frontend CI on push while the Home workstream is active.
 - the frozen Home Timeline interaction suite is also executed in Firefox in CI because pointer/focus behavior is browser-sensitive.
