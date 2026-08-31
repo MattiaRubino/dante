@@ -1,8 +1,7 @@
-export const WORLD_FOCUS_VISUAL_VERSION = 'wf-v2-candidate' as const;
+export const WORLD_FOCUS_VISUAL_VERSION = 'wf-v3-candidate' as const;
 
 export const WORLD_FOCUS_VISUAL_LAYER = Object.freeze({
   ambient: 'ambient',
-  coronaFallback: 'corona-fallback',
   coronaEnergy: 'corona-energy',
   coronaReference: 'corona-reference',
 } as const);
