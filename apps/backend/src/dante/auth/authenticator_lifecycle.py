@@ -1212,7 +1212,7 @@ class AuthenticatorLifecycleService:
                 await database_session.flush()
             else:
                 identity_ref = identity.external_identity_ref
-                identity.provider_email_address = challenge.provider_email_address,
+                identity.provider_email_address = challenge.provider_email_address
                 identity.provider_email_private = challenge.provider_email_private
                 identity.status_code = "active"
                 identity.status_changed_at = now
