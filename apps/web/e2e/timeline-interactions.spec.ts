@@ -76,6 +76,52 @@ test('custom event dragging never falls back to a native browser drag ghost', as
   expect(selectedText).toBe('');
 });
 
+test('a focused card never consumes the first drag gesture on another card', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/home');
+
+  const focused = page.locator('[data-timeline-event="7"]');
+  const target = page.locator('[data-timeline-event="12"]');
+  await focused.scrollIntoViewIfNeeded();
+
+  const focusedBox = await focused.boundingBox();
+  expect(focusedBox).not.toBeNull();
+  if (!focusedBox) {
+    throw new Error('Expected focus-card geometry');
+  }
+
+  await page.mouse.click(
+    focusedBox.x + Math.max(12, focusedBox.width - 16),
+    focusedBox.y +
+      Math.min(focusedBox.height - 12, Math.max(18, focusedBox.height * 0.62)),
+  );
+  await expect(focused).toHaveClass(/is-focused/);
+
+  const targetBox = await target.boundingBox();
+  expect(targetBox).not.toBeNull();
+  if (!targetBox) {
+    throw new Error('Expected drag-target geometry');
+  }
+
+  const startX = targetBox.x + Math.max(12, targetBox.width - 16);
+  const startY =
+    targetBox.y +
+    Math.min(targetBox.height - 12, Math.max(18, targetBox.height * 0.62));
+
+  await page.mouse.move(startX, startY);
+  await page.mouse.down();
+  await page.mouse.move(startX, startY + 52, { steps: 5 });
+
+  const overlay = page.locator('.timeline-event-drag-overlay');
+  await expect(overlay).toHaveCount(1);
+  await expect(overlay).toContainText('Promemoria');
+
+  await page.mouse.up();
+  await expect(overlay).toHaveCount(0);
+});
+
 test('compact overlap cards stay in a bounded cluster instead of jumping across the canvas', async ({
   page,
 }) => {
