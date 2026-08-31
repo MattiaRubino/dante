@@ -107,9 +107,8 @@ def _require_healthy(url: str, timeout_seconds: float, label: str) -> None:
         with urlopen(request, timeout=timeout_seconds) as response:  # noqa: S310
             status = response.status
     except (URLError, OSError) as error:
-        raise AcceptanceFailure(
-            f"{label} is unreachable: {url} ({error.reason})"
-        ) from error
+        detail = error.reason if isinstance(error, URLError) else str(error)
+        raise AcceptanceFailure(f"{label} is unreachable: {url} ({detail})") from error
     if not 200 <= status < 300:
         raise AcceptanceFailure(f"{label} returned HTTP {status}: {url}")
 
