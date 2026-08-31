@@ -186,27 +186,36 @@ def test_registration_rejects_wrong_challenge_missing_uv_and_wrong_origin() -> N
     credential_id = b"registration-negative"
     expected_challenge = b"r" * 32
     invalid_responses = (
-        _registration_response(
-            challenge=b"w" * 32,
-            credential_id=credential_id,
-            public_key=public_key,
+        (
+            _registration_response(
+                challenge=b"w" * 32,
+                credential_id=credential_id,
+                public_key=public_key,
+            ),
+            r"Wrong challenge",
         ),
-        _registration_response(
-            challenge=expected_challenge,
-            credential_id=credential_id,
-            public_key=public_key,
-            user_verified=False,
+        (
+            _registration_response(
+                challenge=expected_challenge,
+                credential_id=credential_id,
+                public_key=public_key,
+                user_verified=False,
+            ),
+            r"User verification required",
         ),
-        _registration_response(
-            challenge=expected_challenge,
-            credential_id=credential_id,
-            public_key=public_key,
-            origin="https://evil.dante.test",
+        (
+            _registration_response(
+                challenge=expected_challenge,
+                credential_id=credential_id,
+                public_key=public_key,
+                origin="https://evil.dante.test",
+            ),
+            r"Invalid origin",
         ),
     )
 
-    for response in invalid_responses:
-        with pytest.raises(ValueError):
+    for response, expected_error in invalid_responses:
+        with pytest.raises(ValueError, match=expected_error):
             policy.verify_registration(
                 response=response,
                 expected_challenge=expected_challenge,
@@ -231,36 +240,45 @@ def test_assertion_rejects_wrong_signature_missing_uv_and_wrong_origin() -> None
     user_handle = b"u" * 32
     assertion_challenge = b"a" * 32
     invalid_responses = (
-        _authentication_response(
-            challenge=assertion_challenge,
-            credential_id=credential_id,
-            user_handle=user_handle,
-            private_key=wrong_private_key,
-            counter=1,
-            backed_up=False,
+        (
+            _authentication_response(
+                challenge=assertion_challenge,
+                credential_id=credential_id,
+                user_handle=user_handle,
+                private_key=wrong_private_key,
+                counter=1,
+                backed_up=False,
+            ),
+            r"Invalid signature",
         ),
-        _authentication_response(
-            challenge=assertion_challenge,
-            credential_id=credential_id,
-            user_handle=user_handle,
-            private_key=private_key,
-            counter=1,
-            backed_up=False,
-            user_verified=False,
+        (
+            _authentication_response(
+                challenge=assertion_challenge,
+                credential_id=credential_id,
+                user_handle=user_handle,
+                private_key=private_key,
+                counter=1,
+                backed_up=False,
+                user_verified=False,
+            ),
+            r"User verification required",
         ),
-        _authentication_response(
-            challenge=assertion_challenge,
-            credential_id=credential_id,
-            user_handle=user_handle,
-            private_key=private_key,
-            counter=1,
-            backed_up=False,
-            origin="https://evil.dante.test",
+        (
+            _authentication_response(
+                challenge=assertion_challenge,
+                credential_id=credential_id,
+                user_handle=user_handle,
+                private_key=private_key,
+                counter=1,
+                backed_up=False,
+                origin="https://evil.dante.test",
+            ),
+            r"Invalid origin",
         ),
     )
 
-    for response in invalid_responses:
-        with pytest.raises(ValueError):
+    for response, expected_error in invalid_responses:
+        with pytest.raises(ValueError, match=expected_error):
             policy.verify_authentication(
                 response=response,
                 expected_challenge=assertion_challenge,
