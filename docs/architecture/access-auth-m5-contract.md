@@ -1,6 +1,6 @@
 # DANTE — Access/Auth M5 Contract
 
-- **Status:** CURRENT / BRANCH-LOCAL AUTHORITATIVE FOR M5 / M5.1 + M5.2 DESIGN FREEZE COMPLETE / M5-A–D ACCEPTED / GROUP 1 ACTIVE
+- **Status:** CURRENT / BRANCH-LOCAL AUTHORITATIVE FOR M5 / M5.1 + M5.2 DESIGN FREEZE COMPLETE / M5-A–D + GROUP 1 ACCEPTED
 - **Vertical:** Access/Auth
 - **Branch:** `feature/access-auth`
 - **Prerequisite:** M1–M4 CLOSED; M4 ENGINEERING PASS; M4 MANUAL UAT PASS; USER ACCEPTED
@@ -10,14 +10,14 @@
 - **M5-B:** provider/JWK/JOSE/AEAD/WebAuthn policy infrastructure COMPLETE / ENGINEERING PASS
 - **M5-C:** Google backend COMPLETE / ENGINEERING PASS
 - **M5-D:** Apple backend + grant/notification lifecycle COMPLETE / ENGINEERING PASS
-- **Group 1 / M5-E + M5-G:** authenticator lifecycle + password/passwordless adaptation ACTIVE / ENGINEERING CANDIDATE UNDER PROOF
-- **Accepted PostgreSQL/Alembic head before Group 1:** `20260830_12`
-- **Group 1 candidate revision:** `20260831_13` — ACL-only, pending Group 1 acceptance
+- **Group 1 / M5-E + M5-G:** authenticator lifecycle + password/passwordless adaptation COMPLETE / ENGINEERING PASS
+- **Accepted Group-1 code checkpoint:** `1c4b7c988eaae130d6a90d43940a42e2a550870d`
+- **Accepted PostgreSQL/Alembic head:** `20260831_13`
 - **Exact M5.2 authority:** `access-auth-m5-persistence-api-contract.md`
-- **Next after Group 1 acceptance:** M5-F — WebAuthn/passkeys
+- **Next execution block:** M5-F — WebAuthn/passkeys
 - **Companion authorities:** Access/Auth architecture/security/API/testing contracts, ADR-011, Database System of Record and CP6 persistence constitution
 
-M5 turns DANTE Account authentication into a production-grade multi-authenticator system without creating parallel Account/session authorities. M5-A through M5-D are accepted branch truth. Group 1 now materializes Account-wide authenticator lifecycle and password/passwordless behavior; public M5 HTTP/OpenAPI/Web materialization and final provider/browser acceptance remain later work.
+M5 turns DANTE Account authentication into a production-grade multi-authenticator system without creating parallel Account/session authorities. M5-A through M5-D and Group 1 are accepted branch truth. Group 1 materialized Account-wide authenticator lifecycle and password/passwordless behavior; M5-F now adds passkeys under that already-proven authority. Public M5 HTTP/OpenAPI/Web materialization and final provider/browser acceptance remain later work.
 
 ---
 
@@ -285,7 +285,7 @@ provider proof
 
 Authenticated Settings linking uses the already-proven Account and does not create an unnecessary second link challenge.
 
-Group 1 materializes the backend Account-wide confirmation/unlink authority. Public link routes remain M5-H/I work.
+Group 1 has materialized and proved the backend Account-wide confirmation/unlink authority. Public link routes remain M5-H/I work.
 
 ---
 
@@ -371,7 +371,7 @@ Conditional mediation and other WebAuthn L3 capability APIs are progressive enha
 
 Passkey removal is logical revoke rather than physical delete, preserving lifetime credential uniqueness.
 
-The persistence and policy foundation exists from M5-A/B; full WebAuthn ceremony implementation is **M5-F**, immediately after Group 1 acceptance.
+The persistence/policy foundation exists from M5-A/B and the shared lifecycle/anti-lockout authority now exists from Group 1. Full WebAuthn ceremony implementation is **M5-F — NEXT**.
 
 ---
 
@@ -387,7 +387,7 @@ add password to provider/passkey-only Account
 remove password when safe
 ```
 
-Every security-sensitive mutation is backend-authoritative, Account-lock serialized and recent-auth protected, except **reauthentication itself**, which by definition must work when freshness has expired.
+Every security-sensitive mutation is backend-authoritative, Account-lock serialized and recent-auth protected, except reauthentication itself, which by definition must work when freshness has expired.
 
 ### 10.1 Anti-lockout
 
@@ -405,7 +405,7 @@ Passwordless Accounts must additionally retain at least one verified recovery-el
 
 UI prevention is not authority; backend rechecks current durable truth under Account lock.
 
-Group 1 materializes this Account-wide decision and includes deterministic PostgreSQL race proof as an acceptance obligation.
+Group 1 has materialized and proved this Account-wide decision, including real PostgreSQL concurrent-removal proof.
 
 ### 10.2 Add password
 
@@ -433,11 +433,11 @@ session + CSRF + recent auth
 → rotate current session bearer
 ```
 
-Group 1 candidate revision `20260831_13` adds only the runtime `DELETE` privilege required for this governed mutation. It does not alter table shape, constraints, indexes or SQLAlchemy mapping.
+Accepted revision `20260831_13` adds only the runtime `DELETE` privilege required for this governed mutation. It does not alter table shape, constraints, indexes or SQLAlchemy mapping.
 
 ### 10.4 Passwordless recovery
 
-M4 recovery becomes create-or-replace:
+M4 recovery is now create-or-replace:
 
 ```text
 strong exact EmailIdentity + Account recovery proof
@@ -498,10 +498,10 @@ passkey_credential
 webauthn_challenge
 ```
 
-Accepted M5-A PostgreSQL/Alembic truth before Group 1:
+Current accepted PostgreSQL/Alembic truth:
 
 ```text
-revision 20260830_12
+revision 20260831_13
 PostgreSQL 18.6
 83 tables
 5 views
@@ -513,14 +513,13 @@ PostgreSQL 18.6
 103 standalone Dictionary entries
 ```
 
-Group 1 candidate adds forward revision:
+Group 1 added only:
 
 ```text
-20260831_13
 GRANT DELETE ON dante.password_credential TO dante_runtime
 ```
 
-This is ACL-only. It does not change topology, schema shape or mapping metadata. Until Group 1 QA closes, `20260830_12` remains the last accepted head and `20260831_13` remains candidate head.
+This is ACL-only. It does not change topology, schema shape or mapping metadata. Dictionary/catalog/migration/privilege parity is accepted through the Group-1 120-test PostgreSQL regression.
 
 Permanent chain:
 
@@ -566,7 +565,7 @@ Collision is not treated as an exception.
 
 All successful authentication methods use canonical DANTE AuthSession.
 
-M5-C/D and Group 1 implement backend application/persistence behavior only. **Public M5 FastAPI routes are not yet materialized**; that remains M5-H + M5-I together with deterministic OpenAPI/client generation.
+M5-C/D and Group 1 implement backend application/persistence behavior only. Public M5 FastAPI routes are not yet materialized; that remains M5-H + M5-I together with deterministic OpenAPI/client generation.
 
 ---
 
@@ -628,7 +627,7 @@ no blind retries
 
 Required race proof includes concurrent first provider signup, link to two Accounts, signin vs unlink/disable, Apple notification vs signin/link, passkey registration duplicate, passkey auth vs removal, add/remove password vs recovery and concurrent authenticator removals.
 
-Group 1 specifically must prove that concurrent authenticator removals serialize on the Account lock and cannot jointly violate anti-lockout.
+Group 1 proved concurrent provider/password authenticator removal serialization on the Account lock. M5-F must extend the same authority to passkey mutations.
 
 ---
 
@@ -656,16 +655,29 @@ unit/pure
 
 Real PostgreSQL is mandatory for physical/race claims.
 
-Accepted prior evidence:
+Accepted evidence:
 
 ```text
 M5-A persistence                         COMPLETE / real PostgreSQL accepted
 M5-B provider/crypto policy runtime      COMPLETE / engineering pass
 M5-C Google backend                      COMPLETE / engineering pass
 M5-D Apple backend                       COMPLETE / engineering pass
+GROUP 1 / M5-E + M5-G                   COMPLETE / engineering pass
 ```
 
-Group 1 acceptance requires its own static/fast/focused PostgreSQL proof plus the relevant broader regression gate. No Group 1 PASS is claimed by this document before those runs complete.
+Group-1 accepted proof:
+
+```text
+uv lock --check                         PASS / 57 packages
+Ruff format/check/lint                  PASS
+mypy src                                PASS / 50 source files
+backend fast                            179 / 179 PASS
+focused real PostgreSQL Group 1         16 / 16 PASS
+full real PostgreSQL regression         120 / 120 PASS
+backend build                           PASS
+git diff --check                        PASS
+scope audit                             PASS
+```
 
 CI uses protocol-faithful local provider substitutes through the real DANTE adapters.
 
@@ -683,17 +695,15 @@ M5-A persistence foundations             COMPLETE / ACCEPTED
 M5-B provider/JWK/JOSE/AEAD infra        COMPLETE / ENGINEERING PASS
 M5-C Google backend                      COMPLETE / ENGINEERING PASS
 M5-D Apple backend                       COMPLETE / ENGINEERING PASS
+GROUP 1 / M5-E + M5-G                    COMPLETE / ENGINEERING PASS
+accepted Alembic head                    20260831_13
 
-GROUP 1 / M5-E + M5-G                    ACTIVE / ENGINEERING CANDIDATE UNDER PROOF
-candidate Alembic head                   20260831_13
-accepted pre-Group1 head                 20260830_12
-
-M5-F WebAuthn/passkeys                   PLANNED / NEXT AFTER GROUP 1
+M5-F WebAuthn/passkeys                   NEXT
 M5-H + M5-I public API/OpenAPI/client    PLANNED
 M5-J + M5-K+ Web + wider proof/UAT       PLANNED
 ```
 
-Group 1 currently owns:
+Group 1 accepted ownership:
 
 ```text
 provider-first explicit link confirmation
@@ -719,4 +729,4 @@ real provider/browser acceptance
 whole-M5 production-ready closure
 ```
 
-Next execution step is to complete Group 1 local/static/PostgreSQL acceptance. After Group 1 is accepted, proceed directly to **M5-F — WebAuthn/passkeys** under its own exact write gate.
+Next execution step is **M5-F — WebAuthn/passkeys** under its own exact write gate, reusing the Group-1 Account-wide authenticator lifecycle and anti-lockout authority rather than creating a parallel passkey lifecycle.
