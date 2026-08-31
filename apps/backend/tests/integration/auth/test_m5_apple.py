@@ -50,7 +50,11 @@ from dante.auth.proofs import FlowProofPurpose, ProviderEnrollmentOtpCodec, flow
 from dante.auth.provider_flow import ProviderFlowLimiters
 from dante.auth.sessions import generate_session_secret, session_secret_verifier
 from dante.platform.config.auth import AuthSettings, SmtpSecurity
-from dante.platform.config.auth_provider import APPLE_ISSUER, AppleProviderSettings, AuthProviderSettings
+from dante.platform.config.auth_provider import (
+    APPLE_ISSUER,
+    AppleProviderSettings,
+    AuthProviderSettings,
+)
 from dante.platform.database.mappings.auth import (
     AccountProfileBootstrapRow,
     AccountRow,
@@ -184,7 +188,9 @@ def _evidence(
         subject=subject,
         email=normalized,
         email_verified=authoritative and normalized is not None,
-        email_private=((private if private is not None else False) if normalized is not None else None),
+        email_private=(
+            (private if private is not None else False) if normalized is not None else None
+        ),
         mailbox_authoritative=authoritative and normalized is not None,
     )
 
@@ -653,7 +659,9 @@ async def test_authenticated_link_then_apple_reauthentication_rotate_exact_same_
         assert isinstance(linked, ProviderAuthenticated)
         assert linked.session.principal.account_ref == account_ref
         assert linked.session.principal.auth_session_ref == admitted.principal.auth_session_ref
-        assert linked.session.session_secret.get_secret_value() != original_secret.get_secret_value()
+        assert (
+            linked.session.session_secret.get_secret_value() != original_secret.get_secret_value()
+        )
         assert await _count(runtime, ExternalIdentityRow) == 1
         assert await _count(runtime, AppleAuthGrantRow) == 1
 
@@ -678,7 +686,10 @@ async def test_authenticated_link_then_apple_reauthentication_rotate_exact_same_
             source_context="apple-reauth-complete",
         )
         assert isinstance(reauthenticated, ProviderAuthenticated)
-        assert reauthenticated.session.principal.auth_session_ref == admitted.principal.auth_session_ref
+        assert (
+            reauthenticated.session.principal.auth_session_ref
+            == admitted.principal.auth_session_ref
+        )
         assert (
             reauthenticated.session.session_secret.get_secret_value()
             != linked.session.session_secret.get_secret_value()

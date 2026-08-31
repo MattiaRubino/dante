@@ -87,7 +87,9 @@ def _client(runtime: _StubRuntime) -> AppleProtocolClient:
 
 
 @pytest.mark.asyncio
-async def test_code_exchange_is_single_attempt_exact_form_and_keeps_only_refresh_identity_material() -> None:
+async def test_code_exchange_is_single_attempt_exact_form_and_keeps_only_refresh_identity_material() -> (
+    None
+):
     runtime = _StubRuntime()
     client = _client(runtime)
 

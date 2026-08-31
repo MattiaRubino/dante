@@ -243,7 +243,10 @@ def test_authorization_url_is_exact_form_post_code_id_token_request() -> None:
     assert "scope=name+email" in result
     assert "state=state123" in result
     assert "nonce=nonce123" in result
-    assert "redirect_uri=https%3A%2F%2Fauth.dante.example%2Fapi%2Fv1%2Fauth%2Fapple%2Fcallback" in result
+    assert (
+        "redirect_uri=https%3A%2F%2Fauth.dante.example%2Fapi%2Fv1%2Fauth%2Fapple%2Fcallback"
+        in result
+    )
 
 
 def test_one_shot_profile_is_sanitized_and_unknown_members_fail_closed() -> None:
@@ -273,10 +276,14 @@ def test_client_secret_is_short_lived_es256_and_exactly_scoped() -> None:
         serialization.PrivateFormat.PKCS8,
         serialization.NoEncryption(),
     ).decode("ascii")
-    public_pem = private_key.public_key().public_bytes(
-        serialization.Encoding.PEM,
-        serialization.PublicFormat.SubjectPublicKeyInfo,
-    ).decode("ascii")
+    public_pem = (
+        private_key.public_key()
+        .public_bytes(
+            serialization.Encoding.PEM,
+            serialization.PublicFormat.SubjectPublicKeyInfo,
+        )
+        .decode("ascii")
+    )
     signer = AppleClientSecretSigner(
         team_id=_TEAM_ID,
         key_id=_KEY_ID,

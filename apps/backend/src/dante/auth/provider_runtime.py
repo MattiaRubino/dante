@@ -158,7 +158,9 @@ class ProviderRuntime:
         except Exception as exc:
             # Authorization codes are single-use and revoke is a provider mutation. If the
             # transport loses the response, the caller must reconcile instead of blindly retrying.
-            raise ProviderMutationAmbiguousError("Apple provider mutation result is ambiguous") from exc
+            raise ProviderMutationAmbiguousError(
+                "Apple provider mutation result is ambiguous"
+            ) from exc
 
         if not body:
             return ProviderJsonResponse(status_code=status_code, body=None)

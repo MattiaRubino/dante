@@ -454,7 +454,7 @@ class AppleFlowService:
             challenge.failed_verification_attempts = 0
             challenge.updated_at = now
             await database_session.commit()
-        except (ProviderEnrollmentInvalidOrExpiredError, SignupResendCooldownError):
+        except ProviderEnrollmentInvalidOrExpiredError, SignupResendCooldownError:
             await self._safe_rollback(database_session)
             raise
         except SQLAlchemyError as exc:
@@ -1065,7 +1065,11 @@ class AppleFlowService:
                 )
             )
             ambiguous_commit = await self._commit(database_session)
-        except (AccountUnavailableError, ProviderProofInvalidError, ProviderReconciliationPendingError):
+        except (
+            AccountUnavailableError,
+            ProviderProofInvalidError,
+            ProviderReconciliationPendingError,
+        ):
             await self._safe_rollback(database_session)
             raise
         except SQLAlchemyError as exc:
@@ -1173,7 +1177,10 @@ class AppleFlowService:
             raise
         except IntegrityError as exc:
             await self._safe_rollback(database_session)
-            if bound is not None and self._constraint_name(exc) == _EXTERNAL_IDENTITY_UNIQUENESS_CONSTRAINT:
+            if (
+                bound is not None
+                and self._constraint_name(exc) == _EXTERNAL_IDENTITY_UNIQUENESS_CONSTRAINT
+            ):
                 current = await self._read_external_identity(evidence.issuer, evidence.subject)
                 if current is not None and current.account_ref == bound.account_ref:
                     same_account_identity_race = True
@@ -1477,7 +1484,10 @@ class AppleFlowService:
             raise AuthIntegrityError("Apple grant encryption failed") from exc
         except IntegrityError as exc:
             await self._safe_rollback(database_session)
-            if allow_insert_race_retry and self._constraint_name(exc) == _APPLE_GRANT_UNIQUENESS_CONSTRAINT:
+            if (
+                allow_insert_race_retry
+                and self._constraint_name(exc) == _APPLE_GRANT_UNIQUENESS_CONSTRAINT
+            ):
                 return await self._persist_signin_grant(
                     evidence=evidence,
                     refresh_token=refresh_token,
@@ -1719,7 +1729,7 @@ class AppleFlowService:
                 claimed_at=now,
             )
             ambiguous_commit = await self._commit(database_session)
-        except (ProviderTransactionInvalidOrExpiredError, AuthIntegrityError):
+        except ProviderTransactionInvalidOrExpiredError, AuthIntegrityError:
             await self._safe_rollback(database_session)
             raise
         except SQLAlchemyError as exc:
@@ -1813,7 +1823,11 @@ class AppleFlowService:
             raise AuthServiceUnavailableError(retryable=True) from exc
 
     async def _apply_revocation_event(self, event: AppleNotificationEvent) -> bool:
-        reason = "provider_account_deleted" if event.event_type == "account-deleted" else "provider_revoked"
+        reason = (
+            "provider_account_deleted"
+            if event.event_type == "account-deleted"
+            else "provider_revoked"
+        )
         now = datetime.now(UTC)
         try:
             async with self._session_factory() as database_session, database_session.begin():
@@ -1977,7 +1991,10 @@ class AppleFlowService:
             async with self._session_factory() as database_session, database_session.begin():
                 challenge = await database_session.scalar(
                     select(ExternalSignupChallengeRow)
-                    .where(ExternalSignupChallengeRow.external_signup_ref == snapshot.external_signup_ref)
+                    .where(
+                        ExternalSignupChallengeRow.external_signup_ref
+                        == snapshot.external_signup_ref
+                    )
                     .with_for_update()
                 )
                 if challenge is None:
@@ -2154,9 +2171,12 @@ class AppleFlowService:
             seconds=self._settings.session_idle_timeout_seconds
         ):
             raise ProviderTransactionInvalidOrExpiredError()
-        if require_recent and current.recent_auth_at + timedelta(
-            seconds=self._settings.recent_auth_window_seconds
-        ) <= now:
+        if (
+            require_recent
+            and current.recent_auth_at
+            + timedelta(seconds=self._settings.recent_auth_window_seconds)
+            <= now
+        ):
             raise ReauthenticationRequiredError()
         return _BoundSession(
             account_ref=current.account_ref,
@@ -2274,7 +2294,9 @@ class AppleFlowService:
         return row.email_identity_ref if row is not None else None
 
     @staticmethod
-    def _activate_grant(grant: AppleAuthGrantRow, *, external_identity_ref: UUID, now: datetime) -> None:
+    def _activate_grant(
+        grant: AppleAuthGrantRow, *, external_identity_ref: UUID, now: datetime
+    ) -> None:
         grant.external_identity_ref = external_identity_ref
         grant.status_code = "active"
         grant.updated_at = now
@@ -2452,7 +2474,9 @@ class AppleFlowService:
         profile: AppleAuthorizationProfile | None,
         now: datetime,
     ) -> AccountProfileBootstrapRow | None:
-        if profile is None or not any((profile.display_name, profile.given_name, profile.family_name)):
+        if profile is None or not any(
+            (profile.display_name, profile.given_name, profile.family_name)
+        ):
             return None
         return AccountProfileBootstrapRow(
             account_ref=account_ref,
@@ -2625,7 +2649,9 @@ class AppleFlowService:
         except SQLAlchemyError as exc:
             raise AuthServiceUnavailableError(retryable=False) from exc
 
-    async def _read_external_identity(self, issuer: str, subject: str) -> ExternalIdentityRow | None:
+    async def _read_external_identity(
+        self, issuer: str, subject: str
+    ) -> ExternalIdentityRow | None:
         try:
             async with self._session_factory() as session, session.begin():
                 row: ExternalIdentityRow | None = await session.scalar(
@@ -2656,7 +2682,9 @@ class AppleFlowService:
         try:
             async with self._session_factory() as session, session.begin():
                 row: EmailIdentityRow | None = await session.scalar(
-                    select(EmailIdentityRow).where(EmailIdentityRow.comparison_key == comparison_key)
+                    select(EmailIdentityRow).where(
+                        EmailIdentityRow.comparison_key == comparison_key
+                    )
                 )
                 return row
         except SQLAlchemyError as exc:
@@ -2688,7 +2716,9 @@ class AppleFlowService:
 
     async def _reconcile_transaction_insert(self, expected: ExternalAuthTransactionRow) -> None:
         persisted = await self._read_transaction(expected.external_auth_transaction_ref)
-        if persisted is None or not self._same_transaction(persisted, expected, require_unclaimed=True):
+        if persisted is None or not self._same_transaction(
+            persisted, expected, require_unclaimed=True
+        ):
             raise AuthServiceUnavailableError(retryable=False)
 
     async def _reconcile_claim(
@@ -2763,7 +2793,9 @@ class AppleFlowService:
         try:
             async with self._session_factory() as session, session.begin():
                 auth_session = await session.scalar(
-                    select(AuthSessionRow).where(AuthSessionRow.auth_session_ref == auth_session_ref)
+                    select(AuthSessionRow).where(
+                        AuthSessionRow.auth_session_ref == auth_session_ref
+                    )
                 )
                 identity = await session.scalar(
                     select(ExternalIdentityRow).where(
@@ -2863,7 +2895,9 @@ class AppleFlowService:
     ) -> None:
         try:
             async with self._session_factory() as session, session.begin():
-                account = await session.scalar(select(AccountRow).where(AccountRow.account_ref == account_ref))
+                account = await session.scalar(
+                    select(AccountRow).where(AccountRow.account_ref == account_ref)
+                )
                 email = await session.scalar(
                     select(EmailIdentityRow).where(
                         EmailIdentityRow.email_identity_ref == email_identity_ref,
@@ -2877,10 +2911,14 @@ class AppleFlowService:
                     )
                 )
                 auth_session = await session.scalar(
-                    select(AuthSessionRow).where(AuthSessionRow.auth_session_ref == auth_session_ref)
+                    select(AuthSessionRow).where(
+                        AuthSessionRow.auth_session_ref == auth_session_ref
+                    )
                 )
                 grant = await session.scalar(
-                    select(AppleAuthGrantRow).where(AppleAuthGrantRow.apple_auth_grant_ref == grant_ref)
+                    select(AppleAuthGrantRow).where(
+                        AppleAuthGrantRow.apple_auth_grant_ref == grant_ref
+                    )
                 )
                 pending = (
                     await session.scalar(
@@ -2934,7 +2972,9 @@ class AppleFlowService:
                     )
                 )
                 grant = await session.scalar(
-                    select(AppleAuthGrantRow).where(AppleAuthGrantRow.apple_auth_grant_ref == grant_ref)
+                    select(AppleAuthGrantRow).where(
+                        AppleAuthGrantRow.apple_auth_grant_ref == grant_ref
+                    )
                 )
         except SQLAlchemyError as exc:
             raise ProviderReconciliationPendingError() from exc

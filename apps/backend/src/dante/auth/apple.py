@@ -10,7 +10,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from hashlib import sha256
-from urllib.parse import urlencode, urlsplit
+from urllib.parse import urlencode
 
 from joserfc import jwt
 from joserfc.jwk import ECKey
@@ -207,7 +207,9 @@ class AppleProtocolClient:
         try:
             response = await self._runtime.apple_token_exchange(form)
         except ProviderMutationAmbiguousError as exc:
-            raise AppleExchangeAmbiguousError("Apple authorization-code exchange is ambiguous") from exc
+            raise AppleExchangeAmbiguousError(
+                "Apple authorization-code exchange is ambiguous"
+            ) from exc
         except ProviderRuntimeError as exc:
             raise AppleProviderUnavailableError("Apple token endpoint failed safely") from exc
 
@@ -339,7 +341,9 @@ class AppleTokenVerifier:
 
         email = _validated_email(claims.get("email"))
         email_verified = _optional_apple_bool(claims.get("email_verified"), name="email_verified")
-        private_claim = _optional_apple_bool(claims.get("is_private_email"), name="is_private_email")
+        private_claim = _optional_apple_bool(
+            claims.get("is_private_email"), name="is_private_email"
+        )
         email_private: bool | None = None
         if email is not None:
             domain = email.comparison_key.rsplit("@", 1)[1]
