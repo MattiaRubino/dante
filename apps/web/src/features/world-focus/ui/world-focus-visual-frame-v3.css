@@ -1,0 +1,124 @@
+.world-focus-visual-frame {
+  contain: strict;
+}
+
+.world-focus-ambient-field {
+  overflow: hidden;
+  background:
+    radial-gradient(
+      ellipse 78% 112% at -8% 44%,
+      color-mix(in srgb, var(--world-focus-accent) 17%, transparent),
+      transparent 64%
+    ),
+    radial-gradient(
+      ellipse 72% 108% at 108% 58%,
+      color-mix(in srgb, var(--world-focus-hot) 12%, transparent),
+      transparent 66%
+    ),
+    radial-gradient(
+      ellipse 48% 38% at 42% 12%,
+      color-mix(in srgb, var(--world-focus-violet) 7%, transparent),
+      transparent 78%
+    ),
+    linear-gradient(180deg, #050817 0%, #02040e 50%, #010208 100%);
+}
+
+.world-focus-ambient-field::after {
+  background:
+    radial-gradient(
+      ellipse 36% 24% at 26% 43%,
+      color-mix(in srgb, var(--world-focus-accent) 6%, transparent),
+      transparent 75%
+    ),
+    radial-gradient(
+      ellipse 34% 24% at 76% 57%,
+      color-mix(in srgb, var(--world-focus-hot) 4%, transparent),
+      transparent 77%
+    );
+  filter: blur(42px);
+  opacity: 0.68;
+}
+
+.world-focus-corona-energy-renderer,
+.world-focus-energy-layer,
+.world-focus-energy-canvas,
+.world-focus-energy-fallback,
+.world-focus-corona-reference-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.world-focus-corona-energy-renderer {
+  z-index: 2;
+}
+
+.world-focus-energy-layer {
+  overflow: hidden;
+}
+
+.world-focus-energy-canvas {
+  display: block;
+  background: transparent;
+  filter: saturate(1.18) contrast(1.06);
+  mix-blend-mode: screen;
+}
+
+.world-focus-energy-layer[data-world-focus-energy-renderer='pending']
+  .world-focus-energy-canvas,
+.world-focus-energy-layer[data-world-focus-energy-renderer='fallback']
+  .world-focus-energy-canvas {
+  opacity: 0;
+}
+
+.world-focus-energy-fallback {
+  display: none;
+  background:
+    radial-gradient(circle at 9% 31%, rgba(255, 255, 255, 0.72) 0 0.8px, transparent 1.6px),
+    radial-gradient(circle at 92% 68%, rgba(255, 203, 151, 0.72) 0 0.8px, transparent 1.7px),
+    radial-gradient(
+      ellipse 54% 94% at 50% 50%,
+      transparent 0 94.5%,
+      color-mix(in srgb, var(--world-focus-accent) 34%, transparent) 95.5%,
+      color-mix(in srgb, var(--world-focus-violet) 58%, transparent) 97%,
+      color-mix(in srgb, var(--world-focus-hot) 28%, transparent) 99%,
+      transparent 100%
+    );
+  background-size: 181px 157px, 233px 211px, 100% 100%;
+  filter: blur(1.8px) saturate(1.15);
+  opacity: 0.72;
+}
+
+.world-focus-energy-layer[data-world-focus-energy-renderer='fallback']
+  .world-focus-energy-fallback {
+  display: block;
+}
+
+.world-focus-corona-reference-overlay {
+  z-index: 3;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.world-focus-corona-reference {
+  vector-effect: non-scaling-stroke;
+  stroke-width: 1;
+}
+
+@media (max-width: 720px) {
+  .world-focus-energy-canvas {
+    filter: saturate(1.12) contrast(1.04);
+  }
+
+  .world-focus-ambient-field::after {
+    filter: blur(30px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .world-focus-energy-canvas {
+    transition: none;
+  }
+}
