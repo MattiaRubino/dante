@@ -2,6 +2,13 @@
 
 from dataclasses import dataclass
 
+from dante.auth.apple import (
+    AppleClientSecretSigner,
+    AppleNotificationVerifier,
+    AppleProtocolClient,
+    AppleTokenVerifier,
+)
+from dante.auth.apple_flow import AppleFlowService
 from dante.auth.google import GoogleTokenVerifier
 from dante.auth.lifecycle import KeyedRateLimiter
 from dante.auth.lifecycle_runtime import AuthLifecycleRuntime
@@ -14,9 +21,10 @@ from dante.platform.database.runtime import DatabaseRuntime
 
 @dataclass(frozen=True, slots=True)
 class ProviderFlowRuntime:
-    """M5 provider application service; shared resources remain owned by parent runtimes."""
+    """M5 provider application services; parent runtimes own shared resources."""
 
-    service: ProviderFlowService
+    service: ProviderFlowService | None
+    apple_service: AppleFlowService | None
 
 
 def create_provider_flow_runtime(
@@ -26,7 +34,7 @@ def create_provider_flow_runtime(
     auth_runtime: AuthRuntime,
     lifecycle_runtime: AuthLifecycleRuntime,
 ) -> ProviderFlowRuntime:
-    """Build provider flow capabilities without creating duplicate network/email resources."""
+    """Build enabled provider flows without duplicate network/crypto/email ownership."""
     max_keys = settings.provider_rate_max_keys
     limiters = ProviderFlowLimiters(
         begin=KeyedRateLimiter(
@@ -45,18 +53,66 @@ def create_provider_flow_runtime(
             max_keys=max_keys,
         ),
     )
-    service = ProviderFlowService(
-        session_factory=database_runtime.session_factory,
-        settings=settings,
-        google_verifier=GoogleTokenVerifier(
+    otp_codec = ProviderEnrollmentOtpCodec(
+        key_ring=settings.signup_otp_key_bytes,
+        current_key_id=settings.signup_otp_current_key_id,
+    )
+
+    google_service = (
+        ProviderFlowService(
+            session_factory=database_runtime.session_factory,
+            settings=settings,
+            google_verifier=GoogleTokenVerifier(
+                settings=settings.provider,
+                provider_runtime=auth_runtime.provider_runtime,
+            ),
+            otp_codec=otp_codec,
+            email_delivery=lifecycle_runtime.email_dispatcher,
+            limiters=limiters,
+        )
+        if settings.provider.google.enabled
+        else None
+    )
+
+    apple_service: AppleFlowService | None = None
+    apple = settings.provider.apple
+    if apple.enabled:
+        if (
+            apple.client_id is None
+            or apple.team_id is None
+            or apple.key_id is None
+            or apple.client_private_key_pem is None
+            or auth_runtime.apple_grant_cipher is None
+        ):
+            raise RuntimeError("enabled Apple authentication lost validated runtime configuration")
+        signer = AppleClientSecretSigner(
+            team_id=apple.team_id,
+            key_id=apple.key_id,
+            client_id=apple.client_id,
+            private_key_pem=apple.client_private_key_pem,
+        )
+        protocol_client = AppleProtocolClient(
             settings=settings.provider,
             provider_runtime=auth_runtime.provider_runtime,
-        ),
-        otp_codec=ProviderEnrollmentOtpCodec(
-            key_ring=settings.signup_otp_key_bytes,
-            current_key_id=settings.signup_otp_current_key_id,
-        ),
-        email_delivery=lifecycle_runtime.email_dispatcher,
-        limiters=limiters,
-    )
-    return ProviderFlowRuntime(service=service)
+            signer=signer,
+        )
+        token_verifier = AppleTokenVerifier(
+            settings=settings.provider,
+            provider_runtime=auth_runtime.provider_runtime,
+        )
+        apple_service = AppleFlowService(
+            session_factory=database_runtime.session_factory,
+            settings=settings,
+            token_verifier=token_verifier,
+            notification_verifier=AppleNotificationVerifier(
+                settings=settings.provider,
+                provider_runtime=auth_runtime.provider_runtime,
+            ),
+            protocol_client=protocol_client,
+            grant_cipher=auth_runtime.apple_grant_cipher,
+            otp_codec=otp_codec,
+            email_delivery=lifecycle_runtime.email_dispatcher,
+            limiters=limiters,
+        )
+
+    return ProviderFlowRuntime(service=google_service, apple_service=apple_service)
