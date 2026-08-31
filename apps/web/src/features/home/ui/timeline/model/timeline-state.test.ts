@@ -10,6 +10,7 @@ import {
   createInitialTimelineState,
   timelineEventsForDate,
   timelineReducer,
+  type TimelineState,
 } from './timeline-state';
 import { parseTimelineDate } from './timeline-temporal';
 
@@ -21,6 +22,37 @@ function eventById(
   return timelineEventsForDate(state, dateKey).find(
     (event) => event.id === eventId,
   );
+}
+
+function materializedEventCount(state: TimelineState): number {
+  return Object.values(state.eventsByDate).reduce(
+    (count, events) => count + events.length,
+    0,
+  );
+}
+
+function expectTimelineStateIntegrity(
+  state: TimelineState,
+  expectedEventCount: number,
+): void {
+  const ids: string[] = [];
+
+  for (const events of Object.values(state.eventsByDate)) {
+    let previousStart = -1;
+    for (const event of events) {
+      ids.push(event.id);
+      expect(Number.isFinite(event.startMinute)).toBe(true);
+      expect(Number.isFinite(event.endMinute)).toBe(true);
+      expect(event.startMinute).toBeGreaterThanOrEqual(0);
+      expect(event.endMinute).toBeLessThanOrEqual(1440);
+      expect(event.endMinute).toBeGreaterThan(event.startMinute);
+      expect(event.startMinute).toBeGreaterThanOrEqual(previousStart);
+      previousStart = event.startMinute;
+    }
+  }
+
+  expect(ids).toHaveLength(expectedEventCount);
+  expect(new Set(ids).size).toBe(ids.length);
 }
 
 describe('timeline state', () => {
@@ -97,6 +129,72 @@ describe('timeline state', () => {
     expect(zoomed.filters.has('focus')).toBe(true);
     expect(zoomed.focusedEventId).toBe('2');
     expect(zoomed.zoom).toBe(2.1);
+  });
+
+  it('survives repeated focus, overlap move and undo cycles without state drift', () => {
+    const initial = createInitialTimelineState();
+    const original = eventById(initial, '2026-08-04', '12');
+    const expectedEventCount = materializedEventCount(initial);
+    expect(original).toBeTruthy();
+
+    let state = initial;
+    for (let iteration = 0; iteration < 150; iteration += 1) {
+      state = timelineReducer(state, {
+        type: 'focus-event',
+        eventId: '12',
+      });
+      expect(state.focusedEventId).toBe('12');
+
+      state = timelineReducer(state, {
+        type: 'move-event',
+        fromDateKey: '2026-08-04',
+        toDateKey: '2026-08-04',
+        eventId: '12',
+        startMinute: 17 * 60 + 40,
+      });
+      expect(eventById(state, '2026-08-04', '12')).toMatchObject({
+        startMinute: 1060,
+        endMinute: 1075,
+      });
+      expectTimelineStateIntegrity(state, expectedEventCount);
+
+      state = timelineReducer(state, { type: 'undo-last-event-change' });
+      expect(eventById(state, '2026-08-04', '12')).toEqual(original);
+
+      state = timelineReducer(state, {
+        type: 'focus-event',
+        eventId: null,
+      });
+      expect(state.focusedEventId).toBeNull();
+      expectTimelineStateIntegrity(state, expectedEventCount);
+    }
+  });
+
+  it('survives repeated cross-day moves without duplicating or losing the event', () => {
+    const initial = createInitialTimelineState();
+    const expectedEventCount = materializedEventCount(initial);
+    const original = eventById(initial, '2026-08-04', '1');
+    expect(original).toBeTruthy();
+
+    let state = initial;
+    let currentDateKey = '2026-08-04';
+    for (let iteration = 0; iteration < 100; iteration += 1) {
+      const nextDateKey =
+        currentDateKey === '2026-08-04' ? '2026-08-05' : '2026-08-04';
+      state = timelineReducer(state, {
+        type: 'move-event',
+        fromDateKey: currentDateKey,
+        toDateKey: nextDateKey,
+        eventId: '1',
+        startMinute: 9 * 60 + (iteration % 12) * 5,
+      });
+      currentDateKey = nextDateKey;
+      expectTimelineStateIntegrity(state, expectedEventCount);
+      expect(eventById(state, currentDateKey, '1')).toBeTruthy();
+    }
+
+    expect(eventById(state, '2026-08-04', '1')).toBeTruthy();
+    expect(eventById(state, '2026-08-05', '1')).toBeUndefined();
   });
 
   it('moves a group exactly one adjacent slot in either direction', () => {
