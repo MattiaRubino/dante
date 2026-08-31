@@ -139,9 +139,20 @@ non-zero delivery-loss, readiness-error or KDF-rejection signal is actionable.
 Every absent signal is rendered as neutral `NO SIGNAL`, never as an implicit
 green/healthy value.
 
-The dashboard import flow has been started against the real Grafana stack, but
-visual acceptance is not yet claimed until both dashboards are imported with
-their exact datasources and checked against live signals.
+The original dashboard import flow was started against the real Grafana stack,
+but visual acceptance is not yet claimed. Grafana 12 exposes its stored
+dashboard as an expanded `dashboard.grafana.app/v2` resource, whereas the
+repository owns the stable classic HTTP-API model. These are not line-compatible
+JSON documents and must never be pasted over one another.
+
+The repository now owns a guarded Grafana acceptance runner that resolves exact
+datasource UIDs, updates the stable dashboards through Grafana's conversion API,
+backs up existing objects and verifies their stored panel/query signatures. It
+also materializes exactly eight schema-v2 rules with numeric signals and
+explicit evaluators, binds an already-tested real contact point at rule level
+without rewriting the global notification policy, and manages only the exact
+temporary LOCAL receipt probe. This corrects the earlier manual overwrite
+procedure; live apply/receipt evidence remains required before PASS.
 
 ## Remaining acceptance
 
@@ -150,8 +161,8 @@ their exact datasources and checked against live signals.
 | Full backend regression and current-tree quality-gate rerun | PASS; final canonical source-closure run |
 | Full web quality gates | PASS locally; 58 tests, lint, typecheck, production build and bundle budget |
 | Faro/browser activation | PASS operationally; final release-identity smoke remains part of integration acceptance |
-| Source-controlled dashboard import and visual smoke | IN PROGRESS; final UID-preserving overwrite/update and visual evidence are required |
-| Exact eight-rule catalog, contact point and received synthetic notification | IN PROGRESS; owned real contact plus temporary LOCAL delivery rule required |
+| Source-controlled dashboard apply and visual smoke | IN PROGRESS; guarded UID-preserving API plan/apply and visual evidence are required |
+| Exact eight-rule catalog, contact point and received synthetic notification | IN PROGRESS; schema-v2 materializer is source-controlled; owned real contact plus received-and-removed LOCAL probe remain required |
 | Explicit redaction/correlation acceptance query | PASS on activation checkpoint; repeat for the integration release |
 | Collector/Grafana-delivery outage: application remains available | IN PROGRESS; guarded reversible `observability:prove:collector-outage` procedure published |
 | Disposable PostgreSQL role/ACL proof in CI | CI COVERED; Backend PostgreSQL workflow runs exact ACL/row-lock tests; current branch job evidence required |

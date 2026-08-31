@@ -28,7 +28,21 @@ def _checks(scope: Literal["all", "web", "backend"]) -> list[Check]:
         Check(
             "Static observability contracts",
             (sys.executable, "tooling/observability/validate.py"),
-        )
+        ),
+        Check(
+            "Grafana acceptance tooling tests",
+            (
+                sys.executable,
+                "-m",
+                "unittest",
+                "discover",
+                "-s",
+                "tooling/observability/tests",
+                "-p",
+                "test_*.py",
+                "-v",
+            ),
+        ),
     ]
     if scope in {"all", "web"}:
         checks.extend(
@@ -124,7 +138,9 @@ def main() -> int:
     scope = _parse_scope()
     checks = _checks(scope)
     required_tools = {check.command[0] for check in checks}
-    missing_tools = sorted(tool for tool in required_tools if shutil.which(tool) is None)
+    missing_tools = sorted(
+        tool for tool in required_tools if shutil.which(tool) is None
+    )
     if missing_tools:
         print(
             f"observability verification failed: missing tools: {', '.join(missing_tools)}",

@@ -30,6 +30,7 @@ _WEB_SANITIZER = (
 _WEB_SMOKE = _REPO_ROOT / "tooling" / "observability" / "run-local-web-smoke.py"
 _VERIFY = _REPO_ROOT / "tooling" / "observability" / "verify.py"
 _OUTAGE_PROBE = _REPO_ROOT / "tooling" / "observability" / "prove-collector-outage.py"
+_GRAFANA_ACCEPTANCE = _REPO_ROOT / "tooling" / "observability" / "grafana_acceptance.py"
 _ROOT_PACKAGE = _REPO_ROOT / "package.json"
 _DASHBOARD_ROOT = _REPO_ROOT / "infra" / "observability" / "grafana" / "dashboards"
 _ALERTS = (
@@ -41,6 +42,22 @@ _DICTIONARY_SCHEMA = (
 )
 _ALLOY_IMAGE = "grafana/alloy:v1.19.2@sha256:b8ec653c44235fbe910879145dac3597d66b0aaecf60bcbbe82580767771a839"
 _SAFE_SEVERITIES = frozenset({"warning", "critical"})
+_EXPECTED_ALERT_IDS = frozenset(
+    {
+        "dante-backend-unavailable",
+        "dante-backend-error-ratio",
+        "dante-backend-latency",
+        "dante-database-readiness",
+        "dante-auth-kdf-saturation",
+        "dante-alloy-missing",
+        "dante-log-delivery-drops",
+        "dante-metrics-delivery-failures",
+    }
+)
+_EXPECTED_DASHBOARD_PANEL_COUNTS = {
+    "dante-service-overview": 15,
+    "dante-telemetry-pipeline": 13,
+}
 _GRAFANA_RUNTIME_JOBS = frozenset(
     {
         "integrations/self",
@@ -215,13 +232,16 @@ def _validate_grafana_assets() -> None:
     summaries = [_validate_dashboard(path) for path in dashboard_paths]
     if len({summary.uid for summary in summaries}) != len(summaries):
         _fail("Grafana dashboard UIDs must be unique")
+    actual_panel_counts = {summary.uid: len(summary.panel_ids) for summary in summaries}
+    if actual_panel_counts != _EXPECTED_DASHBOARD_PANEL_COUNTS:
+        _fail("Grafana dashboard UID/panel topology differs from the governed console")
 
     raw_alerts = _json(_ALERTS)
-    if not isinstance(raw_alerts, dict) or raw_alerts.get("schema_version") != 1:
-        _fail("alert catalog must use DANTE schema_version 1")
+    if not isinstance(raw_alerts, dict) or raw_alerts.get("schema_version") != 2:
+        _fail("alert catalog must use DANTE schema_version 2")
     rules = raw_alerts.get("rules")
-    if not isinstance(rules, list) or not rules:
-        _fail("alert catalog must contain rules")
+    if not isinstance(rules, list) or len(rules) != 8:
+        _fail("alert catalog must contain exactly eight governed rules")
     identifiers: set[str] = set()
     for rule in rules:
         if not isinstance(rule, dict):
@@ -237,8 +257,30 @@ def _validate_grafana_assets() -> None:
             _fail(f"alert {identifier} must define an explicit no-data policy")
         if not isinstance(expression, str) or not expression.strip():
             _fail(f"alert {identifier} has no PromQL expression")
+        lookback = rule.get("lookback_seconds")
+        if not isinstance(lookback, int) or not 60 <= lookback <= 3600:
+            _fail(f"alert {identifier} has an invalid bounded lookback")
+        evaluator = rule.get("evaluator")
+        if (
+            not isinstance(evaluator, dict)
+            or evaluator.get("type") not in {"gt", "lt"}
+            or not isinstance(evaluator.get("threshold"), int | float)
+        ):
+            _fail(f"alert {identifier} has an invalid explicit evaluator")
         if _FORBIDDEN_TELEMETRY_LABELS.search(expression):
             _fail(f"alert {identifier} uses an identity-like label")
+        if not re.search(
+            r'(?:environment|deployment_environment_name)="prod"', expression
+        ):
+            _fail(f"production alert {identifier} is not pinned to prod")
+        if rule.get("no_data_state") == "alerting" and (
+            "absent_over_time(" in expression or "==" in expression
+        ):
+            _fail(
+                f"alert {identifier} combines Alerting-on-NoData with an empty-vector query"
+            )
+    if identifiers != _EXPECTED_ALERT_IDS:
+        _fail("alert catalog identifiers differ from the governed eight-rule set")
 
     runtime_query_sources = [
         *dashboard_paths,
@@ -309,9 +351,13 @@ def _validate_web_contract() -> None:
     if "fetchTransportV2: true" in runtime:
         _fail("the pinned Alloy receiver is incompatible with Faro fetch transport v2")
     if "PerformanceInstrumentation" in runtime:
-        _fail("generic Faro performance/resource instrumentation is outside the data contract")
+        _fail(
+            "generic Faro performance/resource instrumentation is outside the data contract"
+        )
     if "beforeSend: sanitizeTransportItem" in runtime:
-        _fail("the Web sanitizer must remain the terminal post-initialization transport hook")
+        _fail(
+            "the Web sanitizer must remain the terminal post-initialization transport hook"
+        )
 
 
 def _validate_web_smoke_contract() -> None:
@@ -349,6 +395,7 @@ def _validate_verifier_contract() -> None:
     package = _json(_ROOT_PACKAGE)
     required_fragments = (
         '"Static observability contracts"',
+        '"Grafana acceptance tooling tests"',
         '"Web observability lint"',
         '"Web observability tests"',
         '"Web production build and bundle budget"',
@@ -400,6 +447,49 @@ def _validate_collector_outage_probe_contract() -> None:
         _fail("root collector-outage command must execute the governed probe directly")
 
 
+def _validate_grafana_acceptance_contract() -> None:
+    runner = _read(_GRAFANA_ACCEPTANCE)
+    package = _json(_ROOT_PACKAGE)
+    required_fragments = (
+        "--allow-write",
+        "--with-synthetic",
+        "--cleanup-synthetic",
+        '"overwrite": True',
+        '"/api/dashboards/db"',
+        '"/api/v1/provisioning/alert-rules"',
+        '_SYNTHETIC_UID = "dante-acceptance-synthetic"',
+        "refusing to delete a rule that is not the exact DANTE synthetic probe",
+        "grafana_service_account_token.local",
+        "chmod 600",
+    )
+    for fragment in required_fragments:
+        if fragment not in runner:
+            _fail(f"Grafana acceptance runner is missing: {fragment}")
+    if "shell=True" in runner:
+        _fail("Grafana acceptance runner must never execute through a shell")
+    if _GRAFANA_ACCEPTANCE.stat().st_mode & 0o111 == 0:
+        _fail("Grafana acceptance runner must remain executable")
+    expected_commands = {
+        "observability:grafana:plan": (
+            "python3 tooling/observability/grafana_acceptance.py"
+        ),
+        "observability:grafana:apply": (
+            "python3 tooling/observability/grafana_acceptance.py "
+            "--allow-write --with-synthetic"
+        ),
+        "observability:grafana:cleanup-synthetic": (
+            "python3 tooling/observability/grafana_acceptance.py "
+            "--allow-write --cleanup-synthetic"
+        ),
+    }
+    scripts = package.get("scripts")
+    if not isinstance(scripts, dict):
+        _fail("root package scripts are malformed")
+    for name, command in expected_commands.items():
+        if scripts.get(name) != command:
+            _fail(f"root Grafana command is missing or stale: {name}")
+
+
 def main() -> int:
     """Validate static artifacts; the pinned Alloy binary remains a separate CI gate."""
     try:
@@ -410,6 +500,7 @@ def main() -> int:
         _validate_web_smoke_contract()
         _validate_verifier_contract()
         _validate_collector_outage_probe_contract()
+        _validate_grafana_acceptance_contract()
     except ValidationFailure as error:
         print(f"observability validation failed: {error}", file=sys.stderr)
         return 1

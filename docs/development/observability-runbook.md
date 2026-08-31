@@ -270,17 +270,77 @@ If provider-side OTLP translation produces a different metric suffix/label name,
 stop dashboard/alert materialization, capture the observed exact name and update
 source-controlled queries plus tests in one change.
 
-## 9. Import, use dashboards and materialize alerts
+## 9. Apply dashboards and materialize alerts
 
-The repository owns dashboard JSON, not a hidden provider-side dashboard state.
-Import both files through Grafana's **Dashboards → New → Import** UI:
+The repository owns two classic dashboard HTTP-API models:
 
 ```text
 infra/observability/grafana/dashboards/dante-service-overview.json
 infra/observability/grafana/dashboards/dante-telemetry-pipeline.json
 ```
 
-For `DANTE · Service overview`, preserve the supplied name and UID, then map:
+Grafana 12 may display/export the same dashboard as a
+`dashboard.grafana.app/v2` resource whose expanded `spec.elements` form is much
+longer. The formats are two serializations of the same dashboard; line counts
+are not comparable and the classic source must never be pasted over the v2 JSON
+editor. The governed runner sends the classic model to Grafana's dashboard API,
+which performs the conversion and updates the existing stable UID.
+
+Create a short-lived Grafana service account authorized only to write dashboards
+and alert rules in the target stack. This is an administrative provisioning
+credential, not the Alloy metrics/logs/traces ingestion token. Save it locally
+without displaying or committing it:
+
+```bash
+umask 077
+python3 -c "import getpass,sys; sys.stdout.write(getpass.getpass('Grafana service-account token: '))" \
+  > infra/compose/secrets/grafana_service_account_token.local
+chmod 600 infra/compose/secrets/grafana_service_account_token.local
+```
+
+In Grafana **Alerts & IRM → Alerting → Contact points**, create the owned real
+contact point `DANTE Operations` and use its **Test** action. The destination is
+entered only in Grafana; it is never passed in argv, chat or repository source.
+
+Set the non-secret stack root and run the read-only plan first:
+
+```bash
+export DANTE_GRAFANA_URL="https://YOUR-STACK.grafana.net"
+corepack pnpm observability:grafana:plan -- --receiver "DANTE Operations"
+```
+
+The runner auto-selects a datasource only when exactly one datasource of that
+type exists. If it reports multiple candidates, rerun with the exact non-secret
+UIDs it prints, for example:
+
+```bash
+corepack pnpm observability:grafana:plan -- \
+  --receiver "DANTE Operations" \
+  --prometheus-uid METRICS_UID \
+  --loki-uid LOKI_UID \
+  --tempo-uid TEMPO_UID
+```
+
+Review the plan, then use the same datasource arguments for the single apply:
+
+```bash
+corepack pnpm observability:grafana:apply -- \
+  --receiver "DANTE Operations" \
+  --prometheus-uid METRICS_UID \
+  --loki-uid LOKI_UID \
+  --tempo-uid TEMPO_UID
+```
+
+The apply operation creates or validates the stable `DANTE` folder; updates
+only the two DANTE dashboard UIDs; verifies every stored panel/query signature;
+creates or updates exactly eight governed production alert UIDs; and creates
+one labelled temporary LOCAL notification rule. Before replacing an existing
+object it writes a private backup under the ignored
+`.dante/observability/grafana-backups/` directory. It never deletes unrelated
+objects, rewrites the global notification-policy tree, touches application data
+or uses the ingestion credential.
+
+The datasource mapping remains:
 
 | Import field | Required datasource type |
 |---|---|
@@ -288,10 +348,10 @@ For `DANTE · Service overview`, preserve the supplied name and UID, then map:
 | `DS_LOKI` | Grafana Cloud Logs / Loki |
 | `DS_TEMPO` | Grafana Cloud Traces / Tempo |
 
-For `DANTE · Telemetry pipeline & budget`, preserve its supplied name and UID
-and map only `DS_PROMETHEUS` and `DS_LOKI` to the equivalent datasource types.
-Do not record a stack-specific datasource display name in source: Grafana Cloud
-names vary by stack, whereas the plugin type is the stable contract.
+`DANTE · Telemetry pipeline & budget` uses only Prometheus and Loki. Do not
+record a stack-specific datasource display name in source: Grafana Cloud names
+vary by stack, whereas plugin type and datasource UID are the deployment
+binding.
 
 Both dashboards open on `local`, last six hours, with a one-minute refresh.
 Select another environment only when that environment's runtime identity and
@@ -335,9 +395,10 @@ The alert source contract is:
 infra/observability/grafana/alerts/dante-alerts.json
 ```
 
-Create the corresponding Grafana-managed rules only after the smoke queries
-prove names/labels in that exact stack. Preserve expression, `for`, severity and
-no-data policy. Attach the real contact point and this runbook.
+Schema v2 separates each numeric PromQL signal from its explicit `gt`/`lt`
+evaluator. This prevents a healthy false comparison from becoming an empty
+vector that Grafana could misclassify as NoData. Production rules remain pinned
+to `environment="prod"`; the synthetic receipt probe alone is labelled LOCAL.
 
 Repository presence is not proof that dashboard import, rule evaluation or
 notification delivery is active. PROD activation requires a synthetic alert
@@ -350,35 +411,24 @@ runtime smoke both pass. It completes the remaining dashboard, alert,
 notification, collector-isolation and CI evidence without changing a migration,
 business table, product role, secret or Grafana ingestion credential.
 
-1. **Update the two dashboards.** Import both JSON files again, retain their
-   stable UIDs and select Grafana's explicit overwrite/update option. Map only
-   the datasource types listed above. Verify that an absent series renders as
-   neutral `NO SIGNAL`, not green. Capture one screenshot of each console with
-   the `local` selector and real data.
-2. **Materialize the eight source rules.** In Grafana Alerting create a
-   production rule group (for example `DANTE / Production`) from every object
-   in `dante-alerts.json`. Use the Metrics datasource proven by Explore. Copy
-   each `expr`, `for`, severity and no-data state exactly; attach this runbook
-   URL/anchor and the chosen contact point. The source rules intentionally keep
-   `environment="prod"`: LOCAL traffic must not silently rewrite production
-   policy.
-3. **Prove the notification path honestly.** Configure an owned real Grafana
-   contact point (email is the lowest-friction choice; Slack/Discord/webhook is
-   equally valid when owned and configured by the operator). Use Grafana's
-   contact-point **Test** action first. Then create a separate, clearly named
-   temporary rule in a LOCAL acceptance group:
+1. **Apply two dashboards and eight rules.** Run the plan/apply sequence above.
+   Verify that both dashboards load with their exact datasources, fifteen
+   service panels and the complete pipeline console. An absent series must
+   render as neutral `NO SIGNAL`, never implicit green. The eight production
+   rules must appear under `DANTE production` with exact source UIDs.
+2. **Prove the notification path honestly.** The apply command creates
+   `DANTE acceptance · synthetic notification` in the temporary LOCAL group and
+   binds it directly to the already-tested real receiver. Wait for the received
+   notification and record its timestamp/title. A configured or pending rule is
+   not receipt evidence. Immediately after receipt run:
 
-   ```promql
-   vector(1)
+   ```bash
+   corepack pnpm observability:grafana:cleanup-synthetic
    ```
 
-   Give that temporary rule a `DANTE acceptance` title, a short evaluation
-   interval and an immediate threshold (`A > 0`). It is a deliberate synthetic
-   delivery probe, not a production health rule. Wait for the real received
-   notification, capture the time/title, then delete the temporary rule. Never
-   point this rule at a production escalation route and never report a merely
-   configured contact point as delivered evidence.
-4. **Prove collector/Grafana-delivery isolation.** With the application and
+   Cleanup first verifies the exact UID, title, group and LOCAL synthetic labels;
+   it refuses to delete anything else and confirms the rule is absent afterward.
+3. **Prove collector/Grafana-delivery isolation.** With the application and
    Alloy already healthy, run from the repository root:
 
    ```bash
@@ -390,7 +440,7 @@ business table, product role, secret or Grafana ingestion credential.
    restores/rechecks Alloy in a `finally` block. It does not stop PostgreSQL,
    delete a volume or alter application data. This safely proves loss of the
    collector/Grafana delivery boundary, not an invented provider outage.
-5. **Record the CI ACL proof, do not rerun it against a shared database.**
+4. **Record the CI ACL proof, do not rerun it against a shared database.**
    `.github/workflows/backend-ci.yml` runs the disposable PostgreSQL acceptance
    suite. Its
    `test_current_catalog.py::test_m3_account_security_lock_is_narrow_and_transaction_scoped`
@@ -405,6 +455,9 @@ The dashboard update, exact eight-rule catalog, real receipt, reversible
 collector proof and named PostgreSQL CI checks form one acceptance record. Any
 missing item remains `IN PROGRESS`; no dashboard image or local metric alone
 upgrades it to PROD activation.
+
+After the two live operations, revoke the short-lived service-account token and
+remove only its local file. The Alloy ingestion token remains untouched.
 
 ## 10. Normal triage order
 

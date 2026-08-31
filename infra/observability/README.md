@@ -90,9 +90,13 @@ with readiness, traffic, 5xx, latency, database readiness and KDF pressure,
 then provides bounded Auth/Database diagnostics and redacted logs/traces.
 `DANTE · Telemetry pipeline & budget` is the collector decision surface: it
 starts with Alloy/delivery health, then shows queues, failures and Free-plan
-ingestion budget. They are imported through Grafana's UI with the requested
-Prometheus/Loki/Tempo datasources; preserve their stable UIDs and map by
-datasource type, never by a copied local datasource name.
+ingestion budget. They are applied through
+`tooling/observability/grafana_acceptance.py` with the requested
+Prometheus/Loki/Tempo datasource UIDs. Grafana 12's expanded
+`dashboard.grafana.app/v2` JSON editor is a provider serialization, not the
+repository format: never replace it by pasting the shorter classic model. The
+runner uses Grafana's dashboard API to convert/update by stable UID, verifies
+the stored panel/query signature and writes a private pre-change backup.
 
 They refresh every minute by default. Use the 30-second option only during an
 active incident. A zero request rate is normal for a quiet LOCAL service; a
@@ -125,4 +129,12 @@ root. It
 uses the allowlisted `https://127.0.0.1:4173` origin, generates only ephemeral
 LOCAL TLS material and embeds no ingestion credential in the Web build.
 
-The application stays available if Alloy or Grafana Cloud is unavailable. Telemetry queues and retries are bounded; exhaustion drops observability data and is itself visible in Alloy self-metrics.
+The application stays available if Alloy or Grafana Cloud is unavailable.
+Telemetry queues and retries are bounded; exhaustion drops observability data
+and is itself visible in Alloy self-metrics.
+
+The same governed runner materializes the eight production alert rules from the
+schema-v2 catalog and can create/remove the exact temporary LOCAL receipt probe.
+It requires a short-lived, private Grafana service-account token distinct from
+the Alloy ingestion token and never rewrites the global notification-policy
+tree. See the operator runbook for the plan/apply/receipt/cleanup sequence.
