@@ -86,6 +86,7 @@ export const TIMELINE_POLICY = {
     initialExternalMinute: 8 * 60,
     initialExternalOffsetPx: 70,
     horizontalSyncTolerancePx: 0.5,
+    eventRevealInsetPx: 16,
   },
   feedback: {
     toastDurationMs: 5000,
