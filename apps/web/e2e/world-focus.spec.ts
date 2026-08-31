@@ -19,7 +19,7 @@ test('Home opens the centered World on the dedicated World Focus route', async (
   await expect(focus).toHaveAttribute('data-world-focus-geometry-version', 'wf-g3');
   await expect(focus).toHaveAttribute(
     'data-world-focus-visual-version',
-    'wf-v3-candidate',
+    'wf-v4-candidate',
   );
   await expect(page.locator('[data-app-region="topbar"]')).toBeVisible();
   await expect(page.locator('[data-world-focus-region="visual-frame"]')).toHaveCount(1);
@@ -29,8 +29,14 @@ test('Home opens the centered World on the dedicated World Focus route', async (
   await expect(page.locator('.world-focus-corona-reference')).toHaveCount(3);
   await expect(page.locator('.world-focus-corona-fallback-svg')).toHaveCount(0);
   await expect(
-    page.locator('[data-world-focus-energy-motion="static"]'),
+    page.locator('[data-world-focus-vfx-coverage="peripheral-outside-workspace"]'),
   ).toHaveCount(1);
+  await expect(
+    page.locator('[data-world-focus-vfx-boundary="workspace-protected"]'),
+  ).toHaveCount(1);
+  await expect(
+    page.locator('[data-world-focus-energy-motion]'),
+  ).toHaveAttribute('data-world-focus-energy-motion', /animated|reduced/);
   await expect(
     page.locator('[data-world-focus-energy-renderer]'),
   ).toHaveAttribute('data-world-focus-energy-renderer', /webgl2|fallback/);
@@ -104,7 +110,7 @@ test('direct World Focus URL opens the same frozen structure and Escape closes s
   await expect(focus).toHaveAttribute('data-world-focus-geometry-version', 'wf-g3');
   await expect(focus).toHaveAttribute(
     'data-world-focus-visual-version',
-    'wf-v3-candidate',
+    'wf-v4-candidate',
   );
   await expect(page.locator('[data-app-region="topbar"]')).toBeVisible();
 
