@@ -1,10 +1,11 @@
 # DANTE — Access/Auth M5 Live Handoff — 2026-08-29
 
-- **Status:** CURRENT CONTINUATION SAVE-GAME / M5.1–M5-C COMPLETE / M5-D NEXT
+- **Status:** CURRENT CONTINUATION SAVE-GAME / M5.1–M5-D COMPLETE / M5-E NEXT
 - **Vertical:** Access/Auth
 - **Repository:** `MattiaRubino/dante`
 - **Branch:** `feature/access-auth`
 - **Worktree:** `/home/mattia/projects/dante`
+- **M5-D accepted implementation checkpoint:** `7d13b712f032e8d41d7cf03d406555fd9f3c0160`
 - **M5-C accepted implementation checkpoint:** `e6f738a1ea3f5152caa7d99f1d6ccd108747c806`
 - **M5-B accepted implementation checkpoint:** `e2d40a7666e3c0130afecd8113b8063390b86b9d`
 - **M5-A accepted implementation checkpoint:** `7e40e02d301b0812b3f55e0d9d4ce6439e420b2a`
@@ -15,7 +16,7 @@
 - **M5.2 exact persistence/API authority:** `../architecture/access-auth-m5-persistence-api-contract.md`
 - **Forward plan:** `access-auth-m4-m7-execution-plan.md`
 
-> This file is the live save-game for continuation. Repository truth wins if the branch has moved after this handoff. A new chat should not replay the conversation or redo broad M5 research; it should verify current branch state, read the authorities above, and continue from M5-D.
+> This file is the live save-game for continuation. Repository truth wins if the branch has moved after this handoff. A new chat should not replay the conversation or redo broad M5 research; it should verify current branch state, read the authorities above, and continue from M5-E.
 
 ---
 
@@ -67,7 +68,7 @@ Recommended read order:
 11. current Access/Auth Dictionary entries
 12. CP6 persistence constitution
 13. `docs/frontend/access.md`
-14. current backend implementation/tests for the exact M5-D slice
+14. current backend implementation/tests for the exact M5-E slice
 
 ---
 
@@ -90,7 +91,7 @@ real boundary proof rather than mock-only confidence
 no gratuitous enterprise theatre/overengineering without consumer value
 ```
 
-Testing preference retained from M4/M5-A/M5-B/M5-C:
+Testing preference retained from M4/M5-A/M5-B/M5-C/M5-D:
 
 ```text
 prove each invariant at the truthful layer
@@ -227,7 +228,8 @@ M5.2 persistence/API design                 COMPLETE
 M5-A persistence implementation             COMPLETE / POSTGRESQL PROVEN
 M5-B dependency/runtime infrastructure      COMPLETE / ENGINEERING PASS
 M5-C Google authentication                  COMPLETE / ENGINEERING PASS
-M5-D Apple authentication                   NEXT
+M5-D Apple authentication                   COMPLETE / ENGINEERING PASS
+M5-E linking/authenticator lifecycle        NEXT
 M5 OpenAPI/client materialization           NOT STARTED
 M5 Web runtime integration                  NOT STARTED
 ```
@@ -239,7 +241,7 @@ docs/architecture/access-auth-m5-contract.md
 docs/architecture/access-auth-m5-persistence-api-contract.md
 ```
 
-Do not perform another broad “what should Google/Apple/passkeys do?” discovery sweep unless provider standards materially changed. M5-D starts from the frozen contracts, accepted M5-A persistence reality, accepted M5-B trust/runtime foundation and accepted M5-C provider-flow patterns.
+Do not perform another broad “what should Google/Apple/passkeys do?” discovery sweep unless provider standards materially changed. M5-E starts from the frozen contracts, accepted M5-A persistence reality, accepted M5-B trust/runtime foundation, accepted M5-C Google patterns and accepted M5-D Apple lifecycle implementation.
 
 ---
 
@@ -535,56 +537,103 @@ M5-C does not yet expose public routes/Web UI and does not claim real Google bro
 
 ---
 
-# 11. Exact next work — M5-D
+# 11. M5-D accepted Apple backend slice
 
 ```text
 M5-D — Apple Authentication + Grant / Notification Lifecycle
+COMPLETE / ENGINEERING PASS
+```
+
+Accepted implementation checkpoint:
+
+```text
+7d13b712f032e8d41d7cf03d406555fd9f3c0160
+chore(auth): finalize M5-D formatting
+```
+
+Accepted behavior:
+
+```text
+Apple begin + form_post-compatible authorization topology
+pre-exchange ExternalAuthTransaction claim
+front-channel ID token + server-side single-use code exchange identity convergence
+issuer/audience/nonce/exp/iat/subject/c_hash verification
+ES256 Apple client-secret issuance
+ambiguous code exchange never blindly retried
+one-shot Apple name/profile bootstrap preservation
+Hide My Email classification for privaterelay.appleid.com + private.icloud.com
+known identity signin / passwordless Account / collision / provider enrollment
+Apple link + reauthentication exact AuthSession binding and bearer rotation
+AES-256-GCM refresh grant bound by grant+issuer+subject+client AAD
+pending → active → revocation_pending → revoked lifecycle
+local-first revoke + bounded remote reconciliation
+signed server notifications
+email-disabled/email-enabled ordered EmailIdentity recovery restriction state
+consent-revoked/account-deleted identity/grant reconciliation
+ambiguous PostgreSQL commit reconciliation and same-sub race convergence
+```
+
+Accepted proof:
+
+```text
+uv lock --check                              PASS
+Ruff autofix / format / format-check / lint PASS
+mypy src                                     PASS / 49 source files
+backend fast                                 171 / 171 PASS
+focused real PostgreSQL M5-D                  9 / 9 PASS
+full real PostgreSQL regression              111 / 111 PASS
+backend build                                PASS / sdist + wheel
+git diff --check                             PASS
+```
+
+M5-D does not expose public routes/Web UI and does not claim real Apple registered-domain/browser/provider acceptance or Private Email Relay sender configuration.
+
+---
+
+# 12. Exact next work — M5-E
+
+```text
+M5-E — Explicit Linking + Authenticator Lifecycle
 NEXT
 ```
 
 Exact product boundary:
 
 ```text
-Apple authorization begin URL
-form_post callback semantics
-claim ExternalAuthTransaction before code exchange
-server-side authorization-code exchange
-ID-token/JWK verification through accepted M5-B runtime
-issuer/audience/nonce/expiry/subject validation
-known ExternalIdentity signin
-new Account / collision / provider enrollment
-provider reauthentication and Settings-link semantics as frozen
-one-shot Apple name staging
-Hide My Email / provider-email-private semantics
-pending AppleAuthGrant persistence after successful code exchange
-pending → active exact ExternalIdentity binding after Account/link finalization
-revocation_pending → remote revoke outside DB tx → revoked
-signed server notification verification
-email-disabled/email-enabled event-time ordering
-consent-revoked/account-deleted reconciliation
+provider-link challenge inspection + explicit confirmation
+exact Account + recent-auth binding
+lifetime issuer+subject ownership preservation
+provider-neutral authentication-method projection
+provider unlink = logical ExternalIdentity revoke, never DELETE
+Apple unlink composes with M5-D local-first grant revocation/reconciliation
+Google unlink preserves lifetime issuer+subject ownership
+anti-lockout before any authenticator removal
+password/passwordless Account coherence
+provider link/unlink concurrency under Account security lock
 canonical DANTE AuthSession only
 ```
 
 Still out of scope until later slices:
 
 ```text
-provider unlink/authenticator management
 full WebAuthn ceremonies
-password lifecycle adaptation
+full password lifecycle adaptation
 public M5 FastAPI/OpenAPI/generated client
 Access Web UI
 real provider/browser final M5 acceptance
 Gmail/Calendar/Drive or other provider-data scopes
 ```
 
+Do not keep expanding `apple_flow.py` with provider-neutral lifecycle responsibility; M5-E is the natural boundary for shared authenticator-management extraction if needed.
+
 ---
 
-# 12. Forward execution
+# 13. Forward execution
 
 ```text
 M5-C  Google authentication                        COMPLETE / ENGINEERING PASS
-M5-D  Apple auth + grant/notifications             NEXT
-M5-E  explicit linking/authenticator lifecycle     PLANNED
+M5-D  Apple auth + grant/notifications             COMPLETE / ENGINEERING PASS
+M5-E  explicit linking/authenticator lifecycle     NEXT
 M5-F  WebAuthn/passkeys                            PLANNED
 M5-G  passwordless password/recovery adaptation    PLANNED
 M5-H  FastAPI/Pydantic public contract             PLANNED
@@ -597,7 +646,7 @@ M7    Security + Observability + final handoff      PLANNED
 
 ---
 
-# 13. Testing / acceptance posture
+# 14. Testing / acceptance posture
 
 Mandatory layers through later M5:
 
@@ -628,7 +677,7 @@ explicit user acceptance
 
 ---
 
-# 14. Whole-vertical state
+# 15. Whole-vertical state
 
 ```text
 M1 CLOSED
@@ -641,7 +690,8 @@ M5 ACTIVE
   M5-A COMPLETE / POSTGRESQL PROVEN
   M5-B COMPLETE / ENGINEERING PASS
   M5-C COMPLETE / ENGINEERING PASS
-  M5-D NEXT
+  M5-D COMPLETE / ENGINEERING PASS
+  M5-E NEXT
 M6 PLANNED
 M7 PLANNED / FINAL GATE
 
