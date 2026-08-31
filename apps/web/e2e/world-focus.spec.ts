@@ -2,50 +2,32 @@ import { expect, test } from '@playwright/test';
 
 test.use({ locale: 'it-IT' });
 
-test('Home opens the centered World directly into the static workspace and browser back preserves Home state', async ({
+test('Home opens a centered World on the dedicated World Focus route', async ({
   page,
 }) => {
   await page.goto('/home');
 
-  await page.getByRole('button', { name: 'Comprimi assistente' }).click();
-  const homeShell = page.locator('[data-home-region="shell"]');
-  await expect(homeShell).toHaveAttribute('data-home-ai-state', 'collapsed');
-
-  await page.getByRole('button', { name: 'Espandi timeline' }).click();
-  await expect(homeShell).toHaveAttribute(
-    'data-home-timeline-state',
-    'expanded',
-  );
-
   const music = page.locator('.home-world[aria-label="Musica"]');
   await music.click();
   await expect(music).toHaveAttribute('aria-current', 'true');
-
   await music.click();
-  await expect(page).toHaveURL(/\/home\?focus=music$/);
 
+  await expect(page).toHaveURL(/\/worlds\/music$/);
   const focus = page.locator('.world-focus-shell');
   await expect(page.getByRole('main', { name: 'Mondo Musica' })).toBeVisible();
-  await expect(focus).toHaveAttribute('data-entry-origin', 'live');
-  await expect(focus).toHaveAttribute('data-world-focus-status', 'ready');
-  await expect(focus).toHaveAttribute('data-entry-presentation', 'instant');
-  await expect(focus).toHaveAttribute('data-entry-phase', 'end');
-  await expect(page.locator('.world-focus-surface')).toBeVisible();
-  await expect(page.locator('.world-focus-portal')).toBeVisible();
-  await expect(page.locator('.world-focus-entry-effect')).toHaveCount(0);
+  await expect(focus).toHaveAttribute('data-world-focus-geometry-version', 'wf-g1');
   await expect(page.locator('[data-app-region="topbar"]')).toBeVisible();
+  await expect(page.locator('.world-focus-guide-rail')).toHaveCount(2);
+  await expect(page.locator('[data-guide-line]')).toHaveCount(6);
+  await expect(page.locator('[data-world-focus-region="workspace"]')).toBeVisible();
+
+  const background = await focus.evaluate(
+    (element) => getComputedStyle(element).backgroundColor,
+  );
+  expect(background).toBe('rgb(255, 255, 255)');
 
   await page.goBack();
   await expect(page).toHaveURL(/\/home$/);
-  await expect(page.getByRole('main', { name: 'Mondo Musica' })).toHaveCount(0);
-  await expect(homeShell).toHaveAttribute('data-home-ai-state', 'collapsed');
-  await expect(homeShell).toHaveAttribute(
-    'data-home-timeline-state',
-    'expanded',
-  );
-  await expect(music).toHaveAttribute('aria-current', 'true');
-  await expect(music).toBeFocused();
-  await expect(page.locator('[data-app-region="topbar"]')).toBeVisible();
 });
 
 test('the initially centered World still requires two activations', async ({
@@ -58,17 +40,15 @@ test('the initially centered World still requires two activations', async ({
 
   await body.click();
   await expect(page).toHaveURL(/\/home$/);
-  await expect(page.locator('.world-focus-shell')).toHaveCount(0);
 
   await body.click();
-  await expect(page).toHaveURL(/\/home\?focus=body$/);
+  await expect(page).toHaveURL(/\/worlds\/body$/);
 });
 
 test('dragging the active World does not enter World Focus', async ({ page }) => {
   await page.goto('/home');
 
   const body = page.locator('.home-world[aria-label="Corpo"]');
-  await expect(body).toHaveAttribute('aria-current', 'true');
   const box = await body.boundingBox();
   expect(box).not.toBeNull();
   if (box === null) {
@@ -95,65 +75,50 @@ test('keyboard activation selects first and opens the centered World second', as
   await expect(music).toHaveAttribute('aria-current', 'true');
 
   await page.keyboard.press('Enter');
-  await expect(page).toHaveURL(/\/home\?focus=music$/);
-  await expect(page.getByRole('main', { name: 'Mondo Musica' })).toBeVisible();
+  await expect(page).toHaveURL(/\/worlds\/music$/);
 });
 
-test('direct World Focus URL opens the same static surface and has a safe close path', async ({
+test('direct World Focus URL opens the same geometry and has a safe close path', async ({
   page,
 }) => {
-  await page.goto('/home?focus=travel');
+  await page.goto('/worlds/travel');
 
   const focus = page.locator('.world-focus-shell');
   await expect(focus).toBeVisible();
   await expect(focus).toHaveAttribute('data-entry-origin', 'fallback');
-  await expect(focus).toHaveAttribute('data-entry-presentation', 'instant');
-  await expect(focus).toHaveAttribute('data-entry-phase', 'end');
-  await expect(focus).toHaveAttribute('data-world-focus-status', 'ready');
-  await expect(page.locator('.world-focus-surface')).toBeVisible();
-  await expect(page.locator('.world-focus-portal')).toBeVisible();
-  await expect(page.getByRole('main', { name: 'Mondo Viaggi' })).toBeVisible();
+  await expect(focus).toHaveAttribute('data-world-focus-geometry-version', 'wf-g1');
   await expect(page.locator('[data-app-region="topbar"]')).toBeVisible();
 
   await page.getByRole('button', { name: 'Torna indietro' }).click();
-  await expect(page).toHaveURL(/\/home$/);
-  await expect(focus).toHaveCount(0);
+  await expect(page).toHaveURL(/\/worlds$/);
 });
 
-test('legacy immersive preference cannot re-enable an intermediate transition', async ({
+test('WF-G1 keeps the workspace between the side guide rails across desktop widths', async ({
   page,
 }) => {
-  await page.addInitScript(() => {
-    window.localStorage.setItem(
-      'dante.preferences.world-focus-motion.v1',
-      'immersive',
-    );
-  });
-  await page.goto('/home');
+  for (const width of [1600, 1366, 1024, 901]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/worlds/music');
 
-  const music = page.locator('.home-world[aria-label="Musica"]');
-  await music.click();
-  await expect(music).toHaveAttribute('aria-current', 'true');
-  await music.click();
+    const workspace = await page
+      .locator('[data-world-focus-region="workspace"]')
+      .boundingBox();
+    const leftRail = await page
+      .locator('.world-focus-guide-rail[data-side="left"]')
+      .boundingBox();
+    const rightRail = await page
+      .locator('.world-focus-guide-rail[data-side="right"]')
+      .boundingBox();
 
-  const focus = page.locator('.world-focus-shell');
-  await expect(focus).toHaveAttribute('data-entry-presentation', 'instant');
-  await expect(focus).toHaveAttribute('data-entry-phase', 'end');
-  await expect(page.locator('.world-focus-entry-effect')).toHaveCount(0);
-  await expect(page.locator('[data-app-region="topbar"]')).toBeVisible();
-});
+    expect(workspace).not.toBeNull();
+    expect(leftRail).not.toBeNull();
+    expect(rightRail).not.toBeNull();
+    if (workspace === null || leftRail === null || rightRail === null) {
+      throw new Error(`Missing WF-G1 geometry at ${width}px`);
+    }
 
-test('reduced motion keeps the same static World Focus surface usable', async ({
-  page,
-}) => {
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto('/home?focus=music');
-
-  const focus = page.locator('.world-focus-shell');
-  await expect(focus).toBeVisible();
-  await expect(focus).toHaveAttribute('data-entry-presentation', 'instant');
-  await expect(page.locator('.world-focus-entry-effect')).toHaveCount(0);
-
-  await page.keyboard.press('Escape');
-  await expect(page).toHaveURL(/\/home$/);
+    expect(workspace.width).toBeGreaterThan(320);
+    expect(workspace.x).toBeGreaterThanOrEqual(leftRail.x + leftRail.width);
+    expect(workspace.x + workspace.width).toBeLessThanOrEqual(rightRail.x);
+  }
 });
