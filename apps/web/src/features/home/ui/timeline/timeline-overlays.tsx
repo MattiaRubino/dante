@@ -710,6 +710,13 @@ export function TimeEditorPopover({
       setError(true);
       return;
     }
+    if (
+      startMinute === event.startMinute &&
+      endMinute === event.endMinute
+    ) {
+      onClose(true);
+      return;
+    }
     onSave(dateKey, event.id, startMinute, endMinute);
     onClose(true);
   };
