@@ -3,14 +3,18 @@
   --world-focus-workspace-inline-inset-compact: clamp(76px, 18vw, 112px);
   --world-focus-workspace-block-inset: clamp(32px, 5vh, 64px);
   --world-focus-workspace-block-inset-compact: 20px;
+  --world-focus-accent: #8a74ff;
+  --world-focus-violet: #7b4dff;
+  --world-focus-hot: #ff8736;
+  --world-focus-ambient-intensity: 0.76;
 
   position: relative;
   min-width: 0;
   min-height: calc(100dvh - var(--app-shell-topbar-height));
   overflow: hidden;
-  color: #111827;
-  background: #ffffff;
-  color-scheme: light;
+  color: rgba(238, 242, 255, 0.94);
+  background: #010208;
+  color-scheme: dark;
   isolation: isolate;
   outline: none;
 }
@@ -30,31 +34,11 @@
   white-space: nowrap;
 }
 
-.world-focus-ellipse-guides {
+.world-focus-shell-controls {
   position: absolute;
-  z-index: 1;
+  z-index: 4;
   inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
   pointer-events: none;
-}
-
-.world-focus-ellipse-guides ellipse {
-  fill: none;
-  vector-effect: non-scaling-stroke;
-  stroke: #111111;
-}
-
-.world-focus-ellipse-guides ellipse[data-guide-line='outer'],
-.world-focus-ellipse-guides ellipse[data-guide-line='inner'] {
-  stroke-width: 1.15;
-  opacity: 0.62;
-}
-
-.world-focus-ellipse-guides ellipse[data-guide-line='origin'] {
-  stroke-width: 2;
-  opacity: 1;
 }
 
 .world-focus-workspace {
@@ -66,35 +50,49 @@
   left: var(--world-focus-workspace-inline-inset);
   min-width: 0;
   overflow: hidden;
-  border: 2px solid #2563eb;
-  border-radius: 18px;
-  background: rgba(37, 99, 235, 0.12);
-  box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 28px;
+  background:
+    radial-gradient(
+      ellipse 76% 58% at 50% 8%,
+      color-mix(in srgb, var(--world-focus-accent) 10%, transparent),
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse 64% 54% at 92% 78%,
+      color-mix(in srgb, var(--world-focus-hot) 6%, transparent),
+      transparent 70%
+    ),
+    linear-gradient(180deg, rgba(7, 10, 25, 0.66), rgba(2, 4, 13, 0.88));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.035),
+    inset 0 0 100px rgba(0, 0, 0, 0.18),
+    0 28px 90px rgba(0, 0, 0, 0.24);
 }
 
-.world-focus-back {
+.world-focus-workspace::before,
+.world-focus-workspace::after {
   position: absolute;
-  z-index: 4;
-  top: 16px;
-  left: 16px;
-  display: inline-flex;
-  min-height: 40px;
-  align-items: center;
-  gap: 8px;
-  padding: 0 12px;
-  border: 1px solid #111827;
-  border-radius: 999px;
-  color: #111827;
-  background: rgba(255, 255, 255, 0.96);
-  font: inherit;
-  font-size: 0.82rem;
-  font-weight: 650;
-  cursor: pointer;
+  inset: 0;
+  pointer-events: none;
+  content: '';
 }
 
-.world-focus-back:focus-visible {
-  outline: 2px solid #2563eb;
-  outline-offset: 3px;
+.world-focus-workspace::before {
+  background-image:
+    radial-gradient(circle at 16% 21%, rgba(255, 255, 255, 0.6) 0 0.55px, transparent 0.9px),
+    radial-gradient(circle at 37% 67%, color-mix(in srgb, var(--world-focus-accent) 58%, white) 0 0.65px, transparent 1px),
+    radial-gradient(circle at 69% 29%, rgba(255, 255, 255, 0.54) 0 0.55px, transparent 0.9px),
+    radial-gradient(circle at 86% 75%, color-mix(in srgb, var(--world-focus-hot) 50%, white) 0 0.65px, transparent 1px);
+  background-size: 179px 163px, 229px 197px, 211px 233px, 257px 219px;
+  opacity: 0.22;
+}
+
+.world-focus-workspace::after {
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.018),
+    inset 0 -80px 120px rgba(0, 0, 0, 0.18);
 }
 
 @media (max-width: 720px) {
@@ -103,15 +101,6 @@
     right: var(--world-focus-workspace-inline-inset-compact);
     bottom: var(--world-focus-workspace-block-inset-compact);
     left: var(--world-focus-workspace-inline-inset-compact);
-    border-radius: 14px;
-  }
-
-  .world-focus-back {
-    top: 10px;
-    left: 10px;
-  }
-
-  .world-focus-back > span:last-child {
-    display: none;
+    border-radius: 20px;
   }
 }
