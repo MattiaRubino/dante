@@ -4,6 +4,34 @@
 
 A render that looks correct at one width is not a frontend PASS.
 
+## Change-control invariant — frozen behavior
+
+Once the user explicitly accepts a frontend behavior or visual state, that behavior becomes **FROZEN** until the user explicitly authorizes a change.
+
+Frozen means:
+
+- refactors, bug fixes, performance work and cleanup may change implementation but not the accepted observable contract;
+- an intentional change to interaction semantics, layout, hierarchy, visual treatment, information density or navigation requires explicit user approval **before the first production write**;
+- regression tests protecting a frozen behavior must not be weakened, deleted or rewritten merely to match a new accidental behavior;
+- if a regression is discovered while implementing another feature, restore the frozen contract first; redesigning the contract is a separate approved scope;
+- CI green is necessary but not sufficient: the user remains the final visual/manual acceptance gate for changes that affect an accepted surface.
+
+For direct feature-branch work, the assistant must not ask the user to pull/test a new frontend commit until the relevant automated gates have completed successfully. A broken build, typecheck or known regression test must be caught before handoff whenever the repository CI can execute it.
+
+The required execution sequence for frozen surfaces is:
+
+```text
+scope + frozen-contract check
+→ implementation
+→ static/unit/component/E2E gates
+→ CI green
+→ user local/manual gate
+→ explicit acceptance
+→ freeze updated contract
+```
+
+A deliberate contract change follows the same sequence but starts with explicit user authorization and records which frozen expectations are being replaced.
+
 ## Gate classes
 
 ### Q0 — contract/static
@@ -25,6 +53,8 @@ For each durable component/state:
 - focus ownership/restoration;
 - no console errors;
 - no event duplication/leaked listeners.
+
+Accepted interaction sequences become executable regression contracts. The tests should assert user-visible semantics rather than incidental implementation details.
 
 ### Q2 — responsive geometry
 
@@ -52,6 +82,8 @@ Golden screenshots and bounding-box assertions are complementary: screenshots ca
 ### Q3 — visual regression
 
 Accepted surfaces receive stable screenshot baselines for defined viewport/state combinations. Deliberate changes update baselines only with reviewed visual scope; a changed baseline is not automatically a pass.
+
+A screenshot baseline is evidence, not authority by itself: it may only be updated when the corresponding visual change was intentionally approved.
 
 ### Q4 — accessibility
 
@@ -94,6 +126,8 @@ Budgets are measured before becoming numeric gates. Production client must track
 
 Do not invent arbitrary thresholds before the production renderer exists; establish baselines then promote meaningful budgets to blocking gates.
 
+Performance optimization is not allowed to silently alter frozen interaction or visual behavior. If maintaining the contract is impossible, the trade-off is raised as an explicit product decision before implementation.
+
 ### Q7 — security/supply chain
 
 When `apps/web` exists:
@@ -107,8 +141,15 @@ When `apps/web` exists:
 
 ## CI activation rule
 
-A future workflow/check becomes a protected-main required check only after it exists, runs on relevant PRs, emits a stable context and its failure genuinely means merge must stop. This follows repository engineering-safety policy.
+A workflow/check becomes a protected-main required check only after it exists, runs on relevant PRs, emits a stable context and its failure genuinely means merge must stop. This follows repository engineering-safety policy.
 
-## Current executable guard
+Active feature branches that receive direct implementation commits should run the relevant frontend CI as well. The purpose is to catch regressions before manual validation, not only at final merge time.
 
-`tests/prototypes/frontend-preprod-contracts.py` is intentionally stdlib-only and checks the v0 machine-readable contracts/fixtures for drift. It is an early guard, not a substitute for the future production test stack.
+## Current executable guards
+
+- `tests/prototypes/frontend-preprod-contracts.py` checks the v0 machine-readable contracts/fixtures for drift.
+- `apps/web/e2e/timeline-interactions.spec.ts` protects the current Home Timeline interaction and geometry contract.
+- `feature/home-react` runs Frontend CI on push while the Home workstream is active.
+- the frozen Home Timeline interaction suite is also executed in Firefox in CI because pointer/focus behavior is browser-sensitive.
+
+These guards complement each other; none is a substitute for the final user acceptance gate.
