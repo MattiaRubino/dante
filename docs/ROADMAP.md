@@ -5,8 +5,10 @@
 - **Protected `main`:** integrated source authority; Access/Auth remains branch-local until explicit merge gate
 - **Active vertical:** Access/Auth
 - **Current macro-phase:** M5 — Multi-authenticator Account Layer — **ACTIVE**
-- **Last completed execution block:** **GROUP 1 — M5-E + M5-G — COMPLETE / ENGINEERING PASS**
-- **Next execution block:** **GROUP 2 — M5-F — WebAuthn / Passkeys**
+- **Last accepted execution block:** **GROUP 1 — M5-E + M5-G — COMPLETE / ENGINEERING PASS**
+- **Current execution block:** **GROUP 2 — M5-F — WebAuthn / Passkeys — ACTIVE / IMPLEMENTATION CANDIDATE / QA PENDING**
+- **M5-F PRE-SCOPE:** `64849f2cd60f1d7275344519efdf735eb9c1af95`
+- **Current M5-F candidate HEAD before handoff-doc commits:** `0da2d516be8d46b24318404bec494f61a9d9ddc1`
 
 ## 1. Current sequence
 
@@ -59,11 +61,11 @@ Authenticator Lifecycle + Password/Passwordless
           ↓
 GROUP 2 — M5-F
 WebAuthn / Passkeys
-        NEXT
+        ACTIVE / IMPLEMENTATION CANDIDATE / QA PENDING
           ↓
 GROUP 3 — M5-H + M5-I
 Public FastAPI + Deterministic OpenAPI / Governed Client
-        PLANNED
+        BLOCKED ON M5-F ACCEPTANCE
           ↓
 GROUP 4 — M5-J + M5-K+
 Access Web + Security / Provider / Browser / UAT / Acceptance
@@ -95,6 +97,9 @@ M5-D Apple checkpoint
 
 GROUP 1 / M5-E + M5-G code checkpoint
 1c4b7c988eaae130d6a90d43940a42e2a550870d
+
+GROUP 1 docs closure / M5-F PRE-SCOPE
+64849f2cd60f1d7275344519efdf735eb9c1af95
 ```
 
 Current accepted DB truth:
@@ -154,32 +159,77 @@ operation-specific ambiguous-commit reconciliation only
 
 Do not reopen this block absent direct defect evidence.
 
-## 4. Group 2 — M5-F — NEXT
+## 4. Group 2 — M5-F — ACTIVE CANDIDATE
 
 **WebAuthn / Passkeys**
 
+Implementation is already materially present on the branch. It is **not accepted yet**.
+
+Candidate PRE-SCOPE and snapshot:
+
 ```text
-stable opaque WebAuthnAccount user_handle
+PRE-SCOPE
+64849f2cd60f1d7275344519efdf735eb9c1af95
+
+candidate implementation HEAD before docs handoff
+0da2d516be8d46b24318404bec494f61a9d9ddc1
+
+remote relation
+19 commits ahead / 0 behind
+10 M5-F files changed
+0 migration / 0 Dictionary / 0 mapping / 0 public API / 0 frontend
+```
+
+Materialized direction:
+
+```text
+stable opaque 32-byte WebAuthnAccount user_handle
 registration begin/complete
 discoverable username-less authentication
 passkey reauthentication
 multiple credentials
-UV required / resident credential direction / attestation none
+UV required
+resident credential required
+attestation none
+exact RP ID / explicit HTTPS origin
 credential_id lifetime uniqueness
-COSE algorithm persistence
-signCount + backup state update policy
+COSE public-key + algorithm persistence
+signCount monotonic update policy
+backup eligibility/state handling
 label/update/remove
 logical revoke
 same Account anti-lockout framework from Group 1
 canonical DANTE AuthSession only
-real HTTPS WebAuthn acceptance later in Group 4
+real python-fido2 verifier
+bounded challenge/rate/resource policy
 ```
+
+Current focused proof in source includes real software-ES256 fido2 registration/assertion verification, negative crypto policy tests, full register→signin→reauth→revoke PostgreSQL path, replay rejection, duplicate credential handling, concurrent passkey-removal anti-lockout and passkey-removal vs provider-unlink Account-lock proof.
+
+Before candidate QA/closure the following must still be completed:
+
+```text
+ambiguous signin/reauth reconciliation tolerant of later valid credential-state advancement
+passkey signin authoritative mutation timestamp after Account security lock
+same credential across Accounts race proof
+passkey signin vs passkey removal proof
+Account disable vs passkey signin proof
+reauth vs concurrent bearer rotation proof
+passkey removal vs password removal proof
+concurrent assertion / signCount / backup-state advancement proof
+ambiguous terminal-commit reconciliation proof
+explicit enabled/disabled runtime composition proof
+```
+
+Only after those writes: local Ruff/mypy/fast/focused-PG/build, then full PostgreSQL regression, formatter materialization, final scope/architecture audit and documentation closure.
+
+Real HTTPS browser/WebAuthn acceptance remains Group 4 and must not be claimed by M5-F.
 
 ## 5. Group 3 — M5-H + M5-I
 
 **Public FastAPI + OpenAPI / Governed Client**
 
-These are one delivery pipeline, not two independent gates:
+Blocked until M5-F is accepted. These are one delivery pipeline, not two independent gates:
 
 ```text
 application services from Groups 1–2
@@ -248,5 +298,7 @@ docs/workstreams/access-auth.md
 docs/workstreams/access-auth-m5-live-handoff-2026-08-29.md
 docs/workstreams/access-auth-m4-m7-execution-plan.md
 ```
+
+The two M5 architecture contracts remain frozen design authority while M5-F is still a candidate; do not rewrite them merely to narrate in-flight implementation. They are reconciled again only after accepted M5-F proof.
 
 Repository truth beats conversation memory. New chat != new branch/worktree.
