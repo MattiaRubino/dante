@@ -89,26 +89,36 @@ void main() {
   float radius = mix(0.018, 1.52, pow(eased, 0.72));
 
   float angularNoise = fbm(
-    vec2(angle * 1.45 + uTime * 0.08 * uMotion, radiusFromOrigin * 8.0 - uTime * 0.45)
+    vec2(
+      angle * 1.45 + uTime * 0.08 * uMotion,
+      radiusFromOrigin * 8.0 - uTime * 0.45
+    )
   );
   float fineNoise = fbm(p * (8.0 + uDensity * 5.0) - uTime * 0.18);
-  float turbulence = (angularNoise - 0.5) * 0.075 + (fineNoise - 0.5) * 0.028;
+  float turbulence =
+    (angularNoise - 0.5) * 0.075 + (fineNoise - 0.5) * 0.028;
   turbulence *= 0.55 + sin(progress * PI) * 0.75;
 
   float distortedRadius = radiusFromOrigin + turbulence;
   float edgeDistance = abs(distortedRadius - radius);
   float ringWidth = mix(0.012, 0.044, sin(progress * PI));
-  float ring = 1.0 - smoothstep(ringWidth, ringWidth * 2.6, edgeDistance);
-  float innerRing = 1.0 - smoothstep(
-    ringWidth * 0.35,
-    ringWidth * 1.15,
-    abs(distortedRadius - radius * 0.965)
-  );
-  float inside = 1.0 - smoothstep(radius - 0.035, radius + 0.018, distortedRadius);
+  float ring =
+    1.0 - smoothstep(ringWidth, ringWidth * 2.6, edgeDistance);
+  float innerRing =
+    1.0 -
+    smoothstep(
+      ringWidth * 0.35,
+      ringWidth * 1.15,
+      abs(distortedRadius - radius * 0.965)
+    );
+  float inside =
+    1.0 -
+    smoothstep(radius - 0.035, radius + 0.018, distortedRadius);
 
   float polarY = log(radiusFromOrigin + 0.035);
   float radialBands = fract(
-    polarY * (5.2 + uMotion * 0.7) - uTime * (1.45 + uMotion * 0.35)
+    polarY * (5.2 + uMotion * 0.7) -
+      uTime * (1.45 + uMotion * 0.35)
   );
   float streakBand = pow(1.0 - abs(radialBands - 0.5) * 2.0, 11.0);
 
@@ -118,11 +128,18 @@ void main() {
   float starMask = smoothstep(0.84, 0.995, starSeed);
   float streaks = streakBand * starMask * inside;
 
-  float vortex = 0.5 + 0.5 * sin(
-    angle * (5.0 + uMotion) - polarY * 13.0 - uTime * (2.2 + uMotion * 0.5)
-  );
+  float vortex =
+    0.5 +
+    0.5 *
+      sin(
+        angle * (5.0 + uMotion) -
+          polarY * 13.0 -
+          uTime * (2.2 + uMotion * 0.5)
+      );
   vortex = pow(vortex, 5.0) * inside;
-  vortex *= smoothstep(radius + 0.05, radius * 0.08, radiusFromOrigin);
+  vortex *=
+    1.0 -
+    smoothstep(radius * 0.08, radius + 0.05, radiusFromOrigin);
 
   float activationFlash = exp(-pow((progress - 0.48) / 0.13, 2.0));
   float coreGlow = exp(-radiusFromOrigin * (3.0 + 1.8 * progress));
@@ -136,10 +153,14 @@ void main() {
   color += energy * inside * (0.18 + vortex * 0.34) * uIntensity;
   color += edgeColor * ring * (1.2 + activationFlash * 1.4);
   color += vec3(0.58, 0.83, 1.0) * innerRing * 0.72;
-  color += mix(uAccent, vec3(1.0), 0.48) * streaks * (0.85 + uDensity * 0.7);
+  color +=
+    mix(uAccent, vec3(1.0), 0.48) *
+    streaks *
+    (0.85 + uDensity * 0.7);
   color += edgeColor * coreGlow * activationFlash * 0.62;
 
-  float worldWash = inside * smoothstep(0.16, 0.72, progress) * 0.84;
+  float worldWash =
+    inside * smoothstep(0.16, 0.72, progress) * 0.84;
   float effectFade = 1.0 - smoothstep(0.82, 1.0, progress);
   float alpha = max(worldWash, ring * 0.94 + innerRing * 0.54);
   alpha += streaks * 0.48 + coreGlow * activationFlash * 0.18;
@@ -274,20 +295,23 @@ export function WorldFocusEntryEffect({
       return;
     }
 
-    if (typeof window.WebGL2RenderingContext === 'undefined') {
+    const completeWithFallback = () => {
       setRendererMode('fallback');
       const timeout = window.setTimeout(
         () => completionRef.current(),
         ENTRY_DURATION_MS,
       );
       return () => window.clearTimeout(timeout);
+    };
+
+    if (typeof window.WebGL2RenderingContext === 'undefined') {
+      return completeWithFallback();
     }
 
     const gl = canvas.getContext('webgl2', {
       alpha: true,
       antialias: false,
       depth: false,
-      desynchronized: true,
       failIfMajorPerformanceCaveat: true,
       powerPreference: 'high-performance',
       premultipliedAlpha: false,
@@ -296,41 +320,51 @@ export function WorldFocusEntryEffect({
     });
 
     if (gl === null) {
-      setRendererMode('fallback');
-      const timeout = window.setTimeout(
-        () => completionRef.current(),
-        ENTRY_DURATION_MS,
-      );
-      return () => window.clearTimeout(timeout);
+      return completeWithFallback();
     }
 
     let resources: WebGlResources;
     try {
       resources = createProgram(gl);
     } catch {
-      setRendererMode('fallback');
-      const timeout = window.setTimeout(
-        () => completionRef.current(),
-        ENTRY_DURATION_MS,
-      );
-      return () => window.clearTimeout(timeout);
+      gl.getExtension('WEBGL_lose_context')?.loseContext();
+      return completeWithFallback();
     }
 
     setRendererMode('webgl2');
 
-    const resolutionLocation = gl.getUniformLocation(resources.program, 'uResolution');
+    const resolutionLocation = gl.getUniformLocation(
+      resources.program,
+      'uResolution',
+    );
     const originLocation = gl.getUniformLocation(resources.program, 'uOrigin');
-    const progressLocation = gl.getUniformLocation(resources.program, 'uProgress');
+    const progressLocation = gl.getUniformLocation(
+      resources.program,
+      'uProgress',
+    );
     const timeLocation = gl.getUniformLocation(resources.program, 'uTime');
     const accentLocation = gl.getUniformLocation(resources.program, 'uAccent');
-    const intensityLocation = gl.getUniformLocation(resources.program, 'uIntensity');
-    const densityLocation = gl.getUniformLocation(resources.program, 'uDensity');
+    const intensityLocation = gl.getUniformLocation(
+      resources.program,
+      'uIntensity',
+    );
+    const densityLocation = gl.getUniformLocation(
+      resources.program,
+      'uDensity',
+    );
     const motionLocation = gl.getUniformLocation(resources.program, 'uMotion');
     const accent = parseHexColor(world.accent);
-
-    let animationFrame = 0;
-    let completed = false;
     const startedAt = performance.now();
+    let animationFrame = 0;
+
+    gl.useProgram(resources.program);
+    gl.bindVertexArray(resources.vertexArray);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.uniform3f(accentLocation, accent[0], accent[1], accent[2]);
+    gl.uniform1f(intensityLocation, world.theme.ambientIntensity);
+    gl.uniform1f(densityLocation, world.theme.particleDensity);
+    gl.uniform1f(motionLocation, motionWeight(world));
 
     const resize = () => {
       const bounds = canvas.getBoundingClientRect();
@@ -340,18 +374,6 @@ export function WorldFocusEntryEffect({
       );
       const width = Math.max(1, Math.round(bounds.width * dpr));
       const height = Math.max(1, Math.round(bounds.height * dpr));
-
-      if (canvas.width !== width || canvas.height !== height) {
-        canvas.width = width;
-        canvas.height = height;
-        gl.viewport(0, 0, width, height);
-      }
-    };
-
-    const render = (now: number) => {
-      resize();
-
-      const bounds = canvas.getBoundingClientRect();
       const originCenterX = entry.origin.left + entry.origin.width / 2;
       const originCenterY = entry.origin.top + entry.origin.height / 2;
       const originX = clamp(
@@ -364,23 +386,24 @@ export function WorldFocusEntryEffect({
         0,
         1,
       );
-      const progress = clamp((now - startedAt) / ENTRY_DURATION_MS, 0, 1);
 
-      gl.useProgram(resources.program);
-      gl.bindVertexArray(resources.vertexArray);
-      gl.enable(gl.BLEND);
-      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-      gl.clearColor(0, 0, 0, 0);
-      gl.clear(gl.COLOR_BUFFER_BIT);
+      if (canvas.width !== width || canvas.height !== height) {
+        canvas.width = width;
+        canvas.height = height;
+        gl.viewport(0, 0, width, height);
+      }
 
       gl.uniform2f(resolutionLocation, canvas.width, canvas.height);
       gl.uniform2f(originLocation, originX, originY);
+    };
+
+    const render = (now: number) => {
+      const progress = clamp((now - startedAt) / ENTRY_DURATION_MS, 0, 1);
+
+      gl.clearColor(0, 0, 0, 0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
       gl.uniform1f(progressLocation, progress);
       gl.uniform1f(timeLocation, (now - startedAt) / 1_000);
-      gl.uniform3f(accentLocation, accent[0], accent[1], accent[2]);
-      gl.uniform1f(intensityLocation, world.theme.ambientIntensity);
-      gl.uniform1f(densityLocation, world.theme.particleDensity);
-      gl.uniform1f(motionLocation, motionWeight(world));
       gl.drawArrays(gl.TRIANGLES, 0, 3);
 
       if (progress < 1) {
@@ -388,20 +411,18 @@ export function WorldFocusEntryEffect({
         return;
       }
 
-      completed = true;
       completionRef.current();
     };
 
+    resize();
+    window.addEventListener('resize', resize, { passive: true });
     animationFrame = window.requestAnimationFrame(render);
 
     return () => {
+      window.removeEventListener('resize', resize);
       window.cancelAnimationFrame(animationFrame);
       destroyProgram(gl, resources);
       gl.getExtension('WEBGL_lose_context')?.loseContext();
-
-      if (!completed) {
-        completionRef.current();
-      }
     };
   }, [entry, world]);
 
