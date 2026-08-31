@@ -10,7 +10,6 @@ import {
 } from 'vitest';
 
 import { i18n } from '../../../bootstrap/i18n';
-import { writeWorldFocusMotionPreference } from '../model/world-focus-motion-preference';
 import {
   clearWorldFocusEntry,
   primeWorldFocusEntry,
@@ -19,30 +18,15 @@ import { getWorldFocusWorld } from '../model/world-focus-fixtures';
 import { WorldFocusPage } from './world-focus-page';
 
 beforeAll(async () => {
-  vi.stubGlobal(
-    'matchMedia',
-    vi.fn().mockImplementation((query: string) => ({
-      matches: false,
-      media: query,
-      onchange: null,
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      dispatchEvent: vi.fn(),
-    })),
-  );
   await i18n.changeLanguage('it');
 });
 
 afterEach(() => {
   cleanup();
   clearWorldFocusEntry();
-  window.localStorage.clear();
 });
 
 afterAll(() => {
-  vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
 
@@ -55,7 +39,7 @@ function requireWorld(id: 'music' | 'travel') {
 }
 
 describe('WorldFocusPage', () => {
-  it('uses a live opener handoff for the optional immersive entry and closes through history', () => {
+  it('opens directly into the static workspace surface from a live Home handoff', () => {
     primeWorldFocusEntry({
       worldId: 'music',
       source: 'home',
@@ -71,19 +55,17 @@ describe('WorldFocusPage', () => {
       />,
     );
 
-    expect(screen.getByRole('main', { name: 'Mondo Musica' })).toBeTruthy();
+    const shell = screen.getByRole('main', { name: 'Mondo Musica' });
+    expect(shell).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Musica' })).toBeTruthy();
-    expect(
-      container
-        .querySelector('.world-focus-shell')
-        ?.getAttribute('data-entry-origin'),
-    ).toBe('live');
-    expect(
-      container
-        .querySelector('.world-focus-shell')
-        ?.getAttribute('data-entry-presentation'),
-    ).toBe('immersive');
-    expect(container.querySelector('.world-focus-anchor')).toBeTruthy();
+    expect(shell.getAttribute('data-entry-origin')).toBe('live');
+    expect(shell.getAttribute('data-entry-presentation')).toBe('instant');
+    expect(shell.getAttribute('data-entry-phase')).toBe('end');
+    expect(container.querySelector('.world-focus-surface')).toBeTruthy();
+    expect(container.querySelector('.world-focus-portal')).toBeTruthy();
+    expect(container.querySelectorAll('.world-focus-portal-ring')).toHaveLength(6);
+    expect(container.querySelectorAll('.world-focus-portal-node')).toHaveLength(4);
+    expect(container.querySelector('.world-focus-entry-effect')).toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: 'Torna indietro' }));
     expect(onClose).toHaveBeenCalledWith({ preferHistory: true });
@@ -109,31 +91,7 @@ describe('WorldFocusPage', () => {
     expect(onClose).toHaveBeenCalledWith({ preferHistory: false });
   });
 
-  it('skips the middle effect when the persisted preference is instant', () => {
-    writeWorldFocusMotionPreference('instant');
-    primeWorldFocusEntry({
-      worldId: 'music',
-      source: 'home',
-      origin: { left: 500, top: 320, width: 118, height: 118 },
-    });
-
-    const { container } = render(
-      <WorldFocusPage
-        world={requireWorld('music')}
-        source="home"
-        onClose={vi.fn()}
-      />,
-    );
-
-    const shell = container.querySelector('.world-focus-shell');
-    expect(shell?.getAttribute('data-entry-origin')).toBe('live');
-    expect(shell?.getAttribute('data-entry-presentation')).toBe('instant');
-    expect(shell?.getAttribute('data-entry-phase')).toBe('end');
-    expect(container.querySelector('.world-focus-entry-effect')).toBeNull();
-    expect(container.querySelector('.world-focus-anchor')).toBeTruthy();
-  });
-
-  it('renders truthful loading, error and unavailable shell states', () => {
+  it('renders truthful loading, error and unavailable shell states inside the workspace', () => {
     const onClose = vi.fn();
     const world = requireWorld('music');
     const { container, rerender } = render(

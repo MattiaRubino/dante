@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test.use({ locale: 'it-IT' });
 
-test('Home opens the centered World on the second activation and browser back preserves Home state', async ({
+test('Home opens the centered World directly into the static workspace and browser back preserves Home state', async ({
   page,
 }) => {
   await page.goto('/home');
@@ -23,19 +23,16 @@ test('Home opens the centered World on the second activation and browser back pr
 
   await music.click();
   await expect(page).toHaveURL(/\/home\?focus=music$/);
+
+  const focus = page.locator('.world-focus-shell');
   await expect(page.getByRole('main', { name: 'Mondo Musica' })).toBeVisible();
-  await expect(page.locator('.world-focus-shell')).toHaveAttribute(
-    'data-entry-origin',
-    'live',
-  );
-  await expect(page.locator('.world-focus-shell')).toHaveAttribute(
-    'data-world-focus-status',
-    'ready',
-  );
-  await expect(page.locator('.world-focus-shell')).toHaveAttribute(
-    'data-entry-presentation',
-    'immersive',
-  );
+  await expect(focus).toHaveAttribute('data-entry-origin', 'live');
+  await expect(focus).toHaveAttribute('data-world-focus-status', 'ready');
+  await expect(focus).toHaveAttribute('data-entry-presentation', 'instant');
+  await expect(focus).toHaveAttribute('data-entry-phase', 'end');
+  await expect(page.locator('.world-focus-surface')).toBeVisible();
+  await expect(page.locator('.world-focus-portal')).toBeVisible();
+  await expect(page.locator('.world-focus-entry-effect')).toHaveCount(0);
   await expect(page.locator('[data-app-region="topbar"]')).toBeVisible();
 
   await page.goBack();
@@ -102,7 +99,7 @@ test('keyboard activation selects first and opens the centered World second', as
   await expect(page.getByRole('main', { name: 'Mondo Musica' })).toBeVisible();
 });
 
-test('direct World Focus URL has a safe instant fallback entry and close path', async ({
+test('direct World Focus URL opens the same static surface and has a safe close path', async ({
   page,
 }) => {
   await page.goto('/home?focus=travel');
@@ -111,7 +108,10 @@ test('direct World Focus URL has a safe instant fallback entry and close path', 
   await expect(focus).toBeVisible();
   await expect(focus).toHaveAttribute('data-entry-origin', 'fallback');
   await expect(focus).toHaveAttribute('data-entry-presentation', 'instant');
+  await expect(focus).toHaveAttribute('data-entry-phase', 'end');
   await expect(focus).toHaveAttribute('data-world-focus-status', 'ready');
+  await expect(page.locator('.world-focus-surface')).toBeVisible();
+  await expect(page.locator('.world-focus-portal')).toBeVisible();
   await expect(page.getByRole('main', { name: 'Mondo Viaggi' })).toBeVisible();
   await expect(page.locator('[data-app-region="topbar"]')).toBeVisible();
 
@@ -120,13 +120,13 @@ test('direct World Focus URL has a safe instant fallback entry and close path', 
   await expect(focus).toHaveCount(0);
 });
 
-test('the persisted instant preference skips the ornamental transition', async ({
+test('legacy immersive preference cannot re-enable an intermediate transition', async ({
   page,
 }) => {
   await page.addInitScript(() => {
     window.localStorage.setItem(
       'dante.preferences.world-focus-motion.v1',
-      'instant',
+      'immersive',
     );
   });
   await page.goto('/home');
@@ -143,7 +143,7 @@ test('the persisted instant preference skips the ornamental transition', async (
   await expect(page.locator('[data-app-region="topbar"]')).toBeVisible();
 });
 
-test('reduced motion keeps World Focus usable without ornamental animation', async ({
+test('reduced motion keeps the same static World Focus surface usable', async ({
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
