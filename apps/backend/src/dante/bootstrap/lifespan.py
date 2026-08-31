@@ -39,16 +39,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         stack.push_async_callback(auth_lifecycle_runtime.aclose)
         app.state.auth_lifecycle_runtime = auth_lifecycle_runtime
 
-        providers = settings.auth.provider
-        app.state.provider_flow_runtime = (
-            create_provider_flow_runtime(
-                settings=settings.auth,
-                database_runtime=database_runtime,
-                auth_runtime=auth_runtime,
-                lifecycle_runtime=auth_lifecycle_runtime,
-            )
-            if providers.google.enabled or providers.apple.enabled
-            else None
+        app.state.provider_flow_runtime = create_provider_flow_runtime(
+            settings=settings.auth,
+            database_runtime=database_runtime,
+            auth_runtime=auth_runtime,
+            lifecycle_runtime=auth_lifecycle_runtime,
         )
 
         yield
