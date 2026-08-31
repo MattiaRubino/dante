@@ -39,7 +39,7 @@ function requireWorld(id: 'music' | 'travel') {
 }
 
 describe('WorldFocusPage', () => {
-  it('renders the WF-G3 candidate as exactly three concentric ellipse guides', () => {
+  it('renders the frozen WF0 shell regions and WF-G3 ellipse frame', () => {
     primeWorldFocusEntry({
       worldId: 'music',
       source: 'home',
@@ -56,28 +56,26 @@ describe('WorldFocusPage', () => {
     );
 
     const shell = screen.getByRole('main', { name: 'Mondo Musica' });
-    expect(shell.getAttribute('data-world-focus-geometry-version')).toBe(
-      'wf-g3-candidate',
-    );
+    expect(shell.getAttribute('data-world-focus-structure-version')).toBe('1.0.0');
+    expect(shell.getAttribute('data-world-focus-geometry-version')).toBe('wf-g3');
+    expect(shell.getAttribute('data-world-focus-region')).toBe('shell');
     expect(shell.getAttribute('data-entry-origin')).toBe('live');
-    expect(container.querySelectorAll('.world-focus-ellipse-guides')).toHaveLength(
-      1,
-    );
-    expect(container.querySelectorAll('[data-guide-line="outer"]')).toHaveLength(
-      1,
-    );
-    expect(container.querySelectorAll('[data-guide-line="origin"]')).toHaveLength(
-      1,
-    );
-    expect(container.querySelectorAll('[data-guide-line="inner"]')).toHaveLength(
-      1,
-    );
+
+    expect(
+      container.querySelectorAll('[data-world-focus-region="visual-frame"]'),
+    ).toHaveLength(1);
+    expect(
+      container.querySelectorAll('[data-world-focus-region="workspace"]'),
+    ).toHaveLength(1);
+    expect(
+      container.querySelectorAll('[data-world-focus-region="shell-controls"]'),
+    ).toHaveLength(1);
     expect(
       container.querySelectorAll('.world-focus-ellipse-guides ellipse'),
     ).toHaveLength(3);
-    expect(
-      container.querySelector('[data-world-focus-region="workspace"]'),
-    ).toBeTruthy();
+    expect(container.querySelectorAll('[data-guide-line="outer"]')).toHaveLength(1);
+    expect(container.querySelectorAll('[data-guide-line="origin"]')).toHaveLength(1);
+    expect(container.querySelectorAll('[data-guide-line="inner"]')).toHaveLength(1);
     expect(container.querySelector('.world-focus-circle-guides')).toBeNull();
     expect(container.querySelector('.world-focus-guide-rail')).toBeNull();
     expect(container.querySelector('.world-focus-portal')).toBeNull();
@@ -100,9 +98,8 @@ describe('WorldFocusPage', () => {
 
     const shell = container.querySelector('.world-focus-shell');
     expect(shell?.getAttribute('data-entry-origin')).toBe('fallback');
-    expect(shell?.getAttribute('data-world-focus-geometry-version')).toBe(
-      'wf-g3-candidate',
-    );
+    expect(shell?.getAttribute('data-world-focus-structure-version')).toBe('1.0.0');
+    expect(shell?.getAttribute('data-world-focus-geometry-version')).toBe('wf-g3');
 
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(onClose).toHaveBeenCalledWith({ preferHistory: false });
@@ -122,9 +119,7 @@ describe('WorldFocusPage', () => {
 
     const shell = container.querySelector('.world-focus-shell');
     expect(shell?.getAttribute('data-world-focus-status')).toBe('loading');
-    expect(screen.getByRole('status').textContent).toBe(
-      'Caricamento del Mondo Musica',
-    );
+    expect(screen.getByRole('status').textContent).toBe('Caricamento del Mondo Musica');
 
     rerender(
       <WorldFocusPage
@@ -135,9 +130,7 @@ describe('WorldFocusPage', () => {
       />,
     );
     expect(shell?.getAttribute('data-world-focus-status')).toBe('error');
-    expect(screen.getByRole('alert').textContent).toBe(
-      'Impossibile aprire il Mondo Musica',
-    );
+    expect(screen.getByRole('alert').textContent).toBe('Impossibile aprire il Mondo Musica');
 
     rerender(
       <WorldFocusPage
@@ -148,9 +141,7 @@ describe('WorldFocusPage', () => {
       />,
     );
     expect(shell?.getAttribute('data-world-focus-status')).toBe('unavailable');
-    expect(screen.getByRole('alert').textContent).toBe(
-      'Mondo Musica non disponibile',
-    );
+    expect(screen.getByRole('alert').textContent).toBe('Mondo Musica non disponibile');
   });
 
   it('restores focus to a still-mounted opener when the focus surface unmounts', async () => {
