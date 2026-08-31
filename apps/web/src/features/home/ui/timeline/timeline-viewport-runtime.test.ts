@@ -7,6 +7,7 @@ import {
   buildTimelineRenderedDays,
   findTimelineDayAtOffset,
   parseTimelineViewedDate,
+  timelineCompactCardWidth,
   timelineIntrinsicCardWidth,
   timelineNowViewportOffset,
 } from './timeline-viewport-runtime';
@@ -107,5 +108,29 @@ describe('timeline viewport runtime', () => {
   it('never lets intrinsic sizing exceed the compact viewport', () => {
     expect(timelineIntrinsicCardWidth(4000, 240)).toBeLessThanOrEqual(240);
     expect(timelineIntrinsicCardWidth(20, 120)).toBe(120);
+  });
+
+  it('does not inflate a short card just because it enters an overlap lane', () => {
+    const isolated = timelineCompactCardWidth(110, 1400, null);
+    const spaciousOverlapLane = timelineCompactCardWidth(110, 1400, 620);
+
+    expect(spaciousOverlapLane).toBe(isolated);
+  });
+
+  it('only shrinks a card when the overlap lane is genuinely narrower', () => {
+    const isolated = timelineCompactCardWidth(410, 1400, null);
+    const constrained = timelineCompactCardWidth(410, 1400, 180);
+
+    expect(constrained).toBe(180);
+    expect(constrained).toBeLessThan(isolated);
+  });
+
+  it('sanitizes invalid measurement inputs instead of emitting NaN geometry', () => {
+    expect(Number.isFinite(timelineIntrinsicCardWidth(Number.NaN, 900))).toBe(
+      true,
+    );
+    expect(
+      Number.isFinite(timelineCompactCardWidth(200, Number.NaN, Number.NaN)),
+    ).toBe(true);
   });
 });
