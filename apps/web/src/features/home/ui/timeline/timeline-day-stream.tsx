@@ -780,7 +780,7 @@ export function TimelineDayStream({
       document.removeEventListener('pointercancel', cancel, true);
       document.removeEventListener('keydown', keyCancel, true);
       document.removeEventListener('visibilitychange', visibilityCancel, true);
-      window.removeEventListener('blur', windowCancel, true);
+      window.removeEventListener('blur', windowCancel);
     };
     dragCleanupRef.current = cleanup;
     document.addEventListener('pointermove', move, true);
@@ -788,7 +788,7 @@ export function TimelineDayStream({
     document.addEventListener('pointercancel', cancel, true);
     document.addEventListener('keydown', keyCancel, true);
     document.addEventListener('visibilitychange', visibilityCancel, true);
-    window.addEventListener('blur', windowCancel, true);
+    window.addEventListener('blur', windowCancel);
   };
 
   const keyboardMove = (
