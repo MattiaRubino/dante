@@ -39,7 +39,7 @@ function requireWorld(id: 'music' | 'travel') {
 }
 
 describe('WorldFocusPage', () => {
-  it('opens directly into the static workspace surface from a live Home handoff', () => {
+  it('renders the locked WF-G1 frame and rectangular workspace', () => {
     primeWorldFocusEntry({
       worldId: 'music',
       source: 'home',
@@ -56,15 +56,26 @@ describe('WorldFocusPage', () => {
     );
 
     const shell = screen.getByRole('main', { name: 'Mondo Musica' });
-    expect(shell).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Musica' })).toBeTruthy();
+    expect(shell.getAttribute('data-world-focus-geometry-version')).toBe(
+      'wf-g1',
+    );
     expect(shell.getAttribute('data-entry-origin')).toBe('live');
-    expect(shell.getAttribute('data-entry-presentation')).toBe('instant');
-    expect(shell.getAttribute('data-entry-phase')).toBe('end');
-    expect(container.querySelector('.world-focus-surface')).toBeTruthy();
-    expect(container.querySelector('.world-focus-portal')).toBeTruthy();
-    expect(container.querySelectorAll('.world-focus-portal-ring')).toHaveLength(6);
-    expect(container.querySelectorAll('.world-focus-portal-node')).toHaveLength(4);
+    expect(container.querySelectorAll('.world-focus-guide-rail')).toHaveLength(
+      2,
+    );
+    expect(container.querySelectorAll('[data-guide-line="outer"]')).toHaveLength(
+      2,
+    );
+    expect(container.querySelectorAll('[data-guide-line="origin"]')).toHaveLength(
+      2,
+    );
+    expect(container.querySelectorAll('[data-guide-line="inner"]')).toHaveLength(
+      2,
+    );
+    expect(
+      container.querySelector('[data-world-focus-region="workspace"]'),
+    ).toBeTruthy();
+    expect(container.querySelector('.world-focus-portal')).toBeNull();
     expect(container.querySelector('.world-focus-entry-effect')).toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: 'Torna indietro' }));
@@ -77,27 +88,28 @@ describe('WorldFocusPage', () => {
     const { container } = render(
       <WorldFocusPage
         world={requireWorld('travel')}
-        source="home"
+        source="worlds"
         onClose={onClose}
       />,
     );
 
     const shell = container.querySelector('.world-focus-shell');
     expect(shell?.getAttribute('data-entry-origin')).toBe('fallback');
-    expect(shell?.getAttribute('data-entry-presentation')).toBe('instant');
-    expect(shell?.getAttribute('data-entry-phase')).toBe('end');
+    expect(shell?.getAttribute('data-world-focus-geometry-version')).toBe(
+      'wf-g1',
+    );
 
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(onClose).toHaveBeenCalledWith({ preferHistory: false });
   });
 
-  it('renders truthful loading, error and unavailable shell states inside the workspace', () => {
+  it('renders truthful loading, error and unavailable states inside the workspace', () => {
     const onClose = vi.fn();
     const world = requireWorld('music');
     const { container, rerender } = render(
       <WorldFocusPage
         world={world}
-        source="home"
+        source="worlds"
         status="loading"
         onClose={onClose}
       />,
@@ -112,7 +124,7 @@ describe('WorldFocusPage', () => {
     rerender(
       <WorldFocusPage
         world={world}
-        source="home"
+        source="worlds"
         status="error"
         onClose={onClose}
       />,
@@ -125,7 +137,7 @@ describe('WorldFocusPage', () => {
     rerender(
       <WorldFocusPage
         world={world}
-        source="home"
+        source="worlds"
         status="unavailable"
         onClose={onClose}
       />,
@@ -136,7 +148,7 @@ describe('WorldFocusPage', () => {
     );
   });
 
-  it('restores focus to the live opener after the focus surface unmounts', async () => {
+  it('restores focus to a still-mounted opener when the focus surface unmounts', async () => {
     const opener = document.createElement('button');
     opener.type = 'button';
     opener.textContent = 'Apri Musica';
@@ -147,7 +159,7 @@ describe('WorldFocusPage', () => {
       const { unmount } = render(
         <WorldFocusPage
           world={requireWorld('music')}
-          source="home"
+          source="worlds"
           onClose={vi.fn()}
         />,
       );
