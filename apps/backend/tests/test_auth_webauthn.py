@@ -179,52 +179,38 @@ def test_webauthn_registration_and_assertion_use_real_fido2_verification() -> No
     assert assertion.backup_state is True
 
 
-@pytest.mark.parametrize(
-    "response_factory,expected_challenge",
-    [
-        (
-            lambda private_key, public_key: _registration_response(
-                challenge=b"wrong-registration-challenge-32!"[:32],
-                credential_id=b"registration-negative",
-                public_key=public_key,
-            ),
-            b"r" * 32,
-        ),
-        (
-            lambda private_key, public_key: _registration_response(
-                challenge=b"r" * 32,
-                credential_id=b"registration-negative",
-                public_key=public_key,
-                user_verified=False,
-            ),
-            b"r" * 32,
-        ),
-        (
-            lambda private_key, public_key: _registration_response(
-                challenge=b"r" * 32,
-                credential_id=b"registration-negative",
-                public_key=public_key,
-                origin="https://evil.dante.test",
-            ),
-            b"r" * 32,
-        ),
-    ],
-)
-def test_registration_rejects_wrong_challenge_missing_uv_or_wrong_origin(
-    response_factory: object,
-    expected_challenge: bytes,
-) -> None:
+def test_registration_rejects_wrong_challenge_missing_uv_and_wrong_origin() -> None:
     policy = _policy()
     private_key = ec.generate_private_key(ec.SECP256R1())
     public_key = ES256.from_cryptography_key(private_key.public_key())
-    factory = response_factory
-    assert callable(factory)
+    credential_id = b"registration-negative"
+    expected_challenge = b"r" * 32
+    invalid_responses = (
+        _registration_response(
+            challenge=b"w" * 32,
+            credential_id=credential_id,
+            public_key=public_key,
+        ),
+        _registration_response(
+            challenge=expected_challenge,
+            credential_id=credential_id,
+            public_key=public_key,
+            user_verified=False,
+        ),
+        _registration_response(
+            challenge=expected_challenge,
+            credential_id=credential_id,
+            public_key=public_key,
+            origin="https://evil.dante.test",
+        ),
+    )
 
-    with pytest.raises(ValueError):
-        policy.verify_registration(
-            response=factory(private_key, public_key),
-            expected_challenge=expected_challenge,
-        )
+    for response in invalid_responses:
+        with pytest.raises(ValueError):
+            policy.verify_registration(
+                response=response,
+                expected_challenge=expected_challenge,
+            )
 
 
 def test_assertion_rejects_wrong_signature_missing_uv_and_wrong_origin() -> None:
@@ -244,7 +230,6 @@ def test_assertion_rejects_wrong_signature_missing_uv_and_wrong_origin() -> None
     )
     user_handle = b"u" * 32
     assertion_challenge = b"a" * 32
-
     invalid_responses = (
         _authentication_response(
             challenge=assertion_challenge,
