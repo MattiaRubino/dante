@@ -21,7 +21,7 @@ import {
 import type { WorldFocusWorld } from '../model/world-focus-fixtures';
 import { WorldFocusVisualFrame } from './world-focus-visual-frame';
 import './world-focus.css';
-import './world-focus-visual-frame-v2.css';
+import './world-focus-visual-frame-v3.css';
 import './world-focus-states.css';
 
 export type WorldFocusCloseRequest = Readonly<{
