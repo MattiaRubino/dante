@@ -4,9 +4,9 @@ Production backend application for DANTE.
 
 CP1 established the Python/process/configuration foundation. CP2 established the reproducible LOCAL PostgreSQL 18.4 image/envelope and direct phase-time evidence. CP3 activated application persistence, Alembic authority, PostgreSQL role separation and the real PostgreSQL acceptance harness. CP4 established calibrated CI and protected-main enforcement. CP5 re-proved the integrated scaffold end to end on the canonical WSL2/Linux workstation. PR #24 merged the closed scaffold into protected `main`.
 
-CP6 then consumed that foundation and is **CLOSED / CONCRETE POSTGRESQL DATABASE PASS / INTEGRATED VIA PR #42**. Its protected-main integration baseline is revision `20260826_08`.
+CP6 then consumed that foundation and is **CLOSED / CONCRETE POSTGRESQL DATABASE PASS / INTEGRATED VIA PR #42**. Its protected-main integration baseline was revision `20260826_08`.
 
-The post-CP6 recovery workstream adds forward revision `20260830_09`, retirement/anti-resurrection integrity and a complete LOCAL pgBackRest restore/PITR operator rehearsal. That newer contract is current in this tree and remains branch-local until integrated.
+The later PostgreSQL Recovery workstream added forward revision `20260830_09`, retirement/anti-resurrection integrity and a complete LOCAL pgBackRest restore/PITR operator rehearsal. PR #47 integrated that accepted Recovery evolution into protected `main`; `20260830_09` is now the protected-main database head.
 
 ## Current status
 
@@ -28,37 +28,43 @@ CP6 CLOSED / CONCRETE POSTGRESQL DATABASE PASS
 PR #42 MERGED INTO PROTECTED main
 
 POSTGRESQL 18.6
-PRE-RECOVERY PROTECTED-MAIN ALEMBIC 20260826_08
-PRE-RECOVERY TOPOLOGY 68 / 5 / 14 / 75 / 95 / 68 / 120
+HISTORICAL PRE-RECOVERY ALEMBIC 20260826_08
+HISTORICAL PRE-RECOVERY TOPOLOGY 68 / 5 / 14 / 75 / 95 / 68 / 120
 
-CURRENT RECOVERY-TREE ALEMBIC 20260830_09
-CURRENT RECOVERY-TREE TOPOLOGY 69 / 5 / 15 / 76 / 97 / 69 / 123
+CURRENT PROTECTED-MAIN ALEMBIC 20260830_09
+CURRENT PROTECTED-MAIN TOPOLOGY 69 / 5 / 15 / 76 / 97 / 69 / 123
 CP01–CP07 LOCAL RECOVERY PASS / CLOSED
+PR #47 MERGED INTO PROTECTED main
 ```
 
-Protected-main CP6 integration:
+Protected-main integration milestones:
 
 ```text
-final feature HEAD  9297b64c7c912c2cc8e344a6617beb5c91457bbb
-PR                  #42
-merge commit        117360b9333fd1a8a62d0dfeb0398a4d5811e393
-status              MERGED
+CP6 final feature HEAD  9297b64c7c912c2cc8e344a6617beb5c91457bbb
+CP6 PR                  #42
+CP6 merge commit        117360b9333fd1a8a62d0dfeb0398a4d5811e393
+
+Recovery final head     e46ae3d9d5918b27ebf86f4e291b51312f1e7c4d
+Recovery PR             #47
+Recovery merge commit   bdd2b2370d41423dbaecd00fde86bb2bf2466f2b
 ```
 
 Current backend transition boundary:
 
 ```text
 CP6 CLOSED + INTEGRATED
-pre-recovery database baseline available on protected main
         ↓
-POST-CP6 FORWARD EVOLUTION
-recovery revision 20260830_09 + LOCAL recovery system in this tree
+RECOVERY EVOLUTION 20260830_09 + LOCAL RECOVERY SYSTEM
+CLOSED + INTEGRATED VIA PR #47
+        ↓
+CURRENT PROTECTED-main DATABASE
+20260830_09 / 69|5|15|76|97|69|123
         ↓
 BOUNDED PRODUCT / PLATFORM WORKSTREAMS
 normal forward schema evolution only for genuine requirements
 ```
 
-There is no remaining CP6 alignment/merge step. Final CP6 closure evidence lives in `docs/development/backend-cp6-05-whole-database-qa.md`; the consolidated historical branch record lives in `docs/archive/branches/2026-08-feature-logical-postgresql.md` and is non-authoritative for current state.
+There is no remaining CP6 or Recovery alignment/merge step. Final CP6 closure evidence lives in `docs/development/backend-cp6-05-whole-database-qa.md`; current Recovery operation lives in `docs/operations/postgres-recovery-runbook.md`; consolidated historical branch records live under `docs/archive/branches/` and are non-authoritative for current state.
 
 ## Runtime contract
 
@@ -144,7 +150,11 @@ Historical CP6 branch chronology lives in:
 
 `docs/archive/branches/2026-08-feature-logical-postgresql.md`
 
-No live/session CP6 handoff is current authority after integration.
+Historical Recovery branch chronology lives in:
+
+`docs/archive/branches/2026-08-feature-postgres-recovery.md`
+
+No live/session CP6 or Recovery handoff is current authority after integration.
 
 ## LOCAL database security provisioning
 
@@ -186,7 +196,7 @@ DDL owner role       dante_owner via explicit SET ROLE
 
 Migration commands must receive the dedicated migrator password separately from runtime config. Normal application startup never runs migrations.
 
-The migration history begins with the technical CP3 baseline `20260820_01`. CP6 materialized the concrete business database through the reviewed M1..M7 linear stages and the CP6-05 hardening revision `20260826_08`. The post-CP6 recovery workstream then adds forward revision `20260830_09` for MaterialState retirement/anti-resurrection integrity. Applied migration history is immutable; later corrections use new forward revisions.
+The migration history begins with the technical CP3 baseline `20260820_01`. CP6 materialized the concrete business database through the reviewed M1..M7 linear stages and the CP6-05 hardening revision `20260826_08`. The integrated Recovery workstream then added forward revision `20260830_09` for MaterialState retirement/anti-resurrection integrity. Applied migration history is immutable; later corrections use new forward revisions.
 
 PostgreSQL server patch maintenance such as 18.4 → 18.6 is platform/image maintenance and does not rewrite Alembic business/schema history.
 
@@ -364,7 +374,7 @@ See `docs/development/backend-cp6-05-whole-database-qa.md` for the full closure 
 
 ## Post-CP6 boundaries
 
-The concrete PostgreSQL database is closed and integrated. Post-CP6 work may consume it and may evolve it through normal reviewed forward migrations when a genuine application requirement appears.
+The concrete PostgreSQL database is closed and integrated. Recovery is also closed and integrated. Post-CP6 product/platform work may consume the current `20260830_09` protected-main database and may evolve it through normal reviewed forward migrations when a genuine application requirement appears.
 
 Database existence alone still does **not** authorize or prove:
 

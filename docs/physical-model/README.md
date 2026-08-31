@@ -7,8 +7,8 @@
 - **PostgreSQL architecture family:** 18 / sole canonical persistence + material-history authority
 - **Physical phase-time exact patch:** 18.4 / historical selection evidence
 - **Current downstream PostgreSQL patch:** 18.6
-- **Current downstream database state:** CP1–CP6 CLOSED; CP6 integrated via PR #42
-- **Recovery-tree forward evolution:** Alembic `20260830_09` / `69|5|15|76|97|69|123|0|0|0`
+- **Current downstream database state:** CP1–CP6 CLOSED; CP6 integrated via PR #42; LOCAL PostgreSQL Recovery integrated via PR #47
+- **Current protected-main database head:** Alembic `20260830_09` / `69|5|15|76|97|69|123|0|0|0`
 
 ## 1. Purpose and historical boundary
 
@@ -94,9 +94,10 @@ Current concrete persistence is owned downstream by:
 ../decisions/ADR-010-postgresql-persistence-constitution.md
 ../database/README.md
 ../database/dante-postgresql-database.md + current continuation parts
+../operations/postgres-recovery-runbook.md
 ```
 
-CP6 is CLOSED / integrated via PR #42. The Recovery workstream then adds a normal forward evolution; live Git determines whether that evolution has entered protected `main`.
+CP6 is CLOSED / integrated via PR #42. The accepted LOCAL Recovery workstream then added normal forward evolution `20260830_09` and was integrated into protected `main` via PR #47. The former Recovery branch is historical; current protected-main database/recovery truth lives in the sources above.
 
 ## 5. Non-negotiable barriers
 
@@ -116,6 +117,7 @@ SELECTED != DIRECT PASS
 POSTGRESQL PATCH REFRESH != PHYSICAL REOPEN
 CP3 TECHNICAL QA != BUSINESS-SEMANTIC HG PASS
 DATABASE MATERIALIZATION != PRODUCT-VERTICAL APPLICATION IMPLEMENTATION
+LOCAL RECOVERY PASS != REMOTE/CLOUD PRODUCTION RECOVERY PASS
 ```
 
 No universal Entity/Thing/EAV/generic-edge canonical shortcut is accepted.
@@ -173,7 +175,7 @@ The historical S3 selection is phase-time Physical target evidence. It is **not*
 Current recovery activation boundary:
 
 ```text
-pgBackRest LOCAL recovery   IMPLEMENTED / DIRECTLY REHEARSED
+pgBackRest LOCAL recovery   IMPLEMENTED / DIRECTLY REHEARSED / INTEGRATED VIA PR #47
 remote backup provider      TBD / NOT ACTIVATED
 production/cloud recovery   NOT CLAIMED
 ```
@@ -271,7 +273,7 @@ PgBouncer
 → demonstrated connection-pressure need + direct validation
 
 pgBackRest LOCAL
-→ activated and directly rehearsed by the closed LOCAL Recovery workstream
+→ activated, directly rehearsed and integrated by the closed LOCAL Recovery workstream
 
 remote backup provider
 → TBD; select/activate only at a real production deployment boundary with provider-specific proof
@@ -285,18 +287,18 @@ PostgreSQL-native structures required by the concrete DANTE schema may be implem
 BACKEND CP1–CP5                    CLOSED / INTEGRATED / DIRECT QA PASS
 CP6 CONCRETE POSTGRESQL DATABASE   CLOSED / INTEGRATED VIA PR #42
 POSTGRESQL                         18.6
-PRE-RECOVERY CP6 HEAD              20260826_08
-PRE-RECOVERY TOPOLOGY              68|5|14|75|95|68|120|0|0|0
-RECOVERY-TREE HEAD                 20260830_09
-RECOVERY-TREE TOPOLOGY             69|5|15|76|97|69|123|0|0|0
+HISTORICAL PRE-RECOVERY CP6 HEAD   20260826_08
+HISTORICAL PRE-RECOVERY TOPOLOGY   68|5|14|75|95|68|120|0|0|0
+CURRENT PROTECTED-MAIN HEAD        20260830_09
+CURRENT PROTECTED-MAIN TOPOLOGY    69|5|15|76|97|69|123|0|0|0
 DANTE BUSINESS DATABASE            MATERIALIZED
-LOCAL POSTGRESQL RECOVERY          CP01–CP07 PASS / CLOSED
+LOCAL POSTGRESQL RECOVERY          CP01–CP07 PASS / CLOSED / INTEGRATED VIA PR #47
 REMOTE BACKUP PROVIDER             TBD / NOT ACTIVATED
 PRODUCTION/CLOUD RECOVERY          NOT CLAIMED
 SEMANTIC HG BLANKET PASS           NO
 ```
 
-The CP6 closure proof remains in `../development/backend-cp6-05-whole-database-qa.md`. Current database/recovery truth is owned by `../database/README.md`, the current migrations/mappings/tests and `../operations/postgres-recovery-runbook.md`.
+The CP6 closure proof remains in `../development/backend-cp6-05-whole-database-qa.md`. Current database/recovery truth is owned by `../database/README.md`, current migrations/mappings/tests and `../operations/postgres-recovery-runbook.md`.
 
 ## 11. Current boundary summary
 
@@ -311,10 +313,10 @@ CP6 CLOSED / INTEGRATED VIA PR #42
 PostgreSQL 18.6
 business database MATERIALIZED
 
-RECOVERY FORWARD EVOLUTION IN THIS TREE
+CURRENT PROTECTED-MAIN RECOVERY EVOLUTION
 Alembic 20260830_09
 69|5|15|76|97|69|123|0|0|0
-CP01–CP07 LOCAL PASS / CLOSED
+CP01–CP07 LOCAL PASS / CLOSED / INTEGRATED VIA PR #47
 remote provider TBD / NOT ACTIVATED
 production/cloud recovery NOT CLAIMED
 
