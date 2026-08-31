@@ -17,17 +17,24 @@ test('Home opens the centered World on the dedicated World Focus route', async (
   await expect(page.getByRole('main', { name: 'Mondo Musica' })).toBeVisible();
   await expect(focus).toHaveAttribute('data-world-focus-structure-version', '1.0.0');
   await expect(focus).toHaveAttribute('data-world-focus-geometry-version', 'wf-g3');
+  await expect(focus).toHaveAttribute('data-world-focus-visual-version', 'wf-v1');
   await expect(page.locator('[data-app-region="topbar"]')).toBeVisible();
   await expect(page.locator('[data-world-focus-region="visual-frame"]')).toHaveCount(1);
   await expect(page.locator('[data-world-focus-region="workspace"]')).toHaveCount(1);
   await expect(page.locator('[data-world-focus-region="shell-controls"]')).toHaveCount(1);
-  await expect(page.locator('.world-focus-ellipse-guides ellipse')).toHaveCount(3);
+  await expect(page.locator('.world-focus-corona-svg')).toHaveCount(1);
+  await expect(page.locator('.world-focus-corona-svg mask')).toHaveCount(1);
+  await expect(page.locator('[data-world-focus-visual-layer="corona-field"]')).toHaveCount(1);
+  await expect(page.locator('[data-world-focus-visual-layer="corona-energy"]')).toHaveCount(1);
+  await expect(page.locator('[data-world-focus-visual-layer="corona-geometry"]')).toHaveCount(1);
+  await expect(page.locator('[data-world-focus-visual-layer="corona-particles"]')).toHaveCount(1);
+  await expect(page.getByRole('button', { name: 'Torna indietro' })).toHaveCount(0);
   await expect(page.locator('[data-home-region="shell"]')).toHaveCount(0);
 
   const background = await focus.evaluate(
     (element) => getComputedStyle(element).backgroundColor,
   );
-  expect(background).toBe('rgb(255, 255, 255)');
+  expect(background).not.toBe('rgb(255, 255, 255)');
 
   await page.goBack();
   await expect(page).toHaveURL(/\/home$/);
@@ -79,7 +86,7 @@ test('keyboard activation selects first and opens the centered World second', as
   await expect(page).toHaveURL(/\/worlds\/music$/);
 });
 
-test('direct World Focus URL opens the same frozen structure and closes safely', async ({
+test('direct World Focus URL opens the same frozen structure and Escape closes safely', async ({
   page,
 }) => {
   await page.goto('/worlds/travel');
@@ -89,9 +96,10 @@ test('direct World Focus URL opens the same frozen structure and closes safely',
   await expect(focus).toHaveAttribute('data-entry-origin', 'fallback');
   await expect(focus).toHaveAttribute('data-world-focus-structure-version', '1.0.0');
   await expect(focus).toHaveAttribute('data-world-focus-geometry-version', 'wf-g3');
+  await expect(focus).toHaveAttribute('data-world-focus-visual-version', 'wf-v1');
   await expect(page.locator('[data-app-region="topbar"]')).toBeVisible();
 
-  await page.getByRole('button', { name: 'Torna indietro' }).click();
+  await page.keyboard.press('Escape');
   await expect(page).toHaveURL(/\/worlds$/);
 });
 
