@@ -543,7 +543,7 @@ def _rule_payload(
                 "model": {
                     "datasource": {"type": "prometheus", "uid": prometheus_uid},
                     "editorMode": "code",
-                    "expr": str(rule["expr"]).replace('\\\"prod\\\"', f'\\\"{environment}\\\"'),
+                    "expr": str(rule["expr"]).replace('"prod"', f'"{environment}"'),
                     "instant": True,
                     "intervalMs": 1000,
                     "legendFormat": "__auto",
