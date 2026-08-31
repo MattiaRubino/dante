@@ -12,12 +12,14 @@ import {
   WORLD_FOCUS_REGION,
   WORLD_FOCUS_STRUCTURE_VERSION,
 } from '../model/world-focus-structure';
+import { WORLD_FOCUS_VISUAL_VERSION } from '../model/world-focus-visual';
 import {
   clearWorldFocusEntry,
   readWorldFocusEntry,
   type WorldFocusEntrySource,
 } from '../model/world-focus-transition';
 import type { WorldFocusWorld } from '../model/world-focus-fixtures';
+import { WorldFocusVisualFrame } from './world-focus-visual-frame';
 import './world-focus.css';
 import './world-focus-states.css';
 
@@ -37,36 +39,6 @@ type WorldFocusPageProps = Readonly<{
   status?: WorldFocusShellStatus;
   onClose: (request: WorldFocusCloseRequest) => void;
 }>;
-
-const GUIDE_LINE_ROLES = ['outer', 'origin', 'inner'] as const;
-
-type GuideLineRole = (typeof GUIDE_LINE_ROLES)[number];
-
-function WorldFocusEllipseGuides() {
-  return (
-    <svg
-      className="world-focus-ellipse-guides"
-      data-world-focus-region={WORLD_FOCUS_REGION.visualFrame}
-      aria-hidden="true"
-      focusable="false"
-    >
-      {GUIDE_LINE_ROLES.map((role: GuideLineRole) => {
-        const geometry = WORLD_FOCUS_GEOMETRY.guideEllipses[role];
-
-        return (
-          <ellipse
-            key={role}
-            data-guide-line={role}
-            cx="50%"
-            cy="50%"
-            rx={geometry.rx}
-            ry={geometry.ry}
-          />
-        );
-      })}
-    </svg>
-  );
-}
 
 export function WorldFocusPage({
   world,
@@ -102,6 +74,10 @@ export function WorldFocusPage({
       WORLD_FOCUS_GEOMETRY.layout.workspaceBlockInset,
     '--world-focus-workspace-block-inset-compact':
       WORLD_FOCUS_GEOMETRY.layout.compactWorkspaceBlockInset,
+    '--world-focus-accent': world.accent,
+    '--world-focus-violet': '#7b4dff',
+    '--world-focus-hot': '#ff8736',
+    '--world-focus-ambient-intensity': String(world.theme.ambientIntensity),
   } as CSSProperties;
 
   useEffect(() => {
@@ -152,6 +128,7 @@ export function WorldFocusPage({
       data-world-focus-status={status}
       data-world-focus-structure-version={WORLD_FOCUS_STRUCTURE_VERSION}
       data-world-focus-geometry-version={WORLD_FOCUS_GEOMETRY.version}
+      data-world-focus-visual-version={WORLD_FOCUS_VISUAL_VERSION}
       data-entry-origin={entry === null ? 'fallback' : 'live'}
       aria-label={t(($) => $.common.worldFocus.mainLabel, { world: label })}
       style={geometryStyle}
@@ -159,18 +136,13 @@ export function WorldFocusPage({
     >
       <h1 className="world-focus-visually-hidden">{label}</h1>
 
-      <WorldFocusEllipseGuides />
+      <WorldFocusVisualFrame world={world} />
 
-      <button
-        className="world-focus-back"
+      <div
+        className="world-focus-shell-controls"
         data-world-focus-region={WORLD_FOCUS_REGION.shellControls}
-        type="button"
-        onClick={() => onClose(closeRequest)}
-        aria-label={t(($) => $.common.worldFocus.back)}
-      >
-        <span aria-hidden="true">←</span>
-        <span>{t(($) => $.common.worldFocus.back)}</span>
-      </button>
+        aria-hidden="true"
+      />
 
       <section
         className="world-focus-workspace"
