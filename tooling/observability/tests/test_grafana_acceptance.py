@@ -81,7 +81,7 @@ class GrafanaAcceptanceTests(unittest.TestCase):
             "id": "dante-example",
             "title": "Example",
             "severity": "critical",
-            "expr": "max_over_time(up[5m])",
+            "expr": 'max_over_time(up{environment="prod"}[5m])',
             "lookback_seconds": 360,
             "evaluator": {"type": "lt", "threshold": 1},
             "for": "2m",
