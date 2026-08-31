@@ -1,7 +1,7 @@
-# DANTE — World Focus Geometry Contract WF-G2 Candidate
+# DANTE — World Focus Geometry Contract WF-G3 Candidate
 
 **Status:** CANDIDATE / visual approval pending  
-**Geometry version:** `wf-g2-candidate`  
+**Geometry version:** `wf-g3-candidate`  
 **Scope:** World Focus structural geometry only
 
 This contract exists to stop World Focus geometry from drifting during later visual, module, AI, insight, responsive and backend work.
@@ -24,33 +24,40 @@ World Focus is not rendered on top of Home and does not use Home as its visible 
 
 The World Focus route owns a full white route surface below the global Topbar.
 
-The visual frame is defined by exactly three **true concentric circles** centered on the World Focus surface:
+The visual frame is defined by exactly three **true concentric SVG ellipses** centered on the World Focus surface:
 
 - `outer` — outer boundary of the future World visual-frame band;
 - `origin` — canonical reference/origin for future transition, drawing or asset placement;
 - `inner` — inner boundary of the future World visual-frame band.
 
-These are SVG `<circle>` primitives, not manually drawn Bézier/path approximations.
+These are SVG `<ellipse>` primitives, not manually drawn Bézier/path approximations.
 
-Their radii are intentionally large enough that the rectangular viewport clips away the side-middle portions. The intended visible result is therefore only four corner arc groups:
+The origin ellipse is the geometric authority:
 
 ```text
-upper-left                         upper-right
-     )))                         (((
-
-
-
-     )))                         (((
-lower-left                         lower-right
+cx = 50%
+cy = 50%
+rx = 50%
+ry = 87%
 ```
 
-There must be no persistent vertical side bulge and no inverted hand-authored curve.
+Therefore its left and right extrema are mathematically tangent to the lateral route edges at mid-height. It must not disappear outside the viewport at the side midpoint.
+
+The frame band is formed by:
+
+```text
+outer  rx 52.25% / ry 90%  -> extends outside the route laterally
+origin rx 50%    / ry 87%  -> touches both route sides at mid-height
+inner  rx 47.75% / ry 84%  -> remains slightly inside
+```
+
+The taller vertical radii intentionally produce long, elegant corner arcs rather than a rigid circular silhouette.
 
 Future galaxy, particle, magic-circle, shader, SVG or image assets must fit this visual-frame band; they must not redefine the page geometry.
 
 ## 3. Workspace rule
 
-The real application workspace remains rectangular and independent from the visual-circle frame.
+The real application workspace remains rectangular and independent from the visual-frame ellipses.
 
 It:
 
@@ -68,7 +75,7 @@ All structural values come from:
 
 The candidate contract owns:
 
-- the exact three guide radii;
+- the exact three ellipse `rx` / `ry` pairs;
 - workspace inline inset;
 - compact workspace inline inset;
 - workspace vertical inset;
@@ -89,7 +96,7 @@ Compact behavior is separately bounded below `720px`.
 
 ## 5. Change control
 
-`wf-g2-candidate` is not locked until user visual approval.
+`wf-g3-candidate` is not locked until user visual approval.
 
 Once approved it must be promoted to a locked version and any later geometry change requires all of:
 
@@ -100,19 +107,20 @@ Once approved it must be promoted to a locked version and any later geometry cha
 5. responsive/E2E geometry revalidation;
 6. this document updated in the same change.
 
-Color, particles, galaxy texture, magic-circle styling, asset choice and optional entry animation are skin/presentation work and must not silently move the approved circles or workspace.
+Color, particles, galaxy texture, magic-circle styling, asset choice and optional entry animation are skin/presentation work and must not silently move the approved ellipses or workspace.
 
 ## 6. Current visual gate
 
 Before any cosmic/Dr-Strange-style styling is reintroduced, verify in the real browser that:
 
 - the page below the Topbar is white;
-- exactly three true concentric circle guides exist;
-- only their four corner arc portions are materially visible;
+- exactly three true concentric ellipse guides exist;
+- the origin ellipse touches the left/right route edge at side mid-height;
+- the outer ellipse extends outside that edge;
+- the inner ellipse remains slightly inside;
+- the corner arcs read as smooth elongated geometry rather than a rigid circle;
 - the center/origin guide is visually stronger than outer/inner guides;
-- there is no side-middle bulge or inverse-looking curve;
 - the blue workspace remains a separate rectangular debug region;
-- resizing across the pressure widths does not distort circles into ellipses;
 - nothing overflows or moves arbitrarily.
 
 No visual skin work is authorized until this geometry gate is approved.
