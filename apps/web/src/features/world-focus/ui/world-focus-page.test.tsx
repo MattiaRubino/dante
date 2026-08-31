@@ -39,7 +39,7 @@ function requireWorld(id: 'music' | 'travel') {
 }
 
 describe('WorldFocusPage', () => {
-  it('keeps WF0/WF-G3 frozen while mounting the volumetric visual candidate', () => {
+  it('keeps WF0/WF-G3 frozen while mounting the peripheral VFX candidate', () => {
     primeWorldFocusEntry({
       worldId: 'music',
       source: 'home',
@@ -59,7 +59,7 @@ describe('WorldFocusPage', () => {
     expect(shell.getAttribute('data-world-focus-structure-version')).toBe('1.0.0');
     expect(shell.getAttribute('data-world-focus-geometry-version')).toBe('wf-g3');
     expect(shell.getAttribute('data-world-focus-visual-version')).toBe(
-      'wf-v3-candidate',
+      'wf-v4-candidate',
     );
     expect(shell.getAttribute('data-world-focus-region')).toBe('shell');
     expect(shell.getAttribute('data-entry-origin')).toBe('live');
@@ -79,7 +79,15 @@ describe('WorldFocusPage', () => {
     ).toHaveLength(3);
     expect(container.querySelector('.world-focus-corona-fallback-svg')).toBeNull();
     expect(
-      container.querySelector('[data-world-focus-energy-motion="static"]'),
+      container.querySelector('[data-world-focus-energy-motion="animated"]'),
+    ).toBeTruthy();
+    expect(
+      container.querySelector(
+        '[data-world-focus-vfx-coverage="peripheral-outside-workspace"]',
+      ),
+    ).toBeTruthy();
+    expect(
+      container.querySelector('[data-world-focus-vfx-boundary="workspace-protected"]'),
     ).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Torna indietro' })).toBeNull();
     expect(container.querySelector('.world-focus-portal')).toBeNull();
@@ -105,7 +113,7 @@ describe('WorldFocusPage', () => {
     expect(shell?.getAttribute('data-world-focus-structure-version')).toBe('1.0.0');
     expect(shell?.getAttribute('data-world-focus-geometry-version')).toBe('wf-g3');
     expect(shell?.getAttribute('data-world-focus-visual-version')).toBe(
-      'wf-v3-candidate',
+      'wf-v4-candidate',
     );
 
     fireEvent.keyDown(document, { key: 'Escape' });
