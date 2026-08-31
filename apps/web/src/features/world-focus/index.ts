@@ -19,4 +19,5 @@ export {
 export {
   WorldFocusPage,
   type WorldFocusCloseRequest,
+  type WorldFocusShellStatus,
 } from './ui/world-focus-page';

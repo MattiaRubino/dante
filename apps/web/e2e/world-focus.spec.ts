@@ -11,6 +11,9 @@ test('Home opens the centered World into the immersive focus and browser back pr
   const homeShell = page.locator('[data-home-region="shell"]');
   await expect(homeShell).toHaveAttribute('data-home-ai-state', 'collapsed');
 
+  await page.getByRole('button', { name: 'Espandi timeline' }).click();
+  await expect(homeShell).toHaveAttribute('data-home-timeline-state', 'expanded');
+
   const music = page.locator('.home-world[aria-label="Musica"]');
   await music.click();
   await expect(music).toHaveAttribute('aria-current', 'true');
@@ -32,6 +35,7 @@ test('Home opens the centered World into the immersive focus and browser back pr
   await expect(page).toHaveURL(/\/home$/);
   await expect(page.getByRole('main', { name: 'Mondo Musica' })).toHaveCount(0);
   await expect(homeShell).toHaveAttribute('data-home-ai-state', 'collapsed');
+  await expect(homeShell).toHaveAttribute('data-home-timeline-state', 'expanded');
   await expect(music).toHaveAttribute('aria-current', 'true');
   await expect(music).toBeFocused();
   await expect(page.locator('[data-app-region="topbar"]')).toBeVisible();

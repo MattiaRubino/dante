@@ -135,29 +135,30 @@ describe('WorldFocusPage', () => {
   });
 
   it('restores focus to the live opener after the focus surface unmounts', async () => {
-    const onClose = vi.fn();
-    const world = requireWorld('music');
-    const { rerender } = render(
-      <button type="button">Apri Musica</button>,
-    );
-    const opener = screen.getByRole('button', { name: 'Apri Musica' });
+    const opener = document.createElement('button');
+    opener.type = 'button';
+    opener.textContent = 'Apri Musica';
+    document.body.append(opener);
     opener.focus();
-    expect(document.activeElement).toBe(opener);
 
-    rerender(
-      <>
-        <button type="button">Apri Musica</button>
-        <WorldFocusPage world={world} source="home" onClose={onClose} />
-      </>,
-    );
-    expect(document.activeElement).toBe(
-      screen.getByRole('main', { name: 'Mondo Musica' }),
-    );
+    try {
+      const { unmount } = render(
+        <WorldFocusPage
+          world={requireWorld('music')}
+          source="home"
+          onClose={vi.fn()}
+        />,
+      );
 
-    rerender(<button type="button">Apri Musica</button>);
-    await Promise.resolve();
-    expect(document.activeElement).toBe(
-      screen.getByRole('button', { name: 'Apri Musica' }),
-    );
+      expect(document.activeElement).toBe(
+        screen.getByRole('main', { name: 'Mondo Musica' }),
+      );
+
+      unmount();
+      await Promise.resolve();
+      expect(document.activeElement).toBe(opener);
+    } finally {
+      opener.remove();
+    }
   });
 });
