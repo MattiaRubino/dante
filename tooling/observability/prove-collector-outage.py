@@ -106,7 +106,7 @@ def _require_healthy(url: str, timeout_seconds: float, label: str) -> None:
     try:
         with urlopen(request, timeout=timeout_seconds) as response:  # noqa: S310
             status = response.status
-    except URLError as error:
+    except (URLError, OSError) as error:
         raise AcceptanceFailure(
             f"{label} is unreachable: {url} ({error.reason})"
         ) from error
