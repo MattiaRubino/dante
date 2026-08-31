@@ -1,10 +1,11 @@
 # DANTE — Access/Auth M4–M7 Execution Plan
 
-- **Status:** CURRENT EXECUTION PLAN / M4 CLOSED / M5 ACTIVE / M5.1–M5-B COMPLETE / M5-C NEXT / M6–M7 PLANNED
+- **Status:** CURRENT EXECUTION PLAN / M4 CLOSED / M5 ACTIVE / M5.1–M5-C COMPLETE / M5-D NEXT / M6–M7 PLANNED
 - **Vertical:** Access/Auth
 - **Branch:** `feature/access-auth`
 - **Worktree:** `/home/mattia/projects/dante`
 - **Closed prerequisite:** M1–M4 CLOSED; M4 engineering gate PASS; user acceptance ACCEPTED
+- **M5-C accepted implementation checkpoint:** `e6f738a1ea3f5152caa7d99f1d6ccd108747c806`
 - **M5-B accepted implementation checkpoint:** `e2d40a7666e3c0130afecd8113b8063390b86b9d`
 - **M5-A accepted implementation checkpoint:** `7e40e02d301b0812b3f55e0d9d4ce6439e420b2a`
 - **M4 final accepted implementation checkpoint:** `c95e3b2ca664725bcacc374cb5ba6ed49409fe2b`
@@ -212,7 +213,7 @@ provider/link/register/remove mutations require recent-auth
 provider profile bootstrap expires after <=30 days and never resyncs
 ```
 
-Frozen public API inventory remains in the M5.2 authority and is materialized later in M5-H/I, not by M5-A/M5-B.
+Frozen public API inventory remains in the M5.2 authority and is materialized later in M5-H/I, not by M5-A/M5-B/M5-C.
 
 ---
 
@@ -374,40 +375,61 @@ Provider/JWK/token network calls remain outside DB transactions.
 
 M5-B changed no DB schema/Alembic/Dictionary, so the accepted M5-A PostgreSQL gate was not rerun absent direct regression evidence.
 
-M5-B intentionally stops before Google/Apple product flows, full passkey ceremonies, public M5 API/OpenAPI/client, Access Web and real provider/browser acceptance.
-
 ---
 
 # 6. M5-C — Google Authentication
 
-**Status:** `NEXT`.
+**Status:** `COMPLETE / ENGINEERING PASS`.
 
-Implement:
+Accepted implementation checkpoint:
 
 ```text
-GIS begin/complete
-OIDC nonce/transaction binding
-JWK validation through accepted M5-B runtime
-issuer/audience/azp/nonce/expiry/subject claim validation
-known identity signin
-new Account with provider-authoritative mailbox when frozen rules permit
-third-party Google mailbox → provider enrollment
-email collision → explicit link-required flow
-provider reauthentication
-provider Settings link semantics where frozen by M5 contract
-profile bootstrap staging
-canonical DANTE AuthSession issuance only
+e6f738a1ea3f5152caa7d99f1d6ccd108747c806
+chore(auth): finalize M5-C formatting
 ```
 
-No Gmail/Calendar/Drive scopes.
+Implemented:
 
-Proof includes invalid iss/aud/azp/signature/nonce/expiry/subject, unknown-kid bounded refresh, provider cancel/outage, identity/profile changes, races and canonical DANTE AuthSession issuance.
+```text
+GIS/OIDC begin + complete application flow
+OIDC nonce/state verifier-only transaction persistence
+single claim / replay rejection
+JWK validation through accepted M5-B runtime
+issuer/audience/azp/nonce/exp/iat/nbf/subject validation
+canonical Google issuer + issuer/subject identity authority
+known ExternalIdentity signin
+new passwordless Account under provider-authoritative mailbox rules
+third-party Google mailbox → provider enrollment OTP
+email collision → explicit link_required, never silent merge
+provider reauthentication
+provider Settings link semantics under frozen M5 contract
+profile bootstrap staging only
+canonical DANTE AuthSession issuance/rotation only
+bounded provider ingress limits
+commit ambiguity / uniqueness-race reconciliation
+```
+
+Accepted proof:
+
+```text
+uv lock --check                              PASS
+Ruff format / format-check / lint            PASS
+mypy strict                                  PASS / 79 source files
+backend fast                                 148 / 148 PASS
+focused real PostgreSQL M5-C                  7 / 7 PASS
+backend build                                PASS / sdist + wheel
+git diff --check                             PASS
+```
+
+The focused PostgreSQL proof covers verifier-only transaction persistence/replay rejection, passwordless Account creation and identity reuse, collision→link, third-party enrollment, enrollment collision, concurrent same Google identity convergence and link/reauth behavior.
+
+No Gmail/Calendar/Drive scopes. Public M5 routes, Access Web Google UI and real Google browser/provider UAT remain later slices.
 
 ---
 
 # 7. M5-D — Apple Authentication / Grant / Notifications
 
-**Status:** PLANNED.
+**Status:** `NEXT`.
 
 Implement:
 
@@ -697,9 +719,10 @@ M5 ACTIVE
   M5.2 COMPLETE
   M5-A COMPLETE / REAL POSTGRESQL PROVEN
   M5-B COMPLETE / ENGINEERING PASS
-  M5-C NEXT
+  M5-C COMPLETE / ENGINEERING PASS
+  M5-D NEXT
 M6 PLANNED
 M7 PLANNED / FINAL GATE
 ```
 
-M5-C is now the exact next slice. It must consume the accepted M5-B shared provider/crypto infrastructure rather than rebuilding or bypassing it.
+M5-D is now the exact next slice. It must consume the accepted M5-B shared provider/crypto infrastructure and M5-C provider-flow patterns rather than rebuilding or bypassing them.
