@@ -21,6 +21,7 @@ from dante.auth.apple import (
     AppleNotificationEvent,
     AppleNotificationVerifier,
     AppleProtocolClient,
+    AppleProviderUnavailableError,
     AppleTokenResponse,
     AppleTokenVerifier,
 )
@@ -34,6 +35,7 @@ from dante.auth.contracts import (
     ProviderEnrollmentRequired,
     ProviderLinkRequired,
     ProviderPurpose,
+    ProviderReconciliationPendingError,
     ProviderReturnTarget,
     ProviderTransactionInvalidOrExpiredError,
 )
@@ -141,7 +143,9 @@ class _FakeAppleVerifier:
 class _FakeAppleProtocolClient:
     def __init__(self) -> None:
         self.exchange_codes: list[str] = []
+        self.revoke_attempts: list[str] = []
         self.revoked_tokens: list[str] = []
+        self.revoke_failures_remaining = 0
 
     async def exchange_code(self, code: str) -> AppleTokenResponse:
         self.exchange_codes.append(code)
@@ -151,7 +155,12 @@ class _FakeAppleProtocolClient:
         )
 
     async def revoke_refresh_token(self, refresh_token: SecretStr) -> None:
-        self.revoked_tokens.append(refresh_token.get_secret_value())
+        token = refresh_token.get_secret_value()
+        self.revoke_attempts.append(token)
+        if self.revoke_failures_remaining > 0:
+            self.revoke_failures_remaining -= 1
+            raise AppleProviderUnavailableError("simulated Apple revoke outage")
+        self.revoked_tokens.append(token)
 
 
 class _FakeNotificationVerifier:
@@ -751,7 +760,7 @@ async def test_signed_email_events_are_monotonic_and_revocation_clears_grant_sec
 
 
 @pytest.mark.asyncio
-async def test_concurrent_first_apple_callbacks_converge_on_one_account_and_identity(
+async def test_concurrent_first_apple_callbacks_converge_on_one_account_identity_and_active_grant(
     migrated_database: Any,
 ) -> None:
     evidence = _evidence(
@@ -803,3 +812,76 @@ async def test_concurrent_first_apple_callbacks_converge_on_one_account_and_iden
         assert await _count(runtime, ExternalIdentityRow) == 1
         assert await _count(runtime, AppleAuthGrantRow) == 1
         assert await _count(runtime, AuthSessionRow) == 2
+
+        async with runtime.session_factory() as session, session.begin():
+            identity = await session.scalar(select(ExternalIdentityRow))
+            grant = await session.scalar(select(AppleAuthGrantRow))
+        assert identity is not None
+        assert grant is not None
+        assert grant.status_code == "active"
+        assert grant.external_identity_ref == identity.external_identity_ref
+        assert grant.pending_expires_at is None
+        assert grant.revocation_requested_at is None
+
+
+@pytest.mark.asyncio
+async def test_local_revoke_survives_provider_outage_and_reconciles_pending_grant(
+    migrated_database: Any,
+) -> None:
+    evidence = _evidence(
+        subject="apple-revoke-reconcile",
+        email="revoke@example.com",
+        authoritative=True,
+    )
+    async with _apple_service(migrated_database, evidence=evidence) as (
+        service,
+        _verifier,
+        protocol,
+        _notifications,
+        _delivery,
+        runtime,
+    ):
+        result = await _begin_and_complete(service, source="revoke-reconcile")
+        assert isinstance(result, ProviderAuthenticated)
+        async with runtime.session_factory() as session, session.begin():
+            identity = await session.scalar(select(ExternalIdentityRow))
+            grant = await session.scalar(select(AppleAuthGrantRow))
+        assert identity is not None
+        assert grant is not None
+        assert grant.status_code == "active"
+        original_ciphertext = grant.refresh_token_ciphertext
+        assert original_ciphertext is not None
+
+        protocol.revoke_failures_remaining = 1
+        with pytest.raises(ProviderReconciliationPendingError):
+            await service.revoke_identity_and_grant(
+                external_identity_ref=identity.external_identity_ref,
+            )
+
+        async with runtime.session_factory() as session, session.begin():
+            revoked_identity = await session.scalar(select(ExternalIdentityRow))
+            pending_grant = await session.scalar(select(AppleAuthGrantRow))
+        assert revoked_identity is not None
+        assert revoked_identity.status_code == "revoked"
+        assert revoked_identity.revocation_reason_code == "user_unlinked"
+        assert pending_grant is not None
+        assert pending_grant.status_code == "revocation_pending"
+        assert pending_grant.refresh_token_ciphertext == original_ciphertext
+        assert pending_grant.refresh_token_nonce is not None
+        assert pending_grant.encryption_key_id is not None
+        assert pending_grant.revocation_requested_at is not None
+        assert protocol.revoked_tokens == []
+        assert len(protocol.revoke_attempts) == 1
+
+        assert await service.reconcile_expired_pending_grants() == 1
+
+        async with runtime.session_factory() as session, session.begin():
+            final_grant = await session.scalar(select(AppleAuthGrantRow))
+        assert final_grant is not None
+        assert final_grant.status_code == "revoked"
+        assert final_grant.refresh_token_ciphertext is None
+        assert final_grant.refresh_token_nonce is None
+        assert final_grant.encryption_key_id is None
+        assert final_grant.revoked_at is not None
+        assert len(protocol.revoke_attempts) == 2
+        assert len(protocol.revoked_tokens) == 1
