@@ -1,5 +1,6 @@
 """Focused M5 WebAuthn RP/origin and real cryptographic verification tests."""
 
+import pytest
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec
 from fido2.cose import ES256
@@ -39,9 +40,13 @@ def _registration_response(
     credential_id: bytes,
     public_key: ES256,
     backup_eligible: bool = True,
+    user_verified: bool = True,
+    origin: str = _ORIGIN,
 ) -> dict[str, object]:
     credential = AttestedCredentialData.create(Aaguid.NONE, credential_id, public_key)
-    flags = AuthenticatorData.FLAG.UP | AuthenticatorData.FLAG.UV | AuthenticatorData.FLAG.AT
+    flags = AuthenticatorData.FLAG.UP | AuthenticatorData.FLAG.AT
+    if user_verified:
+        flags |= AuthenticatorData.FLAG.UV
     if backup_eligible:
         flags |= AuthenticatorData.FLAG.BE
     auth_data = AuthenticatorData.create(
@@ -54,7 +59,7 @@ def _registration_response(
     client_data = CollectedClientData.create(
         CollectedClientData.TYPE.CREATE,
         challenge,
-        _ORIGIN,
+        origin,
     )
     encoded_id = websafe_encode(credential_id)
     return {
@@ -76,8 +81,12 @@ def _authentication_response(
     private_key: ec.EllipticCurvePrivateKey,
     counter: int,
     backed_up: bool,
+    user_verified: bool = True,
+    origin: str = _ORIGIN,
 ) -> dict[str, object]:
-    flags = AuthenticatorData.FLAG.UP | AuthenticatorData.FLAG.UV | AuthenticatorData.FLAG.BE
+    flags = AuthenticatorData.FLAG.UP | AuthenticatorData.FLAG.BE
+    if user_verified:
+        flags |= AuthenticatorData.FLAG.UV
     if backed_up:
         flags |= AuthenticatorData.FLAG.BS
     auth_data = AuthenticatorData.create(
@@ -88,7 +97,7 @@ def _authentication_response(
     client_data = CollectedClientData.create(
         CollectedClientData.TYPE.GET,
         challenge,
-        _ORIGIN,
+        origin,
     )
     signature = private_key.sign(
         auth_data + client_data.hash,
@@ -168,3 +177,109 @@ def test_webauthn_registration_and_assertion_use_real_fido2_verification() -> No
     assert assertion.sign_count == 7
     assert assertion.backup_eligible is True
     assert assertion.backup_state is True
+
+
+@pytest.mark.parametrize(
+    "response_factory,expected_challenge",
+    [
+        (
+            lambda private_key, public_key: _registration_response(
+                challenge=b"wrong-registration-challenge-32!"[:32],
+                credential_id=b"registration-negative",
+                public_key=public_key,
+            ),
+            b"r" * 32,
+        ),
+        (
+            lambda private_key, public_key: _registration_response(
+                challenge=b"r" * 32,
+                credential_id=b"registration-negative",
+                public_key=public_key,
+                user_verified=False,
+            ),
+            b"r" * 32,
+        ),
+        (
+            lambda private_key, public_key: _registration_response(
+                challenge=b"r" * 32,
+                credential_id=b"registration-negative",
+                public_key=public_key,
+                origin="https://evil.dante.test",
+            ),
+            b"r" * 32,
+        ),
+    ],
+)
+def test_registration_rejects_wrong_challenge_missing_uv_or_wrong_origin(
+    response_factory: object,
+    expected_challenge: bytes,
+) -> None:
+    policy = _policy()
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    public_key = ES256.from_cryptography_key(private_key.public_key())
+    factory = response_factory
+    assert callable(factory)
+
+    with pytest.raises(ValueError):
+        policy.verify_registration(
+            response=factory(private_key, public_key),
+            expected_challenge=expected_challenge,
+        )
+
+
+def test_assertion_rejects_wrong_signature_missing_uv_and_wrong_origin() -> None:
+    policy = _policy()
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    wrong_private_key = ec.generate_private_key(ec.SECP256R1())
+    public_key = ES256.from_cryptography_key(private_key.public_key())
+    credential_id = b"assertion-negative"
+    registration_challenge = b"r" * 32
+    registration = policy.verify_registration(
+        response=_registration_response(
+            challenge=registration_challenge,
+            credential_id=credential_id,
+            public_key=public_key,
+        ),
+        expected_challenge=registration_challenge,
+    )
+    user_handle = b"u" * 32
+    assertion_challenge = b"a" * 32
+
+    invalid_responses = (
+        _authentication_response(
+            challenge=assertion_challenge,
+            credential_id=credential_id,
+            user_handle=user_handle,
+            private_key=wrong_private_key,
+            counter=1,
+            backed_up=False,
+        ),
+        _authentication_response(
+            challenge=assertion_challenge,
+            credential_id=credential_id,
+            user_handle=user_handle,
+            private_key=private_key,
+            counter=1,
+            backed_up=False,
+            user_verified=False,
+        ),
+        _authentication_response(
+            challenge=assertion_challenge,
+            credential_id=credential_id,
+            user_handle=user_handle,
+            private_key=private_key,
+            counter=1,
+            backed_up=False,
+            origin="https://evil.dante.test",
+        ),
+    )
+
+    for response in invalid_responses:
+        with pytest.raises(ValueError):
+            policy.verify_authentication(
+                response=response,
+                expected_challenge=assertion_challenge,
+                credential_id=credential_id,
+                public_key_cose=registration.public_key_cose,
+                cose_algorithm=registration.cose_algorithm,
+            )
