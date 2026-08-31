@@ -40,7 +40,10 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Frontend contract drift check
-        run: python3 tests/prototypes/frontend-preprod-contracts.py
+        shell: bash
+        run: |
+          python3 tests/prototypes/frontend-preprod-contracts.py
+          python3 tests/prototypes/world-focus-preprod-contracts.py
 
       - name: Format check
         if: ${{ github.ref != 'refs/heads/feature/home-react' }}
