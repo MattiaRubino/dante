@@ -9,6 +9,7 @@ from collections.abc import Awaitable, Callable
 from contextlib import suppress
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
+from typing import override
 from uuid import UUID, uuid7
 
 from pydantic import SecretStr
@@ -516,6 +517,7 @@ class MultiAuthenticatorLifecycleService(AuthLifecycleService):
             new_secret_verifier=new_session_verifier,
         )
 
+    @override
     async def request_password_recovery(
         self,
         *,
@@ -561,6 +563,7 @@ class MultiAuthenticatorLifecycleService(AuthLifecycleService):
         )
         await self._pad_recovery_success(started_at)
 
+    @override
     async def validate_password_recovery(
         self,
         *,
@@ -581,6 +584,7 @@ class MultiAuthenticatorLifecycleService(AuthLifecycleService):
             )
         )
 
+    @override
     async def reset_password(
         self,
         *,
@@ -620,34 +624,31 @@ class MultiAuthenticatorLifecycleService(AuthLifecycleService):
                     EmailIdentityRow.account_ref == snapshot.account_ref,
                 )
             )
-            challenge = await database_session.scalar(
-                select(PasswordRecoveryChallengeRow)
-                .where(
-                    PasswordRecoveryChallengeRow.password_recovery_ref
-                    == snapshot.password_recovery_ref,
-                    PasswordRecoveryChallengeRow.account_ref == snapshot.account_ref,
-                    PasswordRecoveryChallengeRow.email_identity_ref
-                    == snapshot.email_identity_ref,
-                )
-                .with_for_update()
-            )
             if (
                 account is None
                 or account.status_code != "active"
                 or email_identity is None
                 or email_identity.verified_at is None
                 or email_identity.recovery_restriction_code is not None
-                or challenge is None
-                or challenge.expires_at <= mutation_at
-                or not hmac.compare_digest(
-                    challenge.secret_verifier,
-                    snapshot.secret_verifier,
-                )
-                or not recovery_secret_matches(secret, challenge.secret_verifier)
             ):
                 raise RecoveryInvalidOrExpiredError()
 
-            await database_session.delete(challenge)
+            consumed = await database_session.scalar(
+                delete(PasswordRecoveryChallengeRow)
+                .where(
+                    PasswordRecoveryChallengeRow.password_recovery_ref
+                    == snapshot.password_recovery_ref,
+                    PasswordRecoveryChallengeRow.account_ref == snapshot.account_ref,
+                    PasswordRecoveryChallengeRow.email_identity_ref
+                    == snapshot.email_identity_ref,
+                    PasswordRecoveryChallengeRow.secret_verifier == snapshot.secret_verifier,
+                    PasswordRecoveryChallengeRow.expires_at > mutation_at,
+                )
+                .returning(PasswordRecoveryChallengeRow.password_recovery_ref)
+            )
+            if consumed is None:
+                raise RecoveryInvalidOrExpiredError()
+
             credential = await database_session.scalar(
                 select(PasswordCredentialRow)
                 .where(PasswordCredentialRow.account_ref == snapshot.account_ref)
@@ -1151,12 +1152,10 @@ class AuthenticatorLifecycleService:
                 require_recent=True,
             )
             challenge = await database_session.scalar(
-                select(ExternalLinkChallengeRow)
-                .where(
+                select(ExternalLinkChallengeRow).where(
                     ExternalLinkChallengeRow.external_link_challenge_ref
                     == external_link_challenge_ref
                 )
-                .with_for_update()
             )
             self._require_link_challenge(
                 challenge,
@@ -1213,8 +1212,7 @@ class AuthenticatorLifecycleService:
                 await database_session.flush()
             else:
                 identity_ref = identity.external_identity_ref
-                identity.email_identity_ref = challenge.target_email_identity_ref
-                identity.provider_email_address = challenge.provider_email_address
+                identity.provider_email_address = challenge.provider_email_address,
                 identity.provider_email_private = challenge.provider_email_private
                 identity.status_code = "active"
                 identity.status_changed_at = now
@@ -1235,7 +1233,29 @@ class AuthenticatorLifecycleService:
             elif challenge.apple_auth_grant_ref is not None:
                 raise AuthIntegrityError("non-Apple link challenge unexpectedly owns Apple grant")
 
-            await database_session.delete(challenge)
+            consumed_link_ref = await database_session.scalar(
+                delete(ExternalLinkChallengeRow)
+                .where(
+                    ExternalLinkChallengeRow.external_link_challenge_ref
+                    == external_link_challenge_ref,
+                    ExternalLinkChallengeRow.target_account_ref == locked.account_ref,
+                    ExternalLinkChallengeRow.target_email_identity_ref
+                    == challenge.target_email_identity_ref,
+                    ExternalLinkChallengeRow.provider_code == challenge.provider_code,
+                    ExternalLinkChallengeRow.issuer == challenge.issuer,
+                    ExternalLinkChallengeRow.subject == challenge.subject,
+                    ExternalLinkChallengeRow.apple_auth_grant_ref
+                    == challenge.apple_auth_grant_ref,
+                    ExternalLinkChallengeRow.continuation_verifier
+                    == challenge.continuation_verifier,
+                    ExternalLinkChallengeRow.expires_at == challenge.expires_at,
+                    ExternalLinkChallengeRow.expires_at > now,
+                )
+                .returning(ExternalLinkChallengeRow.external_link_challenge_ref)
+            )
+            if consumed_link_ref is None:
+                raise ProviderLinkInvalidOrExpiredError()
+
             await _rotate_locked_session(
                 database_session,
                 locked=locked,
@@ -1583,12 +1603,13 @@ class AuthenticatorLifecycleService:
     ) -> ExternalIdentityRow | None:
         try:
             async with self._session_factory() as database_session, database_session.begin():
-                return await database_session.scalar(
+                identity: ExternalIdentityRow | None = await database_session.scalar(
                     select(ExternalIdentityRow).where(
                         ExternalIdentityRow.issuer == issuer,
                         ExternalIdentityRow.subject == subject,
                     )
                 )
+                return identity
         except SQLAlchemyError as exc:
             raise AuthServiceUnavailableError(retryable=True) from exc
 
