@@ -302,11 +302,13 @@ In Grafana **Alerts & IRM → Alerting → Contact points**, create the owned re
 contact point `DANTE Operations` and use its **Test** action. The destination is
 entered only in Grafana; it is never passed in argv, chat or repository source.
 
-Set the non-secret stack root and run the read-only plan first:
+Set the non-secret stack root and run the read-only plan first. Pass script
+arguments directly after the pnpm script name; do not insert a standalone `--`
+because pnpm forwards it literally to Python `argparse` in this toolchain:
 
 ```bash
 export DANTE_GRAFANA_URL="https://YOUR-STACK.grafana.net"
-corepack pnpm observability:grafana:plan -- --receiver "DANTE Operations"
+corepack pnpm observability:grafana:plan --receiver "DANTE Operations"
 ```
 
 The runner auto-selects a datasource only when exactly one datasource of that
@@ -314,7 +316,7 @@ type exists. If it reports multiple candidates, rerun with the exact non-secret
 UIDs it prints, for example:
 
 ```bash
-corepack pnpm observability:grafana:plan -- \
+corepack pnpm observability:grafana:plan \
   --receiver "DANTE Operations" \
   --prometheus-uid METRICS_UID \
   --loki-uid LOKI_UID \
@@ -324,7 +326,7 @@ corepack pnpm observability:grafana:plan -- \
 Review the plan, then use the same datasource arguments for the single apply:
 
 ```bash
-corepack pnpm observability:grafana:apply -- \
+corepack pnpm observability:grafana:apply \
   --receiver "DANTE Operations" \
   --prometheus-uid METRICS_UID \
   --loki-uid LOKI_UID \
@@ -364,11 +366,17 @@ Read `DANTE · Service overview` top-to-bottom:
 
 1. `Backend readiness` must be `READY`; a quiet request-rate card is normal in
    LOCAL and is not a readiness failure.
-2. `Backend 5xx ratio` is green below 2%, yellow from 2% to below 10%, red at
-   10% or higher. `Backend latency p95` is green below 0.5 seconds, yellow from
-   0.5 to below 1 second, red at 1 second or higher.
-3. Database readiness errors and KDF rejections must be zero. If non-zero, use
-   the Auth/Database panels below before opening the redacted log/trace panels.
+2. When a server-error series exists, `Backend 5xx ratio` is green below 2%,
+   yellow from 2% to below 10%, red at 10% or higher. A quiet environment that
+   has never emitted that event-only series may show Grafana `No data`; treat
+   that as neutral absence, not a healthy zero. `Backend latency p95` is green
+   below 0.5 seconds, yellow from 0.5 to below 1 second, red at 1 second or
+   higher.
+3. Database readiness errors and KDF rejections must be zero when those series
+   are present. If an event-only series has never been emitted, `No data` is
+   acceptable as neutral absence but is not independent evidence of health. If
+   non-zero, use the Auth/Database panels below before opening the redacted
+   log/trace panels.
 4. Empty warning/error logs and error traces are healthy when the upper signals
    are green; they are investigation surfaces, not required activity.
 
@@ -376,10 +384,11 @@ Read `DANTE · Telemetry pipeline & budget` separately from product health:
 
 1. `Alloy` must be `UP`; collector RSS must remain below its configured warning
    threshold.
-2. Metrics delivery failures, log drops and Faro exporter errors must remain
-   zero. An absent Faro series is expected in environments where browser
-   telemetry is deliberately off; `NO SIGNAL` is neutral and not an implicit
-   delivery success.
+2. Metrics delivery failures and log drops must remain zero when present. Faro
+   exporter errors are also expected to remain zero when browser telemetry is
+   active. An absent Faro or other never-emitted event-only series may appear as
+   `NO SIGNAL` or Grafana's native `No data`; both are neutral absence and are
+   not implicit delivery success.
 3. Use exporter failures, queue depth and the three delivery charts to diagnose
    a telemetry problem. Use the budget row for quota/cost review, not as a
    reason to blindly reduce availability/error instrumentation.
@@ -413,9 +422,11 @@ business table, product role, secret or Grafana ingestion credential.
 
 1. **Apply two dashboards and eight rules.** Run the plan/apply sequence above.
    Verify that both dashboards load with their exact datasources, fifteen
-   service panels and the complete pipeline console. An absent series must
-   render as neutral `NO SIGNAL`, never implicit green. The eight production
-   rules must appear under `DANTE production` with exact source UIDs.
+   service panels and the complete pipeline console. Treat `NO SIGNAL` and
+   Grafana's native `No data` as neutral absence for never-emitted event-only
+   series; neither is evidence of a healthy zero. Required liveness panels must
+   still show their explicit live state. The eight production rules must appear
+   under `DANTE production` with exact source UIDs.
 2. **Prove the notification path honestly.** The apply command creates
    `DANTE acceptance · synthetic notification` in the temporary LOCAL group and
    binds it directly to the already-tested real receiver. Wait for the received
@@ -432,7 +443,7 @@ business table, product role, secret or Grafana ingestion credential.
    Alloy already healthy, run from the repository root:
 
    ```bash
-   corepack pnpm observability:prove:collector-outage -- --allow-alloy-outage
+   corepack pnpm observability:prove:collector-outage --allow-alloy-outage
    ```
 
    The guarded command stops only the exact optional `alloy` Compose service,
