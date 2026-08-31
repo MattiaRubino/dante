@@ -332,6 +332,8 @@ The default dashboard refresh is one minute. The operator may select a
 only, not the governed 30-second metric/scrape export cadence. Source dashboards
 are descriptive operational views, not canonical history, alert-rule
 substitutes or an authority to change product/database behavior.
+Absent data is rendered as neutral `NO SIGNAL`; unknown telemetry must never be
+colored or interpreted as a healthy zero.
 
 The alert catalog is source truth for expressions/severity/no-data behavior.
 It is materialized in a real Grafana Cloud stack only after the first target

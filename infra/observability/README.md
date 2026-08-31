@@ -97,6 +97,7 @@ datasource type, never by a copied local datasource name.
 They refresh every minute by default. Use the 30-second option only during an
 active incident. A zero request rate is normal for a quiet LOCAL service; a
 missing Faro series is normal where Web telemetry is intentionally disabled.
+Absent dashboard signals render as neutral `NO SIGNAL`, not as green/healthy.
 The import and visual-acceptance procedure remains in the operator runbook.
 
 ## Run and verify

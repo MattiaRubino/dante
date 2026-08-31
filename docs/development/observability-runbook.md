@@ -318,7 +318,8 @@ Read `DANTE · Telemetry pipeline & budget` separately from product health:
    threshold.
 2. Metrics delivery failures, log drops and Faro exporter errors must remain
    zero. An absent Faro series is expected in environments where browser
-   telemetry is deliberately off.
+   telemetry is deliberately off; `NO SIGNAL` is neutral and not an implicit
+   delivery success.
 3. Use exporter failures, queue depth and the three delivery charts to diagnose
    a telemetry problem. Use the budget row for quota/cost review, not as a
    reason to blindly reduce availability/error instrumentation.

@@ -136,6 +136,8 @@ environment selector and retain 30-second refresh as an operator-selected
 incident option. A zero-valued quiet-service signal is not an error; a missing
 Faro series is expected where browser telemetry is deliberately disabled. A
 non-zero delivery-loss, readiness-error or KDF-rejection signal is actionable.
+Every absent signal is rendered as neutral `NO SIGNAL`, never as an implicit
+green/healthy value.
 
 The dashboard import flow has been started against the real Grafana stack, but
 visual acceptance is not yet claimed until both dashboards are imported with

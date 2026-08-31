@@ -56,6 +56,13 @@
                 "1": {"color": "green", "index": 0, "text": "READY"}
               },
               "type": "value"
+            },
+            {
+              "options": {
+                "match": {"result": "null"},
+                "result": {"color": "gray", "index": 2, "text": "NO SIGNAL"}
+              },
+              "type": "special"
             }
           ],
           "thresholds": {
@@ -125,6 +132,15 @@
         "defaults": {
           "color": {"mode": "thresholds"},
           "decimals": 2,
+          "mappings": [
+            {
+              "options": {
+                "match": {"result": "null"},
+                "result": {"color": "gray", "index": 0, "text": "NO SIGNAL"}
+              },
+              "type": "special"
+            }
+          ],
           "max": 1,
           "min": 0,
           "thresholds": {
@@ -169,6 +185,15 @@
       "fieldConfig": {
         "defaults": {
           "color": {"mode": "thresholds"},
+          "mappings": [
+            {
+              "options": {
+                "match": {"result": "null"},
+                "result": {"color": "gray", "index": 0, "text": "NO SIGNAL"}
+              },
+              "type": "special"
+            }
+          ],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -443,6 +468,15 @@
         "defaults": {
           "color": {"mode": "thresholds"},
           "decimals": 0,
+          "mappings": [
+            {
+              "options": {
+                "match": {"result": "null"},
+                "result": {"color": "gray", "index": 0, "text": "NO SIGNAL"}
+              },
+              "type": "special"
+            }
+          ],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -486,6 +520,15 @@
         "defaults": {
           "color": {"mode": "thresholds"},
           "decimals": 0,
+          "mappings": [
+            {
+              "options": {
+                "match": {"result": "null"},
+                "result": {"color": "gray", "index": 0, "text": "NO SIGNAL"}
+              },
+              "type": "special"
+            }
+          ],
           "thresholds": {
             "mode": "absolute",
             "steps": [

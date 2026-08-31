@@ -43,7 +43,8 @@
         "defaults": {
           "color": {"mode": "thresholds"},
           "mappings": [
-            {"options": {"0": {"color": "red", "index": 1, "text": "DOWN"}, "1": {"color": "green", "index": 0, "text": "UP"}}, "type": "value"}
+            {"options": {"0": {"color": "red", "index": 1, "text": "DOWN"}, "1": {"color": "green", "index": 0, "text": "UP"}}, "type": "value"},
+            {"options": {"match": {"result": "null"}, "result": {"color": "gray", "index": 2, "text": "NO SIGNAL"}}, "type": "special"}
           ],
           "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}]}
         },
@@ -243,6 +244,9 @@
         "defaults": {
           "color": {"mode": "thresholds"},
           "decimals": 0,
+          "mappings": [
+            {"options": {"match": {"result": "null"}, "result": {"color": "gray", "index": 0, "text": "NO SIGNAL"}}, "type": "special"}
+          ],
           "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]},
           "unit": "ops"
         },
@@ -273,6 +277,9 @@
         "defaults": {
           "color": {"mode": "thresholds"},
           "decimals": 0,
+          "mappings": [
+            {"options": {"match": {"result": "null"}, "result": {"color": "gray", "index": 0, "text": "NO SIGNAL"}}, "type": "special"}
+          ],
           "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]},
           "unit": "ops"
         },
@@ -303,6 +310,9 @@
         "defaults": {
           "color": {"mode": "thresholds"},
           "decimals": 0,
+          "mappings": [
+            {"options": {"match": {"result": "null"}, "result": {"color": "gray", "index": 0, "text": "NO SIGNAL"}}, "type": "special"}
+          ],
           "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]},
           "unit": "ops"
         },
