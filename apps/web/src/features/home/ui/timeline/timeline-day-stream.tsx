@@ -530,7 +530,7 @@ export function TimelineDayStream({
         }
 
         if (restoreFocus) {
-          card.focus({ preventScroll: true });
+          card.focus({ preventScroll: true, focusVisible: true });
         }
 
         const gridRect = grid.getBoundingClientRect();
