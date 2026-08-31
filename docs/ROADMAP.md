@@ -1,7 +1,7 @@
 # DANTE Roadmap
 
 - **Status:** CURRENT FOR `feature/access-auth`
-- **Last reconciled:** 2026-08-30
+- **Last reconciled:** 2026-08-31
 - **Protected `main`:** integrated source authority; Access/Auth remains branch-local until explicit merge gate
 - **Active vertical:** Access/Auth
 - **Last closed macro-phase:** M4 — Signup + Verification + Recovery + Reset + Reauth
@@ -10,7 +10,9 @@
 - **M5.2:** COMPLETE
 - **M5-A:** COMPLETE / REAL POSTGRESQL PROVEN
 - **M5-B:** COMPLETE / ENGINEERING PASS
-- **Next exact step:** M5-C — Google Authentication + Account Creation / Collision
+- **M5-C:** COMPLETE / ENGINEERING PASS
+- **Next exact step:** M5-D — Apple Authentication + Grant / Notification Lifecycle
+- **M5-C accepted implementation checkpoint:** `e6f738a1ea3f5152caa7d99f1d6ccd108747c806`
 - **M5-B accepted implementation checkpoint:** `e2d40a7666e3c0130afecd8113b8063390b86b9d`
 - **M5-A accepted implementation checkpoint:** `7e40e02d301b0812b3f55e0d9d4ce6439e420b2a`
 - **M5 architecture authority:** `architecture/access-auth-m5-contract.md`
@@ -62,10 +64,10 @@ M5-B — Provider/JWK/JOSE/AEAD Infrastructure
         COMPLETE / ENGINEERING PASS
           ↓
 M5-C — Google Authentication + Account Creation / Collision
-        NEXT
+        COMPLETE / ENGINEERING PASS
           ↓
 M5-D — Apple Authentication + Grant/Notification Lifecycle
-        PLANNED
+        NEXT
           ↓
 M5-E — Explicit Linking + Authenticator Lifecycle
         PLANNED
@@ -92,7 +94,7 @@ M7 — Security Hardening + Observability + Authenticated Handoff
         PLANNED / FINAL WHOLE-VERTICAL GATE
 ```
 
-The whole Access/Auth vertical is **not closed**. M5-A proves its persistence boundary and M5-B proves the shared provider/JWK/JOSE/AEAD/WebAuthn-policy runtime foundation. Neither implies Google/Apple end-user flows, public M5 API, generated client, Web integration or provider/browser acceptance.
+The whole Access/Auth vertical is **not closed**. M5-A proves its persistence boundary, M5-B proves the shared provider/JWK/JOSE/AEAD/WebAuthn-policy runtime foundation, and M5-C proves the Google backend application/persistence slice. Public M5 API, generated client, Access Web integration and real provider/browser acceptance remain later work.
 
 ---
 
@@ -169,7 +171,7 @@ AppleAuthGrant exact ExternalIdentity issuer+subject binding
 Apple link/signup challenge exact grant identity binding
 AuthSession exact auth_session_ref+account_ref composite target
 WebAuthnAccount exact account_ref+user_handle composite target
-WebAuthnChallenge exact Account/AuthSession/userHandle ownership
+WebAuthnChallenge exact Account+AuthSession ownership
 PasskeyCredential ownership through WebAuthnAccount
 explicit cose_algorithm
 logical passkey revocation
@@ -331,7 +333,7 @@ No Google/Apple provider HTTP client, JOSE/JWK runtime, WebAuthn library, public
 
 # 7. M5-B — COMPLETE / ENGINEERING PASS
 
-M5-B now owns an accepted **Provider/JWK/JOSE/AEAD/WebAuthn Policy Infrastructure** baseline.
+M5-B owns the accepted **Provider/JWK/JOSE/AEAD/WebAuthn Policy Infrastructure** baseline.
 
 Accepted implementation checkpoint:
 
@@ -380,17 +382,60 @@ git diff --check                             PASS
 
 M5-B changes no schema/Alembic/Dictionary; the accepted M5-A PostgreSQL gate was therefore not rerun absent regression evidence.
 
-M5-B intentionally stops before Google/Apple product flows, complete WebAuthn ceremonies, public routes/OpenAPI/client, Web UI and real provider/browser UAT.
+---
+
+# 8. M5-C — COMPLETE / ENGINEERING PASS
+
+M5-C consumes the M5-B trust/runtime foundation and implements the Google backend product path without creating parallel Account/session authority.
+
+Accepted implementation checkpoint:
+
+```text
+e6f738a1ea3f5152caa7d99f1d6ccd108747c806
+```
+
+Implemented:
+
+```text
+Google OIDC begin/complete application flow
+state/nonce verifier-only transaction persistence and single claim
+trusted JWK/RS256 verification through M5-B runtime
+issuer/audience/azp/nonce/exp/iat/nbf/subject validation
+canonical issuer + issuer/subject identity authority
+Gmail/Workspace/third-party mailbox authority classification
+known ExternalIdentity signin
+provider-authoritative mailbox → passwordless Account
+third-party mailbox → DANTE provider-enrollment OTP
+email collision → explicit link_required, never silent merge
+Google link and reauth exact AuthSession binding
+canonical DANTE AuthSession issuance/rotation only
+provider profile bootstrap staging only
+bounded provider ingress limits
+commit ambiguity/race reconciliation
+```
+
+Accepted proof:
+
+```text
+uv lock --check                              PASS
+Ruff format / format-check / lint            PASS
+mypy strict                                  PASS / 79 source files
+backend fast                                 148 / 148 PASS
+focused real PostgreSQL M5-C                  7 / 7 PASS
+backend build                                PASS / sdist + wheel
+git diff --check                             PASS
+```
+
+The PostgreSQL proof covers verifier-only transaction state/replay rejection, Account/EmailIdentity/ExternalIdentity/AuthSession creation, identity reuse, collision→link, third-party enrollment, enrollment collision, concurrent same-sub convergence and link/reauth behavior.
+
+M5-C does not yet expose public M5 routes or Access Web Google UI and does not claim real Google browser/provider acceptance; those remain later M5 slices.
 
 ---
 
-# 8. M5-C onward
+# 9. M5-D onward
 
 ```text
-M5-C — NEXT
-Google signin/new Account/collision/reauth/link using the accepted M5-B trust/runtime foundation
-
-M5-D
+M5-D — NEXT
 Apple begin/form_post/code exchange/new Account/link/reauth
 + pending/active grant lifecycle
 + revoke reconciliation
@@ -434,7 +479,7 @@ focused security/race proof
 
 ---
 
-# 9. Browser/provider acceptance topology
+# 10. Browser/provider acceptance topology
 
 Mandatory CI:
 
@@ -464,7 +509,7 @@ Chromium/Firefox/WebKit remain critical. Engine-specific native capability gaps 
 
 ---
 
-# 10. M6 / M7
+# 11. M6 / M7
 
 ```text
 M6 — Native Mobile Access
@@ -478,7 +523,7 @@ M7 owns complete session/device/security management, new-login alerts/“this wa
 
 ---
 
-# 11. Whole-vertical closure rule
+# 12. Whole-vertical closure rule
 
 ```text
 M1 CLOSED
@@ -490,7 +535,8 @@ M5 ACTIVE
   M5.2 COMPLETE
   M5-A COMPLETE / POSTGRESQL PROVEN
   M5-B COMPLETE / ENGINEERING PASS
-  M5-C NEXT
+  M5-C COMPLETE / ENGINEERING PASS
+  M5-D NEXT
 M6 PLANNED
 M7 PLANNED / FINAL GATE
 
