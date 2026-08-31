@@ -28,6 +28,10 @@ def _secret(raw: bytes) -> str:
     return urlsafe_b64encode(raw).rstrip(b"=").decode("ascii")
 
 
+def _exchange_id_token() -> str:
+    return "exchange-id-token"
+
+
 def _settings() -> AuthProviderSettings:
     return AuthProviderSettings(
         apple=AppleProviderSettings(
@@ -65,7 +69,7 @@ class _StubRuntime:
                 "token_type": "Bearer",
                 "expires_in": 3600,
                 "refresh_token": "refresh-token",
-                "id_token": "exchange-id-token",
+                "id_token": _exchange_id_token(),
             },
         )
 
@@ -89,7 +93,7 @@ async def test_code_exchange_is_single_attempt_exact_form_and_keeps_only_refresh
 
     response = await client.exchange_code("single-use-code")
 
-    assert response.id_token == "exchange-id-token"
+    assert response.id_token == _exchange_id_token()
     assert response.refresh_token.get_secret_value() == "refresh-token"
     assert runtime.token_forms == [
         {
