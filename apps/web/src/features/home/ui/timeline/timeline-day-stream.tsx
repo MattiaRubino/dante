@@ -512,7 +512,7 @@ export function TimelineDayStream({
   const previousUndoEventIdRef = useRef(state.undo?.eventId ?? null);
 
   const scheduleEventReveal = useCallback(
-    (eventId: string) => {
+    (eventId: string, restoreFocus = false) => {
       if (revealFrameRef.current !== null) {
         cancelAnimationFrame(revealFrameRef.current);
       }
@@ -527,6 +527,10 @@ export function TimelineDayStream({
         ).find((candidate) => candidate.dataset.timelineEvent === eventId);
         if (!card) {
           return;
+        }
+
+        if (restoreFocus) {
+          card.focus({ preventScroll: true });
         }
 
         const gridRect = grid.getBoundingClientRect();
@@ -873,7 +877,7 @@ export function TimelineDayStream({
         undoGroup: 'keyboard-nudge',
       });
       onMoveFeedback(feedback);
-      scheduleEventReveal(event.id);
+      scheduleEventReveal(event.id, true);
     };
 
     const snap = timelineDragSnapMinutes(state.zoom);
