@@ -5,10 +5,10 @@ import {
   WORLD_FOCUS_GEOMETRY_VERSION,
 } from './world-focus-geometry';
 
-describe('World Focus WF-G3 candidate geometry contract', () => {
-  it('uses three concentric ellipse guides with the origin tangent to route sides', () => {
-    expect(WORLD_FOCUS_GEOMETRY_VERSION).toBe('wf-g3-candidate');
-    expect(WORLD_FOCUS_GEOMETRY.version).toBe('wf-g3-candidate');
+describe('World Focus WF-G3 frozen geometry contract', () => {
+  it('keeps the approved concentric ellipse guides and workspace anchors explicit', () => {
+    expect(WORLD_FOCUS_GEOMETRY_VERSION).toBe('wf-g3');
+    expect(WORLD_FOCUS_GEOMETRY.version).toBe('wf-g3');
     expect(WORLD_FOCUS_GEOMETRY.guideEllipses).toEqual({
       outer: { rx: '52.25%', ry: '90%' },
       origin: { rx: '50%', ry: '87%' },
@@ -19,6 +19,7 @@ describe('World Focus WF-G3 candidate geometry contract', () => {
       compactWorkspaceInlineInset: 'clamp(76px, 18vw, 112px)',
       workspaceBlockInset: 'clamp(32px, 5vh, 64px)',
       compactWorkspaceBlockInset: '20px',
+      compactTuningMaxPx: 720,
     });
     expect(Object.isFrozen(WORLD_FOCUS_GEOMETRY)).toBe(true);
     expect(Object.isFrozen(WORLD_FOCUS_GEOMETRY.guideEllipses)).toBe(true);
