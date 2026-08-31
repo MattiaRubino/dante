@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test.use({ locale: 'it-IT' });
 
-test('Home opens a centered World on the dedicated World Focus route', async ({
+test('Home opens the centered World on the dedicated World Focus route', async ({
   page,
 }) => {
   await page.goto('/home');
@@ -15,14 +15,14 @@ test('Home opens a centered World on the dedicated World Focus route', async ({
   await expect(page).toHaveURL(/\/worlds\/music$/);
   const focus = page.locator('.world-focus-shell');
   await expect(page.getByRole('main', { name: 'Mondo Musica' })).toBeVisible();
-  await expect(focus).toHaveAttribute(
-    'data-world-focus-geometry-version',
-    'wf-g3-candidate',
-  );
+  await expect(focus).toHaveAttribute('data-world-focus-structure-version', '1.0.0');
+  await expect(focus).toHaveAttribute('data-world-focus-geometry-version', 'wf-g3');
   await expect(page.locator('[data-app-region="topbar"]')).toBeVisible();
-  await expect(page.locator('.world-focus-ellipse-guides')).toHaveCount(1);
+  await expect(page.locator('[data-world-focus-region="visual-frame"]')).toHaveCount(1);
+  await expect(page.locator('[data-world-focus-region="workspace"]')).toHaveCount(1);
+  await expect(page.locator('[data-world-focus-region="shell-controls"]')).toHaveCount(1);
   await expect(page.locator('.world-focus-ellipse-guides ellipse')).toHaveCount(3);
-  await expect(page.locator('[data-world-focus-region="workspace"]')).toBeVisible();
+  await expect(page.locator('[data-home-region="shell"]')).toHaveCount(0);
 
   const background = await focus.evaluate(
     (element) => getComputedStyle(element).backgroundColor,
@@ -33,9 +33,7 @@ test('Home opens a centered World on the dedicated World Focus route', async ({
   await expect(page).toHaveURL(/\/home$/);
 });
 
-test('the initially centered World still requires two activations', async ({
-  page,
-}) => {
+test('the initially centered World still requires two activations', async ({ page }) => {
   await page.goto('/home');
 
   const body = page.locator('.home-world[aria-label="Corpo"]');
@@ -81,7 +79,7 @@ test('keyboard activation selects first and opens the centered World second', as
   await expect(page).toHaveURL(/\/worlds\/music$/);
 });
 
-test('direct World Focus URL opens the same geometry and has a safe close path', async ({
+test('direct World Focus URL opens the same frozen structure and closes safely', async ({
   page,
 }) => {
   await page.goto('/worlds/travel');
@@ -89,20 +87,18 @@ test('direct World Focus URL opens the same geometry and has a safe close path',
   const focus = page.locator('.world-focus-shell');
   await expect(focus).toBeVisible();
   await expect(focus).toHaveAttribute('data-entry-origin', 'fallback');
-  await expect(focus).toHaveAttribute(
-    'data-world-focus-geometry-version',
-    'wf-g3-candidate',
-  );
+  await expect(focus).toHaveAttribute('data-world-focus-structure-version', '1.0.0');
+  await expect(focus).toHaveAttribute('data-world-focus-geometry-version', 'wf-g3');
   await expect(page.locator('[data-app-region="topbar"]')).toBeVisible();
 
   await page.getByRole('button', { name: 'Torna indietro' }).click();
   await expect(page).toHaveURL(/\/worlds$/);
 });
 
-test('WF-G3 candidate keeps the workspace bounded independently of the visual ellipses', async ({
+test('WF0 remains bounded without horizontal overflow across contracted widths', async ({
   page,
 }) => {
-  for (const width of [1600, 1366, 1024, 901]) {
+  for (const width of [1856, 1600, 1366, 1200, 1024, 901, 900, 760, 721, 720, 719, 390]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/worlds/music');
 
@@ -110,21 +106,29 @@ test('WF-G3 candidate keeps the workspace bounded independently of the visual el
     const workspace = await page
       .locator('[data-world-focus-region="workspace"]')
       .boundingBox();
-    const guides = await page.locator('.world-focus-ellipse-guides').boundingBox();
+    const visualFrame = await page
+      .locator('[data-world-focus-region="visual-frame"]')
+      .boundingBox();
 
     expect(shell).not.toBeNull();
     expect(workspace).not.toBeNull();
-    expect(guides).not.toBeNull();
-    if (shell === null || workspace === null || guides === null) {
-      throw new Error(`Missing WF-G3 candidate geometry at ${width}px`);
+    expect(visualFrame).not.toBeNull();
+    if (shell === null || workspace === null || visualFrame === null) {
+      throw new Error(`Missing WF0 geometry at ${width}px`);
     }
 
-    expect(workspace.width).toBeGreaterThan(320);
-    expect(workspace.x).toBeGreaterThan(shell.x);
-    expect(workspace.x + workspace.width).toBeLessThan(
-      shell.x + shell.width,
+    expect(workspace.x).toBeGreaterThanOrEqual(shell.x);
+    expect(workspace.x + workspace.width).toBeLessThanOrEqual(shell.x + shell.width);
+    expect(workspace.y).toBeGreaterThanOrEqual(shell.y);
+    expect(workspace.y + workspace.height).toBeLessThanOrEqual(shell.y + shell.height);
+    expect(visualFrame.x).toBe(shell.x);
+    expect(visualFrame.y).toBe(shell.y);
+    expect(visualFrame.width).toBe(shell.width);
+    expect(visualFrame.height).toBe(shell.height);
+
+    const hasHorizontalOverflow = await page.evaluate(
+      () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
     );
-    expect(guides.x).toBe(shell.x);
-    expect(guides.width).toBe(shell.width);
+    expect(hasHorizontalOverflow).toBe(false);
   }
 });
