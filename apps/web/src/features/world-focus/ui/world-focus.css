@@ -35,7 +35,7 @@
 }
 
 .world-focus-ambient {
-  z-index: -2;
+  z-index: 0;
   overflow: hidden;
   background:
     radial-gradient(
@@ -124,9 +124,9 @@
 
 .world-focus-entry-effect {
   z-index: 10;
+  display: block;
   width: 100%;
   height: calc(100dvh - var(--app-shell-topbar-height));
-  display: block;
 }
 
 .world-focus-entry-effect[data-world-focus-entry-renderer='fallback'] {
@@ -178,7 +178,7 @@
 .world-focus-shell[data-entry-phase='entering'] .world-focus-back,
 .world-focus-shell[data-entry-phase='entering'] .world-focus-identity,
 .world-focus-shell[data-entry-phase='entering'] .world-focus-canvas {
-  animation: world-focus-content-enter 760ms 520ms cubic-bezier(0.16, 0.78, 0.22, 1)
+  animation: world-focus-content-enter 620ms 460ms cubic-bezier(0.16, 0.78, 0.22, 1)
     both;
 }
 
