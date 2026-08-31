@@ -196,6 +196,48 @@ describe('TimelineSurface production parity', () => {
     expect(focusedCard?.classList.contains('is-focused')).toBe(false);
   });
 
+  it('remains stable across repeated focus and keyboard move cycles through overlap boundaries', () => {
+    const { container } = renderTimeline();
+    const grid = container.querySelector<HTMLElement>('.timeline-grid');
+    expect(grid).toBeTruthy();
+
+    const getReminder = () =>
+      container.querySelector<HTMLElement>('[data-timeline-event="12"]');
+
+    for (let step = 0; step < 35; step += 1) {
+      const reminder = getReminder();
+      expect(reminder).toBeTruthy();
+      fireEvent.keyDown(reminder as HTMLElement, {
+        key: 'ArrowDown',
+        altKey: true,
+      });
+
+      if (step % 5 === 0) {
+        const movedReminder = getReminder();
+        fireEvent.click(movedReminder as HTMLElement);
+        expect(movedReminder?.classList.contains('is-focused')).toBe(true);
+        fireEvent.click(grid as HTMLElement);
+        expect(movedReminder?.classList.contains('is-focused')).toBe(false);
+      }
+    }
+
+    expect(getReminder()?.getAttribute('aria-label')).toContain('17:40–17:55');
+
+    for (let step = 0; step < 35; step += 1) {
+      const reminder = getReminder();
+      expect(reminder).toBeTruthy();
+      fireEvent.keyDown(reminder as HTMLElement, {
+        key: 'ArrowUp',
+        altKey: true,
+      });
+    }
+
+    expect(getReminder()?.getAttribute('aria-label')).toContain('14:45–15:00');
+    expect(
+      container.querySelectorAll('[data-timeline-event="12"]'),
+    ).toHaveLength(1);
+  });
+
   it('exposes group split as a real semantic expansion command', () => {
     const { onExpandedChange, onExpansionProgress } = renderTimeline();
 
