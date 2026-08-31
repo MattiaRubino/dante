@@ -17,17 +17,22 @@ test('Home opens the centered World on the dedicated World Focus route', async (
   await expect(page.getByRole('main', { name: 'Mondo Musica' })).toBeVisible();
   await expect(focus).toHaveAttribute('data-world-focus-structure-version', '1.0.0');
   await expect(focus).toHaveAttribute('data-world-focus-geometry-version', 'wf-g3');
-  await expect(focus).toHaveAttribute('data-world-focus-visual-version', 'wf-v1');
+  await expect(focus).toHaveAttribute(
+    'data-world-focus-visual-version',
+    'wf-v2-candidate',
+  );
   await expect(page.locator('[data-app-region="topbar"]')).toBeVisible();
   await expect(page.locator('[data-world-focus-region="visual-frame"]')).toHaveCount(1);
   await expect(page.locator('[data-world-focus-region="workspace"]')).toHaveCount(1);
   await expect(page.locator('[data-world-focus-region="shell-controls"]')).toHaveCount(1);
-  await expect(page.locator('.world-focus-corona-svg')).toHaveCount(1);
-  await expect(page.locator('.world-focus-corona-svg mask')).toHaveCount(1);
-  await expect(page.locator('[data-world-focus-visual-layer="corona-field"]')).toHaveCount(1);
-  await expect(page.locator('[data-world-focus-visual-layer="corona-energy"]')).toHaveCount(1);
-  await expect(page.locator('[data-world-focus-visual-layer="corona-geometry"]')).toHaveCount(1);
-  await expect(page.locator('[data-world-focus-visual-layer="corona-particles"]')).toHaveCount(1);
+  await expect(page.locator('.world-focus-energy-canvas')).toHaveCount(1);
+  await expect(page.locator('.world-focus-corona-reference')).toHaveCount(3);
+  await expect(
+    page.locator('[data-world-focus-energy-motion="static"]'),
+  ).toHaveCount(1);
+  await expect(
+    page.locator('[data-world-focus-energy-renderer]'),
+  ).toHaveAttribute('data-world-focus-energy-renderer', /webgl2|fallback/);
   await expect(page.getByRole('button', { name: 'Torna indietro' })).toHaveCount(0);
   await expect(page.locator('[data-home-region="shell"]')).toHaveCount(0);
 
@@ -96,7 +101,10 @@ test('direct World Focus URL opens the same frozen structure and Escape closes s
   await expect(focus).toHaveAttribute('data-entry-origin', 'fallback');
   await expect(focus).toHaveAttribute('data-world-focus-structure-version', '1.0.0');
   await expect(focus).toHaveAttribute('data-world-focus-geometry-version', 'wf-g3');
-  await expect(focus).toHaveAttribute('data-world-focus-visual-version', 'wf-v1');
+  await expect(focus).toHaveAttribute(
+    'data-world-focus-visual-version',
+    'wf-v2-candidate',
+  );
   await expect(page.locator('[data-app-region="topbar"]')).toBeVisible();
 
   await page.keyboard.press('Escape');
