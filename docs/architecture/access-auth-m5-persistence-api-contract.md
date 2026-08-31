@@ -15,11 +15,14 @@
 - **M5-C accepted implementation checkpoint:** `e6f738a1ea3f5152caa7d99f1d6ccd108747c806`
 - **M5-B accepted implementation checkpoint:** `e2d40a7666e3c0130afecd8113b8063390b86b9d`
 - **M5-A accepted implementation checkpoint:** `7e40e02d301b0812b3f55e0d9d4ce6439e420b2a`
-- **Next implementation step:** M5-E — Explicit linking + authenticator lifecycle
+- **Next execution block:** M5-E + M5-G — Authenticator Lifecycle + Password/Passwordless Adaptation
 - **Companion authority:** `access-auth-m5-contract.md`
+- **Execution authority:** `../workstreams/access-auth-m4-m7-execution-plan.md`
 - **Binding foundations:** Access/Auth architecture/security/API/testing contracts, ADR-011, Database System of Record, CP6 persistence constitution
 
-This document remains the **exact M5 persistence and public-API design authority**. M5-A materialized and proved the persistence subset. M5-B materialized and proved the shared provider/JWK/JOSE/AEAD/WebAuthn-policy runtime foundation. M5-C materialized and proved the Google backend application/persistence slice. M5-D materialized and proved the Apple protocol/application/persistence/grant-lifecycle slice. Public M5 API, generated client, Web integration, complete authenticator management and real provider/browser acceptance remain future M5 slices.
+This document remains the **exact M5 persistence and public-API design authority**. M5-A materialized and proved the persistence subset. M5-B materialized and proved the shared provider/JWK/JOSE/AEAD/WebAuthn-policy runtime foundation. M5-C materialized and proved the Google backend application/persistence slice. M5-D materialized and proved the Apple protocol/application/persistence/grant-lifecycle slice. Public M5 API, generated client, Web integration, complete authenticator management and real provider/browser acceptance remain future M5 work.
+
+The labels `M5-E` through `M5-K+` remain the frozen semantic decomposition used by this contract. They no longer imply seven independent sequential implementation gates. Current execution is grouped as `M5-E + M5-G`, then `M5-F`, then `M5-H + M5-I`, then `M5-J + M5-K+`; the workstream execution plan is authoritative for that grouping.
 
 ---
 
@@ -1713,23 +1716,37 @@ CI remains deterministic and does not depend on public providers.
 
 ---
 
-# 27. Current implementation order
+# 27. Current execution grouping
+
+The semantic slice labels remain frozen, but current implementation is grouped into four gates:
 
 ```text
 M5-A   persistence foundations                              COMPLETE / PROVEN
 M5-B   provider/JWK/JOSE/AEAD infrastructure               COMPLETE / ENGINEERING PASS
 M5-C   Google                                              COMPLETE / ENGINEERING PASS
 M5-D   Apple grant/callback/notifications                   COMPLETE / ENGINEERING PASS
-M5-E   linking + authenticator management/anti-lockout      NEXT
-M5-F   WebAuthn/passkeys                                    PLANNED
-M5-G   add/remove password + passwordless recovery          PLANNED
-M5-H   FastAPI public materialization                       PLANNED
-M5-I   deterministic OpenAPI + governed client              PLANNED
-M5-J   Access Web/smart onboarding                          PLANNED
-M5-K+  focused proof → provider/browser UAT → acceptance    PLANNED
+
+GROUP 1
+M5-E + M5-G
+linking + authenticator management/anti-lockout
++ add/remove password + passwordless recovery              NEXT
+
+GROUP 2
+M5-F
+WebAuthn/passkeys                                           PLANNED
+
+GROUP 3
+M5-H + M5-I
+FastAPI public materialization
++ deterministic OpenAPI + governed client                  PLANNED
+
+GROUP 4
+M5-J + M5-K+
+Access Web/smart onboarding
++ focused proof/provider/browser UAT/acceptance             PLANNED
 ```
 
-Do not combine the entire M5 implementation into one uncontrolled patch.
+Execution order is Group 1 → Group 2 → Group 3 → Group 4. Do not restore the old E→F→G→H→I→J→K sequence. The grouping does not alter any persistence/API/security semantics frozen elsewhere in this contract.
 
 ---
 
@@ -1754,7 +1771,10 @@ M5-D fast                                      171 / 171 PASS
 M5-D focused real PostgreSQL                    9 / 9 PASS
 M5-D full real PostgreSQL                     111 / 111 PASS
 M5-D Ruff/mypy/build                           PASS
-M5-E                                           NEXT
+GROUP 1 / M5-E + M5-G                         NEXT
+GROUP 2 / M5-F                                PLANNED
+GROUP 3 / M5-H + M5-I                         PLANNED
+GROUP 4 / M5-J + M5-K+                        PLANNED
 ```
 
-M5 as a whole remains ACTIVE. Accepted M5-A persistence, M5-B runtime infrastructure, M5-C Google backend behavior and M5-D Apple backend behavior do not imply provider-management completion, public API/Web materialization, browser/provider UAT or whole-M5 completion.
+M5 as a whole remains ACTIVE. Accepted M5-A persistence, M5-B runtime infrastructure, M5-C Google backend behavior and M5-D Apple backend behavior do not imply authenticator-lifecycle completion, passkeys, public API/Web materialization, browser/provider UAT or whole-M5 completion.
