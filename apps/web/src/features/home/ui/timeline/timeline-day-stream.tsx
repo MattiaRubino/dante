@@ -429,7 +429,7 @@ function TimelineDay({
             >
               ⚑
             </span>
-          ))}
+          ))
         : null}
 
       <div className="timeline-split-columns" aria-hidden="true">
@@ -804,7 +804,7 @@ export function TimelineDayStream({
       );
       onMoveEvent({
         fromDateKey: dateKey,
-        toDateKey,
+        toDateKey: toDateKey,
         eventId: event.id,
         startMinute: event.startMinute,
       });
