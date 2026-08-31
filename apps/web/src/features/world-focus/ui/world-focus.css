@@ -1,24 +1,18 @@
 .world-focus-shell {
-  --world-focus-accent: #8a74ff;
-  --world-focus-ambient-intensity: 0.75;
-  --world-focus-particle-density: 0.6;
-  --world-focus-hot: #ff7b34;
-  --world-focus-hot-soft: #ffb15f;
-  --world-focus-violet: #a56cff;
-  --world-focus-panel-inset-x: clamp(12px, 1.25vw, 22px);
-  --world-focus-panel-inset-y: clamp(12px, 1.2vh, 18px);
-  --world-focus-portal-size: clamp(860px, 76vw, 1220px);
+  --world-focus-rail-width: clamp(104px, 12vw, 192px);
+  --world-focus-rail-width-compact: clamp(56px, 16vw, 88px);
+  --world-focus-workspace-gap: clamp(16px, 2vw, 32px);
+  --world-focus-workspace-gap-compact: 12px;
+  --world-focus-workspace-block-inset: clamp(32px, 5vh, 64px);
+  --world-focus-workspace-block-inset-compact: 20px;
 
-  position: fixed;
-  z-index: 900;
-  top: var(--app-shell-topbar-height);
-  right: 0;
-  bottom: 0;
-  left: 0;
-  overflow: hidden;
+  position: relative;
   min-width: 0;
-  color: var(--dante-theme-home-text-primary);
-  background: #02050a;
+  min-height: calc(100dvh - var(--app-shell-topbar-height));
+  overflow: hidden;
+  color: #111827;
+  background: #ffffff;
+  color-scheme: light;
   isolation: isolate;
   outline: none;
 }
@@ -28,561 +22,124 @@
   box-sizing: border-box;
 }
 
-.world-focus-surface {
-  position: absolute;
-  inset: var(--world-focus-panel-inset-y) var(--world-focus-panel-inset-x);
-  overflow: hidden;
-  border: 1px solid rgba(176, 148, 233, 0.22);
-  border-radius: clamp(24px, 2vw, 34px);
-  background:
-    radial-gradient(circle at 50% 50%, rgba(20, 20, 52, 0.82) 0 18%, transparent 44%),
-    radial-gradient(circle at 18% 22%, rgba(102, 42, 175, 0.18), transparent 35%),
-    radial-gradient(circle at 84% 32%, rgba(255, 105, 42, 0.11), transparent 34%),
-    linear-gradient(145deg, #030712 0%, #050713 48%, #02050c 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.035),
-    inset 0 0 100px rgba(0, 0, 0, 0.42),
-    0 20px 70px rgba(0, 0, 0, 0.34);
-}
-
-.world-focus-cosmic-field,
-.world-focus-nebula,
-.world-focus-star-field {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.world-focus-cosmic-field {
-  z-index: 0;
-  overflow: hidden;
-}
-
-.world-focus-nebula {
-  filter: blur(24px);
-  opacity: 0.58;
-}
-
-.world-focus-nebula--violet {
-  background:
-    radial-gradient(ellipse at 23% 49%, rgba(111, 49, 211, 0.2), transparent 38%),
-    radial-gradient(ellipse at 42% 18%, rgba(146, 78, 255, 0.12), transparent 32%),
-    radial-gradient(ellipse at 34% 82%, rgba(84, 51, 178, 0.12), transparent 31%);
-}
-
-.world-focus-nebula--ember {
-  background:
-    radial-gradient(ellipse at 79% 42%, rgba(255, 105, 35, 0.17), transparent 34%),
-    radial-gradient(ellipse at 69% 78%, rgba(226, 75, 24, 0.1), transparent 29%),
-    radial-gradient(ellipse at 58% 16%, rgba(255, 156, 68, 0.08), transparent 27%);
-}
-
-.world-focus-star-field {
-  background-image:
-    radial-gradient(circle, rgba(255, 255, 255, 0.78) 0 0.65px, transparent 0.9px),
-    radial-gradient(circle, rgba(174, 114, 255, 0.82) 0 0.75px, transparent 1px),
-    radial-gradient(circle, rgba(255, 139, 67, 0.68) 0 0.65px, transparent 0.95px);
-  background-position:
-    0 0,
-    47px 63px,
-    19px 91px;
-  background-size:
-    137px 127px,
-    193px 173px,
-    229px 211px;
-  opacity: 0.32;
-  mask-image: radial-gradient(circle at 50% 50%, transparent 0 23%, black 44%, black 100%);
-}
-
-.world-focus-surface::before,
-.world-focus-surface::after {
-  position: absolute;
-  z-index: 1;
-  pointer-events: none;
-  content: '';
-}
-
-.world-focus-surface::before {
-  inset: 0;
-  background:
-    linear-gradient(90deg, transparent, rgba(181, 122, 255, 0.08), transparent) 0 14% / 100% 1px no-repeat,
-    linear-gradient(90deg, transparent, rgba(255, 131, 55, 0.07), transparent) 0 86% / 100% 1px no-repeat;
-  opacity: 0.72;
-}
-
-.world-focus-surface::after {
-  inset: 10%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(0, 0, 0, 0.58) 0 42%, transparent 66%);
-  filter: blur(22px);
-}
-
-.world-focus-surface-corners {
-  position: absolute;
-  z-index: 8;
-  inset: 0;
-  pointer-events: none;
-}
-
-.world-focus-surface-corners > span {
-  position: absolute;
-  width: 64px;
-  height: 64px;
-  opacity: 0.5;
-}
-
-.world-focus-surface-corners > span::before,
-.world-focus-surface-corners > span::after {
-  position: absolute;
-  background: linear-gradient(90deg, var(--world-focus-violet), var(--world-focus-hot));
-  content: '';
-}
-
-.world-focus-surface-corners > span::before {
-  width: 46px;
-  height: 1px;
-}
-
-.world-focus-surface-corners > span::after {
-  width: 1px;
-  height: 46px;
-}
-
-.world-focus-surface-corners [data-corner='north-west'] {
-  top: 18px;
-  left: 18px;
-}
-
-.world-focus-surface-corners [data-corner='north-east'] {
-  top: 18px;
-  right: 18px;
-  transform: rotate(90deg);
-}
-
-.world-focus-surface-corners [data-corner='south-east'] {
-  right: 18px;
-  bottom: 18px;
-  transform: rotate(180deg);
-}
-
-.world-focus-surface-corners [data-corner='south-west'] {
-  bottom: 18px;
-  left: 18px;
-  transform: rotate(270deg);
-}
-
-.world-focus-portal {
-  position: absolute;
-  z-index: 4;
-  top: 50%;
-  left: 50%;
-  width: var(--world-focus-portal-size);
-  aspect-ratio: 1;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-}
-
-.world-focus-portal-aura,
-.world-focus-portal-plasma,
-.world-focus-portal-ring,
-.world-focus-portal-void,
-.world-focus-portal-particles,
-.world-focus-portal-nodes,
-.world-focus-portal-geometry {
-  position: absolute;
-  inset: 0;
-}
-
-.world-focus-portal-aura {
-  inset: -7%;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle, transparent 0 54%, rgba(129, 72, 255, 0.12) 63%, transparent 78%),
-    conic-gradient(
-      from 210deg,
-      rgba(137, 74, 255, 0.08),
-      transparent 18%,
-      rgba(178, 108, 255, 0.12) 33%,
-      transparent 51%,
-      rgba(255, 114, 44, 0.1) 68%,
-      rgba(255, 163, 77, 0.06) 81%,
-      transparent
-    );
-  filter: blur(26px);
-}
-
-.world-focus-portal-plasma {
-  border-radius: 50%;
-}
-
-.world-focus-portal-plasma--mist {
-  inset: 2%;
-  background: conic-gradient(
-    from 222deg,
-    rgba(135, 75, 255, 0.9) 0deg,
-    rgba(224, 193, 255, 0.68) 58deg,
-    rgba(148, 90, 255, 0.6) 116deg,
-    rgba(78, 54, 171, 0.2) 164deg,
-    rgba(255, 91, 33, 0.44) 220deg,
-    rgba(255, 181, 91, 0.86) 278deg,
-    rgba(255, 114, 48, 0.62) 316deg,
-    rgba(135, 75, 255, 0.9) 360deg
-  );
-  filter: blur(18px) saturate(128%);
-  opacity: 0.54;
-  -webkit-mask: radial-gradient(circle, transparent 0 64%, #000 69% 77%, transparent 82%);
-  mask: radial-gradient(circle, transparent 0 64%, #000 69% 77%, transparent 82%);
-}
-
-.world-focus-portal-plasma--outer {
-  inset: 3.4%;
-  background:
-    conic-gradient(
-      from 218deg,
-      #7c42ff 0deg,
-      #c68dff 38deg,
-      #f0dbff 65deg,
-      #8752ff 111deg,
-      #4d3ea4 157deg,
-      #6d3fbe 193deg,
-      #ff5f27 227deg,
-      #ffb554 267deg,
-      #ff7a2e 309deg,
-      #a25fff 342deg,
-      #7c42ff 360deg
-    );
-  filter: saturate(132%) brightness(1.1);
-  box-shadow:
-    0 0 30px rgba(142, 78, 255, 0.36),
-    0 0 54px rgba(255, 111, 44, 0.2);
-  -webkit-mask: radial-gradient(circle, transparent 0 68%, #000 70% 76%, transparent 78%);
-  mask: radial-gradient(circle, transparent 0 68%, #000 70% 76%, transparent 78%);
-}
-
-.world-focus-portal-plasma--inner {
-  inset: 7.4%;
-  background: conic-gradient(
-    from 228deg,
-    rgba(162, 104, 255, 0.92),
-    rgba(236, 219, 255, 0.86) 20%,
-    rgba(111, 67, 220, 0.46) 43%,
-    rgba(255, 111, 45, 0.66) 64%,
-    rgba(255, 196, 112, 0.94) 79%,
-    rgba(161, 92, 255, 0.9)
-  );
-  filter: blur(1px) brightness(1.12);
-  -webkit-mask: radial-gradient(circle, transparent 0 72%, #000 73.2% 75.6%, transparent 77%);
-  mask: radial-gradient(circle, transparent 0 72%, #000 73.2% 75.6%, transparent 77%);
-}
-
-.world-focus-portal-ring {
-  border: 1px solid rgba(179, 137, 255, 0.28);
-  border-radius: 50%;
-  box-shadow: inset 0 0 18px rgba(121, 73, 255, 0.035);
-}
-
-.world-focus-portal-ring[data-ring='0'] {
-  inset: 9.5%;
-  border-color: rgba(222, 194, 255, 0.42);
-}
-
-.world-focus-portal-ring[data-ring='1'] {
-  inset: 12.7%;
-  border-color: rgba(158, 103, 255, 0.28);
-}
-
-.world-focus-portal-ring[data-ring='2'] {
-  inset: 16.2%;
-  border-style: dashed;
-  border-color: rgba(255, 151, 76, 0.2);
-}
-
-.world-focus-portal-ring[data-ring='3'] {
-  inset: 19.2%;
-  border-color: rgba(174, 119, 255, 0.19);
-}
-
-.world-focus-portal-ring[data-ring='4'] {
-  inset: 23.3%;
-  border-style: dashed;
-  border-color: rgba(220, 188, 255, 0.16);
-}
-
-.world-focus-portal-ring[data-ring='5'] {
-  inset: 27.2%;
-  border-color: rgba(255, 137, 64, 0.14);
-}
-
-.world-focus-portal-geometry {
-  z-index: 4;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  color: rgba(194, 150, 255, 0.48);
-  filter: drop-shadow(0 0 8px rgba(147, 90, 255, 0.16));
-}
-
-.world-focus-portal-geometry .geometry-ring {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.1;
-}
-
-.world-focus-portal-geometry .geometry-ring--mid {
-  stroke: rgba(255, 149, 73, 0.27);
-  stroke-dasharray: 5 13 2 18;
-}
-
-.world-focus-portal-geometry .geometry-ring--inner {
-  stroke: rgba(180, 135, 255, 0.25);
-  stroke-dasharray: 28 8 4 12;
-}
-
-.world-focus-portal-geometry .geometry-spokes,
-.world-focus-portal-geometry .geometry-diamonds {
-  fill: none;
-  stroke: rgba(211, 179, 255, 0.48);
-  stroke-width: 1.2;
-}
-
-.world-focus-portal-geometry .geometry-diamonds {
-  stroke: rgba(255, 157, 83, 0.52);
-}
-
-.world-focus-portal-node {
-  position: absolute;
-  z-index: 7;
-  width: 52px;
-  height: 52px;
-  border: 1px solid rgba(225, 201, 255, 0.58);
-  border-radius: 50%;
-  background:
-    radial-gradient(circle, rgba(255, 255, 255, 0.14), transparent 24%),
-    rgba(8, 8, 27, 0.66);
-  box-shadow:
-    0 0 18px rgba(148, 85, 255, 0.22),
-    inset 0 0 18px rgba(141, 77, 255, 0.11);
-}
-
-.world-focus-portal-node::before,
-.world-focus-portal-node::after {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  background: linear-gradient(90deg, rgba(183, 126, 255, 0.62), rgba(255, 143, 62, 0.62));
-  content: '';
-  transform: translate(-50%, -50%);
-}
-
-.world-focus-portal-node::before {
-  width: 88px;
-  height: 1px;
-}
-
-.world-focus-portal-node::after {
-  width: 1px;
-  height: 88px;
-}
-
-.world-focus-portal-node > i {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 14px;
-  height: 14px;
-  border: 1px solid rgba(248, 225, 255, 0.82);
-  transform: translate(-50%, -50%) rotate(45deg);
-}
-
-.world-focus-portal-node[data-node='north'] {
-  top: 6.7%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.world-focus-portal-node[data-node='east'] {
-  top: 50%;
-  right: 6.7%;
-  transform: translate(50%, -50%);
-}
-
-.world-focus-portal-node[data-node='south'] {
-  bottom: 6.7%;
-  left: 50%;
-  transform: translate(-50%, 50%);
-}
-
-.world-focus-portal-node[data-node='west'] {
-  top: 50%;
-  left: 6.7%;
-  transform: translate(-50%, -50%);
-}
-
-.world-focus-portal-particle {
-  position: absolute;
-  z-index: 8;
-  top: var(--particle-y);
-  left: var(--particle-x);
-  width: var(--particle-size);
-  height: var(--particle-size);
-  border-radius: 50%;
-  background: #d6b5ff;
-  box-shadow:
-    0 0 8px rgba(170, 104, 255, 0.9),
-    0 0 18px rgba(146, 82, 255, 0.48);
-  opacity: var(--particle-alpha);
-  transform: translate(-50%, -50%);
-}
-
-.world-focus-portal-particle[data-hot='true'] {
-  background: #ffd19d;
-  box-shadow:
-    0 0 8px rgba(255, 149, 74, 0.94),
-    0 0 20px rgba(255, 98, 34, 0.5);
-}
-
-.world-focus-portal-void {
-  z-index: 2;
-  inset: 28.5%;
-  border: 1px solid rgba(163, 118, 255, 0.08);
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 48% 46%, rgba(28, 25, 70, 0.14), transparent 34%),
-    radial-gradient(circle at 50% 50%, #040611 0, #02040b 72%, #020309 100%);
-  box-shadow:
-    inset 0 0 90px rgba(0, 0, 0, 0.8),
-    0 0 42px rgba(86, 48, 170, 0.08);
-}
-
-.world-focus-workspace {
-  position: absolute;
-  z-index: 12;
-  top: 50%;
-  left: 50%;
-  width: min(48vw, 640px);
-  height: min(56vh, 560px);
-  transform: translate(-50%, -50%);
-  pointer-events: auto;
-}
-
-.world-focus-back {
-  position: absolute;
-  z-index: 30;
-  top: clamp(18px, 2.2vh, 28px);
-  left: clamp(18px, 2vw, 30px);
-  display: inline-flex;
-  min-height: 42px;
-  align-items: center;
-  gap: 10px;
-  padding: 0 14px 0 11px;
-  border: 1px solid rgba(182, 143, 255, 0.2);
-  border-radius: 999px;
-  color: rgba(245, 247, 255, 0.9);
-  background: rgba(8, 12, 24, 0.72);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    0 10px 28px rgba(0, 0, 0, 0.25);
-  backdrop-filter: blur(16px) saturate(118%);
-  font: inherit;
-  font-size: 0.84rem;
-  font-weight: 640;
-  letter-spacing: 0.01em;
-  cursor: pointer;
-  transition:
-    border-color 150ms ease,
-    background 150ms ease,
-    transform 150ms ease;
-}
-
-.world-focus-back > span:first-child {
-  font-size: 1.12rem;
-  line-height: 1;
-}
-
-.world-focus-back:hover {
-  border-color: rgba(197, 158, 255, 0.42);
-  background: rgba(11, 16, 30, 0.86);
-}
-
-.world-focus-back:active {
-  transform: translateY(1px);
-}
-
-.world-focus-back:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--world-focus-accent) 72%, white);
-  outline-offset: 3px;
-}
-
 .world-focus-visually-hidden {
   position: absolute;
   width: 1px;
   height: 1px;
-  padding: 0;
-  margin: -1px;
   overflow: hidden;
   clip: rect(0 0 0 0);
+  clip-path: inset(50%);
   white-space: nowrap;
-  border: 0;
 }
 
-@media (max-width: 1100px) {
-  .world-focus-shell {
-    --world-focus-portal-size: clamp(760px, 96vw, 980px);
+.world-focus-guide-rail {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  bottom: 0;
+  width: var(--world-focus-rail-width);
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.world-focus-guide-rail[data-side='left'] {
+  left: 0;
+}
+
+.world-focus-guide-rail[data-side='right'] {
+  right: 0;
+  transform: scaleX(-1);
+}
+
+.world-focus-guide-rail path {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+  stroke: #111111;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.world-focus-guide-rail path[data-guide-line='outer'],
+.world-focus-guide-rail path[data-guide-line='inner'] {
+  stroke-width: 1.15;
+  opacity: 0.62;
+}
+
+.world-focus-guide-rail path[data-guide-line='origin'] {
+  stroke-width: 2;
+  opacity: 1;
+}
+
+.world-focus-workspace {
+  position: absolute;
+  z-index: 2;
+  top: var(--world-focus-workspace-block-inset);
+  right: calc(
+    var(--world-focus-rail-width) + var(--world-focus-workspace-gap)
+  );
+  bottom: var(--world-focus-workspace-block-inset);
+  left: calc(
+    var(--world-focus-rail-width) + var(--world-focus-workspace-gap)
+  );
+  min-width: 0;
+  overflow: hidden;
+  border: 2px solid #2563eb;
+  border-radius: 18px;
+  background: rgba(37, 99, 235, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.08);
+}
+
+.world-focus-back {
+  position: absolute;
+  z-index: 4;
+  top: 16px;
+  left: 16px;
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border: 1px solid #111827;
+  border-radius: 999px;
+  color: #111827;
+  background: rgba(255, 255, 255, 0.96);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.world-focus-back:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 3px;
+}
+
+@media (max-width: 720px) {
+  .world-focus-guide-rail {
+    width: var(--world-focus-rail-width-compact);
   }
 
   .world-focus-workspace {
-    width: min(58vw, 560px);
-  }
-}
-
-@media (max-width: 760px) {
-  .world-focus-shell {
-    --world-focus-panel-inset-x: 8px;
-    --world-focus-panel-inset-y: 8px;
-    --world-focus-portal-size: max(720px, 148vw);
-  }
-
-  .world-focus-surface {
-    border-radius: 22px;
-  }
-
-  .world-focus-surface-corners > span {
-    display: none;
+    top: var(--world-focus-workspace-block-inset-compact);
+    right: calc(
+      var(--world-focus-rail-width-compact) +
+        var(--world-focus-workspace-gap-compact)
+    );
+    bottom: var(--world-focus-workspace-block-inset-compact);
+    left: calc(
+      var(--world-focus-rail-width-compact) +
+        var(--world-focus-workspace-gap-compact)
+    );
+    border-radius: 14px;
   }
 
   .world-focus-back {
-    top: 14px;
-    left: 14px;
-    width: 42px;
-    justify-content: center;
-    padding: 0;
+    top: 10px;
+    left: 10px;
   }
 
   .world-focus-back > span:last-child {
     display: none;
-  }
-
-  .world-focus-workspace {
-    width: min(72vw, 430px);
-    height: min(52vh, 480px);
-  }
-
-  .world-focus-portal-node {
-    width: 42px;
-    height: 42px;
-  }
-
-  .world-focus-portal-node::before {
-    width: 68px;
-  }
-
-  .world-focus-portal-node::after {
-    height: 68px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .world-focus-back {
-    transition: none;
   }
 }
