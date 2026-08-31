@@ -1,7 +1,7 @@
 # DANTE Architecture Index
 
 - **Status:** CURRENT / AUTHORITATIVE NAVIGATION
-- **Last reconciled:** 2026-08-26
+- **Last reconciled:** 2026-08-31
 
 This file describes the current architecture state directly. Phase-time reviews, old branch overlays and pre-closure status remain evidence in their owning documents/Git history and do not override this index.
 
@@ -20,19 +20,21 @@ Backend CP1–CP5 scaffold             CLOSED / DIRECT QA / INTEGRATED VIA PR #2
 Backend CP6 PostgreSQL database       CLOSED / DIRECT QA / INTEGRATED VIA PR #42
 PostgreSQL architecture              18 major family / sole canonical persistence + material-history authority
 Current PostgreSQL patch             18.6
-Current Alembic head                 20260826_08
-Current DB topology                  68 tables / 5 views / 14 routines / 75 triggers / 95 indexes / 68 FKs / 120 CHECKs
-Access Frontend                      ACTIVE / UNMERGED ON feature/access-frontend
-First post-CP6 backend vertical       NOT STARTED ON A DEDICATED BRANCH
+Current Alembic head                 20260830_09
+Current DB topology                  69 tables / 5 views / 15 routines / 76 triggers / 97 indexes / 69 FKs / 123 CHECKs
+PostgreSQL local Recovery            CP01–CP07 LOCAL PASS / CLOSED / INTEGRATED VIA PR #47
+Full Access/Auth product vertical    ACTIVE / UNMERGED ON feature/access-auth
+AI architecture                      ACTIVE / DESIGN-ONLY ON feature/ai-architecture
 ```
 
-Protected `main` is the integrated authority for closed shared foundations and CP6. Active unmerged product work remains branch-local until normal protected-main integration.
+Protected `main` is the integrated authority for closed shared foundations, CP6 and the integrated Recovery evolution. Active unmerged product/architecture work remains branch-local until normal protected-main integration.
 
 ## 2. Current architecture entry points
 
 Read according to the subject:
 
 - [`system-overview.md`](system-overview.md) — system/component/authority overview;
+- [`dante-ai-foundation.md`](dante-ai-foundation.md) — current branch-local AI-00 semantic/architectural baseline; no provider, schema or implementation selection;
 - [`technical-decisions.md`](technical-decisions.md) — current architecture decision register;
 - [`domain-model-logical-readiness.md`](domain-model-logical-readiness.md) — satisfied Domain → Logical semantic compatibility contract;
 - [`../domain/README.md`](../domain/README.md) — current Domain entry point;
@@ -69,11 +71,16 @@ PostgreSQL 18 major family
 
 current repository/runtime patch
 = PostgreSQL 18.6
+
+current Alembic head
+= 20260830_09
 ```
 
-The accepted Domain → Logical → Physical chain has already been concretely materialized through CP6. Later backend/product work consumes that database rather than reopening the architecture merely because a new feature is implemented.
+The accepted Domain → Logical → Physical chain has already been concretely materialized through CP6 and the bounded Recovery lifecycle evolution. Later backend/product/AI work consumes that database rather than reopening the architecture merely because a new feature or AI framework is implemented.
 
 Frontend remains platform-specific at renderer/UI/platform-adapter level with selective semantic sharing. Backend/database canonical authority and operation-specific offline governance remain preserved.
+
+AI architecture currently consumes the same rule: model/provider/runtime output is not accepted canonical effect, and no AI-specific persistence shortcut may redefine closed Domain/Logical/Physical/database semantics.
 
 ## 4. Domain / Logical invariants carried into implementation
 
@@ -99,6 +106,7 @@ Ownership != Possession
 shared canonical reality + actor-scoped overlays where required
 material history reconstructible where consequential
 specialist Transaction / Movement lifecycle != Observation
+AI/solver/provider output != accepted canonical effect
 ```
 
 Logical hardenings `WL-H01..WL-H12` remain implementation regression contracts unless deliberately superseded by later accepted authority.
@@ -132,7 +140,14 @@ Still bounded to the stage that owns them:
 - provider adapters and specialist modules activated only by real need;
 - cloud compute/IaC and remote infrastructure materialization;
 - platform release activation details;
-- dormant frontend capabilities activated only when product requirements justify them.
+- dormant frontend capabilities activated only when product requirements justify them;
+- AI interaction/product form;
+- AI model/provider strategy;
+- AI agent/runtime/SDK selection;
+- AI conversation/memory physical persistence;
+- AI tool registry, autonomy policy implementation and evaluation stack.
+
+The current branch-local AI baseline is [`dante-ai-foundation.md`](dante-ai-foundation.md). It consolidates inherited constraints and open questions; it does not close the deferred implementation choices above.
 
 A deferral does not authorize violating already accepted Domain/Logical/Physical/database invariants.
 
@@ -166,6 +181,8 @@ table shape preference
 provider naming
 UI naming
 framework fashion
+agent-framework conventions
+vector-store convenience
 one isolated implementation annoyance
 ```
 
@@ -176,15 +193,17 @@ Reopen when accepted requirements, safety/privacy constraints, real runtime evid
 There is no pending CP6 architecture gate.
 
 ```text
-DATABASE / CP6
+DATABASE / CP6 + RECOVERY EVOLUTION
 CLOSED / INTEGRATED
 
-FRONTEND ACCESS
-ACTIVE ON feature/access-frontend
+FULL ACCESS/AUTH PRODUCT VERTICAL
+ACTIVE ON feature/access-auth
 UNMERGED
 
-NEXT BACKEND PRODUCT VERTICAL
-START ONLY UNDER A NEW EXPLICIT BOUNDED WORKSTREAM FROM CURRENT main
+AI ARCHITECTURE
+ACTIVE ON feature/ai-architecture
+DESIGN / RESEARCH ONLY
+NO BACKEND / DB / PROVIDER IMPLEMENTATION CLAIMED
 ```
 
-Direct implementation evidence is claimed only after the relevant real artifact/scenario executes.
+For AI, the current next phase after AI-00 is product/interaction-form research before provider/model/runtime selection. Direct implementation evidence is claimed only after the relevant real artifact/scenario executes.
