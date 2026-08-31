@@ -154,7 +154,7 @@ export function computeTimelineEventLayouts(
     const naturalHeight = mapper.map(event.endMinute) - top;
     const height = Math.max(naturalHeight, timelineEventReadableHeight(event));
 
-    let compactLeftPercent = layoutPolicy.compactLeftInsetPercent;
+    let compactLeftPercent: number = layoutPolicy.compactLeftInsetPercent;
     let compactWidthPercent = 0;
     if (compact.laneCount > 1) {
       /*
