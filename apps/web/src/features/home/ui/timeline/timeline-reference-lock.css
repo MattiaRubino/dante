@@ -69,20 +69,12 @@
   font-size: clamp(8px, calc(7.4px + 1.1cqh), 9.25px);
 }
 
-/* Pointer grammar is deliberately binary: the free body is the draggable /
- * focusable surface, while only explicit nested actions use the pointer hand.
- * This removes the default-arrow / hand / grab flicker caused by different
- * descendants inheriting different cursor defaults. */
-.home-m1 .home-timeline--production .timeline-event-card {
-  cursor: grab;
-}
-
-.home-m1 .home-timeline--production .timeline-event-card:active {
-  cursor: grabbing;
-}
-
+/* Pointer grammar: the card body is a neutral selectable/draggable canvas.
+ * Explicit actions use the hand. A grabbing cursor appears only after the drag
+ * runtime has actually crossed its movement threshold (is-drag-source). */
+.home-m1 .home-timeline--production .timeline-event-card,
 .home-m1 .home-timeline--production .timeline-event-card__drag-zone {
-  cursor: inherit;
+  cursor: default;
 }
 
 .home-m1
@@ -96,9 +88,18 @@
   cursor: pointer;
 }
 
+.home-m1
+  .home-timeline--production:has(.timeline-event-card.is-drag-source)
+  .timeline-grid,
+.home-m1
+  .home-timeline--production:has(.timeline-event-card.is-drag-source)
+  .timeline-grid * {
+  cursor: grabbing !important;
+}
+
 /* While another card owns focus, nested actions on surrounding cards are not
- * active pointer targets: the first pointer interaction transfers focus to the
- * new card. The React handler mirrors the same rule for keyboard activation. */
+ * active pointer targets: the first pointer interaction is reserved for the
+ * focus-dismiss boundary rather than accidentally opening another action. */
 .home-m1
   .home-timeline--production
   .timeline-event-card:is(.is-groupmate, .is-dim)
