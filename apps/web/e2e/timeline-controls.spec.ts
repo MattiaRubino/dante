@@ -57,6 +57,7 @@ test('keyboard group reorder moves exactly one slot and remains reversible', asy
       elements.map((element) => element.getAttribute('data-group-id')),
     );
 
+  await expect(chips).toHaveCount(6);
   const initialOrder = await readOrder();
   expect(initialOrder).toEqual([
     'focus',
@@ -156,6 +157,8 @@ test('split and merge remain reversible without mutating group order', async ({
     chips.evaluateAll((elements) =>
       elements.map((element) => element.getAttribute('data-group-id')),
     );
+
+  await expect(chips).toHaveCount(6);
   const initialOrder = await readOrder();
 
   const split = page.getByRole('button', { name: 'Separa per gruppi' });
