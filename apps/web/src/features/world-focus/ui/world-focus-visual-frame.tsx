@@ -1,5 +1,3 @@
-import { useMemo } from 'react';
-
 import { WORLD_FOCUS_GEOMETRY } from '../model/world-focus-geometry';
 import { WORLD_FOCUS_REGION } from '../model/world-focus-structure';
 import {
@@ -7,81 +5,18 @@ import {
   WORLD_FOCUS_VISUAL_VERSION,
 } from '../model/world-focus-visual';
 import type { WorldFocusWorld } from '../model/world-focus-fixtures';
+import { WorldFocusEnergyCanvas } from './world-focus-energy-canvas';
 import './world-focus-visual-frame.css';
 
 type WorldFocusVisualFrameProps = Readonly<{
   world: WorldFocusWorld;
 }>;
 
-type CoronaParticle = Readonly<{
-  x: number;
-  y: number;
-  radius: number;
-  opacity: number;
-  tone: 'accent' | 'hot' | 'white';
-  streak: boolean;
-}>;
-
-type Point = Readonly<{ x: number; y: number }>;
-
 const VIEWBOX_SIZE = 1000;
 const VIEWBOX_CENTER = VIEWBOX_SIZE / 2;
-const CORONA_MARKER_ANGLES = [0, 34, 146, 180, 214, 326] as const;
 
 function percentToViewBox(value: string): number {
   return Number.parseFloat(value) * 10;
-}
-
-function hashSeed(value: string): number {
-  let hash = 2166136261;
-  for (let index = 0; index < value.length; index += 1) {
-    hash ^= value.charCodeAt(index);
-    hash = Math.imul(hash, 16777619);
-  }
-  return hash >>> 0;
-}
-
-function createRandom(seed: number) {
-  let state = seed || 1;
-  return () => {
-    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
-    return state / 4294967296;
-  };
-}
-
-function pointOnEllipse(angleDegrees: number, rx: number, ry: number): Point {
-  const angle = (angleDegrees * Math.PI) / 180;
-  return {
-    x: VIEWBOX_CENTER + rx * Math.cos(angle),
-    y: VIEWBOX_CENTER + ry * Math.sin(angle),
-  };
-}
-
-function buildParticles(
-  world: WorldFocusWorld,
-  originRx: number,
-  originRy: number,
-): readonly CoronaParticle[] {
-  const random = createRandom(hashSeed(`world-focus:${world.id}`));
-  const count = Math.round(54 + world.theme.particleDensity * 48);
-
-  return Array.from({ length: count }, (_, index) => {
-    const angle = random() * Math.PI * 2;
-    const radialOffset = (random() - 0.5) * 38;
-    const rx = originRx + radialOffset;
-    const ry = originRy + radialOffset * 1.25;
-    const toneRoll = random();
-
-    return {
-      x: VIEWBOX_CENTER + rx * Math.cos(angle),
-      y: VIEWBOX_CENTER + ry * Math.sin(angle),
-      radius: 0.75 + random() * 2.5,
-      opacity: 0.28 + random() * 0.68,
-      tone:
-        toneRoll > 0.78 ? 'white' : toneRoll > 0.46 ? 'hot' : 'accent',
-      streak: index % 7 === 0,
-    };
-  });
 }
 
 export function WorldFocusVisualFrame({ world }: WorldFocusVisualFrameProps) {
@@ -91,14 +26,10 @@ export function WorldFocusVisualFrame({ world }: WorldFocusVisualFrameProps) {
   const originRy = percentToViewBox(WORLD_FOCUS_GEOMETRY.guideEllipses.origin.ry);
   const innerRx = percentToViewBox(WORLD_FOCUS_GEOMETRY.guideEllipses.inner.rx);
   const innerRy = percentToViewBox(WORLD_FOCUS_GEOMETRY.guideEllipses.inner.ry);
-  const particles = useMemo(
-    () => buildParticles(world, originRx, originRy),
-    [originRx, originRy, world],
-  );
   const idPrefix = `world-focus-corona-${world.id}`;
-  const bandMaskId = `${idPrefix}-band-mask`;
-  const spectrumId = `${idPrefix}-spectrum`;
-  const flareId = `${idPrefix}-flare`;
+  const fallbackMaskId = `${idPrefix}-fallback-mask`;
+  const fallbackGradientId = `${idPrefix}-fallback-gradient`;
+  const turbulenceId = `${idPrefix}-turbulence`;
 
   return (
     <div
@@ -115,14 +46,15 @@ export function WorldFocusVisualFrame({ world }: WorldFocusVisualFrameProps) {
       />
 
       <svg
-        className="world-focus-corona-svg"
+        className="world-focus-corona-fallback-svg"
+        data-world-focus-visual-layer={WORLD_FOCUS_VISUAL_LAYER.coronaFallback}
         viewBox={`0 0 ${VIEWBOX_SIZE} ${VIEWBOX_SIZE}`}
         preserveAspectRatio="none"
         focusable="false"
       >
         <defs>
           <mask
-            id={bandMaskId}
+            id={fallbackMaskId}
             maskUnits="userSpaceOnUse"
             x="-100"
             y="-500"
@@ -147,185 +79,108 @@ export function WorldFocusVisualFrame({ world }: WorldFocusVisualFrameProps) {
           </mask>
 
           <linearGradient
-            id={spectrumId}
+            id={fallbackGradientId}
             gradientUnits="userSpaceOnUse"
-            x1="0"
-            y1="180"
-            x2={VIEWBOX_SIZE}
-            y2="820"
+            x1="80"
+            y1="90"
+            x2="920"
+            y2="910"
           >
-            <stop className="world-focus-corona-stop world-focus-corona-stop--violet" offset="0%" />
-            <stop className="world-focus-corona-stop world-focus-corona-stop--accent" offset="30%" />
-            <stop className="world-focus-corona-stop world-focus-corona-stop--white" offset="49%" />
-            <stop className="world-focus-corona-stop world-focus-corona-stop--hot" offset="72%" />
-            <stop className="world-focus-corona-stop world-focus-corona-stop--accent" offset="100%" />
+            <stop offset="0%" stopColor="var(--world-focus-violet)" />
+            <stop offset="34%" stopColor="var(--world-focus-accent)" />
+            <stop offset="55%" stopColor="rgba(255, 250, 242, 0.98)" />
+            <stop offset="76%" stopColor="var(--world-focus-hot)" />
+            <stop offset="100%" stopColor="var(--world-focus-accent)" />
           </linearGradient>
 
-          <radialGradient id={flareId} cx="50%" cy="50%" r="68%">
-            <stop className="world-focus-corona-stop world-focus-corona-stop--white" offset="0%" />
-            <stop className="world-focus-corona-stop world-focus-corona-stop--accent" offset="42%" />
-            <stop className="world-focus-corona-stop world-focus-corona-stop--transparent" offset="100%" />
-          </radialGradient>
+          <filter
+            id={turbulenceId}
+            x="-20%"
+            y="-20%"
+            width="140%"
+            height="140%"
+            colorInterpolationFilters="sRGB"
+          >
+            <feTurbulence
+              type="fractalNoise"
+              baseFrequency="0.008 0.055"
+              numOctaves="4"
+              seed="17"
+              result="noise"
+            />
+            <feDisplacementMap
+              in="SourceGraphic"
+              in2="noise"
+              scale="34"
+              xChannelSelector="R"
+              yChannelSelector="B"
+            />
+          </filter>
         </defs>
 
-        <g
-          className="world-focus-corona-field"
-          data-world-focus-visual-layer={WORLD_FOCUS_VISUAL_LAYER.coronaField}
-          mask={`url(#${bandMaskId})`}
-        >
-          <rect
-            className="world-focus-corona-band-fill"
-            x="-100"
-            y="-500"
-            width="1200"
-            height="2000"
-            fill={`url(#${spectrumId})`}
-          />
-          <rect
-            className="world-focus-corona-band-flare"
-            x="-100"
-            y="-500"
-            width="1200"
-            height="2000"
-            fill={`url(#${flareId})`}
-          />
-        </g>
-
-        <g
-          className="world-focus-corona-energy"
-          data-world-focus-visual-layer={WORLD_FOCUS_VISUAL_LAYER.coronaEnergy}
-          mask={`url(#${bandMaskId})`}
-        >
+        <g mask={`url(#${fallbackMaskId})`} filter={`url(#${turbulenceId})`}>
           <ellipse
-            className="world-focus-corona-halo world-focus-corona-halo--wide"
+            className="world-focus-fallback-energy world-focus-fallback-energy--broad"
             cx={VIEWBOX_CENTER}
             cy={VIEWBOX_CENTER}
             rx={originRx}
             ry={originRy}
             fill="none"
-            stroke={`url(#${spectrumId})`}
-            pathLength={1000}
+            stroke={`url(#${fallbackGradientId})`}
           />
           <ellipse
-            className="world-focus-corona-halo world-focus-corona-halo--mid"
+            className="world-focus-fallback-energy world-focus-fallback-energy--core"
             cx={VIEWBOX_CENTER}
             cy={VIEWBOX_CENTER}
             rx={originRx}
             ry={originRy}
             fill="none"
-            stroke={`url(#${spectrumId})`}
-            pathLength={1000}
-          />
-          <ellipse
-            className="world-focus-corona-core"
-            cx={VIEWBOX_CENTER}
-            cy={VIEWBOX_CENTER}
-            rx={originRx}
-            ry={originRy}
-            fill="none"
-            stroke={`url(#${spectrumId})`}
-            pathLength={1000}
-          />
-          <ellipse
-            className="world-focus-corona-thread world-focus-corona-thread--outer"
-            cx={VIEWBOX_CENTER}
-            cy={VIEWBOX_CENTER}
-            rx={outerRx - 7}
-            ry={outerRy - 10}
-            fill="none"
-            stroke={`url(#${spectrumId})`}
-            pathLength={1000}
-          />
-          <ellipse
-            className="world-focus-corona-thread world-focus-corona-thread--inner"
-            cx={VIEWBOX_CENTER}
-            cy={VIEWBOX_CENTER}
-            rx={innerRx + 8}
-            ry={innerRy + 10}
-            fill="none"
-            stroke={`url(#${spectrumId})`}
-            pathLength={1000}
+            stroke={`url(#${fallbackGradientId})`}
           />
         </g>
+      </svg>
 
-        <g
-          className="world-focus-corona-geometry"
-          data-world-focus-visual-layer={WORLD_FOCUS_VISUAL_LAYER.coronaGeometry}
-          mask={`url(#${bandMaskId})`}
-        >
-          <ellipse
-            className="world-focus-corona-orbit world-focus-corona-orbit--a"
-            cx={VIEWBOX_CENTER}
-            cy={VIEWBOX_CENTER}
-            rx={originRx + 11}
-            ry={originRy + 14}
-            fill="none"
-            pathLength={1000}
-          />
-          <ellipse
-            className="world-focus-corona-orbit world-focus-corona-orbit--b"
-            cx={VIEWBOX_CENTER}
-            cy={VIEWBOX_CENTER}
-            rx={originRx - 11}
-            ry={originRy - 14}
-            fill="none"
-            pathLength={1000}
-          />
+      <div
+        className="world-focus-corona-energy-renderer"
+        data-world-focus-visual-layer={WORLD_FOCUS_VISUAL_LAYER.coronaEnergy}
+      >
+        <WorldFocusEnergyCanvas world={world} animated={false} />
+      </div>
 
-          {CORONA_MARKER_ANGLES.map((angle) => {
-            const innerPoint = pointOnEllipse(angle, innerRx + 3, innerRy + 4);
-            const outerPoint = pointOnEllipse(angle, outerRx - 3, outerRy - 4);
-            const originPoint = pointOnEllipse(angle, originRx, originRy);
-
-            return (
-              <g key={angle} className="world-focus-corona-marker">
-                <line
-                  x1={innerPoint.x}
-                  y1={innerPoint.y}
-                  x2={outerPoint.x}
-                  y2={outerPoint.y}
-                />
-                <rect
-                  x={originPoint.x - 4.25}
-                  y={originPoint.y - 4.25}
-                  width="8.5"
-                  height="8.5"
-                  transform={`rotate(45 ${originPoint.x} ${originPoint.y})`}
-                />
-              </g>
-            );
-          })}
-        </g>
-
-        <g
-          className="world-focus-corona-particles"
-          data-world-focus-visual-layer={WORLD_FOCUS_VISUAL_LAYER.coronaParticles}
-          mask={`url(#${bandMaskId})`}
-        >
-          {particles.map((particle, index) => (
-            <g key={`${particle.x}-${particle.y}-${index}`}>
-              {particle.streak ? (
-                <line
-                  className="world-focus-corona-particle-streak"
-                  x1={particle.x - 5}
-                  y1={particle.y - 1.2}
-                  x2={particle.x + 5}
-                  y2={particle.y + 1.2}
-                  data-particle-tone={particle.tone}
-                  opacity={particle.opacity * 0.5}
-                />
-              ) : null}
-              <circle
-                className="world-focus-corona-particle"
-                cx={particle.x}
-                cy={particle.y}
-                r={particle.radius}
-                data-particle-tone={particle.tone}
-                opacity={particle.opacity}
-              />
-            </g>
-          ))}
-        </g>
+      <svg
+        className="world-focus-corona-reference-overlay"
+        data-world-focus-visual-layer={WORLD_FOCUS_VISUAL_LAYER.coronaReference}
+        viewBox={`0 0 ${VIEWBOX_SIZE} ${VIEWBOX_SIZE}`}
+        preserveAspectRatio="none"
+        focusable="false"
+      >
+        <ellipse
+          className="world-focus-corona-reference world-focus-corona-reference--outer"
+          cx={VIEWBOX_CENTER}
+          cy={VIEWBOX_CENTER}
+          rx={outerRx}
+          ry={outerRy}
+          fill="none"
+          pathLength={1000}
+        />
+        <ellipse
+          className="world-focus-corona-reference world-focus-corona-reference--origin"
+          cx={VIEWBOX_CENTER}
+          cy={VIEWBOX_CENTER}
+          rx={originRx}
+          ry={originRy}
+          fill="none"
+          pathLength={1000}
+        />
+        <ellipse
+          className="world-focus-corona-reference world-focus-corona-reference--inner"
+          cx={VIEWBOX_CENTER}
+          cy={VIEWBOX_CENTER}
+          rx={innerRx}
+          ry={innerRy}
+          fill="none"
+          pathLength={1000}
+        />
       </svg>
     </div>
   );
