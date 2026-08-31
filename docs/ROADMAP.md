@@ -11,7 +11,9 @@
 - **M5-A:** COMPLETE / REAL POSTGRESQL PROVEN
 - **M5-B:** COMPLETE / ENGINEERING PASS
 - **M5-C:** COMPLETE / ENGINEERING PASS
-- **Next exact step:** M5-D — Apple Authentication + Grant / Notification Lifecycle
+- **M5-D:** COMPLETE / ENGINEERING PASS
+- **Next exact step:** M5-E — Explicit Linking + Authenticator Lifecycle
+- **M5-D accepted implementation checkpoint:** `7d13b712f032e8d41d7cf03d406555fd9f3c0160`
 - **M5-C accepted implementation checkpoint:** `e6f738a1ea3f5152caa7d99f1d6ccd108747c806`
 - **M5-B accepted implementation checkpoint:** `e2d40a7666e3c0130afecd8113b8063390b86b9d`
 - **M5-A accepted implementation checkpoint:** `7e40e02d301b0812b3f55e0d9d4ce6439e420b2a`
@@ -67,10 +69,10 @@ M5-C — Google Authentication + Account Creation / Collision
         COMPLETE / ENGINEERING PASS
           ↓
 M5-D — Apple Authentication + Grant/Notification Lifecycle
-        NEXT
+        COMPLETE / ENGINEERING PASS
           ↓
 M5-E — Explicit Linking + Authenticator Lifecycle
-        PLANNED
+        NEXT
           ↓
 M5-F — WebAuthn / Passkeys
         PLANNED
@@ -94,7 +96,7 @@ M7 — Security Hardening + Observability + Authenticated Handoff
         PLANNED / FINAL WHOLE-VERTICAL GATE
 ```
 
-The whole Access/Auth vertical is **not closed**. M5-A proves its persistence boundary, M5-B proves the shared provider/JWK/JOSE/AEAD/WebAuthn-policy runtime foundation, and M5-C proves the Google backend application/persistence slice. Public M5 API, generated client, Access Web integration and real provider/browser acceptance remain later work.
+The whole Access/Auth vertical is **not closed**. M5-A proves its persistence boundary, M5-B proves the shared provider/JWK/JOSE/AEAD/WebAuthn-policy runtime foundation, M5-C proves the Google backend application/persistence slice, and M5-D proves the Apple backend protocol/application/persistence/grant-lifecycle slice. Public M5 API, generated client, Access Web integration, complete authenticator management and real provider/browser acceptance remain later work.
 
 ---
 
@@ -432,19 +434,62 @@ M5-C does not yet expose public M5 routes or Access Web Google UI and does not c
 
 ---
 
-# 9. M5-D onward
+# 9. M5-D — COMPLETE / ENGINEERING PASS
+
+M5-D consumes the shared provider runtime and the M5-A Apple persistence foundation without introducing parallel Account/session authority.
+
+Accepted implementation checkpoint:
 
 ```text
-M5-D — NEXT
-Apple begin/form_post/code exchange/new Account/link/reauth
-+ pending/active grant lifecycle
-+ revoke reconciliation
-+ signed notifications
-+ Private Relay state
+7d13b712f032e8d41d7cf03d406555fd9f3c0160
+```
 
-M5-E
+Implemented:
+
+```text
+Apple Web begin/form_post authorization topology
+state/nonce server-authoritative transaction and pre-exchange single claim
+front-channel ID token + server-side authorization-code exchange convergence
+issuer/audience/nonce/exp/iat/subject/c_hash verification
+ES256 Apple client-secret issuance
+single-use code exchange with no blind retry on ambiguous transport result
+one-shot Apple name/profile bootstrap
+Hide My Email recognition for privaterelay.appleid.com + private.icloud.com
+known identity signin / new passwordless Account / collision / provider enrollment
+Apple link + reauth bound to canonical DANTE AuthSession
+AES-256-GCM refresh grant with exact grant+issuer+subject+client AAD
+pending→active→revocation_pending→revoked grant lifecycle
+local-first revoke + bounded idempotent remote reconciliation
+signed server-notification handling
+email-disabled/email-enabled ordered recovery restriction updates
+consent-revoked/account-deleted identity/grant reconciliation
+ambiguous PostgreSQL commit reconciliation
+same issuer+subject race convergence without active-grant regression
+```
+
+Accepted proof:
+
+```text
+uv lock --check                              PASS
+Ruff autofix / format / format-check / lint PASS
+mypy src                                     PASS / 49 source files
+backend fast                                 171 / 171 PASS
+focused real PostgreSQL M5-D                  9 / 9 PASS
+full real PostgreSQL regression              111 / 111 PASS
+backend build                                PASS / sdist + wheel
+git diff --check                             PASS
+```
+
+M5-D does not expose public M5 routes or Access Web Apple UI and does not claim Apple registered-domain/browser/provider UAT or Private Email Relay sender setup; those remain later M5 gates.
+
+---
+
+# 10. M5-E onward
+
+```text
+M5-E — NEXT
 explicit provider link/unlink
-+ auth methods API
++ authenticator lifecycle / auth methods API semantics
 + anti-lockout
 
 M5-F
@@ -479,7 +524,7 @@ focused security/race proof
 
 ---
 
-# 10. Browser/provider acceptance topology
+# 11. Browser/provider acceptance topology
 
 Mandatory CI:
 
@@ -509,7 +554,7 @@ Chromium/Firefox/WebKit remain critical. Engine-specific native capability gaps 
 
 ---
 
-# 11. M6 / M7
+# 12. M6 / M7
 
 ```text
 M6 — Native Mobile Access
@@ -523,7 +568,7 @@ M7 owns complete session/device/security management, new-login alerts/“this wa
 
 ---
 
-# 12. Whole-vertical closure rule
+# 13. Whole-vertical closure rule
 
 ```text
 M1 CLOSED
@@ -536,7 +581,8 @@ M5 ACTIVE
   M5-A COMPLETE / POSTGRESQL PROVEN
   M5-B COMPLETE / ENGINEERING PASS
   M5-C COMPLETE / ENGINEERING PASS
-  M5-D NEXT
+  M5-D COMPLETE / ENGINEERING PASS
+  M5-E NEXT
 M6 PLANNED
 M7 PLANNED / FINAL GATE
 
