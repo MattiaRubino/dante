@@ -1,4 +1,4 @@
-export const WORLD_FOCUS_VISUAL_VERSION = 'wf-v3-candidate' as const;
+export const WORLD_FOCUS_VISUAL_VERSION = 'wf-v4-candidate' as const;
 
 export const WORLD_FOCUS_VISUAL_LAYER = Object.freeze({
   ambient: 'ambient',
