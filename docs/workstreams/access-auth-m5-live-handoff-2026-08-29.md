@@ -1,26 +1,19 @@
 # DANTE — Access/Auth M5 Live Handoff — 2026-08-29
 
-- **Status:** CURRENT CONTINUATION SAVE-GAME / M5.1–M5-D COMPLETE / M5-E NEXT
-- **Vertical:** Access/Auth
+- **Status:** CURRENT CONTINUATION SAVE-GAME / M5.1–M5-D COMPLETE / GROUP 1 NEXT
 - **Repository:** `MattiaRubino/dante`
 - **Branch:** `feature/access-auth`
 - **Worktree:** `/home/mattia/projects/dante`
-- **M5-D accepted implementation checkpoint:** `7d13b712f032e8d41d7cf03d406555fd9f3c0160`
-- **M5-C accepted implementation checkpoint:** `e6f738a1ea3f5152caa7d99f1d6ccd108747c806`
-- **M5-B accepted implementation checkpoint:** `e2d40a7666e3c0130afecd8113b8063390b86b9d`
-- **M5-A accepted implementation checkpoint:** `7e40e02d301b0812b3f55e0d9d4ce6439e420b2a`
-- **M4 implementation checkpoint:** `c95e3b2ca664725bcacc374cb5ba6ed49409fe2b`
-- **M4 documentation closure:** `a95955da72cbb9119982aa1544c2aaa356fc5e6a`
-- **M5.1 architecture freeze checkpoint:** `8f993ace74d21c98d4034b0e521a1f9b458b007a`
-- **M5 architecture authority:** `../architecture/access-auth-m5-contract.md`
-- **M5.2 exact persistence/API authority:** `../architecture/access-auth-m5-persistence-api-contract.md`
+- **Last accepted code checkpoint:** `7d13b712f032e8d41d7cf03d406555fd9f3c0160` — M5-D
+- **M5-D docs closure:** `1cc331851d52d39f42e922147f300e0370649670`
+- **Exact next execution block:** **M5-E + M5-G — Authenticator Lifecycle + Password/Passwordless Adaptation**
+- **Architecture authority:** `../architecture/access-auth-m5-contract.md`
+- **Exact M5 design authority:** `../architecture/access-auth-m5-persistence-api-contract.md`
 - **Forward plan:** `access-auth-m4-m7-execution-plan.md`
 
-> This file is the live save-game for continuation. Repository truth wins if the branch has moved after this handoff. A new chat should not replay the conversation or redo broad M5 research; it should verify current branch state, read the authorities above, and continue from M5-E.
+> This file is the live save-game. A new chat should not replay prior conversations or restart M5 discovery. Verify the current branch HEAD, read the current authorities, then continue from Group 1.
 
----
-
-# 1. Mandatory continuation
+## 1. Mandatory continuation
 
 ```text
 repo:      MattiaRubino/dante
@@ -28,7 +21,7 @@ branch:    feature/access-auth
 worktree:  /home/mattia/projects/dante
 ```
 
-Do not create another Access branch/worktree merely because the chat changed.
+Do not create another Access branch/worktree because the chat changed.
 
 Do not touch without explicit topology/write gate:
 
@@ -39,222 +32,62 @@ feature/access-frontend
 /home/mattia/projects/dante-frontend
 ```
 
-Before remote Git writes, obey `docs/development/agent-operating-manual.md`:
+Before remote writes obey `docs/development/agent-operating-manual.md`: exact PRE-SCOPE SHA, exact CREATE/UPDATE/DELETE paths, purpose/out-of-scope, explicit approval, HEAD race-check, post-write compare.
+
+## 2. Read order for a new chat
 
 ```text
-1. fetch current branch HEAD
-2. establish exact PRE-SCOPE SHA
-3. list exact CREATE/UPDATE/DELETE paths
-4. list exact purpose and exclusions
-5. obtain explicit user approval
-6. re-fetch HEAD before first write
-7. post-write compare actual path/status set against gate
+docs/PROJECT-STATUS.md
+→ docs/development/agent-operating-manual.md
+→ docs/ROADMAP.md
+→ docs/workstreams/access-auth.md
+→ this file
+→ docs/architecture/access-auth-m5-contract.md
+→ docs/architecture/access-auth-m5-persistence-api-contract.md
+→ docs/workstreams/access-auth-m4-m7-execution-plan.md
+→ Access/Auth architecture/security/API/testing contracts + ADR-011
+→ DB System of Record + docs/database/access-auth.md + Dictionary
+→ current backend implementation/tests for Group 1
 ```
 
-No merge/rebase/force-push/protected-main write without explicit authorization.
+Repository truth beats conversation memory.
 
-Recommended read order:
-
-1. `docs/PROJECT-STATUS.md`
-2. `docs/ROADMAP.md`
-3. `docs/workstreams/access-auth.md`
-4. this file
-5. `docs/architecture/access-auth-m5-contract.md`
-6. `docs/architecture/access-auth-m5-persistence-api-contract.md`
-7. `docs/workstreams/access-auth-m4-m7-execution-plan.md`
-8. Access/Auth architecture/security/API/testing contracts + ADR-011
-9. `docs/database/README.md`
-10. `docs/database/access-auth.md`
-11. current Access/Auth Dictionary entries
-12. CP6 persistence constitution
-13. `docs/frontend/access.md`
-14. current backend implementation/tests for the exact M5-E slice
-
----
-
-# 2. User quality bar / working style
-
-DANTE must be built at the level expected from mature large applications such as Google, Notion, Linear, Facebook and comparable serious products.
-
-Interpretation:
-
-```text
-production-quality architecture
-security-first consumer-grade UX
-high performance
-strong PostgreSQL integrity
-clean maintainable code
-no hidden technical debt for convenience
-configurable/tokenized UI rather than hardcoded one-offs
-strong accessibility/responsive behavior
-real boundary proof rather than mock-only confidence
-no gratuitous enterprise theatre/overengineering without consumer value
-```
-
-Testing preference retained from M4/M5-A/M5-B/M5-C/M5-D:
-
-```text
-prove each invariant at the truthful layer
-use focused proof during development
-avoid rerunning heavy suites after every tiny edit
-one heavy closeout QA when candidate is actually ready
-never hide flaky Auth behind retries
-```
-
-For manual UAT, advance one action at a time.
-
-Avoid top-level `exit` in shell snippets.
-
----
-
-# 3. Closed foundation — do not reopen casually
-
-```text
-M1 — Access Visual/UX Freeze
-CLOSED / ACCEPTED
-
-M2 — Auth Architecture Freeze
-CLOSED / ACCEPTED / QA PASS
-
-M3 — Email/Password Signin + AuthSession Spine
-CLOSED / ENGINEERING PASS / USER ACCEPTED
-
-M4 — Signup + Verification + Recovery + Reset + Reauth
-CLOSED / ENGINEERING PASS / USER ACCEPTED
-```
-
-Whole Access/Auth remains:
-
-```text
-ACTIVE / NOT CLOSED
-```
-
-Permanent Auth constitution:
+## 3. Permanent Auth constitution
 
 ```text
 Person != Account != Principal != Actor
 AuthSession != DANTE Session
 EmailIdentity != Account
 PasswordCredential optional
-Principal runtime-derived
-multiple independent AuthSessions normal
-same-origin Web Auth
-Secure HttpOnly host-only __Host-dante-session
-session-bound CSRF + Origin + Fetch Metadata + X-Dante-Client
 provider identity = issuer + subject
 provider email != identity/link authority
-provider authentication != provider-data integration authorization
+provider auth != provider-data authorization
 provider token/assertion != DANTE AuthSession
 passwordless Account valid
+multiple independent AuthSessions normal
 method != factor != assurance
 frontend/provider callback != backend-authoritative success
-unknown/loading != signed-out/signed-in/error
 ```
 
-Do not reintroduce:
+No JWT/localStorage auth, no Redis/JWT session authority, no silent provider-email merge, no provider-specific Account/session authority, no fake frontend success.
+
+## 4. Closed state — do not reopen casually
 
 ```text
-JWT/localStorage browser Auth
-Redis/JWT session authority
-Principal table
-silent provider-email merge
-provider-specific parallel Account/session authority
-Account advisory-lock replacement
-wide credentialed CORS
-Axios just for Auth
-raw fetch from Access UI
-fake frontend Auth success
-persisted browser Auth cache
-login-first + useEffect session repair
+M1  CLOSED / ACCEPTED
+M2  CLOSED / ACCEPTED / QA PASS
+M3  CLOSED / ENGINEERING PASS / USER ACCEPTED
+M4  CLOSED / ENGINEERING PASS / USER ACCEPTED
+
+M5.1 COMPLETE
+M5.2 COMPLETE
+M5-A COMPLETE / REAL POSTGRESQL PROVEN
+M5-B COMPLETE / ENGINEERING PASS
+M5-C COMPLETE / ENGINEERING PASS
+M5-D COMPLETE / ENGINEERING PASS
 ```
 
----
-
-# 4. M4 accepted baseline
-
-Final M4 implementation checkpoint:
-
-```text
-c95e3b2ca664725bcacc374cb5ba6ed49409fe2b
-fix(auth): reconcile M4 PostgreSQL acceptance
-```
-
-Accepted M4 database baseline:
-
-```text
-PostgreSQL          18.6
-Alembic             20260829_11
-74 tables
-5 views
-15 routines
-75 triggers
-113 physical indexes
-72 foreign keys
-149 CHECK constraints
-94 standalone Dictionary entries
-```
-
-Accepted M4 automated proof:
-
-```text
-backend static / typing / lint / build        PASS
-backend fast                                 87 / 87 PASS
-real PostgreSQL marked suite                 87 / 87 PASS
-Web Access UI                                22 / 22 PASS
-real Auth full-stack browser                 33 / 33 PASS
-Chromium / Firefox / WebKit                  11 / 11 PASS each
-```
-
-Accepted manual UAT:
-
-```text
-login/session/logout
-new signup → OTP → Account/AuthSession → setup handoff
-recovery → reset → fresh replacement signin
-existing-account signup → OTP → safe existing_account result
-```
-
-Do not rerun M4 QA absent direct regression evidence.
-
----
-
-# 5. M5 current status
-
-```text
-M5 overall                                  ACTIVE
-M5.1 external-authority/benchmark freeze    COMPLETE
-M5.1 architecture/security freeze           COMPLETE
-M5.2 persistence/API design                 COMPLETE
-M5-A persistence implementation             COMPLETE / POSTGRESQL PROVEN
-M5-B dependency/runtime infrastructure      COMPLETE / ENGINEERING PASS
-M5-C Google authentication                  COMPLETE / ENGINEERING PASS
-M5-D Apple authentication                   COMPLETE / ENGINEERING PASS
-M5-E linking/authenticator lifecycle        NEXT
-M5 OpenAPI/client materialization           NOT STARTED
-M5 Web runtime integration                  NOT STARTED
-```
-
-The design authorities are:
-
-```text
-docs/architecture/access-auth-m5-contract.md
-docs/architecture/access-auth-m5-persistence-api-contract.md
-```
-
-Do not perform another broad “what should Google/Apple/passkeys do?” discovery sweep unless provider standards materially changed. M5-E starts from the frozen contracts, accepted M5-A persistence reality, accepted M5-B trust/runtime foundation, accepted M5-C Google patterns and accepted M5-D Apple lifecycle implementation.
-
----
-
-# 6. M5-A accepted persistence truth
-
-Accepted implementation checkpoint:
-
-```text
-7e40e02d301b0812b3f55e0d9d4ce6439e420b2a
-fix(auth): reconcile M5 persistence acceptance
-```
-
-Current database:
+Current accepted DB:
 
 ```text
 PostgreSQL          18.6
@@ -269,432 +102,129 @@ Alembic             20260830_12
 103 standalone Dictionary entries
 ```
 
-Materialized delta:
+No DB schema change in M5-B/C/D.
 
-```text
-ALTER
-  dante.email_identity
-    + recovery_restriction_code
-    + recovery_restriction_observed_at
-
-CREATE
-  dante.external_identity
-  dante.external_auth_transaction
-  dante.external_link_challenge
-  dante.external_signup_challenge
-  dante.account_profile_bootstrap
-  dante.apple_auth_grant
-  dante.webauthn_account
-  dante.passkey_credential
-  dante.webauthn_challenge
-```
-
-Exactly 9 new tables. No generic provider/auth token/challenge table.
-
-Accepted proof:
-
-```text
-uv lock                                      PASS
-Ruff format / lint                           PASS
-mypy strict                                  PASS
-backend fast                                 87 / 87 PASS
-real PostgreSQL 18.6                         95 / 95 PASS
-M5 persistence tests                          8 / 8 PASS
-migration head/base/head                      PASS
-Alembic autogenerate drift                    PASS
-Dictionary ≈ SQLAlchemy ≈ Alembic ≈ PG       PASS
-runtime ACL / negative constraints            PASS
-backend build                                 PASS
-```
-
-Physical hardening accepted during materialization:
-
-```text
-ExternalIdentity exact Apple composite target
-AppleAuthGrant exact issuer+subject binding
-Apple link/signup challenge exact grant binding
-AuthSession exact Account composite target
-WebAuthnAccount exact Account+userHandle target
-WebAuthnChallenge exact Account/session/userHandle binding
-PasskeyCredential ownership through WebAuthnAccount
-explicit cose_algorithm
-logical passkey revocation
-backup_state => backup_eligible
-cleanup indexes for profile bootstrap / pending Apple grant
-column-scoped EmailIdentity INSERT/UPDATE reconciliation
-```
-
----
-
-# 7. Provider-enriched onboarding
-
-Provider data policy remains:
-
-```text
-provider data
-→ validate/classify provenance
-→ eliminate redundant onboarding
-→ initialize/stage useful setup/profile values
-→ user later edits in DANTE
-→ future provider login never silently overwrites DANTE-owned values
-```
-
-Google useful bootstrap when actually returned:
-
-```text
-email
-email_verified
-name
-given_name
-family_name
-picture
-locale
-hosted-domain metadata
-security/authentication claims actually supplied
-```
-
-Apple useful bootstrap:
-
-```text
-email or Private Email Relay
-first/last name on initial authorization when supplied
-private-email/reachability semantics
-security/authentication claims actually supplied
-```
-
-Apple name may be one-shot. M5-A has bounded `account_profile_bootstrap` staging so later lifecycle code does not lose it or dump profile fields into Account/ExternalIdentity.
-
----
-
-# 8. Frozen M5 persistence/lifecycle invariants carried forward
-
-### EmailIdentity reachability
-
-```text
-verified_at = historical mailbox proof
-recovery_restriction_code = current recovery-blocking policy
-recovery_restriction_observed_at = newest provider reachability evidence
-```
-
-Older/equal Apple relay events cannot reverse newer state.
-
-### ExternalIdentity
-
-```text
-identity key = issuer + subject
-UNIQUE(issuer,subject)
-normal unlink = logical revoke
-provider email is metadata only
-```
-
-### ExternalAuthTransaction
-
-```text
-purpose = sign_in | link | reauthenticate
-TTL <= 15 min
-state/nonce verifier only
-link/reauth bind exact session + begin-time bearer verifier snapshot
-single conditional claim
-Apple claim before code exchange
-```
-
-### AppleAuthGrant
-
-```text
-pending
-active
-revocation_pending
-revoked
-```
-
-Refresh token is application-layer AEAD encrypted; key material stays outside PostgreSQL/Git/logs. Local auth revoke precedes remote provider revoke.
-
-### Provider collision
-
-```text
-provider proof + matching existing email
-→ no duplicate Account
-→ targeted link challenge
-→ prove exact Account
-→ explicit consent + recent auth
-→ Account lock
-→ final issuer+subject uniqueness check
-→ atomic binding
-```
-
-### Passkeys
-
-```text
-random immutable 32-byte user_handle
-credential_id lifetime UNIQUE
-explicit COSE algorithm
-backup/signCount metadata
-logical revoke
-no biometric/PIN material
-```
-
----
-
-# 9. M5-B accepted trust/runtime foundation
-
-```text
-M5-B — provider/JWK/JOSE/AEAD/WebAuthn policy infrastructure
-COMPLETE / ENGINEERING PASS
-```
-
-Accepted implementation checkpoint:
-
-```text
-e2d40a7666e3c0130afecd8113b8063390b86b9d
-chore(auth): finalize M5-B lock and formatting
-```
-
-Accepted dependency/runtime baseline:
-
-```text
-fido2         2.2.1
-joserfc       1.7.4
-cryptography  50.0.1
-httpx2        existing runtime
-Python        3.14
-uv            0.12.5
-```
-
-Accepted infrastructure:
-
-```text
-typed provider settings + safe disabled defaults
-bounded provider/JWK network runtime
-trusted configured JWKS source only
-coordinated JWK cache/conditional refresh/unknown-kid cooldown
-strict RS256 JOSE boundary + canonical unpadded Base64URL segments
-Apple AES-256-GCM grant key ring + 12-byte nonce + stable AAD
-purpose-separated 256-bit provider/link/enrollment/WebAuthn proofs
-FIDO2 RP/origin policy baseline
-single process-scoped AuthRuntime ownership / clean shutdown
-no provider network I/O at startup
-```
-
-Accepted closeout proof:
+## 5. M5-D accepted evidence
 
 ```text
 uv lock --check                              PASS
-Ruff autofix / format / lint                 PASS
-mypy strict                                  PASS / 73 source files
-backend fast                                 127 / 127 PASS
-backend build                                PASS
-git diff --check                             PASS
-```
-
-No PostgreSQL rerun was required because M5-B changes no schema/Alembic/Dictionary/DB contract.
-
----
-
-# 10. M5-C accepted Google backend slice
-
-```text
-M5-C — Google Authentication + Account Creation / Collision
-COMPLETE / ENGINEERING PASS
-```
-
-Accepted implementation checkpoint:
-
-```text
-e6f738a1ea3f5152caa7d99f1d6ccd108747c806
-chore(auth): finalize M5-C formatting
-```
-
-Accepted behavior:
-
-```text
-Google OIDC trust boundary over M5-B JWK/JOSE runtime
-canonical issuer + issuer/subject identity authority
-state/nonce verifier-only ExternalAuthTransaction
-single claim / replay rejection
-known ExternalIdentity signin
-provider-authoritative mailbox → passwordless Account
-third-party mailbox → DANTE provider-enrollment OTP
-existing EmailIdentity collision → link_required, never silent merge
-Google link/reauth exact session binding + bearer rotation
-profile bootstrap staging only
-bounded ingress limits
-commit ambiguity and uniqueness-race reconciliation
-```
-
-Accepted proof:
-
-```text
-uv lock --check                              PASS
-Ruff format / format-check / lint            PASS
-mypy strict                                  PASS / 79 source files
-backend fast                                 148 / 148 PASS
-focused real PostgreSQL M5-C                  7 / 7 PASS
-backend build                                PASS / sdist + wheel
-git diff --check                             PASS
-```
-
-M5-C does not yet expose public routes/Web UI and does not claim real Google browser/provider acceptance.
-
----
-
-# 11. M5-D accepted Apple backend slice
-
-```text
-M5-D — Apple Authentication + Grant / Notification Lifecycle
-COMPLETE / ENGINEERING PASS
-```
-
-Accepted implementation checkpoint:
-
-```text
-7d13b712f032e8d41d7cf03d406555fd9f3c0160
-chore(auth): finalize M5-D formatting
-```
-
-Accepted behavior:
-
-```text
-Apple begin + form_post-compatible authorization topology
-pre-exchange ExternalAuthTransaction claim
-front-channel ID token + server-side single-use code exchange identity convergence
-issuer/audience/nonce/exp/iat/subject/c_hash verification
-ES256 Apple client-secret issuance
-ambiguous code exchange never blindly retried
-one-shot Apple name/profile bootstrap preservation
-Hide My Email classification for privaterelay.appleid.com + private.icloud.com
-known identity signin / passwordless Account / collision / provider enrollment
-Apple link + reauthentication exact AuthSession binding and bearer rotation
-AES-256-GCM refresh grant bound by grant+issuer+subject+client AAD
-pending → active → revocation_pending → revoked lifecycle
-local-first revoke + bounded remote reconciliation
-signed server notifications
-email-disabled/email-enabled ordered EmailIdentity recovery restriction state
-consent-revoked/account-deleted identity/grant reconciliation
-ambiguous PostgreSQL commit reconciliation and same-sub race convergence
-```
-
-Accepted proof:
-
-```text
-uv lock --check                              PASS
-Ruff autofix / format / format-check / lint PASS
-mypy src                                     PASS / 49 source files
+Ruff format/check/lint                       PASS
+mypy src                                     PASS
 backend fast                                 171 / 171 PASS
 focused real PostgreSQL M5-D                  9 / 9 PASS
 full real PostgreSQL regression              111 / 111 PASS
 backend build                                PASS / sdist + wheel
 git diff --check                             PASS
+scope audit                                  PASS
 ```
 
-M5-D does not expose public routes/Web UI and does not claim real Apple registered-domain/browser/provider acceptance or Private Email Relay sender configuration.
+M5-D proves the Apple backend protocol/application/persistence/grant/notification slice. It does not claim real Apple browser/provider production acceptance.
 
----
+## 6. Remaining M5 — grouped execution
 
-# 12. Exact next work — M5-E
+The frozen labels remain for traceability, but there are now four execution gates:
 
 ```text
-M5-E — Explicit Linking + Authenticator Lifecycle
-NEXT
+GROUP 1 — NEXT
+M5-E + M5-G
+Authenticator Lifecycle + Password/Passwordless Adaptation
+
+GROUP 2
+M5-F
+Passkeys / WebAuthn
+
+GROUP 3
+M5-H + M5-I
+Public FastAPI + OpenAPI / Governed Client
+
+GROUP 4
+M5-J + M5-K+
+Access Web + Final Security / Provider / Browser / UAT Acceptance
 ```
 
-Exact product boundary:
+Do not revert to the old seven-step sequential execution merely because the semantic labels still exist in the frozen M5 design.
+
+## 7. Exact next work — Group 1 / M5-E + M5-G
+
+Purpose:
 
 ```text
-provider-link challenge inspection + explicit confirmation
-exact Account + recent-auth binding
-lifetime issuer+subject ownership preservation
-provider-neutral authentication-method projection
-provider unlink = logical ExternalIdentity revoke, never DELETE
-Apple unlink composes with M5-D local-first grant revocation/reconciliation
-Google unlink preserves lifetime issuer+subject ownership
-anti-lockout before any authenticator removal
-password/passwordless Account coherence
-provider link/unlink concurrency under Account security lock
-canonical DANTE AuthSession only
+one provider-neutral direct-authenticator lifecycle
++ explicit provider linking/unlinking
++ backend-authoritative methods truth
++ Account-wide anti-lockout
++ password/passwordless lifecycle adaptation
 ```
 
-Still out of scope until later slices:
+Required behavior:
 
 ```text
-full WebAuthn ceremonies
-full password lifecycle adaptation
-public M5 FastAPI/OpenAPI/generated client
-Access Web UI
-real provider/browser final M5 acceptance
-Gmail/Calendar/Drive or other provider-data scopes
+inspect current authentication methods from durable Account state
+inspect/confirm provider-first ExternalLinkChallenge
+prove exact Account + recent auth + explicit consent before provider-first link
+safe provider unlink = logical ExternalIdentity revoke
+Apple unlink = local identity revoke first, then durable grant revoke reconciliation
+count active direct authenticators under Account security lock
+recheck anti-lockout inside mutation transaction
+passwordless safety requires a viable verified recovery EmailIdentity
+establish first password with existing HIBP/Argon2id/pepper stack
+remove password only when Account remains recoverable/authenticatable
+M4 reset create-or-replace PasswordCredential
+invalidate older pending password recovery proof on normal password mutation
+rotate exact retained AuthSession bearer after sensitive mutations
+concurrent link/unlink/password mutations converge on DB truth
+commit ambiguity uses exact operation-specific reconciliation only
 ```
 
-Do not keep expanding `apple_flow.py` with provider-neutral lifecycle responsibility; M5-E is the natural boundary for shared authenticator-management extraction if needed.
-
----
-
-# 13. Forward execution
+Architecture direction:
 
 ```text
-M5-C  Google authentication                        COMPLETE / ENGINEERING PASS
-M5-D  Apple auth + grant/notifications             COMPLETE / ENGINEERING PASS
-M5-E  explicit linking/authenticator lifecycle     NEXT
-M5-F  WebAuthn/passkeys                            PLANNED
-M5-G  passwordless password/recovery adaptation    PLANNED
-M5-H  FastAPI/Pydantic public contract             PLANNED
-M5-I  deterministic OpenAPI + governed client      PLANNED
-M5-J  Access Web / smart onboarding                PLANNED
-M5-K+ focused security/provider/browser/UAT         PLANNED
-M6    Native Mobile Access                         PLANNED
-M7    Security + Observability + final handoff      PLANNED
+provider-neutral lifecycle logic should be extracted where it is genuinely shared
+Google/Apple protocol evidence stays provider-specific
+Apple grant mechanics stay Apple-specific
+apple_flow.py must not become the home for new generic authenticator-management logic
 ```
 
----
-
-# 14. Testing / acceptance posture
-
-Mandatory layers through later M5:
+Still out of scope:
 
 ```text
-unit/pure protocol vectors
-real PostgreSQL where persistence/races are truthful
-FastAPI HTTP contract
-OpenAPI/generated client
-Web application
-browser full-stack
-real external-provider acceptance
+M5-F WebAuthn/passkey ceremonies
+M5-H public FastAPI endpoints
+M5-I OpenAPI/Orval generation
+M5-J Access Web
+M5-K+ real provider/browser/UAT closure
+provider-data scopes/integrations
+schema/Alembic/Dictionary change unless direct evidence forces a separately approved forward fix
 ```
 
-Do not multiply every low-level race across every browser.
-
-Chromium/Firefox/WebKit remain product-critical. Engine-specific WebAuthn/provider limitations are recorded truthfully, not faked.
-
-Real M5 closure requires:
+## 8. Later groups
 
 ```text
-real Google smoke/UAT
-real Apple registered-domain smoke/UAT
-Apple Private Email Relay sender configuration
-real HTTPS WebAuthn/passkey acceptance
-manual integrated M5 UAT
-explicit user acceptance
+GROUP 2 / M5-F
+passkey registration + discoverable signin + reauth + management
+→ reuse Group-1 anti-lockout framework
+
+GROUP 3 / M5-H+I
+FastAPI/Pydantic
+→ RFC9457/no-store/request IDs
+→ deterministic OpenAPI
+→ Orval Fetch/Zod
+→ governed @dante/api-client
+
+GROUP 4 / M5-J+K+
+Access Web
+→ Google/Apple/passkey/password surfaces
+→ provider enrollment/link/security management
+→ browser matrix
+→ real Google/Apple/WebAuthn UAT
+→ Private Email Relay sender proof
+→ final races/HTTP/client/PostgreSQL proof
+→ manual M5 UAT
+→ docs + explicit user acceptance
 ```
 
----
+## 9. Testing posture
 
-# 15. Whole-vertical state
+Use focused proof while developing Group 1. Do not rerun the full PostgreSQL suite after every edit. Before Group-1 closure, run the meaningful whole-backend regression because Account/authenticator lifecycle touches shared password/provider state.
 
-```text
-M1 CLOSED
-M2 CLOSED
-M3 CLOSED
-M4 CLOSED
-M5 ACTIVE
-  M5.1 COMPLETE
-  M5.2 COMPLETE
-  M5-A COMPLETE / POSTGRESQL PROVEN
-  M5-B COMPLETE / ENGINEERING PASS
-  M5-C COMPLETE / ENGINEERING PASS
-  M5-D COMPLETE / ENGINEERING PASS
-  M5-E NEXT
-M6 PLANNED
-M7 PLANNED / FINAL GATE
-
-Whole Access/Auth vertical
-ACTIVE / NOT CLOSED
-```
+Never push debugging to the user: local output is evidence; implementation defects are fixed in the branch.
