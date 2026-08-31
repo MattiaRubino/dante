@@ -57,12 +57,11 @@ describe('WorldFocusPage', () => {
 
     expect(screen.getByRole('main', { name: 'Mondo Musica' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Musica' })).toBeTruthy();
-    expect(
-      container
-        .querySelector('.world-focus-shell')
-        ?.getAttribute('data-entry-origin'),
-    ).toBe('live');
-    expect(container.querySelectorAll('.world-focus-orbit')).toHaveLength(5);
+    const shell = container.querySelector('.world-focus-shell');
+    expect(shell?.getAttribute('data-entry-origin')).toBe('live');
+    expect(shell?.getAttribute('data-entry-phase')).toBe('entering');
+    expect(container.querySelector('.world-focus-entry-effect')).toBeTruthy();
+    expect(container.querySelector('.world-focus-portal')).toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: 'Torna indietro' }));
     expect(onClose).toHaveBeenCalledWith({ preferHistory: true });
@@ -79,11 +78,10 @@ describe('WorldFocusPage', () => {
       />,
     );
 
-    expect(
-      container
-        .querySelector('.world-focus-shell')
-        ?.getAttribute('data-entry-origin'),
-    ).toBe('fallback');
+    const shell = container.querySelector('.world-focus-shell');
+    expect(shell?.getAttribute('data-entry-origin')).toBe('fallback');
+    expect(shell?.getAttribute('data-entry-phase')).toBe('settled');
+    expect(container.querySelector('.world-focus-entry-effect')).toBeNull();
 
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(onClose).toHaveBeenCalledWith({ preferHistory: false });
