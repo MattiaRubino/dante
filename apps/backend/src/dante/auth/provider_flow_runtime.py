@@ -13,6 +13,7 @@ from dante.auth.authenticator_lifecycle import AuthenticatorLifecycleService
 from dante.auth.google import GoogleTokenVerifier
 from dante.auth.lifecycle import KeyedRateLimiter
 from dante.auth.lifecycle_runtime import AuthLifecycleRuntime
+from dante.auth.passkey_flow import PasskeyFlowLimiters, PasskeyFlowService
 from dante.auth.proofs import ProviderEnrollmentOtpCodec
 from dante.auth.provider_flow import ProviderFlowLimiters, ProviderFlowService
 from dante.auth.service import AuthRuntime
@@ -22,11 +23,12 @@ from dante.platform.database.runtime import DatabaseRuntime
 
 @dataclass(frozen=True, slots=True)
 class ProviderFlowRuntime:
-    """M5 provider flows plus Account-wide authenticator lifecycle authority."""
+    """M5 provider flows plus Account-wide authenticator/passkey lifecycle authority."""
 
     service: ProviderFlowService | None
     apple_service: AppleFlowService | None
     authenticator_service: AuthenticatorLifecycleService
+    passkey_service: PasskeyFlowService | None
 
 
 def create_provider_flow_runtime(
@@ -36,7 +38,7 @@ def create_provider_flow_runtime(
     auth_runtime: AuthRuntime,
     lifecycle_runtime: AuthLifecycleRuntime,
 ) -> ProviderFlowRuntime:
-    """Build provider flows and lifecycle authority without duplicate resource ownership."""
+    """Build provider/passkey flows without duplicate process-resource ownership."""
     max_keys = settings.provider_rate_max_keys
     limiters = ProviderFlowLimiters(
         begin=KeyedRateLimiter(
@@ -124,8 +126,34 @@ def create_provider_flow_runtime(
             apple_service.reconcile_expired_pending_grants if apple_service is not None else None
         ),
     )
+
+    passkey_service: PasskeyFlowService | None = None
+    webauthn_policy = auth_runtime.webauthn_policy
+    if settings.provider.webauthn.enabled:
+        if webauthn_policy is None:
+            raise RuntimeError("enabled WebAuthn lost validated process-scoped policy")
+        webauthn = settings.provider.webauthn
+        passkey_service = PasskeyFlowService(
+            session_factory=database_runtime.session_factory,
+            settings=settings,
+            policy=webauthn_policy,
+            limiters=PasskeyFlowLimiters(
+                begin=KeyedRateLimiter(
+                    capacity=webauthn.begin_rate_capacity,
+                    window_seconds=webauthn.begin_rate_window_seconds,
+                    max_keys=webauthn.rate_max_keys,
+                ),
+                complete=KeyedRateLimiter(
+                    capacity=webauthn.complete_rate_capacity,
+                    window_seconds=webauthn.complete_rate_window_seconds,
+                    max_keys=webauthn.rate_max_keys,
+                ),
+            ),
+        )
+
     return ProviderFlowRuntime(
         service=google_service,
         apple_service=apple_service,
         authenticator_service=authenticator_service,
+        passkey_service=passkey_service,
     )
