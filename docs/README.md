@@ -56,6 +56,7 @@ REMOTE BACKUP PROVIDER               TBD / NOT ACTIVATED
 PRODUCTION/CLOUD RECOVERY            NOT CLAIMED
 ACCESS PRE-BACKEND FRONTEND          CLOSED / ACCEPTED / RELEASE-HARDENED
 FULL ACCESS/AUTH PRODUCT VERTICAL    ACTIVE UNMERGED WORKSTREAM / NOT CLAIMED CLOSED
+AI ARCHITECTURE                      ACTIVE BRANCH-LOCAL DESIGN WORKSTREAM / NO IMPLEMENTATION CLAIM
 ```
 
 For exact current state, read `PROJECT-STATUS.md` rather than reconstructing status from historical workstream/checkpoint files.
@@ -205,11 +206,14 @@ Entry points:
 
 - `architecture/README.md`
 - `architecture/system-overview.md`
+- `architecture/dante-ai-foundation.md` — branch-local AI-00 consolidated semantic/architectural baseline; no provider, schema or runtime selection
 - `architecture/technical-decisions.md`
 - `architecture/domain-model-logical-readiness.md`
 - `decisions/`
 
 Current architecture docs state current post-CP6 architecture directly. Phase reviews/QA/readiness continuations are evidence according to their explicit lifecycle role.
+
+The AI foundation consumes current Product / Domain / Logical / Physical / Database authority and separates inherited constraints, derived implications and intentionally open AI-specific choices. It does not authorize database evolution or implementation.
 
 Important persistence ADRs:
 
@@ -298,6 +302,8 @@ CP1–CP6 are closed. Text saying CP6-03 is active, Gate 03 is unearned, CP6-04 
 
 Post-CP6 backend work is active on bounded unmerged workstreams where authorized; `feature/access-auth` is one such current branch. Branch-local authority owns its exact state until integration.
 
+The AI architecture branch is design/research only at AI-00. No AI backend implementation, provider integration, persistence schema or runtime activation is claimed by this index.
+
 ## 12. Frontend
 
 Current protected-main frontend documentation:
@@ -353,7 +359,7 @@ PostgreSQL Recovery is closed and integrated through PR #47; its current operati
 
 Active unmerged workstream records remain branch-local until integration.
 
-At the 2026-08-31 reconciliation, bounded unmerged work includes `feature/access-auth`, `feature/home-react` and `feature/platform-observability`. Live Git refs are authoritative for later changes.
+At the 2026-08-31 reconciliation, bounded unmerged work includes `feature/access-auth`, `feature/home-react`, `feature/platform-observability` and `feature/ai-architecture`; additional live refs may exist and remain authoritative for their own later changes. The AI branch is currently documentation/design-only.
 
 ## 14. Development governance
 
@@ -401,6 +407,8 @@ Executable truth beats documentation claims.
 Historical successful runs remain evidence for the exact commit/environment on which they executed; later patch/runtime/schema claims require evidence appropriate to the later state.
 
 No blanket semantic/direct-pass claim is inferred merely because a technology was selected or a workflow exists.
+
+AI follows the same rule: a provider feature page, SDK capability or written architecture does not prove DANTE AI behavior until the relevant implementation and scenarios are directly tested.
 
 ## 17. Brand / UX / prototypes
 
