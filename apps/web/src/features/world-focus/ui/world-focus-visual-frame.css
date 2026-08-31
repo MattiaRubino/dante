@@ -1,0 +1,222 @@
+.world-focus-visual-frame {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  contain: paint;
+}
+
+.world-focus-ambient-field {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse 72% 96% at 0% 52%,
+      color-mix(in srgb, var(--world-focus-accent) 18%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 72% 96% at 100% 48%,
+      color-mix(in srgb, var(--world-focus-hot) 15%, transparent),
+      transparent 61%
+    ),
+    radial-gradient(
+      ellipse 68% 72% at 50% 54%,
+      color-mix(in srgb, var(--world-focus-accent) 7%, transparent),
+      transparent 72%
+    ),
+    linear-gradient(180deg, #050816 0%, #02040d 54%, #010208 100%);
+}
+
+.world-focus-ambient-field::before,
+.world-focus-ambient-field::after {
+  position: absolute;
+  inset: 0;
+  content: '';
+}
+
+.world-focus-ambient-field::before {
+  opacity: calc(0.16 + var(--world-focus-ambient-intensity) * 0.22);
+  background-image:
+    radial-gradient(circle at 11% 23%, rgba(255, 255, 255, 0.95) 0 0.7px, transparent 1px),
+    radial-gradient(circle at 29% 76%, rgba(180, 145, 255, 0.78) 0 0.8px, transparent 1.1px),
+    radial-gradient(circle at 61% 18%, rgba(255, 255, 255, 0.82) 0 0.6px, transparent 1px),
+    radial-gradient(circle at 78% 68%, rgba(255, 171, 86, 0.78) 0 0.8px, transparent 1.1px),
+    radial-gradient(circle at 92% 34%, rgba(255, 255, 255, 0.72) 0 0.6px, transparent 1px);
+  background-size: 151px 137px, 197px 173px, 179px 211px, 223px 191px, 257px 229px;
+  background-position: 0 0, 31px 19px, 83px 47px, 17px 91px, 121px 37px;
+}
+
+.world-focus-ambient-field::after {
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(rgba(255, 255, 255, 0.014) 1px, transparent 1px);
+  background-size: 96px 96px;
+  opacity: 0.22;
+  mask-image: radial-gradient(ellipse 62% 66% at 50% 50%, black 0%, transparent 82%);
+}
+
+.world-focus-corona-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.world-focus-corona-stop--violet {
+  stop-color: var(--world-focus-violet);
+}
+
+.world-focus-corona-stop--accent {
+  stop-color: var(--world-focus-accent);
+}
+
+.world-focus-corona-stop--white {
+  stop-color: rgba(255, 249, 240, 0.98);
+}
+
+.world-focus-corona-stop--hot {
+  stop-color: var(--world-focus-hot);
+}
+
+.world-focus-corona-stop--transparent {
+  stop-color: transparent;
+}
+
+.world-focus-corona-field,
+.world-focus-corona-energy,
+.world-focus-corona-geometry,
+.world-focus-corona-particles {
+  mix-blend-mode: screen;
+}
+
+.world-focus-corona-band-fill {
+  opacity: calc(0.25 + var(--world-focus-ambient-intensity) * 0.16);
+}
+
+.world-focus-corona-band-flare {
+  opacity: 0.13;
+}
+
+.world-focus-corona-halo,
+.world-focus-corona-core,
+.world-focus-corona-thread,
+.world-focus-corona-orbit,
+.world-focus-corona-marker line,
+.world-focus-corona-marker rect,
+.world-focus-corona-particle-streak {
+  vector-effect: non-scaling-stroke;
+}
+
+.world-focus-corona-halo--wide {
+  stroke-width: 32;
+  opacity: 0.09;
+}
+
+.world-focus-corona-halo--mid {
+  stroke-width: 15;
+  opacity: 0.19;
+}
+
+.world-focus-corona-core {
+  stroke-width: 2.6;
+  opacity: 0.96;
+}
+
+.world-focus-corona-thread {
+  stroke-width: 1.35;
+  opacity: 0.76;
+}
+
+.world-focus-corona-thread--outer {
+  stroke-dasharray: 36 9 5 14 52 7 4 18;
+}
+
+.world-focus-corona-thread--inner {
+  stroke-dasharray: 9 12 28 8 4 14 46 10;
+}
+
+.world-focus-corona-orbit {
+  stroke: color-mix(in srgb, var(--world-focus-accent) 64%, white);
+  stroke-width: 1;
+  opacity: 0.44;
+}
+
+.world-focus-corona-orbit--a {
+  stroke-dasharray: 2 9 34 11 3 17;
+}
+
+.world-focus-corona-orbit--b {
+  stroke-dasharray: 18 6 2 12 41 9;
+  opacity: 0.31;
+}
+
+.world-focus-corona-marker line {
+  stroke: color-mix(in srgb, var(--world-focus-hot) 72%, white);
+  stroke-width: 1.2;
+  opacity: 0.58;
+}
+
+.world-focus-corona-marker rect {
+  fill: rgba(5, 8, 20, 0.72);
+  stroke: color-mix(in srgb, var(--world-focus-accent) 70%, white);
+  stroke-width: 1;
+  opacity: 0.78;
+}
+
+.world-focus-corona-particle[data-particle-tone='accent'] {
+  fill: color-mix(in srgb, var(--world-focus-accent) 78%, white);
+}
+
+.world-focus-corona-particle[data-particle-tone='hot'] {
+  fill: color-mix(in srgb, var(--world-focus-hot) 84%, white);
+}
+
+.world-focus-corona-particle[data-particle-tone='white'] {
+  fill: rgba(255, 252, 246, 0.98);
+}
+
+.world-focus-corona-particle-streak {
+  stroke-linecap: round;
+  stroke-width: 1.1;
+}
+
+.world-focus-corona-particle-streak[data-particle-tone='accent'] {
+  stroke: color-mix(in srgb, var(--world-focus-accent) 74%, white);
+}
+
+.world-focus-corona-particle-streak[data-particle-tone='hot'] {
+  stroke: color-mix(in srgb, var(--world-focus-hot) 82%, white);
+}
+
+.world-focus-corona-particle-streak[data-particle-tone='white'] {
+  stroke: rgba(255, 252, 246, 0.92);
+}
+
+@media (max-width: 720px) {
+  .world-focus-ambient-field::after {
+    background-size: 72px 72px;
+    opacity: 0.16;
+  }
+
+  .world-focus-corona-halo--wide {
+    stroke-width: 24;
+  }
+
+  .world-focus-corona-halo--mid {
+    stroke-width: 11;
+  }
+
+  .world-focus-corona-core {
+    stroke-width: 2.2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .world-focus-visual-frame,
+  .world-focus-visual-frame * {
+    scroll-behavior: auto;
+  }
+}
