@@ -311,6 +311,19 @@ class AuthenticationMethods:
 
 
 @dataclass(frozen=True, slots=True)
+class PasskeyMethod:
+    """Safe active-passkey projection for Security/settings management surfaces."""
+
+    passkey_credential_ref: UUID
+    label: str
+    transports: tuple[str, ...]
+    backup_eligible: bool
+    backup_state: bool
+    created_at: datetime
+    last_used_at: datetime | None
+
+
+@dataclass(frozen=True, slots=True)
 class PasskeyCeremonyBegun:
     """Public WebAuthn options plus one non-secret durable ceremony reference."""
 
