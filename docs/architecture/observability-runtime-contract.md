@@ -1,6 +1,6 @@
 # DANTE Observability Runtime Contract
 
-- **Status:** BRANCH-LOCAL CURRENT / SOURCE CLOSURE COMPLETE / OPERATIONAL ACCEPTANCE PENDING
+- **Status:** BRANCH-LOCAL CURRENT / SOURCE CLOSURE COMPLETE / OPERATIONAL ACCEPTANCE PASS / NOT YET INTEGRATED
 - **Branch:** `feature/platform-observability`
 - **Pinned source baseline:** `dc5ee595c6291d980dc15f582dd094a399631557`
 - **Target:** OpenTelemetry + Grafana Alloy + Grafana Cloud Free EU
@@ -332,8 +332,10 @@ The default dashboard refresh is one minute. The operator may select a
 only, not the governed 30-second metric/scrape export cadence. Source dashboards
 are descriptive operational views, not canonical history, alert-rule
 substitutes or an authority to change product/database behavior.
-Absent data is rendered as neutral `NO SIGNAL`; unknown telemetry must never be
-colored or interpreted as a healthy zero.
+Never-emitted event-only metric families may appear as `NO SIGNAL` or Grafana's
+native `No data`. Both are neutral absence and must never be interpreted as a
+healthy zero. Required liveness signals remain explicit and must be present when
+the corresponding runtime component is expected to be available.
 
 The alert catalog is source truth for expressions/severity/no-data behavior.
 It is materialized in a real Grafana Cloud stack only after the first target
