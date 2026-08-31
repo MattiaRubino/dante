@@ -4,6 +4,7 @@ import {
   type KeyboardEvent,
   type PointerEvent as ReactPointerEvent,
   type RefObject,
+  useCallback,
   useEffect,
   useLayoutEffect,
   useRef,
@@ -504,13 +505,67 @@ export function TimelineDayStream({
   const daysRef = useRef(days);
   const stateRef = useRef(state);
   const autoScrollFrameRef = useRef<number | null>(null);
+  const revealFrameRef = useRef<number | null>(null);
   const dragCleanupRef = useRef<(() => void) | null>(null);
   const suppressClickRef = useRef<string | null>(null);
+  const previousUndoEventIdRef = useRef(state.undo?.eventId ?? null);
+
+  const scheduleEventReveal = useCallback(
+    (eventId: string) => {
+      if (revealFrameRef.current !== null) {
+        cancelAnimationFrame(revealFrameRef.current);
+      }
+      revealFrameRef.current = requestAnimationFrame(() => {
+        revealFrameRef.current = null;
+        const grid = gridRef.current;
+        if (!grid) {
+          return;
+        }
+        const card = Array.from(
+          grid.querySelectorAll<HTMLElement>('[data-timeline-event]'),
+        ).find((candidate) => candidate.dataset.timelineEvent === eventId);
+        if (!card) {
+          return;
+        }
+
+        const gridRect = grid.getBoundingClientRect();
+        const cardRect = card.getBoundingClientRect();
+        const inset = TIMELINE_POLICY.viewport.eventRevealInsetPx;
+        const visibleTop = gridRect.top + inset;
+        const visibleBottom = gridRect.bottom - inset;
+        const maxScrollTop = Math.max(0, grid.scrollHeight - grid.clientHeight);
+
+        if (cardRect.top < visibleTop) {
+          grid.scrollTop = clamp(
+            grid.scrollTop - (visibleTop - cardRect.top),
+            0,
+            maxScrollTop,
+          );
+        } else if (cardRect.bottom > visibleBottom) {
+          grid.scrollTop = clamp(
+            grid.scrollTop + (cardRect.bottom - visibleBottom),
+            0,
+            maxScrollTop,
+          );
+        }
+      });
+    },
+    [gridRef],
+  );
 
   useLayoutEffect(() => {
     daysRef.current = days;
     stateRef.current = state;
   }, [days, state]);
+
+  useLayoutEffect(() => {
+    const previousUndoEventId = previousUndoEventIdRef.current;
+    const currentUndoEventId = state.undo?.eventId ?? null;
+    if (previousUndoEventId !== null && currentUndoEventId === null) {
+      scheduleEventReveal(previousUndoEventId);
+    }
+    previousUndoEventIdRef.current = currentUndoEventId;
+  }, [scheduleEventReveal, state.undo]);
 
   const focusedEvent = state.focusedEventId
     ? (findTimelineEvent(state, state.focusedEventId)?.event ?? null)
@@ -817,6 +872,7 @@ export function TimelineDayStream({
         startMinute: event.startMinute,
       });
       onMoveFeedback(t(($) => $.common.home.timeline.feedback.movedDay));
+      scheduleEventReveal(event.id);
       return;
     }
 
@@ -838,6 +894,7 @@ export function TimelineDayStream({
       startMinute: bounded,
     });
     onMoveFeedback(t(($) => $.common.home.timeline.feedback.movedTime));
+    scheduleEventReveal(event.id);
   };
 
   useEffect(() => {
@@ -845,6 +902,9 @@ export function TimelineDayStream({
       dragCleanupRef.current?.();
       if (autoScrollFrameRef.current !== null) {
         cancelAnimationFrame(autoScrollFrameRef.current);
+      }
+      if (revealFrameRef.current !== null) {
+        cancelAnimationFrame(revealFrameRef.current);
       }
       runtimeRef.current?.overlay?.remove();
       runtimeRef.current?.card.classList.remove('is-drag-source');
