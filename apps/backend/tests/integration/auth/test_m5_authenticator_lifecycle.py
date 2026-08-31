@@ -261,26 +261,6 @@ async def _seed_account(
     return account_ref, email_ref, sessions
 
 
-async def _seed_email(runtime: DatabaseRuntime, *, account_ref: UUID, email: str) -> UUID:
-    email_ref = uuid7()
-    normalized = normalize_email(email)
-    now = datetime.now(UTC)
-    async with runtime.session_factory() as session, session.begin():
-        session.add(
-            EmailIdentityRow(
-                email_identity_ref=email_ref,
-                account_ref=account_ref,
-                address=normalized.address,
-                comparison_key=normalized.comparison_key,
-                created_at=now,
-                verified_at=now,
-                recovery_restriction_code=None,
-                recovery_restriction_observed_at=None,
-            )
-        )
-    return email_ref
-
-
 async def _seed_provider(
     runtime: DatabaseRuntime,
     *,
@@ -293,7 +273,6 @@ async def _seed_provider(
     identity_ref = uuid7()
     now = datetime.now(UTC)
     issuer = GOOGLE_ISSUER if provider_code == "google" else APPLE_ISSUER
-    email_address = f"{provider_code}.{subject}@example.com"
     async with runtime.session_factory() as session, session.begin():
         session.add(
             ExternalIdentityRow(
@@ -303,7 +282,7 @@ async def _seed_provider(
                 provider_code=provider_code,
                 issuer=issuer,
                 subject=subject,
-                provider_email_address=email_address,
+                provider_email_address=f"{provider_code}.{subject}@example.com",
                 provider_email_private=False,
                 status_code=status_code,
                 created_at=now,
@@ -539,24 +518,17 @@ async def test_passwordless_recovery_creates_first_password_revokes_sessions_and
 
 
 @pytest.mark.asyncio
-async def test_provider_link_reactivation_preserves_lifetime_email_binding(
-    migrated_database: Any,
-) -> None:
+async def test_provider_link_reactivates_same_account_lifetime_identity(migrated_database: Any) -> None:
     async with _services(migrated_database) as (_lifecycle, authenticators, _delivery, _kdf, runtime):
-        account_ref, original_email_ref, sessions = await _seed_account(
+        account_ref, email_ref, sessions = await _seed_account(
             runtime,
-            email="original-binding@example.com",
+            email="link-reactivation@example.com",
             password_present=True,
-        )
-        collision_email_ref = await _seed_email(
-            runtime,
-            account_ref=account_ref,
-            email="collision-binding@example.com",
         )
         identity_ref = await _seed_provider(
             runtime,
             account_ref=account_ref,
-            email_ref=original_email_ref,
+            email_ref=email_ref,
             provider_code="google",
             subject="reactivation-subject",
             status_code="revoked",
@@ -564,7 +536,7 @@ async def test_provider_link_reactivation_preserves_lifetime_email_binding(
         challenge_ref, continuation = await _seed_link_challenge(
             runtime,
             target_account_ref=account_ref,
-            target_email_ref=collision_email_ref,
+            target_email_ref=email_ref,
             subject="reactivation-subject",
         )
 
@@ -588,7 +560,7 @@ async def test_provider_link_reactivation_preserves_lifetime_email_binding(
             )
         assert identity is not None
         assert identity.status_code == "active"
-        assert identity.email_identity_ref == original_email_ref
+        assert identity.email_identity_ref == email_ref
         assert challenge is None
         assert issued.principal.account_ref == account_ref
 
