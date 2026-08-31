@@ -10,6 +10,7 @@ import re
 import sys
 from collections.abc import Mapping
 from datetime import UTC, datetime
+from io import TextIOWrapper
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from types import TracebackType
@@ -156,7 +157,7 @@ class _DanteStreamHandler(logging.StreamHandler[TextIO]):
 
 class _DanteRotatingFileHandler(RotatingFileHandler):
     @override
-    def _open(self) -> TextIO:
+    def _open(self) -> TextIOWrapper:
         descriptor = os.open(
             self.baseFilename,
             os.O_WRONLY | os.O_APPEND | os.O_CREAT | getattr(os, "O_NOFOLLOW", 0),
@@ -164,7 +165,7 @@ class _DanteRotatingFileHandler(RotatingFileHandler):
         )
         try:
             return cast(
-                TextIO,
+                TextIOWrapper,
                 os.fdopen(
                     descriptor,
                     self.mode,
