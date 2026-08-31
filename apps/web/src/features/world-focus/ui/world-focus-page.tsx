@@ -38,21 +38,20 @@ const GUIDE_LINE_ROLES = ['outer', 'origin', 'inner'] as const;
 
 type GuideLineRole = (typeof GUIDE_LINE_ROLES)[number];
 
-function WorldFocusGuideRail({ side }: { side: 'left' | 'right' }) {
+function WorldFocusCircleGuides() {
   return (
     <svg
-      className="world-focus-guide-rail"
-      data-side={side}
-      viewBox={WORLD_FOCUS_GEOMETRY.layout.guideViewBox}
-      preserveAspectRatio="none"
+      className="world-focus-circle-guides"
       aria-hidden="true"
       focusable="false"
     >
       {GUIDE_LINE_ROLES.map((role: GuideLineRole) => (
-        <path
+        <circle
           key={role}
           data-guide-line={role}
-          d={WORLD_FOCUS_GEOMETRY.guidePaths[role]}
+          cx="50%"
+          cy="50%"
+          r={WORLD_FOCUS_GEOMETRY.guideRadii[role]}
         />
       ))}
     </svg>
@@ -85,12 +84,10 @@ export function WorldFocusPage({
   );
 
   const geometryStyle = {
-    '--world-focus-rail-width': WORLD_FOCUS_GEOMETRY.layout.railWidth,
-    '--world-focus-rail-width-compact':
-      WORLD_FOCUS_GEOMETRY.layout.compactRailWidth,
-    '--world-focus-workspace-gap': WORLD_FOCUS_GEOMETRY.layout.workspaceGap,
-    '--world-focus-workspace-gap-compact':
-      WORLD_FOCUS_GEOMETRY.layout.compactWorkspaceGap,
+    '--world-focus-workspace-inline-inset':
+      WORLD_FOCUS_GEOMETRY.layout.workspaceInlineInset,
+    '--world-focus-workspace-inline-inset-compact':
+      WORLD_FOCUS_GEOMETRY.layout.compactWorkspaceInlineInset,
     '--world-focus-workspace-block-inset':
       WORLD_FOCUS_GEOMETRY.layout.workspaceBlockInset,
     '--world-focus-workspace-block-inset-compact':
@@ -150,8 +147,7 @@ export function WorldFocusPage({
     >
       <h1 className="world-focus-visually-hidden">{label}</h1>
 
-      <WorldFocusGuideRail side="left" />
-      <WorldFocusGuideRail side="right" />
+      <WorldFocusCircleGuides />
 
       <button
         className="world-focus-back"
