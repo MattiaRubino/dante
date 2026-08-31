@@ -37,12 +37,16 @@
   padding-bottom: clamp(2px, calc(1.2px + 0.9cqh), 3.5px);
 }
 
-/* Title and time are precise actions, not full-row hit zones. The remaining
- * card surface stays owned by focus/selection and drag. */
+/* Title, time and metadata expose intrinsic content width to the compact-card
+ * measurement runtime. Keeping metadata shrink-wrapped is important: a normal
+ * block would report the card's current width as scrollWidth, creating a
+ * positive feedback loop where repeated moves progressively widened the card. */
 .home-m1 .home-timeline--production .timeline-event-card__title,
 .home-m1 .home-timeline--production .timeline-event-card__time,
+.home-m1 .home-timeline--production .timeline-event-card__meta,
 .timeline-event-drag-overlay .timeline-event-card__title,
-.timeline-event-drag-overlay .timeline-event-card__time {
+.timeline-event-drag-overlay .timeline-event-card__time,
+.timeline-event-drag-overlay .timeline-event-card__meta {
   display: block;
   width: max-content;
   max-width: 100%;
