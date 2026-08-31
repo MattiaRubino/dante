@@ -301,7 +301,7 @@ WF0 uses the same layered approach as H0:
 
 - `world-focus-structure.contract.json`
 - `world-focus-shell-responsive.matrix.json`
-- `tests/prototypes/frontend-preprod-contracts.py`
+- `tests/prototypes/world-focus-preprod-contracts.py`
 
 ### Q1 — React ownership/state guard
 
