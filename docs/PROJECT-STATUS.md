@@ -5,8 +5,8 @@
 - **Protected `main`:** integrated source authority; Access/Auth remains branch-local until explicit merge gate
 - **Active product vertical:** Access/Auth
 - **Current macro-phase:** M5 — Google + Apple + Passkeys + Explicit Linking — **ACTIVE**
-- **Last completed slice:** M5-D — Apple Authentication + Grant / Notification Lifecycle — **COMPLETE / ENGINEERING PASS**
-- **Next execution block:** **M5-E + M5-G — Authenticator Lifecycle + Password/Passwordless Adaptation — NEXT**
+- **Last completed execution block:** **GROUP 1 — M5-E + M5-G — Authenticator Lifecycle + Password/Passwordless Adaptation — COMPLETE / ENGINEERING PASS**
+- **Next execution block:** **GROUP 2 — M5-F — WebAuthn / Passkeys — NEXT**
 - **Forward execution authority:** `workstreams/access-auth-m4-m7-execution-plan.md`
 - **M5 exact design authority:** `architecture/access-auth-m5-persistence-api-contract.md`
 - **M5 live handoff:** `workstreams/access-auth-m5-live-handoff-2026-08-29.md`
@@ -42,9 +42,9 @@ ACTIVE
 ├── M5-B provider/JWK/JOSE/AEAD/WebAuthn infrastructure      COMPLETE / ENGINEERING PASS
 ├── M5-C Google authentication                               COMPLETE / ENGINEERING PASS
 ├── M5-D Apple authentication + grant lifecycle              COMPLETE / ENGINEERING PASS
-└── Remaining execution                                      4 GROUPS
-    ├── GROUP 1  M5-E + M5-G  authenticator lifecycle + password/passwordless   NEXT
-    ├── GROUP 2  M5-F         passkeys/WebAuthn                                  PLANNED
+└── Remaining grouped execution                              3 GROUPS
+    ├── GROUP 1  M5-E + M5-G  authenticator lifecycle + password/passwordless   COMPLETE / ENGINEERING PASS
+    ├── GROUP 2  M5-F         passkeys/WebAuthn                                  NEXT
     ├── GROUP 3  M5-H + M5-I  public FastAPI + OpenAPI/governed client           PLANNED
     └── GROUP 4  M5-J + M5-K+ Access Web + security/provider/browser/UAT         PLANNED
 
@@ -58,7 +58,7 @@ Whole Access/Auth vertical
 ACTIVE / NOT CLOSED
 ```
 
-The labels `M5-E` through `M5-K+` remain the frozen semantic decomposition of M5. They are **not seven independent execution gates anymore**. The current execution grouping above is authoritative and intentionally runs M5-G together with M5-E before M5-F.
+The labels `M5-E` through `M5-K+` remain the frozen semantic decomposition of M5. They are **not seven independent execution gates**. The grouped execution above is authoritative.
 
 ## 2. Accepted checkpoints
 
@@ -80,29 +80,32 @@ M5-D Apple backend
 
 M5-D documentation closure
 1cc331851d52d39f42e922147f300e0370649670
+
+M5-E + M5-G accepted code / formatter checkpoint
+1c4b7c988eaae130d6a90d43940a42e2a550870d
 ```
 
-M5-D accepted proof:
+Group 1 / M5-E + M5-G accepted proof:
 
 ```text
-uv lock --check                              PASS
-Ruff format/check/lint                       PASS
-mypy src                                     PASS / 49 source files
-backend fast                                 171 / 171 PASS
-focused real PostgreSQL M5-D                  9 / 9 PASS
-full real PostgreSQL regression              111 / 111 PASS
+uv lock --check                              PASS / 57 packages
+Ruff format + lint                           PASS
+mypy src                                     PASS / 50 source files
+backend fast                                 179 / 179 PASS
+focused Group-1 PostgreSQL                   16 / 16 PASS
+full real PostgreSQL regression              120 / 120 PASS
 backend build                                PASS / sdist + wheel
 git diff --check                             PASS
 scope audit                                  PASS
 ```
 
-M5-D is an engineering/backend acceptance, not a claim that Apple is already production-live in the browser. Real registered-domain Apple UAT, Private Email Relay sender configuration, real Google/Apple provider smoke, WebAuthn/browser proof and integrated manual acceptance remain in Group 4.
+Accepted Group-1 behavior includes provider-neutral method inventory, explicit provider-first link confirmation, logical provider unlink, Apple local-first grant revocation handoff, Account-wide anti-lockout, first-password establishment, safe password removal, passwordless recovery create-or-replace, bearer rotation, Account-lock serialization and concurrent removal proof.
 
 ## 3. Current database truth
 
 ```text
 PostgreSQL          18.6
-Alembic             20260830_12
+Alembic             20260831_13
 83 tables
 5 views
 15 routines
@@ -112,6 +115,14 @@ Alembic             20260830_12
 233 CHECK constraints
 103 standalone Dictionary entries
 ```
+
+`20260831_13` is an ACL-only forward revision:
+
+```text
+GRANT DELETE ON dante.password_credential TO dante_runtime
+```
+
+It changes no table shape, mapping, constraint or index. Dictionary/catalog/migration/privilege parity was proved in the Group-1 PostgreSQL regression.
 
 Permanent structural invariant:
 
@@ -123,8 +134,6 @@ Database Dictionary
 ≈ current human DB reference
 ≈ direct tests
 ```
-
-No schema/Alembic/Dictionary change was introduced by M5-B, M5-C or M5-D.
 
 ## 4. Binding Auth constitution
 
@@ -161,36 +170,34 @@ persisted browser Auth cache
 provider profile fields dumped into Account
 ```
 
-## 5. Exact next block — M5-E + M5-G
+## 5. Exact next block — Group 2 / M5-F
 
-**Purpose:** finish the provider-neutral direct-authenticator lifecycle before adding passkeys.
+**Purpose:** add WebAuthn/passkeys as another direct authenticator under the Account-wide lifecycle and anti-lockout model already proved by Group 1.
 
 ```text
-GET/authentication-methods application truth
-provider-first link confirmation
-safe provider unlink / logical revoke
-Apple grant reconciliation on unlink
-backend-authoritative authenticator counts
-anti-lockout under Account security lock
-verified + recovery-eligible EmailIdentity checks
-establish first PasswordCredential
-remove PasswordCredential safely
-passwordless recovery reset = create-or-replace PasswordCredential
-normal password mutation invalidates older recovery proof
-security-sensitive retained session → exact bearer rotation
-commit ambiguity / uniqueness / concurrent-removal reconciliation
+stable opaque WebAuthnAccount user_handle
+registration begin/complete
+discoverable username-less authentication
+passkey reauthentication
+multiple credentials
+UV required / resident credential direction / attestation none
+credential_id lifetime uniqueness
+COSE algorithm persistence
+signCount + backup state update policy
+label/update/remove
+logical revoke
+Group-1 anti-lockout integration
+canonical DANTE AuthSession only
 ```
 
-Still out of scope for this block:
+Still out of scope for Group 2:
 
 ```text
-M5-F passkey ceremonies and passkey management
 M5-H public FastAPI materialization
 M5-I deterministic OpenAPI / Orval client
 M5-J Access Web implementation
-M5-K+ provider/browser/UAT acceptance
+M5-K+ real provider/browser/UAT acceptance
 provider-data integration scopes
-new DB schema unless direct evidence forces a separately gated forward fix
 ```
 
 ## 6. Branch/worktree safety
