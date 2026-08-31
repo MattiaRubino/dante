@@ -218,6 +218,12 @@ class WebAuthnSettings(BaseModel):
     rp_id: str = "localhost"
     rp_name: str = "DANTE"
     expected_origins: tuple[str, ...] = ("https://localhost:5173",)
+    challenge_lifetime_seconds: PositiveInt = 300
+    begin_rate_capacity: PositiveInt = 30
+    begin_rate_window_seconds: PositiveFloat = 60.0
+    complete_rate_capacity: PositiveInt = 20
+    complete_rate_window_seconds: PositiveFloat = 60.0
+    rate_max_keys: PositiveInt = 20_000
 
     @field_validator("rp_id", "rp_name")
     @classmethod
@@ -235,6 +241,12 @@ class WebAuthnSettings(BaseModel):
         if len(set(canonical)) != len(canonical):
             raise ValueError("WebAuthn expected_origins must be unique")
         return canonical
+
+    @model_validator(mode="after")
+    def validate_ceremony_bounds(self) -> Self:
+        if self.challenge_lifetime_seconds > 300:
+            raise ValueError("WebAuthn challenge lifetime cannot exceed five minutes")
+        return self
 
 
 class AuthProviderSettings(BaseModel):
