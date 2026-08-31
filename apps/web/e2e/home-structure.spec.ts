@@ -31,6 +31,19 @@ async function visibleBox(locator: Locator): Promise<Box> {
   return box;
 }
 
+async function documentBox(locator: Locator): Promise<Box> {
+  await expect(locator).toBeVisible();
+  return locator.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return {
+      x: rect.left + window.scrollX,
+      y: rect.top + window.scrollY,
+      width: rect.width,
+      height: rect.height,
+    };
+  });
+}
+
 function expectClose(actual: number, expected: number, tolerance = 1.5) {
   expect(Math.abs(actual - expected)).toBeLessThanOrEqual(tolerance);
 }
@@ -175,14 +188,14 @@ for (const width of TIMELINE_EXPANSION_WIDTHS) {
     const shell = page.locator('[data-home-region="shell"]');
     const hero = page.locator('[data-home-layout="hero"]');
     const timeline = page.locator('[data-home-region="timeline"]');
-    const beforeHero = await visibleBox(hero);
-    const beforeTimeline = await visibleBox(timeline);
+    const beforeHero = await documentBox(hero);
+    const beforeTimeline = await documentBox(timeline);
 
     await page.getByRole('button', { name: 'Espandi timeline' }).click();
     await expect(shell).toHaveAttribute('data-home-timeline-state', 'expanded');
 
-    const expandedHero = await visibleBox(hero);
-    const expandedTimeline = await visibleBox(timeline);
+    const expandedHero = await documentBox(hero);
+    const expandedTimeline = await documentBox(timeline);
     expectSameBox(expandedHero, beforeHero);
     expect(expandedTimeline.width).toBeGreaterThan(beforeTimeline.width + 100);
     await expectNoHorizontalPageOverflow(page);
@@ -190,8 +203,8 @@ for (const width of TIMELINE_EXPANSION_WIDTHS) {
     await page.getByRole('button', { name: 'Riduci timeline' }).click();
     await expect(shell).toHaveAttribute('data-home-timeline-state', 'normal');
 
-    const restoredHero = await visibleBox(hero);
-    const restoredTimeline = await visibleBox(timeline);
+    const restoredHero = await documentBox(hero);
+    const restoredTimeline = await documentBox(timeline);
     expectSameBox(restoredHero, beforeHero);
     expectSameBox(restoredTimeline, beforeTimeline, 2);
   });
