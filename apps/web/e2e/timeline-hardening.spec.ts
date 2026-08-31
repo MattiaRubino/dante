@@ -23,6 +23,14 @@ async function expectCardInsideTimelineViewport(
     .toBe(true);
 }
 
+async function timelineDateFor(card: Locator): Promise<string | null> {
+  return card.evaluate(
+    (element) =>
+      element.closest<HTMLElement>('[data-timeline-date]')?.dataset.timelineDate ??
+      null,
+  );
+}
+
 test('unchanged time save preserves the previous real move feedback and Undo', async ({
   page,
 }) => {
@@ -61,7 +69,7 @@ test('unchanged time save preserves the previous real move feedback and Undo', a
   await expect(card).toHaveAttribute('aria-label', originalLabel ?? '');
 });
 
-test('keyboard nudges keep moved and restored events inside the Timeline viewport', async ({
+test('keyboard nudge sequences stay visible and Undo returns to the sequence origin', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 760 });
@@ -70,35 +78,107 @@ test('keyboard nudges keep moved and restored events inside the Timeline viewpor
   const grid = page.locator('.timeline-grid');
   const lowerCard = page.locator('[data-timeline-event="12"]');
   await lowerCard.scrollIntoViewIfNeeded();
+  const lowerOriginalLabel = await lowerCard.getAttribute('aria-label');
+  expect(lowerOriginalLabel).not.toBeNull();
   await lowerCard.focus();
 
   for (let index = 0; index < 80; index += 1) {
     await lowerCard.press('Alt+ArrowDown');
   }
-  await expectCardInsideTimelineViewport(lowerCard, grid);
-
-  const beforeLastNudge = await lowerCard.getAttribute('aria-label');
-  expect(beforeLastNudge).not.toBeNull();
-  await lowerCard.press('Alt+ArrowDown');
   await expect(lowerCard).not.toHaveAttribute(
     'aria-label',
-    beforeLastNudge ?? '',
+    lowerOriginalLabel ?? '',
   );
   await expectCardInsideTimelineViewport(lowerCard, grid);
 
   const undoButton = page.locator('.timeline-move-toast.is-on button');
   await expect(undoButton).toBeVisible();
   await undoButton.click();
-  await expect(lowerCard).toHaveAttribute('aria-label', beforeLastNudge ?? '');
+  await expect(lowerCard).toHaveAttribute('aria-label', lowerOriginalLabel ?? '');
   await expectCardInsideTimelineViewport(lowerCard, grid);
 
   const upperCard = page.locator('[data-timeline-event="1"]');
   await upperCard.scrollIntoViewIfNeeded();
+  const upperOriginalLabel = await upperCard.getAttribute('aria-label');
+  expect(upperOriginalLabel).not.toBeNull();
   await upperCard.focus();
   for (let index = 0; index < 70; index += 1) {
     await upperCard.press('Alt+ArrowUp');
   }
+  await expect(upperCard).not.toHaveAttribute(
+    'aria-label',
+    upperOriginalLabel ?? '',
+  );
   await expectCardInsideTimelineViewport(upperCard, grid);
+
+  await expect(undoButton).toBeVisible();
+  await undoButton.click();
+  await expect(upperCard).toHaveAttribute('aria-label', upperOriginalLabel ?? '');
+  await expectCardInsideTimelineViewport(upperCard, grid);
+});
+
+test('keyboard nudges cross midnight, retain focus, and Undo restores the origin', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 760 });
+  await page.goto('/home');
+
+  const grid = page.locator('.timeline-grid');
+  const card = page.locator('[data-timeline-event="8"]');
+  await card.scrollIntoViewIfNeeded();
+
+  await card
+    .getByRole('button', { name: 'Modifica orario di Revisione concept' })
+    .click();
+  const dialog = page.getByRole('dialog', { name: 'Modifica orario' });
+  await expect(dialog).toBeVisible();
+  await page.getByLabel('Inizio ore').fill('23');
+  await page.getByLabel('Inizio minuti').fill('10');
+  await page.getByLabel('Fine ore').fill('23');
+  await page.getByLabel('Fine minuti').fill('55');
+  await dialog.getByRole('button', { name: 'Conferma' }).click();
+  await expect(dialog).toHaveCount(0);
+
+  const sequenceOriginLabel = await card.getAttribute('aria-label');
+  expect(sequenceOriginLabel).toContain('23:10–23:55');
+  expect(await timelineDateFor(card)).toBe('2026-08-04');
+
+  await card.focus();
+  await card.press('Alt+ArrowDown');
+  await expect(card).toHaveAttribute(
+    'aria-label',
+    /Revisione concept, 23:15–24:00/,
+  );
+
+  await page.keyboard.press('Alt+ArrowDown');
+  await expect.poll(() => timelineDateFor(card)).toBe('2026-08-05');
+  await expect(card).toHaveAttribute(
+    'aria-label',
+    /Revisione concept, 00:00–00:45/,
+  );
+  await expect(card).toBeFocused();
+  await expectCardInsideTimelineViewport(card, grid);
+
+  await expect
+    .poll(() =>
+      card.evaluate((element) => getComputedStyle(element).outlineOffset),
+    )
+    .toBe('-2px');
+
+  await page.keyboard.press('Alt+ArrowDown');
+  await expect(card).toHaveAttribute(
+    'aria-label',
+    /Revisione concept, 00:05–00:50/,
+  );
+  await expect(card).toBeFocused();
+
+  const undoButton = page.locator('.timeline-move-toast.is-on button');
+  await expect(undoButton).toBeVisible();
+  await undoButton.click();
+
+  await expect.poll(() => timelineDateFor(card)).toBe('2026-08-04');
+  await expect(card).toHaveAttribute('aria-label', sequenceOriginLabel ?? '');
+  await expectCardInsideTimelineViewport(card, grid);
 });
 
 test('reduced motion prevents imperative smooth Timeline navigation', async ({
