@@ -598,6 +598,22 @@ export function TimelineDayStream({
     runtime.overlay = overlay;
     runtime.dragging = true;
     runtime.lastAutoFrame = performance.now();
+
+    /*
+     * Pointer capture is a drag hardening mechanism, not part of click-intent
+     * detection. Capturing on pointerdown made the pending gesture interfere
+     * with focus/click state and caused the first real drag to be lost. Wait
+     * until the activation threshold has been crossed. Document listeners keep
+     * the drag operational even if a browser refuses capture.
+     */
+    try {
+      if (!runtime.card.hasPointerCapture(runtime.pointerId)) {
+        runtime.card.setPointerCapture(runtime.pointerId);
+      }
+    } catch {
+      // Best-effort enhancement: document-level listeners remain authoritative.
+    }
+
     runtime.card.classList.add('is-drag-source');
     updateOverlay();
     autoScrollFrameRef.current = requestAnimationFrame(autoScrollTick);
@@ -711,13 +727,6 @@ export function TimelineDayStream({
       lastAutoFrame: 0,
     };
 
-    try {
-      card.setPointerCapture(pointerId);
-    } catch {
-      cancelDrag();
-      return;
-    }
-
     const move = (eventMove: PointerEvent) => {
       const runtime = runtimeRef.current;
       if (!runtime || eventMove.pointerId !== runtime.pointerId) {
@@ -757,7 +766,10 @@ export function TimelineDayStream({
       }
     };
     const lostCapture = (lostEvent: PointerEvent) => {
-      if (runtimeRef.current?.pointerId === lostEvent.pointerId) {
+      if (
+        runtimeRef.current?.pointerId === lostEvent.pointerId &&
+        runtimeRef.current.dragging
+      ) {
         cancelDrag();
       }
     };
