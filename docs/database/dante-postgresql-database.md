@@ -507,11 +507,14 @@ PREPARED
 Recovery blocks on:
 
 ```text
+missing/unavailable `records/` directory
+unexpected entry inside `records/`
+duplicate MaterialStateRef suppression target
 PREPARED without COMMITTED
 COMMITTED without PREPARED
 identity/target mismatch
 prepared hash mismatch
-invalid/non-canonical record
+non-canonical/invalid record
 ```
 
 A PREPARED record alone never authorizes automatic deletion because the database transaction might never have committed.

@@ -1,6 +1,6 @@
 # DANTE — PostgreSQL Recovery Workstream
 
-- **Status:** ACTIVE / CP06 IMPLEMENTED / FINAL LOCAL QA PENDING
+- **Status:** ACTIVE / CP06 LOCAL PASS / CLOSED / CP07 NEXT
 - **Repository:** `MattiaRubino/dante`
 - **Branch:** `feature/postgres-recovery`
 - **Worktree:** `/home/mattia/projects/dante-postgres-recovery`
@@ -8,7 +8,7 @@
 - **Current DANTE Alembic head on this branch:** `20260830_09`
 - **Current DANTE topology:** `69|5|15|76|97|69|123|0|0|0`
 - **pgBackRest:** 2.59.1 / PGDG `2.59.1-1.pgdg13+1`
-- **Current checkpoint:** CP06 Failure Injection + Semantic Recovery / Anti-Resurrection — implementation materialized, final versioned proof pending
+- **Current checkpoint:** CP06 Failure Injection + Semantic Recovery / Anti-Resurrection — LOCAL PASS / CLOSED; CP07 next
 - **Execution plan:** `postgres-recovery-execution-plan.md`
 - **Live continuation:** `postgres-recovery-live-handoff-2026-08-29.md`
 
@@ -134,16 +134,16 @@ CP04 Destructive / Isolated Restore     LOCAL PASS
 SC-031 destructive restore              PASS
 CP05 Deterministic PITR                 LOCAL PASS
 PSV-40 local archive/restore/PITR       PASS
-CP06 Failure Injection + Semantic       IMPLEMENTED / FINAL LOCAL QA PENDING
-Failure Matrix prototype/direct proof   LOCAL PASS CANDIDATE
-SC-011 mechanism prototype              LOCAL PASS CANDIDATE
+CP06 Failure Injection + Semantic       LOCAL PASS / CLOSED
+Failure Matrix versioned final harness  LOCAL PASS
+SC-011 mechanism prototype              LOCAL PASS
 SC-011 versioned implementation         MATERIALIZED
-SC-011 definitive versioned harness     IMPLEMENTED / NOT YET RUN
-CP07 Whole Recovery QA + Runbook        NOT STARTED
+SC-011 definitive versioned harness     LOCAL PASS
+CP07 Whole Recovery QA + Runbook        NEXT / NOT STARTED
 AWS selected-stack acceptance           NOT RUN
 ```
 
-CP06 is not closed until direct proof runs on the exact current branch HEAD.
+CP06 direct local proof completed on implementation/runtime head `a1a6323210b3d7af66284006a754759fa9d08028`. The documentation-only closure commit intentionally has a later SHA.
 
 ## 7. Retained direct CP02–CP05 evidence
 
@@ -274,7 +274,7 @@ Versioned definitive failure matrix:
 
 `infra/local/postgres/recovery/cp06-failure-matrix-check.sh`
 
-It is implemented but must still be rerun from the exact final CP06 HEAD before closure.
+The versioned final failure matrix passed against implementation/runtime head `a1a6323210b3d7af66284006a754759fa9d08028` with N1–N7 all fail-closed and the real pgBackRest repository, retained CP05 target and Git worktree unchanged.
 
 ## 9. SC-011 canonical retirement model
 
@@ -349,6 +349,9 @@ PREPARED durable intent
 Recovery blocks on:
 
 ```text
+missing/unavailable `records/` directory
+unexpected entry inside `records/`
+duplicate MaterialStateRef suppression target
 PREPARED without COMMITTED
 COMMITTED without PREPARED
 identity/target mismatch
@@ -388,7 +391,7 @@ Definitive versioned harness:
 
 The definitive harness upgrades its disposable source to `20260830_09`, creates B0 on that real schema, uses the versioned Python PREPARED/COMMITTED ledger implementation, destroys only disposable PGDATA, proves physical resurrection and performs reconciliation using the real migration/integrity contract.
 
-It is implemented but not yet executed against the exact final CP06 HEAD.
+The definitive versioned harness passed against implementation/runtime head `a1a6323210b3d7af66284006a754759fa9d08028`. It proved physical resurrection of protected X from old B0 while isolated, committed-ledger reconciliation before reopen, payload reinsertion rejection, NativeRef/MaterialStateRef/current-history continuity, SELECT-only retirement ACL and non-interference with the real pgBackRest repository, retained CP05 target and Git worktree.
 
 ## 12. Derived-state reconciliation boundary
 
@@ -430,34 +433,72 @@ The database recovery path must never manufacture object consistency by deleting
 
 ## 14. CP06 closure contract
 
-Before CP06 may become `LOCAL PASS / CLOSED`:
+CP06 local acceptance is complete.
 
 ```text
-[ ] exact branch/worktree alignment
-[ ] migration fresh -> head PASS
-[ ] 20260830_09 -> 20260826_08 -> 20260830_09 PASS
-[ ] Alembic check PASS
-[ ] current topology exact PASS
-[ ] Dictionary ↔ SQLAlchemy ↔ PostgreSQL PASS
-[ ] retirement ACL/integrity tests PASS
-[ ] all five material facets retirement tests PASS
-[ ] suppression-ledger unit tests PASS
-[ ] Ruff/static checks required by backend PASS
-[ ] versioned CP06 failure matrix PASS
-[ ] versioned definitive SC-011 destructive rehearsal PASS
-[ ] real pgBackRest repository non-interference PASS
-[ ] CP05 target non-interference PASS where retained
-[ ] current documentation reconciled
+[x] exact branch/worktree alignment
+[x] migration fresh -> head PASS
+[x] 20260830_09 -> 20260826_08 -> 20260830_09 PASS
+[x] Alembic check PASS
+[x] current topology exact PASS
+[x] Dictionary ↔ SQLAlchemy ↔ PostgreSQL PASS
+[x] retirement ACL/integrity tests PASS
+[x] all five material facets retirement tests PASS
+[x] suppression-ledger unit tests PASS
+[x] Ruff/static checks required by backend PASS
+[x] versioned CP06 failure matrix PASS
+[x] versioned definitive SC-011 destructive rehearsal PASS
+[x] real pgBackRest repository non-interference PASS
+[x] CP05 target non-interference PASS
+[x] current documentation reconciled
 ```
 
-Until then:
+## CP06 local acceptance evidence
+
+Implementation/runtime proof head:
 
 ```text
-CP06 IMPLEMENTED / FINAL LOCAL QA PENDING
-SC-011 NOT YET FINAL PASS
+a1a6323210b3d7af66284006a754759fa9d08028
 ```
 
-## 15. CP07 next boundary
+The later closure commit is documentation-only, so its Git SHA is expected to differ from the implementation/runtime proof head above.
+
+Directly exercised local evidence:
+
+```text
+suppression-ledger unit tests             11/11 PASS
+targeted database acceptance              17/17 PASS
+whole database regression                 80/80 PASS
+whole backend test suite                 128/128 PASS
+Ruff format/check                         PASS
+mypy strict                               PASS
+versioned CP06 failure matrix N1-N7       PASS
+definitive versioned SC-011               PASS
+old B0 physical resurrection of X         PROVEN
+ledger reconciliation before reopen       PASS
+payload reinsertion after retirement      REJECTED
+NativeRef continuity                      PASS
+MaterialStateRef continuity               PASS
+current/history continuity                PASS
+runtime retirement ACL SELECT-only        PASS
+real pgBackRest repository non-interference PASS
+retained CP05 target non-interference     PASS
+Git worktree non-interference             PASS
+SC-011 readback/teardown clean             PASS
+```
+
+Current checkpoint truth:
+
+```text
+CP06 = LOCAL PASS / CLOSED
+SC-011 = PASS
+CP07 = NEXT / NOT STARTED
+AWS selected production recovery = NOT YET PROVEN
+```
+
+This LOCAL closure does not prove AWS S3 activation, Versioning/Object Lock production acceptance, production RPO/RTO, R2 recovery, PowerSync/search/vector recovery implementation or the whole CP07 operator rehearsal.
+
+## 15. CP07 next boundary## 15. CP07 next boundary
 
 CP07 will own:
 

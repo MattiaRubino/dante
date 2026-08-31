@@ -1,6 +1,6 @@
 # DANTE — PostgreSQL Recovery Live Handoff
 
-- **Status:** CURRENT LIVE HANDOFF / CP06 FINAL LOCAL QA
+- **Status:** CURRENT LIVE HANDOFF / CP06 LOCAL PASS / CLOSED / CP07 NEXT
 - **Repository:** `MattiaRubino/dante`
 - **Branch:** `feature/postgres-recovery`
 - **Worktree:** `/home/mattia/projects/dante-postgres-recovery`
@@ -8,8 +8,8 @@
 - **Current branch DB head:** `20260830_09`
 - **Current branch DB topology:** `69|5|15|76|97|69|123|0|0|0`
 - **CP01–CP05:** directly proven LOCAL PASS
-- **CP06:** implementation materialized; final exact-HEAD proof pending
-- **SC-011:** mechanism prototype directly proven; definitive versioned harness not yet run
+- **CP06:** LOCAL PASS / CLOSED
+- **SC-011:** PASS — definitive versioned harness directly proven
 - **CP07:** not started
 
 > This file is only the active branch continuation checkpoint. Repository/code/tests beat this handoff if they disagree. Remove/consolidate it before protected-main integration once durable current documents cover all necessary information.
@@ -95,11 +95,11 @@ CP04 Destructive / Isolated Restore      LOCAL PASS
 SC-031 destructive local restore         PASS
 CP05 Deterministic PITR                  LOCAL PASS
 PSV-40 local archive/restore/PITR        PASS
-CP06 Failure Injection + Semantic        IMPLEMENTED / FINAL LOCAL QA PENDING
-Failure Matrix direct mechanism proof    LOCAL PASS CANDIDATE
-SC-011 mechanism prototype               LOCAL PASS CANDIDATE
-SC-011 versioned final harness           IMPLEMENTED / NOT YET RUN
-CP07 Whole Recovery QA + Runbook         NOT STARTED
+CP06 Failure Injection + Semantic        LOCAL PASS / CLOSED
+Failure Matrix versioned final harness   LOCAL PASS
+SC-011 mechanism prototype               LOCAL PASS
+SC-011 versioned final harness           LOCAL PASS
+CP07 Whole Recovery QA + Runbook         NEXT / NOT STARTED
 AWS selected recovery topology           NOT ACTIVATED
 ```
 
@@ -195,7 +195,7 @@ PREPARED
 → COMMITTED bound to PREPARED SHA-256
 ```
 
-Recovery blocks on orphan/mismatched/tampered evidence.
+Recovery blocks on missing/unavailable `records/`, unexpected entries, duplicate MaterialStateRef targets, orphan PREPARED/COMMITTED state, identity/target mismatch, prepared-hash mismatch and invalid/non-canonical evidence.
 
 The ledger is recovery-only evidence and must survive independently from both PGDATA and the database backup repository.
 
@@ -226,7 +226,7 @@ Versioned final harness:
 infra/local/postgres/recovery/cp06-failure-matrix-check.sh
 ```
 
-Must still be run on exact final branch HEAD.
+Versioned final harness passed on implementation/runtime head `a1a6323210b3d7af66284006a754759fa9d08028` with N1–N7 PASS and non-interference preserved.
 
 ## 9. SC-011 status
 
@@ -257,7 +257,7 @@ infra/local/postgres/recovery/cp06-sc011-anti-resurrection-check.sh
 
 It uses the real migration + real suppression library and creates B0 from a disposable source upgraded to `20260830_09`.
 
-Must still be run before SC-011 PASS.
+Definitive versioned SC-011 passed on implementation/runtime head `a1a6323210b3d7af66284006a754759fa9d08028` and is now local PASS.
 
 ## 10. Derived/object reopen boundary
 
@@ -265,37 +265,68 @@ Derived/search/vector/sync state is not canonical. After recovery it must be reb
 
 R2/object consistency is a separate recovery boundary. PostgreSQL restore does not prove referenced object recovery. Object-backed features remain closed until object verification/reconciliation is complete.
 
-## 11. Next exact local sequence
+## 11. Current continuation
 
-Do **not** run these until remote implementation/documentation reconciliation is complete and the user is explicitly told to pull the final branch HEAD.
+CP06 local acceptance is complete; do not repeat destructive CP06 proof merely to manufacture another identical PASS.
 
-Then:
+## CP06 local acceptance evidence
+
+Implementation/runtime proof head:
 
 ```text
-1. git pull --ff-only
-2. confirm local == remote and clean
-3. syntax/quality checks
-4. current database/retirement/suppression tests
-5. migration fresh/downgrade/upgrade proof
-6. versioned CP06 failure matrix
-7. definitive SC-011 destructive rehearsal
-8. report all direct output
+a1a6323210b3d7af66284006a754759fa9d08028
 ```
 
-No PASS by inference.
+The later closure commit is documentation-only, so its Git SHA is expected to differ from the implementation/runtime proof head above.
+
+Directly exercised local evidence:
+
+```text
+suppression-ledger unit tests             11/11 PASS
+targeted database acceptance              17/17 PASS
+whole database regression                 80/80 PASS
+whole backend test suite                 128/128 PASS
+Ruff format/check                         PASS
+mypy strict                               PASS
+versioned CP06 failure matrix N1-N7       PASS
+definitive versioned SC-011               PASS
+old B0 physical resurrection of X         PROVEN
+ledger reconciliation before reopen       PASS
+payload reinsertion after retirement      REJECTED
+NativeRef continuity                      PASS
+MaterialStateRef continuity               PASS
+current/history continuity                PASS
+runtime retirement ACL SELECT-only        PASS
+real pgBackRest repository non-interference PASS
+retained CP05 target non-interference     PASS
+Git worktree non-interference             PASS
+SC-011 readback/teardown clean             PASS
+```
+
+Current checkpoint truth:
+
+```text
+CP06 = LOCAL PASS / CLOSED
+SC-011 = PASS
+CP07 = NEXT / NOT STARTED
+AWS selected production recovery = NOT YET PROVEN
+```
+
+This LOCAL closure does not prove AWS S3 activation, Versioning/Object Lock production acceptance, production RPO/RTO, R2 recovery, PowerSync/search/vector recovery implementation or the whole CP07 operator rehearsal.
+
+The next recovery implementation boundary is CP07. Any CP07 code/infra/AWS activation still requires its own explicit gate.
 
 ## 12. CP06 closure rule
-
-Only after all final versioned evidence is green:
 
 ```text
 CP06 LOCAL PASS / CLOSED
 SC-011 PASS
+CP07 NEXT / NOT STARTED
 ```
 
-Then update the current workstream docs within the already-approved recovery scope and proceed to CP07 under a new explicit implementation gate where required.
+The closure is LOCAL only. AWS selected-stack acceptance and the whole CP07 operator rehearsal remain unproven.
 
-## 13. CP07 boundary
+## 13. CP07 boundary## 13. CP07 boundary
 
 CP07 owns:
 

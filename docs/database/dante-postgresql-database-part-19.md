@@ -277,10 +277,22 @@ Therefore:
 PREPARED + matching COMMITTED
 → valid committed suppression evidence
 
+missing/unavailable `records/` directory
+→ recovery BLOCKED
+
+unexpected entry inside `records/`
+→ recovery BLOCKED
+
+duplicate MaterialStateRef suppression target
+→ recovery BLOCKED
+
 PREPARED without COMMITTED
 → recovery BLOCKED
 
 COMMITTED without PREPARED
+→ recovery BLOCKED
+
+identity/target mismatch
 → recovery BLOCKED
 
 prepared hash mismatch
@@ -415,6 +427,39 @@ Object-store recovery/reconciliation is a separate boundary. PostgreSQL recovery
 
 ### 56.15 Current status
 
-The anti-resurrection architecture has direct local prototype proof. The repository now materializes the canonical retirement table, recovery ledger protocol and retirement-aware validators at `20260830_09`.
+The anti-resurrection architecture and the versioned implementation are locally accepted.
 
-Final SC-011 PASS is earned only after the definitive **versioned** harness runs successfully on the exact current branch HEAD. Until then the implementation is materialized but the checkpoint is not closed.
+Implementation/runtime proof head:
+
+```text
+a1a6323210b3d7af66284006a754759fa9d08028
+```
+
+Direct local acceptance proved:
+
+```text
+fresh/current migration contract                PASS
+Dictionary ↔ SQLAlchemy ↔ PostgreSQL            PASS
+retirement ACL/integrity                        PASS
+all five retirement-aware material facets       PASS
+suppression ledger fail-closed behavior          PASS
+versioned CP06 failure matrix N1-N7              PASS
+old B0 physically resurrected protected X        PROVEN
+definitive versioned SC-011 reconciliation       PASS
+payload reinsertion after retirement             REJECTED
+NativeRef / MaterialStateRef continuity           PASS
+current/history continuity                        PASS
+real pgBackRest repository non-interference       PASS
+retained CP05 target non-interference             PASS
+Git non-interference                              PASS
+```
+
+Therefore:
+
+```text
+CP06 LOCAL PASS / CLOSED
+SC-011 PASS
+CP07 NEXT / NOT STARTED
+```
+
+This does not claim AWS selected-stack acceptance, production RPO/RTO, R2 recovery, derived-store recovery implementation or whole CP07 operator-rehearsal proof.

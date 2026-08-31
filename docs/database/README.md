@@ -116,8 +116,12 @@ Recovery rules:
 valid PREPARED + COMMITTED pair
 → eligible for deterministic suppression reconciliation
 
+missing/unavailable `records/` directory
+unexpected entry inside `records/`
+duplicate MaterialStateRef suppression target
 PREPARED without COMMITTED
 COMMITTED without PREPARED
+identity/target mismatch
 hash mismatch
 invalid/non-canonical record
 → recovery BLOCKED

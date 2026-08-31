@@ -44,7 +44,7 @@ Current semantic authority lives in:
 - `../domain/README.md`
 - `../logical-model/README.md`
 
-## Active PostgreSQL recovery workstream
+## PostgreSQL recovery workstream
 
 ```text
 repo       MattiaRubino/dante
@@ -70,35 +70,64 @@ CP04 Destructive / Isolated Restore     LOCAL PASS
 SC-031 destructive local restore        PASS
 CP05 Deterministic PITR                 LOCAL PASS
 PSV-40 local archive/restore/PITR       PASS
-CP06 Failure + Semantic Recovery        IMPLEMENTED / FINAL LOCAL QA PENDING
-Failure Matrix A                        DIRECT PROTOTYPE EVIDENCE PASS CANDIDATE
-SC-011 mechanism prototype              DIRECT LOCAL PASS CANDIDATE
-SC-011 versioned final harness          IMPLEMENTED / NOT YET RUN
+CP06 Failure + Semantic Recovery        LOCAL PASS / CLOSED
+Failure Matrix                          VERSIONED LOCAL PASS
+SC-011 mechanism prototype              DIRECT LOCAL PASS
+SC-011 versioned final harness          LOCAL PASS
 current DB evolution                    Alembic 20260830_09
 current DB topology                     69|5|15|76|97|69|123|0|0|0
-CP07 Whole Recovery QA + Runbook        NOT STARTED
+CP07 Whole Recovery QA + Runbook        NEXT / NOT STARTED
 AWS S3 selected topology                NOT ACTIVATED
 ```
 
-CP06 is **not closed merely because implementation exists**. Closure requires direct execution against the exact current branch HEAD of:
+CP06 is **LOCAL PASS / CLOSED** on the directly exercised local contract. The implementation/runtime proof head is `a1a6323210b3d7af66284006a754759fa9d08028`; the closure commit itself is documentation-only and therefore has a later SHA.
+
+## CP06 local acceptance evidence
+
+Implementation/runtime proof head:
 
 ```text
-current database migration/catalog/ACL tests
-suppression-ledger unit tests
-versioned CP06 failure matrix
-versioned definitive SC-011 anti-resurrection rehearsal
-quality/static checks required by the backend
-current-documentation reconciliation
+a1a6323210b3d7af66284006a754759fa9d08028
 ```
 
-Only after those are green may the workstream record state:
+The later closure commit is documentation-only, so its Git SHA is expected to differ from the implementation/runtime proof head above.
+
+Directly exercised local evidence:
 
 ```text
-CP06 LOCAL PASS / CLOSED
-SC-011 PASS
+suppression-ledger unit tests             11/11 PASS
+targeted database acceptance              17/17 PASS
+whole database regression                 80/80 PASS
+whole backend test suite                 128/128 PASS
+Ruff format/check                         PASS
+mypy strict                               PASS
+versioned CP06 failure matrix N1-N7       PASS
+definitive versioned SC-011               PASS
+old B0 physical resurrection of X         PROVEN
+ledger reconciliation before reopen       PASS
+payload reinsertion after retirement      REJECTED
+NativeRef continuity                      PASS
+MaterialStateRef continuity               PASS
+current/history continuity                PASS
+runtime retirement ACL SELECT-only        PASS
+real pgBackRest repository non-interference PASS
+retained CP05 target non-interference     PASS
+Git worktree non-interference             PASS
+SC-011 readback/teardown clean             PASS
 ```
 
-## Recovery permanent rules
+Current checkpoint truth:
+
+```text
+CP06 = LOCAL PASS / CLOSED
+SC-011 = PASS
+CP07 = NEXT / NOT STARTED
+AWS selected production recovery = NOT YET PROVEN
+```
+
+This LOCAL closure does not prove AWS S3 activation, Versioning/Object Lock production acceptance, production RPO/RTO, R2 recovery, PowerSync/search/vector recovery implementation or the whole CP07 operator rehearsal.
+
+## Recovery permanent rules## Recovery permanent rules
 
 ```text
 PostgreSQL = sole canonical persistence authority
