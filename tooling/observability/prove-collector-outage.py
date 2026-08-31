@@ -114,6 +114,23 @@ def _require_healthy(url: str, timeout_seconds: float, label: str) -> None:
         raise AcceptanceFailure(f"{label} returned HTTP {status}: {url}")
 
 
+
+def _wait_for_healthy(
+    url: str, timeout_seconds: float, label: str, wait_seconds: float = 10.0
+) -> None:
+    """Wait a bounded interval for a just-started local service to become ready."""
+    deadline = time.monotonic() + wait_seconds
+    last_failure: AcceptanceFailure | None = None
+    while True:
+        try:
+            _require_healthy(url, timeout_seconds, label)
+            return
+        except AcceptanceFailure as error:
+            last_failure = error
+        if time.monotonic() >= deadline:
+            raise last_failure
+        time.sleep(0.5)
+
 def _assert_alloy_service_exists(settings: Settings) -> None:
     command = (
         "docker",
@@ -176,7 +193,7 @@ def main() -> int:
         if stopped:
             try:
                 _compose(settings, "start", "alloy")
-                _require_healthy(
+                _wait_for_healthy(
                     settings.alloy_ready_url,
                     settings.timeout_seconds,
                     "Alloy readiness after restoration",
