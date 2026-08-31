@@ -1,11 +1,11 @@
 # DANTE — Access/Auth Full-Stack Vertical Workstream
 
-- **Status:** ACTIVE VERTICAL / M1–M4 CLOSED / M5 ACTIVE / M5.1–M5-D COMPLETE
+- **Status:** ACTIVE VERTICAL / M1–M4 CLOSED / M5 ACTIVE / M5.1–M5-D COMPLETE / GROUP 1 COMPLETE
 - **Branch:** `feature/access-auth`
 - **Intended worktree:** `/home/mattia/projects/dante`
-- **Next execution block:** **M5-E + M5-G — Authenticator Lifecycle + Password/Passwordless Adaptation**
-- **M5-D accepted implementation checkpoint:** `7d13b712f032e8d41d7cf03d406555fd9f3c0160`
-- **M5-D documentation closure:** `1cc331851d52d39f42e922147f300e0370649670`
+- **Last completed execution block:** **M5-E + M5-G — Authenticator Lifecycle + Password/Passwordless Adaptation — COMPLETE / ENGINEERING PASS**
+- **Accepted Group-1 code checkpoint:** `1c4b7c988eaae130d6a90d43940a42e2a550870d`
+- **Next execution block:** **M5-F — WebAuthn / Passkeys**
 - **M5 architecture authority:** `../architecture/access-auth-m5-contract.md`
 - **M5 exact design authority:** `../architecture/access-auth-m5-persistence-api-contract.md`
 - **M5 live handoff:** `access-auth-m5-live-handoff-2026-08-29.md`
@@ -56,20 +56,7 @@ unknown/loading != signed-out/signed-in/error
 method != factor != assurance
 ```
 
-Do not reintroduce:
-
-```text
-JWT/localStorage browser Auth
-Redis/JWT session authority
-Principal table
-silent provider-email merge
-provider-specific parallel Account/session authority
-Account advisory-lock replacement
-wide credentialed CORS
-fake frontend Auth success
-persisted browser Auth cache
-login-first + useEffect session repair
-```
+Do not reintroduce JWT/localStorage browser Auth, Redis/JWT session authority, Principal persistence, silent provider-email merge, provider-specific Account/session authority, Account advisory-lock replacement, wide credentialed CORS, fake frontend Auth success, persisted browser Auth cache or login-first/useEffect session repair.
 
 ## 3. Closed foundation
 
@@ -85,13 +72,14 @@ M5-A persistence foundations                           COMPLETE / REAL POSTGRESQ
 M5-B provider/JWK/JOSE/AEAD infrastructure             COMPLETE / ENGINEERING PASS
 M5-C Google authentication                             COMPLETE / ENGINEERING PASS
 M5-D Apple authentication + grant/notifications        COMPLETE / ENGINEERING PASS
+GROUP 1 / M5-E + M5-G                                  COMPLETE / ENGINEERING PASS
 ```
 
 Accepted current DB truth:
 
 ```text
 PostgreSQL          18.6
-Alembic             20260830_12
+Alembic             20260831_13
 83 tables
 5 views
 15 routines
@@ -102,32 +90,33 @@ Alembic             20260830_12
 103 standalone Dictionary entries
 ```
 
-M5-D closeout:
+Group-1 closeout:
 
 ```text
-uv lock --check                              PASS
+uv lock --check                              PASS / 57 packages
 Ruff format/check/lint                       PASS
-mypy                                         PASS
-backend fast                                 171 / 171 PASS
-focused PostgreSQL M5-D                       9 / 9 PASS
-full PostgreSQL regression                   111 / 111 PASS
+mypy src                                     PASS / 50 source files
+backend fast                                 179 / 179 PASS
+focused PostgreSQL Group 1                   16 / 16 PASS
+full PostgreSQL regression                   120 / 120 PASS
 backend build                                PASS
 git diff --check                             PASS
 scope audit                                  PASS
 ```
 
+`20260831_13` is ACL-only: it grants `DELETE` on `dante.password_credential` to `dante_runtime`; no table shape, mapping, index or constraint changed.
+
 Do not reopen closed slices absent direct defect evidence.
 
 ## 4. Remaining M5 execution — authoritative grouping
 
-The labels M5-E/F/G/H/I/J/K+ remain useful semantic ownership labels from the frozen design. They are **not separate execution gates** anymore.
-
 ```text
-GROUP 1 — NEXT
+GROUP 1
 M5-E + M5-G
 Authenticator Lifecycle + Password/Passwordless Adaptation
+COMPLETE / ENGINEERING PASS
 
-GROUP 2
+GROUP 2 — NEXT
 M5-F
 WebAuthn / Passkeys
 
@@ -140,49 +129,32 @@ M5-J + M5-K+
 Access Web + Security / Provider / Browser / UAT / Acceptance
 ```
 
-This order intentionally executes M5-G with M5-E before M5-F because anti-lockout must account for provider identities and PasswordCredential under one Account-wide model before passkeys join it.
+The labels M5-E/F/G/H/I/J/K+ remain semantic ownership labels from the frozen design; they are not separate execution gates.
 
-## 5. Exact next block — Group 1 / M5-E + M5-G
-
-Goal: establish one provider-neutral direct-authenticator lifecycle and then adapt the existing password/recovery system to it.
-
-Required behavior:
+## 5. Group 1 accepted result
 
 ```text
-authentication-method inventory derived from current durable Account truth
+authentication-method inventory from durable Account truth
 provider-first link challenge inspection/confirmation
-explicit Account proof + recent auth + consent before provider-first link
-provider unlink = logical ExternalIdentity revoke, not DELETE
+exact Account proof + recent auth before provider-first link
+provider unlink = logical ExternalIdentity revoke
 Apple unlink = local revoke first + durable grant reconciliation
-no provider email coincidence as link authority
-backend-authoritative active direct-authenticator counts
-Account security lock around all authenticator mutations
+backend-authoritative direct-authenticator counts
+Account security lock around authenticator mutations
 anti-lockout recheck under lock
-passwordless Account requires viable verified recovery EmailIdentity
-establish first PasswordCredential with existing HIBP/Argon2id/pepper policy
-remove PasswordCredential only when anti-lockout still holds
-M4 reset becomes create-or-replace PasswordCredential
-normal password mutation invalidates stale password recovery proof
+passwordless safety requires verified recovery-eligible EmailIdentity
+first PasswordCredential establishment with existing HIBP/Argon2id/pepper policy
+safe PasswordCredential removal
+M4 reset create-or-replace PasswordCredential
+normal password mutation invalidates stale recovery proof
 security-sensitive retained AuthSession rotates exact bearer
-commit ambiguity gets operation-specific reconciliation only
-concurrent provider/password mutations converge against DB constraints/locks
+concurrent password/provider removal preserves one viable authenticator
+operation-specific ambiguous commit reconciliation
 ```
 
-Implementation rule: prefer extracting provider-neutral lifecycle helpers/services where they reduce duplication. Do **not** add more unrelated lifecycle logic to `apple_flow.py` merely because Apple has grant state.
+Provider-neutral lifecycle logic lives outside `apple_flow.py`; Apple grant mechanics remain Apple-specific.
 
-Still out of scope:
-
-```text
-passkey registration/authentication/management
-public M5 FastAPI routes
-OpenAPI/Orval client generation
-Access Web implementation
-real provider/browser/UAT acceptance
-provider-data integration authorization/scopes
-schema/Alembic/Dictionary changes unless direct evidence forces a separately gated forward fix
-```
-
-## 6. Group 2 — M5-F
+## 6. Exact next block — Group 2 / M5-F
 
 Passkeys/WebAuthn join the lifecycle established by Group 1:
 
@@ -199,11 +171,12 @@ signCount + backup-state policy
 label/update/remove
 logical revoke
 Group-1 anti-lockout integration
+canonical DANTE AuthSession only
 ```
 
-## 7. Group 3 — M5-H + M5-I
+Public FastAPI/OpenAPI/client, Access Web and real browser/provider UAT remain later groups.
 
-One delivery pipeline:
+## 7. Group 3 — M5-H + M5-I
 
 ```text
 application services
@@ -218,8 +191,6 @@ application services
 ```
 
 ## 8. Group 4 — M5-J + M5-K+
-
-First materialize the Web product, then run final M5 acceptance without opening another architecture phase.
 
 ```text
 Access Web Google/Apple/passkey/email-password
@@ -245,7 +216,7 @@ real PostgreSQL for DB/race authority
 no flaky Auth hidden behind retries
 no blind retry of non-idempotent provider mutations
 one heavy closeout regression when candidate is ready
-browser/provider proof only when the public/Web surfaces exist
+browser/provider proof only when public/Web surfaces exist
 ```
 
 ## 10. Branch/worktree safety
