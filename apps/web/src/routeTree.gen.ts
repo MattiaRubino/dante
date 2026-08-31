@@ -16,6 +16,7 @@ import { Route as AppProfileRouteImport } from './routes/_app.profile'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
 import { Route as AppTodayRouteImport } from './routes/_app.today'
 import { Route as AppWorldsRouteImport } from './routes/_app.worlds'
+import { Route as AppWorldsWorldIdRouteImport } from './routes/_app.worlds.$worldId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -51,6 +52,11 @@ const AppWorldsRoute = AppWorldsRouteImport.update({
   path: '/worlds',
   getParentRoute: () => AppRoute,
 } as any)
+const AppWorldsWorldIdRoute = AppWorldsWorldIdRouteImport.update({
+  id: '/$worldId',
+  path: '/$worldId',
+  getParentRoute: () => AppWorldsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -58,7 +64,8 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AppProfileRoute
   '/settings': typeof AppSettingsRoute
   '/today': typeof AppTodayRoute
-  '/worlds': typeof AppWorldsRoute
+  '/worlds': typeof AppWorldsRouteWithChildren
+  '/worlds/$worldId': typeof AppWorldsWorldIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -66,7 +73,8 @@ export interface FileRoutesByTo {
   '/profile': typeof AppProfileRoute
   '/settings': typeof AppSettingsRoute
   '/today': typeof AppTodayRoute
-  '/worlds': typeof AppWorldsRoute
+  '/worlds': typeof AppWorldsRouteWithChildren
+  '/worlds/$worldId': typeof AppWorldsWorldIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -76,13 +84,28 @@ export interface FileRoutesById {
   '/_app/profile': typeof AppProfileRoute
   '/_app/settings': typeof AppSettingsRoute
   '/_app/today': typeof AppTodayRoute
-  '/_app/worlds': typeof AppWorldsRoute
+  '/_app/worlds': typeof AppWorldsRouteWithChildren
+  '/_app/worlds/$worldId': typeof AppWorldsWorldIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/home' | '/profile' | '/settings' | '/today' | '/worlds'
+  fullPaths:
+    | '/'
+    | '/home'
+    | '/profile'
+    | '/settings'
+    | '/today'
+    | '/worlds'
+    | '/worlds/$worldId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/home' | '/profile' | '/settings' | '/today' | '/worlds'
+  to:
+    | '/'
+    | '/home'
+    | '/profile'
+    | '/settings'
+    | '/today'
+    | '/worlds'
+    | '/worlds/$worldId'
   id:
     | '__root__'
     | '/'
@@ -92,6 +115,7 @@ export interface FileRouteTypes {
     | '/_app/settings'
     | '/_app/today'
     | '/_app/worlds'
+    | '/_app/worlds/$worldId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -150,15 +174,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppWorldsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/worlds/$worldId': {
+      id: '/_app/worlds/$worldId'
+      path: '/$worldId'
+      fullPath: '/worlds/$worldId'
+      preLoaderRoute: typeof AppWorldsWorldIdRouteImport
+      parentRoute: typeof AppWorldsRoute
+    }
   }
 }
+
+interface AppWorldsRouteChildren {
+  AppWorldsWorldIdRoute: typeof AppWorldsWorldIdRoute
+}
+
+const AppWorldsRouteChildren: AppWorldsRouteChildren = {
+  AppWorldsWorldIdRoute: AppWorldsWorldIdRoute,
+}
+
+const AppWorldsRouteWithChildren = AppWorldsRoute._addFileChildren(
+  AppWorldsRouteChildren,
+)
 
 interface AppRouteChildren {
   AppHomeRoute: typeof AppHomeRoute
   AppProfileRoute: typeof AppProfileRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppTodayRoute: typeof AppTodayRoute
-  AppWorldsRoute: typeof AppWorldsRoute
+  AppWorldsRoute: typeof AppWorldsRouteWithChildren
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -166,7 +209,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppProfileRoute: AppProfileRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppTodayRoute: AppTodayRoute,
-  AppWorldsRoute: AppWorldsRoute,
+  AppWorldsRoute: AppWorldsRouteWithChildren,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
