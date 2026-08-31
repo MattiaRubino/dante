@@ -271,13 +271,11 @@ class ProviderFlowService:
     ) -> ProviderEnrollmentRequired:
         """Resolve one provider enrollment without exposing provider identity internals."""
         now = datetime.now(UTC)
-        challenge = await self._read_provider_enrollment(external_signup_ref)
-        self._require_enrollment_challenge(
-            challenge,
+        challenge = self._require_enrollment_challenge(
+            await self._read_provider_enrollment(external_signup_ref),
             continuation_secret=continuation_secret,
             now=now,
         )
-        assert challenge is not None
         return ProviderEnrollmentRequired(
             external_signup_ref=challenge.external_signup_ref,
             continuation_secret=SecretStr(continuation_secret),
@@ -309,17 +307,15 @@ class ProviderFlowService:
         database_session = self._session_factory()
         try:
             await database_session.begin()
-            challenge = await database_session.scalar(
-                select(ExternalSignupChallengeRow)
-                .where(ExternalSignupChallengeRow.external_signup_ref == external_signup_ref)
-                .with_for_update()
-            )
-            self._require_enrollment_challenge(
-                challenge,
+            challenge = self._require_enrollment_challenge(
+                await database_session.scalar(
+                    select(ExternalSignupChallengeRow)
+                    .where(ExternalSignupChallengeRow.external_signup_ref == external_signup_ref)
+                    .with_for_update()
+                ),
                 continuation_secret=continuation_secret,
                 now=now,
             )
-            assert challenge is not None
             expires_at = challenge.expires_at
             verification_expires_at = min(expires_at, now + self._provider_otp_ttl())
             challenge.email_address = normalized.address
@@ -365,13 +361,11 @@ class ProviderFlowService:
         """Rotate provider-enrollment OTP after the governed resend cooldown."""
         await self._limiters.enrollment.consume(source_context, code="auth.provider_rate_limited")
         now = datetime.now(UTC)
-        challenge = await self._read_provider_enrollment(external_signup_ref)
-        self._require_enrollment_challenge(
-            challenge,
+        challenge = self._require_enrollment_challenge(
+            await self._read_provider_enrollment(external_signup_ref),
             continuation_secret=continuation_secret,
             now=now,
         )
-        assert challenge is not None
         if challenge.email_comparison_key is None:
             raise ProviderEnrollmentInvalidOrExpiredError()
         await self._limiters.enrollment.consume(
@@ -386,17 +380,15 @@ class ProviderFlowService:
         database_session = self._session_factory()
         try:
             await database_session.begin()
-            locked = await database_session.scalar(
-                select(ExternalSignupChallengeRow)
-                .where(ExternalSignupChallengeRow.external_signup_ref == external_signup_ref)
-                .with_for_update()
-            )
-            self._require_enrollment_challenge(
-                locked,
+            locked = self._require_enrollment_challenge(
+                await database_session.scalar(
+                    select(ExternalSignupChallengeRow)
+                    .where(ExternalSignupChallengeRow.external_signup_ref == external_signup_ref)
+                    .with_for_update()
+                ),
                 continuation_secret=continuation_secret,
                 now=now,
             )
-            assert locked is not None
             if locked.email_address is None or locked.verification_issued_at is None:
                 await database_session.rollback()
                 raise ProviderEnrollmentInvalidOrExpiredError()
@@ -469,17 +461,15 @@ class ProviderFlowService:
         database_session = self._session_factory()
         try:
             await database_session.begin()
-            challenge = await database_session.scalar(
-                select(ExternalSignupChallengeRow)
-                .where(ExternalSignupChallengeRow.external_signup_ref == external_signup_ref)
-                .with_for_update()
-            )
-            self._require_enrollment_challenge(
-                challenge,
+            challenge = self._require_enrollment_challenge(
+                await database_session.scalar(
+                    select(ExternalSignupChallengeRow)
+                    .where(ExternalSignupChallengeRow.external_signup_ref == external_signup_ref)
+                    .with_for_update()
+                ),
                 continuation_secret=continuation_secret,
                 now=now,
             )
-            assert challenge is not None
             if (
                 challenge.email_address is None
                 or challenge.email_comparison_key is None
@@ -530,7 +520,7 @@ class ProviderFlowService:
                     now=now,
                 )
             else:
-                self._stage_account_from_enrollment(
+                await self._stage_account_from_enrollment(
                     database_session,
                     snapshot=snapshot,
                     account_ref=account_ref,
@@ -851,7 +841,9 @@ class ProviderFlowService:
         database_session = self._session_factory()
         try:
             await database_session.begin()
-            await database_session.execute(select(func.dante.acquire_account_security_lock(account_ref)))
+            await database_session.execute(
+                select(func.dante.acquire_account_security_lock(account_ref))
+            )
             account = await database_session.scalar(
                 select(AccountRow).where(AccountRow.account_ref == account_ref)
             )
@@ -921,7 +913,9 @@ class ProviderFlowService:
         evidence: GoogleIdentityEvidence,
     ) -> ProviderAuthenticationResult:
         if evidence.email is None or not evidence.mailbox_authoritative:
-            raise AuthIntegrityError("Google Account creation requires authoritative mailbox evidence")
+            raise AuthIntegrityError(
+                "Google Account creation requires authoritative mailbox evidence"
+            )
 
         account_ref = uuid7()
         email_identity_ref = uuid7()
@@ -940,7 +934,7 @@ class ProviderFlowService:
                 issuer=evidence.issuer,
                 subject=evidence.subject,
             )
-            self._stage_google_account(
+            await self._stage_google_account(
                 database_session,
                 evidence=evidence,
                 account_ref=account_ref,
@@ -1199,7 +1193,9 @@ class ProviderFlowService:
                 return_target = ProviderReturnTarget(row.return_target_code)
             except ValueError as exc:
                 await database_session.rollback()
-                raise AuthIntegrityError("stored provider transaction vocabulary is invalid") from exc
+                raise AuthIntegrityError(
+                    "stored provider transaction vocabulary is invalid"
+                ) from exc
 
             row.claimed_at = now
             claimed = _ClaimedTransaction(
@@ -1251,8 +1247,7 @@ class ProviderFlowService:
             or persisted.expected_issuer != claimed.expected_issuer
             or persisted.purpose_code != claimed.purpose.value
             or persisted.auth_session_ref != claimed.auth_session_ref
-            or persisted.auth_session_secret_verifier
-            != claimed.auth_session_secret_verifier
+            or persisted.auth_session_secret_verifier != claimed.auth_session_secret_verifier
             or persisted.return_target_code != claimed.return_target.value
         ):
             raise AuthServiceUnavailableError(retryable=False)
@@ -1388,10 +1383,8 @@ class ProviderFlowService:
         )
         if account is None or account.status_code != "active" or current is None:
             raise ProviderTransactionInvalidOrExpiredError()
-        if (
-            current.expires_at <= now
-            or current.last_user_activity_at
-            <= now - timedelta(seconds=self._settings.session_idle_timeout_seconds)
+        if current.expires_at <= now or current.last_user_activity_at <= now - timedelta(
+            seconds=self._settings.session_idle_timeout_seconds
         ):
             raise ProviderTransactionInvalidOrExpiredError()
         if require_recent and (
@@ -1472,7 +1465,7 @@ class ProviderFlowService:
             identity.email_identity_ref = email_identity_ref
         ProviderFlowService._refresh_google_identity_metadata(identity, evidence=evidence, now=now)
 
-    def _stage_google_account(
+    async def _stage_google_account(
         self,
         database_session: AsyncSession,
         *,
@@ -1530,11 +1523,12 @@ class ProviderFlowService:
                 ),
             ]
         )
+        await database_session.flush()
         bootstrap = self._profile_bootstrap_row(account_ref=account_ref, evidence=evidence, now=now)
         if bootstrap is not None:
             database_session.add(bootstrap)
 
-    def _stage_account_from_enrollment(
+    async def _stage_account_from_enrollment(
         self,
         database_session: AsyncSession,
         *,
@@ -1590,6 +1584,7 @@ class ProviderFlowService:
                 ),
             ]
         )
+        await database_session.flush()
         bootstrap = self._profile_bootstrap_from_snapshot(
             account_ref=account_ref,
             snapshot=snapshot,
@@ -1684,12 +1679,13 @@ class ProviderFlowService:
                 self._session_factory() as database_session,
                 database_session.begin(),
             ):
-                return await database_session.scalar(
+                row: ExternalIdentityRow | None = await database_session.scalar(
                     select(ExternalIdentityRow).where(
                         ExternalIdentityRow.issuer == issuer,
                         ExternalIdentityRow.subject == subject,
                     )
                 )
+                return row
         except SQLAlchemyError as exc:
             raise AuthServiceUnavailableError(retryable=True) from exc
 
@@ -1699,9 +1695,12 @@ class ProviderFlowService:
                 self._session_factory() as database_session,
                 database_session.begin(),
             ):
-                return await database_session.scalar(
-                    select(EmailIdentityRow).where(EmailIdentityRow.comparison_key == comparison_key)
+                row: EmailIdentityRow | None = await database_session.scalar(
+                    select(EmailIdentityRow).where(
+                        EmailIdentityRow.comparison_key == comparison_key
+                    )
                 )
+                return row
         except SQLAlchemyError as exc:
             raise AuthServiceUnavailableError(retryable=True) from exc
 
@@ -1715,12 +1714,13 @@ class ProviderFlowService:
                 self._session_factory() as database_session,
                 database_session.begin(),
             ):
-                return await database_session.scalar(
+                row: EmailIdentityRow | None = await database_session.scalar(
                     select(EmailIdentityRow).where(
                         EmailIdentityRow.email_identity_ref == email_identity_ref,
                         EmailIdentityRow.account_ref == account_ref,
                     )
                 )
+                return row
         except SQLAlchemyError as exc:
             raise AuthServiceUnavailableError(retryable=True) from exc
 
@@ -1733,11 +1733,12 @@ class ProviderFlowService:
                 self._session_factory() as database_session,
                 database_session.begin(),
             ):
-                return await database_session.scalar(
+                row: ExternalAuthTransactionRow | None = await database_session.scalar(
                     select(ExternalAuthTransactionRow).where(
                         ExternalAuthTransactionRow.external_auth_transaction_ref == transaction_ref
                     )
                 )
+                return row
         except SQLAlchemyError as exc:
             raise AuthServiceUnavailableError(retryable=False) from exc
 
@@ -1750,11 +1751,12 @@ class ProviderFlowService:
                 self._session_factory() as database_session,
                 database_session.begin(),
             ):
-                return await database_session.scalar(
+                row: ExternalSignupChallengeRow | None = await database_session.scalar(
                     select(ExternalSignupChallengeRow).where(
                         ExternalSignupChallengeRow.external_signup_ref == external_signup_ref
                     )
                 )
+                return row
         except SQLAlchemyError as exc:
             raise AuthServiceUnavailableError(retryable=True) from exc
 
@@ -2079,7 +2081,7 @@ class ProviderFlowService:
         *,
         continuation_secret: str,
         now: datetime,
-    ) -> None:
+    ) -> ExternalSignupChallengeRow:
         if (
             challenge is None
             or challenge.expires_at <= now
@@ -2090,6 +2092,7 @@ class ProviderFlowService:
             )
         ):
             raise ProviderEnrollmentInvalidOrExpiredError()
+        return challenge
 
     def _require_recent_auth(self, admitted: AdmittedSession) -> None:
         deadline = admitted.principal.recent_auth_at + timedelta(
@@ -2289,8 +2292,7 @@ class ProviderFlowService:
             and hmac.compare_digest(persisted.state_verifier, expected.state_verifier)
             and hmac.compare_digest(persisted.nonce_verifier, expected.nonce_verifier)
             and persisted.auth_session_ref == expected.auth_session_ref
-            and persisted.auth_session_secret_verifier
-            == expected.auth_session_secret_verifier
+            and persisted.auth_session_secret_verifier == expected.auth_session_secret_verifier
             and persisted.return_target_code == expected.return_target_code
             and persisted.created_at == expected.created_at
             and persisted.expires_at == expected.expires_at
