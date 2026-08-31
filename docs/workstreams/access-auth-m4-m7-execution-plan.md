@@ -1,17 +1,17 @@
 # DANTE — Access/Auth M4–M7 Execution Plan
 
-- **Status:** CURRENT EXECUTION PLAN / M4 CLOSED / M5 ACTIVE / M5.1–M5-D COMPLETE
+- **Status:** CURRENT EXECUTION PLAN / M4 CLOSED / M5 ACTIVE / GROUP 1 COMPLETE
 - **Vertical:** Access/Auth
 - **Branch:** `feature/access-auth`
 - **Worktree:** `/home/mattia/projects/dante`
-- **Exact next execution block:** **GROUP 1 — M5-E + M5-G**
-- **M5-D accepted implementation checkpoint:** `7d13b712f032e8d41d7cf03d406555fd9f3c0160`
-- **M5-D docs closure:** `1cc331851d52d39f42e922147f300e0370649670`
+- **Exact next execution block:** **GROUP 2 — M5-F — WebAuthn / Passkeys**
+- **Accepted Group-1 code checkpoint:** `1c4b7c988eaae130d6a90d43940a42e2a550870d`
+- **Accepted Alembic head:** `20260831_13`
 - **Architecture authority:** `../architecture/access-auth-m5-contract.md`
 - **Exact M5 design authority:** `../architecture/access-auth-m5-persistence-api-contract.md`
 - **Live handoff:** `access-auth-m5-live-handoff-2026-08-29.md`
 
-> This plan is the current execution authority. The M5-E/F/G/H/I/J/K+ labels remain semantic ownership labels from the frozen M5 design; they no longer imply seven sequential implementation gates.
+> This plan is the current execution authority. The M5-E/F/G/H/I/J/K+ labels remain semantic ownership labels from the frozen M5 design; they do not imply seven sequential implementation gates.
 
 ## 1. Continuation rules
 
@@ -75,32 +75,34 @@ M5-A persistence foundations                           COMPLETE / REAL POSTGRESQ
 M5-B provider/JWK/JOSE/AEAD/WebAuthn infrastructure    COMPLETE / ENGINEERING PASS
 M5-C Google authentication                             COMPLETE / ENGINEERING PASS
 M5-D Apple authentication + grant/notifications        COMPLETE / ENGINEERING PASS
+GROUP 1 / M5-E + M5-G                                  COMPLETE / ENGINEERING PASS
 ```
 
-M5-D proof:
+Group-1 proof:
 
 ```text
-uv lock --check                              PASS
+uv lock --check                              PASS / 57 packages
 Ruff format/check/lint                       PASS
-mypy                                         PASS
-backend fast                                 171 / 171 PASS
-focused PostgreSQL M5-D                       9 / 9 PASS
-full PostgreSQL regression                   111 / 111 PASS
+mypy src                                     PASS / 50 source files
+backend fast                                 179 / 179 PASS
+focused PostgreSQL Group 1                   16 / 16 PASS
+full PostgreSQL regression                   120 / 120 PASS
 backend build                                PASS
 git diff --check                             PASS
 scope audit                                  PASS
 ```
 
-Current accepted DB remains Alembic `20260830_12`, PostgreSQL 18.6, 83 tables, 5 views, 15 routines, 75 triggers, 156 physical indexes, 85 FKs, 233 CHECKs and 103 standalone Dictionary entries.
+Current accepted DB is Alembic `20260831_13`, PostgreSQL 18.6, 83 tables, 5 views, 15 routines, 75 triggers, 156 physical indexes, 85 FKs, 233 CHECKs and 103 standalone Dictionary entries. `20260831_13` is ACL-only and grants the governed runtime DELETE required for password removal.
 
 ## 4. Remaining M5 — four execution groups
 
 ```text
-GROUP 1 — NEXT
+GROUP 1
 M5-E + M5-G
 Authenticator Lifecycle + Password/Passwordless Adaptation
+COMPLETE / ENGINEERING PASS
 
-GROUP 2
+GROUP 2 — NEXT
 M5-F
 WebAuthn / Passkeys
 
@@ -115,82 +117,31 @@ Access Web + Security / Provider / Browser / UAT / Acceptance
 
 Execution order is Group 1 → Group 2 → Group 3 → Group 4. Do not restore the old E→F→G→H→I→J→K sequence.
 
-# 5. GROUP 1 — M5-E + M5-G — NEXT
+# 5. GROUP 1 — M5-E + M5-G — COMPLETE
 
-## Purpose
-
-Create one Account-wide direct-authenticator lifecycle for provider identities and PasswordCredential before passkeys join that model.
-
-## Functional scope
+Accepted result:
 
 ```text
 authentication-method inventory from durable Account truth
 provider-first link challenge inspection + confirmation
-provider link finalization after exact Account proof + recent auth + consent
+provider link finalization after exact Account proof + recent auth
 safe provider unlink / logical ExternalIdentity revoke
-Apple grant revocation lifecycle on unlink
+Apple local-first identity/grant revoke with remote reconciliation handoff
 backend-authoritative direct-authenticator counting
 recovery-eligible EmailIdentity determination
 anti-lockout under Account security lock
 establish first PasswordCredential
 remove PasswordCredential safely
-M4 password reset adapts to create-or-replace PasswordCredential
+M4 password reset create-or-replace PasswordCredential
 normal password mutation invalidates pending recovery proof
 security-sensitive retained session rotates exact bearer
+concurrent provider/password removals preserve a viable authenticator
+operation-specific ambiguous commit reconciliation
 ```
 
-## Concurrency/security scope
+Provider-neutral lifecycle logic is outside `apple_flow.py`; Apple grant mechanics remain Apple-specific.
 
-```text
-link confirm vs competing issuer+subject link
-unlink vs concurrent signin/reauth
-unlink vs Account disable
-provider unlink vs password removal
-password establish vs recovery reset
-password remove vs recovery reset
-concurrent authenticator removals
-recovery reachability changes vs passwordless safety decision
-same AuthSession bearer rotation races
-ambiguous commit reconciliation
-```
-
-Account-wide mutations serialize on the existing Account security lock. Database constraints remain the final arbiter.
-
-## Architecture rule
-
-Provider-neutral lifecycle logic belongs in provider-neutral application code. Do not extend `apple_flow.py` with generic methods/anti-lockout/password responsibilities. Apple-specific grant revoke/reconciliation remains Apple-specific and should be called through a narrow boundary.
-
-## Group-1 closure proof
-
-Candidate must prove, at minimum:
-
-```text
-Ruff format/check/lint
-mypy
-fast backend suite
-focused unit/service lifecycle tests
-focused real PostgreSQL Group-1 races/state transitions
-full PostgreSQL regression before final Group-1 acceptance
-backend build
-git diff --check
-scope audit
-```
-
-No browser/provider real-UAT gate in Group 1 because public API/Web surfaces are not materialized yet.
-
-## Explicitly out of Group 1
-
-```text
-passkey ceremonies or passkey credential management
-public FastAPI M5 routes
-OpenAPI / Orval generation
-Access Web UI
-real provider/browser UAT
-provider-data integration scopes
-schema/Alembic/Dictionary change unless direct evidence forces a separately approved forward fix
-```
-
-# 6. GROUP 2 — M5-F — Passkeys / WebAuthn
+# 6. GROUP 2 — M5-F — Passkeys / WebAuthn — NEXT
 
 ## Purpose
 
@@ -199,30 +150,67 @@ Add WebAuthn credentials as another direct authenticator under the lifecycle/ant
 ## Scope
 
 ```text
-stable opaque 32-byte WebAuthn user_handle
+stable opaque random 32-byte WebAuthn user_handle
 registration begin/complete
+authenticated Account + recent auth for registration
 resident credential required direction
 user verification required
 attestation none
+exact RP ID and allowed origin
+short single-use challenge
 discoverable username-less authentication
 passkey reauthentication on same AuthSession
 multiple passkeys
 credential-id lifetime uniqueness
 COSE algorithm persistence
-signCount / backup-state verified update policy
+signCount / backup eligibility / backup-state verified update policy
+bounded transport hints
 label/update/remove
 logical revoke
-anti-lockout integration
+Group-1 anti-lockout integration
 canonical DANTE AuthSession only
 ```
+
+## Concurrency/security scope
+
+```text
+registration duplicate credential race
+registration completion replay
+signin assertion vs credential removal
+reauth assertion vs bearer rotation
+concurrent passkey removals
+passkey removal vs password/provider removal
+challenge consume races
+signCount / backup-state update races
+Account disable vs registration/authentication
+ambiguous commit reconciliation where mutation outcome can be safely proven
+```
+
+Account-wide mutation continues to serialize on the existing Account security lock. Database uniqueness remains final arbiter.
 
 ## Proof
 
 ```text
-protocol/policy unit vectors
-real PostgreSQL credential/challenge/race proof
-full backend regressions at candidate gate
-real browser/WebAuthn UAT deferred to Group 4
+Ruff format/check/lint
+mypy
+fast protocol/policy/service tests
+focused real PostgreSQL credential/challenge/race proof
+full backend/PostgreSQL regressions at candidate gate when shared state justifies it
+backend build
+git diff --check
+scope audit
+```
+
+Real browser/WebAuthn UAT is deferred to Group 4 because public FastAPI/Web surfaces are not yet materialized.
+
+## Explicitly out of Group 2
+
+```text
+public M5 FastAPI routes
+OpenAPI / Orval generation
+Access Web UI
+real provider/browser/WebAuthn UAT
+provider-data integration scopes
 ```
 
 # 7. GROUP 3 — M5-H + M5-I — Public API + Governed Client
@@ -243,11 +231,7 @@ application services from Groups 1–2
 → schema/client drift + deterministic-generation proof
 ```
 
-No frontend route may redefine provider/authenticator semantics independently.
-
 # 8. GROUP 4 — M5-J + M5-K+ — Web + Final M5 Acceptance
-
-This is one macro-block with two internal gates.
 
 ## Gate A — Web product materialization
 
@@ -265,8 +249,6 @@ smart provider-enriched onboarding
 loading/pending/cancel/error/recovery states
 hard-refresh backend-authoritative session truth
 ```
-
-Official provider branding only. No provider credential imitation and no frontend-authoritative auth success.
 
 ## Gate B — final M5 proof / acceptance
 
@@ -315,8 +297,8 @@ M5 ACTIVE
   M5-C COMPLETE / ENGINEERING PASS
   M5-D COMPLETE / ENGINEERING PASS
 
-  GROUP 1  M5-E + M5-G  NEXT
-  GROUP 2  M5-F         PLANNED
+  GROUP 1  M5-E + M5-G  COMPLETE / ENGINEERING PASS
+  GROUP 2  M5-F         NEXT
   GROUP 3  M5-H + M5-I  PLANNED
   GROUP 4  M5-J + M5-K+ PLANNED
 
