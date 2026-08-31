@@ -1,0 +1,115 @@
+.world-focus-visual-frame {
+  contain: strict;
+}
+
+.world-focus-ambient-field {
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 74% 98% at -2% 48%, color-mix(in srgb, var(--world-focus-accent) 20%, transparent), transparent 62%),
+    radial-gradient(ellipse 72% 96% at 102% 52%, color-mix(in srgb, var(--world-focus-hot) 15%, transparent), transparent 63%),
+    radial-gradient(ellipse 54% 42% at 48% 16%, color-mix(in srgb, var(--world-focus-violet) 8%, transparent), transparent 76%),
+    linear-gradient(180deg, #050817 0%, #02040e 48%, #010208 100%);
+}
+
+.world-focus-ambient-field::after {
+  background:
+    radial-gradient(ellipse 34% 24% at 28% 46%, color-mix(in srgb, var(--world-focus-accent) 7%, transparent), transparent 72%),
+    radial-gradient(ellipse 31% 23% at 73% 56%, color-mix(in srgb, var(--world-focus-hot) 5%, transparent), transparent 74%);
+  filter: blur(36px);
+  opacity: 0.72;
+}
+
+.world-focus-corona-fallback-svg,
+.world-focus-corona-reference-overlay,
+.world-focus-corona-energy-renderer,
+.world-focus-energy-layer,
+.world-focus-energy-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.world-focus-corona-fallback-svg,
+.world-focus-corona-reference-overlay {
+  overflow: hidden;
+}
+
+.world-focus-corona-fallback-svg {
+  z-index: 1;
+  opacity: 0.34;
+  mix-blend-mode: screen;
+}
+
+.world-focus-fallback-energy {
+  vector-effect: non-scaling-stroke;
+}
+
+.world-focus-fallback-energy--broad {
+  stroke-width: 39;
+  opacity: 0.32;
+}
+
+.world-focus-fallback-energy--core {
+  stroke-width: 8;
+  opacity: 0.5;
+}
+
+.world-focus-corona-energy-renderer {
+  z-index: 2;
+}
+
+.world-focus-energy-layer {
+  overflow: hidden;
+}
+
+.world-focus-energy-canvas {
+  display: block;
+  background: transparent;
+}
+
+.world-focus-energy-fallback {
+  display: none;
+}
+
+.world-focus-corona-reference-overlay {
+  z-index: 3;
+  mix-blend-mode: screen;
+}
+
+.world-focus-corona-reference {
+  vector-effect: non-scaling-stroke;
+  stroke-linecap: round;
+}
+
+.world-focus-corona-reference--outer,
+.world-focus-corona-reference--inner {
+  stroke: color-mix(in srgb, var(--world-focus-accent) 58%, white);
+  stroke-width: 0.65;
+  opacity: 0.045;
+}
+
+.world-focus-corona-reference--origin {
+  stroke: rgba(255, 248, 236, 0.7);
+  stroke-width: 0.85;
+  stroke-dasharray: 1 13 76 17 2 9 31 21;
+  opacity: 0.1;
+}
+
+@media (max-width: 720px) {
+  .world-focus-corona-fallback-svg {
+    opacity: 0.28;
+  }
+
+  .world-focus-fallback-energy--broad {
+    stroke-width: 30;
+  }
+
+  .world-focus-fallback-energy--core {
+    stroke-width: 6;
+  }
+
+  .world-focus-ambient-field::after {
+    filter: blur(28px);
+  }
+}
