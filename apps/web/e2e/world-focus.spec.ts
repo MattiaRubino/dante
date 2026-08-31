@@ -23,16 +23,24 @@ test('Home opens the centered World into the immersive focus and browser back pr
 
   await music.click();
   await expect(page).toHaveURL(/\/home\?focus=music$/);
+  const focus = page.locator('.world-focus-shell');
+  const topbar = page.locator('[data-app-region="topbar"]');
   await expect(page.getByRole('main', { name: 'Mondo Musica' })).toBeVisible();
-  await expect(page.locator('.world-focus-shell')).toHaveAttribute(
-    'data-entry-origin',
-    'live',
-  );
-  await expect(page.locator('.world-focus-shell')).toHaveAttribute(
-    'data-world-focus-status',
-    'ready',
-  );
-  await expect(page.locator('[data-app-region="topbar"]')).toBeHidden();
+  await expect(focus).toHaveAttribute('data-entry-origin', 'live');
+  await expect(focus).toHaveAttribute('data-world-focus-status', 'ready');
+  await expect(topbar).toBeVisible();
+  await expect(focus).toHaveAttribute('data-entry-phase', 'entering');
+  await expect(focus).toHaveAttribute('data-entry-phase', 'settled', {
+    timeout: 3_000,
+  });
+
+  const topbarBox = await topbar.boundingBox();
+  const focusBox = await focus.boundingBox();
+  expect(topbarBox).not.toBeNull();
+  expect(focusBox).not.toBeNull();
+  if (topbarBox !== null && focusBox !== null) {
+    expect(focusBox.y).toBeGreaterThanOrEqual(topbarBox.y + topbarBox.height - 1);
+  }
 
   await page.goBack();
   await expect(page).toHaveURL(/\/home$/);
@@ -44,7 +52,7 @@ test('Home opens the centered World into the immersive focus and browser back pr
   );
   await expect(music).toHaveAttribute('aria-current', 'true');
   await expect(music).toBeFocused();
-  await expect(page.locator('[data-app-region="topbar"]')).toBeVisible();
+  await expect(topbar).toBeVisible();
 });
 
 test('dragging the active World does not enter World Focus', async ({ page }) => {
@@ -90,8 +98,10 @@ test('direct World Focus URL has a safe fallback entry and close path', async ({
   const focus = page.locator('.world-focus-shell');
   await expect(focus).toBeVisible();
   await expect(focus).toHaveAttribute('data-entry-origin', 'fallback');
+  await expect(focus).toHaveAttribute('data-entry-phase', 'settled');
   await expect(focus).toHaveAttribute('data-world-focus-status', 'ready');
   await expect(page.getByRole('main', { name: 'Mondo Viaggi' })).toBeVisible();
+  await expect(page.locator('[data-app-region="topbar"]')).toBeVisible();
 
   await page.getByRole('button', { name: 'Torna indietro' }).click();
   await expect(page).toHaveURL(/\/home$/);
@@ -106,10 +116,8 @@ test('reduced motion keeps World Focus usable without ornamental animation', asy
 
   const focus = page.locator('.world-focus-shell');
   await expect(focus).toBeVisible();
-  const animationName = await focus.evaluate(
-    (element) => getComputedStyle(element).animationName,
-  );
-  expect(animationName).toBe('none');
+  await expect(focus).toHaveAttribute('data-entry-phase', 'settled');
+  await expect(page.locator('.world-focus-entry-effect')).toHaveCount(0);
 
   await page.keyboard.press('Escape');
   await expect(page).toHaveURL(/\/home$/);
