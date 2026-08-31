@@ -101,14 +101,20 @@ copy_ledger_build_to_volume() {
 }
 
 copy_ledger_volume_to_readback() {
+  local host_uid host_gid
+  host_uid="$(id -u)"
+  host_gid="$(id -g)"
   rm -rf "$LEDGER_READ"
   mkdir -p "$LEDGER_READ"
   docker run --rm \
+    --user root \
     --entrypoint sh \
+    -e HOST_UID="$host_uid" \
+    -e HOST_GID="$host_gid" \
     -v "${LEDGER_VOL}:/source:ro" \
     -v "${LEDGER_READ}:/dest" \
     "$IMAGE" \
-    -lc 'set -eu; cp -a /source/. /dest/'
+    -lc 'set -eu; cp -a /source/. /dest/; chown -R "$HOST_UID:$HOST_GID" /dest'
 }
 
 cd "$REPO_ROOT"
