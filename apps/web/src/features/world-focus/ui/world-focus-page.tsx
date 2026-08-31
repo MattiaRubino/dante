@@ -38,22 +38,27 @@ const GUIDE_LINE_ROLES = ['outer', 'origin', 'inner'] as const;
 
 type GuideLineRole = (typeof GUIDE_LINE_ROLES)[number];
 
-function WorldFocusCircleGuides() {
+function WorldFocusEllipseGuides() {
   return (
     <svg
-      className="world-focus-circle-guides"
+      className="world-focus-ellipse-guides"
       aria-hidden="true"
       focusable="false"
     >
-      {GUIDE_LINE_ROLES.map((role: GuideLineRole) => (
-        <circle
-          key={role}
-          data-guide-line={role}
-          cx="50%"
-          cy="50%"
-          r={WORLD_FOCUS_GEOMETRY.guideRadii[role]}
-        />
-      ))}
+      {GUIDE_LINE_ROLES.map((role: GuideLineRole) => {
+        const geometry = WORLD_FOCUS_GEOMETRY.guideEllipses[role];
+
+        return (
+          <ellipse
+            key={role}
+            data-guide-line={role}
+            cx="50%"
+            cy="50%"
+            rx={geometry.rx}
+            ry={geometry.ry}
+          />
+        );
+      })}
     </svg>
   );
 }
@@ -147,7 +152,7 @@ export function WorldFocusPage({
     >
       <h1 className="world-focus-visually-hidden">{label}</h1>
 
-      <WorldFocusCircleGuides />
+      <WorldFocusEllipseGuides />
 
       <button
         className="world-focus-back"
