@@ -39,14 +39,17 @@ Backend CP1–CP5 Scaffold
 Backend CP6 Concrete PostgreSQL Database
         CLOSED / DIRECT QA PASS / INTEGRATED VIA PR #42
           ↓
+PostgreSQL LOCAL Recovery
+        CP01–CP07 CLOSED / LOCAL PASS / INTEGRATED VIA PR #47
+          ↓
 Access Pre-Backend Web Materialization
         CLOSED / ACCEPTED / RELEASE-HARDENED
         AF-01D / AF-02A / AF-02B / AF-03A PASS
 ```
 
-Architecture closure remains distinct from product/runtime completion. Closing the pre-backend Access frontend does not close the real full-stack Access/Auth product vertical.
+Architecture closure remains distinct from product/runtime completion. Closing the pre-backend Access frontend does not close the real full-stack Access/Auth product vertical. Closing LOCAL PostgreSQL Recovery does not claim remote/cloud production recovery.
 
-## 2. CP6 is complete
+## 2. CP6 and PostgreSQL Recovery are complete
 
 CP6 converted the closed Domain + Logical + Physical model into the concrete DANTE PostgreSQL database.
 
@@ -61,7 +64,7 @@ CP6      CLOSED / CONCRETE POSTGRESQL DATABASE PASS
          INTEGRATED VIA PR #42
 ```
 
-Pre-recovery protected-main CP6 baseline:
+Historical pre-recovery CP6 baseline:
 
 ```text
 PostgreSQL          18.6
@@ -75,9 +78,10 @@ Alembic             20260826_08
 120 CHECK constraints
 ```
 
-Post-CP6 recovery evolution in this tree:
+Current protected-main database / Recovery baseline:
 
 ```text
+PostgreSQL          18.6
 Alembic             20260830_09
 69 tables
 5 views
@@ -87,23 +91,29 @@ Alembic             20260830_09
 69 foreign keys
 123 CHECK constraints
 CP01–CP07           LOCAL PASS / CLOSED
+Recovery            INTEGRATED VIA PR #47
+remote provider     TBD / NOT ACTIVATED
+cloud recovery      NOT CLAIMED
 ```
 
-The newer database/recovery contract remains branch-local until integrated; live Git refs determine protected-main state.
+PR #47 integrated the closed Recovery branch into protected `main` with merge commit `bdd2b2370d41423dbaecd00fde86bb2bf2466f2b`. Recovery is therefore no longer an integration candidate or active branch boundary.
 
-CP6 is historical implementation/acceptance work now. Do not route new work through old Gate 03, DB-U*, CP6-04 or protected-main-alignment steps.
+CP6 and Recovery checkpoint chronology are historical implementation/acceptance work now. Do not route new work through old Gate 03, DB-U*, CP6-04, Recovery CP01–CP07 or protected-main-alignment steps.
 
-Current database authority:
+Current database / Recovery authority:
 
 - `database/README.md`
 - `database/dictionary/`
+- `operations/postgres-recovery-runbook.md`
 - `development/backend-cp6-02-postgresql-persistence-constitution.md`
 - `decisions/ADR-010-postgresql-persistence-constitution.md`
 - `development/backend-cp6-05-whole-database-qa.md`
+- executable Recovery harnesses under `../infra/local/postgres/recovery/`
 
-Historical branch record:
+Historical branch records:
 
 - `archive/branches/2026-08-feature-logical-postgresql.md`
+- `archive/branches/2026-08-feature-postgres-recovery.md`
 
 ## 3. Access frontend materialization is closed
 
@@ -128,12 +138,13 @@ The project is no longer waiting to start its first post-CP6 vertical. At the 20
 feature/access-auth             active full-stack product work
 feature/home-react              active frontend work
 feature/platform-observability  active platform work
-feature/postgres-recovery       CP01–CP07 LOCAL PASS / CLOSED / integration candidate
 ```
 
-These branches are intentionally independent and own only their bounded truth until integration. Do not collapse them into a single mega-branch and do not rewrite protected-main truth from an unmerged branch.
+PostgreSQL Recovery is intentionally absent from this list because it is closed and integrated via PR #47.
 
-## 5. Database evolution after CP6
+These active branches are intentionally independent and own only their bounded truth until integration. Do not collapse them into a single mega-branch and do not rewrite protected-main truth from an unmerged branch.
+
+## 5. Database evolution after CP6 / Recovery
 
 Permanent same-change rule:
 
@@ -145,9 +156,12 @@ real structural database change
 → human-readable reference update when meaning/topology changes
 → generated artifacts/diagrams where governed
 → direct tests
+→ affected recovery/operational assertions updated when head/topology changes
 ```
 
-Applied revisions are immutable. A product vertical may reveal a legitimate schema evolution need; that becomes a normal reviewed forward change and does not reopen CP6.
+Applied revisions are immutable. A product vertical may reveal a legitimate schema evolution need; that becomes a normal reviewed forward change and does not reopen CP6 or the closed Recovery workstream.
+
+The current protected-main migration baseline is `20260830_09`. Any branch-local migration chain created from an older common baseline must be explicitly reconciled before its own integration rather than creating accidental multiple Alembic heads.
 
 ## 6. Capability-triggered implementation
 
@@ -173,7 +187,7 @@ PgBouncer
 → concrete connection-management need + direct validation
 
 pgBackRest LOCAL recovery
-→ implemented and directly rehearsed
+→ implemented, directly rehearsed and integrated via PR #47
 
 remote backup provider
 → TBD; trigger only at a real production deployment boundary
@@ -227,6 +241,7 @@ completed branch history is retained only when materially useful
 historical evidence is explicitly non-authoritative
 frozen split documents are compacted only when lossless knowledge coverage is proven
 Git remains the complete recoverable chronology
+post-merge documentation must be reconciled from candidate state to protected-main state
 ```
 
 Current authority:
@@ -252,17 +267,18 @@ UNMERGED BRANCH TRUTH != PROTECTED-main TRUTH
 DATABASE MATERIALIZATION != PRODUCT APPLICATION IMPLEMENTATION
 DETERMINABLE SCHEMA EVOLUTION != SPECULATIVE PRE-MATERIALIZATION
 TEMPORARY HANDOFF != DURABLE main DOCUMENTATION
+MERGED BRANCH CANDIDATE STATE != CURRENT protected-main STATUS
 ```
 
 ## 11. Immediate sequence
 
 ```text
-1. finish and integrate each active bounded workstream only after its own acceptance gate
-2. treat feature/postgres-recovery as a closed LOCAL recovery integration candidate
-3. continue feature/access-auth, feature/home-react and feature/platform-observability independently
+1. Recovery is CLOSED / integrated; do not resume feature/postgres-recovery
+2. continue feature/access-auth, feature/home-react and feature/platform-observability independently
+3. before each integration, reconcile the active branch against the then-current protected-main baseline
 4. evolve the database only through same-change forward migrations when a real vertical requires it
 5. keep remote backup/cloud recovery deferred until production deployment creates a real need
-6. apply documentation lifecycle cleanup before each branch integration
+6. apply documentation lifecycle cleanup before integration AND post-merge current-state reconciliation afterward
 7. use live Git refs and branch-local authority rather than stale global assumptions
 ```
 

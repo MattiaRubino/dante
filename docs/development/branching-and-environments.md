@@ -103,6 +103,8 @@ After merge:
 - verify PR `merged=true`;
 - verify exact merge parentage/tree relation;
 - inspect push-main CI where it exists and can be read;
+- reconcile any candidate-state/current-document wording to the actual protected-main state;
+- repair references to temporary/workstream overlays deliberately removed before integration;
 - record unavailable/nonexistent evidence as unavailable rather than inventing PASS;
 - close/archive/delete the feature branch only after the integration result is verified.
 
@@ -198,7 +200,14 @@ While one regular maintainer exists:
 
 ## 12. Current branch/workstream truth
 
-Protected `main` contains the integrated CP1–CP6 backend/database baseline, with CP6 integrated via PR #42.
+Protected `main` contains the integrated CP1–CP6 backend/database baseline and the closed LOCAL PostgreSQL Recovery evolution:
+
+```text
+CP6                  integrated via PR #42
+PostgreSQL Recovery  CP01–CP07 LOCAL PASS / CLOSED / integrated via PR #47
+current Alembic      20260830_09
+current topology     69|5|15|76|97|69|123|0|0|0
+```
 
 At the 2026-08-31 reconciliation, bounded unmerged work observed in current project authority includes:
 
@@ -206,10 +215,9 @@ At the 2026-08-31 reconciliation, bounded unmerged work observed in current proj
 feature/access-auth             active unmerged product vertical
 feature/home-react              active unmerged frontend workstream
 feature/platform-observability  active unmerged platform workstream
-feature/postgres-recovery       CP01–CP07 LOCAL PASS / CLOSED / integration candidate
 ```
 
-`feature/access-frontend` is closed historical branch state. Its accepted frontend result remains baseline evidence, but that branch is not a current resume/integration line.
+`feature/postgres-recovery` and `feature/access-frontend` are closed historical branch state. Their accepted results remain current protected-main/baseline evidence where applicable, but those branches are not current resume/integration lines.
 
 Closed feature branches are not reusable development lines. New work starts from current protected `main` under a fresh bounded branch unless an already-active workstream explicitly continues on its existing branch.
 
@@ -244,6 +252,15 @@ temporary handoffs
 → temporary handoffs deleted
 ```
 
+After merge:
+
+```text
+protected-main readback
+→ candidate-state wording reconciled to merged state
+→ deleted-overlay references repaired
+→ historical branch record remains non-authoritative
+```
+
 Protected `main` must not contain live/session handoff files as current navigation.
 
 See `documentation-lifecycle-policy.md` and `../archive/README.md`.
@@ -263,7 +280,7 @@ Restate
 → first real Class-B durable workflow
 
 pgBackRest LOCAL
-→ already activated and directly rehearsed for LOCAL PostgreSQL recovery
+→ already activated and directly rehearsed for LOCAL PostgreSQL recovery; integrated via PR #47
 
 remote backup provider
 → real production deployment boundary + provider-specific direct proof
@@ -289,18 +306,19 @@ OBSERVABILITY
 continue feature/platform-observability only inside its bounded platform scope
 
 POSTGRESQL RECOVERY
-feature/postgres-recovery has closed LOCAL CP01–CP07
-→ permanent bootstrap/runner/runbook remain reusable
-→ active-workstream overlays are removed during documentation closure
+CLOSED / INTEGRATED VIA PR #47
+→ do not resume feature/postgres-recovery
+→ permanent bootstrap/runner/runbook remain reusable from current protected main
 → remote provider remains TBD until production deployment creates the real boundary
 
 DOCUMENTATION
 apply lifecycle/current-truth cleanup before every integration
 → no live/session handoff on protected main
 → retain at most one useful non-authoritative branch-history record
+→ perform a post-merge current-state/read-link reconciliation before declaring the integration fully closed
 ```
 
-A genuine later database requirement uses a normal forward migration plus same-change database reconciliation. It does not reopen CP6 or `feature/logical-postgresql`.
+A genuine later database requirement uses a normal forward migration plus same-change database reconciliation. It does not reopen CP6, PostgreSQL Recovery or `feature/logical-postgresql`.
 
 ## 17. Persistent rules
 
@@ -309,6 +327,7 @@ BRANCH != ENVIRONMENT
 NEW CHAT != NEW BRANCH
 ACTIVE WORKSTREAM != NEW WORKTREE BY DEFAULT
 UNMERGED BRANCH TRUTH != PROTECTED-main TRUTH
+MERGED BRANCH CANDIDATE STATE != CURRENT protected-main STATUS
 CLOSED BRANCH != PERMANENT DEVELOPMENT LINE
 SELECTED TECHNOLOGY != IMPLEMENTED CAPABILITY
 DOCUMENTED CHECK != LIVE REQUIRED CHECK

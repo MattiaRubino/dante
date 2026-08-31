@@ -4,7 +4,8 @@
 - **Last reconciled:** 2026-08-31
 - **Protected `main`:** integrated source authority; read the live Git ref for the current SHA
 - **Backend CP6 integration:** PR #42 MERGED
-- **Current product boundary:** protected `main` remains integrated authority; Access/Auth, Home React and platform observability have active bounded unmerged workstreams; PostgreSQL recovery CP01–CP07 is locally closed on its integration-candidate branch
+- **PostgreSQL Recovery integration:** PR #47 MERGED / CP01–CP07 LOCAL PASS / CLOSED
+- **Current product boundary:** protected `main` includes the accepted PostgreSQL Recovery evolution; Access/Auth, Home React and platform observability remain bounded unmerged workstreams
 
 ## 1. Executive state
 
@@ -59,18 +60,20 @@ CP6-05 CLOSED / DIRECT QA PASS
 CURRENT POSTGRESQL TECHNICAL PATCH
 18.6
 
-PRE-RECOVERY PROTECTED-MAIN BUSINESS DATABASE BASELINE
+HISTORICAL PRE-RECOVERY CP6 BUSINESS DATABASE BASELINE
 MATERIALIZED / MAPPED / DICTIONARY-RECONCILED / DIRECTLY TESTED
 ALEMBIC 20260826_08
 68 tables / 5 views / 14 routines / 75 triggers /
 95 indexes / 68 FKs / 120 CHECKs
 
-POST-CP6 RECOVERY EVOLUTION IN THIS TREE
+CURRENT PROTECTED-MAIN DATABASE / RECOVERY BASELINE
 ALEMBIC 20260830_09
 69 tables / 5 views / 15 routines / 76 triggers /
 97 indexes / 69 FKs / 123 CHECKs
 CP01–CP07 LOCAL PASS / CLOSED
+RECOVERY INTEGRATED VIA PR #47
 remote backup provider TBD / NOT ACTIVATED
+production/cloud recovery NOT CLAIMED
 
 ACCESS PRE-BACKEND FRONTEND
 CLOSED / ACCEPTED / RELEASE-HARDENED
@@ -92,7 +95,7 @@ Architecture/design closure is not the same as runtime/product completion. Closi
 
 ## 2. Current protected-main backend/database truth
 
-PR #42 integrated the completed CP6 branch into protected `main` through the required merge-commit path.
+PR #42 integrated the completed CP6 branch into protected `main` through the required merge-commit path. PR #47 subsequently integrated the closed PostgreSQL Recovery workstream, including the forward database evolution `20260830_09`.
 
 Final accepted CP6 implementation candidate:
 
@@ -100,19 +103,19 @@ Final accepted CP6 implementation candidate:
 22bbc078391d52c43665474bf465593d6225106e
 ```
 
-Final feature head before merge:
+Final CP6 feature head before merge:
 
 ```text
 9297b64c7c912c2cc8e344a6617beb5c91457bbb
 ```
 
-Protected-main merge commit:
+CP6 protected-main merge commit:
 
 ```text
 117360b9333fd1a8a62d0dfeb0398a4d5811e393
 ```
 
-Final database baseline:
+Historical pre-recovery CP6 database baseline:
 
 ```text
 PostgreSQL          18.6
@@ -132,7 +135,7 @@ materialized views    0
 RLS policies          0
 ```
 
-Final direct acceptance included:
+Final CP6 direct acceptance included:
 
 ```text
 Ruff format/check                    PASS
@@ -150,19 +153,17 @@ GET /health/live                     200
 GET /health/ready                    200
 ```
 
-Durable evidence:
+Durable CP6 evidence:
 
 - `development/backend-cp6-05-whole-database-qa.md`
-- `database/README.md`
-- `database/dictionary/`
 - `archive/branches/2026-08-feature-logical-postgresql.md` — non-authoritative branch history
 
+### 2.1 Integrated PostgreSQL Recovery evolution
 
-### 2.1 Post-CP6 recovery evolution in this tree
-
-The recovery workstream adds one forward database evolution and a fully rehearsed LOCAL recovery system without rewriting the integrated CP6 history:
+The Recovery workstream added one forward database evolution and a fully rehearsed LOCAL recovery system without rewriting CP6 history:
 
 ```text
+PostgreSQL                           18.6
 Alembic head                         20260830_09
 topology                             69|5|15|76|97|69|123|0|0|0
 material_state_retirement            materialized
@@ -174,8 +175,22 @@ remote backup provider               TBD / NOT ACTIVATED
 production/cloud recovery            NOT CLAIMED
 ```
 
-This is the current contract of the recovery tree. Until integration, protected `main` retains its earlier integrated CP6 database baseline. After integration, live Git—not this phase-time sentence—determines the protected-main state.
+Integration evidence:
 
+```text
+Recovery final branch HEAD           e46ae3d9d5918b27ebf86f4e291b51312f1e7c4d
+PR                                    #47
+protected-main merge commit          bdd2b2370d41423dbaecd00fde86bb2bf2466f2b
+```
+
+This is now protected-main database/recovery truth. The former `feature/postgres-recovery` branch and worktree are historical lifecycle evidence, not a current integration boundary.
+
+Current durable Recovery authority:
+
+- `database/README.md`
+- `operations/postgres-recovery-runbook.md`
+- `archive/branches/2026-08-feature-postgres-recovery.md` — non-authoritative branch history
+- versioned recovery code/harnesses under `infra/local/postgres/recovery/`
 
 ## 3. Persistence authority
 
@@ -314,10 +329,10 @@ CP2 / CP3 ORIGINAL DIRECT EVIDENCE
 CURRENT REPOSITORY PATCH
 18.6
 
-PRE-RECOVERY PROTECTED-MAIN DANTE DATABASE BASELINE
+HISTORICAL PRE-RECOVERY CP6 BASELINE
 18.6 / Alembic 20260826_08
 
-POST-CP6 RECOVERY EVOLUTION IN THIS TREE
+CURRENT PROTECTED-MAIN DATABASE / RECOVERY BASELINE
 18.6 / Alembic 20260830_09 / 69|5|15|76|97|69|123|0|0|0
 ```
 
@@ -352,8 +367,9 @@ Protected `main` remains integrated authority. Current branch-local work observe
 feature/access-auth             active unmerged product vertical
 feature/home-react              active unmerged frontend workstream
 feature/platform-observability  active unmerged platform workstream
-feature/postgres-recovery       LOCAL recovery closed / integration candidate
 ```
+
+PostgreSQL Recovery is not in this list because PR #47 integrated the closed workstream into protected `main`.
 
 Do not infer one branch's implementation from another branch or from this global summary. Each bounded branch owns its own newer truth until integration.
 
@@ -380,7 +396,7 @@ Restate
 → first real Class-B durable workflow
 
 pgBackRest LOCAL recovery
-→ implemented / whole LOCAL operator rehearsal PASS on the recovery workstream
+→ implemented / whole LOCAL operator rehearsal PASS / integrated via PR #47
 
 remote backup provider
 → TBD; production activation/proof deferred until deployment requires it
@@ -437,6 +453,14 @@ apps/backend/README.md
 docs/database/README.md
 docs/database/dictionary/README.md
 docs/development/backend-cp6-05-whole-database-qa.md
+```
+
+PostgreSQL Recovery:
+
+```text
+docs/operations/postgres-recovery-runbook.md
+infra/local/postgres/recovery/
+docs/archive/branches/2026-08-feature-postgres-recovery.md   # historical only
 ```
 
 Frontend Access:

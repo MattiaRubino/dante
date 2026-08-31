@@ -40,17 +40,19 @@ CLOSED / DIRECT QA PASS / INTEGRATED VIA PR #42
 CURRENT POSTGRESQL
 18.6
 
-PRE-RECOVERY PROTECTED-MAIN DATABASE BASELINE
+HISTORICAL PRE-RECOVERY CP6 DATABASE BASELINE
 Alembic 20260826_08
 68 tables / 5 views / 14 routines / 75 triggers /
 95 physical indexes / 68 FKs / 120 CHECKs
 
-POST-CP6 RECOVERY EVOLUTION IN THIS TREE
+CURRENT PROTECTED-MAIN DATABASE / RECOVERY BASELINE
 Alembic 20260830_09
 69 tables / 5 views / 15 routines / 76 triggers /
 97 physical indexes / 69 FKs / 123 CHECKs
 PostgreSQL recovery CP01–CP07 LOCAL PASS / CLOSED
+Recovery integrated via PR #47
 remote backup provider TBD / NOT ACTIVATED
+production/cloud recovery NOT CLAIMED
 
 ACCESS PRE-BACKEND FRONTEND
 CLOSED / ACCEPTED / RELEASE-HARDENED
@@ -134,9 +136,9 @@ Backend entry point:
 
 ## Concrete PostgreSQL database
 
-CP6 is complete and integrated into protected `main` through PR #42.
+CP6 is complete and integrated into protected `main` through PR #42. PostgreSQL Recovery was subsequently integrated through PR #47 without reopening CP6.
 
-The pre-recovery protected-main CP6 baseline was:
+The historical pre-recovery CP6 baseline was:
 
 ```text
 PostgreSQL          18.6
@@ -156,10 +158,12 @@ materialized views    0
 RLS policies          0
 ```
 
-The post-CP6 recovery evolution materialized in this tree is:
+The current protected-main database after Recovery integration is:
 
 ```text
+PostgreSQL          18.6
 Alembic head        20260830_09
+
 tables              69
 views                5
 routines             15
@@ -169,7 +173,7 @@ foreign keys         69
 CHECK constraints   123
 ```
 
-The `20260830_09` evolution remains branch-local until integrated into protected `main`; after integration it becomes the protected-main baseline. Read the live Git refs rather than inferring integration status from this paragraph.
+PR #47 integrated the Recovery evolution into protected `main` with merge commit `bdd2b2370d41423dbaecd00fde86bb2bf2466f2b`. The Recovery branch is historical after integration; current database truth is the protected-main contract above.
 
 Final CP6 acceptance included:
 
@@ -279,16 +283,17 @@ The whole Access/Auth product vertical is **not claimed closed here**. An active
 
 There is no remaining CP6 design/materialization step. Post-CP6 work proceeds through bounded product/platform workstreams and normal forward schema evolution when genuinely required.
 
+PostgreSQL Recovery is no longer an active branch boundary: CP01–CP07 are closed and the accepted LOCAL recovery implementation is integrated into protected `main` via PR #47.
+
 At the 2026-08-31 reconciliation, active unmerged workstreams include:
 
 ```text
 feature/access-auth
 feature/home-react
 feature/platform-observability
-feature/postgres-recovery   LOCAL recovery CLOSED / integration candidate
 ```
 
-Each branch owns only its bounded unmerged truth. Protected `main` remains the integrated authority; live Git refs determine whether/when any branch has been integrated.
+Each unmerged branch owns only its bounded newer truth. Protected `main` remains the integrated authority; live Git refs determine later movement.
 
 A product vertical consumes the existing database and evolves it only through reviewed forward migrations plus the same-change Database System-of-Record rule. CP6 is not reopened.
 
@@ -316,7 +321,7 @@ PgBouncer
 → demonstrated connection-management need
 
 pgBackRest LOCAL recovery
-→ implemented and directly rehearsed in the closed recovery workstream
+→ implemented and directly rehearsed; integrated into main via PR #47
 
 remote backup provider
 → TBD; activate and prove only at the real production deployment boundary

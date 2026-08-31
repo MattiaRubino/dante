@@ -2,6 +2,17 @@
 
 This directory owns the current developer-facing Docker Compose entry point for DANTE LOCAL PostgreSQL and the isolated PostgreSQL recovery harness.
 
+Current protected-main database/recovery baseline:
+
+```text
+PostgreSQL       18.6
+Alembic          20260830_09
+topology         69|5|15|76|97|69|123|0|0|0
+LOCAL Recovery   CP01–CP07 PASS / CLOSED / integrated via PR #47
+remote provider  TBD / NOT ACTIVATED
+cloud recovery   NOT CLAIMED
+```
+
 ## 1. Normal LOCAL PostgreSQL
 
 Prerequisites:
@@ -65,7 +76,7 @@ dante_migrator   LOGIN migration identity
 dante_runtime    LOGIN application runtime identity
 ```
 
-The current canonical application schema is `dante`; the current Alembic head is `20260830_09`.
+The current canonical application schema is `dante`; the current protected-main Alembic head is `20260830_09`.
 
 ## 2. Normal persistence/reset behavior
 
@@ -144,13 +155,15 @@ remote backup provider                                     TBD / NOT ACTIVATED
 production/cloud recovery                                  NOT CLAIMED
 ```
 
-Exact-head runtime relation:
+Phase-time exact-head proof relation:
 
 ```text
 branch          feature/postgres-recovery
 upstream        origin/feature/postgres-recovery
 recovery image  dante-postgres-recovery:18.6-pgbackrest-2.59.1
 ```
+
+That branch/upstream pair records the exact proof context only. The permanent runner is branch-agnostic; the Recovery workstream itself is now integrated into protected `main` via PR #47.
 
 Measured LOCAL observations from the exact pushed hardened runner:
 
@@ -169,9 +182,6 @@ PGDATA loss → database-local reopen       16.261533 s
 ```
 
 These are LOCAL rehearsal observations, not production RPO/RTO targets.
-
-
-
 
 Recovery uses:
 
@@ -395,7 +405,6 @@ PGDATA loss → database-local reopen       15.614213 s
 
 These are LOCAL rehearsal observations only. They are not production RPO/RTO targets.
 
-
 ## 8. Suppression ledger contract
 
 The external recovery suppression ledger is independent from both canonical PGDATA and the database backup repository.
@@ -441,13 +450,23 @@ Provider selection, credentials, costs and production acceptance are deferred.
 
 ## 10. Authority
 
-Current detailed recovery status and evidence are maintained in:
+Current Recovery authority is deliberately durable and does not depend on the removed active-workstream overlays:
 
 ```text
-docs/workstreams/postgres-recovery.md
-docs/workstreams/postgres-recovery-execution-plan.md
-docs/database/README.md
-docs/database/dante-postgresql-database-part-19.md
+current database contract
+→ docs/database/README.md
+→ docs/database/dante-postgresql-database-part-19.md
+
+operator recovery procedure
+→ docs/operations/postgres-recovery-runbook.md
+
+executable recovery truth
+→ infra/local/postgres/recovery/
+
+historical closed-branch narrative
+→ docs/archive/branches/2026-08-feature-postgres-recovery.md  (NON-AUTHORITATIVE)
 ```
+
+The former `docs/workstreams/postgres-recovery.md` and `docs/workstreams/postgres-recovery-execution-plan.md` were deliberately removed during branch closure and must not be used as current links or authorities.
 
 Git/Alembic preserve chronology; this README describes the current operational contract.

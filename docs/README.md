@@ -31,7 +31,7 @@ When sources conflict, use this order unless a narrower accepted authority expli
 8. conversation memory
 ```
 
-An unmerged branch may contain newer truth for its own scope, but it is not protected-main authority until integration.
+An unmerged branch may contain newer truth for its own scope, but it is not protected-main authority until integration. Once merged, CURRENT documentation must describe the protected-main state rather than continuing to present the integrated branch as a candidate.
 
 ## 2. Current lifecycle
 
@@ -47,11 +47,13 @@ FRONTEND MATERIALIZATION             CLOSED / PASS / INTEGRATED VIA PR #28
 BACKEND CP1–CP5 SCAFFOLD             CLOSED / DIRECT QA / INTEGRATED VIA PR #24
 BACKEND CP6 DATABASE                 CLOSED / DIRECT QA / INTEGRATED VIA PR #42
 CURRENT POSTGRESQL                   18.6
-PRE-RECOVERY MAIN ALEMBIC BASELINE   20260826_08
-PRE-RECOVERY MAIN DB TOPOLOGY        68/5/14/75/95/68/120
-RECOVERY EVOLUTION IN THIS TREE      20260830_09 / 69/5/15/76/97/69/123
-POSTGRESQL LOCAL RECOVERY            CP01–CP07 LOCAL PASS / CLOSED
+HISTORICAL PRE-RECOVERY ALEMBIC      20260826_08
+HISTORICAL PRE-RECOVERY DB TOPOLOGY  68/5/14/75/95/68/120
+CURRENT PROTECTED-MAIN ALEMBIC       20260830_09
+CURRENT PROTECTED-MAIN DB TOPOLOGY   69/5/15/76/97/69/123
+POSTGRESQL LOCAL RECOVERY            CP01–CP07 LOCAL PASS / CLOSED / INTEGRATED VIA PR #47
 REMOTE BACKUP PROVIDER               TBD / NOT ACTIVATED
+PRODUCTION/CLOUD RECOVERY            NOT CLAIMED
 ACCESS PRE-BACKEND FRONTEND          CLOSED / ACCEPTED / RELEASE-HARDENED
 FULL ACCESS/AUTH PRODUCT VERTICAL    ACTIVE UNMERGED WORKSTREAM / NOT CLAIMED CLOSED
 ```
@@ -90,6 +92,15 @@ temporary handoffs
 → rationale/evidence propagated to durable owners
 → optional ONE branch history record
 → temporary handoffs removed
+```
+
+After integration:
+
+```text
+verify exact protected-main merge
+→ reconcile candidate/branch-local wording to protected-main truth
+→ repair links to any deliberately removed workstream overlays
+→ keep archive history non-authoritative
 ```
 
 Normative lifecycle source:
@@ -184,6 +195,8 @@ sole canonical persistence + material-history authority
 
 PostgreSQL 18.4 remains historical exact phase-time Physical/CP2/CP3 evidence. Current repository/database patch is 18.6. Patch maintenance inside major line 18 does not reopen the architecture.
 
+The accepted LOCAL Recovery evolution is integrated into protected `main` via PR #47. Remote backup/cloud recovery remains a separate unactivated boundary.
+
 Specialist capability activation remains trigger-based and direct-validation-specific.
 
 ## 9. Architecture and decisions
@@ -217,7 +230,7 @@ Start here:
 - `database/dictionary/README.md`
 - `database/dictionary/scope.json`
 
-Current database contract in this tree:
+Current protected-main database contract:
 
 ```text
 PostgreSQL          18.6
@@ -231,7 +244,7 @@ Alembic             20260830_09
 123 CHECK constraints
 ```
 
-The pre-recovery protected-main CP6 baseline was `20260826_08 / 68|5|14|75|95|68|120`. Integration status is determined by live Git refs.
+The pre-recovery CP6 baseline `20260826_08 / 68|5|14|75|95|68|120` is historical. PR #47 integrated the `20260830_09` Recovery evolution into protected `main`.
 
 The machine-readable Dictionary is reconciled to the current `20260830_09` contract.
 
@@ -251,9 +264,15 @@ CP6 final acceptance:
 
 - `development/backend-cp6-05-whole-database-qa.md`
 
-Historical CP6 branch record:
+Current Recovery operation:
+
+- `operations/postgres-recovery-runbook.md`
+- executable harnesses under `../infra/local/postgres/recovery/`
+
+Historical branch records:
 
 - `archive/branches/2026-08-feature-logical-postgresql.md` — NON-AUTHORITATIVE
+- `archive/branches/2026-08-feature-postgres-recovery.md` — NON-AUTHORITATIVE
 
 ## 11. Backend
 
@@ -277,7 +296,7 @@ Durable backend contracts include:
 
 CP1–CP6 are closed. Text saying CP6-03 is active, Gate 03 is unearned, CP6-04 is next or protected-main integration is pending is historical unless explicitly scoped to the phase-time record.
 
-Post-CP6 backend work is already active on bounded unmerged workstreams where authorized; `feature/access-auth` is one such current branch. Branch-local authority owns its exact state until integration.
+Post-CP6 backend work is active on bounded unmerged workstreams where authorized; `feature/access-auth` is one such current branch. Branch-local authority owns its exact state until integration.
 
 ## 12. Frontend
 
@@ -296,7 +315,7 @@ Generic frontend engineering foundation/materialization is closed/integrated.
 
 ### Access frontend baseline
 
-The completed pre-backend Access frontend materialization is the accepted Web baseline for the next full-stack Access/Auth product vertical.
+The completed pre-backend Access frontend materialization is the accepted Web baseline for the active full-stack Access/Auth product vertical.
 
 Accepted checkpoints:
 
@@ -328,11 +347,13 @@ Entry point:
 
 On protected `main`, workstream files are durable records/evidence, not active chat handoffs.
 
-Closed records include Domain, Logical, Pre-Physical, Physical, Engineering Foundation, Frontend Foundation/Materialization and backend scaffold/CP6 history as applicable.
+Closed records include Domain, Logical, Pre-Physical, Physical, Engineering Foundation, Frontend Foundation/Materialization, backend scaffold/CP6 and PostgreSQL Recovery as applicable.
+
+PostgreSQL Recovery is closed and integrated through PR #47; its current operational authority is Database SoR + operator runbook + executable harnesses, while `archive/branches/2026-08-feature-postgres-recovery.md` retains the single non-authoritative branch history.
 
 Active unmerged workstream records remain branch-local until integration.
 
-At the 2026-08-31 reconciliation, bounded unmerged work includes `feature/access-auth`, `feature/home-react`, `feature/platform-observability`, while `feature/postgres-recovery` has completed CP01–CP07 locally and is an integration candidate. Live Git refs are authoritative for later changes.
+At the 2026-08-31 reconciliation, bounded unmerged work includes `feature/access-auth`, `feature/home-react` and `feature/platform-observability`. Live Git refs are authoritative for later changes.
 
 ## 14. Development governance
 
@@ -415,6 +436,7 @@ read current global status
 → use branch-local handoff only if the branch is active and one is genuinely needed
 → update durable current docs when behavior/architecture changes
 → remove temporary handoffs before integration
+→ reconcile candidate-state wording after merge
 ```
 
 Current truth should be easy to find without archaeological reconstruction of obsolete overlays.

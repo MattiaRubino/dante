@@ -13,13 +13,30 @@
 - Reusable-runner implementation/runtime proof HEAD: `789e946a8f096b52f2a440b967120cc3e0a340a3`
 - Initial CP07 whole-rehearsal implementation proof HEAD: `8893efe629ff1dc9fc2b512779aa56457b802be6`
 - CP06 implementation/runtime proof HEAD: `a1a6323210b3d7af66284006a754759fa9d08028`
+- Final Recovery branch HEAD: `e46ae3d9d5918b27ebf86f4e291b51312f1e7c4d`
+- Integration PR: `#47`
+- Protected-main merge commit: `bdd2b2370d41423dbaecd00fde86bb2bf2466f2b`
 - PostgreSQL: 18.6
-- Recovery-tree Alembic head: `20260830_09`
-- Recovery-tree topology: `69|5|15|76|97|69|123|0|0|0`
+- Recovery Alembic head: `20260830_09`
+- Recovery topology: `69|5|15|76|97|69|123|0|0|0`
 - Remote backup provider at closure: `TBD / NOT ACTIVATED`
 - Production/cloud recovery at closure: `NOT CLAIMED`
 
 The branch/worktree names above are phase-time evidence only. The permanent bootstrap and CP07 runner are branch-agnostic and require a clean attached branch with a configured upstream and exact `HEAD == upstream` after fetch.
+
+## Protected-main integration result
+
+The closed workstream was integrated through the normal protected-main path:
+
+```text
+final branch HEAD     e46ae3d9d5918b27ebf86f4e291b51312f1e7c4d
+PR                    #47
+merge method          normal merge commit
+merge commit          bdd2b2370d41423dbaecd00fde86bb2bf2466f2b
+result                MERGED INTO PROTECTED main
+```
+
+Required PR gates were green on the exact final branch HEAD before merge. The historical Recovery worktree was subsequently removed without `--force`. Current protected-main database/recovery status must not be reconstructed from this archive record; use the current Database System of Record, runbook and live Git.
 
 ## Purpose
 
@@ -49,6 +66,7 @@ CP05  Deterministic PITR                     LOCAL PASS
 CP06  Failure + Semantic Recovery            LOCAL PASS / CLOSED
 CP07  Whole Recovery QA + Operator Runbook   LOCAL PASS / CLOSED
 POST  Fresh-clone reproducibility hardening  PASS / EXACT-HEAD PROVEN
+INT   Protected-main integration             MERGED VIA PR #47
 ```
 
 ## Recovery topology and activation boundary
@@ -97,6 +115,8 @@ to:
 ```text
 20260830_09 / 69|5|15|76|97|69|123|0|0|0
 ```
+
+After PR #47, the latter is the protected-main database baseline. This statement records the integration outcome, not a new Recovery runtime proof.
 
 Supported retirement-aware material facets at closure:
 

@@ -2,8 +2,9 @@
 
 - **Status:** CURRENT / MATERIALIZED
 - **PostgreSQL:** 18.6
-- **Alembic head in this tree:** `20260830_09`
+- **Alembic head:** `20260830_09`
 - **Schema:** `dante`
+- **Protected-main integration:** PostgreSQL Recovery evolution integrated via PR #47
 - **Scope:** current DANTE PostgreSQL architecture, Dictionary, mappings, migrations, lifecycle/recovery integrity, direct proof and documentation consistency
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 - **Architecture decision:** `../decisions/ADR-010-postgresql-persistence-constitution.md`
@@ -24,7 +25,7 @@ how retirement/redaction and recovery reconciliation work
 what migration/mapping/tests implement and prove the contract
 ```
 
-Git/Alembic preserve chronology. Current database docs describe the accepted current contract, not obsolete implementation checkpoints.
+Git/Alembic preserve chronology. Current database docs describe the accepted current protected-main contract, not obsolete implementation checkpoints or pre-merge candidate state.
 
 ## 2. Current materialized database
 
@@ -64,13 +65,13 @@ The pre-recovery protected-main CP6 baseline remains historical evidence:
 20260826_08 / 68|5|14|75|95|68|120|0|0|0
 ```
 
-The Recovery workstream adds the bounded forward evolution:
+The closed Recovery workstream added the bounded forward evolution:
 
 ```text
 20260830_09 / 69|5|15|76|97|69|123|0|0|0
 ```
 
-Integration status is determined by live Git refs.
+PR #47 integrated that Recovery evolution into protected `main`; `20260830_09` is therefore the current protected-main Alembic/database baseline. The former Recovery branch is historical, not an integration candidate.
 
 ## 3. Recovery/lifecycle addition
 
@@ -265,6 +266,7 @@ fresh-clone bootstrap                         PASS
 bootstrap idempotence                         PASS
 branch-agnostic runner                        PASS
 exact pushed implementation HEAD CP07         PASS
+protected-main integration via PR #47         PASS
 remote backup provider                        TBD / NOT ACTIVATED
 production/cloud recovery                     NOT CLAIMED
 ```
@@ -368,4 +370,4 @@ closed Recovery branch history
 
 ## 12. Acceptance bar
 
-The database System of Record succeeds when a new engineer can use the repository alone to understand current architecture, locate every real persisted object, trace objects to migration/mapping/tests, understand integrity/ACL/current/history/lifecycle semantics, understand anti-resurrection behavior, distinguish canonical from provider/derived/recovery state and execute the current database/recovery acceptance procedures.
+The Database System of Record succeeds when a new engineer can use the repository alone to understand current architecture, locate every real persisted object, trace objects to migration/mapping/tests, understand integrity/ACL/current/history/lifecycle semantics, understand anti-resurrection behavior, distinguish canonical from provider/derived/recovery state and execute the current database/recovery acceptance procedures.
