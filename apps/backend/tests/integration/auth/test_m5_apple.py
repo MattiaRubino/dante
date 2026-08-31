@@ -184,7 +184,7 @@ def _evidence(
         subject=subject,
         email=normalized,
         email_verified=authoritative and normalized is not None,
-        email_private=(private if normalized is not None else None),
+        email_private=((private if private is not None else False) if normalized is not None else None),
         mailbox_authoritative=authoritative and normalized is not None,
     )
 
@@ -261,6 +261,10 @@ def _state_from_url(url: str) -> str:
 def _nonce_from_url(url: str) -> str:
     values = parse_qs(urlsplit(url).query, strict_parsing=True)
     return values["nonce"][0]
+
+
+def _front_id_token(label: str) -> str:
+    return f"front-id-token:{label}"
 
 
 async def _begin_and_complete(
@@ -413,7 +417,7 @@ async def test_apple_transaction_persists_only_verifiers_and_claims_before_singl
         result = await service.complete_apple(
             state=state,
             code="single-use-code",
-            id_token="front-id-token",
+            id_token=_front_id_token("claim"),
             user=None,
             error=None,
             source_context="claim-once-complete",
@@ -426,7 +430,7 @@ async def test_apple_transaction_persists_only_verifiers_and_claims_before_singl
             await service.complete_apple(
                 state=state,
                 code="single-use-code",
-                id_token="front-id-token",
+                id_token=_front_id_token("claim"),
                 user=None,
                 error=None,
                 source_context="claim-once-replay",
@@ -641,7 +645,7 @@ async def test_authenticated_link_then_apple_reauthentication_rotate_exact_same_
         linked = await service.complete_apple(
             state=_state_from_url(begun.authorization_url),
             code="settings-link-code",
-            id_token="front-link-token",
+            id_token=_front_id_token("link"),
             user=None,
             error=None,
             source_context="settings-link-complete",
@@ -668,7 +672,7 @@ async def test_authenticated_link_then_apple_reauthentication_rotate_exact_same_
         reauthenticated = await service.complete_apple(
             state=_state_from_url(reauth_begin.authorization_url),
             code="reauth-code",
-            id_token="front-reauth-token",
+            id_token=_front_id_token("reauth"),
             user=None,
             error=None,
             source_context="apple-reauth-complete",
@@ -791,7 +795,7 @@ async def test_concurrent_first_apple_callbacks_converge_on_one_account_identity
             service.complete_apple(
                 state=_state_from_url(first_begin.authorization_url),
                 code="concurrent-code-1",
-                id_token="front-concurrent-1",
+                id_token=_front_id_token("concurrent-1"),
                 user=None,
                 error=None,
                 source_context="concurrent-complete-1",
@@ -799,7 +803,7 @@ async def test_concurrent_first_apple_callbacks_converge_on_one_account_identity
             service.complete_apple(
                 state=_state_from_url(second_begin.authorization_url),
                 code="concurrent-code-2",
-                id_token="front-concurrent-2",
+                id_token=_front_id_token("concurrent-2"),
                 user=None,
                 error=None,
                 source_context="concurrent-complete-2",
