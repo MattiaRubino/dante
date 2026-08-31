@@ -378,7 +378,7 @@ test('time editor rejects an invalid range and restores focus on Escape', async 
 
   await page.getByLabel('Fine ore').fill('14');
   await page.getByLabel('Fine minuti').fill('40');
-  await page.getByRole('button', { name: 'Salva' }).click();
+  await page.getByRole('button', { name: 'Conferma' }).click();
 
   await expect(dialog).toBeVisible();
   await expect(dialog.getByRole('alert')).toBeVisible();
