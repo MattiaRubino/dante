@@ -37,6 +37,7 @@ from dante.auth.contracts import (
     PasskeyAlreadyRegisteredError,
     PasskeyCeremonyBegun,
     PasskeyChallengeInvalidOrExpiredError,
+    PasskeyMethod,
     PasskeyNotFoundError,
     PasskeyVerificationFailedError,
     Principal,
@@ -165,9 +166,9 @@ class PasskeyFlowService:
                 require_recent=True,
             )
             webauthn_account = await database_session.scalar(
-                select(WebAuthnAccountRow)
-                .where(WebAuthnAccountRow.account_ref == locked.account_ref)
-                .with_for_update()
+                select(WebAuthnAccountRow).where(
+                    WebAuthnAccountRow.account_ref == locked.account_ref
+                )
             )
             if webauthn_account is None:
                 user_handle = secrets.token_bytes(_CHALLENGE_BYTES)
@@ -889,6 +890,53 @@ class PasskeyFlowService:
                 auth_session_ref=locked.auth_session_ref,
                 secret_verifier=new_secret_verifier,
             ),
+        )
+
+    async def list_passkeys(
+        self,
+        *,
+        admitted: AdmittedSession,
+    ) -> tuple[PasskeyMethod, ...]:
+        """Return safe active-passkey management metadata without credential secrets."""
+        try:
+            async with self._session_factory() as database_session, database_session.begin():
+                account = await database_session.scalar(
+                    select(AccountRow).where(
+                        AccountRow.account_ref == admitted.principal.account_ref
+                    )
+                )
+                if account is None or account.status_code != "active":
+                    raise AccountUnavailableError()
+                rows = tuple(
+                    (
+                        await database_session.scalars(
+                            select(PasskeyCredentialRow)
+                            .where(
+                                PasskeyCredentialRow.account_ref == account.account_ref,
+                                PasskeyCredentialRow.status_code == "active",
+                            )
+                            .order_by(
+                                PasskeyCredentialRow.created_at,
+                                PasskeyCredentialRow.passkey_credential_ref,
+                            )
+                        )
+                    ).all()
+                )
+        except AccountUnavailableError:
+            raise
+        except SQLAlchemyError as exc:
+            raise AuthServiceUnavailableError(retryable=True) from exc
+        return tuple(
+            PasskeyMethod(
+                passkey_credential_ref=row.passkey_credential_ref,
+                label=row.label,
+                transports=tuple(row.transports),
+                backup_eligible=row.backup_eligible,
+                backup_state=row.backup_state,
+                created_at=row.created_at,
+                last_used_at=row.last_used_at,
+            )
+            for row in rows
         )
 
     async def update_label(
