@@ -39,6 +39,7 @@
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
   "id": null,
+  "description": "Decision dashboard for DANTE runtime health. Start with the six health signals, then use traffic, authentication, database, logs and traces to narrow an incident. All dimensions are bounded and privacy-safe.",
   "links": [],
   "liveNow": false,
   "panels": [
@@ -99,7 +100,7 @@
         "defaults": {"color": {"mode": "palette-classic"}, "unit": "reqps"},
         "overrides": []
       },
-      "gridPos": {"h": 8, "w": 10, "x": 4, "y": 0},
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 6},
       "id": 2,
       "options": {
         "legend": {"calcs": ["lastNotNull"], "displayMode": "table", "placement": "bottom", "showLegend": true},
@@ -138,10 +139,10 @@
         },
         "overrides": []
       },
-      "gridPos": {"h": 5, "w": 5, "x": 14, "y": 0},
+      "gridPos": {"h": 5, "w": 4, "x": 8, "y": 0},
       "id": 3,
       "options": {
-        "colorMode": "value",
+        "colorMode": "background",
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
@@ -180,10 +181,10 @@
         },
         "overrides": []
       },
-      "gridPos": {"h": 5, "w": 5, "x": 19, "y": 0},
+      "gridPos": {"h": 5, "w": 4, "x": 12, "y": 0},
       "id": 4,
       "options": {
-        "colorMode": "value",
+        "colorMode": "background",
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
@@ -211,7 +212,7 @@
         "defaults": {"color": {"mode": "palette-classic"}, "custom": {"drawStyle": "bars", "fillOpacity": 55, "lineWidth": 1, "stacking": {"group": "A", "mode": "normal"}}, "unit": "ops"},
         "overrides": []
       },
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 14},
       "id": 5,
       "options": {
         "legend": {"calcs": ["sum"], "displayMode": "table", "placement": "bottom", "showLegend": true},
@@ -226,7 +227,7 @@
           "refId": "A"
         }
       ],
-      "title": "Signin outcomes",
+      "title": "Authentication · sign-in outcomes",
       "type": "timeseries"
     },
     {
@@ -236,7 +237,7 @@
         "defaults": {"color": {"mode": "palette-classic"}, "unit": "ops"},
         "overrides": []
       },
-      "gridPos": {"h": 8, "w": 6, "x": 12, "y": 8},
+      "gridPos": {"h": 8, "w": 6, "x": 12, "y": 14},
       "id": 6,
       "options": {
         "legend": {"calcs": ["sum"], "displayMode": "table", "placement": "bottom", "showLegend": true},
@@ -251,7 +252,7 @@
           "refId": "A"
         }
       ],
-      "title": "KDF admission rejections",
+      "title": "Authentication · KDF admission rejections",
       "type": "timeseries"
     },
     {
@@ -261,7 +262,7 @@
         "defaults": {"color": {"mode": "palette-classic"}, "unit": "reqps"},
         "overrides": []
       },
-      "gridPos": {"h": 8, "w": 6, "x": 18, "y": 8},
+      "gridPos": {"h": 8, "w": 6, "x": 18, "y": 14},
       "id": 7,
       "options": {
         "legend": {"calcs": ["lastNotNull"], "displayMode": "table", "placement": "bottom", "showLegend": true},
@@ -276,7 +277,7 @@
           "refId": "A"
         }
       ],
-      "title": "Auth dependency outcomes",
+      "title": "Authentication · dependency request rate",
       "type": "timeseries"
     },
     {
@@ -286,7 +287,7 @@
         "defaults": {"color": {"mode": "palette-classic"}, "unit": "s"},
         "overrides": []
       },
-      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 16},
+      "gridPos": {"h": 8, "w": 9, "x": 0, "y": 22},
       "id": 8,
       "options": {
         "legend": {"calcs": ["lastNotNull"], "displayMode": "table", "placement": "bottom", "showLegend": true},
@@ -301,7 +302,7 @@
           "refId": "A"
         }
       ],
-      "title": "Database operation latency p95",
+      "title": "Database · operation latency p95",
       "type": "timeseries"
     },
     {
@@ -311,7 +312,7 @@
         "defaults": {"color": {"mode": "palette-classic"}, "unit": "short"},
         "overrides": []
       },
-      "gridPos": {"h": 8, "w": 6, "x": 8, "y": 16},
+      "gridPos": {"h": 8, "w": 6, "x": 9, "y": 22},
       "id": 9,
       "options": {
         "legend": {"calcs": ["lastNotNull"], "displayMode": "table", "placement": "bottom", "showLegend": true},
@@ -326,7 +327,7 @@
           "refId": "A"
         }
       ],
-      "title": "Application DB pool",
+      "title": "Database · application pool",
       "type": "timeseries"
     },
     {
@@ -336,7 +337,7 @@
         "defaults": {"color": {"mode": "palette-classic"}, "unit": "short"},
         "overrides": []
       },
-      "gridPos": {"h": 8, "w": 10, "x": 14, "y": 16},
+      "gridPos": {"h": 8, "w": 9, "x": 15, "y": 22},
       "id": 10,
       "options": {
         "legend": {"calcs": ["lastNotNull", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true},
@@ -351,13 +352,13 @@
           "refId": "A"
         }
       ],
-      "title": "PostgreSQL connections",
+      "title": "Database · PostgreSQL connections",
       "type": "timeseries"
     },
     {
       "datasource": {"type": "loki", "uid": "${DS_LOKI}"},
       "description": "Redacted structured error events. Expand a row to use request_id or trace_id for correlation.",
-      "gridPos": {"h": 10, "w": 16, "x": 0, "y": 24},
+      "gridPos": {"h": 10, "w": 16, "x": 0, "y": 30},
       "id": 11,
       "options": {
         "dedupStrategy": "none",
@@ -378,14 +379,14 @@
           "refId": "A"
         }
       ],
-      "title": "Recent operational errors",
+      "title": "Investigate · recent operational warnings and errors",
       "type": "logs"
     },
     {
       "datasource": {"type": "tempo", "uid": "${DS_TEMPO}"},
       "description": "Sampled backend error traces, correlated with structured logs by trace_id.",
       "fieldConfig": {"defaults": {}, "overrides": []},
-      "gridPos": {"h": 10, "w": 8, "x": 16, "y": 24},
+      "gridPos": {"h": 10, "w": 8, "x": 16, "y": 30},
       "id": 12,
       "options": {"cellHeight": "sm", "showHeader": true},
       "targets": [
@@ -397,13 +398,134 @@
           "tableType": "traces"
         }
       ],
-      "title": "Recent backend error traces",
+      "title": "Investigate · recent backend error traces",
       "type": "table"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "Current completed backend request rate across privacy-safe route templates. A quiet service is not treated as an error.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "fixed", "fixedColor": "blue"},
+          "decimals": 2,
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 5, "w": 4, "x": 4, "y": 0},
+      "id": 13,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum(rate(http_server_request_count_total{deployment_environment_name=~\"$environment\"}[$__rate_interval]))",
+          "legendFormat": "requests/s",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Traffic · current request rate",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "Database readiness errors observed during the last five minutes. Any non-zero value needs investigation.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 1},
+              {"color": "red", "value": 3}
+            ]
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 5, "w": 4, "x": 16, "y": 0},
+      "id": 14,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum(increase(dante_database_readiness_checks_total{deployment_environment_name=~\"$environment\",dante_outcome=\"error\"}[5m]))",
+          "legendFormat": "readiness errors",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Database · readiness errors (5m)",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "Rejected or timed-out password KDF admissions during the last five minutes. Sustained values indicate saturation.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 1},
+              {"color": "red", "value": 3}
+            ]
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 5, "w": 4, "x": 20, "y": 0},
+      "id": 15,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum(increase(dante_auth_kdf_rejections_total{deployment_environment_name=~\"$environment\"}[5m]))",
+          "legendFormat": "rejections",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Authentication · KDF rejections (5m)",
+      "type": "stat"
     }
   ],
-  "refresh": "30s",
+  "refresh": "1m",
   "schemaVersion": 41,
-  "tags": ["dante", "observability", "service"],
+  "tags": ["dante", "observability", "service", "operations"],
   "templating": {
     "list": [
       {
@@ -426,7 +548,7 @@
     ]
   },
   "time": {"from": "now-6h", "to": "now"},
-  "timepicker": {},
+  "timepicker": {"refresh_intervals": ["30s", "1m", "5m", "15m", "1h"]},
   "timezone": "browser",
   "title": "DANTE · Service overview",
   "uid": "dante-service-overview",

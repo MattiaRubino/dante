@@ -32,6 +32,7 @@
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
   "id": null,
+  "description": "Control plane for DANTE telemetry delivery and ingestion budget. Start with the health strip, then use exporter, queue and delivery panels to distinguish an application incident from an observability-pipeline incident.",
   "links": [],
   "liveNow": false,
   "panels": [
@@ -100,7 +101,7 @@
       "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
       "description": "OpenTelemetry exporter failures. Queues and retries are finite; any sustained increase needs investigation.",
       "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "unit": "ops"}, "overrides": []},
-      "gridPos": {"h": 8, "w": 8, "x": 9, "y": 0},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 6},
       "id": 3,
       "options": {
         "legend": {"calcs": ["sum"], "displayMode": "table", "placement": "bottom", "showLegend": true},
@@ -111,14 +112,14 @@
         {"editorMode": "code", "expr": "sum by (exporter) (increase(otelcol_exporter_send_failed_metric_points_total{environment=~\"$environment\"}[$__rate_interval]))", "legendFormat": "metric points · {{exporter}}", "range": true, "refId": "B"},
         {"editorMode": "code", "expr": "sum by (exporter) (increase(otelcol_exporter_send_failed_log_records_total{environment=~\"$environment\"}[$__rate_interval]))", "legendFormat": "log records · {{exporter}}", "range": true, "refId": "C"}
       ],
-      "title": "OTLP export failures",
+      "title": "Delivery · OTLP exporter failures",
       "type": "timeseries"
     },
     {
       "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
       "description": "Items waiting in bounded OpenTelemetry exporter queues.",
       "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "unit": "short"}, "overrides": []},
-      "gridPos": {"h": 8, "w": 7, "x": 17, "y": 0},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 6},
       "id": 4,
       "options": {
         "legend": {"calcs": ["lastNotNull", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true},
@@ -127,14 +128,14 @@
       "targets": [
         {"editorMode": "code", "expr": "max by (exporter) (otelcol_exporter_queue_size{environment=~\"$environment\"})", "legendFormat": "{{exporter}}", "range": true, "refId": "A"}
       ],
-      "title": "OTLP queue depth",
+      "title": "Delivery · OTLP queue depth",
       "type": "timeseries"
     },
     {
       "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
       "description": "Loki write retries and final drops from backend/Faro streams.",
       "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "unit": "ops"}, "overrides": []},
-      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 8},
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 14},
       "id": 5,
       "options": {
         "legend": {"calcs": ["sum"], "displayMode": "table", "placement": "bottom", "showLegend": true},
@@ -144,14 +145,14 @@
         {"editorMode": "code", "expr": "sum(increase(loki_write_batch_retries_total{environment=~\"$environment\"}[$__rate_interval]))", "legendFormat": "retries", "range": true, "refId": "A"},
         {"editorMode": "code", "expr": "sum(increase(loki_write_dropped_entries_total{environment=~\"$environment\"}[$__rate_interval]))", "legendFormat": "dropped entries", "range": true, "refId": "B"}
       ],
-      "title": "Log delivery",
+      "title": "Delivery · log stream",
       "type": "timeseries"
     },
     {
       "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
       "description": "Remote-write backlog and failures. The WAL is retained for at most one hour.",
       "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "unit": "short"}, "overrides": []},
-      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 8},
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 14},
       "id": 6,
       "options": {
         "legend": {"calcs": ["lastNotNull", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true},
@@ -162,14 +163,14 @@
         {"editorMode": "code", "expr": "sum(increase(prometheus_remote_storage_samples_failed_total{environment=~\"$environment\"}[$__rate_interval]))", "legendFormat": "failed", "range": true, "refId": "B"},
         {"editorMode": "code", "expr": "sum(increase(prometheus_remote_storage_samples_retries_total{environment=~\"$environment\"}[$__rate_interval]))", "legendFormat": "retried", "range": true, "refId": "C"}
       ],
-      "title": "Metrics remote write",
+      "title": "Delivery · metrics remote write",
       "type": "timeseries"
     },
     {
       "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
       "description": "Browser collector intake, rejection and exporter errors. LOCAL/UAT only when using Alloy's Faro receiver.",
       "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "unit": "reqps"}, "overrides": []},
-      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 8},
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 14},
       "id": 7,
       "options": {
         "legend": {"calcs": ["lastNotNull", "sum"], "displayMode": "table", "placement": "bottom", "showLegend": true},
@@ -179,14 +180,14 @@
         {"editorMode": "code", "expr": "sum(rate(faro_receiver_requests_total{environment=~\"$environment\"}[$__rate_interval]))", "legendFormat": "accepted", "range": true, "refId": "A"},
         {"editorMode": "code", "expr": "sum(rate(faro_receiver_exporter_errors_total{environment=~\"$environment\"}[$__rate_interval]))", "legendFormat": "export errors", "range": true, "refId": "B"}
       ],
-      "title": "Faro intake",
+      "title": "Delivery · browser telemetry intake",
       "type": "timeseries"
     },
     {
       "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
       "description": "Samples generated by each controlled scrape before remote write; use this to protect the Free-plan budget.",
       "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "unit": "short"}, "overrides": []},
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 22},
       "id": 8,
       "options": {
         "legend": {"calcs": ["lastNotNull", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true},
@@ -195,14 +196,14 @@
       "targets": [
         {"editorMode": "code", "expr": "sum by (job) (scrape_samples_post_metric_relabeling{environment=~\"$environment\"})", "legendFormat": "{{job}}", "range": true, "refId": "A"}
       ],
-      "title": "Scraped series by job",
+      "title": "Budget · scraped series by job",
       "type": "timeseries"
     },
     {
       "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
       "description": "Outbound Loki volume. A sudden increase is both a product signal and an ingestion-budget risk.",
       "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "unit": "Bps"}, "overrides": []},
-      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 22},
       "id": 9,
       "options": {
         "legend": {"calcs": ["lastNotNull", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true},
@@ -211,13 +212,13 @@
       "targets": [
         {"editorMode": "code", "expr": "sum(rate(loki_write_sent_bytes_total{environment=~\"$environment\"}[$__rate_interval]))", "legendFormat": "sent bytes/s", "range": true, "refId": "A"}
       ],
-      "title": "Log ingestion rate",
+      "title": "Budget · log ingestion rate",
       "type": "timeseries"
     },
     {
       "datasource": {"type": "loki", "uid": "${DS_LOKI}"},
       "description": "Redacted backend warnings/errors; collector delivery failures remain in the self-metric panels above.",
-      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 24},
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 30},
       "id": 10,
       "options": {
         "dedupStrategy": "none",
@@ -232,13 +233,103 @@
       "targets": [
         {"direction": "backward", "editorMode": "code", "expr": "{application=\"dante\",environment=~\"$environment\"} | json | severity=~\"error|warning\" | service_name=\"dante-backend\"", "queryType": "range", "refId": "A"}
       ],
-      "title": "Backend telemetry warnings",
+      "title": "Investigate · backend telemetry warnings",
       "type": "logs"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "Failed Prometheus remote-write samples over the last ten minutes. Any non-zero value means metrics delivery is degraded.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "decimals": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]},
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 5, "w": 5, "x": 9, "y": 0},
+      "id": 11,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {"editorMode": "code", "expr": "sum(increase(prometheus_remote_storage_samples_failed_total{environment=~\"$environment\"}[10m]))", "legendFormat": "failed samples", "range": true, "refId": "A"}
+      ],
+      "title": "Delivery · metrics failures (10m)",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "Final Loki drops over the last ten minutes. Retries alone are not data loss; final drops are.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "decimals": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]},
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 5, "w": 5, "x": 14, "y": 0},
+      "id": 12,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {"editorMode": "code", "expr": "sum(increase(loki_write_dropped_entries_total{environment=~\"$environment\"}[10m]))", "legendFormat": "dropped entries", "range": true, "refId": "A"}
+      ],
+      "title": "Delivery · log drops (10m)",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "description": "Faro receiver exporter errors over the last ten minutes. This panel is expected to be empty where browser telemetry is intentionally disabled.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "decimals": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]},
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 5, "w": 5, "x": 19, "y": 0},
+      "id": 13,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {"editorMode": "code", "expr": "sum(increase(faro_receiver_exporter_errors_total{environment=~\"$environment\"}[10m]))", "legendFormat": "export errors", "range": true, "refId": "A"}
+      ],
+      "title": "Delivery · Faro exporter errors (10m)",
+      "type": "stat"
     }
   ],
-  "refresh": "30s",
+  "refresh": "1m",
   "schemaVersion": 41,
-  "tags": ["dante", "observability", "collector", "budget"],
+  "tags": ["dante", "observability", "collector", "budget", "operations"],
   "templating": {
     "list": [
       {
@@ -261,7 +352,7 @@
     ]
   },
   "time": {"from": "now-6h", "to": "now"},
-  "timepicker": {},
+  "timepicker": {"refresh_intervals": ["30s", "1m", "5m", "15m", "1h"]},
   "timezone": "browser",
   "title": "DANTE · Telemetry pipeline & budget",
   "uid": "dante-telemetry-pipeline",
