@@ -12,7 +12,7 @@ type RendererStatus = 'pending' | 'webgl2' | 'fallback';
 
 type Rgb = readonly [number, number, number];
 
-const MAX_DEVICE_PIXEL_RATIO = 1.6;
+const MAX_DEVICE_PIXEL_RATIO = 1.45;
 
 const VERTEX_SHADER_SOURCE = `#version 300 es
 precision highp float;
@@ -45,11 +45,6 @@ uniform vec2 uOriginRadius;
 uniform vec2 uInnerRadius;
 
 const float PI = 3.141592653589793;
-const float TAU = 6.283185307179586;
-
-float hash11(float value) {
-  return fract(sin(value * 127.1 + 311.7) * 43758.5453123);
-}
 
 float hash21(vec2 point) {
   vec3 p3 = fract(vec3(point.xyx) * 0.1031);
@@ -72,131 +67,162 @@ float noise2(vec2 point) {
 
 float fbm(vec2 point) {
   float value = 0.0;
-  float amplitude = 0.52;
-  mat2 rotation = mat2(0.82, -0.57, 0.57, 0.82);
+  float amplitude = 0.5;
+  mat2 transform = mat2(0.84, -0.54, 0.54, 0.84);
+
+  for (int octave = 0; octave < 6; octave += 1) {
+    value += amplitude * noise2(point);
+    point = transform * point * 2.02 + vec2(11.7, 7.9);
+    amplitude *= 0.5;
+  }
+
+  return value;
+}
+
+float ridgedFbm(vec2 point) {
+  float value = 0.0;
+  float amplitude = 0.56;
+  mat2 transform = mat2(0.76, -0.65, 0.65, 0.76);
 
   for (int octave = 0; octave < 5; octave += 1) {
-    value += amplitude * noise2(point);
-    point = rotation * point * 2.03 + vec2(17.1, 9.2);
-    amplitude *= 0.49;
+    float sampleValue = noise2(point);
+    float ridge = 1.0 - abs(sampleValue * 2.0 - 1.0);
+    value += ridge * ridge * amplitude;
+    point = transform * point * 2.08 + vec2(19.1, 4.3);
+    amplitude *= 0.48;
   }
 
   return value;
 }
 
 float ellipseMetric(vec2 uv, vec2 radius) {
-  vec2 normalized = (uv - vec2(0.5)) / radius;
-  return length(normalized);
+  return length((uv - vec2(0.5)) / radius);
+}
+
+float starSpark(vec2 uv, float seed) {
+  vec2 gridUv = uv * vec2(88.0, 58.0);
+  vec2 cell = floor(gridUv);
+  vec2 local = fract(gridUv);
+  float gate = step(0.968, hash21(cell + seed * 13.7));
+  vec2 center = vec2(
+    0.18 + hash21(cell + seed * 5.1) * 0.64,
+    0.18 + hash21(cell + seed * 9.3 + 17.0) * 0.64
+  );
+  float distanceToSpark = length(local - center);
+  float point = pow(max(0.0, 1.0 - distanceToSpark * 8.5), 10.0);
+  return gate * point;
 }
 
 void main() {
   vec2 uv = gl_FragCoord.xy / uResolution;
-  float pixel = 2.2 / min(uResolution.x, uResolution.y);
+  float pixel = 2.0 / min(uResolution.x, uResolution.y);
 
   float outerMetric = ellipseMetric(uv, uOuterRadius);
   float innerMetric = ellipseMetric(uv, uInnerRadius);
   float insideOuter = 1.0 - smoothstep(1.0, 1.0 + pixel * 2.0, outerMetric);
   float outsideInner = smoothstep(1.0 - pixel * 2.0, 1.0, innerMetric);
-  float band = insideOuter * outsideInner;
+  float hardBand = insideOuter * outsideInner;
 
-  if (band < 0.001) {
+  if (hardBand < 0.001) {
     discard;
   }
 
+  float outerDepth = max(0.0, 1.0 - outerMetric);
+  float innerDepth = max(0.0, innerMetric - 1.0);
+  float bandDepth = max(outerDepth + innerDepth, 0.00001);
+  float acrossBand = clamp(innerDepth / bandDepth, 0.0, 1.0);
+
   vec2 originPoint = (uv - vec2(0.5)) / uOriginRadius;
-  float radius = length(originPoint);
   float angle = atan(originPoint.y, originPoint.x);
-  float radialDistance = abs(radius - 1.0);
-  float normalizedAngle = (angle + PI) / TAU;
+  vec2 orbit = vec2(cos(angle), sin(angle));
 
-  vec2 warpDomain = vec2(angle * 2.15 + uSeed * 0.91, radius * 17.0 - uTime * 0.15);
-  float warpA = fbm(warpDomain);
-  float warpB = fbm(vec2(
-    angle * 5.4 - warpA * 3.8 + uSeed * 1.7,
-    radius * 38.0 + warpA * 5.2 + uTime * 0.22
+  vec2 largeDomain = orbit * 2.7 + vec2(
+    acrossBand * 1.45 + uSeed * 1.8,
+    acrossBand * -1.1 + uTime * 0.035
+  );
+  float largeCloud = fbm(largeDomain);
+
+  vec2 warp = vec2(
+    fbm(orbit * 4.4 + vec2(acrossBand * 3.2, uSeed * 2.1 + uTime * 0.05)),
+    fbm(orbit.yx * 4.9 + vec2(-acrossBand * 2.7, uSeed * 3.4 - uTime * 0.04))
+  );
+
+  vec2 mediumDomain = orbit * 6.8 +
+    warp * 2.9 +
+    vec2(acrossBand * 8.5, uSeed * 2.6 + uTime * 0.09);
+  float mediumCloud = fbm(mediumDomain);
+
+  vec2 filamentDomain = orbit * 13.0 +
+    warp * 5.2 +
+    vec2(acrossBand * 19.0 - uTime * 0.12, uSeed * 5.7);
+  float filamentNoise = ridgedFbm(filamentDomain);
+  float filament = smoothstep(0.62, 1.12, filamentNoise);
+  filament *= smoothstep(0.22, 0.76, mediumCloud + largeCloud * 0.34);
+
+  vec2 detailDomain = orbit * 24.0 +
+    warp * 7.0 +
+    vec2(acrossBand * 41.0, -uSeed * 7.3 + uTime * 0.17);
+  float fineCloud = fbm(detailDomain);
+  float fineRidge = ridgedFbm(detailDomain * 1.37 + vec2(8.0, 3.0));
+  float hair = smoothstep(0.75, 1.18, fineRidge) * smoothstep(0.38, 0.78, fineCloud);
+
+  float edgeWarp = (largeCloud - 0.5) * 0.22 + (mediumCloud - 0.5) * 0.08;
+  float warpedAcross = clamp(acrossBand + edgeWarp, 0.0, 1.0);
+  float edgeEnvelope = pow(max(0.0, sin(PI * warpedAcross)), 0.38);
+
+  float voids = smoothstep(0.24, 0.58, fbm(
+    orbit * 3.6 + warp * 1.4 + vec2(uSeed * 4.1, acrossBand * 5.0)
   ));
-  float microNoise = fbm(vec2(
-    angle * 13.0 + warpB * 2.4,
-    radius * 92.0 - warpA * 9.0 - uTime * 0.31
+  float cloudBody = smoothstep(
+    0.24,
+    0.78,
+    largeCloud * 0.58 + mediumCloud * 0.58 + fineCloud * 0.18
+  );
+  cloudBody *= mix(0.38, 1.0, voids);
+
+  float spark = starSpark(uv, uSeed);
+  float hotPocket = smoothstep(0.66, 0.92, fbm(
+    orbit * 5.1 + warp * 2.2 + vec2(acrossBand * 7.2, uSeed * 8.0)
   ));
 
-  float broadGlow = exp(-radialDistance * 22.0);
-  float core = exp(-radialDistance * 82.0);
-
-  float filamentA = pow(
-    0.5 + 0.5 * sin(angle * 71.0 + radius * 54.0 + warpA * 11.0 + uTime * 0.7),
-    7.0
-  );
-  float filamentB = pow(
-    0.5 + 0.5 * sin(angle * 119.0 - radius * 37.0 + warpB * 15.0 - uTime * 0.9),
-    12.0
-  );
-  float filamentC = pow(
-    0.5 + 0.5 * sin(angle * 183.0 + radius * 91.0 + microNoise * 8.0 + uTime * 1.1),
-    18.0
-  );
-
-  float densityBreakup = smoothstep(0.34, 0.82, warpB + microNoise * 0.38);
-  float filamentField =
-    filamentA * 0.48 +
-    filamentB * 0.34 +
-    filamentC * 0.22;
-  filamentField *= mix(0.22, 1.0, densityBreakup);
-
-  float sectorCount = 168.0;
-  float sector = normalizedAngle * sectorCount;
-  float sectorId = floor(sector);
-  float localAngle = abs(fract(sector) - 0.5);
-  float sparkGate = step(0.81, hash11(sectorId + floor(uSeed * 31.0)));
-  float sparkOffset = (hash11(sectorId * 3.7 + uSeed * 13.0) - 0.5) * 0.07;
-  float spark = exp(-localAngle * 88.0) *
-    exp(-abs((radius - 1.0) - sparkOffset) * 165.0) *
-    sparkGate;
-
-  float shardGate = step(0.9, hash11(sectorId * 11.3 + uSeed * 7.0));
-  float shard = exp(-localAngle * 34.0) *
-    exp(-radialDistance * 42.0) *
-    shardGate *
-    (0.4 + 0.6 * microNoise);
-
-  float energy =
-    broadGlow * 0.24 +
-    core * 0.92 +
-    filamentField * (0.42 + broadGlow * 0.8) +
-    spark * 1.5 +
-    shard * 0.65;
-
-  float colorWave = 0.5 + 0.5 * sin(angle * 1.17 + warpA * 3.1 + uSeed);
-  vec3 baseColor = mix(uViolet, uAccent, colorWave);
-  float hotMix = smoothstep(0.48, 0.92, warpB) *
-    (0.32 + 0.68 * (0.5 + 0.5 * sin(angle * 1.83 - uSeed)));
-  baseColor = mix(baseColor, uHot, hotMix * 0.82);
-
-  vec3 whiteHot = vec3(1.0, 0.975, 0.925);
-  float whiteAmount = clamp(core * 0.52 + spark * 0.92 + filamentC * core * 0.35, 0.0, 1.0);
-  vec3 color = mix(baseColor, whiteHot, whiteAmount);
-
-  float alpha = band * clamp(
-    0.07 +
-    broadGlow * 0.16 +
-    densityBreakup * 0.14 +
-    filamentField * 0.5 +
-    core * 0.42 +
-    spark * 0.92 +
-    shard * 0.38,
+  float density = edgeEnvelope * clamp(
+    0.08 +
+    cloudBody * 0.62 +
+    filament * 0.78 +
+    hair * 0.42 +
+    spark * 1.2,
     0.0,
     1.0
   );
-  alpha *= clamp(0.62 + uIntensity * 0.54, 0.0, 1.35);
+
+  float paletteNoise = fbm(
+    orbit * 2.35 + warp * 1.6 + vec2(uSeed * 3.0, acrossBand * 2.8)
+  );
+  vec3 color = mix(uViolet, uAccent, smoothstep(0.18, 0.82, paletteNoise));
+  color = mix(color, uHot, hotPocket * (0.28 + 0.44 * mediumCloud));
+
+  vec3 whiteHot = vec3(1.0, 0.965, 0.9);
+  float whiteAmount = clamp(
+    filament * 0.46 +
+    hair * 0.34 +
+    spark * 1.15 +
+    smoothstep(0.82, 1.08, filamentNoise) * 0.24,
+    0.0,
+    0.9
+  );
+  color = mix(color, whiteHot, whiteAmount);
 
   float luminance =
-    0.46 +
-    energy * 1.16 +
-    spark * 1.5 +
-    filamentC * core * 0.7;
-  vec3 rgb = color * luminance;
+    0.34 +
+    cloudBody * 0.56 +
+    filament * 1.0 +
+    hair * 0.55 +
+    spark * 2.2;
 
-  // Premultiplied output gives clean transparent compositing around the band.
+  float alpha = hardBand * density * clamp(0.72 + uIntensity * 0.42, 0.0, 1.25);
+  alpha = clamp(alpha, 0.0, 1.0);
+
+  vec3 rgb = color * luminance;
   outColor = vec4(rgb * alpha, alpha);
 }
 `;
@@ -358,8 +384,8 @@ export function WorldFocusEnergyCanvas({
     const innerRadiusLocation = requireUniform(gl, program, 'uInnerRadius');
 
     const accent = parseHexColor(world.accent);
-    const violet = parseHexColor('#8757ff');
-    const hot = parseHexColor('#ff8a38');
+    const violet = parseHexColor('#6f4cff');
+    const hot = parseHexColor('#ff9a42');
     const seed = worldSeed(world.id);
     const outerRadius = WORLD_FOCUS_GEOMETRY.guideEllipses.outer;
     const originRadius = WORLD_FOCUS_GEOMETRY.guideEllipses.origin;
