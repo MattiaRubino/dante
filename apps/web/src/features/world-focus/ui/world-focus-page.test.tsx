@@ -39,7 +39,7 @@ function requireWorld(id: 'music' | 'travel') {
 }
 
 describe('WorldFocusPage', () => {
-  it('keeps WF0/WF-G3 frozen while mounting the shader visual candidate', () => {
+  it('keeps WF0/WF-G3 frozen while mounting the volumetric visual candidate', () => {
     primeWorldFocusEntry({
       worldId: 'music',
       source: 'home',
@@ -59,7 +59,7 @@ describe('WorldFocusPage', () => {
     expect(shell.getAttribute('data-world-focus-structure-version')).toBe('1.0.0');
     expect(shell.getAttribute('data-world-focus-geometry-version')).toBe('wf-g3');
     expect(shell.getAttribute('data-world-focus-visual-version')).toBe(
-      'wf-v2-candidate',
+      'wf-v3-candidate',
     );
     expect(shell.getAttribute('data-world-focus-region')).toBe('shell');
     expect(shell.getAttribute('data-entry-origin')).toBe('live');
@@ -77,6 +77,7 @@ describe('WorldFocusPage', () => {
     expect(
       container.querySelectorAll('.world-focus-corona-reference'),
     ).toHaveLength(3);
+    expect(container.querySelector('.world-focus-corona-fallback-svg')).toBeNull();
     expect(
       container.querySelector('[data-world-focus-energy-motion="static"]'),
     ).toBeTruthy();
@@ -104,7 +105,7 @@ describe('WorldFocusPage', () => {
     expect(shell?.getAttribute('data-world-focus-structure-version')).toBe('1.0.0');
     expect(shell?.getAttribute('data-world-focus-geometry-version')).toBe('wf-g3');
     expect(shell?.getAttribute('data-world-focus-visual-version')).toBe(
-      'wf-v2-candidate',
+      'wf-v3-candidate',
     );
 
     fireEvent.keyDown(document, { key: 'Escape' });
