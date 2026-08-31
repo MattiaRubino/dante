@@ -30,7 +30,7 @@
   white-space: nowrap;
 }
 
-.world-focus-circle-guides {
+.world-focus-ellipse-guides {
   position: absolute;
   z-index: 1;
   inset: 0;
@@ -40,19 +40,19 @@
   pointer-events: none;
 }
 
-.world-focus-circle-guides circle {
+.world-focus-ellipse-guides ellipse {
   fill: none;
   vector-effect: non-scaling-stroke;
   stroke: #111111;
 }
 
-.world-focus-circle-guides circle[data-guide-line='outer'],
-.world-focus-circle-guides circle[data-guide-line='inner'] {
+.world-focus-ellipse-guides ellipse[data-guide-line='outer'],
+.world-focus-ellipse-guides ellipse[data-guide-line='inner'] {
   stroke-width: 1.15;
   opacity: 0.62;
 }
 
-.world-focus-circle-guides circle[data-guide-line='origin'] {
+.world-focus-ellipse-guides ellipse[data-guide-line='origin'] {
   stroke-width: 2;
   opacity: 1;
 }
