@@ -692,6 +692,7 @@ async def test_concurrent_passkey_removals_preserve_last_authenticator(
                     created_at=now,
                 )
             )
+            await session.flush()
             session.add_all(
                 [
                     PasskeyCredentialRow(
@@ -766,6 +767,7 @@ async def test_passkey_removal_and_provider_unlink_share_account_wide_lock(
                     created_at=now,
                 )
             )
+            await session.flush()
             session.add(
                 PasskeyCredentialRow(
                     passkey_credential_ref=passkey_ref,
