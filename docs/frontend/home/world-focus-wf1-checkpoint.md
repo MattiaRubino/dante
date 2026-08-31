@@ -1,224 +1,134 @@
 # DANTE — World Focus WF1 Checkpoint
 
-**Status:** IMPLEMENTATION CANDIDATE / USER VISUAL QA PENDING  
+**Status:** WF-G1 GEOMETRY CANDIDATE / USER VISUAL QA PENDING  
 **Date:** 2026-08-31  
 **Branch:** `feature/home-react`  
-**Scope:** WF1 route/shell/entry-transition foundation only
+**Scope:** dedicated World Focus route + locked structural geometry
 
-This checkpoint records the current WF1 implementation candidate. It does **not** declare WF1 closed until the real frontend gates and user visual/manual review pass.
+This checkpoint supersedes the earlier `/home?focus=...` overlay implementation and the earlier transition experiments.
 
-## 1. Non-negotiable product boundary
+## 1. Current architectural decision
 
-World Focus is an immersive depth surface for one selected World.
-
-It is not the Mondi Overview and it is not a new Domain entity.
-
-The persistent application topbar is outside World Focus ownership and is **untouchable** by the World Focus feature:
+World Focus is a real application route/surface:
 
 ```text
-World Focus MUST NOT
-- hide the topbar
-- recolor the topbar
-- restyle the topbar
-- change its blur/material
-- change its z-index/layer ownership
-- replace or recompose it
+/home
+/worlds
+/worlds/:worldId
 ```
 
-World Focus always occupies the application area **below** the existing topbar.
+Opening a World from Home navigates to `/worlds/:worldId`.
 
-## 2. Start / optional transition / end contract
+World Focus is **not** rendered over Home and Home is **not** its visible background.
 
-Navigation and presentation are deliberately separate:
+The persistent AppShell Topbar is outside World Focus ownership and remains unchanged.
+
+## 2. Current interaction
+
+Home keeps its existing World carousel behavior:
 
 ```text
-START
-source screen + selected World
+first activation
+-> select / center World
 
-    ↓ route/navigation always works
-
-OPTIONAL TRANSITION
-camera-like focus + portal presentation
-
-    ↓
-
-END
-stable World Focus surface
+subsequent activation on the centered World
+-> navigate to /worlds/:worldId
 ```
 
-The middle transition is ornamental presentation only.
+Pointer drag must not open World Focus. Keyboard activation preserves the same select-then-open semantics.
 
-The start and end states MUST remain correct when the transition is skipped entirely.
+## 3. WF-G1 geometry lock
 
-No backend, Domain, authorization, routing, persistence, or application behavior may depend on the animation completing.
-
-## 3. Entry gesture contract
-
-Desktop mouse:
+The geometry authority is:
 
 ```text
-single click
--> normal carousel selection/navigation
-
-double click on a World
--> open World Focus
+apps/web/src/features/world-focus/model/world-focus-geometry.ts
 ```
 
-Keyboard remains independently accessible:
+Geometry version:
 
 ```text
-Enter on an inactive World
--> select/center
-
-Enter on the active World
--> open World Focus
+wf-g1
 ```
 
-Touch/pen must not rely on browser double-tap semantics:
+The World Focus route is intentionally plain during this gate:
+
+- white route surface below the Topbar;
+- three curved black guide lines on the left;
+- three mirrored curved black guide lines on the right;
+- `outer` and `inner` define the future visual-frame band;
+- `origin` is the canonical future animation/asset reference line;
+- one real rectangular workspace remains between the two side bands;
+- the workspace is blue only as temporary geometry/debug visualization.
+
+The workspace is never clipped to a circle or ellipse.
+
+## 4. Geometry change control
+
+Once the user visually approves WF-G1, it is frozen.
+
+Any later geometry change requires:
+
+1. explicit user/product approval;
+2. intentional edit to the geometry authority;
+3. geometry version bump (`wf-g2`, ...);
+4. contract test update;
+5. responsive/E2E revalidation;
+6. documentation update in the same change.
+
+Cosmic styling, particles, magic-circle treatment, image/shader assets and optional entry animation are presentation layers. They may use the WF-G1 bands but may not silently move them or redefine the workspace.
+
+## 5. Responsive pressure
+
+The locked desktop pressure widths are:
 
 ```text
-first tap
--> select/center
-
-subsequent tap on the active World
--> open World Focus
+1600
+1366
+1024
+901
 ```
 
-Pointer travel above the bounded click threshold remains drag/navigation and must not open World Focus.
+Compact behavior is separately bounded below `720px`.
 
-## 4. Route/lifecycle contract
+At every pressure width:
 
-World Focus remains route-backed through validated application search state:
+- both guide rails remain inside the route surface;
+- the rectangular workspace remains between the guide rails;
+- no geometry overlaps unexpectedly;
+- no horizontal overflow is allowed.
+
+## 6. Current content boundary
+
+The workspace is intentionally empty except for truthful shell states:
 
 ```text
-/home?focus=<world-id>
-/worlds?focus=<world-id>
+loading
+ready
+error
+unavailable
 ```
 
-The source route remains mounted beneath the immersive surface so transient Home state is preserved rather than reconstructed.
+No production AI surface, widgets, modules, charts, insight surfaces or backend data are authorized in this geometry gate.
 
-While World Focus is active the Home underlay is:
+## 7. Deferred presentation
 
-- still mounted;
-- `inert`;
-- `aria-hidden`;
-- never treated as canonical World Focus content.
+All previous camera/WebGL/portal transition experiments are outside the current runtime target.
 
-Browser history owns live-entry back behavior. Direct/deep-link loads without a live opener snapshot have a deterministic close path that removes only `focus`.
-
-## 5. Motion preference contract
-
-WF1 establishes the frontend preference contract:
+The required navigation is currently:
 
 ```text
-WorldFocusMotionPreference
-= immersive | instant
+Home
+-> World Focus route
 ```
 
-Default:
+without an intermediate ornamental transition.
 
-```text
-immersive
-```
+An optional transition may be designed later, but only after WF-G1 geometry is approved and without making navigation depend on it.
 
-`instant` means:
+## 8. Current World identity status
 
-```text
-START
--> END
-```
-
-with no portal/camera transition in the middle.
-
-The current pre-backend preference is persisted as presentation configuration under:
-
-```text
-dante.preferences.world-focus-motion.v1
-```
-
-This is UI/product preference state only. It is not Domain truth and it does not justify a database change in the current phase.
-
-The future Settings surface must use this same typed contract instead of inventing a second switch.
-
-`prefers-reduced-motion: reduce` always suppresses the ornamental transition regardless of the stored preference.
-
-Navigation remains available in every mode.
-
-## 6. Transition v3 visual grammar
-
-The transition target is no longer a generic overlay expansion.
-
-The intended choreography is:
-
-```text
-selected World
--> source camera visually locks toward it
--> World grows toward the focus center
--> energetic/cosmic aperture ignites from that World
--> portal/tunnel expands through the application area
--> source Home recedes
--> stable World Focus atmosphere resolves
-```
-
-The topbar is never part of this choreography.
-
-The source camera effect is implemented only on the Home underlay beneath the topbar.
-
-## 7. Rendering architecture
-
-The transition uses one bounded procedural WebGL2 effect shared by every World.
-
-No Three.js scene, Rive runtime, permanent particle engine, video overlay, or per-World animation implementation is introduced for WF1.
-
-The WebGL renderer:
-
-- mounts only for the immersive entry;
-- targets roughly 1.24 seconds;
-- caps device pixel ratio;
-- disables depth/stencil/antialias buffers not needed by the effect;
-- does not preserve the drawing buffer;
-- avoids GPU readback;
-- cleans up shaders/program/VAO;
-- requests context loss after teardown;
-- falls back to bounded CSS presentation when WebGL2 is unavailable or rejected.
-
-The expensive transition renderer does not remain mounted in the settled World Focus.
-
-## 8. Stable end state
-
-The end state is independent from WebGL.
-
-WF1 currently leaves a static, declarative World anchor beneath the topbar to visually retain the selected World after the transition ends.
-
-The end anchor:
-
-- is ordinary DOM/CSS presentation;
-- uses the World accent/theme parameters;
-- does not require a running render loop;
-- is also present when entry mode is `instant`;
-- is placeholder visual structure for WF1, not a final content/module design decision.
-
-The production World canvas remains intentionally empty in WF1.
-
-## 9. World variation boundary
-
-One shared transition grammar is used for every World.
-
-Allowed declarative variation remains bounded to presentation parameters such as:
-
-```text
-accent
-motion character
-texture family
-particle density
-ambient intensity
-```
-
-There is no custom animation code path per World.
-
-## 10. Current World identity status
-
-The current World Focus catalog remains synthetic pre-backend frontend presentation data.
+The current World catalog remains synthetic pre-backend frontend presentation data.
 
 ```text
 World Focus fixture id
@@ -228,70 +138,19 @@ World Focus fixture id
 != persisted World entity
 ```
 
-WF2 establishes the explicit frontend application/data-source boundary.
+No World Domain primitive or database change is introduced by WF-G1.
 
-## 11. Shell states
+## 9. Visual gate now required
 
-World Focus explicitly represents:
+Before adding any cosmic/Dr-Strange-style skin, verify in the real browser:
 
-```text
-loading
-ready
-error
-unavailable
-```
+1. Home opens a dedicated `/worlds/:worldId` page;
+2. the Topbar remains exactly the global Topbar;
+3. the area below it is white;
+4. exactly three guide curves appear on each side;
+5. the central/origin guide is visually stronger;
+6. the blue rectangular workspace remains wholly inside the two guide bands;
+7. resizing across the pressure widths behaves predictably;
+8. nothing overflows, stretches arbitrarily or changes geometry ownership.
 
-`loading` exposes `aria-busy` plus a status message. `error` and `unavailable` remain distinct states and do not masquerade as empty content.
-
-Focus moves into the immersive surface on entry. On exit, focus returns to the live opener when it still exists.
-
-## 12. Automated pressure authored
-
-WF1 coverage includes or is expected to include:
-
-- double-click desktop entry;
-- single click remains selection only;
-- keyboard select/open behavior;
-- touch/pen select/open boundary;
-- live opener vs direct-entry fallback;
-- persisted `instant` preference;
-- reduced-motion suppression;
-- topbar remains visible;
-- Home state preservation through browser back;
-- opener focus restoration;
-- pointer drag not opening World Focus;
-- shell loading/error/unavailable semantics.
-
-These tests are not claimed green for the v3 candidate until executed in the real worktree.
-
-## 13. Required visual gate
-
-Before WF1 can close, validate at minimum:
-
-1. the topbar is pixel-for-pixel unaffected during the entire sequence;
-2. single mouse click does not open World Focus;
-3. double click does open it;
-4. the visual motion appears to originate from the actual selected World;
-5. the source scene appears to focus toward the World rather than merely fade;
-6. the portal reads as one coherent aperture/tunnel, not layered random effects;
-7. the transition resolves cleanly into the stable end state;
-8. the static end anchor remains convincing when the animation is disabled;
-9. `instant` feels immediate rather than broken;
-10. reduced motion remains fully usable;
-11. browser back restores the previous Home state.
-
-## 14. Exclusions retained
-
-WF1 authorizes no:
-
-- backend/API work;
-- database/Alembic change;
-- provider integration;
-- real LLM execution;
-- World Domain entity;
-- Mondi Overview design;
-- production widget/module composition;
-- Timeline/Orientation/Context Rail redesign;
-- topbar redesign of any kind.
-
-Do not advance to WF2/WF3 closure language until WF1 user visual QA is actually earned.
+Only after this visual gate is approved can the WF-G1 geometry be marked LOCKED and presentation work resume.
