@@ -71,6 +71,16 @@ class AppleIdentityEvidence:
     email_private: bool | None
     mailbox_authoritative: bool
 
+    def __post_init__(self) -> None:
+        if self.email is None:
+            if self.email_verified or self.email_private is not None or self.mailbox_authoritative:
+                raise AppleProofError("Apple email metadata requires an email claim")
+            return
+        if self.email_private is None:
+            object.__setattr__(self, "email_private", False)
+        if self.mailbox_authoritative and not self.email_verified:
+            raise AppleProofError("Apple mailbox authority requires verified email evidence")
+
 
 @dataclass(frozen=True, slots=True)
 class AppleAuthorizationProfile:
@@ -493,14 +503,14 @@ def _notification_event_object(value: object) -> dict[str, object]:
 
 def _required_claim_string(claims: dict[str, object], name: str, *, maximum: int) -> str:
     value = claims.get(name)
-    if not _canonical_text(value, maximum=maximum):
+    if not isinstance(value, str) or not _canonical_text(value, maximum=maximum):
         raise AppleProofError(f"Apple {name} claim is invalid")
     return value
 
 
 def _required_object_string(value: dict[str, object], name: str, *, maximum: int) -> str:
     candidate = value.get(name)
-    if not _canonical_text(candidate, maximum=maximum):
+    if not isinstance(candidate, str) or not _canonical_text(candidate, maximum=maximum):
         raise AppleProofError(f"Apple event {name} is invalid")
     return candidate
 
@@ -570,13 +580,13 @@ def _profile_part(value: object) -> str | None:
 
 def _required_response_string(body: dict[str, object], name: str, *, maximum: int) -> str:
     value = body.get(name)
-    if not _canonical_text(value, maximum=maximum):
+    if not isinstance(value, str) or not _canonical_text(value, maximum=maximum):
         raise AppleProviderUnavailableError(f"Apple token response omitted valid {name}")
     return value
 
 
 def _protocol_error_code(body: dict[str, object]) -> str:
     value = body.get("error")
-    if not _canonical_text(value, maximum=128):
+    if not isinstance(value, str) or not _canonical_text(value, maximum=128):
         return "provider_error"
     return value
