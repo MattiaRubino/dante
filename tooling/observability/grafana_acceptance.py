@@ -553,7 +553,7 @@ def _rule_payload(
                     "maxDataPoints": 43200,
                     "reducer": "last",
                     "refId": "B",
-                    "settings": {"mode": "strict"},
+                    "settings": {"mode": "dropNN"},
                     "type": "reduce",
                 },
             },
