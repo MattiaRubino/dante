@@ -1,11 +1,11 @@
 # DANTE System Overview
 
 - **Status:** CURRENT ARCHITECTURE / IMPLEMENTATION-BOUNDARY OVERVIEW
-- **Last reconciled:** 2026-08-26
+- **Last reconciled:** 2026-08-31
 - **Backend foundation:** CP1–CP6 CLOSED / integrated / directly validated
 - **Current PostgreSQL:** 18.6
-- **Current Alembic head:** `20260826_08`
-- **Current product work:** Access frontend active and unmerged on `feature/access-frontend`
+- **Current Alembic head:** `20260830_09`
+- **Current product work:** full Access/Auth vertical active and unmerged on `feature/access-auth`; AI architecture active and design-only on `feature/ai-architecture`
 
 ## 1. Product and authority
 
@@ -32,6 +32,8 @@ client local state != canonical accepted effect
 ```
 
 Logical hardenings `WL-H01..WL-H12` remain active implementation contracts.
+
+The current AI-00 consolidation is `docs/architecture/dante-ai-foundation.md`. It defines inherited/derived AI constraints only; it does not select a provider, agent runtime, conversation schema, database evolution or frontend interaction form.
 
 ## 2. Repository / application topology
 
@@ -80,6 +82,7 @@ CP4 CI enforcement                              CLOSED / DIRECT REMOTE QA PASS
 CP5 integrated scaffold QA                      CLOSED / DIRECT INTEGRATED QA PASS
 Backend scaffold integration PR #24             MERGED
 CP6 concrete PostgreSQL database                CLOSED / DIRECT QA / INTEGRATED VIA PR #42
+PostgreSQL Recovery evolution                   CLOSED / LOCAL DIRECT QA / INTEGRATED VIA PR #47
 ```
 
 Current technical baseline:
@@ -98,7 +101,7 @@ explicit application transaction ownership
 real PostgreSQL acceptance testing
 ```
 
-The earlier CP2/CP3 PostgreSQL 18.4 runs remain exact historical phase-time evidence. Patch maintenance inside PostgreSQL major line 18 does not reopen the architecture.
+The earlier CP2/CP3 PostgreSQL 18.4 runs and the pre-Recovery `20260826_08` database shape remain exact historical phase-time evidence. Patch maintenance inside PostgreSQL major line 18 and the bounded Recovery lifecycle evolution do not reopen the selected architecture.
 
 ## 4. Canonical persistence authority
 
@@ -110,24 +113,26 @@ current repository/runtime patch
 18.6
 
 current Alembic head
-20260826_08
+20260830_09
 ```
 
 Current concrete topology:
 
 ```text
-68 tables
+69 tables
 5 ordinary views
-14 integrity routines
-75 triggers
-95 physical indexes
-68 foreign keys
-120 named CHECK constraints
+15 integrity routines
+76 triggers
+97 physical indexes
+69 foreign keys
+123 named CHECK constraints
 0 custom enum/domain
 0 sequences
 0 materialized views
 0 RLS policies
 ```
+
+The current exact Database System of Record is `docs/database/README.md` plus the Database Dictionary and executable Alembic/SQLAlchemy/PostgreSQL truth. The post-CP6 Recovery evolution adds the bounded MaterialState retirement/anti-resurrection contract; it does not create a second canonical persistence surface.
 
 Selected PostgreSQL capability envelope remains bounded by the accepted Physical/technical decisions, including PostGIS, pgvector, native FTS, `pg_trgm`, `unaccent`, `pg_stat_statements` and a trigger-based PgBouncer activation posture.
 
@@ -151,6 +156,8 @@ universal event ontology
 universal Fact/Version semantic payload root
 JSONB required-semantic escape hatch
 ```
+
+AI work inherits the same boundary. Conversation state, embeddings, provider threads, agent/runtime journals or generated summaries do not become canonical DANTE truth by convenience.
 
 ## 5. Reference / material-state architecture
 
@@ -182,6 +189,8 @@ MaterialStateRef
 
 Provider revisions, MVCC tokens, timestamps and ETags do not become MaterialStateRef.
 
+For consequential operations, expected material state remains the semantic concurrency basis. A stale AI/tool request must conflict/re-read/reconcile rather than silently overwrite newer accepted state.
+
 ## 6. CP6 — Concrete PostgreSQL Database
 
 CP6 is complete. It converted the closed Domain + Logical + Physical model into the concrete DANTE PostgreSQL database and then validated the result directly.
@@ -207,7 +216,9 @@ Durable acceptance evidence:
 
 The former CP6 blueprint/materialization sequence is historical execution evidence. It is not a current next-step plan.
 
-## 7. Boundary to product verticals
+The later Recovery evolution is current protected-main truth and is governed by the Database System of Record, current Alembic head `20260830_09`, current Dictionary, operator runbook and recovery harnesses.
+
+## 7. Boundary to product / AI verticals
 
 Database materialization is not the same thing as product-vertical application implementation.
 
@@ -224,15 +235,18 @@ product workflow orchestration
 
 They consume the already-materialized canonical database. A later real requirement may evolve the DB normally, but accepted schema/semantic invariants are not casually reopened.
 
-Current state:
+Current bounded branch-local state includes:
 
 ```text
-Access frontend
-ACTIVE / UNMERGED on feature/access-frontend
+Full Access/Auth product vertical
+ACTIVE / UNMERGED on feature/access-auth
 
-first dedicated post-CP6 backend product vertical
-NOT STARTED
+AI architecture
+ACTIVE / DESIGN-ONLY on feature/ai-architecture
+NO BACKEND / DB / PROVIDER IMPLEMENTATION CLAIMED
 ```
+
+AI-00 must first consolidate product/semantic/governance constraints and then research the interaction/product form. Provider/model/runtime/tool/memory choices remain downstream.
 
 ## 8. Frontend / client data authority
 
@@ -254,6 +268,8 @@ Local arrival/staging never defines canonical truth.
 
 Generic frontend foundation/materialization is already closed and integrated. Product verticals proceed on bounded branches under their own gates.
 
+The future AI interaction surface must preserve the same authority boundary: chat/UI state may express draft, candidate, streaming or pending state without pretending that state is an accepted canonical effect.
+
 ## 9. Offline / specialist capabilities
 
 Selected Physical targets remain activation-triggered rather than automatically enabled everywhere.
@@ -269,6 +285,8 @@ OR-Tools                          solver-backed capability
 ```
 
 A PostgreSQL-native structure required by the canonical schema may exist without activating the surrounding runtime/product capability.
+
+For AI, Restate/outbox/pgvector/OR-Tools/provider capabilities remain trigger-based: selection in the target architecture does not mean every AI request should activate them.
 
 ## 10. Transactions / migrations / privileges
 
@@ -294,6 +312,8 @@ dante_runtime    LOGIN NOINHERIT / runtime DML posture
 
 Migration/evolution, idempotency, material-state and privilege doctrine is governed by the accepted PostgreSQL Constitution and the real Alembic/mapping implementation.
 
+Future AI tool execution must pass through application/domain mutation contracts rather than receiving direct unrestricted database mutation authority.
+
 ## 11. Current direct database evidence
 
 Final CP6 acceptance established, among other gates:
@@ -312,17 +332,24 @@ restart/health                   PASS
 persistent volume retained       PASS
 ```
 
-The accepted implementation/database evidence is the CP6 closure package, not older pre-materialization foundation runs.
+The later integrated Recovery workstream directly proved the bounded recovery/retirement/anti-resurrection contract in LOCAL, including whole CP07 rehearsal and database-local reopen. Remote backup/cloud recovery remains unactivated/not claimed. Exact current evidence belongs to `docs/database/README.md` and the recovery runbook/harnesses.
+
+Current AI-00 work is documentation/design only and makes no runtime QA claim.
 
 ## 12. Current non-claims
 
 ```text
-FIRST POST-CP6 BACKEND PRODUCT VERTICAL   NOT IMPLEMENTED
-SEMANTIC HG BLANKET PASS                  NO
-RESTORE/PITR PRODUCTION REHEARSAL         NOT CLAIMED BY CP6
-POWERSYNC PRODUCT DIRECT TEST             ONLY WHEN ACTIVATED BY A REAL VERTICAL
-RESTATE DIRECT TEST                       ONLY WHEN ACTIVATED BY A REAL WORKFLOW
-PRODUCTION DEPLOYMENT                     NOT IMPLIED BY LOCAL/CI DATABASE CLOSURE
+FULL ACCESS/AUTH PRODUCT VERTICAL       NOT CLAIMED CLOSED
+DANTE AI RUNTIME                        NOT IMPLEMENTED
+AI MODEL / PROVIDER                     NOT SELECTED
+AI AGENT SDK / ORCHESTRATOR             NOT SELECTED
+AI CONVERSATION / MEMORY DB SCHEMA      NOT DESIGNED OR MATERIALIZED
+SEMANTIC HG BLANKET PASS                NO
+REMOTE BACKUP PROVIDER                  TBD / NOT ACTIVATED
+PRODUCTION/CLOUD RECOVERY               NOT CLAIMED
+POWERSYNC PRODUCT DIRECT TEST           ONLY WHEN ACTIVATED BY A REAL VERTICAL
+RESTATE DIRECT TEST                     ONLY WHEN ACTIVATED BY A REAL WORKFLOW
+PRODUCTION DEPLOYMENT                   NOT IMPLIED BY LOCAL/CI DATABASE CLOSURE
 ```
 
 ## 13. Testing / CI
@@ -340,6 +367,8 @@ Frontend CI Gate
 Required-check names come from real emitted contexts and repository rules, not guessed prose.
 
 Historical successful runs remain evidence for the exact commit/environment on which they executed. Current claims require current evidence appropriate to the affected scope.
+
+Future AI implementation will require its own direct evidence for model/tool/runtime/security behavior; documentation or provider feature claims will not constitute PASS.
 
 ## 14. Environments / developer posture
 
@@ -361,8 +390,10 @@ LOGICAL MODEL         CLOSED
 PHYSICAL MODEL        CLOSED
 BACKEND FOUNDATION    CLOSED
 CP6 DATABASE          CLOSED / INTEGRATED
+POSTGRESQL RECOVERY   LOCAL PASS / CLOSED / INTEGRATED
 FRONTEND FOUNDATION   CLOSED / INTEGRATED
-ACCESS FRONTEND       ACTIVE / UNMERGED
+ACCESS/AUTH VERTICAL  ACTIVE / UNMERGED
+AI ARCHITECTURE       ACTIVE / DESIGN-ONLY / UNMERGED
 ```
 
-Current general repository status is owned by `docs/PROJECT-STATUS.md`; branch-local product work is owned by the relevant workstream documentation and executable branch truth.
+Current general repository status is owned by `docs/PROJECT-STATUS.md`; branch-local product/architecture work is owned by the relevant durable documentation and executable branch truth.
