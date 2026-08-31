@@ -225,12 +225,15 @@ def openapi_document() -> dict[str, Any]:
 
 def render_openapi() -> str:
     """Render stable JSON ordering for reviewable generated-source diffs."""
-    return json.dumps(
-        openapi_document(),
-        ensure_ascii=False,
-        indent=2,
-        sort_keys=True,
-    ) + "\n"
+    return (
+        json.dumps(
+            openapi_document(),
+            ensure_ascii=False,
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n"
+    )
 
 
 def write_openapi(target: Path) -> None:

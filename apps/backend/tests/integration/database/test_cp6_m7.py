@@ -118,9 +118,7 @@ def _mapped_table_names() -> set[str]:
         "auth_session",
     }
     return {
-        table.name
-        for table in Base.metadata.tables.values()
-        if table.name not in post_cp6_tables
+        table.name for table in Base.metadata.tables.values() if table.name not in post_cp6_tables
     }
 
 
