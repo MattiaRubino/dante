@@ -1,11 +1,11 @@
 # DANTE — World Focus WF1 Checkpoint
 
-**Status:** IMPLEMENTATION CANDIDATE / AUTOMATED + USER QA PENDING  
+**Status:** IMPLEMENTATION CANDIDATE / SECOND VISUAL QA PENDING  
 **Date:** 2026-08-31  
 **Branch:** `feature/home-react`  
 **Scope:** WF1 route/shell/entry-transition foundation only
 
-This checkpoint records the WF1 implementation candidate. It does **not** declare WF1 closed until the real frontend gates and user visual/manual review pass.
+This checkpoint records the current WF1 implementation candidate. It does **not** declare WF1 closed until the second real visual/manual review passes.
 
 ## 1. Implemented boundary
 
@@ -27,11 +27,31 @@ World Focus is represented as validated search/navigation state on the owning ap
 /worlds?focus=<world-id>
 ```
 
-This is deliberate for WF1. It keeps the source route mounted beneath the immersive application surface, so transient Home state is not reconstructed after exit.
+This keeps the source route mounted beneath the immersive application surface, so transient Home state is not reconstructed after exit.
 
 `/worlds` without `focus` remains the existing Mondi Overview placeholder. WF1 does not design the Mondi Overview.
 
-## 2. State/lifecycle decision
+## 2. Global Topbar invariant
+
+The global AppShell Topbar is **not part of World Focus** and must not change when World Focus opens.
+
+Non-negotiable invariant:
+
+```text
+Topbar identity
+Topbar geometry
+Topbar visuals
+Topbar interaction
+Topbar z-order
+
+remain exactly the normal AppShell behavior.
+```
+
+World Focus occupies the application surface **below** the accepted 64px global Topbar and has a lower stacking level than the Topbar.
+
+The earlier WF1 candidate that hid the Topbar was rejected during user visual QA and that special-case CSS/route-shell behavior has been removed.
+
+## 3. State/lifecycle decision
 
 The source screen remains mounted while World Focus is open.
 
@@ -39,9 +59,7 @@ The underlay is:
 
 - `inert`;
 - `aria-hidden`;
-- visually covered by the fixed immersive surface.
-
-The persistent AppShell/Topbar also remains mounted so shell geometry does not change, but is hidden from interaction while a validated World Focus state is active.
+- visually covered only below the global Topbar.
 
 Browser history owns live-entry back behavior. A direct/deep-link load without a live opener snapshot has a deterministic fallback close that removes only `focus`.
 
@@ -58,7 +76,7 @@ unavailable
 
 Focus moves into the immersive surface on entry. On exit, restoration is deferred until the still-mounted underlay has left its `inert` state, then returns to the live opener when it still exists.
 
-## 3. Home entry behavior
+## 4. Home entry behavior
 
 The accepted Home carousel remains unchanged.
 
@@ -78,46 +96,59 @@ Keyboard activation follows the same select-first/open-second rule.
 
 The bridge emits only presentation identity + opener geometry. It does not create backend/Domain identity.
 
-## 4. Transition architecture
+## 5. Transition architecture — v2 after visual rejection
 
-One shared transition engine is used for every World.
+The first CSS-only orbit/portal candidate was rejected during user visual QA because it did not reach the required premium/cinematic quality.
 
-Live entry carries one short-lived in-memory visual snapshot:
+The replacement is a bounded GPU-driven entry engine based on established modern WebGL transition techniques:
 
 ```text
-world id
-entry source
-opener client rectangle
+real clicked World origin
+-> radial SDF expansion
+-> procedural noise deformation
+-> turbulent energy boundary
+-> polar tunnel / radial streak field
+-> world-color activation flash
+-> World Focus atmosphere settles underneath
+-> GPU transition layer tears down
 ```
 
-The snapshot:
+Implementation rules:
 
-- has a five-second TTL;
-- is not persisted;
-- is not backend state;
-- is not part of URL semantics;
-- is used only to visually hand the selected Home sphere into the full-screen World Focus.
+- one shared WebGL2 fragment-shader engine for every World;
+- no Three.js scene graph;
+- no Rive/WASM runtime;
+- no downloaded video/VFX dependency;
+- no per-World animation implementation;
+- no continuous WebGL rendering after entry;
+- WebGL canvas exists only during the approximately one-second live entry;
+- renderer resources and WebGL context are explicitly released after teardown;
+- `preserveDrawingBuffer` is disabled;
+- depth, stencil and antialias buffers are not requested;
+- `failIfMajorPerformanceCaveat` forces a lightweight fallback on unsuitable devices;
+- device pixel ratio is bounded;
+- resize/layout geometry is measured outside the per-frame hot path;
+- WebGL-unavailable devices receive a bounded CSS fallback;
+- reduced-motion users skip the ornamental live-entry engine entirely.
 
-World variation is declarative and bounded:
+The visual direction follows researched GPU transition patterns rather than arbitrary DOM decoration: expanding signed-distance masks, noise-deformed boundaries, shader-driven ripple/reveal fields and GPU-controlled progress.
+
+## 6. World variation
+
+World variation remains declarative and bounded:
 
 ```text
 accent
 motion character
 texture family
-orbital density
+orbital density (legacy profile field; not a DOM orbit count)
 particle density
 ambient intensity
 ```
 
-There is no custom animation component or WebGL scene per World.
+The same engine reads the profile and changes energy, density and motion characteristics without introducing a custom renderer per World.
 
-The current implementation uses CSS/compositor-friendly transform/opacity and bounded gradient/orbit layers. Richer particle/3D behavior is intentionally deferred until measured value/performance justify it.
-
-`prefers-reduced-motion` removes entry and continuous ornamental animation while preserving the final surface and navigation.
-
-## 5. Current World identity status
-
-The current World Focus catalog is explicitly synthetic pre-backend frontend presentation data.
+The current catalog remains explicitly synthetic pre-backend frontend presentation data:
 
 ```text
 World Focus fixture id
@@ -129,22 +160,23 @@ World Focus fixture id
 
 WF2 will establish the explicit frontend application/data-source boundary.
 
-## 6. Current surface contents
+## 7. Current surface contents
 
 WF1 intentionally contains only:
 
-- immersive shell/background;
+- immersive application surface below the unchanged Topbar;
 - back control;
 - World identity/title/description;
 - empty semantic World canvas boundary;
 - explicit loading/error/unavailable shell presentation;
-- transition/theme infrastructure.
+- GPU entry engine + fallback;
+- final ambient/theme infrastructure.
 
 No production widget composition, AI conversation, Insight, personalization, or backend integration is part of WF1.
 
-## 7. Tests authored
+## 8. Automated pressure
 
-WF1 adds automated specifications for:
+WF1 specifications cover:
 
 - live opener snapshot vs direct-entry fallback;
 - back/Escape close semantics;
@@ -155,11 +187,13 @@ WF1 adds automated specifications for:
 - keyboard entry;
 - direct `/home?focus=...` fallback;
 - loading/error/unavailable shell-state semantics;
-- reduced-motion usability.
+- reduced-motion usability;
+- Topbar remaining visible and geometrically above World Focus;
+- live entry moving from `entering` to `settled`.
 
-These tests are **authored but not claimed green by this checkpoint** until executed in the real worktree.
+The previous worktree run before the v2 visual replacement established green lint, typecheck, architecture, generated checks, 90/90 unit tests and build; the single remaining E2E failure at that point belonged to the independent Access workstream. The v2 transition must be rerun through the same gates before WF1 closure.
 
-## 8. Required local gate
+## 9. Required local gate
 
 Before WF1 can close:
 
@@ -175,25 +209,30 @@ pnpm test:e2e:web
 git diff --check
 ```
 
-Use the actual repository script names if the workspace aggregate differs.
+Independent Timeline/Access workstream failures must be attributed accurately rather than silently fixed from WF1.
 
-## 9. Required user visual/manual gate
+## 10. Required second user visual/manual gate
 
 At minimum validate:
 
-1. center `Musica`, activate it again, inspect expansion;
-2. browser/back control returns to the same Home state;
-3. AI collapsed/expanded state survives;
-4. active World remains selected after return;
-5. focus returns to the opener after close/back;
-6. dragging a World does not open the focus;
-7. keyboard activation works select-first/open-second;
-8. direct `/home?focus=music` is usable;
-9. reduced-motion route remains clear and usable;
-10. compact and large desktop do not clip the shell;
-11. transition quality is high enough without adding heavier rendering technology.
+1. the global Topbar is visually and behaviorally unchanged before/during/after World Focus;
+2. center `Musica`, activate it again and judge the new GPU entry;
+3. verify the effect clearly originates from the selected sphere rather than the screen center;
+4. compare `Musica` and `Viaggi` for one coherent engine with different character;
+5. ensure the transition reads as entering a World, not opening a modal/page;
+6. verify there is no obvious frame drop or delayed interaction on the target machine;
+7. browser/back control returns to the same Home state;
+8. AI collapsed/expanded state survives;
+9. Timeline state survives;
+10. active World remains selected after return;
+11. focus returns to the opener after close/back;
+12. dragging a World does not open the focus;
+13. keyboard activation works select-first/open-second;
+14. direct `/home?focus=music` remains usable without needing an opener;
+15. reduced-motion remains clear and usable;
+16. compact and large desktop do not clip the shell.
 
-## 10. Exclusions retained
+## 11. Exclusions retained
 
 WF1 authorizes no:
 
@@ -204,6 +243,7 @@ WF1 authorizes no:
 - World Domain entity;
 - Mondi Overview design;
 - widget/module implementation beyond the empty canvas shell;
-- Timeline/Orientation/Context Rail redesign.
+- Timeline/Orientation/Context Rail redesign;
+- Topbar redesign.
 
 Do not advance to WF2/WF3 closure language until WF1 QA is actually earned.
