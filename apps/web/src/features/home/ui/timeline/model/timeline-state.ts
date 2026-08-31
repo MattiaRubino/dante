@@ -165,6 +165,13 @@ function updateEventTime(
     return state;
   }
 
+  if (
+    current.startMinute === action.startMinute &&
+    current.endMinute === action.endMinute
+  ) {
+    return state;
+  }
+
   const nextEvent: TimelineEvent = {
     ...current,
     startMinute: action.startMinute,
@@ -206,6 +213,14 @@ function moveEvent(
     startMinute,
     endMinute: startMinute + duration,
   };
+
+  if (
+    action.fromDateKey === action.toDateKey &&
+    movedEvent.startMinute === current.startMinute &&
+    movedEvent.endMinute === current.endMinute
+  ) {
+    return state;
+  }
 
   if (action.fromDateKey === action.toDateKey) {
     const nextEvents = sourceEvents.map((event) =>
