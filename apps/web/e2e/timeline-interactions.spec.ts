@@ -9,7 +9,9 @@ test('custom event dragging never falls back to a native browser drag ghost', as
   await page.goto('/home');
 
   await page.evaluate(() => {
-    const target = window as typeof window & { __timelineNativeDragStarts?: number };
+    const target = window as typeof window & {
+      __timelineNativeDragStarts?: number;
+    };
     target.__timelineNativeDragStarts = 0;
     document.addEventListener(
       'dragstart',
@@ -37,7 +39,8 @@ test('custom event dragging never falls back to a native browser drag ghost', as
     }
 
     const startX = box.x + Math.max(12, box.width - 16);
-    const startY = box.y + Math.min(box.height - 12, Math.max(18, box.height * 0.62));
+    const startY =
+      box.y + Math.min(box.height - 12, Math.max(18, box.height * 0.62));
     const deltaY = index % 2 === 0 ? 52 : -52;
 
     await page.mouse.move(startX, startY);
@@ -119,9 +122,9 @@ test('expanded group header, event columns and horizontal scroll stay mathematic
 
   const chips = page.locator('.dante-timeline-group-chip');
   const samples = [
-    { chip: 0, eventId: '2' },
-    { chip: 1, eventId: '3' },
-    { chip: 4, eventId: '1' },
+    { chip: 0, eventId: '7' },
+    { chip: 3, eventId: '8' },
+    { chip: 4, eventId: '12' },
   ] as const;
 
   for (const sample of samples) {
