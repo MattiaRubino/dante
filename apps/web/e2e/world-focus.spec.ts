@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test.use({ locale: 'it-IT' });
 
-test('Home opens the centered World on double click and browser back preserves Home state', async ({
+test('Home opens the centered World on the second activation and browser back preserves Home state', async ({
   page,
 }) => {
   await page.goto('/home');
@@ -21,7 +21,7 @@ test('Home opens the centered World on double click and browser back preserves H
   await music.click();
   await expect(music).toHaveAttribute('aria-current', 'true');
 
-  await music.dblclick();
+  await music.click();
   await expect(page).toHaveURL(/\/home\?focus=music$/);
   await expect(page.getByRole('main', { name: 'Mondo Musica' })).toBeVisible();
   await expect(page.locator('.world-focus-shell')).toHaveAttribute(
@@ -49,6 +49,22 @@ test('Home opens the centered World on double click and browser back preserves H
   await expect(music).toHaveAttribute('aria-current', 'true');
   await expect(music).toBeFocused();
   await expect(page.locator('[data-app-region="topbar"]')).toBeVisible();
+});
+
+test('the initially centered World still requires two activations', async ({
+  page,
+}) => {
+  await page.goto('/home');
+
+  const body = page.locator('.home-world[aria-label="Corpo"]');
+  await expect(body).toHaveAttribute('aria-current', 'true');
+
+  await body.click();
+  await expect(page).toHaveURL(/\/home$/);
+  await expect(page.locator('.world-focus-shell')).toHaveCount(0);
+
+  await body.click();
+  await expect(page).toHaveURL(/\/home\?focus=body$/);
 });
 
 test('dragging the active World does not enter World Focus', async ({ page }) => {
@@ -118,7 +134,7 @@ test('the persisted instant preference skips the ornamental transition', async (
   const music = page.locator('.home-world[aria-label="Musica"]');
   await music.click();
   await expect(music).toHaveAttribute('aria-current', 'true');
-  await music.dblclick();
+  await music.click();
 
   const focus = page.locator('.world-focus-shell');
   await expect(focus).toHaveAttribute('data-entry-presentation', 'instant');
