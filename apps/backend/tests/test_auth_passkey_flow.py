@@ -218,10 +218,13 @@ def test_raw_webauthn_challenge_verifier_is_exact_width_and_purpose_separated() 
     assert webauthn is not None
     assert provider is not None
     assert webauthn != provider
-    assert flow_proof_verifier_from_raw(
-        purpose=FlowProofPurpose.WEBAUTHN_CHALLENGE,
-        raw_secret=b"x" * 31,
-    ) is None
+    assert (
+        flow_proof_verifier_from_raw(
+            purpose=FlowProofPurpose.WEBAUTHN_CHALLENGE,
+            raw_secret=b"x" * 31,
+        )
+        is None
+    )
 
 
 def test_verified_assertion_never_decreases_counter_and_updates_current_backup_state() -> None:

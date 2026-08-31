@@ -262,6 +262,6 @@ class WebAuthnPolicy:
         if not isinstance(decoded, Mapping):
             raise ValueError("stored COSE public key is not a map")
         key = CoseKey.parse(cast(Mapping[int, Any], decoded))
-        if key.ALGORITHM != cose_algorithm:
+        if cose_algorithm != key.ALGORITHM:
             raise ValueError("stored COSE algorithm does not match persisted metadata")
         return AttestedCredentialData.create(Aaguid.NONE, credential_id, key)

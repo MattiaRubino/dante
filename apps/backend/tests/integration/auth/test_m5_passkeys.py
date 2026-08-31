@@ -364,7 +364,9 @@ def _admitted(issued: IssuedSession) -> AdmittedSession:
     )
 
 
-async def _active_passkeys(runtime: DatabaseRuntime, account_ref: UUID) -> list[PasskeyCredentialRow]:
+async def _active_passkeys(
+    runtime: DatabaseRuntime, account_ref: UUID
+) -> list[PasskeyCredentialRow]:
     async with runtime.session_factory() as session, session.begin():
         return list(
             (
@@ -439,9 +441,7 @@ async def _credential_by_id(
 ) -> PasskeyCredentialRow:
     async with runtime.session_factory() as session, session.begin():
         row = await session.scalar(
-            select(PasskeyCredentialRow).where(
-                PasskeyCredentialRow.credential_id == credential_id
-            )
+            select(PasskeyCredentialRow).where(PasskeyCredentialRow.credential_id == credential_id)
         )
     assert row is not None
     return row
@@ -636,7 +636,9 @@ async def test_real_fido2_registration_authentication_reauth_replay_and_removal(
                 backed_up=True,
             ),
         )
-        assert reauthenticated.principal.auth_session_ref == authenticated.principal.auth_session_ref
+        assert (
+            reauthenticated.principal.auth_session_ref == authenticated.principal.auth_session_ref
+        )
         assert reauthenticated.principal.recent_auth_at >= authenticated.principal.recent_auth_at
 
         removed = await service.remove_passkey(
@@ -730,7 +732,9 @@ async def test_concurrent_passkey_removals_preserve_last_authenticator(
 
         outcomes = await asyncio.gather(remove(0), remove(1))
 
-        assert sum(isinstance(outcome, AuthenticatorRemovalBlockedError) for outcome in outcomes) == 1
+        assert (
+            sum(isinstance(outcome, AuthenticatorRemovalBlockedError) for outcome in outcomes) == 1
+        )
         assert len(await _active_passkeys(runtime, account_ref)) == 1
 
         async with runtime.session_factory() as session, session.begin():
@@ -816,7 +820,9 @@ async def test_passkey_removal_and_provider_unlink_share_account_wide_lock(
                 return exc
 
         outcomes = await asyncio.gather(remove_passkey(), unlink_provider())
-        assert sum(isinstance(outcome, AuthenticatorRemovalBlockedError) for outcome in outcomes) == 1
+        assert (
+            sum(isinstance(outcome, AuthenticatorRemovalBlockedError) for outcome in outcomes) == 1
+        )
 
         async with runtime.session_factory() as session, session.begin():
             active_passkeys = await session.scalar(
@@ -1189,7 +1195,9 @@ async def test_passkey_and_password_removal_share_one_account_anti_lockout_autho
         password_task = asyncio.create_task(remove_password())
         start.set()
         outcomes = await asyncio.gather(passkey_task, password_task)
-        assert sum(isinstance(outcome, AuthenticatorRemovalBlockedError) for outcome in outcomes) == 1
+        assert (
+            sum(isinstance(outcome, AuthenticatorRemovalBlockedError) for outcome in outcomes) == 1
+        )
 
         async with runtime.session_factory() as session, session.begin():
             password_count = await session.scalar(
@@ -1284,7 +1292,10 @@ async def test_concurrent_valid_assertions_serialize_without_counter_regression(
         )
 
         assert verified_count == 2
-        assert authenticated[0].principal.auth_session_ref != authenticated[1].principal.auth_session_ref
+        assert (
+            authenticated[0].principal.auth_session_ref
+            != authenticated[1].principal.auth_session_ref
+        )
         credential = await _credential_by_id(runtime, registered.credential_id)
         assert credential.sign_count >= 11
         assert credential.backup_state in {False, True}
@@ -1530,7 +1541,10 @@ async def test_ambiguous_reauth_commit_reconciles_after_later_valid_assertion_ad
         )
 
         assert lost_ack_injected is True
-        assert reauthenticated.principal.auth_session_ref == registered.issued.principal.auth_session_ref
+        assert (
+            reauthenticated.principal.auth_session_ref
+            == registered.issued.principal.auth_session_ref
+        )
         assert len(later_sessions) == 1
         credential = await _credential_by_id(runtime, registered.credential_id)
         assert credential.sign_count >= 11

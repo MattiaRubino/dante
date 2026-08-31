@@ -11,7 +11,6 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import UUID, uuid7
 
-from pydantic import SecretStr
 from sqlalchemy import delete, func, select, update
 from sqlalchemy.exc import DBAPIError, IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
@@ -192,7 +191,9 @@ class PasskeyFlowService:
                 .limit(1)
             )
             if display_name is None:
-                raise AuthIntegrityError("passkey registration Account has no verified EmailIdentity")
+                raise AuthIntegrityError(
+                    "passkey registration Account has no verified EmailIdentity"
+                )
 
             existing_credential_ids = tuple(
                 (
@@ -203,9 +204,7 @@ class PasskeyFlowService:
                     )
                 ).all()
             )
-            expires_at = created_at + timedelta(
-                seconds=self._webauthn.challenge_lifetime_seconds
-            )
+            expires_at = created_at + timedelta(seconds=self._webauthn.challenge_lifetime_seconds)
             database_session.add(
                 WebAuthnChallengeRow(
                     webauthn_challenge_ref=challenge_ref,
@@ -552,9 +551,7 @@ class PasskeyFlowService:
             mutation_at = datetime.now(UTC)
             expires_at = mutation_at + timedelta(seconds=self._settings.session_max_age_seconds)
             account = await database_session.scalar(
-                select(AccountRow).where(
-                    AccountRow.account_ref == credential_snapshot.account_ref
-                )
+                select(AccountRow).where(AccountRow.account_ref == credential_snapshot.account_ref)
             )
             if account is None or account.status_code != "active":
                 raise AccountUnavailableError()
@@ -588,7 +585,7 @@ class PasskeyFlowService:
                 if not exc.connection_invalidated:
                     raise
                 ambiguous_commit = True
-        except (AccountUnavailableError, AuthStateChangedError, PasskeyVerificationFailedError):
+        except AccountUnavailableError, AuthStateChangedError, PasskeyVerificationFailedError:
             await self._safe_rollback(database_session)
             raise
         except SQLAlchemyError as exc:
@@ -683,9 +680,7 @@ class PasskeyFlowService:
             )
             if user_handle is None or not credential_ids:
                 raise PasskeyNotFoundError()
-            expires_at = created_at + timedelta(
-                seconds=self._webauthn.challenge_lifetime_seconds
-            )
+            expires_at = created_at + timedelta(seconds=self._webauthn.challenge_lifetime_seconds)
             database_session.add(
                 WebAuthnChallengeRow(
                     webauthn_challenge_ref=challenge_ref,
@@ -983,7 +978,7 @@ class PasskeyFlowService:
             credential.label = normalized_label
             credential.updated_at = now
             await database_session.commit()
-        except (AccountUnavailableError, AuthStateChangedError, PasskeyNotFoundError):
+        except AccountUnavailableError, AuthStateChangedError, PasskeyNotFoundError:
             await self._safe_rollback(database_session)
             raise
         except SQLAlchemyError as exc:
@@ -1592,7 +1587,9 @@ class PasskeyFlowService:
                     "ambiguous passkey reauthentication changed immutable credential state"
                 )
             raise AuthServiceUnavailableError(retryable=True)
-        raise AuthIntegrityError("ambiguous passkey reauthentication reconciliation mismatched state")
+        raise AuthIntegrityError(
+            "ambiguous passkey reauthentication reconciliation mismatched state"
+        )
 
     async def _reconcile_removal(
         self,
