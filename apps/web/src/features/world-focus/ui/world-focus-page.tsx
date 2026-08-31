@@ -9,6 +9,10 @@ import { useTranslation } from 'react-i18next';
 
 import { WORLD_FOCUS_GEOMETRY } from '../model/world-focus-geometry';
 import {
+  WORLD_FOCUS_REGION,
+  WORLD_FOCUS_STRUCTURE_VERSION,
+} from '../model/world-focus-structure';
+import {
   clearWorldFocusEntry,
   readWorldFocusEntry,
   type WorldFocusEntrySource,
@@ -42,6 +46,7 @@ function WorldFocusEllipseGuides() {
   return (
     <svg
       className="world-focus-ellipse-guides"
+      data-world-focus-region={WORLD_FOCUS_REGION.visualFrame}
       aria-hidden="true"
       focusable="false"
     >
@@ -141,9 +146,11 @@ export function WorldFocusPage({
     <main
       ref={mainRef}
       className="world-focus-shell"
+      data-world-focus-region={WORLD_FOCUS_REGION.shell}
       data-world-focus-id={world.id}
       data-world-focus-source={source}
       data-world-focus-status={status}
+      data-world-focus-structure-version={WORLD_FOCUS_STRUCTURE_VERSION}
       data-world-focus-geometry-version={WORLD_FOCUS_GEOMETRY.version}
       data-entry-origin={entry === null ? 'fallback' : 'live'}
       aria-label={t(($) => $.common.worldFocus.mainLabel, { world: label })}
@@ -156,6 +163,7 @@ export function WorldFocusPage({
 
       <button
         className="world-focus-back"
+        data-world-focus-region={WORLD_FOCUS_REGION.shellControls}
         type="button"
         onClick={() => onClose(closeRequest)}
         aria-label={t(($) => $.common.worldFocus.back)}
@@ -166,7 +174,7 @@ export function WorldFocusPage({
 
       <section
         className="world-focus-workspace"
-        data-world-focus-region="workspace"
+        data-world-focus-region={WORLD_FOCUS_REGION.workspace}
         aria-label={t(($) => $.common.worldFocus.canvasLabel, { world: label })}
         aria-busy={status === 'loading' ? true : undefined}
       >
