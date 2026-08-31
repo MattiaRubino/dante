@@ -888,13 +888,24 @@ export function TimelineDayStream({
       <div
         ref={gridRef}
         className={`timeline-grid${expanded ? ' is-expanded' : ''}`}
-        onPointerDownCapture={(pointerEvent) => {
-          if (focusedEvent && !pointerIsInsideFocusedCard(pointerEvent.target)) {
-            pointerEvent.stopPropagation();
-          }
-        }}
         onClickCapture={(clickEvent) => {
-          if (!focusedEvent || pointerIsInsideFocusedCard(clickEvent.target)) {
+          const target = clickEvent.target;
+          const targetCard =
+            target instanceof Element
+              ? target.closest<HTMLElement>('[data-timeline-event]')
+              : null;
+          const targetEventId = targetCard?.dataset.timelineEvent ?? null;
+
+          if (
+            targetEventId !== null &&
+            suppressClickRef.current === targetEventId
+          ) {
+            clickEvent.stopPropagation();
+            suppressClickRef.current = null;
+            return;
+          }
+
+          if (!focusedEvent || pointerIsInsideFocusedCard(target)) {
             return;
           }
           clickEvent.stopPropagation();
