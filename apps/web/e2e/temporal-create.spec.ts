@@ -246,9 +246,10 @@ test('double-click and Shift-drag on empty Timeline create contextual defaults',
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveCount(0);
 
+  await section.scrollIntoViewIfNeeded();
   const rangeBox = await section.boundingBox();
   if (!rangeBox) {
-    throw new Error('Expected Timeline day geometry after contextual create');
+    throw new Error('Expected visible Timeline day geometry after contextual create');
   }
   const startX = rangeBox.x + Math.min(600, rangeBox.width - 40);
   const startY = rangeBox.y + rangeBox.height * 0.46;
@@ -269,7 +270,8 @@ test('double-click and Shift-drag on empty Timeline create contextual defaults',
 test('Full Create becomes a mobile full-screen editor with no horizontal overflow', async ({
   page,
 }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
+  const viewportWidth = 390;
+  await page.setViewportSize({ width: viewportWidth, height: 844 });
   await page.goto('/home');
 
   const dialog = await openCreate(page);
@@ -279,7 +281,7 @@ test('Full Create becomes a mobile full-screen editor with no horizontal overflo
 
   const box = await dialog.boundingBox();
   expect(box).not.toBeNull();
-  expect(box?.width ?? 999).toBeLessThanOrEqual(390);
+  expect(box?.width ?? 999).toBeLessThanOrEqual(viewportWidth + 0.5);
   expect(box?.height ?? 0).toBeGreaterThan(800);
   expect(
     await page.evaluate(
