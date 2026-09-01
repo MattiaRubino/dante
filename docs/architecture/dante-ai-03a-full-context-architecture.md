@@ -5,7 +5,7 @@
 - **Accepted:** 2026-09-01
 - **Phase:** AI-03A — Full Context Architecture
 - **Upstream runtime baseline:** AI-02.1 v0.5 / CLOSED / STRUCTURALLY ACCEPTED
-- **Validation result:** INITIAL CANDIDATE FAIL / 9 HARDENINGS / HARDENED CANDIDATE STRUCTURAL PASS
+- **Validation result:** INITIAL CANDIDATE FAIL / 9 INITIAL HARDENINGS / FINAL INDEPENDENT REVALIDATION + 4 HARDENINGS / 13 TOTAL / STRUCTURAL PASS
 - **Implementation claim:** NONE
 - **Database evolution:** NONE
 - **Alembic evolution:** NONE
@@ -177,7 +177,7 @@ The phase used four evidence directions:
 1. **Internal reconstruction** from North Star → Domain → Logical → Physical → CP/PostgreSQL/Recovery → AI-00 → AI-02.1.
 2. **Modern production/context engineering research**, including long-context behavior, dynamic/JIT context acquisition, context/tool discovery, compaction, provider-managed state, permission-aware/federated retrieval, context security and prompt-injection containment.
 3. **Reverse engineering from DANTE capabilities and historical simulations**: derive required context backwards from the work DANTE must actually perform.
-4. **A dedicated destructive AI-03A mega-test**, including scenario frames, multi-actor privacy, history, long context, source retirement, revocation, provider continuity, child/delegated work, hostile content, ambiguous references and resource pressure.
+4. **Dedicated destructive validation**, first through the original AI-03A mega-test and then through a separate final independent reverse-engineering/kill-test focused on provider-native acquisition, derived sensitivity, relative interpretation, opaque consumer transformation and compound multi-actor/provider failures.
 
 The initial candidate did **not** pass cleanly.
 
@@ -186,11 +186,24 @@ AI-03A INITIAL CANDIDATE
 FAIL / HARDENING REQUIRED
 
         ↓
-9 structural hardenings
+9 initial structural hardenings
 
 AI-03A HARDENED CANDIDATE
 STRUCTURAL PASS
+
+        ↓
+FINAL INDEPENDENT REVERSE-ENGINEERING / KILL-TEST
+
+        ↓
+4 additional boundary hardenings
+
+AI-03A FINAL HARDENED CONTRACT
+13 TOTAL HARDENINGS
+STRUCTURAL PASS
+NO NEW TOP-LEVEL CONTEXT CONTRACT
 ```
+
+The final revalidation deliberately did not treat earlier `PASS` labels as evidence. It reconstructed Context requirements from Product/Domain/Logical/DB/Recovery/AI-02 and attacked the accepted seven-contract shape independently.
 
 This is architecture/simulation acceptance only.
 
@@ -347,6 +360,15 @@ Reality Scope
 - OPEN-WORLD ASSERTION
 - explicit MIXED frame
 
+Runtime Interpretation Frame where material
+- reference instant
+- applicable timezone / offset
+- source/target timezone where distinct
+- calendar/day-boundary semantics
+- DST resolution when ambiguous
+- spatial anchor / location source / timestamp / precision where material
+- locale/unit/calendar interpretation where meaning depends on it
+
 resolved target/reference bindings already known
 reference-resolution requirements not yet satisfied
 
@@ -362,6 +384,15 @@ InformationNeed set
 ```
 
 The ContextPlan may evolve while the Run reasons, but it may not silently widen the security/purpose envelope of the WorkContract.
+
+A ContextPlan may also begin from a bounded but partially unresolved WorkContract when interpretation/reference resolution itself requires context.
+
+```text
+UNRESOLVED
+!= UNBOUNDED
+```
+
+A partially unresolved target or deictic expression does not authorize broad exploratory access. Bounded acquisition may refine references/interpretation while the original objective, purpose and protected security/policy ceiling remain binding. Material scope expansion still requires ordinary clarification/supersession/authorization semantics.
 
 ### 6.1 Protected requirements
 
@@ -441,6 +472,7 @@ scope
     Actor / represented party where material
     temporal scope
     Reality Scope
+    Runtime Interpretation Frame where material
     purpose
 
 reference-resolution requirement
@@ -475,6 +507,7 @@ status
     SOURCE_UNAVAILABLE
     SOURCE_RETIRED
     AMBIGUOUS_TARGET
+    AMBIGUOUS_INTERPRETATION
 ```
 
 The exact eventual implementation vocabulary may be typed differently. The semantics above are accepted.
@@ -666,6 +699,9 @@ freshness/currentness state
 validity horizon / revalidation need
 MaterialState binding only when real
 
+INTERPRETATION FRAME
+resolved temporal/spatial/locale frame where material to meaning
+
 REPRESENTATION
 structured value
 text
@@ -741,6 +777,31 @@ all ContentArtifact representations
 
 Provider revision/ETag remains provider state.
 
+### 9.4 Derived sensitivity closure
+
+Transformation cannot be treated as automatic declassification.
+
+A derived representation may reveal more sensitive information than any one material input considered alone. Examples include relationship inference, health inference, identity inference or a private pattern reconstructed from individually lower-sensitivity signals.
+
+Therefore:
+
+```text
+DERIVATION MAY TIGHTEN SENSITIVITY.
+
+summary / aggregate / inference / synthesis
+MUST NOT AUTOMATICALLY RECEIVE
+WEAKER RESTRICTIONS THAN MATERIAL INPUTS
+
+and
+
+MAY REQUIRE STRONGER RESTRICTIONS
+because of what the derivation itself reveals.
+```
+
+The derived representation is re-evaluated for its own confidentiality/sensitivity/use restrictions before it becomes eligible for another ConsumerContext, child/delegated work, provider or later publication.
+
+This is an information-flow hardening, not a new Domain sensitivity ontology.
+
 ---
 
 ## 10. ContextReadiness
@@ -767,6 +828,7 @@ POLICY_BLOCKED
 SOURCE_UNAVAILABLE
 SOURCE_RETIRED
 AMBIGUOUS_TARGET
+AMBIGUOUS_INTERPRETATION
 ```
 
 A Run may proceed only when the readiness state is compatible with the consequence and consumer requirements.
@@ -879,6 +941,57 @@ The product may preserve human-visible conversation continuity while the reasoni
 
 Provider-managed opaque state that cannot be proved compatible must not be reused merely because it exists.
 
+### 11.2 Consumer delivery / transformation integrity
+
+DANTE must not equate the context it assembled with context it can prove the consumer received under the required semantics.
+
+```text
+ASSEMBLED CONSUMER CONTEXT
+!=
+ESTABLISHED CONSUMER EXPOSURE
+```
+
+A provider/Harness may apply:
+
+```text
+truncation
+automatic compaction
+context editing
+server-side tool context
+provider continuation
+opaque retained state
+representation transformation
+```
+
+For protected or required material, DANTE must know enough about the consumer/Harness contract to establish whether the required instruction/context/fidelity obligations remain satisfied.
+
+If DANTE cannot establish that a required element survived a provider-side transformation, the correct state is not fabricated certainty.
+
+```text
+UNKNOWN
+remains UNKNOWN
+```
+
+Depending on consequence, this may require:
+
+```text
+READY_WITH_DECLARED_LIMITATIONS
+or
+NOT_READY
+or
+rebuild/reinvoke through a consumer/Harness with sufficient guarantees
+```
+
+This does not claim token-level attention or causal attribution inside a model.
+
+```text
+EXPOSED
+!= ATTENDED TO
+!= USED CAUSALLY
+```
+
+The hardening concerns only what DANTE can truthfully establish about the effective consumer-visible input contract.
+
 ---
 
 ## 12. ContextManifest
@@ -905,11 +1018,13 @@ InformationNeed set/revision where material
 source/fragment references actually exposed
 source/state/version references
 Reality Scope / Scenario bindings
+Runtime Interpretation Frame where material
 representation/transformation versions
 instruction profile/bundle version
 capability/tool projection version
 provider/model/HarnessProfile identity
 provider-managed opaque-state declaration/reference
+known consumer-side transformation/compaction declaration where material
 policy decision/version refs where material
 resource/context allocation
 ordering/role metadata where needed
@@ -979,6 +1094,52 @@ hidden participant
 ```
 
 Retrieval implementation in AI-03B must therefore preserve permission-aware discovery where source systems support it.
+
+### 13.1 Governed acquisition / no hidden acquisition bypass
+
+Any mechanism capable of introducing new information into a consumer's reasoning context participates in the governed acquisition boundary.
+
+This includes, where present:
+
+```text
+provider-native search
+provider-native file retrieval
+browser/computer-use discovery
+connected-source tools
+remote capability/MCP-style retrieval
+sub-agent or child-worker acquisition
+server-side tool execution that returns new source material
+```
+
+Therefore:
+
+```text
+PROVIDER-NATIVE ACQUISITION
+!= POLICY BYPASS
+
+MODEL-DISCOVERED TOOL USE
+!= NEW PURPOSE
+
+TECHNICAL CONNECTIVITY
+!= PROCESSING ELIGIBILITY
+```
+
+New information acquired after the initial ConsumerContext remains bound by the current WorkContract, ContextPlan, InformationNeed, explicit exclusions, purpose, Principal/Actor/represented-party scope and applicable acquisition/processing policy.
+
+For protected/private source classes, a mechanism DANTE cannot sufficiently constrain or account for is not eligible merely because a provider can technically invoke it.
+
+### 13.2 Acquisition authorization != effect authorization
+
+A context/retrieval path must not smuggle consequential effects through an operation described as acquisition.
+
+```text
+ACQUISITION AUTHORIZATION
+!= EFFECT AUTHORIZATION
+```
+
+If obtaining information can materially mutate remote or DANTE state — for example creating a hold/reservation, sending/acknowledging a message, changing provider state or otherwise causing a consequential effect — the effect remains governed by the inherited AI-02 Capability/Effect Runtime contracts.
+
+Context acquisition does not confer mutation authority.
 
 ---
 
@@ -1072,6 +1233,8 @@ truth status
 ```
 
 Information-flow restrictions and lineage therefore survive extraction, summarization, compaction, embedding, reranking and synthesis.
+
+Transformation may also produce a representation whose inferred sensitivity is higher than any individual input; Section 9.4 therefore requires derived-sensitivity re-evaluation rather than automatic declassification.
 
 ---
 
@@ -1255,6 +1418,42 @@ DANTE-native state can use application/database coherence semantics where requir
 Distributed/open-world/provider sources often cannot provide atomic snapshots. DANTE records actual acquisition windows/limitations and revalidates volatile consequential dependencies rather than fabricating atomicity.
 
 Readiness may decay while a Run continues.
+
+### 20.1 Runtime Interpretation Frame
+
+Reality Scope says which world/reality frame a statement belongs to; it does not by itself resolve relative language.
+
+```text
+REALITY SCOPE
+!= RUNTIME INTERPRETATION FRAME
+```
+
+Expressions such as:
+
+```text
+tomorrow
+this morning
+at 09:00
+next Friday
+here
+near me
+when I get there
+that place
+```
+
+may require an explicit interpretation frame before an InformationNeed or target/query scope is sufficiently resolved.
+
+Material dimensions can include reference instant, timezone/offset, source/target timezone, DST ambiguity, calendar/day-boundary semantics, spatial anchor, location timestamp/precision and locale/unit/calendar conventions.
+
+For consequential work:
+
+```text
+RELATIVE EXPRESSION
+!= RESOLVED SCOPE
+without sufficient interpretation frame
+```
+
+Ambiguity may therefore produce `AMBIGUOUS_INTERPRETATION` / `NOT_READY` and focused clarification rather than an arbitrary guess.
 
 ---
 
@@ -1488,6 +1687,8 @@ Do not invent false provenance or exposure precision.
 
 If compatibility with a new Context continuity compartment cannot be established, opaque state is not reused.
 
+Provider-side transformation/compaction is also subject to Section 11.2: an assembled ConsumerContext does not prove that every protected element remained in the effective consumer-visible input.
+
 ---
 
 ## 28. Provider failover
@@ -1505,7 +1706,7 @@ Provider A unavailable
 
 Do not treat Provider A thread/memory as the authority that must be transported.
 
-A provider lacking a required privacy/capability/continuity contract is not an eligible fallback.
+A provider lacking a required privacy/capability/continuity/input-integrity contract is not an eligible fallback.
 
 ---
 
@@ -1649,6 +1850,8 @@ without exposing the private source to another actor/provider/recipient.
 
 Processing eligibility and Disclosure remain independent.
 
+A safe individual input classification is not enough to declassify a more sensitive composite inference; Section 9.4 applies before reuse as context.
+
 ---
 
 ## 33. Voice, realtime and multimodal context
@@ -1682,6 +1885,8 @@ recognized speech
 != authenticated exact intent
 ```
 
+Relative/deictic speech also requires sufficient Runtime Interpretation Frame and reference resolution before consequential targeting.
+
 Reference resolution, input authenticity and effect governance remain AI-02 responsibilities.
 
 ---
@@ -1710,9 +1915,11 @@ required context missing
 → behave as if complete
 ```
 
+The same applies when required material cannot be proven to survive provider/Harness transformation: do not represent uncertain effective exposure as complete context.
+
 ---
 
-# PART VI — DEDICATED AI-03A MEGA-TEST
+# PART VI — DEDICATED AI-03A VALIDATION
 
 ## 35. North Star reverse-engineering
 
@@ -1746,7 +1953,7 @@ No capability required a new universal Context/Memory Domain root.
 
 ---
 
-## 36. Nine hardenings produced by the mega-test
+## 36. Initial nine hardenings produced by the first mega-test
 
 ### GAP-01 — Reality Scope / scenario frame — P0
 
@@ -1826,6 +2033,103 @@ INTERACTION SESSION CONTINUITY
 **Failure:** `minimum context` could be interpreted so narrowly that DANTE loses cross-life orchestration capability.
 
 **Hardening:** minimum necessary is relative to legitimate objective; broad objectives use staged cross-domain InformationNeeds.
+
+**Retest:** PASS.
+
+---
+
+## 36A. Final independent destructive revalidation — four additional hardenings
+
+The final revalidation started from the already-hardened seven-contract architecture but rebuilt requirements independently from Product/Domain/Logical/DB/Recovery/AI-02. Earlier `PASS` labels were not treated as proof.
+
+It found no missing top-level contract, but four boundary gaps were material enough to harden the accepted Context contract.
+
+### GAP-10 — Governed acquisition / hidden provider-tool bypass — P0
+
+**Failure:** a provider/model could receive an initially valid ConsumerContext and then use provider-native search, connectors, browser tools, remote capabilities or child workers to introduce new private information without passing the same acquisition/purpose scope.
+
+**Hardening:** every mechanism that introduces new information into reasoning participates in governed acquisition. Technical provider capability does not create purpose or processing eligibility.
+
+```text
+PROVIDER-NATIVE ACQUISITION != POLICY BYPASS
+MODEL-DISCOVERED TOOL USE != NEW PURPOSE
+```
+
+A related clarification fixes:
+
+```text
+ACQUISITION AUTHORIZATION != EFFECT AUTHORIZATION
+```
+
+If an apparent read causes a material effect, inherited AI-02 Effect Runtime governance applies.
+
+**Retest:** PASS.
+
+### GAP-11 — Derived sensitivity closure — P0
+
+**Failure:** individually lower-sensitivity inputs can compose into a more sensitive inference, such as a hidden relationship, health state or identity inference. Merely inheriting the weakest/common source label could enable unsafe reuse before final publication.
+
+**Hardening:** derivatives never automatically receive weaker restrictions than material inputs and may require stricter sensitivity/use restrictions because of what the derivation reveals.
+
+```text
+DERIVATION MAY TIGHTEN SENSITIVITY
+AGGREGATION / SUMMARY / INFERENCE != DECLASSIFICATION
+```
+
+**Retest:** PASS.
+
+### GAP-12 — Runtime Interpretation Frame — P0/P1
+
+**Failure:** Reality Scope alone cannot resolve `tomorrow`, `at 09:00`, `near me`, `here`, DST-overlapping times or travel/timezone-relative queries. A wrong interpretation can retrieve the wrong state or target a wrong consequential effect.
+
+**Hardening:** when material, ContextPlan/InformationNeed carry a resolved Runtime Interpretation Frame covering time/spatial/locale dimensions needed by the request. Consequential ambiguity yields NOT_READY/clarification rather than guesswork.
+
+```text
+REALITY SCOPE != RUNTIME INTERPRETATION FRAME
+```
+
+**Retest:** PASS, including travel/timezone and DST ambiguity cases.
+
+### GAP-13 — Consumer delivery / transformation integrity — P0
+
+**Failure:** DANTE can assemble a correct ConsumerContext while a provider/Harness silently truncates, compacts, transforms or augments the effective input. Treating assembled input as proven effective exposure can falsely mark protected requirements satisfied.
+
+**Hardening:** assembled ConsumerContext is distinct from what DANTE can establish the consumer actually received under its Harness/provider contract. Unknown provider transformation remains UNKNOWN and may force limitation, rebuild or NOT_READY depending on consequence.
+
+```text
+ASSEMBLED CONSUMER CONTEXT
+!= ESTABLISHED CONSUMER EXPOSURE
+```
+
+This does not claim access to model attention/causal internals.
+
+**Retest:** PASS.
+
+### Bootstrap clarification — bounded unresolved WorkContract
+
+The revalidation also attacked the apparent ordering cycle in requests such as:
+
+```text
+"move the one with Luca like last time"
+```
+
+A fully resolved target may require bounded session/semantic context. No eighth Context contract is needed.
+
+Accepted clarification:
+
+```text
+bounded initial WorkContract
+objective / purpose / protected scope known
+target/reference partly unresolved
+        ↓
+bounded interpretation/reference acquisition
+        ↓
+resolved/refined binding
+```
+
+```text
+UNRESOLVED != UNBOUNDED
+```
 
 **Retest:** PASS.
 
@@ -1971,11 +2275,59 @@ Work Supersession leads to new ContextPlan/continuity evaluation/ConsumerContext
 
 PASS.
 
+### 38.17 Provider-native private connector acquisition
+
+A model cannot use a technically connected private source outside the current WorkContract/InformationNeed/purpose/acquisition eligibility merely because the provider exposes the connector.
+
+PASS after GAP-10.
+
+### 38.18 Malicious source induces new tool acquisition
+
+A hostile PDF/web/tool result can suggest retrieving unrelated material but remains DATA. The resulting model-discovered need cannot widen scope and provider-native acquisition remains governed.
+
+PASS after GAP-10 + existing instruction-provenance rules.
+
+### 38.19 Read-like operation causes hidden effect
+
+If a source lookup can create a hold/reservation, acknowledge/send content or materially mutate provider state, acquisition authority alone is insufficient; AI-02 effect governance remains required.
+
+PASS after GAP-10 clarification.
+
+### 38.20 Low-sensitivity signals compose into sensitive inference
+
+Individually lower-sensitivity signals that reveal a hidden health/relationship/identity inference produce a derivative whose own sensitivity/use eligibility is re-evaluated before reuse.
+
+PASS after GAP-11.
+
+### 38.21 Travel/timezone relative interpretation
+
+A query such as `what do I have tomorrow at 09:00?` while travelling does not resolve solely from canonical current Reality Scope. The applicable reference instant/timezone frame is explicit.
+
+PASS after GAP-12.
+
+### 38.22 DST-overlap consequential time
+
+A local time that occurs twice during a daylight-saving transition remains ambiguous until the correct offset/instant is resolved. A consequential effect cannot arbitrarily choose one.
+
+PASS after GAP-12.
+
+### 38.23 Provider automatic compaction/truncation
+
+DANTE does not claim protected context reached the consumer intact merely because it assembled that ConsumerContext. Insufficiently characterized provider transformation yields limitation/rebuild/NOT_READY as consequence requires.
+
+PASS after GAP-13.
+
+### 38.24 Partially unresolved conversational target bootstrap
+
+`that one with Luca like last time` may use bounded context to resolve references without treating unresolved target identity as permission for global data access.
+
+PASS with WorkContract/Context bootstrap clarification.
+
 ---
 
 # PART VII — ACCEPTED INVARIANTS
 
-## 39. AI-03A invariants C01–C29
+## 39. AI-03A invariants C01–C33
 
 ```text
 C01
@@ -2095,9 +2447,34 @@ Minimum necessary context
 is relative to the legitimate objective.
 Broad orchestration may legitimately require
 broad but staged cross-domain acquisition.
+
+C30
+Any mechanism that introduces new information into reasoning
+participates in governed acquisition.
+Provider-native tools/connectors/subagents do not bypass
+WorkContract, purpose, InformationNeed or acquisition policy.
+Acquisition authorization does not imply effect authorization.
+
+C31
+Derived representations do not automatically receive weaker
+sensitivity/use restrictions than their material inputs
+and may require stricter restrictions because of what
+composition/inference itself reveals.
+
+C32
+Reality Scope does not replace Runtime Interpretation Frame.
+Material relative temporal/spatial/locale expressions must be
+resolved sufficiently for the InformationNeed/consequence;
+ambiguous consequential interpretation may make Context NOT_READY.
+
+C33
+Assembled ConsumerContext does not prove established effective
+consumer exposure when a provider/Harness may transform,
+compact, truncate or augment context opaquely.
+Unknown effective exposure remains UNKNOWN rather than fabricated.
 ```
 
-No extra invariant is added merely to round the count.
+No additional top-level Context contract is introduced by C30–C33.
 
 ---
 
@@ -2222,11 +2599,14 @@ large-history
 large-context
 hostile-source
 provider-failover
+provider-native acquisition
+relative temporal/spatial interpretation
+consumer-side opaque transformation
 ```
 
 cases without requiring a generic Fact/Memory ontology or Domain/Logical/Physical/PostgreSQL reopen.
 
-After the nine hardenings, this gate is satisfied structurally.
+After thirteen total hardenings and the final independent revalidation, this gate is satisfied structurally.
 
 ---
 
@@ -2242,6 +2622,10 @@ HISTORY / CURRENTNESS                  PASS
 REFERENCE AMBIGUITY                    PASS after hardening
 PRIVACY / PURPOSE                      PASS after hardening
 PROVIDER CONTINUITY                    PASS after hardening
+PROVIDER-NATIVE ACQUISITION            PASS after final hardening
+DERIVED SENSITIVITY                    PASS after final hardening
+RUNTIME INTERPRETATION FRAME           PASS after final hardening
+CONSUMER DELIVERY / TRANSFORMATION     PASS after final hardening
 CHILD / EXTERNAL AGENT CONTEXT         PASS after hardening
 PROMPT / CONTEXT INJECTION             PASS structurally after hardening
 REVOCATION                             PASS
@@ -2255,6 +2639,7 @@ MULTIMODAL / VOICE                     PASS
 FUTURE MODEL REPLACEMENT               PASS
 FAST DETERMINISTIC PATH                PASS
 
+NEW TOP-LEVEL CONTEXT CONTRACT         NO
 DOMAIN REOPEN REQUIRED                 NO
 LOGICAL REOPEN REQUIRED                NO
 PHYSICAL REOPEN REQUIRED               NO
@@ -2268,6 +2653,8 @@ Therefore:
 AI-03A
 FULL CONTEXT ARCHITECTURE
 CLOSED / STRUCTURALLY ACCEPTED
+FINAL REVALIDATION COMPLETE
+13 TOTAL HARDENINGS
 ```
 
 No more AI-03A mega-test cycle is required unless AI-03B/03C produces concrete contradictory evidence against this contract.
@@ -2300,6 +2687,7 @@ source reread
 freshness/currentness validation
 coverage-aware retrieval
 permission-aware retrieval
+provider-native acquisition under the same governed boundary
 iterative/JIT retrieval
 document hierarchy/chunking
 large-corpus behavior
