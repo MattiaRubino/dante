@@ -12,10 +12,8 @@ import {
   WORLD_FOCUS_PERFORMANCE_MEASURES,
   type WorldFocusPerformanceSpan,
 } from '../application/world-focus-foundation';
-import { createWorldFocusSessionSnapshot } from '../application/world-focus-session';
 import type { WorldFocusWorld } from '../model/world-focus-fixtures';
 import { WORLD_FOCUS_GEOMETRY } from '../model/world-focus-geometry';
-import type { WorldFocusTimePreset } from '../model/world-focus-lens';
 import type { WorldFocusShellStatus } from '../model/world-focus-platform';
 import {
   WORLD_FOCUS_REGION,
@@ -27,10 +25,7 @@ import {
   type WorldFocusEntrySource,
 } from '../model/world-focus-transition';
 import { WORLD_FOCUS_VISUAL_VERSION } from '../model/world-focus-visual';
-import {
-  WorldFocusContext,
-  type WorldFocusTimePresetChangeHandler,
-} from './world-focus-context';
+import { WorldFocusContext } from './world-focus-context';
 import { WorldFocusVisualFrame } from './world-focus-visual-frame';
 import { WorldFocusWorkspace } from './world-focus-workspace';
 import './world-focus.css';
@@ -47,8 +42,6 @@ type WorldFocusPageProps = Readonly<{
   world: WorldFocusWorld;
   source: WorldFocusEntrySource;
   status?: WorldFocusShellStatus;
-  requestedTimePreset?: WorldFocusTimePreset;
-  onTimePresetChange?: WorldFocusTimePresetChangeHandler;
   onClose: (request: WorldFocusCloseRequest) => void;
 }>;
 
@@ -56,8 +49,6 @@ export function WorldFocusPage({
   world,
   source,
   status = 'ready',
-  requestedTimePreset,
-  onTimePresetChange,
   onClose,
 }: WorldFocusPageProps) {
   const { t } = useTranslation('common');
@@ -70,15 +61,6 @@ export function WorldFocusPage({
   const closeRequest = useMemo<WorldFocusCloseRequest>(
     () => ({ preferHistory: entry !== null }),
     [entry],
-  );
-  const session = useMemo(
-    () =>
-      createWorldFocusSessionSnapshot({
-        worldId: world.id,
-        timeCapability: world.lens?.time,
-        requestedTimePreset,
-      }),
-    [requestedTimePreset, world.id, world.lens?.time],
   );
 
   const geometryStyle = {
@@ -145,11 +127,7 @@ export function WorldFocusPage({
 
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
-      if (
-        event.key !== 'Escape' ||
-        event.defaultPrevented ||
-        event.target instanceof HTMLSelectElement
-      ) {
+      if (event.key !== 'Escape' || event.defaultPrevented) {
         return;
       }
 
@@ -188,14 +166,7 @@ export function WorldFocusPage({
       <WorldFocusWorkspace
         worldLabel={label}
         status={status}
-        context={
-          <WorldFocusContext
-            world={world}
-            session={session}
-            disabled={status !== 'ready' || onTimePresetChange === undefined}
-            {...(onTimePresetChange === undefined ? {} : { onTimePresetChange })}
-          />
-        }
+        context={<WorldFocusContext world={world} />}
       />
     </main>
   );
