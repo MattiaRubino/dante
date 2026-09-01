@@ -61,7 +61,7 @@ export type TemporalCreateEntryProps = Readonly<{
   request?: TemporalCreateInvocation | null;
   onPreview: (projection: TemporalCreateTimelineProjection | null) => void;
   onApplied: (effect: TemporalCreateAppliedEffect) => boolean;
-  onBeforeOpen?: () => void;
+  onBeforeOpen?: (() => void) | undefined;
 }>;
 
 function clamp(value: number, min: number, max: number): number {
