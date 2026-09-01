@@ -63,9 +63,9 @@ describe('Temporal Create enterprise authoring semantics', () => {
       event: { ...baseline.event, allDayEndDate: '2026-09-04' },
     });
 
-    expect(validateTemporalCreateFields(fields).map((issue) => issue.code)).toContain(
-      'temporal.create.all_day_range.invalid',
-    );
+    expect(
+      validateTemporalCreateFields(fields).map((issue) => issue.code),
+    ).toContain('temporal.create.all_day_range.invalid');
   });
 
   it('keeps expected duration on an open Activity without fabricating placement', () => {
@@ -89,7 +89,7 @@ describe('Temporal Create enterprise authoring semantics', () => {
     expect(validateTemporalCreateFields(fields)).toEqual([]);
   });
 
-  it('preserves provider intent and deep Activity policy in the local rich record', async () => {
+  it('preserves deep Event preparation and provider intent without fake execution', async () => {
     const runtime = enterpriseRuntime();
     const eventBase = createTemporalCreateFields({
       title: 'Call cliente',
@@ -104,8 +104,16 @@ describe('Temporal Create enterprise authoring semantics', () => {
         ...eventBase.event,
         location: 'Studio / remoto',
         visibility: 'private',
-        participants: 'cliente@example.com\ncollega@example.com',
+        purpose: 'Allineare il rilascio',
+        expectedOutcome: 'Decisione sul piano finale',
+        agenda: 'Rischi\nDecisioni\nProssimi passi',
+        decisionRequired: true,
+        requiredParticipants: 'cliente@example.com',
+        optionalParticipants: 'collega@example.com',
         resources: 'Sala Atlas',
+        preRead: 'Specifica v3',
+        preparationMinutes: 15,
+        recoveryMinutes: 10,
         conferenceMode: 'provider-default',
       },
     });
@@ -115,17 +123,18 @@ describe('Temporal Create enterprise authoring semantics', () => {
     }
     await runtime.execute(preparation.prepared);
 
-    const record = (await runtime.listRecords())[0];
-    expect(record?.metadata.specification.event.participants).toContain(
-      'cliente@example.com',
-    );
-    expect(record?.metadata.specification.event.resources).toBe('Sala Atlas');
-    expect(record?.metadata.specification.event.conferenceMode).toBe(
-      'provider-default',
-    );
+    const event = (await runtime.listRecords())[0]?.metadata.specification.event;
+    expect(event?.requiredParticipants).toContain('cliente@example.com');
+    expect(event?.optionalParticipants).toContain('collega@example.com');
+    expect(event?.resources).toBe('Sala Atlas');
+    expect(event?.preRead).toBe('Specifica v3');
+    expect(event?.purpose).toBe('Allineare il rilascio');
+    expect(event?.decisionRequired).toBe(true);
+    expect(event?.preparationMinutes).toBe(15);
+    expect(event?.conferenceMode).toBe('provider-default');
   });
 
-  it('keeps fallback and session limits as planning intent, not Session records', async () => {
+  it('keeps Activity fallback and session limits as planning intent, not Session records', async () => {
     const runtime = enterpriseRuntime();
     const baseline = createTemporalCreateFields({
       title: 'Studio intensivo',
@@ -149,13 +158,6 @@ describe('Temporal Create enterprise authoring semantics', () => {
         minSessionMinutes: 45,
         maxSessions: 4,
       },
-      recurrence: {
-        ...baseline.recurrence,
-        frequency: 'weekly',
-        weekdays: Object.freeze(['MO', 'WE', 'FR'] as const),
-        endMode: 'count',
-        count: 8,
-      },
     });
 
     const preparation = runtime.prepare(fields);
@@ -164,12 +166,46 @@ describe('Temporal Create enterprise authoring semantics', () => {
     }
     const execution = await runtime.execute(preparation.prepared);
     expect(execution.effect?.projection.placement).toBeNull();
-    expect(execution.effect?.projection.capabilities).toContain('recurrence');
+    expect(execution.effect?.projection.capabilities).not.toContain('recurrence');
     expect(execution.effect?.projection.capabilities).toContain('execution');
 
     const specification = (await runtime.listRecords())[0]?.metadata.specification;
     expect(specification?.scheduling.fallbackPolicy).toBe('shorten-or-split');
     expect(specification?.execution.maxSessions).toBe(4);
-    expect(specification?.recurrence.weekdays).toEqual(['MO', 'WE', 'FR']);
+    expect(specification?.eventRecurrence.patternKind).toBe('none');
+  });
+
+  it('persists an Event recurrence specification without generating Occurrence rows locally', async () => {
+    const runtime = enterpriseRuntime();
+    const baseline = createTemporalCreateFields({
+      title: 'Review ricorrente',
+      kind: 'event',
+      date: '2026-09-01',
+    });
+    const fields = createTemporalCreateFields({
+      ...baseline,
+      eventRecurrence: {
+        ...baseline.eventRecurrence,
+        patternKind: 'quota-per-period',
+        quotaCount: 2,
+        quotaPeriodKind: 'week',
+        quotaPeriodInterval: 1,
+        endMode: 'count',
+        count: 8,
+      },
+    });
+
+    const preparation = runtime.prepare(fields);
+    if (preparation.status !== 'ready') {
+      throw new Error('Expected recurring Event Create to be ready');
+    }
+    const execution = await runtime.execute(preparation.prepared);
+
+    expect(execution.effect?.projection.capabilities).toContain('recurrence');
+    expect((await runtime.list())).toHaveLength(1);
+    expect(
+      (await runtime.listRecords())[0]?.metadata.specification.eventRecurrence
+        .patternKind,
+    ).toBe('quota-per-period');
   });
 });
