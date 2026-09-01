@@ -175,11 +175,21 @@ export const home = {
         mergeCompatible: 'Può essere unita a sessioni compatibili',
       },
       recurrence: {
-        title: 'Ripetizione',
+        title: 'Ricorrenza evento',
         description:
-          'Definisce la sorgente della ricorrenza. Le future occorrenze restano entità distinte.',
-        frequency: 'Ripetizione',
+          'La ricorrenza dell’Evento resta sull’Evento. Le occorrenze generate conservano identità separate e lo stato dell’evaluator appartiene al runtime backend.',
+        activityTitle: 'Routine e ripetizione',
+        activityDescription:
+          'Una ripetizione persistente che genera Attività appartiene a Routine, Recurrence e Occurrence, non a un semplice flag repeat sull’Attività.',
+        activityHandoff:
+          'Per generare Attività ricorrenti usa il verticale proprietario Routine. Qui l’handoff è esplicito: questo editor non finge una ricorrenza canonica dell’Attività.',
+        patternKind: 'Modello di ricorrenza',
         none: 'Non si ripete',
+        calendarWallClock: 'Calendario / ora civile',
+        elapsedInterval: 'Intervallo trascorso',
+        quotaPerPeriod: 'Quota per periodo',
+        cyclicPositional: 'Posizione ciclica',
+        frequency: 'Frequenza di calendario',
         daily: 'Giornaliera',
         weekly: 'Settimanale',
         monthly: 'Mensile',
@@ -194,15 +204,30 @@ export const home = {
           SA: 'Sab',
           SU: 'Dom',
         },
+        elapsedMinutes: 'Intervallo trascorso (minuti)',
+        quotaCount: 'Occorrenze richieste',
+        quotaPeriod: 'Periodo',
+        periodInterval: 'Ogni N periodi',
+        periodDay: 'Giorno',
+        periodWeek: 'Settimana',
+        periodMonth: 'Mese',
+        cycleLength: 'Lunghezza ciclo',
+        cycleOffset: 'Posizione nel ciclo',
+        cycleUnit: 'Unità del ciclo',
         ends: 'Termina',
-        never: 'Mai',
+        never: 'Nessuna fine esplicita',
         until: 'A una data',
         afterCount: 'Dopo un numero di occorrenze',
         untilDate: 'Data finale',
         count: 'Occorrenze',
         recurringBadge: 'Ricorrente',
+        backendNote:
+          'Create conserva la specifica di ricorrenza. Generazione delle Occurrence, checkpoint dell’evaluator, reconciliation e persistenza durevole si attivano tramite il backend di recurrence; qui non vengono simulati.',
       },
       confirmation: {
+        title: 'Conferma e promemoria',
+        description:
+          'Definisci cosa fare quando un elemento termina senza un esito autorevole dell’utente. Il tempo pianificato non implica mai il completamento Actual.',
         outcome: 'Esito non confermato',
         inherit: 'Usa la regola ereditata',
         askImmediately: 'Chiedi subito',
@@ -212,6 +237,9 @@ export const home = {
         silent: 'Lascia non confermato senza notificare',
         autoComplete: 'Completa automaticamente',
         autoNotCompleted: 'Segna non completato automaticamente',
+        inferProvisional: 'Inferisci un risultato provvisorio',
+        inferNote:
+          'Ogni risultato inferito resta provvisorio e non autorevole finché non viene confermato o validato da una regola accettata più forte.',
         reminder: 'Promemoria',
         noReminder: 'Nessun promemoria specifico',
         atStart: 'All’inizio',
@@ -236,12 +264,27 @@ export const home = {
         visibilityDefault: 'Predefinita',
         visibilityPrivate: 'Privata',
         visibilityPublic: 'Pubblica',
+        intentTitle: 'Scopo e preparazione',
+        intentDescription:
+          'Conserva perché esiste l’Evento e cosa deve essere pronto, senza trasformare azioni provider future in successi locali finti.',
+        purpose: 'Scopo',
+        purposePlaceholder: 'Perché esiste questo evento…',
+        expectedOutcome: 'Risultato atteso',
+        expectedOutcomePlaceholder: 'Cosa dovrebbe essere vero quando termina…',
+        agenda: 'Agenda',
+        agendaPlaceholder: 'Argomenti, sequenza o punti decisionali…',
+        decisionRequired: 'Da questo evento è attesa una decisione',
+        preparation: 'Buffer di preparazione',
+        recovery: 'Buffer di recupero',
       },
       integrations: {
-        participants: 'Partecipanti',
+        requiredParticipants: 'Partecipanti richiesti',
+        optionalParticipants: 'Partecipanti opzionali',
         participantsPlaceholder: 'Email, persone o riferimenti; uno per riga…',
         resources: 'Sale e risorse',
         resourcesPlaceholder: 'Sale, attrezzatura o risorse richieste…',
+        preRead: 'Pre-read / materiale da preparare',
+        preReadPlaceholder: 'Documenti, link o riferimenti al materiale…',
         conference: 'Videochiamata',
         none: 'Nessuna',
         providerDefault: 'Crea con il provider predefinito',
@@ -252,9 +295,7 @@ export const home = {
       organization: {
         title: 'Organizzazione',
         description:
-          'Contesto e tag aiutano a trovare e collegare l’elemento senza cambiare la sua identità temporale.',
-        tags: 'Tag',
-        tagsPlaceholder: 'es. cliente, studio, viaggio',
+          'Contesto e note aiutano a collocare e capire l’elemento senza inventare una tassonomia generica di tag priva di owner canonico.',
       },
       handoffs: {
         otherTitle: 'Altro tipo',
@@ -290,9 +331,13 @@ export const home = {
           'La sessione minima deve essere almeno 5 minuti e non superare la durata prevista.',
         sessionCount: 'Il numero massimo di sessioni non è valido.',
         buffer: 'Preparazione, recupero e spaziatura devono essere valori validi.',
-        recurrenceInterval: 'L’intervallo di ripetizione non è valido.',
+        eventBuffer: 'Preparazione e recupero dell’Evento devono usare valori validi.',
+        recurrenceInterval: 'L’intervallo della ricorrenza di calendario non è valido.',
         recurrenceWeekdays:
-          'Scegli almeno un giorno per una ripetizione settimanale.',
+          'Scegli almeno un giorno per una ricorrenza settimanale.',
+        recurrenceElapsed: 'L’intervallo trascorso della ricorrenza non è valido.',
+        recurrenceQuota: 'La quota o il periodo della ricorrenza non sono validi.',
+        recurrenceCycle: 'Il ciclo o la posizione della ricorrenza non sono validi.',
         recurrenceUntil:
           'La data finale della ricorrenza non può precedere l’inizio.',
         recurrenceCount: 'Il numero di occorrenze non è valido.',
@@ -359,7 +404,7 @@ export const home = {
     detail: {
       subitems: '{{count}} sotto-attività collegate',
       aiNote:
-        'DANTE può usare questo contesto per proporre modifiche, ma le variazioni operative restano confermabili.',
+        'DANTE può usare questo contesto per proporre modifiche, mentre le modifiche operative restano confermabili.',
       close: 'Chiudi',
       subitemParent: 'Sotto-attività di',
     },
@@ -383,7 +428,4 @@ export const home = {
   },
 } as const;
 
-type DeepStringResource<T> = T extends string
-  ? string
-  : { readonly [K in keyof T]: DeepStringResource<T[K]> };
-export type HomeResource = DeepStringResource<typeof home>;
+export type HomeResource = typeof home;
