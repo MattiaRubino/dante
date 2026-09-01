@@ -85,19 +85,19 @@ feature/access-auth owns branch-local implementation truth
 AI ARCHITECTURE
 ACTIVE UNMERGED DESIGN / REENGINEERING WORKSTREAM
 feature/ai-architecture
-AI-00 RECORDED
-PRODUCTION ENGINEERING RESEARCH RECORDED
-AI-02.1 ACTIVE / v0.5 CANDIDATE STRUCTURAL FREEZE
+AI-00 COMPLETE
+AI-01 PRODUCT-FORM + PRODUCTION-ENGINEERING RESEARCH COMPLETE
+AI-02.1 v0.5 CLOSED / STRUCTURALLY ACCEPTED
 ROUND I COMPLETE
 ROUND II COMPLETE
 FINAL KILL-TEST COMPLETE
 LAST MEGA STRESS-TEST COMPLETE
 TARGETED v0.5 CONSISTENCY VERIFICATION COMPLETE
-NO MORE MEGA TESTS
+NO MORE AI-02 MEGA TESTS
 FUTURE-EXTENSIBILITY STRUCTURAL CRITERION PASS
-NOT CLOSED — ADDITIONAL PRE-AI-03 REVIEW PENDING
+AI-03 CONTEXT / RETRIEVAL / MEMORY ACTIVE
+CURRENT MACRO-PHASE AI-03A FULL CONTEXT ARCHITECTURE
 NO AI BACKEND / DB / PROVIDER IMPLEMENTATION CLAIMED
-AI-03 NOT STARTED / BLOCKED UNTIL AI-02.1 ACCEPTANCE
 
 PARALLEL ACTIVE UNMERGED WORKSTREAMS
 feature/access-auth
@@ -106,7 +106,7 @@ feature/platform-observability
 feature/ai-architecture
 ```
 
-Architecture/design closure is not runtime/product completion. The AI-02.1 checkpoint is an architecture simulation/reengineering result only.
+Architecture/design closure is not runtime/product completion. AI-02.1 closure records structural architecture acceptance only.
 
 ## 2. Current protected-main backend/database truth
 
@@ -235,6 +235,9 @@ USER AUTONOMY != EXTERNAL/INSTITUTIONAL AUTHORITY
 DANTE REPRESENTATION != EXTERNAL SYSTEM-OF-RECORD AUTHORITY
 SENT != DELIVERED != SEEN != ACKNOWLEDGED != ACCEPTED
 EXECUTION ENVIRONMENT != MANDATORY SANDBOX/CONTAINER
+FRESH INPUTS != AUTOMATICALLY COHERENT COMBINED BASIS
+APPROVAL != PERPETUAL AUTHORIZATION FOR MATERIALLY CHANGED WORK
+CACHE HIT != CURRENT DISCLOSURE AUTHORIZATION
 ```
 
 ## 5. Reference / material-state baseline
@@ -327,10 +330,19 @@ docs/architecture/ai-production-engineering-state-of-the-art-2026.md
 → external production-engineering research / NON-DANTE-DECISION
 
 docs/architecture/dante-ai-02-1-intelligence-reengineering.md
-→ AI-02.1 ACTIVE / v0.5 CANDIDATE STRUCTURAL FREEZE / NOT CLOSED
+→ AI-02.1 v0.5 CLOSED / STRUCTURALLY ACCEPTED
+
+docs/architecture/dante-ai-03-context-retrieval-memory.md
+→ AI-03 ACTIVE / AI-03A FULL CONTEXT ARCHITECTURE
+
+docs/workstreams/ai-architecture.md
+→ durable active branch/workstream record
+
+docs/workstreams/ai-architecture-live-handoff.md
+→ TEMPORARY branch-operational session handoff / MUST NOT MERGE TO main
 ```
 
-### 9.1 Completed simulation/reengineering program
+### 9.1 Completed AI-02 simulation/reengineering program
 
 ```text
 Round I                          COMPLETE
@@ -418,13 +430,40 @@ deterministic fast path bypassing unnecessary isolation PASS
 
 No additional fundamental responsibility gap emerged.
 
-### 9.3 Current remaining AI work
+### 9.3 AI-02 closure
 
-AI-02.1 is not closed yet because the additional explicitly requested pre-AI-03 review remains pending.
+AI-02.1 is formally accepted at the branch-local architecture level:
 
-There will be no more mega stress-test cycles. After that review, make an explicit AI-02.1 acceptance/closure decision.
+```text
+AI-02.1 v0.5
+CLOSED / STRUCTURALLY ACCEPTED
+```
 
-AI-03 Context / Retrieval / Memory is **NOT STARTED / BLOCKED** until that decision.
+This means the runtime responsibility architecture is accepted as the baseline consumed by AI-03. It does **not** claim runtime implementation, provider selection, backend implementation, database materialization or production proof.
+
+### 9.4 Current AI-03 work
+
+Current compact roadmap:
+
+```text
+AI-00 COMPLETE
+AI-01 COMPLETE
+AI-02 COMPLETE / STRUCTURALLY ACCEPTED
+AI-03 ACTIVE
+  AI-03A Full Context Architecture
+  AI-03B Retrieval + Memory Architecture
+  AI-03C Destructive Validation + Materialization Blueprint
+AI-04 FUTURE Productionization Architecture
+AI-05 FUTURE Whole-System Acceptance + Implementation Blueprint
+```
+
+Current exact task:
+
+```text
+AI-03A — FULL CONTEXT ARCHITECTURE
+```
+
+AI-03 must not pre-commit memory tables, embeddings, vector-store, conversation persistence, provider memory or model/provider choices before semantic need and destructive validation justify them.
 
 ## 10. Capability-triggered components
 
@@ -475,10 +514,13 @@ feature/platform-observability
 → continue under its own platform gates
 
 feature/ai-architecture
-→ AI-02.1 v0.5 CANDIDATE STRUCTURAL FREEZE
-→ perform additional user-requested pre-AI-03 review
-→ explicit AI-02.1 acceptance/closure decision
-→ then AI-03 Context / Retrieval / Memory
+→ AI-02.1 v0.5 CLOSED / STRUCTURALLY ACCEPTED
+→ AI-03 Context / Retrieval / Memory ACTIVE
+→ current macro-phase AI-03A Full Context Architecture
+→ then AI-03B Retrieval + Memory
+→ then AI-03C Destructive Validation + Materialization Blueprint
+→ then AI-04 Productionization Architecture
+→ then AI-05 Whole-System Acceptance + Implementation Blueprint
 ```
 
-No runtime, provider, backend implementation or database PASS is claimed by AI-02.1 documentation.
+No runtime, provider, backend implementation or database PASS is claimed by the AI architecture documentation.
