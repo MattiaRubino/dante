@@ -1,13 +1,13 @@
 # DANTE — Access/Auth Full-Stack Vertical Workstream
 
-- **Status:** ACTIVE VERTICAL / M1–M4 CLOSED / M5 ACTIVE / M5.1–M5-D COMPLETE / GROUP 1 COMPLETE / GROUP 2 ACTIVE CANDIDATE
+- **Status:** ACTIVE VERTICAL / M1–M4 CLOSED / M5 ACTIVE / GROUPS 1–3 COMPLETE / GROUP 4 NEXT
 - **Branch:** `feature/access-auth`
 - **Intended worktree:** `/home/mattia/projects/dante`
-- **Last accepted execution block:** **M5-E + M5-G — Authenticator Lifecycle + Password/Passwordless Adaptation — COMPLETE / ENGINEERING PASS**
-- **Accepted Group-1 code checkpoint:** `1c4b7c988eaae130d6a90d43940a42e2a550870d`
-- **M5-F PRE-SCOPE / last accepted docs baseline:** `64849f2cd60f1d7275344519efdf735eb9c1af95`
-- **M5-F implementation snapshot before handoff-doc commits:** `0da2d516be8d46b24318404bec494f61a9d9ddc1`
-- **Current execution block:** **M5-F — WebAuthn / Passkeys — implementation candidate / QA pending**
+- **Last accepted execution block:** **GROUP 3 — M5-H + M5-I — COMPLETE / ENGINEERING PASS**
+- **Group 3 PRE-SCOPE:** `ee099dc7c6bef4742c6e66e5d15f9a0428dd8ffa`
+- **Group 3 engineering checkpoint:** `05b348e9e0293cd9cd0cc3f190824527761b24d9`
+- **Current execution block:** **GROUP 4 — M5-J + M5-K+ — Access Web + browser/provider/security/UAT — NEXT**
+- **Accepted Alembic head:** `20260831_13`
 - **M5 architecture authority:** `../architecture/access-auth-m5-contract.md`
 - **M5 exact design authority:** `../architecture/access-auth-m5-persistence-api-contract.md`
 - **M5 live handoff:** `access-auth-m5-live-handoff-2026-08-29.md`
@@ -30,10 +30,10 @@ docs/PROJECT-STATUS.md
 → docs/workstreams/access-auth-m4-m7-execution-plan.md
 → Access/Auth architecture/security/API/testing contracts + ADR-011
 → DB System of Record + docs/database/access-auth.md + Dictionary where relevant
-→ current implementation/tests for M5-F
+→ current Group-4 implementation/tests once materialized
 ```
 
-Repository truth beats conversation memory. Do not reinterpret M1–M4 or redo broad M5 discovery from scratch.
+Repository truth beats conversation memory. Do not reinterpret M1–M4 or reopen accepted M5 groups absent direct defect evidence.
 
 No new branch/worktree, merge, rebase, force-push/history rewrite or protected-main write without explicit user authorization.
 
@@ -77,6 +77,8 @@ M5-B provider/JWK/JOSE/AEAD infrastructure             COMPLETE / ENGINEERING PA
 M5-C Google authentication                             COMPLETE / ENGINEERING PASS
 M5-D Apple authentication + grant/notifications        COMPLETE / ENGINEERING PASS
 GROUP 1 / M5-E + M5-G                                  COMPLETE / ENGINEERING PASS
+GROUP 2 / M5-F                                         COMPLETE / ENGINEERING PASS
+GROUP 3 / M5-H + M5-I                                  COMPLETE / ENGINEERING PASS
 ```
 
 Accepted current DB truth:
@@ -94,25 +96,83 @@ Alembic             20260831_13
 103 standalone Dictionary entries
 ```
 
-Group-1 closeout:
+`20260831_13` is ACL-only. Groups 2 and 3 required no schema/Alembic/Dictionary/ACL widening.
+
+## 4. Group 2 accepted result
+
+M5-F established WebAuthn/passkeys as a first-class direct authenticator under the Account-wide lifecycle and anti-lockout authority.
 
 ```text
-uv lock --check                              PASS / 57 packages
-Ruff format/check/lint                       PASS
-mypy src                                     PASS / 50 source files
-backend fast                                 179 / 179 PASS
-focused PostgreSQL Group 1                   16 / 16 PASS
-full PostgreSQL regression                   120 / 120 PASS
-backend build                                PASS
-git diff --check                             PASS
-scope audit                                  PASS
+real python-fido2 verification
+opaque stable WebAuthn user_handle
+registration / discoverable authentication / reauthentication
+resident credentials required
+UV required
+multiple passkeys
+credential lifetime uniqueness
+COSE public-key persistence
+monotonic credential-state handling
+safe management projection
+logical revoke
+Account-wide anti-lockout
+canonical DANTE AuthSession only
+real PostgreSQL race proof
 ```
 
-`20260831_13` is ACL-only: it grants `DELETE` on `dante.password_credential` to `dante_runtime`; no table shape, mapping, index or constraint changed.
+Closure:
 
-Do not reopen closed slices absent direct defect evidence.
+```text
+191 non-PostgreSQL PASS
+132 PostgreSQL PASS
+323 total PASS
+Ruff / mypy / build / diff / scope PASS
+```
 
-## 4. Remaining M5 execution — authoritative grouping
+Real browser/hardware WebAuthn acceptance remains Group 4.
+
+## 5. Group 3 accepted result
+
+M5-H + M5-I materialized the public HTTP contract and the governed client as one deterministic delivery pipeline:
+
+```text
+application services
+→ exact FastAPI/Pydantic materialization
+→ stable /api/v1 operationIds
+→ RFC 9457 + no-store + request IDs
+→ same-origin browser security + session CSRF
+→ opaque HttpOnly provider continuation cookies
+→ Apple bounded form_post external ingress
+→ deterministic OpenAPI
+→ Orval Fetch + generated Zod
+→ governed @dante/api-client
+→ strict runtime success validation
+→ drift + two-run determinism proof
+```
+
+Public M5 surface includes methods/password, provider enrollment/link/unlink, Google, Apple and complete passkey lifecycle. Apple callback/notifications remain backend ingress and are not ordinary browser-client methods.
+
+Closure evidence:
+
+```text
+Ruff / mypy                                      PASS
+focused M5 HTTP/OpenAPI                          35 PASS
+full non-PostgreSQL                              225 PASS
+provider-continuation real PostgreSQL             2 PASS
+full real PostgreSQL                             134 PASS
+backend build                                    PASS
+api-client lint / typecheck                       PASS
+api-client Vitest                                 11 PASS
+generated OpenAPI/Orval/Zod                       deterministic + current / 78 files
+architecture check                                PASS / 151 modules / 287 dependencies
+workspace typecheck                               PASS / 6 of 6
+workspace build                                   PASS / 2 of 2
+git diff + clean synced tree                      PASS
+PRE-SCOPE scope audit                             PASS
+```
+
+Do not reopen Group 3 absent direct defect evidence.
+
+## 6. Remaining M5 execution — authoritative grouping
 
 ```text
 GROUP 1
@@ -120,178 +180,71 @@ M5-E + M5-G
 Authenticator Lifecycle + Password/Passwordless Adaptation
 COMPLETE / ENGINEERING PASS
 
-GROUP 2 — CURRENT
+GROUP 2
 M5-F
 WebAuthn / Passkeys
-ACTIVE / IMPLEMENTATION CANDIDATE / QA PENDING
+COMPLETE / ENGINEERING PASS
 
 GROUP 3
 M5-H + M5-I
 Public FastAPI + Deterministic OpenAPI / Governed Client
-BLOCKED ON M5-F ACCEPTANCE
+COMPLETE / ENGINEERING PASS
 
-GROUP 4
+GROUP 4 — CURRENT / NEXT
 M5-J + M5-K+
 Access Web + Security / Provider / Browser / UAT / Acceptance
-PLANNED
+NEXT
 ```
 
-The labels M5-E/F/G/H/I/J/K+ remain semantic ownership labels from the frozen design; they are not separate execution gates.
+The labels M5-E/F/G/H/I/J/K+ remain semantic ownership labels from the frozen design; they are not independent execution gates.
 
-## 5. Group 1 accepted result
+## 7. Group 4 purpose
+
+Group 4 is the next implementation block. It must consume the governed `@dante/api-client`; raw generated operations and ad-hoc fetch proliferation remain forbidden.
+
+Materialize:
 
 ```text
-authentication-method inventory from durable Account truth
-provider-first link challenge inspection/confirmation
-exact Account proof + recent auth before provider-first link
-provider unlink = logical ExternalIdentity revoke
-Apple unlink = local revoke first + durable grant reconciliation
-backend-authoritative direct-authenticator counts
-Account security lock around authenticator mutations
-anti-lockout recheck under lock
-passwordless safety requires verified recovery-eligible EmailIdentity
-first PasswordCredential establishment with existing HIBP/Argon2id/pepper policy
-safe PasswordCredential removal
-M4 reset create-or-replace PasswordCredential
-normal password mutation invalidates stale recovery proof
-security-sensitive retained AuthSession rotates exact bearer
-concurrent password/provider removal preserves one viable authenticator
-operation-specific ambiguous commit reconciliation
+email/password Access flows
+Google begin/complete
+Apple begin + returned callback outcome handling
+passkey registration/authentication/reauthentication
+provider enrollment
+provider link-required + confirmation
+methods/security management
+loading/cancel/error/recovery states
+backend-authoritative success only
+no localStorage/sessionStorage auth authority
+no frontend inference of provider success
 ```
 
-Provider-neutral lifecycle logic lives outside `apple_flow.py`; Apple grant mechanics remain Apple-specific.
-
-## 6. Group 2 / M5-F — current candidate
-
-### Scope integrity
-
-Current M5-F candidate was built from:
+Then prove:
 
 ```text
-PRE-SCOPE
-64849f2cd60f1d7275344519efdf735eb9c1af95
-
-implementation snapshot before docs-only handoff reconciliation
-0da2d516be8d46b24318404bec494f61a9d9ddc1
-```
-
-PRE-SCOPE → implementation snapshot is `ahead 19 / behind 0` with exactly 10 files, all inside the approved M5-F gate. There is no migration, mapping, Dictionary, public API, OpenAPI/client, frontend or provider-core delta.
-
-### Materialized behavior
-
-```text
-real python-fido2 2.2.1 verification
-opaque stable random 32-byte WebAuthnAccount user_handle
-registration begin/complete
-resident credential required
-user verification required
-attestation none
-exact RP ID + explicit HTTPS origins
-verifier-only short challenge
-claim committed before crypto to block replay
-crypto outside DB mutation transaction
-discoverable username-less signin
-fresh canonical DANTE AuthSession on passkey signin
-passkey reauthentication on exact same AuthSession
-bearer rotation on registration/reauth/removal
-multiple passkeys
-credential-id lifetime uniqueness
-COSE public-key + algorithm persistence
-signCount monotonic update
-backup eligibility/state policy
-safe active-passkey projection
-label-only update
-logical revoke
-Group-1 Account-wide anti-lockout on removal
-bounded resource/rate policy
-```
-
-### Proof already authored in source
-
-```text
-real software ES256 fido2 registration/assertion
-negative wrong-challenge/origin/UV/signature tests
-registration→signin→reauth→revoke PG vertical
-challenge replay rejection
-same-Account duplicate credential rejection
-revoked credential rejection
-concurrent passkey removals preserve one authenticator
-passkey removal vs provider unlink shares Account lock
-```
-
-### Candidate blockers before QA/acceptance
-
-M5-F is not accepted merely because these files exist. The next assistant must finish:
-
-```text
-1. ambiguous signin/reauth reconciliation tolerance for later valid credential-state advancement
-2. passkey-signin mutation timestamp after Account security lock
-3. same credential across two Accounts race proof
-4. passkey signin vs passkey removal race proof
-5. Account disable vs passkey signin race proof
-6. reauth vs concurrent bearer rotation proof
-7. passkey removal vs password removal race proof
-8. concurrent assertion / signCount / backup-state advancement proof
-9. ambiguous terminal-commit reconciliation proof
-10. explicit enabled/disabled runtime composition proof
-11. final exact-origin canonicalization quality check
-```
-
-See the live handoff for detailed rationale and deterministic race shapes. Do not skip these merely to reach the next roadmap label.
-
-## 7. M5-F proof/closure sequence
-
-```text
-finish known hardening and missing focused proof
-→ PRE-SCOPE scope audit
-→ stop writes
-→ user pulls
-→ user runs local Ruff/mypy/fast/focused-PG/build QA
-→ assistant fixes defects; user does not patch source manually
-→ one full PostgreSQL regression when candidate is otherwise green
-→ materialize exact local formatter/autofix output
-→ final architecture + scope audit
-→ reconcile M5 closure authorities
-→ mark M5-F COMPLETE / ENGINEERING PASS
-→ only then Group 3 becomes NEXT
-```
-
-Real browser/WebAuthn acceptance is intentionally deferred to Group 4 because public FastAPI/Web surfaces are not materialized yet.
-
-## 8. Group 3 — M5-H + M5-I
-
-After M5-F acceptance:
-
-```text
-application services
-→ exact FastAPI/Pydantic contract
-→ RFC9457 + no-store + request IDs
-→ Apple form_post ingress boundary
-→ deterministic OpenAPI
-→ frozen operationIds/success unions/problems
-→ Orval Fetch + generated Zod
-→ governed @dante/api-client
-→ drift/determinism tests
-```
-
-## 9. Group 4 — M5-J + M5-K+
-
-```text
-Access Web Google/Apple/passkey/email-password
-provider enrollment/link/security-management states
-smart provider-enriched onboarding
 Chromium / Firefox / WebKit
-real Google UAT
-real Apple registered-domain UAT
+real Google smoke/UAT
+real Apple registered-domain smoke/UAT
 Apple Private Email Relay sender configuration
-real WebAuthn/passkey UAT
-final security/race/HTTP/OpenAPI/client/PostgreSQL proof as applicable
-manual integrated UAT
+real WebAuthn/passkey browser/hardware UAT
+final browser/security/provider proof
+manual integrated M5 UAT
 docs reconciliation
 explicit user acceptance
 ```
 
-## 10. Quality / testing posture
+Whole M5 remains ACTIVE until Group 4 acceptance.
+
+## 8. M6 / M7
+
+```text
+M6 — Native Mobile Access
+FUTURE / OPTIONAL / ONLY IF DELIBERATELY RE-GATED
+
+M7 — Security Hardening + Observability + Authenticated Handoff
+PLANNED / FINAL WHOLE-VERTICAL GATE
+```
+
+## 9. Quality / testing posture
 
 ```text
 prove each invariant at the truthful layer
@@ -300,13 +253,12 @@ real PostgreSQL for persistence/race authority
 real python-fido2 for WebAuthn crypto verification
 no flaky Auth hidden behind retries
 no blind retry of non-idempotent/ambiguous mutations
-one heavy PostgreSQL closeout regression when candidate is ready
-browser/provider proof only when public/Web surfaces exist
+browser/provider proof only at the public/Web boundary
 ```
 
-Local `uv==0.12.5` / Ruff behavior is authority. Never hand-edit `uv.lock`. Use `ruff format`, `ruff check --fix`, then fix only the residual non-autofixable findings. The user must not be asked to manually patch/debug project source.
+Local `uv==0.12.5` / Ruff behavior is authority. Never hand-edit `uv.lock`. The user runs requested QA; implementation/debug responsibility remains with the assistant.
 
-## 11. Branch/worktree safety
+## 10. Branch/worktree safety
 
 ```text
 repo:      MattiaRubino/dante
