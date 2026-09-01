@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
 test.use({ locale: 'it-IT' });
@@ -116,6 +117,50 @@ test('direct World Focus URL opens the same frozen structure and Escape closes s
 
   await page.keyboard.press('Escape');
   await expect(page).toHaveURL(/\/worlds$/);
+});
+
+test('B0 workspace is container-query ready and records open-to-usable timing', async ({
+  page,
+}) => {
+  await page.goto('/worlds/music');
+
+  const workspace = page.locator('[data-world-focus-region="workspace"]');
+  await expect(workspace).toBeVisible();
+  expect(
+    await workspace.evaluate((element) => getComputedStyle(element).containerType),
+  ).toBe('inline-size');
+
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        performance
+          .getEntriesByName('dante.world-focus.open-to-usable', 'measure')
+          .map((entry) => entry.duration),
+      ),
+    )
+    .toSatisfy((durations) =>
+      durations.length > 0 &&
+      durations.every((duration) => Number.isFinite(duration) && duration >= 0),
+    );
+});
+
+test('World Focus foundation has no detectable axe violations at wide and compact widths', async ({
+  page,
+}) => {
+  for (const viewport of [
+    { width: 1600, height: 900 },
+    { width: 390, height: 844 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.goto('/worlds/music');
+    await expect(page.locator('.world-focus-shell')).toBeVisible();
+
+    const results = await new AxeBuilder({ page })
+      .include('.world-focus-shell')
+      .analyze();
+
+    expect(results.violations).toEqual([]);
+  }
 });
 
 test('WF0 remains bounded without horizontal overflow across contracted widths', async ({
