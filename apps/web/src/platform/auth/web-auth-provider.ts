@@ -1,19 +1,9 @@
 const GOOGLE_IDENTITY_SCRIPT_ID = 'dante-google-identity-services';
 const GOOGLE_IDENTITY_SCRIPT_SRC = 'https://accounts.google.com/gsi/client';
-const GOOGLE_PROMPT_TIMEOUT_MS = 60_000;
 const APPLE_AUTHORIZATION_HOST = 'appleid.apple.com';
 
 type GoogleCredentialResponse = Readonly<{
   credential?: string;
-}>;
-
-type GooglePromptMoment = Readonly<{
-  isDismissedMoment?: () => boolean;
-  isNotDisplayed?: () => boolean;
-  isSkippedMoment?: () => boolean;
-  getDismissedReason?: () => string;
-  getNotDisplayedReason?: () => string;
-  getSkippedReason?: () => string;
 }>;
 
 type GoogleIdentityConfiguration = Readonly<{
@@ -22,12 +12,26 @@ type GoogleIdentityConfiguration = Readonly<{
   nonce: string;
   auto_select: false;
   cancel_on_tap_outside: true;
+  use_fedcm_for_button: true;
+  button_auto_select: false;
+}>;
+
+type GoogleButtonConfiguration = Readonly<{
+  type: 'standard';
+  theme: 'outline';
+  size: 'large';
+  text: 'continue_with';
+  shape: 'rectangular';
+  logo_alignment: 'left';
+  width?: number;
 }>;
 
 type GoogleAccountsId = Readonly<{
   initialize: (configuration: GoogleIdentityConfiguration) => void;
-  prompt: (callback?: (notification: GooglePromptMoment) => void) => void;
-  cancel?: () => void;
+  renderButton: (
+    parent: HTMLElement,
+    configuration: GoogleButtonConfiguration,
+  ) => void;
 }>;
 
 type GoogleIdentityGlobal = Readonly<{
@@ -48,10 +52,6 @@ export class ProviderBrowserUnavailableError extends Error {
     super(message);
     this.name = 'ProviderBrowserUnavailableError';
   }
-}
-
-function abortedError(): DOMException {
-  return new DOMException('The provider request was aborted.', 'AbortError');
 }
 
 function googleAccountsId(): GoogleAccountsId | null {
@@ -134,31 +134,24 @@ export function loadGoogleIdentityServices(): Promise<GoogleAccountsId> {
   return googleScriptPromise;
 }
 
-function promptFailureReason(notification: GooglePromptMoment): string | null {
-  if (notification.isNotDisplayed?.()) {
-    return notification.getNotDisplayedReason?.() ?? 'not_displayed';
-  }
-  if (notification.isSkippedMoment?.()) {
-    return notification.getSkippedReason?.() ?? 'skipped';
-  }
-  if (notification.isDismissedMoment?.()) {
-    return notification.getDismissedReason?.() ?? 'dismissed';
-  }
-  return null;
+export function googleClientIdFromBuild(): string {
+  const value = import.meta.env.VITE_DANTE_GOOGLE_CLIENT_ID;
+  return typeof value === 'string' ? value.trim() : '';
 }
 
-export async function requestGoogleCredential({
+export async function renderGoogleIdentityButton({
+  container,
   clientId,
   nonce,
-  signal,
+  onCredential,
+  onError,
 }: Readonly<{
+  container: HTMLElement;
   clientId: string;
   nonce: string;
-  signal?: AbortSignal;
-}>): Promise<string> {
-  if (signal?.aborted) {
-    throw abortedError();
-  }
+  onCredential: (credential: string) => void;
+  onError: (error: ProviderBrowserUnavailableError) => void;
+}>): Promise<void> {
   if (clientId.trim().length === 0) {
     throw new ProviderBrowserUnavailableError(
       'Google sign-in is not configured for this build.',
@@ -171,72 +164,36 @@ export async function requestGoogleCredential({
   }
 
   const google = await loadGoogleIdentityServices();
-  if (signal?.aborted) {
-    throw abortedError();
-  }
-
-  return new Promise<string>((resolve, reject) => {
-    let settled = false;
-    const finish = (callback: () => void) => {
-      if (settled) {
+  container.replaceChildren();
+  google.initialize({
+    client_id: clientId,
+    nonce,
+    auto_select: false,
+    cancel_on_tap_outside: true,
+    use_fedcm_for_button: true,
+    button_auto_select: false,
+    callback: (response) => {
+      const credential = response.credential;
+      if (typeof credential !== 'string' || credential.length === 0) {
+        onError(
+          new ProviderBrowserUnavailableError(
+            'Google sign-in returned no credential evidence.',
+          ),
+        );
         return;
       }
-      settled = true;
-      window.clearTimeout(timeoutId);
-      signal?.removeEventListener('abort', abort);
-      callback();
-    };
-    const abort = () => {
-      google.cancel?.();
-      finish(() => reject(abortedError()));
-    };
-    const timeoutId = window.setTimeout(() => {
-      google.cancel?.();
-      finish(() =>
-        reject(
-          new ProviderBrowserUnavailableError(
-            'Google sign-in did not complete before the browser prompt expired.',
-          ),
-        ),
-      );
-    }, GOOGLE_PROMPT_TIMEOUT_MS);
-
-    signal?.addEventListener('abort', abort, { once: true });
-
-    google.initialize({
-      client_id: clientId,
-      nonce,
-      auto_select: false,
-      cancel_on_tap_outside: true,
-      callback: (response) => {
-        const credential = response.credential;
-        if (typeof credential !== 'string' || credential.length === 0) {
-          finish(() =>
-            reject(
-              new ProviderBrowserUnavailableError(
-                'Google sign-in returned no credential evidence.',
-              ),
-            ),
-          );
-          return;
-        }
-        finish(() => resolve(credential));
-      },
-    });
-
-    google.prompt((notification) => {
-      const reason = promptFailureReason(notification);
-      if (reason === null) {
-        return;
-      }
-      finish(() =>
-        reject(
-          new ProviderBrowserUnavailableError(
-            `Google sign-in browser prompt ended before authentication (${reason}).`,
-          ),
-        ),
-      );
-    });
+      onCredential(credential);
+    },
+  });
+  const width = Math.floor(container.getBoundingClientRect().width);
+  google.renderButton(container, {
+    type: 'standard',
+    theme: 'outline',
+    size: 'large',
+    text: 'continue_with',
+    shape: 'rectangular',
+    logo_alignment: 'left',
+    ...(width > 0 ? { width } : {}),
   });
 }
 
