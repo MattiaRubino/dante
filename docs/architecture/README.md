@@ -24,7 +24,7 @@ Current Alembic head                 20260830_09
 Current DB topology                  69 tables / 5 views / 15 routines / 76 triggers / 97 indexes / 69 FKs / 123 CHECKs
 PostgreSQL local Recovery            CP01–CP07 LOCAL PASS / CLOSED / INTEGRATED VIA PR #47
 Full Access/Auth product vertical    ACTIVE / UNMERGED ON feature/access-auth
-AI architecture                      ACTIVE / AI-02.1 REENGINEERING / DESIGN ONLY ON feature/ai-architecture
+AI architecture                      ACTIVE / AI-02.1 v0.3 REENGINEERING / DESIGN ONLY ON feature/ai-architecture
 ```
 
 Protected `main` is the integrated authority for closed shared foundations, CP6 and the integrated Recovery evolution. Active unmerged product/architecture work remains branch-local until normal protected-main integration.
@@ -36,7 +36,7 @@ Read according to the subject:
 - [`system-overview.md`](system-overview.md) — system/component/authority overview;
 - [`dante-ai-foundation.md`](dante-ai-foundation.md) — branch-local AI-00 semantic/architectural baseline; inherited constraints remain active and are not superseded by AI-02.1;
 - [`ai-production-engineering-state-of-the-art-2026.md`](ai-production-engineering-state-of-the-art-2026.md) — branch-local production AI/agent engineering research thesis; state-of-the-art evidence and DANTE applicability boundaries, explicitly **not** the final DANTE Intelligence Architecture;
-- [`dante-ai-02-1-intelligence-reengineering.md`](dante-ai-02-1-intelligence-reengineering.md) — **current active AI-02.1 architecture checkpoint**; v0.2 reengineering derived from North-Star/simulation pressure-testing, explicitly **NOT CLOSED** and with adversarial acceptance still pending;
+- [`dante-ai-02-1-intelligence-reengineering.md`](dante-ai-02-1-intelligence-reengineering.md) — **current active AI-02.1 architecture checkpoint**; v0.3 after two distinct pressure-test rounds, explicitly **NOT CLOSED** and with the final kill-test still required;
 - [`technical-decisions.md`](technical-decisions.md) — current architecture decision register;
 - [`domain-model-logical-readiness.md`](domain-model-logical-readiness.md) — satisfied Domain → Logical semantic compatibility contract;
 - [`../domain/README.md`](../domain/README.md) — current Domain entry point;
@@ -82,9 +82,23 @@ The accepted Domain → Logical → Physical chain has already been concretely m
 
 Frontend remains platform-specific at renderer/UI/platform-adapter level with selective semantic sharing. Backend/database canonical authority and operation-specific offline governance remain preserved.
 
-AI architecture currently consumes the same rule: model/provider/runtime output is not accepted canonical effect, and no AI-specific persistence shortcut may redefine closed Domain/Logical/Physical/database semantics.
+AI architecture consumes the same rule: model/provider/runtime output is not accepted canonical effect, and no AI-specific persistence shortcut may redefine closed Domain/Logical/Physical/database semantics.
 
-AI-02.1 currently pressure-tests the intelligence architecture against real DANTE obligations. Its v0.2 checkpoint adds first-class responsibility boundaries for Interaction Session, Semantic Query / Projection, hypothetical Scenario Workspace, compound ChangeSet / EffectGraph, verification, proactivity/attention, recipient-aware Disclosure Projection and mixed DANTE-native/open-world reasoning. These are responsibility contracts, not automatic services, new Domain owners or persistence tables.
+AI-02.1 currently pressure-tests the intelligence architecture against real DANTE obligations. Round I produced first-class responsibility boundaries for Interaction Session, Semantic Query / Projection, hypothetical Scenario Workspace, compound ChangeSet / EffectGraph, verification, proactivity/attention, recipient-aware Disclosure Projection and mixed DANTE-native/open-world reasoning.
+
+Round II then attacked those boundaries under concurrency, revocation, cumulative privacy inference, causal feedback loops, superseding user intent and partial external effects. The current v0.3 additionally hardens:
+
+```text
+cumulative / cross-query disclosure protection
+causal-loop / oscillation guard
+Work Supersession
+BasisManifest + dependency-aware invalidation
+revocable active-Run validity
+Attention budgeting
+cancel Run != undo already-dispatched effects
+```
+
+These are responsibility contracts, not automatic services, new Domain owners or persistence tables. Two pressure-test rounds have not produced evidence sufficient to reopen Domain, Logical, Physical or PostgreSQL.
 
 The production-engineering research additionally records a current DANTE applicability boundary without selecting a provider or SDK: frontier intelligence is expected to be **API-first**; DANTE does not plan to train a foundation model, require fine-tuning as a baseline, own a frontier model or operate a large always-on self-hosted model fleet. Small/local inference remains optional and benchmark-gated. These are project constraints for later architecture work, not implementation claims.
 
@@ -147,14 +161,14 @@ Still bounded to the stage that owns them:
 - cloud compute/IaC and remote infrastructure materialization;
 - platform release activation details;
 - dormant frontend capabilities activated only when product requirements justify them;
-- exact final AI chat/voice/UI interaction design, while Interaction Session is now an AI-02.1 architecture responsibility;
+- exact final AI chat/voice/UI interaction design, while Interaction Session is an AI-02.1 architecture responsibility;
 - exact AI model/provider strategy and routing policy;
 - AI agent/runtime/SDK selection;
 - AI conversation/memory physical persistence;
 - AI tool/capability registry implementation, autonomy policy implementation and evaluation stack;
 - optional local-model choice and activation;
 - exact Context / Retrieval / Memory architecture owned by the later AI-03 phase;
-- exact physical representation, if any, for AI-02.1 runtime-only responsibilities such as Scenario Workspace and ChangeSet.
+- exact physical representation, if any, for AI-02.1 runtime-only responsibilities such as Scenario Workspace, ChangeSet, BasisManifest, work lineage and bounded disclosure accounting.
 
 The branch-local AI authority is layered: [`dante-ai-foundation.md`](dante-ai-foundation.md) owns inherited semantic constraints; [`ai-production-engineering-state-of-the-art-2026.md`](ai-production-engineering-state-of-the-art-2026.md) owns external engineering evidence/applicability boundaries; [`dante-ai-02-1-intelligence-reengineering.md`](dante-ai-02-1-intelligence-reengineering.md) owns the current active reengineering checkpoint. None authorizes backend/database implementation merely by documentation.
 
@@ -178,7 +192,7 @@ For example, `domain-model-logical-readiness-part-2.md` through `part-5.md` are 
 
 The production AI/agent engineering thesis is intentionally research evidence. It may classify technologies as strong defaults, challengers, watch items or anti-defaults without converting those classifications into DANTE implementation decisions.
 
-The AI-02.1 checkpoint is branch-local architectural work, but it remains **ACTIVE / NOT CLOSED** until the remaining compound adversarial simulations and other explicitly required acceptance work complete. Do not read `v0.2` as implementation status or final architecture closure.
+The AI-02.1 checkpoint is branch-local architectural work, but it remains **ACTIVE / NOT CLOSED**. Round I and Round II are complete; the final kill-test and the other explicitly required pre-AI-03 acceptance work are still pending. Do not read `v0.3` as implementation status or final architecture closure.
 
 ## 8. Architecture reopen discipline
 
@@ -228,9 +242,10 @@ STATE-OF-THE-ART EVIDENCE RECORDED
 NON-DANTE-DECISION
 
 AI-02.1
-ACTIVE / REENGINEERED TO v0.2
-FIRST NORTH-STAR / SIMULATION PRESSURE-TEST COMPLETE
-COMPOUND ADVERSARIAL PRESSURE-TEST STILL REQUIRED
+ACTIVE / REENGINEERED TO v0.3
+ROUND I COMPLETE
+ROUND II COMPLETE
+FINAL KILL-TEST STILL REQUIRED
 NOT CLOSED
 
 THEN: AI-03
@@ -238,10 +253,10 @@ CONTEXT / RETRIEVAL / MEMORY
 BLOCKED UNTIL AI-02.1 STRUCTURAL ACCEPTANCE
 ```
 
-AI-02.1 starts from what DANTE must actually be able to do: Product/North Star, existing simulations and adversarial scenarios, accepted Domain/Logical/Physical/database authority, AI-00 and external engineering evidence. The first pass identified bounded architecture gaps and recorded corresponding responsibility-level fixes without creating a parallel ontology or automatic new infrastructure.
+AI-02.1 starts from what DANTE must actually be able to do: Product/North Star, existing simulations and adversarial scenarios, accepted Domain/Logical/Physical/database authority, AI-00 and external engineering evidence. The two completed rounds identified bounded architecture gaps and responsibility-level fixes without creating a parallel ontology or automatic new infrastructure.
 
 A specific AI-02.1 acceptance question is future extensibility: if DANTE later exposes a much richer integrated general-purpose conversational intelligence, or consumes future frontier models/providers with substantially better capabilities, the architecture must absorb them without transferring canonical memory, Authority, application truth or effect ownership to the model/provider and without requiring a fundamental redesign.
 
-AI-03 follows only after the remaining structural/adversarial pressure-test. It owns detailed Context / Retrieval / Memory rather than having those choices pre-committed by the current checkpoint.
+AI-03 follows only after the final structural/adversarial kill-test and other required pre-AI-03 review. It owns detailed Context / Retrieval / Memory rather than having those choices pre-committed by the current checkpoint.
 
 Direct implementation evidence is claimed only after the relevant real artifact/scenario executes.
