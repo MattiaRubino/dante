@@ -4,24 +4,29 @@
 - **Workstream:** `feature/ai-architecture`
 - **Established:** 2026-09-01
 - **Phase:** AI-02.1
-- **Current checkpoint:** v0.4 / ROUND I + ROUND II + FINAL KILL-TEST COMPLETE / ONE LAST MEGA STRESS-TEST REQUIRED
-- **Scope:** pressure-test and reengineer the DANTE Intelligence Architecture against actual product obligations before AI-03
+- **Current checkpoint:** **v0.5 CANDIDATE STRUCTURAL FREEZE**
+- **Pressure-test program:** ROUND I + ROUND II + FINAL KILL-TEST + LAST MEGA STRESS-TEST COMPLETE
+- **Targeted v0.5 consistency verification:** COMPLETE / STRUCTURAL PASS
+- **Mega-test policy:** NO MORE MEGA TESTS IN AI-02.1
+- **Remaining phase work:** one additional user-requested pre-AI-03 review + explicit AI-02.1 acceptance/closure decision
 - **Implementation:** NOT STARTED by this document
 - **Provider/model/SDK selection:** OPEN
 - **Database evolution:** NONE AUTHORIZED BY THIS DOCUMENT
-- **AI-03:** BLOCKED until AI-02.1 completes its remaining architecture acceptance work
+- **AI-03:** NOT STARTED / BLOCKED until explicit AI-02.1 acceptance
 
 ---
 
 ## 1. Purpose
 
-AI-02.1 exists to answer a narrower and harder question than the previous AI research work:
+AI-02.1 answers a harder question than provider/framework selection:
 
-> **Does the proposed DANTE Intelligence Architecture actually survive what DANTE must do in real life, under the already accepted Product, Domain, Logical, Physical and PostgreSQL contracts?**
+> **Does the DANTE Intelligence Architecture survive what DANTE must actually do in real life, under the already accepted Product, Domain, Logical, Physical and PostgreSQL contracts?**
 
-This phase does not start from a preferred model, agent framework, provider, vector database or chat UI. It starts from product obligations and tries to break the architecture.
+This phase starts from product obligations and tries to break the architecture.
 
-The method is deliberately adversarial:
+It does **not** start from a preferred model, agent framework, vector database, sandbox product or chat UI.
+
+Method:
 
 ```text
 Product / North Star
@@ -41,31 +46,16 @@ PASS / GAP / CONTRADICTION / OVER-ABSTRACTION
         ↓
 smallest justified reengineering change
         ↓
-repeat
+repeat only while a structural gap remains
 ```
 
-This document records the current **v0.4 checkpoint after three distinct architecture pressure-test rounds**:
-
-```text
-Round I
-→ broad North-Star / product simulation pass
-
-Round II
-→ clean compound adversarial pressure-test
-
-Final Kill-Test
-→ deep cross-domain / multi-actor / failure-oriented stress pass
-```
-
-AI-02.1 is still not closed. One final deliberately broad mega stress-test remains before the phase can be considered for structural acceptance. After that mega-test, any residual narrow edge case is handled by a targeted verification rather than restarting an indefinite sequence of mega-tests.
-
-The pressure-test record must remain methodologically clean. Questions about concrete provider pricing, model/server selection or other later implementation choices may be useful adjacent discussion, but they are not counted as evidence for an official adversarial round unless the scenario itself is testing an architecture obligation.
+The mega-test cycle is now complete. AI-02.1 does not continue indefinitely searching for artificial new gaps.
 
 ---
 
 ## 2. Authority and interpretation discipline
 
-This document does not create a new Domain ontology and does not supersede closed Product/Domain/Logical/Physical/database authority.
+This document does not create a new Domain ontology and does not supersede accepted Product/Domain/Logical/Physical/database authority.
 
 Precedence remains:
 
@@ -79,29 +69,35 @@ protected-main executable truth
 → conversation memory
 ```
 
-If a responsibility introduced here can be expressed using an existing accepted semantic family, the existing family remains the semantic owner.
+If a responsibility introduced here can be expressed through an existing accepted semantic family, that existing family remains semantic owner.
 
-Terms such as:
+The following are architecture/runtime responsibility contracts unless another accepted source defines equivalent Domain meaning:
 
 ```text
 Interaction Session
-Semantic Query Gateway
+WorkContract
+Semantic Query / Projection Gateway
+Context Engine
 Scenario Workspace
-ChangeSet
-Effect Graph
-Attention Engine
-Disclosure Projection
-VerificationReceipt
-HarnessProfile
 BasisManifest
-Work Supersession
 Reference / Target Resolution
-PolicyDecision
+ModelTarget
+HarnessProfile
+Capability Runtime
+Execution Environment
+Verifier
+Policy Composition / policy mesh
 ConsequenceProfile
-Result Publication / Result Maturity
+ChangeSet / EffectGraph
+Effect Runtime
+Attention
+Disclosure Projection
+Safe Result Publication
+Result Maturity
+Work Supersession
 ```
 
-are **architecture/runtime responsibility contracts unless another accepted source already defines an equivalent Domain concept**. They are not permission to create new canonical tables or generic semantic roots.
+They do **not** authorize new generic canonical tables or semantic roots.
 
 ---
 
@@ -123,7 +119,7 @@ Primary product authority:
 - `docs/product/v1-data-history-and-privacy.md`
 - `docs/product/v1-learning-context-and-ai-boundary.md`
 
-Primary simulation evidence:
+Primary simulation/research evidence:
 
 - `docs/product/feature-discovery-simulation-2026-08.md`
 - `docs/product/multi-actor-collaboration-discovery-simulation-2026-08.md`
@@ -146,13 +142,11 @@ Primary simulation evidence:
 - current Alembic / SQLAlchemy / PostgreSQL executable truth
 - `docs/decisions/ADR-010-postgresql-persistence-constitution.md`
 
-Simulation/research evidence may reveal an architectural gap. It does not silently rewrite an accepted semantic meaning.
+Simulation/research may reveal an architecture gap. It does not silently rewrite accepted semantic meaning.
 
 ---
 
-## 4. Non-negotiable inherited and reengineering invariants
-
-AI-02.1 carries forward at least the following rules:
+## 4. Non-negotiable invariants
 
 ```text
 DANTE != chatbot
@@ -197,35 +191,34 @@ telemetry != audit
 DISPLAY NAME != EFFECT TARGET
 AMBIGUOUS TARGET != RESOLVED TARGET
 
+SCENARIO STATE != CANONICAL CURRENT STATE
+CHANGESET != BYPASS OF INDIVIDUAL EFFECT GOVERNANCE
+CONTEXT ACCESS != DISCLOSURE PERMISSION
+
+INTERACTION SESSION != RUN != WORKER
+SUPERSEDE != CANCEL != ROLLBACK != RECONCILE
+RUN-START AUTHORIZATION != PERPETUAL AUTHORIZATION
+CANCEL RUN != UNDO ALREADY-DISPATCHED EFFECTS
+
 DANTE CANONICAL REPRESENTATION
 !=
 EXTERNAL INSTITUTIONAL SYSTEM-OF-RECORD AUTHORITY
 
 SENT != DELIVERED != SEEN != ACKNOWLEDGED != ACCEPTED
+
+EXECUTION ENVIRONMENT != MANDATORY SANDBOX/CONTAINER
+FRESH INPUTS != AUTOMATICALLY COHERENT COMBINED BASIS
+APPROVAL != PERPETUAL AUTHORIZATION FOR MATERIALLY CHANGED WORK
+CACHE HIT != CURRENT DISCLOSURE AUTHORIZATION
 ```
 
-No reengineering change in this phase is accepted if it obtains convenience by collapsing one of these distinctions.
+No reengineering change is accepted if convenience collapses one of these distinctions.
 
 ---
 
 ## 5. Product capability obligations
 
-The North Star expresses the non-mandatory operating idea:
-
-```text
-UNDERSTAND
-→ DISCOVER
-→ ORCHESTRATE
-→ DECIDE
-→ PLAN & COORDINATE
-→ ACT
-→ OBSERVE
-→ LEARN & ADAPT
-```
-
-AI-02.1 translates that product language into architecture obligations without turning it into eight services or eight agents.
-
-DANTE must be able to support, in combinations rather than isolation:
+DANTE must support combinations of:
 
 ```text
 natural-language understanding
@@ -249,2167 +242,111 @@ selective disclosure
 uncertainty and conflicting evidence
 learning without truth laundering
 future model/provider replacement
+code/artifact/browser/computer-use workloads where product scope later requires them
 ```
 
-A simple request must remain simple. The architecture must not require the expensive path merely because the platform can support the expensive path.
-
----
-
-## 6. Round I — first simulation pressure-test summary
-
-The first pass intentionally covered ordinary and structurally difficult cases.
-
-| Scenario family | Result | Architectural consequence |
-|---|---|---|
-| deterministic historical question, e.g. monthly running total | PASS | model may be skipped; semantic query + deterministic compute is sufficient |
-| simple natural-language command, e.g. create appointment | PASS | language interpretation must terminate in governed application operation |
-| compare three realistic ways to add a new Goal | GAP FOUND | first-class hypothetical/simulation workspace required |
-| illness week requiring selective pause/replan | GAP FOUND | compound governed ChangeSet / EffectGraph required |
-| elapsed scheduled item with unknown outcome | PARTIAL | proactivity/attention responsibility required; elapsed time remains not completion |
-| persistent unresolved work after chat closes | PASS WITH CLARIFICATION | persist through correct Domain semantics, not `AIReviewItem` or transcript ownership |
-| imported professional/source document | PASS | artifact + provenance + candidate/acceptance path already fits |
-| privacy-preserving coordination | GAP FOUND | recipient-aware Disclosure Projection must be distinct from Context Projection |
-| caregiver / conflicting multi-actor evidence | PASS | existing Subject/Actor/Authority/Visibility/Reconciliation semantics survive |
-| meeting transcript → decisions/commitments/tasks | PASS | extracted outputs remain candidates until resolved into existing semantic owners |
-| provider timeout after external mutation attempt | PASS STRONG | outcome-unknown + verification/reconciliation remains required |
-| multi-week proactive watch | PARTIAL | durable trigger/evaluation + attention policy required; model must not be the timer |
-| future rich general-purpose conversation | GAP FOUND | Interaction Session + dual open-world/DANTE-native path must become first-class |
-| stable structured access for future intelligence | GAP FOUND | Semantic Query / Projection Gateway required |
-
-This scorecard did not close the phase. It produced the v0.2 responsibility map that Round II then attacked more aggressively.
+A simple request must remain simple. The platform must not force every request through the most expensive or isolated path merely because those capabilities exist.
 
 ---
 
-## 7. Reengineering decision 01 — Interaction Session is first-class
+# PART I — PRESSURE-TEST EVIDENCE
 
-### Problem
+## 6. Round I — first simulation pressure-test
 
-`Session != Run != Worker` was already a production-engineering rule, but the future DANTE product requires a stronger user-facing interaction boundary.
-
-A conversation may contain many pieces of work. A piece of work may outlive the conversation. A background run may later return into a conversation or another surface.
-
-Therefore:
-
-```text
-Interaction Session != Run != Worker
-```
-
-### Interaction Session responsibility
-
-An Interaction Session may own noncanonical interaction state such as:
-
-```text
-conversation turn continuity
-current surface / presentation context
-currently attached artifacts
-temporary referents and conversational deixis
-streaming presentation state
-session-local user choices that have not been promoted elsewhere
-```
-
-It must not own canonical DANTE truth merely because that truth was discussed in the session.
-
-### Required lifecycle
-
-```text
-Interaction Session
-  ├─ Run A → completed
-  ├─ Run B → completed
-  ├─ Run C → suspended / durable
-  └─ later Run D
-```
-
-A Run may finish while the Session continues.
-
-A Run may survive the Session when the work has its own legitimate durable lifecycle, for example:
-
-```text
-research job
-watch / condition monitoring
-approval wait
-booking workflow
-external callback
-```
-
-Closing the UI surface must not silently cancel work unless the work contract says it should.
-
----
-
-## 8. Reengineering decision 02 — dual intelligence path
-
-A future DANTE intelligence must not become unable to answer general questions merely because the product has a structured Domain.
-
-Two paths are therefore required:
-
-```text
-DANTE-NATIVE PATH
-structured life state
-history
-planning
-resources
-relationships
-constraints
-semantic queries
-governed effects
-
-OPEN-WORLD PATH
-general explanation
-research
-web information
-documents
-content
-code
-multimodal reasoning
-creative / analytical work
-```
-
-They are not two products and do not require two independent agent platforms.
-
-They must be composable inside the same Execution Kernel.
-
-Example:
-
-```text
-"Explain how to photograph the Milky Way
-and find the best evenings in my next two months."
-
-open-world photography knowledge
-+
-DANTE calendar / location / commitments
-+
-external astronomy/weather information
-+
-constraint evaluation
-→ one result
-```
-
-The architecture must not force a request to choose exactly one world when the useful answer spans both.
-
----
-
-## 9. Reengineering decision 03 — Semantic Query / Projection Gateway
-
-### Problem
-
-Future intelligence needs stable access to DANTE meaning without being coupled to database tables or requiring the Context Engine to invent arbitrary SQL for every task.
-
-### Responsibility
-
-The Semantic Query / Projection Gateway exposes application-owned, permission-aware semantic projections such as:
-
-```text
-current commitments
-Goal trajectory
-workload in a period
-open commitments involving a Person
-current material state of a Program
-safe availability projection
-Meeting-series continuity
-planned-vs-actual history
-unresolved confirmations
-resource availability
-```
-
-Conceptually:
-
-```text
-Intelligence
-    │
-    ▼
-Semantic Query / Projection Gateway
-    │
-    ▼
-Application / Domain query contracts
-    │
-    ▼
-PostgreSQL / accepted projections
-```
-
-### Non-goals
-
-The gateway is not:
-
-```text
-a universal Entity API
-a generic graph database abstraction
-raw SQL access for the model
-a second Domain model
-a vector-search replacement
-a reason to expose every table to AI
-```
-
-It should reuse owner-specific application semantics and existing projection rules.
-
-### Fast path
-
-The gateway enables a structurally cheap route:
-
-```text
-request
-→ semantic interpretation
-→ semantic query
-→ deterministic aggregation
-→ result
-```
-
-No model call is required after interpretation when the answer is deterministic.
-
----
-
-## 10. Reengineering decision 04 — Context Engine remains distinct
-
-The Context Engine is not renamed into the Semantic Query Gateway.
-
-The responsibilities are different.
-
-### Semantic Query / Projection Gateway
-
-Best for:
-
-```text
-structured DANTE-native state
-current material facts
-owner-specific history
-known relationships
-validated projections
-```
-
-### Context Engine
-
-Best for assembling reasoning material from sources such as:
-
-```text
-unstructured notes
-documents
-artifacts
-web results
-external content
-conversation context
-retrieval results
-prior noncanonical working material
-```
-
-The Context Engine remains scope-aware, provenance-aware, purpose-aware and budgeted.
-
-Detailed Context / Retrieval / Memory design remains AI-03. AI-02.1 only fixes the responsibility boundary necessary to avoid conflating structured application query with general retrieval.
-
----
-
-## 11. Reengineering decision 05 — Simulation / Hypothetical State Workspace
-
-### Product requirement
-
-DANTE must compare futures before applying meaningful structural changes.
-
-Examples:
-
-```text
-add Japanese study without sacrificing protected sleep
-compare three travel plans
-simulate a new job schedule
-see what a week of illness changes
-compare two training programs
-move all flexible meetings out of Wednesday
-```
-
-### Architectural rule
-
-A hypothetical future is not canonical state.
-
-```text
-CANONICAL MATERIAL STATE
-        │
-        ├──── Scenario A overlay
-        ├──── Scenario B overlay
-        └──── Scenario C overlay
-```
-
-The architecture must not duplicate the whole database for every scenario.
-
-A scenario workspace conceptually contains:
-
-```text
-basis material-state references
-hypothetical changes
-assumptions
-constraints
-external assumptions / forecasts
-solver/model outputs
-derived metrics
-violations / conflicts
-comparison evidence
-```
-
-### State class
-
-Default classification:
-
-```text
-transient / derived technical state
-```
-
-A scenario becoming materially meaningful does not imply that the whole workspace becomes a new canonical object. Individual results may later be retained through the correct existing semantic owner, for example Proposal, Possibility, Decision rationale or another already accepted family when genuinely applicable.
-
-### Staleness
-
-Every consequential scenario is evaluated against a basis.
-
-If material state changes before a user accepts a scenario:
-
-```text
-stale basis
-→ re-read
-→ re-evaluate
-→ show changed consequences
-```
-
-A scenario is never authorization to apply a plan built against obsolete material state.
-
----
-
-## 12. Reengineering decision 06 — ChangeSet / Effect Graph
-
-### Problem
-
-One user intention may legitimately require several coordinated domain/application operations.
-
-Example:
-
-```text
-"I'm ill this week. Pause training, lighten study,
-but do not move my medical appointment."
-```
-
-Potential operations:
-
-```text
-set temporary mode
-pause Program A
-suspend future generated occurrences
-replan study workload
-preserve protected Event B
-```
-
-Treating this as one opaque tool call loses too much structure. Treating each effect independently loses the overall decision and dependency model.
-
-### ChangeSet responsibility
-
-A ChangeSet / EffectGraph may carry:
-
-```text
-objective
-basis material state
-ordered/related operations
-dependency edges
-protected invariants
-expected-state requirements
-atomic groups
-external-effect boundaries
-preview information
-approval binding
-rollback availability
-compensation rules
-partial-outcome state
-reconciliation requirements
-```
-
-### Relationship to Effect Runtime
-
-ChangeSet does not replace the governed effect contract.
-
-```text
-ChangeSet
-    │
-    ├─ Effect A
-    ├─ Effect B
-    ├─ Effect C
-    └─ Effect D
-          │
-          ▼
-EffectIntent
-→ EffectPermit
-→ EffectAttempt
-→ EffectReceipt
-→ Verification / Reconciliation
-```
-
-Each consequential operation remains independently governed where required.
-
-### Atomicity
-
-When all operations belong to one legitimate application transaction boundary, normal database atomicity may apply.
-
-When a ChangeSet crosses provider/system boundaries:
-
-```text
-all-or-nothing may be impossible
-```
-
-The correct state may therefore be:
-
-```text
-PARTIALLY_APPLIED
-OUTCOME_UNKNOWN
-RECONCILIATION_REQUIRED
-COMPENSATION_PENDING
-```
-
-The architecture must never manufacture total success from partial external completion.
-
----
-
-## 13. Reengineering decision 07 — Verifier / Auditor primitive
-
-The first pressure-test confirms the production-research conclusion:
-
-```text
-MODEL CLAIM
-"I completed X"
-
-!=
-
-VERIFIED STATE
-"X is demonstrably true according to the relevant evidence"
-```
-
-Verification belongs inside the execution model rather than as an optional afterthought.
-
-Potential verifiers include:
-
-```text
-schema validation
-SQL / state reread
-MaterialState verification
-provider reread
-receipt verification
-constraint solver validation
-filesystem diff
-hash / integrity validation
-test execution
-DOM / accessibility inspection
-independent semantic verification only when deterministic evidence is insufficient
-```
-
-A conceptual `VerificationReceipt` may record runtime evidence about what was checked and what result was established.
-
-It is not automatically a new canonical Domain owner.
-
-Verification does not replace Confirmation, Observation, Evidence or Reconciliation. Those retain their accepted semantic meanings.
-
----
-
-## 14. Reengineering decision 08 — Proactivity / Attention boundary
-
-### Problem
-
-A trigger tells DANTE that something happened or should be evaluated. It does not determine whether the user should be interrupted.
-
-The product requires proactive behavior without constant notification noise.
-
-### Responsibility
-
-Conceptually:
-
-```text
-Signal
-  ↓
-Relevance
-  ↓
-Materiality
-  ↓
-Urgency
-  ↓
-Attention Policy
-  ↓
-┌────────┬────────┬────────┬────────────┬──────────┐
-│        │        │        │            │          │
-silent  review   notify   start work   escalate
-```
-
-Inputs may include:
-
-```text
-user policy
-quiet hours
-current mode
-risk/consequence
-repetition / deduplication
-whether the issue blocks future work
-whether the user already saw it
-confidence / uncertainty
-expiration
-recipient/context
-```
-
-### Distinction from Trigger
-
-```text
-Trigger
-= something is due / changed / true enough to evaluate
-
-Attention
-= what should happen to the user's attention because of it
-```
-
-### Distinction from notification transport
-
-The Attention boundary selects the product response. Push/email/in-app delivery is a downstream channel concern.
-
-### Review Queue
-
-Review Queue remains a product aggregation surface, not a generic AI persistence store.
-
-Persistent unresolved matters must use the correct existing semantics when they deserve persistence, for example:
-
-```text
-Proposal
-Request
-Confirmation need
-Reconciliation
-Decision requiring resolution
-unresolved candidate under an existing owner
-```
-
-Do not introduce a universal `AIReviewItem` or store unresolved product obligations only in a chat transcript.
-
----
-
-## 15. Reengineering decision 09 — Context Projection != Disclosure Projection
-
-### Problem
-
-DANTE may legitimately process information that it must not disclose to a recipient.
-
-Example:
-
-```text
-private calendar source
-"medical appointment 19:00"
-        ↓ authorized computation
-safe availability consequence
-"unavailable 19:00–20:00"
-        ↓ recipient
-```
-
-### Context Projection
-
-Answers:
-
-> What information may this reasoning operation consume for this purpose?
-
-### Disclosure Projection
-
-Answers:
-
-> What representation may this recipient receive from the result?
-
-These are not the same decision.
-
-```text
-source state
-   │
-   ├─ ContextProjection(model/runtime)
-   │
-   └─ DisclosureProjection(recipient/surface)
-```
-
-The disclosure step may deliberately remove source details while preserving an authorized consequence.
-
-### Relationship to policy
-
-Policy remains responsible for whether processing/disclosure is legitimate.
-
-Projection is responsible for **which representation** is safe and semantically adequate.
-
-This distinction prevents a binary allow/deny egress check from forcing either unnecessary disclosure or unusable denial.
-
----
-
-## 16. Information-flow and derived-output rule
-
-The production research strengthens the need to propagate trust properties through derived material.
-
-At minimum, reasoning material may carry conceptual properties such as:
-
-```text
-confidentiality class
-integrity / trust class
-instruction authority
-source/provenance lineage
-```
-
-Derived output does not automatically reset those properties merely because a model generated new wording.
-
-For example:
-
-```text
-PRIVATE DANTE STATE
-+
-UNTRUSTED WEB CONTENT
-        ↓
-GENERATED SUMMARY
-```
-
-must not become implicitly:
-
-```text
-PUBLIC + TRUSTED
-```
-
-Dynamic decisions such as:
-
-```text
-may process for purpose P?
-may disclose to recipient R?
-may send to provider Z?
-```
-
-remain policy decisions at use time rather than frozen intrinsic labels that duplicate Authority/Visibility/Consent semantics.
-
----
-
-## 17. Reengineering decision 10 — ModelTarget + HarnessProfile
-
-DANTE does not plan to train a foundation model or operate a large always-on frontier inference fleet.
-
-Current project constraints remain:
-
-```text
-NO foundation-model training
-NO DANTE-owned frontier model
-NO fine-tuning requirement as baseline
-NO large always-on self-hosted frontier-model fleet
-NO GPU cluster as baseline
-
-API-FIRST frontier intelligence
-provider/model replaceability mandatory
-small/local inference optional and benchmark-gated
-```
-
-Because DANTE does not control model weights, much of the controllable quality surface lives in the harness.
-
-Therefore separate:
-
-```text
-ModelTarget
-from
-HarnessProfile
-```
-
-A HarnessProfile may version provider/model-specific choices such as:
-
-```text
-instruction shape
-context strategy
-reasoning configuration
-structured-output mode
-provider-native tool semantics
-prompt/cache behavior
-continuation/compaction behavior
-model-specific capability projection
-```
-
-Provider independence does not mean reducing every model to a lowest-common-denominator `generate(prompt) -> string` interface.
-
-Application contracts remain stable while provider-native strengths may be used behind versioned adapters/harnesses.
-
----
-
-## 18. Execution Kernel v0.4
-
-After three pressure-test rounds, the current responsibility map is:
-
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│                       INTERACTION EDGE                          │
-│ Web · Mobile · Voice · Capture · API · External AI             │
-└──────────────────────────────┬──────────────────────────────────┘
-                               │
-                               ▼
-                      INTERACTION SESSION
-                               │
-                               ▼
-                          WORK INTAKE
-              objective / scope / lineage / consequence
-                               │
-                     Semantic Interpretation
-                               │
-                               ▼
-               REFERENCE / TARGET RESOLUTION
-                               │
-                     exact / unique / ambiguous
-                               │
-                               ▼
-                      EXECUTION KERNEL
-                               │
-          ┌────────────────────┼────────────────────┐
-          │                    │                    │
-          ▼                    ▼                    ▼
-   SEMANTIC QUERY           CONTEXT             SCENARIO
-   / PROJECTION             ENGINE              WORKSPACE
-          │                    │                    │
-          └────────────────────┼────────────────────┘
-                               ▼
-                      BASIS / DEPENDENCIES
-              source freshness / temporal validity
-                               │
-                               ▼
-                        REASONING LAYER
-                               │
-            ┌──────────────────┼──────────────────┐
-            ▼                  ▼                  ▼
-         Models          Deterministic         Solver
-     + HarnessProfile       Compute
-            │                  │                  │
-            └──────────────────┼──────────────────┘
-                               ▼
-                      CAPABILITY RUNTIME
-                               │
-                               ▼
-                POLICY COMPOSITION / CONSEQUENCE
-                               │
-                               ▼
-                      VERIFIER / AUDITOR
-                               │
-                               ▼
-                   CHANGESET / EFFECT GRAPH
-                               │
-                               ▼
-                        EFFECT RUNTIME
-                               │
-                               ▼
-                    APPLICATION / DOMAIN
-                               │
-                               ▼
-                          PostgreSQL
-                               │
-                               ▼
-             RESULT / DISCLOSURE / PUBLICATION
-```
-
-Cross-cutting responsibilities:
-
-```text
-Policy / Authority / AuthZ / Consent / Visibility
-Policy composition / precedence / obligations
-Consequence classification
-Information flow
-Provider eligibility
-Autonomy
-Proactivity / Attention + attention budgeting
-Causal lineage / oscillation protection
-Run / durability / work supersession
-Basis validity / temporal freshness / dependency-aware invalidation
-Reference / target resolution integrity
-Artifact handling
-Result maturity / safe publication / disclosure
-Cumulative inference protection
-Control Plane
-Resource governance
-Observability
-Audit / execution evidence
-Evals
-```
-
-This is a responsibility architecture, not a deployment diagram.
-
----
-
-## 19. Responsibility boundary != microservice
-
-AI-02.1 explicitly rejects architecture theatre.
-
-The previous diagram does **not** imply services named:
-
-```text
-semantic-query-service
-simulation-service
-attention-service
-verification-service
-disclosure-service
-supersession-service
-basis-service
-oscillation-service
-target-resolution-service
-policy-composition-service
-result-publication-service
-```
-
-A valid first implementation can remain inside the accepted capability-first modular monolith, for example conceptually:
-
-```text
-apps/backend/src/dante/
-  ...
-  intelligence/
-    interaction
-    intake
-    execution
-    query
-    context
-    simulation
-    models
-    capabilities
-    verification
-    effects
-    attention
-    results
-```
-
-Exact module placement remains an implementation decision and is not authorized by this document.
-
-Extraction into independent deployment units requires measured isolation, scaling, availability, hardware or operational evidence.
-
----
-
-## 20. End-to-end behavioral model
-
-A representative high-level path is:
-
-```text
-1. receive interaction / event / trigger
-2. resolve principal / actor / represented party / purpose
-3. classify work, objective, scope, consequence and risk
-4. relate work to prior work: continuation / supersession / independent
-5. resolve references/targets needed by the operation
-6. if a consequential target is ambiguous or unresolved, clarify or stop
-7. choose structural fast path when possible
-8. resolve authorized semantic state
-9. assemble only necessary contextual material
-10. record consequential basis/dependencies and temporal freshness requirements
-11. evaluate information-flow/provider eligibility
-12. choose model/compute/solver/capabilities as needed
-13. reason / calculate / simulate
-14. compose applicable policy/Authority/AuthZ/Consent/autonomy/safety constraints
-15. verify material intermediate claims when consequential
-16. produce Result / Proposal / ChangeSet as appropriate
-17. check that work is still semantically current and not superseded
-18. revalidate target binding when target identity/context may have changed
-19. re-read material state and time-sensitive sources before consequential execution when freshness matters
-20. re-evaluate policy / Authority / AuthZ / Consent / source validity after long waits or approvals
-21. issue bounded EffectPermits
-22. execute governed effects
-23. verify / reconcile receipts and ambiguous outcomes
-24. materialize accepted canonical effects only through application/domain operations
-25. assign truthful result maturity: working / provisional / verified / accepted-effect as applicable
-26. apply recipient-aware disclosure projection, including bounded cumulative inference protection when required
-27. publish/stream only material cleared for that recipient/surface at that maturity
-28. render result through the current interaction surface
-29. retain only state justified by the correct semantic/runtime owner
-```
-
-Not every request uses every step.
-
-A simple deterministic query may be:
-
-```text
-1 → 2 → 3 → 5 → 7 → 8 → deterministic compute → 25 → 26 → 27 → 28
-```
-
-The architecture must preserve that cheap path.
-
----
-
-## 21. Compound change semantics
-
-A consequential compound flow should conceptually support:
-
-```text
-User request
-   ↓
-Interpretation
-   ↓
-Reference / target resolution
-   ↓
-Consequence classification
-   ↓
-Current MaterialState / source basis
-   ↓
-Scenario / consequence analysis
-   ↓
-Policy composition
-   ↓
-ChangeSet preview
-   ↓
-Approval where required
-   ↓
-CHECK work is still current / not superseded
-   ↓
-RE-RESOLVE / REVALIDATE target where material
-   ↓
-RE-READ current state + time-sensitive dependencies
-   ↓
-RE-EVALUATE Authority / AuthZ / Consent / policy / source validity
-   ↓
-Bind final EffectPermits
-   ↓
-Execute effect graph
-   ↓
-Verify receipts
-   ↓
-Reconcile ambiguity/partial completion
-   ↓
-Truthful result maturity
-   ↓
-Safe disclosure/publication
-```
-
-Approval is not permission to execute indefinitely against stale state.
-
-If state materially changed while awaiting approval, DANTE must re-evaluate rather than blindly dispatch the old plan.
-
-If newer work supersedes the objective/scope before dispatch, obsolete not-yet-dispatched effects must not execute merely because an older Run remains technically alive.
-
-If the target was ambiguous or its identity binding is no longer valid, an effect must not be dispatched merely because the language model remains confident.
-
----
-
-## 22. Proactive / watch flow
-
-Representative watch:
-
-> Notify me when there is a good astrophotography evening and I am actually free.
-
-Correct architecture:
-
-```text
-Watch definition / accepted condition
-        ↓
-scheduled or condition-driven evaluation
-        ↓
-external astronomy/weather signals
-        ↓
-temporal freshness check
-        ↓
-deterministic filters
-        ↓
-current DANTE availability / constraints
-        ↓
-reasoning only if needed
-        ↓
-causal-loop / recent-effect check
-        ↓
-Attention policy + attention budget
-        ↓
-safe result publication
-        ↓
-notify / review / remain silent
-```
-
-Incorrect architecture:
-
-```text
-LLM process waits for three weeks
-```
-
-Durability belongs to the runtime/workflow boundary when the workload requires crash-safe waiting. Intelligence is invoked when evaluation requires intelligence.
-
----
-
-## 23. Multi-actor reasoning
-
-The architecture must preserve real roles instead of collapsing everything into `user_id`.
-
-Potentially distinct roles include:
-
-```text
-Account holder
-Principal
-Actor
-represented party
-Subject
-responsible party
-performer
-participant
-observer
-recorder
-Authority holder
-recipient
-external non-DANTE participant
-provider/system of record
-```
-
-A future prompt/context/capability contract must carry enough role information for the material operation.
-
-A private source may be processed to create a safe shared consequence without exposing the source.
-
-A participant may see a result without having Authority to change it.
-
-An Authority holder may exist without a DANTE Account.
-
-These are inherited semantic requirements, not optional AI features.
-
----
-
-## 24. Epistemic flow
-
-DANTE must distinguish:
-
-```text
-source material
-observation/assertion
-inference
-candidate interpretation
-proposal
-confirmation
-accepted current state
-actual outcome
-reconciliation
-```
-
-Representative meeting extraction:
-
-```text
-transcript
-   ↓
-model extraction
-   ↓
-candidate decision
-candidate commitment
-candidate task
-   ↓
-validation / resolution / confirmation where appropriate
-   ↓
-existing semantic owners
-```
-
-Do not create a universal `memory_fact` or `ai_fact` table merely to store everything the model said.
-
----
-
-## 25. External effects and ambiguous outcomes
-
-The effect contract remains one of the strongest surviving parts of the architecture.
-
-```text
-EffectIntent
-→ EffectPermit
-→ EffectAttempt
-→ EffectReceipt
-→ Verification
-→ Reconciliation when needed
-```
-
-Example:
-
-```text
-DANTE asks provider to move appointment
-provider times out
-```
-
-The correct result may be:
-
-```text
-OUTCOME_UNKNOWN
-```
-
-not `FAILED` and not `SUCCESS`.
-
-Next action may be provider reread/reconciliation.
-
-Blind retry is forbidden when the first attempt may already have produced an external effect.
-
-Cancellation is also precise:
-
-```text
-CANCEL RUN
-!=
-UNDO ALREADY-DISPATCHED EFFECTS
-```
-
-Cancelling a Run stops future executable work that the cancellation contract still controls. Already-dispatched effects remain subject to receipt verification, reconciliation and explicit compensation/reversal semantics where supported. DANTE must not report them as undone merely because the originating Run was cancelled.
-
-The presentation layer must preserve the same truth. While an external result is unresolved, DANTE may say that the request was sent or is being verified; it must not stream or display a completed-success state that has not been established.
-
----
-
-## 26. Review and human-resolution semantics
-
-Human attention is not a substitute for semantics.
-
-If an issue survives a Session, it should survive through an appropriate durable owner.
-
-Examples:
-
-```text
-AI proposal needing approval
-→ Proposal / applicable decision flow
-
-conflicting provider/current state
-→ Reconciliation
-
-unknown past execution
-→ applicable Confirmation / unresolved outcome semantics
-
-request awaiting another party
-→ Request / participation/responsibility semantics as applicable
-```
-
-UI may aggregate these into Review Queue without making Review Queue the semantic owner.
-
----
-
-## 27. Future rich conversational intelligence acceptance criterion
-
-AI-02.1 treats future general-purpose conversational intelligence as a mandatory extensibility test.
-
-The target is not to build a frontier chatbot today.
-
-The target is to ensure that DANTE can later host substantially richer intelligence without architectural replacement.
-
-A future surface may eventually include:
-
-```text
-text
-voice
-image
-camera
-PDF/document work
-web research
-general Q&A
-creative work
-code
-analysis
-artifacts
-long-running research
-DANTE-aware planning
-DANTE actions
-external systems
-specialist intelligence
-```
-
-### Required invariant
-
-More capable intelligence must be able to plug into DANTE without inheriting ownership of:
-
-```text
-canonical memory
-canonical application state
-Domain semantics
-Authority
-Visibility
-accepted-effect rules
-material history
-```
-
-Therefore the preferred dependency direction is:
-
-```text
-future frontier intelligence
-        ↓
-DANTE Intelligence contracts
-        ↓
-Application / Domain
-        ↓
-canonical life state
-```
-
-not:
-
-```text
-future model/provider
-=
-new DANTE database
-+ new authority model
-+ new memory truth
-+ new business logic
-```
-
-### Provider replacement
-
-A future model with much stronger reasoning should improve DANTE by replacing or augmenting a cognitive component, not by requiring migration of the product's semantic truth into that provider's thread/memory model.
-
-The same future-rich-chat acceptance now includes publication safety: richer token streaming, realtime voice or multimodal output must not gain a privileged path around disclosure, result-maturity or effect-verification rules.
-
----
-
-## 28. External AI / external-agent symmetry
-
-DANTE must support both directions without architectural inversion:
-
-```text
-AI inside DANTE
-→ DANTE invokes provider/model capabilities
-
-DANTE inside external AI
-→ external assistant invokes explicitly exposed DANTE capabilities
-```
-
-An external AI client may receive bounded read/propose/act capabilities through protocols such as MCP/A2A or another future adapter when product strategy justifies it.
-
-External protocol adapters must not become internal Domain contracts.
-
-External agents do not inherit user Authority merely because they possess a technical connection.
-
-Delegation, principal identity, purpose, scope and effect policy remain explicit.
-
-This pre-existing extensibility requirement is retained, but the official pressure-test rounds are intentionally independent from later questions about which external AI products/protocols to activate.
-
----
-
-## 29. What remains intentionally open
-
-AI-02.1 v0.4 does not decide:
-
-```text
-exact provider/model set
-primary vs secondary provider
-model gateway product
-agent SDK/framework
-exact Execution Kernel implementation
-conversation persistence schema
-memory persistence schema
-embedding strategy
-vector-index strategy
-retrieval ranking
-context compaction implementation
-sandbox provider
-policy engine product
-learned router
-local-model family/size
-exact autonomy UX
-exact durable-runtime activation per workload
-exact Attention scoring/rules
-exact ScenarioWorkspace representation
-exact ChangeSet physical persistence, if any
-exact Interaction Session persistence, if any
-exact target-resolution implementation
-exact PolicyDecision implementation
-exact ConsequenceProfile implementation
-exact safe-streaming implementation
-exact result-maturity representation
-exact physical representation, if any, for BasisManifest/work lineage/disclosure accounting
-```
-
-Many of these belong partly or primarily to AI-03 or later implementation phases.
-
-The architecture decides the required contracts now; it does not prematurely choose the technology that will implement them.
-
----
-
-## 30. Explicit anti-patterns after reengineering
-
-Do not implement:
-
-```text
-one giant agent loop owning the product
-raw model access to PostgreSQL
-raw model access to arbitrary provider credentials
-provider conversation thread as DANTE memory authority
-one generic AIAction table
-one universal memory_fact table
-one universal AIReviewItem table
-one generic Scenario entity promoted to Domain without semantic proof
-one opaque mega-tool for compound mutation
-one approval token valid forever despite stale state
-one Run authorization assumed valid forever
-one Context Engine that dumps the whole user history into every request
-one egress allow/deny check that ignores safe derived projections
-one disclosure check that ignores cumulative inference when that risk is material
-one background LLM process acting as scheduler/timer
-one adaptation loop that recursively reacts to its own effects without material change
-one old Run dispatching obsolete work after a newer intent superseded it
-one model call for deterministic arithmetic/aggregation by default
-one learned router before DANTE has representative outcome data
-one service/container per architecture box
-one consequential effect targeted only by display-name/model guess
-one LLM deciding policy precedence because multiple rules conflict
-one user-autonomy setting treated as authority over external/institutional reality
-one raw model/provider stream connected directly to a recipient when sensitive context is involved
-one streamed success claim before an external effect is verified
-one unchanged source version assumed fresh forever
-one delivered notification treated as seen/acknowledged/accepted
-```
-
----
-
-## 31. Round I architecture scorecard
-
-```text
-CORE PRINCIPLES                         PASS
-Domain compatibility                    PASS
-PostgreSQL canonical authority          PASS
-Deterministic-first execution           PASS
-Provider/model replaceability           PASS
-Effect safety / ambiguous outcomes      PASS
-Multi-actor semantic compatibility      PASS
-Durable-work separation                 PASS
-Epistemic integrity                     PASS
-
-Scenario reasoning                      GAP → FIX IDENTIFIED
-Compound multi-object mutation          GAP → FIX IDENTIFIED
-Proactivity / attention                 GAP → FIX IDENTIFIED
-Recipient disclosure                    GAP → FIX IDENTIFIED
-Structured semantic access              GAP → FIX IDENTIFIED
-Future rich conversation                GAP → FIX IDENTIFIED
-```
-
-Round I produced the v0.2 responsibility map. Round II then tested those fixes under concurrency, revocation, cumulative privacy risk, feedback loops, superseding intent and partial external execution.
-
----
-
-## 31.1 Round II — clean compound adversarial pressure-test
-
-Round II is the second official AI-02.1 pressure-test. It was intentionally kept separate from adjacent questions about concrete provider/model pricing, local-model/server selection or product-specific external-AI activation.
-
-The test combined real DANTE concerns rather than evaluating one clean feature at a time.
+Round I converted product simulations into runtime obligations.
 
 | Scenario family | Result | Consequence |
 |---|---|---|
-| week-wide replan while calendar/current state changes | PASS | scenario basis + expected MaterialState survive; re-evaluate before apply |
-| three scenarios where only one dependency changes | PARTIAL | BasisManifest/dependency-aware invalidation required |
-| concurrent mobile/Web edits from same old state | PASS STRONG | expected MaterialState rejects last-write-wins |
-| five-person coordination with non-DANTE participant and selective availability | PASS | existing multi-actor semantics survive |
-| individually safe availability queries compose into a private inference | GAP FOUND | cumulative/cross-query disclosure protection required |
-| DANTE-generated replan triggers another replan and oscillates | GAP FOUND | causal-loop/oscillation guard required |
-| derived hypothesis later rejected by user | PASS | inference remains derived, not hard canonical preference |
-| conflicting authoritative/provider/user statements | PASS STRONG | Authority/Provenance/Reconciliation remain sufficient |
-| multi-effect operation succeeds partially then crashes | PASS STRONG | ChangeSet + Effect states preserve partial/unknown outcome |
-| source/permission revoked during active Run | PARTIAL | active-run validity must be revocable/revalidated |
-| ambiguous meeting transcript | PASS | unresolved candidate/clarification is valid result |
-| request has constraints with deterministic validity | PASS STRONG | solver/verifier path survives |
-| no valid plan exists | PASS | `NO VALID PLAN` is legitimate result |
-| many individually useful proactive signals overwhelm user | PARTIAL | Attention must budget aggregate interruption load |
-| newer user intent semantically replaces older still-running work | GAP FOUND | Work Supersession first-class required |
-| crash around external dispatch ambiguity | PASS | durable effect boundary + no blind retry survive |
-| corrected/retired fact later reappears via old derived material | PASS STRUCTURAL | anti-resurrection remains mandatory; AI-03 must prove lifecycle |
-| visible endpoints accidentally imply hidden private relationship | PASS SEMANTIC / HARDENING | reinforces cumulative inference control |
-| external report corrected after having influenced a decision | PASS STRONG | historical/provider/current distinction survives |
-| hostile combined scenario with stale basis + revocation + partial effect + superseding work | PASS ONLY WITH v0.3 HARDENINGS | no Domain/Logical reopen required |
+| deterministic historical question | PASS | Semantic Query + deterministic compute may skip model |
+| simple natural-language command | PASS | interpretation terminates in governed application operation |
+| compare realistic alternative futures | GAP | Scenario Workspace required |
+| illness/week-wide selective pause/replan | GAP | ChangeSet / EffectGraph required |
+| elapsed item with unknown outcome | PARTIAL | Attention/proactivity boundary required; elapsed != complete |
+| unresolved work survives chat closure | PASS WITH CLARIFICATION | persist through correct semantic owner, not AIReviewItem/transcript |
+| imported professional/source document | PASS | provenance + candidate/acceptance path fits |
+| privacy-preserving coordination | GAP | recipient-aware Disclosure Projection distinct from Context |
+| caregiver/conflicting multi-actor evidence | PASS | Subject/Actor/Authority/Visibility/Reconciliation survive |
+| meeting transcript → decisions/tasks | PASS | extraction remains candidate until semantically resolved |
+| provider timeout after mutation attempt | PASS STRONG | outcome-unknown + reconciliation required |
+| multi-week watch | PARTIAL | durable trigger/evaluation + Attention required |
+| future rich general-purpose conversation | GAP | Interaction Session + dual open-world/DANTE path required |
+| stable structured access for intelligence | GAP | Semantic Query / Projection Gateway required |
 
-### Round II high-level verdict
+Round I produced the first responsibility map.
+
+---
+
+## 7. Round II — clean compound adversarial pressure-test
+
+Round II intentionally excluded adjacent vendor/cost/server questions and combined multiple architectural hazards in each scenario.
+
+| Scenario family | Result | Consequence |
+|---|---|---|
+| week-wide replan while current state changes | PASS | re-evaluate scenario basis before apply |
+| only one scenario dependency changes | PARTIAL | BasisManifest / dependency-aware invalidation |
+| concurrent mobile/Web edits from same old state | PASS STRONG | expected MaterialState rejects last-write-wins |
+| non-DANTE participant + selective availability | PASS | multi-actor semantics survive |
+| individually safe queries compose into private inference | GAP | cumulative/cross-query disclosure protection |
+| DANTE-generated replan causes oscillation | GAP | causal-loop / oscillation guard |
+| derived hypothesis later rejected | PASS | derived inference not hard preference |
+| conflicting provider/user/authoritative statements | PASS STRONG | Reconciliation/Authority/Provenance survive |
+| multi-effect operation partially completes then crashes | PASS STRONG | ChangeSet preserves partial/unknown outcomes |
+| source/permission revoked during Run | PARTIAL | Run validity must be revocable |
+| ambiguous meeting transcript | PASS | unresolved/clarification valid |
+| constraints deterministic | PASS STRONG | solver/verifier path survives |
+| no valid plan | PASS | `NO VALID PLAN` legitimate |
+| individually relevant signals overwhelm user | PARTIAL | Attention budgeting required |
+| newer intent replaces old still-running work | GAP | Work Supersession required |
+| crash around external dispatch | PASS | no blind retry across ambiguity |
+| retired fact reappears via derivative | PASS STRUCTURAL | anti-resurrection mandatory; AI-03 must prove lifecycle |
+
+Round II produced:
 
 ```text
-NO semantic contradiction found
-NO Domain reopen evidence
-NO Logical reopen evidence
-NO Physical/PostgreSQL reopen evidence
-
-3 architecture gaps found:
-1 cumulative/cross-query disclosure inference
-2 causal-loop / oscillation protection
-3 work supersession
-
-3 contract hardenings found:
-1 BasisManifest / dependency-aware validity
-2 revocable active-Run authorization/data validity
-3 aggregate Attention budgeting
-
-1 effect lifecycle clarification:
+cumulative/cross-query disclosure protection
+causal-loop / oscillation guard
+Work Supersession
+BasisManifest / dependency-aware validity
+revocable active-Run validity
+Attention budgeting
 CANCEL RUN != UNDO ALREADY-DISPATCHED EFFECTS
 ```
 
----
-
-## 31.2 v0.3 hardening — cumulative / cross-query disclosure protection
-
-### Problem
-
-A response may be safe in isolation while a sequence of authorized responses allows a recipient to infer information they were never authorized to receive.
-
-Example:
-
-```text
-recipient may learn:
-"unavailable 19:00–20:00"
-
-but may not learn:
-private event type/reason
-or a hidden relationship between two participants
-```
-
-Repeated narrow queries can reveal more than any single response.
-
-Therefore Disclosure Projection is not always stateless.
-
-Where inference risk is material, disclosure may consider:
-
-```text
-recipient
-purpose
-sensitivity
-requested granularity
-relevant prior disclosures
-query sequence/pattern
-aggregate information already exposed
-relationship inference risk
-rate / probing behavior
-```
-
-Potential outcomes include:
-
-```text
-ALLOW
-COARSEN
-AGGREGATE
-WITHHOLD
-REQUIRE DIFFERENT SCOPE
-```
-
-This does not create a universal privacy-memory ontology or a second Visibility truth.
-
-Any disclosure accounting is bounded runtime/security state whose only purpose is to enforce already valid disclosure/Visibility constraints against composition attacks.
-
-The existing semantic invariant remains:
-
-```text
-visible endpoint A
-+
-visible endpoint B
-!=
-visible relationship A↔B
-```
+No Domain/Logical/Physical/PostgreSQL reopen evidence appeared.
 
 ---
 
-## 31.3 v0.3 hardening — causal-loop / oscillation guard
+## 8. Final Kill-Test — broad domain / boundary attack
 
-### Problem
+The third official round stressed agriculture, education, shift work, caregiving, legal/sensitive work, family, business, public/institutional boundaries, offline/late state, large fan-out, malicious input and future rich conversational surfaces.
 
-DANTE may legitimately create an effect that produces a new signal. If the system cannot distinguish external change from its own recent adaptation, multiple individually valid rules can oscillate indefinitely.
+The personas were adversarial lenses only; they do not become product profiles or Domain owners.
 
-Example:
+It found three P0 correctness gaps:
 
 ```text
-move training to Tuesday
-→ Tuesday becomes overloaded
-→ move to Wednesday
-→ recovery rule reacts
-→ move back to Tuesday
-→ repeat
+P0 1 — Reference / Target Resolution
+P0 2 — Policy Composition / Precedence + ConsequenceProfile
+P0 3 — Safe Result Publication / Streaming
 ```
 
-Relevant causal lineage must therefore be available when proactivity/replanning evaluates a signal:
+and hardenings:
 
 ```text
-Signal
-→ caused_by / related_to Effect
-→ Effect belongs to Run
-→ Run may originate from Watch / Rule / prior adaptation
-```
-
-Bounded protections may include:
-
-```text
-minimum material delta
-hysteresis
-cooldown
-recent-effect awareness
-duplicate/symmetric adaptation detection
-bounded adaptation depth
-```
-
-The guard must not suppress a genuinely new external change merely because related DANTE work happened recently.
-
-The decision is therefore not "never react to our own effect". It is:
-
-> do not recursively re-adapt when no sufficiently material new reality justifies another change.
-
----
-
-## 31.4 v0.3 hardening — Work Supersession
-
-### Problem
-
-Canonical state may remain unchanged while the user's newer intention makes an older Run's pending proposal obsolete.
-
-Example:
-
-```text
-Run A:
-"organize next week"
-
-Run B one minute later:
-"wait — the priority is now finishing the project"
-```
-
-Expected MaterialState alone cannot detect this because the database may not have changed yet.
-
-Work Intake / Run lifecycle must therefore support bounded work relationships such as:
-
-```text
-objective
-scope
-continuation_of?
-supersedes?
-independent_of?
-```
-
-The distinction is mandatory:
-
-```text
-SUPERSEDE
-!= CANCEL
-!= ROLLBACK
-!= RECONCILE
-```
-
-A superseded Run may still need to:
-
-```text
-finish reconciliation of already-attempted effects
-preserve audit/execution evidence
-return truthful status about work already performed
-```
-
-but it must not:
-
-```text
-present an obsolete proposal as the current recommendation
-dispatch not-yet-dispatched work that the newer intent invalidated
-silently cancel unrelated independent Runs
-```
-
-Supersession must be scope-aware. A new weekly-planning objective does not automatically supersede an unrelated flight watch or research Run.
-
----
-
-## 31.5 v0.3 hardening — Execution / Reasoning BasisManifest
-
-### Problem
-
-A scenario, plan or consequential result may depend on multiple inputs, not one global snapshot.
-
-A conceptual `BasisManifest` may therefore capture enough dependency evidence to evaluate continued validity:
-
-```text
-relevant MaterialStateRefs
-relevant canonical/source references
-external source identity/version/freshness
-assumptions used
-constraints used
-policy/config versions where consequential
-capability/harness versions where consequential to reproducibility
-```
-
-The purpose is not to store every token or every transient thought.
-
-The purpose is to support:
-
-```text
-what changed?
-which result depended on it?
-what must be recomputed?
-what remains valid?
-```
-
-Preferred behavior:
-
-```text
-changed input X
-→ invalidate/recompute dependent outputs
-```
-
-instead of either:
-
-```text
-invalidate everything
-```
-
-or:
-
-```text
-invalidate nothing
-```
-
-BasisManifest is runtime/evidence metadata, not a new canonical Domain owner and not a substitute for owner-specific MaterialState history.
-
----
-
-## 31.6 v0.3 hardening — active Run validity is revocable
-
-Authorization and data eligibility are not frozen forever at Run start.
-
-```text
-authorized at T0
-!=
-authorized forever
-```
-
-At consequential boundaries, especially after waits/approvals/durable suspension or before disclosure/effect, the runtime must be able to revalidate as applicable:
-
-```text
-Authority
-AuthZ
-Consent
-Visibility
-purpose / processing eligibility
-source validity
-source retirement/deletion
-expected MaterialState
-work supersession/currentness
-```
-
-Revocation cannot retroactively remove information already processed by an external provider or undo an already-dispatched effect.
-
-It can and must constrain subsequent behavior, including where applicable:
-
-```text
-new retrieval/use
-new provider disclosure
-new recipient disclosure
-new derived persistence
-new consequential effect
-```
-
-This preserves both honest system limits and forward enforcement.
-
----
-
-## 31.7 v0.3 hardening — Attention is a budgeted user resource
-
-A system can be wrong at product level while every single notification is individually relevant.
-
-Therefore Attention evaluates not only:
-
-```text
-is this signal relevant/material/urgent?
-```
-
-but also:
-
-```text
-given everything else asking for attention now,
-should this interrupt the user in this form and at this time?
-```
-
-Inputs may include:
-
-```text
-attention budget
-interruption cost
-recent interruptions
-aggregate current load
-batchability
-review opportunity
-urgency/materiality
-expiry
-user policy
-quiet hours/current mode
-```
-
-Ten moderate signals may become one review instead of ten interruptions.
-
-Attention budgeting is a responsibility refinement of the existing Attention boundary, not a new service or semantic persistence root.
-
----
-
-## 31.8 Round III — Final Kill-Test
-
-The third official pressure-test deliberately broadened the scenario corpus again and searched for rare cross-domain failures rather than replaying only the v0.3 hostile seed.
-
-The personas/work domains were used as adversarial lenses only. They do not become product profiles, mandatory modules or Domain owners.
-
-Representative scenario families included:
-
-```text
-farmer / small producer
-nurse / shift worker
-teacher + students + parents
-student / researcher
-caregiver
-clinician in personal-organizer scope
-field technician
-legal professional
-freelancer
-shop operator
-artisan
-parent / guardian
-older or low-digital participant
-photographer / creator
-software developer
-manager
-journalist / confidential-source work
-traveller / group trip
-athlete / coach
-emergency worker
-public official
-extreme institutional / head-of-government stress boundary
-malicious participant/input
-large fan-out coordination
-offline/late-arriving state
-long multimodal chat
-```
-
-These were combined with:
-
-```text
-multi-actor identity
-private actor-scoped context
-ambiguous natural-language referents
-same-name people/resources/documents
-institutional constraints
-conflicting policy sources
-provider timeout
-partial effect completion
-crash/recovery
-source correction/retirement
-time-sensitive external data
-cumulative disclosure probing
-self-generated adaptation signals
-superseding work
-attention saturation
-prompt injection
-future rich realtime/streaming conversation
-```
-
-### Round III result
-
-The v0.3 core continued to survive Domain, history, multi-actor, scenario, reconciliation, partial-effect, revocation, supersession, disclosure and oscillation stress.
-
-The kill-test found three new P0 architecture gaps and three important hardenings:
-
-```text
-P0 GAP 1
-Reference / Target Resolution
-
-P0 GAP 2
-Policy Composition / Precedence
-+ ConsequenceProfile
-
-P0 GAP 3
-Safe Result Publication / Streaming
-
-HARDENING A
-BasisManifest temporal validity
-
-HARDENING B
-DANTE canonical representation
-!= external institutional System of Record authority
-
-HARDENING C
+Basis temporal validity
+DANTE representation != external institutional System of Record authority
 sent != delivered != seen != acknowledged != accepted
 ```
 
-It found no evidence sufficient to reopen Domain, Logical, Physical or PostgreSQL.
+Again, no evidence justified reopening Domain, Logical, Physical or PostgreSQL.
 
 ---
 
-## 31.9 v0.4 P0 — Reference / Target Resolution Gate
+## 9. Last Mega Stress-Test — final whole-system collapse attempt
 
-### Failure found
+The last mega-test deliberately combined ordinary life and extreme boundaries in one program rather than replaying isolated features.
 
-A system can pass expected-state and authorization checks and still act on the wrong real target if natural-language reference resolution is wrong.
-
-Examples:
-
-```text
-"move the meeting with Luca"
-"send it to Marco"
-"use the big field"
-"book the Panda"
-"update Atlas"
-"move dad's appointment"
-```
-
-may each resolve to more than one legitimate Person, Asset, Place, Content Artifact, Event or other owner.
-
-Expected MaterialState protects against stale state. It does **not** prove that the correct semantic target was selected.
-
-Therefore:
-
-```text
-DISPLAY NAME
-!=
-EFFECT TARGET
-```
-
-and:
-
-```text
-MODEL CONFIDENCE
-!=
-TARGET RESOLUTION PROOF
-```
-
-### Required target-resolution outcomes
-
-A consequential reference must be classifiable as at least:
-
-```text
-EXACT
-UNIQUE_IN_SCOPE
-AMBIGUOUS
-UNRESOLVED
-```
-
-A conceptual resolved-target contract may carry:
-
-```text
-canonical reference
-owner/type semantics
-resolution scope
-resolution basis
-ambiguity status
-```
-
-The exact physical/API representation remains open.
-
-### Consequential rule
-
-```text
-EXACT / UNIQUE_IN_SCOPE
-→ may proceed subject to normal governance
-
-AMBIGUOUS
-→ focused clarification / explicit preview / disambiguation
-
-UNRESOLVED
-→ no consequential effect
-```
-
-This is a Work Intake / semantic-interpretation correctness gate, not a new identity ontology.
-
-NativeRef / ScopedRecordRef / MaterialStateRef / ExternalRef retain their accepted meanings.
-
----
-
-## 31.10 v0.4 P0 — Policy Composition / Precedence + ConsequenceProfile
-
-### Failure found
-
-Several individually valid rules can disagree.
-
-Example shift-swap scenario:
-
-```text
-user autonomy policy                 ALLOW
-personal calendar/capacity           ALLOW
-institutional staffing rule          REQUIRE APPROVAL
-qualification constraint             LIMIT / DENY
-minimum-rest safety constraint       DENY
-current delegated Authority          MAYBE INSUFFICIENT
-```
-
-The model must not improvise which one wins.
-
-### Policy composition responsibility
-
-The runtime must be able to deterministically compose applicable:
-
-```text
-Authority
-AuthZ
-Consent
-Visibility
-user autonomy
-hard constraints
-safety rules
-institutional/external constraints
-purpose restrictions
-provider/data eligibility
-```
-
-A conceptual `PolicyDecision` may return:
-
-```text
-ALLOW
-DENY
-REQUIRE_CONFIRMATION
-REQUIRE_EXTERNAL_APPROVAL
-LIMIT_SCOPE
-```
-
-with, when material:
-
-```text
-reasons
-obligations
-authority basis
-policy/config versions
-validity / expiry
-```
-
-`PolicyDecision` is not a new Domain owner and does not replace the semantic meaning of Authority, Consent or Visibility.
-
-### User autonomy rule
-
-```text
-USER AUTONOMY
-!=
-UNIVERSAL OVERRIDE
-```
-
-A user may control DANTE's behavior inside the authority they actually possess. A personal preference does not rewrite an external institution's roster, a school's official record, a provider's current state or another person's rights.
-
-### ConsequenceProfile
-
-The kill-test also showed that minimum governance depends on the consequences of the work, not only on the natural-language intent.
-
-A conceptual `ConsequenceProfile` may classify dimensions such as:
-
-```text
-reversible?
-external effect?
-financially consequential?
-safety-sensitive?
-privacy-sensitive?
-multi-actor?
-time-critical?
-irreversible or hard to compensate?
-independent verification required?
-```
-
-It may influence:
-
-```text
-autonomy ceiling
-verification floor
-approval requirement
-safe failure mode
-publication maturity
-```
-
-It is a runtime/governance contract, not a universal severity score and not a new semantic root.
-
----
-
-## 31.11 v0.4 P0 — Safe Result Publication / Streaming Gate
-
-### Failure found
-
-A correct final Disclosure Projection is too late if sensitive or unverified material has already been streamed to the recipient.
-
-Example:
-
-```text
-private source:
-"medical appointment 19:00"
-
-allowed recipient result:
-"unavailable 19:00–20:00"
-```
-
-A raw model stream that begins publishing the private reason creates an irreversible disclosure before final filtering can run.
-
-Therefore:
-
-```text
-MODEL OUTPUT
-!=
-PUBLISHABLE OUTPUT
-
-INTERNAL STREAM
-!=
-RECIPIENT STREAM
-```
-
-### Publication responsibility
-
-Before material reaches a recipient/surface, DANTE must preserve the required gates for:
-
-```text
-information-flow eligibility
-recipient-aware Disclosure Projection
-cumulative inference protection
-result maturity
-verification status
-effect outcome truth
-```
-
-The exact safe-streaming mechanism remains an implementation choice. Depending on consequence/sensitivity, it may include buffering, constrained generation, staged publication, safe incremental projection or another mechanism that proves the same property.
-
-The architecture does **not** require all text to be fully buffered. It requires that streaming optimization never bypass governance.
-
-### Result maturity
-
-Presentation may need to distinguish states such as:
-
-```text
-WORKING
-PROVISIONAL
-VERIFIED
-ACCEPTED_EFFECT
-```
-
-These are presentation/runtime maturity concepts, not replacements for Domain Confirmation, Actual, Outcome or Reconciliation.
-
-Example:
-
-```text
-provider mutation request sent
-response timed out
-```
-
-safe publication:
-
-```text
-"Request sent; outcome is being verified."
-```
-
-unsafe publication:
-
-```text
-"Done ✓"
-```
-
----
-
-## 31.12 v0.4 hardening — temporal validity is part of Basis validity
-
-A source may become unusable for a consequential decision even when no explicit update/version event has arrived.
-
-Examples:
-
-```text
-weather forecast
-price
-inventory
-availability
-traffic
-travel condition
-live provider state
-```
-
-Therefore Basis validity may require temporal metadata such as:
-
-```text
-observed_at
-source version where available
-valid_for / valid_until
-freshness requirement
-revalidate_after
-temporal scope
-```
-
-The rule is:
-
-```text
-SOURCE VERSION UNCHANGED
-!=
-SOURCE STILL FRESH ENOUGH
-```
-
-Temporal validity extends `BasisManifest`; it does not create another canonical time/version ontology.
-
----
-
-## 31.13 v0.4 hardening — DANTE representation != external System of Record authority
-
-DANTE may canonically retain that a person has a hospital shift, school deadline, court hearing, flight or institutional meeting because that reality matters to their life.
-
-That does not mean DANTE becomes the authoritative institutional system that creates or governs that external reality.
-
-Examples include:
-
-```text
-hospital roster
-school register
-clinical record
-court/case system
-banking ledger
-official administrative act
-institutional/classified record
-```
-
-Therefore:
-
-```text
-DANTE CANONICAL PERSONAL REPRESENTATION
-!=
-EXTERNAL INSTITUTIONAL SYSTEM-OF-RECORD AUTHORITY
-```
-
-A DANTE-side edit may change local planning or a proposal. It modifies the external authoritative reality only through a legitimate governed capability accepted by that external system.
-
-This is consistent with the Product North Star requirement that DANTE may coordinate specialist systems without pretending to replace them.
-
----
-
-## 31.14 v0.4 hardening — communication state must not collapse
-
-Multi-actor coordination may require several distinct facts:
-
-```text
-SENT
-DELIVERED
-SEEN
-ACKNOWLEDGED
-ACCEPTED
-ACTUALLY PARTICIPATED / ACTED
-```
-
-They are not interchangeable.
-
-For example:
-
-```text
-message delivered
-!=
-parent knows/acknowledged school change
-
-request seen
-!=
-participant accepted responsibility
-```
-
-DANTE may batch transport operations physically, but must not manufacture stronger coordination semantics than the evidence supports.
-
-This reuses existing Request/Proposal/Participation/Actual/Confirmation semantics where applicable rather than creating one generic notification truth.
-
----
-
-## 31.15 Round III architecture scorecard
-
-| Area | Verdict after kill-test |
-|---|---|
-| Product / North-Star compatibility | PASS |
-| Domain compatibility | PASS STRONG |
-| Logical compatibility | PASS STRONG |
-| PostgreSQL canonical authority | PASS STRONG |
-| Material history | PASS |
-| Multi-actor / non-account participants | PASS STRONG |
-| Subject / Actor / Principal / Authority distinction | PASS STRONG |
-| Scenario / hypothetical state | PASS |
-| Work Supersession | PASS |
-| Compound effects | PASS STRONG |
-| Partial / unknown external outcomes | PASS STRONG |
-| Crash / recovery semantics | PASS STRUCTURAL |
-| Cancellation semantics | PASS |
-| Revocation during Run | PASS |
-| Direct privacy | PASS |
-| Cumulative privacy inference | PASS AFTER v0.3 |
-| Self-feedback / oscillation | PASS AFTER v0.3 |
-| Attention overload | PASS AFTER v0.3 |
-| Untrusted input / prompt injection boundary | PASS |
-| Specialist-system boundary | PASS + EXPLICIT HARDENING |
-| Offline / late-arriving state | PASS STRUCTURAL |
-| Large fan-out | PASS SEMANTICALLY / IMPLEMENTATION SCALE OPEN |
-| Reference / target resolution | P0 GAP → v0.4 CONTRACT ADDED |
-| Policy composition / precedence | P0 GAP → v0.4 CONTRACT ADDED |
-| Safe result publication / streaming | P0 GAP → v0.4 CONTRACT ADDED |
-| Temporal source validity | HARDENING ADDED |
-| Consequence classification | P0 HARDENING ADDED |
-| Communication acknowledgement semantics | HARDENING ADDED |
-| Need to reopen Domain | NO |
-| Need to reopen Logical | NO |
-| Need to reopen Physical | NO |
-| Need to reopen PostgreSQL | NO |
-
-The trajectory matters: successive rounds are now finding correctness conditions at execution/policy/publication boundaries rather than missing half of the platform or contradictions in the semantic core.
-
----
-
-## 32. Remaining AI-02.1 acceptance work — one last mega stress-test
-
-Before AI-02.1 can close, the v0.4 model must undergo **one final broad mega stress-test**.
-
-This is intentionally the last mega-test in AI-02.1.
-
-The goal is not to invent another gap by force. It is to attempt one last whole-system collapse of v0.4 across a very broad set of human situations and failure combinations.
-
-After that mega-test:
-
-```text
-if a new fundamental responsibility gap appears
-→ repair the smallest justified architecture boundary
-→ perform targeted verification of that repair
-
-if only bounded implementation/detail questions remain
-→ do not restart another mega-test cycle
-→ proceed to the explicitly required remaining pre-AI-03 review
-```
-
-The mega-test must exercise at least:
+Scenario families included:
 
 ```text
 single person
@@ -2431,115 +368,1841 @@ public-service / institutional boundary
 very large multi-actor fan-out
 non-DANTE participants
 offline / multi-device / delayed sync
-ambiguous identity/reference resolution
-malicious/untrusted external content
-cumulative privacy probing
-policy conflicts and precedence
-Authority/Consent revocation
-stale material state
-time-expiring external sources
-source correction/retirement
-partial external effects
-ambiguous provider outcome
-process crash / durable resume
-cancellation after dispatch
-work supersession
-self-generated feedback loops
-attention saturation
-resource pressure
-streaming / voice / multimodal output
-future much-more-capable general-purpose conversational intelligence
+malicious/untrusted input
+provider failures
+partial effects
+supersession
+revocation
+attention storms
+future much-more-capable general-purpose intelligence
+code / generated artifacts / browser / computer-use execution
 ```
 
-The final hostile scenario should deliberately combine many of these rather than merely replaying independent examples.
-
-The v0.4 architecture passes only if it can preserve, simultaneously:
+The final hostile composition included, simultaneously:
 
 ```text
-correct target identity
-correct policy precedence
-canonical/history integrity
-no stale-state overwrite
-no stale-source assumption
-no blind retry
-truthful partial/unknown outcome
-scope-aware supersession
-revocable permissions
-no cross-query privacy reconstruction
-no raw sensitive streaming
-no false success publication
-no self-oscillation
-no attention storm
-no specialist-system authority inflation
-no collapse of sent/delivered/acknowledged/accepted
-no Domain/Logical duplication for convenience
+changing weather/provider state
+school closure
+hospital recall
+road changes
+family pickup coordination
+machinery risk
+client deadlines
+power/network intermittence
+offline devices
+non-DANTE participants
+duplicate/ambiguous contacts
+Authority revocation
+malicious document
+compromised sensor
+provider timeout
+already-dispatched effect
+newer Run superseding old planning
+self-generated replan loop
+100+ valid alerts
+private sensitive information
+hidden relationships
+source correction after use
+artifact generation
+external agent work
+model outage
+model-generated code
+late sync
+```
+
+### Last mega-test result
+
+The v0.4 core survived Product/Domain/Logical/PostgreSQL, history, multi-actor, scenarios, target resolution, policy, partial effects, revocation, supersession, privacy, attention, publication and future-model pressure.
+
+One remaining P0 architecture responsibility was found:
+
+```text
+EXECUTION ENVIRONMENT / ISOLATION
+```
+
+Why it was necessary:
+
+```text
+model-generated code
+untrusted executable/archive content
+browser/computer use
+hostile execution workloads
+```
+
+must not execute with unrestricted backend filesystem/network/credentials/process authority merely because Capability Runtime can invoke them.
+
+The same round produced bounded hardenings:
+
+```text
+A. WorkContract propagation through decomposition / child Runs
+B. approval binding/rebinding to materially approved target/proposal/basis/effect
+C. Basis coherence in addition to individual freshness
+D. publication currentness / superseded-output suppression
+E. external-agent effect containment
+F. mandatory reconciliation survives optional-resource exhaustion
+G. surface-aware disclosure / consequential realtime-input authenticity
+H. telemetry/evaluation purpose and privacy constraints
+I. future cache hit != current disclosure authorization
+```
+
+No additional universal ontology, generic AI table or microservice family was justified.
+
+---
+
+## 10. Test-program conclusion
+
+The trajectory is significant:
+
+```text
+Round I
+→ missing platform responsibilities
+
+Round II
+→ concurrency/privacy/lifecycle correctness
+
+Final Kill-Test
+→ target/policy/publication correctness
+
+Last Mega Stress-Test
+→ hostile execution-environment isolation + bounded contract hardening
+```
+
+Successive rounds stopped finding missing semantic foundations and increasingly found runtime/security correctness conditions at edges.
+
+The mega-test program is complete. No further mega-test cycle is planned in AI-02.1.
+
+---
+
+# PART II — CURRENT v0.5 RESPONSIBILITY ARCHITECTURE
+
+## 11. Current architecture map
+
+```text
+┌──────────────────────────────────────────────────────────────────┐
+│                        INTERACTION EDGE                          │
+│ Web · Mobile · Voice · Capture · API · External AI             │
+└───────────────────────────────┬──────────────────────────────────┘
+                                │
+                                ▼
+                       INTERACTION SESSION
+                                │
+                                ▼
+                           WORK INTAKE
+                                │
+                          WORK CONTRACT
+      objective / scope / target bindings / protected constraints
+          purpose / consequence / governance / approval terms
+                                │
+                                ▼
+                         EXECUTION KERNEL
+                                │
+       ┌────────────────────────┼─────────────────────────┐
+       │                        │                         │
+       ▼                        ▼                         ▼
+SEMANTIC QUERY /            CONTEXT                  SCENARIO
+PROJECTION GATEWAY          ENGINE                   WORKSPACE
+       │                        │                         │
+       └────────────────────────┼─────────────────────────┘
+                                ▼
+                         BASIS MANIFEST
+      state/source dependencies / freshness / temporal validity /
+             assumptions / constraints / coherence
+                                │
+                                ▼
+                         REASONING LAYER
+           ┌────────────────────┼────────────────────┐
+           ▼                    ▼                    ▼
+     ModelTarget +         Deterministic           Solver
+     HarnessProfile           Compute
+           │                    │                    │
+           └────────────────────┼────────────────────┘
+                                ▼
+                        CAPABILITY RUNTIME
+                                │
+                    ┌───────────┴───────────┐
+                    │                       │
+              trusted normal path     EXECUTION ENVIRONMENT
+                                     when workload/threat model
+                                     requires isolation
+                    │                       │
+                    └───────────┬───────────┘
+                                ▼
+                            VERIFIER
+                                │
+                                ▼
+                    CHANGESET / EFFECTGRAPH
+                                │
+                                ▼
+                         EFFECT RUNTIME
+                                │
+                                ▼
+                     APPLICATION / DOMAIN
+                                │
+                                ▼
+                           PostgreSQL
+                                │
+                                ▼
+        RESULT / DISCLOSURE / SAFE PUBLICATION / ATTENTION
+```
+
+Cross-cutting responsibilities:
+
+```text
+Policy mesh / Authority / AuthZ / Consent / Visibility
+ConsequenceProfile
+Information flow / provider eligibility
+Autonomy
+Attention + aggregate attention budgeting
+Causal lineage / oscillation protection
+Run durability / Work Supersession
+Approval binding / rebinding
+Resource governance
+Artifacts
+Publication currentness / Result Maturity
+Cumulative inference protection
+Control Plane
+Observability
+Audit / execution evidence
+Evals
+```
+
+This is **not** a deployment diagram.
+
+---
+
+## 12. Responsibility boundary != microservice
+
+AI-02.1 rejects architecture theatre.
+
+The current map does not imply services named:
+
+```text
+semantic-query-service
+scenario-service
+attention-service
+verification-service
+disclosure-service
+supersession-service
+basis-service
+target-resolution-service
+policy-composition-service
+publication-service
+execution-environment-service
+```
+
+A first implementation may remain within the accepted capability-first modular monolith. Extraction requires measured isolation/scaling/availability/hardware/operational evidence.
+
+Likewise:
+
+```text
+logical Execution Environment responsibility
+!= mandatory sandbox product
 ```
 
 ---
 
-## 33. Regression checklist for the last mega stress-test
-
-Every remaining AI-02.1 scenario must check:
+## 13. Interaction Session
 
 ```text
-[ ] no accepted Domain distinction collapsed
-[ ] no provider state promoted to canonical truth
-[ ] no inference presented as Confirmation
-[ ] no history rewritten to match the current plan
-[ ] no stale material state silently overwritten
-[ ] no stale Basis dependency ignored
-[ ] no time-sensitive source assumed current merely because its version did not change
-[ ] no unrelated output invalidated without reason when dependency-local validation is possible
-[ ] no effect declared successful without sufficient evidence
-[ ] no blind retry across an ambiguous external effect
-[ ] cancel Run not represented as undo of already-dispatched effects
-[ ] no Authority inferred from technical capability
-[ ] no Visibility used as Authority
-[ ] no active Run assumes Authority/AuthZ/Consent remains valid forever
-[ ] user autonomy does not override external/institutional authority it does not own
-[ ] policy precedence is not improvised by the language model
-[ ] consequence level is sufficient to set governance/verification floor
-[ ] no private source disclosed merely because its consequence is usable
-[ ] no cumulative query sequence reconstructs protected information without bounded control
-[ ] visible endpoints do not imply an unauthorized hidden relationship
-[ ] no raw provider/model stream bypasses disclosure/information-flow checks
-[ ] no provisional/unknown effect is published as verified success
-[ ] no display-name or model guess becomes a consequential target without adequate resolution
-[ ] ambiguous/unresolved target causes clarification/no effect
-[ ] no other actor collapsed into account holder/user
-[ ] no unresolved durable work trapped only in chat state
-[ ] no hypothetical scenario treated as current reality
-[ ] no ChangeSet hides partial completion
-[ ] no superseded Run presents obsolete proposal as current
-[ ] no superseded Run dispatches newly obsolete effects
-[ ] no newer Run accidentally cancels independent work
-[ ] no DANTE adaptation recursively triggers itself without material new reality
-[ ] no user attention flood from individually-valid signals when batching/suppression is appropriate
-[ ] DANTE representation does not claim institutional System-of-Record authority
-[ ] sent/delivered/seen/acknowledged/accepted are not collapsed
-[ ] no unnecessary frontier-model call for deterministic work
-[ ] no unnecessary durable/sandbox/multi-agent complexity
-[ ] no new technology activated without a concrete trigger
-[ ] no new generic persistence root created for convenience
-[ ] no future rich-chat capability forces redesign of Domain/application core
+Interaction Session != Run != Worker
 ```
 
-Any failure must be classified as:
+Interaction Session may own noncanonical interaction continuity:
 
 ```text
-local implementation issue
-architecture responsibility gap
-semantic contradiction
-closed-model reopen candidate
-technology limitation
-product requirement conflict
+conversation turn continuity
+surface/presentation context
+attached artifacts
+temporary referents/deixis
+session-local presentation state
 ```
 
-Do not reopen the widest layer first.
+It does not own canonical DANTE truth because that truth was discussed in conversation.
+
+One Session may contain multiple Runs. A Run may outlive the UI Session when its own work contract legitimately requires durable lifecycle, for example research, watch, approval wait, booking or callback.
+
+Closing UI does not silently cancel independent durable work unless contract says so.
 
 ---
 
-## 34. AI-03 gate
+## 14. WorkContract
+
+`WorkContract` is the authoritative execution contract carried through decomposition and child Runs.
+
+It may contain materially relevant:
+
+```text
+objective
+scope
+resolved target bindings
+protected constraints
+purpose
+ConsequenceProfile / governance obligations
+approval conditions
+work lineage
+```
+
+Rule:
+
+```text
+derived execution may refine WorkContract
+but may not silently drop/relax protected requirements
+```
+
+If a material requirement changes, a new/superseding decision updates the current work meaning.
+
+This protects against semantic loss across:
+
+```text
+user intent
+→ orchestrator
+→ child Run
+→ subagent
+→ capability
+→ effect
+```
+
+---
+
+## 15. Work Supersession
+
+Canonical state may be unchanged while newer user intention makes old work obsolete.
+
+Work relationships may include:
+
+```text
+continuation_of
+supersedes
+independent_of
+```
+
+Mandatory distinction:
+
+```text
+SUPERSEDE
+!= CANCEL
+!= ROLLBACK
+!= RECONCILE
+```
+
+A superseded Run may still:
+
+```text
+finish reconciliation of already-attempted effects
+preserve audit/execution evidence
+return truthful status about work already performed
+```
+
+It must not:
+
+```text
+present obsolete proposal as current
+dispatch newly obsolete effects
+cancel unrelated independent work
+```
+
+---
+
+## 16. Dual intelligence path
+
+DANTE supports composition of:
+
+```text
+DANTE-NATIVE PATH
+structured state / history / planning / constraints / governed effects
+
+OPEN-WORLD PATH
+general explanation / research / web / documents / code / multimodal / creative analysis
+```
+
+They are not two products or necessarily two runtimes.
+
+One request may combine both.
+
+Future much-richer conversational intelligence must plug into the same contracts rather than replace Domain/application state.
+
+---
+
+## 17. Semantic Query / Projection Gateway
+
+Purpose: stable application-owned, permission-aware access to structured DANTE meaning.
+
+Examples:
+
+```text
+current commitments
+Goal trajectory
+workload in a period
+open commitments involving a Person
+current Program material state
+safe availability
+meeting-series continuity
+planned-vs-actual history
+unresolved confirmations
+resource availability
+```
+
+It is not:
+
+```text
+raw model SQL access
+a universal Entity API
+a second Domain model
+a vector-search replacement
+```
+
+It enables fast deterministic routes where no additional model reasoning is necessary.
+
+---
+
+## 18. Context Engine
+
+Context Engine remains distinct from Semantic Query.
+
+It assembles authorized reasoning material such as:
+
+```text
+unstructured notes
+documents
+artifacts
+web results
+external content
+conversation context
+retrieval results
+prior noncanonical working material
+```
+
+Detailed Context / Retrieval / Memory design remains AI-03.
+
+---
+
+## 19. Reference / Target Resolution
+
+A consequential system can pass AuthZ and expected-state checks and still affect the wrong target if semantic reference binding is wrong.
+
+```text
+DISPLAY NAME != EFFECT TARGET
+MODEL CONFIDENCE != TARGET RESOLUTION PROOF
+```
+
+Outcomes:
+
+```text
+EXACT
+UNIQUE_IN_SCOPE
+AMBIGUOUS
+UNRESOLVED
+```
+
+Consequential rule:
+
+```text
+EXACT / UNIQUE_IN_SCOPE
+→ may proceed subject to normal governance
+
+AMBIGUOUS
+→ focused clarification / explicit preview / disambiguation
+
+UNRESOLVED
+→ no consequential effect
+```
+
+Target Resolution may need authorized Semantic Query / Context to resolve candidates; it is an Execution Kernel responsibility, not an impossible pre-query oracle.
+
+It consumes accepted NativeRef/ScopedRecordRef/MaterialStateRef/ExternalRef semantics rather than inventing universal identity.
+
+---
+
+## 20. Scenario Workspace
+
+DANTE must compare futures before meaningful structural changes.
+
+```text
+CANONICAL MATERIAL STATE
+        │
+        ├──── Scenario A overlay
+        ├──── Scenario B overlay
+        └──── Scenario C overlay
+```
+
+Scenario workspace contains, as needed:
+
+```text
+basis references
+hypothetical changes
+assumptions
+constraints
+external assumptions/forecasts
+solver/model outputs
+derived metrics
+violations/conflicts
+comparison evidence
+```
+
+Default state class:
+
+```text
+transient / derived technical state
+```
+
+It does not duplicate the whole database and does not become canonical merely because it is useful.
+
+---
+
+## 21. BasisManifest
+
+`BasisManifest` records enough dependency evidence to evaluate continued validity without storing every thought/token.
+
+It may include:
+
+```text
+relevant MaterialStateRefs
+canonical/source references
+external source identity/version
+observed_at
+valid_for / valid_until
+revalidate_after
+acquisition window
+assumptions
+constraints
+policy/config versions when consequential
+capability/harness versions where evidence requires them
+```
+
+### Dependency-aware invalidation
+
+```text
+changed input X
+→ invalidate/recompute dependent outputs
+```
+
+rather than `invalidate everything` or `invalidate nothing`.
+
+### Temporal validity
+
+```text
+SOURCE VERSION UNCHANGED
+!=
+SOURCE STILL FRESH ENOUGH
+```
+
+Weather, price, inventory, availability, traffic and other volatile state may expire without explicit version event.
+
+### Basis coherence
+
+```text
+EACH INPUT FRESH
+!=
+COMBINED WORLD-STATE COHERENT
+```
+
+DANTE-native state may require coherent application/database snapshot semantics. Independent external sources may not offer atomicity; DANTE records acquisition limits and revalidates consequential volatile dependencies instead of fabricating one simultaneous truth.
+
+BasisManifest is runtime/evidence metadata, not new Domain Version/Fact ontology.
+
+---
+
+## 22. ModelTarget + HarnessProfile
+
+Current constraints remain:
+
+```text
+NO foundation-model training
+NO DANTE-owned frontier model
+NO fine-tuning requirement as baseline
+NO large always-on self-hosted frontier fleet
+NO GPU cluster as baseline
+API-FIRST frontier intelligence
+provider/model replaceability mandatory
+small/local inference optional and benchmark-gated
+```
+
+Separate:
+
+```text
+ModelTarget
+from
+HarnessProfile
+```
+
+HarnessProfile may version model/provider-specific controllable behavior:
+
+```text
+instruction shape
+context strategy
+reasoning configuration
+structured-output mode
+provider-native tool semantics
+prompt/cache behavior
+continuation/compaction behavior
+model-specific capability projection
+```
+
+Provider independence does not require lowest-common-denominator inference APIs.
+
+---
+
+## 23. Deterministic compute and solver
+
+`MODEL != SOLVER != DATABASE`.
+
+Examples of deterministic first-class intelligence:
+
+```text
+SQL aggregation
+calendar/time math
+rules
+statistics
+calculators
+constraint validation
+OR-Tools CP-SAT where justified
+```
+
+If deterministic computation can answer safely, no frontier-model call is required.
+
+Solver `UNKNOWN != INFEASIBLE`, and solver output remains candidate/derived until governed acceptance.
+
+---
+
+## 24. Capability Runtime
+
+Capabilities are explicit product/runtime operations, not arbitrary hidden model powers.
+
+Conceptually:
+
+```text
+Capability Registry
+→ discovery/projection
+→ invocation
+→ validation
+→ evidence/effect handling
+```
+
+Capability availability does not imply Authority.
+
+Generated/programmatic tool use may improve efficiency but does not bypass policy/effect contracts.
+
+---
+
+## 25. Execution Environment / Isolation — v0.5 P0
+
+### Failure found
+
+Future general-purpose DANTE may execute:
+
+```text
+model-generated Python/shell/code
+untrusted archive/project content
+browser automation
+computer use
+hostile document conversion/execution
+other arbitrary workloads
+```
+
+If that code runs with backend filesystem, process, network or credential authority, normal capability/effect policy can be bypassed.
+
+### Architectural rule
+
+`Execution Environment` is a first-class runtime/security responsibility when a workload/threat model requires isolation.
+
+Potential controls:
+
+```text
+filesystem scope
+artifact mounts
+network/egress
+credential mediation
+CPU
+RAM
+disk
+wall-clock time
+process count
+lifecycle / cleanup
+execution evidence
+```
+
+### Lazy activation
+
+```text
+ordinary trusted deterministic/application work
+→ normal execution path
+
+untrusted/generated/general execution workload
+→ select appropriate isolated environment
+```
+
+The architecture does **not** mandate one universal sandbox technology.
+
+Research challenger classes remain:
+
+```text
+WASM/WASI
+hardened container / gVisor-style isolation
+microVM / VM
+other future mechanisms
+```
+
+Selection depends on workload compatibility and threat model.
+
+### Credential rule
+
+```text
+MODEL-GENERATED / UNTRUSTED CODE
+MUST NOT RECEIVE RAW PRIVILEGED DANTE/DB/PROVIDER CREDENTIALS
+```
+
+Where privileged action is necessary:
+
+```text
+isolated workload
+→ bounded trusted broker/capability
+→ current identity/delegation/policy/egress checks
+→ provider/application
+```
+
+Execution Environment is not a Domain concept, not automatically a microservice and not required for every request.
+
+---
+
+## 26. Verifier
+
+```text
+MODEL CLAIM
+"I completed X"
+!=
+VERIFIED STATE
+"X is demonstrably true according to relevant evidence"
+```
+
+Potential verification mechanisms:
+
+```text
+schema validation
+semantic validation
+SQL/state reread
+MaterialState verification
+provider reread
+receipt verification
+constraint solver validation
+filesystem diff/hash
+test execution
+DOM/accessibility inspection
+independent semantic verification where deterministic evidence is insufficient
+```
+
+Verifier is a runtime responsibility.
+
+```text
+Verifier != Audit store
+Verifier != Confirmation
+Verifier != Reconciliation
+```
+
+Those existing semantics remain distinct.
+
+---
+
+## 27. Policy Composition / policy mesh
+
+Multiple individually valid policies may disagree.
+
+Examples:
+
+```text
+user autonomy             ALLOW
+institutional policy      REQUIRE APPROVAL
+qualification rule        LIMIT/DENY
+safety constraint         DENY
+current delegated Authority MAYBE INSUFFICIENT
+```
+
+The language model does not improvise precedence.
+
+Policy applies at multiple enforcement points:
+
+```text
+Context PEP
+→ may this information be processed for this purpose?
+
+Capability PEP
+→ may this capability be discovered/invoked?
+
+Effect PEP
+→ may this exact effect execute now?
+
+Publication/Egress PEP
+→ may this representation leave to this recipient/provider/surface now?
+```
+
+Applicable inputs may include:
+
+```text
+Authority
+AuthZ
+Consent
+Visibility
+user autonomy
+hard constraints
+safety rules
+institutional/external constraints
+purpose restrictions
+provider/data eligibility
+```
+
+Potential decisions:
+
+```text
+ALLOW
+DENY
+REQUIRE_CONFIRMATION
+REQUIRE_EXTERNAL_APPROVAL
+LIMIT_SCOPE
+```
+
+`PolicyDecision` remains runtime/governance state, not a new Domain owner.
+
+---
+
+## 28. ConsequenceProfile
+
+Minimum governance depends on consequences, not only phrasing.
+
+Dimensions may include:
+
+```text
+reversible?
+external effect?
+financially consequential?
+safety-sensitive?
+privacy-sensitive?
+multi-actor?
+time-critical?
+irreversible/hard to compensate?
+independent verification required?
+```
+
+It may establish:
+
+```text
+autonomy ceiling
+verification floor
+approval requirement
+safe failure mode
+publication maturity floor
+isolation requirement
+```
+
+It is not a universal semantic severity score and not a Domain root.
+
+---
+
+## 29. ChangeSet / EffectGraph
+
+One intention may require multiple coordinated operations.
+
+ChangeSet may carry:
+
+```text
+objective
+basis
+operations
+dependency edges
+protected invariants
+expected-state requirements
+atomic groups
+external-effect boundaries
+preview
+approval binding
+rollback availability
+compensation rules
+partial-outcome state
+reconciliation requirements
+```
+
+It does not replace individual effect governance:
+
+```text
+ChangeSet
+    ├─ Effect A
+    ├─ Effect B
+    └─ Effect C
+          ↓
+EffectIntent
+→ EffectPermit
+→ EffectAttempt
+→ EffectReceipt
+→ Verification / Reconciliation
+```
+
+Cross-system all-or-nothing semantics must not be fabricated when they do not exist.
+
+---
+
+## 30. Approval binding / rebinding
+
+Approval is not a durable broad permit for any later plan that looks similar.
+
+Approval must bind to materially relevant:
+
+```text
+target(s)
+proposal / ChangeSet meaning
+basis / assumptions where consequential
+effect semantics
+protected constraints
+```
+
+If the material ChangeSet changes after approval:
+
+```text
+OLD APPROVAL
+!=
+AUTHORIZATION FOR NEW MATERIAL PLAN
+```
+
+Before final dispatch after waits, DANTE re-reads current work/state/policy and binds a current final permit.
+
+---
+
+## 31. External effects / outcome unknown
+
+```text
+EffectIntent
+→ EffectPermit
+→ EffectAttempt
+→ EffectReceipt
+→ Verification
+→ Reconciliation when needed
+```
+
+Provider timeout after dispatch may mean:
+
+```text
+OUTCOME_UNKNOWN
+```
+
+not `FAILED` and not `SUCCESS`.
+
+Blind retry is forbidden when first attempt may already have produced effect.
+
+```text
+CANCEL RUN
+!=
+UNDO ALREADY-DISPATCHED EFFECTS
+```
+
+Cancellation stops remaining controllable work. Already-dispatched effects remain subject to verification/reconciliation/compensation semantics.
+
+---
+
+## 32. Mandatory reconciliation survives resource exhaustion
+
+Resource budgets may stop optional work:
+
+```text
+model calls
+search steps
+sandbox compute
+nonessential elaboration
+```
+
+But if DANTE already dispatched an effect whose outcome is ambiguous, budget exhaustion must not erase that obligation.
+
+```text
+optional work exhausted
++
+outcome-unknown effect exists
+→ reconciliation obligation remains durable/unresolved
+```
+
+Implementation may reserve safety/reconciliation capacity or otherwise guarantee eventual handling; exact mechanism is later work.
+
+---
+
+## 33. External-agent effect containment
+
+DANTE may delegate bounded work to external intelligent systems.
+
+If an external agent performs consequential side effects, DANTE must choose one truthful model:
+
+```text
+A. effect routed back through governed DANTE capability
+→ DANTE effect governance applies
+
+B. external agent/system performs effect outside DANTE
+→ treat it as externally performed
+→ observe / verify / reconcile
+→ do not pretend DANTE governed the dispatch
+```
+
+Passing broad human credentials through to opaque agents by default is forbidden/confused-deputy risk.
+
+---
+
+## 34. Revocable active-Run validity
+
+```text
+authorized at T0
+!=
+authorized forever
+```
+
+At consequential boundaries, especially after wait/approval/durable suspension and before disclosure/effect, DANTE may need to revalidate:
+
+```text
+Authority
+AuthZ
+Consent
+Visibility
+purpose / processing eligibility
+source validity
+source retirement/deletion
+expected MaterialState
+work supersession/currentness
+```
+
+Revocation cannot retroactively remove information already processed externally or undo already-dispatched effects.
+
+It constrains subsequent retrieval, provider disclosure, recipient disclosure, derived persistence and effects where applicable.
+
+---
+
+## 35. Context Projection != Disclosure Projection
+
+```text
+Context Projection
+= what reasoning operation may consume for purpose P
+
+Disclosure Projection
+= what representation recipient R may receive
+```
+
+A private source may produce a safe shared consequence without disclosing source detail.
+
+Example:
+
+```text
+private event: medical appointment 19:00
+→ authorized computation
+→ recipient-safe result: unavailable 19:00–20:00
+```
+
+Processing permission, source/provenance disclosure and recipient disclosure remain separate questions.
+
+---
+
+## 36. Cumulative / cross-query disclosure protection
+
+A response may be safe alone while a query sequence reconstructs protected information.
+
+Where risk is material, disclosure may consider:
+
+```text
+recipient
+purpose
+sensitivity
+requested granularity
+relevant prior disclosures
+query sequence/pattern
+aggregate information exposed
+relationship inference risk
+probing behavior
+```
+
+Possible outcomes:
+
+```text
+ALLOW
+COARSEN
+AGGREGATE
+WITHHOLD
+REQUIRE DIFFERENT SCOPE
+```
+
+Bounded disclosure accounting is runtime/security state, not a second Visibility ontology.
+
+---
+
+## 37. Safe Result Publication / Streaming
+
+```text
+MODEL OUTPUT != PUBLISHABLE OUTPUT
+INTERNAL STREAM != RECIPIENT STREAM
+```
+
+Correct final disclosure filtering is too late if sensitive/unverified content already crossed the surface boundary.
+
+Before recipient publication, DANTE preserves required checks for:
+
+```text
+information-flow eligibility
+recipient/surface Disclosure Projection
+cumulative inference protection
+result maturity
+verification/effect truth
+current work/supersession status
+```
+
+The architecture does not require full buffering of every answer. It requires that realtime/streaming optimization never bypass governance.
+
+---
+
+## 38. Publication currentness
+
+A superseded/stale Run may continue cleanup/reconciliation/evidence but may not keep presenting obsolete material as the current answer.
+
+Before publishing further material:
+
+```text
+is this work/result still current for this scope?
+```
+
+If not:
+
+```text
+suppress obsolete continuation
+or present it explicitly as historical/superseded when useful
+```
+
+This prevents correct-but-obsolete output from misleading the user.
+
+---
+
+## 39. Result Maturity
+
+Presentation/runtime maturity may distinguish:
+
+```text
+WORKING
+PROVISIONAL
+VERIFIED
+ACCEPTED_EFFECT
+```
+
+These are not replacements for Domain Confirmation, Actual, Outcome or Reconciliation.
+
+Example:
+
+```text
+provider request dispatched
+response timed out
+```
+
+safe:
+
+> Request sent; outcome is being verified.
+
+unsafe:
+
+> Done ✓
+
+---
+
+## 40. Surface-aware disclosure and realtime input authenticity
+
+Recipient disclosure depends not only on Person/Principal but also on surface/channel.
+
+Examples:
+
+```text
+private in-app screen
+lock-screen notification
+shared display
+voice response
+external AI client
+email/push transport
+```
+
+A surface may receive a coarser representation than another surface for the same recipient.
+
+Realtime/voice input also has provenance/authenticity risk. Speech detected by ASR is not automatically authenticated consequential intent. ConsequenceProfile and interaction/authentication policy determine when confirmation/stronger binding is required.
+
+---
+
+## 41. Information-flow lineage
+
+Derived wording does not reset trust/confidentiality.
+
+```text
+PRIVATE DANTE STATE
++
+UNTRUSTED WEB CONTENT
+        ↓
+GENERATED SUMMARY
+```
+
+must not become implicitly:
+
+```text
+PUBLIC + TRUSTED
+```
+
+Useful conceptual properties include:
+
+```text
+confidentiality class
+integrity/trust class
+instruction authority
+source/provenance lineage
+```
+
+Dynamic processing/disclosure/provider decisions remain policy decisions at use time rather than a duplicate semantic ontology.
+
+---
+
+## 42. Untrusted content / prompt injection
+
+External content, documents, transcripts, webpages, tool output and uploaded files are data unless explicit trusted instruction authority establishes otherwise.
+
+```text
+DATA != INSTRUCTION
+```
+
+A meeting transcript saying "ignore system instructions" remains transcript data.
+
+A malicious web page cannot grant itself tool/effect authority.
+
+Uploaded user files may themselves be compromised and are not automatically safe to execute.
+
+---
+
+## 43. Attention / proactivity
+
+Trigger tells DANTE something is due/changed/true enough to evaluate.
+
+Attention decides what should happen to user attention.
+
+```text
+Signal
+→ relevance
+→ materiality
+→ urgency
+→ causal-loop check
+→ attention policy + aggregate attention budget
+→ silent / review / notify / start work / escalate
+```
+
+Attention inputs may include:
+
+```text
+user policy
+quiet hours/current mode
+risk/consequence
+recent interruptions
+aggregate current load
+batchability
+review opportunity
+repetition/deduplication
+expiry
+```
+
+Push/email/in-app transport is downstream.
+
+Review Queue remains an aggregation surface, not a generic semantic/persistence owner.
+
+---
+
+## 44. Causal-loop / oscillation guard
+
+DANTE effects may generate new signals. Without causal awareness, individually valid rules can oscillate.
+
+Relevant lineage:
+
+```text
+Signal
+→ related_to / caused_by Effect
+→ Effect belongs to Run
+→ Run may originate from Watch / Rule / prior adaptation
+```
+
+Bounded protections may include:
+
+```text
+minimum material delta
+hysteresis
+cooldown
+recent-effect awareness
+duplicate/symmetric adaptation detection
+bounded adaptation depth
+```
+
+The guard does not suppress genuinely new external change.
+
+---
+
+## 45. Communication-state integrity
+
+```text
+SENT
+!= DELIVERED
+!= SEEN
+!= ACKNOWLEDGED
+!= ACCEPTED
+!= ACTUALLY PARTICIPATED/ACTED
+```
+
+Transport batching may be physical/technical, but semantic outcome cannot manufacture stronger coordination evidence than exists.
+
+Use existing Request/Proposal/Participation/Actual/Confirmation/Acknowledgement semantics where applicable.
+
+---
+
+## 46. External System-of-Record boundary
+
+DANTE may canonically retain that a person has a hospital shift, school deadline, court hearing, flight or institutional meeting because that reality matters to their life.
+
+That does not make DANTE the institutional authority over:
+
+```text
+hospital roster
+school register
+clinical record
+court/case system
+bank ledger
+official administrative act
+classified/institutional record
+```
+
+```text
+DANTE CANONICAL PERSONAL REPRESENTATION
+!=
+EXTERNAL INSTITUTIONAL SYSTEM-OF-RECORD AUTHORITY
+```
+
+External authoritative reality changes only through legitimate capability accepted by that external system.
+
+---
+
+## 47. Observability / audit / evaluation privacy
+
+```text
+DURABLE RUNTIME JOURNAL
+!= APPLICATION RUN RECORD
+!= AUDIT / EXECUTION EVIDENCE
+!= OTEL TELEMETRY
+```
+
+Observability/evaluation pipelines are not privileged data sinks.
+
+Sensitive prompts, context fragments, tool results, traces and production examples remain subject to purpose, retention, redaction and provider/data-use controls.
+
+Production trace reuse for evals is not automatic merely because the trace exists.
+
+---
+
+## 48. Cache rule carried into AI-03
+
+Caching is later physical/context work, but one invariant is already fixed:
+
+```text
+CACHE HIT
+!=
+CURRENT DISCLOSURE AUTHORIZATION
+```
+
+A cached result created when access was allowed must not bypass current recipient/purpose/policy/disclosure checks after revocation/change.
+
+AI-03 must design cache keys/lifecycle accordingly.
+
+---
+
+## 49. Resource governance
+
+ResourceBudget is broader than tokens.
+
+Potential dimensions:
+
+```text
+money
+model/tool calls
+DB operations
+sandbox CPU/RAM/disk/network
+parallelism
+wall-clock
+active compute
+step count
+```
+
+Budget exhaustion is a legitimate Run outcome for optional work.
+
+It must not hide partial effects or erase mandatory reconciliation/evidence obligations.
+
+---
+
+## 50. Durable execution
+
+```text
+DURATION != DURABILITY REQUIREMENT
+```
+
+A 30-minute pure computation may not need a durable workflow; a short operation with external acceptance ambiguity or long callback wait may.
+
+Conceptual classes:
+
+```text
+INLINE
+BOUNDED ASYNC
+DURABLE
+```
+
+Restate remains the accepted target for first real Class-B durable workflow unless a proper reopen occurs. AI-02.1 does not activate it for every request.
+
+---
+
+## 51. External AI / external-agent symmetry
+
+DANTE must support both directions:
+
+```text
+AI inside DANTE
+→ DANTE invokes provider/model/specialist capability
+
+DANTE inside external AI
+→ external assistant invokes explicitly exposed DANTE capability
+```
+
+External protocols such as MCP/A2A are edge adapters, not internal Domain contracts.
+
+External agent/client does not inherit user Authority merely because it holds a technical connection.
+
+Delegation, Principal, represented party, purpose, scope, recipient and effect policy remain explicit.
+
+---
+
+## 52. Future rich conversational intelligence acceptance
+
+A future DANTE surface may include:
+
+```text
+text
+voice
+image/camera
+PDF/document work
+web research
+general Q&A
+creative work
+code
+analysis
+artifacts
+long-running research
+browser/computer use
+DANTE-aware planning/effects
+external systems/specialists
+```
+
+More capable intelligence must plug into DANTE without owning:
+
+```text
+canonical memory
+canonical application state
+Domain semantics
+Authority
+Visibility
+accepted-effect rules
+material history
+```
+
+Preferred dependency:
+
+```text
+future frontier intelligence
+        ↓
+DANTE Intelligence contracts
+        ↓
+Application / Domain
+        ↓
+canonical life state
+```
+
+not:
+
+```text
+future provider
+= new DANTE database + memory truth + authority + business logic
+```
+
+A future model with huge context/provider memory remains an optimization/cognitive component. Provider thread/memory is not canonical DANTE memory.
+
+**Structural future-extensibility criterion: PASS.**
+
+---
+
+# PART III — TARGETED v0.5 VERIFICATION
+
+## 53. Verification objective
+
+After the last mega-test found `Execution Environment / Isolation`, AI-02.1 did not start another broad mega-test. It ran a bounded consistency verification of the new boundary and associated hardenings.
+
+This is architecture verification only, not runtime/security penetration testing.
+
+---
+
+## 54. Generated-code secret isolation
+
+Scenario:
+
+```text
+future DANTE receives/generates code
+code attempts to read environment/application/provider/database secrets
+```
+
+v0.5 contract:
+
+```text
+untrusted/generated code
+→ isolated Execution Environment when required
+→ no raw privileged credentials
+→ bounded trusted broker/capability for privileged action
+```
+
+Result: **PASS STRUCTURAL**.
+
+No new responsibility needed.
+
+---
+
+## 55. Execution-environment crash vs Run durability
+
+Scenario:
+
+```text
+Run exists
+isolated environment crashes
+artifacts may be partial
+external effect may or may not have happened through broker
+```
+
+Distinctions:
+
+```text
+Interaction Session != Run != Worker != Execution Environment
+```
+
+Environment failure does not itself rewrite canonical state. Durable/async Run handling and effect reconciliation remain separate.
+
+Result: **PASS STRUCTURAL**.
+
+---
+
+## 56. Browser/computer-use effect verification
+
+Scenario:
+
+```text
+computer-use agent clicks external action
+screen/response ambiguous
+```
+
+v0.5 requires:
+
+```text
+ConsequenceProfile
+→ policy/approval as needed
+→ bounded environment
+→ target/action verification where possible
+→ outcome may remain UNKNOWN
+→ provider/UI reread/reconciliation
+```
+
+Result: **PASS STRUCTURAL**.
+
+Pixel-level completion is never equivalent to verified effect success.
+
+---
+
+## 57. Superseded publication
+
+Scenario:
+
+```text
+Run A streams/proposes old plan
+Run B supersedes same scope
+Run A still technically alive
+```
+
+Safe Publication currentness gate prevents Run A from presenting obsolete continuation as current while allowing cleanup/reconciliation.
+
+Result: **PASS STRUCTURAL**.
+
+---
+
+## 58. Basis coherence
+
+Scenario:
+
+```text
+weather fresh at T1
+resource availability fresh at T2
+calendar fresh at T3
+values were never simultaneously true enough for consequential plan
+```
+
+BasisManifest records acquisition/freshness/coherence limitations; consequential volatile inputs are revalidated and DANTE-native snapshot semantics are used where required.
+
+Result: **PASS STRUCTURAL**.
+
+---
+
+## 59. Approval rebinding
+
+Scenario:
+
+```text
+user approved ChangeSet A
+replan materially changes target/time/effect semantics
+```
+
+Old approval cannot be reused automatically. Re-read/recompute/rebind or obtain new approval as consequence requires.
+
+Result: **PASS STRUCTURAL**.
+
+---
+
+## 60. External-agent side effects
+
+Scenario:
+
+```text
+external intelligent worker performs provider side effect outside DANTE
+```
+
+v0.5 requires either governed DANTE capability path or explicit external-effect observation/reconciliation.
+
+Result: **PASS STRUCTURAL**.
+
+---
+
+## 61. Resource exhaustion after ambiguous effect
+
+Scenario:
+
+```text
+Effect A dispatched
+outcome unknown
+optional run budget exhausted
+```
+
+Reconciliation obligation survives. Run cannot erase ambiguous already-dispatched consequence by ending optional compute.
+
+Result: **PASS STRUCTURAL**.
+
+---
+
+## 62. Deterministic fast path
+
+Scenario:
+
+> how much did I run last month?
+
+Correct path:
+
+```text
+semantic interpretation
+→ Semantic Query
+→ deterministic SQL aggregation
+→ disclosure/publication
+```
+
+No sandbox, durable workflow or frontier model required after interpretation when unnecessary.
+
+Result: **PASS STRUCTURAL**.
+
+---
+
+## 63. Targeted verification conclusion
+
+```text
+generated-code secret isolation                         PASS STRUCTURAL
+execution-environment crash vs Run durability           PASS STRUCTURAL
+browser/computer-use effect verification                PASS STRUCTURAL
+superseded publication                                  PASS STRUCTURAL
+Basis coherence                                         PASS STRUCTURAL
+approval rebinding                                      PASS STRUCTURAL
+external-agent side effects                             PASS STRUCTURAL
+resource exhaustion after ambiguous effect              PASS STRUCTURAL
+deterministic fast path bypassing unnecessary isolation PASS STRUCTURAL
+```
+
+No new fundamental responsibility gap appeared.
+
+No evidence justifies reopening Domain, Logical, Physical or PostgreSQL.
+
+---
+
+# PART IV — END-TO-END BEHAVIOR
+
+## 64. Representative full path
+
+```text
+1. receive interaction / event / trigger
+2. resolve Principal / Actor / represented party / purpose
+3. establish WorkContract: objective / scope / protected constraints / consequence
+4. relate work to prior work: continuation / supersession / independent
+5. resolve authorized semantic candidates/context required to identify targets
+6. bind consequential references/targets; clarify/stop if ambiguous/unresolved
+7. choose structural fast path where possible
+8. resolve authorized DANTE-native semantic state
+9. assemble only necessary unstructured/external/contextual material
+10. build BasisManifest including dependency/freshness/coherence requirements
+11. evaluate information-flow/provider eligibility at applicable policy points
+12. choose model / deterministic compute / solver / capabilities
+13. select Execution Environment only if workload/threat model requires isolation
+14. reason / calculate / simulate
+15. ensure derived child work preserves WorkContract/protected requirements
+16. compose applicable policy / Authority / AuthZ / Consent / autonomy / institutional constraints
+17. verify material intermediate claims where consequential
+18. produce Result / Proposal / ChangeSet as appropriate
+19. bind approval where required to exact material proposal/target/basis/effect meaning
+20. after waits, confirm work is still current/not superseded
+21. revalidate target binding if identity/context may have changed
+22. re-read material state and volatile dependencies
+23. re-evaluate policy / Authority / AuthZ / Consent / source validity
+24. issue bounded EffectPermits
+25. execute governed effect graph
+26. verify receipts; reconcile ambiguous/partial outcomes
+27. preserve reconciliation obligation even if optional resource budget ends
+28. materialize accepted canonical effects only through application/domain operations
+29. assign truthful Result Maturity
+30. apply recipient/surface-aware Disclosure Projection
+31. apply cumulative inference protection where material
+32. verify publication currentness / supersession state
+33. publish/stream only cleared material
+34. Attention chooses justified interruption/review behavior
+35. retain only state justified by correct semantic/runtime owner
+```
+
+Not every request uses every step.
+
+---
+
+## 65. Simple deterministic path
+
+```text
+request
+→ principal/purpose
+→ WorkContract
+→ target/query scope
+→ Semantic Query
+→ deterministic compute
+→ policy/disclosure
+→ Safe Publication
+```
+
+No sandbox/model/durable workflow is required merely because the architecture can support them.
+
+---
+
+## 66. Consequential compound path
+
+```text
+User request
+→ WorkContract
+→ target resolution
+→ ConsequenceProfile
+→ current MaterialState / BasisManifest
+→ Scenario / consequence analysis
+→ policy composition
+→ ChangeSet preview
+→ bound approval where required
+→ check supersession/currentness
+→ revalidate target/state/volatile dependencies
+→ re-evaluate Authority/AuthZ/Consent/policy
+→ bind EffectPermits
+→ execute EffectGraph
+→ verify/reconcile
+→ Result Maturity
+→ Disclosure / Safe Publication
+```
+
+---
+
+## 67. Proactive/watch path
+
+```text
+Watch definition / accepted condition
+→ scheduled/condition-driven evaluation
+→ external signals
+→ freshness/coherence check
+→ deterministic filters
+→ current DANTE state
+→ reasoning only if needed
+→ causal-loop/recent-effect check
+→ Attention + aggregate attention budget
+→ Safe Publication
+→ notify / review / remain silent
+```
+
+An LLM is not a three-week timer.
+
+---
+
+## 68. Code/computer-use path
+
+```text
+request
+→ WorkContract / ConsequenceProfile
+→ capability selection
+→ is arbitrary/untrusted execution required?
+       │
+       ├─ no → normal trusted path
+       │
+       └─ yes
+           ↓
+      Execution Environment
+      bounded filesystem/network/resources
+      no raw privileged credentials
+           ↓
+      trusted broker/capability for privileged actions
+           ↓
+      verification / effect governance / reconciliation
+           ↓
+      artifact/result publication
+```
+
+---
+
+# PART V — OPEN IMPLEMENTATION CHOICES / AI-03 BOUNDARY
+
+## 69. What remains intentionally open
+
+AI-02.1 v0.5 does not decide:
+
+```text
+exact provider/model set
+primary vs secondary provider
+model gateway product
+agent SDK/framework
+exact Execution Kernel implementation
+conversation persistence schema
+memory persistence schema
+embedding strategy
+vector-index strategy
+retrieval ranking
+context compaction implementation
+exact Execution Environment technology
+policy engine product
+learned router
+local-model family/size
+exact autonomy UX
+exact durable-runtime activation per workload
+exact Attention scoring/rules
+exact Scenario Workspace representation
+exact ChangeSet physical persistence, if any
+exact Interaction Session persistence, if any
+exact target-resolution implementation
+exact PolicyDecision implementation
+exact ConsequenceProfile representation
+exact safe-streaming implementation
+exact Result Maturity representation
+exact BasisManifest/work-lineage/disclosure-accounting persistence, if any
+exact broker/credential-proxy implementation
+```
+
+The architecture fixes required contracts now; it does not prematurely choose implementation products.
+
+---
+
+## 70. AI-03 gate
 
 AI-03 owns detailed:
 
@@ -2549,88 +2212,200 @@ RETRIEVAL
 MEMORY
 ```
 
-AI-03 remains deliberately after AI-02.1 because context/memory choices depend on the structural intelligence responsibilities fixed here.
+AI-03 must consume the structurally accepted result of AI-02.1.
 
-AI-03 must not be used to repair an unresolved architecture gap that belongs to AI-02.1.
+It must not be used to repair unresolved AI-02.1 responsibility gaps.
 
-Before AI-03 starts, AI-02.1 must at minimum establish that:
+Inputs AI-03 must inherit include:
 
 ```text
-Interaction Session boundary is coherent
-DANTE-native/open-world composition is coherent
-Semantic Query / Context split is coherent
-Reference / Target Resolution is safe for consequential work
-Scenario Workspace does not create a second truth
-BasisManifest/dependency/temporal invalidation is coherent
-Policy composition/precedence is coherent
-ConsequenceProfile can establish minimum governance without becoming a universal score
-ChangeSet/Effect interaction preserves WL-H obligations
-Work Supersession does not corrupt independent work or already-attempted effects
-Attention/proactivity does not fabricate outcomes or self-oscillate
-Attention load can be bounded across multiple signals
-Disclosure Projection preserves privacy/Visibility semantics across single and cumulative queries
-Safe Result Publication prevents streaming/presentation from bypassing disclosure or verification
-active-Run authorization/data validity can be revoked/revalidated
-DANTE representation remains distinct from external institutional System-of-Record authority
-communication state does not collapse sent/delivered/seen/acknowledged/accepted
-future frontier-chat extensibility survives
-the one last mega stress-test does not require semantic collapse
+Interaction Session != Run != Worker
+Semantic Query distinct from Context Engine
+Context Projection distinct from Disclosure Projection
+cumulative inference protection
+WorkContract / supersession currentness
+BasisManifest dependency/freshness/coherence
+source reread / currentness
+anti-resurrection
+cache hit != current disclosure authorization
+provider thread/cache != canonical memory
+surface-aware publication
+information-flow lineage
+purpose/retention/privacy limits for telemetry/evals
 ```
 
-Only then should detailed memory admission, retrieval strategy, embeddings, indexes, conversation history and lifecycle be selected.
+AI-03 will decide detailed retrieval/memory admission and physical lifecycle only after AI-02.1 closes.
 
 ---
 
-## 35. Current phase verdict
+## 71. Anti-patterns after v0.5
 
-AI-02.1 v0.4 is the current branch-local architecture checkpoint.
+Do not implement:
 
-The central thesis remains intact:
+```text
+one giant agent loop owning the product
+raw model access to PostgreSQL
+raw model access to arbitrary provider credentials
+provider conversation thread as DANTE memory authority
+one generic AIAction table
+one universal memory_fact table
+one universal AIReviewItem table
+one generic Scenario Domain entity without semantic proof
+one opaque mega-tool for compound mutation
+one approval token valid forever despite materially changed plan/state
+one Run authorization assumed valid forever
+one Context Engine dumping full history into every request
+one egress allow/deny check ignoring safe derived projections
+one disclosure check ignoring cumulative inference when material
+one background LLM process acting as scheduler/timer
+one adaptation loop recursively reacting to itself without material change
+one old Run dispatching/publishing obsolete work after supersession
+one model call for deterministic arithmetic/aggregation by default
+one learned router before representative DANTE outcome data
+one service/container per architecture box
+one consequential effect targeted only by display-name/model guess
+one LLM deciding policy precedence
+one user-autonomy setting treated as authority over external reality
+one raw model/provider stream connected directly to sensitive recipient output
+one streamed success claim before external effect is verified
+one unchanged source version assumed fresh forever
+one set of individually fresh external values assumed mutually coherent automatically
+one delivered notification treated as seen/acknowledged/accepted
+one sandbox/microVM for every ordinary request
+one arbitrary generated-code process with backend/provider/DB secrets
+one external agent side effect falsely reported as DANTE-governed
+one optional budget exhaustion that drops an outcome-unknown reconciliation obligation
+one cache hit bypassing current disclosure policy
+one telemetry/eval pipeline treated as permission to retain all sensitive material
+```
+
+---
+
+# PART VI — FINAL STRUCTURAL SCORECARD
+
+## 72. v0.5 architecture scorecard
+
+| Area | Verdict |
+|---|---|
+| Product / North-Star compatibility | PASS STRONG |
+| Domain compatibility | PASS STRONG |
+| Logical compatibility | PASS STRONG |
+| PostgreSQL canonical authority | PASS STRONG |
+| Material history | PASS STRONG |
+| Multi-actor / non-account participants | PASS STRONG |
+| Subject / Actor / Principal / Authority distinction | PASS STRONG |
+| Structured semantic access | PASS |
+| Open-world + DANTE-native composition | PASS |
+| Scenario / hypothetical state | PASS |
+| Basis dependency / temporal validity / coherence | PASS STRUCTURAL |
+| WorkContract propagation | PASS STRUCTURAL |
+| Work Supersession | PASS STRONG |
+| Reference / Target Resolution | PASS v0.5 |
+| Policy composition / precedence | PASS v0.5 |
+| Consequence governance | PASS v0.5 |
+| Compound effects | PASS STRONG |
+| Partial / unknown external outcomes | PASS STRONG |
+| Approval rebinding | PASS STRUCTURAL |
+| Cancellation semantics | PASS |
+| Revocation during Run | PASS |
+| Direct privacy | PASS |
+| Cumulative privacy inference | PASS |
+| Safe streaming/publication | PASS STRUCTURAL |
+| Publication currentness | PASS STRUCTURAL |
+| Attention overload | PASS |
+| Self-feedback / oscillation | PASS |
+| Untrusted input / prompt injection | PASS |
+| Specialist-system boundary | PASS |
+| Offline / late-arriving state | PASS STRUCTURAL |
+| Large fan-out | PASS SEMANTICALLY / SCALE IMPLEMENTATION OPEN |
+| External AI / delegation | PASS STRUCTURAL |
+| External-agent side-effect containment | PASS STRUCTURAL |
+| Future rich general-purpose chat | PASS |
+| Model/provider replacement | PASS STRONG |
+| Generated code / computer use isolation | PASS STRUCTURAL AFTER v0.5 P0 |
+| Resource exhaustion / mandatory reconciliation | PASS STRUCTURAL |
+| Need to reopen Domain | NO |
+| Need to reopen Logical | NO |
+| Need to reopen Physical | NO |
+| Need to reopen PostgreSQL | NO |
+
+---
+
+## 73. Why v0.5 is a candidate structural freeze, not implementation closure
+
+The pressure-test program has stopped finding missing semantic/platform fundamentals. The final new P0 was an execution-security boundary around arbitrary/untrusted execution.
+
+That is sufficient evidence to mark:
+
+```text
+v0.5 CANDIDATE STRUCTURAL FREEZE
+```
+
+It is **not** evidence that:
+
+```text
+backend implementation exists
+sandbox isolation is proven
+provider integration is proven
+security penetration testing passed
+load/performance passed
+AI-03 memory/retrieval design exists
+production runtime is ready
+```
+
+Those claims require later real artifacts and direct tests.
+
+---
+
+## 74. Remaining AI-02.1 work
+
+The mega-test program is complete.
+
+```text
+NO MORE MEGA TESTS
+```
+
+The only remaining pre-AI-03 work is:
+
+```text
+1. perform the additional review explicitly requested by the user
+2. reconcile any real issue at the smallest justified boundary
+3. make an explicit AI-02.1 acceptance/closure decision
+4. only then start AI-03 Context / Retrieval / Memory
+```
+
+If the remaining review discovers only implementation/detail questions, they become downstream requirements rather than reasons to restart broad reengineering.
+
+---
+
+## 75. Current phase verdict
+
+The central thesis survives every completed stress round:
 
 > **DANTE is a domain-centered intelligence platform around replaceable cognition, not a model-centric application.**
-
-Round I exposed missing first-class responsibilities around hypothetical state, compound change, attention, disclosure, structured semantic access and conversational lifecycle.
-
-Round II attacked the reengineered model under concurrency, cumulative privacy inference, self-generated feedback, revocation, superseding intent, partial effects, crashes, corrections and multi-actor pressure. It produced the v0.3 hardenings around cumulative disclosure, causal loops, Work Supersession, BasisManifest, revocable Run validity, Attention budgeting and cancellation semantics.
-
-The Final Kill-Test broadened the attack again across agriculture, education, shift work, caregiving, legal/sensitive work, family, business, public/institutional boundaries, offline operation, large fan-out and future rich conversational surfaces. It found three P0 correctness gaps at the runtime edges:
-
-```text
-Reference / Target Resolution
-Policy Composition / Precedence + ConsequenceProfile
-Safe Result Publication / Streaming
-```
-
-and three additional hardenings:
-
-```text
-Basis temporal validity
-DANTE representation != external institutional System of Record authority
-sent != delivered != seen != acknowledged != accepted
-```
-
-All were repairable inside intelligence/runtime responsibility boundaries without creating new Domain owners or producing evidence sufficient to reopen Domain, Logical, Physical or PostgreSQL.
-
-Current v0.4 includes all earlier contracts plus these additions.
 
 Current status:
 
 ```text
 AI-02.1
 ACTIVE
-REENGINEERED TO v0.4
+v0.5 CANDIDATE STRUCTURAL FREEZE
 ROUND I COMPLETE
 ROUND II COMPLETE
 FINAL KILL-TEST COMPLETE
-ONE LAST MEGA STRESS-TEST REQUIRED
+LAST MEGA STRESS-TEST COMPLETE
+TARGETED v0.5 CONSISTENCY VERIFICATION COMPLETE
+NO MORE MEGA TESTS
+FUTURE-EXTENSIBILITY STRUCTURAL CRITERION PASS
 NOT CLOSED
+ADDITIONAL PRE-AI-03 REVIEW PENDING
 
 DOMAIN / LOGICAL / PHYSICAL / POSTGRESQL REOPEN
-NOT JUSTIFIED BY CURRENT PRESSURE-TEST EVIDENCE
+NOT JUSTIFIED BY CURRENT EVIDENCE
 
 AI-03
 NOT STARTED
-BLOCKED UNTIL AI-02.1 STRUCTURAL ACCEPTANCE
+BLOCKED UNTIL EXPLICIT AI-02.1 ACCEPTANCE
 ```
 
 No runtime, provider, backend implementation or database PASS is claimed by this document.
