@@ -136,7 +136,9 @@ function creationOptionsFromJson(
 function requestOptionsFromJson(
   options: Record<string, unknown>,
 ): PublicKeyCredentialRequestOptions {
-  const allowCredentials = decodeCredentialDescriptors(options.allowCredentials);
+  const allowCredentials = decodeCredentialDescriptors(
+    options.allowCredentials,
+  );
   return {
     ...(options as unknown as PublicKeyCredentialRequestOptions),
     challenge: base64UrlToBytes(requiredString(options, 'challenge')),
@@ -203,7 +205,9 @@ function assertionResponse(
     authenticatorAttachment: authenticatorAttachment(credential),
     clientExtensionResults: clientExtensionResults(credential),
     response: {
-      authenticatorData: bytesToBase64Url(credential.response.authenticatorData),
+      authenticatorData: bytesToBase64Url(
+        credential.response.authenticatorData,
+      ),
       clientDataJSON: bytesToBase64Url(credential.response.clientDataJSON),
       signature: bytesToBase64Url(credential.response.signature),
       userHandle:
@@ -220,7 +224,9 @@ function ensureWebAuthnAvailable(): void {
     typeof PublicKeyCredential === 'undefined' ||
     navigator.credentials === undefined
   ) {
-    throw new WebAuthnBrowserError('Passkeys are not supported by this browser.');
+    throw new WebAuthnBrowserError(
+      'Passkeys are not supported by this browser.',
+    );
   }
 }
 
