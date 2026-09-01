@@ -2,11 +2,13 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import { i18n } from '../../../bootstrap/i18n';
+import { resolveWorldFocusWorkspaceAllocation } from '../model/world-focus-workspace-allocation';
 import { WorldFocusSurfaceLayer } from './world-focus-surface-layer';
 import {
   WorldFocusSurfaceRegistry,
   type WorldFocusSurfaceRegistration,
 } from './world-focus-surface-registry';
+import { WorldFocusWorkspaceAllocationProvider } from './world-focus-workspace-allocation-context';
 import {
   WorldFocusWorkspaceHost,
   useWorldFocusWorkspace,
@@ -17,6 +19,21 @@ beforeAll(async () => {
 });
 
 afterEach(() => cleanup());
+
+function AllocatedSurfaceLayer({
+  registry,
+}: Readonly<{
+  registry: WorldFocusSurfaceRegistry<WorldFocusSurfaceRegistration>;
+}>) {
+  const workspace = useWorldFocusWorkspace();
+  const allocation = resolveWorldFocusWorkspaceAllocation(workspace.state, 1280);
+
+  return (
+    <WorldFocusWorkspaceAllocationProvider plan={allocation}>
+      <WorldFocusSurfaceLayer registry={registry} />
+    </WorldFocusWorkspaceAllocationProvider>
+  );
+}
 
 function SurfaceHarness({
   registry,
@@ -50,7 +67,7 @@ function SurfaceHarness({
       >
         Change context
       </button>
-      <WorldFocusSurfaceLayer registry={registry} />
+      <AllocatedSurfaceLayer registry={registry} />
     </>
   );
 }
@@ -120,7 +137,7 @@ describe('WorldFocusSurfaceLayer', () => {
           >
             Open future
           </button>
-          <WorldFocusSurfaceLayer registry={registry} />
+          <AllocatedSurfaceLayer registry={registry} />
         </>
       );
     }
