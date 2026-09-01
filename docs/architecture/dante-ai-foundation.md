@@ -1,37 +1,40 @@
 # DANTE AI Foundation — AI-00 Semantic and Architectural Baseline
 
-- **Status:** CURRENT BRANCH-LOCAL DESIGN BASELINE / NON-IMPLEMENTATION
+- **Status:** CURRENT BRANCH-LOCAL SEMANTIC / ARCHITECTURAL BASELINE / NON-IMPLEMENTATION
 - **Workstream:** `feature/ai-architecture`
 - **Established:** 2026-08-31
-- **Baseline:** protected `main` / branch PRE-SCOPE `fe87d3c8a71f0c56d9acf5e8acbcdb274b18f282`
-- **Scope:** consolidate the already-accepted Product, Domain, Logical, Physical and PostgreSQL implications that any future DANTE AI architecture must preserve
+- **Baseline origin:** protected `main` / original branch PRE-SCOPE `fe87d3c8a71f0c56d9acf5e8acbcdb274b18f282`
+- **Last sequencing reconciliation:** 2026-09-01
+- **Scope:** consolidate accepted Product, Domain, Logical, Physical and PostgreSQL implications that every DANTE AI architecture must preserve
 - **Implementation:** NOT STARTED by this document
-- **Provider/model/SDK selection:** OPEN
+- **Provider/model/SDK selection:** NOT DECIDED BY AI-00
 - **Database evolution:** NONE AUTHORIZED BY THIS DOCUMENT
+
+> **Sequencing note:** AI-00 is a semantic baseline, not the current work queue. Its original statement that AI-01 Interaction/Product Form Research was the next step is historical phase sequencing. That product-form work and subsequent production-engineering research / AI-02.1 reengineering have already occurred. Current continuation authority is `dante-ai-02-1-intelligence-reengineering.md` plus the current Roadmap/Project Status. Statements marked `OPEN` below mean **not decided by AI-00**; a later accepted workstream may have refined them without changing this baseline.
 
 ---
 
 ## 1. Purpose
 
-DANTE already contains substantial AI-relevant product and semantic design. This document brings that material into one current architectural baseline so future AI work does not have to reconstruct the same constraints from scattered sources or accidentally reinterpret the closed Domain / Logical / Physical model.
+DANTE already contained substantial AI-relevant product and semantic design before AI-specific implementation work began. AI-00 consolidates that material so later AI work does not reconstruct the same constraints from scattered sources or reinterpret closed Domain / Logical / Physical semantics for provider/framework convenience.
 
-This document answers:
+AI-00 answers:
 
-> **What must be true about DANTE AI before we decide its conversational form, model/provider stack, agent runtime, memory implementation, tool architecture or database changes?**
+> **What must be true about DANTE AI before later phases decide conversational form, model/provider stack, agent/runtime architecture, context/memory implementation, tool architecture or database changes?**
 
-It deliberately does **not** answer yet:
+AI-00 deliberately does **not** select:
 
-- which model or provider should be used;
-- whether OpenAI, Anthropic, another provider, local models or a multi-provider strategy should be selected;
-- whether a specific agent SDK/framework should be adopted;
+- a model/provider;
+- OpenAI vs Anthropic vs another provider vs multi-provider;
+- a specific agent SDK/framework;
 - the final chat/voice/UI interaction model;
-- the physical conversation/memory schema;
-- the final tool registry;
-- the exact autonomy UX;
-- which AI-generated intermediate states deserve persistence;
-- whether new database structures are required.
+- a physical conversation/memory schema;
+- a final tool registry;
+- exact autonomy UX;
+- which AI intermediates deserve persistence;
+- new database structures.
 
-Those are downstream decisions and must consume this baseline rather than redefine it for convenience.
+Later phases consume this baseline rather than redefine it.
 
 ---
 
@@ -39,32 +42,33 @@ Those are downstream decisions and must consume this baseline rather than redefi
 
 This file is a **consolidation and architectural derivation**, not a new Domain ontology.
 
-Statements are interpreted in three classes:
+Statements are interpreted as:
 
 ```text
 INHERITED
 already fixed by current Product / Domain / Logical / Physical / DB authority
 
 DERIVED
-architectural consequence that follows from those accepted constraints
+architectural consequence that follows from accepted constraints
 but is not itself a new Domain primitive
 
 OPEN
-future AI-specific choice that remains intentionally undecided
+not decided by AI-00
 ```
 
-Precedence remains the normal DANTE order:
+Precedence remains:
 
 ```text
 protected-main executable truth
 → accepted Product / Domain / Logical / Physical / ADR authority
 → current Database System of Record and engineering contracts
-→ this branch-local AI consolidation for its bounded scope
+→ this AI-00 consolidation for its bounded semantic scope
+→ later branch-local AI architecture for later bounded decisions
 → historical evidence
 → conversation memory
 ```
 
-If this file ever conflicts with a higher-authority accepted source, the higher authority wins and this file must be reconciled.
+If AI-00 conflicts with higher accepted authority, higher authority wins and AI-00 must be reconciled.
 
 Closed semantics are not reopened because an AI provider, ORM, vector store, SDK or agent framework would prefer a simpler shape.
 
@@ -74,58 +78,43 @@ Closed semantics are not reopened because an AI provider, ORM, vector store, SDK
 
 ### Product / North Star
 
-Primary current product authority:
+Primary current product authority includes:
 
 - `docs/product/product-identity-and-north-star.md`
 - `docs/product/scope.md`
 - `docs/product/v1-adaptive-intelligence-and-future-social.md`
 - applicable current product specifications under `docs/product/`
 
-Key product discovery evidence:
+Key product discovery evidence includes:
 
 - `docs/product/feature-discovery-simulation-2026-08.md`
 - `docs/product/multi-actor-collaboration-discovery-simulation-2026-08.md`
+- `docs/product/multi-actor-collaboration-research-2026-08.md`
 
-Research/simulation is evidence, not automatic Domain truth. The closed Domain/Logical model remains the semantic authority where discovery findings were later promoted and validated.
+Research/simulation is evidence, not automatic Domain truth.
 
 ### Domain / Logical
 
 Primary semantic sources include:
 
 - `docs/domain/README.md`
-- `docs/domain/concepts/possibility.md`
-- `docs/domain/concepts/proposal.md`
-- `docs/domain/concepts/request.md`
-- `docs/domain/concepts/decision.md`
-- `docs/domain/concepts/confirmation.md`
-- `docs/domain/concepts/acknowledgement.md`
-- `docs/domain/concepts/observation.md`
-- `docs/domain/concepts/evidence.md`
-- `docs/domain/concepts/provenance.md`
-- `docs/domain/concepts/reconciliation.md`
-- `docs/domain/concepts/criterion-evaluation.md`
-- `docs/domain/concepts/actual.md`
-- `docs/domain/concepts/authority.md`
-- `docs/domain/concepts/visibility.md`
+- current concept specifications under `docs/domain/concepts/`
 - `docs/logical-model/README.md`
 - `docs/logical-model/whole-logical-model-v1.md`
 
-The Logical Model remains CLOSED / 57 of 57 / remote-QA PASS. `WL-H01..WL-H12` remain implementation regression obligations.
+The Logical Model remains CLOSED / 57 of 57 / remote-QA PASS. `WL-H01..WL-H12` remain binding implementation regression obligations.
 
 ### Physical / PostgreSQL
 
-Primary physical and materialized sources:
+Primary sources include:
 
 - `docs/physical-model/README.md`
-- `docs/physical-model/pm-02-primary-mapping-overview-v1.md`
-- `docs/physical-model/mappings/postgresql-18.4-v1.md` — historical exact mapping design within the selected PostgreSQL 18 major family
-- `docs/development/backend-cp6-01-concrete-persistence-coverage.md`
-- `docs/development/backend-cp6-01-concrete-persistence-coverage-part-2.md`
+- accepted Physical mapping/selection material;
 - `docs/development/backend-cp6-02-postgresql-persistence-constitution.md`
 - `docs/decisions/ADR-010-postgresql-persistence-constitution.md`
 - `docs/database/README.md`
 - `docs/database/dictionary/README.md`
-- current Alembic / SQLAlchemy / PostgreSQL executable truth
+- current Alembic / SQLAlchemy / PostgreSQL executable truth.
 
 Current protected-main database baseline consumed by this document:
 
@@ -148,9 +137,9 @@ materialized views      0
 RLS policies            0
 ```
 
-Current recovery/lifecycle evolution is integrated. Remote backup provider remains TBD / not activated and production/cloud recovery is not claimed.
+Current Recovery/lifecycle evolution is integrated. Remote backup provider remains TBD / not activated and production/cloud recovery is not claimed.
 
-Permanent DB consistency invariant remains:
+Permanent DB consistency invariant:
 
 ```text
 Database Architecture & Reference
@@ -160,17 +149,17 @@ Database Architecture & Reference
 ≈ real PostgreSQL schema
 ```
 
-This AI workstream must not create a parallel source of canonical truth that bypasses that invariant.
+AI must not create a parallel source of canonical truth that bypasses this invariant.
 
 ---
 
 ## 4. Product identity of DANTE AI
 
-### INHERITED — DANTE is not a chatbot or a model
+### INHERITED — DANTE is not a chatbot or model
 
-The Product North Star explicitly requires that DANTE may use AI deeply without being equivalent to a chatbot or to a specific AI model.
+DANTE may use AI deeply without being equivalent to a chatbot or a specific model/provider.
 
-Durable product value must remain in DANTE's structured representation of life:
+Durable product value remains in DANTE's structured representation of life:
 
 - context;
 - history;
@@ -193,9 +182,9 @@ DANTE AI != chat transcript
 DANTE AI != autonomous mutation engine
 ```
 
-### DERIVED — the model is a replaceable cognitive component
+### DERIVED — model is replaceable cognition
 
-A future model/provider may contribute language understanding, reasoning, extraction, generation, planning support and tool selection, but DANTE owns:
+A model/provider may contribute language understanding, reasoning, extraction, generation, planning support and tool selection, but DANTE owns:
 
 ```text
 semantic meaning
@@ -214,7 +203,7 @@ Provider/model replacement must not redefine those concepts.
 
 ## 5. DANTE cognitive loop
 
-The Product North Star uses the non-mandatory operating concept:
+The Product North Star uses the non-mandatory operating idea:
 
 ```text
 UNDERSTAND
@@ -227,15 +216,11 @@ UNDERSTAND
 → LEARN & ADAPT
 ```
 
-This is **not** a required technical pipeline and does not imply eight services or eight agents.
-
-It is, however, a useful semantic map for future AI behavior.
+This is **not** a required technical pipeline and does not imply eight services or agents.
 
 ### UNDERSTAND
 
 Potential inputs include authorized current state, history, provenance, Observations, relationships, commitments, constraints and relevant external/provider information.
-
-The AI may form an interpretation, but:
 
 ```text
 interpretation != canonical truth
@@ -245,14 +230,14 @@ interpretation != canonical truth
 
 DANTE may surface a problem, opportunity, pattern or candidate future.
 
-A system-discovered candidate may become a noncanonical candidate or, when intentionally retained under the accepted semantic rules, a canonical Possibility.
-
 ```text
 AI discovery != user preference
 AI discovery != user intent
 AI discovery != Goal
 AI discovery != Decision
 ```
+
+A retained candidate may become a canonical Possibility only when it genuinely satisfies accepted Possibility semantics.
 
 ### ORCHESTRATE
 
@@ -262,7 +247,7 @@ Solver/model output is input to reasoning, not accepted effect by itself.
 
 ### DECIDE
 
-Decision has existing bounded semantics. The AI may support a Decision by presenting alternatives, Evidence, rationale or scenario effects, but:
+AI may support a Decision with alternatives, Evidence, rationale or scenario effects, but:
 
 ```text
 AI recommendation != Decision
@@ -272,11 +257,11 @@ Decision != resulting domain state
 
 ### PLAN & COORDINATE
 
-DANTE may help construct or revise Goals, Plans, Activities, Events, Routines, Schedules, Responsibility, Participation and resource coordination while preserving their distinct ownership and history.
+DANTE may help construct or revise Goals, Plans, Activities, Events, Routines, Schedules, Responsibility, Participation and resource coordination while preserving their distinct ownership/history.
 
 ### ACT
 
-Execution must occur through governed DANTE application capabilities and provider boundaries.
+Execution occurs through governed DANTE application capabilities and provider boundaries.
 
 ```text
 LLM output != database mutation
@@ -285,7 +270,7 @@ LLM tool request != accepted effect
 
 ### OBSERVE
 
-What happened is represented through the appropriate existing semantics such as Actual, Session, Observation, Outcome, Participation and Confirmation where applicable.
+What happened is represented through appropriate existing semantics such as Actual, Session, Observation, Outcome, Participation and Confirmation where applicable.
 
 Planned time elapsing does not fabricate Actual or completion.
 
@@ -293,32 +278,32 @@ Planned time elapsing does not fabricate Actual or completion.
 
 DANTE may derive patterns and propose adaptation, but observed behavior does not silently overwrite declared preference and correlation does not prove causation.
 
-When evidence is insufficient, a correct DANTE behavior is to leave state unchanged, preserve uncertainty or ask for clarification/Confirmation.
+When evidence is insufficient, correct behavior may be to leave state unchanged, preserve uncertainty or ask for clarification/Confirmation.
 
 ---
 
-## 6. Semantic boundaries the AI must preserve
+## 6. Semantic boundaries AI must preserve
 
-The AI architecture must use the existing semantic language instead of creating a parallel set of generic `AIThing`, `AIAction`, `AIState` or `memory_fact` meanings.
+AI architecture must use existing semantic language rather than creating a parallel generic `AIThing`, `AIAction`, `AIState` or `memory_fact` ontology.
 
-| Semantic family | What it means for AI | What AI must not collapse it into |
+| Semantic family | AI meaning | Must not collapse into |
 |---|---|---|
-| Possibility | candidate future retained for consideration | Goal, user preference, Decision, Plan |
-| Proposal | materially specific candidate put forward for consideration | effective state, Decision, Agreement |
+| Possibility | retained candidate future | Goal, preference, Decision, Plan |
+| Proposal | materially specific candidate offered for consideration | effective state, Decision, Agreement |
 | Request | bounded ask for action/information/response/change | resulting effect or fulfillment |
 | Decision | bounded question resolved to a result | Authority, mutation, Actual |
-| Confirmation | contextual attestation toward a specific target/version | truth, AI confidence, Authority |
-| Acknowledgement | explicit taking-notice of target/version/change | acceptance, Confirmation, comprehension |
-| Observation | measured/perceived/reported/derived fact/assertion | universal fact store, Actual, Outcome |
+| Confirmation | contextual attestation toward a target/version | truth, AI confidence, Authority |
+| Acknowledgement | explicit taking-notice | acceptance, Confirmation, comprehension |
+| Observation | measured/perceived/reported/derived assertion | universal fact store, Actual, Outcome |
 | Evidence | contextual evaluative use of information | source record itself, truth |
-| Provenance | how a material record/version came to exist/change | truth, Authority, rationale |
-| Reconciliation | handling of materially competing states/assertions | latest-wins, AI-confidence-wins, universal merge record |
-| Criterion/Evaluation | rule + bounded assessment over Evidence | universal progress score, automatic effect |
+| Provenance | how material record/version came to exist/change | truth, Authority, rationale |
+| Reconciliation | handling materially competing states/assertions | latest-wins, AI-confidence-wins, universal merge |
+| Criterion/Evaluation | rule + bounded assessment over Evidence | universal score, automatic effect |
 | Actual | realization of a specific expectation/intention | Observation, Session, generic reality row |
 | Authority | legitimate bounded governance capability | Account, Actor, technical AuthZ, AI capability |
 | Visibility | bounded information exposure capability | Authority, arbitrary downstream use |
 
-The existing non-collapse rules remain binding, including:
+Binding non-collapse rules include:
 
 ```text
 Possibility != Goal != Proposal != Decision != Plan != Activity
@@ -334,13 +319,11 @@ derived projection != canonical truth
 
 ---
 
-## 7. AI as Actor without fabricated identity or authority
+## 7. AI as Actor without fabricated identity or Authority
 
-### INHERITED
+Existing Provenance/Domain semantics allow AI/system to materially act as proposer, transformer, importer or corrector where Actor semantics genuinely apply.
 
-Existing Provenance/Domain semantics allow an AI/system to materially act as proposer, transformer, importer or corrector where Actor semantics genuinely apply.
-
-That does **not** turn the AI into:
+That does **not** turn AI into:
 
 ```text
 Person
@@ -349,7 +332,7 @@ Principal
 Authority
 ```
 
-A future AI action must preserve the actual human/system/provider roles involved. For example:
+Representative lineage:
 
 ```text
 source document
@@ -362,15 +345,11 @@ source document
 
 The accepted record must not be represented as though the user directly authored the original extracted value.
 
-Where consequence warrants it, provenance may need model/rule/version identifiers, source material-state references, transformation basis and correcting/confirming Actor context.
+Where consequence warrants it, provenance may retain model/rule/version identifiers, source material-state references, transformation basis and correcting/confirming Actor context.
 
 ---
 
-## 8. Epistemic integrity: knowing, inferring and accepting are different
-
-DANTE must preserve honest uncertainty.
-
-### INHERITED
+## 8. Epistemic integrity
 
 ```text
 AI inference != confirmed fact
@@ -381,15 +360,13 @@ Authority != objective truth
 absence / unknown != explicit negative
 ```
 
-An AI-generated interpretation can be high-confidence and still remain noncanonical or unresolved.
+AI interpretation may be high-confidence and still remain noncanonical/unresolved.
 
-A future reasoning result may be represented transiently, as a derived projection, as an unresolved/candidate interpretation, as a material Evaluation, as a Proposal, as a Possibility, or through another specific semantic family depending on what it actually means.
+A reasoning result may remain transient, derived, unresolved/candidate, an Evaluation, Proposal, Possibility or another specific semantic family according to meaning.
 
-No one universal `AI result` persistence root is pre-approved.
+No universal `AI result` persistence root is pre-approved.
 
-### Correct uncertainty is a valid result
-
-DANTE may truthfully conclude:
+Correct outcomes include:
 
 ```text
 unknown
@@ -400,13 +377,13 @@ no safe action
 no change recommended
 ```
 
-It must not manufacture a winner merely to appear decisive.
+DANTE must not manufacture a winner merely to appear decisive.
 
 ---
 
 ## 9. Canonical and noncanonical state layers
 
-The accepted Physical Model already distinguishes:
+Accepted Physical architecture distinguishes:
 
 ```text
 canonical DANTE state
@@ -418,38 +395,32 @@ runtime / security state
 transient computation state
 ```
 
-### DERIVED AI placement
-
-Most model computation naturally begins outside canonical truth:
+Most model computation starts outside canonical truth:
 
 ```text
 transient reasoning
 → derived interpretation / candidate / unresolved state
 → applicable semantic review/governance
-→ canonical effect only when the owning domain operation legitimately establishes it
+→ canonical effect only when owning domain operation legitimately establishes it
 ```
 
-This is the central architectural barrier against accidental AI truth laundering.
+This is the barrier against AI truth laundering.
 
-### Important CP6 precedent
-
-The CP6 persistence coverage explicitly preserves:
+CP6 precedent remains:
 
 ```text
 AI candidate before acceptance
 → noncanonical
 
-Possibility retained canonically under its actual semantics
+Possibility retained canonically under actual Possibility semantics
 → native Possibility identity may exist
 ```
 
-Therefore an AI generation does not deserve canonical persistence merely because it exists, and a meaningful retained Possibility does not have to remain trapped in a chat transcript merely because it originated from AI.
-
 ---
 
-## 10. Context construction is an authorization/disclosure problem, not only retrieval
+## 10. Context is an authorization/disclosure problem, not only retrieval
 
-The multi-actor simulation establishes a recurring product structure:
+Multi-actor product evidence establishes:
 
 ```text
 shared canonical reality
@@ -459,9 +430,7 @@ actor-scoped personal overlays
 selective disclosure
 ```
 
-One shared fact may have different personal meaning, visibility, responsibility and planning consequences for different actors.
-
-### INHERITED Visibility rules
+Visibility rules include:
 
 ```text
 Visibility(projection) != Visibility(source)
@@ -471,9 +440,7 @@ not visible != nonexistent
 Visibility != arbitrary data-use permission
 ```
 
-A private source may produce a safe visible consequence.
-
-Example:
+A private source may produce a safe visible consequence:
 
 ```text
 PRIVATE SOURCE
@@ -485,11 +452,7 @@ Unavailable 18:30–19:30
 recipient-visible
 ```
 
-The AI may be allowed to process private context for a bounded purpose without being allowed to disclose the private source or its provenance to the recipient.
-
-### DERIVED context gate
-
-Future DANTE context construction must distinguish at least conceptually:
+Future AI context construction must conceptually distinguish:
 
 ```text
 may process this information for purpose P
@@ -497,540 +460,306 @@ may expose this representation to recipient R
 may expose its source/provenance
 may use it to evaluate or plan
 may propose an effect
-may make or request a governed mutation
+may make/request a governed mutation
 ```
 
-The exact security implementation is OPEN. The semantic distinction is not.
+Exact security implementation is downstream. The distinction is not.
 
 ---
 
 ## 11. Multi-actor reasoning must not collapse everybody into `user`
 
-The collaboration simulation repeatedly establishes that real coordination may involve:
+Real coordination may involve:
 
-- a subject different from the account holder;
-- an actor different from the subject;
-- a recorder different from the observer;
-- a responsible party different from the performer;
-- a participant without Authority;
-- an Authority holder without a DANTE Account;
-- a non-DANTE participant;
-- a representative acting on behalf of someone else;
-- private sources whose consequence can be shared without the source;
-- specialist systems of record that DANTE coordinates around rather than replaces.
+- subject different from account holder;
+- actor different from subject;
+- recorder different from observer;
+- responsible party different from performer;
+- participant without Authority;
+- Authority holder without DANTE Account;
+- non-DANTE participant;
+- representative acting for someone else;
+- private sources whose consequence can be shared without source;
+- specialist systems that DANTE coordinates around rather than replaces.
 
-Therefore future AI prompts, context objects, tools and provenance must not reduce material operations to a single ambiguous `user_id` when those roles differ.
+Prompts, context objects, tools and provenance must carry enough role information for the material operation rather than one ambiguous `user_id`.
 
 ---
 
-## 12. Proposal, Request, Decision and effect form a governance chain — not one tool call
+## 12. Proposal, Request, Decision and effect are a governance chain
 
-Natural-language commands often contain semantics richer than the text itself.
-
-Example:
+Natural language may express different semantics:
 
 ```text
 "Maybe move English to 18:30"
-→ may express a candidate / Possibility / Proposal context
+→ candidate / Possibility / Proposal context
 
 "Move English to 18:30"
-→ Request for a bounded change
+→ Request for bounded change
 
 "I decided to keep it at 17:00"
-→ may establish a Decision under the applicable context
+→ may establish a Decision in the applicable context
 
 Schedule current accepted state
 → remains owned by Schedule
 
 Actual later execution
-→ remains separate again
+→ remains separate
 ```
 
-The model may help interpret the language, but the application/domain layer owns the effective transition.
+The model interprets language; application/domain owns effective transition.
 
-### DERIVED tool-effect classification
-
-A useful engineering classification remains:
+Tool/effect classes conceptually include:
 
 ```text
 READ
-retrieve/inspect authorized state
-
 PROPOSE
-produce a candidate without making it effective
-
 ACT
-request a governed application capability that may produce an effect
 ```
 
-This classification is **not** a replacement ontology for Possibility/Proposal/Request/Decision/etc. It is an implementation-level effect classification for future tool/runtime design.
+Those classes do not create one generic canonical AI-action ontology.
 
 ---
 
-## 13. Authority, technical AuthZ and AI autonomy are separate
-
-### INHERITED
+## 13. Authority, technical AuthZ and autonomy remain distinct
 
 ```text
-Actor != Authority
-Account != Authority
-Principal != Authority
-technical authorization != Domain Authority
-can see != can govern
-may propose != may make effective
+Authority
+= legitimate semantic governance capability
+
+AuthZ decision
+= technical/runtime decision whether this Principal/request may perform this operation now
+
+Autonomy
+= product policy about how much DANTE may do without fresh interaction, within actual Authority/AuthZ/Consent/Visibility boundaries
 ```
-
-An AI may reason or propose without possessing Authority to enact a shared-domain change.
-
-### INHERITED product autonomy direction
-
-The adaptive-intelligence product work already rejects one universal AI permission level and identifies scoped autonomy such as:
 
 ```text
-1. suggestions only
-2. propose changes + require confirmation
-3. automatically apply minor changes inside approved limits
-4. manage a defined scope autonomously under explicit constraints
+AI capability != Authority
+technical token != Authority
+can invoke tool != may govern target
 ```
 
-### DERIVED autonomy policy dimensions
-
-A future policy may need to vary by:
-
-```text
-actor / principal context
-target capability
-item/type/domain
-scope / calendar / program / routine / individual item
-material consequence
-change magnitude
-shared vs private effect
-authority basis
-visibility/disclosure implications
-time window
-risk or provider side effect
-```
-
-The exact policy model is OPEN.
-
-A global `ai_autonomy=true` flag is not an adequate semantic design.
+Autonomy is scoped, not a global boolean.
 
 ---
 
-## 14. Consequential mutation must survive stale reasoning
+## 14. Consequential effects require expected-state semantics
 
-AI reasoning can take long enough for current state to change underneath it.
-
-The accepted PostgreSQL physical contract already addresses stale consequential mutation through expected material state.
-
-Conceptual operation:
+A consequential mutation must not use last-write-wins simply because an LLM/tool invoked it.
 
 ```text
-1. locate current semantic owner / facet
-2. verify current MaterialStateRef == expected MaterialStateRef
-3. enforce required invariant coordination / locking
-4. establish the new owner-specific material state
-5. update current accepted binding atomically
-6. write bounded provenance / idempotency metadata where applicable
-7. commit
+read material state V1
+→ reason/propose
+→ current state later becomes V2
+→ attempt based on V1
+→ conflict / reread / reconcile
 ```
 
-Mismatch means:
+`MaterialStateRef` remains a semantic stable address, not MVCC/xmin/provider revision/ETag.
+
+Idempotency and identity are different:
 
 ```text
-conflict
-→ re-read / re-evaluate / reconcile
+idempotency != semantic identity
 ```
-
-not:
-
-```text
-model reasoned from old state
-→ silently overwrite new reality
-```
-
-Future AI tools that can make consequential changes must consume normal application mutation contracts and cannot bypass expected-state/concurrency semantics.
 
 ---
 
-## 15. Reconciliation and the future Resolution surface
+## 15. Provider state is not canonical state
 
-Reconciliation already permits:
+External/provider systems may have current state, revisions, IDs, thread/memory state and side-effect outcomes.
 
-- detect competing states without resolving them;
-- keep conflict unresolved;
-- select under an explicit bounded basis;
-- combine compatible facets;
-- correct or supersede while preserving history;
-- escalate to a human/specialist;
-- use a Decision where a bounded resolution itself matters;
-- use deterministic authorized policy without fabricating a human Decision.
-
-Rejected universal winner rules include:
+None automatically becomes DANTE canonical truth.
 
 ```text
-latest wins
+provider event id != DANTE identity
+provider revision != MaterialStateRef
+provider thread != DANTE canonical memory
+provider model memory != DANTE current fact
+```
+
+DANTE may represent relevant external reality canonically for personal coordination while the external system remains the institutional/provider System of Record for its own domain.
+
+---
+
+## 16. Reconciliation is not universal latest-wins
+
+Conflicting sources require the appropriate reconciliation semantics.
+
+Forbidden universal policies include:
+
+```text
+latest timestamp always wins
 provider always wins
 user always wins
-creator always wins
-manager always wins
-highest AI confidence wins
+AI confidence always wins
+highest Authority always means objective truth
 ```
 
-### DERIVED product implication
+Authority, Provenance and source identity are evidence/context, not universal truth functions.
 
-A future Home `Resolution` surface should not be defined as merely an AI inbox or notification center.
-
-AI may:
-
-```text
-detect a conflict
-explain competing states
-retrieve relevant Evidence / Provenance
-propose a resolution
-ask for Confirmation or Decision
-assist reconciliation
-```
-
-but:
-
-```text
-AI != Reconciliation result
-Resolution UI != AI ontology
-```
-
-The final frontend form remains downstream scope.
+Unresolved conflict may remain unresolved.
 
 ---
 
-## 16. Memory: DANTE must not create a second truth database
-
-### INHERITED constraint
-
-PostgreSQL remains the sole canonical persistence and material-history authority for DANTE.
-
-Search, embeddings, conversation caches, provider threads, agent sessions, model context, derived summaries and runtime journals cannot become a second canonical reality merely because they are convenient to query.
-
-### DERIVED memory classes to preserve conceptually
-
-Future AI architecture will likely need to distinguish at least:
+## 17. Search, solver and model confidence do not establish truth
 
 ```text
-canonical DANTE state
-material history
-conversation transcript / communication context
-working context for one reasoning run
-retrieved source material
-derived summary / projection
-AI inference / candidate interpretation
-user-declared preference
-observed behavior pattern
-retained canonical Possibility / other real domain object
-provider/runtime session state
-```
-
-These are not pre-approved database tables.
-
-The memory architecture remains OPEN, but any implementation must preserve:
-
-```text
-summary != source
-embedding != source truth
-conversation statement != automatically canonical domain fact
-observed pattern != declared preference
-AI memory != Authority
-provider thread state != DANTE canonical history
-```
-
----
-
-## 17. Provenance, explanation and historical integrity
-
-DANTE must be able to preserve materially useful lineage without retaining everything forever.
-
-AI-mediated extraction and transformation must not hide its origin.
-
-Where material, future AI provenance may need to answer:
-
-```text
-which source/material state was used?
-which model/rule/version transformed it?
-which Actor/system proposed or changed it?
-what was the user's later correction/Confirmation/Decision?
-what Authority/policy basis governed the effect?
-what expected state was the operation based on?
-which result became canonical and which remained provider/runtime state?
-```
-
-Decision rationale remains distinct from Provenance.
-
-Historical correction must not rewrite earlier lineage to look as though the corrected value had always been known.
-
-Retention/minimization also remains binding: provenance is not a backdoor archive for deleted sensitive payloads.
-
----
-
-## 18. Execution architecture implications
-
-No new runtime is selected by this document.
-
-The accepted Physical stack already establishes trigger-based capability boundaries:
-
-```text
-normal backend/application transaction
-→ ordinary bounded synchronous work
-
-PostgreSQL transactional outbox
-→ real Class-A bounded asynchronous requirement
-
-Restate
-→ real Class-B durable workflow requirement
-```
-
-Restate was selected as a target for workflows that genuinely need durable progress across waits/callbacks/human approval/provider uncertainty. It is not automatically activated for every AI response.
-
-If AI eventually drives a workflow such as:
-
-```text
-propose provider action
-→ wait for user approval
-→ hours later execute
-→ provider timeout / unknown result
-→ reconcile
-```
-
-then durable workflow infrastructure may be justified.
-
-Even there:
-
-```text
-Restate journal != Decision
-Restate journal != Confirmation
-Restate journal != Actual
-provider outcome != canonical DANTE truth
-```
-
-The owning DANTE semantics remain in PostgreSQL/application boundaries.
-
----
-
-## 19. Solver, retrieval and deterministic systems are peers in reasoning — not truth shortcuts
-
-DANTE AI is expected to combine more than an LLM.
-
-Potential reasoning inputs/capabilities may include:
-
-- deterministic queries;
-- PostgreSQL FTS / `pg_trgm` / `unaccent`;
-- pgvector-backed semantic retrieval when a real use case activates it;
-- rules / Criteria / constraints;
-- OR-Tools CP-SAT for justified planning/optimization capabilities;
-- provider APIs;
-- specialist tools;
-- external AI;
-- human input.
-
-But:
-
-```text
-retrieval rank != truth
-embedding similarity != Evidence weight automatically
-solver UNKNOWN != INFEASIBLE
-solver output != accepted plan
-provider state != canonical state
+search rank != truth
+vector similarity != truth
+solver optimum != accepted decision
 model confidence != Confirmation
 ```
 
-The exact reasoning/orchestration runtime remains OPEN.
+Search/retrieval finds candidates. The authoritative source/state establishes current meaning where applicable.
+
+Solver output is candidate/derived until governed acceptance.
 
 ---
 
-## 20. Findings from the personal feature-discovery simulation
+## 18. AI persistence is not pre-approved as universal tables
 
-The personal simulation repeatedly produced reusable pressure for:
-
-- low-friction capture;
-- planned vs actual separation;
-- longitudinal observations/history;
-- review queues for ambiguity or incomplete classification;
-- scenario comparison before meaningful replanning;
-- realistic capacity rather than filling every free minute;
-- criteria/evaluation-backed progress rather than fabricated percentages;
-- adaptive planning;
-- triggers / conditional behavior;
-- explainability / reversible changes;
-- external information and specialist boundaries;
-- user control over what becomes durable.
-
-### AI implication
-
-DANTE AI must be able to help turn unstructured input and fragmented context into structured candidates **without pretending classification is already accepted truth**.
-
-It must also be able to operate when the best result is:
+AI-00 explicitly rejects architecture shortcuts such as:
 
 ```text
-capture now
-classify later
-ask for review
-leave unresolved
-propose rather than apply
+one universal AIAction table
+one universal memory_fact table
+one universal AIReviewItem table
+store every thought/tool result forever
+one provider-thread table as canonical memory
 ```
+
+Persistence must be justified by what the state actually means and which semantic/runtime owner legitimately owns it.
 
 ---
 
-## 21. Findings from the multi-actor collaboration simulation
+## 19. Retention, redaction and anti-resurrection
 
-The multi-actor simulation repeatedly produced:
+If later phases introduce conversation history, summaries, embeddings, provider caches/threads, learned patterns or other derived state, deletion/retirement rules apply to those representations too.
 
-- shared canonical facts + personal overlays;
-- participant state distinct from actual participation;
-- proposal distinct from confirmation/effective state;
-- responsibility distinct from assignment/performance/authority;
-- coordination without exposing full calendars;
-- selective disclosure;
-- external/non-DANTE participants;
-- temporary substitution without history rewrite;
-- role-specific views;
-- shared resources/capacity/prerequisites;
-- authoritative external facts distinct from personal planning targets;
-- changes that may require acknowledgement;
-- conflicting evidence / unresolved state;
-- specialist-system boundaries;
-- personal autonomy around shared commitments.
-
-### AI implication
-
-DANTE AI cannot assume:
+Deleted/retired information must not reappear as eligible context through:
 
 ```text
-one user
-one view
-one truth source
-one authority
-one visibility scope
-one globally valid interpretation
+embedding
+summary
+cache
+provider thread
+runtime checkpoint
+search index
 ```
 
-Context, explanation, proposal and action must be recipient-, purpose-, scope- and authority-aware.
+Recovery copies remain noncanonical and subject to established anti-resurrection constraints.
 
 ---
 
-## 22. Database / CP6 non-regression contract for AI
+## 20. Conversation/session/runtime state is not canonical life truth
 
-AI implementation must consume the current database instead of creating a convenience ontology beside it.
-
-### Reference families remain exactly distinct
+Future interaction may need:
 
 ```text
-NativeRef
-ScopedRecordRef
-MaterialStateRef
-ExternalRef
+conversation/thread identity
+turn/message state
+working context
+compaction
+streaming state
+long-running Run state
+provider thread/cache state
 ```
 
-No generic `AIRef` or universal `kind + uuid` identity root is justified by AI needs alone.
+Those are not automatically canonical DANTE state.
 
-### Existing PostgreSQL thesis remains binding
-
-```text
-owner-specific canonical tables/families
-+ owner-specific material-state/history
-+ specific typed relations
-+ bounded technical address/control structures only where genuinely required
-+ separate provider / projection / runtime concerns
-```
-
-Rejected as AI shortcuts:
-
-```text
-universal Entity / Thing table
-universal Relationship / edge table
-universal Fact table
-universal AI memory fact table as canonical truth
-EAV/property bag for required semantics
-JSONB required-semantic escape hatch
-universal event-log ontology
-provider thread as canonical history
-vector store as canonical knowledge database
-```
-
-### Same-change rule remains binding
-
-If future AI work genuinely requires a structural DB change, that future reviewed change must reconcile as applicable:
-
-```text
-Alembic migration
-SQLAlchemy metadata/mappings
-Database Dictionary
-human-readable Database Architecture & Reference
-direct database tests
-recovery/operational harnesses affected by head/topology
-current documentation
-```
-
-Applied migrations remain immutable.
-
-This AI-00 document authorizes **none** of those changes.
+Later AI-02.1 refines `Interaction Session != Run != Worker`; that refinement is consistent with this baseline and does not change AI-00 semantics.
 
 ---
 
-## 23. Recovery / retention implications for AI
+## 21. Durable execution is separate from model reasoning
 
-The current database includes explicit MaterialState retirement/redaction and anti-resurrection behavior.
+Long-running/waiting/callback/reconciliation work may require durable runtime semantics.
 
-Future AI features must not accidentally reintroduce protected information through:
+```text
+model loop != durable workflow authority
+```
 
-- embeddings;
-- conversation summaries;
-- provider threads;
-- tool caches;
-- traces;
-- derived search indexes;
-- runtime journals;
-- reconstructed prompt context.
+A model is not a timer, crash-recovery journal or accepted-effect authority.
 
-### DERIVED requirement
+A technically long computation does not necessarily require durable workflow; a short operation with outcome ambiguity might.
 
-Any persisted AI-derived representation that can retain protected semantic payload must eventually participate in an explicit retention/redaction/anti-resurrection design appropriate to its storage and threat boundary.
+Exact durable-runtime activation remains downstream and evidence-driven.
 
-The exact design is OPEN because no AI persistence is yet selected.
+---
 
-The existing recovery suppression ledger remains technical DR evidence only and must not be repurposed as AI/domain memory.
+## 22. Specialist systems remain specialist
+
+DANTE should connect life across tools without pretending to replace every specialist system.
+
+Examples:
+
+```text
+hospital roster
+school register
+clinical record
+banking ledger
+court/case system
+government/institutional record
+```
+
+DANTE may canonically represent a relevant personal commitment/fact while the external system remains authoritative for its institutional record.
+
+---
+
+## 23. External intelligence remains bounded
+
+DANTE may:
+
+```text
+use external AI/model capabilities
+expose bounded DANTE capabilities to external assistants/agents
+```
+
+External intelligence does not inherit Person/Principal/Authority merely because it connects technically.
+
+Delegation, purpose, scope, recipient and disclosure/effect governance remain explicit.
+
+Protocol choices such as MCP/A2A are adapters, not Domain ontology.
 
 ---
 
 ## 24. Security, privacy and inference-leakage obligations
 
-`WL-H11` and `WL-H12` remain especially important for AI:
+`WL-H11` and `WL-H12` remain especially important:
 
 ```text
 consequential AuthZ provenance
 non-interference / inference leakage
 ```
 
-AI adds pressure because a response can disclose information indirectly even when the raw row is not returned.
+AI adds pressure because responses can disclose information indirectly even when raw rows are hidden.
 
-Future design must pressure at least:
+Future/current AI architecture must pressure at least:
 
 - hidden-source leakage through summaries;
 - existence leakage through counts/ranking/phrasing;
 - relationship leakage;
 - provenance leakage;
-- cross-person/cross-scope context contamination;
+- cross-person/cross-scope contamination;
 - unauthorized secondary use;
-- tool output injection into later reasoning;
-- untrusted external content influencing tool/action decisions;
-- traces/logs retaining sensitive prompts/tool results.
+- tool-output injection into later reasoning;
+- untrusted external content influencing action decisions;
+- traces/logs retaining sensitive prompts/tool results;
+- cumulative disclosure across multiple individually safe queries;
+- unsafe realtime/streaming publication;
+- generated-code credential/egress abuse.
 
-Exact prompt-injection defenses, data-use policies, trace redaction and provider retention controls are **OPEN AI-security design**. They must be evaluated before production activation rather than assumed solved by an SDK.
+AI-02.1 later establishes concrete responsibility boundaries for many of these; AI-00 itself does not select their implementation technology.
 
 ---
 
 ## 25. Observability, cost and evaluation
 
-No AI quality/runtime claim is made yet.
+No AI quality/runtime claim is made by AI-00.
 
-Future implementation must distinguish at least:
+Future implementation must distinguish:
 
 ```text
 model success != task success
@@ -1039,34 +768,35 @@ canonical mutation success != provider side-effect success
 latency != usefulness
 low token cost != good decision
 high confidence != semantic correctness
+telemetry != audit
 ```
 
-Likely future evidence dimensions include:
+Likely evidence dimensions include:
 
 - response/tool latency;
 - token/model cost;
 - retrieval quality;
 - tool selection correctness;
-- authorization/visibility policy correctness;
+- authorization/visibility correctness;
 - structured-output validity;
 - stale-state conflict handling;
 - hallucinated state/action rate;
 - clarification/abstention quality;
-- proposal acceptance/rejection patterns;
+- proposal acceptance/rejection;
 - canonical effect correctness;
 - provider reconciliation outcomes;
 - privacy/inference leakage tests;
-- regression evals over DANTE scenarios.
+- DANTE scenario regression evals.
 
-Exact metrics, eval framework and tracing stack are OPEN.
+Exact metrics/framework/tracing stack are later implementation choices.
 
 ---
 
 ## 26. AI-00 inherited/derived invariants
 
-The following form the current AI foundation and must be treated as regression constraints unless a higher-authority accepted decision deliberately supersedes them.
+These remain regression constraints unless higher accepted authority deliberately supersedes them.
 
-1. **DANTE is not a chatbot and not a specific AI model/provider.**
+1. **DANTE is not a chatbot and not a specific model/provider.**
 2. **PostgreSQL remains the sole canonical persistence + material-history authority.**
 3. **AI/solver/provider output is not an accepted canonical effect.**
 4. **AI inference is not a confirmed fact.**
@@ -1087,92 +817,76 @@ The following form the current AI foundation and must be treated as regression c
 19. **AI-mediated lineage must not launder source/model/provider/user roles.**
 20. **Historical correction must not rewrite past state or provenance.**
 21. **DANTE may correctly abstain, defer, ask, propose or leave conflict unresolved.**
-22. **Specialist systems can remain bounded sources of record; DANTE need not replace them.**
+22. **Specialist systems can remain bounded Systems of Record; DANTE need not replace them.**
 23. **AI implementation does not justify universal Entity/Relationship/Fact/memory ontologies.**
-24. **Retention/redaction/privacy requirements apply to AI-derived persistence too if such persistence is later introduced.**
+24. **Retention/redaction/privacy requirements apply to AI-derived persistence too if later introduced.**
 
 ---
 
-## 27. Explicitly open AI architecture questions
+## 27. Questions not decided by AI-00
 
-The following are not decided by AI-00:
+The following list is deliberately scoped as **not decided by AI-00**. Some items may now be partly refined by AI-02.1 or later project work; current status is owned by the current architecture/roadmap, not by this historical list.
 
 ### Product / interaction
 
-- Is DANTE primarily one persistent conversational presence, several contextual surfaces, command/search plus chat, or a hybrid?
-- How do Home AI, Capture and Resolution relate without becoming one overloaded inbox?
-- How much should AI act proactively vs only on request?
-- How should DANTE expose uncertainty, proposals, rationale, sources and pending actions?
-- What should voice, attachments and multimodal interaction mean?
+- exact conversational/surface composition;
+- Home AI/Capture/Resolution presentation relationship;
+- exact proactivity UX;
+- exact uncertainty/rationale/source presentation;
+- exact voice/attachment/multimodal UX.
 
 ### Model/provider strategy
 
-- OpenAI vs Anthropic vs others vs multi-provider;
-- direct APIs vs provider agent SDKs;
-- model routing / fallback;
-- structured output guarantees;
-- multimodal and real-time requirements;
-- provider data-retention / regional / privacy posture;
-- local models where justified.
+- provider/model set;
+- direct API vs SDK mechanics;
+- routing/fallback;
+- provider data-retention/regional posture;
+- local-model activation.
 
 ### Runtime / agent architecture
 
-- one orchestrator vs specialist agents;
-- who owns the tool loop;
-- model-directed vs deterministic routing;
-- interruption/cancellation;
-- durable workflow activation criteria;
-- bounded parallelism;
-- retry/reconciliation semantics;
-- provider-independent internal contracts.
+- exact orchestration implementation;
+- exact interruption/cancellation mechanics;
+- exact durable-runtime activation per workload;
+- exact parallelism/retry mechanics;
+- exact provider-independent internal adapter implementation.
 
-### Context / retrieval
+### Context / retrieval / memory
 
-- context assembly contract;
-- search/retrieval ranking;
+- context assembly implementation;
+- retrieval ranking;
 - semantic retrieval activation;
-- freshness and MaterialState basis;
-- privacy-aware retrieval/projection;
-- attachment/document ingestion.
-
-### Conversation / memory
-
-- conversation/thread identity;
-- turn/message persistence;
-- working memory;
-- summaries;
-- long-term remembered information;
-- what deserves canonical promotion;
-- retention/deletion;
 - embeddings/index lifecycle;
-- portability across model providers.
+- conversation persistence;
+- working/long-term memory;
+- compaction/summaries;
+- retention/deletion implementation;
+- provider portability mechanics.
 
 ### Tools / authority
 
-- concrete tool/capability registry;
-- effect classes and risk tiers;
-- confirmation/autonomy policy;
-- authority and technical AuthZ enforcement points;
-- idempotency / expected-state envelopes;
-- provider side-effect reconciliation.
+- concrete capability registry implementation;
+- exact risk/consequence policy implementation;
+- exact confirmation/autonomy UX;
+- exact technical enforcement points;
+- exact external side-effect adapter implementation.
 
 ### Safety / quality
 
-- prompt-injection and untrusted-content boundary;
-- output validation;
-- trace privacy;
-- eval datasets;
-- red-team cases;
+- exact prompt-injection defense implementation;
+- exact output validation stack;
+- trace/eval privacy mechanisms;
+- eval framework;
 - latency/cost budgets;
-- model/provider failover behavior.
+- failover implementation.
 
-None of these may be closed from provider marketing or framework convenience alone.
+None may be closed from provider marketing or framework convenience alone.
 
 ---
 
-## 28. Forbidden shortcuts entering later AI design
+## 28. Forbidden shortcuts
 
-The following should be treated as immediate design smells unless backed by a new, explicit, validated requirement:
+Immediate design smells unless backed by new explicit validated requirements:
 
 ```text
 "put everything in a vector DB"
@@ -1194,109 +908,59 @@ The following should be treated as immediate design smells unless backed by a ne
 "if a tool succeeded the canonical effect succeeded"
 ```
 
-DANTE should prefer the smallest truthful architecture that preserves the accepted semantics.
+DANTE should prefer the smallest truthful architecture that preserves accepted semantics.
 
 ---
 
-## 29. Working architectural hypothesis — not yet a frozen implementation
+## 29. Foundational working shape
 
-The evidence currently supports the following conceptual shape:
+AI-00's original conceptual guardrail remains valid at semantic level:
 
 ```text
-                DANTE CANONICAL WORLD
-                     PostgreSQL
-                         │
-                  authorized access
-                         ▼
-                 CONTEXT CONSTRUCTION
-     identity / purpose / Visibility / material basis
-      current state / history / provenance / sources
-                         │
-                         ▼
-                 DANTE REASONING
-          model(s) + deterministic capabilities
-       retrieval + rules + solvers + provider tools
-                         │
-          ┌──────────────┼───────────────┐
-          ▼              ▼               ▼
-       answer       interpretation    discovery
-                     evaluation      candidate
-                         │
-                         ▼
-                NONCANONICAL SPACE
-          transient / derived / unresolved
-                         │
-               proposal / request path
-                         │
-                         ▼
-                 GOVERNANCE GATE
-       Authority / policy / Visibility / AuthZ
-      Confirmation / Decision where semantically real
-           expected MaterialState / idempotency
-                         │
-                    permitted?
-                  ┌──────┴──────┐
-                  │             │
-                 no            yes
-                  │             │
-           preserve/defer      ▼
-                         application capability
-                               │
-                               ▼
-                        CANONICAL EFFECT
-                           PostgreSQL
-                               │
-                               ▼
-                Actual / Observation / Outcome /
-                  provider result / reconciliation
-                               │
-                               ▼
-                         LEARN & ADAPT
-                               ↺
+DANTE CANONICAL WORLD / PostgreSQL
+        ↓ authorized access
+context / semantic state
+        ↓
+reasoning / deterministic capabilities / solvers / provider tools
+        ↓
+transient / derived / unresolved candidate space
+        ↓
+proposal / request / governance
+        ↓
+application capability
+        ↓
+canonical effect
+        ↓
+Actual / Observation / Outcome / provider result / reconciliation
+        ↓
+learn / adapt without truth laundering
 ```
 
-This is a **conceptual guardrail**, not a service diagram and not a commitment to a particular agent framework.
+AI-02.1 later refines the runtime boundaries around this shape — Interaction Session, WorkContract, Semantic Query, Scenario Workspace, BasisManifest, policy mesh, EffectGraph, Safe Publication, Execution Environment and related guards — without changing the semantic ownership established here.
 
 ---
 
-## 30. Next workstream step
+## 30. Historical sequencing note
 
-The next recommended phase is **AI-01 — DANTE Interaction / Product Form Research**.
+At AI-00 establishment time, the recommended next phase was labelled **AI-01 — DANTE Interaction / Product Form Research** and was intended to compare high-quality AI interaction patterns before provider/runtime implementation decisions.
 
-Its purpose is not implementation. It should determine how users should actually experience this intelligence before we choose runtime/provider architecture.
+That sequencing is **historical and already consumed**. It should not be interpreted as the current next step.
 
-AI-01 should compare high-quality current AI interaction patterns, including as relevant:
-
-- ChatGPT;
-- Claude;
-- other materially relevant conversational/agent products;
-- command/search assistants;
-- proactive assistants;
-- multimodal/voice interaction;
-- tool/action confirmation UX;
-- source/rationale exposure;
-- persistent context and memory UX;
-- background/durable task interaction;
-- interruption/correction/retry behavior.
-
-The benchmark must distinguish:
+Current continuation order is owned by:
 
 ```text
-pattern worth learning from
-!= product requirement
-!= semantic authority
-!= architecture decision
+docs/ROADMAP.md
+docs/PROJECT-STATUS.md
+docs/architecture/dante-ai-02-1-intelligence-reengineering.md
 ```
 
-The goal is to determine the **form of DANTE** that best expresses the already-defined DANTE semantics, not to clone another chatbot.
-
-Only after that product-form work should the workstream move into provider/model/runtime/tool/memory technology selection and implementation blueprints.
+As of the 2026-09-01 reconciliation, AI-02.1 is at a v0.5 candidate structural freeze after completed simulation/kill-test rounds and targeted verification, with one additional pre-AI-03 review still pending.
 
 ---
 
 ## 31. Closure state of AI-00
 
-AI-00 establishes a consolidated foundation only.
+AI-00 establishes a semantic/architectural foundation only.
 
 ```text
 Product role                           BASELINED
@@ -1307,12 +971,12 @@ Authority/Visibility boundary          BASELINED
 AI provenance boundary                 BASELINED
 Scoped autonomy direction              INHERITED
 Stale-state mutation boundary          INHERITED
-Provider/model selection               OPEN
-Conversation/memory physical model     OPEN
-Tool/runtime implementation            OPEN
-Frontend interaction form              NEXT / AI-01
+Provider/model selection               NOT DECIDED BY AI-00
+Conversation/memory physical model     NOT DECIDED BY AI-00
+Tool/runtime implementation            NOT DECIDED BY AI-00
+Frontend interaction form              LATER WORK PERFORMED / AI-00 SEQUENCING HISTORICAL
 Database evolution                     NOT AUTHORIZED
-Backend implementation                 NOT STARTED
+Backend implementation                 NOT STARTED BY AI-00
 ```
 
-The workstream must preserve this distinction between **architecture understanding** and **implementation proof** throughout later phases.
+AI-00 itself remains current for semantic constraints. Later AI phases may refine runtime/product responsibilities only while preserving this distinction between **architecture understanding** and **implementation proof**.
