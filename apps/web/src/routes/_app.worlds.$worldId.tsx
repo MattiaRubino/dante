@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Navigate, createFileRoute } from '@tanstack/react-router';
 
 import {
@@ -31,12 +32,31 @@ function WorldFocusRoute() {
   const { time: requestedTimePreset } = Route.useSearch();
   const navigate = Route.useNavigate();
   const normalizedWorldId = normalizeWorldFocusId(worldId);
+  const world =
+    normalizedWorldId === undefined
+      ? undefined
+      : getWorldFocusWorld(normalizedWorldId);
+  const effectiveTimePreset = resolveWorldFocusTimePreset(
+    world?.lens?.time,
+    requestedTimePreset,
+  );
 
-  if (normalizedWorldId === undefined) {
-    return <Navigate to="/worlds" replace />;
-  }
+  useEffect(() => {
+    if (
+      world === undefined ||
+      requestedTimePreset === undefined ||
+      effectiveTimePreset === requestedTimePreset
+    ) {
+      return;
+    }
 
-  const world = getWorldFocusWorld(normalizedWorldId);
+    void navigate({
+      search: {},
+      replace: true,
+      resetScroll: false,
+    });
+  }, [effectiveTimePreset, navigate, requestedTimePreset, world]);
+
   if (world === undefined) {
     return <Navigate to="/worlds" replace />;
   }
