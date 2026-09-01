@@ -5,7 +5,7 @@ import {
   WORLD_FOCUS_VISUAL_VERSION,
 } from '../model/world-focus-visual';
 import type { WorldFocusWorld } from '../model/world-focus-fixtures';
-import { WorldFocusEnergyCanvas } from './world-focus-energy-canvas';
+import { WorldFocusEnergySurface } from './world-focus-energy-surface';
 import './world-focus-visual-frame.css';
 
 type WorldFocusVisualFrameProps = Readonly<{
@@ -46,7 +46,7 @@ export function WorldFocusVisualFrame({ world }: WorldFocusVisualFrameProps) {
         className="world-focus-corona-energy-renderer"
         data-world-focus-visual-layer={WORLD_FOCUS_VISUAL_LAYER.coronaEnergy}
       >
-        <WorldFocusEnergyCanvas world={world} animated />
+        <WorldFocusEnergySurface world={world} />
       </div>
 
       <svg
