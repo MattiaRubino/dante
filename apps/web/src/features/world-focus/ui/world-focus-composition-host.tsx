@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { WorldFocusCompositionEntry } from '../model/world-focus-composition';
+import type { WorldFocusCompositionPlanEntry } from '../model/world-focus-composition-plan';
 import { WorldFocusModuleRegistry } from './world-focus-module-registry';
 import { WorldFocusRenderBoundary } from './world-focus-render-boundary';
 
@@ -10,7 +10,7 @@ export type WorldFocusCompositionRendererProps<
   WorldId extends string = string,
 > = Readonly<{
   worldId: WorldId;
-  entry: WorldFocusCompositionEntry<Kind>;
+  entry: WorldFocusCompositionPlanEntry<Kind>;
 }>;
 
 export type WorldFocusCompositionRegistration<
@@ -25,15 +25,15 @@ export type WorldFocusCompositionRegistration<
 
 type WorldFocusCompositionHostProps<WorldId extends string = string> = Readonly<{
   worldId: WorldId;
-  entries: readonly WorldFocusCompositionEntry[];
+  entries: readonly WorldFocusCompositionPlanEntry[];
   registry: WorldFocusModuleRegistry<
     WorldFocusCompositionRegistration<string, WorldId>
   >;
 }>;
 
 /**
- * Owns outer placement and isolation for already-resolved World composition.
- * It deliberately does not decide ranking, canonical meaning or authorization.
+ * Owns placement/isolation for an already-resolved World composition plan.
+ * Ranking, canonical meaning and authorization remain outside this renderer.
  */
 export function WorldFocusCompositionHost<WorldId extends string = string>({
   worldId,
@@ -60,6 +60,10 @@ export function WorldFocusCompositionHost<WorldId extends string = string>({
               data-world-focus-module-status="unsupported"
               data-world-focus-stability={entry.ownership.stability}
               data-world-focus-origin={entry.ownership.origin}
+              data-world-focus-prominence={entry.prominence}
+              data-world-focus-footprint={entry.footprint}
+              data-world-focus-grid-span={entry.gridSpan}
+              data-world-focus-grid-row={entry.row}
               role="alert"
             >
               <p>{t(($) => $.common.worldFocus.surfaces.unavailable)}</p>
@@ -75,6 +79,10 @@ export function WorldFocusCompositionHost<WorldId extends string = string>({
             data-world-focus-module-kind={entry.kind}
             data-world-focus-stability={entry.ownership.stability}
             data-world-focus-origin={entry.ownership.origin}
+            data-world-focus-prominence={entry.prominence}
+            data-world-focus-footprint={entry.footprint}
+            data-world-focus-grid-span={entry.gridSpan}
+            data-world-focus-grid-row={entry.row}
           >
             <WorldFocusRenderBoundary
               resetKey={`${worldId}:${entry.instanceId}:${entry.kind}`}
