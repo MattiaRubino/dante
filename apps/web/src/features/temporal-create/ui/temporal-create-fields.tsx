@@ -11,11 +11,9 @@ import { TemporalCreateEventFields } from './temporal-create-event-fields';
 import { TemporalCreateHandoffFields } from './temporal-create-handoff-fields';
 import { TemporalCreateOrganizationFields } from './temporal-create-organization-fields';
 import { TemporalCreateRecurrenceFields } from './temporal-create-recurrence-fields';
-import type { TemporalCreateContextOption } from './temporal-create-composer';
 
 type TemporalCreateAdvancedFieldsProps = Readonly<{
   fields: TemporalCreateFields;
-  contexts: readonly TemporalCreateContextOption[];
   depth: TemporalCreateSurface;
   onPatch: (patch: Partial<TemporalCreateFields>) => void;
   renderError: (path: string) => ReactNode;
@@ -25,13 +23,11 @@ export { TemporalCreateCoreFields };
 
 export function TemporalCreateAdvancedFields({
   fields,
-  contexts,
   depth,
   onPatch,
   renderError,
 }: TemporalCreateAdvancedFieldsProps) {
   const { t } = useTranslation('common');
-  void contexts;
 
   if (depth === 'quick') {
     return null;
