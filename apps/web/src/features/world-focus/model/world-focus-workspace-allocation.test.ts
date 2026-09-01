@@ -1,0 +1,335 @@
+import { describe, expect, it } from 'vitest';
+
+import {
+  DEFAULT_WORLD_FOCUS_WORKSPACE_ALLOCATION_POLICY,
+  resolveWorldFocusWorkspaceAllocation,
+} from './world-focus-workspace-allocation';
+import type { WorldFocusPresentationSurface } from './world-focus-platform';
+import {
+  createWorldFocusWorkspaceState,
+  reduceWorldFocusWorkspaceState,
+  type WorldFocusWorkspaceState,
+} from './world-focus-workspace';
+
+function openSurface(
+  state: WorldFocusWorkspaceState,
+  instanceId: string,
+  presentation: WorldFocusPresentationSurface,
+): WorldFocusWorkspaceState {
+  return reduceWorldFocusWorkspaceState(state, {
+    type: 'open-surface',
+    surface: {
+      instanceId,
+      kind: `test:${presentation}`,
+      depth: presentation === 'full-screen' ? 'explore' : 'insight',
+      presentation,
+      origin: 'application',
+    },
+  });
+}
+
+function getPlacement(
+  plan: ReturnType<typeof resolveWorldFocusWorkspaceAllocation>,
+  instanceId: string,
+) {
+  const placement = plan.placements.find(
+    (candidate) => candidate.instanceId === instanceId,
+  );
+  if (placement === undefined) {
+    throw new Error(`Missing placement ${instanceId}`);
+  }
+  return placement;
+}
+
+function createDeterministicRandom(seed: number): () => number {
+  let state = seed >>> 0;
+  return () => {
+    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+    return state / 0x1_0000_0000;
+  };
+}
+
+describe('World Focus workspace surface allocation', () => {
+  it('keeps an empty workspace as full content with no transient layer', () => {
+    const plan = resolveWorldFocusWorkspaceAllocation(
+      createWorldFocusWorkspaceState('music'),
+      1280,
+    );
+
+    expect(plan).toMatchObject({
+      mainAllocation: 'full',
+      topLayer: 'none',
+      workspaceInlineSize: 1280,
+      mainInlineSize: 1280,
+      sidecarInlineSize: null,
+      splitGap: 0,
+      activeSidecarInstanceId: null,
+      activeOverlayInstanceId: null,
+      activeFocusInstanceId: null,
+    });
+  });
+
+  it('allocates a wide sidecar beside the main canvas without creating an overlay layer', () => {
+    const state = openSurface(
+      createWorldFocusWorkspaceState('music'),
+      'dante:thread',
+      'sidecar',
+    );
+    const plan = resolveWorldFocusWorkspaceAllocation(state, 1280);
+
+    expect(plan.mainAllocation).toBe('split');
+    expect(plan.topLayer).toBe('none');
+    expect(plan.activeSidecarInstanceId).toBe('dante:thread');
+    expect(plan.sidecarInlineSize).toBe(420);
+    expect(plan.mainInlineSize).toBe(844);
+    expect(plan.splitGap).toBe(16);
+    expect(getPlacement(plan, 'dante:thread')).toMatchObject({
+      slot: 'sidecar',
+      activeInSlot: true,
+    });
+  });
+
+  it('degrades a sidecar to overlay when preserving a useful main canvas would fail', () => {
+    const state = openSurface(
+      createWorldFocusWorkspaceState('travel'),
+      'insight:trip',
+      'sidecar',
+    );
+    const plan = resolveWorldFocusWorkspaceAllocation(state, 899);
+
+    expect(plan).toMatchObject({
+      mainAllocation: 'full',
+      topLayer: 'overlay',
+      mainInlineSize: 899,
+      sidecarInlineSize: null,
+      splitGap: 0,
+      activeSidecarInstanceId: null,
+      activeOverlayInstanceId: 'insight:trip',
+    });
+    expect(getPlacement(plan, 'insight:trip')).toMatchObject({
+      slot: 'overlay',
+      activeInSlot: true,
+    });
+  });
+
+  it('preserves split allocation underneath a modal instead of collapsing two independent concerns into one mode', () => {
+    let state = createWorldFocusWorkspaceState('finance');
+    state = openSurface(state, 'dante:finance', 'sidecar');
+    state = openSurface(state, 'confirm:transfer', 'modal');
+
+    const plan = resolveWorldFocusWorkspaceAllocation(state, 1280);
+
+    expect(plan).toMatchObject({
+      mainAllocation: 'split',
+      topLayer: 'overlay',
+      activeSidecarInstanceId: 'dante:finance',
+      activeOverlayInstanceId: 'confirm:transfer',
+      activeFocusInstanceId: null,
+    });
+    expect(getPlacement(plan, 'dante:finance')).toMatchObject({
+      slot: 'sidecar',
+      activeInSlot: true,
+    });
+    expect(getPlacement(plan, 'confirm:transfer')).toMatchObject({
+      slot: 'overlay',
+      activeInSlot: true,
+    });
+  });
+
+  it('preserves the underlying sidecar allocation while a full-focus surface owns the top layer', () => {
+    let state = createWorldFocusWorkspaceState('projects');
+    state = openSurface(state, 'dante:project', 'sidecar');
+    state = openSurface(state, 'explore:project-history', 'full-screen');
+
+    const plan = resolveWorldFocusWorkspaceAllocation(state, 1440);
+
+    expect(plan).toMatchObject({
+      mainAllocation: 'split',
+      topLayer: 'focus',
+      activeSidecarInstanceId: 'dante:project',
+      activeOverlayInstanceId: null,
+      activeFocusInstanceId: 'explore:project-history',
+    });
+    expect(getPlacement(plan, 'explore:project-history')).toMatchObject({
+      slot: 'focus',
+      activeInSlot: true,
+    });
+  });
+
+  it('keeps a narrow sidecar dormant while a newer modal owns the only active overlay slot', () => {
+    let state = createWorldFocusWorkspaceState('relationships');
+    state = openSurface(state, 'dante:relationship', 'sidecar');
+    state = openSurface(state, 'confirm:note', 'modal');
+
+    const plan = resolveWorldFocusWorkspaceAllocation(state, 720);
+
+    expect(plan).toMatchObject({
+      mainAllocation: 'full',
+      topLayer: 'overlay',
+      activeSidecarInstanceId: null,
+      activeOverlayInstanceId: 'confirm:note',
+    });
+    expect(getPlacement(plan, 'dante:relationship')).toMatchObject({
+      slot: 'dormant',
+      activeInSlot: false,
+    });
+    expect(getPlacement(plan, 'confirm:note')).toMatchObject({
+      slot: 'overlay',
+      activeInSlot: true,
+    });
+  });
+
+  it('allocates only the most recent sidecar and leaves earlier sidecars dormant', () => {
+    let state = createWorldFocusWorkspaceState('study');
+    state = openSurface(state, 'insight:first', 'sidecar');
+    state = openSurface(state, 'insight:second', 'sidecar');
+
+    const plan = resolveWorldFocusWorkspaceAllocation(state, 1200);
+
+    expect(plan.activeSidecarInstanceId).toBe('insight:second');
+    expect(getPlacement(plan, 'insight:first')).toMatchObject({
+      slot: 'dormant',
+      activeInSlot: false,
+    });
+    expect(getPlacement(plan, 'insight:second')).toMatchObject({
+      slot: 'sidecar',
+      activeInSlot: true,
+    });
+  });
+
+  it('keeps route presentation external to workspace geometry', () => {
+    const state = openSurface(
+      createWorldFocusWorkspaceState('travel'),
+      'route:details',
+      'route',
+    );
+    const plan = resolveWorldFocusWorkspaceAllocation(state, 1024);
+
+    expect(plan).toMatchObject({
+      mainAllocation: 'full',
+      topLayer: 'none',
+      mainInlineSize: 1024,
+      sidecarInlineSize: null,
+    });
+    expect(getPlacement(plan, 'route:details')).toMatchObject({
+      slot: 'external',
+      activeInSlot: true,
+    });
+  });
+
+  it('rejects allocation policies that cannot satisfy their own split minima', () => {
+    expect(() =>
+      resolveWorldFocusWorkspaceAllocation(
+        createWorldFocusWorkspaceState('music'),
+        1200,
+        {
+          ...DEFAULT_WORLD_FOCUS_WORKSPACE_ALLOCATION_POLICY,
+          minSplitInlineSize: 800,
+        },
+      ),
+    ).toThrowError(
+      'World Focus minimum split inline size cannot satisfy main, sidecar and gap minima',
+    );
+
+    expect(() =>
+      resolveWorldFocusWorkspaceAllocation(
+        createWorldFocusWorkspaceState('music'),
+        1200,
+        {
+          ...DEFAULT_WORLD_FOCUS_WORKSPACE_ALLOCATION_POLICY,
+          preferredSidecarFraction: 1,
+        },
+      ),
+    ).toThrowError(
+      'World Focus preferred sidecar fraction must be greater than 0 and less than 1',
+    );
+  });
+
+  it('stays bounded and deterministic across 500 synthetic users, widths and surface stacks', () => {
+    const random = createDeterministicRandom(0x5f3759df);
+    const presentations: readonly WorldFocusPresentationSurface[] = [
+      'inline',
+      'popover',
+      'sidecar',
+      'modal',
+      'full-screen',
+      'route',
+    ];
+
+    for (let scenario = 0; scenario < 500; scenario += 1) {
+      const width = Math.floor(random() * 1901);
+      const surfaceCount = Math.floor(random() * 9);
+      let state = createWorldFocusWorkspaceState(`synthetic-${scenario}`);
+
+      for (let index = 0; index < surfaceCount; index += 1) {
+        const presentation =
+          presentations[Math.floor(random() * presentations.length)];
+        if (presentation === undefined) {
+          throw new Error('Expected deterministic presentation');
+        }
+        state = openSurface(
+          state,
+          `surface:${scenario}:${index}`,
+          presentation,
+        );
+      }
+
+      const first = resolveWorldFocusWorkspaceAllocation(state, width);
+      const second = resolveWorldFocusWorkspaceAllocation(state, width);
+
+      expect(second).toEqual(first);
+      expect(first.workspaceInlineSize).toBe(width);
+      expect(first.mainInlineSize).toBeGreaterThanOrEqual(0);
+      expect(first.mainInlineSize).toBeLessThanOrEqual(width);
+
+      const activeSidecars = first.placements.filter(
+        (placement) =>
+          placement.slot === 'sidecar' && placement.activeInSlot,
+      );
+      const activeOverlays = first.placements.filter(
+        (placement) =>
+          placement.slot === 'overlay' && placement.activeInSlot,
+      );
+      const activeFocus = first.placements.filter(
+        (placement) => placement.slot === 'focus' && placement.activeInSlot,
+      );
+
+      expect(activeSidecars.length).toBeLessThanOrEqual(1);
+      expect(activeOverlays.length).toBeLessThanOrEqual(1);
+      expect(activeFocus.length).toBeLessThanOrEqual(1);
+
+      if (first.mainAllocation === 'split') {
+        expect(first.sidecarInlineSize).not.toBeNull();
+        expect(first.activeSidecarInstanceId).not.toBeNull();
+        expect(activeSidecars).toHaveLength(1);
+        expect(
+          first.mainInlineSize +
+            (first.sidecarInlineSize ?? 0) +
+            first.splitGap,
+        ).toBeCloseTo(width, 8);
+      } else {
+        expect(first.sidecarInlineSize).toBeNull();
+        expect(first.activeSidecarInstanceId).toBeNull();
+        expect(first.splitGap).toBe(0);
+        expect(activeSidecars).toHaveLength(0);
+      }
+
+      if (first.topLayer === 'focus') {
+        expect(first.activeFocusInstanceId).not.toBeNull();
+        expect(first.activeOverlayInstanceId).toBeNull();
+        expect(activeFocus).toHaveLength(1);
+        expect(activeOverlays).toHaveLength(0);
+      } else if (first.topLayer === 'overlay') {
+        expect(first.activeOverlayInstanceId).not.toBeNull();
+        expect(first.activeFocusInstanceId).toBeNull();
+        expect(activeOverlays).toHaveLength(1);
+        expect(activeFocus).toHaveLength(0);
+      } else {
+        expect(first.activeOverlayInstanceId).toBeNull();
+        expect(first.activeFocusInstanceId).toBeNull();
+        expect(activeOverlays).toHaveLength(0);
+        expect(activeFocus).toHaveLength(0);
+      }
+    }
+  });
+});
