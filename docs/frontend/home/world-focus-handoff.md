@@ -1,6 +1,6 @@
 # DANTE — World Focus Handoff
 
-**Status:** CURRENT HANDOFF — PRE-BACKEND / DANTE PRESENCE GATE NEXT  
+**Status:** CURRENT HANDOFF — PRE-BACKEND / WORLD WORKSPACE PLATFORM NEXT  
 **Date:** 2026-09-01  
 **Branch:** `feature/home-react`  
 **Worktree:** `/home/mattia/projects/dante-frontend`
@@ -67,8 +67,9 @@ For current World Focus work, use this order:
 4. world-focus-structural-contract.md
 5. world-focus-geometry-contract.md
 6. world-focus-current-checkpoint.md for implementation status / next gate
-7. delivery methodology
-8. research/review documents only as evidence
+7. world-focus-workspace-scenario-oracle-evidence.md for already-completed workspace/module stress conclusions
+8. delivery methodology
+9. other research/review documents only as evidence
 ```
 
 Frontend documents never override canonical semantic authorities.
@@ -76,17 +77,18 @@ Frontend documents never override canonical semantic authorities.
 ## 4. Current implementation state
 
 ```text
-WF0 route/shell structure         FROZEN
-WF-G3 workspace/frame geometry    FROZEN
-WF-V4 VFX                         candidate, not visually frozen
-B0 foundation                     CLOSED
-WR0 product reverse engineering   CLOSED
-WR1 DANTE/user stress             complete; 7 material gaps found
-WR2 gap closure                   CLOSED; 7/7 gaps closed
-B1 Orientation                    CLOSED FOR SEQUENCING
-B2 Continuity / Resume            IMPLEMENTED / AUTOMATED PASS
-integrated B2 visual acceptance   DEFERRED
-next implementation gate          NOT CODE — DANTE presence/spatial reverse engineering first
+WF0 route/shell structure            FROZEN
+WF-G3 workspace/frame geometry       FROZEN
+WF-V4 VFX                            candidate, not visually frozen
+B0 foundation                        CLOSED
+WR0 product reverse engineering      CLOSED
+WR1 DANTE/user stress                complete; 7 material gaps found
+WR2 gap closure                      CLOSED; 7/7 gaps closed
+B1 Orientation                       CLOSED FOR SEQUENCING
+B2 Continuity / Resume               IMPLEMENTED / AUTOMATED PASS
+integrated B2 visual acceptance      DEFERRED
+workspace/module uncertainty study   DONE / retained as evidence
+next implementation gate             WORLD WORKSPACE PLATFORM MATERIALIZATION
 ```
 
 ## 5. Structural baseline
@@ -183,7 +185,50 @@ Broader context is used only when the actual user purpose materially requires it
 
 Visible projections and DANTE answers must preserve compatible basis/freshness semantics. A provider refresh that changes the relevant fact cannot be hidden behind an answer pretending the old screen is still current.
 
-## 8. B1 final disposition
+## 8. Workspace/module scenario research already completed
+
+Do **not** restart the broad architecture question of unknown future modules/surfaces.
+
+The recovered evidence file `world-focus-workspace-scenario-oracle-evidence.md` preserves the durable result of the earlier scenario study.
+
+Already pressure-tested:
+
+```text
+unknown future World
+unknown future specialist module
+sparse / dense / very large World
+long/high-frequency history
+multiple/stale/offline providers
+AI unavailable
+partial data
+late async after World switch
+same canonical reality in multiple Worlds
+sensitive/multi-actor context
+customization while adaptive content changes
+narrow/reduced-motion/keyboard cases
+layout/schema evolution
+```
+
+Already accepted direction:
+
+```text
+one workspace platform, not page-per-World
+finite approved renderer/surface registry
+unknown specialist surfaces through controlled extension
+no arbitrary AI-generated executable UI
+specialist renderer only when generic primitives materially lose meaning
+stable / adaptive / ephemeral remain distinct
+AI cannot silently mutate stable composition
+DANTE can drive contextual Insight / Explore / deeper-surface intents
+typed source drill-down on demand
+bounded/aggregated large-data projections
+same canonical reality reused across Worlds without duplication
+future stable config needs version/evolution semantics
+```
+
+This is implementation input, not an open research gate.
+
+## 9. B1 final disposition
 
 The original visible global temporal Lens failed product review and was removed completely rather than hidden as future infrastructure.
 
@@ -205,11 +250,11 @@ micro visual polish              deferred to integrated composition review
 
 A future Lens/session is reintroduced only when a real vertical proves the need.
 
-## 9. B2 Continuity / Resume status
+## 10. B2 Continuity / Resume status
 
 B2 is the first real question-driven content capability.
 
-It deliberately means:
+It means:
 
 > **What is actually in motion and where can I continue?**
 
@@ -228,13 +273,33 @@ Implemented pre-backend properties include:
 - accessible semantics;
 - no fake Resume CTA without a real route/capability.
 
-Automated gates passed. Integrated user acceptance is intentionally deferred until the DANTE spatial/presence contract is resolved; B2 remains available evidence/capability and is not discarded.
+Automated gates passed. Integrated user acceptance is deferred until the real workspace orchestration/surface footprint exists; B2 remains valid and is not discarded.
 
-## 10. Immediate next gate — contextual DANTE presence / spatial UX
+## 11. Immediate next gate — World Workspace Platform materialization
 
-DANTE is foundational to World Focus, but **Home AI is not the World AI surface**.
+The next scope is **inside the frozen rectangular workspace**. Do not spend time redesigning route/opening/sphere/VFX now.
 
-WR2 already closed the semantic presentation depths:
+Consume the already-completed scenario research and current Product/Platform contracts to materialize the smallest production-grade orchestration layer required by the accepted behavior.
+
+It must cover, only as proven necessary:
+
+```text
+dynamic composition host
+finite surface/renderer registry
+interaction cursor ownership
+selected projection/source context
+open / close / replace / promote surface semantics
+Insight / Explore / deeper contextual surfaces
+World contextual DANTE presence/conversation footprint
+stable / adaptive / ephemeral coexistence
+focus / back / Escape ownership
+responsive/mobile surface mapping
+surface-local error/degraded behavior
+race/generation safety
+performance/resource behavior
+```
+
+### DANTE semantics already closed
 
 ```text
 P0 QUIET
@@ -245,55 +310,28 @@ P4 PROPOSAL
 P5 ACTION / RECEIPT
 ```
 
-What remains open — and must be solved before more World content is composed — is the spatial/interaction contract.
+Home AI is not the World DANTE surface.
 
-Required reverse engineering and stress test:
+### Concrete presentation still open
+
+These were never frozen and may require focused product/interaction comparison before the relevant production write:
 
 ```text
-always visible vs on demand
-quiet footprint
+exact quiet footprint
 composer placement
-long-conversation expansion
-sidecar / dock / overlay / full-surface alternatives
-when DANTE consumes layout space vs overlays
-minimum content area left to dynamic composition
-content reflow during expansion
-selected-module/source contextual interaction
-deictic follow-up (“questa”, “perché?”, “continua”)
-conversation vs Insight relationship
-conversation vs Explore relationship
-Proposal / confirmation / receipt placement
-World switch and conversation binding
-large desktop / laptop / tablet / mobile
-focus / keyboard / SR / touch / reduced motion
-AI unavailable/degraded state
-pre-backend shell now vs real runtime later
+conversation expansion geometry
+inline vs sidecar vs overlay/full-workspace mapping
+surface coexistence/exclusivity
+focus/back/Escape precedence
+responsive/mobile mapping
+exact local state model required by those interactions
 ```
 
-Stress at least:
+Do not turn these remaining choices into a repeat of the full unknown-module/World reverse engineering.
 
-```text
-Music
-Body
-Travel
-Finance
-Study
-Relationships
-sparse World
-dense World
-AI quiet
-long conversation
-Insight
-Proposal/action
-```
+## 12. Dynamic composition
 
-External products may be studied for interaction patterns, but no product — including Home — is copied as the semantic/layout answer.
-
-Do not write production World DANTE UI until this gate has been reviewed with the user.
-
-## 11. Dynamic composition after the DANTE gate
-
-Persistent World content remains dynamic/question-driven:
+Persistent World content remains:
 
 ```text
 available authorized reality
@@ -302,36 +340,32 @@ available authorized reality
 -> stable/adaptive/ephemeral presentation
 ```
 
-Continuity, Next, Attention, Change, trend, metrics, timeline, people, artifacts etc. are potential answers/renderers, not guaranteed page sections.
+Continuity, Next, Attention, Change, trend, metrics, timeline, people, artifacts and specialist surfaces are potential answers/renderers, not guaranteed page sections.
 
-Once DANTE's real footprint is frozen, re-run B2 integrated visual review inside the real remaining workspace, then continue one complete mini-vertical at a time.
+B2 will be re-reviewed inside the real workspace once this platform layer is usable.
 
-## 12. Delivery method
+## 13. Delivery method
 
-Every World Focus vertical follows `world-focus-delivery-methodology.md`.
-
-Required simplified sequence:
+Every implementation slice follows `world-focus-delivery-methodology.md`.
 
 ```text
-authority re-read
--> scenario/failure/future pressure
--> current product/tech research
--> architecture alternatives
--> explicit decision/rejections
--> UX/responsive/a11y/security/performance/state/test design
--> smallest complete production implementation
+authority/evidence re-read
+-> focused failure/future pressure only where not already closed
+-> product/tech research only for genuinely open decisions
+-> architecture decision
+-> production implementation
+-> responsive/a11y/security/performance/state/tests
 -> automated gates
 -> real-browser review
 -> user functional + visual validation
 -> fixes
 -> explicit user OK
 -> freeze
--> next vertical
 ```
 
-No hidden infrastructure-only phase replaces visible product progress after B0, unless a demonstrated dependency must be resolved first — as with the current DANTE spatial gate.
+Do not redo closed research merely because a new chat starts.
 
-## 13. Backend stop line
+## 14. Backend stop line
 
 Before the final authorized backend vertical, do not add:
 
@@ -345,7 +379,7 @@ Before the final authorized backend vertical, do not add:
 
 Frontend may establish narrow ports/contracts and deterministic local behavior only when needed to prove the real product interaction.
 
-## 14. Required read order for a new World Focus chat
+## 15. Required read order for a new World Focus chat
 
 1. `world-focus-current-checkpoint.md`
 2. `world-focus-handoff.md`
@@ -353,11 +387,12 @@ Frontend may establish narrow ports/contracts and deterministic local behavior o
 4. `world-focus-platform-contract.md`
 5. `world-focus-structural-contract.md`
 6. `world-focus-geometry-contract.md`
-7. `world-focus-delivery-methodology.md`
-8. `world-focus-frontend-roadmap.md`
-9. `world-focus-evidence-index.md` only if deeper research/review reasoning is needed.
+7. `world-focus-workspace-scenario-oracle-evidence.md`
+8. `world-focus-delivery-methodology.md`
+9. `world-focus-frontend-roadmap.md`
+10. `world-focus-evidence-index.md` for deeper research/review archaeology.
 
-## 15. Operational safety
+## 16. Operational safety
 
 - stay on `feature/home-react` until explicitly authorized otherwise;
 - fresh HEAD before production writes;
