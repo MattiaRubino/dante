@@ -5,17 +5,6 @@ export const worldFocus = {
   back: 'Go back',
   mainLabel: '{{world}} World',
   canvasLabel: '{{world}} World space',
-  lens: {
-    label: 'World context',
-    timeLabel: 'Time range',
-    presets: {
-      last7Days: '7 days',
-      last30Days: '30 days',
-      last90Days: '90 days',
-      lastYear: '1 year',
-      allTime: 'All time',
-    },
-  },
   states: {
     loading: 'Loading the {{world}} World',
     error: 'Unable to open the {{world}} World',
