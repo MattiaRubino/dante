@@ -66,11 +66,12 @@ AI ARCHITECTURE
 ACTIVE UNMERGED DESIGN / REENGINEERING WORKSTREAM
 feature/ai-architecture
 AI-02.1 v0.5 CLOSED / STRUCTURALLY ACCEPTED
-ALL FOUR MEGA/PRESSURE TEST ROUNDS COMPLETE
-TARGETED v0.5 CONSISTENCY VERIFICATION COMPLETE
-NO MORE AI-02 MEGA TESTS
+ALL AI-02 PRESSURE/MEGA TEST ROUNDS COMPLETE
 AI-03 CONTEXT / RETRIEVAL / MEMORY ACTIVE
-CURRENT MACRO-PHASE AI-03A FULL CONTEXT ARCHITECTURE
+AI-03A FULL CONTEXT ARCHITECTURE CLOSED / STRUCTURALLY ACCEPTED
+AI-03A INITIAL CANDIDATE FAILED / 9 HARDENINGS / HARDENED CANDIDATE PASS
+AI-03A C01..C29 ACCEPTED
+CURRENT MACRO-PHASE AI-03B RETRIEVAL + MEMORY ARCHITECTURE
 NO AI BACKEND / DB / PROVIDER IMPLEMENTATION CLAIMED
 ```
 
@@ -249,7 +250,10 @@ docs/architecture/dante-ai-02-1-intelligence-reengineering.md
 → AI-02.1 v0.5 CLOSED / STRUCTURALLY ACCEPTED
 
 docs/architecture/dante-ai-03-context-retrieval-memory.md
-→ AI-03 ACTIVE / current macro-phase AI-03A Full Context Architecture
+→ AI-03 ACTIVE / current macro-phase AI-03B Retrieval + Memory
+
+docs/architecture/dante-ai-03a-full-context-architecture.md
+→ AI-03A Full Context Architecture CLOSED / STRUCTURALLY ACCEPTED
 ```
 
 AI-02.1 incorporates all completed simulation/kill-test rounds and the final isolation/runtime hardening. It preserves:
@@ -269,17 +273,37 @@ SENT != DELIVERED != SEEN != ACKNOWLEDGED != ACCEPTED
 Execution Environment != mandatory sandbox/container
 ```
 
-AI-02.1 acceptance is structural architecture only. It is not an implementation claim. Exact model/provider/SDK, runtime technology, sandbox implementation and AI-03 persistence/materialization choices remain evidence-driven later work.
+AI-03A adds the accepted detailed Context contract:
 
-AI-03 is intentionally split into three large passes only:
+```text
+ContextPlan
+InformationNeed
+ContextStrategy
+ContextFragment
+ContextReadiness
+ConsumerContext
+ContextManifest
++ inherited BasisManifest
+```
+
+Key AI-03A hardenings include explicit Reality Scope, context continuity compartments, model-discovered need scope ceilings, reference-resolution requirements, explicit source/use exclusions, child/delegated context minimisation, instruction provenance, non-monotonic readiness and objective-relative minimisation.
+
+AI-03A acceptance is structural architecture only. It is not an implementation claim.
+
+AI-03 remains intentionally split into three large passes:
 
 ```text
 AI-03A  Full Context Architecture
+        CLOSED / STRUCTURALLY ACCEPTED
+
 AI-03B  Retrieval + Memory Architecture
+        ACTIVE / CURRENT
+
 AI-03C  Destructive Validation + Materialization Blueprint
+        FUTURE
 ```
 
-No memory table, embedding/index activation, vector-store or provider decision is implied merely because AI-03 is active.
+No memory table, embedding/index activation, vector-store or provider decision is implied by AI-03A closure or AI-03B activation.
 
 ## Capability-triggered components
 
@@ -366,7 +390,8 @@ For the active AI branch, continuation is additionally routed through:
 
 - `docs/workstreams/ai-architecture.md` — durable branch-local workstream record;
 - `docs/workstreams/ai-architecture-live-handoff.md` — TEMPORARY session save-game while the branch is active; must not merge to `main`;
-- `docs/architecture/dante-ai-03-context-retrieval-memory.md` — current AI-03 architecture charter.
+- `docs/architecture/dante-ai-03-context-retrieval-memory.md` — current AI-03 architecture charter;
+- `docs/architecture/dante-ai-03a-full-context-architecture.md` — accepted AI-03A Context authority consumed by AI-03B.
 
 Persistent truth rules:
 
