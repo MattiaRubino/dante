@@ -6,11 +6,13 @@
 - **Workstream:** DANTE AI architecture
 - **Current phase:** AI-03 — Context / Retrieval / Memory
 - **AI-03A:** CLOSED / STRUCTURALLY ACCEPTED / FINAL REVALIDATION COMPLETE / 13 HARDENINGS
-- **Current macro-phase:** AI-03B — Retrieval + Memory Architecture
+- **AI-03B:** CANDIDATE / STRUCTURAL PASS PENDING FINAL INDEPENDENT VALIDATION
+- **Current macro-phase:** AI-03B — Final Independent Retrieval + Memory Validation
 - **Created:** 2026-09-01
-- **Refreshed after final AI-03A revalidation:** 2026-09-01
-- **PRE-SCOPE for this final AI-03A revalidation:** `ef5b09d5b7e31a4977dbc20759e41558032a9448`
-- **Last substantive checkpoint before this handoff refresh:** `0ad94f4a947fbd8286be994fdff6b829f8f84e0e`
+- **Refreshed after AI-03B candidate materialization:** 2026-09-01
+- **PRE-SCOPE for AI-03B candidate materialization:** `cd98a1e76864aa91f098e7391c91cce48cefa20a`
+- **AI-03B candidate commit:** `2a120d6a5467a78edd64dd6e74c03fcadfe4eb94`
+- **AI-03 charter alignment checkpoint:** `3ddb2e8e9ff9133d20e73425b8716b3b62156dd7`
 - **Current branch HEAD:** fetch live before every write; this handoff refresh itself advances HEAD beyond the checkpoint above
 
 This file exists only to survive chat/session/context saturation while `feature/ai-architecture` is active. Durable architectural truth lives in the architecture/workstream/current-status sources named below.
@@ -30,10 +32,12 @@ repository  MattiaRubino/dante
 branch      feature/ai-architecture
 workstream  DANTE AI architecture
 phase       AI-03 Context / Retrieval / Memory
-current     AI-03B Retrieval + Memory Architecture
+current     AI-03B Final Independent Retrieval + Memory Validation
 ```
 
 Do not recreate AI-00, AI-01, AI-02 or AI-03A from scratch.
+
+Do not rebuild the AI-03B candidate from scratch unless final validation finds a concrete contradiction. The current candidate is durable branch authority but is **not yet CLOSED**.
 
 Do not treat the old exploratory AI-00..AI-12 planning sequence as current routing.
 
@@ -74,6 +78,7 @@ docs/architecture/ai-production-engineering-state-of-the-art-2026.md
 docs/architecture/dante-ai-02-1-intelligence-reengineering.md
 docs/architecture/dante-ai-03-context-retrieval-memory.md
 docs/architecture/dante-ai-03a-full-context-architecture.md
+docs/architecture/dante-ai-03b-retrieval-memory-architecture.md
 docs/architecture/system-overview.md
 docs/architecture/technical-decisions.md
 ```
@@ -220,7 +225,8 @@ ACTIVE
   FINAL REVALIDATION COMPLETE / 13 HARDENINGS / C01..C33
 
   AI-03B — RETRIEVAL + MEMORY ARCHITECTURE
-  ACTIVE / CURRENT
+  CANDIDATE / STRUCTURAL PASS
+  FINAL INDEPENDENT VALIDATION NEXT
 
   AI-03C — DESTRUCTIVE VALIDATION + MATERIALIZATION BLUEPRINT
   FUTURE
@@ -1166,251 +1172,365 @@ Do not infer any of these choices from AI-03A closure.
 
 ---
 
-# 13. CURRENT WORK — AI-03B Retrieval + Memory Architecture
+# 13. CURRENT WORK — AI-03B Final Independent Validation
 
-This is the exact work a fresh chat must start.
-
-Do **not** go back to another generic Context mega-test.
-
-Do **not** materialize tables/indexes first.
-
-AI-03B asks two linked questions:
-
-> **How does DANTE actually find the candidate information required by an accepted AI-03A InformationNeed?**
-
-and:
-
-> **Which noncanonical information/state, if any, legitimately survives beyond the immediate step/Run, under what lifecycle and correction/deletion rules?**
-
-## 13.1 Retrieval scope
-
-Design in depth:
+Durable candidate authority:
 
 ```text
-Semantic Query / Projection Gateway consumption
-structured current-state retrieval
-material-history retrieval
-specific relation traversal
-metadata filtering
-PostgreSQL native FTS
-pg_trgm / fuzzy retrieval
-semantic/vector retrieval where justified
-hybrid retrieval
-reranking
-source reread
-freshness/currentness validation
-coverage-aware retrieval
-permission-aware discovery/retrieval
-provider-native/JIT acquisition under the same governed boundary
-iterative/JIT retrieval
-query decomposition/reformulation where justified
-document hierarchy / chunking
-large-corpus retrieval
-long-context vs indexed retrieval decisions
-retrieval caches and lifecycle
-retrieval evaluation / failure metrics
+docs/architecture/dante-ai-03b-retrieval-memory-architecture.md
 ```
 
-Retrieval must satisfy AI-03A semantics, not replace them.
-
-At minimum preserve:
+Current state:
 
 ```text
-InformationNeed coverage
-Reality Scope
-Runtime Interpretation Frame where material
-reference-resolution requirement
-source binding
-Source Standing / Provenance / integrity distinctions
-purpose/acquisition eligibility
-no hidden provider-tool acquisition bypass
-acquisition != effect authorization
-derived-sensitivity closure
-currentness/coherence requirements
-consumer-delivery/transformation integrity
-explicit exclusions
-anti-resurrection
+DANTE-FIRST INTERNAL DESIGN           COMPLETE
+TARGETED MODERN CHALLENGER RESEARCH  COMPLETE
+RECONCILIATION                       COMPLETE
+FIRST HEAVY KILL-TEST                PASS CANDIDATE
+B01..B30                             CANDIDATE
+AI-03B CLOSED                        NO
+FINAL INDEPENDENT VALIDATION         NEXT
 ```
 
-Retrieval rank/similarity never establishes canonical truth or source currentness.
+Do **not** restart AI-03B as a blank-slate architecture exercise. Do **not** treat the candidate's first PASS as proof either.
 
-## 13.2 Memory scope
+The fresh validation must independently reconstruct the required Retrieval/Memory obligations from Product/Domain/Logical/PostgreSQL/Recovery/AI-02/AI-03A and try to break the materialized candidate.
 
-Separate memory classes before selecting storage:
+## 13.1 Retrieval candidate architecture
+
+Two additional runtime architecture contracts are currently proposed:
+
+```text
+RetrievalPlan
+RetrievalCandidate
+```
+
+They are not Domain roots, database tables or mandatory services.
+
+The candidate flow is:
+
+```text
+AI-03A InformationNeed
+        ↓
+RetrievalPlan
+        ├ eligible search universe
+        ├ retrieval guarantee / coverage requirement
+        ├ source semantics
+        ├ Reality Scope
+        ├ Runtime Interpretation Frame where material
+        ├ reference/currentness/coherence requirements
+        ├ explicit exclusions
+        └ resource / latency / cost bounds
+        ↓
+least-complex adequate route
+        ├ structured / exact
+        ├ material history
+        ├ typed relation traversal
+        ├ lexical / fuzzy
+        ├ semantic / ANN
+        ├ hybrid / rerank
+        ├ hierarchical document
+        ├ direct long-context
+        ├ Interaction / Run
+        ├ provider/federated
+        └ open-world / bounded JIT
+        ↓
+RetrievalCandidate
+        ↓
+source / policy / lifecycle / currentness / identity validation
+        ↓
+ContextFragment
+        ↓
+AI-03A ContextReadiness
+```
+
+Key retrieval candidate rules:
+
+```text
+RETRIEVAL != TRUTH
+APPROXIMATE != COMPLETE
+candidate count != coverage proof
+rank/similarity/rerank != Source Standing
+multiple chunks/derivatives of one lineage != independent corroboration
+index/cache/embedding != source
+consequential derived retrieval may require source reread
+permission-safe acquisition defines the eligible search universe
+```
+
+## 13.2 Memory candidate architecture
+
+Memory classes remain separated:
 
 ```text
 CANONICAL APPLICATION MEMORY
-already owned by Domain/PostgreSQL
-not an AI memory layer
+→ already Domain/PostgreSQL
+→ not generic AI memory
 
 INTERACTION MEMORY
-conversation/session continuity
-referents / attachments / current discourse state
-not automatically canonical
+→ discourse/session/referent continuity
+→ transcript != canonical truth
 
 RUN / WORKING MEMORY
-intermediate calculations / research / working artifacts
-transient by default
+→ intermediate research/calculation/tool state
+→ transient by default
 
-COMPACTION / CHECKPOINT STATE
-continuity optimization
-lossy unless proven otherwise
-not source authority
+COMPACTION / CHECKPOINT
+→ continuity optimization
+→ lossy / not source
 
-DERIVED / ADAPTIVE MEMORY
-patterns / hypotheses / inferred preferences
-candidate by default
-requires provenance/evidence/scope/time/conflict lifecycle
-and derived-sensitivity/use restrictions where material
+ADAPTIVE / DERIVED USER MEMORY
+→ bounded user-specific hypotheses/patterns
+→ candidate, not confirmed truth
 
-PROVIDER MEMORY / THREAD / PROMPT CACHE
-replaceable optimization
-never DANTE authority
+OPERATIONAL / EXPERIENCE MEMORY
+→ verified reusable knowledge about bounded environment/provider/workflow behavior
+→ experience != policy
+
+PROVIDER MEMORY / THREAD / CACHE
+→ replaceable optimization
 
 RETRIEVAL REPRESENTATIONS
-chunks / summaries / FTS/vector representations / embeddings/indexes
-technical derivatives
-not facts
+→ chunks/summaries/FTS/vector/embedding/index state
+→ technical derivatives
 
 EXECUTION EVIDENCE
-runtime/effect reconstruction
-not user memory
+→ effect/runtime reconstruction
+→ not user memory
 ```
 
-## 13.3 Memory lifecycle
-
-AI-03B must explicitly resolve:
+Common admission rule:
 
 ```text
-admission
-why something is allowed to survive
-purpose
-scope
-source/provenance
-promotion
-confirmation
-correction
-contradiction
-supersession
-decay
-expiry
-retirement
-redaction
-deletion
-forgetting
-anti-resurrection
-provider/cache invalidation
-index invalidation
-```
-
-Primary rule:
-
-```text
+DEFAULT NONCANONICAL SURVIVAL = NO
 MEMORY SURVIVAL MUST BE EARNED
+MODEL REQUEST TO REMEMBER != MEMORY ADMISSION
+MEMORY EXISTS != MEMORY MAY BE RECALLED
+MEMORY RECALL = GOVERNED ACQUISITION
 ```
 
-Canonical DANTE state is not copied into generic memory merely to make retrieval easier.
+## 13.3 Correction / suppression hardening
+
+The candidate distinguishes:
+
+```text
+CORRECT
+FORGET
+SOURCE SUPPRESSION
+USE SUPPRESSION
+INFERENCE DISPOSITION
+```
+
+This is required to prevent semantic re-inference resurrection.
+
+Example:
+
+```text
+truthful late-night history
+→ derived "prefers working late"
+→ user rejects hypothesis
+→ same history remains
+→ future system MUST NOT silently recreate equivalent rejected hypothesis
+```
+
+Durable adaptive memory therefore needs bounded typed semantics sufficient for correction/scope/expiry/disposition. Free-form prose alone is not accepted as durable semantic authority.
+
+Also:
+
+```text
+DERIVATIVE != INDEPENDENT EVIDENCE OF ITS ANCESTRY
+```
+
+so a memory cannot increase its own apparent confidence through repeated re-derivation.
+
+## 13.4 Operational/experience poisoning boundary
+
+Operational memory can survive only on adequate verified basis such as, where appropriate:
+
+```text
+verified execution outcome
+provider receipt / reread
+Verifier result
+repeated independently verified execution
+trusted operational specification
+```
+
+Not sufficient by itself:
+
+```text
+model self-report
+untrusted webpage
+malicious document/tool output
+assistant-generated success summary
+```
+
+```text
+PAST EXPERIENCE != POLICY
+EXPERIENCE != INSTRUCTION AUTHORITY
+```
+
+## 13.5 Recovery / anti-resurrection
+
+All retrieval/memory derivatives inherit current source lifecycle.
+
+```text
+RESTORED BYTES != RESTORED ELIGIBILITY
+```
+
+Old summary/embedding/cache/provider-memory bytes cannot become active merely because restore/recovery made them physically available again.
+
+The existing PostgreSQL `material_state_retirement` / suppression semantics remain the canonical source-lifecycle boundary.
 
 ---
 
-# 14. Research expectation for AI-03B
+# 14. Targeted challenger research — COMPLETE
 
-Use targeted modern research as challenger evidence, not as architecture authority.
+Do not run another generic retrieval/memory landscape study before final validation unless a new specific technical contradiction appears.
 
-A deep Retrieval/Memory review should examine at least:
+The candidate was already challenged against current evidence for:
 
 ```text
-PostgreSQL FTS / pg_trgm / pgvector behavior
-filtered ANN / HNSW / IVFFlat limitations
+PostgreSQL FTS / pg_trgm / pgvector 0.8.x
+filtered approximate ANN / iterative scans
 hybrid lexical+dense retrieval
-reranking
-late interaction / contextual retrieval where relevant
-query decomposition/adaptive retrieval
-hierarchical/parent-child document retrieval
-source reread/currentness
-retrieval evaluation
-long-context tradeoffs
-
+long-context vs RAG/retrieval
+hierarchical/contextual retrieval
+reranking / late interaction challenger patterns
+LongMemEval / LongMemEval-V2
+LoCoMo-Plus
+memory poisoning / MemoryGraft-style attacks
 Mem0
 Zep / Graphiti
-Letta
-LangGraph/LangMem
-LlamaIndex / Haystack memory/retrieval patterns
-provider-native memory/thread/cache mechanisms
-provider-native search/connectors/tool acquisition semantics
-provider context compaction/truncation/continuation semantics
-modern memory benchmarks / temporal memory / knowledge update
-memory poisoning
-correction/deletion through summaries/embeddings/cache
+Letta / agent memory patterns
+current provider-native search/thread/cache/compaction/continuation behavior
 ```
 
-Do not adopt a framework because it appears modern.
-
-For every technique ask:
+Material consequences already incorporated:
 
 ```text
-what problem does it solve?
-does DANTE actually have that problem?
-does it preserve AI-03A C01..C33?
-is it a semantic responsibility or implementation optimization?
-what are failure modes?
-what is mature vs experimental?
-what lifecycle/deletion burden does it create?
-what is the simplest adequate alternative?
+APPROXIMATE != COMPLETE
+eligible search universe must be explicit
+no universal RAG-first route
+Operational/Experience Memory is distinct from Adaptive User Memory
+poisoned experience requires verified admission basis
+provider state remains replaceable/noncanonical
+correct non-recall / non-application is part of memory quality
 ```
 
-If current provider/pricing/features matter, use fresh primary-source research rather than stale memory.
+Technology/framework appearance in research does not select it for DANTE.
 
 ---
 
-# 15. AI-03B quality bar
+# 15. First AI-03B kill-test result
 
-The architecture should be professional and detailed enough to answer:
-
-```text
-For each InformationNeed, which retrieval strategy can satisfy it and why?
-What does completeness mean for each source class?
-When is SQL/structured query enough?
-When is FTS/fuzzy retrieval enough?
-When is semantic/vector retrieval justified?
-When is direct long-context better?
-How are multi-stage/JIT strategies bounded?
-How do provider-native retrieval/tools remain inside the same acquisition scope?
-How do permissions participate before candidate exposure?
-How is source reread/currentness verified?
-How are Reality Scope, Runtime Interpretation Frame and target identity preserved through indexes?
-How do chunk/summary/embedding representations retain source lineage and derived-sensitivity constraints?
-What happens when a source is corrected/retired/deleted?
-What may survive as Interaction/working/derived memory?
-What cannot survive?
-What promotes a user statement/inference toward durable application semantics, if anything?
-How are contradictions handled without latest-wins laundering?
-How are memory poisoning and stale memory detected/contained?
-How can provider memory be discarded/rebuilt?
-How do we detect or represent provider/Harness compaction/truncation limitations without fabricating exposure certainty?
-What metrics prove retrieval/memory quality rather than only final answer quality?
-```
-
-Performance requirements remain architectural:
+The reconciled candidate has already survived a first heavy internal adversarial pass including:
 
 ```text
-simple structured read stays cheap
-no vector search for every request
-no model call for deterministic aggregation
-no context dump of entire history
-no specialist store without measured need
+ANN used for COMPLETE_REQUIRED
+permission filtering only after ANN
+vector zero interpreted as absence
+many chunks from one source pretending to corroborate
+stale embedding after source correction
+old embedding restored from backup
+rejected inference recreated from surviving history
+same rejected inference paraphrased
+self-confirming memory loop
+poisoned fake-success operational memory
+provider behavior/version drift
+model says "remember this"
+malicious source says "remember this secret"
+old chat memory enters a new purpose
+same Interaction Session switches represented party
+private caregiver fact enters shared output
+provider persistent thread after revocation
+long Run resumes after days
+retrieval cache survives Visibility change
+direct long-context vs indexed retrieval
+RAG used where bounded exact SQL was required
+operational experience treated as instruction
+forgotten AI memory while canonical state remains
+old user statement conflicts with newer canonical state
+15-year history / millions of rows
+very large context/history
+source-derived duplicate memories
+source retirement during active Run
 ```
+
+Current result:
+
+```text
+AI-03B RECONCILED CANDIDATE
+STRUCTURAL PASS CANDIDATE
+
+new Domain owner                 NO
+Logical reopen                   NO
+Physical reopen                  NO
+PostgreSQL/Alembic change        NO
+new generic Memory/Fact ontology NO
+knowledge graph required         NO
+vector DB required               NO
+Redis required                   NO
+provider selection               NO
+```
+
+This is **not** final closure evidence. The next validation must start from the source obligations again rather than trusting this table.
 
 ---
 
-# 16. AI-03B things that remain explicitly OPEN
+# 16. AI-03B candidate invariants B01–B30
 
-Do not close these before the architecture/evidence earns them:
+```text
+B01  RETRIEVAL != TRUTH.
+B02  RetrievalCandidate != ContextFragment.
+B03  Retrieval guarantee must match InformationNeed coverage.
+B04  APPROXIMATE != COMPLETE.
+B05  Candidate count != coverage proof.
+B06  Eligibility defines the permitted search universe;
+     post-filtering alone is not a universal permission proof.
+B07  Rank / similarity / rerank != Source Standing.
+B08  Multiple representations of one lineage != independent corroboration.
+B09  Index / cache / embedding != source.
+B10  Consequential derived retrieval may require source reread/current-state validation.
+B11  Memory survival defaults to NO.
+B12  MEMORY EXISTS != MEMORY MAY BE RECALLED.
+B13  Memory recall is governed acquisition under AI-03A.
+B14  MODEL REQUEST TO REMEMBER != MEMORY ADMISSION.
+B15  Canonical application semantics belong to Domain/PostgreSQL, not generic AI memory.
+B16  Durable adaptive memory requires bounded typed semantics;
+     free-form prose alone is not durable semantic authority.
+B17  Derived memory != independent evidence of its ancestry.
+B18  Correction != Forgetting != Source Suppression
+     != Use Suppression != Inference Disposition.
+B19  Rejected/corrected inference must not silently resurrect
+     from materially equivalent surviving basis.
+B20  Operational experience requires verified basis
+     and bounded environment/version applicability.
+B21  PAST EXPERIENCE != POLICY.
+B22  Provider memory is replaceable optimization.
+B23  Retrieval representations inherit source lifecycle.
+B24  Restored bytes != restored eligibility.
+B25  Memory promotion may propose a Domain/application change;
+     it cannot mint canonical truth itself.
+B26  Interaction memory != transcript truth.
+B27  Run/working memory defaults transient.
+B28  Compaction/checkpoint != source.
+B29  Execution evidence != user memory.
+B30  Correct non-recall / non-application is part of memory quality.
+```
+
+Treat these as candidate contracts only until the final independent validation closes AI-03B.
+
+---
+
+# 17. AI-03B things that remain explicitly OPEN
+
+The following remain deliberately unselected/unmaterialized:
 
 ```text
 conversation table
 Run/working table
 memory table
+adaptive-memory table
+operational-memory table
 summary table
 chunk table
 embedding table
@@ -1418,6 +1538,7 @@ embedding model/dimension
 pgvector activation
 HNSW / IVFFlat parameters
 new FTS indexes
+retrieval cache store
 specialist vector DB
 Redis
 Mem0 / Zep / Graphiti / Letta adoption
@@ -1435,43 +1556,72 @@ MCP/A2A implementation
 
 A research technique is not a decision.
 
+AI-03C, not AI-03B, owns physical/materialization classification after AI-03B is closed.
+
 ---
 
-# 17. Expected AI-03B process
+# 18. Final independent AI-03B validation process
 
-The user does not want dozens of micro-phases.
+Do not add dozens of micro-phases.
 
-Recommended flow:
+Current flow:
 
 ```text
 1. RECONSTRUCT INTERNAL REQUIREMENTS
-   final AI-03A C01..C33 + Domain/Logical/DB/Recovery + Product cases
+   COMPLETE for candidate construction
+   REPEAT INDEPENDENTLY for final validation
 
-2. BUILD ONE DEEP INITIAL RETRIEVAL + MEMORY ARCHITECTURE
-   semantic classes / lifecycle / retrieval paths
+2. BUILD DEEP INITIAL RETRIEVAL + MEMORY ARCHITECTURE
+   COMPLETE
 
 3. TARGETED MODERN RETRIEVAL/MEMORY RESEARCH
-   challenge weak assumptions and compare modern production patterns
+   COMPLETE
 
-4. RECONCILE INTO AI-03B CANDIDATE
+4. RECONCILE AI-03B CANDIDATE
+   COMPLETE
 
-5. DEDICATED RETRIEVAL/MEMORY ADVERSARIAL TEST
-   only after the candidate is complete
+5. FIRST HEAVY CANDIDATE KILL-TEST
+   COMPLETE / PASS CANDIDATE
 
-6. HARDEN REAL GAPS
+6. FINAL INDEPENDENT READBACK + DESTRUCTIVE VALIDATION
+   NEXT
 
-7. CLOSE AI-03B STRUCTURALLY IF IT PASSES
+7. HARDEN ONLY REAL NEW GAPS
+   IF FOUND
 
-8. AI-03C
+8. CLOSE AI-03B STRUCTURALLY
+   ONLY IF FINAL VALIDATION PASSES
+
+9. AI-03C
    whole Context/Retrieval/Memory destructive validation
    + physical/materialization blueprint
 ```
 
-Do not materialize AI-03B before the architecture and its lifecycle are coherent.
+Final validation must pressure at minimum:
+
+```text
+permission-safe approximate retrieval
+coverage guarantees / false absence
+source lifecycle + stale derivative paths
+multi-lineage vs same-lineage evidence
+inference resurrection
+self-confirming memory
+poisoned operational experience
+correction / forgetting / suppression semantics
+multi-actor / represented-party switching
+provider state after revocation/failover
+long-running Run resume
+large history / documents / context pressure
+correct non-recall / non-application
+Recovery / anti-resurrection
+future stronger models / larger context windows
+```
+
+If a concrete gap requires fresh outside evidence, run research only on that exact gap.
 
 ---
 
-# 18. Git write-gate discipline
+# 19. Git write-gate discipline
 
 Before any new remote write use exactly:
 
@@ -1521,7 +1671,7 @@ never claim implementation PASS from documentation-only work
 
 ---
 
-# 19. Documentation / handoff lifecycle
+# 20. Documentation / handoff lifecycle
 
 Durable architecture decisions belong in architecture/current sources.
 
@@ -1552,24 +1702,24 @@ Temporary handoff count entering protected `main` must be zero.
 
 ---
 
-# 20. Exact safe next action for the next chat
+# 21. Exact safe next action for the next chat
 
 ```text
-NO REPOSITORY WRITE IS REQUIRED JUST TO BEGIN AI-03B.
+NO REPOSITORY WRITE IS REQUIRED JUST TO BEGIN FINAL AI-03B VALIDATION.
 ```
 
 First:
 
 1. fetch live branch/ref and verify current HEAD;
-2. read the mandatory current authority above;
-3. explicitly acknowledge AI-03A as CLOSED / STRUCTURALLY ACCEPTED / FINAL REVALIDATION COMPLETE;
-4. do not reopen its thirteen hardenings / C01..C33 without concrete contradictory evidence;
-5. start **AI-03B — Retrieval + Memory Architecture** in analysis/design mode;
-6. reconstruct retrieval/memory needs from actual DANTE Product/Domain/Logical/DB semantics, AI-03A C01..C33 and simulations;
-7. specifically preserve governed provider-native acquisition, acquisition/effect separation, derived-sensitivity closure, Runtime Interpretation Frame and consumer-delivery/transformation integrity;
-8. use modern primary-source/paper/framework research as challenger evidence;
-9. build the architecture deeply in one large pass;
-10. only after it is coherent decide whether a dedicated AI-03B mega-test is ready;
-11. do not create DB/index/provider implementation before a later exact write gate and the AI-03C materialization discipline.
+2. read the mandatory current authority above, especially `dante-ai-03b-retrieval-memory-architecture.md`;
+3. acknowledge AI-03A as CLOSED / C01..C33 and AI-03B as **CANDIDATE, NOT CLOSED**;
+4. do not restart generic retrieval/memory research or architecture ideation;
+5. independently reconstruct AI-03B requirements from Product/Domain/Logical/PostgreSQL/Recovery/AI-02/AI-03A;
+6. attack `RetrievalPlan`, `RetrievalCandidate`, coverage/eligibility semantics, memory classes and the Survival/Admission lifecycle as if the existing PASS label were untrusted;
+7. specifically attack approximate retrieval, permission filtering, stale derivatives, inference resurrection, self-corroboration, poisoned experience, cross-purpose/multi-actor reuse, provider revocation/failover, long-running currentness and anti-resurrection;
+8. classify every finding as real gap vs already-covered failure vs implementation/materialization question;
+9. if a real structural gap exists, harden the smallest AI-03B boundary and retest before any closure;
+10. if no unresolved structural contradiction remains, issue a separate exact write gate to close AI-03B and update routing toward AI-03C;
+11. do not create DB/index/provider implementation or enter AI-03C materialization before AI-03B closure.
 
-The new chat should behave as a continuation of this workstream, not as an agent asked to invent a fresh AI architecture.
+The new chat must continue this exact checkpoint rather than inventing a fresh AI architecture.
