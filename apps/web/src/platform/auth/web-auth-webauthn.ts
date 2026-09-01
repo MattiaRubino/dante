@@ -72,20 +72,28 @@ function bytesToBase64Url(value: ArrayBuffer | ArrayBufferView): string {
     .replace(/=+$/g, '');
 }
 
-function decodeCredentialDescriptors(value: unknown): PublicKeyCredentialDescriptor[] | undefined {
+function decodeCredentialDescriptors(
+  value: unknown,
+): PublicKeyCredentialDescriptor[] | undefined {
   if (value === undefined) {
     return undefined;
   }
   if (!Array.isArray(value)) {
-    throw new WebAuthnBrowserError('WebAuthn credential descriptors are malformed.');
+    throw new WebAuthnBrowserError(
+      'WebAuthn credential descriptors are malformed.',
+    );
   }
   return value.map((entry) => {
     if (!isRecord(entry)) {
-      throw new WebAuthnBrowserError('WebAuthn credential descriptor is malformed.');
+      throw new WebAuthnBrowserError(
+        'WebAuthn credential descriptor is malformed.',
+      );
     }
     const type = requiredString(entry, 'type');
     if (type !== 'public-key') {
-      throw new WebAuthnBrowserError('WebAuthn credential descriptor type is unsupported.');
+      throw new WebAuthnBrowserError(
+        'WebAuthn credential descriptor type is unsupported.',
+      );
     }
     const transportsValue = entry.transports;
     const transports =
@@ -151,6 +159,12 @@ function authenticatorAttachment(
   return credential.authenticatorAttachment ?? undefined;
 }
 
+function clientExtensionResults(
+  credential: PublicKeyCredential,
+): Record<string, unknown> {
+  return { ...credential.getClientExtensionResults() };
+}
+
 function registrationResponse(
   credential: PublicKeyCredential,
 ): PasskeyRegistrationCompleteRequest['response'] {
@@ -164,7 +178,7 @@ function registrationResponse(
     rawId: bytesToBase64Url(credential.rawId),
     type: 'public-key',
     authenticatorAttachment: authenticatorAttachment(credential),
-    clientExtensionResults: credential.getClientExtensionResults(),
+    clientExtensionResults: clientExtensionResults(credential),
     response: {
       attestationObject: bytesToBase64Url(
         credential.response.attestationObject,
@@ -187,7 +201,7 @@ function assertionResponse(
     rawId: bytesToBase64Url(credential.rawId),
     type: 'public-key',
     authenticatorAttachment: authenticatorAttachment(credential),
-    clientExtensionResults: credential.getClientExtensionResults(),
+    clientExtensionResults: clientExtensionResults(credential),
     response: {
       authenticatorData: bytesToBase64Url(credential.response.authenticatorData),
       clientDataJSON: bytesToBase64Url(credential.response.clientDataJSON),
@@ -275,5 +289,8 @@ export async function createPasskeyReauthenticationEvidence({
   ceremony: PasskeyCeremony;
   signal?: AbortSignal;
 }>): Promise<PasskeyReauthenticationCompleteRequest> {
-  return createPasskeyAuthenticationEvidence({ ceremony, signal });
+  return createPasskeyAuthenticationEvidence({
+    ceremony,
+    ...(signal === undefined ? {} : { signal }),
+  });
 }
