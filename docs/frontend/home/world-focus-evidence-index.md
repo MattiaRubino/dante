@@ -27,6 +27,25 @@ world-focus-frontend-roadmap.md
 
 Research/review evidence below is retained to preserve reasoning, simulations, alternatives, rejected paths and test evidence.
 
+## E0 — Workspace/module scenario oracle recovery
+
+### `world-focus-workspace-scenario-oracle-evidence.md`
+
+Purpose:
+
+- preserve durable workspace/module conclusions from the former WF0 scenario oracle without restoring its obsolete roadmap/status;
+- record that **unknown future Worlds and unknown future specialist modules were already explicit architecture stress cases**;
+- preserve the reasoning behind one shared workspace platform rather than page-per-World branching;
+- preserve stable/adaptive/ephemeral separation;
+- preserve controlled specialist extension and finite renderer/surface registration;
+- preserve the rejection of arbitrary model-generated executable UI;
+- preserve DANTE -> Insight / Explore / source-drill-down / deeper-surface expectations;
+- preserve typed drill-down, large-data bounding, schema/version evolution and cross-World reuse requirements.
+
+This evidence exists specifically so a later chat does **not** repeat the broad “we do not know all future modules” analysis from zero.
+
+The original `world-focus-wf0-scenario-oracle.md` was removed during cleanup because its old phase language was stale; that deletion was too aggressive because the file contained unique research. The restored evidence file keeps the durable research while discarding obsolete sequencing/status authority.
+
 ## E1 — Product reverse engineering
 
 ### `world-focus-product-reverse-engineering-stress-test.md`
@@ -101,7 +120,7 @@ Research/architecture/implementation evidence for Continuity / Resume.
 
 ### `world-focus-b2-continuity-resume-disposition.md`
 
-Current B2 engineering disposition: automated PASS; integrated user visual acceptance deferred until the World contextual DANTE spatial gate.
+Current B2 engineering disposition: automated PASS; integrated user visual acceptance deferred until the World Workspace Platform/surface footprint is materialized.
 
 ## E4 — VFX research
 
@@ -121,7 +140,7 @@ VFX research has no authority to move the workspace or change the product compos
 
 ## Removed superseded documents
 
-The following were intentionally removed from the live documentation set because newer authority fully supersedes them and keeping them would mislead future chats:
+The following remain intentionally removed because newer authority/evidence fully supersedes them and keeping them live would mislead future chats:
 
 ```text
 world-focus-b1-world-context-lens-review.md
@@ -130,10 +149,13 @@ world-focus-wf1-checkpoint.md
 world-focus-wf0-scenario-oracle.md
 ```
 
-The obsolete contents/roadmap intent they represented are either rejected or captured more accurately by current contracts and WR0-WR2 evidence.
+Important distinction:
+
+- the **old scenario-oracle file/status** remains removed;
+- its unique durable workspace/module research is now retained in `world-focus-workspace-scenario-oracle-evidence.md`.
 
 ## Reading rule
 
-A new chat should **not** start by reading all evidence documents.
+A new chat should start with `world-focus-current-checkpoint.md` and `world-focus-handoff.md`.
 
-Start with `world-focus-current-checkpoint.md` and `world-focus-handoff.md`. Open evidence only when the current scope requires the deeper reasoning behind a decision.
+For the current World Workspace Platform scope, read `world-focus-workspace-scenario-oracle-evidence.md` before proposing new architecture so already-completed future-module/surface research is not repeated.
