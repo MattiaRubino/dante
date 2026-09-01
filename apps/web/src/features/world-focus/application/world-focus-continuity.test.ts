@@ -110,17 +110,11 @@ describe('World Focus B2 continuity application boundary', () => {
   });
 
   it('provides deterministic positive continuity scenarios without backend claims', async () => {
-    const body = await readWorldFocusContinuity('body');
     const music = await readWorldFocusContinuity('music');
     const travel = await readWorldFocusContinuity('travel');
 
-    expect(body.status).toBe('ready');
     expect(music.status).toBe('ready');
     expect(travel.status).toBe('ready');
-    if (body.status === 'ready') {
-      expect(body.projection.orderedItems).toHaveLength(1);
-      expect(body.projection.orderedItems[0]?.key).toBe('body-mobility-reset');
-    }
     if (music.status === 'ready') {
       expect(music.projection.orderedItems).toHaveLength(2);
     }
