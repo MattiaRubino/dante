@@ -2,11 +2,11 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { TemporalCreateFields } from '../model/temporal-create-session';
-import type { TemporalCreateContextOption } from './temporal-create-composer';
 import {
   TEMPORAL_CREATE_DURATION_OPTIONS,
   temporalCreateDurationLabel,
 } from './temporal-create-field-shared';
+import type { TemporalCreateContextOption } from './temporal-create-ui-types';
 
 type TemporalCreateCoreFieldsProps = Readonly<{
   fields: TemporalCreateFields;
