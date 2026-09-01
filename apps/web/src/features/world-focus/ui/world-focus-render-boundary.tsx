@@ -20,17 +20,17 @@ export class WorldFocusRenderBoundary extends Component<
   WorldFocusRenderBoundaryProps,
   WorldFocusRenderBoundaryState
 > {
-  state: WorldFocusRenderBoundaryState = { hasError: false };
+  override state: WorldFocusRenderBoundaryState = { hasError: false };
 
   static getDerivedStateFromError(): WorldFocusRenderBoundaryState {
     return { hasError: true };
   }
 
-  componentDidCatch(error: unknown, info: ErrorInfo) {
+  override componentDidCatch(error: unknown, info: ErrorInfo) {
     this.props.onError?.(error, info);
   }
 
-  componentDidUpdate(previousProps: WorldFocusRenderBoundaryProps) {
+  override componentDidUpdate(previousProps: WorldFocusRenderBoundaryProps) {
     if (
       this.state.hasError &&
       previousProps.resetKey !== this.props.resetKey
@@ -45,7 +45,7 @@ export class WorldFocusRenderBoundary extends Component<
     }
   };
 
-  render() {
+  override render() {
     return this.state.hasError
       ? this.props.fallback({ reset: this.reset })
       : this.props.children;
