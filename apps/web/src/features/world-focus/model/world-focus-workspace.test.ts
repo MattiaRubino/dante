@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   createWorldFocusWorkspaceState,
   getWorldFocusEscapeDisposition,
+  getWorldFocusInteractionCursor,
   reduceWorldFocusWorkspaceState,
 } from './world-focus-workspace';
 
@@ -35,6 +36,42 @@ describe('World Focus workspace orchestration model', () => {
 
     expect(cleared.generation).toBe(2);
     expect(cleared.selection).toBeNull();
+  });
+
+  it('exposes a bounded cursor made only of World, generation and presentation references', () => {
+    const selected = reduceWorldFocusWorkspaceState(
+      createWorldFocusWorkspaceState('music'),
+      {
+        type: 'select-context',
+        reference: { kind: 'projection', key: 'continuity:track-a' },
+      },
+    );
+    const opened = reduceWorldFocusWorkspaceState(selected, {
+      type: 'open-surface',
+      surface: {
+        instanceId: 'explore:versions',
+        kind: 'artifact-explore',
+        depth: 'explore',
+        presentation: 'sidecar',
+        origin: 'user',
+      },
+    });
+
+    expect(getWorldFocusInteractionCursor(opened)).toEqual({
+      worldId: 'music',
+      generation: 1,
+      selection: { kind: 'projection', key: 'continuity:track-a' },
+      activeSurface: {
+        instanceId: 'explore:versions',
+        kind: 'artifact-explore',
+        depth: 'explore',
+        boundGeneration: 1,
+        contextReference: {
+          kind: 'projection',
+          key: 'continuity:track-a',
+        },
+      },
+    });
   });
 
   it('binds a surface to the initiating generation and rejects stale async presentation intents', () => {
