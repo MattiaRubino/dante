@@ -12,6 +12,11 @@ export const worldFocus = {
       'Si è verificato un errore inatteso. Puoi riprovare senza esporre dettagli tecnici.',
     retry: 'Riprova',
   },
+  surfaces: {
+    unavailable: 'Questo contenuto non è disponibile.',
+    error: 'Non riesco a mostrare questo contenuto.',
+    close: 'Chiudi',
+  },
   continuity: {
     title: 'In movimento',
     loading: 'Recupero di ciò che è in movimento',
