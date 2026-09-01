@@ -342,12 +342,16 @@
   }
 
   .world-focus-composition {
+    grid-template-columns: minmax(0, 1fr);
     gap: 12px;
     padding: 0 clamp(18px, 6cqi, 28px) clamp(18px, 6cqi, 28px);
   }
 
+  .world-focus-composition-item,
   .world-focus-composition-item[data-world-focus-grid-span='4'],
-  .world-focus-composition-item[data-world-focus-grid-span='6'] {
+  .world-focus-composition-item[data-world-focus-grid-span='6'],
+  .world-focus-composition-item[data-world-focus-grid-span='12'],
+  .world-focus-composition-item[data-world-focus-prominence='lead'] {
     grid-column: 1 / -1;
   }
 
