@@ -68,7 +68,7 @@ For current World Focus work, use this order:
 5. world-focus-geometry-contract.md
 6. world-focus-current-checkpoint.md for implementation status / next gate
 7. delivery methodology
-8. review/stress documents as evidence
+8. research/review documents only as evidence
 ```
 
 Frontend documents never override canonical semantic authorities.
@@ -355,19 +355,7 @@ Frontend may establish narrow ports/contracts and deterministic local behavior o
 6. `world-focus-geometry-contract.md`
 7. `world-focus-delivery-methodology.md`
 8. `world-focus-frontend-roadmap.md`
-9. evidence documents only as required by the scope.
-
-Deep evidence set:
-
-- `world-focus-product-reverse-engineering-stress-test.md`
-- `world-focus-product-reverse-engineering-stress-matrix.md`
-- `world-focus-dante-user-reverse-engineering-stress-test.md`
-- `world-focus-dante-user-gap-closure-stress-test.md`
-- `world-focus-b0-foundation-review.md`
-- `world-focus-b1-product-disposition.md`
-- `world-focus-b2-continuity-resume-review.md`
-- `world-focus-b2-continuity-resume-disposition.md`
-- `world-focus-vfx-research.md`
+9. `world-focus-evidence-index.md` only if deeper research/review reasoning is needed.
 
 ## 15. Operational safety
 
