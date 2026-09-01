@@ -5,6 +5,7 @@ import {
   WorldFocusSurfaceRegistry,
   type WorldFocusSurfaceRegistration,
 } from './world-focus-surface-registry';
+import { useWorldFocusWorkspaceAllocation } from './world-focus-workspace-allocation-context';
 import { useWorldFocusWorkspace } from './world-focus-workspace-host';
 
 type WorldFocusSurfaceLayerProps = Readonly<{
@@ -12,26 +13,42 @@ type WorldFocusSurfaceLayerProps = Readonly<{
 }>;
 
 /**
- * Renders transient/deeper workspace surfaces from finite shipped
- * registrations. Unknown kinds and renderer failures degrade locally and never
- * become a second route/page failure boundary.
+ * Renders only surfaces that the workspace allocation plan has made active.
+ * Dormant stack entries and external route presentations remain orchestration
+ * state, not competing DOM surfaces. Unknown kinds and renderer failures
+ * degrade locally and never become a second route/page failure boundary.
  */
 export function WorldFocusSurfaceLayer({
   registry,
 }: WorldFocusSurfaceLayerProps) {
   const { t } = useTranslation('common');
   const workspace = useWorldFocusWorkspace();
+  const allocation = useWorldFocusWorkspaceAllocation();
+  const activePlacements = allocation.placements.filter(
+    (placement) =>
+      placement.activeInSlot &&
+      placement.slot !== 'dormant' &&
+      placement.slot !== 'external',
+  );
 
-  if (workspace.state.surfaces.length === 0) {
+  if (activePlacements.length === 0) {
     return null;
   }
 
   return (
     <div
       className="world-focus-surface-layer"
-      data-world-focus-surface-count={workspace.state.surfaces.length}
+      data-world-focus-surface-count={activePlacements.length}
+      data-world-focus-top-layer={allocation.topLayer}
     >
-      {workspace.state.surfaces.map((surface) => {
+      {activePlacements.map((placement) => {
+        const surface = workspace.state.surfaces.find(
+          (candidate) => candidate.instanceId === placement.instanceId,
+        );
+        if (surface === undefined) {
+          return null;
+        }
+
         const registration = registry.resolve(surface.kind);
         const isCurrentGeneration =
           surface.boundGeneration === workspace.state.generation;
@@ -44,6 +61,7 @@ export function WorldFocusSurfaceLayer({
               className="world-focus-surface world-focus-surface-unsupported"
               data-world-focus-surface-id={surface.instanceId}
               data-world-focus-surface-kind={surface.kind}
+              data-world-focus-surface-slot={placement.slot}
               data-world-focus-surface-status="unsupported"
               role="alert"
             >
@@ -65,6 +83,7 @@ export function WorldFocusSurfaceLayer({
             data-world-focus-surface-kind={surface.kind}
             data-world-focus-surface-depth={surface.depth}
             data-world-focus-surface-presentation={surface.presentation}
+            data-world-focus-surface-slot={placement.slot}
             data-world-focus-surface-origin={surface.origin}
             data-world-focus-surface-generation={surface.boundGeneration}
             data-world-focus-surface-current={
