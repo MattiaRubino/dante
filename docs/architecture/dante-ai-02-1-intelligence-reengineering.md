@@ -4,6 +4,7 @@
 - **Workstream:** `feature/ai-architecture`
 - **Established:** 2026-09-01
 - **Phase:** AI-02.1
+- **Current checkpoint:** v0.3 / TWO PRESSURE-TEST ROUNDS COMPLETE / FINAL KILL-TEST STILL REQUIRED
 - **Scope:** pressure-test and reengineer the DANTE Intelligence Architecture against actual product obligations before AI-03
 - **Implementation:** NOT STARTED by this document
 - **Provider/model/SDK selection:** OPEN
@@ -43,7 +44,9 @@ smallest justified reengineering change
 repeat
 ```
 
-This document records the current **v0.2 checkpoint after the first serious simulation pass**. It is not the final AI-02.1 closure record.
+This document records the current **v0.3 checkpoint after two distinct simulation/adversarial pressure-test rounds**. It is not the final AI-02.1 closure record.
+
+The pressure-test record must remain methodologically clean. Questions about concrete provider pricing, model/server selection or other later implementation choices may be useful adjacent discussion, but they are not counted as evidence for the official adversarial round unless the scenario itself is testing an architecture obligation.
 
 ---
 
@@ -77,6 +80,8 @@ Attention Engine
 Disclosure Projection
 VerificationReceipt
 HarnessProfile
+BasisManifest
+Work Supersession
 ```
 
 are **architecture/runtime responsibility contracts unless another accepted source already defines an equivalent Domain concept**. They are not permission to create new canonical tables or generic semantic roots.
@@ -221,7 +226,7 @@ A simple request must remain simple. The architecture must not require the expen
 
 ---
 
-## 6. First simulation pressure-test summary
+## 6. Round I — first simulation pressure-test summary
 
 The first pass intentionally covered ordinary and structurally difficult cases.
 
@@ -242,7 +247,7 @@ The first pass intentionally covered ordinary and structurally difficult cases.
 | future rich general-purpose conversation | GAP FOUND | Interaction Session + dual open-world/DANTE-native path must become first-class |
 | stable structured access for future intelligence | GAP FOUND | Semantic Query / Projection Gateway required |
 
-This scorecard does not close the phase. It records what the first pass taught us.
+This scorecard did not close the phase. It produced the v0.2 responsibility map that Round II then attacked more aggressively.
 
 ---
 
@@ -881,9 +886,9 @@ Application contracts remain stable while provider-native strengths may be used 
 
 ---
 
-## 18. Execution Kernel v0.2
+## 18. Execution Kernel v0.3
 
-After the first simulation pass, the current responsibility map is:
+After two pressure-test rounds, the current responsibility map is:
 
 ```text
 ┌───────────────────────────────────────────────────────────────┐
@@ -896,6 +901,7 @@ After the first simulation pass, the current responsibility map is:
                              │
                              ▼
                         WORK INTAKE
+                 objective / scope / lineage
                              │
                   Semantic Interpretation
                              │
@@ -909,6 +915,9 @@ After the first simulation pass, the current responsibility map is:
  / PROJECTION             ENGINE              WORKSPACE
         │                    │                    │
         └────────────────────┼────────────────────┘
+                             ▼
+                    BASIS / DEPENDENCIES
+                             │
                              ▼
                       REASONING LAYER
                              │
@@ -944,10 +953,12 @@ Policy / Authority / AuthZ / Consent / Visibility
 Information flow
 Provider eligibility
 Autonomy
-Proactivity / Attention
-Run / durability
+Proactivity / Attention + attention budgeting
+Causal lineage / oscillation protection
+Run / durability / work supersession
+Basis validity / dependency-aware invalidation
 Artifact handling
-Result / disclosure / presentation
+Result / disclosure / cumulative inference protection
 Control Plane
 Resource governance
 Observability
@@ -971,6 +982,9 @@ simulation-service
 attention-service
 verification-service
 disclosure-service
+supersession-service
+basis-service
+oscillation-service
 ```
 
 A valid first implementation can remain inside the accepted capability-first modular monolith, for example conceptually:
@@ -1006,24 +1020,27 @@ A representative high-level path is:
 ```text
 1. receive interaction / event / trigger
 2. resolve principal / actor / represented party / purpose
-3. classify work and risk
-4. choose structural fast path when possible
-5. resolve authorized semantic state
-6. assemble only necessary contextual material
-7. evaluate information-flow/provider eligibility
-8. choose model/compute/solver/capabilities as needed
-9. reason / calculate / simulate
-10. verify material intermediate claims when consequential
-11. produce Result / Proposal / ChangeSet as appropriate
-12. re-read material state before consequential execution when freshness matters
-13. re-evaluate policy / Authority / AuthZ after long waits or approvals
-14. issue bounded EffectPermits
-15. execute governed effects
-16. verify / reconcile receipts and ambiguous outcomes
-17. materialize accepted canonical effects only through application/domain operations
-18. apply recipient-aware disclosure projection
-19. render result through the current interaction surface
-20. retain only state justified by the correct semantic/runtime owner
+3. classify work, objective, scope and risk
+4. relate work to prior work: continuation / supersession / independent
+5. choose structural fast path when possible
+6. resolve authorized semantic state
+7. assemble only necessary contextual material
+8. record the consequential basis/dependencies required for later validity checks
+9. evaluate information-flow/provider eligibility
+10. choose model/compute/solver/capabilities as needed
+11. reason / calculate / simulate
+12. verify material intermediate claims when consequential
+13. produce Result / Proposal / ChangeSet as appropriate
+14. check that work is still semantically current and not superseded
+15. re-read material state before consequential execution when freshness matters
+16. re-evaluate policy / Authority / AuthZ / Consent / source validity after long waits or approvals
+17. issue bounded EffectPermits
+18. execute governed effects
+19. verify / reconcile receipts and ambiguous outcomes
+20. materialize accepted canonical effects only through application/domain operations
+21. apply recipient-aware disclosure projection, including bounded cumulative inference protection when required
+22. render result through the current interaction surface
+23. retain only state justified by the correct semantic/runtime owner
 ```
 
 Not every request uses every step.
@@ -1031,7 +1048,7 @@ Not every request uses every step.
 A simple deterministic query may be:
 
 ```text
-1 → 4 → 5 → deterministic compute → 18 → 19
+1 → 5 → 6 → deterministic compute → 21 → 22
 ```
 
 The architecture must preserve that cheap path.
@@ -1055,9 +1072,11 @@ ChangeSet preview
    ↓
 Approval where required
    ↓
+CHECK work is still current / not superseded
+   ↓
 RE-READ current state
    ↓
-RE-EVALUATE Authority / AuthZ / policy
+RE-EVALUATE Authority / AuthZ / Consent / policy / source validity
    ↓
 Bind final EffectPermits
    ↓
@@ -1073,6 +1092,8 @@ Canonical result + truthful status
 Approval is not permission to execute indefinitely against stale state.
 
 If state materially changed while awaiting approval, DANTE must re-evaluate rather than blindly dispatch the old plan.
+
+If newer work supersedes the objective/scope before dispatch, obsolete not-yet-dispatched effects must not execute merely because an older Run remains technically alive.
 
 ---
 
@@ -1097,7 +1118,9 @@ current DANTE availability / constraints
         ↓
 reasoning only if needed
         ↓
-Attention policy
+causal-loop / recent-effect check
+        ↓
+Attention policy + attention budget
         ↓
 notify / review / remain silent
 ```
@@ -1214,6 +1237,16 @@ not `FAILED` and not `SUCCESS`.
 Next action may be provider reread/reconciliation.
 
 Blind retry is forbidden when the first attempt may already have produced an external effect.
+
+Cancellation is also precise:
+
+```text
+CANCEL RUN
+!=
+UNDO ALREADY-DISPATCHED EFFECTS
+```
+
+Cancelling a Run stops future executable work that the cancellation contract still controls. Already-dispatched effects remain subject to receipt verification, reconciliation and explicit compensation/reversal semantics where supported. DANTE must not report them as undone merely because the originating Run was cancelled.
 
 ---
 
@@ -1335,11 +1368,13 @@ External agents do not inherit user Authority merely because they possess a tech
 
 Delegation, principal identity, purpose, scope and effect policy remain explicit.
 
+This pre-existing extensibility requirement is retained, but the official Round II pressure-test below is intentionally independent from later questions about which external AI products/protocols to activate.
+
 ---
 
 ## 29. What remains intentionally open
 
-AI-02.1 v0.2 does not decide:
+AI-02.1 v0.3 does not decide:
 
 ```text
 exact provider/model set
@@ -1363,6 +1398,7 @@ exact Attention scoring/rules
 exact ScenarioWorkspace representation
 exact ChangeSet physical persistence, if any
 exact Interaction Session persistence, if any
+exact physical representation, if any, for BasisManifest/work lineage/disclosure accounting
 ```
 
 Many of these belong partly or primarily to AI-03 or later implementation phases.
@@ -1384,9 +1420,13 @@ one universal AIReviewItem table
 one generic Scenario entity promoted to Domain without semantic proof
 one opaque mega-tool for compound mutation
 one approval token valid forever despite stale state
+one Run authorization assumed valid forever
 one Context Engine that dumps the whole user history into every request
 one egress allow/deny check that ignores safe derived projections
+one disclosure check that ignores cumulative inference when that risk is material
 one background LLM process acting as scheduler/timer
+one adaptation loop that recursively reacts to its own effects without material change
+one old Run dispatching obsolete work after a newer intent superseded it
 one model call for deterministic arithmetic/aggregation by default
 one learned router before DANTE has representative outcome data
 one service/container per architecture box
@@ -1394,7 +1434,7 @@ one service/container per architecture box
 
 ---
 
-## 31. First-pass architecture scorecard
+## 31. Round I architecture scorecard
 
 ```text
 CORE PRINCIPLES                         PASS
@@ -1415,30 +1455,377 @@ Structured semantic access              GAP → FIX IDENTIFIED
 Future rich conversation                GAP → FIX IDENTIFIED
 ```
 
-The identified fixes are the responsibility boundaries recorded in this document.
+Round I produced the v0.2 responsibility map. Round II then tested those fixes under concurrency, revocation, cumulative privacy risk, feedback loops, superseding intent and partial external execution.
 
-They have not yet earned final acceptance because the architecture has not passed the next compound adversarial simulation round.
+---
+
+## 31.1 Round II — clean compound adversarial pressure-test
+
+Round II is the second official AI-02.1 pressure-test. It was intentionally kept separate from adjacent questions about concrete provider/model pricing, local-model/server selection or product-specific external-AI activation.
+
+The test combined real DANTE concerns rather than evaluating one clean feature at a time.
+
+| Scenario family | Result | Consequence |
+|---|---|---|
+| week-wide replan while calendar/current state changes | PASS | scenario basis + expected MaterialState survive; re-evaluate before apply |
+| three scenarios where only one dependency changes | PARTIAL | BasisManifest/dependency-aware invalidation required |
+| concurrent mobile/Web edits from same old state | PASS STRONG | expected MaterialState rejects last-write-wins |
+| five-person coordination with non-DANTE participant and selective availability | PASS | existing multi-actor semantics survive |
+| individually safe availability queries compose into a private inference | GAP FOUND | cumulative/cross-query disclosure protection required |
+| DANTE-generated replan triggers another replan and oscillates | GAP FOUND | causal-loop/oscillation guard required |
+| derived hypothesis later rejected by user | PASS | inference remains derived, not hard canonical preference |
+| conflicting authoritative/provider/user statements | PASS STRONG | Authority/Provenance/Reconciliation remain sufficient |
+| multi-effect operation succeeds partially then crashes | PASS STRONG | ChangeSet + Effect states preserve partial/unknown outcome |
+| source/permission revoked during active Run | PARTIAL | active-run validity must be revocable/revalidated |
+| ambiguous meeting transcript | PASS | unresolved candidate/clarification is valid result |
+| request has constraints with deterministic validity | PASS STRONG | solver/verifier path survives |
+| no valid plan exists | PASS | `NO VALID PLAN` is legitimate result |
+| many individually useful proactive signals overwhelm user | PARTIAL | Attention must budget aggregate interruption load |
+| newer user intent semantically replaces older still-running work | GAP FOUND | Work Supersession first-class required |
+| crash around external dispatch ambiguity | PASS | durable effect boundary + no blind retry survive |
+| corrected/retired fact later reappears via old derived material | PASS STRUCTURAL | anti-resurrection remains mandatory; AI-03 must prove lifecycle |
+| visible endpoints accidentally imply hidden private relationship | PASS SEMANTIC / HARDENING | reinforces cumulative inference control |
+| external report corrected after having influenced a decision | PASS STRONG | historical/provider/current distinction survives |
+| hostile combined scenario with stale basis + revocation + partial effect + superseding work | PASS ONLY WITH v0.3 HARDENINGS | no Domain/Logical reopen required |
+
+### Round II high-level verdict
+
+```text
+NO semantic contradiction found
+NO Domain reopen evidence
+NO Logical reopen evidence
+NO Physical/PostgreSQL reopen evidence
+
+3 architecture gaps found:
+1 cumulative/cross-query disclosure inference
+2 causal-loop / oscillation protection
+3 work supersession
+
+3 contract hardenings found:
+1 BasisManifest / dependency-aware validity
+2 revocable active-Run authorization/data validity
+3 aggregate Attention budgeting
+
+1 effect lifecycle clarification:
+CANCEL RUN != UNDO ALREADY-DISPATCHED EFFECTS
+```
+
+---
+
+## 31.2 v0.3 hardening — cumulative / cross-query disclosure protection
+
+### Problem
+
+A response may be safe in isolation while a sequence of authorized responses allows a recipient to infer information they were never authorized to receive.
+
+Example:
+
+```text
+recipient may learn:
+"unavailable 19:00–20:00"
+
+but may not learn:
+private event type/reason
+or a hidden relationship between two participants
+```
+
+Repeated narrow queries can reveal more than any single response.
+
+Therefore Disclosure Projection is not always stateless.
+
+Where inference risk is material, disclosure may consider:
+
+```text
+recipient
+purpose
+sensitivity
+requested granularity
+relevant prior disclosures
+query sequence/pattern
+aggregate information already exposed
+relationship inference risk
+rate / probing behavior
+```
+
+Potential outcomes include:
+
+```text
+ALLOW
+COARSEN
+AGGREGATE
+WITHHOLD
+REQUIRE DIFFERENT SCOPE
+```
+
+This does not create a universal privacy-memory ontology or a second Visibility truth.
+
+Any disclosure accounting is bounded runtime/security state whose only purpose is to enforce already valid disclosure/Visibility constraints against composition attacks.
+
+The existing semantic invariant remains:
+
+```text
+visible endpoint A
++
+visible endpoint B
+!=
+visible relationship A↔B
+```
+
+---
+
+## 31.3 v0.3 hardening — causal-loop / oscillation guard
+
+### Problem
+
+DANTE may legitimately create an effect that produces a new signal. If the system cannot distinguish external change from its own recent adaptation, multiple individually valid rules can oscillate indefinitely.
+
+Example:
+
+```text
+move training to Tuesday
+→ Tuesday becomes overloaded
+→ move to Wednesday
+→ recovery rule reacts
+→ move back to Tuesday
+→ repeat
+```
+
+Relevant causal lineage must therefore be available when proactivity/replanning evaluates a signal:
+
+```text
+Signal
+→ caused_by / related_to Effect
+→ Effect belongs to Run
+→ Run may originate from Watch / Rule / prior adaptation
+```
+
+Bounded protections may include:
+
+```text
+minimum material delta
+hysteresis
+cooldown
+recent-effect awareness
+duplicate/symmetric adaptation detection
+bounded adaptation depth
+```
+
+The guard must not suppress a genuinely new external change merely because related DANTE work happened recently.
+
+The decision is therefore not "never react to our own effect". It is:
+
+> do not recursively re-adapt when no sufficiently material new reality justifies another change.
+
+---
+
+## 31.4 v0.3 hardening — Work Supersession
+
+### Problem
+
+Canonical state may remain unchanged while the user's newer intention makes an older Run's pending proposal obsolete.
+
+Example:
+
+```text
+Run A:
+"organize next week"
+
+Run B one minute later:
+"wait — the priority is now finishing the project"
+```
+
+Expected MaterialState alone cannot detect this because the database may not have changed yet.
+
+Work Intake / Run lifecycle must therefore support bounded work relationships such as:
+
+```text
+objective
+scope
+continuation_of?
+supersedes?
+independent_of?
+```
+
+The distinction is mandatory:
+
+```text
+SUPERSEDE
+!= CANCEL
+!= ROLLBACK
+!= RECONCILE
+```
+
+A superseded Run may still need to:
+
+```text
+finish reconciliation of already-attempted effects
+preserve audit/execution evidence
+return truthful status about work already performed
+```
+
+but it must not:
+
+```text
+present an obsolete proposal as the current recommendation
+dispatch not-yet-dispatched work that the newer intent invalidated
+silently cancel unrelated independent Runs
+```
+
+Supersession must be scope-aware. A new weekly-planning objective does not automatically supersede an unrelated flight watch or research Run.
+
+---
+
+## 31.5 v0.3 hardening — Execution / Reasoning BasisManifest
+
+### Problem
+
+A scenario, plan or consequential result may depend on multiple inputs, not one global snapshot.
+
+A conceptual `BasisManifest` may therefore capture enough dependency evidence to evaluate continued validity:
+
+```text
+relevant MaterialStateRefs
+relevant canonical/source references
+external source identity/version/freshness
+assumptions used
+constraints used
+policy/config versions where consequential
+capability/harness versions where consequential to reproducibility
+```
+
+The purpose is not to store every token or every transient thought.
+
+The purpose is to support:
+
+```text
+what changed?
+which result depended on it?
+what must be recomputed?
+what remains valid?
+```
+
+Preferred behavior:
+
+```text
+changed input X
+→ invalidate/recompute dependent outputs
+```
+
+instead of either:
+
+```text
+invalidate everything
+```
+
+or:
+
+```text
+invalidate nothing
+```
+
+BasisManifest is runtime/evidence metadata, not a new canonical Domain owner and not a substitute for owner-specific MaterialState history.
+
+---
+
+## 31.6 v0.3 hardening — active Run validity is revocable
+
+Authorization and data eligibility are not frozen forever at Run start.
+
+```text
+authorized at T0
+!=
+authorized forever
+```
+
+At consequential boundaries, especially after waits/approvals/durable suspension or before disclosure/effect, the runtime must be able to revalidate as applicable:
+
+```text
+Authority
+AuthZ
+Consent
+Visibility
+purpose / processing eligibility
+source validity
+source retirement/deletion
+expected MaterialState
+work supersession/currentness
+```
+
+Revocation cannot retroactively remove information already processed by an external provider or undo an already-dispatched effect.
+
+It can and must constrain subsequent behavior, including where applicable:
+
+```text
+new retrieval/use
+new provider disclosure
+new recipient disclosure
+new derived persistence
+new consequential effect
+```
+
+This preserves both honest system limits and forward enforcement.
+
+---
+
+## 31.7 v0.3 hardening — Attention is a budgeted user resource
+
+A system can be wrong at product level while every single notification is individually relevant.
+
+Therefore Attention evaluates not only:
+
+```text
+is this signal relevant/material/urgent?
+```
+
+but also:
+
+```text
+given everything else asking for attention now,
+should this interrupt the user in this form and at this time?
+```
+
+Inputs may include:
+
+```text
+attention budget
+interruption cost
+recent interruptions
+aggregate current load
+batchability
+review opportunity
+urgency/materiality
+expiry
+user policy
+quiet hours/current mode
+```
+
+Ten moderate signals may become one review instead of ten interruptions.
+
+Attention budgeting is a responsibility refinement of the existing Attention boundary, not a new service or semantic persistence root.
 
 ---
 
 ## 32. Remaining AI-02.1 acceptance work
 
-Before AI-02.1 can close, the v0.2 model must undergo a more aggressive compound pressure-test.
+Before AI-02.1 can close, the v0.3 model must undergo a final, more aggressive **kill-test**.
 
-The next scenarios must combine multiple failure dimensions at the same time rather than testing one clean concern per case.
+The next round must target the new hardenings directly rather than merely replaying the previous scenarios.
 
-Required classes include at least:
+It must combine multiple failure dimensions at the same time, including at least:
 
 ```text
-multi-actor + privacy + stale state
+multi-actor + privacy + cumulative inference probing
+stale scenario basis + dependency-local invalidation
 provider side effect + timeout + retry temptation
-long approval wait + changed Authority
+long approval wait + changed Authority/Consent
+revoked permission during active Run
+superseding user intent while older Run is waiting or streaming
+causal feedback loop produced by DANTE's own prior effects
+Attention overload from multiple simultaneous watches
 external untrusted content + sensitive DANTE context + outbound effect
 multi-step replan + partially failed external operation
-long-running watch + changing user constraints
 conflicting evidence from multiple actors/providers
 participant without DANTE account
-revoked permission during active Run
 model/provider outage during compound work
 cancellation during streaming / execution
 budget/resource exhaustion mid-run
@@ -1447,32 +1834,36 @@ concurrent user edit during scenario approval
 future frontier-chat mixed open-world + DANTE-native task
 ```
 
-At least one deliberately hostile end-to-end scenario should combine many of these simultaneously.
+At least one deliberately hostile end-to-end scenario must combine many of these simultaneously.
 
-### Example hostile scenario seed
+### Required hostile seed for Round III
 
 ```text
-four-person trip
-+ one participant does not use DANTE
-+ private calendars
-+ selective availability disclosure
-+ shared budget
-+ flight/hotel providers
-+ untrusted external travel content
-+ one participant cancels
-+ booking provider times out after mutation
-+ user changes decision during reconciliation
-+ DANTE must replan without rewriting history
-+ no private reason may leak to the other participants
+shared multi-person plan
++ at least one non-DANTE participant
++ private actor-scoped context
++ repeated probing that could infer hidden information
++ one scenario built from several independent MaterialState/source dependencies
++ DANTE performs a bounded adaptation
++ that adaptation produces a new signal capable of causing oscillation
++ user starts a newer Run that supersedes only part of the old objective
++ Authority/Consent changes while one Run is suspended
++ one external effect has already been dispatched and times out
++ another effect has not yet been dispatched
++ one source used by the scenario is corrected/retired
++ process crashes and resumes
++ user attention is already saturated by other valid signals
++ DANTE must recover without rewriting history, leaking private information,
+  duplicating an external effect, applying obsolete work or entering a replan loop
 ```
 
 The architecture should survive without introducing scenario-specific semantic patches.
 
 ---
 
-## 33. Regression checklist for the next pressure-test
+## 33. Regression checklist for the final kill-test
 
-Every future AI-02.1 scenario must check:
+Every remaining AI-02.1 scenario must check:
 
 ```text
 [ ] no accepted Domain distinction collapsed
@@ -1480,15 +1871,26 @@ Every future AI-02.1 scenario must check:
 [ ] no inference presented as Confirmation
 [ ] no history rewritten to match the current plan
 [ ] no stale material state silently overwritten
+[ ] no stale Basis dependency ignored
+[ ] no unrelated output invalidated without reason when dependency-local validation is possible
 [ ] no effect declared successful without sufficient evidence
 [ ] no blind retry across an ambiguous external effect
+[ ] cancel Run not represented as undo of already-dispatched effects
 [ ] no Authority inferred from technical capability
 [ ] no Visibility used as Authority
+[ ] no active Run assumes Authority/AuthZ/Consent remains valid forever
 [ ] no private source disclosed merely because its consequence is usable
+[ ] no cumulative query sequence reconstructs protected information without bounded control
+[ ] visible endpoints do not imply an unauthorized hidden relationship
 [ ] no other actor collapsed into account holder/user
 [ ] no unresolved durable work trapped only in chat state
 [ ] no hypothetical scenario treated as current reality
 [ ] no ChangeSet hides partial completion
+[ ] no superseded Run presents obsolete proposal as current
+[ ] no superseded Run dispatches newly obsolete effects
+[ ] no newer Run accidentally cancels independent work
+[ ] no DANTE adaptation recursively triggers itself without material new reality
+[ ] no user attention flood from individually-valid signals when batching/suppression is appropriate
 [ ] no unnecessary frontier-model call for deterministic work
 [ ] no unnecessary durable/sandbox/multi-agent complexity
 [ ] no new technology activated without a concrete trigger
@@ -1532,11 +1934,15 @@ Interaction Session boundary is coherent
 DANTE-native/open-world composition is coherent
 Semantic Query / Context split is coherent
 Scenario Workspace does not create a second truth
+BasisManifest/dependency invalidation is coherent
 ChangeSet/Effect interaction preserves WL-H obligations
-Attention/proactivity does not fabricate outcomes
-Disclosure Projection preserves privacy/Visibility semantics
+Work Supersession does not corrupt independent work or already-attempted effects
+Attention/proactivity does not fabricate outcomes or self-oscillate
+Attention load can be bounded across multiple signals
+Disclosure Projection preserves privacy/Visibility semantics across single and cumulative queries
+active-Run authorization/data validity can be revoked/revalidated
 future frontier-chat extensibility survives
-compound adversarial scenarios do not require semantic collapse
+final compound adversarial kill-test does not require semantic collapse
 ```
 
 Only then should detailed memory admission, retrieval strategy, embeddings, indexes, conversation history and lifecycle be selected.
@@ -1545,25 +1951,43 @@ Only then should detailed memory admission, retrieval strategy, embeddings, inde
 
 ## 35. Current phase verdict
 
-AI-02.1 v0.2 produces a stronger architecture than the pre-simulation model.
+AI-02.1 v0.3 is stronger than v0.2 and is the current branch-local architecture checkpoint.
 
 The central thesis remains intact:
 
 > **DANTE is a domain-centered intelligence platform around replaceable cognition, not a model-centric application.**
 
-The first serious product pressure-test did not invalidate the architecture. It exposed missing first-class responsibilities around hypothetical state, compound change, attention, disclosure, structured semantic access and conversational lifecycle.
+Round I exposed missing first-class responsibilities around hypothetical state, compound change, attention, disclosure, structured semantic access and conversational lifecycle.
 
-Those gaps now have bounded fixes that preserve the accepted Domain/Logical/Physical/PostgreSQL model rather than bypassing it.
+Round II then attacked the reengineered model under concurrency, cumulative privacy inference, self-generated feedback, revocation, superseding intent, partial effects, crashes, corrections and multi-actor pressure. It found three further architecture gaps and three bounded contract hardenings, all repairable inside the intelligence/runtime responsibility model without reopening Domain, Logical, Physical or PostgreSQL.
 
-Current status therefore remains:
+Current v0.3 additions are therefore:
+
+```text
+cumulative / cross-query disclosure protection
+causal-loop / oscillation guard
+Work Supersession
+BasisManifest + dependency-aware invalidation
+revocable active-Run validity
+Attention budgeting
+cancel Run != undo dispatched effects
+```
+
+These remain responsibility contracts, not automatic microservices, tables or new Domain owners.
+
+Current status:
 
 ```text
 AI-02.1
 ACTIVE
-REENGINEERED TO v0.2
-FIRST SIMULATION PASS COMPLETE
-FINAL ADVERSARIAL PRESSURE-TEST NOT YET COMPLETE
+REENGINEERED TO v0.3
+ROUND I COMPLETE
+ROUND II COMPLETE
+FINAL KILL-TEST STILL REQUIRED
 NOT CLOSED
+
+DOMAIN / LOGICAL / PHYSICAL / POSTGRESQL REOPEN
+NOT JUSTIFIED BY CURRENT PRESSURE-TEST EVIDENCE
 
 AI-03
 NOT STARTED
