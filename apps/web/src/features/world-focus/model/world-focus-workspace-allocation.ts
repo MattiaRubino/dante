@@ -1,21 +1,24 @@
 import type {
+  WorldFocusPresentationSurface,
+} from './world-focus-platform';
+import type {
   WorldFocusSurfaceDescriptor,
   WorldFocusWorkspaceState,
 } from './world-focus-workspace';
 
-export const WORLD_FOCUS_WORKSPACE_ALLOCATION_MODES = [
-  'content',
-  'split',
-  'overlay',
-  'focus',
-] as const;
+export const WORLD_FOCUS_MAIN_ALLOCATIONS = ['full', 'split'] as const;
 
-export type WorldFocusWorkspaceAllocationMode =
-  (typeof WORLD_FOCUS_WORKSPACE_ALLOCATION_MODES)[number];
+export type WorldFocusMainAllocation =
+  (typeof WORLD_FOCUS_MAIN_ALLOCATIONS)[number];
+
+export const WORLD_FOCUS_TOP_LAYERS = ['none', 'overlay', 'focus'] as const;
+
+export type WorldFocusTopLayer = (typeof WORLD_FOCUS_TOP_LAYERS)[number];
 
 export const WORLD_FOCUS_SURFACE_SLOTS = [
   'sidecar',
   'overlay',
+  'focus',
   'dormant',
   'external',
 ] as const;
@@ -44,17 +47,21 @@ export const DEFAULT_WORLD_FOCUS_WORKSPACE_ALLOCATION_POLICY: WorldFocusWorkspac
 
 export type WorldFocusSurfacePlacement = Readonly<{
   instanceId: string;
-  requestedPresentation: WorldFocusSurfaceDescriptor['presentation'];
+  requestedPresentation: WorldFocusPresentationSurface;
   slot: WorldFocusSurfaceSlot;
   activeInSlot: boolean;
 }>;
 
 export type WorldFocusWorkspaceAllocationPlan = Readonly<{
-  mode: WorldFocusWorkspaceAllocationMode;
+  mainAllocation: WorldFocusMainAllocation;
+  topLayer: WorldFocusTopLayer;
   workspaceInlineSize: number;
   mainInlineSize: number;
   sidecarInlineSize: number | null;
+  splitGap: number;
   activeSidecarInstanceId: string | null;
+  activeOverlayInstanceId: string | null;
+  activeFocusInstanceId: string | null;
   topSurfaceInstanceId: string | null;
   placements: readonly WorldFocusSurfacePlacement[];
 }>;
@@ -127,12 +134,13 @@ function clamp(value: number, minimum: number, maximum: number): number {
   return Math.min(Math.max(value, minimum), maximum);
 }
 
-function findActiveSidecar(
+function findLatestSurfaceByPresentation(
   surfaces: readonly WorldFocusSurfaceDescriptor[],
+  presentation: WorldFocusPresentationSurface,
 ): WorldFocusSurfaceDescriptor | null {
   for (let index = surfaces.length - 1; index >= 0; index -= 1) {
     const surface = surfaces[index];
-    if (surface?.presentation === 'sidecar') {
+    if (surface?.presentation === presentation) {
       return surface;
     }
   }
@@ -146,28 +154,46 @@ function getTopSurface(
 }
 
 function isOverlayPresentation(
-  presentation: WorldFocusSurfaceDescriptor['presentation'],
+  presentation: WorldFocusPresentationSurface,
+): boolean {
+  return presentation === 'popover' || presentation === 'modal';
+}
+
+function isWorkspaceLayerPresentation(
+  presentation: WorldFocusPresentationSurface,
 ): boolean {
   return (
+    presentation === 'sidecar' ||
     presentation === 'popover' ||
     presentation === 'modal' ||
     presentation === 'full-screen'
   );
 }
 
+function findTopWorkspaceLayerSurface(
+  surfaces: readonly WorldFocusSurfaceDescriptor[],
+): WorldFocusSurfaceDescriptor | null {
+  for (let index = surfaces.length - 1; index >= 0; index -= 1) {
+    const surface = surfaces[index];
+    if (surface !== undefined && isWorkspaceLayerPresentation(surface.presentation)) {
+      return surface;
+    }
+  }
+  return null;
+}
+
 /**
  * Resolves how transient/deeper surfaces consume the already-owned rectangular
- * World workspace. It never ranks World content and never knows World identity.
+ * World workspace. It never ranks World content, knows World identity, or owns
+ * canonical truth.
  *
- * - one most-recent sidecar may consume layout space when the allocated
- *   workspace is genuinely wide enough;
- * - older sidecars remain dormant in the interaction stack so close/back can
- *   restore them without rendering competing columns;
- * - popover/modal/full-screen are overlay presentations and never shrink the
- *   composition beneath them;
- * - a requested sidecar degrades to overlay when preserving a useful main
- *   canvas would otherwise fail;
- * - route presentation is external to workspace allocation.
+ * The plan deliberately separates two independent axes:
+ * - mainAllocation: whether a sidecar consumes real canvas width;
+ * - topLayer: whether an overlay/focus surface sits above that canvas.
+ *
+ * This means a wide sidecar can remain allocated while a confirmation modal or
+ * focused Explore surface temporarily sits above it. Narrow sidecars degrade to
+ * overlay without changing their requested presentation contract.
  */
 export function resolveWorldFocusWorkspaceAllocation(
   state: WorldFocusWorkspaceState,
@@ -180,8 +206,12 @@ export function resolveWorldFocusWorkspaceAllocation(
     'World Focus workspace inline size',
   );
   const resolvedPolicy = assertPolicy(policy);
-  const activeSidecar = findActiveSidecar(state.surfaces);
+  const activeSidecar = findLatestSurfaceByPresentation(
+    state.surfaces,
+    'sidecar',
+  );
   const topSurface = getTopSurface(state.surfaces);
+  const topWorkspaceLayerSurface = findTopWorkspaceLayerSurface(state.surfaces);
 
   const preferredSidecarInlineSize = clamp(
     inlineSize * resolvedPolicy.preferredSidecarFraction,
@@ -199,6 +229,21 @@ export function resolveWorldFocusWorkspaceAllocation(
     sidecarInlineSize === null
       ? inlineSize
       : inlineSize - resolvedPolicy.splitGap - sidecarInlineSize;
+
+  const activeLayerSurface =
+    topWorkspaceLayerSurface?.presentation === 'sidecar' && canSplit
+      ? null
+      : topWorkspaceLayerSurface;
+  const activeFocusSurface =
+    activeLayerSurface?.presentation === 'full-screen'
+      ? activeLayerSurface
+      : null;
+  const activeOverlaySurface =
+    activeLayerSurface !== null &&
+    (activeLayerSurface.presentation === 'sidecar' ||
+      isOverlayPresentation(activeLayerSurface.presentation))
+      ? activeLayerSurface
+      : null;
 
   const placements = state.surfaces.map<WorldFocusSurfacePlacement>((surface) => {
     if (surface.presentation === 'route') {
@@ -220,11 +265,35 @@ export function resolveWorldFocusWorkspaceAllocation(
         });
       }
 
+      if (canSplit) {
+        return Object.freeze({
+          instanceId: surface.instanceId,
+          requestedPresentation: surface.presentation,
+          slot: 'sidecar' as const,
+          activeInSlot: true,
+        });
+      }
+
       return Object.freeze({
         instanceId: surface.instanceId,
         requestedPresentation: surface.presentation,
-        slot: canSplit ? ('sidecar' as const) : ('overlay' as const),
-        activeInSlot: true,
+        slot:
+          surface === activeOverlaySurface
+            ? ('overlay' as const)
+            : ('dormant' as const),
+        activeInSlot: surface === activeOverlaySurface,
+      });
+    }
+
+    if (surface.presentation === 'full-screen') {
+      return Object.freeze({
+        instanceId: surface.instanceId,
+        requestedPresentation: surface.presentation,
+        slot:
+          surface === activeFocusSurface
+            ? ('focus' as const)
+            : ('dormant' as const),
+        activeInSlot: surface === activeFocusSurface,
       });
     }
 
@@ -232,8 +301,11 @@ export function resolveWorldFocusWorkspaceAllocation(
       return Object.freeze({
         instanceId: surface.instanceId,
         requestedPresentation: surface.presentation,
-        slot: 'overlay' as const,
-        activeInSlot: surface === topSurface,
+        slot:
+          surface === activeOverlaySurface
+            ? ('overlay' as const)
+            : ('dormant' as const),
+        activeInSlot: surface === activeOverlaySurface,
       });
     }
 
@@ -245,25 +317,21 @@ export function resolveWorldFocusWorkspaceAllocation(
     });
   });
 
-  let mode: WorldFocusWorkspaceAllocationMode = 'content';
-  if (topSurface?.presentation === 'full-screen') {
-    mode = 'focus';
-  } else if (canSplit) {
-    mode = 'split';
-  } else if (
-    topSurface !== null &&
-    (isOverlayPresentation(topSurface.presentation) ||
-      topSurface.presentation === 'sidecar')
-  ) {
-    mode = 'overlay';
-  }
-
   return Object.freeze({
-    mode,
+    mainAllocation: canSplit ? 'split' : 'full',
+    topLayer:
+      activeFocusSurface !== null
+        ? 'focus'
+        : activeOverlaySurface !== null
+          ? 'overlay'
+          : 'none',
     workspaceInlineSize: inlineSize,
     mainInlineSize,
     sidecarInlineSize,
-    activeSidecarInstanceId: activeSidecar?.instanceId ?? null,
+    splitGap: canSplit ? resolvedPolicy.splitGap : 0,
+    activeSidecarInstanceId: canSplit ? activeSidecar?.instanceId ?? null : null,
+    activeOverlayInstanceId: activeOverlaySurface?.instanceId ?? null,
+    activeFocusInstanceId: activeFocusSurface?.instanceId ?? null,
     topSurfaceInstanceId: topSurface?.instanceId ?? null,
     placements: Object.freeze(placements),
   });
