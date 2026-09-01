@@ -27,6 +27,7 @@ import {
 import { WORLD_FOCUS_VISUAL_VERSION } from '../model/world-focus-visual';
 import { WorldFocusContext } from './world-focus-context';
 import { WorldFocusContinuity } from './world-focus-continuity';
+import { WorldFocusRenderBoundary } from './world-focus-render-boundary';
 import { WorldFocusVisualFrame } from './world-focus-visual-frame';
 import { WorldFocusWorkspace } from './world-focus-workspace';
 import './world-focus.css';
@@ -169,7 +170,37 @@ export function WorldFocusPage({
         status={status}
         context={<WorldFocusContext world={world} />}
       >
-        <WorldFocusContinuity worldId={world.id} />
+        <WorldFocusRenderBoundary
+          resetKey={`continuity:${world.id}`}
+          fallback={({ reset }) => (
+            <section
+              className="world-focus-continuity world-focus-continuity-degraded"
+              aria-labelledby="world-focus-continuity-render-error-title"
+              data-world-focus-continuity-status="error"
+            >
+              <h2
+                className="world-focus-continuity-title"
+                id="world-focus-continuity-render-error-title"
+              >
+                {t(($) => $.common.worldFocus.continuity.title)}
+              </h2>
+              <div className="world-focus-continuity-degraded-row">
+                <p className="world-focus-continuity-status" role="alert">
+                  {t(($) => $.common.worldFocus.continuity.error)}
+                </p>
+                <button
+                  className="world-focus-continuity-retry"
+                  type="button"
+                  onClick={reset}
+                >
+                  {t(($) => $.common.worldFocus.continuity.retry)}
+                </button>
+              </div>
+            </section>
+          )}
+        >
+          <WorldFocusContinuity worldId={world.id} />
+        </WorldFocusRenderBoundary>
       </WorldFocusWorkspace>
     </main>
   );
