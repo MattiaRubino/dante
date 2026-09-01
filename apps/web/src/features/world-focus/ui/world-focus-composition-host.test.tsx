@@ -2,7 +2,7 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import { i18n } from '../../../bootstrap/i18n';
-import { defineWorldFocusComposition } from '../model/world-focus-composition';
+import { resolveWorldFocusCompositionPlan } from '../model/world-focus-composition-plan';
 import {
   WorldFocusCompositionHost,
   type WorldFocusCompositionRegistration,
@@ -15,18 +15,29 @@ beforeAll(async () => {
 
 afterEach(() => cleanup());
 
+const TEST_POLICY = Object.freeze({
+  maxAdaptiveEntries: 4,
+  maxEphemeralEntries: 2,
+});
+
 describe('WorldFocusCompositionHost', () => {
-  it('renders resolved composition through finite registrations and exposes ownership axes', () => {
-    const entries = defineWorldFocusComposition([
-      {
-        instanceId: 'continuity',
-        kind: 'continuity',
-        ownership: {
-          stability: 'adaptive',
-          origin: 'application-derived',
+  it('renders resolved composition through finite registrations and exposes ownership/layout axes', () => {
+    const plan = resolveWorldFocusCompositionPlan(
+      [
+        {
+          instanceId: 'continuity',
+          kind: 'continuity',
+          ownership: {
+            stability: 'adaptive',
+            origin: 'application-derived',
+          },
+          prominence: 'primary',
+          footprint: 'standard',
+          order: 0,
         },
-      },
-    ]);
+      ],
+      TEST_POLICY,
+    );
     const registry = new WorldFocusModuleRegistry<WorldFocusCompositionRegistration>([
       {
         kind: 'continuity',
@@ -37,27 +48,39 @@ describe('WorldFocusCompositionHost', () => {
     const { container } = render(
       <WorldFocusCompositionHost
         worldId="music"
-        entries={entries}
+        entries={plan.entries}
         registry={registry}
       />,
     );
 
     expect(screen.getByText('Continuity for music')).toBeTruthy();
-    const item = container.querySelector('[data-world-focus-composition-id="continuity"]');
+    const item = container.querySelector(
+      '[data-world-focus-composition-id="continuity"]',
+    );
     expect(item?.getAttribute('data-world-focus-stability')).toBe('adaptive');
     expect(item?.getAttribute('data-world-focus-origin')).toBe(
       'application-derived',
     );
+    expect(item?.getAttribute('data-world-focus-prominence')).toBe('primary');
+    expect(item?.getAttribute('data-world-focus-footprint')).toBe('standard');
+    expect(item?.getAttribute('data-world-focus-grid-span')).toBe('12');
+    expect(item?.getAttribute('data-world-focus-grid-row')).toBe('0');
   });
 
   it('degrades an unknown future renderer locally instead of inventing UI', () => {
-    const entries = defineWorldFocusComposition([
-      {
-        instanceId: 'future',
-        kind: 'future-specialist',
-        ownership: { stability: 'ephemeral', origin: 'dante-proposed' },
-      },
-    ]);
+    const plan = resolveWorldFocusCompositionPlan(
+      [
+        {
+          instanceId: 'future',
+          kind: 'future-specialist',
+          ownership: { stability: 'ephemeral', origin: 'dante-proposed' },
+          prominence: 'primary',
+          footprint: 'wide',
+          order: 0,
+        },
+      ],
+      TEST_POLICY,
+    );
     const registry = new WorldFocusModuleRegistry<WorldFocusCompositionRegistration>(
       [],
     );
@@ -65,7 +88,7 @@ describe('WorldFocusCompositionHost', () => {
     const { container } = render(
       <WorldFocusCompositionHost
         worldId="travel"
-        entries={entries}
+        entries={plan.entries}
         registry={registry}
       />,
     );
