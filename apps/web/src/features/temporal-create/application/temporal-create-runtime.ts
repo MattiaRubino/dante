@@ -26,7 +26,6 @@ export type TemporalCreateMetadata = Readonly<{
   kind: TemporalCreateKind;
   contextId: string;
   notes: string;
-  tags: string;
   timeSemantics: TemporalCreateTimeSemantics;
   timeZoneId: string;
   specification: TemporalCreateFields;
@@ -110,7 +109,7 @@ function capabilitiesForFields(
     'history',
     'notes',
   ];
-  if (fields.recurrence.frequency !== 'none') {
+  if (fields.kind === 'event' && fields.eventRecurrence.patternKind !== 'none') {
     capabilities.push('recurrence');
   }
   if (fields.kind === 'activity') {
@@ -183,7 +182,6 @@ class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
       kind: fields.kind,
       contextId: fields.contextId,
       notes: fields.notes.trim(),
-      tags: fields.tags.trim(),
       timeSemantics: fields.timeSemantics,
       timeZoneId: fields.timeZoneId,
       specification: fields,
@@ -237,11 +235,7 @@ class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
     }
 
     const result = await this.workspace.execute(prepared.command);
-    if (
-      result.status !== 'applied' ||
-      !result.item ||
-      !result.undoToken
-    ) {
+    if (result.status !== 'applied' || !result.item || !result.undoToken) {
       return Object.freeze({ result, effect: null });
     }
 
