@@ -7,7 +7,13 @@ import {
 } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import {
+  startWorldFocusPerformanceSpan,
+  WORLD_FOCUS_PERFORMANCE_MEASURES,
+  type WorldFocusPerformanceSpan,
+} from '../application/world-focus-foundation';
 import { WORLD_FOCUS_GEOMETRY } from '../model/world-focus-geometry';
+import type { WorldFocusShellStatus } from '../model/world-focus-platform';
 import {
   WORLD_FOCUS_REGION,
   WORLD_FOCUS_STRUCTURE_VERSION,
@@ -20,6 +26,7 @@ import {
 } from '../model/world-focus-transition';
 import type { WorldFocusWorld } from '../model/world-focus-fixtures';
 import { WorldFocusVisualFrame } from './world-focus-visual-frame';
+import { WorldFocusWorkspace } from './world-focus-workspace';
 import './world-focus.css';
 import './world-focus-visual-frame-v4.css';
 import './world-focus-states.css';
@@ -28,11 +35,7 @@ export type WorldFocusCloseRequest = Readonly<{
   preferHistory: boolean;
 }>;
 
-export type WorldFocusShellStatus =
-  | 'loading'
-  | 'ready'
-  | 'error'
-  | 'unavailable';
+export type { WorldFocusShellStatus } from '../model/world-focus-platform';
 
 type WorldFocusPageProps = Readonly<{
   world: WorldFocusWorld;
@@ -50,17 +53,10 @@ export function WorldFocusPage({
   const { t } = useTranslation('common');
   const mainRef = useRef<HTMLElement | null>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
+  const performanceSpanRef = useRef<WorldFocusPerformanceSpan | null>(null);
   const [entry] = useState(() => readWorldFocusEntry(world.id, source));
 
   const label = t(($) => $.common.worldFocus.worlds[world.id].label);
-  const statusMessage =
-    status === 'loading'
-      ? t(($) => $.common.worldFocus.states.loading, { world: label })
-      : status === 'error'
-        ? t(($) => $.common.worldFocus.states.error, { world: label })
-        : status === 'unavailable'
-          ? t(($) => $.common.worldFocus.states.unavailable, { world: label })
-          : null;
   const closeRequest = useMemo<WorldFocusCloseRequest>(
     () => ({ preferHistory: entry !== null }),
     [entry],
@@ -80,6 +76,29 @@ export function WorldFocusPage({
     '--world-focus-hot': '#ff8736',
     '--world-focus-ambient-intensity': String(world.theme.ambientIntensity),
   } as CSSProperties;
+
+  useEffect(() => {
+    const span = startWorldFocusPerformanceSpan(
+      WORLD_FOCUS_PERFORMANCE_MEASURES.openToUsable,
+    );
+    performanceSpanRef.current = span;
+
+    return () => {
+      if (performanceSpanRef.current === span) {
+        span.cancel();
+        performanceSpanRef.current = null;
+      }
+    };
+  }, [world.id]);
+
+  useEffect(() => {
+    if (status !== 'ready') {
+      return;
+    }
+
+    performanceSpanRef.current?.finish();
+    performanceSpanRef.current = null;
+  }, [status, world.id]);
 
   useEffect(() => {
     if (entry !== null) {
@@ -145,21 +164,7 @@ export function WorldFocusPage({
         aria-hidden="true"
       />
 
-      <section
-        className="world-focus-workspace"
-        data-world-focus-region={WORLD_FOCUS_REGION.workspace}
-        aria-label={t(($) => $.common.worldFocus.canvasLabel, { world: label })}
-        aria-busy={status === 'loading' ? true : undefined}
-      >
-        {statusMessage === null ? null : (
-          <p
-            className="world-focus-state"
-            role={status === 'loading' ? 'status' : 'alert'}
-          >
-            {statusMessage}
-          </p>
-        )}
-      </section>
+      <WorldFocusWorkspace worldLabel={label} status={status} />
     </main>
   );
 }
