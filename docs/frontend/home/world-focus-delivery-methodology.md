@@ -71,13 +71,16 @@ Every block follows this order.
 18. Smallest complete production-depth implementation
 19. Automated gates
 20. Real-browser/manual review
-21. Fix/polish
-22. Explicit acceptance
-23. Freeze/update contracts
-24. Next block
+21. User functional + visual validation
+22. Fix/polish from review evidence
+23. Explicit user acceptance
+24. Freeze/update contracts
+25. Next block
 ```
 
 Do not jump directly from a product idea to implementation.
+
+A green automated suite is necessary but is never sufficient to authorize the next mini-vertical.
 
 ---
 
@@ -368,6 +371,8 @@ Failure/race injection is required where the block has async behavior.
 
 No gate is reported green unless actually executed.
 
+Automated tests do not replace product acceptance. After implementation and automated gates, every mini-vertical is exposed for real-browser validation before freeze.
+
 ---
 
 # 15. Freeze rule
@@ -378,11 +383,31 @@ A block can freeze only after:
 architecture review complete
 implementation complete
 relevant automated gates green
-real-browser/manual product review complete
+assistant real-browser/manual review complete
+user functional validation complete
+user visual/UI validation complete
 known regressions resolved
 explicit user acceptance
 contracts/docs updated
 ```
+
+The required handoff between adjacent mini-verticals is therefore:
+
+```text
+automated PASS
+-> real-browser/manual review
+-> user tests the complete accumulated World Focus surface
+-> user tests the new vertical functionally
+-> user reviews the new vertical visually/interaction-wise
+-> issues are fixed and re-tested
+-> explicit user OK
+-> freeze
+-> only then start the next vertical
+```
+
+User validation is cumulative: each gate must verify not only the newest vertical but also that the already accepted World Focus experience still behaves coherently as a whole.
+
+A mini-vertical with green CI but without explicit user acceptance remains **IMPLEMENTED / ACCEPTANCE PENDING**, not CLOSED.
 
 After freeze:
 
@@ -466,6 +491,7 @@ research the real problem
 -> choose the narrowest correct owner
 -> implement the smallest complete production-depth slice
 -> prove it under pressure
+-> user functional + visual acceptance
 -> freeze it
 -> move forward
 ```
