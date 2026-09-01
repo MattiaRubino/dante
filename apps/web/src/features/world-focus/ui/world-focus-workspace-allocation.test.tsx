@@ -165,6 +165,10 @@ describe('WorldFocusWorkspace allocation integration', () => {
     expect(surface?.getAttribute('data-world-focus-surface-slot')).toBe(
       'sidecar',
     );
+    expect(surface?.getAttribute('data-world-focus-surface-interaction')).toBe(
+      'interactive',
+    );
+    expect(surface?.hasAttribute('inert')).toBe(false);
   });
 
   it('reallocates the same sidecar to a non-modal overlay when the measured workspace contracts', () => {
@@ -190,9 +194,13 @@ describe('WorldFocusWorkspace allocation integration', () => {
     expect(surface?.getAttribute('data-world-focus-surface-slot')).toBe(
       'overlay',
     );
+    expect(surface?.getAttribute('data-world-focus-surface-interaction')).toBe(
+      'interactive',
+    );
+    expect(surface?.hasAttribute('inert')).toBe(false);
   });
 
-  it('keeps a wide sidecar allocated underneath a modal while making only the main plane inert', () => {
+  it('keeps a wide sidecar allocated but inert underneath a modal while the modal remains interactive', () => {
     const { container } = renderWorkspace();
 
     fireEvent.click(screen.getByRole('button', { name: 'Open sidecar' }));
@@ -216,7 +224,15 @@ describe('WorldFocusWorkspace allocation integration', () => {
     expect(sidecar?.getAttribute('data-world-focus-surface-slot')).toBe(
       'sidecar',
     );
+    expect(sidecar?.getAttribute('data-world-focus-surface-interaction')).toBe(
+      'inert',
+    );
+    expect(sidecar?.hasAttribute('inert')).toBe(true);
     expect(modal?.getAttribute('data-world-focus-surface-slot')).toBe('overlay');
+    expect(modal?.getAttribute('data-world-focus-surface-interaction')).toBe(
+      'interactive',
+    );
+    expect(modal?.hasAttribute('inert')).toBe(false);
   });
 
   it('keeps a narrow sidecar dormant while a newer modal owns the only overlay slot', () => {
@@ -228,6 +244,7 @@ describe('WorldFocusWorkspace allocation integration', () => {
 
     const workspace = container.querySelector('.world-focus-workspace');
     const mainPlane = container.querySelector('.world-focus-main-plane');
+    const modal = screen.getByTestId('surface-confirm:modal').parentElement;
 
     expect(workspace?.getAttribute('data-world-focus-main-allocation')).toBe(
       'full',
@@ -237,10 +254,9 @@ describe('WorldFocusWorkspace allocation integration', () => {
     );
     expect(mainPlane?.hasAttribute('inert')).toBe(true);
     expect(screen.queryByTestId('surface-dante:sidecar')).toBeNull();
-    expect(
-      screen
-        .getByTestId('surface-confirm:modal')
-        .parentElement?.getAttribute('data-world-focus-surface-slot'),
-    ).toBe('overlay');
+    expect(modal?.getAttribute('data-world-focus-surface-slot')).toBe('overlay');
+    expect(modal?.getAttribute('data-world-focus-surface-interaction')).toBe(
+      'interactive',
+    );
   });
 });
