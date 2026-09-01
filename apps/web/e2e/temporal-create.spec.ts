@@ -91,7 +91,9 @@ test('Expanded and Full Activity author the DANTE planning grammar without fake 
   await dialog.getByLabel('Politica di spostamento').selectOption('window');
   await dialog.getByLabel('Struttura di esecuzione').selectOption('splittable');
   await dialog.getByLabel('Sessione minima (min)').fill('45');
-  await dialog.getByLabel('Ripetizione').selectOption('weekly');
+  await dialog
+    .getByRole('combobox', { name: 'Ripetizione', exact: true })
+    .selectOption('weekly');
   await dialog.getByRole('button', { name: 'Lun' }).click();
   await dialog.getByRole('button', { name: 'Mer' }).click();
   await dialog.getByLabel('Esito non confermato').selectOption('daily-review');
@@ -148,7 +150,9 @@ test('Event Full Create keeps Event grammar and preserves provider intent withou
   await dialog.getByLabel('Luogo').fill('Studio / remoto');
   await dialog.getByLabel('Disponibilità').selectOption('busy');
   await dialog.getByLabel('Visibilità').selectOption('private');
-  await dialog.getByLabel('Ripetizione').selectOption('daily');
+  await dialog
+    .getByRole('combobox', { name: 'Ripetizione', exact: true })
+    .selectOption('daily');
   await dialog
     .getByLabel('Partecipanti')
     .fill('cliente@example.com\ncollega@example.com');
@@ -232,9 +236,9 @@ test('double-click and Shift-drag on empty Timeline create contextual defaults',
     throw new Error('Expected a visible Timeline day section');
   }
 
-  await section.dblclick({
-    position: { x: Math.min(600, box.width - 40), y: box.height * 0.46 },
-  });
+  const emptyX = Math.min(600, box.width - 40);
+  const emptyY = box.height * 0.46;
+  await section.dblclick({ position: { x: emptyX, y: emptyY } });
   let dialog = page.locator('[data-temporal-create="composer"]');
   await expect(dialog).toBeVisible();
   await expect(dialog.getByLabel('Data')).not.toHaveValue('');
@@ -242,9 +246,13 @@ test('double-click and Shift-drag on empty Timeline create contextual defaults',
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveCount(0);
 
-  const startX = box.x + Math.min(620, box.width - 50);
-  const startY = box.y + box.height * 0.34;
-  const endY = Math.min(box.y + box.height - 30, startY + 130);
+  const rangeBox = await section.boundingBox();
+  if (!rangeBox) {
+    throw new Error('Expected Timeline day geometry after contextual create');
+  }
+  const startX = rangeBox.x + Math.min(600, rangeBox.width - 40);
+  const startY = rangeBox.y + rangeBox.height * 0.46;
+  const endY = Math.min(rangeBox.y + rangeBox.height - 30, startY + 130);
   await page.keyboard.down('Shift');
   await page.mouse.move(startX, startY);
   await page.mouse.down();
