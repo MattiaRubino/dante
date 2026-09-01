@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { ProviderContinuation } from '../application/auth-provider';
@@ -23,7 +23,23 @@ type AccessProviderFlowPanelProps = Readonly<{
   onConfirmLink: () => void;
 }>;
 
-export function AccessProviderFlowPanel({
+function continuationStateKey(continuation: ProviderContinuationValue): string {
+  if (continuation.kind === 'link') {
+    return `link:${continuation.link.external_link_challenge_ref}`;
+  }
+  return `enrollment:${continuation.enrollment.email_address ?? ''}:${continuation.enrollment.verification_expires_at ?? ''}`;
+}
+
+export function AccessProviderFlowPanel(props: AccessProviderFlowPanelProps) {
+  return (
+    <AccessProviderFlowPanelState
+      key={continuationStateKey(props.continuation)}
+      {...props}
+    />
+  );
+}
+
+function AccessProviderFlowPanelState({
   continuation,
   authenticated,
   errorMessage,
@@ -47,16 +63,6 @@ export function AccessProviderFlowPanel({
   const [linkEmail, setLinkEmail] = useState('');
   const [linkPassword, setLinkPassword] = useState('');
   const [showLinkPassword, setShowLinkPassword] = useState(false);
-
-  useEffect(() => {
-    if (enrollment === null) {
-      return;
-    }
-    setEmail(enrollment.email_address ?? '');
-    setEditingEmail(enrollment.verification_expires_at == null);
-    setCode('');
-    setFieldError(null);
-  }, [enrollment]);
 
   function submitLinkCredentials(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
