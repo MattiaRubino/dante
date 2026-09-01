@@ -20,26 +20,60 @@ _EXPORT_PEPPER_KEY_ID = "openapi-password-v1"
 _EXPORT_OTP_KEY_ID = "openapi-signup-otp-v1"
 _HTTP_METHODS = frozenset({"get", "post", "put", "patch", "delete", "options", "head", "trace"})
 _PROBLEM_SCHEMA_REF = "#/components/schemas/ProblemDetails"
-_FIRST_PARTY_JSON_POST_PATHS = (
-    "/api/v1/auth/signup",
-    "/api/v1/auth/signup/verify",
-    "/api/v1/auth/signup/resend",
-    "/api/v1/auth/recovery",
-    "/api/v1/auth/recovery/validate",
-    "/api/v1/auth/reset-password",
-    "/api/v1/auth/reauthenticate",
-    "/api/v1/auth/password/establish",
+_FIRST_PARTY_BROWSER_MUTATIONS = (
+    ("/api/v1/auth/signin", "post"),
+    ("/api/v1/auth/signup", "post"),
+    ("/api/v1/auth/signup/verify", "post"),
+    ("/api/v1/auth/signup/resend", "post"),
+    ("/api/v1/auth/recovery", "post"),
+    ("/api/v1/auth/recovery/validate", "post"),
+    ("/api/v1/auth/reset-password", "post"),
+    ("/api/v1/auth/reauthenticate", "post"),
+    ("/api/v1/auth/session", "delete"),
+    ("/api/v1/auth/password/establish", "post"),
+    ("/api/v1/auth/password", "delete"),
+    ("/api/v1/auth/google/begin", "post"),
+    ("/api/v1/auth/google/complete", "post"),
+    ("/api/v1/auth/apple/begin", "post"),
+    ("/api/v1/auth/provider-enrollment/email", "post"),
+    ("/api/v1/auth/provider-enrollment/verify", "post"),
+    ("/api/v1/auth/provider-enrollment/resend", "post"),
+    ("/api/v1/auth/provider-link/confirm", "post"),
+    ("/api/v1/auth/providers/{external_identity_ref}", "delete"),
+    ("/api/v1/auth/passkeys/registration/begin", "post"),
+    ("/api/v1/auth/passkeys/registration/complete", "post"),
+    ("/api/v1/auth/passkeys/authentication/begin", "post"),
+    ("/api/v1/auth/passkeys/authentication/complete", "post"),
+    ("/api/v1/auth/passkeys/reauthentication/begin", "post"),
+    ("/api/v1/auth/passkeys/reauthentication/complete", "post"),
+    ("/api/v1/auth/passkeys/{passkey_credential_ref}", "patch"),
+    ("/api/v1/auth/passkeys/{passkey_credential_ref}", "delete"),
 )
 _AUTHENTICATED_OPERATIONS = (
     ("/api/v1/auth/methods", "get"),
     ("/api/v1/auth/reauthenticate", "post"),
     ("/api/v1/auth/password/establish", "post"),
     ("/api/v1/auth/password", "delete"),
+    ("/api/v1/auth/providers/{external_identity_ref}", "delete"),
+    ("/api/v1/auth/passkeys/registration/begin", "post"),
+    ("/api/v1/auth/passkeys/registration/complete", "post"),
+    ("/api/v1/auth/passkeys/reauthentication/begin", "post"),
+    ("/api/v1/auth/passkeys/reauthentication/complete", "post"),
+    ("/api/v1/auth/passkeys/{passkey_credential_ref}", "patch"),
+    ("/api/v1/auth/passkeys/{passkey_credential_ref}", "delete"),
 )
-_AUTHENTICATED_CSRF_MUTATIONS = (
-    ("/api/v1/auth/reauthenticate", "post"),
-    ("/api/v1/auth/password/establish", "post"),
-    ("/api/v1/auth/password", "delete"),
+_AUTHENTICATED_CSRF_MUTATIONS = tuple(
+    operation for operation in _AUTHENTICATED_OPERATIONS if operation[1] != "get"
+)
+_PROVIDER_BEGIN_OPERATIONS = (
+    ("/api/v1/auth/google/begin", "post"),
+    ("/api/v1/auth/apple/begin", "post"),
+)
+_PROVIDER_ENROLLMENT_OPERATIONS = (
+    ("/api/v1/auth/provider-enrollment", "get"),
+    ("/api/v1/auth/provider-enrollment/email", "post"),
+    ("/api/v1/auth/provider-enrollment/verify", "post"),
+    ("/api/v1/auth/provider-enrollment/resend", "post"),
 )
 
 
@@ -140,16 +174,12 @@ def _require_discriminators(document: dict[str, Any]) -> None:
             schema_name=schema_name,
             property_name="authenticated",
         )
-    _require_literal_discriminator(
-        schemas,
-        schema_name="SignupAuthenticatedResponse",
-        property_name="outcome",
-    )
-    _require_literal_discriminator(
-        schemas,
-        schema_name="ExistingAccountSignupResponse",
-        property_name="outcome",
-    )
+    for schema_name in ("SignupAuthenticatedResponse", "ExistingAccountSignupResponse"):
+        _require_literal_discriminator(
+            schemas,
+            schema_name=schema_name,
+            property_name="outcome",
+        )
     _require_literal_discriminator(
         schemas,
         schema_name="SignupCreatedResponse",
@@ -160,6 +190,21 @@ def _require_discriminators(document: dict[str, Any]) -> None:
         schema_name="RecoveryAcceptedResponse",
         property_name="accepted",
     )
+    for schema_name in (
+        "ProviderAuthenticatedResponse",
+        "ProviderLinkRequiredResponse",
+        "ProviderEnrollmentRequiredResponse",
+    ):
+        _require_literal_discriminator(
+            schemas,
+            schema_name=schema_name,
+            property_name="outcome",
+        )
+    _require_literal_discriminator(
+        schemas,
+        schema_name="ProviderAuthenticatedResponse",
+        property_name="authenticated",
+    )
 
 
 def _response_header(description: str, *, const: str | None = None) -> dict[str, Any]:
@@ -167,6 +212,21 @@ def _response_header(description: str, *, const: str | None = None) -> dict[str,
     if const is not None:
         schema["const"] = const
     return {"description": description, "schema": schema}
+
+
+def _add_response_header(
+    document: dict[str, Any],
+    *,
+    path: str,
+    method: str,
+    status: str,
+    name: str,
+    description: str,
+) -> None:
+    operation = _operation(document, path, method)
+    response = cast(dict[str, Any], cast(dict[str, Any], operation["responses"])[status])
+    headers = cast(dict[str, Any], response.setdefault("headers", {}))
+    headers[name] = _response_header(description)
 
 
 def _annotate_auth_response_headers(document: dict[str, Any]) -> None:
@@ -198,37 +258,79 @@ def _annotate_auth_response_headers(document: dict[str, Any]) -> None:
                         "Minimum delay before another equivalent attempt is useful when supplied."
                     )
 
-    cookie_successes = (
-        (
-            "/api/v1/auth/signin",
-            "post",
-            "200",
-            "Establishes the host-only HttpOnly Secure __Host-dante-session cookie.",
+    session_cookie_successes = (
+        ("/api/v1/auth/signin", "post", "200", "Establishes a new AuthSession bearer."),
+        ("/api/v1/auth/signup/verify", "post", "200", "May establish a new AuthSession bearer."),
+        ("/api/v1/auth/reauthenticate", "post", "200", "Rotates the same AuthSession bearer."),
+        ("/api/v1/auth/password/establish", "post", "200", "Rotates the same AuthSession bearer."),
+        ("/api/v1/auth/password", "delete", "200", "Rotates the same AuthSession bearer."),
+        ("/api/v1/auth/provider-link/confirm", "post", "200", "Rotates the same AuthSession bearer."),
+        ("/api/v1/auth/providers/{external_identity_ref}", "delete", "200", "Rotates the same AuthSession bearer."),
+        ("/api/v1/auth/passkeys/registration/complete", "post", "200", "Rotates the same AuthSession bearer."),
+        ("/api/v1/auth/passkeys/authentication/complete", "post", "200", "Establishes a new AuthSession bearer."),
+        ("/api/v1/auth/passkeys/reauthentication/complete", "post", "200", "Rotates the same AuthSession bearer."),
+        ("/api/v1/auth/passkeys/{passkey_credential_ref}", "delete", "200", "Rotates the same AuthSession bearer."),
+    )
+    for path, method, status, description in session_cookie_successes:
+        _add_response_header(
+            document,
+            path=path,
+            method=method,
+            status=status,
+            name="Set-Cookie",
+            description=f"{description} Cookie: __Host-dante-session.",
+        )
+
+    for path, method, status in (
+        ("/api/v1/auth/google/complete", "post", "200"),
+        ("/api/v1/auth/provider-enrollment/verify", "post", "200"),
+    ):
+        _add_response_header(
+            document,
+            path=path,
+            method=method,
+            status=status,
+            name="Set-Cookie",
+            description=(
+                "Outcome-dependent AuthSession or provider continuation cookie; continuation secrets "
+                "never appear in JSON."
+            ),
+        )
+
+    for path in (
+        "/api/v1/auth/provider-enrollment/email",
+        "/api/v1/auth/provider-enrollment/resend",
+    ):
+        _add_response_header(
+            document,
+            path=path,
+            method="post",
+            status="200",
+            name="Set-Cookie",
+            description="Refreshes the bounded __Host-dante-provider-enrollment capability cookie.",
+        )
+
+    _add_response_header(
+        document,
+        path="/api/v1/auth/apple/callback",
+        method="post",
+        status="303",
+        name="Set-Cookie",
+        description=(
+            "Outcome-dependent AuthSession or provider continuation cookie; continuation secrets "
+            "never enter the redirect URL."
         ),
-        (
-            "/api/v1/auth/signup/verify",
-            "post",
-            "200",
-            "May establish __Host-dante-session only for the authenticated signup outcome.",
-        ),
-        (
-            "/api/v1/auth/reauthenticate",
-            "post",
-            "200",
-            "Rotates the bearer on the same AuthSession through __Host-dante-session.",
-        ),
-        (
-            "/api/v1/auth/password/establish",
-            "post",
-            "200",
-            "Rotates the bearer after password establishment through __Host-dante-session.",
-        ),
-        (
-            "/api/v1/auth/password",
-            "delete",
-            "200",
-            "Rotates the bearer after password removal through __Host-dante-session.",
-        ),
+    )
+    _add_response_header(
+        document,
+        path="/api/v1/auth/apple/callback",
+        method="post",
+        status="303",
+        name="Location",
+        description="Fixed DANTE destination selected only from stored bounded return_target_code.",
+    )
+
+    for path, method, status, description in (
         (
             "/api/v1/auth/reset-password",
             "post",
@@ -241,12 +343,15 @@ def _annotate_auth_response_headers(document: dict[str, Any]) -> None:
             "204",
             "Clears the current __Host-dante-session cookie.",
         ),
-    )
-    for path, method, status, description in cookie_successes:
-        operation = _operation(document, path, method)
-        response = cast(dict[str, Any], cast(dict[str, Any], operation["responses"])[status])
-        headers = cast(dict[str, Any], response.setdefault("headers", {}))
-        headers["Set-Cookie"] = _response_header(description)
+    ):
+        _add_response_header(
+            document,
+            path=path,
+            method=method,
+            status=status,
+            name="Set-Cookie",
+            description=description,
+        )
 
     get_session = _operation(document, "/api/v1/auth/session", "get")
     get_200 = cast(dict[str, Any], cast(dict[str, Any], get_session["responses"])["200"])
@@ -295,6 +400,41 @@ def _csrf_browser_policy(browser_policy: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _annotate_apple_form_post(document: dict[str, Any]) -> None:
+    operation = _operation(document, "/api/v1/auth/apple/callback", "post")
+    operation["requestBody"] = {
+        "required": True,
+        "content": {
+            "application/x-www-form-urlencoded": {
+                "schema": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": ["state"],
+                    "properties": {
+                        "state": {"type": "string", "minLength": 1, "maxLength": 256},
+                        "code": {"type": "string", "maxLength": 4096},
+                        "id_token": {"type": "string", "maxLength": 32768},
+                        "user": {"type": "string", "maxLength": 8192},
+                        "error": {"type": "string", "maxLength": 256},
+                    },
+                }
+            }
+        },
+    }
+    operation["x-dante-external-ingress"] = {
+        "browser_proof_exception": True,
+        "required_media_type": "application/x-www-form-urlencoded",
+        "authority": "server-side state verifier and provider proof",
+    }
+    _operation(document, "/api/v1/auth/apple/notifications", "post")[
+        "x-dante-external-ingress"
+    ] = {
+        "browser_proof_exception": True,
+        "required_media_type": "application/json",
+        "authority": "Apple-signed notification JWS verification",
+    }
+
+
 def _annotate_browser_security(document: dict[str, Any]) -> None:
     """Record browser-managed ingress rules without generating forbidden browser headers."""
     components = cast(dict[str, Any], document["components"])
@@ -307,11 +447,22 @@ def _annotate_browser_security(document: dict[str, Any]) -> None:
             "Opaque host-only HttpOnly Secure AuthSession bearer cookie; browser transport owns it."
         ),
     }
+    security_schemes["DanteProviderLinkCookie"] = {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "__Host-dante-provider-link",
+        "description": "Opaque high-entropy provider-link continuation capability.",
+    }
+    security_schemes["DanteProviderEnrollmentCookie"] = {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "__Host-dante-provider-enrollment",
+        "description": "Opaque high-entropy provider-enrollment continuation capability.",
+    }
 
     browser_policy = _browser_policy()
-    _operation(document, "/api/v1/auth/signin", "post")["x-dante-browser-security"] = browser_policy
-    for path in _FIRST_PARTY_JSON_POST_PATHS:
-        _operation(document, path, "post")["x-dante-browser-security"] = browser_policy
+    for path, method in _FIRST_PARTY_BROWSER_MUTATIONS:
+        _operation(document, path, method)["x-dante-browser-security"] = browser_policy
 
     get_session = _operation(document, "/api/v1/auth/session", "get")
     get_session["security"] = [{}, {"DanteSessionCookie": []}]
@@ -334,12 +485,39 @@ def _annotate_browser_security(document: dict[str, Any]) -> None:
     for path, method in _AUTHENTICATED_CSRF_MUTATIONS:
         _operation(document, path, method)["x-dante-browser-security"] = csrf_policy
 
+    for path, method in _PROVIDER_BEGIN_OPERATIONS:
+        operation = _operation(document, path, method)
+        operation["security"] = [{}, {"DanteSessionCookie": []}]
+        operation["x-dante-browser-security"] = {
+            **browser_policy,
+            "session_cookie": {
+                "required_when": "purpose is link or reauthenticate",
+            },
+            "csrf_header": {
+                "owner": "web_transport",
+                "name": "X-Dante-CSRF",
+                "required_when": "purpose is link or reauthenticate",
+            },
+        }
+
+    for path, method in _PROVIDER_ENROLLMENT_OPERATIONS:
+        _operation(document, path, method)["security"] = [{"DanteProviderEnrollmentCookie": []}]
+
+    provider_link = _operation(document, "/api/v1/auth/provider-link", "get")
+    provider_link["security"] = [{"DanteProviderLinkCookie": []}]
+
+    provider_link_confirm = _operation(document, "/api/v1/auth/provider-link/confirm", "post")
+    provider_link_confirm["security"] = [
+        {"DanteSessionCookie": [], "DanteProviderLinkCookie": []}
+    ]
+
 
 def _harden_contract(document: dict[str, Any]) -> dict[str, Any]:
     _normalize_problem_media_types(document)
     _require_discriminators(document)
     _annotate_auth_response_headers(document)
     _annotate_browser_security(document)
+    _annotate_apple_form_post(document)
     return document
 
 
