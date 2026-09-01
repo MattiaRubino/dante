@@ -135,7 +135,7 @@ export function loadGoogleIdentityServices(): Promise<GoogleAccountsId> {
 }
 
 export function googleClientIdFromBuild(): string {
-  const value = import.meta.env.VITE_DANTE_GOOGLE_CLIENT_ID;
+  const value: unknown = import.meta.env.VITE_DANTE_GOOGLE_CLIENT_ID;
   return typeof value === 'string' ? value.trim() : '';
 }
 
