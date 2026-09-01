@@ -8,12 +8,24 @@ import {
 import {
   WebAuthRemoteError,
   webAuthRemote,
+  type WebAuthenticatedSession,
   type WebAuthSession,
   type WebAuthSignInRequest,
 } from '../../../platform/auth/web-auth-remote';
 import type { AccessFlowEvent } from '../model/access-flow';
 
 export const authSessionQueryKey = ['auth', 'session'] as const;
+
+export type AccessAuthSession =
+  | WebAuthenticatedSession
+  | Readonly<{ authenticated: false }>;
+
+function accessAuthSession(session: WebAuthSession): AccessAuthSession {
+  if ('csrf_token' in session) {
+    return session;
+  }
+  return { authenticated: false };
+}
 
 function isRetryableSessionRead(error: unknown): boolean {
   if (!(error instanceof WebAuthRemoteError)) {
@@ -110,7 +122,8 @@ export function accessEventForAuthError(
 export function authSessionQueryOptions() {
   return queryOptions({
     queryKey: authSessionQueryKey,
-    queryFn: ({ signal }) => webAuthRemote.getSession(signal),
+    queryFn: async ({ signal }): Promise<AccessAuthSession> =>
+      accessAuthSession(await webAuthRemote.getSession(signal)),
     retry: (failureCount, error) =>
       failureCount < 1 && isRetryableSessionRead(error),
     staleTime: 1_000,
@@ -131,7 +144,7 @@ export function useSignInMutation() {
       webAuthRemote.signIn(request),
     retry: false,
     onSuccess: (session) => {
-      queryClient.setQueryData<WebAuthSession>(authSessionQueryKey, session);
+      queryClient.setQueryData<AccessAuthSession>(authSessionQueryKey, session);
     },
   });
 }
@@ -144,7 +157,7 @@ export function useLogOutMutation() {
       webAuthRemote.logOut(csrfToken),
     retry: false,
     onSuccess: () => {
-      queryClient.setQueryData<WebAuthSession>(authSessionQueryKey, {
+      queryClient.setQueryData<AccessAuthSession>(authSessionQueryKey, {
         authenticated: false,
       });
     },
