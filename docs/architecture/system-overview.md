@@ -1,11 +1,11 @@
 # DANTE System Overview
 
 - **Status:** CURRENT ARCHITECTURE / IMPLEMENTATION-BOUNDARY OVERVIEW
-- **Last reconciled:** 2026-08-31
+- **Last reconciled:** 2026-09-01
 - **Backend foundation:** CP1–CP6 CLOSED / integrated / directly validated
 - **Current PostgreSQL:** 18.6
 - **Current Alembic head:** `20260830_09`
-- **Current product work:** full Access/Auth vertical active and unmerged on `feature/access-auth`; AI architecture active and design-only on `feature/ai-architecture`
+- **Current product work:** full Access/Auth vertical active and unmerged on `feature/access-auth`; AI architecture active in AI-02.1 design/reengineering on `feature/ai-architecture`
 
 ## 1. Product and authority
 
@@ -33,7 +33,20 @@ client local state != canonical accepted effect
 
 Logical hardenings `WL-H01..WL-H12` remain active implementation contracts.
 
-The current AI-00 consolidation is `docs/architecture/dante-ai-foundation.md`. It defines inherited/derived AI constraints only; it does not select a provider, agent runtime, conversation schema, database evolution or frontend interaction form.
+The AI architecture is currently layered across three branch-local documents:
+
+```text
+docs/architecture/dante-ai-foundation.md
+→ AI-00 inherited/derived semantic baseline
+
+docs/architecture/ai-production-engineering-state-of-the-art-2026.md
+→ external production-engineering research / NON-DANTE-DECISION
+
+docs/architecture/dante-ai-02-1-intelligence-reengineering.md
+→ current ACTIVE AI-02.1 reengineering checkpoint / NOT CLOSED
+```
+
+AI-02.1 does not supersede AI-00. It pressure-tests and refines architecture responsibilities while preserving the accepted semantic baseline.
 
 ## 2. Repository / application topology
 
@@ -71,6 +84,8 @@ apps/backend/src/dante
 ```
 
 FastAPI is an inbound adapter/process host. SQLAlchemy/provider/runtime objects stay outside Domain identity. Capability boundaries are behavior/cohesion based, not one owner/table/route per module.
+
+AI-02.1 responsibility boxes are not automatic deployable services and do not alter this accepted modular-monolith posture. Exact future implementation placement remains open.
 
 ## 3. Backend technical foundation
 
@@ -157,7 +172,7 @@ universal Fact/Version semantic payload root
 JSONB required-semantic escape hatch
 ```
 
-AI work inherits the same boundary. Conversation state, embeddings, provider threads, agent/runtime journals or generated summaries do not become canonical DANTE truth by convenience.
+AI work inherits the same boundary. Conversation state, embeddings, provider threads, agent/runtime journals, scenario overlays, ChangeSets or generated summaries do not become canonical DANTE truth by convenience.
 
 ## 5. Reference / material-state architecture
 
@@ -189,7 +204,7 @@ MaterialStateRef
 
 Provider revisions, MVCC tokens, timestamps and ETags do not become MaterialStateRef.
 
-For consequential operations, expected material state remains the semantic concurrency basis. A stale AI/tool request must conflict/re-read/reconcile rather than silently overwrite newer accepted state.
+For consequential operations, expected material state remains the semantic concurrency basis. A stale AI/tool/scenario request must conflict/re-read/re-evaluate/reconcile rather than silently overwrite newer accepted state.
 
 ## 6. CP6 — Concrete PostgreSQL Database
 
@@ -242,11 +257,89 @@ Full Access/Auth product vertical
 ACTIVE / UNMERGED on feature/access-auth
 
 AI architecture
-ACTIVE / DESIGN-ONLY on feature/ai-architecture
+ACTIVE / AI-02.1 DESIGN + REENGINEERING on feature/ai-architecture
 NO BACKEND / DB / PROVIDER IMPLEMENTATION CLAIMED
 ```
 
-AI-00 must first consolidate product/semantic/governance constraints and then research the interaction/product form. Provider/model/runtime/tool/memory choices remain downstream.
+AI-00 remains the semantic baseline. Production-engineering research remains evidence. AI-02.1 is now the active architecture pressure-test and has recorded a v0.2 responsibility map, but the phase is explicitly **NOT CLOSED** pending compound adversarial simulation and remaining acceptance work.
+
+### AI-02.1 v0.2 responsibility map
+
+The current reengineering checkpoint distinguishes:
+
+```text
+Interaction Edge
+→ Interaction Session
+→ Work Intake
+→ Execution Kernel
+
+Execution Kernel may compose:
+- Semantic Query / Projection Gateway
+- Context Engine
+- Simulation / Hypothetical State Workspace
+- model reasoning through ModelTarget + HarnessProfile
+- deterministic compute
+- solver
+- capability runtime
+- verifier / auditor
+- ChangeSet / EffectGraph
+- governed Effect Runtime
+
+Cross-cutting:
+- policy / Authority / AuthZ / Consent / Visibility
+- information flow
+- provider eligibility
+- autonomy
+- proactivity / attention
+- run / durability
+- artifacts
+- result / disclosure / presentation
+- control plane
+- resource governance
+- observability
+- audit / execution evidence
+- evals
+```
+
+These are responsibility boundaries, not new Domain owners and not one-service-per-box deployment instructions.
+
+### Interaction / Run distinction
+
+```text
+Interaction Session != Run != Worker
+```
+
+A conversation may contain multiple Runs. A durable Run may outlive the UI Session when its own work contract legitimately requires that behavior.
+
+### DANTE-native / open-world composition
+
+The same intelligence surface may combine:
+
+```text
+DANTE-native structured state / planning / effects
++
+open-world explanation / research / documents / code / multimodal reasoning
+```
+
+without transferring canonical state or Authority to the model/provider.
+
+### Scenario and compound-change distinction
+
+Hypothetical scenarios are derived/transient overlays over a material-state basis, not current truth. A selected scenario may lead to a governed ChangeSet, but the ChangeSet does not replace individual effect governance or cross-system reconciliation.
+
+### Context vs disclosure
+
+The architecture distinguishes:
+
+```text
+Context Projection
+= what a reasoning operation may consume for a purpose
+
+Disclosure Projection
+= what representation a recipient may receive
+```
+
+This preserves privacy when DANTE can compute from private state but should reveal only an authorized consequence.
 
 ## 8. Frontend / client data authority
 
@@ -268,7 +361,7 @@ Local arrival/staging never defines canonical truth.
 
 Generic frontend foundation/materialization is already closed and integrated. Product verticals proceed on bounded branches under their own gates.
 
-The future AI interaction surface must preserve the same authority boundary: chat/UI state may express draft, candidate, streaming or pending state without pretending that state is an accepted canonical effect.
+The future AI interaction surface must preserve the same authority boundary: chat/UI state may express draft, candidate, streaming, hypothetical or pending state without pretending that state is an accepted canonical effect.
 
 ## 9. Offline / specialist capabilities
 
@@ -287,6 +380,8 @@ OR-Tools                          solver-backed capability
 A PostgreSQL-native structure required by the canonical schema may exist without activating the surrounding runtime/product capability.
 
 For AI, Restate/outbox/pgvector/OR-Tools/provider capabilities remain trigger-based: selection in the target architecture does not mean every AI request should activate them.
+
+Research challengers remain challengers until a real DANTE workload creates evidence to reopen the smallest relevant choice.
 
 ## 10. Transactions / migrations / privileges
 
@@ -314,6 +409,8 @@ Migration/evolution, idempotency, material-state and privilege doctrine is gover
 
 Future AI tool execution must pass through application/domain mutation contracts rather than receiving direct unrestricted database mutation authority.
 
+A compound AI-generated ChangeSet may coordinate multiple application effects, but does not expand their transaction/authority boundaries. Cross-provider all-or-nothing semantics must not be fabricated where they do not exist.
+
 ## 11. Current direct database evidence
 
 Final CP6 acceptance established, among other gates:
@@ -334,16 +431,19 @@ persistent volume retained       PASS
 
 The later integrated Recovery workstream directly proved the bounded recovery/retirement/anti-resurrection contract in LOCAL, including whole CP07 rehearsal and database-local reopen. Remote backup/cloud recovery remains unactivated/not claimed. Exact current evidence belongs to `docs/database/README.md` and the recovery runbook/harnesses.
 
-Current AI-00 work is documentation/design only and makes no runtime QA claim.
+Current AI-00 / research / AI-02.1 work is documentation/design only and makes no runtime QA claim.
 
 ## 12. Current non-claims
 
 ```text
 FULL ACCESS/AUTH PRODUCT VERTICAL       NOT CLAIMED CLOSED
+DANTE AI-02.1                           ACTIVE / NOT CLOSED
 DANTE AI RUNTIME                        NOT IMPLEMENTED
 AI MODEL / PROVIDER                     NOT SELECTED
 AI AGENT SDK / ORCHESTRATOR             NOT SELECTED
 AI CONVERSATION / MEMORY DB SCHEMA      NOT DESIGNED OR MATERIALIZED
+AI-02.1 RESPONSIBILITY BOUNDARIES        NOT IMPLEMENTED AS SERVICES/MODULES BY THIS DOC
+AI-03 CONTEXT / RETRIEVAL / MEMORY      NOT STARTED
 SEMANTIC HG BLANKET PASS                NO
 REMOTE BACKUP PROVIDER                  TBD / NOT ACTIVATED
 PRODUCTION/CLOUD RECOVERY               NOT CLAIMED
@@ -370,6 +470,8 @@ Historical successful runs remain evidence for the exact commit/environment on w
 
 Future AI implementation will require its own direct evidence for model/tool/runtime/security behavior; documentation or provider feature claims will not constitute PASS.
 
+Before AI-02.1 can close at architecture level, its current v0.2 responsibility model must additionally survive compound adversarial simulations combining multi-actor/privacy/stale-state/provider-effect/durability/cancellation/resource/failure dimensions rather than only isolated happy paths.
+
 ## 14. Environments / developer posture
 
 Exactly:
@@ -393,7 +495,9 @@ CP6 DATABASE          CLOSED / INTEGRATED
 POSTGRESQL RECOVERY   LOCAL PASS / CLOSED / INTEGRATED
 FRONTEND FOUNDATION   CLOSED / INTEGRATED
 ACCESS/AUTH VERTICAL  ACTIVE / UNMERGED
-AI ARCHITECTURE       ACTIVE / DESIGN-ONLY / UNMERGED
+AI ARCHITECTURE       ACTIVE / AI-02.1 REENGINEERING / UNMERGED
+AI-02.1               v0.2 CHECKPOINT / FIRST PRESSURE-TEST COMPLETE / NOT CLOSED
+AI-03                 NOT STARTED / BLOCKED UNTIL AI-02.1 ACCEPTANCE
 ```
 
 Current general repository status is owned by `docs/PROJECT-STATUS.md`; branch-local product/architecture work is owned by the relevant durable documentation and executable branch truth.
