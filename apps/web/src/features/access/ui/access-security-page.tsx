@@ -21,7 +21,10 @@ import {
   usePrepareGoogleAuthenticationMutation,
   useUnlinkProviderMutation,
 } from '../application/auth-provider';
-import { useAuthSessionQuery } from '../application/auth-session';
+import {
+  isAuthenticatedAccessSession,
+  useAuthSessionQuery,
+} from '../application/auth-session';
 import { useReauthenticateMutation } from '../application/auth-lifecycle';
 import { isValidNewPassword } from '../model/access-flow';
 import { GoogleIdentityButton } from './provider-button';
@@ -95,8 +98,7 @@ export function AccessSecurityPage() {
   const { t } = useTranslation('common');
   const sessionQuery = useAuthSessionQuery();
   const sessionData = sessionQuery.data;
-  const session =
-    sessionData !== undefined && 'csrf_token' in sessionData ? sessionData : null;
+  const session = isAuthenticatedAccessSession(sessionData) ? sessionData : null;
   const authenticated = session !== null;
   const methodsQuery = useAuthenticationMethodsQuery(authenticated);
   const establishPasswordMutation = useEstablishPasswordMutation();
