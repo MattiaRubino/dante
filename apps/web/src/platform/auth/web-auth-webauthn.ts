@@ -6,8 +6,8 @@ import type {
 } from '@dante/api-client';
 
 export class WebAuthnBrowserError extends Error {
-  constructor(message: string) {
-    super(message);
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
     this.name = 'WebAuthnBrowserError';
   }
 }
@@ -45,7 +45,10 @@ function base64UrlToBytes(value: string): Uint8Array<ArrayBuffer> {
   try {
     binary = atob(base64);
   } catch (error) {
-    throw new WebAuthnBrowserError('WebAuthn binary field could not be decoded.') from error;
+    throw new WebAuthnBrowserError(
+      'WebAuthn binary field could not be decoded.',
+      { cause: error },
+    );
   }
   const bytes = new Uint8Array(binary.length);
   for (let index = 0; index < binary.length; index += 1) {

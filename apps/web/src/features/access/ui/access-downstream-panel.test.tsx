@@ -160,7 +160,9 @@ describe('AccessDownstreamPanel', () => {
 
     expect(screen.getByText('Google')).toBeTruthy();
     expect(screen.getByText('person@example.com')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Accedi e collega' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Autentica l’account esistente' }),
+    );
     expect(linkDispatch).toHaveBeenCalledWith({ type: 'REQUEST_ACCOUNT_LINK' });
 
     cleanup();

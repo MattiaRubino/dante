@@ -53,7 +53,7 @@ describe('AccessSignInPanel', () => {
 
     const googleButton = screen.getByRole('button', {
       name: 'Continua con Google',
-    }) as HTMLButtonElement;
+    });
     const appleButton = screen.getByRole('button', {
       name: 'Continua con Apple',
     });
