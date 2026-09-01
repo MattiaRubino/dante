@@ -4,13 +4,13 @@
 **Date:** 2026-09-01  
 **Branch:** `feature/home-react`  
 **Product authority:** `world-focus-product-contract.md`  
-**Automated evidence:** Frontend CI run `33516836976` on final B1 HEAD `99deb8057f912e798e1ce55d98aeda3920e3183c` — Quality, Chromium Web E2E, Firefox Timeline, Mobile Bundle and Frontend CI Gate PASS after rerun of an isolated pre-existing Timeline intermittent failure.
+**Automated evidence:** Frontend CI run `33516836976` on B1 HEAD `99deb8057f912e798e1ce55d98aeda3920e3183c` — Quality, Chromium Web E2E, Firefox Timeline, Mobile Bundle and Frontend CI Gate PASS after rerun of an isolated pre-existing Timeline intermittent failure.
 
-B1 originally exposed `World Context / Session / Lens` and passed automated gates before user product review exposed an upstream World-definition problem.
+B1 originally explored a World-level temporal Lens. User review exposed that the control appeared before the product need was understandable, which triggered WR0/WR1/WR2 reverse engineering.
 
-WR0/WR1/WR2 subsequently established that a World is a user-recognizable continuity context and shared coordinate between the user and DANTE, not a dashboard/query surface. A universal first-open temporal Lens therefore failed the product gate.
+The resulting Product Contract establishes that a World is a user-recognizable continuity context and shared coordinate between the user and DANTE, not a dashboard/query surface.
 
-The B1 revision removed the unaccepted Lens implementation rather than retaining hidden or test-only infrastructure.
+The unaccepted Lens implementation was therefore removed rather than hidden as future infrastructure.
 
 Final disposition:
 
@@ -32,12 +32,14 @@ B1 visual micro-polish               DEFERRED BY USER
 B1 sequencing gate                   CLOSED
 ```
 
-The user explicitly chose not to spend a separate iteration on micro-positioning, typography size or spacing of the current Orientation copy before real World content exists. Those details are not frozen as final visual design; they must be re-reviewed when Continuity/Resume and later real content establish the integrated workspace composition.
+The user explicitly chose not to spend a separate iteration on micro-positioning, typography size or spacing of Orientation before real World content establishes the integrated composition. Those details are **not frozen as final visual design** and must be revisited during integrated composition review.
 
-This deferral is not permission to lower visual quality on subsequent mini-verticals. Every new functional vertical still requires full product/UI/interaction quality for its own behavior, followed by automated gates and user functional/visual review.
+A future Lens may be introduced only when a real projection/Explore capability proves a meaningful shared scope. A future World Session/cursor may be introduced only when a real interaction requires transient ownership beyond route state.
 
-A future World Lens may be introduced only when a real projection/module/Explore capability demonstrates a meaningful shared scope. A future World Session/cursor may be introduced only when real continuity or interaction state requires ownership beyond the route.
+B1 has no authority over current roadmap sequencing. Current next-gate authority lives in:
 
-The original B1 review remains historical implementation/design evidence for the first attempt. Where it conflicts with the current Product Contract or this disposition, the newer authority governs.
+- `world-focus-current-checkpoint.md`
+- `world-focus-handoff.md`
+- `world-focus-frontend-roadmap.md`
 
-The next authorized product vertical is Continuity / Resume. Its analysis must begin from the current World Product Contract and follow the World Focus delivery methodology before implementation.
+Current next gate is the **World contextual DANTE presence / spatial interaction reverse engineering**, not another B1 feature and not an automatic continuation of the old Lens work.
