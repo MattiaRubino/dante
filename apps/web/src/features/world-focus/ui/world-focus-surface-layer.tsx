@@ -54,6 +54,7 @@ export function WorldFocusSurfaceLayer({
           surface.boundGeneration === workspace.state.generation;
         const requestClose = () => workspace.closeSurface(surface.instanceId);
         const surfaceIsInert = placement.interaction === 'inert';
+        const wrapperIsPointerTransparent = surface.presentation === 'popover';
 
         if (registration === null) {
           return (
@@ -94,6 +95,11 @@ export function WorldFocusSurfaceLayer({
               isCurrentGeneration ? 'true' : 'false'
             }
             inert={surfaceIsInert ? true : undefined}
+            style={
+              wrapperIsPointerTransparent
+                ? { pointerEvents: 'none' }
+                : undefined
+            }
           >
             <WorldFocusRenderBoundary
               resetKey={`${surface.instanceId}:${surface.kind}:${surface.boundGeneration}`}
