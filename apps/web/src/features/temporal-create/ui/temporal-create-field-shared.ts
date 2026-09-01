@@ -1,5 +1,7 @@
 import { Temporal } from '@dante/time';
 
+import type { TemporalCreateTimeMode } from '../model/temporal-create-session';
+
 export const TEMPORAL_CREATE_DURATION_OPTIONS = Object.freeze([
   15, 30, 45, 60, 90, 120, 180, 240, 360, 480,
 ]);
@@ -10,6 +12,8 @@ export const TEMPORAL_CREATE_BUFFER_OPTIONS = Object.freeze([
 
 export const TEMPORAL_CREATE_REMINDER_OPTIONS: readonly (number | null)[] =
   Object.freeze([null, 0, 5, 10, 15, 30, 60, 120, 1440]);
+
+const NANOSECONDS_PER_MINUTE = 60_000_000_000n;
 
 export function temporalCreateDurationLabel(minutes: number): string {
   if (minutes < 60) {
@@ -49,25 +53,50 @@ function plainDateTime(dateValue: string, timeValue: string) {
   }
 }
 
-export function temporalCreateEndDateTime(
+function formatPlainDateTime(
   startDate: string,
-  startTime: string,
-  durationMinutes: number,
+  start: ReturnType<typeof Temporal.PlainDateTime.from>,
+  end: ReturnType<typeof Temporal.PlainDateTime.from>,
 ): Readonly<{ date: string; time: string; dayOffset: number }> {
-  const start = plainDateTime(startDate, startTime);
-  if (!start) {
-    return Object.freeze({ date: startDate, time: '00:00', dayOffset: 0 });
-  }
-  const end = start.add({ minutes: Math.max(0, durationMinutes) });
-  const dayOffset = start.toPlainDate().until(end.toPlainDate()).days;
+  const startDay = Temporal.PlainDate.from(startDate);
   return Object.freeze({
     date: end.toPlainDate().toString(),
     time: `${String(end.hour).padStart(2, '0')}:${String(end.minute).padStart(
       2,
       '0',
     )}`,
-    dayOffset,
+    dayOffset: startDay.until(end.toPlainDate()).days,
   });
+}
+
+export function temporalCreateEndDateTime(
+  startDate: string,
+  startTime: string,
+  durationMinutes: number,
+  timeMode: TemporalCreateTimeMode = 'floating',
+  timeZoneId = 'UTC',
+): Readonly<{ date: string; time: string; dayOffset: number }> {
+  const start = plainDateTime(startDate, startTime);
+  if (!start) {
+    return Object.freeze({ date: startDate, time: '00:00', dayOffset: 0 });
+  }
+
+  try {
+    if (timeMode === 'zoned') {
+      const zonedStart = start.toZonedDateTime(timeZoneId);
+      const zonedEnd = zonedStart.add({ minutes: Math.max(0, durationMinutes) });
+      return formatPlainDateTime(
+        startDate,
+        zonedStart.toPlainDateTime(),
+        zonedEnd.toPlainDateTime(),
+      );
+    }
+
+    const end = start.add({ minutes: Math.max(0, durationMinutes) });
+    return formatPlainDateTime(startDate, start, end);
+  } catch {
+    return Object.freeze({ date: startDate, time: '00:00', dayOffset: 0 });
+  }
 }
 
 export function temporalCreateDurationFromEndDateTime(
@@ -75,10 +104,31 @@ export function temporalCreateDurationFromEndDateTime(
   startTime: string,
   endDate: string,
   endTime: string,
+  timeMode: TemporalCreateTimeMode = 'floating',
+  timeZoneId = 'UTC',
 ): number | null {
   const start = plainDateTime(startDate, startTime);
   const end = plainDateTime(endDate, endTime);
-  if (!start || !end || Temporal.PlainDateTime.compare(end, start) <= 0) {
+  if (!start || !end) {
+    return null;
+  }
+
+  if (timeMode === 'zoned') {
+    try {
+      const startInstant = start.toZonedDateTime(timeZoneId).toInstant();
+      const endInstant = end.toZonedDateTime(timeZoneId).toInstant();
+      const elapsedNanoseconds =
+        endInstant.epochNanoseconds - startInstant.epochNanoseconds;
+      if (elapsedNanoseconds <= 0n) {
+        return null;
+      }
+      return Math.max(5, Number(elapsedNanoseconds / NANOSECONDS_PER_MINUTE));
+    } catch {
+      return null;
+    }
+  }
+
+  if (Temporal.PlainDateTime.compare(end, start) <= 0) {
     return null;
   }
   const difference = start.until(end, { largestUnit: 'days' });
