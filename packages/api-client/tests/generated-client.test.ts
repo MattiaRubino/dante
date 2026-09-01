@@ -425,15 +425,17 @@ describe('@dante/api-client governed boundary', () => {
         ),
       ),
     });
-    expect(
-      await appleBeginClient.beginAppleAuthentication({
-        purpose: 'sign_in',
-        return_target: 'access',
-      }),
-    ).toMatchObject({
-      ok: true,
-      value: { authorization_url: expect.any(String) },
+    const appleResult = await appleBeginClient.beginAppleAuthentication({
+      purpose: 'sign_in',
+      return_target: 'access',
     });
+    expect(appleResult.ok).toBe(true);
+    if (!appleResult.ok) {
+      throw new Error('expected Apple begin success');
+    }
+    expect(appleResult.value.authorization_url).toBe(
+      'https://appleid.apple.com/auth/authorize?state=opaque',
+    );
 
     for (const outcome of [
       providerAuthenticated(),
