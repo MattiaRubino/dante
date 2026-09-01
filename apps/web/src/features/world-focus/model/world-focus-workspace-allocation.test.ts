@@ -50,7 +50,7 @@ function createDeterministicRandom(seed: number): () => number {
 }
 
 describe('World Focus workspace surface allocation', () => {
-  it('keeps an empty workspace as full content with no transient layer', () => {
+  it('keeps an empty workspace as full interactive content with no transient layer', () => {
     const plan = resolveWorldFocusWorkspaceAllocation(
       createWorldFocusWorkspaceState('music'),
       1280,
@@ -59,6 +59,7 @@ describe('World Focus workspace surface allocation', () => {
     expect(plan).toMatchObject({
       mainAllocation: 'full',
       topLayer: 'none',
+      mainInteraction: 'interactive',
       workspaceInlineSize: 1280,
       mainInlineSize: 1280,
       sidecarInlineSize: null,
@@ -79,6 +80,7 @@ describe('World Focus workspace surface allocation', () => {
 
     expect(plan.mainAllocation).toBe('split');
     expect(plan.topLayer).toBe('none');
+    expect(plan.mainInteraction).toBe('interactive');
     expect(plan.activeSidecarInstanceId).toBe('dante:thread');
     expect(plan.sidecarInlineSize).toBe(420);
     expect(plan.mainInlineSize).toBe(844);
@@ -89,7 +91,7 @@ describe('World Focus workspace surface allocation', () => {
     });
   });
 
-  it('degrades a sidecar to overlay when preserving a useful main canvas would fail', () => {
+  it('degrades a sidecar to a non-modal overlay when preserving a useful main canvas would fail', () => {
     const state = openSurface(
       createWorldFocusWorkspaceState('travel'),
       'insight:trip',
@@ -100,6 +102,7 @@ describe('World Focus workspace surface allocation', () => {
     expect(plan).toMatchObject({
       mainAllocation: 'full',
       topLayer: 'overlay',
+      mainInteraction: 'interactive',
       mainInlineSize: 899,
       sidecarInlineSize: null,
       splitGap: 0,
@@ -112,7 +115,7 @@ describe('World Focus workspace surface allocation', () => {
     });
   });
 
-  it('preserves split allocation underneath a modal instead of collapsing two independent concerns into one mode', () => {
+  it('preserves split allocation underneath a modal and makes the main plane inert', () => {
     let state = createWorldFocusWorkspaceState('finance');
     state = openSurface(state, 'dante:finance', 'sidecar');
     state = openSurface(state, 'confirm:transfer', 'modal');
@@ -122,6 +125,7 @@ describe('World Focus workspace surface allocation', () => {
     expect(plan).toMatchObject({
       mainAllocation: 'split',
       topLayer: 'overlay',
+      mainInteraction: 'inert',
       activeSidecarInstanceId: 'dante:finance',
       activeOverlayInstanceId: 'confirm:transfer',
       activeFocusInstanceId: null,
@@ -136,7 +140,7 @@ describe('World Focus workspace surface allocation', () => {
     });
   });
 
-  it('preserves the underlying sidecar allocation while a full-focus surface owns the top layer', () => {
+  it('preserves the underlying sidecar allocation while a full-focus surface makes the main plane inert', () => {
     let state = createWorldFocusWorkspaceState('projects');
     state = openSurface(state, 'dante:project', 'sidecar');
     state = openSurface(state, 'explore:project-history', 'full-screen');
@@ -146,6 +150,7 @@ describe('World Focus workspace surface allocation', () => {
     expect(plan).toMatchObject({
       mainAllocation: 'split',
       topLayer: 'focus',
+      mainInteraction: 'inert',
       activeSidecarInstanceId: 'dante:project',
       activeOverlayInstanceId: null,
       activeFocusInstanceId: 'explore:project-history',
@@ -166,6 +171,7 @@ describe('World Focus workspace surface allocation', () => {
     expect(plan).toMatchObject({
       mainAllocation: 'full',
       topLayer: 'overlay',
+      mainInteraction: 'inert',
       activeSidecarInstanceId: null,
       activeOverlayInstanceId: 'confirm:note',
     });
@@ -187,6 +193,7 @@ describe('World Focus workspace surface allocation', () => {
     const plan = resolveWorldFocusWorkspaceAllocation(state, 1200);
 
     expect(plan.activeSidecarInstanceId).toBe('insight:second');
+    expect(plan.mainInteraction).toBe('interactive');
     expect(getPlacement(plan, 'insight:first')).toMatchObject({
       slot: 'dormant',
       activeInSlot: false,
@@ -197,7 +204,7 @@ describe('World Focus workspace surface allocation', () => {
     });
   });
 
-  it('keeps route presentation external to workspace geometry', () => {
+  it('keeps route presentation external to workspace geometry and interaction', () => {
     const state = openSurface(
       createWorldFocusWorkspaceState('travel'),
       'route:details',
@@ -208,6 +215,7 @@ describe('World Focus workspace surface allocation', () => {
     expect(plan).toMatchObject({
       mainAllocation: 'full',
       topLayer: 'none',
+      mainInteraction: 'interactive',
       mainInlineSize: 1024,
       sidecarInlineSize: null,
     });
@@ -330,6 +338,16 @@ describe('World Focus workspace surface allocation', () => {
         expect(activeOverlays).toHaveLength(0);
         expect(activeFocus).toHaveLength(0);
       }
+
+      const activeBlockingPlacement = first.placements.find(
+        (placement) =>
+          placement.activeInSlot &&
+          (placement.requestedPresentation === 'modal' ||
+            placement.requestedPresentation === 'full-screen'),
+      );
+      expect(first.mainInteraction).toBe(
+        activeBlockingPlacement === undefined ? 'interactive' : 'inert',
+      );
     }
   });
 });
