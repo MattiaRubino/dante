@@ -299,7 +299,10 @@ export function TemporalCreateEntry({
       : runtime.prepare(session.draft.current);
     if (preparation.status === 'invalid') {
       setIssues(preparation.issues);
-      if (session.surface === 'quick' && preparation.issues.some((issue) => issue.path[0].includes('.'))) {
+      const hasAdvancedIssue = preparation.issues.some(
+        (issue) => issue.path[0]?.includes('.') ?? false,
+      );
+      if (session.surface === 'quick' && hasAdvancedIssue) {
         changeSurface('expanded');
       }
       return;
