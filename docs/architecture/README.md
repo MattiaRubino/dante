@@ -1,7 +1,7 @@
 # DANTE Architecture Index
 
 - **Status:** CURRENT / AUTHORITATIVE NAVIGATION
-- **Last reconciled:** 2026-08-31
+- **Last reconciled:** 2026-09-01
 
 This file describes the current architecture state directly. Phase-time reviews, old branch overlays and pre-closure status remain evidence in their owning documents/Git history and do not override this index.
 
@@ -24,7 +24,7 @@ Current Alembic head                 20260830_09
 Current DB topology                  69 tables / 5 views / 15 routines / 76 triggers / 97 indexes / 69 FKs / 123 CHECKs
 PostgreSQL local Recovery            CP01–CP07 LOCAL PASS / CLOSED / INTEGRATED VIA PR #47
 Full Access/Auth product vertical    ACTIVE / UNMERGED ON feature/access-auth
-AI architecture                      ACTIVE / DESIGN-ONLY ON feature/ai-architecture
+AI architecture                      ACTIVE / DESIGN + RESEARCH ONLY ON feature/ai-architecture
 ```
 
 Protected `main` is the integrated authority for closed shared foundations, CP6 and the integrated Recovery evolution. Active unmerged product/architecture work remains branch-local until normal protected-main integration.
@@ -35,6 +35,7 @@ Read according to the subject:
 
 - [`system-overview.md`](system-overview.md) — system/component/authority overview;
 - [`dante-ai-foundation.md`](dante-ai-foundation.md) — current branch-local AI-00 semantic/architectural baseline; no provider, schema or implementation selection;
+- [`ai-production-engineering-state-of-the-art-2026.md`](ai-production-engineering-state-of-the-art-2026.md) — current branch-local production AI/agent engineering research thesis; state-of-the-art evidence and DANTE applicability boundaries, explicitly **not** the final DANTE Intelligence Architecture;
 - [`technical-decisions.md`](technical-decisions.md) — current architecture decision register;
 - [`domain-model-logical-readiness.md`](domain-model-logical-readiness.md) — satisfied Domain → Logical semantic compatibility contract;
 - [`../domain/README.md`](../domain/README.md) — current Domain entry point;
@@ -81,6 +82,8 @@ The accepted Domain → Logical → Physical chain has already been concretely m
 Frontend remains platform-specific at renderer/UI/platform-adapter level with selective semantic sharing. Backend/database canonical authority and operation-specific offline governance remain preserved.
 
 AI architecture currently consumes the same rule: model/provider/runtime output is not accepted canonical effect, and no AI-specific persistence shortcut may redefine closed Domain/Logical/Physical/database semantics.
+
+The production-engineering research additionally records a current DANTE applicability boundary without selecting a provider or SDK: frontier intelligence is expected to be **API-first**; DANTE does not plan to train a foundation model, require fine-tuning as a baseline, own a frontier model or operate a large always-on self-hosted model fleet. Small/local inference remains optional and benchmark-gated. These are project constraints for later architecture work, not implementation claims.
 
 ## 4. Domain / Logical invariants carried into implementation
 
@@ -141,13 +144,15 @@ Still bounded to the stage that owns them:
 - cloud compute/IaC and remote infrastructure materialization;
 - platform release activation details;
 - dormant frontend capabilities activated only when product requirements justify them;
-- AI interaction/product form;
-- AI model/provider strategy;
+- AI interaction/product form beyond already accepted Product/North-Star constraints;
+- exact AI model/provider strategy and routing policy;
 - AI agent/runtime/SDK selection;
 - AI conversation/memory physical persistence;
-- AI tool registry, autonomy policy implementation and evaluation stack.
+- AI tool/capability registry implementation, autonomy policy implementation and evaluation stack;
+- optional local-model choice and activation;
+- exact context/retrieval/memory architecture owned by the later AI-03 phase.
 
-The current branch-local AI baseline is [`dante-ai-foundation.md`](dante-ai-foundation.md). It consolidates inherited constraints and open questions; it does not close the deferred implementation choices above.
+The current branch-local AI baseline is [`dante-ai-foundation.md`](dante-ai-foundation.md). The production-engineering research is [`ai-production-engineering-state-of-the-art-2026.md`](ai-production-engineering-state-of-the-art-2026.md). The former owns inherited semantic constraints; the latter records external engineering evidence and applicability boundaries. Neither by itself closes the final DANTE Intelligence Architecture.
 
 A deferral does not authorize violating already accepted Domain/Logical/Physical/database invariants.
 
@@ -166,6 +171,8 @@ workstream closure records
 Use them as reference/evidence according to their explicit role.
 
 For example, `domain-model-logical-readiness-part-2.md` through `part-5.md` are transition/closure evidence; the consolidated [`domain-model-logical-readiness.md`](domain-model-logical-readiness.md) now states the current satisfied contract directly.
+
+The production AI/agent engineering thesis is intentionally research evidence. It may classify technologies as strong defaults, challengers, watch items or anti-defaults without converting those classifications into DANTE implementation decisions.
 
 ## 8. Architecture reopen discipline
 
@@ -188,6 +195,8 @@ one isolated implementation annoyance
 
 Reopen when accepted requirements, safety/privacy constraints, real runtime evidence or incompatibility with a current invariant proves that the existing boundary is materially wrong.
 
+New research technologies such as an alternative durable runtime, relationship-authorization engine, sandbox implementation, model router or inference server remain challengers until a real DANTE requirement and direct evidence justify the smallest relevant reopen.
+
 ## 9. Current next architecture posture
 
 There is no pending CP6 architecture gate.
@@ -204,6 +213,27 @@ AI ARCHITECTURE
 ACTIVE ON feature/ai-architecture
 DESIGN / RESEARCH ONLY
 NO BACKEND / DB / PROVIDER IMPLEMENTATION CLAIMED
+
+AI-00
+SEMANTIC / ARCHITECTURAL FOUNDATION RECORDED
+
+PRODUCTION AI / AGENT ENGINEERING RESEARCH
+STATE-OF-THE-ART EVIDENCE RECORDED
+NON-DANTE-DECISION
+
+NEXT: AI-02.1
+DANTE INTELLIGENCE REENGINEERING
++ NORTH-STAR / SIMULATION PRESSURE-TEST
++ FUTURE-EXTENSIBILITY TEST
+
+THEN: AI-03
+CONTEXT / RETRIEVAL / MEMORY
 ```
 
-For AI, the current next phase after AI-00 is product/interaction-form research before provider/model/runtime selection. Direct implementation evidence is claimed only after the relevant real artifact/scenario executes.
+AI-02.1 must start from what DANTE must actually be able to do: Product/North Star, existing simulations and adversarial scenarios, accepted Domain/Logical/Physical/database authority, AI-00 and the external engineering evidence. It must pressure-test whether the proposed intelligence model survives those scenarios without semantic collapse, unjustified complexity or hidden provider dependence.
+
+A specific AI-02.1 acceptance question is future extensibility: if DANTE later exposes a much richer integrated general-purpose conversational intelligence, or consumes future frontier models/providers with substantially better capabilities, the architecture must be able to absorb them without transferring canonical memory, Authority, application truth or effect ownership to the model/provider and without requiring a fundamental redesign.
+
+AI-03 follows only after that structural pressure-test. It owns the detailed Context / Retrieval / Memory architecture rather than having those choices pre-committed by this research document.
+
+Direct implementation evidence is claimed only after the relevant real artifact/scenario executes.
