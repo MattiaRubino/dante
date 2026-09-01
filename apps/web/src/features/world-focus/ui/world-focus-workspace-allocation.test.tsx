@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+} from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { WorldFocusSurfaceLayer } from './world-focus-surface-layer';
@@ -99,14 +105,17 @@ function triggerResize(inlineSize: number) {
   if (callback === null) {
     throw new Error('Expected World Focus ResizeObserver callback');
   }
-  callback(
-    [
-      {
-        contentRect: { width: inlineSize },
-      } as ResizeObserverEntry,
-    ],
-    {} as ResizeObserver,
-  );
+
+  act(() => {
+    callback(
+      [
+        {
+          contentRect: { width: inlineSize },
+        } as ResizeObserverEntry,
+      ],
+      {} as ResizeObserver,
+    );
+  });
 }
 
 beforeEach(() => {
@@ -162,7 +171,6 @@ describe('WorldFocusWorkspace allocation integration', () => {
     const { container } = renderWorkspace();
 
     fireEvent.click(screen.getByRole('button', { name: 'Open sidecar' }));
-    fireEvent.click(document.body);
     triggerResize(720);
 
     const workspace = container.querySelector('.world-focus-workspace');
@@ -229,8 +237,10 @@ describe('WorldFocusWorkspace allocation integration', () => {
     );
     expect(mainPlane?.hasAttribute('inert')).toBe(true);
     expect(screen.queryByTestId('surface-dante:sidecar')).toBeNull();
-    expect(screen.getByTestId('surface-confirm:modal').parentElement?.getAttribute(
-      'data-world-focus-surface-slot',
-    )).toBe('overlay');
+    expect(
+      screen
+        .getByTestId('surface-confirm:modal')
+        .parentElement?.getAttribute('data-world-focus-surface-slot'),
+    ).toBe('overlay');
   });
 });
