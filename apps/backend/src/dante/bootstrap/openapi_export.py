@@ -20,7 +20,7 @@ _EXPORT_PEPPER_KEY_ID = "openapi-password-v1"
 _EXPORT_OTP_KEY_ID = "openapi-signup-otp-v1"
 _HTTP_METHODS = frozenset({"get", "post", "put", "patch", "delete", "options", "head", "trace"})
 _PROBLEM_SCHEMA_REF = "#/components/schemas/ProblemDetails"
-_M4_POST_PATHS = (
+_FIRST_PARTY_JSON_POST_PATHS = (
     "/api/v1/auth/signup",
     "/api/v1/auth/signup/verify",
     "/api/v1/auth/signup/resend",
@@ -28,6 +28,18 @@ _M4_POST_PATHS = (
     "/api/v1/auth/recovery/validate",
     "/api/v1/auth/reset-password",
     "/api/v1/auth/reauthenticate",
+    "/api/v1/auth/password/establish",
+)
+_AUTHENTICATED_OPERATIONS = (
+    ("/api/v1/auth/methods", "get"),
+    ("/api/v1/auth/reauthenticate", "post"),
+    ("/api/v1/auth/password/establish", "post"),
+    ("/api/v1/auth/password", "delete"),
+)
+_AUTHENTICATED_CSRF_MUTATIONS = (
+    ("/api/v1/auth/reauthenticate", "post"),
+    ("/api/v1/auth/password/establish", "post"),
+    ("/api/v1/auth/password", "delete"),
 )
 
 
@@ -206,6 +218,18 @@ def _annotate_auth_response_headers(document: dict[str, Any]) -> None:
             "Rotates the bearer on the same AuthSession through __Host-dante-session.",
         ),
         (
+            "/api/v1/auth/password/establish",
+            "post",
+            "200",
+            "Rotates the bearer after password establishment through __Host-dante-session.",
+        ),
+        (
+            "/api/v1/auth/password",
+            "delete",
+            "200",
+            "Rotates the bearer after password removal through __Host-dante-session.",
+        ),
+        (
             "/api/v1/auth/reset-password",
             "post",
             "204",
@@ -231,6 +255,13 @@ def _annotate_auth_response_headers(document: dict[str, Any]) -> None:
         "May clear an invalid or expired __Host-dante-session cookie."
     )
 
+    get_methods = _operation(document, "/api/v1/auth/methods", "get")
+    methods_401 = cast(dict[str, Any], cast(dict[str, Any], get_methods["responses"])["401"])
+    methods_401_headers = cast(dict[str, Any], methods_401.setdefault("headers", {}))
+    methods_401_headers["Set-Cookie"] = _response_header(
+        "May clear an invalid or expired __Host-dante-session cookie."
+    )
+
 
 def _browser_policy() -> dict[str, Any]:
     return {
@@ -253,6 +284,17 @@ def _browser_policy() -> dict[str, Any]:
     }
 
 
+def _csrf_browser_policy(browser_policy: dict[str, Any]) -> dict[str, Any]:
+    return {
+        **browser_policy,
+        "csrf_header": {
+            "owner": "web_transport",
+            "name": "X-Dante-CSRF",
+            "required": True,
+        },
+    }
+
+
 def _annotate_browser_security(document: dict[str, Any]) -> None:
     """Record browser-managed ingress rules without generating forbidden browser headers."""
     components = cast(dict[str, Any], document["components"])
@@ -268,7 +310,7 @@ def _annotate_browser_security(document: dict[str, Any]) -> None:
 
     browser_policy = _browser_policy()
     _operation(document, "/api/v1/auth/signin", "post")["x-dante-browser-security"] = browser_policy
-    for path in _M4_POST_PATHS:
+    for path in _FIRST_PARTY_JSON_POST_PATHS:
         _operation(document, path, "post")["x-dante-browser-security"] = browser_policy
 
     get_session = _operation(document, "/api/v1/auth/session", "get")
@@ -285,16 +327,12 @@ def _annotate_browser_security(document: dict[str, Any]) -> None:
         },
     }
 
-    reauth = _operation(document, "/api/v1/auth/reauthenticate", "post")
-    reauth["security"] = [{"DanteSessionCookie": []}]
-    reauth["x-dante-browser-security"] = {
-        **browser_policy,
-        "csrf_header": {
-            "owner": "web_transport",
-            "name": "X-Dante-CSRF",
-            "required": True,
-        },
-    }
+    for path, method in _AUTHENTICATED_OPERATIONS:
+        _operation(document, path, method)["security"] = [{"DanteSessionCookie": []}]
+
+    csrf_policy = _csrf_browser_policy(browser_policy)
+    for path, method in _AUTHENTICATED_CSRF_MUTATIONS:
+        _operation(document, path, method)["x-dante-browser-security"] = csrf_policy
 
 
 def _harden_contract(document: dict[str, Any]) -> dict[str, Any]:

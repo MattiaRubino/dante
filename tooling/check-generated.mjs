@@ -19,9 +19,12 @@ const generatedPaths = [
   'packages/design-tokens/generated/web.css',
   'packages/design-tokens/generated/native.ts',
   'apps/web/src/routeTree.gen.ts',
+  'packages/api-client/openapi/dante-v1.openapi.json',
 ];
 
 const generatedDirectories = ['packages/api-client/src/generated'];
+const apiGeneratedPaths = ['packages/api-client/openapi/dante-v1.openapi.json'];
+const apiGeneratedDirectories = ['packages/api-client/src/generated'];
 
 const snapshots = new Map();
 let tempRoot;
@@ -80,20 +83,43 @@ async function listFiles(relativeDirectory) {
   return files.sort();
 }
 
-async function allGeneratedPaths() {
-  const paths = [...generatedPaths];
+async function collectPaths(paths, directories) {
+  const collected = [...paths];
 
-  for (const directory of generatedDirectories) {
-    paths.push(...(await listFiles(directory)));
+  for (const directory of directories) {
+    collected.push(...(await listFiles(directory)));
   }
 
-  return [...new Set(paths)].sort();
+  return [...new Set(collected)].sort();
+}
+
+async function allGeneratedPaths() {
+  return collectPaths(generatedPaths, generatedDirectories);
+}
+
+async function allApiGeneratedPaths() {
+  return collectPaths(apiGeneratedPaths, apiGeneratedDirectories);
+}
+
+async function snapshotPaths(paths) {
+  const snapshot = new Map();
+
+  for (const relativePath of paths) {
+    snapshot.set(relativePath, await readFile(join(repoRoot, relativePath)));
+  }
+
+  return snapshot;
 }
 
 async function snapshotGeneratedFiles() {
-  for (const relativePath of await allGeneratedPaths()) {
-    snapshots.set(relativePath, await readFile(join(repoRoot, relativePath)));
+  const snapshot = await snapshotPaths(await allGeneratedPaths());
+  for (const [relativePath, content] of snapshot) {
+    snapshots.set(relativePath, content);
   }
+}
+
+function regenerateApiClient() {
+  run('pnpm', ['api:generate'], 'deterministic OpenAPI and Orval API generation');
 }
 
 async function regenerate() {
@@ -120,26 +146,15 @@ async function regenerate() {
     'TanStack Router generation through the real Vite plugin',
   );
 
-  run(
-    'pnpm',
-    ['--filter', '@dante/api-client', 'generate'],
-    'Orval API client generation',
-  );
-
-  run(
-    'pnpm',
-    ['exec', 'prettier', '--write', 'packages/api-client/src/generated'],
-    'generated API formatting',
-  );
+  regenerateApiClient();
 }
 
-async function findDrift() {
-  const currentPaths = await allGeneratedPaths();
-  const paths = new Set([...snapshots.keys(), ...currentPaths]);
+async function findDifferences(snapshot, currentPaths) {
+  const paths = new Set([...snapshot.keys(), ...currentPaths]);
   const drifted = [];
 
   for (const relativePath of [...paths].sort()) {
-    const original = snapshots.get(relativePath);
+    const original = snapshot.get(relativePath);
     let regenerated;
 
     try {
@@ -162,6 +177,10 @@ async function findDrift() {
   return drifted;
 }
 
+async function findCommittedDrift() {
+  return findDifferences(snapshots, await allGeneratedPaths());
+}
+
 async function restoreSnapshots() {
   for (const directory of generatedDirectories) {
     await rm(join(repoRoot, directory), { recursive: true, force: true });
@@ -179,12 +198,21 @@ async function restoreSnapshots() {
 }
 
 let drifted = [];
+let nondeterministicApi = [];
 let failure;
 
 try {
   await snapshotGeneratedFiles();
   await regenerate();
-  drifted = await findDrift();
+
+  const firstApiGeneration = await snapshotPaths(await allApiGeneratedPaths());
+  regenerateApiClient();
+  nondeterministicApi = await findDifferences(
+    firstApiGeneration,
+    await allApiGeneratedPaths(),
+  );
+
+  drifted = await findCommittedDrift();
 } catch (error) {
   failure = error;
 } finally {
@@ -194,6 +222,17 @@ try {
 if (failure) {
   process.stderr.write(
     `generated-source check could not complete: ${failure.message}\n`,
+  );
+  process.exitCode = 1;
+} else if (nondeterministicApi.length > 0) {
+  process.stderr.write('Nondeterministic API generation detected:\n');
+
+  for (const relativePath of nondeterministicApi) {
+    process.stderr.write(`- ${relativePath}\n`);
+  }
+
+  process.stderr.write(
+    'Two consecutive FastAPI → OpenAPI → Orval/Zod generations must be byte-identical.\n',
   );
   process.exitCode = 1;
 } else if (drifted.length > 0) {

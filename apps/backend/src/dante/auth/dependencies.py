@@ -5,7 +5,10 @@ from typing import cast
 from fastapi import Request
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
-from dante.auth.lifecycle import AuthLifecycleService
+from dante.auth.authenticator_lifecycle import (
+    AuthenticatorLifecycleService,
+    MultiAuthenticatorLifecycleService,
+)
 from dante.auth.lifecycle_runtime import AuthLifecycleRuntime
 from dante.auth.provider_flow_runtime import ProviderFlowRuntime
 from dante.auth.service import AuthRuntime, AuthService
@@ -30,8 +33,8 @@ def get_auth_service(request: Request) -> AuthService:
     return auth_runtime.service
 
 
-def get_auth_lifecycle_service(request: Request) -> AuthLifecycleService:
-    """Resolve the process-scoped M4 AuthLifecycleService installed by lifespan."""
+def get_auth_lifecycle_service(request: Request) -> MultiAuthenticatorLifecycleService:
+    """Resolve the process-scoped M4/M5 lifecycle service installed by lifespan."""
     lifecycle_runtime = cast(AuthLifecycleRuntime, request.app.state.auth_lifecycle_runtime)
     return lifecycle_runtime.service
 
@@ -39,6 +42,11 @@ def get_auth_lifecycle_service(request: Request) -> AuthLifecycleService:
 def get_auth_provider_flow_runtime(request: Request) -> ProviderFlowRuntime:
     """Resolve the process-scoped M5 provider/authenticator runtime installed by lifespan."""
     return cast(ProviderFlowRuntime, request.app.state.auth_provider_flow_runtime)
+
+
+def get_authenticator_lifecycle_service(request: Request) -> AuthenticatorLifecycleService:
+    """Resolve the process-scoped Account-wide authenticator lifecycle authority."""
+    return get_auth_provider_flow_runtime(request).authenticator_service
 
 
 def single_header_value(scope: Scope, name: str) -> str | None:

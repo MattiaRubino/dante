@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 
 from dante.auth.api import router as auth_router
 from dante.auth.dependencies import AuthRequestBodyLimitMiddleware, BrowserAuthSecurityMiddleware
+from dante.auth.m5_api import router as auth_m5_router
 from dante.bootstrap.lifespan import lifespan
 from dante.platform.config.settings import Environment, Settings
 from dante.platform.database.runtime import DatabaseRuntime
@@ -41,6 +42,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     install_problem_handlers(app)
     app.include_router(auth_router)
+    app.include_router(auth_m5_router)
 
     @app.get("/health/live", include_in_schema=False)
     def health_live() -> dict[str, str]:
