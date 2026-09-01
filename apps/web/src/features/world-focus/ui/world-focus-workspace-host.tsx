@@ -4,7 +4,6 @@ import {
   useContext,
   useMemo,
   useReducer,
-  useRef,
   type ReactNode,
 } from 'react';
 
@@ -75,8 +74,6 @@ export function WorldFocusWorkspaceHost({
     worldId,
     createWorldFocusWorkspaceState,
   );
-  const stateRef = useRef(state);
-  stateRef.current = state;
 
   const selectContext = useCallback((reference: WorldFocusContextReference) => {
     dispatch({ type: 'select-context', reference });
@@ -120,12 +117,12 @@ export function WorldFocusWorkspaceHost({
   }, []);
 
   const requestEscape = useCallback((): WorldFocusEscapeDisposition => {
-    const disposition = getWorldFocusEscapeDisposition(stateRef.current);
+    const disposition = getWorldFocusEscapeDisposition(state);
     if (disposition === 'surface-dismissible') {
       dispatch({ type: 'close-top-surface' });
     }
     return disposition;
-  }, []);
+  }, [state]);
 
   const cursor = useMemo(() => getWorldFocusInteractionCursor(state), [state]);
 
