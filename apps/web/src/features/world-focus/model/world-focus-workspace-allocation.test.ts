@@ -88,6 +88,7 @@ describe('World Focus workspace surface allocation', () => {
     expect(getPlacement(plan, 'dante:thread')).toMatchObject({
       slot: 'sidecar',
       activeInSlot: true,
+      interaction: 'interactive',
     });
   });
 
@@ -112,10 +113,11 @@ describe('World Focus workspace surface allocation', () => {
     expect(getPlacement(plan, 'insight:trip')).toMatchObject({
       slot: 'overlay',
       activeInSlot: true,
+      interaction: 'interactive',
     });
   });
 
-  it('preserves split allocation underneath a modal and makes the main plane inert', () => {
+  it('preserves split allocation underneath a modal while making main and sidecar inert', () => {
     let state = createWorldFocusWorkspaceState('finance');
     state = openSurface(state, 'dante:finance', 'sidecar');
     state = openSurface(state, 'confirm:transfer', 'modal');
@@ -133,14 +135,16 @@ describe('World Focus workspace surface allocation', () => {
     expect(getPlacement(plan, 'dante:finance')).toMatchObject({
       slot: 'sidecar',
       activeInSlot: true,
+      interaction: 'inert',
     });
     expect(getPlacement(plan, 'confirm:transfer')).toMatchObject({
       slot: 'overlay',
       activeInSlot: true,
+      interaction: 'interactive',
     });
   });
 
-  it('preserves the underlying sidecar allocation while a full-focus surface makes the main plane inert', () => {
+  it('preserves the underlying sidecar allocation while full focus makes main and sidecar inert', () => {
     let state = createWorldFocusWorkspaceState('projects');
     state = openSurface(state, 'dante:project', 'sidecar');
     state = openSurface(state, 'explore:project-history', 'full-screen');
@@ -155,9 +159,15 @@ describe('World Focus workspace surface allocation', () => {
       activeOverlayInstanceId: null,
       activeFocusInstanceId: 'explore:project-history',
     });
+    expect(getPlacement(plan, 'dante:project')).toMatchObject({
+      slot: 'sidecar',
+      activeInSlot: true,
+      interaction: 'inert',
+    });
     expect(getPlacement(plan, 'explore:project-history')).toMatchObject({
       slot: 'focus',
       activeInSlot: true,
+      interaction: 'interactive',
     });
   });
 
@@ -178,10 +188,12 @@ describe('World Focus workspace surface allocation', () => {
     expect(getPlacement(plan, 'dante:relationship')).toMatchObject({
       slot: 'dormant',
       activeInSlot: false,
+      interaction: 'inert',
     });
     expect(getPlacement(plan, 'confirm:note')).toMatchObject({
       slot: 'overlay',
       activeInSlot: true,
+      interaction: 'interactive',
     });
   });
 
@@ -197,10 +209,12 @@ describe('World Focus workspace surface allocation', () => {
     expect(getPlacement(plan, 'insight:first')).toMatchObject({
       slot: 'dormant',
       activeInSlot: false,
+      interaction: 'inert',
     });
     expect(getPlacement(plan, 'insight:second')).toMatchObject({
       slot: 'sidecar',
       activeInSlot: true,
+      interaction: 'interactive',
     });
   });
 
@@ -222,6 +236,7 @@ describe('World Focus workspace surface allocation', () => {
     expect(getPlacement(plan, 'route:details')).toMatchObject({
       slot: 'external',
       activeInSlot: true,
+      interaction: 'interactive',
     });
   });
 
@@ -345,9 +360,24 @@ describe('World Focus workspace surface allocation', () => {
           (placement.requestedPresentation === 'modal' ||
             placement.requestedPresentation === 'full-screen'),
       );
-      expect(first.mainInteraction).toBe(
-        activeBlockingPlacement === undefined ? 'interactive' : 'inert',
-      );
+      const expectedBackgroundInteraction =
+        activeBlockingPlacement === undefined ? 'interactive' : 'inert';
+      expect(first.mainInteraction).toBe(expectedBackgroundInteraction);
+      expect(
+        activeSidecars.every(
+          (placement) => placement.interaction === expectedBackgroundInteraction,
+        ),
+      ).toBe(true);
+      expect(
+        [...activeOverlays, ...activeFocus].every(
+          (placement) => placement.interaction === 'interactive',
+        ),
+      ).toBe(true);
+      expect(
+        first.placements
+          .filter((placement) => placement.slot === 'dormant')
+          .every((placement) => placement.interaction === 'inert'),
+      ).toBe(true);
     }
   });
 });
