@@ -55,6 +55,7 @@ export type WorldFocusSurfacePlacement = Readonly<{
   requestedPresentation: WorldFocusPresentationSurface;
   slot: WorldFocusSurfaceSlot;
   activeInSlot: boolean;
+  interaction: WorldFocusMainInteraction;
 }>;
 
 export type WorldFocusWorkspaceAllocationPlan = Readonly<{
@@ -198,9 +199,9 @@ function findTopWorkspaceLayerSurface(
  * - topLayer: whether an overlay/focus surface sits above that canvas;
  * - mainInteraction: whether the main plane remains operable underneath it.
  *
- * This means a wide sidecar can remain allocated while a confirmation modal or
- * focused Explore surface temporarily sits above it. Narrow sidecars degrade to
- * a non-modal overlay without changing their requested presentation contract.
+ * Active placements also carry interaction state so an allocated sidecar can
+ * remain visually stable underneath a blocking modal/focus surface without
+ * remaining clickable through that blocking layer.
  */
 export function resolveWorldFocusWorkspaceAllocation(
   state: WorldFocusWorkspaceState,
@@ -263,6 +264,7 @@ export function resolveWorldFocusWorkspaceAllocation(
         requestedPresentation: surface.presentation,
         slot: 'external' as const,
         activeInSlot: surface === topSurface,
+        interaction: 'interactive' as const,
       });
     }
 
@@ -273,6 +275,7 @@ export function resolveWorldFocusWorkspaceAllocation(
           requestedPresentation: surface.presentation,
           slot: 'dormant' as const,
           activeInSlot: false,
+          interaction: 'inert' as const,
         });
       }
 
@@ -282,41 +285,39 @@ export function resolveWorldFocusWorkspaceAllocation(
           requestedPresentation: surface.presentation,
           slot: 'sidecar' as const,
           activeInSlot: true,
+          interaction: mainInteraction,
         });
       }
 
+      const isActiveOverlay = surface === activeOverlaySurface;
       return Object.freeze({
         instanceId: surface.instanceId,
         requestedPresentation: surface.presentation,
-        slot:
-          surface === activeOverlaySurface
-            ? ('overlay' as const)
-            : ('dormant' as const),
-        activeInSlot: surface === activeOverlaySurface,
+        slot: isActiveOverlay ? ('overlay' as const) : ('dormant' as const),
+        activeInSlot: isActiveOverlay,
+        interaction: isActiveOverlay ? ('interactive' as const) : ('inert' as const),
       });
     }
 
     if (surface.presentation === 'full-screen') {
+      const isActiveFocus = surface === activeFocusSurface;
       return Object.freeze({
         instanceId: surface.instanceId,
         requestedPresentation: surface.presentation,
-        slot:
-          surface === activeFocusSurface
-            ? ('focus' as const)
-            : ('dormant' as const),
-        activeInSlot: surface === activeFocusSurface,
+        slot: isActiveFocus ? ('focus' as const) : ('dormant' as const),
+        activeInSlot: isActiveFocus,
+        interaction: isActiveFocus ? ('interactive' as const) : ('inert' as const),
       });
     }
 
     if (isOverlayPresentation(surface.presentation)) {
+      const isActiveOverlay = surface === activeOverlaySurface;
       return Object.freeze({
         instanceId: surface.instanceId,
         requestedPresentation: surface.presentation,
-        slot:
-          surface === activeOverlaySurface
-            ? ('overlay' as const)
-            : ('dormant' as const),
-        activeInSlot: surface === activeOverlaySurface,
+        slot: isActiveOverlay ? ('overlay' as const) : ('dormant' as const),
+        activeInSlot: isActiveOverlay,
+        interaction: isActiveOverlay ? ('interactive' as const) : ('inert' as const),
       });
     }
 
@@ -325,6 +326,7 @@ export function resolveWorldFocusWorkspaceAllocation(
       requestedPresentation: surface.presentation,
       slot: 'dormant' as const,
       activeInSlot: false,
+      interaction: 'inert' as const,
     });
   });
 
