@@ -37,7 +37,9 @@ function projectPlacement(
 ): TemporalCreateTimelineProjection {
   const specification = metadata.specification;
   const flexible = temporalCreateHasFlexibleIntent(specification);
-  const recurring = specification.recurrence.frequency !== 'none';
+  const recurring =
+    specification.kind === 'event' &&
+    specification.eventRecurrence.patternKind !== 'none';
 
   if (!placement) {
     return Object.freeze({
@@ -127,7 +129,6 @@ export function temporalCreateTimelinePreviewFromFields(
       kind: fields.kind,
       contextId: fields.contextId,
       notes: fields.notes.trim(),
-      tags: fields.tags.trim(),
       timeSemantics: fields.timeSemantics,
       timeZoneId: fields.timeZoneId,
       specification: fields,
