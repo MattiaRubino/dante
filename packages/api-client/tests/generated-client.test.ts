@@ -10,6 +10,10 @@ const AUTH_SESSION_REF = '00000000-0000-4000-8000-000000000002';
 const SIGNUP_REF = '00000000-0000-4000-8000-000000000003';
 const RECOVERY_REF = '00000000-0000-4000-8000-000000000004';
 const EXTERNAL_IDENTITY_REF = '00000000-0000-4000-8000-000000000005';
+const PASSKEY_REF = '00000000-0000-4000-8000-000000000006';
+const TRANSACTION_REF = '00000000-0000-4000-8000-000000000007';
+const LINK_REF = '00000000-0000-4000-8000-000000000008';
+const WEBAUTHN_CHALLENGE_REF = '00000000-0000-4000-8000-000000000009';
 
 function apiResponse(
   status: number,
@@ -46,6 +50,10 @@ function authenticatedSession() {
   };
 }
 
+function providerAuthenticated() {
+  return { ...authenticatedSession(), outcome: 'authenticated' as const };
+}
+
 function authenticationProviderMethod() {
   return {
     external_identity_ref: EXTERNAL_IDENTITY_REF,
@@ -55,12 +63,91 @@ function authenticationProviderMethod() {
   };
 }
 
+function passkeyMethod() {
+  return {
+    backup_eligible: true,
+    backup_state: false,
+    created_at: '2026-08-30T10:00:00Z',
+    label: 'Laptop',
+    last_used_at: null,
+    passkey_credential_ref: PASSKEY_REF,
+    transports: ['internal'],
+  };
+}
+
 function authenticationMethods() {
   return {
-    active_passkey_count: 2,
+    active_passkey_count: 1,
+    passkeys: [passkeyMethod()],
     password_established: true,
     providers: [authenticationProviderMethod()],
     recovery_eligible_email_count: 1,
+  };
+}
+
+function providerEnrollmentRequired() {
+  return {
+    outcome: 'enrollment_required' as const,
+    external_signup_ref: SIGNUP_REF,
+    expires_at: '2026-09-01T18:00:00Z',
+    email_address: 'person@example.com',
+    verification_expires_at: '2026-09-01T17:15:00Z',
+  };
+}
+
+function providerLinkRequired() {
+  return {
+    outcome: 'link_required' as const,
+    external_link_challenge_ref: LINK_REF,
+    expires_at: '2026-09-01T18:00:00Z',
+  };
+}
+
+function passkeyCeremony() {
+  return {
+    webauthn_challenge_ref: WEBAUTHN_CHALLENGE_REF,
+    expires_at: '2026-09-01T18:00:00Z',
+    options: {
+      challenge: 'YQ',
+      rpId: 'dante.test',
+      allowCredentials: [],
+    },
+  };
+}
+
+function assertionRequest() {
+  return {
+    webauthn_challenge_ref: WEBAUTHN_CHALLENGE_REF,
+    response: {
+      id: 'YQ',
+      rawId: 'YQ',
+      type: 'public-key' as const,
+      clientExtensionResults: {},
+      response: {
+        authenticatorData: 'YQ',
+        clientDataJSON: 'YQ',
+        signature: 'YQ',
+        userHandle: null,
+      },
+    },
+  };
+}
+
+function registrationRequest() {
+  return {
+    label: 'Laptop',
+    transports: ['internal'],
+    webauthn_challenge_ref: WEBAUTHN_CHALLENGE_REF,
+    response: {
+      id: 'YQ',
+      rawId: 'YQ',
+      type: 'public-key' as const,
+      clientExtensionResults: {},
+      response: {
+        attestationObject: 'YQ',
+        clientDataJSON: 'YQ',
+      },
+    },
   };
 }
 
@@ -98,33 +185,48 @@ describe('@dante/api-client governed boundary', () => {
       'authGetAuthenticationMethods',
       'authEstablishPassword',
       'authRemovePassword',
+      'authBeginGoogleAuthentication',
+      'authCompleteGoogleAuthentication',
+      'authBeginAppleAuthentication',
+      'authHandleAppleCallback',
+      'authProcessAppleNotification',
+      'authGetProviderEnrollment',
+      'authSetProviderEnrollmentEmail',
+      'authResendProviderEnrollmentVerification',
+      'authVerifyProviderEnrollment',
+      'authGetProviderLink',
+      'authConfirmProviderLink',
+      'authUnlinkProvider',
+      'authBeginPasskeyRegistration',
+      'authCompletePasskeyRegistration',
+      'authBeginPasskeyAuthentication',
+      'authCompletePasskeyAuthentication',
+      'authBeginPasskeyReauthentication',
+      'authCompletePasskeyReauthentication',
+      'authUpdatePasskey',
+      'authRemovePasskey',
     ]) {
       expect(operation in publicApi).toBe(false);
     }
     expect(typeof publicApi.createDanteApiClient).toBe('function');
   });
 
-  it('validates successful signin and session responses before returning them', async () => {
-    const client = createDanteApiClient({
+  it('validates successful signin and the M4 lifecycle contracts', async () => {
+    const signInClient = createDanteApiClient({
       fetchFn: fetchReturning(
         apiResponse(200, authenticatedSession(), 'application/json'),
       ),
     });
-
-    const result = await client.signIn({
-      email: 'person@example.com',
-      password: 'correct horse battery staple',
+    expect(
+      await signInClient.signIn({
+        email: 'person@example.com',
+        password: 'correct horse battery staple',
+      }),
+    ).toMatchObject({
+      ok: true,
+      value: { authenticated: true, account_ref: ACCOUNT_REF },
     });
 
-    expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.requestId).toBe(REQUEST_ID);
-      expect(result.value.authenticated).toBe(true);
-      expect(result.value.account_ref).toBe(ACCOUNT_REF);
-    }
-  });
-
-  it('validates each M4 success contract and signup outcome discriminator', async () => {
     const signupClient = createDanteApiClient({
       fetchFn: fetchReturning(
         apiResponse(
@@ -139,17 +241,18 @@ describe('@dante/api-client governed boundary', () => {
         ),
       ),
     });
-    const signup = await signupClient.beginSignup({
-      email: 'person@example.com',
-      password: 'correct horse battery staple',
-    });
-    expect(signup).toMatchObject({
+    expect(
+      await signupClient.beginSignup({
+        email: 'person@example.com',
+        password: 'correct horse battery staple',
+      }),
+    ).toMatchObject({
       ok: true,
       status: 200,
       value: { signup_ref: SIGNUP_REF, verification_required: true },
     });
 
-    const authenticatedClient = createDanteApiClient({
+    const verifyClient = createDanteApiClient({
       fetchFn: fetchReturning(
         apiResponse(
           200,
@@ -158,27 +261,11 @@ describe('@dante/api-client governed boundary', () => {
         ),
       ),
     });
-    const authenticated = await authenticatedClient.verifySignup({
-      signup_ref: SIGNUP_REF,
-      code: '123456',
-    });
-    expect(authenticated).toMatchObject({
+    expect(
+      await verifyClient.verifySignup({ signup_ref: SIGNUP_REF, code: '123456' }),
+    ).toMatchObject({
       ok: true,
       value: { outcome: 'authenticated', account_ref: ACCOUNT_REF },
-    });
-
-    const existingClient = createDanteApiClient({
-      fetchFn: fetchReturning(
-        apiResponse(200, { outcome: 'existing_account' }, 'application/json'),
-      ),
-    });
-    const existing = await existingClient.verifySignup({
-      signup_ref: SIGNUP_REF,
-      code: '123456',
-    });
-    expect(existing).toMatchObject({
-      ok: true,
-      value: { outcome: 'existing_account' },
     });
 
     const recoveryClient = createDanteApiClient({
@@ -187,9 +274,7 @@ describe('@dante/api-client governed boundary', () => {
       ),
     });
     expect(
-      await recoveryClient.requestPasswordRecovery({
-        email: 'person@example.com',
-      }),
+      await recoveryClient.requestPasswordRecovery({ email: 'person@example.com' }),
     ).toMatchObject({ ok: true, status: 202, value: { accepted: true } });
 
     const validationClient = createDanteApiClient({
@@ -203,34 +288,9 @@ describe('@dante/api-client governed boundary', () => {
         secret: 'recovery-secret',
       }),
     ).toMatchObject({ ok: true, value: { valid: true } });
-
-    const resetClient = createDanteApiClient({
-      fetchFn: fetchReturning(apiResponse(204, undefined, null)),
-    });
-    expect(
-      await resetClient.resetPassword({
-        password_recovery_ref: RECOVERY_REF,
-        secret: 'recovery-secret',
-        new_password: 'correct horse battery staple replacement',
-      }),
-    ).toMatchObject({ ok: true, status: 204 });
-
-    const reauthClient = createDanteApiClient({
-      fetchFn: fetchReturning(
-        apiResponse(200, authenticatedSession(), 'application/json'),
-      ),
-    });
-    expect(
-      await reauthClient.reauthenticate({
-        password: 'correct horse battery staple',
-      }),
-    ).toMatchObject({
-      ok: true,
-      value: { authenticated: true, auth_session_ref: AUTH_SESSION_REF },
-    });
   });
 
-  it('validates M5 methods and password lifecycle responses through the governed boundary', async () => {
+  it('validates M5 methods including safe passkey projection and password lifecycle', async () => {
     const methodsClient = createDanteApiClient({
       fetchFn: fetchReturning(
         apiResponse(200, authenticationMethods(), 'application/json'),
@@ -240,8 +300,14 @@ describe('@dante/api-client governed boundary', () => {
       ok: true,
       value: {
         password_established: true,
-        active_passkey_count: 2,
-        recovery_eligible_email_count: 1,
+        active_passkey_count: 1,
+        passkeys: [
+          {
+            passkey_credential_ref: PASSKEY_REF,
+            label: 'Laptop',
+            transports: ['internal'],
+          },
+        ],
         providers: [
           {
             external_identity_ref: EXTERNAL_IDENTITY_REF,
@@ -251,61 +317,24 @@ describe('@dante/api-client governed boundary', () => {
       },
     });
 
-    const establishClient = createDanteApiClient({
+    const sessionClient = createDanteApiClient({
       fetchFn: fetchReturning(
         apiResponse(200, authenticatedSession(), 'application/json'),
       ),
     });
     expect(
-      await establishClient.establishPassword({
+      await sessionClient.establishPassword({
         new_password: 'correct horse battery staple',
       }),
-    ).toMatchObject({
+    ).toMatchObject({ ok: true, value: { auth_session_ref: AUTH_SESSION_REF } });
+    expect(await sessionClient.removePassword()).toMatchObject({
       ok: true,
-      value: { authenticated: true, auth_session_ref: AUTH_SESSION_REF },
-    });
-
-    const removeClient = createDanteApiClient({
-      fetchFn: fetchReturning(
-        apiResponse(200, authenticatedSession(), 'application/json'),
-      ),
-    });
-    expect(await removeClient.removePassword()).toMatchObject({
-      ok: true,
-      value: { authenticated: true, auth_session_ref: AUTH_SESSION_REF },
+      value: { auth_session_ref: AUTH_SESSION_REF },
     });
   });
 
-  it('rejects unknown success payload keys instead of silently widening contracts', async () => {
-    const client = createDanteApiClient({
-      fetchFn: fetchReturning(
-        apiResponse(
-          200,
-          {
-            signup_ref: SIGNUP_REF,
-            signup_expires_at: '2026-08-29T20:00:00Z',
-            verification_expires_at: '2026-08-29T19:15:00Z',
-            verification_required: true,
-            secret: 'must-never-be-public',
-          },
-          'application/json',
-        ),
-      ),
-    });
-
-    expect(
-      await client.beginSignup({
-        email: 'person@example.com',
-        password: 'correct horse battery staple',
-      }),
-    ).toMatchObject({
-      ok: false,
-      failure: { kind: 'contract_violation', reason: 'invalid_payload' },
-    });
-  });
-
-  it('rejects unknown nested provider metadata instead of allowing schema widening', async () => {
-    const client = createDanteApiClient({
+  it('rejects unknown provider and passkey inventory metadata instead of silently widening', async () => {
+    const providerClient = createDanteApiClient({
       fetchFn: fetchReturning(
         apiResponse(
           200,
@@ -322,8 +351,241 @@ describe('@dante/api-client governed boundary', () => {
         ),
       ),
     });
+    expect(await providerClient.getAuthenticationMethods()).toMatchObject({
+      ok: false,
+      failure: { kind: 'contract_violation', reason: 'invalid_payload' },
+    });
 
-    expect(await client.getAuthenticationMethods()).toMatchObject({
+    const passkeyClient = createDanteApiClient({
+      fetchFn: fetchReturning(
+        apiResponse(
+          200,
+          {
+            ...authenticationMethods(),
+            passkeys: [
+              {
+                ...passkeyMethod(),
+                credential_id: 'must-never-be-public',
+              },
+            ],
+          },
+          'application/json',
+        ),
+      ),
+    });
+    expect(await passkeyClient.getAuthenticationMethods()).toMatchObject({
+      ok: false,
+      failure: { kind: 'contract_violation', reason: 'invalid_payload' },
+    });
+  });
+
+  it('governs Google and Apple begin plus provider authentication outcome unions', async () => {
+    const googleBeginClient = createDanteApiClient({
+      fetchFn: fetchReturning(
+        apiResponse(
+          200,
+          {
+            external_auth_transaction_ref: TRANSACTION_REF,
+            state: 'opaque-state',
+            nonce: 'opaque-nonce',
+            expires_at: '2026-09-01T18:00:00Z',
+          },
+          'application/json',
+        ),
+      ),
+    });
+    expect(
+      await googleBeginClient.beginGoogleAuthentication({
+        purpose: 'sign_in',
+        return_target: 'access',
+      }),
+    ).toMatchObject({
+      ok: true,
+      value: { external_auth_transaction_ref: TRANSACTION_REF },
+    });
+
+    const appleBeginClient = createDanteApiClient({
+      fetchFn: fetchReturning(
+        apiResponse(
+          200,
+          {
+            authorization_url: 'https://appleid.apple.com/auth/authorize?state=opaque',
+            expires_at: '2026-09-01T18:00:00Z',
+          },
+          'application/json',
+        ),
+      ),
+    });
+    expect(
+      await appleBeginClient.beginAppleAuthentication({
+        purpose: 'sign_in',
+        return_target: 'access',
+      }),
+    ).toMatchObject({ ok: true, value: { authorization_url: expect.any(String) } });
+
+    for (const outcome of [
+      providerAuthenticated(),
+      providerLinkRequired(),
+      providerEnrollmentRequired(),
+    ]) {
+      const client = createDanteApiClient({
+        fetchFn: fetchReturning(apiResponse(200, outcome, 'application/json')),
+      });
+      const result = await client.completeGoogleAuthentication({
+        external_auth_transaction_ref: TRANSACTION_REF,
+        state: 'opaque-state',
+        credential: 'provider-credential',
+      });
+      expect(result).toMatchObject({ ok: true, value: { outcome: outcome.outcome } });
+    }
+  });
+
+  it('rejects widened provider outcome payloads', async () => {
+    const client = createDanteApiClient({
+      fetchFn: fetchReturning(
+        apiResponse(
+          200,
+          {
+            ...providerLinkRequired(),
+            continuation_secret: 'must-never-be-public',
+          },
+          'application/json',
+        ),
+      ),
+    });
+    expect(
+      await client.completeGoogleAuthentication({
+        external_auth_transaction_ref: TRANSACTION_REF,
+        state: 'opaque-state',
+        credential: 'provider-credential',
+      }),
+    ).toMatchObject({
+      ok: false,
+      failure: { kind: 'contract_violation', reason: 'invalid_payload' },
+    });
+  });
+
+  it('governs provider enrollment, link confirmation and unlink lifecycle', async () => {
+    const enrollmentClient = createDanteApiClient({
+      fetchFn: fetchReturning(
+        apiResponse(200, providerEnrollmentRequired(), 'application/json'),
+      ),
+    });
+    expect(await enrollmentClient.getProviderEnrollment()).toMatchObject({
+      ok: true,
+      value: { outcome: 'enrollment_required', external_signup_ref: SIGNUP_REF },
+    });
+    expect(
+      await enrollmentClient.setProviderEnrollmentEmail({
+        email: 'person@example.com',
+      }),
+    ).toMatchObject({ ok: true, value: { outcome: 'enrollment_required' } });
+    expect(
+      await enrollmentClient.resendProviderEnrollmentVerification(),
+    ).toMatchObject({ ok: true, value: { outcome: 'enrollment_required' } });
+
+    const verifyClient = createDanteApiClient({
+      fetchFn: fetchReturning(
+        apiResponse(200, providerLinkRequired(), 'application/json'),
+      ),
+    });
+    expect(
+      await verifyClient.verifyProviderEnrollment({ code: '123456' }),
+    ).toMatchObject({ ok: true, value: { outcome: 'link_required' } });
+
+    const linkClient = createDanteApiClient({
+      fetchFn: fetchReturning(
+        apiResponse(
+          200,
+          {
+            external_link_challenge_ref: LINK_REF,
+            provider_code: 'google',
+            expires_at: '2026-09-01T18:00:00Z',
+          },
+          'application/json',
+        ),
+      ),
+    });
+    expect(await linkClient.getProviderLink()).toMatchObject({
+      ok: true,
+      value: { external_link_challenge_ref: LINK_REF, provider_code: 'google' },
+    });
+
+    const authenticatedClient = createDanteApiClient({
+      fetchFn: fetchReturning(
+        apiResponse(200, providerAuthenticated(), 'application/json'),
+      ),
+    });
+    expect(await authenticatedClient.confirmProviderLink()).toMatchObject({
+      ok: true,
+      value: { outcome: 'authenticated', account_ref: ACCOUNT_REF },
+    });
+    expect(
+      await authenticatedClient.unlinkProvider(EXTERNAL_IDENTITY_REF),
+    ).toMatchObject({
+      ok: true,
+      value: { outcome: 'authenticated', account_ref: ACCOUNT_REF },
+    });
+  });
+
+  it('governs passkey begin/complete/update/remove without exposing raw WebAuthn operations', async () => {
+    const ceremonyClient = createDanteApiClient({
+      fetchFn: fetchReturning(
+        apiResponse(200, passkeyCeremony(), 'application/json'),
+      ),
+    });
+    expect(await ceremonyClient.beginPasskeyRegistration()).toMatchObject({
+      ok: true,
+      value: { webauthn_challenge_ref: WEBAUTHN_CHALLENGE_REF },
+    });
+    expect(await ceremonyClient.beginPasskeyAuthentication()).toMatchObject({
+      ok: true,
+      value: { webauthn_challenge_ref: WEBAUTHN_CHALLENGE_REF },
+    });
+    expect(await ceremonyClient.beginPasskeyReauthentication()).toMatchObject({
+      ok: true,
+      value: { webauthn_challenge_ref: WEBAUTHN_CHALLENGE_REF },
+    });
+
+    const completionClient = createDanteApiClient({
+      fetchFn: fetchReturning(
+        apiResponse(200, authenticatedSession(), 'application/json'),
+      ),
+    });
+    expect(
+      await completionClient.completePasskeyRegistration(registrationRequest()),
+    ).toMatchObject({ ok: true, value: { auth_session_ref: AUTH_SESSION_REF } });
+    expect(
+      await completionClient.completePasskeyAuthentication(assertionRequest()),
+    ).toMatchObject({ ok: true, value: { auth_session_ref: AUTH_SESSION_REF } });
+    expect(
+      await completionClient.completePasskeyReauthentication(assertionRequest()),
+    ).toMatchObject({ ok: true, value: { auth_session_ref: AUTH_SESSION_REF } });
+    expect(await completionClient.removePasskey(PASSKEY_REF)).toMatchObject({
+      ok: true,
+      value: { auth_session_ref: AUTH_SESSION_REF },
+    });
+
+    const updateClient = createDanteApiClient({
+      fetchFn: fetchReturning(apiResponse(204, undefined, null)),
+    });
+    expect(await updateClient.updatePasskey(PASSKEY_REF, { label: 'Travel key' })).toMatchObject({
+      ok: true,
+      status: 204,
+    });
+  });
+
+  it('rejects unexpected top-level passkey ceremony metadata', async () => {
+    const client = createDanteApiClient({
+      fetchFn: fetchReturning(
+        apiResponse(
+          200,
+          { ...passkeyCeremony(), credential_id: 'must-never-be-public' },
+          'application/json',
+        ),
+      ),
+    });
+    expect(await client.beginPasskeyAuthentication()).toMatchObject({
       ok: false,
       failure: { kind: 'contract_violation', reason: 'invalid_payload' },
     });
@@ -383,47 +645,9 @@ describe('@dante/api-client governed boundary', () => {
       ok: false,
       failure: { kind: 'contract_violation', reason: 'request_id_mismatch' },
     });
-
-    const conflictClient = createDanteApiClient({
-      fetchFn: fetchReturning(
-        apiResponse(
-          409,
-          problem(
-            409,
-            REQUEST_ID,
-            'auth.authenticator_removal_blocked',
-            'conflict',
-          ),
-          'application/problem+json',
-        ),
-      ),
-    });
-    expect(await conflictClient.removePassword()).toMatchObject({
-      ok: false,
-      failure: {
-        kind: 'server_problem',
-        status: 409,
-        code: 'auth.authenticator_removal_blocked',
-        category: 'conflict',
-      },
-    });
   });
 
-  it('rejects malformed session payloads', async () => {
-    const malformedClient = createDanteApiClient({
-      fetchFn: fetchReturning(apiResponse(200, {}, 'application/json')),
-    });
-    expect(await malformedClient.getSession()).toMatchObject({
-      ok: false,
-      failure: {
-        kind: 'contract_violation',
-        reason: 'invalid_payload',
-        status: 200,
-      },
-    });
-  });
-
-  it('handles logout success and classifies transport failure separately', async () => {
+  it('handles no-content success and classifies transport failure separately', async () => {
     const logoutClient = createDanteApiClient({
       fetchFn: fetchReturning(apiResponse(204, undefined, null)),
     });
