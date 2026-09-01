@@ -20,10 +20,12 @@ import {
 
 let observedInlineSize = 1280;
 let resizeCallback: ResizeObserverCallback | null = null;
+let resizeObserverInstance: TestResizeObserver | null = null;
 
 class TestResizeObserver implements ResizeObserver {
   constructor(callback: ResizeObserverCallback) {
     resizeCallback = callback;
+    resizeObserverInstance = this;
   }
 
   disconnect() {}
@@ -102,25 +104,28 @@ function renderWorkspace() {
 function triggerResize(inlineSize: number) {
   observedInlineSize = inlineSize;
   const callback = resizeCallback;
-  if (callback === null) {
+  const observer = resizeObserverInstance;
+  if (callback === null || observer === null) {
     throw new Error('Expected World Focus ResizeObserver callback');
   }
 
+  const entry: ResizeObserverEntry = {
+    target: document.body,
+    contentRect: document.body.getBoundingClientRect(),
+    borderBoxSize: [],
+    contentBoxSize: [],
+    devicePixelContentBoxSize: [],
+  };
+
   act(() => {
-    callback(
-      [
-        {
-          contentRect: { width: inlineSize },
-        } as ResizeObserverEntry,
-      ],
-      {} as ResizeObserver,
-    );
+    callback([entry], observer);
   });
 }
 
 beforeEach(() => {
   observedInlineSize = 1280;
   resizeCallback = null;
+  resizeObserverInstance = null;
   vi.stubGlobal('ResizeObserver', TestResizeObserver);
   vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(
     () =>
