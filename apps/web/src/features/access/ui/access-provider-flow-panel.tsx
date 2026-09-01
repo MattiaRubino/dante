@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import type { ProviderContinuation } from '../application/auth-provider';
 import { isValidAccessEmail } from '../model/access-flow';
-import { AccessPanelFrame } from './access-panel-frame';
+import { AccessPanelFrame, AccessPasswordToggle } from './access-panel-frame';
 
 type ProviderContinuationValue = Exclude<
   ProviderContinuation,
@@ -18,7 +18,8 @@ type AccessProviderFlowPanelProps = Readonly<{
   onSetEnrollmentEmail: (email: string) => void;
   onVerifyEnrollment: (code: string) => void;
   onResendEnrollment: () => void;
-  onAuthenticateExistingAccount: () => void;
+  onAuthenticateExistingAccount: (email: string, password: string) => void;
+  onAuthenticateExistingPasskey: () => void;
   onConfirmLink: () => void;
 }>;
 
@@ -31,6 +32,7 @@ export function AccessProviderFlowPanel({
   onVerifyEnrollment,
   onResendEnrollment,
   onAuthenticateExistingAccount,
+  onAuthenticateExistingPasskey,
   onConfirmLink,
 }: AccessProviderFlowPanelProps) {
   const { t } = useTranslation('common');
@@ -42,6 +44,9 @@ export function AccessProviderFlowPanel({
   const [email, setEmail] = useState(enrollment?.email_address ?? '');
   const [code, setCode] = useState('');
   const [fieldError, setFieldError] = useState<string | null>(null);
+  const [linkEmail, setLinkEmail] = useState('');
+  const [linkPassword, setLinkPassword] = useState('');
+  const [showLinkPassword, setShowLinkPassword] = useState(false);
 
   useEffect(() => {
     if (enrollment === null) {
@@ -53,8 +58,24 @@ export function AccessProviderFlowPanel({
     setFieldError(null);
   }, [enrollment]);
 
+  function submitLinkCredentials(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const trimmedEmail = linkEmail.trim();
+    if (!isValidAccessEmail(trimmedEmail)) {
+      setFieldError(t(($) => $.common.access.validation.email));
+      return;
+    }
+    if (linkPassword.length === 0) {
+      setFieldError(t(($) => $.common.access.validation.passwordRequired));
+      return;
+    }
+    setFieldError(null);
+    onAuthenticateExistingAccount(trimmedEmail, linkPassword);
+  }
+
   if (continuation.kind === 'link') {
     const provider = continuation.link.provider_code;
+    const passwordLabel = t(($) => $.common.access.field.password);
     return (
       <AccessPanelFrame
         titleId="access-provider-link-title"
@@ -69,27 +90,96 @@ export function AccessProviderFlowPanel({
               ? t(($) => $.common.access.provider.appleName)
               : provider}
         </p>
-        <p className="access-security-note">
-          {authenticated
-            ? t(($) => $.common.access.link.authenticatedReady)
-            : t(($) => $.common.access.link.authenticateFirst)}
-        </p>
-        <button
-          className="access-primary-button"
-          type="button"
-          disabled={pending}
-          aria-busy={pending}
-          onClick={
-            authenticated ? onConfirmLink : onAuthenticateExistingAccount
-          }
-        >
-          {authenticated
-            ? t(($) => $.common.access.link.confirm)
-            : t(($) => $.common.access.link.action)}
-        </button>
-        {errorMessage ? (
+        {authenticated ? (
+          <>
+            <p className="access-security-note">
+              {t(($) => $.common.access.link.authenticatedReady)}
+            </p>
+            <button
+              className="access-primary-button"
+              type="button"
+              disabled={pending}
+              aria-busy={pending}
+              onClick={onConfirmLink}
+            >
+              {t(($) => $.common.access.link.confirm)}
+            </button>
+          </>
+        ) : (
+          <>
+            <p className="access-security-note">
+              {t(($) => $.common.access.link.authenticateFirst)}
+            </p>
+            <form
+              className="access-flow-form"
+              onSubmit={submitLinkCredentials}
+              noValidate
+            >
+              <div className="access-field">
+                <label htmlFor="access-link-email">
+                  {t(($) => $.common.access.field.email)}
+                </label>
+                <input
+                  id="access-link-email"
+                  type="email"
+                  autoComplete="email"
+                  value={linkEmail}
+                  disabled={pending}
+                  onChange={(event) => {
+                    setLinkEmail(event.target.value);
+                    setFieldError(null);
+                  }}
+                />
+              </div>
+              <div className="access-field">
+                <label htmlFor="access-link-password">{passwordLabel}</label>
+                <div className="access-input-wrap">
+                  <input
+                    id="access-link-password"
+                    type={showLinkPassword ? 'text' : 'password'}
+                    autoComplete="current-password"
+                    value={linkPassword}
+                    disabled={pending}
+                    onChange={(event) => {
+                      setLinkPassword(event.target.value);
+                      setFieldError(null);
+                    }}
+                  />
+                  <AccessPasswordToggle
+                    showPassword={showLinkPassword}
+                    controls="access-link-password"
+                    fieldLabel={passwordLabel}
+                    onToggle={() => setShowLinkPassword((value) => !value)}
+                  />
+                </div>
+              </div>
+              <button
+                className="access-primary-button"
+                type="submit"
+                disabled={pending}
+                aria-busy={pending}
+              >
+                {t(($) => $.common.access.link.authenticate)}
+              </button>
+            </form>
+            <div className="access-divider" aria-hidden="true">
+              <span />
+              <p>{t(($) => $.common.access.common.or)}</p>
+              <span />
+            </div>
+            <button
+              className="access-secondary-button"
+              type="button"
+              disabled={pending}
+              onClick={onAuthenticateExistingPasskey}
+            >
+              {t(($) => $.common.access.link.authenticatePasskey)}
+            </button>
+          </>
+        )}
+        {fieldError || errorMessage ? (
           <p className="access-field-error" role="alert">
-            {errorMessage}
+            {fieldError ?? errorMessage}
           </p>
         ) : null}
       </AccessPanelFrame>
