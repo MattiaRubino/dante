@@ -122,10 +122,7 @@ export async function resolveProviderContinuation(
     return { kind: 'enrollment', enrollment };
   } catch (error) {
     if (
-      !continuationMissing(
-        error,
-        'auth.provider_enrollment_invalid_or_expired',
-      )
+      !continuationMissing(error, 'auth.provider_enrollment_invalid_or_expired')
     ) {
       throw error;
     }
