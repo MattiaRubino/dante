@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
 import type { AccessCondition } from '../model/access-flow';
@@ -27,6 +28,12 @@ export function AccessAuthenticatedReturnPanel({
       <div className="access-completion-mark" aria-hidden="true">
         ✓
       </div>
+      <Link
+        className="access-primary-button access-security-link"
+        to="/security"
+      >
+        {t(($) => $.common.access.security.title)}
+      </Link>
       <button
         className="access-secondary-button"
         type="button"
