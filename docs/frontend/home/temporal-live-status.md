@@ -1,32 +1,34 @@
 # DANTE — Temporal Workstream Live Status
 
-**Status:** ACTIVE / C1 COMPLETE-CANDIDATE HARDENING — NOT USER-ACCEPTED  
+**Status:** C1 AUTOMATED PASS — PENDING USER MANUAL ACCEPTANCE  
 **Date:** 2026-09-01  
 **Repository:** `MattiaRubino/dante`  
 **Branch:** `feature/home-timeline`  
 **Worktree:** `/home/mattia/projects/dante-timeline`  
 **Integration target:** `feature/home-react`  
-**Current implementation checkpoint:** `4ca8de311e10fb03a4d5fd47903ebe4396271d95`
+**Final C1 implementation candidate:** `36aa4652731cd9a09334fd52214e66bd87544e22`  
+**Frontend CI:** run `33542270688` / #416 — FULL PASS
 
 ## Live authority
 
-This file is the live status for the isolated Timeline / Temporal Create workstream.
+This file is the live operational status for the isolated Timeline / Temporal Create workstream.
 
-For `feature/home-timeline` it supersedes stale operational metadata in the generic Home `current-checkpoint.md` and `production-depth-handoff.md`, which remain historical/parallel documents for `feature/home-react`.
+For `feature/home-timeline` it supersedes stale operational metadata in generic Home checkpoint/handoff files that belong to the parallel/integration Home line.
 
 A continuation must read, in order:
 
 1. `docs/frontend/home/temporal-create-handoff.md`;
 2. `docs/frontend/home/temporal-create-c1-engineering-checkpoint.md`;
-3. `docs/frontend/home/temporal-create-c1-scope-amendment.md`;
-4. `docs/frontend/home/temporal-create-q0-approval.md`;
-5. `docs/frontend/home/temporal-create-q0-contract.md`;
-6. `docs/frontend/home/temporal-frontend-roadmap.md`;
-7. `docs/frontend/home/temporal-f0-contract.md`;
-8. `docs/frontend/home/timeline-t1-frozen-contract.md`;
-9. `docs/frontend/home/temporal-experience-architecture.md`.
+3. `docs/frontend/home/temporal-create-c1-manual-acceptance.md`;
+4. `docs/frontend/home/temporal-create-c1-scope-amendment.md`;
+5. `docs/frontend/home/temporal-create-q0-approval.md`;
+6. `docs/frontend/home/temporal-create-q0-contract.md`;
+7. `docs/frontend/home/temporal-frontend-roadmap.md`;
+8. `docs/frontend/home/temporal-f0-contract.md`;
+9. `docs/frontend/home/timeline-t1-frozen-contract.md`;
+10. `docs/frontend/home/temporal-experience-architecture.md`.
 
-When older documents conflict about C1 scope, the **C1 scope amendment wins**.
+When older C1 documents conflict about scope, the **C1 scope amendment wins**. The live status/handoff win for current checkpoint and gate state.
 
 ## Stable closed foundations
 
@@ -35,15 +37,15 @@ Do not reopen casually:
 - H0 Whole Home structural baseline;
 - T1/T1-A Timeline hardening;
 - T1-B continuous temporal navigation / relative scrubber;
-- F0 temporal application foundation on `7034b9b0d100709785ebe96e3816aab3e7b1d1f8`;
-- permanent temporal distinctions such as Schedule / Occurrence / Session / Actual / Proposal;
+- F0 temporal application foundation at `7034b9b0d100709785ebe96e3816aab3e7b1d1f8`;
+- Schedule / Occurrence / Session / Actual / Proposal distinctions;
 - frontend application model != DTO != Domain != persistence;
 - ports/adapters boundary;
 - no fake backend/provider/AI/voice success.
 
-## C1 product target
+## C1 product shape
 
-C1 is the complete pre-backend Create capability, not merely a compact popup:
+C1 is the complete pre-backend Create capability:
 
 ```text
 Quick Create
@@ -57,81 +59,105 @@ truthful external-vertical handoffs
 
 All levels share one structured draft/application path.
 
-## Current implemented surface
+## Implemented C1 surface
 
-The branch now contains a complete-candidate implementation of the amended C1 scope, including:
+The final automated candidate includes:
 
-- Activity and Event as distinct creation semantics;
+- Activity and Event as distinct semantics;
 - title-first Quick Create;
-- timed, all-day and unscheduled forms;
+- timed, all-day and unscheduled forms as semantically applicable;
 - date/start/end/duration;
 - floating-local and named-zone/zoned time semantics;
-- context/life-area assignment from the available Timeline groups;
+- context/life-area assignment from Timeline groups;
 - notes/tags;
-- progressive Quick -> Expanded -> Full authoring;
-- Activity scheduling constraints including fixed/open/window/preferred/deadline intent where supported;
+- Quick -> Expanded -> Full progressive authoring without draft duplication;
+- Activity fixed/open/window/preferred/deadline intent;
 - movement/replanning policy;
-- expected duration, split/session structure and minimum-session controls;
-- recurrence specification;
-- confirmation/outcome policy seams;
+- expected duration, session structure, minimum/max session controls and buffers where supported;
+- recurrence source specification;
+- confirmation/outcome/review policy seams;
 - Event location, availability and visibility;
 - participant/resource/conference intent as truthful provider handoff only;
-- explicit handoff for object types owned by other verticals instead of flattening them into Activity/Event;
+- explicit handoff for Project/World/other external-owned creation instead of duplicated CRUD;
 - deterministic validation and invalid-control focus;
-- F0-backed local command execution;
-- local rich specification records kept separate from the minimal Timeline projection;
+- F0-backed command execution;
+- local rich specification kept separate from minimal Timeline projection;
+- exact retry idempotency at both projection and rich-intent levels;
 - candidate preview, applied Timeline projection, reveal/focus and Undo;
-- contextual Create from Timeline double-click and Shift-drag range gesture;
-- responsive/mobile full editor;
-- IT/EN i18n and accessibility checks.
+- contextual double-click and Shift-drag range Create;
+- responsive/mobile Full editor;
+- IT/EN i18n;
+- accessibility and modal focus lifecycle protections.
 
-## Hardening completed after the first expanded implementation
+## Hardening that must not regress
 
-Recent audit work found and fixed issues that must not be reintroduced:
+1. **Architecture:** Create UI cycles removed; shared UI types are outside component-to-component cycles.
+2. **i18n/a11y:** semantic labels such as `Durata prevista / Expected duration`; recurrence controls have unambiguous accessible names.
+3. **Shift-drag test truth:** contextual E2E scrolls the intended recycled Timeline day into view and remeasures current geometry before raw mouse input.
+4. **Mobile geometry:** sub-pixel browser width noise is tolerated, while real horizontal overflow remains strictly forbidden.
+5. **DST correctness:** zoned Event end/duration arithmetic uses real Instants in the IANA zone; Europe/Rome spring-forward/fall-back and multi-day cases are covered.
+6. **Rich idempotency:** same operation ID with changed rich metadata is rejected side-effect-free; exact retry remains idempotent.
+7. **Projection performance:** Create projection collision/layout preparation is O(n) with slot counters and cached group/day lookups rather than repeated O(n²) scans.
+8. **Runtime allocation:** the local Create runtime is lazily initialized once rather than constructing and discarding a workspace on each React render.
+9. **Contextual focus return:** direct `+` close returns to `+`; Timeline double-click/Shift-drag close returns to the Timeline grid.
+10. **Discard modal lifecycle:** dirty-close confirmation is a named `alertdialog`; Tab is contained inside its actions; the underlying header/form are inert; continuing editing restores the exact previous connected control.
 
-1. **Architecture cycles:** shared Create UI types were moved out of component-to-component imports; dependency-cruiser is clean.
-2. **i18n/accessibility contract drift:** tests now use the current semantic labels such as `Durata prevista / Expected duration`; recurrence controls are unambiguous.
-3. **Shift-drag E2E determinism:** the test now brings the target day section into the viewport and measures current geometry before using raw mouse coordinates. Do not revert to stale/off-screen bounding boxes.
-4. **Mobile sub-pixel tolerance:** full-screen width assertions tolerate browser floating-point fractions while the real horizontal-overflow invariant remains strict.
-5. **DST correctness:** Event end/duration helpers now distinguish floating vs zoned semantics. Zoned calculations use real Instants in the IANA zone, with explicit Europe/Rome spring-forward and fall-back coverage plus multi-day coverage.
-6. **Rich-intent idempotency:** F0 already protects the minimal projection command; C1 now also fingerprints the complete rich Create intent. Exact retries are accepted, while the same `operationId` with changed rich metadata is rejected side-effect-free.
-7. **Timeline Create projection performance:** collision/layout preparation was changed from repeated `slice/filter/find` work to single-pass O(n) slot counting with cached group/day lookups.
+## Final automated evidence
 
-The detailed implementation record is `temporal-create-c1-engineering-checkpoint.md`.
+Implementation candidate:
 
-## Current CI truth
+`36aa4652731cd9a09334fd52214e66bd87544e22`
 
-The only implementation checkpoint currently eligible to become the C1 automated candidate is:
+Frontend CI:
 
-`4ca8de311e10fb03a4d5fd47903ebe4396271d95`
+- run ID: `33542270688`;
+- run number: `416`;
+- Quality: **PASS**;
+- Mobile Bundle: **PASS**;
+- Web E2E Chromium: **PASS**;
+- frozen Timeline interaction contract Firefox: **PASS**;
+- Frontend CI Gate: **PASS**.
 
-Frontend CI run:
+Quality evidence includes:
 
-- run ID: `33539539640`;
-- run number: `410`.
+- lint PASS;
+- typecheck 5/5 PASS;
+- architecture PASS: 194 modules / 459 dependencies / zero violations;
+- generated-source drift PASS;
+- unit tests PASS: 25 web test files / 151 tests, plus package suites;
+- production build PASS;
+- diff check PASS;
+- repository mutation check PASS.
 
-At the documentation checkpoint:
+Production Home route at the final candidate is approximately:
 
-- **Quality:** PASS, including contract drift, active-workstream format, lint, typecheck, architecture, generated-source drift, unit tests, production build, diff check and repository mutation check;
-- **Mobile Bundle:** PASS, including Expo compatibility and Android Hermes bundle smoke;
-- **Web E2E:** still in progress at the time this checkpoint was written;
-- **Frontend CI Gate:** therefore not yet claimable as final PASS.
+- `233.28 kB` raw;
+- `83.74 kB` gzip.
 
-The immediately preceding implementation run confirmed both Chromium and the frozen Firefox Timeline contract after the gesture/mobile fixes, but that run was superseded by later hardening commits. It is useful evidence only; it is **not** the final closure gate for `4ca8de31...`.
+The earlier pre-expanded Create Home route observed during this workstream was approximately `76.98 kB` gzip. The deeper C1 surface therefore adds roughly `6.8 kB` gzip to the route.
 
-Documentation-sync commits after `4ca8de31...` may move branch HEAD. Treat `4ca8de31...` as the implementation checkpoint and docs-only descendants separately until a later code change creates a new implementation checkpoint.
+### Bundle decision
 
-## Remaining C1 closure work
+**Do not add dynamic import/Suspense for Expanded/Full in C1.**
 
-Before asking for user acceptance:
+The measured potential saving is too small to justify adding an asynchronous boundary to a form whose advanced validation must preserve deterministic focus and draft continuity. The synchronous implementation is intentionally retained unless future route growth produces material evidence that a split is worthwhile.
 
-1. finish the full CI on the latest implementation/docs descendant and require Quality + Mobile + Chromium + Firefox + final gate green;
-2. inspect any remaining failure from logs instead of weakening tests/contracts;
-3. complete the bundle/critical-path audit; only lazy-load Expanded/Full if the split is clean and measurably useful;
-4. perform a final static audit for semantics, cleanup, focus, responsive behavior and repeated-use performance;
-5. give the user an exact manual verification protocol covering Quick, Expanded, Full, Activity, Event, unscheduled/all-day/zoned cases, contextual gestures, Undo and mobile;
-6. wait for explicit user PASS;
-7. only then freeze C1 and move to C2 Card -> Detail.
+This is a measured product-quality decision, not an omitted optimization.
+
+## Current gate
+
+Automated closure is complete. The only remaining C1 gate is the human acceptance protocol in:
+
+`docs/frontend/home/temporal-create-c1-manual-acceptance.md`
+
+C1 is **not yet FROZEN/CLOSED**.
+
+Required next action:
+
+1. sync the local Timeline worktree to the final docs descendant;
+2. run the manual protocol;
+3. report precise defect(s) if any, or explicitly approve C1;
+4. only after explicit user PASS mark C1 frozen and move to C2 Card -> structured Detail.
 
 ## Stop line
 
@@ -150,4 +176,4 @@ Still outside C1:
 
 ## Delivery rule
 
-Continue internal C1 hardening continuously. Do not move to C2 merely because automated tests are green. The next phase starts only after the coherent complete C1 system is manually tested and explicitly approved by the user.
+Do not start C2 merely because CI is green. C1 advances only after the complete Create capability is manually tested and explicitly approved by the user.
