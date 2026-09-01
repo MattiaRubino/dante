@@ -31,7 +31,7 @@ describe('temporal create session', () => {
     expect(session.draft.current.kind).toBe('activity');
     expect(session.draft.current.timeSemantics).toBe('timed');
     expect(session.draft.current.scheduling.constraintKind).toBe('none');
-    expect(session.draft.current.recurrence.frequency).toBe('none');
+    expect(session.draft.current.eventRecurrence.patternKind).toBe('none');
     expect(session.draft.dirty).toBe(false);
   });
 
@@ -65,21 +65,42 @@ describe('temporal create session', () => {
     expect(request.session.draft.current.title).toBe('Studiare inglese');
   });
 
-  it('continues editing and changes presentation depth without losing draft state', () => {
+  it('continues editing and changes presentation depth without losing deep draft state', () => {
+    const base = createTemporalCreateFields({
+      title: 'Call ricorrente',
+      kind: 'event',
+      date: '2026-09-01',
+      eventRecurrence: {
+        ...createTemporalCreateFields().eventRecurrence,
+        patternKind: 'calendar-wall-clock',
+        calendarFrequency: 'weekly',
+        weekdays: Object.freeze(['MO', 'WE'] as const),
+      },
+      event: {
+        ...createTemporalCreateFields().event,
+        purpose: 'Decisione progetto',
+      },
+    });
     const edited = updateTemporalCreateTitle(
-      createTemporalCreateSession(),
-      'Scrivere una canzone',
+      createTemporalCreateSession(base),
+      'Call ricorrente aggiornata',
     );
     const protectedSession = requestTemporalCreateClose(edited).session;
     const resumed = continueTemporalCreateEditing(protectedSession);
     const expanded = setTemporalCreateDetailsOpen(resumed, true);
     const full = setTemporalCreateSurface(expanded, 'full');
+    const backToExpanded = setTemporalCreateSurface(full, 'expanded');
+    const compact = setTemporalCreateSurface(backToExpanded, 'quick');
+    const reopened = setTemporalCreateSurface(compact, 'full');
 
-    expect(full.closeDecision).toBe('none');
-    expect(full.surface).toBe('full');
-    expect(full.detailsOpen).toBe(true);
-    expect(full.draft.current.title).toBe('Scrivere una canzone');
-    expect(full.draft.dirty).toBe(true);
+    expect(reopened.closeDecision).toBe('none');
+    expect(reopened.surface).toBe('full');
+    expect(reopened.draft.current.title).toBe('Call ricorrente aggiornata');
+    expect(reopened.draft.current.eventRecurrence.patternKind).toBe(
+      'calendar-wall-clock',
+    );
+    expect(reopened.draft.current.eventRecurrence.weekdays).toEqual(['MO', 'WE']);
+    expect(reopened.draft.current.event.purpose).toBe('Decisione progetto');
   });
 
   it('normalizes Event creation away from Activity-only unscheduled/flexible states', () => {
@@ -105,6 +126,26 @@ describe('temporal create session', () => {
     expect(eventSession.draft.current.kind).toBe('event');
     expect(eventSession.draft.current.timeSemantics).toBe('timed');
     expect(eventSession.draft.current.scheduling.constraintKind).toBe('none');
+  });
+
+  it('does not permit Activity to become a fake direct recurrence owner', () => {
+    const event = createTemporalCreateFields({
+      title: 'Call',
+      kind: 'event',
+      date: '2026-09-01',
+      eventRecurrence: {
+        ...createTemporalCreateFields().eventRecurrence,
+        patternKind: 'elapsed-interval',
+        elapsedIntervalMinutes: 1440,
+      },
+    });
+    const activity = updateTemporalCreateFields(
+      createTemporalCreateSession(event),
+      { kind: 'activity' },
+    );
+
+    expect(event.eventRecurrence.patternKind).toBe('elapsed-interval');
+    expect(activity.draft.current.eventRecurrence.patternKind).toBe('none');
   });
 
   it('still rejects an externally malformed Event without placement', () => {
@@ -216,7 +257,7 @@ describe('temporal create session', () => {
     ).toContain('temporal.create.deadline.invalid');
   });
 
-  it('validates split-session and recurrence authoring independently from occurrences', () => {
+  it('validates split-session Activity authoring independently from execution instances', () => {
     const baseline = createTemporalCreateFields({
       title: 'Studiare inglese',
       date: '2026-09-01',
@@ -229,11 +270,6 @@ describe('temporal create session', () => {
         sessionMode: 'splittable',
         minSessionMinutes: 120,
       },
-      recurrence: {
-        ...baseline.recurrence,
-        frequency: 'weekly',
-        weekdays: Object.freeze([]),
-      },
     });
     const valid = createTemporalCreateFields({
       ...invalid,
@@ -241,23 +277,103 @@ describe('temporal create session', () => {
         ...invalid.execution,
         minSessionMinutes: 30,
       },
-      recurrence: {
-        ...invalid.recurrence,
-        weekdays: Object.freeze(['MO', 'WE', 'FR'] as const),
+    });
+
+    expect(validateTemporalCreateFields(invalid).map((issue) => issue.code)).toContain(
+      'temporal.create.minimum_session.invalid',
+    );
+    expect(validateTemporalCreateFields(valid)).toEqual([]);
+  });
+
+  it('validates all four CP6 Event recurrence families', () => {
+    const baseline = createTemporalCreateFields({
+      title: 'Evento ricorrente',
+      kind: 'event',
+      date: '2026-09-01',
+    });
+
+    const calendar = createTemporalCreateFields({
+      ...baseline,
+      eventRecurrence: {
+        ...baseline.eventRecurrence,
+        patternKind: 'calendar-wall-clock',
+        calendarFrequency: 'weekly',
+        weekdays: Object.freeze(['TU', 'TH'] as const),
+      },
+    });
+    const elapsed = createTemporalCreateFields({
+      ...baseline,
+      eventRecurrence: {
+        ...baseline.eventRecurrence,
+        patternKind: 'elapsed-interval',
+        elapsedIntervalMinutes: 720,
+      },
+    });
+    const quota = createTemporalCreateFields({
+      ...baseline,
+      eventRecurrence: {
+        ...baseline.eventRecurrence,
+        patternKind: 'quota-per-period',
+        quotaCount: 3,
+        quotaPeriodKind: 'week',
+        quotaPeriodInterval: 1,
+      },
+    });
+    const cycle = createTemporalCreateFields({
+      ...baseline,
+      eventRecurrence: {
+        ...baseline.eventRecurrence,
+        patternKind: 'cyclic-positional',
+        cycleLength: 7,
+        cycleOffset: 2,
+        cycleUnit: 'day',
         endMode: 'count',
         count: 12,
       },
     });
 
-    expect(validateTemporalCreateFields(invalid).map((issue) => issue.code)).toEqual(
-      expect.arrayContaining([
-        'temporal.create.minimum_session.invalid',
-        'temporal.create.recurrence.weekdays_required',
-      ]),
+    expect(validateTemporalCreateFields(calendar)).toEqual([]);
+    expect(validateTemporalCreateFields(elapsed)).toEqual([]);
+    expect(validateTemporalCreateFields(quota)).toEqual([]);
+    expect(validateTemporalCreateFields(cycle)).toEqual([]);
+  });
+
+  it('rejects malformed CP6 recurrence payloads deterministically', () => {
+    const baseline = createTemporalCreateFields({
+      title: 'Evento ricorrente',
+      kind: 'event',
+      date: '2026-09-01',
+    });
+    const invalid = createTemporalCreateFields({
+      ...baseline,
+      eventRecurrence: {
+        ...baseline.eventRecurrence,
+        patternKind: 'cyclic-positional',
+        cycleLength: 3,
+        cycleOffset: 3,
+      },
+    });
+
+    expect(validateTemporalCreateFields(invalid).map((issue) => issue.code)).toContain(
+      'temporal.create.recurrence.cycle_invalid',
     );
-    expect(validateTemporalCreateFields(valid)).toEqual([]);
-    expect(valid.recurrence.frequency).toBe('weekly');
-    expect(valid.recurrence.weekdays).toEqual(['MO', 'WE', 'FR']);
+  });
+
+  it('supports infer-provisional without claiming an authoritative Actual', () => {
+    const baseline = createTemporalCreateFields({
+      title: 'Allenamento',
+      date: '2026-09-01',
+    });
+    const fields = createTemporalCreateFields({
+      ...baseline,
+      confirmation: {
+        ...baseline.confirmation,
+        outcomePolicy: 'infer-provisional',
+      },
+    });
+
+    expect(validateTemporalCreateFields(fields)).toEqual([]);
+    expect(fields.confirmation.outcomePolicy).toBe('infer-provisional');
   });
 
   it('discard creates a fresh clean Quick Create session', () => {
