@@ -19,6 +19,18 @@ export const worldFocus = {
     error: 'Unable to display this content.',
     close: 'Close',
   },
+  dante: {
+    invoke: 'Open DANTE',
+    invokeForWorld: 'Open DANTE for the {{world}} World',
+    worldContext: 'World · {{world}}',
+    inputLabel: 'Write a request for DANTE',
+    placeholder: 'Ask DANTE…',
+    send: 'Send request',
+    close: 'Close DANTE',
+    unavailable: 'DANTE is unavailable right now.',
+    submissionUnavailable:
+      'DANTE is unavailable right now. Your request is still here.',
+  },
   continuity: {
     title: 'In motion',
     loading: 'Recovering what is in motion',
