@@ -1,8 +1,11 @@
 import {
   authBeginSignup as generatedAuthBeginSignup,
+  authEstablishPassword as generatedAuthEstablishPassword,
+  authGetAuthenticationMethods as generatedAuthGetAuthenticationMethods,
   authGetSession as generatedAuthGetSession,
   authLogOut as generatedAuthLogOut,
   authReauthenticate as generatedAuthReauthenticate,
+  authRemovePassword as generatedAuthRemovePassword,
   authRequestPasswordRecovery as generatedAuthRequestPasswordRecovery,
   authResendSignupVerification as generatedAuthResendSignupVerification,
   authResetPassword as generatedAuthResetPassword,
@@ -12,6 +15,7 @@ import {
 } from '../generated/dante';
 import {
   AuthenticatedSessionResponse,
+  AuthenticationMethodsResponse,
   ExistingAccountSignupResponse,
   ProblemDetails,
   RecoveryAcceptedResponse,
@@ -20,7 +24,9 @@ import {
   SignupCreatedResponse,
   UnauthenticatedSessionResponse,
   type AuthenticatedSessionResponseOutput,
+  type AuthenticationMethodsResponseOutput,
   type ExistingAccountSignupResponseOutput,
+  type PasswordEstablishRequest,
   type PasswordRecoveryRequest,
   type PasswordRecoveryValidationRequest,
   type PasswordResetRequest,
@@ -62,6 +68,18 @@ const SIGNUP_CREATED_KEYS = new Set([
 const EXISTING_ACCOUNT_SIGNUP_KEYS = new Set(['outcome']);
 const RECOVERY_ACCEPTED_KEYS = new Set(['accepted']);
 const RECOVERY_VALIDATION_KEYS = new Set(['valid']);
+const AUTHENTICATION_METHODS_KEYS = new Set([
+  'active_passkey_count',
+  'password_established',
+  'providers',
+  'recovery_eligible_email_count',
+]);
+const AUTHENTICATION_PROVIDER_METHOD_KEYS = new Set([
+  'external_identity_ref',
+  'provider_code',
+  'provider_email_address',
+  'provider_email_private',
+]);
 const PROBLEM_KEYS = new Set([
   'category',
   'code',
@@ -85,6 +103,7 @@ export type SignupVerificationResult =
   SignupAuthenticated | ExistingAccountSignup;
 export type RecoveryAccepted = RecoveryAcceptedResponseOutput;
 export type RecoveryValidation = RecoveryValidationResponseOutput;
+export type AuthenticationMethods = AuthenticationMethodsResponseOutput;
 
 export type ContractViolationReason =
   | 'cache_policy_mismatch'
@@ -184,6 +203,19 @@ function hasOnlyKeys(
   allowed: ReadonlySet<string>,
 ): value is Record<string, unknown> {
   return isRecord(value) && Object.keys(value).every((key) => allowed.has(key));
+}
+
+function hasStrictAuthenticationMethodsShape(value: unknown): boolean {
+  if (!hasOnlyKeys(value, AUTHENTICATION_METHODS_KEYS)) {
+    return false;
+  }
+  const providers = value.providers;
+  return (
+    Array.isArray(providers) &&
+    providers.every((provider) =>
+      hasOnlyKeys(provider, AUTHENTICATION_PROVIDER_METHOD_KEYS),
+    )
+  );
 }
 
 function hasStrictProblemShape(value: unknown): boolean {
@@ -411,12 +443,37 @@ function parseRecoveryValidation(
   );
 }
 
+function parseAuthenticationMethods(
+  wire: WireResponse,
+): RemoteResult<AuthenticationMethods> {
+  if (mediaType(wire.headers) !== JSON_MEDIA_TYPE) {
+    return contractViolation('content_type_mismatch', wire);
+  }
+  if (!hasStrictAuthenticationMethodsShape(wire.data)) {
+    return contractViolation('invalid_payload', wire);
+  }
+  const parsed = AuthenticationMethodsResponse.safeParse(wire.data);
+  return parsed.success
+    ? success(wire, parsed.data)
+    : contractViolation('invalid_payload', wire);
+}
+
 export type DanteApiClient = {
   signIn(
     request: SignInRequest,
     options?: RequestInit,
   ): Promise<RemoteResult<AuthenticatedSession>>;
   getSession(options?: RequestInit): Promise<RemoteResult<AuthSession>>;
+  getAuthenticationMethods(
+    options?: RequestInit,
+  ): Promise<RemoteResult<AuthenticationMethods>>;
+  establishPassword(
+    request: PasswordEstablishRequest,
+    options?: RequestInit,
+  ): Promise<RemoteResult<AuthenticatedSession>>;
+  removePassword(
+    options?: RequestInit,
+  ): Promise<RemoteResult<AuthenticatedSession>>;
   logOut(options?: RequestInit): Promise<RemoteResult<void>>;
   beginSignup(
     request: SignupRequest,
@@ -481,6 +538,58 @@ export function createDanteApiClient(
       }
       if (wire.status === 200) {
         return parseSession(wire);
+      }
+      if (wire.status >= 400) {
+        return serverProblem(wire);
+      }
+      return contractViolation('unexpected_status', wire);
+    },
+
+    async getAuthenticationMethods(requestOptions) {
+      let wire: WireResponse;
+      try {
+        wire = await generatedAuthGetAuthenticationMethods(requestOptions, fetchFn);
+      } catch (error) {
+        return fromThrown(error);
+      }
+      if (wire.status === 200) {
+        return parseAuthenticationMethods(wire);
+      }
+      if (wire.status >= 400) {
+        return serverProblem(wire);
+      }
+      return contractViolation('unexpected_status', wire);
+    },
+
+    async establishPassword(request, requestOptions) {
+      let wire: WireResponse;
+      try {
+        wire = await generatedAuthEstablishPassword(
+          request,
+          requestOptions,
+          fetchFn,
+        );
+      } catch (error) {
+        return fromThrown(error);
+      }
+      if (wire.status === 200) {
+        return parseAuthenticatedSession(wire);
+      }
+      if (wire.status >= 400) {
+        return serverProblem(wire);
+      }
+      return contractViolation('unexpected_status', wire);
+    },
+
+    async removePassword(requestOptions) {
+      let wire: WireResponse;
+      try {
+        wire = await generatedAuthRemovePassword(requestOptions, fetchFn);
+      } catch (error) {
+        return fromThrown(error);
+      }
+      if (wire.status === 200) {
+        return parseAuthenticatedSession(wire);
       }
       if (wire.status >= 400) {
         return serverProblem(wire);

@@ -9,6 +9,7 @@ const ACCOUNT_REF = '00000000-0000-4000-8000-000000000001';
 const AUTH_SESSION_REF = '00000000-0000-4000-8000-000000000002';
 const SIGNUP_REF = '00000000-0000-4000-8000-000000000003';
 const RECOVERY_REF = '00000000-0000-4000-8000-000000000004';
+const EXTERNAL_IDENTITY_REF = '00000000-0000-4000-8000-000000000005';
 
 function apiResponse(
   status: number,
@@ -45,14 +46,35 @@ function authenticatedSession() {
   };
 }
 
-function problem(status = 401, requestId = REQUEST_ID) {
+function authenticationMethods() {
   return {
-    type: 'urn:dante:problem:auth.invalid_credentials',
+    active_passkey_count: 2,
+    password_established: true,
+    providers: [
+      {
+        external_identity_ref: EXTERNAL_IDENTITY_REF,
+        provider_code: 'google',
+        provider_email_address: 'person@example.com',
+        provider_email_private: false,
+      },
+    ],
+    recovery_eligible_email_count: 1,
+  };
+}
+
+function problem(
+  status = 401,
+  requestId = REQUEST_ID,
+  code = 'auth.invalid_credentials',
+  category = 'authentication',
+) {
+  return {
+    type: `urn:dante:problem:${code}`,
     title: 'Authentication failed',
     status,
-    detail: 'The supplied credentials could not be accepted.',
-    code: 'auth.invalid_credentials',
-    category: 'authentication',
+    detail: 'The supplied request could not be accepted.',
+    code,
+    category,
     request_id: requestId,
     retryable: false,
   };
@@ -71,6 +93,9 @@ describe('@dante/api-client governed boundary', () => {
       'authValidatePasswordRecovery',
       'authResetPassword',
       'authReauthenticate',
+      'authGetAuthenticationMethods',
+      'authEstablishPassword',
+      'authRemovePassword',
     ]) {
       expect(operation in publicApi).toBe(false);
     }
@@ -203,6 +228,52 @@ describe('@dante/api-client governed boundary', () => {
     });
   });
 
+  it('validates M5 methods and password lifecycle responses through the governed boundary', async () => {
+    const methodsClient = createDanteApiClient({
+      fetchFn: fetchReturning(
+        apiResponse(200, authenticationMethods(), 'application/json'),
+      ),
+    });
+    expect(await methodsClient.getAuthenticationMethods()).toMatchObject({
+      ok: true,
+      value: {
+        password_established: true,
+        active_passkey_count: 2,
+        recovery_eligible_email_count: 1,
+        providers: [
+          {
+            external_identity_ref: EXTERNAL_IDENTITY_REF,
+            provider_code: 'google',
+          },
+        ],
+      },
+    });
+
+    const establishClient = createDanteApiClient({
+      fetchFn: fetchReturning(
+        apiResponse(200, authenticatedSession(), 'application/json'),
+      ),
+    });
+    expect(
+      await establishClient.establishPassword({
+        new_password: 'correct horse battery staple',
+      }),
+    ).toMatchObject({
+      ok: true,
+      value: { authenticated: true, auth_session_ref: AUTH_SESSION_REF },
+    });
+
+    const removeClient = createDanteApiClient({
+      fetchFn: fetchReturning(
+        apiResponse(200, authenticatedSession(), 'application/json'),
+      ),
+    });
+    expect(await removeClient.removePassword()).toMatchObject({
+      ok: true,
+      value: { authenticated: true, auth_session_ref: AUTH_SESSION_REF },
+    });
+  });
+
   it('rejects unknown success payload keys instead of silently widening contracts', async () => {
     const client = createDanteApiClient({
       fetchFn: fetchReturning(
@@ -226,6 +297,31 @@ describe('@dante/api-client governed boundary', () => {
         password: 'correct horse battery staple',
       }),
     ).toMatchObject({
+      ok: false,
+      failure: { kind: 'contract_violation', reason: 'invalid_payload' },
+    });
+  });
+
+  it('rejects unknown nested provider metadata instead of allowing schema widening', async () => {
+    const client = createDanteApiClient({
+      fetchFn: fetchReturning(
+        apiResponse(
+          200,
+          {
+            ...authenticationMethods(),
+            providers: [
+              {
+                ...authenticationMethods().providers[0],
+                provider_subject: 'must-never-be-public',
+              },
+            ],
+          },
+          'application/json',
+        ),
+      ),
+    });
+
+    expect(await client.getAuthenticationMethods()).toMatchObject({
       ok: false,
       failure: { kind: 'contract_violation', reason: 'invalid_payload' },
     });
@@ -284,6 +380,30 @@ describe('@dante/api-client governed boundary', () => {
     ).toMatchObject({
       ok: false,
       failure: { kind: 'contract_violation', reason: 'request_id_mismatch' },
+    });
+
+    const conflictClient = createDanteApiClient({
+      fetchFn: fetchReturning(
+        apiResponse(
+          409,
+          problem(
+            409,
+            REQUEST_ID,
+            'auth.authenticator_removal_blocked',
+            'conflict',
+          ),
+          'application/problem+json',
+        ),
+      ),
+    });
+    expect(await conflictClient.removePassword()).toMatchObject({
+      ok: false,
+      failure: {
+        kind: 'server_problem',
+        status: 409,
+        code: 'auth.authenticator_removal_blocked',
+        category: 'conflict',
+      },
     });
   });
 

@@ -28,8 +28,17 @@ from dante.platform.http.problem import ProblemError
 _ACCOUNT_REF = UUID("00000000-0000-4000-8000-000000000001")
 _SESSION_REF = UUID("00000000-0000-4000-8000-000000000002")
 _EXTERNAL_IDENTITY_REF = UUID("00000000-0000-4000-8000-000000000003")
-_SESSION_SECRET = "session-secret"
-_CSRF_TOKEN = "csrf-token"
+
+
+def _synthetic_value(label: str) -> str:
+    return f"dante-test-{label}-{_ACCOUNT_REF.hex}"
+
+
+_SESSION_SECRET = _synthetic_value("session")
+_CSRF_TOKEN = _synthetic_value("csrf")
+_NEW_PASSWORD = _synthetic_value("new-password")
+_ROTATED_SESSION_SECRET = _synthetic_value("rotated-session")
+_ROTATED_CSRF_TOKEN = _synthetic_value("rotated-csrf")
 
 
 def _principal() -> Principal:
@@ -54,8 +63,8 @@ def _issued() -> IssuedSession:
     return IssuedSession(
         principal=_principal(),
         expires_at=datetime(2026, 10, 1, 10, 0, tzinfo=UTC),
-        session_secret=SecretStr("rotated-secret"),
-        csrf_token=SecretStr("rotated-csrf"),
+        session_secret=SecretStr(_ROTATED_SESSION_SECRET),
+        csrf_token=SecretStr(_ROTATED_CSRF_TOKEN),
     )
 
 
@@ -203,7 +212,7 @@ async def test_password_establishment_requires_session_bound_csrf_before_mutatio
 
     with pytest.raises(ProblemError) as error:
         await establish_password(
-            PasswordEstablishRequest(new_password="correct horse battery staple"),
+            PasswordEstablishRequest(new_password=_NEW_PASSWORD),
             _request(csrf=False),
             Response(),
             _AuthService(_admitted()),
@@ -221,21 +230,19 @@ async def test_password_establishment_rotates_cookie_and_returns_authoritative_s
     lifecycle = _LifecycleService()
 
     result = await establish_password(
-        PasswordEstablishRequest(new_password="correct horse battery staple"),
+        PasswordEstablishRequest(new_password=_NEW_PASSWORD),
         _request(csrf=True),
         response,
         _AuthService(_admitted()),
         lifecycle,
     )
 
-    assert lifecycle.establish_calls == [
-        (_ACCOUNT_REF, _SESSION_SECRET, "correct horse battery staple")
-    ]
+    assert lifecycle.establish_calls == [(_ACCOUNT_REF, _SESSION_SECRET, _NEW_PASSWORD)]
     assert result.authenticated is True
     assert result.account_ref == _ACCOUNT_REF
-    assert result.csrf_token == "rotated-csrf"
+    assert result.csrf_token == _ROTATED_CSRF_TOKEN
     set_cookie = response.headers["set-cookie"]
-    assert "__Host-dante-session=rotated-secret" in set_cookie
+    assert f"__Host-dante-session={_ROTATED_SESSION_SECRET}" in set_cookie
     assert "HttpOnly" in set_cookie
     assert "Secure" in set_cookie
     assert "SameSite=lax" in set_cookie
