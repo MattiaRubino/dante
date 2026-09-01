@@ -1,9 +1,9 @@
-import type {
-  WorldFocusPresentationSurface,
-} from './world-focus-platform';
-import type {
-  WorldFocusSurfaceDescriptor,
-  WorldFocusWorkspaceState,
+import type { WorldFocusPresentationSurface } from './world-focus-platform';
+import {
+  getWorldFocusBlockingSurface,
+  isWorldFocusBlockingPresentation,
+  type WorldFocusSurfaceDescriptor,
+  type WorldFocusWorkspaceState,
 } from './world-focus-workspace';
 
 export const WORLD_FOCUS_MAIN_ALLOCATIONS = ['full', 'split'] as const;
@@ -160,6 +160,14 @@ function getTopSurface(
   return surfaces.at(-1) ?? null;
 }
 
+function findFirstBlockingSurfaceIndex(
+  surfaces: readonly WorldFocusSurfaceDescriptor[],
+): number {
+  return surfaces.findIndex((surface) =>
+    isWorldFocusBlockingPresentation(surface.presentation),
+  );
+}
+
 function isOverlayPresentation(
   presentation: WorldFocusPresentationSurface,
 ): boolean {
@@ -182,11 +190,26 @@ function findTopWorkspaceLayerSurface(
 ): WorldFocusSurfaceDescriptor | null {
   for (let index = surfaces.length - 1; index >= 0; index -= 1) {
     const surface = surfaces[index];
-    if (surface !== undefined && isWorkspaceLayerPresentation(surface.presentation)) {
+    if (
+      surface !== undefined &&
+      isWorkspaceLayerPresentation(surface.presentation)
+    ) {
       return surface;
     }
   }
   return null;
+}
+
+function createDormantPlacement(
+  surface: WorldFocusSurfaceDescriptor,
+): WorldFocusSurfacePlacement {
+  return Object.freeze({
+    instanceId: surface.instanceId,
+    requestedPresentation: surface.presentation,
+    slot: 'dormant',
+    activeInSlot: false,
+    interaction: 'inert',
+  });
 }
 
 /**
@@ -202,6 +225,10 @@ function findTopWorkspaceLayerSurface(
  * Active placements also carry interaction state so an allocated sidecar can
  * remain visually stable underneath a blocking modal/focus surface without
  * remaining clickable through that blocking layer.
+ *
+ * The resolver also defends against legacy/malformed stacks. If a blocking
+ * surface exists, later non-blocking entries are never allowed to become the
+ * effective top layer even if they somehow bypassed reducer admission.
  */
 export function resolveWorldFocusWorkspaceAllocation(
   state: WorldFocusWorkspaceState,
@@ -214,12 +241,17 @@ export function resolveWorldFocusWorkspaceAllocation(
     'World Focus workspace inline size',
   );
   const resolvedPolicy = assertPolicy(policy);
-  const activeSidecar = findLatestSurfaceByPresentation(
-    state.surfaces,
-    'sidecar',
-  );
-  const topSurface = getTopSurface(state.surfaces);
-  const topWorkspaceLayerSurface = findTopWorkspaceLayerSurface(state.surfaces);
+  const firstBlockingIndex = findFirstBlockingSurfaceIndex(state.surfaces);
+  const baseSurfaces =
+    firstBlockingIndex < 0
+      ? state.surfaces
+      : state.surfaces.slice(0, firstBlockingIndex);
+  const blockingSurface = getWorldFocusBlockingSurface(state);
+  const activeSidecar = findLatestSurfaceByPresentation(baseSurfaces, 'sidecar');
+  const rawTopSurface = getTopSurface(state.surfaces);
+  const effectiveTopSurface = blockingSurface ?? rawTopSurface;
+  const topWorkspaceLayerSurface =
+    blockingSurface ?? findTopWorkspaceLayerSurface(baseSurfaces);
 
   const preferredSidecarInlineSize = clamp(
     inlineSize * resolvedPolicy.preferredSidecarFraction,
@@ -253,82 +285,92 @@ export function resolveWorldFocusWorkspaceAllocation(
       ? activeLayerSurface
       : null;
   const mainInteraction: WorldFocusMainInteraction =
-    activeFocusSurface !== null || activeOverlaySurface?.presentation === 'modal'
+    blockingSurface !== null ||
+    activeFocusSurface !== null ||
+    activeOverlaySurface?.presentation === 'modal'
       ? 'inert'
       : 'interactive';
 
-  const placements = state.surfaces.map<WorldFocusSurfacePlacement>((surface) => {
-    if (surface.presentation === 'route') {
-      return Object.freeze({
-        instanceId: surface.instanceId,
-        requestedPresentation: surface.presentation,
-        slot: 'external' as const,
-        activeInSlot: surface === topSurface,
-        interaction: 'interactive' as const,
-      });
-    }
+  const placements = state.surfaces.map<WorldFocusSurfacePlacement>(
+    (surface, index) => {
+      const isNonBlockingAfterBarrier =
+        firstBlockingIndex >= 0 &&
+        index > firstBlockingIndex &&
+        !isWorldFocusBlockingPresentation(surface.presentation);
+      if (isNonBlockingAfterBarrier) {
+        return createDormantPlacement(surface);
+      }
 
-    if (surface.presentation === 'sidecar') {
-      if (surface !== activeSidecar) {
+      if (surface.presentation === 'route') {
+        const isActiveExternal =
+          blockingSurface === null && surface === effectiveTopSurface;
         return Object.freeze({
           instanceId: surface.instanceId,
           requestedPresentation: surface.presentation,
-          slot: 'dormant' as const,
-          activeInSlot: false,
-          interaction: 'inert' as const,
+          slot: 'external' as const,
+          activeInSlot: isActiveExternal,
+          interaction: isActiveExternal
+            ? ('interactive' as const)
+            : ('inert' as const),
         });
       }
 
-      if (canSplit) {
+      if (surface.presentation === 'sidecar') {
+        if (surface !== activeSidecar) {
+          return createDormantPlacement(surface);
+        }
+
+        if (canSplit) {
+          return Object.freeze({
+            instanceId: surface.instanceId,
+            requestedPresentation: surface.presentation,
+            slot: 'sidecar' as const,
+            activeInSlot: true,
+            interaction: mainInteraction,
+          });
+        }
+
+        const isActiveOverlay = surface === activeOverlaySurface;
         return Object.freeze({
           instanceId: surface.instanceId,
           requestedPresentation: surface.presentation,
-          slot: 'sidecar' as const,
-          activeInSlot: true,
-          interaction: mainInteraction,
+          slot: isActiveOverlay ? ('overlay' as const) : ('dormant' as const),
+          activeInSlot: isActiveOverlay,
+          interaction: isActiveOverlay
+            ? ('interactive' as const)
+            : ('inert' as const),
         });
       }
 
-      const isActiveOverlay = surface === activeOverlaySurface;
-      return Object.freeze({
-        instanceId: surface.instanceId,
-        requestedPresentation: surface.presentation,
-        slot: isActiveOverlay ? ('overlay' as const) : ('dormant' as const),
-        activeInSlot: isActiveOverlay,
-        interaction: isActiveOverlay ? ('interactive' as const) : ('inert' as const),
-      });
-    }
+      if (surface.presentation === 'full-screen') {
+        const isActiveFocus = surface === activeFocusSurface;
+        return Object.freeze({
+          instanceId: surface.instanceId,
+          requestedPresentation: surface.presentation,
+          slot: isActiveFocus ? ('focus' as const) : ('dormant' as const),
+          activeInSlot: isActiveFocus,
+          interaction: isActiveFocus
+            ? ('interactive' as const)
+            : ('inert' as const),
+        });
+      }
 
-    if (surface.presentation === 'full-screen') {
-      const isActiveFocus = surface === activeFocusSurface;
-      return Object.freeze({
-        instanceId: surface.instanceId,
-        requestedPresentation: surface.presentation,
-        slot: isActiveFocus ? ('focus' as const) : ('dormant' as const),
-        activeInSlot: isActiveFocus,
-        interaction: isActiveFocus ? ('interactive' as const) : ('inert' as const),
-      });
-    }
+      if (isOverlayPresentation(surface.presentation)) {
+        const isActiveOverlay = surface === activeOverlaySurface;
+        return Object.freeze({
+          instanceId: surface.instanceId,
+          requestedPresentation: surface.presentation,
+          slot: isActiveOverlay ? ('overlay' as const) : ('dormant' as const),
+          activeInSlot: isActiveOverlay,
+          interaction: isActiveOverlay
+            ? ('interactive' as const)
+            : ('inert' as const),
+        });
+      }
 
-    if (isOverlayPresentation(surface.presentation)) {
-      const isActiveOverlay = surface === activeOverlaySurface;
-      return Object.freeze({
-        instanceId: surface.instanceId,
-        requestedPresentation: surface.presentation,
-        slot: isActiveOverlay ? ('overlay' as const) : ('dormant' as const),
-        activeInSlot: isActiveOverlay,
-        interaction: isActiveOverlay ? ('interactive' as const) : ('inert' as const),
-      });
-    }
-
-    return Object.freeze({
-      instanceId: surface.instanceId,
-      requestedPresentation: surface.presentation,
-      slot: 'dormant' as const,
-      activeInSlot: false,
-      interaction: 'inert' as const,
-    });
-  });
+      return createDormantPlacement(surface);
+    },
+  );
 
   return Object.freeze({
     mainAllocation: canSplit ? 'split' : 'full',
@@ -346,7 +388,7 @@ export function resolveWorldFocusWorkspaceAllocation(
     activeSidecarInstanceId: canSplit ? activeSidecar?.instanceId ?? null : null,
     activeOverlayInstanceId: activeOverlaySurface?.instanceId ?? null,
     activeFocusInstanceId: activeFocusSurface?.instanceId ?? null,
-    topSurfaceInstanceId: topSurface?.instanceId ?? null,
+    topSurfaceInstanceId: effectiveTopSurface?.instanceId ?? null,
     placements: Object.freeze(placements),
   });
 }
