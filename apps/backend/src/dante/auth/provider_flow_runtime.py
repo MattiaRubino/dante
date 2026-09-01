@@ -15,6 +15,7 @@ from dante.auth.lifecycle import KeyedRateLimiter
 from dante.auth.lifecycle_runtime import AuthLifecycleRuntime
 from dante.auth.passkey_flow import PasskeyFlowLimiters, PasskeyFlowService
 from dante.auth.proofs import ProviderEnrollmentOtpCodec
+from dante.auth.provider_continuation import ProviderContinuationService
 from dante.auth.provider_flow import ProviderFlowLimiters, ProviderFlowService
 from dante.auth.service import AuthRuntime
 from dante.platform.config.auth import AuthSettings
@@ -29,6 +30,7 @@ class ProviderFlowRuntime:
     apple_service: AppleFlowService | None
     authenticator_service: AuthenticatorLifecycleService
     passkey_service: PasskeyFlowService | None
+    continuation_service: ProviderContinuationService
 
 
 def create_provider_flow_runtime(
@@ -156,4 +158,7 @@ def create_provider_flow_runtime(
         apple_service=apple_service,
         authenticator_service=authenticator_service,
         passkey_service=passkey_service,
+        continuation_service=ProviderContinuationService(
+            session_factory=database_runtime.session_factory,
+        ),
     )
