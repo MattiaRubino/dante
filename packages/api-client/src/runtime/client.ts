@@ -1,37 +1,77 @@
 import {
+  authBeginAppleAuthentication as generatedAuthBeginAppleAuthentication,
+  authBeginGoogleAuthentication as generatedAuthBeginGoogleAuthentication,
+  authBeginPasskeyAuthentication as generatedAuthBeginPasskeyAuthentication,
+  authBeginPasskeyReauthentication as generatedAuthBeginPasskeyReauthentication,
+  authBeginPasskeyRegistration as generatedAuthBeginPasskeyRegistration,
   authBeginSignup as generatedAuthBeginSignup,
+  authCompleteGoogleAuthentication as generatedAuthCompleteGoogleAuthentication,
+  authCompletePasskeyAuthentication as generatedAuthCompletePasskeyAuthentication,
+  authCompletePasskeyReauthentication as generatedAuthCompletePasskeyReauthentication,
+  authCompletePasskeyRegistration as generatedAuthCompletePasskeyRegistration,
+  authConfirmProviderLink as generatedAuthConfirmProviderLink,
   authEstablishPassword as generatedAuthEstablishPassword,
   authGetAuthenticationMethods as generatedAuthGetAuthenticationMethods,
+  authGetProviderEnrollment as generatedAuthGetProviderEnrollment,
+  authGetProviderLink as generatedAuthGetProviderLink,
   authGetSession as generatedAuthGetSession,
   authLogOut as generatedAuthLogOut,
   authReauthenticate as generatedAuthReauthenticate,
+  authRemovePasskey as generatedAuthRemovePasskey,
   authRemovePassword as generatedAuthRemovePassword,
   authRequestPasswordRecovery as generatedAuthRequestPasswordRecovery,
+  authResendProviderEnrollmentVerification as generatedAuthResendProviderEnrollmentVerification,
   authResendSignupVerification as generatedAuthResendSignupVerification,
   authResetPassword as generatedAuthResetPassword,
+  authSetProviderEnrollmentEmail as generatedAuthSetProviderEnrollmentEmail,
   authSignIn as generatedAuthSignIn,
+  authUnlinkProvider as generatedAuthUnlinkProvider,
+  authUpdatePasskey as generatedAuthUpdatePasskey,
   authValidatePasswordRecovery as generatedAuthValidatePasswordRecovery,
+  authVerifyProviderEnrollment as generatedAuthVerifyProviderEnrollment,
   authVerifySignup as generatedAuthVerifySignup,
 } from '../generated/dante';
 import {
+  AppleAuthenticationBegunResponse,
   AuthenticatedSessionResponse,
   AuthenticationMethodsResponse,
   ExistingAccountSignupResponse,
+  GoogleAuthenticationBegunResponse,
+  PasskeyCeremonyResponse,
   ProblemDetails,
+  ProviderAuthenticatedResponse,
+  ProviderEnrollmentRequiredResponse,
+  ProviderLinkRequiredResponse,
+  ProviderLinkResponse,
   RecoveryAcceptedResponse,
   RecoveryValidationResponse,
   SignupAuthenticatedResponse,
   SignupCreatedResponse,
   UnauthenticatedSessionResponse,
+  type AppleAuthenticationBegunResponseOutput,
   type AuthenticatedSessionResponseOutput,
   type AuthenticationMethodsResponseOutput,
   type ExistingAccountSignupResponseOutput,
+  type GoogleAuthenticationBegunResponseOutput,
+  type GoogleAuthenticationCompleteRequest,
+  type PasskeyAuthenticationCompleteRequest,
+  type PasskeyCeremonyResponseOutput,
+  type PasskeyReauthenticationCompleteRequest,
+  type PasskeyRegistrationCompleteRequest,
+  type PasskeyUpdateRequest,
   type PasswordEstablishRequest,
   type PasswordRecoveryRequest,
   type PasswordRecoveryValidationRequest,
   type PasswordResetRequest,
   type ProblemDetailsOutput,
   type ProblemFieldErrorOutput,
+  type ProviderAuthenticatedResponseOutput,
+  type ProviderBeginRequest,
+  type ProviderEnrollmentEmailRequest,
+  type ProviderEnrollmentRequiredResponseOutput,
+  type ProviderEnrollmentVerificationRequest,
+  type ProviderLinkRequiredResponseOutput,
+  type ProviderLinkResponseOutput,
   type ReauthenticateRequest,
   type RecoveryAcceptedResponseOutput,
   type RecoveryValidationResponseOutput,
@@ -70,6 +110,7 @@ const RECOVERY_ACCEPTED_KEYS = new Set(['accepted']);
 const RECOVERY_VALIDATION_KEYS = new Set(['valid']);
 const AUTHENTICATION_METHODS_KEYS = new Set([
   'active_passkey_count',
+  'passkeys',
   'password_established',
   'providers',
   'recovery_eligible_email_count',
@@ -79,6 +120,51 @@ const AUTHENTICATION_PROVIDER_METHOD_KEYS = new Set([
   'provider_code',
   'provider_email_address',
   'provider_email_private',
+]);
+const PASSKEY_METHOD_KEYS = new Set([
+  'backup_eligible',
+  'backup_state',
+  'created_at',
+  'label',
+  'last_used_at',
+  'passkey_credential_ref',
+  'transports',
+]);
+const GOOGLE_AUTHENTICATION_BEGUN_KEYS = new Set([
+  'expires_at',
+  'external_auth_transaction_ref',
+  'nonce',
+  'state',
+]);
+const APPLE_AUTHENTICATION_BEGUN_KEYS = new Set([
+  'authorization_url',
+  'expires_at',
+]);
+const PROVIDER_AUTHENTICATED_KEYS = new Set([
+  ...AUTHENTICATED_SESSION_KEYS,
+  'outcome',
+]);
+const PROVIDER_LINK_REQUIRED_KEYS = new Set([
+  'expires_at',
+  'external_link_challenge_ref',
+  'outcome',
+]);
+const PROVIDER_ENROLLMENT_REQUIRED_KEYS = new Set([
+  'email_address',
+  'expires_at',
+  'external_signup_ref',
+  'outcome',
+  'verification_expires_at',
+]);
+const PROVIDER_LINK_KEYS = new Set([
+  'expires_at',
+  'external_link_challenge_ref',
+  'provider_code',
+]);
+const PASSKEY_CEREMONY_KEYS = new Set([
+  'expires_at',
+  'options',
+  'webauthn_challenge_ref',
 ]);
 const PROBLEM_KEYS = new Set([
   'category',
@@ -99,11 +185,24 @@ export type AuthSession = AuthenticatedSession | UnauthenticatedSession;
 export type SignupCreated = SignupCreatedResponseOutput;
 export type SignupAuthenticated = SignupAuthenticatedResponseOutput;
 export type ExistingAccountSignup = ExistingAccountSignupResponseOutput;
-export type SignupVerificationResult =
-  SignupAuthenticated | ExistingAccountSignup;
+export type SignupVerificationResult = SignupAuthenticated | ExistingAccountSignup;
 export type RecoveryAccepted = RecoveryAcceptedResponseOutput;
 export type RecoveryValidation = RecoveryValidationResponseOutput;
 export type AuthenticationMethods = AuthenticationMethodsResponseOutput;
+export type GoogleAuthenticationBegun = GoogleAuthenticationBegunResponseOutput;
+export type AppleAuthenticationBegun = AppleAuthenticationBegunResponseOutput;
+export type ProviderAuthenticated = ProviderAuthenticatedResponseOutput;
+export type ProviderLinkRequired = ProviderLinkRequiredResponseOutput;
+export type ProviderEnrollmentRequired = ProviderEnrollmentRequiredResponseOutput;
+export type ProviderAuthenticationResult =
+  | ProviderAuthenticated
+  | ProviderLinkRequired
+  | ProviderEnrollmentRequired;
+export type ProviderEnrollmentVerificationResult =
+  | ProviderAuthenticated
+  | ProviderLinkRequired;
+export type ProviderLink = ProviderLinkResponseOutput;
+export type PasskeyCeremony = PasskeyCeremonyResponseOutput;
 
 export type ContractViolationReason =
   | 'cache_policy_mismatch'
@@ -156,8 +255,7 @@ export type RemoteSuccess<T> = {
   headers: Headers;
 };
 
-export type RemoteResult<T> =
-  RemoteSuccess<T> | { ok: false; failure: RemoteFailure };
+export type RemoteResult<T> = RemoteSuccess<T> | { ok: false; failure: RemoteFailure };
 
 type WireResponse = {
   data: unknown;
@@ -165,8 +263,8 @@ type WireResponse = {
   headers: Headers;
 };
 
-type TransportFailureKind =
-  NetworkUnavailableFailure['kind'] | AbortedFailure['kind'];
+type TransportFailureKind = NetworkUnavailableFailure['kind'] | AbortedFailure['kind'];
+type SuccessParser<T> = (wire: WireResponse) => RemoteResult<T>;
 
 class TransportFailure extends Error {
   constructor(readonly kind: TransportFailureKind) {
@@ -210,11 +308,14 @@ function hasStrictAuthenticationMethodsShape(value: unknown): boolean {
     return false;
   }
   const providers = value.providers;
+  const passkeys = value.passkeys;
   return (
     Array.isArray(providers) &&
     providers.every((provider) =>
       hasOnlyKeys(provider, AUTHENTICATION_PROVIDER_METHOD_KEYS),
-    )
+    ) &&
+    Array.isArray(passkeys) &&
+    passkeys.every((passkey) => hasOnlyKeys(passkey, PASSKEY_METHOD_KEYS))
   );
 }
 
@@ -247,9 +348,7 @@ function contractViolation(
   };
 }
 
-function trackedFetch(
-  fetchFn: typeof globalThis.fetch,
-): typeof globalThis.fetch {
+function trackedFetch(fetchFn: typeof globalThis.fetch): typeof globalThis.fetch {
   return async (input, init) => {
     try {
       return await fetchFn(input, init);
@@ -368,11 +467,13 @@ function parseAuthenticatedSession(
 }
 
 function parseSession(wire: WireResponse): RemoteResult<AuthSession> {
-  if (mediaType(wire.headers) !== JSON_MEDIA_TYPE) {
-    return contractViolation('content_type_mismatch', wire);
-  }
-  if (!isRecord(wire.data)) {
-    return contractViolation('invalid_payload', wire);
+  if (mediaType(wire.headers) !== JSON_MEDIA_TYPE || !isRecord(wire.data)) {
+    return contractViolation(
+      mediaType(wire.headers) === JSON_MEDIA_TYPE
+        ? 'invalid_payload'
+        : 'content_type_mismatch',
+      wire,
+    );
   }
   if (wire.data.authenticated === true) {
     return parseJsonSchema(
@@ -426,11 +527,7 @@ function parseSignupVerification(
 function parseRecoveryAccepted(
   wire: WireResponse,
 ): RemoteResult<RecoveryAccepted> {
-  return parseJsonSchema(
-    wire,
-    RECOVERY_ACCEPTED_KEYS,
-    RecoveryAcceptedResponse,
-  );
+  return parseJsonSchema(wire, RECOVERY_ACCEPTED_KEYS, RecoveryAcceptedResponse);
 }
 
 function parseRecoveryValidation(
@@ -458,6 +555,134 @@ function parseAuthenticationMethods(
     : contractViolation('invalid_payload', wire);
 }
 
+function parseGoogleAuthenticationBegun(
+  wire: WireResponse,
+): RemoteResult<GoogleAuthenticationBegun> {
+  return parseJsonSchema(
+    wire,
+    GOOGLE_AUTHENTICATION_BEGUN_KEYS,
+    GoogleAuthenticationBegunResponse,
+  );
+}
+
+function parseAppleAuthenticationBegun(
+  wire: WireResponse,
+): RemoteResult<AppleAuthenticationBegun> {
+  return parseJsonSchema(
+    wire,
+    APPLE_AUTHENTICATION_BEGUN_KEYS,
+    AppleAuthenticationBegunResponse,
+  );
+}
+
+function parseProviderAuthenticated(
+  wire: WireResponse,
+): RemoteResult<ProviderAuthenticated> {
+  return parseJsonSchema(
+    wire,
+    PROVIDER_AUTHENTICATED_KEYS,
+    ProviderAuthenticatedResponse,
+  );
+}
+
+function parseProviderLinkRequired(
+  wire: WireResponse,
+): RemoteResult<ProviderLinkRequired> {
+  return parseJsonSchema(
+    wire,
+    PROVIDER_LINK_REQUIRED_KEYS,
+    ProviderLinkRequiredResponse,
+  );
+}
+
+function parseProviderEnrollmentRequired(
+  wire: WireResponse,
+): RemoteResult<ProviderEnrollmentRequired> {
+  return parseJsonSchema(
+    wire,
+    PROVIDER_ENROLLMENT_REQUIRED_KEYS,
+    ProviderEnrollmentRequiredResponse,
+  );
+}
+
+function parseProviderAuthentication(
+  wire: WireResponse,
+): RemoteResult<ProviderAuthenticationResult> {
+  if (mediaType(wire.headers) !== JSON_MEDIA_TYPE || !isRecord(wire.data)) {
+    return contractViolation(
+      mediaType(wire.headers) === JSON_MEDIA_TYPE
+        ? 'invalid_payload'
+        : 'content_type_mismatch',
+      wire,
+    );
+  }
+  if (wire.data.outcome === 'authenticated') {
+    return parseProviderAuthenticated(wire);
+  }
+  if (wire.data.outcome === 'link_required') {
+    return parseProviderLinkRequired(wire);
+  }
+  if (wire.data.outcome === 'enrollment_required') {
+    return parseProviderEnrollmentRequired(wire);
+  }
+  return contractViolation('invalid_payload', wire);
+}
+
+function parseProviderEnrollmentVerification(
+  wire: WireResponse,
+): RemoteResult<ProviderEnrollmentVerificationResult> {
+  if (mediaType(wire.headers) !== JSON_MEDIA_TYPE || !isRecord(wire.data)) {
+    return contractViolation(
+      mediaType(wire.headers) === JSON_MEDIA_TYPE
+        ? 'invalid_payload'
+        : 'content_type_mismatch',
+      wire,
+    );
+  }
+  if (wire.data.outcome === 'authenticated') {
+    return parseProviderAuthenticated(wire);
+  }
+  if (wire.data.outcome === 'link_required') {
+    return parseProviderLinkRequired(wire);
+  }
+  return contractViolation('invalid_payload', wire);
+}
+
+function parseProviderLink(wire: WireResponse): RemoteResult<ProviderLink> {
+  return parseJsonSchema(wire, PROVIDER_LINK_KEYS, ProviderLinkResponse);
+}
+
+function parsePasskeyCeremony(wire: WireResponse): RemoteResult<PasskeyCeremony> {
+  return parseJsonSchema(wire, PASSKEY_CEREMONY_KEYS, PasskeyCeremonyResponse);
+}
+
+function expectedResult<T>(
+  wire: WireResponse,
+  expectedStatus: number,
+  parser: SuccessParser<T>,
+): RemoteResult<T> {
+  if (wire.status === expectedStatus) {
+    return parser(wire);
+  }
+  if (wire.status >= 400) {
+    return serverProblem(wire);
+  }
+  return contractViolation('unexpected_status', wire);
+}
+
+function expectedVoidResult(
+  wire: WireResponse,
+  expectedStatus: number,
+): RemoteResult<void> {
+  if (wire.status === expectedStatus) {
+    return success(wire, undefined);
+  }
+  if (wire.status >= 400) {
+    return serverProblem(wire);
+  }
+  return contractViolation('unexpected_status', wire);
+}
+
 export type DanteApiClient = {
   signIn(
     request: SignInRequest,
@@ -471,9 +696,7 @@ export type DanteApiClient = {
     request: PasswordEstablishRequest,
     options?: RequestInit,
   ): Promise<RemoteResult<AuthenticatedSession>>;
-  removePassword(
-    options?: RequestInit,
-  ): Promise<RemoteResult<AuthenticatedSession>>;
+  removePassword(options?: RequestInit): Promise<RemoteResult<AuthenticatedSession>>;
   logOut(options?: RequestInit): Promise<RemoteResult<void>>;
   beginSignup(
     request: SignupRequest,
@@ -503,6 +726,70 @@ export type DanteApiClient = {
     request: ReauthenticateRequest,
     options?: RequestInit,
   ): Promise<RemoteResult<AuthenticatedSession>>;
+  beginGoogleAuthentication(
+    request: ProviderBeginRequest,
+    options?: RequestInit,
+  ): Promise<RemoteResult<GoogleAuthenticationBegun>>;
+  completeGoogleAuthentication(
+    request: GoogleAuthenticationCompleteRequest,
+    options?: RequestInit,
+  ): Promise<RemoteResult<ProviderAuthenticationResult>>;
+  beginAppleAuthentication(
+    request: ProviderBeginRequest,
+    options?: RequestInit,
+  ): Promise<RemoteResult<AppleAuthenticationBegun>>;
+  getProviderEnrollment(
+    options?: RequestInit,
+  ): Promise<RemoteResult<ProviderEnrollmentRequired>>;
+  setProviderEnrollmentEmail(
+    request: ProviderEnrollmentEmailRequest,
+    options?: RequestInit,
+  ): Promise<RemoteResult<ProviderEnrollmentRequired>>;
+  resendProviderEnrollmentVerification(
+    options?: RequestInit,
+  ): Promise<RemoteResult<ProviderEnrollmentRequired>>;
+  verifyProviderEnrollment(
+    request: ProviderEnrollmentVerificationRequest,
+    options?: RequestInit,
+  ): Promise<RemoteResult<ProviderEnrollmentVerificationResult>>;
+  getProviderLink(options?: RequestInit): Promise<RemoteResult<ProviderLink>>;
+  confirmProviderLink(
+    options?: RequestInit,
+  ): Promise<RemoteResult<ProviderAuthenticated>>;
+  unlinkProvider(
+    externalIdentityRef: string,
+    options?: RequestInit,
+  ): Promise<RemoteResult<ProviderAuthenticated>>;
+  beginPasskeyRegistration(
+    options?: RequestInit,
+  ): Promise<RemoteResult<PasskeyCeremony>>;
+  completePasskeyRegistration(
+    request: PasskeyRegistrationCompleteRequest,
+    options?: RequestInit,
+  ): Promise<RemoteResult<AuthenticatedSession>>;
+  beginPasskeyAuthentication(
+    options?: RequestInit,
+  ): Promise<RemoteResult<PasskeyCeremony>>;
+  completePasskeyAuthentication(
+    request: PasskeyAuthenticationCompleteRequest,
+    options?: RequestInit,
+  ): Promise<RemoteResult<AuthenticatedSession>>;
+  beginPasskeyReauthentication(
+    options?: RequestInit,
+  ): Promise<RemoteResult<PasskeyCeremony>>;
+  completePasskeyReauthentication(
+    request: PasskeyReauthenticationCompleteRequest,
+    options?: RequestInit,
+  ): Promise<RemoteResult<AuthenticatedSession>>;
+  updatePasskey(
+    passkeyCredentialRef: string,
+    request: PasskeyUpdateRequest,
+    options?: RequestInit,
+  ): Promise<RemoteResult<void>>;
+  removePasskey(
+    passkeyCredentialRef: string,
+    options?: RequestInit,
+  ): Promise<RemoteResult<AuthenticatedSession>>;
 };
 
 export function createDanteApiClient(
@@ -514,242 +801,400 @@ export function createDanteApiClient(
 
   return {
     async signIn(request, requestOptions) {
-      let wire: WireResponse;
       try {
-        wire = await generatedAuthSignIn(request, requestOptions, fetchFn);
+        const wire: WireResponse = await generatedAuthSignIn(
+          request,
+          requestOptions,
+          fetchFn,
+        );
+        return expectedResult(wire, 200, parseAuthenticatedSession);
       } catch (error) {
         return fromThrown(error);
       }
-      if (wire.status === 200) {
-        return parseAuthenticatedSession(wire);
-      }
-      if (wire.status >= 400) {
-        return serverProblem(wire);
-      }
-      return contractViolation('unexpected_status', wire);
     },
 
     async getSession(requestOptions) {
-      let wire: WireResponse;
       try {
-        wire = await generatedAuthGetSession(requestOptions, fetchFn);
+        const wire: WireResponse = await generatedAuthGetSession(
+          requestOptions,
+          fetchFn,
+        );
+        return expectedResult(wire, 200, parseSession);
       } catch (error) {
         return fromThrown(error);
       }
-      if (wire.status === 200) {
-        return parseSession(wire);
-      }
-      if (wire.status >= 400) {
-        return serverProblem(wire);
-      }
-      return contractViolation('unexpected_status', wire);
     },
 
     async getAuthenticationMethods(requestOptions) {
-      let wire: WireResponse;
       try {
-        wire = await generatedAuthGetAuthenticationMethods(
+        const wire: WireResponse = await generatedAuthGetAuthenticationMethods(
           requestOptions,
           fetchFn,
         );
+        return expectedResult(wire, 200, parseAuthenticationMethods);
       } catch (error) {
         return fromThrown(error);
       }
-      if (wire.status === 200) {
-        return parseAuthenticationMethods(wire);
-      }
-      if (wire.status >= 400) {
-        return serverProblem(wire);
-      }
-      return contractViolation('unexpected_status', wire);
     },
 
     async establishPassword(request, requestOptions) {
-      let wire: WireResponse;
       try {
-        wire = await generatedAuthEstablishPassword(
+        const wire: WireResponse = await generatedAuthEstablishPassword(
           request,
           requestOptions,
           fetchFn,
         );
+        return expectedResult(wire, 200, parseAuthenticatedSession);
       } catch (error) {
         return fromThrown(error);
       }
-      if (wire.status === 200) {
-        return parseAuthenticatedSession(wire);
-      }
-      if (wire.status >= 400) {
-        return serverProblem(wire);
-      }
-      return contractViolation('unexpected_status', wire);
     },
 
     async removePassword(requestOptions) {
-      let wire: WireResponse;
       try {
-        wire = await generatedAuthRemovePassword(requestOptions, fetchFn);
+        const wire: WireResponse = await generatedAuthRemovePassword(
+          requestOptions,
+          fetchFn,
+        );
+        return expectedResult(wire, 200, parseAuthenticatedSession);
       } catch (error) {
         return fromThrown(error);
       }
-      if (wire.status === 200) {
-        return parseAuthenticatedSession(wire);
-      }
-      if (wire.status >= 400) {
-        return serverProblem(wire);
-      }
-      return contractViolation('unexpected_status', wire);
     },
 
     async logOut(requestOptions) {
-      let wire: WireResponse;
       try {
-        wire = await generatedAuthLogOut(requestOptions, fetchFn);
+        const wire: WireResponse = await generatedAuthLogOut(requestOptions, fetchFn);
+        return expectedVoidResult(wire, 204);
       } catch (error) {
         return fromThrown(error);
       }
-      if (wire.status === 204) {
-        return success(wire, undefined);
-      }
-      if (wire.status >= 400) {
-        return serverProblem(wire);
-      }
-      return contractViolation('unexpected_status', wire);
     },
 
     async beginSignup(request, requestOptions) {
-      let wire: WireResponse;
       try {
-        wire = await generatedAuthBeginSignup(request, requestOptions, fetchFn);
+        const wire: WireResponse = await generatedAuthBeginSignup(
+          request,
+          requestOptions,
+          fetchFn,
+        );
+        return expectedResult(wire, 200, parseSignupCreated);
       } catch (error) {
         return fromThrown(error);
       }
-      if (wire.status === 200) {
-        return parseSignupCreated(wire);
-      }
-      if (wire.status >= 400) {
-        return serverProblem(wire);
-      }
-      return contractViolation('unexpected_status', wire);
     },
 
     async verifySignup(request, requestOptions) {
-      let wire: WireResponse;
       try {
-        wire = await generatedAuthVerifySignup(
+        const wire: WireResponse = await generatedAuthVerifySignup(
           request,
           requestOptions,
           fetchFn,
         );
+        return expectedResult(wire, 200, parseSignupVerification);
       } catch (error) {
         return fromThrown(error);
       }
-      if (wire.status === 200) {
-        return parseSignupVerification(wire);
-      }
-      if (wire.status >= 400) {
-        return serverProblem(wire);
-      }
-      return contractViolation('unexpected_status', wire);
     },
 
     async resendSignupVerification(request, requestOptions) {
-      let wire: WireResponse;
       try {
-        wire = await generatedAuthResendSignupVerification(
+        const wire: WireResponse = await generatedAuthResendSignupVerification(
           request,
           requestOptions,
           fetchFn,
         );
+        return expectedResult(wire, 200, parseSignupCreated);
       } catch (error) {
         return fromThrown(error);
       }
-      if (wire.status === 200) {
-        return parseSignupCreated(wire);
-      }
-      if (wire.status >= 400) {
-        return serverProblem(wire);
-      }
-      return contractViolation('unexpected_status', wire);
     },
 
     async requestPasswordRecovery(request, requestOptions) {
-      let wire: WireResponse;
       try {
-        wire = await generatedAuthRequestPasswordRecovery(
+        const wire: WireResponse = await generatedAuthRequestPasswordRecovery(
           request,
           requestOptions,
           fetchFn,
         );
+        return expectedResult(wire, 202, parseRecoveryAccepted);
       } catch (error) {
         return fromThrown(error);
       }
-      if (wire.status === 202) {
-        return parseRecoveryAccepted(wire);
-      }
-      if (wire.status >= 400) {
-        return serverProblem(wire);
-      }
-      return contractViolation('unexpected_status', wire);
     },
 
     async validatePasswordRecovery(request, requestOptions) {
-      let wire: WireResponse;
       try {
-        wire = await generatedAuthValidatePasswordRecovery(
+        const wire: WireResponse = await generatedAuthValidatePasswordRecovery(
           request,
           requestOptions,
           fetchFn,
         );
+        return expectedResult(wire, 200, parseRecoveryValidation);
       } catch (error) {
         return fromThrown(error);
       }
-      if (wire.status === 200) {
-        return parseRecoveryValidation(wire);
-      }
-      if (wire.status >= 400) {
-        return serverProblem(wire);
-      }
-      return contractViolation('unexpected_status', wire);
     },
 
     async resetPassword(request, requestOptions) {
-      let wire: WireResponse;
       try {
-        wire = await generatedAuthResetPassword(
+        const wire: WireResponse = await generatedAuthResetPassword(
           request,
           requestOptions,
           fetchFn,
         );
+        return expectedVoidResult(wire, 204);
       } catch (error) {
         return fromThrown(error);
       }
-      if (wire.status === 204) {
-        return success(wire, undefined);
-      }
-      if (wire.status >= 400) {
-        return serverProblem(wire);
-      }
-      return contractViolation('unexpected_status', wire);
     },
 
     async reauthenticate(request, requestOptions) {
-      let wire: WireResponse;
       try {
-        wire = await generatedAuthReauthenticate(
+        const wire: WireResponse = await generatedAuthReauthenticate(
           request,
           requestOptions,
           fetchFn,
         );
+        return expectedResult(wire, 200, parseAuthenticatedSession);
       } catch (error) {
         return fromThrown(error);
       }
-      if (wire.status === 200) {
-        return parseAuthenticatedSession(wire);
+    },
+
+    async beginGoogleAuthentication(request, requestOptions) {
+      try {
+        const wire: WireResponse = await generatedAuthBeginGoogleAuthentication(
+          request,
+          requestOptions,
+          fetchFn,
+        );
+        return expectedResult(wire, 200, parseGoogleAuthenticationBegun);
+      } catch (error) {
+        return fromThrown(error);
       }
-      if (wire.status >= 400) {
-        return serverProblem(wire);
+    },
+
+    async completeGoogleAuthentication(request, requestOptions) {
+      try {
+        const wire: WireResponse = await generatedAuthCompleteGoogleAuthentication(
+          request,
+          requestOptions,
+          fetchFn,
+        );
+        return expectedResult(wire, 200, parseProviderAuthentication);
+      } catch (error) {
+        return fromThrown(error);
       }
-      return contractViolation('unexpected_status', wire);
+    },
+
+    async beginAppleAuthentication(request, requestOptions) {
+      try {
+        const wire: WireResponse = await generatedAuthBeginAppleAuthentication(
+          request,
+          requestOptions,
+          fetchFn,
+        );
+        return expectedResult(wire, 200, parseAppleAuthenticationBegun);
+      } catch (error) {
+        return fromThrown(error);
+      }
+    },
+
+    async getProviderEnrollment(requestOptions) {
+      try {
+        const wire: WireResponse = await generatedAuthGetProviderEnrollment(
+          requestOptions,
+          fetchFn,
+        );
+        return expectedResult(wire, 200, parseProviderEnrollmentRequired);
+      } catch (error) {
+        return fromThrown(error);
+      }
+    },
+
+    async setProviderEnrollmentEmail(request, requestOptions) {
+      try {
+        const wire: WireResponse = await generatedAuthSetProviderEnrollmentEmail(
+          request,
+          requestOptions,
+          fetchFn,
+        );
+        return expectedResult(wire, 200, parseProviderEnrollmentRequired);
+      } catch (error) {
+        return fromThrown(error);
+      }
+    },
+
+    async resendProviderEnrollmentVerification(requestOptions) {
+      try {
+        const wire: WireResponse =
+          await generatedAuthResendProviderEnrollmentVerification(
+            {},
+            requestOptions,
+            fetchFn,
+          );
+        return expectedResult(wire, 200, parseProviderEnrollmentRequired);
+      } catch (error) {
+        return fromThrown(error);
+      }
+    },
+
+    async verifyProviderEnrollment(request, requestOptions) {
+      try {
+        const wire: WireResponse = await generatedAuthVerifyProviderEnrollment(
+          request,
+          requestOptions,
+          fetchFn,
+        );
+        return expectedResult(wire, 200, parseProviderEnrollmentVerification);
+      } catch (error) {
+        return fromThrown(error);
+      }
+    },
+
+    async getProviderLink(requestOptions) {
+      try {
+        const wire: WireResponse = await generatedAuthGetProviderLink(
+          requestOptions,
+          fetchFn,
+        );
+        return expectedResult(wire, 200, parseProviderLink);
+      } catch (error) {
+        return fromThrown(error);
+      }
+    },
+
+    async confirmProviderLink(requestOptions) {
+      try {
+        const wire: WireResponse = await generatedAuthConfirmProviderLink(
+          {},
+          requestOptions,
+          fetchFn,
+        );
+        return expectedResult(wire, 200, parseProviderAuthenticated);
+      } catch (error) {
+        return fromThrown(error);
+      }
+    },
+
+    async unlinkProvider(externalIdentityRef, requestOptions) {
+      try {
+        const wire: WireResponse = await generatedAuthUnlinkProvider(
+          externalIdentityRef,
+          requestOptions,
+          fetchFn,
+        );
+        return expectedResult(wire, 200, parseProviderAuthenticated);
+      } catch (error) {
+        return fromThrown(error);
+      }
+    },
+
+    async beginPasskeyRegistration(requestOptions) {
+      try {
+        const wire: WireResponse = await generatedAuthBeginPasskeyRegistration(
+          {},
+          requestOptions,
+          fetchFn,
+        );
+        return expectedResult(wire, 200, parsePasskeyCeremony);
+      } catch (error) {
+        return fromThrown(error);
+      }
+    },
+
+    async completePasskeyRegistration(request, requestOptions) {
+      try {
+        const wire: WireResponse = await generatedAuthCompletePasskeyRegistration(
+          request,
+          requestOptions,
+          fetchFn,
+        );
+        return expectedResult(wire, 200, parseAuthenticatedSession);
+      } catch (error) {
+        return fromThrown(error);
+      }
+    },
+
+    async beginPasskeyAuthentication(requestOptions) {
+      try {
+        const wire: WireResponse = await generatedAuthBeginPasskeyAuthentication(
+          {},
+          requestOptions,
+          fetchFn,
+        );
+        return expectedResult(wire, 200, parsePasskeyCeremony);
+      } catch (error) {
+        return fromThrown(error);
+      }
+    },
+
+    async completePasskeyAuthentication(request, requestOptions) {
+      try {
+        const wire: WireResponse = await generatedAuthCompletePasskeyAuthentication(
+          request,
+          requestOptions,
+          fetchFn,
+        );
+        return expectedResult(wire, 200, parseAuthenticatedSession);
+      } catch (error) {
+        return fromThrown(error);
+      }
+    },
+
+    async beginPasskeyReauthentication(requestOptions) {
+      try {
+        const wire: WireResponse = await generatedAuthBeginPasskeyReauthentication(
+          {},
+          requestOptions,
+          fetchFn,
+        );
+        return expectedResult(wire, 200, parsePasskeyCeremony);
+      } catch (error) {
+        return fromThrown(error);
+      }
+    },
+
+    async completePasskeyReauthentication(request, requestOptions) {
+      try {
+        const wire: WireResponse =
+          await generatedAuthCompletePasskeyReauthentication(
+            request,
+            requestOptions,
+            fetchFn,
+          );
+        return expectedResult(wire, 200, parseAuthenticatedSession);
+      } catch (error) {
+        return fromThrown(error);
+      }
+    },
+
+    async updatePasskey(passkeyCredentialRef, request, requestOptions) {
+      try {
+        const wire: WireResponse = await generatedAuthUpdatePasskey(
+          passkeyCredentialRef,
+          request,
+          requestOptions,
+          fetchFn,
+        );
+        return expectedVoidResult(wire, 204);
+      } catch (error) {
+        return fromThrown(error);
+      }
+    },
+
+    async removePasskey(passkeyCredentialRef, requestOptions) {
+      try {
+        const wire: WireResponse = await generatedAuthRemovePasskey(
+          passkeyCredentialRef,
+          requestOptions,
+          fetchFn,
+        );
+        return expectedResult(wire, 200, parseAuthenticatedSession);
+      } catch (error) {
+        return fromThrown(error);
+      }
     },
   };
 }
