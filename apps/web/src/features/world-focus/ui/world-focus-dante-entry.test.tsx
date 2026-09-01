@@ -115,7 +115,7 @@ describe('World Focus D1 contextual DANTE entry', () => {
     );
     expect((wrapper as HTMLElement | null)?.style.pointerEvents).toBe('none');
     expect(screen.getByTestId('world-content')).toBeTruthy();
-    expect(invoke).toBeDisabled();
+    expect(invoke.getAttribute('disabled')).not.toBeNull();
   });
 
   it('preserves the draft and reports a truthful unavailable submit without inventing an answer', () => {
