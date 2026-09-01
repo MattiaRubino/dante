@@ -24,7 +24,10 @@ Current Alembic head                 20260830_09
 Current DB topology                  69 tables / 5 views / 15 routines / 76 triggers / 97 indexes / 69 FKs / 123 CHECKs
 PostgreSQL local Recovery            CP01–CP07 LOCAL PASS / CLOSED / INTEGRATED VIA PR #47
 Full Access/Auth product vertical    ACTIVE / UNMERGED ON feature/access-auth
-AI architecture                      ACTIVE / AI-02.1 v0.4 REENGINEERING / DESIGN ONLY ON feature/ai-architecture
+AI architecture                      ACTIVE / AI-02.1 v0.5 CANDIDATE STRUCTURAL FREEZE / DESIGN ONLY ON feature/ai-architecture
+AI mega/pressure-test program        COMPLETE
+AI targeted v0.5 verification        COMPLETE
+AI-02.1 closure                      NOT YET / ADDITIONAL PRE-AI-03 REVIEW PENDING
 ```
 
 Protected `main` is the integrated authority for closed shared foundations, CP6 and the integrated Recovery evolution. Active unmerged product/architecture work remains branch-local until normal protected-main integration.
@@ -34,9 +37,9 @@ Protected `main` is the integrated authority for closed shared foundations, CP6 
 Read according to the subject:
 
 - [`system-overview.md`](system-overview.md) — system/component/authority overview;
-- [`dante-ai-foundation.md`](dante-ai-foundation.md) — branch-local AI-00 semantic/architectural baseline; inherited constraints remain active and are not superseded by AI-02.1;
-- [`ai-production-engineering-state-of-the-art-2026.md`](ai-production-engineering-state-of-the-art-2026.md) — branch-local production AI/agent engineering research thesis; state-of-the-art evidence and DANTE applicability boundaries, explicitly **not** the final DANTE Intelligence Architecture;
-- [`dante-ai-02-1-intelligence-reengineering.md`](dante-ai-02-1-intelligence-reengineering.md) — **current active AI-02.1 architecture checkpoint**; v0.4 after Round I, Round II and the broad Final Kill-Test, explicitly **NOT CLOSED** with one last mega stress-test still required;
+- [`dante-ai-foundation.md`](dante-ai-foundation.md) — AI-00 semantic/architectural baseline; inherited constraints remain active and are not superseded by AI-02.1;
+- [`ai-production-engineering-state-of-the-art-2026.md`](ai-production-engineering-state-of-the-art-2026.md) — production AI/agent engineering research thesis; state-of-the-art evidence and DANTE applicability boundaries, explicitly **not** the final DANTE Intelligence Architecture;
+- [`dante-ai-02-1-intelligence-reengineering.md`](dante-ai-02-1-intelligence-reengineering.md) — **current active AI-02.1 architecture checkpoint**; v0.5 candidate structural freeze after all pressure/kill-test rounds and targeted consistency verification; **NOT CLOSED** pending the additional pre-AI-03 review;
 - [`technical-decisions.md`](technical-decisions.md) — current architecture decision register;
 - [`domain-model-logical-readiness.md`](domain-model-logical-readiness.md) — satisfied Domain → Logical semantic compatibility contract;
 - [`../domain/README.md`](../domain/README.md) — current Domain entry point;
@@ -45,13 +48,13 @@ Read according to the subject:
 - [`../database/README.md`](../database/README.md) — current concrete PostgreSQL System of Record;
 - [`../decisions/`](../decisions/) — ADR authority;
 - [`../development/engineering-foundation-v0.md`](../development/engineering-foundation-v0.md) — backend engineering foundation;
-- [`frontend-engineering-foundation.md`](frontend-engineering-foundation.md) and its accepted companion/review records — frontend engineering foundation;
+- [`frontend-engineering-foundation.md`](frontend-engineering-foundation.md) and accepted companion/review records — frontend engineering foundation;
 - [`../frontend/README.md`](../frontend/README.md) — current frontend documentation entry point.
 
 Important persistence ADRs:
 
-- [`../decisions/ADR-007-domain-model-informed-persistence-boundaries.md`](../decisions/ADR-007-domain-model-informed-persistence-boundaries.md) — semantic persistence guardrails;
-- [`../decisions/ADR-010-postgresql-persistence-constitution.md`](../decisions/ADR-010-postgresql-persistence-constitution.md) — accepted reusable PostgreSQL persistence doctrine;
+- [`../decisions/ADR-007-domain-model-informed-persistence-boundaries.md`](../decisions/ADR-007-domain-model-informed-persistence-boundaries.md);
+- [`../decisions/ADR-010-postgresql-persistence-constitution.md`](../decisions/ADR-010-postgresql-persistence-constitution.md);
 - [`../decisions/ADR-003-primary-database.md`](../decisions/ADR-003-primary-database.md) — historical PostgreSQL-selection rationale where explicitly historical.
 
 Important frontend ADRs:
@@ -61,9 +64,7 @@ Important frontend ADRs:
 
 ## 3. Current system direction
 
-DANTE is one product monorepo with accepted ownership for backend, web, mobile, packages, infrastructure/tooling, system tests, documentation, prototypes and GitHub automation. Paths are materialized when real content exists rather than created as empty architecture theatre.
-
-The backend remains a capability-first modular monolith.
+DANTE remains one product monorepo. The backend remains a capability-first modular monolith. Responsibility boundaries are not automatically deployable services.
 
 Canonical persistence direction:
 
@@ -78,201 +79,279 @@ current Alembic head
 = 20260830_09
 ```
 
-The accepted Domain → Logical → Physical chain has already been concretely materialized through CP6 and the bounded Recovery lifecycle evolution. Later backend/product/AI work consumes that database rather than reopening the architecture merely because a new feature or AI framework is implemented.
+The accepted Domain → Logical → Physical chain has already been concretely materialized through CP6 and the bounded Recovery lifecycle evolution. Later backend/product/AI work consumes that database rather than reopening the architecture because a feature/framework/provider prefers a different shape.
 
-Frontend remains platform-specific at renderer/UI/platform-adapter level with selective semantic sharing. Backend/database canonical authority and operation-specific offline governance remain preserved.
+AI architecture inherits the same rule: model/provider/runtime output is not accepted canonical effect, and no AI-specific persistence shortcut may redefine closed Domain/Logical/Physical/database semantics.
 
-AI architecture consumes the same rule: model/provider/runtime output is not accepted canonical effect, and no AI-specific persistence shortcut may redefine closed Domain/Logical/Physical/database semantics.
+## 4. AI authority layering
 
-AI-02.1 pressure-tests the intelligence architecture against actual DANTE obligations rather than against one preferred AI technology. Round I produced first-class responsibility boundaries for Interaction Session, Semantic Query / Projection, hypothetical Scenario Workspace, compound ChangeSet / EffectGraph, verification, proactivity/attention, recipient-aware Disclosure Projection and mixed DANTE-native/open-world reasoning.
-
-Round II hardened that model with:
+Current branch-local AI authority is deliberately layered:
 
 ```text
-cumulative / cross-query disclosure protection
-causal-loop / oscillation guard
-Work Supersession
-BasisManifest + dependency-aware invalidation
-revocable active-Run validity
-Attention budgeting
-cancel Run != undo already-dispatched effects
+AI-00
+DANTE AI Foundation
+→ inherited / derived semantic guardrails
+
+Production AI / Agent Engineering Research
+→ technology landscape / engineering evidence
+→ NON-DANTE-DECISION
+
+AI-02.1
+DANTE Intelligence Reengineering
+→ current structural responsibility architecture
+→ v0.5 CANDIDATE STRUCTURAL FREEZE
 ```
 
-The broad Final Kill-Test then attacked v0.3 across agriculture, education, shift work, caregiving, legal/sensitive work, family, business, public/institutional boundaries, offline operation, high fan-out and future rich conversational surfaces. The current v0.4 additionally requires:
+AI-02.1 does not normatively rewrite AI-00. AI-00's original sequencing toward AI-01 is historical workstream chronology; later product-form/research/reengineering work has already superseded that scheduling note.
+
+## 5. AI-02.1 v0.5 structural model
+
+The completed test program converged on the following responsibilities.
+
+### Interaction / work
 
 ```text
-Reference / Target Resolution Gate
-Policy Composition / Precedence
+Interaction Edge
+Interaction Session
+Work Intake
+WorkContract
+Work lineage / continuation / supersession
 ConsequenceProfile
-Safe Result Publication / Streaming Gate
-BasisManifest temporal validity
-DANTE representation != external institutional System-of-Record authority
-sent != delivered != seen != acknowledged != accepted
+Reference / Target Resolution
 ```
 
-These are responsibility/runtime contracts, not automatic services, new Domain owners or persistence tables. Three completed pressure-test rounds have not produced evidence sufficient to reopen Domain, Logical, Physical or PostgreSQL.
+`Interaction Session != Run != Worker`.
 
-The production-engineering research additionally records a current DANTE applicability boundary without selecting a provider or SDK: frontier intelligence is expected to be **API-first**; DANTE does not plan to train a foundation model, require fine-tuning as a baseline, own a frontier model or operate a large always-on self-hosted model fleet. Small/local inference remains optional and benchmark-gated. These are project constraints for later architecture work, not implementation claims.
-
-## 4. Domain / Logical invariants carried into implementation
-
-Downstream implementation must continue to preserve at least:
+`WorkContract` preserves the authoritative execution meaning across decomposition and child Runs:
 
 ```text
-no universal Entity / Thing ontology
-no generic Relation as semantic escape hatch
-no untyped property bag as canonical semantic truth
-provider IDs != DANTE canonical identity
-
-Person != Account != Actor
-Person != Living Referent != Asset
-Subject / Resource contextual roles != native identity
-Possibility != Goal / Proposal / Decision / Plan
-Schedule != Actual
-Actual != Observation
-Evidence != Provenance
-Authority != Visibility
-Responsibility != Participation
-Ownership != Possession
-
-shared canonical reality + actor-scoped overlays where required
-material history reconstructible where consequential
-specialist Transaction / Movement lifecycle != Observation
-AI/solver/provider output != accepted canonical effect
+objective
+scope
+resolved target bindings
+protected constraints
+purpose
+consequence/governance obligations
+approval conditions
 ```
 
-Logical hardenings `WL-H01..WL-H12` remain implementation regression contracts unless deliberately superseded by later accepted authority.
+Derived work may refine this contract but must not silently drop a protected requirement. A material relaxation requires a new/superseding decision.
 
-AI-02.1 additionally requires that display names/model guesses do not become consequential target identity, conflicting policies are composed outside model improvisation, and model output/streaming does not bypass disclosure or verification.
-
-## 5. Frontend foundation direction
-
-The accepted frontend foundation fixes, among other things:
-
-- TypeScript/React/Vite/Expo/pnpm/Turbo baseline;
-- feature-first Web/Mobile architecture;
-- public-API-only and acyclic dependency direction;
-- selective shared-package policy;
-- Data Authority Matrix and feature data firewall;
-- mobile local/offline capability with backend-governed canonical effects;
-- Web online-first posture;
-- identity-scoped local data;
-- design-token/UI/i18n/time/config boundaries;
-- LOCAL/DEV/UAT/PROD environment vocabulary;
-- GitHub Actions CI/CD authority.
-
-Foundation/materialization is closed and integrated. Product vertical work such as Access remains separately scoped until its own full-stack/release gates close.
-
-## 6. Current bounded deferrals
-
-Architecture is closed where evidence was sufficient, but not every future product choice is pre-decided.
-
-Still bounded to the stage that owns them:
-
-- exact product APIs/routes/versioning for future verticals;
-- specific AuthN/AuthZ application protocol beyond already accepted persistence/security doctrine;
-- provider adapters and specialist modules activated only by real need;
-- cloud compute/IaC and remote infrastructure materialization;
-- platform release activation details;
-- dormant frontend capabilities activated only when product requirements justify them;
-- exact final AI chat/voice/UI interaction design, while Interaction Session and safe publication are AI-02.1 responsibilities;
-- exact AI model/provider strategy and routing policy;
-- AI agent/runtime/SDK selection;
-- AI conversation/memory physical persistence;
-- AI tool/capability registry implementation, autonomy policy implementation and evaluation stack;
-- optional local-model choice and activation;
-- exact Context / Retrieval / Memory architecture owned by the later AI-03 phase;
-- exact implementation for target resolution, policy composition, consequence profiling and safe streaming;
-- exact physical representation, if any, for AI-02.1 runtime-only responsibilities such as Scenario Workspace, ChangeSet, BasisManifest, work lineage and bounded disclosure accounting.
-
-The branch-local AI authority is layered: [`dante-ai-foundation.md`](dante-ai-foundation.md) owns inherited semantic constraints; [`ai-production-engineering-state-of-the-art-2026.md`](ai-production-engineering-state-of-the-art-2026.md) owns external engineering evidence/applicability boundaries; [`dante-ai-02-1-intelligence-reengineering.md`](dante-ai-02-1-intelligence-reengineering.md) owns the current active reengineering checkpoint. None authorizes backend/database implementation merely by documentation.
-
-A deferral does not authorize violating already accepted Domain/Logical/Physical/database invariants.
-
-## 7. Evidence vs current authority
-
-The following kinds of files may remain useful but are not current-status authorities merely because they were written later in a phase:
+### State / context / scenarios
 
 ```text
-*-final-review.md
-*-post-closure-qa.md
-*-part-N.md transition continuations
-phase audits / readiness records
-workstream closure records
+Semantic Query / Projection Gateway
+Context Engine
+Scenario Workspace
+BasisManifest
 ```
 
-Use them as reference/evidence according to their explicit role.
+Semantic Query and Context are distinct. Structured DANTE-native state is accessed through application-owned semantic query/projection contracts; arbitrary unstructured/external/contextual material is assembled by the Context Engine.
 
-For example, `domain-model-logical-readiness-part-2.md` through `part-5.md` are transition/closure evidence; the consolidated [`domain-model-logical-readiness.md`](domain-model-logical-readiness.md) now states the current satisfied contract directly.
+Scenario Workspace is hypothetical/derived and does not create a second canonical reality.
 
-The production AI/agent engineering thesis is intentionally research evidence. It may classify technologies as strong defaults, challengers, watch items or anti-defaults without converting those classifications into DANTE implementation decisions.
+`BasisManifest` tracks relevant dependencies, source identity/version, temporal validity, assumptions and constraints. It also captures **Basis coherence**: independently fresh values are not automatically one coherent world-state.
 
-The AI-02.1 checkpoint is branch-local architectural work, but it remains **ACTIVE / NOT CLOSED**. Round I, Round II and the broad Final Kill-Test are complete; one last mega stress-test and the other explicitly required pre-AI-03 acceptance work are still pending. Do not read `v0.4` as implementation status or final architecture closure.
+### Reasoning / capabilities
 
-## 8. Architecture reopen discipline
+```text
+ModelTarget + HarnessProfile
+Deterministic Compute
+Solver
+Capability Runtime
+Verifier
+Execution Environment
+```
+
+A simple deterministic request must stay on the cheap path and may use no model and no isolated environment.
+
+`Execution Environment` is a runtime/security responsibility for workloads whose threat model requires isolation, such as generated code, hostile executable artifacts, browser/computer-use or comparable workloads.
+
+```text
+Execution Environment != mandatory sandbox/container
+```
+
+Isolation is selected lazily by workload and may use different techniques. Generated/untrusted code does not receive raw privileged DANTE/provider/database credentials; privileged operations flow through bounded trusted capabilities/brokers.
+
+### Governance / effects
+
+```text
+Policy Composition / policy mesh
+Authority / AuthZ / Consent / Visibility
+Autonomy
+ConsequenceProfile
+ChangeSet / EffectGraph
+Effect Runtime
+Approval binding
+Verification / Reconciliation
+```
+
+Policy is not one model-chosen linear verdict. Enforcement may occur at context, capability, effect and publication/egress boundaries.
+
+Approval binds to the materially approved target/proposal/basis/effect semantics. A materially changed ChangeSet cannot silently reuse an old approval.
+
+`ChangeSet / EffectGraph` coordinates compound change but does not bypass individual governed effects.
+
+`CANCEL RUN != UNDO ALREADY-DISPATCHED EFFECTS`.
+
+Resource exhaustion may stop optional work but must not erase a reconciliation obligation created by an already-dispatched ambiguous effect.
+
+### Publication / privacy / attention
+
+```text
+Context Projection
+Disclosure Projection
+cumulative inference protection
+Safe Result Publication
+Result Maturity
+publication currentness
+Attention + Attention budgeting
+causal-loop / oscillation guard
+```
+
+```text
+MODEL OUTPUT != PUBLISHABLE OUTPUT
+INTERNAL STREAM != RECIPIENT STREAM
+SAFE SINGLE DISCLOSURE != AUTOMATICALLY SAFE CUMULATIVE DISCLOSURE
+```
+
+Safe Publication rechecks recipient/surface eligibility, result maturity and work currentness. A superseded/stale Run may reconcile old work but must not continue presenting obsolete output as the current result.
+
+Disclosure is surface-aware: lock screen, voice/realtime, shared UI and another recipient may require different safe representations.
+
+Attention is a scarce resource and may aggregate/suppress individually relevant signals.
+
+### External AI / agents
+
+DANTE supports both directions conceptually:
+
+```text
+AI inside DANTE
+DANTE exposed to external AI/agent clients
+```
+
+External protocol adapters such as MCP/A2A remain edge adapters, not internal Domain ontology.
+
+A delegated external intelligent system may perform consequential effects only when either:
+
+```text
+1. the effect returns through governed DANTE capabilities
+or
+2. it is honestly treated as an externally performed effect whose outcome must be observed/reconciled
+```
+
+DANTE must not falsely claim its own governance for a side effect performed outside that boundary.
+
+## 6. Non-negotiable AI invariants
+
+```text
+DANTE != chatbot/model/provider/thread
+MODEL != canonical truth
+MODEL != authorization engine
+MODEL != policy-precedence authority
+MODEL != effect success
+PostgreSQL = sole canonical persistence/material-history authority
+AI inference != confirmed fact
+AI confidence != Confirmation
+provider state != canonical DANTE state
+DISPLAY NAME != EFFECT TARGET
+MODEL OUTPUT != PUBLISHABLE OUTPUT
+INTERNAL STREAM != RECIPIENT STREAM
+SCENARIO STATE != CANONICAL CURRENT STATE
+CONTEXT ACCESS != DISCLOSURE PERMISSION
+INTERACTION SESSION != RUN != WORKER
+SUPERSEDE != CANCEL != ROLLBACK != RECONCILE
+RUN-START AUTHORIZATION != PERPETUAL AUTHORIZATION
+DANTE REPRESENTATION != EXTERNAL SYSTEM-OF-RECORD AUTHORITY
+SENT != DELIVERED != SEEN != ACKNOWLEDGED != ACCEPTED
+EXECUTION ENVIRONMENT != MANDATORY SANDBOX/CONTAINER
+FRESH INPUTS != AUTOMATICALLY COHERENT BASIS
+APPROVAL != PERPETUAL AUTHORIZATION FOR MATERIALLY CHANGED WORK
+CACHE HIT != CURRENT DISCLOSURE AUTHORIZATION
+TELEMETRY/EVAL PIPELINE != PRIVILEGED DATA SINK
+```
+
+## 7. Pressure-test acceptance state
+
+```text
+Round I                         COMPLETE
+Round II                        COMPLETE
+Final Kill-Test                 COMPLETE
+Last Mega Stress-Test           COMPLETE
+Targeted v0.5 verification      COMPLETE
+Additional mega-test cycles     NONE
+```
+
+Targeted v0.5 structural checks:
+
+```text
+generated-code secret isolation                         PASS
+environment crash vs Run durability                     PASS
+browser/computer-use effect verification                PASS
+superseded publication                                  PASS
+Basis coherence                                         PASS
+approval rebinding                                      PASS
+external-agent side effects                             PASS
+resource exhaustion after ambiguous effect              PASS
+deterministic fast path bypassing unnecessary isolation PASS
+```
+
+The completed tests produced no evidence sufficient to reopen Domain, Logical, Physical or PostgreSQL.
+
+The future-extensibility structural criterion also passes: future substantially stronger general-purpose conversational intelligence can be added without transferring canonical memory, Authority, application state, Domain semantics or effect ownership to the provider/model.
+
+## 8. Current bounded deferrals
+
+Still open or trigger-bound:
+
+- exact AI model/provider set and routing policy;
+- AI agent/runtime/SDK implementation;
+- exact policy-engine technology;
+- exact Execution Environment/sandbox technology;
+- exact target-resolution implementation;
+- exact safe-streaming/publication implementation;
+- exact Scenario Workspace representation;
+- exact ChangeSet physical persistence, if any;
+- exact Interaction Session persistence, if any;
+- exact Context / Retrieval / Memory architecture — AI-03;
+- conversation history persistence;
+- embeddings/index lifecycle;
+- optional local-model choice/activation;
+- provider-specific commercial/cost selections;
+- cloud compute/IaC and production infrastructure activation.
+
+A deferral does not authorize violating already accepted semantic/runtime invariants.
+
+## 9. Architecture reopen discipline
 
 Closed Domain, Logical, Physical, Engineering and Frontend Foundation decisions are not casually reselected.
 
 Implementation evidence first reopens the smallest affected technology/adapter/boundary. A wider architectural reopen requires a demonstrated contradiction that cannot be resolved locally.
 
-Do not reopen architecture because of:
+Do not reopen architecture because of ORM convenience, table shape preference, provider naming, UI naming, framework fashion, agent-framework conventions, vector-store convenience or one isolated implementation annoyance.
 
-```text
-ORM convenience
-table shape preference
-provider naming
-UI naming
-framework fashion
-agent-framework conventions
-vector-store convenience
-one isolated implementation annoyance
-```
-
-Reopen when accepted requirements, safety/privacy constraints, real runtime evidence or incompatibility with a current invariant proves that the existing boundary is materially wrong.
-
-New research technologies such as an alternative durable runtime, relationship-authorization engine, sandbox implementation, model router or inference server remain challengers until a real DANTE requirement and direct evidence justify the smallest relevant reopen.
-
-## 9. Current next architecture posture
-
-There is no pending CP6 architecture gate.
+## 10. Current next architecture posture
 
 ```text
 DATABASE / CP6 + RECOVERY EVOLUTION
 CLOSED / INTEGRATED
 
 FULL ACCESS/AUTH PRODUCT VERTICAL
-ACTIVE ON feature/access-auth
-UNMERGED
+ACTIVE ON feature/access-auth / UNMERGED
 
 AI ARCHITECTURE
 ACTIVE ON feature/ai-architecture
 DESIGN / REENGINEERING ONLY
-NO BACKEND / DB / PROVIDER IMPLEMENTATION CLAIMED
-
-AI-00
-SEMANTIC / ARCHITECTURAL FOUNDATION RECORDED
-
-PRODUCTION AI / AGENT ENGINEERING RESEARCH
-STATE-OF-THE-ART EVIDENCE RECORDED
-NON-DANTE-DECISION
 
 AI-02.1
-ACTIVE / REENGINEERED TO v0.4
-ROUND I COMPLETE
-ROUND II COMPLETE
-FINAL KILL-TEST COMPLETE
-ONE LAST MEGA STRESS-TEST REQUIRED
+v0.5 CANDIDATE STRUCTURAL FREEZE
+ALL PRESSURE/MEGA TESTS COMPLETE
+TARGETED v0.5 VERIFICATION COMPLETE
+NO MORE MEGA TESTS
 NOT CLOSED
+ADDITIONAL PRE-AI-03 REVIEW PENDING
 
-THEN: AI-03
-CONTEXT / RETRIEVAL / MEMORY
-BLOCKED UNTIL AI-02.1 STRUCTURAL ACCEPTANCE
+THEN, ONLY AFTER EXPLICIT AI-02.1 ACCEPTANCE:
+AI-03 CONTEXT / RETRIEVAL / MEMORY
 ```
-
-AI-02.1 starts from what DANTE must actually be able to do: Product/North Star, existing simulations and adversarial scenarios, accepted Domain/Logical/Physical/database authority, AI-00 and external engineering evidence. The completed rounds identified bounded architecture gaps and responsibility-level fixes without creating a parallel ontology or automatic new infrastructure.
-
-A specific AI-02.1 acceptance question is future extensibility: if DANTE later exposes a much richer integrated general-purpose conversational intelligence, realtime voice/multimodal surface or consumes future frontier models/providers with substantially better capabilities, the architecture must absorb them without transferring canonical memory, Authority, application truth or effect ownership to the model/provider, without bypassing safe publication, and without requiring a fundamental redesign.
-
-AI-03 follows only after the one last mega stress-test and other required pre-AI-03 review. It owns detailed Context / Retrieval / Memory rather than having those choices pre-committed by the current checkpoint.
 
 Direct implementation evidence is claimed only after the relevant real artifact/scenario executes.
