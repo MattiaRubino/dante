@@ -12,6 +12,11 @@ export const WORLD_FOCUS_SURFACE_ORIGINS = [
 export type WorldFocusSurfaceOrigin =
   (typeof WORLD_FOCUS_SURFACE_ORIGINS)[number];
 
+export const WORLD_FOCUS_BLOCKING_PRESENTATIONS = [
+  'modal',
+  'full-screen',
+] as const satisfies readonly WorldFocusPresentationSurface[];
+
 export type WorldFocusContextReference = Readonly<{
   kind: string;
   key: string;
@@ -116,6 +121,53 @@ function canApplyGeneration(
   );
 }
 
+export function isWorldFocusBlockingPresentation(
+  presentation: WorldFocusPresentationSurface,
+): boolean {
+  return presentation === 'modal' || presentation === 'full-screen';
+}
+
+export function getWorldFocusBlockingSurface<Kind extends string = string>(
+  state: WorldFocusWorkspaceState<Kind>,
+): WorldFocusSurfaceDescriptor<Kind> | null {
+  for (let index = state.surfaces.length - 1; index >= 0; index -= 1) {
+    const surface = state.surfaces[index];
+    if (
+      surface !== undefined &&
+      isWorldFocusBlockingPresentation(surface.presentation)
+    ) {
+      return surface;
+    }
+  }
+  return null;
+}
+
+function isSurfaceBarrierSafe<Kind extends string>(
+  surfaces: readonly WorldFocusSurfaceDescriptor<Kind>[],
+): boolean {
+  let blockingTailStarted = false;
+
+  for (const surface of surfaces) {
+    if (isWorldFocusBlockingPresentation(surface.presentation)) {
+      blockingTailStarted = true;
+      continue;
+    }
+    if (blockingTailStarted) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function canMutateSurfaceWhileBlocked<Kind extends string>(
+  state: WorldFocusWorkspaceState<Kind>,
+  index: number,
+): boolean {
+  const blocker = getWorldFocusBlockingSurface(state);
+  return blocker === null || index === state.surfaces.length - 1;
+}
+
 function buildSurfaceDescriptor<Kind extends string>(
   state: WorldFocusWorkspaceState<Kind>,
   request: WorldFocusSurfaceRequest<Kind>,
@@ -209,6 +261,11 @@ export function getWorldFocusEscapeDisposition(
  * Pure workspace transition function. Async callers may attach an
  * expectedGeneration to presentation intents. A stale intent then becomes a
  * deterministic no-op instead of presenting a result against a newer cursor.
+ *
+ * Modal/full-screen presentations form a blocking tail. Once one is active,
+ * weaker presentations cannot be appended above it. Additional blocking
+ * surfaces are allowed so deliberate nested modal/focus flows remain possible.
+ * Lower surfaces cannot be replaced/promoted while a blocker owns interaction.
  */
 export function reduceWorldFocusWorkspaceState<Kind extends string = string>(
   state: WorldFocusWorkspaceState<Kind>,
@@ -259,6 +316,12 @@ export function reduceWorldFocusWorkspaceState<Kind extends string = string>(
       ) {
         return state;
       }
+      if (
+        getWorldFocusBlockingSurface(state) !== null &&
+        !isWorldFocusBlockingPresentation(intent.surface.presentation)
+      ) {
+        return state;
+      }
 
       return withSurfaces(state, [
         ...state.surfaces,
@@ -274,7 +337,7 @@ export function reduceWorldFocusWorkspaceState<Kind extends string = string>(
       const index = state.surfaces.findIndex(
         (surface) => surface.instanceId === intent.instanceId,
       );
-      if (index < 0) {
+      if (index < 0 || !canMutateSurfaceWhileBlocked(state, index)) {
         return state;
       }
 
@@ -290,7 +353,7 @@ export function reduceWorldFocusWorkspaceState<Kind extends string = string>(
 
       const surfaces = state.surfaces.slice();
       surfaces[index] = replacement;
-      return withSurfaces(state, surfaces);
+      return isSurfaceBarrierSafe(surfaces) ? withSurfaces(state, surfaces) : state;
     }
 
     case 'promote-surface': {
@@ -301,7 +364,7 @@ export function reduceWorldFocusWorkspaceState<Kind extends string = string>(
       const index = state.surfaces.findIndex(
         (surface) => surface.instanceId === intent.instanceId,
       );
-      if (index < 0) {
+      if (index < 0 || !canMutateSurfaceWhileBlocked(state, index)) {
         return state;
       }
 
@@ -322,7 +385,7 @@ export function reduceWorldFocusWorkspaceState<Kind extends string = string>(
         depth: intent.depth,
         presentation: intent.presentation,
       });
-      return withSurfaces(state, surfaces);
+      return isSurfaceBarrierSafe(surfaces) ? withSurfaces(state, surfaces) : state;
     }
 
     case 'close-surface': {
