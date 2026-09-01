@@ -24,10 +24,12 @@ Current Alembic head                 20260830_09
 Current DB topology                  69 tables / 5 views / 15 routines / 76 triggers / 97 indexes / 69 FKs / 123 CHECKs
 PostgreSQL local Recovery            CP01–CP07 LOCAL PASS / CLOSED / INTEGRATED VIA PR #47
 Full Access/Auth product vertical    ACTIVE / UNMERGED ON feature/access-auth
-AI architecture                      ACTIVE / AI-02.1 v0.5 CANDIDATE STRUCTURAL FREEZE / DESIGN ONLY ON feature/ai-architecture
+AI architecture                      ACTIVE / DESIGN ONLY ON feature/ai-architecture
+AI-02.1                              v0.5 CLOSED / STRUCTURALLY ACCEPTED
 AI mega/pressure-test program        COMPLETE
 AI targeted v0.5 verification        COMPLETE
-AI-02.1 closure                      NOT YET / ADDITIONAL PRE-AI-03 REVIEW PENDING
+AI-03                                ACTIVE / CONTEXT + RETRIEVAL + MEMORY
+AI-03 current macro-phase            AI-03A FULL CONTEXT ARCHITECTURE
 ```
 
 Protected `main` is the integrated authority for closed shared foundations, CP6 and the integrated Recovery evolution. Active unmerged product/architecture work remains branch-local until normal protected-main integration.
@@ -37,9 +39,10 @@ Protected `main` is the integrated authority for closed shared foundations, CP6 
 Read according to the subject:
 
 - [`system-overview.md`](system-overview.md) — system/component/authority overview;
-- [`dante-ai-foundation.md`](dante-ai-foundation.md) — AI-00 semantic/architectural baseline; inherited constraints remain active and are not superseded by AI-02.1;
+- [`dante-ai-foundation.md`](dante-ai-foundation.md) — AI-00 semantic/architectural baseline; inherited constraints remain active and are not superseded by later AI phases;
 - [`ai-production-engineering-state-of-the-art-2026.md`](ai-production-engineering-state-of-the-art-2026.md) — production AI/agent engineering research thesis; state-of-the-art evidence and DANTE applicability boundaries, explicitly **not** the final DANTE Intelligence Architecture;
-- [`dante-ai-02-1-intelligence-reengineering.md`](dante-ai-02-1-intelligence-reengineering.md) — **current active AI-02.1 architecture checkpoint**; v0.5 candidate structural freeze after all pressure/kill-test rounds and targeted consistency verification; **NOT CLOSED** pending the additional pre-AI-03 review;
+- [`dante-ai-02-1-intelligence-reengineering.md`](dante-ai-02-1-intelligence-reengineering.md) — **AI-02.1 accepted structural runtime architecture**; v0.5 after all pressure/kill-test rounds and targeted consistency verification;
+- [`dante-ai-03-context-retrieval-memory.md`](dante-ai-03-context-retrieval-memory.md) — **current active AI-03 architecture charter**; Context / Retrieval / Memory with current macro-phase AI-03A Full Context Architecture;
 - [`technical-decisions.md`](technical-decisions.md) — current architecture decision register;
 - [`domain-model-logical-readiness.md`](domain-model-logical-readiness.md) — satisfied Domain → Logical semantic compatibility contract;
 - [`../domain/README.md`](../domain/README.md) — current Domain entry point;
@@ -50,6 +53,11 @@ Read according to the subject:
 - [`../development/engineering-foundation-v0.md`](../development/engineering-foundation-v0.md) — backend engineering foundation;
 - [`frontend-engineering-foundation.md`](frontend-engineering-foundation.md) and accepted companion/review records — frontend engineering foundation;
 - [`../frontend/README.md`](../frontend/README.md) — current frontend documentation entry point.
+
+Active branch continuation additionally uses:
+
+- [`../workstreams/ai-architecture.md`](../workstreams/ai-architecture.md) — durable branch-local AI workstream record;
+- [`../workstreams/ai-architecture-live-handoff.md`](../workstreams/ai-architecture-live-handoff.md) — TEMPORARY branch-operational save-game; must not merge to protected `main`.
 
 Important persistence ADRs:
 
@@ -83,7 +91,7 @@ The accepted Domain → Logical → Physical chain has already been concretely m
 
 AI architecture inherits the same rule: model/provider/runtime output is not accepted canonical effect, and no AI-specific persistence shortcut may redefine closed Domain/Logical/Physical/database semantics.
 
-## 4. AI authority layering
+## 4. AI authority layering and current roadmap
 
 Current branch-local AI authority is deliberately layered:
 
@@ -92,19 +100,40 @@ AI-00
 DANTE AI Foundation
 → inherited / derived semantic guardrails
 
-Production AI / Agent Engineering Research
-→ technology landscape / engineering evidence
-→ NON-DANTE-DECISION
+AI-01
+Product Form + Production Engineering Research
+→ completed interaction/product-form + engineering evidence
+→ research technology remains NON-DANTE-DECISION unless later selected
 
-AI-02.1
-DANTE Intelligence Reengineering
-→ current structural responsibility architecture
-→ v0.5 CANDIDATE STRUCTURAL FREEZE
+AI-02
+DANTE Intelligence Runtime Architecture
+→ AI-02.1 v0.5 CLOSED / STRUCTURALLY ACCEPTED
+
+AI-03
+Context / Retrieval / Memory
+→ ACTIVE
+→ current macro-phase AI-03A Full Context Architecture
 ```
 
-AI-02.1 does not normatively rewrite AI-00. AI-00's original sequencing toward AI-01 is historical workstream chronology; later product-form/research/reengineering work has already superseded that scheduling note.
+The previous longer exploratory AI-00..AI-12 decomposition is historical planning only. Current routing is:
 
-## 5. AI-02.1 v0.5 structural model
+```text
+AI-00  Semantic & Product Foundation                         COMPLETE
+AI-01  Product Form + Production Engineering Research         COMPLETE
+AI-02  Intelligence Runtime Architecture                      COMPLETE / STRUCTURALLY ACCEPTED
+AI-03  Context / Retrieval / Memory                           ACTIVE
+       ├ AI-03A Full Context Architecture
+       ├ AI-03B Retrieval + Memory Architecture
+       └ AI-03C Destructive Validation + Materialization Blueprint
+AI-04  Productionization Architecture                         FUTURE
+AI-05  Whole-System Acceptance + Implementation Blueprint     FUTURE
+```
+
+Security, privacy, simulations and evals remain cross-cutting disciplines rather than late afterthoughts.
+
+AI-02.1 does not normatively rewrite AI-00. AI-00's original sequencing toward AI-01 is historical workstream chronology; later product-form/research/reengineering work has already consumed that scheduling note.
+
+## 5. AI-02.1 v0.5 accepted structural model
 
 The completed test program converged on the following responsibilities.
 
@@ -150,6 +179,8 @@ Semantic Query and Context are distinct. Structured DANTE-native state is access
 Scenario Workspace is hypothetical/derived and does not create a second canonical reality.
 
 `BasisManifest` tracks relevant dependencies, source identity/version, temporal validity, assumptions and constraints. It also captures **Basis coherence**: independently fresh values are not automatically one coherent world-state.
+
+Detailed Context / Retrieval / Memory semantics are now owned by AI-03; AI-02 supplies their surrounding runtime contracts.
 
 ### Reasoning / capabilities
 
@@ -241,7 +272,47 @@ or
 
 DANTE must not falsely claim its own governance for a side effect performed outside that boundary.
 
-## 6. Non-negotiable AI invariants
+## 6. AI-03 current architecture boundary
+
+Durable charter:
+
+- [`dante-ai-03-context-retrieval-memory.md`](dante-ai-03-context-retrieval-memory.md)
+
+AI-03 keeps three responsibilities distinct:
+
+```text
+CONTEXT
+= purpose-bound runtime view for a specific reasoning/execution step
+
+RETRIEVAL
+= candidate discovery + validation for context construction
+
+MEMORY
+= information/state that survives beyond the immediate step/Run under explicit lifecycle
+```
+
+Current exact task:
+
+```text
+AI-03A — FULL CONTEXT ARCHITECTURE
+```
+
+AI-03A must define the end-to-end flow from `WorkContract` to the exact authorized/provenance-bearing/freshness-aware `ContextManifest` consumed by a model, solver, verifier, capability-discovery step or other reasoning consumer.
+
+AI-03B then defines structured/history/lexical/fuzzy/semantic/hybrid retrieval and Interaction/working/derived/provider/retrieval-memory classes with explicit lifecycle.
+
+AI-03C pressure-tests the whole design and only then produces a materialization blueprint.
+
+Forbidden shortcut:
+
+```text
+AI-03 starts
+→ therefore create memory table / embeddings / vector index
+```
+
+No database evolution, embedding/index activation, vector-store decision or provider/model selection is authorized by AI-03 activation.
+
+## 7. Non-negotiable AI invariants
 
 ```text
 DANTE != chatbot/model/provider/thread
@@ -268,9 +339,13 @@ FRESH INPUTS != AUTOMATICALLY COHERENT BASIS
 APPROVAL != PERPETUAL AUTHORIZATION FOR MATERIALLY CHANGED WORK
 CACHE HIT != CURRENT DISCLOSURE AUTHORIZATION
 TELEMETRY/EVAL PIPELINE != PRIVILEGED DATA SINK
+SEARCH INDEX != SOURCE OF TRUTH
+EMBEDDING != SOURCE / FACT
+SUMMARY != SOURCE / FACT
+PROVIDER MEMORY != DANTE CANONICAL MEMORY
 ```
 
-## 7. Pressure-test acceptance state
+## 8. Pressure-test acceptance state
 
 ```text
 Round I                         COMPLETE
@@ -278,7 +353,8 @@ Round II                        COMPLETE
 Final Kill-Test                 COMPLETE
 Last Mega Stress-Test           COMPLETE
 Targeted v0.5 verification      COMPLETE
-Additional mega-test cycles     NONE
+Additional AI-02 mega-tests     NONE
+AI-02.1 closure                 CLOSED / STRUCTURALLY ACCEPTED
 ```
 
 Targeted v0.5 structural checks:
@@ -299,7 +375,7 @@ The completed tests produced no evidence sufficient to reopen Domain, Logical, P
 
 The future-extensibility structural criterion also passes: future substantially stronger general-purpose conversational intelligence can be added without transferring canonical memory, Authority, application state, Domain semantics or effect ownership to the provider/model.
 
-## 8. Current bounded deferrals
+## 9. Current bounded deferrals
 
 Still open or trigger-bound:
 
@@ -312,7 +388,7 @@ Still open or trigger-bound:
 - exact Scenario Workspace representation;
 - exact ChangeSet physical persistence, if any;
 - exact Interaction Session persistence, if any;
-- exact Context / Retrieval / Memory architecture — AI-03;
+- detailed AI-03 Context / Retrieval / Memory decisions;
 - conversation history persistence;
 - embeddings/index lifecycle;
 - optional local-model choice/activation;
@@ -321,7 +397,7 @@ Still open or trigger-bound:
 
 A deferral does not authorize violating already accepted semantic/runtime invariants.
 
-## 9. Architecture reopen discipline
+## 10. Architecture reopen discipline
 
 Closed Domain, Logical, Physical, Engineering and Frontend Foundation decisions are not casually reselected.
 
@@ -329,7 +405,7 @@ Implementation evidence first reopens the smallest affected technology/adapter/b
 
 Do not reopen architecture because of ORM convenience, table shape preference, provider naming, UI naming, framework fashion, agent-framework conventions, vector-store convenience or one isolated implementation annoyance.
 
-## 10. Current next architecture posture
+## 11. Current next architecture posture
 
 ```text
 DATABASE / CP6 + RECOVERY EVOLUTION
@@ -343,15 +419,15 @@ ACTIVE ON feature/ai-architecture
 DESIGN / REENGINEERING ONLY
 
 AI-02.1
-v0.5 CANDIDATE STRUCTURAL FREEZE
+v0.5 CLOSED / STRUCTURALLY ACCEPTED
 ALL PRESSURE/MEGA TESTS COMPLETE
 TARGETED v0.5 VERIFICATION COMPLETE
-NO MORE MEGA TESTS
-NOT CLOSED
-ADDITIONAL PRE-AI-03 REVIEW PENDING
+NO MORE AI-02 MEGA TESTS
 
-THEN, ONLY AFTER EXPLICIT AI-02.1 ACCEPTANCE:
-AI-03 CONTEXT / RETRIEVAL / MEMORY
+AI-03
+CONTEXT / RETRIEVAL / MEMORY
+ACTIVE
+CURRENT MACRO-PHASE AI-03A FULL CONTEXT ARCHITECTURE
 ```
 
 Direct implementation evidence is claimed only after the relevant real artifact/scenario executes.
