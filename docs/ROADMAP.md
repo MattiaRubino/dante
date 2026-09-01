@@ -196,7 +196,7 @@ remote backup provider
 
 A selected component is not implemented merely because it appears in architecture. Research challengers such as DBOS, ReBAC engines, alternative sandbox implementations, learned model routers, self-hosted inference servers or specialist vector databases do not reopen an accepted component or become dependencies merely because they appear in the AI research landscape.
 
-AI-02.1 responsibility boundaries such as Scenario Workspace, ChangeSet/EffectGraph, Attention or Semantic Query Gateway are likewise not activated technologies or separate services by virtue of appearing in architecture.
+AI-02.1 responsibility boundaries and hardenings are likewise not activated technologies or separate services by virtue of appearing in architecture.
 
 ## 7. AI architecture sequence
 
@@ -217,8 +217,10 @@ DANTE applicability boundary
         ↓
 AI-02.1
 ACTIVE — DANTE INTELLIGENCE REENGINEERING
-v0.2 first North-Star/simulation checkpoint recorded
-compound adversarial pressure-test still required
+v0.3 current checkpoint
+Round I complete
+Round II complete
+final kill-test still required
 future-extensibility acceptance still required
 NOT CLOSED
         ↓
@@ -267,9 +269,7 @@ AI-00
 production engineering research
 ```
 
-The first pressure-test has been completed and recorded in `architecture/dante-ai-02-1-intelligence-reengineering.md` as the active v0.2 checkpoint.
-
-It identified bounded architecture gaps and corresponding responsibility-level fixes:
+Round I produced the initial reengineering checkpoint and introduced:
 
 ```text
 Interaction Session first-class
@@ -284,30 +284,38 @@ DANTE-native + open-world paths composable in one Execution Kernel
 ModelTarget + provider-specific HarnessProfile
 ```
 
-These are not new Domain owners or automatic persistence tables/services.
-
-AI-02.1 must still pressure-test at least:
+Round II then deliberately combined concurrency, stale basis, multi-actor privacy, revocation, partial effects, crashes, corrections, feedback loops and superseding user intent. It found no evidence sufficient to reopen Domain, Logical, Physical or PostgreSQL, but it did require the v0.3 hardenings:
 
 ```text
-ordinary conversation and explanation
-structured DANTE-native requests
-planning / analysis / deterministic compute
-proactivity / watch / scheduled work
-READ / PROPOSE / ACT effects
-ambiguous provider outcomes
-multi-actor / delegation / representation
-Authority / Visibility / selective disclosure
-untrusted external content
-multimodal / artifact work
-long-running / durable work
-external-AI and external-agent integration
-failure, cancellation and resource pressure
-future model/provider replacement
+cumulative / cross-query disclosure protection
+causal-loop / oscillation guard
+Work Supersession
+BasisManifest + dependency-aware invalidation
+revocable active-Run validity
+Attention budgeting
+cancel Run != undo already-dispatched effects
 ```
 
-The next acceptance round must combine these dimensions adversarially rather than testing only isolated cases. Required compound failures include stale state, permission change, partial external effects, ambiguous provider outcomes, cancellation, resource exhaustion, untrusted external input, private context, multi-actor coordination and durable resume.
+These are responsibility/runtime contracts, not new Domain owners or automatic persistence tables/services.
 
-The architecture is accepted only if those scenarios do not require semantic collapse, hidden provider ownership of truth, a duplicate application ontology or unjustified always-on infrastructure.
+The final acceptance round must now attack those exact hardenings in combination rather than replaying the easier cases. Required dimensions include:
+
+```text
+cumulative privacy probing
+scope-aware work supersession
+stale scenario dependencies
+revoked Authority/Consent during durable waits
+self-generated feedback / oscillation
+multiple simultaneous Attention demands
+partial external effects + timeout + crash/recovery
+source correction/retirement
+non-DANTE participants
+conflicting evidence
+cancellation after partial dispatch
+future mixed open-world + DANTE-native work
+```
+
+The architecture is accepted only if that final kill-test does not require semantic collapse, hidden provider ownership of truth, a duplicate application ontology or unjustified infrastructure.
 
 A specific acceptance criterion remains **future extensibility**:
 
@@ -406,6 +414,11 @@ SCENARIO STATE != CANONICAL CURRENT STATE
 CHANGESET != BYPASS OF INDIVIDUAL EFFECT GOVERNANCE
 CONTEXT ACCESS != DISCLOSURE PERMISSION
 INTERACTION SESSION != RUN != WORKER
+SUPERSEDE != CANCEL != ROLLBACK != RECONCILE
+RUN-START AUTHORIZATION != PERPETUAL AUTHORIZATION
+CANCEL RUN != UNDO ALREADY-DISPATCHED EFFECTS
+SAFE SINGLE DISCLOSURE != AUTOMATICALLY SAFE CUMULATIVE DISCLOSURE
+DANTE-GENERATED SIGNAL != AUTOMATIC JUSTIFICATION FOR ANOTHER ADAPTATION
 ```
 
 ## 12. Immediate sequence
@@ -413,8 +426,8 @@ INTERACTION SESSION != RUN != WORKER
 ```text
 1. Recovery is CLOSED / integrated; do not resume feature/postgres-recovery
 2. continue feature/access-auth, feature/home-react and feature/platform-observability independently
-3. on feature/ai-architecture, continue AI-02.1 from the recorded v0.2 reengineering checkpoint
-4. execute the required compound adversarial pressure-test before any AI-02.1 closure
+3. on feature/ai-architecture, continue AI-02.1 from the recorded v0.3 checkpoint
+4. execute the final kill-test against cumulative disclosure, supersession, causal loops, revocation, stale dependencies and partial effects
 5. complete the additional pre-AI-03 review explicitly required by the active workstream before starting AI-03
 6. keep future-extensibility against a rich integrated frontier-chat-style intelligence as an acceptance criterion
 7. AI-03 owns Context / Retrieval / Memory only after AI-02.1 structural acceptance
