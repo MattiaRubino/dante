@@ -1,489 +1,381 @@
-# DANTE — World Focus Workstream Handoff
+# DANTE — World Focus Handoff
 
-**Status:** ACTIVE / PRODUCT DIRECTION ACCEPTED / PRE-BACKEND IMPLEMENTATION NOT STARTED  
-**Date:** 2026-08-30  
-**Working branch:** `feature/home-react`  
-**Worktree:** `/home/mattia/projects/dante-frontend`  
-**Handoff integration base HEAD:** `5e9db94b643cdd4a4be7b5ffc0d99dcaec615bed`  
-**Accepted Home Mondi/Sintesi visual-geometry checkpoint:** `5e780498d823aa242ee6caf5b326c81c19bfce8f`
+**Status:** CURRENT HANDOFF — PRE-BACKEND / DANTE PRESENCE GATE NEXT  
+**Date:** 2026-09-01  
+**Branch:** `feature/home-react`  
+**Worktree:** `/home/mattia/projects/dante-frontend`
 
-This file is the **entry point for continuing the World Focus workstream in a new chat**. It records the decisions already made, the semantic boundaries that must not be reinterpreted, the exact scope stop before backend integration and the next implementation gate.
+This file is the durable handoff for continuing World Focus in a new chat. For exact live state, read `world-focus-current-checkpoint.md` first.
 
-Read together with:
+## 1. Product purpose
 
-1. `docs/frontend/home/world-focus-architecture.md`
-2. `docs/frontend/home/world-focus-frontend-roadmap.md`
-3. `docs/frontend/home/contract.md`
-4. `docs/frontend/home/production-depth-handoff.md`
-5. `docs/frontend/production-readiness/component-architecture.md`
-6. `docs/frontend/production-readiness/backend-integration-contract.md`
-7. `docs/frontend/production-readiness/quality-gates.md`
-8. `docs/domain/README.md` + complete Domain Language Map
-9. `docs/logical-model/README.md` + Whole Logical model
-10. `docs/physical-model/README.md`
-11. `docs/database/README.md` + Database Dictionary where persistence meaning matters
-12. `docs/product/product-identity-and-north-star.md`
-13. product discovery simulations under `docs/product/`
+World Focus is the focused application surface for one meaningful continuity context.
 
-The Domain / Logical / Physical / Database authorities outrank this frontend workstream for semantic meaning. This handoff does **not** create a new Domain concept or authorize database changes.
+Compass:
 
----
+> **Understand this part of my life and continue from here.**
 
-# 1. Why this workstream exists
-
-The Home Central Stage already exposes `Mondi` as a continuity projection. A World is useful because it lets the person quickly recover, resume or explore a significant part of their life.
-
-The next product step is not to turn the Home sphere into a CRUD card. The accepted direction is an immersive, reusable **World Focus** surface:
+It is distinct from:
 
 ```text
 HOME
-  -> select / center World
-  -> open active World
-  -> WORLD FOCUS
-     "fammi capire questa parte della mia vita"
+cross-life compression/orientation/operation
+
+MONDI OVERVIEW
+broad view/management of Worlds as a system
+
+WORLD FOCUS
+scoped expansion/understanding/continuation of one World
+
+EXPLORE / DETAIL
+deeper evidence/history/specialist depth
 ```
 
-World Focus is a deep contextual view of **one** World.
+World Focus is route-backed at `/worlds/:worldId`; it is not a Home overlay.
 
-It is distinct from the top-level `Mondi` application destination:
+## 2. What a World is
+
+A World is a **user-recognizable continuity context for a significant part of reality**.
+
+Core thesis:
+
+> **A World is a shared coordinate system between the user and DANTE for one meaningful continuity context — not a shared source of truth.**
+
+Permanent rejects:
 
 ```text
-TOPBAR -> MONDI
-  -> MONDI OVERVIEW
-     broad view of all Worlds as a system
-     management / relationships / global exploration
-
-MONDI OVERVIEW -> select one World
-  -> same reusable WORLD FOCUS surface
+World != Domain owner
+World != universal Entity/Thing
+World != folder/life-area taxonomy
+World != Goal/Project/Person/Asset automatically
+World != database partition
+World != ACL/security boundary
+World != AI memory bucket
+World != mandatory dashboard/time-range/KPI surface
 ```
 
-Do not collapse these two surfaces.
+The same canonical reality may be projected into several Worlds without duplication of canonical identity.
 
----
+## 3. Authority hierarchy
 
-# 2. Semantic decision — what a World is and is not
-
-The current accepted Home contract already states that `Mondi` is:
-
-> Significant realities the user wants readily recoverable, resumable or explorable over time.
-
-Permanent semantic guardrails:
+For current World Focus work, use this order:
 
 ```text
-World != Domain taxonomy
-World != universal Entity / Thing
-World != Goal
-World != Plan
-World != Project
-World != category folder
-World != database super-parent for life records
-World != mandatory owner of every item shown inside it
+1. current Domain / Logical / Physical / Database / Intelligence authorities
+2. world-focus-product-contract.md
+3. world-focus-platform-contract.md
+4. world-focus-structural-contract.md
+5. world-focus-geometry-contract.md
+6. world-focus-current-checkpoint.md for implementation status / next gate
+7. delivery methodology
+8. review/stress documents as evidence
 ```
 
-There is no canonical `World` Domain owner in the closed 57-owner model and no current canonical `world` table in the materialized CP6 database.
+Frontend documents never override canonical semantic authorities.
 
-For this frontend phase, treat a World as a **product-level continuity/profile + projection concept** over existing DANTE reality. This is a bounded product/frontend architecture interpretation, not a Domain-model amendment.
-
-A World may surface heterogeneous canonical realities without changing their meaning, e.g. Goal, Plan, Activity, Event, Routine, Session, Observation, Possibility, Place, Person, Asset, Content Artifact, Actual/Outcome-related projections and derived Signals.
-
-The same canonical reality may be relevant to multiple Worlds without duplication of canonical identity.
-
----
-
-# 3. Product decisions already accepted
-
-The following decisions are **closed for the current pre-backend phase** unless new evidence proves a contradiction.
-
-## 3.1 Entry model
-
-- Home lateral-world interaction continues to navigate/center the carousel.
-- Opening the already active/central World transitions into World Focus.
-- World Focus is reusable from Home and later from Mondi Overview, Search and contextual AI/navigation entry points.
-- World Focus must be application-navigation aware / route-backed or equivalently history-safe; it must not be a Home-only local modal whose state disappears incorrectly on refresh/back.
-- Exact final route syntax is not frozen yet; do not invent backend/API semantics from a route name.
-
-## 3.2 Immersive transition
-
-Desired product grammar:
+## 4. Current implementation state
 
 ```text
-selected sphere
--> focus / pause
--> geometric-orbital expansion
--> sphere / field expands toward full viewport
--> Home recedes
--> World Focus becomes foreground application surface
+WF0 route/shell structure         FROZEN
+WF-G3 workspace/frame geometry    FROZEN
+WF-V4 VFX                         candidate, not visually frozen
+B0 foundation                     CLOSED
+WR0 product reverse engineering   CLOSED
+WR1 DANTE/user stress             complete; 7 material gaps found
+WR2 gap closure                   CLOSED; 7/7 gaps closed
+B1 Orientation                    CLOSED FOR SEQUENCING
+B2 Continuity / Resume            IMPLEMENTED / AUTOMATED PASS
+integrated B2 visual acceptance   DEFERRED
+next implementation gate          NOT CODE — DANTE presence/spatial reverse engineering first
 ```
 
-Visual inspiration is cosmic / galaxy / geometric-circle / ritual-orbital, with a mild “enter the World” feeling.
+## 5. Structural baseline
 
-Different Worlds **may** vary accent color, particle density, orbital rhythm/texture or similar parameters, but only through **one shared transition engine**. No separate animation implementation per World.
-
-Complexity rule:
+Frozen ownership:
 
 ```text
-world-specific variation is allowed
-ONLY if it remains parameterized, performant and maintainable.
+APP SHELL / GLOBAL TOPBAR
+└ route outlet
+   └ /worlds/:worldId
+      └ WORLD FOCUS SHELL
+         ├ visual frame
+         ├ rectangular workspace
+         └ shell controls
+
+future transient overlay layer
 ```
 
-If a richer effect requires disproportionate complexity, prefer the shared base animation.
+Permanent structural rules:
 
-Reduced-motion must have a simple, intentional equivalent.
+- AppShell/Topbar remains outside World Focus ownership;
+- the workspace is rectangular;
+- visual ellipses are reference/VFX geometry, never content-layout authority;
+- World-specific content/skin may not resize the shell/workspace;
+- transient overlays do not become a second persistent layout system;
+- geometry changes require explicit user approval + contract/version/test update.
 
-## 3.3 World Focus surface
+## 6. B0 foundation already available
 
-World Focus is not a fixed static dashboard and not one hard-coded React page per World.
+B0 established production infrastructure that later verticals should consume rather than recreate:
 
-Different Worlds may legitimately contain very different realities. Therefore the accepted direction is:
+- `model -> application -> ui -> route` dependency direction;
+- strict typed platform vocabularies;
+- runtime-validation seam for untrusted boundaries;
+- `WorldFocusLatestReadCoordinator` / latest-only stale-commit protection;
+- upstream AbortSignal support;
+- distinction between obsolete frontend reads and durable future DANTE runs;
+- safe HTTPS external-link parser;
+- route error surface + local render boundary;
+- persistent workspace owner + container-query foundation;
+- User Timing seam;
+- capability-driven VFX degradation when WebGL/software rendering would harm responsiveness;
+- WCAG 2.2 AA target and current keyboard/focus/reduced-motion foundations;
+- no speculative state/query/plugin/DI libraries.
+
+No real API/DB/provider/LLM behavior was faked.
+
+## 7. Product model closed by WR0-WR2
+
+World Focus is question-driven, not widget-driven.
+
+Output families:
 
 ```text
-stable World Focus shell
-+
-typed dynamic composition canvas
-+
-finite module registry
-+
-universal modules where useful
-+
-specialist modules only when they create real value
+Orientation
+Situation
+Continuity / Resume
+Attention / Resolution
+Next
+Change
+Trajectory / Comparison [optional]
+Evidence / History
+Explore
+Act / Decide
+Intelligence
 ```
 
-Forbidden:
+A World shows only useful answers supported by available authorized reality.
+
+Sparse, dormant and completed Worlds remain truthful rather than manufacturing urgency/content.
+
+### Four-layer World context model
+
+Never collapse:
 
 ```text
-if (world === "music") ... entire page
-if (world === "travel") ... entire page
-arbitrary user-supplied JSX/HTML
-LLM-generated React components
-Notion-like unrestricted block-builder as the core architecture
+1. World identity / purpose
+2. Stable World relevance definition
+3. Current World interaction cursor/session when actually needed
+4. Authorized purpose-scoped DANTE context
 ```
 
-## 3.4 AI is native to World Focus
+World relevance is presentation/application context, not ownership or authorization.
 
-The DANTE conversational capability is essential inside World Focus.
+The Context Builder remains purpose/recipient/sensitivity/freshness aware.
 
-It is the same DANTE interaction layer with an active World context, not a second unrelated chatbot/product.
+### DANTE cross-World rule
 
-Examples:
+Current World supplies the default relevance bias, not a reasoning prison.
+
+Broader context is used only when the actual user purpose materially requires it and it is authorized.
+
+### Coherent basis
+
+Visible projections and DANTE answers must preserve compatible basis/freshness semantics. A provider refresh that changes the relevant fact cannot be hidden behind an answer pretending the old screen is still current.
+
+## 8. B1 final disposition
+
+The original visible global temporal Lens failed product review and was removed completely rather than hidden as dead foundation.
+
+Final B1:
 
 ```text
-"Perché sto rallentando?"
-"Fammi vedere le spese dell'ultimo mese."
-"Confrontalo con gli ultimi tre mesi."
-"Cosa manca ancora per questo viaggio?"
+World Orientation                KEEP
+route-owned active World         KEEP
+entry/exit lifecycle             KEEP
+loading/error/unavailable        KEEP
+responsive/a11y foundation       KEEP
+visible time Lens                REMOVED
+Lens fixture capability          REMOVED
+URL `time` contract              REMOVED
+Lens model/tests                 REMOVED
+Lens-only Session snapshot       REMOVED
+micro visual polish              deferred to integrated composition review
 ```
 
-The AI may cause a visual Insight surface to appear instead of answering only with prose.
+A future Lens/session is reintroduced only when a real vertical proves the need.
 
-This is **accepted and technically feasible**, but must be implemented through typed capabilities and registered renderers, never by allowing the model to generate arbitrary UI code or query the database directly.
+## 9. B2 Continuity / Resume status
 
-## 3.5 Insight surfaces
+B2 is the first real question-driven content capability.
 
-AI-driven visual response uses one controlled grammar with progressive depth, conceptually:
+It deliberately means:
+
+> **What is actually in motion and where can I continue?**
+
+It is not a Recents list and does not infer `recent = resumable`.
+
+Implemented pre-backend properties include:
+
+- intent-specific continuity read boundary;
+- runtime validation;
+- deterministic scenario adapter;
+- bounded first-open result set;
+- ready/empty/partial/stale/error/unavailable states;
+- latest-only/race protection;
+- local read/render failure isolation;
+- responsive/container behavior;
+- accessible semantics;
+- no fake Resume CTA without a real route/capability.
+
+Automated gates passed. Integrated user acceptance is intentionally deferred until the DANTE spatial/presence contract is resolved; B2 remains available evidence/capability and is not discarded.
+
+## 10. Immediate next gate — contextual DANTE presence / spatial UX
+
+DANTE is foundational to World Focus, but **Home AI is not the World AI surface**.
+
+WR2 already closed the semantic presentation depths:
 
 ```text
-PEEK
-small, quick answer / value / explanation
-
-INSIGHT
-chart / comparison / breakdown / bounded analysis
-
-EXPLORE
-larger temporary surface when the question requires deeper exploration
+P0 QUIET
+P1 INVOKE
+P2 CONTEXTUAL ENTRY
+P3 INSIGHT
+P4 PROPOSAL
+P5 ACTION / RECEIPT
 ```
 
-Exact names/copy/geometry are still open.
+What remains open — and must be solved before more World content is composed — is the spatial/interaction contract.
 
-An ephemeral insight may later be promoted into a persistent World widget when product semantics permit it.
-
-## 3.6 Personalization / widgets
-
-Accepted high-level model:
+Required reverse engineering and stress test:
 
 ```text
-PINNED
-user-owned stable composition
-
-ADAPTIVE
-bounded DANTE-selected current relevance
-
-EPHEMERAL
-AI/query-generated temporary insight
+always visible vs on demand
+quiet footprint
+composer placement
+long-conversation expansion
+sidecar / dock / overlay / full-surface alternatives
+when DANTE consumes layout space vs overlays
+minimum content area left to dynamic composition
+content reflow during expansion
+selected-module/source contextual interaction
+deictic follow-up (“questa”, “perché?”, “continua”)
+conversation vs Insight relationship
+conversation vs Explore relationship
+Proposal / confirmation / receipt placement
+World switch and conversation binding
+large desktop / laptop / tablet / mobile
+focus / keyboard / SR / touch / reduced motion
+AI unavailable/degraded state
+pre-backend shell now vs real streaming/runtime later
 ```
 
-The user must retain spatial/interaction predictability. DANTE must not arbitrarily rearrange the stable World every time it opens.
-
-A World may support a deliberate customization mode and an `Add to World` / equivalent capability.
-
-Persistent widget principle:
+Stress at least:
 
 ```text
-saved widget
-= saved presentation/query/configuration intent
-!= copied result data by default
+Music
+Body
+Travel
+Finance
+Study
+Relationships
+sparse World
+dense World
+AI quiet
+long conversation
+Insight
+Proposal/action state
 ```
 
-If an exact historical snapshot is semantically required in a future vertical, it must use the correct Domain/material-history semantics rather than silently turning widget payload into canonical truth.
+External products may be studied for interaction patterns, but no product — including Home — is copied as the semantic/layout answer.
 
-Removal of a widget from a World does not delete the underlying Goal/Event/Observation/etc.
+Do not write production World DANTE UI until this gate has been reviewed with the user.
 
-## 3.7 Suggestion vs persistence
+## 11. Dynamic composition after the DANTE gate
 
-DANTE may suggest a useful widget, connection or possible World.
+Persistent World content remains dynamic/question-driven:
 
 ```text
-suggest != accept
-suggest != persist
-AI inference != canonical accepted effect
+available authorized reality
+-> useful output questions now
+-> ranking/composition
+-> stable/adaptive/ephemeral presentation
 ```
 
-Promotion into stable user configuration requires the appropriate explicit user-owned action unless a later separately accepted autonomy policy says otherwise.
+Continuity, Next, Attention, Change, trend, metrics, timeline, people, artifacts etc. are potential answers/renderers, not guaranteed page sections.
 
----
+Once DANTE's real footprint is frozen, re-run B2 integrated visual review inside the real remaining workspace, then continue one complete mini-vertical at a time.
 
-# 4. Current implementation scope — PRE-BACKEND
+## 12. Delivery method
 
-The current decision is **not** to build the full backend vertical yet.
+Every World Focus vertical follows `world-focus-delivery-methodology.md`.
 
-Reason: exact World Focus content, module families and user interaction model still need product validation across several radically different Worlds. Freezing persistence/API contracts before that discovery is stable would create expensive backend debt.
-
-The current phase must nevertheless be built to **production frontend depth**, not as a disposable mock.
-
-Target stop line:
+Required simplified sequence:
 
 ```text
-REAL React/TypeScript architecture
-REAL routing/navigation lifecycle
-REAL composition engine
-REAL module contracts/registry
-REAL UI state machine / async state representation
-REAL responsive/accessibility/performance behavior
-REAL error isolation
-REAL typed frontend ports/adapters
-REAL tests
-REAL deterministic scenario fixtures
-
-STOP BEFORE
-real business API
-real database changes
-real provider integration
-real LLM/tool execution
-real cross-device persistence
-invented backend success
+authority re-read
+-> scenario/failure/future pressure
+-> current product/tech research
+-> architecture alternatives
+-> explicit decision/rejections
+-> UX/responsive/a11y/security/performance/state/test design
+-> smallest complete production implementation
+-> automated gates
+-> real-browser review
+-> user functional + visual validation
+-> fixes
+-> explicit user OK
+-> freeze
+-> next vertical
 ```
 
-At the end of the pre-backend phase, replacing the fixture/local adapter with a real generated-client/backend adapter must **not require rewriting the World Focus UI architecture**.
+No hidden infrastructure-only phase replaces visible product progress after B0, unless a demonstrated dependency must be resolved first — as with the current DANTE spatial gate.
 
----
+## 13. Backend stop line
 
-# 5. Required frontend architecture boundary
+Before the final authorized backend vertical, do not add:
 
-Expected dependency direction:
+- real World business API;
+- database/Alembic World persistence;
+- provider SDK/runtime;
+- real LLM streaming/model routing;
+- durable Run/Task backend;
+- tool/effect execution;
+- fake backend success.
 
-```text
-WorldFocus UI
-    ↓
-World Focus application/frontend capability
-    ↓
-typed ports + view models + semantic UI intents
-    ↓
-local deterministic scenario adapter   [NOW]
-real backend/generated-client adapter   [LATER]
-```
+Frontend may establish narrow ports/contracts and deterministic local behavior only when needed to prove the real product interaction.
 
-The frontend must never consume ORM rows or database Dictionary shapes directly.
+## 14. Required read order for a new World Focus chat
 
-Permanent rule:
+1. `world-focus-current-checkpoint.md`
+2. `world-focus-handoff.md`
+3. `world-focus-product-contract.md`
+4. `world-focus-platform-contract.md`
+5. `world-focus-structural-contract.md`
+6. `world-focus-geometry-contract.md`
+7. `world-focus-delivery-methodology.md`
+8. `world-focus-frontend-roadmap.md`
+9. evidence documents only as required by the scope.
 
-```text
-frontend view model != backend DTO != Domain model != persistence row
-```
+Deep evidence set:
 
-The future full vertical will likely require application queries / projection builders, but those are **not invented in this phase**.
+- `world-focus-wf0-scenario-oracle.md`
+- `world-focus-product-reverse-engineering-stress-test.md`
+- `world-focus-product-reverse-engineering-stress-matrix.md`
+- `world-focus-dante-user-reverse-engineering-stress-test.md`
+- `world-focus-dante-user-gap-closure-stress-test.md`
+- `world-focus-b0-foundation-review.md`
+- `world-focus-b1-product-disposition.md`
+- `world-focus-b2-continuity-resume-review.md`
+- `world-focus-b2-continuity-resume-disposition.md`
+- `world-focus-vfx-research.md`
 
----
+## 15. Operational safety
 
-# 6. Dynamic composition model
-
-World Focus must be built from a finite registry of controlled module kinds.
-
-Illustrative families only — not a frozen catalog:
-
-```text
-metric
-trend
-comparison
-breakdown
-timeline
-goal trajectory
-planned vs actual
-activity/event/routine projections
-recent reality
-people
-places
-assets
-artifacts
-observations
-specialist modules where justified
-```
-
-A module kind must own a clear contract for:
-
-- validated projection shape;
-- supported sizes/presentation profiles;
-- loading/ready/partial/stale/empty/error/unavailable states;
-- interactions/actions it can emit;
-- accessibility semantics;
-- responsive behavior;
-- performance characteristics;
-- error isolation.
-
-Do not create one mega-module with arbitrary optional properties.
-
-Specialist modules are allowed only when a generic module would materially degrade the experience or semantics.
-
----
-
-# 7. AI / generated-UI safety boundary
-
-Allowed conceptual chain:
-
-```text
-user request
--> DANTE conversational interpretation
--> typed capability / presentation intent
--> authorized application query/capability
--> typed InsightProjection
--> registered frontend renderer
-```
-
-Forbidden chain:
-
-```text
-LLM -> SQL
-LLM -> ORM
-LLM -> arbitrary HTTP
-LLM -> JSX
-LLM -> HTML/JavaScript component payload
-```
-
-The future backend owns authorization and consequential action validation. Frontend capability availability is not authority.
-
----
-
-# 8. Performance standard
-
-World Focus is expected to become a central DANTE surface and must be designed accordingly.
-
-Permanent expectations:
-
-- do not load all user life data to open one World;
-- do not load all Worlds to render one World Focus unless a specific cross-World feature requires it;
-- route/shell and critical content first;
-- secondary/heavy modules lazy where appropriate;
-- specialist module code splitting where worthwhile;
-- charting/large visualization libraries must not inflate the initial bundle without proof;
-- isolate module rerenders;
-- abort/cancel obsolete async work during navigation/context changes;
-- avoid N+1-like frontend fetch patterns in the future integration contract;
-- large lists/series require bounded windows, pagination/virtualization/downsampling as applicable;
-- transitions prefer compositor-friendly transform/opacity; avoid layout-thrashing animation;
-- WebGL/canvas complexity is admitted only if profiling proves the value exceeds cost;
-- a failed module must not crash the full World Focus.
-
-Numeric budgets must be established from real browser measurements during roadmap hardening; do not invent a green performance claim from code inspection.
-
----
-
-# 9. Accessibility and interaction standard
-
-Target: WCAG 2.2 AA-quality behavior.
-
-Must cover at least:
-
-- full keyboard access;
-- deterministic focus entry/return;
-- Escape/back semantics where relevant;
-- screen-reader naming/state for dynamic modules and insight surfaces;
-- reduced motion;
-- zoom/text expansion;
-- responsive/touch behavior;
-- no information encoded by color alone;
-- predictable personalization/edit mode;
-- live-region behavior only where genuinely needed, not noisy narration of every dashboard update.
-
----
-
-# 10. Open decisions — do not silently resolve
-
-The following are deliberately **OPEN** and must be solved through roadmap scenarios/product review rather than guessed:
-
-1. exact information hierarchy inside World Focus;
-2. exact default module set;
-3. exact universal vs specialist module boundary;
-4. exact AI placement/expansion geometry;
-5. exact Peek/Insight/Explore visual grammar and naming;
-6. exact customization interaction and widget sizing grid;
-7. exact method by which a reality becomes explicitly/semantically/contextually relevant to a World;
-8. exact World profile/config persistence model;
-9. exact widget persistence/config schema;
-10. exact backend application-query/projection architecture;
-11. exact authorization/disclosure contract for World projections;
-12. exact route URL structure;
-13. exact Mondi Overview information architecture;
-14. exact AI autonomy policy for suggestions/persistence;
-15. exact external/provider data integration into World Focus.
-
-These are not missing work to hide. They are explicit gates.
-
----
-
-# 11. Scenario requirement before broad implementation
-
-The architecture must be stress-tested against at least four materially different Worlds before the module catalog is considered stable.
-
-Recommended minimum set:
-
-```text
-Musica
-Viaggi
-Finanza
-Studio or Corpo
-```
-
-Why:
-
-- creative pipeline/version/artifact pressure;
-- temporal/place/booking/participant pressure;
-- numeric/history/comparison pressure;
-- goal/routine/session/observation pressure.
-
-If the same architecture only works by branching the entire page by World name, the architecture has failed.
-
----
-
-# 12. Exact next step
-
-Do **not** start by filling World Focus with many widgets.
-
-Next implementation gate is `WF0` in `world-focus-frontend-roadmap.md`:
-
-1. construct scenario oracles for several very different Worlds;
-2. derive the smallest justified module grammar;
-3. freeze the shell / routing / transition ownership contract;
-4. only then begin `WF1` implementation.
-
-The user has already authorized continuing this workstream. Each concrete implementation slice still requires a fresh shared-branch HEAD check and must remain bounded to the slice.
-
----
-
-# 13. Operational safety
-
-- Stay on `feature/home-react` until explicitly authorized otherwise.
-- Shared branch: always inspect fresh remote HEAD before writes.
-- Do not overwrite parallel Timeline work.
-- No new branch/worktree without explicit authorization.
-- No merge/rebase/force/history rewrite/main mutation without explicit authorization.
-- Never manually edit generated route output.
-- No backend/database/Alembic changes in the current World Focus pre-backend phase.
-- When a roadmap slice changes accepted behavior/ownership, update this handoff/architecture/roadmap and relevant registry/contracts in the same reviewed scope.
+- stay on `feature/home-react` until explicitly authorized otherwise;
+- fresh HEAD before production writes;
+- do not modify frozen Timeline behavior as collateral damage;
+- do not touch Access/Auth casually;
+- no merge/rebase/force/history rewrite/main mutation without explicit authorization;
+- never manually edit generated route output;
+- update `world-focus-current-checkpoint.md` and this handoff whenever current gate/accepted disposition materially changes.
