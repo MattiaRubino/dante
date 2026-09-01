@@ -87,7 +87,7 @@ function WorldFocusRoute() {
     <WorldFocusPage
       world={world}
       source={source}
-      requestedTimePreset={requestedTimePreset}
+      {...(requestedTimePreset === undefined ? {} : { requestedTimePreset })}
       onTimePresetChange={changeTimePreset}
       onClose={closeWorldFocus}
     />
