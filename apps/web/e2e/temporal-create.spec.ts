@@ -1,20 +1,34 @@
-import { expect, test } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
+import { expect, test, type Page } from '@playwright/test';
 
 test.use({ locale: 'it-IT' });
 
-test('Quick Add protects draft state and restores opener focus', async ({
+async function openCreate(page: Page) {
+  await page.getByRole('button', { name: 'Aggiungi alla timeline' }).click();
+  const dialog = page.locator('[data-temporal-create="composer"]');
+  await expect(dialog).toBeVisible();
+  return dialog;
+}
+
+async function expectNoRawCreateKeys(page: Page) {
+  await expect(page.locator('body')).not.toContainText('home.timeline.create.');
+}
+
+test('Quick Create stays title-first, protects drafts, and restores opener focus', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/home');
 
   const trigger = page.getByRole('button', { name: 'Aggiungi alla timeline' });
-  await trigger.click();
-
-  const dialog = page.getByRole('dialog', { name: 'Aggiungi' });
+  const dialog = await openCreate(page);
   const title = dialog.getByRole('textbox', { name: 'Titolo' });
+
   await expect(title).toBeFocused();
-  await expect(dialog).not.toContainText('home.timeline.create.');
+  await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'quick');
+  await expect(dialog.getByLabel('Tipo')).toHaveValue('activity');
+  await expect(dialog.getByLabel('Contesto')).toBeVisible();
+  await expectNoRawCreateKeys(page);
 
   await title.fill('Studiare inglese');
   await page.keyboard.press('Escape');
@@ -35,25 +49,23 @@ test('Quick Add protects draft state and restores opener focus', async ({
   await expect(trigger).toBeFocused();
 });
 
-test('Quick Add creates a timed Activity, reveals its projection, and undoes it', async ({
+test('Quick Create makes a fixed Activity, reveals it, and undoes through F0', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/home');
 
-  await page.getByRole('button', { name: 'Aggiungi alla timeline' }).click();
-  const dialog = page.getByRole('dialog', { name: 'Aggiungi' });
+  const dialog = await openCreate(page);
   await dialog.getByRole('textbox', { name: 'Titolo' }).fill('Nuova attività');
   await dialog.getByLabel('Ora').fill('13:30');
-  await dialog.getByLabel('Durata').selectOption('60');
+  await dialog.getByLabel('Durata prevista').selectOption('60');
   await dialog.getByLabel('Contesto').selectOption('focus');
-
   await dialog.getByRole('button', { name: 'Aggiungi' }).click();
   await expect(dialog).toHaveCount(0);
 
-  const card = page.locator(
-    '[data-temporal-create-projection]:not(.is-preview)',
-  ).filter({ hasText: 'Nuova attività' });
+  const card = page
+    .locator('[data-temporal-create-projection]:not(.is-preview)')
+    .filter({ hasText: 'Nuova attività' });
   await expect(card).toBeVisible();
   await expect(card).toBeFocused();
 
@@ -63,26 +75,116 @@ test('Quick Add creates a timed Activity, reveals its projection, and undoes it'
   await expect(card).toHaveCount(0);
 });
 
-test('Quick Add preserves Event/all-day and Activity/unscheduled semantics', async ({
+test('Expanded and Full Activity author the DANTE planning grammar without fake placement', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/home');
+
+  const dialog = await openCreate(page);
+  await dialog.getByRole('textbox', { name: 'Titolo' }).fill('Montare il video');
+  await dialog.getByLabel('Durata prevista').selectOption('180');
+  await dialog.getByRole('button', { name: /Dettagli e pianificazione/ }).click();
+  await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'expanded');
+
+  await dialog.getByLabel('Vincolo temporale').selectOption('bounded-window');
+  await dialog.getByLabel('Politica di spostamento').selectOption('window');
+  await dialog.getByLabel('Struttura di esecuzione').selectOption('splittable');
+  await dialog.getByLabel('Sessione minima (min)').fill('45');
+  await dialog.getByLabel('Ripetizione').selectOption('weekly');
+  await dialog.getByRole('button', { name: 'Lun' }).click();
+  await dialog.getByRole('button', { name: 'Mer' }).click();
+  await dialog.getByLabel('Esito non confermato').selectOption('daily-review');
+
+  await dialog.getByRole('button', { name: 'Editor completo →' }).click();
+  await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'full');
+  await dialog
+    .getByLabel('Se il piano non è più fattibile')
+    .selectOption('shorten-or-split');
+  await dialog.getByLabel('Numero massimo di sessioni').fill('4');
+  await dialog.getByLabel('Tag').fill('video, musica');
+  await dialog.getByLabel('Promemoria').selectOption('60');
+
+  await expect(dialog.getByRole('button', { name: /Progetto/ })).toBeDisabled();
+  await expect(dialog.getByRole('button', { name: /Mondo/ })).toBeDisabled();
+  await expect(dialog).toContainText('Richiede il verticale proprietario');
+  await expectNoRawCreateKeys(page);
+
+  const accessibility = await new AxeBuilder({ page })
+    .include('[data-temporal-create="composer"]')
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+    .analyze();
+  expect(accessibility.violations).toEqual([]);
+
+  await dialog.getByRole('button', { name: 'Aggiungi' }).click();
+  await expect(dialog).toHaveCount(0);
+  await expect(
+    page
+      .locator('[data-temporal-create-projection]:not(.is-preview)')
+      .filter({ hasText: 'Montare il video' }),
+  ).toHaveCount(0);
+  const toast = page.locator('.temporal-create-toast.is-on');
+  await expect(toast).toContainText('Montare il video');
+  await expect(toast).toContainText('Da pianificare');
+  await toast.getByRole('button', { name: 'Annulla' }).click();
+});
+
+test('Event Full Create keeps Event grammar and preserves provider intent without fake execution', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1360, height: 860 });
+  await page.goto('/home');
+
+  const dialog = await openCreate(page);
+  await dialog.getByRole('textbox', { name: 'Titolo' }).fill('Call cliente');
+  await dialog.getByLabel('Tipo').selectOption('event');
+  await dialog.getByLabel('Ora').fill('16:00');
+  await dialog.getByRole('button', { name: /Dettagli e pianificazione/ }).click();
+  await dialog.getByRole('button', { name: 'Editor completo →' }).click();
+
+  await expect(dialog.getByLabel('Vincolo temporale')).toHaveCount(0);
+  await dialog.getByLabel('Data fine').fill('2026-08-05');
+  await dialog.getByLabel('Ora fine').fill('10:00');
+  await dialog.getByLabel('Luogo').fill('Studio / remoto');
+  await dialog.getByLabel('Disponibilità').selectOption('busy');
+  await dialog.getByLabel('Visibilità').selectOption('private');
+  await dialog.getByLabel('Ripetizione').selectOption('daily');
+  await dialog
+    .getByLabel('Partecipanti')
+    .fill('cliente@example.com\ncollega@example.com');
+  await dialog.getByLabel('Sale e risorse').fill('Sala Atlas');
+  await dialog.getByLabel('Videochiamata').selectOption('provider-default');
+  await expect(dialog).toContainText(
+    'Inviti, prenotazioni e link reali vengono eseguiti solo quando il provider/backend è collegato.',
+  );
+  await expectNoRawCreateKeys(page);
+
+  await dialog.getByRole('button', { name: 'Aggiungi' }).click();
+  const card = page
+    .locator('[data-temporal-create-projection]:not(.is-preview)')
+    .filter({ hasText: 'Call cliente' });
+  await expect(card).toBeVisible();
+  await expect(card).toContainText('Ricorrente');
+});
+
+test('all-day multi-day Event and unscheduled Activity preserve different temporal semantics', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1280, height: 820 });
   await page.goto('/home');
 
-  const trigger = page.getByRole('button', { name: 'Aggiungi alla timeline' });
-  await trigger.click();
-  let dialog = page.getByRole('dialog', { name: 'Aggiungi' });
+  let dialog = await openCreate(page);
   await dialog.getByRole('textbox', { name: 'Titolo' }).fill('Fiera');
-  await dialog.getByRole('radio', { name: 'Evento' }).click();
+  await dialog.getByLabel('Tipo').selectOption('event');
   await dialog.getByRole('radio', { name: 'Tutto il giorno' }).click();
+  const startDate = await dialog.getByLabel('Data inizio').inputValue();
+  await dialog.getByLabel('Data fine').fill(startDate);
   await dialog.getByRole('button', { name: 'Aggiungi' }).click();
-
   await expect(
     page.locator('.temporal-create-all-day').filter({ hasText: 'Fiera' }),
   ).toBeVisible();
 
-  await trigger.click();
-  dialog = page.getByRole('dialog', { name: 'Aggiungi' });
+  dialog = await openCreate(page);
   await dialog.getByRole('textbox', { name: 'Titolo' }).fill('Da organizzare');
   await dialog.getByRole('radio', { name: 'Da pianificare' }).click();
   await dialog.getByRole('button', { name: 'Aggiungi' }).click();
@@ -90,29 +192,35 @@ test('Quick Add preserves Event/all-day and Activity/unscheduled semantics', asy
   await expect(page.locator('.temporal-create-toast.is-on')).toContainText(
     'Da organizzare',
   );
+  await expect(page.locator('.temporal-create-toast.is-on')).toContainText(
+    'Da pianificare',
+  );
 });
 
-test('Quick Add validates before commit and exposes progressive timezone details', async ({
+test('advanced validation focuses the real invalid control without losing the draft', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1280, height: 820 });
   await page.goto('/home');
 
-  await page.getByRole('button', { name: 'Aggiungi alla timeline' }).click();
-  const dialog = page.getByRole('dialog', { name: 'Aggiungi' });
+  const dialog = await openCreate(page);
+  await dialog.getByRole('textbox', { name: 'Titolo' }).fill('Studio');
+  await dialog.getByLabel('Durata prevista').selectOption('60');
+  await dialog.getByRole('button', { name: /Dettagli e pianificazione/ }).click();
+  await dialog.getByLabel('Struttura di esecuzione').selectOption('splittable');
+  await dialog.getByLabel('Sessione minima (min)').fill('120');
   await dialog.getByRole('button', { name: 'Aggiungi' }).click();
-  await expect(dialog.getByText('Inserisci un titolo.')).toBeVisible();
-  await expect(dialog.getByRole('textbox', { name: 'Titolo' })).toBeFocused();
 
-  await dialog.getByRole('textbox', { name: 'Titolo' }).fill('Call estera');
-  await dialog.getByRole('button', { name: '+ Dettagli' }).click();
-  await dialog.getByRole('radio', { name: 'Fuso orario' }).click();
-  const zone = dialog.getByLabel('Fuso orario');
-  await zone.fill('Europe/Rome');
-  await expect(zone).toHaveValue('Europe/Rome');
+  await expect(
+    dialog.getByText(/sessione minima deve essere almeno 5 minuti/i),
+  ).toBeVisible();
+  await expect(dialog.getByLabel('Sessione minima (min)')).toBeFocused();
+  await expect(dialog.getByRole('textbox', { name: 'Titolo' })).toHaveValue(
+    'Studio',
+  );
 });
 
-test('double click on empty Timeline time opens contextual Create', async ({
+test('double-click and Shift-drag on empty Timeline create contextual defaults', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -123,28 +231,48 @@ test('double click on empty Timeline time opens contextual Create', async ({
   if (!box) {
     throw new Error('Expected a visible Timeline day section');
   }
-  await section.dblclick({
-    position: { x: Math.min(600, box.width - 40), y: box.height * 0.52 },
-  });
 
-  const dialog = page.getByRole('dialog', { name: 'Aggiungi' });
+  await section.dblclick({
+    position: { x: Math.min(600, box.width - 40), y: box.height * 0.46 },
+  });
+  let dialog = page.locator('[data-temporal-create="composer"]');
   await expect(dialog).toBeVisible();
   await expect(dialog.getByLabel('Data')).not.toHaveValue('');
   await expect(dialog.getByLabel('Ora')).not.toHaveValue('');
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+
+  const startX = box.x + Math.min(620, box.width - 50);
+  const startY = box.y + box.height * 0.34;
+  const endY = Math.min(box.y + box.height - 30, startY + 130);
+  await page.keyboard.down('Shift');
+  await page.mouse.move(startX, startY);
+  await page.mouse.down();
+  await page.mouse.move(startX, endY, { steps: 5 });
+  await page.mouse.up();
+  await page.keyboard.up('Shift');
+
+  dialog = page.locator('[data-temporal-create="composer"]');
+  await expect(dialog).toBeVisible();
+  const duration = Number(await dialog.getByLabel('Durata prevista').inputValue());
+  expect(duration).toBeGreaterThanOrEqual(30);
 });
 
-test('Quick Add becomes a bounded mobile sheet without horizontal overflow', async ({
+test('Full Create becomes a mobile full-screen editor with no horizontal overflow', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/home');
-  await page.getByRole('button', { name: 'Aggiungi alla timeline' }).click();
 
-  const dialog = page.getByRole('dialog', { name: 'Aggiungi' });
-  await expect(dialog).toBeVisible();
+  const dialog = await openCreate(page);
+  await dialog.getByRole('button', { name: /Dettagli e pianificazione/ }).click();
+  await dialog.getByRole('button', { name: 'Editor completo →' }).click();
+  await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'full');
+
   const box = await dialog.boundingBox();
   expect(box).not.toBeNull();
   expect(box?.width ?? 999).toBeLessThanOrEqual(390);
+  expect(box?.height ?? 0).toBeGreaterThan(800);
   expect(
     await page.evaluate(
       () =>
@@ -152,4 +280,5 @@ test('Quick Add becomes a bounded mobile sheet without horizontal overflow', asy
         document.documentElement.clientWidth,
     ),
   ).toBe(true);
+  await expectNoRawCreateKeys(page);
 });

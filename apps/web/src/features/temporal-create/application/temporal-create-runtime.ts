@@ -25,8 +25,10 @@ export type TemporalCreateMetadata = Readonly<{
   kind: TemporalCreateKind;
   contextId: string;
   notes: string;
+  tags: string;
   timeSemantics: TemporalCreateTimeSemantics;
   timeZoneId: string;
+  specification: TemporalCreateFields;
 }>;
 
 export type TemporalCreatePreparedOperation = Readonly<{
@@ -47,6 +49,7 @@ export type TemporalCreatePreparedOperation = Readonly<{
       placement: ReturnType<typeof buildTemporalCreatePlacement>;
       capabilities: readonly (
         | 'placement'
+        | 'recurrence'
         | 'execution'
         | 'actual'
         | 'confirmation'
@@ -69,6 +72,11 @@ export type TemporalCreatePreparation =
       prepared: TemporalCreatePreparedOperation;
     }>;
 
+export type TemporalCreateRecord = Readonly<{
+  projection: TemporalProjectionItem;
+  metadata: TemporalCreateMetadata;
+}>;
+
 export type TemporalCreateAppliedEffect = Readonly<{
   projection: TemporalProjectionItem;
   metadata: TemporalCreateMetadata;
@@ -89,31 +97,30 @@ export interface TemporalCreateRuntime {
   ): TemporalCreatePreparation;
   execute(prepared: TemporalCreatePreparedOperation): Promise<TemporalCreateExecution>;
   list(): Promise<readonly TemporalProjectionItem[]>;
+  listRecords(): Promise<readonly TemporalCreateRecord[]>;
 }
 
-function capabilitiesForKind(
-  kind: TemporalCreateKind,
+function capabilitiesForFields(
+  fields: TemporalCreateFields,
 ): TemporalCreatePreparedOperation['command']['payload']['capabilities'] {
-  return kind === 'activity'
-    ? Object.freeze([
-        'placement',
-        'execution',
-        'actual',
-        'confirmation',
-        'replanning',
-        'history',
-        'notes',
-      ] as const)
-    : Object.freeze([
-        'placement',
-        'confirmation',
-        'history',
-        'notes',
-      ] as const);
+  const capabilities: TemporalCreatePreparedOperation['command']['payload']['capabilities'][number][] = [
+    'placement',
+    'confirmation',
+    'history',
+    'notes',
+  ];
+  if (fields.recurrence.frequency !== 'none') {
+    capabilities.push('recurrence');
+  }
+  if (fields.kind === 'activity') {
+    capabilities.push('execution', 'actual', 'replanning');
+  }
+  return Object.freeze(capabilities);
 }
 
 class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
   public readonly clock: TemporalClock;
+  private readonly records = new Map<TemporalProjectionItem['id'], TemporalCreateRecord>();
 
   public constructor(
     private readonly workspace: TemporalWorkspacePort,
@@ -137,8 +144,10 @@ class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
       kind: fields.kind,
       contextId: fields.contextId,
       notes: fields.notes.trim(),
+      tags: fields.tags.trim(),
       timeSemantics: fields.timeSemantics,
       timeZoneId: fields.timeZoneId,
+      specification: fields,
     }) satisfies TemporalCreateMetadata;
 
     const command = Object.freeze({
@@ -151,14 +160,14 @@ class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
         subject: Object.freeze({
           source: 'native' as const,
           kind: fields.kind,
-          // Frontend-only provisional subject identity. The future backend owns
-          // canonical domain identity and may reconcile it without changing the
-          // Create form contract.
+          // Frontend-only provisional subject identity. A future backend adapter
+          // owns canonical identity and can reconcile it without changing the
+          // Create UI/application contract.
           id: `create-subject:${projectionId}`,
         }),
-        title: fields.title,
+        title: fields.title.trim(),
         placement: buildTemporalCreatePlacement(fields),
-        capabilities: capabilitiesForKind(fields.kind),
+        capabilities: capabilitiesForFields(fields),
       }),
     });
 
@@ -182,18 +191,28 @@ class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
 
     const projection = result.item;
     const undoToken = result.undoToken;
+    this.records.set(
+      projection.id,
+      Object.freeze({ projection, metadata: prepared.metadata }),
+    );
+
     const effect = Object.freeze({
       projection,
       metadata: prepared.metadata,
       undoToken,
-      undo: () =>
-        this.workspace.execute({
+      undo: async () => {
+        const undoResult = await this.workspace.execute({
           type: 'temporal.operation.undo',
           operationId: this.ids.operationId(),
           source: 'manual',
           issuedAt: this.clock.now(),
           payload: Object.freeze({ undoToken }),
-        }),
+        });
+        if (undoResult.status === 'applied') {
+          this.records.delete(projection.id);
+        }
+        return undoResult;
+      },
     }) satisfies TemporalCreateAppliedEffect;
 
     return Object.freeze({ result, effect });
@@ -204,6 +223,16 @@ class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
       type: 'temporal.projection.list',
     });
     return result.snapshot.items;
+  }
+
+  public async listRecords(): Promise<readonly TemporalCreateRecord[]> {
+    const projections = await this.list();
+    return Object.freeze(
+      projections.flatMap((projection) => {
+        const record = this.records.get(projection.id);
+        return record ? [record] : [];
+      }),
+    );
   }
 }
 

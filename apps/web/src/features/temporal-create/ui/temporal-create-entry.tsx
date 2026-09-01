@@ -25,9 +25,10 @@ import {
   createTemporalCreateSession,
   discardTemporalCreateSession,
   requestTemporalCreateClose,
-  setTemporalCreateDetailsOpen,
+  setTemporalCreateSurface,
   updateTemporalCreateFields,
   type TemporalCreateSession,
+  type TemporalCreateSurface,
 } from '../model/temporal-create-session';
 import {
   TemporalCreateComposer,
@@ -39,8 +40,10 @@ import './temporal-create.css';
 
 const VIEWPORT_PADDING_PX = 16;
 const COMPOSER_GAP_PX = 10;
-const COMPOSER_MAX_WIDTH_PX = 560;
-const COMPOSER_ESTIMATED_HEIGHT_PX = 650;
+const QUICK_WIDTH_PX = 560;
+const EXPANDED_WIDTH_PX = 760;
+const QUICK_ESTIMATED_HEIGHT_PX = 650;
+const EXPANDED_ESTIMATED_HEIGHT_PX = 760;
 
 type InvocationAnchor = Readonly<{
   left: number;
@@ -52,6 +55,7 @@ export type TemporalCreateInvocation = Readonly<{
   id: number;
   date: PlainDate;
   startMinute?: number;
+  durationMinutes?: number;
   anchor?: InvocationAnchor;
 }>;
 
@@ -105,7 +109,7 @@ export function TemporalCreateEntry({
   });
 
   const freshFields = useCallback(
-    (date: PlainDate, startMinute?: number) => {
+    (date: PlainDate, startMinute?: number, durationMinutes?: number) => {
       const runtime = runtimeRef.current;
       const zone = runtime.clock.timeZoneId();
       let minute = startMinute;
@@ -120,6 +124,7 @@ export function TemporalCreateEntry({
       return createTemporalCreateFields({
         date: date.toString(),
         startTime: minuteToInput(minute),
+        durationMinutes: durationMinutes ?? 30,
         timeZoneId: zone,
         contextId:
           contexts.find((context) => context.id === 'personale')?.id ??
@@ -155,10 +160,11 @@ export function TemporalCreateEntry({
     (
       date: PlainDate,
       startMinute?: number,
+      durationMinutes?: number,
       externalAnchor?: InvocationAnchor,
     ) => {
       onBeforeOpen?.();
-      const fields = freshFields(date, startMinute);
+      const fields = freshFields(date, startMinute, durationMinutes);
       setSession(createTemporalCreateSession(fields));
       setIssues([]);
       setFailureMessage('');
@@ -186,7 +192,12 @@ export function TemporalCreateEntry({
     }
     requestSeenRef.current = request.id;
     const frame = requestAnimationFrame(() => {
-      openComposer(request.date, request.startMinute, request.anchor);
+      openComposer(
+        request.date,
+        request.startMinute,
+        request.durationMinutes,
+        request.anchor,
+      );
     });
     return () => cancelAnimationFrame(frame);
   }, [open, openComposer, request]);
@@ -214,12 +225,14 @@ export function TemporalCreateEntry({
   }, [onPreview, open, session.closeDecision, session.draft]);
 
   useLayoutEffect(() => {
-    if (!open || !anchor) {
+    if (!open || !anchor || session.surface === 'full') {
       return;
     }
     const updatePosition = () => {
+      const desiredWidth =
+        session.surface === 'expanded' ? EXPANDED_WIDTH_PX : QUICK_WIDTH_PX;
       const width = Math.min(
-        COMPOSER_MAX_WIDTH_PX,
+        desiredWidth,
         Math.max(0, window.innerWidth - VIEWPORT_PADDING_PX * 2),
       );
       const left = clamp(
@@ -229,7 +242,9 @@ export function TemporalCreateEntry({
       );
       const below = anchor.bottom + COMPOSER_GAP_PX;
       const estimatedHeight = Math.min(
-        COMPOSER_ESTIMATED_HEIGHT_PX,
+        session.surface === 'expanded'
+          ? EXPANDED_ESTIMATED_HEIGHT_PX
+          : QUICK_ESTIMATED_HEIGHT_PX,
         window.innerHeight - VIEWPORT_PADDING_PX * 2,
       );
       const above = anchor.top - COMPOSER_GAP_PX - estimatedHeight;
@@ -246,7 +261,7 @@ export function TemporalCreateEntry({
     updatePosition();
     window.addEventListener('resize', updatePosition);
     return () => window.removeEventListener('resize', updatePosition);
-  }, [anchor, open]);
+  }, [anchor, open, session.surface]);
 
   const requestClose = () => {
     if (lifecycle === 'pending') {
@@ -270,6 +285,10 @@ export function TemporalCreateEntry({
     setSession((current) => updateTemporalCreateFields(current, next));
   };
 
+  const changeSurface = (surface: TemporalCreateSurface) => {
+    setSession((current) => setTemporalCreateSurface(current, surface));
+  };
+
   const submit = async () => {
     if (commitInFlightRef.current) {
       return;
@@ -280,6 +299,9 @@ export function TemporalCreateEntry({
       : runtime.prepare(session.draft.current);
     if (preparation.status === 'invalid') {
       setIssues(preparation.issues);
+      if (session.surface === 'quick' && preparation.issues.some((issue) => issue.path[0].includes('.'))) {
+        changeSurface('expanded');
+      }
       return;
     }
 
@@ -320,11 +342,7 @@ export function TemporalCreateEntry({
       lifecycle={lifecycle}
       failureMessage={failureMessage}
       onPatch={patch}
-      onToggleDetails={() =>
-        setSession((current) =>
-          setTemporalCreateDetailsOpen(current, !current.detailsOpen),
-        )
-      }
+      onSurfaceChange={changeSurface}
       onRequestClose={requestClose}
       onContinueEditing={() =>
         setSession((current) => continueTemporalCreateEditing(current))

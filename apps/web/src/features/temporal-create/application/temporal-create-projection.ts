@@ -1,6 +1,7 @@
 import type { TemporalPlacement } from '../../temporal';
 import {
   buildTemporalCreatePlacement,
+  temporalCreateHasFlexibleIntent,
   validateTemporalCreateFields,
   type TemporalCreateFields,
 } from '../model/temporal-create-session';
@@ -18,6 +19,8 @@ export type TemporalCreateTimelineProjection = Readonly<{
   startMinute: number | null;
   endMinute: number | null;
   allDay: boolean;
+  flexible: boolean;
+  recurring: boolean;
   preview: boolean;
 }>;
 
@@ -32,6 +35,10 @@ function projectPlacement(
   metadata: TemporalCreateMetadata,
   preview: boolean,
 ): TemporalCreateTimelineProjection {
+  const specification = metadata.specification;
+  const flexible = temporalCreateHasFlexibleIntent(specification);
+  const recurring = specification.recurrence.frequency !== 'none';
+
   if (!placement) {
     return Object.freeze({
       id,
@@ -42,6 +49,8 @@ function projectPlacement(
       startMinute: null,
       endMinute: null,
       allDay: false,
+      flexible,
+      recurring,
       preview,
     });
   }
@@ -56,6 +65,8 @@ function projectPlacement(
       startMinute: null,
       endMinute: null,
       allDay: true,
+      flexible,
+      recurring,
       preview,
     });
   }
@@ -80,6 +91,8 @@ function projectPlacement(
       ? Math.min(1440, minuteOfDay(end.hour, end.minute))
       : 1440,
     allDay: false,
+    flexible,
+    recurring,
     preview,
   });
 }
@@ -114,8 +127,10 @@ export function temporalCreateTimelinePreviewFromFields(
       kind: fields.kind,
       contextId: fields.contextId,
       notes: fields.notes.trim(),
+      tags: fields.tags.trim(),
       timeSemantics: fields.timeSemantics,
       timeZoneId: fields.timeZoneId,
+      specification: fields,
     }),
     true,
   );

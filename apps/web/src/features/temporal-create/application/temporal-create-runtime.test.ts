@@ -10,7 +10,7 @@ import { createTemporalCreateFields } from '../model/temporal-create-session';
 import { createLocalTemporalCreateRuntime } from './temporal-create-runtime';
 
 function runtime() {
-  const ids = createDeterministicTemporalIdFactory('c1');
+  const ids = createDeterministicTemporalIdFactory('c1-rich');
   const clock = createFixedTemporalClock(
     Temporal.Instant.from('2026-09-01T08:00:00Z'),
     'Europe/Rome',
@@ -22,51 +22,60 @@ function runtime() {
   });
 }
 
-describe('Temporal Create application runtime', () => {
-  it('rejects an invalid draft before command execution', () => {
-    const preparation = runtime().prepare(
-      createTemporalCreateFields({
-        date: '2026-09-01',
-        title: '',
-      }),
-    );
-
-    expect(preparation.status).toBe('invalid');
-    if (preparation.status === 'invalid') {
-      expect(preparation.issues.map((issue) => issue.code)).toContain(
-        'temporal.projection.title.required',
-      );
-    }
-  });
-
-  it('creates an Activity through F0 with truthful capabilities and metadata', async () => {
+describe('Temporal Create rich application runtime', () => {
+  it('retains rich Activity intent separately from the minimal Timeline projection', async () => {
     const createRuntime = runtime();
-    const preparation = createRuntime.prepare(
-      createTemporalCreateFields({
-        title: 'Allenamento',
-        date: '2026-09-01',
-        startTime: '18:00',
-        durationMinutes: 60,
-        contextId: 'salute',
-        notes: 'Circuito',
-      }),
-    );
-
-    expect(preparation.status).toBe('ready');
+    const baseline = createTemporalCreateFields({
+      title: 'Montare video',
+      date: '2026-09-01',
+      durationMinutes: 180,
+      notes: 'Export finale',
+      tags: 'video, musica',
+    });
+    const fields = createTemporalCreateFields({
+      ...baseline,
+      scheduling: {
+        ...baseline.scheduling,
+        constraintKind: 'bounded-window',
+        windowStartDate: '2026-09-01',
+        windowStartTime: '18:00',
+        windowEndDate: '2026-09-03',
+        windowEndTime: '23:00',
+        movementPolicy: 'window',
+      },
+      execution: {
+        ...baseline.execution,
+        sessionMode: 'splittable',
+        minSessionMinutes: 45,
+      },
+      recurrence: {
+        ...baseline.recurrence,
+        frequency: 'weekly',
+        weekdays: Object.freeze(['MO', 'WE'] as const),
+      },
+    });
+    const preparation = createRuntime.prepare(fields);
     if (preparation.status !== 'ready') {
-      throw new Error('Expected ready Create operation');
+      throw new Error('Expected ready rich Create operation');
     }
+
     const execution = await createRuntime.execute(preparation.prepared);
+    const records = await createRuntime.listRecords();
 
     expect(execution.result.status).toBe('applied');
-    expect(execution.effect?.projection.title).toBe('Allenamento');
-    expect(execution.effect?.metadata.kind).toBe('activity');
-    expect(execution.effect?.metadata.contextId).toBe('salute');
-    expect(execution.effect?.projection.capabilities).toContain('execution');
-    expect(execution.effect?.projection.capabilities).toContain('actual');
+    expect(execution.effect?.projection.placement).toBeNull();
+    expect(execution.effect?.projection.capabilities).toContain('recurrence');
+    expect(records).toHaveLength(1);
+    expect(records[0]?.metadata.specification.scheduling.constraintKind).toBe(
+      'bounded-window',
+    );
+    expect(records[0]?.metadata.specification.execution.minSessionMinutes).toBe(
+      45,
+    );
+    expect(records[0]?.metadata.specification.tags).toBe('video, musica');
   });
 
-  it('replays the exact same prepared operation idempotently', async () => {
+  it('keeps exact prepared-command replay idempotent without duplicating rich records', async () => {
     const createRuntime = runtime();
     const preparation = createRuntime.prepare(
       createTemporalCreateFields({
@@ -85,14 +94,15 @@ describe('Temporal Create application runtime', () => {
     const replay = await createRuntime.execute(preparation.prepared);
 
     expect(replay.result).toBe(first.result);
-    expect((await createRuntime.list()).length).toBe(1);
+    expect(await createRuntime.list()).toHaveLength(1);
+    expect(await createRuntime.listRecords()).toHaveLength(1);
   });
 
-  it('undoes an applied Create through the F0 undo command', async () => {
+  it('undo removes both F0 projection and its local rich specification', async () => {
     const createRuntime = runtime();
     const preparation = createRuntime.prepare(
       createTemporalCreateFields({
-        title: 'Promemoria',
+        title: 'Allenamento',
         date: '2026-09-01',
       }),
     );
@@ -101,10 +111,11 @@ describe('Temporal Create application runtime', () => {
     }
 
     const execution = await createRuntime.execute(preparation.prepared);
-    expect((await createRuntime.list()).length).toBe(1);
+    expect(await createRuntime.listRecords()).toHaveLength(1);
 
     const undo = await execution.effect?.undo();
     expect(undo?.status).toBe('applied');
-    expect((await createRuntime.list()).length).toBe(0);
+    expect(await createRuntime.list()).toHaveLength(0);
+    expect(await createRuntime.listRecords()).toHaveLength(0);
   });
 });

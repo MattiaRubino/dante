@@ -37,6 +37,15 @@ type PortalTarget = Readonly<{
   tone: string;
 }>;
 
+type RangeGesture = Readonly<{
+  pointerId: number;
+  section: HTMLElement;
+  date: PlainDate;
+  startMinute: number;
+  startX: number;
+  startY: number;
+}>;
+
 function parsePixel(value: string): number {
   const parsed = Number.parseFloat(value);
   return Number.isFinite(parsed) ? parsed : 0;
@@ -77,6 +86,10 @@ function minuteAtClientY(section: HTMLElement, clientY: number): number {
   return 1439;
 }
 
+function snapMinute(minute: number): number {
+  return Math.max(0, Math.min(1425, Math.round(minute / 15) * 15));
+}
+
 function pixelAtMinute(section: HTMLElement, minute: number): number {
   const lines = Array.from(
     section.querySelectorAll<HTMLElement>('.timeline-hour-line'),
@@ -110,6 +123,22 @@ function formatMinute(minute: number): string {
   ).padStart(2, '0')}`;
 }
 
+function emptyTimelineTarget(target: EventTarget | null): HTMLElement | null {
+  if (!(target instanceof Element)) {
+    return null;
+  }
+  if (
+    target.closest(
+      'button, input, select, textarea, .timeline-event-card, .temporal-create-projection-card, .temporal-create-all-day',
+    )
+  ) {
+    return null;
+  }
+  return target.closest<HTMLElement>(
+    '.timeline-day-section[data-timeline-date]',
+  );
+}
+
 export function TimelineCreateBridge({
   defaultDate,
   groups,
@@ -131,6 +160,7 @@ export function TimelineCreateBridge({
   const requestIdRef = useRef(0);
   const layoutFrameRef = useRef<number | null>(null);
   const toastTimerRef = useRef<number | null>(null);
+  const rangeGestureRef = useRef<RangeGesture | null>(null);
 
   const scheduleLayoutRefresh = useCallback(() => {
     if (layoutFrameRef.current !== null) {
@@ -172,29 +202,15 @@ export function TimelineCreateBridge({
 
   useEffect(() => {
     const onDoubleClick = (event: MouseEvent) => {
-      const target = event.target;
-      if (!(target instanceof Element)) {
-        return;
-      }
-      if (
-        target.closest(
-          'button, input, select, textarea, .timeline-event-card, .temporal-create-projection-card',
-        )
-      ) {
-        return;
-      }
-      const section = target.closest<HTMLElement>(
-        '.timeline-day-section[data-timeline-date]',
-      );
+      const section = emptyTimelineTarget(event.target);
       if (!section?.dataset.timelineDate) {
         return;
       }
-      const minute =
-        Math.round(minuteAtClientY(section, event.clientY) / 15) * 15;
+      const minute = snapMinute(minuteAtClientY(section, event.clientY));
       setRequest({
         id: ++requestIdRef.current,
         date: Temporal.PlainDate.from(section.dataset.timelineDate),
-        startMinute: Math.max(0, Math.min(1425, minute)),
+        startMinute: minute,
         anchor: {
           left: event.clientX,
           top: event.clientY,
@@ -202,8 +218,79 @@ export function TimelineCreateBridge({
         },
       });
     };
+
+    const onPointerDown = (event: PointerEvent) => {
+      if (!event.shiftKey || event.button !== 0) {
+        return;
+      }
+      const section = emptyTimelineTarget(event.target);
+      if (!section?.dataset.timelineDate) {
+        return;
+      }
+      rangeGestureRef.current = {
+        pointerId: event.pointerId,
+        section,
+        date: Temporal.PlainDate.from(section.dataset.timelineDate),
+        startMinute: snapMinute(minuteAtClientY(section, event.clientY)),
+        startX: event.clientX,
+        startY: event.clientY,
+      };
+      document.documentElement.setAttribute('data-temporal-create-ranging', 'true');
+      event.preventDefault();
+    };
+
+    const finishRange = (event: PointerEvent) => {
+      const gesture = rangeGestureRef.current;
+      if (!gesture || gesture.pointerId !== event.pointerId) {
+        return;
+      }
+      rangeGestureRef.current = null;
+      document.documentElement.removeAttribute('data-temporal-create-ranging');
+      const endMinute = snapMinute(
+        minuteAtClientY(gesture.section, event.clientY),
+      );
+      const startMinute = Math.min(gesture.startMinute, endMinute);
+      const rawDuration = Math.abs(endMinute - gesture.startMinute);
+      const durationMinutes = Math.max(15, rawDuration || 30);
+      const moved =
+        Math.abs(event.clientY - gesture.startY) >= 8 ||
+        Math.abs(event.clientX - gesture.startX) >= 8;
+      if (!moved) {
+        return;
+      }
+      setRequest({
+        id: ++requestIdRef.current,
+        date: gesture.date,
+        startMinute,
+        durationMinutes,
+        anchor: {
+          left: event.clientX,
+          top: event.clientY,
+          bottom: event.clientY,
+        },
+      });
+      event.preventDefault();
+    };
+
+    const cancelRange = (event: PointerEvent) => {
+      if (rangeGestureRef.current?.pointerId !== event.pointerId) {
+        return;
+      }
+      rangeGestureRef.current = null;
+      document.documentElement.removeAttribute('data-temporal-create-ranging');
+    };
+
     document.addEventListener('dblclick', onDoubleClick, true);
-    return () => document.removeEventListener('dblclick', onDoubleClick, true);
+    document.addEventListener('pointerdown', onPointerDown, true);
+    document.addEventListener('pointerup', finishRange, true);
+    document.addEventListener('pointercancel', cancelRange, true);
+    return () => {
+      document.removeEventListener('dblclick', onDoubleClick, true);
+      document.removeEventListener('pointerdown', onPointerDown, true);
+      document.removeEventListener('pointerup', finishRange, true);
+      document.removeEventListener('pointercancel', cancelRange, true);
+      document.documentElement.removeAttribute('data-temporal-create-ranging');
+    };
   }, []);
 
   useEffect(() => {
@@ -397,6 +484,14 @@ export function TimelineCreateBridge({
     }
   };
 
+  const feedbackSuffix = undoEffect
+    ? undoEffect.metadata.specification.scheduling.constraintKind !== 'none'
+      ? ` · ${t(($) => $.common.home.timeline.create.timeSemantics.unscheduled)}`
+      : undoEffect.metadata.timeSemantics === 'unscheduled'
+        ? ` · ${t(($) => $.common.home.timeline.create.timeSemantics.unscheduled)}`
+        : ''
+    : '';
+
   return (
     <>
       <TemporalCreateEntry
@@ -427,6 +522,9 @@ export function TimelineCreateBridge({
                 {projection.kind === 'activity'
                   ? t(($) => $.common.home.timeline.create.kind.activity)
                   : t(($) => $.common.home.timeline.create.kind.event)}
+                {projection.recurring
+                  ? ` · ${t(($) => $.common.home.timeline.create.recurrence.recurringBadge)}`
+                  : ''}
               </span>
               <strong>{projection.title}</strong>
             </div>
@@ -454,6 +552,9 @@ export function TimelineCreateBridge({
                 {projection.kind === 'activity'
                   ? t(($) => $.common.home.timeline.create.kind.activity)
                   : t(($) => $.common.home.timeline.create.kind.event)}
+                {projection.recurring
+                  ? ` · ${t(($) => $.common.home.timeline.create.recurrence.recurringBadge)}`
+                  : ''}
               </span>
             </article>
           ),
@@ -475,7 +576,7 @@ export function TimelineCreateBridge({
                 {undoEffect
                   ? `${t(($) => $.common.home.timeline.feedback.created)} ${
                       undoEffect.projection.title
-                    }`
+                    }${feedbackSuffix}`
                   : ''}
               </span>
               {undoEffect ? (

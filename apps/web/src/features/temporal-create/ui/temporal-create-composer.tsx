@@ -4,13 +4,22 @@ import {
   useLayoutEffect,
   useRef,
   type CSSProperties,
+  type FormEvent,
   type KeyboardEvent,
   type PointerEvent,
+  type ReactNode,
 } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { TemporalValidationIssue } from '../../temporal';
-import type { TemporalCreateSession } from '../model/temporal-create-session';
+import type {
+  TemporalCreateSession,
+  TemporalCreateSurface,
+} from '../model/temporal-create-session';
+import {
+  TemporalCreateAdvancedFields,
+  TemporalCreateCoreFields,
+} from './temporal-create-fields';
 
 export type TemporalCreateComposerPosition = Readonly<{
   top: number;
@@ -30,19 +39,32 @@ type TemporalCreateComposerProps = Readonly<{
   lifecycle: 'idle' | 'pending' | 'failed';
   failureMessage: string;
   onPatch: (patch: Partial<TemporalCreateSession['draft']['current']>) => void;
-  onToggleDetails: () => void;
+  onSurfaceChange: (surface: TemporalCreateSurface) => void;
   onRequestClose: () => void;
   onContinueEditing: () => void;
   onDiscard: () => void;
   onSubmit: () => void;
 }>;
 
+const FOCUSABLE_SELECTOR =
+  'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 function focusableElements(root: HTMLElement): HTMLElement[] {
-  return Array.from(
-    root.querySelectorAll<HTMLElement>(
-      'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-    ),
-  ).filter((element) => !element.hasAttribute('hidden'));
+  return Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
+    (element) => !element.hasAttribute('hidden'),
+  );
+}
+
+function focusValidationPath(root: HTMLElement, path: string): void {
+  const region = root.querySelector<HTMLElement>(`[data-create-path="${path}"]`);
+  if (!region) {
+    return;
+  }
+  if (region.matches(FOCUSABLE_SELECTOR)) {
+    region.focus();
+    return;
+  }
+  region.querySelector<HTMLElement>(FOCUSABLE_SELECTOR)?.focus();
 }
 
 function issueFor(
@@ -60,7 +82,7 @@ export function TemporalCreateComposer({
   lifecycle,
   failureMessage,
   onPatch,
-  onToggleDetails,
+  onSurfaceChange,
   onRequestClose,
   onContinueEditing,
   onDiscard,
@@ -94,12 +116,14 @@ export function TemporalCreateComposer({
     if (!firstPath) {
       return;
     }
-    requestAnimationFrame(() => {
-      dialogRef.current
-        ?.querySelector<HTMLElement>(`[data-create-path="${firstPath}"]`)
-        ?.focus();
+    const frame = requestAnimationFrame(() => {
+      const root = dialogRef.current;
+      if (root) {
+        focusValidationPath(root, firstPath);
+      }
     });
-  }, [issues, session.closeDecision]);
+    return () => cancelAnimationFrame(frame);
+  }, [issues, session.closeDecision, session.surface]);
 
   const continueEditing = () => {
     onContinueEditing();
@@ -148,36 +172,87 @@ export function TemporalCreateComposer({
     }
   };
 
-  const fieldError = (path: string) => {
-    const issue = issueFor(issues, path);
-    if (!issue) {
-      return null;
+  const validationText = (issue: TemporalValidationIssue): string => {
+    switch (issue.code) {
+      case 'temporal.projection.title.required':
+        return t(($) => $.common.home.timeline.create.validation.title);
+      case 'temporal.create.date.invalid':
+        return t(($) => $.common.home.timeline.create.validation.date);
+      case 'temporal.create.start_time.invalid':
+        return t(($) => $.common.home.timeline.create.validation.time);
+      case 'temporal.create.duration.invalid':
+        return t(($) => $.common.home.timeline.create.validation.duration);
+      case 'temporal.create.timezone.invalid':
+        return t(($) => $.common.home.timeline.create.validation.timeZone);
+      case 'temporal.create.event.requires_placement':
+        return t(($) => $.common.home.timeline.create.validation.eventPlacement);
+      case 'temporal.create.all_day_range.invalid':
+        return t(($) => $.common.home.timeline.create.validation.allDayRange);
+      case 'temporal.create.window.invalid':
+        return t(($) => $.common.home.timeline.create.validation.window);
+      case 'temporal.create.deadline.invalid':
+        return t(($) => $.common.home.timeline.create.validation.deadline);
+      case 'temporal.create.preferred_window.invalid':
+        return t(($) => $.common.home.timeline.create.validation.preferredWindow);
+      case 'temporal.create.minimum_session.invalid':
+        return t(($) => $.common.home.timeline.create.validation.minimumSession);
+      case 'temporal.create.session_count.invalid':
+        return t(($) => $.common.home.timeline.create.validation.sessionCount);
+      case 'temporal.create.buffer.invalid':
+        return t(($) => $.common.home.timeline.create.validation.buffer);
+      case 'temporal.create.recurrence.interval_invalid':
+        return t(($) => $.common.home.timeline.create.validation.recurrenceInterval);
+      case 'temporal.create.recurrence.weekdays_required':
+        return t(($) => $.common.home.timeline.create.validation.recurrenceWeekdays);
+      case 'temporal.create.recurrence.until_invalid':
+        return t(($) => $.common.home.timeline.create.validation.recurrenceUntil);
+      case 'temporal.create.recurrence.count_invalid':
+        return t(($) => $.common.home.timeline.create.validation.recurrenceCount);
+      case 'temporal.create.reminder.invalid':
+        return t(($) => $.common.home.timeline.create.validation.reminder);
+      default:
+        return t(($) => $.common.home.timeline.create.validation.generic);
     }
-    const key = issue.code as keyof typeof t;
-    void key;
-    return (
+  };
+
+  const renderError = (path: string): ReactNode => {
+    const issue = issueFor(issues, path);
+    return issue ? (
       <span className="temporal-create-field-error" role="alert">
-        {issue.code === 'temporal.projection.title.required'
-          ? t(($) => $.common.home.timeline.create.validation.title)
-          : issue.code === 'temporal.create.date.invalid'
-            ? t(($) => $.common.home.timeline.create.validation.date)
-            : issue.code === 'temporal.create.start_time.invalid'
-              ? t(($) => $.common.home.timeline.create.validation.time)
-              : issue.code === 'temporal.create.duration.invalid'
-                ? t(($) => $.common.home.timeline.create.validation.duration)
-                : issue.code === 'temporal.create.timezone.invalid'
-                  ? t(($) => $.common.home.timeline.create.validation.timeZone)
-                  : issue.code === 'temporal.create.event.requires_placement'
-                    ? t(($) => $.common.home.timeline.create.validation.eventPlacement)
-                    : t(($) => $.common.home.timeline.create.validation.generic)}
+        {validationText(issue)}
       </span>
-    );
+    ) : null;
   };
 
   const style = {
     top: `${position.top}px`,
     left: `${position.left}px`,
   } satisfies CSSProperties;
+
+  const surfaceTitle =
+    session.surface === 'full'
+      ? t(($) => $.common.home.timeline.create.surface.full)
+      : session.surface === 'expanded'
+        ? t(($) => $.common.home.timeline.create.surface.expanded)
+        : t(($) => $.common.home.timeline.create.title);
+
+  const constraintLabel =
+    fields.scheduling.constraintKind === 'open'
+      ? t(($) => $.common.home.timeline.create.planning.constraintOpen)
+      : fields.scheduling.constraintKind === 'bounded-window'
+        ? t(($) => $.common.home.timeline.create.planning.constraintWindow)
+        : fields.scheduling.constraintKind === 'deadline'
+          ? t(($) => $.common.home.timeline.create.planning.constraintDeadline)
+          : fields.scheduling.constraintKind === 'preferred-window'
+            ? t(($) => $.common.home.timeline.create.planning.constraintPreferred)
+            : fields.timeSemantics === 'unscheduled'
+              ? t(($) => $.common.home.timeline.create.timeSemantics.unscheduled)
+              : null;
+
+  const submitForm = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    onSubmit();
+  };
 
   return (
     <div
@@ -187,8 +262,9 @@ export function TemporalCreateComposer({
     >
       <div
         ref={dialogRef}
-        className="temporal-create-composer"
+        className={`temporal-create-composer is-${session.surface}`}
         data-temporal-create="composer"
+        data-temporal-create-surface={session.surface}
         role="dialog"
         aria-modal="true"
         aria-labelledby={dialogTitleId}
@@ -197,181 +273,164 @@ export function TemporalCreateComposer({
         style={style}
       >
         <div className="temporal-create-composer__header">
-          <div>
+          <div className="temporal-create-composer__heading-copy">
             <span className="temporal-create-composer__eyebrow">
               {t(($) => $.common.home.timeline.create.draft)}
             </span>
-            <h2 id={dialogTitleId}>{t(($) => $.common.home.timeline.create.title)}</h2>
+            <h2 id={dialogTitleId}>{surfaceTitle}</h2>
+            {session.surface !== 'quick' ? (
+              <p>{t(($) => $.common.home.timeline.create.surface.description)}</p>
+            ) : null}
           </div>
-          <button
-            className="temporal-create-composer__close"
-            type="button"
-            disabled={pending}
-            onClick={onRequestClose}
-            aria-label={t(($) => $.common.home.timeline.create.close)}
-          >
-            ×
-          </button>
+          <div className="temporal-create-composer__header-actions">
+            {session.surface === 'expanded' ? (
+              <button
+                type="button"
+                className="temporal-create-surface-action"
+                onClick={() => onSurfaceChange('full')}
+              >
+                {t(($) => $.common.home.timeline.create.surface.openFull)}
+              </button>
+            ) : null}
+            {session.surface === 'full' ? (
+              <button
+                type="button"
+                className="temporal-create-surface-action"
+                onClick={() => onSurfaceChange('expanded')}
+              >
+                {t(($) => $.common.home.timeline.create.surface.backExpanded)}
+              </button>
+            ) : null}
+            <button
+              className="temporal-create-composer__close"
+              type="button"
+              disabled={pending}
+              onClick={onRequestClose}
+              aria-label={t(($) => $.common.home.timeline.create.close)}
+            >
+              ×
+            </button>
+          </div>
         </div>
 
-        <div className="temporal-create-composer__body">
-          <label htmlFor={titleId}>{t(($) => $.common.home.timeline.create.titleLabel)}</label>
+        <form className="temporal-create-composer__body" onSubmit={submitForm}>
+          <label className="temporal-create-title-label" htmlFor={titleId}>
+            {t(($) => $.common.home.timeline.create.titleLabel)}
+          </label>
           <input
             ref={titleRef}
             id={titleId}
+            className="temporal-create-title-input"
             data-create-path="title"
             name="temporal-create-title"
             type="text"
             value={fields.title}
             onChange={(event) => onPatch({ title: event.currentTarget.value })}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                onSubmit();
-              }
-            }}
             placeholder={t(($) => $.common.home.timeline.create.titlePlaceholder)}
             autoComplete="off"
             spellCheck="true"
           />
-          {fieldError('title')}
+          {renderError('title')}
 
-          <div className="temporal-create-segmented" role="radiogroup" aria-label={t(($) => $.common.home.timeline.create.kind.label)}>
-            {(['activity', 'event'] as const).map((kind) => (
-              <button
-                key={kind}
-                type="button"
-                role="radio"
-                aria-checked={fields.kind === kind}
-                className={fields.kind === kind ? 'is-active' : ''}
-                onClick={() =>
-                  onPatch({
-                    kind,
-                    ...(kind === 'event' && fields.timeSemantics === 'unscheduled'
-                      ? { timeSemantics: 'timed' as const }
-                      : {}),
-                  })
-                }
-              >
-                {kind === 'activity'
-                  ? t(($) => $.common.home.timeline.create.kind.activity)
-                  : t(($) => $.common.home.timeline.create.kind.event)}
-              </button>
-            ))}
-          </div>
+          <TemporalCreateCoreFields
+            fields={fields}
+            contexts={contexts}
+            onPatch={onPatch}
+            renderError={renderError}
+          />
 
-          <div className="temporal-create-segmented is-secondary" role="radiogroup" aria-label={t(($) => $.common.home.timeline.create.timeSemantics.label)} data-create-path="timeSemantics">
-            {(['timed', 'all-day', 'unscheduled'] as const).map((semantics) => (
-              <button
-                key={semantics}
-                type="button"
-                role="radio"
-                aria-checked={fields.timeSemantics === semantics}
-                disabled={fields.kind === 'event' && semantics === 'unscheduled'}
-                className={fields.timeSemantics === semantics ? 'is-active' : ''}
-                onClick={() => onPatch({ timeSemantics: semantics })}
-              >
-                {semantics === 'timed'
-                  ? t(($) => $.common.home.timeline.create.timeSemantics.timed)
-                  : semantics === 'all-day'
-                    ? t(($) => $.common.home.timeline.create.timeSemantics.allDay)
-                    : t(($) => $.common.home.timeline.create.timeSemantics.unscheduled)}
-              </button>
-            ))}
-          </div>
-          {fieldError('timeSemantics')}
+          {session.surface === 'quick' ? (
+            <button
+              className="temporal-create-details-toggle"
+              type="button"
+              onClick={() => onSurfaceChange('expanded')}
+            >
+              <span>{t(($) => $.common.home.timeline.create.details.show)}</span>
+              <span aria-hidden="true">→</span>
+            </button>
+          ) : null}
 
-          <div className="temporal-create-temporal-row">
-            <label className="temporal-create-control">
-              <span>{t(($) => $.common.home.timeline.create.date)}</span>
-              <input data-create-path="date" type="date" value={fields.date} onChange={(event) => onPatch({ date: event.currentTarget.value })} />
-              {fieldError('date')}
-            </label>
-            {fields.timeSemantics === 'timed' ? (
-              <>
-                <label className="temporal-create-control">
-                  <span>{t(($) => $.common.home.timeline.create.start)}</span>
-                  <input data-create-path="startTime" type="time" step="300" value={fields.startTime} onChange={(event) => onPatch({ startTime: event.currentTarget.value })} />
-                  {fieldError('startTime')}
-                </label>
-                <label className="temporal-create-control">
-                  <span>{t(($) => $.common.home.timeline.create.duration)}</span>
-                  <select data-create-path="durationMinutes" value={fields.durationMinutes} onChange={(event) => onPatch({ durationMinutes: Number(event.currentTarget.value) })}>
-                    {[15, 30, 45, 60, 90, 120, 180].map((minutes) => (
-                      <option key={minutes} value={minutes}>{minutes < 60 ? `${minutes} min` : minutes % 60 === 0 ? `${minutes / 60} h` : `${Math.floor(minutes / 60)} h ${minutes % 60} min`}</option>
-                    ))}
-                  </select>
-                  {fieldError('durationMinutes')}
-                </label>
-              </>
+          <TemporalCreateAdvancedFields
+            fields={fields}
+            contexts={contexts}
+            depth={session.surface}
+            onPatch={onPatch}
+            renderError={renderError}
+          />
+
+          <div className="temporal-create-intent-summary" aria-live="polite">
+            <span className="is-kind">
+              {fields.kind === 'activity'
+                ? t(($) => $.common.home.timeline.create.kind.activity)
+                : t(($) => $.common.home.timeline.create.kind.event)}
+            </span>
+            {constraintLabel ? <span>{constraintLabel}</span> : null}
+            {fields.recurrence.frequency !== 'none' ? (
+              <span>
+                {t(
+                  ($) => $.common.home.timeline.create.recurrence.recurringBadge,
+                )}
+              </span>
+            ) : null}
+            {fields.timeSemantics === 'timed' && !constraintLabel ? (
+              <span>{`${fields.date} · ${fields.startTime} · ${fields.durationMinutes} min`}</span>
+            ) : fields.timeSemantics === 'all-day' ? (
+              <span>{`${fields.date} · ${t(($) => $.common.home.timeline.create.timeSemantics.allDay)}`}</span>
             ) : null}
           </div>
 
-          <label className="temporal-create-control">
-            <span>{t(($) => $.common.home.timeline.create.context)}</span>
-            <select data-create-path="contextId" value={fields.contextId} onChange={(event) => onPatch({ contextId: event.currentTarget.value })}>
-              {contexts.map((context) => <option key={context.id} value={context.id}>{context.label}</option>)}
-            </select>
-          </label>
-
-          <button className="temporal-create-details-toggle" type="button" aria-expanded={session.detailsOpen} onClick={onToggleDetails}>
-            {session.detailsOpen
-              ? t(($) => $.common.home.timeline.create.details.hide)
-              : t(($) => $.common.home.timeline.create.details.show)}
-          </button>
-
-          {session.detailsOpen ? (
-            <div className="temporal-create-details">
-              {fields.timeSemantics === 'timed' ? (
-                <>
-                  <div className="temporal-create-segmented is-secondary" role="radiogroup" aria-label={t(($) => $.common.home.timeline.create.timeMode.label)}>
-                    {(['floating', 'zoned'] as const).map((mode) => (
-                      <button key={mode} type="button" role="radio" aria-checked={fields.timeMode === mode} className={fields.timeMode === mode ? 'is-active' : ''} onClick={() => onPatch({ timeMode: mode })}>
-                        {mode === 'floating'
-                          ? t(($) => $.common.home.timeline.create.timeMode.floating)
-                          : t(($) => $.common.home.timeline.create.timeMode.zoned)}
-                      </button>
-                    ))}
-                  </div>
-                  {fields.timeMode === 'zoned' ? (
-                    <label className="temporal-create-control">
-                      <span>{t(($) => $.common.home.timeline.create.timeZone)}</span>
-                      <input data-create-path="timeZoneId" type="text" value={fields.timeZoneId} onChange={(event) => onPatch({ timeZoneId: event.currentTarget.value })} autoComplete="off" />
-                      {fieldError('timeZoneId')}
-                    </label>
-                  ) : null}
-                </>
-              ) : null}
-              <label className="temporal-create-control">
-                <span>{t(($) => $.common.home.timeline.create.notes)}</span>
-                <textarea value={fields.notes} rows={3} onChange={(event) => onPatch({ notes: event.currentTarget.value })} placeholder={t(($) => $.common.home.timeline.create.notesPlaceholder)} />
-              </label>
+          {failureMessage ? (
+            <div className="temporal-create-operation-error" role="alert">
+              {failureMessage}
             </div>
           ) : null}
 
-          <div className="temporal-create-preview-summary" aria-live="polite">
-            <span>{fields.kind === 'activity' ? t(($) => $.common.home.timeline.create.kind.activity) : t(($) => $.common.home.timeline.create.kind.event)}</span>
-            <b>·</b>
-            <span>{fields.timeSemantics === 'unscheduled' ? t(($) => $.common.home.timeline.create.preview.unscheduled) : fields.timeSemantics === 'all-day' ? `${fields.date} · ${t(($) => $.common.home.timeline.create.timeSemantics.allDay)}` : `${fields.date} · ${fields.startTime} · ${fields.durationMinutes} min`}</span>
-          </div>
-
-          {failureMessage ? <div className="temporal-create-operation-error" role="alert">{failureMessage}</div> : null}
-
           <div className="temporal-create-actions">
-            <button type="button" disabled={pending} onClick={onRequestClose}>{t(($) => $.common.home.timeline.create.cancel)}</button>
-            <button className="is-primary" type="button" disabled={pending} onClick={onSubmit}>{pending ? t(($) => $.common.home.timeline.create.creating) : t(($) => $.common.home.timeline.create.submit)}</button>
+            {session.surface !== 'quick' ? (
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => onSurfaceChange('quick')}
+              >
+                {t(($) => $.common.home.timeline.create.surface.compact)}
+              </button>
+            ) : null}
+            <button type="button" disabled={pending} onClick={onRequestClose}>
+              {t(($) => $.common.home.timeline.create.cancel)}
+            </button>
+            <button className="is-primary" type="submit" disabled={pending}>
+              {pending
+                ? t(($) => $.common.home.timeline.create.creating)
+                : t(($) => $.common.home.timeline.create.submit)}
+            </button>
           </div>
-        </div>
+        </form>
 
         {session.closeDecision === 'confirm-discard' ? (
-          <div className="temporal-create-discard" role="alert" aria-describedby={discardDescriptionId}>
+          <div
+            className="temporal-create-discard"
+            role="alert"
+            aria-describedby={discardDescriptionId}
+          >
             <div>
-              <strong>{t(($) => $.common.home.timeline.create.discardTitle)}</strong>
-              <p id={discardDescriptionId}>{t(($) => $.common.home.timeline.create.discardBody)}</p>
+              <strong>
+                {t(($) => $.common.home.timeline.create.discardTitle)}
+              </strong>
+              <p id={discardDescriptionId}>
+                {t(($) => $.common.home.timeline.create.discardBody)}
+              </p>
             </div>
             <div className="temporal-create-discard__actions">
-              <button ref={continueRef} type="button" onClick={continueEditing}>{t(($) => $.common.home.timeline.create.continueEditing)}</button>
-              <button className="temporal-create-discard__destructive" type="button" onClick={onDiscard}>{t(($) => $.common.home.timeline.create.discard)}</button>
+              <button ref={continueRef} type="button" onClick={continueEditing}>
+                {t(($) => $.common.home.timeline.create.continueEditing)}
+              </button>
+              <button
+                className="temporal-create-discard__destructive"
+                type="button"
+                onClick={onDiscard}
+              >
+                {t(($) => $.common.home.timeline.create.discard)}
+              </button>
             </div>
           </div>
         ) : null}
