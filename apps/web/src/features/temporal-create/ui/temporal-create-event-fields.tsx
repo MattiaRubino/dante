@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type {
@@ -5,7 +6,9 @@ import type {
   TemporalCreateSurface,
 } from '../model/temporal-create-session';
 import {
+  TEMPORAL_CREATE_BUFFER_OPTIONS,
   temporalCreateDurationFromEndDateTime,
+  temporalCreateDurationLabel,
   temporalCreateEndDateTime,
 } from './temporal-create-field-shared';
 
@@ -13,12 +16,14 @@ type EventFieldsProps = Readonly<{
   fields: TemporalCreateFields;
   depth: TemporalCreateSurface;
   onPatch: (patch: Partial<TemporalCreateFields>) => void;
+  renderError: (path: string) => ReactNode;
 }>;
 
 export function TemporalCreateEventFields({
   fields,
   depth,
   onPatch,
+  renderError,
 }: EventFieldsProps) {
   const { t } = useTranslation('common');
   const event = fields.event;
@@ -177,16 +182,81 @@ export function TemporalCreateEventFields({
       {depth === 'full' ? (
         <>
           <div className="temporal-create-divider" />
+          <div className="temporal-create-section__heading is-subsection">
+            <div>
+              <h4>{t(($) => $.common.home.timeline.create.eventDetails.intentTitle)}</h4>
+              <p>{t(($) => $.common.home.timeline.create.eventDetails.intentDescription)}</p>
+            </div>
+          </div>
           <div className="temporal-create-grid two">
             <label className="temporal-create-control">
+              <span>{t(($) => $.common.home.timeline.create.eventDetails.purpose)}</span>
+              <textarea
+                rows={3}
+                value={event.purpose}
+                onChange={(inputEvent) =>
+                  patchEvent({ purpose: inputEvent.currentTarget.value })
+                }
+                placeholder={t(
+                  ($) => $.common.home.timeline.create.eventDetails.purposePlaceholder,
+                )}
+              />
+            </label>
+            <label className="temporal-create-control">
               <span>
-                {t(($) => $.common.home.timeline.create.integrations.participants)}
+                {t(($) => $.common.home.timeline.create.eventDetails.expectedOutcome)}
               </span>
               <textarea
                 rows={3}
-                value={event.participants}
+                value={event.expectedOutcome}
                 onChange={(inputEvent) =>
-                  patchEvent({ participants: inputEvent.currentTarget.value })
+                  patchEvent({ expectedOutcome: inputEvent.currentTarget.value })
+                }
+                placeholder={t(
+                  ($) =>
+                    $.common.home.timeline.create.eventDetails
+                      .expectedOutcomePlaceholder,
+                )}
+              />
+            </label>
+          </div>
+          <label className="temporal-create-control">
+            <span>{t(($) => $.common.home.timeline.create.eventDetails.agenda)}</span>
+            <textarea
+              rows={4}
+              value={event.agenda}
+              onChange={(inputEvent) =>
+                patchEvent({ agenda: inputEvent.currentTarget.value })
+              }
+              placeholder={t(
+                ($) => $.common.home.timeline.create.eventDetails.agendaPlaceholder,
+              )}
+            />
+          </label>
+          <label className="temporal-create-checkline">
+            <input
+              type="checkbox"
+              checked={event.decisionRequired}
+              onChange={(inputEvent) =>
+                patchEvent({ decisionRequired: inputEvent.currentTarget.checked })
+              }
+            />
+            <span>
+              {t(($) => $.common.home.timeline.create.eventDetails.decisionRequired)}
+            </span>
+          </label>
+
+          <div className="temporal-create-divider" />
+          <div className="temporal-create-grid two">
+            <label className="temporal-create-control">
+              <span>
+                {t(($) => $.common.home.timeline.create.integrations.requiredParticipants)}
+              </span>
+              <textarea
+                rows={3}
+                value={event.requiredParticipants}
+                onChange={(inputEvent) =>
+                  patchEvent({ requiredParticipants: inputEvent.currentTarget.value })
                 }
                 placeholder={t(
                   ($) =>
@@ -195,6 +265,25 @@ export function TemporalCreateEventFields({
                 )}
               />
             </label>
+            <label className="temporal-create-control">
+              <span>
+                {t(($) => $.common.home.timeline.create.integrations.optionalParticipants)}
+              </span>
+              <textarea
+                rows={3}
+                value={event.optionalParticipants}
+                onChange={(inputEvent) =>
+                  patchEvent({ optionalParticipants: inputEvent.currentTarget.value })
+                }
+                placeholder={t(
+                  ($) =>
+                    $.common.home.timeline.create.integrations
+                      .participantsPlaceholder,
+                )}
+              />
+            </label>
+          </div>
+          <div className="temporal-create-grid two">
             <label className="temporal-create-control">
               <span>
                 {t(($) => $.common.home.timeline.create.integrations.resources)}
@@ -212,7 +301,58 @@ export function TemporalCreateEventFields({
                 )}
               />
             </label>
+            <label className="temporal-create-control">
+              <span>{t(($) => $.common.home.timeline.create.integrations.preRead)}</span>
+              <textarea
+                rows={3}
+                value={event.preRead}
+                onChange={(inputEvent) =>
+                  patchEvent({ preRead: inputEvent.currentTarget.value })
+                }
+                placeholder={t(
+                  ($) => $.common.home.timeline.create.integrations.preReadPlaceholder,
+                )}
+              />
+            </label>
           </div>
+
+          <div
+            className="temporal-create-grid two"
+            data-create-path="event.buffers"
+          >
+            <label className="temporal-create-control">
+              <span>{t(($) => $.common.home.timeline.create.eventDetails.preparation)}</span>
+              <select
+                value={event.preparationMinutes}
+                onChange={(inputEvent) =>
+                  patchEvent({ preparationMinutes: Number(inputEvent.currentTarget.value) })
+                }
+              >
+                {TEMPORAL_CREATE_BUFFER_OPTIONS.map((value) => (
+                  <option key={value} value={value}>
+                    {temporalCreateDurationLabel(value)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="temporal-create-control">
+              <span>{t(($) => $.common.home.timeline.create.eventDetails.recovery)}</span>
+              <select
+                value={event.recoveryMinutes}
+                onChange={(inputEvent) =>
+                  patchEvent({ recoveryMinutes: Number(inputEvent.currentTarget.value) })
+                }
+              >
+                {TEMPORAL_CREATE_BUFFER_OPTIONS.map((value) => (
+                  <option key={value} value={value}>
+                    {temporalCreateDurationLabel(value)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {renderError('event.buffers')}
+          </div>
+
           <label className="temporal-create-control">
             <span>
               {t(($) => $.common.home.timeline.create.integrations.conference)}
