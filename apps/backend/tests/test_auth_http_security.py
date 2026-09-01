@@ -138,7 +138,7 @@ async def test_valid_first_party_json_mutation_reaches_application() -> None:
 
 
 @pytest.mark.asyncio
-async def test_apple_callback_is_the_reviewed_external_browser_ingress_exception() -> None:
+async def test_apple_callback_is_external_browser_proof_exception_but_requires_form_media() -> None:
     recorder = _RecorderApp()
     middleware = BrowserAuthSecurityMiddleware(
         cast(ASGIApp, recorder),
@@ -149,12 +149,56 @@ async def test_apple_callback_is_the_reviewed_external_browser_ingress_exception
         middleware,
         _scope(
             path="/api/v1/auth/apple/callback",
-            headers=((b"content-type", b"application/x-www-form-urlencoded"),),
+            headers=((b"content-type", b"application/x-www-form-urlencoded; charset=utf-8"),),
         ),
         [{"type": "http.request", "body": b"state=opaque", "more_body": False}],
     )
 
     assert _status(sent) == 204
+    assert recorder.calls == 1
+
+    rejected, receive_calls = await _invoke(
+        middleware,
+        _scope(
+            path="/api/v1/auth/apple/callback",
+            headers=((b"content-type", b"application/json"),),
+        ),
+        [{"type": "http.request", "body": b"{}", "more_body": False}],
+    )
+    assert _status(rejected) == 400
+    assert receive_calls == 0
+    assert recorder.calls == 1
+
+
+@pytest.mark.asyncio
+async def test_apple_notifications_bypass_browser_proof_only_for_json() -> None:
+    recorder = _RecorderApp()
+    middleware = BrowserAuthSecurityMiddleware(
+        cast(ASGIApp, recorder),
+        canonical_web_origin=_CANONICAL_ORIGIN,
+    )
+
+    accepted, _receive_calls = await _invoke(
+        middleware,
+        _scope(
+            path="/api/v1/auth/apple/notifications",
+            headers=((b"content-type", b"application/json"),),
+        ),
+        [{"type": "http.request", "body": b'{"payload":"signed"}', "more_body": False}],
+    )
+    assert _status(accepted) == 204
+    assert recorder.calls == 1
+
+    rejected, receive_calls = await _invoke(
+        middleware,
+        _scope(
+            path="/api/v1/auth/apple/notifications",
+            headers=((b"content-type", b"text/plain"),),
+        ),
+        [{"type": "http.request", "body": b"signed", "more_body": False}],
+    )
+    assert _status(rejected) == 400
+    assert receive_calls == 0
     assert recorder.calls == 1
 
 
