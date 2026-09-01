@@ -46,18 +46,20 @@ function authenticatedSession() {
   };
 }
 
+function authenticationProviderMethod() {
+  return {
+    external_identity_ref: EXTERNAL_IDENTITY_REF,
+    provider_code: 'google',
+    provider_email_address: 'person@example.com',
+    provider_email_private: false,
+  };
+}
+
 function authenticationMethods() {
   return {
     active_passkey_count: 2,
     password_established: true,
-    providers: [
-      {
-        external_identity_ref: EXTERNAL_IDENTITY_REF,
-        provider_code: 'google',
-        provider_email_address: 'person@example.com',
-        provider_email_private: false,
-      },
-    ],
+    providers: [authenticationProviderMethod()],
     recovery_eligible_email_count: 1,
   };
 }
@@ -311,7 +313,7 @@ describe('@dante/api-client governed boundary', () => {
             ...authenticationMethods(),
             providers: [
               {
-                ...authenticationMethods().providers[0],
+                ...authenticationProviderMethod(),
                 provider_subject: 'must-never-be-public',
               },
             ],
