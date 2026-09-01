@@ -5,7 +5,7 @@
 
 This file summarizes current accepted technical decisions. Detailed rationale and constraints live in linked Domain/Logical/Physical/Engineering/Frontend Foundation sources and ADRs. Historical phase-time status does not override later closure/integration evidence.
 
-Branch-local AI architecture is tracked here only as **current unmerged design context**, not promoted into an accepted implementation technology decision by this register. AI-02.1 v0.5 structural acceptance fixes responsibility contracts; AI-03 is active for Context/Retrieval/Memory while concrete provider/runtime/persistence technologies remain open.
+Branch-local AI architecture is tracked here only as **current unmerged design context**, not promoted into an accepted implementation technology decision by this register. AI-02.1 v0.5 and AI-03A Full Context Architecture are structurally accepted responsibility contracts; AI-03B Retrieval + Memory is active while concrete provider/runtime/retrieval/persistence technologies remain open.
 
 ## TD-01 — Canonical persistence
 
@@ -53,6 +53,8 @@ Selected target:
 - PgBouncer 1.25.2 target posture.
 
 Current repository-owned PostgreSQL 18.6 image preserves the selected PostGIS/pgvector envelope. PgBouncer activation remains tied to concrete validation/need.
+
+The existence of native FTS / `pg_trgm` / `pgvector` capability does **not** constitute AI-03B activation, index design or retrieval-architecture selection. Those remain evidence-driven downstream decisions.
 
 ## TD-03 — Offline/sync
 
@@ -112,6 +114,8 @@ The historical S3 target remains valid phase-time Physical selection evidence. I
 
 Recovery copies remain noncanonical and anti-resurrection obligations remain active.
 
+AI-03A explicitly inherits this anti-resurrection rule: future durable embeddings/summaries/indexes/caches/provider-state derivatives cannot regain semantic eligibility merely because old bytes reappear after restore.
+
 ## TD-07 — Solver
 
 **ACCEPTED TARGET / TRIGGER-BASED ACTIVATION**
@@ -139,7 +143,7 @@ Operational telemetry is privacy-minimized and noncanonical.
 TELEMETRY != AUDIT
 ```
 
-AI traces/prompts/tool results are not automatically safe to export merely because an observability backend exists; purpose/privacy/redaction rules remain applicable.
+AI traces/prompts/ContextManifests/tool results are not automatically safe to export merely because an observability backend exists; purpose/privacy/redaction rules remain applicable.
 
 ## TD-09 — Repository strategy and root ownership
 
@@ -181,7 +185,7 @@ Capability-first modular monolith.
 - private module implementation is not a public interface;
 - cross-module ACID transaction allowed when semantics require it.
 
-AI-02.1 responsibility boundaries do not imply one microservice/container per box. Any future extraction requires measured evidence.
+AI-02.1 and AI-03A responsibility boundaries do not imply one microservice/container per box or one module/table per Context contract. Any future extraction requires measured evidence.
 
 ## TD-11 — Frontend application architecture
 
@@ -478,7 +482,17 @@ AI-02  Intelligence Runtime Architecture
 
 AI-03  Context / Retrieval / Memory
        ACTIVE
-       current macro-phase AI-03A Full Context Architecture
+
+       AI-03A Full Context Architecture
+       CLOSED / STRUCTURALLY ACCEPTED
+       initial candidate FAIL → 9 hardenings → hardened candidate STRUCTURAL PASS
+       C01..C29 accepted
+
+       AI-03B Retrieval + Memory Architecture
+       ACTIVE / CURRENT
+
+       AI-03C Destructive Validation + Materialization Blueprint
+       FUTURE
 
 AI-04  Productionization Architecture
        FUTURE
@@ -487,7 +501,42 @@ AI-05  Whole-System Acceptance + Implementation Blueprint
        FUTURE
 ```
 
-This is **not** a new accepted technology stack decision. It records branch-local responsibility boundaries and current design sequencing while concrete provider/runtime/persistence technologies remain open.
+This is **not** a new accepted technology stack decision. It records branch-local responsibility boundaries and current design sequencing while concrete provider/runtime/retrieval/persistence technologies remain open.
+
+AI-03A accepted Context contracts are:
+
+```text
+ContextPlan
+InformationNeed
+ContextStrategy
+ContextFragment
+ContextReadiness
+ConsumerContext
+ContextManifest
++ inherited BasisManifest
+```
+
+Important accepted Context boundaries include:
+
+```text
+Context != canonical reality
+Context != Retrieval != Memory
+Reality Scope is explicit
+Scenario A != Scenario B != canonical current
+Source Standing != Domain Authority
+DATA != INSTRUCTION
+user-originated content != user instruction automatically
+model-discovered need may refine != may widen WorkContract/policy scope
+Interaction Session continuity != provider-context continuity
+WorkContract propagation != parent-context inheritance
+ConsumerContext != ContextManifest
+ContextManifest != BasisManifest
+ContextReadiness is consumer-specific and non-monotonic
+cache hit != current eligibility
+retired source != eligible derivative after restore
+```
+
+AI-03A closure required no Domain/Logical/Physical/PostgreSQL/Alembic change and claims no implementation PASS.
 
 Current structural constraints relevant to future technical selection include:
 
@@ -504,13 +553,15 @@ policy mesh rather than model-selected authorization
 safe publication rather than raw sensitive provider stream
 PostgreSQL remains sole canonical persistence/material-history authority
 search/vector/cache/provider memory remain noncanonical
+AI-03A Context contract is fixed upstream for AI-03B
 AI-03 materialization follows demonstrated semantic need + destructive validation
 ```
 
-AI-03 current authority:
+Current AI-03 authority:
 
 ```text
 docs/architecture/dante-ai-03-context-retrieval-memory.md
+docs/architecture/dante-ai-03a-full-context-architecture.md
 docs/workstreams/ai-architecture.md
 ```
 
@@ -531,12 +582,18 @@ exact Execution Environment technology
 local model family/size/server
 conversation persistence physical form
 Run/working persistence physical form
+memory admission/persistence physical form
 embedding model / dimensions
 pgvector/FTS activation for AI retrieval
-chunk/summary/adaptive-memory persistence
+HNSW / IVFFlat design
+chunk/document retrieval schema
+reranker / hybrid retrieval implementation
+summary/compaction/adaptive-memory persistence
 provider thread/cache strategy
-AI-03 context/retrieval/memory physical architecture
+AI-03 retrieval/memory physical architecture
 ```
+
+No such choice is promoted to accepted technology merely by AI-03B becoming active.
 
 ## Selected technologies not to reintroduce casually
 
