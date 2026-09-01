@@ -99,19 +99,20 @@ export function TemporalCreateComposer({
   const closeAttemptFocusRef = useRef<HTMLElement | null>(null);
   const fields = session.draft.current;
   const pending = lifecycle === 'pending';
+  const discardPending = session.closeDecision === 'confirm-discard';
 
   useLayoutEffect(() => {
     titleRef.current?.focus();
   }, []);
 
   useLayoutEffect(() => {
-    if (session.closeDecision === 'confirm-discard') {
+    if (discardPending) {
       continueRef.current?.focus();
     }
-  }, [session.closeDecision]);
+  }, [discardPending]);
 
   useEffect(() => {
-    if (issues.length === 0 || session.closeDecision === 'confirm-discard') {
+    if (issues.length === 0 || discardPending) {
       return;
     }
     const firstPath = issues[0]?.path[0];
@@ -125,7 +126,7 @@ export function TemporalCreateComposer({
       }
     });
     return () => cancelAnimationFrame(frame);
-  }, [issues, session.closeDecision, session.surface]);
+  }, [discardPending, issues, session.surface]);
 
   const rememberCloseAttemptFocus = () => {
     const active = document.activeElement;
@@ -156,7 +157,7 @@ export function TemporalCreateComposer({
     if (event.key === 'Escape') {
       event.preventDefault();
       event.stopPropagation();
-      if (session.closeDecision === 'confirm-discard') {
+      if (discardPending) {
         continueEditing();
       } else if (!pending) {
         requestCloseFromCurrentFocus();
@@ -167,10 +168,7 @@ export function TemporalCreateComposer({
     if (event.key !== 'Tab') {
       return;
     }
-    const root =
-      session.closeDecision === 'confirm-discard'
-        ? discardRef.current
-        : dialogRef.current;
+    const root = discardPending ? discardRef.current : dialogRef.current;
     if (!root) {
       return;
     }
@@ -297,7 +295,10 @@ export function TemporalCreateComposer({
         onKeyDown={handleKeyDown}
         style={style}
       >
-        <div className="temporal-create-composer__header">
+        <div
+          className="temporal-create-composer__header"
+          inert={discardPending || undefined}
+        >
           <div className="temporal-create-composer__heading-copy">
             <span className="temporal-create-composer__eyebrow">
               {t(($) => $.common.home.timeline.create.draft)}
@@ -338,7 +339,11 @@ export function TemporalCreateComposer({
           </div>
         </div>
 
-        <form className="temporal-create-composer__body" onSubmit={submitForm}>
+        <form
+          className="temporal-create-composer__body"
+          inert={discardPending || undefined}
+          onSubmit={submitForm}
+        >
           <label className="temporal-create-title-label" htmlFor={titleId}>
             {t(($) => $.common.home.timeline.create.titleLabel)}
           </label>
@@ -434,7 +439,7 @@ export function TemporalCreateComposer({
           </div>
         </form>
 
-        {session.closeDecision === 'confirm-discard' ? (
+        {discardPending ? (
           <div
             ref={discardRef}
             className="temporal-create-discard"
