@@ -5,15 +5,15 @@
 **Branch:** `feature/home-react`  
 **Scope stop:** complete production-grade frontend/product behavior before real backend/API/database/provider/LLM integration.
 
-This roadmap replaces the older `WF0 -> WF8` sequencing. That sequence is no longer current because WR0-WR2 materially changed the product model and the implementation method moved to complete question-driven mini-verticals.
+This roadmap replaces the older `WF0 -> WF8` sequencing. It also records that the broad workspace/module uncertainty research has already been completed; future chats must not restart it from zero.
 
 ## 1. Delivery rule
 
-World Focus is built one complete functional vertical at a time.
+World Focus is built one complete functional/platform slice at a time.
 
 ```text
-authority + semantics
--> simulations / reverse engineering
+authority + already-closed evidence
+-> focused pressure only for genuinely open decisions
 -> external product + technology research where relevant
 -> architecture decision
 -> complete frontend implementation
@@ -24,10 +24,10 @@ authority + semantics
 -> fixes
 -> explicit user acceptance
 -> freeze
--> next vertical
+-> next slice
 ```
 
-Do not build all models/services first and UI later. Do not open several broad feature tracks in parallel.
+Do not build all models/services first and UI later. Do not open several broad feature tracks in parallel. Do not redo closed reverse engineering merely because a new chat starts.
 
 ## 2. Completed / established foundation
 
@@ -55,6 +55,35 @@ Established:
 - ornamental WebGL degradation policy;
 - explicit dependency non-adoptions;
 - backend/provider/LLM stop line.
+
+### Workspace/module scenario research — DONE
+
+The original scenario oracle stress-tested the platform against materially different Worlds and explicit future uncertainty, including unknown future Worlds and unknown future specialist modules.
+
+The durable conclusions are retained in:
+
+`world-focus-workspace-scenario-oracle-evidence.md`
+
+Already established:
+
+```text
+one workspace platform, not page-per-World
+no generic WorldItem / Thing semantic root
+finite registered renderer/surface families
+unknown specialist surfaces through controlled extension
+specialist renderer only when reusable primitives materially lose meaning
+stable / adaptive / ephemeral remain distinct
+AI cannot silently mutate stable composition
+DANTE can drive contextual Insight / Explore / deeper-surface intents
+no arbitrary model-generated executable UI
+typed source drill-down on demand
+large-data projections bounded/aggregated before React
+cross-World reuse without canonical duplication
+future stable config must support version/evolution semantics
+sparse and dense Worlds must share the same platform
+```
+
+Do **not** re-run this whole research pass.
 
 ### WR0-WR2 — World product/context reverse engineering — CLOSED
 
@@ -94,19 +123,55 @@ Proves the first real question-driven World projection:
 
 > **What is in motion and where can I continue?**
 
-Engineering is retained. Integrated user visual acceptance is deferred until the next structural product gate establishes DANTE's actual footprint inside the workspace.
+Engineering is retained. Integrated visual acceptance is deferred until the real workspace orchestration/surface footprint exists.
 
-## 3. CURRENT GATE — World contextual DANTE presence / spatial UX
+## 3. CURRENT GATE — World Workspace Platform materialization
 
 This is the only active next World Focus scope.
 
+The target is **inside the frozen rectangular workspace**, not the outer route/sphere/opening/VFX.
+
 ### Goal
 
-Determine how DANTE physically and interactively exists inside World Focus **without copying Home**, before additional dynamic content is composed around a false full-width workspace assumption.
+Materialize the production-grade frontend workspace orchestration already implied and stress-tested by existing research, so chat, contextual DANTE, Insight, Explore, proposals, deeper panels/surfaces and dynamic composition have a coherent shared host.
 
-### Already fixed semantically
+This is not a license to build a speculative plugin framework or enumerate every future surface.
 
-WR2 already defines:
+### Platform responsibilities to materialize as proven necessary
+
+```text
+dynamic composition host
+finite surface/renderer registry
+interaction cursor ownership
+selected projection/source references
+surface open / close / replace / promote semantics
+Insight / Explore / contextual deeper-surface presentation
+World contextual DANTE presence/conversation footprint
+stable / adaptive / ephemeral coexistence
+focus / back / Escape ownership
+responsive/mobile surface mapping
+surface-local error/degraded behavior
+race/generation safety
+performance/resource behavior
+AI unavailable/degraded presentation
+```
+
+### Already fixed; do not reopen
+
+```text
+World != page-per-domain
+World != dashboard ontology
+unknown future modules must extend rather than rewrite
+ModuleKind != Domain owner
+ModuleKind != World question
+no arbitrary AI-generated JSX/HTML/JS
+specialist surfaces only when generic primitives lose meaning
+AI Insight != stable module automatically
+stable content cannot be silently rearranged by adaptive logic
+DANTE can request contextual Insight/Explore/deeper presentation
+```
+
+### DANTE semantic depth already fixed
 
 ```text
 P0 QUIET
@@ -117,40 +182,28 @@ P4 PROPOSAL
 P5 ACTION / RECEIPT
 ```
 
-and:
+Home AI surface is not the World DANTE surface.
+
+### Still genuinely open
+
+Only concrete presentation/orchestration choices that were never frozen should receive fresh focused research/alternatives:
 
 ```text
-World identity
-World relevance
-interaction cursor/session when needed
-authorized purpose-scoped DANTE context
+exact DANTE quiet footprint
+composer/invocation placement
+conversation expansion geometry
+which semantic depth maps to inline / sidecar / overlay / full-workspace
+surface coexistence vs exclusivity
+focus/back/Escape precedence
+responsive/mobile mapping
+exact local state model required by those interactions
 ```
 
-Do not reopen these merely to solve geometry.
+These decisions must be reviewed with the user before visually consequential behavior is frozen, but they do not justify restarting the broad module/workspace architecture study.
 
-### Must be reverse-engineered before code
+### Required pressure during implementation
 
-- persistent vs transient DANTE presence;
-- quiet footprint;
-- composer/invocation placement;
-- long-conversation mode;
-- sidecar/dock/overlay/full-surface alternatives;
-- layout-consuming versus overlay states;
-- minimum remaining dynamic-content area;
-- content reflow/continuity during expansion;
-- contextual selection/deictic interaction;
-- conversation versus Insight;
-- conversation versus Explore;
-- Proposal/confirmation/action receipt states;
-- World switch/run binding;
-- desktop/laptop/tablet/mobile;
-- keyboard/focus/SR/touch/reduced motion;
-- AI unavailable/degraded state;
-- pre-backend shell now versus real runtime later.
-
-### Required product pressure
-
-At minimum:
+Use the already identified contrasting cases:
 
 ```text
 Music
@@ -159,25 +212,39 @@ Travel
 Finance
 Study
 Relationships
+unknown future World
 sparse World
 dense World
+unknown future specialist surface
 quiet DANTE
 long conversation
 Insight
-Proposal/action
+Explore
+Proposal/action presentation
+AI unavailable
+provider stale/partial where relevant
 ```
 
 ### Exit gate
 
-No production World DANTE UI is written until the reverse engineering/alternatives are reviewed with the user.
+Workspace platform behavior must pass:
 
-After implementation, the DANTE footprint must pass automated gates and the user's real-browser functional/visual review before the roadmap advances.
+```text
+automated gates
+assistant real-browser review
+user functional review
+user visual/interaction review
+fixes/rerun
+explicit user OK
+```
 
-## 4. B2 integrated acceptance after DANTE footprint
+before later content slices treat the workspace contract as frozen.
 
-Once the contextual DANTE shell/space contract is frozen:
+## 4. B2 integrated acceptance after workspace platform
 
-1. remount/review Continuity within the real remaining dynamic-content area;
+Once the actual workspace/surface footprint exists:
+
+1. remount/review Continuity within the real dynamic composition area;
 2. verify it behaves as one optional composed answer rather than a fixed page section;
 3. run user functional + visual review;
 4. fix/polish if needed;
@@ -189,9 +256,9 @@ Do not redesign Continuity merely to fill empty space.
 
 Do **not** pre-freeze a long numbered module list now.
 
-After each accepted vertical, choose the next highest-value World question from the Product Contract and re-run the delivery methodology.
+After each accepted slice, choose the next highest-value World question from the Product Contract.
 
-Current candidate families include:
+Candidate families include:
 
 ```text
 Situation
@@ -202,7 +269,7 @@ Evidence / History
 Explore
 Act / Decide
 Trajectory / Comparison when semantically justified
-DANTE Insight/Proposal depth when the contextual surface supports it
+DANTE Insight/Proposal depth as real interactions mature
 ```
 
 Selection depends on:
@@ -212,13 +279,11 @@ Selection depends on:
 - architecture proof value;
 - semantic risk;
 - ability to implement truthfully before backend;
-- interaction with already frozen composition/DANTE behavior.
+- interaction with already frozen workspace/DANTE behavior.
 
-A candidate can be skipped or reordered when new evidence proves another dependency/value path.
+## 6. Dynamic composition maturation
 
-## 6. Dynamic composition milestone
-
-As real output verticals accumulate, implement only the composition machinery proven necessary by those real renderers.
+The composition machinery should be completed incrementally through real renderers, not through an abstract dashboard builder.
 
 Permanent rules:
 
@@ -229,7 +294,7 @@ module kind != World question
 renderer != canonical owner
 ```
 
-The composition system must eventually support:
+The system must support:
 
 - stable user-owned content;
 - bounded adaptive content;
@@ -237,9 +302,10 @@ The composition system must eventually support:
 - sparse Worlds;
 - different density without per-World page branching;
 - responsive behavior based on allocated container space;
-- module-local failure isolation.
+- module/surface-local failure isolation;
+- controlled specialist extension.
 
-Do not introduce a free-coordinate dashboard/grid system until real interaction proves it is necessary.
+Do not introduce a free-coordinate dashboard/grid system until real customization proves it necessary.
 
 ## 7. Personalization milestone
 
@@ -285,6 +351,7 @@ AI unavailable
 multi-actor/privacy
 large history
 same canonical reality in multiple Worlds
+unknown future specialist surface
 ```
 
 If success requires an entire page branch by World identity, the platform has failed.
@@ -299,6 +366,7 @@ Before real backend integration:
 - no backend DTO/DB leakage;
 - no universal `WorldItem`/Thing collapse;
 - no parallel World AI runtime;
+- no arbitrary runtime executable plugin UI;
 - no duplicate global state when local/route/application ownership is sufficient;
 - architecture checks green.
 
@@ -329,7 +397,7 @@ Before real backend integration:
 - no all-life-data load;
 - heavy specialist code lazy where justified;
 - dense World stress;
-- DANTE expansion/conversation does not cause pathological layout/render work;
+- conversation/surface expansion does not cause pathological layout/render work;
 - resource/listener/RAF cleanup;
 - ornamental VFX degrades before interaction quality.
 
@@ -359,10 +427,10 @@ The backend vertical may include as justified:
 - audit/reconciliation;
 - backend contract tests.
 
-The frontend must not need a product/layout rewrite merely to connect these capabilities.
+The frontend must not need a product/workspace rewrite merely to connect these capabilities.
 
 ## 11. Permanent roadmap rule
 
-This roadmap tracks **current sequence and gates**, not speculative feature promises.
+This roadmap tracks current sequence and gates, not speculative feature promises.
 
-Whenever a user acceptance or reverse-engineering result changes the sequence materially, update this roadmap and `world-focus-current-checkpoint.md` immediately so a later chat cannot restart from an obsolete phase plan.
+Whenever a user acceptance or recovered/reverse-engineering result changes sequencing materially, update this roadmap and `world-focus-current-checkpoint.md` immediately so a later chat cannot restart from an obsolete phase plan.
