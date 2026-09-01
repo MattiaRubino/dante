@@ -22,12 +22,6 @@ type WorldFocusWorkspaceProps = Readonly<{
   surfaces?: ReactNode;
 }>;
 
-function getObservedInlineSize(entry: ResizeObserverEntry): number {
-  const boxSize = entry.contentBoxSize;
-  const firstBox = Array.isArray(boxSize) ? boxSize[0] : boxSize;
-  return firstBox?.inlineSize ?? entry.contentRect.width;
-}
-
 /**
  * Owns the persistent rectangular World Focus workspace and only its physical
  * allocation. It measures the space actually granted to this workspace,
@@ -79,7 +73,7 @@ export function WorldFocusWorkspace({
     const observer = new ResizeObserver((entries) => {
       const entry = entries[0];
       if (entry !== undefined) {
-        commitInlineSize(getObservedInlineSize(entry));
+        commitInlineSize(entry.contentRect.width);
       }
     });
     observer.observe(section);
