@@ -55,7 +55,7 @@ Useful pattern:
 
 DANTE conclusion:
 
-Geometric overlay and modal interaction are separate concerns. A popover or a narrow sidecar fallback is not automatically modal. Modal/focused surfaces make the main plane inert; concrete surface verticals remain responsible for their own correct role/label/focus lifecycle.
+Geometric overlay and modal interaction are separate concerns. A popover or a narrow sidecar fallback is not automatically modal. Modal/focused surfaces make every underlying interactive workspace plane inert; concrete surface verticals remain responsible for their own correct role/label/focus lifecycle.
 
 ### MDN — CSS Container Queries
 
@@ -125,9 +125,18 @@ full | split        none | overlay | focus
       +-------+--------+
               |
               v
-MAIN INTERACTION
+BACKGROUND INTERACTION
 interactive | inert
 ```
+
+Each active surface placement also carries its own interaction state:
+
+```text
+placement.interaction
+interactive | inert
+```
+
+That is required because a visible allocated sidecar can remain physically present underneath a blocking layer while being intentionally non-interactive.
 
 ## Why the axes are separate
 
@@ -145,14 +154,20 @@ Therefore:
 mainAllocation = split
 topLayer        = overlay
 mainInteraction = inert
+sidecar         = visible + allocated + inert
+modal           = visible + interactive
 ```
 
-A full-screen Explore surface may similarly sit above a split workspace while preserving the underlying allocation for deterministic restoration:
+The sidecar stays allocated only to preserve visual/layout continuity and deterministic restoration after the modal closes. It is **not** clickable through the modal.
+
+A full-screen Explore surface may similarly sit above a split workspace while preserving the underlying allocation:
 
 ```text
 mainAllocation = split
 topLayer        = focus
 mainInteraction = inert
+sidecar         = visible + allocated + inert
+focus surface   = visible + interactive
 ```
 
 ## Allocation rules
@@ -179,18 +194,20 @@ Rules:
 5. Otherwise the same requested sidecar degrades to non-modal overlay.
 6. At most one overlay/focus surface is active above the workspace stack.
 7. A newer modal makes a narrow overlay sidecar dormant until the modal closes.
-8. A wide split sidecar may remain visible underneath a newer modal/focus layer.
+8. A wide split sidecar may remain visible and allocated underneath a newer modal/focus layer, but it becomes inert while that blocking layer is active.
 9. `route` presentation remains external to workspace geometry.
 10. `inline` content belongs to composition, not the transient surface plane.
+11. Dormant surfaces are inert and are not rendered as competing DOM surfaces.
 
 ## Interaction rules
 
 ```text
-sidecar split                  -> main interactive
-sidecar degraded overlay       -> main interactive
-popover                        -> main interactive
-modal                          -> main inert
-full-screen                    -> main inert
+sidecar split, no blocking layer     -> main interactive, sidecar interactive
+sidecar degraded overlay             -> main interactive, sidecar interactive
+popover                              -> main interactive
+modal                                -> main inert, underlying sidecar inert
+full-screen                          -> main inert, underlying sidecar inert
+active modal/full-screen             -> active surface interactive
 ```
 
 This is deliberately not inferred from visual elevation alone.
@@ -225,6 +242,8 @@ Composition container queries are evaluated against `world-focus-main`, not the 
 
 This allows the exact same World composition to reflow when a sidecar opens without re-running product ranking or introducing World-specific layout code.
 
+Active surface wrappers receive their resolved slot and interaction state. If a blocking modal/focus surface is above a split sidecar, the sidecar wrapper remains in its slot but carries `inert`; the active blocking surface remains interactive.
+
 ## Logical grid vs physical tracks
 
 The planner keeps a logical 12-unit layout contract.
@@ -255,6 +274,12 @@ overflow-x: hidden
 The outer workspace remains clipped as the stable visual/geometry boundary.
 
 Future sidecar implementations should give their own body explicit scroll ownership rather than relying on accidental parent overflow.
+
+## Resilience
+
+The workspace performs an immediate local size measurement and then observes subsequent size changes with `ResizeObserver` when available.
+
+If `ResizeObserver` is unavailable, World Focus keeps the initial measurement and does not crash. This is a degradation path, not a claim that unsupported environments receive live allocation updates.
 
 ## Stress validation
 
@@ -294,15 +319,18 @@ Required invariants include:
 - at most one active overlay;
 - at most one active focus surface;
 - `mainInteraction` is inert iff an active modal/full-screen surface requires it;
+- active sidecars inherit the blocking/background interaction state;
+- active overlay/focus owner remains interactive;
+- dormant placements are inert;
 - same state + same width = same allocation plan.
 
 ### React integration
 
 Integration tests exercise:
 
-- wide sidecar -> split + interactive main;
-- live ResizeObserver contraction -> same sidecar becomes non-modal overlay;
-- split sidecar + newer modal -> sidecar remains allocated, main becomes inert;
+- wide sidecar -> split + interactive main + interactive sidecar;
+- live ResizeObserver contraction -> same sidecar becomes non-modal interactive overlay;
+- split sidecar + newer modal -> sidecar remains allocated but inert, main inert, modal interactive;
 - narrow sidecar + newer modal -> sidecar becomes dormant, modal owns overlay slot.
 
 ## Explicit non-goals
@@ -342,11 +370,12 @@ Code candidate includes:
 - logical 12-unit planning with adaptive physical rendering;
 - deterministic composition stress;
 - workspace allocation resolver;
-- separate main allocation / top layer / main interaction axes;
-- actual workspace measurement through `ResizeObserver`;
+- separate main allocation / top layer / interaction axes;
+- per-placement interaction state;
+- actual workspace measurement through `ResizeObserver` with safe fallback;
 - nested `world-focus-main` container queries;
 - active/dormant surface placement filtering;
-- inert main plane for modal/full-focus allocation;
+- inert main plane and underlying sidecar for modal/full-focus allocation;
 - deterministic allocation and React integration tests.
 
 The slice remains **IMPLEMENTED / AUTOMATED VALIDATION PENDING** until the exact final candidate passes the repository frontend gates.
