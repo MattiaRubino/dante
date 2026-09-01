@@ -1,0 +1,287 @@
+.world-focus-dante-entry {
+  position: absolute;
+  z-index: 2;
+  right: clamp(12px, 2cqi, 20px);
+  bottom: clamp(12px, 2cqi, 20px);
+  pointer-events: auto;
+}
+
+.world-focus-dante-invoke {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 82px;
+  min-height: 44px;
+  padding: 0 13px 0 9px;
+  border: 1px solid color-mix(in srgb, var(--world-focus-accent) 28%, rgba(255, 255, 255, 0.08));
+  border-radius: 999px;
+  color: rgba(244, 247, 255, 0.9);
+  background:
+    linear-gradient(180deg, rgba(18, 22, 42, 0.9), rgba(7, 10, 24, 0.94));
+  box-shadow:
+    0 12px 34px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  font: inherit;
+  cursor: pointer;
+  backdrop-filter: blur(18px);
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    opacity 120ms ease;
+}
+
+.world-focus-dante-invoke:hover {
+  border-color: color-mix(in srgb, var(--world-focus-accent) 48%, rgba(255, 255, 255, 0.1));
+  background:
+    linear-gradient(180deg, rgba(22, 27, 50, 0.94), rgba(9, 12, 28, 0.97));
+  transform: translateY(-1px);
+}
+
+.world-focus-dante-invoke:focus-visible,
+.world-focus-dante-composer-close:focus-visible,
+.world-focus-dante-composer-submit:focus-visible,
+.world-focus-dante-composer-input:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--world-focus-accent) 72%, white);
+  outline-offset: 3px;
+}
+
+.world-focus-dante-entry[data-world-focus-dante-open='true']
+  .world-focus-dante-invoke {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(4px) scale(0.96);
+}
+
+.world-focus-dante-invoke-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid color-mix(in srgb, var(--world-focus-accent) 34%, transparent);
+  border-radius: 50%;
+  color: color-mix(in srgb, var(--world-focus-accent) 58%, white);
+  background: color-mix(in srgb, var(--world-focus-accent) 9%, rgba(255, 255, 255, 0.018));
+  font-size: 0.72rem;
+  font-weight: 760;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.world-focus-dante-invoke-label {
+  font-size: 0.72rem;
+  font-weight: 720;
+  line-height: 1;
+  letter-spacing: 0.08em;
+}
+
+.world-focus-dante-invoke-unavailable {
+  color: rgba(225, 230, 244, 0.5);
+  font-size: 0.78rem;
+  line-height: 1;
+}
+
+.world-focus-dante-composer {
+  position: absolute;
+  right: clamp(12px, 2cqi, 20px);
+  bottom: clamp(12px, 2cqi, 20px);
+  width: min(420px, calc(100% - 24px));
+  max-height: min(420px, calc(100% - 24px));
+  overflow: auto;
+  pointer-events: auto;
+  border: 1px solid color-mix(in srgb, var(--world-focus-accent) 24%, rgba(255, 255, 255, 0.08));
+  border-radius: 20px;
+  color: rgba(242, 246, 255, 0.92);
+  background:
+    radial-gradient(
+      circle at 88% 2%,
+      color-mix(in srgb, var(--world-focus-accent) 12%, transparent),
+      transparent 42%
+    ),
+    linear-gradient(180deg, rgba(14, 18, 36, 0.97), rgba(5, 8, 20, 0.985));
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.46),
+    inset 0 1px 0 rgba(255, 255, 255, 0.055);
+  backdrop-filter: blur(24px);
+}
+
+.world-focus-dante-composer-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 14px 10px 18px;
+}
+
+.world-focus-dante-composer-heading {
+  min-width: 0;
+}
+
+.world-focus-dante-composer-title {
+  margin: 0;
+  color: rgba(248, 250, 255, 0.96);
+  font-size: 0.82rem;
+  font-weight: 760;
+  line-height: 1.2;
+  letter-spacing: 0.1em;
+}
+
+.world-focus-dante-composer-context {
+  margin: 5px 0 0;
+  overflow: hidden;
+  color: rgba(207, 216, 239, 0.54);
+  font-size: 0.72rem;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.world-focus-dante-composer-close,
+.world-focus-dante-composer-submit {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(236, 240, 252, 0.7);
+  background: rgba(255, 255, 255, 0.025);
+  font: inherit;
+  cursor: pointer;
+}
+
+.world-focus-dante-composer-close {
+  margin: -6px -4px 0 0;
+  border-radius: 12px;
+  font-size: 1.15rem;
+}
+
+.world-focus-dante-composer-close:hover,
+.world-focus-dante-composer-submit:hover:not(:disabled) {
+  color: rgba(250, 251, 255, 0.94);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.world-focus-dante-composer-form {
+  padding: 0 18px 18px;
+}
+
+.world-focus-dante-composer-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.world-focus-dante-composer-field {
+  position: relative;
+}
+
+.world-focus-dante-composer-input {
+  display: block;
+  width: 100%;
+  min-height: 104px;
+  max-height: 220px;
+  padding: 13px 56px 13px 14px;
+  resize: vertical;
+  border: 1px solid rgba(255, 255, 255, 0.085);
+  border-radius: 15px;
+  color: rgba(248, 250, 255, 0.94);
+  background: rgba(1, 3, 12, 0.5);
+  font: inherit;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  caret-color: color-mix(in srgb, var(--world-focus-accent) 74%, white);
+}
+
+.world-focus-dante-composer-input::placeholder {
+  color: rgba(201, 210, 234, 0.4);
+}
+
+.world-focus-dante-composer-input:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.world-focus-dante-composer-submit {
+  position: absolute;
+  right: 7px;
+  bottom: 7px;
+  border-radius: 12px;
+  color: color-mix(in srgb, var(--world-focus-accent) 58%, white);
+  background: color-mix(in srgb, var(--world-focus-accent) 10%, rgba(255, 255, 255, 0.025));
+  font-size: 1rem;
+}
+
+.world-focus-dante-composer-submit:disabled {
+  color: rgba(209, 216, 235, 0.3);
+  background: rgba(255, 255, 255, 0.018);
+  cursor: default;
+}
+
+.world-focus-dante-composer-status {
+  margin: 10px 18px 18px;
+  color: rgba(214, 222, 243, 0.62);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.world-focus-dante-composer-form .world-focus-dante-composer-status {
+  margin: 10px 0 0;
+}
+
+@container world-focus-workspace (max-width: 420px) {
+  .world-focus-dante-entry {
+    right: 10px;
+    bottom: 10px;
+  }
+
+  .world-focus-dante-invoke {
+    min-width: 44px;
+    width: 44px;
+    padding: 0;
+  }
+
+  .world-focus-dante-invoke-label,
+  .world-focus-dante-invoke-unavailable {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+
+  .world-focus-dante-composer {
+    right: 10px;
+    bottom: 10px;
+    width: calc(100% - 20px);
+    max-height: calc(100% - 20px);
+    border-radius: 16px;
+  }
+
+  .world-focus-dante-composer-header {
+    padding: 14px 10px 8px 14px;
+  }
+
+  .world-focus-dante-composer-form {
+    padding: 0 14px 14px;
+  }
+
+  .world-focus-dante-composer-input {
+    min-height: 96px;
+    font-size: 0.84rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .world-focus-dante-invoke {
+    transition: none;
+  }
+}
