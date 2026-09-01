@@ -5,6 +5,7 @@
 - **Established:** 2026-09-01
 - **Upstream structural baseline:** AI-02.1 v0.5 / STRUCTURALLY ACCEPTED
 - **AI-03A:** CLOSED / STRUCTURALLY ACCEPTED / FINAL REVALIDATION COMPLETE / 13 HARDENINGS
+- **AI-03B:** CANDIDATE / STRUCTURAL PASS PENDING FINAL INDEPENDENT VALIDATION
 - **Implementation:** NOT STARTED by this document
 - **Database evolution:** NONE AUTHORIZED BY THIS DOCUMENT
 - **Provider/model selection:** OPEN
@@ -61,6 +62,7 @@ AI-03 must be read against the following sources before material architecture de
 - `docs/architecture/ai-production-engineering-state-of-the-art-2026.md`
 - `docs/architecture/dante-ai-02-1-intelligence-reengineering.md`
 - `docs/architecture/dante-ai-03a-full-context-architecture.md`
+- `docs/architecture/dante-ai-03b-retrieval-memory-architecture.md`
 - `docs/architecture/system-overview.md`
 
 Repository truth outranks conversation memory.
@@ -293,7 +295,11 @@ This is architecture/simulation acceptance only, not implementation PASS.
 
 ### AI-03B — Retrieval + Memory Architecture
 
-**Status:** ACTIVE / CURRENT MACRO-PHASE
+**Status:** CANDIDATE / STRUCTURAL PASS PENDING FINAL INDEPENDENT VALIDATION
+
+Durable candidate authority:
+
+- `docs/architecture/dante-ai-03b-retrieval-memory-architecture.md`
 
 Goal: define how candidate information is found under the final AI-03A Context contract and which noncanonical information may legitimately survive.
 
@@ -330,6 +336,7 @@ Interaction Session continuity
 Run / working memory
 compaction/checkpoint state
 derived / adaptive memory
+operational / experience memory
 candidate hypotheses
 provider thread / provider memory / prompt cache
 retrieval representations / embeddings / indexes
@@ -353,6 +360,9 @@ retirement
 redaction
 deletion
 forgetting
+source suppression
+use suppression
+inference disposition
 anti-resurrection
 provider/cache invalidation
 index invalidation
@@ -362,7 +372,25 @@ Principle:
 
 > **Memory survival must be earned. Canonical application memory already belongs to Domain/PostgreSQL and must not be recreated as generic AI memory.**
 
+The candidate additionally fixes:
+
+```text
+RetrievalPlan / RetrievalCandidate separation
+APPROXIMATE != COMPLETE
+candidate count != coverage proof
+permission-safe retrieval universe
+rank/similarity/rerank != Source Standing
+memory recall = governed acquisition
+MODEL REQUEST TO REMEMBER != MEMORY ADMISSION
+rejected inference must not silently resurrect
+memory derivative != independent evidence of its ancestry
+PAST EXPERIENCE != POLICY
+RESTORED BYTES != RESTORED ELIGIBILITY
+```
+
 AI-03B must preserve every accepted AI-03A invariant, including Reality Scope, Runtime Interpretation Frame where material, coverage semantics, model-discovered scope ceiling, governed provider-native acquisition, Context continuity compartments, child-context minimisation, instruction provenance, Source Standing separation, derived-sensitivity closure, non-monotonic readiness, consumer-delivery/transform integrity, anti-resurrection, ConsumerContext/ContextManifest distinction and ContextManifest/BasisManifest separation.
+
+The current candidate has completed DANTE-first design, targeted modern challenger research, reconciliation and a first heavy kill-test. It is not CLOSED until a fresh independent readback/destructive validation treats the candidate PASS as untrusted and fails to find an unresolved structural contradiction.
 
 ### AI-03C — Destructive Validation + Materialization Blueprint
 
@@ -658,6 +686,10 @@ Provider thread state, model memory and prompt cache may be useful but never bec
 
 Audit/evidence needed to explain effects and runtime behavior remains separate from adaptive/personal memory semantics.
 
+### 8.8 Operational/experience memory is bounded noncanonical knowledge
+
+Verified reusable knowledge about a bounded provider/environment/capability/workflow may be useful, but it is not user memory, policy or permanent truth. It requires explicit source/lineage, applicability and revalidation semantics.
+
 ---
 
 ## 9. Privacy, retention and anti-resurrection
@@ -676,6 +708,7 @@ lexical index
 summary
 compacted session state
 derived memory candidate
+operational/experience memory
 cache
 provider thread/memory
 artifact
@@ -849,27 +882,33 @@ Only then may the project move to AI-04 Productionization Architecture.
 Current next action:
 
 ```text
-AI-03B — RETRIEVAL + MEMORY ARCHITECTURE
+AI-03B — FINAL INDEPENDENT RETRIEVAL + MEMORY VALIDATION
 ```
 
-Start by consuming the final accepted AI-03A `C01..C33` contract, then design in one large architecture pass:
+Use the materialized candidate:
+
+- `docs/architecture/dante-ai-03b-retrieval-memory-architecture.md`
+
+Then independently reconstruct the required Retrieval/Memory obligations from Product/Domain/Logical/PostgreSQL/Recovery/AI-02/AI-03A and attack the candidate without treating its first structural PASS as proof.
+
+Required pressure includes at least:
 
 ```text
-retrieval strategy selection and execution
-structured/current/history retrieval
-lexical/fuzzy/semantic/hybrid acquisition
-coverage/currentness/source-reread rules
-permission-aware retrieval
-provider-native/JIT acquisition containment
-large-corpus/document hierarchy
-retrieval evaluation
-
-Interaction / working / derived / provider / retrieval-memory classes
-memory admission and promotion
-correction / contradiction / supersession
-decay / expiry / forgetting
-retirement / deletion / anti-resurrection
-cache / provider / index invalidation
+permission-filtered approximate retrieval / recall collapse
+complete-required vs ANN/hybrid Top-K
+source lifecycle + stale derivatives
+multi-source vs same-lineage fake corroboration
+inference resurrection after user correction
+self-confirming memory loops
+poisoned operational/experience memory
+cross-purpose / cross-actor memory reuse
+provider persistent state after revocation
+long-running Run resume/currentness
+large history / large document corpora / context pressure
+correct non-recall / non-application
+Recovery / anti-resurrection
 ```
 
-Use targeted modern retrieval/memory research as challenger evidence where needed, but do not select physical technologies before the semantic/lifecycle architecture is coherent.
+If a real gap appears, harden the smallest AI-03B boundary and retest. If the candidate survives without unresolved structural contradiction, close AI-03B and only then enter AI-03C.
+
+Do not select or activate physical retrieval/memory technologies before AI-03C classification/materialization evidence.
