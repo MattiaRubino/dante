@@ -26,6 +26,7 @@ import {
 } from '../model/world-focus-transition';
 import { WORLD_FOCUS_VISUAL_VERSION } from '../model/world-focus-visual';
 import { WorldFocusContext } from './world-focus-context';
+import { WorldFocusContinuity } from './world-focus-continuity';
 import { WorldFocusVisualFrame } from './world-focus-visual-frame';
 import { WorldFocusWorkspace } from './world-focus-workspace';
 import './world-focus.css';
@@ -167,7 +168,9 @@ export function WorldFocusPage({
         worldLabel={label}
         status={status}
         context={<WorldFocusContext world={world} />}
-      />
+      >
+        <WorldFocusContinuity worldId={world.id} />
+      </WorldFocusWorkspace>
     </main>
   );
 }
