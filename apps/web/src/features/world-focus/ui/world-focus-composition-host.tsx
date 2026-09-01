@@ -5,33 +5,41 @@ import type { WorldFocusCompositionEntry } from '../model/world-focus-compositio
 import { WorldFocusModuleRegistry } from './world-focus-module-registry';
 import { WorldFocusRenderBoundary } from './world-focus-render-boundary';
 
-export type WorldFocusCompositionRendererProps<Kind extends string = string> =
-  Readonly<{
-    worldId: string;
-    entry: WorldFocusCompositionEntry<Kind>;
-  }>;
+export type WorldFocusCompositionRendererProps<
+  Kind extends string = string,
+  WorldId extends string = string,
+> = Readonly<{
+  worldId: WorldId;
+  entry: WorldFocusCompositionEntry<Kind>;
+}>;
 
-export type WorldFocusCompositionRegistration<Kind extends string = string> =
-  Readonly<{
-    kind: Kind;
-    render: (props: WorldFocusCompositionRendererProps<Kind>) => ReactNode;
-  }>;
+export type WorldFocusCompositionRegistration<
+  Kind extends string = string,
+  WorldId extends string = string,
+> = Readonly<{
+  kind: Kind;
+  render: (
+    props: WorldFocusCompositionRendererProps<Kind, WorldId>,
+  ) => ReactNode;
+}>;
 
-type WorldFocusCompositionHostProps = Readonly<{
-  worldId: string;
+type WorldFocusCompositionHostProps<WorldId extends string = string> = Readonly<{
+  worldId: WorldId;
   entries: readonly WorldFocusCompositionEntry[];
-  registry: WorldFocusModuleRegistry<WorldFocusCompositionRegistration>;
+  registry: WorldFocusModuleRegistry<
+    WorldFocusCompositionRegistration<string, WorldId>
+  >;
 }>;
 
 /**
  * Owns outer placement and isolation for already-resolved World composition.
  * It deliberately does not decide ranking, canonical meaning or authorization.
  */
-export function WorldFocusCompositionHost({
+export function WorldFocusCompositionHost<WorldId extends string = string>({
   worldId,
   entries,
   registry,
-}: WorldFocusCompositionHostProps) {
+}: WorldFocusCompositionHostProps<WorldId>) {
   const { t } = useTranslation('common');
 
   return (
