@@ -1,10 +1,12 @@
 # DANTE — Temporal F0 Application Foundation Contract
 
-**Status:** IMPLEMENTED CANDIDATE — PENDING USER ACCEPTANCE
+**Status:** ACCEPTED / CLOSED — LOCAL + CI PASS
 **Date:** 2026-09-01
 **Owner workstream:** `feature/home-timeline`
 **Integration target:** `feature/home-react`
 **Scope:** frontend temporal application boundary only; no new visible feature
+**Closure commit:** `7034b9b0d100709785ebe96e3816aab3e7b1d1f8`
+**Closure CI:** Frontend CI #213 — Quality PASS, Mobile Bundle PASS, Chromium Web E2E PASS, frozen Timeline Firefox contract PASS, Frontend CI Gate PASS
 
 ## Purpose
 
@@ -228,23 +230,25 @@ F0 does not:
 - persist mock data;
 - change Home/H0 structure.
 
-## Acceptance gate
+## Acceptance gate — CLOSED
 
-F0 is accepted only if:
+F0 closure evidence:
 
-1. existing Home/Timeline behavior remains unchanged;
-2. all temporal forms round-trip without semantic collapse;
-3. fixed clock is deterministic across zones;
-4. invalid ranges reject;
-5. retries are idempotent;
-6. stale revisions reject;
-7. no-op does not fabricate mutation/Undo;
-8. Undo cannot overwrite newer truth;
-9. revisions remain monotonic after Undo;
-10. snapshots are deterministic;
-11. subscribers fire only on applied mutations;
-12. subscriber failure cannot corrupt committed state;
-13. temporal capability has no React/Timeline dependency;
-14. no fake transport/storage/DB coupling exists;
-15. full frontend CI passes;
-16. user explicitly approves F0 before Quick Add begins.
+1. existing Home/Timeline behavior remained unchanged — PASS;
+2. all temporal forms round-trip without semantic collapse — PASS;
+3. fixed clock is deterministic across zones — PASS;
+4. invalid ranges reject — PASS;
+5. retries are idempotent — PASS;
+6. stale revisions reject — PASS;
+7. no-op does not fabricate mutation/Undo — PASS;
+8. Undo cannot overwrite newer truth — PASS;
+9. revisions remain monotonic after Undo — PASS;
+10. snapshots are deterministic — PASS;
+11. subscribers fire only on applied mutations — PASS;
+12. subscriber failure cannot corrupt committed state — PASS;
+13. temporal capability has no React/Timeline dependency — PASS;
+14. no fake transport/storage/DB coupling exists — PASS;
+15. full frontend CI passes — PASS on Frontend CI #213 after rerun of an unrelated Access first-Tab focus flake;
+16. user explicitly approved F0 before Quick Add begins — PASS on 2026-09-01.
+
+F0 is therefore closed. Further changes require demonstrated need from a later capability or backend integration rather than speculative expansion.
