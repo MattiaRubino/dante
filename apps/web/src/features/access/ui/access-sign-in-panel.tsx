@@ -10,10 +10,11 @@ import {
 import { AccessConditionNotice } from './access-condition-notice';
 import { GoogleIdentityButton, ProviderButton } from './provider-button';
 
-type GoogleButtonState = Readonly<{
+export type GoogleButtonState = Readonly<{
   clientId: string | null;
   nonce: string | null;
   pending: boolean;
+  errorMessage?: string | null;
   onCredential: (credential: string) => void;
   onError: (error: ProviderBrowserUnavailableError) => void;
 }>;
@@ -151,6 +152,11 @@ export function AccessSignInPanel({
           </button>
         </div>
 
+        {google.errorMessage ? (
+          <p className="access-field-error" role="alert">
+            {google.errorMessage}
+          </p>
+        ) : null}
         {passkeyError ? (
           <p className="access-field-error" role="alert">
             {passkeyError}
@@ -262,7 +268,7 @@ export function AccessSignInPanel({
           disabled={interactionPending}
           aria-busy={pending}
         >
-          {t(($) => $.common.access.action.signin)}
+          {t(($) => $.common.access.action.continue)}
         </button>
 
         <AccessConditionNotice condition={condition} />
@@ -278,17 +284,6 @@ export function AccessSignInPanel({
             {t(($) => $.common.access.action.createAccount)}
           </button>
         </div>
-
-        <p className="access-legal">
-          {t(($) => $.common.access.legal.prefix)}{' '}
-          <span className="access-legal-placeholder">
-            {t(($) => $.common.access.legal.terms)}
-          </span>
-          {' · '}
-          <span className="access-legal-placeholder">
-            {t(($) => $.common.access.legal.privacy)}
-          </span>
-        </p>
       </form>
     </section>
   );
