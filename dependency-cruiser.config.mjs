@@ -37,6 +37,61 @@ export default {
       },
     },
     {
+      name: 'world-focus-model-stays-inner',
+      comment:
+        'World Focus model code is an inner layer and must not depend on application orchestration, UI rendering, or app routes.',
+      severity: 'error',
+      from: {
+        path: '^apps/web/src/features/world-focus/model/',
+      },
+      to: {
+        path: [
+          '^apps/web/src/features/world-focus/application/',
+          '^apps/web/src/features/world-focus/ui/',
+          '^apps/web/src/routes/',
+        ],
+      },
+    },
+    {
+      name: 'world-focus-application-not-to-ui-or-routes',
+      comment:
+        'World Focus application code may orchestrate model contracts but cannot depend on React UI or route modules.',
+      severity: 'error',
+      from: {
+        path: '^apps/web/src/features/world-focus/application/',
+      },
+      to: {
+        path: [
+          '^apps/web/src/features/world-focus/ui/',
+          '^apps/web/src/routes/',
+        ],
+      },
+    },
+    {
+      name: 'world-focus-not-to-home-internals',
+      comment:
+        'World Focus is a sibling feature of Home and may not depend on Home internals; any future crossing must use an approved Home public entrypoint.',
+      severity: 'error',
+      from: {
+        path: '^apps/web/src/features/world-focus/',
+      },
+      to: {
+        path: '^apps/web/src/features/home/(?!(?:index|route-contract)\\.(ts|tsx)$)',
+      },
+    },
+    {
+      name: 'other-features-use-world-focus-public-api',
+      comment:
+        'Other web features may consume World Focus only through approved public entrypoints, never through World Focus internals.',
+      severity: 'error',
+      from: {
+        path: '^apps/web/src/features/(?!world-focus(?:/|$))',
+      },
+      to: {
+        path: '^apps/web/src/features/world-focus/(?!(?:index|route-contract)\\.(ts|tsx)$)',
+      },
+    },
+    {
       name: 'web-not-to-mobile',
       comment:
         'Web and Mobile are sibling deployables, never source dependencies.',
@@ -51,7 +106,7 @@ export default {
     {
       name: 'mobile-not-to-web',
       comment:
-        'Mobile and Web are sibling deployables, never source dependencies.',
+        'Web and Mobile are sibling deployables, never source dependencies.',
       severity: 'error',
       from: {
         path: '^apps/mobile/',
