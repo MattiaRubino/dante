@@ -46,6 +46,17 @@ type RangeGesture = Readonly<{
   startY: number;
 }>;
 
+type DayLayout = Readonly<{
+  section: HTMLElement;
+  eventsHost: HTMLElement | null;
+  pixelAtMinute: (minute: number) => number;
+}>;
+
+type GroupLayout = Readonly<{
+  index: number;
+  tone: string;
+}>;
+
 function parsePixel(value: string): number {
   const parsed = Number.parseFloat(value);
   return Number.isFinite(parsed) ? parsed : 0;
@@ -90,31 +101,29 @@ function snapMinute(minute: number): number {
   return Math.max(0, Math.min(1425, Math.round(minute / 15) * 15));
 }
 
-function pixelAtMinute(section: HTMLElement, minute: number): number {
-  const lines = Array.from(
-    section.querySelectorAll<HTMLElement>('.timeline-hour-line'),
-  );
+function createMinutePixelMapper(
+  section: HTMLElement,
+): (minute: number) => number {
   const interval = TIMELINE_POLICY.grid.minorLineIntervalMinutes;
-  if (lines.length < 2) {
-    return (
-      (Math.max(0, Math.min(1440, minute)) / 1440) * section.clientHeight
-    );
-  }
-  const normalized = Math.max(0, Math.min(1440, minute)) / interval;
-  const lowerIndex = Math.min(lines.length - 1, Math.floor(normalized));
-  const upperIndex = Math.min(lines.length - 1, lowerIndex + 1);
-  const lower = parsePixel(lines[lowerIndex]?.style.top ?? '0');
-  const upper = parsePixel(
-    lines[upperIndex]?.style.top ?? String(lower),
+  const lineTops = Array.from(
+    section.querySelectorAll<HTMLElement>('.timeline-hour-line'),
+    (line) => parsePixel(line.style.top),
   );
-  return lower + (upper - lower) * (normalized - lowerIndex);
-}
 
-function toneForContext(
-  groups: readonly TimelineGroup[],
-  contextId: string,
-): string {
-  return groups.find((group) => group.id === contextId)?.tone ?? 'personal';
+  if (lineTops.length < 2) {
+    const sectionHeight = section.clientHeight;
+    return (minute) =>
+      (Math.max(0, Math.min(1440, minute)) / 1440) * sectionHeight;
+  }
+
+  return (minute) => {
+    const normalized = Math.max(0, Math.min(1440, minute)) / interval;
+    const lowerIndex = Math.min(lineTops.length - 1, Math.floor(normalized));
+    const upperIndex = Math.min(lineTops.length - 1, lowerIndex + 1);
+    const lower = lineTops[lowerIndex] ?? 0;
+    const upper = lineTops[upperIndex] ?? lower;
+    return lower + (upper - lower) * (normalized - lowerIndex);
+  };
 }
 
 function formatMinute(minute: number): string {
@@ -139,6 +148,12 @@ function emptyTimelineTarget(target: EventTarget | null): HTMLElement | null {
   );
 }
 
+function slotKey(projection: TemporalCreateTimelineProjection): string {
+  return `${projection.dateKey ?? ''}|${projection.allDay ? 'all-day' : 'timed'}|${
+    projection.startMinute ?? 'none'
+  }`;
+}
+
 export function TimelineCreateBridge({
   defaultDate,
   groups,
@@ -161,6 +176,11 @@ export function TimelineCreateBridge({
   const layoutFrameRef = useRef<number | null>(null);
   const toastTimerRef = useRef<number | null>(null);
   const rangeGestureRef = useRef<RangeGesture | null>(null);
+
+  const contextOptions = useMemo(
+    () => groups.map((group) => ({ id: group.id, label: group.label })),
+    [groups],
+  );
 
   const scheduleLayoutRefresh = useCallback(() => {
     if (layoutFrameRef.current !== null) {
@@ -371,6 +391,7 @@ export function TimelineCreateBridge({
     if (typeof document === 'undefined') {
       return [] as PortalTarget[];
     }
+
     const all = preview ? [...projections, preview] : projections;
     const root = document.querySelector<HTMLElement>(
       '.home-timeline--production',
@@ -384,87 +405,101 @@ export function TimelineCreateBridge({
       Number.parseFloat(
         rootStyle?.getPropertyValue('--timeline-expanded-group-width') ?? '260',
       ) || 260;
+    const groupLayouts = new Map<string, GroupLayout>();
+    groups.forEach((group, index) => {
+      groupLayouts.set(group.id, { index, tone: group.tone });
+    });
+    const dayLayouts = new Map<string, DayLayout | null>();
+    const slotCounts = new Map<string, number>();
+    const targets: PortalTarget[] = [];
 
-    return all.flatMap<PortalTarget>((projection, projectionIndex) => {
+    const dayLayoutFor = (dateKey: string): DayLayout | null => {
+      if (dayLayouts.has(dateKey)) {
+        return dayLayouts.get(dateKey) ?? null;
+      }
+      const section = document.querySelector<HTMLElement>(
+        `.timeline-day-section[data-timeline-date="${CSS.escape(dateKey)}"]`,
+      );
+      if (!section) {
+        dayLayouts.set(dateKey, null);
+        return null;
+      }
+      const dayLayout = Object.freeze({
+        section,
+        eventsHost: section.querySelector<HTMLElement>(
+          '.timeline-events-layer',
+        ),
+        pixelAtMinute: createMinutePixelMapper(section),
+      });
+      dayLayouts.set(dateKey, dayLayout);
+      return dayLayout;
+    };
+
+    for (const projection of all) {
       if (
         !projection.dateKey ||
         (filters.size > 0 && !filters.has(projection.contextId))
       ) {
-        return [];
-      }
-      const section = document.querySelector<HTMLElement>(
-        `.timeline-day-section[data-timeline-date="${CSS.escape(
-          projection.dateKey,
-        )}"]`,
-      );
-      if (!section) {
-        return [];
-      }
-      const host = projection.allDay
-        ? section
-        : section.querySelector<HTMLElement>('.timeline-events-layer');
-      if (!host) {
-        return [];
+        continue;
       }
 
-      const precedingSameSlot = all
-        .slice(0, projectionIndex)
-        .filter(
-          (candidate) =>
-            candidate.dateKey === projection.dateKey &&
-            candidate.allDay === projection.allDay &&
-            candidate.startMinute === projection.startMinute &&
-            (filters.size === 0 || filters.has(candidate.contextId)),
-        ).length;
+      const key = slotKey(projection);
+      const precedingSameSlot = slotCounts.get(key) ?? 0;
+      slotCounts.set(key, precedingSameSlot + 1);
+
+      const dayLayout = dayLayoutFor(projection.dateKey);
+      if (!dayLayout) {
+        continue;
+      }
+      const groupLayout = groupLayouts.get(projection.contextId);
+      const tone = groupLayout?.tone ?? 'personal';
 
       if (projection.allDay) {
-        return [
-          {
-            projection,
-            host,
-            tone: toneForContext(groups, projection.contextId),
-            style: { top: 30 + precedingSameSlot * 30, right: 18 },
-          },
-        ];
+        targets.push({
+          projection,
+          host: dayLayout.section,
+          tone,
+          style: { top: 30 + precedingSameSlot * 30, right: 18 },
+        });
+        continue;
       }
+
       if (
         projection.startMinute === null ||
-        projection.endMinute === null
+        projection.endMinute === null ||
+        !dayLayout.eventsHost
       ) {
-        return [];
+        continue;
       }
-      const top = pixelAtMinute(section, projection.startMinute);
-      const bottom = pixelAtMinute(section, projection.endMinute);
+
+      const top = dayLayout.pixelAtMinute(projection.startMinute);
+      const bottom = dayLayout.pixelAtMinute(projection.endMinute);
       const compactLeft = 14 + precedingSameSlot * 8;
       const compactWidth = Math.min(
         300,
-        Math.max(180, host.clientWidth * 0.34),
+        Math.max(180, dayLayout.eventsHost.clientWidth * 0.34),
       );
-      const foundGroupIndex = groups.findIndex(
-        (group) => group.id === projection.contextId,
-      );
-      const groupIndex = foundGroupIndex < 0 ? 0 : foundGroupIndex;
+      const groupIndex = groupLayout?.index ?? 0;
       const expandedLeft =
         groupIndex * groupWidth + 6 + precedingSameSlot * 8;
       const expandedWidth = Math.max(150, groupWidth - 12);
-      return [
-        {
-          projection,
-          host,
-          tone: toneForContext(groups, projection.contextId),
-          style: {
-            top: top + precedingSameSlot * 4,
-            left:
-              compactLeft +
-              (expandedLeft - compactLeft) * expansionProgress,
-            width:
-              compactWidth +
-              (expandedWidth - compactWidth) * expansionProgress,
-            height: Math.max(38, bottom - top),
-          },
+
+      targets.push({
+        projection,
+        host: dayLayout.eventsHost,
+        tone,
+        style: {
+          top: top + precedingSameSlot * 4,
+          left:
+            compactLeft + (expandedLeft - compactLeft) * expansionProgress,
+          width:
+            compactWidth + (expandedWidth - compactWidth) * expansionProgress,
+          height: Math.max(38, bottom - top),
         },
-      ];
-    });
+      });
+    }
+
+    return targets;
   }, [filters, groups, layoutRevision, preview, projections]);
 
   const undo = async () => {
@@ -496,10 +531,7 @@ export function TimelineCreateBridge({
     <>
       <TemporalCreateEntry
         defaultDate={defaultDate}
-        contexts={groups.map((group) => ({
-          id: group.id,
-          label: group.label,
-        }))}
+        contexts={contextOptions}
         request={request}
         onPreview={setPreview}
         onApplied={applied}
