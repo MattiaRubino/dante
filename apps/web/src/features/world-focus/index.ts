@@ -31,3 +31,4 @@ export {
   type WorldFocusCloseRequest,
   type WorldFocusShellStatus,
 } from './ui/world-focus-page';
+export { WorldFocusRouteError } from './ui/world-focus-route-error';
