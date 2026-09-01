@@ -1,149 +1,201 @@
-# DANTE — Home Current Checkpoint
+# DANTE — Home / Frontend Current Checkpoint
 
-**Status:** **P1 APP SHELL FROZEN / P2 DAY CONTEXT NEXT**  
-**Date:** 2026-08-29  
+**Status:** CURRENT LIVE ENTRY POINT  
+**Date:** 2026-09-01  
 **Working branch:** `feature/home-react`  
 **Worktree:** `/home/mattia/projects/dante-frontend`  
-**Protected main:** `baa9aba52932a0fa09b957ee7668aeb459fb4a20`
+**Current branch baseline before this documentation cleanup:** `aa495e38304ae26a4635e9c843cabbe1cb954f6e`
 
-For the current strategy read `docs/frontend/home/production-depth-handoff.md` first. The durable behavior/product rules in `docs/frontend/home/contract.md` remain authoritative unless explicitly superseded. P1 closure details live in `docs/frontend/app-shell/p1-global-app-shell.md`; intentionally deferred product/backend decisions live in `docs/frontend/open-decisions.md`.
+This file is the **live branch checkpoint** for a new chat/agent. Do not reconstruct current state from older phase labels or historical roadmap documents.
 
-## Current implementation state
+## 1. Workstreams currently present on this branch
 
-The Home prototype/reference package remains preserved on `main`. The active React implementation remains isolated on `feature/home-react`.
-
-The current branch contains:
-
-- real React Home, no iframe/prototype bridge;
-- accepted macro Home geometry/material baseline;
-- shared persistent AppShell outside Home ownership;
-- real router destinations under the shell;
-- production-depth Global Topbar behavior;
-- inline Topbar Search with real local navigation and truthful unavailable remote search;
-- global Create/launcher/account shells without fake backend success;
-- neutral account icon instead of fake identity initials;
-- shell-owned theme bridge and centralized visual configuration;
-- responsive/keyboard/focus/accessibility test coverage for the shell.
-
-P1 implementation/visual checkpoint accepted and frozen on 2026-08-29:
-
-`e11d6c53d2fe1361b37345bbc3f49792541bd45d`
-
-Documentation commits follow that code checkpoint.
-
-## P1 — Global App Shell + Topbar
-
-P1 is **closed for implementation scope**. Do not reopen it while entering P2 unless a bounded regression demonstrates a real defect.
-
-Final accepted direction:
-
-- Topbar is shared application infrastructure, not Home-owned decoration;
-- DANTE master logo remains unmodified;
-- current brand/background contrast treatment is accepted for now; further color polish is explicitly deferred;
-- Home / Mondi / Oggi use real router navigation;
-- Search is a lens icon that expands into an inline central search surface; it is not a modal/backdrop;
-- local application destinations are searchable immediately below the field;
-- Create remains truthful/deferred where real vertical writes do not exist;
-- Review remains deprecated bounded debt;
-- account/session identity remains owned by Access/Auth.
-
-See `docs/frontend/app-shell/p1-global-app-shell.md` for the exact contract.
-
-### P1 QA status
-
-Before the final Search/visual polish, the complete frontend gate was green, including **29/29 Playwright E2E**.
-
-The final polish changed Search from a dialog to the inline Topbar surface and updated unit/E2E specifications accordingly. The post-polish regression suite has **not yet been rerun** in the local WSL worktree at this documentation checkpoint. Do not claim that final regression run as green until it is actually executed.
-
-This does not reopen P1 product design: implementation is frozen, and any regression fix must be bounded to the defect found.
-
-## User-reviewed Home visual state
-
-The following remain frozen baseline and must not be casually redesigned:
-
-- macro placement and proportions of Home regions;
-- fluid shell/edge attachment geometry;
-- AI / upper workspace / Timeline / Context Rail macro composition;
-- current overall skin/material direction;
-- navy/violet family for panel/material depth;
-- DANTE orange for generic active/infrastructure chrome;
-- semantic colors for Worlds, timeline groups/events and genuine semantic states.
-
-Visual configuration must remain centralized through tokens/theme ownership rather than scattered component values.
-
-## Phase order
-
-Production-depth work continues one surface at a time:
-
-1. Global App Shell + Topbar — **FROZEN / P1**
-2. Day Context Strip / Day Route — **NEXT / P2**
-3. Orientation
-4. AI conversational surface
-5. Central Stage / Mondi
-6. Segnali
-7. Timeline
-8. Context Rail — Capture
-9. Context Rail — Resolution
-10. whole-Home integration/hardening
-
-## Immediate next pass — P2 Day Context Strip / Day Route
-
-P2 must productionize viewed-day context and day navigation while preserving the frozen AppShell and accepted Home macro geometry.
-
-The pass must establish a single coherent viewed-day source of truth for the Home surface, define local day navigation behavior and its relation to the current real day, and avoid creating a second competing navigation system beside the Global Topbar.
-
-Do not invent persistence/backend semantics. Any deeper date/calendar integration should be represented through explicit frontend state/contracts and future integration boundaries.
-
-Before writes, inspect the current Day Ribbon/orientation/timeline interactions and the machine-readable Home stage/responsive contracts so day context is not implemented independently in several components.
-
-## Product boundaries retained
-
-Central Stage remains:
+The branch contains three distinct frontend concerns that must not be collapsed:
 
 ```text
-READ / NAVIGATE / OPEN
-NO persistent +
-NO ghost add slots
-NO fake World/Signal entities
-NO direct configuration CRUD inside Home stage
+HOME / APP SHELL
+shared application shell and Home composition
+
+TEMPORAL / TIMELINE
+Home Timeline + shared temporal capability
+
+WORLD FOCUS
+one focused World as its own route/application surface
 ```
 
-Timeline quick-add remains a contextual affordance whose production date/time/persistence contract is still open.
+Home, Timeline and World Focus share product/domain authorities but are not the same UI surface and must not borrow component semantics from one another merely because they all involve DANTE.
 
-Context Rail still means:
+## 2. Global AppShell / Home baseline
 
-```text
-USER -> DANTE     Capture
-DANTE -> USER     Resolution
-```
+The shared AppShell/Topbar is already productionized and remains outside World Focus ownership.
 
-Resolution is not a notifications center.
+Accepted durable rules include:
 
-## Required references
+- persistent shared AppShell and Global Topbar;
+- real application routing;
+- Home / Mondi / Oggi navigation;
+- inline Topbar Search rather than a Home-owned modal;
+- centralized design-token/theme ownership;
+- no fake backend writes;
+- Access/Auth remains a separate workstream and must not be casually modified here.
 
-A new chat/agent should start with:
+For durable Home product semantics read:
 
-- `docs/frontend/home/production-depth-handoff.md`
-- `docs/frontend/home/current-checkpoint.md`
-- `docs/frontend/app-shell/p1-global-app-shell.md`
-- `docs/frontend/open-decisions.md`
 - `docs/frontend/home/contract.md`
-- `docs/frontend/ui-registry.md`
-- `docs/frontend/design-tokens.md`
-- `docs/frontend/production-readiness/component-architecture.md`
-- `docs/frontend/production-readiness/backend-integration-contract.md`
-- `docs/frontend/production-readiness/quality-gates.md`
-- current code under `apps/web/src/features/home/`, `apps/web/src/app-shell/` and `apps/web/src/routes/`.
+- `docs/frontend/home/home-structural-contract.md`
+- `docs/frontend/app-shell/p1-global-app-shell.md`
 
-For Home-stage/day/responsive work also inspect:
+## 3. Timeline current state
 
-- `prototypes/frontend/shared/contracts/home-stage.contract.json`
-- `prototypes/frontend/shared/contracts/home-stage.view-model.schema.json`
-- `prototypes/frontend/shared/contracts/home-responsive.matrix.json`
-- `prototypes/frontend/shared/fixtures/home-stage.v0.json`
+Timeline Phase T1 is **user-accepted and frozen** for observable interaction/geometry behavior.
 
-For visual/behavior archaeology use the complete modular Home prototype preserved on `main` as the oracle.
+The current temporal architecture and future pre-backend roadmap remain active, but no Timeline work is currently authorized merely because the roadmap contains T2+.
 
-## Operational rule
+Read in this order when resuming Timeline:
 
-Continue on `feature/home-react` until explicitly authorized otherwise. Fresh HEAD check before writes. Bounded write gate before each new implementation scope. No merge/rebase/force/history rewrite/main mutation without explicit authorization. Do not touch the parallel Access/Auth workstream. `routeTree.gen.ts` is generated and must never be edited manually.
+1. `docs/frontend/home/timeline-current-checkpoint.md`
+2. `docs/frontend/home/timeline-handoff.md`
+3. `docs/frontend/home/timeline-t1-frozen-contract.md`
+4. `docs/frontend/home/temporal-experience-architecture.md`
+5. `docs/frontend/home/temporal-frontend-roadmap.md`
+
+Never weaken Timeline regression tests to accommodate unrelated World Focus work.
+
+## 4. World Focus current state
+
+World Focus is the **active product workstream**.
+
+Durable current state:
+
+```text
+WF0 structural shell / route          FROZEN
+WF-G3 geometry                        FROZEN
+B0 production foundation              CLOSED
+WR0 product reverse engineering       CLOSED
+WR1 DANTE <-> user stress             COMPLETE / gaps found
+WR2 gap closure                       CLOSED / no structural gaps
+B1 Orientation                        CLOSED for sequencing
+B2 Continuity / Resume                IMPLEMENTED / AUTOMATED PASS
+B2 integrated user acceptance         DEFERRED
+```
+
+Why B2 acceptance is deferred:
+
+The latest user review exposed that the next architectural/product gate must establish **DANTE's real spatial/presentation presence inside World Focus before more World content verticals are composed**. Backend/API/provider/real-LLM work remains deferred, but the frontend must know DANTE's actual footprint and interaction states so later dynamic composition is designed against the real available workspace.
+
+Important correction:
+
+```text
+Home AI surface != World contextual DANTE surface
+```
+
+Do not copy Home AI geometry/components into World Focus by analogy. The World surface requires its own bounded reverse engineering and user-approved interaction architecture.
+
+Read in this order when resuming World Focus:
+
+1. `docs/frontend/home/world-focus-current-checkpoint.md`
+2. `docs/frontend/home/world-focus-handoff.md`
+3. `docs/frontend/home/world-focus-product-contract.md`
+4. `docs/frontend/home/world-focus-platform-contract.md`
+5. `docs/frontend/home/world-focus-structural-contract.md`
+6. `docs/frontend/home/world-focus-geometry-contract.md`
+7. `docs/frontend/home/world-focus-delivery-methodology.md`
+8. supporting reverse-engineering/review evidence referenced by the handoff.
+
+## 5. World Focus immediate next gate
+
+Do **not** start another content mini-vertical yet.
+
+Next bounded work is:
+
+> **World contextual DANTE presence / spatial interaction reverse engineering.**
+
+It must determine, before implementation:
+
+- DANTE's role inside a focused World versus Home/global AI;
+- quiet/invoke/contextual/insight/proposal/action presentation states;
+- persistent vs transient presence;
+- composer/conversation placement and expansion behavior;
+- whether/when DANTE consumes layout space versus overlays it;
+- interaction with selected World content, Insight and Explore;
+- desktop/laptop/tablet/mobile pressure;
+- minimum viable remaining content area;
+- focus/keyboard/a11y/responsive behavior;
+- AI-unavailable behavior;
+- pre-backend frontend shell required now versus real runtime deferred to the final backend vertical.
+
+Only after this gate is researched, stress-tested, user-reviewed and frozen may integrated B2 visual acceptance and later World content verticals continue.
+
+## 6. Permanent World Focus delivery method
+
+Every mini-vertical follows:
+
+```text
+authority re-read
+-> requirements
+-> simulations / adversarial pressure
+-> product comparison
+-> current technology research where relevant
+-> architecture alternatives
+-> explicit decision / rejected alternatives
+-> complete frontend implementation
+-> responsive / a11y / security / performance / async / errors
+-> automated gates
+-> real browser review
+-> user functional + visual review
+-> fixes
+-> explicit user OK
+-> freeze
+-> next vertical
+```
+
+A green CI run never closes a mini-vertical by itself.
+
+## 7. Backend stop line
+
+For World Focus and the temporal frontend phase, do not invent:
+
+- real business APIs;
+- DB/Alembic changes;
+- persistence rows as frontend contracts;
+- provider integrations;
+- real LLM/tool execution;
+- fake durable success.
+
+Use typed frontend/application ports and deterministic local adapters only where a real product vertical needs them. Real backend/API/DB/provider/LLM integration comes at the agreed final vertical.
+
+## 8. Global authority / semantic alignment
+
+Frontend work consumes rather than redefines:
+
+- Product Identity / North Star;
+- product simulations;
+- Domain Atlas / Language Map;
+- Logical Model;
+- Physical Model;
+- current Database/Alembic source of record;
+- Intelligence / Context / Governed Effect contracts;
+- frontend production-readiness contracts.
+
+Permanent examples:
+
+```text
+UI model != backend DTO != Domain != persistence row
+AI output != canonical fact
+AI proposal != Decision
+World != canonical Domain owner
+World relevance != authorization
+planned != actual
+absence != false
+UI hiding != authorization
+```
+
+## 9. Operational rules
+
+- continue on `feature/home-react` until explicitly authorized otherwise;
+- inspect fresh branch HEAD before writes;
+- do not touch the parallel Access/Auth workstream without a bounded reason;
+- no merge/rebase/force/history rewrite/main mutation without explicit authorization;
+- never manually edit generated route-tree output;
+- preserve frozen Timeline and World geometry contracts unless explicitly reopened by the user;
+- update this live checkpoint whenever the active workstream or next gate materially changes.
