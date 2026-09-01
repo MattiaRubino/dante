@@ -20,12 +20,10 @@ import {
 
 let observedInlineSize = 1280;
 let resizeCallback: ResizeObserverCallback | null = null;
-let resizeObserverInstance: TestResizeObserver | null = null;
 
 class TestResizeObserver implements ResizeObserver {
   constructor(callback: ResizeObserverCallback) {
     resizeCallback = callback;
-    resizeObserverInstance = this;
   }
 
   disconnect() {}
@@ -48,6 +46,12 @@ const TEST_SURFACE_REGISTRY = new WorldFocusSurfaceRegistry<
     ),
   },
 ]);
+
+const TEST_RESIZE_OBSERVER: ResizeObserver = {
+  disconnect() {},
+  observe() {},
+  unobserve() {},
+};
 
 function WorkspaceControls() {
   const workspace = useWorldFocusWorkspace();
@@ -104,8 +108,7 @@ function renderWorkspace() {
 function triggerResize(inlineSize: number) {
   observedInlineSize = inlineSize;
   const callback = resizeCallback;
-  const observer = resizeObserverInstance;
-  if (callback === null || observer === null) {
+  if (callback === null) {
     throw new Error('Expected World Focus ResizeObserver callback');
   }
 
@@ -118,28 +121,26 @@ function triggerResize(inlineSize: number) {
   };
 
   act(() => {
-    callback([entry], observer);
+    callback([entry], TEST_RESIZE_OBSERVER);
   });
 }
 
 beforeEach(() => {
   observedInlineSize = 1280;
   resizeCallback = null;
-  resizeObserverInstance = null;
   vi.stubGlobal('ResizeObserver', TestResizeObserver);
   vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(
-    () =>
-      ({
-        width: observedInlineSize,
-        height: 720,
-        x: 0,
-        y: 0,
-        top: 0,
-        right: observedInlineSize,
-        bottom: 720,
-        left: 0,
-        toJSON: () => ({}),
-      }) as DOMRect,
+    () => ({
+      width: observedInlineSize,
+      height: 720,
+      x: 0,
+      y: 0,
+      top: 0,
+      right: observedInlineSize,
+      bottom: 720,
+      left: 0,
+      toJSON: () => ({}),
+    }),
   );
 });
 
