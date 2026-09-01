@@ -32,7 +32,9 @@ export function useAuthenticationMethodsQuery(enabled = true) {
 function cacheMethodsAfterMutation(
   queryClient: ReturnType<typeof useQueryClient>,
 ): Promise<void> {
-  return queryClient.invalidateQueries({ queryKey: authenticationMethodsQueryKey });
+  return queryClient.invalidateQueries({
+    queryKey: authenticationMethodsQueryKey,
+  });
 }
 
 export function useEstablishPasswordMutation() {
