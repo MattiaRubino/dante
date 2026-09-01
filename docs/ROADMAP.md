@@ -138,7 +138,7 @@ The project is no longer waiting to start its first post-CP6 vertical. At the 20
 feature/access-auth             active full-stack product work
 feature/home-react              active frontend work
 feature/platform-observability  active platform work
-feature/ai-architecture         active design/research work
+feature/ai-architecture         active AI-02.1 architecture reengineering / design-only
 ```
 
 Additional live refs may exist and remain authoritative for their own later changes. PostgreSQL Recovery is intentionally absent from this list because it is closed and integrated via PR #47.
@@ -196,9 +196,11 @@ remote backup provider
 
 A selected component is not implemented merely because it appears in architecture. Research challengers such as DBOS, ReBAC engines, alternative sandbox implementations, learned model routers, self-hosted inference servers or specialist vector databases do not reopen an accepted component or become dependencies merely because they appear in the AI research landscape.
 
+AI-02.1 responsibility boundaries such as Scenario Workspace, ChangeSet/EffectGraph, Attention or Semantic Query Gateway are likewise not activated technologies or separate services by virtue of appearing in architecture.
+
 ## 7. AI architecture sequence
 
-The AI workstream remains **design/research only**. No provider integration, AI backend runtime, new AI persistence or database evolution is claimed by roadmap text.
+The AI workstream remains **design/reengineering only**. No provider integration, AI backend runtime, new AI persistence or database evolution is claimed by roadmap text.
 
 Current branch-local sequence:
 
@@ -214,12 +216,15 @@ failure/security/performance evidence
 DANTE applicability boundary
         ↓
 AI-02.1
-DANTE INTELLIGENCE REENGINEERING
-+ North-Star / simulation pressure-test
-+ future-extensibility test
+ACTIVE — DANTE INTELLIGENCE REENGINEERING
+v0.2 first North-Star/simulation checkpoint recorded
+compound adversarial pressure-test still required
+future-extensibility acceptance still required
+NOT CLOSED
         ↓
 AI-03
 CONTEXT / RETRIEVAL / MEMORY
+BLOCKED until AI-02.1 structural acceptance
 ```
 
 ### AI-00
@@ -245,7 +250,7 @@ provider/model/SDK selection still open
 
 The research may recommend patterns or list challengers without pre-activating technologies.
 
-### AI-02.1 — next
+### AI-02.1 — ACTIVE
 
 AI-02.1 is not a provider-selection phase. It is a **reengineering and pressure-test of the DANTE Intelligence Architecture** starting from actual product obligations.
 
@@ -262,7 +267,26 @@ AI-00
 production engineering research
 ```
 
-AI-02.1 must pressure-test at least:
+The first pressure-test has been completed and recorded in `architecture/dante-ai-02-1-intelligence-reengineering.md` as the active v0.2 checkpoint.
+
+It identified bounded architecture gaps and corresponding responsibility-level fixes:
+
+```text
+Interaction Session first-class
+Semantic Query / Projection Gateway
+Context Engine kept distinct from structured semantic query
+Simulation / Hypothetical State Workspace
+ChangeSet / EffectGraph above individual governed effects
+Verifier / Auditor primitive
+Proactivity / Attention boundary
+Context Projection != recipient-aware Disclosure Projection
+DANTE-native + open-world paths composable in one Execution Kernel
+ModelTarget + provider-specific HarnessProfile
+```
+
+These are not new Domain owners or automatic persistence tables/services.
+
+AI-02.1 must still pressure-test at least:
 
 ```text
 ordinary conversation and explanation
@@ -281,9 +305,11 @@ failure, cancellation and resource pressure
 future model/provider replacement
 ```
 
+The next acceptance round must combine these dimensions adversarially rather than testing only isolated cases. Required compound failures include stale state, permission change, partial external effects, ambiguous provider outcomes, cancellation, resource exhaustion, untrusted external input, private context, multi-actor coordination and durable resume.
+
 The architecture is accepted only if those scenarios do not require semantic collapse, hidden provider ownership of truth, a duplicate application ontology or unjustified always-on infrastructure.
 
-A specific acceptance criterion is **future extensibility**:
+A specific acceptance criterion remains **future extensibility**:
 
 > If DANTE later gains a much richer integrated general-purpose conversational intelligence — including capabilities comparable to future frontier chat systems — or adopts substantially more capable future models/providers/specialists, the architecture must absorb that improvement without transferring canonical memory, Authority, application state or effect ownership to the model/provider and without requiring a fundamental redesign of the product core.
 
@@ -291,7 +317,9 @@ AI-02.1 may refine architecture responsibilities and contracts. Any impact on cl
 
 ### AI-03 — after AI-02.1
 
-AI-03 owns the detailed **Context / Retrieval / Memory** architecture. It must consume the structural result of AI-02.1 rather than pre-committing retrieval, embeddings, vector-store, conversation-history or memory persistence decisions from industry fashion.
+AI-03 owns the detailed **Context / Retrieval / Memory** architecture. It must consume the structurally accepted result of AI-02.1 rather than pre-committing retrieval, embeddings, vector-store, conversation-history or memory persistence decisions from industry fashion.
+
+AI-03 must not be used to hide or repair an unresolved AI-02.1 responsibility gap.
 
 ## 8. Persistent frontend direction
 
@@ -329,6 +357,7 @@ AI provider/model adapter implementation
 AI sandbox implementation
 AI local-model activation
 AI context/retrieval/memory persistence
+AI-02.1 runtime module/service implementation
 production deployment
 ```
 
@@ -373,6 +402,10 @@ MERGED BRANCH CANDIDATE STATE != CURRENT protected-main STATUS
 RESEARCH TECHNOLOGY != DANTE IMPLEMENTATION SELECTION
 MODEL/PROVIDER OUTPUT != CANONICAL EFFECT
 MODEL CAPABILITY != AUTHORITY
+SCENARIO STATE != CANONICAL CURRENT STATE
+CHANGESET != BYPASS OF INDIVIDUAL EFFECT GOVERNANCE
+CONTEXT ACCESS != DISCLOSURE PERMISSION
+INTERACTION SESSION != RUN != WORKER
 ```
 
 ## 12. Immediate sequence
@@ -380,14 +413,16 @@ MODEL CAPABILITY != AUTHORITY
 ```text
 1. Recovery is CLOSED / integrated; do not resume feature/postgres-recovery
 2. continue feature/access-auth, feature/home-react and feature/platform-observability independently
-3. on feature/ai-architecture, consume AI-00 + production research and execute AI-02.1 before AI-03
-4. AI-02.1 starts from Product/North Star + simulations + accepted semantic/database authority, not provider marketing
-5. AI-03 owns Context / Retrieval / Memory only after AI-02.1 structural pressure-test
-6. before each integration, reconcile the active branch against the then-current protected-main baseline
-7. evolve the database only through same-change forward migrations when a real vertical requires it
-8. keep remote backup/cloud recovery deferred until production deployment creates a real need
-9. apply documentation lifecycle cleanup before integration AND post-merge current-state reconciliation afterward
-10. use live Git refs and branch-local authority rather than stale global assumptions
+3. on feature/ai-architecture, continue AI-02.1 from the recorded v0.2 reengineering checkpoint
+4. execute the required compound adversarial pressure-test before any AI-02.1 closure
+5. complete the additional pre-AI-03 review explicitly required by the active workstream before starting AI-03
+6. keep future-extensibility against a rich integrated frontier-chat-style intelligence as an acceptance criterion
+7. AI-03 owns Context / Retrieval / Memory only after AI-02.1 structural acceptance
+8. before each integration, reconcile the active branch against the then-current protected-main baseline
+9. evolve the database only through same-change forward migrations when a real vertical requires it
+10. keep remote backup/cloud recovery deferred until production deployment creates a real need
+11. apply documentation lifecycle cleanup before integration AND post-merge current-state reconciliation afterward
+12. use live Git refs and branch-local authority rather than stale global assumptions
 ```
 
 This roadmap intentionally does not pre-create future branches, migrations, APIs, provider integrations or infrastructure before their concrete scope is authorized.
