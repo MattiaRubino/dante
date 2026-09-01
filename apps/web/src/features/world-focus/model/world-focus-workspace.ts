@@ -157,7 +157,7 @@ export function createWorldFocusWorkspaceState<Kind extends string = string>(
     worldId: assertNonEmptyToken(worldId, 'World Focus workspace world id'),
     generation: 0,
     selection: null,
-    surfaces: Object.freeze([]) as readonly WorldFocusSurfaceDescriptor<Kind>[],
+    surfaces: Object.freeze([]),
   });
 }
 
