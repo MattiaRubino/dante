@@ -211,16 +211,7 @@ The final backend vertical must plug into explicit application/interaction bound
 6. `world-focus-geometry-contract.md`
 7. `world-focus-delivery-methodology.md`
 8. `world-focus-frontend-roadmap.md`
-9. relevant evidence only when needed:
-   - `world-focus-product-reverse-engineering-stress-test.md`
-   - `world-focus-product-reverse-engineering-stress-matrix.md`
-   - `world-focus-dante-user-reverse-engineering-stress-test.md`
-   - `world-focus-dante-user-gap-closure-stress-test.md`
-   - `world-focus-b0-foundation-review.md`
-   - `world-focus-b1-product-disposition.md`
-   - `world-focus-b2-continuity-resume-review.md`
-   - `world-focus-b2-continuity-resume-disposition.md`
-   - `world-focus-vfx-research.md`
+9. `world-focus-evidence-index.md` only when deeper research/review archaeology is required.
 
 ## 12. User-gate rule
 
