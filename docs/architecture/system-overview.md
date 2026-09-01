@@ -5,7 +5,7 @@
 - **Backend foundation:** CP1–CP6 CLOSED / integrated / directly validated
 - **Current PostgreSQL:** 18.6
 - **Current Alembic head:** `20260830_09`
-- **Current product work:** full Access/Auth vertical active and unmerged on `feature/access-auth`; AI architecture active in AI-02.1 v0.5 candidate structural freeze on `feature/ai-architecture`
+- **Current product work:** full Access/Auth vertical active and unmerged on `feature/access-auth`; AI-02.1 v0.5 structurally accepted and AI-03 Context/Retrieval/Memory active on `feature/ai-architecture`
 
 ## 1. Product and authority
 
@@ -56,10 +56,13 @@ docs/architecture/ai-production-engineering-state-of-the-art-2026.md
 → external production-engineering research / NON-DANTE-DECISION
 
 docs/architecture/dante-ai-02-1-intelligence-reengineering.md
-→ current ACTIVE AI-02.1 v0.5 CANDIDATE STRUCTURAL FREEZE / NOT CLOSED
+→ AI-02.1 v0.5 CLOSED / STRUCTURALLY ACCEPTED
+
+docs/architecture/dante-ai-03-context-retrieval-memory.md
+→ AI-03 ACTIVE / current macro-phase AI-03A Full Context Architecture
 ```
 
-AI-02.1 does not supersede AI-00. It pressure-tests and refines runtime/intelligence responsibilities while preserving the accepted semantic baseline.
+AI-02.1 does not supersede AI-00. It pressure-tested and refined runtime/intelligence responsibilities while preserving the accepted semantic baseline. AI-03 now consumes that accepted runtime structure and owns detailed Context / Retrieval / Memory design.
 
 ## 2. Repository / application topology
 
@@ -230,9 +233,9 @@ Basis coherence
 
 Expected MaterialState cannot compensate for a wrong-but-current target. Fresh individual inputs do not prove that a multi-source basis was ever simultaneously coherent.
 
-## 6. Current AI-02.1 structural architecture
+## 6. Accepted AI-02.1 structural architecture
 
-The current v0.5 candidate is a **responsibility architecture**, not a deployment diagram.
+AI-02.1 v0.5 is a **structurally accepted responsibility architecture**, not a deployment diagram or implementation PASS.
 
 ```text
 ┌──────────────────────────────────────────────────────────────────┐
@@ -361,7 +364,7 @@ It is not raw model SQL access and not a generic Entity API.
 
 Assembles authorized unstructured/external/conversational reasoning material such as documents, notes, web results, artifacts and temporary conversation context.
 
-Detailed Context/Retrieval/Memory design remains AI-03.
+Detailed Context/Retrieval/Memory architecture is now **ACTIVE in AI-03**. AI-03 keeps Context, Retrieval and Memory distinct, and must not turn Context Engine into a second canonical store.
 
 ### Scenario Workspace
 
@@ -397,6 +400,8 @@ capability/harness versions when needed for evidence
 ```
 
 For DANTE-native work requiring one coherent view, application/database reads should provide the needed coherence semantics. For independent external sources, DANTE records the actual acquisition limits and revalidates volatile consequential dependencies instead of fabricating atomicity.
+
+AI-03 context construction must bind fragments to the applicable Basis/MaterialState/source lifecycle rather than inventing a parallel freshness system.
 
 ## 10. Capability execution and isolation
 
@@ -555,6 +560,8 @@ Result/presentation maturity may include `WORKING`, `PROVISIONAL`, `VERIFIED`, `
 
 Lock-screen notification, private in-app view, shared UI and voice/realtime are different surfaces and may require different disclosure.
 
+AI-03 context design must preserve the same distinction: processing eligibility is not recipient disclosure authorization, and a cache hit never bypasses current policy.
+
 ## 15. Attention / proactivity
 
 Trigger is not Attention.
@@ -643,9 +650,9 @@ material history
 
 Provider thread/memory is an optimization/integration detail, not DANTE truth.
 
-## 19. AI-02.1 verification and current phase state
+## 19. AI phase state
 
-Completed:
+Completed AI-02 evidence:
 
 ```text
 Round I                         COMPLETE
@@ -653,7 +660,7 @@ Round II                        COMPLETE
 Final Kill-Test                 COMPLETE
 Last Mega Stress-Test           COMPLETE
 Targeted v0.5 verification      COMPLETE
-More mega-test cycles           NONE
+More AI-02 mega-test cycles     NONE
 ```
 
 Targeted checks:
@@ -674,18 +681,21 @@ No evidence was found to reopen Domain, Logical, Physical or PostgreSQL.
 
 Future-extensibility structural criterion: **PASS**.
 
-Current phase:
+Current phase state:
 
 ```text
 AI-02.1
-ACTIVE
-v0.5 CANDIDATE STRUCTURAL FREEZE
-NOT CLOSED
-ADDITIONAL USER-REQUESTED PRE-AI-03 REVIEW PENDING
+v0.5 CLOSED / STRUCTURALLY ACCEPTED
+NO RUNTIME/BACKEND/PROVIDER IMPLEMENTATION CLAIM
 
 AI-03
-NOT STARTED / BLOCKED
+ACTIVE — CONTEXT / RETRIEVAL / MEMORY
+CURRENT MACRO-PHASE AI-03A FULL CONTEXT ARCHITECTURE
 ```
+
+Current AI-03 charter:
+
+- `docs/architecture/dante-ai-03-context-retrieval-memory.md`.
 
 ## 20. Frontend / client data authority
 
@@ -747,15 +757,18 @@ dante_runtime    LOGIN NOINHERIT / runtime DML posture
 
 Future AI execution passes through application/domain mutation contracts rather than receiving direct unrestricted database mutation authority.
 
+Any future AI-03C structural DB recommendation must enter normal forward Alembic + SQLAlchemy + Dictionary + human reference + direct-test + recovery-impact governance; AI architecture documentation cannot bypass that same-change rule.
+
 ## 23. Current non-claims
 
 ```text
 FULL ACCESS/AUTH PRODUCT VERTICAL       NOT CLAIMED CLOSED
-DANTE AI-02.1                           ACTIVE / v0.5 CANDIDATE / NOT CLOSED
+DANTE AI-02.1                           CLOSED STRUCTURALLY / NOT IMPLEMENTATION PASS
+AI-03 CONTEXT/RETRIEVAL/MEMORY          ACTIVE DESIGN / NOT MATERIALIZED
 AI RUNTIME                              NOT IMPLEMENTED BY THIS DOCUMENT
 AI PROVIDER/MODEL                       NOT SELECTED
 AI EXECUTION ENVIRONMENT TECHNOLOGY     NOT SELECTED / NOT IMPLEMENTED
-AI-03 CONTEXT/RETRIEVAL/MEMORY          NOT STARTED
+AI MEMORY/EMBEDDING/INDEX PERSISTENCE   NOT SELECTED / NOT IMPLEMENTED
 REMOTE/CLOUD RECOVERY                   NOT CLAIMED
 ```
 
