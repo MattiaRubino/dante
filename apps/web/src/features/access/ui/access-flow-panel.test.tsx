@@ -24,6 +24,7 @@ const idlePending = {
   reset: false,
   reauth: false,
   logOut: false,
+  provider: false,
 } as const;
 
 function renderPanel(
@@ -40,6 +41,9 @@ function renderPanel(
     onResetPassword: vi.fn(),
     onReauthenticate: vi.fn(),
     onLogOut: vi.fn(),
+    onApple: vi.fn(),
+    googleCredential: vi.fn(),
+    googleError: vi.fn(),
   };
 
   render(
@@ -48,7 +52,23 @@ function renderPanel(
       dispatch={dispatch}
       recoveryEntryState="none"
       pending={idlePending}
-      {...actions}
+      google={{
+        clientId: null,
+        nonce: null,
+        pending: false,
+        onCredential: actions.googleCredential,
+        onError: actions.googleError,
+      }}
+      onApple={actions.onApple}
+      onRetryRecoveryValidation={actions.onRetryRecoveryValidation}
+      onCredentialSubmit={actions.onCredentialSubmit}
+      onSignupSubmit={actions.onSignupSubmit}
+      onVerifySubmit={actions.onVerifySubmit}
+      onResendVerification={actions.onResendVerification}
+      onRecoverySubmit={actions.onRecoverySubmit}
+      onResetPassword={actions.onResetPassword}
+      onReauthenticate={actions.onReauthenticate}
+      onLogOut={actions.onLogOut}
     />,
   );
   return { dispatch, ...actions };
