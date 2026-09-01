@@ -17,10 +17,27 @@ function renderPanel() {
     onCreateAccount: vi.fn(),
     onForgotPassword: vi.fn(),
     onCredentialSubmit: vi.fn(),
-    onProvider: vi.fn(),
+    onApple: vi.fn(),
+    googleCredential: vi.fn(),
+    googleError: vi.fn(),
   };
 
-  render(<AccessSignInPanel condition={{ kind: 'idle' }} {...handlers} />);
+  render(
+    <AccessSignInPanel
+      condition={{ kind: 'idle' }}
+      onCreateAccount={handlers.onCreateAccount}
+      onForgotPassword={handlers.onForgotPassword}
+      onCredentialSubmit={handlers.onCredentialSubmit}
+      onApple={handlers.onApple}
+      google={{
+        clientId: null,
+        nonce: null,
+        pending: false,
+        onCredential: handlers.googleCredential,
+        onError: handlers.googleError,
+      }}
+    />,
+  );
 
   return handlers;
 }
@@ -41,7 +58,7 @@ describe('AccessSignInPanel', () => {
       name: 'Continua con Apple',
     });
 
-    expect(googleButton.getAttribute('data-provider')).toBe('google');
+    expect(googleButton).toBeDisabled();
     expect(appleButton.getAttribute('data-provider')).toBe('apple');
 
     const emailInput = screen.getByLabelText<HTMLInputElement>('Email');
@@ -72,13 +89,11 @@ describe('AccessSignInPanel', () => {
       screen.getByRole('button', { name: 'Password dimenticata?' }),
     );
     fireEvent.click(screen.getByRole('button', { name: 'Crea un account' }));
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Continua con Google' }),
-    );
+    fireEvent.click(screen.getByRole('button', { name: 'Continua con Apple' }));
 
     expect(handlers.onForgotPassword).toHaveBeenCalledTimes(1);
     expect(handlers.onCreateAccount).toHaveBeenCalledTimes(1);
-    expect(handlers.onProvider).toHaveBeenCalledWith('google');
+    expect(handlers.onApple).toHaveBeenCalledTimes(1);
 
     fireEvent.click(screen.getByRole('button', { name: 'Accedi' }));
     expect(handlers.onCredentialSubmit).not.toHaveBeenCalled();
