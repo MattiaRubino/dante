@@ -335,7 +335,8 @@ function VerifyEmailScreen({
         <span>{t(($) => $.common.access.signup.stepEmail)}</span>
         <span>{t(($) => $.common.access.signup.stepPassword)}</span>
         <span className="is-active">
-          {t(($) => $.common.access.signup.stepVerify)}</span>
+          {t(($) => $.common.access.signup.stepVerify)}
+        </span>
       </div>
       <p className="access-email-context">{email}</p>
       <form className="access-flow-form" onSubmit={submit} noValidate>
