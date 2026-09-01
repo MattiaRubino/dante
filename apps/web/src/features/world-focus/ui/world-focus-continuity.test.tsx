@@ -73,11 +73,12 @@ describe('World Focus B2 Continuity UI', () => {
   });
 
   it('keeps partial and stale data visible with truthful qualification', async () => {
-    const partialReader: WorldFocusContinuityReader = async () => ({
-      status: 'partial',
-      projection: readyResult('music', 'Partial thread').projection,
-      reasonCode: 'source-partial',
-    });
+    const partialReader: WorldFocusContinuityReader = () =>
+      Promise.resolve({
+        status: 'partial',
+        projection: readyResult('music', 'Partial thread').projection,
+        reasonCode: 'source-partial',
+      });
     const { rerender } = render(
       <WorldFocusContinuity worldId="music" reader={partialReader} />,
     );
@@ -87,11 +88,12 @@ describe('World Focus B2 Continuity UI', () => {
       screen.getByText('Alcune informazioni di continuità non sono disponibili.'),
     ).toBeTruthy();
 
-    const staleReader: WorldFocusContinuityReader = async () => ({
-      status: 'stale',
-      projection: readyResult('music', 'Stale thread').projection,
-      asOf: '2026-09-01T08:00:00Z',
-    });
+    const staleReader: WorldFocusContinuityReader = () =>
+      Promise.resolve({
+        status: 'stale',
+        projection: readyResult('music', 'Stale thread').projection,
+        asOf: '2026-09-01T08:00:00Z',
+      });
     rerender(<WorldFocusContinuity worldId="music" reader={staleReader} />);
 
     expect(await screen.findByText('Stale thread')).toBeTruthy();
@@ -102,12 +104,11 @@ describe('World Focus B2 Continuity UI', () => {
 
   it('contains unexpected failures locally and retries with a new read', async () => {
     let attempt = 0;
-    const reader: WorldFocusContinuityReader = async () => {
+    const reader: WorldFocusContinuityReader = () => {
       attempt += 1;
-      if (attempt === 1) {
-        throw new Error('private-adapter-detail');
-      }
-      return readyResult('music', 'Recovered thread');
+      return attempt === 1
+        ? Promise.reject(new Error('private-adapter-detail'))
+        : Promise.resolve(readyResult('music', 'Recovered thread'));
     };
 
     render(<WorldFocusContinuity worldId="music" reader={reader} />);
