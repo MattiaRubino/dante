@@ -5,6 +5,15 @@ import type { WorldFocusId } from '../model/world-focus-fixtures';
 const CONTINUITY_FIXTURES: Partial<
   Readonly<Record<WorldFocusId, readonly WorldFocusContinuityItem[]>>
 > = {
+  body: [
+    {
+      key: 'body-mobility-reset',
+      title: 'Mobility Reset',
+      context: 'Program',
+      checkpoint: 'Week 3 · Session B',
+      presentationState: 'active',
+    },
+  ],
   music: [
     {
       key: 'music-neon-static',
