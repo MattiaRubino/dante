@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { usePasskeySignInMutation } from '../application/auth-passkey';
 import {
   isValidAccessEmail,
   type AccessCondition,
@@ -52,13 +53,16 @@ export function AccessSignInPanel({
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<SignInErrors>({});
   const [showPassword, setShowPassword] = useState(false);
+  const [passkeyError, setPasskeyError] = useState<string | null>(null);
+  const passkeyMutation = usePasskeySignInMutation();
+  const interactionPending = pending || passkeyMutation.isPending;
   const passwordControlLabel = showPassword
     ? t(($) => $.common.access.action.hidePassword)
     : t(($) => $.common.access.action.showPassword);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (pending) {
+    if (interactionPending) {
       return;
     }
 
@@ -82,6 +86,17 @@ export function AccessSignInPanel({
     onCredentialSubmit(trimmedEmail, password);
   }
 
+  function signInWithPasskey() {
+    if (interactionPending) {
+      return;
+    }
+    setPasskeyError(null);
+    passkeyMutation.mutate(undefined, {
+      onError: () =>
+        setPasskeyError(t(($) => $.common.access.failure.passkeyBody)),
+    });
+  }
+
   return (
     <section className="access-panel" aria-labelledby="access-signin-title">
       <form className="access-panel-inner" onSubmit={handleSubmit} noValidate>
@@ -101,15 +116,33 @@ export function AccessSignInPanel({
             provider="google"
             label={t(($) => $.common.access.provider.google)}
             onClick={() => onProvider('google')}
-            disabled={pending}
+            disabled={interactionPending}
           />
           <ProviderButton
             provider="apple"
             label={t(($) => $.common.access.provider.apple)}
             onClick={() => onProvider('apple')}
-            disabled={pending}
+            disabled={interactionPending}
           />
+          <button
+            className="access-provider-button"
+            type="button"
+            disabled={interactionPending}
+            aria-busy={passkeyMutation.isPending}
+            onClick={signInWithPasskey}
+          >
+            <span className="access-provider-icon" aria-hidden="true">
+              ◇
+            </span>
+            <span>{t(($) => $.common.access.provider.passkey)}</span>
+          </button>
         </div>
+
+        {passkeyError ? (
+          <p className="access-field-error" role="alert">
+            {passkeyError}
+          </p>
+        ) : null}
 
         <div className="access-divider" aria-hidden="true">
           <span />
@@ -130,7 +163,7 @@ export function AccessSignInPanel({
               inputMode="email"
               placeholder={t(($) => $.common.access.field.emailPlaceholder)}
               value={email}
-              disabled={pending}
+              disabled={interactionPending}
               aria-invalid={Boolean(errors.email)}
               aria-describedby={errors.email ? 'access-email-error' : undefined}
               onChange={(event) => {
@@ -156,7 +189,7 @@ export function AccessSignInPanel({
                 className="access-inline-action"
                 type="button"
                 onClick={onForgotPassword}
-                disabled={pending}
+                disabled={interactionPending}
               >
                 {t(($) => $.common.access.signin.forgot)}
               </button>
@@ -168,7 +201,7 @@ export function AccessSignInPanel({
                 type={showPassword ? 'text' : 'password'}
                 autoComplete="current-password"
                 value={password}
-                disabled={pending}
+                disabled={interactionPending}
                 aria-invalid={Boolean(errors.password)}
                 aria-describedby={
                   errors.password ? 'access-password-error' : undefined
@@ -185,7 +218,7 @@ export function AccessSignInPanel({
                 type="button"
                 aria-label={passwordControlLabel}
                 aria-pressed={showPassword}
-                disabled={pending}
+                disabled={interactionPending}
                 onClick={() => setShowPassword((value) => !value)}
               >
                 <svg
@@ -213,7 +246,7 @@ export function AccessSignInPanel({
         <button
           className="access-primary-button"
           type="submit"
-          disabled={pending}
+          disabled={interactionPending}
           aria-busy={pending}
         >
           {t(($) => $.common.access.action.signin)}
@@ -227,7 +260,7 @@ export function AccessSignInPanel({
             className="access-inline-action access-create-account"
             type="button"
             onClick={onCreateAccount}
-            disabled={pending}
+            disabled={interactionPending}
           >
             {t(($) => $.common.access.action.createAccount)}
           </button>
