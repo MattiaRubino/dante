@@ -245,7 +245,10 @@ export function AccessPage({
   useEffect(() => {
     if (!googleSurfaceVisible) {
       googlePreparationStarted.current = false;
-      if (googlePreparationData !== undefined || googlePreparationError !== null) {
+      if (
+        googlePreparationData !== undefined ||
+        googlePreparationError !== null
+      ) {
         resetGooglePreparation();
       }
       return;
@@ -314,7 +317,10 @@ export function AccessPage({
       return;
     }
     if (result.outcome === 'enrollment_required') {
-      setProviderContinuationOverride({ kind: 'enrollment', enrollment: result });
+      setProviderContinuationOverride({
+        kind: 'enrollment',
+        enrollment: result,
+      });
       return;
     }
     setProviderContinuationOverride({
