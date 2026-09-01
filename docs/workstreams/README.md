@@ -10,7 +10,7 @@ Protected-main project truth is owned by:
 - `../PROJECT-STATUS.md`
 - `../ROADMAP.md`
 
-Branch-local workstream files may describe newer unmerged implementation only inside their own bounded branch. They never silently become protected-main truth.
+Branch-local workstream files may describe newer unmerged implementation/design only inside their own bounded branch. They never silently become protected-main truth.
 
 ## Current durable subsystem entry points
 
@@ -36,6 +36,27 @@ Branch-local workstream files may describe newer unmerged implementation only in
 - `engineering-foundation.md`
 - `physical-model.md`
 - `pre-physical-coherence.md`
+
+### AI architecture — active branch-local workstream
+
+On `feature/ai-architecture`:
+
+- `ai-architecture.md` — durable branch-local workstream record;
+- `ai-architecture-live-handoff.md` — **TEMPORARY / MUST NOT MERGE TO protected main**; session/context save-game only;
+- `../architecture/dante-ai-03-context-retrieval-memory.md` — current AI-03 phase charter.
+
+Current branch-local AI state:
+
+```text
+AI-00  COMPLETE
+AI-01  COMPLETE
+AI-02  COMPLETE / STRUCTURALLY ACCEPTED
+AI-02.1 v0.5 CLOSED
+AI-03  ACTIVE
+AI-03A FULL CONTEXT ARCHITECTURE CURRENT
+```
+
+The temporary live handoff must be deleted/consolidated before integration. Durable architecture decisions must not live only in that file.
 
 ### Domain / Logical
 
@@ -95,12 +116,13 @@ Detailed CP01–CP07 chronology, proof heads, failure findings, measurements and
 
 ## Current bounded unmerged workstreams
 
-At the 2026-08-31 reconciliation, current project authority records bounded unmerged work including:
+At the 2026-09-01 reconciliation, current project authority records bounded unmerged work including:
 
 ```text
 feature/access-auth             active product vertical
 feature/home-react              active frontend workstream
 feature/platform-observability  active platform workstream
+feature/ai-architecture         active AI architecture workstream
 ```
 
 PostgreSQL Recovery is intentionally absent: it is already integrated in protected `main` via PR #47.
@@ -114,12 +136,13 @@ Before continuing an active workstream:
 1. verify exact branch/worktree/remote relation;
 2. read current global/subsystem authority;
 3. read the active branch-local workstream record when one legitimately exists;
-4. prefer repository/code/tests over conversation memory;
-5. do not write to protected `main` outside the repository integration path;
-6. do not treat selected/unimplemented capability as PASS;
-7. keep current docs aligned with materialized repository truth;
-8. remove live/session/resume handoffs before integration;
-9. after merge, reconcile candidate/branch-local wording to protected-main truth and repair links to intentionally removed overlays.
+4. read a temporary live/session handoff only when it genuinely exists on that active branch;
+5. prefer repository/code/tests over conversation memory;
+6. do not write to protected `main` outside the repository integration path;
+7. do not treat selected/unimplemented capability as PASS;
+8. keep current docs aligned with materialized repository truth;
+9. remove live/session/resume handoffs before integration;
+10. after merge, reconcile candidate/branch-local wording to protected-main truth and repair links to intentionally removed overlays.
 
 ## Carry-forward engineering rules
 
