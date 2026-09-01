@@ -124,7 +124,7 @@ export function GoogleIdentityButton({
         type="button"
         disabled
         aria-label={label}
-        aria-busy="true"
+        aria-busy={disabled || undefined}
       >
         <span className="access-provider-mark" aria-hidden="true">
           <GoogleMark />
