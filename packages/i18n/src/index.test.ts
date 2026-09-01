@@ -57,6 +57,43 @@ describe('@dante/i18n', () => {
     expect(runtime.t(($) => $.common.gesture.title)).toBe('Test gesto');
   });
 
+  it('resolves the complete Temporal Create resource tree at runtime', async () => {
+    const runtime = await createRuntime();
+
+    expect(runtime.t(($) => $.common.home.timeline.create.kind.activity)).toBe(
+      'Attività',
+    );
+    expect(runtime.t(($) => $.common.home.timeline.create.kind.event)).toBe(
+      'Evento',
+    );
+    expect(
+      runtime.t(($) => $.common.home.timeline.create.timeSemantics.timed),
+    ).toBe('Orario');
+    expect(
+      runtime.t(($) => $.common.home.timeline.create.timeSemantics.allDay),
+    ).toBe('Tutto il giorno');
+    expect(
+      runtime.t(($) => $.common.home.timeline.create.timeSemantics.unscheduled),
+    ).toBe('Da pianificare');
+    expect(runtime.t(($) => $.common.home.timeline.create.date)).toBe('Data');
+    expect(runtime.t(($) => $.common.home.timeline.create.start)).toBe('Ora');
+    expect(runtime.t(($) => $.common.home.timeline.create.duration)).toBe(
+      'Durata',
+    );
+    expect(runtime.t(($) => $.common.home.timeline.create.context)).toBe(
+      'Contesto',
+    );
+    expect(runtime.t(($) => $.common.home.timeline.create.details.show)).toBe(
+      '+ Dettagli',
+    );
+    expect(runtime.t(($) => $.common.home.timeline.create.cancel)).toBe(
+      'Annulla',
+    );
+    expect(runtime.t(($) => $.common.home.timeline.create.submit)).toBe(
+      'Aggiungi',
+    );
+  });
+
   it('boots English through the same shared resource contract', async () => {
     const runtime = await createRuntime('en');
 
