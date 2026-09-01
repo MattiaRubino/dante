@@ -1,75 +1,78 @@
 # DANTE — World Focus Workspace Platform Checkpoint
 
-**Status:** IMPLEMENTED — AUTOMATED FRONTEND GATES PASS — DANTE SPATIAL GATE STILL OPEN  
+**Status:** ENGINEERING CLOSED — FINAL PLATFORM AUTOMATED PASS — CONCRETE DANTE SEQUENCING ACTIVE  
 **Date:** 2026-09-01  
 **Branch:** `feature/home-react`  
-**Validated implementation HEAD:** `e92c48bf4c3040cdc3a32da5d82e84212cd65a0d`  
-**Frontend CI:** `33539431035` — PASS
+**Final platform HEAD:** `6c441335a75bb913af8da1eda569d8094d38a539`  
+**Frontend CI:** `33549465793` — PASS
 
-## 1. Scope actually implemented
+This checkpoint is the durable engineering closure record for the reusable World Focus composition / interaction / surface platform. It no longer represents the active live gate; current sequencing is in `world-focus-current-checkpoint.md`.
 
-This checkpoint records the reusable interaction/composition foundation now mounted inside `worldFocus.workspace`.
-
-It does **not** claim that the production World contextual DANTE UI is designed or accepted. The product contract still requires the dedicated DANTE spatial/presence gate before that UI is written.
-
-Implemented foundation:
+## 1. What this platform owns
 
 ```text
 WORLD FOCUS WORKSPACE HOST
-├─ transient workspace state
-├─ bounded interaction cursor
-├─ interaction generation
-├─ selected context reference
-├─ finite surface stack
-├─ composition host
-│  └─ finite approved module registry
-└─ surface layer
-   └─ finite approved surface registry
+├ transient workspace interaction state
+├ bounded interaction cursor references
+├ interaction generation
+├ selected context reference
+├ finite surface stack
+├ composition host
+│  └ finite approved module registry
+├ workspace allocation resolver
+│  ├ main allocation: full | split
+│  ├ top layer: none | overlay | focus
+│  └ interaction: interactive | inert
+└ surface layer
+   └ finite approved surface registry
 ```
 
-## 2. Workspace state ownership
+It does **not** own canonical World truth, Domain ownership, authorization/disclosure, durable DANTE Run lifetime, provider state, source payload authority or backend effects.
 
-The workspace host owns transient presentation/interaction state only:
+## 2. Dynamic composition
+
+World Focus is not a fixed dashboard. Composition is resolved from approved product outputs and finite shipped renderers.
+
+The planner preserves distinctions between:
 
 ```text
-world reference
-generation
-selection reference
-surface descriptors
+stability:   stable | adaptive | ephemeral
+prominence:  lead | primary | supporting
+footprint:   wide | standard | compact
 ```
 
-It explicitly does not own:
+The logical plan uses a 12-unit contract, while physical rendering may collapse/adapt at small allocated widths. Logical grid semantics therefore do not force pathological 12-track CSS at narrow widths.
+
+Automated deterministic stress covers 500 synthetic compositions spanning sparse/dense Worlds, unknown future kinds and 0–20 candidate answers.
+
+Permanent rule:
 
 ```text
-canonical World truth
-Domain ownership
-authorization/disclosure
-durable DANTE Run lifetime
-provider state
-canonical source payloads
-React/DOM serialization as truth
+module kind != Domain owner
+module kind != World question
+renderer != canonical truth
 ```
-
-The route remains the authority for the active mounted World.
 
 ## 3. Bounded interaction cursor
 
-The current cursor seam exposes only bounded references needed by future contextual interaction:
+The workspace cursor exposes only bounded presentation references:
 
 ```text
 worldId
 generation
-selection
+selection reference
 active surface reference
 ```
 
-Selection changes advance the interaction generation. Repeating the same selection is a no-op.
+It explicitly does not contain DOM nodes, secrets, authorization decisions, copied canonical source data or durable Run state.
 
-This is the frontend presentation counterpart of the WR2 interaction-cursor model; authoritative DANTE context reconstruction remains a future application/Context Builder responsibility.
+Selection changes advance generation. Repeating the same selection is a no-op.
 
-## 4. Surface orchestration
+Future DANTE Context Builder logic remains purpose/recipient/sensitivity/freshness aware and reconstructs authorized context outside this React cursor.
 
-The pure workspace reducer supports finite operations:
+## 4. Surface state model
+
+The pure reducer supports finite operations:
 
 ```text
 select context
@@ -81,7 +84,7 @@ close surface
 close top surface
 ```
 
-A surface descriptor keeps:
+A surface descriptor keeps only finite presentation metadata:
 
 ```text
 instance id
@@ -94,98 +97,160 @@ bounded context reference
 dismissibility
 ```
 
-Semantic depth and geometry remain independent.
+Semantic depth and geometry are separate axes.
 
-## 5. Race / stale-result protection
+## 5. Race / stale presentation protection
 
-Async presentation requests may carry `expectedGeneration`.
+Async presentation intents may carry `expectedGeneration`.
 
 Invariant:
 
 ```text
 request starts at generation N
-user changes selected context -> generation N+1
-late presentation request still bound to N
--> request is a deterministic no-op
+selection changes -> generation N+1
+late presentation intent still expects N
+-> deterministic no-op
 ```
 
-This prevents a late DANTE/Insight result from being attached to a newer user context.
+This prevents late frontend presentation results from attaching to a newer context. It does not replace future durable DANTE Run/effect semantics.
 
-It does not replace future durable Run/effect semantics.
+## 6. Escape and blocking-stack ownership
 
-## 6. Escape ownership
-
-Escape precedence is now explicit:
+Escape precedence:
 
 ```text
-non-dismissible top surface -> consume/block Escape
+non-dismissible top surface
+-> consume/block Escape
+-> World cannot close underneath
 
 dismissible top surface
--> close top surface
--> keep World open
+-> close top surface only
 
 no surface
--> World route may close/return
+-> route may close World
 ```
 
-This prevents confirmation/action surfaces from allowing the World underneath them to disappear accidentally.
+The platform additionally hardened the stack so a newer non-blocking surface cannot semantically jump above a currently authoritative blocking modal/full-focus surface.
 
-## 7. Composition host
+This blocking-tail rule is defense-in-depth for confirmation/focus flows and prevents state/DOM ordering from silently weakening interaction authority.
 
-`WorldFocusPage` no longer hardcodes the concrete Continuity renderer directly.
+## 7. Workspace physical allocation
 
-Current flow:
+The allocator deliberately separates concerns rather than creating a combinatorial mega-enum:
 
 ```text
-resolved composition entries
--> finite module registry
--> registered renderer
--> local render boundary
+mainAllocation = full | split
+topLayer       = none | overlay | focus
+mainInteraction= interactive | inert
 ```
 
-Continuity is currently the first registered capability.
-
-Unknown module kinds fail locally and safely instead of crashing the World.
-
-This is intentionally still a tiny pre-backend composition input; it is not a fake universal ranking engine.
-
-## 8. Surface registry / layer
-
-The surface layer now exists as a controlled presentation boundary.
-
-Permanent rules enforced by architecture:
+This permits valid states such as:
 
 ```text
-approved registered renderer only
-unknown future kind -> local unavailable state
-renderer failure -> local error boundary
-no remote executable plugin
-no arbitrary JSX/HTML/JavaScript from DANTE
+main + DANTE sidecar
++
+confirmation modal above it
 ```
 
-The production registry intentionally contains no fabricated DANTE/Insight/Explore surface yet. The spatial/presence contract must be accepted first.
+without losing deterministic restoration of the underlying allocation.
 
-## 9. Current implementation relationship
+Current pre-backend presentation policy:
 
 ```text
-WORLD FOCUS PAGE
-└─ WORKSPACE PLATFORM
-   ├─ Orientation
-   ├─ Composition Host
-   │  └─ Continuity [registered capability]
-   └─ Surface Layer
-      └─ no production DANTE surface yet
+minimum split workspace   900 px
+minimum useful main       520 px
+minimum sidecar           300 px
+maximum sidecar           420 px
+preferred sidecar         36%
+split gap                 16 px
 ```
 
-The visible World remains semantically equivalent to the accepted Orientation + B2 Continuity state while the under-the-hood ownership is now ready for contextual interaction.
+These are UI policy values, not Domain semantics and not persisted World truth.
 
-## 10. Automated evidence
+## 8. Sidecar / overlay / focus behavior
 
-Final validated run on `e92c48bf4c3040cdc3a32da5d82e84212cd65a0d`:
+Accepted allocation behavior:
+
+```text
+wide sidecar
+-> consumes real canvas width
+-> main remains interactive
+
+sidecar when split minima cannot be preserved
+-> degrades to non-modal overlay
+-> main remains interactive
+
+modal
+-> main becomes inert
+-> visible underlying sidecar also becomes inert
+
+full-focus
+-> main becomes inert
+-> visible underlying sidecar also becomes inert
+
+older competing surfaces
+-> dormant rather than competing in DOM
+
+route presentation
+-> external to workspace geometry
+```
+
+The platform was benchmarked against Microsoft Fluent 2 drawer behavior, WAI-ARIA modal interaction requirements and MDN CSS Container Queries.
+
+## 9. Actual allocated-container ownership
+
+The persistent outer workspace remains the stable visual boundary, but reusable content adapts against the **actual main canvas**:
+
+```text
+workspace 1280
+├ main 844   <- named `world-focus-main` query container
+├ gap 16
+└ sidecar 420
+```
+
+A module therefore sees 844 px, not 1280 px and not global viewport width.
+
+`ResizeObserver` measures the space actually granted to the workspace. Missing ResizeObserver support degrades safely after the initial measure rather than crashing the World.
+
+No duplicated `window.innerWidth` product breakpoint state was introduced.
+
+## 10. Scroll / resource ownership
+
+The main plane owns vertical scrolling; the outer workspace remains the clipped stable boundary.
+
+Future sidecars/focus surfaces must own their internal overflow explicitly rather than rely on accidental ancestor clipping.
+
+The platform retains B0 local error boundaries, cancellation/race safety, User Timing and VFX degradation rules.
+
+## 11. Finite renderer/surface extension
+
+Only code shipped by DANTE may enter the registries.
+
+```text
+approved registration -> renderer allowed
+unknown kind           -> local safe degradation
+renderer throw         -> local render boundary
+remote/model JSX       -> forbidden
+arbitrary HTML/JS      -> forbidden
+```
+
+This is controlled extensibility, not an executable plugin marketplace and not model-generated UI.
+
+## 12. Stress / automated evidence
+
+Final platform HEAD:
+
+`6c441335a75bb913af8da1eda569d8094d38a539`
+
+CI:
+
+`33549465793`
+
+Final gate evidence:
 
 ```text
 Frontend contract drift check       PASS
-Home/World Focus format checks      PASS
+Home / World Focus format checks    PASS
 Lint                                PASS
 Typecheck                           PASS
 Architecture check                  PASS
@@ -199,28 +264,62 @@ Firefox frozen Timeline contract    PASS
 Frontend CI Gate                    PASS
 ```
 
-The implementation was corrected against real strict-lint and strict-TypeScript failures before this PASS; no gate was weakened to accept the code.
+Stress evidence includes:
 
-## 11. Not closed by this checkpoint
+```text
+500 deterministic composition scenarios
+500 deterministic allocation/surface-stack scenarios
+wide/narrow sidecar integration
+live ResizeObserver contraction
+modal over split sidecar
+narrow sidecar dormant under modal
+main/sidecar inert defense-in-depth
+blocking-stack barrier
+compact containment
+```
 
-This checkpoint does not authorize or freeze:
+No gate was weakened to obtain PASS.
 
-- DANTE quiet footprint;
-- composer placement;
-- conversation pane geometry;
-- sidecar vs dock vs overlay vs full-surface behavior;
-- long-conversation expansion;
-- Insight/Explore concrete renderers;
-- Proposal/confirmation/receipt grammar;
-- responsive DANTE spatial behavior;
-- real streaming/provider/runtime;
-- durable conversation/Run persistence;
-- backend/API/DB effects.
+## 13. Relationship to DANTE D0/D1
 
-## 12. Immediate next gate
+After this platform closed, `world-focus-dante-spatial-presence-review.md` resolved the previously open concrete DANTE spatial question through external product comparison and pressure testing.
 
-The authoritative next step remains:
+Accepted direction:
 
-> **World contextual DANTE spatial / presence reverse engineering and user decision.**
+```text
+P0 quiet invoke
+P1 compact non-modal composer
+ongoing conversation wide -> sidecar
+ongoing conversation constrained/mobile -> route-owned focus overlay
+explicit maximize / restore
+contextual/deictic invocation only with explicit bounded reference
+```
 
-Only after that product gate is accepted should the first production DANTE World surface be registered and rendered through this platform foundation.
+D1 is now the first concrete registered surface consumer. See `world-focus-d1-dante-entry-review.md` for its final engineering disposition.
+
+## 14. Historical notes superseded by this checkpoint
+
+Earlier versions of this file stated:
+
+```text
+DANTE spatial gate still open
+production registry intentionally empty
+next gate = DANTE spatial reverse engineering
+```
+
+Those statements described the earlier implementation moment and are no longer live. They are replaced by the final platform closure above and the D0/D1 documents.
+
+## 15. Permanent barriers
+
+```text
+World != canonical Domain owner
+layout policy != Domain semantics
+surface stack != authorization
+surface visibility != disclosure permission
+AI output != accepted fact
+AI proposal != user Decision
+tool call != authorization
+provider state != canonical state
+planned != actual
+absence != false
+```
