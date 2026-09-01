@@ -9,6 +9,10 @@ export const worldFocus = {
     loading: 'Loading the {{world}} World',
     error: 'Unable to open the {{world}} World',
     unavailable: '{{world}} World unavailable',
+    routeErrorTitle: 'Unable to open this World',
+    routeErrorBody:
+      'An unexpected error occurred. You can retry without exposing technical details.',
+    retry: 'Retry',
   },
   worlds: {
     body: {
