@@ -47,6 +47,7 @@ export const access = {
   provider: {
     google: 'Continue with Google',
     apple: 'Continue with Apple',
+    passkey: 'Sign in with a passkey',
     googleName: 'Google',
     appleName: 'Apple',
     body: 'DANTE opens the provider’s official flow. The consent screen belongs to the provider, not DANTE.',
@@ -55,6 +56,14 @@ export const access = {
       'Complete sign-in in the provider window. You’ll return to DANTE automatically.',
     scopeNote:
       'Using Google or Apple to sign in does not authorize DANTE to read Calendar, Gmail, or iCloud.',
+  },
+  providerEnrollment: {
+    title: 'Verify an email address',
+    body: 'The provider cannot prove mailbox control to DANTE. Verify the address directly before the account is created.',
+    sendCode: 'Send verification code',
+    verify: 'Verify and continue',
+    privacy:
+      'The flow capability stays in an HttpOnly cookie. No provider token is stored in browser storage.',
   },
   common: {
     or: 'or',
@@ -99,6 +108,8 @@ export const access = {
   failure: {
     invalidCredentialsTitle: 'Sign-in failed.',
     invalidCredentialsBody: 'The email or password is incorrect.',
+    passkeyBody:
+      'The passkey did not complete sign-in. Try again or use another method.',
     accountUnavailableTitle: 'Account unavailable.',
     accountUnavailableBody: 'This account cannot open a new session right now.',
     passwordCompromisedTitle: 'Password update required.',
@@ -166,9 +177,16 @@ export const access = {
   },
   link: {
     title: 'Confirm account linking',
-    body: 'A DANTE account already exists for this email. Sign in to that account before linking the provider.',
-    action: 'Sign in and link',
+    body: 'A DANTE account already exists for this identity. Authenticate that account first, then explicitly confirm the provider link.',
+    action: 'Authenticate existing account',
     other: 'Use another account',
+    authenticateFirst:
+      'The provider proof alone cannot authorize linking. DANTE first needs a session for the existing account.',
+    authenticatedReady:
+      'The existing account is authenticated. Confirm the provider link now.',
+    authenticate: 'Authenticate with password',
+    authenticatePasskey: 'Authenticate with passkey',
+    confirm: 'Confirm link',
   },
   authenticated: {
     title: 'Access confirmed',
@@ -178,6 +196,46 @@ export const access = {
     title: 'Confirm your identity again',
     body: 'To protect your account, enter your password again before continuing.',
     action: 'Confirm identity',
+  },
+  security: {
+    title: 'Account security',
+    body: 'Manage the methods you can use to authenticate to DANTE. Removals cannot violate the anti-lockout policy.',
+    loading: 'Loading security settings…',
+    signinRequired: 'Sign in to manage account security.',
+    backAccess: 'Back to Access',
+    reauthTitle: 'Recent confirmation',
+    reauthBody:
+      'Sensitive changes require recent proof that you still control an authenticator.',
+    reauthHint: 'Use password or passkey below, then repeat the operation.',
+    reauthPassword: 'Confirm with password',
+    reauthPasskey: 'Confirm with passkey',
+    reauthComplete: 'Identity confirmed recently.',
+    passwordTitle: 'Password',
+    newPassword: 'New password',
+    addPassword: 'Add password',
+    removePassword: 'Remove password',
+    passwordAdded: 'Password added.',
+    passwordRemoved: 'Password removed.',
+    providersTitle: 'Linked providers',
+    providersBody:
+      'Google and Apple authenticate identity; they do not automatically authorize access to provider data.',
+    linkGoogle: 'Link Google',
+    linkApple: 'Link Apple',
+    providerLinked: 'Provider linked.',
+    providerRemoved: 'Provider removed.',
+    passkeysTitle: 'Passkeys',
+    passkeysBody:
+      'Private keys remain inside the authenticator. DANTE stores only the public credential needed for verification.',
+    passkeyLabel: 'Passkey label',
+    passkeyLabelRequired: 'Enter a label for the passkey.',
+    addPasskey: 'Add passkey',
+    passkeyAdded: 'Passkey added.',
+    passkeyRenamed: 'Passkey renamed.',
+    passkeyRemoved: 'Passkey removed.',
+    passkeyTransportUnknown: 'Transport not reported',
+    rename: 'Rename',
+    save: 'Save',
+    remove: 'Remove',
   },
   setupName: {
     title: 'What should DANTE call you?',
