@@ -132,16 +132,24 @@ test('B0 workspace is container-query ready and records open-to-usable timing', 
 
   await expect
     .poll(() =>
-      page.evaluate(() =>
-        performance
-          .getEntriesByName('dante.world-focus.open-to-usable', 'measure')
-          .map((entry) => entry.duration),
+      page.evaluate(
+        () =>
+          performance.getEntriesByName(
+            'dante.world-focus.open-to-usable',
+            'measure',
+          ).length,
       ),
     )
-    .toSatisfy((durations) =>
-      durations.length > 0 &&
-      durations.every((duration) => Number.isFinite(duration) && duration >= 0),
-    );
+    .toBeGreaterThan(0);
+
+  const durations = await page.evaluate(() =>
+    performance
+      .getEntriesByName('dante.world-focus.open-to-usable', 'measure')
+      .map((entry) => entry.duration),
+  );
+  expect(
+    durations.every((duration) => Number.isFinite(duration) && duration >= 0),
+  ).toBe(true);
 });
 
 test('World Focus foundation has no detectable axe violations at wide and compact widths', async ({
