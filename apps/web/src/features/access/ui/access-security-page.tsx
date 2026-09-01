@@ -98,7 +98,9 @@ export function AccessSecurityPage() {
   const { t } = useTranslation('common');
   const sessionQuery = useAuthSessionQuery();
   const sessionData = sessionQuery.data;
-  const session = isAuthenticatedAccessSession(sessionData) ? sessionData : null;
+  const session = isAuthenticatedAccessSession(sessionData)
+    ? sessionData
+    : null;
   const authenticated = session !== null;
   const methodsQuery = useAuthenticationMethodsQuery(authenticated);
   const establishPasswordMutation = useEstablishPasswordMutation();
@@ -126,7 +128,10 @@ export function AccessSecurityPage() {
   const csrfToken = session?.csrf_token ?? null;
   const methods = methodsQuery.data;
   const providerCodes = useMemo(
-    () => new Set(methods?.providers.map((provider) => provider.provider_code) ?? []),
+    () =>
+      new Set(
+        methods?.providers.map((provider) => provider.provider_code) ?? [],
+      ),
     [methods?.providers],
   );
 
@@ -235,7 +240,9 @@ export function AccessSecurityPage() {
           }
           void refreshMethods()
             .then(() => {
-              setSuccessMessage(t(($) => $.common.access.security.providerLinked));
+              setSuccessMessage(
+                t(($) => $.common.access.security.providerLinked),
+              );
             })
             .catch(handleError);
         },
@@ -270,7 +277,9 @@ export function AccessSecurityPage() {
         onSuccess: () => {
           void refreshMethods()
             .then(() => {
-              setSuccessMessage(t(($) => $.common.access.security.providerRemoved));
+              setSuccessMessage(
+                t(($) => $.common.access.security.providerRemoved),
+              );
             })
             .catch(handleError);
         },
@@ -428,7 +437,10 @@ export function AccessSecurityPage() {
         <h2>{t(($) => $.common.access.security.reauthTitle)}</h2>
         <p>{t(($) => $.common.access.security.reauthBody)}</p>
         <div className="access-security-actions">
-          <form className="access-security-inline-form" onSubmit={reauthenticatePassword}>
+          <form
+            className="access-security-inline-form"
+            onSubmit={reauthenticatePassword}
+          >
             <input
               type="password"
               autoComplete="current-password"
@@ -467,7 +479,10 @@ export function AccessSecurityPage() {
             {t(($) => $.common.access.security.removePassword)}
           </button>
         ) : (
-          <form className="access-security-inline-form" onSubmit={submitPassword}>
+          <form
+            className="access-security-inline-form"
+            onSubmit={submitPassword}
+          >
             <input
               type="password"
               autoComplete="new-password"
@@ -560,7 +575,10 @@ export function AccessSecurityPage() {
             <p>{t(($) => $.common.access.security.passkeysBody)}</p>
           </div>
         </div>
-        <form className="access-security-inline-form" onSubmit={registerPasskey}>
+        <form
+          className="access-security-inline-form"
+          onSubmit={registerPasskey}
+        >
           <input
             value={passkeyLabel}
             maxLength={100}
@@ -586,7 +604,9 @@ export function AccessSecurityPage() {
                   <input
                     value={editingPasskeyLabel}
                     maxLength={100}
-                    onChange={(event) => setEditingPasskeyLabel(event.target.value)}
+                    onChange={(event) =>
+                      setEditingPasskeyLabel(event.target.value)
+                    }
                   />
                 ) : (
                   <strong>{passkey.label}</strong>
@@ -602,7 +622,9 @@ export function AccessSecurityPage() {
                     className="access-secondary-button"
                     type="button"
                     disabled={updatePasskeyMutation.isPending}
-                    onClick={() => savePasskeyLabel(passkey.passkey_credential_ref)}
+                    onClick={() =>
+                      savePasskeyLabel(passkey.passkey_credential_ref)
+                    }
                   >
                     {t(($) => $.common.access.security.save)}
                   </button>
@@ -622,7 +644,9 @@ export function AccessSecurityPage() {
                   className="access-danger-button"
                   type="button"
                   disabled={removePasskeyMutation.isPending}
-                  onClick={() => removePasskey(passkey.passkey_credential_ref)}
+                  onClick={() =>
+                    removePasskey(passkey.passkey_credential_ref)
+                  }
                 >
                   {t(($) => $.common.access.security.remove)}
                 </button>
