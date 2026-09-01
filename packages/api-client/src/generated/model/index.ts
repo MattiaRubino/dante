@@ -6,6 +6,7 @@
  */
 
 export * from './authBeginSignupBody.zod';
+export * from './authEstablishPasswordBody.zod';
 export * from './authReauthenticateBody.zod';
 export * from './authRequestPasswordRecoveryBody.zod';
 export * from './authResendSignupVerificationBody.zod';
@@ -14,7 +15,10 @@ export * from './authSignInBody.zod';
 export * from './authValidatePasswordRecoveryBody.zod';
 export * from './authVerifySignupBody.zod';
 export * from './authenticatedSessionResponse.zod';
+export * from './authenticationMethodsResponse.zod';
+export * from './authenticationProviderMethodResponse.zod';
 export * from './existingAccountSignupResponse.zod';
+export * from './passwordEstablishRequest.zod';
 export * from './passwordRecoveryRequest.zod';
 export * from './passwordRecoveryValidationRequest.zod';
 export * from './passwordResetRequest.zod';

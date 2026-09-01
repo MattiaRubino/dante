@@ -144,9 +144,7 @@ class _LifecycleService:
         admitted: AdmittedSession,
         presented_session_secret: str,
     ) -> IssuedSession:
-        self.remove_calls.append(
-            (admitted.principal.account_ref, presented_session_secret)
-        )
+        self.remove_calls.append((admitted.principal.account_ref, presented_session_secret))
         if self.removal_error is not None:
             raise self.removal_error
         return self.issued

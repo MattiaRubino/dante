@@ -6,7 +6,9 @@
  */
 import type {
   AuthenticatedSessionResponse,
+  AuthenticationMethodsResponse,
   ExistingAccountSignupResponse,
+  PasswordEstablishRequest,
   PasswordRecoveryRequest,
   PasswordRecoveryValidationRequest,
   PasswordResetRequest,
@@ -22,6 +24,253 @@ import type {
   SignupVerificationRequest,
   UnauthenticatedSessionResponse,
 } from './model';
+
+export type authGetAuthenticationMethodsResponse200 = {
+  data: AuthenticationMethodsResponse;
+  status: 200;
+};
+
+export type authGetAuthenticationMethodsResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type authGetAuthenticationMethodsResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type authGetAuthenticationMethodsResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type authGetAuthenticationMethodsResponse503 = {
+  data: ProblemDetails;
+  status: 503;
+};
+
+export type authGetAuthenticationMethodsResponseSuccess =
+  authGetAuthenticationMethodsResponse200 & {
+    headers: Headers;
+  };
+export type authGetAuthenticationMethodsResponseError = (
+  | authGetAuthenticationMethodsResponse401
+  | authGetAuthenticationMethodsResponse403
+  | authGetAuthenticationMethodsResponse500
+  | authGetAuthenticationMethodsResponse503
+) & {
+  headers: Headers;
+};
+
+export type authGetAuthenticationMethodsResponse =
+  | authGetAuthenticationMethodsResponseSuccess
+  | authGetAuthenticationMethodsResponseError;
+
+export const getAuthGetAuthenticationMethodsUrl = () => {
+  return `/api/v1/auth/methods`;
+};
+
+/**
+ * Return safe Account-wide authenticator inventory for the admitted AuthSession.
+ * @summary Get Authentication Methods
+ */
+export const authGetAuthenticationMethods = async (
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<authGetAuthenticationMethodsResponse> => {
+  const res = await (fetchFn ?? fetch)(getAuthGetAuthenticationMethodsUrl(), {
+    ...options,
+    method: 'GET',
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: authGetAuthenticationMethodsResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as authGetAuthenticationMethodsResponse;
+};
+
+export type authRemovePasswordResponse200 = {
+  data: AuthenticatedSessionResponse;
+  status: 200;
+};
+
+export type authRemovePasswordResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type authRemovePasswordResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type authRemovePasswordResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type authRemovePasswordResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type authRemovePasswordResponse503 = {
+  data: ProblemDetails;
+  status: 503;
+};
+
+export type authRemovePasswordResponseSuccess =
+  authRemovePasswordResponse200 & {
+    headers: Headers;
+  };
+export type authRemovePasswordResponseError = (
+  | authRemovePasswordResponse401
+  | authRemovePasswordResponse403
+  | authRemovePasswordResponse409
+  | authRemovePasswordResponse500
+  | authRemovePasswordResponse503
+) & {
+  headers: Headers;
+};
+
+export type authRemovePasswordResponse =
+  authRemovePasswordResponseSuccess | authRemovePasswordResponseError;
+
+export const getAuthRemovePasswordUrl = () => {
+  return `/api/v1/auth/password`;
+};
+
+/**
+ * Remove the password only when Account-wide anti-lockout remains satisfied.
+ * @summary Remove Password
+ */
+export const authRemovePassword = async (
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<authRemovePasswordResponse> => {
+  const res = await (fetchFn ?? fetch)(getAuthRemovePasswordUrl(), {
+    ...options,
+    method: 'DELETE',
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: authRemovePasswordResponse['data'] = body ? JSON.parse(body) : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as authRemovePasswordResponse;
+};
+
+export type authEstablishPasswordResponse200 = {
+  data: AuthenticatedSessionResponse;
+  status: 200;
+};
+
+export type authEstablishPasswordResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type authEstablishPasswordResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type authEstablishPasswordResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type authEstablishPasswordResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type authEstablishPasswordResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type authEstablishPasswordResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type authEstablishPasswordResponse503 = {
+  data: ProblemDetails;
+  status: 503;
+};
+
+export type authEstablishPasswordResponseSuccess =
+  authEstablishPasswordResponse200 & {
+    headers: Headers;
+  };
+export type authEstablishPasswordResponseError = (
+  | authEstablishPasswordResponse400
+  | authEstablishPasswordResponse401
+  | authEstablishPasswordResponse403
+  | authEstablishPasswordResponse409
+  | authEstablishPasswordResponse422
+  | authEstablishPasswordResponse500
+  | authEstablishPasswordResponse503
+) & {
+  headers: Headers;
+};
+
+export type authEstablishPasswordResponse =
+  authEstablishPasswordResponseSuccess | authEstablishPasswordResponseError;
+
+export const getAuthEstablishPasswordUrl = () => {
+  return `/api/v1/auth/password/establish`;
+};
+
+/**
+ * Establish the first password and rotate the bearer on the same AuthSession.
+ * @summary Establish Password
+ */
+export const authEstablishPassword = async (
+  passwordEstablishRequest: PasswordEstablishRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<authEstablishPasswordResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(getAuthEstablishPasswordUrl(), {
+    ...options,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(passwordEstablishRequest),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: authEstablishPasswordResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as authEstablishPasswordResponse;
+};
 
 export type authReauthenticateResponse200 = {
   data: AuthenticatedSessionResponse;

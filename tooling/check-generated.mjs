@@ -119,7 +119,11 @@ async function snapshotGeneratedFiles() {
 }
 
 function regenerateApiClient() {
-  run('pnpm', ['api:generate'], 'deterministic OpenAPI and Orval API generation');
+  run(
+    'pnpm',
+    ['api:generate'],
+    'deterministic OpenAPI and Orval API generation',
+  );
 }
 
 async function regenerate() {
