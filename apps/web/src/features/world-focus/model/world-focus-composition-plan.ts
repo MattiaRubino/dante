@@ -75,6 +75,8 @@ const MAX_SPAN: Readonly<
   compact: 6,
 };
 
+const VALID_SPANS: readonly WorldFocusCompositionGridSpan[] = [4, 6, 12];
+
 function assertNonNegativeInteger(value: number, label: string): number {
   if (!Number.isInteger(value) || value < 0) {
     throw new Error(`${label} must be a non-negative integer`);
@@ -175,48 +177,69 @@ function selectCandidates<Kind extends string>(
   });
 }
 
-function expandRowToFill<Kind extends string>(
-  row: readonly Readonly<{
-    candidate: WorldFocusCompositionCandidate<Kind>;
-    span: WorldFocusCompositionGridSpan;
-  }>[],
-): readonly Readonly<{
+type MutablePlannedRowItem<Kind extends string> = {
   candidate: WorldFocusCompositionCandidate<Kind>;
   span: WorldFocusCompositionGridSpan;
-}>[] {
+};
+
+function getNextValidSpan(
+  current: WorldFocusCompositionGridSpan,
+  max: WorldFocusCompositionGridSpan,
+  remaining: number,
+): WorldFocusCompositionGridSpan | null {
+  for (const candidate of VALID_SPANS) {
+    if (candidate <= current || candidate > max) {
+      continue;
+    }
+    if (candidate - current <= remaining) {
+      return candidate;
+    }
+  }
+  return null;
+}
+
+function expandRowToFill<Kind extends string>(
+  row: readonly Readonly<MutablePlannedRowItem<Kind>>[],
+): readonly Readonly<MutablePlannedRowItem<Kind>>[] {
   let used = row.reduce((total, item) => total + item.span, 0);
   if (used >= 12) {
     return row;
   }
 
-  const expanded = row.map((item) => ({ ...item }));
+  const expanded: MutablePlannedRowItem<Kind>[] = row.map((item) => ({
+    ...item,
+  }));
+
   while (used < 12) {
-    const candidateIndex = expanded.findIndex(
-      (item) => item.span < MAX_SPAN[item.candidate.footprint],
-    );
-    if (candidateIndex < 0) {
+    const remaining = 12 - used;
+    let changed = false;
+
+    for (let index = 0; index < expanded.length; index += 1) {
+      const current = expanded[index];
+      if (current === undefined) {
+        continue;
+      }
+      const nextSpan = getNextValidSpan(
+        current.span,
+        MAX_SPAN[current.candidate.footprint],
+        remaining,
+      );
+      if (nextSpan === null) {
+        continue;
+      }
+
+      used += nextSpan - current.span;
+      expanded[index] = {
+        candidate: current.candidate,
+        span: nextSpan,
+      };
+      changed = true;
       break;
     }
 
-    const current = expanded[candidateIndex];
-    if (current === undefined) {
+    if (!changed) {
       break;
     }
-    const max = MAX_SPAN[current.candidate.footprint];
-    const delta = Math.min(max - current.span, 12 - used);
-    if (delta !== 2 && delta !== 4 && delta !== 6 && delta !== 8) {
-      break;
-    }
-    const nextSpan = current.span + delta;
-    if (nextSpan !== 4 && nextSpan !== 6 && nextSpan !== 12) {
-      break;
-    }
-
-    expanded[candidateIndex] = {
-      candidate: current.candidate,
-      span: nextSpan,
-    };
-    used += delta;
   }
 
   return expanded;
@@ -228,16 +251,8 @@ function planGrid<Kind extends string>(
   entries: readonly WorldFocusCompositionPlanEntry<Kind>[];
   rowCount: number;
 }> {
-  const rows: Array<
-    Array<{
-      candidate: WorldFocusCompositionCandidate<Kind>;
-      span: WorldFocusCompositionGridSpan;
-    }>
-  > = [];
-  let currentRow: Array<{
-    candidate: WorldFocusCompositionCandidate<Kind>;
-    span: WorldFocusCompositionGridSpan;
-  }> = [];
+  const rows: Array<Array<MutablePlannedRowItem<Kind>>> = [];
+  let currentRow: Array<MutablePlannedRowItem<Kind>> = [];
   let used = 0;
 
   const flush = () => {
