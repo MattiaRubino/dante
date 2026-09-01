@@ -14,6 +14,7 @@ test('Quick Add protects draft state and restores opener focus', async ({
   const dialog = page.getByRole('dialog', { name: 'Aggiungi' });
   const title = dialog.getByRole('textbox', { name: 'Titolo' });
   await expect(title).toBeFocused();
+  await expect(dialog).not.toContainText('home.timeline.create.');
 
   await title.fill('Studiare inglese');
   await page.keyboard.press('Escape');
