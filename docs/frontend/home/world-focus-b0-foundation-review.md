@@ -1,9 +1,9 @@
 # DANTE — World Focus B0 Foundation Review
 
-**Status:** B0 IMPLEMENTATION CANDIDATE — AWAITING FULL GATES  
+**Status:** B0 ENGINEERING CLOSED — AUTOMATED FRONTEND GATES PASS  
 **Date:** 2026-09-01  
 **Branch:** `feature/home-react`  
-**Scope:** one complete production-depth World Focus foundation block. No B0 sub-blocks exist. Real backend/API/database/provider/LLM integration remains explicitly out of scope until the final vertical.
+**Scope:** one complete production-depth World Focus foundation block. No B0 sub-blocks exist. Real backend/API/database/provider/LLM integration remains explicitly out of scope until the final vertical. Visual/VFX product approval remains a separate acceptance track and does not reopen B0 infrastructure.
 
 ---
 
@@ -411,6 +411,22 @@ Instrumentation rules:
 - measurement failure cannot break product behavior;
 - operational telemetry remains distinct from authoritative audit.
 
+B0 also hardens the existing candidate World Focus energy VFX as an explicitly ornamental capability:
+
+```text
+hardware-capable WebGL2 without a major performance caveat
+-> continuous V4 energy renderer may run
+
+major performance caveat / known software rasterizer / unavailable WebGL2
+-> static CSS energy fallback
+-> no continuous shader loop
+-> World Focus remains fully usable
+```
+
+The capability probe requests WebGL2 with `failIfMajorPerformanceCaveat: true`, rejects known software renderer identities such as SwiftShader/llvmpipe/softpipe, and releases the probe context. This is production behavior, not a test-only branch.
+
+The rule is permanent: decorative VFX may degrade before it is allowed to monopolize responsiveness, interaction latency or browser-test observability. The fallback preserves the same structural/VFX boundary contract and never changes WF0/WF-G3 geometry.
+
 Later mini-verticals may add metrics such as projection latency, lazy module load, Insight first response/completion and customize latency through the same ownership approach.
 
 Performance budgets are measured before becoming blocking numeric product gates.
@@ -569,6 +585,12 @@ application/world-focus-foundation.ts
   stale-commit prevention
   vendor-neutral User Timing span
 
+ui/world-focus-module-registry.ts
+  deterministic finite registry seam
+  duplicate-kind fail-fast
+  unknown-kind fail-safe
+  no remote/executable module loading
+
 ui/world-focus-render-boundary.tsx
   local render isolation primitive
   reset-key behavior
@@ -579,6 +601,12 @@ ui/world-focus-workspace.tsx
 
 ui/world-focus-route-error.tsx
   localized safe route failure + retry
+
+ui/world-focus-energy-surface.tsx
+  capability-gated continuous VFX
+  major-performance-caveat rejection
+  known software-renderer rejection
+  static production fallback
 
 WorldFocusPage
   workspace delegation
@@ -592,7 +620,7 @@ CSS
   accessible route-failure treatment
 ```
 
-Tests cover platform primitives, safe URLs, validation, race invalidation, upstream abort, release semantics, non-blocking instrumentation, render isolation, localized route retry, current shell behavior, container-query readiness, User Timing and axe pressure.
+Tests cover platform primitives, safe URLs, validation, race invalidation, upstream abort, release semantics, non-blocking instrumentation, deterministic module registry behavior, render isolation, localized route retry, VFX capability degradation, current shell behavior, container-query readiness, User Timing, axe pressure and the complete contracted geometry-width matrix.
 
 ---
 
@@ -661,4 +689,26 @@ B0 closes only when all of the following are true:
 17. no real backend/DB/provider/LLM behavior has been faked;
 18. documentation records explicit technology re-evaluation triggers.
 
-Until these gates actually pass, B0 remains **IMPLEMENTATION CANDIDATE**, not CLOSED.
+All 18 engineering exit criteria passed on 2026-09-01 at implementation HEAD `de1e77cb038a9ab2c394b5eb3ebceb53178c474a` through Frontend CI run `33499801570`:
+
+```text
+Frontend contract drift       PASS
+active-workstream format      PASS
+lint                          PASS
+typecheck                     PASS
+architecture                  PASS
+generated-source drift        PASS
+unit tests                    PASS
+production build              PASS
+diff/repository cleanliness   PASS
+Chromium Web E2E              PASS
+World Focus axe pressure      PASS
+World Focus geometry matrix   PASS
+Firefox frozen Timeline E2E   PASS
+Mobile compatibility/bundle   PASS
+Frontend CI Gate              PASS
+```
+
+B0 is therefore **ENGINEERING CLOSED**.
+
+This closure does not claim that the candidate V4 visual treatment is product-approved or visually frozen. Manual/real-device visual acceptance remains a separate product-quality activity, and later World Focus mini-verticals still require their own browser/product acceptance. Those later activities may refine presentation or add vertical semantics without reopening B0 foundation unless they expose a genuine architectural defect.
