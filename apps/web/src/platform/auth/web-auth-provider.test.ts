@@ -26,10 +26,9 @@ describe('Web Auth provider browser boundary', () => {
     );
 
     expect(() =>
-      redirectToAppleAuthorization(
-        'http://appleid.apple.com/auth/authorize',
-        { assign },
-      ),
+      redirectToAppleAuthorization('http://appleid.apple.com/auth/authorize', {
+        assign,
+      }),
     ).toThrow(ProviderBrowserUnavailableError);
     expect(() =>
       redirectToAppleAuthorization(

@@ -152,9 +152,9 @@ describe('Web Auth remote transport', () => {
 
     expect(captures).toHaveLength(2);
     expect(captures[0]?.input).toBe('/api/v1/auth/google/begin');
-    expect(
-      new Headers(captures[0]?.init?.headers).has('X-Dante-CSRF'),
-    ).toBe(false);
+    expect(new Headers(captures[0]?.init?.headers).has('X-Dante-CSRF')).toBe(
+      false,
+    );
     expect(captures[1]?.input).toBe('/api/v1/auth/google/begin');
     expect(new Headers(captures[1]?.init?.headers).get('X-Dante-CSRF')).toBe(
       'provider-link-csrf',
