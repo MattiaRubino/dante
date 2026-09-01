@@ -245,6 +245,7 @@ test('double-click and Shift-drag on empty Timeline create contextual defaults',
   await expect(dialog.getByLabel('Ora')).not.toHaveValue('');
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveCount(0);
+  await expect(page.locator('.timeline-grid')).toBeFocused();
 
   await section.scrollIntoViewIfNeeded();
   const rangeBox = await section.boundingBox();

@@ -89,7 +89,8 @@ export function TemporalCreateEntry({
 }: TemporalCreateEntryProps) {
   const { t } = useTranslation('common');
   const triggerRef = useRef<HTMLButtonElement | null>(null);
-  const runtimeRef = useRef(createLocalTemporalCreateRuntime());
+  const focusReturnRef = useRef<HTMLElement | null>(null);
+  const [runtime] = useState(() => createLocalTemporalCreateRuntime());
   const requestSeenRef = useRef<number | null>(null);
   const preparedRef = useRef<TemporalCreatePreparedOperation | null>(null);
   const commitInFlightRef = useRef(false);
@@ -110,7 +111,6 @@ export function TemporalCreateEntry({
 
   const freshFields = useCallback(
     (date: PlainDate, startMinute?: number, durationMinutes?: number) => {
-      const runtime = runtimeRef.current;
       const zone = runtime.clock.timeZoneId();
       let minute = startMinute;
       if (minute === undefined) {
@@ -132,11 +132,18 @@ export function TemporalCreateEntry({
           'personale',
       });
     },
-    [contexts],
+    [contexts, runtime],
   );
 
-  const restoreTriggerFocus = useCallback(() => {
-    requestAnimationFrame(() => triggerRef.current?.focus());
+  const restoreComposerFocus = useCallback(() => {
+    const target = focusReturnRef.current ?? triggerRef.current;
+    requestAnimationFrame(() => {
+      if (target?.isConnected) {
+        target.focus({ preventScroll: true });
+      } else {
+        triggerRef.current?.focus({ preventScroll: true });
+      }
+    });
   }, []);
 
   const closeComposer = useCallback(
@@ -150,10 +157,10 @@ export function TemporalCreateEntry({
       commitInFlightRef.current = false;
       onPreview(null);
       if (restoreFocus) {
-        restoreTriggerFocus();
+        restoreComposerFocus();
       }
     },
-    [onPreview, restoreTriggerFocus],
+    [onPreview, restoreComposerFocus],
   );
 
   const openComposer = useCallback(
@@ -162,6 +169,7 @@ export function TemporalCreateEntry({
       startMinute?: number,
       durationMinutes?: number,
       externalAnchor?: InvocationAnchor,
+      focusReturnTarget?: HTMLElement | null,
     ) => {
       onBeforeOpen?.();
       const fields = freshFields(date, startMinute, durationMinutes);
@@ -170,6 +178,7 @@ export function TemporalCreateEntry({
       setFailureMessage('');
       setLifecycle('idle');
       preparedRef.current = null;
+      focusReturnRef.current = focusReturnTarget ?? triggerRef.current;
       const triggerRect = triggerRef.current?.getBoundingClientRect();
       setAnchor(
         externalAnchor ??
@@ -197,6 +206,7 @@ export function TemporalCreateEntry({
         request.startMinute,
         request.durationMinutes,
         request.anchor,
+        document.querySelector<HTMLElement>('.timeline-grid'),
       );
     });
     return () => cancelAnimationFrame(frame);
@@ -293,7 +303,6 @@ export function TemporalCreateEntry({
     if (commitInFlightRef.current) {
       return;
     }
-    const runtime = runtimeRef.current;
     const preparation = preparedRef.current
       ? ({ status: 'ready', prepared: preparedRef.current } as const)
       : runtime.prepare(session.draft.current);
@@ -361,7 +370,15 @@ export function TemporalCreateEntry({
         ref={triggerRef}
         className="dante-timeline-quick-add"
         type="button"
-        onClick={() => openComposer(defaultDate)}
+        onClick={() =>
+          openComposer(
+            defaultDate,
+            undefined,
+            undefined,
+            undefined,
+            triggerRef.current,
+          )
+        }
         aria-label={t(($) => $.common.home.timeline.quickAdd)}
         aria-haspopup="dialog"
         aria-expanded={open}
