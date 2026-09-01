@@ -7,6 +7,10 @@ export const worldFocus = {
     loading: 'Caricamento del Mondo {{world}}',
     error: 'Impossibile aprire il Mondo {{world}}',
     unavailable: 'Mondo {{world}} non disponibile',
+    routeErrorTitle: 'Impossibile aprire questo Mondo',
+    routeErrorBody:
+      'Si è verificato un errore inatteso. Puoi riprovare senza esporre dettagli tecnici.',
+    retry: 'Riprova',
   },
   worlds: {
     body: {
