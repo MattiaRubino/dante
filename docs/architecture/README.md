@@ -29,7 +29,8 @@ AI-02.1                              v0.5 CLOSED / STRUCTURALLY ACCEPTED
 AI mega/pressure-test program        COMPLETE
 AI targeted v0.5 verification        COMPLETE
 AI-03                                ACTIVE / CONTEXT + RETRIEVAL + MEMORY
-AI-03 current macro-phase            AI-03A FULL CONTEXT ARCHITECTURE
+AI-03A                               CLOSED / STRUCTURALLY ACCEPTED / C01..C29
+AI-03 current macro-phase            AI-03B RETRIEVAL + MEMORY ARCHITECTURE
 ```
 
 Protected `main` is the integrated authority for closed shared foundations, CP6 and the integrated Recovery evolution. Active unmerged product/architecture work remains branch-local until normal protected-main integration.
@@ -42,7 +43,8 @@ Read according to the subject:
 - [`dante-ai-foundation.md`](dante-ai-foundation.md) — AI-00 semantic/architectural baseline; inherited constraints remain active and are not superseded by later AI phases;
 - [`ai-production-engineering-state-of-the-art-2026.md`](ai-production-engineering-state-of-the-art-2026.md) — production AI/agent engineering research thesis; state-of-the-art evidence and DANTE applicability boundaries, explicitly **not** the final DANTE Intelligence Architecture;
 - [`dante-ai-02-1-intelligence-reengineering.md`](dante-ai-02-1-intelligence-reengineering.md) — **AI-02.1 accepted structural runtime architecture**; v0.5 after all pressure/kill-test rounds and targeted consistency verification;
-- [`dante-ai-03-context-retrieval-memory.md`](dante-ai-03-context-retrieval-memory.md) — **current active AI-03 architecture charter**; Context / Retrieval / Memory with current macro-phase AI-03A Full Context Architecture;
+- [`dante-ai-03-context-retrieval-memory.md`](dante-ai-03-context-retrieval-memory.md) — **active AI-03 architecture charter**; current macro-phase AI-03B Retrieval + Memory Architecture;
+- [`dante-ai-03a-full-context-architecture.md`](dante-ai-03a-full-context-architecture.md) — **AI-03A accepted Full Context Architecture**; hardened candidate, C01..C29, dedicated mega-test evidence;
 - [`technical-decisions.md`](technical-decisions.md) — current architecture decision register;
 - [`domain-model-logical-readiness.md`](domain-model-logical-readiness.md) — satisfied Domain → Logical semantic compatibility contract;
 - [`../domain/README.md`](../domain/README.md) — current Domain entry point;
@@ -109,10 +111,15 @@ AI-02
 DANTE Intelligence Runtime Architecture
 → AI-02.1 v0.5 CLOSED / STRUCTURALLY ACCEPTED
 
+AI-03A
+Full Context Architecture
+→ CLOSED / STRUCTURALLY ACCEPTED
+→ dedicated mega-test / 9 hardenings / C01..C29
+
 AI-03
 Context / Retrieval / Memory
 → ACTIVE
-→ current macro-phase AI-03A Full Context Architecture
+→ current macro-phase AI-03B Retrieval + Memory Architecture
 ```
 
 The previous longer exploratory AI-00..AI-12 decomposition is historical planning only. Current routing is:
@@ -123,8 +130,11 @@ AI-01  Product Form + Production Engineering Research         COMPLETE
 AI-02  Intelligence Runtime Architecture                      COMPLETE / STRUCTURALLY ACCEPTED
 AI-03  Context / Retrieval / Memory                           ACTIVE
        ├ AI-03A Full Context Architecture
+       │        CLOSED / STRUCTURALLY ACCEPTED
        ├ AI-03B Retrieval + Memory Architecture
+       │        ACTIVE / CURRENT
        └ AI-03C Destructive Validation + Materialization Blueprint
+                FUTURE
 AI-04  Productionization Architecture                         FUTURE
 AI-05  Whole-System Acceptance + Implementation Blueprint     FUTURE
 ```
@@ -180,7 +190,7 @@ Scenario Workspace is hypothetical/derived and does not create a second canonica
 
 `BasisManifest` tracks relevant dependencies, source identity/version, temporal validity, assumptions and constraints. It also captures **Basis coherence**: independently fresh values are not automatically one coherent world-state.
 
-Detailed Context / Retrieval / Memory semantics are now owned by AI-03; AI-02 supplies their surrounding runtime contracts.
+Detailed Context is now fixed by AI-03A; Retrieval/Memory details are owned by active AI-03B.
 
 ### Reasoning / capabilities
 
@@ -272,47 +282,155 @@ or
 
 DANTE must not falsely claim its own governance for a side effect performed outside that boundary.
 
-## 6. AI-03 current architecture boundary
+## 6. AI-03A accepted Full Context Architecture
 
-Durable charter:
+Durable authority:
 
-- [`dante-ai-03-context-retrieval-memory.md`](dante-ai-03-context-retrieval-memory.md)
+- [`dante-ai-03a-full-context-architecture.md`](dante-ai-03a-full-context-architecture.md)
 
-AI-03 keeps three responsibilities distinct:
+AI-03A closes Context around seven accepted runtime contracts:
 
 ```text
-CONTEXT
-= purpose-bound runtime view for a specific reasoning/execution step
-
-RETRIEVAL
-= candidate discovery + validation for context construction
-
-MEMORY
-= information/state that survives beyond the immediate step/Run under explicit lifecycle
+ContextPlan
+InformationNeed
+ContextStrategy
+ContextFragment
+ContextReadiness
+ConsumerContext
+ContextManifest
 ```
+
+plus inherited `BasisManifest`.
+
+The accepted flow is:
+
+```text
+WorkContract
+→ ContextPlan
+→ InformationNeeds
+→ strategy per need
+→ discovery/acquisition eligibility
+→ source read / source binding
+→ ContextFragments
+→ Reality Scope / Provenance / Source Standing /
+  Integrity / Canonicality / Instruction Provenance /
+  Confidentiality / Temporal Validity / Contradiction
+→ coverage + coherence
+→ ContextReadiness
+→ minimisation/transformation
+→ resource-aware packing
+→ consumer/provider exposure eligibility
+→ ConsumerContext
+→ Harness/consumer invocation
+→ ContextManifest exposure receipt
+→ bounded JIT acquisition when required
+```
+
+The initial candidate failed and was hardened through:
+
+```text
+GAP-01 Reality Scope / Scenario binding
+GAP-02 Interaction Session continuity != provider-context continuity
+GAP-03 model-discovered InformationNeed scope ceiling
+GAP-04 per-need Reference Resolution requirement
+GAP-05 explicit source/use exclusions
+GAP-06 child/delegated context minimisation
+GAP-07 user-originated content != automatic instruction authority
+GAP-08 non-monotonic ContextReadiness
+GAP-09 objective-relative minimisation
+```
+
+After retest:
+
+```text
+AI-03A HARDENED CANDIDATE      STRUCTURAL PASS
+AI-03A invariants              C01..C29 ACCEPTED
+Domain/Logical/Physical reopen NO
+PostgreSQL/Alembic change      NO
+implementation claim           NONE
+```
+
+Key non-collapse rules:
+
+```text
+CONTEXT != CANONICAL REALITY
+CONTEXT != RETRIEVAL != MEMORY
+SOURCE STANDING != DOMAIN AUTHORITY
+CONSUMER CONTEXT != CONTEXT MANIFEST
+CONTEXT MANIFEST != BASIS MANIFEST
+EXPOSURE != MATERIAL DEPENDENCY
+DATA != INSTRUCTION
+INTERACTION SESSION CONTINUITY != PROVIDER-CONTEXT CONTINUITY
+WORKCONTRACT PROPAGATION != PARENT-CONTEXT INHERITANCE
+MODEL-DISCOVERED NEED != SCOPE EXPANSION
+SCENARIO A != SCENARIO B != CANONICAL CURRENT
+```
+
+Context machinery is bypassable for deterministic structured work that does not need a composed ConsumerContext.
+
+## 7. AI-03B current architecture boundary
+
+Durable phase charter:
+
+- [`dante-ai-03-context-retrieval-memory.md`](dante-ai-03-context-retrieval-memory.md)
 
 Current exact task:
 
 ```text
-AI-03A — FULL CONTEXT ARCHITECTURE
+AI-03B — RETRIEVAL + MEMORY ARCHITECTURE
 ```
 
-AI-03A must define the end-to-end flow from `WorkContract` to the exact authorized/provenance-bearing/freshness-aware `ContextManifest` consumed by a model, solver, verifier, capability-discovery step or other reasoning consumer.
+AI-03B must consume every AI-03A Context invariant while defining:
 
-AI-03B then defines structured/history/lexical/fuzzy/semantic/hybrid retrieval and Interaction/working/derived/provider/retrieval-memory classes with explicit lifecycle.
+```text
+RETRIEVAL
+structured/current/history query paths
+relation traversal
+metadata / lexical / fuzzy retrieval
+semantic/vector retrieval where justified
+hybrid retrieval / reranking
+source reread/currentness
+coverage-aware retrieval
+permission-aware discovery/retrieval
+iterative/JIT retrieval
+large-document hierarchy/chunking
+long-context vs indexed retrieval
+retrieval evaluation
 
-AI-03C pressure-tests the whole design and only then produces a materialization blueprint.
+MEMORY
+canonical application memory — already Domain/PostgreSQL
+Interaction memory/session continuity
+Run/working memory
+compaction/checkpoint state
+derived/adaptive memory candidates
+provider thread/memory/cache
+retrieval representations/indexes/embeddings
+execution evidence separation
+
+LIFECYCLE
+admission / promotion
+confirmation/correction
+contradiction/supersession
+decay/expiry
+retirement/redaction/deletion/forgetting
+anti-resurrection
+provider/cache/index invalidation
+```
+
+AI-03B does not authorize persistence simply because these nouns exist.
+
+AI-03C later pressure-tests the whole Context/Retrieval/Memory design and only then produces physical/materialization classification.
 
 Forbidden shortcut:
 
 ```text
-AI-03 starts
+AI-03B starts
 → therefore create memory table / embeddings / vector index
 ```
 
-No database evolution, embedding/index activation, vector-store decision or provider/model selection is authorized by AI-03 activation.
+No database evolution, embedding/index activation, vector-store decision or provider/model selection is authorized by AI-03B activation.
 
-## 7. Non-negotiable AI invariants
+## 8. Non-negotiable AI invariants
 
 ```text
 DANTE != chatbot/model/provider/thread
@@ -343,21 +461,33 @@ SEARCH INDEX != SOURCE OF TRUTH
 EMBEDDING != SOURCE / FACT
 SUMMARY != SOURCE / FACT
 PROVIDER MEMORY != DANTE CANONICAL MEMORY
+CONTEXT != RETRIEVAL != MEMORY
+SOURCE STANDING != DOMAIN AUTHORITY
+CONSUMER CONTEXT != CONTEXT MANIFEST
+CONTEXT MANIFEST != BASIS MANIFEST
+MODEL-DISCOVERED NEED != SCOPE EXPANSION
+WORKCONTRACT PROPAGATION != PARENT-CONTEXT INHERITANCE
 ```
 
-## 8. Pressure-test acceptance state
+## 9. Pressure-test acceptance state
 
 ```text
-Round I                         COMPLETE
-Round II                        COMPLETE
-Final Kill-Test                 COMPLETE
-Last Mega Stress-Test           COMPLETE
-Targeted v0.5 verification      COMPLETE
-Additional AI-02 mega-tests     NONE
-AI-02.1 closure                 CLOSED / STRUCTURALLY ACCEPTED
+AI-02 Round I                         COMPLETE
+AI-02 Round II                        COMPLETE
+AI-02 Final Kill-Test                 COMPLETE
+AI-02 Last Mega Stress-Test           COMPLETE
+AI-02 Targeted v0.5 verification      COMPLETE
+Additional AI-02 mega-tests           NONE
+AI-02.1 closure                       CLOSED / STRUCTURALLY ACCEPTED
+
+AI-03A initial candidate               FAIL / HARDENING REQUIRED
+AI-03A hardenings                      9
+AI-03A hardened candidate              STRUCTURAL PASS
+AI-03A C01..C29                        ACCEPTED
+Additional AI-03A mega-tests           NONE unless contradictory downstream evidence
 ```
 
-Targeted v0.5 structural checks:
+AI-02 targeted v0.5 structural checks:
 
 ```text
 generated-code secret isolation                         PASS
@@ -371,11 +501,13 @@ resource exhaustion after ambiguous effect              PASS
 deterministic fast path bypassing unnecessary isolation PASS
 ```
 
+AI-03A retests cover North Star capability reach, cross-domain/multi-actor, scenarios, historical/currentness, reference ambiguity, privacy/purpose, provider continuity, child/delegated context, context injection, revocation, anti-resurrection, long context, large histories/documents, context pressure, opaque provider state, multimodal/voice, future provider replacement and deterministic fast paths.
+
 The completed tests produced no evidence sufficient to reopen Domain, Logical, Physical or PostgreSQL.
 
 The future-extensibility structural criterion also passes: future substantially stronger general-purpose conversational intelligence can be added without transferring canonical memory, Authority, application state, Domain semantics or effect ownership to the provider/model.
 
-## 9. Current bounded deferrals
+## 10. Current bounded deferrals
 
 Still open or trigger-bound:
 
@@ -385,19 +517,19 @@ Still open or trigger-bound:
 - exact Execution Environment/sandbox technology;
 - exact target-resolution implementation;
 - exact safe-streaming/publication implementation;
-- exact Scenario Workspace representation;
+- exact Scenario Workspace physical representation;
 - exact ChangeSet physical persistence, if any;
 - exact Interaction Session persistence, if any;
-- detailed AI-03 Context / Retrieval / Memory decisions;
+- AI-03B retrieval algorithms and memory lifecycle decisions;
 - conversation history persistence;
-- embeddings/index lifecycle;
+- embeddings/index lifecycle and activation;
 - optional local-model choice/activation;
 - provider-specific commercial/cost selections;
 - cloud compute/IaC and production infrastructure activation.
 
-A deferral does not authorize violating already accepted semantic/runtime invariants.
+A deferral does not authorize violating already accepted semantic/runtime/context invariants.
 
-## 10. Architecture reopen discipline
+## 11. Architecture reopen discipline
 
 Closed Domain, Logical, Physical, Engineering and Frontend Foundation decisions are not casually reselected.
 
@@ -405,7 +537,9 @@ Implementation evidence first reopens the smallest affected technology/adapter/b
 
 Do not reopen architecture because of ORM convenience, table shape preference, provider naming, UI naming, framework fashion, agent-framework conventions, vector-store convenience or one isolated implementation annoyance.
 
-## 11. Current next architecture posture
+AI-03A is likewise not reopened merely because a retrieval or memory technology prefers a weaker Context contract.
+
+## 12. Current next architecture posture
 
 ```text
 DATABASE / CP6 + RECOVERY EVOLUTION
@@ -420,14 +554,18 @@ DESIGN / REENGINEERING ONLY
 
 AI-02.1
 v0.5 CLOSED / STRUCTURALLY ACCEPTED
-ALL PRESSURE/MEGA TESTS COMPLETE
+ALL AI-02 PRESSURE/MEGA TESTS COMPLETE
 TARGETED v0.5 VERIFICATION COMPLETE
-NO MORE AI-02 MEGA TESTS
+
+AI-03A
+FULL CONTEXT ARCHITECTURE
+CLOSED / STRUCTURALLY ACCEPTED
+9 HARDENINGS / C01..C29
 
 AI-03
 CONTEXT / RETRIEVAL / MEMORY
 ACTIVE
-CURRENT MACRO-PHASE AI-03A FULL CONTEXT ARCHITECTURE
+CURRENT MACRO-PHASE AI-03B RETRIEVAL + MEMORY ARCHITECTURE
 ```
 
 Direct implementation evidence is claimed only after the relevant real artifact/scenario executes.
