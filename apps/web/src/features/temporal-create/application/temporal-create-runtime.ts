@@ -4,6 +4,7 @@ import {
   InMemoryTemporalWorkspace,
   systemTemporalClock,
   systemTemporalIdFactory,
+  temporalValidationIssue,
   type TemporalClock,
   type TemporalIdFactory,
   type TemporalOperationId,
@@ -118,9 +119,47 @@ function capabilitiesForFields(
   return Object.freeze(capabilities);
 }
 
+function canonicalJsonValue(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(canonicalJsonValue);
+  }
+  if (value !== null && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>)
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([key, child]) => [key, canonicalJsonValue(child)]),
+    );
+  }
+  return value;
+}
+
+function richIntentFingerprint(metadata: TemporalCreateMetadata): string {
+  return JSON.stringify(canonicalJsonValue(metadata));
+}
+
+function operationIdReuseResult(
+  operationId: TemporalOperationId,
+): TemporalOperationResult {
+  return Object.freeze({
+    operationId,
+    status: 'rejected' as const,
+    code: 'operation-id-reused' as const,
+    issues: Object.freeze([
+      temporalValidationIssue('temporal.operation.id_reused', ['operationId']),
+    ]),
+  });
+}
+
 class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
   public readonly clock: TemporalClock;
-  private readonly records = new Map<TemporalProjectionItem['id'], TemporalCreateRecord>();
+  private readonly records = new Map<
+    TemporalProjectionItem['id'],
+    TemporalCreateRecord
+  >();
+  private readonly richOperationFingerprints = new Map<
+    TemporalOperationId,
+    string
+  >();
 
   public constructor(
     private readonly workspace: TemporalWorkspacePort,
@@ -180,6 +219,23 @@ class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
   public async execute(
     prepared: TemporalCreatePreparedOperation,
   ): Promise<TemporalCreateExecution> {
+    const richFingerprint = richIntentFingerprint(prepared.metadata);
+    const previousFingerprint = this.richOperationFingerprints.get(
+      prepared.operationId,
+    );
+    if (
+      previousFingerprint !== undefined &&
+      previousFingerprint !== richFingerprint
+    ) {
+      return Object.freeze({
+        result: operationIdReuseResult(prepared.operationId),
+        effect: null,
+      });
+    }
+    if (previousFingerprint === undefined) {
+      this.richOperationFingerprints.set(prepared.operationId, richFingerprint);
+    }
+
     const result = await this.workspace.execute(prepared.command);
     if (
       result.status !== 'applied' ||
