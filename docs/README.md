@@ -56,11 +56,14 @@ REMOTE BACKUP PROVIDER               TBD / NOT ACTIVATED
 PRODUCTION/CLOUD RECOVERY            NOT CLAIMED
 ACCESS PRE-BACKEND FRONTEND          CLOSED / ACCEPTED / RELEASE-HARDENED
 FULL ACCESS/AUTH PRODUCT VERTICAL    ACTIVE UNMERGED WORKSTREAM
-AI ARCHITECTURE                      ACTIVE / AI-02.1 v0.5 CANDIDATE STRUCTURAL FREEZE / NO IMPLEMENTATION CLAIM
-AI-02.1 MEGA/PRESSURE TEST PROGRAM   COMPLETE
-AI-02.1 TARGETED v0.5 VERIFICATION   COMPLETE
-AI-02.1 CLOSURE                      NOT YET — ADDITIONAL PRE-AI-03 REVIEW PENDING
-AI-03 CONTEXT/RETRIEVAL/MEMORY       NOT STARTED / BLOCKED UNTIL AI-02.1 ACCEPTANCE
+AI-00 FOUNDATION                     COMPLETE
+AI-01 PRODUCT/PRODUCTION RESEARCH    COMPLETE
+AI-02.1 RUNTIME ARCHITECTURE         v0.5 CLOSED / STRUCTURALLY ACCEPTED
+AI-02 PRESSURE/MEGA TEST PROGRAM     COMPLETE
+AI-02 TARGETED v0.5 VERIFICATION     COMPLETE
+AI-03 CONTEXT/RETRIEVAL/MEMORY       ACTIVE
+AI-03 CURRENT MACRO-PHASE            AI-03A FULL CONTEXT ARCHITECTURE
+AI BACKEND/DB/PROVIDER IMPLEMENTATION NOT CLAIMED
 ```
 
 For exact current state, read `PROJECT-STATUS.md` rather than reconstructing status from historical workstream/checkpoint files.
@@ -83,6 +86,12 @@ Read in this order for general project continuation:
 12. current branch/ref and its relation to protected `main`
 
 Repository truth beats incomplete conversation memory.
+
+For the active AI workstream, branch-local continuation additionally uses:
+
+- `workstreams/ai-architecture.md` — durable active-workstream record;
+- `workstreams/ai-architecture-live-handoff.md` — TEMPORARY branch-operational handoff while the branch is active; MUST NOT MERGE TO `main`;
+- `architecture/dante-ai-03-context-retrieval-memory.md` — current AI-03 phase charter.
 
 ## 4. Documentation lifecycle
 
@@ -193,14 +202,44 @@ architecture/ai-production-engineering-state-of-the-art-2026.md
 → production engineering research / TECHNOLOGY LANDSCAPE / NON-DANTE-DECISION
 
 architecture/dante-ai-02-1-intelligence-reengineering.md
-→ current AI-02.1 v0.5 CANDIDATE STRUCTURAL FREEZE / NOT CLOSED
+→ AI-02.1 v0.5 CLOSED / STRUCTURALLY ACCEPTED
+
+architecture/dante-ai-03-context-retrieval-memory.md
+→ AI-03 ACTIVE / current macro-phase AI-03A FULL CONTEXT ARCHITECTURE
 ```
 
 AI-00 remains semantically binding for its inherited/derived baseline. Its original `AI-01 next step` sequencing is historical; later product-form/research/reengineering work has already occurred.
 
 The production-engineering thesis is evidence rather than a normative provider/runtime selection.
 
-### AI-02.1 v0.5 candidate
+### Current compact AI roadmap
+
+```text
+AI-00  Semantic & Product Foundation
+       COMPLETE
+
+AI-01  Product Form + Production Engineering Research
+       COMPLETE
+
+AI-02  Intelligence Runtime Architecture
+       COMPLETE / STRUCTURALLY ACCEPTED
+
+AI-03  Context / Retrieval / Memory
+       ACTIVE
+       ├ AI-03A Full Context Architecture
+       ├ AI-03B Retrieval + Memory Architecture
+       └ AI-03C Destructive Validation + Materialization Blueprint
+
+AI-04  Productionization Architecture
+       FUTURE
+
+AI-05  Whole-System Acceptance + Implementation Blueprint
+       FUTURE
+```
+
+The earlier longer AI-00..AI-12 decomposition is historical planning only, not current routing.
+
+### AI-02.1 v0.5 accepted structural architecture
 
 The completed pressure-test program progressed through:
 
@@ -251,7 +290,19 @@ Targeted v0.5 consistency verification covers the new boundary and hardenings an
 
 These are responsibility/runtime contracts, not automatic services, Domain owners or database tables. All completed rounds found no evidence sufficient to reopen Domain, Logical, Physical or PostgreSQL.
 
-AI-02.1 is still **NOT CLOSED** only because the explicitly requested additional pre-AI-03 review remains pending. There will be no additional mega-test cycle.
+AI-02.1 is now **CLOSED / STRUCTURALLY ACCEPTED**. That closure does not claim runtime/backend/provider/database implementation PASS.
+
+### AI-03 active boundary
+
+AI-03 owns detailed Context / Retrieval / Memory architecture.
+
+Current macro-phase:
+
+```text
+AI-03A — FULL CONTEXT ARCHITECTURE
+```
+
+AI-03 must consume AI-02.1 rather than pre-commit embeddings, vector-store, conversation-history or memory persistence choices from industry fashion. Physical materialization is deferred until AI-03C destructive validation and classification.
 
 ## 10. Database System of Record
 
