@@ -1,11 +1,30 @@
 import {
   createDanteApiClient,
+  type AppleAuthenticationBegun,
   type AuthenticatedSession,
+  type AuthenticationMethods,
   type AuthSession,
   type ExistingAccountSignup,
+  type GoogleAuthenticationBegun,
+  type GoogleAuthenticationCompleteRequest,
+  type PasskeyAuthenticationCompleteRequest,
+  type PasskeyCeremony,
+  type PasskeyReauthenticationCompleteRequest,
+  type PasskeyRegistrationCompleteRequest,
+  type PasskeyUpdateRequest,
+  type PasswordEstablishRequest,
   type PasswordRecoveryRequest,
   type PasswordRecoveryValidationRequest,
   type PasswordResetRequest,
+  type ProviderAuthenticationResult,
+  type ProviderBeginRequest,
+  type ProviderEnrollmentEmailRequest,
+  type ProviderEnrollmentRequired,
+  type ProviderEnrollmentVerificationRequest,
+  type ProviderEnrollmentVerificationResult,
+  type ProviderLink,
+  type ProviderPurpose,
+  type ProviderReturnTarget,
   type ReauthenticateRequest,
   type RecoveryAccepted,
   type RecoveryValidation,
@@ -43,6 +62,31 @@ export type WebReauthenticateRequest = ReauthenticateRequest;
 export type WebRecoveryAccepted = RecoveryAccepted;
 export type WebRecoveryValidation = RecoveryValidation;
 export type WebAuthRemoteFailure = RemoteFailure;
+export type WebAuthenticationMethods = AuthenticationMethods;
+export type WebPasswordEstablishRequest = PasswordEstablishRequest;
+export type WebProviderPurpose = ProviderPurpose;
+export type WebProviderReturnTarget = ProviderReturnTarget;
+export type WebProviderBeginRequest = ProviderBeginRequest;
+export type WebGoogleAuthenticationBegun = GoogleAuthenticationBegun;
+export type WebGoogleAuthenticationCompleteRequest =
+  GoogleAuthenticationCompleteRequest;
+export type WebAppleAuthenticationBegun = AppleAuthenticationBegun;
+export type WebProviderAuthenticationResult = ProviderAuthenticationResult;
+export type WebProviderEnrollmentRequired = ProviderEnrollmentRequired;
+export type WebProviderEnrollmentEmailRequest = ProviderEnrollmentEmailRequest;
+export type WebProviderEnrollmentVerificationRequest =
+  ProviderEnrollmentVerificationRequest;
+export type WebProviderEnrollmentVerificationResult =
+  ProviderEnrollmentVerificationResult;
+export type WebProviderLink = ProviderLink;
+export type WebPasskeyCeremony = PasskeyCeremony;
+export type WebPasskeyRegistrationCompleteRequest =
+  PasskeyRegistrationCompleteRequest;
+export type WebPasskeyAuthenticationCompleteRequest =
+  PasskeyAuthenticationCompleteRequest;
+export type WebPasskeyReauthenticationCompleteRequest =
+  PasskeyReauthenticationCompleteRequest;
+export type WebPasskeyUpdateRequest = PasskeyUpdateRequest;
 
 export class WebAuthRemoteError extends Error {
   constructor(readonly failure: WebAuthRemoteFailure) {
@@ -95,6 +139,22 @@ function csrfRequestOptions(
   return requestOptions(signal, headers);
 }
 
+function providerBeginRequestOptions(
+  purpose: WebProviderPurpose,
+  csrfToken: string | undefined,
+  signal?: AbortSignal,
+): RequestInit {
+  if (purpose === 'sign_in') {
+    return requestOptions(signal);
+  }
+  if (csrfToken === undefined) {
+    throw new Error(
+      'Authenticated provider begin requires the current session CSRF token.',
+    );
+  }
+  return csrfRequestOptions(csrfToken, signal);
+}
+
 function unwrapRemoteResult<T>(result: RemoteResult<T>): T {
   if (result.ok) {
     return result.value;
@@ -120,6 +180,36 @@ export function createWebAuthRemote(
     ): Promise<WebAuthenticatedSession> {
       return unwrapRemoteResult(
         await client.signIn(request, requestOptions(signal)),
+      );
+    },
+
+    async getAuthenticationMethods(
+      signal?: AbortSignal,
+    ): Promise<WebAuthenticationMethods> {
+      return unwrapRemoteResult(
+        await client.getAuthenticationMethods(requestOptions(signal)),
+      );
+    },
+
+    async establishPassword(
+      request: WebPasswordEstablishRequest,
+      csrfToken: string,
+      signal?: AbortSignal,
+    ): Promise<WebAuthenticatedSession> {
+      return unwrapRemoteResult(
+        await client.establishPassword(
+          request,
+          csrfRequestOptions(csrfToken, signal),
+        ),
+      );
+    },
+
+    async removePassword(
+      csrfToken: string,
+      signal?: AbortSignal,
+    ): Promise<WebAuthenticatedSession> {
+      return unwrapRemoteResult(
+        await client.removePassword(csrfRequestOptions(csrfToken, signal)),
       );
     },
 
@@ -191,6 +281,197 @@ export function createWebAuthRemote(
       return unwrapRemoteResult(
         await client.reauthenticate(
           request,
+          csrfRequestOptions(csrfToken, signal),
+        ),
+      );
+    },
+
+    async beginGoogleAuthentication(
+      request: WebProviderBeginRequest,
+      csrfToken?: string,
+      signal?: AbortSignal,
+    ): Promise<WebGoogleAuthenticationBegun> {
+      return unwrapRemoteResult(
+        await client.beginGoogleAuthentication(
+          request,
+          providerBeginRequestOptions(request.purpose, csrfToken, signal),
+        ),
+      );
+    },
+
+    async completeGoogleAuthentication(
+      request: WebGoogleAuthenticationCompleteRequest,
+      signal?: AbortSignal,
+    ): Promise<WebProviderAuthenticationResult> {
+      return unwrapRemoteResult(
+        await client.completeGoogleAuthentication(request, requestOptions(signal)),
+      );
+    },
+
+    async beginAppleAuthentication(
+      request: WebProviderBeginRequest,
+      csrfToken?: string,
+      signal?: AbortSignal,
+    ): Promise<WebAppleAuthenticationBegun> {
+      return unwrapRemoteResult(
+        await client.beginAppleAuthentication(
+          request,
+          providerBeginRequestOptions(request.purpose, csrfToken, signal),
+        ),
+      );
+    },
+
+    async getProviderEnrollment(
+      signal?: AbortSignal,
+    ): Promise<WebProviderEnrollmentRequired> {
+      return unwrapRemoteResult(
+        await client.getProviderEnrollment(requestOptions(signal)),
+      );
+    },
+
+    async setProviderEnrollmentEmail(
+      request: WebProviderEnrollmentEmailRequest,
+      signal?: AbortSignal,
+    ): Promise<WebProviderEnrollmentRequired> {
+      return unwrapRemoteResult(
+        await client.setProviderEnrollmentEmail(request, requestOptions(signal)),
+      );
+    },
+
+    async resendProviderEnrollmentVerification(
+      signal?: AbortSignal,
+    ): Promise<WebProviderEnrollmentRequired> {
+      return unwrapRemoteResult(
+        await client.resendProviderEnrollmentVerification(requestOptions(signal)),
+      );
+    },
+
+    async verifyProviderEnrollment(
+      request: WebProviderEnrollmentVerificationRequest,
+      signal?: AbortSignal,
+    ): Promise<WebProviderEnrollmentVerificationResult> {
+      return unwrapRemoteResult(
+        await client.verifyProviderEnrollment(request, requestOptions(signal)),
+      );
+    },
+
+    async getProviderLink(signal?: AbortSignal): Promise<WebProviderLink> {
+      return unwrapRemoteResult(
+        await client.getProviderLink(requestOptions(signal)),
+      );
+    },
+
+    async confirmProviderLink(
+      csrfToken: string,
+      signal?: AbortSignal,
+    ): Promise<WebAuthenticatedSession> {
+      const result = unwrapRemoteResult(
+        await client.confirmProviderLink(csrfRequestOptions(csrfToken, signal)),
+      );
+      return result;
+    },
+
+    async unlinkProvider(
+      externalIdentityRef: string,
+      csrfToken: string,
+      signal?: AbortSignal,
+    ): Promise<WebAuthenticatedSession> {
+      return unwrapRemoteResult(
+        await client.unlinkProvider(
+          externalIdentityRef,
+          csrfRequestOptions(csrfToken, signal),
+        ),
+      );
+    },
+
+    async beginPasskeyRegistration(
+      csrfToken: string,
+      signal?: AbortSignal,
+    ): Promise<WebPasskeyCeremony> {
+      return unwrapRemoteResult(
+        await client.beginPasskeyRegistration(
+          csrfRequestOptions(csrfToken, signal),
+        ),
+      );
+    },
+
+    async completePasskeyRegistration(
+      request: WebPasskeyRegistrationCompleteRequest,
+      csrfToken: string,
+      signal?: AbortSignal,
+    ): Promise<WebAuthenticatedSession> {
+      return unwrapRemoteResult(
+        await client.completePasskeyRegistration(
+          request,
+          csrfRequestOptions(csrfToken, signal),
+        ),
+      );
+    },
+
+    async beginPasskeyAuthentication(
+      signal?: AbortSignal,
+    ): Promise<WebPasskeyCeremony> {
+      return unwrapRemoteResult(
+        await client.beginPasskeyAuthentication(requestOptions(signal)),
+      );
+    },
+
+    async completePasskeyAuthentication(
+      request: WebPasskeyAuthenticationCompleteRequest,
+      signal?: AbortSignal,
+    ): Promise<WebAuthenticatedSession> {
+      return unwrapRemoteResult(
+        await client.completePasskeyAuthentication(request, requestOptions(signal)),
+      );
+    },
+
+    async beginPasskeyReauthentication(
+      csrfToken: string,
+      signal?: AbortSignal,
+    ): Promise<WebPasskeyCeremony> {
+      return unwrapRemoteResult(
+        await client.beginPasskeyReauthentication(
+          csrfRequestOptions(csrfToken, signal),
+        ),
+      );
+    },
+
+    async completePasskeyReauthentication(
+      request: WebPasskeyReauthenticationCompleteRequest,
+      csrfToken: string,
+      signal?: AbortSignal,
+    ): Promise<WebAuthenticatedSession> {
+      return unwrapRemoteResult(
+        await client.completePasskeyReauthentication(
+          request,
+          csrfRequestOptions(csrfToken, signal),
+        ),
+      );
+    },
+
+    async updatePasskey(
+      passkeyCredentialRef: string,
+      request: WebPasskeyUpdateRequest,
+      csrfToken: string,
+      signal?: AbortSignal,
+    ): Promise<void> {
+      return unwrapRemoteResult(
+        await client.updatePasskey(
+          passkeyCredentialRef,
+          request,
+          csrfRequestOptions(csrfToken, signal),
+        ),
+      );
+    },
+
+    async removePasskey(
+      passkeyCredentialRef: string,
+      csrfToken: string,
+      signal?: AbortSignal,
+    ): Promise<WebAuthenticatedSession> {
+      return unwrapRemoteResult(
+        await client.removePasskey(
+          passkeyCredentialRef,
           csrfRequestOptions(csrfToken, signal),
         ),
       );
