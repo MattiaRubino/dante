@@ -238,6 +238,12 @@ test('relative temporal scrubber keeps advancing while held without a native-thu
   const mountedCount = initialDates.length;
   const initialFirst = initialDates[0] ?? '';
 
+  // The Timeline lives below the Home hero. Pointer coordinates are viewport-
+  // relative, so bring the actual scrubber into the viewport before deriving
+  // coordinates for the pointer-capture regression.
+  await scrubber.scrollIntoViewIfNeeded();
+  await expect(scrubber).toBeInViewport();
+
   const box = await scrubber.boundingBox();
   expect(box).not.toBeNull();
   if (!box) {
