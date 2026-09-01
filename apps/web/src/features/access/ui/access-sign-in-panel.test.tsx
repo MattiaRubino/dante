@@ -53,12 +53,12 @@ describe('AccessSignInPanel', () => {
 
     const googleButton = screen.getByRole('button', {
       name: 'Continua con Google',
-    });
+    }) as HTMLButtonElement;
     const appleButton = screen.getByRole('button', {
       name: 'Continua con Apple',
     });
 
-    expect(googleButton).toBeDisabled();
+    expect(googleButton.disabled).toBe(true);
     expect(appleButton.getAttribute('data-provider')).toBe('apple');
 
     const emailInput = screen.getByLabelText<HTMLInputElement>('Email');
