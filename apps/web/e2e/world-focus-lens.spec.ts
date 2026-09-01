@@ -41,7 +41,7 @@ test('B1 exposes visible World context and restorable temporal Lens history', as
   ).toHaveAttribute('aria-pressed', 'true');
 });
 
-test('B1 falls back safely for malformed or unsupported Lens URL state', async ({
+test('B1 falls back safely and canonicalizes recognized unsupported Lens state', async ({
   page,
 }) => {
   await page.goto('/worlds/music?time=banana');
@@ -56,6 +56,7 @@ test('B1 falls back safely for malformed or unsupported Lens URL state', async (
   await expect(
     page.getByRole('button', { name: '30 giorni' }),
   ).toHaveAttribute('aria-pressed', 'true');
+  await expect(page).toHaveURL(/\/worlds\/finance$/);
 });
 
 test('B1 does not invent a temporal Lens for Worlds without that capability', async ({
@@ -68,6 +69,7 @@ test('B1 does not invent a temporal Lens for Worlds without that capability', as
   await expect(
     page.locator('[data-world-focus-context="true"]'),
   ).toHaveAttribute('data-world-focus-scope-key', 'travel|time:none');
+  await expect(page).toHaveURL(/\/worlds\/travel$/);
 });
 
 test('B1 uses the compact native selector without changing Lens semantics', async ({
@@ -83,6 +85,11 @@ test('B1 uses the compact native selector without changing Lens semantics', asyn
   await select.selectOption('90d');
   await expect(page).toHaveURL(/\/worlds\/music\?time=90d$/);
   await expect(select).toHaveValue('90d');
+
+  await select.focus();
+  await page.keyboard.press('Escape');
+  await expect(page).toHaveURL(/\/worlds\/music\?time=90d$/);
+  await expect(select).toBeFocused();
 
   const hasHorizontalOverflow = await page.evaluate(
     () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
