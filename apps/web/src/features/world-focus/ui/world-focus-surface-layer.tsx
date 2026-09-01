@@ -53,6 +53,7 @@ export function WorldFocusSurfaceLayer({
         const isCurrentGeneration =
           surface.boundGeneration === workspace.state.generation;
         const requestClose = () => workspace.closeSurface(surface.instanceId);
+        const surfaceIsInert = placement.interaction === 'inert';
 
         if (registration === null) {
           return (
@@ -62,7 +63,9 @@ export function WorldFocusSurfaceLayer({
               data-world-focus-surface-id={surface.instanceId}
               data-world-focus-surface-kind={surface.kind}
               data-world-focus-surface-slot={placement.slot}
+              data-world-focus-surface-interaction={placement.interaction}
               data-world-focus-surface-status="unsupported"
+              inert={surfaceIsInert ? true : undefined}
               role="alert"
             >
               <p>{t(($) => $.common.worldFocus.surfaces.unavailable)}</p>
@@ -84,11 +87,13 @@ export function WorldFocusSurfaceLayer({
             data-world-focus-surface-depth={surface.depth}
             data-world-focus-surface-presentation={surface.presentation}
             data-world-focus-surface-slot={placement.slot}
+            data-world-focus-surface-interaction={placement.interaction}
             data-world-focus-surface-origin={surface.origin}
             data-world-focus-surface-generation={surface.boundGeneration}
             data-world-focus-surface-current={
               isCurrentGeneration ? 'true' : 'false'
             }
+            inert={surfaceIsInert ? true : undefined}
           >
             <WorldFocusRenderBoundary
               resetKey={`${surface.instanceId}:${surface.kind}:${surface.boundGeneration}`}
