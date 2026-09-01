@@ -12,15 +12,16 @@ from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, ConfigDict, Field
 
 from dante.auth.apple_flow import AppleAuthorizationCancelledError, AppleFlowService
-from dante.auth.authenticator_lifecycle import AuthenticatorLifecycleService
 from dante.auth.contracts import (
     AdmittedSession,
     AuthError,
     ProviderAuthenticated,
     ProviderAuthenticationBegun,
     ProviderAuthenticationResult,
+    ProviderEnrollmentInvalidOrExpiredError,
     ProviderEnrollmentRequired,
     ProviderEnrollmentResult,
+    ProviderLinkInvalidOrExpiredError,
     ProviderLinkRequired,
     ProviderPurpose,
     ProviderReturnTarget,
@@ -208,25 +209,16 @@ def _apple_service(runtime: ProviderFlowRuntime) -> AppleFlowService:
 
 
 def _required_flow_cookie(request: Request, *, name: str, enrollment: bool) -> str:
+    error: AuthError = (
+        ProviderEnrollmentInvalidOrExpiredError()
+        if enrollment
+        else ProviderLinkInvalidOrExpiredError()
+    )
     try:
         value = flow_cookie_value(request, name=name)
     except AmbiguousFlowCookieError as exc:
-        error: AuthError = (
-            __import__("dante.auth.contracts", fromlist=["ProviderEnrollmentInvalidOrExpiredError"])
-            .ProviderEnrollmentInvalidOrExpiredError()
-            if enrollment
-            else __import__("dante.auth.contracts", fromlist=["ProviderLinkInvalidOrExpiredError"])
-            .ProviderLinkInvalidOrExpiredError()
-        )
         raise translate_m5_auth_error(error) from exc
     if value is None:
-        error = (
-            __import__("dante.auth.contracts", fromlist=["ProviderEnrollmentInvalidOrExpiredError"])
-            .ProviderEnrollmentInvalidOrExpiredError()
-            if enrollment
-            else __import__("dante.auth.contracts", fromlist=["ProviderLinkInvalidOrExpiredError"])
-            .ProviderLinkInvalidOrExpiredError()
-        )
         raise translate_m5_auth_error(error)
     return value
 
@@ -547,8 +539,7 @@ async def handle_apple_callback(
             source_context=source_context(request),
         )
     except AppleAuthorizationCancelledError:
-        redirect = RedirectResponse(url=_FIXED_RETURN_TARGETS[return_target], status_code=303)
-        return redirect
+        return RedirectResponse(url=_FIXED_RETURN_TARGETS[return_target], status_code=303)
     except AuthError as exc:
         raise translate_m5_auth_error(exc) from exc
 
