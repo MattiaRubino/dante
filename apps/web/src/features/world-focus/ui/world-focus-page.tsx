@@ -96,13 +96,15 @@ function WorldFocusWorkspaceExperience({
       worldLabel={worldLabel}
       status={status}
       context={<WorldFocusContext world={world} />}
+      surfaces={
+        <WorldFocusSurfaceLayer registry={getCoreWorldFocusSurfaceRegistry()} />
+      }
     >
       <WorldFocusCompositionHost
         worldId={world.id}
         entries={compositionPlan.entries}
         registry={getCoreWorldFocusModuleRegistry()}
       />
-      <WorldFocusSurfaceLayer registry={getCoreWorldFocusSurfaceRegistry()} />
     </WorldFocusWorkspace>
   );
 }
