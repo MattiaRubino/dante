@@ -1,6 +1,6 @@
 # DANTE — World Focus B1 World Context / Session / Lens Review
 
-**Status:** B1 ANALYSIS OPEN — NO IMPLEMENTATION AUTHORIZED YET  
+**Status:** B1 IMPLEMENTATION IN PROGRESS — AUTOMATED GATES PENDING / USER ACCEPTANCE PENDING  
 **Date:** 2026-09-01  
 **Branch:** `feature/home-react`  
 **Parent:** `world-focus-platform-contract.md`, `world-focus-delivery-methodology.md`, B0 ENGINEERING CLOSED  
@@ -192,16 +192,16 @@ Time is the only Lens dimension with enough cross-scenario evidence to justify f
 
 However, even temporal Lens is **optional per World/context**.
 
-B1 should therefore implement:
+B1 therefore implements:
 
 ```text
 WorldLens
 └── time: optional bounded temporal scope
 ```
 
-and a narrow extension seam for future contextual/sub-scope dimensions.
+and keeps a narrow extension seam for future contextual/sub-scope dimensions.
 
-Do not implement a generic `filters[]` collection now.
+No generic `filters[]` collection is introduced.
 
 Why:
 
@@ -218,58 +218,70 @@ Re-evaluation trigger:
 
 # 6. Temporal Lens semantic model
 
-The Lens must distinguish **relative viewing intent** from the absolute interval eventually used by a projection query.
+The Lens distinguishes **relative viewing intent** from the absolute interval eventually used by a projection query.
 
-Do not persist only already-resolved timestamps for presets such as “last 30 days”, because after reload they would silently stop meaning “last 30 days”.
-
-Conceptual model:
+The implemented B1 model preserves a finite preset intent rather than pre-resolved timestamps:
 
 ```text
 WorldTimeLens
-  NONE
   RELATIVE
-    preset identity
-  ABSOLUTE
-    start/end calendar boundary
+    7d / 30d / 90d / 1y
+  ALL_TIME
+    all
 ```
 
-B1 should not hard-code backend query DTOs.
+The model deliberately leaves an extension point for future absolute/custom calendar ranges, but B1 does not ship a date-range picker before a real projection consumer proves the UX and timezone semantics required.
 
-The frontend model should preserve semantic intent; a future application adapter resolves it into authoritative query boundaries using current timezone/calendar context.
-
-## Initial preset pressure
-
-Potential initial presets to evaluate in UI:
+## Frozen B1 preset vocabulary
 
 ```text
-7 days
-30 days
-90 days
-this year / year-to-date
-all time
+7d
+30d
+90d
+1y
+all
 ```
 
-These are **not yet frozen copy or mandatory availability**. Each World may expose a smaller meaningful subset and one default.
+The vocabulary is finite; availability is per World capability.
 
-Do not add “Now” as a universal time preset: some modules represent past actuals, some future schedules, some persistent context.
+## Frozen deterministic fixture capabilities
 
-## Absolute/custom range
+```text
+Body     -> 7d / 30d / 90d / 1y      default 30d
+Music    -> 7d / 30d / 90d / 1y      default 30d
+Study    -> 7d / 30d / 90d / 1y      default 30d
+Finance  -> 30d / 90d / 1y / all     default 30d
+Work     -> 7d / 30d / 90d           default 30d
+Routine  -> 7d / 30d / 90d           default 30d
+Travel / Relationships / Growth / Projects
+         -> no visible temporal Lens in B1
+```
 
-The architecture must allow it, because Finance, Travel, Study and historical inspection will eventually require precise intervals.
+This is frontend presentation capability metadata only. It is not a Domain classification or backend contract.
 
-Whether B1 ships the full custom date-range picker is a UI/product decision to close before implementation. Do not fake a low-quality date picker merely to satisfy extensibility.
+## Absolute/custom range decision
+
+B1 does **not** implement a custom absolute range picker.
+
+Reason:
+
+- it would introduce substantial calendar/focus/mobile/timezone UX before any real projection needs it;
+- Travel requires trip-relative/future semantics that a generic historic picker would misrepresent;
+- the future model can extend without changing the current relative intent contract.
+
+Re-evaluate when the first real projection requires an exact user-selected calendar interval.
 
 ---
 
 # 7. Timezone/calendar semantics
 
-B1 must not use ad-hoc date arithmetic.
+B1 does not perform ad-hoc date arithmetic.
 
 The repository already owns `@dante/time`, currently backed by `temporal-polyfill` and Temporal types/functions.
 
-Native browser Temporal remains non-Baseline as of 2026-09-01, so B1 must continue to use the DANTE time abstraction rather than switching to native Temporal availability checks.
+Native browser Temporal remains non-Baseline as of 2026-09-01, so future B1/B2 resolution continues through the DANTE time abstraction rather than native feature checks.
 
-Required distinctions for future queries:
+Required distinctions for future queries remain:
 
 ```text
 instant
@@ -281,7 +293,7 @@ relative window intent
 
 A “day” or “month” boundary must be resolved in a known timezone when semantics require it.
 
-Travel is a mandatory pressure case because World/user/source timezone can differ.
+Travel remains a mandatory pressure case because World/user/source timezone can differ.
 
 ---
 
@@ -289,26 +301,29 @@ Travel is a mandatory pressure case because World/user/source timezone can diffe
 
 Not every Lens interaction belongs in the URL.
 
-The rule is:
+The rule remains:
 
 > Put in the URL only Lens state that is useful to refresh, restore, bookmark, share or browser-navigate.
 
-Current mature patterns support this:
+B1 implementation uses:
 
-- Linear reflects applied filters in the URL and allows filtered views to be shared;
-- Grafana exposes selected time range/timezone through URL state for links/drill-down;
-- TanStack Router treats search params as validated typed application state and explicitly supports defaults/stripping/retention.
+```text
+/worlds/:worldId?time=<preset>
+```
 
-DANTE-specific decision:
+Rules:
 
-- route `worldId` remains path identity;
-- accepted restorable Lens state may use validated search params;
-- transient selection/hover/component state stays local;
-- defaults should be omitted/stripped from the URL where possible;
-- malformed Lens URL state must fall back safely instead of breaking World Focus;
+- `worldId` remains path identity;
+- only the finite accepted temporal preset is parsed from `time`;
+- malformed values safely fall back to the World default;
+- a recognized preset unsupported by the current World also falls back to that World's default;
+- the default preset is omitted when the user returns to it;
+- explicit non-default Lens changes create browser history rather than replacing it;
+- refresh/deep-link restore the accepted non-default scope;
+- transient hover/selection/component state does not enter the URL;
 - URL state is presentation/query context, never authorization.
 
-No arbitrary nested filter JSON is authorized.
+No nested query/filter JSON is introduced.
 
 ---
 
@@ -324,20 +339,13 @@ change Lens
 -> does NOT change canonical reality
 ```
 
-This is consistent with mature dashboard/view products:
-
-- Notion distinguishes temporary view-mode filters from explicitly saved configuration;
-- Linear lets users filter temporarily and explicitly save a custom view when durability is desired.
-
-DANTE-specific future rule:
-
-A user may later explicitly choose to save a module's fixed scope or a World default Lens. That belongs to personalization/configuration semantics, not to the default B1 interaction.
+A future explicit save action may persist a module fixed scope or World default Lens, but that belongs to later personalization/configuration semantics.
 
 ---
 
 # 10. Future module participation contract
 
-B1 should establish the semantic shape but not implement module families.
+B1 establishes the semantic shape but does not implement module families.
 
 Later ModuleConfig may declare a relationship conceptually equivalent to:
 
@@ -364,33 +372,42 @@ User-saved “last 12 months” trend
 -> FIXED
 ```
 
-This prevents a global Lens from blindly changing every module.
-
 Exact enum names remain a later ModuleConfig contract decision.
 
 ---
 
 # 11. World switch/session lifecycle
 
-B1 must define deterministic reset/restore behavior.
+B1 implements deterministic session scope identity.
 
-Baseline:
+```text
+WorldFocusSessionSnapshot
+  activeWorldId
+  lens
+  scopeKey
+```
+
+Example:
+
+```text
+music|time:30d
+music|time:90d
+travel|time:none
+```
+
+The key is not canonical identity and is not a durable run ID. It is a deterministic frontend scope identity that B2 can combine with the B0 latest-read coordinator to reject stale projection completions.
+
+World switch behavior:
 
 ```text
 open World A
-set temporary Lens A
+change Lens A
 switch to World B
--> B receives B's own default/restored Lens policy
--> A's transient component state cannot leak into B
+-> B resolves only B's capability/default/URL state
+-> A state cannot leak into B
 ```
 
-Do not create one application-global Lens shared by every World.
-
-Future persistence may restore a user-owned World default or restorable URL state, but current pre-backend fixtures remain deterministic.
-
-Race protection uses B0 request-generation/cancellation primitives.
-
-Late results from a previous World/Lens generation may not commit to the active session.
+No application-global Lens store is created.
 
 ---
 
@@ -398,7 +415,7 @@ Late results from a previous World/Lens generation may not commit to the active 
 
 ## Notion dashboard/global filters
 
-Current Notion dashboard views support global filters across widgets, but only widgets whose underlying views expose the relevant property are affected. View-mode filters are temporary/local unless explicitly saved with appropriate authority.
+Current Notion dashboard views support global filters across widgets, but only widgets whose underlying views expose the relevant property are affected.
 
 DANTE lesson:
 
@@ -440,167 +457,161 @@ Do not copy Grafana's generic variable/query system.
 
 ---
 
-# 13. Technology review — current B1 decisions
+# 13. Technology review — B1 decisions
 
 ## State management
 
-Keep React local/reducer state. No Zustand/Redux/XState.
-
-Trigger to reconsider remains genuine cross-tree workflow complexity, not B1 existence.
+React/TanStack route state remains sufficient. No Zustand/Redux/XState.
 
 ## Routing/search state
 
-Use current TanStack Router when restorable Lens state is accepted for URL encoding.
-
-It already provides typed/validated search state; no second URL-state library is justified.
+Current TanStack Router owns validated/restorable `time` search state. No second URL-state library is added.
 
 ## Runtime schema library
 
-Do not add Zod/Valibot solely for B1 unless the concrete search-state or fixture boundary becomes complex enough to justify it. A small explicit parser can remain clearer for a finite preset vocabulary.
-
-The B0 generic boundary seam remains available for future untrusted transport payloads.
+No Zod/Valibot dependency is added for a five-value search vocabulary. The route uses a finite explicit parser; B0's validator-neutral transport seam remains available for real backend payloads.
 
 ## Time
 
-Use `@dante/time` / Temporal polyfill abstraction already in the repository.
-
-Do not migrate B1 to native `Temporal` because native availability is still incomplete across widely used browsers.
+`@dante/time` remains the future range-resolution authority. B1 preserves intent and does not resolve fake date boundaries merely to exercise the package.
 
 ## UI controls
 
-Prefer native semantic buttons/menus/dialog patterns plus DANTE design tokens.
+No UI component dependency is added.
 
-Do not add a component-system dependency for one Lens control.
+- wide workspace: native semantic buttons with `aria-pressed`;
+- narrow workspace: native `select`/combobox;
+- both consume the same session state and route intent.
 
 ## Layout
 
-Use the B0 workspace container-query foundation. Do not couple Lens responsiveness to viewport JS.
+B0's named workspace container owns responsiveness. No viewport JavaScript or duplicated device breakpoint logic is added.
 
 ---
 
-# 14. UI/product target
+# 14. UI/product decision
 
-B1 must leave the workspace visibly more useful.
+B1 introduces a visible, quiet World context header inside the frozen workspace.
 
-It should introduce a restrained **World context header/lens region** inside the workspace, not a dashboard toolbar.
-
-The visual hierarchy should communicate:
+Frozen functional hierarchy for B1:
 
 ```text
-where am I?
-what scope am I viewing?
-can I change/reset that scope?
+WORLD kicker
+World title
+World presentation description
+optional temporal Lens
 ```
 
-without competing with the global Topbar or the future World content.
+The title becomes visibly rendered as the page-level `h1` rather than remaining visually hidden.
 
-## Desired qualities
+Wide workspace:
 
-- visually quiet compared with modules/content;
-- premium/intentional, not generic admin-dashboard chrome;
-- usable with one hand/touch at narrow widths;
-- keyboard complete;
-- no horizontal overflow;
-- no giant toolbar of filters;
-- current scope always understandable;
-- default/no-filter state not visually noisy;
-- future additional Lens dimensions can be added without redesigning the whole header.
+```text
+context copy                           segmented temporal Lens
+```
 
-Exact visual composition is **not yet frozen** and must be reviewed against the live workspace before implementation acceptance.
+Narrow workspace:
+
+```text
+context copy
+native compact temporal selector
+```
+
+Worlds without a temporal capability show the context header without empty filter chrome.
+
+No explicit Reset button is added: selecting the World default is the reset operation and removes the non-default search state.
+
+The visual styling is intentionally restrained and subordinate to future module content. Final user visual acceptance remains mandatory before B1 freeze.
 
 ---
 
 # 15. Accessibility requirements
 
-At minimum:
+B1 implementation provides:
 
-- current World remains the document/page heading context;
-- Lens region has an accessible name;
-- controls have explicit current/selected state;
-- keyboard use does not depend on arrow-key behavior unless the selected ARIA pattern specifically requires it;
-- focus remains stable after changing scope;
-- menus/popovers restore focus correctly;
-- touch targets meet current product/WCAG pressure;
-- selected state is not color-only;
-- changing Lens does not create unexpected focus jumps;
-- reduced motion keeps identical semantic behavior.
+- visible page-level World heading;
+- accessible Lens region name;
+- button group name on wide layout;
+- explicit `aria-pressed` state;
+- native labelled combobox on compact layout;
+- >=44px Lens controls;
+- visible focus treatment;
+- no color-only selected-state semantics;
+- stable focus after Lens changes;
+- disabled Lens controls while the shell is not ready or no interaction owner exists;
+- reduced-motion behavior with identical semantics.
 
-If a custom date-range dialog is implemented, it must be independently keyboard/focus tested rather than relying on automated axe only.
+Automated axe remains required but does not replace the user's/manual keyboard and visual gate.
 
 ---
 
 # 16. Performance requirements
 
-B1 itself should be extremely cheap.
+B1 is deliberately cheap:
 
 - no chart/data library;
 - no global state dependency;
-- no continuous timers just to maintain relative labels;
-- no rerender of decorative VFX due to every Lens interaction;
-- Lens change becomes a future query-generation boundary, not a page remount;
-- URL updates must not recreate unrelated shell state;
-- preset resolution uses shared time utilities;
-- performance marks may later measure Lens-to-usable-projection latency when B2 exists.
+- no timers;
+- no date arithmetic on render;
+- no VFX coupling to Lens state;
+- no page remount requirement for Lens change;
+- pure finite parsing/resolution;
+- CSS container-query responsive transformation;
+- session scope identity is a short deterministic string, not serialized state.
 
-Current B0 VFX degradation rule remains untouched.
+B2 may add `Lens -> projection usable` timing once projections exist.
 
 ---
 
 # 17. Security/privacy/disclosure requirements
 
-Lens is not authorization.
+Lens remains non-authoritative.
 
-Changing scope must never make the frontend fetch/show data that the authoritative future projection boundary is not allowed to disclose.
+The URL contains only a finite presentation preset token. It contains no source payload, token, provider ID, note, subject identity or authorization information.
 
-URL search state must not contain sensitive source payloads, private notes, authorization tokens or provider identifiers merely for convenience.
-
-A shareable URL may describe a viewing scope; the receiver's authoritative access still determines what can be projected.
+Future projection authorization/disclosure remains backend authoritative.
 
 ---
 
 # 18. Deterministic pre-backend strategy
 
-B1 may extend the synthetic World fixture with **presentation capability metadata only**, for example whether a temporal Lens is available and its deterministic default/preset set.
+B1 extends only the synthetic World fixture with presentation capability metadata.
 
-Such fixture metadata is explicitly:
+It does not add:
 
-```text
-frontend product fixture
-!= Domain identity
-!= backend DTO
-!= DB row
-!= canonical World model
-```
+- metrics;
+- source records;
+- fake API latency;
+- fake backend success;
+- DB persistence;
+- provider data.
 
-Do not invent source data, metrics or fake API latency in B1.
-
-B2 will introduce the real deterministic projection adapter boundary.
+B2 will introduce deterministic projection adapters on top of the B1 session/Lens contract.
 
 ---
 
 # 19. Failure/adversarial matrix
 
-B1 implementation must prove at least:
+Implementation/tests cover or are required to cover:
 
 ```text
 invalid URL Lens value
 missing Lens value
+recognized but unsupported Lens value
 World with no temporal Lens
 World with smaller preset set
-World A -> World B switch
-Back/Forward through accepted Lens changes
+Back/Forward through Lens changes
 refresh/deep-link with accepted Lens
-compact viewport
-200% zoom pressure
-keyboard-only
-reduced motion
-very long translated labels
-Italian + English
-future timezone different from browser timezone
-rapid Lens changes before future projections finish
+wide + compact workspace
+keyboard semantics
+axe pressure
+reduced motion through existing global pressure
+Italian + English resource parity
+no horizontal overflow across frozen widths
+World-specific scope identity
 ```
 
-Where B2 is required to exercise projection races, B1 must at least expose deterministic generation/change identity that B2 can consume without redesign.
+Projection-race execution itself belongs to B2, which will consume `scopeKey` plus B0 request cancellation rather than redesign session ownership.
 
 ---
 
@@ -610,6 +621,7 @@ B1 does not implement:
 
 ```text
 generic filter/query language
+custom absolute date picker yet
 arbitrary category/person/status filters
 module families
 ModuleConfig persistence
@@ -625,41 +637,97 @@ new Domain/Logical/Physical semantics
 
 ---
 
-# 21. Open decisions to close before implementation
+# 21. Implementation inventory
 
-1. exact first temporal preset vocabulary and per-World availability;
-2. whether B1 includes a polished custom absolute date-range flow or only leaves the typed seam;
-3. exact URL parameter shape and whether Lens changes push or replace browser history by interaction class;
-4. exact visual composition of World context + Lens inside the frozen workspace;
-5. whether the World title remains visually hidden from WF1 or becomes visible as part of the new context region;
-6. compact/narrow control transformation;
-7. exact deterministic fixture capability metadata;
-8. whether an explicit Reset control is shown only after deviation from default or represented through preset selection.
+B1 implementation introduces/changes:
 
-These are product/UI decisions, not backend blockers.
+```text
+model/world-focus-lens.ts
+  finite temporal preset vocabulary
+  capability definition validation
+  safe URL preset normalization
+  per-World preset resolution
+  relative/all-time Lens intent
+
+application/world-focus-session.ts
+  deterministic World + Lens session snapshot
+  scope identity for later projection ownership
+
+model/world-focus-fixtures.ts
+  presentation-only per-World temporal capability metadata
+
+ui/world-focus-context.tsx
+  visible World context
+  wide semantic segmented controls
+  compact native selector
+
+ui/world-focus-page.tsx
+  session creation + context integration
+
+ui/world-focus-workspace.tsx
+  persistent context slot independent of future content slot
+
+route
+  validated `time` search state
+  push-history Lens changes
+  default-search reset behavior
+
+world-focus.css
+  container-responsive context/Lens design
+
+i18n it/en
+  Lens labels and preset copy
+
+unit + E2E
+  model/session invariants
+  URL/history/deep-link/unsupported/no-Lens/compact behavior
+```
 
 ---
 
-# 22. B1 completion target
+# 22. Future backend / B2 handoff requirements
 
-B1 is complete only when the user can open contrasting fixture Worlds and see a polished, useful World context/Lens experience whose behavior is deterministic and production-depth.
+B1 deliberately does not invent an endpoint.
 
-Expected exit evidence:
+B2/future backend must be able to consume a bounded frontend request intent containing, as applicable:
 
 ```text
-visible World context inside workspace
-bounded optional temporal Lens
-validated/restorable URL behavior where accepted
-no generic filter grammar
-World-specific Lens capability without World-specific pages
-stable world-switch/reset/history semantics
-container-responsive UI
-keyboard/a11y complete
-safe translated state
-strict typing/tests/build/E2E green
-no WF0/WF-G3 regression
-no Access/Auth/Timeline regression
-future B2 projection boundary can consume Lens without redesign
+World presentation/context identity
+validated temporal Lens intent
+resolved authoritative timezone/calendar context when needed
+request/scope generation identity client-side
 ```
 
-Only after these decisions and implementation pass should B1 freeze and B2 begin.
+The future backend/application layer remains responsible for:
+
+- authoritative data selection;
+- disclosure/authorization;
+- timezone-aware range resolution where source semantics require it;
+- aggregation/downsampling;
+- provenance/freshness;
+- partial/unavailable/error semantics.
+
+The client `scopeKey` is never accepted as authorization or canonical state.
+
+---
+
+# 23. B1 gate / acceptance state
+
+B1 is **not frozen** merely because implementation exists.
+
+Required gate sequence:
+
+```text
+implementation
+-> automated CI
+-> browser/E2E evidence
+-> user functional test
+-> user visual/interaction review
+-> fixes if needed
+-> rerun gates
+-> explicit user OK
+-> B1 freeze
+-> B2
+```
+
+At the time of this update the implementation commit exists, but automated gates and user acceptance are still pending.
