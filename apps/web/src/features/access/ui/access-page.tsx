@@ -120,7 +120,13 @@ export function AccessPage({
   const validateRecoveryMutation = useValidatePasswordRecoveryMutation();
   const resetPasswordMutation = useResetPasswordMutation();
   const reauthenticateMutation = useReauthenticateMutation();
-  const prepareGoogleMutation = usePrepareGoogleAuthenticationMutation();
+  const {
+    data: googlePreparationData,
+    error: googlePreparationError,
+    isPending: googlePreparationPending,
+    mutate: prepareGoogle,
+    reset: resetGooglePreparation,
+  } = usePrepareGoogleAuthenticationMutation();
   const completeGoogleMutation = useCompleteGoogleAuthenticationMutation();
   const appleMutation = useAppleAuthenticationMutation();
   const continuationQuery = useProviderContinuationQuery(
@@ -134,7 +140,7 @@ export function AccessPage({
 
   const providerContinuation: ProviderContinuation =
     providerContinuationOverride ?? continuationQuery.data ?? { kind: 'none' };
-  const googlePreparation = prepareGoogleMutation.data ?? null;
+  const googlePreparation = googlePreparationData ?? null;
 
   const dispatchAuthError = useCallback(
     (error: unknown): AccessFlowEvent | null => {
@@ -239,11 +245,8 @@ export function AccessPage({
   useEffect(() => {
     if (!googleSurfaceVisible) {
       googlePreparationStarted.current = false;
-      if (
-        prepareGoogleMutation.data !== undefined ||
-        prepareGoogleMutation.error !== null
-      ) {
-        prepareGoogleMutation.reset();
+      if (googlePreparationData !== undefined || googlePreparationError !== null) {
+        resetGooglePreparation();
       }
       return;
     }
@@ -252,17 +255,21 @@ export function AccessPage({
     }
 
     googlePreparationStarted.current = true;
-    setGoogleError(null);
-    prepareGoogleMutation.mutate(
+    prepareGoogle(
       { purpose: 'sign_in', returnTarget: 'access' },
       {
-        onError: () => {
-          googlePreparationStarted.current = false;
-          googleFailure();
-        },
+        onSuccess: () => setGoogleError(null),
+        onError: googleFailure,
       },
     );
-  }, [googleFailure, googleSurfaceVisible, prepareGoogleMutation]);
+  }, [
+    googleFailure,
+    googlePreparationData,
+    googlePreparationError,
+    googleSurfaceVisible,
+    prepareGoogle,
+    resetGooglePreparation,
+  ]);
 
   useLayoutEffect(() => {
     if (
@@ -332,12 +339,12 @@ export function AccessPage({
       { preparation, credential },
       {
         onSuccess: (result) => {
-          prepareGoogleMutation.reset();
+          resetGooglePreparation();
           googlePreparationStarted.current = false;
           applyProviderResult('google', result);
         },
         onError: () => {
-          prepareGoogleMutation.reset();
+          resetGooglePreparation();
           googlePreparationStarted.current = false;
           googleFailure();
           dispatch({ type: 'SERVER_PROVIDER_FAILED', provider: 'google' });
@@ -685,8 +692,7 @@ export function AccessPage({
                 clientId: googlePreparation?.clientId ?? null,
                 nonce: googlePreparation?.begun.nonce ?? null,
                 pending:
-                  prepareGoogleMutation.isPending ||
-                  completeGoogleMutation.isPending,
+                  googlePreparationPending || completeGoogleMutation.isPending,
                 errorMessage: googleSurfaceVisible ? googleError : null,
                 onCredential: completeGoogle,
                 onError: googleBrowserError,
