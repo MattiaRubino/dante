@@ -7,6 +7,7 @@ import {
 import type { WorldFocusPresentationSurface } from './world-focus-platform';
 import {
   createWorldFocusWorkspaceState,
+  isWorldFocusBlockingPresentation,
   reduceWorldFocusWorkspaceState,
   type WorldFocusWorkspaceState,
 } from './world-focus-workspace';
@@ -240,6 +241,87 @@ describe('World Focus workspace surface allocation', () => {
     });
   });
 
+  it('keeps a blocker authoritative even if a malformed legacy stack places weaker surfaces above it', () => {
+    const malformedState: WorldFocusWorkspaceState = Object.freeze({
+      worldId: 'finance',
+      generation: 4,
+      selection: null,
+      surfaces: Object.freeze([
+        Object.freeze({
+          instanceId: 'dante:under',
+          kind: 'assistant',
+          depth: 'insight',
+          presentation: 'sidecar',
+          origin: 'dante',
+          boundGeneration: 4,
+          contextReference: null,
+          dismissible: true,
+        }),
+        Object.freeze({
+          instanceId: 'confirm:blocker',
+          kind: 'confirmation',
+          depth: 'insight',
+          presentation: 'modal',
+          origin: 'application',
+          boundGeneration: 4,
+          contextReference: null,
+          dismissible: true,
+        }),
+        Object.freeze({
+          instanceId: 'dante:illegal-late',
+          kind: 'assistant',
+          depth: 'insight',
+          presentation: 'sidecar',
+          origin: 'dante',
+          boundGeneration: 4,
+          contextReference: null,
+          dismissible: true,
+        }),
+        Object.freeze({
+          instanceId: 'route:illegal-late',
+          kind: 'route',
+          depth: 'explore',
+          presentation: 'route',
+          origin: 'user',
+          boundGeneration: 4,
+          contextReference: null,
+          dismissible: true,
+        }),
+      ]),
+    });
+
+    const plan = resolveWorldFocusWorkspaceAllocation(malformedState, 1280);
+
+    expect(plan).toMatchObject({
+      mainAllocation: 'split',
+      topLayer: 'overlay',
+      mainInteraction: 'inert',
+      activeSidecarInstanceId: 'dante:under',
+      activeOverlayInstanceId: 'confirm:blocker',
+      topSurfaceInstanceId: 'confirm:blocker',
+    });
+    expect(getPlacement(plan, 'dante:under')).toMatchObject({
+      slot: 'sidecar',
+      activeInSlot: true,
+      interaction: 'inert',
+    });
+    expect(getPlacement(plan, 'confirm:blocker')).toMatchObject({
+      slot: 'overlay',
+      activeInSlot: true,
+      interaction: 'interactive',
+    });
+    expect(getPlacement(plan, 'dante:illegal-late')).toMatchObject({
+      slot: 'dormant',
+      activeInSlot: false,
+      interaction: 'inert',
+    });
+    expect(getPlacement(plan, 'route:illegal-late')).toMatchObject({
+      slot: 'dormant',
+      activeInSlot: false,
+      interaction: 'inert',
+    });
+  });
+
   it('rejects allocation policies that cannot satisfy their own split minima', () => {
     expect(() =>
       resolveWorldFocusWorkspaceAllocation(
@@ -295,6 +377,15 @@ describe('World Focus workspace surface allocation', () => {
           `surface:${scenario}:${index}`,
           presentation,
         );
+      }
+
+      let blockingTailStarted = false;
+      for (const surface of state.surfaces) {
+        if (isWorldFocusBlockingPresentation(surface.presentation)) {
+          blockingTailStarted = true;
+        } else {
+          expect(blockingTailStarted).toBe(false);
+        }
       }
 
       const first = resolveWorldFocusWorkspaceAllocation(state, width);
