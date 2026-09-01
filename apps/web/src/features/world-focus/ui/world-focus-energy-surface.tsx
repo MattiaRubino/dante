@@ -45,7 +45,7 @@ function readRendererIdentity(gl: WebGL2RenderingContext): string | null {
     const debugInfo = gl.getExtension(
       'WEBGL_debug_renderer_info',
     ) as DebugRendererInfo | null;
-    const renderer = debugInfo
+    const renderer: unknown = debugInfo
       ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL)
       : gl.getParameter(gl.RENDERER);
 
