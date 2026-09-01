@@ -428,4 +428,7 @@ export const home = {
   },
 } as const;
 
-export type HomeResource = typeof home;
+type DeepStringResource<T> = T extends string
+  ? string
+  : { readonly [K in keyof T]: DeepStringResource<T[K]> };
+export type HomeResource = DeepStringResource<typeof home>;
