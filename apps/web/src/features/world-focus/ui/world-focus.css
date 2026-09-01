@@ -86,6 +86,27 @@
     inset 0 -80px 120px rgba(0, 0, 0, 0.18);
 }
 
+.world-focus-composition {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+
+.world-focus-composition-item {
+  min-width: 0;
+}
+
+.world-focus-surface-layer {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  pointer-events: none;
+}
+
+.world-focus-surface {
+  pointer-events: auto;
+}
+
 .world-focus-context {
   position: relative;
   z-index: 1;
