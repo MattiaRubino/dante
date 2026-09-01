@@ -12,6 +12,20 @@ export const worldFocus = {
       'Si è verificato un errore inatteso. Puoi riprovare senza esporre dettagli tecnici.',
     retry: 'Riprova',
   },
+  continuity: {
+    title: 'In movimento',
+    loading: 'Recupero di ciò che è in movimento',
+    partial: 'Alcune informazioni di continuità non sono disponibili.',
+    stale: 'Questa vista usa informazioni non aggiornate.',
+    error: 'Non riesco a recuperare ciò che è in movimento.',
+    unavailable: 'Ciò che è in movimento non è disponibile al momento.',
+    retry: 'Riprova',
+    states: {
+      active: 'Attivo',
+      paused: 'In pausa',
+      blocked: 'Bloccato',
+    },
+  },
   worlds: {
     body: {
       label: 'Corpo',
