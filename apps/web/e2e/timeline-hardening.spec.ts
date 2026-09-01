@@ -301,7 +301,6 @@ test('temporal scrubber reads as a scrollbar handle and stays distinct from the 
   const scrubber = page.locator('[data-temporal-scrubber="relative"]');
   const thumb = scrubber.locator('.timeline-temporal-scrubber__thumb');
   const expansionThumb = page.locator('.timeline-expansion-handle > span');
-  const activeReference = page.locator('.home-timeline-now-dot');
 
   await scrubber.scrollIntoViewIfNeeded();
   await expect(scrubber).toBeInViewport();
@@ -322,11 +321,20 @@ test('temporal scrubber reads as a scrollbar handle and stays distinct from the 
     expansionThumb.evaluate(
       (element) => getComputedStyle(element).backgroundColor,
     ),
-    activeReference.evaluate(
-      (element) => getComputedStyle(element).backgroundColor,
-    ),
+    page.evaluate(() => {
+      const probe = document.createElement('span');
+      probe.style.position = 'fixed';
+      probe.style.visibility = 'hidden';
+      probe.style.background = 'var(--dante-semantic-color-home-chrome-active)';
+      document.body.append(probe);
+      const color = getComputedStyle(probe).backgroundColor;
+      probe.remove();
+      return color;
+    }),
   ]);
 
+  expect(activeColor).not.toBe('');
+  expect(activeColor).not.toBe('rgba(0, 0, 0, 0)');
   expect(expansionColor).toBe(activeColor);
   expect(scrubberColor).not.toBe(expansionColor);
 });
