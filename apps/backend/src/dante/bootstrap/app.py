@@ -6,7 +6,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from dante.auth.api import router as auth_router
-from dante.auth.dependencies import BrowserAuthSecurityMiddleware
+from dante.auth.dependencies import AuthRequestBodyLimitMiddleware, BrowserAuthSecurityMiddleware
 from dante.bootstrap.lifespan import lifespan
 from dante.platform.config.settings import Environment, Settings
 from dante.platform.database.runtime import DatabaseRuntime
@@ -29,8 +29,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     app.state.settings = effective_settings
 
-    # Browser Auth policy runs before request-body parsing; request context remains
-    # outermost and guarantees the same server-authoritative request_id on every path.
+    # Starlette executes the last registered middleware first. Keep request context
+    # outermost, reject invalid first-party browser mutations before reading bodies,
+    # then bound accepted Auth payloads before framework parsing/application allocation.
+    app.add_middleware(AuthRequestBodyLimitMiddleware)
     app.add_middleware(
         BrowserAuthSecurityMiddleware,
         canonical_web_origin=effective_settings.auth.canonical_web_origin,
