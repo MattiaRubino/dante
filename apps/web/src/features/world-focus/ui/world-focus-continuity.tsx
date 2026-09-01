@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import {
-  type WorldFocusContinuityReader,
-} from '../application/world-focus-continuity';
+import type { WorldFocusContinuityReader } from '../application/world-focus-continuity';
 import { readWorldFocusContinuity } from '../application/world-focus-continuity-runtime';
 import { WorldFocusLatestReadCoordinator } from '../application/world-focus-foundation';
 import type {
@@ -12,8 +10,7 @@ import type {
 } from '../model/world-focus-continuity';
 import type { WorldFocusId } from '../model/world-focus-fixtures';
 
-type WorldFocusContinuityViewState =
-  | Readonly<{ status: 'loading' }>
+type WorldFocusContinuitySettledState =
   | Readonly<{ status: 'error' }>
   | WorldFocusContinuityReadResult;
 
@@ -29,28 +26,42 @@ export function WorldFocusContinuity({
   const { t } = useTranslation('common');
   const [coordinator] = useState(() => new WorldFocusLatestReadCoordinator());
   const [retryGeneration, setRetryGeneration] = useState(0);
-  const [state, setState] = useState<WorldFocusContinuityViewState>({
-    status: 'loading',
-  });
+  const [settled, setSettled] = useState<Readonly<{
+    requestKey: string;
+    state: WorldFocusContinuitySettledState;
+  }> | null>(null);
+  const requestKey = `${worldId}:${retryGeneration}`;
+  const state =
+    settled?.requestKey === requestKey
+      ? settled.state
+      : ({ status: 'loading' } as const);
+  const stateLabels: Readonly<
+    Record<WorldFocusContinuityPresentationState, string>
+  > = {
+    active: t(($) => $.common.worldFocus.continuity.states.active),
+    paused: t(($) => $.common.worldFocus.continuity.states.paused),
+    blocked: t(($) => $.common.worldFocus.continuity.states.blocked),
+  };
 
   useEffect(() => {
     const lease = coordinator.begin();
-    setState({ status: 'loading' });
 
     void reader(worldId, lease.signal)
       .then((result) => {
-        lease.commit(() => setState(result));
+        lease.commit(() => setSettled({ requestKey, state: result }));
       })
       .catch(() => {
         if (lease.signal.aborted) {
           return;
         }
-        lease.commit(() => setState({ status: 'error' }));
+        lease.commit(() =>
+          setSettled({ requestKey, state: { status: 'error' } }),
+        );
       })
       .finally(() => lease.release());
 
     return () => coordinator.cancelCurrent();
-  }, [coordinator, reader, retryGeneration, worldId]);
+  }, [coordinator, reader, requestKey, worldId]);
 
   if (state.status === 'empty') {
     return null;
@@ -157,25 +168,11 @@ export function WorldFocusContinuity({
               </p>
             </div>
             <span className="world-focus-continuity-item-state">
-              {getPresentationStateLabel(item.presentationState, t)}
+              {stateLabels[item.presentationState]}
             </span>
           </li>
         ))}
       </ul>
     </section>
   );
-}
-
-function getPresentationStateLabel(
-  state: WorldFocusContinuityPresentationState,
-  t: ReturnType<typeof useTranslation>['t'],
-) {
-  switch (state) {
-    case 'active':
-      return t(($) => $.common.worldFocus.continuity.states.active);
-    case 'paused':
-      return t(($) => $.common.worldFocus.continuity.states.paused);
-    case 'blocked':
-      return t(($) => $.common.worldFocus.continuity.states.blocked);
-  }
 }
