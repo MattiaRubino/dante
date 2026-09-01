@@ -46,6 +46,19 @@ export type WorldFocusWorkspaceState<Kind extends string = string> = Readonly<{
   surfaces: readonly WorldFocusSurfaceDescriptor<Kind>[];
 }>;
 
+export type WorldFocusInteractionCursor = Readonly<{
+  worldId: string;
+  generation: number;
+  selection: WorldFocusContextReference | null;
+  activeSurface: Readonly<{
+    instanceId: string;
+    kind: string;
+    depth: WorldFocusInteractionDepth;
+    boundGeneration: number;
+    contextReference: WorldFocusContextReference | null;
+  }> | null;
+}>;
+
 export type WorldFocusWorkspaceIntent<Kind extends string = string> =
   | Readonly<{
       type: 'select-context';
@@ -152,6 +165,34 @@ export function getWorldFocusTopSurface<Kind extends string = string>(
   state: WorldFocusWorkspaceState<Kind>,
 ): WorldFocusSurfaceDescriptor<Kind> | null {
   return state.surfaces.at(-1) ?? null;
+}
+
+/**
+ * Produces the bounded transient cursor a future contextual DANTE request may
+ * reference. It contains identities/hints only and intentionally excludes raw
+ * module payloads, canonical truth, authorization decisions and React/DOM
+ * state.
+ */
+export function getWorldFocusInteractionCursor(
+  state: WorldFocusWorkspaceState,
+): WorldFocusInteractionCursor {
+  const activeSurface = getWorldFocusTopSurface(state);
+
+  return Object.freeze({
+    worldId: state.worldId,
+    generation: state.generation,
+    selection: state.selection,
+    activeSurface:
+      activeSurface === null
+        ? null
+        : Object.freeze({
+            instanceId: activeSurface.instanceId,
+            kind: activeSurface.kind,
+            depth: activeSurface.depth,
+            boundGeneration: activeSurface.boundGeneration,
+            contextReference: activeSurface.contextReference,
+          }),
+  });
 }
 
 export function getWorldFocusEscapeDisposition(
