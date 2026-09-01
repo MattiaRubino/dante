@@ -181,14 +181,14 @@ export function TemporalCreateEntry({
   );
 
   useEffect(() => {
-    if (!request || requestSeenRef.current === request.id) {
+    if (!request || requestSeenRef.current === request.id || open) {
       return;
     }
     requestSeenRef.current = request.id;
-    if (open) {
-      return;
-    }
-    openComposer(request.date, request.startMinute, request.anchor);
+    const frame = requestAnimationFrame(() => {
+      openComposer(request.date, request.startMinute, request.anchor);
+    });
+    return () => cancelAnimationFrame(frame);
   }, [open, openComposer, request]);
 
   useEffect(() => {
@@ -211,7 +211,7 @@ export function TemporalCreateEntry({
       temporalCreateTimelinePreviewFromFields(session.draft.current),
     );
     return () => onPreview(null);
-  }, [onPreview, open, session.closeDecision, session.draft.current]);
+  }, [onPreview, open, session.closeDecision, session.draft]);
 
   useLayoutEffect(() => {
     if (!open || !anchor) {
