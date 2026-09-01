@@ -301,16 +301,6 @@ class AuthenticationProviderMethod:
 
 
 @dataclass(frozen=True, slots=True)
-class AuthenticationMethods:
-    """Current Account-wide authenticator inventory for security/settings surfaces."""
-
-    password_established: bool
-    providers: tuple[AuthenticationProviderMethod, ...]
-    active_passkey_count: int
-    recovery_eligible_email_count: int
-
-
-@dataclass(frozen=True, slots=True)
 class PasskeyMethod:
     """Safe active-passkey projection for Security/settings management surfaces."""
 
@@ -321,6 +311,17 @@ class PasskeyMethod:
     backup_state: bool
     created_at: datetime
     last_used_at: datetime | None
+
+
+@dataclass(frozen=True, slots=True)
+class AuthenticationMethods:
+    """Current Account-wide authenticator inventory for security/settings surfaces."""
+
+    password_established: bool
+    providers: tuple[AuthenticationProviderMethod, ...]
+    passkeys: tuple[PasskeyMethod, ...]
+    active_passkey_count: int
+    recovery_eligible_email_count: int
 
 
 @dataclass(frozen=True, slots=True)
