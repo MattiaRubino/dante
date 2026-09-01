@@ -101,13 +101,22 @@ export function WorldFocusWorkspaceHost({
       presentation: WorldFocusPresentationSurface,
       expectedGeneration?: number,
     ) => {
-      dispatch({
-        type: 'promote-surface',
-        instanceId,
-        depth,
-        presentation,
-        expectedGeneration,
-      });
+      dispatch(
+        expectedGeneration === undefined
+          ? {
+              type: 'promote-surface',
+              instanceId,
+              depth,
+              presentation,
+            }
+          : {
+              type: 'promote-surface',
+              instanceId,
+              depth,
+              presentation,
+              expectedGeneration,
+            },
+      );
     },
     [],
   );
