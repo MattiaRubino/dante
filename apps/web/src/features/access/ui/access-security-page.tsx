@@ -94,8 +94,8 @@ function securityError(error: unknown): SecurityError {
 export function AccessSecurityPage() {
   const { t } = useTranslation('common');
   const sessionQuery = useAuthSessionQuery();
-  const session =
-    sessionQuery.data?.authenticated === true ? sessionQuery.data : null;
+  const sessionData = sessionQuery.data;
+  const session = sessionData?.authenticated === true ? sessionData : null;
   const authenticated = session !== null;
   const methodsQuery = useAuthenticationMethodsQuery(authenticated);
   const establishPasswordMutation = useEstablishPasswordMutation();
