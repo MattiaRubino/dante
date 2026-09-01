@@ -60,7 +60,9 @@ def _scope(
     )
 
 
-def _browser_headers(*, content_type: bytes = b"application/json") -> tuple[tuple[bytes, bytes], ...]:
+def _browser_headers(
+    *, content_type: bytes = b"application/json"
+) -> tuple[tuple[bytes, bytes], ...]:
     return (
         (b"origin", _CANONICAL_ORIGIN.encode("ascii")),
         (b"sec-fetch-site", b"same-origin"),
