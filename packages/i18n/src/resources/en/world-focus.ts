@@ -14,6 +14,20 @@ export const worldFocus = {
       'An unexpected error occurred. You can retry without exposing technical details.',
     retry: 'Retry',
   },
+  continuity: {
+    title: 'In motion',
+    loading: 'Recovering what is in motion',
+    partial: 'Some continuity information is unavailable.',
+    stale: 'This view is using information that may be out of date.',
+    error: 'Unable to recover what is in motion.',
+    unavailable: 'What is in motion is unavailable right now.',
+    retry: 'Retry',
+    states: {
+      active: 'Active',
+      paused: 'Paused',
+      blocked: 'Blocked',
+    },
+  },
   worlds: {
     body: {
       label: 'Body',
