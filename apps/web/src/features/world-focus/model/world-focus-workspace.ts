@@ -306,6 +306,9 @@ export function reduceWorldFocusWorkspaceState<Kind extends string = string>(
       }
 
       const current = state.surfaces[index];
+      if (current === undefined) {
+        return state;
+      }
       if (
         current.depth === intent.depth &&
         current.presentation === intent.presentation
