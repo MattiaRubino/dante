@@ -5,12 +5,12 @@
 - **Branch:** `feature/ai-architecture`
 - **Workstream:** DANTE AI architecture
 - **Current phase:** AI-03 — Context / Retrieval / Memory
-- **AI-03A:** CLOSED / STRUCTURALLY ACCEPTED
+- **AI-03A:** CLOSED / STRUCTURALLY ACCEPTED / FINAL REVALIDATION COMPLETE / 13 HARDENINGS
 - **Current macro-phase:** AI-03B — Retrieval + Memory Architecture
 - **Created:** 2026-09-01
-- **Refreshed after AI-03A closure:** 2026-09-01
-- **PRE-SCOPE for this reconciliation:** `1181f402aa187a04cd268ba3fa947c6a63ab9ead`
-- **Last substantive checkpoint before this handoff refresh:** `8b5a37d94124f200c8a11d71ea24020f4ba35f48`
+- **Refreshed after final AI-03A revalidation:** 2026-09-01
+- **PRE-SCOPE for this final AI-03A revalidation:** `ef5b09d5b7e31a4977dbc20759e41558032a9448`
+- **Last substantive checkpoint before this handoff refresh:** `0ad94f4a947fbd8286be994fdff6b829f8f84e0e`
 - **Current branch HEAD:** fetch live before every write; this handoff refresh itself advances HEAD beyond the checkpoint above
 
 This file exists only to survive chat/session/context saturation while `feature/ai-architecture` is active. Durable architectural truth lives in the architecture/workstream/current-status sources named below.
@@ -217,6 +217,7 @@ ACTIVE
 
   AI-03A — FULL CONTEXT ARCHITECTURE
   CLOSED / STRUCTURALLY ACCEPTED
+  FINAL REVALIDATION COMPLETE / 13 HARDENINGS / C01..C33
 
   AI-03B — RETRIEVAL + MEMORY ARCHITECTURE
   ACTIVE / CURRENT
@@ -377,7 +378,7 @@ AI-02 closure is architecture acceptance only, not backend/runtime/provider impl
 
 ---
 
-# 9. AI-03A — CLOSED / STRUCTURALLY ACCEPTED
+# 9. AI-03A — CLOSED / STRUCTURALLY ACCEPTED / FINAL REVALIDATION COMPLETE
 
 Durable authority:
 
@@ -399,25 +400,41 @@ FAIL / HARDENING REQUIRED
 DEDICATED CONTEXT MEGA-TEST
 
         ↓
-9 MATERIAL HARDENINGS
+9 INITIAL MATERIAL HARDENINGS
 
         ↓
 HARDENED CANDIDATE
 STRUCTURAL PASS
+
+        ↓
+INDEPENDENT REVERSE-ENGINEERING / SECOND KILL-TEST
+
+        ↓
+4 ADDITIONAL BOUNDARY HARDENINGS
+
+        ↓
+FINAL HARDENED CONTRACT
+13 TOTAL HARDENINGS
+C01..C33
+STRUCTURAL PASS
 ```
+
+The second revalidation did not treat the earlier PASS as evidence. It reconstructed real Context obligations from North Star/Product, Domain, Logical, PostgreSQL/Recovery, AI-02 and the simulation corpus, then attacked the seven-contract architecture independently.
 
 Final closure:
 
 ```text
 AI-03A FULL CONTEXT ARCHITECTURE
 CLOSED / STRUCTURALLY ACCEPTED
+FINAL REVALIDATION COMPLETE
 
-Domain reopen       NO
-Logical reopen      NO
-Physical reopen     NO
-PostgreSQL change   NO
-Alembic change      NO
-implementation PASS NO
+new top-level Context contract  NO
+Domain reopen                   NO
+Logical reopen                  NO
+Physical reopen                 NO
+PostgreSQL change               NO
+Alembic change                  NO
+implementation PASS             NO
 ```
 
 ## 9.2 Accepted Context definition
@@ -463,7 +480,7 @@ These are not automatic services or tables.
 ## 9.4 Accepted pipeline
 
 ```text
-WORK CONTRACT
+BOUNDED WORK CONTRACT
   ↓
 CONTEXT PLAN
   ├ contract/policy needs
@@ -472,9 +489,14 @@ CONTEXT PLAN
   ↓
 INFORMATION NEEDS
   ↓
+REALITY SCOPE / RUNTIME INTERPRETATION FRAME where material
+  ↓
 CONTEXT STRATEGY per need
   ↓
 DISCOVERY / ACQUISITION PEP
+  ↓
+GOVERNED ACQUISITION
+including provider-native/JIT/tool acquisition
   ↓
 SOURCE READ / SOURCE BINDING
   ↓
@@ -482,7 +504,8 @@ CONTEXT FRAGMENTS
   ↓
 Reality Scope / Provenance / Source Standing /
 Integrity / Canonicality / Instruction Provenance /
-Confidentiality / Temporal Validity / Contradiction
+Confidentiality / Derived Sensitivity /
+Temporal Validity / Contradiction
   ↓
 COVERAGE + COHERENCE
   ↓
@@ -500,6 +523,8 @@ HARNESS / ADAPTER
   ↓
 ACTUAL CONSUMER CALL
   ↓
+ESTABLISH WHAT EFFECTIVE EXPOSURE CAN ACTUALLY BE PROVED
+  ↓
 CONTEXT MANIFEST
   exposure receipt
   ↓
@@ -511,7 +536,13 @@ BASIS MANIFEST
   material dependency/currentness evidence
 ```
 
-## 9.5 The nine hardenings that closed AI-03A
+A WorkContract may be bounded but partially unresolved when context is needed for interpretation/reference resolution.
+
+```text
+UNRESOLVED != UNBOUNDED
+```
+
+## 9.5 The thirteen hardenings that close AI-03A
 
 ### GAP-01 — Reality Scope / Scenario binding — P0
 
@@ -634,6 +665,73 @@ A narrow metric query may need tiny context. A legitimate cross-life feasibility
 
 Broad orchestration is allowed; indiscriminate data dumping is not.
 
+### GAP-10 — Governed acquisition / no hidden provider-tool bypass — P0
+
+Every mechanism capable of introducing new information into reasoning participates in the same acquisition boundary.
+
+This includes provider-native search/file retrieval, connected-source tools, browser/computer-use discovery, remote capabilities and child/sub-agent acquisition where present.
+
+```text
+PROVIDER-NATIVE ACQUISITION != POLICY BYPASS
+MODEL-DISCOVERED TOOL USE != NEW PURPOSE
+TECHNICAL CONNECTIVITY != PROCESSING ELIGIBILITY
+```
+
+Related clarification:
+
+```text
+ACQUISITION AUTHORIZATION != EFFECT AUTHORIZATION
+```
+
+A read-like operation that causes a material effect remains governed by AI-02 Effect Runtime semantics.
+
+### GAP-11 — Derived sensitivity closure — P0
+
+Individually lower-sensitivity inputs can compose into a more sensitive health/relationship/identity or other private inference.
+
+```text
+DERIVATION MAY TIGHTEN SENSITIVITY
+AGGREGATION / SUMMARY / INFERENCE != DECLASSIFICATION
+```
+
+A derivative never automatically gets weaker restrictions than material inputs and may require stronger use/exposure restrictions because of what the composite inference reveals.
+
+### GAP-12 — Runtime Interpretation Frame — P0/P1
+
+Reality Scope does not resolve relative/deictic meaning by itself.
+
+Material requests may require:
+
+```text
+reference instant
+timezone / offset
+source/target timezone
+DST resolution
+calendar/day-boundary semantics
+spatial anchor
+location source/timestamp/precision
+locale/unit/calendar interpretation
+```
+
+```text
+REALITY SCOPE != RUNTIME INTERPRETATION FRAME
+```
+
+Consequential unresolved interpretation may make ContextReadiness NOT_READY rather than permitting a guess.
+
+### GAP-13 — Consumer delivery / transformation integrity — P0
+
+DANTE assembling a correct ConsumerContext does not prove a provider/Harness preserved every required element after truncation, compaction, context editing, server-side tool context or opaque continuation.
+
+```text
+ASSEMBLED CONSUMER CONTEXT
+!= ESTABLISHED CONSUMER EXPOSURE
+```
+
+Unknown effective exposure remains UNKNOWN. Consequence may require declared limitation, rebuild, different consumer/Harness or NOT_READY.
+
+This is not a claim about token-level model attention/causal use.
+
 ## 9.6 InformationNeed accepted semantics
 
 Conceptually preserves:
@@ -653,6 +751,7 @@ scope
   Actor / represented party where material
   temporal scope
   Reality Scope
+  Runtime Interpretation Frame where material
   purpose
 
 reference-resolution requirement
@@ -684,6 +783,7 @@ status
   SOURCE_UNAVAILABLE
   SOURCE_RETIRED
   AMBIGUOUS_TARGET
+  AMBIGUOUS_INTERPRETATION
 ```
 
 Coverage matters because:
@@ -713,7 +813,9 @@ uncertainty/conflict membership
 Domain Provenance reference/projection where applicable
 runtime transform lineage
 confidentiality / instruction provenance / purpose restrictions
+derived-sensitivity classification where material
 currentness / effective/observed time / validity
+Runtime Interpretation Frame where material
 MaterialStateRef only where actual source has MaterialState semantics
 representation type
 resource cost
@@ -753,7 +855,7 @@ Readiness is consequence/consumer-specific and non-monotonic.
 
 ## 9.9 ConsumerContext
 
-Actual consumer-visible surface may include:
+Actual DANTE-assembled consumer surface may include:
 
 ```text
 DANTE/system instructions
@@ -770,6 +872,8 @@ eligible provider continuation/compaction
 
 Different consumers receive different purpose-bound projections.
 
+DANTE-assembled ConsumerContext must not be confused with established effective exposure after provider/Harness transformation.
+
 ## 9.10 ContextManifest
 
 ContextManifest is an immutable **exposure receipt** for one invocation.
@@ -780,11 +884,11 @@ ContextManifest != BasisManifest
 EXPOSED != USED BY MODEL != MATERIAL DEPENDENCY
 ```
 
-The manifest should normally reference rather than permanently duplicate all sensitive prompt content.
+The manifest records only what DANTE can legitimately establish about effective exposure and should normally reference rather than permanently duplicate all sensitive prompt content.
 
-It may preserve consumer/invocation, WorkContract/ContextPlan revisions, exposed fragment/source/version refs, Reality Scope, representation/instruction/tool versions, provider/HarnessProfile, opaque-state declaration, policy refs, resource allocation, digest/limitations and timestamps where useful.
+It may preserve consumer/invocation, WorkContract/ContextPlan revisions, exposed fragment/source/version refs, Reality Scope, Runtime Interpretation Frame where material, representation/instruction/tool versions, provider/HarnessProfile, opaque-state/transform declaration, policy refs, resource allocation, digest/limitations and timestamps where useful.
 
-Opaque provider state stays explicitly opaque; DANTE must not invent internal provider provenance it cannot observe.
+Opaque provider state stays explicitly opaque; DANTE must not invent internal provider provenance or effective exposure it cannot observe.
 
 ## 9.11 Source lifecycle / anti-resurrection
 
@@ -824,7 +928,7 @@ No RAG/model/context assembly is required if deterministic application logic suf
 
 ---
 
-# 10. AI-03A accepted invariants C01–C29
+# 10. AI-03A accepted invariants C01–C33
 
 ```text
 C01  CONTEXT != CANONICAL REALITY.
@@ -915,6 +1019,27 @@ C29  Minimum necessary context
      is relative to the legitimate objective.
      Broad orchestration may legitimately require
      broad but staged cross-domain acquisition.
+
+C30  Any mechanism that introduces new information into reasoning
+     participates in governed acquisition.
+     Provider-native tools/connectors/subagents do not bypass
+     WorkContract, purpose, InformationNeed or acquisition policy.
+     Acquisition authorization does not imply effect authorization.
+
+C31  Derived representations do not automatically receive weaker
+     sensitivity/use restrictions than their material inputs
+     and may require stricter restrictions because of what
+     composition/inference itself reveals.
+
+C32  Reality Scope does not replace Runtime Interpretation Frame.
+     Material relative temporal/spatial/locale expressions must be
+     resolved sufficiently for the InformationNeed/consequence;
+     ambiguous consequential interpretation may make Context NOT_READY.
+
+C33  Assembled ConsumerContext does not prove established effective
+     consumer exposure when a provider/Harness may transform,
+     compact, truncate or augment context opaquely.
+     Unknown effective exposure remains UNKNOWN rather than fabricated.
 ```
 
 Treat these as fixed upstream contracts for AI-03B unless real contradictory evidence appears.
@@ -923,7 +1048,7 @@ Treat these as fixed upstream contracts for AI-03B unless real contradictory evi
 
 # 11. AI-03A validation result
 
-Hardened architecture was retested against representative prior simulations and hostile/scale cases including:
+The final hardened architecture was retested against representative prior simulations and hostile/scale/compound cases including:
 
 ```text
 student + external deadline
@@ -958,6 +1083,14 @@ OCR error
 cumulative inference leakage
 malicious child agent
 Work Supersession / changed objective
+provider-native private connector acquisition
+malicious source inducing additional tool acquisition
+read-like acquisition with hidden material side effect
+low-sensitivity signals composing into sensitive inference
+travel/timezone-relative requests
+DST-overlap ambiguous consequential time
+provider automatic compaction/truncation
+partially unresolved conversational-target bootstrap
 ```
 
 Final structural result:
@@ -972,6 +1105,10 @@ HISTORY / CURRENTNESS                  PASS
 REFERENCE AMBIGUITY                    PASS after hardening
 PRIVACY / PURPOSE                      PASS after hardening
 PROVIDER CONTINUITY                    PASS after hardening
+PROVIDER-NATIVE ACQUISITION            PASS after final hardening
+DERIVED SENSITIVITY                    PASS after final hardening
+RUNTIME INTERPRETATION FRAME           PASS after final hardening
+CONSUMER DELIVERY / TRANSFORMATION     PASS after final hardening
 CHILD / EXTERNAL AGENT CONTEXT         PASS after hardening
 PROMPT / CONTEXT INJECTION             PASS structurally after hardening
 REVOCATION                             PASS
@@ -985,6 +1122,7 @@ MULTIMODAL / VOICE                     PASS
 FUTURE MODEL REPLACEMENT               PASS
 FAST DETERMINISTIC PATH                PASS
 
+NEW TOP-LEVEL CONTEXT CONTRACT         NO
 DOMAIN REOPEN REQUIRED                 NO
 LOGICAL REOPEN REQUIRED                NO
 PHYSICAL REOPEN REQUIRED               NO
@@ -1063,6 +1201,7 @@ source reread
 freshness/currentness validation
 coverage-aware retrieval
 permission-aware discovery/retrieval
+provider-native/JIT acquisition under the same governed boundary
 iterative/JIT retrieval
 query decomposition/reformulation where justified
 document hierarchy / chunking
@@ -1079,11 +1218,16 @@ At minimum preserve:
 ```text
 InformationNeed coverage
 Reality Scope
+Runtime Interpretation Frame where material
 reference-resolution requirement
 source binding
 Source Standing / Provenance / integrity distinctions
 purpose/acquisition eligibility
+no hidden provider-tool acquisition bypass
+acquisition != effect authorization
+derived-sensitivity closure
 currentness/coherence requirements
+consumer-delivery/transformation integrity
 explicit exclusions
 anti-resurrection
 ```
@@ -1117,6 +1261,7 @@ DERIVED / ADAPTIVE MEMORY
 patterns / hypotheses / inferred preferences
 candidate by default
 requires provenance/evidence/scope/time/conflict lifecycle
+and derived-sensitivity/use restrictions where material
 
 PROVIDER MEMORY / THREAD / PROMPT CACHE
 replaceable optimization
@@ -1192,6 +1337,8 @@ Letta
 LangGraph/LangMem
 LlamaIndex / Haystack memory/retrieval patterns
 provider-native memory/thread/cache mechanisms
+provider-native search/connectors/tool acquisition semantics
+provider context compaction/truncation/continuation semantics
 modern memory benchmarks / temporal memory / knowledge update
 memory poisoning
 correction/deletion through summaries/embeddings/cache
@@ -1204,7 +1351,7 @@ For every technique ask:
 ```text
 what problem does it solve?
 does DANTE actually have that problem?
-does it preserve AI-03A contracts?
+does it preserve AI-03A C01..C33?
 is it a semantic responsibility or implementation optimization?
 what are failure modes?
 what is mature vs experimental?
@@ -1228,10 +1375,11 @@ When is FTS/fuzzy retrieval enough?
 When is semantic/vector retrieval justified?
 When is direct long-context better?
 How are multi-stage/JIT strategies bounded?
+How do provider-native retrieval/tools remain inside the same acquisition scope?
 How do permissions participate before candidate exposure?
 How is source reread/currentness verified?
-How are Reality Scope and target identity preserved through indexes?
-How do chunk/summary/embedding representations retain source lineage?
+How are Reality Scope, Runtime Interpretation Frame and target identity preserved through indexes?
+How do chunk/summary/embedding representations retain source lineage and derived-sensitivity constraints?
 What happens when a source is corrected/retired/deleted?
 What may survive as Interaction/working/derived memory?
 What cannot survive?
@@ -1239,6 +1387,7 @@ What promotes a user statement/inference toward durable application semantics, i
 How are contradictions handled without latest-wins laundering?
 How are memory poisoning and stale memory detected/contained?
 How can provider memory be discarded/rebuilt?
+How do we detect or represent provider/Harness compaction/truncation limitations without fabricating exposure certainty?
 What metrics prove retrieval/memory quality rather than only final answer quality?
 ```
 
@@ -1296,7 +1445,7 @@ Recommended flow:
 
 ```text
 1. RECONSTRUCT INTERNAL REQUIREMENTS
-   AI-03A + Domain/Logical/DB/Recovery + Product cases
+   final AI-03A C01..C33 + Domain/Logical/DB/Recovery + Product cases
 
 2. BUILD ONE DEEP INITIAL RETRIEVAL + MEMORY ARCHITECTURE
    semantic classes / lifecycle / retrieval paths
@@ -1413,13 +1562,14 @@ First:
 
 1. fetch live branch/ref and verify current HEAD;
 2. read the mandatory current authority above;
-3. explicitly acknowledge AI-03A as CLOSED / STRUCTURALLY ACCEPTED;
-4. do not reopen its nine hardenings/C01..C29 without contradictory evidence;
+3. explicitly acknowledge AI-03A as CLOSED / STRUCTURALLY ACCEPTED / FINAL REVALIDATION COMPLETE;
+4. do not reopen its thirteen hardenings / C01..C33 without concrete contradictory evidence;
 5. start **AI-03B — Retrieval + Memory Architecture** in analysis/design mode;
-6. reconstruct retrieval/memory needs from actual DANTE Product/Domain/Logical/DB semantics and simulations;
-7. use modern primary-source/paper/framework research as challenger evidence;
-8. build the architecture deeply in one large pass;
-9. only after it is coherent decide whether a dedicated AI-03B mega-test is ready;
-10. do not create DB/index/provider implementation before a later exact write gate and the AI-03C materialization discipline.
+6. reconstruct retrieval/memory needs from actual DANTE Product/Domain/Logical/DB semantics, AI-03A C01..C33 and simulations;
+7. specifically preserve governed provider-native acquisition, acquisition/effect separation, derived-sensitivity closure, Runtime Interpretation Frame and consumer-delivery/transformation integrity;
+8. use modern primary-source/paper/framework research as challenger evidence;
+9. build the architecture deeply in one large pass;
+10. only after it is coherent decide whether a dedicated AI-03B mega-test is ready;
+11. do not create DB/index/provider implementation before a later exact write gate and the AI-03C materialization discipline.
 
 The new chat should behave as a continuation of this workstream, not as an agent asked to invent a fresh AI architecture.
