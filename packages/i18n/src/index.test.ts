@@ -88,7 +88,7 @@ describe('@dante/i18n', () => {
     );
     expect(
       runtime.t(($) => $.common.home.timeline.create.planning.constraintOpen),
-    ).toBe('Senza collocazione');
+    ).toBe('Aperta, senza collocazione');
     expect(
       runtime.t(($) => $.common.home.timeline.create.execution.splittable),
     ).toBe('Divisibile in sessioni');
