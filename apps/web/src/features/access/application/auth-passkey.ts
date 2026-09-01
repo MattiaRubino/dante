@@ -31,7 +31,7 @@ export async function signInWithPasskey(
   const ceremony = await webAuthRemote.beginPasskeyAuthentication(signal);
   const evidence = await createPasskeyAuthenticationEvidence({
     ceremony,
-    signal,
+    ...(signal === undefined ? {} : { signal }),
   });
   return webAuthRemote.completePasskeyAuthentication(evidence, signal);
 }
@@ -52,7 +52,7 @@ export async function registerPasskey({
   const evidence = await createPasskeyRegistrationEvidence({
     ceremony,
     label,
-    signal,
+    ...(signal === undefined ? {} : { signal }),
   });
   return webAuthRemote.completePasskeyRegistration(
     evidence,
@@ -74,7 +74,7 @@ export async function reauthenticateWithPasskey({
   );
   const evidence = await createPasskeyReauthenticationEvidence({
     ceremony,
-    signal,
+    ...(signal === undefined ? {} : { signal }),
   });
   return webAuthRemote.completePasskeyReauthentication(
     evidence,
