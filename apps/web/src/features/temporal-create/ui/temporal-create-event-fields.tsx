@@ -28,6 +28,8 @@ export function TemporalCreateEventFields({
     fields.date,
     fields.startTime,
     fields.durationMinutes,
+    fields.timeMode,
+    fields.timeZoneId,
   );
 
   const patchEnd = (endDate: string, endTime: string) => {
@@ -36,6 +38,8 @@ export function TemporalCreateEventFields({
       fields.startTime,
       endDate,
       endTime,
+      fields.timeMode,
+      fields.timeZoneId,
     );
     if (duration !== null) {
       onPatch({ durationMinutes: duration });
