@@ -1,7 +1,7 @@
 # DANTE Documentation Index
 
 - **Status:** CURRENT NAVIGATION / AUTHORITY INDEX
-- **Last reconciled:** 2026-08-31
+- **Last reconciled:** 2026-09-01
 
 This directory is the durable documentation surface for DANTE. Current specifications describe the present directly; historical evidence, phase-time continuations and completed workstream records do not silently override current truth.
 
@@ -56,7 +56,7 @@ REMOTE BACKUP PROVIDER               TBD / NOT ACTIVATED
 PRODUCTION/CLOUD RECOVERY            NOT CLAIMED
 ACCESS PRE-BACKEND FRONTEND          CLOSED / ACCEPTED / RELEASE-HARDENED
 FULL ACCESS/AUTH PRODUCT VERTICAL    ACTIVE UNMERGED WORKSTREAM / NOT CLAIMED CLOSED
-AI ARCHITECTURE                      ACTIVE BRANCH-LOCAL DESIGN WORKSTREAM / NO IMPLEMENTATION CLAIM
+AI ARCHITECTURE                      ACTIVE BRANCH-LOCAL DESIGN + RESEARCH / NO IMPLEMENTATION CLAIM
 ```
 
 For exact current state, read `PROJECT-STATUS.md` rather than reconstructing status from historical workstream/checkpoint files.
@@ -207,6 +207,7 @@ Entry points:
 - `architecture/README.md`
 - `architecture/system-overview.md`
 - `architecture/dante-ai-foundation.md` — branch-local AI-00 consolidated semantic/architectural baseline; no provider, schema or runtime selection
+- `architecture/ai-production-engineering-state-of-the-art-2026.md` — branch-local production AI/agent engineering research thesis; state-of-the-art evidence plus explicit DANTE applicability boundary, **not** the final DANTE Intelligence Architecture
 - `architecture/technical-decisions.md`
 - `architecture/domain-model-logical-readiness.md`
 - `decisions/`
@@ -214,6 +215,8 @@ Entry points:
 Current architecture docs state current post-CP6 architecture directly. Phase reviews/QA/readiness continuations are evidence according to their explicit lifecycle role.
 
 The AI foundation consumes current Product / Domain / Logical / Physical / Database authority and separates inherited constraints, derived implications and intentionally open AI-specific choices. It does not authorize database evolution or implementation.
+
+The production-engineering thesis is research evidence rather than a normative DANTE design. It records current industry techniques, technology challengers, failure models and DANTE-specific applicability constraints such as API-first frontier intelligence and no foundation-model-training / no large always-on self-hosted frontier baseline. Exact provider/model/SDK/runtime selection remains deferred to later evidence-driven architecture work.
 
 Important persistence ADRs:
 
@@ -302,7 +305,7 @@ CP1–CP6 are closed. Text saying CP6-03 is active, Gate 03 is unearned, CP6-04 
 
 Post-CP6 backend work is active on bounded unmerged workstreams where authorized; `feature/access-auth` is one such current branch. Branch-local authority owns its exact state until integration.
 
-The AI architecture branch is design/research only at AI-00. No AI backend implementation, provider integration, persistence schema or runtime activation is claimed by this index.
+The AI architecture branch remains design/research only. AI-00 plus the production-engineering research are documentation/evidence artifacts; no AI backend implementation, provider integration, persistence schema or runtime activation is claimed by this index.
 
 ## 12. Frontend
 
@@ -359,7 +362,7 @@ PostgreSQL Recovery is closed and integrated through PR #47; its current operati
 
 Active unmerged workstream records remain branch-local until integration.
 
-At the 2026-08-31 reconciliation, bounded unmerged work includes `feature/access-auth`, `feature/home-react`, `feature/platform-observability` and `feature/ai-architecture`; additional live refs may exist and remain authoritative for their own later changes. The AI branch is currently documentation/design-only.
+At the 2026-09-01 reconciliation, bounded unmerged work includes `feature/access-auth`, `feature/home-react`, `feature/platform-observability` and `feature/ai-architecture`; additional live refs may exist and remain authoritative for their own later changes. The AI branch is currently documentation/design/research-only.
 
 ## 14. Development governance
 
@@ -408,7 +411,7 @@ Historical successful runs remain evidence for the exact commit/environment on w
 
 No blanket semantic/direct-pass claim is inferred merely because a technology was selected or a workflow exists.
 
-AI follows the same rule: a provider feature page, SDK capability or written architecture does not prove DANTE AI behavior until the relevant implementation and scenarios are directly tested.
+AI follows the same rule: a provider feature page, SDK capability or written architecture does not prove DANTE AI behavior until the relevant implementation and scenarios are directly tested. A research classification such as `STRONG DEFAULT`, `CHALLENGER`, `WATCH` or `ANTI-DEFAULT` is not an implementation status or accepted technology selection.
 
 ## 17. Brand / UX / prototypes
 
@@ -432,7 +435,33 @@ Everything under `archive/` is non-authoritative unless a current source explici
 
 Do not copy current files into archive as backups. Git already preserves exact old payloads.
 
-## 19. Current continuation rule
+## 19. Current AI continuation
+
+The current branch-local AI sequence is intentionally explicit:
+
+```text
+AI-00
+semantic / architectural foundation
+        ↓
+production AI / agent engineering research
+external evidence + applicability boundary
+        ↓
+AI-02.1
+DANTE Intelligence Reengineering
++ North-Star / simulation pressure-test
++ future-extensibility test
+        ↓
+AI-03
+Context / Retrieval / Memory
+```
+
+AI-02.1 does not start by choosing a model/provider. It must test the intelligence architecture against what DANTE must actually be able to do, including real simulations, multi-actor/privacy/Authority boundaries, durability/effects, proactivity, external-AI integration and the accepted Domain/Logical/Physical/database contracts.
+
+The future-extensibility test is explicit: a later much richer integrated conversational intelligence, new frontier provider or new specialist intelligence must be addable without transferring canonical truth, durable memory, Authority or effect ownership to the model/provider and without requiring a fundamental architecture rewrite.
+
+AI-03 owns detailed Context / Retrieval / Memory design only after that structural reengineering/pressure-test.
+
+## 20. General continuation rule
 
 Before modifying a subsystem:
 
