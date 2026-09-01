@@ -1,137 +1,153 @@
 # DANTE — Temporal Workstream Live Status
 
-**Status:** ACTIVE / C1 CREATE SYSTEM OPEN — NOT USER-ACCEPTED
-**Date:** 2026-09-01
-**Repository:** `MattiaRubino/dante`
-**Branch:** `feature/home-timeline`
-**Worktree:** `/home/mattia/projects/dante-timeline`
-**Integration target:** `feature/home-react`
+**Status:** ACTIVE / C1 COMPLETE-CANDIDATE HARDENING — NOT USER-ACCEPTED  
+**Date:** 2026-09-01  
+**Repository:** `MattiaRubino/dante`  
+**Branch:** `feature/home-timeline`  
+**Worktree:** `/home/mattia/projects/dante-timeline`  
+**Integration target:** `feature/home-react`  
+**Current implementation checkpoint:** `4ca8de311e10fb03a4d5fd47903ebe4396271d95`
 
 ## Live authority
 
-This file is the live checkpoint for the isolated Timeline/Create workstream.
+This file is the live status for the isolated Timeline / Temporal Create workstream.
 
-For this branch it supersedes stale operational metadata in the generic Home `current-checkpoint.md` and `production-depth-handoff.md`, which still describe the parallel `feature/home-react` P1/P2 workstream.
+For `feature/home-timeline` it supersedes stale operational metadata in the generic Home `current-checkpoint.md` and `production-depth-handoff.md`, which remain historical/parallel documents for `feature/home-react`.
 
-Read next:
+A continuation must read, in order:
 
-- `temporal-create-handoff.md`;
-- `temporal-create-c1-scope-amendment.md`;
-- `temporal-create-q0-approval.md`;
-- `temporal-create-q0-contract.md`;
-- `temporal-frontend-roadmap.md`.
+1. `docs/frontend/home/temporal-create-handoff.md`;
+2. `docs/frontend/home/temporal-create-c1-engineering-checkpoint.md`;
+3. `docs/frontend/home/temporal-create-c1-scope-amendment.md`;
+4. `docs/frontend/home/temporal-create-q0-approval.md`;
+5. `docs/frontend/home/temporal-create-q0-contract.md`;
+6. `docs/frontend/home/temporal-frontend-roadmap.md`;
+7. `docs/frontend/home/temporal-f0-contract.md`;
+8. `docs/frontend/home/timeline-t1-frozen-contract.md`;
+9. `docs/frontend/home/temporal-experience-architecture.md`.
+
+When older documents conflict about C1 scope, the **C1 scope amendment wins**.
 
 ## Stable closed foundations
 
-- H0 Whole Home structural baseline: frozen.
-- T1/T1-A Timeline hardening: closed.
-- T1-B continuous temporal navigation/scrubber: closed.
-- F0 temporal application foundation: closed on `7034b9b0d100709785ebe96e3816aab3e7b1d1f8`.
-- Q0 original Create contract: user-approved as architectural/product baseline, later amended for broader C1 scope.
+Do not reopen casually:
 
-## Current Create implementation checkpoint
+- H0 Whole Home structural baseline;
+- T1/T1-A Timeline hardening;
+- T1-B continuous temporal navigation / relative scrubber;
+- F0 temporal application foundation on `7034b9b0d100709785ebe96e3816aab3e7b1d1f8`;
+- permanent temporal distinctions such as Schedule / Occurrence / Session / Actual / Proposal;
+- frontend application model != DTO != Domain != persistence;
+- ports/adapters boundary;
+- no fake backend/provider/AI/voice success.
 
-The pre-documentation-sync implementation branch reached `abb1ec90c6791252168857b600c5c866ecdc8b59` after adding explicit raw-i18n-key regression guards.
+## C1 product target
 
-Useful implemented foundation includes:
-
-- compact Quick Create UI;
-- Activity/Event;
-- timed/all-day/unscheduled;
-- date/time/duration/timezone/context/details;
-- F0-backed local create runtime;
-- deterministic validation;
-- candidate Timeline preview;
-- local applied projection;
-- reveal/focus;
-- Undo;
-- contextual Timeline invocation;
-- responsive/mobile behavior;
-- i18n and accessibility/test coverage.
-
-## Manual review finding — scope not complete
-
-The user manually reviewed the working composer on 2026-09-01.
-
-After restarting the Vite dev server, stale raw i18n keys disappeared and the compact UI rendered correctly. The manual review then exposed the more important product issue:
-
-> the current UI is a valid Quick Create layer, but it is not yet the complete DANTE Create system promised by the later user mandate.
-
-Therefore C1 is explicitly **OPEN**. The compact composer must not be presented again as the completed vertical.
-
-The expanded authority is `temporal-create-c1-scope-amendment.md`.
-
-## Current CI truth
-
-The earlier full Create checkpoint `9c70b91d0d1f303b1fbf876b0dec37450669bcaf` had a fully green Frontend CI run including Quality, Mobile, Chromium and frozen Firefox Timeline contract.
-
-After the manual stale-dev-server i18n incident, two regression protections were added. On implementation checkpoint `abb1ec90c6791252168857b600c5c866ecdc8b59`, Frontend CI #342 reported:
-
-- Quality: PASS;
-- Mobile Bundle: PASS;
-- Web E2E: FAIL;
-- Frontend CI Gate: FAIL as a consequence.
-
-That checkpoint is therefore **not a green closure point**. The Web E2E failure must be triaged/fixed while the broader Create work continues.
-
-Documentation-sync commits after `abb1ec90...` are docs-only and intentionally move branch HEAD; they do not change this implementation/CI truth.
-
-## Current product target
-
-C1 now means one complete progressive Create capability:
+C1 is the complete pre-backend Create capability, not merely a compact popup:
 
 ```text
 Quick Create
 +
 Expanded Create
 +
-Full Create editor/deep authoring
+Full Create / deep authoring
 +
-truthful handoff/integration seams
+truthful external-vertical handoffs
 ```
 
-All surfaces share one draft/application contract.
+All levels share one structured draft/application path.
 
-### Activity
+## Current implemented surface
 
-Creation-time authoring must reach the maximum useful pre-backend depth for authoritative DANTE semantics, including relevant organization links, scheduling intent/constraints, duration/session structure, movement/replanning policy, recurrence source specification and reminder/confirmation intent.
+The branch now contains a complete-candidate implementation of the amended C1 scope, including:
 
-### Event
+- Activity and Event as distinct creation semantics;
+- title-first Quick Create;
+- timed, all-day and unscheduled forms;
+- date/start/end/duration;
+- floating-local and named-zone/zoned time semantics;
+- context/life-area assignment from the available Timeline groups;
+- notes/tags;
+- progressive Quick -> Expanded -> Full authoring;
+- Activity scheduling constraints including fixed/open/window/preferred/deadline intent where supported;
+- movement/replanning policy;
+- expected duration, split/session structure and minimum-session controls;
+- recurrence specification;
+- confirmation/outcome policy seams;
+- Event location, availability and visibility;
+- participant/resource/conference intent as truthful provider handoff only;
+- explicit handoff for object types owned by other verticals instead of flattening them into Activity/Event;
+- deterministic validation and invalid-control focus;
+- F0-backed local command execution;
+- local rich specification records kept separate from the minimal Timeline projection;
+- candidate preview, applied Timeline projection, reveal/focus and Undo;
+- contextual Create from Timeline double-click and Shift-drag range gesture;
+- responsive/mobile full editor;
+- IT/EN i18n and accessibility checks.
 
-Creation-time authoring must reach the maximum useful pre-backend depth for Event semantics, including start/end/all-day/timezone, location, recurrence, availability/visibility/reminders where authoritative, plus truthful external seams for participants/resources/conferencing.
+## Hardening completed after the first expanded implementation
 
-### Other entity types
+Recent audit work found and fixed issues that must not be reintroduced:
 
-Do not flatten Goal/Project/Program/Routine/etc. into Activity/Event. Provide scalable handoff/global-create architecture when appropriate.
+1. **Architecture cycles:** shared Create UI types were moved out of component-to-component imports; dependency-cruiser is clean.
+2. **i18n/accessibility contract drift:** tests now use the current semantic labels such as `Durata prevista / Expected duration`; recurrence controls are unambiguous.
+3. **Shift-drag E2E determinism:** the test now brings the target day section into the viewport and measures current geometry before using raw mouse coordinates. Do not revert to stale/off-screen bounding boxes.
+4. **Mobile sub-pixel tolerance:** full-screen width assertions tolerate browser floating-point fractions while the real horizontal-overflow invariant remains strict.
+5. **DST correctness:** Event end/duration helpers now distinguish floating vs zoned semantics. Zoned calculations use real Instants in the IANA zone, with explicit Europe/Rome spring-forward and fall-back coverage plus multi-day coverage.
+6. **Rich-intent idempotency:** F0 already protects the minimal projection command; C1 now also fingerprints the complete rich Create intent. Exact retries are accepted, while the same `operationId` with changed rich metadata is rejected side-effect-free.
+7. **Timeline Create projection performance:** collision/layout preparation was changed from repeated `slice/filter/find` work to single-pass O(n) slot counting with cached group/day lookups.
 
-## Explicit stop line
+The detailed implementation record is `temporal-create-c1-engineering-checkpoint.md`.
 
-Still outside this workstream until the later backend/external vertical:
+## Current CI truth
 
-- real API;
+The only implementation checkpoint currently eligible to become the C1 automated candidate is:
+
+`4ca8de311e10fb03a4d5fd47903ebe4396271d95`
+
+Frontend CI run:
+
+- run ID: `33539539640`;
+- run number: `410`.
+
+At the documentation checkpoint:
+
+- **Quality:** PASS, including contract drift, active-workstream format, lint, typecheck, architecture, generated-source drift, unit tests, production build, diff check and repository mutation check;
+- **Mobile Bundle:** PASS, including Expo compatibility and Android Hermes bundle smoke;
+- **Web E2E:** still in progress at the time this checkpoint was written;
+- **Frontend CI Gate:** therefore not yet claimable as final PASS.
+
+The immediately preceding implementation run confirmed both Chromium and the frozen Firefox Timeline contract after the gesture/mobile fixes, but that run was superseded by later hardening commits. It is useful evidence only; it is **not** the final closure gate for `4ca8de31...`.
+
+Documentation-sync commits after `4ca8de31...` may move branch HEAD. Treat `4ca8de31...` as the implementation checkpoint and docs-only descendants separately until a later code change creates a new implementation checkpoint.
+
+## Remaining C1 closure work
+
+Before asking for user acceptance:
+
+1. finish the full CI on the latest implementation/docs descendant and require Quality + Mobile + Chromium + Firefox + final gate green;
+2. inspect any remaining failure from logs instead of weakening tests/contracts;
+3. complete the bundle/critical-path audit; only lazy-load Expanded/Full if the split is clean and measurably useful;
+4. perform a final static audit for semantics, cleanup, focus, responsive behavior and repeated-use performance;
+5. give the user an exact manual verification protocol covering Quick, Expanded, Full, Activity, Event, unscheduled/all-day/zoned cases, contextual gestures, Undo and mobile;
+6. wait for explicit user PASS;
+7. only then freeze C1 and move to C2 Card -> Detail.
+
+## Stop line
+
+Still outside C1:
+
+- real API transport;
 - PostgreSQL persistence;
 - canonical server IDs;
 - auth/ACL enforcement;
-- provider sync;
-- external invitations/conferencing execution;
+- external provider writes/sync/invitations/conferencing;
 - notification delivery;
 - authoritative solver runtime;
 - multi-device reconciliation;
 - AI runtime;
 - voice runtime.
 
-## Next work
-
-1. keep the useful existing Quick Create foundation;
-2. triage/fix the current Web E2E regression;
-3. redesign the Create interaction as progressive Quick → Expanded → Full rather than a giant popup;
-4. expand the Create draft/application model only for demonstrated authoritative fields;
-5. implement Activity and Event deep authoring to the amended scope;
-6. add truthful external-vertical handoffs;
-7. run full Quality/Mobile/Chromium/Firefox gates on one final implementation commit;
-8. perform one substantive user manual review of the complete Create system;
-9. only then mark C1 CLOSED.
-
 ## Delivery rule
 
-Internal engineering slices may proceed continuously. Do not stop the user for micro-approval after each field or component. The next user acceptance gate is the coherent complete C1 Create system unless a genuinely unresolved product decision requires earlier input.
+Continue internal C1 hardening continuously. Do not move to C2 merely because automated tests are green. The next phase starts only after the coherent complete C1 system is manually tested and explicitly approved by the user.
