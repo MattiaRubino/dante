@@ -17,6 +17,18 @@ export const worldFocus = {
     error: 'Non riesco a mostrare questo contenuto.',
     close: 'Chiudi',
   },
+  dante: {
+    invoke: 'Apri DANTE',
+    invokeForWorld: 'Apri DANTE per il Mondo {{world}}',
+    worldContext: 'Mondo · {{world}}',
+    inputLabel: 'Scrivi una richiesta per DANTE',
+    placeholder: 'Chiedi a DANTE…',
+    send: 'Invia richiesta',
+    close: 'Chiudi DANTE',
+    unavailable: 'DANTE non è disponibile al momento.',
+    submissionUnavailable:
+      'DANTE non è disponibile al momento. La richiesta è rimasta qui.',
+  },
   continuity: {
     title: 'In movimento',
     loading: 'Recupero di ciò che è in movimento',
