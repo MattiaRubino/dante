@@ -5,7 +5,7 @@
 
 This file summarizes current accepted technical decisions. Detailed rationale and constraints live in linked Domain/Logical/Physical/Engineering/Frontend Foundation sources and ADRs. Historical phase-time status does not override later closure/integration evidence.
 
-Branch-local AI-02.1 architecture is tracked here only as **current unmerged design context**, not promoted into an accepted implementation technology decision by this register.
+Branch-local AI architecture is tracked here only as **current unmerged design context**, not promoted into an accepted implementation technology decision by this register. AI-02.1 v0.5 structural acceptance fixes responsibility contracts; AI-03 is active for Context/Retrieval/Memory while concrete provider/runtime/persistence technologies remain open.
 
 ## TD-01 — Canonical persistence
 
@@ -245,7 +245,7 @@ component transient               React
 cross-tree transient              Zustand only when justified
 ```
 
-Feature UI uses feature data/model boundaries rather than direct HTTP/PowerSync/query-cache/storage ownership. No universal frontend `Repository<T>`.
+Feature UI uses feature data/model boundaries rather than direct HTTP/PowerSync/query-cache/storage ownership. No universal frontend `Repository[T>`.
 
 ## TD-14 — Frontend offline posture
 
@@ -464,14 +464,30 @@ Durable consequences include stable UUID/reference addressing, bounded heterogen
 `feature/ai-architecture` is currently at:
 
 ```text
-AI-02.1 v0.5 CANDIDATE STRUCTURAL FREEZE
-all pressure/mega-test rounds complete
-targeted v0.5 structural verification complete
-additional pre-AI-03 review pending
-NOT CLOSED
+AI-00  Semantic & Product Foundation
+       COMPLETE
+
+AI-01  Product Form + Production Engineering Research
+       COMPLETE
+
+AI-02  Intelligence Runtime Architecture
+       COMPLETE / STRUCTURALLY ACCEPTED
+       AI-02.1 v0.5 CLOSED
+       all pressure/mega-test rounds complete
+       targeted v0.5 structural verification complete
+
+AI-03  Context / Retrieval / Memory
+       ACTIVE
+       current macro-phase AI-03A Full Context Architecture
+
+AI-04  Productionization Architecture
+       FUTURE
+
+AI-05  Whole-System Acceptance + Implementation Blueprint
+       FUTURE
 ```
 
-This is **not** a new accepted technology stack decision. It records responsibility boundaries that future implementation must satisfy while concrete provider/runtime technologies remain open.
+This is **not** a new accepted technology stack decision. It records branch-local responsibility boundaries and current design sequencing while concrete provider/runtime/persistence technologies remain open.
 
 Current structural constraints relevant to future technical selection include:
 
@@ -486,6 +502,23 @@ Execution Environment isolation only when workload/threat model requires it
 no raw privileged credentials in arbitrary generated/untrusted code
 policy mesh rather than model-selected authorization
 safe publication rather than raw sensitive provider stream
+PostgreSQL remains sole canonical persistence/material-history authority
+search/vector/cache/provider memory remain noncanonical
+AI-03 materialization follows demonstrated semantic need + destructive validation
+```
+
+AI-03 current authority:
+
+```text
+docs/architecture/dante-ai-03-context-retrieval-memory.md
+docs/workstreams/ai-architecture.md
+```
+
+Temporary branch continuity may additionally use:
+
+```text
+docs/workstreams/ai-architecture-live-handoff.md
+TEMPORARY / MUST NOT MERGE TO protected main
 ```
 
 Concrete choices remain OPEN/DEFERRED, including:
@@ -496,6 +529,12 @@ model routing/gateway product
 agent SDK/framework
 exact Execution Environment technology
 local model family/size/server
+conversation persistence physical form
+Run/working persistence physical form
+embedding model / dimensions
+pgvector/FTS activation for AI retrieval
+chunk/summary/adaptive-memory persistence
+provider thread/cache strategy
 AI-03 context/retrieval/memory physical architecture
 ```
 
