@@ -26,12 +26,12 @@ const googleBegun = {
   external_auth_transaction_ref: '00000000-0000-4000-8000-000000000001',
   state: 'provider-state',
   nonce: 'dante-nonce',
-} as never;
+};
 
 const appleBegun = {
   authorization_url:
     'https://appleid.apple.com/auth/authorize?client_id=dante&state=provider-state',
-} as never;
+};
 
 function missingContinuation(code: string): WebAuthRemoteError {
   return new WebAuthRemoteError({
@@ -50,13 +50,13 @@ describe('Provider application boundary', () => {
     vi.mocked(googleClientIdFromBuild).mockReturnValue('google-client-id');
     const beginGoogleSpy = vi
       .spyOn(webAuthRemote, 'beginGoogleAuthentication')
-      .mockResolvedValue(googleBegun);
+      .mockResolvedValue(googleBegun as never);
     const completeGoogleSpy = vi
       .spyOn(webAuthRemote, 'completeGoogleAuthentication')
       .mockResolvedValue({ outcome: 'authenticated' } as never);
     const beginAppleSpy = vi
       .spyOn(webAuthRemote, 'beginAppleAuthentication')
-      .mockResolvedValue(appleBegun);
+      .mockResolvedValue(appleBegun as never);
 
     const preparation = await prepareGoogleAuthentication({
       purpose: 'link',
