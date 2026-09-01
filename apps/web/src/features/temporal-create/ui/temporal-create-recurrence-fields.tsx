@@ -19,28 +19,6 @@ type RecurrenceFieldsProps = Readonly<{
   renderError: (path: string) => ReactNode;
 }>;
 
-function weekdayLabel(
-  weekday: TemporalCreateWeekday,
-  t: ReturnType<typeof useTranslation>['t'],
-): string {
-  switch (weekday) {
-    case 'MO':
-      return t(($) => $.common.home.timeline.create.recurrence.day.MO);
-    case 'TU':
-      return t(($) => $.common.home.timeline.create.recurrence.day.TU);
-    case 'WE':
-      return t(($) => $.common.home.timeline.create.recurrence.day.WE);
-    case 'TH':
-      return t(($) => $.common.home.timeline.create.recurrence.day.TH);
-    case 'FR':
-      return t(($) => $.common.home.timeline.create.recurrence.day.FR);
-    case 'SA':
-      return t(($) => $.common.home.timeline.create.recurrence.day.SA);
-    case 'SU':
-      return t(($) => $.common.home.timeline.create.recurrence.day.SU);
-  }
-}
-
 export function TemporalCreateRecurrenceFields({
   fields,
   depth,
@@ -56,6 +34,25 @@ export function TemporalCreateRecurrenceFields({
   const patchConfirmation = (
     patch: Partial<TemporalCreateFields['confirmation']>,
   ) => onPatch({ confirmation: { ...confirmation, ...patch } });
+
+  const weekdayLabel = (weekday: TemporalCreateWeekday): string => {
+    switch (weekday) {
+      case 'MO':
+        return t(($) => $.common.home.timeline.create.recurrence.day.MO);
+      case 'TU':
+        return t(($) => $.common.home.timeline.create.recurrence.day.TU);
+      case 'WE':
+        return t(($) => $.common.home.timeline.create.recurrence.day.WE);
+      case 'TH':
+        return t(($) => $.common.home.timeline.create.recurrence.day.TH);
+      case 'FR':
+        return t(($) => $.common.home.timeline.create.recurrence.day.FR);
+      case 'SA':
+        return t(($) => $.common.home.timeline.create.recurrence.day.SA);
+      case 'SU':
+        return t(($) => $.common.home.timeline.create.recurrence.day.SU);
+    }
+  };
 
   const toggleWeekday = (weekday: TemporalCreateWeekday) => {
     const selected = recurrence.weekdays.includes(weekday);
@@ -151,7 +148,7 @@ export function TemporalCreateRecurrenceFields({
               aria-pressed={recurrence.weekdays.includes(weekday)}
               onClick={() => toggleWeekday(weekday)}
             >
-              {weekdayLabel(weekday, t)}
+              {weekdayLabel(weekday)}
             </button>
           ))}
           {renderError('recurrence.weekdays')}
