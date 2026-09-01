@@ -18,12 +18,10 @@ from dante.platform.http.problem import ProblemError, problem_response_for_scope
 _AUTH_API_PATH = "/api/v1/auth"
 _AUTH_MUTATION_METHODS = frozenset({"POST", "PUT", "PATCH", "DELETE"})
 _JSON_BODY_METHODS = frozenset({"POST", "PUT", "PATCH"})
-_EXTERNAL_AUTH_INGRESS = frozenset(
-    {
-        ("POST", "/api/v1/auth/apple/callback"),
-        ("POST", "/api/v1/auth/apple/notifications"),
-    }
-)
+_EXTERNAL_AUTH_INGRESS_MEDIA_TYPES = {
+    ("POST", "/api/v1/auth/apple/callback"): "application/x-www-form-urlencoded",
+    ("POST", "/api/v1/auth/apple/notifications"): "application/json",
+}
 _DEFAULT_MAX_AUTH_REQUEST_BODY_BYTES = 64 * 1024
 
 
@@ -105,6 +103,13 @@ def _content_length(scope: Scope) -> int | None:
         return int(raw_value)
     except ValueError as exc:
         raise ValueError("invalid Content-Length") from exc
+
+
+def _media_type(scope: Scope) -> str | None:
+    content_type = single_header_value(scope, "Content-Type")
+    if content_type is None:
+        return None
+    return content_type.split(";", 1)[0].strip().lower()
 
 
 class AuthRequestBodyLimitMiddleware:
@@ -212,7 +217,7 @@ class AuthRequestBodyLimitMiddleware:
 
 
 class BrowserAuthSecurityMiddleware:
-    """Fail closed on first-party Web Auth mutations before request-body parsing."""
+    """Fail closed on browser proof/media-type policy before request-body parsing."""
 
     def __init__(self, app: ASGIApp, *, canonical_web_origin: str) -> None:
         self._app = app
@@ -225,7 +230,22 @@ class BrowserAuthSecurityMiddleware:
 
         method = str(scope.get("method", "")).upper()
         path = str(scope.get("path", ""))
-        if not _is_auth_mutation(method, path) or (method, path) in _EXTERNAL_AUTH_INGRESS:
+        if not _is_auth_mutation(method, path):
+            await self._app(scope, receive, send)
+            return
+
+        external_media_type = _EXTERNAL_AUTH_INGRESS_MEDIA_TYPES.get((method, path))
+        if external_media_type is not None:
+            if _media_type(scope) != external_media_type:
+                response = _problem(
+                    scope,
+                    status=400,
+                    code="request.malformed",
+                    title="Malformed request",
+                    detail="The request uses an unsupported media type for this Auth ingress.",
+                )
+                await response(scope, receive, send)
+                return
             await self._app(scope, receive, send)
             return
 
@@ -244,20 +264,15 @@ class BrowserAuthSecurityMiddleware:
             await response(scope, receive, send)
             return
 
-        if method in _JSON_BODY_METHODS:
-            content_type = single_header_value(scope, "Content-Type")
-            media_type = (
-                content_type.split(";", 1)[0].strip().lower() if content_type is not None else None
+        if method in _JSON_BODY_METHODS and _media_type(scope) != "application/json":
+            response = _problem(
+                scope,
+                status=400,
+                code="request.malformed",
+                title="Malformed request",
+                detail="The request must use application/json.",
             )
-            if media_type != "application/json":
-                response = _problem(
-                    scope,
-                    status=400,
-                    code="request.malformed",
-                    title="Malformed request",
-                    detail="The request must use application/json.",
-                )
-                await response(scope, receive, send)
-                return
+            await response(scope, receive, send)
+            return
 
         await self._app(scope, receive, send)
