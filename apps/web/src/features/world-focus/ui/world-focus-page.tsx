@@ -71,6 +71,7 @@ function WorldFocusWorkspaceExperience({
   onRequestWorldClose,
 }: WorldFocusWorkspaceExperienceProps) {
   const { requestEscape } = useWorldFocusWorkspace();
+  const compositionPlan = getCoreWorldFocusComposition();
 
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
@@ -98,7 +99,7 @@ function WorldFocusWorkspaceExperience({
     >
       <WorldFocusCompositionHost
         worldId={world.id}
-        entries={getCoreWorldFocusComposition()}
+        entries={compositionPlan.entries}
         registry={getCoreWorldFocusModuleRegistry()}
       />
       <WorldFocusSurfaceLayer registry={getCoreWorldFocusSurfaceRegistry()} />
