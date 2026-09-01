@@ -185,7 +185,7 @@ Visible projections and DANTE answers must preserve compatible basis/freshness s
 
 ## 8. B1 final disposition
 
-The original visible global temporal Lens failed product review and was removed completely rather than hidden as dead foundation.
+The original visible global temporal Lens failed product review and was removed completely rather than hidden as future infrastructure.
 
 Final B1:
 
@@ -267,7 +267,7 @@ World switch and conversation binding
 large desktop / laptop / tablet / mobile
 focus / keyboard / SR / touch / reduced motion
 AI unavailable/degraded state
-pre-backend shell now vs real streaming/runtime later
+pre-backend shell now vs real runtime later
 ```
 
 Stress at least:
@@ -284,7 +284,7 @@ dense World
 AI quiet
 long conversation
 Insight
-Proposal/action state
+Proposal/action
 ```
 
 External products may be studied for interaction patterns, but no product — including Home — is copied as the semantic/layout answer.
@@ -359,7 +359,6 @@ Frontend may establish narrow ports/contracts and deterministic local behavior o
 
 Deep evidence set:
 
-- `world-focus-wf0-scenario-oracle.md`
 - `world-focus-product-reverse-engineering-stress-test.md`
 - `world-focus-product-reverse-engineering-stress-matrix.md`
 - `world-focus-dante-user-reverse-engineering-stress-test.md`
