@@ -49,22 +49,9 @@ Access Pre-Backend Web Materialization
 
 Architecture closure remains distinct from product/runtime completion. Closing the pre-backend Access frontend does not close the real full-stack Access/Auth product vertical. Closing LOCAL PostgreSQL Recovery does not claim remote/cloud production recovery.
 
-## 2. CP6 and PostgreSQL Recovery are complete
+## 2. Current PostgreSQL / Recovery baseline
 
-CP6 converted the closed Domain + Logical + Physical model into the concrete DANTE PostgreSQL database.
-
-```text
-CP6-00  COMPLETE
-CP6-01  CLOSED / GATE 01 PASS
-CP6-02  CLOSED / GATE 02 PASS
-CP6-03  CLOSED / GATE 03 PASS
-CP6-04  CLOSED / MATERIALIZATION PASS
-CP6-05  CLOSED / DIRECT QA PASS
-CP6      CLOSED / CONCRETE POSTGRESQL DATABASE PASS
-         INTEGRATED VIA PR #42
-```
-
-Historical pre-recovery CP6 baseline:
+Historical pre-Recovery CP6 baseline:
 
 ```text
 PostgreSQL          18.6
@@ -96,9 +83,7 @@ remote provider     TBD / NOT ACTIVATED
 cloud recovery      NOT CLAIMED
 ```
 
-PR #47 integrated the closed Recovery branch into protected `main` with merge commit `bdd2b2370d41423dbaecd00fde86bb2bf2466f2b`. Recovery is therefore no longer an integration candidate or active branch boundary.
-
-CP6 and Recovery checkpoint chronology are historical implementation/acceptance work now. Do not route new work through old Gate 03, DB-U*, CP6-04, Recovery CP01–CP07 or protected-main-alignment steps.
+CP6 and Recovery checkpoint chronology are historical implementation/acceptance work. Do not route new work through old Gate 03, DB-U*, CP6-04, Recovery CP01–CP07 or protected-main-alignment steps.
 
 Current database / Recovery authority:
 
@@ -110,42 +95,20 @@ Current database / Recovery authority:
 - `development/backend-cp6-05-whole-database-qa.md`
 - executable Recovery harnesses under `../infra/local/postgres/recovery/`
 
-Historical branch records:
+## 3. Active bounded unmerged workstreams
 
-- `archive/branches/2026-08-feature-logical-postgresql.md`
-- `archive/branches/2026-08-feature-postgres-recovery.md`
-
-## 3. Access frontend materialization is closed
-
-The pre-backend Access Web workstream completed:
-
-```text
-AF-01D  shell completion / professional polish      PASS
-AF-02A  complete pre-backend frontend state graph   PASS
-AF-02B  downstream surface hardening                PASS
-AF-03A  release-hardening viewport matrix           PASS
-```
-
-It intentionally stops backend-authoritative transitions instead of fabricating authentication success. Current frontend truth is `frontend/access.md` plus current code/tests. The closed branch history is `archive/branches/2026-08-feature-access-frontend.md`.
-
-Closing this workstream does not mean real Access/Auth is complete.
-
-## 4. Active bounded unmerged workstreams
-
-The project is no longer waiting to start its first post-CP6 vertical. At the 2026-09-01 reconciliation, bounded unmerged work includes:
+At the 2026-09-01 reconciliation, bounded unmerged work includes:
 
 ```text
 feature/access-auth             active full-stack product work
 feature/home-react              active frontend work
 feature/platform-observability  active platform work
-feature/ai-architecture         active AI-02.1 architecture reengineering / design-only
+feature/ai-architecture         active AI architecture design/reengineering work
 ```
 
-Additional live refs may exist and remain authoritative for their own later changes. PostgreSQL Recovery is intentionally absent from this list because it is closed and integrated via PR #47.
+These branches remain intentionally independent. Each owns only its bounded newer truth until protected-main integration.
 
-These active branches are intentionally independent and own only their bounded truth until integration. Do not collapse them into a single mega-branch and do not rewrite protected-main truth from an unmerged branch.
-
-## 5. Database evolution after CP6 / Recovery
+## 4. Database evolution after CP6 / Recovery
 
 Permanent same-change rule:
 
@@ -162,9 +125,9 @@ real structural database change
 
 Applied revisions are immutable. A product vertical may reveal a legitimate schema evolution need; that becomes a normal reviewed forward change and does not reopen CP6 or the closed Recovery workstream.
 
-The current protected-main migration baseline is `20260830_09`. Any branch-local migration chain created from an older common baseline must be explicitly reconciled before its own integration rather than creating accidental multiple Alembic heads.
+Current protected-main migration baseline: `20260830_09`.
 
-## 6. Capability-triggered implementation
+## 5. Capability-triggered implementation
 
 Selected specialist components activate only at real product/operational triggers:
 
@@ -192,13 +155,14 @@ pgBackRest LOCAL recovery
 
 remote backup provider
 → TBD; trigger only at a real production deployment boundary
+
+AI Execution Environment isolation
+→ activate only for generated-code/untrusted/browser/computer-use or comparable workload/threat-model needs
 ```
 
-A selected component is not implemented merely because it appears in architecture. Research challengers such as DBOS, ReBAC engines, alternative sandbox implementations, learned model routers, self-hosted inference servers or specialist vector databases do not reopen an accepted component or become dependencies merely because they appear in the AI research landscape.
+A selected component is not implemented merely because it appears in architecture. Research challengers do not become dependencies merely because they appear in the landscape.
 
-AI-02.1 responsibility boundaries and hardenings are likewise not activated technologies or separate services by virtue of appearing in architecture.
-
-## 7. AI architecture sequence
+## 6. AI architecture sequence
 
 The AI workstream remains **design/reengineering only**. No provider integration, AI backend runtime, new AI persistence or database evolution is claimed by roadmap text.
 
@@ -209,6 +173,9 @@ AI-00
 DANTE AI Foundation
 semantic / architectural baseline
         ↓
+PRODUCT-FORM / INTERACTION RESEARCH
+completed earlier in the workstream; AI-00's original "AI-01 next" wording is historical
+        ↓
 PRODUCTION AI / AGENT ENGINEERING RESEARCH
 state-of-the-art techniques
 technology challengers
@@ -217,28 +184,32 @@ DANTE applicability boundary
         ↓
 AI-02.1
 ACTIVE — DANTE INTELLIGENCE REENGINEERING
-v0.4 current checkpoint
+v0.5 CANDIDATE STRUCTURAL FREEZE
 Round I complete
 Round II complete
 Final Kill-Test complete
-ONE LAST mega stress-test required
-future-extensibility acceptance still required
-NOT CLOSED
+Last Mega Stress-Test complete
+Targeted v0.5 consistency verification complete
+NO MORE MEGA TESTS
+future-extensibility structural criterion PASS
+NOT CLOSED — additional user-requested pre-AI-03 review pending
         ↓
 AI-03
 CONTEXT / RETRIEVAL / MEMORY
-BLOCKED until AI-02.1 structural acceptance
+BLOCKED until explicit AI-02.1 acceptance/closure
 ```
 
-### AI-00
+### 6.1 AI-00
 
-`architecture/dante-ai-foundation.md` preserves the inherited semantic and architectural constraints. It keeps canonical truth, Authority, visibility/disclosure, provider state, unresolved/candidate state, multi-actor reasoning, stale-state handling, reconciliation, memory classes and durable-execution boundaries distinct. It does not select an SDK, provider, schema or implementation.
+`architecture/dante-ai-foundation.md` preserves inherited semantic and architectural constraints. It keeps canonical truth, Authority, Visibility/disclosure, provider state, unresolved/candidate state, multi-actor reasoning, stale-state handling, reconciliation, memory classes and durable-execution boundaries distinct. It does not select an SDK, provider, schema or implementation.
 
-### Production engineering research
+The original AI-00 statement that AI-01 was the next step is retained only as historical phase sequencing. It is not current work-queue authority.
 
-`architecture/ai-production-engineering-state-of-the-art-2026.md` records external production-engineering evidence as of 2026-09-01. It is deliberately marked `RESEARCH / TECHNOLOGY LANDSCAPE / NON-DANTE-DECISION`.
+### 6.2 Production engineering research
 
-The current DANTE applicability constraints recorded by that research are:
+`architecture/ai-production-engineering-state-of-the-art-2026.md` is `RESEARCH / TECHNOLOGY LANDSCAPE / NON-DANTE-DECISION`.
+
+Current applicability constraints include:
 
 ```text
 frontier intelligence expected API-first
@@ -251,18 +222,15 @@ small/local inference optional and benchmark-gated
 provider/model/SDK selection still open
 ```
 
-The research may recommend patterns or list challengers without pre-activating technologies.
+### 6.3 AI-02.1 — v0.5 candidate
 
-### AI-02.1 — ACTIVE
+AI-02.1 asks whether the intelligence architecture survives what DANTE must actually do under the accepted Product/Domain/Logical/Physical/PostgreSQL contracts.
 
-AI-02.1 is not a provider-selection phase. It is a **reengineering and pressure-test of the DANTE Intelligence Architecture** starting from actual product obligations.
-
-Required inputs include:
+Inputs:
 
 ```text
 Product / North Star
-existing DANTE simulations and scenario evidence
-what DANTE must actually be able to do
+existing simulations and scenario evidence
 accepted Domain semantics
 Whole Logical Model / WL-H01..WL-H12
 Physical / PostgreSQL authority
@@ -270,22 +238,26 @@ AI-00
 production engineering research
 ```
 
-Round I produced the initial reengineering checkpoint and introduced:
+#### Round I
+
+Introduced:
 
 ```text
 Interaction Session first-class
 Semantic Query / Projection Gateway
-Context Engine kept distinct from structured semantic query
-Simulation / Hypothetical State Workspace
+Context Engine distinct from structured semantic query
+Scenario Workspace
 ChangeSet / EffectGraph above individual governed effects
-Verifier / Auditor primitive
-Proactivity / Attention boundary
+Verifier
+Attention boundary
 Context Projection != recipient-aware Disclosure Projection
 DANTE-native + open-world paths composable in one Execution Kernel
 ModelTarget + provider-specific HarnessProfile
 ```
 
-Round II deliberately combined concurrency, stale basis, multi-actor privacy, revocation, partial effects, crashes, corrections, feedback loops and superseding user intent. It found no evidence sufficient to reopen Domain, Logical, Physical or PostgreSQL, but required the v0.3 hardenings:
+#### Round II
+
+Hardened with:
 
 ```text
 cumulative / cross-query disclosure protection
@@ -297,71 +269,109 @@ Attention budgeting
 cancel Run != undo already-dispatched effects
 ```
 
-The broad Final Kill-Test then attacked the system across agriculture, education, shift work, caregiving, legal/sensitive work, family, business, public/institutional boundaries, offline/late sync, large fan-out, malicious input and future rich conversational surfaces.
+#### Final Kill-Test
 
-It found three P0 architecture gaps:
+Added:
 
 ```text
 Reference / Target Resolution Gate
 Policy Composition / Precedence
-Safe Result Publication / Streaming Gate
-```
-
-and the associated v0.4 hardenings:
-
-```text
 ConsequenceProfile
+Safe Result Publication / Streaming Gate
 BasisManifest temporal validity
 DANTE canonical representation != external institutional System-of-Record authority
 sent != delivered != seen != acknowledged != accepted
 ```
 
-These are responsibility/runtime contracts, not new Domain owners or automatic persistence tables/services.
+#### Last Mega Stress-Test
 
-The one last mega stress-test now targets v0.4 as a whole. It must combine broad real-life workloads and adversarial dimensions including:
+The final broad test combined ordinary life, family, school, shift work, caregiving, agriculture, business, legal/sensitive work, public/institutional boundaries, large fan-out, offline, malicious content, crashes, revocation, supersession, code/computer-use and future much-more-capable intelligence.
+
+It found one remaining fundamental P0 responsibility:
 
 ```text
-ambiguous target references
-policy conflicts
-multi-actor privacy
-cumulative inference probing
-stale MaterialState
-time-expiring external sources
-revoked Authority/Consent
-source correction/retirement
-partial external effects
-ambiguous provider outcomes
-crash/recovery
-cancellation after dispatch
-scope-aware supersession
-self-generated feedback / oscillation
-Attention overload
-untrusted external input
-offline / delayed sync
-large fan-out
-rich streaming / voice / multimodal publication
-future much-more-capable general-purpose intelligence
+Execution Environment / Isolation
 ```
 
-The architecture is accepted only if this last mega-test does not require semantic collapse, hidden provider ownership of truth, a duplicate application ontology or unjustified infrastructure.
+and bounded hardenings:
 
-This is intentionally the last mega-test. If it exposes a fundamental gap, fix the smallest architecture boundary and run targeted verification of that fix. If it exposes only implementation/detail questions, do not restart another indefinite mega-test cycle.
+```text
+WorkContract propagation through decomposition/child Runs
+approval binding/rebinding to the materially approved proposal/basis/effect
+Basis coherence in addition to freshness
+publication currentness / superseded output suppression
+external-agent effect containment
+mandatory reconciliation survives optional-resource exhaustion
+surface-aware disclosure / realtime input authenticity
+telemetry/eval purpose/privacy constraints
+future cache hit != current disclosure authorization
+```
 
-A specific acceptance criterion remains **future extensibility**:
+`Execution Environment` is a logical/runtime boundary, not a mandatory sandbox service. Ordinary trusted deterministic/application work remains on the cheap path. Isolation activates lazily only when the workload/threat model requires it.
 
-> If DANTE later gains a much richer integrated general-purpose conversational intelligence — including capabilities comparable to future frontier chat systems — or adopts substantially more capable future models/providers/specialists, the architecture must absorb that improvement without transferring canonical memory, Authority, application state or effect ownership to the model/provider, without bypassing disclosure/publication governance and without requiring a fundamental redesign of the product core.
+Generated/untrusted code must not receive raw privileged DANTE/provider/database credentials. Where it needs privileged action, it uses bounded trusted brokers/capabilities subject to current policy and evidence.
 
-AI-02.1 may refine architecture responsibilities and contracts. Any impact on closed Domain/Logical/Physical/database authority must satisfy normal reopen discipline rather than being silently reinterpreted for AI convenience.
+#### Targeted v0.5 verification
 
-### AI-03 — after AI-02.1
+The post-test targeted verification checked:
 
-AI-03 owns the detailed **Context / Retrieval / Memory** architecture. It must consume the structurally accepted result of AI-02.1 rather than pre-committing retrieval, embeddings, vector-store, conversation-history or memory persistence decisions from industry fashion.
+```text
+generated-code secret isolation                         PASS STRUCTURAL
+execution-environment crash vs Run durability           PASS STRUCTURAL
+browser/computer-use effect verification                PASS STRUCTURAL
+superseded publication                                  PASS STRUCTURAL
+Basis coherence                                         PASS STRUCTURAL
+approval rebinding                                      PASS STRUCTURAL
+external-agent side effects                             PASS STRUCTURAL
+resource exhaustion after ambiguous effect              PASS STRUCTURAL
+deterministic fast path bypassing unnecessary isolation PASS STRUCTURAL
+```
 
-AI-03 must not be used to hide or repair an unresolved AI-02.1 responsibility gap.
+No additional fundamental responsibility gap emerged. No evidence was found to reopen Domain, Logical, Physical or PostgreSQL.
 
-## 8. Persistent frontend direction
+### 6.4 Future-extensibility acceptance
 
-The generic frontend engineering foundation, production materialization and pre-backend Access Web materialization are closed. Future frontend work is vertical/product work rather than another generic foundation phase.
+Structural criterion: **PASS**.
+
+A future DANTE may host much richer general-purpose conversational intelligence, realtime voice, multimodal understanding, code/artifact work, web research, external specialists and substantially stronger future models without transferring ownership of:
+
+```text
+canonical memory
+canonical application state
+Domain semantics
+Authority
+Visibility
+accepted-effect rules
+material history
+```
+
+Provider/model intelligence remains replaceable cognition around DANTE-owned contracts.
+
+### 6.5 AI-02.1 remaining work
+
+There will be **no more mega-test cycles** in AI-02.1.
+
+The only remaining pre-AI-03 architecture work is the additional review explicitly requested by the user, followed by an explicit AI-02.1 closure/acceptance decision.
+
+If that review reveals a real contradiction, reopen the smallest affected boundary. Do not restart broad simulations merely to keep testing indefinitely.
+
+### 6.6 AI-03 — blocked until closure
+
+AI-03 owns detailed:
+
+```text
+Context
+Retrieval
+Memory
+```
+
+AI-03 must consume the accepted structural result of AI-02.1 rather than pre-committing embeddings, vector-store, conversation-history or memory persistence choices from industry fashion.
+
+It must not be used to hide an unresolved AI-02.1 responsibility gap.
+
+## 7. Persistent frontend direction
+
+The generic frontend engineering foundation, production materialization and pre-backend Access Web materialization are closed. Future frontend work is vertical/product work.
 
 Persistent rules remain:
 
@@ -377,9 +387,7 @@ production never imports prototypes
 current design tokens / i18n / time contracts remain governed
 ```
 
-## 9. Infrastructure / release boundaries still deferred
-
-Do not prematurely materialize infrastructure merely to complete a diagram.
+## 8. Infrastructure / release boundaries still deferred
 
 Still trigger-bound/not currently complete:
 
@@ -392,10 +400,10 @@ real V1→V2 business-schema evolution rehearsal
 PowerSync product activation
 Restate product activation
 AI provider/model adapter implementation
-AI sandbox implementation
+AI Execution Environment implementation
 AI local-model activation
-AI context/retrieval/memory persistence
-AI-02.1 runtime module/service implementation
+AI Context/Retrieval/Memory persistence
+AI runtime module/service implementation
 exact target-resolution implementation
 exact policy-composition engine/product
 exact safe-streaming/publication implementation
@@ -404,7 +412,7 @@ production deployment
 
 When these become real workstreams, current evidence must replace design-time assumptions.
 
-## 10. Documentation lifecycle baseline
+## 9. Documentation lifecycle baseline
 
 ```text
 current specifications state current truth directly
@@ -416,17 +424,7 @@ Git remains the complete recoverable chronology
 post-merge documentation must be reconciled from candidate state to protected-main state
 ```
 
-Current authority:
-
-- `development/documentation-lifecycle-policy.md`
-- `development/documentation-and-handoff.md`
-- `development/branching-and-environments.md`
-- `development/operating-rules.md`
-- `docs/README.md`
-
-Fewer files is not a success criterion by itself. Remove/compact only after knowledge coverage.
-
-## 11. Persistent engineering rules
+## 10. Persistent engineering rules
 
 ```text
 SELECTED ARCHITECTURE != IMPLEMENTED COMPONENT
@@ -437,9 +435,6 @@ CLIENT LOCAL STATE != CANONICAL EFFECT AUTHORITY
 ENVIRONMENT != GIT BRANCH
 UNMERGED BRANCH TRUTH != PROTECTED-main TRUTH
 DATABASE MATERIALIZATION != PRODUCT APPLICATION IMPLEMENTATION
-DETERMINABLE SCHEMA EVOLUTION != SPECULATIVE PRE-MATERIALIZATION
-TEMPORARY HANDOFF != DURABLE main DOCUMENTATION
-MERGED BRANCH CANDIDATE STATE != CURRENT protected-main STATUS
 RESEARCH TECHNOLOGY != DANTE IMPLEMENTATION SELECTION
 MODEL/PROVIDER OUTPUT != CANONICAL EFFECT
 MODEL CAPABILITY != AUTHORITY
@@ -459,24 +454,19 @@ USER AUTONOMY != EXTERNAL/INSTITUTIONAL AUTHORITY
 SOURCE VERSION UNCHANGED != SOURCE NECESSARILY FRESH
 DANTE REPRESENTATION != EXTERNAL SYSTEM-OF-RECORD AUTHORITY
 SENT != DELIVERED != SEEN != ACKNOWLEDGED != ACCEPTED
+EXECUTION ENVIRONMENT != MANDATORY SANDBOX/CONTAINER
+FRESH INPUTS != AUTOMATICALLY COHERENT COMBINED BASIS
+APPROVAL != PERPETUAL AUTHORIZATION FOR MATERIALLY CHANGED WORK
+CACHE HIT != CURRENT DISCLOSURE AUTHORIZATION
 ```
 
-## 12. Immediate sequence
+## 11. Immediate sequence
 
 ```text
 1. Recovery is CLOSED / integrated; do not resume feature/postgres-recovery
-2. continue feature/access-auth, feature/home-react and feature/platform-observability independently
-3. on feature/ai-architecture, continue AI-02.1 from the recorded v0.4 checkpoint
-4. execute the ONE LAST mega stress-test against v0.4 as a whole
-5. if that test exposes a fundamental gap, repair the smallest boundary and perform targeted verification only
-6. complete the additional pre-AI-03 review explicitly required by the active workstream
-7. keep future-extensibility against a rich integrated frontier-chat-style intelligence as an acceptance criterion
-8. AI-03 owns Context / Retrieval / Memory only after AI-02.1 structural acceptance
-9. before each integration, reconcile the active branch against the then-current protected-main baseline
-10. evolve the database only through same-change forward migrations when a real vertical requires it
-11. keep remote backup/cloud recovery deferred until production deployment creates a real need
-12. apply documentation lifecycle cleanup before integration AND post-merge current-state reconciliation afterward
-13. use live Git refs and branch-local authority rather than stale global assumptions
+2. continue feature/access-auth, feature/home-react and feature/platform-observability independently under their own scopes
+3. feature/ai-architecture is now at AI-02.1 v0.5 CANDIDATE STRUCTURAL FREEZE
+4. perform the additional user-requested pre-AI-03 review
+5. if the review passes, make an explicit AI-02.1 closure/acceptance decision
+6. only then start AI-03 Context / Retrieval / Memory
 ```
-
-This roadmap intentionally does not pre-create future branches, migrations, APIs, provider integrations or infrastructure before their concrete scope is authorized.
