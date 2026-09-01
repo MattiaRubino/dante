@@ -1,17 +1,20 @@
 # DANTE AI-03B — Retrieval + Memory Architecture
 
-- **Status:** CANDIDATE / STRUCTURAL PASS PENDING FINAL INDEPENDENT VALIDATION
+- **Status:** CLOSED / STRUCTURALLY ACCEPTED
 - **Branch:** `feature/ai-architecture`
 - **Established:** 2026-09-01
-- **PRE-SCOPE:** `cd98a1e76864aa91f098e7391c91cce48cefa20a`
+- **Initial candidate PRE-SCOPE:** `cd98a1e76864aa91f098e7391c91cce48cefa20a`
+- **Final-hardening PRE-SCOPE:** `9e8e0fd92733e1b54d5a69b981a11e0a1874d1f0`
 - **Phase:** AI-03B — Retrieval + Memory Architecture
 - **Upstream context baseline:** AI-03A / CLOSED / STRUCTURALLY ACCEPTED / FINAL REVALIDATION COMPLETE / C01..C33
+- **Validation result:** FIRST RECONCILED CANDIDATE STRUCTURAL PASS / FINAL INDEPENDENT VALIDATION FAIL / 5 FINAL HARDENINGS / FINAL COMPOUND RETEST PASS
+- **Accepted invariants:** B01..B35
 - **Implementation claim:** NONE
 - **Database evolution:** NONE
 - **Alembic evolution:** NONE
 - **Provider/model selection:** NONE
 - **Physical retrieval technology selection:** NONE
-- **Next gate:** final independent AI-03B readback + destructive validation before closure
+- **Next phase:** AI-03C — Destructive Validation + Materialization Blueprint
 
 ---
 
@@ -25,11 +28,11 @@ The governing questions are:
 
 and:
 
-> **Which noncanonical information may survive, under which explicit class, purpose, source, sensitivity, correction, forgetting, suppression and anti-resurrection lifecycle?**
+> **Which noncanonical information may survive, under which explicit class, purpose, source, sensitivity, retention, correction, forgetting, suppression and anti-resurrection lifecycle?**
 
 AI-03B is not a universal RAG design, vector-database choice, generic memory ontology, conversation-schema proposal, provider-memory decision or database migration.
 
-The architecture starts from the closed DANTE stack:
+The architecture consumes the closed DANTE stack:
 
 ```text
 Product / North Star
@@ -39,7 +42,7 @@ Product / North Star
 → PostgreSQL / CP6 / Recovery
 → AI-02.1 runtime
 → AI-03A Context C01..C33
-→ AI-03B Retrieval + Memory
+→ AI-03B Retrieval + Memory B01..B35
 ```
 
 Repository truth outranks research/framework convenience.
@@ -141,6 +144,7 @@ RETRIEVAL PLAN
         ├ reference/target requirement
         ├ currentness/coherence requirement
         ├ explicit exclusions
+        ├ permitted query transformations
         ├ consequence
         └ latency/cost/resource budget
         │
@@ -209,6 +213,7 @@ freshness/currentness requirement
 coherence requirement
 representation/fidelity requirement
 permitted provider/tool acquisition
+permitted query transformations
 resource / latency / cost budget
 stopping criteria
 JIT refinement ceiling
@@ -222,13 +227,70 @@ MAY REFINE ACQUISITION
 MUST NOT CREATE NEW PURPOSE / AUTHORITY / VISIBILITY
 ```
 
+### 5.1 Retrieval transformation / query-rewrite integrity
+
+Search implementations may legitimately use:
+
+```text
+query rewriting
+translation
+query decomposition
+semantic expansion
+hypothetical-document/query generation
+provider-native query planning
+model-generated search terms
+```
+
+These are retrieval representations, not new semantic authority.
+
+Binding rules:
+
+```text
+QUERY REWRITE
+!= NEW INFORMATION NEED
+
+QUERY EXPANSION
+!= PURPOSE EXPANSION
+
+GENERATED / HYPOTHETICAL SEARCH REPRESENTATION
+!= SOURCE
+!= EVIDENCE
+```
+
+A transformation must preserve the material constraints of the accepted InformationNeed, including as applicable:
+
+```text
+target / Subject / represented party
+purpose
+negative source/use constraints
+Reality Scope
+Runtime Interpretation Frame
+security/privacy compartment
+coverage requirement
+source-class restrictions
+```
+
+If a transformation reveals a genuinely new material dependency rather than a semantically equivalent retrieval formulation, that dependency must become or refine an explicit bounded `InformationNeed` under AI-03A C23. It must not be smuggled into search scope by the query generator.
+
+Example:
+
+```text
+request
+"find what in the project was stressing me"
+
+unsafe rewrite
+"find evidence of burnout or depression"
+```
+
+The second formulation introduces materially stronger health semantics and cannot be treated as an equivalent query rewrite merely because a model produced it.
+
 ---
 
 ## 6. Retrieval guarantee semantics
 
 AI-03B separates result count/rank from coverage proof.
 
-Candidate guarantee classes:
+Accepted guarantee classes:
 
 ```text
 EXACT
@@ -468,6 +530,8 @@ resource cost
 
 A rank/score is retrieval evidence only.
 
+Generated query expansion / hypothetical retrieval text may participate in retrieval planning but does not become a source-bound `RetrievalCandidate` merely because it resembles a plausible answer.
+
 ---
 
 ## 10. Candidate validation / source reread
@@ -651,7 +715,7 @@ Examples may include a tentative scheduling tendency or repeated preference-like
 INFERENCE != CONFIRMED FACT
 ```
 
-Durable adaptive memory must have bounded typed semantics sufficient for correction/scope/expiry/suppression. Free-form prose alone is not accepted as durable semantic authority.
+Durable adaptive memory must have bounded typed semantics sufficient for source/inference status, correction, scope, validity, expiry and suppression. Free-form prose alone is not accepted as durable semantic authority.
 
 ### 14.6 Operational / Experience Memory
 
@@ -685,6 +749,8 @@ PROVIDER MEMORY
 
 Reuse requires current purpose/privacy/representation/authorization/Harness compatibility.
 
+Provider support for automatic or server-side persistence does not grant DANTE retention authority by itself.
+
 ### 14.8 Retrieval Representations
 
 Chunks, summaries, embeddings, indexes and caches are technical derivative state, not user facts.
@@ -715,6 +781,8 @@ source / lineage / basis?
 independent evidence or derivative?
 sensitivity / derived sensitivity?
 purpose/use restrictions?
+retention eligibility?
+future-reuse eligibility?
 validity / temporal scope?
 review / expiry / decay?
 correction path?
@@ -748,9 +816,99 @@ MODEL REQUEST TO REMEMBER
 
 A model/tool may propose admission; DANTE owns the gate.
 
+### 15.1 Processing eligibility != retention eligibility
+
+Final independent validation established a required separation that the first candidate did not state strongly enough:
+
+```text
+PROCESSING / RETRIEVAL ELIGIBILITY
+!= RETENTION / MEMORY-ADMISSION ELIGIBILITY
+!= FUTURE-REUSE ELIGIBILITY
+```
+
+An uploaded document, connected-source datum, sensitive item or third-party fact may be eligible for one current task without being eligible to become reusable memory.
+
+The user may also explicitly permit current processing while prohibiting future retention/reuse.
+
+Examples:
+
+```text
+"use this PDF for this answer, but do not remember it"
+→ current processing may be eligible
+→ durable memory admission denied
+
+sensitive imported document
+→ may support the bounded current task
+→ does not automatically become reusable profile context
+```
+
+### 15.2 Admission decision != durable memory write authority
+
+Retention is a state mutation. Therefore:
+
+```text
+MEMORY ADMISSION DECISION
+!= MEMORY WRITE PERMIT
+```
+
+Where a memory mutation is material/durable, creation, update, correction, deactivation or forgetting remains subject to the inherited AI-02 effect/governance semantics and current authorization at the mutation boundary.
+
+```text
+DURABLE MEMORY MUTATION
+REQUIRES CURRENT ADMISSION
++
+CURRENT GOVERNED EFFECT AUTHORIZATION
+```
+
+A delayed memory write after revocation cannot rely solely on an earlier processing decision.
+
+Likewise:
+
+```text
+"remember this"
+= retention intent / proposal
+!= blanket authority over third-party data
+!= canonical promotion
+!= permanent reuse authorization under unrelated purposes
+```
+
+Provider-native automatic memory must remain disabled/constrained/reconciled where it cannot satisfy the same retention boundary.
+
 ---
 
-## 16. Memory recall is governed retrieval
+## 16. Durable user-memory inspectability and control
+
+DANTE may retain user-specific reusable noncanonical memory only when its semantic family is inspectable enough to preserve user control.
+
+For durable Adaptive/Derived User Memory, DANTE must be able to represent or reconstruct, as applicable:
+
+```text
+what DANTE is treating as reusable
+source / lineage
+explicit vs observed vs inferred status
+bounded semantic type
+scope / purpose applicability
+validity / review / expiry
+uncertainty/conflict state where material
+correction path
+deactivation path
+forget/delete path
+inference-disposition state where applicable
+```
+
+This implements the product obligation that learned/user-profile context remain understandable, editable and removable.
+
+```text
+DURABLE USER-SPECIFIC REUSABLE MEMORY
+MUST BE SEMANTICALLY INSPECTABLE
+AND USER-CONTROLLABLE AT THE APPROPRIATE LEVEL.
+```
+
+This does not mean every internal FTS row, ANN node, cache key or execution trace becomes a user-facing profile item. Technical derivatives retain their own lifecycle; the rule targets reusable personal semantic memory.
+
+---
+
+## 17. Memory recall is governed retrieval
 
 ```text
 MEMORY EXISTS
@@ -779,7 +937,7 @@ No architecture rule injects every remembered item into every prompt/session.
 
 ---
 
-## 17. Canonical promotion boundary
+## 18. Canonical promotion boundary and non-duplication
 
 If a user/model supplies information whose durable meaning belongs to an existing accepted Domain owner, the correct action is not to hide it in generic memory.
 
@@ -800,11 +958,35 @@ CANNOT MINT CANONICAL TRUTH BY ITSELF.
 
 If no accepted owner is justified, AI-03B does not invent a generic Fact/UserMemory domain root.
 
+Final validation adds the reciprocal rule:
+
+```text
+SUCCESSFUL CANONICAL PROMOTION
+MUST NOT LEAVE A MATERIALLY EQUIVALENT
+NONCANONICAL MEMORY ACTING AS
+INDEPENDENT AUTHORITY OR CORROBORATION.
+```
+
+After successful promotion, the source memory may remain referenced for lineage/audit where justified but must be demoted, superseded, retired or otherwise prevented from behaving like an independent second semantic authority.
+
+Example:
+
+```text
+adaptive candidate
+"prefers quiet mornings"
+        ↓ user confirms / governed canonical update
+canonical preference/state
+        ↓
+old adaptive candidate
+!= second corroborating source
+!= fallback authority after canonical correction
+```
+
 ---
 
 # PART III — CORRECTION, SUPPRESSION AND ANTI-RESURRECTION
 
-## 18. Distinct lifecycle operations
+## 19. Distinct lifecycle operations
 
 These are not synonyms:
 
@@ -828,9 +1010,11 @@ INFERENCE DISPOSITION
 
 Forgetting an AI memory does not rewrite truthful canonical history.
 
+A retention prohibition may also exist even when source processing remains permitted for another bounded purpose.
+
 ---
 
-## 19. Inference-resurrection protection
+## 20. Inference-resurrection protection
 
 Failure case:
 
@@ -862,7 +1046,7 @@ This is not a universal predicate graph. A durable adaptive-memory family must s
 
 ---
 
-## 20. Self-confirming memory / ancestry protection
+## 21. Self-confirming memory / ancestry protection
 
 Failure case:
 
@@ -889,7 +1073,7 @@ Lineage/dedup semantics must preserve the distinction.
 
 ---
 
-## 21. Poisoned operational-experience protection
+## 22. Poisoned operational-experience protection
 
 Operational/Experience Memory has a high-risk failure mode: untrusted or model-generated content can look like successful prior experience and later act as a persistent behavioral template.
 
@@ -923,7 +1107,7 @@ Operational memories require bounded environment/provider/version applicability 
 
 ---
 
-## 22. Source lifecycle / recovery inheritance
+## 23. Source lifecycle / recovery inheritance
 
 Retrieval and memory derivatives inherit source lifecycle.
 
@@ -953,7 +1137,7 @@ This consumes the existing PostgreSQL Recovery / `material_state_retirement` ant
 
 # PART IV — MULTI-ACTOR, PROVIDER AND CURRENTNESS
 
-## 23. Multi-actor memory / retrieval
+## 24. Multi-actor memory / retrieval
 
 No memory/retrieval scope collapses to generic `user_id + text`.
 
@@ -974,9 +1158,11 @@ A shared fact can coexist with private personal overlays, notes, constraints and
 
 Memory retained in one representation/purpose context is not automatically reusable in another.
 
+A person's request to remember information does not by itself grant authority to create reusable memory about another person or represented party outside the applicable governance context.
+
 ---
 
-## 24. Provider state lifecycle
+## 25. Provider state lifecycle
 
 Provider thread/cache/compaction/native memory may improve continuity, latency or cost but remains discardable.
 
@@ -1001,9 +1187,11 @@ DO NOT REUSE
 
 Provider failover must not require provider-owned memory as canonical state.
 
+Provider-side persistence also remains subject to the retention/admission distinction; provider technical capability does not itself authorize durable future reuse.
+
 ---
 
-## 25. Currentness is non-monotonic
+## 26. Currentness is non-monotonic
 
 A previously valid retrieval/memory candidate can become ineligible because of:
 
@@ -1017,17 +1205,51 @@ source retirement/redaction
 provider/environment version change
 freshness expiry
 Work Supersession
+material change to the derivation basis
 ```
 
 `VALID BEFORE != VALID NOW`.
 
 Long-running Run resume therefore re-evaluates currentness/eligibility before consequential reuse.
 
+### 26.1 Derived-memory basis currentness
+
+Final independent validation identified a separate currentness requirement for derived memory:
+
+```text
+ALL ORIGINAL SOURCE BYTES STILL VALID
+!= DERIVED MEMORY STILL CURRENT
+```
+
+Example:
+
+```text
+January–March history
+→ tentative "prefers evenings" memory
+
+April–June history
+→ materially different pattern
+```
+
+No old source is necessarily false or retired, but the earlier derived memory may now be stale, conflicted or superseded.
+
+Durable derived/adaptive memory must therefore preserve enough basis/applicability information to support currentness decisions such as:
+
+```text
+STILL_APPLICABLE
+REVALIDATION_REQUIRED
+CONFLICTED
+SUPERSEDED
+EXPIRED
+```
+
+A fixed TTL is not by itself a semantic currentness proof. AI-03B does not create a second universal BasisManifest; it requires reuse of adequate lineage/basis semantics so material basis changes can invalidate or weaken the derived memory.
+
 ---
 
 # PART V — RESEARCH RECONCILIATION
 
-## 26. Targeted external challenger evidence
+## 27. Targeted external challenger evidence
 
 AI-03B was challenged against current retrieval/memory/provider patterns after the internal DANTE-first candidate was constructed. Research is challenger evidence only; it is not semantic authority.
 
@@ -1062,11 +1284,13 @@ Mem0 / Zep / Graphiti / Letta / related frameworks
 
 No framework/provider/store is selected by this evidence.
 
+The final five hardenings did not require another generic research round; they were derived directly from DANTE Product/privacy/user-control, AI-02 governance and the accepted semantic stack.
+
 ---
 
 # PART VI — EVALUATION
 
-## 27. Retrieval evaluation
+## 28. Retrieval evaluation
 
 AI-03B cannot be validated solely by final-answer quality.
 
@@ -1085,6 +1309,9 @@ cross-actor leakage
 unsupported-negative rate
 contradiction preservation
 retrieval-route correctness
+query-rewrite semantic drift
+query expansion scope violation
+hypothetical-query/source confusion
 latency p50/p95
 cost / provider calls
 tokens per satisfied InformationNeed
@@ -1096,7 +1323,7 @@ A good-looking answer cannot hide retrieval leakage or missing required context.
 
 ---
 
-## 28. Memory evaluation
+## 29. Memory evaluation
 
 Required families include:
 
@@ -1105,9 +1332,15 @@ correct memory recall
 correct memory non-recall
 correct constraint application
 correct constraint non-application
+retention-denial compliance
+future-reuse-denial compliance
+unauthorized delayed memory mutation
+durable-user-memory inspectability/control
 stale-memory reuse
+material-basis drift detection
 false durable inference
 false canonical promotion
+post-promotion duplicate authority
 correction propagation
 forgetting propagation
 source/use suppression propagation
@@ -1125,9 +1358,9 @@ anti-resurrection failure
 
 ---
 
-# PART VII — CANDIDATE INVARIANTS
+# PART VII — ACCEPTED INVARIANTS
 
-## 29. AI-03B candidate invariants B01–B30
+## 30. AI-03B accepted invariants B01–B35
 
 ```text
 B01  RETRIEVAL != TRUTH.
@@ -1199,19 +1432,39 @@ B29  Execution evidence != user memory.
 
 B30  Correct non-recall / non-application
      is part of memory quality.
+
+B31  Processing/retrieval eligibility does not imply retention
+     or future-reuse eligibility. Durable memory mutation requires
+     current admission plus governed effect authorization.
+
+B32  Durable user-specific reusable memory must be semantically
+     inspectable and support appropriate source/inference status,
+     scope/validity, correction, deactivation and deletion control.
+
+B33  Retrieval rewrite / expansion / translation / decomposition /
+     hypothetical query generation must not silently redefine an
+     InformationNeed. Generated query representations are not source evidence.
+
+B34  Durable derived memory is not self-freshening. Material basis
+     change or new contradictory evidence may make it stale,
+     conflicted or superseded even when original sources remain valid.
+
+B35  Successful canonical promotion must not leave a materially
+     equivalent noncanonical memory acting as independent authority
+     or independent corroboration.
 ```
 
-These remain candidate invariants until final independent AI-03B validation closes the phase.
+These are the accepted AI-03B structural invariants consumed by AI-03C.
 
 ---
 
-# PART VIII — CANDIDATE DESTRUCTIVE VALIDATION
+# PART VIII — DESTRUCTIVE VALIDATION / CLOSURE RECORD
 
-## 30. First candidate kill-test
+## 31. First reconciled candidate kill-test
 
-The reconciled candidate was attacked after internal design + targeted external challenge.
+The DANTE-first design was challenged with targeted modern research and attacked before final independent validation.
 
-Representative compound cases:
+Representative compound cases included:
 
 ```text
 ANN used for COMPLETE_REQUIRED
@@ -1244,76 +1497,207 @@ source-derived duplicate memories
 source retirement during active Run
 ```
 
-Candidate response:
-
-```text
-ANN for completeness                     route rejected / architecture holds
-post-filter-only permission proof         rejected / eligibility envelope holds
-zero vector results                       no false absence claim
-source chunk multiplicity                 no fake corroboration
-stale derivative                          source/currentness validation required
-backup resurrection                       current lifecycle suppresses eligibility
-inference resurrection                    Inference Disposition required
-paraphrase resurrection                   typed adaptive semantics required
-self-confirming memory                    ancestry rule blocks fake evidence
-poisoned experience                       verified admission basis required
-provider/environment drift                applicability + revalidation required
-model memory request                      proposal only
-malicious source memory request           DATA / no admission authority
-cross-purpose chat memory                 governed recall blocks reuse
-represented-party switch                  eligibility re-evaluation
-private→shared disclosure                 AI-03A disclosure separation preserved
-provider revocation                       provider-memory reuse blocked
-Run resume                                currentness revalidation
-Visibility change                         cache/retrieval reauthorization
-long-context vs RAG                       both supported; per-need route
-exact structured need                     deterministic route preserved
-experience-as-instruction                 rejected
-forget vs canonical state                 semantic separation preserved
-old vs new state                          contradiction/reconciliation preserved
-large history                             bounded query/aggregate/JIT strategy
-large context                             hierarchy/JIT; no dump-all requirement
-derivative duplicates                     lineage/dedup
-retirement mid-Run                        non-monotonic eligibility
-```
-
 First result:
 
 ```text
 AI-03B RECONCILED CANDIDATE
 STRUCTURAL PASS CANDIDATE
+B01..B30 CANDIDATE
 ```
 
-This is not yet final closure. A fresh independent readback/kill-test must attempt to find contradictions without treating this candidate PASS as evidence.
+That result was explicitly not treated as closure evidence.
 
 ---
 
-## 31. Structural impact result
+## 32. Final independent validation — result
 
-Current candidate requires none of:
+A fresh readback reconstructed the Retrieval/Memory obligations from Product/privacy/user-control, Domain, Logical, PostgreSQL/Recovery, AI-02 and AI-03A rather than trusting the first candidate.
+
+Initial independent result:
 
 ```text
-new Domain owner
-Logical reopen
-Physical reopen
-PostgreSQL/Alembic change
-new generic Memory root
-new generic Fact ontology
-new knowledge graph
-new vector database
-Redis
-memory framework
-provider/model selection
-new microservice per architecture noun
+FAIL / HARDENING REQUIRED
 ```
 
-The architecture can begin as contracts/modules inside the existing application/runtime boundary. Extraction requires measured operational evidence later.
+Five real downstream gaps were found.
+
+### FINAL-GAP-01 — Retention admission / governed memory mutation — P0
+
+Problem:
+
+```text
+eligible to process now
+!= eligible to retain
+!= eligible to reuse later
+```
+
+The first candidate had a Survival Gate but did not make retention/future-reuse authorization sufficiently distinct from current acquisition, nor durable memory mutation sufficiently explicit as an effect/governance boundary.
+
+Hardening:
+
+```text
+PROCESSING / RETRIEVAL ELIGIBILITY
+!= RETENTION / MEMORY-ADMISSION ELIGIBILITY
+!= FUTURE-REUSE ELIGIBILITY
+
+DURABLE MEMORY MUTATION
+REQUIRES CURRENT ADMISSION
++
+CURRENT GOVERNED EFFECT AUTHORIZATION
+```
+
+This also covers delayed writes after revocation and provider-native automatic memory.
+
+### FINAL-GAP-02 — Durable user-memory inspectability and control — P0
+
+Problem: typed memory alone does not satisfy the product requirement that reusable personal context remain understandable, correctable, deactivatable and deletable.
+
+Hardening: durable user-specific reusable memory must preserve enough semantic metadata/control to expose what is being reused, its source/inference status, scope/validity and correction/deactivation/deletion paths.
+
+This does not turn technical indexes/caches into user-profile records.
+
+### FINAL-GAP-03 — Retrieval transformation / query-rewrite integrity — P0
+
+Problem: query rewriting, decomposition, translation, semantic expansion or hypothetical-document generation can silently introduce a stronger or different InformationNeed.
+
+Hardening:
+
+```text
+QUERY REWRITE != NEW INFORMATION NEED
+QUERY EXPANSION != PURPOSE EXPANSION
+GENERATED / HYPOTHETICAL QUERY REPRESENTATION != SOURCE EVIDENCE
+```
+
+A genuinely new material dependency must become/refine a bounded InformationNeed under AI-03A.
+
+### FINAL-GAP-04 — Derived-memory basis currentness — P0/P1
+
+Problem: a derived memory can become stale because later evidence changes the material basis even when every original source remains individually valid.
+
+Hardening:
+
+```text
+ALL ORIGINAL SOURCE BYTES STILL VALID
+!= DERIVED MEMORY STILL CURRENT
+```
+
+Durable derived memory must support revalidation against material basis/applicability changes, not merely source deletion/TTL.
+
+### FINAL-GAP-05 — Canonical-promotion non-duplication — P0/P1
+
+Problem: after an adaptive memory is successfully promoted to canonical Domain/application state, the old memory could remain active as a second apparent authority or fake corroborating source.
+
+Hardening:
+
+```text
+CANONICAL PROMOTION != DUPLICATION
+```
+
+The promoted source memory must no longer act as independent semantic authority/corroboration.
+
+---
+
+## 33. Final compound retest
+
+After applying FINAL-GAP-01..05 conceptually, the architecture was attacked again with compound cases including:
+
+```text
+private PDF usable now + explicit "do not remember"
+sensitive imported document usable now but reusable profile denied
+"remember this about my partner"
+provider automatic persistent memory
+revocation during delayed memory write
+user asks what DANTE has learned about them
+user deactivates one learned preference
+query rewrite adds health semantics
+HyDE/hypothetical passage looks like a plausible answer
+translation that genuinely preserves the same need
+new evidence invalidates an old inferred preference without deleting old sources
+operational memory after provider version change
+adaptive memory promoted into canonical state
+canonical state later corrected while stale adaptive copy survives
+inference resurrection
+self-confirming memory loop
+poisoned operational experience
+permission-filtered ANN recall pressure
+COMPLETE_REQUIRED through ANN/hybrid Top-K
+source retirement / backup restore
+cross-actor / represented-party switch
+long-running Run resume
+correct non-recall / non-application
+large history / large document/context pressure
+```
+
+Final response:
+
+```text
+current processing but retention denied        PASS
+future-reuse denial                            PASS
+third-party remember request                   governed / no blanket authority
+provider automatic persistence                 governed / non-authoritative
+revocation before memory mutation              current permit required
+user-memory inspectability/control              PASS
+preference deactivation                         PASS
+query rewrite semantic expansion               explicit need boundary preserved
+hypothetical search text                        never source evidence
+safe translation                               permitted as equivalent transformation
+new basis contradicts derived memory            revalidation required
+provider/version drift                          applicability revalidation
+canonical promotion                            no duplicate semantic authority
+later canonical correction                      stale adaptive copy cannot override
+inference resurrection                          blocked by disposition semantics
+self-confirming memory                          blocked by ancestry semantics
+poisoned experience                             verified admission basis required
+permission-filtered ANN                         eligibility envelope preserved
+ANN for completeness                            route rejected
+restore/retirement                              anti-resurrection preserved
+cross-actor reuse                               eligibility re-evaluation
+Run resume                                      currentness re-evaluation
+correct non-application                         first-class eval condition
+large scale/context                             bounded route/hierarchy/JIT architecture holds
+```
+
+Final structural result:
+
+```text
+RETRIEVAL PLAN / CANDIDATE CONTRACTS      PASS
+COVERAGE / APPROXIMATE SEMANTICS          PASS
+PERMISSION-SAFE SEARCH UNIVERSE           PASS
+QUERY-TRANSFORMATION INTEGRITY            PASS after final hardening
+SOURCE / DERIVATIVE CURRENTNESS           PASS after final hardening
+MEMORY CLASS SEPARATION                    PASS
+RETENTION / FUTURE-REUSE BOUNDARY         PASS after final hardening
+DURABLE USER MEMORY CONTROL               PASS after final hardening
+INFERENCE RESURRECTION                     PASS
+SELF-CORROBORATION                         PASS
+OPERATIONAL MEMORY POISONING              PASS
+CANONICAL PROMOTION NON-DUPLICATION       PASS after final hardening
+PROVIDER MEMORY REPLACEABILITY            PASS
+MULTI-ACTOR / REPRESENTED-PARTY           PASS
+RECOVERY / ANTI-RESURRECTION              PASS
+EVALUATION ARCHITECTURE                    PASS
+
+FURTHER MATERIAL STRUCTURAL GAP           NONE FOUND
+NEW TOP-LEVEL AI CONTRACT                 NO
+NEW DOMAIN OWNER                          NO
+LOGICAL REOPEN                            NO
+PHYSICAL REOPEN                           NO
+POSTGRESQL CHANGE                         NO
+ALEMBIC CHANGE                            NO
+VECTOR DB REQUIRED                        NO
+MEMORY FRAMEWORK REQUIRED                 NO
+PROVIDER SELECTION                        NO
+```
+
+AI-03B therefore closes at the structural architecture level.
+
+This does **not** prove runtime retrieval recall, latency, physical invalidation behavior, provider integration, retention jobs or database implementation.
 
 ---
 
 # PART IX — EXPLICIT DEFERRALS
 
-## 32. Physical/materialization decisions deferred to AI-03C
+## 34. Physical/materialization decisions deferred to AI-03C
 
 AI-03B does not authorize:
 
@@ -1355,7 +1739,7 @@ Only then may physical change be proposed under normal CP6/Alembic same-change d
 
 ---
 
-## 33. Provider/framework decisions remain open
+## 35. Provider/framework decisions remain open
 
 No selection is made for:
 
@@ -1378,65 +1762,53 @@ Research technique != DANTE decision.
 
 ---
 
-# PART X — CLOSURE GATE
+# PART X — CLOSURE
 
-## 34. AI-03B final closure requirements
-
-AI-03B may be closed only if a fresh independent validation can establish:
-
-```text
-RetrievalPlan semantics coherent
-RetrievalCandidate boundary coherent
-coverage guarantees coherent
-permission-safe search-universe rule coherent
-structured/history/document/open-world routes coherent
-ranking/reconciliation separation preserved
-source-reread/currentness lifecycle coherent
-memory classes explicit and noncollapsed
-Memory Survival Gate coherent
-canonical promotion boundary preserved
-correction/forgetting/suppression distinct
-inference resurrection contained
-self-corroboration contained
-operational-memory poisoning contained
-provider memory replaceable
-multi-actor scope preserved
-source retirement/recovery anti-resurrection preserved
-evaluation directly tests retrieval/memory quality
-no new semantic escape hatch
-no unresolved structural contradiction
-```
-
-If a real contradiction appears, reopen the smallest affected AI-03B boundary. Do not reopen Domain/Logical/Physical/AI-03A unless the contradiction genuinely cannot be resolved downstream.
-
----
-
-## 35. Current verdict / next action
+## 36. AI-03B closure verdict
 
 ```text
 AI-03B
 RETRIEVAL + MEMORY ARCHITECTURE
 
-INTERNAL DANTE-FIRST DESIGN          COMPLETE
-TARGETED MODERN CHALLENGER RESEARCH COMPLETE
-RECONCILIATION                      COMPLETE
-FIRST HEAVY KILL-TEST               PASS CANDIDATE
-B01..B30                            CANDIDATE
+DANTE-FIRST INTERNAL DESIGN             COMPLETE
+TARGETED MODERN CHALLENGER RESEARCH    COMPLETE
+RECONCILIATION                         COMPLETE
+FIRST HEAVY KILL-TEST                  PASS CANDIDATE
+FINAL INDEPENDENT VALIDATION           FAIL / 5 HARDENINGS
+FINAL HARDENINGS                       COMPLETE
+FINAL COMPOUND RETEST                  PASS
+B01..B35                               ACCEPTED
 
 STATUS
-CANDIDATE / STRUCTURAL PASS
-PENDING FINAL INDEPENDENT VALIDATION
+CLOSED / STRUCTURALLY ACCEPTED
 ```
 
-Next action:
+Closure means the semantic/runtime architecture is coherent enough to be consumed by AI-03C.
+
+Closure does not mean any physical retrieval/memory implementation exists.
+
+Reopen AI-03B only if later materialization/production evidence reveals a real contradiction that cannot be resolved in the smaller downstream boundary.
+
+Do not restart generic AI-03B mega-testing merely to search indefinitely for hypothetical gaps.
+
+---
+
+## 37. Next action
 
 ```text
-fresh readback of repository authority
-→ independent AI-03B reverse-engineering / destructive validation
-→ harden only real gaps
-→ close AI-03B if it still holds
-→ then AI-03C whole Context/Retrieval/Memory destructive validation
-   + materialization blueprint
+AI-03C — DESTRUCTIVE VALIDATION + MATERIALIZATION BLUEPRINT
 ```
 
-No implementation, database change or physical retrieval activation is authorized by this document.
+AI-03C must consume:
+
+```text
+AI-03A C01..C33
++
+AI-03B B01..B35
++
+Product / Domain / Logical / Physical / PostgreSQL / Recovery authority
+```
+
+It must attack the whole Context/Retrieval/Memory architecture under realistic scale, privacy, recovery, provider, multi-actor and lifecycle pressure and then classify what — if anything — deserves physical persistence or index activation.
+
+No implementation, database change, pgvector/FTS activation, provider selection or memory-framework adoption is authorized by AI-03B closure.
