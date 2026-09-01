@@ -57,7 +57,7 @@ describe('@dante/i18n', () => {
     expect(runtime.t(($) => $.common.gesture.title)).toBe('Test gesto');
   });
 
-  it('resolves the complete Temporal Create resource tree at runtime', async () => {
+  it('resolves the complete Temporal Create authoring tree at runtime', async () => {
     const runtime = await createRuntime();
 
     expect(runtime.t(($) => $.common.home.timeline.create.kind.activity)).toBe(
@@ -78,14 +78,26 @@ describe('@dante/i18n', () => {
     expect(runtime.t(($) => $.common.home.timeline.create.date)).toBe('Data');
     expect(runtime.t(($) => $.common.home.timeline.create.start)).toBe('Ora');
     expect(runtime.t(($) => $.common.home.timeline.create.duration)).toBe(
-      'Durata',
+      'Durata prevista',
     );
     expect(runtime.t(($) => $.common.home.timeline.create.context)).toBe(
       'Contesto',
     );
     expect(runtime.t(($) => $.common.home.timeline.create.details.show)).toBe(
-      '+ Dettagli',
+      'Dettagli e pianificazione',
     );
+    expect(
+      runtime.t(($) => $.common.home.timeline.create.planning.constraintOpen),
+    ).toBe('Senza collocazione');
+    expect(
+      runtime.t(($) => $.common.home.timeline.create.execution.splittable),
+    ).toBe('Divisibile in sessioni');
+    expect(
+      runtime.t(($) => $.common.home.timeline.create.recurrence.weekly),
+    ).toBe('Settimanale');
+    expect(
+      runtime.t(($) => $.common.home.timeline.create.integrations.providerRequired),
+    ).toContain('provider/backend');
     expect(runtime.t(($) => $.common.home.timeline.create.cancel)).toBe(
       'Annulla',
     );
@@ -102,6 +114,12 @@ describe('@dante/i18n', () => {
       'Frontend runtime ready',
     );
     expect(runtime.t(($) => $.common.gesture.title)).toBe('Gesture probe');
+    expect(runtime.t(($) => $.common.home.timeline.create.duration)).toBe(
+      'Expected duration',
+    );
+    expect(runtime.t(($) => $.common.home.timeline.create.details.show)).toBe(
+      'Details and planning',
+    );
   });
 
   it('falls back to Italian for an unsupported locale', async () => {
