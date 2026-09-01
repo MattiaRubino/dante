@@ -1,6 +1,6 @@
 # World Focus — Dynamic Composition & Surface Allocation Review
 
-Status: **IMPLEMENTED CANDIDATE — AUTOMATED VALIDATION PENDING**
+Status: **ENGINEERING AUTOMATED PASS — CONCRETE SURFACE VERTICAL ACCEPTANCE PENDING**
 
 This document records the product/architecture contract for the dynamic World Focus workspace before concrete DANTE / Insight / Explore surface verticals are implemented.
 
@@ -42,8 +42,9 @@ DANTE conclusion:
 
 ### WAI-ARIA APG — Modal Dialog
 
-Reference:
+References:
 https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/
+https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/dialog/
 
 Useful pattern:
 
@@ -51,6 +52,7 @@ Useful pattern:
 - focus belongs inside the modal while it is open;
 - `Escape` normally dismisses the modal when dismissal is allowed;
 - focus returns to the invoking/logically subsequent element;
+- nested modal dialogs are valid when they are deliberate;
 - modal semantics must never be declared if the implementation does not actually block outside interaction.
 
 DANTE conclusion:
@@ -82,6 +84,22 @@ workspace 1280
 
 A module must see `844`, not `1280`.
 
+### MDN — Top layer / Popover stack behavior
+
+References:
+https://developer.mozilla.org/en-US/docs/Glossary/Top_layer
+https://developer.mozilla.org/en-US/docs/Web/API/Popover_API
+
+Useful pattern:
+
+- elevated UI has explicit layer ownership rather than accidental z-index competition;
+- modal and popover behavior are not interchangeable;
+- stack relationships are deliberate and browser interaction semantics matter independently from raw geometry.
+
+DANTE conclusion:
+
+A blocking modal/full-focus surface must remain authoritative until it is deliberately replaced/closed by a compatible blocking flow. A weaker sidecar, popover or route event must not be able to overtake an active blocker simply because an async callback or synthetic event arrives later.
+
 ## Architecture
 
 ```text
@@ -112,6 +130,9 @@ Transient/deeper surfaces are resolved on an independent path:
 
 ```text
 WORLD WORKSPACE STATE
+              |
+              v
+SURFACE ADMISSION BARRIER
               |
               v
 WORKSPACE SURFACE ALLOCATION RESOLVER
@@ -188,7 +209,7 @@ These are presentation policy values, not Domain concepts and not persisted Worl
 Rules:
 
 1. At most one sidecar consumes canvas width.
-2. The most recent sidecar is the candidate active sidecar.
+2. The most recent admissible sidecar is the candidate active sidecar.
 3. Earlier sidecars remain dormant in interaction state so close/back can restore them.
 4. A sidecar becomes split only when both workspace and main minima remain satisfied.
 5. Otherwise the same requested sidecar degrades to non-modal overlay.
@@ -198,6 +219,48 @@ Rules:
 9. `route` presentation remains external to workspace geometry.
 10. `inline` content belongs to composition, not the transient surface plane.
 11. Dormant surfaces are inert and are not rendered as competing DOM surfaces.
+12. A modal/full-screen blocker is authoritative over weaker later entries, including malformed/legacy state that bypassed reducer admission.
+
+## Blocking stack admission barrier
+
+Blocking presentations:
+
+```text
+modal
+full-screen
+```
+
+Accepted reducer policy:
+
+```text
+non-blocking -> may open non-blocking or blocking
+blocking     -> may append only another blocking surface
+nested blocking surfaces are allowed
+close top blocker -> restores the previous blocker/base allocation
+replace/promote below an active blocker -> no-op
+explicit close/cleanup -> allowed
+```
+
+The invariant is a **blocking tail**:
+
+```text
+[nonblocking ...] [blocking ...]
+```
+
+Once the first blocker enters the stack, no weaker/nonblocking surface may be appended after it.
+
+This is intentionally stricter than relying on `inert` or CSS alone. A late async result, synthetic click or future integration bug cannot legally create a weaker top owner above a blocking interaction.
+
+### Defense in depth
+
+The barrier is enforced at four independent levels:
+
+1. **Reducer admission** — rejects nonblocking opens while a blocker exists and rejects hidden lower replace/promote mutations.
+2. **Allocation normalization** — forged/legacy malformed stacks still keep the latest blocker authoritative; weaker entries after the first blocker are dormant/inert.
+3. **DOM interaction** — main and allocated underlying sidecars carry `inert` while a blocking surface owns interaction.
+4. **Integration tests** — a forced synthetic click beneath a modal is dispatched deliberately; the reducer still prevents a sidecar from appearing.
+
+This is not an authorization boundary. It is a presentation/interaction consistency boundary.
 
 ## Interaction rules
 
@@ -208,6 +271,7 @@ popover                              -> main interactive
 modal                                -> main inert, underlying sidecar inert
 full-screen                          -> main inert, underlying sidecar inert
 active modal/full-screen             -> active surface interactive
+nested blocker                       -> newer blocker owns interaction
 ```
 
 This is deliberately not inferred from visual elevation alone.
@@ -285,7 +349,7 @@ If `ResizeObserver` is unavailable, World Focus keeps the initial measurement an
 
 ### Composition planner
 
-The planner already has deterministic stress covering 500 synthetic World/user compositions with 0-20 candidates and combinations of:
+The planner has deterministic stress covering 500 synthetic World/user compositions with 0-20 candidates and combinations of:
 
 - stable / adaptive / ephemeral;
 - lead / primary / supporting;
@@ -304,12 +368,12 @@ Required invariants include:
 
 ### Surface allocation resolver
 
-The allocation resolver adds deterministic stress across 500 synthetic users combining:
+The allocation resolver has deterministic stress across 500 synthetic users combining:
 
 - workspace widths from 0 through 1900px;
 - 0-8 transient surfaces;
 - inline / popover / sidecar / modal / full-screen / route presentations;
-- arbitrary stack order.
+- arbitrary attempted stack order.
 
 Required invariants include:
 
@@ -322,7 +386,10 @@ Required invariants include:
 - active sidecars inherit the blocking/background interaction state;
 - active overlay/focus owner remains interactive;
 - dormant placements are inert;
+- once a blocking tail starts, reducer state contains no later nonblocking surface;
 - same state + same width = same allocation plan.
+
+The resolver also has a forged malformed-state test proving that a late illegal sidecar/route cannot overtake a modal even when reducer admission is bypassed.
 
 ### React integration
 
@@ -331,7 +398,43 @@ Integration tests exercise:
 - wide sidecar -> split + interactive main + interactive sidecar;
 - live ResizeObserver contraction -> same sidecar becomes non-modal interactive overlay;
 - split sidecar + newer modal -> sidecar remains allocated but inert, main inert, modal interactive;
-- narrow sidecar + newer modal -> sidecar becomes dormant, modal owns overlay slot.
+- narrow sidecar + newer modal -> sidecar becomes dormant, modal owns overlay slot;
+- forced click inside an inert main plane while a modal is open -> reducer refuses the weaker sidecar and surface count remains unchanged.
+
+## Automated validation evidence
+
+Exact code candidate:
+
+```text
+2047733bd01eeaa85b4d6e4dd2cc11e102b25248
+```
+
+Frontend CI run:
+
+```text
+33548911233
+```
+
+Result:
+
+```text
+Frontend contract drift     PASS
+Home format check           PASS
+Lint                        PASS
+Typecheck                   PASS
+Architecture                PASS
+Generated-source drift      PASS
+Unit tests                  PASS
+Production build            PASS
+Diff check                   PASS
+Repository mutation check   PASS
+Mobile Bundle               PASS
+Chromium Web E2E            PASS
+Firefox frozen contract     PASS
+Frontend CI Gate            PASS
+```
+
+No Playwright failure artifact was uploaded because the browser gate passed.
 
 ## Explicit non-goals
 
@@ -356,6 +459,7 @@ World != canonical Domain owner
 layout policy != Domain semantics
 surface stack != authorization
 surface visibility != disclosure permission
+inert != authorization
 AI output != accepted fact
 provider state != canonical state
 planned != actual
@@ -364,11 +468,11 @@ absence != false
 
 ## Current disposition
 
-Code candidate includes:
+Engineering foundation now includes:
 
 - dynamic composition planner;
 - logical 12-unit planning with adaptive physical rendering;
-- deterministic composition stress;
+- deterministic 500-scenario composition stress;
 - workspace allocation resolver;
 - separate main allocation / top layer / interaction axes;
 - per-placement interaction state;
@@ -376,6 +480,13 @@ Code candidate includes:
 - nested `world-focus-main` container queries;
 - active/dormant surface placement filtering;
 - inert main plane and underlying sidecar for modal/full-focus allocation;
-- deterministic allocation and React integration tests.
+- blocking-tail admission policy with deliberate nested blockers;
+- lower-surface mutation rejection while blocked;
+- allocation defense against malformed/legacy stacks;
+- forced-event integration defense beneath modal barriers;
+- deterministic 500-scenario allocation stress;
+- exact code candidate full frontend CI PASS.
 
-The slice remains **IMPLEMENTED / AUTOMATED VALIDATION PENDING** until the exact final candidate passes the repository frontend gates.
+The **dynamic composition / surface allocation engineering platform is automated-PASS and ready to be consumed by a real concrete vertical**.
+
+It is not a finished DANTE/Insight/Explore experience and is not user-accepted product UI. Concrete surfaces must still prove their own product semantics, focus lifecycle, accessibility, responsive behavior, degraded states and user value before their vertical can be closed.
