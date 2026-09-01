@@ -86,6 +86,25 @@
     inset 0 -80px 120px rgba(0, 0, 0, 0.18);
 }
 
+.world-focus-main-plane {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  container: world-focus-main / inline-size;
+}
+
+.world-focus-workspace[data-world-focus-main-allocation='split']
+  .world-focus-main-plane {
+  width: var(--world-focus-main-inline-size);
+}
+
 .world-focus-composition {
   position: relative;
   z-index: 1;
@@ -122,7 +141,24 @@
 }
 
 .world-focus-surface {
+  min-width: 0;
+  min-height: 0;
   pointer-events: auto;
+}
+
+.world-focus-surface[data-world-focus-surface-slot='sidecar'] {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: var(--world-focus-sidecar-inline-size);
+  overflow: hidden;
+}
+
+.world-focus-surface[data-world-focus-surface-slot='overlay'],
+.world-focus-surface[data-world-focus-surface-slot='focus'] {
+  position: absolute;
+  inset: 0;
 }
 
 .world-focus-context {
@@ -318,13 +354,13 @@
   outline-offset: 3px;
 }
 
-@container world-focus-workspace (max-width: 900px) {
+@container world-focus-main (max-width: 900px) {
   .world-focus-composition-item[data-world-focus-grid-span='4'] {
     grid-column: span 6;
   }
 }
 
-@container world-focus-workspace (max-width: 700px) {
+@container world-focus-main (max-width: 700px) {
   .world-focus-context {
     padding: clamp(18px, 6cqi, 28px);
   }
