@@ -319,9 +319,9 @@ class AuthenticationMethods:
 
     password_established: bool
     providers: tuple[AuthenticationProviderMethod, ...]
-    passkeys: tuple[PasskeyMethod, ...]
     active_passkey_count: int
     recovery_eligible_email_count: int
+    passkeys: tuple[PasskeyMethod, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
