@@ -1,0 +1,267 @@
+.dante-timeline-quick-add:not(:disabled) {
+  cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    background 140ms ease,
+    transform 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.dante-timeline-quick-add:not(:disabled):hover,
+.dante-timeline-quick-add[aria-expanded='true'] {
+  border-color: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-chrome-active, #ea5c12) 72%,
+    white
+  );
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-chrome-active-soft, rgba(234, 92, 18, 0.12))
+      78%,
+    rgba(255, 255, 255, 0.035)
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.055),
+    0 12px 28px rgba(0, 0, 0, 0.22);
+}
+
+.dante-timeline-quick-add:not(:disabled):active {
+  transform: translateY(1px);
+}
+
+.temporal-create-backdrop {
+  position: fixed;
+  z-index: 120;
+  inset: 0;
+  background: rgba(2, 6, 12, 0.38);
+}
+
+.temporal-create-composer {
+  position: absolute;
+  box-sizing: border-box;
+  width: min(420px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  padding: 18px;
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08))
+        82%,
+      var(--dante-semantic-color-home-chrome-active, #ea5c12)
+    );
+  border-radius: 18px;
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-surface-primary, #0d1522) 96%,
+    black
+  );
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.045);
+}
+
+.temporal-create-composer__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.temporal-create-composer__eyebrow {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--dante-semantic-color-home-chrome-active, #ea5c12);
+  font-size: 10px;
+  font-weight: 720;
+  letter-spacing: 0.11em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.temporal-create-composer h2 {
+  margin: 0;
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  font-size: 18px;
+  font-weight: 680;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.temporal-create-composer__close {
+  display: grid;
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08));
+  border-radius: 10px;
+  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-surface-control, #151f2e) 72%,
+    transparent
+  );
+  font-size: 19px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.temporal-create-composer__close:hover {
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-surface-control, #151f2e) 90%,
+    white 3%
+  );
+}
+
+.temporal-create-composer__body {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.temporal-create-composer__body label {
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.temporal-create-composer__body input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 46px;
+  padding: 0 13px;
+  border: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
+  border-radius: 12px;
+  outline: 0;
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-surface-control, #151f2e) 76%,
+    black
+  );
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.25;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    background 140ms ease;
+}
+
+.temporal-create-composer__body input::placeholder {
+  color: var(--dante-semantic-color-home-text-muted, #7f8b9d);
+  opacity: 0.86;
+}
+
+.temporal-create-composer__body input:focus-visible {
+  border-color: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-chrome-active, #ea5c12) 72%,
+    white
+  );
+  box-shadow: 0 0 0 3px
+    color-mix(
+      in srgb,
+      var(--dante-semantic-color-home-chrome-active, #ea5c12) 18%,
+      transparent
+    );
+}
+
+.temporal-create-composer button:focus-visible {
+  outline: 2px solid var(--dante-semantic-color-home-chrome-active, #ea5c12);
+  outline-offset: 2px;
+}
+
+.temporal-create-discard {
+  display: grid;
+  gap: 14px;
+  margin-top: 16px;
+  padding: 13px;
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--dante-timeline-tone-urgent, #ff5b64) 28%,
+      transparent
+    );
+  border-radius: 12px;
+  background: color-mix(
+    in srgb,
+    var(--dante-timeline-tone-urgent, #ff5b64) 7%,
+    transparent
+  );
+}
+
+.temporal-create-discard strong {
+  display: block;
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  font-size: 12px;
+  font-weight: 680;
+}
+
+.temporal-create-discard p {
+  margin: 4px 0 0;
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.temporal-create-discard__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.temporal-create-discard__actions button {
+  min-height: 34px;
+  padding: 0 11px;
+  border: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
+  border-radius: 10px;
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  background: var(--dante-semantic-color-home-surface-control, #151f2e);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 640;
+  cursor: pointer;
+}
+
+.temporal-create-discard__actions .temporal-create-discard__destructive {
+  border-color: color-mix(
+    in srgb,
+    var(--dante-timeline-tone-urgent, #ff5b64) 44%,
+    transparent
+  );
+  color: color-mix(
+    in srgb,
+    var(--dante-timeline-tone-urgent, #ff5b64) 68%,
+    white
+  );
+  background: color-mix(
+    in srgb,
+    var(--dante-timeline-tone-urgent, #ff5b64) 10%,
+    transparent
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dante-timeline-quick-add:not(:disabled),
+  .temporal-create-composer__body input {
+    transition: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .temporal-create-composer {
+    width: calc(100vw - 24px);
+    max-height: calc(100vh - 24px);
+    padding: 16px;
+    border-radius: 16px;
+  }
+}

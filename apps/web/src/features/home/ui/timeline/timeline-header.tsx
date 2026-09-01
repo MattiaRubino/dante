@@ -9,6 +9,8 @@ import {
 } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { TemporalCreateEntry } from '../../../temporal-create';
+
 import './timeline-material.css';
 import './timeline-reference-lock.css';
 
@@ -174,15 +176,7 @@ export function TimelineHeader({
   return (
     <header className="dante-timeline-header">
       <div className="dante-timeline-header-row">
-        <button
-          className="dante-timeline-quick-add"
-          type="button"
-          disabled
-          aria-label={t(($) => $.common.home.timeline.quickAdd)}
-          title={t(($) => $.common.home.timeline.quickAddDeferred)}
-        >
-          +
-        </button>
+        <TemporalCreateEntry />
 
         <button
           ref={calendarTriggerRef}

@@ -71,7 +71,17 @@ export const home = {
     expand: 'Espandi timeline',
     collapse: 'Riduci timeline',
     quickAdd: 'Aggiungi alla timeline',
-    quickAddDeferred: 'Creazione completa disponibile nel vertical Timeline',
+    create: {
+      draft: 'Bozza',
+      title: 'Aggiungi',
+      titleLabel: 'Titolo',
+      titlePlaceholder: 'Cosa vuoi aggiungere?',
+      close: 'Chiudi creazione',
+      discardTitle: 'Scartare questa bozza?',
+      discardBody: 'Le modifiche inserite andranno perse.',
+      continueEditing: 'Continua a modificare',
+      discard: 'Scarta',
+    },
     weekLabel: 'Settimana visualizzata',
     todayPrefix: 'Oggi',
     streamHint:
