@@ -56,7 +56,7 @@ REMOTE BACKUP PROVIDER               TBD / NOT ACTIVATED
 PRODUCTION/CLOUD RECOVERY            NOT CLAIMED
 ACCESS PRE-BACKEND FRONTEND          CLOSED / ACCEPTED / RELEASE-HARDENED
 FULL ACCESS/AUTH PRODUCT VERTICAL    ACTIVE UNMERGED WORKSTREAM / NOT CLAIMED CLOSED
-AI ARCHITECTURE                      ACTIVE / AI-02.1 v0.3 REENGINEERING / NO IMPLEMENTATION CLAIM
+AI ARCHITECTURE                      ACTIVE / AI-02.1 v0.4 REENGINEERING / NO IMPLEMENTATION CLAIM
 AI-03 CONTEXT/RETRIEVAL/MEMORY       NOT STARTED / BLOCKED UNTIL AI-02.1 ACCEPTANCE
 ```
 
@@ -209,7 +209,7 @@ Entry points:
 - `architecture/system-overview.md`
 - `architecture/dante-ai-foundation.md` — branch-local AI-00 consolidated semantic/architectural baseline; inherited constraints remain active
 - `architecture/ai-production-engineering-state-of-the-art-2026.md` — branch-local production AI/agent engineering research thesis; state-of-the-art evidence plus explicit DANTE applicability boundary, **not** the final DANTE Intelligence Architecture
-- `architecture/dante-ai-02-1-intelligence-reengineering.md` — **current active AI-02.1 checkpoint**; v0.3 after two distinct pressure-test rounds, **NOT CLOSED** pending the final kill-test and remaining pre-AI-03 acceptance
+- `architecture/dante-ai-02-1-intelligence-reengineering.md` — **current active AI-02.1 checkpoint**; v0.4 after three official pressure-test rounds, **NOT CLOSED** pending one last mega stress-test and the remaining pre-AI-03 acceptance
 - `architecture/technical-decisions.md`
 - `architecture/domain-model-logical-readiness.md`
 - `decisions/`
@@ -220,9 +220,24 @@ The AI foundation consumes current Product / Domain / Logical / Physical / Datab
 
 The production-engineering thesis is research evidence rather than a normative DANTE design. It records current industry techniques, technology challengers, failure models and DANTE-specific applicability constraints such as API-first frontier intelligence and no foundation-model-training / no large always-on self-hosted frontier baseline. Exact provider/model/SDK/runtime selection remains deferred to later evidence-driven architecture work.
 
-AI-02.1 owns the active branch-local reengineering checkpoint. Round I introduced Interaction Session, Semantic Query / Projection Gateway, Context Engine separation, Simulation Workspace, ChangeSet / EffectGraph, Verifier/Auditor, Proactivity/Attention, recipient-aware Disclosure Projection, mixed DANTE-native/open-world intelligence and `ModelTarget + HarnessProfile`.
+AI-02.1 owns the active branch-local reengineering checkpoint.
 
-Round II then hardened that model with:
+Round I introduced:
+
+```text
+Interaction Session
+Semantic Query / Projection Gateway
+Context Engine separation
+Simulation Workspace
+ChangeSet / EffectGraph
+Verifier/Auditor
+Proactivity/Attention
+recipient-aware Disclosure Projection
+mixed DANTE-native/open-world intelligence
+ModelTarget + HarnessProfile
+```
+
+Round II hardened that model with:
 
 ```text
 cumulative / cross-query disclosure protection
@@ -234,7 +249,19 @@ Attention budgeting
 cancel Run != undo already-dispatched effects
 ```
 
-These are responsibility boundaries/contracts, not automatic services, Domain owners or database tables. The two completed rounds found no evidence sufficient to reopen Domain, Logical, Physical or PostgreSQL.
+The Final Kill-Test then added the v0.4 requirements:
+
+```text
+Reference / Target Resolution Gate
+Policy Composition / Precedence
+ConsequenceProfile
+Safe Result Publication / Streaming Gate
+BasisManifest temporal validity
+DANTE representation != external institutional System-of-Record authority
+sent != delivered != seen != acknowledged != accepted
+```
+
+These are responsibility boundaries/contracts, not automatic services, Domain owners or database tables. The three completed rounds found no evidence sufficient to reopen Domain, Logical, Physical or PostgreSQL.
 
 Important persistence ADRs:
 
@@ -380,7 +407,7 @@ PostgreSQL Recovery is closed and integrated through PR #47; its current operati
 
 Active unmerged workstream records remain branch-local until integration.
 
-At the 2026-09-01 reconciliation, bounded unmerged work includes `feature/access-auth`, `feature/home-react`, `feature/platform-observability` and `feature/ai-architecture`; additional live refs may exist and remain authoritative for their own later changes. The AI branch is documentation/design/reengineering-only with AI-02.1 v0.3 active and not closed.
+At the 2026-09-01 reconciliation, bounded unmerged work includes `feature/access-auth`, `feature/home-react`, `feature/platform-observability` and `feature/ai-architecture`; additional live refs may exist and remain authoritative for their own later changes. The AI branch is documentation/design/reengineering-only with AI-02.1 v0.4 active and not closed.
 
 ## 14. Development governance
 
@@ -431,7 +458,7 @@ No blanket semantic/direct-pass claim is inferred merely because a technology wa
 
 AI follows the same rule: a provider feature page, SDK capability or written architecture does not prove DANTE AI behavior until the relevant implementation and scenarios are directly tested. A research classification such as `STRONG DEFAULT`, `CHALLENGER`, `WATCH` or `ANTI-DEFAULT` is not an implementation status or accepted technology selection.
 
-AI-02.1 Round I and Round II are architecture evidence only. Their responsibility fixes remain subject to the final compound kill-test; `v0.3` is not a runtime PASS and does not close the phase.
+AI-02.1 Round I, Round II and the Final Kill-Test are architecture evidence only. The v0.4 fixes remain subject to one last mega stress-test; `v0.4` is not a runtime PASS and does not close the phase.
 
 ## 17. Brand / UX / prototypes
 
@@ -468,10 +495,11 @@ external evidence + applicability boundary
         ↓
 AI-02.1
 ACTIVE — DANTE Intelligence Reengineering
-v0.3 current checkpoint
+v0.4 current checkpoint
 Round I complete
 Round II complete
-final kill-test still required
+Final Kill-Test complete
+ONE LAST mega stress-test required
 future-extensibility acceptance still required
         ↓
 AI-03
@@ -481,11 +509,11 @@ BLOCKED until AI-02.1 structural acceptance
 
 AI-02.1 does not choose a model/provider first. It tests the intelligence architecture against what DANTE must actually be able to do, including real simulations, multi-actor/privacy/Authority boundaries, durability/effects, proactivity, external-AI integration and the accepted Domain/Logical/Physical/database contracts.
 
-The current v0.3 checkpoint preserves Round I fixes and adds the Round II hardenings: cumulative disclosure-inference protection, causal-loop/oscillation guard, Work Supersession, BasisManifest/dependency-aware invalidation, revocable active-Run validity, Attention budgeting and precise cancellation semantics.
+The current v0.4 checkpoint preserves all earlier fixes and adds Reference/Target Resolution, deterministic Policy Composition/Precedence, ConsequenceProfile, Safe Result Publication/Streaming, temporal Basis validity, the explicit external institutional System-of-Record boundary and non-collapsed communication acknowledgement states.
 
-The future-extensibility test remains explicit: a later much richer integrated conversational intelligence, new frontier provider or new specialist intelligence must be addable without transferring canonical truth, durable memory, Authority or effect ownership to the model/provider and without requiring a fundamental architecture rewrite.
+The future-extensibility test remains explicit: a later much richer integrated conversational intelligence, new frontier provider or new specialist intelligence must be addable without transferring canonical truth, durable memory, Authority or effect ownership to the model/provider, without bypassing safe publication and without requiring a fundamental architecture rewrite.
 
-AI-03 owns detailed Context / Retrieval / Memory design only after the final AI-02.1 structural/adversarial kill-test and other required pre-AI-03 acceptance work.
+AI-03 owns detailed Context / Retrieval / Memory design only after the one last AI-02.1 mega stress-test and other required pre-AI-03 acceptance work.
 
 ## 20. General continuation rule
 
