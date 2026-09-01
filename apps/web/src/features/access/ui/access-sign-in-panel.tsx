@@ -3,10 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import type { ProviderBrowserUnavailableError } from '../../../platform/auth/web-auth-provider';
 import { usePasskeySignInMutation } from '../application/auth-passkey';
-import {
-  isValidAccessEmail,
-  type AccessCondition,
-} from '../model/access-flow';
+import { isValidAccessEmail, type AccessCondition } from '../model/access-flow';
 import { AccessConditionNotice } from './access-condition-notice';
 import { GoogleIdentityButton, ProviderButton } from './provider-button';
 
