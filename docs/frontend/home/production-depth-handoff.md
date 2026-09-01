@@ -1,169 +1,164 @@
-# DANTE — Home Production-Depth Handoff
+# DANTE — Frontend Production-Depth Handoff
 
-**Status:** ACTIVE / P1 FROZEN / P2 NEXT  
-**Date:** 2026-08-29  
+**Status:** CURRENT HANDOFF — MULTI-WORKSTREAM FRONTEND BRANCH  
+**Date:** 2026-09-01  
 **Working branch:** `feature/home-react`  
-**Worktree:** `/home/mattia/projects/dante-frontend`  
-**P1 frozen implementation checkpoint:** `e11d6c53d2fe1361b37345bbc3f49792541bd45d`  
-**Current protected main:** `baa9aba52932a0fa09b957ee7668aeb459fb4a20`
+**Worktree:** `/home/mattia/projects/dante-frontend`
 
-Read `docs/frontend/home/current-checkpoint.md` together with this file. P1 closure details are in `docs/frontend/app-shell/p1-global-app-shell.md`; intentionally deferred decisions are tracked in `docs/frontend/open-decisions.md`.
+This document is the durable handoff for a new chat/agent working on the frontend branch. For the exact live state and immediate gate, always read `docs/frontend/home/current-checkpoint.md` first.
 
-## What is already accepted
+## 1. Current branch topology
 
-The Home React migration has a stable macro-composition baseline and P1 Global App Shell + Topbar is frozen for implementation scope.
+Three distinct concerns coexist on this branch:
 
-User-reviewed and currently frozen unless a later bounded issue proves otherwise:
+```text
+APP SHELL / HOME
+TEMPORAL / TIMELINE
+WORLD FOCUS
+```
 
-- global Home macro geometry / regional placement;
-- shell attachment geometry;
-- overall Home visual direction;
-- current navy/violet panel-material family;
-- DANTE orange for generic active/infrastructure chrome;
-- semantic colors remain owned by Worlds, timeline groups/events and semantic states;
-- visual palette is centrally configurable through design tokens rather than scattered raw component colors;
-- shared persistent AppShell/Topbar ownership;
-- current inline Topbar Search interaction model;
-- DANTE master logo remains unmodified.
+They share the same product/domain foundation, but they do not own each other's layout or interaction semantics.
 
-The current Home is real React, not an iframe/prototype bridge.
+In particular:
 
-Component-specific parity/production work remains for later passes. Do not reopen accepted macro layout while fixing a component.
+```text
+Home AI != World contextual DANTE
+Home Timeline != full temporal workspace
+World Focus != Home overlay
+Mondi Overview != World Focus
+```
 
-## Production-depth strategy
+Do not transfer a component or geometry from one surface to another merely because the underlying DANTE capability is related.
 
-Work **one product surface at a time** and take each touched surface to production-grade depth before moving on.
+## 2. Production-depth standard
 
-Each pass must combine:
+Each bounded product capability is taken to full frontend depth before the next observable capability is opened:
 
-- accepted prototype visual/behavioral intent;
-- correct React/TypeScript ownership and state boundaries;
-- reusable infrastructure where justified;
-- real frontend-local interaction behavior;
-- truthful unavailable/pending/error behavior for backend-dependent capabilities;
-- responsive, accessibility, keyboard/focus, reduced-motion and test evidence appropriate to the surface;
-- future backend integration through explicit ports/adapters rather than component rewrites.
+- product semantics and scenario pressure;
+- React/TypeScript ownership;
+- state and async/race handling;
+- truthful loading/empty/partial/stale/error/unavailable behavior where applicable;
+- responsive/container behavior;
+- keyboard/focus/accessibility;
+- security/privacy/disclosure boundaries;
+- performance/resource cleanup;
+- deterministic pre-backend adapters where needed;
+- unit/component/integration/E2E evidence;
+- real-browser review;
+- explicit user functional + visual acceptance.
 
-Quality target is a large, advanced production application, not a demo.
+A green automated suite is necessary but not sufficient for product freeze.
 
-## Pass order
+## 3. Backend integration stop line
 
-1. **Global App Shell + Topbar — FROZEN / P1**
-2. **Day Context Strip / Day Route — NEXT / P2**
-3. Orientation
-4. AI conversational surface
-5. Central Stage / Mondi
-6. Segnali
-7. Timeline
-8. Context Rail — Capture
-9. Context Rail — Resolution
-10. whole-Home integration/hardening
+Current frontend work must remain backend-ready without fabricating backend semantics.
 
-Adjust this order only for a real dependency.
+Permanent rule:
 
-## P1 closure summary
+```text
+frontend view model != backend DTO != Domain model != persistence row
+```
 
-The Topbar is now shared application infrastructure rather than Home-owned decoration.
+Frontend code may define intent-specific ports/adapters and runtime validation seams justified by a real vertical. It may not invent endpoint shapes, ORM rows, SQL contracts, provider truth or durable effects.
 
-Current shell behavior includes:
+Real API/DB/provider/LLM integration occurs in the separately authorized final vertical.
 
-- persistent AppShell with route outlet;
-- `/home`, `/worlds`, `/today`, `/profile`, `/settings` real router destinations;
-- Access `/` outside AppShell;
-- Search represented by a lens trigger that expands into an inline central search field;
-- immediate local destination results below Search;
-- keyboard/focus behavior for Search and menus;
-- truthful remote-search unavailability;
-- Create capability discovery without fake writes;
-- launcher and neutral account shell;
-- deprecated Review kept bounded rather than expanded;
-- shell-owned visual/theme bridge and responsive behavior.
+## 4. AppShell / Home authority
 
-Further Topbar brand-background color tuning is explicitly deferred. Do not recolor the DANTE master logo to solve contrast.
+Durable Home and shared-shell authorities:
 
-Before the final inline-Search/visual polish, the complete frontend gate was green including 29/29 Playwright E2E. The post-polish regression suite still needs one real rerun; do not claim that rerun as green until executed. P1 product scope nevertheless remains frozen, and any regression fix must be bounded to the defect.
+- `docs/frontend/home/contract.md`
+- `docs/frontend/home/home-structural-contract.md`
+- `docs/frontend/app-shell/p1-global-app-shell.md`
+- `docs/frontend/open-decisions.md`
+- `docs/frontend/ui-registry.md`
+- `docs/frontend/design-tokens.md`
 
-## Immediate next pass — P2 Day Context Strip / Day Route
+Shared AppShell/Topbar is application infrastructure, not owned by Home, Timeline or World Focus.
 
-P2 owns the viewed-day context strip/ribbon and the Home day-route interaction model.
+The accepted Home macro composition and shell geometry must not be reopened by an unrelated World/Timeline implementation.
 
-The goal is not merely to make the strip clickable. P2 must establish one coherent frontend source of truth for the day being viewed and define how the relevant Home surfaces consume it without duplicating state.
+## 5. Timeline handoff
 
-P2 should determine and productionize, within existing product contracts:
+Timeline T1 observable behavior is frozen and user accepted.
 
-- what constitutes `viewed day` versus real current day/now;
-- previous/next-day navigation and return-to-today behavior where supported by the accepted design;
-- whether viewed-day state belongs in route/search state or another explicit navigation state boundary;
-- synchronization requirements between Day Context, Orientation and Timeline;
-- browser history/deep-link expectations for day changes;
-- date formatting/i18n and timezone-safe frontend representation;
-- keyboard/focus/accessibility and responsive behavior;
-- empty/loading/error boundaries only where real data dependencies exist;
-- future calendar/backend integration boundary without fake persistence.
+Start a Timeline chat with:
 
-Do not create a second global-navigation system beside the Topbar. Do not change the frozen AppShell ownership or accepted Home macro geometry.
+1. `docs/frontend/home/timeline-current-checkpoint.md`
+2. `docs/frontend/home/timeline-handoff.md`
+3. `docs/frontend/home/timeline-t1-frozen-contract.md`
+4. `docs/frontend/home/temporal-experience-architecture.md`
+5. `docs/frontend/home/temporal-frontend-roadmap.md`
 
-Before writing P2, inspect the actual current React day ribbon/orientation/timeline code and machine-readable Home contracts. Do not infer the day model only from screenshots.
+The roadmap after T1 is planning authority only when the Timeline workstream is explicitly resumed. It does not authorize parallel temporal work while World Focus is active.
 
-## Architecture / engineering rules that must remain true
+## 6. World Focus handoff
 
-- UI/view model != backend DTO != Domain != persistence row.
-- Backend-dependent features use explicit ports/adapters and boundary validation when integration arrives.
-- No ad-hoc direct HTTP contract from components.
-- No fake backend success.
-- Frontend-local behavior should be real, not a static mock.
-- Routing must use the application router, not hard-coded browser navigation hacks.
-- Shared shell concerns stay outside Home feature ownership.
-- Avoid premature mega-abstractions, but do not duplicate genuinely shared state/behavior.
-- Styling/material choices remain centrally configurable through semantic/design/theme tokens.
-- Generated token output is generated authority; source token files are editable authority.
-- Keep semantic World/event/state colors distinct from generic infrastructure chrome.
-- Do not manually edit generated route-tree output.
+World Focus is the active workstream.
 
-## Current theme authority
+Start a World Focus chat with:
 
-Read and preserve:
+1. `docs/frontend/home/world-focus-current-checkpoint.md`
+2. `docs/frontend/home/world-focus-handoff.md`
+3. `docs/frontend/home/world-focus-product-contract.md`
+4. `docs/frontend/home/world-focus-platform-contract.md`
+5. `docs/frontend/home/world-focus-structural-contract.md`
+6. `docs/frontend/home/world-focus-geometry-contract.md`
+7. `docs/frontend/home/world-focus-delivery-methodology.md`
+8. evidence documents named by the handoff only when deeper archaeology is required.
 
-- `packages/design-tokens/tokens/home-theme.json`
-- `packages/design-tokens/tokens/shell-theme.json`
-- `packages/design-tokens/tokens/primitives.json`
-- `packages/design-tokens/tokens/semantic.json`
-- `packages/design-tokens/terrazzo.config.ts`
-- `apps/web/src/features/home/ui/home-skin.css`
-- `apps/web/src/app-shell/ui/app-shell-theme.css`
+Current World Focus state:
 
-A future broad recolor should be possible primarily from token/theme ownership rather than editing individual components.
+```text
+structure/route                frozen
+WF-G3 geometry                 frozen
+B0 foundation                  closed
+WR0-WR2 product/context model  closed
+B1 Orientation                 closed for sequencing
+B2 Continuity                  automated pass; integrated user acceptance deferred
+next gate                      World contextual DANTE spatial/presence reverse engineering
+```
 
-## Required read order for a new chat/agent
+Do not start another World content vertical before that DANTE gate is resolved.
 
-Before proposing P2 writes, inspect at least:
+## 7. Shared engineering rules
 
-1. `docs/frontend/home/production-depth-handoff.md`
-2. `docs/frontend/home/current-checkpoint.md`
-3. `docs/frontend/app-shell/p1-global-app-shell.md`
-4. `docs/frontend/open-decisions.md`
-5. `docs/frontend/home/contract.md`
-6. `docs/frontend/ui-registry.md`
-7. `docs/frontend/design-tokens.md`
-8. `docs/frontend/production-readiness/component-architecture.md`
-9. `docs/frontend/production-readiness/backend-integration-contract.md`
-10. `docs/frontend/production-readiness/quality-gates.md`
-11. machine-readable Home contracts under `prototypes/frontend/shared/contracts/` relevant to day/responsive behavior;
-12. actual current React implementation under `apps/web/src/features/home/`, AppShell and routes.
+- use existing React/TanStack/Vite/TypeScript/tooling rather than creating a duplicate stack;
+- strict TypeScript remains enabled; do not weaken it to make a change pass;
+- prefer explicit narrow ownership over global managers/event buses;
+- no generic repository or universal entity just for frontend convenience;
+- no arbitrary generated HTML/JSX/UI from AI;
+- routing uses the application router;
+- generated route tree is never manually edited;
+- design/theme values remain centrally owned;
+- semantic state is not communicated by color alone;
+- decorative VFX must degrade before it harms responsiveness;
+- frontend hiding is never authorization;
+- provider unavailable/unknown is never coerced to semantic false;
+- cancellation of a React read is not cancellation of a future durable DANTE run/effect.
 
-For visual archaeology, use the complete modular Home prototype preserved on `main` as the oracle. Do not revive arbitrary historical screenshots or prototype branches as competing targets.
+## 8. Required project authorities when semantics are touched
 
-## Operational rule
+Re-read the exact current sources relevant to the change, including as applicable:
 
-Work remains on `feature/home-react` until explicitly authorized otherwise.
+- Product Identity / North Star;
+- feature-discovery simulations;
+- multi-actor/collaboration simulations;
+- Domain Atlas / Language Map;
+- Logical Model;
+- Physical Model;
+- Database source of record / Alembic history;
+- Intelligence Context/Runtime boundaries;
+- Governed Operation/Effect contracts;
+- frontend production-readiness contracts.
 
-Before every new implementation write scope:
+A frontend label or layout convenience never creates a new Domain concept.
 
-- verify current branch/HEAD and unexpected movement;
-- state the bounded write gate and exclusions;
-- wait for explicit user authorization unless the user's message itself unmistakably authorizes that exact write;
-- no merge/rebase/force/history rewrite/main mutation without an explicit gate;
-- do not touch the parallel Access/Auth workstream;
-- never manually edit `routeTree.gen.ts`.
+## 9. Operational safety
 
-When a pass is finished, update current documentation/registry/contracts only where touched behavior or ownership actually changed.
+- fresh HEAD check before a new write scope;
+- stay on `feature/home-react` unless explicitly authorized otherwise;
+- no merge/rebase/force/history rewrite/main mutation without explicit authorization;
+- do not casually modify Access/Auth;
+- do not weaken frozen Timeline/World geometry regression guards;
+- after a material workstream change, update the live checkpoint and the relevant workstream handoff in the same documentation pass.
