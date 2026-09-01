@@ -103,6 +103,7 @@ export function TemporalCreateAdvancedFields({
           fields={fields}
           depth={depth}
           onPatch={onPatch}
+          renderError={renderError}
         />
       )}
 
