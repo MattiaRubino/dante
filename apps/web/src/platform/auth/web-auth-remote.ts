@@ -304,7 +304,10 @@ export function createWebAuthRemote(
       signal?: AbortSignal,
     ): Promise<WebProviderAuthenticationResult> {
       return unwrapRemoteResult(
-        await client.completeGoogleAuthentication(request, requestOptions(signal)),
+        await client.completeGoogleAuthentication(
+          request,
+          requestOptions(signal),
+        ),
       );
     },
 
@@ -334,7 +337,10 @@ export function createWebAuthRemote(
       signal?: AbortSignal,
     ): Promise<WebProviderEnrollmentRequired> {
       return unwrapRemoteResult(
-        await client.setProviderEnrollmentEmail(request, requestOptions(signal)),
+        await client.setProviderEnrollmentEmail(
+          request,
+          requestOptions(signal),
+        ),
       );
     },
 
@@ -342,7 +348,9 @@ export function createWebAuthRemote(
       signal?: AbortSignal,
     ): Promise<WebProviderEnrollmentRequired> {
       return unwrapRemoteResult(
-        await client.resendProviderEnrollmentVerification(requestOptions(signal)),
+        await client.resendProviderEnrollmentVerification(
+          requestOptions(signal),
+        ),
       );
     },
 
@@ -421,7 +429,10 @@ export function createWebAuthRemote(
       signal?: AbortSignal,
     ): Promise<WebAuthenticatedSession> {
       return unwrapRemoteResult(
-        await client.completePasskeyAuthentication(request, requestOptions(signal)),
+        await client.completePasskeyAuthentication(
+          request,
+          requestOptions(signal),
+        ),
       );
     },
 
