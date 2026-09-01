@@ -1,7 +1,6 @@
 import { defineWorldFocusComposition } from '../model/world-focus-composition';
-import {
-  type WorldFocusCompositionRegistration,
-} from './world-focus-composition-host';
+import type { WorldFocusId } from '../model/world-focus-fixtures';
+import { type WorldFocusCompositionRegistration } from './world-focus-composition-host';
 import { WorldFocusContinuity } from './world-focus-continuity';
 import { WorldFocusModuleRegistry } from './world-focus-module-registry';
 
@@ -17,7 +16,7 @@ const CORE_WORLD_FOCUS_COMPOSITION = defineWorldFocusComposition([
 ] as const);
 
 const CORE_WORLD_FOCUS_MODULE_REGISTRY = new WorldFocusModuleRegistry<
-  WorldFocusCompositionRegistration
+  WorldFocusCompositionRegistration<string, WorldFocusId>
 >([
   {
     kind: 'continuity',
