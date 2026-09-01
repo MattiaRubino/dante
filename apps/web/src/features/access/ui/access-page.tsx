@@ -10,6 +10,8 @@ import { useTranslation } from 'react-i18next';
 
 import danteSymbolUrl from '../../../../../../assets/brand/logo/master/dante-symbol-master-v0.svg?url';
 import danteWordmarkUrl from '../../../../../../assets/brand/wordmark/master/dante-wordmark-master-v0.svg?url';
+import type { ProviderBrowserUnavailableError } from '../../../platform/auth/web-auth-provider';
+import type { WebProviderAuthenticationResult } from '../../../platform/auth/web-auth-remote';
 import {
   type RecoveryProofStore,
   useBeginSignupMutation,
@@ -22,9 +24,12 @@ import {
 } from '../application/auth-lifecycle';
 import { usePasskeySignInMutation } from '../application/auth-passkey';
 import {
+  type GoogleAuthenticationPreparation,
   type ProviderContinuation,
+  useAppleAuthenticationMutation,
+  useCompleteGoogleAuthenticationMutation,
   useConfirmProviderLinkMutation,
-  useProviderAuthenticationMutation,
+  usePrepareGoogleAuthenticationMutation,
   useProviderContinuationQuery,
   useResendProviderEnrollmentMutation,
   useSetProviderEnrollmentEmailMutation,
@@ -41,7 +46,6 @@ import {
   initialAccessFlowState,
   type AccessFlowEvent,
   type AccessFlowState,
-  type AccessProvider,
 } from '../model/access-flow';
 import { AccessBrandStage } from './access-brand-stage';
 import {
@@ -81,19 +85,6 @@ function isRecoveryInvalidEvent(event: AccessFlowEvent | null): boolean {
   return event?.type === 'SERVER_RECOVERY_INVALID_OR_EXPIRED';
 }
 
-function requestedProvider(flow: AccessFlowState): AccessProvider | null {
-  if (flow.condition.kind !== 'backend-required') {
-    return null;
-  }
-  if (flow.condition.operation === 'provider-google') {
-    return 'google';
-  }
-  if (flow.condition.operation === 'provider-apple') {
-    return 'apple';
-  }
-  return null;
-}
-
 export function AccessPage({
   recoveryProofStore,
 }: Readonly<{ recoveryProofStore: RecoveryProofStore }>) {
@@ -107,8 +98,11 @@ export function AccessPage({
       hadRecoveryProofAtMount ? 'validating' : 'none',
     );
   const recoveryValidationStarted = useRef(false);
-  const providerStart = useRef<AccessProvider | null>(null);
+  const googlePreparationStarted = useRef(false);
   const [signupRef, setSignupRef] = useState<string | null>(null);
+  const [googlePreparation, setGooglePreparation] =
+    useState<GoogleAuthenticationPreparation | null>(null);
+  const [googleError, setGoogleError] = useState<string | null>(null);
   const [providerContinuation, setProviderContinuation] =
     useState<ProviderContinuation>({ kind: 'none' });
   const [providerError, setProviderError] = useState<string | null>(null);
@@ -130,7 +124,9 @@ export function AccessPage({
   const validateRecoveryMutation = useValidatePasswordRecoveryMutation();
   const resetPasswordMutation = useResetPasswordMutation();
   const reauthenticateMutation = useReauthenticateMutation();
-  const providerMutation = useProviderAuthenticationMutation();
+  const prepareGoogleMutation = usePrepareGoogleAuthenticationMutation();
+  const completeGoogleMutation = useCompleteGoogleAuthenticationMutation();
+  const appleMutation = useAppleAuthenticationMutation();
   const continuationQuery = useProviderContinuationQuery(
     recoveryEntryState === 'none',
   );
@@ -156,6 +152,10 @@ export function AccessPage({
 
   const providerFailure = useCallback(() => {
     setProviderError(t(($) => $.common.access.providerError.body));
+  }, [t]);
+
+  const googleFailure = useCallback(() => {
+    setGoogleError(t(($) => $.common.access.providerError.body));
   }, [t]);
 
   function beginRemote(event: AccessFlowEvent): boolean {
@@ -240,59 +240,32 @@ export function AccessPage({
     setProviderError(null);
   }, [continuationQuery.data]);
 
+  const googleSurfaceVisible =
+    recoveryEntryState === 'none' &&
+    providerContinuation.kind === 'none' &&
+    (flow.screen.id === 'SIGN_IN' || flow.screen.id === 'SIGN_UP_EMAIL');
+
   useEffect(() => {
-    const provider = requestedProvider(flow);
-    if (
-      provider === null ||
-      providerStart.current !== null ||
-      providerMutation.isPending
-    ) {
+    if (!googleSurfaceVisible) {
+      googlePreparationStarted.current = false;
+      setGooglePreparation(null);
+      setGoogleError(null);
+      return;
+    }
+    if (googlePreparationStarted.current) {
       return;
     }
 
-    providerStart.current = provider;
-    setProviderError(null);
-    dispatch({ type: 'SERVER_PROVIDER_STARTED', provider });
-    providerMutation.mutate(
+    googlePreparationStarted.current = true;
+    setGoogleError(null);
+    prepareGoogleMutation.mutate(
+      { purpose: 'sign_in', returnTarget: 'access' },
       {
-        provider,
-        purpose: 'sign_in',
-        returnTarget: 'access',
-      },
-      {
-        onSuccess: (outcome) => {
-          providerStart.current = null;
-          if (outcome.kind === 'redirected') {
-            return;
-          }
-          const result = outcome.result;
-          if (result.outcome === 'authenticated') {
-            setProviderContinuation({ kind: 'none' });
-            dispatch({ type: 'SERVER_AUTHENTICATED' });
-            return;
-          }
-          if (result.outcome === 'enrollment_required') {
-            setProviderContinuation({ kind: 'enrollment', enrollment: result });
-            return;
-          }
-          setProviderContinuation({
-            kind: 'link',
-            link: {
-              external_link_challenge_ref: result.external_link_challenge_ref,
-              provider_code: provider,
-              expires_at: result.expires_at,
-            },
-          });
-          dispatch({ type: 'SERVER_ACCOUNT_LINK_REQUIRED', provider });
-        },
-        onError: () => {
-          providerStart.current = null;
-          providerFailure();
-          dispatch({ type: 'SERVER_PROVIDER_FAILED', provider });
-        },
+        onSuccess: setGooglePreparation,
+        onError: googleFailure,
       },
     );
-  }, [flow, providerFailure, providerMutation]);
+  }, [googleFailure, googleSurfaceVisible, prepareGoogleMutation]);
 
   useLayoutEffect(() => {
     if (
@@ -326,6 +299,79 @@ export function AccessPage({
     }
     dispatchAuthError(sessionQuery.error);
   }, [dispatchAuthError, sessionQuery.error]);
+
+  function applyProviderResult(
+    provider: 'google' | 'apple',
+    result: WebProviderAuthenticationResult,
+  ) {
+    if (result.outcome === 'authenticated') {
+      setProviderContinuation({ kind: 'none' });
+      dispatch({ type: 'SERVER_AUTHENTICATED' });
+      return;
+    }
+    if (result.outcome === 'enrollment_required') {
+      setProviderContinuation({ kind: 'enrollment', enrollment: result });
+      return;
+    }
+    setProviderContinuation({
+      kind: 'link',
+      link: {
+        external_link_challenge_ref: result.external_link_challenge_ref,
+        provider_code: provider,
+        expires_at: result.expires_at,
+      },
+    });
+    dispatch({ type: 'SERVER_ACCOUNT_LINK_REQUIRED', provider });
+  }
+
+  function completeGoogle(credential: string) {
+    const preparation = googlePreparation;
+    if (preparation === null || completeGoogleMutation.isPending) {
+      return;
+    }
+    setGoogleError(null);
+    dispatch({ type: 'SERVER_PROVIDER_STARTED', provider: 'google' });
+    completeGoogleMutation.mutate(
+      { preparation, credential },
+      {
+        onSuccess: (result) => {
+          setGooglePreparation(null);
+          googlePreparationStarted.current = false;
+          applyProviderResult('google', result);
+        },
+        onError: () => {
+          setGooglePreparation(null);
+          googlePreparationStarted.current = false;
+          googleFailure();
+          dispatch({ type: 'SERVER_PROVIDER_FAILED', provider: 'google' });
+        },
+      },
+    );
+  }
+
+  function googleBrowserError(_error: ProviderBrowserUnavailableError) {
+    googleFailure();
+  }
+
+  function beginApple() {
+    if (appleMutation.isPending || !window.navigator.onLine) {
+      if (!window.navigator.onLine) {
+        dispatch({ type: 'NETWORK_OFFLINE' });
+      }
+      return;
+    }
+    setProviderError(null);
+    dispatch({ type: 'SERVER_PROVIDER_STARTED', provider: 'apple' });
+    appleMutation.mutate(
+      { purpose: 'sign_in', returnTarget: 'access' },
+      {
+        onError: () => {
+          providerFailure();
+          dispatch({ type: 'SERVER_PROVIDER_FAILED', provider: 'apple' });
+        },
+      },
+    );
+  }
 
   function retryRecoveryValidation() {
     recoveryValidationStarted.current = false;
@@ -597,6 +643,8 @@ export function AccessPage({
     confirmLinkMutation.isPending ||
     signInMutation.isPending ||
     linkPasskeyMutation.isPending;
+  const providerEntryPending =
+    completeGoogleMutation.isPending || appleMutation.isPending;
 
   return (
     <div className="access-shell">
@@ -635,6 +683,17 @@ export function AccessPage({
               onResetPassword={resetPassword}
               onReauthenticate={reauthenticate}
               onLogOut={logOut}
+              google={{
+                clientId: googlePreparation?.clientId ?? null,
+                nonce: googlePreparation?.begun.nonce ?? null,
+                pending:
+                  prepareGoogleMutation.isPending ||
+                  completeGoogleMutation.isPending,
+                errorMessage: googleError,
+                onCredential: completeGoogle,
+                onError: googleBrowserError,
+              }}
+              onApple={beginApple}
               pending={{
                 signIn: signInMutation.isPending,
                 signUp: beginSignupMutation.isPending,
@@ -644,6 +703,7 @@ export function AccessPage({
                 reset: resetPasswordMutation.isPending,
                 reauth: reauthenticateMutation.isPending,
                 logOut: logOutMutation.isPending,
+                provider: providerEntryPending,
               }}
             />
           ) : (
