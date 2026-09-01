@@ -7,7 +7,10 @@ import {
   InMemoryTemporalWorkspace,
 } from '../../temporal';
 import { createTemporalCreateFields } from '../model/temporal-create-session';
-import { createLocalTemporalCreateRuntime } from './temporal-create-runtime';
+import {
+  createLocalTemporalCreateRuntime,
+  type TemporalCreatePreparedOperation,
+} from './temporal-create-runtime';
 
 function runtime() {
   const ids = createDeterministicTemporalIdFactory('c1-rich');
@@ -96,6 +99,49 @@ describe('Temporal Create rich application runtime', () => {
     expect(replay.result).toBe(first.result);
     expect(await createRuntime.list()).toHaveLength(1);
     expect(await createRuntime.listRecords()).toHaveLength(1);
+  });
+
+  it('rejects operation-id reuse when only the rich Create intent changes', async () => {
+    const createRuntime = runtime();
+    const preparation = createRuntime.prepare(
+      createTemporalCreateFields({
+        title: 'Call',
+        kind: 'event',
+        date: '2026-09-01',
+        notes: 'Original note',
+      }),
+    );
+    if (preparation.status !== 'ready') {
+      throw new Error('Expected ready Create operation');
+    }
+
+    const first = await createRuntime.execute(preparation.prepared);
+    expect(first.result.status).toBe('applied');
+
+    const changedSpecification = createTemporalCreateFields({
+      ...preparation.prepared.metadata.specification,
+      notes: 'Changed on replay',
+    });
+    const tampered = Object.freeze({
+      ...preparation.prepared,
+      metadata: Object.freeze({
+        ...preparation.prepared.metadata,
+        notes: 'Changed on replay',
+        specification: changedSpecification,
+      }),
+    }) satisfies TemporalCreatePreparedOperation;
+
+    const collision = await createRuntime.execute(tampered);
+    const records = await createRuntime.listRecords();
+
+    expect(collision.effect).toBeNull();
+    expect(collision.result.status).toBe('rejected');
+    if (collision.result.status === 'rejected') {
+      expect(collision.result.code).toBe('operation-id-reused');
+    }
+    expect(records).toHaveLength(1);
+    expect(records[0]?.metadata.notes).toBe('Original note');
+    expect(records[0]?.metadata.specification.notes).toBe('Original note');
   });
 
   it('undo removes both F0 projection and its local rich specification', async () => {
