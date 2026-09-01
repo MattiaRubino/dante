@@ -60,7 +60,7 @@ export type TemporalCreateEntryProps = Readonly<{
   contexts: readonly TemporalCreateContextOption[];
   request?: TemporalCreateInvocation | null;
   onPreview: (projection: TemporalCreateTimelineProjection | null) => void;
-  onApplied: (effect: TemporalCreateAppliedEffect) => void;
+  onApplied: (effect: TemporalCreateAppliedEffect) => boolean;
   onBeforeOpen?: () => void;
 }>;
 
@@ -291,11 +291,9 @@ export function TemporalCreateEntry({
     try {
       const execution = await runtime.execute(preparation.prepared);
       if (execution.result.status === 'applied' && execution.effect) {
-        onApplied(execution.effect);
-        setSession(
-          discardTemporalCreateSession(freshFields(defaultDate)),
-        );
-        closeComposer(false);
+        const focusHandled = onApplied(execution.effect);
+        setSession(discardTemporalCreateSession(freshFields(defaultDate)));
+        closeComposer(!focusHandled);
         return;
       }
       if (execution.result.status === 'rejected') {
