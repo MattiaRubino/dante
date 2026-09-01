@@ -1,8 +1,8 @@
 import { defineWorldFocusComposition } from '../model/world-focus-composition';
-import { WorldFocusContinuity } from './world-focus-continuity';
 import {
   type WorldFocusCompositionRegistration,
 } from './world-focus-composition-host';
+import { WorldFocusContinuity } from './world-focus-continuity';
 import { WorldFocusModuleRegistry } from './world-focus-module-registry';
 
 const CORE_WORLD_FOCUS_COMPOSITION = defineWorldFocusComposition([
