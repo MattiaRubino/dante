@@ -223,10 +223,18 @@ export function TemporalCreateComposer({
         return t(($) => $.common.home.timeline.create.validation.sessionCount);
       case 'temporal.create.buffer.invalid':
         return t(($) => $.common.home.timeline.create.validation.buffer);
+      case 'temporal.create.event_buffer.invalid':
+        return t(($) => $.common.home.timeline.create.validation.eventBuffer);
       case 'temporal.create.recurrence.interval_invalid':
         return t(($) => $.common.home.timeline.create.validation.recurrenceInterval);
       case 'temporal.create.recurrence.weekdays_required':
         return t(($) => $.common.home.timeline.create.validation.recurrenceWeekdays);
+      case 'temporal.create.recurrence.elapsed_invalid':
+        return t(($) => $.common.home.timeline.create.validation.recurrenceElapsed);
+      case 'temporal.create.recurrence.quota_invalid':
+        return t(($) => $.common.home.timeline.create.validation.recurrenceQuota);
+      case 'temporal.create.recurrence.cycle_invalid':
+        return t(($) => $.common.home.timeline.create.validation.recurrenceCycle);
       case 'temporal.create.recurrence.until_invalid':
         return t(($) => $.common.home.timeline.create.validation.recurrenceUntil);
       case 'temporal.create.recurrence.count_invalid':
@@ -394,7 +402,8 @@ export function TemporalCreateComposer({
                 : t(($) => $.common.home.timeline.create.kind.event)}
             </span>
             {constraintLabel ? <span>{constraintLabel}</span> : null}
-            {fields.recurrence.frequency !== 'none' ? (
+            {fields.kind === 'event' &&
+            fields.eventRecurrence.patternKind !== 'none' ? (
               <span>
                 {t(
                   ($) => $.common.home.timeline.create.recurrence.recurringBadge,
