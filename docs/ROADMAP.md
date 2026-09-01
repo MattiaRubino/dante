@@ -182,8 +182,11 @@ AI-02.1 v0.5
 AI-03 — CONTEXT / RETRIEVAL / MEMORY
 ACTIVE
     ├ AI-03A FULL CONTEXT ARCHITECTURE
+    │        CLOSED / STRUCTURALLY ACCEPTED
     ├ AI-03B RETRIEVAL + MEMORY ARCHITECTURE
+    │        ACTIVE / CURRENT
     └ AI-03C DESTRUCTIVE VALIDATION + MATERIALIZATION BLUEPRINT
+             FUTURE
         ↓
 AI-04 — PRODUCTIONIZATION ARCHITECTURE
 FUTURE
@@ -263,7 +266,7 @@ Safe Result Publication
 Attention
 ```
 
-AI-02.1 is now:
+AI-02.1 is:
 
 ```text
 v0.5
@@ -279,17 +282,108 @@ Durable phase charter:
 
 - `architecture/dante-ai-03-context-retrieval-memory.md`
 
-Current macro-phase:
+#### AI-03A — CLOSED / STRUCTURALLY ACCEPTED
+
+Durable accepted Context authority:
+
+- `architecture/dante-ai-03a-full-context-architecture.md`
+
+The initial Context candidate did not pass. A dedicated mega-test found nine material gaps:
 
 ```text
-AI-03A — FULL CONTEXT ARCHITECTURE
+Reality Scope / Scenario binding
+Interaction Session continuity != provider-context continuity
+model-discovered InformationNeed scope ceiling
+per-need reference-resolution requirement
+explicit negative source/use constraints
+child/delegated context minimisation
+instruction provenance
+non-monotonic ContextReadiness
+objective-relative minimisation
 ```
 
-AI-03A owns the complete path from `WorkContract` to the exact purpose-bound, authorized, provenance-bearing, freshness/coherence-aware `ContextManifest` delivered to a reasoning consumer.
+After incorporating and retesting those hardenings:
 
-AI-03B then defines structured/lexical/semantic/hybrid retrieval and Interaction/working/derived/provider/retrieval-memory classes with admission, correction, decay, retirement, deletion and anti-resurrection.
+```text
+AI-03A HARDENED CANDIDATE
+STRUCTURAL PASS
+C01..C29 ACCEPTED
 
-AI-03C finally runs destructive validation and produces the materialization blueprint that decides what stays transient, what is recomputable, what is provider-owned optimization, what is justified durable derived state, what may require PostgreSQL/index evolution and what must not be stored.
+NO Domain reopen
+NO Logical reopen
+NO Physical reopen
+NO PostgreSQL/Alembic change
+NO runtime/provider implementation claim
+```
+
+Accepted Context contracts:
+
+```text
+ContextPlan
+InformationNeed
+ContextStrategy
+ContextFragment
+ContextReadiness
+ConsumerContext
+ContextManifest
++ inherited BasisManifest
+```
+
+Do not reopen AI-03A merely because AI-03B later prefers a retrieval/index/memory implementation. Reopen the smallest boundary only if real downstream evidence contradicts the accepted contract.
+
+#### AI-03B — ACTIVE / CURRENT
+
+Current exact AI task:
+
+```text
+AI-03B — RETRIEVAL + MEMORY ARCHITECTURE
+```
+
+AI-03B consumes AI-03A and must define:
+
+```text
+structured/current/history retrieval
+relation traversal
+FTS / pg_trgm / fuzzy retrieval
+semantic/vector retrieval where justified
+hybrid retrieval
+reranking
+source reread
+freshness/currentness validation
+coverage-aware retrieval
+permission-aware discovery/retrieval
+multi-stage / iterative / JIT retrieval
+document hierarchy/chunking
+large-corpus behavior
+long-context vs indexed retrieval
+retrieval evaluation
+
+canonical application memory — already Domain/PostgreSQL
+Interaction Session continuity / memory
+Run/working memory
+compaction/checkpoint state
+derived/adaptive memory candidates
+provider thread/memory/cache
+retrieval representations/indexes/embeddings
+execution evidence separation
+
+admission
+promotion
+confirmation/correction
+contradiction
+supersession
+decay/expiry
+retirement/redaction/deletion
+forgetting
+anti-resurrection
+provider/cache/index invalidation
+```
+
+AI-03B still does **not** authorize a memory table, embeddings, pgvector activation, chunk schema, conversation persistence or provider-native memory selection.
+
+#### AI-03C — future
+
+After AI-03B, AI-03C runs whole Context/Retrieval/Memory destructive validation and produces the materialization blueprint that decides what stays transient, what is recomputable, what is provider-owned optimization, what is justified durable derived state, what may require PostgreSQL/index evolution and what must not be stored.
 
 Explicit AI-03 rule:
 
@@ -373,7 +467,7 @@ Restate product activation
 AI provider/model adapter implementation
 AI Execution Environment implementation
 AI local-model activation
-AI Context/Retrieval/Memory persistence
+AI Retrieval/Memory persistence
 AI runtime module/service implementation
 exact target-resolution implementation
 exact policy-composition engine/product
@@ -429,6 +523,13 @@ EXECUTION ENVIRONMENT != MANDATORY SANDBOX/CONTAINER
 FRESH INPUTS != AUTOMATICALLY COHERENT COMBINED BASIS
 APPROVAL != PERPETUAL AUTHORIZATION FOR MATERIALLY CHANGED WORK
 CACHE HIT != CURRENT DISCLOSURE AUTHORIZATION
+CONTEXT != RETRIEVAL != MEMORY
+CONSUMER CONTEXT != CONTEXT MANIFEST
+CONTEXT MANIFEST != BASIS MANIFEST
+SOURCE STANDING != DOMAIN AUTHORITY
+INTERACTION SESSION CONTINUITY != PROVIDER-CONTEXT CONTINUITY
+MODEL-DISCOVERED INFORMATION NEED != SCOPE EXPANSION
+WORKCONTRACT PROPAGATION != PARENT-CONTEXT INHERITANCE
 ```
 
 ## 11. Immediate sequence
@@ -438,8 +539,9 @@ CACHE HIT != CURRENT DISCLOSURE AUTHORIZATION
 2. continue feature/access-auth, feature/home-react and feature/platform-observability independently under their own scopes
 3. feature/ai-architecture has closed AI-02.1 v0.5 as STRUCTURALLY ACCEPTED
 4. AI-03 Context / Retrieval / Memory is ACTIVE
-5. current exact AI task = AI-03A Full Context Architecture
-6. complete AI-03A, then AI-03B, then AI-03C before any AI Context/Memory materialization
-7. after AI-03 closure proceed to AI-04 Productionization Architecture
-8. finish with AI-05 Whole-System Acceptance + Implementation Blueprint
+5. AI-03A Full Context Architecture is CLOSED / STRUCTURALLY ACCEPTED
+6. current exact AI task = AI-03B Retrieval + Memory Architecture
+7. complete AI-03B, then AI-03C before any AI Retrieval/Memory materialization
+8. after AI-03 closure proceed to AI-04 Productionization Architecture
+9. finish with AI-05 Whole-System Acceptance + Implementation Blueprint
 ```
