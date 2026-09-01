@@ -26,14 +26,13 @@ function runtime() {
 }
 
 describe('Temporal Create rich application runtime', () => {
-  it('retains rich Activity intent separately from the minimal Timeline projection', async () => {
+  it('retains rich Activity scheduling/execution intent without fake recurrence or placement', async () => {
     const createRuntime = runtime();
     const baseline = createTemporalCreateFields({
       title: 'Montare video',
       date: '2026-09-01',
       durationMinutes: 180,
       notes: 'Export finale',
-      tags: 'video, musica',
     });
     const fields = createTemporalCreateFields({
       ...baseline,
@@ -51,11 +50,6 @@ describe('Temporal Create rich application runtime', () => {
         sessionMode: 'splittable',
         minSessionMinutes: 45,
       },
-      recurrence: {
-        ...baseline.recurrence,
-        frequency: 'weekly',
-        weekdays: Object.freeze(['MO', 'WE'] as const),
-      },
     });
     const preparation = createRuntime.prepare(fields);
     if (preparation.status !== 'ready') {
@@ -67,7 +61,8 @@ describe('Temporal Create rich application runtime', () => {
 
     expect(execution.result.status).toBe('applied');
     expect(execution.effect?.projection.placement).toBeNull();
-    expect(execution.effect?.projection.capabilities).toContain('recurrence');
+    expect(execution.effect?.projection.capabilities).not.toContain('recurrence');
+    expect(execution.effect?.projection.capabilities).toContain('execution');
     expect(records).toHaveLength(1);
     expect(records[0]?.metadata.specification.scheduling.constraintKind).toBe(
       'bounded-window',
@@ -75,7 +70,40 @@ describe('Temporal Create rich application runtime', () => {
     expect(records[0]?.metadata.specification.execution.minSessionMinutes).toBe(
       45,
     );
-    expect(records[0]?.metadata.specification.tags).toBe('video, musica');
+    expect(records[0]?.metadata.specification.eventRecurrence.patternKind).toBe(
+      'none',
+    );
+  });
+
+  it('marks Event recurrence capability only for an Event recurrence owner', async () => {
+    const createRuntime = runtime();
+    const baseline = createTemporalCreateFields({
+      title: 'Call settimanale',
+      kind: 'event',
+      date: '2026-09-01',
+    });
+    const fields = createTemporalCreateFields({
+      ...baseline,
+      eventRecurrence: {
+        ...baseline.eventRecurrence,
+        patternKind: 'calendar-wall-clock',
+        calendarFrequency: 'weekly',
+        weekdays: Object.freeze(['TU'] as const),
+      },
+    });
+    const preparation = createRuntime.prepare(fields);
+    if (preparation.status !== 'ready') {
+      throw new Error('Expected ready recurring Event');
+    }
+
+    const execution = await createRuntime.execute(preparation.prepared);
+
+    expect(execution.result.status).toBe('applied');
+    expect(execution.effect?.projection.capabilities).toContain('recurrence');
+    expect(
+      (await createRuntime.listRecords())[0]?.metadata.specification.eventRecurrence
+        .patternKind,
+    ).toBe('calendar-wall-clock');
   });
 
   it('keeps exact prepared-command replay idempotent without duplicating rich records', async () => {
@@ -101,16 +129,23 @@ describe('Temporal Create rich application runtime', () => {
     expect(await createRuntime.listRecords()).toHaveLength(1);
   });
 
-  it('rejects operation-id reuse when only the rich Create intent changes', async () => {
+  it('rejects operation-id reuse when only deep Event intent changes', async () => {
     const createRuntime = runtime();
-    const preparation = createRuntime.prepare(
-      createTemporalCreateFields({
-        title: 'Call',
-        kind: 'event',
-        date: '2026-09-01',
-        notes: 'Original note',
-      }),
-    );
+    const base = createTemporalCreateFields({
+      title: 'Call',
+      kind: 'event',
+      date: '2026-09-01',
+      notes: 'Original note',
+    });
+    const original = createTemporalCreateFields({
+      ...base,
+      event: {
+        ...base.event,
+        purpose: 'Review',
+        requiredParticipants: 'cliente@example.com',
+      },
+    });
+    const preparation = createRuntime.prepare(original);
     if (preparation.status !== 'ready') {
       throw new Error('Expected ready Create operation');
     }
@@ -120,13 +155,15 @@ describe('Temporal Create rich application runtime', () => {
 
     const changedSpecification = createTemporalCreateFields({
       ...preparation.prepared.metadata.specification,
-      notes: 'Changed on replay',
+      event: {
+        ...preparation.prepared.metadata.specification.event,
+        purpose: 'Changed on replay',
+      },
     });
     const tampered = Object.freeze({
       ...preparation.prepared,
       metadata: Object.freeze({
         ...preparation.prepared.metadata,
-        notes: 'Changed on replay',
         specification: changedSpecification,
       }),
     }) satisfies TemporalCreatePreparedOperation;
@@ -141,7 +178,52 @@ describe('Temporal Create rich application runtime', () => {
     }
     expect(records).toHaveLength(1);
     expect(records[0]?.metadata.notes).toBe('Original note');
-    expect(records[0]?.metadata.specification.notes).toBe('Original note');
+    expect(records[0]?.metadata.specification.event.purpose).toBe('Review');
+    expect(
+      records[0]?.metadata.specification.event.requiredParticipants,
+    ).toContain('cliente@example.com');
+  });
+
+  it('rejects operation-id reuse when only Event recurrence semantics change', async () => {
+    const createRuntime = runtime();
+    const base = createTemporalCreateFields({
+      title: 'Recurring review',
+      kind: 'event',
+      date: '2026-09-01',
+    });
+    const original = createTemporalCreateFields({
+      ...base,
+      eventRecurrence: {
+        ...base.eventRecurrence,
+        patternKind: 'elapsed-interval',
+        elapsedIntervalMinutes: 1440,
+      },
+    });
+    const preparation = createRuntime.prepare(original);
+    if (preparation.status !== 'ready') {
+      throw new Error('Expected ready recurring Event');
+    }
+    await createRuntime.execute(preparation.prepared);
+
+    const changedSpecification = createTemporalCreateFields({
+      ...original,
+      eventRecurrence: {
+        ...original.eventRecurrence,
+        elapsedIntervalMinutes: 2880,
+      },
+    });
+    const tampered = Object.freeze({
+      ...preparation.prepared,
+      metadata: Object.freeze({
+        ...preparation.prepared.metadata,
+        specification: changedSpecification,
+      }),
+    }) satisfies TemporalCreatePreparedOperation;
+
+    const collision = await createRuntime.execute(tampered);
+
+    expect(collision.effect).toBeNull();
+    expect(collision.result.status).toBe('rejected');
   });
 
   it('undo removes both F0 projection and its local rich specification', async () => {
