@@ -189,7 +189,7 @@ export function WorldFocusPage({
             world={world}
             session={session}
             disabled={status !== 'ready' || onTimePresetChange === undefined}
-            onTimePresetChange={onTimePresetChange}
+            {...(onTimePresetChange === undefined ? {} : { onTimePresetChange })}
           />
         }
       />
