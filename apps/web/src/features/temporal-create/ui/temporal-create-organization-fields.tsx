@@ -45,22 +45,6 @@ export function TemporalCreateOrganizationFields({
           )}
         />
       </label>
-
-      {depth === 'full' ? (
-        <label className="temporal-create-control">
-          <span>
-            {t(($) => $.common.home.timeline.create.organization.tags)}
-          </span>
-          <input
-            type="text"
-            value={fields.tags}
-            onChange={(event) => onPatch({ tags: event.currentTarget.value })}
-            placeholder={t(
-              ($) => $.common.home.timeline.create.organization.tagsPlaceholder,
-            )}
-          />
-        </label>
-      ) : null}
     </section>
   );
 }
