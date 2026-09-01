@@ -262,7 +262,10 @@ describe('@dante/api-client governed boundary', () => {
       ),
     });
     expect(
-      await verifyClient.verifySignup({ signup_ref: SIGNUP_REF, code: '123456' }),
+      await verifyClient.verifySignup({
+        signup_ref: SIGNUP_REF,
+        code: '123456',
+      }),
     ).toMatchObject({
       ok: true,
       value: { outcome: 'authenticated', account_ref: ACCOUNT_REF },
@@ -274,7 +277,9 @@ describe('@dante/api-client governed boundary', () => {
       ),
     });
     expect(
-      await recoveryClient.requestPasswordRecovery({ email: 'person@example.com' }),
+      await recoveryClient.requestPasswordRecovery({
+        email: 'person@example.com',
+      }),
     ).toMatchObject({ ok: true, status: 202, value: { accepted: true } });
 
     const validationClient = createDanteApiClient({
@@ -326,7 +331,10 @@ describe('@dante/api-client governed boundary', () => {
       await sessionClient.establishPassword({
         new_password: 'correct horse battery staple',
       }),
-    ).toMatchObject({ ok: true, value: { auth_session_ref: AUTH_SESSION_REF } });
+    ).toMatchObject({
+      ok: true,
+      value: { auth_session_ref: AUTH_SESSION_REF },
+    });
     expect(await sessionClient.removePassword()).toMatchObject({
       ok: true,
       value: { auth_session_ref: AUTH_SESSION_REF },
@@ -409,7 +417,8 @@ describe('@dante/api-client governed boundary', () => {
         apiResponse(
           200,
           {
-            authorization_url: 'https://appleid.apple.com/auth/authorize?state=opaque',
+            authorization_url:
+              'https://appleid.apple.com/auth/authorize?state=opaque',
             expires_at: '2026-09-01T18:00:00Z',
           },
           'application/json',
@@ -421,7 +430,10 @@ describe('@dante/api-client governed boundary', () => {
         purpose: 'sign_in',
         return_target: 'access',
       }),
-    ).toMatchObject({ ok: true, value: { authorization_url: expect.any(String) } });
+    ).toMatchObject({
+      ok: true,
+      value: { authorization_url: expect.any(String) },
+    });
 
     for (const outcome of [
       providerAuthenticated(),
@@ -436,7 +448,10 @@ describe('@dante/api-client governed boundary', () => {
         state: 'opaque-state',
         credential: 'provider-credential',
       });
-      expect(result).toMatchObject({ ok: true, value: { outcome: outcome.outcome } });
+      expect(result).toMatchObject({
+        ok: true,
+        value: { outcome: outcome.outcome },
+      });
     }
   });
 
@@ -473,7 +488,10 @@ describe('@dante/api-client governed boundary', () => {
     });
     expect(await enrollmentClient.getProviderEnrollment()).toMatchObject({
       ok: true,
-      value: { outcome: 'enrollment_required', external_signup_ref: SIGNUP_REF },
+      value: {
+        outcome: 'enrollment_required',
+        external_signup_ref: SIGNUP_REF,
+      },
     });
     expect(
       await enrollmentClient.setProviderEnrollmentEmail({
@@ -554,13 +572,24 @@ describe('@dante/api-client governed boundary', () => {
     });
     expect(
       await completionClient.completePasskeyRegistration(registrationRequest()),
-    ).toMatchObject({ ok: true, value: { auth_session_ref: AUTH_SESSION_REF } });
+    ).toMatchObject({
+      ok: true,
+      value: { auth_session_ref: AUTH_SESSION_REF },
+    });
     expect(
       await completionClient.completePasskeyAuthentication(assertionRequest()),
-    ).toMatchObject({ ok: true, value: { auth_session_ref: AUTH_SESSION_REF } });
+    ).toMatchObject({
+      ok: true,
+      value: { auth_session_ref: AUTH_SESSION_REF },
+    });
     expect(
-      await completionClient.completePasskeyReauthentication(assertionRequest()),
-    ).toMatchObject({ ok: true, value: { auth_session_ref: AUTH_SESSION_REF } });
+      await completionClient.completePasskeyReauthentication(
+        assertionRequest(),
+      ),
+    ).toMatchObject({
+      ok: true,
+      value: { auth_session_ref: AUTH_SESSION_REF },
+    });
     expect(await completionClient.removePasskey(PASSKEY_REF)).toMatchObject({
       ok: true,
       value: { auth_session_ref: AUTH_SESSION_REF },
@@ -569,7 +598,9 @@ describe('@dante/api-client governed boundary', () => {
     const updateClient = createDanteApiClient({
       fetchFn: fetchReturning(apiResponse(204, undefined, null)),
     });
-    expect(await updateClient.updatePasskey(PASSKEY_REF, { label: 'Travel key' })).toMatchObject({
+    expect(
+      await updateClient.updatePasskey(PASSKEY_REF, { label: 'Travel key' }),
+    ).toMatchObject({
       ok: true,
       status: 204,
     });

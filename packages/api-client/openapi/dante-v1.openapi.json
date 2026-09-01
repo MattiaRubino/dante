@@ -7809,6 +7809,11 @@
             "required": true,
             "required_value": "web"
           },
+          "csrf_header": {
+            "name": "X-Dante-CSRF",
+            "owner": "web_transport",
+            "required": true
+          },
           "origin": {
             "must_equal": "canonical_web_origin",
             "owner": "browser",

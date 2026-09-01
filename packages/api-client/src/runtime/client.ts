@@ -185,7 +185,8 @@ export type AuthSession = AuthenticatedSession | UnauthenticatedSession;
 export type SignupCreated = SignupCreatedResponseOutput;
 export type SignupAuthenticated = SignupAuthenticatedResponseOutput;
 export type ExistingAccountSignup = ExistingAccountSignupResponseOutput;
-export type SignupVerificationResult = SignupAuthenticated | ExistingAccountSignup;
+export type SignupVerificationResult =
+  SignupAuthenticated | ExistingAccountSignup;
 export type RecoveryAccepted = RecoveryAcceptedResponseOutput;
 export type RecoveryValidation = RecoveryValidationResponseOutput;
 export type AuthenticationMethods = AuthenticationMethodsResponseOutput;
@@ -193,14 +194,12 @@ export type GoogleAuthenticationBegun = GoogleAuthenticationBegunResponseOutput;
 export type AppleAuthenticationBegun = AppleAuthenticationBegunResponseOutput;
 export type ProviderAuthenticated = ProviderAuthenticatedResponseOutput;
 export type ProviderLinkRequired = ProviderLinkRequiredResponseOutput;
-export type ProviderEnrollmentRequired = ProviderEnrollmentRequiredResponseOutput;
+export type ProviderEnrollmentRequired =
+  ProviderEnrollmentRequiredResponseOutput;
 export type ProviderAuthenticationResult =
-  | ProviderAuthenticated
-  | ProviderLinkRequired
-  | ProviderEnrollmentRequired;
+  ProviderAuthenticated | ProviderLinkRequired | ProviderEnrollmentRequired;
 export type ProviderEnrollmentVerificationResult =
-  | ProviderAuthenticated
-  | ProviderLinkRequired;
+  ProviderAuthenticated | ProviderLinkRequired;
 export type ProviderLink = ProviderLinkResponseOutput;
 export type PasskeyCeremony = PasskeyCeremonyResponseOutput;
 
@@ -255,7 +254,8 @@ export type RemoteSuccess<T> = {
   headers: Headers;
 };
 
-export type RemoteResult<T> = RemoteSuccess<T> | { ok: false; failure: RemoteFailure };
+export type RemoteResult<T> =
+  RemoteSuccess<T> | { ok: false; failure: RemoteFailure };
 
 type WireResponse = {
   data: unknown;
@@ -263,7 +263,8 @@ type WireResponse = {
   headers: Headers;
 };
 
-type TransportFailureKind = NetworkUnavailableFailure['kind'] | AbortedFailure['kind'];
+type TransportFailureKind =
+  NetworkUnavailableFailure['kind'] | AbortedFailure['kind'];
 type SuccessParser<T> = (wire: WireResponse) => RemoteResult<T>;
 
 class TransportFailure extends Error {
@@ -348,7 +349,9 @@ function contractViolation(
   };
 }
 
-function trackedFetch(fetchFn: typeof globalThis.fetch): typeof globalThis.fetch {
+function trackedFetch(
+  fetchFn: typeof globalThis.fetch,
+): typeof globalThis.fetch {
   return async (input, init) => {
     try {
       return await fetchFn(input, init);
@@ -527,7 +530,11 @@ function parseSignupVerification(
 function parseRecoveryAccepted(
   wire: WireResponse,
 ): RemoteResult<RecoveryAccepted> {
-  return parseJsonSchema(wire, RECOVERY_ACCEPTED_KEYS, RecoveryAcceptedResponse);
+  return parseJsonSchema(
+    wire,
+    RECOVERY_ACCEPTED_KEYS,
+    RecoveryAcceptedResponse,
+  );
 }
 
 function parseRecoveryValidation(
@@ -652,7 +659,9 @@ function parseProviderLink(wire: WireResponse): RemoteResult<ProviderLink> {
   return parseJsonSchema(wire, PROVIDER_LINK_KEYS, ProviderLinkResponse);
 }
 
-function parsePasskeyCeremony(wire: WireResponse): RemoteResult<PasskeyCeremony> {
+function parsePasskeyCeremony(
+  wire: WireResponse,
+): RemoteResult<PasskeyCeremony> {
   return parseJsonSchema(wire, PASSKEY_CEREMONY_KEYS, PasskeyCeremonyResponse);
 }
 
@@ -696,7 +705,9 @@ export type DanteApiClient = {
     request: PasswordEstablishRequest,
     options?: RequestInit,
   ): Promise<RemoteResult<AuthenticatedSession>>;
-  removePassword(options?: RequestInit): Promise<RemoteResult<AuthenticatedSession>>;
+  removePassword(
+    options?: RequestInit,
+  ): Promise<RemoteResult<AuthenticatedSession>>;
   logOut(options?: RequestInit): Promise<RemoteResult<void>>;
   beginSignup(
     request: SignupRequest,
@@ -864,7 +875,10 @@ export function createDanteApiClient(
 
     async logOut(requestOptions) {
       try {
-        const wire: WireResponse = await generatedAuthLogOut(requestOptions, fetchFn);
+        const wire: WireResponse = await generatedAuthLogOut(
+          requestOptions,
+          fetchFn,
+        );
         return expectedVoidResult(wire, 204);
       } catch (error) {
         return fromThrown(error);
@@ -977,11 +991,12 @@ export function createDanteApiClient(
 
     async completeGoogleAuthentication(request, requestOptions) {
       try {
-        const wire: WireResponse = await generatedAuthCompleteGoogleAuthentication(
-          request,
-          requestOptions,
-          fetchFn,
-        );
+        const wire: WireResponse =
+          await generatedAuthCompleteGoogleAuthentication(
+            request,
+            requestOptions,
+            fetchFn,
+          );
         return expectedResult(wire, 200, parseProviderAuthentication);
       } catch (error) {
         return fromThrown(error);
@@ -1015,11 +1030,12 @@ export function createDanteApiClient(
 
     async setProviderEnrollmentEmail(request, requestOptions) {
       try {
-        const wire: WireResponse = await generatedAuthSetProviderEnrollmentEmail(
-          request,
-          requestOptions,
-          fetchFn,
-        );
+        const wire: WireResponse =
+          await generatedAuthSetProviderEnrollmentEmail(
+            request,
+            requestOptions,
+            fetchFn,
+          );
         return expectedResult(wire, 200, parseProviderEnrollmentRequired);
       } catch (error) {
         return fromThrown(error);
@@ -1106,11 +1122,12 @@ export function createDanteApiClient(
 
     async completePasskeyRegistration(request, requestOptions) {
       try {
-        const wire: WireResponse = await generatedAuthCompletePasskeyRegistration(
-          request,
-          requestOptions,
-          fetchFn,
-        );
+        const wire: WireResponse =
+          await generatedAuthCompletePasskeyRegistration(
+            request,
+            requestOptions,
+            fetchFn,
+          );
         return expectedResult(wire, 200, parseAuthenticatedSession);
       } catch (error) {
         return fromThrown(error);
@@ -1119,11 +1136,12 @@ export function createDanteApiClient(
 
     async beginPasskeyAuthentication(requestOptions) {
       try {
-        const wire: WireResponse = await generatedAuthBeginPasskeyAuthentication(
-          {},
-          requestOptions,
-          fetchFn,
-        );
+        const wire: WireResponse =
+          await generatedAuthBeginPasskeyAuthentication(
+            {},
+            requestOptions,
+            fetchFn,
+          );
         return expectedResult(wire, 200, parsePasskeyCeremony);
       } catch (error) {
         return fromThrown(error);
@@ -1132,11 +1150,12 @@ export function createDanteApiClient(
 
     async completePasskeyAuthentication(request, requestOptions) {
       try {
-        const wire: WireResponse = await generatedAuthCompletePasskeyAuthentication(
-          request,
-          requestOptions,
-          fetchFn,
-        );
+        const wire: WireResponse =
+          await generatedAuthCompletePasskeyAuthentication(
+            request,
+            requestOptions,
+            fetchFn,
+          );
         return expectedResult(wire, 200, parseAuthenticatedSession);
       } catch (error) {
         return fromThrown(error);
@@ -1145,11 +1164,12 @@ export function createDanteApiClient(
 
     async beginPasskeyReauthentication(requestOptions) {
       try {
-        const wire: WireResponse = await generatedAuthBeginPasskeyReauthentication(
-          {},
-          requestOptions,
-          fetchFn,
-        );
+        const wire: WireResponse =
+          await generatedAuthBeginPasskeyReauthentication(
+            {},
+            requestOptions,
+            fetchFn,
+          );
         return expectedResult(wire, 200, parsePasskeyCeremony);
       } catch (error) {
         return fromThrown(error);

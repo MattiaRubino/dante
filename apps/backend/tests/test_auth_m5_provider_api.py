@@ -387,9 +387,7 @@ def test_apple_form_post_parser_rejects_duplicate_and_unknown_fields() -> None:
 @pytest.mark.asyncio
 async def test_apple_callback_redirects_only_to_fixed_server_resolved_target() -> None:
     apple = _AppleService(result=ProviderAuthenticated(session=_issued()))
-    callback_body = (
-        f"state=apple-state&code=apple-code&id_token={_APPLE_ID_TOKEN}".encode("ascii")
-    )
+    callback_body = f"state=apple-state&code=apple-code&id_token={_APPLE_ID_TOKEN}".encode("ascii")
     request = _request(
         body=callback_body,
         content_type="application/x-www-form-urlencoded",
