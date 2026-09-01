@@ -18,13 +18,14 @@ import {
   type TemporalCreateTimelineProjection,
 } from '../../../temporal-create';
 import { TIMELINE_POLICY } from './model/timeline-policy';
-import type { TimelineGroup } from './model/timeline-types';
+import type { TimelineGroup, TimelineGroupId } from './model/timeline-types';
 
 import './timeline-create-bridge.css';
 
 type TimelineCreateBridgeProps = Readonly<{
   defaultDate: PlainDate;
   groups: readonly TimelineGroup[];
+  filters: ReadonlySet<TimelineGroupId>;
   onRevealDate: (date: PlainDate) => void;
   onBeforeOpen?: () => void;
 }>;
@@ -112,6 +113,7 @@ function formatMinute(minute: number): string {
 export function TimelineCreateBridge({
   defaultDate,
   groups,
+  filters,
   onRevealDate,
   onBeforeOpen,
 }: TimelineCreateBridgeProps) {
@@ -230,7 +232,7 @@ export function TimelineCreateBridge({
   const reveal = useCallback(
     (projection: TemporalCreateTimelineProjection) => {
       if (!projection.dateKey) {
-        return;
+        return false;
       }
       onRevealDate(Temporal.PlainDate.from(projection.dateKey));
       requestAnimationFrame(() => {
@@ -256,6 +258,7 @@ export function TimelineCreateBridge({
           }
         });
       });
+      return true;
     },
     [onRevealDate],
   );
@@ -266,7 +269,7 @@ export function TimelineCreateBridge({
       setEffects((current) => [...current, effect]);
       setPreview(null);
       showCreateFeedback(effect);
-      reveal(projection);
+      return reveal(projection);
     },
     [reveal, showCreateFeedback],
   );
@@ -295,8 +298,11 @@ export function TimelineCreateBridge({
         rootStyle?.getPropertyValue('--timeline-expanded-group-width') ?? '260',
       ) || 260;
 
-    return all.flatMap<PortalTarget>((projection) => {
-      if (!projection.dateKey) {
+    return all.flatMap<PortalTarget>((projection, projectionIndex) => {
+      if (
+        !projection.dateKey ||
+        (filters.size > 0 && !filters.has(projection.contextId))
+      ) {
         return [];
       }
       const section = document.querySelector<HTMLElement>(
@@ -313,13 +319,24 @@ export function TimelineCreateBridge({
       if (!host) {
         return [];
       }
+
+      const precedingSameSlot = all
+        .slice(0, projectionIndex)
+        .filter(
+          (candidate) =>
+            candidate.dateKey === projection.dateKey &&
+            candidate.allDay === projection.allDay &&
+            candidate.startMinute === projection.startMinute &&
+            (filters.size === 0 || filters.has(candidate.contextId)),
+        ).length;
+
       if (projection.allDay) {
         return [
           {
             projection,
             host,
             tone: toneForContext(groups, projection.contextId),
-            style: { top: 30, right: 18 },
+            style: { top: 30 + precedingSameSlot * 30, right: 18 },
           },
         ];
       }
@@ -331,7 +348,7 @@ export function TimelineCreateBridge({
       }
       const top = pixelAtMinute(section, projection.startMinute);
       const bottom = pixelAtMinute(section, projection.endMinute);
-      const compactLeft = 14;
+      const compactLeft = 14 + precedingSameSlot * 8;
       const compactWidth = Math.min(
         300,
         Math.max(180, host.clientWidth * 0.34),
@@ -340,7 +357,8 @@ export function TimelineCreateBridge({
         (group) => group.id === projection.contextId,
       );
       const groupIndex = foundGroupIndex < 0 ? 0 : foundGroupIndex;
-      const expandedLeft = groupIndex * groupWidth + 6;
+      const expandedLeft =
+        groupIndex * groupWidth + 6 + precedingSameSlot * 8;
       const expandedWidth = Math.max(150, groupWidth - 12);
       return [
         {
@@ -348,7 +366,7 @@ export function TimelineCreateBridge({
           host,
           tone: toneForContext(groups, projection.contextId),
           style: {
-            top,
+            top: top + precedingSameSlot * 4,
             left:
               compactLeft +
               (expandedLeft - compactLeft) * expansionProgress,
@@ -360,7 +378,7 @@ export function TimelineCreateBridge({
         },
       ];
     });
-  }, [groups, layoutRevision, preview, projections]);
+  }, [filters, groups, layoutRevision, preview, projections]);
 
   const undo = async () => {
     const effect = undoEffect;
