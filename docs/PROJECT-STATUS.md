@@ -88,15 +88,15 @@ feature/ai-architecture
 AI-00 COMPLETE
 AI-01 PRODUCT-FORM + PRODUCTION-ENGINEERING RESEARCH COMPLETE
 AI-02.1 v0.5 CLOSED / STRUCTURALLY ACCEPTED
-ROUND I COMPLETE
-ROUND II COMPLETE
-FINAL KILL-TEST COMPLETE
-LAST MEGA STRESS-TEST COMPLETE
-TARGETED v0.5 CONSISTENCY VERIFICATION COMPLETE
+AI-02 PRESSURE/MEGA TEST PROGRAM COMPLETE
+AI-02 TARGETED v0.5 CONSISTENCY VERIFICATION COMPLETE
 NO MORE AI-02 MEGA TESTS
 FUTURE-EXTENSIBILITY STRUCTURAL CRITERION PASS
 AI-03 CONTEXT / RETRIEVAL / MEMORY ACTIVE
-CURRENT MACRO-PHASE AI-03A FULL CONTEXT ARCHITECTURE
+AI-03A FULL CONTEXT ARCHITECTURE CLOSED / STRUCTURALLY ACCEPTED
+AI-03A INITIAL CANDIDATE FAIL / 9 HARDENINGS / HARDENED CANDIDATE STRUCTURAL PASS
+AI-03A C01..C29 ACCEPTED
+CURRENT MACRO-PHASE AI-03B RETRIEVAL + MEMORY ARCHITECTURE
 NO AI BACKEND / DB / PROVIDER IMPLEMENTATION CLAIMED
 
 PARALLEL ACTIVE UNMERGED WORKSTREAMS
@@ -106,7 +106,7 @@ feature/platform-observability
 feature/ai-architecture
 ```
 
-Architecture/design closure is not runtime/product completion. AI-02.1 closure records structural architecture acceptance only.
+Architecture/design closure is not runtime/product completion. AI-02.1 and AI-03A closure record structural architecture acceptance only.
 
 ## 2. Current protected-main backend/database truth
 
@@ -238,6 +238,13 @@ EXECUTION ENVIRONMENT != MANDATORY SANDBOX/CONTAINER
 FRESH INPUTS != AUTOMATICALLY COHERENT COMBINED BASIS
 APPROVAL != PERPETUAL AUTHORIZATION FOR MATERIALLY CHANGED WORK
 CACHE HIT != CURRENT DISCLOSURE AUTHORIZATION
+CONTEXT != RETRIEVAL != MEMORY
+CONSUMER CONTEXT != CONTEXT MANIFEST
+CONTEXT MANIFEST != BASIS MANIFEST
+SOURCE STANDING != DOMAIN AUTHORITY
+MODEL-DISCOVERED NEED != WORKCONTRACT/POLICY SCOPE EXPANSION
+SESSION CONTINUITY != PROVIDER-CONTEXT CONTINUITY
+WORKCONTRACT PROPAGATION != PARENT-CONTEXT INHERITANCE
 ```
 
 ## 5. Reference / material-state baseline
@@ -260,6 +267,8 @@ Reference / Target Resolution
 BasisManifest / expected state
 → are target state and dependent information still valid/coherent/fresh enough?
 ```
+
+AI-03A further requires each relevant `InformationNeed` to state the level of reference resolution required for readiness. `AMBIGUOUS` is not solved by model confidence.
 
 Expected MaterialState does not compensate for selecting the wrong-but-current target.
 
@@ -333,7 +342,10 @@ docs/architecture/dante-ai-02-1-intelligence-reengineering.md
 → AI-02.1 v0.5 CLOSED / STRUCTURALLY ACCEPTED
 
 docs/architecture/dante-ai-03-context-retrieval-memory.md
-→ AI-03 ACTIVE / AI-03A FULL CONTEXT ARCHITECTURE
+→ AI-03 ACTIVE / AI-03B RETRIEVAL + MEMORY CURRENT
+
+docs/architecture/dante-ai-03a-full-context-architecture.md
+→ AI-03A CLOSED / STRUCTURALLY ACCEPTED / C01..C29
 
 docs/workstreams/ai-architecture.md
 → durable active branch/workstream record
@@ -412,25 +424,7 @@ future cache hit != current disclosure authorization
 
 These are architecture responsibilities/contracts, not implemented modules/services or new Domain/persistence owners.
 
-### 9.2 v0.5 targeted verification
-
-Structural verification result:
-
-```text
-generated-code secret isolation                         PASS
-environment crash vs Run durability                     PASS
-browser/computer-use effect verification                PASS
-superseded publication                                  PASS
-Basis coherence                                         PASS
-approval rebinding                                      PASS
-external-agent side effects                             PASS
-resource exhaustion after ambiguous effect              PASS
-deterministic fast path bypassing unnecessary isolation PASS
-```
-
-No additional fundamental responsibility gap emerged.
-
-### 9.3 AI-02 closure
+### 9.2 AI-02 closure
 
 AI-02.1 is formally accepted at the branch-local architecture level:
 
@@ -439,7 +433,51 @@ AI-02.1 v0.5
 CLOSED / STRUCTURALLY ACCEPTED
 ```
 
-This means the runtime responsibility architecture is accepted as the baseline consumed by AI-03. It does **not** claim runtime implementation, provider selection, backend implementation, database materialization or production proof.
+This does not claim runtime implementation, provider selection, backend implementation, database materialization or production proof.
+
+### 9.3 AI-03A closure
+
+AI-03A durable authority:
+
+- `docs/architecture/dante-ai-03a-full-context-architecture.md`
+
+The first candidate failed its dedicated mega-test. Nine gaps were hardened and retested before acceptance:
+
+```text
+Reality Scope / Scenario binding
+Context continuity compartment
+model-discovered need scope ceiling
+reference-resolution requirement
+explicit negative context constraints
+child/delegated context minimisation
+instruction provenance
+non-monotonic ContextReadiness
+objective-relative minimisation
+```
+
+Accepted Context contracts:
+
+```text
+ContextPlan
+InformationNeed
+ContextStrategy
+ContextFragment
+ContextReadiness
+ConsumerContext
+ContextManifest
++ inherited BasisManifest
+```
+
+Final result:
+
+```text
+AI-03A HARDENED CANDIDATE
+STRUCTURAL PASS
+C01..C29 ACCEPTED
+NO Domain / Logical / Physical / PostgreSQL reopen
+NO Alembic change
+NO implementation PASS claim
+```
 
 ### 9.4 Current AI-03 work
 
@@ -451,8 +489,11 @@ AI-01 COMPLETE
 AI-02 COMPLETE / STRUCTURALLY ACCEPTED
 AI-03 ACTIVE
   AI-03A Full Context Architecture
+           CLOSED / STRUCTURALLY ACCEPTED
   AI-03B Retrieval + Memory Architecture
+           ACTIVE / CURRENT
   AI-03C Destructive Validation + Materialization Blueprint
+           FUTURE
 AI-04 FUTURE Productionization Architecture
 AI-05 FUTURE Whole-System Acceptance + Implementation Blueprint
 ```
@@ -460,10 +501,10 @@ AI-05 FUTURE Whole-System Acceptance + Implementation Blueprint
 Current exact task:
 
 ```text
-AI-03A — FULL CONTEXT ARCHITECTURE
+AI-03B — RETRIEVAL + MEMORY ARCHITECTURE
 ```
 
-AI-03 must not pre-commit memory tables, embeddings, vector-store, conversation persistence, provider memory or model/provider choices before semantic need and destructive validation justify them.
+AI-03B must consume AI-03A and define retrieval + memory semantics/lifecycle before physical choices. It must not pre-commit memory tables, embeddings, vector-store, conversation persistence, provider memory or model/provider choices.
 
 ## 10. Capability-triggered components
 
@@ -516,8 +557,8 @@ feature/platform-observability
 feature/ai-architecture
 → AI-02.1 v0.5 CLOSED / STRUCTURALLY ACCEPTED
 → AI-03 Context / Retrieval / Memory ACTIVE
-→ current macro-phase AI-03A Full Context Architecture
-→ then AI-03B Retrieval + Memory
+→ AI-03A Full Context Architecture CLOSED / STRUCTURALLY ACCEPTED
+→ current macro-phase AI-03B Retrieval + Memory Architecture
 → then AI-03C Destructive Validation + Materialization Blueprint
 → then AI-04 Productionization Architecture
 → then AI-05 Whole-System Acceptance + Implementation Blueprint
