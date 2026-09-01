@@ -4,6 +4,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -114,6 +115,21 @@ export function TemporalCreateEntry() {
     };
   }, [open, session.closeDecision]);
 
+  const composer = open ? (
+    <TemporalCreateComposer
+      position={position}
+      session={session}
+      onTitleChange={(title) =>
+        setSession((current) => updateTemporalCreateTitle(current, title))
+      }
+      onRequestClose={requestClose}
+      onContinueEditing={() =>
+        setSession((current) => continueTemporalCreateEditing(current))
+      }
+      onDiscard={closeComposer}
+    />
+  ) : null;
+
   return (
     <>
       <button
@@ -129,20 +145,9 @@ export function TemporalCreateEntry() {
         +
       </button>
 
-      {open ? (
-        <TemporalCreateComposer
-          position={position}
-          session={session}
-          onTitleChange={(title) =>
-            setSession((current) => updateTemporalCreateTitle(current, title))
-          }
-          onRequestClose={requestClose}
-          onContinueEditing={() =>
-            setSession((current) => continueTemporalCreateEditing(current))
-          }
-          onDiscard={closeComposer}
-        />
-      ) : null}
+      {composer && typeof document !== 'undefined'
+        ? createPortal(composer, document.body)
+        : null}
     </>
   );
 }
