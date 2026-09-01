@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
@@ -21,22 +22,30 @@ function renderPanel() {
     googleCredential: vi.fn(),
     googleError: vi.fn(),
   };
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  });
 
   render(
-    <AccessSignInPanel
-      condition={{ kind: 'idle' }}
-      onCreateAccount={handlers.onCreateAccount}
-      onForgotPassword={handlers.onForgotPassword}
-      onCredentialSubmit={handlers.onCredentialSubmit}
-      onApple={handlers.onApple}
-      google={{
-        clientId: null,
-        nonce: null,
-        pending: false,
-        onCredential: handlers.googleCredential,
-        onError: handlers.googleError,
-      }}
-    />,
+    <QueryClientProvider client={queryClient}>
+      <AccessSignInPanel
+        condition={{ kind: 'idle' }}
+        onCreateAccount={handlers.onCreateAccount}
+        onForgotPassword={handlers.onForgotPassword}
+        onCredentialSubmit={handlers.onCredentialSubmit}
+        onApple={handlers.onApple}
+        google={{
+          clientId: null,
+          nonce: null,
+          pending: false,
+          onCredential: handlers.googleCredential,
+          onError: handlers.googleError,
+        }}
+      />
+    </QueryClientProvider>,
   );
 
   return handlers;
@@ -51,7 +60,7 @@ describe('AccessSignInPanel', () => {
         .textContent,
     ).toBe('Accedi a DANTE');
 
-    const googleButton = screen.getByRole('button', {
+    const googleButton = screen.getByRole<HTMLButtonElement>('button', {
       name: 'Continua con Google',
     });
     const appleButton = screen.getByRole('button', {
@@ -95,7 +104,7 @@ describe('AccessSignInPanel', () => {
     expect(handlers.onCreateAccount).toHaveBeenCalledTimes(1);
     expect(handlers.onApple).toHaveBeenCalledTimes(1);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Accedi' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Continua' }));
     expect(handlers.onCredentialSubmit).not.toHaveBeenCalled();
     expect(
       screen.getByText('Inserisci un indirizzo email valido.'),
@@ -108,7 +117,7 @@ describe('AccessSignInPanel', () => {
     fireEvent.change(screen.getByLabelText('Password'), {
       target: { value: 'correct horse battery staple' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Accedi' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Continua' }));
 
     expect(handlers.onCredentialSubmit).toHaveBeenCalledWith(
       'person@example.com',
