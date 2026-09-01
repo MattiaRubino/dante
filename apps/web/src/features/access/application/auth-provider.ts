@@ -9,6 +9,7 @@ import {
   WebAuthRemoteError,
   webAuthRemote,
   type WebAuthenticatedSession,
+  type WebGoogleAuthenticationBegun,
   type WebProviderAuthenticationResult,
   type WebProviderEnrollmentRequired,
   type WebProviderEnrollmentVerificationResult,
@@ -17,31 +18,24 @@ import {
   type WebProviderReturnTarget,
 } from '../../../platform/auth/web-auth-remote';
 import {
+  googleClientIdFromBuild,
   redirectToAppleAuthorization,
-  requestGoogleCredential,
 } from '../../../platform/auth/web-auth-provider';
 import { authSessionQueryKey } from './auth-session';
 
 export type AccessProviderCode = 'google' | 'apple';
 
 export type ProviderAuthenticationInput = Readonly<{
-  provider: AccessProviderCode;
   purpose: WebProviderPurpose;
   returnTarget: WebProviderReturnTarget;
   csrfToken?: string;
   signal?: AbortSignal;
 }>;
 
-export type ProviderAuthenticationOutcome =
-  | Readonly<{
-      kind: 'result';
-      provider: 'google';
-      result: WebProviderAuthenticationResult;
-    }>
-  | Readonly<{
-      kind: 'redirected';
-      provider: 'apple';
-    }>;
+export type GoogleAuthenticationPreparation = Readonly<{
+  clientId: string;
+  begun: WebGoogleAuthenticationBegun;
+}>;
 
 export type ProviderContinuation =
   | Readonly<{ kind: 'none' }>
@@ -59,11 +53,6 @@ export const providerContinuationQueryKey = [
   'provider-continuation',
 ] as const;
 
-function configuredGoogleClientId(): string {
-  const value = import.meta.env.VITE_DANTE_GOOGLE_CLIENT_ID;
-  return typeof value === 'string' ? value.trim() : '';
-}
-
 function continuationMissing(error: unknown, code: string): boolean {
   return (
     error instanceof WebAuthRemoteError &&
@@ -72,43 +61,57 @@ function continuationMissing(error: unknown, code: string): boolean {
   );
 }
 
-export async function runProviderAuthentication(
-  input: ProviderAuthenticationInput,
-): Promise<ProviderAuthenticationOutcome> {
-  const request = {
+function providerRequest(input: ProviderAuthenticationInput) {
+  return {
     purpose: input.purpose,
     return_target: input.returnTarget,
   } as const;
+}
 
-  if (input.provider === 'google') {
-    const begun = await webAuthRemote.beginGoogleAuthentication(
-      request,
-      input.csrfToken,
-      input.signal,
-    );
-    const credential = await requestGoogleCredential({
-      clientId: configuredGoogleClientId(),
-      nonce: begun.nonce,
-      signal: input.signal,
-    });
-    const result = await webAuthRemote.completeGoogleAuthentication(
-      {
-        external_auth_transaction_ref: begun.external_auth_transaction_ref,
-        state: begun.state,
-        credential,
-      },
-      input.signal,
-    );
-    return { kind: 'result', provider: 'google', result };
+export async function prepareGoogleAuthentication(
+  input: ProviderAuthenticationInput,
+): Promise<GoogleAuthenticationPreparation> {
+  const clientId = googleClientIdFromBuild();
+  if (clientId.length === 0) {
+    throw new Error('Google sign-in is not configured for this build.');
   }
+  const begun = await webAuthRemote.beginGoogleAuthentication(
+    providerRequest(input),
+    input.csrfToken,
+    input.signal,
+  );
+  return { clientId, begun };
+}
 
+export async function completeGoogleAuthentication({
+  preparation,
+  credential,
+  signal,
+}: Readonly<{
+  preparation: GoogleAuthenticationPreparation;
+  credential: string;
+  signal?: AbortSignal;
+}>): Promise<WebProviderAuthenticationResult> {
+  return webAuthRemote.completeGoogleAuthentication(
+    {
+      external_auth_transaction_ref:
+        preparation.begun.external_auth_transaction_ref,
+      state: preparation.begun.state,
+      credential,
+    },
+    signal,
+  );
+}
+
+export async function beginAppleAuthentication(
+  input: ProviderAuthenticationInput,
+): Promise<void> {
   const begun = await webAuthRemote.beginAppleAuthentication(
-    request,
+    providerRequest(input),
     input.csrfToken,
     input.signal,
   );
   redirectToAppleAuthorization(begun.authorization_url);
-  return { kind: 'redirected', provider: 'apple' };
 }
 
 export async function resolveProviderContinuation(
@@ -160,19 +163,30 @@ function cacheAuthenticatedSession(
   queryClient.setQueryData(authSessionQueryKey, session);
 }
 
-export function useProviderAuthenticationMutation() {
+export function usePrepareGoogleAuthenticationMutation() {
+  return useMutation({
+    mutationFn: prepareGoogleAuthentication,
+    retry: false,
+  });
+}
+
+export function useCompleteGoogleAuthenticationMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: runProviderAuthentication,
+    mutationFn: completeGoogleAuthentication,
     retry: false,
-    onSuccess: (outcome) => {
-      if (
-        outcome.kind === 'result' &&
-        outcome.result.outcome === 'authenticated'
-      ) {
-        cacheAuthenticatedSession(queryClient, outcome.result);
+    onSuccess: (result) => {
+      if (result.outcome === 'authenticated') {
+        cacheAuthenticatedSession(queryClient, result);
       }
     },
+  });
+}
+
+export function useAppleAuthenticationMutation() {
+  return useMutation({
+    mutationFn: beginAppleAuthentication,
+    retry: false,
   });
 }
 
