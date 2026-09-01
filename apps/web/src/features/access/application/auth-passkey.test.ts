@@ -55,26 +55,26 @@ afterEach(() => {
 describe('Passkey application ceremonies', () => {
   it('keeps passkey sign-in as begin, browser evidence, then backend completion', async () => {
     const signal = new AbortController().signal;
-    vi.spyOn(webAuthRemote, 'beginPasskeyAuthentication').mockResolvedValue(
-      ceremony,
-    );
+    const beginAuthentication = vi
+      .spyOn(webAuthRemote, 'beginPasskeyAuthentication')
+      .mockResolvedValue(ceremony);
     vi.mocked(createPasskeyAuthenticationEvidence).mockResolvedValue(
       authenticationEvidence,
     );
-    vi.spyOn(webAuthRemote, 'completePasskeyAuthentication').mockResolvedValue(
-      authenticatedSession,
-    );
+    const completeAuthentication = vi
+      .spyOn(webAuthRemote, 'completePasskeyAuthentication')
+      .mockResolvedValue(authenticatedSession);
 
     await expect(signInWithPasskey(signal)).resolves.toEqual(
       authenticatedSession,
     );
 
-    expect(webAuthRemote.beginPasskeyAuthentication).toHaveBeenCalledWith(signal);
+    expect(beginAuthentication).toHaveBeenCalledWith(signal);
     expect(createPasskeyAuthenticationEvidence).toHaveBeenCalledWith({
       ceremony,
       signal,
     });
-    expect(webAuthRemote.completePasskeyAuthentication).toHaveBeenCalledWith(
+    expect(completeAuthentication).toHaveBeenCalledWith(
       authenticationEvidence,
       signal,
     );
@@ -82,13 +82,15 @@ describe('Passkey application ceremonies', () => {
 
   it('binds registration evidence to the requested label and current CSRF token', async () => {
     const signal = new AbortController().signal;
-    vi.spyOn(webAuthRemote, 'beginPasskeyRegistration').mockResolvedValue(ceremony);
+    const beginRegistration = vi
+      .spyOn(webAuthRemote, 'beginPasskeyRegistration')
+      .mockResolvedValue(ceremony);
     vi.mocked(createPasskeyRegistrationEvidence).mockResolvedValue(
       registrationEvidence,
     );
-    vi.spyOn(webAuthRemote, 'completePasskeyRegistration').mockResolvedValue(
-      authenticatedSession,
-    );
+    const completeRegistration = vi
+      .spyOn(webAuthRemote, 'completePasskeyRegistration')
+      .mockResolvedValue(authenticatedSession);
 
     await expect(
       registerPasskey({
@@ -98,7 +100,7 @@ describe('Passkey application ceremonies', () => {
       }),
     ).resolves.toEqual(authenticatedSession);
 
-    expect(webAuthRemote.beginPasskeyRegistration).toHaveBeenCalledWith(
+    expect(beginRegistration).toHaveBeenCalledWith(
       'current-csrf-token',
       signal,
     );
@@ -107,7 +109,7 @@ describe('Passkey application ceremonies', () => {
       label: 'Laptop',
       signal,
     });
-    expect(webAuthRemote.completePasskeyRegistration).toHaveBeenCalledWith(
+    expect(completeRegistration).toHaveBeenCalledWith(
       registrationEvidence,
       'current-csrf-token',
       signal,
@@ -116,15 +118,15 @@ describe('Passkey application ceremonies', () => {
 
   it('keeps reauthentication separate from ordinary passkey sign-in', async () => {
     const signal = new AbortController().signal;
-    vi.spyOn(webAuthRemote, 'beginPasskeyReauthentication').mockResolvedValue(
-      ceremony,
-    );
+    const beginReauthentication = vi
+      .spyOn(webAuthRemote, 'beginPasskeyReauthentication')
+      .mockResolvedValue(ceremony);
     vi.mocked(createPasskeyReauthenticationEvidence).mockResolvedValue(
       authenticationEvidence,
     );
-    vi.spyOn(webAuthRemote, 'completePasskeyReauthentication').mockResolvedValue(
-      authenticatedSession,
-    );
+    const completeReauthentication = vi
+      .spyOn(webAuthRemote, 'completePasskeyReauthentication')
+      .mockResolvedValue(authenticatedSession);
 
     await expect(
       reauthenticateWithPasskey({
@@ -133,7 +135,7 @@ describe('Passkey application ceremonies', () => {
       }),
     ).resolves.toEqual(authenticatedSession);
 
-    expect(webAuthRemote.beginPasskeyReauthentication).toHaveBeenCalledWith(
+    expect(beginReauthentication).toHaveBeenCalledWith(
       'reauth-csrf-token',
       signal,
     );
@@ -141,7 +143,7 @@ describe('Passkey application ceremonies', () => {
       ceremony,
       signal,
     });
-    expect(webAuthRemote.completePasskeyReauthentication).toHaveBeenCalledWith(
+    expect(completeReauthentication).toHaveBeenCalledWith(
       authenticationEvidence,
       'reauth-csrf-token',
       signal,
