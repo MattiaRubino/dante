@@ -2,7 +2,6 @@ import { useMemo, useState, type FormEvent } from 'react';
 import { Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
-import type { ProviderBrowserUnavailableError } from '../../../platform/auth/web-auth-provider';
 import { WebAuthRemoteError } from '../../../platform/auth/web-auth-remote';
 import {
   useEstablishPasswordMutation,
@@ -95,7 +94,9 @@ function securityError(error: unknown): SecurityError {
 export function AccessSecurityPage() {
   const { t } = useTranslation('common');
   const sessionQuery = useAuthSessionQuery();
-  const authenticated = sessionQuery.data?.authenticated === true;
+  const session =
+    sessionQuery.data?.authenticated === true ? sessionQuery.data : null;
+  const authenticated = session !== null;
   const methodsQuery = useAuthenticationMethodsQuery(authenticated);
   const establishPasswordMutation = useEstablishPasswordMutation();
   const removePasswordMutation = useRemovePasswordMutation();
@@ -119,7 +120,6 @@ export function AccessSecurityPage() {
   const [lastError, setLastError] = useState<SecurityError | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const session = authenticated ? sessionQuery.data : null;
   const csrfToken = session?.csrf_token ?? null;
   const methods = methodsQuery.data;
   const providerCodes = useMemo(
@@ -137,7 +137,7 @@ export function AccessSecurityPage() {
     setLastError(securityError(error));
   }
 
-  function handleProviderBrowserError(_error: ProviderBrowserUnavailableError) {
+  function handleProviderBrowserError() {
     setSuccessMessage(null);
     setLastError({
       message: 'The Google authentication control could not be initialized.',
@@ -221,7 +221,7 @@ export function AccessSecurityPage() {
     completeGoogleMutation.mutate(
       { preparation, credential },
       {
-        onSuccess: async (result) => {
+        onSuccess: (result) => {
           setGooglePreparation(null);
           if (result.outcome !== 'authenticated') {
             setLastError({
@@ -230,8 +230,11 @@ export function AccessSecurityPage() {
             });
             return;
           }
-          await refreshMethods();
-          setSuccessMessage(t(($) => $.common.access.security.providerLinked));
+          void refreshMethods()
+            .then(() => {
+              setSuccessMessage(t(($) => $.common.access.security.providerLinked));
+            })
+            .catch(handleError);
         },
         onError: handleError,
       },
@@ -261,9 +264,12 @@ export function AccessSecurityPage() {
     unlinkProviderMutation.mutate(
       { externalIdentityRef, csrfToken },
       {
-        onSuccess: async () => {
-          await refreshMethods();
-          setSuccessMessage(t(($) => $.common.access.security.providerRemoved));
+        onSuccess: () => {
+          void refreshMethods()
+            .then(() => {
+              setSuccessMessage(t(($) => $.common.access.security.providerRemoved));
+            })
+            .catch(handleError);
         },
         onError: handleError,
       },
