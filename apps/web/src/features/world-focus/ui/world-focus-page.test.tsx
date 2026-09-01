@@ -10,11 +10,11 @@ import {
 } from 'vitest';
 
 import { i18n } from '../../../bootstrap/i18n';
+import { getWorldFocusWorld } from '../model/world-focus-fixtures';
 import {
   clearWorldFocusEntry,
   primeWorldFocusEntry,
 } from '../model/world-focus-transition';
-import { getWorldFocusWorld } from '../model/world-focus-fixtures';
 import { WorldFocusPage } from './world-focus-page';
 
 beforeAll(async () => {
@@ -78,6 +78,21 @@ describe('WorldFocusPage', () => {
       container.querySelectorAll('.world-focus-corona-reference'),
     ).toHaveLength(3);
     expect(container.querySelector('.world-focus-corona-fallback-svg')).toBeNull();
+
+    const composition = container.querySelector<HTMLElement>(
+      '.world-focus-composition',
+    );
+    expect(composition?.getAttribute('data-world-focus-composition-count')).toBe(
+      '1',
+    );
+    const continuity = container.querySelector<HTMLElement>(
+      '[data-world-focus-composition-id="continuity"]',
+    );
+    expect(continuity).not.toBeNull();
+    expect(continuity?.getAttribute('data-world-focus-prominence')).toBe('primary');
+    expect(continuity?.getAttribute('data-world-focus-footprint')).toBe('standard');
+    expect(continuity?.getAttribute('data-world-focus-grid-span')).toBe('12');
+    expect(continuity?.getAttribute('data-world-focus-grid-row')).toBe('0');
 
     const energy = container.querySelector<HTMLElement>(
       '[data-world-focus-energy-renderer]',
