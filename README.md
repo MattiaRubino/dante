@@ -65,13 +65,12 @@ feature/access-auth
 AI ARCHITECTURE
 ACTIVE UNMERGED DESIGN / REENGINEERING WORKSTREAM
 feature/ai-architecture
-AI-02.1 v0.5 CANDIDATE STRUCTURAL FREEZE
+AI-02.1 v0.5 CLOSED / STRUCTURALLY ACCEPTED
 ALL FOUR MEGA/PRESSURE TEST ROUNDS COMPLETE
 TARGETED v0.5 CONSISTENCY VERIFICATION COMPLETE
-NO MORE MEGA TESTS
-NOT CLOSED
-ADDITIONAL PRE-AI-03 REVIEW STILL PENDING
-AI-03 NOT STARTED / BLOCKED
+NO MORE AI-02 MEGA TESTS
+AI-03 CONTEXT / RETRIEVAL / MEMORY ACTIVE
+CURRENT MACRO-PHASE AI-03A FULL CONTEXT ARCHITECTURE
 NO AI BACKEND / DB / PROVIDER IMPLEMENTATION CLAIMED
 ```
 
@@ -247,10 +246,13 @@ docs/architecture/ai-production-engineering-state-of-the-art-2026.md
 → production-engineering research / NON-DANTE-DECISION
 
 docs/architecture/dante-ai-02-1-intelligence-reengineering.md
-→ AI-02.1 v0.5 CANDIDATE STRUCTURAL FREEZE / NOT CLOSED
+→ AI-02.1 v0.5 CLOSED / STRUCTURALLY ACCEPTED
+
+docs/architecture/dante-ai-03-context-retrieval-memory.md
+→ AI-03 ACTIVE / current macro-phase AI-03A Full Context Architecture
 ```
 
-The v0.5 candidate incorporates all completed simulation/kill-test rounds and the final isolation/runtime hardening. It preserves:
+AI-02.1 incorporates all completed simulation/kill-test rounds and the final isolation/runtime hardening. It preserves:
 
 ```text
 DANTE != model/provider/chat transcript
@@ -267,7 +269,17 @@ SENT != DELIVERED != SEEN != ACKNOWLEDGED != ACCEPTED
 Execution Environment != mandatory sandbox/container
 ```
 
-AI-02.1 is not an implementation claim. Exact model/provider/SDK, runtime technology, sandbox implementation and AI-03 Context/Retrieval/Memory design remain later evidence-driven work.
+AI-02.1 acceptance is structural architecture only. It is not an implementation claim. Exact model/provider/SDK, runtime technology, sandbox implementation and AI-03 persistence/materialization choices remain evidence-driven later work.
+
+AI-03 is intentionally split into three large passes only:
+
+```text
+AI-03A  Full Context Architecture
+AI-03B  Retrieval + Memory Architecture
+AI-03C  Destructive Validation + Materialization Blueprint
+```
+
+No memory table, embedding/index activation, vector-store or provider decision is implied merely because AI-03 is active.
 
 ## Capability-triggered components
 
@@ -349,6 +361,12 @@ General continuation order:
 10. `docs/development/repository-engineering-safety.md`
 11. the current subsystem/workstream authority
 12. current branch/ref and relation to protected `main`
+
+For the active AI branch, continuation is additionally routed through:
+
+- `docs/workstreams/ai-architecture.md` — durable branch-local workstream record;
+- `docs/workstreams/ai-architecture-live-handoff.md` — TEMPORARY session save-game while the branch is active; must not merge to `main`;
+- `docs/architecture/dante-ai-03-context-retrieval-memory.md` — current AI-03 architecture charter.
 
 Persistent truth rules:
 
