@@ -158,6 +158,138 @@ describe('World Focus dynamic composition planner', () => {
     expect(threeCompact.entries.map((entry) => entry.gridSpan)).toEqual([4, 4, 4]);
   });
 
+  it('uses the same composition grammar across realistic contrasting Worlds', () => {
+    const scenarios: ReadonlyArray<
+      Readonly<{
+        name: string;
+        candidates: readonly WorldFocusCompositionCandidate[];
+      }>
+    > = [
+      {
+        name: 'music-dense',
+        candidates: [
+          makeCandidate('release-pipeline', {
+            stability: 'stable',
+            footprint: 'wide',
+            order: 0,
+          }),
+          makeCandidate('active-tracks', {
+            stability: 'stable',
+            footprint: 'standard',
+            order: 1,
+          }),
+          makeCandidate('attention-release-risk', {
+            prominence: 'lead',
+            footprint: 'wide',
+            order: 0,
+          }),
+          makeCandidate('next-milestone', {
+            footprint: 'compact',
+            order: 1,
+          }),
+          makeCandidate('meaningful-change', {
+            footprint: 'compact',
+            order: 2,
+          }),
+          makeCandidate('recent-artifact', {
+            stability: 'ephemeral',
+            footprint: 'standard',
+            order: 0,
+          }),
+        ],
+      },
+      {
+        name: 'travel-specialist',
+        candidates: [
+          makeCandidate('itinerary', {
+            stability: 'stable',
+            footprint: 'wide',
+            order: 0,
+          }),
+          makeCandidate('next-segment', {
+            footprint: 'standard',
+            order: 0,
+          }),
+          makeCandidate('booking-evidence', {
+            footprint: 'standard',
+            order: 1,
+          }),
+        ],
+      },
+      {
+        name: 'finance-sparse',
+        candidates: [
+          makeCandidate('situation', {
+            footprint: 'standard',
+            order: 0,
+          }),
+        ],
+      },
+      {
+        name: 'relationships-qualitative',
+        candidates: [
+          makeCandidate('shared-context', {
+            stability: 'stable',
+            footprint: 'wide',
+            order: 0,
+          }),
+          makeCandidate('evidence-history', {
+            footprint: 'standard',
+            order: 0,
+          }),
+        ],
+      },
+      {
+        name: 'unknown-future-empty',
+        candidates: [],
+      },
+      {
+        name: 'unknown-future-specialist',
+        candidates: [
+          makeCandidate('specialist-future', {
+            stability: 'stable',
+            footprint: 'wide',
+            order: 0,
+          }),
+          makeCandidate('supporting-future', {
+            footprint: 'compact',
+            order: 0,
+          }),
+        ],
+      },
+    ];
+
+    for (const scenario of scenarios) {
+      const plan = resolveWorldFocusCompositionPlan(
+        scenario.candidates,
+        DEFAULT_POLICY,
+      );
+
+      expect(
+        plan.entries.every((entry) => [4, 6, 12].includes(entry.gridSpan)),
+        scenario.name,
+      ).toBe(true);
+      expect(
+        plan.entries.filter((entry) => entry.ownership.stability === 'stable')
+          .length,
+        scenario.name,
+      ).toBe(
+        scenario.candidates.filter(
+          (candidate) => candidate.ownership.stability === 'stable',
+        ).length,
+      );
+
+      const rowTotals = new Map<number, number>();
+      for (const entry of plan.entries) {
+        rowTotals.set(entry.row, (rowTotals.get(entry.row) ?? 0) + entry.gridSpan);
+      }
+      expect(
+        [...rowTotals.values()].every((total) => total <= 12),
+        scenario.name,
+      ).toBe(true);
+    }
+  });
+
   it('rejects invalid policy and duplicate instances before a broken layout can be rendered', () => {
     expect(() =>
       resolveWorldFocusCompositionPlan([], {
