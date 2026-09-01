@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Annotated, Literal
+from typing import Annotated, Literal, TypedDict
 from urllib.parse import parse_qsl
 from uuid import UUID
 
@@ -65,6 +65,14 @@ _APPLE_FORM_MAX_LENGTHS = {
     "user": 8192,
     "error": 256,
 }
+
+
+class _AppleCallbackForm(TypedDict):
+    state: str
+    code: str | None
+    id_token: str | None
+    user: str | None
+    error: str | None
 
 
 class ProviderBeginRequest(BaseModel):
@@ -363,7 +371,7 @@ async def _inspect_enrollment(
     raise RuntimeError("provider continuation owns unsupported provider")
 
 
-def _parse_apple_form(raw_body: bytes) -> dict[str, str | None]:
+def _parse_apple_form(raw_body: bytes) -> _AppleCallbackForm:
     try:
         encoded = raw_body.decode("utf-8", errors="strict")
         pairs = parse_qsl(
@@ -533,7 +541,6 @@ async def handle_apple_callback(
 ) -> RedirectResponse:
     form = _parse_apple_form(await request.body())
     state = form["state"]
-    assert state is not None
     try:
         return_target = await runtime.continuation_service.resolve_apple_return_target(state)
         result = await _apple_service(runtime).complete_apple(
