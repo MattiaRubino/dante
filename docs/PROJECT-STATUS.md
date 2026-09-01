@@ -91,7 +91,12 @@ ACTIVE UNMERGED DESIGN / REENGINEERING WORKSTREAM
 feature/ai-architecture
 AI-00 RECORDED
 PRODUCTION ENGINEERING RESEARCH RECORDED
-AI-02.1 ACTIVE / v0.3 / ROUND I + II COMPLETE / FINAL KILL-TEST REQUIRED / NOT CLOSED
+AI-02.1 ACTIVE / v0.4
+ROUND I COMPLETE
+ROUND II COMPLETE
+FINAL KILL-TEST COMPLETE
+ONE LAST MEGA STRESS-TEST REQUIRED
+NOT CLOSED
 NO AI BACKEND / DB / PROVIDER IMPLEMENTATION CLAIMED
 AI-03 NOT STARTED / BLOCKED UNTIL AI-02.1 ACCEPTANCE
 
@@ -266,7 +271,18 @@ client local state != canonical accepted effect
 
 Accepted persistence thesis remains owner-specific canonical/material-history families plus specific typed relations and bounded technical addressing/control structures. Universal Entity/Thing, universal generic edges, canonical EAV/property bags and JSONB required-semantic escape hatches remain forbidden shortcuts.
 
-AI-02.1 adds no exception to these rules. Scenario overlays are not canonical current state; ChangeSets do not bypass individual effect governance; Context access does not imply disclosure permission; Interaction Session does not own canonical truth; BasisManifest/work-lineage metadata do not become generic canonical semantic roots.
+AI-02.1 adds no exception to these rules. Scenario overlays are not canonical current state; ChangeSets do not bypass individual effect governance; Context access does not imply disclosure permission; Interaction Session does not own canonical truth; BasisManifest/work-lineage/target-resolution/policy-result metadata do not become generic canonical semantic roots.
+
+Current additional AI correctness invariants include:
+
+```text
+DISPLAY NAME != EFFECT TARGET
+MODEL OUTPUT != PUBLISHABLE OUTPUT
+INTERNAL STREAM != RECIPIENT STREAM
+USER AUTONOMY != EXTERNAL/INSTITUTIONAL AUTHORITY
+DANTE REPRESENTATION != EXTERNAL SYSTEM-OF-RECORD AUTHORITY
+SENT != DELIVERED != SEEN != ACKNOWLEDGED != ACCEPTED
+```
 
 ## 5. Reference / material-state baseline
 
@@ -297,6 +313,8 @@ MaterialStateRef
 ```
 
 No application-only `type + uuid` polymorphic integrity.
+
+AI-02.1 Reference / Target Resolution consumes these accepted reference semantics; it does not invent a new universal identity system. Expected MaterialState still governs stale-state concurrency after the correct target has been resolved.
 
 ## 6. Backend technical foundation
 
@@ -401,7 +419,7 @@ docs/architecture/ai-production-engineering-state-of-the-art-2026.md
 → external production-engineering research / NON-DANTE-DECISION
 
 docs/architecture/dante-ai-02-1-intelligence-reengineering.md
-→ AI-02.1 ACTIVE reengineering checkpoint / v0.3 / NOT CLOSED
+→ AI-02.1 ACTIVE reengineering checkpoint / v0.4 / NOT CLOSED
 ```
 
 Current AI-02.1 pressure-test state:
@@ -409,7 +427,8 @@ Current AI-02.1 pressure-test state:
 ```text
 Round I                                      COMPLETE
 Round II                                     COMPLETE
-final kill-test                              REQUIRED / NOT RUN YET
+Final Kill-Test                              COMPLETE
+one last mega stress-test                    REQUIRED / NOT RUN YET
 Domain reopen evidence                       NONE
 Logical reopen evidence                      NONE
 Physical/PostgreSQL reopen evidence          NONE
@@ -442,9 +461,21 @@ Attention budgeting
 cancel Run != undo already-dispatched effects
 ```
 
+Final Kill-Test v0.4 additions:
+
+```text
+Reference / Target Resolution Gate
+Policy Composition / Precedence
+ConsequenceProfile
+Safe Result Publication / Streaming Gate
+BasisManifest temporal validity
+DANTE representation != external institutional System-of-Record authority
+sent != delivered != seen != acknowledged != accepted
+```
+
 These are architecture responsibilities/contracts, not implemented modules/services or new Domain/persistence owners.
 
-AI-02.1 still requires the final kill-test and additional explicitly requested pre-AI-03 review before it can be considered for closure.
+AI-02.1 still requires the one last mega stress-test and the additional explicitly requested pre-AI-03 review before it can be considered for closure.
 
 AI-03 Context / Retrieval / Memory is not started and must consume the accepted structural result of AI-02.1.
 
@@ -477,7 +508,7 @@ remote backup provider
 
 Selected architecture does not imply activated runtime capability.
 
-The same trigger discipline applies to AI technology challengers and AI-02.1 responsibilities. No model provider, SDK, model gateway, local model, sandbox, learned router or new AI persistence is activated by the current documentation.
+The same trigger discipline applies to AI technology challengers and AI-02.1 responsibilities. No model provider, SDK, model gateway, local model, sandbox, learned router, policy engine or new AI persistence is activated by the current documentation.
 
 ## 11. Repository / documentation truth
 
@@ -505,19 +536,20 @@ REMOTE BACKUP PROVIDER                            TBD / NOT ACTIVATED
 REAL V1→V2 BUSINESS-SCHEMA EVOLUTION              NOT RUN
 POWERSYNC DIRECT PRODUCT TEST                     NOT RUN
 RESTATE DIRECT PRODUCT TEST                       NOT RUN
-DANTE AI-02.1                                     ACTIVE / v0.3 / NOT CLOSED
-DANTE AI-02.1 FINAL KILL-TEST                     NOT RUN YET
+DANTE AI-02.1                                     ACTIVE / v0.4 / NOT CLOSED
+DANTE AI-02.1 LAST MEGA STRESS-TEST               NOT RUN YET
 DANTE AI RUNTIME                                  NOT IMPLEMENTED
 AI MODEL / PROVIDER                               NOT SELECTED
 AI AGENT SDK / ORCHESTRATOR                       NOT SELECTED
 AI CONVERSATION / MEMORY DB SCHEMA                NOT DESIGNED/MATERIALIZED
+AI TARGET/POLICY/PUBLICATION CONTRACTS             NOT IMPLEMENTED
 AI-03 CONTEXT / RETRIEVAL / MEMORY                NOT STARTED
 PRODUCTION DEPLOYMENT                             NOT STARTED
 ```
 
 The Access frontend branch's historical local/automated evidence must not be inflated: AF-03A full automation was proven before its final one-line width refinement; exact final delta plus visual review were accepted, while the final branch integration still requires hosted PR CI.
 
-AI documentation/architecture evidence must likewise not be inflated into runtime PASS. AI-02.1 v0.3 means two design pressure-test rounds have been incorporated, not that model/tool/provider behavior has executed or that architecture closure has been earned.
+AI documentation/architecture evidence must likewise not be inflated into runtime PASS. AI-02.1 v0.4 means three design pressure-test rounds have been incorporated, not that model/tool/provider behavior has executed or that architecture closure has been earned.
 
 ## 13. Current navigation
 
