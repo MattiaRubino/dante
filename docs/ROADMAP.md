@@ -217,10 +217,11 @@ DANTE applicability boundary
         ↓
 AI-02.1
 ACTIVE — DANTE INTELLIGENCE REENGINEERING
-v0.3 current checkpoint
+v0.4 current checkpoint
 Round I complete
 Round II complete
-final kill-test still required
+Final Kill-Test complete
+ONE LAST mega stress-test required
 future-extensibility acceptance still required
 NOT CLOSED
         ↓
@@ -284,7 +285,7 @@ DANTE-native + open-world paths composable in one Execution Kernel
 ModelTarget + provider-specific HarnessProfile
 ```
 
-Round II then deliberately combined concurrency, stale basis, multi-actor privacy, revocation, partial effects, crashes, corrections, feedback loops and superseding user intent. It found no evidence sufficient to reopen Domain, Logical, Physical or PostgreSQL, but it did require the v0.3 hardenings:
+Round II deliberately combined concurrency, stale basis, multi-actor privacy, revocation, partial effects, crashes, corrections, feedback loops and superseding user intent. It found no evidence sufficient to reopen Domain, Logical, Physical or PostgreSQL, but required the v0.3 hardenings:
 
 ```text
 cumulative / cross-query disclosure protection
@@ -296,30 +297,59 @@ Attention budgeting
 cancel Run != undo already-dispatched effects
 ```
 
-These are responsibility/runtime contracts, not new Domain owners or automatic persistence tables/services.
+The broad Final Kill-Test then attacked the system across agriculture, education, shift work, caregiving, legal/sensitive work, family, business, public/institutional boundaries, offline/late sync, large fan-out, malicious input and future rich conversational surfaces.
 
-The final acceptance round must now attack those exact hardenings in combination rather than replaying the easier cases. Required dimensions include:
+It found three P0 architecture gaps:
 
 ```text
-cumulative privacy probing
-scope-aware work supersession
-stale scenario dependencies
-revoked Authority/Consent during durable waits
-self-generated feedback / oscillation
-multiple simultaneous Attention demands
-partial external effects + timeout + crash/recovery
-source correction/retirement
-non-DANTE participants
-conflicting evidence
-cancellation after partial dispatch
-future mixed open-world + DANTE-native work
+Reference / Target Resolution Gate
+Policy Composition / Precedence
+Safe Result Publication / Streaming Gate
 ```
 
-The architecture is accepted only if that final kill-test does not require semantic collapse, hidden provider ownership of truth, a duplicate application ontology or unjustified infrastructure.
+and the associated v0.4 hardenings:
+
+```text
+ConsequenceProfile
+BasisManifest temporal validity
+DANTE canonical representation != external institutional System-of-Record authority
+sent != delivered != seen != acknowledged != accepted
+```
+
+These are responsibility/runtime contracts, not new Domain owners or automatic persistence tables/services.
+
+The one last mega stress-test now targets v0.4 as a whole. It must combine broad real-life workloads and adversarial dimensions including:
+
+```text
+ambiguous target references
+policy conflicts
+multi-actor privacy
+cumulative inference probing
+stale MaterialState
+time-expiring external sources
+revoked Authority/Consent
+source correction/retirement
+partial external effects
+ambiguous provider outcomes
+crash/recovery
+cancellation after dispatch
+scope-aware supersession
+self-generated feedback / oscillation
+Attention overload
+untrusted external input
+offline / delayed sync
+large fan-out
+rich streaming / voice / multimodal publication
+future much-more-capable general-purpose intelligence
+```
+
+The architecture is accepted only if this last mega-test does not require semantic collapse, hidden provider ownership of truth, a duplicate application ontology or unjustified infrastructure.
+
+This is intentionally the last mega-test. If it exposes a fundamental gap, fix the smallest architecture boundary and run targeted verification of that fix. If it exposes only implementation/detail questions, do not restart another indefinite mega-test cycle.
 
 A specific acceptance criterion remains **future extensibility**:
 
-> If DANTE later gains a much richer integrated general-purpose conversational intelligence — including capabilities comparable to future frontier chat systems — or adopts substantially more capable future models/providers/specialists, the architecture must absorb that improvement without transferring canonical memory, Authority, application state or effect ownership to the model/provider and without requiring a fundamental redesign of the product core.
+> If DANTE later gains a much richer integrated general-purpose conversational intelligence — including capabilities comparable to future frontier chat systems — or adopts substantially more capable future models/providers/specialists, the architecture must absorb that improvement without transferring canonical memory, Authority, application state or effect ownership to the model/provider, without bypassing disclosure/publication governance and without requiring a fundamental redesign of the product core.
 
 AI-02.1 may refine architecture responsibilities and contracts. Any impact on closed Domain/Logical/Physical/database authority must satisfy normal reopen discipline rather than being silently reinterpreted for AI convenience.
 
@@ -366,6 +396,9 @@ AI sandbox implementation
 AI local-model activation
 AI context/retrieval/memory persistence
 AI-02.1 runtime module/service implementation
+exact target-resolution implementation
+exact policy-composition engine/product
+exact safe-streaming/publication implementation
 production deployment
 ```
 
@@ -410,6 +443,9 @@ MERGED BRANCH CANDIDATE STATE != CURRENT protected-main STATUS
 RESEARCH TECHNOLOGY != DANTE IMPLEMENTATION SELECTION
 MODEL/PROVIDER OUTPUT != CANONICAL EFFECT
 MODEL CAPABILITY != AUTHORITY
+MODEL OUTPUT != PUBLISHABLE OUTPUT
+INTERNAL STREAM != RECIPIENT STREAM
+DISPLAY NAME != EFFECT TARGET
 SCENARIO STATE != CANONICAL CURRENT STATE
 CHANGESET != BYPASS OF INDIVIDUAL EFFECT GOVERNANCE
 CONTEXT ACCESS != DISCLOSURE PERMISSION
@@ -419,6 +455,10 @@ RUN-START AUTHORIZATION != PERPETUAL AUTHORIZATION
 CANCEL RUN != UNDO ALREADY-DISPATCHED EFFECTS
 SAFE SINGLE DISCLOSURE != AUTOMATICALLY SAFE CUMULATIVE DISCLOSURE
 DANTE-GENERATED SIGNAL != AUTOMATIC JUSTIFICATION FOR ANOTHER ADAPTATION
+USER AUTONOMY != EXTERNAL/INSTITUTIONAL AUTHORITY
+SOURCE VERSION UNCHANGED != SOURCE NECESSARILY FRESH
+DANTE REPRESENTATION != EXTERNAL SYSTEM-OF-RECORD AUTHORITY
+SENT != DELIVERED != SEEN != ACKNOWLEDGED != ACCEPTED
 ```
 
 ## 12. Immediate sequence
@@ -426,16 +466,17 @@ DANTE-GENERATED SIGNAL != AUTOMATIC JUSTIFICATION FOR ANOTHER ADAPTATION
 ```text
 1. Recovery is CLOSED / integrated; do not resume feature/postgres-recovery
 2. continue feature/access-auth, feature/home-react and feature/platform-observability independently
-3. on feature/ai-architecture, continue AI-02.1 from the recorded v0.3 checkpoint
-4. execute the final kill-test against cumulative disclosure, supersession, causal loops, revocation, stale dependencies and partial effects
-5. complete the additional pre-AI-03 review explicitly required by the active workstream before starting AI-03
-6. keep future-extensibility against a rich integrated frontier-chat-style intelligence as an acceptance criterion
-7. AI-03 owns Context / Retrieval / Memory only after AI-02.1 structural acceptance
-8. before each integration, reconcile the active branch against the then-current protected-main baseline
-9. evolve the database only through same-change forward migrations when a real vertical requires it
-10. keep remote backup/cloud recovery deferred until production deployment creates a real need
-11. apply documentation lifecycle cleanup before integration AND post-merge current-state reconciliation afterward
-12. use live Git refs and branch-local authority rather than stale global assumptions
+3. on feature/ai-architecture, continue AI-02.1 from the recorded v0.4 checkpoint
+4. execute the ONE LAST mega stress-test against v0.4 as a whole
+5. if that test exposes a fundamental gap, repair the smallest boundary and perform targeted verification only
+6. complete the additional pre-AI-03 review explicitly required by the active workstream
+7. keep future-extensibility against a rich integrated frontier-chat-style intelligence as an acceptance criterion
+8. AI-03 owns Context / Retrieval / Memory only after AI-02.1 structural acceptance
+9. before each integration, reconcile the active branch against the then-current protected-main baseline
+10. evolve the database only through same-change forward migrations when a real vertical requires it
+11. keep remote backup/cloud recovery deferred until production deployment creates a real need
+12. apply documentation lifecycle cleanup before integration AND post-merge current-state reconciliation afterward
+13. use live Git refs and branch-local authority rather than stale global assumptions
 ```
 
 This roadmap intentionally does not pre-create future branches, migrations, APIs, provider integrations or infrastructure before their concrete scope is authorized.
