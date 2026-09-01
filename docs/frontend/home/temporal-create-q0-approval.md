@@ -34,3 +34,7 @@ Therefore:
 - real backend/API/DB/provider integration remains outside C1 and will be implemented with the later Timeline backend vertical.
 
 This delivery-mode clarification supersedes only the old per-slice manual-approval wording in sections 34/37 of the full Q0 contract. The semantic, lifecycle, UX, accessibility, performance, ownership, testing and non-goal contents of that contract remain authoritative.
+
+## Current implementation state
+
+C1 is under active implementation. Intermediate commits are not acceptance checkpoints. The full pre-backend Create vertical is considered ready for user testing only after the implementation, regression suite, accessibility checks, performance/lifecycle checks and Frontend CI gate are all green on the same final commit.
