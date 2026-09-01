@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 import {
   createWorldFocusWorkspaceState,
+  getWorldFocusBlockingSurface,
   getWorldFocusEscapeDisposition,
   getWorldFocusInteractionCursor,
+  isWorldFocusBlockingPresentation,
   reduceWorldFocusWorkspaceState,
 } from './world-focus-workspace';
 
@@ -174,6 +176,205 @@ describe('World Focus workspace orchestration model', () => {
 
     expect(state.surfaces).toEqual([]);
     expect(getWorldFocusEscapeDisposition(state)).toBe('no-surface');
+  });
+
+  it('treats modal and full-screen as admission barriers while still allowing deliberate nested blockers', () => {
+    expect(isWorldFocusBlockingPresentation('modal')).toBe(true);
+    expect(isWorldFocusBlockingPresentation('full-screen')).toBe(true);
+    expect(isWorldFocusBlockingPresentation('sidecar')).toBe(false);
+
+    let state = reduceWorldFocusWorkspaceState(
+      createWorldFocusWorkspaceState('projects'),
+      {
+        type: 'open-surface',
+        surface: {
+          instanceId: 'confirmation:publish',
+          kind: 'confirmation',
+          depth: 'insight',
+          presentation: 'modal',
+          origin: 'application',
+        },
+      },
+    );
+
+    const blockedSidecar = reduceWorldFocusWorkspaceState(state, {
+      type: 'open-surface',
+      surface: {
+        instanceId: 'dante:late',
+        kind: 'assistant',
+        depth: 'insight',
+        presentation: 'sidecar',
+        origin: 'dante',
+      },
+    });
+    const blockedPopover = reduceWorldFocusWorkspaceState(state, {
+      type: 'open-surface',
+      surface: {
+        instanceId: 'hint:late',
+        kind: 'hint',
+        depth: 'insight',
+        presentation: 'popover',
+        origin: 'application',
+      },
+    });
+    const blockedRoute = reduceWorldFocusWorkspaceState(state, {
+      type: 'open-surface',
+      surface: {
+        instanceId: 'route:late',
+        kind: 'route',
+        depth: 'explore',
+        presentation: 'route',
+        origin: 'user',
+      },
+    });
+
+    expect(blockedSidecar).toBe(state);
+    expect(blockedPopover).toBe(state);
+    expect(blockedRoute).toBe(state);
+    expect(getWorldFocusBlockingSurface(state)?.instanceId).toBe(
+      'confirmation:publish',
+    );
+
+    state = reduceWorldFocusWorkspaceState(state, {
+      type: 'open-surface',
+      surface: {
+        instanceId: 'confirmation:nested',
+        kind: 'nested-confirmation',
+        depth: 'insight',
+        presentation: 'modal',
+        origin: 'application',
+      },
+    });
+
+    expect(state.surfaces.map((surface) => surface.instanceId)).toEqual([
+      'confirmation:publish',
+      'confirmation:nested',
+    ]);
+    expect(getWorldFocusBlockingSurface(state)?.instanceId).toBe(
+      'confirmation:nested',
+    );
+
+    state = reduceWorldFocusWorkspaceState(state, { type: 'close-top-surface' });
+    expect(getWorldFocusBlockingSurface(state)?.instanceId).toBe(
+      'confirmation:publish',
+    );
+
+    state = reduceWorldFocusWorkspaceState(state, { type: 'close-top-surface' });
+    const afterBarrier = reduceWorldFocusWorkspaceState(state, {
+      type: 'open-surface',
+      surface: {
+        instanceId: 'dante:after',
+        kind: 'assistant',
+        depth: 'insight',
+        presentation: 'sidecar',
+        origin: 'dante',
+      },
+    });
+
+    expect(afterBarrier.surfaces.map((surface) => surface.instanceId)).toEqual([
+      'dante:after',
+    ]);
+  });
+
+  it('rejects hidden replace and promote mutations below a blocking surface', () => {
+    let state = createWorldFocusWorkspaceState<'insight' | 'confirmation'>(
+      'music',
+    );
+    state = reduceWorldFocusWorkspaceState(state, {
+      type: 'open-surface',
+      surface: {
+        instanceId: 'insight:mix',
+        kind: 'insight',
+        depth: 'insight',
+        presentation: 'sidecar',
+        origin: 'dante',
+      },
+    });
+    state = reduceWorldFocusWorkspaceState(state, {
+      type: 'open-surface',
+      surface: {
+        instanceId: 'confirmation:mix',
+        kind: 'confirmation',
+        depth: 'insight',
+        presentation: 'modal',
+        origin: 'application',
+      },
+    });
+
+    const hiddenPromotion = reduceWorldFocusWorkspaceState(state, {
+      type: 'promote-surface',
+      instanceId: 'insight:mix',
+      depth: 'explore',
+      presentation: 'full-screen',
+    });
+    const hiddenReplacement = reduceWorldFocusWorkspaceState(state, {
+      type: 'replace-surface',
+      instanceId: 'insight:mix',
+      surface: {
+        instanceId: 'insight:replacement',
+        kind: 'insight',
+        depth: 'explore',
+        presentation: 'full-screen',
+        origin: 'application',
+      },
+    });
+
+    expect(hiddenPromotion).toBe(state);
+    expect(hiddenReplacement).toBe(state);
+
+    state = reduceWorldFocusWorkspaceState(state, { type: 'close-top-surface' });
+    state = reduceWorldFocusWorkspaceState(state, {
+      type: 'promote-surface',
+      instanceId: 'insight:mix',
+      depth: 'explore',
+      presentation: 'full-screen',
+    });
+
+    expect(state.surfaces[0]).toMatchObject({
+      instanceId: 'insight:mix',
+      presentation: 'full-screen',
+      depth: 'explore',
+    });
+  });
+
+  it('does not replace a nested top blocker with a weaker surface while an earlier blocker remains below it', () => {
+    let state = createWorldFocusWorkspaceState<'confirmation' | 'result'>(
+      'finance',
+    );
+    state = reduceWorldFocusWorkspaceState(state, {
+      type: 'open-surface',
+      surface: {
+        instanceId: 'confirmation:first',
+        kind: 'confirmation',
+        depth: 'insight',
+        presentation: 'modal',
+        origin: 'application',
+      },
+    });
+    state = reduceWorldFocusWorkspaceState(state, {
+      type: 'open-surface',
+      surface: {
+        instanceId: 'confirmation:second',
+        kind: 'confirmation',
+        depth: 'insight',
+        presentation: 'modal',
+        origin: 'application',
+      },
+    });
+
+    const weakened = reduceWorldFocusWorkspaceState(state, {
+      type: 'replace-surface',
+      instanceId: 'confirmation:second',
+      surface: {
+        instanceId: 'result:sidecar',
+        kind: 'result',
+        depth: 'insight',
+        presentation: 'sidecar',
+        origin: 'application',
+      },
+    });
+
+    expect(weakened).toBe(state);
   });
 
   it('blocks Escape ownership at a non-dismissible top surface instead of allowing the World to close underneath it', () => {
