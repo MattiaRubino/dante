@@ -70,7 +70,7 @@ export class WorldFocusLatestReadCoordinator {
 
     const controller = new AbortController();
     let released = false;
-    let detachUpstream = () => undefined;
+    let detachUpstream: () => void = () => undefined;
 
     const active: ActiveRead = {
       generation,
@@ -88,8 +88,9 @@ export class WorldFocusLatestReadCoordinator {
         controller.abort();
       };
 
-      detachUpstream = () =>
+      detachUpstream = () => {
         upstreamSignal.removeEventListener('abort', handleUpstreamAbort);
+      };
 
       if (upstreamSignal.aborted) {
         handleUpstreamAbort();
