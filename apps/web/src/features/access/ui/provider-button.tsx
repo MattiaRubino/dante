@@ -1,9 +1,25 @@
+import { useEffect, useRef } from 'react';
+
+import {
+  ProviderBrowserUnavailableError,
+  renderGoogleIdentityButton,
+} from '../../../platform/auth/web-auth-provider';
+
 type AccessProvider = 'google' | 'apple';
 
 type ProviderButtonProps = Readonly<{
   provider: AccessProvider;
   label: string;
   onClick?: () => void;
+  disabled?: boolean;
+}>;
+
+export type GoogleIdentityButtonProps = Readonly<{
+  label: string;
+  clientId: string | null;
+  nonce: string | null;
+  onCredential: (credential: string) => void;
+  onError: (error: ProviderBrowserUnavailableError) => void;
   disabled?: boolean;
 }>;
 
@@ -50,6 +66,83 @@ function AppleMark() {
         d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.27-.07 2.15.7 2.9.76 1.12-.23 2.19-.89 3.39-.8 1.44.12 2.53.69 3.25 1.73-2.97 1.78-2.27 5.69.46 6.79-.55 1.44-1.26 2.87-2 3.95l.01.54ZM12.03 7.25c-.15-2.14 1.59-3.9 3.58-4.07.27 2.47-2.24 4.32-3.58 4.07Z"
       />
     </svg>
+  );
+}
+
+export function GoogleIdentityButton({
+  label,
+  clientId,
+  nonce,
+  onCredential,
+  onError,
+  disabled = false,
+}: GoogleIdentityButtonProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (container === null || clientId === null || nonce === null) {
+      return;
+    }
+    let active = true;
+    void renderGoogleIdentityButton({
+      container,
+      clientId,
+      nonce,
+      onCredential: (credential) => {
+        if (active) {
+          onCredential(credential);
+        }
+      },
+      onError: (error) => {
+        if (active) {
+          onError(error);
+        }
+      },
+    }).catch((error: unknown) => {
+      if (!active) {
+        return;
+      }
+      onError(
+        error instanceof ProviderBrowserUnavailableError
+          ? error
+          : new ProviderBrowserUnavailableError(
+              'Google sign-in could not initialize its official button.',
+            ),
+      );
+    });
+    return () => {
+      active = false;
+      container.replaceChildren();
+    };
+  }, [clientId, nonce, onCredential, onError]);
+
+  if (clientId === null || nonce === null) {
+    return (
+      <button
+        className="access-provider-button"
+        type="button"
+        disabled
+        aria-label={label}
+        aria-busy="true"
+      >
+        <span className="access-provider-mark" aria-hidden="true">
+          <GoogleMark />
+        </span>
+        <span>{label}</span>
+      </button>
+    );
+  }
+
+  return (
+    <div
+      className="access-google-button-shell"
+      data-disabled={disabled ? 'true' : 'false'}
+      aria-label={label}
+      aria-disabled={disabled}
+    >
+      <div ref={containerRef} className="access-google-button-host" />
+    </div>
   );
 }
 
