@@ -1,14 +1,14 @@
 # DANTE Roadmap
 
 - **Status:** CURRENT FOR `feature/access-auth`
-- **Last reconciled:** 2026-08-31
+- **Last reconciled:** 2026-09-01
 - **Protected `main`:** integrated source authority; Access/Auth remains branch-local until explicit merge gate
 - **Active vertical:** Access/Auth
 - **Current macro-phase:** M5 — Multi-authenticator Account Layer — **ACTIVE**
-- **Last accepted execution block:** **GROUP 1 — M5-E + M5-G — COMPLETE / ENGINEERING PASS**
-- **Current execution block:** **GROUP 2 — M5-F — WebAuthn / Passkeys — ACTIVE / IMPLEMENTATION CANDIDATE / QA PENDING**
-- **M5-F PRE-SCOPE:** `64849f2cd60f1d7275344519efdf735eb9c1af95`
-- **Current M5-F candidate HEAD before handoff-doc commits:** `0da2d516be8d46b24318404bec494f61a9d9ddc1`
+- **Last accepted execution block:** **GROUP 3 — M5-H + M5-I — COMPLETE / ENGINEERING PASS**
+- **Current execution block:** **GROUP 4 — M5-J + M5-K+ — NEXT**
+- **Group 3 PRE-SCOPE:** `ee099dc7c6bef4742c6e66e5d15f9a0428dd8ffa`
+- **Group 3 engineering checkpoint:** `05b348e9e0293cd9cd0cc3f190824527761b24d9`
 
 ## 1. Current sequence
 
@@ -61,24 +61,24 @@ Authenticator Lifecycle + Password/Passwordless
           ↓
 GROUP 2 — M5-F
 WebAuthn / Passkeys
-        ACTIVE / IMPLEMENTATION CANDIDATE / QA PENDING
+        COMPLETE / ENGINEERING PASS
           ↓
 GROUP 3 — M5-H + M5-I
 Public FastAPI + Deterministic OpenAPI / Governed Client
-        BLOCKED ON M5-F ACCEPTANCE
+        COMPLETE / ENGINEERING PASS
           ↓
 GROUP 4 — M5-J + M5-K+
 Access Web + Security / Provider / Browser / UAT / Acceptance
-        PLANNED
+        NEXT
           ↓
 M6 — Native Mobile Access
-        PLANNED
+        FUTURE / OPTIONAL / ONLY IF RE-GATED
           ↓
 M7 — Security Hardening + Observability + Authenticated Handoff
         PLANNED / FINAL WHOLE-VERTICAL GATE
 ```
 
-The historical labels `M5-E` through `M5-K+` remain the frozen semantic decomposition used by the architecture/API contract. They are not separate execution gates. The grouped order above is the only current execution order.
+The historical labels `M5-E` through `M5-K+` remain the frozen semantic decomposition used by the architecture/API contract. They are not separate execution gates. The grouped order above is authoritative.
 
 ## 2. Accepted M5 foundation
 
@@ -95,14 +95,20 @@ e6f738a1ea3f5152caa7d99f1d6ccd108747c806
 M5-D Apple checkpoint
 7d13b712f032e8d41d7cf03d406555fd9f3c0160
 
-GROUP 1 / M5-E + M5-G code checkpoint
+GROUP 1 / M5-E + M5-G
 1c4b7c988eaae130d6a90d43940a42e2a550870d
 
-GROUP 1 docs closure / M5-F PRE-SCOPE
-64849f2cd60f1d7275344519efdf735eb9c1af95
+GROUP 2 / M5-F
+f6a8da43fbe674ca18c366cd3731afc8f97ec045
+
+GROUP 3 / M5-H + M5-I PRE-SCOPE
+ee099dc7c6bef4742c6e66e5d15f9a0428dd8ffa
+
+GROUP 3 engineering checkpoint
+05b348e9e0293cd9cd0cc3f190824527761b24d9
 ```
 
-Current accepted DB truth:
+Current accepted DB truth remains:
 
 ```text
 PostgreSQL          18.6
@@ -117,158 +123,116 @@ Alembic             20260831_13
 103 standalone Dictionary entries
 ```
 
-`20260831_13` is ACL-only and grants the governed runtime DELETE required for safe password removal; no schema shape/mapping/index/constraint change.
+No Group 2 or Group 3 schema/Alembic/Dictionary/ACL widening was required.
 
-Group-1 closeout evidence:
+## 3. Group 2 — COMPLETE
+
+**M5-F — WebAuthn / Passkeys**
+
+Accepted engineering result:
 
 ```text
-uv lock --check                              PASS / 57 packages
-Ruff format/check/lint                       PASS
-mypy src                                     PASS / 50 source files
-backend fast                                 179 / 179 PASS
-focused PostgreSQL Group 1                   16 / 16 PASS
-full PostgreSQL regression                   120 / 120 PASS
-backend build                                PASS
-git diff --check                             PASS
-scope audit                                  PASS
+real python-fido2 verifier
+resident credential + UV required
+discoverable username-less signin
+stable opaque WebAuthn user_handle
+registration / authentication / reauthentication
+multiple passkeys
+safe management projection
+label update + logical revoke
+Account-wide anti-lockout
+canonical DANTE AuthSession only
+bounded challenge/rate/resource policy
+real PostgreSQL race/concurrency proof
 ```
 
-## 3. Group 1 — M5-E + M5-G — COMPLETE
+Closure evidence:
 
-**Authenticator Lifecycle + Password / Passwordless Adaptation**
+```text
+Ruff / mypy                     PASS
+non-PostgreSQL                  191 PASS
+PostgreSQL                      132 PASS
+total                           323 PASS
+backend build                   PASS
+scope audit                     PASS
+```
+
+Real HTTPS browser/hardware WebAuthn acceptance remains Group 4.
+
+## 4. Group 3 — COMPLETE
+
+**M5-H + M5-I — Public FastAPI + Deterministic OpenAPI / Governed Client**
 
 Accepted result:
 
 ```text
-provider-neutral authentication-method inventory
-provider-first ExternalLinkChallenge confirmation
-safe provider unlink / logical revoke
-Apple grant revocation reconciliation when unlinking Apple
-backend-authoritative direct-authenticator counting
-Account security lock around authenticator mutations
-anti-lockout recheck inside authoritative transaction
-verified/recovery-eligible EmailIdentity requirement for passwordless safety
-establish first password using existing Argon2id/HIBP/pepper policy
-safe remove password
-M4 reset adapted to create-or-replace password
-normal password mutation invalidates stale recovery proof
-security-sensitive retained session rotates exact bearer
-concurrent provider/password removal converges safely
-operation-specific ambiguous-commit reconciliation only
+full frozen public M5 Auth route inventory
+stable /api/v1 operationIds
+Pydantic/FastAPI materialization
+RFC 9457 typed problems
+request IDs + no-store
+Origin + Fetch Metadata + X-Dante-Client
+session-bound CSRF
+opaque HttpOnly provider continuation cookies
+Google begin/complete
+Apple begin + bounded form_post callback + notifications
+provider enrollment/link/unlink
+password lifecycle
+passkey HTTP lifecycle
+safe passkey management projection
+deterministic OpenAPI
+Orval Fetch + generated Zod
+governed @dante/api-client
+strict payload-widening rejection
+generated drift + two-run determinism proof
 ```
 
-Do not reopen this block absent direct defect evidence.
-
-## 4. Group 2 — M5-F — ACTIVE CANDIDATE
-
-**WebAuthn / Passkeys**
-
-Implementation is already materially present on the branch. It is **not accepted yet**.
-
-Candidate PRE-SCOPE and snapshot:
+Closure evidence:
 
 ```text
-PRE-SCOPE
-64849f2cd60f1d7275344519efdf735eb9c1af95
-
-candidate implementation HEAD before docs handoff
-0da2d516be8d46b24318404bec494f61a9d9ddc1
-
-remote relation
-19 commits ahead / 0 behind
-10 M5-F files changed
-0 migration / 0 Dictionary / 0 mapping / 0 public API / 0 frontend
+uv lock --check                        PASS / 57 packages
+Ruff                                  PASS
+mypy                                  PASS / 56 source files
+focused HTTP/OpenAPI                  35 PASS
+full non-PostgreSQL                   225 PASS
+provider continuation PostgreSQL      2 PASS
+full PostgreSQL                       134 PASS
+backend build                         PASS
+api-client lint/typecheck             PASS
+api-client tests                      11 PASS
+generated drift/determinism           PASS / 78 files
+architecture check                    PASS / 151 modules / 287 dependencies
+workspace typecheck                   PASS / 6 of 6 packages
+workspace build                       PASS / 2 of 2 build tasks
+clean/synced worktree                 PASS
+scope audit                           PASS
 ```
 
-Materialized direction:
+Do not reopen Group 3 absent direct defect evidence.
 
-```text
-stable opaque 32-byte WebAuthnAccount user_handle
-registration begin/complete
-discoverable username-less authentication
-passkey reauthentication
-multiple credentials
-UV required
-resident credential required
-attestation none
-exact RP ID / explicit HTTPS origin
-credential_id lifetime uniqueness
-COSE public-key + algorithm persistence
-signCount monotonic update policy
-backup eligibility/state handling
-label/update/remove
-logical revoke
-same Account anti-lockout framework from Group 1
-canonical DANTE AuthSession only
-real python-fido2 verifier
-bounded challenge/rate/resource policy
-```
+## 5. Group 4 — NEXT
 
-Current focused proof in source includes real software-ES256 fido2 registration/assertion verification, negative crypto policy tests, full register→signin→reauth→revoke PostgreSQL path, replay rejection, duplicate credential handling, concurrent passkey-removal anti-lockout and passkey-removal vs provider-unlink Account-lock proof.
+**M5-J + M5-K+ — Access Web + Final M5 Proof / Acceptance**
 
-Before candidate QA/closure the following must still be completed:
-
-```text
-ambiguous signin/reauth reconciliation tolerant of later valid credential-state advancement
-passkey signin authoritative mutation timestamp after Account security lock
-same credential across Accounts race proof
-passkey signin vs passkey removal proof
-Account disable vs passkey signin proof
-reauth vs concurrent bearer rotation proof
-passkey removal vs password removal proof
-concurrent assertion / signCount / backup-state advancement proof
-ambiguous terminal-commit reconciliation proof
-explicit enabled/disabled runtime composition proof
-```
-
-Only after those writes: local Ruff/mypy/fast/focused-PG/build, then full PostgreSQL regression, formatter materialization, final scope/architecture audit and documentation closure.
-
-Real HTTPS browser/WebAuthn acceptance remains Group 4 and must not be claimed by M5-F.
-
-## 5. Group 3 — M5-H + M5-I
-
-**Public FastAPI + OpenAPI / Governed Client**
-
-Blocked until M5-F is accepted. These are one delivery pipeline, not two independent gates:
-
-```text
-application services from Groups 1–2
-→ exact Pydantic/FastAPI endpoints
-→ RFC 9457 + request IDs + no-store
-→ Apple form_post ingress exception materialized exactly
-→ deterministic OpenAPI
-→ frozen operationIds / success unions / problems
-→ Orval Fetch + generated Zod
-→ governed @dante/api-client
-→ drift / determinism / generated-client tests
-```
-
-## 6. Group 4 — M5-J + M5-K+
-
-**Access Web + Final M5 Proof / Acceptance**
-
-One macro-block with two internal gates:
+One macro-block with two internal responsibilities:
 
 ```text
 A. Web materialization
-   Google / Apple / passkey / email-password
+   email/password + provider + passkey flows
    provider enrollment
    link-required + confirm
    methods/security management
-   smart provider-enriched onboarding
    loading/cancel/error/recovery states
    backend-authoritative success only
+   no browser auth cache/localStorage authority
 
 B. Final acceptance
-   focused security/race proof
-   whole PostgreSQL regression where justified
-   FastAPI contract proof
-   OpenAPI/client drift proof
    Chromium / Firefox / WebKit
    real Google smoke/UAT
    real Apple registered-domain smoke/UAT
    Apple Private Email Relay sender configuration
    real WebAuthn/passkey UAT
+   final security/provider/browser proof
    manual integrated M5 UAT
    docs reconciliation
    explicit user acceptance
@@ -276,19 +240,19 @@ B. Final acceptance
 
 M5 cannot close before Group 4 acceptance.
 
-## 7. M6 / M7
+## 6. M6 / M7
 
 ```text
 M6 — Native Mobile Access
-PLANNED / AFTER M5 UNLESS RE-GATED
+FUTURE / OPTIONAL / ONLY IF DELIBERATELY RE-GATED
 
 M7 — Security Hardening + Observability + Authenticated Handoff
 PLANNED / FINAL WHOLE-VERTICAL GATE
 ```
 
-M7 owns complete session/device/security management, production observability, final release/privacy/accessibility/security review and whole-vertical closure. It does not absorb unfinished M5 authenticator correctness.
+M7 owns complete production hardening, observability and authenticated handoff. It does not absorb unfinished M5 browser/provider acceptance.
 
-## 8. Current authorities
+## 7. Current authorities
 
 ```text
 docs/PROJECT-STATUS.md
@@ -299,6 +263,4 @@ docs/workstreams/access-auth-m5-live-handoff-2026-08-29.md
 docs/workstreams/access-auth-m4-m7-execution-plan.md
 ```
 
-The two M5 architecture contracts remain frozen design authority while M5-F is still a candidate; do not rewrite them merely to narrate in-flight implementation. They are reconciled again only after accepted M5-F proof.
-
-Repository truth beats conversation memory. New chat != new branch/worktree.
+The M5 architecture contracts remain frozen design authority. Repository truth beats conversation memory. New chat != new branch/worktree.
