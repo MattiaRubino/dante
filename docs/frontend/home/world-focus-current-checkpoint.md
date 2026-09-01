@@ -212,7 +212,6 @@ The final backend vertical must plug into explicit application/interaction bound
 7. `world-focus-delivery-methodology.md`
 8. `world-focus-frontend-roadmap.md`
 9. relevant evidence only when needed:
-   - `world-focus-wf0-scenario-oracle.md`
    - `world-focus-product-reverse-engineering-stress-test.md`
    - `world-focus-product-reverse-engineering-stress-matrix.md`
    - `world-focus-dante-user-reverse-engineering-stress-test.md`
