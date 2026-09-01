@@ -4,10 +4,11 @@
 - **Branch:** `feature/ai-architecture`
 - **Established:** 2026-09-01
 - **Upstream structural baseline:** AI-02.1 v0.5 / STRUCTURALLY ACCEPTED
+- **AI-03A:** CLOSED / STRUCTURALLY ACCEPTED
 - **Implementation:** NOT STARTED by this document
 - **Database evolution:** NONE AUTHORIZED BY THIS DOCUMENT
 - **Provider/model selection:** OPEN
-- **Current macro-phase:** AI-03A — FULL CONTEXT ARCHITECTURE
+- **Current macro-phase:** AI-03B — RETRIEVAL + MEMORY ARCHITECTURE
 
 ---
 
@@ -59,6 +60,7 @@ AI-03 must be read against the following sources before material architecture de
 - `docs/architecture/dante-ai-foundation.md`
 - `docs/architecture/ai-production-engineering-state-of-the-art-2026.md`
 - `docs/architecture/dante-ai-02-1-intelligence-reengineering.md`
+- `docs/architecture/dante-ai-03a-full-context-architecture.md`
 - `docs/architecture/system-overview.md`
 
 Repository truth outranks conversation memory.
@@ -117,6 +119,8 @@ must not silently re-enter eligibility through
 summary / embedding / cache / provider state / derived memory
 ```
 
+AI-03A adds accepted context invariants `C01..C29`; see `dante-ai-03a-full-context-architecture.md`.
+
 No Context/Memory design is accepted if it creates a generic semantic escape hatch around closed Domain/Logical meaning.
 
 ---
@@ -165,7 +169,7 @@ Purpose limitation and minimisation are product architecture requirements, not l
 
 ## 5. Core AI-03 distinction
 
-AI-03 must keep three responsibilities separate:
+AI-03 keeps three responsibilities separate:
 
 ```text
 CONTEXT
@@ -180,6 +184,8 @@ MEMORY
 
 A single item may participate in more than one responsibility over time, but the responsibilities are not synonyms.
 
+AI-03A has now closed the Context contract. AI-03B must consume it rather than redefine Context around a preferred retrieval or memory technology.
+
 ---
 
 ## 6. AI-03 roadmap
@@ -188,73 +194,84 @@ AI-03 is intentionally divided into only three large architecture passes.
 
 ### AI-03A — Full Context Architecture
 
-Goal: define the entire lifecycle from work meaning to the exact information presented to each reasoning invocation.
+**Status:** CLOSED / STRUCTURALLY ACCEPTED
 
-Required coverage:
+Durable authority:
+
+- `docs/architecture/dante-ai-03a-full-context-architecture.md`
+
+Accepted runtime contracts:
 
 ```text
-WorkContract -> information needs
-source discovery
-structured DANTE-native context
-material-history context
-conversation/session context
-working/run context
-artifact/document context
-external/open-world context
-provider/external state
-candidate/derived context
-multi-actor context
-
+ContextPlan
+InformationNeed
+ContextStrategy
 ContextFragment
+ContextReadiness
+ConsumerContext
 ContextManifest
-provenance
-source identity
-source authority
-information class
-confidentiality
-integrity / trust
-instruction authority
-processing eligibility
-purpose
-recipient/surface relevance where applicable
-freshness / temporal validity
-MaterialState binding
-BasisManifest relationship
-coherence
-contradiction
-uncertainty
-relevance
-redundancy / deduplication
-token / latency / cost / resource budget
-provider/model rendering
-context caching
-iterative acquisition
-compaction
-context-window pressure
-failure / degradation / abstention
 ```
 
-AI-03A must answer precisely:
+plus the inherited AI-02 `BasisManifest`.
+
+The accepted hardened flow is:
 
 ```text
-what enters context?
-why?
-from where?
-under whose Authority / processing basis?
-for which purpose?
-with what provenance and trust?
-for how long is it valid?
-what makes it stale?
-what happens if it changes during the Run?
-what exactly did the model/tool/solver receive?
-what did not enter and why?
+WorkContract
+→ ContextPlan
+→ InformationNeeds
+→ strategy per need
+→ discovery/acquisition eligibility
+→ source read / source binding
+→ source-linked ContextFragments
+→ Reality Scope / provenance / Source Standing /
+  integrity / canonicality / instruction provenance /
+  confidentiality / temporal validity / contradiction
+→ coverage + coherence
+→ ContextReadiness
+→ minimisation / transformation
+→ resource-aware packing
+→ consumer exposure eligibility
+→ ConsumerContext
+→ Harness / consumer invocation
+→ ContextManifest exposure receipt
+→ bounded iterative/JIT acquisition where required
 ```
 
-AI-03A does not choose durable memory tables, vector-store products or embedding models.
+The dedicated AI-03A mega-test found nine real gaps in the initial candidate and hardened them:
+
+```text
+GAP-01 Reality Scope / Scenario binding
+GAP-02 Interaction continuity != provider-context continuity
+GAP-03 model-discovered need cannot widen WorkContract/policy scope
+GAP-04 reference-resolution requirement per InformationNeed
+GAP-05 explicit source/use exclusions
+GAP-06 child/delegated context minimisation
+GAP-07 user-origin content != automatic instruction authority
+GAP-08 ContextReadiness is non-monotonic
+GAP-09 minimisation remains relative to legitimate broad objective
+```
+
+After hardening and retest:
+
+```text
+AI-03A HARDENED CANDIDATE
+STRUCTURAL PASS
+
+NO Domain reopen
+NO Logical reopen
+NO Physical reopen
+NO PostgreSQL/Alembic change
+NO generic Context/Fact/Memory ontology
+```
+
+This is architecture/simulation acceptance only, not implementation PASS.
 
 ### AI-03B — Retrieval + Memory Architecture
 
-Goal: define how candidate information is found and which noncanonical information may legitimately survive.
+**Status:** ACTIVE / CURRENT MACRO-PHASE
+
+Goal: define how candidate information is found under the AI-03A Context contract and which noncanonical information may legitimately survive.
 
 Required retrieval coverage:
 
@@ -270,11 +287,13 @@ semantic/vector retrieval where justified
 hybrid retrieval
 reranking
 source reread
-freshness validation
-permission-aware retrieval
-multi-stage / iterative retrieval
+freshness/currentness validation
+coverage-aware retrieval
+permission-aware discovery/retrieval
+multi-stage / iterative / JIT retrieval
 document hierarchy / chunking where justified
 large-corpus retrieval
+long-context vs retrieval strategy
 retrieval evaluation
 ```
 
@@ -284,9 +303,9 @@ Required memory coverage:
 canonical application memory — already owned by Domain/PostgreSQL
 Interaction Session continuity
 Run / working memory
+compaction/checkpoint state
 derived / adaptive memory
 candidate hypotheses
-summaries / compaction state
 provider thread / provider memory / prompt cache
 retrieval representations / embeddings / indexes
 execution evidence — explicitly not user memory
@@ -316,9 +335,9 @@ index invalidation
 
 Principle:
 
-> **Memory survival must be earned.**
+> **Memory survival must be earned. Canonical application memory already belongs to Domain/PostgreSQL and must not be recreated as generic AI memory.**
 
-AI-03B must reject "store every useful-looking AI observation" as a default.
+AI-03B must preserve every accepted AI-03A invariant, including Reality Scope, coverage semantics, model-discovered scope ceiling, Context continuity compartments, child-context minimisation, instruction provenance, Source Standing separation, non-monotonic readiness, anti-resurrection, ConsumerContext/ContextManifest distinction and ContextManifest/BasisManifest separation.
 
 ### AI-03C — Destructive Validation + Materialization Blueprint
 
@@ -384,17 +403,17 @@ Any structural DB change then enters the normal CP6/PostgreSQL same-change disci
 
 ---
 
-## 7. Context architecture principles
+## 7. Accepted Context architecture principles
 
-The following principles are already accepted starting constraints for AI-03A.
+AI-03B/AI-03C inherit these from the closed AI-03A contract.
 
-### 7.1 Context is a purpose-bound view
+### 7.1 Context is a purpose-bound consumer view
 
 ```text
 CONTEXT != COPY OF DANTE WORLD
 ```
 
-Context must be sufficient for the objective without indiscriminate over-collection.
+Minimum necessary is relative to the legitimate objective. Broad cross-life orchestration may require broad but staged InformationNeeds; minimisation must not amputate the North Star.
 
 ### 7.2 Context is not merely a prompt
 
@@ -411,66 +430,113 @@ human review surface
 
 Different consumers may require different projections of the same underlying basis.
 
-### 7.3 ContextManifest records actual exposure
+### 7.3 InformationNeed owns sufficiency
 
-The architecture must be able to explain what a consumer actually received, not merely what DANTE could theoretically retrieve.
+Every material inclusion must be explainable through an InformationNeed, with explicit criticality, coverage, currentness/coherence and reference-resolution requirements.
 
-### 7.4 Retrieval is iterative
+Required needs cannot be dropped by model preference or resource pressure.
 
-Preferred default:
+### 7.4 Acquisition strategy is per need
+
+DANTE has no universal RAG strategy.
+
+Structured query, deterministic aggregate, live source read, direct long-context, hierarchical/index retrieval and bounded JIT exploration are legitimate strategy classes when justified.
+
+### 7.5 Reality frames remain explicit
+
+```text
+CANONICAL CURRENT
+!= HISTORICAL / AS-OF
+!= SCENARIO A
+!= SCENARIO B
+!= OPEN-WORLD ASSERTION
+```
+
+No cross-frame laundering.
+
+### 7.6 ContextManifest records exposure, not causal use
+
+```text
+ConsumerContext != ContextManifest
+ContextManifest != BasisManifest
+EXPOSED != USED != MATERIAL DEPENDENCY
+```
+
+The manifest is an exposure receipt and should not become a permanent duplicate prompt archive by default.
+
+### 7.7 Retrieval is iterative and bounded
+
+Preferred pattern:
 
 ```text
 understand objective
-→ identify information need
-→ retrieve bounded context
+→ required InformationNeeds
+→ acquire bounded eligible context
 → reason
-→ discover missing dependency
-→ retrieve again under current policy/freshness
+→ discover legitimate missing dependency
+→ acquire again under current scope/policy/freshness
 → continue
 ```
 
-not:
+not indiscriminate dump-at-start.
 
-```text
-dump everything at turn start
-```
-
-### 7.5 Structured state and unstructured context are different paths
+### 7.8 Structured state and unstructured context are different paths
 
 Structured DANTE-native meaning remains accessed through application-owned semantic query/projection contracts.
 
-Documents, notes, web results, attachments and other unstructured/open-world material use Context/ Retrieval paths appropriate to their source class.
+Documents, notes, web results, attachments and other unstructured/open-world material use Context/Retrieval paths appropriate to their source class.
 
 No model receives unrestricted raw SQL merely because SQL is convenient.
 
-### 7.6 Provenance and information-flow survive transformation
+### 7.9 Provenance and information-flow survive transformation
 
-Summarisation, chunking, embedding, reranking, synthesis and compaction must not launder source identity, confidentiality or integrity constraints.
+Summarisation, chunking, embedding, reranking, synthesis and compaction must not launder source identity, confidentiality, canonicality or instruction authority.
 
 ```text
 private source -> summary
-summary remains constrained by private source lineage
+summary remains constrained by lineage
 
 untrusted source -> generated derivative
 derivative does not inherit instruction authority
 ```
 
-### 7.7 Freshness and coherence are explicit
+### 7.10 Freshness, readiness and coherence remain explicit
 
 ```text
 source version unchanged != source necessarily fresh
 all fragments fresh != combined basis necessarily coherent
+READY now != READY forever
 ```
 
-AI-03 must preserve the AI-02 `BasisManifest` relationship rather than creating a parallel freshness model.
+AI-03 preserves the AI-02 `BasisManifest` relationship rather than creating a parallel dependency/freshness authority.
 
-### 7.8 Context and disclosure remain separate
+### 7.11 Context and disclosure remain separate
 
 An internal reasoning context may legitimately contain information that a particular recipient must not receive.
 
+Acquisition eligibility, consumer/provider exposure and recipient disclosure are separate checks.
+
 Safe Result Publication / Disclosure remains the egress authority.
 
-### 7.9 Performance is architectural
+### 7.12 Context continuity is compartmented
+
+```text
+Interaction Session continuity
+!= provider/model-visible context continuity
+```
+
+Provider thread/cache/compaction reuse requires current purpose/policy/confidentiality/consumer compatibility.
+
+### 7.13 Child context is separately minimized
+
+```text
+WorkContract protected obligations propagate
+!= parent context is copied wholesale
+```
+
+Child/delegated workers receive minimum necessary projections for their own InformationNeeds.
+
+### 7.14 Performance is architectural
 
 Good context architecture minimizes:
 
@@ -479,17 +545,17 @@ unnecessary tokens
 unnecessary model calls
 unnecessary retrieval
 unnecessary embeddings
-unnecessary network/provider round trips
+unnecessary provider/network round trips
 unnecessary persistent copies
 ```
 
-Deterministic SQL/projection/aggregation should answer structured questions directly when possible.
+Deterministic SQL/projection/aggregation should answer structured questions directly when possible. Context machinery is bypassable on legitimate fast paths.
 
 ---
 
 ## 8. Memory architecture principles
 
-AI-03B must preserve these starting distinctions.
+AI-03B must preserve these distinctions.
 
 ### 8.1 Canonical application memory already exists
 
@@ -556,13 +622,17 @@ AI-03 is built under security/privacy constraints from the start.
 Required properties include:
 
 ```text
-processing-policy filtering before model exposure
+policy-aware discovery/acquisition
+processing/consumer exposure re-evaluation
 DATA != INSTRUCTION
+instruction provenance
 source-to-sink containment
-instruction-authority classification
+model-discovered need scope ceiling
 cross-user / cross-actor isolation
+child/delegation minimisation
 cumulative inference protection
 purpose limitation
+explicit source/use exclusions
 provider eligibility / minimisation
 surface-aware disclosure
 cache re-authorization
@@ -596,15 +666,16 @@ Current selected retrieval capabilities include PostgreSQL native FTS, `pg_trgm`
 Forbidden shortcut:
 
 ```text
-AI-03 begins
+AI-03B begins
 → therefore create memory tables / embeddings / vector index
 ```
 
-Required sequence:
+Required sequence remains:
 
 ```text
 semantic need
 → architecture contract
+→ retrieval/memory lifecycle
 → destructive validation
 → persistence classification
 → smallest justified physical design
@@ -639,30 +710,33 @@ final SDK/gateway
 final sandbox/runtime
 ```
 
-Any later selection must be justified by the completed architecture and evidence.
+Any later selection must be justified by completed architecture and evidence.
 
 ---
 
-## 13. AI-03A acceptance gate
+## 13. AI-03A closure record
 
-AI-03A may close only when the architecture can explain end-to-end:
+AI-03A is closed at the structural architecture level.
+
+Durable proof/rationale:
+
+- `docs/architecture/dante-ai-03a-full-context-architecture.md`
+
+Closure result:
 
 ```text
-request / WorkContract
-→ information needs
-→ candidate sources
-→ current processing eligibility
-→ source/provenance/trust classification
-→ freshness / MaterialState / Basis validation
-→ contradiction/coherence handling
-→ relevance + packing under resource budget
-→ provider/consumer-specific representation
-→ exact ContextManifest
-→ iterative acquisition
-→ invalidation / supersession / revocation response
+INITIAL CANDIDATE                 FAIL / HARDENING REQUIRED
+HARDENINGS                       9
+HARDENED CANDIDATE               STRUCTURAL PASS
+C01..C29                         ACCEPTED AI-03A INVARIANTS
+Domain reopen                    NO
+Logical reopen                   NO
+Physical reopen                  NO
+PostgreSQL/Alembic change        NO
+runtime/provider implementation  NOT CLAIMED
 ```
 
-and when representative simple, historical, multi-actor, sensitive, document-heavy, open-world and long-running scenarios do not require a generic memory/fact ontology or Domain/Logical reopen.
+AI-03A is reopened only if later Retrieval/Memory/materialization evidence demonstrates a real contradiction that cannot be resolved inside the smaller downstream boundary.
 
 ---
 
@@ -693,21 +767,26 @@ Only then may the project move to AI-04 Productionization Architecture.
 Current next action:
 
 ```text
-AI-03A — FULL CONTEXT ARCHITECTURE
+AI-03B — RETRIEVAL + MEMORY ARCHITECTURE
 ```
 
-Start by reconstructing constraints from:
+Start by consuming the accepted AI-03A contract, then design in one large architecture pass:
 
 ```text
-North Star
-→ Domain
-→ Whole Logical / WL-H01..WL-H12
-→ Physical
-→ CP1–CP6 / Persistence Constitution
-→ current Alembic/PostgreSQL/Recovery truth
-→ AI-00
-→ AI-02.1 v0.5
-→ production-engineering research
+retrieval strategy selection and execution
+structured/current/history retrieval
+lexical/fuzzy/semantic/hybrid acquisition
+coverage/currentness/source-reread rules
+permission-aware retrieval
+large-corpus/document hierarchy
+retrieval evaluation
+
+Interaction / working / derived / provider / retrieval-memory classes
+memory admission and promotion
+correction / contradiction / supersession
+decay / expiry / forgetting
+retirement / deletion / anti-resurrection
+cache / provider / index invalidation
 ```
 
-Then design the Context system end-to-end in one large architecture pass before any materialization decision.
+Use targeted modern retrieval/memory research as challenger evidence where needed, but do not select physical technologies before the semantic/lifecycle architecture is coherent.
