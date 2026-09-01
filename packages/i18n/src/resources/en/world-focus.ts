@@ -14,6 +14,11 @@ export const worldFocus = {
       'An unexpected error occurred. You can retry without exposing technical details.',
     retry: 'Retry',
   },
+  surfaces: {
+    unavailable: 'This content is unavailable.',
+    error: 'Unable to display this content.',
+    close: 'Close',
+  },
   continuity: {
     title: 'In motion',
     loading: 'Recovering what is in motion',
