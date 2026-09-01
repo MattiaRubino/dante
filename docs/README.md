@@ -36,33 +36,35 @@ An unmerged branch may contain newer truth for its own scope, but it is not prot
 ## 2. Current lifecycle
 
 ```text
-PRODUCT / NORTH STAR                 CURRENT
-DOMAIN MODEL                         CLOSED
-LOGICAL MODEL                        CLOSED / 57 OF 57 / REMOTE QA PASS
-PRE-PHYSICAL COHERENCE               CLOSED / FINAL QA PASS
-PHYSICAL TARGET                      CLOSED / ACCEPTED
-ENGINEERING FOUNDATION               CLOSED / ACCEPTED
-FRONTEND ENGINEERING FOUNDATION      CLOSED / INTEGRATED VIA PR #22
-FRONTEND MATERIALIZATION             CLOSED / PASS / INTEGRATED VIA PR #28
-BACKEND CP1–CP5 SCAFFOLD             CLOSED / DIRECT QA / INTEGRATED VIA PR #24
-BACKEND CP6 DATABASE                 CLOSED / DIRECT QA / INTEGRATED VIA PR #42
-CURRENT POSTGRESQL                   18.6
-HISTORICAL PRE-RECOVERY ALEMBIC      20260826_08
-HISTORICAL PRE-RECOVERY DB TOPOLOGY  68/5/14/75/95/68/120
-CURRENT PROTECTED-MAIN ALEMBIC       20260830_09
-CURRENT PROTECTED-MAIN DB TOPOLOGY   69/5/15/76/97/69/123
-POSTGRESQL LOCAL RECOVERY            CP01–CP07 LOCAL PASS / CLOSED / INTEGRATED VIA PR #47
-REMOTE BACKUP PROVIDER               TBD / NOT ACTIVATED
-PRODUCTION/CLOUD RECOVERY            NOT CLAIMED
-ACCESS PRE-BACKEND FRONTEND          CLOSED / ACCEPTED / RELEASE-HARDENED
-FULL ACCESS/AUTH PRODUCT VERTICAL    ACTIVE UNMERGED WORKSTREAM
-AI-00 FOUNDATION                     COMPLETE
-AI-01 PRODUCT/PRODUCTION RESEARCH    COMPLETE
-AI-02.1 RUNTIME ARCHITECTURE         v0.5 CLOSED / STRUCTURALLY ACCEPTED
-AI-02 PRESSURE/MEGA TEST PROGRAM     COMPLETE
-AI-02 TARGETED v0.5 VERIFICATION     COMPLETE
-AI-03 CONTEXT/RETRIEVAL/MEMORY       ACTIVE
-AI-03 CURRENT MACRO-PHASE            AI-03A FULL CONTEXT ARCHITECTURE
+PRODUCT / NORTH STAR                  CURRENT
+DOMAIN MODEL                          CLOSED
+LOGICAL MODEL                         CLOSED / 57 OF 57 / REMOTE QA PASS
+PRE-PHYSICAL COHERENCE                CLOSED / FINAL QA PASS
+PHYSICAL TARGET                       CLOSED / ACCEPTED
+ENGINEERING FOUNDATION                CLOSED / ACCEPTED
+FRONTEND ENGINEERING FOUNDATION       CLOSED / INTEGRATED VIA PR #22
+FRONTEND MATERIALIZATION              CLOSED / PASS / INTEGRATED VIA PR #28
+BACKEND CP1–CP5 SCAFFOLD              CLOSED / DIRECT QA / INTEGRATED VIA PR #24
+BACKEND CP6 DATABASE                  CLOSED / DIRECT QA / INTEGRATED VIA PR #42
+CURRENT POSTGRESQL                    18.6
+HISTORICAL PRE-RECOVERY ALEMBIC       20260826_08
+HISTORICAL PRE-RECOVERY DB TOPOLOGY   68/5/14/75/95/68/120
+CURRENT PROTECTED-MAIN ALEMBIC        20260830_09
+CURRENT PROTECTED-MAIN DB TOPOLOGY    69/5/15/76/97/69/123
+POSTGRESQL LOCAL RECOVERY             CP01–CP07 LOCAL PASS / CLOSED / INTEGRATED VIA PR #47
+REMOTE BACKUP PROVIDER                TBD / NOT ACTIVATED
+PRODUCTION/CLOUD RECOVERY             NOT CLAIMED
+ACCESS PRE-BACKEND FRONTEND           CLOSED / ACCEPTED / RELEASE-HARDENED
+FULL ACCESS/AUTH PRODUCT VERTICAL     ACTIVE UNMERGED WORKSTREAM
+AI-00 FOUNDATION                      COMPLETE
+AI-01 PRODUCT/PRODUCTION RESEARCH     COMPLETE
+AI-02.1 RUNTIME ARCHITECTURE          v0.5 CLOSED / STRUCTURALLY ACCEPTED
+AI-02 PRESSURE/MEGA TEST PROGRAM      COMPLETE
+AI-02 TARGETED v0.5 VERIFICATION      COMPLETE
+AI-03 CONTEXT/RETRIEVAL/MEMORY        ACTIVE
+AI-03A FULL CONTEXT ARCHITECTURE      CLOSED / STRUCTURALLY ACCEPTED
+AI-03A HARDENED INVARIANTS            C01..C29 ACCEPTED
+AI-03 CURRENT MACRO-PHASE             AI-03B RETRIEVAL + MEMORY ARCHITECTURE
 AI BACKEND/DB/PROVIDER IMPLEMENTATION NOT CLAIMED
 ```
 
@@ -91,7 +93,8 @@ For the active AI workstream, branch-local continuation additionally uses:
 
 - `workstreams/ai-architecture.md` — durable active-workstream record;
 - `workstreams/ai-architecture-live-handoff.md` — TEMPORARY branch-operational handoff while the branch is active; MUST NOT MERGE TO `main`;
-- `architecture/dante-ai-03-context-retrieval-memory.md` — current AI-03 phase charter.
+- `architecture/dante-ai-03-context-retrieval-memory.md` — current AI-03 phase charter;
+- `architecture/dante-ai-03a-full-context-architecture.md` — closed/accepted AI-03A Context authority consumed by AI-03B.
 
 ## 4. Documentation lifecycle
 
@@ -205,7 +208,10 @@ architecture/dante-ai-02-1-intelligence-reengineering.md
 → AI-02.1 v0.5 CLOSED / STRUCTURALLY ACCEPTED
 
 architecture/dante-ai-03-context-retrieval-memory.md
-→ AI-03 ACTIVE / current macro-phase AI-03A FULL CONTEXT ARCHITECTURE
+→ AI-03 ACTIVE / current macro-phase AI-03B RETRIEVAL + MEMORY ARCHITECTURE
+
+architecture/dante-ai-03a-full-context-architecture.md
+→ AI-03A CLOSED / STRUCTURALLY ACCEPTED / C01..C29
 ```
 
 AI-00 remains semantically binding for its inherited/derived baseline. Its original `AI-01 next step` sequencing is historical; later product-form/research/reengineering work has already occurred.
@@ -227,8 +233,11 @@ AI-02  Intelligence Runtime Architecture
 AI-03  Context / Retrieval / Memory
        ACTIVE
        ├ AI-03A Full Context Architecture
+       │        CLOSED / STRUCTURALLY ACCEPTED
        ├ AI-03B Retrieval + Memory Architecture
+       │        ACTIVE / CURRENT
        └ AI-03C Destructive Validation + Materialization Blueprint
+                FUTURE
 
 AI-04  Productionization Architecture
        FUTURE
@@ -290,19 +299,86 @@ Targeted v0.5 consistency verification covers the new boundary and hardenings an
 
 These are responsibility/runtime contracts, not automatic services, Domain owners or database tables. All completed rounds found no evidence sufficient to reopen Domain, Logical, Physical or PostgreSQL.
 
-AI-02.1 is now **CLOSED / STRUCTURALLY ACCEPTED**. That closure does not claim runtime/backend/provider/database implementation PASS.
+AI-02.1 is **CLOSED / STRUCTURALLY ACCEPTED**. That closure does not claim runtime/backend/provider/database implementation PASS.
 
-### AI-03 active boundary
+### AI-03A accepted Context boundary
 
-AI-03 owns detailed Context / Retrieval / Memory architecture.
+Durable authority:
 
-Current macro-phase:
+- `architecture/dante-ai-03a-full-context-architecture.md`
+
+The initial candidate failed its dedicated destructive Context test. Nine hardenings were incorporated and retested before closure.
+
+Accepted runtime contracts:
 
 ```text
-AI-03A — FULL CONTEXT ARCHITECTURE
+ContextPlan
+InformationNeed
+ContextStrategy
+ContextFragment
+ContextReadiness
+ConsumerContext
+ContextManifest
++ inherited BasisManifest
 ```
 
-AI-03 must consume AI-02.1 rather than pre-commit embeddings, vector-store, conversation-history or memory persistence choices from industry fashion. Physical materialization is deferred until AI-03C destructive validation and classification.
+Accepted high-level boundaries include:
+
+```text
+Context != canonical reality
+Context != Retrieval != Memory
+Reality Scope must remain explicit
+Source Standing != Domain Authority
+DATA != INSTRUCTION
+model-discovered need may refine != may widen WorkContract/policy scope
+Interaction Session continuity != provider-context continuity
+WorkContract propagation != parent-context inheritance
+ConsumerContext != ContextManifest
+ContextManifest != BasisManifest
+ContextReadiness is consumer-specific / non-monotonic
+minimum necessary remains objective-relative
+```
+
+AI-03A accepted invariants are `C01..C29`.
+
+Closure result:
+
+```text
+HARDENED CANDIDATE         STRUCTURAL PASS
+Domain/Logical/Physical    NO REOPEN
+PostgreSQL/Alembic         NO CHANGE
+runtime implementation     NOT CLAIMED
+```
+
+### AI-03B active boundary
+
+AI-03B is the current exact work.
+
+It owns retrieval and memory architecture under the fixed AI-03A Context contracts, including:
+
+```text
+structured/current/history retrieval
+lexical/fuzzy/semantic/hybrid retrieval
+coverage-aware and permission-aware retrieval
+source reread / currentness validation
+large-corpus/document hierarchy
+long-context vs retrieval strategy
+retrieval evaluation
+
+Interaction memory
+Run/working memory
+compaction/checkpoint state
+derived/adaptive memory
+provider state/cache
+retrieval representations/indexes/embeddings
+
+admission / promotion / correction / contradiction
+supersession / decay / expiry
+retirement / deletion / forgetting / anti-resurrection
+provider/cache/index invalidation
+```
+
+AI-03B must not pre-commit embeddings, vector-store, conversation-history or memory persistence choices from industry fashion. Physical materialization remains deferred until AI-03C.
 
 ## 10. Database System of Record
 
@@ -424,6 +500,10 @@ SUPERSEDE != CANCEL != ROLLBACK != RECONCILE
 RUN-START AUTHORIZATION != PERPETUAL AUTHORIZATION
 DANTE REPRESENTATION != EXTERNAL SYSTEM-OF-RECORD AUTHORITY
 EXECUTION ENVIRONMENT != MANDATORY SANDBOX/CONTAINER
+CONSUMER CONTEXT != CONTEXT MANIFEST
+CONTEXT MANIFEST != BASIS MANIFEST
+SOURCE STANDING != DOMAIN AUTHORITY
+MODEL-DISCOVERED NEED != SCOPE EXPANSION
 ENVIRONMENT != GIT BRANCH
 TEMPORARY HANDOFF != DURABLE DOCUMENTATION
 ```
