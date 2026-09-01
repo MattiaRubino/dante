@@ -1,5 +1,7 @@
+import type { PlainDate } from '@dante/time';
 import {
   useCallback,
+  useEffect,
   useLayoutEffect,
   useRef,
   useState,
@@ -7,92 +9,230 @@ import {
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
+import type { TemporalValidationIssue } from '../../temporal';
+import {
+  createLocalTemporalCreateRuntime,
+  type TemporalCreateAppliedEffect,
+  type TemporalCreatePreparedOperation,
+} from '../application/temporal-create-runtime';
+import {
+  temporalCreateTimelinePreviewFromFields,
+  type TemporalCreateTimelineProjection,
+} from '../application/temporal-create-projection';
 import {
   continueTemporalCreateEditing,
+  createTemporalCreateFields,
   createTemporalCreateSession,
   discardTemporalCreateSession,
   requestTemporalCreateClose,
-  updateTemporalCreateTitle,
+  setTemporalCreateDetailsOpen,
+  updateTemporalCreateFields,
+  type TemporalCreateSession,
 } from '../model/temporal-create-session';
 import {
   TemporalCreateComposer,
   type TemporalCreateComposerPosition,
+  type TemporalCreateContextOption,
 } from './temporal-create-composer';
 
 import './temporal-create.css';
 
 const VIEWPORT_PADDING_PX = 16;
 const COMPOSER_GAP_PX = 10;
-const COMPOSER_MAX_WIDTH_PX = 420;
-const COMPOSER_BASE_HEIGHT_PX = 190;
-const COMPOSER_DISCARD_HEIGHT_PX = 286;
+const COMPOSER_MAX_WIDTH_PX = 560;
+const COMPOSER_ESTIMATED_HEIGHT_PX = 650;
+
+type InvocationAnchor = Readonly<{
+  left: number;
+  top: number;
+  bottom: number;
+}>;
+
+export type TemporalCreateInvocation = Readonly<{
+  id: number;
+  date: PlainDate;
+  startMinute?: number;
+  anchor?: InvocationAnchor;
+}>;
+
+export type TemporalCreateEntryProps = Readonly<{
+  defaultDate: PlainDate;
+  contexts: readonly TemporalCreateContextOption[];
+  request?: TemporalCreateInvocation | null;
+  onPreview: (projection: TemporalCreateTimelineProjection | null) => void;
+  onApplied: (effect: TemporalCreateAppliedEffect) => void;
+  onBeforeOpen?: () => void;
+}>;
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), Math.max(min, max));
 }
 
-export function TemporalCreateEntry() {
+function minuteToInput(minute: number): string {
+  const safe = Math.max(0, Math.min(1435, Math.round(minute / 5) * 5));
+  return `${String(Math.floor(safe / 60)).padStart(2, '0')}:${String(
+    safe % 60,
+  ).padStart(2, '0')}`;
+}
+
+export function TemporalCreateEntry({
+  defaultDate,
+  contexts,
+  request,
+  onPreview,
+  onApplied,
+  onBeforeOpen,
+}: TemporalCreateEntryProps) {
   const { t } = useTranslation('common');
   const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const runtimeRef = useRef(createLocalTemporalCreateRuntime());
+  const requestSeenRef = useRef<number | null>(null);
+  const preparedRef = useRef<TemporalCreatePreparedOperation | null>(null);
+  const commitInFlightRef = useRef(false);
   const [open, setOpen] = useState(false);
-  const [session, setSession] = useState(createTemporalCreateSession);
+  const [session, setSession] = useState<TemporalCreateSession>(() =>
+    createTemporalCreateSession(),
+  );
+  const [issues, setIssues] = useState<readonly TemporalValidationIssue[]>([]);
+  const [lifecycle, setLifecycle] = useState<'idle' | 'pending' | 'failed'>(
+    'idle',
+  );
+  const [failureMessage, setFailureMessage] = useState('');
+  const [anchor, setAnchor] = useState<InvocationAnchor | null>(null);
   const [position, setPosition] = useState<TemporalCreateComposerPosition>({
     top: 72,
     left: VIEWPORT_PADDING_PX,
   });
 
+  const freshFields = useCallback(
+    (date: PlainDate, startMinute?: number) => {
+      const runtime = runtimeRef.current;
+      const zone = runtime.clock.timeZoneId();
+      let minute = startMinute;
+      if (minute === undefined) {
+        if (date.equals(runtime.clock.today(zone))) {
+          const now = runtime.clock.now().toZonedDateTimeISO(zone);
+          minute = Math.ceil((now.hour * 60 + now.minute) / 15) * 15;
+        } else {
+          minute = 9 * 60;
+        }
+      }
+      return createTemporalCreateFields({
+        date: date.toString(),
+        startTime: minuteToInput(minute),
+        timeZoneId: zone,
+        contextId:
+          contexts.find((context) => context.id === 'personale')?.id ??
+          contexts[0]?.id ??
+          'personale',
+      });
+    },
+    [contexts],
+  );
+
   const restoreTriggerFocus = useCallback(() => {
     requestAnimationFrame(() => triggerRef.current?.focus());
   }, []);
 
-  const closeComposer = useCallback(() => {
-    setOpen(false);
-    setSession(discardTemporalCreateSession());
-    restoreTriggerFocus();
-  }, [restoreTriggerFocus]);
+  const closeComposer = useCallback(
+    (restoreFocus = true) => {
+      setOpen(false);
+      setIssues([]);
+      setFailureMessage('');
+      setLifecycle('idle');
+      setAnchor(null);
+      preparedRef.current = null;
+      commitInFlightRef.current = false;
+      onPreview(null);
+      if (restoreFocus) {
+        restoreTriggerFocus();
+      }
+    },
+    [onPreview, restoreTriggerFocus],
+  );
 
-  const openComposer = () => {
-    setSession(createTemporalCreateSession());
-    setOpen(true);
-  };
+  const openComposer = useCallback(
+    (
+      date: PlainDate,
+      startMinute?: number,
+      externalAnchor?: InvocationAnchor,
+    ) => {
+      onBeforeOpen?.();
+      const fields = freshFields(date, startMinute);
+      setSession(createTemporalCreateSession(fields));
+      setIssues([]);
+      setFailureMessage('');
+      setLifecycle('idle');
+      preparedRef.current = null;
+      const triggerRect = triggerRef.current?.getBoundingClientRect();
+      setAnchor(
+        externalAnchor ??
+          (triggerRect
+            ? {
+                left: triggerRect.left,
+                top: triggerRect.top,
+                bottom: triggerRect.bottom,
+              }
+            : null),
+      );
+      setOpen(true);
+    },
+    [freshFields, onBeforeOpen],
+  );
 
-  const requestClose = () => {
-    const request = requestTemporalCreateClose(session);
-    if (request.shouldClose) {
-      closeComposer();
+  useEffect(() => {
+    if (!request || requestSeenRef.current === request.id) {
       return;
     }
-    setSession(request.session);
-  };
+    requestSeenRef.current = request.id;
+    if (open) {
+      return;
+    }
+    openComposer(request.date, request.startMinute, request.anchor);
+  }, [open, openComposer, request]);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (!open) {
       return;
     }
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [open]);
 
+  useEffect(() => {
+    if (!open || session.closeDecision === 'confirm-discard') {
+      onPreview(null);
+      return;
+    }
+    onPreview(
+      temporalCreateTimelinePreviewFromFields(session.draft.current),
+    );
+    return () => onPreview(null);
+  }, [onPreview, open, session.closeDecision, session.draft.current]);
+
+  useLayoutEffect(() => {
+    if (!open || !anchor) {
+      return;
+    }
     const updatePosition = () => {
-      const trigger = triggerRef.current;
-      if (!trigger) {
-        return;
-      }
-
-      const rect = trigger.getBoundingClientRect();
       const width = Math.min(
         COMPOSER_MAX_WIDTH_PX,
         Math.max(0, window.innerWidth - VIEWPORT_PADDING_PX * 2),
       );
-      const estimatedHeight =
-        session.closeDecision === 'confirm-discard'
-          ? COMPOSER_DISCARD_HEIGHT_PX
-          : COMPOSER_BASE_HEIGHT_PX;
-
       const left = clamp(
-        rect.left,
+        anchor.left,
         VIEWPORT_PADDING_PX,
         window.innerWidth - width - VIEWPORT_PADDING_PX,
       );
-      const below = rect.bottom + COMPOSER_GAP_PX;
-      const above = rect.top - COMPOSER_GAP_PX - estimatedHeight;
+      const below = anchor.bottom + COMPOSER_GAP_PX;
+      const estimatedHeight = Math.min(
+        COMPOSER_ESTIMATED_HEIGHT_PX,
+        window.innerHeight - VIEWPORT_PADDING_PX * 2,
+      );
+      const above = anchor.top - COMPOSER_GAP_PX - estimatedHeight;
       const top =
         below + estimatedHeight <= window.innerHeight - VIEWPORT_PADDING_PX
           ? below
@@ -101,32 +241,98 @@ export function TemporalCreateEntry() {
               VIEWPORT_PADDING_PX,
               window.innerHeight - estimatedHeight - VIEWPORT_PADDING_PX,
             );
-
       setPosition({ top, left });
     };
-
     updatePosition();
     window.addEventListener('resize', updatePosition);
-    window.addEventListener('scroll', updatePosition, true);
+    return () => window.removeEventListener('resize', updatePosition);
+  }, [anchor, open]);
 
-    return () => {
-      window.removeEventListener('resize', updatePosition);
-      window.removeEventListener('scroll', updatePosition, true);
-    };
-  }, [open, session.closeDecision]);
+  const requestClose = () => {
+    if (lifecycle === 'pending') {
+      return;
+    }
+    const requestResult = requestTemporalCreateClose(session);
+    if (requestResult.shouldClose) {
+      closeComposer();
+      return;
+    }
+    setSession(requestResult.session);
+  };
+
+  const patch = (
+    next: Partial<TemporalCreateSession['draft']['current']>,
+  ) => {
+    preparedRef.current = null;
+    setIssues([]);
+    setFailureMessage('');
+    setLifecycle('idle');
+    setSession((current) => updateTemporalCreateFields(current, next));
+  };
+
+  const submit = async () => {
+    if (commitInFlightRef.current) {
+      return;
+    }
+    const runtime = runtimeRef.current;
+    const preparation = preparedRef.current
+      ? ({ status: 'ready', prepared: preparedRef.current } as const)
+      : runtime.prepare(session.draft.current);
+    if (preparation.status === 'invalid') {
+      setIssues(preparation.issues);
+      return;
+    }
+
+    preparedRef.current = preparation.prepared;
+    commitInFlightRef.current = true;
+    setLifecycle('pending');
+    setIssues([]);
+    setFailureMessage('');
+    try {
+      const execution = await runtime.execute(preparation.prepared);
+      if (execution.result.status === 'applied' && execution.effect) {
+        onApplied(execution.effect);
+        setSession(
+          discardTemporalCreateSession(freshFields(defaultDate)),
+        );
+        closeComposer(false);
+        return;
+      }
+      if (execution.result.status === 'rejected') {
+        setIssues(execution.result.issues);
+        setLifecycle('idle');
+      } else {
+        setLifecycle('failed');
+        setFailureMessage(t(($) => $.common.home.timeline.create.failure));
+      }
+    } catch {
+      setLifecycle('failed');
+      setFailureMessage(t(($) => $.common.home.timeline.create.failure));
+    } finally {
+      commitInFlightRef.current = false;
+    }
+  };
 
   const composer = open ? (
     <TemporalCreateComposer
       position={position}
       session={session}
-      onTitleChange={(title) =>
-        setSession((current) => updateTemporalCreateTitle(current, title))
+      contexts={contexts}
+      issues={issues}
+      lifecycle={lifecycle}
+      failureMessage={failureMessage}
+      onPatch={patch}
+      onToggleDetails={() =>
+        setSession((current) =>
+          setTemporalCreateDetailsOpen(current, !current.detailsOpen),
+        )
       }
       onRequestClose={requestClose}
       onContinueEditing={() =>
         setSession((current) => continueTemporalCreateEditing(current))
       }
-      onDiscard={closeComposer}
+      onDiscard={() => closeComposer()}
+      onSubmit={() => void submit()}
     />
   ) : null;
 
@@ -136,7 +342,7 @@ export function TemporalCreateEntry() {
         ref={triggerRef}
         className="dante-timeline-quick-add"
         type="button"
-        onClick={openComposer}
+        onClick={() => openComposer(defaultDate)}
         aria-label={t(($) => $.common.home.timeline.quickAdd)}
         aria-haspopup="dialog"
         aria-expanded={open}
@@ -144,7 +350,6 @@ export function TemporalCreateEntry() {
       >
         +
       </button>
-
       {composer && typeof document !== 'undefined'
         ? createPortal(composer, document.body)
         : null}

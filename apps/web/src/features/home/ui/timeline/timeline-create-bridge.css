@@ -1,0 +1,130 @@
+.temporal-create-projection-card,
+.temporal-create-all-day {
+  --timeline-group-color: var(--dante-timeline-tone-personal, #f2778c);
+}
+
+.temporal-create-projection-card[data-timeline-tone='focus'],
+.temporal-create-all-day[data-timeline-tone='focus'] { --timeline-group-color: var(--dante-timeline-tone-focus); }
+.temporal-create-projection-card[data-timeline-tone='meeting'],
+.temporal-create-all-day[data-timeline-tone='meeting'] { --timeline-group-color: var(--dante-timeline-tone-meeting); }
+.temporal-create-projection-card[data-timeline-tone='health'],
+.temporal-create-all-day[data-timeline-tone='health'] { --timeline-group-color: var(--dante-timeline-tone-health); }
+.temporal-create-projection-card[data-timeline-tone='creative'],
+.temporal-create-all-day[data-timeline-tone='creative'] { --timeline-group-color: var(--dante-timeline-tone-creative); }
+.temporal-create-projection-card[data-timeline-tone='urgent'],
+.temporal-create-all-day[data-timeline-tone='urgent'] { --timeline-group-color: var(--dante-timeline-tone-urgent); }
+
+.temporal-create-projection-card {
+  position: absolute;
+  z-index: 11;
+  box-sizing: border-box;
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  overflow: hidden;
+  padding: 8px 10px 8px 13px;
+  border: 1px solid color-mix(in srgb, var(--timeline-group-color) 34%, var(--dante-semantic-color-home-border-subtle));
+  border-radius: 10px;
+  color: var(--dante-semantic-color-home-text-primary);
+  background: color-mix(in srgb, var(--timeline-group-color) 5%, var(--dante-semantic-color-home-surface-primary));
+  box-shadow: inset 3px 0 0 var(--timeline-group-color), 0 10px 24px rgba(0, 0, 0, 0.16);
+  transition: opacity 140ms ease, box-shadow 140ms ease;
+}
+
+.temporal-create-projection-card strong {
+  overflow: hidden;
+  font-size: 10px;
+  font-weight: 690;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.temporal-create-projection-card span {
+  color: var(--dante-semantic-color-home-text-secondary);
+  font-size: 8.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.temporal-create-projection-card:focus-visible,
+.temporal-create-all-day:focus-visible {
+  outline: 2px solid var(--timeline-group-color);
+  outline-offset: 2px;
+}
+
+.temporal-create-projection-card.is-preview,
+.temporal-create-all-day.is-preview {
+  border-style: dashed;
+  opacity: 0.62;
+  pointer-events: none;
+  box-shadow: inset 3px 0 0 color-mix(in srgb, var(--timeline-group-color) 60%, transparent);
+}
+
+.temporal-create-all-day {
+  position: absolute;
+  z-index: 12;
+  display: inline-flex;
+  max-width: min(340px, calc(100% - 120px));
+  align-items: center;
+  gap: 7px;
+  padding: 5px 9px;
+  border: 1px solid color-mix(in srgb, var(--timeline-group-color) 30%, transparent);
+  border-radius: 999px;
+  color: var(--dante-semantic-color-home-text-primary);
+  background: color-mix(in srgb, var(--timeline-group-color) 8%, var(--dante-semantic-color-home-surface-primary));
+}
+
+.temporal-create-all-day span {
+  color: color-mix(in srgb, var(--timeline-group-color) 68%, white);
+  font-size: 7.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.temporal-create-all-day strong {
+  overflow: hidden;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.temporal-create-toast {
+  position: fixed;
+  z-index: 1700;
+  bottom: max(18px, env(safe-area-inset-bottom));
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 12px;
+  transform: translate(-50%, 18px);
+  border: 1px solid var(--dante-semantic-color-home-border-subtle);
+  border-radius: 11px;
+  color: var(--dante-semantic-color-home-text-primary);
+  background: var(--dante-semantic-color-home-surface-raised);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.28);
+  font-size: 10px;
+  opacity: 0;
+  pointer-events: none;
+  transition: 160ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.temporal-create-toast.is-on {
+  transform: translate(-50%, 0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.temporal-create-toast button {
+  border: 0;
+  color: var(--dante-semantic-color-home-chrome-active-text);
+  background: transparent;
+  font: inherit;
+  font-weight: 680;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .temporal-create-projection-card,
+  .temporal-create-toast { transition: none; }
+}
