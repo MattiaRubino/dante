@@ -22,7 +22,9 @@ function cacheAuthenticatedSession(
 async function refreshMethods(
   queryClient: ReturnType<typeof useQueryClient>,
 ): Promise<void> {
-  await queryClient.invalidateQueries({ queryKey: authenticationMethodsQueryKey });
+  await queryClient.invalidateQueries({
+    queryKey: authenticationMethodsQueryKey,
+  });
 }
 
 export async function signInWithPasskey(
@@ -54,11 +56,7 @@ export async function registerPasskey({
     label,
     ...(signal === undefined ? {} : { signal }),
   });
-  return webAuthRemote.completePasskeyRegistration(
-    evidence,
-    csrfToken,
-    signal,
-  );
+  return webAuthRemote.completePasskeyRegistration(evidence, csrfToken, signal);
 }
 
 export async function reauthenticateWithPasskey({
@@ -132,11 +130,7 @@ export function useUpdatePasskeyMutation() {
       label: string;
       csrfToken: string;
     }) =>
-      webAuthRemote.updatePasskey(
-        passkeyCredentialRef,
-        { label },
-        csrfToken,
-      ),
+      webAuthRemote.updatePasskey(passkeyCredentialRef, { label }, csrfToken),
     retry: false,
     onSuccess: async () => refreshMethods(queryClient),
   });
