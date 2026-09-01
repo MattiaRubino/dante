@@ -5,7 +5,7 @@
 - **Backend foundation:** CP1–CP6 CLOSED / integrated / directly validated
 - **Current PostgreSQL:** 18.6
 - **Current Alembic head:** `20260830_09`
-- **Current product work:** full Access/Auth vertical active and unmerged on `feature/access-auth`; AI-02.1 v0.5 structurally accepted and AI-03 Context/Retrieval/Memory active on `feature/ai-architecture`
+- **Current product work:** full Access/Auth vertical active and unmerged on `feature/access-auth`; AI-02.1 v0.5 and AI-03A Full Context Architecture structurally accepted; AI-03B Retrieval + Memory current on `feature/ai-architecture`
 
 ## 1. Product and authority
 
@@ -42,9 +42,16 @@ EXECUTION ENVIRONMENT != MANDATORY SANDBOX/CONTAINER
 FRESH INPUTS != AUTOMATICALLY COHERENT COMBINED BASIS
 APPROVAL != PERPETUAL AUTHORIZATION FOR MATERIALLY CHANGED WORK
 CACHE HIT != CURRENT DISCLOSURE AUTHORIZATION
+CONTEXT != RETRIEVAL != MEMORY
+CONSUMER CONTEXT != CONTEXT MANIFEST
+CONTEXT MANIFEST != BASIS MANIFEST
+SOURCE STANDING != DOMAIN AUTHORITY
+INTERACTION SESSION CONTINUITY != PROVIDER-CONTEXT CONTINUITY
+MODEL-DISCOVERED INFORMATION NEED != WORKCONTRACT/POLICY SCOPE EXPANSION
+WORKCONTRACT PROPAGATION != PARENT-CONTEXT INHERITANCE
 ```
 
-Logical hardenings `WL-H01..WL-H12` remain active implementation contracts.
+Logical hardenings `WL-H01..WL-H12` remain active implementation contracts. AI-03A adds accepted Context hardenings `C01..C29`.
 
 The AI architecture is layered across:
 
@@ -58,11 +65,14 @@ docs/architecture/ai-production-engineering-state-of-the-art-2026.md
 docs/architecture/dante-ai-02-1-intelligence-reengineering.md
 → AI-02.1 v0.5 CLOSED / STRUCTURALLY ACCEPTED
 
+docs/architecture/dante-ai-03a-full-context-architecture.md
+→ AI-03A Full Context Architecture CLOSED / STRUCTURALLY ACCEPTED
+
 docs/architecture/dante-ai-03-context-retrieval-memory.md
-→ AI-03 ACTIVE / current macro-phase AI-03A Full Context Architecture
+→ AI-03 ACTIVE / current macro-phase AI-03B Retrieval + Memory Architecture
 ```
 
-AI-02.1 does not supersede AI-00. It pressure-tested and refined runtime/intelligence responsibilities while preserving the accepted semantic baseline. AI-03 now consumes that accepted runtime structure and owns detailed Context / Retrieval / Memory design.
+AI-02.1 does not supersede AI-00. It pressure-tested and refined runtime/intelligence responsibilities while preserving the accepted semantic baseline. AI-03A then fixed detailed Context contracts inside that runtime. AI-03B consumes both and owns detailed Retrieval + Memory design.
 
 ## 2. Repository / application topology
 
@@ -184,7 +194,7 @@ universal Fact/Version semantic payload root
 JSONB required-semantic escape hatch
 ```
 
-Conversation state, embeddings, provider threads, agent/runtime journals, scenario overlays, ChangeSets, BasisManifests, WorkContracts, target-resolution metadata, policy decisions or generated summaries do not become canonical DANTE truth by convenience.
+Conversation state, embeddings, provider threads, agent/runtime journals, scenario overlays, ChangeSets, BasisManifests, WorkContracts, ContextPlans, ContextFragments, ContextManifests, target-resolution metadata, policy decisions or generated summaries do not become canonical DANTE truth by convenience.
 
 ## 5. Reference / material-state architecture
 
@@ -223,6 +233,9 @@ AI adds orthogonal checks:
 ```text
 Reference / Target Resolution
 → are we acting on the intended canonical target?
+
+InformationNeed reference-resolution requirement
+→ is the target/referent resolved enough for this specific context need?
 
 BasisManifest validity
 → are target state and other dependencies still valid/fresh enough?
@@ -352,6 +365,19 @@ SUPERSEDE != CANCEL != ROLLBACK != RECONCILE
 
 A superseded Run may still finish reconciliation/evidence for already-attempted work. It must not dispatch newly obsolete effects or keep publishing obsolete output as current.
 
+AI-03A adds the decomposition privacy complement:
+
+```text
+CHILD WORK CONTRACT
+inherits protected obligations
+
+CHILD CONTEXT
+is separately minimized to the child's InformationNeeds
+
+WORKCONTRACT PROPAGATION
+!= PARENT-CONTEXT INHERITANCE
+```
+
 ## 8. Semantic Query vs Context vs Scenario
 
 ### Semantic Query / Projection Gateway
@@ -362,15 +388,92 @@ It is not raw model SQL access and not a generic Entity API.
 
 ### Context Engine
 
-Assembles authorized unstructured/external/conversational reasoning material such as documents, notes, web results, artifacts and temporary conversation context.
+Builds purpose-bound, consumer-specific context under the accepted AI-03A contracts. It may compose structured projections with documents, notes, external/open-world material, session/working state and other eligible sources without becoming a second canonical store.
 
-Detailed Context/Retrieval/Memory architecture is now **ACTIVE in AI-03**. AI-03 keeps Context, Retrieval and Memory distinct, and must not turn Context Engine into a second canonical store.
+Accepted Context contracts are:
+
+```text
+ContextPlan
+InformationNeed
+ContextStrategy
+ContextFragment
+ContextReadiness
+ConsumerContext
+ContextManifest
+```
+
+plus inherited `BasisManifest`.
+
+`ContextFragment` is runtime source-linked representation, not a new Domain Fact/Observation/Evidence/ContentArtifact/Version/MaterialState/Memory root.
+
+`ConsumerContext` is what one consumer actually receives. `ContextManifest` is the exposure receipt. Neither is the canonical world.
 
 ### Scenario Workspace
 
 Hypothetical/derived overlays over an explicit basis. It does not duplicate the canonical database and does not become current reality merely because a model/solver produced it.
 
-## 9. BasisManifest / freshness / coherence
+AI-03A requires explicit Reality Scope:
+
+```text
+CANONICAL_CURRENT
+MATERIAL_HISTORICAL / AS-OF
+SCENARIO <workspace/branch>
+OPEN-WORLD ASSERTION
+explicit MIXED frame
+```
+
+No cross-frame laundering is allowed.
+
+## 9. AI-03A Context assembly contract
+
+The accepted structural path is:
+
+```text
+WorkContract
+→ ContextPlan
+→ InformationNeeds
+→ ContextStrategy per need
+→ discovery/acquisition PEP
+→ source read + source binding
+→ ContextFragments
+→ Reality Scope / Provenance / Source Standing /
+  Integrity / Canonicality / Instruction Provenance /
+  Confidentiality / Temporal Validity / Contradiction
+→ coverage + coherence
+→ ContextReadiness
+→ minimisation / transformation
+→ resource-aware packing
+→ consumer/provider exposure PEP
+→ ConsumerContext
+→ Harness / consumer invocation
+→ ContextManifest exposure receipt
+→ bounded iterative/JIT acquisition if legitimate need remains
+```
+
+Core distinctions:
+
+```text
+CONTEXT != RETRIEVAL != MEMORY
+PROVENANCE != SOURCE STANDING != INTEGRITY != CANONICALITY
+SOURCE STANDING != DOMAIN AUTHORITY
+DATA != INSTRUCTION
+USER-ORIGINATED CONTENT != USER INSTRUCTION AUTOMATICALLY
+CONSUMER CONTEXT != CONTEXT MANIFEST
+CONTEXT MANIFEST != BASIS MANIFEST
+EXPOSED != USED != MATERIAL DEPENDENCY
+```
+
+InformationNeed carries explicit criticality, coverage/currentness/coherence and reference-resolution requirements. Model-discovered needs may refine but cannot silently widen the WorkContract/policy scope.
+
+ContextPlan also supports explicit exclusions such as forbidden sources, data classes, purposes, provider exposure or derivative use.
+
+ContextReadiness is requirement-based, consumer-/step-specific and non-monotonic.
+
+```text
+READY now != READY forever
+```
+
+## 10. BasisManifest / freshness / coherence
 
 `BasisManifest` is runtime/evidence metadata, not a new Domain Version/Fact root.
 
@@ -401,9 +504,112 @@ capability/harness versions when needed for evidence
 
 For DANTE-native work requiring one coherent view, application/database reads should provide the needed coherence semantics. For independent external sources, DANTE records the actual acquisition limits and revalidates volatile consequential dependencies instead of fabricating atomicity.
 
-AI-03 context construction must bind fragments to the applicable Basis/MaterialState/source lifecycle rather than inventing a parallel freshness system.
+```text
+ContextManifest
+= exposure receipt
 
-## 10. Capability execution and isolation
+BasisManifest
+= material dependency/currentness basis
+```
+
+They may overlap in source references but are not interchangeable.
+
+## 11. Context continuity, provider state and compaction
+
+Human-visible Interaction Session continuity and reasoning-provider continuity are different.
+
+```text
+INTERACTION SESSION CONTINUITY
+!= PROVIDER-CONTEXT CONTINUITY
+```
+
+Provider thread, prompt cache, provider compaction and prior ConsumerContext may be reused only when compatible with current:
+
+```text
+purpose
+WorkContract
+Principal / Actor / represented party
+processing rules
+confidentiality compartment
+consumer/provider eligibility
+recipient-related constraints where materially relevant
+```
+
+If not compatible, the same product Interaction Session may continue with a new clean/sanitized ConsumerContext.
+
+Provider-managed opaque state remains explicitly opaque. DANTE records what it knows rather than inventing the provider's internal retained representation.
+
+Compaction is not source or memory authority:
+
+```text
+COMPACTION != MEMORY != SOURCE != CANONICAL STATE
+```
+
+Lossy compacted representations must preserve a recoverable route to stronger source material where that material legitimately survives. Protected material semantics must not exist only in lossy summary/compaction when they can be rehydrated from stronger sources.
+
+## 12. Policy composition is a mesh, not one model decision
+
+Several enforcement questions exist at different boundaries:
+
+```text
+Discovery / Acquisition PEP
+→ may this work search for / acquire this source/category for this purpose?
+
+Consumer Context PEP
+→ may this exact representation be exposed to this consumer/provider now?
+
+Capability PEP
+→ may this capability be discovered/invoked?
+
+Effect PEP
+→ may this exact consequential effect execute now?
+
+Publication/Egress PEP
+→ may this representation leave to this recipient/provider/surface now?
+```
+
+The policy layer may compose Authority, AuthZ, Consent, Visibility, autonomy, hard constraints, safety/institutional rules and purpose/data/provider eligibility.
+
+The model does not improvise precedence.
+
+Potential decision shapes include:
+
+```text
+ALLOW
+DENY
+REQUIRE_CONFIRMATION
+REQUIRE_EXTERNAL_APPROVAL
+LIMIT_SCOPE
+```
+
+`ConsequenceProfile` sets a minimum governance/verification/publication floor without becoming a universal semantic risk score.
+
+## 13. Reference / Target Resolution
+
+Natural-language references may resolve only after authorized semantic query/context is available. Target Resolution is therefore an Execution Kernel responsibility that may consume the Semantic Query / Projection Gateway; it is **not** a magical pre-query oracle.
+
+Consequential targets must become adequately bound to canonical references before execution.
+
+```text
+EXACT / UNIQUE_IN_SCOPE
+→ may proceed subject to normal governance
+
+AMBIGUOUS
+→ clarify / preview / disambiguate
+
+UNRESOLVED
+→ no consequential effect
+```
+
+AI-03A further makes reference-resolution level an explicit InformationNeed requirement.
+
+```text
+AMBIGUITY != MODEL CONFIDENCE
+```
+
+Model confidence is not target identity proof.
+
+## 14. Capability execution and isolation
 
 Most requests do **not** require isolation.
 
@@ -415,6 +621,8 @@ SQL aggregation
 deterministic calculation
 normal application/domain capability
 ```
+
+AI-03A explicitly preserves the fast path: Context machinery is bypassable where deterministic application logic can answer correctly without composed context.
 
 Potential isolation-triggering workloads include:
 
@@ -451,60 +659,7 @@ Execution Environment != mandatory microservice
 Execution Environment != every request gets a sandbox
 ```
 
-## 11. Policy composition is a mesh, not one model decision
-
-Several enforcement questions exist at different boundaries:
-
-```text
-Context PEP
-→ may this information be processed for this purpose?
-
-Capability PEP
-→ may this capability be discovered/invoked?
-
-Effect PEP
-→ may this exact consequential effect execute now?
-
-Publication/Egress PEP
-→ may this representation leave to this recipient/provider/surface now?
-```
-
-The policy layer may compose Authority, AuthZ, Consent, Visibility, autonomy, hard constraints, safety/institutional rules and purpose/data/provider eligibility.
-
-The model does not improvise precedence.
-
-Potential decision shapes include:
-
-```text
-ALLOW
-DENY
-REQUIRE_CONFIRMATION
-REQUIRE_EXTERNAL_APPROVAL
-LIMIT_SCOPE
-```
-
-`ConsequenceProfile` sets a minimum governance/verification/publication floor without becoming a universal semantic risk score.
-
-## 12. Reference / Target Resolution
-
-Natural-language references may resolve only after authorized semantic query/context is available. Target Resolution is therefore an Execution Kernel responsibility that may consume the Semantic Query / Projection Gateway; it is **not** a magical pre-query oracle.
-
-Consequential targets must become adequately bound to canonical references before execution.
-
-```text
-EXACT / UNIQUE_IN_SCOPE
-→ may proceed subject to normal governance
-
-AMBIGUOUS
-→ clarify / preview / disambiguate
-
-UNRESOLVED
-→ no consequential effect
-```
-
-Model confidence is not target identity proof.
-
-## 13. ChangeSet / effects / approval
+## 15. ChangeSet / effects / approval
 
 One user decision may require several operations.
 
@@ -528,17 +683,25 @@ CANCEL RUN != UNDO ALREADY-DISPATCHED EFFECTS
 
 Outcome-unknown effects remain real obligations. Optional resource/budget exhaustion may stop additional optional work but must not erase required reconciliation.
 
-## 14. Context, disclosure and publication
+## 16. Context, disclosure and publication
 
 ```text
-Context Projection
-= what reasoning may consume for purpose P
+Context Projection / ConsumerContext
+= what reasoning consumer may receive for purpose P
 
 Disclosure Projection
 = what representation recipient R may receive
 
 Safe Publication
 = what may cross recipient/surface boundary now
+```
+
+AI-03A adds a pre-disclosure distinction:
+
+```text
+acquisition eligibility
+!= consumer/provider exposure eligibility
+!= recipient disclosure
 ```
 
 Cumulative/cross-query inference protection applies when individually safe answers could compose into a protected fact/relationship.
@@ -560,9 +723,31 @@ Result/presentation maturity may include `WORKING`, `PROVISIONAL`, `VERIFIED`, `
 
 Lock-screen notification, private in-app view, shared UI and voice/realtime are different surfaces and may require different disclosure.
 
-AI-03 context design must preserve the same distinction: processing eligibility is not recipient disclosure authorization, and a cache hit never bypasses current policy.
+## 17. Source lifecycle and anti-resurrection
 
-## 15. Attention / proactivity
+Context acquisition must distinguish materially different source states instead of collapsing them all to `None`:
+
+```text
+NOT_FOUND
+FOUND_CURRENT
+FOUND_HISTORICAL
+PAYLOAD_RETIRED / REDACTED
+CURRENTLY_NOT_PROCESSABLE
+CURRENTLY_NOT_VISIBLE
+TEMPORARILY_UNAVAILABLE
+STALE
+CONFLICTED
+```
+
+An old ContextManifest may remain a truthful historical receipt that a consumer was exposed to material at time T.
+
+That does not make a now-retired source or derivative eligible for future retrieval.
+
+Future durable derivatives such as embeddings, summaries, indexes, context caches, provider state or compaction checkpoints inherit source lifecycle/anti-resurrection obligations. Restoring old bytes from backup does not by itself restore semantic eligibility.
+
+Exact physical invalidation mechanics remain AI-03C work if/when such durable derivatives exist.
+
+## 18. Attention / proactivity
 
 Trigger is not Attention.
 
@@ -580,7 +765,7 @@ Attention considers aggregate interruption load and batchability, not only wheth
 
 The oscillation guard uses causal lineage/hysteresis/cooldown/material change so DANTE does not recursively react to its own adaptations without new reality.
 
-## 16. External AI / external-agent effects
+## 19. External AI / external-agent effects
 
 DANTE may use models/agents internally and may expose bounded capabilities to external AI clients.
 
@@ -601,7 +786,9 @@ an external autonomous system performed an external effect
 
 DANTE must not claim its effect governance covered a side effect that happened outside it.
 
-## 17. Observability / audit / evaluation privacy
+For delegated reasoning, AI-03A additionally requires minimum-necessary child/delegated ConsumerContext. Parent context is not copied wholesale.
+
+## 20. Observability / audit / evaluation privacy
 
 ```text
 TELEMETRY != AUDIT
@@ -609,11 +796,11 @@ TELEMETRY != AUDIT
 
 Observability and evaluation pipelines are not privileged data sinks.
 
-Sensitive prompts, context fragments, tool results, traces or production examples remain subject to purpose, retention, redaction and provider/data-policy constraints.
+Sensitive prompts, ContextFragments, ContextManifests, tool results, traces or production examples remain subject to purpose, retention, redaction and provider/data-policy constraints.
 
 Production trace reuse in an evaluation corpus requires legitimate purpose/handling rather than being automatic.
 
-## 18. Future rich intelligence
+## 21. Future rich intelligence
 
 DANTE supports one semantic/application core with multiple interaction/intelligence surfaces.
 
@@ -648,9 +835,11 @@ accepted-effect rules
 material history
 ```
 
+A much larger context window changes `ContextStrategy`/packing economics; it does not remove privacy, source lifecycle, contradiction, Reality Scope or purpose requirements.
+
 Provider thread/memory is an optimization/integration detail, not DANTE truth.
 
-## 19. AI phase state
+## 22. AI phase state
 
 Completed AI-02 evidence:
 
@@ -663,18 +852,15 @@ Targeted v0.5 verification      COMPLETE
 More AI-02 mega-test cycles     NONE
 ```
 
-Targeted checks:
+AI-03A evidence:
 
 ```text
-generated-code secret isolation                         PASS STRUCTURAL
-environment crash vs Run durability                     PASS STRUCTURAL
-browser/computer-use effect verification                PASS STRUCTURAL
-superseded publication                                  PASS STRUCTURAL
-Basis coherence                                         PASS STRUCTURAL
-approval rebinding                                      PASS STRUCTURAL
-external-agent side effects                             PASS STRUCTURAL
-resource exhaustion after ambiguous effect              PASS STRUCTURAL
-deterministic fast path bypassing unnecessary isolation PASS STRUCTURAL
+Initial candidate               FAIL / HARDENING REQUIRED
+Dedicated AI-03A mega-test      COMPLETE
+Hardenings                      9
+Hardened candidate              STRUCTURAL PASS
+C01..C29                        ACCEPTED
+More AI-03A mega-test cycles    NONE unless contradictory downstream evidence
 ```
 
 No evidence was found to reopen Domain, Logical, Physical or PostgreSQL.
@@ -688,16 +874,21 @@ AI-02.1
 v0.5 CLOSED / STRUCTURALLY ACCEPTED
 NO RUNTIME/BACKEND/PROVIDER IMPLEMENTATION CLAIM
 
+AI-03A
+FULL CONTEXT ARCHITECTURE
+CLOSED / STRUCTURALLY ACCEPTED
+
 AI-03
 ACTIVE — CONTEXT / RETRIEVAL / MEMORY
-CURRENT MACRO-PHASE AI-03A FULL CONTEXT ARCHITECTURE
+CURRENT MACRO-PHASE AI-03B RETRIEVAL + MEMORY ARCHITECTURE
 ```
 
-Current AI-03 charter:
+Current AI-03 authority:
 
-- `docs/architecture/dante-ai-03-context-retrieval-memory.md`.
+- `docs/architecture/dante-ai-03-context-retrieval-memory.md`;
+- `docs/architecture/dante-ai-03a-full-context-architecture.md`.
 
-## 20. Frontend / client data authority
+## 23. Frontend / client data authority
 
 Frontend Data Authority Matrix remains:
 
@@ -715,7 +906,7 @@ cross-tree transient              Zustand only when justified
 
 The future AI interaction surface preserves the same authority boundary: chat/UI state may express draft, candidate, hypothetical, superseded, provisional or pending state without pretending it is accepted canonical effect.
 
-## 21. Offline / specialist capabilities
+## 24. Offline / specialist capabilities
 
 Selected Physical targets remain activation-triggered:
 
@@ -733,7 +924,7 @@ AI Execution Environment          workload/threat-model trigger
 
 Specialist/institutional systems keep their own authority boundary. DANTE may coordinate or mirror relevant personal facts without pretending to replace healthcare, school, judicial, financial, governmental or other specialist Systems of Record.
 
-## 22. Transactions / migrations / privileges
+## 25. Transactions / migrations / privileges
 
 Current durable posture:
 
@@ -759,12 +950,13 @@ Future AI execution passes through application/domain mutation contracts rather 
 
 Any future AI-03C structural DB recommendation must enter normal forward Alembic + SQLAlchemy + Dictionary + human reference + direct-test + recovery-impact governance; AI architecture documentation cannot bypass that same-change rule.
 
-## 23. Current non-claims
+## 26. Current non-claims
 
 ```text
 FULL ACCESS/AUTH PRODUCT VERTICAL       NOT CLAIMED CLOSED
 DANTE AI-02.1                           CLOSED STRUCTURALLY / NOT IMPLEMENTATION PASS
-AI-03 CONTEXT/RETRIEVAL/MEMORY          ACTIVE DESIGN / NOT MATERIALIZED
+DANTE AI-03A                            CLOSED STRUCTURALLY / NOT IMPLEMENTATION PASS
+AI-03 RETRIEVAL/MEMORY                  ACTIVE DESIGN / NOT MATERIALIZED
 AI RUNTIME                              NOT IMPLEMENTED BY THIS DOCUMENT
 AI PROVIDER/MODEL                       NOT SELECTED
 AI EXECUTION ENVIRONMENT TECHNOLOGY     NOT SELECTED / NOT IMPLEMENTED
