@@ -10,6 +10,17 @@ function buffer(...bytes: number[]): ArrayBuffer {
   return Uint8Array.from(bytes).buffer;
 }
 
+function byteValues(value: BufferSource | undefined): number[] {
+  if (value === undefined) {
+    return [];
+  }
+  const bytes =
+    value instanceof ArrayBuffer
+      ? new Uint8Array(value)
+      : new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
+  return Array.from(bytes);
+}
+
 class FakeAuthenticatorAttestationResponse {
   constructor(
     readonly attestationObject: ArrayBuffer,
@@ -119,16 +130,10 @@ describe('WebAuthn browser serialization boundary', () => {
     });
 
     const creation = createMock.mock.calls[0]?.[0];
-    expect(Array.from(new Uint8Array(creation?.publicKey?.challenge ?? buffer()))).toEqual([
-      1, 2, 3,
-    ]);
+    expect(byteValues(creation?.publicKey?.challenge)).toEqual([1, 2, 3]);
+    expect(byteValues(creation?.publicKey?.user.id)).toEqual([4, 5, 6]);
     expect(
-      Array.from(new Uint8Array(creation?.publicKey?.user.id ?? buffer())),
-    ).toEqual([4, 5, 6]);
-    expect(
-      Array.from(
-        new Uint8Array(creation?.publicKey?.excludeCredentials?.[0]?.id ?? buffer()),
-      ),
+      byteValues(creation?.publicKey?.excludeCredentials?.[0]?.id),
     ).toEqual([7, 8, 9]);
     expect(creation?.signal).toBe(signal);
     expect(result).toEqual({
@@ -182,14 +187,10 @@ describe('WebAuthn browser serialization boundary', () => {
     });
 
     const request = getMock.mock.calls[0]?.[0];
-    expect(Array.from(new Uint8Array(request?.publicKey?.challenge ?? buffer()))).toEqual([
-      1, 2, 3,
+    expect(byteValues(request?.publicKey?.challenge)).toEqual([1, 2, 3]);
+    expect(byteValues(request?.publicKey?.allowCredentials?.[0]?.id)).toEqual([
+      7, 8, 9,
     ]);
-    expect(
-      Array.from(
-        new Uint8Array(request?.publicKey?.allowCredentials?.[0]?.id ?? buffer()),
-      ),
-    ).toEqual([7, 8, 9]);
     expect(request?.signal).toBe(signal);
     expect(result).toEqual({
       webauthn_challenge_ref: '00000000-0000-4000-8000-000000000002',
