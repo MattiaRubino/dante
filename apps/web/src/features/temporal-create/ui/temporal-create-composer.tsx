@@ -20,16 +20,15 @@ import {
   TemporalCreateAdvancedFields,
   TemporalCreateCoreFields,
 } from './temporal-create-fields';
+import type {
+  TemporalCreateComposerPosition,
+  TemporalCreateContextOption,
+} from './temporal-create-ui-types';
 
-export type TemporalCreateComposerPosition = Readonly<{
-  top: number;
-  left: number;
-}>;
-
-export type TemporalCreateContextOption = Readonly<{
-  id: string;
-  label: string;
-}>;
+export type {
+  TemporalCreateComposerPosition,
+  TemporalCreateContextOption,
+} from './temporal-create-ui-types';
 
 type TemporalCreateComposerProps = Readonly<{
   position: TemporalCreateComposerPosition;
@@ -352,7 +351,6 @@ export function TemporalCreateComposer({
 
           <TemporalCreateAdvancedFields
             fields={fields}
-            contexts={contexts}
             depth={session.surface}
             onPatch={onPatch}
             renderError={renderError}
