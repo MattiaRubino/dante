@@ -1,19 +1,19 @@
 # DANTE — Access/Auth Full-Stack Vertical Workstream
 
-- **Status:** ACTIVE VERTICAL / M1–M4 CLOSED / M5 ACTIVE / GROUPS 1–3 COMPLETE / GROUP 4 NEXT
+- **Status:** ACTIVE VERTICAL / M1–M4 CLOSED / M5 ACTIVE / GROUPS 1–3 COMPLETE / GROUP 4 ACTIVE CANDIDATE
 - **Branch:** `feature/access-auth`
 - **Intended worktree:** `/home/mattia/projects/dante`
 - **Last accepted execution block:** **GROUP 3 — M5-H + M5-I — COMPLETE / ENGINEERING PASS**
-- **Group 3 PRE-SCOPE:** `ee099dc7c6bef4742c6e66e5d15f9a0428dd8ffa`
-- **Group 3 engineering checkpoint:** `05b348e9e0293cd9cd0cc3f190824527761b24d9`
-- **Current execution block:** **GROUP 4 — M5-J + M5-K+ — Access Web + browser/provider/security/UAT — NEXT**
+- **Group 4 PRE-SCOPE:** `a04009e645aa476af8a2b6ab1628142890b326d9`
+- **Current Group 4 code checkpoint:** `4fd8068e1e51379f75c2bfaf59b46336f4e14637`
+- **Current execution block:** **GROUP 4 — M5-J + M5-K+ — ACTIVE / ENGINEERING CANDIDATE / QA + UAT PENDING**
 - **Accepted Alembic head:** `20260831_13`
 - **M5 architecture authority:** `../architecture/access-auth-m5-contract.md`
 - **M5 exact design authority:** `../architecture/access-auth-m5-persistence-api-contract.md`
 - **M5 live handoff:** `access-auth-m5-live-handoff-2026-08-29.md`
 - **Forward execution authority:** `access-auth-m4-m7-execution-plan.md`
 
-> New chat != new project, branch or worktree. Continue this vertical on `feature/access-auth` and `/home/mattia/projects/dante` until whole Access/Auth closure or an explicit user topology gate.
+> New chat != new project, branch or worktree. Continue this vertical on `feature/access-auth` and `/home/mattia/projects/dante`. Do not restart Group 4 from scratch.
 
 ## 1. Mandatory continuation bootstrap
 
@@ -25,17 +25,14 @@ docs/PROJECT-STATUS.md
 → docs/ROADMAP.md
 → this file
 → docs/workstreams/access-auth-m5-live-handoff-2026-08-29.md
+→ docs/workstreams/access-auth-m4-m7-execution-plan.md
 → docs/architecture/access-auth-m5-contract.md
 → docs/architecture/access-auth-m5-persistence-api-contract.md
-→ docs/workstreams/access-auth-m4-m7-execution-plan.md
-→ Access/Auth architecture/security/API/testing contracts + ADR-011
-→ DB System of Record + docs/database/access-auth.md + Dictionary where relevant
-→ current Group-4 implementation/tests once materialized
+→ Access/Auth security/API/testing contracts + ADR-011
+→ current Group-4 frontend/browser implementation/tests
 ```
 
-Repository truth beats conversation memory. Do not reinterpret M1–M4 or reopen accepted M5 groups absent direct defect evidence.
-
-No new branch/worktree, merge, rebase, force-push/history rewrite or protected-main write without explicit user authorization.
+Repository truth beats conversation memory. Do not reopen Groups 1–3 absent direct defect evidence.
 
 ## 2. Frozen Auth constitution
 
@@ -45,220 +42,141 @@ AuthSession != DANTE Session
 EmailIdentity != Account
 PasswordCredential optional
 Principal runtime-derived
-multiple independent AuthSessions normal
-provider identity key = issuer + subject
+provider identity = issuer + subject
 provider email never silently links Accounts
-provider authentication != provider-data integration authorization
+provider auth != provider-data authorization
 provider token/assertion != DANTE AuthSession
 passwordless Account valid
-PasskeyCredential = authenticator, not Account
-WebAuthn user_handle = opaque discoverable binding
-verification != setup completion
-reauthentication != initial signin
+PasskeyCredential != Account
+WebAuthn user_handle = opaque Account binding
+reauthentication != signin
 frontend/provider/browser completion != backend-authoritative success
-unknown/loading != signed-out/signed-in/error
-method != factor != assurance
 ```
 
-Do not reintroduce JWT/localStorage browser Auth, Redis/JWT session authority, Principal persistence, silent provider-email merge, provider-specific Account/session authority, Account advisory-lock replacement, wide credentialed CORS, fake frontend Auth success, persisted browser Auth cache, provider-profile dumping into Account, hand-rolled WebAuthn/COSE crypto or biometric/device-secret storage.
+Forbidden without a separate gate: JWT/localStorage browser Auth, sessionStorage auth authority, Redis/JWT session authority, persisted Principal, silent provider-email merge, provider-specific Account/session authority, fake frontend success, raw generated-operation bypass, ad-hoc fetch proliferation, hand-rolled WebAuthn crypto, biometric/PIN/device-fingerprint persistence.
 
 ## 3. Closed foundation
 
 ```text
-M1  Visual / UX Freeze                                  CLOSED / ACCEPTED
-M2  Auth Architecture Freeze                           CLOSED / ACCEPTED / QA PASS
-M3  Email/Password Signin + AuthSession Spine          CLOSED / ENGINEERING PASS / USER ACCEPTED
-M4  Signup + Verification + Recovery + Reset + Reauth  CLOSED / ENGINEERING PASS / USER ACCEPTED
-
-M5.1 architecture/external-authority freeze            COMPLETE
-M5.2 exact persistence/API design                      COMPLETE
-M5-A persistence foundations                           COMPLETE / REAL POSTGRESQL PROVEN
-M5-B provider/JWK/JOSE/AEAD infrastructure             COMPLETE / ENGINEERING PASS
-M5-C Google authentication                             COMPLETE / ENGINEERING PASS
-M5-D Apple authentication + grant/notifications        COMPLETE / ENGINEERING PASS
-GROUP 1 / M5-E + M5-G                                  COMPLETE / ENGINEERING PASS
-GROUP 2 / M5-F                                         COMPLETE / ENGINEERING PASS
-GROUP 3 / M5-H + M5-I                                  COMPLETE / ENGINEERING PASS
+M1–M4                                                 CLOSED / ACCEPTED
+M5.1 / M5.2                                           COMPLETE
+M5-A persistence                                      COMPLETE / PG PROVEN
+M5-B provider/crypto/WebAuthn infra                    COMPLETE / ENGINEERING PASS
+M5-C Google backend                                   COMPLETE / ENGINEERING PASS
+M5-D Apple backend/grant/notifications                COMPLETE / ENGINEERING PASS
+GROUP 1 / M5-E + M5-G                                 COMPLETE / ENGINEERING PASS
+GROUP 2 / M5-F                                        COMPLETE / ENGINEERING PASS
+GROUP 3 / M5-H + M5-I                                 COMPLETE / ENGINEERING PASS
+GROUP 4 / M5-J + M5-K+                                ACTIVE / CANDIDATE / QA PENDING
 ```
 
-Accepted current DB truth:
+Accepted DB remains PostgreSQL 18.6 / Alembic `20260831_13`. Group 4 currently has no backend/DB/ACL delta.
+
+## 4. Group 3 handoff authority
+
+Group 3 closed the public HTTP/API-client contract. Relevant proof remains:
 
 ```text
-PostgreSQL          18.6
-Alembic             20260831_13
-83 tables
-5 views
-15 routines
-75 triggers
-156 physical indexes
-85 foreign keys
-233 CHECK constraints
-103 standalone Dictionary entries
+35 focused HTTP/OpenAPI PASS
+225 full non-PG PASS
+2 continuation PG PASS
+134 full PG PASS
+11 governed-client tests PASS
+generated determinism PASS / 78 files
+workspace architecture/typecheck/build PASS
 ```
 
-`20260831_13` is ACL-only. Groups 2 and 3 required no schema/Alembic/Dictionary/ACL widening.
+The frontend must consume the governed `@dante/api-client`; it must not rebuild protocol contracts or raw fetch wrappers beside it.
 
-## 4. Group 2 accepted result
+## 5. Group 4 current candidate
 
-M5-F established WebAuthn/passkeys as a first-class direct authenticator under the Account-wide lifecycle and anti-lockout authority.
+### Scope
 
 ```text
-real python-fido2 verification
-opaque stable WebAuthn user_handle
-registration / discoverable authentication / reauthentication
-resident credentials required
-UV required
-multiple passkeys
-credential lifetime uniqueness
-COSE public-key persistence
-monotonic credential-state handling
-safe management projection
-logical revoke
-Account-wide anti-lockout
-canonical DANTE AuthSession only
-real PostgreSQL race proof
+PRE-SCOPE
+  a04009e645aa476af8a2b6ab1628142890b326d9
+
+current code checkpoint
+  4fd8068e1e51379f75c2bfaf59b46336f4e14637
+
+PRE-SCOPE → checkpoint
+  ahead 30 / behind 0
+  21 changed paths
+  all inside approved Web/i18n Group-4 scope
+  no backend / DB / migration / ACL spill
 ```
 
-Closure:
+### Materialized Web vertical
+
+The existing Access React surface was extended rather than replaced. Current candidate includes:
 
 ```text
-191 non-PostgreSQL PASS
-132 PostgreSQL PASS
-323 total PASS
-Ruff / mypy / build / diff / scope PASS
+M3/M4 email-password/sign-up/recovery lifecycle retained
+same-origin Web remote over governed @dante/api-client
+VITE_DANTE_GOOGLE_CLIENT_ID public build configuration
+Google official GIS renderButton lifecycle
+DANTE Google begin before provider interaction
+DANTE-issued transaction ref + state + nonce
+Google credential callback passed directly to DANTE complete
+backend outcome is sole authenticated/link/enrollment authority
+Apple backend begin + safe redirect authority
+Apple return to / or /security
+provider continuation resolved only through HttpOnly flow cookies
+provider enrollment set-email / resend / verify
+provider link-required → existing Account auth → explicit confirm
+browser WebAuthn conversion boundary only
+navigator.credentials.create/get
+no WebAuthn crypto verification in JS
+passkey signin/register/reauth/update/remove
+/security route
+methods/password/provider/passkey management
+password establish/remove
+provider link/unlink
+password/passkey reauthentication
+IT/EN Group-4 copy
 ```
 
-Real browser/hardware WebAuthn acceptance remains Group 4.
+### Google correction
 
-## 5. Group 3 accepted result
+The earlier custom-button/programmatic-prompt direction was rejected during implementation. The candidate now uses Google Identity Services `renderButton`; DANTE performs `/google/begin` first to mint the bound transaction/nonce, the official Google button obtains credential evidence, and `/google/complete` decides the DANTE result.
 
-M5-H + M5-I materialized the public HTTP contract and the governed client as one deterministic delivery pipeline:
+Security linking intentionally uses a two-stage interaction: DANTE prepares an authenticated link transaction, then renders the official Google button with the DANTE nonce, then completes the link through the backend.
+
+## 6. Candidate is not QA-pass yet
+
+Do **not** claim Group 4 or M5 complete at `4fd8068e...`. No authoritative frontend QA has been recorded after the latest official-Google propagation.
+
+Immediate next work:
 
 ```text
-application services
-→ exact FastAPI/Pydantic materialization
-→ stable /api/v1 operationIds
-→ RFC 9457 + no-store + request IDs
-→ same-origin browser security + session CSRF
-→ opaque HttpOnly provider continuation cookies
-→ Apple bounded form_post external ingress
-→ deterministic OpenAPI
-→ Orval Fetch + generated Zod
-→ governed @dante/api-client
-→ strict runtime success validation
-→ drift + two-run determinism proof
+1. pull/sync current branch
+2. run canonical Prettier + ESLint + TypeScript
+3. run Web unit/component tests
+4. run canonical TanStack route generation/build for /security
+5. materialize routeTree.gen.ts only from generator output
+6. fix all defects in assistant-owned code
+7. complete missing approved Group-4 focused tests
+8. extend web-auth-remote tests for M5 methods
+9. create/complete access-m5 Playwright coverage
+10. run HTTPS Chromium / Firefox / WebKit
+11. accessibility / keyboard / focus / responsive checks
 ```
 
-Public M5 surface includes methods/password, provider enrollment/link/unlink, Google, Apple and complete passkey lifecycle. Apple callback/notifications remain backend ingress and are not ordinary browser-client methods.
+Focused approved tests still expected include provider browser, WebAuthn adapter, provider orchestration, passkey orchestration, methods, provider-flow panel, security page and M5 E2E coverage.
 
-Closure evidence:
+Only after engineering/browser QA is green should the user run real UAT:
 
 ```text
-Ruff / mypy                                      PASS
-focused M5 HTTP/OpenAPI                          35 PASS
-full non-PostgreSQL                              225 PASS
-provider-continuation real PostgreSQL             2 PASS
-full real PostgreSQL                             134 PASS
-backend build                                    PASS
-api-client lint / typecheck                       PASS
-api-client Vitest                                 11 PASS
-generated OpenAPI/Orval/Zod                       deterministic + current / 78 files
-architecture check                                PASS / 151 modules / 287 dependencies
-workspace typecheck                               PASS / 6 of 6
-workspace build                                   PASS / 2 of 2
-git diff + clean synced tree                      PASS
-PRE-SCOPE scope audit                             PASS
+Google real
+Apple registered-domain real
+Apple Private Email Relay sender setup/proof
+passkey real browser/authenticator
+provider enrollment/link collision
+security management
+integrated manual Access M5
 ```
 
-Do not reopen Group 3 absent direct defect evidence.
-
-## 6. Remaining M5 execution — authoritative grouping
-
-```text
-GROUP 1
-M5-E + M5-G
-Authenticator Lifecycle + Password/Passwordless Adaptation
-COMPLETE / ENGINEERING PASS
-
-GROUP 2
-M5-F
-WebAuthn / Passkeys
-COMPLETE / ENGINEERING PASS
-
-GROUP 3
-M5-H + M5-I
-Public FastAPI + Deterministic OpenAPI / Governed Client
-COMPLETE / ENGINEERING PASS
-
-GROUP 4 — CURRENT / NEXT
-M5-J + M5-K+
-Access Web + Security / Provider / Browser / UAT / Acceptance
-NEXT
-```
-
-The labels M5-E/F/G/H/I/J/K+ remain semantic ownership labels from the frozen design; they are not independent execution gates.
-
-## 7. Group 4 purpose
-
-Group 4 is the next implementation block. It must consume the governed `@dante/api-client`; raw generated operations and ad-hoc fetch proliferation remain forbidden.
-
-Materialize:
-
-```text
-email/password Access flows
-Google begin/complete
-Apple begin + returned callback outcome handling
-passkey registration/authentication/reauthentication
-provider enrollment
-provider link-required + confirmation
-methods/security management
-loading/cancel/error/recovery states
-backend-authoritative success only
-no localStorage/sessionStorage auth authority
-no frontend inference of provider success
-```
-
-Then prove:
-
-```text
-Chromium / Firefox / WebKit
-real Google smoke/UAT
-real Apple registered-domain smoke/UAT
-Apple Private Email Relay sender configuration
-real WebAuthn/passkey browser/hardware UAT
-final browser/security/provider proof
-manual integrated M5 UAT
-docs reconciliation
-explicit user acceptance
-```
-
-Whole M5 remains ACTIVE until Group 4 acceptance.
-
-## 8. M6 / M7
-
-```text
-M6 — Native Mobile Access
-FUTURE / OPTIONAL / ONLY IF DELIBERATELY RE-GATED
-
-M7 — Security Hardening + Observability + Authenticated Handoff
-PLANNED / FINAL WHOLE-VERTICAL GATE
-```
-
-## 9. Quality / testing posture
-
-```text
-prove each invariant at the truthful layer
-focused proof during development
-real PostgreSQL for persistence/race authority
-real python-fido2 for WebAuthn crypto verification
-no flaky Auth hidden behind retries
-no blind retry of non-idempotent/ambiguous mutations
-browser/provider proof only at the public/Web boundary
-```
-
-Local `uv==0.12.5` / Ruff behavior is authority. Never hand-edit `uv.lock`. The user runs requested QA; implementation/debug responsibility remains with the assistant.
-
-## 10. Branch/worktree safety
+## 7. Branch/worktree safety
 
 ```text
 repo:      MattiaRubino/dante
@@ -267,3 +185,14 @@ worktree:  /home/mattia/projects/dante
 ```
 
 Do not touch `main`, `feature/home-react`, `feature/access-frontend` or `/home/mattia/projects/dante-frontend` without explicit topology authorization.
+
+A stray ref `tmp-not-used` exists at the Group-4 PRE-SCOPE only. It contains no feature work. Delete it when convenient with `git push origin --delete tmp-not-used`; never use it as an implementation branch.
+
+## 8. M6 / M7
+
+```text
+M6 — FUTURE / OPTIONAL / ONLY IF DELIBERATELY RE-GATED
+M7 — PLANNED / FINAL WHOLE-VERTICAL HARDENING + HANDOFF
+```
+
+Whole M5 remains ACTIVE until Group 4 browser/provider/passkey/manual acceptance is complete.
