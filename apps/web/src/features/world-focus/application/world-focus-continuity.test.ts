@@ -85,7 +85,7 @@ describe('World Focus B2 continuity application boundary', () => {
 
   it('turns invalid adapter payloads into the safe boundary validation error', async () => {
     const adapter: WorldFocusContinuityReadAdapter = {
-      read: async () => ({ status: 'ready', secret: 'do-not-leak' }),
+      read: () => Promise.resolve({ status: 'ready', secret: 'do-not-leak' }),
     };
     const reader = createWorldFocusContinuityReader(adapter);
 
