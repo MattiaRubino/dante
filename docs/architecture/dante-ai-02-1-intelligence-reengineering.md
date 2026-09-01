@@ -1,18 +1,18 @@
 # DANTE AI-02.1 — Intelligence Reengineering & Simulation Pressure-Test
 
-- **Status:** ACTIVE / BRANCH-LOCAL ARCHITECTURE CHECKPOINT / NOT CLOSED
+- **Status:** CLOSED / STRUCTURALLY ACCEPTED / BRANCH-LOCAL ARCHITECTURE BASELINE
 - **Workstream:** `feature/ai-architecture`
 - **Established:** 2026-09-01
 - **Phase:** AI-02.1
-- **Current checkpoint:** **v0.5 CANDIDATE STRUCTURAL FREEZE**
+- **Current checkpoint:** **v0.5 STRUCTURAL ARCHITECTURE ACCEPTED**
 - **Pressure-test program:** ROUND I + ROUND II + FINAL KILL-TEST + LAST MEGA STRESS-TEST COMPLETE
 - **Targeted v0.5 consistency verification:** COMPLETE / STRUCTURAL PASS
 - **Mega-test policy:** NO MORE MEGA TESTS IN AI-02.1
-- **Remaining phase work:** one additional user-requested pre-AI-03 review + explicit AI-02.1 acceptance/closure decision
+- **Remaining phase work:** NONE / downstream work continues in AI-03
 - **Implementation:** NOT STARTED by this document
 - **Provider/model/SDK selection:** OPEN
 - **Database evolution:** NONE AUTHORIZED BY THIS DOCUMENT
-- **AI-03:** NOT STARTED / BLOCKED until explicit AI-02.1 acceptance
+- **AI-03:** ACTIVE / CONTEXT + RETRIEVAL + MEMORY / current macro-phase AI-03A
 
 ---
 
@@ -49,7 +49,7 @@ smallest justified reengineering change
 repeat only while a structural gap remains
 ```
 
-The mega-test cycle is now complete. AI-02.1 does not continue indefinitely searching for artificial new gaps.
+The mega-test cycle is complete. AI-02.1 is structurally accepted and does not continue indefinitely searching for artificial new gaps.
 
 ---
 
@@ -64,7 +64,8 @@ protected-main executable truth
 → accepted Product / Domain / Logical / Physical / ADR authority
 → current Database System of Record and engineering contracts
 → AI-00 semantic/architectural baseline
-→ this AI-02.1 branch-local reengineering checkpoint
+→ this AI-02.1 branch-local accepted runtime architecture
+→ downstream AI-03+ architecture for their bounded decisions
 → external research / simulation evidence
 → conversation memory
 ```
@@ -473,7 +474,7 @@ The mega-test program is complete. No further mega-test cycle is planned in AI-0
 
 ---
 
-# PART II — CURRENT v0.5 RESPONSIBILITY ARCHITECTURE
+# PART II — ACCEPTED v0.5 RESPONSIBILITY ARCHITECTURE
 
 ## 11. Current architecture map
 
@@ -772,7 +773,7 @@ retrieval results
 prior noncanonical working material
 ```
 
-Detailed Context / Retrieval / Memory design remains AI-03.
+Detailed Context / Retrieval / Memory architecture is now active and owned by AI-03. This document fixes only the surrounding runtime boundary and invariants that AI-03 must preserve.
 
 ---
 
@@ -2161,7 +2162,7 @@ request
 
 ---
 
-# PART V — OPEN IMPLEMENTATION CHOICES / AI-03 BOUNDARY
+# PART V — OPEN IMPLEMENTATION CHOICES / AI-03 HANDOFF
 
 ## 69. What remains intentionally open
 
@@ -2202,7 +2203,7 @@ The architecture fixes required contracts now; it does not prematurely choose im
 
 ---
 
-## 70. AI-03 gate
+## 70. AI-03 active boundary
 
 AI-03 owns detailed:
 
@@ -2212,9 +2213,7 @@ RETRIEVAL
 MEMORY
 ```
 
-AI-03 must consume the structurally accepted result of AI-02.1.
-
-It must not be used to repair unresolved AI-02.1 responsibility gaps.
+AI-02.1 is now closed / structurally accepted, so AI-03 actively consumes this baseline. It must not silently redefine the accepted runtime contracts merely because a retrieval/memory technology prefers another shape.
 
 Inputs AI-03 must inherit include:
 
@@ -2234,7 +2233,17 @@ information-flow lineage
 purpose/retention/privacy limits for telemetry/evals
 ```
 
-AI-03 will decide detailed retrieval/memory admission and physical lifecycle only after AI-02.1 closes.
+AI-03 current charter:
+
+- `docs/architecture/dante-ai-03-context-retrieval-memory.md`
+
+Current macro-phase:
+
+```text
+AI-03A — FULL CONTEXT ARCHITECTURE
+```
+
+AI-03 will decide detailed retrieval/memory admission and physical lifecycle only after its own architecture and destructive-validation gates. No memory table, embedding/index or vector-store is implied by activation.
 
 ---
 
@@ -2331,14 +2340,15 @@ one telemetry/eval pipeline treated as permission to retain all sensitive materi
 
 ---
 
-## 73. Why v0.5 is a candidate structural freeze, not implementation closure
+## 73. Why v0.5 structural closure is not implementation closure
 
-The pressure-test program has stopped finding missing semantic/platform fundamentals. The final new P0 was an execution-security boundary around arbitrary/untrusted execution.
+The pressure-test program stopped finding missing semantic/platform fundamentals. The final new P0 was an execution-security boundary around arbitrary/untrusted execution, and targeted verification found no further fundamental responsibility gap.
 
 That is sufficient evidence to mark:
 
 ```text
-v0.5 CANDIDATE STRUCTURAL FREEZE
+AI-02.1 v0.5
+CLOSED / STRUCTURALLY ACCEPTED
 ```
 
 It is **not** evidence that:
@@ -2349,7 +2359,7 @@ sandbox isolation is proven
 provider integration is proven
 security penetration testing passed
 load/performance passed
-AI-03 memory/retrieval design exists
+AI-03 Context/Retrieval/Memory design is complete
 production runtime is ready
 ```
 
@@ -2357,24 +2367,33 @@ Those claims require later real artifacts and direct tests.
 
 ---
 
-## 74. Remaining AI-02.1 work
+## 74. AI-02.1 closure and downstream handoff
 
-The mega-test program is complete.
-
-```text
-NO MORE MEGA TESTS
-```
-
-The only remaining pre-AI-03 work is:
+The mega-test program and targeted structural verification are complete.
 
 ```text
-1. perform the additional review explicitly requested by the user
-2. reconcile any real issue at the smallest justified boundary
-3. make an explicit AI-02.1 acceptance/closure decision
-4. only then start AI-03 Context / Retrieval / Memory
+NO MORE AI-02 MEGA TESTS
 ```
 
-If the remaining review discovers only implementation/detail questions, they become downstream requirements rather than reasons to restart broad reengineering.
+The user explicitly accepted the v0.5 structural baseline and chose to proceed to AI-03. There is no remaining AI-02 structural work.
+
+Downstream rule:
+
+```text
+AI-02.1 accepted baseline
+→ AI-03 Context / Retrieval / Memory
+→ reopen only the smallest AI-02 boundary if later evidence exposes a genuine contradiction
+```
+
+Implementation/detail questions are downstream requirements rather than reasons to restart broad reengineering.
+
+Current continuation sources:
+
+```text
+docs/architecture/dante-ai-03-context-retrieval-memory.md
+docs/workstreams/ai-architecture.md
+docs/workstreams/ai-architecture-live-handoff.md   TEMPORARY / MUST NOT MERGE TO main
+```
 
 ---
 
@@ -2388,24 +2407,23 @@ Current status:
 
 ```text
 AI-02.1
-ACTIVE
-v0.5 CANDIDATE STRUCTURAL FREEZE
+CLOSED / STRUCTURALLY ACCEPTED
+v0.5
 ROUND I COMPLETE
 ROUND II COMPLETE
 FINAL KILL-TEST COMPLETE
 LAST MEGA STRESS-TEST COMPLETE
 TARGETED v0.5 CONSISTENCY VERIFICATION COMPLETE
-NO MORE MEGA TESTS
+NO MORE AI-02 MEGA TESTS
 FUTURE-EXTENSIBILITY STRUCTURAL CRITERION PASS
-NOT CLOSED
-ADDITIONAL PRE-AI-03 REVIEW PENDING
 
 DOMAIN / LOGICAL / PHYSICAL / POSTGRESQL REOPEN
 NOT JUSTIFIED BY CURRENT EVIDENCE
 
 AI-03
-NOT STARTED
-BLOCKED UNTIL EXPLICIT AI-02.1 ACCEPTANCE
+ACTIVE
+CONTEXT / RETRIEVAL / MEMORY
+CURRENT MACRO-PHASE AI-03A FULL CONTEXT ARCHITECTURE
 ```
 
 No runtime, provider, backend implementation or database PASS is claimed by this document.
