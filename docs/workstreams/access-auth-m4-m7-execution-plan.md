@@ -1,19 +1,19 @@
 # DANTE — Access/Auth M4–M7 Execution Plan
 
-- **Status:** CURRENT EXECUTION PLAN / M4 CLOSED / M5 ACTIVE / GROUPS 1–3 COMPLETE / GROUP 4 NEXT
+- **Status:** CURRENT EXECUTION PLAN / M4 CLOSED / M5 ACTIVE / GROUPS 1–3 COMPLETE / GROUP 4 ACTIVE CANDIDATE
 - **Vertical:** Access/Auth
 - **Branch:** `feature/access-auth`
 - **Worktree:** `/home/mattia/projects/dante`
 - **Current execution block:** **GROUP 4 — M5-J + M5-K+ — Access Web + Final Browser / Provider / Security / UAT**
 - **Last accepted execution block:** **GROUP 3 — M5-H + M5-I — COMPLETE / ENGINEERING PASS**
-- **Group 3 PRE-SCOPE:** `ee099dc7c6bef4742c6e66e5d15f9a0428dd8ffa`
-- **Group 3 engineering checkpoint:** `05b348e9e0293cd9cd0cc3f190824527761b24d9`
+- **Group 4 PRE-SCOPE:** `a04009e645aa476af8a2b6ab1628142890b326d9`
+- **Current Group 4 code checkpoint:** `4fd8068e1e51379f75c2bfaf59b46336f4e14637`
 - **Accepted Alembic head:** `20260831_13`
 - **Architecture authority:** `../architecture/access-auth-m5-contract.md`
 - **Exact M5 design authority:** `../architecture/access-auth-m5-persistence-api-contract.md`
 - **Live handoff:** `access-auth-m5-live-handoff-2026-08-29.md`
 
-> This plan is the current execution authority. The M5-E/F/G/H/I/J/K+ labels remain semantic ownership labels from the frozen M5 design; they do not imply seven sequential implementation gates.
+> This plan is the current execution authority. Implementation/debug responsibility belongs to the assistant. The user runs requested QA/UAT and returns raw output; do not push manual source debugging or patches onto the user.
 
 ## 1. Continuation rules
 
@@ -23,36 +23,28 @@ branch:    feature/access-auth
 worktree:  /home/mattia/projects/dante
 ```
 
-Before writes follow `docs/development/agent-operating-manual.md`: exact PRE-SCOPE, exact paths, purpose/out-of-scope, explicit approval, branch race-check, post-write compare.
+Before remote writes follow `docs/development/agent-operating-manual.md`: exact PRE-SCOPE, exact paths, purpose/out-of-scope, explicit approval, branch race-check, post-write compare.
 
 No merge/rebase/history rewrite/protected-main write without explicit authorization.
-
-Implementation/debug responsibility belongs to the assistant. The user runs requested QA commands and returns raw output; do not push manual source patches or formatter debugging onto the user.
 
 ## 2. Frozen foundations
 
 Reuse, do not replace:
 
 ```text
-Account = durable access/security root
+Account = durable security root
 EmailIdentity separate from Account
 PasswordCredential optional
 Principal runtime-derived
 opaque PostgreSQL-backed AuthSession
-multiple independent AuthSessions normal
-same-origin Web Auth
 Secure HttpOnly host-only __Host-dante-session
 session-bound CSRF
 Origin + Fetch Metadata + X-Dante-Client
 /api/v1 + RFC9457
-Account security serialization point
-READ COMMITTED + targeted locking
-no blind mutation retry
-FastAPI/Pydantic → deterministic OpenAPI → Orval Fetch → governed @dante/api-client
+FastAPI/Pydantic → deterministic OpenAPI → Orval/Zod → governed @dante/api-client
 TanStack Query remote lifecycle
-TanStack Router critical-session bootstrap
-real PostgreSQL proof
-real HTTPS Chromium + Firefox + WebKit proof at the appropriate browser boundary
+TanStack Router session bootstrap
+real browser proof at Group-4 boundary
 ```
 
 Permanent Auth rules:
@@ -60,191 +52,213 @@ Permanent Auth rules:
 ```text
 provider identity = issuer + subject
 provider email != Account/link authority
-provider authentication != provider-data authorization
 provider assertion/token != DANTE AuthSession
 passwordless Account valid
-PasskeyCredential = authenticator, not Account
-WebAuthn user_handle = opaque discoverable Account binding
-normal provider/passkey removal = logical revoke
-no Account before accepted mailbox proof
-reauth rotates exact bearer on same AuthSession
-network/expensive external verification outside DB mutation transaction
-commit ambiguity → operation-specific reconciliation only
+PasskeyCredential != Account
+WebAuthn user_handle = opaque Account binding
+provider/browser completion != backend authentication success
+no blind mutation retry
 ```
 
 ## 3. Closed M5 implementation
 
 ```text
-M5.1 architecture/external-authority freeze            COMPLETE
-M5.2 exact persistence/API design                      COMPLETE
-M5-A persistence foundations                           COMPLETE / REAL POSTGRESQL PROVEN
-M5-B provider/JWK/JOSE/AEAD/WebAuthn infrastructure    COMPLETE / ENGINEERING PASS
-M5-C Google authentication                             COMPLETE / ENGINEERING PASS
-M5-D Apple authentication + grant/notifications        COMPLETE / ENGINEERING PASS
-GROUP 1 / M5-E + M5-G                                  COMPLETE / ENGINEERING PASS
-GROUP 2 / M5-F                                         COMPLETE / ENGINEERING PASS
-GROUP 3 / M5-H + M5-I                                  COMPLETE / ENGINEERING PASS
+M5.1 / M5.2                                           COMPLETE
+M5-A                                                  COMPLETE / PG PROVEN
+M5-B                                                  COMPLETE / ENGINEERING PASS
+M5-C Google backend                                   COMPLETE / ENGINEERING PASS
+M5-D Apple backend                                    COMPLETE / ENGINEERING PASS
+GROUP 1 / M5-E+G                                      COMPLETE / ENGINEERING PASS
+GROUP 2 / M5-F                                        COMPLETE / ENGINEERING PASS
+GROUP 3 / M5-H+I                                      COMPLETE / ENGINEERING PASS
 ```
 
-Current accepted DB is Alembic `20260831_13`, PostgreSQL 18.6, 83 tables, 5 views, 15 routines, 75 triggers, 156 physical indexes, 85 FKs, 233 CHECKs and 103 standalone Dictionary entries. Group 2 and Group 3 required no DB structural or ACL widening.
+Group 2 closed with 191 non-PG + 132 PG = 323 tests. Group 3 closed with 35 focused HTTP/OpenAPI, 225 non-PG, 2 continuation PG, 134 full PG, 11 client tests, deterministic 78-file OpenAPI/Orval/Zod generation and workspace architecture/typecheck/build proof.
 
-## 4. Grouped M5 execution
+Accepted DB remains PostgreSQL 18.6 / Alembic `20260831_13`.
+
+## 4. GROUP 4 — ACTIVE
+
+### 4.1 Purpose
+
+Finish the actual Access Web vertical over the already-governed backend/client contract and prove it in real browsers/providers/authenticators before closing M5.
+
+### 4.2 Current physical state
 
 ```text
-GROUP 1
-M5-E + M5-G
-Authenticator Lifecycle + Password/Passwordless Adaptation
-COMPLETE / ENGINEERING PASS
+PRE-SCOPE
+  a04009e645aa476af8a2b6ab1628142890b326d9
 
-GROUP 2
-M5-F
-WebAuthn / Passkeys
-COMPLETE / ENGINEERING PASS
+current code checkpoint
+  4fd8068e1e51379f75c2bfaf59b46336f4e14637
 
-GROUP 3
-M5-H + M5-I
-Public FastAPI + Deterministic OpenAPI / Governed Client
-COMPLETE / ENGINEERING PASS
+remote relation
+  ahead 30 / behind 0
 
-GROUP 4 — CURRENT / NEXT
-M5-J + M5-K+
-Access Web + Security / Provider / Browser / UAT / Acceptance
-NEXT
+scope
+  21 approved Web/i18n paths
+  no backend / DB / Alembic / ACL spill
 ```
 
-Execution order remains Group 1 → Group 2 → Group 3 → Group 4. Do not restore the old E→F→G→H→I→J→K sequence.
-
-## 5. Group 2 closeout authority
-
-Group 2 is closed at the engineering layer with real `python-fido2`, real PostgreSQL and concurrency proof.
+Current materialization:
 
 ```text
-Ruff / mypy                     PASS
-non-PostgreSQL                  191 PASS
-PostgreSQL                      132 PASS
-total                           323 PASS
-backend build                   PASS
-scope audit                     PASS
-```
-
-Browser/hardware passkey acceptance is intentionally deferred to Group 4.
-
-## 6. Group 3 closeout authority
-
-Group 3 delivered one deterministic contract pipeline:
-
-```text
-application services
-→ FastAPI/Pydantic public M5 routes
-→ RFC 9457 + no-store + request IDs
-→ Origin / Fetch Metadata / X-Dante-Client / CSRF
-→ opaque HttpOnly provider continuation cookies
-→ Apple bounded form_post ingress + notifications
-→ deterministic OpenAPI
-→ frozen operationIds / typed success unions / typed problems
-→ Orval Fetch + generated Zod
-→ governed @dante/api-client
-→ strict runtime contract validation
-→ generated drift + two-run determinism proof
-```
-
-Final proof:
-
-```text
-uv lock --check                        PASS / 57 packages
-Ruff                                  PASS
-mypy                                  PASS / 56 source files
-focused M5 HTTP/OpenAPI               35 PASS
-full non-PostgreSQL                   225 PASS
-provider-continuation PostgreSQL      2 PASS
-full PostgreSQL                       134 PASS
-backend build                         PASS
-api-client lint/typecheck             PASS
-api-client tests                      11 PASS
-generated drift/determinism           PASS / 78 files
-architecture check                    PASS / 151 modules / 287 dependencies
-workspace typecheck                   PASS / 6 of 6
-workspace build                       PASS / 2 of 2
-git diff / clean synced tree          PASS
-PRE-SCOPE scope audit                 PASS
-```
-
-PRE-SCOPE `ee099dc7...` → engineering checkpoint `05b348e9...` is ahead-only and contains only the approved Group-3 backend/contract/generated-client/test surface. No migration, mapping, Dictionary, ACL or frontend implementation entered Group 3.
-
-Do not reopen Group 3 absent direct defect evidence.
-
-## 7. GROUP 4 — M5-J + M5-K+ — NEXT
-
-### 7.1 Purpose
-
-Materialize the actual Access Web experience against the already-governed backend/client contract and complete the real browser/provider/passkey acceptance required to close M5.
-
-### 7.2 Required Web materialization
-
-```text
-email/password signin/signup/recovery/reauth
-Google begin/complete
-Apple begin and returned callback outcome handling
-passkey registration/authentication/reauthentication
-provider enrollment flow
-provider link-required + explicit confirmation
-provider unlink
+web-auth-remote over governed client
+Google public build config
+Google official GIS renderButton
+DANTE begin transaction + nonce before Google credential
+DANTE complete as sole Google outcome authority
+Apple begin + redirect return target
+HttpOnly provider continuation resume
+provider enrollment
+provider link-required + explicit confirm
+WebAuthn browser conversion adapter
+passkey signin/register/reauth/update/remove
+/security route
+methods/security management
 password establish/remove
-passkey label/remove
-methods/security management projection
-loading/cancel/error/recovery states
-backend-authoritative success only
+provider link/unlink
+password/passkey reauth
+IT/EN copy
 ```
 
-Browser rules:
+### 4.3 Google browser rule — frozen for current candidate
+
+Do not regress to custom-button `google.accounts.id.prompt()` flow.
 
 ```text
-no JWT/localStorage auth
-no sessionStorage auth authority
-no frontend-authenticated cache as source of truth
-no provider SDK result treated as DANTE login success
-no raw generated-operation export
-no ad-hoc fetch proliferation around @dante/api-client
-no continuation capability exposed to JavaScript
+DANTE POST /google/begin
+→ server-bound transaction/state/nonce
+→ Google Identity Services official renderButton
+→ credential callback
+→ DANTE POST /google/complete
+→ backend returns authenticated | link_required | enrollment_required
 ```
 
-### 7.3 Final Group-4 acceptance
+A Google SDK credential is evidence only. It is never DANTE authentication authority and is not persisted in browser storage.
+
+Authenticated Security link uses the same model but intentionally begins with a DANTE “Link Google” preparation action before rendering the official Google button with the DANTE nonce.
+
+### 4.4 Apple browser rule
+
+```text
+DANTE /apple/begin
+→ browser redirect to appleid.apple.com only
+→ Apple form_post to backend callback
+→ backend continuation/redirect
+→ fixed DANTE return target / or /security
+```
+
+No Apple transaction/link/enrollment capability becomes JavaScript storage authority.
+
+### 4.5 Passkey browser rule
+
+Frontend ownership is limited to:
+
+```text
+Base64URL ↔ ArrayBuffer
+public WebAuthn JSON adaptation
+navigator.credentials.create/get
+bounded browser error handling
+```
+
+Cryptographic verification, credential authority and Account/AuthSession state remain backend-owned.
+
+## 5. Engineering candidate QA — NEXT
+
+`4fd8068e...` is **not yet QA-pass**. No authoritative local run has been recorded after official-Google propagation.
+
+The next chat must first run and interpret:
+
+```text
+sync exact branch
+canonical Prettier
+ESLint
+TypeScript typecheck
+Web unit/component tests
+canonical TanStack route generation/build
+workspace architecture/typecheck/build as justified
+```
+
+The `/security` route exists in source, but `apps/web/src/routeTree.gen.ts` remains generator-owned and must be refreshed only through the canonical TanStack/Vite workflow. Never hand-edit it.
+
+Missing/unfinished focused proof from the approved macro-gate must then be completed, especially:
+
+```text
+web-auth-provider.test.ts
+web-auth-webauthn.test.ts
+auth-provider.test.ts
+auth-passkey.test.ts
+auth-methods.test.ts
+access-provider-flow-panel.test.tsx
+access-security-page.test.tsx
+web-auth-remote M5 coverage
+access-m5.spec.ts
+existing access-auth.spec.ts updates where contract changed
+```
+
+Do not mechanically create empty tests; each must prove a meaningful browser/application invariant.
+
+## 6. Browser QA after static/unit green
+
+Use the existing HTTPS Access/Auth Playwright harness and run:
 
 ```text
 Chromium
 Firefox
 WebKit
-real Google smoke/UAT
-real Apple registered-domain smoke/UAT
-Apple Private Email Relay sender configuration
-real WebAuthn/passkey browser/hardware UAT
-provider enrollment collision/link-required flow
-reauth + authenticator management
-same-origin/session/CSRF behavior in real browser
-manual integrated M5 UAT
+```
+
+Prove at minimum:
+
+```text
+critical session bootstrap
+email/password lifecycle regression
+Secure HttpOnly session behavior
+CSRF/Origin/Fetch-Metadata behavior through real browser
+provider loading/cancel/error states
+provider continuation resume
+link-required flow
+/security authenticated gating
+methods/password/provider/passkey management states
+passkey browser-boundary behavior where automation can truthfully prove it
+accessibility / keyboard / focus / responsive regressions
+```
+
+Do not fake Google/Apple/provider success in a way that is later reported as real provider acceptance.
+
+## 7. Real UAT / final M5 acceptance
+
+Only after engineering/browser QA is green:
+
+```text
+real Google smoke + user UAT
+real Apple registered-domain smoke + user UAT
+Apple Private Email Relay sender configuration/proof
+real WebAuthn/passkey browser/authenticator UAT
+provider enrollment collision/link-required UAT
+reauth + security-management UAT
+manual integrated Access M5 UAT
 final docs reconciliation
 explicit user acceptance
 ```
 
-Backend/DB regressions should be rerun only where Group-4 changes justify them. Do not mechanically repeat heavy PostgreSQL suites for frontend-only edits unless authority changes or a defect demands it.
-
 M5 closes only after Group 4 acceptance.
 
-## 8. M6 — Native Mobile Access
+Backend/DB regressions should be rerun only if Group-4 work discovers a backend authority defect or changes backend code. Do not rerun heavy PostgreSQL suites mechanically for frontend-only fixes.
+
+## 8. Scope / topology
+
+Approved Group-4 work remains limited to the existing Access Web/platform auth/i18n/E2E/test surfaces and generator-owned `routeTree.gen.ts`, plus closure docs. No backend redesign or DB change is authorized by default.
+
+A stray remote branch/ref `tmp-not-used` points to PRE-SCOPE `a04009e6...` and contains no changes. It is not an implementation branch. Delete with `git push origin --delete tmp-not-used` when convenient.
+
+## 9. M6 / M7
 
 ```text
-FUTURE / OPTIONAL / ONLY IF DELIBERATELY RE-GATED
+M6 — FUTURE / OPTIONAL / ONLY IF DELIBERATELY RE-GATED
+M7 — PLANNED / FINAL WHOLE-VERTICAL HARDENING + OBSERVABILITY + HANDOFF
 ```
-
-Do not automatically insert M6 between M5 and M7 merely because it exists in the historical roadmap.
-
-## 9. M7 — Security Hardening + Observability + Authenticated Handoff
-
-```text
-PLANNED / FINAL WHOLE-VERTICAL GATE
-```
-
-M7 owns production hardening, security/observability completeness and the final authenticated handoff into the rest of DANTE. It does not absorb unfinished M5 browser/provider acceptance.
 
 ## 10. Current authorities
 
@@ -258,4 +272,4 @@ docs/architecture/access-auth-m5-contract.md
 docs/architecture/access-auth-m5-persistence-api-contract.md
 ```
 
-The M5 architecture contracts remain frozen design authority. Operational status lives in the status/roadmap/workstream/handoff documents.
+The M5 architecture contracts are frozen design authority; operational state is defined by the status/roadmap/workstream/handoff documents.
