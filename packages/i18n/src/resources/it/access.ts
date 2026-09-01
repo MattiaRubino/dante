@@ -41,6 +41,7 @@ export const access = {
   provider: {
     google: 'Continua con Google',
     apple: 'Continua con Apple',
+    passkey: 'Accedi con passkey',
     googleName: 'Google',
     appleName: 'Apple',
     body: 'DANTE apre il flusso ufficiale del provider. La schermata di consenso appartiene al provider, non DANTE.',
@@ -49,6 +50,14 @@ export const access = {
       'Completa l’accesso nella finestra del provider. Tornerai automaticamente a DANTE.',
     scopeNote:
       'Usare Google o Apple per accedere non autorizza DANTE a leggere Calendar, Gmail o iCloud.',
+  },
+  providerEnrollment: {
+    title: 'Verifica un indirizzo email',
+    body: 'Il provider non può dimostrare a DANTE il controllo di questa casella. Verificala direttamente prima di creare l’account.',
+    sendCode: 'Invia codice di verifica',
+    verify: 'Verifica e continua',
+    privacy:
+      'La capability del flusso rimane in un cookie HttpOnly. Nel browser non viene salvato alcun token del provider.',
   },
   common: {
     or: 'oppure',
@@ -94,6 +103,7 @@ export const access = {
   failure: {
     invalidCredentialsTitle: 'Accesso non riuscito.',
     invalidCredentialsBody: 'Email o password non sono corretti.',
+    passkeyBody: 'La passkey non ha completato l’accesso. Riprova o usa un altro metodo.',
     accountUnavailableTitle: 'Account non disponibile.',
     accountUnavailableBody:
       'Questo account non può aprire una nuova sessione in questo momento.',
@@ -164,9 +174,16 @@ export const access = {
   },
   link: {
     title: 'Conferma il collegamento',
-    body: 'Esiste già un account DANTE associato a questa email. Accedi prima di collegare il provider.',
-    action: 'Accedi e collega',
+    body: 'Esiste già un account DANTE associato a questa identità. Autentica prima quell’account, poi conferma esplicitamente il collegamento.',
+    action: 'Autentica l’account esistente',
     other: 'Usa un altro account',
+    authenticateFirst:
+      'La prova del provider da sola non autorizza il collegamento. Serve prima una sessione DANTE dell’account esistente.',
+    authenticatedReady:
+      'L’account esistente è autenticato. Conferma ora il collegamento del provider.',
+    authenticate: 'Autentica con password',
+    authenticatePasskey: 'Autentica con passkey',
+    confirm: 'Conferma collegamento',
   },
   authenticated: {
     title: 'Accesso confermato',
@@ -176,6 +193,46 @@ export const access = {
     title: 'Conferma di nuovo la tua identità',
     body: 'Per proteggere il tuo account, inserisci di nuovo la password prima di continuare.',
     action: 'Conferma identità',
+  },
+  security: {
+    title: 'Sicurezza account',
+    body: 'Gestisci i metodi con cui puoi autenticarti a DANTE. Le rimozioni non possono violare la protezione anti-lockout.',
+    loading: 'Caricamento delle impostazioni di sicurezza…',
+    signinRequired: 'Accedi per gestire la sicurezza dell’account.',
+    backAccess: 'Torna ad Accesso',
+    reauthTitle: 'Conferma recente',
+    reauthBody:
+      'Le modifiche sensibili richiedono una conferma recente della tua identità.',
+    reauthHint: 'Usa password o passkey qui sotto, poi ripeti l’operazione.',
+    reauthPassword: 'Conferma con password',
+    reauthPasskey: 'Conferma con passkey',
+    reauthComplete: 'Identità confermata di recente.',
+    passwordTitle: 'Password',
+    newPassword: 'Nuova password',
+    addPassword: 'Aggiungi password',
+    removePassword: 'Rimuovi password',
+    passwordAdded: 'Password aggiunta.',
+    passwordRemoved: 'Password rimossa.',
+    providersTitle: 'Provider collegati',
+    providersBody:
+      'Google e Apple autenticano l’identità; non autorizzano automaticamente l’accesso ai loro dati.',
+    linkGoogle: 'Collega Google',
+    linkApple: 'Collega Apple',
+    providerLinked: 'Provider collegato.',
+    providerRemoved: 'Provider rimosso.',
+    passkeysTitle: 'Passkey',
+    passkeysBody:
+      'Le chiavi private restano nell’autenticatore. DANTE conserva solo la credenziale pubblica necessaria alla verifica.',
+    passkeyLabel: 'Nome passkey',
+    passkeyLabelRequired: 'Inserisci un nome per la passkey.',
+    addPasskey: 'Aggiungi passkey',
+    passkeyAdded: 'Passkey aggiunta.',
+    passkeyRenamed: 'Passkey rinominata.',
+    passkeyRemoved: 'Passkey rimossa.',
+    passkeyTransportUnknown: 'Trasporto non indicato',
+    rename: 'Rinomina',
+    save: 'Salva',
+    remove: 'Rimuovi',
   },
   setupName: {
     title: 'Come vuoi che DANTE ti chiami?',
