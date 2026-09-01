@@ -145,7 +145,11 @@ export function WorldFocusPage({
 
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape') {
+      if (
+        event.key !== 'Escape' ||
+        event.defaultPrevented ||
+        event.target instanceof HTMLSelectElement
+      ) {
         return;
       }
 
