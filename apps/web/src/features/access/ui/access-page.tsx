@@ -10,7 +10,6 @@ import { useTranslation } from 'react-i18next';
 
 import danteSymbolUrl from '../../../../../../assets/brand/logo/master/dante-symbol-master-v0.svg?url';
 import danteWordmarkUrl from '../../../../../../assets/brand/wordmark/master/dante-wordmark-master-v0.svg?url';
-import type { ProviderBrowserUnavailableError } from '../../../platform/auth/web-auth-provider';
 import type { WebProviderAuthenticationResult } from '../../../platform/auth/web-auth-remote';
 import {
   type RecoveryProofStore,
@@ -24,7 +23,6 @@ import {
 } from '../application/auth-lifecycle';
 import { usePasskeySignInMutation } from '../application/auth-passkey';
 import {
-  type GoogleAuthenticationPreparation,
   type ProviderContinuation,
   useAppleAuthenticationMutation,
   useCompleteGoogleAuthenticationMutation,
@@ -100,11 +98,9 @@ export function AccessPage({
   const recoveryValidationStarted = useRef(false);
   const googlePreparationStarted = useRef(false);
   const [signupRef, setSignupRef] = useState<string | null>(null);
-  const [googlePreparation, setGooglePreparation] =
-    useState<GoogleAuthenticationPreparation | null>(null);
   const [googleError, setGoogleError] = useState<string | null>(null);
-  const [providerContinuation, setProviderContinuation] =
-    useState<ProviderContinuation>({ kind: 'none' });
+  const [providerContinuationOverride, setProviderContinuationOverride] =
+    useState<ProviderContinuation | null>(null);
   const [providerError, setProviderError] = useState<string | null>(null);
   const [flow, dispatch] = useReducer(
     accessFlowReducer,
@@ -135,6 +131,10 @@ export function AccessPage({
   const verifyEnrollmentMutation = useVerifyProviderEnrollmentMutation();
   const confirmLinkMutation = useConfirmProviderLinkMutation();
   const linkPasskeyMutation = usePasskeySignInMutation();
+
+  const providerContinuation: ProviderContinuation =
+    providerContinuationOverride ?? continuationQuery.data ?? { kind: 'none' };
+  const googlePreparation = prepareGoogleMutation.data ?? null;
 
   const dispatchAuthError = useCallback(
     (error: unknown): AccessFlowEvent | null => {
@@ -231,15 +231,6 @@ export function AccessPage({
     validateRecoveryMutation,
   ]);
 
-  useEffect(() => {
-    const continuation = continuationQuery.data;
-    if (continuation === undefined || continuation.kind === 'none') {
-      return;
-    }
-    setProviderContinuation(continuation);
-    setProviderError(null);
-  }, [continuationQuery.data]);
-
   const googleSurfaceVisible =
     recoveryEntryState === 'none' &&
     providerContinuation.kind === 'none' &&
@@ -248,8 +239,12 @@ export function AccessPage({
   useEffect(() => {
     if (!googleSurfaceVisible) {
       googlePreparationStarted.current = false;
-      setGooglePreparation(null);
-      setGoogleError(null);
+      if (
+        prepareGoogleMutation.data !== undefined ||
+        prepareGoogleMutation.error !== null
+      ) {
+        prepareGoogleMutation.reset();
+      }
       return;
     }
     if (googlePreparationStarted.current) {
@@ -261,8 +256,10 @@ export function AccessPage({
     prepareGoogleMutation.mutate(
       { purpose: 'sign_in', returnTarget: 'access' },
       {
-        onSuccess: setGooglePreparation,
-        onError: googleFailure,
+        onError: () => {
+          googlePreparationStarted.current = false;
+          googleFailure();
+        },
       },
     );
   }, [googleFailure, googleSurfaceVisible, prepareGoogleMutation]);
@@ -305,15 +302,15 @@ export function AccessPage({
     result: WebProviderAuthenticationResult,
   ) {
     if (result.outcome === 'authenticated') {
-      setProviderContinuation({ kind: 'none' });
+      setProviderContinuationOverride({ kind: 'none' });
       dispatch({ type: 'SERVER_AUTHENTICATED' });
       return;
     }
     if (result.outcome === 'enrollment_required') {
-      setProviderContinuation({ kind: 'enrollment', enrollment: result });
+      setProviderContinuationOverride({ kind: 'enrollment', enrollment: result });
       return;
     }
-    setProviderContinuation({
+    setProviderContinuationOverride({
       kind: 'link',
       link: {
         external_link_challenge_ref: result.external_link_challenge_ref,
@@ -335,12 +332,12 @@ export function AccessPage({
       { preparation, credential },
       {
         onSuccess: (result) => {
-          setGooglePreparation(null);
+          prepareGoogleMutation.reset();
           googlePreparationStarted.current = false;
           applyProviderResult('google', result);
         },
         onError: () => {
-          setGooglePreparation(null);
+          prepareGoogleMutation.reset();
           googlePreparationStarted.current = false;
           googleFailure();
           dispatch({ type: 'SERVER_PROVIDER_FAILED', provider: 'google' });
@@ -349,7 +346,7 @@ export function AccessPage({
     );
   }
 
-  function googleBrowserError(_error: ProviderBrowserUnavailableError) {
+  function googleBrowserError() {
     googleFailure();
   }
 
@@ -562,7 +559,7 @@ export function AccessPage({
       { email },
       {
         onSuccess: (enrollment) =>
-          setProviderContinuation({ kind: 'enrollment', enrollment }),
+          setProviderContinuationOverride({ kind: 'enrollment', enrollment }),
         onError: providerFailure,
       },
     );
@@ -572,7 +569,7 @@ export function AccessPage({
     setProviderError(null);
     resendEnrollmentMutation.mutate(undefined, {
       onSuccess: (enrollment) =>
-        setProviderContinuation({ kind: 'enrollment', enrollment }),
+        setProviderContinuationOverride({ kind: 'enrollment', enrollment }),
       onError: providerFailure,
     });
   }
@@ -582,18 +579,19 @@ export function AccessPage({
     verifyEnrollmentMutation.mutate(
       { code },
       {
-        onSuccess: async (result) => {
+        onSuccess: (result) => {
           if (result.outcome === 'authenticated') {
-            setProviderContinuation({ kind: 'none' });
+            setProviderContinuationOverride({ kind: 'none' });
             dispatch({ type: 'SERVER_EMAIL_VERIFIED' });
             return;
           }
-          const refreshed = await continuationQuery.refetch();
-          if (refreshed.data?.kind === 'link') {
-            setProviderContinuation(refreshed.data);
-            return;
-          }
-          providerFailure();
+          void continuationQuery.refetch().then((refreshed) => {
+            if (refreshed.data?.kind === 'link') {
+              setProviderContinuationOverride(refreshed.data);
+              return;
+            }
+            providerFailure();
+          });
         },
         onError: providerFailure,
       },
@@ -628,7 +626,7 @@ export function AccessPage({
       { csrfToken: session.csrf_token },
       {
         onSuccess: () => {
-          setProviderContinuation({ kind: 'none' });
+          setProviderContinuationOverride({ kind: 'none' });
           dispatch({ type: 'SERVER_AUTHENTICATED' });
         },
         onError: providerFailure,
@@ -689,7 +687,7 @@ export function AccessPage({
                 pending:
                   prepareGoogleMutation.isPending ||
                   completeGoogleMutation.isPending,
-                errorMessage: googleError,
+                errorMessage: googleSurfaceVisible ? googleError : null,
                 onCredential: completeGoogle,
                 onError: googleBrowserError,
               }}
