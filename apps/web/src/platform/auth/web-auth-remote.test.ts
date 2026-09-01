@@ -128,6 +128,39 @@ describe('Web Auth remote transport', () => {
     );
   });
 
+  it('keeps provider sign-in public while protecting provider link begin with CSRF', async () => {
+    const captures: Array<{ input: RequestInfo | URL; init?: RequestInit }> =
+      [];
+    const fetchFn: typeof globalThis.fetch = (input, init) => {
+      captures.push(init === undefined ? { input } : { input, init });
+      return Promise.reject(new TypeError('offline'));
+    };
+    const remote = createWebAuthRemote(fetchFn);
+
+    await expect(
+      remote.beginGoogleAuthentication({
+        purpose: 'sign_in',
+        return_target: 'access',
+      }),
+    ).rejects.toBeTruthy();
+    await expect(
+      remote.beginGoogleAuthentication(
+        { purpose: 'link', return_target: 'security' },
+        'provider-link-csrf',
+      ),
+    ).rejects.toBeTruthy();
+
+    expect(captures).toHaveLength(2);
+    expect(captures[0]?.input).toBe('/api/v1/auth/providers/google/begin');
+    expect(
+      new Headers(captures[0]?.init?.headers).has('X-Dante-CSRF'),
+    ).toBe(false);
+    expect(captures[1]?.input).toBe('/api/v1/auth/providers/google/begin');
+    expect(new Headers(captures[1]?.init?.headers).get('X-Dante-CSRF')).toBe(
+      'provider-link-csrf',
+    );
+  });
+
   it('rejects authenticated mutations without a CSRF token before transport', async () => {
     let called = false;
     const fetchFn: typeof globalThis.fetch = () => {
@@ -140,6 +173,49 @@ describe('Web Auth remote transport', () => {
     await expect(
       remote.reauthenticate({ password: 'password' }, ''),
     ).rejects.toThrow('requires a CSRF token');
+    await expect(
+      remote.establishPassword({ new_password: 'new password value' }, ''),
+    ).rejects.toThrow('requires a CSRF token');
+    await expect(remote.removePassword('')).rejects.toThrow(
+      'requires a CSRF token',
+    );
+    await expect(
+      remote.beginGoogleAuthentication({
+        purpose: 'link',
+        return_target: 'security',
+      }),
+    ).rejects.toThrow('requires the current session CSRF token');
+    await expect(
+      remote.beginAppleAuthentication({
+        purpose: 'reauthenticate',
+        return_target: 'security',
+      }),
+    ).rejects.toThrow('requires the current session CSRF token');
+    await expect(remote.confirmProviderLink('')).rejects.toThrow(
+      'requires a CSRF token',
+    );
+    await expect(remote.unlinkProvider('external-identity-ref', '')).rejects.toThrow(
+      'requires a CSRF token',
+    );
+    await expect(remote.beginPasskeyRegistration('')).rejects.toThrow(
+      'requires a CSRF token',
+    );
+    await expect(
+      remote.completePasskeyRegistration({} as never, ''),
+    ).rejects.toThrow('requires a CSRF token');
+    await expect(remote.beginPasskeyReauthentication('')).rejects.toThrow(
+      'requires a CSRF token',
+    );
+    await expect(
+      remote.completePasskeyReauthentication({} as never, ''),
+    ).rejects.toThrow('requires a CSRF token');
+    await expect(
+      remote.updatePasskey('passkey-ref', { label: 'Laptop' }, ''),
+    ).rejects.toThrow('requires a CSRF token');
+    await expect(remote.removePasskey('passkey-ref', '')).rejects.toThrow(
+      'requires a CSRF token',
+    );
+
     expect(called).toBe(false);
   });
 });
