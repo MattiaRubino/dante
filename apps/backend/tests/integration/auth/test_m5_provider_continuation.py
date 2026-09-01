@@ -101,9 +101,7 @@ async def test_opaque_provider_continuations_resolve_server_side_by_purpose(
                 ]
             )
 
-        enrollment_state = await service.resolve_enrollment(
-            enrollment.secret.get_secret_value()
-        )
+        enrollment_state = await service.resolve_enrollment(enrollment.secret.get_secret_value())
         assert enrollment_state.external_signup_ref == signup_ref
         assert enrollment_state.provider_code == "google"
 

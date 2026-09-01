@@ -19,6 +19,26 @@ export const AuthenticationMethodsResponse = /*#__PURE__*/ zod
           authenticationMethodsResponseActivePasskeyCountMin,
         ),
       ),
+    passkeys: /*#__PURE__*/ zod.array(
+      /*#__PURE__*/ zod
+        .object({
+          backup_eligible: /*#__PURE__*/ zod.boolean(),
+          backup_state: /*#__PURE__*/ zod.boolean(),
+          created_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+          label: /*#__PURE__*/ zod.string(),
+          last_used_at: /*#__PURE__*/ zod.union([
+            /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+            /*#__PURE__*/ zod.null(),
+          ]),
+          passkey_credential_ref: /*#__PURE__*/ zod.uuid(),
+          transports: /*#__PURE__*/ zod.array(/*#__PURE__*/ zod.string()),
+        })
+        .check(
+          /*#__PURE__*/ zod.describe(
+            'Safe passkey management metadata without credential\/public-key\/user-handle disclosure.',
+          ),
+        ),
+    ),
     password_established: /*#__PURE__*/ zod.boolean(),
     providers: /*#__PURE__*/ zod.array(
       /*#__PURE__*/ zod

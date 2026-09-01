@@ -5,14 +5,34 @@
  * OpenAPI spec version: 0.1.0
  */
 import type {
+  AppleAuthenticationBegunResponse,
+  AppleNotificationRequest,
+  AuthHandleAppleCallbackBody,
   AuthenticatedSessionResponse,
   AuthenticationMethodsResponse,
   ExistingAccountSignupResponse,
+  GoogleAuthenticationBegunResponse,
+  GoogleAuthenticationCompleteRequest,
+  PasskeyAuthenticationCompleteRequest,
+  PasskeyBeginRequest,
+  PasskeyCeremonyResponse,
+  PasskeyReauthenticationCompleteRequest,
+  PasskeyRegistrationCompleteRequest,
+  PasskeyUpdateRequest,
   PasswordEstablishRequest,
   PasswordRecoveryRequest,
   PasswordRecoveryValidationRequest,
   PasswordResetRequest,
   ProblemDetails,
+  ProviderAuthenticatedResponse,
+  ProviderBeginRequest,
+  ProviderEnrollmentEmailRequest,
+  ProviderEnrollmentRequiredResponse,
+  ProviderEnrollmentResendRequest,
+  ProviderEnrollmentVerificationRequest,
+  ProviderLinkConfirmRequest,
+  ProviderLinkRequiredResponse,
+  ProviderLinkResponse,
   ReauthenticateRequest,
   RecoveryAcceptedResponse,
   RecoveryValidationResponse,
@@ -25,9 +45,601 @@ import type {
   UnauthenticatedSessionResponse,
 } from './model';
 
+export type authBeginAppleAuthenticationResponse200 = {
+  data: AppleAuthenticationBegunResponse;
+  status: 200;
+};
+
+export type authBeginAppleAuthenticationResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type authBeginAppleAuthenticationResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type authBeginAppleAuthenticationResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type authBeginAppleAuthenticationResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type authBeginAppleAuthenticationResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type authBeginAppleAuthenticationResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type authBeginAppleAuthenticationResponse429 = {
+  data: ProblemDetails;
+  status: 429;
+};
+
+export type authBeginAppleAuthenticationResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type authBeginAppleAuthenticationResponse503 = {
+  data: ProblemDetails;
+  status: 503;
+};
+
+export type authBeginAppleAuthenticationResponseSuccess =
+  authBeginAppleAuthenticationResponse200 & {
+    headers: Headers;
+  };
+export type authBeginAppleAuthenticationResponseError = (
+  | authBeginAppleAuthenticationResponse400
+  | authBeginAppleAuthenticationResponse401
+  | authBeginAppleAuthenticationResponse403
+  | authBeginAppleAuthenticationResponse404
+  | authBeginAppleAuthenticationResponse409
+  | authBeginAppleAuthenticationResponse422
+  | authBeginAppleAuthenticationResponse429
+  | authBeginAppleAuthenticationResponse500
+  | authBeginAppleAuthenticationResponse503
+) & {
+  headers: Headers;
+};
+
+export type authBeginAppleAuthenticationResponse =
+  | authBeginAppleAuthenticationResponseSuccess
+  | authBeginAppleAuthenticationResponseError;
+
+export const getAuthBeginAppleAuthenticationUrl = () => {
+  return `/api/v1/auth/apple/begin`;
+};
+
+/**
+ * @summary Begin Apple Authentication
+ */
+export const authBeginAppleAuthentication = async (
+  providerBeginRequest: ProviderBeginRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<authBeginAppleAuthenticationResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(getAuthBeginAppleAuthenticationUrl(), {
+    ...options,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(providerBeginRequest),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: authBeginAppleAuthenticationResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as authBeginAppleAuthenticationResponse;
+};
+
+export type authHandleAppleCallbackResponse303 = {
+  data: unknown;
+  status: 303;
+};
+
+export type authHandleAppleCallbackResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type authHandleAppleCallbackResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type authHandleAppleCallbackResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type authHandleAppleCallbackResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type authHandleAppleCallbackResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type authHandleAppleCallbackResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type authHandleAppleCallbackResponse429 = {
+  data: ProblemDetails;
+  status: 429;
+};
+
+export type authHandleAppleCallbackResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type authHandleAppleCallbackResponse503 = {
+  data: ProblemDetails;
+  status: 503;
+};
+
+export type authHandleAppleCallbackResponseError = (
+  | authHandleAppleCallbackResponse303
+  | authHandleAppleCallbackResponse400
+  | authHandleAppleCallbackResponse401
+  | authHandleAppleCallbackResponse403
+  | authHandleAppleCallbackResponse404
+  | authHandleAppleCallbackResponse409
+  | authHandleAppleCallbackResponse422
+  | authHandleAppleCallbackResponse429
+  | authHandleAppleCallbackResponse500
+  | authHandleAppleCallbackResponse503
+) & {
+  headers: Headers;
+};
+
+export type authHandleAppleCallbackResponse =
+  authHandleAppleCallbackResponseError;
+
+export const getAuthHandleAppleCallbackUrl = () => {
+  return `/api/v1/auth/apple/callback`;
+};
+
+/**
+ * @summary Handle Apple Callback
+ */
+export const authHandleAppleCallback = async (
+  authHandleAppleCallbackBody: AuthHandleAppleCallbackBody,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<authHandleAppleCallbackResponse> => {
+  const formUrlEncoded = new URLSearchParams();
+  if (authHandleAppleCallbackBody.code !== undefined) {
+    formUrlEncoded.append(`code`, authHandleAppleCallbackBody.code);
+  }
+  if (authHandleAppleCallbackBody.error !== undefined) {
+    formUrlEncoded.append(`error`, authHandleAppleCallbackBody.error);
+  }
+  if (authHandleAppleCallbackBody.id_token !== undefined) {
+    formUrlEncoded.append(`id_token`, authHandleAppleCallbackBody.id_token);
+  }
+  formUrlEncoded.append(`state`, authHandleAppleCallbackBody.state);
+  if (authHandleAppleCallbackBody.user !== undefined) {
+    formUrlEncoded.append(`user`, authHandleAppleCallbackBody.user);
+  }
+
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(getAuthHandleAppleCallbackUrl(), {
+    ...options,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      ...getHeaders(options?.headers),
+    },
+    body: formUrlEncoded,
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: authHandleAppleCallbackResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as authHandleAppleCallbackResponse;
+};
+
+export type authProcessAppleNotificationResponse204 = {
+  data: void;
+  status: 204;
+};
+
+export type authProcessAppleNotificationResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type authProcessAppleNotificationResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type authProcessAppleNotificationResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type authProcessAppleNotificationResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type authProcessAppleNotificationResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type authProcessAppleNotificationResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type authProcessAppleNotificationResponse429 = {
+  data: ProblemDetails;
+  status: 429;
+};
+
+export type authProcessAppleNotificationResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type authProcessAppleNotificationResponse503 = {
+  data: ProblemDetails;
+  status: 503;
+};
+
+export type authProcessAppleNotificationResponseSuccess =
+  authProcessAppleNotificationResponse204 & {
+    headers: Headers;
+  };
+export type authProcessAppleNotificationResponseError = (
+  | authProcessAppleNotificationResponse400
+  | authProcessAppleNotificationResponse401
+  | authProcessAppleNotificationResponse403
+  | authProcessAppleNotificationResponse404
+  | authProcessAppleNotificationResponse409
+  | authProcessAppleNotificationResponse422
+  | authProcessAppleNotificationResponse429
+  | authProcessAppleNotificationResponse500
+  | authProcessAppleNotificationResponse503
+) & {
+  headers: Headers;
+};
+
+export type authProcessAppleNotificationResponse =
+  | authProcessAppleNotificationResponseSuccess
+  | authProcessAppleNotificationResponseError;
+
+export const getAuthProcessAppleNotificationUrl = () => {
+  return `/api/v1/auth/apple/notifications`;
+};
+
+/**
+ * @summary Process Apple Notification
+ */
+export const authProcessAppleNotification = async (
+  appleNotificationRequest: AppleNotificationRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<authProcessAppleNotificationResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(getAuthProcessAppleNotificationUrl(), {
+    ...options,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(appleNotificationRequest),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: authProcessAppleNotificationResponse['data'] = body
+    ? JSON.parse(body)
+    : undefined;
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as authProcessAppleNotificationResponse;
+};
+
+export type authBeginGoogleAuthenticationResponse200 = {
+  data: GoogleAuthenticationBegunResponse;
+  status: 200;
+};
+
+export type authBeginGoogleAuthenticationResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type authBeginGoogleAuthenticationResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type authBeginGoogleAuthenticationResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type authBeginGoogleAuthenticationResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type authBeginGoogleAuthenticationResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type authBeginGoogleAuthenticationResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type authBeginGoogleAuthenticationResponse429 = {
+  data: ProblemDetails;
+  status: 429;
+};
+
+export type authBeginGoogleAuthenticationResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type authBeginGoogleAuthenticationResponse503 = {
+  data: ProblemDetails;
+  status: 503;
+};
+
+export type authBeginGoogleAuthenticationResponseSuccess =
+  authBeginGoogleAuthenticationResponse200 & {
+    headers: Headers;
+  };
+export type authBeginGoogleAuthenticationResponseError = (
+  | authBeginGoogleAuthenticationResponse400
+  | authBeginGoogleAuthenticationResponse401
+  | authBeginGoogleAuthenticationResponse403
+  | authBeginGoogleAuthenticationResponse404
+  | authBeginGoogleAuthenticationResponse409
+  | authBeginGoogleAuthenticationResponse422
+  | authBeginGoogleAuthenticationResponse429
+  | authBeginGoogleAuthenticationResponse500
+  | authBeginGoogleAuthenticationResponse503
+) & {
+  headers: Headers;
+};
+
+export type authBeginGoogleAuthenticationResponse =
+  | authBeginGoogleAuthenticationResponseSuccess
+  | authBeginGoogleAuthenticationResponseError;
+
+export const getAuthBeginGoogleAuthenticationUrl = () => {
+  return `/api/v1/auth/google/begin`;
+};
+
+/**
+ * @summary Begin Google Authentication
+ */
+export const authBeginGoogleAuthentication = async (
+  providerBeginRequest: ProviderBeginRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<authBeginGoogleAuthenticationResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(getAuthBeginGoogleAuthenticationUrl(), {
+    ...options,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(providerBeginRequest),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: authBeginGoogleAuthenticationResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as authBeginGoogleAuthenticationResponse;
+};
+
+export type authCompleteGoogleAuthenticationResponse200 = {
+  data:
+    | ProviderAuthenticatedResponse
+    | ProviderLinkRequiredResponse
+    | ProviderEnrollmentRequiredResponse;
+  status: 200;
+};
+
+export type authCompleteGoogleAuthenticationResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type authCompleteGoogleAuthenticationResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type authCompleteGoogleAuthenticationResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type authCompleteGoogleAuthenticationResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type authCompleteGoogleAuthenticationResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type authCompleteGoogleAuthenticationResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type authCompleteGoogleAuthenticationResponse429 = {
+  data: ProblemDetails;
+  status: 429;
+};
+
+export type authCompleteGoogleAuthenticationResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type authCompleteGoogleAuthenticationResponse503 = {
+  data: ProblemDetails;
+  status: 503;
+};
+
+export type authCompleteGoogleAuthenticationResponseSuccess =
+  authCompleteGoogleAuthenticationResponse200 & {
+    headers: Headers;
+  };
+export type authCompleteGoogleAuthenticationResponseError = (
+  | authCompleteGoogleAuthenticationResponse400
+  | authCompleteGoogleAuthenticationResponse401
+  | authCompleteGoogleAuthenticationResponse403
+  | authCompleteGoogleAuthenticationResponse404
+  | authCompleteGoogleAuthenticationResponse409
+  | authCompleteGoogleAuthenticationResponse422
+  | authCompleteGoogleAuthenticationResponse429
+  | authCompleteGoogleAuthenticationResponse500
+  | authCompleteGoogleAuthenticationResponse503
+) & {
+  headers: Headers;
+};
+
+export type authCompleteGoogleAuthenticationResponse =
+  | authCompleteGoogleAuthenticationResponseSuccess
+  | authCompleteGoogleAuthenticationResponseError;
+
+export const getAuthCompleteGoogleAuthenticationUrl = () => {
+  return `/api/v1/auth/google/complete`;
+};
+
+/**
+ * @summary Complete Google Authentication
+ */
+export const authCompleteGoogleAuthentication = async (
+  googleAuthenticationCompleteRequest: GoogleAuthenticationCompleteRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<authCompleteGoogleAuthenticationResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getAuthCompleteGoogleAuthenticationUrl(),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(googleAuthenticationCompleteRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: authCompleteGoogleAuthenticationResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as authCompleteGoogleAuthenticationResponse;
+};
+
 export type authGetAuthenticationMethodsResponse200 = {
   data: AuthenticationMethodsResponse;
   status: 200;
+};
+
+export type authGetAuthenticationMethodsResponse400 = {
+  data: ProblemDetails;
+  status: 400;
 };
 
 export type authGetAuthenticationMethodsResponse401 = {
@@ -38,6 +650,26 @@ export type authGetAuthenticationMethodsResponse401 = {
 export type authGetAuthenticationMethodsResponse403 = {
   data: ProblemDetails;
   status: 403;
+};
+
+export type authGetAuthenticationMethodsResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type authGetAuthenticationMethodsResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type authGetAuthenticationMethodsResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type authGetAuthenticationMethodsResponse429 = {
+  data: ProblemDetails;
+  status: 429;
 };
 
 export type authGetAuthenticationMethodsResponse500 = {
@@ -55,8 +687,13 @@ export type authGetAuthenticationMethodsResponseSuccess =
     headers: Headers;
   };
 export type authGetAuthenticationMethodsResponseError = (
+  | authGetAuthenticationMethodsResponse400
   | authGetAuthenticationMethodsResponse401
   | authGetAuthenticationMethodsResponse403
+  | authGetAuthenticationMethodsResponse404
+  | authGetAuthenticationMethodsResponse409
+  | authGetAuthenticationMethodsResponse422
+  | authGetAuthenticationMethodsResponse429
   | authGetAuthenticationMethodsResponse500
   | authGetAuthenticationMethodsResponse503
 ) & {
@@ -96,9 +733,926 @@ export const authGetAuthenticationMethods = async (
   } as authGetAuthenticationMethodsResponse;
 };
 
+export type authBeginPasskeyAuthenticationResponse200 = {
+  data: PasskeyCeremonyResponse;
+  status: 200;
+};
+
+export type authBeginPasskeyAuthenticationResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type authBeginPasskeyAuthenticationResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type authBeginPasskeyAuthenticationResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type authBeginPasskeyAuthenticationResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type authBeginPasskeyAuthenticationResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type authBeginPasskeyAuthenticationResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type authBeginPasskeyAuthenticationResponse429 = {
+  data: ProblemDetails;
+  status: 429;
+};
+
+export type authBeginPasskeyAuthenticationResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type authBeginPasskeyAuthenticationResponse503 = {
+  data: ProblemDetails;
+  status: 503;
+};
+
+export type authBeginPasskeyAuthenticationResponseSuccess =
+  authBeginPasskeyAuthenticationResponse200 & {
+    headers: Headers;
+  };
+export type authBeginPasskeyAuthenticationResponseError = (
+  | authBeginPasskeyAuthenticationResponse400
+  | authBeginPasskeyAuthenticationResponse401
+  | authBeginPasskeyAuthenticationResponse403
+  | authBeginPasskeyAuthenticationResponse404
+  | authBeginPasskeyAuthenticationResponse409
+  | authBeginPasskeyAuthenticationResponse422
+  | authBeginPasskeyAuthenticationResponse429
+  | authBeginPasskeyAuthenticationResponse500
+  | authBeginPasskeyAuthenticationResponse503
+) & {
+  headers: Headers;
+};
+
+export type authBeginPasskeyAuthenticationResponse =
+  | authBeginPasskeyAuthenticationResponseSuccess
+  | authBeginPasskeyAuthenticationResponseError;
+
+export const getAuthBeginPasskeyAuthenticationUrl = () => {
+  return `/api/v1/auth/passkeys/authentication/begin`;
+};
+
+/**
+ * @summary Begin Passkey Authentication
+ */
+export const authBeginPasskeyAuthentication = async (
+  passkeyBeginRequest: PasskeyBeginRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<authBeginPasskeyAuthenticationResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(getAuthBeginPasskeyAuthenticationUrl(), {
+    ...options,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(passkeyBeginRequest),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: authBeginPasskeyAuthenticationResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as authBeginPasskeyAuthenticationResponse;
+};
+
+export type authCompletePasskeyAuthenticationResponse200 = {
+  data: AuthenticatedSessionResponse;
+  status: 200;
+};
+
+export type authCompletePasskeyAuthenticationResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type authCompletePasskeyAuthenticationResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type authCompletePasskeyAuthenticationResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type authCompletePasskeyAuthenticationResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type authCompletePasskeyAuthenticationResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type authCompletePasskeyAuthenticationResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type authCompletePasskeyAuthenticationResponse429 = {
+  data: ProblemDetails;
+  status: 429;
+};
+
+export type authCompletePasskeyAuthenticationResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type authCompletePasskeyAuthenticationResponse503 = {
+  data: ProblemDetails;
+  status: 503;
+};
+
+export type authCompletePasskeyAuthenticationResponseSuccess =
+  authCompletePasskeyAuthenticationResponse200 & {
+    headers: Headers;
+  };
+export type authCompletePasskeyAuthenticationResponseError = (
+  | authCompletePasskeyAuthenticationResponse400
+  | authCompletePasskeyAuthenticationResponse401
+  | authCompletePasskeyAuthenticationResponse403
+  | authCompletePasskeyAuthenticationResponse404
+  | authCompletePasskeyAuthenticationResponse409
+  | authCompletePasskeyAuthenticationResponse422
+  | authCompletePasskeyAuthenticationResponse429
+  | authCompletePasskeyAuthenticationResponse500
+  | authCompletePasskeyAuthenticationResponse503
+) & {
+  headers: Headers;
+};
+
+export type authCompletePasskeyAuthenticationResponse =
+  | authCompletePasskeyAuthenticationResponseSuccess
+  | authCompletePasskeyAuthenticationResponseError;
+
+export const getAuthCompletePasskeyAuthenticationUrl = () => {
+  return `/api/v1/auth/passkeys/authentication/complete`;
+};
+
+/**
+ * @summary Complete Passkey Authentication
+ */
+export const authCompletePasskeyAuthentication = async (
+  passkeyAuthenticationCompleteRequest: PasskeyAuthenticationCompleteRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<authCompletePasskeyAuthenticationResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getAuthCompletePasskeyAuthenticationUrl(),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(passkeyAuthenticationCompleteRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: authCompletePasskeyAuthenticationResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as authCompletePasskeyAuthenticationResponse;
+};
+
+export type authBeginPasskeyReauthenticationResponse200 = {
+  data: PasskeyCeremonyResponse;
+  status: 200;
+};
+
+export type authBeginPasskeyReauthenticationResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type authBeginPasskeyReauthenticationResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type authBeginPasskeyReauthenticationResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type authBeginPasskeyReauthenticationResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type authBeginPasskeyReauthenticationResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type authBeginPasskeyReauthenticationResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type authBeginPasskeyReauthenticationResponse429 = {
+  data: ProblemDetails;
+  status: 429;
+};
+
+export type authBeginPasskeyReauthenticationResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type authBeginPasskeyReauthenticationResponse503 = {
+  data: ProblemDetails;
+  status: 503;
+};
+
+export type authBeginPasskeyReauthenticationResponseSuccess =
+  authBeginPasskeyReauthenticationResponse200 & {
+    headers: Headers;
+  };
+export type authBeginPasskeyReauthenticationResponseError = (
+  | authBeginPasskeyReauthenticationResponse400
+  | authBeginPasskeyReauthenticationResponse401
+  | authBeginPasskeyReauthenticationResponse403
+  | authBeginPasskeyReauthenticationResponse404
+  | authBeginPasskeyReauthenticationResponse409
+  | authBeginPasskeyReauthenticationResponse422
+  | authBeginPasskeyReauthenticationResponse429
+  | authBeginPasskeyReauthenticationResponse500
+  | authBeginPasskeyReauthenticationResponse503
+) & {
+  headers: Headers;
+};
+
+export type authBeginPasskeyReauthenticationResponse =
+  | authBeginPasskeyReauthenticationResponseSuccess
+  | authBeginPasskeyReauthenticationResponseError;
+
+export const getAuthBeginPasskeyReauthenticationUrl = () => {
+  return `/api/v1/auth/passkeys/reauthentication/begin`;
+};
+
+/**
+ * @summary Begin Passkey Reauthentication
+ */
+export const authBeginPasskeyReauthentication = async (
+  passkeyBeginRequest: PasskeyBeginRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<authBeginPasskeyReauthenticationResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getAuthBeginPasskeyReauthenticationUrl(),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(passkeyBeginRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: authBeginPasskeyReauthenticationResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as authBeginPasskeyReauthenticationResponse;
+};
+
+export type authCompletePasskeyReauthenticationResponse200 = {
+  data: AuthenticatedSessionResponse;
+  status: 200;
+};
+
+export type authCompletePasskeyReauthenticationResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type authCompletePasskeyReauthenticationResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type authCompletePasskeyReauthenticationResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type authCompletePasskeyReauthenticationResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type authCompletePasskeyReauthenticationResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type authCompletePasskeyReauthenticationResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type authCompletePasskeyReauthenticationResponse429 = {
+  data: ProblemDetails;
+  status: 429;
+};
+
+export type authCompletePasskeyReauthenticationResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type authCompletePasskeyReauthenticationResponse503 = {
+  data: ProblemDetails;
+  status: 503;
+};
+
+export type authCompletePasskeyReauthenticationResponseSuccess =
+  authCompletePasskeyReauthenticationResponse200 & {
+    headers: Headers;
+  };
+export type authCompletePasskeyReauthenticationResponseError = (
+  | authCompletePasskeyReauthenticationResponse400
+  | authCompletePasskeyReauthenticationResponse401
+  | authCompletePasskeyReauthenticationResponse403
+  | authCompletePasskeyReauthenticationResponse404
+  | authCompletePasskeyReauthenticationResponse409
+  | authCompletePasskeyReauthenticationResponse422
+  | authCompletePasskeyReauthenticationResponse429
+  | authCompletePasskeyReauthenticationResponse500
+  | authCompletePasskeyReauthenticationResponse503
+) & {
+  headers: Headers;
+};
+
+export type authCompletePasskeyReauthenticationResponse =
+  | authCompletePasskeyReauthenticationResponseSuccess
+  | authCompletePasskeyReauthenticationResponseError;
+
+export const getAuthCompletePasskeyReauthenticationUrl = () => {
+  return `/api/v1/auth/passkeys/reauthentication/complete`;
+};
+
+/**
+ * @summary Complete Passkey Reauthentication
+ */
+export const authCompletePasskeyReauthentication = async (
+  passkeyReauthenticationCompleteRequest: PasskeyReauthenticationCompleteRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<authCompletePasskeyReauthenticationResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getAuthCompletePasskeyReauthenticationUrl(),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(passkeyReauthenticationCompleteRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: authCompletePasskeyReauthenticationResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as authCompletePasskeyReauthenticationResponse;
+};
+
+export type authBeginPasskeyRegistrationResponse200 = {
+  data: PasskeyCeremonyResponse;
+  status: 200;
+};
+
+export type authBeginPasskeyRegistrationResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type authBeginPasskeyRegistrationResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type authBeginPasskeyRegistrationResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type authBeginPasskeyRegistrationResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type authBeginPasskeyRegistrationResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type authBeginPasskeyRegistrationResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type authBeginPasskeyRegistrationResponse429 = {
+  data: ProblemDetails;
+  status: 429;
+};
+
+export type authBeginPasskeyRegistrationResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type authBeginPasskeyRegistrationResponse503 = {
+  data: ProblemDetails;
+  status: 503;
+};
+
+export type authBeginPasskeyRegistrationResponseSuccess =
+  authBeginPasskeyRegistrationResponse200 & {
+    headers: Headers;
+  };
+export type authBeginPasskeyRegistrationResponseError = (
+  | authBeginPasskeyRegistrationResponse400
+  | authBeginPasskeyRegistrationResponse401
+  | authBeginPasskeyRegistrationResponse403
+  | authBeginPasskeyRegistrationResponse404
+  | authBeginPasskeyRegistrationResponse409
+  | authBeginPasskeyRegistrationResponse422
+  | authBeginPasskeyRegistrationResponse429
+  | authBeginPasskeyRegistrationResponse500
+  | authBeginPasskeyRegistrationResponse503
+) & {
+  headers: Headers;
+};
+
+export type authBeginPasskeyRegistrationResponse =
+  | authBeginPasskeyRegistrationResponseSuccess
+  | authBeginPasskeyRegistrationResponseError;
+
+export const getAuthBeginPasskeyRegistrationUrl = () => {
+  return `/api/v1/auth/passkeys/registration/begin`;
+};
+
+/**
+ * @summary Begin Passkey Registration
+ */
+export const authBeginPasskeyRegistration = async (
+  passkeyBeginRequest: PasskeyBeginRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<authBeginPasskeyRegistrationResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(getAuthBeginPasskeyRegistrationUrl(), {
+    ...options,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(passkeyBeginRequest),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: authBeginPasskeyRegistrationResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as authBeginPasskeyRegistrationResponse;
+};
+
+export type authCompletePasskeyRegistrationResponse200 = {
+  data: AuthenticatedSessionResponse;
+  status: 200;
+};
+
+export type authCompletePasskeyRegistrationResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type authCompletePasskeyRegistrationResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type authCompletePasskeyRegistrationResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type authCompletePasskeyRegistrationResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type authCompletePasskeyRegistrationResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type authCompletePasskeyRegistrationResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type authCompletePasskeyRegistrationResponse429 = {
+  data: ProblemDetails;
+  status: 429;
+};
+
+export type authCompletePasskeyRegistrationResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type authCompletePasskeyRegistrationResponse503 = {
+  data: ProblemDetails;
+  status: 503;
+};
+
+export type authCompletePasskeyRegistrationResponseSuccess =
+  authCompletePasskeyRegistrationResponse200 & {
+    headers: Headers;
+  };
+export type authCompletePasskeyRegistrationResponseError = (
+  | authCompletePasskeyRegistrationResponse400
+  | authCompletePasskeyRegistrationResponse401
+  | authCompletePasskeyRegistrationResponse403
+  | authCompletePasskeyRegistrationResponse404
+  | authCompletePasskeyRegistrationResponse409
+  | authCompletePasskeyRegistrationResponse422
+  | authCompletePasskeyRegistrationResponse429
+  | authCompletePasskeyRegistrationResponse500
+  | authCompletePasskeyRegistrationResponse503
+) & {
+  headers: Headers;
+};
+
+export type authCompletePasskeyRegistrationResponse =
+  | authCompletePasskeyRegistrationResponseSuccess
+  | authCompletePasskeyRegistrationResponseError;
+
+export const getAuthCompletePasskeyRegistrationUrl = () => {
+  return `/api/v1/auth/passkeys/registration/complete`;
+};
+
+/**
+ * @summary Complete Passkey Registration
+ */
+export const authCompletePasskeyRegistration = async (
+  passkeyRegistrationCompleteRequest: PasskeyRegistrationCompleteRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<authCompletePasskeyRegistrationResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getAuthCompletePasskeyRegistrationUrl(),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(passkeyRegistrationCompleteRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: authCompletePasskeyRegistrationResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as authCompletePasskeyRegistrationResponse;
+};
+
+export type authRemovePasskeyResponse200 = {
+  data: AuthenticatedSessionResponse;
+  status: 200;
+};
+
+export type authRemovePasskeyResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type authRemovePasskeyResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type authRemovePasskeyResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type authRemovePasskeyResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type authRemovePasskeyResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type authRemovePasskeyResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type authRemovePasskeyResponse429 = {
+  data: ProblemDetails;
+  status: 429;
+};
+
+export type authRemovePasskeyResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type authRemovePasskeyResponse503 = {
+  data: ProblemDetails;
+  status: 503;
+};
+
+export type authRemovePasskeyResponseSuccess = authRemovePasskeyResponse200 & {
+  headers: Headers;
+};
+export type authRemovePasskeyResponseError = (
+  | authRemovePasskeyResponse400
+  | authRemovePasskeyResponse401
+  | authRemovePasskeyResponse403
+  | authRemovePasskeyResponse404
+  | authRemovePasskeyResponse409
+  | authRemovePasskeyResponse422
+  | authRemovePasskeyResponse429
+  | authRemovePasskeyResponse500
+  | authRemovePasskeyResponse503
+) & {
+  headers: Headers;
+};
+
+export type authRemovePasskeyResponse =
+  authRemovePasskeyResponseSuccess | authRemovePasskeyResponseError;
+
+export const getAuthRemovePasskeyUrl = (passkeyCredentialRef: string) => {
+  return `/api/v1/auth/passkeys/${passkeyCredentialRef}`;
+};
+
+/**
+ * @summary Remove Passkey
+ */
+export const authRemovePasskey = async (
+  passkeyCredentialRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<authRemovePasskeyResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getAuthRemovePasskeyUrl(passkeyCredentialRef),
+    {
+      ...options,
+      method: 'DELETE',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: authRemovePasskeyResponse['data'] = body ? JSON.parse(body) : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as authRemovePasskeyResponse;
+};
+
+export type authUpdatePasskeyResponse204 = {
+  data: void;
+  status: 204;
+};
+
+export type authUpdatePasskeyResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type authUpdatePasskeyResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type authUpdatePasskeyResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type authUpdatePasskeyResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type authUpdatePasskeyResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type authUpdatePasskeyResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type authUpdatePasskeyResponse429 = {
+  data: ProblemDetails;
+  status: 429;
+};
+
+export type authUpdatePasskeyResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type authUpdatePasskeyResponse503 = {
+  data: ProblemDetails;
+  status: 503;
+};
+
+export type authUpdatePasskeyResponseSuccess = authUpdatePasskeyResponse204 & {
+  headers: Headers;
+};
+export type authUpdatePasskeyResponseError = (
+  | authUpdatePasskeyResponse400
+  | authUpdatePasskeyResponse401
+  | authUpdatePasskeyResponse403
+  | authUpdatePasskeyResponse404
+  | authUpdatePasskeyResponse409
+  | authUpdatePasskeyResponse422
+  | authUpdatePasskeyResponse429
+  | authUpdatePasskeyResponse500
+  | authUpdatePasskeyResponse503
+) & {
+  headers: Headers;
+};
+
+export type authUpdatePasskeyResponse =
+  authUpdatePasskeyResponseSuccess | authUpdatePasskeyResponseError;
+
+export const getAuthUpdatePasskeyUrl = (passkeyCredentialRef: string) => {
+  return `/api/v1/auth/passkeys/${passkeyCredentialRef}`;
+};
+
+/**
+ * @summary Update Passkey
+ */
+export const authUpdatePasskey = async (
+  passkeyCredentialRef: string,
+  passkeyUpdateRequest: PasskeyUpdateRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<authUpdatePasskeyResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getAuthUpdatePasskeyUrl(passkeyCredentialRef),
+    {
+      ...options,
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(passkeyUpdateRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: authUpdatePasskeyResponse['data'] = body
+    ? JSON.parse(body)
+    : undefined;
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as authUpdatePasskeyResponse;
+};
+
 export type authRemovePasswordResponse200 = {
   data: AuthenticatedSessionResponse;
   status: 200;
+};
+
+export type authRemovePasswordResponse400 = {
+  data: ProblemDetails;
+  status: 400;
 };
 
 export type authRemovePasswordResponse401 = {
@@ -111,9 +1665,24 @@ export type authRemovePasswordResponse403 = {
   status: 403;
 };
 
+export type authRemovePasswordResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
 export type authRemovePasswordResponse409 = {
   data: ProblemDetails;
   status: 409;
+};
+
+export type authRemovePasswordResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type authRemovePasswordResponse429 = {
+  data: ProblemDetails;
+  status: 429;
 };
 
 export type authRemovePasswordResponse500 = {
@@ -131,9 +1700,13 @@ export type authRemovePasswordResponseSuccess =
     headers: Headers;
   };
 export type authRemovePasswordResponseError = (
+  | authRemovePasswordResponse400
   | authRemovePasswordResponse401
   | authRemovePasswordResponse403
+  | authRemovePasswordResponse404
   | authRemovePasswordResponse409
+  | authRemovePasswordResponse422
+  | authRemovePasswordResponse429
   | authRemovePasswordResponse500
   | authRemovePasswordResponse503
 ) & {
@@ -190,6 +1763,11 @@ export type authEstablishPasswordResponse403 = {
   status: 403;
 };
 
+export type authEstablishPasswordResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
 export type authEstablishPasswordResponse409 = {
   data: ProblemDetails;
   status: 409;
@@ -198,6 +1776,11 @@ export type authEstablishPasswordResponse409 = {
 export type authEstablishPasswordResponse422 = {
   data: ProblemDetails;
   status: 422;
+};
+
+export type authEstablishPasswordResponse429 = {
+  data: ProblemDetails;
+  status: 429;
 };
 
 export type authEstablishPasswordResponse500 = {
@@ -218,8 +1801,10 @@ export type authEstablishPasswordResponseError = (
   | authEstablishPasswordResponse400
   | authEstablishPasswordResponse401
   | authEstablishPasswordResponse403
+  | authEstablishPasswordResponse404
   | authEstablishPasswordResponse409
   | authEstablishPasswordResponse422
+  | authEstablishPasswordResponse429
   | authEstablishPasswordResponse500
   | authEstablishPasswordResponse503
 ) & {
@@ -270,6 +1855,764 @@ export const authEstablishPassword = async (
     status: res.status,
     headers: res.headers,
   } as authEstablishPasswordResponse;
+};
+
+export type authGetProviderEnrollmentResponse200 = {
+  data: ProviderEnrollmentRequiredResponse;
+  status: 200;
+};
+
+export type authGetProviderEnrollmentResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type authGetProviderEnrollmentResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type authGetProviderEnrollmentResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type authGetProviderEnrollmentResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type authGetProviderEnrollmentResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type authGetProviderEnrollmentResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type authGetProviderEnrollmentResponse429 = {
+  data: ProblemDetails;
+  status: 429;
+};
+
+export type authGetProviderEnrollmentResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type authGetProviderEnrollmentResponse503 = {
+  data: ProblemDetails;
+  status: 503;
+};
+
+export type authGetProviderEnrollmentResponseSuccess =
+  authGetProviderEnrollmentResponse200 & {
+    headers: Headers;
+  };
+export type authGetProviderEnrollmentResponseError = (
+  | authGetProviderEnrollmentResponse400
+  | authGetProviderEnrollmentResponse401
+  | authGetProviderEnrollmentResponse403
+  | authGetProviderEnrollmentResponse404
+  | authGetProviderEnrollmentResponse409
+  | authGetProviderEnrollmentResponse422
+  | authGetProviderEnrollmentResponse429
+  | authGetProviderEnrollmentResponse500
+  | authGetProviderEnrollmentResponse503
+) & {
+  headers: Headers;
+};
+
+export type authGetProviderEnrollmentResponse =
+  | authGetProviderEnrollmentResponseSuccess
+  | authGetProviderEnrollmentResponseError;
+
+export const getAuthGetProviderEnrollmentUrl = () => {
+  return `/api/v1/auth/provider-enrollment`;
+};
+
+/**
+ * @summary Get Provider Enrollment
+ */
+export const authGetProviderEnrollment = async (
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<authGetProviderEnrollmentResponse> => {
+  const res = await (fetchFn ?? fetch)(getAuthGetProviderEnrollmentUrl(), {
+    ...options,
+    method: 'GET',
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: authGetProviderEnrollmentResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as authGetProviderEnrollmentResponse;
+};
+
+export type authSetProviderEnrollmentEmailResponse200 = {
+  data: ProviderEnrollmentRequiredResponse;
+  status: 200;
+};
+
+export type authSetProviderEnrollmentEmailResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type authSetProviderEnrollmentEmailResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type authSetProviderEnrollmentEmailResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type authSetProviderEnrollmentEmailResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type authSetProviderEnrollmentEmailResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type authSetProviderEnrollmentEmailResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type authSetProviderEnrollmentEmailResponse429 = {
+  data: ProblemDetails;
+  status: 429;
+};
+
+export type authSetProviderEnrollmentEmailResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type authSetProviderEnrollmentEmailResponse503 = {
+  data: ProblemDetails;
+  status: 503;
+};
+
+export type authSetProviderEnrollmentEmailResponseSuccess =
+  authSetProviderEnrollmentEmailResponse200 & {
+    headers: Headers;
+  };
+export type authSetProviderEnrollmentEmailResponseError = (
+  | authSetProviderEnrollmentEmailResponse400
+  | authSetProviderEnrollmentEmailResponse401
+  | authSetProviderEnrollmentEmailResponse403
+  | authSetProviderEnrollmentEmailResponse404
+  | authSetProviderEnrollmentEmailResponse409
+  | authSetProviderEnrollmentEmailResponse422
+  | authSetProviderEnrollmentEmailResponse429
+  | authSetProviderEnrollmentEmailResponse500
+  | authSetProviderEnrollmentEmailResponse503
+) & {
+  headers: Headers;
+};
+
+export type authSetProviderEnrollmentEmailResponse =
+  | authSetProviderEnrollmentEmailResponseSuccess
+  | authSetProviderEnrollmentEmailResponseError;
+
+export const getAuthSetProviderEnrollmentEmailUrl = () => {
+  return `/api/v1/auth/provider-enrollment/email`;
+};
+
+/**
+ * @summary Set Provider Enrollment Email
+ */
+export const authSetProviderEnrollmentEmail = async (
+  providerEnrollmentEmailRequest: ProviderEnrollmentEmailRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<authSetProviderEnrollmentEmailResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(getAuthSetProviderEnrollmentEmailUrl(), {
+    ...options,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(providerEnrollmentEmailRequest),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: authSetProviderEnrollmentEmailResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as authSetProviderEnrollmentEmailResponse;
+};
+
+export type authResendProviderEnrollmentVerificationResponse200 = {
+  data: ProviderEnrollmentRequiredResponse;
+  status: 200;
+};
+
+export type authResendProviderEnrollmentVerificationResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type authResendProviderEnrollmentVerificationResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type authResendProviderEnrollmentVerificationResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type authResendProviderEnrollmentVerificationResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type authResendProviderEnrollmentVerificationResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type authResendProviderEnrollmentVerificationResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type authResendProviderEnrollmentVerificationResponse429 = {
+  data: ProblemDetails;
+  status: 429;
+};
+
+export type authResendProviderEnrollmentVerificationResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type authResendProviderEnrollmentVerificationResponse503 = {
+  data: ProblemDetails;
+  status: 503;
+};
+
+export type authResendProviderEnrollmentVerificationResponseSuccess =
+  authResendProviderEnrollmentVerificationResponse200 & {
+    headers: Headers;
+  };
+export type authResendProviderEnrollmentVerificationResponseError = (
+  | authResendProviderEnrollmentVerificationResponse400
+  | authResendProviderEnrollmentVerificationResponse401
+  | authResendProviderEnrollmentVerificationResponse403
+  | authResendProviderEnrollmentVerificationResponse404
+  | authResendProviderEnrollmentVerificationResponse409
+  | authResendProviderEnrollmentVerificationResponse422
+  | authResendProviderEnrollmentVerificationResponse429
+  | authResendProviderEnrollmentVerificationResponse500
+  | authResendProviderEnrollmentVerificationResponse503
+) & {
+  headers: Headers;
+};
+
+export type authResendProviderEnrollmentVerificationResponse =
+  | authResendProviderEnrollmentVerificationResponseSuccess
+  | authResendProviderEnrollmentVerificationResponseError;
+
+export const getAuthResendProviderEnrollmentVerificationUrl = () => {
+  return `/api/v1/auth/provider-enrollment/resend`;
+};
+
+/**
+ * @summary Resend Provider Enrollment Verification
+ */
+export const authResendProviderEnrollmentVerification = async (
+  providerEnrollmentResendRequest: ProviderEnrollmentResendRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<authResendProviderEnrollmentVerificationResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getAuthResendProviderEnrollmentVerificationUrl(),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(providerEnrollmentResendRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: authResendProviderEnrollmentVerificationResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as authResendProviderEnrollmentVerificationResponse;
+};
+
+export type authVerifyProviderEnrollmentResponse200 = {
+  data: ProviderAuthenticatedResponse | ProviderLinkRequiredResponse;
+  status: 200;
+};
+
+export type authVerifyProviderEnrollmentResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type authVerifyProviderEnrollmentResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type authVerifyProviderEnrollmentResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type authVerifyProviderEnrollmentResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type authVerifyProviderEnrollmentResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type authVerifyProviderEnrollmentResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type authVerifyProviderEnrollmentResponse429 = {
+  data: ProblemDetails;
+  status: 429;
+};
+
+export type authVerifyProviderEnrollmentResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type authVerifyProviderEnrollmentResponse503 = {
+  data: ProblemDetails;
+  status: 503;
+};
+
+export type authVerifyProviderEnrollmentResponseSuccess =
+  authVerifyProviderEnrollmentResponse200 & {
+    headers: Headers;
+  };
+export type authVerifyProviderEnrollmentResponseError = (
+  | authVerifyProviderEnrollmentResponse400
+  | authVerifyProviderEnrollmentResponse401
+  | authVerifyProviderEnrollmentResponse403
+  | authVerifyProviderEnrollmentResponse404
+  | authVerifyProviderEnrollmentResponse409
+  | authVerifyProviderEnrollmentResponse422
+  | authVerifyProviderEnrollmentResponse429
+  | authVerifyProviderEnrollmentResponse500
+  | authVerifyProviderEnrollmentResponse503
+) & {
+  headers: Headers;
+};
+
+export type authVerifyProviderEnrollmentResponse =
+  | authVerifyProviderEnrollmentResponseSuccess
+  | authVerifyProviderEnrollmentResponseError;
+
+export const getAuthVerifyProviderEnrollmentUrl = () => {
+  return `/api/v1/auth/provider-enrollment/verify`;
+};
+
+/**
+ * @summary Verify Provider Enrollment
+ */
+export const authVerifyProviderEnrollment = async (
+  providerEnrollmentVerificationRequest: ProviderEnrollmentVerificationRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<authVerifyProviderEnrollmentResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(getAuthVerifyProviderEnrollmentUrl(), {
+    ...options,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(providerEnrollmentVerificationRequest),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: authVerifyProviderEnrollmentResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as authVerifyProviderEnrollmentResponse;
+};
+
+export type authGetProviderLinkResponse200 = {
+  data: ProviderLinkResponse;
+  status: 200;
+};
+
+export type authGetProviderLinkResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type authGetProviderLinkResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type authGetProviderLinkResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type authGetProviderLinkResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type authGetProviderLinkResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type authGetProviderLinkResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type authGetProviderLinkResponse429 = {
+  data: ProblemDetails;
+  status: 429;
+};
+
+export type authGetProviderLinkResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type authGetProviderLinkResponse503 = {
+  data: ProblemDetails;
+  status: 503;
+};
+
+export type authGetProviderLinkResponseSuccess =
+  authGetProviderLinkResponse200 & {
+    headers: Headers;
+  };
+export type authGetProviderLinkResponseError = (
+  | authGetProviderLinkResponse400
+  | authGetProviderLinkResponse401
+  | authGetProviderLinkResponse403
+  | authGetProviderLinkResponse404
+  | authGetProviderLinkResponse409
+  | authGetProviderLinkResponse422
+  | authGetProviderLinkResponse429
+  | authGetProviderLinkResponse500
+  | authGetProviderLinkResponse503
+) & {
+  headers: Headers;
+};
+
+export type authGetProviderLinkResponse =
+  authGetProviderLinkResponseSuccess | authGetProviderLinkResponseError;
+
+export const getAuthGetProviderLinkUrl = () => {
+  return `/api/v1/auth/provider-link`;
+};
+
+/**
+ * @summary Get Provider Link
+ */
+export const authGetProviderLink = async (
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<authGetProviderLinkResponse> => {
+  const res = await (fetchFn ?? fetch)(getAuthGetProviderLinkUrl(), {
+    ...options,
+    method: 'GET',
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: authGetProviderLinkResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as authGetProviderLinkResponse;
+};
+
+export type authConfirmProviderLinkResponse200 = {
+  data: ProviderAuthenticatedResponse;
+  status: 200;
+};
+
+export type authConfirmProviderLinkResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type authConfirmProviderLinkResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type authConfirmProviderLinkResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type authConfirmProviderLinkResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type authConfirmProviderLinkResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type authConfirmProviderLinkResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type authConfirmProviderLinkResponse429 = {
+  data: ProblemDetails;
+  status: 429;
+};
+
+export type authConfirmProviderLinkResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type authConfirmProviderLinkResponse503 = {
+  data: ProblemDetails;
+  status: 503;
+};
+
+export type authConfirmProviderLinkResponseSuccess =
+  authConfirmProviderLinkResponse200 & {
+    headers: Headers;
+  };
+export type authConfirmProviderLinkResponseError = (
+  | authConfirmProviderLinkResponse400
+  | authConfirmProviderLinkResponse401
+  | authConfirmProviderLinkResponse403
+  | authConfirmProviderLinkResponse404
+  | authConfirmProviderLinkResponse409
+  | authConfirmProviderLinkResponse422
+  | authConfirmProviderLinkResponse429
+  | authConfirmProviderLinkResponse500
+  | authConfirmProviderLinkResponse503
+) & {
+  headers: Headers;
+};
+
+export type authConfirmProviderLinkResponse =
+  authConfirmProviderLinkResponseSuccess | authConfirmProviderLinkResponseError;
+
+export const getAuthConfirmProviderLinkUrl = () => {
+  return `/api/v1/auth/provider-link/confirm`;
+};
+
+/**
+ * @summary Confirm Provider Link
+ */
+export const authConfirmProviderLink = async (
+  providerLinkConfirmRequest: ProviderLinkConfirmRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<authConfirmProviderLinkResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(getAuthConfirmProviderLinkUrl(), {
+    ...options,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(providerLinkConfirmRequest),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: authConfirmProviderLinkResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as authConfirmProviderLinkResponse;
+};
+
+export type authUnlinkProviderResponse200 = {
+  data: ProviderAuthenticatedResponse;
+  status: 200;
+};
+
+export type authUnlinkProviderResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type authUnlinkProviderResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type authUnlinkProviderResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type authUnlinkProviderResponse404 = {
+  data: ProblemDetails;
+  status: 404;
+};
+
+export type authUnlinkProviderResponse409 = {
+  data: ProblemDetails;
+  status: 409;
+};
+
+export type authUnlinkProviderResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type authUnlinkProviderResponse429 = {
+  data: ProblemDetails;
+  status: 429;
+};
+
+export type authUnlinkProviderResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type authUnlinkProviderResponse503 = {
+  data: ProblemDetails;
+  status: 503;
+};
+
+export type authUnlinkProviderResponseSuccess =
+  authUnlinkProviderResponse200 & {
+    headers: Headers;
+  };
+export type authUnlinkProviderResponseError = (
+  | authUnlinkProviderResponse400
+  | authUnlinkProviderResponse401
+  | authUnlinkProviderResponse403
+  | authUnlinkProviderResponse404
+  | authUnlinkProviderResponse409
+  | authUnlinkProviderResponse422
+  | authUnlinkProviderResponse429
+  | authUnlinkProviderResponse500
+  | authUnlinkProviderResponse503
+) & {
+  headers: Headers;
+};
+
+export type authUnlinkProviderResponse =
+  authUnlinkProviderResponseSuccess | authUnlinkProviderResponseError;
+
+export const getAuthUnlinkProviderUrl = (externalIdentityRef: string) => {
+  return `/api/v1/auth/providers/${externalIdentityRef}`;
+};
+
+/**
+ * @summary Unlink Provider
+ */
+export const authUnlinkProvider = async (
+  externalIdentityRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<authUnlinkProviderResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getAuthUnlinkProviderUrl(externalIdentityRef),
+    {
+      ...options,
+      method: 'DELETE',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: authUnlinkProviderResponse['data'] = body ? JSON.parse(body) : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as authUnlinkProviderResponse;
 };
 
 export type authReauthenticateResponse200 = {

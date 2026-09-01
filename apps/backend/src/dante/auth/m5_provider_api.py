@@ -29,10 +29,10 @@ from dante.auth.contracts import (
 )
 from dante.auth.dependencies import get_auth_provider_flow_runtime, get_auth_service
 from dante.auth.m5_http import (
-    AmbiguousFlowCookieError,
     COMMON_M5_PROBLEM_RESPONSES,
     PROVIDER_ENROLLMENT_COOKIE_NAME,
     PROVIDER_LINK_COOKIE_NAME,
+    AmbiguousFlowCookieError,
     authenticated_response,
     clear_flow_cookie,
     flow_cookie_value,
@@ -151,9 +151,13 @@ class ProviderEnrollmentRequiredResponse(BaseModel):
 
 
 ProviderAuthenticationResponse = (
-    ProviderAuthenticatedResponse | ProviderLinkRequiredResponse | ProviderEnrollmentRequiredResponse
+    ProviderAuthenticatedResponse
+    | ProviderLinkRequiredResponse
+    | ProviderEnrollmentRequiredResponse
 )
-ProviderEnrollmentVerificationResponse = ProviderAuthenticatedResponse | ProviderLinkRequiredResponse
+ProviderEnrollmentVerificationResponse = (
+    ProviderAuthenticatedResponse | ProviderLinkRequiredResponse
+)
 
 
 class ProviderEnrollmentEmailRequest(BaseModel):
@@ -298,7 +302,9 @@ def _apply_provider_result_cookies(
     raise TypeError("unexpected provider authentication result")
 
 
-def _provider_result_response(result: ProviderAuthenticationResult) -> ProviderAuthenticationResponse:
+def _provider_result_response(
+    result: ProviderAuthenticationResult,
+) -> ProviderAuthenticationResponse:
     if isinstance(result, ProviderAuthenticated):
         return _provider_authenticated(result)
     if isinstance(result, ProviderLinkRequired):

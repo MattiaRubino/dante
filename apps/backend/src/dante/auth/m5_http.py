@@ -299,7 +299,10 @@ def translate_m5_auth_error(exc: Exception) -> ProblemError:
         )
     if isinstance(
         exc,
-        (ProviderEnrollmentVerificationInvalidOrExpiredError, ProviderEnrollmentAttemptsExhaustedError),
+        (
+            ProviderEnrollmentVerificationInvalidOrExpiredError,
+            ProviderEnrollmentAttemptsExhaustedError,
+        ),
     ):
         return ProblemError(
             status=401,
@@ -423,7 +426,9 @@ async def required_session(
     return admitted, cookie_value
 
 
-def authenticated_response(session: IssuedSession | AdmittedSession) -> AuthenticatedSessionResponse:
+def authenticated_response(
+    session: IssuedSession | AdmittedSession,
+) -> AuthenticatedSessionResponse:
     """Project canonical session state without exposing the bearer secret."""
     return AuthenticatedSessionResponse(
         account_ref=session.principal.account_ref,

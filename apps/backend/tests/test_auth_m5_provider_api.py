@@ -18,7 +18,6 @@ from dante.auth.contracts import (
     ProviderAuthenticated,
     ProviderEnrollmentRequired,
     ProviderLinkRequired,
-    ProviderPurpose,
     ProviderReturnTarget,
 )
 from dante.auth.m5_provider_api import (
@@ -277,7 +276,10 @@ async def test_google_link_required_uses_http_only_flow_cookie_not_json_secret()
     assert "continuation" not in repr(body)
     cookies = _set_cookies(response)
     assert any(f"__Host-dante-provider-link={_LINK_SECRET}" in cookie for cookie in cookies)
-    assert any("HttpOnly" in cookie and "Secure" in cookie and "SameSite=lax" in cookie for cookie in cookies)
+    assert any(
+        "HttpOnly" in cookie and "Secure" in cookie and "SameSite=lax" in cookie
+        for cookie in cookies
+    )
 
 
 @pytest.mark.asyncio
@@ -332,11 +334,15 @@ async def test_provider_link_confirmation_requires_session_csrf_and_rotates_bear
     assert authenticator.confirm_calls == [(_LINK_REF, _LINK_SECRET)]
     cookies = _set_cookies(response)
     assert any(f"__Host-dante-session={_ROTATED_SESSION_SECRET}" in cookie for cookie in cookies)
-    assert any("__Host-dante-provider-link=" in cookie and "Max-Age=0" in cookie for cookie in cookies)
+    assert any(
+        "__Host-dante-provider-link=" in cookie and "Max-Age=0" in cookie for cookie in cookies
+    )
 
 
 @pytest.mark.asyncio
-async def test_provider_link_confirmation_rejects_missing_csrf_before_application_mutation() -> None:
+async def test_provider_link_confirmation_rejects_missing_csrf_before_application_mutation() -> (
+    None
+):
     authenticator = _AuthenticatorService()
     request = _request(
         cookies=(

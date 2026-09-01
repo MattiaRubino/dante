@@ -14,7 +14,7 @@ from dante.auth.authenticator_lifecycle import (
     AuthenticatorLifecycleService,
     MultiAuthenticatorLifecycleService,
 )
-from dante.auth.contracts import AuthError, AuthenticationMethods, PasskeyMethod
+from dante.auth.contracts import AuthenticationMethods, AuthError, PasskeyMethod
 from dante.auth.dependencies import (
     get_auth_lifecycle_service,
     get_auth_provider_flow_runtime,

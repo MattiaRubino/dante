@@ -264,12 +264,42 @@ def _annotate_auth_response_headers(document: dict[str, Any]) -> None:
         ("/api/v1/auth/reauthenticate", "post", "200", "Rotates the same AuthSession bearer."),
         ("/api/v1/auth/password/establish", "post", "200", "Rotates the same AuthSession bearer."),
         ("/api/v1/auth/password", "delete", "200", "Rotates the same AuthSession bearer."),
-        ("/api/v1/auth/provider-link/confirm", "post", "200", "Rotates the same AuthSession bearer."),
-        ("/api/v1/auth/providers/{external_identity_ref}", "delete", "200", "Rotates the same AuthSession bearer."),
-        ("/api/v1/auth/passkeys/registration/complete", "post", "200", "Rotates the same AuthSession bearer."),
-        ("/api/v1/auth/passkeys/authentication/complete", "post", "200", "Establishes a new AuthSession bearer."),
-        ("/api/v1/auth/passkeys/reauthentication/complete", "post", "200", "Rotates the same AuthSession bearer."),
-        ("/api/v1/auth/passkeys/{passkey_credential_ref}", "delete", "200", "Rotates the same AuthSession bearer."),
+        (
+            "/api/v1/auth/provider-link/confirm",
+            "post",
+            "200",
+            "Rotates the same AuthSession bearer.",
+        ),
+        (
+            "/api/v1/auth/providers/{external_identity_ref}",
+            "delete",
+            "200",
+            "Rotates the same AuthSession bearer.",
+        ),
+        (
+            "/api/v1/auth/passkeys/registration/complete",
+            "post",
+            "200",
+            "Rotates the same AuthSession bearer.",
+        ),
+        (
+            "/api/v1/auth/passkeys/authentication/complete",
+            "post",
+            "200",
+            "Establishes a new AuthSession bearer.",
+        ),
+        (
+            "/api/v1/auth/passkeys/reauthentication/complete",
+            "post",
+            "200",
+            "Rotates the same AuthSession bearer.",
+        ),
+        (
+            "/api/v1/auth/passkeys/{passkey_credential_ref}",
+            "delete",
+            "200",
+            "Rotates the same AuthSession bearer.",
+        ),
     )
     for path, method, status, description in session_cookie_successes:
         _add_response_header(
@@ -426,9 +456,7 @@ def _annotate_apple_form_post(document: dict[str, Any]) -> None:
         "required_media_type": "application/x-www-form-urlencoded",
         "authority": "server-side state verifier and provider proof",
     }
-    _operation(document, "/api/v1/auth/apple/notifications", "post")[
-        "x-dante-external-ingress"
-    ] = {
+    _operation(document, "/api/v1/auth/apple/notifications", "post")["x-dante-external-ingress"] = {
         "browser_proof_exception": True,
         "required_media_type": "application/json",
         "authority": "Apple-signed notification JWS verification",
@@ -507,9 +535,7 @@ def _annotate_browser_security(document: dict[str, Any]) -> None:
     provider_link["security"] = [{"DanteProviderLinkCookie": []}]
 
     provider_link_confirm = _operation(document, "/api/v1/auth/provider-link/confirm", "post")
-    provider_link_confirm["security"] = [
-        {"DanteSessionCookie": [], "DanteProviderLinkCookie": []}
-    ]
+    provider_link_confirm["security"] = [{"DanteSessionCookie": [], "DanteProviderLinkCookie": []}]
 
 
 def _harden_contract(document: dict[str, Any]) -> dict[str, Any]:
