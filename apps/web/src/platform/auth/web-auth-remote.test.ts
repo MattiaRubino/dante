@@ -151,11 +151,11 @@ describe('Web Auth remote transport', () => {
     ).rejects.toBeTruthy();
 
     expect(captures).toHaveLength(2);
-    expect(captures[0]?.input).toBe('/api/v1/auth/providers/google/begin');
+    expect(captures[0]?.input).toBe('/api/v1/auth/google/begin');
     expect(
       new Headers(captures[0]?.init?.headers).has('X-Dante-CSRF'),
     ).toBe(false);
-    expect(captures[1]?.input).toBe('/api/v1/auth/providers/google/begin');
+    expect(captures[1]?.input).toBe('/api/v1/auth/google/begin');
     expect(new Headers(captures[1]?.init?.headers).get('X-Dante-CSRF')).toBe(
       'provider-link-csrf',
     );
@@ -194,9 +194,9 @@ describe('Web Auth remote transport', () => {
     await expect(remote.confirmProviderLink('')).rejects.toThrow(
       'requires a CSRF token',
     );
-    await expect(remote.unlinkProvider('external-identity-ref', '')).rejects.toThrow(
-      'requires a CSRF token',
-    );
+    await expect(
+      remote.unlinkProvider('external-identity-ref', ''),
+    ).rejects.toThrow('requires a CSRF token');
     await expect(remote.beginPasskeyRegistration('')).rejects.toThrow(
       'requires a CSRF token',
     );
