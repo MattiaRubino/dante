@@ -1,73 +1,161 @@
-# DANTE — Frontend Product Contract
+# DANTE — Frontend Documentation Entry Map
 
-**Status:** current product/UX authority for the materialized frontend.
+**Status:** CURRENT FRONTEND DOCUMENTATION ENTRY POINT  
+**Date:** 2026-09-01  
+**Branch context:** production-shaped frontend plus active `feature/home-react` workstreams
 
-This directory contains durable product-facing frontend contracts carried from approved exploratory work into the production-shaped React workspace. Current implementation truth remains the checked-out production code/tests; prototype branches are frozen design/history sources, not runtime dependencies.
+This directory contains the durable product, architecture, handoff and production-readiness documentation for the materialized frontend.
 
-## Read order
+The checked-out code/tests/CI remain implementation truth. Historical prototype material is evidence/oracle only where current documentation explicitly says so.
 
-1. `docs/frontend/access.md` — current materialized Access Web baseline and remaining full-stack boundary
-2. `docs/frontend/home/home-structural-contract.md` — frozen Whole-Home H0 macro structure, ownership and responsive composition
-3. `docs/frontend/home/production-depth-handoff.md` — current Home phase, working strategy and new-chat bootstrap
-4. `docs/frontend/home/current-checkpoint.md`
-5. `docs/frontend/home/contract.md`
-6. `docs/frontend/ui-registry.md`
-7. `docs/frontend/design-tokens.md`
-8. `docs/frontend/terminology.md`
-9. `docs/frontend/localization.md`
-10. `docs/frontend/production-readiness/component-architecture.md`
-11. `docs/frontend/production-readiness/backend-integration-contract.md`
-12. `docs/frontend/production-readiness/quality-gates.md`
+## 1. First read for any new frontend chat
 
-Engineering/runtime authority remains the materialized frontend workspace, repository architecture, CI and local-development documentation. Product contracts do not replace those engineering authorities.
+Always start with:
 
-## Access
+1. `docs/frontend/home/current-checkpoint.md` — **live branch state and active workstream**;
+2. `docs/frontend/home/production-depth-handoff.md` — shared frontend engineering/operational handoff.
 
-`docs/frontend/access.md` is the current durable contract for the completed pre-backend Access Web materialization. The approved cross-platform design source remains frozen on `prototype/access-system`; it is historical design evidence and must not override newer production code/current documentation.
+Do not infer current sequencing from an older feature review or roadmap before reading those two files.
 
-The completed frontend work deliberately does **not** claim real Auth backend behavior. Real account/session/provider/recovery integration belongs to a later full-stack Access/Auth vertical created from current protected `main`.
+## 2. Then choose the actual workstream
 
-## Home React migration rule
+### AppShell / Home
 
-The accepted Home prototype is an executable UX/reference specification, **not** code to transliterate line-by-line into React.
+Read:
 
-The Whole-Home macro skeleton is additionally change-controlled by H0. Child feature work consumes that skeleton and may not silently change region ownership, macro hierarchy or responsive composition merely because a local implementation would be easier.
+1. `docs/frontend/home/home-structural-contract.md` — frozen Whole-Home macro ownership/geometry;
+2. `docs/frontend/app-shell/p1-global-app-shell.md` — shared AppShell/Topbar contract;
+3. `docs/frontend/home/contract.md` — durable Home product/behavior **prototype oracle**, not the live branch checkpoint;
+4. `docs/frontend/open-decisions.md`;
+5. `docs/frontend/ui-registry.md`;
+6. `docs/frontend/design-tokens.md`.
 
-Implementation must:
+`home/contract.md` intentionally preserves accepted Home product intent from the prototype lineage. Its old prototype milestone/version labels are historical context and do **not** override `current-checkpoint.md`, current React code or newer frozen structural contracts.
 
-- preserve the accepted visual and behavioral contract before introducing redesigns;
-- preserve the frozen H0 Whole-Home structural contract unless an explicit user-approved change reopens it;
-- use the React/TypeScript architecture already materialized in the repository;
-- componentize by ownership boundary rather than arbitrary pieces of the old monolith;
-- separate view models from backend DTOs/domain/persistence shapes;
-- preserve semantic IDs, localization keys and machine-readable Home-stage/Whole-Home contracts;
-- keep semantic World/group/event colors distinct from generic DANTE chrome.
+### Timeline / temporal capability
 
-Machine-readable H0 authority lives in:
+Read in this order:
 
-- `prototypes/frontend/shared/contracts/home-structure.contract.json`;
-- `prototypes/frontend/shared/contracts/home-shell-responsive.matrix.json`.
+1. `docs/frontend/home/timeline-current-checkpoint.md` — current temporal status;
+2. `docs/frontend/home/timeline-handoff.md` — new-chat temporal handoff;
+3. `docs/frontend/home/timeline-t1-frozen-contract.md` — user-accepted observable T1 contract;
+4. `docs/frontend/home/temporal-experience-architecture.md` — current temporal product/application architecture;
+5. `docs/frontend/home/temporal-frontend-roadmap.md` — T1 frozen, T2 next only when temporal work explicitly resumes.
 
-Those contracts are blocking CI through `tests/prototypes/frontend-preprod-contracts.py`; runtime structure and geometry are additionally protected by React and Playwright regression tests.
+Timeline T1 must not be reopened by unrelated Home/World work. Critical interaction/geometry behavior remains protected in Chromium and Firefox.
 
-## Deliberately not imported from exploratory branches
+### World Focus
 
-Exploratory branches contain extensive historical material intentionally excluded from current production documentation, including intermediate patch/archive chains, reconstruction fragments, obsolete checkpoints, abandoned experiments and regression tooling tied only to superseded prototype internals.
+Read in this order:
 
-That history remains available on its source branch if archaeology is required, but it is not an implementation dependency.
+1. `docs/frontend/home/world-focus-current-checkpoint.md` — **live World status and exact next gate**;
+2. `docs/frontend/home/world-focus-handoff.md` — durable World new-chat handoff;
+3. `docs/frontend/home/world-focus-product-contract.md` — current World product authority after WR0/WR1/WR2;
+4. `docs/frontend/home/world-focus-platform-contract.md` — current implementation/platform authority;
+5. `docs/frontend/home/world-focus-structural-contract.md` — frozen route/workspace structural contract;
+6. `docs/frontend/home/world-focus-geometry-contract.md` — locked WF-G3 geometry;
+7. `docs/frontend/home/world-focus-delivery-methodology.md` — mandatory mini-vertical method and user gate;
+8. `docs/frontend/home/world-focus-frontend-roadmap.md` — current pre-backend sequencing;
+9. `docs/frontend/home/world-focus-evidence-index.md` — historical research/review map, only when deeper archaeology is needed.
 
-## Frozen Home prototype evidence
+World research/review evidence deliberately does not carry live sequencing authority. Internal status lines inside those evidence documents describe the historical pass in which they were written.
 
-Historical Home prototype authority is pinned to `prototype/frontend` commit:
+Current World sequencing is controlled only by the live checkpoint/handoff/current contracts/roadmap.
 
-`2203c96c4aa1dc10258a84bcf461aa0b923e8951`
+## 3. Production-readiness authorities
 
-The final user-reviewed local Home wrapper corresponding to the accepted B2 v27 state was:
+For any non-trivial implementation also inspect the relevant current engineering contracts:
+
+- `docs/frontend/production-readiness/component-architecture.md`;
+- `docs/frontend/production-readiness/backend-integration-contract.md`;
+- `docs/frontend/production-readiness/quality-gates.md`;
+- `docs/frontend/terminology.md`;
+- `docs/frontend/localization.md`;
+- `docs/frontend/design-tokens.md`.
+
+## 4. Access/Auth boundary
+
+`docs/frontend/access.md` is the current durable Access Web contract.
+
+Access/Auth is a separate workstream. Home/Timeline/World changes must not casually modify it to resolve unrelated CI flakes or UI problems.
+
+The current frontend does not claim real Auth backend behavior unless a later full-stack Access/Auth vertical explicitly provides it.
+
+## 5. Semantic authority hierarchy
+
+Frontend documentation consumes rather than redefines DANTE's deeper authorities.
+
+When semantic meaning is touched, re-read as applicable:
+
+- Product Identity / North Star;
+- current product simulations;
+- Domain Atlas / Language Map;
+- Logical Model;
+- Physical Model;
+- Database source of record / Alembic history;
+- Intelligence Context/Runtime contracts;
+- Governed Operation/Effect contracts.
+
+Permanent examples:
 
 ```text
-DANTE_Home_v43_VERIFIED_INJECTION_COLOR_FIX.html
-size       87386 bytes
-SHA-256    e82058e4e980208feb3f0c055dab3eec81812be1fa47e5f036e8d5d0e1fe859d
+frontend view model != backend DTO != Domain != persistence row
+AI output != canonical fact
+AI proposal != Decision
+provider state != canonical state
+planned != actual
+absence != false
+UI hiding != authorization
 ```
 
-The wrapper itself is not copied into current production documentation; durable behavior/visual decisions and machine-readable contracts are retained instead.
+Product labels must not silently become Domain ontology.
+
+## 6. Home migration / prototype rule
+
+The accepted Home prototype is an executable UX/reference oracle, not source code to transliterate line-by-line into React.
+
+Current React implementation must:
+
+- preserve accepted product/behavior intent unless an explicit reviewed scope changes it;
+- preserve the frozen Whole-Home structural contract;
+- use current React/TypeScript ownership rather than revive prototype internals;
+- separate view models from backend/domain/persistence shapes;
+- preserve semantic IDs/localization and machine-readable structural contracts;
+- keep semantic World/group/event/state colors distinct from generic infrastructure chrome.
+
+Prototype branches and wrappers are historical evidence, not runtime dependencies.
+
+## 7. Machine-readable structural authority
+
+Whole-Home structure is also protected by machine-readable contracts under:
+
+`prototypes/frontend/shared/contracts/`
+
+including the current Home structure/responsive matrices and World Focus structure/responsive geometry contracts.
+
+These are exercised by repository tests/CI together with React and Playwright guards.
+
+## 8. Documentation hygiene rule
+
+A document can be one of:
+
+```text
+LIVE CHECKPOINT
+HANDOFF
+CURRENT CONTRACT / ARCHITECTURE
+CURRENT ROADMAP
+FROZEN CHANGE-CONTROL CONTRACT
+EVIDENCE / HISTORICAL ORACLE
+```
+
+Do not leave an obsolete roadmap/checkpoint in the live read path after a later decision supersedes it.
+
+When a workstream materially changes sequence or accepted behavior:
+
+1. update its live checkpoint;
+2. update its handoff;
+3. update current contract/roadmap if the decision changes them;
+4. remove truly superseded checkpoint/roadmap documents when their useful reasoning is already preserved elsewhere;
+5. retain deep research as evidence only when it still adds unique reasoning, and route it through an evidence index where needed.
+
+The goal is that a new chat can determine **where we are, what is frozen, what is open and what comes next without reconstructing chronology from Git history**.
