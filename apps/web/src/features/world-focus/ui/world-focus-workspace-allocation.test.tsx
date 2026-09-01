@@ -241,6 +241,27 @@ describe('WorldFocusWorkspace allocation integration', () => {
     expect(modal?.hasAttribute('inert')).toBe(false);
   });
 
+  it('rejects a forced sidecar event beneath an active modal instead of relying on inert alone', () => {
+    const { container } = renderWorkspace();
+    const sidecarButton = screen.getByRole('button', { name: 'Open sidecar' });
+    const modalButton = screen.getByRole('button', { name: 'Open modal' });
+
+    fireEvent.click(modalButton);
+    fireEvent.click(sidecarButton);
+
+    const workspace = container.querySelector('.world-focus-workspace');
+    const surfaceLayer = container.querySelector('.world-focus-surface-layer');
+
+    expect(workspace?.getAttribute('data-world-focus-main-interaction')).toBe(
+      'inert',
+    );
+    expect(screen.getByTestId('surface-confirm:modal')).toBeTruthy();
+    expect(screen.queryByTestId('surface-dante:sidecar')).toBeNull();
+    expect(surfaceLayer?.getAttribute('data-world-focus-surface-count')).toBe(
+      '1',
+    );
+  });
+
   it('keeps a narrow sidecar dormant while a newer modal owns the only overlay slot', () => {
     observedInlineSize = 720;
     const { container } = renderWorkspace();
