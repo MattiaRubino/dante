@@ -84,7 +84,7 @@ test('Quick Create makes a fixed Activity, reveals it, and undoes through F0', a
   await expect(card).toHaveCount(0);
 });
 
-test('Expanded and Full Activity author the DANTE planning grammar without fake placement', async ({
+test('Expanded and Full Activity author DANTE planning without fake recurrence or placement', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -100,12 +100,13 @@ test('Expanded and Full Activity author the DANTE planning grammar without fake 
   await dialog.getByLabel('Politica di spostamento').selectOption('window');
   await dialog.getByLabel('Struttura di esecuzione').selectOption('splittable');
   await dialog.getByLabel('Sessione minima (min)').fill('45');
-  await dialog
-    .getByRole('combobox', { name: 'Ripetizione', exact: true })
-    .selectOption('weekly');
-  await dialog.getByRole('button', { name: 'Lun' }).click();
-  await dialog.getByRole('button', { name: 'Mer' }).click();
   await dialog.getByLabel('Esito non confermato').selectOption('daily-review');
+
+  await expect(dialog.getByText('Routine e ripetizione')).toBeVisible();
+  await expect(dialog).toContainText(
+    'questo editor non finge una ricorrenza canonica dell’Attività',
+  );
+  await expect(dialog.getByLabel('Modello di ricorrenza')).toHaveCount(0);
 
   await dialog.getByRole('button', { name: 'Editor completo →' }).click();
   await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'full');
@@ -113,12 +114,15 @@ test('Expanded and Full Activity author the DANTE planning grammar without fake 
     .getByLabel('Se il piano non è più fattibile')
     .selectOption('shorten-or-split');
   await dialog.getByLabel('Numero massimo di sessioni').fill('4');
-  await dialog.getByLabel('Tag').fill('video, musica');
   await dialog.getByLabel('Promemoria').selectOption('60');
+  await dialog.getByLabel('Esito non confermato').selectOption('infer-provisional');
 
+  await expect(dialog).toContainText('Ogni risultato inferito resta provvisorio');
   await expect(dialog.getByRole('button', { name: /Progetto/ })).toBeDisabled();
+  await expect(dialog.getByRole('button', { name: /Routine/ })).toBeDisabled();
   await expect(dialog.getByRole('button', { name: /Mondo/ })).toBeDisabled();
   await expect(dialog).toContainText('Richiede il verticale proprietario');
+  await expect(dialog.getByLabel('Tag')).toHaveCount(0);
   await expectNoRawCreateKeys(page);
 
   const accessibility = await new AxeBuilder({ page })
@@ -140,7 +144,7 @@ test('Expanded and Full Activity author the DANTE planning grammar without fake 
   await toast.getByRole('button', { name: 'Annulla' }).click();
 });
 
-test('Event Full Create keeps Event grammar and preserves provider intent without fake execution', async ({
+test('Event Full Create preserves deep purpose, collaboration and provider intent without fake execution', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1360, height: 860 });
@@ -159,16 +163,33 @@ test('Event Full Create keeps Event grammar and preserves provider intent withou
   await dialog.getByLabel('Luogo').fill('Studio / remoto');
   await dialog.getByLabel('Disponibilità').selectOption('busy');
   await dialog.getByLabel('Visibilità').selectOption('private');
+  await dialog.getByLabel('Scopo').fill('Definire il rilascio');
+  await dialog.getByLabel('Risultato atteso').fill('Decisione sul piano finale');
+  await dialog.getByLabel('Agenda').fill('Rischi\nDecisioni\nProssimi passi');
   await dialog
-    .getByRole('combobox', { name: 'Ripetizione', exact: true })
-    .selectOption('daily');
+    .getByRole('checkbox', { name: 'Da questo evento è attesa una decisione' })
+    .check();
+
+  await dialog.getByLabel('Modello di ricorrenza').selectOption('calendar-wall-clock');
+  await dialog.getByLabel('Frequenza di calendario').selectOption('weekly');
+  await dialog.getByRole('button', { name: 'Mar' }).click();
+  await dialog.getByRole('button', { name: 'Gio' }).click();
   await dialog
-    .getByLabel('Partecipanti')
-    .fill('cliente@example.com\ncollega@example.com');
+    .getByLabel('Partecipanti richiesti')
+    .fill('cliente@example.com');
+  await dialog
+    .getByLabel('Partecipanti opzionali')
+    .fill('collega@example.com');
   await dialog.getByLabel('Sale e risorse').fill('Sala Atlas');
+  await dialog.getByLabel('Pre-read / materiale da preparare').fill('Specifica v3');
+  await dialog.getByLabel('Buffer di preparazione').selectOption('15');
+  await dialog.getByLabel('Buffer di recupero').selectOption('10');
   await dialog.getByLabel('Videochiamata').selectOption('provider-default');
   await expect(dialog).toContainText(
     'Inviti, prenotazioni e link reali vengono eseguiti solo quando il provider/backend è collegato.',
+  );
+  await expect(dialog).toContainText(
+    'Generazione delle Occurrence, checkpoint dell’evaluator, reconciliation e persistenza durevole',
   );
   await expectNoRawCreateKeys(page);
 
@@ -178,6 +199,42 @@ test('Event Full Create keeps Event grammar and preserves provider intent withou
     .filter({ hasText: 'Call cliente' });
   await expect(card).toBeVisible();
   await expect(card).toContainText('Ricorrente');
+});
+
+test('Event recurrence exposes all four CP6 families and preserves deep values across surface round-trips', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1360, height: 860 });
+  await page.goto('/home');
+
+  const dialog = await openCreate(page);
+  await dialog.getByRole('textbox', { name: 'Titolo' }).fill('Evento ciclico');
+  await dialog.getByLabel('Tipo').selectOption('event');
+  await dialog.getByRole('button', { name: /Dettagli e pianificazione/ }).click();
+  await dialog.getByRole('button', { name: 'Editor completo →' }).click();
+
+  const pattern = dialog.getByLabel('Modello di ricorrenza');
+  await expect(pattern.locator('option')).toHaveCount(5);
+
+  await pattern.selectOption('elapsed-interval');
+  await dialog.getByLabel('Intervallo trascorso (minuti)').fill('720');
+  await pattern.selectOption('quota-per-period');
+  await dialog.getByLabel('Occorrenze richieste').fill('3');
+  await dialog.getByLabel('Periodo').selectOption('week');
+  await pattern.selectOption('cyclic-positional');
+  await dialog.getByLabel('Lunghezza ciclo').fill('7');
+  await dialog.getByLabel('Posizione nel ciclo').fill('2');
+  await dialog.getByLabel('Scopo').fill('Conservare il ciclo operativo');
+
+  await dialog.getByRole('button', { name: '← Dettagli' }).click();
+  await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'expanded');
+  await dialog.getByRole('button', { name: 'Editor completo →' }).click();
+  await expect(pattern).toHaveValue('cyclic-positional');
+  await expect(dialog.getByLabel('Lunghezza ciclo')).toHaveValue('7');
+  await expect(dialog.getByLabel('Posizione nel ciclo')).toHaveValue('2');
+  await expect(dialog.getByLabel('Scopo')).toHaveValue(
+    'Conservare il ciclo operativo',
+  );
 });
 
 test('all-day multi-day Event and unscheduled Activity preserve different temporal semantics', async ({
