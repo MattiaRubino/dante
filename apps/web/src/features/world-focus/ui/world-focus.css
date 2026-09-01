@@ -126,6 +126,159 @@
   text-wrap: pretty;
 }
 
+.world-focus-continuity {
+  position: relative;
+  z-index: 1;
+  width: min(900px, calc(100% - clamp(48px, 8cqi, 88px)));
+  margin: clamp(6px, 1.2cqi, 16px) 0 0 clamp(24px, 4cqi, 44px);
+  padding-bottom: clamp(24px, 4cqi, 44px);
+}
+
+.world-focus-continuity-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.world-focus-continuity-title {
+  margin: 0;
+  color: rgba(239, 243, 255, 0.72);
+  font-size: 0.74rem;
+  font-weight: 720;
+  line-height: 1.2;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.world-focus-continuity-qualification,
+.world-focus-continuity-status {
+  margin: 0;
+  color: rgba(210, 218, 240, 0.54);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.world-focus-continuity-list {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.world-focus-continuity-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(20px, 4cqi, 48px);
+  min-height: 68px;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+}
+
+.world-focus-continuity-item-copy {
+  min-width: 0;
+}
+
+.world-focus-continuity-item-title {
+  margin: 0;
+  overflow: hidden;
+  color: rgba(247, 249, 255, 0.92);
+  font-size: clamp(0.98rem, 1.55cqi, 1.08rem);
+  font-weight: 590;
+  line-height: 1.25;
+  letter-spacing: -0.018em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.world-focus-continuity-item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 5px 0 0;
+  color: rgba(210, 218, 240, 0.5);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.world-focus-continuity-item-state {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 5px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 999px;
+  color: rgba(228, 234, 250, 0.66);
+  background: rgba(255, 255, 255, 0.025);
+  font-size: 0.7rem;
+  font-weight: 650;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.world-focus-continuity-item[data-world-focus-continuity-state='active']
+  .world-focus-continuity-item-state {
+  border-color: color-mix(in srgb, var(--world-focus-accent) 28%, transparent);
+  color: color-mix(in srgb, var(--world-focus-accent) 54%, white);
+  background: color-mix(in srgb, var(--world-focus-accent) 7%, transparent);
+}
+
+.world-focus-continuity-item[data-world-focus-continuity-state='paused']
+  .world-focus-continuity-item-state {
+  color: rgba(210, 218, 240, 0.52);
+}
+
+.world-focus-continuity-item[data-world-focus-continuity-state='blocked']
+  .world-focus-continuity-item-state {
+  border-color: color-mix(in srgb, var(--world-focus-hot) 34%, transparent);
+  color: color-mix(in srgb, var(--world-focus-hot) 56%, white);
+  background: color-mix(in srgb, var(--world-focus-hot) 7%, transparent);
+}
+
+.world-focus-continuity-loading,
+.world-focus-continuity-degraded {
+  min-height: 72px;
+}
+
+.world-focus-continuity-loading .world-focus-continuity-status {
+  margin-top: 12px;
+}
+
+.world-focus-continuity-degraded-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.world-focus-continuity-retry {
+  min-width: 72px;
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: rgba(245, 248, 255, 0.88);
+  background: rgba(255, 255, 255, 0.045);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.world-focus-continuity-retry:hover {
+  background: rgba(255, 255, 255, 0.075);
+}
+
+.world-focus-continuity-retry:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--world-focus-accent) 72%, white);
+  outline-offset: 3px;
+}
+
 @container world-focus-workspace (max-width: 700px) {
   .world-focus-context {
     padding: clamp(18px, 6cqi, 28px);
@@ -141,5 +294,32 @@
 
   .world-focus-context-description {
     font-size: 0.82rem;
+  }
+
+  .world-focus-continuity {
+    width: calc(100% - clamp(36px, 12cqi, 56px));
+    margin: 4px 0 0 clamp(18px, 6cqi, 28px);
+    padding-bottom: clamp(18px, 6cqi, 28px);
+  }
+
+  .world-focus-continuity-heading,
+  .world-focus-continuity-degraded-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .world-focus-continuity-item {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    min-height: 0;
+    padding: 14px 0;
+  }
+
+  .world-focus-continuity-item-title {
+    font-size: 0.96rem;
+  }
+
+  .world-focus-continuity-item-state {
+    justify-self: start;
   }
 }
