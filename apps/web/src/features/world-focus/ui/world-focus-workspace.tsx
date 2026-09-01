@@ -72,6 +72,10 @@ export function WorldFocusWorkspace({
 
     commitInlineSize(section.getBoundingClientRect().width);
 
+    if (typeof ResizeObserver === 'undefined') {
+      return;
+    }
+
     const observer = new ResizeObserver((entries) => {
       const entry = entries[0];
       if (entry !== undefined) {
