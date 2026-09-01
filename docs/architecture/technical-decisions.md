@@ -245,7 +245,7 @@ component transient               React
 cross-tree transient              Zustand only when justified
 ```
 
-Feature UI uses feature data/model boundaries rather than direct HTTP/PowerSync/query-cache/storage ownership. No universal frontend `Repository[T>`.
+Feature UI uses feature data/model boundaries rather than direct HTTP/PowerSync/query-cache/storage ownership. No universal frontend `Repository[T]`.
 
 ## TD-14 — Frontend offline posture
 
