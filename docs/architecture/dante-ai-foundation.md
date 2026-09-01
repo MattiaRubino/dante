@@ -10,7 +10,7 @@
 - **Provider/model/SDK selection:** NOT DECIDED BY AI-00
 - **Database evolution:** NONE AUTHORIZED BY THIS DOCUMENT
 
-> **Sequencing note:** AI-00 is a semantic baseline, not the current work queue. Its original statement that AI-01 Interaction/Product Form Research was the next step is historical phase sequencing. That product-form work and subsequent production-engineering research / AI-02.1 reengineering have already occurred. Current continuation authority is `dante-ai-02-1-intelligence-reengineering.md` plus the current Roadmap/Project Status. Statements marked `OPEN` below mean **not decided by AI-00**; a later accepted workstream may have refined them without changing this baseline.
+> **Sequencing note:** AI-00 is a semantic baseline, not the current work queue. Its original statement that AI-01 Interaction/Product Form Research was the next step is historical phase sequencing. Product-form work, production-engineering research and AI-02.1 runtime reengineering have already occurred. AI-02.1 v0.5 is now structurally accepted; current continuation authority is `dante-ai-03-context-retrieval-memory.md` plus the current Roadmap/Project Status. Statements marked `OPEN` below mean **not decided by AI-00**; a later accepted workstream may have refined them without changing this baseline.
 
 ---
 
@@ -863,6 +863,8 @@ The following list is deliberately scoped as **not decided by AI-00**. Some item
 - retention/deletion implementation;
 - provider portability mechanics.
 
+These questions are now actively owned by AI-03 where applicable; listing them here still means only that AI-00 itself did not decide them.
+
 ### Tools / authority
 
 - concrete capability registry implementation;
@@ -952,9 +954,21 @@ Current continuation order is owned by:
 docs/ROADMAP.md
 docs/PROJECT-STATUS.md
 docs/architecture/dante-ai-02-1-intelligence-reengineering.md
+docs/architecture/dante-ai-03-context-retrieval-memory.md
 ```
 
-As of the 2026-09-01 reconciliation, AI-02.1 is at a v0.5 candidate structural freeze after completed simulation/kill-test rounds and targeted verification, with one additional pre-AI-03 review still pending.
+As of the 2026-09-01 reconciliation:
+
+```text
+AI-02.1 v0.5
+CLOSED / STRUCTURALLY ACCEPTED
+
+AI-03
+ACTIVE — CONTEXT / RETRIEVAL / MEMORY
+CURRENT MACRO-PHASE AI-03A FULL CONTEXT ARCHITECTURE
+```
+
+The old exploratory longer phase numbering remains historical planning only; current routing is defined by the current Roadmap and workstream record.
 
 ---
 
