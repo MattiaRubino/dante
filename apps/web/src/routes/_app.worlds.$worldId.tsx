@@ -5,12 +5,14 @@ import {
   normalizeWorldFocusId,
   readWorldFocusEntry,
   WorldFocusPage,
+  WorldFocusRouteError,
   type WorldFocusCloseRequest,
   type WorldFocusEntrySource,
 } from '../features/world-focus';
 
 export const Route = createFileRoute('/_app/worlds/$worldId')({
   component: WorldFocusRoute,
+  errorComponent: WorldFocusRouteError,
 });
 
 function WorldFocusRoute() {
