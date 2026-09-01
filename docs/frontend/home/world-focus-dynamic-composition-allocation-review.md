@@ -1,0 +1,352 @@
+# World Focus — Dynamic Composition & Surface Allocation Review
+
+Status: **IMPLEMENTED CANDIDATE — AUTOMATED VALIDATION PENDING**
+
+This document records the product/architecture contract for the dynamic World Focus workspace before concrete DANTE / Insight / Explore surface verticals are implemented.
+
+## Problem
+
+World Focus cannot be a fixed dashboard and cannot contain World-specific layout branches such as `if music -> layout A` or `if finance -> layout B`.
+
+The same rectangular workspace must remain coherent when:
+
+- different Worlds expose different answer families;
+- a World is sparse or dense;
+- adaptive/ephemeral outputs appear or disappear;
+- a contextual DANTE / Insight / Explore surface opens;
+- a sidecar consumes real canvas width;
+- the same sidecar must fall back to overlay in a narrow allocation;
+- a modal or focused surface sits above an already split workspace;
+- the browser/parent layout changes the actual space granted to World Focus;
+- future specialist modules are added without reauthoring the page shell.
+
+## External high-level patterns reviewed
+
+### Microsoft Fluent 2 — Drawer
+
+Reference:
+https://fluent2.microsoft.design/components/web/react/core/drawer/usage
+
+Useful pattern:
+
+- inline drawer = passive side-by-side surface when main + secondary content must remain usable together;
+- overlay drawer = elevated surface that covers main content;
+- modal overlay is intentionally blocking;
+- non-modal overlay may remain interactive with the main page;
+- prolonged/complex flows should move to a more focused surface;
+- drawer body owns overflow rather than silently clipping content.
+
+DANTE conclusion:
+
+`inline/sidecar`, `overlay`, and `focus` are distinct physical/interaction behaviors. They must not collapse into one generic drawer state.
+
+### WAI-ARIA APG — Modal Dialog
+
+Reference:
+https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/
+
+Useful pattern:
+
+- content below a modal is inert;
+- focus belongs inside the modal while it is open;
+- `Escape` normally dismisses the modal when dismissal is allowed;
+- focus returns to the invoking/logically subsequent element;
+- modal semantics must never be declared if the implementation does not actually block outside interaction.
+
+DANTE conclusion:
+
+Geometric overlay and modal interaction are separate concerns. A popover or a narrow sidecar fallback is not automatically modal. Modal/focused surfaces make the main plane inert; concrete surface verticals remain responsible for their own correct role/label/focus lifecycle.
+
+### MDN — CSS Container Queries
+
+References:
+https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Containment/Container_queries
+https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Containment/Container_size_and_style_queries
+
+Useful pattern:
+
+Reusable components should adapt to their actual containing allocation, not only the global viewport.
+
+DANTE conclusion:
+
+The outer World workspace remains a named query container, but actual composition adapts against a nested `world-focus-main` container whose inline size is the canvas remaining after sidecar allocation.
+
+Example:
+
+```text
+workspace 1280
+├ main 844  <- component/container queries resolve here
+├ gap 16
+└ sidecar 420
+```
+
+A module must see `844`, not `1280`.
+
+## Architecture
+
+```text
+REALITY / APPLICATION PROJECTIONS
+              |
+              v
+PRODUCT OUTPUT CANDIDATES
+              |
+              v
+DYNAMIC COMPOSITION PLANNER
+- stable / adaptive / ephemeral
+- lead / primary / supporting
+- wide / standard / compact
+- bounded first-open budget
+              |
+              v
+LOGICAL 12-UNIT PLAN
+              |
+              v
+ALLOCATED MAIN CANVAS
+              |
+              v
+CSS CONTAINER RENDERING
+(world-focus-main)
+```
+
+Transient/deeper surfaces are resolved on an independent path:
+
+```text
+WORLD WORKSPACE STATE
+              |
+              v
+WORKSPACE SURFACE ALLOCATION RESOLVER
+              |
+      +-------+--------+
+      |                |
+      v                v
+MAIN ALLOCATION     TOP LAYER
+full | split        none | overlay | focus
+      |                |
+      +-------+--------+
+              |
+              v
+MAIN INTERACTION
+interactive | inert
+```
+
+## Why the axes are separate
+
+The following state is valid and must not require a synthetic combined enum:
+
+```text
+MAIN + DANTE SIDECAR
+        +
+CONFIRMATION MODAL ABOVE IT
+```
+
+Therefore:
+
+```text
+mainAllocation = split
+topLayer        = overlay
+mainInteraction = inert
+```
+
+A full-screen Explore surface may similarly sit above a split workspace while preserving the underlying allocation for deterministic restoration:
+
+```text
+mainAllocation = split
+topLayer        = focus
+mainInteraction = inert
+```
+
+## Allocation rules
+
+Current pre-backend allocation policy:
+
+```text
+min split workspace     900px
+min useful main         520px
+min sidecar             300px
+max sidecar             420px
+preferred sidecar       36%
+split gap               16px
+```
+
+These are presentation policy values, not Domain concepts and not persisted World truth.
+
+Rules:
+
+1. At most one sidecar consumes canvas width.
+2. The most recent sidecar is the candidate active sidecar.
+3. Earlier sidecars remain dormant in interaction state so close/back can restore them.
+4. A sidecar becomes split only when both workspace and main minima remain satisfied.
+5. Otherwise the same requested sidecar degrades to non-modal overlay.
+6. At most one overlay/focus surface is active above the workspace stack.
+7. A newer modal makes a narrow overlay sidecar dormant until the modal closes.
+8. A wide split sidecar may remain visible underneath a newer modal/focus layer.
+9. `route` presentation remains external to workspace geometry.
+10. `inline` content belongs to composition, not the transient surface plane.
+
+## Interaction rules
+
+```text
+sidecar split                  -> main interactive
+sidecar degraded overlay       -> main interactive
+popover                        -> main interactive
+modal                          -> main inert
+full-screen                    -> main inert
+```
+
+This is deliberately not inferred from visual elevation alone.
+
+Concrete modal/focus surface verticals must later close the remaining accessibility loop:
+
+- correct semantic role and accessible name;
+- initial focus placement;
+- focus containment where required;
+- Escape policy consistent with dismissibility;
+- focus restoration;
+- inert background behavior verified in browser/AT tests.
+
+## Rendering rules
+
+The persistent outer workspace remains:
+
+```text
+world-focus-workspace
+```
+
+The main content plane is now:
+
+```text
+world-focus-main-plane
+container: world-focus-main / inline-size
+```
+
+When split, `world-focus-main-plane` receives the resolver's actual main inline size.
+
+Composition container queries are evaluated against `world-focus-main`, not the global viewport and not the full outer workspace.
+
+This allows the exact same World composition to reflow when a sidecar opens without re-running product ranking or introducing World-specific layout code.
+
+## Logical grid vs physical tracks
+
+The planner keeps a logical 12-unit layout contract.
+
+This does **not** require 12 physical CSS tracks at every width.
+
+A real compact-browser failure showed that 12 physical tracks plus 11 gaps can exceed a very narrow workspace even when the logical plan itself is valid.
+
+Accepted rule:
+
+```text
+logical plan = 12 units
+physical renderer = adaptive
+```
+
+Below the compact main-container threshold, the physical renderer collapses to one column while preserving logical entry order and semantic prominence.
+
+## Scroll ownership
+
+The main plane owns vertical overflow:
+
+```text
+world-focus-main-plane
+overflow-y: auto
+overflow-x: hidden
+```
+
+The outer workspace remains clipped as the stable visual/geometry boundary.
+
+Future sidecar implementations should give their own body explicit scroll ownership rather than relying on accidental parent overflow.
+
+## Stress validation
+
+### Composition planner
+
+The planner already has deterministic stress covering 500 synthetic World/user compositions with 0-20 candidates and combinations of:
+
+- stable / adaptive / ephemeral;
+- lead / primary / supporting;
+- wide / standard / compact;
+- sparse and dense scenarios;
+- unknown future module kinds.
+
+Required invariants include:
+
+- stable entries are not lost;
+- deterministic input produces deterministic plans;
+- first-open budgets remain bounded;
+- rows do not exceed logical capacity;
+- lead prominence remains truthful;
+- no World identity branch is required.
+
+### Surface allocation resolver
+
+The allocation resolver adds deterministic stress across 500 synthetic users combining:
+
+- workspace widths from 0 through 1900px;
+- 0-8 transient surfaces;
+- inline / popover / sidecar / modal / full-screen / route presentations;
+- arbitrary stack order.
+
+Required invariants include:
+
+- main width never becomes negative or exceeds workspace width;
+- split sums exactly to `main + gap + sidecar = workspace`;
+- at most one active sidecar;
+- at most one active overlay;
+- at most one active focus surface;
+- `mainInteraction` is inert iff an active modal/full-screen surface requires it;
+- same state + same width = same allocation plan.
+
+### React integration
+
+Integration tests exercise:
+
+- wide sidecar -> split + interactive main;
+- live ResizeObserver contraction -> same sidecar becomes non-modal overlay;
+- split sidecar + newer modal -> sidecar remains allocated, main becomes inert;
+- narrow sidecar + newer modal -> sidecar becomes dormant, modal owns overlay slot.
+
+## Explicit non-goals
+
+This slice does not implement:
+
+- DANTE chat UI;
+- Insight UI;
+- Explore UI;
+- modal visual design;
+- focus trap implementation for a concrete modal;
+- backend/API persistence;
+- user-authored freeform coordinates;
+- a generic dashboard builder;
+- World-specific layout templates.
+
+Those concrete verticals consume this platform after the platform gates pass.
+
+## Persistent invariants
+
+```text
+World != canonical Domain owner
+layout policy != Domain semantics
+surface stack != authorization
+surface visibility != disclosure permission
+AI output != accepted fact
+provider state != canonical state
+planned != actual
+absence != false
+```
+
+## Current disposition
+
+Code candidate includes:
+
+- dynamic composition planner;
+- logical 12-unit planning with adaptive physical rendering;
+- deterministic composition stress;
+- workspace allocation resolver;
+- separate main allocation / top layer / main interaction axes;
+- actual workspace measurement through `ResizeObserver`;
+- nested `world-focus-main` container queries;
+- active/dormant surface placement filtering;
+- inert main plane for modal/full-focus allocation;
+- deterministic allocation and React integration tests.
+
+The slice remains **IMPLEMENTED / AUTOMATED VALIDATION PENDING** until the exact final candidate passes the repository frontend gates.
