@@ -1,6 +1,6 @@
 # DANTE — World Focus B2 Continuity / Resume Disposition
 
-**Status:** IMPLEMENTED — AUTOMATED PASS / USER ACCEPTANCE PENDING  
+**Status:** IMPLEMENTED — AUTOMATED PASS / INTEGRATED USER ACCEPTANCE DEFERRED UNTIL DANTE SPATIAL GATE  
 **Date:** 2026-09-01  
 **Branch:** `feature/home-react`  
 **Candidate SHA:** `dbe90ab1a6ff94bbabe9857f52b674d2a55fcb4d`  
@@ -11,9 +11,9 @@ B2 is the first real World Focus content mini-vertical. It implements World Outp
 
 > **What is in motion and where can I continue?**
 
-The implementation deliberately distinguishes semantic continuity from recency. It does not infer `recent = resumable`, does not fabricate one item per World, and does not expose a fake `Resume` action without a real route/capability.
+It deliberately distinguishes semantic continuity from recency. It does not infer `recent = resumable`, does not fabricate one item per World, and does not expose a fake Resume action without a real route/capability.
 
-Current implementation disposition:
+## Current implementation disposition
 
 ```text
 semantic/reverse-engineering contract       PASS
@@ -35,17 +35,15 @@ accessibility semantics                     PASS
 i18n IT/EN                                  PASS
 fake Resume CTA                             REJECTED / ABSENT
 real backend/API/DB                         NOT STARTED BY DESIGN
-user functional acceptance                  PENDING
-user visual acceptance                      PENDING
+automated validation                        PASS
+integrated user visual acceptance           DEFERRED
 ```
 
 ## Automated evidence
 
-Final candidate run: GitHub Actions Frontend CI `33522476382` on `dbe90ab1a6ff94bbabe9857f52b674d2a55fcb4d`.
+Candidate CI completed successfully after rerunning a known pre-existing Access keyboard flake on the same SHA with no code changes.
 
-The first Web E2E attempt failed only on the known pre-existing intermittent Access keyboard test `e2e/access.spec.ts:491` (`localeButton` not focused after the first Tab). All World Focus and B2 tests passed in that attempt.
-
-The Web E2E job was re-run on the **same SHA with no code changes** and then passed completely:
+Final candidate evidence:
 
 ```text
 Quality                         PASS
@@ -62,35 +60,21 @@ Firefox frozen Timeline         PASS
 Frontend CI Gate                PASS
 ```
 
-This establishes the Access failure as intermittent evidence rather than a B2 regression. No Access/Auth code was modified as part of B2.
+All World Focus/B2 tests passed; no Access/Auth code was modified for B2.
 
-## Product behavior now available
+## Product behavior proved by B2
 
-Positive deterministic scenarios intentionally exist where continuity has a defensible meaning:
+Positive deterministic scenarios exist only where continuity has a defensible meaning, e.g. creative/project/planning/learning/work continuity.
 
-```text
-music     -> active/paused creative threads with meaningful checkpoints
-travel    -> planning continuity
-study     -> explicit learning continuity
-work      -> explicit work continuity
-projects  -> explicit project continuity
-```
+Sparse scenarios remain empty where current evidence does not justify a `resume` answer.
 
-Sparse scenarios intentionally remain empty where the current pre-backend evidence does not justify continuity:
+`empty` means:
 
-```text
-body
-finance
-relationships
-growth
-routine
-```
+> there is no justified Continuity answer in the current deterministic scenario.
 
-`empty` means there is no justified Continuity answer in the current deterministic scenario. It does **not** mean the World has no data, no value, or no future content.
+It does **not** mean the World itself has no value/data/future content.
 
 ## Failure and race guarantees
-
-B2 now enforces:
 
 ```text
 late result from World A cannot attach after switch to World B
@@ -104,28 +88,38 @@ retry starts a fresh read generation
 
 The World shell remains usable when Continuity fails.
 
-## User gate
+## Why integrated acceptance is deferred
 
-No next World Focus mini-vertical may be treated as started/accepted until the user reviews B2 in the real browser.
+The user's first integrated browser review correctly exposed a broader sequencing problem: judging/expanding more World content before establishing the **real contextual DANTE footprint** means designing the dynamic composition against space that may not actually remain available.
 
-User review should judge both:
+Therefore B2 is neither rejected nor frozen visually.
+
+Correct disposition:
 
 ```text
-FUNCTIONAL
-- correct World-specific content
-- sparse Worlds remain sparse
-- no fake Resume control
-- compact containment
-- no obvious interaction/regression bug
-
-PRODUCT / VISUAL
-- whether “In movimento” immediately makes sense
-- whether thread/checkpoint/state hierarchy is understandable
-- whether it feels like part of a World rather than a generic dashboard list
-- density, hierarchy and restraint
-- whether the first real content starts making the World concept useful
+B2 engineering capability       KEEP
+B2 semantic contract            KEEP
+B2 automated evidence           KEEP
+current list placement/spacing  NOT global composition authority
+integrated visual freeze        WAIT
 ```
 
-The exact global World composition remains open to later integrated polish; B2 acceptance concerns the Continuity function and its current presentation, not pixel-freezing the entire workspace.
+Before B2 is visually frozen inside the final World composition, World Focus must first resolve the contextual DANTE presence/spatial interaction gate described in `world-focus-current-checkpoint.md` and `world-focus-handoff.md`.
 
-**Next state after user approval:** B2 CLOSED / FROZEN, then select and reverse-engineer the next mini-vertical according to `world-focus-delivery-methodology.md`.
+Critical correction:
+
+```text
+Home AI surface != World contextual DANTE surface
+```
+
+No Home AI component/geometry should be copied into the World merely to reserve space.
+
+## Next gate
+
+Do **not** start another World content mini-vertical.
+
+Next work:
+
+> **Reverse-engineer and user-approve the World contextual DANTE presence / spatial interaction model.**
+
+After that model is implemented and accepted, re-run the integrated B2 review inside the real remaining dynamic-content area. Only explicit user acceptance after that review closes/freeze B2.
