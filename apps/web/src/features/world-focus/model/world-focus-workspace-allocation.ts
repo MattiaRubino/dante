@@ -15,6 +15,11 @@ export const WORLD_FOCUS_TOP_LAYERS = ['none', 'overlay', 'focus'] as const;
 
 export type WorldFocusTopLayer = (typeof WORLD_FOCUS_TOP_LAYERS)[number];
 
+export const WORLD_FOCUS_MAIN_INTERACTIONS = ['interactive', 'inert'] as const;
+
+export type WorldFocusMainInteraction =
+  (typeof WORLD_FOCUS_MAIN_INTERACTIONS)[number];
+
 export const WORLD_FOCUS_SURFACE_SLOTS = [
   'sidecar',
   'overlay',
@@ -55,6 +60,7 @@ export type WorldFocusSurfacePlacement = Readonly<{
 export type WorldFocusWorkspaceAllocationPlan = Readonly<{
   mainAllocation: WorldFocusMainAllocation;
   topLayer: WorldFocusTopLayer;
+  mainInteraction: WorldFocusMainInteraction;
   workspaceInlineSize: number;
   mainInlineSize: number;
   sidecarInlineSize: number | null;
@@ -187,13 +193,14 @@ function findTopWorkspaceLayerSurface(
  * World workspace. It never ranks World content, knows World identity, or owns
  * canonical truth.
  *
- * The plan deliberately separates two independent axes:
+ * The plan deliberately separates three independent concerns:
  * - mainAllocation: whether a sidecar consumes real canvas width;
- * - topLayer: whether an overlay/focus surface sits above that canvas.
+ * - topLayer: whether an overlay/focus surface sits above that canvas;
+ * - mainInteraction: whether the main plane remains operable underneath it.
  *
  * This means a wide sidecar can remain allocated while a confirmation modal or
  * focused Explore surface temporarily sits above it. Narrow sidecars degrade to
- * overlay without changing their requested presentation contract.
+ * a non-modal overlay without changing their requested presentation contract.
  */
 export function resolveWorldFocusWorkspaceAllocation(
   state: WorldFocusWorkspaceState,
@@ -244,6 +251,10 @@ export function resolveWorldFocusWorkspaceAllocation(
       isOverlayPresentation(activeLayerSurface.presentation))
       ? activeLayerSurface
       : null;
+  const mainInteraction: WorldFocusMainInteraction =
+    activeFocusSurface !== null || activeOverlaySurface?.presentation === 'modal'
+      ? 'inert'
+      : 'interactive';
 
   const placements = state.surfaces.map<WorldFocusSurfacePlacement>((surface) => {
     if (surface.presentation === 'route') {
@@ -325,6 +336,7 @@ export function resolveWorldFocusWorkspaceAllocation(
         : activeOverlaySurface !== null
           ? 'overlay'
           : 'none',
+    mainInteraction,
     workspaceInlineSize: inlineSize,
     mainInlineSize,
     sidecarInlineSize,
