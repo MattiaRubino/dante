@@ -32,11 +32,20 @@ test('Quick Create stays title-first, protects drafts, and restores opener focus
 
   await title.fill('Studiare inglese');
   await page.keyboard.press('Escape');
+  const discardPrompt = dialog.getByRole('alertdialog');
+  await expect(discardPrompt).toBeVisible();
   await expect(dialog.getByText('Scartare questa bozza?')).toBeVisible();
   await expect(title).toHaveValue('Studiare inglese');
 
+  const discardActions = discardPrompt.getByRole('button');
+  await expect(discardActions.nth(0)).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(discardActions.nth(1)).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(discardActions.nth(0)).toBeFocused();
+
   await page.keyboard.press('Escape');
-  await expect(dialog.getByText('Scartare questa bozza?')).toHaveCount(0);
+  await expect(discardPrompt).toHaveCount(0);
   await expect(title).toBeFocused();
   await expect(title).toHaveValue('Studiare inglese');
 

@@ -90,10 +90,13 @@ export function TemporalCreateComposer({
   const { t } = useTranslation('common');
   const titleId = useId();
   const dialogTitleId = useId();
+  const discardTitleId = useId();
   const discardDescriptionId = useId();
   const dialogRef = useRef<HTMLDivElement | null>(null);
+  const discardRef = useRef<HTMLDivElement | null>(null);
   const titleRef = useRef<HTMLInputElement | null>(null);
   const continueRef = useRef<HTMLButtonElement | null>(null);
+  const closeAttemptFocusRef = useRef<HTMLElement | null>(null);
   const fields = session.draft.current;
   const pending = lifecycle === 'pending';
 
@@ -124,9 +127,29 @@ export function TemporalCreateComposer({
     return () => cancelAnimationFrame(frame);
   }, [issues, session.closeDecision, session.surface]);
 
+  const rememberCloseAttemptFocus = () => {
+    const active = document.activeElement;
+    closeAttemptFocusRef.current =
+      active instanceof HTMLElement && dialogRef.current?.contains(active)
+        ? active
+        : titleRef.current;
+  };
+
+  const requestCloseFromCurrentFocus = () => {
+    rememberCloseAttemptFocus();
+    onRequestClose();
+  };
+
   const continueEditing = () => {
+    const returnTarget = closeAttemptFocusRef.current;
     onContinueEditing();
-    requestAnimationFrame(() => titleRef.current?.focus());
+    requestAnimationFrame(() => {
+      if (returnTarget?.isConnected) {
+        returnTarget.focus({ preventScroll: true });
+      } else {
+        titleRef.current?.focus({ preventScroll: true });
+      }
+    });
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -136,7 +159,7 @@ export function TemporalCreateComposer({
       if (session.closeDecision === 'confirm-discard') {
         continueEditing();
       } else if (!pending) {
-        onRequestClose();
+        requestCloseFromCurrentFocus();
       }
       return;
     }
@@ -144,7 +167,10 @@ export function TemporalCreateComposer({
     if (event.key !== 'Tab') {
       return;
     }
-    const root = dialogRef.current;
+    const root =
+      session.closeDecision === 'confirm-discard'
+        ? discardRef.current
+        : dialogRef.current;
     if (!root) {
       return;
     }
@@ -167,7 +193,7 @@ export function TemporalCreateComposer({
   const handleBackdropPointerDown = (event: PointerEvent<HTMLDivElement>) => {
     if (event.target === event.currentTarget && !pending) {
       event.preventDefault();
-      onRequestClose();
+      requestCloseFromCurrentFocus();
     }
   };
 
@@ -304,7 +330,7 @@ export function TemporalCreateComposer({
               className="temporal-create-composer__close"
               type="button"
               disabled={pending}
-              onClick={onRequestClose}
+              onClick={requestCloseFromCurrentFocus}
               aria-label={t(($) => $.common.home.timeline.create.close)}
             >
               ×
@@ -393,7 +419,11 @@ export function TemporalCreateComposer({
                 {t(($) => $.common.home.timeline.create.surface.compact)}
               </button>
             ) : null}
-            <button type="button" disabled={pending} onClick={onRequestClose}>
+            <button
+              type="button"
+              disabled={pending}
+              onClick={requestCloseFromCurrentFocus}
+            >
               {t(($) => $.common.home.timeline.create.cancel)}
             </button>
             <button className="is-primary" type="submit" disabled={pending}>
@@ -406,12 +436,15 @@ export function TemporalCreateComposer({
 
         {session.closeDecision === 'confirm-discard' ? (
           <div
+            ref={discardRef}
             className="temporal-create-discard"
-            role="alert"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby={discardTitleId}
             aria-describedby={discardDescriptionId}
           >
             <div>
-              <strong>
+              <strong id={discardTitleId}>
                 {t(($) => $.common.home.timeline.create.discardTitle)}
               </strong>
               <p id={discardDescriptionId}>
