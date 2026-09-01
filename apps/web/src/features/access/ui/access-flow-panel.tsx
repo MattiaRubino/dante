@@ -6,14 +6,16 @@ import {
   isValidNewPassword,
   type AccessFlowEvent,
   type AccessFlowState,
-  type AccessProvider,
 } from '../model/access-flow';
 import { AccessAuthenticatedReturnPanel } from './access-authenticated-return-panel';
 import { AccessConditionNotice } from './access-condition-notice';
 import { AccessDownstreamPanel } from './access-downstream-panel';
 import { AccessPanelFrame, AccessPasswordToggle } from './access-panel-frame';
-import { AccessSignInPanel } from './access-sign-in-panel';
-import { ProviderButton } from './provider-button';
+import {
+  AccessSignInPanel,
+  type GoogleButtonState,
+} from './access-sign-in-panel';
+import { GoogleIdentityButton, ProviderButton } from './provider-button';
 
 type FlowProps = Readonly<{
   flow: AccessFlowState;
@@ -31,6 +33,7 @@ type AccessPendingState = Readonly<{
   reset: boolean;
   reauth: boolean;
   logOut: boolean;
+  provider: boolean;
 }>;
 
 type AccessFlowPanelProps = FlowProps &
@@ -45,15 +48,29 @@ type AccessFlowPanelProps = FlowProps &
     onResetPassword: (password: string) => void;
     onReauthenticate: (password: string) => void;
     onLogOut: () => void;
+    google: GoogleButtonState;
+    onApple: () => void;
     pending: AccessPendingState;
   }>;
 
-function SignupEmailScreen({ flow, dispatch }: FlowProps) {
+function SignupEmailScreen({
+  flow,
+  dispatch,
+  google,
+  onApple,
+  pending,
+}: FlowProps &
+  Readonly<{
+    google: GoogleButtonState;
+    onApple: () => void;
+    pending: boolean;
+  }>) {
   const { t } = useTranslation('common');
   const initialEmail =
     flow.screen.id === 'SIGN_UP_EMAIL' ? flow.screen.email : '';
   const [email, setEmail] = useState(initialEmail);
   const [error, setError] = useState<string | null>(null);
+  const interactionPending = pending || google.pending;
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -63,10 +80,6 @@ function SignupEmailScreen({ flow, dispatch }: FlowProps) {
       return;
     }
     dispatch({ type: 'SIGN_UP_EMAIL_ACCEPTED', email: trimmedEmail });
-  }
-
-  function provider(provider: AccessProvider) {
-    dispatch({ type: 'REQUEST_PROVIDER', provider });
   }
 
   return (
@@ -112,6 +125,7 @@ function SignupEmailScreen({ flow, dispatch }: FlowProps) {
             autoComplete="email"
             inputMode="email"
             value={email}
+            disabled={interactionPending}
             placeholder={t(($) => $.common.access.field.emailPlaceholder)}
             aria-invalid={Boolean(error)}
             aria-describedby={error ? 'access-signup-email-error' : undefined}
@@ -126,7 +140,11 @@ function SignupEmailScreen({ flow, dispatch }: FlowProps) {
             </span>
           ) : null}
         </div>
-        <button className="access-primary-button" type="submit">
+        <button
+          className="access-primary-button"
+          type="submit"
+          disabled={interactionPending}
+        >
           {t(($) => $.common.access.signup.continueEmail)}
         </button>
       </form>
@@ -138,17 +156,26 @@ function SignupEmailScreen({ flow, dispatch }: FlowProps) {
       </div>
 
       <div className="access-provider-stack">
-        <ProviderButton
-          provider="google"
+        <GoogleIdentityButton
           label={t(($) => $.common.access.signup.google)}
-          onClick={() => provider('google')}
+          clientId={google.clientId}
+          nonce={google.nonce}
+          onCredential={google.onCredential}
+          onError={google.onError}
+          disabled={interactionPending}
         />
         <ProviderButton
           provider="apple"
           label={t(($) => $.common.access.signup.apple)}
-          onClick={() => provider('apple')}
+          onClick={onApple}
+          disabled={interactionPending}
         />
       </div>
+      {google.errorMessage ? (
+        <p className="access-field-error" role="alert">
+          {google.errorMessage}
+        </p>
+      ) : null}
       <AccessConditionNotice condition={flow.condition} />
     </AccessPanelFrame>
   );
@@ -308,8 +335,7 @@ function VerifyEmailScreen({
         <span>{t(($) => $.common.access.signup.stepEmail)}</span>
         <span>{t(($) => $.common.access.signup.stepPassword)}</span>
         <span className="is-active">
-          {t(($) => $.common.access.signup.stepVerify)}
-        </span>
+          {t(($) => $.common.access.signup.stepVerify)}</span>
       </div>
       <p className="access-email-context">{email}</p>
       <form className="access-flow-form" onSubmit={submit} noValidate>
@@ -729,6 +755,8 @@ export function AccessFlowPanel({
   onResetPassword,
   onReauthenticate,
   onLogOut,
+  google,
+  onApple,
   pending,
 }: AccessFlowPanelProps) {
   if (recoveryEntryState !== 'none') {
@@ -750,14 +778,21 @@ export function AccessFlowPanel({
           onCreateAccount={() => dispatch({ type: 'CREATE_ACCOUNT' })}
           onForgotPassword={() => dispatch({ type: 'FORGOT_PASSWORD' })}
           onCredentialSubmit={onCredentialSubmit}
-          onProvider={(provider) =>
-            dispatch({ type: 'REQUEST_PROVIDER', provider })
-          }
-          pending={pending.signIn}
+          google={google}
+          onApple={onApple}
+          pending={pending.signIn || pending.provider}
         />
       );
     case 'SIGN_UP_EMAIL':
-      return <SignupEmailScreen flow={flow} dispatch={dispatch} />;
+      return (
+        <SignupEmailScreen
+          flow={flow}
+          dispatch={dispatch}
+          google={google}
+          onApple={onApple}
+          pending={pending.provider}
+        />
+      );
     case 'SIGN_UP_PASSWORD':
       return (
         <SignupPasswordScreen
