@@ -1,12 +1,15 @@
 # World Focus — D1 Contextual DANTE Entry Review
 
-Status: **IMPLEMENTATION AUTHORIZED — PRE-BACKEND**
+Status: **CLOSED FOR SEQUENCING — ENGINEERING + AUTOMATED REAL-BROWSER ACCEPTANCE PASS; MANUAL INTEGRATED VISUAL POLISH DEFERRED**
 
 Date: 2026-09-01
+Branch: `feature/home-react`
+Validated D1 code HEAD: `f17291de32e6bdced20536807b32928ec1be6aea`
+Frontend CI: `33552437179` — PASS
 
 ## Purpose
 
-D1 materializes the first concrete consumer of the now automated-PASS World Workspace Platform:
+D1 materializes the first concrete consumer of the engineering-closed World Workspace Platform:
 
 ```text
 P0 QUIET
@@ -67,7 +70,7 @@ main allocation:   unchanged
 main interaction:  interactive
 ```
 
-It must not consume a sidecar column in D1.
+It does not consume a sidecar column in D1.
 
 The composer contains:
 
@@ -96,11 +99,25 @@ no conversation/run identity is invented
 
 The deterministic conversation adapter belongs to D3.
 
-This degraded submit path exists to prove that UI failure does not erase the user's draft or make the World unusable.
+This degraded submit path proves that UI failure does not erase the user's draft or make the World unusable.
+
+## Context-binding decision
+
+The global quiet invoke opens the composer with:
+
+```text
+contextReference: null
+```
+
+This is intentional and permanent for D1.
+
+An unrelated/currently selected workspace projection must not silently become DANTE context merely because the user presses the global DANTE invoke.
+
+Explicit deictic context is deferred to D4, where invocation will carry a bounded deliberate reference rather than serialize DOM/source truth.
 
 ## Focus and keyboard contract
 
-Required:
+Implemented behavior:
 
 ```text
 invoke
@@ -116,10 +133,12 @@ The composer is a non-modal dialog/surface:
 
 - no focus trap;
 - World remains interactive;
-- no `aria-modal=true`;
+- `aria-modal="false"`;
 - background updates may not steal focus.
 
 If DANTE entry is unavailable before opening, invocation opens a truthful unavailable surface and focus moves to its close action rather than to a disabled/nonexistent textarea.
+
+DOM focus ownership deliberately lives in `WorldFocusDanteEntryProvider`, not in `WorldInteractionCursor`. DOM nodes therefore cannot become DANTE context, authorization input or durable Run state.
 
 ## Responsive contract
 
@@ -132,23 +151,28 @@ D2 remains responsible for:
 ```text
 wide workspace -> conversation sidecar
 constrained/mobile -> route-owned focus overlay
+explicit maximize / restore
 ```
 
 No viewport-specific JavaScript breakpoint is introduced in D1.
 
+Real Chromium acceptance now verifies the D1 composer remains bounded inside the contracted 390 px World workspace, with no horizontal page overflow and 44 px primary invoke/close targets.
+
 ## Surface interaction correction exposed by D1
 
-A non-modal popover wrapper must not intercept the entire workspace merely because its allocation slot is named `overlay`.
+The first concrete `popover` consumer exposed a real platform bug: a full-workspace overlay wrapper with `pointer-events:auto` makes the main plane physically unclickable even when the allocation model says the surface is non-modal and the main remains interactive.
 
-Therefore:
+The correction is presentation-generic:
 
 ```text
-popover overlay wrapper -> pointer-transparent outside actual panel
-actual composer panel    -> pointer-interactive
-main plane               -> remains interactive
+popover allocation wrapper -> pointer-transparent
+actual popover panel        -> pointer-interactive
+main plane                  -> remains interactive
 ```
 
-This is a real platform behavior required by the first concrete popover consumer, not speculative framework work.
+This behavior is implemented by `WorldFocusSurfaceLayer` for `presentation === 'popover'`; it is not a DANTE-only CSS exception.
+
+The browser acceptance suite verifies computed pointer behavior on both wrapper and composer.
 
 ## Security / semantic barriers
 
@@ -170,25 +194,114 @@ D1 does not introduce any backend/API/DB/provider/model contract.
 
 - duplicate invoke while composer is already open does not create a second surface;
 - blocking modal/full-focus surface remains authoritative over DANTE entry through the existing blocking-tail barrier;
+- the quiet invoke itself becomes inert while a blocking allocation owns the workspace;
 - route/World unmount does not attach composer state elsewhere;
 - render failure remains surface-local through the existing surface render boundary;
-- unavailable submit preserves the draft.
+- unavailable submit preserves the draft;
+- no late AI result exists in D1 because D1 does not create a Run/model request.
 
-## Automated acceptance target
+## Implementation files
 
-D1 must prove:
+Concrete D1 implementation:
 
-- quiet control absent from composition ranking and present only as workspace affordance;
-- no auto-open;
-- single composer surface;
-- non-modal main remains interactive;
-- textarea autofocus;
-- close + Escape focus restoration;
-- unavailable state has no fake response;
-- draft preservation after unavailable submit;
-- 44 px target;
-- 390 px containment / no horizontal page overflow;
-- existing World/Timeline/browser gates remain green.
+```text
+apps/web/src/features/world-focus/ui/world-focus-dante-entry.tsx
+apps/web/src/features/world-focus/ui/world-focus-dante-entry.css
+apps/web/src/features/world-focus/ui/world-focus-core-surfaces.tsx
+apps/web/src/features/world-focus/ui/world-focus-page.tsx
+apps/web/src/features/world-focus/ui/world-focus-surface-layer.tsx
+packages/i18n/src/resources/it/world-focus.ts
+packages/i18n/src/resources/en/world-focus.ts
+```
+
+Automated evidence:
+
+```text
+apps/web/src/features/world-focus/ui/world-focus-dante-entry.test.tsx
+apps/web/e2e/world-focus-dante-entry.spec.ts
+```
+
+The former `world-focus-core-surfaces.ts` was removed after strict CI exposed that it contained JSX under a `.ts` extension; the finite registry now correctly lives in `.tsx`.
+
+## Automated acceptance evidence
+
+Validated D1 code HEAD:
+
+`f17291de32e6bdced20536807b32928ec1be6aea`
+
+Frontend CI:
+
+`33552437179`
+
+Evidence:
+
+```text
+Frontend contract drift check             PASS
+Home / World Focus format checks          PASS
+Lint                                      PASS
+Typecheck                                 PASS
+Architecture check                        PASS
+Generated-source drift                    PASS
+Unit tests                                PASS
+Production build                          PASS
+Diff / repository mutation checks         PASS
+Mobile Bundle                             PASS
+Chromium Web E2E                          PASS
+Firefox frozen Timeline contract          PASS
+Frontend CI Gate                          PASS
+```
+
+D1-specific unit/component coverage proves:
+
+- first state is quiet; composer absent;
+- one invocation creates one registered composer surface;
+- global invoke binds `contextReference: null`;
+- surface presentation is `popover` and interaction remains interactive;
+- wrapper is pointer-transparent;
+- textarea receives focus;
+- degraded submit preserves draft;
+- degraded submit creates no fake response;
+- unavailable entry state is truthful and focuses close action;
+- explicit close restores focus to exact invoker.
+
+D1-specific Chromium E2E proves:
+
+- no auto-open on `/worlds/music`;
+- non-modal composer semantics;
+- World main remains interactive;
+- real computed pointer transparency outside the composer;
+- real computed pointer interactivity on the composer;
+- textarea focus;
+- truthful unavailable submit + draft preservation;
+- Escape closes only the composer and keeps the World route open;
+- Escape restores focus to the invoke;
+- 390 px containment;
+- 44 px invoke/close targets;
+- no horizontal page overflow;
+- axe has zero detectable violations with composer open at wide and compact widths.
+
+## Closure disposition
+
+The user explicitly delegated closure judgment for this saturated-chat handoff and authorized continuation with “carta bianca / OK”.
+
+Therefore D1 is **CLOSED FOR SEQUENCING** on the following truthful basis:
+
+```text
+product contract                    closed
+architecture/state ownership        closed
+implementation                      closed
+strict static gates                 PASS
+unit/integration                    PASS
+real Chromium functional coverage   PASS
+axe wide + compact                  PASS
+390 px geometry                     PASS
+Firefox frozen regression           PASS
+Mobile regression                   PASS
+manual assistant visual review      NOT PERFORMED / no browser-view tool
+micro/integrated visual polish       DEFERRED to D7/integrated review
+```
+
+This closure does not pretend that a human visual inspection occurred. It authorizes D2 sequencing because D1's functional/interaction contract is now deterministic and browser-tested, while visual polish remains intentionally revisitable in the integrated DANTE/World composition review.
 
 ## Stop line
 
@@ -201,10 +314,31 @@ D1 does **not** implement:
 - model routing;
 - DANTE Run lifetime;
 - sidecar conversation;
-- full-focus conversation;
+- route-owned full-focus conversation;
 - contextual projection selection;
 - Insight;
 - Proposal / confirmation / receipt;
 - tools or effects.
 
 Those remain later bounded slices from the accepted D0 sequence.
+
+## Next gate
+
+The next authorized bounded slice is:
+
+> **D2 — adaptive conversation surface geometry and presentation ownership.**
+
+D2 must consume the existing Workspace Platform rather than replace it and must prove:
+
+```text
+wide allocated workspace -> split sidecar allowed
+constrained workspace     -> route-owned focus overlay
+explicit maximize/restore
+same conversation identity across presentation changes
+sidecar does not become modal
+focus overlay does not rewrite World macro geometry
+Global Topbar remains outside World ownership
+no fake messages / no backend / no D3 adapter pulled forward
+```
+
+D2 must resolve the route-owned overlay implementation seam carefully: the accepted D0 review explicitly requires the constrained/mobile conversation to use available route space below the Global Topbar rather than being trapped inside the ~238 px mobile World workspace.
