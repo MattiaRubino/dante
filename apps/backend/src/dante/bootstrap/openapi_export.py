@@ -54,6 +54,7 @@ _AUTHENTICATED_OPERATIONS = (
     ("/api/v1/auth/reauthenticate", "post"),
     ("/api/v1/auth/password/establish", "post"),
     ("/api/v1/auth/password", "delete"),
+    ("/api/v1/auth/provider-link/confirm", "post"),
     ("/api/v1/auth/providers/{external_identity_ref}", "delete"),
     ("/api/v1/auth/passkeys/registration/begin", "post"),
     ("/api/v1/auth/passkeys/registration/complete", "post"),
