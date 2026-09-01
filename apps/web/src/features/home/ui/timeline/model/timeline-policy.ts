@@ -88,7 +88,7 @@ export const TIMELINE_POLICY = {
     eventRevealInsetPx: 16,
   },
   scrubber: {
-    edgeInsetPx: 8,
+    edgeInsetPx: 26,
     deadZoneRatio: 0.07,
     minPxPerSecond: 180,
     maxPxPerSecond: 4200,

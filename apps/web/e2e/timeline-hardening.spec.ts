@@ -292,6 +292,45 @@ test('relative temporal scrubber keeps advancing while held without a native-thu
     .toContain('2026-08-04');
 });
 
+test('temporal scrubber reads as a scrollbar handle and stays distinct from the expansion handle', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 760 });
+  await page.goto('/home');
+
+  const scrubber = page.locator('[data-temporal-scrubber="relative"]');
+  const thumb = scrubber.locator('.timeline-temporal-scrubber__thumb');
+  const expansionThumb = page.locator('.timeline-expansion-handle > span');
+  const activeReference = page.locator('.home-timeline-now-dot');
+
+  await scrubber.scrollIntoViewIfNeeded();
+  await expect(scrubber).toBeInViewport();
+  await expect(thumb).toBeVisible();
+  await expect(expansionThumb).toBeVisible();
+
+  const thumbBox = await thumb.boundingBox();
+  expect(thumbBox).not.toBeNull();
+  if (!thumbBox) {
+    return;
+  }
+  expect(thumbBox.width).toBeGreaterThanOrEqual(4);
+  expect(thumbBox.height).toBeGreaterThanOrEqual(40);
+  expect(thumbBox.height / thumbBox.width).toBeGreaterThan(7);
+
+  const [scrubberColor, expansionColor, activeColor] = await Promise.all([
+    thumb.evaluate((element) => getComputedStyle(element).backgroundColor),
+    expansionThumb.evaluate(
+      (element) => getComputedStyle(element).backgroundColor,
+    ),
+    activeReference.evaluate(
+      (element) => getComputedStyle(element).backgroundColor,
+    ),
+  ]);
+
+  expect(expansionColor).toBe(activeColor);
+  expect(scrubberColor).not.toBe(expansionColor);
+});
+
 test('Timeline viewport remains keyboard-scrollable without relying on a native vertical thumb', async ({
   page,
 }) => {
