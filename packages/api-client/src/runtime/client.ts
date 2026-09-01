@@ -548,7 +548,10 @@ export function createDanteApiClient(
     async getAuthenticationMethods(requestOptions) {
       let wire: WireResponse;
       try {
-        wire = await generatedAuthGetAuthenticationMethods(requestOptions, fetchFn);
+        wire = await generatedAuthGetAuthenticationMethods(
+          requestOptions,
+          fetchFn,
+        );
       } catch (error) {
         return fromThrown(error);
       }
