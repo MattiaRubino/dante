@@ -35,12 +35,18 @@ test('Home opens the centered World on the dedicated World Focus route', async (
   await expect(
     page.locator('[data-world-focus-vfx-boundary="workspace-protected"]'),
   ).toHaveCount(1);
-  await expect(
-    page.locator('[data-world-focus-energy-motion]'),
-  ).toHaveAttribute('data-world-focus-energy-motion', /animated|reduced/);
-  await expect(
-    page.locator('[data-world-focus-energy-renderer]'),
-  ).toHaveAttribute('data-world-focus-energy-renderer', /webgl2|fallback/);
+
+  const energy = page.locator('[data-world-focus-energy-renderer]');
+  await expect(energy).toHaveAttribute(
+    'data-world-focus-energy-renderer',
+    /webgl2|fallback/,
+  );
+  const renderer = await energy.getAttribute('data-world-focus-energy-renderer');
+  await expect(energy).toHaveAttribute(
+    'data-world-focus-energy-motion',
+    renderer === 'fallback' ? 'static' : /animated|reduced/,
+  );
+
   await expect(page.getByRole('button', { name: 'Torna indietro' })).toHaveCount(0);
   await expect(page.locator('[data-home-region="shell"]')).toHaveCount(0);
 
