@@ -56,7 +56,8 @@ function securityError(error: unknown): SecurityError {
   switch (failure.code) {
     case 'auth.reauthentication_required':
       return {
-        message: 'Confirm your identity again before changing security settings.',
+        message:
+          'Confirm your identity again before changing security settings.',
         reauthenticationRequired: true,
       };
     case 'auth.authenticator_removal_blocked':
@@ -118,7 +119,9 @@ export function AccessSecurityPage() {
   const [newPassword, setNewPassword] = useState('');
   const [passkeyLabel, setPasskeyLabel] = useState('My passkey');
   const [passwordReauth, setPasswordReauth] = useState('');
-  const [editingPasskeyRef, setEditingPasskeyRef] = useState<string | null>(null);
+  const [editingPasskeyRef, setEditingPasskeyRef] = useState<string | null>(
+    null,
+  );
   const [editingPasskeyLabel, setEditingPasskeyLabel] = useState('');
   const [googlePreparation, setGooglePreparation] =
     useState<GoogleAuthenticationPreparation | null>(null);
@@ -410,7 +413,9 @@ export function AccessSecurityPage() {
     <main className="access-security-shell">
       <header className="access-security-header">
         <div>
-          <p className="access-kicker">{t(($) => $.common.access.kicker.access)}</p>
+          <p className="access-kicker">
+            {t(($) => $.common.access.kicker.access)}
+          </p>
           <h1>{t(($) => $.common.access.security.title)}</h1>
           <p>{t(($) => $.common.access.security.body)}</p>
         </div>
@@ -644,9 +649,7 @@ export function AccessSecurityPage() {
                   className="access-danger-button"
                   type="button"
                   disabled={removePasskeyMutation.isPending}
-                  onClick={() =>
-                    removePasskey(passkey.passkey_credential_ref)
-                  }
+                  onClick={() => removePasskey(passkey.passkey_credential_ref)}
                 >
                   {t(($) => $.common.access.security.remove)}
                 </button>

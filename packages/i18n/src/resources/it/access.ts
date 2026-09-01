@@ -2,8 +2,7 @@ export const access = {
   stage: {
     titleFirst: 'Comprendi la vita.',
     titleSecond: 'Dai forma al prossimo passo.',
-    body:
-      'Uno spazio personale per capire cosa sta succedendo, mantenere continuità nel tempo e decidere cosa viene dopo.',
+    body: 'Uno spazio personale per capire cosa sta succedendo, mantenere continuità nel tempo e decidere cosa viene dopo.',
     foot: 'Una sola realtà. Più modi per comprenderla.',
   },
   kicker: {
@@ -18,8 +17,7 @@ export const access = {
   },
   signup: {
     title: 'Crea il tuo account DANTE',
-    body:
-      'Usa un indirizzo email a cui hai accesso. Ti chiederemo di verificarlo.',
+    body: 'Usa un indirizzo email a cui hai accesso. Ti chiederemo di verificarlo.',
     existing: 'Hai già un account?',
     progress: 'Avanzamento creazione account',
     stepEmail: 'Email',
@@ -32,8 +30,7 @@ export const access = {
   },
   signupPassword: {
     title: 'Proteggi il tuo account',
-    body:
-      'Scegli una password lunga e unica. Puoi usare quella generata dal tuo password manager.',
+    body: 'Scegli una password lunga e unica. Puoi usare quella generata dal tuo password manager.',
   },
   password: {
     guideTitle: 'Lunghezza minima',
@@ -47,8 +44,7 @@ export const access = {
     passkey: 'Accedi con passkey',
     googleName: 'Google',
     appleName: 'Apple',
-    body:
-      'DANTE apre il flusso ufficiale del provider. La schermata di consenso appartiene al provider, non DANTE.',
+    body: 'DANTE apre il flusso ufficiale del provider. La schermata di consenso appartiene al provider, non DANTE.',
     wait: 'Completa l’accesso',
     pendingBody:
       'Completa l’accesso nella finestra del provider. Tornerai automaticamente a DANTE.',
@@ -57,8 +53,7 @@ export const access = {
   },
   providerEnrollment: {
     title: 'Verifica un indirizzo email',
-    body:
-      'Il provider non può dimostrare a DANTE il controllo di questa casella. Verificala direttamente prima di creare l’account.',
+    body: 'Il provider non può dimostrare a DANTE il controllo di questa casella. Verificala direttamente prima di creare l’account.',
     sendCode: 'Invia codice di verifica',
     verify: 'Verifica e continua',
     privacy:
@@ -144,8 +139,7 @@ export const access = {
   },
   verify: {
     title: 'Controlla la tua email',
-    body:
-      'Inserisci il codice a 6 cifre che ti abbiamo inviato per verificare l’indirizzo.',
+    body: 'Inserisci il codice a 6 cifre che ti abbiamo inviato per verificare l’indirizzo.',
     resend: 'Invia di nuovo',
     action: 'Verifica e continua',
     privacy: 'Il codice è monouso e scade automaticamente.',
@@ -159,8 +153,7 @@ export const access = {
   },
   recovery: {
     title: 'Controlla la tua email',
-    body:
-      'Se esiste un account associato all’indirizzo indicato, riceverai le istruzioni per recuperare l’accesso.',
+    body: 'Se esiste un account associato all’indirizzo indicato, riceverai le istruzioni per recuperare l’accesso.',
     validatingTitle: 'Verifica del link di recupero',
     validatingBody:
       'Stiamo verificando il link in modo sicuro prima di mostrarti il cambio password.',
@@ -182,8 +175,7 @@ export const access = {
   },
   link: {
     title: 'Conferma il collegamento',
-    body:
-      'Esiste già un account DANTE associato a questa identità. Autentica prima quell’account, poi conferma esplicitamente il collegamento.',
+    body: 'Esiste già un account DANTE associato a questa identità. Autentica prima quell’account, poi conferma esplicitamente il collegamento.',
     action: 'Autentica l’account esistente',
     other: 'Usa un altro account',
     authenticateFirst:
@@ -196,19 +188,16 @@ export const access = {
   },
   authenticated: {
     title: 'Accesso confermato',
-    body:
-      'La tua identità è stata confermata. Stiamo preparando il tuo spazio DANTE.',
+    body: 'La tua identità è stata confermata. Stiamo preparando il tuo spazio DANTE.',
   },
   reauth: {
     title: 'Conferma di nuovo la tua identità',
-    body:
-      'Per proteggere il tuo account, inserisci di nuovo la password prima di continuare.',
+    body: 'Per proteggere il tuo account, inserisci di nuovo la password prima di continuare.',
     action: 'Conferma identità',
   },
   security: {
     title: 'Sicurezza account',
-    body:
-      'Gestisci i metodi con cui puoi autenticarti a DANTE. Le rimozioni non possono violare la protezione anti-lockout.',
+    body: 'Gestisci i metodi con cui puoi autenticarti a DANTE. Le rimozioni non possono violare la protezione anti-lockout.',
     loading: 'Caricamento delle impostazioni di sicurezza…',
     signinRequired: 'Accedi per gestire la sicurezza dell’account.',
     backAccess: 'Torna ad Accesso',
@@ -248,16 +237,13 @@ export const access = {
   },
   setupName: {
     title: 'Come vuoi che DANTE ti chiami?',
-    body:
-      'Serve solo per rendere l’esperienza più naturale. Puoi cambiarlo quando vuoi.',
+    body: 'Serve solo per rendere l’esperienza più naturale. Puoi cambiarlo quando vuoi.',
     label: 'Nome preferito',
   },
   setupLocale: {
     title: 'Lingua e fuso orario',
-    body:
-      'DANTE usa queste informazioni per mostrare orari e date correttamente. Abbiamo precompilato ciò che possiamo rilevare.',
-    note:
-      'Stai confermando solo impostazioni operative; potrai modificarle in seguito.',
+    body: 'DANTE usa queste informazioni per mostrare orari e date correttamente. Abbiamo precompilato ciò che possiamo rilevare.',
+    note: 'Stai confermando solo impostazioni operative; potrai modificarle in seguito.',
     language: 'Lingua',
     timezone: 'Fuso orario',
   },
@@ -283,16 +269,14 @@ export const access = {
   },
   importFlow: {
     title: 'Importa nel tuo spazio',
-    body:
-      'L’import è separato dall’accesso: collegare Google per fare login non autorizza DANTE a leggere il calendario.',
+    body: 'L’import è separato dall’accesso: collegare Google per fare login non autorizza DANTE a leggere il calendario.',
     google:
       'L’import da Google richiederà un’autorizzazione separata e specifica.',
     file: 'Potrai importare un calendario da file senza collegare un account.',
   },
   demo: {
     title: 'Una demo, senza sporcare i tuoi dati',
-    body:
-      'L’elemento qui sotto è solo tutorial e non entra nella tua cronologia reale.',
+    body: 'L’elemento qui sotto è solo tutorial e non entra nella tua cronologia reale.',
     item: 'Passeggiata · 18:30',
     itemBody:
       'Puoi aprirla, spostarla, completarla o eliminarla durante il tour.',
@@ -300,8 +284,7 @@ export const access = {
   },
   home: {
     title: 'Tutto pronto',
-    body:
-      'Hai completato la configurazione iniziale. Ora puoi entrare nel tuo spazio DANTE.',
+    body: 'Hai completato la configurazione iniziale. Ora puoi entrare nel tuo spazio DANTE.',
     pending: 'Potrai modificare queste impostazioni in seguito.',
   },
 } as const;

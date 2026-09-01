@@ -17,8 +17,7 @@ import type { AccessFlowEvent } from '../model/access-flow';
 export const authSessionQueryKey = ['auth', 'session'] as const;
 
 export type AccessAuthSession =
-  | WebAuthenticatedSession
-  | Readonly<{ authenticated: false }>;
+  WebAuthenticatedSession | Readonly<{ authenticated: false }>;
 
 function accessAuthSession(session: WebAuthSession): AccessAuthSession {
   if ('csrf_token' in session) {

@@ -47,10 +47,7 @@ export function useEstablishPasswordMutation() {
       newPassword: string;
       csrfToken: string;
     }) =>
-      webAuthRemote.establishPassword(
-        { new_password: newPassword },
-        csrfToken,
-      ),
+      webAuthRemote.establishPassword({ new_password: newPassword }, csrfToken),
     retry: false,
     onSuccess: async (session) => {
       queryClient.setQueryData(authSessionQueryKey, session);

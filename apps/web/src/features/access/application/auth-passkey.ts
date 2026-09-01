@@ -93,13 +93,8 @@ export function usePasskeySignInMutation() {
 export function usePasskeyRegistrationMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      label,
-      csrfToken,
-    }: {
-      label: string;
-      csrfToken: string;
-    }) => registerPasskey({ label, csrfToken }),
+    mutationFn: ({ label, csrfToken }: { label: string; csrfToken: string }) =>
+      registerPasskey({ label, csrfToken }),
     retry: false,
     onSuccess: async (session) => {
       cacheAuthenticatedSession(queryClient, session);
