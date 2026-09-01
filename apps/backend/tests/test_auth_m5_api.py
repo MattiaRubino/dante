@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
+from typing import cast
 from uuid import UUID
 
 import pytest
@@ -15,6 +16,7 @@ from dante.auth.contracts import (
     AuthenticationProviderMethod,
     AuthenticatorRemovalBlockedError,
     IssuedSession,
+    PasskeyMethod,
     Principal,
 )
 from dante.auth.m5_api import (
@@ -23,11 +25,13 @@ from dante.auth.m5_api import (
     get_authentication_methods,
     remove_password,
 )
+from dante.auth.provider_flow_runtime import ProviderFlowRuntime
 from dante.platform.http.problem import ProblemError
 
 _ACCOUNT_REF = UUID("00000000-0000-4000-8000-000000000001")
 _SESSION_REF = UUID("00000000-0000-4000-8000-000000000002")
 _EXTERNAL_IDENTITY_REF = UUID("00000000-0000-4000-8000-000000000003")
+_PASSKEY_REF = UUID("00000000-0000-4000-8000-000000000004")
 
 
 def _synthetic_value(label: str) -> str:
@@ -112,9 +116,36 @@ class _AuthenticatorService:
                     provider_email_private=False,
                 ),
             ),
-            active_passkey_count=2,
+            active_passkey_count=1,
             recovery_eligible_email_count=1,
         )
+
+
+class _PasskeyService:
+    def __init__(self) -> None:
+        self.calls = 0
+
+    async def list_passkeys(self, *, admitted: AdmittedSession) -> tuple[PasskeyMethod, ...]:
+        assert admitted.principal.account_ref == _ACCOUNT_REF
+        self.calls += 1
+        return (
+            PasskeyMethod(
+                passkey_credential_ref=_PASSKEY_REF,
+                label="Work laptop",
+                transports=("internal",),
+                backup_eligible=True,
+                backup_state=False,
+                created_at=datetime(2026, 8, 30, 10, 0, tzinfo=UTC),
+                last_used_at=datetime(2026, 9, 1, 9, 0, tzinfo=UTC),
+            ),
+        )
+
+
+def _runtime(passkey_service: _PasskeyService) -> ProviderFlowRuntime:
+    return cast(
+        ProviderFlowRuntime,
+        type("Runtime", (), {"passkey_service": passkey_service})(),
+    )
 
 
 class _LifecycleService:
@@ -163,16 +194,19 @@ class _LifecycleService:
 async def test_methods_returns_safe_account_wide_inventory() -> None:
     auth_service = _AuthService(_admitted())
     authenticator_service = _AuthenticatorService()
+    passkey_service = _PasskeyService()
 
     result = await get_authentication_methods(
         _request(),
         Response(),
         auth_service,
         authenticator_service,
+        _runtime(passkey_service),
     )
 
     assert auth_service.presented == [_SESSION_SECRET]
     assert authenticator_service.calls == 1
+    assert passkey_service.calls == 1
     assert result.model_dump(mode="json") == {
         "password_established": True,
         "providers": [
@@ -183,7 +217,18 @@ async def test_methods_returns_safe_account_wide_inventory() -> None:
                 "provider_email_private": False,
             }
         ],
-        "active_passkey_count": 2,
+        "passkeys": [
+            {
+                "passkey_credential_ref": str(_PASSKEY_REF),
+                "label": "Work laptop",
+                "transports": ["internal"],
+                "backup_eligible": True,
+                "backup_state": False,
+                "created_at": "2026-08-30T10:00:00Z",
+                "last_used_at": "2026-09-01T09:00:00Z",
+            }
+        ],
+        "active_passkey_count": 1,
         "recovery_eligible_email_count": 1,
     }
 
@@ -191,6 +236,7 @@ async def test_methods_returns_safe_account_wide_inventory() -> None:
 @pytest.mark.asyncio
 async def test_methods_requires_an_admitted_server_session_and_clears_stale_cookie() -> None:
     response = Response()
+    passkey_service = _PasskeyService()
 
     with pytest.raises(ProblemError) as error:
         await get_authentication_methods(
@@ -198,10 +244,12 @@ async def test_methods_requires_an_admitted_server_session_and_clears_stale_cook
             response,
             _AuthService(),
             _AuthenticatorService(),
+            _runtime(passkey_service),
         )
 
     assert error.value.status == 401
     assert error.value.code == "auth.authentication_required"
+    assert passkey_service.calls == 0
     assert "__Host-dante-session=" in response.headers["set-cookie"]
     assert "Max-Age=0" in response.headers["set-cookie"]
 
