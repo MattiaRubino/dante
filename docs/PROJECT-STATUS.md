@@ -91,7 +91,7 @@ ACTIVE UNMERGED DESIGN / REENGINEERING WORKSTREAM
 feature/ai-architecture
 AI-00 RECORDED
 PRODUCTION ENGINEERING RESEARCH RECORDED
-AI-02.1 ACTIVE / v0.2 FIRST PRESSURE-TEST CHECKPOINT / NOT CLOSED
+AI-02.1 ACTIVE / v0.3 / ROUND I + II COMPLETE / FINAL KILL-TEST REQUIRED / NOT CLOSED
 NO AI BACKEND / DB / PROVIDER IMPLEMENTATION CLAIMED
 AI-03 NOT STARTED / BLOCKED UNTIL AI-02.1 ACCEPTANCE
 
@@ -266,7 +266,7 @@ client local state != canonical accepted effect
 
 Accepted persistence thesis remains owner-specific canonical/material-history families plus specific typed relations and bounded technical addressing/control structures. Universal Entity/Thing, universal generic edges, canonical EAV/property bags and JSONB required-semantic escape hatches remain forbidden shortcuts.
 
-AI-02.1 adds no exception to these rules. Scenario overlays are not canonical current state; ChangeSets do not bypass individual effect governance; Context access does not imply disclosure permission; Interaction Session does not own canonical truth.
+AI-02.1 adds no exception to these rules. Scenario overlays are not canonical current state; ChangeSets do not bypass individual effect governance; Context access does not imply disclosure permission; Interaction Session does not own canonical truth; BasisManifest/work-lineage metadata do not become generic canonical semantic roots.
 
 ## 5. Reference / material-state baseline
 
@@ -401,22 +401,21 @@ docs/architecture/ai-production-engineering-state-of-the-art-2026.md
 → external production-engineering research / NON-DANTE-DECISION
 
 docs/architecture/dante-ai-02-1-intelligence-reengineering.md
-→ AI-02.1 ACTIVE reengineering checkpoint / v0.2 / NOT CLOSED
+→ AI-02.1 ACTIVE reengineering checkpoint / v0.3 / NOT CLOSED
 ```
 
-Current AI-02.1 first-pass result:
+Current AI-02.1 pressure-test state:
 
 ```text
-core semantic/database/effect principles       PASS
-scenario reasoning                             GAP → bounded fix identified
-compound multi-object mutation                 GAP → bounded fix identified
-proactivity / attention                        GAP → bounded fix identified
-recipient disclosure                           GAP → bounded fix identified
-structured semantic access                     GAP → bounded fix identified
-future rich conversation                       GAP → bounded fix identified
+Round I                                      COMPLETE
+Round II                                     COMPLETE
+final kill-test                              REQUIRED / NOT RUN YET
+Domain reopen evidence                       NONE
+Logical reopen evidence                      NONE
+Physical/PostgreSQL reopen evidence          NONE
 ```
 
-Current responsibility-level fixes include:
+Round I responsibility-level fixes:
 
 ```text
 Interaction Session first-class
@@ -431,9 +430,21 @@ DANTE-native + open-world paths composable in one Execution Kernel
 ModelTarget + provider-specific HarnessProfile
 ```
 
-These are architecture responsibilities, not implemented modules/services or new Domain/persistence owners.
+Round II v0.3 hardenings:
 
-AI-02.1 still requires a compound adversarial pressure-test and additional explicitly requested pre-AI-03 review before it can be considered for closure.
+```text
+cumulative / cross-query disclosure protection
+causal-loop / oscillation guard
+Work Supersession
+BasisManifest + dependency-aware invalidation
+revocable active-Run validity
+Attention budgeting
+cancel Run != undo already-dispatched effects
+```
+
+These are architecture responsibilities/contracts, not implemented modules/services or new Domain/persistence owners.
+
+AI-02.1 still requires the final kill-test and additional explicitly requested pre-AI-03 review before it can be considered for closure.
 
 AI-03 Context / Retrieval / Memory is not started and must consume the accepted structural result of AI-02.1.
 
@@ -494,7 +505,8 @@ REMOTE BACKUP PROVIDER                            TBD / NOT ACTIVATED
 REAL V1→V2 BUSINESS-SCHEMA EVOLUTION              NOT RUN
 POWERSYNC DIRECT PRODUCT TEST                     NOT RUN
 RESTATE DIRECT PRODUCT TEST                       NOT RUN
-DANTE AI-02.1                                     ACTIVE / NOT CLOSED
+DANTE AI-02.1                                     ACTIVE / v0.3 / NOT CLOSED
+DANTE AI-02.1 FINAL KILL-TEST                     NOT RUN YET
 DANTE AI RUNTIME                                  NOT IMPLEMENTED
 AI MODEL / PROVIDER                               NOT SELECTED
 AI AGENT SDK / ORCHESTRATOR                       NOT SELECTED
@@ -505,7 +517,7 @@ PRODUCTION DEPLOYMENT                             NOT STARTED
 
 The Access frontend branch's historical local/automated evidence must not be inflated: AF-03A full automation was proven before its final one-line width refinement; exact final delta plus visual review were accepted, while the final branch integration still requires hosted PR CI.
 
-AI documentation/architecture evidence must likewise not be inflated into runtime PASS. AI-02.1 v0.2 means the first design pressure-test has been recorded, not that model/tool/provider behavior has executed.
+AI documentation/architecture evidence must likewise not be inflated into runtime PASS. AI-02.1 v0.3 means two design pressure-test rounds have been incorporated, not that model/tool/provider behavior has executed or that architecture closure has been earned.
 
 ## 13. Current navigation
 
