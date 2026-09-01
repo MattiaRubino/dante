@@ -27,6 +27,12 @@ function accessAuthSession(session: WebAuthSession): AccessAuthSession {
   return { authenticated: false };
 }
 
+export function isAuthenticatedAccessSession(
+  session: AccessAuthSession | undefined,
+): session is WebAuthenticatedSession {
+  return session?.authenticated === true;
+}
+
 function isRetryableSessionRead(error: unknown): boolean {
   if (!(error instanceof WebAuthRemoteError)) {
     return false;
