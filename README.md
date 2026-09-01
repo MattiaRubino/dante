@@ -56,11 +56,23 @@ production/cloud recovery NOT CLAIMED
 
 ACCESS PRE-BACKEND FRONTEND
 CLOSED / ACCEPTED / RELEASE-HARDENED
-AF-01D PASS / AF-02A PASS / AF-02B PASS / AF-03A PASS
+AF-01D / AF-02A / AF-02B / AF-03A PASS
 
 FULL ACCESS/AUTH PRODUCT VERTICAL
-ACTIVE UNMERGED WORKSTREAM EXISTS / NOT CLAIMED CLOSED
-branch-local truth lives on feature/access-auth
+ACTIVE UNMERGED WORKSTREAM
+feature/access-auth
+
+AI ARCHITECTURE
+ACTIVE UNMERGED DESIGN / REENGINEERING WORKSTREAM
+feature/ai-architecture
+AI-02.1 v0.5 CANDIDATE STRUCTURAL FREEZE
+ALL FOUR MEGA/PRESSURE TEST ROUNDS COMPLETE
+TARGETED v0.5 CONSISTENCY VERIFICATION COMPLETE
+NO MORE MEGA TESTS
+NOT CLOSED
+ADDITIONAL PRE-AI-03 REVIEW STILL PENDING
+AI-03 NOT STARTED / BLOCKED
+NO AI BACKEND / DB / PROVIDER IMPLEMENTATION CLAIMED
 ```
 
 For exact current truth use `docs/PROJECT-STATUS.md`. Do not reconstruct current state from old phase documents, historical workstream continuations or conversation memory.
@@ -110,7 +122,6 @@ type checking             mypy strict
 testing                   pytest + Hypothesis where meaningful
 server semantics          Linux
 Windows workflow          WSL2/Linux
-IDE                       PyCharm with WSL interpreter supported
 local stateful infra      Docker Compose
 
 canonical persistence     PostgreSQL 18 major family
@@ -118,6 +129,7 @@ current patch             PostgreSQL 18.6
 ORM/SQL toolkit           SQLAlchemy 2.0 stable line
 driver                    psycopg 3
 migrations                Alembic
+current Alembic head      20260830_09
 ```
 
 Current database roles:
@@ -138,27 +150,7 @@ Backend entry point:
 
 CP6 is complete and integrated into protected `main` through PR #42. PostgreSQL Recovery was subsequently integrated through PR #47 without reopening CP6.
 
-The historical pre-recovery CP6 baseline was:
-
-```text
-PostgreSQL          18.6
-Alembic head        20260826_08
-
-tables              68
-views                5
-routines             14
-triggers             75
-physical indexes    95
-foreign keys         68
-CHECK constraints   120
-
-custom enum/domain    0
-sequences             0
-materialized views    0
-RLS policies          0
-```
-
-The current protected-main database after Recovery integration is:
+Current protected-main database:
 
 ```text
 PostgreSQL          18.6
@@ -171,27 +163,14 @@ triggers             76
 physical indexes    97
 foreign keys         69
 CHECK constraints   123
+
+custom enum/domain    0
+sequences             0
+materialized views    0
+RLS policies          0
 ```
 
-PR #47 integrated the Recovery evolution into protected `main` with merge commit `bdd2b2370d41423dbaecd00fde86bb2bf2466f2b`. The Recovery branch is historical after integration; current database truth is the protected-main contract above.
-
-Final CP6 acceptance included:
-
-```text
-Ruff format/check                    PASS
-mypy strict                          PASS
-non-PostgreSQL tests                 37 / 37 PASS
-real PostgreSQL tests                76 / 76 PASS
-build                                PASS
-Dictionary JSON-Schema               PASS
-Dictionary ↔ SQLAlchemy              PASS
-Dictionary ↔ Alembic                 PASS
-Dictionary ↔ live PostgreSQL         PASS
-persistent LOCAL upgrade/restart     PASS
-security / ACL posture               PASS
-GET /health/live                     200
-GET /health/ready                    200
-```
+The pre-Recovery `20260826_08 / 68|5|14|75|95|68|120` shape remains historical evidence only.
 
 Current database documentation starts at:
 
@@ -209,9 +188,7 @@ Database Architecture & Reference
 ≈ real PostgreSQL schema
 ```
 
-A later schema change is incomplete if these representations remain inconsistent.
-
-Historical exact PostgreSQL 18.4 evidence for the Physical/CP2/CP3 phases remains historical truth. Current patch 18.6 does not rewrite what executed on 18.4.
+A later structural database change is incomplete if these representations remain inconsistent.
 
 ## Frontend baseline
 
@@ -239,63 +216,58 @@ Zod 4
 Orval 8 when real OpenAPI exists
 ```
 
-Accepted architecture includes:
+Accepted architecture includes feature-first Web/Mobile boundaries, thin route/navigation adapters, public-API-only acyclic feature dependencies, selective shared packages, backend/PostgreSQL canonical accepted-effect authority, Web online-first, bounded Mobile local/offline state as noncanonical, identity-scoped local data and production isolation from prototypes.
 
-- feature-first Web/Mobile applications;
-- thin route/navigation adapters;
-- public-API-only acyclic feature dependencies;
-- shared packages only for real multi-consumer value;
-- backend + PostgreSQL as canonical accepted-effect authority;
-- Web online-first baseline;
-- Mobile bounded local/offline state as noncanonical;
-- identity-scoped local data;
-- platform-specific UI implementations over shared semantic tokens;
-- production code never importing prototypes.
+Current protected-main frontend docs start at `docs/frontend/README.md`.
 
-Current protected-main frontend docs start at:
+## Active bounded unmerged workstreams
 
-- `docs/frontend/README.md`
-
-## Access frontend baseline
-
-The completed pre-backend Access frontend materialization is the accepted Web baseline consumed by the active unmerged full-stack Access/Auth workstream.
-
-Accepted checkpoints:
+At the 2026-09-01 reconciliation, bounded unmerged work includes:
 
 ```text
-AF-01D  shell completion / professional polish      PASS
-AF-02A  complete pre-backend frontend state graph   PASS
-AF-02B  downstream surface hardening                PASS
-AF-03A  release-hardening viewport matrix           PASS
+feature/access-auth             active full-stack product work
+feature/home-react              active frontend work
+feature/platform-observability  active platform work
+feature/ai-architecture         active AI architecture design/reengineering work
 ```
 
-Current durable Access frontend authority:
+Each unmerged branch owns only its bounded newer truth until protected-main integration. Do not infer one branch's implementation state from another branch.
 
-- `docs/frontend/access.md`
-- `apps/web/src/features/access/`
-- `apps/web/e2e/access.spec.ts`
+PostgreSQL Recovery is not an active branch boundary: CP01–CP07 are closed and the accepted LOCAL recovery implementation is integrated into `main` via PR #47.
 
-The frontend deliberately stops backend-authoritative transitions rather than fabricating account/session/authentication success.
+## AI architecture checkpoint
 
-The whole Access/Auth product vertical is **not claimed closed here**. An active unmerged `feature/access-auth` workstream exists; its branch-local docs, code and tests own the newer Auth state. This global file must not freeze its sub-checkpoints.
-
-## Post-CP6 product direction
-
-There is no remaining CP6 design/materialization step. Post-CP6 work proceeds through bounded product/platform workstreams and normal forward schema evolution when genuinely required.
-
-PostgreSQL Recovery is no longer an active branch boundary: CP01–CP07 are closed and the accepted LOCAL recovery implementation is integrated into protected `main` via PR #47.
-
-At the 2026-08-31 reconciliation, active unmerged workstreams include:
+Current branch-local AI authority is layered:
 
 ```text
-feature/access-auth
-feature/home-react
-feature/platform-observability
+docs/architecture/dante-ai-foundation.md
+→ AI-00 semantic / architectural baseline
+
+docs/architecture/ai-production-engineering-state-of-the-art-2026.md
+→ production-engineering research / NON-DANTE-DECISION
+
+docs/architecture/dante-ai-02-1-intelligence-reengineering.md
+→ AI-02.1 v0.5 CANDIDATE STRUCTURAL FREEZE / NOT CLOSED
 ```
 
-Each unmerged branch owns only its bounded newer truth. Protected `main` remains the integrated authority; live Git refs determine later movement.
+The v0.5 candidate incorporates all completed simulation/kill-test rounds and the final isolation/runtime hardening. It preserves:
 
-A product vertical consumes the existing database and evolves it only through reviewed forward migrations plus the same-change Database System-of-Record rule. CP6 is not reopened.
+```text
+DANTE != model/provider/chat transcript
+PostgreSQL = sole canonical persistence/material-history authority
+MODEL OUTPUT != PUBLISHABLE OUTPUT
+DISPLAY NAME != EFFECT TARGET
+Interaction Session != Run != Worker
+SUPERSEDE != CANCEL != ROLLBACK != RECONCILE
+Context access != disclosure permission
+Scenario state != canonical current state
+ChangeSet != bypass of individual effect governance
+DANTE representation != external System-of-Record authority
+SENT != DELIVERED != SEEN != ACKNOWLEDGED != ACCEPTED
+Execution Environment != mandatory sandbox/container
+```
+
+AI-02.1 is not an implementation claim. Exact model/provider/SDK, runtime technology, sandbox implementation and AI-03 Context/Retrieval/Memory design remain later evidence-driven work.
 
 ## Capability-triggered components
 
@@ -321,35 +293,20 @@ PgBouncer
 → demonstrated connection-management need
 
 pgBackRest LOCAL recovery
-→ implemented and directly rehearsed; integrated into main via PR #47
+→ implemented and directly rehearsed; integrated via PR #47
 
 remote backup provider
-→ TBD; activate and prove only at the real production deployment boundary
+→ TBD; activate and prove only at a real production deployment boundary
+
+AI Execution Environment isolation
+→ activate only for workloads/threat models that require it
 ```
 
 Selected architecture is not the same thing as activated implementation or direct PASS.
 
 ## Protected `main`
 
-The effective `lifeos-main-safety` ruleset requires:
-
-```text
-PR before integration
-normal merge commit only
-branch up to date with main
-review threads resolved
-non-fast-forward protection
-no bypass actor
-
-required checks:
-Backend CI Gate
-Dependency Review
-Frontend CI Gate
-```
-
-Do not use squash, rebase or force-push as a shortcut around protected-main policy.
-
-The live GitHub ruleset is enforcement authority; a documentation snapshot is informative only and must not override live remote state.
+Protected-main policy is repository-enforced. Use the live GitHub ruleset as authority rather than a stale documentation snapshot. Integration remains PR-based and must respect required checks and branch protection.
 
 ## Environment model
 
@@ -364,25 +321,11 @@ PROD
 
 Environment != Git branch.
 
-Activation remains progressive. Provider-specific infrastructure is selected/materialized only when the real deployment or operational boundary requires it.
-
 ## Documentation lifecycle
 
-DANTE documentation is part of the implementation, but the working tree is not a chat transcript.
+Current specifications describe current truth directly. Historical evidence remains explicitly historical; temporary live/session handoffs do not merge into protected `main`; Git preserves complete chronology; frozen split specifications may be compacted only when lossless knowledge coverage is proven.
 
-Rules:
-
-```text
-current specifications describe current truth directly
-historical evidence is clearly labelled
-active branch handoffs stay branch-local
-temporary live/session handoffs do not merge into main
-completed workstreams retain at most one useful branch-history narrative
-Git remains complete recoverable history
-frozen split documents may be compacted only losslessly
-```
-
-Normative policy:
+Normative lifecycle source:
 
 - `docs/development/documentation-lifecycle-policy.md`
 
@@ -407,20 +350,7 @@ General continuation order:
 11. the current subsystem/workstream authority
 12. current branch/ref and relation to protected `main`
 
-Backend/database continuation:
-
-- `apps/backend/README.md`
-- `docs/database/README.md`
-- `docs/database/dictionary/README.md`
-- `docs/development/backend-cp6-05-whole-database-qa.md`
-
-Access frontend baseline:
-
-- `docs/frontend/access.md`
-- `apps/web/src/features/access/`
-- `apps/web/e2e/access.spec.ts`
-
-## Persistent truth rules
+Persistent truth rules:
 
 ```text
 SELECTED ARCHITECTURE != IMPLEMENTED COMPONENT
