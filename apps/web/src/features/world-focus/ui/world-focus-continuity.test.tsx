@@ -10,6 +10,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { i18n } from '../../../bootstrap/i18n';
 import type { WorldFocusContinuityReader } from '../application/world-focus-continuity';
 import type { WorldFocusContinuityReadResult } from '../model/world-focus-continuity';
+import type { WorldFocusId } from '../model/world-focus-fixtures';
 import { WorldFocusContinuity } from './world-focus-continuity';
 
 beforeAll(async () => {
@@ -24,7 +25,7 @@ afterEach(() => {
 function readyResult(
   worldId: 'music' | 'travel',
   title: string,
-): WorldFocusContinuityReadResult {
+): Extract<WorldFocusContinuityReadResult, Readonly<{ status: 'ready' }>> {
   return {
     status: 'ready',
     projection: {
@@ -124,17 +125,18 @@ describe('World Focus B2 Continuity UI', () => {
   it('does not let a late result from the previous World overwrite the active one', async () => {
     const music = deferred<WorldFocusContinuityReadResult>();
     const travel = deferred<WorldFocusContinuityReadResult>();
-    const reader = vi.fn<WorldFocusContinuityReader>((worldId) =>
+    const readerMock = vi.fn((worldId: WorldFocusId) =>
       worldId === 'music' ? music.promise : travel.promise,
     );
+    const reader: WorldFocusContinuityReader = readerMock;
 
     const { rerender } = render(
       <WorldFocusContinuity worldId="music" reader={reader} />,
     );
-    await waitFor(() => expect(reader).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(readerMock).toHaveBeenCalledTimes(1));
 
     rerender(<WorldFocusContinuity worldId="travel" reader={reader} />);
-    await waitFor(() => expect(reader).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(readerMock).toHaveBeenCalledTimes(2));
 
     music.resolve(readyResult('music', 'Late music thread'));
     travel.resolve(readyResult('travel', 'Japan 2027'));
