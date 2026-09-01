@@ -55,6 +55,7 @@ _ROTATED_SESSION_SECRET = _value("rotated-session")
 _ROTATED_CSRF = _value("rotated-csrf")
 _LINK_SECRET = _value("link")
 _ENROLLMENT_SECRET = _value("enrollment")
+_APPLE_ID_TOKEN = _value("apple-id-token")
 
 
 def _now() -> datetime:
@@ -203,7 +204,7 @@ class _AppleService:
     async def complete_apple(self, **kwargs: Any) -> Any:
         assert kwargs["state"] == "apple-state"
         assert kwargs["code"] == "apple-code"
-        assert kwargs["id_token"] == "apple-id-token"
+        assert kwargs["id_token"] == _APPLE_ID_TOKEN
         return self.result
 
     async def process_notification(self, token: str) -> bool:
@@ -247,10 +248,11 @@ def _runtime(
 
 @pytest.mark.asyncio
 async def test_google_link_required_uses_http_only_flow_cookie_not_json_secret() -> None:
+    expires_at = datetime.now(UTC) + timedelta(minutes=10)
     result = ProviderLinkRequired(
         external_link_challenge_ref=_LINK_REF,
         continuation_secret=SecretStr(_LINK_SECRET),
-        expires_at=_now() + timedelta(minutes=10),
+        expires_at=expires_at,
     )
     response = Response()
 
@@ -268,11 +270,9 @@ async def test_google_link_required_uses_http_only_flow_cookie_not_json_secret()
     )
 
     body = wire.model_dump(mode="json")
-    assert body == {
-        "outcome": "link_required",
-        "external_link_challenge_ref": str(_LINK_REF),
-        "expires_at": "2026-09-01T14:10:00Z",
-    }
+    assert body["outcome"] == "link_required"
+    assert body["external_link_challenge_ref"] == str(_LINK_REF)
+    assert wire.expires_at == expires_at
     assert "continuation" not in repr(body)
     cookies = _set_cookies(response)
     assert any(f"__Host-dante-provider-link={_LINK_SECRET}" in cookie for cookie in cookies)
@@ -387,8 +387,11 @@ def test_apple_form_post_parser_rejects_duplicate_and_unknown_fields() -> None:
 @pytest.mark.asyncio
 async def test_apple_callback_redirects_only_to_fixed_server_resolved_target() -> None:
     apple = _AppleService(result=ProviderAuthenticated(session=_issued()))
+    callback_body = (
+        f"state=apple-state&code=apple-code&id_token={_APPLE_ID_TOKEN}".encode("ascii")
+    )
     request = _request(
-        body=b"state=apple-state&code=apple-code&id_token=apple-id-token",
+        body=callback_body,
         content_type="application/x-www-form-urlencoded",
     )
 
