@@ -1,21 +1,30 @@
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import type { ProviderBrowserUnavailableError } from '../../../platform/auth/web-auth-provider';
 import { usePasskeySignInMutation } from '../application/auth-passkey';
 import {
   isValidAccessEmail,
   type AccessCondition,
-  type AccessProvider,
 } from '../model/access-flow';
 import { AccessConditionNotice } from './access-condition-notice';
-import { ProviderButton } from './provider-button';
+import { GoogleIdentityButton, ProviderButton } from './provider-button';
+
+type GoogleButtonState = Readonly<{
+  clientId: string | null;
+  nonce: string | null;
+  pending: boolean;
+  onCredential: (credential: string) => void;
+  onError: (error: ProviderBrowserUnavailableError) => void;
+}>;
 
 type AccessSignInPanelProps = Readonly<{
   condition: AccessCondition;
   onCreateAccount: () => void;
   onForgotPassword: () => void;
   onCredentialSubmit: (email: string, password: string) => void;
-  onProvider: (provider: AccessProvider) => void;
+  google: GoogleButtonState;
+  onApple: () => void;
   pending?: boolean;
 }>;
 
@@ -45,7 +54,8 @@ export function AccessSignInPanel({
   onCreateAccount,
   onForgotPassword,
   onCredentialSubmit,
-  onProvider,
+  google,
+  onApple,
   pending = false,
 }: AccessSignInPanelProps) {
   const { t } = useTranslation('common');
@@ -55,7 +65,8 @@ export function AccessSignInPanel({
   const [showPassword, setShowPassword] = useState(false);
   const [passkeyError, setPasskeyError] = useState<string | null>(null);
   const passkeyMutation = usePasskeySignInMutation();
-  const interactionPending = pending || passkeyMutation.isPending;
+  const interactionPending =
+    pending || passkeyMutation.isPending || google.pending;
   const passwordControlLabel = showPassword
     ? t(($) => $.common.access.action.hidePassword)
     : t(($) => $.common.access.action.showPassword);
@@ -112,16 +123,18 @@ export function AccessSignInPanel({
         </p>
 
         <div className="access-provider-stack">
-          <ProviderButton
-            provider="google"
+          <GoogleIdentityButton
             label={t(($) => $.common.access.provider.google)}
-            onClick={() => onProvider('google')}
+            clientId={google.clientId}
+            nonce={google.nonce}
+            onCredential={google.onCredential}
+            onError={google.onError}
             disabled={interactionPending}
           />
           <ProviderButton
             provider="apple"
             label={t(($) => $.common.access.provider.apple)}
-            onClick={() => onProvider('apple')}
+            onClick={onApple}
             disabled={interactionPending}
           />
           <button
