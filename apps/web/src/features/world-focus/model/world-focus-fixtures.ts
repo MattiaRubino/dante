@@ -1,3 +1,8 @@
+import {
+  createWorldFocusTemporalLensCapability,
+  type WorldFocusTemporalLensCapability,
+} from './world-focus-lens';
+
 export const WORLD_FOCUS_IDS = [
   'body',
   'music',
@@ -33,15 +38,37 @@ export type WorldFocusWorld = Readonly<{
   id: WorldFocusId;
   accent: string;
   theme: WorldFocusThemeProfile;
+  lens?: Readonly<{
+    time: WorldFocusTemporalLensCapability;
+  }>;
 }>;
+
+const STANDARD_TIME_LENS = createWorldFocusTemporalLensCapability('30d', [
+  '7d',
+  '30d',
+  '90d',
+  '1y',
+]);
+const FINANCE_TIME_LENS = createWorldFocusTemporalLensCapability('30d', [
+  '30d',
+  '90d',
+  '1y',
+  'all',
+]);
+const OPERATING_TIME_LENS = createWorldFocusTemporalLensCapability('30d', [
+  '7d',
+  '30d',
+  '90d',
+]);
 
 /**
  * Synthetic pre-backend presentation catalog.
  *
- * These IDs/colors/theme profiles are frontend fixture identity only. They are
- * not Domain identities, backend DTOs, database rows, or persisted World
- * entities. WF2 replaces direct fixture use with the explicit frontend data
- * source boundary without changing the World Focus shell.
+ * These IDs/colors/theme profiles/Lens capabilities are frontend fixture
+ * identity only. They are not Domain identities, backend DTOs, database rows,
+ * or persisted World entities. WF2 replaces direct fixture use with the
+ * explicit frontend data source boundary without changing the World Focus
+ * shell.
  */
 export const WORLD_FOCUS_WORLDS: readonly WorldFocusWorld[] = [
   {
@@ -54,6 +81,7 @@ export const WORLD_FOCUS_WORLDS: readonly WorldFocusWorld[] = [
       particleDensity: 0.56,
       ambientIntensity: 0.72,
     },
+    lens: { time: STANDARD_TIME_LENS },
   },
   {
     id: 'music',
@@ -65,6 +93,7 @@ export const WORLD_FOCUS_WORLDS: readonly WorldFocusWorld[] = [
       particleDensity: 0.72,
       ambientIntensity: 0.88,
     },
+    lens: { time: STANDARD_TIME_LENS },
   },
   {
     id: 'travel',
@@ -87,6 +116,7 @@ export const WORLD_FOCUS_WORLDS: readonly WorldFocusWorld[] = [
       particleDensity: 0.42,
       ambientIntensity: 0.7,
     },
+    lens: { time: STANDARD_TIME_LENS },
   },
   {
     id: 'finance',
@@ -98,6 +128,7 @@ export const WORLD_FOCUS_WORLDS: readonly WorldFocusWorld[] = [
       particleDensity: 0.34,
       ambientIntensity: 0.64,
     },
+    lens: { time: FINANCE_TIME_LENS },
   },
   {
     id: 'relationships',
@@ -120,6 +151,7 @@ export const WORLD_FOCUS_WORLDS: readonly WorldFocusWorld[] = [
       particleDensity: 0.38,
       ambientIntensity: 0.66,
     },
+    lens: { time: OPERATING_TIME_LENS },
   },
   {
     id: 'growth',
@@ -142,6 +174,7 @@ export const WORLD_FOCUS_WORLDS: readonly WorldFocusWorld[] = [
       particleDensity: 0.46,
       ambientIntensity: 0.7,
     },
+    lens: { time: OPERATING_TIME_LENS },
   },
   {
     id: 'projects',

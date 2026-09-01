@@ -96,6 +96,200 @@
     inset 0 -80px 120px rgba(0, 0, 0, 0.18);
 }
 
+.world-focus-context {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: clamp(20px, 3cqi, 44px);
+  padding: clamp(24px, 4cqi, 44px);
+}
+
+.world-focus-context-copy {
+  min-width: 0;
+  max-width: 620px;
+}
+
+.world-focus-context-kicker {
+  margin: 0 0 10px;
+  color: color-mix(in srgb, var(--world-focus-accent) 76%, white);
+  font-size: 0.72rem;
+  font-weight: 720;
+  line-height: 1;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.world-focus-context-title {
+  margin: 0;
+  color: rgba(248, 250, 255, 0.98);
+  font-size: clamp(2rem, 4.2cqi, 3.15rem);
+  font-weight: 650;
+  line-height: 0.98;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+
+.world-focus-context-description {
+  max-width: 52ch;
+  margin: 12px 0 0;
+  color: rgba(218, 224, 242, 0.62);
+  font-size: clamp(0.83rem, 1.35cqi, 0.96rem);
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+
+.world-focus-lens {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  min-width: 0;
+}
+
+.world-focus-lens-segments {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 999px;
+  background: rgba(4, 7, 18, 0.54);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.025),
+    0 12px 30px rgba(0, 0, 0, 0.16);
+  backdrop-filter: blur(14px);
+}
+
+.world-focus-lens-segment {
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  color: rgba(225, 230, 246, 0.64);
+  background: transparent;
+  font: inherit;
+  font-size: 0.79rem;
+  font-weight: 620;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color 140ms ease,
+    background-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.world-focus-lens-segment:hover:not(:disabled) {
+  color: rgba(246, 248, 255, 0.92);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.world-focus-lens-segment[aria-pressed='true'] {
+  color: rgba(255, 255, 255, 0.98);
+  background: color-mix(in srgb, var(--world-focus-accent) 22%, rgba(255, 255, 255, 0.055));
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--world-focus-accent) 28%, transparent),
+    0 7px 20px color-mix(in srgb, var(--world-focus-accent) 10%, transparent);
+}
+
+.world-focus-lens-segment:focus-visible,
+.world-focus-lens-select:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--world-focus-accent) 72%, white);
+  outline-offset: 2px;
+}
+
+.world-focus-lens-segment:disabled,
+.world-focus-lens-select:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.world-focus-lens-compact {
+  display: none;
+  min-width: 0;
+}
+
+.world-focus-lens-select {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 14px;
+  color: rgba(248, 250, 255, 0.96);
+  background: rgba(4, 7, 18, 0.72);
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 620;
+  color-scheme: dark;
+}
+
+@container world-focus-workspace (max-width: 700px) {
+  .world-focus-context {
+    flex-direction: column;
+    gap: 18px;
+    padding: clamp(18px, 6cqi, 28px);
+  }
+
+  .world-focus-context-copy {
+    max-width: none;
+  }
+
+  .world-focus-context-title {
+    font-size: clamp(1.75rem, 11cqi, 2.4rem);
+  }
+
+  .world-focus-context-description {
+    font-size: 0.82rem;
+  }
+
+  .world-focus-lens {
+    width: min(100%, 290px);
+  }
+
+  .world-focus-lens-segments {
+    display: none;
+  }
+
+  .world-focus-lens-compact {
+    display: block;
+    width: 100%;
+  }
+}
+
+@container world-focus-workspace (max-width: 300px) {
+  .world-focus-context {
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .world-focus-context-kicker {
+    margin-bottom: 8px;
+    font-size: 0.64rem;
+  }
+
+  .world-focus-context-title {
+    font-size: 1.7rem;
+  }
+
+  .world-focus-context-description {
+    margin-top: 9px;
+    font-size: 0.76rem;
+    line-height: 1.42;
+  }
+
+  .world-focus-lens-select {
+    font-size: 0.8rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .world-focus-lens-segment {
+    transition: none;
+  }
+}
+
 @media (max-width: 720px) {
   .world-focus-workspace {
     top: var(--world-focus-workspace-block-inset-compact);

@@ -12,19 +12,25 @@ import {
   WORLD_FOCUS_PERFORMANCE_MEASURES,
   type WorldFocusPerformanceSpan,
 } from '../application/world-focus-foundation';
+import { createWorldFocusSessionSnapshot } from '../application/world-focus-session';
+import type { WorldFocusWorld } from '../model/world-focus-fixtures';
 import { WORLD_FOCUS_GEOMETRY } from '../model/world-focus-geometry';
+import type { WorldFocusTimePreset } from '../model/world-focus-lens';
 import type { WorldFocusShellStatus } from '../model/world-focus-platform';
 import {
   WORLD_FOCUS_REGION,
   WORLD_FOCUS_STRUCTURE_VERSION,
 } from '../model/world-focus-structure';
-import { WORLD_FOCUS_VISUAL_VERSION } from '../model/world-focus-visual';
 import {
   clearWorldFocusEntry,
   readWorldFocusEntry,
   type WorldFocusEntrySource,
 } from '../model/world-focus-transition';
-import type { WorldFocusWorld } from '../model/world-focus-fixtures';
+import { WORLD_FOCUS_VISUAL_VERSION } from '../model/world-focus-visual';
+import {
+  WorldFocusContext,
+  type WorldFocusTimePresetChangeHandler,
+} from './world-focus-context';
 import { WorldFocusVisualFrame } from './world-focus-visual-frame';
 import { WorldFocusWorkspace } from './world-focus-workspace';
 import './world-focus.css';
@@ -41,6 +47,8 @@ type WorldFocusPageProps = Readonly<{
   world: WorldFocusWorld;
   source: WorldFocusEntrySource;
   status?: WorldFocusShellStatus;
+  requestedTimePreset?: WorldFocusTimePreset;
+  onTimePresetChange?: WorldFocusTimePresetChangeHandler;
   onClose: (request: WorldFocusCloseRequest) => void;
 }>;
 
@@ -48,6 +56,8 @@ export function WorldFocusPage({
   world,
   source,
   status = 'ready',
+  requestedTimePreset,
+  onTimePresetChange,
   onClose,
 }: WorldFocusPageProps) {
   const { t } = useTranslation('common');
@@ -60,6 +70,15 @@ export function WorldFocusPage({
   const closeRequest = useMemo<WorldFocusCloseRequest>(
     () => ({ preferHistory: entry !== null }),
     [entry],
+  );
+  const session = useMemo(
+    () =>
+      createWorldFocusSessionSnapshot({
+        worldId: world.id,
+        timeCapability: world.lens?.time,
+        requestedTimePreset,
+      }),
+    [requestedTimePreset, world.id, world.lens?.time],
   );
 
   const geometryStyle = {
@@ -154,8 +173,6 @@ export function WorldFocusPage({
       style={geometryStyle}
       tabIndex={-1}
     >
-      <h1 className="world-focus-visually-hidden">{label}</h1>
-
       <WorldFocusVisualFrame world={world} />
 
       <div
@@ -164,7 +181,18 @@ export function WorldFocusPage({
         aria-hidden="true"
       />
 
-      <WorldFocusWorkspace worldLabel={label} status={status} />
+      <WorldFocusWorkspace
+        worldLabel={label}
+        status={status}
+        context={
+          <WorldFocusContext
+            world={world}
+            session={session}
+            disabled={status !== 'ready' || onTimePresetChange === undefined}
+            onTimePresetChange={onTimePresetChange}
+          />
+        }
+      />
     </main>
   );
 }

@@ -7,6 +7,7 @@ import { WORLD_FOCUS_REGION } from '../model/world-focus-structure';
 type WorldFocusWorkspaceProps = Readonly<{
   worldLabel: string;
   status: WorldFocusShellStatus;
+  context?: ReactNode;
   children?: ReactNode;
 }>;
 
@@ -18,6 +19,7 @@ type WorldFocusWorkspaceProps = Readonly<{
 export function WorldFocusWorkspace({
   worldLabel,
   status,
+  context,
   children,
 }: WorldFocusWorkspaceProps) {
   const { t } = useTranslation('common');
@@ -41,6 +43,7 @@ export function WorldFocusWorkspace({
       })}
       aria-busy={status === 'loading' ? true : undefined}
     >
+      {context}
       {statusMessage === null ? null : (
         <p
           className="world-focus-state"

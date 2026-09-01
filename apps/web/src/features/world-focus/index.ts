@@ -9,6 +9,17 @@ export {
   type WorldFocusWorld,
 } from './model/world-focus-fixtures';
 export {
+  createWorldFocusLens,
+  createWorldFocusTemporalLensCapability,
+  normalizeWorldFocusTimePreset,
+  resolveWorldFocusTimePreset,
+  WORLD_FOCUS_TIME_PRESETS,
+  type WorldFocusLens,
+  type WorldFocusTemporalLensCapability,
+  type WorldFocusTimeLens,
+  type WorldFocusTimePreset,
+} from './model/world-focus-lens';
+export {
   DEFAULT_WORLD_FOCUS_MOTION_PREFERENCE,
   normalizeWorldFocusMotionPreference,
   readWorldFocusMotionPreference,

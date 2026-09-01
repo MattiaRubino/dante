@@ -3,6 +3,17 @@ export const worldFocus = {
   back: 'Torna indietro',
   mainLabel: 'Mondo {{world}}',
   canvasLabel: 'Spazio del Mondo {{world}}',
+  lens: {
+    label: 'Contesto del Mondo',
+    timeLabel: 'Periodo',
+    presets: {
+      last7Days: '7 giorni',
+      last30Days: '30 giorni',
+      last90Days: '90 giorni',
+      lastYear: '1 anno',
+      allTime: 'Tutto',
+    },
+  },
   states: {
     loading: 'Caricamento del Mondo {{world}}',
     error: 'Impossibile aprire il Mondo {{world}}',
