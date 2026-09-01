@@ -2,6 +2,7 @@ import { useMemo, useState, type FormEvent } from 'react';
 import { Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
+import type { ProviderBrowserUnavailableError } from '../../../platform/auth/web-auth-provider';
 import { WebAuthRemoteError } from '../../../platform/auth/web-auth-remote';
 import {
   useEstablishPasswordMutation,
@@ -15,14 +16,16 @@ import {
   useUpdatePasskeyMutation,
 } from '../application/auth-passkey';
 import {
-  useProviderAuthenticationMutation,
+  type GoogleAuthenticationPreparation,
+  useAppleAuthenticationMutation,
+  useCompleteGoogleAuthenticationMutation,
+  usePrepareGoogleAuthenticationMutation,
   useUnlinkProviderMutation,
 } from '../application/auth-provider';
-import {
-  useAuthSessionQuery,
-} from '../application/auth-session';
+import { useAuthSessionQuery } from '../application/auth-session';
 import { useReauthenticateMutation } from '../application/auth-lifecycle';
 import { isValidNewPassword } from '../model/access-flow';
+import { GoogleIdentityButton } from './provider-button';
 import '../access.css';
 import '../access-security.css';
 
@@ -96,7 +99,9 @@ export function AccessSecurityPage() {
   const methodsQuery = useAuthenticationMethodsQuery(authenticated);
   const establishPasswordMutation = useEstablishPasswordMutation();
   const removePasswordMutation = useRemovePasswordMutation();
-  const providerMutation = useProviderAuthenticationMutation();
+  const prepareGoogleMutation = usePrepareGoogleAuthenticationMutation();
+  const completeGoogleMutation = useCompleteGoogleAuthenticationMutation();
+  const appleMutation = useAppleAuthenticationMutation();
   const unlinkProviderMutation = useUnlinkProviderMutation();
   const registerPasskeyMutation = usePasskeyRegistrationMutation();
   const updatePasskeyMutation = useUpdatePasskeyMutation();
@@ -109,6 +114,8 @@ export function AccessSecurityPage() {
   const [passwordReauth, setPasswordReauth] = useState('');
   const [editingPasskeyRef, setEditingPasskeyRef] = useState<string | null>(null);
   const [editingPasskeyLabel, setEditingPasskeyLabel] = useState('');
+  const [googlePreparation, setGooglePreparation] =
+    useState<GoogleAuthenticationPreparation | null>(null);
   const [lastError, setLastError] = useState<SecurityError | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -128,6 +135,14 @@ export function AccessSecurityPage() {
   function handleError(error: unknown) {
     setSuccessMessage(null);
     setLastError(securityError(error));
+  }
+
+  function handleProviderBrowserError(_error: ProviderBrowserUnavailableError) {
+    setSuccessMessage(null);
+    setLastError({
+      message: 'The Google authentication control could not be initialized.',
+      reauthenticationRequired: false,
+    });
   }
 
   async function refreshMethods() {
@@ -178,29 +193,63 @@ export function AccessSecurityPage() {
     );
   }
 
-  function linkProvider(provider: 'google' | 'apple') {
+  function prepareGoogleLink() {
     clearFeedback();
-    if (csrfToken === null) {
+    if (csrfToken === null || prepareGoogleMutation.isPending) {
       return;
     }
-    providerMutation.mutate(
+    setGooglePreparation(null);
+    prepareGoogleMutation.mutate(
       {
-        provider,
         purpose: 'link',
         returnTarget: 'security',
         csrfToken,
       },
       {
-        onSuccess: async (outcome) => {
-          if (outcome.kind === 'result') {
-            await refreshMethods();
-            setSuccessMessage(
-              t(($) => $.common.access.security.providerLinked),
-            );
+        onSuccess: setGooglePreparation,
+        onError: handleError,
+      },
+    );
+  }
+
+  function completeGoogleLink(credential: string) {
+    const preparation = googlePreparation;
+    if (preparation === null || completeGoogleMutation.isPending) {
+      return;
+    }
+    clearFeedback();
+    completeGoogleMutation.mutate(
+      { preparation, credential },
+      {
+        onSuccess: async (result) => {
+          setGooglePreparation(null);
+          if (result.outcome !== 'authenticated') {
+            setLastError({
+              message: 'Google did not complete the requested account link.',
+              reauthenticationRequired: false,
+            });
+            return;
           }
+          await refreshMethods();
+          setSuccessMessage(t(($) => $.common.access.security.providerLinked));
         },
         onError: handleError,
       },
+    );
+  }
+
+  function linkApple() {
+    clearFeedback();
+    if (csrfToken === null || appleMutation.isPending) {
+      return;
+    }
+    appleMutation.mutate(
+      {
+        purpose: 'link',
+        returnTarget: 'security',
+        csrfToken,
+      },
+      { onError: handleError },
     );
   }
 
@@ -293,6 +342,7 @@ export function AccessSecurityPage() {
       {
         onSuccess: () => {
           setPasswordReauth('');
+          setGooglePreparation(null);
           setSuccessMessage(t(($) => $.common.access.security.reauthComplete));
         },
         onError: handleError,
@@ -308,8 +358,10 @@ export function AccessSecurityPage() {
     passkeyReauthMutation.mutate(
       { csrfToken },
       {
-        onSuccess: () =>
-          setSuccessMessage(t(($) => $.common.access.security.reauthComplete)),
+        onSuccess: () => {
+          setGooglePreparation(null);
+          setSuccessMessage(t(($) => $.common.access.security.reauthComplete));
+        },
         onError: handleError,
       },
     );
@@ -433,21 +485,34 @@ export function AccessSecurityPage() {
           </div>
           <div className="access-security-actions">
             {!providerCodes.has('google') ? (
-              <button
-                className="access-secondary-button"
-                type="button"
-                disabled={providerMutation.isPending}
-                onClick={() => linkProvider('google')}
-              >
-                {t(($) => $.common.access.security.linkGoogle)}
-              </button>
+              googlePreparation === null ? (
+                <button
+                  className="access-secondary-button"
+                  type="button"
+                  disabled={prepareGoogleMutation.isPending}
+                  aria-busy={prepareGoogleMutation.isPending}
+                  onClick={prepareGoogleLink}
+                >
+                  {t(($) => $.common.access.security.linkGoogle)}
+                </button>
+              ) : (
+                <GoogleIdentityButton
+                  label={t(($) => $.common.access.security.linkGoogle)}
+                  clientId={googlePreparation.clientId}
+                  nonce={googlePreparation.begun.nonce}
+                  disabled={completeGoogleMutation.isPending}
+                  onCredential={completeGoogleLink}
+                  onError={handleProviderBrowserError}
+                />
+              )
             ) : null}
             {!providerCodes.has('apple') ? (
               <button
                 className="access-secondary-button"
                 type="button"
-                disabled={providerMutation.isPending}
-                onClick={() => linkProvider('apple')}
+                disabled={appleMutation.isPending}
+                aria-busy={appleMutation.isPending}
+                onClick={linkApple}
               >
                 {t(($) => $.common.access.security.linkApple)}
               </button>
