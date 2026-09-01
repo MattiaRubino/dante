@@ -8,7 +8,8 @@
 - **Current macro-phase:** AI-03A — Full Context Architecture
 - **Created:** 2026-09-01
 - **PRE-SCOPE for AI-03 transition:** `17bdc95a3abf08ac7a74d4d9d66a9ae6570f3a48`
-- **Current branch HEAD:** verify live before any write; this file is updated at meaningful continuation checkpoints
+- **Last substantive AI-03 transition checkpoint before this handoff refresh:** `ae0601e76fa4f2bd91e4fd256577a509d66860e7`
+- **Current branch HEAD:** verify live before any write; the handoff refresh itself may advance HEAD beyond the substantive checkpoint above
 
 This document exists only to survive chat/session/context saturation while `feature/ai-architecture` is active. Durable architectural truth must live in the architecture/workstream/current-status sources named below.
 
