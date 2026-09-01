@@ -39,7 +39,7 @@ function requireWorld(id: 'music' | 'travel') {
 }
 
 describe('WorldFocusPage', () => {
-  it('keeps WF0/WF-G3 frozen while mounting the peripheral VFX candidate', () => {
+  it('keeps WF0/WF-G3 frozen while mounting a performance-safe peripheral VFX surface', () => {
     primeWorldFocusEntry({
       worldId: 'music',
       source: 'home',
@@ -78,9 +78,21 @@ describe('WorldFocusPage', () => {
       container.querySelectorAll('.world-focus-corona-reference'),
     ).toHaveLength(3);
     expect(container.querySelector('.world-focus-corona-fallback-svg')).toBeNull();
-    expect(
-      container.querySelector('[data-world-focus-energy-motion="animated"]'),
-    ).toBeTruthy();
+
+    const energy = container.querySelector<HTMLElement>(
+      '[data-world-focus-energy-renderer]',
+    );
+    expect(energy).not.toBeNull();
+    expect(['webgl2', 'fallback']).toContain(
+      energy?.getAttribute('data-world-focus-energy-renderer'),
+    );
+    expect(['animated', 'reduced', 'static']).toContain(
+      energy?.getAttribute('data-world-focus-energy-motion'),
+    );
+    if (energy?.getAttribute('data-world-focus-energy-renderer') === 'fallback') {
+      expect(energy.getAttribute('data-world-focus-energy-motion')).toBe('static');
+    }
+
     expect(
       container.querySelector(
         '[data-world-focus-vfx-coverage="peripheral-outside-workspace"]',
