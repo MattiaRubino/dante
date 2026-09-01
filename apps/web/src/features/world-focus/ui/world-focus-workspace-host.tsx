@@ -8,22 +8,26 @@ import {
   type ReactNode,
 } from 'react';
 
-import {
-  createWorldFocusWorkspaceState,
-  getWorldFocusEscapeDisposition,
-  reduceWorldFocusWorkspaceState,
-  type WorldFocusContextReference,
-  type WorldFocusEscapeDisposition,
-  type WorldFocusSurfaceRequest,
-  type WorldFocusWorkspaceState,
-} from '../model/world-focus-workspace';
 import type {
   WorldFocusInteractionDepth,
   WorldFocusPresentationSurface,
 } from '../model/world-focus-platform';
+import {
+  createWorldFocusWorkspaceState,
+  getWorldFocusEscapeDisposition,
+  getWorldFocusInteractionCursor,
+  reduceWorldFocusWorkspaceState,
+  type WorldFocusContextReference,
+  type WorldFocusEscapeDisposition,
+  type WorldFocusInteractionCursor,
+  type WorldFocusSurfaceRequest,
+  type WorldFocusWorkspaceIntent,
+  type WorldFocusWorkspaceState,
+} from '../model/world-focus-workspace';
 
 export type WorldFocusWorkspaceApi = Readonly<{
   state: WorldFocusWorkspaceState;
+  cursor: WorldFocusInteractionCursor;
   selectContext: (reference: WorldFocusContextReference) => void;
   clearContext: () => void;
   openSurface: (surface: WorldFocusSurfaceRequest) => void;
@@ -50,6 +54,13 @@ type WorldFocusWorkspaceHostProps = Readonly<{
   children: ReactNode;
 }>;
 
+function workspaceReducer(
+  state: WorldFocusWorkspaceState,
+  intent: WorldFocusWorkspaceIntent,
+): WorldFocusWorkspaceState {
+  return reduceWorldFocusWorkspaceState(state, intent);
+}
+
 /**
  * Owns only transient workspace interaction state for the current mounted
  * World. Durable truth, authorization and DANTE Run lifetime remain outside
@@ -60,7 +71,7 @@ export function WorldFocusWorkspaceHost({
   children,
 }: WorldFocusWorkspaceHostProps) {
   const [state, dispatch] = useReducer(
-    reduceWorldFocusWorkspaceState,
+    workspaceReducer,
     worldId,
     createWorldFocusWorkspaceState,
   );
@@ -116,9 +127,12 @@ export function WorldFocusWorkspaceHost({
     return disposition;
   }, []);
 
+  const cursor = useMemo(() => getWorldFocusInteractionCursor(state), [state]);
+
   const value = useMemo<WorldFocusWorkspaceApi>(
     () => ({
       state,
+      cursor,
       selectContext,
       clearContext,
       openSurface,
@@ -130,6 +144,7 @@ export function WorldFocusWorkspaceHost({
     [
       clearContext,
       closeSurface,
+      cursor,
       openSurface,
       promoteSurface,
       replaceSurface,
