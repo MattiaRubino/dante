@@ -3,7 +3,8 @@
 - **Status:** ACTIVE / BRANCH-LOCAL DURABLE WORKSTREAM RECORD
 - **Branch:** `feature/ai-architecture`
 - **Current phase:** AI-03 — Context / Retrieval / Memory
-- **Current macro-phase:** AI-03A — Full Context Architecture
+- **AI-03A:** CLOSED / STRUCTURALLY ACCEPTED
+- **Current macro-phase:** AI-03B — Retrieval + Memory Architecture
 - **Implementation claim:** NONE
 - **Merge status:** UNMERGED
 
@@ -52,7 +53,12 @@ current AI architecture sources relevant to the phase
 current branch/ref and relation to protected main
 ```
 
-For AI-03 specifically, also read the source corpus in `docs/architecture/dante-ai-03-context-retrieval-memory.md`.
+For AI-03 specifically, also read:
+
+```text
+docs/architecture/dante-ai-03-context-retrieval-memory.md
+docs/architecture/dante-ai-03a-full-context-architecture.md
+```
 
 Repository truth beats conversation memory.
 
@@ -120,8 +126,11 @@ AI-02.1 v0.5
 AI-03 — CONTEXT / RETRIEVAL / MEMORY
 ACTIVE
   AI-03A Full Context Architecture
+           CLOSED / STRUCTURALLY ACCEPTED
   AI-03B Retrieval + Memory Architecture
+           ACTIVE / CURRENT
   AI-03C Destructive Validation + Materialization Blueprint
+           FUTURE
 
 AI-04 — PRODUCTIONIZATION ARCHITECTURE
 FUTURE
@@ -265,85 +274,141 @@ Durable phase charter:
 
 - `docs/architecture/dante-ai-03-context-retrieval-memory.md`
 
+Accepted Context authority:
+
+- `docs/architecture/dante-ai-03a-full-context-architecture.md`
+
 AI-03 owns detailed Context / Retrieval / Memory architecture and eventual materialization recommendations.
 
 ### AI-03A — Full Context Architecture
 
-Current exact focus.
+**CLOSED / STRUCTURALLY ACCEPTED.**
 
-Must design, in one deep architecture pass:
+The initial candidate failed the dedicated AI-03A mega-test and was hardened through nine material corrections:
 
 ```text
-WorkContract -> information needs
-candidate source classes
-structured current state
-material history
-conversation/session context
-working/run context
-documents/artifacts
-open-world/external context
-multi-actor context
-
-ContextFragment
-ContextManifest
-provenance
-source authority
-confidentiality
-integrity/trust
-instruction authority
-processing eligibility
-purpose
-freshness/temporal validity
-MaterialState/Basis binding
-coherence/contradiction
-relevance/deduplication
-packing/budgets
-provider rendering
-iterative retrieval
-compaction
-context cache semantics
-failure/degradation
+GAP-01 Reality Scope / Scenario binding
+GAP-02 Interaction Session continuity != provider-context continuity
+GAP-03 model-discovered InformationNeed cannot widen WorkContract/policy scope
+GAP-04 reference-resolution requirement per InformationNeed
+GAP-05 explicit negative source/use constraints
+GAP-06 child/delegated context is separately minimized
+GAP-07 user-originated content != automatic instruction authority
+GAP-08 ContextReadiness is non-monotonic
+GAP-09 minimum necessary context remains relative to legitimate broad objective
 ```
 
-Acceptance requires an end-to-end explanation of what entered each reasoning invocation, why, under which permissions, from which source and with what validity.
+Accepted Context contracts:
+
+```text
+ContextPlan
+InformationNeed
+ContextStrategy
+ContextFragment
+ContextReadiness
+ConsumerContext
+ContextManifest
+```
+
+plus inherited `BasisManifest`.
+
+Accepted AI-03A invariants are `C01..C29` in the durable AI-03A specification.
+
+Key boundaries:
+
+```text
+Context != canonical reality
+Context != Retrieval != Memory
+ConsumerContext != ContextManifest
+ContextManifest != BasisManifest
+Exposure != material dependency
+Source Standing != Domain Authority
+DATA != INSTRUCTION
+Interaction Session continuity != provider-context continuity
+WorkContract propagation != parent-context inheritance
+Scenario A != Scenario B != canonical current
+model-discovered need may refine != may widen scope
+cache hit != current eligibility
+```
+
+Closure result:
+
+```text
+HARDENED CANDIDATE         STRUCTURAL PASS
+Domain reopen              NO
+Logical reopen             NO
+Physical reopen            NO
+PostgreSQL/Alembic change  NO
+implementation claim       NONE
+```
+
+Do not run more AI-03A mega-test cycles unless downstream evidence reveals a real contradiction.
 
 ### AI-03B — Retrieval + Memory Architecture
 
-After AI-03A.
+**ACTIVE / CURRENT EXACT FOCUS.**
 
-Must define:
+Must design in one deep architecture pass, not a long sequence of tiny sub-phases:
 
 ```text
-structured semantic retrieval
-history queries
-FTS / fuzzy / semantic / hybrid retrieval
-source reread
+RETRIEVAL
+Semantic Query / Projection Gateway consumption
+current-state queries
+material-history queries
+relation traversal
+metadata filtering
+PostgreSQL FTS
+pg_trgm / fuzzy retrieval
+semantic/vector retrieval where justified
+hybrid retrieval
 reranking
-chunk/document hierarchy
+source reread
+freshness/currentness validation
+coverage-aware retrieval
+permission-aware discovery/retrieval
+multi-stage / iterative / JIT retrieval
+document hierarchy / chunking
+large-corpus behavior
+long-context vs indexed retrieval
+retrieval evaluation
 
-Interaction memory
-Run/working memory
-derived/adaptive memory
-provider memory/cache
-retrieval representations
+MEMORY
+canonical application memory — already Domain/PostgreSQL
+Interaction Session continuity / memory
+Run / working memory
+compaction/checkpoint state
+derived/adaptive memory candidates
+candidate hypotheses
+provider thread / provider memory / prompt cache
+retrieval representations / embeddings / indexes
+execution evidence — separate from user memory
 
+LIFECYCLE
 admission
+purpose/scope
 promotion
-correction
+confirmation/correction
 contradiction
+supersession
 decay
 expiry
 retirement
+redaction
 deletion
 forgetting
 anti-resurrection
+provider/cache/index invalidation
 ```
 
-No generic AI memory ontology by default.
+AI-03B must consume, not weaken, every AI-03A Context contract.
+
+Primary rule:
+
+> **Memory survival must be earned. Canonical application memory already exists in Domain/PostgreSQL and is not recreated as generic AI memory.**
 
 ### AI-03C — Destructive Validation + Materialization Blueprint
 
-After A+B.
+After AI-03B.
 
 Must attack scale, privacy, stale/corrected/deleted sources, provider memory, caches, embeddings, long history, huge documents, multi-actor, offline, prompt/retrieval poisoning and future-model/context-window pressure.
 
@@ -425,9 +490,15 @@ Every architecture decision must be reviewed against:
 semantic correctness
 source/canonicality integrity
 historical truth
+Reality Scope correctness
+reference-resolution correctness
+coverage / absence semantics
 multi-actor correctness
-privacy / Authority / Visibility
+privacy / Authority / Consent / Visibility
+purpose/source/use exclusions
 security / prompt/retrieval injection
+instruction provenance
+child/delegation minimisation
 revocation / deletion / anti-resurrection
 concurrency / stale state
 provider replaceability
@@ -466,7 +537,20 @@ Before branch integration, its meaningful payload must be classified and propaga
 ## 13. Current next action
 
 ```text
-AI-03A — FULL CONTEXT ARCHITECTURE
+AI-03B — RETRIEVAL + MEMORY ARCHITECTURE
 ```
 
-The next design pass must first reconstruct constraints from North Star -> Domain -> Logical -> Physical -> CP/Persistence/Alembic/PostgreSQL -> AI-00 -> AI-02.1 -> production research, then build the context architecture in depth before materialization.
+The next design pass must begin by reading and accepting AI-03A as fixed upstream Context authority, then study/design Retrieval + Memory deeply enough to determine:
+
+```text
+how each ContextStrategy is actually satisfied
+how retrieval preserves coverage/currentness/policy/Reality Scope
+how documents and large corpora are represented without source laundering
+what Interaction/working/derived/provider/retrieval memory actually means
+what earns persistence vs remains transient/recomputable
+how correction/deletion/retirement propagates
+how memory poisoning and anti-resurrection are prevented
+how retrieval/memory quality will be evaluated
+```
+
+Do targeted modern retrieval/memory research where it can challenge the design. Do not preselect pgvector/indexes/chunk tables/memory frameworks/provider-native memory before the semantic lifecycle is coherent.
