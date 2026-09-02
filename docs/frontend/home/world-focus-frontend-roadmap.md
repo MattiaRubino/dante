@@ -1,23 +1,16 @@
 # DANTE — World Focus Frontend Roadmap
 
-**Status:** CURRENT WORKING ROADMAP — WS0–WS8 CLOSED / PRE-M0 GATE CLOSED / M0 ACTIVE  
+**Status:** CURRENT WORKING ROADMAP — WS0–WS8 + PRE-M0 CLOSED / M0 CLOSED / M1 NEXT  
 **Date:** 2026-09-02  
 **Branch:** `feature/home-react`  
-**Scope stop:** freeze production-grade frontend/product behavior before real backend/API/database/provider/LLM/effect integration.
+**Scope stop:** production-grade frontend/product freeze before real backend/API/database/provider/LLM/effect integration.
 
-Primary sequencing authority:
-
-`world-focus-substrate-closure-plan.md`
-
-Current proof / gate authorities:
+Primary sequencing authorities:
 
 ```text
-WS1–WS5  world-focus-substrate-final-convergence-proof.md
-WS6      world-focus-ws6-universal-work-primitives.md
-WS7      world-focus-ws7-executable-harness-review.md
-WS8      world-focus-ws8-final-falsification-review.md
-POST-WS8 world-focus-post-ws8-hygiene-audit.md
-PRE-M0   world-focus-pre-m0-falsification-review.md
+world-focus-current-checkpoint.md
+world-focus-m0-materialization-mapping.md
+world-focus-substrate-closure-plan.md
 ```
 
 ---
@@ -42,36 +35,17 @@ Home React foundation
 -> WS8 hostile final falsification
 -> post-WS8 coherence/hygiene cleanup
 -> pre-M0 red-first falsification gate
--> M0 ACTIVE
+-> M0 materialization mapping / scope freeze
 ```
 
 ---
 
-# 2. Frozen / accepted foundations
-
-```text
-WF0 route/shell                         FROZEN / USER AUTHORIZED
-WF-G3 geometry                         LOCKED / USER AUTHORIZED
-WF-V4 visual treatment                 CANDIDATE
-B0 foundation                          ENGINEERING CLOSED
-WR0–WR2                                CLOSED
-B1 Orientation                         CLOSED FOR SEQUENCING
-B2 Continuity / Resume                 IMPLEMENTED / AUTOMATED PASS
-Workspace Platform                     ENGINEERING CLOSED
-D0 DANTE spatial contract              ACCEPTED
-D1 quiet invoke/composer               CLOSED FOR SEQUENCING
-WS0–WS8                                CLOSED
-PRE-M0 FALSIFICATION                   CLOSED / PASS
-```
-
-Historical evidence remains valid:
+# 2. Evidence checkpoints
 
 ```text
 Workspace Platform
 HEAD 6c441335a75bb913af8da1eda569d8094d38a539
 CI   33549465793 PASS
-500 composition scenarios
-500 allocation/surface-stack scenarios
 
 D1
 HEAD f17291de32e6bdced20536807b32928ec1be6aea
@@ -90,11 +64,11 @@ HEAD 7c9feab50c6e2a04a9a3b1e36c92958362dba704
 CI   33664655614 PASS
 ```
 
+M0 is a mapping/scope-freeze authority, not a replacement for the proof/runtime checkpoints above.
+
 ---
 
 # 3. Closed substrate model
-
-Layer ownership:
 
 ```text
 L0 Higher Authorities
@@ -121,36 +95,55 @@ No universal Thing/WorldItem/Fact/Relationship/property-bag root.
 
 ---
 
-# 4. Final pre-materialization falsification
+# 4. M0 closure result
 
-A red-first gate was run after the hygiene cleanup rather than assuming green CI implied no local lifecycle gaps.
+Authority:
 
-Discovery commit:
+`world-focus-m0-materialization-mapping.md`
 
-```text
-798170e0c1ad12e0263364ab5c542a6ffe3d5e06
-```
+M0 classified 66 production decisions across host/foundation, references, WP-01..04, O1–O11, L2–L8 and D0–D6.
 
-It produced exactly two adversarial failures: stale transient Home/Worlds opener handoffs could resurrect after a World/source mismatch.
-
-The test remained unchanged while the existing transition owner was fixed.
-
-Validated fix:
+Key bounded generalizations earned for M1:
 
 ```text
-HEAD 7c9feab50c6e2a04a9a3b1e36c92958362dba704
-CI   33664655614 PASS
+production World identity is currently coupled to the ten fixture IDs
+World context reference type is currently owned by workspace instead of a neutral model owner
+production workspace/cursor remains single-selection while WS7 proved primary + bounded supporting refs
+WP-02/03/04 have semantic proof constructors but no production application seams
+basis/disclosure/reference/effect/offline semantics need narrow production facets rather than one generic envelope
 ```
 
-No new primitive/layer/backend owner was required.
+M0 pressure rejected:
+
+```text
+proof/oracle promoted to runtime authority
+generic projection envelope/property bag
+frontend AuthZ from World relevance/cursor
+fixture IDs as permanent World taxonomy
+AI-required first open
+M3 customization pulled into M1
+M2 renderers before M1 semantics
+backend pulled forward for realism
+```
+
+Closure:
+
+```text
+unowned material rows              0
+new generic roots                  0
+page-per-World requirement         0
+AI-required basic path             0
+backend authority pulled forward   0
+WS reopen required                 0
+```
 
 ---
 
 # 5. Materialization sequence
 
 ```text
-M0 — Materialization Mapping / Scope Freeze          ACTIVE
-M1 — Core Non-Visual Production Materialization      BLOCKED BY M0
+M0 — Materialization Mapping / Scope Freeze          CLOSED
+M1 — Core Non-Visual Production Materialization     NEXT — NOT STARTED
 M2 — Shared Visual Primitive Layer                   BLOCKED BY M1
 M3 — Adaptive World Composition Materialization      BLOCKED BY M2
 M4 — Contextual DANTE Materialization                BLOCKED BY M3
@@ -159,57 +152,32 @@ M6 — Integrated Product / Visual / Accessibility     BLOCKED BY M5
 M7 — Pre-Backend Frontend Freeze / Handoff           BLOCKED BY M6
 ```
 
-## M0 — active now
+## M1 — frozen scope
 
-M0 maps every closed invariant/primitive into exactly one disposition:
-
-```text
-A already satisfied code
-B code requiring bounded generalization
-C missing model/application production code
-D missing shared renderer
-E specialist extension
-F DANTE seam / M4
-G backend-deferred seam
-```
-
-M0 must inspect real production code, not just proof/oracle files, and produce:
+M1 must:
 
 ```text
-complete mapping matrix
-reuse inventory
-bounded-generalization inventory
-missing production semantics inventory
-shared renderer inventory
-specialist-extension inventory
-DANTE M4 boundary
-backend-deferred boundary
-M1–M7 assignment
-scope freeze + reopen triggers
+decouple production World identity/descriptor from fixed fixtures
+extract neutral context-reference ownership
+materialize primary + bounded ordered supporting refs
+align WP-01 Continuity production semantics without regressing B2
+add WP-02 Attention application/model seam
+add WP-03 Comparison application/model seam
+add WP-04 Trajectory application/model seam
+add narrow basis/freshness/validity/reference-resolution/disclosure/offline/effect-presentation facets
+add direct typed O2 Situation / O5 Next / O8 Evidence application seams
+retain deterministic pre-backend adapters and aggressive tests
 ```
 
-M0 does not implement those rows.
-
-## M1
-
-Materialize missing non-visual production semantics without fabricating backend truth.
-
-Expected candidates must be earned by M0, not assumed. Known candidate deltas include production multi-reference support and production semantic state/config seams where proof currently outruns runtime.
+M1 does not build shared visual renderers, dynamic ranking/customization, D2–D6 or backend runtime.
 
 ## M2
 
-Create only shared visual primitives earned by M0/M1, including truthful empty/partial/stale/unavailable states, evidence affordances, keyboard/focus/a11y and bounded responsive behavior.
+Shared visual primitive/rendering layer earned by M1: Attention, Comparison, Trajectory, evidence/history and truthful effect/resource states. Primitive does not imply card.
 
 ## M3
 
-Materialize stable/adaptive/ephemeral composition and user configuration semantics, then prove:
-
-```text
-same substrate + different meaningful reality
--> materially different useful World compositions
-```
-
-No branch-by-World-id architecture.
+Materialize meaningful composition candidate resolution, stable/adaptive/ephemeral behavior, Customize Draft -> Apply/Cancel, pin/hide/reorder and conflict UX. No durable persistence claim.
 
 ## M4
 
@@ -219,13 +187,13 @@ Preserve D0/D1 and resume:
 D2 adaptive ongoing conversation surface
 D3 deterministic pre-backend conversation adapter
 D4 explicit contextual/deictic invocation
-D5 Insight presentation
+D5 Insight
 D6 Proposal / confirmation / receipt
 ```
 
 ## M5
 
-Build contrasting complete Worlds using the same substrate, including an unknown-future fixture.
+Build contrasting complete Worlds over the same substrate, including an unknown-future fixture and specialist renderer only where earned.
 
 ## M6
 
@@ -233,11 +201,17 @@ Integrated product/visual/a11y/performance review. Human visual acceptance remai
 
 ## M7
 
-Freeze frontend seams before backend: no fake effects, no hidden unresolved product blockers, docs synchronized, explicit backend contract.
+Pre-backend frontend freeze and explicit backend handoff.
 
 ---
 
-# 6. Backend stop line
+# 6. Sequencing note for older product/platform contracts
+
+The semantic/product/platform invariants in `world-focus-product-contract.md` and `world-focus-platform-contract.md` remain authoritative. Their historical paragraphs naming the contextual DANTE spatial review as the current/next gate predate D0/D1 and WS/M0 closure and are superseded for sequencing by the current checkpoint, M0 map and this roadmap.
+
+---
+
+# 7. Backend stop line
 
 Before M7 closes and a separately gated backend vertical begins:
 
@@ -255,16 +229,16 @@ NO provider ACK treated as canonical completion
 
 ---
 
-# 7. Strict reopen policy
+# 8. Strict reopen policy
 
 Do not restart WS0–WS8 for a new noun/provider/UI/renderer/model/viewport/config store/larger dataset.
 
-A prior WS phase reopens only if M0 or later executable/materialization evidence demonstrates a concrete contradiction that cannot be repaired in an existing owner. Reopen only the earliest necessary phase.
+Reopen only when later executable/materialization evidence demonstrates a concrete contradiction that cannot be repaired in an existing owner, and only at the earliest necessary phase.
 
 ---
 
-# 8. Immediate continuation
+# 9. Immediate continuation
 
-> **Continue M0 — Materialization Mapping / Scope Freeze.**
+> **M1 — Core Non-Visual Production Materialization is NEXT.**
 
-M1–M7 and D2–D6 remain blocked until M0 is explicitly closed and its mapping is frozen.
+Open M1 only under a fresh write gate derived from the M0 scope freeze.

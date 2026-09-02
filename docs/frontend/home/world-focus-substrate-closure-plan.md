@@ -1,12 +1,12 @@
 # DANTE — World Focus Substrate Closure Program
 
-**Status:** CURRENT PROGRAM — WS0–WS8 CLOSED / PRE-M0 FALSIFICATION CLOSED / M0 ACTIVE  
+**Status:** CURRENT PROGRAM — WS0–WS8 + PRE-M0 CLOSED / M0 CLOSED / M1 NEXT  
 **Date:** 2026-09-02  
 **Branch:** `feature/home-react`
 
 This document is the sequencing authority from closed substrate work into Materialization.
 
-Current closure/evidence authorities:
+Current authorities:
 
 ```text
 WS1–WS5  world-focus-substrate-final-convergence-proof.md
@@ -15,13 +15,8 @@ WS7      world-focus-ws7-executable-harness-review.md
 WS8      world-focus-ws8-final-falsification-review.md
 POST-WS8 world-focus-post-ws8-hygiene-audit.md
 PRE-M0   world-focus-pre-m0-falsification-review.md
+M0       world-focus-m0-materialization-mapping.md
 ```
-
-Exact combinatorial evidence:
-
-`world-focus-substrate-combinatorial-evidence.md`
-
-Older WS0/Cycle A/B/C documents are supporting evidence and do not override current sequencing.
 
 ---
 
@@ -40,11 +35,9 @@ analytical convergence
 != backend/runtime proof
 ```
 
-These stages remain deliberately separate.
-
 ---
 
-# 2. Permanent higher-authority barriers
+# 2. Permanent barriers
 
 ```text
 World != canonical Domain owner
@@ -68,32 +61,28 @@ idempotency != semantic identity
 
 No frontend convenience may create a universal Entity/Thing/Relationship/Fact/property-bag/ACL/persistence root.
 
-Protected-main Domain/Logical/Physical authority remains higher than frontend convenience.
-
 ---
 
 # 3. Current sequence
 
 ```text
 WS0 — Substrate Inventory                    CLOSED
-WS1–WS5 — Convergence Loop                   MAXIMAL PRACTICAL ANALYTICAL CLOSURE
+WS1–WS5 — Convergence Loop                   CLOSED
 WS6 — Universal Work Primitive Closure       CLOSED
 WS7 — Executable Non-Visual Harness          CLOSED
 WS8 — Final Falsification                    CLOSED
 POST-WS8 Hygiene                             CLOSED / APPLIED
 PRE-M0 Falsification                         CLOSED / PASS
-
-M0 — Materialization Mapping / Scope Freeze  ACTIVE
-M1–M7 Materialization                        BLOCKED UNTIL M0 CLOSES
+M0 — Materialization Mapping / Scope Freeze  CLOSED
+M1 — Core Non-Visual Materialization         NEXT — NOT STARTED
+M2–M7                                        BLOCKED BY SEQUENCE
 ```
 
-D2–D6 remain preserved for Materialization M4.
+D2–D6 remain preserved for M4.
 
 ---
 
-# 4. Closed substrate result
-
-Fixed layer model:
+# 4. Closed substrate
 
 ```text
 L0 Higher Authorities
@@ -107,7 +96,7 @@ L7 Renderer / Specialist Extension
 L8 Platform / User Policies
 ```
 
-Finite L1 catalog:
+Finite L1:
 
 ```text
 WP-01 Continuity
@@ -116,49 +105,25 @@ WP-03 Comparison
 WP-04 Trajectory
 ```
 
-Rules:
-
-```text
-L1 is reusable, not mandatory
-Domain-owned semantics remain Domain-owned
-L2–L8 never get smuggled into L1
-primitive != module != renderer != persistence root
-```
-
-A valid World may use zero L1 primitives.
+L1 is reusable, not mandatory. A World may use zero L1 primitives.
 
 ---
 
-# 5. Retained proof chain
+# 5. Retained proof evidence
 
-WS1–WS5:
-
-```text
-A 44 domain/user-job scenarios + DANTE/no-DANTE + adversarial cross-products
-B 40 mechanism-first scenarios + independent cross-products
-C 40 metamorphic transformations
-D 48 architecture mutants killed
-E WL-H01..WL-H12 traceability
-F complete 3-way + high-risk 4-way combinatorial coverage
-G post-last-hardening structure/deletion proof
-H future-authority/implementation substitutions
-```
-
-Concern ledger: `CG-01..CG-40`.
-
-WS7 executable coverage:
+WS7 executable combinatorial coverage:
 
 ```text
-67 general vectors / 11 axes / strength 3
+67 general vectors / all 3-way interactions
 4,455 / 4,455
 SHA ca2e8b4aa19285eecd61ac072c0bc9a4f938e7863eea8393d2f2da26827610a0
 
-157 high-risk vectors / 7 axes / strength 4
+157 high-risk vectors / all 4-way interactions
 2,835 / 2,835
 SHA d6efbcd0306ee7d37fac0b4cbc59c7af356c8ac8cbf9ee0d08ed8efbc8f5d835
 ```
 
-WS8 final result:
+WS8 final result retained:
 
 ```text
 0 unresolved material substrate gaps
@@ -169,18 +134,14 @@ WS8 final result:
 0 AI-only basic-usefulness path
 0 Domain/Logical/Physical contradiction
 0 privacy/disclosure/non-interference contradiction
-0 state/race/responsive class requiring substrate redesign
-0 consequential-effect class requiring new ownership layer
+0 state/race/responsive redesign class
+0 consequential-effect class requiring new owner
 0 surviving mutation
 ```
 
 ---
 
-# 6. Pre-M0 falsification closure
-
-Authority:
-
-`world-focus-pre-m0-falsification-review.md`
+# 6. Pre-M0 falsification
 
 Red-first discovery:
 
@@ -189,97 +150,88 @@ commit 798170e0c1ad12e0263364ab5c542a6ffe3d5e06
 2 failing adversarial tests / 227 passing web tests
 ```
 
-Finding:
+Finding: a mismatched World/source read could leave the transient opener handoff alive and permit stale route-origin resurrection within TTL.
 
-> a mismatched World/source read returned `null` but left the transient opener handoff alive, allowing stale route-origin resurrection within the TTL.
-
-Fix:
+Validated fix:
 
 ```text
 HEAD 7c9feab50c6e2a04a9a3b1e36c92958362dba704
-CI   33664655614 — PASS
+CI   33664655614 PASS
 ```
 
-Mismatch now invalidates the pending handoff. No WS layer, primitive or backend owner was added.
+No new WS layer, primitive or backend owner was required.
 
 ---
 
-# 7. Existing platform remains reusable
+# 7. M0 closure
 
-Do not rebuild:
+Authority:
 
-```text
-stable/adaptive/ephemeral planner
-finite module/surface registries
-workspace generation + stale-intent guard
-surface stack + blocking tail
-full/split allocation
-overlay/focus/inert semantics
-ResizeObserver/container-query ownership
-local failure isolation
-```
+`world-focus-m0-materialization-mapping.md`
 
-Known production materialization boundary:
+M0 mapped every relevant closed invariant to one disposition:
 
 ```text
-current reducer selection        single-reference production state
-WS7 reference proof seam         primary + bounded ordered supporting refs
-```
-
-M0 must classify that delta; it is not itself a reason to reopen WS7.
-
----
-
-# 8. M0 contract — ACTIVE
-
-M0 is mapping/scope freeze only.
-
-Every closed invariant/primitive must receive one disposition:
-
-```text
-A already satisfied by production code
-B bounded generalization of existing code
+A already satisfied production code
+B bounded generalization
 C missing model/application production code
 D missing shared renderer
 E specialist extension
 F DANTE seam / M4
-G backend-deferred seam
+G backend-deferred authority
 ```
 
-M0 must cover at minimum:
+Coverage:
 
 ```text
-WP-01..WP-04
-L0–L8
-Output Grammar O1–O11
-workspace/references/surfaces
-composition/config
-basis/evidence/disclosure
-identity resolution
-operation/effect lifecycle
-specialist rendering
-responsive/a11y/failure/performance
-DANTE seams
-backend-deferred authority seams
+66 materialization decisions
+WP-01..WP-04 classified
+L0–L8 classified
+O1–O11 classified
+D0–D6 classified
+reference identity/config/effect/privacy/offline/responsive/large-data covered
+unowned material rows 0
+backend authority pulled forward 0
+generic roots 0
+page-per-World requirement 0
+AI-required basic path 0
 ```
 
-M0 outputs:
-
-```text
-complete mapping matrix
-reuse/generalization/missing-code inventory
-M1–M7 assignment
-explicit non-goals
-backend stop-line mapping
-reopen triggers
-scope freeze
-```
-
-M0 cannot close while any closed invariant is unclassified or mapped to a generic escape hatch.
+No M0 evidence reopens WS0–WS8.
 
 ---
 
-# 9. Materialization sequence after M0
+# 8. M1 scope freeze
+
+M1 must do only:
+
+```text
+decouple production World identity/descriptor from the fixed fixture union
+extract neutral context-reference ownership from workspace
+materialize primary + bounded ordered supporting refs
+align WP-01 production semantics
+add WP-02/03/04 application/model seams
+add narrow basis/freshness/validity/reference-resolution/disclosure/offline/effect-presentation facets
+add direct typed O2 Situation / O5 Next / O8 Evidence application seams
+retain deterministic pre-backend adapters + aggressive tests
+```
+
+M1 must not do:
+
+```text
+shared visual primitive rendering            -> M2
+dynamic ranking/customization                 -> M3
+D2–D6                                         -> M4
+complete contrasting Worlds                   -> M5
+integrated visual/a11y/performance acceptance -> M6
+backend/API/DB/Alembic/AuthZ/LLM/effects       -> after M7
+```
+
+Existing planner/registries/workspace generation/allocation/failure isolation must be reused, not rebuilt.
+
+---
+
+# 9. Materialization sequence
 
 ```text
 M1 Core Non-Visual Production Materialization
@@ -287,25 +239,27 @@ M2 Shared Visual Primitive Layer
 M3 Adaptive World Composition
 M4 Contextual DANTE Materialization
 M5 Contrasting Complete Worlds
-M6 Integrated Product / Visual / A11y Review
+M6 Integrated Product / Visual / A11y / Performance Review
 M7 Pre-Backend Frontend Freeze
 ```
 
-M1 stays blocked until M0 is explicitly closed.
+---
+
+# 10. Sequencing note
+
+Historical paragraphs in the product/platform contracts that name the contextual DANTE spatial review as the current/next gate are sequencing-stale. Their semantic invariants remain authoritative; sequencing is superseded by `world-focus-current-checkpoint.md`, the M0 map and current roadmap.
 
 ---
 
-# 10. Strict reopen rule
+# 11. Strict reopen rule
 
 Do not restart WS0–WS8 for a new World noun, provider, API, renderer, model, viewport, config store, sync engine or larger dataset.
 
-Reopen only when later executable/materialization evidence demonstrates a concrete semantic, ownership, state, security, privacy or consequential-effect contradiction that cannot fit an existing owner. Return only to the earliest genuinely contradicted phase.
+Reopen only when later executable/materialization evidence demonstrates a concrete contradiction that cannot fit an existing owner, and only at the earliest genuinely contradicted phase.
 
 ---
 
-# 11. Backend stop line
-
-Until the later explicit backend vertical:
+# 12. Backend stop line
 
 ```text
 NO World DB/Alembic persistence
@@ -321,8 +275,8 @@ NO provider ACK treated as canonical completion
 
 ---
 
-# 12. Immediate continuation
+# 13. Immediate continuation
 
-> **M0 — Materialization Mapping / Scope Freeze is ACTIVE.**
+> **M1 — Core Non-Visual Production Materialization is NEXT.**
 
-Do not begin M1 implementation, D2–D6 or backend work until M0 is separately closed and its scope is frozen.
+Open M1 only under a fresh live HEAD/write gate derived from the frozen M0 map.

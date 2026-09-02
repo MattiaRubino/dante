@@ -1,6 +1,6 @@
 # DANTE — Home / Frontend Current Checkpoint
 
-**Status:** CURRENT LIVE ENTRY POINT — WORLD FOCUS WS0–WS8 CLOSED / POST-WS8 HYGIENE + PRE-M0 FALSIFICATION CLOSED / M0 ACTIVE  
+**Status:** CURRENT LIVE ENTRY POINT — WORLD FOCUS WS0–WS8 + PRE-M0 CLOSED / M0 CLOSED / M1 NEXT  
 **Date:** 2026-09-02  
 **Working branch:** `feature/home-react`  
 **Worktree:** `/home/mattia/projects/dante-frontend`
@@ -19,8 +19,6 @@ TEMPORAL / TIMELINE
 WORLD FOCUS
 ```
 
-They share higher product/domain authority but do not own one another's layout or interaction semantics.
-
 Permanent distinctions:
 
 ```text
@@ -32,9 +30,7 @@ Mondi Overview != World Focus
 
 ---
 
-## 2. Active workstream
-
-World Focus remains the active workstream.
+## 2. Active workstream state
 
 ```text
 WF0 structural shell / route            FROZEN / USER AUTHORIZED
@@ -47,16 +43,12 @@ B2 Continuity / Resume                  IMPLEMENTED / AUTOMATED PASS
 Workspace Platform                      ENGINEERING CLOSED
 D0 contextual DANTE spatial direction   ACCEPTED
 D1 quiet invoke + compact composer       CLOSED FOR SEQUENCING
-WS0                                     CLOSED
-WS1–WS5                                 CLOSED
-WS6                                     CLOSED
-WS7                                     CLOSED
-WS8                                     CLOSED
-POST-WS8 WORLD FOCUS HYGIENE             APPLIED
-APPSHELL LEGACY REVIEW CLEANUP           APPLIED
-PRE-M0 FALSIFICATION                     CLOSED / PASS
-M0 MATERIALIZATION MAPPING               ACTIVE — SCOPE FREEZE IN PROGRESS
-M1–M7                                   BLOCKED UNTIL M0 CLOSES
+WS0–WS8                                 CLOSED
+POST-WS8 HYGIENE                        CLOSED / APPLIED
+PRE-M0 FALSIFICATION                    CLOSED / PASS
+M0 MATERIALIZATION MAPPING              CLOSED
+M1 CORE NON-VISUAL MATERIALIZATION      NEXT — NOT STARTED
+M2–M7                                   BLOCKED BY SEQUENCE
 D2–D6                                   DEFERRED TO M4
 ```
 
@@ -66,29 +58,36 @@ No backend/API/database/provider/real-LLM/effect implementation is active.
 
 ## 3. Current evidence chain
 
-WS8 semantic closure remains anchored at:
-
 ```text
+WS8 proof/runtime
 HEAD 88db899391a3a41e23e76177d4896a657232b5eb
-CI   33639741630 — PASS — attempt 1
+CI   33639741630 PASS — attempt 1
+
+PRE-M0 red-first discovery
+HEAD 798170e0c1ad12e0263364ab5c542a6ffe3d5e06
+2 failed / 227 passed web tests
+
+PRE-M0 validated fix
+HEAD 7c9feab50c6e2a04a9a3b1e36c92958362dba704
+CI   33664655614 PASS
 ```
 
-The later cleanup/falsification branch state is separate evidence.
+M0 authority:
 
-Final pre-M0 adversarial gate:
+`world-focus-m0-materialization-mapping.md`
+
+M0 result:
 
 ```text
-red test commit   798170e0c1ad12e0263364ab5c542a6ffe3d5e06
-red evidence      2 failed / 227 passed web tests
-fix HEAD          7c9feab50c6e2a04a9a3b1e36c92958362dba704
-Frontend CI       33664655614 — PASS
+66 production-disposition decisions assigned
+WP-01..WP-04 classified
+L0–L8 classified
+O1–O11 classified
+D0–D6 classified
+unowned material rows 0
+backend authority pulled forward 0
+generic semantic roots introduced 0
 ```
-
-The gate discovered and fixed stale transient route-handoff resurrection after World/source mismatch. The adversarial test was not weakened.
-
-Authority:
-
-`world-focus-pre-m0-falsification-review.md`
 
 ---
 
@@ -96,49 +95,52 @@ Authority:
 
 ```text
 1. docs/frontend/home/world-focus-current-checkpoint.md
-2. docs/frontend/home/world-focus-pre-m0-falsification-review.md
-3. docs/frontend/home/world-focus-post-ws8-hygiene-audit.md
-4. docs/frontend/home/world-focus-substrate-closure-plan.md
-5. docs/frontend/home/world-focus-ws8-final-falsification-review.md
-6. docs/frontend/home/world-focus-ws7-executable-harness-review.md
-7. docs/frontend/home/world-focus-ws6-universal-work-primitives.md
-8. docs/frontend/home/world-focus-ws6-primitive-pressure-matrix.md
+2. docs/frontend/home/world-focus-m0-materialization-mapping.md
+3. docs/frontend/home/world-focus-pre-m0-falsification-review.md
+4. docs/frontend/home/world-focus-post-ws8-hygiene-audit.md
+5. docs/frontend/home/world-focus-substrate-closure-plan.md
+6. docs/frontend/home/world-focus-ws8-final-falsification-review.md
+7. docs/frontend/home/world-focus-ws7-executable-harness-review.md
+8. docs/frontend/home/world-focus-ws6-universal-work-primitives.md
 9. docs/frontend/home/world-focus-substrate-final-convergence-proof.md
-10. docs/frontend/home/world-focus-substrate-combinatorial-evidence.md
-11. docs/frontend/home/world-focus-frontend-roadmap.md
-12. docs/frontend/home/world-focus-handoff.md
-13. product/platform/structure/geometry contracts as needed
-14. docs/frontend/home/world-focus-evidence-index.md
+10. docs/frontend/home/world-focus-frontend-roadmap.md
+11. product/platform/structure/geometry contracts as needed
 ```
 
-Historical `NEXT D2`, `M0 NEXT` or older WS phase-time status never overrides this checkpoint.
+Historical `NEXT D2`, `M0 NEXT` or `M0 ACTIVE` prose never overrides the live checkpoint/M0 map.
 
 ---
 
-## 5. Post-WS8 hygiene result
+## 5. M1 frozen scope
 
-Resolved without reopening WS0–WS8:
+M1 must:
 
 ```text
-HYG-01 unknown popover fallback pointer barrier
-HYG-02 unused immersive|instant persisted preference scaffold
-HYG-03 superseded V2/V3 visual-frame CSS
-HYG-04 dead legacy SVG visual styling
-HYG-05 stale branch-level D2 routing
-HYG-06 stale World-switch entry provenance / close policy
-HYG-07 deprecated Global Topbar Review + fake badge
-HYG-08 stale transient handoff resurrection after route mismatch
+decouple production World identity/descriptor from fixed fixture IDs
+extract neutral context-reference ownership from workspace
+materialize primary + bounded ordered supporting references
+connect WP-01..WP-04 to production application seams
+add narrow basis/freshness/validity/reference/disclosure/offline/effect-presentation facets
+add typed O2 Situation / O5 Next / O8 Evidence application seams
+retain deterministic pre-backend adapters + aggressive tests
 ```
 
-HYG-08 was found by an adversarial red-first test immediately before M0 and closed at `7c9feab5...`.
+M1 must not pull forward:
+
+```text
+M2 shared visual renderers
+M3 composition customization
+D2–D6 / M4
+complete Worlds / M5
+integrated visual acceptance / M6
+backend/API/DB/Alembic/AuthZ/provider/LLM/tools/effects
+```
 
 ---
 
-## 6. Global AppShell / Home and Timeline
+## 6. AppShell / Timeline boundaries
 
-The former Global Topbar Review placeholder remains removed. Do not reintroduce it without a new explicit product contract.
-
-Timeline T1 observable interaction/geometry behavior remains frozen and user accepted. World Focus/M0 work must not weaken Timeline regression guards.
+The removed Global Topbar Review placeholder remains removed. Timeline T1 observable interaction/geometry remains frozen and user accepted. World Focus work must not weaken those contracts.
 
 ---
 
@@ -148,11 +150,11 @@ Timeline T1 observable interaction/geometry behavior remains frozen and user acc
 frontend view model != backend DTO != Domain model != persistence row
 ```
 
-Until the later explicit backend vertical:
+Until the explicit later backend vertical:
 
 ```text
 NO World DB/Alembic persistence
-NO real World business API merely for frontend completeness
+NO business API merely for frontend completeness
 NO real AuthZ/provider runtime
 NO real LLM/model routing/streaming
 NO canonical chat persistence
@@ -163,31 +165,7 @@ NO fake successful backend state
 
 ---
 
-## 8. CURRENT ACTIVE GATE — M0
-
-> **M0 — Materialization Mapping / Scope Freeze**
-
-M0 is now active.
-
-It must map every closed invariant/primitive to one production disposition:
-
-```text
-A already satisfied by existing production code
-B existing code requiring bounded generalization
-C missing model/application production code
-D missing shared renderer
-E specialist extension
-F DANTE seam — defer to M4
-G backend-deferred seam
-```
-
-M0 must produce an explicit M1–M7 assignment and freeze scope before M1 begins.
-
-M0 must not itself implement M1, visual primitives, D2–D6 or backend runtime.
-
----
-
-## 9. Operational rules
+## 8. Operational rules
 
 - stay on `feature/home-react` unless explicitly authorized otherwise;
 - fresh HEAD check before every write scope;
@@ -195,5 +173,5 @@ M0 must not itself implement M1, visual primitives, D2–D6 or backend runtime.
 - do not casually modify Access/Auth, Timeline or shared AppShell;
 - generated route tree is never manually edited;
 - preserve frozen Timeline and World geometry contracts unless explicitly reopened;
-- fix CI/test root causes rather than weaken gates;
-- keep live docs synchronized whenever the active gate materially changes.
+- fix root causes rather than weaken tests;
+- keep live docs synchronized when the active gate changes.
