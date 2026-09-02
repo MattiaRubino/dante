@@ -35,9 +35,7 @@ _REQUIRED_EXTENSIONS: tuple[tuple[str, str | None], ...] = (
 
 
 def _load_core() -> ModuleType:
-    spec = importlib.util.spec_from_file_location(
-        "dante_access_auth_uat_core", _CORE_PATH
-    )
+    spec = importlib.util.spec_from_file_location("dante_access_auth_uat_core", _CORE_PATH)
     if spec is None or spec.loader is None:
         raise RuntimeError("Could not load the Access/Auth full-stack harness core.")
 
@@ -85,9 +83,7 @@ def _extension_guard(database_name: str) -> Callable[..., None]:
                     sql.Identifier(extension_name)
                 )
                 if expected_version is not None:
-                    statement += sql.SQL(" VERSION {}").format(
-                        sql.Literal(expected_version)
-                    )
+                    statement += sql.SQL(" VERSION {}").format(sql.Literal(expected_version))
                 connection.execute(statement)
 
                 row = connection.execute(
@@ -143,9 +139,7 @@ def _tls_material_override(core: ModuleType) -> Callable[[Path], tuple[Path, Pat
         cert_value = os.environ.get(_TLS_CERT_ENV)
         key_value = os.environ.get(_TLS_KEY_ENV)
         if (cert_value is None) != (key_value is None):
-            raise RuntimeError(
-                f"{_TLS_CERT_ENV} and {_TLS_KEY_ENV} must be supplied together."
-            )
+            raise RuntimeError(f"{_TLS_CERT_ENV} and {_TLS_KEY_ENV} must be supplied together.")
         if cert_value is not None and key_value is not None:
             cert_path = Path(cert_value).expanduser().resolve()
             key_path = Path(key_value).expanduser().resolve()
@@ -218,9 +212,7 @@ def main() -> None:
 
     database_name = getattr(core, "_DATABASE_NAME", None)
     if not isinstance(database_name, str) or not database_name:
-        raise RuntimeError(
-            "Access/Auth harness core does not expose its disposable database name."
-        )
+        raise RuntimeError("Access/Auth harness core does not expose its disposable database name.")
 
     core._WEB_ORIGIN = _UAT_WEB_ORIGIN
     core._create_extensions = _extension_guard(database_name)
