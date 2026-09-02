@@ -11,6 +11,7 @@ import {
 
 import { i18n } from '../../../bootstrap/i18n';
 import { getWorldFocusWorld } from '../model/world-focus-fixtures';
+import { createWorldFocusIdentityDescriptor } from '../model/world-focus-identity';
 import {
   clearWorldFocusEntry,
   primeWorldFocusEntry,
@@ -38,6 +39,14 @@ function requireWorld(id: 'music' | 'travel') {
   return world;
 }
 
+function requireIdentity(id: 'music' | 'travel') {
+  return createWorldFocusIdentityDescriptor(
+    id === 'music'
+      ? { id, label: 'Musica', description: 'Il tuo mondo musicale' }
+      : { id, label: 'Viaggi', description: 'Il tuo mondo dei viaggi' },
+  );
+}
+
 describe('WorldFocusPage', () => {
   it('keeps WF0/WF-G3 frozen while mounting a performance-safe peripheral VFX surface', () => {
     primeWorldFocusEntry({
@@ -50,6 +59,7 @@ describe('WorldFocusPage', () => {
     const { container } = render(
       <WorldFocusPage
         world={requireWorld('music')}
+        identity={requireIdentity('music')}
         source="home"
         onClose={onClose}
       />,
@@ -130,6 +140,7 @@ describe('WorldFocusPage', () => {
     const { container } = render(
       <WorldFocusPage
         world={requireWorld('travel')}
+        identity={requireIdentity('travel')}
         source="worlds"
         onClose={onClose}
       />,
@@ -158,6 +169,7 @@ describe('WorldFocusPage', () => {
     const { rerender } = render(
       <WorldFocusPage
         world={requireWorld('music')}
+        identity={requireIdentity('music')}
         source="home"
         onClose={onClose}
       />,
@@ -172,6 +184,7 @@ describe('WorldFocusPage', () => {
     rerender(
       <WorldFocusPage
         world={requireWorld('travel')}
+        identity={requireIdentity('travel')}
         source="worlds"
         onClose={onClose}
       />,
@@ -190,9 +203,11 @@ describe('WorldFocusPage', () => {
   it('renders truthful loading, error and unavailable states inside the workspace', () => {
     const onClose = vi.fn();
     const world = requireWorld('music');
+    const identity = requireIdentity('music');
     const { container, rerender } = render(
       <WorldFocusPage
         world={world}
+        identity={identity}
         source="worlds"
         status="loading"
         onClose={onClose}
@@ -206,6 +221,7 @@ describe('WorldFocusPage', () => {
     rerender(
       <WorldFocusPage
         world={world}
+        identity={identity}
         source="worlds"
         status="error"
         onClose={onClose}
@@ -217,6 +233,7 @@ describe('WorldFocusPage', () => {
     rerender(
       <WorldFocusPage
         world={world}
+        identity={identity}
         source="worlds"
         status="unavailable"
         onClose={onClose}
@@ -237,6 +254,7 @@ describe('WorldFocusPage', () => {
       const { unmount } = render(
         <WorldFocusPage
           world={requireWorld('music')}
+          identity={requireIdentity('music')}
           source="home"
           onClose={vi.fn()}
         />,
