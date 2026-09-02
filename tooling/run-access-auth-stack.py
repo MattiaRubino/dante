@@ -221,6 +221,9 @@ def main() -> None:
             "Access/Auth harness core does not expose its synthetic email."
         )
 
+    os.environ["VITE_DANTE_APPLE_ENABLED"] = "true"
+    os.environ["VITE_DANTE_PASSKEY_ENABLED"] = "true"
+
     core._create_extensions = _extension_guard(database_name)
     core._auth_settings = _auth_settings_override(core._auth_settings)
     core._seed_account = _seed_account_with_e2e_accounts(
