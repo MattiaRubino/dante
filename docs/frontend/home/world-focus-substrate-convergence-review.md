@@ -1,9 +1,11 @@
 # DANTE — World Focus Substrate Convergence Review
 
-**Status:** CURRENT WS1–WS5 CLOSURE REVIEW — ANALYTICAL CONVERGENCE CLOSED  
+**Status:** SUPPORTING CYCLE-A CLOSURE EVIDENCE — CG-01..CG-32 / FINAL CLOSURE RATIONALE SUPERSEDED  
 **Date:** 2026-09-02  
 **Branch:** `feature/home-react`  
 **Companion corpus:** `world-focus-substrate-convergence-corpus.md`
+
+> **Authority note (2026-09-02):** this file remains the durable Cycle-A concern/decision record for `CG-01..CG-32`. Its internal `ANALYTICALLY CLOSED` / `Next gate WS6` conclusion is historical Cycle-A closure rationale and is superseded by `world-focus-substrate-final-convergence-proof.md`, which incorporates Cycle B–H and `CG-33..CG-40`. Current sequencing is owned by `world-focus-current-checkpoint.md`.
 
 This is the durable closure record for the indivisible **WS1–WS5 World Substrate Convergence Loop**.
 
