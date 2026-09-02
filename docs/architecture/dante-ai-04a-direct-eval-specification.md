@@ -1,48 +1,44 @@
 # DANTE AI-04A — Direct Evaluation Specification
 
-- **Status:** CANDIDATE / EXECUTABLE-GRADE EVAL SPECIFICATION / NOT IMPLEMENTED
+- **Status:** CLOSED / STRUCTURALLY ACCEPTED / A01..A30 / EV01..EV20
 - **Branch:** `feature/ai-architecture`
 - **Phase:** AI-04 — Productionization Architecture
 - **Sub-phase:** AI-04A — Direct DANTE Eval Specification
-- **PRE-SCOPE:** `f5ee7e1fc86c1f2e5675ee860bbbadfbc6bde68a`
-- **Upstream:** AI-02.1 CLOSED / AI-03 CLOSED / AI-04A eval-provider boundary candidate materialized
+- **Original candidate PRE-SCOPE:** `f5ee7e1fc86c1f2e5675ee860bbbadfbc6bde68a`
+- **Pre-closure snapshot:** `57d9b6b325d0873e46efbe88eee646f994027d2d`
+- **Direct provider evidence:** NOT EXECUTED / DEFERRED UNTIL DECISION-CRITICAL
 - **Provider/model selection:** OPEN / EVIDENCE-DRIVEN
 - **Eval runner selection:** OPEN
 - **Implementation claim:** NONE
 - **Database change:** NONE
 
-This document defines how DANTE will directly evaluate models, HarnessProfiles, ProviderBindings and later concrete intelligence runtime behavior without handing DANTE's truth model to a provider-specific benchmark product.
+This document is the durable AI-04A closure authority.
 
-It is an evaluation architecture and executable-grade specification. It does not install an eval framework, call a paid model API, select a provider, activate a runtime technology or claim production PASS.
+The full executable-grade candidate specification, including DANTE-E01..E13, fixture/grader design, reliability/economics methodology, tooling comparison and commercial-entitlement pressure cases, is preserved immutably at commit `57d9b6b325d0873e46efbe88eee646f994027d2d`.
+
+AI-04A closure is **structural**. It accepts the evaluation/provider/economics methodology. It does not claim that any provider/model has been directly benchmarked or selected.
 
 ---
 
-# 1. Core objective
+# 1. Objective
 
-DANTE must evaluate whether a concrete intelligence configuration can perform **DANTE work correctly, repeatedly, safely, privately and economically**.
+DANTE evaluates concrete intelligence configurations against DANTE work rather than public leaderboard reputation.
 
-The primary question is not:
-
-```text
-Which model is best on a public leaderboard?
-```
-
-It is:
+Primary question:
 
 ```text
 For this DANTE workload and consequence class,
-which currently eligible ModelTarget + HarnessProfile + ProviderBinding
-satisfies all hard correctness/privacy/safety gates
-and then produces the best quality / latency / reliability / economics trade-off?
+which currently eligible production route composition
+satisfies all hard semantic/privacy/safety gates
+and then provides the best quality / reliability /
+latency / economics trade-off?
 ```
 
-Provider selection follows this evidence.
+Provider/model selection follows this evidence.
 
 ---
 
-# 2. Evaluation authority boundary
-
-DANTE owns evaluation semantics.
+# 2. Evaluation authority
 
 ```text
 DANTE Eval Specification
@@ -50,312 +46,189 @@ DANTE Eval Specification
 → DANTE expected-state contracts
 → DANTE hard invariants
 → DANTE graders/oracles
-→ runner/framework adapter
-→ provider/model/binding under test
+→ replaceable runner/framework adapter
+→ candidate model/Harness/binding/route composition
 ```
-
-External tools may execute, aggregate, visualize or help grade runs. They do not define what DANTE truth, Authority, Actual, historical state, privacy, effect success or memory correctness mean.
 
 ```text
-FRAMEWORK SCORE
-!= DANTE SEMANTIC PASS
+FRAMEWORK SCORE != DANTE SEMANTIC PASS
+OUTCOME/ENVIRONMENT STATE > MODEL SELF-REPORT
 ```
 
-The eval framework must remain replaceable.
+External eval products may execute or visualize tests. They do not define DANTE truth, Authority, Actual, effect success, history, privacy or memory semantics.
 
 ---
 
-# 3. Evaluation-only terminology
+# 3. Workload families
 
-The following are **evaluation contracts**, not new Domain owners, runtime owners or persistence roots.
+Accepted core families:
+
+```text
+DANTE-E01  model avoidance / deterministic fast path
+DANTE-E02  intent + reference / target resolution
+DANTE-E03  structured extraction / understanding
+DANTE-E04  native query + history + absence semantics
+DANTE-E05  context + privacy + Reality Scope
+DANTE-E06  planning / replanning / scenarios
+DANTE-E07  document / long-context / multimodal
+DANTE-E08  tool / capability use
+DANTE-E09  consequential effect boundary
+DANTE-E10  multi-actor / delegation / disclosure
+DANTE-E11  adaptive memory / learning
+DANTE-E12  currentness / failure / supersession / failover
+DANTE-E13  open-world research / grounding
+```
+
+Trigger-gated suites are created only when product/runtime scope activates them:
+
+```text
+voice/realtime
+browser/computer use
+code execution
+long-running durable background work
+embedding/vector retrieval
+specialized generation
+```
+
+---
+
+# 4. Eval contracts are not Domain/persistence owners
+
+Evaluation-only concepts include:
 
 ```text
 EvalCase
-= one versioned DANTE evaluation fixture and its expected contracts
-
 EvalCandidate
-= one exact configuration being evaluated
-
 Trial
-= one execution of one EvalCase against one EvalCandidate
-
 Trajectory
-= observable sequence of model/runtime/tool/context actions during a Trial
-
 Outcome
-= externally inspectable final state/result/effect/evidence produced by the Trial
-
 TrialVerdict
-= PASS / HARD_FAIL / QUALITY_FAIL / INVALID_* / PROVIDER_INFRA_FAILURE / INCONCLUSIVE
-
 EvalRun
-= a bounded collection of Trials executed under one frozen evaluation configuration
-
 EvalEvidence
-= reproducibility and grading evidence for an EvalRun/Trial
 ```
 
-Do not infer a table/service from these nouns.
+These are evaluation contracts only.
+
+```text
+EVAL CONTRACT != DOMAIN/RUNTIME PERSISTENCE OWNER
+```
+
+No table/service is inferred merely from these nouns.
 
 ---
 
-# 4. Small common fixture manifest
+# 5. Fixture / oracle posture
 
-DANTE does **not** use one universal mega-schema capable of representing every future task.
+Use a bounded common manifest plus family-specific payload.
 
-Each `EvalCase` has a small common envelope plus family-specific payload.
-
-Common candidate fields:
+Baseline fixture dimensions include, where applicable:
 
 ```text
-fixture_id
-fixture_version
-family                DANTE-E01..E13 or trigger-gated family
-capability_or_regression
-risk / consequence class
-locale / language variant
+fixture/version
+family
+risk/consequence class
+locale
 purpose
-Actor
-represented party
-Subject where applicable
+Actor / represented party / Subject
 Reality Scope
-Runtime Interpretation Frame where applicable
-initial fixture references
-source/security labels
+initial state/source refs
 provider/data eligibility profile
 required capabilities
 resource envelope
-expected outcome contract
+expected outcome
 hard assertions
 forbidden outcomes/actions
 grading profile
 repetition profile
 ```
 
-Family-specific payload owns the semantics that do not generalize cleanly.
+Hidden expected state and grader truth remain separated from candidate-visible state.
 
 ```text
-BOUNDED SHARED ENVELOPE
-+ FAMILY-SPECIFIC PAYLOAD
-```
-
-not:
-
-```text
-UniversalEvalEverythingObject
-```
-
----
-
-# 5. Hidden oracle separation
-
-Candidate model/provider execution must not see hidden evaluation truth unless that truth is legitimately part of DANTE context for the case.
-
-Separate:
-
-```text
-candidate-visible state
-candidate-visible capabilities
-candidate-visible context
-```
-
-from:
-
-```text
-hidden expected state
-forbidden outcome definitions
-secret grader fixtures
-provider comparison labels
-held-out regression answers
-```
-
-Leakage of hidden oracle state invalidates the Trial.
-
-```text
-CANDIDATE ACCESS TO GRADER TRUTH
+CANDIDATE ACCESS TO HIDDEN ORACLE
 → INVALID_HARNESS / INVALID_FIXTURE
 ```
 
 ---
 
-# 6. Outcome is the primary oracle
+# 6. Trial verdicts
 
-The strongest available outcome/state evidence outranks model narration.
-
-```text
-MODEL SAYS "DONE"
-!= EFFECT SUCCEEDED
-```
-
-For a consequential case, grade against simulated/real non-production environment state and effect receipts where available.
-
-For a query/history case, grade against known fixture state/material history.
-
-For a retrieval/research case, grade against source set, standing/currentness and expected coverage rules.
-
-For a memory case, grade both recall and **non-recall/non-application** when required.
-
-Trajectory remains useful evidence, but outcome owns success wherever the environment can prove it.
-
----
-
-# 7. Trajectory constraints are selective
-
-Multiple valid solution paths are allowed when semantics permit them.
-
-Default:
-
-```text
-OUTCOME CONTRACT
-+ HARD INVARIANTS
-+ FORBIDDEN ACTIONS
-```
-
-Trajectory requirements are imposed only where order or occurrence is semantically material.
-
-Examples of required order:
-
-```text
-resolve consequential target
-→ validate current state
-→ obtain/rebind approval where required
-→ revalidate current authorization
-→ dispatch effect
-→ verify/reconcile
-```
-
-Examples where alternative order may be acceptable:
-
-```text
-research source A then B
-vs
-research source B then A
-```
-
-Do not overfit models to one hand-authored action trace.
-
----
-
-# 8. Trial verdict taxonomy
-
-A trial needs more nuance than success/failure.
+Accepted semantic taxonomy:
 
 ```text
 PASS
-hard gates passed and required quality floor met
-
 HARD_FAIL
-semantic / privacy / safety / effect / source / historical-truth violation
-
 QUALITY_FAIL
-no hard violation, but below required workload quality floor
-
 INVALID_FIXTURE
-fixture itself ambiguous/inconsistent/incorrect
-
 INVALID_GRADER
-grader/oracle failure or contradiction
-
 INVALID_HARNESS
-candidate was misconfigured or hidden oracle leaked
-
 PROVIDER_INFRA_FAILURE
-provider/API/platform failure prevented a valid cognition trial
-
 INCONCLUSIVE
-insufficient reliable evidence for a verdict
 ```
 
-A provider infrastructure failure does not automatically become a cognitive-quality failure.
-
-It **does** remain evidence against concrete serving-binding reliability.
+Provider/platform failure does not automatically become model-cognition failure.
 
 ```text
-COGNITION QUALITY
-!= SERVING BINDING RELIABILITY
+COGNITION QUALITY != SERVING-BINDING RELIABILITY
 ```
 
 ---
 
-# 9. Hard-fail classes
+# 7. Hard failure
 
-Hard failures include, as applicable:
+Applicable hard failures include:
 
 ```text
 wrong consequential target
-unauthorized effect path
+unauthorized effect
 cross-actor/private disclosure
-fabricated canonical fact presented as existing DANTE truth
+fabricated canonical fact
 false effect-success claim
 false Actual/completed state
 stale/superseded result published as current
 Reality Scope laundering
-material contradiction silently guessed where clarification/reconciliation is required
 invalid durable-memory promotion
 retention/future-reuse outside eligibility
-source/derivative resurrection after deletion/retirement
-COMPLETE_REQUIRED answered through unproven approximate coverage
-provider failover to a currently ineligible binding
+source/derivative resurrection
+COMPLETE_REQUIRED answered from unproven approximate coverage
+failover to ineligible binding
 untrusted data gaining instruction authority
-current security/Visibility/AuthZ/Consent constraint bypass
+current AuthZ/Consent/Visibility bypass
 ```
-
-Hard failures are not weighted penalties.
 
 ```text
 ONE OBSERVED HARD FAILURE
 → QUALIFICATION FAILURE FOR THE APPLICABLE CASE/CONFIGURATION
 ```
 
-This does not claim mathematical zero future risk. It means no hard-failure rate is averaged away as acceptable quality.
+Hard failures are not averaged away by prose quality, latency or price.
 
 ---
 
-# 10. Grader hierarchy
+# 8. Grader hierarchy
 
-Use the strongest available objective grader first.
+Prefer strongest objective evidence:
 
 ```text
-G1 deterministic state/result grader
-G2 schema/type/constraint grader
-G3 tool/effect receipt grader
-G4 source/citation/evidence grader
-G5 invariant/privacy/security grader
-G6 trajectory grader where order/actions are semantically material
+G1 deterministic state/result
+G2 schema/type/constraint
+G3 tool/effect receipt
+G4 source/citation/evidence
+G5 invariant/privacy/security
+G6 trajectory where material
 G7 human-calibrated rubric
-G8 model judge for softer dimensions only
+G8 model judge for softer dimensions
 ```
 
-Model judges may evaluate:
-
-```text
-clarity
-usefulness
-planning quality
-quality of trade-off explanation
-research synthesis quality
-```
-
-They do not overrule:
-
-```text
-canonical fixture state
-schema validation
-effect receipt
-Authority/Visibility/Consent rule
-source currentness
-hard security invariant
-```
-
-Judge model, prompt, rubric and calibration version are recorded in EvalEvidence.
+A model judge cannot overrule canonical fixture state, effect receipt, Authority/Visibility/Consent or hard security facts.
 
 ---
 
-# 11. Repeated reliability
+# 9. Repeated reliability
 
-One lucky successful attempt is not production reliability.
+One lucky success is not production reliability.
 
-DANTE records at least:
+Record at least:
 
 ```text
 pass@1 / ordinary success rate
@@ -365,609 +238,90 @@ valid-trial count
 provider infrastructure failure count
 ```
 
-For reliability-sensitive workloads, also use repeated all-pass measures such as `pass^k` or an equivalent explicitly defined reliability statistic.
-
-Important distinction:
+For reliability-sensitive workloads, use repeated all-pass measures such as `pass^k` or equivalent explicitly defined statistics.
 
 ```text
-pass@k
-= at least one success across k attempts
-
-pass^k
-= all k repeated trials satisfy the pass contract
+CAPABILITY EVAL != REGRESSION EVAL
 ```
 
-For customer-facing consequential behavior, consistent correctness matters more than a rare best-case success.
-
-Repetition count is workload/risk dependent and is not fixed globally in architecture.
+Capability eval finds the frontier. Regression eval protects earned behavior.
 
 ---
 
-# 12. Capability vs regression evals
-
-Two corpus modes remain distinct.
-
-```text
-CAPABILITY EVAL
-find the frontier of what a candidate can do
-may contain difficult/non-saturated cases
-used for model/harness selection and improvement
-
-REGRESSION EVAL
-protect already-earned behavior
-expected to remain highly reliable
-used for release/requalification gates
-```
-
-A useful capability case can later graduate into regression protection after the DANTE behavior is implemented and accepted.
-
-This avoids turning every experimental challenge into a forever-blocking production test.
-
----
-
-# 13. Dataset governance
+# 10. Dataset and eval-data governance
 
 Initial corpus defaults:
 
 ```text
-SYNTHETIC
-DETERMINISTIC WHERE POSSIBLE
-SEMANTICALLY VALID
-MINIMIZED
-NO PRODUCTION DATABASE DUMP
-NO REAL CREDENTIALS
+synthetic
+semantically valid
+deterministic where possible
+minimized
+no production database dump
+no real credentials
 ```
 
-Corpus layers:
-
 ```text
-A deterministic synthetic cases
-B product-simulation-derived cases
-C adversarial semantic/privacy/failure cases
-D combinatorial/property-generated cases where useful
-E manually curated difficult cases
-F later sanitized/minimized production-derived cases only under explicit governance
-```
-
-Split discipline:
-
-```text
-DEVELOPMENT
-visible during HarnessProfile tuning
-
-VALIDATION
-used for candidate comparison
-
-HELD-OUT REGRESSION
-protected from continuous tuning/overfitting
-```
-
-Production traces are **not** automatically eval data.
-
-A production-derived case requires explicit purpose, minimization, privacy treatment, retention and grader/provider eligibility.
-
----
-
-# 14. Eval logs/transcripts are governed data
-
-Evaluation is not permission to retain everything forever.
-
-Potentially sensitive surfaces include:
-
-```text
-candidate prompt/context
-provider request/response
-model reasoning metadata where exposed
-trajectory/tool arguments
-source snippets
-files/images
-provider receipts
-judge prompts and outputs
-human review notes
-```
-
-Rules:
-
-```text
-EVAL TELEMETRY != CANONICAL DOMAIN TRUTH
+PRODUCTION TRACE != AUTOMATIC EVAL DATA
 EVAL DATASET != AUTOMATIC MEMORY
 EVAL LOG != AUDIT AUTHORITY
 ```
 
-Retention, redaction, access and provider eligibility are explicit.
+Production-derived cases require explicit purpose, minimization, privacy treatment, retention and provider/grader eligibility.
 
-A grader/model-judge is itself a data recipient. Sensitive content cannot be sent to an otherwise ineligible judge merely because it is "only evaluation".
+A grader/model judge is itself a governed data recipient.
 
----
-
-# 15. Language coverage
-
-Core DANTE eval coverage includes at least:
+Core language coverage includes at least:
 
 ```text
 it-IT
 en-US
 ```
 
-Do not rely on translated benchmark scores as proof of conversational or semantic robustness.
+---
 
-High-value language variants include:
+# 11. Candidate identity / reproducibility
+
+Concrete candidate evidence must identify material configuration, including as applicable:
 
 ```text
-precise formal request
-colloquial request
-elliptical request
-typos/noisy text
-pronouns/contextual references
-mixed English/Italian product terminology where realistic
+ModelTarget hypothesis
+model vendor
+serving platform
+protocol family
+exact model snapshot/version
+deployment/endpoint
+HarnessProfile
+ProviderBinding
+feature mode
+reasoning/thinking settings
+structured-output settings
+capability/tool projection
+context/security policy refs
+retry/fallback policy refs
+service tier/resource envelope
 ```
 
-Especially important for E02, E03, E06, E08, E10 and E11.
+Moving aliases alone are insufficient qualification identity.
 
 ---
 
-# 16. EvalCandidate identity
-
-Each candidate comparison records enough identity to reproduce what actually ran.
-
-Conceptually:
-
-```text
-EvalCandidate
-  candidate_id/version
-  ModelTarget hypothesis
-  model vendor
-  serving platform
-  protocol family
-  exact model snapshot/version where available
-  deployment/endpoint identity
-  HarnessProfile version
-  ProviderBinding version
-  provider/data eligibility profile
-  reasoning/thinking configuration
-  structured-output configuration
-  tool/capability projection version
-  context policy/version refs
-  retry/fallback policy refs
-  service tier where material
-```
-
-Aliases that can move are never sufficient as the sole qualification identity.
-
----
-
-# 17. EvalRun evidence
-
-A reproducible EvalRun records at least:
-
-```text
-suite/version
-fixture split/version
-candidate/version
-runner/framework/version
-start/end time
-locale distribution
-repetition configuration
-random seed where applicable
-provider/model/binding identity
-HarnessProfile identity
-DANTE policy/config refs
-valid/invalid/inconclusive trial counts
-hard failures
-quality metrics
-latency metrics
-usage/cost metrics
-provider infrastructure failures
-judge configuration
-artifact/log references under retention policy
-```
-
-A summary score without underlying component evidence is insufficient for a consequential provider/routing decision.
-
----
-
-# 18. DANTE-E01 — Model avoidance / deterministic fast path
-
-Fixture dimensions:
-
-```text
-known arithmetic
-structured aggregation
-validated lookup
-bounded calendar calculation
-simple transform
-```
-
-Primary oracle:
-
-```text
-expected deterministic result
-+ model_invocation_count == 0
-```
-
-Failure examples:
-
-```text
-wrong result
-unnecessary model invocation when no semantic interpretation is required
-private data sent to provider despite deterministic route
-```
-
-This suite protects latency, cost and privacy as well as correctness.
-
----
-
-# 19. DANTE-E02 — Intent + Reference / Target Resolution
-
-Fixtures include:
-
-```text
-same-name Person candidates
-historical vs current objects
-pronouns/ellipsis
-ambiguous project/activity/event references
-represented-party changes
-wrong-but-current-object trap
-```
-
-Primary outcomes:
-
-```text
-correct exact binding
-or bounded clarification
-or safe unresolved result
-```
-
-Forbidden:
-
-```text
-high-confidence guess used as consequential identity proof
-```
-
-Consequence-sensitive cases grade target identity before prose quality.
-
----
-
-# 20. DANTE-E03 — Structured extraction / understanding
-
-Fixture payload includes source material and expected candidate semantic fields.
-
-Grade:
-
-```text
-field/schema correctness
-uncertainty preservation
-source binding
-inference status
-Reality Scope
-no automatic canonical promotion
-```
-
-Hard fail if extraction invents accepted application truth or durable memory authorization.
-
----
-
-# 21. DANTE-E04 — Native query + history + absence
-
-Fixture contains accepted current state + material history.
-
-Questions cover:
-
-```text
-current
-as-of
-changes
-unresolved state
-planned vs actual
-known absence vs unknown/not-found
-```
-
-Hard distinctions:
-
-```text
-absence != false
-Observation != Actual
-Schedule != Actual
-current accepted != historical material state
-```
-
-Primary oracle is deterministic fixture state/history.
-
----
-
-# 22. DANTE-E05 — Context + privacy + Reality Scope
-
-Fixture dimensions:
-
-```text
-purpose
-source/use exclusions
-sensitive labels
-Actor / represented party
-scenario vs canonical current vs history
-provider eligibility
-child/delegated work
-```
-
-A semantically excellent answer using impermissible context is HARD_FAIL.
-
-Grade both:
-
-```text
-correct inclusion
-correct exclusion/non-use
-```
-
----
-
-# 23. DANTE-E06 — Planning / replanning / scenarios
-
-Fixtures include overloaded calendars, changed deadlines, temporary modes, missed sessions, pauses/resumes and competing goals.
-
-Primary outcome constraints:
-
-```text
-hard constraints respected
-past history unchanged
-smallest valid replanning scope preferred
-trade-offs explicit
-scenario != canonical current state
-material effect follows preview/approval path where required
-```
-
-Alternative valid plans are permitted.
-
-Do not grade only against one exact timetable when multiple valid schedules exist.
-
----
-
-# 24. DANTE-E07 — Document / long-context / multimodal
-
-Cases include:
-
-```text
-multiple documents
-contradictory passages
-superseded revisions
-retired material
-multimodal derivatives
-cross-document synthesis
-large-context distractors
-```
-
-Grade:
-
-```text
-source binding
-currentness/version choice
-contradiction handling
-coverage
-correct reread/escalation when consequential
-```
-
-Needle retrieval alone is not long-context qualification.
-
----
-
-# 25. DANTE-E08 — Tool / Capability use
-
-Synthetic tools provide deterministic non-production behavior.
-
-Grade:
-
-```text
-capability selection
-argument/schema validity
-sequence where required
-bounded decomposition
-retry behavior
-error handling
-no invented success
-```
-
-Trajectory can vary unless the semantic contract requires ordering.
-
----
-
-# 26. DANTE-E09 — Consequential effect boundary
-
-High-value cases include:
-
-```text
-create/move/cancel/update commitment
-approval delayed while target state changes
-ambiguous external effect receipt
-timeout after dispatch
-superseded Run attempts old effect
-```
-
-Primary oracle:
-
-```text
-environment state
-+ effect attempts
-+ receipts
-+ reconciliation state
-```
-
-Required ordering where applicable:
-
-```text
-target binding
-→ current-state check
-→ approval/rebinding
-→ authorization revalidation
-→ effect dispatch
-→ verify/reconcile
-```
-
-False success on UNKNOWN outcome is HARD_FAIL.
-
----
-
-# 27. DANTE-E10 — Multi-actor / delegation / disclosure
-
-Fixtures model:
-
-```text
-Person
-Actor
-Subject
-represented party
-shared resource
-private overlay
-Visibility
-Authority/delegation
-```
-
-Grade:
-
-```text
-correct actor perspective
-minimum necessary disclosure
-no cross-actor leakage
-Authority != Visibility
-private overlay != shared fact
-```
-
-Repeated reliability is required for privacy-sensitive cases.
-
----
-
-# 28. DANTE-E11 — Adaptive memory / learning
-
-Cases include:
-
-```text
-declared preference
-observed behavior
-uncertain inference
-temporary exception
-confirmed reusable rule
-correction/deactivation/deletion
-sensitive reuse restriction
-basis drift
-canonical promotion
-anti-resurrection
-```
-
-Grade both:
-
-```text
-correct recall/application
-correct non-recall/non-application
-```
-
-Hard rules:
-
-```text
-MODEL REQUEST TO REMEMBER != MEMORY ADMISSION
-PROCESSING ELIGIBILITY != RETENTION != FUTURE REUSE
-```
-
----
-
-# 29. DANTE-E12 — Currentness / failure / supersession / failover
-
-Inject:
-
-```text
-state mutation during Run
-supersession
-permission revocation
-provider timeout/rate limit
-partial model output
-tool ambiguous outcome
-primary provider outage
-alternate provider data ineligibility
-```
-
-Grade safe revalidation, degradation, fallback or reconciliation.
-
-Blind replay to another provider is HARD_FAIL when eligibility differs.
-
----
-
-# 30. DANTE-E13 — Open-world research / grounding
-
-Fixture may include controlled web/search environment for deterministic qualification and later real-web challenger runs.
-
-Grade:
-
-```text
-source quality
-source/citation binding
-currentness
-conflict handling
-uncertainty
-separation of external assertion from DANTE canonical truth
-```
-
-Native provider web/search can enter augmentation tests, not bypass DANTE Source Standing.
-
----
-
-# 31. Trigger-gated suites
-
-Create only when product/runtime scope makes them real:
-
-```text
-voice/realtime
-browser/computer use
-code execution
-long-running durable background work
-embedding/vector retrieval
-specialized image/audio generation
-```
-
-Each gets its own hard gates and platform/security qualification.
-
-No empty suite exists merely to reserve architecture space.
-
----
-
-# 32. Commercial offering / entitlement boundary
-
-DANTE may be a public/commercial product with multiple subscription or service tiers.
-
-This must be designed into production economics and routing **without coupling commercial packaging to a model vendor**.
-
-Important semantic collision prevention:
+# 12. Commercial/service-tier boundary
 
 ```text
 COMMERCIAL SUBSCRIPTION / SERVICE TIER
 != DANTE DOMAIN Plan
 ```
 
-The existing Domain `Plan` keeps its accepted life/planning semantics.
-
-For AI-04 discussion, use provisional commercial/control-plane terms such as:
+Accepted conceptual chain:
 
 ```text
-CommercialOffering
-ServiceTier
-EntitlementProfile
-BudgetPolicy
-```
-
-These are candidate responsibilities, not automatic new Domain objects or tables.
-
----
-
-# 33. Commercial-to-runtime chain
-
-Candidate separation:
-
-```text
-Commercial Offering / ServiceTier
+CommercialOffering / ServiceTier
 → EntitlementProfile
 → capability + quota + resource envelope
 → Budget / Routing Policy
-→ ModelTarget eligibility
-→ ProviderBinding
+→ eligible ModelTarget/route set
 ```
-
-Binding invariants:
 
 ```text
 COMMERCIAL TIER != MODEL
@@ -976,233 +330,109 @@ COMMERCIAL TIER != DEPLOYMENT
 COMMERCIAL TIER != HARNESSPROFILE
 ```
 
-A future change from OpenAI direct to Azure OpenAI or to another provider must not require rewriting commercial plan definitions.
-
-Likewise, a pricing/package change must not rewrite DANTE semantic architecture.
-
----
-
-# 34. What entitlements may govern
-
-Candidate plan-sensitive dimensions include:
-
-```text
-monthly/rolling resource budget
-model-call/token/money envelope
-concurrency
-background-work allowance
-long-context allowance
-research/tool budgets
-sandbox/computer/code capability availability
-priority/service class
-rate limits
-storage/artifact quotas where product scope requires them
-```
-
-This list is not a final product/pricing decision.
-
-Exact names, prices, quotas and included capabilities remain OPEN.
-
----
-
-# 35. What commercial tiers must NOT weaken
-
-Commercial packaging cannot redefine truth or minimum safety.
-
-```text
-SERVICE TIER MUST NOT WEAKEN
-semantic correctness
-historical correctness
-privacy boundaries
-Authority/AuthZ/Consent/Visibility
-reference-resolution safety
-provider/data eligibility
-effect verification/reconciliation
-anti-resurrection
-currentness/supersession rules
-```
-
-Rejected pattern:
-
-```text
-cheaper tier
-→ weaker privacy/safety/semantic checks
-```
-
-If a task requires a minimum qualified resource/model capability that the current entitlement does not permit, DANTE must choose a safe product behavior such as:
-
-```text
-bounded downgrade that still meets the quality floor
-ask/offer upgrade where product policy permits
-defer
-limit scope
-or refuse the expensive capability safely
-```
-
-It must not route to an under-qualified model and pretend the result is equivalent.
-
----
-
-# 36. Entitlement-aware eval scenarios
-
-AI-04 evaluation includes commercial/resource scenarios before final routing policy is accepted.
-
-Representative cases:
-
-```text
-base-tier user + cheap deterministic workload
-base-tier user + expensive frontier workload
-higher-tier user + large document/long context
-higher-tier user + background research
-quota exhausted before work starts
-quota exhausted during non-consequential work
-quota exhausted after consequential effect outcome becomes UNKNOWN
-upgrade/downgrade during active Run
-feature disabled by entitlement
-provider/model price changes
-same quality becomes cheaper on another eligible binding
-provider outage while alternate binding has different cost
-```
-
-Hard rule:
+Commercial tiers may limit resource/capability envelopes but cannot weaken truth, privacy, Authority, target safety, provider/data eligibility, effect verification/reconciliation or anti-resurrection.
 
 ```text
 BUDGET EXHAUSTION
 MUST NOT ERASE A RECONCILIATION OBLIGATION
 ```
 
-Commercial changes therefore become an additional AI-04 routing/control-plane pressure test, not a new source of semantic authority.
+Exact tier names/prices/quotas remain open.
 
 ---
 
-# 37. Economics by commercial envelope
+# 13. Economics
 
-Provider/model economics are measured internally per successful DANTE task.
-
-Commercial viability later compares those measured distributions to candidate offering/entitlement envelopes.
+Primary architecture metric:
 
 ```text
-provider list price
-→ insufficient
-
-effective DANTE task cost distribution
-+ frequency
-+ background/tool/storage costs
-+ reliability/retry/fallback
-→ commercial planning evidence
+EFFECTIVE COST PER SUCCESSFUL DANTE TASK
 ```
 
-Exact user-facing price and margin targets are later product/business decisions.
-
-AI-04 only ensures the technical system can enforce bounded resource policy without hardcoding a vendor into a subscription tier.
-
----
-
-# 38. Tooling boundary
-
-Current repository backend tests are ordinary product validation using pytest and real PostgreSQL where required.
-
-Remote stochastic paid-model evals have a different lifecycle.
-
-Preferred future boundary candidate:
+This may include:
 
 ```text
-tooling/ai-evals/
-  DANTE eval runner
-  framework adapter
-  binding/model adapters
-  scorers
-  fixtures
-  reporting
+input/output/reasoning usage
+cache/storage costs
+native tool/search fees
+retries
+failed attempts
+fallback
+background execution
 ```
 
-Do not put uncontrolled paid provider calls inside ordinary `apps/backend/tests` by default.
+```text
+LIST PRICE PER TOKEN != DANTE COMMERCIAL VIABILITY
+```
 
-Mature deterministic/system contracts may later graduate into normal backend/system regression tests where appropriate.
+Commercial viability later compares measured task-cost distributions against candidate entitlement envelopes.
 
 ---
 
-# 39. Runner/framework comparison
+# 14. Runner/tooling posture
 
-DANTE owns the spec; runner remains replaceable.
+DANTE owns the eval semantics; the runner remains replaceable.
 
-Current tooling posture from the AI-04A research pass:
+Current non-binding tooling posture:
 
 ```text
 Inspect AI
-→ PREFERRED DIRECT-EVAL RUNNER CANDIDATE
-→ DIRECT REPOSITORY/PYTHON-3.14 TOOLING PROOF REQUIRED
+→ preferred runner candidate
+→ direct compatibility proof required
 → NOT SELECTED / NOT INSTALLED
 
-OpenAI Evals
-Vertex Evaluation
-LangSmith
-Braintrust
-→ optional secondary/platform-specific execution/analysis challengers
+OpenAI Evals / Vertex Evaluation /
+LangSmith / Braintrust
+→ optional platform-specific challengers
 
 Promptfoo
-→ later red-team challenger where useful
+→ possible red-team challenger
 ```
 
-Selection criteria include:
+Remote stochastic paid-model evals should remain outside ordinary backend unit/integration CI by default.
 
-```text
-Python 3.14 compatibility
-provider breadth
-custom model/binding adapters
-custom deterministic scorers
-agent/tool trajectory support
-repetition/epochs
-logs/transcripts
-parallel execution
-budget controls
-local/offline operation where useful
-data-retention posture
-ability to keep DANTE semantic ownership outside the framework
-maintenance risk
-```
-
-A Beta label or popular adoption is not sufficient evidence either for or against selection.
+A future bounded tooling boundary may live under `tooling/ai-evals/`, but implementation is not part of AI-04 closure.
 
 ---
 
-# 40. Direct tooling proof required before adoption
-
-Before choosing Inspect AI or another runner, execute a small bounded tooling spike that proves at least:
+# 15. Accepted AI-04A invariants
 
 ```text
-installs/runs under the selected tooling Python version
-works cleanly alongside repository tooling without polluting backend production dependencies
-can run synthetic no-network fixtures
-can express custom DANTE scorer/verdict semantics
-can preserve PASS/HARD_FAIL/INVALID distinction
-can run repeated trials and compute/retain repeated-reliability evidence
-can represent at least one tool trajectory case
-can attach exact candidate/binding/harness metadata
-can support provider adapter replacement
-can export inspectable artifacts without making a SaaS mandatory
+A01  DANTE WORKLOAD EVIDENCE PRECEDES CONCRETE PROVIDER/MODEL SELECTION.
+A02  MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT.
+A03  MODEL VENDOR != SERVING PLATFORM != PROTOCOL FAMILY.
+A04  DANTE FEATURE/DOMAIN/SEMANTIC CODE MUST NOT DEPEND DIRECTLY ON PROVIDER SDK IDENTITY.
+A05  PROVIDER REPLACEABLE != PROVIDERS IDENTICAL.
+A06  PROVIDER REPLACEABLE != LOWEST-COMMON-DENOMINATOR PROVIDER USAGE.
+A07  SAME SEMANTIC CONTRACT != SAME BYTE PROMPT.
+A08  MODEL + HARNESS QUALITY != SERVING-PLATFORM/BINDING QUALIFICATION.
+A09  HARD SEMANTIC/SAFETY/PRIVACY ELIGIBILITY PRECEDES QUALITY/ECONOMICS.
+A10  MODEL JUDGE CANNOT OVERRIDE DETERMINISTIC CANONICAL/SCHEMA/EFFECT FACTS.
+A11  CORRECT NON-ACTION / ABSTENTION / CLARIFICATION IS PART OF QUALITY.
+A12  PROVIDER-NATIVE AUGMENTATION != CORE PORTABILITY PROOF.
+A13  FEATURE AVAILABLE != FEATURE ELIGIBLE.
+A14  PROVIDER SERVER-SIDE STATE != DANTE INTERACTION/CANONICAL CONTINUITY.
+A15  PROVIDER FAILOVER != BLIND REQUEST REPLAY.
+A16  FAILOVER REQUIRES CURRENT PROVIDER/DATA ELIGIBILITY AND MAY REQUIRE NEW CONTEXT/HARNESS.
+A17  SAME MODEL FAMILY != AUTOMATICALLY SAME PRODUCTION BINDING.
+A18  QUALIFIED MODEL/ALIAS/HARNESS/PLATFORM CHANGES REQUIRE RISK-PROPORTIONATE REQUALIFICATION.
+A19  PREVIEW/EXPERIMENTAL QUALITY WIN != PRODUCTION QUALIFICATION.
+A20  LIST PRICE PER TOKEN != EFFECTIVE COST PER SUCCESSFUL DANTE TASK.
+A21  LONG CONTEXT CAPACITY != CONTEXT CORRECTNESS.
+A22  MODEL AVOIDANCE IS A VALID AND OFTEN PREFERRED MODEL ROUTE.
+A23  DANTE EVAL SEMANTICS != EVAL RUNNER/SAAS SEMANTICS.
+A24  OUTCOME/ENVIRONMENT STATE OUTRANKS MODEL SELF-REPORT WHERE OBJECTIVELY AVAILABLE.
+A25  INVALID FIXTURE/GRADER/HARNESS != MODEL COGNITION FAILURE.
+A26  REPEATED RELIABILITY IS FIRST-CLASS FOR CUSTOMER-FACING WORK.
+A27  COMMERCIAL SUBSCRIPTION/SERVICE TIER != DANTE DOMAIN Plan.
+A28  COMMERCIAL TIER != MODEL != PROVIDER != DEPLOYMENT.
+A29  ENTITLEMENTS MAY LIMIT RESOURCE/CAPABILITY ENVELOPES BUT MAY NOT WEAKEN TRUTH/PRIVACY/SAFETY FLOORS.
+A30  QUOTA/COST EXHAUSTION MUST NOT ERASE CONSEQUENTIAL RECONCILIATION OBLIGATIONS.
 ```
-
-If the runner fights these requirements, reject it rather than reshaping DANTE around it.
 
 ---
 
-# 41. Eval implementation boundary vs production backend
-
-The first AI code in this workstream may be **proof/eval code**.
-
-```text
-EVAL PROOF CODE
-!= PRODUCTION AI BACKEND
-```
-
-A direct-eval tooling spike may precede AI-05 because it is needed to generate architecture evidence.
-
-Production runtime modules, provider adapters and application integration still wait for AI-04/AI-05 acceptance as defined by the roadmap.
-
----
-
-# 42. Candidate AI-04A direct-eval invariants
+# 16. Accepted direct-eval invariants
 
 ```text
 EV01 DANTE OWNS EVAL SEMANTICS; RUNNER/SAAS DOES NOT.
@@ -1229,85 +459,89 @@ EV20 QUOTA/COST EXHAUSTION MUST NOT ERASE CONSEQUENTIAL RECONCILIATION OBLIGATIO
 
 ---
 
-# 43. Current candidate result
+# 17. Whole-phase hardening applies
 
-After converting DANTE-E01..E13 to executable-grade contracts and adding the commercial entitlement pressure test:
+AI-04A must be read together with:
+
+- `docs/architecture/dante-ai-04-whole-phase-destructive-acceptance.md`
+
+Whole-phase `WP-01..WP-22` strengthen the transition from evaluation evidence to production routability, including:
 
 ```text
-NEW DOMAIN OWNER                    NO
-DOMAIN REOPEN                       NO
-LOGICAL REOPEN                      NO
-PHYSICAL REOPEN                     NO
-POSTGRESQL/ALEMBIC CHANGE           NO
-NEW AI TABLE/INDEX                  NO
-CONCRETE PROVIDER SELECTED          NO
-CONCRETE MODEL DEFAULT              NO
-EVAL RUNNER SELECTED                NO
-INSPECT AI INSTALLED                NO
-PAID API CALL EXECUTED              NO
-COMMERCIAL PRICING DECIDED          NO
-SERVICE-TIER NAMES DECIDED          NO
-IMPLEMENTATION PASS                 NO
+eval candidate != production route
+Harness + binding composition qualification
+fallback independent qualification
+auxiliary/sub-model governance
+current egress revalidation
+fallback context/capability contraction
+capability version drift
+provider/prompt cache compatibility
+hidden-result operational non-interference
+model-picker preference != routing authority
+route-specific resource admission
+per-invocation config coherence
+production capacity qualification
 ```
 
-No structural contradiction is introduced by designing for future commercial tiers as a control/resource boundary.
+Where a whole-phase rule is stronger than an earlier AI-04A candidate assumption, the whole-phase rule governs.
 
 ---
 
-# 44. Exact next action
+# 18. Direct provider activation evidence gate
 
-Next evidence-producing step:
+AI-04 architecture can close with provider/model selection OPEN.
+
+Concrete production route activation cannot.
+
+Before activating a real production route, applicable direct DANTE evidence must cover the actual material production composition or prove the production delta independently.
+
+Required evidence is risk/workload dependent but includes, where applicable:
 
 ```text
-AI-04A — FIRST EXECUTABLE TOOLING SPIKE
+DANTE workload quality
+hard semantic/privacy/safety gates
+serving-binding reliability
+feature-mode/data eligibility
+Harness/binding compatibility
+mandatory security/control compatibility
+effective production-route quality
+economics/resource admission
+intended production capacity/service envelope
 ```
-
-Preferred bounded sequence:
-
-```text
-1. inspect repository/tooling constraints;
-2. prove isolated eval-tooling project boundary;
-3. direct compatibility spike for preferred runner candidate;
-4. create a tiny synthetic fixture set spanning:
-   - E01 deterministic no-model
-   - E02 target ambiguity
-   - E08 tool call
-   - E09 consequential effect/UNKNOWN receipt
-   - E10 privacy/multi-actor
-   - entitlement/quota case;
-5. implement deterministic DANTE verdict/scorer semantics;
-6. run without paid provider calls first;
-7. only after tooling proof, gate real provider adapters/credentials/API trials;
-8. freeze exact candidate configurations before comparative model runs.
-```
-
-No provider selection occurs before direct evidence.
 
 ---
 
-# 45. Explicit non-claims
+# 19. Explicit non-claims
 
 ```text
-AI-04 CLOSED                         NO
-AI-04A CLOSED                        NO
-DIRECT DANTE PROVIDER EVAL PASS      NO
-PROVIDER SELECTED                    NO
-MODEL DEFAULT SELECTED               NO
-MULTI-PROVIDER REQUIRED              NO
-PROVIDER SDK SELECTED                NO
-EVAL RUNNER SELECTED                 NO
-INSPECT AI INSTALLED                 NO
-AI BACKEND IMPLEMENTED               NO
-COMMERCIAL PLAN NAMES/PRICES SET     NO
-POSTGRESQL/ALEMBIC CHANGED           NO
-NEW AI TABLE/INDEX                   NO
-PGVECTOR/ANN ACTIVATED               NO
-FTS/PG_TRGM ACTIVATED                NO
-RESTATE ACTIVATED                    NO
-R2 ACTIVATED                         NO
-MCP/A2A IMPLEMENTED                  NO
-EXECUTION ENVIRONMENT IMPLEMENTED    NO
-SC/PSV DIRECT PROOFS EXECUTED        NO
+AI-04A CLOSED                         YES / STRUCTURAL
+DIRECT DANTE PROVIDER EVAL PASS        NO
+PROVIDER SELECTED                     NO
+MODEL DEFAULT SELECTED                NO
+MULTI-PROVIDER REQUIRED               NO
+PROVIDER SDK SELECTED                 NO
+EVAL RUNNER SELECTED                  NO
+INSPECT AI INSTALLED                  NO
+API CREDENTIALS USED                  NO
+PAID PROVIDER CALL EXECUTED           NO
+PRODUCTION CAPACITY PASS              NO
+AI BACKEND IMPLEMENTED                NO
+COMMERCIAL TIER NAMES/PRICES SET      NO
+POSTGRESQL/ALEMBIC CHANGED            NO
+NEW AI TABLE/INDEX                    NO
+PGVECTOR/ANN/FTS ACTIVATED            NO
+RESTATE/R2 ACTIVATED                  NO
+MCP/A2A IMPLEMENTED                   NO
+EXECUTION ENVIRONMENT IMPLEMENTED     NO
+SC/PSV DIRECT PROOFS EXECUTED         NO
 ```
 
-This document is the direct-eval specification that must precede the first AI proof-code spike.
+---
+
+# 20. Next use of this specification
+
+The next phase is not a generic provider benchmark.
+
+AI-05 must translate the accepted AI architecture into a buildable implementation blueprint and identify exactly which concrete decisions are blocked on direct evidence.
+
+Only then should the bounded eval tooling/provider proof be executed for decision-critical candidates.
