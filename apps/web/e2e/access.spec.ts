@@ -301,6 +301,7 @@ test.describe('DANTE Access', () => {
 
     await page.getByRole('button', { name: 'Nascondi password' }).click();
     await expect(passwordInput).toHaveAttribute('type', 'password');
+    await expect(passwordInput).toHaveValue('Dante-password-example');
   });
 
   test('navigates signup locally and stops before fake account creation', async ({
