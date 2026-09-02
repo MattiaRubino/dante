@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -28,6 +28,7 @@ export function TemporalCreateRecurrenceFields({
   const { t } = useTranslation('common');
   const recurrence = fields.eventRecurrence;
   const confirmation = fields.confirmation;
+  const [cyclePositionDraft, setCyclePositionDraft] = useState('');
   const patchRecurrence = (
     patch: Partial<TemporalCreateFields['eventRecurrence']>,
   ) => onPatch({ eventRecurrence: { ...recurrence, ...patch } });
@@ -64,6 +65,35 @@ export function TemporalCreateRecurrenceFields({
             canonical.indexOf(left) - canonical.indexOf(right),
         );
     patchRecurrence({ weekdays: Object.freeze(next) });
+  };
+
+  const addCyclePosition = () => {
+    const position = Number(cyclePositionDraft);
+    if (
+      !Number.isInteger(position) ||
+      position < 1 ||
+      position > recurrence.cycleLength ||
+      recurrence.cyclePositions.includes(position)
+    ) {
+      return;
+    }
+    patchRecurrence({
+      cyclePositions: Object.freeze(
+        [...recurrence.cyclePositions, position].sort((left, right) => left - right),
+      ),
+    });
+    setCyclePositionDraft('');
+  };
+
+  const removeCyclePosition = (position: number) => {
+    if (recurrence.cyclePositions.length <= 1) {
+      return;
+    }
+    patchRecurrence({
+      cyclePositions: Object.freeze(
+        recurrence.cyclePositions.filter((candidate) => candidate !== position),
+      ),
+    });
   };
 
   return (
@@ -162,6 +192,12 @@ export function TemporalCreateRecurrenceFields({
                       <option value="monthly">
                         {t(($) => $.common.home.timeline.create.recurrence.monthly)}
                       </option>
+                      <option value="monthly-ordinal">
+                        {t(($) => $.common.home.timeline.create.recurrence.monthlyOrdinal)}
+                      </option>
+                      <option value="yearly">
+                        {t(($) => $.common.home.timeline.create.recurrence.yearly)}
+                      </option>
                     </select>
                   </label>
                   <label className="temporal-create-control">
@@ -208,6 +244,73 @@ export function TemporalCreateRecurrenceFields({
                     {renderError('eventRecurrence.weekdays')}
                   </div>
                 ) : null}
+                {recurrence.calendarFrequency === 'monthly-ordinal' ? (
+                  <div
+                    className="temporal-create-grid two"
+                    data-create-path="eventRecurrence.calendarOrdinal"
+                  >
+                    <label className="temporal-create-control">
+                      <span>
+                        {t(($) => $.common.home.timeline.create.recurrence.ordinal)}
+                      </span>
+                      <select
+                        value={recurrence.calendarOrdinal}
+                        onChange={(event) =>
+                          patchRecurrence({
+                            calendarOrdinal: Number(event.currentTarget.value),
+                          })
+                        }
+                      >
+                        {[-5, -4, -3, -2, -1, 1, 2, 3, 4, 5].map((ordinal) => (
+                          <option key={ordinal} value={ordinal}>
+                            {ordinal === -1
+                              ? t(($) => $.common.home.timeline.create.recurrence.ordinalLast)
+                              : ordinal < 0
+                                ? t(
+                                    ($) =>
+                                      $.common.home.timeline.create.recurrence.ordinalFromEnd,
+                                    { value: Math.abs(ordinal) },
+                                  )
+                                : t(
+                                    ($) => $.common.home.timeline.create.recurrence.ordinalFromStart,
+                                    { value: ordinal },
+                                  )}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="temporal-create-control">
+                      <span>
+                        {t(($) => $.common.home.timeline.create.recurrence.ordinalWeekday)}
+                      </span>
+                      <select
+                        value={recurrence.calendarOrdinalWeekday}
+                        onChange={(event) =>
+                          patchRecurrence({
+                            calendarOrdinalWeekday: event.currentTarget
+                              .value as TemporalCreateWeekday,
+                          })
+                        }
+                      >
+                        {temporalCreateWeekdays().map((weekday) => (
+                          <option key={weekday} value={weekday}>
+                            {weekdayLabel(weekday)}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    {renderError('eventRecurrence.calendarOrdinal')}
+                  </div>
+                ) : null}
+                {recurrence.calendarFrequency === 'monthly' ||
+                recurrence.calendarFrequency === 'yearly' ? (
+                  <p className="temporal-create-truth-note">
+                    {t(
+                      ($) => $.common.home.timeline.create.recurrence.calendarAnchorNote,
+                      { date: fields.date },
+                    )}
+                  </p>
+                ) : null}
               </>
             ) : null}
 
@@ -233,128 +336,251 @@ export function TemporalCreateRecurrenceFields({
             ) : null}
 
             {recurrence.patternKind === 'quota-per-period' ? (
-              <div
-                className="temporal-create-grid three"
-                data-create-path="eventRecurrence.quota"
-              >
-                <label className="temporal-create-control">
-                  <span>
-                    {t(($) => $.common.home.timeline.create.recurrence.quotaCount)}
-                  </span>
-                  <input
-                    type="number"
-                    min="1"
-                    max="999"
-                    value={recurrence.quotaCount}
-                    onChange={(event) =>
-                      patchRecurrence({ quotaCount: Number(event.currentTarget.value) })
-                    }
-                  />
-                </label>
-                <label className="temporal-create-control">
-                  <span>
-                    {t(($) => $.common.home.timeline.create.recurrence.quotaPeriod)}
-                  </span>
-                  <select
-                    aria-label={t(($) => $.common.home.timeline.create.recurrence.quotaPeriod)}
-                    value={recurrence.quotaPeriodKind}
-                    onChange={(event) =>
-                      patchRecurrence({
-                        quotaPeriodKind: event.currentTarget
-                          .value as TemporalCreateFields['eventRecurrence']['quotaPeriodKind'],
-                      })
-                    }
-                  >
-                    <option value="day">
-                      {t(($) => $.common.home.timeline.create.recurrence.periodDay)}
-                    </option>
-                    <option value="week">
-                      {t(($) => $.common.home.timeline.create.recurrence.periodWeek)}
-                    </option>
-                    <option value="month">
-                      {t(($) => $.common.home.timeline.create.recurrence.periodMonth)}
-                    </option>
-                    <option value="year">
-                      {t(($) => $.common.home.timeline.create.recurrence.periodYear)}
-                    </option>
-                  </select>
-                </label>
-                <label className="temporal-create-control">
-                  <span>
-                    {t(($) => $.common.home.timeline.create.recurrence.periodInterval)}
-                  </span>
-                  <input
-                    type="number"
-                    min="1"
-                    max="365"
-                    value={recurrence.quotaPeriodInterval}
-                    onChange={(event) =>
-                      patchRecurrence({
-                        quotaPeriodInterval: Number(event.currentTarget.value),
-                      })
-                    }
-                  />
-                </label>
-                {renderError('eventRecurrence.quota')}
-              </div>
+              <>
+                <div
+                  className="temporal-create-grid three"
+                  data-create-path="eventRecurrence.quota"
+                >
+                  <label className="temporal-create-control">
+                    <span>
+                      {t(($) => $.common.home.timeline.create.recurrence.quotaCount)}
+                    </span>
+                    <input
+                      type="number"
+                      min="1"
+                      max="999"
+                      value={recurrence.quotaCount}
+                      onChange={(event) =>
+                        patchRecurrence({ quotaCount: Number(event.currentTarget.value) })
+                      }
+                    />
+                  </label>
+                  <label className="temporal-create-control">
+                    <span>
+                      {t(($) => $.common.home.timeline.create.recurrence.quotaPeriod)}
+                    </span>
+                    <select
+                      aria-label={t(($) => $.common.home.timeline.create.recurrence.quotaPeriod)}
+                      value={recurrence.quotaPeriodKind}
+                      onChange={(event) =>
+                        patchRecurrence({
+                          quotaPeriodKind: event.currentTarget
+                            .value as TemporalCreateFields['eventRecurrence']['quotaPeriodKind'],
+                        })
+                      }
+                    >
+                      <option value="day">
+                        {t(($) => $.common.home.timeline.create.recurrence.periodDay)}
+                      </option>
+                      <option value="week">
+                        {t(($) => $.common.home.timeline.create.recurrence.periodWeek)}
+                      </option>
+                      <option value="month">
+                        {t(($) => $.common.home.timeline.create.recurrence.periodMonth)}
+                      </option>
+                      <option value="year">
+                        {t(($) => $.common.home.timeline.create.recurrence.periodYear)}
+                      </option>
+                    </select>
+                  </label>
+                  <label className="temporal-create-control">
+                    <span>
+                      {t(($) => $.common.home.timeline.create.recurrence.periodInterval)}
+                    </span>
+                    <input
+                      type="number"
+                      min="1"
+                      max="365"
+                      value={recurrence.quotaPeriodInterval}
+                      onChange={(event) =>
+                        patchRecurrence({
+                          quotaPeriodInterval: Number(event.currentTarget.value),
+                        })
+                      }
+                    />
+                  </label>
+                  {renderError('eventRecurrence.quota')}
+                </div>
+                {depth === 'full' ? (
+                  <>
+                    <div className="temporal-create-grid three">
+                      <label className="temporal-create-control">
+                        <span>
+                          {t(($) => $.common.home.timeline.create.recurrence.quotaFrame)}
+                        </span>
+                        <select
+                          value={recurrence.quotaFrame}
+                          onChange={(event) =>
+                            patchRecurrence({
+                              quotaFrame: event.currentTarget
+                                .value as TemporalCreateFields['eventRecurrence']['quotaFrame'],
+                            })
+                          }
+                        >
+                          <option value="floating-local">
+                            {t(
+                              ($) => $.common.home.timeline.create.recurrence.frameFloating,
+                            )}
+                          </option>
+                          <option value="named-zone">
+                            {t(($) => $.common.home.timeline.create.recurrence.frameNamedZone)}
+                          </option>
+                          <option value="absolute-utc">
+                            {t(($) => $.common.home.timeline.create.recurrence.frameUtc)}
+                          </option>
+                        </select>
+                      </label>
+                      {recurrence.quotaPeriodKind === 'week' ? (
+                        <label className="temporal-create-control">
+                          <span>
+                            {t(
+                              ($) => $.common.home.timeline.create.recurrence.quotaWeekStart,
+                            )}
+                          </span>
+                          <select
+                            value={recurrence.quotaWeekStart}
+                            onChange={(event) =>
+                              patchRecurrence({
+                                quotaWeekStart: event.currentTarget
+                                  .value as TemporalCreateWeekday,
+                              })
+                            }
+                          >
+                            {temporalCreateWeekdays().map((weekday) => (
+                              <option key={weekday} value={weekday}>
+                                {weekdayLabel(weekday)}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      ) : null}
+                      {recurrence.quotaFrame === 'named-zone' ? (
+                        <label className="temporal-create-control">
+                          <span>
+                            {t(
+                              ($) => $.common.home.timeline.create.recurrence.quotaTimeZone,
+                            )}
+                          </span>
+                          <input
+                            data-create-path="eventRecurrence.quotaTimeZoneId"
+                            type="text"
+                            value={recurrence.quotaTimeZoneId}
+                            autoComplete="off"
+                            onChange={(event) =>
+                              patchRecurrence({
+                                quotaTimeZoneId: event.currentTarget.value,
+                              })
+                            }
+                          />
+                          {renderError('eventRecurrence.quotaTimeZoneId')}
+                        </label>
+                      ) : null}
+                    </div>
+                    <p className="temporal-create-truth-note">
+                      {t(($) => $.common.home.timeline.create.recurrence.quotaFrameNote)}
+                    </p>
+                  </>
+                ) : null}
+              </>
             ) : null}
 
             {recurrence.patternKind === 'cyclic-positional' ? (
-              <div
-                className="temporal-create-grid three"
-                data-create-path="eventRecurrence.cycle"
-              >
-                <label className="temporal-create-control">
-                  <span>
-                    {t(($) => $.common.home.timeline.create.recurrence.cycleLength)}
-                  </span>
-                  <input
-                    type="number"
-                    min="1"
-                    max="10000"
-                    value={recurrence.cycleLength}
-                    onChange={(event) =>
-                      patchRecurrence({ cycleLength: Number(event.currentTarget.value) })
-                    }
-                  />
-                </label>
-                <label className="temporal-create-control">
-                  <span>
-                    {t(($) => $.common.home.timeline.create.recurrence.cycleOffset)}
-                  </span>
-                  <input
-                    type="number"
-                    min="0"
-                    max={Math.max(0, recurrence.cycleLength - 1)}
-                    value={recurrence.cycleOffset}
-                    onChange={(event) =>
-                      patchRecurrence({ cycleOffset: Number(event.currentTarget.value) })
-                    }
-                  />
-                </label>
-                <label className="temporal-create-control">
-                  <span>
-                    {t(($) => $.common.home.timeline.create.recurrence.cycleUnit)}
-                  </span>
-                  <select
-                    value={recurrence.cycleUnit}
-                    onChange={(event) =>
-                      patchRecurrence({
-                        cycleUnit: event.currentTarget
-                          .value as TemporalCreateFields['eventRecurrence']['cycleUnit'],
-                      })
-                    }
+              <>
+                <div
+                  className="temporal-create-grid two"
+                  data-create-path="eventRecurrence.cycle"
+                >
+                  <label className="temporal-create-control">
+                    <span>
+                      {t(($) => $.common.home.timeline.create.recurrence.cycleLength)}
+                    </span>
+                    <input
+                      type="number"
+                      min="1"
+                      max="10000"
+                      value={recurrence.cycleLength}
+                      onChange={(event) =>
+                        patchRecurrence({ cycleLength: Number(event.currentTarget.value) })
+                      }
+                    />
+                  </label>
+                  <label className="temporal-create-control">
+                    <span>
+                      {t(($) => $.common.home.timeline.create.recurrence.cycleUnit)}
+                    </span>
+                    <select
+                      value={recurrence.cycleUnit}
+                      onChange={(event) =>
+                        patchRecurrence({
+                          cycleUnit: event.currentTarget
+                            .value as TemporalCreateFields['eventRecurrence']['cycleUnit'],
+                        })
+                      }
+                    >
+                      <option value="day">
+                        {t(($) => $.common.home.timeline.create.recurrence.periodDay)}
+                      </option>
+                      <option value="week">
+                        {t(($) => $.common.home.timeline.create.recurrence.periodWeek)}
+                      </option>
+                    </select>
+                  </label>
+                </div>
+                <div className="temporal-create-grid two">
+                  <label className="temporal-create-control">
+                    <span>
+                      {t(($) => $.common.home.timeline.create.recurrence.cycleAddPosition)}
+                    </span>
+                    <input
+                      type="number"
+                      min="1"
+                      max={Math.max(1, recurrence.cycleLength)}
+                      value={cyclePositionDraft}
+                      onChange={(event) => setCyclePositionDraft(event.currentTarget.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter') {
+                          event.preventDefault();
+                          addCyclePosition();
+                        }
+                      }}
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    className="temporal-create-surface-action"
+                    onClick={addCyclePosition}
                   >
-                    <option value="day">
-                      {t(($) => $.common.home.timeline.create.recurrence.periodDay)}
-                    </option>
-                    <option value="week">
-                      {t(($) => $.common.home.timeline.create.recurrence.periodWeek)}
-                    </option>
-                  </select>
-                </label>
+                    {t(($) => $.common.home.timeline.create.recurrence.addPosition)}
+                  </button>
+                </div>
+                <div
+                  className="temporal-create-weekdays"
+                  role="group"
+                  aria-label={t(
+                    ($) => $.common.home.timeline.create.recurrence.cyclePositions,
+                  )}
+                >
+                  {recurrence.cyclePositions.map((position) => (
+                    <button
+                      key={position}
+                      type="button"
+                      className="is-active"
+                      disabled={recurrence.cyclePositions.length <= 1}
+                      aria-label={t(
+                        ($) => $.common.home.timeline.create.recurrence.removePosition,
+                        { position },
+                      )}
+                      onClick={() => removeCyclePosition(position)}
+                    >
+                      {position}
+                    </button>
+                  ))}
+                </div>
+                <p className="temporal-create-truth-note">
+                  {t(($) => $.common.home.timeline.create.recurrence.cyclePositionsNote)}
+                </p>
                 {renderError('eventRecurrence.cycle')}
-              </div>
+              </>
             ) : null}
 
             {recurrence.patternKind !== 'none' ? (
