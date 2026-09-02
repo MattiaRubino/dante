@@ -6,14 +6,17 @@ import type {
   TemporalCreateSurface,
 } from '../model/temporal-create-session';
 import { TemporalCreateActivityFields } from './temporal-create-activity-fields';
+import { TemporalCreateAppearanceFields } from './temporal-create-appearance-fields';
 import { TemporalCreateCoreFields } from './temporal-create-core-fields';
 import { TemporalCreateEventFields } from './temporal-create-event-fields';
 import { TemporalCreateHandoffFields } from './temporal-create-handoff-fields';
 import { TemporalCreateOrganizationFields } from './temporal-create-organization-fields';
 import { TemporalCreateRecurrenceFields } from './temporal-create-recurrence-fields';
+import type { TemporalCreateContextOption } from './temporal-create-ui-types';
 
 type TemporalCreateAdvancedFieldsProps = Readonly<{
   fields: TemporalCreateFields;
+  contexts: readonly TemporalCreateContextOption[];
   depth: TemporalCreateSurface;
   onPatch: (patch: Partial<TemporalCreateFields>) => void;
   renderError: (path: string) => ReactNode;
@@ -23,6 +26,7 @@ export { TemporalCreateCoreFields };
 
 export function TemporalCreateAdvancedFields({
   fields,
+  contexts,
   depth,
   onPatch,
   renderError,
@@ -117,6 +121,12 @@ export function TemporalCreateAdvancedFields({
       <TemporalCreateOrganizationFields
         fields={fields}
         depth={depth}
+        onPatch={onPatch}
+      />
+
+      <TemporalCreateAppearanceFields
+        fields={fields}
+        contexts={contexts}
         onPatch={onPatch}
       />
 
