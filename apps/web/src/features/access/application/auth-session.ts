@@ -3,6 +3,7 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
+  type QueryClient,
 } from '@tanstack/react-query';
 
 import {
@@ -30,6 +31,17 @@ export function isAuthenticatedAccessSession(
   session: AccessAuthSession | undefined,
 ): session is WebAuthenticatedSession {
   return session?.authenticated === true;
+}
+
+export async function commitAuthoritativeAuthSession(
+  queryClient: QueryClient,
+  session: AccessAuthSession,
+): Promise<void> {
+  await queryClient.cancelQueries({
+    queryKey: authSessionQueryKey,
+    exact: true,
+  });
+  queryClient.setQueryData<AccessAuthSession>(authSessionQueryKey, session);
 }
 
 function isRetryableSessionRead(error: unknown): boolean {
@@ -148,9 +160,8 @@ export function useSignInMutation() {
     mutationFn: (request: WebAuthSignInRequest) =>
       webAuthRemote.signIn(request),
     retry: false,
-    onSuccess: (session) => {
-      queryClient.setQueryData<AccessAuthSession>(authSessionQueryKey, session);
-    },
+    onSuccess: (session) =>
+      commitAuthoritativeAuthSession(queryClient, session),
   });
 }
 
@@ -161,10 +172,7 @@ export function useLogOutMutation() {
     mutationFn: ({ csrfToken }: { csrfToken: string }) =>
       webAuthRemote.logOut(csrfToken),
     retry: false,
-    onSuccess: () => {
-      queryClient.setQueryData<AccessAuthSession>(authSessionQueryKey, {
-        authenticated: false,
-      });
-    },
+    onSuccess: () =>
+      commitAuthoritativeAuthSession(queryClient, { authenticated: false }),
   });
 }
