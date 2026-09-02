@@ -475,14 +475,14 @@ export function auditWorldFocusSubstrateOracle(
     );
   }
   if (
-    scenario.config === 'pinned-saved' &&
-    (scenario.basis !== 'current' ||
+    outcome.canReuseSavedDerivedResult &&
+    (scenario.config === 'concurrent-shared' ||
+      scenario.basis !== 'current' ||
       scenario.disclosure !== 'allowed' ||
-      scenario.identity !== 'stable') &&
-    outcome.canReuseSavedDerivedResult
+      scenario.identity !== 'stable')
   ) {
     violations.push(
-      'saved derived result cannot bypass current basis/disclosure/ref',
+      'saved derived result reuse requires current basis, allowed disclosure, stable identity and non-conflicting config',
     );
   }
   if (
