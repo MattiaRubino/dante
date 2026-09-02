@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type {
@@ -24,10 +23,6 @@ type TemporalCreateAppearanceFieldsProps = Readonly<{
   onPatch: (patch: Partial<TemporalCreateFields>) => void;
 }>;
 
-function fallbackToneLabel(tone: TemporalCreateAppearanceTone): string {
-  return tone.charAt(0).toLocaleUpperCase() + tone.slice(1);
-}
-
 export function TemporalCreateAppearanceFields({
   fields,
   contexts,
@@ -37,17 +32,22 @@ export function TemporalCreateAppearanceFields({
   const inheritedContext =
     contexts.find((context) => context.id === fields.contextId) ?? null;
   const inheritedTone = inheritedContext?.tone ?? 'personal';
-  const toneLabels = useMemo(
-    () =>
-      new Map(
-        APPEARANCE_TONES.map((tone) => [
-          tone,
-          contexts.find((context) => context.tone === tone)?.label ??
-            fallbackToneLabel(tone),
-        ]),
-      ),
-    [contexts],
-  );
+  const colorLabel = (tone: TemporalCreateAppearanceTone): string => {
+    switch (tone) {
+      case 'focus':
+        return t(($) => $.common.home.timeline.create.appearance.colors.purple);
+      case 'meeting':
+        return t(($) => $.common.home.timeline.create.appearance.colors.cyan);
+      case 'health':
+        return t(($) => $.common.home.timeline.create.appearance.colors.green);
+      case 'creative':
+        return t(($) => $.common.home.timeline.create.appearance.colors.amber);
+      case 'personal':
+        return t(($) => $.common.home.timeline.create.appearance.colors.rose);
+      case 'urgent':
+        return t(($) => $.common.home.timeline.create.appearance.colors.red);
+    }
+  };
 
   return (
     <section
@@ -95,7 +95,7 @@ export function TemporalCreateAppearanceFields({
 
         <div className="temporal-create-appearance__tones">
           {APPEARANCE_TONES.map((tone) => {
-            const label = toneLabels.get(tone) ?? fallbackToneLabel(tone);
+            const label = colorLabel(tone);
             return (
               <label
                 key={tone}
