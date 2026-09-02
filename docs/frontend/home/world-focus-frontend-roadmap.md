@@ -1,11 +1,11 @@
 # DANTE — World Focus Frontend Roadmap
 
-**Status:** CURRENT WORKING ROADMAP — WS0 COMPLETE / WS1 NEXT  
+**Status:** CURRENT WORKING ROADMAP — WS0 COMPLETE / WS1–WS5 CONVERGENCE LOOP NEXT  
 **Date:** 2026-09-02  
 **Branch:** `feature/home-react`  
 **Scope stop:** close and materialize production-grade frontend/product behavior before real backend/API/database/provider/LLM/effect integration.
 
-This roadmap now sequences World Focus through the **World Substrate Closure Program** before further feature materialization.
+This roadmap sequences World Focus through the **World Substrate Closure Program** before further feature materialization.
 
 Primary program authority:
 
@@ -37,7 +37,7 @@ Home React foundation
 -> D0 contextual DANTE spatial/presence reverse engineering
 -> D1 quiet invoke + compact composer
 -> WS0 Substrate Inventory
--> WS1 NEXT
+-> WS1–WS5 WORLD SUBSTRATE CONVERGENCE LOOP NEXT
 ```
 
 Historical evidence remains in `world-focus-evidence-index.md`.
@@ -169,21 +169,43 @@ Global quiet invoke remains `contextReference: null`.
 ```text
 WS0 — Substrate Inventory                COMPLETE
 
-WS1 — Simulation Corpus                  NEXT
-WS2 — With/Without DANTE Stress          NOT STARTED
-WS3 — Adversarial / Edge Stress          NOT STARTED
-WS4 — Targeted Reverse Engineering       NOT STARTED
-WS5 — Gap Closure                        NOT STARTED
-       ^
-       | repeat WS1 -> WS5 until convergence
-       +-------------------------------------
+WS1–WS5 — WORLD SUBSTRATE CONVERGENCE    NEXT ACTIVE MACRO-BLOCK
+          one indivisible cyclic gate
+          no independent PASS/STOP states
 
-WS6 — Universal Work Primitive Closure   NOT STARTED
-WS7 — Executable Non-Visual Harness      NOT STARTED
-WS8 — Final Falsification                NOT STARTED
+          Simulation Corpus
+          + With/Without DANTE Stress
+          + Adversarial / Edge Stress
+          + Targeted Reverse Engineering
+          + Gap Closure
+
+WS6 — Universal Work Primitive Closure   BLOCKED BY CONVERGENCE LOOP
+WS7 — Executable Non-Visual Harness      BLOCKED BY WS6
+WS8 — Final Falsification                BLOCKED BY WS7
 ```
 
-WS1–WS5 are one **cyclic falsification loop**, not independent feature milestones.
+Critical rule:
+
+```text
+WS1 / WS2 / WS3 / WS4 / WS5
+= names for internal activities
+!= five project phases to complete one after another
+```
+
+A working iteration is intentionally interleaved:
+
+```text
+scenario
+-> non-DANTE behavior
+-> DANTE-enhanced behavior
+-> adversarial pressure
+-> targeted reverse engineering immediately if needed
+-> gap closure immediately
+-> propagate the decision through the corpus
+-> continue
+```
+
+The macro-block closes only when all material gaps are closed/propagated and one complete confirmation pass yields **zero new material substrate gap**.
 
 ---
 
@@ -205,7 +227,7 @@ universal primitive closure              = still open
 whole-corpus executable oracle           = still open
 ```
 
-Primary pressure clusters passed to WS1:
+Primary pressure clusters passed to the convergence loop:
 
 ```text
 P1  work primitive completeness
@@ -222,11 +244,13 @@ P10 failure / race / responsive class completeness
 
 ---
 
-## 5. WS1 — Simulation Corpus
+# 5. WS1–WS5 — World Substrate Convergence Loop
 
-### Objective
+The subsections below describe five activities performed **together**. They are not independent milestones.
 
-Build a durable, UI-agnostic corpus of materially different real-life work patterns the substrate must support.
+## 5.1 Simulation Corpus activity
+
+Build and continuously evolve a durable, UI-agnostic corpus of materially different real-life work patterns the substrate must support.
 
 Required families include:
 
@@ -263,7 +287,7 @@ stable / adaptive / ephemeral pressure
 same canonical reality in multiple Worlds
 ```
 
-The scenario truth must describe:
+Scenario truth describes:
 
 ```text
 user job
@@ -277,11 +301,11 @@ failure modes
 
 Do not encode a preferred card/module/UI layout into the scenario.
 
----
+The corpus remains open to refinement throughout the macro-block; there is no separate `WS1 CLOSED` gate.
 
-## 6. WS2 — With / Without DANTE Stress
+## 5.2 With / Without DANTE activity
 
-For every significant scenario prove two paths.
+For every significant scenario pressure two paths.
 
 ### Without DANTE
 
@@ -300,7 +324,7 @@ DANTE uses bounded authorized purpose-scoped context
 AI does not become source truth, authorization or mandatory navigation
 ```
 
-Pressure:
+Pressure includes:
 
 ```text
 AI unavailable
@@ -314,9 +338,9 @@ deep surface proposal
 consequential action proposal
 ```
 
----
+Any mismatch becomes immediate convergence-loop evidence and is handled without waiting for a later phase.
 
-## 7. WS3 — Adversarial / Edge Stress
+## 5.3 Adversarial / Edge activity
 
 Pressure at minimum:
 
@@ -350,11 +374,9 @@ unknown future World/module
 
 The aim is to discover **new substrate classes**, not generate a huge cosmetic bug list.
 
----
+## 5.4 Targeted Reverse Engineering activity
 
-## 8. WS4 — Targeted Reverse Engineering
-
-External research occurs only when WS1–WS3 expose a concrete unresolved problem.
+External research occurs immediately when simulation/adversarial work exposes a concrete unresolved problem.
 
 For each gap:
 
@@ -368,9 +390,9 @@ Can DANTE do better while preserving its semantics/governance?
 
 Broad competitor research already completed must not be repeated ritualistically.
 
----
+Research without a concrete falsification target is out of scope.
 
-## 9. WS5 — Gap Closure
+## 5.5 Gap Closure activity
 
 Every material gap gets an explicit record:
 
@@ -390,23 +412,22 @@ new test/harness obligation
 
 Close the **class** of failure, not one scenario.
 
-Cycle rule:
+A closed gap is immediately propagated back through the relevant corpus and pressure families. There is no separate “finish WS5, then return to WS1” ceremony because all five activities remain inside the same active macro-block.
+
+### Single closure rule
 
 ```text
-new material substrate concept found
--> close it
--> return to WS1
-
-no new material substrate concept found
--> run one full confirmation WS1->WS5 cycle
-
-confirmation cycle also yields no new material gap
+all known material gaps closed or explicitly rejected
++ all accepted decisions propagated across relevant scenarios
++ one complete global confirmation pass
++ zero new material substrate gap in that pass
+-> WORLD SUBSTRATE CONVERGENCE LOOP CLOSED
 -> WS6
 ```
 
 ---
 
-## 10. WS6 — Universal Work Primitive Closure
+## 6. WS6 — Universal Work Primitive Closure
 
 Close the smallest finite reusable work primitive vocabulary earned by evidence.
 
@@ -448,7 +469,7 @@ multi-actor/disclosure semantics remain explicit where necessary
 
 ---
 
-## 11. WS7 — Executable Non-Visual Harness
+## 7. WS7 — Executable Non-Visual Harness
 
 Build a deterministic oracle over the closed substrate.
 
@@ -473,7 +494,7 @@ Reuse current reducers/planners/registries where possible. Do not build a second
 
 ---
 
-## 12. WS8 — Final Falsification
+## 8. WS8 — Final Falsification
 
 Run the complete corpus, with/without DANTE, all adversarial families, high-risk cross-products, unknown future World/specialist, multi-actor/privacy, dense/large-history and race cases.
 
@@ -489,11 +510,11 @@ Closure requires:
 0 known state/race/responsive class requiring substrate redesign
 ```
 
-Any material failure returns to the earliest necessary WS phase and repeats through WS8.
+Any material failure returns to the WS1–WS5 convergence loop or another earliest necessary closure point and repeats through WS8.
 
 ---
 
-# 13. Materialization roadmap — only after WS8
+# 9. Materialization roadmap — only after WS8
 
 ```text
 M0 — Materialization Mapping / Scope Freeze
@@ -579,7 +600,7 @@ explicit user pre-backend approval
 
 ---
 
-## 14. Backend stop line
+## 10. Backend stop line
 
 Before explicit backend vertical, do not add merely to satisfy frontend demos:
 
@@ -599,7 +620,7 @@ Frontend may define narrow typed seams and deterministic local adapters only whe
 
 ---
 
-## 15. Operational delivery rule
+## 11. Operational delivery rule
 
 For every bounded phase/slice:
 
@@ -626,8 +647,10 @@ Every remote write still requires the repository's exact branch/PRE-SCOPE/path g
 
 ---
 
-## 16. Immediate next gate
+## 12. Immediate next gate
 
-> **WS1 — Simulation Corpus**
+> **WS1–WS5 — WORLD SUBSTRATE CONVERGENCE LOOP**
 
-Do not start D2 or new visible World materialization before WS8 closes.
+Do not execute WS1 as a separate deliverable and stop for WS2.
+
+Work simulation, with/without DANTE stress, adversarial pressure, targeted reverse engineering and gap closure as one continuous cyclic macro-block until convergence. Do not start D2 or new visible World materialization before WS8 closes.
