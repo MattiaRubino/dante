@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { createTemporalCreateFields } from '../model/temporal-create-session';
+import {
+  createTemporalCreateFields,
+  validateTemporalCreateFields,
+} from '../model/temporal-create-session';
 import { applyTemporalCreateFieldSeed } from './temporal-create-seed';
 
 describe('Temporal Create semantic seed', () => {
@@ -37,6 +40,7 @@ describe('Temporal Create semantic seed', () => {
     expect(seeded.eventRecurrence.quotaPeriodInterval).toBe(1);
     expect(seeded.event.purpose).toBe('Chiudere le decisioni aperte');
     expect(seeded.event.visibility).toBe('default');
+    expect(validateTemporalCreateFields(seeded)).toEqual([]);
   });
 
   it('preserves owner normalization instead of letting a seed invent Activity recurrence', () => {
@@ -54,6 +58,7 @@ describe('Temporal Create semantic seed', () => {
 
     expect(seeded.kind).toBe('activity');
     expect(seeded.eventRecurrence.patternKind).toBe('none');
+    expect(validateTemporalCreateFields(seeded)).toEqual([]);
   });
 
   it('keeps unresolved or invalid interpreted values subject to normal Create validation', () => {
@@ -69,6 +74,8 @@ describe('Temporal Create semantic seed', () => {
     });
 
     expect(seeded.timeZoneId).toBe('Europe/Not-A-Zone');
-    expect(seeded.title).toBe('Call');
+    expect(
+      validateTemporalCreateFields(seeded).map((issue) => issue.code),
+    ).toContain('temporal.create.timezone.invalid');
   });
 });
