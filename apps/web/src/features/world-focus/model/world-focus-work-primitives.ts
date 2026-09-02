@@ -83,7 +83,9 @@ export type WorldFocusTrajectoryPrimitive = Readonly<{
     WorldFocusContextReference,
     ...WorldFocusContextReference[],
   ];
+  missingPositionReferences: readonly WorldFocusContextReference[];
   orderingBasisReference: WorldFocusContextReference | null;
+  aggregationBasisReference: WorldFocusContextReference | null;
 }>;
 
 export type WorldFocusWorkPrimitive =
@@ -242,6 +244,19 @@ export function createWorldFocusTrajectoryPrimitive(
     'World Focus trajectory point references',
     2,
   ) as WorldFocusTrajectoryPrimitive['orderedPointReferences'];
+  const missingPositionReferences = normalizeDistinctReferences(
+    input.missingPositionReferences,
+    'World Focus trajectory missing position references',
+    0,
+  );
+  const occupied = new Set(orderedPointReferences.map(referenceIdentity));
+  for (const missingReference of missingPositionReferences) {
+    if (occupied.has(referenceIdentity(missingReference))) {
+      throw new Error(
+        'World Focus trajectory present and missing references must be distinct',
+      );
+    }
+  }
 
   return Object.freeze({
     instanceId: assertNonEmptyToken(
@@ -255,9 +270,14 @@ export function createWorldFocusTrajectoryPrimitive(
     ),
     axis: input.axis,
     orderedPointReferences,
+    missingPositionReferences,
     orderingBasisReference: normalizeOptionalReference(
       input.orderingBasisReference,
       'World Focus trajectory ordering basis reference',
+    ),
+    aggregationBasisReference: normalizeOptionalReference(
+      input.aggregationBasisReference,
+      'World Focus trajectory aggregation basis reference',
     ),
   });
 }
@@ -293,9 +313,13 @@ export function getWorldFocusWorkPrimitiveReferences(
       return Object.freeze([
         primitive.subjectReference,
         ...primitive.orderedPointReferences,
+        ...primitive.missingPositionReferences,
         ...(primitive.orderingBasisReference === null
           ? []
           : [primitive.orderingBasisReference]),
+        ...(primitive.aggregationBasisReference === null
+          ? []
+          : [primitive.aggregationBasisReference]),
       ]);
   }
 }

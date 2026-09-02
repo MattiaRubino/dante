@@ -242,6 +242,9 @@ function resolveConfigDisposition(
 }
 
 function mustRevalidateExecution(scenario: WorldFocusOracleScenario): boolean {
+  if (scenario.dante === 'proposal-action-late') {
+    return true;
+  }
   if (scenario.effect === 'read-only') {
     return false;
   }
@@ -252,7 +255,6 @@ function mustRevalidateExecution(scenario: WorldFocusOracleScenario): boolean {
     scenario.identity !== 'stable' ||
     scenario.governance !== 'none' ||
     scenario.sync !== 'online' ||
-    scenario.dante === 'proposal-action-late' ||
     scenario.time !== 'simple'
   );
 }
@@ -267,7 +269,7 @@ function resolveEffectDisposition(
 
   if (
     scenario.disclosure !== 'allowed' ||
-    scenario.identity === 'retired-merge-split' ||
+    scenario.identity !== 'stable' ||
     scenario.basis === 'superseded-retracted'
   ) {
     return 'blocked';
@@ -275,12 +277,6 @@ function resolveEffectDisposition(
 
   if (scenario.effect === 'partial-real-compensating') {
     return 'compensate-or-reconcile';
-  }
-
-  if (scenario.effect === 'pending-ambiguous') {
-    return requiresExecutionRevalidation
-      ? 'revalidate-before-execution'
-      : 'reconcile-before-claim';
   }
 
   return requiresExecutionRevalidation
@@ -327,7 +323,7 @@ export function resolveWorldFocusSubstrateOracle(
   const canAttachDerivedResult =
     basisDisposition !== 'invalid' &&
     disclosureDisposition === 'allowed' &&
-    referenceDisposition !== 'retired' &&
+    referenceDisposition === 'usable' &&
     scenario.interaction !== 'world-switch-late';
   const canReuseSavedDerivedResult =
     scenario.config !== 'concurrent-shared' &&
@@ -414,6 +410,14 @@ export function auditWorldFocusSubstrateOracle(
     violations.push('ambiguous identity must remain unresolved');
   }
   if (
+    scenario.identity !== 'stable' &&
+    outcome.canAttachDerivedResult
+  ) {
+    violations.push(
+      'derived result cannot attach to unresolved or retired identity',
+    );
+  }
+  if (
     scenario.config === 'concurrent-shared' &&
     outcome.configDisposition !== 'conflict'
   ) {
@@ -433,6 +437,23 @@ export function auditWorldFocusSubstrateOracle(
     outcome.requiresExecutionRevalidation !== mustRevalidateExecution(scenario)
   ) {
     violations.push('consequential execution revalidation decision drifted');
+  }
+  if (
+    scenario.dante === 'proposal-action-late' &&
+    !outcome.requiresExecutionRevalidation
+  ) {
+    violations.push(
+      'DANTE consequential proposal must revalidate at execution time',
+    );
+  }
+  if (
+    scenario.dante === 'proposal-action-late' &&
+    outcome.canAttachDerivedResult &&
+    outcome.danteDisposition !== 'revalidate-consequential-action'
+  ) {
+    violations.push(
+      'attachable DANTE consequential proposal must retain revalidation state',
+    );
   }
   if (
     scenario.disclosure !== 'allowed' &&

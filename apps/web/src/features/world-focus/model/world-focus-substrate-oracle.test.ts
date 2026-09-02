@@ -148,6 +148,18 @@ describe('World Focus WS7 substrate oracle', () => {
     expect(retired.canAttachDerivedResult).toBe(false);
   });
 
+  it('keeps ambiguous identity unresolved and forbids derived attachment until authoritative resolution', () => {
+    const outcome = resolveWorldFocusSubstrateOracle({
+      ...decodeGeneralVector('00000000000'),
+      identity: 'ambiguous-candidate',
+      dante: 'contextual-analysis',
+    });
+
+    expect(outcome.referenceDisposition).toBe('unresolved');
+    expect(outcome.canAttachDerivedResult).toBe(false);
+    expect(outcome.danteDisposition).toBe('rebuild-or-reject-context');
+  });
+
   it('keeps conflicted basis unresolved rather than treating missing certainty as false', () => {
     const outcome = resolveWorldFocusSubstrateOracle({
       ...decodeGeneralVector('00000000000'),
@@ -172,6 +184,18 @@ describe('World Focus WS7 substrate oracle', () => {
       governance: 'revision-bound-binding',
     });
     expect(revisionBound.requiresExecutionRevalidation).toBe(true);
+  });
+
+  it('keeps a DANTE consequential proposal execution-bound even before any effect exists', () => {
+    const outcome = resolveWorldFocusSubstrateOracle({
+      ...decodeGeneralVector('00000000000'),
+      effect: 'read-only',
+      dante: 'proposal-action-late',
+    });
+
+    expect(outcome.effectDisposition).toBe('not-applicable');
+    expect(outcome.requiresExecutionRevalidation).toBe(true);
+    expect(outcome.danteDisposition).toBe('revalidate-consequential-action');
   });
 
   it('distinguishes partial real effects from cancellation-before-effect', () => {

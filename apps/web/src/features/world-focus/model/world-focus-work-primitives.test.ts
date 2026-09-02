@@ -86,24 +86,49 @@ describe('World Focus WS6 work primitives', () => {
     ).toThrow(/duplicate references/);
   });
 
-  it('requires Trajectory to preserve ordered multi-point meaning', () => {
+  it('requires Trajectory to preserve order, explicit missingness and aggregation basis', () => {
     const trajectory = createWorldFocusTrajectoryPrimitive({
       instanceId: 'trajectory:pace',
       subjectReference: ref('goal', 'exam'),
       axis: 'time',
       orderedPointReferences: [
         ref('observation', 'week-1'),
-        ref('observation', 'week-2'),
         ref('observation', 'week-3'),
       ],
+      missingPositionReferences: [ref('interval', 'week-2')],
       orderingBasisReference: ref('window', 'exam-cycle'),
+      aggregationBasisReference: ref('aggregation', 'weekly-average'),
     });
 
     expect(trajectory.orderedPointReferences.map(({ key }) => key)).toEqual([
       'week-1',
-      'week-2',
       'week-3',
     ]);
+    expect(trajectory.missingPositionReferences).toEqual([
+      { kind: 'interval', key: 'week-2' },
+    ]);
+    expect(trajectory.aggregationBasisReference).toEqual({
+      kind: 'aggregation',
+      key: 'weekly-average',
+    });
+    expect(getWorldFocusWorkPrimitiveReferences(trajectory)).toHaveLength(6);
+  });
+
+  it('does not allow one trajectory reference to be both present and missing', () => {
+    expect(() =>
+      createWorldFocusTrajectoryPrimitive({
+        instanceId: 'trajectory:invalid-gap',
+        subjectReference: ref('metric', 'pace'),
+        axis: 'time',
+        orderedPointReferences: [
+          ref('interval', 'week-1'),
+          ref('interval', 'week-2'),
+        ],
+        missingPositionReferences: [ref('interval', 'week-2')],
+        orderingBasisReference: ref('window', 'month'),
+        aggregationBasisReference: null,
+      }),
+    ).toThrow(/present and missing references must be distinct/);
   });
 
   it('rejects structurally empty primitive identities and references', () => {
