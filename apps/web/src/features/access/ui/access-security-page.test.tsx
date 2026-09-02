@@ -132,6 +132,9 @@ beforeAll(async () => {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.stubEnv('VITE_DANTE_GOOGLE_CLIENT_ID', 'google-client-id');
+  vi.stubEnv('VITE_DANTE_APPLE_ENABLED', 'true');
+  vi.stubEnv('VITE_DANTE_PASSKEY_ENABLED', 'true');
 
   establishPasswordMutation = mutationMock();
   removePasswordMutation = mutationMock();
@@ -188,6 +191,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  vi.unstubAllEnvs();
 });
 
 describe('AccessSecurityPage', () => {
@@ -259,6 +263,7 @@ describe('AccessSecurityPage', () => {
 
     const passkeyLabel =
       screen.getByLabelText<HTMLInputElement>('Nome passkey');
+    expect(passkeyLabel.placeholder).toBe('Es. Portatile personale');
     fireEvent.change(passkeyLabel, { target: { value: ' Work laptop ' } });
     fireEvent.click(screen.getByRole('button', { name: 'Aggiungi passkey' }));
     expect(registerPasskeyMutation.mutate).toHaveBeenCalledWith(
@@ -308,7 +313,7 @@ describe('AccessSecurityPage', () => {
     );
   });
 
-  it('surfaces anti-lockout reauthentication requirements while wiring password and provider removal to session authority', () => {
+  it('surfaces localized anti-lockout reauthentication requirements while wiring removal to session authority', () => {
     setMethods({
       password_established: true,
       providers: [
@@ -352,10 +357,28 @@ describe('AccessSecurityPage', () => {
 
     const alert = screen.getByRole('alert');
     expect(alert.textContent).toContain(
-      'Confirm your identity again before changing security settings.',
+      'Conferma di nuovo la tua identità prima di modificare le impostazioni di sicurezza.',
     );
     expect(alert.textContent).toContain(
       'Usa password o passkey qui sotto, poi ripeti l’operazione.',
     );
+  });
+
+  it('does not offer browser methods that the build has disabled', () => {
+    vi.stubEnv('VITE_DANTE_GOOGLE_CLIENT_ID', '');
+    vi.stubEnv('VITE_DANTE_APPLE_ENABLED', 'false');
+    vi.stubEnv('VITE_DANTE_PASSKEY_ENABLED', 'false');
+    setMethods({ password_established: true, providers: [], passkeys: [] });
+
+    render(<AccessSecurityPage />);
+
+    expect(screen.queryByRole('button', { name: 'Collega Google' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Collega Apple' })).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: 'Conferma con passkey' }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: 'Aggiungi passkey' }),
+    ).toBeNull();
   });
 });
