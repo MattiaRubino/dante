@@ -9,6 +9,7 @@ import {
   type TemporalIdFactory,
   type TemporalOperationId,
   type TemporalOperationResult,
+  type TemporalPlacement,
   type TemporalProjectionItem,
   type TemporalUndoToken,
   type TemporalValidationIssue,
@@ -78,11 +79,27 @@ export type TemporalCreateRecord = Readonly<{
   metadata: TemporalCreateMetadata;
 }>;
 
+export type TemporalCreateMutationEffect = Readonly<{
+  projection: TemporalProjectionItem | null;
+  metadata: TemporalCreateMetadata;
+  undoToken: TemporalUndoToken;
+  undo: () => Promise<TemporalOperationResult>;
+}>;
+
+export type TemporalCreateMutationExecution = Readonly<{
+  result: TemporalOperationResult;
+  effect: TemporalCreateMutationEffect | null;
+}>;
+
 export type TemporalCreateAppliedEffect = Readonly<{
   projection: TemporalProjectionItem;
   metadata: TemporalCreateMetadata;
   undoToken: TemporalUndoToken;
   undo: () => Promise<TemporalOperationResult>;
+  replacePlacement: (
+    placement: TemporalPlacement | null,
+  ) => Promise<TemporalCreateMutationExecution>;
+  remove: () => Promise<TemporalCreateMutationExecution>;
 }>;
 
 export type TemporalCreateExecution = Readonly<{
@@ -96,7 +113,9 @@ export interface TemporalCreateRuntime {
     fields: TemporalCreateFields,
     operationId?: TemporalOperationId,
   ): TemporalCreatePreparation;
-  execute(prepared: TemporalCreatePreparedOperation): Promise<TemporalCreateExecution>;
+  execute(
+    prepared: TemporalCreatePreparedOperation,
+  ): Promise<TemporalCreateExecution>;
   list(): Promise<readonly TemporalProjectionItem[]>;
   listRecords(): Promise<readonly TemporalCreateRecord[]>;
 }
@@ -146,6 +165,20 @@ function operationIdReuseResult(
     code: 'operation-id-reused' as const,
     issues: Object.freeze([
       temporalValidationIssue('temporal.operation.id_reused', ['operationId']),
+    ]),
+  });
+}
+
+function notFoundResult(operationId: TemporalOperationId): TemporalOperationResult {
+  return Object.freeze({
+    operationId,
+    status: 'rejected' as const,
+    code: 'not-found' as const,
+    issues: Object.freeze([
+      temporalValidationIssue('temporal.projection.not_found', [
+        'payload',
+        'id',
+      ]),
     ]),
   });
 }
@@ -220,6 +253,128 @@ class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
     });
   }
 
+  private async currentProjection(
+    projectionId: TemporalProjectionItem['id'],
+  ): Promise<TemporalProjectionItem | null> {
+    const result = await this.workspace.query({
+      type: 'temporal.projection.get',
+      id: projectionId,
+    });
+    return result.status === 'ok' ? result.item : null;
+  }
+
+  private mutationEffect(
+    projectionId: TemporalProjectionItem['id'],
+    metadata: TemporalCreateMetadata,
+    result: Extract<TemporalOperationResult, { status: 'applied' }>,
+  ): TemporalCreateMutationEffect | null {
+    const undoToken = result.undoToken;
+    if (!undoToken) {
+      return null;
+    }
+
+    return Object.freeze({
+      projection: result.item,
+      metadata,
+      undoToken,
+      undo: async () => {
+        const undoResult = await this.workspace.execute({
+          type: 'temporal.operation.undo',
+          operationId: this.ids.operationId(),
+          source: 'manual',
+          issuedAt: this.clock.now(),
+          payload: Object.freeze({ undoToken }),
+        });
+        if (undoResult.status === 'applied') {
+          if (undoResult.item) {
+            this.records.set(
+              projectionId,
+              Object.freeze({ projection: undoResult.item, metadata }),
+            );
+          } else {
+            this.records.delete(projectionId);
+          }
+        }
+        return undoResult;
+      },
+    });
+  }
+
+  private async replacePlacement(
+    projectionId: TemporalProjectionItem['id'],
+    metadata: TemporalCreateMetadata,
+    placement: TemporalPlacement | null,
+  ): Promise<TemporalCreateMutationExecution> {
+    const operationId = this.ids.operationId();
+    const current = await this.currentProjection(projectionId);
+    if (!current) {
+      return Object.freeze({
+        result: notFoundResult(operationId),
+        effect: null,
+      });
+    }
+
+    const result = await this.workspace.execute({
+      type: 'temporal.placement.replace',
+      operationId,
+      source: 'manual',
+      issuedAt: this.clock.now(),
+      payload: Object.freeze({
+        id: projectionId,
+        expectedRevision: current.revision,
+        placement,
+      }),
+    });
+
+    if (result.status === 'applied' && result.item) {
+      this.records.set(
+        projectionId,
+        Object.freeze({ projection: result.item, metadata }),
+      );
+      return Object.freeze({
+        result,
+        effect: this.mutationEffect(projectionId, metadata, result),
+      });
+    }
+
+    return Object.freeze({ result, effect: null });
+  }
+
+  private async removeProjection(
+    projectionId: TemporalProjectionItem['id'],
+    metadata: TemporalCreateMetadata,
+  ): Promise<TemporalCreateMutationExecution> {
+    const operationId = this.ids.operationId();
+    const current = await this.currentProjection(projectionId);
+    if (!current) {
+      return Object.freeze({
+        result: notFoundResult(operationId),
+        effect: null,
+      });
+    }
+
+    const result = await this.workspace.execute({
+      type: 'temporal.projection.remove',
+      operationId,
+      source: 'manual',
+      issuedAt: this.clock.now(),
+      payload: Object.freeze({
+        id: projectionId,
+        expectedRevision: current.revision,
+      }),
+    });
+
+    if (result.status === 'applied') {
+      this.records.delete(projectionId);
+      return Object.freeze({
+        result,
+        effect: this.mutationEffect(projectionId, metadata, result),
+      });
+    }
+
+    return Object.freeze({ result, effect: null });
+  }
+
   public async execute(
     prepared: TemporalCreatePreparedOperation,
   ): Promise<TemporalCreateExecution> {
@@ -269,6 +424,9 @@ class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
         }
         return undoResult;
       },
+      replacePlacement: (placement: TemporalPlacement | null) =>
+        this.replacePlacement(projection.id, prepared.metadata, placement),
+      remove: () => this.removeProjection(projection.id, prepared.metadata),
     }) satisfies TemporalCreateAppliedEffect;
 
     return Object.freeze({ result, effect });
