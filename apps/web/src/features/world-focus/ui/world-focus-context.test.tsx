@@ -2,7 +2,7 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import { i18n } from '../../../bootstrap/i18n';
-import { getWorldFocusWorld } from '../model/world-focus-fixtures';
+import { createWorldFocusIdentityDescriptor } from '../model/world-focus-identity';
 import { WorldFocusContext } from './world-focus-context';
 
 beforeAll(async () => {
@@ -13,20 +13,19 @@ afterEach(() => {
   cleanup();
 });
 
-function requireWorld(id: 'music' | 'travel') {
-  const world = getWorldFocusWorld(id);
-  if (world === undefined) {
-    throw new Error(`Missing World Focus fixture: ${id}`);
-  }
-  return world;
-}
-
 describe('WorldFocusContext', () => {
-  it('renders a quiet first-open orientation surface', () => {
-    const { container } = render(<WorldFocusContext world={requireWorld('music')} />);
+  it('renders a quiet first-open orientation surface from an explicit descriptor', () => {
+    const identity = createWorldFocusIdentityDescriptor({
+      id: 'music',
+      label: 'Musica',
+      description: 'Creatività, ascolto e progetti musicali.',
+    });
+    const { container } = render(<WorldFocusContext identity={identity} />);
 
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Musica');
-    expect(container.textContent).toContain('Creatività, ascolto e progetti musicali.');
+    expect(container.textContent).toContain(
+      'Creatività, ascolto e progetti musicali.',
+    );
     expect(
       container.querySelector('[data-world-focus-context-id="music"]'),
     ).not.toBeNull();
@@ -34,10 +33,18 @@ describe('WorldFocusContext', () => {
     expect(container.querySelector('select')).toBeNull();
   });
 
-  it('does not invent analytical controls for a contrasting World', () => {
-    const { container } = render(<WorldFocusContext world={requireWorld('travel')} />);
+  it('renders an unknown future World descriptor without inventing analytical controls', () => {
+    const identity = createWorldFocusIdentityDescriptor({
+      id: 'future-craft',
+      label: 'Craft',
+      description: 'Un contesto futuro non presente nel catalogo fixture.',
+    });
+    const { container } = render(<WorldFocusContext identity={identity} />);
 
-    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Viaggi');
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Craft');
+    expect(container.textContent).toContain(
+      'Un contesto futuro non presente nel catalogo fixture.',
+    );
     expect(container.querySelector('button')).toBeNull();
     expect(container.querySelector('select')).toBeNull();
   });
