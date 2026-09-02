@@ -114,7 +114,7 @@ test('Expanded and Full Activity author DANTE planning without fake recurrence o
     .getByLabel('Se il piano non è più fattibile')
     .selectOption('shorten-or-split');
   await dialog.getByLabel('Numero massimo di sessioni').fill('4');
-  await dialog.getByLabel('Promemoria').selectOption('60');
+  await dialog.getByLabel('Promemoria', { exact: true }).selectOption('60');
   await dialog.getByLabel('Esito non confermato').selectOption('infer-provisional');
 
   await expect(dialog).toContainText('Ogni risultato inferito resta provvisorio');
@@ -220,7 +220,7 @@ test('Event recurrence exposes all four CP6 families and preserves deep values a
   await dialog.getByLabel('Intervallo trascorso (minuti)').fill('720');
   await pattern.selectOption('quota-per-period');
   await dialog.getByLabel('Occorrenze richieste').fill('3');
-  await dialog.getByLabel('Periodo').selectOption('week');
+  await dialog.getByLabel('Periodo', { exact: true }).selectOption('week');
   await pattern.selectOption('cyclic-positional');
   await dialog.getByLabel('Lunghezza ciclo').fill('7');
   await dialog.getByLabel('Posizione nel ciclo').fill('2');
