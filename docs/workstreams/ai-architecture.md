@@ -2,14 +2,15 @@
 
 - **Status:** ACTIVE / BRANCH-LOCAL DURABLE WORKSTREAM RECORD
 - **Branch:** `feature/ai-architecture`
-- **Current phase:** POST-AI-04 GLOBAL CURRENT-TRUTH RECONCILIATION
+- **Current phase:** PRE-AI05 CROSS-PHASE HARDENING + WHOLE-CHAIN RETEST
 - **AI-04 overall:** CLOSED / STRUCTURALLY ACCEPTED
 - **AI-04A:** CLOSED / STRUCTURALLY ACCEPTED / A01..A30 / EV01..EV20 / DIRECT PROVIDER EVIDENCE NOT EXECUTED
 - **AI-04B:** CLOSED / STRUCTURALLY ACCEPTED / RT-01..RT-31
 - **AI-04C:** CLOSED / STRUCTURALLY ACCEPTED / PA-01..PA-61
 - **AI-04 whole-phase:** CLOSED / WP-01..WP-22
+- **PRE-AI05 hardening:** CANDIDATE / PRE05-H01..H14 / RETEST NOT YET EXECUTED AFTER MATERIALIZATION
 - **AI-03 overall:** CLOSED / STRUCTURALLY ACCEPTED
-- **AI-05:** FUTURE / NEXT AFTER GLOBAL RECONCILIATION
+- **AI-05:** FUTURE / NEXT ONLY AFTER PRE-AI05 RETEST + CURRENT-TRUTH RECONCILIATION
 - **Implementation claim:** NONE
 - **Provider/model selection:** OPEN / EVIDENCE-DRIVEN
 - **Commercial packaging:** OPEN / ARCHITECTURAL ENTITLEMENT BOUNDARY ONLY
@@ -59,6 +60,11 @@ CLOSED / STRUCTURALLY ACCEPTED
   WHOLE-PHASE CLOSED / WP-01..WP-22
 
 CURRENT
+PRE-AI05 CROSS-PHASE HARDENING + WHOLE-CHAIN RETEST
+  candidate PRE05-H01..H14
+  no PASS claim until post-materialization retest
+
+THEN
 GLOBAL CURRENT-TRUTH RECONCILIATION
 
 THEN
@@ -89,9 +95,20 @@ docs/architecture/dante-ai-04a-direct-eval-specification.md
 docs/architecture/dante-ai-04b-concrete-runtime-capability-architecture.md
 docs/architecture/dante-ai-04c-production-assurance-control-plane-operations.md
 docs/architecture/dante-ai-04-whole-phase-destructive-acceptance.md
+docs/architecture/dante-ai-pre05-cross-phase-hardening.md   CURRENT CANDIDATE SUPPLEMENT
 ```
 
 Temporary continuity lives only in `docs/workstreams/ai-architecture-live-handoff.md` and MUST NOT merge to protected `main`.
+
+Current interpretation rule:
+
+```text
+accepted AI-02/03/04 authority
++
+PRE-AI05 bounded candidate hardening
+```
+
+The candidate may strengthen cross-phase traceability but does not relabel AI-02/03/04 implementation status or provider selection.
 
 ---
 
@@ -150,6 +167,18 @@ SCENARIO STATE != CANONICAL CURRENT STATE
 CONTEXT ACCESS != DISCLOSURE PERMISSION
 APPROVAL != PERPETUAL AUTHORIZATION FOR MATERIALLY CHANGED WORK
 CACHE HIT != CURRENT DISCLOSURE AUTHORIZATION
+SAFE SINGLE DISCLOSURE != AUTOMATICALLY SAFE CUMULATIVE DISCLOSURE
+AUTONOMY != AUTHORITY != AUTHZ != APPROVAL
+```
+
+AI-02 also owns first-class:
+
+```text
+Attention / aggregate attention budgeting
+causal-loop / oscillation protection
+surface-aware disclosure
+cumulative/cross-query disclosure protection
+scoped autonomy
 ```
 
 AI-03 closure remains:
@@ -168,7 +197,7 @@ including anti-resurrection, bounded context/retrieval/memory semantics, default
 
 ### AI-04A
 
-Accepted:
+Accepted base closure:
 
 ```text
 DANTE-E01..E13
@@ -186,6 +215,17 @@ COGNITION QUALITY != SERVING-BINDING RELIABILITY
 REPEATED RELIABILITY IS FIRST-CLASS
 EFFECTIVE COST PER SUCCESSFUL DANTE TASK
 ```
+
+PRE-AI05 candidate extends current executable coverage with:
+
+```text
+DANTE-E14 proactive / Attention / causal-loop safety
+trajectory-level cumulative disclosure
+recipient / surface / channel fixture dimensions
+scoped autonomy fixture/policy dimension
+```
+
+These additions are NOT accepted until the whole-chain retest passes.
 
 Direct provider/model proof remains unexecuted and decision-gated.
 
@@ -207,6 +247,8 @@ PROVIDER TOOL != DANTE CAPABILITY
 PROVIDER CALL ID != DANTE semantic idempotency
 PROVIDER-HOSTED EXECUTION != DANTE Execution Environment
 ```
+
+PRE-AI05 candidate makes explicit that the whole-phase compatible route-composition semantics outrank any older local sequential diagram.
 
 ### AI-04C
 
@@ -255,7 +297,38 @@ production capacity activation gate
 
 ---
 
-## 7. Provider replaceability / route activation
+## 7. PRE-AI05 candidate hardenings
+
+Current candidate authority:
+
+```text
+docs/architecture/dante-ai-pre05-cross-phase-hardening.md
+```
+
+Candidate set:
+
+```text
+PRE05-H01 AttentionBudget != ResourceBudget != commercial/provider quota
+PRE05-H02 proactive trigger authenticity/currentness
+PRE05-H03 causal-loop / oscillation production traceability
+PRE05-H04 DANTE-E14 core proactive/Attention/loop eval
+PRE05-H05 cumulative disclosure as trajectory property
+PRE05-H06 recipient/surface/channel first-class publication/eval dimensions
+PRE05-H07 scoped autonomy as policy ceiling distinct from Authority/AuthZ/approval
+PRE05-H08 safe-autonomy evaluation without weakening hard gates
+PRE05-H09 current-tree executable E01..E14 contract
+PRE05-H10 superseded AI-01 ModelTarget terminology
+PRE05-H11 whole-phase route composition outranks older AI-04B local sequence
+PRE05-H12 old pre-Physical AI/context boundary classified historical by current navigation
+PRE05-H13 formal IFC/leakage-budget/ACS mechanisms remain challengers
+PRE05-H14 commercial tier cannot buy weaker attention/autonomy/privacy safety
+```
+
+No PASS claim yet.
+
+---
+
+## 8. Provider replaceability / route activation
 
 ```text
 MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT
@@ -270,7 +343,7 @@ Architecture closure does not select OpenAI, Azure, Anthropic, Gemini or any oth
 
 ---
 
-## 8. Commercial/service-tier boundary
+## 9. Commercial/service-tier boundary
 
 ```text
 COMMERCIAL SUBSCRIPTION / SERVICE TIER != DANTE DOMAIN Plan
@@ -284,13 +357,13 @@ CommercialOffering / ServiceTier
 → eligible route set
 ```
 
-Commercial tiers may bound resources/capabilities but not weaken truth, privacy, Authority, target safety, provider/data eligibility or reconciliation.
+Commercial tiers may bound resources/capabilities but not weaken truth, privacy, Authority, target safety, provider/data eligibility, reconciliation, scoped-autonomy safety or Attention/disclosure policy.
 
 Exact names/prices/quotas/package contents remain open.
 
 ---
 
-## 9. Direct proof obligations remain distinct
+## 10. Direct proof obligations remain distinct
 
 Architecture acceptance does not execute Physical/Recovery proof obligations.
 
@@ -310,35 +383,37 @@ No implementation PASS is claimed.
 
 ---
 
-## 10. Current exact action
+## 11. Current exact action
 
 ```text
-GLOBAL CURRENT-TRUTH RECONCILIATION
+PRE-AI05 WHOLE-CHAIN DESTRUCTIVE RETEST
 ```
 
-Purpose:
+Required sequence:
 
 ```text
-mark AI-04 CLOSED consistently in global/current project navigation
-remove stale AI-04 CURRENT wording
-route AI work to AI-05
-preserve all non-claims
-make no implementation/provider/database claim
+read back materialized PRE05-H01..H14
+→ reconstruct AI-01→AI-04 independently
+→ run forward compound kill-test
+→ run reverse-order composition test
+→ attack proactivity/Attention/loop/privacy/autonomy boundaries
+→ compare against refreshed 2026 state-of-the-art evidence
+→ PASS only if no unexplained structural responsibility gap remains
 ```
 
-This reconciliation is a separate bounded write gate.
-
-After reconciliation:
+If PASS:
 
 ```text
-AI-05 — WHOLE-SYSTEM ACCEPTANCE + IMPLEMENTATION BLUEPRINT
+mark PRE-AI05 hardening accepted
+→ GLOBAL CURRENT-TRUTH RECONCILIATION
+→ AI-05 current
 ```
 
-AI-05 is the final architecture-to-build boundary before actual AI implementation workstreams.
+If FAIL, reopen only the smallest affected boundary.
 
 ---
 
-## 11. Decisions still open
+## 12. Decisions still open
 
 ```text
 concrete provider/model set
@@ -346,6 +421,9 @@ provider SDKs
 actual direct provider benchmark results
 final eval runner
 exact runtime implementation modules/contracts
+exact Attention implementation/scoring/state persistence if any
+exact cumulative-disclosure enforcement algorithm
+formal IFC / leakage-budget / ACS implementation choice
 control-plane physical storage/topology
 commercial tier names/prices/quotas
 billing implementation
@@ -362,7 +440,7 @@ Do not preselect them without applicable evidence.
 
 ---
 
-## 12. Live handoff policy
+## 13. Live handoff policy
 
 `docs/workstreams/ai-architecture-live-handoff.md` is temporary and MUST NOT merge to protected `main`.
 
