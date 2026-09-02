@@ -327,6 +327,14 @@ export const home = {
         choice: 'Colore dell’elemento',
         inherit: 'Eredita dal Contesto',
         override: 'Colore personalizzato',
+        colors: {
+          purple: 'Viola',
+          cyan: 'Ciano',
+          green: 'Verde',
+          amber: 'Ambra',
+          rose: 'Rosa',
+          red: 'Rosso',
+        },
       },
       handoffs: {
         otherTitle: 'Altro tipo',
