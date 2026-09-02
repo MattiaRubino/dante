@@ -75,6 +75,9 @@ describe('Provider application boundary', () => {
       SIGNAL,
     );
 
+    if (preparation === null) {
+      throw new Error('configured Google preparation unexpectedly returned null');
+    }
     await completeGoogleAuthentication({
       preparation,
       credential: 'google-credential',
@@ -106,6 +109,20 @@ describe('Provider application boundary', () => {
     expect(redirectToAppleAuthorization).toHaveBeenCalledWith(
       appleBegun.authorization_url,
     );
+  });
+
+  it('does not create a Google transaction when the build has no Google client ID', async () => {
+    vi.mocked(googleClientIdFromBuild).mockReturnValue('');
+    const beginGoogleSpy = vi.spyOn(webAuthRemote, 'beginGoogleAuthentication');
+
+    await expect(
+      prepareGoogleAuthentication({
+        purpose: 'sign_in',
+        returnTarget: 'access',
+        signal: SIGNAL,
+      }),
+    ).resolves.toBeNull();
+    expect(beginGoogleSpy).not.toHaveBeenCalled();
   });
 
   it('prefers an enrollment continuation and does not probe link state when enrollment exists', async () => {
