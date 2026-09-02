@@ -147,6 +147,46 @@ describe('WorldFocusPage', () => {
     expect(onClose).toHaveBeenCalledWith({ preferHistory: false });
   });
 
+  it('rebinds entry provenance and close policy when the same page instance changes World', () => {
+    primeWorldFocusEntry({
+      worldId: 'music',
+      source: 'home',
+      origin: { left: 500, top: 320, width: 118, height: 118 },
+    });
+    const onClose = vi.fn();
+
+    const { rerender } = render(
+      <WorldFocusPage
+        world={requireWorld('music')}
+        source="home"
+        onClose={onClose}
+      />,
+    );
+
+    expect(
+      screen
+        .getByRole('main', { name: 'Mondo Musica' })
+        .getAttribute('data-entry-origin'),
+    ).toBe('live');
+
+    rerender(
+      <WorldFocusPage
+        world={requireWorld('travel')}
+        source="worlds"
+        onClose={onClose}
+      />,
+    );
+
+    expect(
+      screen
+        .getByRole('main', { name: 'Mondo Viaggi' })
+        .getAttribute('data-entry-origin'),
+    ).toBe('fallback');
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(onClose).toHaveBeenLastCalledWith({ preferHistory: false });
+  });
+
   it('renders truthful loading, error and unavailable states inside the workspace', () => {
     const onClose = vi.fn();
     const world = requireWorld('music');

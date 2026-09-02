@@ -77,8 +77,6 @@ world-focus-b2-continuity-resume-review.md
 world-focus-b2-continuity-resume-disposition.md
 ```
 
-B2 automated PASS remains bounded; integrated visual acceptance remains later M6 work.
-
 ## E4 — Workspace Platform
 
 `world-focus-workspace-platform-checkpoint.md`
@@ -93,8 +91,6 @@ CI 33549465793 PASS
 ## E5 — DANTE spatial/presence
 
 `world-focus-dante-spatial-presence-review.md`
-
-Accepted D0 synthesis:
 
 > **AI availability is persistent; AI footprint is not.**
 
@@ -119,8 +115,6 @@ Visual research only. It cannot rewrite WF0/WF-G3/product semantics.
 
 `world-focus-ws0-substrate-inventory.md`
 
-Historical baseline showing broad workspace mechanics but incomplete work-semantic/executable universal closure at that time.
-
 ## E9 — Cycle A
 
 ```text
@@ -128,13 +122,9 @@ world-focus-substrate-convergence-corpus.md
 world-focus-substrate-convergence-review.md
 ```
 
-44 primary scenarios + DANTE/no-DANTE + 16 cross-products; X04 exposed CG-32.
-
 ## E10 — Cycle B/C
 
 `world-focus-substrate-independent-confirmation.md`
-
-Mechanism-first orthogonal scenarios exposed CG-33..CG-36; metamorphic Cycle C then remained clean.
 
 ## E11 — Final WS1–WS5 convergence
 
@@ -163,8 +153,6 @@ world-focus-ws6-universal-work-primitives.md
 world-focus-ws6-primitive-pressure-matrix.md
 ```
 
-Closed catalog:
-
 ```text
 WP-01 Continuity
 WP-02 Attention
@@ -176,37 +164,21 @@ WP-04 Trajectory
 
 `world-focus-ws7-executable-harness-review.md`
 
-Validated code:
-
 ```text
-ca89e733893959af7dcc40fd0b8c8ba08e056ba4
+HEAD ca89e733893959af7dcc40fd0b8c8ba08e056ba4
+CI 33633635890 PASS — attempt 1
 ```
-
-Frontend CI:
-
-```text
-33633635890 PASS — attempt 1
-```
-
-This is non-visual pre-backend proof, not real AuthZ/provider/effect or human visual acceptance.
 
 ## E15 — WS8 final falsification
 
 `world-focus-ws8-final-falsification-review.md`
 
-Validated proof/runtime HEAD:
-
 ```text
-88db899391a3a41e23e76177d4896a657232b5eb
+HEAD 88db899391a3a41e23e76177d4896a657232b5eb
+CI 33639741630 PASS — attempt 1
 ```
 
-Frontend CI:
-
-```text
-33639741630 PASS — attempt 1
-```
-
-WS8 added stateful hostile scenarios, mutation-kill against falsified outcomes and post-hardening metamorphic confirmation. The mutation stage found and closed the CG-40 audit gap without weakening the adversarial test.
+WS8 added stateful hostile scenarios, mutation-kill and post-hardening metamorphic confirmation. The CG-40 audit gap was closed without weakening the adversarial test.
 
 ## E16 — Post-WS8 coherence / hygiene audit
 
@@ -217,6 +189,7 @@ Scope:
 ```text
 live authority routing vs current branch state
 World Focus runtime fallback behavior
+route-entry lifecycle under World switch
 orphaned frontend APIs/scaffolding
 superseded visual implementation residue
 WS7/WS8 closure claims vs executable evidence
@@ -225,14 +198,15 @@ WS7/WS8 closure claims vs executable evidence
 Result:
 
 ```text
-HYG-01 unknown popover pointer barrier      FIXED
-HYG-02 unused motion preference scaffold    REMOVED
-HYG-03 visual V2/V3 residue                 REMOVED
-HYG-04 legacy SVG base styling              REMOVED
-HYG-05 stale branch-level D2 routing         FIXED
-new substrate class                         0
-WS0–WS8 reopen                              NO
-M0 started                                  NO
+HYG-01 unknown popover pointer barrier       FIXED
+HYG-02 unused motion preference scaffold     REMOVED
+HYG-03 visual V2/V3 residue                  REMOVED
+HYG-04 legacy SVG base styling               REMOVED
+HYG-05 stale branch-level D2 routing          FIXED
+HYG-06 stale World-switch entry provenance   FIXED
+new substrate class                          0
+WS0–WS8 reopen                               NO
+M0 started                                   NO
 ```
 
 Global Topbar Review remains tracked deprecated AppShell/Home debt outside this World Focus-local hygiene scope.

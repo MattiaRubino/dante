@@ -3,7 +3,6 @@ import {
   useEffect,
   useMemo,
   useRef,
-  useState,
   type CSSProperties,
 } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -141,7 +140,10 @@ export function WorldFocusPage({
   const mainRef = useRef<HTMLElement | null>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
   const performanceSpanRef = useRef<WorldFocusPerformanceSpan | null>(null);
-  const [entry] = useState(() => readWorldFocusEntry(world.id, source));
+  const entry = useMemo(
+    () => readWorldFocusEntry(world.id, source),
+    [source, world.id],
+  );
 
   const label = t(($) => $.common.worldFocus.worlds[world.id].label);
   const closeRequest = useMemo<WorldFocusCloseRequest>(

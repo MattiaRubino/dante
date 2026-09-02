@@ -79,9 +79,7 @@ Frontend CI:
 33639741630 — PASS — attempt 1
 ```
 
-WS8 used stateful hostile pressure, mutation-kill and an independent post-hardening confirmation. Final closure remained zero across unresolved substrate gaps, new primitives/owners, generic escape hatches, page-per-World requirements, AI-only basic usefulness, Domain/Logical/Physical contradictions, privacy/non-interference contradictions, redesign-required race/responsive classes and surviving mutants.
-
-This remains the semantic substrate closure evidence. Later hygiene changes do not rewrite that historical proof point.
+WS8 used stateful hostile pressure, mutation-kill and an independent post-hardening confirmation. This remains the semantic substrate closure evidence; later hygiene changes do not rewrite that historical proof point.
 
 ---
 
@@ -91,8 +89,6 @@ Authority:
 
 `world-focus-post-ws8-hygiene-audit.md`
 
-The review compared live routing docs, World Focus model/application/UI code, final WS7/WS8 executable proofs and active/deprecated frontend residue.
-
 Findings repaired locally:
 
 ```text
@@ -101,6 +97,7 @@ HYG-02 unused immersive|instant localStorage preference scaffold
 HYG-03 superseded V2/V3 visual CSS generations
 HYG-04 dead legacy SVG styling in the base visual-frame stylesheet
 HYG-05 branch-level live router docs still said D2 NEXT
+HYG-06 World switch could retain stale route-entry provenance / close policy
 ```
 
 Disposition:
@@ -182,7 +179,7 @@ ResizeObserver/container-query ownership
 local failure isolation
 ```
 
-The hygiene fix strengthens the existing finite-surface fallback contract; it does not change substrate ownership.
+The hygiene fixes strengthen existing lifecycle/fallback contracts; they do not change substrate ownership.
 
 ---
 
@@ -196,25 +193,13 @@ D2–D6                                MATERIALIZATION-DEFERRED TO M4
 
 D1 global invoke remains `contextReference: null`.
 
-Future contextual DANTE must consume explicit bounded references and authoritative minimized context, preserve recipient/purpose disclosure, reject invalid/ambiguous refs, and revalidate consequential action at execution.
-
 ---
 
 # 7. Strict reopen rule
 
 Do not reopen WS0–WS8 because of a new World name, provider, API, renderer, viewport, model, config store, sync engine or larger dataset.
 
-Reopen only on concrete evidence that the closed substrate cannot represent a real job without:
-
-```text
-new semantic/ownership/state family
-generic escape hatch
-privacy/non-interference violation
-unrepairable race/security failure in existing owner
-accepted upstream Domain/Logical contradiction
-specialist capability requiring core ownership change
-consequential effect that cannot fit revalidation/reconciliation boundaries
-```
+Reopen only on concrete evidence of a new semantic/ownership/state family, generic escape hatch, privacy/non-interference violation, unrepairable race/security failure in the existing owner, accepted upstream contradiction, or consequential effect that cannot fit existing revalidation/reconciliation ownership.
 
 ---
 
