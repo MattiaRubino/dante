@@ -3,15 +3,15 @@
 - **Status:** TEMPORARY / BRANCH-OPERATIONAL SAVE-GAME
 - **MUST NOT MERGE TO PROTECTED `main`**
 - **Branch:** `feature/ai-architecture`
-- **Current phase:** AI-05 — WHOLE-SYSTEM ACCEPTANCE + IMPLEMENTATION BLUEPRINT
+- **Current phase:** AI-05A — WHOLE-SYSTEM BUILD BOUNDARY / OWNERSHIP MAP
 - **Global current-truth reconciliation:** COMPLETE / QA PASS
 - **AI-02.1 / AI-03 / AI-04:** CLOSED / STRUCTURALLY ACCEPTED
-- **PRE-AI05 hardening:** CLOSED / STRUCTURALLY ACCEPTED / PRE05-H01..H19
-- **Fresh retest after H19:** PASS / 26 OF 26 STRUCTURAL CASES
-- **Reverse-order retest:** PASS
-- **2026 state-of-the-art regression:** PASS
+- **PRE-AI05:** CLOSED / STRUCTURALLY ACCEPTED / PRE05-H01..H19
 - **Current core eval families:** DANTE-E01..DANTE-E14
-- **AI-05:** ACTIVE / CURRENT / FINAL ARCHITECTURE-TO-BUILD BOUNDARY
+- **AI-05:** ACTIVE / CURRENT
+- **AI-05A:** CANDIDATE / BD-01..BD-30 / T01..T26 PENDING
+- **Implementation:** NONE
+- **Provider/model/SDK:** OPEN
 - **Refreshed:** 2026-09-02
 - **Current branch HEAD:** FETCH LIVE before every write
 
@@ -25,13 +25,120 @@ feature/ai-architecture
 → PRE-AI05 H01..H19 CLOSED
 → global current-truth reconciliation COMPLETE
 → AI-05 CURRENT
-→ whole-system acceptance + repository-real implementation blueprint
-→ then actual AI implementation workstream(s)
+→ AI-05A candidate materialized
+→ run T01..T26 destructive buildability/minimality tests
+→ harden smallest demonstrated gaps
+→ close AI-05A only after clean retest
+→ then AI-05B concrete implementation blueprint
 ```
 
-Do not restart AI-02/03/04/PRE-AI05 redesign without concrete contradictory downstream evidence.
+Do not restart upstream architecture without concrete contradictory evidence.
 
-## 2. Closed architecture truth
+## 2. Current AI-05A authority
+
+`docs/architecture/dante-ai-05a-whole-system-build-boundary.md`
+
+Observed repository baseline:
+
+```text
+apps/backend/src/dante/
+├ bootstrap/
+└ platform/
+
+kernel/                 not materialized
+modules/                not materialized
+provider AI SDK         none
+tooling/ai-evals        none
+AI runtime              none
+```
+
+Candidate ownership:
+
+```text
+modules/intelligence
+→ DANTE intelligence application/orchestration semantics
+
+provider SDK/protocol
+→ private outbound adapter behind DANTE-owned ModelAccessPort
+
+platform
+→ shared technical mechanics only
+
+bootstrap
+→ composition/lifecycle
+
+tooling/ai-evals
+→ direct eval tooling outside ordinary runtime
+```
+
+No folder is claimed implemented merely because the blueprint names it.
+
+## 3. Current first-vertical candidate
+
+```text
+GLOBAL SEARCH / ASK DANTE
+READ-ONLY
++ CANONICAL NAVIGATION
++ SOURCE / PROVENANCE / CURRENTNESS
++ DETERMINISTIC FAST PATH
++ MODEL-ASSISTED PATH WHERE NEEDED
+
+NO CONSEQUENTIAL MUTATION
+NO GENERIC CONVERSATION PERSISTENCE
+NO VECTOR/FTS ACTIVATION BY DEFAULT
+NO BACKGROUND AGENT
+```
+
+Product basis: Global Search and Command is an accepted shared product capability; natural language never bypasses backend validation and missing records must not be fabricated.
+
+## 4. Persistence posture
+
+```text
+DEFAULT NONCANONICAL AI PERSISTENCE = NO
+```
+
+Initial candidate expects first read-only vertical to add **zero new AI tables** unless destructive acceptance proves a real evidence/survival requirement.
+
+Runtime contracts such as WorkContract, ContextPlan, ContextFragment, ConsumerContext and inline Run state remain ephemeral by default. Provider/Harness/Binding definitions start as static/versioned typed control configuration. Dynamic control-plane persistence is trigger-gated.
+
+## 5. Provider/control posture
+
+```text
+MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT
+HARNESSPROFILE != PROVIDERBINDING
+EVAL CANDIDATE != PRODUCTION ROUTE
+```
+
+Current implementation candidate prefers thin native provider adapters and one primary provider if direct DANTE evidence later supports it. No gateway/framework is selected merely to prepare for hypothetical multi-provider use.
+
+## 6. Destructive test focus
+
+Run all `T01..T26` from AI-05A, including:
+
+```text
+god-module risk
+module vs platform vs kernel ownership
+raw business-table bypass pressure
+no-model fast path
+one-provider simplicity vs future replaceability
+static config vs hidden env business logic
+zero-new-persistence claim
+stream/cancel/Run-registry pressure
+conversation persistence pressure
+commercial entitlement ownership
+cumulative-disclosure accounting need
+sensitive/shared surface scope
+provider outage
+planning/Scenario persistence
+future effect reuse of owning application use cases
+eval artifact home
+observability privacy
+voice/MCP/A2A/background extensibility
+architecture import enforcement
+noun→table/service overmaterialization
+```
+
+## 7. Closed upstream truth
 
 ```text
 AI-03A       C01..C33
@@ -44,102 +151,28 @@ AI-04 whole  WP-01..WP-22
 PRE-AI05     H01..H19
 ```
 
-Provider/model selection remains OPEN. No implementation/API/DB/direct-provider PASS exists.
-
-## 3. PRE05-H01..H19
+## 8. Current non-claims
 
 ```text
-H01 AttentionBudget != ResourceBudget != commercial/provider quota
-H02 trigger fired != material change/current work eligibility
-H03 causal-loop / oscillation safety is production-critical
-H04 DANTE-E14 proactive/Attention/loop safety is core eval
-H05 cumulative disclosure may span related work
-H06 recipient != surface != channel
-H07 scoped autonomy is policy ceiling, not Authority/AuthZ/approval
-H08 unsafe autonomy and excessive over-asking are graded separately
-H09 current-tree eval coverage E01..E14
-H10 AI-01 old ModelTarget shorthand is historical terminology
-H11 WP route composition outranks older AI-04B local sequence
-H12 old pre-Physical AI/context boundary is historical in current navigation
-H13 formal IFC/leakage-budget/ACS implementations remain challengers
-H14 commercial tier cannot buy weaker attention/autonomy/privacy safety
-H15 AttentionDecision != proactive Work Admission != Effect authorization
-H16 cumulative disclosure may span Runs/Interactions/surfaces/known related sinks
-H17 RUN-START AUTONOMY != PERPETUAL AUTONOMY
-H18 NOTIFY != SENT != DELIVERED != SEEN != ACKNOWLEDGED != ACCEPTED
-H19 SOURCE CONTENT/FUTURE ELIGIBILITY != PRIOR DISCLOSURE OCCURRENCE
+AI-05A PASS/CLOSED                NO
+modules/intelligence IMPLEMENTED  NO
+provider/model/SDK selected       NO
+direct provider eval              NO
+stream transport selected         NO
+new PostgreSQL/Alembic change     NO
+new AI table/index                NO
+conversation persistence          NO
+control-plane persistence         NO
+FTS/vector/pgvector activation    NO
+Restate/R2/MCP/A2A activation     NO
+Execution Environment selected    NO
+commercial billing                NO
 ```
 
-H19 allows only minimum non-content security/accounting state needed to prevent cumulative re-disclosure after source deletion when its independent protection purpose still applies. It is not Context/Memory/source evidence and cannot reconstruct or resurrect deleted content.
-
-## 4. Core eval coverage
-
-```text
-E01 deterministic/model avoidance
-E02 target resolution
-E03 extraction
-E04 query/history/absence
-E05 context/privacy/Reality Scope/cumulative disclosure
-E06 planning/replanning/scenario
-E07 document/long-context/multimodal
-E08 tool/capability use
-E09 consequential effect/scoped autonomy
-E10 multi-actor/delegation/surface disclosure
-E11 adaptive memory/learning
-E12 currentness/failure/supersession/failover
-E13 open-world research/grounding
-E14 proactivity/Attention/causal-loop/notification truth
-```
-
-## 5. Acceptance evidence
-
-```text
-fresh full AI-01→AI-04 + H01..H19 retest     PASS / 26 OF 26
-compound collision retest                    PASS
-reverse PRE05→04→03→02→01                   PASS
-refreshed 2026 state-of-the-art regression   PASS
-global current-truth reconciliation          PASS / 8 exact current docs
-```
-
-Structural/documentation evidence only.
-
-## 6. Current exact action — AI-05
-
-Start from the accepted system, not from a provider SDK.
-
-```text
-accepted Product/Domain/Logical/Physical/PostgreSQL contracts
-+ AI-02 runtime responsibilities
-+ AI-03 Context/Retrieval/Memory/materialization
-+ AI-04 productionization/control-plane/eval/runtime
-+ PRE-AI05 cross-phase hardening
-→ whole-system acceptance matrix
-→ repository-real ownership/module/port/adapter placement
-→ runtime-only vs durable vs canonical classification
-→ first implementation vertical dependency map
-→ exact activation/direct-proof gates
-→ ordered implementation blueprint
-```
-
-Initial AI-05 work is architecture-to-build analysis. Do not create production backend/provider/database artifacts merely to make architecture nouns concrete.
-
-## 7. Current non-claims
-
-```text
-PRE-AI05 PASS                    YES / STRUCTURAL
-GLOBAL RECONCILIATION            YES / DOCUMENTATION QA
-AI-05 SUBSTANTIVE DESIGN         STARTING NOW
-PROVIDER/MODEL/SDK SELECTED      NO
-DIRECT PROVIDER EVAL             NO
-PRODUCTION CAPACITY PASS         NO
-IMPLEMENTATION                   NO
-POSTGRESQL/ALEMBIC CHANGE        NO
-```
-
-## 8. Git discipline
+## 9. Git discipline
 
 Before every remote write: exact BRANCH / PRE-SCOPE / CREATE / UPDATE / DELETE / PURPOSE / OUT-OF-SCOPE gate, then refetch HEAD. After writes compare PRE-SCOPE..HEAD and prove path scope.
 
-## 9. Handoff lifecycle
+## 10. Handoff lifecycle
 
 This file is temporary and MUST NOT merge to protected `main`. Before integration: propagate durable truth → verify coverage → DELETE this file.
