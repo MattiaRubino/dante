@@ -4,23 +4,21 @@
 - **MUST NOT MERGE TO PROTECTED `main`**
 - **Branch:** `feature/ai-architecture`
 - **Workstream:** DANTE AI architecture
-- **Current phase:** POST-AI-04 GLOBAL CURRENT-TRUTH RECONCILIATION
+- **Current phase:** PRE-AI05 CROSS-PHASE HARDENING + WHOLE-CHAIN RETEST
 - **AI-04 overall:** CLOSED / STRUCTURALLY ACCEPTED
 - **AI-04A:** CLOSED / A01..A30 / EV01..EV20 / DIRECT PROVIDER EVIDENCE NOT EXECUTED
 - **AI-04B:** CLOSED / RT-01..RT-31
 - **AI-04C:** CLOSED / PA-01..PA-61
 - **AI-04 whole-phase:** CLOSED / WP-01..WP-22
+- **PRE-AI05 hardening:** CANDIDATE / PRE05-H01..H14 / RETEST NOT YET EXECUTED AFTER MATERIALIZATION
 - **AI-03 overall:** CLOSED / STRUCTURALLY ACCEPTED
-- **AI-05:** NEXT AFTER GLOBAL RECONCILIATION
+- **AI-05:** NEXT ONLY AFTER PRE-AI05 RETEST + CURRENT-TRUTH RECONCILIATION
 - **Refreshed:** 2026-09-02
-- **AI-04 closure PRE-SCOPE:** `57d9b6b325d0873e46efbe88eee646f994027d2d`
 - **Current branch HEAD:** FETCH LIVE before every write
 
 This file exists only to survive chat/session/context saturation while `feature/ai-architecture` remains active.
 
 Repository truth outranks this handoff.
-
-The complete pre-closure handoff/workstream state is preserved at commit `57d9b6b325d0873e46efbe88eee646f994027d2d`.
 
 ---
 
@@ -30,8 +28,9 @@ The complete pre-closure handoff/workstream state is preserved at commit `57d9b6
 repository  MattiaRubino/dante
 branch      feature/ai-architecture
 workstream  DANTE AI architecture
-current     GLOBAL CURRENT-TRUTH RECONCILIATION
-next        AI-05 Whole-System Acceptance + Implementation Blueprint
+current     PRE-AI05 CROSS-PHASE HARDENING + WHOLE-CHAIN RETEST
+next        global current-truth reconciliation if retest PASS
+then        AI-05 Whole-System Acceptance + Implementation Blueprint
 then        actual AI implementation workstream(s)
 ```
 
@@ -48,6 +47,12 @@ AI-04B         CLOSED / RT-01..RT-31
 AI-04C         CLOSED / PA-01..PA-61
 AI-04 whole    CLOSED / WP-01..WP-22
 AI-04 overall  CLOSED / STRUCTURALLY ACCEPTED
+```
+
+Current bounded candidate:
+
+```text
+PRE05-H01..PRE05-H14
 ```
 
 Do not restart AI-02/03/04 redesign without concrete contradictory downstream evidence.
@@ -69,169 +74,231 @@ docs/architecture/dante-ai-04a-direct-eval-specification.md
 docs/architecture/dante-ai-04b-concrete-runtime-capability-architecture.md
 docs/architecture/dante-ai-04c-production-assurance-control-plane-operations.md
 docs/architecture/dante-ai-04-whole-phase-destructive-acceptance.md
+docs/architecture/dante-ai-pre05-cross-phase-hardening.md   CURRENT CANDIDATE SUPPLEMENT
 ```
 
-For AI-05 and any conclusion touching persistence/semantics, also inspect Product/North Star, Domain, Whole Logical/WL-H01..H12, Physical, CP6/PostgreSQL Constitution, current Alembic/DB truth, Recovery, Access/Home/current app workstreams and PSV obligations directly.
+For the current retest, use Product/North Star and accepted Domain/Logical/Physical/PostgreSQL contracts only as semantic/upstream requirements. Do not audit unrelated active branch topology.
 
 ---
 
-# 3. AI-04 closure truth
+# 3. Why PRE-AI05 hardening exists
 
-Accepted invariants:
+The whole AI-01→AI-04 review found no missing mega-layer and no reason to reopen Context/Memory/Effects/provider/control-plane architecture.
+
+It found bounded downstream traceability gaps around responsibilities already present in AI-02:
 
 ```text
-A01..A30
-EV01..EV20
-RT-01..RT-31
-PA-01..PA-61
-WP-01..WP-22
+proactivity / Attention
+AttentionBudget vs ResourceBudget
+causal-loop / oscillation guard
+cumulative / cross-query disclosure
+recipient/surface/channel-aware publication
+scoped autonomy vs Authority/AuthZ/approval
+current-tree eval detail
+historical terminology/authority precedence
 ```
 
-Key whole-phase rules:
+The materialized candidate is:
 
 ```text
-EVAL CANDIDATE != PRODUCTION ROUTE
+docs/architecture/dante-ai-pre05-cross-phase-hardening.md
+```
+
+---
+
+# 4. PRE05-H01..H14 compact truth
+
+```text
+H01 AttentionBudget != ResourceBudget != commercial/provider quota
+H02 trigger fired != material change / current work eligibility
+H03 causal-loop / oscillation guard is production-critical
+H04 DANTE-E14 proactivity / Attention / causal-loop safety is core eval family
+H05 cumulative disclosure is a trajectory property
+H06 recipient != surface != channel
+H07 autonomy policy != Authority != AuthZ != approval
+H08 evaluate unsafe autonomy and unnecessary approval separately
+H09 current-tree executable eval detail covers E01..E14
+H10 AI-01 old ModelTarget shorthand is superseded terminology
+H11 WP route composition outranks older AI-04B local sequence
+H12 old pre-Physical AI/context boundary is historical in current navigation
+H13 formal IFC / leakage-budget / ACS mechanisms remain challengers
+H14 commercial tier cannot buy weaker attention/autonomy/privacy safety
+```
+
+No candidate hardening is accepted until post-materialization retest PASS.
+
+---
+
+# 5. Retest requirements
+
+Run from current tree, not conversation memory.
+
+Minimum required composition:
+
+```text
+AI-01
+→ AI-02 / 02.1
+→ AI-03A/B/C
+→ AI-04A/B/C
+→ AI-04 whole-phase
+→ PRE05-H01..H14 candidate
+```
+
+Required hostile cases include:
+
+```text
+own-effect self-trigger loop
+own-effect + genuine later external change
+attention storm / quiet hours / urgent exception
+sequential privacy inference across safe-looking answers
+same recipient across private/lock/shared/voice surfaces
+AUTO_WITHIN_SCOPE then Authority/AuthZ revoked
+PROPOSE_ONLY despite available mutation capability
+stale callback after supersession
+provider continuation after Harness/tool/policy change
+provider failover with context/capability contraction
+memory/cache after deletion/revocation
+quota exhausted before/after consequential ambiguity
+auxiliary router/verifier/judge as governed recipient
+model outage while deterministic route remains valid
+```
+
+Required result classes:
+
+```text
+PASS
+GAP
+CONTRADICTION
+OVER-ABSTRACTION
+INTENTIONAL OPEN GATE
+HISTORICAL / SUPERSEDED ONLY
+```
+
+Retest PASS requires no unexplained responsibility/authority gap.
+
+---
+
+# 6. State-of-the-art posture used for the hardening
+
+Strong current patterns:
+
+```text
+background/event-triggered agents with explicit access + activity/version controls
+preview/staging before compound live effects
+monitoring that only interrupts on meaningful change
+risk-scoped human approval rather than universal approval
+per-action least privilege and current authorization
+runtime loop/step/cost limits
+multi-turn outcome/trajectory/repeated evals
+```
+
+Emerging challengers:
+
+```text
+formal information-flow control
+cross-task private-data flow tracking
+posterior/inference-leakage budgets
+portable agent-control middleware standards
+```
+
+DANTE adopts the responsibility/proof boundary now and keeps implementation technology evidence-gated.
+
+---
+
+# 7. Provider / commercial truth remains unchanged
+
+```text
+MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT
+MODEL VENDOR != SERVING PLATFORM != PROTOCOL FAMILY
 HARNESSPROFILE != PROVIDERBINDING
-routing selects compatible qualified Harness+Binding composition
-fallback independently qualifies
-auxiliary/sub-model inference is governed first-class
-route selection/context assembly != egress authorization
-fallback capability contraction != silent context truncation
-capability version N != automatic version N+1 compatibility
-CACHE HIT != Harness/tool/security/Auth continuity
-operational behavior must preserve hidden-result non-interference
-model picker/preference != routing Authority
-route selection + resource admission must be coherent
-per-invocation coherent snapshot != whole-Run immutable config
-DIRECT EVAL != PRODUCTION CAPACITY QUALIFICATION
-```
-
-Provider/model selection remains OPEN.
-
----
-
-# 4. Commercial/service-tier truth
-
-```text
 COMMERCIAL SUBSCRIPTION / SERVICE TIER != DANTE DOMAIN Plan
-```
-
-```text
-CommercialOffering / ServiceTier
-→ EntitlementProfile
-→ resource/capability envelope
-→ Budget / Routing Policy
-→ eligible route set
-```
-
-```text
 COMMERCIAL TIER != MODEL / PROVIDER / DEPLOYMENT
 ENTITLED != SERVABLE
 ```
 
+No provider/model is selected.
+
 No Base/Plus/Pro names, prices or quotas are fixed.
 
-Commercial tiers may not weaken correctness/privacy/Authority/target safety/provider-data eligibility/reconciliation.
+Commercial tiers may not weaken correctness/privacy/Authority/target safety/provider-data eligibility/reconciliation/scoped-autonomy/attention-disclosure floors.
 
 ---
 
-# 5. Provider activation gate
+# 8. Direct proof obligations remain distinct
 
-AI-04 architecture closure does not activate a provider.
-
-Before a concrete production route is activated, applicable direct DANTE evidence must cover the actual material production composition, including as required:
+Still unexecuted where applicable:
 
 ```text
-workload quality
-hard semantic/privacy/safety gates
-serving-binding reliability
-feature/data eligibility
-Harness+binding compatibility
-security/control compatibility
-effective production-route quality
-economics/resource behavior
-intended production capacity/service envelope
+PSV-06 / SC-017 hidden-result non-interference
+PSV-07 / SC-018 FTS mixed filter/query
+PSV-08 / SC-019 vector recall after filtering
+PSV-09 / SC-020 projection freshness/material basis
+PSV-10 / SC-021 deletion/redaction propagation
+PSV-21..28B durable execution / Restate / journal privacy / recovery
+PSV-37 pgvector source/model/freshness provenance
 ```
 
-No API credentials are required for the current global-reconciliation / AI-05 design work.
+No implementation or provider PASS may be inferred from the architecture retest.
 
 ---
 
-# 6. Current exact action
+# 9. Current exact action
 
 ```text
-GLOBAL CURRENT-TRUTH RECONCILIATION
+READ BACK MATERIALIZED PRE05-H01..H14
+→ WHOLE AI-01→AI-04 FORWARD DESTRUCTIVE RETEST
+→ REVERSE-ORDER RETEST
+→ REFRESHED STATE-OF-THE-ART REGRESSION CHECK
 ```
 
-Expected bounded targets are global/current navigation and status documents only, so that repository truth consistently says:
+If PASS:
 
 ```text
-AI-04 CLOSED / STRUCTURALLY ACCEPTED
-AI-05 NEXT / CURRENT AFTER RECONCILIATION
+mark PRE-AI05 hardening accepted
+→ reconcile global/current navigation
+→ set AI-05 current
 ```
 
-No implementation/provider/database claim should be added.
-
-This reconciliation requires a fresh Git write gate.
-
----
-
-# 7. AI-05 intent
-
-After reconciliation:
+If FAIL:
 
 ```text
-AI-05 — WHOLE-SYSTEM ACCEPTANCE + IMPLEMENTATION BLUEPRINT
-```
-
-AI-05 must reconcile the accepted project layers into a concrete architecture-to-build plan:
-
-```text
-Product / North Star
-Domain
-Whole Logical
-Physical / PostgreSQL
-Access / app boundaries
-AI-02 runtime semantics
-AI-03 context/retrieval/memory
-AI-04 productionization
-```
-
-and produce exact implementation boundaries, ports/adapters/config/control-plane/evidence responsibilities, first vertical sequencing and decision-specific proof gates.
-
-AI-05 is still architecture/blueprint work until explicitly gated implementation begins.
-
----
-
-# 8. Current non-claims
-
-```text
-AI-04 CLOSED                         YES / STRUCTURAL
-AI-05 STARTED                        NO
-DIRECT PROVIDER EVAL PASS            NO
-PROVIDER SELECTED                    NO
-MODEL DEFAULT SELECTED               NO
-PROVIDER SDK SELECTED                NO
-EVAL RUNNER SELECTED                 NO
-API CREDENTIALS USED                 NO
-PAID API CALL EXECUTED               NO
-PRODUCTION CAPACITY PASS             NO
-AI BACKEND IMPLEMENTED               NO
-FRONTEND AI IMPLEMENTED              NO
-CONTROL PLANE IMPLEMENTED            NO
-COMMERCIAL TIER NAMES/PRICES SET     NO
-POSTGRESQL/ALEMBIC CHANGED           NO
-NEW AI TABLE/INDEX                   NO
-PGVECTOR/ANN/FTS ACTIVATED           NO
-RESTATE/R2 ACTIVATED                 NO
-MCP/A2A ACTIVATED                    NO
-EXECUTION ENVIRONMENT IMPLEMENTED    NO
-SC/PSV DIRECT PROOFS EXECUTED        NO
+reopen only the smallest affected boundary
 ```
 
 ---
 
-# 9. Git write-gate discipline
+# 10. Current non-claims
+
+```text
+PRE-AI05 HARDENING MATERIALIZED       YES
+PRE-AI05 RETEST PASS                  NO
+AI-05 STARTED                         NO
+DIRECT PROVIDER EVAL PASS             NO
+PROVIDER SELECTED                     NO
+MODEL DEFAULT SELECTED                NO
+PROVIDER SDK SELECTED                 NO
+EVAL RUNNER SELECTED                  NO
+API CREDENTIALS USED                  NO
+PAID API CALL EXECUTED                NO
+PRODUCTION CAPACITY PASS              NO
+AI BACKEND IMPLEMENTED                NO
+FRONTEND AI IMPLEMENTED               NO
+CONTROL PLANE IMPLEMENTED             NO
+FORMAL IFC IMPLEMENTED                NO
+ATTENTION ENGINE IMPLEMENTED          NO
+COMMERCIAL TIER NAMES/PRICES SET      NO
+POSTGRESQL/ALEMBIC CHANGED            NO
+NEW AI TABLE/INDEX                    NO
+PGVECTOR/ANN/FTS ACTIVATED            NO
+RESTATE/R2 ACTIVATED                  NO
+MCP/A2A ACTIVATED                     NO
+EXECUTION ENVIRONMENT IMPLEMENTED     NO
+SC/PSV DIRECT PROOFS EXECUTED         NO
+```
+
+---
+
+# 11. Git write-gate discipline
 
 Before every new remote write:
 
@@ -264,7 +331,7 @@ After writes compare PRE-SCOPE..HEAD and prove exact path classification/no scop
 
 ---
 
-# 10. Handoff lifecycle
+# 12. Handoff lifecycle
 
 This file is temporary and **MUST NOT MERGE TO PROTECTED `main`**.
 
