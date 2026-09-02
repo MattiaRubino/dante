@@ -64,8 +64,16 @@ export {
   type TemporalCreateWeekday,
 } from './model/temporal-create-session';
 export {
+  TemporalCreateContextCatalogProvider,
+  type TemporalCreateContextCreator,
+} from './ui/temporal-create-context-catalog';
+export {
   TemporalCreateEntry,
   type TemporalCreateEntryProps,
   type TemporalCreateInvocation,
 } from './ui/temporal-create-entry';
-export type { TemporalCreateContextOption } from './ui/temporal-create-composer';
+export type {
+  TemporalCreateContextInput,
+  TemporalCreateContextOption,
+  TemporalCreateContextTone,
+} from './ui/temporal-create-ui-types';
