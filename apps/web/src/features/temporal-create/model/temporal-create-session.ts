@@ -55,6 +55,19 @@ export type TemporalCreateVisibility = 'default' | 'private' | 'public';
 export type TemporalCreateConferenceMode = 'none' | 'provider-default';
 
 /**
+ * Presentation-only override for the Timeline visual grammar. It never changes
+ * Context ownership, filtering, scheduling semantics or canonical Domain
+ * classification. `null` means the item inherits its Context tone.
+ */
+export type TemporalCreateAppearanceTone =
+  | 'focus'
+  | 'meeting'
+  | 'health'
+  | 'creative'
+  | 'personal'
+  | 'urgent';
+
+/**
  * Event recurrence is deliberately Event-specific. Persistent repetition that
  * produces Activities belongs to the Routine -> Recurrence -> Occurrence
  * vertical and is represented in Create as a Routine handoff, not as a repeat
@@ -169,6 +182,7 @@ export type TemporalCreateFields = Readonly<{
   timeMode: TemporalCreateTimeMode;
   timeZoneId: string;
   contextId: string;
+  appearanceTone: TemporalCreateAppearanceTone | null;
   notes: string;
   scheduling: TemporalCreateSchedulingIntent;
   execution: TemporalCreateExecutionIntent;
@@ -373,6 +387,7 @@ export function createTemporalCreateFields(
       timeMode: options.timeMode ?? 'floating',
       timeZoneId,
       contextId: options.contextId ?? 'personale',
+      appearanceTone: options.appearanceTone ?? null,
       notes: options.notes ?? '',
       scheduling,
       execution,
@@ -414,6 +429,7 @@ function temporalCreateFieldsEqual(
     left.timeMode === right.timeMode &&
     left.timeZoneId === right.timeZoneId &&
     left.contextId === right.contextId &&
+    left.appearanceTone === right.appearanceTone &&
     left.notes === right.notes &&
     left.scheduling.constraintKind === right.scheduling.constraintKind &&
     left.scheduling.windowStartDate === right.scheduling.windowStartDate &&
