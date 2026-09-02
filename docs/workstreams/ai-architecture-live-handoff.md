@@ -5,9 +5,9 @@
 - **Branch:** `feature/ai-architecture`
 - **Current phase:** PRE-AI05 CROSS-PHASE HARDENING + WHOLE-CHAIN RETEST
 - **AI-02.1 / AI-03 / AI-04:** CLOSED / STRUCTURALLY ACCEPTED
-- **PRE-AI05 hardening:** CANDIDATE / PRE05-H01..H18
-- **Retest history:** first FAIL bounded → H15-H16; second full FAIL bounded → H17-H18
-- **Fresh retest after H17-H18:** NOT YET EXECUTED
+- **PRE-AI05 hardening:** CANDIDATE / PRE05-H01..H19
+- **Retest history:** first FAIL bounded → H15-H16; second full FAIL bounded → H17-H18; third full FAIL bounded → H19
+- **Fresh retest after H19:** NOT YET EXECUTED
 - **AI-05:** NEXT ONLY AFTER PRE-AI05 PASS + CURRENT-TRUTH RECONCILIATION
 - **Refreshed:** 2026-09-02
 - **Current branch HEAD:** FETCH LIVE before every write
@@ -25,13 +25,7 @@ feature/ai-architecture
 → refreshed 2026 state-of-the-art regression check
 ```
 
-Only if PASS:
-
-```text
-mark PRE-AI05 accepted
-→ global current-truth reconciliation
-→ AI-05 current
-```
+Only if PASS: mark PRE-AI05 accepted → global current-truth reconciliation → AI-05 current.
 
 ## 2. Closed architecture truth
 
@@ -47,7 +41,7 @@ AI-04 whole  WP-01..WP-22
 
 Provider/model selection remains OPEN. No implementation/API/DB PASS exists.
 
-## 3. PRE05-H01..H18
+## 3. PRE05-H01..H19
 
 ```text
 H01 AttentionBudget != ResourceBudget != commercial/provider quota
@@ -68,13 +62,12 @@ H15 AttentionDecision != proactive Work Admission != Effect authorization
 H16 cumulative disclosure may span Runs/Interactions/surfaces/known related sinks
 H17 RUN-START AUTONOMY != PERPETUAL AUTONOMY
 H18 Attention/Notify decision != SENT != DELIVERED != SEEN != ACKNOWLEDGED != ACCEPTED
+H19 SOURCE CONTENT/LIFECYCLE != PRIOR DISCLOSURE OCCURRENCE
 ```
 
-H17 requires current scoped-autonomy revalidation before an autonomous consequential dispatch after waits/replanning/material changes/policy changes.
+H19 allows only minimum non-content security/accounting state needed to prevent cumulative re-disclosure after source deletion; it has its own justified purpose/lifetime, is not Context/Memory/source evidence, and cannot reconstruct or resurrect deleted content.
 
-H18 requires truthful notification transport state and E14 coverage for timeout/unknown/replay/deduplication.
-
-## 4. Current E01..E14 coverage
+## 4. Core eval coverage
 
 ```text
 E01 deterministic/model avoidance
@@ -93,37 +86,22 @@ E13 open-world research/grounding
 E14 proactivity/Attention/causal-loop/notification truth
 ```
 
-## 5. Fresh hostile retest set
+## 5. Fresh hostile retest focus
+
+All prior cases must be rerun. Compound privacy pressure now explicitly tests:
 
 ```text
-1 own-effect loop without new material delta
-2 own-effect loop + genuine new external change
-3 attention storm under quiet hours
-4 urgent material signal under high attention pressure
-5 cumulative protected inference inside one interaction
-6 cumulative protected inference across separate Runs
-7 same recipient across private/lock/shared/voice surfaces
-8 known related sinks compose protected information
-9 AUTO_WITHIN_SCOPE then Authority/AuthZ revoked
-10 AUTO_WITHIN_SCOPE then autonomy alone changes to PROPOSE_ONLY
-11 PROPOSE_ONLY with mutation technically available
-12 attention silent while background work eligible
-13 attention notify while consequential work ineligible
-14 notification decision + transport timeout/unknown delivery
-15 duplicate/replayed notification transport event
-16 commercial quota exhausted during optional proactive work
-17 quota exhausted after outcome-unknown effect
-18 failover with context/capability contraction
-19 continuation after policy/tool/Harness change
-20 stale callback after supersession
-21 provider/cache memory after deletion/revocation
-22 auxiliary router/verifier/judge as governed recipient
-23 model outage while deterministic route remains valid
-24 proactive Run + autonomy change + failover + surface change + quota pressure
-25 private source + cumulative disclosure + deletion + old cache/restore + new Run
+private source
+→ prior safe disclosure
+→ source deletion/revocation
+→ stale cache/backup restore
+→ new Run
+→ source remains ineligible
+→ minimum prior-exposure safety accounting may remain independently eligible
+→ no cumulative leak / no source resurrection
 ```
 
-PASS requires no unexplained responsibility gap or hidden safety downgrade.
+Also retest autonomy-only revocation, notification UNKNOWN/replay, proactive+failover+surface+quota pressure and deterministic operation during model outage.
 
 ## 6. Current non-claims
 
