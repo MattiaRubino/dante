@@ -1,3 +1,10 @@
+import {
+  createWorldFocusContextReferenceSet,
+  normalizeWorldFocusContextReference,
+  sameWorldFocusContextReferenceSet,
+  type WorldFocusContextReference,
+  type WorldFocusContextReferenceSet,
+} from './world-focus-context-reference';
 import type {
   WorldFocusInteractionDepth,
   WorldFocusPresentationSurface,
@@ -16,11 +23,6 @@ export const WORLD_FOCUS_BLOCKING_PRESENTATIONS = [
   'modal',
   'full-screen',
 ] as const satisfies readonly WorldFocusPresentationSurface[];
-
-export type WorldFocusContextReference = Readonly<{
-  kind: string;
-  key: string;
-}>;
 
 export type WorldFocusWorkspaceExpectation = Readonly<{
   worldId: string;
@@ -52,14 +54,14 @@ export type WorldFocusSurfaceRequest<Kind extends string = string> = Readonly<{
 export type WorldFocusWorkspaceState<Kind extends string = string> = Readonly<{
   worldId: string;
   generation: number;
-  selection: WorldFocusContextReference | null;
+  contextReferences: WorldFocusContextReferenceSet | null;
   surfaces: readonly WorldFocusSurfaceDescriptor<Kind>[];
 }>;
 
 export type WorldFocusInteractionCursor = Readonly<{
   worldId: string;
   generation: number;
-  selection: WorldFocusContextReference | null;
+  contextReferences: WorldFocusContextReferenceSet | null;
   activeSurface: Readonly<{
     instanceId: string;
     kind: string;
@@ -73,6 +75,10 @@ export type WorldFocusWorkspaceIntent<Kind extends string = string> =
   | Readonly<{
       type: 'select-context';
       reference: WorldFocusContextReference;
+    }>
+  | Readonly<{
+      type: 'set-context';
+      references: WorldFocusContextReferenceSet;
     }>
   | Readonly<{ type: 'clear-context' }>
   | Readonly<{
@@ -115,13 +121,6 @@ function assertNonNegativeInteger(value: number, label: string): number {
     throw new Error(`${label} must be a non-negative integer`);
   }
   return value;
-}
-
-function sameContextReference(
-  left: WorldFocusContextReference | null,
-  right: WorldFocusContextReference | null,
-): boolean {
-  return left?.kind === right?.kind && left?.key === right?.key;
 }
 
 function canApplyWorkspaceExpectation(
@@ -208,7 +207,15 @@ function buildSurfaceDescriptor<Kind extends string>(
     presentation: request.presentation,
     origin: request.origin,
     boundGeneration: state.generation,
-    contextReference: request.contextReference ?? state.selection,
+    contextReference:
+      request.contextReference === undefined
+        ? state.contextReferences?.primary ?? null
+        : request.contextReference === null
+          ? null
+          : normalizeWorldFocusContextReference(
+              request.contextReference,
+              'World Focus surface context reference',
+            ),
     dismissible: request.dismissible ?? true,
   });
 }
@@ -223,6 +230,21 @@ function withSurfaces<Kind extends string>(
   });
 }
 
+function withContextReferences<Kind extends string>(
+  state: WorldFocusWorkspaceState<Kind>,
+  contextReferences: WorldFocusContextReferenceSet | null,
+): WorldFocusWorkspaceState<Kind> {
+  if (sameWorldFocusContextReferenceSet(state.contextReferences, contextReferences)) {
+    return state;
+  }
+
+  return Object.freeze({
+    ...state,
+    generation: state.generation + 1,
+    contextReferences,
+  });
+}
+
 /**
  * Creates transient World workspace state. This is intentionally presentation /
  * interaction state only: it never owns canonical World truth, authorization,
@@ -234,7 +256,7 @@ export function createWorldFocusWorkspaceState<Kind extends string = string>(
   return Object.freeze({
     worldId: assertNonEmptyToken(worldId, 'World Focus workspace world id'),
     generation: 0,
-    selection: null,
+    contextReferences: null,
     surfaces: Object.freeze([]),
   });
 }
@@ -259,7 +281,7 @@ export function getWorldFocusInteractionCursor(
   return Object.freeze({
     worldId: state.worldId,
     generation: state.generation,
-    selection: state.selection,
+    contextReferences: state.contextReferences,
     activeSurface:
       activeSurface === null
         ? null
@@ -283,55 +305,28 @@ export function getWorldFocusEscapeDisposition(
   return surface.dismissible ? 'surface-dismissible' : 'surface-blocked';
 }
 
-/**
- * Pure workspace transition function. Async callers may attach an atomic
- * expectedWorkspace identity + generation to presentation intents. A request
- * from another World, or from an older cursor generation in the same World,
- * becomes a deterministic no-op instead of presenting against a newer or
- * different workspace.
- *
- * Modal/full-screen presentations form a blocking tail. Once one is active,
- * weaker presentations cannot be appended above it. Additional blocking
- * surfaces are allowed so deliberate nested modal/focus flows remain possible.
- * Lower surfaces cannot be replaced/promoted while a blocker owns interaction.
- */
 export function reduceWorldFocusWorkspaceState<Kind extends string = string>(
   state: WorldFocusWorkspaceState<Kind>,
   intent: WorldFocusWorkspaceIntent<Kind>,
 ): WorldFocusWorkspaceState<Kind> {
   switch (intent.type) {
-    case 'select-context': {
-      const reference = Object.freeze({
-        kind: assertNonEmptyToken(
-          intent.reference.kind,
-          'World Focus context reference kind',
-        ),
-        key: assertNonEmptyToken(
-          intent.reference.key,
-          'World Focus context reference key',
-        ),
-      });
+    case 'select-context':
+      return withContextReferences(
+        state,
+        createWorldFocusContextReferenceSet({ primary: intent.reference }),
+      );
 
-      if (sameContextReference(state.selection, reference)) {
-        return state;
-      }
-
-      return Object.freeze({
-        ...state,
-        generation: state.generation + 1,
-        selection: reference,
-      });
-    }
+    case 'set-context':
+      return withContextReferences(
+        state,
+        createWorldFocusContextReferenceSet({
+          primary: intent.references.primary,
+          supporting: intent.references.supporting,
+        }),
+      );
 
     case 'clear-context':
-      if (state.selection === null) {
-        return state;
-      }
-      return Object.freeze({
-        ...state,
-        generation: state.generation + 1,
-        selection: null,
-      });
+      return withContextReferences(state, null);
 
     case 'open-surface': {
       if (
