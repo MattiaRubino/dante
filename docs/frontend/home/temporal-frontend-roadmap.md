@@ -1,301 +1,399 @@
 # DANTE — Temporal Frontend Production-Depth Roadmap
 
-**Status:** ACTIVE AUTHORITY — C1 AUTOMATED PASS / MANUAL ACCEPTANCE PENDING  
-**Updated:** 2026-09-02  
+**Status:** ACTIVE AUTHORITY — C1 AUTOMATED PASS / USER MANUAL ACCEPTANCE PENDING  
+**Original roadmap date:** 2026-08-31  
+**Current-status reconciliation:** 2026-09-02  
 **Workstream owner:** `feature/home-timeline`  
 **Worktree:** `/home/mattia/projects/dante-timeline`  
 **Integration target:** `feature/home-react`  
-**Frozen common base:** `98b486a308961022ba0d8f43bb79339518457741` — H0 Whole Home Structural Freeze  
+**Frozen common base:** `98b486a308961022ba0d8f43bb79339518457741` — H0 Whole Home Structural Freeze / CI green  
 **F0 closed checkpoint:** `7034b9b0d100709785ebe96e3816aab3e7b1d1f8`  
-**C1 final implementation candidate:** `81808814abb4e4998c7bde5b0c6cb8f5f903aa62`  
+**C1 implementation candidate:** `81808814abb4e4998c7bde5b0c6cb8f5f903aa62`  
 **C1 automated evidence:** Frontend CI `33613239926` / #536 — FULL PASS  
-**Consumes:** `temporal-experience-architecture.md`, `timeline-t1-frozen-contract.md`, H0, Product V1 temporal documents/simulations, closed Domain/Logical/Physical semantics, CP6 PostgreSQL materialization and current frontend production standards  
-**Scope stop:** maximum production-depth frontend capability up to explicit backend/API/provider/solver runtime boundaries
+**Consumes:** `temporal-experience-architecture.md`, `timeline-t1-frozen-contract.md`, H0, Product V1 temporal documents and simulations, closed Domain/Logical/Physical semantics, CP6 PostgreSQL materialization, current frontend production standards  
+**Scope stop:** maximum production-depth frontend capability up to, but not including, real backend/API/provider/solver integration
 
-## 1. Workstream isolation
+---
+
+## 1. Authority and workstream isolation
+
+This document is the operational authority for Timeline work after the split from the general Home branch.
+
+Historical temporal documents may still mention `feature/home-react` because they were authored before the split. That metadata is historical only. It does **not** assign temporal implementation work back to the Mondi/Home workstream.
+
+Current ownership is:
 
 ```text
 feature/home-timeline
 → Home Timeline
 → shared temporal frontend application capability
-→ Create / Detail / edit / execution / replan frontend flows
+→ temporal Detail/create/edit/execution/replan frontend flows
 → future dedicated temporal workspace
 → pre-backend temporal ports/adapters/tests/docs
 
 feature/home-react
-→ Mondi / Central Stage / World Focus
+→ Mondi / Central Stage / World Focus workstream
 → Home integration line
 
 H0 / shared infrastructure
 → change-controlled integration surface
 ```
 
-Timeline work must not casually reauthor HomeShell/AppShell, Central Stage, World Focus, global Home geometry, shared design tokens, shared i18n architecture or shared CI rules.
+The Timeline workstream must not use Mondi/World Focus files as a convenience dependency and must not casually modify:
 
-**Permanent rule:** temporal child capabilities consume H0; they do not renegotiate it.
+- HomeShell/AppShell ownership;
+- Central Stage or World Focus;
+- global Home geometry;
+- global design tokens;
+- shared i18n architecture;
+- CI/shared architecture rules;
+- H0 contracts.
+
+If a genuine shared change is required, it is isolated, justified, tested and intentionally propagated/integrated. Shared files are not a place to hide Timeline-specific behavior.
+
+**Permanent rule:** child capabilities consume the H0 Home skeleton; they do not renegotiate it.
+
+---
 
 ## 2. Product objective
 
-Timeline is not merely a polished calendar component. It is the temporal operating surface of DANTE.
+The target is not merely a polished calendar component.
 
-It must preserve recoverable distinctions such as:
+The Timeline must become a production-grade temporal operating surface that can expose DANTE's richer semantics without making simple actions complicated.
+
+The frontend must preserve recoverability of distinctions already established by Product/Domain/DB, including:
 
 ```text
-Activity != Event
 Occurrence != Schedule != Session != Actual
 planned/intended != actual reality
-recurrence source != generated Occurrence
+recurrence source != generated occurrence
 Proposal != Decision != accepted effect
 confirmation/provenance != outcome
-calendar/context != sharing
+calendar/life area != sharing
 AI output != canonical truth
 ```
 
-The UI should hide unnecessary complexity through progressive disclosure, not destroy semantics in the application layer.
+The UI may use simpler language and progressive disclosure. The application layer must not collapse these distinctions in a way that forces a later rewrite.
 
 ### Experience benchmark
 
-Aim for:
+The desired combination is:
 
-- Google/Notion Calendar predictability and manual speed;
-- Akiflow/Sunsama task-to-time fluency where useful;
-- Motion/Reclaim adaptive-planning mechanics only where DANTE semantics justify them;
-- Fantastical-class time/timezone maturity where relevant;
-- stronger DANTE guarantees around accepted state, constraints, history, reversibility and planned-vs-actual truth.
+- Google/Notion Calendar-level predictability and manual speed;
+- Akiflow/Sunsama-level task-to-time operational fluency;
+- Motion/Reclaim-class adaptive planning mechanics where DANTE semantics permit them;
+- Fantastical-class temporal/time-zone maturity where relevant;
+- stronger DANTE guarantees around accepted state, constraints, provenance, reversibility and planned-vs-actual truth.
 
-Borrow interaction quality, not competitor ontology.
+Do not copy competitors feature-for-feature. Borrow mature interaction patterns only when they improve DANTE's own product model.
 
-## 3. Delivery model
+---
+
+## 3. Delivery model — one capability to maximum useful depth
+
+After the common foundation is strong enough, work proceeds **capability by capability**, not as one enormous abstract architecture project.
 
 ```text
 bounded capability
 → product/domain alignment
 → frontend application boundary
 → complete UI states/interactions
-→ accessibility/keyboard/touch
-→ responsive/i18n
+→ accessibility + keyboard + touch strategy
+→ responsive + i18n
 → performance/cleanup
 → automated regression protection
-→ traceability/docs
-→ user manual PASS
+→ user visual/manual PASS
 → freeze
 → next capability
 ```
 
-A capability is not complete because a happy path renders.
+A capability is not complete because its happy path renders.
 
-Applicable production-depth gates include:
+For every capability, production-depth means all applicable items below are closed:
 
-- semantic owner and contract;
-- normal/empty/disabled/unavailable/validation/error states;
-- pending/retry/recovery/reconciliation when meaningful;
-- keyboard/focus;
-- pointer/touch;
-- responsive collision behavior;
-- non-color-only communication;
-- reduced motion;
-- i18n-safe copy/layout;
-- deterministic local truth before backend;
-- cleanup of listeners/observers/timers/RAF;
-- repeated-use/density pressure;
-- unit/E2E/Firefox protection;
-- no dead/fake/dangling affordance;
-- documentation and freeze contract.
+- semantic contract and ownership;
+- normal, empty, disabled/unavailable, validation and error states;
+- pending/retry/recovery/reconciliation states when meaningful;
+- keyboard and focus behavior;
+- pointer/touch behavior where applicable;
+- responsive/viewport collision behavior;
+- non-color-only state communication;
+- reduced-motion behavior;
+- i18n-safe content/layout;
+- deterministic local behavior before backend exists;
+- listener/observer/timer/RAF cleanup;
+- dense/repeated-use performance pressure;
+- unit/component/E2E/Firefox gates as relevant;
+- no dead code, fake success, dangling feature flag or misleading affordance;
+- documentation and frozen regression contract when behavior is accepted.
 
-Build only abstractions justified by current or already-authoritative next flows.
+**Architecture rule:** build only abstractions justified by current or already-authoritative next flows. Do not build a speculative enterprise framework merely to look sophisticated.
+
+---
 
 ## 4. External-vertical dependency policy
 
-### DANTE intelligence / AI
+Some temporal experiences depend on capabilities owned elsewhere. They must not block the Timeline foundation, and they must not be faked inside this branch.
 
-AI runtime is an external vertical. Timeline/Create may define typed semantic input/proposal seams but must not implement a private AI stack or present fixtures as intelligence.
+### AI / contextual intelligence
 
-C1 now has a source-neutral structured Create seed. Future DANTE interpretation must feed that semantic boundary rather than script UI controls.
+AI provider/runtime is an external vertical.
+
+Timeline may define and consume typed temporal intents, candidate interpretations, proposal/preview contracts and integration ports. Until the AI vertical exists, only deterministic fixtures/test doubles may exercise those contracts.
+
+Do **not** implement a private Timeline AI stack or present mock model output as production intelligence.
+
+C1 now provides the first concrete source-neutral structured seed contract. A future DANTE interpreter, global Create, keyboard entry or import path must feed that semantic boundary and the same Create session; it must not automate the UI by clicking controls.
 
 ### Voice
 
-Voice is an alternative input vertical. It must target the same semantic command/seed boundary; speech capture/provider runtime remains external.
+Voice is an alternative input channel owned by its future/global vertical. Timeline exposes the same semantic command boundary used by manual controls. It does not implement speech capture/provider logic here.
 
 ### Backend / persistence / solver
 
-Real API, PostgreSQL writes, production solver, recurrence evaluator and provider synchronization remain beyond the frontend stop line.
+Real API, PostgreSQL mutations, provider synchronization and production solver integration are outside this roadmap's stop line.
 
-No component direct HTTP, fake DTO, fake durable state or browser-side Occurrence generation.
+Frontend work must stop at explicit ports/adapters with truthful local behavior. No invented endpoint, ORM row or fake durable-server state.
 
-### Notifications / Review / Resolution
+### Notifications / Review / global Resolution orchestration
 
-Timeline may author or expose intents/handoffs. Delivery/global orchestration remains outside unless explicitly assigned.
+Timeline may expose handoff state/intents. Global notification delivery, review scheduling and cross-product Resolution orchestration remain separate capabilities unless explicitly moved into this workstream.
 
-### Goal / Program / World / Project / Routine / other owners
+### Goal / Program / World / Project verticals
 
-Timeline/Create may carry typed owner handoff intent and preserve a draft snapshot. Independent CRUD belongs to the owning vertical.
+Timeline may render links/projections and emit navigation/operation intents for these concepts. Their independent CRUD/domain UI belongs to their own verticals.
 
-C1 currently marks all external owner handoffs `deferred` rather than fabricating navigation/success.
+C1 additionally establishes a typed external-owner handoff registry whose current targets remain explicitly `deferred`; handoff preserves a normalized immutable draft snapshot without fabricating a route or success state.
+
+**Dependency rule:** if another vertical is unavailable, finish the Timeline-owned seam and expose the dependency truthfully; do not duplicate the external vertical.
 
 ---
 
 # 5. Roadmap
 
-## T1 — Existing Timeline hardening and freeze
+## T1 — Existing Timeline final hardening and freeze
 
-**Status:** FROZEN / CLOSED.
+**Current status:** **FROZEN / CLOSED.** The audit scope below is retained as historical/operational evidence of the gate that was executed; it is not a current TODO list.
 
-Protected baseline includes:
+### Goal
+
+Close the accepted Phase-1 Timeline as a genuinely reliable production-grade interaction baseline before expanding capability depth.
+
+T1 is hardening, not redesign.
+
+### Already protected
+
+The current baseline already includes substantial real behavior:
 
 - continuous bounded multi-day stream;
-- viewed-date navigation / `Ora`;
-- semantic zoom/density;
-- deterministic overlap geometry;
-- custom pointer drag without native ghost;
-- first-gesture correctness across focused cards;
-- same/cross-day movement;
-- duration/day bounds;
-- real-mutation Undo;
-- no-op mutation truth;
+- viewed-date navigation and `Ora` behavior;
+- semantic zoom/density mapping;
+- deterministic compact overlaps;
+- content-driven bounded card sizing;
+- direct title/time/subitem action regions;
+- focus/deselect-first grammar;
+- custom first-gesture pointer drag without native drag ghost;
+- same-day/cross-day movement;
+- duration preservation and day bounds;
+- Undo for move/time edit;
 - keyboard movement;
-- group filtering/reorder;
-- calendar/time popovers and focus restoration;
-- reduced-motion imperative navigation;
-- responsive H0 behavior;
-- Chromium + frozen Firefox contract;
-- cleanup guards.
+- group filters/reorder;
+- expanded group/event/header geometry and horizontal sync;
+- calendar and time popovers with focus restoration;
+- responsive Home behavior;
+- Chromium + Firefox critical interaction coverage;
+- RAF/timer/listener cleanup guards;
+- reduced-motion CSS coverage.
 
-Do not alter T1 merely to simplify later capabilities.
+### Historical audit scope — completed
 
----
+Only demonstrated defects or missing production guarantees were permitted to reopen T1. The first hardening slice was:
 
-## F0 — Shared temporal application foundation
+**T1-A — mutation truth and motion/accessibility edge cases**
 
-**Status:** FROZEN / CLOSED at `7034b9b0d100709785ebe96e3816aab3e7b1d1f8`.
+- no-op time edits must not create a fake mutation/Undo;
+- boundary-clamped no-op moves must not create fake mutation state;
+- feedback/Undo must describe the effect that actually occurred;
+- imperative smooth scrolling must respect reduced-motion preference;
+- add focused regression tests for these cases.
 
-Provides:
+A final destructive audit then covered pointer, keyboard, viewport boundaries, repeated use and cleanup. The resulting T1/T1-A/T1-B contracts are now frozen and continue to be regression-tested, including the Firefox interaction contract.
 
-- stable projection/operation/Undo identities;
-- clock;
-- typed temporal placements including date-span, floating-local, zoned and absolute;
-- typed command/result/query boundary;
-- immutable drafts/projections;
-- deterministic validation;
-- exact operation idempotency;
-- optimistic revision/expected-state semantics;
-- Undo/recovery contract;
-- deterministic in-memory workspace;
-- subscriber isolation;
-- no fake network/storage.
-
-Permanent:
-
-`ViewModel != application projection != DTO != DB row`.
-
----
-
-## C1 — `+` / Temporal Create to production depth
-
-**Status:** IMPLEMENTATION COMPLETE / AUTOMATED PASS / USER MANUAL ACCEPTANCE PENDING.
-
-**Final implementation candidate:** `81808814abb4e4998c7bde5b0c6cb8f5f903aa62`  
-**CI:** #536 / `33613239926` FULL PASS.
-
-The detailed expanded contract is owned by `temporal-create-c1-scope-amendment.md`; exact implementation mapping is in `temporal-create-c1-traceability.md`.
-
-### Final C1 capability
-
-One shared Create system:
+### T1 exit gate — satisfied
 
 ```text
-Timeline +
-double-click
-Shift-drag range
-future semantic seed callers
-        ↓
-shared draft
-        ↓
-Quick ↔ Expanded ↔ Full
-        ↓
-normalize / validate / preview
-        ↓
-explicit commit
-        ↓
-F0 command / local deterministic adapter
+T1 = FROZEN / PASS
 ```
 
-### Activity
+The gate required:
 
-Creation-time authoring covers:
+- no known correctness defect in accepted behavior;
+- Timeline model/component tests green;
+- lint/typecheck/build green;
+- Timeline Playwright green;
+- Firefox critical contract green;
+- accepted responsive/H0 geometry unchanged;
+- user visual/manual acceptance for observable corrections.
 
-- timed/all-day/unscheduled where appropriate;
+Do not weaken `timeline-t1-frozen-contract.md` to accept drift.
+
+---
+
+## F0 — Minimal shared temporal application foundation
+
+**Current status:** **FROZEN / CLOSED** at `7034b9b0d100709785ebe96e3816aab3e7b1d1f8`.
+
+### Goal
+
+Create only the reusable frontend seams required so every later capability does not mutate fixture/component state in its own private way.
+
+### Required primitives
+
+Introduced and frozen incrementally:
+
+- stable temporal projection/item identity;
+- query/read boundary;
+- typed semantic intent/command boundary;
+- operation request/result model;
+- draft vs accepted projection state;
+- validation/error representation;
+- expected-state/conflict representation where required;
+- undo/recovery contract;
+- clock abstraction;
+- deterministic local adapter;
+- clean separation of View Model, frontend application model, future DTO and Domain/persistence model.
+
+The local adapter supports truthful operation outcomes needed by current flows and preserves the permanent non-collapse rules around idempotency, expected state, no-op and Undo.
+
+### Exit gate — satisfied
+
+F0 supports real Create without direct component mutation shortcuts and without backend-shaped abstractions.
+
+---
+
+## C1 — `+` / Create to production depth
+
+**Current status:** **IMPLEMENTATION COMPLETE / AUTOMATED PASS / USER MANUAL ACCEPTANCE PENDING.**
+
+**Final implementation candidate:** `81808814abb4e4998c7bde5b0c6cb8f5f903aa62`  
+**Automated CI:** `33613239926` / #536 — FULL PASS  
+**Expanded authoritative scope:** `temporal-create-c1-scope-amendment.md`  
+**Final mapping/evidence:** `temporal-create-c1-traceability.md`
+
+### Goal
+
+Turn the Timeline `+` into the first fully closed capability while preserving a fast common path and the complete useful pre-backend authoring depth.
+
+The original roadmap scope below began with the smallest truthful grammar, but the user-approved amendment expanded the C1 **completion** boundary before freeze. The original progressive principle remains valid; the current final capability is broader.
+
+### Original progressive foundation — retained
+
+- quick create from current/viewed temporal context;
+- Event vs Activity where product semantics require the distinction;
+- title;
+- date;
+- start/end or duration;
+- all-day/date-span form where applicable;
+- calendar/life-area assignment where current contracts support it;
+- optional notes/context that belong to creation rather than another vertical;
+- quick vs expanded creation;
+- dirty/cancel/discard behavior;
+- deterministic validation;
+- keyboard/focus/pointer/touch behavior;
+- responsive overlay/sheet strategy;
+- unavailable external capabilities shown truthfully;
+- local-adapter operation result and Undo/recovery where appropriate.
+
+Do not put external owner CRUD, AI runtime, voice capture or backend persistence inside C1. Add only truthful integration seams.
+
+### Final amended C1 depth now implemented
+
+One shared draft/application lifecycle serves Quick, Expanded and Full Create plus contextual Timeline invocation.
+
+**Activity** now authors, where applicable:
+
+- timed/all-day/unscheduled forms;
 - exact expected duration;
-- open/window/deadline/preferred scheduling intent;
+- open/bounded-window/deadline/preferred scheduling intent;
+- earliest/deadline boundaries;
 - movement/replanning policy;
-- split/min/max session intent;
+- indivisible/splittable execution intent;
+- minimum/max session intent;
 - preparation/recovery/spacing;
+- partial/early-finish/compatible-merge intent;
 - fallback policy;
 - confirmation/review/reminder intent;
 - context/notes;
 - external owner handoff.
 
-**Activity does not own recurrence.** Persistent repetition hands off to Routine.
+Persistent repetition **does not** live on Activity. CP6 recurrence ownership is Routine/Event; therefore repeated Activity intent hands off to Routine. Do not reintroduce `Activity.repeat` or an Activity recurrence editor.
 
-### Event
-
-Creation-time authoring covers:
+**Event** now authors:
 
 - timed/all-day multi-day placement;
-- floating-local / named-zone time;
-- timezone;
+- start/end/duration;
+- floating-local/named-zone time semantics and IANA timezone;
 - location/availability/visibility;
-- purpose/outcome/agenda/decision intent;
+- purpose/expected outcome/agenda/decision intent;
 - participants/resources/pre-read/conference intent;
-- buffers;
+- preparation/recovery buffers;
 - confirmation/reminder policy;
 - all four CP6 recurrence families.
 
-Recurrence depth includes calendar daily/weekly/monthly/monthly-ordinal/yearly, elapsed interval, quota per day/week/month/year with frame/week-start/zone, and multi-position cyclic patterns.
+Event recurrence includes calendar daily/weekly/monthly/monthly-ordinal/yearly, elapsed interval, quota day/week/month/year with frame/week-start/zone, cyclic patterns with multiple active positions, and open/until/count termination.
 
-### C1 integration seams
+C1 stores recurrence specification only. Backend M6 owns recurrence evaluator/Occurrence generation and exact governing recurrence-state binding.
 
-- structured source-neutral field seed for future global Create/keyboard/import/DANTE;
-- typed owner registry and immutable handoff draft snapshot;
-- rich-intent idempotency;
-- application-boundary normalized immutable prepared snapshot;
-- provider actions remain intent only;
-- recurrence evaluator/Occurrence generation remain backend-only.
+**Integration/application hardening** now includes:
 
-### C1 automated gate
+- source-neutral structured seed for future global Create/keyboard/import/governed DANTE interpretation;
+- typed external-owner handoff registry with immutable normalized draft snapshot;
+- rich-intent idempotency layered over F0 minimal command idempotency;
+- normalized deep-frozen prepared specification at the application boundary to prevent prepare/execute mutation drift;
+- candidate preview separate from accepted projection;
+- provider actions as intent only;
+- truthful local Undo/reveal/focus;
+- accessibility, i18n and mobile full-screen protection.
 
-PASS:
+### C1 automated gate — satisfied
 
-- Quality;
-- Mobile Bundle;
-- full Chromium E2E;
-- frozen Timeline Firefox E2E;
-- final Frontend CI Gate.
+CI #536 proves:
 
-Measured:
+- Quality PASS;
+- Mobile Bundle PASS;
+- full Chromium Web E2E PASS;
+- frozen Timeline Firefox contract PASS;
+- Frontend CI Gate PASS.
 
-- architecture 199 modules / 477 dependencies / 0 violations;
-- web unit 28 files / 168 tests;
-- Home route 252.22 kB raw / 86.38 kB gzip.
+Measured on the implementation candidate:
 
-### C1 final gate
+- architecture: 199 modules / 477 dependencies / zero violations;
+- web unit: 28 files / 168 tests;
+- Home route: 252.22 kB raw / 86.38 kB gzip.
 
-Only `temporal-create-c1-manual-acceptance.md` remains.
+### C1 freeze criterion — one human gate remains
 
-Do **not** start C2 before explicit user PASS.
+The supported temporal objects can be created quickly on the happy path and safely under supported validation/cancel/input paths without fake persistence/provider claims. Automated engineering is complete.
+
+C1 becomes `FROZEN / CLOSED` only after the user executes `temporal-create-c1-manual-acceptance.md` and explicitly approves the complete experience.
+
+Do **not** start C2 before that PASS.
 
 ---
 
 ## C2 — Card → structured Detail to production depth
 
-**Status:** NEXT AFTER C1 FREEZE — NOT STARTED.
+**Current status:** **NEXT AFTER C1 FREEZE / NOT STARTED.**
 
 ### Goal
 
-Replace the current demonstration Detail with a real DANTE contextual Detail while resting Timeline cards remain calm.
+Replace the current demonstration Detail with a real DANTE contextual detail experience while keeping resting Timeline cards calm.
 
-Use a composable Detail shell, not one universal nullable mega-object.
+### Architecture
 
-Candidate sections only when semantically applicable:
+Use a composable Detail shell, not one universal object with dozens of nullable fields.
+
+Candidate capability sections, rendered only when semantically applicable:
 
 ```text
 Identity / title
@@ -312,225 +410,297 @@ History / provenance
 Contextual command handoff
 ```
 
-Required behaviors:
+External vertical sections remain integration hooks until their owner exists.
 
-- direct card/title entry consistent with frozen T1;
+### Required behaviors
+
+- direct card/title entry according to frozen interaction grammar;
 - progressive disclosure;
-- shared temporal commands;
-- proper loading/unavailable/error states;
+- edit affordances routed through shared temporal commands;
+- proper loading/unavailable/error states even under local adapter simulation;
 - focus ownership/restoration;
-- deep keyboard usage;
-- responsive panel/sheet/modal behavior;
-- long/dense content stress;
+- deep keyboard usability;
+- responsive modal/panel/sheet behavior;
+- long-content and dense structured-item stress;
 - no duplicated information wall.
 
-Freeze criterion: simple appointment remains simple while rich structured items can expose real depth.
+### Freeze criterion
+
+Simple appointment remains simple; structured learning/workout/program-occurrence examples can become rich without making every card or Detail instance equally complex.
 
 ---
 
-## C3 — Temporal edit / move / resize
+## C3 — Temporal edit / move / resize to production depth
 
-Goal: every placement edit converges on one semantic operation path.
+### Goal
 
-Scope:
+Unify every manual placement change behind one semantic operation path.
+
+### Scope
 
 - precise time editor;
-- drag/cross-day move;
-- resize/duration when product-approved;
-- keyboard/pointer/touch alternatives;
-- snap/precision/day bounds;
-- all-day/date-span transitions when legitimate;
-- timezone-aware edit;
+- drag move;
+- cross-day move;
+- resize/duration adjustment when product-approved;
+- keyboard equivalents;
+- pointer/touch alternatives;
+- snap/precision behavior;
+- day bounds;
+- all-day/date-span transition only when semantically supported;
+- timezone-aware edit when a named-zone item requires it;
 - validation/conflict preview;
-- no-op truth;
-- optimistic rollback/recovery;
+- no-op correctness;
+- optimistic local interaction + rollback/recovery contract;
 - Undo.
 
-**Invariant:** drag, editor, keyboard and future DANTE/voice requests converge on the same semantic operation grammar.
+**Invariant:** drag, editor, keyboard and future AI/voice requests must converge on the same semantic operation grammar.
 
 ---
 
-## C4 — Groups, filters, views and preferences
+## C4 — Groups, filters, views and user preferences
 
-Scope:
+### Goal
 
-- calendar/life-area visibility;
+Take the already-useful grouping/view controls from prototype-grade local behavior to product-grade temporal organization.
+
+### Scope
+
+- selected calendar/life-area visibility;
 - grouped vs unified chronology;
-- ordering/focus combinations;
-- frontend preference boundary;
+- ordering;
+- focus combinations;
+- preserved frontend preference boundary;
 - hidden-conflict/affected-count awareness;
-- filtered/empty states;
-- non-color recognition;
+- empty/filtered states;
+- accessible non-color-only recognition;
 - dense-day legibility;
-- responsive fallback.
+- responsive fallback when wide grouped columns are impossible.
 
-Sharing is not a calendar group.
+Sharing is not a calendar group and must not be modeled as one.
 
 ---
 
-## C5 — Existing-item recurrence and scheduling flexibility
+## C5 — Recurrence and scheduling flexibility
 
-C1 owns initial creation-time authoring. C5 owns later management/edit scope.
+### Goal
 
-Scope includes:
+Expose DANTE's temporal rules without reducing them to a single `fixed/flexible` switch or a simplistic recurrence editor.
 
-- existing fixed/window/deadline/preferred/open constraints;
-- movement/replanning rules;
-- occurrence vs source scope;
-- this occurrence / selected / future / source changes when authoritative;
-- richer recurrence state/history presentation;
-- source revision without rewriting historical generated Occurrences.
+C1 now owns **initial creation-time** scheduling/recurrence authoring. C5 remains responsible for deeper editing/management of existing items and source/occurrence scope.
 
-The UI must distinguish editing one Occurrence from changing its source recurrence.
+### Scope as applicable
+
+Temporal constraint:
+
+- fixed instant/block;
+- bounded window;
+- deadline-constrained;
+- preferred window;
+- open scheduling.
+
+Movement/structure:
+
+- locked;
+- movable;
+- confirmation-required;
+- replannable;
+- indivisible/splittable where supported;
+- minimum duration/spacing/recovery constraints where relevant.
+
+Recurrence/source scope:
+
+- this occurrence;
+- selected linked occurrences when justified;
+- future occurrences;
+- source routine/program/series when the owning vertical supports it.
+
+The UI must distinguish an occurrence edit from changing the originating recurrence source. Source revisions must not rewrite historical generated-Occurrence provenance.
 
 ---
 
 ## C6 — Execution, Session, Actual and Confirmation
 
-Goal: represent what happened separately from what was planned.
+### Goal
 
-As applicable:
+Represent what happened separately from what was planned.
+
+### Scope
+
+As applicable to item type:
 
 - in progress;
-- unconfirmed after expected time;
-- completed/partial/skipped/missed/not-completed;
-- postponed/replaced/cancelled;
+- ended but unconfirmed;
+- completed;
+- partial;
+- skipped;
+- missed/not completed;
+- postponed;
+- replaced;
+- cancelled;
 - reopened/corrected;
 - actual start/end/duration;
 - actual quantities/measurements;
-- confirmation/provenance;
+- confirmation/provenance display;
 - lightweight direct actions;
-- Detail escalation;
-- global Resolution handoff.
+- Detail escalation for richer correction;
+- Resolution handoff without duplicating the global Resolution vertical.
 
-A passed time window never silently proves completion except under an explicit accepted rule.
+A time window passing must never silently imply completion unless an explicit user-approved rule exists elsewhere.
 
 ---
 
 ## C7 — Conflict, proposal and replanning experience
 
-Scope:
+### Goal
 
-- conflict representation;
-- hard vs soft constraint;
-- candidate plan distinct from accepted plan;
+Build the frontend mechanics required for governed replanning before any production solver/AI is connected.
+
+### Scope
+
+- conflict detection representation from deterministic/local inputs;
+- hard constraint vs soft preference;
+- candidate plan/proposal visually distinct from accepted plan;
 - affected-item preview;
-- smallest-valid replan scope;
-- infeasible outcome;
-- accept/modify/reject;
-- confirmation;
+- smallest-valid-scope replanning grammar;
+- infeasible/no-fit outcome;
+- accept / modify / reject;
+- confirmation where material;
 - Undo/recovery;
-- protected-constraint/consequence explanation;
-- future authoritative solver seam.
+- explanation of protected constraints and consequences.
 
-Solver/AI may generate candidates later; they do not own acceptance/application of effects.
+A solver or AI provider may later generate candidates. It does not own the application of accepted effects.
 
 ---
 
 ## W1 — Dedicated temporal workspace architecture proof
 
-Goal: prove temporal semantics/application capability is reusable outside Home without forcing reuse of the Home DOM/CSS renderer.
+### Goal
 
-First proof:
+Prove the temporal application capability is reusable outside Home without stretching the Home Timeline renderer into a giant page.
 
-- dedicated surface/route;
+### First proof
+
+- dedicated route/surface;
 - full Day projection;
-- useful Week/planning projection;
+- first useful Week/planning projection;
 - shared selection/Detail;
 - shared create/edit/move commands;
-- flexible/unscheduled area when later phases support it;
-- same application capability/store;
-- renderer/layout may differ.
+- flexible/unscheduled area when C5/C7 supports it;
+- same temporal store/application capability;
+- different renderer/layout allowed.
+
+### Rule
 
 ```text
 shared semantics/application capability
-!= forced shared renderer
+!= forced shared DOM/CSS renderer
 ```
 
 ---
 
 ## W2 — Dedicated workspace depth
 
-After W1 proof, expand only validated needs:
+After W1 proves the architecture, expand only validated planning needs:
 
-- richer Day/Week/Month/Agenda;
+- richer Day;
+- Week;
+- Month;
+- Agenda/continuous list;
 - grouped/focus views;
-- multi-select/bulk;
-- timezone controls;
+- multi-select/bulk operations;
+- time-zone controls;
 - flexible/unscheduled tray;
 - broader horizon/load inspection;
 - recurrence edit;
-- proposal/replan mode.
+- candidate-plan/replan mode.
 
-Long horizons must change abstraction rather than render hundreds of miniature rich days.
+Long horizons change abstraction level. Do not render a year as hundreds of miniature rich Timeline days.
 
 ---
 
 ## X1 — External integration seams
 
-Goal: close Timeline-owned contracts for external runtimes.
+### Goal
 
-May include:
+Close Timeline-owned contracts for capabilities whose runtime belongs to another vertical.
 
-- DANTE candidate-intent input;
-- contextual selected-item scope;
-- voice input;
-- Global Search/Create entry;
+May include, when needed:
+
+- AI candidate-intent input;
+- contextual AI selected-item scope;
+- future voice input;
+- Global Search/Create command entry;
 - Notification/Review/Resolution handoff;
-- Goal/Program/Project/World/Routine owner links;
-- external calendar/provider indicators.
+- Goal/Program/Project/World navigation links;
+- external calendar/provider source indicators.
 
-C1 already proves the seed and owner-handoff patterns. Later seams should extend those patterns rather than invent private integration mechanisms.
+C1 has already established reusable seed/handoff patterns. Later integrations should extend these shared contracts rather than create private command mechanisms.
 
-Missing verticals remain explicitly unavailable/deferred.
+### Exit rule
+
+The Timeline side of each seam is complete and tested. Missing external verticals remain explicitly unavailable/deferred; no private duplicate implementation is created here.
 
 ---
 
 ## P0 — Production hardening and pre-backend freeze
 
+### Goal
+
+Reach the point where backend integration is predominantly adapter/integration work, not a frontend redesign.
+
 ### Architecture gates
 
 - no component direct HTTP;
-- no DTO/persistence leakage;
-- no universal Thing/Event collapse;
+- no backend DTO/persistence leakage;
+- no universal `Thing/Event` collapse;
 - no duplicate Home/workspace temporal stores;
-- stable public exports;
+- stable public boundaries/exports;
 - architecture/dependency checks green;
-- external vertical seams explicit.
+- external-vertical seams explicit.
 
 ### Behavior gates
 
 For implemented capabilities:
 
-- create/edit/move/Undo;
+- create/edit/move/undo;
 - Detail;
 - recurrence/flexibility;
 - execution/Actual/confirmation;
 - conflict/proposal/replan;
 - workspace projections;
-- manual/external-command semantic equivalence.
+- manual/external-command semantic equivalence at the shared boundary.
 
 ### Accessibility gates
 
 - keyboard reachability;
 - deterministic focus ownership/restoration;
 - screen-reader semantics;
-- non-color-only state;
+- non-color-only state communication;
 - WCAG 2.2 AA target;
-- reduced motion including JS motion;
-- touch targets/mobile alternatives.
+- reduced motion including imperative JS motion;
+- touch targets/mobile alternatives where applicable.
 
 ### Performance gates
 
-- dense-day/multi-day/week stress;
+- dense-day stress;
+- multi-day/week stress;
 - fluid scroll/zoom/drag;
-- bounded rendering/windowing;
+- bounded rendering/windowing where justified;
 - no uncontrolled layout thrash;
 - listener/observer/RAF/timer cleanup;
-- repeated-open memory pressure;
-- route/bundle review based on measurement.
+- memory growth/repeated-open-close pressure;
+- bundle/route-split review.
 
-### Stop condition
+### Responsive/visual gates
+
+- accepted desktop pressure matrix;
+- expanded/collapsed Home Timeline;
+- compressed/compact Home modes;
+- overlay/detail collision tests;
+- dedicated-workspace responsive matrix;
+- visual regression where stable enough to freeze.
+
+### Final stop condition
 
 ```text
 React / renderers
@@ -541,48 +711,62 @@ Explicit temporal ports
         ↓
 Truthful deterministic local adapter
         ║
-        ║ STOP — backend vertical begins after explicit gate
+        ║  STOP — backend vertical starts after explicit gate
         ║
 Future backend adapter / API / PostgreSQL / providers / solver
 ```
 
-No production backend is claimed before that separate vertical.
+At this point no production backend is claimed, no provider integration is fabricated and no future DB/API implementation is invented inside the frontend.
 
-## 6. Integration discipline
+---
 
-Do not continuously merge `feature/home-timeline` and `feature/home-react` back and forth.
+## 6. Integration discipline with `feature/home-react`
+
+Do not continuously merge the two workstreams back and forth.
 
 Normal flow:
 
 ```text
 feature/home-react
-→ Mondi/World Focus progresses independently
+→ Mondi / World Focus progresses independently
 
 feature/home-timeline
-→ Timeline capability progresses independently
+→ Timeline progresses independently
 
-capability reaches accepted frozen checkpoint
-→ intentional integration
-→ combined H0 + Mondi + Timeline validation
+Timeline capability reaches a green/frozen integration checkpoint
+→ intentionally integrate into feature/home-react
+→ run combined H0 + Mondi + Timeline CI/E2E
 ```
 
-Shared changes must be small, explicit and justified. Never reset/discard another workstream to simplify integration.
+If a shared change is needed earlier, isolate it as a small explicit change rather than dragging unrelated work across branches.
+
+Unexpected movement of either branch must be inspected before integration. Never reset/discard the other workstream to simplify a merge.
+
+---
 
 ## 7. Current execution point
+
+Current branch lineage starts from the H0 frozen base:
+
+`98b486a308961022ba0d8f43bb79339518457741`
+
+Current state:
 
 ```text
 T1    FROZEN / CLOSED
 F0    FROZEN / CLOSED
-C1    IMPLEMENTATION COMPLETE / AUTOMATED PASS
+C1    IMPLEMENTATION COMPLETE
+      AUTOMATED PASS
       USER MANUAL ACCEPTANCE PENDING
-C2    BLOCKED UNTIL C1 USER PASS
+C2    BLOCKED UNTIL EXPLICIT C1 USER PASS
 ```
 
-Immediate next action:
+Immediate sequence:
 
-1. documentation descendant must pass Frontend CI;
-2. user performs the single final C1 manual acceptance;
-3. explicit PASS freezes C1;
-4. only then begin C2.
+1. keep the documentation/traceability descendant CI-green;
+2. user executes the one final protocol in `temporal-create-c1-manual-acceptance.md`;
+3. any demonstrated defect reopens only the necessary C1 contract;
+4. explicit `C1 MANUAL PASS — APPROVED` freezes/closes C1;
+5. only then start C2 Card → structured Detail.
 
-Do not return to old `T1-A` or “activate + later” instructions from earlier roadmap revisions; those are superseded by the current completed progression recorded here.
+The former `T1-A` current-stage instruction and “do not activate + yet” instruction are historical and fully superseded by this progression.
