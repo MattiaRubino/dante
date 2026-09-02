@@ -1,7 +1,7 @@
 # DANTE — Project Status
 
 - **Status:** CURRENT TRUTH
-- **Last reconciled:** 2026-09-01
+- **Last reconciled:** 2026-09-02
 - **Protected `main`:** integrated source authority; read the live Git ref for the current SHA
 - **Backend CP6 integration:** PR #42 MERGED
 - **PostgreSQL Recovery integration:** PR #47 MERGED / CP01–CP07 LOCAL PASS / CLOSED
@@ -92,11 +92,11 @@ AI-02 PRESSURE/MEGA TEST PROGRAM COMPLETE
 AI-02 TARGETED v0.5 CONSISTENCY VERIFICATION COMPLETE
 NO MORE AI-02 MEGA TESTS
 FUTURE-EXTENSIBILITY STRUCTURAL CRITERION PASS
-AI-03 CONTEXT / RETRIEVAL / MEMORY ACTIVE
-AI-03A FULL CONTEXT ARCHITECTURE CLOSED / STRUCTURALLY ACCEPTED
-AI-03A INITIAL CANDIDATE FAIL / 9 HARDENINGS / HARDENED CANDIDATE STRUCTURAL PASS
-AI-03A C01..C29 ACCEPTED
-CURRENT MACRO-PHASE AI-03B RETRIEVAL + MEMORY ARCHITECTURE
+AI-03 CONTEXT / RETRIEVAL / MEMORY CLOSED / STRUCTURALLY ACCEPTED
+AI-03A FULL CONTEXT ARCHITECTURE CLOSED / C01..C33
+AI-03B RETRIEVAL + MEMORY ARCHITECTURE CLOSED / B01..B35
+AI-03C DESTRUCTIVE VALIDATION + MATERIALIZATION CLOSED / MAT-01..MAT-15
+CURRENT MACRO-PHASE AI-04 PRODUCTIONIZATION ARCHITECTURE
 NO AI BACKEND / DB / PROVIDER IMPLEMENTATION CLAIMED
 
 PARALLEL ACTIVE UNMERGED WORKSTREAMS
@@ -106,7 +106,7 @@ feature/platform-observability
 feature/ai-architecture
 ```
 
-Architecture/design closure is not runtime/product completion. AI-02.1 and AI-03A closure record structural architecture acceptance only.
+Architecture/design closure is not runtime/product completion. AI-02.1 and AI-03 closure record structural architecture acceptance only.
 
 ## 2. Current protected-main backend/database truth
 
@@ -245,7 +245,15 @@ SOURCE STANDING != DOMAIN AUTHORITY
 MODEL-DISCOVERED NEED != WORKCONTRACT/POLICY SCOPE EXPANSION
 SESSION CONTINUITY != PROVIDER-CONTEXT CONTINUITY
 WORKCONTRACT PROPAGATION != PARENT-CONTEXT INHERITANCE
+PROCESSING / RETRIEVAL ELIGIBILITY != RETENTION / FUTURE-REUSE ELIGIBILITY
+MEMORY EXISTS != MEMORY MAY BE RECALLED
+APPROXIMATE != COMPLETE
+SEMANTIC AUTHORITY != FUNCTIONAL ROLE != SURVIVAL DISPOSITION != PHYSICAL OWNER
+MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT
+DANTE FEATURE/BUSINESS CODE != CONCRETE PROVIDER SDK
 ```
+
+Provider replaceability remains required without forcing lowest-common-denominator provider behavior.
 
 ## 5. Reference / material-state baseline
 
@@ -268,7 +276,7 @@ BasisManifest / expected state
 → are target state and dependent information still valid/coherent/fresh enough?
 ```
 
-AI-03A further requires each relevant `InformationNeed` to state the level of reference resolution required for readiness. `AMBIGUOUS` is not solved by model confidence.
+AI-03A requires each relevant `InformationNeed` to state the level of reference resolution required for readiness. `AMBIGUOUS` is not solved by model confidence.
 
 Expected MaterialState does not compensate for selecting the wrong-but-current target.
 
@@ -342,13 +350,19 @@ docs/architecture/dante-ai-02-1-intelligence-reengineering.md
 → AI-02.1 v0.5 CLOSED / STRUCTURALLY ACCEPTED
 
 docs/architecture/dante-ai-03-context-retrieval-memory.md
-→ AI-03 ACTIVE / AI-03B RETRIEVAL + MEMORY CURRENT
+→ AI-03 CLOSED / STRUCTURALLY ACCEPTED
 
 docs/architecture/dante-ai-03a-full-context-architecture.md
-→ AI-03A CLOSED / STRUCTURALLY ACCEPTED / C01..C29
+→ AI-03A CLOSED / C01..C33
+
+docs/architecture/dante-ai-03b-retrieval-memory-architecture.md
+→ AI-03B CLOSED / B01..B35
+
+docs/architecture/dante-ai-03c-destructive-validation-materialization-blueprint.md
+→ AI-03C CLOSED / MAT-01..MAT-15
 
 docs/workstreams/ai-architecture.md
-→ durable active branch/workstream record
+→ durable active branch/workstream record / AI-04 current
 
 docs/workstreams/ai-architecture-live-handoff.md
 → TEMPORARY branch-operational session handoff / MUST NOT MERGE TO main
@@ -435,27 +449,22 @@ CLOSED / STRUCTURALLY ACCEPTED
 
 This does not claim runtime implementation, provider selection, backend implementation, database materialization or production proof.
 
-### 9.3 AI-03A closure
+### 9.3 AI-03 closure
 
-AI-03A durable authority:
-
-- `docs/architecture/dante-ai-03a-full-context-architecture.md`
-
-The first candidate failed its dedicated mega-test. Nine gaps were hardened and retested before acceptance:
+AI-03 is formally closed at the structural architecture level.
 
 ```text
-Reality Scope / Scenario binding
-Context continuity compartment
-model-discovered need scope ceiling
-reference-resolution requirement
-explicit negative context constraints
-child/delegated context minimisation
-instruction provenance
-non-monotonic ContextReadiness
-objective-relative minimisation
+AI-03A  FULL CONTEXT ARCHITECTURE
+        CLOSED / C01..C33
+
+AI-03B  RETRIEVAL + MEMORY ARCHITECTURE
+        CLOSED / B01..B35
+
+AI-03C  DESTRUCTIVE VALIDATION + MATERIALIZATION BLUEPRINT
+        CLOSED / MAT-01..MAT-15
 ```
 
-Accepted Context contracts:
+The accepted AI-03A Context contracts remain:
 
 ```text
 ContextPlan
@@ -468,18 +477,24 @@ ContextManifest
 + inherited BasisManifest
 ```
 
-Final result:
+AI-03B closes retrieval guarantees, source/currentness/coverage boundaries, document and large-corpus representation, memory classes/admission/reuse/correction/forgetting/anti-resurrection and provider/cache/index behavior.
+
+AI-03C closes materialization/survival boundaries without forcing persistence:
 
 ```text
-AI-03A HARDENED CANDIDATE
-STRUCTURAL PASS
-C01..C29 ACCEPTED
-NO Domain / Logical / Physical / PostgreSQL reopen
-NO Alembic change
-NO implementation PASS claim
+DEFAULT NONCANONICAL PERSISTENCE = NO
+Class-A technical coordination != Class-B durable execution
+persistent derivative requires truthful/scalable source basis
+async invalidation != current eligibility
+derived state is sacrificial when safely recomputable
+ANN is optimization, not prerequisite
+serving generations require controlled cutover
+semantic obligation != execution/audit evidence
 ```
 
-### 9.4 Current AI-03 work
+Closure did not authorize PostgreSQL/Alembic changes, embeddings, vector/FTS activation, Restate/R2 activation, provider/model selection or runtime implementation. Direct SC/PSV proof remains unexecuted until an activated consumer makes it applicable.
+
+### 9.4 Current AI-04 work
 
 Current compact roadmap:
 
@@ -487,24 +502,46 @@ Current compact roadmap:
 AI-00 COMPLETE
 AI-01 COMPLETE
 AI-02 COMPLETE / STRUCTURALLY ACCEPTED
-AI-03 ACTIVE
-  AI-03A Full Context Architecture
-           CLOSED / STRUCTURALLY ACCEPTED
-  AI-03B Retrieval + Memory Architecture
-           ACTIVE / CURRENT
-  AI-03C Destructive Validation + Materialization Blueprint
-           FUTURE
-AI-04 FUTURE Productionization Architecture
-AI-05 FUTURE Whole-System Acceptance + Implementation Blueprint
+AI-03 COMPLETE / STRUCTURALLY ACCEPTED
+  AI-03A CLOSED / C01..C33
+  AI-03B CLOSED / B01..B35
+  AI-03C CLOSED / MAT-01..MAT-15
+AI-04 ACTIVE / CURRENT — Productionization Architecture
+AI-05 FUTURE — Whole-System Acceptance + Implementation Blueprint
 ```
 
-Current exact task:
+Current exact task begins with AI-04A-style work even if the phase remains one coherent AI-04 macro-phase:
 
 ```text
-AI-03B — RETRIEVAL + MEMORY ARCHITECTURE
+representative DANTE eval workload
+→ quality floors / capability requirements
+→ provider/model candidates
+→ benchmark/comparison where required
+→ routing/fallback/economics decisions
+→ concrete runtime/capability design
+→ security/privacy/control-plane/operations
 ```
 
-AI-03B must consume AI-03A and define retrieval + memory semantics/lifecycle before physical choices. It must not pre-commit memory tables, embeddings, vector-store, conversation persistence, provider memory or model/provider choices.
+Concrete provider/model selection is intentionally still open. Provider replaceability is a binding architecture requirement:
+
+```text
+MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT
+DANTE FEATURE/BUSINESS CODE != CONCRETE PROVIDER SDK
+PROVIDER REPLACEABLE != LOWEST-COMMON-DENOMINATOR PROVIDER USAGE
+```
+
+Expected production boundary:
+
+```text
+DANTE work/capability need
+→ ModelTarget
+→ HarnessProfile
+→ ProviderBinding
+→ Provider Adapter
+→ concrete provider / model / deployment
+```
+
+A single primary provider may be the correct V1 implementation if eval evidence supports it; the architecture must keep later replacement/addition bounded to provider binding/adapter/harness/config/eval rather than requiring a rewrite of DANTE semantics or feature logic.
 
 ## 10. Capability-triggered components
 
@@ -556,12 +593,13 @@ feature/platform-observability
 
 feature/ai-architecture
 → AI-02.1 v0.5 CLOSED / STRUCTURALLY ACCEPTED
-→ AI-03 Context / Retrieval / Memory ACTIVE
-→ AI-03A Full Context Architecture CLOSED / STRUCTURALLY ACCEPTED
-→ current macro-phase AI-03B Retrieval + Memory Architecture
-→ then AI-03C Destructive Validation + Materialization Blueprint
-→ then AI-04 Productionization Architecture
+→ AI-03 Context / Retrieval / Memory CLOSED / STRUCTURALLY ACCEPTED
+   → AI-03A C01..C33
+   → AI-03B B01..B35
+   → AI-03C MAT-01..MAT-15
+→ current macro-phase AI-04 Productionization Architecture
 → then AI-05 Whole-System Acceptance + Implementation Blueprint
+→ then implementation workstream(s) under explicit gates
 ```
 
 No runtime, provider, backend implementation or database PASS is claimed by the AI architecture documentation.
