@@ -2,7 +2,8 @@
 
 - **Status:** ACTIVE / BRANCH-LOCAL DURABLE WORKSTREAM RECORD
 - **Branch:** `feature/ai-architecture`
-- **Current phase:** GLOBAL CURRENT-TRUTH RECONCILIATION
+- **Current phase:** AI-05 — WHOLE-SYSTEM ACCEPTANCE + IMPLEMENTATION BLUEPRINT
+- **Global current-truth reconciliation:** COMPLETE / QA PASS
 - **AI-02.1:** CLOSED / STRUCTURALLY ACCEPTED
 - **AI-03:** CLOSED / STRUCTURALLY ACCEPTED / C01..C33 / B01..B35 / MAT-01..MAT-15
 - **AI-04:** CLOSED / STRUCTURALLY ACCEPTED
@@ -15,7 +16,7 @@
 - **Fresh post-H19 whole-chain retest:** PASS / 26 OF 26 STRUCTURAL CASES
 - **Reverse-order retest:** PASS
 - **2026 state-of-the-art regression:** PASS
-- **AI-05:** NEXT / BECOMES CURRENT AFTER GLOBAL RECONCILIATION
+- **AI-05:** ACTIVE / CURRENT / FINAL ARCHITECTURE-TO-BUILD BOUNDARY
 - **Implementation claim:** NONE
 - **Provider/model selection:** OPEN / EVIDENCE-DRIVEN
 - **Commercial packaging:** OPEN / ENTITLEMENT BOUNDARY ONLY
@@ -32,11 +33,9 @@ AI-02 CLOSED / STRUCTURALLY ACCEPTED
 AI-03 CLOSED / STRUCTURALLY ACCEPTED
 AI-04 CLOSED / STRUCTURALLY ACCEPTED
 PRE-AI05 CROSS-PHASE HARDENING CLOSED / H01..H19
+GLOBAL CURRENT-TRUTH RECONCILIATION COMPLETE / QA PASS
 
 CURRENT
-GLOBAL CURRENT-TRUTH RECONCILIATION
-
-THEN
 AI-05 — WHOLE-SYSTEM ACCEPTANCE + IMPLEMENTATION BLUEPRINT
 
 THEN
@@ -189,36 +188,46 @@ PSV-37 pgvector source/model/freshness provenance
 
 Concrete provider/model direct DANTE eval and production-capacity qualification are also unexecuted.
 
-## 10. Current exact action
+## 10. Global reconciliation closure
+
+Global current/navigation authorities now consistently state:
 
 ```text
-GLOBAL CURRENT-TRUTH RECONCILIATION
+AI-04 CLOSED / STRUCTURALLY ACCEPTED
+PRE-AI05 CLOSED / PRE05-H01..H19
+DANTE-E01..DANTE-E14 CURRENT
+old ai-context-runtime-boundaries.md = HISTORICAL / PRE-PHYSICAL REFERENCE
+AI-05 ACTIVE / CURRENT
 ```
 
-Purpose:
+The bounded reconciliation changed current documentation only; no implementation/provider/database truth was promoted.
+
+## 11. Current exact action — AI-05
+
+AI-05 is now the final architecture-to-build boundary.
+
+First work must be analysis/blueprint, not arbitrary code:
 
 ```text
-mark AI-04 CLOSED consistently in global/current project navigation
-mark PRE-AI05 CLOSED / H01..H19
-make E01..E14 current
-classify old pre-Physical AI/context boundary as historical in current navigation
-remove stale AI-04 CURRENT / E01..E13 routing
-route AI work to AI-05
-preserve every implementation/provider/database non-claim
+accepted Product / Domain / Logical / Physical / PostgreSQL contracts
++ AI-02 / AI-03 / AI-04 / PRE-AI05
+→ whole-system responsibility/ownership acceptance
+→ repository-real module / port / adapter placement
+→ runtime-only vs durable vs canonical materialization classification
+→ provider/control-plane/eval implementation seams
+→ exact first-vertical dependency map
+→ activation/direct-proof gates
+→ implementation sequence
 ```
 
-After reconciliation:
+AI-05 must minimize implementation surface: architecture nouns do not automatically become modules/services/tables. It may recommend no new persistence where no durable need is justified.
 
-```text
-AI-05 — WHOLE-SYSTEM ACCEPTANCE + IMPLEMENTATION BLUEPRINT
-```
-
-AI-05 is the final architecture-to-build boundary before actual AI implementation workstreams.
-
-## 11. Open decisions
+## 12. Open decisions
 
 Provider/model/SDK/eval runner, concrete runtime implementation, Attention implementation, cumulative-disclosure mechanism/storage, formal IFC/leakage-budget/ACS adoption, control-plane topology, commercial packaging/billing, gateway/security products, MCP/A2A, Execution Environment, Restate/R2/vector/search activation and production-region mappings remain evidence-gated.
 
-## 12. Handoff policy
+AI-05 may resolve implementation shape and proof sequencing; it may not fabricate direct provider/prod evidence that has not been executed.
+
+## 13. Handoff policy
 
 Temporary live handoff must be deleted before protected-main integration.
