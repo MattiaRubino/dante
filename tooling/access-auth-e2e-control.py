@@ -3,7 +3,9 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shutil
 import subprocess
+import sys
 import time
 from dataclasses import dataclass
 from urllib.error import HTTPError, URLError
@@ -29,9 +31,16 @@ class _ContainerDatabase:
     smtp_control_port: int
 
 
+def _docker_executable() -> str:
+    executable = shutil.which("docker")
+    if executable is None:
+        raise RuntimeError("Required executable is unavailable: docker")
+    return executable
+
+
 def _docker(*args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        ["docker", *args],
+    return subprocess.run(  # noqa: S603 - fixed Docker CLI argv; no shell interpretation
+        [_docker_executable(), *args],
         check=True,
         text=True,
         capture_output=True,
@@ -204,7 +213,7 @@ def _latest_email(
 
 
 def _clear_emails(database: _ContainerDatabase) -> None:
-    request = Request(
+    request = Request(  # noqa: S310 - internally constructed loopback test control URL
         _email_control_url(database, "/messages"),
         method="DELETE",
     )
@@ -258,14 +267,13 @@ def main() -> None:
             raise RuntimeError("email-latest requires a recipient address.")
         if args.wait_seconds <= 0 or args.wait_seconds > 60:
             raise RuntimeError("--wait-seconds must be within (0, 60].")
-        print(
-            _latest_email(
-                database,
-                recipient=args.value,
-                subject=args.subject,
-                wait_seconds=args.wait_seconds,
-            )
+        message = _latest_email(
+            database,
+            recipient=args.value,
+            subject=args.subject,
+            wait_seconds=args.wait_seconds,
         )
+        sys.stdout.write(f"{message}\n")
         return
 
     if args.value is None:
