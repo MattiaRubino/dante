@@ -159,6 +159,7 @@ function TimelineEventCard({
   const { t } = useTranslation('common');
   const event = layout.event;
   const group = groupForEvent(event, groups);
+  const tone = event.appearanceTone ?? group?.tone ?? 'personal';
   const isFocused = focusedEvent?.id === event.id;
   const isGroupmate =
     focusedEvent !== null &&
@@ -210,7 +211,7 @@ function TimelineEventCard({
     <article
       className={`timeline-event-card${expandedSubitems ? ' is-expanded' : ''}${isFocused ? ' is-focused' : ''}${isGroupmate ? ' is-groupmate' : ''}${isDim ? ' is-dim' : ''}`}
       data-timeline-event={event.id}
-      data-timeline-tone={group?.tone ?? 'personal'}
+      data-timeline-tone={tone}
       data-compact-left={layout.compactLeftPercent}
       data-compact-width={layout.compactWidthPercent}
       data-group-index={layout.groupIndex}
