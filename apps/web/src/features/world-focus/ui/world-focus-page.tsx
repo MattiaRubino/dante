@@ -14,6 +14,7 @@ import {
 } from '../application/world-focus-foundation';
 import type { WorldFocusWorld } from '../model/world-focus-fixtures';
 import { WORLD_FOCUS_GEOMETRY } from '../model/world-focus-geometry';
+import type { WorldFocusIdentityDescriptor } from '../model/world-focus-identity';
 import type {
   WorldFocusFeatureAvailability,
   WorldFocusShellStatus,
@@ -62,6 +63,7 @@ const PRE_BACKEND_DANTE_ENTRY_AVAILABILITY: WorldFocusFeatureAvailability =
 
 type WorldFocusPageProps = Readonly<{
   world: WorldFocusWorld;
+  identity: WorldFocusIdentityDescriptor;
   source: WorldFocusEntrySource;
   status?: WorldFocusShellStatus;
   onClose: (request: WorldFocusCloseRequest) => void;
@@ -69,14 +71,14 @@ type WorldFocusPageProps = Readonly<{
 
 type WorldFocusWorkspaceExperienceProps = Readonly<{
   world: WorldFocusWorld;
-  worldLabel: string;
+  identity: WorldFocusIdentityDescriptor;
   status: WorldFocusShellStatus;
   onRequestWorldClose: () => void;
 }>;
 
 function WorldFocusWorkspaceExperience({
   world,
-  worldLabel,
+  identity,
   status,
   onRequestWorldClose,
 }: WorldFocusWorkspaceExperienceProps) {
@@ -103,14 +105,14 @@ function WorldFocusWorkspaceExperience({
 
   return (
     <WorldFocusDanteEntryProvider
-      worldId={world.id}
-      worldLabel={worldLabel}
+      worldId={identity.id}
+      worldLabel={identity.label}
       availability={PRE_BACKEND_DANTE_ENTRY_AVAILABILITY}
     >
       <WorldFocusWorkspace
-        worldLabel={worldLabel}
+        worldLabel={identity.label}
         status={status}
-        context={<WorldFocusContext world={world} />}
+        context={<WorldFocusContext identity={identity} />}
         surfaces={
           <>
             <WorldFocusDanteInvoke />
@@ -121,7 +123,7 @@ function WorldFocusWorkspaceExperience({
         }
       >
         <WorldFocusCompositionHost
-          worldId={world.id}
+          worldId={identity.id}
           entries={compositionPlan.entries}
           registry={getCoreWorldFocusModuleRegistry()}
         />
@@ -132,6 +134,7 @@ function WorldFocusWorkspaceExperience({
 
 export function WorldFocusPage({
   world,
+  identity,
   source,
   status = 'ready',
   onClose,
@@ -141,11 +144,10 @@ export function WorldFocusPage({
   const previousFocusRef = useRef<HTMLElement | null>(null);
   const performanceSpanRef = useRef<WorldFocusPerformanceSpan | null>(null);
   const entry = useMemo(
-    () => readWorldFocusEntry(world.id, source),
-    [source, world.id],
+    () => readWorldFocusEntry(identity.id, source),
+    [identity.id, source],
   );
 
-  const label = t(($) => $.common.worldFocus.worlds[world.id].label);
   const closeRequest = useMemo<WorldFocusCloseRequest>(
     () => ({ preferHistory: entry !== null }),
     [entry],
@@ -182,7 +184,7 @@ export function WorldFocusPage({
         performanceSpanRef.current = null;
       }
     };
-  }, [world.id]);
+  }, [identity.id]);
 
   useEffect(() => {
     if (status !== 'ready') {
@@ -191,7 +193,7 @@ export function WorldFocusPage({
 
     performanceSpanRef.current?.finish();
     performanceSpanRef.current = null;
-  }, [status, world.id]);
+  }, [identity.id, status]);
 
   useEffect(() => {
     if (entry !== null) {
@@ -222,14 +224,16 @@ export function WorldFocusPage({
       ref={mainRef}
       className="world-focus-shell"
       data-world-focus-region={WORLD_FOCUS_REGION.shell}
-      data-world-focus-id={world.id}
+      data-world-focus-id={identity.id}
       data-world-focus-source={source}
       data-world-focus-status={status}
       data-world-focus-structure-version={WORLD_FOCUS_STRUCTURE_VERSION}
       data-world-focus-geometry-version={WORLD_FOCUS_GEOMETRY.version}
       data-world-focus-visual-version={WORLD_FOCUS_VISUAL_VERSION}
       data-entry-origin={entry === null ? 'fallback' : 'live'}
-      aria-label={t(($) => $.common.worldFocus.mainLabel, { world: label })}
+      aria-label={t(($) => $.common.worldFocus.mainLabel, {
+        world: identity.label,
+      })}
       style={geometryStyle}
       tabIndex={-1}
     >
@@ -241,10 +245,10 @@ export function WorldFocusPage({
         aria-hidden="true"
       />
 
-      <WorldFocusWorkspaceHost key={world.id} worldId={world.id}>
+      <WorldFocusWorkspaceHost key={identity.id} worldId={identity.id}>
         <WorldFocusWorkspaceExperience
           world={world}
-          worldLabel={label}
+          identity={identity}
           status={status}
           onRequestWorldClose={requestWorldClose}
         />
