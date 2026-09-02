@@ -16,6 +16,10 @@ import {
   type TemporalCreatePreparedOperation,
 } from '../application/temporal-create-runtime';
 import {
+  applyTemporalCreateFieldSeed,
+  type TemporalCreateFieldSeed,
+} from '../application/temporal-create-seed';
+import {
   temporalCreateTimelinePreviewFromFields,
   type TemporalCreateTimelineProjection,
 } from '../application/temporal-create-projection';
@@ -56,6 +60,7 @@ export type TemporalCreateInvocation = Readonly<{
   date: PlainDate;
   startMinute?: number;
   durationMinutes?: number;
+  seed?: TemporalCreateFieldSeed;
   anchor?: InvocationAnchor;
 }>;
 
@@ -110,27 +115,35 @@ export function TemporalCreateEntry({
   });
 
   const freshFields = useCallback(
-    (date: PlainDate, startMinute?: number, durationMinutes?: number) => {
+    (
+      date: PlainDate,
+      startMinute?: number,
+      durationMinutes?: number,
+      seed?: TemporalCreateFieldSeed,
+    ) => {
       const zone = runtime.clock.timeZoneId();
+      const targetDate = seed?.date ?? date.toString();
       let minute = startMinute;
       if (minute === undefined) {
-        if (date.equals(runtime.clock.today(zone))) {
+        if (targetDate === runtime.clock.today(zone).toString()) {
           const now = runtime.clock.now().toZonedDateTimeISO(zone);
           minute = Math.ceil((now.hour * 60 + now.minute) / 15) * 15;
         } else {
           minute = 9 * 60;
         }
       }
-      return createTemporalCreateFields({
-        date: date.toString(),
-        startTime: minuteToInput(minute),
-        durationMinutes: durationMinutes ?? 30,
-        timeZoneId: zone,
+      const base = createTemporalCreateFields({
+        date: targetDate,
+        startTime: seed?.startTime ?? minuteToInput(minute),
+        durationMinutes: seed?.durationMinutes ?? durationMinutes ?? 30,
+        timeZoneId: seed?.timeZoneId ?? zone,
         contextId:
+          seed?.contextId ??
           contexts.find((context) => context.id === 'personale')?.id ??
           contexts[0]?.id ??
           'personale',
       });
+      return seed ? applyTemporalCreateFieldSeed(base, seed) : base;
     },
     [contexts, runtime],
   );
@@ -168,11 +181,12 @@ export function TemporalCreateEntry({
       date: PlainDate,
       startMinute?: number,
       durationMinutes?: number,
+      seed?: TemporalCreateFieldSeed,
       externalAnchor?: InvocationAnchor,
       focusReturnTarget?: HTMLElement | null,
     ) => {
       onBeforeOpen?.();
-      const fields = freshFields(date, startMinute, durationMinutes);
+      const fields = freshFields(date, startMinute, durationMinutes, seed);
       setSession(createTemporalCreateSession(fields));
       setIssues([]);
       setFailureMessage('');
@@ -205,6 +219,7 @@ export function TemporalCreateEntry({
         request.date,
         request.startMinute,
         request.durationMinutes,
+        request.seed,
         request.anchor,
         document.querySelector<HTMLElement>('.timeline-grid'),
       );
@@ -373,6 +388,7 @@ export function TemporalCreateEntry({
         onClick={() =>
           openComposer(
             defaultDate,
+            undefined,
             undefined,
             undefined,
             undefined,
