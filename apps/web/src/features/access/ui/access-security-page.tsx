@@ -4,6 +4,11 @@ import { useTranslation } from 'react-i18next';
 
 import { WebAuthRemoteError } from '../../../platform/auth/web-auth-remote';
 import {
+  appleAuthenticationEnabledFromBuild,
+  googleAuthenticationEnabledFromBuild,
+  passkeyAuthenticationEnabledFromBuild,
+} from '../../../platform/auth/web-auth-provider';
+import {
   useEstablishPasswordMutation,
   useAuthenticationMethodsQuery,
   useRemovePasswordMutation,
@@ -36,65 +41,6 @@ type SecurityError = Readonly<{
   reauthenticationRequired: boolean;
 }>;
 
-function securityError(error: unknown): SecurityError {
-  if (!(error instanceof WebAuthRemoteError)) {
-    return {
-      message: 'The security operation could not be completed.',
-      reauthenticationRequired: false,
-    };
-  }
-  const failure = error.failure;
-  if (failure.kind !== 'server_problem') {
-    return {
-      message:
-        failure.kind === 'network_unavailable'
-          ? 'The Access service is unreachable.'
-          : 'The security operation could not be completed.',
-      reauthenticationRequired: false,
-    };
-  }
-  switch (failure.code) {
-    case 'auth.reauthentication_required':
-      return {
-        message:
-          'Confirm your identity again before changing security settings.',
-        reauthenticationRequired: true,
-      };
-    case 'auth.authenticator_removal_blocked':
-      return {
-        message:
-          'DANTE blocked this removal because it would leave the account without a safe authenticator.',
-        reauthenticationRequired: false,
-      };
-    case 'auth.password_already_established':
-      return {
-        message: 'This account already has a password.',
-        reauthenticationRequired: false,
-      };
-    case 'auth.passkey_already_registered':
-      return {
-        message: 'That passkey is already registered with DANTE.',
-        reauthenticationRequired: false,
-      };
-    case 'auth.passkey_not_found':
-      return {
-        message: 'That passkey is no longer active on this account.',
-        reauthenticationRequired: false,
-      };
-    case 'dependency.provider_unavailable':
-    case 'service.unavailable':
-      return {
-        message: 'The authentication service is temporarily unavailable.',
-        reauthenticationRequired: false,
-      };
-    default:
-      return {
-        message: failure.problem.detail,
-        reauthenticationRequired: false,
-      };
-  }
-}
-
 export function AccessSecurityPage() {
   const { t } = useTranslation('common');
   const sessionQuery = useAuthSessionQuery();
@@ -117,7 +63,7 @@ export function AccessSecurityPage() {
   const passkeyReauthMutation = usePasskeyReauthenticationMutation();
 
   const [newPassword, setNewPassword] = useState('');
-  const [passkeyLabel, setPasskeyLabel] = useState('My passkey');
+  const [passkeyLabel, setPasskeyLabel] = useState('');
   const [passwordReauth, setPasswordReauth] = useState('');
   const [editingPasskeyRef, setEditingPasskeyRef] = useState<string | null>(
     null,
@@ -128,6 +74,9 @@ export function AccessSecurityPage() {
   const [lastError, setLastError] = useState<SecurityError | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  const googleEnabled = googleAuthenticationEnabledFromBuild();
+  const appleEnabled = appleAuthenticationEnabledFromBuild();
+  const passkeyEnabled = passkeyAuthenticationEnabledFromBuild();
   const csrfToken = session?.csrf_token ?? null;
   const methods = methodsQuery.data;
   const providerCodes = useMemo(
@@ -137,6 +86,73 @@ export function AccessSecurityPage() {
       ),
     [methods?.providers],
   );
+  const activePasskeyCount = methods?.passkeys.length ?? 0;
+  const showProviderManagement =
+    googleEnabled || appleEnabled || (methods?.providers.length ?? 0) > 0;
+  const showPasskeyManagement = passkeyEnabled || activePasskeyCount > 0;
+
+  function errorFor(error: unknown): SecurityError {
+    if (!(error instanceof WebAuthRemoteError)) {
+      return {
+        message: t(($) => $.common.access.security.errorOperation),
+        reauthenticationRequired: false,
+      };
+    }
+    const failure = error.failure;
+    if (failure.kind !== 'server_problem') {
+      return {
+        message:
+          failure.kind === 'network_unavailable'
+            ? t(($) => $.common.access.security.errorServiceUnreachable)
+            : t(($) => $.common.access.security.errorOperation),
+        reauthenticationRequired: false,
+      };
+    }
+    switch (failure.code) {
+      case 'auth.reauthentication_required':
+        return {
+          message: t(
+            ($) => $.common.access.security.errorReauthenticationRequired,
+          ),
+          reauthenticationRequired: true,
+        };
+      case 'auth.authenticator_removal_blocked':
+        return {
+          message: t(($) => $.common.access.security.errorRemovalBlocked),
+          reauthenticationRequired: false,
+        };
+      case 'auth.password_already_established':
+        return {
+          message: t(
+            ($) => $.common.access.security.errorPasswordAlreadyEstablished,
+          ),
+          reauthenticationRequired: false,
+        };
+      case 'auth.passkey_already_registered':
+        return {
+          message: t(
+            ($) => $.common.access.security.errorPasskeyAlreadyRegistered,
+          ),
+          reauthenticationRequired: false,
+        };
+      case 'auth.passkey_not_found':
+        return {
+          message: t(($) => $.common.access.security.errorPasskeyNotFound),
+          reauthenticationRequired: false,
+        };
+      case 'dependency.provider_unavailable':
+      case 'service.unavailable':
+        return {
+          message: t(($) => $.common.access.security.errorServiceUnavailable),
+          reauthenticationRequired: false,
+        };
+      default:
+        return {
+          message: t(($) => $.common.access.security.errorOperation),
+          reauthenticationRequired: false,
+        };
+    }
+  }
 
   function clearFeedback() {
     setLastError(null);
@@ -145,13 +161,13 @@ export function AccessSecurityPage() {
 
   function handleError(error: unknown) {
     setSuccessMessage(null);
-    setLastError(securityError(error));
+    setLastError(errorFor(error));
   }
 
   function handleProviderBrowserError() {
     setSuccessMessage(null);
     setLastError({
-      message: 'The Google authentication control could not be initialized.',
+      message: t(($) => $.common.access.security.errorGoogleControl),
       reauthenticationRequired: false,
     });
   }
@@ -165,7 +181,7 @@ export function AccessSecurityPage() {
     clearFeedback();
     if (csrfToken === null) {
       setLastError({
-        message: 'Your session is no longer available.',
+        message: t(($) => $.common.access.security.errorSessionUnavailable),
         reauthenticationRequired: false,
       });
       return;
@@ -206,7 +222,7 @@ export function AccessSecurityPage() {
 
   function prepareGoogleLink() {
     clearFeedback();
-    if (csrfToken === null || prepareGoogleMutation.isPending) {
+    if (!googleEnabled || csrfToken === null || prepareGoogleMutation.isPending) {
       return;
     }
     setGooglePreparation(null);
@@ -217,7 +233,11 @@ export function AccessSecurityPage() {
         csrfToken,
       },
       {
-        onSuccess: setGooglePreparation,
+        onSuccess: (preparation) => {
+          if (preparation !== null) {
+            setGooglePreparation(preparation);
+          }
+        },
         onError: handleError,
       },
     );
@@ -236,7 +256,9 @@ export function AccessSecurityPage() {
           setGooglePreparation(null);
           if (result.outcome !== 'authenticated') {
             setLastError({
-              message: 'Google did not complete the requested account link.',
+              message: t(
+                ($) => $.common.access.security.errorGoogleLinkIncomplete,
+              ),
               reauthenticationRequired: false,
             });
             return;
@@ -256,7 +278,7 @@ export function AccessSecurityPage() {
 
   function linkApple() {
     clearFeedback();
-    if (csrfToken === null || appleMutation.isPending) {
+    if (!appleEnabled || csrfToken === null || appleMutation.isPending) {
       return;
     }
     appleMutation.mutate(
@@ -294,7 +316,7 @@ export function AccessSecurityPage() {
   function registerPasskey(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     clearFeedback();
-    if (csrfToken === null) {
+    if (!passkeyEnabled || csrfToken === null) {
       return;
     }
     const label = passkeyLabel.trim();
@@ -309,6 +331,7 @@ export function AccessSecurityPage() {
       { label, csrfToken },
       {
         onSuccess: () => {
+          setPasskeyLabel('');
           setSuccessMessage(t(($) => $.common.access.security.passkeyAdded));
         },
         onError: handleError,
@@ -373,7 +396,7 @@ export function AccessSecurityPage() {
 
   function reauthenticatePasskey() {
     clearFeedback();
-    if (csrfToken === null) {
+    if (!passkeyEnabled || activePasskeyCount === 0 || csrfToken === null) {
       return;
     }
     passkeyReauthMutation.mutate(
@@ -461,14 +484,16 @@ export function AccessSecurityPage() {
               {t(($) => $.common.access.security.reauthPassword)}
             </button>
           </form>
-          <button
-            className="access-secondary-button"
-            type="button"
-            disabled={passkeyReauthMutation.isPending}
-            onClick={reauthenticatePasskey}
-          >
-            {t(($) => $.common.access.security.reauthPasskey)}
-          </button>
+          {passkeyEnabled && activePasskeyCount > 0 ? (
+            <button
+              className="access-secondary-button"
+              type="button"
+              disabled={passkeyReauthMutation.isPending}
+              onClick={reauthenticatePasskey}
+            >
+              {t(($) => $.common.access.security.reauthPasskey)}
+            </button>
+          ) : null}
         </div>
       </section>
 
@@ -506,158 +531,170 @@ export function AccessSecurityPage() {
         )}
       </section>
 
-      <section className="access-security-card">
-        <div className="access-security-section-heading">
-          <div>
-            <h2>{t(($) => $.common.access.security.providersTitle)}</h2>
-            <p>{t(($) => $.common.access.security.providersBody)}</p>
-          </div>
-          <div className="access-security-actions">
-            {!providerCodes.has('google') ? (
-              googlePreparation === null ? (
+      {showProviderManagement ? (
+        <section className="access-security-card">
+          <div className="access-security-section-heading">
+            <div>
+              <h2>{t(($) => $.common.access.security.providersTitle)}</h2>
+              <p>{t(($) => $.common.access.security.providersBody)}</p>
+            </div>
+            <div className="access-security-actions">
+              {googleEnabled && !providerCodes.has('google') ? (
+                googlePreparation === null ? (
+                  <button
+                    className="access-secondary-button"
+                    type="button"
+                    disabled={prepareGoogleMutation.isPending}
+                    aria-busy={prepareGoogleMutation.isPending}
+                    onClick={prepareGoogleLink}
+                  >
+                    {t(($) => $.common.access.security.linkGoogle)}
+                  </button>
+                ) : (
+                  <GoogleIdentityButton
+                    label={t(($) => $.common.access.security.linkGoogle)}
+                    clientId={googlePreparation.clientId}
+                    nonce={googlePreparation.begun.nonce}
+                    disabled={completeGoogleMutation.isPending}
+                    onCredential={completeGoogleLink}
+                    onError={handleProviderBrowserError}
+                  />
+                )
+              ) : null}
+              {appleEnabled && !providerCodes.has('apple') ? (
                 <button
                   className="access-secondary-button"
                   type="button"
-                  disabled={prepareGoogleMutation.isPending}
-                  aria-busy={prepareGoogleMutation.isPending}
-                  onClick={prepareGoogleLink}
+                  disabled={appleMutation.isPending}
+                  aria-busy={appleMutation.isPending}
+                  onClick={linkApple}
                 >
-                  {t(($) => $.common.access.security.linkGoogle)}
+                  {t(($) => $.common.access.security.linkApple)}
                 </button>
-              ) : (
-                <GoogleIdentityButton
-                  label={t(($) => $.common.access.security.linkGoogle)}
-                  clientId={googlePreparation.clientId}
-                  nonce={googlePreparation.begun.nonce}
-                  disabled={completeGoogleMutation.isPending}
-                  onCredential={completeGoogleLink}
-                  onError={handleProviderBrowserError}
-                />
-              )
-            ) : null}
-            {!providerCodes.has('apple') ? (
-              <button
-                className="access-secondary-button"
-                type="button"
-                disabled={appleMutation.isPending}
-                aria-busy={appleMutation.isPending}
-                onClick={linkApple}
-              >
-                {t(($) => $.common.access.security.linkApple)}
-              </button>
-            ) : null}
+              ) : null}
+            </div>
           </div>
-        </div>
-        <div className="access-security-list">
-          {methods?.providers.map((provider) => (
-            <article
-              className="access-security-method"
-              key={provider.external_identity_ref}
-            >
-              <div>
-                <strong>{provider.provider_code}</strong>
-                {provider.provider_email_address ? (
-                  <span>{provider.provider_email_address}</span>
-                ) : null}
-              </div>
-              <button
-                className="access-danger-button"
-                type="button"
-                disabled={unlinkProviderMutation.isPending}
-                onClick={() => unlinkProvider(provider.external_identity_ref)}
+          <div className="access-security-list">
+            {methods?.providers.map((provider) => (
+              <article
+                className="access-security-method"
+                key={provider.external_identity_ref}
               >
-                {t(($) => $.common.access.security.remove)}
-              </button>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="access-security-card">
-        <div className="access-security-section-heading">
-          <div>
-            <h2>{t(($) => $.common.access.security.passkeysTitle)}</h2>
-            <p>{t(($) => $.common.access.security.passkeysBody)}</p>
-          </div>
-        </div>
-        <form
-          className="access-security-inline-form"
-          onSubmit={registerPasskey}
-        >
-          <input
-            value={passkeyLabel}
-            maxLength={100}
-            onChange={(event) => setPasskeyLabel(event.target.value)}
-            aria-label={t(($) => $.common.access.security.passkeyLabel)}
-          />
-          <button
-            className="access-primary-button"
-            type="submit"
-            disabled={registerPasskeyMutation.isPending}
-          >
-            {t(($) => $.common.access.security.addPasskey)}
-          </button>
-        </form>
-        <div className="access-security-list">
-          {methods?.passkeys.map((passkey) => (
-            <article
-              className="access-security-method"
-              key={passkey.passkey_credential_ref}
-            >
-              <div>
-                {editingPasskeyRef === passkey.passkey_credential_ref ? (
-                  <input
-                    value={editingPasskeyLabel}
-                    maxLength={100}
-                    onChange={(event) =>
-                      setEditingPasskeyLabel(event.target.value)
-                    }
-                  />
-                ) : (
-                  <strong>{passkey.label}</strong>
-                )}
-                <span>
-                  {passkey.transports.join(', ') ||
-                    t(($) => $.common.access.security.passkeyTransportUnknown)}
-                </span>
-              </div>
-              <div className="access-security-actions">
-                {editingPasskeyRef === passkey.passkey_credential_ref ? (
-                  <button
-                    className="access-secondary-button"
-                    type="button"
-                    disabled={updatePasskeyMutation.isPending}
-                    onClick={() =>
-                      savePasskeyLabel(passkey.passkey_credential_ref)
-                    }
-                  >
-                    {t(($) => $.common.access.security.save)}
-                  </button>
-                ) : (
-                  <button
-                    className="access-secondary-button"
-                    type="button"
-                    onClick={() => {
-                      setEditingPasskeyRef(passkey.passkey_credential_ref);
-                      setEditingPasskeyLabel(passkey.label);
-                    }}
-                  >
-                    {t(($) => $.common.access.security.rename)}
-                  </button>
-                )}
+                <div>
+                  <strong>{provider.provider_code}</strong>
+                  {provider.provider_email_address ? (
+                    <span>{provider.provider_email_address}</span>
+                  ) : null}
+                </div>
                 <button
                   className="access-danger-button"
                   type="button"
-                  disabled={removePasskeyMutation.isPending}
-                  onClick={() => removePasskey(passkey.passkey_credential_ref)}
+                  disabled={unlinkProviderMutation.isPending}
+                  onClick={() => unlinkProvider(provider.external_identity_ref)}
                 >
                   {t(($) => $.common.access.security.remove)}
                 </button>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {showPasskeyManagement ? (
+        <section className="access-security-card">
+          <div className="access-security-section-heading">
+            <div>
+              <h2>{t(($) => $.common.access.security.passkeysTitle)}</h2>
+              <p>{t(($) => $.common.access.security.passkeysBody)}</p>
+            </div>
+          </div>
+          {passkeyEnabled ? (
+            <form
+              className="access-security-inline-form"
+              onSubmit={registerPasskey}
+            >
+              <input
+                value={passkeyLabel}
+                maxLength={100}
+                placeholder={t(
+                  ($) => $.common.access.security.passkeyLabelPlaceholder,
+                )}
+                onChange={(event) => setPasskeyLabel(event.target.value)}
+                aria-label={t(($) => $.common.access.security.passkeyLabel)}
+              />
+              <button
+                className="access-primary-button"
+                type="submit"
+                disabled={registerPasskeyMutation.isPending}
+              >
+                {t(($) => $.common.access.security.addPasskey)}
+              </button>
+            </form>
+          ) : null}
+          <div className="access-security-list">
+            {methods?.passkeys.map((passkey) => (
+              <article
+                className="access-security-method"
+                key={passkey.passkey_credential_ref}
+              >
+                <div>
+                  {editingPasskeyRef === passkey.passkey_credential_ref ? (
+                    <input
+                      value={editingPasskeyLabel}
+                      maxLength={100}
+                      onChange={(event) =>
+                        setEditingPasskeyLabel(event.target.value)
+                      }
+                    />
+                  ) : (
+                    <strong>{passkey.label}</strong>
+                  )}
+                  <span>
+                    {passkey.transports.join(', ') ||
+                      t(
+                        ($) =>
+                          $.common.access.security.passkeyTransportUnknown,
+                      )}
+                  </span>
+                </div>
+                <div className="access-security-actions">
+                  {editingPasskeyRef === passkey.passkey_credential_ref ? (
+                    <button
+                      className="access-secondary-button"
+                      type="button"
+                      disabled={updatePasskeyMutation.isPending}
+                      onClick={() =>
+                        savePasskeyLabel(passkey.passkey_credential_ref)
+                      }
+                    >
+                      {t(($) => $.common.access.security.save)}
+                    </button>
+                  ) : (
+                    <button
+                      className="access-secondary-button"
+                      type="button"
+                      onClick={() => {
+                        setEditingPasskeyRef(passkey.passkey_credential_ref);
+                        setEditingPasskeyLabel(passkey.label);
+                      }}
+                    >
+                      {t(($) => $.common.access.security.rename)}
+                    </button>
+                  )}
+                  <button
+                    className="access-danger-button"
+                    type="button"
+                    disabled={removePasskeyMutation.isPending}
+                    onClick={() => removePasskey(passkey.passkey_credential_ref)}
+                  >
+                    {t(($) => $.common.access.security.remove)}
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
     </main>
   );
 }
