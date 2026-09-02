@@ -32,6 +32,9 @@ describe('temporal create session', () => {
     expect(session.draft.current.timeSemantics).toBe('timed');
     expect(session.draft.current.scheduling.constraintKind).toBe('none');
     expect(session.draft.current.eventRecurrence.patternKind).toBe('none');
+    expect(session.draft.current.eventRecurrence.quotaTimeZoneId).toBe(
+      'Europe/Rome',
+    );
     expect(session.draft.dirty).toBe(false);
   });
 
@@ -66,18 +69,22 @@ describe('temporal create session', () => {
   });
 
   it('continues editing and changes presentation depth without losing deep draft state', () => {
+    const baseline = createTemporalCreateFields();
     const base = createTemporalCreateFields({
       title: 'Call ricorrente',
       kind: 'event',
       date: '2026-09-01',
       eventRecurrence: {
-        ...createTemporalCreateFields().eventRecurrence,
-        patternKind: 'calendar-wall-clock',
-        calendarFrequency: 'weekly',
-        weekdays: Object.freeze(['MO', 'WE'] as const),
+        ...baseline.eventRecurrence,
+        patternKind: 'quota-per-period',
+        quotaCount: 3,
+        quotaPeriodKind: 'week',
+        quotaFrame: 'named-zone',
+        quotaWeekStart: 'MO',
+        quotaTimeZoneId: 'Europe/Rome',
       },
       event: {
-        ...createTemporalCreateFields().event,
+        ...baseline.event,
         purpose: 'Decisione progetto',
       },
     });
@@ -97,9 +104,13 @@ describe('temporal create session', () => {
     expect(reopened.surface).toBe('full');
     expect(reopened.draft.current.title).toBe('Call ricorrente aggiornata');
     expect(reopened.draft.current.eventRecurrence.patternKind).toBe(
-      'calendar-wall-clock',
+      'quota-per-period',
     );
-    expect(reopened.draft.current.eventRecurrence.weekdays).toEqual(['MO', 'WE']);
+    expect(reopened.draft.current.eventRecurrence.quotaFrame).toBe('named-zone');
+    expect(reopened.draft.current.eventRecurrence.quotaWeekStart).toBe('MO');
+    expect(reopened.draft.current.eventRecurrence.quotaTimeZoneId).toBe(
+      'Europe/Rome',
+    );
     expect(reopened.draft.current.event.purpose).toBe('Decisione progetto');
   });
 
@@ -290,6 +301,7 @@ describe('temporal create session', () => {
       title: 'Evento ricorrente',
       kind: 'event',
       date: '2026-09-01',
+      timeZoneId: 'Europe/Rome',
     });
 
     const calendar = createTemporalCreateFields({
@@ -315,8 +327,10 @@ describe('temporal create session', () => {
         ...baseline.eventRecurrence,
         patternKind: 'quota-per-period',
         quotaCount: 3,
-        quotaPeriodKind: 'week',
+        quotaPeriodKind: 'year',
         quotaPeriodInterval: 1,
+        quotaFrame: 'named-zone',
+        quotaTimeZoneId: 'Europe/Rome',
       },
     });
     const cycle = createTemporalCreateFields({
@@ -324,8 +338,8 @@ describe('temporal create session', () => {
       eventRecurrence: {
         ...baseline.eventRecurrence,
         patternKind: 'cyclic-positional',
-        cycleLength: 7,
-        cycleOffset: 2,
+        cycleLength: 4,
+        cyclePositions: Object.freeze([1, 2]),
         cycleUnit: 'day',
         endMode: 'count',
         count: 12,
@@ -338,23 +352,99 @@ describe('temporal create session', () => {
     expect(validateTemporalCreateFields(cycle)).toEqual([]);
   });
 
-  it('rejects malformed CP6 recurrence payloads deterministically', () => {
+  it('preserves monthly ordinal and yearly calendar intent without generating occurrences', () => {
+    const baseline = createTemporalCreateFields({
+      title: 'Board review',
+      kind: 'event',
+      date: '2026-09-15',
+    });
+    const ordinal = createTemporalCreateFields({
+      ...baseline,
+      eventRecurrence: {
+        ...baseline.eventRecurrence,
+        patternKind: 'calendar-wall-clock',
+        calendarFrequency: 'monthly-ordinal',
+        calendarOrdinal: -1,
+        calendarOrdinalWeekday: 'FR',
+      },
+    });
+    const yearly = createTemporalCreateFields({
+      ...baseline,
+      eventRecurrence: {
+        ...baseline.eventRecurrence,
+        patternKind: 'calendar-wall-clock',
+        calendarFrequency: 'yearly',
+      },
+    });
+
+    expect(validateTemporalCreateFields(ordinal)).toEqual([]);
+    expect(validateTemporalCreateFields(yearly)).toEqual([]);
+    expect(ordinal.eventRecurrence.calendarOrdinal).toBe(-1);
+    expect(ordinal.eventRecurrence.calendarOrdinalWeekday).toBe('FR');
+    expect(yearly.eventRecurrence.calendarFrequency).toBe('yearly');
+  });
+
+  it('requires a valid explicit quota frame and named zone when selected', () => {
+    const baseline = createTemporalCreateFields({
+      title: 'Quota',
+      kind: 'event',
+      date: '2026-09-01',
+    });
+    const valid = createTemporalCreateFields({
+      ...baseline,
+      eventRecurrence: {
+        ...baseline.eventRecurrence,
+        patternKind: 'quota-per-period',
+        quotaCount: 3,
+        quotaPeriodKind: 'week',
+        quotaFrame: 'named-zone',
+        quotaWeekStart: 'MO',
+        quotaTimeZoneId: 'Europe/Rome',
+      },
+    });
+    const invalid = createTemporalCreateFields({
+      ...valid,
+      eventRecurrence: {
+        ...valid.eventRecurrence,
+        quotaTimeZoneId: 'Europe/Not-A-Zone',
+      },
+    });
+
+    expect(validateTemporalCreateFields(valid)).toEqual([]);
+    expect(
+      validateTemporalCreateFields(invalid).map((issue) => issue.code),
+    ).toContain('temporal.create.recurrence.quota_timezone_invalid');
+  });
+
+  it('rejects malformed CP6 cyclic positions deterministically', () => {
     const baseline = createTemporalCreateFields({
       title: 'Evento ricorrente',
       kind: 'event',
       date: '2026-09-01',
     });
-    const invalid = createTemporalCreateFields({
+    const duplicate = createTemporalCreateFields({
       ...baseline,
       eventRecurrence: {
         ...baseline.eventRecurrence,
         patternKind: 'cyclic-positional',
-        cycleLength: 3,
-        cycleOffset: 3,
+        cycleLength: 4,
+        cyclePositions: Object.freeze([1, 1]),
+      },
+    });
+    const outside = createTemporalCreateFields({
+      ...baseline,
+      eventRecurrence: {
+        ...baseline.eventRecurrence,
+        patternKind: 'cyclic-positional',
+        cycleLength: 4,
+        cyclePositions: Object.freeze([1, 5]),
       },
     });
 
-    expect(validateTemporalCreateFields(invalid).map((issue) => issue.code)).toContain(
+    expect(validateTemporalCreateFields(duplicate).map((issue) => issue.code)).toContain(
+      'temporal.create.recurrence.cycle_invalid',
+    );
+    expect(validateTemporalCreateFields(outside).map((issue) => issue.code)).toContain(
       'temporal.create.recurrence.cycle_invalid',
     );
   });
