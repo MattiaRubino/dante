@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  appleAuthenticationEnabledFromBuild,
+  googleAuthenticationEnabledFromBuild,
+  googleClientIdFromBuild,
+  passkeyAuthenticationEnabledFromBuild,
   ProviderBrowserUnavailableError,
   redirectToAppleAuthorization,
   renderGoogleIdentityButton,
@@ -9,10 +13,30 @@ import {
 afterEach(() => {
   Reflect.deleteProperty(window, 'google');
   document.getElementById('dante-google-identity-services')?.remove();
+  vi.unstubAllEnvs();
   vi.restoreAllMocks();
 });
 
 describe('Web Auth provider browser boundary', () => {
+  it('derives presentation availability only from public build configuration', () => {
+    vi.stubEnv('VITE_DANTE_GOOGLE_CLIENT_ID', ' google-client-id ');
+    vi.stubEnv('VITE_DANTE_APPLE_ENABLED', 'true');
+    vi.stubEnv('VITE_DANTE_PASSKEY_ENABLED', '1');
+
+    expect(googleClientIdFromBuild()).toBe('google-client-id');
+    expect(googleAuthenticationEnabledFromBuild()).toBe(true);
+    expect(appleAuthenticationEnabledFromBuild()).toBe(true);
+    expect(passkeyAuthenticationEnabledFromBuild()).toBe(true);
+
+    vi.stubEnv('VITE_DANTE_GOOGLE_CLIENT_ID', '   ');
+    vi.stubEnv('VITE_DANTE_APPLE_ENABLED', 'false');
+    vi.stubEnv('VITE_DANTE_PASSKEY_ENABLED', 'off');
+
+    expect(googleAuthenticationEnabledFromBuild()).toBe(false);
+    expect(appleAuthenticationEnabledFromBuild()).toBe(false);
+    expect(passkeyAuthenticationEnabledFromBuild()).toBe(false);
+  });
+
   it('only redirects Apple authorization to the canonical HTTPS authority', () => {
     const assign = vi.fn();
 
