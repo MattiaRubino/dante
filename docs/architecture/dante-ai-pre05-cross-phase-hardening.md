@@ -1,13 +1,13 @@
 # DANTE PRE-AI05 — Cross-Phase Hardening Candidate
 
-- **Status:** CANDIDATE / SECOND FULL RETEST FAIL BOUNDED / FRESH RETEST REQUIRED
+- **Status:** CANDIDATE / THIRD FULL RETEST FAIL BOUNDED / FRESH RETEST REQUIRED
 - **Branch:** `feature/ai-architecture`
 - **Established:** 2026-09-02
 - **Upstream:** AI-02.1 CLOSED / AI-03 CLOSED / AI-04 CLOSED STRUCTURALLY
 - **Implementation:** NONE
 - **Provider/model selection:** OPEN
 - **Database change:** NONE
-- **Retest history:** initial whole-chain audit → H01..H14; first post-write retest → H15..H16; second full retest → H17..H18
+- **Retest history:** initial whole-chain audit → H01..H14; first post-write retest → H15..H16; second full retest → H17..H18; third full retest → H19
 
 This is a bounded supplement discovered by repeatedly testing AI-01→AI-04 as one system. It does not reopen AI-02/03/04 wholesale and makes no implementation/provider PASS claim.
 
@@ -35,8 +35,6 @@ ATTENTION BUDGET
 ```
 
 ResourceBudget governs compute/model/tool/sandbox/external consumption. AttentionBudget governs justified interruption/review/notification pressure.
-
-Relevant inputs may include trigger provenance/currentness, materiality, urgency, consequence, user mode/quiet hours, recent interruptions, duplicates, expiry and causal lineage.
 
 Attention outcomes are limited to attention/publication behavior:
 
@@ -82,7 +80,7 @@ DANTE-E14  PROACTIVITY / ATTENTION / CAUSAL-LOOP SAFETY
 
 E14 is core because watches/reminders/adaptation/proactivity are already accepted product/runtime behavior.
 
-Representative cases include meaningful vs immaterial change, duplicate signals, own-effect loops, quiet-hours deferral, urgent escalation, stale callbacks, superseded watches, attention storms, repeated dismissal, silent attention with otherwise eligible background work, and notification with an ineligible effect.
+Representative cases include meaningful vs immaterial change, duplicate signals, own-effect loops, quiet-hours deferral, urgent escalation, stale callbacks, superseded watches, attention storms, repeated dismissal, silent attention with otherwise eligible background work, notification with an ineligible effect, and truthful notification-transport outcomes.
 
 Useful evidence includes hard effect/privacy failures, oscillation count, missed escalation, false/duplicate intervention rate, loop depth, unnecessary model/tool work and material-alert latency.
 
@@ -102,8 +100,6 @@ DISCLOSURE ACCOUNTING
 != DOMAIN Visibility
 != PERMANENT TRANSCRIPT LOG
 ```
-
-If cross-Run survival is justified, retain the minimum sufficient policy/accounting state for the minimum justified lifetime and apply AI-03 purpose, retention, deletion/source-lifecycle and anti-resurrection rules.
 
 Known/related sinks may be composed when the threat model requires. Arbitrary unknown external collusion is an explicit limit, not a fabricated guarantee.
 
@@ -157,16 +153,11 @@ AUTO_WITHIN_SCOPE
 Evaluate separately:
 
 ```text
-unsafe under-asking
-→ mandatory approval omitted
-→ hard failure
-
-excessive over-asking
-→ safe bounded action repeatedly asks unnecessarily
-→ quality/autonomy-efficiency failure unless stronger harm occurs
+unsafe under-asking → mandatory approval omitted → hard failure
+excessive over-asking → unnecessary interruption → quality failure unless stronger harm occurs
 ```
 
-Possible metrics include unsafe autonomous action count, missed approval count, unnecessary approval/interruption rate, correct autonomous completion within scope and correct escalation rate. Hard gates precede autonomy optimization.
+Hard gates precede autonomy optimization.
 
 ## 10. PRE05-H09 — Current-tree executable eval detail
 
@@ -291,8 +282,6 @@ A tier may grant more compute/concurrency/background work/context or features on
 
 ## 16. PRE05-H15 — AttentionDecision != proactive work admission
 
-The first post-materialization retest found that carrying `Attention → start work` literally could turn Attention into hidden execution authority.
-
 ```text
 ATTENTION DECISION
 != PROACTIVE WORK ADMISSION
@@ -324,48 +313,22 @@ MAY SPAN RELATED RUNS / INTERACTIONS / SURFACES
 AND KNOWN RELATED SINKS WHEN THE THREAT MODEL REQUIRES.
 ```
 
-Any surviving disclosure-accounting state is minimized, purpose-bound, retention-bounded and lifecycle/anti-resurrection governed. No indefinite content log is implied.
+Any surviving disclosure-accounting state is minimized, purpose-bound, retention-bounded and lifecycle governed. No indefinite content log is implied.
 
 ## 18. PRE05-H17 — Run-start autonomy is not perpetual autonomy
-
-The second full retest found a distinct case in which Authority/AuthZ remain valid while the user's/current policy autonomy posture changes during a Run.
-
-Binding:
 
 ```text
 RUN-START AUTONOMY
 != PERPETUAL AUTONOMY
 ```
 
-Before an autonomous consequential dispatch, especially after waits, approval delays, replanning, material target/basis change or a current policy/config change, DANTE re-evaluates the applicable current scoped-autonomy posture in addition to current Authority/AuthZ/Consent/Visibility and other effect gates.
+Before an autonomous consequential dispatch, especially after waits, replanning, material target/basis change or policy/config change, DANTE re-evaluates current scoped autonomy in addition to current Authority/AuthZ/Consent/Visibility and other effect gates.
 
-Example:
+An old WorkContract also cannot silently relax a protected approval condition merely because a later global autonomy setting became more permissive; material relaxation requires the normal new/superseding work decision semantics.
 
-```text
-T0  AUTO_WITHIN_SCOPE
-Run starts
-T1  user/policy changes same scope to PROPOSE_ONLY
-T2  effect otherwise remains authorized
-
-→ no autonomous dispatch at T2
-→ produce proposal/review path instead
-```
-
-Past legitimate work is not retroactively erased, and already-dispatched effects remain subject to verification/reconciliation rather than fictional rollback.
-
-Autonomy currentness is policy/runtime state, not a new Domain Authority.
+Past legitimate work is not retroactively erased and already-dispatched effects remain subject to verification/reconciliation.
 
 ## 19. PRE05-H18 — Notify decision is not communication-state truth
-
-AI-02 already preserves:
-
-```text
-SENT != DELIVERED != SEEN != ACKNOWLEDGED != ACCEPTED
-```
-
-The second full retest found this needed explicit E14 traceability.
-
-Binding:
 
 ```text
 ATTENTION DECISION = NOTIFY
@@ -376,13 +339,53 @@ ATTENTION DECISION = NOTIFY
 != USER ACCEPTED/ACTED
 ```
 
-The selected notification/publication transport remains governed by the applicable capability/effect/publication contract and produces only the communication state supported by actual receipts/evidence.
+The selected notification transport remains governed by applicable capability/effect/publication contracts and produces only the communication state supported by actual evidence. Timeout or missing receipt may remain UNKNOWN. Replay/retry must not fabricate stronger state or duplicate consequential notification effects.
 
-A timeout or missing delivery receipt may remain `UNKNOWN`; DANTE must not upgrade it to delivered/seen/acknowledged.
+E14 grades both attention choice and truthful transport outcome handling where transport is part of the fixture.
 
-E14 therefore grades both the attention decision and, where a real/simulated transport is part of the fixture, truthful transport outcome handling and deduplication/retry semantics.
+## 20. PRE05-H19 — Source lifecycle is not prior-disclosure occurrence
 
-## 20. Current composed responsibility path
+The third full retest combined cumulative privacy with source deletion, restored stale derivatives and a later Run. It exposed a subtle conflict if anti-resurrection were applied indiscriminately to the minimum security state needed to remember that a disclosure already happened.
+
+Binding:
+
+```text
+SOURCE CONTENT / SOURCE FUTURE ELIGIBILITY
+!= PRIOR DISCLOSURE OCCURRENCE
+```
+
+Deletion/retirement/revocation of a source means its content and source-derived representations cannot regain future retrieval/context/reuse eligibility. It does **not** make a disclosure that already crossed a recipient/provider/sink boundary retroactively nonexistent.
+
+Where cumulative-disclosure safety still requires it, DANTE may retain only the minimum non-content technical security/accounting state needed to represent relevant prior exposure under its own legitimate purpose and bounded lifetime.
+
+That state:
+
+```text
+!= source
+!= ContextFragment
+!= Memory authority
+!= retrieval representation
+!= permission to reconstruct deleted content
+```
+
+It should remain outside model/context input by default and be consumed by deterministic policy/publication enforcement where possible.
+
+Its lifecycle is independent and explicit:
+
+```text
+minimum necessary fields
+authorized security/privacy purpose
+strict access boundary
+bounded retention / expiry
+correction when accounting itself is wrong
+deletion when its independent purpose ends
+recovery integrity
+no semantic resurrection of source content
+```
+
+This follows the same general distinction already present in AI-04 between a past egress event and later provider/source eligibility: revocation does not undo what already left the boundary.
+
+## 21. Current composed responsibility path
 
 ```text
 Trigger / Interaction
@@ -400,16 +403,16 @@ Trigger / Interaction
 → Result Maturity
 → AttentionPolicy / AttentionBudget when attention is possible
 → recipient + surface + channel Disclosure Projection
-→ cumulative disclosure check where material
+→ cumulative disclosure check using only justified bounded prior-exposure state where material
 → governed publication/notification transport
-→ truthful sent/delivered/seen/acknowledged state only from evidence
+→ truthful communication state from evidence
 ```
 
 Responsibility boundary != service/table.
 
-## 21. Fresh full retest corpus
+## 22. Fresh full retest corpus
 
-The next retest restarts from zero and must cover at least:
+The next retest restarts from zero and covers at least:
 
 ```text
 1 own-effect loop without new material delta
@@ -435,19 +438,21 @@ The next retest restarts from zero and must cover at least:
 21 provider/cache memory after deletion/revocation
 22 auxiliary router/verifier/judge as governed recipient
 23 model outage while deterministic route remains valid
-24 compound: proactive Run + autonomy change + provider failover + surface change + quota pressure
-25 compound: private source + cumulative disclosure + deletion + old cache/restore + new Run
+24 proactive Run + autonomy change + failover + surface change + quota pressure
+25 private source + cumulative disclosure + deletion + stale cache/restore + new Run while minimum prior-exposure accounting remains non-content security state
+26 prior-exposure accounting expires when independent protection purpose no longer applies; source remains deleted and cannot resurrect
 ```
 
 PASS requires no unexplained responsibility gap, no new generic semantic owner and no hidden safety downgrade.
 
-## 22. Non-claims / next action
+## 23. Non-claims / next action
 
 ```text
 PRE-AI05 HARDENING MATERIALIZED      YES
 FIRST RETEST                         FAIL BOUNDED / H15-H16
 SECOND FULL RETEST                   FAIL BOUNDED / H17-H18
-FRESH RETEST AFTER H17-H18           NOT YET EXECUTED
+THIRD FULL RETEST                    FAIL BOUNDED / H19
+FRESH RETEST AFTER H19               NOT YET EXECUTED
 PRE-AI05 PASS                        NO
 AI-02/03/04 BROAD REOPEN             NO
 PROVIDER/MODEL SELECTED              NO
