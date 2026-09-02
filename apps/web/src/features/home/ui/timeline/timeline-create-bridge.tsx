@@ -10,6 +10,7 @@ import {
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
+import type { TemporalPlacement } from '../../../temporal';
 import {
   TemporalCreateContextCatalogProvider,
   TemporalCreateEntry,
@@ -18,6 +19,7 @@ import {
   type TemporalCreateContextInput,
   type TemporalCreateContextOption,
   type TemporalCreateInvocation,
+  type TemporalCreateMutationEffect,
   type TemporalCreateTimelineProjection,
 } from '../../../temporal-create';
 import { TIMELINE_POLICY } from './model/timeline-policy';
@@ -28,6 +30,10 @@ import type {
   TimelineGroupId,
   TimelineSemanticTone,
 } from './model/timeline-types';
+import {
+  TimelinePlanningTray,
+  type TimelinePlanningTrayItem,
+} from './timeline-planning-tray';
 
 import './timeline-create-bridge.css';
 
@@ -71,6 +77,12 @@ type GroupLayout = Readonly<{
   tone: string;
 }>;
 
+type PlanningUndo = Readonly<{
+  kind: 'placement' | 'delete';
+  originalEffect: TemporalCreateAppliedEffect;
+  mutation: TemporalCreateMutationEffect;
+}>;
+
 function parsePixel(value: string): number {
   const parsed = Number.parseFloat(value);
   return Number.isFinite(parsed) ? parsed : 0;
@@ -92,9 +104,7 @@ function minuteAtClientY(section: HTMLElement, clientY: number): number {
 
   for (let index = 0; index < lines.length - 1; index += 1) {
     const current = parsePixel(lines[index]?.style.top ?? '0');
-    const next = parsePixel(
-      lines[index + 1]?.style.top ?? String(current),
-    );
+    const next = parsePixel(lines[index + 1]?.style.top ?? String(current));
     if (localY <= next) {
       const progress =
         next <= current ? 0 : (localY - current) / (next - current);
@@ -235,6 +245,49 @@ function isNativeMaterializedProjection(
   );
 }
 
+function withProjection(
+  effect: TemporalCreateAppliedEffect,
+  projection: TemporalCreateAppliedEffect['projection'],
+): TemporalCreateAppliedEffect {
+  return Object.freeze({ ...effect, projection });
+}
+
+function planningPlacement(
+  effect: TemporalCreateAppliedEffect,
+  dateKey: string,
+  requestedStartMinute: number,
+): TemporalPlacement {
+  const specification = effect.metadata.specification;
+  const date = Temporal.PlainDate.from(dateKey);
+  const duration = Math.max(5, specification.durationMinutes);
+  const startMinute = Math.max(
+    0,
+    Math.min(1439, Math.round(requestedStartMinute)),
+  );
+  const localStart = Temporal.PlainDateTime.from({
+    year: date.year,
+    month: date.month,
+    day: date.day,
+    hour: Math.floor(startMinute / 60),
+    minute: startMinute % 60,
+  });
+
+  if (specification.timeMode === 'zoned') {
+    const start = localStart.toZonedDateTime(effect.metadata.timeZoneId);
+    return Object.freeze({
+      kind: 'zoned' as const,
+      start,
+      end: start.add({ minutes: duration }),
+    });
+  }
+
+  return Object.freeze({
+    kind: 'floating-local' as const,
+    start: localStart,
+    end: localStart.add({ minutes: duration }),
+  });
+}
+
 export function TimelineCreateBridge({
   defaultDate,
   groups,
@@ -257,6 +310,8 @@ export function TimelineCreateBridge({
   const [layoutRevision, setLayoutRevision] = useState(0);
   const [undoEffect, setUndoEffect] =
     useState<TemporalCreateAppliedEffect | null>(null);
+  const [planningUndo, setPlanningUndo] = useState<PlanningUndo | null>(null);
+  const [planningFeedback, setPlanningFeedback] = useState('');
   const [toastVisible, setToastVisible] = useState(false);
   const requestIdRef = useRef(0);
   const layoutFrameRef = useRef<number | null>(null);
@@ -273,6 +328,36 @@ export function TimelineCreateBridge({
       })),
     [groups],
   );
+
+  const planningItems = useMemo<readonly TimelinePlanningTrayItem[]>(() => {
+    const groupMap = new Map(groups.map((group, index) => [group.id, { group, index }]));
+    return effects.flatMap((effect) => {
+      if (
+        effect.metadata.kind !== 'activity' ||
+        effect.projection.placement !== null
+      ) {
+        return [];
+      }
+      const specification = effect.metadata.specification;
+      const groupEntry = groupMap.get(effect.metadata.contextId);
+      return [
+        Object.freeze({
+          id: effect.projection.id,
+          title: effect.projection.title,
+          contextLabel: groupEntry?.group.label ?? effect.metadata.contextId,
+          tone:
+            specification.appearanceTone ??
+            groupEntry?.group.tone ??
+            ('personal' as const),
+          groupIndex: groupEntry?.index ?? 0,
+          durationMinutes: specification.durationMinutes,
+          constraintKind: specification.scheduling.constraintKind,
+          splittable: specification.execution.sessionMode === 'splittable',
+          notes: effect.metadata.notes,
+        }),
+      ];
+    });
+  }, [effects, groups]);
 
   const createContext = useCallback(
     (input: TemporalCreateContextInput): TemporalCreateContextOption => {
@@ -360,7 +445,10 @@ export function TimelineCreateBridge({
         startX: event.clientX,
         startY: event.clientY,
       };
-      document.documentElement.setAttribute('data-temporal-create-ranging', 'true');
+      document.documentElement.setAttribute(
+        'data-temporal-create-ranging',
+        'true',
+      );
       event.preventDefault();
     };
 
@@ -426,19 +514,35 @@ export function TimelineCreateBridge({
     };
   }, []);
 
+  const showToast = useCallback(() => {
+    setToastVisible(true);
+    if (toastTimerRef.current !== null) {
+      window.clearTimeout(toastTimerRef.current);
+    }
+    toastTimerRef.current = window.setTimeout(() => {
+      setToastVisible(false);
+      toastTimerRef.current = null;
+    }, TIMELINE_POLICY.feedback.toastDurationMs);
+  }, []);
+
   const showCreateFeedback = useCallback(
     (effect: TemporalCreateAppliedEffect) => {
+      setPlanningUndo(null);
+      setPlanningFeedback('');
       setUndoEffect(effect);
-      setToastVisible(true);
-      if (toastTimerRef.current !== null) {
-        window.clearTimeout(toastTimerRef.current);
-      }
-      toastTimerRef.current = window.setTimeout(() => {
-        setToastVisible(false);
-        toastTimerRef.current = null;
-      }, TIMELINE_POLICY.feedback.toastDurationMs);
+      showToast();
     },
-    [],
+    [showToast],
+  );
+
+  const showPlanningFeedback = useCallback(
+    (feedback: string, undo: PlanningUndo) => {
+      setUndoEffect(null);
+      setPlanningUndo(undo);
+      setPlanningFeedback(feedback);
+      showToast();
+    },
+    [showToast],
   );
 
   const reveal = useCallback(
@@ -505,6 +609,90 @@ export function TimelineCreateBridge({
       showCreateFeedback,
       t,
     ],
+  );
+
+  const placePlanningItem = useCallback(
+    async (itemId: string, dateKey: string, startMinute: number) => {
+      const effect = effects.find(
+        (candidate) => candidate.projection.id === itemId,
+      );
+      if (!effect || effect.projection.placement !== null) {
+        return false;
+      }
+      const execution = await effect.replacePlacement(
+        planningPlacement(effect, dateKey, startMinute),
+      );
+      const mutation = execution.effect;
+      if (
+        execution.result.status !== 'applied' ||
+        !mutation?.projection
+      ) {
+        return false;
+      }
+
+      const updated = withProjection(effect, mutation.projection);
+      setEffects((current) =>
+        current.map((candidate) =>
+          candidate.projection.id === itemId ? updated : candidate,
+        ),
+      );
+      const projection = temporalCreateTimelineProjectionFromEffect(updated);
+      const native = timelineEventFromProjection(
+        projection,
+        t(($) => $.common.home.timeline.create.kind.activity),
+      );
+      if (!native) {
+        await mutation.undo();
+        return false;
+      }
+      onMaterializeCreatedEvent(native.dateKey, native.event);
+      reveal(projection);
+      showPlanningFeedback(
+        `${t(($) => $.common.home.timeline.create.kind.activity)} · ${formatMinute(native.event.startMinute)}`,
+        Object.freeze({
+          kind: 'placement',
+          originalEffect: effect,
+          mutation,
+        }),
+      );
+      return true;
+    },
+    [
+      effects,
+      onMaterializeCreatedEvent,
+      reveal,
+      showPlanningFeedback,
+      t,
+    ],
+  );
+
+  const deletePlanningItem = useCallback(
+    async (itemId: string) => {
+      const effect = effects.find(
+        (candidate) => candidate.projection.id === itemId,
+      );
+      if (!effect || effect.projection.placement !== null) {
+        return false;
+      }
+      const execution = await effect.remove();
+      const mutation = execution.effect;
+      if (execution.result.status !== 'applied' || !mutation) {
+        return false;
+      }
+      setEffects((current) =>
+        current.filter((candidate) => candidate.projection.id !== itemId),
+      );
+      showPlanningFeedback(
+        `${t(($) => $.common.home.timeline.create.kind.activity)} · ${effect.projection.title}`,
+        Object.freeze({
+          kind: 'delete',
+          originalEffect: effect,
+          mutation,
+        }),
+      );
+      return true;
+    },
+    [effects, showPlanningFeedback, t],
   );
 
   const projections = useMemo(
@@ -609,8 +797,7 @@ export function TimelineCreateBridge({
         Math.max(180, dayLayout.eventsHost.clientWidth * 0.34),
       );
       const groupIndex = groupLayout?.index ?? 0;
-      const expandedLeft =
-        groupIndex * groupWidth + 6 + precedingSameSlot * 8;
+      const expandedLeft = groupIndex * groupWidth + 6 + precedingSameSlot * 8;
       const expandedWidth = Math.max(150, groupWidth - 12);
 
       targets.push({
@@ -631,7 +818,7 @@ export function TimelineCreateBridge({
     return targets;
   }, [filters, groups, layoutRevision, preview, projections]);
 
-  const undo = async () => {
+  const undoCreate = async () => {
     const effect = undoEffect;
     if (!effect) {
       return;
@@ -654,6 +841,42 @@ export function TimelineCreateBridge({
     }
   };
 
+  const undoPlanningMutation = async () => {
+    const undo = planningUndo;
+    if (!undo) {
+      return;
+    }
+    const result = await undo.mutation.undo();
+    if (result.status !== 'applied' || !result.item) {
+      return;
+    }
+
+    if (undo.kind === 'placement') {
+      onRemoveCreatedEvent(undo.originalEffect.projection.id);
+      const restored = withProjection(undo.originalEffect, result.item);
+      setEffects((current) =>
+        current.map((candidate) =>
+          candidate.projection.id === restored.projection.id
+            ? restored
+            : candidate,
+        ),
+      );
+    } else {
+      const restored = withProjection(undo.originalEffect, result.item);
+      setEffects((current) =>
+        current.some(
+          (candidate) => candidate.projection.id === restored.projection.id,
+        )
+          ? current
+          : [...current, restored],
+      );
+    }
+
+    setPlanningUndo(null);
+    setPlanningFeedback('');
+    setToastVisible(false);
+  };
+
   const feedbackSuffix = undoEffect
     ? undoEffect.metadata.specification.scheduling.constraintKind !== 'none'
       ? ` · ${t(($) => $.common.home.timeline.create.timeSemantics.unscheduled)}`
@@ -674,6 +897,14 @@ export function TimelineCreateBridge({
           onBeforeOpen={onBeforeOpen}
         />
       </TemporalCreateContextCatalogProvider>
+
+      <TimelinePlanningTray
+        items={planningItems}
+        defaultDate={defaultDate}
+        onBeforeOpen={onBeforeOpen}
+        onPlace={placePlanningItem}
+        onDelete={deletePlanningItem}
+      />
 
       {portalTargets.map(({ projection, host, style, tone }) =>
         createPortal(
@@ -742,14 +973,23 @@ export function TimelineCreateBridge({
               aria-live="polite"
             >
               <span>
-                {undoEffect
-                  ? `${t(($) => $.common.home.timeline.feedback.created)} ${
-                      undoEffect.projection.title
-                    }${feedbackSuffix}`
-                  : ''}
+                {planningUndo
+                  ? planningFeedback
+                  : undoEffect
+                    ? `${t(($) => $.common.home.timeline.feedback.created)} ${
+                        undoEffect.projection.title
+                      }${feedbackSuffix}`
+                    : ''}
               </span>
-              {undoEffect ? (
-                <button type="button" onClick={() => void undo()}>
+              {planningUndo || undoEffect ? (
+                <button
+                  type="button"
+                  onClick={() =>
+                    void (planningUndo
+                      ? undoPlanningMutation()
+                      : undoCreate())
+                  }
+                >
                   {t(($) => $.common.home.timeline.undo)}
                 </button>
               ) : null}
