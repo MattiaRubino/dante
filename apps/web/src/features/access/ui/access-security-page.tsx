@@ -460,7 +460,7 @@ export function AccessSecurityPage() {
     );
   }
 
-  if (sessionQuery.isPending) {
+  if (sessionQuery.isPending || (authenticated && methodsQuery.isPending)) {
     return (
       <main className="access-security-shell">
         <p>{t(($) => $.common.access.security.loading)}</p>
@@ -476,6 +476,27 @@ export function AccessSecurityPage() {
           <Link className="access-primary-button access-security-link" to="/">
             {t(($) => $.common.access.action.signin)}
           </Link>
+        </section>
+      </main>
+    );
+  }
+
+  if (methodsQuery.isError) {
+    return (
+      <main className="access-security-shell">
+        <section className="access-security-card">
+          <h1>{t(($) => $.common.access.security.title)}</h1>
+          <p>{t(($) => $.common.access.security.body)}</p>
+          <div className="access-security-feedback is-error" role="alert">
+            <strong>{errorFor(methodsQuery.error).message}</strong>
+          </div>
+          <button
+            className="access-secondary-button"
+            type="button"
+            onClick={() => void methodsQuery.refetch()}
+          >
+            {t(($) => $.common.access.action.tryAgain)}
+          </button>
         </section>
       </main>
     );
@@ -540,7 +561,7 @@ export function AccessSecurityPage() {
             {canReauthenticateWithGoogle ? (
               googleFlow?.kind === 'reauthenticate' ? (
                 <GoogleIdentityButton
-                  label={t(($) => $.common.access.security.reauthGoogle)}
+                  label={t(($) => $.common.access.provider.google)}
                   clientId={googleFlow.preparation.clientId}
                   nonce={googleFlow.preparation.begun.nonce}
                   disabled={completeGoogleMutation.isPending}
@@ -555,7 +576,7 @@ export function AccessSecurityPage() {
                   aria-busy={prepareGoogleMutation.isPending}
                   onClick={() => prepareGoogleSecurityFlow('reauthenticate')}
                 >
-                  {t(($) => $.common.access.security.reauthGoogle)}
+                  {t(($) => $.common.access.provider.google)}
                 </button>
               )
             ) : null}
@@ -568,7 +589,7 @@ export function AccessSecurityPage() {
                 aria-busy={appleMutation.isPending}
                 onClick={reauthenticateApple}
               >
-                {t(($) => $.common.access.security.reauthApple)}
+                {t(($) => $.common.access.provider.apple)}
               </button>
             ) : null}
 
