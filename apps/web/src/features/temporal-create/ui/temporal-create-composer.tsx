@@ -229,10 +229,16 @@ export function TemporalCreateComposer({
         return t(($) => $.common.home.timeline.create.validation.recurrenceInterval);
       case 'temporal.create.recurrence.weekdays_required':
         return t(($) => $.common.home.timeline.create.validation.recurrenceWeekdays);
+      case 'temporal.create.recurrence.ordinal_invalid':
+        return t(($) => $.common.home.timeline.create.validation.recurrenceOrdinal);
       case 'temporal.create.recurrence.elapsed_invalid':
         return t(($) => $.common.home.timeline.create.validation.recurrenceElapsed);
       case 'temporal.create.recurrence.quota_invalid':
         return t(($) => $.common.home.timeline.create.validation.recurrenceQuota);
+      case 'temporal.create.recurrence.quota_timezone_invalid':
+        return t(
+          ($) => $.common.home.timeline.create.validation.recurrenceQuotaTimeZone,
+        );
       case 'temporal.create.recurrence.cycle_invalid':
         return t(($) => $.common.home.timeline.create.validation.recurrenceCycle);
       case 'temporal.create.recurrence.until_invalid':
