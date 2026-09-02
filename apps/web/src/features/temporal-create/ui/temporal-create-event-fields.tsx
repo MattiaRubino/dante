@@ -182,7 +182,7 @@ export function TemporalCreateEventFields({
       {depth === 'full' ? (
         <>
           <div className="temporal-create-divider" />
-          <div className="temporal-create-section__heading is-subsection">
+          <div className="temporal-create-section__heading">
             <div>
               <h4>{t(($) => $.common.home.timeline.create.eventDetails.intentTitle)}</h4>
               <p>{t(($) => $.common.home.timeline.create.eventDetails.intentDescription)}</p>
@@ -233,18 +233,20 @@ export function TemporalCreateEventFields({
               )}
             />
           </label>
-          <label className="temporal-create-checkline">
-            <input
-              type="checkbox"
-              checked={event.decisionRequired}
-              onChange={(inputEvent) =>
-                patchEvent({ decisionRequired: inputEvent.currentTarget.checked })
-              }
-            />
-            <span>
-              {t(($) => $.common.home.timeline.create.eventDetails.decisionRequired)}
-            </span>
-          </label>
+          <div className="temporal-create-check-grid">
+            <label>
+              <input
+                type="checkbox"
+                checked={event.decisionRequired}
+                onChange={(inputEvent) =>
+                  patchEvent({ decisionRequired: inputEvent.currentTarget.checked })
+                }
+              />
+              <span>
+                {t(($) => $.common.home.timeline.create.eventDetails.decisionRequired)}
+              </span>
+            </label>
+          </div>
 
           <div className="temporal-create-divider" />
           <div className="temporal-create-grid two">
