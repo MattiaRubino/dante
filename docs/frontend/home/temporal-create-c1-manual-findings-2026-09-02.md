@@ -15,7 +15,7 @@ A newly created Activity appears in the Timeline but does not behave like an acc
 
 **Required correction:** accepted timed Create projections must enter the normal Timeline interaction path or another single shared interaction path. Do not duplicate T1 drag/edit behavior inside the Create portal just to make it look interactive. Preview may remain a separate ephemeral projection.
 
-**Implementation checkpoint:** prepared as native Timeline reducer/ViewModel materialization with identity-based removal on Create Undo. Validation required before disposition can move to resolved.
+**Implementation checkpoint:** native Timeline reducer/ViewModel materialization with identity-based removal on Create Undo is prepared in the current hardening sequence. Validation required before disposition can move to resolved.
 
 ### M2 — Context selector is fixture-derived and cannot author a new context
 
