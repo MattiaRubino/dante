@@ -44,6 +44,7 @@ export type TimelineState = Readonly<{
 export type TimelineAction =
   | Readonly<{ type: 'toggle-filter'; groupId: TimelineGroupId }>
   | Readonly<{ type: 'reset-groups-focus' }>
+  | Readonly<{ type: 'create-group'; group: TimelineGroup }>
   | Readonly<{
       type: 'reorder-group';
       groupId: TimelineGroupId;
@@ -401,6 +402,19 @@ export function timelineReducer(
         filters: new Set<TimelineGroupId>(),
         focusedEventId: null,
       };
+
+    case 'create-group': {
+      const duplicate = state.groups.some(
+        (group) =>
+          group.id === action.group.id ||
+          group.label.localeCompare(action.group.label, undefined, {
+            sensitivity: 'accent',
+          }) === 0,
+      );
+      return duplicate
+        ? state
+        : { ...state, groups: [...state.groups, action.group] };
+    }
 
     case 'reorder-group': {
       const fromIndex = state.groups.findIndex(
