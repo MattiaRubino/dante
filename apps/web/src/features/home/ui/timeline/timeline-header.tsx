@@ -18,7 +18,11 @@ import {
   isSameTimelineDate,
   timelineDateKey,
 } from './model/timeline-temporal';
-import type { TimelineGroup, TimelineGroupId } from './model/timeline-types';
+import type {
+  TimelineEvent,
+  TimelineGroup,
+  TimelineGroupId,
+} from './model/timeline-types';
 import { TimelineCreateBridge } from './timeline-create-bridge';
 
 function displayDate(date: PlainDate): Date {
@@ -91,6 +95,8 @@ type TimelineHeaderProps = Readonly<{
   onToggleFilter: (groupId: TimelineGroupId) => void;
   onReorderGroup: (groupId: TimelineGroupId, targetIndex: number) => void;
   onGroupScroll: (scrollLeft: number) => void;
+  onMaterializeCreatedEvent: (dateKey: string, event: TimelineEvent) => void;
+  onRemoveCreatedEvent: (eventId: TimelineEvent['id']) => void;
 }>;
 
 export function TimelineHeader({
@@ -115,6 +121,8 @@ export function TimelineHeader({
   onToggleFilter,
   onReorderGroup,
   onGroupScroll,
+  onMaterializeCreatedEvent,
+  onRemoveCreatedEvent,
 }: TimelineHeaderProps) {
   const { t } = useTranslation('common');
   const week = buildIsoWeek(viewDate);
@@ -180,6 +188,8 @@ export function TimelineHeader({
           groups={groups}
           filters={filters}
           onRevealDate={onDateSelect}
+          onMaterializeCreatedEvent={onMaterializeCreatedEvent}
+          onRemoveCreatedEvent={onRemoveCreatedEvent}
           onBeforeOpen={() => {
             if (calendarOpen) {
               onCalendarToggle();
