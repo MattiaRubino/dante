@@ -274,6 +274,9 @@ export function TemporalCreateRecurrenceFields({
                     <option value="month">
                       {t(($) => $.common.home.timeline.create.recurrence.periodMonth)}
                     </option>
+                    <option value="year">
+                      {t(($) => $.common.home.timeline.create.recurrence.periodYear)}
+                    </option>
                   </select>
                 </label>
                 <label className="temporal-create-control">
