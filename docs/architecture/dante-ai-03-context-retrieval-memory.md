@@ -6,10 +6,11 @@
 - **Upstream structural baseline:** AI-02.1 v0.5 / STRUCTURALLY ACCEPTED
 - **AI-03A:** CLOSED / STRUCTURALLY ACCEPTED / FINAL REVALIDATION COMPLETE / 13 HARDENINGS / C01..C33
 - **AI-03B:** CLOSED / STRUCTURALLY ACCEPTED / FINAL INDEPENDENT VALIDATION COMPLETE / 5 FINAL HARDENINGS / B01..B35
+- **AI-03C:** CANDIDATE / FIRST MATERIALIZATION KILL-TEST FAIL / MAT-01..MAT-10 INCORPORATED / HARDENED RETEST PASS / FINAL INDEPENDENT VALIDATION PENDING
 - **Implementation:** NOT STARTED by this document
 - **Database evolution:** NONE AUTHORIZED BY THIS DOCUMENT
 - **Provider/model selection:** OPEN
-- **Current macro-phase:** AI-03C — DESTRUCTIVE VALIDATION + MATERIALIZATION BLUEPRINT
+- **Current macro-phase:** AI-03C — FINAL INDEPENDENT DESTRUCTIVE VALIDATION OF MATERIALIZATION BLUEPRINT
 
 ---
 
@@ -66,6 +67,7 @@ AI-03 must be read against the following sources before material architecture de
 - `docs/architecture/dante-ai-02-1-intelligence-reengineering.md`
 - `docs/architecture/dante-ai-03a-full-context-architecture.md`
 - `docs/architecture/dante-ai-03b-retrieval-memory-architecture.md`
+- `docs/architecture/dante-ai-03c-destructive-validation-materialization-blueprint.md`
 - `docs/architecture/system-overview.md`
 
 Repository truth outranks conversation memory.
@@ -127,6 +129,8 @@ summary / embedding / cache / provider state / derived memory
 AI-03A adds accepted Context invariants `C01..C33`.
 
 AI-03B adds accepted Retrieval/Memory invariants `B01..B35`.
+
+AI-03C currently adds candidate physical/materialization hardenings `MAT-01..MAT-10`; they remain pending final independent validation and are not yet an AI-03 closure claim.
 
 No Context/Retrieval/Memory design is accepted if it creates a generic semantic escape hatch around closed Domain/Logical meaning.
 
@@ -319,77 +323,85 @@ No new Domain/Logical/Physical/PostgreSQL owner, vector database, memory framewo
 
 ### AI-03C — Destructive Validation + Materialization Blueprint
 
-**Status:** ACTIVE / CURRENT MACRO-PHASE
+**Status:** CANDIDATE / HARDENED COMPOUND RETEST PASS / FINAL INDEPENDENT VALIDATION PENDING
 
-Goal: attack the completed Context/Retrieval/Memory architecture as one system and only then decide what deserves physical persistence/materialization.
+Durable candidate authority:
 
-Required pressure includes:
+- `docs/architecture/dante-ai-03c-destructive-validation-materialization-blueprint.md`
 
-```text
-15+ years history
-millions of structured rows
-very large document corpora
-same-name / ambiguous referents
-multi-actor private context
-Consent / Visibility / AuthZ revocation during Run
-source correction / retirement / deletion
-backup restore and anti-resurrection
-stale summary / stale embedding
-material-basis drift without source deletion
-provider persistent memory
-provider automatic retention
-cache after authorization change
-prompt/retrieval poisoning
-malicious documents
-cross-query inference
-provider-native retrieval/tool bypass attempts
-derived sensitivity amplification
-relative time/location/DST ambiguity
-query-rewrite semantic expansion
-consumer/provider opaque compaction or truncation
-context-window exhaustion
-provider/model failover
-offline delayed state
-multimodal/voice/files
-long-running Run resume
-retention denial / future-reuse denial
-canonical promotion / duplicate derivative authority
-future much-larger context windows
-future much-stronger models
-```
-
-Materialization blueprint must classify every proposed state as one of:
+AI-03C has now completed the first materialization pass:
 
 ```text
-already canonical in existing Domain/PostgreSQL
-transient runtime state
-recomputable derived state
-bounded durable derived state
-provider-owned optimization state
-retrieval index / representation
-execution/audit evidence
-object bytes / artifact storage
-NOT JUSTIFIED TO STORE
+state-family reconstruction
+→ initial materialization matrix
+→ targeted physical research
+→ first materialization kill-test FAIL
+→ MAT-01..MAT-10
+→ hardened compound retest PASS CANDIDATE
 ```
 
-Only after this classification may AI-03C recommend:
+The candidate adds one explicit physical class that was previously missing from the coarse materialization vocabulary:
 
 ```text
-conversation persistence
-Run/working persistence
-adaptive/derived memory persistence
-operational/experience memory persistence
-summary persistence
-embedding storage
-pgvector use
-FTS indexes
-chunk metadata
-provider-cache metadata
-retention/invalidation jobs
-new PostgreSQL structures
+DURABLE EXECUTION RUNTIME STATE
 ```
 
-Any structural DB change then enters the normal CP6/PostgreSQL same-change discipline. AI-03 itself does not bypass it.
+It remains distinct from canonical PostgreSQL, derived memory, provider state and retrieval indexes. Restate remains the selected Physical target for Class-B durable execution when a real consumer activates that need.
+
+The refined materialization classes are:
+
+```text
+M0 existing canonical Domain/PostgreSQL state
+M1 transient runtime state
+M2 durable execution runtime state
+M3 recomputable derived state
+M4 bounded durable derived state
+M5 provider-owned optimization state
+M6 retrieval representation / index
+M7 execution / audit / reconciliation evidence
+M8 object bytes / artifact representation storage
+M9 NOT JUSTIFIED TO STORE
+```
+
+The candidate currently concludes:
+
+```text
+ContextPlan / InformationNeed             transient / no-store
+RetrievalPlan / RetrievalCandidate        transient / no-store
+ContextFragment / ConsumerContext         transient / no-store
+ordinary Interaction / Run state          transient by default
+Class-B resumable execution               durable runtime / Restate target when activated
+adaptive user inference                   recomputable by default
+confirmed user meaning                    promote to proper Domain owner
+user use/inference suppression            canonical governance durability
+provider memory/thread/cache              replaceable optimization
+OCR/chunks/summaries                      recomputable/source-linked derivatives
+FTS/trigram                               query-specific derived indexes only when justified
+embeddings                                not activated
+HNSW / IVFFlat                            not activated
+retrieval cache                           no durable default
+ContentArtifact raw reusable bytes        object-storage target only when content vertical requires
+ContextManifest / BasisManifest           selective minimal evidence only where justified
+```
+
+Candidate hardenings:
+
+```text
+MAT-01 architecture contract != persistence owner
+MAT-02 Durable Execution Runtime State is a distinct physical class
+MAT-03 durable journal != privacy-free runtime
+MAT-04 user-control durability != derivative durability
+MAT-05 persistent derivative requires valid source basis
+MAT-06 async invalidation != current eligibility
+MAT-07 recomputable derived state is sacrificial in recovery
+MAT-08 runtime/provider/derived recovery cannot outrun canonical recovery
+MAT-09 ANN is optimization, not retrieval prerequisite
+MAT-10 derived representation generations do not mix silently
+```
+
+No PostgreSQL/Alembic/SQLAlchemy change, provider selection, pgvector activation, ANN selection, FTS activation, Restate activation or R2 activation is justified merely by this candidate.
+
+Direct SC/PSV benchmark obligations remain UNEXECUTED.
 
 ---
 
@@ -828,6 +840,18 @@ A restore of old bytes must not make a retired/suppressed derivative retrieval-e
 
 Retention denial also survives future workflows: current processing does not grant a latent right to convert the same data into reusable memory later without a current eligible basis.
 
+AI-03C strengthens the physical interpretation:
+
+```text
+RESTORED DERIVED BYTES
+→ NOT SERVING-ELIGIBLE BY DEFAULT
+→ verify source lifecycle / suppression / generation / basis
+→ discard + rebuild OR explicitly reconcile
+→ only then eligible
+```
+
+Consequential durable runtime/provider state is also fenced from resume until canonical PostgreSQL recovery/reconciliation is serving-ready and current authorization/basis/supersession has been revalidated.
+
 ---
 
 ## 11. Security requirements
@@ -866,6 +890,9 @@ retrieval poisoning resistance
 derived-memory basis-currentness revalidation
 canonical-promotion non-duplication
 trace/eval minimisation
+journal/checkpoint minimisation at durable runtime boundaries
+current source-basis eligibility for durable derivatives
+recovery/serving fence across canonical and durable runtime/provider/derived state
 ```
 
 A later AI-04 security assurance pass attacks the concrete production design; it does not introduce these requirements for the first time.
@@ -908,6 +935,16 @@ accepted semantic need
 → normal reviewed forward migration if needed
 ```
 
+AI-03C candidate discipline additionally requires:
+
+```text
+persist the obligation, not the transient blob
+persistent derivative -> truthful source basis + generation identity
+async derivative cleanup != current eligibility
+exact eligible-universe vector baseline before ANN
+representation upgrades -> explicit generation/build/validate/cutover/retire
+```
+
 No structural DB change is authorized by this document.
 
 ---
@@ -937,7 +974,19 @@ final sandbox/runtime
 MCP/A2A implementation
 ```
 
-Any later selection must be justified by completed AI-03C materialization evidence and later production work.
+It has also not activated:
+
+```text
+pgvector semantic retrieval
+HNSW
+IVFFlat
+new FTS indexes
+new pg_trgm indexes
+Restate durable execution
+R2 content storage
+```
+
+Any later selection/activation must be justified by completed AI-03C materialization evidence plus the applicable direct Physical/production proof.
 
 ---
 
@@ -1028,9 +1077,56 @@ Do not restart generic AI-03B mega-testing merely to search indefinitely for hyp
 
 ---
 
-## 16. AI-03 overall closure gate
+## 16. AI-03C candidate checkpoint
 
-AI-03 itself remains ACTIVE until AI-03C proves:
+Durable candidate proof/rationale:
+
+- `docs/architecture/dante-ai-03c-destructive-validation-materialization-blueprint.md`
+
+Current chronology:
+
+```text
+STATE-FAMILY RECONSTRUCTION             COMPLETE
+INITIAL MATERIALIZATION MATRIX          COMPLETE
+TARGETED PHYSICAL RESEARCH              COMPLETE ENOUGH FOR CANDIDATE
+FIRST MATERIALIZATION KILL-TEST         FAIL / HARDENING REQUIRED
+MAT-01..MAT-10                          INCORPORATED
+HARDENED COMPOUND RETEST                PASS CANDIDATE
+FINAL INDEPENDENT AI-03C VALIDATION     PENDING
+```
+
+Current candidate result:
+
+```text
+further material structural gap         NONE FOUND after hardening
+AI-03A reopen                            NO
+AI-03B reopen                            NO
+Domain reopen                            NO
+Logical reopen                           NO
+Physical target reopen                   NO
+PostgreSQL/Alembic change                NONE JUSTIFIED
+new generic memory table                 NO
+conversation table                       NO / NOT JUSTIFIED
+PostgreSQL Run table                     NO / NOT JUSTIFIED
+Redis                                    NO / NOT JUSTIFIED
+specialist vector DB                     NO / NOT JUSTIFIED
+pgvector activation                      NOT YET
+HNSW / IVFFlat                           NOT YET
+FTS / pg_trgm activation                 NOT YET
+Restate activation                       NOT YET
+R2 activation                            NOT YET
+implementation PASS                      NOT CLAIMED
+```
+
+Direct Physical proof obligations such as SC-017..SC-021, PSV-06..10, PSV-21..28B and PSV-37 remain UNEXECUTED and must not be relabeled PASS by architecture reasoning.
+
+AI-03C remains a candidate until a fresh independent reverse-engineering tries to break MAT-01..MAT-10 and the complete materialization matrix against C01..C33, B01..B35 and current Product/Domain/Logical/Physical/PostgreSQL/Recovery truth.
+
+---
+
+## 17. AI-03 overall closure gate
+
+AI-03 itself remains ACTIVE until final AI-03C validation proves:
 
 ```text
 Context semantics coherent under whole-system pressure
@@ -1039,6 +1135,7 @@ Memory classes/lifecycle coherent under physical persistence choices
 canonical vs derived boundary preserved
 privacy / Authority / Visibility / retention preserved
 source lifecycle / anti-resurrection preserved
+durable runtime privacy/recovery boundary preserved
 performance strategy bounded
 provider state replaceable
 no unjustified persistence
@@ -1050,36 +1147,45 @@ Only then may the project route to AI-04 Productionization Architecture.
 
 ---
 
-## 17. Immediate next action
+## 18. Immediate next action
 
 Current next action:
 
 ```text
-AI-03C — DESTRUCTIVE VALIDATION + MATERIALIZATION BLUEPRINT
+AI-03C — FRESH INDEPENDENT DESTRUCTIVE VALIDATION
+OF THE MATERIALIZATION BLUEPRINT CANDIDATE
 ```
 
-Start from the closed contracts:
+Do **not** rebuild AI-03A or AI-03B from scratch.
+
+Start from:
 
 ```text
 AI-03A C01..C33
 AI-03B B01..B35
+AI-03C MAT-01..MAT-10 candidate
 ```
 
-Then reconstruct the concrete candidate state families implied by the accepted architecture and classify each before proposing storage:
+Then independently attack:
 
 ```text
-already canonical in existing Domain/PostgreSQL
-transient runtime
-recomputable derived
-bounded durable derived
-provider-owned optimization
-retrieval representation/index
-execution/audit evidence
-object bytes/artifact storage
-NOT JUSTIFIED TO STORE
+M0..M9 state classification completeness
+no-store defaults
+Durable Execution Runtime State separation
+Restate journal/checkpoint privacy
+canonical/runtime/provider recovery fencing
+persistent-derivative source basis
+async invalidation vs current eligibility
+derived-state sacrificial recovery
+representation generation/cutover
+exact-before-ANN retrieval strategy
+permission-safe ANN/FTS behavior
+adaptive inference/control durability
+ContentArtifact/object/derivative separation
+canonical promotion non-duplication
 ```
 
-AI-03C must pressure the whole design before choosing tables/indexes/providers. At minimum test:
+Pressure with:
 
 ```text
 large structured history / high cardinality
@@ -1102,6 +1208,8 @@ source retirement while derivatives exist
 future stronger models / larger context windows
 ```
 
-Only after destructive classification may AI-03C recommend actual persistence/index structures, and any structural PostgreSQL change must go through normal CP6/Alembic same-change discipline.
+If that fresh review finds a real gap, harden the smallest affected AI-03C boundary and retest.
 
-Do not infer implementation PASS from AI-03A/AI-03B structural closure.
+If it passes, AI-03C may close structurally and AI-03 overall may route to AI-04. Any actual PostgreSQL/index/provider/runtime implementation remains a separate later gate and must follow normal CP6/Alembic same-change discipline.
+
+Do not infer implementation PASS from architecture closure.
