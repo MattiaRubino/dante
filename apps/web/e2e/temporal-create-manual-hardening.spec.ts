@@ -9,7 +9,7 @@ async function openCreate(page: Page) {
   return dialog;
 }
 
-test('floating Create can move, keeps its position, and Full stays centered with a clear return path', async ({
+test('floating Create can move, uses header +/- for depth, and Full stays centered with a clear return path', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -42,9 +42,11 @@ test('floating Create can move, keeps its position, and Full stays centered with
   expect(moved.x).toBeGreaterThan(initial.x + 80);
   expect(moved.y).toBeGreaterThan(initial.y + 30);
 
-  await dialog
-    .getByRole('button', { name: /Dettagli e pianificazione/ })
-    .click();
+  const expand = dialog.getByRole('button', {
+    name: 'Dettagli e pianificazione',
+  });
+  await expect(expand).toHaveText('+');
+  await expand.click();
   await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'expanded');
 
   const expanded = await dialog.boundingBox();
@@ -54,14 +56,14 @@ test('floating Create can move, keeps its position, and Full stays centered with
   expect(expanded.x).toBeGreaterThan(15);
   expect(expanded.y).toBeGreaterThan(15);
 
-  await dialog.evaluate((element) => element.scrollTo(0, element.scrollHeight));
-  const compact = dialog.getByRole('button', { name: 'Riduci' });
-  await expect(compact).toBeVisible();
-  await compact.click();
+  const collapse = dialog.getByRole('button', { name: 'Nascondi dettagli' });
+  await expect(collapse).toHaveText('−');
+  await expect(dialog.getByRole('button', { name: 'Riduci' })).toHaveCount(0);
+  await collapse.click();
   await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'quick');
 
   await dialog
-    .getByRole('button', { name: /Dettagli e pianificazione/ })
+    .getByRole('button', { name: 'Dettagli e pianificazione' })
     .click();
   await dialog.getByRole('button', { name: 'Editor completo →' }).click();
   await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'full');
@@ -78,4 +80,7 @@ test('floating Create can move, keeps its position, and Full stays centered with
   await expect(backToDetails).toBeVisible();
   await backToDetails.click();
   await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'expanded');
+  await expect(
+    dialog.getByRole('button', { name: 'Nascondi dettagli' }),
+  ).toBeVisible();
 });
