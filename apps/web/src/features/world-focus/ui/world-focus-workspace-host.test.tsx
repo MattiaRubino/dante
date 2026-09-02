@@ -11,6 +11,7 @@ function WorkspaceHarness() {
 
   return (
     <div>
+      <output data-testid="world-id">{workspace.state.worldId}</output>
       <output data-testid="generation">{workspace.state.generation}</output>
       <output data-testid="surface-count">
         {workspace.state.surfaces.length}
@@ -35,7 +36,10 @@ function WorkspaceHarness() {
             depth: 'insight',
             presentation: 'sidecar',
             origin: 'dante',
-            expectedGeneration: workspace.state.generation,
+            expectedWorkspace: {
+              worldId: workspace.state.worldId,
+              generation: workspace.state.generation,
+            },
           })
         }
       >
@@ -58,6 +62,7 @@ describe('WorldFocusWorkspaceHost', () => {
       </WorldFocusWorkspaceHost>,
     );
 
+    expect(screen.getByTestId('world-id').textContent).toBe('music');
     expect(screen.getByTestId('generation').textContent).toBe('0');
     expect(screen.getByTestId('selection').textContent).toBe('none');
 
@@ -71,6 +76,30 @@ describe('WorldFocusWorkspaceHost', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Escape' }));
     expect(screen.getByTestId('surface-count').textContent).toBe('0');
     expect(screen.getByTestId('selection').textContent).toBe('continuity:a');
+  });
+
+  it('resets transient state synchronously when worldId changes even without an external React key', () => {
+    const { rerender } = render(
+      <WorldFocusWorkspaceHost worldId="music">
+        <WorkspaceHarness />
+      </WorldFocusWorkspaceHost>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Select' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Open' }));
+    expect(screen.getByTestId('generation').textContent).toBe('1');
+    expect(screen.getByTestId('surface-count').textContent).toBe('1');
+
+    rerender(
+      <WorldFocusWorkspaceHost worldId="travel">
+        <WorkspaceHarness />
+      </WorldFocusWorkspaceHost>,
+    );
+
+    expect(screen.getByTestId('world-id').textContent).toBe('travel');
+    expect(screen.getByTestId('generation').textContent).toBe('0');
+    expect(screen.getByTestId('selection').textContent).toBe('none');
+    expect(screen.getByTestId('surface-count').textContent).toBe('0');
   });
 
   it('fails fast when workspace hooks escape their owner', () => {

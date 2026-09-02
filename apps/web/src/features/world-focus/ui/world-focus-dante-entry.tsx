@@ -112,7 +112,10 @@ export function WorldFocusDanteInvoke() {
       presentation: 'popover',
       origin: 'user',
       contextReference: null,
-      expectedGeneration: workspace.state.generation,
+      expectedWorkspace: {
+        worldId: workspace.state.worldId,
+        generation: workspace.state.generation,
+      },
     });
   }, [workspace]);
 

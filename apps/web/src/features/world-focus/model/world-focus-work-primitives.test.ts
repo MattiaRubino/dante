@@ -10,6 +10,11 @@ import {
 } from './world-focus-work-primitives';
 
 const ref = (kind: string, key: string) => ({ kind, key });
+const COMPARISON_POLICY = Object.freeze({ maxSubjectReferences: 4 });
+const TRAJECTORY_POLICY = Object.freeze({
+  maxOrderedPointReferences: 8,
+  maxMissingPositionReferences: 8,
+});
 
 describe('World Focus WS6 work primitives', () => {
   it('keeps the finite WS6 catalog exact and AI-independent', () => {
@@ -67,38 +72,66 @@ describe('World Focus WS6 work primitives', () => {
     expect(attention.state).toBe('awaiting-response');
   });
 
-  it('requires Comparison to have at least two distinct bounded subjects', () => {
-    const comparison = createWorldFocusComparisonPrimitive({
-      instanceId: 'comparison:plan-actual',
-      mode: 'planned-actual',
-      subjectReferences: [ref('schedule', 'planned'), ref('actual', 'observed')],
-      basisReference: ref('window', 'week-36'),
-    });
+  it('requires Comparison to have at least two distinct explicitly bounded subjects', () => {
+    const comparison = createWorldFocusComparisonPrimitive(
+      {
+        instanceId: 'comparison:plan-actual',
+        mode: 'planned-actual',
+        subjectReferences: [
+          ref('schedule', 'planned'),
+          ref('actual', 'observed'),
+        ],
+        basisReference: ref('window', 'week-36'),
+      },
+      COMPARISON_POLICY,
+    );
 
     expect(comparison.subjectReferences).toHaveLength(2);
     expect(() =>
-      createWorldFocusComparisonPrimitive({
-        instanceId: 'comparison:duplicate',
-        mode: 'difference',
-        subjectReferences: [ref('source', 'a'), ref('source', 'a')],
-        basisReference: null,
-      }),
+      createWorldFocusComparisonPrimitive(
+        {
+          instanceId: 'comparison:duplicate',
+          mode: 'difference',
+          subjectReferences: [ref('source', 'a'), ref('source', 'a')],
+          basisReference: null,
+        },
+        COMPARISON_POLICY,
+      ),
     ).toThrow(/duplicate references/);
+
+    expect(() =>
+      createWorldFocusComparisonPrimitive(
+        {
+          instanceId: 'comparison:too-wide',
+          mode: 'difference',
+          subjectReferences: [
+            ref('source', 'a'),
+            ref('source', 'b'),
+            ref('source', 'c'),
+          ],
+          basisReference: null,
+        },
+        { maxSubjectReferences: 2 },
+      ),
+    ).toThrow(/exceed configured maximum 2/);
   });
 
-  it('requires Trajectory to preserve order, explicit missingness and aggregation basis', () => {
-    const trajectory = createWorldFocusTrajectoryPrimitive({
-      instanceId: 'trajectory:pace',
-      subjectReference: ref('goal', 'exam'),
-      axis: 'time',
-      orderedPointReferences: [
-        ref('observation', 'week-1'),
-        ref('observation', 'week-3'),
-      ],
-      missingPositionReferences: [ref('interval', 'week-2')],
-      orderingBasisReference: ref('window', 'exam-cycle'),
-      aggregationBasisReference: ref('aggregation', 'weekly-average'),
-    });
+  it('requires Trajectory to preserve order, explicit missingness, aggregation basis and reference bounds', () => {
+    const trajectory = createWorldFocusTrajectoryPrimitive(
+      {
+        instanceId: 'trajectory:pace',
+        subjectReference: ref('goal', 'exam'),
+        axis: 'time',
+        orderedPointReferences: [
+          ref('observation', 'week-1'),
+          ref('observation', 'week-3'),
+        ],
+        missingPositionReferences: [ref('interval', 'week-2')],
+        orderingBasisReference: ref('window', 'exam-cycle'),
+        aggregationBasisReference: ref('aggregation', 'weekly-average'),
+      },
+      TRAJECTORY_POLICY,
+    );
 
     expect(trajectory.orderedPointReferences.map(({ key }) => key)).toEqual([
       'week-1',
@@ -112,23 +145,83 @@ describe('World Focus WS6 work primitives', () => {
       key: 'weekly-average',
     });
     expect(getWorldFocusWorkPrimitiveReferences(trajectory)).toHaveLength(6);
+
+    expect(() =>
+      createWorldFocusTrajectoryPrimitive(
+        {
+          instanceId: 'trajectory:too-dense',
+          subjectReference: ref('metric', 'pace'),
+          axis: 'time',
+          orderedPointReferences: [
+            ref('observation', '1'),
+            ref('observation', '2'),
+            ref('observation', '3'),
+          ],
+          missingPositionReferences: [],
+          orderingBasisReference: null,
+          aggregationBasisReference: null,
+        },
+        {
+          maxOrderedPointReferences: 2,
+          maxMissingPositionReferences: 0,
+        },
+      ),
+    ).toThrow(/exceed configured maximum 2/);
   });
 
   it('does not allow one trajectory reference to be both present and missing', () => {
     expect(() =>
-      createWorldFocusTrajectoryPrimitive({
-        instanceId: 'trajectory:invalid-gap',
-        subjectReference: ref('metric', 'pace'),
-        axis: 'time',
-        orderedPointReferences: [
-          ref('interval', 'week-1'),
-          ref('interval', 'week-2'),
-        ],
-        missingPositionReferences: [ref('interval', 'week-2')],
-        orderingBasisReference: ref('window', 'month'),
-        aggregationBasisReference: null,
-      }),
+      createWorldFocusTrajectoryPrimitive(
+        {
+          instanceId: 'trajectory:invalid-gap',
+          subjectReference: ref('metric', 'pace'),
+          axis: 'time',
+          orderedPointReferences: [
+            ref('interval', 'week-1'),
+            ref('interval', 'week-2'),
+          ],
+          missingPositionReferences: [ref('interval', 'week-2')],
+          orderingBasisReference: ref('window', 'month'),
+          aggregationBasisReference: null,
+        },
+        TRAJECTORY_POLICY,
+      ),
     ).toThrow(/present and missing references must be distinct/);
+  });
+
+  it('rejects invalid reference-bound policies rather than silently becoming unbounded', () => {
+    expect(() =>
+      createWorldFocusComparisonPrimitive(
+        {
+          instanceId: 'comparison:invalid-policy',
+          mode: 'difference',
+          subjectReferences: [ref('source', 'a'), ref('source', 'b')],
+          basisReference: null,
+        },
+        { maxSubjectReferences: 1 },
+      ),
+    ).toThrow(/greater than or equal to 2/);
+
+    expect(() =>
+      createWorldFocusTrajectoryPrimitive(
+        {
+          instanceId: 'trajectory:invalid-policy',
+          subjectReference: ref('metric', 'pace'),
+          axis: 'time',
+          orderedPointReferences: [
+            ref('observation', '1'),
+            ref('observation', '2'),
+          ],
+          missingPositionReferences: [],
+          orderingBasisReference: null,
+          aggregationBasisReference: null,
+        },
+        {
+          maxOrderedPointReferences: Number.POSITIVE_INFINITY,
+          maxMissingPositionReferences: 0,
+        },
+      ),
+    ).toThrow(/must be an integer/);
   });
 
   it('rejects structurally empty primitive identities and references', () => {

@@ -207,6 +207,22 @@ describe('World Focus WS7 substrate oracle', () => {
     expect(outcome.effectDisposition).toBe('compensate-or-reconcile');
   });
 
+  it('preserves compensation/reconciliation after later disclosure, basis or identity invalidation', () => {
+    for (const mutation of [
+      { disclosure: 'revoked' as const },
+      { basis: 'superseded-retracted' as const },
+      { identity: 'retired-merge-split' as const },
+    ]) {
+      const outcome = resolveWorldFocusSubstrateOracle({
+        ...decodeGeneralVector('00000000000'),
+        effect: 'partial-real-compensating',
+        ...mutation,
+      });
+
+      expect(outcome.effectDisposition).toBe('compensate-or-reconcile');
+    }
+  });
+
   it('rejects late DANTE attachment after a World/cursor switch', () => {
     const outcome = resolveWorldFocusSubstrateOracle({
       ...decodeGeneralVector('00000000000'),

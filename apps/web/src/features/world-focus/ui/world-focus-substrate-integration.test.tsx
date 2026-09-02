@@ -110,7 +110,10 @@ describe('World Focus WS7 substrate integration harness', () => {
             depth: 'insight',
             presentation: 'sidecar',
             origin: 'dante',
-            expectedGeneration,
+            expectedWorkspace: {
+              worldId: workspace.worldId,
+              generation: expectedGeneration,
+            },
           },
         });
 

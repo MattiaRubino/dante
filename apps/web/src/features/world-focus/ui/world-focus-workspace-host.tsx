@@ -20,6 +20,7 @@ import {
   type WorldFocusEscapeDisposition,
   type WorldFocusInteractionCursor,
   type WorldFocusSurfaceRequest,
+  type WorldFocusWorkspaceExpectation,
   type WorldFocusWorkspaceIntent,
   type WorldFocusWorkspaceState,
 } from '../model/world-focus-workspace';
@@ -38,7 +39,7 @@ export type WorldFocusWorkspaceApi = Readonly<{
     instanceId: string,
     depth: WorldFocusInteractionDepth,
     presentation: WorldFocusPresentationSurface,
-    expectedGeneration?: number,
+    expectedWorkspace?: WorldFocusWorkspaceExpectation,
   ) => void;
   closeSurface: (instanceId: string) => void;
   requestEscape: () => WorldFocusEscapeDisposition;
@@ -60,12 +61,7 @@ function workspaceReducer(
   return reduceWorldFocusWorkspaceState(state, intent);
 }
 
-/**
- * Owns only transient workspace interaction state for the current mounted
- * World. Durable truth, authorization and DANTE Run lifetime remain outside
- * this frontend host.
- */
-export function WorldFocusWorkspaceHost({
+function WorldFocusWorkspaceHostInstance({
   worldId,
   children,
 }: WorldFocusWorkspaceHostProps) {
@@ -99,10 +95,10 @@ export function WorldFocusWorkspaceHost({
       instanceId: string,
       depth: WorldFocusInteractionDepth,
       presentation: WorldFocusPresentationSurface,
-      expectedGeneration?: number,
+      expectedWorkspace?: WorldFocusWorkspaceExpectation,
     ) => {
       dispatch(
-        expectedGeneration === undefined
+        expectedWorkspace === undefined
           ? {
               type: 'promote-surface',
               instanceId,
@@ -114,7 +110,7 @@ export function WorldFocusWorkspaceHost({
               instanceId,
               depth,
               presentation,
-              expectedGeneration,
+              expectedWorkspace,
             },
       );
     },
@@ -164,6 +160,24 @@ export function WorldFocusWorkspaceHost({
     <WorldFocusWorkspaceContext.Provider value={value}>
       {children}
     </WorldFocusWorkspaceContext.Provider>
+  );
+}
+
+/**
+ * Owns only transient workspace interaction state for the current mounted
+ * World. The keyed inner owner guarantees that changing worldId cannot retain
+ * another World's selection/surface state even when a caller forgets to key
+ * the host itself. Durable truth, authorization and DANTE Run lifetime remain
+ * outside this frontend host.
+ */
+export function WorldFocusWorkspaceHost({
+  worldId,
+  children,
+}: WorldFocusWorkspaceHostProps) {
+  return (
+    <WorldFocusWorkspaceHostInstance key={worldId} worldId={worldId}>
+      {children}
+    </WorldFocusWorkspaceHostInstance>
   );
 }
 

@@ -43,6 +43,15 @@ export const WORLD_FOCUS_TRAJECTORY_AXES = ['time', 'sequence'] as const;
 export type WorldFocusTrajectoryAxis =
   (typeof WORLD_FOCUS_TRAJECTORY_AXES)[number];
 
+export type WorldFocusComparisonReferencePolicy = Readonly<{
+  maxSubjectReferences: number;
+}>;
+
+export type WorldFocusTrajectoryReferencePolicy = Readonly<{
+  maxOrderedPointReferences: number;
+  maxMissingPositionReferences: number;
+}>;
+
 export type WorldFocusContinuityPrimitive = Readonly<{
   instanceId: string;
   kind: 'continuity';
@@ -102,6 +111,17 @@ function assertNonEmptyToken(value: string, label: string): string {
   return token;
 }
 
+function assertReferenceMaximum(
+  value: number,
+  minimum: number,
+  label: string,
+): number {
+  if (!Number.isInteger(value) || value < minimum) {
+    throw new Error(`${label} must be an integer greater than or equal to ${minimum}`);
+  }
+  return value;
+}
+
 function normalizeReference(
   reference: WorldFocusContextReference,
   label: string,
@@ -120,9 +140,18 @@ function normalizeDistinctReferences(
   references: readonly WorldFocusContextReference[],
   label: string,
   minimum: number,
+  maximum: number,
 ): readonly WorldFocusContextReference[] {
+  const boundedMaximum = assertReferenceMaximum(
+    maximum,
+    minimum,
+    `${label} maximum`,
+  );
   if (references.length < minimum) {
     throw new Error(`${label} must contain at least ${minimum} references`);
+  }
+  if (references.length > boundedMaximum) {
+    throw new Error(`${label} exceed configured maximum ${boundedMaximum}`);
   }
 
   const seen = new Set<string>();
@@ -206,6 +235,7 @@ export function createWorldFocusAttentionPrimitive(
 
 export function createWorldFocusComparisonPrimitive(
   input: Omit<WorldFocusComparisonPrimitive, 'kind'>,
+  policy: WorldFocusComparisonReferencePolicy,
 ): WorldFocusComparisonPrimitive {
   if (!WORLD_FOCUS_COMPARISON_MODES.includes(input.mode)) {
     throw new Error(`Unsupported World Focus comparison mode: ${input.mode}`);
@@ -215,6 +245,7 @@ export function createWorldFocusComparisonPrimitive(
     input.subjectReferences,
     'World Focus comparison subject references',
     2,
+    policy.maxSubjectReferences,
   ) as WorldFocusComparisonPrimitive['subjectReferences'];
 
   return Object.freeze({
@@ -234,6 +265,7 @@ export function createWorldFocusComparisonPrimitive(
 
 export function createWorldFocusTrajectoryPrimitive(
   input: Omit<WorldFocusTrajectoryPrimitive, 'kind'>,
+  policy: WorldFocusTrajectoryReferencePolicy,
 ): WorldFocusTrajectoryPrimitive {
   if (!WORLD_FOCUS_TRAJECTORY_AXES.includes(input.axis)) {
     throw new Error(`Unsupported World Focus trajectory axis: ${input.axis}`);
@@ -243,11 +275,13 @@ export function createWorldFocusTrajectoryPrimitive(
     input.orderedPointReferences,
     'World Focus trajectory point references',
     2,
+    policy.maxOrderedPointReferences,
   ) as WorldFocusTrajectoryPrimitive['orderedPointReferences'];
   const missingPositionReferences = normalizeDistinctReferences(
     input.missingPositionReferences,
     'World Focus trajectory missing position references',
     0,
+    policy.maxMissingPositionReferences,
   );
   const occupied = new Set(orderedPointReferences.map(referenceIdentity));
   for (const missingReference of missingPositionReferences) {

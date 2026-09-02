@@ -267,16 +267,19 @@ function resolveEffectDisposition(
     return 'not-applicable';
   }
 
+  // Once a real effect has partially occurred, later revocation, basis change or
+  // identity evolution may constrain disclosure/new action but cannot erase the
+  // obligation to compensate or reconcile the real-world consequence.
+  if (scenario.effect === 'partial-real-compensating') {
+    return 'compensate-or-reconcile';
+  }
+
   if (
     scenario.disclosure !== 'allowed' ||
     scenario.identity !== 'stable' ||
     scenario.basis === 'superseded-retracted'
   ) {
     return 'blocked';
-  }
-
-  if (scenario.effect === 'partial-real-compensating') {
-    return 'compensate-or-reconcile';
   }
 
   return requiresExecutionRevalidation
@@ -437,6 +440,14 @@ export function auditWorldFocusSubstrateOracle(
     outcome.requiresExecutionRevalidation !== mustRevalidateExecution(scenario)
   ) {
     violations.push('consequential execution revalidation decision drifted');
+  }
+  if (
+    scenario.effect === 'partial-real-compensating' &&
+    outcome.effectDisposition !== 'compensate-or-reconcile'
+  ) {
+    violations.push(
+      'partial real effect must retain compensation/reconciliation obligation',
+    );
   }
   if (
     scenario.dante === 'proposal-action-late' &&

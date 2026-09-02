@@ -76,7 +76,7 @@ describe('World Focus workspace orchestration model', () => {
     });
   });
 
-  it('binds a surface to the initiating generation and rejects stale async presentation intents', () => {
+  it('binds async presentation to both World identity and generation', () => {
     const selected = reduceWorldFocusWorkspaceState(
       createWorldFocusWorkspaceState('travel'),
       {
@@ -93,7 +93,10 @@ describe('World Focus workspace orchestration model', () => {
         depth: 'insight',
         presentation: 'sidecar',
         origin: 'dante',
-        expectedGeneration: selected.generation,
+        expectedWorkspace: {
+          worldId: selected.worldId,
+          generation: selected.generation,
+        },
       },
     });
 
@@ -116,7 +119,10 @@ describe('World Focus workspace orchestration model', () => {
         depth: 'insight',
         presentation: 'sidecar',
         origin: 'dante',
-        expectedGeneration: selected.generation,
+        expectedWorkspace: {
+          worldId: selected.worldId,
+          generation: selected.generation,
+        },
       },
     });
 
@@ -124,6 +130,63 @@ describe('World Focus workspace orchestration model', () => {
     expect(staleIntent.surfaces.map((surface) => surface.instanceId)).toEqual([
       'insight:flight-delay',
     ]);
+  });
+
+  it('rejects a same-generation async result routed to a different World', () => {
+    const sourceWorld = createWorldFocusWorkspaceState('music');
+    const targetWorld = createWorldFocusWorkspaceState('travel');
+
+    expect(sourceWorld.generation).toBe(targetWorld.generation);
+
+    const misrouted = reduceWorldFocusWorkspaceState(targetWorld, {
+      type: 'open-surface',
+      surface: {
+        instanceId: 'insight:from-music',
+        kind: 'insight',
+        depth: 'insight',
+        presentation: 'sidecar',
+        origin: 'dante',
+        expectedWorkspace: {
+          worldId: sourceWorld.worldId,
+          generation: sourceWorld.generation,
+        },
+      },
+    });
+
+    expect(misrouted).toBe(targetWorld);
+    expect(misrouted.surfaces).toEqual([]);
+  });
+
+  it('rejects malformed async workspace expectations instead of silently weakening the guard', () => {
+    const state = createWorldFocusWorkspaceState('music');
+
+    expect(() =>
+      reduceWorldFocusWorkspaceState(state, {
+        type: 'open-surface',
+        surface: {
+          instanceId: 'insight:bad-world',
+          kind: 'insight',
+          depth: 'insight',
+          presentation: 'sidecar',
+          origin: 'dante',
+          expectedWorkspace: { worldId: '   ', generation: 0 },
+        },
+      }),
+    ).toThrow(/expected workspace world id must not be empty/);
+
+    expect(() =>
+      reduceWorldFocusWorkspaceState(state, {
+        type: 'open-surface',
+        surface: {
+          instanceId: 'insight:bad-generation',
+          kind: 'insight',
+          depth: 'insight',
+          presentation: 'sidecar',
+          origin: 'dante',
+          expectedWorkspace: { worldId: 'music', generation: -1 },
+        },
+      }),
+    ).toThrow(/expected workspace generation must be a non-negative integer/);
   });
 
   it('opens, replaces, promotes and closes finite presentation surfaces without rebinding existing surface context', () => {

@@ -22,6 +22,11 @@ export type WorldFocusContextReference = Readonly<{
   key: string;
 }>;
 
+export type WorldFocusWorkspaceExpectation = Readonly<{
+  worldId: string;
+  generation: number;
+}>;
+
 export type WorldFocusSurfaceDescriptor<Kind extends string = string> = Readonly<{
   instanceId: string;
   kind: Kind;
@@ -41,7 +46,7 @@ export type WorldFocusSurfaceRequest<Kind extends string = string> = Readonly<{
   origin: WorldFocusSurfaceOrigin;
   contextReference?: WorldFocusContextReference | null;
   dismissible?: boolean;
-  expectedGeneration?: number;
+  expectedWorkspace?: WorldFocusWorkspaceExpectation;
 }>;
 
 export type WorldFocusWorkspaceState<Kind extends string = string> = Readonly<{
@@ -84,7 +89,7 @@ export type WorldFocusWorkspaceIntent<Kind extends string = string> =
       instanceId: string;
       depth: WorldFocusInteractionDepth;
       presentation: WorldFocusPresentationSurface;
-      expectedGeneration?: number;
+      expectedWorkspace?: WorldFocusWorkspaceExpectation;
     }>
   | Readonly<{
       type: 'close-surface';
@@ -105,6 +110,13 @@ function assertNonEmptyToken(value: string, label: string): string {
   return token;
 }
 
+function assertNonNegativeInteger(value: number, label: string): number {
+  if (!Number.isInteger(value) || value < 0) {
+    throw new Error(`${label} must be a non-negative integer`);
+  }
+  return value;
+}
+
 function sameContextReference(
   left: WorldFocusContextReference | null,
   right: WorldFocusContextReference | null,
@@ -112,12 +124,26 @@ function sameContextReference(
   return left?.kind === right?.kind && left?.key === right?.key;
 }
 
-function canApplyGeneration(
+function canApplyWorkspaceExpectation(
   state: WorldFocusWorkspaceState,
-  expectedGeneration: number | undefined,
+  expectedWorkspace: WorldFocusWorkspaceExpectation | undefined,
 ): boolean {
+  if (expectedWorkspace === undefined) {
+    return true;
+  }
+
+  const expectedWorldId = assertNonEmptyToken(
+    expectedWorkspace.worldId,
+    'World Focus expected workspace world id',
+  );
+  const expectedGeneration = assertNonNegativeInteger(
+    expectedWorkspace.generation,
+    'World Focus expected workspace generation',
+  );
+
   return (
-    expectedGeneration === undefined || expectedGeneration === state.generation
+    expectedWorldId === state.worldId &&
+    expectedGeneration === state.generation
   );
 }
 
@@ -258,9 +284,11 @@ export function getWorldFocusEscapeDisposition(
 }
 
 /**
- * Pure workspace transition function. Async callers may attach an
- * expectedGeneration to presentation intents. A stale intent then becomes a
- * deterministic no-op instead of presenting a result against a newer cursor.
+ * Pure workspace transition function. Async callers may attach an atomic
+ * expectedWorkspace identity + generation to presentation intents. A request
+ * from another World, or from an older cursor generation in the same World,
+ * becomes a deterministic no-op instead of presenting against a newer or
+ * different workspace.
  *
  * Modal/full-screen presentations form a blocking tail. Once one is active,
  * weaker presentations cannot be appended above it. Additional blocking
@@ -306,7 +334,12 @@ export function reduceWorldFocusWorkspaceState<Kind extends string = string>(
       });
 
     case 'open-surface': {
-      if (!canApplyGeneration(state, intent.surface.expectedGeneration)) {
+      if (
+        !canApplyWorkspaceExpectation(
+          state,
+          intent.surface.expectedWorkspace,
+        )
+      ) {
         return state;
       }
       if (
@@ -330,7 +363,12 @@ export function reduceWorldFocusWorkspaceState<Kind extends string = string>(
     }
 
     case 'replace-surface': {
-      if (!canApplyGeneration(state, intent.surface.expectedGeneration)) {
+      if (
+        !canApplyWorkspaceExpectation(
+          state,
+          intent.surface.expectedWorkspace,
+        )
+      ) {
         return state;
       }
 
@@ -357,7 +395,7 @@ export function reduceWorldFocusWorkspaceState<Kind extends string = string>(
     }
 
     case 'promote-surface': {
-      if (!canApplyGeneration(state, intent.expectedGeneration)) {
+      if (!canApplyWorkspaceExpectation(state, intent.expectedWorkspace)) {
         return state;
       }
 
