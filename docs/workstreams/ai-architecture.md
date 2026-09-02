@@ -2,7 +2,7 @@
 
 - **Status:** ACTIVE / BRANCH-LOCAL DURABLE WORKSTREAM RECORD
 - **Branch:** `feature/ai-architecture`
-- **Current phase:** AI-05A — WHOLE-SYSTEM BUILD BOUNDARY / OWNERSHIP MAP
+- **Current phase:** AI-05B — CONCRETE IMPLEMENTATION BLUEPRINT
 - **Global current-truth reconciliation:** COMPLETE / QA PASS
 - **AI-02.1:** CLOSED / STRUCTURALLY ACCEPTED
 - **AI-03:** CLOSED / STRUCTURALLY ACCEPTED / C01..C33 / B01..B35 / MAT-01..MAT-15
@@ -12,9 +12,10 @@
 - **AI-04C:** CLOSED / PA-01..PA-61
 - **AI-04 whole-phase:** CLOSED / WP-01..WP-22
 - **PRE-AI05:** CLOSED / STRUCTURALLY ACCEPTED / PRE05-H01..H19
+- **AI-05A:** CLOSED / STRUCTURALLY ACCEPTED / BD-01..BD-41
 - **Current core eval:** DANTE-E01..DANTE-E14
 - **AI-05:** ACTIVE / CURRENT
-- **AI-05A:** CANDIDATE / FIRST PASS FAIL → BD-31..BD-40 / SECOND INDIVIDUAL PASS + COMPOUND FAIL → BD-41 / FRESH RETEST REQUIRED
+- **AI-05B:** ACTIVE / CURRENT NEXT SUB-PHASE / SUBSTANTIVE DESIGN NOT YET MATERIALIZED
 - **Implementation claim:** NONE
 - **Provider/model selection:** OPEN / EVIDENCE-DRIVEN
 - **Merge status:** UNMERGED
@@ -33,17 +34,15 @@ PRE-AI05 CLOSED / H01..H19
 GLOBAL CURRENT-TRUTH RECONCILIATION COMPLETE
 
 AI-05 ACTIVE / CURRENT
-  └ AI-05A WHOLE-SYSTEM BUILD BOUNDARY
-       FIRST DESTRUCTIVE PASS FAIL BOUNDED
-       BD-31..BD-40 HARDENED
-       SECOND T01..T26 INDIVIDUAL PASS
-       COMPOUND/REVERSE FAIL BOUNDED
-       BD-41 EVAL↔PRODUCTION COMPOSITION HARDENING MATERIALIZED
-       FRESH FULL RETEST REQUIRED
+  ├ AI-05A WHOLE-SYSTEM BUILD BOUNDARY
+  │    CLOSED / STRUCTURALLY ACCEPTED / BD-01..BD-41
+  │
+  └ AI-05B CONCRETE IMPLEMENTATION BLUEPRINT
+       CURRENT / NEXT SUB-PHASE
+       substantive blueprint not yet materialized
 
-THEN, ONLY IF PASS
-AI-05B CONCRETE IMPLEMENTATION BLUEPRINT
-→ AI-05 whole-system acceptance/closure
+THEN
+AI-05 whole-system destructive acceptance / closure
 → actual AI implementation workstream(s)
 ```
 
@@ -64,9 +63,12 @@ docs/architecture/dante-ai-04-whole-phase-destructive-acceptance.md
 docs/architecture/dante-ai-pre05-cross-phase-hardening.md
 docs/architecture/dante-ai-05a-whole-system-build-boundary.md
 docs/architecture/dante-ai-05a-eval-production-composition-hardening.md
+docs/architecture/dante-ai-05a-whole-system-build-boundary-acceptance.md
 ```
 
-`ai-production-engineering-state-of-the-art-2026.md` remains current research evidence / NON-DANTE-DECISION.
+Current AI-05A status is owned by the acceptance document. The original candidate and BD-41 supplement remain truthful pre-closure evidence.
+
+`ai-production-engineering-state-of-the-art-2026.md` remains research evidence / NON-DANTE-DECISION.
 Temporary live handoff MUST NOT merge to protected `main`.
 
 ## 3. Retained upstream invariants
@@ -90,105 +92,73 @@ RECIPIENT != SURFACE != CHANNEL
 SOURCE FUTURE ELIGIBILITY != PRIOR DISCLOSURE OCCURRENCE
 ```
 
-## 4. AI-05A observed repository baseline
-
-```text
-apps/backend/src/dante/
-├ bootstrap/
-└ platform/
-
-kernel/                  NOT MATERIALIZED
-modules/                 NOT MATERIALIZED
-provider AI SDK          NONE
-tooling/ai-evals         NONE
-production AI runtime    NONE
-```
-
-AI-05A is an architecture-to-build candidate only.
-
-## 5. AI-05A ownership candidate
+## 4. AI-05A accepted ownership map
 
 ```text
 modules/search
-→ shared permission/disclosure-aware read/search capability
-→ deterministic structured/search path
-→ bounded cross-capability read projection
-→ DOES NOT own searched canonical semantics or mutations
+→ separate Global Search / discovery capability
+→ deterministic/no-model capable
+→ bounded permission/disclosure/current/history/source read projection
+→ no canonical business ownership / no mutation authority
 
 modules/intelligence
-→ DANTE intelligence application/orchestration semantics
-→ consumes Search/public capabilities
-→ provider-neutral Work/Context/routing/verification/publication
+→ DANTE intelligence application/orchestration boundary
+→ Work/Context/route/model-assisted orchestration/verification/publication
+→ consumes Search and owning capability public seams
 
 provider SDK/protocol
 → private outbound adapter behind DANTE-owned ModelAccessPort
 
 resource/commercial authority
-→ owns applicable shared/commercial quota/metering truth
-→ Intelligence consumes admission/reservation/settlement boundary
-
-platform
-→ shared technical mechanics only
+→ owns shared/commercial quota/metering truth when activated
+→ Intelligence consumes admission/reservation/settlement
 
 bootstrap
-→ composition/lifecycle
+→ composition/lifecycle only
+
+platform
+→ genuinely shared technical mechanics only
 
 tooling/ai-evals
-→ eval orchestration outside ordinary request path
-→ MUST qualify the same material production composition or independently qualify material deltas
+→ outside ordinary production request path
+→ qualification uses same material production composition or independently qualifies material deltas
 ```
 
-## 6. First destructive pass findings / BD-31..BD-40
+## 5. AI-05A final hardening / acceptance
+
+Accepted build invariants are `BD-01..BD-41`.
+
+Key late hardenings:
 
 ```text
 BD-31 Global Search != Intelligence orchestration.
 BD-32 Search may own bounded cross-capability read projection, not canonical semantics/mutation.
 BD-33 Deterministic Search independent of model/provider route availability.
-BD-34 Resource admission/reservation/settlement is explicit consumed boundary; Intelligence does not own ledger truth.
+BD-34 Resource admission/reservation/settlement explicit; Intelligence does not own ledger truth.
 BD-35 Behavior-bearing route/Harness/policy config != scattered env variables.
 BD-36 Static-first config still needs immutable revision, approved active selection, coherent invocation snapshot and emergency deny before production.
-BD-37 Zero-persistence first vertical limited to inline/single-turn/private-in-app/read-only envelope.
-BD-38 H19/durable-audit/resume/background needs gate expansion until minimum state exists.
+BD-37 First zero-persistence envelope = inline/single-turn/private-in-app/read-only.
+BD-38 H19/audit/resume/background durability gates expansion until minimum justified state exists.
 BD-39 Application fake != provider adapter conformance != direct eval != production capacity proof.
 BD-40 Chat-like UI / inline stream != generic conversation or Run persistence required.
+BD-41 Qualification evidence must exercise the same material production composition or independently qualify every material delta before promotion.
 ```
 
-## 7. Second-pass bounded finding / BD-41
-
-Second `T01..T26` individual cases passed under BD-31..BD-40, but the compound/reverse qualification test exposed one remaining proof-seam gap.
-
-Binding:
+Final acceptance evidence:
 
 ```text
-BD-41
-QUALIFICATION EVIDENCE MUST EXERCISE THE SAME MATERIAL PRODUCTION
-COMPOSITION THAT WILL BE PROMOTED, OR EVERY MATERIAL DELTA MUST BE
-INDEPENDENTLY QUALIFIED BEFORE PROMOTION.
+T01..T26                                      PASS / 26 OF 26
+Search + Intelligence + provider outage       PASS
+Search hidden-result + Ask synthesis          PASS
+config rollout + invocation + emergency deny  PASS
+quota + retry/failover + settlement            PASS
+inline stream + disconnect / no durable Run   PASS
+cumulative privacy + zero-persistence gate     PASS
+direct eval + production composition/deltas    PASS
+reverse AI-05A→04→PRE05→03→02                 PASS
 ```
 
-Material composition includes, where applicable:
-
-```text
-HarnessProfile
-ProviderBinding
-ProviderAdapter / protocol translation
-feature mode
-structured-output/tool projection
-security/control/data transformations
-retry/fallback behavior material to the route
-```
-
-```text
-EVAL TOOLING OUTSIDE REQUEST PATH
-!= SECOND PROVIDER INTEGRATION STACK
-
-SAME MATERIAL COMPOSITION
-!= SAME PUBLIC HTTP ENTRYPOINT
-```
-
-Qualification evidence must bind to exact material composition identity and explicit delta evidence.
-
-## 8. First vertical candidate
+## 6. First vertical accepted direction
 
 ```text
 GLOBAL SEARCH
@@ -216,7 +186,7 @@ no case requiring H19 durable prior-exposure accounting
 
 No new generic AI table is justified by this envelope.
 
-## 9. Evidence planes remain separate
+## 7. Evidence planes remain separate
 
 ```text
 APPLICATION FAKE
@@ -226,13 +196,39 @@ APPLICATION FAKE
 != PRODUCTION CAPACITY QUALIFICATION
 ```
 
-No layer inherits the proof claims of another.
+Qualification evidence must identify the exact material route composition it supports and any separately qualified material delta.
 
-## 10. Open decisions / non-claims
+## 8. AI-05B exact scope
+
+AI-05B must translate the accepted AI-05A ownership map into concrete build contracts without starting implementation.
+
+It must freeze, as far as architecture evidence permits:
 
 ```text
-AI-05A PASS/CLOSED                     NO
-AI-05B STARTED                         NO
+module public boundaries
+ports + runtime DTO/types
+Search read/query contracts
+ModelAccessPort contract
+provider adapter conformance contract
+route/config artifact schemas
+resource admission/settlement seams
+HTTP + streaming/publication shape for first vertical
+runtime-only vs evidence/persistence ownership
+exact unit/integration/eval/system test layout
+qualification artifact schema + promotion evidence
+feature/activation gates
+implementation dependency graph
+first build gates / commit sequence
+```
+
+Provider/model/SDK selection remains direct-evidence gated. If a concrete selection cannot be made responsibly without API evidence, AI-05B must specify the exact proof gate rather than guess.
+
+## 9. Open decisions / non-claims
+
+```text
+AI-05A PASS/CLOSED                     YES / STRUCTURAL
+AI-05 WHOLE PHASE CLOSED               NO
+AI-05B SUBSTANTIVE BLUEPRINT           NOT YET MATERIALIZED
 modules/search implemented             NO
 modules/intelligence implemented       NO
 provider/model/SDK selected            NO
@@ -249,26 +245,24 @@ Restate/R2/MCP/A2A activation          NO
 Execution Environment                  NO
 ```
 
-## 11. Current exact action
+## 10. Current exact action
 
 ```text
-READ BACK BD-41
-→ restart T01..T26 from zero
-→ rerun compounds:
-   Search + Intelligence + provider outage
-   Search hidden-result + Ask synthesis
-   config rollout + invocation snapshot + emergency deny
-   quota admission + retry/failover + settlement
-   inline stream + disconnect + no durable Run
-   cumulative disclosure + zero-persistence envelope
-   direct eval + exact material production composition / qualified deltas
-→ reverse-check AI-05A → AI-04 → PRE-AI05 → AI-03 → AI-02
-→ if clean, close AI-05A
-→ then AI-05B
+AI-05B
+→ inspect accepted AI-05A ownership + first-vertical envelope
+→ define concrete module public APIs / ports / DTO/runtime types
+→ define Search query/read contracts
+→ define ModelAccessPort + provider adapter conformance contract
+→ define route/config artifact schemas and resource-control seams
+→ decide simplest first-vertical HTTP/streaming shape
+→ classify exact runtime/evidence/persistence state
+→ define qualification artifacts + test topology
+→ produce implementation dependency graph and build gates
+→ destructively test AI-05B before whole AI-05 closure
 ```
 
-No AI-05A closure before a clean fresh retest.
+Do not start provider/backend implementation simply because AI-05A is closed.
 
-## 12. Handoff policy
+## 11. Handoff policy
 
 Temporary live handoff must be deleted before protected-main integration.
