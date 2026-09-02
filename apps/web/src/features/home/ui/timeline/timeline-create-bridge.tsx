@@ -190,6 +190,9 @@ function timelineEventFromProjection(
       endMinute: projection.endMinute,
       title: projection.title,
       groupId: projection.contextId,
+      ...(projection.appearanceTone
+        ? { appearanceTone: projection.appearanceTone }
+        : {}),
       origin: 'create' as const,
       meta,
     }),
@@ -215,6 +218,9 @@ function timelineAllDayFromProjection(
     endDateExclusiveKey: projection.endDateExclusiveKey,
     title: projection.title,
     groupId: projection.contextId,
+    ...(projection.appearanceTone
+      ? { appearanceTone: projection.appearanceTone }
+      : {}),
     origin: 'create' as const,
     meta,
   });
@@ -575,7 +581,7 @@ export function TimelineCreateBridge({
         continue;
       }
       const groupLayout = groupLayouts.get(projection.contextId);
-      const tone = groupLayout?.tone ?? 'personal';
+      const tone = projection.appearanceTone ?? groupLayout?.tone ?? 'personal';
 
       if (projection.allDay) {
         targets.push({
