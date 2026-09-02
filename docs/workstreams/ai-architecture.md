@@ -2,10 +2,13 @@
 
 - **Status:** ACTIVE / BRANCH-LOCAL DURABLE WORKSTREAM RECORD
 - **Branch:** `feature/ai-architecture`
-- **Current phase:** AI-03 — Context / Retrieval / Memory
-- **AI-03A:** CLOSED / STRUCTURALLY ACCEPTED
-- **Current macro-phase:** AI-03B — Retrieval + Memory Architecture
+- **Current phase:** AI-04 — Productionization Architecture
+- **AI-03 overall:** CLOSED / STRUCTURALLY ACCEPTED
+- **AI-03A:** CLOSED / C01..C33
+- **AI-03B:** CLOSED / B01..B35
+- **AI-03C:** CLOSED / MAT-01..MAT-15
 - **Implementation claim:** NONE
+- **Provider/model selection:** OPEN / EVIDENCE-DRIVEN
 - **Merge status:** UNMERGED
 
 This document is the durable branch-local continuation record for the DANTE AI architecture workstream. It describes current branch scope, accepted architecture checkpoints, what must not be casually reopened, the current roadmap and the exact next design boundary.
@@ -53,11 +56,16 @@ current AI architecture sources relevant to the phase
 current branch/ref and relation to protected main
 ```
 
-For AI-03 specifically, also read:
+For AI-04, accepted upstream AI authority includes:
 
 ```text
+docs/architecture/dante-ai-foundation.md
+docs/architecture/ai-production-engineering-state-of-the-art-2026.md
+docs/architecture/dante-ai-02-1-intelligence-reengineering.md
 docs/architecture/dante-ai-03-context-retrieval-memory.md
 docs/architecture/dante-ai-03a-full-context-architecture.md
+docs/architecture/dante-ai-03b-retrieval-memory-architecture.md
+docs/architecture/dante-ai-03c-destructive-validation-materialization-blueprint.md
 ```
 
 Repository truth beats conversation memory.
@@ -124,65 +132,43 @@ COMPLETE / STRUCTURALLY ACCEPTED
 AI-02.1 v0.5
 
 AI-03 — CONTEXT / RETRIEVAL / MEMORY
-ACTIVE
+CLOSED / STRUCTURALLY ACCEPTED
   AI-03A Full Context Architecture
-           CLOSED / STRUCTURALLY ACCEPTED
+           CLOSED / C01..C33
   AI-03B Retrieval + Memory Architecture
-           ACTIVE / CURRENT
+           CLOSED / B01..B35
   AI-03C Destructive Validation + Materialization Blueprint
-           FUTURE
+           CLOSED / MAT-01..MAT-15
 
 AI-04 — PRODUCTIONIZATION ARCHITECTURE
-FUTURE
-  eval/model/provider/economics
+ACTIVE / CURRENT
+  representative eval workloads + quality floors
+  model/provider/economics + routing/fallback
   concrete runtime/capabilities/external intelligence
   security/privacy/persistence/control-plane/operations
 
 AI-05 — WHOLE-SYSTEM ACCEPTANCE + IMPLEMENTATION BLUEPRINT
-FUTURE
+FUTURE / FINAL ARCHITECTURE-TO-BUILD BOUNDARY
+
+THEN
+ACTUAL AI IMPLEMENTATION WORKSTREAM(S)
 ```
 
 Security, privacy, simulations and eval thinking remain cross-cutting requirements throughout the workstream; later dedicated assurance/acceptance passes validate concrete decisions rather than introducing those concerns for the first time.
 
 ---
 
-## 5. AI-00 — accepted semantic/product foundation
+## 5. AI-00 / AI-01 accepted foundation
 
-Durable source:
+Durable AI-00 source:
 
 - `docs/architecture/dante-ai-foundation.md`
 
-Key inherited constraints:
+Completed AI-01 production-engineering evidence:
 
-```text
-DANTE != model/provider/chat transcript
-PostgreSQL remains canonical authority
-AI output begins noncanonical unless governed application semantics say otherwise
-AI inference != confirmed fact
-Authority != AuthZ
-Visibility != Authority
-processing != disclosure != mutation authority
-provider state != canonical state
-unknown/unresolved are legitimate
-no universal AI action/fact/memory tables
-retention/redaction applies to derivatives
-multi-actor cannot collapse to user_id
-```
-
-AI-00's original sequencing toward AI-01 is historical, not current work routing.
-
----
-
-## 6. AI-01 — completed research/product-form evidence
-
-This phase label groups the completed product-form and production-engineering research used by later architecture work.
-
-Durable evidence includes:
-
-- DANTE interaction/product-form research;
 - `docs/architecture/ai-production-engineering-state-of-the-art-2026.md`.
 
-Important direction retained:
+Important retained direction:
 
 ```text
 ONE DANTE / MANY SURFACES / ONE SEMANTIC REALITY
@@ -203,7 +189,7 @@ Research technologies remain challengers/evidence unless explicitly selected lat
 
 ---
 
-## 7. AI-02 — structurally accepted runtime architecture
+## 6. AI-02 — structurally accepted runtime architecture
 
 Durable source:
 
@@ -264,39 +250,22 @@ CACHE HIT != CURRENT DISCLOSURE AUTHORIZATION
 
 AI-02 is architecture acceptance only. It is not backend/runtime/provider implementation PASS.
 
-Do not reopen AI-02 broadly merely because AI-03 reveals a persistence or retrieval implementation preference. Reopen only the smallest affected boundary if a real contradiction appears.
+Do not reopen AI-02 broadly merely because AI-04 later selects a concrete provider/runtime technique. Reopen only the smallest affected boundary if direct evidence reveals a real contradiction.
 
 ---
 
-## 8. AI-03 — current work
+## 7. AI-03 — CLOSED Context / Retrieval / Memory architecture
 
-Durable phase charter:
+Durable authority:
 
 - `docs/architecture/dante-ai-03-context-retrieval-memory.md`
-
-Accepted Context authority:
-
 - `docs/architecture/dante-ai-03a-full-context-architecture.md`
-
-AI-03 owns detailed Context / Retrieval / Memory architecture and eventual materialization recommendations.
+- `docs/architecture/dante-ai-03b-retrieval-memory-architecture.md`
+- `docs/architecture/dante-ai-03c-destructive-validation-materialization-blueprint.md`
 
 ### AI-03A — Full Context Architecture
 
-**CLOSED / STRUCTURALLY ACCEPTED.**
-
-The initial candidate failed the dedicated AI-03A mega-test and was hardened through nine material corrections:
-
-```text
-GAP-01 Reality Scope / Scenario binding
-GAP-02 Interaction Session continuity != provider-context continuity
-GAP-03 model-discovered InformationNeed cannot widen WorkContract/policy scope
-GAP-04 reference-resolution requirement per InformationNeed
-GAP-05 explicit negative source/use constraints
-GAP-06 child/delegated context is separately minimized
-GAP-07 user-originated content != automatic instruction authority
-GAP-08 ContextReadiness is non-monotonic
-GAP-09 minimum necessary context remains relative to legitimate broad objective
-```
+**CLOSED / C01..C33.**
 
 Accepted Context contracts:
 
@@ -308,148 +277,241 @@ ContextFragment
 ContextReadiness
 ConsumerContext
 ContextManifest
++ inherited BasisManifest
 ```
 
-plus inherited `BasisManifest`.
-
-Accepted AI-03A invariants are `C01..C29` in the durable AI-03A specification.
-
-Key boundaries:
-
-```text
-Context != canonical reality
-Context != Retrieval != Memory
-ConsumerContext != ContextManifest
-ContextManifest != BasisManifest
-Exposure != material dependency
-Source Standing != Domain Authority
-DATA != INSTRUCTION
-Interaction Session continuity != provider-context continuity
-WorkContract propagation != parent-context inheritance
-Scenario A != Scenario B != canonical current
-model-discovered need may refine != may widen scope
-cache hit != current eligibility
-```
-
-Closure result:
-
-```text
-HARDENED CANDIDATE         STRUCTURAL PASS
-Domain reopen              NO
-Logical reopen             NO
-Physical reopen            NO
-PostgreSQL/Alembic change  NO
-implementation claim       NONE
-```
-
-Do not run more AI-03A mega-test cycles unless downstream evidence reveals a real contradiction.
+Final Context invariants include Reality Scope, bounded model-discovered needs, per-need reference resolution, source/use exclusions, child/delegated minimisation, instruction provenance, non-monotonic readiness, exposure/currentness separation, multimodal derivative discipline and provider-state compartmentation.
 
 ### AI-03B — Retrieval + Memory Architecture
 
-**ACTIVE / CURRENT EXACT FOCUS.**
+**CLOSED / B01..B35.**
 
-Must design in one deep architecture pass, not a long sequence of tiny sub-phases:
+Accepted retrieval/memory posture includes:
 
 ```text
-RETRIEVAL
-Semantic Query / Projection Gateway consumption
-current-state queries
-material-history queries
-relation traversal
-metadata filtering
-PostgreSQL FTS
-pg_trgm / fuzzy retrieval
-semantic/vector retrieval where justified
-hybrid retrieval
-reranking
-source reread
-freshness/currentness validation
-coverage-aware retrieval
-permission-aware discovery/retrieval
-multi-stage / iterative / JIT retrieval
-document hierarchy / chunking
-large-corpus behavior
-long-context vs indexed retrieval
-retrieval evaluation
+RetrievalPlan / RetrievalCandidate
+coverage-aware RetrievalGuarantee
+EXACT / BOUNDED_COMPLETE / BEST_EFFORT / APPROXIMATE / SAMPLED
+APPROXIMATE != COMPLETE
+permission-safe Retrieval Eligibility Envelope
+rank/similarity/rerank != Source Standing
+source reread / current-state validation
+query rewrite/expansion integrity
+document/representation lifecycle
 
-MEMORY
-canonical application memory — already Domain/PostgreSQL
-Interaction Session continuity / memory
-Run / working memory
-compaction/checkpoint state
-derived/adaptive memory candidates
-candidate hypotheses
-provider thread / provider memory / prompt cache
-retrieval representations / embeddings / indexes
-execution evidence — separate from user memory
-
-LIFECYCLE
-admission
-purpose/scope
-promotion
-confirmation/correction
-contradiction
-supersession
-decay
-expiry
-retirement
-redaction
-deletion
-forgetting
-anti-resurrection
-provider/cache/index invalidation
+canonical application memory remains Domain/PostgreSQL
+Interaction / Run / adaptive / operational / provider memory separated
+Memory survival defaults to NO
+Memory exists != memory may be recalled
+retention/future-reuse eligibility distinct from current processing
+user-specific durable reusable memory inspectable/controllable
+correction / forgetting / source-use-inference suppression separated
+canonical promotion cannot leave duplicate noncanonical authority
+provider/cache/index state replaceable and source-lifecycle bound
 ```
-
-AI-03B must consume, not weaken, every AI-03A Context contract.
-
-Primary rule:
-
-> **Memory survival must be earned. Canonical application memory already exists in Domain/PostgreSQL and is not recreated as generic AI memory.**
 
 ### AI-03C — Destructive Validation + Materialization Blueprint
 
-After AI-03B.
+**CLOSED / MAT-01..MAT-15.**
 
-Must attack scale, privacy, stale/corrected/deleted sources, provider memory, caches, embeddings, long history, huge documents, multi-actor, offline, prompt/retrieval poisoning and future-model/context-window pressure.
-
-Only then classify what is:
+Accepted materialization posture includes:
 
 ```text
-canonical already
-transient
-recomputable
-durable derived
-provider optimization
-retrieval representation
-execution/audit evidence
-object bytes
-not justified to store
+ARCHITECTURE CONTRACT != PERSISTENCE OWNER
+DEFAULT NONCANONICAL PERSISTENCE = NO
+semantic authority != functional role != survival disposition != physical owner
+Durable Execution Runtime State != PostgreSQL canonical state
+Class-A durable technical coordination != Class-B durable execution
+DURABLE JOURNAL != PRIVACY-FREE RUNTIME
+persistent derivative requires truthful/scalable source basis
+ASYNC INVALIDATION != CURRENT ELIGIBILITY
+recomputable derived state is sacrificial during recovery
+runtime/provider/derived recovery cannot outrun canonical readiness
+ANN is optimization, not prerequisite
+representation generations do not mix silently
+serving generation requires build/catch-up/readiness/atomic cutover
+semantic obligation != execution/audit evidence
 ```
 
-Only after this may new PostgreSQL structures or retrieval indexes be proposed.
+AI-03 closure requires:
+
+```text
+Domain reopen                       NO
+Logical reopen                      NO
+Physical target reopen              NO
+PostgreSQL Constitution reopen      NO
+PostgreSQL/Alembic change           NO
+new generic memory/search/Run table NO
+pgvector/ANN activation             NO
+FTS/trigram activation              NO
+Restate/R2 activation               NO
+provider/model selection            NO
+implementation PASS                 NOT CLAIMED
+```
+
+SC-017..SC-021 and applicable PSV direct proofs remain unexecuted until real activated consumers make them applicable.
+
+Do not rerun generic AI-03 mega-tests without concrete contradictory downstream evidence.
 
 ---
 
-## 9. Database/materialization rule for AI-03
+## 8. AI-04 — CURRENT Productionization Architecture
 
-Current DB truth must be treated as fixed input until a genuine new requirement is justified.
+AI-04 converts the accepted responsibility architecture into concrete production choices without jumping directly into production implementation.
 
-If AI-03C eventually requires structural DB evolution, the same reviewed change must keep aligned, as applicable:
+It proceeds in one coherent phase with an eval-first front end.
+
+### 8.1 Workload / eval / quality floor first
+
+Before selecting concrete providers/models, define representative DANTE workload families and evaluation criteria covering at minimum:
 
 ```text
-Alembic forward migration
-SQLAlchemy metadata/mappings
-Database Dictionary
-human-readable DB reference
-generated artifacts/diagrams where governed
-direct tests
-recovery/operational assertions affected by the change
-current project/workstream docs
+deterministic/no-model fast paths
+structured extraction/understanding
+DANTE-native query + reasoning
+planning/replanning/scenario work
+long-context/document work
+multimodal work
+tool/capability use
+consequential effect preparation
+reference/target ambiguity
+multi-actor/privacy-sensitive work
+currentness/revocation/supersession
+provider/tool failure and degraded behavior
+background/durable work
+open-world research
+code/browser/computer-use where product scope requires it
 ```
 
-Applied migrations are immutable.
+Quality must include more than answer preference:
 
-No table is created simply because an architecture noun exists.
+```text
+semantic correctness
+structured-output reliability
+tool-call/capability reliability
+instruction following
+coverage/absence handling
+reference-resolution behavior
+context/long-context behavior
+privacy/provider eligibility
+failure/retry/fallback behavior
+latency
+cost/token economics
+observability/evaluation feasibility
+```
+
+A benchmark/eval harness may be implemented during AI-04 when needed for direct evidence. Such proof code is not the production AI backend.
+
+### 8.2 Provider/model replaceability — binding now
+
+Concrete provider/model selection remains OPEN, but the replaceability seam is accepted:
+
+```text
+MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT
+DANTE FEATURE/BUSINESS CODE != CONCRETE PROVIDER SDK
+PROVIDER REPLACEABLE != PROVIDERS IDENTICAL
+PROVIDER REPLACEABLE != LOWEST-COMMON-DENOMINATOR PROVIDER USAGE
+```
+
+Expected production boundary:
+
+```text
+DANTE work/capability need
+→ ModelTarget
+→ HarnessProfile
+→ ProviderBinding
+→ Provider Adapter
+→ concrete provider / model / deployment
+```
+
+Responsibilities:
+
+```text
+ModelTarget
+→ capability/quality class DANTE needs
+
+HarnessProfile
+→ model/provider-specific controllable behavior
+  without leaking it into DANTE semantic contracts
+
+ProviderBinding
+→ concrete endpoint/provider/model/deployment/auth/config binding
+
+ProviderAdapter
+→ SDK/protocol-specific request, streaming, tool, structured-output,
+  usage/error/receipt translation
+```
+
+This must support a later direct-provider → Azure-hosted deployment or different-provider adapter without rewriting DANTE Domain, feature, WorkContract, Context, Retrieval, Memory or Effect semantics.
+
+It does **not** require multiple providers on day one. If one provider wins the V1 eval/cost/operational tradeoff, DANTE may deliberately start with one primary provider behind this boundary.
+
+Fallback is not blind replay. An alternate provider must be currently eligible for the WorkContract/data/purpose and may require a newly built ConsumerContext/HarnessProfile.
+
+### 8.3 Concrete runtime / capability work
+
+After workload requirements are defined, AI-04 resolves concrete production behavior for:
+
+```text
+model invocation / streaming / cancellation
+structured outputs
+tool/capability execution
+provider retries / errors / rate limits
+routing and failover
+background work
+Class-A vs Class-B execution trigger
+MCP/A2A/API edge boundaries
+browser/computer-use/code execution
+Execution Environment technology/credentials/network/filesystem/resource limits
+provider-native files/cache/thread usage
+artifact flows
+```
+
+Technology activation remains consumer/benchmark driven.
+
+### 8.4 Security / privacy / control plane / operations
+
+AI-04 must concretize:
+
+```text
+provider/data eligibility
+credential/workload identity boundary
+secret brokerage
+privacy/retention/provider data handling
+observability vs audit vs eval data
+cost/rate/resource budgets
+model/provider configuration/versioning
+feature flags / routing policy
+failure/degraded modes
+incident/reconciliation posture
+release/canary/rollback behavior
+runtime/control-plane ownership
+```
+
+Provider/model choice is not accepted until these production dimensions are considered along with raw model quality.
+
+---
+
+## 9. AI-05 — final architecture-to-build boundary
+
+AI-05 remains future until AI-04 closes.
+
+It must run whole-system acceptance over the concrete productionized design and produce the exact implementation blueprint, including as applicable:
+
+```text
+module / port / adapter boundaries
+physical schemas
+migration sequence
+backend/frontend contracts
+provider adapters
+workers
+feature flags
+eval gates
+rollout strategy
+first implementation vertical
+```
+
+After AI-05 closure, actual AI implementation proceeds through explicit implementation workstream(s)/gates. Architecture documentation must not expand indefinitely instead of building.
 
 ---
 
@@ -458,22 +520,19 @@ No table is created simply because an architecture noun exists.
 Do not claim these are decided before evidence:
 
 ```text
+OpenAI / Azure OpenAI / Anthropic / Gemini / other concrete provider set
+specific model/deployment mapping
+routing/fallback policy
+embedding model/dimensions
+pgvector/ANN activation
+FTS index additions
 conversation persistence physical form
 Run/working persistence physical form
-embedding model
-dimensions
-pgvector activation
-FTS index additions
-chunk schema
-summary persistence
-adaptive-memory persistence
-provider memory/thread use
-prompt-cache implementation
-OpenAI/Anthropic/Gemini/Qwen selection
+summary/adaptive-memory persistence where any survives
+provider memory/thread/cache implementation
 local model activation
-model router/gateway
 runtime SDK
-concrete sandbox technology
+concrete sandbox / Execution Environment technology
 Restate activation for AI work
 MCP/A2A exact implementation
 production AI server/GPU topology
@@ -537,20 +596,40 @@ Before branch integration, its meaningful payload must be classified and propaga
 ## 13. Current next action
 
 ```text
-AI-03B — RETRIEVAL + MEMORY ARCHITECTURE
+AI-04 — PRODUCTIONIZATION ARCHITECTURE
+
+FIRST BOUNDARY
+REPRESENTATIVE DANTE EVAL WORKLOAD + QUALITY FLOORS
 ```
 
-The next design pass must begin by reading and accepting AI-03A as fixed upstream Context authority, then study/design Retrieval + Memory deeply enough to determine:
+Do not choose a provider/model first and then design evaluations around it.
+
+Required sequence:
 
 ```text
-how each ContextStrategy is actually satisfied
-how retrieval preserves coverage/currentness/policy/Reality Scope
-how documents and large corpora are represented without source laundering
-what Interaction/working/derived/provider/retrieval memory actually means
-what earns persistence vs remains transient/recomputable
-how correction/deletion/retirement propagates
-how memory poisoning and anti-resurrection are prevented
-how retrieval/memory quality will be evaluated
+accepted DANTE obligations + AI-02/AI-03 contracts
+→ representative workload taxonomy
+→ success/failure/quality criteria
+→ current provider/model capability research
+→ direct eval/benchmark where decision-relevant
+→ provider/model/economics/routing/fallback candidate
+→ concrete runtime/capability architecture
+→ security/privacy/control-plane/operations architecture
+→ destructive productionization review
+→ AI-04 closure
+→ AI-05 whole-system acceptance + exact implementation blueprint
+→ actual implementation workstream(s)
 ```
 
-Do targeted modern retrieval/memory research where it can challenge the design. Do not preselect pgvector/indexes/chunk tables/memory frameworks/provider-native memory before the semantic lifecycle is coherent.
+Provider-replaceability requirement remains binding throughout:
+
+```text
+DANTE need
+→ ModelTarget
+→ HarnessProfile
+→ ProviderBinding
+→ Provider Adapter
+→ provider/model/deployment
+```
+
+Do not preselect provider SDKs, model IDs, retrieval indexes, Restate/R2 activation or new persistence before the applicable workload/eval/production evidence exists.
