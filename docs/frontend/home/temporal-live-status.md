@@ -1,13 +1,13 @@
 # DANTE — Temporal Workstream Live Status
 
-**Status:** C1 AUTOMATED PASS — PENDING USER MANUAL ACCEPTANCE  
+**Status:** C1 IMPLEMENTATION FULL GREEN — USER MANUAL ACCEPTANCE PENDING  
 **Date:** 2026-09-02  
 **Repository:** `MattiaRubino/dante`  
 **Branch:** `feature/home-timeline`  
 **Worktree:** `/home/mattia/projects/dante-timeline`  
 **Integration target:** `feature/home-react`  
-**Final C1 implementation candidate:** `81808814abb4e4998c7bde5b0c6cb8f5f903aa62`  
-**Frontend CI:** run `33613239926` / #536 — FULL PASS
+**Final C1 implementation candidate:** `f092a3db2fbac28421b73e0629f7b4b83a1b0aec`  
+**Frontend CI:** run `33631013598` / #621 — FULL PASS
 
 ## Live authority
 
@@ -25,7 +25,7 @@ Read next:
 8. `timeline-t1-frozen-contract.md`;
 9. `temporal-experience-architecture.md`.
 
-The C1 scope amendment wins over older Q0/C1 scope where they conflict. This live status and the handoff win for the current checkpoint/gate state.
+The C1 scope amendment wins over older Q0/C1 scope where they conflict. This live status and the handoff win for current checkpoint/gate state.
 
 ## Stable closed foundations
 
@@ -42,35 +42,50 @@ Do not casually reopen:
 - `ViewModel != frontend application model != DTO != DB row`;
 - no fake backend/provider/AI/voice success.
 
-## C1 product shape
+## C1 product contract — manual only
 
-C1 is one Create capability with progressive surfaces:
+C1 is the highest-depth useful **manual authoring** system for Timeline Create before backend integration.
 
 ```text
-Timeline + / contextual gestures / future semantic inputs
-                         ↓
-                 SHARED CREATE DRAFT
-                         ↓
-      Quick Create ↔ Expanded Create ↔ Full Create
-                         ↓
-             validation + candidate preview
-                         ↓
-                    user commit
-                         ↓
-                  F0 command port
-                         ↓
-          deterministic local adapter now
-          authoritative backend adapter later
+Timeline +
+Timeline double-click
+Timeline Shift-drag/range
+        ↓
+manual structured prefill
+        ↓
+SHARED CREATE DRAFT
+        ↓
+Quick ↔ Expanded ↔ Full
+        ↓
+normalize → validate → candidate preview
+        ↓
+explicit user commit
+        ↓
+F0 command/application boundary
+        ↓
+deterministic local adapter now
+        ↓
+real backend adapter later
 ```
+
+Permanent clarification:
+
+- `+` is not a chat;
+- `+` is not an AI command bar;
+- `+` does not parse natural language;
+- `+` does not own voice input;
+- `TemporalCreateFieldSeed` is a deterministic manual-prefill mechanism, not an AI/NL/voice contract;
+- DANTE/AI remains a separate future vertical/surface;
+- a future DANTE vertical may reuse compatible downstream application/domain/backend commands only if its own contract justifies that reuse.
 
 ## Current implemented semantics
 
 ### Shared capability
 
-- one immutable/normalized draft model across Quick/Expanded/Full;
+- one normalized draft model across Quick/Expanded/Full;
 - title-first Quick Create;
-- contextual Timeline defaults from `+`, double-click and Shift-drag range;
-- structured source-neutral seed for future global Create / keyboard / import / governed DANTE interpretation;
+- contextual manual defaults from Timeline `+`, double-click and Shift-drag range;
+- deterministic manual prefill without UI scripting;
 - candidate preview separate from accepted projection;
 - deterministic validation and invalid-control focus;
 - operation lifecycle, rich metadata, reveal/focus and Undo;
@@ -94,7 +109,7 @@ Supported creation-time authoring:
 - fallback policy;
 - confirmation/outcome/review policy;
 - reminder policy;
-- context and notes.
+- Context and notes.
 
 **Activity has no recurrence editor.** Persistent repetition belongs to Routine. C1 presents an explicit Routine handoff instead of reintroducing `Activity.repeat`.
 
@@ -117,7 +132,7 @@ Supported creation-time authoring:
 - confirmation/reminder policy;
 - all four CP6 recurrence families.
 
-Event recurrence depth now includes:
+Event recurrence depth includes:
 
 - calendar daily/weekly/monthly/monthly-ordinal/yearly;
 - weekly weekday sets;
@@ -132,6 +147,21 @@ Event recurrence depth now includes:
 - open/until/count termination.
 
 Create stores recurrence **specification only**. It does not fabricate recurrence MaterialState, evaluator checkpoints or Occurrence generation.
+
+### Context and appearance
+
+Context and appearance are intentionally distinct:
+
+```text
+Context/group membership
+→ organization + grouping + filters + inherited default tone
+
+optional appearance override
+→ presentation only
+→ never changes Context/group membership or filtering
+```
+
+Manual Create defaults to inherited Context color. The user may choose a stable presentation color override (`Viola`, `Ciano`, `Verde`, `Ambra`, `Rosa`, `Rosso`). Color labels are no longer borrowed from Context names, preventing a false `color == category` equivalence.
 
 ### External owning verticals
 
@@ -162,15 +192,16 @@ Critical Create mapping:
 - M4 `20260825_04`: recurrence family exists for **Routine and Event only**;
 - M4 family codes: `calendar_wall_clock`, `elapsed_interval`, `quota_per_period`, `cyclic_positional`;
 - M6 `20260826_06`: backend owns recurrence-generated vs explicit-extra Occurrence generation and exact governing recurrence-state binding;
-- M7/M8 retain runtime ACL/final hardening boundaries.
+- M7 `20260826_07`: runtime ACL activation;
+- `20260826_08`: final forward-only CP6 QA hardening, not a semantic M8 stage.
 
-## Final automated evidence
+## Final implementation evidence
 
 Implementation candidate:
 
-`81808814abb4e4998c7bde5b0c6cb8f5f903aa62`
+`f092a3db2fbac28421b73e0629f7b4b83a1b0aec`
 
-Frontend CI `33613239926` / #536:
+Frontend CI `33631013598` / #621:
 
 - Quality: **PASS**;
 - Mobile Bundle: **PASS**;
@@ -183,32 +214,31 @@ Quality details:
 - frontend contract drift PASS;
 - format PASS;
 - lint PASS;
-- typecheck 5/5 PASS;
-- architecture: **199 modules / 477 dependencies / 0 violations**;
+- typecheck **5/5** PASS;
+- architecture: **214 modules / 522 dependencies / 0 violations**;
 - generated-source drift PASS;
-- web unit suite: **28 files / 168 tests PASS**, plus package suites;
+- web unit suite: **34 files / 183 tests PASS**, plus package suites;
 - production build PASS;
 - diff check PASS;
 - repository mutation check PASS.
 
-Production Home route at this implementation candidate:
+Production Home route:
 
 ```text
-252.22 kB raw
-86.38 kB gzip
+268.40 kB raw
+90.13 kB gzip
 ```
 
-The advanced editor remains synchronous. There is no evidence that a lazy boundary is worth the extra loading/error/focus/draft complexity at the measured size.
+No lazy split is introduced merely to recover gzip at the cost of asynchronous draft/focus/error complexity. Revisit only from measured route-growth evidence.
 
 ## Current gate
-
-Engineering, semantic alignment, traceability and automated validation are complete for the implementation candidate.
 
 C1 is still:
 
 ```text
-AUTOMATED PASS
-MANUAL ACCEPTANCE PENDING
+IMPLEMENTATION FULL GREEN
+DOCUMENTATION RECONCILIATION REQUIRED TO REMAIN CI-GREEN
+USER MANUAL ACCEPTANCE PENDING
 NOT FROZEN / CLOSED
 ```
 
@@ -231,12 +261,12 @@ Still outside C1:
 - Session runtime;
 - Actual/outcome runtime;
 - multi-device reconciliation;
-- AI runtime;
-- voice runtime.
+- AI runtime/input;
+- voice runtime/input.
 
 ## Next action
 
-After the documentation descendant is itself CI-green:
+Only after the final documentation descendant is itself CI-green:
 
 1. sync `/home/mattia/projects/dante-timeline` with `git pull --ff-only`;
 2. execute the single final protocol in `temporal-create-c1-manual-acceptance.md`;
