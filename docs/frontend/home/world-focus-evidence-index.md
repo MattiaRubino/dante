@@ -1,10 +1,10 @@
 # DANTE — World Focus Research / Review Evidence Index
 
-**Status:** CURRENT EVIDENCE MAP — WS0–WS8 CLOSED / POST-WS8 HYGIENE APPLIED / M0 NEXT  
+**Status:** CURRENT EVIDENCE MAP — WS0–WS8 CLOSED / PRE-M0 FALSIFICATION CLOSED / M0 ACTIVE  
 **Date:** 2026-09-02  
 **Branch:** `feature/home-react`
 
-This index separates live sequencing authority, closure authority, post-closure hygiene and historical/supporting evidence.
+This index separates live sequencing authority, closure authority, post-closure hygiene, pre-M0 falsification and historical/supporting evidence.
 
 Rule:
 
@@ -16,6 +16,7 @@ Rule:
 
 ```text
 world-focus-current-checkpoint.md
+world-focus-pre-m0-falsification-review.md
 world-focus-post-ws8-hygiene-audit.md
 world-focus-substrate-closure-plan.md
 world-focus-ws8-final-falsification-review.md
@@ -48,7 +49,7 @@ Protected-main Domain/Logical/Physical authority outranks frontend convenience w
 
 `world-focus-workspace-scenario-oracle-evidence.md`
 
-Retained proof for one shared World workspace, unknown World/module pressure, finite registration, specialist extension, stable/adaptive/ephemeral composition, typed drill-down, large-data bounding and cross-World reuse.
+Shared World workspace, unknown World/module pressure, finite registration, specialist extension, stable/adaptive/ephemeral composition, typed drill-down, large-data bounding and cross-World reuse.
 
 ## E1 — World product reverse engineering
 
@@ -57,16 +58,12 @@ world-focus-product-reverse-engineering-stress-test.md
 world-focus-product-reverse-engineering-stress-matrix.md
 ```
 
-World definition, overlap/proliferation, lifecycle/re-entry, Output Grammar, sparse/dense behavior and universal first-open Lens falsification.
-
 ## E2 — DANTE/user reverse engineering
 
 ```text
 world-focus-dante-user-reverse-engineering-stress-test.md
 world-focus-dante-user-gap-closure-stress-test.md
 ```
-
-G1..G7 discovery/closure, purpose-scoped authorized context, cross-World expansion, bounded cursor and DANTE P0–P5 semantics.
 
 ## E3 — Foundation / early verticals
 
@@ -83,7 +80,7 @@ world-focus-b2-continuity-resume-disposition.md
 
 ```text
 HEAD 6c441335a75bb913af8da1eda569d8094d38a539
-CI 33549465793 PASS
+CI   33549465793 PASS
 500 composition scenarios
 500 allocation/surface-stack scenarios
 ```
@@ -100,7 +97,7 @@ CI 33549465793 PASS
 
 ```text
 HEAD f17291de32e6bdced20536807b32928ec1be6aea
-CI 33552437179 PASS
+CI   33552437179 PASS
 ```
 
 Human/manual assistant visual review was not performed.
@@ -115,16 +112,15 @@ Visual research only. It cannot rewrite WF0/WF-G3/product semantics.
 
 `world-focus-ws0-substrate-inventory.md`
 
-## E9 — Cycle A
+## E9 / E10 — early convergence evidence
 
 ```text
 world-focus-substrate-convergence-corpus.md
 world-focus-substrate-convergence-review.md
+world-focus-substrate-independent-confirmation.md
 ```
 
-## E10 — Cycle B/C
-
-`world-focus-substrate-independent-confirmation.md`
+Supporting/historical after later convergence proof.
 
 ## E11 — Final WS1–WS5 convergence
 
@@ -178,40 +174,58 @@ HEAD 88db899391a3a41e23e76177d4896a657232b5eb
 CI 33639741630 PASS — attempt 1
 ```
 
-WS8 added stateful hostile scenarios, mutation-kill and post-hardening metamorphic confirmation. The CG-40 audit gap was closed without weakening the adversarial test.
+Stateful hostile scenarios + mutation-kill + independent post-hardening confirmation. CG-40 audit weakness closed without weakening the adversarial test.
 
-## E16 — Post-WS8 coherence / hygiene audit
+## E16 — Post-WS8 coherence / hygiene
 
 `world-focus-post-ws8-hygiene-audit.md`
 
-Scope:
+Resolved:
 
 ```text
-live authority routing vs current branch state
-World Focus runtime fallback behavior
-route-entry lifecycle under World switch
-orphaned frontend APIs/scaffolding
-superseded visual implementation residue
-WS7/WS8 closure claims vs executable evidence
-cross-workstream deprecated AppShell debt discovered during coherence review
+HYG-01 unknown popover pointer barrier
+HYG-02 unused motion preference scaffold
+HYG-03 visual V2/V3 residue
+HYG-04 legacy SVG base styling
+HYG-05 stale D2 live routing
+HYG-06 stale World-switch entry provenance
+HYG-07 legacy Global Topbar Review
+HYG-08 stale transient handoff resurrection after route mismatch
 ```
 
-Result:
+No new substrate class; WS0–WS8 remained closed.
+
+## E17 — Pre-M0 adversarial regression gate
+
+`world-focus-pre-m0-falsification-review.md`
+
+Red-first discovery:
 
 ```text
-HYG-01 unknown popover pointer barrier       FIXED
-HYG-02 unused motion preference scaffold     REMOVED
-HYG-03 visual V2/V3 residue                  REMOVED
-HYG-04 legacy SVG base styling               REMOVED
-HYG-05 stale branch-level D2 routing         FIXED
-HYG-06 stale World-switch entry provenance   FIXED
-HYG-07 legacy Global Topbar Review           REMOVED BY APPSHELL/HOME OWNER
-new substrate class                          0
-WS0–WS8 reopen                               NO
-M0 started                                   NO
+commit 798170e0c1ad12e0263364ab5c542a6ffe3d5e06
+new falsification file: 5 tests
+2 failed / 3 passed
+whole web suite: 2 failed / 227 passed
 ```
 
-HYG-07 records a separate AppShell/Home-owned cleanup. It does not change World Focus ownership or substrate semantics.
+Finding:
+
+> mismatched World/source route reads rejected the current handoff but did not invalidate it, allowing stale origin resurrection within TTL.
+
+Fix and validation:
+
+```text
+HEAD 7c9feab50c6e2a04a9a3b1e36c92958362dba704
+CI   33664655614 PASS
+```
+
+The adversarial test was unchanged. Quality, build, Mobile, Chromium, Firefox Timeline and Frontend CI Gate all passed.
+
+## E18 — M0 materialization map
+
+**ACTIVE / being produced.**
+
+M0 will become the production-disposition authority only when its complete mapping and scope freeze are explicitly closed. Until then, no M1 implementation is authorized.
 
 ---
 
@@ -235,15 +249,15 @@ L8 Platform/User Policy
 
 Do not restart WS0–WS8 for a new provider, World noun, UI, renderer, viewport, AI model, config store or larger dataset.
 
-Reopen only when later executable/materialization evidence shows a concrete semantic/ownership/state contradiction that cannot fit an existing owner, and reopen only the earliest necessary phase.
+Reopen only when M0/later executable/materialization evidence shows a concrete semantic/ownership/state contradiction that cannot fit an existing owner, and reopen only the earliest necessary phase.
 
 ---
 
-# 5. Current next evidence gate
+# 5. Current evidence gate
 
-> **M0 — Materialization Mapping / Scope Freeze**
+> **M0 — Materialization Mapping / Scope Freeze — ACTIVE**
 
-M0 is next but is not started by this hygiene synchronization.
+M0 must classify the entire closed substrate against current production code before M1 begins.
 
 ---
 

@@ -1,21 +1,19 @@
 # DANTE — World Focus Post-WS8 Coherence / Hygiene Audit
 
-**Status:** APPLIED — LOCAL POST-CLOSURE HYGIENE + OWNER CLEANUP, WS0–WS8 NOT REOPENED  
+**Status:** CLOSED / APPLIED — LOCAL POST-CLOSURE HYGIENE + PRE-M0 REGRESSION HARDENING, WS0–WS8 NOT REOPENED  
 **Date:** 2026-09-02  
 **Branch:** `feature/home-react`  
 **Initial pre-scope:** `7b1a862e02475f9ecb8efcfb1111a9eca526a827`
 
-This audit was performed after WS8 closure to answer a different question from substrate convergence:
+This audit answered a different question from substrate convergence:
 
-> Does the current repository still contain stale live routing, local runtime bugs, orphaned scaffolding or superseded implementation residue that contradicts the state we now claim?
+> Does the repository still contain stale live routing, runtime-local lifecycle bugs, orphaned scaffolding or superseded implementation residue that contradicts the state we claim?
 
-It does not replace WS8 falsification evidence and does not authorize M0/M1–M7 or backend work.
+It did not replace WS8 falsification evidence. A final red-first pre-M0 gate was then added to attack the cleaned runtime boundary before M0 was allowed to start.
 
 ---
 
 ## 1. Scope reviewed
-
-The pass cross-checked:
 
 ```text
 branch-level current checkpoint / handoff
@@ -29,6 +27,7 @@ workspace reducer/allocation contracts
 D1 contextual DANTE entry boundary
 visual frame / WebGL candidate residue
 explicit deprecated frontend debt
+Home/AppShell cross-owner residue found during coherence review
 ```
 
 The audit distinguished:
@@ -39,7 +38,7 @@ runtime-local bug
 live-authority documentation drift
 orphaned/premature scaffold
 superseded dead implementation residue
-explicit cross-workstream deprecated debt
+cross-workstream deprecated debt
 ```
 
 ---
@@ -65,182 +64,171 @@ Therefore WS0–WS8 were not reopened.
 
 ---
 
-## 3. HYG-01 — Unknown popover fallback pointer barrier
+## 3. Findings HYG-01..HYG-07
 
-Registered popovers already rendered inside a pointer-transparent surface wrapper so the non-modal World remained physically interactive outside the actual panel.
+### HYG-01 — unknown popover fallback pointer barrier — FIXED
 
-The unregistered-surface fallback bypassed that behavior: `.world-focus-surface` restored `pointer-events:auto`, and an overlay-slot unknown `popover` could therefore become a full-area physical click barrier even though the allocation contract still considered the main World interactive.
+An unregistered `popover` fallback could become a full-area physical click barrier even though the allocation contract considered the main World interactive.
 
-Fix:
+Fix preserved pointer-transparent overlay behavior while keeping the local dismiss control interactive. Regression coverage was added.
 
-```text
-full overlay fallback remains pointer-transparent
-explicit dismiss control remains pointer-interactive
-local unsupported-content degradation retained
-keyboard dismissal retained
-```
+### HYG-02 — unused persisted motion preference — REMOVED
 
-A regression test covers the unregistered-popover combination directly.
+The exported/localStorage `immersive | instant` scaffold had no active runtime consumer. It and its tests/exports were removed. The real WebGL renderer continues to honor `prefers-reduced-motion` independently.
 
-Classification: runtime-local surface fallback bug; not a new substrate class.
+### HYG-03 / HYG-04 — superseded visual residue — REMOVED
 
----
+Removed V2/V3 visual-frame CSS and dead SVG corona/halo/thread/orbit/particle styling no longer emitted by the active V4 candidate renderer. WF0/WF-G3 remained untouched.
 
-## 4. HYG-02 — Unused motion-preference scaffold
+### HYG-05 — stale live branch routing — FIXED
 
-`world-focus-motion-preference.ts` exposed and persisted `immersive | instant` through localStorage and exported it from the feature API, but the active Home -> World route and `WorldFocusPage` did not consume that preference.
+Branch-level live docs still pointed to `D2 NEXT` while World Focus authority had moved through WS8. Live routing was synchronized.
 
-The real WebGL renderer independently honors `prefers-reduced-motion`.
+### HYG-06 — World switch retained stale route-entry provenance — FIXED
 
-Removed:
+A reused `WorldFocusPage` instance could retain an older World's transient entry provenance/close policy. Entry resolution was rebound to `world.id + source` and a rerender regression test added.
 
-```text
-world-focus-motion-preference.ts
-world-focus-motion-preference.test.ts
-public exports from world-focus/index.ts
-```
+### HYG-07 — Global Topbar Review owner cleanup — REMOVED
 
-This removes premature hidden persistence without rejecting a future earned user-facing preference.
+The disabled legacy Review control, fake badge `3`, unused icon/CSS/i18n and open-decision/registry residue were removed by the AppShell/Home owner. No replacement global Review workflow was invented and Context Rail Resolution was not promoted into the Topbar.
 
 ---
 
-## 5. HYG-03/HYG-04 — Superseded visual residue
+## 4. HYG-08 — transient route-handoff resurrection
 
-The active page imports the V4 candidate stylesheet, but V2 and V3 remained in the source tree. The structural base stylesheet also retained selectors for an older SVG corona/halo/thread/orbit/particle renderer no longer emitted by the current `WorldFocusVisualFrame`.
+### Discovery method
 
-Removed:
-
-```text
-world-focus-visual-frame-v2.css
-world-focus-visual-frame-v3.css
-legacy SVG renderer rules from world-focus-visual-frame.css
-```
-
-The base stylesheet now owns only structural visual-frame placement and ambient-field geometry. V4 owns the current candidate visual treatment.
-
-WF0 and WF-G3 are unchanged.
-
----
-
-## 6. HYG-05 — Stale live branch routing
-
-The detailed World Focus checkpoint correctly said `WS0–WS8 CLOSED / M0 NEXT`, while the two branch-level entry documents still routed a new chat/agent to `D2 NEXT`.
-
-Aligned:
+Immediately before M0, an independent red-first falsification file was introduced:
 
 ```text
-docs/frontend/home/current-checkpoint.md
-docs/frontend/home/production-depth-handoff.md
-world-focus-current-checkpoint.md
-world-focus-evidence-index.md
+apps/web/src/features/world-focus/model/world-focus-pre-m0-falsification.test.ts
 ```
 
-Current sequencing is now unambiguous:
+It attacked the actual transient route handoff with five lifecycle cases rather than replaying WS7/WS8 substrate vectors.
+
+Test-only discovery commit:
 
 ```text
-WS0–WS8 CLOSED
-post-WS8 hygiene applied
-M0 NEXT / NOT STARTED
-D2–D6 deferred to later M4 materialization
+798170e0c1ad12e0263364ab5c542a6ffe3d5e06
 ```
 
----
-
-## 7. HYG-06 — World switch retained stale route-entry provenance
-
-### Finding
-
-`WorldFocusPage` initialized the transient route entry with:
+Quality reached unit tests and reported:
 
 ```text
-useState(() => readWorldFocusEntry(world.id, source))
+new falsification file: 5 tests
+2 failed / 3 passed
+whole web suite: 2 failed / 227 passed
 ```
 
-The workspace owner already resets by `worldId`, but the page-level entry snapshot did not. If the same page component instance receives a different World, the old entry provenance could survive and incorrectly preserve:
+The two failures were both stale-handoff resurrection attacks.
+
+### Root cause
+
+`readWorldFocusEntry(worldId, source)` returned `null` on a World/source mismatch but retained the pending entry.
+
+Therefore:
 
 ```text
-data-entry-origin = live
-preferHistory = true
+prime music/home
+-> read travel/worlds (mismatch => null)
+-> old music/home handoff still pending
+-> later read music/home within TTL
+-> stale opener origin resurrected
 ```
 
-for a World that was actually reached as a fallback/direct route.
+The same problem existed for a same-World/different-source mismatch.
 
 ### Fix
 
-Entry resolution is now memoized by the actual route identity:
+Mismatch is now terminal for the pending transient handoff:
 
 ```text
-world.id + source
+worldId/source mismatch
+-> pendingEntry = null
+-> return null
 ```
 
-A regression test rerenders the same page instance from a live Home-opened Music World to a direct/fallback Travel World and asserts both the provenance and Escape close policy are rebound.
-
-### Classification
+Fix HEAD:
 
 ```text
-runtime-local route lifecycle bug
-not a new substrate/race class
+7c9feab50c6e2a04a9a3b1e36c92958362dba704
 ```
+
+The adversarial test was not modified.
+
+Validation:
+
+```text
+Frontend CI 33664655614 — PASS
+```
+
+Passed:
+
+```text
+contract drift
+format/lint/typecheck
+architecture/generated-source checks
+unit tests
+production build
+diff/repository-mutation checks
+Mobile Bundle
+Chromium Web E2E
+Firefox frozen Timeline contract
+Frontend CI Gate
+```
+
+Classification:
+
+```text
+runtime-local transient route lifecycle bug
+new substrate class        NO
+WS0–WS8 reopen             NO
+backend owner              NO
+```
+
+Detailed authority:
+
+`world-focus-pre-m0-falsification-review.md`
 
 ---
 
-## 8. HYG-07 — Global Topbar Review owner cleanup
+## 5. Evidence truth
 
-The global `Review` control was visibly disabled, carried a hard-coded badge `3`, and was already classified `DEPRECATED` in Home/AppShell authorities because its role overlapped the accepted Resolution concept without owning a real global workflow.
-
-The World Focus-local pass intentionally did not mutate it. A separate bounded AppShell/Home owner scope then closed the debt.
-
-Removed:
-
-```text
-disabled Global Topbar Review button
-hard-coded fake badge 3
-unused ReviewIcon
-Review-only AppShell CSS
-Review-only shell localization in IT/EN
-shell.review.legacy from open decisions
-active/deprecated Review rows from current UI registry
-```
-
-Contract decision:
-
-```text
-NO replacement global Review workflow invented
-NO automatic promotion of Context Rail Resolution into Topbar
-NO Home H0 macro-structure change
-NO World Focus ownership expansion
-```
-
-Classification: cross-workstream deprecated UI debt resolved by its actual owner; not a new substrate class.
-
----
-
-## 9. Evidence truth
-
-The validated WS8 proof/runtime evidence remains:
+Semantic WS8 closure evidence remains:
 
 ```text
 HEAD 88db899391a3a41e23e76177d4896a657232b5eb
 Frontend CI 33639741630 PASS — attempt 1
 ```
 
-Post-WS8 hygiene is later code/documentation state and must be evaluated on its own final commit. This document does not pre-claim a PASS for the owner cleanup until its attached CI actually completes.
+Later hygiene/falsification evidence is separate branch-state validation and does not rewrite that historical proof point.
+
+Pre-M0 final regression evidence:
+
+```text
+RED discovery commit 798170e0c1ad12e0263364ab5c542a6ffe3d5e06
+FIX HEAD             7c9feab50c6e2a04a9a3b1e36c92958362dba704
+FIX CI               33664655614 PASS
+```
 
 ---
 
-## 10. Final disposition
+## 6. Final disposition
 
 ```text
 WS0–WS8 semantic/substrate closure        HOLDS
-unknown-popover pointer barrier            FIXED
-stale World-switch entry provenance        FIXED
-orphaned persisted motion preference       REMOVED
-superseded V2/V3 visual CSS                 REMOVED
-legacy SVG visual CSS                       REMOVED
-live D2 routing drift                       FIXED
-Global Topbar Review debt                   REMOVED BY APPSHELL/HOME OWNER
-M0                                          NEXT / NOT STARTED
-backend                                     NOT STARTED
+HYG-01 unknown-popover pointer barrier    FIXED
+HYG-02 orphaned motion preference         REMOVED
+HYG-03 V2/V3 visual CSS                   REMOVED
+HYG-04 legacy SVG visual CSS              REMOVED
+HYG-05 stale live D2 routing              FIXED
+HYG-06 stale World-switch provenance      FIXED
+HYG-07 Global Topbar Review debt          REMOVED
+HYG-08 transient handoff resurrection     FIXED + ADVERSARIAL REGRESSION
+PRE-M0 falsification                      CLOSED / PASS
+M0                                        ACTIVE
+M1–M7                                     BLOCKED UNTIL M0 CLOSES
+backend                                   NOT STARTED
 ```
 
-The repository is materially more coherent after these bounded passes without manufacturing new product capability or changing closed substrate semantics.
+The repository is materially more coherent without manufacturing new product capability or changing closed substrate semantics.

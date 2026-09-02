@@ -1,11 +1,11 @@
 # DANTE — Frontend Production-Depth Handoff
 
-**Status:** CURRENT HANDOFF — MULTI-WORKSTREAM FRONTEND BRANCH / WORLD FOCUS WS0–WS8 CLOSED / POST-CLOSURE HYGIENE APPLIED / M0 NEXT  
+**Status:** CURRENT HANDOFF — WORLD FOCUS WS0–WS8 CLOSED / POST-CLOSURE HYGIENE + PRE-M0 FALSIFICATION CLOSED / M0 ACTIVE  
 **Date:** 2026-09-02  
 **Working branch:** `feature/home-react`  
 **Worktree:** `/home/mattia/projects/dante-frontend`
 
-Read `docs/frontend/home/current-checkpoint.md` first. For World Focus, continue with `world-focus-current-checkpoint.md` and `world-focus-post-ws8-hygiene-audit.md` before older evidence.
+Read `docs/frontend/home/current-checkpoint.md` first. For World Focus, continue with `world-focus-current-checkpoint.md` and `world-focus-pre-m0-falsification-review.md` before older evidence.
 
 ---
 
@@ -17,7 +17,7 @@ TEMPORAL / TIMELINE
 WORLD FOCUS
 ```
 
-The workstreams share product/domain foundations but do not own one another's UI state or geometry.
+Shared foundations do not imply shared UI ownership.
 
 ```text
 Home AI != World contextual DANTE
@@ -51,138 +51,44 @@ Green CI never means human visual acceptance happened.
 
 ---
 
-## 3. Backend stop line
+## 3. World Focus current state
 
 ```text
-frontend view model != backend DTO != Domain model != persistence row
+WF0 structure/route                    FROZEN / USER AUTHORIZED
+WF-G3 geometry                         LOCKED / USER AUTHORIZED
+WF-V4 VFX                              CANDIDATE
+B0 foundation                          ENGINEERING CLOSED
+WR0–WR2                                CLOSED
+B1 Orientation                         CLOSED FOR SEQUENCING
+B2 Continuity                          IMPLEMENTED / AUTOMATED PASS
+Workspace Platform                     ENGINEERING CLOSED
+D0 contextual DANTE spatial contract   ACCEPTED
+D1 quiet invoke + composer              CLOSED FOR SEQUENCING
+WS0                                    CLOSED
+WS1–WS5                                CLOSED
+WS6                                    CLOSED
+WS7                                    CLOSED
+WS8                                    CLOSED
+POST-WS8 HYGIENE                       APPLIED
+PRE-M0 FALSIFICATION                   CLOSED / PASS
+M0                                     ACTIVE — MAPPING / SCOPE FREEZE
+M1–M7                                  BLOCKED UNTIL M0 CLOSES
+D2–D6                                  DEFERRED TO M4
 ```
 
-Do not invent endpoint shapes, ORM rows, SQL contracts, provider truth, durable Runs or real effects to make frontend surfaces look complete.
+Final pre-M0 gate evidence:
+
+```text
+discovery commit  798170e0c1ad12e0263364ab5c542a6ffe3d5e06
+fix HEAD          7c9feab50c6e2a04a9a3b1e36c92958362dba704
+Frontend CI       33664655614 PASS
+```
+
+The gate discovered stale transient route-handoff resurrection on World/source mismatch and fixed it in the existing transition owner without reopening WS0–WS8.
 
 ---
 
-## 4. AppShell / Home
-
-Shared AppShell/Global Topbar is application infrastructure outside World Focus ownership.
-
-Authorities:
-
-```text
-docs/frontend/home/contract.md
-docs/frontend/home/home-structural-contract.md
-docs/frontend/app-shell/p1-global-app-shell.md
-docs/frontend/ui-registry.md
-```
-
-The legacy Global Topbar Review debt is closed. The disabled button, hard-coded fake badge, dedicated icon/CSS and shell copy were removed in a bounded AppShell/Home hygiene scope. `shell.review.legacy` is no longer an open decision.
-
-No replacement global Review workflow was invented, and Home Context Rail Resolution was not promoted into the Topbar. Reintroducing a global unresolved-matter entry requires a new explicit product contract rather than resurrecting the deprecated placeholder.
-
----
-
-## 5. Timeline
-
-Timeline T1 remains frozen/user accepted for observable interaction and geometry behavior.
-
-When explicitly resumed:
-
-```text
-1. timeline-current-checkpoint.md
-2. timeline-handoff.md
-3. timeline-t1-frozen-contract.md
-4. temporal-experience-architecture.md
-5. temporal-frontend-roadmap.md
-```
-
-World Focus work must not weaken Timeline regression guards.
-
----
-
-## 6. World Focus current state
-
-Read:
-
-```text
-1. world-focus-current-checkpoint.md
-2. world-focus-post-ws8-hygiene-audit.md
-3. world-focus-substrate-closure-plan.md
-4. world-focus-ws8-final-falsification-review.md
-5. world-focus-ws7-executable-harness-review.md
-6. world-focus-ws6-universal-work-primitives.md
-7. world-focus-ws6-primitive-pressure-matrix.md
-8. world-focus-substrate-final-convergence-proof.md
-9. world-focus-substrate-combinatorial-evidence.md
-10. world-focus-handoff.md
-11. world-focus-frontend-roadmap.md
-12. product/platform/structural/geometry contracts
-13. world-focus-evidence-index.md
-```
-
-Live state:
-
-```text
-WF0 structure/route                   FROZEN / USER AUTHORIZED
-WF-G3 geometry                        LOCKED / USER AUTHORIZED
-WF-V4 VFX                             CANDIDATE
-B0 foundation                         ENGINEERING CLOSED
-WR0–WR2                               CLOSED
-B1 Orientation                        CLOSED FOR SEQUENCING
-B2 Continuity                         IMPLEMENTED / AUTOMATED PASS
-Workspace Platform                    ENGINEERING CLOSED
-D0 contextual DANTE spatial contract  ACCEPTED
-D1 quiet invoke + composer             CLOSED FOR SEQUENCING
-WS0                                   CLOSED
-WS1–WS5                               CLOSED
-WS6                                   CLOSED
-WS7                                   CLOSED
-WS8                                   CLOSED
-POST-WS8 WORLD FOCUS HYGIENE           APPLIED
-APPSHELL LEGACY REVIEW CLEANUP         APPLIED
-NEXT                                  M0 MATERIALIZATION MAPPING
-```
-
-D2–D6 are preserved under later M4 materialization. Old `D2 NEXT` handoff text is obsolete.
-
----
-
-## 7. WS8 closure evidence retained
-
-Validated proof/runtime HEAD:
-
-```text
-88db899391a3a41e23e76177d4896a657232b5eb
-```
-
-Frontend CI:
-
-```text
-33639741630 — PASS — attempt 1
-```
-
-WS8 closed the pre-materialization substrate program through hostile stateful pressure, mutation-kill and an independent confirmation pass. It did not claim real backend/AuthZ/provider/effect correctness or human visual approval.
-
----
-
-## 8. Post-WS8 hygiene
-
-The later coherence audit found no reason to reopen WS0–WS8.
-
-It did find and repair local debt:
-
-```text
-unknown unregistered popover could physically block the World
-unused localStorage motion-preference API/test was exported but not consumed
-V2/V3 visual-frame CSS generations remained in the tree after V4 became the active candidate
-base visual CSS retained dead SVG-renderer styling
-branch-level live checkpoint/handoff still routed a new chat to D2
-World switch could retain stale route-entry provenance / close policy
-```
-
-A separate AppShell/Home cleanup then removed the already-deprecated Global Topbar Review placeholder and synchronized its contracts. Neither cleanup starts M0.
-
----
-
-## 9. Durable World Workspace/DANTE boundaries
+## 4. Durable World Workspace / DANTE boundaries
 
 Preserve:
 
@@ -204,23 +110,82 @@ No generic Entity/Thing/Fact/property-bag escape hatch.
 
 ---
 
-## 10. Immediate next gate
+## 5. AppShell / Home and Timeline
 
-> **M0 — Materialization Mapping / Scope Freeze**
+The deprecated Global Topbar Review placeholder is removed; no global replacement workflow was invented.
 
-M0 must map each closed invariant/primitive to exactly one production disposition before M1 starts.
+Timeline T1 observable interaction/geometry remains frozen/user accepted. M0 may classify future seams but must not alter Timeline behavior as collateral work.
 
-Do not pull forward:
+---
+
+## 6. Backend stop line
 
 ```text
-M1–M7 implementation
-D2–D6 conversation materialization
-backend/API/DB/Alembic/AuthZ/LLM/provider/effect work
+frontend view model != backend DTO != Domain model != persistence row
+```
+
+Do not invent endpoint shapes, ORM rows, SQL contracts, provider truth, durable Runs or real effects to make frontend surfaces look complete.
+
+Before the explicit later backend vertical:
+
+```text
+NO World DB/Alembic
+NO real World API merely for demos
+NO real AuthZ/provider runtime
+NO model routing/streaming
+NO canonical chat persistence
+NO durable DANTE Run backend
+NO real tool/effect execution
+NO fake success
 ```
 
 ---
 
-## 11. Operational safety
+## 7. M0 active contract
+
+M0 is mapping/scope freeze only.
+
+For every closed invariant/primitive, assign exactly one disposition:
+
+```text
+A already satisfied
+B bounded generalization
+C missing model/application production code
+D shared renderer
+E specialist extension
+F DANTE seam / M4
+G backend-deferred
+```
+
+M0 must then assign the executable work to M1–M7 and freeze the sequence.
+
+Do not pull forward M1 implementation, D2–D6, backend/API/DB/Alembic/AuthZ/LLM/provider/effect work or visual polish while the map is still being built.
+
+---
+
+## 8. Read order
+
+```text
+1. current-checkpoint.md
+2. world-focus-current-checkpoint.md
+3. world-focus-pre-m0-falsification-review.md
+4. world-focus-post-ws8-hygiene-audit.md
+5. world-focus-substrate-closure-plan.md
+6. world-focus-ws8-final-falsification-review.md
+7. world-focus-ws7-executable-harness-review.md
+8. world-focus-ws6-universal-work-primitives.md
+9. world-focus-substrate-final-convergence-proof.md
+10. world-focus-substrate-combinatorial-evidence.md
+11. world-focus-frontend-roadmap.md
+12. world-focus-handoff.md
+13. world-focus-evidence-index.md
+```
+
+Older `D2 NEXT` or `M0 NEXT` wording is phase-time history only.
+
+---
+
+## 9. Operational safety
 
 - fresh HEAD check before every write scope;
 - stay on `feature/home-react` unless explicitly authorized otherwise;

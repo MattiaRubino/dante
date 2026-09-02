@@ -1,35 +1,38 @@
 # DANTE — World Focus Current Checkpoint
 
-**Status:** CURRENT LIVE WORLD FOCUS CHECKPOINT — WS0–WS8 CLOSED / POST-WS8 HYGIENE APPLIED / M0 NEXT  
+**Status:** CURRENT LIVE WORLD FOCUS CHECKPOINT — WS0–WS8 CLOSED / POST-WS8 HYGIENE + PRE-M0 FALSIFICATION CLOSED / M0 ACTIVE  
 **Date:** 2026-09-02  
 **Branch:** `feature/home-react`  
 **Worktree:** `/home/mattia/projects/dante-frontend`
 
 This is the first World Focus document a new chat/agent must read.
 
-## Current read order
-
-```text
-1. world-focus-current-checkpoint.md
-2. world-focus-post-ws8-hygiene-audit.md
-3. world-focus-substrate-closure-plan.md
-4. world-focus-ws8-final-falsification-review.md
-5. world-focus-ws7-executable-harness-review.md
-6. world-focus-ws6-universal-work-primitives.md
-7. world-focus-ws6-primitive-pressure-matrix.md
-8. world-focus-substrate-final-convergence-proof.md
-9. world-focus-substrate-combinatorial-evidence.md
-10. world-focus-handoff.md
-11. world-focus-frontend-roadmap.md
-12. product/platform/structure/geometry contracts as needed
-13. world-focus-evidence-index.md
-```
-
 Historical status/next-gate wording never overrides this checkpoint.
 
 ---
 
-# 1. Live sequencing
+# 1. Current read order
+
+```text
+1. world-focus-current-checkpoint.md
+2. world-focus-pre-m0-falsification-review.md
+3. world-focus-post-ws8-hygiene-audit.md
+4. world-focus-substrate-closure-plan.md
+5. world-focus-ws8-final-falsification-review.md
+6. world-focus-ws7-executable-harness-review.md
+7. world-focus-ws6-universal-work-primitives.md
+8. world-focus-ws6-primitive-pressure-matrix.md
+9. world-focus-substrate-final-convergence-proof.md
+10. world-focus-substrate-combinatorial-evidence.md
+11. world-focus-handoff.md
+12. world-focus-frontend-roadmap.md
+13. product/platform/structure/geometry contracts as needed
+14. world-focus-evidence-index.md
+```
+
+---
+
+# 2. Live sequencing
 
 ```text
 WF0 structural route/shell             FROZEN / USER AUTHORIZED
@@ -51,9 +54,10 @@ WS7 Executable Non-Visual Harness      CLOSED
 WS8 Final Falsification                CLOSED
 POST-WS8 HYGIENE                       APPLIED
 APPSHELL LEGACY REVIEW CLEANUP         APPLIED
+PRE-M0 FALSIFICATION                   CLOSED / PASS
 
-M0 Materialization Mapping             NEXT ACTIVE GATE — NOT STARTED
-M1–M7 Materialization                  BLOCKED UNTIL M0 SCOPE FREEZE
+M0 Materialization Mapping             ACTIVE — MAPPING / SCOPE FREEZE
+M1–M7 Materialization                  BLOCKED UNTIL M0 CLOSES
 D2–D6                                  MATERIALIZATION-DEFERRED TO M4
 assistant manual visual review          NOT PERFORMED
 ```
@@ -62,13 +66,13 @@ No backend/API/database/provider/real-LLM/effect implementation is active.
 
 ---
 
-# 2. WS8 validated closure evidence
+# 3. Closed substrate authority
 
-Closure authority:
+WS8 closure authority:
 
 `world-focus-ws8-final-falsification-review.md`
 
-Validated proof/runtime HEAD:
+Validated WS8 proof/runtime HEAD:
 
 ```text
 88db899391a3a41e23e76177d4896a657232b5eb
@@ -80,44 +84,9 @@ Frontend CI:
 33639741630 — PASS — attempt 1
 ```
 
-WS8 used stateful hostile pressure, mutation-kill and an independent post-hardening confirmation. This remains the semantic substrate closure evidence; later hygiene changes do not rewrite that historical proof point.
+That remains the semantic substrate closure point. Later hygiene and pre-M0 fixes do not rewrite it.
 
----
-
-# 3. Post-WS8 hygiene audit
-
-Authority:
-
-`world-focus-post-ws8-hygiene-audit.md`
-
-Findings repaired locally:
-
-```text
-HYG-01 unknown popover fallback pointer barrier
-HYG-02 unused immersive|instant localStorage preference scaffold
-HYG-03 superseded V2/V3 visual CSS generations
-HYG-04 dead legacy SVG styling in the base visual-frame stylesheet
-HYG-05 branch-level live router docs still said D2 NEXT
-HYG-06 World switch could retain stale route-entry provenance / close policy
-HYG-07 deprecated Global Topbar Review placeholder removed by AppShell/Home owner
-```
-
-Disposition:
-
-```text
-new substrate primitive/owner needed  NO
-WS0–WS8 reopen needed                 NO
-M0 started by cleanup                 NO
-backend work needed                   NO
-```
-
-HYG-07 is explicitly cross-workstream cleanup: World Focus did not own the Global Topbar mutation. The shared AppShell/Home owner removed the already-deprecated disabled Review affordance, fake badge and supporting dead implementation without creating a new global Resolution/Review workflow.
-
----
-
-# 4. Frozen substrate semantics
-
-WS6 finite L1 catalog:
+Finite universal L1 catalog:
 
 ```text
 WP-01 CONTINUITY
@@ -125,8 +94,6 @@ WP-02 ATTENTION
 WP-03 COMPARISON
 WP-04 TRAJECTORY
 ```
-
-A World may use zero L1 primitives when direct Domain/application semantics plus L2–L8 already preserve the job.
 
 Frozen layers:
 
@@ -142,7 +109,58 @@ L7 Renderer / Specialist Extension
 L8 Platform / User Policies
 ```
 
-Permanent barriers:
+A World may use zero L1 primitives when direct Domain/application semantics plus L2–L8 already preserve the user job.
+
+---
+
+# 4. Post-WS8 / pre-M0 hardening
+
+Authority:
+
+```text
+world-focus-post-ws8-hygiene-audit.md
+world-focus-pre-m0-falsification-review.md
+```
+
+Resolved findings:
+
+```text
+HYG-01 unknown popover fallback pointer barrier
+HYG-02 unused immersive|instant localStorage preference scaffold
+HYG-03 superseded V2/V3 visual CSS generations
+HYG-04 dead legacy SVG styling
+HYG-05 stale live D2 routing
+HYG-06 stale World-switch entry provenance / close policy
+HYG-07 deprecated Global Topbar Review + fake badge
+HYG-08 transient route-handoff resurrection after World/source mismatch
+```
+
+HYG-08 was discovered with a red-first adversarial test:
+
+```text
+discovery commit  798170e0c1ad12e0263364ab5c542a6ffe3d5e06
+2 failed / 227 passed web tests at discovery
+```
+
+Fixed at:
+
+```text
+HEAD 7c9feab50c6e2a04a9a3b1e36c92958362dba704
+CI   33664655614 — PASS
+```
+
+Disposition:
+
+```text
+new substrate primitive/owner needed  NO
+WS0–WS8 reopen needed                 NO
+backend work needed                   NO
+M0 entry blocked                      NO
+```
+
+---
+
+# 5. Permanent barriers
 
 ```text
 World != Domain owner
@@ -162,7 +180,7 @@ No universal Entity/Thing/Relationship/Fact/property-bag escape hatch.
 
 ---
 
-# 5. Existing Workspace Platform stays intact
+# 6. Existing Workspace Platform stays intact
 
 Preserve rather than rebuild:
 
@@ -181,11 +199,13 @@ ResizeObserver/container-query ownership
 local failure isolation
 ```
 
-The hygiene fixes strengthen existing lifecycle/fallback contracts; they do not change substrate ownership.
+Known materialization fact, not a WS reopen:
+
+> production workspace selection remains single-reference; primary + bounded ordered supporting references are proven in the WS7 seam but not yet materialized in the production reducer.
 
 ---
 
-# 6. DANTE status
+# 7. DANTE status
 
 ```text
 D0 spatial/presence direction        ACCEPTED
@@ -197,7 +217,7 @@ D1 global invoke remains `contextReference: null`.
 
 ---
 
-# 7. Strict reopen rule
+# 8. Strict reopen rule
 
 Do not reopen WS0–WS8 because of a new World name, provider, API, renderer, viewport, model, config store, sync engine or larger dataset.
 
@@ -205,7 +225,7 @@ Reopen only on concrete evidence of a new semantic/ownership/state family, gener
 
 ---
 
-# 8. Backend stop line
+# 9. Backend stop line
 
 ```text
 NO real World DB/Alembic persistence
@@ -221,22 +241,34 @@ NO provider ACK treated as canonical completion
 
 ---
 
-# 9. CURRENT ACTIVE GATE — M0
+# 10. CURRENT ACTIVE GATE — M0
 
 > **M0 — Materialization Mapping / Scope Freeze**
 
-M0 is next but has **not started**.
+M0 is active now.
 
-It maps each closed invariant/primitive to one disposition:
+It must map every closed invariant/primitive to exactly one disposition:
 
 ```text
-already satisfied by existing production code
-existing code requiring bounded generalization
-missing model/application production code
-missing shared renderer
-specialist extension
-DANTE seam
-backend-deferred seam
+A — already satisfied by existing production code
+B — existing code requiring bounded generalization
+C — missing model/application production code
+D — missing shared renderer
+E — specialist extension
+F — DANTE seam, deferred to M4
+G — backend-deferred seam
+```
+
+M0 deliverables:
+
+```text
+complete substrate-to-production matrix
+explicit M1–M7 assignment
+known reusable code inventory
+known gaps and bounded generalizations
+backend-deferred boundary list
+DANTE M4 boundary list
+scope freeze + reopen triggers
 ```
 
 M0 must not silently start M1 implementation, D2–D6, backend/API/DB/AuthZ/LLM/effect work or visual polish.

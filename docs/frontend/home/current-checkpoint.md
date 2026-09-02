@@ -1,19 +1,17 @@
 # DANTE — Home / Frontend Current Checkpoint
 
-**Status:** CURRENT LIVE ENTRY POINT — WORLD FOCUS WS0–WS8 CLOSED / POST-WS8 HYGIENE + APPSHELL REVIEW CLEANUP APPLIED / M0 NEXT  
+**Status:** CURRENT LIVE ENTRY POINT — WORLD FOCUS WS0–WS8 CLOSED / POST-WS8 HYGIENE + PRE-M0 FALSIFICATION CLOSED / M0 ACTIVE  
 **Date:** 2026-09-02  
 **Working branch:** `feature/home-react`  
 **Worktree:** `/home/mattia/projects/dante-frontend`
 
-This file is the branch-level live entry point for a new chat/agent. Do not reconstruct current state from older phase labels, historical roadmaps or conversational summaries.
+This is the branch-level live entry point. Do not reconstruct current state from older phase labels, historical roadmaps or conversational summaries.
 
-For World Focus, `world-focus-current-checkpoint.md` remains the detailed live authority immediately after this file.
+For World Focus, read `world-focus-current-checkpoint.md` immediately after this file.
 
 ---
 
 ## 1. Branch workstreams
-
-Three distinct frontend concerns coexist:
 
 ```text
 APP SHELL / HOME
@@ -36,9 +34,7 @@ Mondi Overview != World Focus
 
 ## 2. Active workstream
 
-World Focus is the active workstream.
-
-Current state:
+World Focus remains the active workstream.
 
 ```text
 WF0 structural shell / route            FROZEN / USER AUTHORIZED
@@ -58,140 +54,104 @@ WS7                                     CLOSED
 WS8                                     CLOSED
 POST-WS8 WORLD FOCUS HYGIENE             APPLIED
 APPSHELL LEGACY REVIEW CLEANUP           APPLIED
-NEXT                                     M0 MATERIALIZATION MAPPING — NOT STARTED
+PRE-M0 FALSIFICATION                     CLOSED / PASS
+M0 MATERIALIZATION MAPPING               ACTIVE — SCOPE FREEZE IN PROGRESS
+M1–M7                                   BLOCKED UNTIL M0 CLOSES
+D2–D6                                   DEFERRED TO M4
 ```
 
-D2–D6 are preserved as materialization-deferred work under M4. They are not the current gate.
+No backend/API/database/provider/real-LLM/effect implementation is active.
 
 ---
 
-## 3. World Focus live read order
+## 3. Current evidence chain
 
-Read:
+WS8 semantic closure remains anchored at:
+
+```text
+HEAD 88db899391a3a41e23e76177d4896a657232b5eb
+CI   33639741630 — PASS — attempt 1
+```
+
+The later cleanup/falsification branch state is separate evidence.
+
+Final pre-M0 adversarial gate:
+
+```text
+red test commit   798170e0c1ad12e0263364ab5c542a6ffe3d5e06
+red evidence      2 failed / 227 passed web tests
+fix HEAD          7c9feab50c6e2a04a9a3b1e36c92958362dba704
+Frontend CI       33664655614 — PASS
+```
+
+The gate discovered and fixed stale transient route-handoff resurrection after World/source mismatch. The adversarial test was not weakened.
+
+Authority:
+
+`world-focus-pre-m0-falsification-review.md`
+
+---
+
+## 4. World Focus read order
 
 ```text
 1. docs/frontend/home/world-focus-current-checkpoint.md
-2. docs/frontend/home/world-focus-post-ws8-hygiene-audit.md
-3. docs/frontend/home/world-focus-substrate-closure-plan.md
-4. docs/frontend/home/world-focus-ws8-final-falsification-review.md
-5. docs/frontend/home/world-focus-ws7-executable-harness-review.md
-6. docs/frontend/home/world-focus-ws6-universal-work-primitives.md
-7. docs/frontend/home/world-focus-ws6-primitive-pressure-matrix.md
-8. docs/frontend/home/world-focus-substrate-final-convergence-proof.md
-9. docs/frontend/home/world-focus-substrate-combinatorial-evidence.md
-10. docs/frontend/home/world-focus-handoff.md
+2. docs/frontend/home/world-focus-pre-m0-falsification-review.md
+3. docs/frontend/home/world-focus-post-ws8-hygiene-audit.md
+4. docs/frontend/home/world-focus-substrate-closure-plan.md
+5. docs/frontend/home/world-focus-ws8-final-falsification-review.md
+6. docs/frontend/home/world-focus-ws7-executable-harness-review.md
+7. docs/frontend/home/world-focus-ws6-universal-work-primitives.md
+8. docs/frontend/home/world-focus-ws6-primitive-pressure-matrix.md
+9. docs/frontend/home/world-focus-substrate-final-convergence-proof.md
+10. docs/frontend/home/world-focus-substrate-combinatorial-evidence.md
 11. docs/frontend/home/world-focus-frontend-roadmap.md
-12. product/platform/structure/geometry contracts as needed
-13. world-focus-evidence-index.md
+12. docs/frontend/home/world-focus-handoff.md
+13. product/platform/structure/geometry contracts as needed
+14. docs/frontend/home/world-focus-evidence-index.md
 ```
 
-Historical `NEXT D2`, old WS phase-time status or removed prototype sequencing never overrides the live checkpoint.
-
----
-
-## 4. Validated WS8 evidence remains the semantic closure evidence
-
-Validated WS8 proof/runtime HEAD:
-
-```text
-88db899391a3a41e23e76177d4896a657232b5eb
-```
-
-Frontend CI:
-
-```text
-33639741630 — PASS — attempt 1
-```
-
-The later hygiene passes repair local runtime/documentation/AppShell debt without reopening WS0–WS8. Their CI status must be read from current branch evidence and must not be confused with the validated WS8 proof SHA above.
+Historical `NEXT D2`, `M0 NEXT` or older WS phase-time status never overrides this checkpoint.
 
 ---
 
 ## 5. Post-WS8 hygiene result
 
-The coherence review found local debt, not a new substrate class.
-
-Applied World Focus-local cleanup:
+Resolved without reopening WS0–WS8:
 
 ```text
-unknown popover fallback no longer turns the full overlay into a pointer barrier
-unused immersive|instant localStorage preference scaffold removed
-superseded V2/V3 visual-frame styles removed
-base visual-frame CSS reduced to structural ownership only
-branch-level routers advanced from stale D2 sequencing to M0 NEXT
-World switch rebinds route-entry provenance / close policy
+HYG-01 unknown popover fallback pointer barrier
+HYG-02 unused immersive|instant persisted preference scaffold
+HYG-03 superseded V2/V3 visual-frame CSS
+HYG-04 dead legacy SVG visual styling
+HYG-05 stale branch-level D2 routing
+HYG-06 stale World-switch entry provenance / close policy
+HYG-07 deprecated Global Topbar Review + fake badge
+HYG-08 stale transient handoff resurrection after route mismatch
 ```
 
-A separate bounded AppShell/Home cleanup then closed the legacy Global Topbar Review debt:
-
-```text
-disabled Review button removed
-hard-coded fake badge 3 removed
-unused Review icon removed
-Review-only CSS removed
-Review-only IT/EN shell copy removed
-shell.review.legacy removed from open decisions
-registry/contract/handoff updated to REMOVED/CLOSED truth
-```
-
-No replacement global Review workflow was invented. Context Rail Resolution remains a Home capability and was not moved into the Topbar.
-
-Not changed by these passes:
-
-```text
-WS0–WS8 closure
-WF0/WF-G3
-D1 global contextReference:null
-backend stop line
-Timeline behavior
-Access/Auth
-```
+HYG-08 was found by an adversarial red-first test immediately before M0 and closed at `7c9feab5...`.
 
 ---
 
-## 6. Global AppShell / Home baseline
+## 6. Global AppShell / Home and Timeline
 
-The shared AppShell/Global Topbar remains application infrastructure outside World Focus ownership.
+The former Global Topbar Review placeholder remains removed. Do not reintroduce it without a new explicit product contract.
 
-Durable authorities:
-
-```text
-docs/frontend/home/contract.md
-docs/frontend/home/home-structural-contract.md
-docs/frontend/app-shell/p1-global-app-shell.md
-docs/frontend/ui-registry.md
-```
-
-The former disabled legacy Global Topbar Review control is removed. Do not reintroduce it as a placeholder, fake count or duplicate Resolution entry without a new explicit product contract.
-
-Do not modify shared shell behavior as collateral damage of World Focus work.
+Timeline T1 observable interaction/geometry behavior remains frozen and user accepted. World Focus/M0 work must not weaken Timeline regression guards.
 
 ---
 
-## 7. Timeline state
-
-Timeline T1 observable interaction/geometry behavior remains frozen and user accepted.
-
-When Timeline is explicitly resumed, read:
+## 7. Backend stop line
 
 ```text
-1. docs/frontend/home/timeline-current-checkpoint.md
-2. docs/frontend/home/timeline-handoff.md
-3. docs/frontend/home/timeline-t1-frozen-contract.md
-4. docs/frontend/home/temporal-experience-architecture.md
-5. docs/frontend/home/temporal-frontend-roadmap.md
+frontend view model != backend DTO != Domain model != persistence row
 ```
 
-Never weaken Timeline regression tests for unrelated World Focus work.
-
----
-
-## 8. Backend stop line
-
-Pre-backend remains strict:
+Until the later explicit backend vertical:
 
 ```text
-NO real World DB/Alembic persistence
+NO World DB/Alembic persistence
 NO real World business API merely for frontend completeness
 NO real AuthZ/provider runtime
 NO real LLM/model routing/streaming
@@ -201,43 +161,39 @@ NO real tool/effect execution
 NO fake successful backend state
 ```
 
-Permanent rule:
-
-```text
-frontend view model != backend DTO != Domain model != persistence row
-```
-
 ---
 
-## 9. Immediate next gate
+## 8. CURRENT ACTIVE GATE — M0
 
 > **M0 — Materialization Mapping / Scope Freeze**
 
-M0 is next and has not been started by the hygiene passes.
+M0 is now active.
 
-M0 maps the closed substrate to:
+It must map every closed invariant/primitive to one production disposition:
 
 ```text
-existing production code already satisfying the invariant
-bounded generalization needed
-missing model/application production code
-missing shared renderer
-specialist extension
-DANTE seam
-backend-deferred seam
+A already satisfied by existing production code
+B existing code requiring bounded generalization
+C missing model/application production code
+D missing shared renderer
+E specialist extension
+F DANTE seam — defer to M4
+G backend-deferred seam
 ```
 
-M0 must not silently start M1, D2–D6 or backend work.
+M0 must produce an explicit M1–M7 assignment and freeze scope before M1 begins.
+
+M0 must not itself implement M1, visual primitives, D2–D6 or backend runtime.
 
 ---
 
-## 10. Operational rules
+## 9. Operational rules
 
-- continue on `feature/home-react` until explicitly authorized otherwise;
-- inspect fresh branch HEAD before every write scope;
+- stay on `feature/home-react` unless explicitly authorized otherwise;
+- fresh HEAD check before every write scope;
 - no merge/rebase/force/history rewrite/main mutation without explicit authorization;
 - do not casually modify Access/Auth, Timeline or shared AppShell;
-- never manually edit generated route-tree output;
+- generated route tree is never manually edited;
 - preserve frozen Timeline and World geometry contracts unless explicitly reopened;
 - fix CI/test root causes rather than weaken gates;
-- keep docs synchronized whenever the active gate materially changes.
+- keep live docs synchronized whenever the active gate materially changes.

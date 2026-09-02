@@ -1,6 +1,6 @@
 # DANTE — World Focus Handoff
 
-**Status:** CURRENT DURABLE HANDOFF — WS0–WS8 CLOSED / M0 NEXT  
+**Status:** CURRENT DURABLE HANDOFF — WS0–WS8 CLOSED / PRE-M0 FALSIFICATION CLOSED / M0 ACTIVE  
 **Date:** 2026-09-02  
 **Repository:** `MattiaRubino/dante`  
 **Branch:** `feature/home-react`  
@@ -10,19 +10,21 @@ Read in order:
 
 ```text
 1. world-focus-current-checkpoint.md
-2. world-focus-substrate-closure-plan.md
-3. world-focus-ws8-final-falsification-review.md
-4. world-focus-ws7-executable-harness-review.md
-5. world-focus-ws6-universal-work-primitives.md
-6. world-focus-ws6-primitive-pressure-matrix.md
-7. world-focus-substrate-final-convergence-proof.md
-8. world-focus-substrate-combinatorial-evidence.md
-9. world-focus-frontend-roadmap.md
-10. world-focus-evidence-index.md
-11. product/platform/structure/geometry contracts as needed
+2. world-focus-pre-m0-falsification-review.md
+3. world-focus-post-ws8-hygiene-audit.md
+4. world-focus-substrate-closure-plan.md
+5. world-focus-ws8-final-falsification-review.md
+6. world-focus-ws7-executable-harness-review.md
+7. world-focus-ws6-universal-work-primitives.md
+8. world-focus-ws6-primitive-pressure-matrix.md
+9. world-focus-substrate-final-convergence-proof.md
+10. world-focus-substrate-combinatorial-evidence.md
+11. world-focus-frontend-roadmap.md
+12. world-focus-evidence-index.md
+13. product/platform/structure/geometry contracts as needed
 ```
 
-Older current/next-gate prose is phase-time evidence only.
+Older `NEXT` prose is phase-time evidence only.
 
 ---
 
@@ -39,29 +41,28 @@ B2 Continuity / Resume                 IMPLEMENTED / AUTOMATED PASS
 Workspace Platform                     ENGINEERING CLOSED
 D0 DANTE spatial/presence              ACCEPTED
 D1 quiet invoke/composer               CLOSED FOR SEQUENCING
-WS0                                    CLOSED
-WS1–WS5                                MAXIMAL PRACTICAL ANALYTICAL CLOSURE
-WS6                                    CLOSED
-WS7                                    CLOSED
-WS8                                    CLOSED
-M0                                     NEXT ACTIVE GATE — NOT STARTED
-M1–M7                                  BLOCKED UNTIL M0 SCOPE FREEZE
-D2–D6                                  PRESERVED / MATERIALIZATION-DEFERRED
+WS0–WS8                                CLOSED
+POST-WS8 HYGIENE                       CLOSED / APPLIED
+PRE-M0 FALSIFICATION                   CLOSED / PASS
+M0                                     ACTIVE — MAPPING / SCOPE FREEZE
+M1–M7                                  BLOCKED UNTIL M0 CLOSES
+D2–D6                                  PRESERVED / DEFERRED TO M4
 ```
 
-Final WS8 validated proof/runtime code:
+Semantic WS8 proof remains:
 
 ```text
-88db899391a3a41e23e76177d4896a657232b5eb
+HEAD 88db899391a3a41e23e76177d4896a657232b5eb
+CI   33639741630 PASS — attempt 1
 ```
 
-Frontend CI:
+Final pre-M0 runtime regression gate:
 
 ```text
-33639741630 PASS — attempt 1
+red discovery  798170e0c1ad12e0263364ab5c542a6ffe3d5e06
+fix HEAD       7c9feab50c6e2a04a9a3b1e36c92958362dba704
+CI             33664655614 PASS
 ```
-
-The later docs-only synchronization commit is documentation state, not a replacement for this validated proof point.
 
 ---
 
@@ -83,11 +84,9 @@ Core thesis:
 
 World is not a Domain owner, folder, life taxonomy, DB partition, permission boundary, AI memory bucket, chat room, mandatory Goal/time/KPI surface or dashboard ontology.
 
-One canonical reality may appear through multiple bounded World projections without duplication.
-
 ---
 
-# 3. Output Grammar remains product-level
+# 3. Output Grammar and substrate
 
 ```text
 O1 Orientation
@@ -103,11 +102,9 @@ O10 Act / Decide
 O11 Intelligence
 ```
 
-An Output Grammar family is not automatically an L1 primitive, module or renderer.
+Output Grammar families are product questions, not automatically primitives/modules/renderers.
 
----
-
-# 4. Closed substrate layers
+Closed layers:
 
 ```text
 L0 Higher Authorities
@@ -121,7 +118,7 @@ L7 Renderer / Specialist Extension
 L8 Platform / User Policies
 ```
 
-Finite L1 vocabulary:
+Finite L1:
 
 ```text
 WP-01 Continuity
@@ -130,9 +127,11 @@ WP-03 Comparison
 WP-04 Trajectory
 ```
 
-L1 is optional. Direct Domain/application projection may be the correct answer.
+L1 is optional; direct Domain/application projection may be correct.
 
-Do not collapse:
+---
+
+# 4. Permanent non-collapses
 
 ```text
 Person != Account != Principal != Actor
@@ -152,106 +151,35 @@ No generic Entity/Thing/Relationship/Fact/property-bag root.
 
 ---
 
-# 5. Final analytical proof retained
+# 5. Retained executable proof
 
-WS1–WS5 final authority:
+WS7:
 
-`world-focus-substrate-final-convergence-proof.md`
+```text
+HEAD ca89e733893959af7dcc40fd0b8c8ba08e056ba4
+CI   33633635890 PASS — attempt 1
+67 fixed 3-way rows / 4,455 interactions
+157 fixed high-risk 4-way rows / 2,835 interactions
+```
 
-Concern ledger:
+WS8:
 
-`CG-01..CG-40`
+```text
+stateful hostile pressure
+mutation-kill
+independent post-hardening confirmation
+0 unresolved substrate gaps after final hardening
+```
 
-The proof chain includes domain scenarios, mechanism-first scenarios, metamorphic attacks, architecture mutation kills, WL-H01..WL-H12 traceability, all 3-way/high-risk 4-way combinations, post-hardening deletion proof and future-authority substitution.
+Pre-M0 red-first gate then attacked post-cleanup transient route behavior and discovered HYG-08:
 
-Do not restart it from zero.
+> mismatch returned null but did not consume the old handoff, allowing stale origin resurrection within TTL.
+
+The existing transition owner now invalidates mismatched pending handoffs. No test weakening and no new substrate owner.
 
 ---
 
-# 6. WS7 executable proof
-
-Authority:
-
-`world-focus-ws7-executable-harness-review.md`
-
-Validated code:
-
-```text
-ca89e733893959af7dcc40fd0b8c8ba08e056ba4
-```
-
-Frontend CI:
-
-```text
-33633635890 PASS — attempt 1
-```
-
-Exact vectors:
-
-```text
-67 general rows / 11 axes / strength 3
-4,455 / 4,455
-SHA ca2e8b4aa19285eecd61ac072c0bc9a4f938e7863eea8393d2f2da26827610a0
-
-157 high-risk rows / 7 axes / strength 4
-2,835 / 2,835
-SHA d6efbcd0306ee7d37fac0b4cbc59c7af356c8ac8cbf9ee0d08ed8efbc8f5d835
-```
-
-WS7 executable semantics include finite WP catalog, primitive structural contracts, basis/disclosure/identity/config/effect/DANTE oracle, bounded reference proof, specialist safe failure, responsive/a11y semantic invariance and existing planner/reducer/allocation integration.
-
-The current production workspace reducer remains single-selection. WS7 does not prematurely materialize multi-reference production ownership.
-
----
-
-# 7. WS8 final falsification proof
-
-Authority:
-
-`world-focus-ws8-final-falsification-review.md`
-
-WS8 did not simply replay WS7. It used:
-
-```text
-stateful hostile scenario pressure
-mutation-kill against falsified outcomes
-independent post-hardening metamorphic confirmation
-```
-
-It exposed one real proof gap around CG-40 non-interference: after an invalidation, the resolver correctly rejected saved/derived reuse but the auditor could fail to kill a falsified outcome that re-enabled reuse.
-
-The auditor was hardened without changing the adversarial test. Reuse now requires:
-
-```text
-current basis
-allowed disclosure for recipient/purpose
-stable identity
-no concurrent shared-config conflict
-```
-
-The mutation suite then killed the mutant family. The independent confirmation re-ran all 224 frozen vectors under no-DANTE, responsive/a11y, unknown future World, wrong-World and independent invalidation transformations.
-
-Final WS8 result:
-
-```text
-0 unresolved material substrate gaps
-0 new primitives
-0 new ownership layers
-0 generic escape hatch
-0 page-per-World requirement
-0 AI-only basic path
-0 Domain/Logical/Physical contradiction
-0 privacy/non-interference contradiction
-0 state/race/responsive redesign class
-0 new consequential-effect owner
-0 surviving mutation
-```
-
-A recurring Access keyboard E2E flake was stabilized in test readiness only; no production Access behavior or tab order changed. The final full Frontend CI passed on attempt 1.
-
----
-
-# 8. Existing platform remains valid
+# 6. Existing platform remains valid
 
 Reuse:
 
@@ -260,7 +188,7 @@ stable/adaptive/ephemeral composition
 finite module/surface registries
 12-unit planner
 workspace generation
-expected workspace stale guard
+expected-workspace stale guard
 surface open/replace/promote/close
 blocking-tail barrier
 full/split allocation
@@ -269,23 +197,18 @@ ResizeObserver/container-query ownership
 local failure isolation
 ```
 
-Historical Workspace Platform:
+Known materialization boundary:
 
 ```text
-HEAD 6c441335a75bb913af8da1eda569d8094d38a539
-CI 33549465793 PASS
+production workspace selection     single-reference
+WS7 proof/reference seam           primary + bounded ordered supporting refs
 ```
 
-D1:
-
-```text
-HEAD f17291de32e6bdced20536807b32928ec1be6aea
-CI 33552437179 PASS
-```
+M0 must classify this and every other proof-vs-production delta.
 
 ---
 
-# 9. DANTE disposition
+# 7. DANTE disposition
 
 D0 accepted:
 
@@ -293,32 +216,33 @@ D0 accepted:
 
 D1 global invoke remains `contextReference: null`; no implicit selection leakage.
 
-D2–D6 remain deferred to Materialization M4.
+D2–D6 remain deferred to M4.
 
 DANTE is never truth, authorization, mandatory navigation or automatic effect completion.
 
 ---
 
-# 10. Materialization sequence
+# 8. M0 — active handoff
+
+M0 classifies every closed invariant/primitive into:
 
 ```text
-M0 Materialization Mapping / Scope Freeze      NEXT — NOT STARTED
-M1 Core Non-Visual Production Materialization  BLOCKED BY M0
-M2 Shared Visual Primitive Layer               BLOCKED BY M1
-M3 Adaptive World Composition                  BLOCKED BY M2
-M4 Contextual DANTE                            BLOCKED BY M3
-M5 Contrasting Complete Worlds                 BLOCKED BY M4
-M6 Integrated Product / Visual / A11y Review   BLOCKED BY M5
-M7 Pre-Backend Frontend Freeze                 BLOCKED BY M6
+A already satisfied
+B bounded generalization
+C missing model/application production code
+D shared renderer
+E specialist extension
+F DANTE seam / M4
+G backend-deferred
 ```
 
-M0 maps the closed substrate to already-satisfied code, bounded generalizations, missing production model/application code, shared renderers, specialist extensions, DANTE seams and backend-deferred seams. M0 must not silently begin M1 implementation.
+M0 must create a complete mapping and freeze assignments into M1–M7 before implementation begins.
+
+Do not turn proof/oracle-only structures into production owners automatically. A proof seam earns a production review, not necessarily a production type with the same shape.
 
 ---
 
-# 11. Backend stop line
-
-Before explicit later backend work:
+# 9. Backend stop line
 
 ```text
 NO World DB/Alembic
@@ -332,15 +256,15 @@ NO fake success
 
 ---
 
-# 12. Strict reopen policy
+# 10. Strict reopen policy
 
 Do not restart WS0–WS8 for a new provider, World noun, UI, renderer, viewport, AI model, config store or larger dataset.
 
-Reopen only when later executable/materialization evidence shows a concrete semantic/ownership/state/security/privacy/effect contradiction that cannot fit an existing owner, and reopen only the earliest necessary phase.
+Reopen only when M0/later executable evidence shows a concrete semantic/ownership/state/security/privacy/effect contradiction that cannot fit an existing owner, and reopen only the earliest necessary phase.
 
 ---
 
-# 13. Repository discipline
+# 11. Repository discipline
 
 Authority order:
 
@@ -357,4 +281,4 @@ Every write needs exact branch/PRE-SCOPE/path gate and live HEAD recheck. No mer
 
 Immediate continuation:
 
-> **M0 only. M0 is not started by this handoff synchronization.**
+> **Continue M0 only. M1 remains blocked.**
