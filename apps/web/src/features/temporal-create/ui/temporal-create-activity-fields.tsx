@@ -41,7 +41,7 @@ export function TemporalCreateActivityFields({
       <div className="temporal-create-section__heading">
         <div>
           <h3 id="temporal-create-planning-heading">
-            {t(($) => $.common.home.timeline.create.planning.title)}
+            {`${t(($) => $.common.home.timeline.create.duration)} · ${t(($) => $.common.home.timeline.create.planning.constraint)}`}
           </h3>
           <p>{t(($) => $.common.home.timeline.create.planning.description)}</p>
         </div>
@@ -308,6 +308,12 @@ export function TemporalCreateActivityFields({
       ) : null}
 
       <div className="temporal-create-divider" />
+
+      <div className="temporal-create-section__heading">
+        <div>
+          <h4>{t(($) => $.common.home.timeline.create.execution.structure)}</h4>
+        </div>
+      </div>
 
       <div className="temporal-create-grid two">
         <label className="temporal-create-control">
