@@ -22,6 +22,7 @@ import type {
   TimelineEvent,
   TimelineGroup,
   TimelineGroupId,
+  TimelineSemanticTone,
 } from './model/timeline-types';
 import { TimelineCreateBridge } from './timeline-create-bridge';
 
@@ -95,6 +96,7 @@ type TimelineHeaderProps = Readonly<{
   onToggleFilter: (groupId: TimelineGroupId) => void;
   onReorderGroup: (groupId: TimelineGroupId, targetIndex: number) => void;
   onGroupScroll: (scrollLeft: number) => void;
+  onCreateContext: (label: string, tone: TimelineSemanticTone) => TimelineGroup;
   onMaterializeCreatedEvent: (dateKey: string, event: TimelineEvent) => void;
   onRemoveCreatedEvent: (eventId: TimelineEvent['id']) => void;
 }>;
@@ -121,6 +123,7 @@ export function TimelineHeader({
   onToggleFilter,
   onReorderGroup,
   onGroupScroll,
+  onCreateContext,
   onMaterializeCreatedEvent,
   onRemoveCreatedEvent,
 }: TimelineHeaderProps) {
@@ -188,6 +191,7 @@ export function TimelineHeader({
           groups={groups}
           filters={filters}
           onRevealDate={onDateSelect}
+          onCreateContext={onCreateContext}
           onMaterializeCreatedEvent={onMaterializeCreatedEvent}
           onRemoveCreatedEvent={onRemoveCreatedEvent}
           onBeforeOpen={() => {
