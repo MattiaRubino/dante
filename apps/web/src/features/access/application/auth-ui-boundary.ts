@@ -1,5 +1,5 @@
 import {
-  WebAuthRemoteError,
+  WebAuthRemoteError as PlatformWebAuthRemoteError,
   type WebAuthRemoteFailure,
   type WebProviderAuthenticationResult,
 } from '../../../platform/auth/web-auth-remote';
@@ -12,13 +12,12 @@ export {
   renderGoogleIdentityButton,
 } from '../../../platform/auth/web-auth-provider';
 
-export { WebAuthRemoteError };
 export type { WebProviderAuthenticationResult };
 
 export function authRemoteFailureFromUnknown(
   error: unknown,
 ): WebAuthRemoteFailure | null {
-  if (error instanceof WebAuthRemoteError) {
+  if (error instanceof PlatformWebAuthRemoteError) {
     return error.failure;
   }
   if (
@@ -42,5 +41,11 @@ export function authRemoteFailureFromUnknown(
       return failure as WebAuthRemoteFailure;
     default:
       return null;
+  }
+}
+
+export class WebAuthRemoteError extends PlatformWebAuthRemoteError {
+  static [Symbol.hasInstance](value: unknown): boolean {
+    return authRemoteFailureFromUnknown(value) !== null;
   }
 }
