@@ -46,9 +46,9 @@ DANTE will not operate a general-purpose production MTA/mail-server fleet as the
 
 Amazon SES API v2 is the selected **primary production delivery-adapter target**, subject to the remaining operational/provider qualification gate before production acceptance.
 
-Preferred initial region target is `eu-south-1` (Europe/Milan) where Amazon SES exposes regional API/SMTP endpoints. Region selection does not by itself close privacy, retention, subprocessors or legal/compliance review; those remain explicit deployment gates.
+Preferred initial region target is `eu-south-1` (Europe/Milan). AWS currently exposes the SES HTTPS API endpoint in Milan, but its endpoint reference explicitly states that SES **SMTP endpoints are not currently available in Europe (Milan)**. This is not a blocker for the selected production direction because DANTE prefers the SES API v2 adapter; it is an important constraint for any SES-SMTP-specific UAT plan. Region selection does not by itself close privacy, retention, subprocessors or legal/compliance review; those remain explicit deployment gates.
 
-Production integration should prefer the SES HTTP API through the AWS SDK over SMTP because it provides structured provider responses, message identifiers/tags/configuration sets and native IAM integration. SMTP remains a valid compatibility/UAT adapter, not the primary production contract.
+Production integration should prefer the SES HTTP API through the AWS SDK over SMTP because it provides structured provider responses, message identifiers/tags/configuration sets and native IAM integration. SMTP remains a valid generic compatibility/UAT adapter when the chosen provider/region exposes it, not the primary production contract.
 
 ### Provider-neutral application boundary
 
@@ -201,7 +201,7 @@ DEV/UAT/PROD
 → no secret in frontend/public runtime config
 ```
 
-The opt-in real-SMTP tooling introduced at `9c0587af...` remains useful for UAT/provider qualification. It does not become production architecture by inertia.
+The opt-in real-SMTP tooling introduced at `9c0587af...` remains useful for providers/regions that expose SMTP and for generic provider qualification. It does not become production architecture by inertia, and it cannot be assumed to exercise SES from Milan because SES SMTP is currently unavailable in `eu-south-1`.
 
 ## Authentication / IAM posture
 
@@ -215,7 +215,7 @@ The selection is architectural, not based on a temporary free allowance.
 
 Relevant current evidence reviewed on 2026-09-02:
 
-- Amazon SES exposes API v2 and regional endpoints, including Europe/Milan.
+- Amazon SES exposes its HTTPS API in Europe/Milan (`eu-south-1`); current AWS endpoint documentation says SES SMTP is not available in Milan.
 - SES configuration sets can publish delivery, bounce and complaint telemetry to AWS event destinations.
 - IAM can restrict allowed SES actions and sender identities.
 - Netflix publicly describes retiring its in-house delivery infrastructure for SES and separating transactional/marketing reputation pools.
