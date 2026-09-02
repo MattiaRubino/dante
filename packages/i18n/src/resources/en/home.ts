@@ -321,6 +321,14 @@ export const home = {
         description:
           'Context and notes help place and understand the item without inventing an unowned generic tag ontology.',
       },
+      appearance: {
+        title: 'Appearance',
+        description:
+          'By default the item inherits its Context color. An override changes presentation only, not the Context or filters.',
+        choice: 'Item color',
+        inherit: 'Inherit from Context',
+        override: 'Custom color',
+      },
       handoffs: {
         otherTitle: 'Other type',
         otherDescription:
