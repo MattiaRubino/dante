@@ -65,6 +65,12 @@ export type TimelineAction =
     }>
   | Readonly<{ type: 'reset-view-options' }>
   | Readonly<{
+      type: 'materialize-event';
+      dateKey: string;
+      event: TimelineEvent;
+    }>
+  | Readonly<{ type: 'remove-event'; eventId: TimelineEventId }>
+  | Readonly<{
       type: 'update-event-time';
       dateKey: string;
       eventId: TimelineEventId;
@@ -144,6 +150,56 @@ function replaceDateEvents(
   return {
     ...state.eventsByDate,
     [dateKey]: sortEvents(events),
+  };
+}
+
+function materializeEvent(
+  state: TimelineState,
+  action: Extract<TimelineAction, { type: 'materialize-event' }>,
+): TimelineState {
+  if (findTimelineEvent(state, action.event.id)) {
+    return state;
+  }
+
+  const events = timelineEventsForDate(state, action.dateKey);
+  return {
+    ...state,
+    eventsByDate: replaceDateEvents(state, action.dateKey, [
+      ...events,
+      action.event,
+    ]),
+  };
+}
+
+function removeEvent(
+  state: TimelineState,
+  eventId: TimelineEventId,
+): TimelineState {
+  let removed = false;
+  const eventsByDate = Object.fromEntries(
+    Object.entries(state.eventsByDate).map(([dateKey, events]) => {
+      const next = events.filter((event) => event.id !== eventId);
+      if (next.length !== events.length) {
+        removed = true;
+      }
+      return [dateKey, next];
+    }),
+  );
+
+  if (!removed) {
+    return state;
+  }
+
+  const expandedEventIds = new Set(state.expandedEventIds);
+  expandedEventIds.delete(eventId);
+
+  return {
+    ...state,
+    eventsByDate,
+    focusedEventId:
+      state.focusedEventId === eventId ? null : state.focusedEventId,
+    expandedEventIds,
+    undo: state.undo?.eventId === eventId ? null : state.undo,
   };
 }
 
@@ -400,6 +456,12 @@ export function timelineReducer(
 
     case 'reset-view-options':
       return { ...state, viewOptions: DEFAULT_VIEW_OPTIONS };
+
+    case 'materialize-event':
+      return materializeEvent(state, action);
+
+    case 'remove-event':
+      return removeEvent(state, action.eventId);
 
     case 'update-event-time':
       return updateEventTime(state, action);
