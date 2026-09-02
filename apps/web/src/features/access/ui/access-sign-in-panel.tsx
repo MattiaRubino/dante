@@ -66,6 +66,7 @@ export function AccessSignInPanel({
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<SignInErrors>({});
   const [showPassword, setShowPassword] = useState(false);
+  const [showAlternateMethods, setShowAlternateMethods] = useState(false);
   const [passkeyError, setPasskeyError] = useState<string | null>(null);
   const passkeyMutation = usePasskeySignInMutation();
   const googleEnabled = googleAuthenticationEnabledFromBuild();
@@ -267,28 +268,63 @@ export function AccessSignInPanel({
         </button>
 
         {passkeyEnabled ? (
-          <div className="access-authenticator-actions">
+          <div className="access-alternate-methods">
             <button
-              className="access-inline-action access-authenticator-action"
+              className="access-inline-action access-alternate-methods-trigger"
               type="button"
+              aria-expanded={showAlternateMethods}
+              aria-controls="access-alternate-methods"
               disabled={interactionPending}
-              aria-busy={passkeyMutation.isPending}
-              onClick={signInWithPasskey}
+              onClick={() => {
+                setShowAlternateMethods((value) => !value);
+                setPasskeyError(null);
+              }}
             >
+              <span>{t(($) => $.common.access.signin.otherMethods)}</span>
               <svg
-                className="access-authenticator-icon"
-                viewBox="0 0 24 24"
+                className="access-alternate-methods-chevron"
+                viewBox="0 0 20 20"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.8"
                 focusable="false"
                 aria-hidden="true"
               >
-                <circle cx="8" cy="12" r="3" />
-                <path d="M11 12h9m-3 0v3m-3-3v2" />
+                <path d="m6 8 4 4 4-4" />
               </svg>
-              <span>{t(($) => $.common.access.provider.passkey)}</span>
             </button>
+
+            {showAlternateMethods ? (
+              <div
+                id="access-alternate-methods"
+                className="access-alternate-methods-menu"
+              >
+                <button
+                  className="access-alternate-method"
+                  type="button"
+                  disabled={interactionPending}
+                  aria-busy={passkeyMutation.isPending}
+                  onClick={signInWithPasskey}
+                >
+                  <svg
+                    className="access-authenticator-icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    focusable="false"
+                    aria-hidden="true"
+                  >
+                    <circle cx="8" cy="12" r="3" />
+                    <path d="M11 12h9m-3 0v3m-3-3v2" />
+                  </svg>
+                  <span className="access-alternate-method-copy">
+                    <strong>{t(($) => $.common.access.provider.passkey)}</strong>
+                    <small>{t(($) => $.common.access.signin.passkeyHint)}</small>
+                  </span>
+                </button>
+              </div>
+            ) : null}
           </div>
         ) : null}
 
