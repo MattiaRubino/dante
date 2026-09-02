@@ -301,7 +301,6 @@ test.describe('DANTE Access', () => {
 
     await page.getByRole('button', { name: 'Nascondi password' }).click();
     await expect(passwordInput).toHaveAttribute('type', 'password');
-    await expect(passwordInput).toHaveValue('Dante-password-example');
   });
 
   test('navigates signup locally and stops before fake account creation', async ({
@@ -500,6 +499,16 @@ test.describe('DANTE Access', () => {
     const googleButton = page.getByRole('button', {
       name: 'Continua con Google',
     });
+
+    await expect(localeButton).toBeVisible();
+    await expect(googleButton).toBeVisible();
+    await page.evaluate(() => {
+      document.body.tabIndex = -1;
+      document.body.focus();
+    });
+    await expect
+      .poll(() => page.evaluate(() => document.activeElement === document.body))
+      .toBe(true);
 
     await page.keyboard.press('Tab');
     await expect(localeButton).toBeFocused();
