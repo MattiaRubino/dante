@@ -85,7 +85,7 @@ Stage management rule:
 
 The timeline `+` is outside this central-stage rule: it belongs to the temporal surface and does not create a Mondi/Segnali capacity/add slot.
 
-Historical `home.stage.worlds` / `home.stage.stats` implementation vocabulary is deprecated by the projection IDs above; historical files/checkpoints remain evidence.
+Historical `home.stage.worlds` / `home.stage.stats` implementation vocabulary is removed from the active implementation by the projection IDs above; historical files/checkpoints remain evidence.
 
 ## Home — time / timeline
 
@@ -166,7 +166,7 @@ The accepted rail must **not** become:
 | side `Review` card | REMOVED | Replaced by `home.contextRail.resolution`; old generic review framing was weaker. |
 | `home.contextRail.focusExpand` | REJECTED | Focus/expand chevrons were ambiguous and created unnecessary state. Accepted rail keeps both functions visible. |
 | short rail ending mid-column | REJECTED | Accepted rail stretches with the timeline column to avoid arbitrary empty lower space. |
-| generic `Stats` stage framing | DEPRECATED | Replaced by the more meaningful `home.stage.signals` / Segnali projection. |
+| generic `Stats` stage framing | REMOVED | Replaced by `home.stage.signals` / Segnali; the remaining `home-stats-*` runtime class vocabulary was removed from the active renderer/geometry on 2026-09-02. |
 | `home.stage.continuity.emptySlot` / ghost `+` | REMOVED | Partial state renders only real items; creation/configuration belongs to dedicated management surfaces. |
 
 ## Maintenance rule

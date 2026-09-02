@@ -66,6 +66,26 @@ export const home = {
     label: 'Central workspace',
     continuity: 'Worlds',
     signals: 'Signals',
+    signalsPrevious: 'Previous signal',
+    signalsNext: 'Next signal',
+    signalSleepTrend: 'Sleep trend',
+    signalMetrics: {
+      focus: {
+        kicker: 'FOCUS',
+        value: '5h 20m',
+        detail: 'this week',
+      },
+      sleep: {
+        kicker: 'SLEEP',
+        value: '6h 38m',
+        detail: '↓ 42m · 3-week average',
+      },
+      spend: {
+        kicker: 'SPEND',
+        value: '€412',
+        detail: '↑ 18% · this month',
+      },
+    },
   },
   timeline: {
     label: 'Today timeline',

@@ -64,6 +64,26 @@ export const home = {
     label: 'Spazio centrale',
     continuity: 'Mondi',
     signals: 'Segnali',
+    signalsPrevious: 'Segnale precedente',
+    signalsNext: 'Segnale successivo',
+    signalSleepTrend: 'Andamento del sonno',
+    signalMetrics: {
+      focus: {
+        kicker: 'FOCUS',
+        value: '5h 20m',
+        detail: 'questa settimana',
+      },
+      sleep: {
+        kicker: 'SONNO',
+        value: '6h 38m',
+        detail: '↓ 42m · media 3 sett.',
+      },
+      spend: {
+        kicker: 'SPESA',
+        value: '€412',
+        detail: '↑ 18% · questo mese',
+      },
+    },
   },
   timeline: {
     label: 'Timeline di oggi',

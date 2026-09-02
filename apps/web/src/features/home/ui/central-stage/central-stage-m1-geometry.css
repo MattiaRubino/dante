@@ -145,7 +145,7 @@
  * No mode is allowed to position itself against upper-workspace coordinates.
  */
 .home-m1 .home-upper-workspace .home-central-stage .home-world-scene,
-.home-m1 .home-upper-workspace .home-central-stage .home-stats-stage {
+.home-m1 .home-upper-workspace .home-central-stage .home-signal-stage {
   position: absolute;
   top: var(--home-stage-projection-top);
   right: var(--home-stage-projection-right);
