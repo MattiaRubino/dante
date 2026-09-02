@@ -45,7 +45,7 @@ export function authRemoteFailureFromUnknown(
 }
 
 export class WebAuthRemoteError extends PlatformWebAuthRemoteError {
-  static [Symbol.hasInstance](value: unknown): boolean {
+  static override [Symbol.hasInstance](value: unknown): boolean {
     return authRemoteFailureFromUnknown(value) !== null;
   }
 }
