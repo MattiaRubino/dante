@@ -5,7 +5,7 @@
 - **Protected `main`:** integrated source authority; read the live Git ref for the current SHA
 - **Backend CP6 integration:** PR #42 MERGED
 - **PostgreSQL Recovery integration:** PR #47 MERGED / CP01–CP07 LOCAL PASS / CLOSED
-- **Current product boundary:** protected `main` includes the accepted PostgreSQL Recovery evolution; Access/Auth, Home React, platform observability and AI architecture remain bounded unmerged workstreams
+- **Current product boundary:** protected `main` includes the accepted PostgreSQL Recovery evolution; Access/Auth, Home React and platform observability remain active bounded workstreams; AI architecture design/reengineering is closed on `feature/ai-architecture` and ready to hand off to implementation
 
 ## 1. Executive state
 
@@ -17,9 +17,8 @@ DOMAIN MODEL
 CLOSED / SEMANTICALLY COMPLETE FOR CURRENT SCOPE
 
 LOGICAL MODEL
-CLOSED
-57 / 57 CLASSIFIED
-WL-H01..WL-H12 ACTIVE AS BINDING HARDENINGS
+CLOSED / 57 OF 57 CLASSIFIED
+WL-H01..WL-H12 BINDING
 
 PRE-PHYSICAL COHERENCE
 CLOSED / FINAL QA PASS
@@ -28,42 +27,24 @@ PHYSICAL TARGET
 CLOSED / SELECTED / ACCEPTED
 PostgreSQL 18 major family
 sole canonical persistence / material-history authority
-Physical phase-time exact patch 18.4 / HISTORICAL
 
 ENGINEERING FOUNDATION v0
 CLOSED / ACCEPTED
 
 FRONTEND ENGINEERING FOUNDATION
-CLOSED / ACCEPTED / INTEGRATED VIA PR #22
+CLOSED / INTEGRATED VIA PR #22
 
 FRONTEND MATERIALIZATION
 CLOSED / PASS / INTEGRATED VIA PR #28
 
 PRODUCTION BACKEND SCAFFOLD
-CLOSED / DIRECT QA PASS / INTEGRATED VIA PR #24
-CP1 CLOSED / DIRECT QA PASS
-CP2 CLOSED / DIRECT QA PASS — PostgreSQL 18.4 historical exact evidence
-CP3 CLOSED / DIRECT QA PASS — PostgreSQL 18.4 historical exact evidence
-CP4 CLOSED / DIRECT REMOTE QA PASS
-CP5 CLOSED / DIRECT INTEGRATED QA PASS
+CP1–CP5 CLOSED / DIRECT QA PASS / INTEGRATED VIA PR #24
 
 CP6 — CONCRETE POSTGRESQL DATABASE
-CLOSED / CONCRETE POSTGRESQL DATABASE PASS
-INTEGRATED IN PROTECTED main VIA PR #42
-CP6-00 COMPLETE
-CP6-01 CLOSED / GATE 01 PASS
-CP6-02 CLOSED / GATE 02 PASS
-CP6-03 CLOSED / GATE 03 PASS
-CP6-04 CLOSED / MATERIALIZATION PASS
-CP6-05 CLOSED / DIRECT QA PASS
+CLOSED / DIRECT QA PASS / INTEGRATED VIA PR #42
 
-CURRENT POSTGRESQL TECHNICAL PATCH
+CURRENT POSTGRESQL
 18.6
-
-HISTORICAL PRE-RECOVERY CP6 BUSINESS DATABASE BASELINE
-ALEMBIC 20260826_08
-68 tables / 5 views / 14 routines / 75 triggers /
-95 indexes / 68 FKs / 120 CHECKs
 
 CURRENT PROTECTED-MAIN DATABASE / RECOVERY BASELINE
 ALEMBIC 20260830_09
@@ -82,89 +63,84 @@ FULL ACCESS/AUTH PRODUCT VERTICAL
 ACTIVE UNMERGED WORKSTREAM
 feature/access-auth owns branch-local implementation truth
 
-AI ARCHITECTURE
-ACTIVE UNMERGED DESIGN / REENGINEERING WORKSTREAM
-feature/ai-architecture
+AI ARCHITECTURE DESIGN / REENGINEERING
+CLOSED / STRUCTURALLY ACCEPTED ON feature/ai-architecture
 AI-00 COMPLETE
-AI-01 PRODUCT-FORM + PRODUCTION-ENGINEERING RESEARCH COMPLETE
-AI-02.1 v0.5 CLOSED / STRUCTURALLY ACCEPTED
-AI-02 PRESSURE/MEGA TEST PROGRAM COMPLETE
-AI-02 TARGETED v0.5 CONSISTENCY VERIFICATION COMPLETE
-NO MORE AI-02 MEGA TESTS
-FUTURE-EXTENSIBILITY STRUCTURAL CRITERION PASS
-AI-03 CONTEXT / RETRIEVAL / MEMORY CLOSED / STRUCTURALLY ACCEPTED
-AI-03A FULL CONTEXT ARCHITECTURE CLOSED / C01..C33
-AI-03B RETRIEVAL + MEMORY ARCHITECTURE CLOSED / B01..B35
-AI-03C DESTRUCTIVE VALIDATION + MATERIALIZATION CLOSED / MAT-01..MAT-15
-AI-04 PRODUCTIONIZATION ARCHITECTURE CLOSED / STRUCTURALLY ACCEPTED
-AI-04A CLOSED / A01..A30 / EV01..EV20
-AI-04B CLOSED / RT-01..RT-31
-AI-04C CLOSED / PA-01..PA-61
-AI-04 WHOLE-PHASE CLOSED / WP-01..WP-22
-PRE-AI05 CROSS-PHASE HARDENING CLOSED / PRE05-H01..H19
-DANTE-E01..DANTE-E14 CURRENT CORE EVAL FAMILIES
-CURRENT MACRO-PHASE AI-05 WHOLE-SYSTEM ACCEPTANCE + IMPLEMENTATION BLUEPRINT
-NO AI BACKEND / DB / PROVIDER IMPLEMENTATION CLAIMED
+AI-01 COMPLETE
+AI-02.1 CLOSED / STRUCTURALLY ACCEPTED
+AI-03 CLOSED / C01..C33 / B01..B35 / MAT-01..MAT-15
+AI-04 CLOSED / A01..A30 / EV01..EV20 / RT-01..RT-31 / PA-01..PA-61 / WP-01..WP-22
+PRE-AI05 CLOSED / PRE05-H01..H19
+AI-05A CLOSED / BD-01..BD-41
+AI-05B CLOSED / AI05B-H01..H15 / B05-01..B05-50 PASS
+AI-05 WHOLE-SYSTEM CLOSED / STRUCTURALLY ACCEPTED
+POST-AI05 HARDENING CLOSED / POST05-H01..H25
+POST-AI05 FINAL MEGA TEST PASS
+MKT-001..MKT-100 PASS
+C01..C20 COMPOUND PASS
+REVERSE AUTHORITY PASS
+PRODUCT/SIMULATION REPLAY PASS
 
-PARALLEL ACTIVE UNMERGED WORKSTREAMS
+CURRENT AI IMPLEMENTATION AUTHORITY
+docs/architecture/dante-ai-implementation-baseline-final.md
+
+CURRENT AI NEXT ACTION
+ACTUAL AI IMPLEMENTATION WORKSTREAM
+I0 repository/application ownership + architecture-test skeleton
+
+AI IMPLEMENTATION CLAIM
+NONE YET
+
+PARALLEL BOUNDED UNMERGED WORKSTREAMS
 feature/access-auth
 feature/home-react
 feature/platform-observability
-feature/ai-architecture
+feature/ai-architecture — architecture closed / implementation handoff ready
 ```
 
-Architecture/design closure is not runtime/product completion. AI-02.1, AI-03, AI-04 and PRE-AI05 closure record structural architecture acceptance only.
+Architecture closure is not runtime/product completion. `I0` is build-authorized; production Search, Ask DANTE, provider routes, new persistence and new database schema are not activated by this status.
 
 ## 2. Current protected-main backend/database truth
 
-PR #42 integrated CP6. PR #47 subsequently integrated the closed PostgreSQL Recovery workstream, including forward database evolution `20260830_09`.
-
-Current protected-main database:
+PR #42 integrated CP6. PR #47 subsequently integrated the closed PostgreSQL Recovery workstream, including forward evolution `20260830_09`.
 
 ```text
 PostgreSQL          18.6
 Alembic head        20260830_09
+schema              dante
 
 tables              69
 views                5
 routines             15
 triggers             76
-physical indexes    97
+physical indexes     97
 foreign keys         69
-CHECK constraints   123
-
+CHECK constraints    123
 custom enum/domain    0
 sequences             0
 materialized views    0
 RLS policies          0
 ```
 
-Historical pre-Recovery CP6 baseline:
+Historical pre-Recovery CP6 baseline remains:
 
 ```text
-PostgreSQL          18.6
-Alembic head        20260826_08
-68 / 5 / 14 / 75 / 95 / 68 / 120
+Alembic 20260826_08
+68 tables / 5 views / 14 routines / 75 triggers /
+95 indexes / 68 FKs / 120 CHECKs
 ```
 
-Recovery state:
+Current Recovery posture:
 
 ```text
-material_state_retirement            materialized
-suppression ledger                   versioned / fail-closed
-CP01–CP07                            LOCAL PASS / CLOSED
-whole operator rehearsal             PASS
-database-local reopen                PASS
-remote backup provider               TBD / NOT ACTIVATED
-production/cloud recovery            NOT CLAIMED
+material_state_retirement  materialized
+suppression ledger         versioned / fail-closed
+CP01–CP07                  LOCAL PASS / CLOSED
+whole operator rehearsal   PASS
+database-local reopen      PASS
+remote backup provider     TBD / NOT ACTIVATED
+production/cloud recovery  NOT CLAIMED
 ```
-
-Current durable Recovery authority:
-
-- `database/README.md`
-- `operations/postgres-recovery-runbook.md`
-- `archive/branches/2026-08-feature-postgres-recovery.md` — non-authoritative branch history
-- versioned recovery code/harnesses under `infra/local/postgres/recovery/`
 
 ## 3. Persistence authority
 
@@ -176,32 +152,32 @@ CP6-02 Constitution + ADR-010
 → durable PostgreSQL doctrine
 
 Database System of Record
-→ current human-readable database meaning + machine Dictionary
+→ current human-readable meaning + machine Dictionary
 
 Alembic
-→ deployed application-schema evolution authority
+→ deployed schema evolution authority
 
-SQLAlchemy metadata / mappings
-→ application representation of deployed database contract
+SQLAlchemy metadata/mappings
+→ application representation
 
 real PostgreSQL introspection
-→ observed materialized database
+→ observed materialized schema
 
 direct tests
 → executable proof
 ```
 
-Permanent reconciliation invariant:
+Permanent reconciliation:
 
 ```text
 Database Architecture & Reference
 ≈ Database Dictionary
-≈ SQLAlchemy metadata / mappings
+≈ SQLAlchemy metadata/mappings
 ≈ Alembic head
 ≈ real PostgreSQL schema
 ```
 
-A later structural DB change is incomplete if these representations are left inconsistent.
+A later structural change remains a normal forward same-change package; AI architecture closure produced **no database/Alembic change**.
 
 ## 4. Binding semantic invariants
 
@@ -226,444 +202,122 @@ idempotency != semantic identity
 client local state != canonical accepted effect
 ```
 
-AI architecture adds no exception. Current AI correctness invariants include:
+Current AI implementation invariants additionally include:
 
 ```text
-DISPLAY NAME != EFFECT TARGET
+GLOBAL SEARCH != INTELLIGENCE
+SEARCH RESULT / CURSOR / TARGET REF != AUTHORIZATION
+SEMANTIC QUERY GATEWAY != INTELLIGENCE-OWNED CROSS-CAPABILITY SQL
 MODEL OUTPUT != PUBLISHABLE OUTPUT
-INTERNAL STREAM != RECIPIENT STREAM
-SCENARIO STATE != CANONICAL CURRENT STATE
-CHANGESET != BYPASS OF INDIVIDUAL EFFECT GOVERNANCE
-CONTEXT ACCESS != DISCLOSURE PERMISSION
-INTERACTION SESSION != RUN != WORKER
-SUPERSEDE != CANCEL != ROLLBACK != RECONCILE
+PROVIDER COMPLETED != VERIFIED != PUBLISHABLE
+PROVIDER FAILURE != DISCLOSURE DID NOT HAPPEN
+Context != Retrieval != Memory
+RetrievalCandidate != ContextFragment
+ConsumerContext != ContextManifest != BasisManifest
+DATA != INSTRUCTION
+MASKING / REDACTION != SEMANTIC EQUIVALENCE
+APPROXIMATE != COMPLETE
 RUN-START AUTHORIZATION != PERPETUAL AUTHORIZATION
 RUN-START AUTONOMY != PERPETUAL AUTONOMY
-USER AUTONOMY != EXTERNAL/INSTITUTIONAL AUTHORITY
-DANTE REPRESENTATION != EXTERNAL SYSTEM-OF-RECORD AUTHORITY
-SENT != DELIVERED != SEEN != ACKNOWLEDGED != ACCEPTED
-EXECUTION ENVIRONMENT != MANDATORY SANDBOX/CONTAINER
-FRESH INPUTS != AUTOMATICALLY COHERENT COMBINED BASIS
-APPROVAL != PERPETUAL AUTHORIZATION FOR MATERIALLY CHANGED WORK
-CACHE HIT != CURRENT DISCLOSURE AUTHORIZATION
-CONTEXT != RETRIEVAL != MEMORY
-CONSUMER CONTEXT != CONTEXT MANIFEST
-CONTEXT MANIFEST != BASIS MANIFEST
-SOURCE STANDING != DOMAIN AUTHORITY
-MODEL-DISCOVERED NEED != WORKCONTRACT/POLICY SCOPE EXPANSION
-SESSION CONTINUITY != PROVIDER-CONTEXT CONTINUITY
-WORKCONTRACT PROPAGATION != PARENT-CONTEXT INHERITANCE
-PROCESSING / RETRIEVAL ELIGIBILITY != RETENTION / FUTURE-REUSE ELIGIBILITY
-MEMORY EXISTS != MEMORY MAY BE RECALLED
-APPROXIMATE != COMPLETE
-SEMANTIC AUTHORITY != FUNCTIONAL ROLE != SURVIVAL DISPOSITION != PHYSICAL OWNER
+AUXILIARY MODEL CALL != FREE PROVIDER CALL
 MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT
-MODEL VENDOR != SERVING PLATFORM != PROTOCOL FAMILY
 HARNESSPROFILE != PROVIDERBINDING
-DANTE FEATURE/BUSINESS CODE != CONCRETE PROVIDER SDK
-ATTENTION DECISION != PROACTIVE WORK ADMISSION != EFFECT AUTHORIZATION
-RECIPIENT != SURFACE != CHANNEL
-SAFE SINGLE DISCLOSURE != AUTOMATICALLY SAFE CUMULATIVE DISCLOSURE
-SOURCE FUTURE ELIGIBILITY != PRIOR DISCLOSURE OCCURRENCE
+CANDIDATE ADMISSION != PRODUCTION QUALIFICATION
+DEFAULT NONCANONICAL PERSISTENCE = NO
+BUILD-READY != INTEGRATION-READY != ACTIVATION-READY
 ```
 
-Provider replaceability remains required without forcing lowest-common-denominator provider behavior.
-
-## 5. Reference / material-state baseline
-
-Reference families remain distinct:
+## 5. Backend technical foundation
 
 ```text
-NativeRef
-ScopedRecordRef
-MaterialStateRef
-ExternalRef
-```
-
-Consequential AI work uses two orthogonal correctness checks:
-
-```text
-Reference / Target Resolution
-→ are we acting on the intended canonical target?
-
-BasisManifest / expected state
-→ are target state and dependent information still valid/coherent/fresh enough?
-```
-
-AI-03A requires each relevant `InformationNeed` to state the level of reference resolution required for readiness. `AMBIGUOUS` is not solved by model confidence.
-
-Expected MaterialState does not compensate for selecting the wrong-but-current target.
-
-## 6. Backend technical foundation
-
-```text
-Python                              3.14.x / initial exact pin 3.14.7
-uv                                  repository package authority
-schema                              dante
-SQLAlchemy                          async 2.0 stable line
-psycopg                             3
-Alembic                             one environment / one DAG / one head
-one AsyncEngine per process
-one async_sessionmaker per process
-one AsyncSession per app operation
-autobegin=False
-autoflush=True
-expire_on_commit=False
-outer application operation owns transaction
-adapter may flush / never implicit commit
-READ COMMITTED default
-
-dante_owner                         NOLOGIN ownership identity
-dante_migrator                      LOGIN NOINHERIT + bounded SET ROLE
-dante_runtime                       LOGIN NOINHERIT / runtime DML posture
+Python                    3.14.x / initial exact pin 3.14.7
+uv                        package authority
+FastAPI                    inbound/process host
+SQLAlchemy                 async 2.0 stable line
+psycopg                    3
+Alembic                    one environment / one DAG / one head
+one AsyncEngine            per process
+one async_sessionmaker     per process
+one AsyncSession           per app operation
+autobegin                  false
+autoflush                  true
+expire_on_commit           false
+transaction owner          outer application operation
+adapter commit             forbidden / flush only
+READ COMMITTED             default
 ```
 
 No generic Repository/UoW/BaseService architecture is introduced merely for uniformity.
 
-## 7. Access frontend baseline
+## 6. Current AI implementation boundary
 
-The completed pre-backend Access frontend remains the accepted baseline consumed by the current full-stack `feature/access-auth` workstream.
-
-Accepted checkpoints:
+Final implementation-facing authority:
 
 ```text
-AF-01D  PASS
-AF-02A  PASS
-AF-02B  PASS
-AF-03A  PASS
+docs/architecture/dante-ai-implementation-baseline-final.md
 ```
 
-The full Access/Auth product vertical is not claimed closed here; its branch-local docs/code/tests own current implementation truth.
-
-## 8. Current bounded unmerged workstreams
+Final structural acceptance evidence:
 
 ```text
-feature/access-auth             active unmerged product vertical
-feature/home-react              active unmerged frontend workstream
-feature/platform-observability  active unmerged platform workstream
-feature/ai-architecture         active unmerged AI architecture workstream
-                                design/reengineering only
+docs/architecture/dante-ai-post05-final-mega-acceptance.md
 ```
 
-Do not infer one branch's implementation from another branch or from this global summary.
-
-A legitimate schema evolution continues to use a reviewed forward Alembic migration synchronized with mappings, Dictionary, human-readable database reference and tests. CP6 is not reopened.
-
-## 9. AI architecture branch-local state
-
-Current durable sources:
+Accepted first technical vertical:
 
 ```text
-docs/architecture/dante-ai-foundation.md
-→ AI-00 semantic / architectural baseline
+GLOBAL SEARCH subset
++ READ-ONLY ASK DANTE
 
-docs/architecture/ai-production-engineering-state-of-the-art-2026.md
-→ external production-engineering research / NON-DANTE-DECISION
-
-docs/architecture/dante-ai-02-1-intelligence-reengineering.md
-→ AI-02.1 v0.5 CLOSED / STRUCTURALLY ACCEPTED
-
-docs/architecture/dante-ai-03-context-retrieval-memory.md
-→ AI-03 CLOSED / STRUCTURALLY ACCEPTED
-
-docs/architecture/dante-ai-03a-full-context-architecture.md
-→ AI-03A CLOSED / C01..C33
-
-docs/architecture/dante-ai-03b-retrieval-memory-architecture.md
-→ AI-03B CLOSED / B01..B35
-
-docs/architecture/dante-ai-03c-destructive-validation-materialization-blueprint.md
-→ AI-03C CLOSED / MAT-01..MAT-15
-
-docs/architecture/dante-ai-04-productionization-architecture.md
-→ AI-04 CLOSED / STRUCTURALLY ACCEPTED
-
-docs/architecture/dante-ai-04a-direct-eval-specification.md
-→ AI-04A CLOSED / A01..A30 / EV01..EV20 / DANTE-E01..E14 current
-
-docs/architecture/dante-ai-04b-concrete-runtime-capability-architecture.md
-→ AI-04B CLOSED / RT-01..RT-31
-
-docs/architecture/dante-ai-04c-production-assurance-control-plane-operations.md
-→ AI-04C CLOSED / PA-01..PA-61
-
-docs/architecture/dante-ai-04-whole-phase-destructive-acceptance.md
-→ AI-04 WHOLE-PHASE CLOSED / WP-01..WP-22
-
-docs/architecture/dante-ai-pre05-cross-phase-hardening.md
-→ PRE-AI05 CLOSED / PRE05-H01..H19
-
-docs/workstreams/ai-architecture.md
-→ durable branch/workstream record / AI-05 current
-
-docs/workstreams/ai-architecture-live-handoff.md
-→ TEMPORARY branch-operational session handoff / MUST NOT MERGE TO main
+private authenticated in-app
+single-turn
+inline/request-owned
+READ_ONLY
+public streaming OFF
+background/durable resume OFF
+consequential mutation OFF
 ```
 
-`docs/architecture/ai-context-runtime-boundaries.md` is historical/pre-Physical evidence and is not current AI runtime authority.
+Search remains independently deterministic. Structured semantic questions consume owning capability typed query seams. Provider SDKs remain private adapters behind `ModelAccessPort` and are not selected yet.
 
-### 9.1 Completed AI-02 simulation/reengineering program
+No generic persistence is justified for Work, Run, Context, SearchResult, ProviderAttempt, AI memory, conversation or embeddings.
+
+## 7. Provider / direct-proof state
+
+Provider/model/SDK selection remains OPEN / evidence-driven.
 
 ```text
-Round I                          COMPLETE
-Round II                         COMPLETE
-Final Kill-Test                  COMPLETE
-Last Mega Stress-Test            COMPLETE
-Targeted v0.5 verification       COMPLETE
-Additional mega-test cycles      NONE
-Domain reopen evidence           NONE
-Logical reopen evidence          NONE
-Physical/PostgreSQL reopen       NONE
+candidate shortlist
+→ candidate admission
+→ inactive adapter/binding
+→ conformance
+→ live compatibility on eligible/minimized data
+→ direct DANTE eval
+→ applicable security/privacy/capacity/economics evidence
+→ qualification
+→ promotion
 ```
 
-Round I established:
+Direct proof obligations remain trigger/applicability gated, including protected Search/reference non-interference, FTS/vector behavior, projection freshness, deletion propagation, durable execution and pgvector provenance.
+
+Missing applicable evidence is not `N/A`.
+
+## 8. Active/unmerged workstreams
 
 ```text
-Interaction Session
-Semantic Query / Projection Gateway
-Context Engine separation
-Scenario Workspace
-ChangeSet / EffectGraph
-Verifier
-Attention
-Context Projection != Disclosure Projection
-DANTE-native + open-world composition
-ModelTarget + HarnessProfile
+feature/access-auth             active product implementation
+feature/home-react              active frontend work
+feature/platform-observability  active platform work
+feature/ai-architecture         architecture design CLOSED / implementation entry ready
 ```
 
-Round II established/hardened:
+Do not infer one branch's implementation from another branch.
+
+## 9. Current next action
 
 ```text
-cumulative disclosure protection
-causal-loop / oscillation guard
-Work Supersession
-BasisManifest / dependency-aware invalidation
-revocable active-Run validity
-Attention budgeting
-cancel Run != undo already-dispatched effects
+ACTUAL AI IMPLEMENTATION WORKSTREAM
+→ I0 repository/application ownership + architecture-test skeleton
 ```
 
-Final Kill-Test established/hardened:
-
-```text
-Reference / Target Resolution
-Policy Composition / Precedence
-ConsequenceProfile
-Safe Result Publication
-Basis temporal validity
-DANTE representation != external System-of-Record authority
-sent != delivered != seen != acknowledged != accepted
-```
-
-Last Mega Stress-Test established/hardened:
-
-```text
-Execution Environment / Isolation
-WorkContract propagation
-approval rebinding
-Basis coherence
-publication currentness
-external-agent effect containment
-mandatory reconciliation survives resource exhaustion
-surface-aware disclosure / consequential realtime input authenticity
-telemetry/eval purpose and privacy constraints
-future cache hit != current disclosure authorization
-```
-
-These are architecture responsibilities/contracts, not implemented modules/services or new Domain/persistence owners.
-
-### 9.2 AI-02 closure
-
-AI-02.1 is formally accepted at the branch-local architecture level:
-
-```text
-AI-02.1 v0.5
-CLOSED / STRUCTURALLY ACCEPTED
-```
-
-This does not claim runtime implementation, provider selection, backend implementation, database materialization or production proof.
-
-### 9.3 AI-03 closure
-
-AI-03 is formally closed at the structural architecture level.
-
-```text
-AI-03A  FULL CONTEXT ARCHITECTURE
-        CLOSED / C01..C33
-
-AI-03B  RETRIEVAL + MEMORY ARCHITECTURE
-        CLOSED / B01..B35
-
-AI-03C  DESTRUCTIVE VALIDATION + MATERIALIZATION BLUEPRINT
-        CLOSED / MAT-01..MAT-15
-```
-
-The accepted AI-03A Context contracts remain:
-
-```text
-ContextPlan
-InformationNeed
-ContextStrategy
-ContextFragment
-ContextReadiness
-ConsumerContext
-ContextManifest
-+ inherited BasisManifest
-```
-
-AI-03B closes retrieval guarantees, source/currentness/coverage boundaries, document and large-corpus representation, memory classes/admission/reuse/correction/forgetting/anti-resurrection and provider/cache/index behavior.
-
-AI-03C closes materialization/survival boundaries without forcing persistence:
-
-```text
-DEFAULT NONCANONICAL PERSISTENCE = NO
-Class-A technical coordination != Class-B durable execution
-persistent derivative requires truthful/scalable source basis
-async invalidation != current eligibility
-derived state is sacrificial when safely recomputable
-ANN is optimization, not prerequisite
-serving generations require controlled cutover
-semantic obligation != execution/audit evidence
-```
-
-Closure did not authorize PostgreSQL/Alembic changes, embeddings, vector/FTS activation, Restate/R2 activation, provider/model selection or runtime implementation. Direct SC/PSV proof remains unexecuted until an activated consumer makes it applicable.
-
-### 9.4 AI-04 + PRE-AI05 closure
-
-Current compact roadmap:
-
-```text
-AI-00 COMPLETE
-AI-01 COMPLETE
-AI-02 COMPLETE / STRUCTURALLY ACCEPTED
-AI-03 COMPLETE / STRUCTURALLY ACCEPTED
-  AI-03A CLOSED / C01..C33
-  AI-03B CLOSED / B01..B35
-  AI-03C CLOSED / MAT-01..MAT-15
-AI-04 CLOSED / STRUCTURALLY ACCEPTED
-  AI-04A CLOSED / A01..A30 / EV01..EV20
-  AI-04B CLOSED / RT-01..RT-31
-  AI-04C CLOSED / PA-01..PA-61
-  WHOLE-PHASE CLOSED / WP-01..WP-22
-PRE-AI05 CLOSED / STRUCTURALLY ACCEPTED / PRE05-H01..H19
-DANTE-E01..DANTE-E14 CURRENT CORE EVAL
-AI-05 ACTIVE / CURRENT — Whole-System Acceptance + Implementation Blueprint
-```
-
-AI-04 closed provider/model/economics evaluation discipline, concrete runtime/capability boundaries, production assurance/control-plane/operations and cross-phase route composition. PRE-AI05 then retested AI-01→AI-04 as one system and hardened Attention/proactivity, cumulative/cross-work disclosure, recipient/surface/channel projection, current scoped autonomy and truthful notification-state handling.
-
-Final PRE-AI05 structural evidence:
-
-```text
-fresh full AI-01→AI-04 + H01..H19 retest     PASS / 26 OF 26
-compound collision retest                    PASS
-reverse PRE05→04→03→02→01                   PASS
-refreshed 2026 state-of-the-art regression   PASS
-new Domain owner required                    NO
-new generic AI mega-layer required           NO
-AI-02/03/04 broad reopen required             NO
-```
-
-Concrete provider/model selection is intentionally still open. Provider replaceability remains binding:
-
-```text
-MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT
-MODEL VENDOR != SERVING PLATFORM != PROTOCOL FAMILY
-HARNESSPROFILE != PROVIDERBINDING
-DANTE FEATURE/BUSINESS CODE != CONCRETE PROVIDER SDK
-PROVIDER REPLACEABLE != PROVIDERS IDENTICAL
-PROVIDER REPLACEABLE != LOWEST-COMMON-DENOMINATOR PROVIDER USAGE
-```
-
-Current production route composition:
-
-```text
-DANTE work/capability need
-→ ModelTarget / deterministic need
-→ eligible qualified route compositions
-→ Routing Policy
-→ compatible qualified:
-   HarnessProfile
-   + ProviderBinding
-   + feature mode
-   + capability projection
-   + security/control profile
-→ route-specific admission
-→ current egress authorization
-→ Provider Adapter when a model route is selected
-→ concrete provider/model/deployment
-```
-
-A single primary provider may be the correct V1 implementation if direct DANTE evidence supports it; the architecture must keep later replacement/addition bounded to provider binding/adapter/harness/config/eval rather than requiring a rewrite of DANTE semantics or feature logic.
-
-### 9.5 AI-05 current boundary
-
-AI-05 is the current architecture-to-build phase. It translates the accepted Product/semantic/runtime/context/retrieval/memory/productionization contracts into exact implementation boundaries, proof gates and first-vertical sequencing.
-
-AI-05 remains design/blueprint work. It does **not** claim provider selection, API execution, AI backend/runtime implementation, production capacity proof or database evolution.
-
-## 10. Capability-triggered components
-
-```text
-PowerSync + encrypted SQLite
-→ real offline/multi-device implementation
-
-PostgreSQL transactional outbox
-→ real Class-A async requirement
-
-R2
-→ real ContentArtifact byte flow
-
-OR-Tools
-→ solver-backed capability
-
-Restate
-→ first real Class-B durable workflow
-
-pgBackRest LOCAL recovery
-→ implemented / whole LOCAL operator rehearsal PASS / integrated via PR #47
-
-remote backup provider
-→ TBD; production activation/proof deferred until deployment requires it
-
-AI Execution Environment isolation
-→ dormant until a workload/threat model requires it
-```
-
-No model provider, SDK, model gateway, local model, sandbox technology, learned router, policy engine or new AI persistence is activated by current documentation.
-
-## 11. Repository / documentation truth
-
-Protected `main` remains integrated authority. Unmerged branch truth remains bounded to its branch until merge.
-
-Current documentation states present truth; historical evidence remains explicitly historical. Temporary handoffs must not become durable `main` authority. Git remains the complete recoverable chronology.
-
-## 12. Next sequence
-
-```text
-feature/access-auth
-→ continue under its own product gates
-
-feature/home-react
-→ continue under its own frontend gates
-
-feature/platform-observability
-→ continue under its own platform gates
-
-feature/ai-architecture
-→ AI-02.1 v0.5 CLOSED / STRUCTURALLY ACCEPTED
-→ AI-03 Context / Retrieval / Memory CLOSED / STRUCTURALLY ACCEPTED
-   → AI-03A C01..C33
-   → AI-03B B01..B35
-   → AI-03C MAT-01..MAT-15
-→ AI-04 Productionization Architecture CLOSED / STRUCTURALLY ACCEPTED
-   → A01..A30 / EV01..EV20
-   → RT-01..RT-31
-   → PA-01..PA-61
-   → WP-01..WP-22
-→ PRE-AI05 CROSS-PHASE HARDENING CLOSED / H01..H19
-→ current macro-phase AI-05 Whole-System Acceptance + Implementation Blueprint
-→ then implementation workstream(s) under explicit gates
-```
-
-No runtime, provider, backend implementation or database PASS is claimed by the AI architecture documentation.
+I0 may implement accepted contracts with deterministic fakes/synthetic trusted contexts. User-visible/private-data Search/Ask still requires the real integration and activation gates defined by the final baseline.
