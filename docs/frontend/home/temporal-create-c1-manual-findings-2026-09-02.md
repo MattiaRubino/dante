@@ -15,6 +15,8 @@ A newly created Activity appears in the Timeline but does not behave like an acc
 
 **Required correction:** accepted timed Create projections must enter the normal Timeline interaction path or another single shared interaction path. Do not duplicate T1 drag/edit behavior inside the Create portal just to make it look interactive. Preview may remain a separate ephemeral projection.
 
+**Implementation checkpoint:** `d5daaa95a7ad9b3e65f38f83a28c3b02bc2562f9` materializes accepted timed Create projections into the normal Timeline reducer/ViewModel path and removes them by identity on Create Undo. Validation still required before disposition can move to resolved.
+
 ### M2 — Context selector is fixture-derived and cannot author a new context
 
 The current Create context options are derived directly from Timeline prototype groups. The UI does not explain this ownership and does not allow the user to create a new context from the authoring flow.
@@ -27,11 +29,15 @@ Opening Full Create changes the spatial model abruptly by pinning the editor to 
 
 **Required correction:** Full should be a deliberate larger Create workspace, not an arbitrary right drawer. Preserve authoring continuity and use a centered/maximized responsive workspace on desktop, full-screen on compact/mobile.
 
+**Checkpoint:** resolved in `ef07f121efa26909fd5bbb0bfe9fd056294125af`; Frontend CI #543 FULL PASS.
+
 ### M4 — Expanded/Full navigation back to a smaller surface is not discoverable
 
 Although code contains surface-change actions, the manual experience does not provide a clear, persistent way to move backward. A bottom `compact` action is insufficient when the form is long.
 
-**Required correction:** persistent surface navigation in the header: Quick ↔ Expanded ↔ Full with clear back affordance and no draft loss.
+**Required correction:** persistent surface navigation in the header/footer reachability path: Quick ↔ Expanded ↔ Full with clear back affordance and no draft loss.
+
+**Checkpoint:** hardened in `ef07f121efa26909fd5bbb0bfe9fd056294125af`; Frontend CI #543 FULL PASS. Final user acceptance remains required.
 
 ### M5 — Personalization/appearance depth is insufficient
 
@@ -39,47 +45,26 @@ Manual review identified missing personalization, especially color and related v
 
 **Required correction:** add UI-owned appearance metadata without polluting Domain semantics. At minimum support a controlled color/tone choice, make context tone visible in the picker, and allow an item-level visual override where useful. Keep design-token-safe values rather than arbitrary CSS strings.
 
-### M6 — Competitive UX audit required before final freeze
+### M6 — Benchmark against neighboring products is required
 
-A targeted benchmark must be used to decide what DANTE should adopt rather than extending the form blindly.
+C1 should be re-audited against high-quality create/authoring patterns from Google Calendar, Notion Calendar, Linear, Sunsama/Fantastical and other relevant products. The goal is not visual copying for its own sake: adopt mature patterns where they improve DANTE's manual workflow, then preserve DANTE-specific semantics where neighboring tools collapse distinctions that DANTE intentionally keeps separate.
 
-Initial benchmark set:
+### M7 — Quick/Expanded feels spatially fixed
 
-- Google Calendar — fast event create, calendar selection, event color, guests/location/availability/visibility/reminders;
-- Notion Calendar — calendar/color ownership, right-side detail editing, moving between calendars, event types;
-- Linear — modal vs full-screen creation, keyboard-first transitions, templates/default properties, inline taxonomy creation;
-- Sunsama — task planned time/timeboxing, context/channel routing to calendars, multiple working sessions;
-- Fantastical — slot/double-click/drag manual authoring, templates, availability, calendar sets.
+Before Full Create, the authoring panel should be movable on desktop when the user needs to inspect the Timeline underneath. It must remain viewport-clamped, keyboard/a11y-safe and deterministic; Full can remain a deliberate workspace rather than a draggable window.
 
-DANTE must borrow interaction strengths only where they fit its own semantics. Natural-language parsing/AI authoring is not part of the Timeline `+` manual Create surface.
+**Checkpoint:** implemented in `ef07f121efa26909fd5bbb0bfe9fd056294125af`; Frontend CI #543 FULL PASS.
 
-### M7 — Quick/Expanded panel feels spatially fixed
+## 2. Guardrails retained during the reopen
 
-Before Full Create, the floating composer cannot be repositioned even when it covers relevant Timeline content.
+- `+` remains manual; no AI/NLP/voice input is introduced.
+- Activity recurrence is not reintroduced. Repeating Activity intent remains a Routine handoff.
+- Event recurrence retains the four CP6 baseline families.
+- No API/DB/provider success is faked.
+- Preview remains ephemeral; accepted items must use the normal interactive presentation path.
+- Domain/Logical closure is not reopened just to satisfy a visual Create feature.
+- New context/color capabilities must be presentation/application contracts until an owning backend/domain capability is explicitly designed.
 
-**Required correction:** Quick and Expanded should be pointer-draggable through an explicit header/drag affordance, clamped to the viewport, with the position preserved when moving between those two surfaces. Full remains a deliberate larger workspace rather than a draggable floating panel. Keyboard/focus interaction must remain intact.
+## 3. Closure rule
 
-## 2. Re-opened C1 correction plan
-
-```text
-M1 native Timeline interaction for accepted timed Create items
-→ M2 context/taxonomy picker + truthful local new-context contract
-→ M3/M4/M7 spatial model + persistent surface navigation + drag
-→ M5 appearance/personalization
-→ benchmark-informed UX polish
-→ blocking unit/E2E/a11y/responsive regression coverage
-→ FULL CI green
-→ regenerate manual acceptance around the corrected experience
-→ single user manual re-acceptance
-```
-
-## 3. Permanent constraints retained
-
-- `+` is manual Create only; no DANTE/AI/NLP authoring UI.
-- Activity does not own recurrence; repeated Activity intent hands off to Routine.
-- Event recurrence remains aligned to CP6 families.
-- Preview is not accepted state.
-- No fake backend persistence/provider success/Occurrence generation.
-- T1 frozen interaction grammar must not be duplicated or weakened.
-- UI appearance/context metadata must not be promoted into canonical ontology without authority.
-- C1 remains OPEN until explicit user PASS after the corrected candidate is automated-green.
+C1 remains `OPEN / MANUAL FAIL` until all material findings above are implemented, automated validation is green, documentation is reconciled, and the user explicitly passes one final coherent manual acceptance run.
