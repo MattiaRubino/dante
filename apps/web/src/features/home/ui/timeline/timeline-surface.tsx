@@ -42,6 +42,7 @@ import type {
   TimelineGroupId,
   TimelineSemanticTone,
 } from './model/timeline-types';
+import { TimelineAllDayLayer } from './timeline-all-day-layer';
 import { TimelineDayStream } from './timeline-day-stream';
 import { TimelineHeader } from './timeline-header';
 import {
@@ -733,8 +734,14 @@ export function TimelineSurface({
         onMaterializeCreatedEvent={(dateKey, event) =>
           dispatch({ type: 'materialize-event', dateKey, event })
         }
+        onMaterializeCreatedAllDay={(item) =>
+          dispatch({ type: 'materialize-all-day', item })
+        }
         onRemoveCreatedEvent={(eventId) =>
           dispatch({ type: 'remove-event', eventId })
+        }
+        onRemoveCreatedAllDay={(itemId) =>
+          dispatch({ type: 'remove-all-day', itemId })
         }
       />
 
@@ -792,6 +799,12 @@ export function TimelineSurface({
           dispatch({ type: 'move-event', ...move });
         }}
         onMoveFeedback={showFeedback}
+      />
+
+      <TimelineAllDayLayer
+        items={state.allDayItems}
+        groups={state.groups}
+        filters={state.filters}
       />
 
       <button
