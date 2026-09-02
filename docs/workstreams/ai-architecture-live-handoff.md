@@ -5,12 +5,15 @@
 - **Branch:** `feature/ai-architecture`
 - **Workstream:** DANTE AI architecture
 - **Current phase:** AI-04 — Productionization Architecture
+- **AI-04A:** CANDIDATE MATERIALIZED / DIRECT DANTE EVAL SPECIFICATION CURRENT
 - **AI-03A:** CLOSED / C01..C33
 - **AI-03B:** CLOSED / B01..B35
 - **AI-03C:** CLOSED / MAT-01..MAT-15
 - **AI-03 overall:** CLOSED / STRUCTURALLY ACCEPTED
 - **Refreshed:** 2026-09-02
-- **AI-03 final closure PRE-SCOPE:** `281e4cb5a6883e3c562d11db8a0ae34c7eb89d1b`
+- **AI-04A materialization PRE-SCOPE:** `aff3d7153aa0c4cf99d4bc28f569bc3db2e82703`
+- **AI-04A candidate commit:** `3aef3ec593f6b40d8f22379df75ae84b423c6747`
+- **AI-04A durable-workstream checkpoint:** `af6b13705397f6c871afab0478edb824f8b45b32`
 - **Current branch HEAD:** FETCH LIVE before every write
 
 This file exists only to survive chat/session/context saturation while `feature/ai-architecture` is active. Durable architecture truth lives in the architecture/current-status sources below.
@@ -30,6 +33,7 @@ repository  MattiaRubino/dante
 branch      feature/ai-architecture
 workstream  DANTE AI architecture
 current     AI-04 Productionization Architecture
+next        AI-04A Direct DANTE Eval Specification
 ```
 
 Closed upstream AI architecture:
@@ -73,6 +77,7 @@ docs/architecture/dante-ai-03-context-retrieval-memory.md
 docs/architecture/dante-ai-03a-full-context-architecture.md
 docs/architecture/dante-ai-03b-retrieval-memory-architecture.md
 docs/architecture/dante-ai-03c-destructive-validation-materialization-blueprint.md
+docs/architecture/dante-ai-04-productionization-architecture.md
 docs/architecture/system-overview.md
 docs/architecture/technical-decisions.md
 ```
@@ -210,7 +215,11 @@ CLOSED / STRUCTURALLY ACCEPTED
   CLOSED / MAT-01..MAT-15
 
 AI-04 — PRODUCTIONIZATION ARCHITECTURE
-CURRENT / NEXT
+CURRENT
+
+  AI-04A — EVAL / MODEL / PROVIDER PRODUCTIONIZATION BOUNDARY
+  CANDIDATE MATERIALIZED
+  DIRECT DANTE EVAL SPECIFICATION CURRENT
 
 AI-05 — WHOLE-SYSTEM ACCEPTANCE + IMPLEMENTATION BLUEPRINT
 FUTURE
@@ -520,53 +529,232 @@ No provider/model selection.
 
 ---
 
-# 14. Current work — AI-04
+# 14. AI-04A current candidate
 
-AI-04 is **Productionization Architecture**.
+Durable authority:
 
-It must consume AI-02.1 + AI-03 closures rather than redesign them.
+`docs/architecture/dante-ai-04-productionization-architecture.md`
 
-Expected concerns include concrete production choices and contracts for:
+The initial AI-04 productionization boundary is now materialized.
+
+## 14.1 Workload-first eval matrix
 
 ```text
-provider/model/gateway posture
-HarnessProfile implementation boundary
-streaming/realtime/cancel behavior
-capability/tool runtime
-execution isolation
-Restate activation contract where justified
-object/content execution boundary
-security/secrets/provider credentials
-observability vs audit vs eval separation
-model/retrieval/effect evaluation architecture
-cost/latency/resource budgets
-failure/degradation/fallback policy
-provider failover
-privacy/retention/provider data handling
-release/deployment/rollback/incident posture
-concrete activation gates for dormant capabilities
+DANTE-E01  model avoidance / deterministic fast path
+DANTE-E02  intent + reference / target resolution
+DANTE-E03  structured extraction / understanding
+DANTE-E04  native query + history + absence semantics
+DANTE-E05  context + privacy + Reality Scope
+DANTE-E06  planning / replanning / scenario reasoning
+DANTE-E07  document / long-context / multimodal reasoning
+DANTE-E08  tool / capability use
+DANTE-E09  consequential effect preparation/execution boundary
+DANTE-E10  multi-actor / delegation / disclosure
+DANTE-E11  adaptive memory / learning
+DANTE-E12  currentness / failure / supersession / failover
+DANTE-E13  open-world research / grounding
 ```
 
-AI-04 must not activate technologies merely to make the architecture look complete.
+Trigger-gated until real product need:
+
+```text
+voice/realtime
+browser/computer-use
+code execution
+durable background work
+embedding/vector retrieval
+specialized generation
+```
+
+## 14.2 Hard gates
+
+A weighted quality score cannot compensate for:
+
+```text
+wrong consequential target
+unauthorized effect
+private/cross-actor disclosure
+fabricated canonical fact
+false effect success
+false Actual/completion
+stale/superseded result published as current
+Reality Scope laundering
+invalid memory promotion
+blind failover to an ineligible provider
+source/derivative resurrection
+```
+
+Hard eligibility precedes graded quality/latency/economics.
+
+## 14.3 Provider boundary
+
+Binding:
+
+```text
+MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT
+MODEL VENDOR != SERVING PLATFORM != PROTOCOL FAMILY
+DANTE FEATURE/BUSINESS CODE != CONCRETE PROVIDER SDK
+PROVIDER REPLACEABLE != PROVIDERS IDENTICAL
+PROVIDER REPLACEABLE != LOWEST-COMMON-DENOMINATOR PROVIDER USAGE
+```
+
+Production chain:
+
+```text
+DANTE work/capability need
+→ ModelTarget
+→ HarnessProfile
+→ ProviderBinding
+→ ProviderAdapter
+→ concrete serving platform / model / deployment
+```
+
+This deliberately supports cases such as direct provider versus cloud-hosted deployment without rewriting DANTE semantics.
+
+## 14.4 Evaluation tracks
+
+```text
+CORE PORTABILITY TRACK
+same DANTE semantic obligation
++ provider-specific HarnessProfile allowed
+
+PROVIDER-NATIVE AUGMENTATION TRACK
+native search/files/cache/state/background/browser/computer/etc.
+```
+
+Do not force lowest-common-denominator provider use, and do not treat native feature quality as portability proof.
+
+## 14.5 Binding eligibility
+
+```text
+FEATURE AVAILABLE != FEATURE ELIGIBLE
+```
+
+Provider-native persistence/state/cache/files/background/tools require WorkContract/data/purpose/retention/region/third-party eligibility.
+
+## 14.6 Failover
+
+```text
+PRIMARY FAIL
+→ alternate binding qualification
+→ fresh provider/data eligibility
+→ rebuild/minimize ConsumerContext if needed
+→ alternate HarnessProfile
+→ invoke
+```
+
+Failover is never blind replay.
+
+## 14.7 Economics
+
+Use:
+
+```text
+EFFECTIVE COST PER SUCCESSFUL DANTE TASK
+```
+
+including tokenization, thinking, cache, native tools/search, retries, failures and fallbacks.
+
+## 14.8 Current official-source landscape snapshot
+
+As of the AI-04A research pass on 2026-09-02, current official documentation supports evaluating candidate families including:
+
+```text
+OpenAI direct / Azure OpenAI
+→ GPT-5.6 Sol / Terra / Luna
+
+Anthropic direct / qualified alternate hosting
+→ Claude Opus 5 / Sonnet 5 / cost-tier candidates
+
+Google Gemini
+→ Gemini 3.7 Flash stable/GA
+→ Gemini 3.5 Flash-Lite cost candidate
+→ preview models challenger-only unless separately qualified
+```
+
+Provider-native retention/state differences are material inputs to binding eligibility. The landscape is version-sensitive and must be rechecked before final selection.
+
+## 14.9 AI-04A candidate hardenings
+
+Initial conceptual kill-test hardened:
+
+```text
+same-prompt fairness fallacy
+model-judge truth ownership
+native-tool vs portability conflation
+model vs serving-platform qualification conflation
+cheap-failure weighted-score problem
+preview winner production promotion
+feature-available therefore feature-use
+blind failover
+floating alias drift
+missing no-model route
+needle-only long-context testing
+list-price economics
+```
+
+Durable candidate invariants: `A01..A22`.
+
+No concrete provider/model/default/routing decision is accepted yet.
 
 ---
 
 # 15. Exact safe next action
 
-Before doing AI-04 design:
+Current exact task:
 
-1. fetch live branch HEAD;
-2. read `docs/ROADMAP.md`, `docs/PROJECT-STATUS.md` and AI workstream authority;
-3. read AI-02.1 and AI-03 closure documents;
-4. reconstruct AI-04 acceptance criteria from current repository truth;
-5. separate what can be decided architecturally now from what requires benchmark/implementation evidence;
-6. use fresh web research for current provider/runtime/security/production details where material;
-7. do not reopen AI-03 unless a concrete contradiction appears;
-8. do not implement provider/DB/runtime changes without a separate exact gate.
+```text
+AI-04A — DIRECT DANTE EVAL SPECIFICATION
+```
+
+Required next sequence:
+
+```text
+DANTE-E01..E13
+→ executable-grade fixture definitions
+→ expected-state / hard-fail contracts
+→ deterministic vs rubric grading rules
+→ development / validation / held-out regression split
+→ candidate ModelTarget hypotheses
+→ small current candidate model/binding set
+→ freeze exact model snapshot + serving binding + HarnessProfile
+→ direct benchmark/proof where decision-relevant
+→ compare hard failures + quality + latency + effective cost
+→ provider/model/routing/fallback candidate
+```
+
+Do **not** select OpenAI/Azure/Anthropic/Gemini from public benchmark reputation alone.
+
+After the provider/eval boundary has real evidence, continue AI-04 concrete runtime/capabilities and security/privacy/control-plane/operations architecture before AI-04 closure.
+
+Do not start AI-05 or production implementation yet.
 
 ---
 
-# 16. Git write-gate discipline
+# 16. AI-04 current non-claims
+
+```text
+AI-04 CLOSED                         NO
+DIRECT DANTE EVAL PASS               NO
+PROVIDER SELECTED                    NO
+MODEL DEFAULT SELECTED               NO
+MULTI-PROVIDER REQUIRED              NO
+PROVIDER SDK SELECTED                NO
+AI BACKEND IMPLEMENTED               NO
+POSTGRESQL/ALEMBIC CHANGED           NO
+NEW AI TABLE/INDEX                   NO
+PGVECTOR/ANN ACTIVATED               NO
+FTS/PG_TRGM ACTIVATED                NO
+RESTATE ACTIVATED                    NO
+R2 ACTIVATED                         NO
+MCP/A2A IMPLEMENTED                  NO
+EXECUTION ENVIRONMENT IMPLEMENTED    NO
+SC/PSV DIRECT PROOFS EXECUTED        NO
+```
+
+---
+
+# 17. Git write-gate discipline
 
 Before every new remote write:
 
@@ -599,7 +787,7 @@ After writes compare PRE-SCOPE..HEAD and prove exact path classification/no scop
 
 ---
 
-# 17. Handoff lifecycle
+# 18. Handoff lifecycle
 
 This file is temporary and **MUST NOT MERGE TO PROTECTED `main`**.
 
