@@ -1,6 +1,6 @@
 # DANTE — World Focus Substrate Closure Program
 
-**Status:** CURRENT PROGRAM — WS0–WS8 + PRE-M0 CLOSED / M0 CLOSED / M1 NEXT  
+**Status:** CURRENT PROGRAM — WS0–WS8 + PRE-M0 CLOSED / M0 CLOSED / M1 ACTIVE / M1-1 CLOSED + VALIDATED / M1-2 NEXT  
 **Date:** 2026-09-02  
 **Branch:** `feature/home-react`
 
@@ -16,6 +16,8 @@ WS8      world-focus-ws8-final-falsification-review.md
 POST-WS8 world-focus-post-ws8-hygiene-audit.md
 PRE-M0   world-focus-pre-m0-falsification-review.md
 M0       world-focus-m0-materialization-mapping.md
+M1-1     world-focus-m1-core-nonvisual-materialization-review.md
+M1-2     world-focus-m1-next-subblock.md
 ```
 
 ---
@@ -74,8 +76,11 @@ WS8 — Final Falsification                    CLOSED
 POST-WS8 Hygiene                             CLOSED / APPLIED
 PRE-M0 Falsification                         CLOSED / PASS
 M0 — Materialization Mapping / Scope Freeze  CLOSED
-M1 — Core Non-Visual Materialization         NEXT — NOT STARTED
+M1 — Core Non-Visual Materialization         ACTIVE
+M1-1 identity/reference ownership            CLOSED / VALIDATED
+M1-2 non-visual facets + seams               NEXT
 M2–M7                                        BLOCKED BY SEQUENCE
+BACKEND                                      BLOCKED UNTIL M7
 ```
 
 D2–D6 remain preserved for M4.
@@ -169,6 +174,13 @@ Authority:
 
 `world-focus-m0-materialization-mapping.md`
 
+Validated closure:
+
+```text
+HEAD 6ea74f630cb35af65d58e7ae873882d6d975411e
+CI   33668744509 PASS
+```
+
 M0 mapped every relevant closed invariant to one disposition:
 
 ```text
@@ -201,9 +213,9 @@ No M0 evidence reopens WS0–WS8.
 
 ---
 
-# 8. M1 scope freeze
+# 8. M1 scope freeze and progress
 
-M1 must do only:
+M1 frozen scope remains:
 
 ```text
 decouple production World identity/descriptor from the fixed fixture union
@@ -215,6 +227,46 @@ add narrow basis/freshness/validity/reference-resolution/disclosure/offline/effe
 add direct typed O2 Situation / O5 Next / O8 Evidence application seams
 retain deterministic pre-backend adapters + aggressive tests
 ```
+
+M1-1 has already materialized and validated:
+
+```text
+neutral production World identity / descriptor
+fixture identity separated from production identity
+neutral context-reference owner
+primary + bounded ordered supporting references
+workspace contextReferences ownership + set-context semantics
+primary-only surface inheritance
+route / continuity / transition identity alignment
+```
+
+Validated M1-1 code evidence:
+
+```text
+CODE HEAD e0f4003496bfbf828ed9ab7718af8e7e30342ad3
+CI        33679425668 PASS
+```
+
+The remaining M1 work is M1-2 as frozen in `world-focus-m1-next-subblock.md`:
+
+```text
+reference-resolution safe presentation vocabulary
+WP-01 stronger production alignment
+WP-02 Attention application/model seam
+WP-03 Comparison application/model seam
+WP-04 Trajectory application/model seam
+freshness / as-of / material-basis frontend semantics
+conflict / incomplete / superseded / retracted / redacted / tombstoned safe states
+evidence / provenance / integrity / attestation presentation metadata where materially needed
+sanitized disclosure outcome
+effect lifecycle presentation contract
+offline / replay / provider-lag frontend representation
+O2 Situation direct typed application seam
+O5 Next direct typed application seam
+O8 Evidence / History direct typed application seam
+```
+
+The current non-enumerable `contextReferences` cursor compatibility property is transitional and must be reviewed/removed before M1 closure.
 
 M1 must not do:
 
@@ -234,20 +286,21 @@ Existing planner/registries/workspace generation/allocation/failure isolation mu
 # 9. Materialization sequence
 
 ```text
-M1 Core Non-Visual Production Materialization
-M2 Shared Visual Primitive Layer
-M3 Adaptive World Composition
-M4 Contextual DANTE Materialization
-M5 Contrasting Complete Worlds
-M6 Integrated Product / Visual / A11y / Performance Review
-M7 Pre-Backend Frontend Freeze
+M1 Core Non-Visual Production Materialization — ACTIVE
+M2 Shared Visual Primitive Layer              — BLOCKED
+M3 Adaptive World Composition                 — BLOCKED
+M4 Contextual DANTE Materialization           — BLOCKED
+M5 Contrasting Complete Worlds                — BLOCKED
+M6 Integrated Product / Visual / A11y / Performance Review — BLOCKED
+M7 Pre-Backend Frontend Freeze                — BLOCKED
+BACKEND                                       — BLOCKED UNTIL M7
 ```
 
 ---
 
 # 10. Sequencing note
 
-Historical paragraphs in the product/platform contracts that name the contextual DANTE spatial review as the current/next gate are sequencing-stale. Their semantic invariants remain authoritative; sequencing is superseded by `world-focus-current-checkpoint.md`, the M0 map and current roadmap.
+Historical paragraphs in the product/platform contracts that name the contextual DANTE spatial review as the current/next gate are sequencing-stale. Their semantic invariants remain authoritative; sequencing is superseded by `world-focus-contract-sequencing-supersession.md`, `world-focus-current-checkpoint.md`, the M0 map and current roadmap.
 
 ---
 
@@ -277,6 +330,6 @@ NO provider ACK treated as canonical completion
 
 # 13. Immediate continuation
 
-> **M1 — Core Non-Visual Production Materialization is NEXT.**
+> **M1 remains ACTIVE. M1-1 is CLOSED / VALIDATED. Continue with M1-2 only.**
 
-Open M1 only under a fresh live HEAD/write gate derived from the frozen M0 map.
+Open each M1-2 write subblock under a fresh live HEAD/write gate derived from the frozen M0 map and `world-focus-m1-next-subblock.md`. Do not begin M2 until M1 is formally closed.
