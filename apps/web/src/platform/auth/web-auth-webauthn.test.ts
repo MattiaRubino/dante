@@ -101,12 +101,12 @@ describe('WebAuthn browser serialization boundary', () => {
       buffer(10, 11),
       new FakeAuthenticatorAttestationResponse(buffer(12, 13), buffer(14, 15)),
     );
-    const createMock = vi.fn((_options: CredentialCreationOptions) =>
-      Promise.resolve(credential as unknown as Credential),
-    );
-    const getMock = vi.fn((_options: CredentialRequestOptions) =>
-      Promise.resolve(null),
-    );
+    let capturedCreation: CredentialCreationOptions | undefined;
+    const createMock = vi.fn((options: CredentialCreationOptions) => {
+      capturedCreation = options;
+      return Promise.resolve(credential as unknown as Credential);
+    });
+    const getMock = vi.fn(() => Promise.resolve(null));
     installCredentials(createMock, getMock);
     const signal = new AbortController().signal;
 
@@ -131,13 +131,12 @@ describe('WebAuthn browser serialization boundary', () => {
       signal,
     });
 
-    const creation = createMock.mock.calls[0]?.[0];
-    expect(byteValues(creation?.publicKey?.challenge)).toEqual([1, 2, 3]);
-    expect(byteValues(creation?.publicKey?.user.id)).toEqual([4, 5, 6]);
+    expect(byteValues(capturedCreation?.publicKey?.challenge)).toEqual([1, 2, 3]);
+    expect(byteValues(capturedCreation?.publicKey?.user.id)).toEqual([4, 5, 6]);
     expect(
-      byteValues(creation?.publicKey?.excludeCredentials?.[0]?.id),
+      byteValues(capturedCreation?.publicKey?.excludeCredentials?.[0]?.id),
     ).toEqual([7, 8, 9]);
-    expect(creation?.signal).toBe(signal);
+    expect(capturedCreation?.signal).toBe(signal);
     expect(result).toEqual({
       webauthn_challenge_ref: '00000000-0000-4000-8000-000000000001',
       label: 'Laptop',
@@ -166,12 +165,12 @@ describe('WebAuthn browser serialization boundary', () => {
         buffer(20, 21),
       ),
     );
-    const createMock = vi.fn((_options: CredentialCreationOptions) =>
-      Promise.resolve(null),
-    );
-    const getMock = vi.fn((_options: CredentialRequestOptions) =>
-      Promise.resolve(credential as unknown as Credential),
-    );
+    const createMock = vi.fn(() => Promise.resolve(null));
+    let capturedRequest: CredentialRequestOptions | undefined;
+    const getMock = vi.fn((options: CredentialRequestOptions) => {
+      capturedRequest = options;
+      return Promise.resolve(credential as unknown as Credential);
+    });
     installCredentials(createMock, getMock);
     const signal = new AbortController().signal;
 
@@ -188,12 +187,11 @@ describe('WebAuthn browser serialization boundary', () => {
       signal,
     });
 
-    const request = getMock.mock.calls[0]?.[0];
-    expect(byteValues(request?.publicKey?.challenge)).toEqual([1, 2, 3]);
-    expect(byteValues(request?.publicKey?.allowCredentials?.[0]?.id)).toEqual([
+    expect(byteValues(capturedRequest?.publicKey?.challenge)).toEqual([1, 2, 3]);
+    expect(byteValues(capturedRequest?.publicKey?.allowCredentials?.[0]?.id)).toEqual([
       7, 8, 9,
     ]);
-    expect(request?.signal).toBe(signal);
+    expect(capturedRequest?.signal).toBe(signal);
     expect(result).toEqual({
       webauthn_challenge_ref: '00000000-0000-4000-8000-000000000002',
       response: {
@@ -213,12 +211,8 @@ describe('WebAuthn browser serialization boundary', () => {
   });
 
   it('rejects malformed backend binary fields before invoking the browser credential API', async () => {
-    const createMock = vi.fn((_options: CredentialCreationOptions) =>
-      Promise.resolve(null),
-    );
-    const getMock = vi.fn((_options: CredentialRequestOptions) =>
-      Promise.resolve(null),
-    );
+    const createMock = vi.fn(() => Promise.resolve(null));
+    const getMock = vi.fn(() => Promise.resolve(null));
     installCredentials(createMock, getMock);
 
     await expect(
