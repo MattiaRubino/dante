@@ -83,6 +83,10 @@ function problemCode(payload: unknown): string | null {
   return null;
 }
 
+function problemCodeFromText(body: string): string | null {
+  return problemCode(JSON.parse(body) as unknown);
+}
+
 async function responseProblemCode(response: Response): Promise<string | null> {
   return problemCode((await response.json()) as unknown);
 }
@@ -91,7 +95,7 @@ async function browserPostWithoutCsrf(
   page: Page,
   path: string,
   payload: Readonly<Record<string, string>>,
-): Promise<Readonly<{ status: number; body: unknown }>> {
+): Promise<Readonly<{ status: number; body: string }>> {
   return page.evaluate(
     async ({ requestPath, requestPayload }) => {
       const response = await fetch(requestPath, {
@@ -105,7 +109,7 @@ async function browserPostWithoutCsrf(
       });
       return {
         status: response.status,
-        body: (await response.json()) as unknown,
+        body: await response.text(),
       };
     },
     { requestPath: path, requestPayload: payload },
@@ -198,7 +202,9 @@ test.describe('DANTE Access/Auth M5 full-stack security surface', () => {
       return_target: 'access',
     });
     expect(publicBegin.status).toBe(503);
-    expect(problemCode(publicBegin.body)).toBe('dependency.provider_unavailable');
+    expect(problemCodeFromText(publicBegin.body)).toBe(
+      'dependency.provider_unavailable',
+    );
 
     const signInResponse = await signIn(page, emailFor(testInfo, 2));
     const currentCsrf = await csrfToken(signInResponse);
@@ -209,7 +215,7 @@ test.describe('DANTE Access/Auth M5 full-stack security surface', () => {
       return_target: 'security',
     });
     expect(missingCsrf.status).toBe(403);
-    expect(problemCode(missingCsrf.body)).toBe('security.csrf_failed');
+    expect(problemCodeFromText(missingCsrf.body)).toBe('security.csrf_failed');
 
     const appleBeginPromise = page.waitForResponse(
       (response) =>
@@ -263,7 +269,7 @@ test.describe('DANTE Access/Auth M5 full-stack security surface', () => {
       {},
     );
     expect(missingCsrf.status).toBe(403);
-    expect(problemCode(missingCsrf.body)).toBe('security.csrf_failed');
+    expect(problemCodeFromText(missingCsrf.body)).toBe('security.csrf_failed');
 
     const registrationPromise = page.waitForResponse(
       (response) =>
