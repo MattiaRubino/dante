@@ -1,7 +1,12 @@
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { ProviderBrowserUnavailableError } from '../../../platform/auth/web-auth-provider';
+import {
+  appleAuthenticationEnabledFromBuild,
+  googleAuthenticationEnabledFromBuild,
+  passkeyAuthenticationEnabledFromBuild,
+  type ProviderBrowserUnavailableError,
+} from '../../../platform/auth/web-auth-provider';
 import { usePasskeySignInMutation } from '../application/auth-passkey';
 import { isValidAccessEmail, type AccessCondition } from '../model/access-flow';
 import { AccessConditionNotice } from './access-condition-notice';
@@ -63,8 +68,14 @@ export function AccessSignInPanel({
   const [showPassword, setShowPassword] = useState(false);
   const [passkeyError, setPasskeyError] = useState<string | null>(null);
   const passkeyMutation = usePasskeySignInMutation();
+  const googleEnabled = googleAuthenticationEnabledFromBuild();
+  const appleEnabled = appleAuthenticationEnabledFromBuild();
+  const passkeyEnabled = passkeyAuthenticationEnabledFromBuild();
+  const providerEnabled = googleEnabled || appleEnabled;
   const interactionPending =
-    pending || passkeyMutation.isPending || google.pending;
+    pending ||
+    (googleEnabled && google.pending) ||
+    (passkeyEnabled && passkeyMutation.isPending);
   const passwordControlLabel = showPassword
     ? t(($) => $.common.access.action.hidePassword)
     : t(($) => $.common.access.action.showPassword);
@@ -96,7 +107,7 @@ export function AccessSignInPanel({
   }
 
   function signInWithPasskey() {
-    if (interactionPending) {
+    if (!passkeyEnabled || interactionPending) {
       return;
     }
     setPasskeyError(null);
@@ -120,51 +131,38 @@ export function AccessSignInPanel({
           {t(($) => $.common.access.signin.body)}
         </p>
 
-        <div className="access-provider-stack">
-          <GoogleIdentityButton
-            label={t(($) => $.common.access.provider.google)}
-            clientId={google.clientId}
-            nonce={google.nonce}
-            onCredential={google.onCredential}
-            onError={google.onError}
-            disabled={interactionPending}
-          />
-          <ProviderButton
-            provider="apple"
-            label={t(($) => $.common.access.provider.apple)}
-            onClick={onApple}
-            disabled={interactionPending}
-          />
-          <button
-            className="access-provider-button"
-            type="button"
-            disabled={interactionPending}
-            aria-busy={passkeyMutation.isPending}
-            onClick={signInWithPasskey}
-          >
-            <span className="access-provider-icon" aria-hidden="true">
-              ◇
-            </span>
-            <span>{t(($) => $.common.access.provider.passkey)}</span>
-          </button>
-        </div>
+        {providerEnabled ? (
+          <>
+            <div className="access-provider-stack">
+              <GoogleIdentityButton
+                label={t(($) => $.common.access.provider.google)}
+                clientId={google.clientId}
+                nonce={google.nonce}
+                onCredential={google.onCredential}
+                onError={google.onError}
+                disabled={interactionPending}
+              />
+              <ProviderButton
+                provider="apple"
+                label={t(($) => $.common.access.provider.apple)}
+                onClick={onApple}
+                disabled={interactionPending}
+              />
+            </div>
 
-        {google.errorMessage ? (
-          <p className="access-field-error" role="alert">
-            {google.errorMessage}
-          </p>
-        ) : null}
-        {passkeyError ? (
-          <p className="access-field-error" role="alert">
-            {passkeyError}
-          </p>
-        ) : null}
+            {google.errorMessage ? (
+              <p className="access-field-error" role="alert">
+                {google.errorMessage}
+              </p>
+            ) : null}
 
-        <div className="access-divider" aria-hidden="true">
-          <span />
-          <p>{t(($) => $.common.access.common.or)}</p>
-          <span />
-        </div>
+            <div className="access-divider" aria-hidden="true">
+              <span />
+              <p>{t(($) => $.common.access.common.or)}</p>
+              <span />
+            </div>
+          </>
+        ) : null}
 
         <div className="access-field-stack">
           <div className="access-field">
@@ -267,6 +265,38 @@ export function AccessSignInPanel({
         >
           {t(($) => $.common.access.action.continue)}
         </button>
+
+        {passkeyEnabled ? (
+          <div className="access-authenticator-actions">
+            <button
+              className="access-inline-action access-authenticator-action"
+              type="button"
+              disabled={interactionPending}
+              aria-busy={passkeyMutation.isPending}
+              onClick={signInWithPasskey}
+            >
+              <svg
+                className="access-authenticator-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                focusable="false"
+                aria-hidden="true"
+              >
+                <circle cx="8" cy="12" r="3" />
+                <path d="M11 12h9m-3 0v3m-3-3v2" />
+              </svg>
+              <span>{t(($) => $.common.access.provider.passkey)}</span>
+            </button>
+          </div>
+        ) : null}
+
+        {passkeyError ? (
+          <p className="access-field-error access-authenticator-error" role="alert">
+            {passkeyError}
+          </p>
+        ) : null}
 
         <AccessConditionNotice condition={condition} />
 
