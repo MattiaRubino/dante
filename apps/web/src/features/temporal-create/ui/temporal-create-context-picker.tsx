@@ -69,11 +69,15 @@ export function TemporalCreateContextPicker({
     [contexts, normalized],
   );
 
+  const resetTransientState = () => {
+    setQuery('');
+    setCreating(false);
+    setNewLabel('');
+    setNewTone('focus');
+  };
+
   useEffect(() => {
     if (!open) {
-      setQuery('');
-      setCreating(false);
-      setNewLabel('');
       return;
     }
 
@@ -84,6 +88,10 @@ export function TemporalCreateContextPicker({
         !rootRef.current?.contains(event.target)
       ) {
         setOpen(false);
+        setQuery('');
+        setCreating(false);
+        setNewLabel('');
+        setNewTone('focus');
       }
     };
     document.addEventListener('pointerdown', closeOutside, true);
@@ -95,11 +103,28 @@ export function TemporalCreateContextPicker({
 
   const close = () => {
     setOpen(false);
+    resetTransientState();
     requestAnimationFrame(() =>
       rootRef.current
         ?.querySelector<HTMLButtonElement>('.temporal-create-context-trigger')
         ?.focus(),
     );
+  };
+
+  const toggle = () => {
+    if (open) {
+      setOpen(false);
+      resetTransientState();
+      return;
+    }
+    resetTransientState();
+    setOpen(true);
+  };
+
+  const chooseContext = (contextId: string) => {
+    onChange(contextId);
+    setOpen(false);
+    resetTransientState();
   };
 
   const keyDown = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -116,6 +141,13 @@ export function TemporalCreateContextPicker({
     requestAnimationFrame(() => nameRef.current?.focus());
   };
 
+  const cancelCreate = () => {
+    setCreating(false);
+    setNewLabel('');
+    setNewTone('focus');
+    requestAnimationFrame(() => searchRef.current?.focus());
+  };
+
   const submitNewContext = () => {
     const label = newLabel.trim().replace(/\s+/g, ' ');
     if (!label || onCreateContext === null) {
@@ -125,6 +157,7 @@ export function TemporalCreateContextPicker({
     const created = onCreateContext({ label, tone: newTone });
     onChange(created.id);
     setOpen(false);
+    resetTransientState();
   };
 
   const createLabel = `${t(($) => $.common.home.topbar.create)} ${t(
@@ -150,7 +183,7 @@ export function TemporalCreateContextPicker({
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-controls={open ? popupId : undefined}
-        onClick={() => setOpen((current) => !current)}
+        onClick={toggle}
       >
         <span
           className="temporal-create-context-swatch"
@@ -200,10 +233,7 @@ export function TemporalCreateContextPicker({
                     aria-selected={context.id === value}
                     className={context.id === value ? 'is-selected' : ''}
                     data-context-tone={context.tone}
-                    onClick={() => {
-                      onChange(context.id);
-                      setOpen(false);
-                    }}
+                    onClick={() => chooseContext(context.id)}
                   >
                     <span
                       className="temporal-create-context-swatch"
@@ -270,7 +300,7 @@ export function TemporalCreateContextPicker({
               </div>
 
               <div className="temporal-create-context-create__actions">
-                <button type="button" onClick={() => setCreating(false)}>
+                <button type="button" onClick={cancelCreate}>
                   {t(($) => $.common.home.timeline.create.cancel)}
                 </button>
                 <button
