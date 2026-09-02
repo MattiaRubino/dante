@@ -1,10 +1,15 @@
-import { describe, expect, it } from 'vitest';
+import { QueryClient } from '@tanstack/react-query';
+import { describe, expect, it, vi } from 'vitest';
 
 import {
   WebAuthRemoteError,
   type WebAuthRemoteFailure,
 } from '../../../platform/auth/web-auth-remote';
-import { accessEventForAuthError } from './auth-session';
+import {
+  accessEventForAuthError,
+  authSessionQueryKey,
+  commitAuthoritativeAuthSession,
+} from './auth-session';
 
 function serverProblem(
   code: string,
@@ -130,5 +135,31 @@ describe('Access Auth application error mapping', () => {
     expect(
       accessEventForAuthError(new WebAuthRemoteError({ kind: 'aborted' })),
     ).toBeNull();
+  });
+});
+
+describe('Access Auth authoritative session cache', () => {
+  it('cancels stale session reads before committing a rotated bearer result', async () => {
+    const queryClient = new QueryClient();
+    const cancelSpy = vi
+      .spyOn(queryClient, 'cancelQueries')
+      .mockResolvedValue(undefined);
+    const setSpy = vi.spyOn(queryClient, 'setQueryData');
+    const session = {
+      authenticated: true as const,
+      account_ref: '00000000-0000-4000-8000-000000000001',
+      auth_session_ref: '00000000-0000-4000-8000-000000000002',
+      csrf_token: 'rotated-csrf',
+      recent_auth_at: '2026-09-02T12:40:00Z',
+      expires_at: '2026-10-02T12:40:00Z',
+    };
+
+    await commitAuthoritativeAuthSession(queryClient, session);
+
+    expect(cancelSpy).toHaveBeenCalledWith({
+      queryKey: authSessionQueryKey,
+      exact: true,
+    });
+    expect(setSpy).toHaveBeenCalledWith(authSessionQueryKey, session);
   });
 });
