@@ -160,9 +160,8 @@ describe('AccessProviderFlowPanel', () => {
       />,
     );
 
-    const codeInput = screen.getByLabelText<HTMLInputElement>(
-      'Codice di verifica',
-    );
+    const codeInput =
+      screen.getByLabelText<HTMLInputElement>('Codice di verifica');
     fireEvent.change(codeInput, { target: { value: '12a34-56' } });
     expect(codeInput.value).toBe('123456');
 

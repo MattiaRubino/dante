@@ -1,6 +1,20 @@
 import type { ReactNode } from 'react';
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+} from '@testing-library/react';
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
 
 vi.mock('@tanstack/react-router', () => ({
   Link: ({
@@ -190,9 +204,9 @@ describe('AccessSecurityPage', () => {
         name: 'Accedi per gestire la sicurezza dell’account.',
       }),
     ).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Accedi' }).getAttribute('href')).toBe(
-      '/',
-    );
+    expect(
+      screen.getByRole('link', { name: 'Accedi' }).getAttribute('href'),
+    ).toBe('/');
     expect(useAuthenticationMethodsQuery).toHaveBeenCalledWith(false);
   });
 
@@ -243,7 +257,8 @@ describe('AccessSecurityPage', () => {
       expect.any(Object),
     );
 
-    const passkeyLabel = screen.getByLabelText<HTMLInputElement>('Nome passkey');
+    const passkeyLabel =
+      screen.getByLabelText<HTMLInputElement>('Nome passkey');
     fireEvent.change(passkeyLabel, { target: { value: ' Work laptop ' } });
     fireEvent.click(screen.getByRole('button', { name: 'Aggiungi passkey' }));
     expect(registerPasskeyMutation.mutate).toHaveBeenCalledWith(
@@ -262,7 +277,9 @@ describe('AccessSecurityPage', () => {
       expect.any(Object),
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Conferma con passkey' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Conferma con passkey' }),
+    );
     expect(passkeyReauthMutation.mutate).toHaveBeenCalledWith(
       { csrfToken: 'current-session-csrf' },
       expect.any(Object),
