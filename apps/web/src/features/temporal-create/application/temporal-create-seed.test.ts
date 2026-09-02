@@ -6,8 +6,8 @@ import {
 } from '../model/temporal-create-session';
 import { applyTemporalCreateFieldSeed } from './temporal-create-seed';
 
-describe('Temporal Create semantic seed', () => {
-  it('deep-merges structured intent without replacing unrelated defaults', () => {
+describe('Temporal Create manual prefill seed', () => {
+  it('deep-merges structured manual prefill without replacing unrelated defaults', () => {
     const base = createTemporalCreateFields({
       date: '2026-09-02',
       timeZoneId: 'Europe/Rome',
@@ -61,7 +61,7 @@ describe('Temporal Create semantic seed', () => {
     expect(validateTemporalCreateFields(seeded)).toEqual([]);
   });
 
-  it('keeps unresolved or invalid interpreted values subject to normal Create validation', () => {
+  it('keeps invalid seeded values subject to normal Create validation', () => {
     const base = createTemporalCreateFields({
       date: '2026-09-02',
       timeZoneId: 'Europe/Rome',
