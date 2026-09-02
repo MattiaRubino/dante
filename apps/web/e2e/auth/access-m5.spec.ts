@@ -193,7 +193,7 @@ test.describe('DANTE Access/Auth M5 full-stack security surface', () => {
     );
     await expect(
       page.getByText(
-        'DANTE blocked this removal because it would leave the account without a safe authenticator.',
+        'DANTE ha bloccato la rimozione perché lascerebbe l’account senza un metodo di autenticazione sicuro.',
       ),
     ).toBeVisible();
   });
@@ -237,7 +237,9 @@ test.describe('DANTE Access/Auth M5 full-stack security surface', () => {
       'dependency.provider_unavailable',
     );
     await expect(
-      page.getByText('The authentication service is temporarily unavailable.'),
+      page.getByText(
+        'Il servizio di autenticazione è temporaneamente non disponibile.',
+      ),
     ).toBeVisible();
   });
 
@@ -291,7 +293,9 @@ test.describe('DANTE Access/Auth M5 full-stack security surface', () => {
       'dependency.provider_unavailable',
     );
     await expect(
-      page.getByText('The authentication service is temporarily unavailable.'),
+      page.getByText(
+        'Il servizio di autenticazione è temporaneamente non disponibile.',
+      ),
     ).toBeVisible();
   });
 });
