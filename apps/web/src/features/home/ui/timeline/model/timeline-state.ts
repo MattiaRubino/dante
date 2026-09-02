@@ -8,6 +8,7 @@ import {
 } from './timeline-fixtures';
 import { clampTimelineZoom } from './timeline-policy';
 import type {
+  TimelineAllDayItem,
   TimelineEvent,
   TimelineEventId,
   TimelineGroup,
@@ -32,6 +33,7 @@ type TimelineUndoSnapshot = Readonly<{
 
 export type TimelineState = Readonly<{
   eventsByDate: Readonly<Record<string, readonly TimelineEvent[]>>;
+  allDayItems: readonly TimelineAllDayItem[];
   groups: readonly TimelineGroup[];
   filters: ReadonlySet<TimelineGroupId>;
   focusedEventId: TimelineEventId | null;
@@ -70,7 +72,12 @@ export type TimelineAction =
       dateKey: string;
       event: TimelineEvent;
     }>
+  | Readonly<{
+      type: 'materialize-all-day';
+      item: TimelineAllDayItem;
+    }>
   | Readonly<{ type: 'remove-event'; eventId: TimelineEventId }>
+  | Readonly<{ type: 'remove-all-day'; itemId: string }>
   | Readonly<{
       type: 'update-event-time';
       dateKey: string;
@@ -105,11 +112,23 @@ function sortEvents(
   );
 }
 
+function sortAllDayItems(
+  items: readonly TimelineAllDayItem[],
+): readonly TimelineAllDayItem[] {
+  return [...items].sort(
+    (left, right) =>
+      left.startDateKey.localeCompare(right.startDateKey) ||
+      left.endDateExclusiveKey.localeCompare(right.endDateExclusiveKey) ||
+      left.id.localeCompare(right.id),
+  );
+}
+
 export function createInitialTimelineState(
   fixtureAnchor: PlainDate = TIMELINE_PROTOTYPE_TODAY,
 ): TimelineState {
   return {
     eventsByDate: createTimelinePrototypeStore(fixtureAnchor),
+    allDayItems: [],
     groups: [...TIMELINE_GROUPS],
     filters: new Set<TimelineGroupId>(),
     focusedEventId: null,
@@ -129,6 +148,16 @@ export function timelineEventsForDate(
   );
 }
 
+export function timelineAllDayItemsForDate(
+  state: TimelineState,
+  dateKey: string,
+): readonly TimelineAllDayItem[] {
+  return state.allDayItems.filter(
+    (item) =>
+      item.startDateKey <= dateKey && dateKey < item.endDateExclusiveKey,
+  );
+}
+
 export function findTimelineEvent(
   state: TimelineState,
   eventId: TimelineEventId,
@@ -141,6 +170,13 @@ export function findTimelineEvent(
   }
 
   return null;
+}
+
+export function findTimelineAllDayItem(
+  state: TimelineState,
+  itemId: string,
+): TimelineAllDayItem | null {
+  return state.allDayItems.find((item) => item.id === itemId) ?? null;
 }
 
 function replaceDateEvents(
@@ -169,6 +205,27 @@ function materializeEvent(
       ...events,
       action.event,
     ]),
+  };
+}
+
+function materializeAllDay(
+  state: TimelineState,
+  action: Extract<TimelineAction, { type: 'materialize-all-day' }>,
+): TimelineState {
+  const item = action.item;
+  if (
+    findTimelineAllDayItem(state, item.id) ||
+    item.id.trim().length === 0 ||
+    item.title.trim().length === 0 ||
+    item.groupId.trim().length === 0 ||
+    item.startDateKey >= item.endDateExclusiveKey
+  ) {
+    return state;
+  }
+
+  return {
+    ...state,
+    allDayItems: sortAllDayItems([...state.allDayItems, item]),
   };
 }
 
@@ -202,6 +259,13 @@ function removeEvent(
     expandedEventIds,
     undo: state.undo?.eventId === eventId ? null : state.undo,
   };
+}
+
+function removeAllDay(state: TimelineState, itemId: string): TimelineState {
+  const allDayItems = state.allDayItems.filter((item) => item.id !== itemId);
+  return allDayItems.length === state.allDayItems.length
+    ? state
+    : { ...state, allDayItems };
 }
 
 function updateEventTime(
@@ -474,8 +538,14 @@ export function timelineReducer(
     case 'materialize-event':
       return materializeEvent(state, action);
 
+    case 'materialize-all-day':
+      return materializeAllDay(state, action);
+
     case 'remove-event':
       return removeEvent(state, action.eventId);
+
+    case 'remove-all-day':
+      return removeAllDay(state, action.itemId);
 
     case 'update-event-time':
       return updateEventTime(state, action);
