@@ -241,7 +241,7 @@ describe('HomePage M1 visual materialization', () => {
       stageScope.getByRole('button', { name: 'Proiezione successiva' }),
     );
     expect(stage?.getAttribute('data-home-stage-mode')).toBe('signals');
-    expect(stageScope.getByRole('region', { name: 'Sintesi' })).toBeTruthy();
+    expect(stageScope.getByRole('region', { name: 'Segnali' })).toBeTruthy();
     expect(stageScope.getByText('FOCUS')).toBeTruthy();
     expect(stageScope.getByText('SONNO')).toBeTruthy();
     expect(stageScope.getByText('SPESA')).toBeTruthy();
