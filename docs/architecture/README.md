@@ -22,6 +22,10 @@ Groups 1–3                           COMPLETE / ENGINEERING PASS
 Group 4 product engineering          AUTOMATED QA PASS
 local password/passkey UAT           PASS
 real Google UAT                      PASS
+
+email-delivery architecture          ACCEPTED DIRECTION
+primary production delivery target   AMAZON SES API V2 / QUALIFICATION OPEN
+durable email platform               NOT YET MATERIALIZED
 real Internet email delivery         OPEN
 real Apple registered-domain UAT     DEFERRED / OPEN
 whole M5                             ACTIVE / NOT FORMALLY CLOSED
@@ -45,6 +49,7 @@ Protected `main` remains integrated authority for closed shared foundations. New
 - `access-auth-m4-contract.md` — closed lifecycle authority
 - `access-auth-m5-contract.md` — durable M5 multi-authenticator semantics
 - `access-auth-m5-persistence-api-contract.md` — exact M5 persistence/API design and milestone reconciliation
+- `access-auth-email-delivery.md` — current target for durable outbound Auth/security email
 - `../workstreams/access-auth.md` — current operational state
 - `../workstreams/access-auth-m5-review-2026-09-02.md` — current review/UAT evidence
 - `../database/README.md` and `../database/access-auth.md`
@@ -57,6 +62,7 @@ Important ADRs:
 - `../decisions/ADR-009-frontend-architecture-boundaries.md`
 - `../decisions/ADR-010-postgresql-persistence-constitution.md`
 - `../decisions/ADR-011-access-auth-architecture.md`
+- `../decisions/ADR-012-email-delivery-platform.md`
 
 ## 3. Permanent Auth architecture
 
@@ -134,7 +140,51 @@ DANTE stores credential public material, never biometric/PIN/private key
 
 Frontend owns only browser ceremony conversion/interaction; backend `python-fido2` owns cryptographic/RP verification.
 
-## 7. Current standards/deprecation review
+## 7. Email delivery architecture
+
+Current direction:
+
+```text
+DANTE application/security state
+        │
+        ├── durable Email Intent
+        ▼
+PostgreSQL transactional outbox
+        ▼
+bounded Email worker/orchestrator
+        ▼
+provider-neutral EmailDeliveryPort / adapter boundary
+        ▼
+Amazon SES API v2 primary production target
+        ▼
+Internet delivery
+        ▼
+provider delivery/bounce/complaint feedback
+        ▼
+DANTE delivery state / suppression / metrics
+```
+
+Permanent email rules:
+
+```text
+DANTE owns lifecycle/state; provider owns last-mile transport
+PostgreSQL remains canonical authority
+provider accepted != delivered
+network timeout != definitely not sent
+no blind retry after ambiguous outcome
+OTP/recovery proof excluded from logs/metrics/traces
+no indefinite plaintext sensitive outbox payload
+Auth/security open tracking OFF
+Auth/security click tracking/link rewriting OFF
+SPF + DKIM + DMARC required for production sender
+Auth/security, product notifications and future marketing separable
+```
+
+The current `SmtpEmailDispatcher` remains a valid bounded implementation/UAT adapter. It is not the final durable production email platform.
+
+Exact outbox schema, SES operational qualification, IAM, sender DNS, event ingestion, suppression and live Internet acceptance remain separate open gates.
+
+## 8. Current standards/deprecation review
 
 Review on 2026-09-02 found no material deprecated primitive in the current Google/WebAuthn path:
 
@@ -144,21 +194,28 @@ Review on 2026-09-02 found no material deprecated primitive in the current Googl
 - WebAuthn browser APIs and FIDO2 verification remain current.
 - Apple M5 semantics already accept the new `private.icloud.com` Sign in with Apple relay domain alongside `privaterelay.appleid.com`.
 
+Email/provider review also corrected one stale economic claim: the former SES-specific 3,000-message/month first-year allowance is not available to new AWS customers after July 21, 2026. Provider cost must use current pricing/credits; this does not change the architectural SES selection.
+
 See `../workstreams/access-auth-m5-review-2026-09-02.md` for sources and benchmark details.
 
-## 8. Progress metadata inside frozen contracts
+## 9. Progress metadata inside frozen contracts
 
 The M5 contracts contain detailed milestone-time reconciliation sections. Statements such as `M5-F NEXT` or `public routes later` are historical for the slice when written if they conflict with the current status/workstream. Their semantic/security/persistence design remains authoritative; operational progress is owned by `PROJECT-STATUS`, `ROADMAP`, the active workstream and current review.
 
-## 9. Current architecture gaps — deliberate, not hidden
+## 10. Current architecture gaps — deliberate, not hidden
 
 ```text
-real outbound-email architecture/provider qualification
+email provider/operational qualification
+exact durable email outbox/delivery-state materialization
+SES API adapter + provider-event/suppression implementation
+real Internet signup/recovery delivery UAT
 real Apple registered-domain UAT
 M7 session/device management UX
 M7 new-login/security-event response
 M7 production observability
 final authenticated Home handoff
 ```
+
+The **email architecture itself is no longer an open question**; its production implementation and qualification are open.
 
 No current evidence requires replacing the accepted Account/AuthSession/authenticator architecture to implement these gaps.
