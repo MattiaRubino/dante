@@ -5,7 +5,7 @@
 
 This file summarizes current accepted technical decisions. Detailed rationale and constraints live in linked Domain/Logical/Physical/Engineering/Frontend Foundation sources and ADRs. Historical phase-time status does not override later closure/integration evidence.
 
-Branch-local AI architecture is tracked here only as **current unmerged design context**, not promoted into an accepted implementation technology decision by this register. AI-02.1 v0.5 and AI-03 Context/Retrieval/Memory are structurally accepted responsibility contracts; AI-04 Productionization Architecture is current while concrete provider/model/runtime/retrieval/persistence activation choices remain evidence-driven and open unless explicitly selected below.
+Branch-local AI architecture is tracked here only as **current unmerged design context**, not promoted into an accepted implementation technology decision by this register. AI-02.1, AI-03, AI-04 and PRE-AI05 are structurally accepted responsibility contracts; AI-05 Whole-System Acceptance + Implementation Blueprint is current while concrete provider/model/runtime/retrieval/persistence activation choices remain evidence-driven and open unless explicitly selected below.
 
 ## TD-01 — Canonical persistence
 
@@ -187,7 +187,7 @@ Capability-first modular monolith.
 - private module implementation is not a public interface;
 - cross-module ACID transaction allowed when semantics require it.
 
-AI-02.1 and AI-03 responsibility boundaries do not imply one microservice/container per box or one module/table per Context/Retrieval/Memory contract. Any future extraction requires measured evidence.
+AI responsibility boundaries do not imply one microservice/container per box or one module/table per Context/Retrieval/Memory/Attention contract. Any future extraction requires measured evidence.
 
 ## TD-11 — Frontend application architecture
 
@@ -432,7 +432,7 @@ Alembic             20260830_09
 97 indexes
 69 FKs
 123 CHECKs
-remote backup provider   TBD / NOT ACTIVATED
+remote backup provider    TBD / NOT ACTIVATED
 production/cloud recovery NOT CLAIMED
 ```
 
@@ -465,7 +465,7 @@ Detailed normative authority:
 
 Durable consequences include stable UUID/reference addressing, bounded heterogeneous anchors, material-state/current-history separation, typed relation/constraint doctrine, transaction/concurrency/idempotency rules, migration/evolution posture and owner/migrator/runtime privilege separation.
 
-## TD-27 — AI provider replaceability boundary
+## TD-27 — AI provider replaceability / production-route boundary
 
 **ACCEPTED STRUCTURAL BOUNDARY / CONCRETE PROVIDER-MODEL SELECTION OPEN**
 
@@ -475,29 +475,60 @@ Binding separation:
 
 ```text
 MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT
+MODEL VENDOR != SERVING PLATFORM != PROTOCOL FAMILY
+HARNESSPROFILE != PROVIDERBINDING
 DANTE FEATURE/BUSINESS CODE != CONCRETE PROVIDER SDK
 PROVIDER REPLACEABLE != PROVIDERS IDENTICAL
 PROVIDER REPLACEABLE != LOWEST-COMMON-DENOMINATOR PROVIDER USAGE
 ```
 
-Productionization direction:
+Current production-route direction:
 
 ```text
 DANTE work/capability need
-→ ModelTarget
-→ HarnessProfile
-→ ProviderBinding
-→ Provider Adapter
+→ ModelTarget / deterministic need
+→ eligible qualified route compositions
+→ Routing Policy
+→ selected compatible qualified:
+   HarnessProfile
+   + ProviderBinding
+   + feature mode
+   + capability projection
+   + security/control profile
+→ route-specific resource admission
+→ current egress authorization
+→ Provider Adapter when a model route is selected
 → concrete provider / model / deployment
 ```
 
-`HarnessProfile` preserves provider/model-specific controllable behavior rather than pretending all providers expose identical capabilities. `ProviderBinding` resolves a target to the concrete endpoint/model/deployment/auth/configuration posture. `ProviderAdapter` owns protocol/SDK-specific request, stream, tool, structured-output, usage/error and receipt translation.
+`HarnessProfile` and `ProviderBinding` remain separate contracts but are selected/co-qualified as a compatible route composition. No universal Harness is selected first and attached to an arbitrary provider later.
+
+`HarnessProfile` preserves provider/model-specific controllable behavior rather than pretending all providers expose identical capabilities. `ProviderBinding` resolves the concrete serving-platform/model/deployment/region/auth/data/feature posture. `ProviderAdapter` owns protocol/SDK-specific request, stream, tool, structured-output, usage/error and receipt translation.
+
+Additional binding consequences from AI-04 whole-phase and PRE-AI05:
+
+```text
+EVAL CANDIDATE != PRODUCTION ROUTE
+MODEL/HARNESS QUALITY != SERVING-BINDING RELIABILITY
+FALLBACK DOES NOT INHERIT PRIMARY QUALIFICATION
+AUXILIARY/SUB-MODEL INVOCATION = GOVERNED DATA RECIPIENT
+ROUTE SELECTION / CONTEXT ASSEMBLY != EGRESS AUTHORIZATION
+CACHE HIT != HARNESS/TOOL/SECURITY/AUTH CONTINUITY
+MODEL PICKER / USER PREFERENCE != ROUTING AUTHORITY
+DIRECT EVAL != PRODUCTION CAPACITY QUALIFICATION
+ENTITLED != SERVABLE
+RUN-START AUTONOMY != PERPETUAL AUTONOMY
+ATTENTION DECISION != PROACTIVE WORK ADMISSION != EFFECT AUTHORIZATION
+RECIPIENT != SURFACE != CHANNEL
+SAFE SINGLE DISCLOSURE != AUTOMATICALLY SAFE CUMULATIVE DISCLOSURE
+SOURCE FUTURE ELIGIBILITY != PRIOR DISCLOSURE OCCURRENCE
+```
 
 This architecture permits, for example, a later direct-provider → Azure-hosted deployment change or an Anthropic/Gemini/other adapter without rewriting DANTE feature/Domain/Context/Retrieval/Memory/Effect semantics.
 
-It does **not** require multi-provider implementation on day one. AI-04 must first define representative workloads/evals and may select one primary V1 provider if that is the best measured simplicity/quality/cost posture.
+It does **not** require multi-provider implementation on day one. One primary V1 provider is acceptable if direct DANTE evidence supports that simpler production posture.
 
-Concrete provider/model/deployment/SDK selection remains AI-04 evidence-driven work and is not accepted by TD-27 itself.
+Concrete provider/model/deployment/SDK selection remains evidence-driven and is not accepted by TD-27 itself. A real production route also requires applicable direct DANTE workload, binding, security/data-eligibility, economics and intended-capacity evidence.
 
 ## Current branch-local AI architecture context — NON-ACCEPTED IMPLEMENTATION SELECTION
 
@@ -509,6 +540,7 @@ AI-00  Semantic & Product Foundation
 
 AI-01  Product Form + Production Engineering Research
        COMPLETE
+       old concrete-target ModelTarget shorthand = historical terminology
 
 AI-02  Intelligence Runtime Architecture
        COMPLETE / STRUCTURALLY ACCEPTED
@@ -523,38 +555,30 @@ AI-03  Context / Retrieval / Memory
        AI-03C CLOSED / MAT-01..MAT-15
 
 AI-04  Productionization Architecture
-       ACTIVE / CURRENT
-       workload/eval first
-       provider/model/economics after eval requirements
-       concrete runtime/capabilities/external intelligence
-       security/privacy/control-plane/operations
+       CLOSED / STRUCTURALLY ACCEPTED
+       AI-04A A01..A30 / EV01..EV20
+       AI-04B RT-01..RT-31
+       AI-04C PA-01..PA-61
+       whole-phase WP-01..WP-22
+
+PRE-AI05  Cross-Phase Hardening
+          CLOSED / PRE05-H01..H19
+          fresh whole-chain retest PASS / 26 OF 26
+          reverse-order retest PASS
+          current eval DANTE-E01..DANTE-E14
 
 AI-05  Whole-System Acceptance + Implementation Blueprint
-       FUTURE / FINAL ARCHITECTURE-TO-BUILD BOUNDARY
+       ACTIVE / CURRENT
+       FINAL ARCHITECTURE-TO-BUILD BOUNDARY
 ```
 
 This is **not** a new accepted provider/runtime technology selection. It records branch-local responsibility boundaries and current design sequencing while concrete provider/runtime activation decisions remain open.
 
-AI-03 accepted contracts/invariants include:
+Accepted AI Context/production constraints include:
 
 ```text
-ContextPlan
-InformationNeed
-ContextStrategy
-ContextFragment
-ContextReadiness
-ConsumerContext
-ContextManifest
-+ inherited BasisManifest
-
-AI-03A C01..C33
-AI-03B B01..B35
-AI-03C MAT-01..MAT-15
-```
-
-Important accepted boundaries include:
-
-```text
+ContextPlan / InformationNeed / ContextStrategy / ContextFragment /
+ContextReadiness / ConsumerContext / ContextManifest / BasisManifest
 Context != canonical reality
 Context != Retrieval != Memory
 Reality Scope is explicit
@@ -577,11 +601,13 @@ restored derived bytes != restored eligibility
 ANN is optimization, not prerequisite
 derived representation generations must not mix silently
 semantic obligation != execution/audit evidence
+AttentionBudget != ResourceBudget != commercial/provider quota
+cumulative disclosure may span related work where material
 ```
 
-AI-03 closure required no Domain/Logical/Physical/PostgreSQL/Alembic change and claims no implementation PASS.
+AI-03/AI-04/PRE-AI05 closure required no Domain/Logical/Physical/PostgreSQL/Alembic change and claims no implementation PASS.
 
-Current structural constraints relevant to AI-04 technical selection include:
+Current structural constraints relevant to AI-05 implementation selection include:
 
 ```text
 API-first frontier intelligence posture
@@ -589,15 +615,17 @@ no foundation-model training baseline
 no DANTE-owned frontier model
 no large always-on self-hosted frontier fleet/GPU cluster baseline
 provider/model replaceability
-ModelTarget / HarnessProfile / ProviderBinding / ProviderAdapter separation
+qualified HarnessProfile + ProviderBinding route composition
 semantic/deterministic fast path
 Execution Environment isolation only when workload/threat model requires it
 no raw privileged credentials in arbitrary generated/untrusted code
 policy mesh rather than model-selected authorization
 safe publication rather than raw sensitive provider stream
+current autonomy revalidation at consequential boundaries where applicable
+Attention separated from Work Admission
+surface/channel-aware + cumulative disclosure protection
 PostgreSQL remains sole canonical persistence/material-history authority
 search/vector/cache/provider memory remain noncanonical
-AI-03 Context/Retrieval/Memory contracts are fixed upstream for AI-04
 materialization/activation follows demonstrated consumer need + direct proof
 ```
 
@@ -608,6 +636,12 @@ docs/architecture/dante-ai-03-context-retrieval-memory.md
 docs/architecture/dante-ai-03a-full-context-architecture.md
 docs/architecture/dante-ai-03b-retrieval-memory-architecture.md
 docs/architecture/dante-ai-03c-destructive-validation-materialization-blueprint.md
+docs/architecture/dante-ai-04-productionization-architecture.md
+docs/architecture/dante-ai-04a-direct-eval-specification.md
+docs/architecture/dante-ai-04b-concrete-runtime-capability-architecture.md
+docs/architecture/dante-ai-04c-production-assurance-control-plane-operations.md
+docs/architecture/dante-ai-04-whole-phase-destructive-acceptance.md
+docs/architecture/dante-ai-pre05-cross-phase-hardening.md
 docs/workstreams/ai-architecture.md
 ```
 
@@ -624,12 +658,15 @@ Concrete choices remain OPEN/DEFERRED, including:
 OpenAI / Azure OpenAI / Anthropic / Gemini / other provider selection
 specific model/deployment mapping
 model routing/gateway product or implementation
-agent SDK/framework
+provider SDK / agent SDK/framework
 exact Execution Environment technology
 local model family/size/server
 conversation persistence physical form
 Run/working persistence physical form
 memory persistence beyond already accepted Domain ownership
+Attention implementation
+cumulative-disclosure accounting mechanism/storage
+formal IFC / posterior-leakage / ACS adoption
 embedding model / dimensions
 pgvector/FTS activation for AI retrieval
 HNSW / IVFFlat design
@@ -637,9 +674,12 @@ chunk/document retrieval schema
 reranker / hybrid retrieval implementation
 summary/compaction/adaptive-memory persistence
 provider thread/cache strategy
+commercial offering names/prices/quotas
+billing/credit implementation
+production region/residency mappings
 ```
 
-No such choice is promoted to accepted technology merely because AI-04 is active.
+No such choice is promoted to accepted technology merely because AI-05 is current.
 
 ## Selected technologies not to reintroduce casually
 
