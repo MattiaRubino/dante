@@ -31,6 +31,7 @@ export {
   type TemporalCreateEventCalendarFrequency,
   type TemporalCreateEventCycleUnit,
   type TemporalCreateEventIntent,
+  type TemporalCreateEventQuotaFrame,
   type TemporalCreateEventQuotaPeriodKind,
   type TemporalCreateEventRecurrenceEnd,
   type TemporalCreateEventRecurrenceIntent,
