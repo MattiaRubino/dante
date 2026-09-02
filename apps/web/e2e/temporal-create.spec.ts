@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 
 test.use({ locale: 'it-IT' });
 
@@ -8,6 +8,16 @@ async function openCreate(page: Page) {
   const dialog = page.locator('[data-temporal-create="composer"]');
   await expect(dialog).toBeVisible();
   return dialog;
+}
+
+async function selectCreateContext(dialog: Locator, label: string) {
+  const trigger = dialog.locator('.temporal-create-context-trigger');
+  await trigger.click();
+  const picker = dialog.locator('.temporal-create-context-popover');
+  await expect(picker).toBeVisible();
+  const option = picker.getByRole('option', { name: label });
+  await expect(option).toBeVisible();
+  await option.click();
 }
 
 async function expectNoRawCreateKeys(page: Page) {
@@ -68,7 +78,7 @@ test('Quick Create stays title-first, protects drafts, and restores opener focus
   await expect(title).toBeFocused();
   await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'quick');
   await expect(dialog.getByLabel('Tipo')).toHaveValue('activity');
-  await expect(dialog.getByLabel('Contesto')).toBeVisible();
+  await expect(dialog.locator('.temporal-create-context-trigger')).toBeVisible();
   await expectNoRawCreateKeys(page);
 
   await title.fill('Studiare inglese');
@@ -109,7 +119,7 @@ test('Quick Create makes a fixed Activity, reveals it, and undoes through F0', a
   await dialog.getByRole('textbox', { name: 'Titolo' }).fill('Nuova attività');
   await dialog.getByLabel('Ora').fill('13:30');
   await dialog.getByLabel('Durata prevista').selectOption('60');
-  await dialog.getByLabel('Contesto').selectOption('focus');
+  await selectCreateContext(dialog, 'Focus / lavoro profondo');
   await dialog.getByRole('button', { name: 'Aggiungi' }).click();
   await expect(dialog).toHaveCount(0);
 
