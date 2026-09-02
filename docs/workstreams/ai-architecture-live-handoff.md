@@ -3,14 +3,15 @@
 - **Status:** TEMPORARY / BRANCH-OPERATIONAL SAVE-GAME
 - **MUST NOT MERGE TO PROTECTED `main`**
 - **Branch:** `feature/ai-architecture`
-- **Current phase:** GLOBAL CURRENT-TRUTH RECONCILIATION
+- **Current phase:** AI-05 — WHOLE-SYSTEM ACCEPTANCE + IMPLEMENTATION BLUEPRINT
+- **Global current-truth reconciliation:** COMPLETE / QA PASS
 - **AI-02.1 / AI-03 / AI-04:** CLOSED / STRUCTURALLY ACCEPTED
 - **PRE-AI05 hardening:** CLOSED / STRUCTURALLY ACCEPTED / PRE05-H01..H19
 - **Fresh retest after H19:** PASS / 26 OF 26 STRUCTURAL CASES
 - **Reverse-order retest:** PASS
 - **2026 state-of-the-art regression:** PASS
 - **Current core eval families:** DANTE-E01..DANTE-E14
-- **AI-05:** NEXT / BECOMES CURRENT AFTER GLOBAL RECONCILIATION
+- **AI-05:** ACTIVE / CURRENT / FINAL ARCHITECTURE-TO-BUILD BOUNDARY
 - **Refreshed:** 2026-09-02
 - **Current branch HEAD:** FETCH LIVE before every write
 
@@ -20,9 +21,11 @@ Repository truth outranks this temporary handoff.
 
 ```text
 feature/ai-architecture
-→ PRE-AI05 H01..H19 already CLOSED
-→ current exact action = GLOBAL CURRENT-TRUTH RECONCILIATION
-→ then AI-05 Whole-System Acceptance + Implementation Blueprint
+→ AI-02 / AI-03 / AI-04 CLOSED
+→ PRE-AI05 H01..H19 CLOSED
+→ global current-truth reconciliation COMPLETE
+→ AI-05 CURRENT
+→ whole-system acceptance + repository-real implementation blueprint
 → then actual AI implementation workstream(s)
 ```
 
@@ -95,33 +98,37 @@ fresh full AI-01→AI-04 + H01..H19 retest     PASS / 26 OF 26
 compound collision retest                    PASS
 reverse PRE05→04→03→02→01                   PASS
 refreshed 2026 state-of-the-art regression   PASS
+global current-truth reconciliation          PASS / 8 exact current docs
 ```
 
-Structural evidence only.
+Structural/documentation evidence only.
 
-## 6. Current exact action
+## 6. Current exact action — AI-05
+
+Start from the accepted system, not from a provider SDK.
 
 ```text
-GLOBAL CURRENT-TRUTH RECONCILIATION
+accepted Product/Domain/Logical/Physical/PostgreSQL contracts
++ AI-02 runtime responsibilities
++ AI-03 Context/Retrieval/Memory/materialization
++ AI-04 productionization/control-plane/eval/runtime
++ PRE-AI05 cross-phase hardening
+→ whole-system acceptance matrix
+→ repository-real ownership/module/port/adapter placement
+→ runtime-only vs durable vs canonical classification
+→ first implementation vertical dependency map
+→ exact activation/direct-proof gates
+→ ordered implementation blueprint
 ```
 
-Expected current truth after the bounded global gate:
-
-```text
-AI-04 CLOSED / STRUCTURALLY ACCEPTED
-PRE-AI05 CLOSED / H01..H19
-DANTE-E01..E14 current
-old ai-context-runtime-boundaries.md classified HISTORICAL in navigation
-AI-05 CURRENT / Whole-System Acceptance + Implementation Blueprint
-```
-
-No provider/model/API/backend/database implementation claim may be added.
+Initial AI-05 work is architecture-to-build analysis. Do not create production backend/provider/database artifacts merely to make architecture nouns concrete.
 
 ## 7. Current non-claims
 
 ```text
 PRE-AI05 PASS                    YES / STRUCTURAL
-AI-05 SUBSTANTIVE DESIGN         NOT YET STARTED
+GLOBAL RECONCILIATION            YES / DOCUMENTATION QA
+AI-05 SUBSTANTIVE DESIGN         STARTING NOW
 PROVIDER/MODEL/SDK SELECTED      NO
 DIRECT PROVIDER EVAL             NO
 PRODUCTION CAPACITY PASS         NO
