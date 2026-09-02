@@ -3,11 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import './signal-stage.css';
 
-type SignalGraphicProps = Readonly<{
-  ariaLabel?: string;
-}>;
-
-function FocusGraphic({}: SignalGraphicProps) {
+function FocusGraphic() {
   return (
     <div className="home-synthesis-bars" aria-hidden="true">
       {[42, 68, 54, 82, 62].map((height, index) => (
@@ -17,7 +13,7 @@ function FocusGraphic({}: SignalGraphicProps) {
   );
 }
 
-function SleepGraphic({ ariaLabel }: SignalGraphicProps) {
+function SleepGraphic({ ariaLabel }: { ariaLabel: string }) {
   return (
     <svg
       className="home-synthesis-line"
@@ -31,7 +27,7 @@ function SleepGraphic({ ariaLabel }: SignalGraphicProps) {
   );
 }
 
-function SpendGraphic({}: SignalGraphicProps) {
+function SpendGraphic() {
   return (
     <div
       className="home-synthesis-bars home-synthesis-bars-spend"
@@ -45,21 +41,9 @@ function SpendGraphic({}: SignalGraphicProps) {
 }
 
 const SIGNAL_METRICS = [
-  {
-    id: 'focus',
-    className: 'home-synthesis-focus',
-    Graphic: FocusGraphic,
-  },
-  {
-    id: 'sleep',
-    className: 'home-synthesis-sleep',
-    Graphic: SleepGraphic,
-  },
-  {
-    id: 'spend',
-    className: 'home-synthesis-spend',
-    Graphic: SpendGraphic,
-  },
+  { id: 'focus', className: 'home-synthesis-focus' },
+  { id: 'sleep', className: 'home-synthesis-sleep' },
+  { id: 'spend', className: 'home-synthesis-spend' },
 ] as const;
 
 function modulo(value: number, divisor: number) {
@@ -97,6 +81,8 @@ export function SignalStage() {
     },
   } as const;
 
+  const sleepTrendLabel = t(($) => $.common.home.stage.signalSleepTrend);
+
   return (
     <section
       className="home-signal-stage"
@@ -105,7 +91,6 @@ export function SignalStage() {
     >
       <div className="home-signal-track" role="list">
         {visibleMetrics.map((metric) => {
-          const Graphic = metric.Graphic;
           const copy = metricCopy[metric.id];
 
           return (
@@ -116,13 +101,13 @@ export function SignalStage() {
             >
               <span className="home-synthesis-kicker">{copy.kicker}</span>
               <strong className="home-synthesis-value">{copy.value}</strong>
-              <Graphic
-                ariaLabel={
-                  metric.id === 'sleep'
-                    ? t(($) => $.common.home.stage.signalSleepTrend)
-                    : undefined
-                }
-              />
+              {metric.id === 'focus' ? (
+                <FocusGraphic />
+              ) : metric.id === 'sleep' ? (
+                <SleepGraphic ariaLabel={sleepTrendLabel} />
+              ) : (
+                <SpendGraphic />
+              )}
               <small className="home-synthesis-detail">{copy.detail}</small>
             </article>
           );
