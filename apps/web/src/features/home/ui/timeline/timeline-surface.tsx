@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 
 import './timeline.css';
 
+import { createTimelineLocalContext } from './model/timeline-context-catalog';
 import {
   TIMELINE_PROTOTYPE_NOW_MINUTE,
   TIMELINE_PROTOTYPE_TODAY,
@@ -35,7 +36,12 @@ import {
   parseTimelineDate,
   timelineDateKey,
 } from './model/timeline-temporal';
-import type { TimelineEvent, TimelineGroupId } from './model/timeline-types';
+import type {
+  TimelineEvent,
+  TimelineGroup,
+  TimelineGroupId,
+  TimelineSemanticTone,
+} from './model/timeline-types';
 import { TimelineDayStream } from './timeline-day-stream';
 import { TimelineHeader } from './timeline-header';
 import {
@@ -420,6 +426,17 @@ export function TimelineSurface({
     [state.zoom],
   );
 
+  const createContext = useCallback(
+    (label: string, tone: TimelineSemanticTone): TimelineGroup => {
+      const result = createTimelineLocalContext(state.groups, label, tone);
+      if (result.created) {
+        dispatch({ type: 'create-group', group: result.group });
+      }
+      return result.group;
+    },
+    [state.groups],
+  );
+
   const preserveRawScroll = useCallback(() => {
     rawScrollRestoreRef.current = gridRef.current?.scrollTop ?? null;
   }, []);
@@ -712,6 +729,7 @@ export function TimelineSurface({
             grid.scrollLeft = scrollLeft;
           }
         }}
+        onCreateContext={createContext}
         onMaterializeCreatedEvent={(dateKey, event) =>
           dispatch({ type: 'materialize-event', dateKey, event })
         }
