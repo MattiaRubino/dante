@@ -211,6 +211,7 @@ export const home = {
         periodDay: 'Giorno',
         periodWeek: 'Settimana',
         periodMonth: 'Mese',
+        periodYear: 'Anno',
         cycleLength: 'Lunghezza ciclo',
         cycleOffset: 'Posizione nel ciclo',
         cycleUnit: 'Unità del ciclo',
