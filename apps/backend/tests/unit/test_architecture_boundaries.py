@@ -162,6 +162,67 @@ def _format_edges(edges: list[_ImportEdge]) -> str:
 
 
 @cache
+def _source_modules() -> frozenset[str]:
+    return frozenset(_module_and_package(path)[0] for path in _DANTE_ROOT.rglob("*.py"))
+
+
+def _internal_target(imported: str) -> str | None:
+    parts = imported.split(".")
+    modules = _source_modules()
+    for size in range(len(parts), 0, -1):
+        candidate = ".".join(parts[:size])
+        if candidate in modules:
+            return candidate
+    return None
+
+
+@cache
+def _internal_graph() -> dict[str, frozenset[str]]:
+    mutable_graph: dict[str, set[str]] = {module: set() for module in _source_modules()}
+    for edge in _import_edges():
+        target = _internal_target(edge.imported)
+        if target is not None:
+            mutable_graph.setdefault(edge.importer, set()).add(target)
+    return {module: frozenset(targets) for module, targets in mutable_graph.items()}
+
+
+def _find_internal_paths(
+    *,
+    importer_root: str,
+    forbidden_root: str,
+    allowed_forbidden_roots: tuple[str, ...] = (),
+) -> list[tuple[str, ...]]:
+    graph = _internal_graph()
+    violations: list[tuple[str, ...]] = []
+
+    for start in sorted(module for module in graph if _is_within(module, importer_root)):
+        queue: list[tuple[str, tuple[str, ...]]] = [(start, (start,))]
+        visited = {start}
+
+        while queue:
+            current, path = queue.pop(0)
+            for target in sorted(graph.get(current, ())):
+                if target in visited:
+                    continue
+
+                next_path = (*path, target)
+                if _is_within(target, forbidden_root) and not _is_within_any(
+                    target, allowed_forbidden_roots
+                ):
+                    violations.append(next_path)
+                    break
+
+                visited.add(target)
+                queue.append((target, next_path))
+
+    return violations
+
+
+def _format_paths(paths: list[tuple[str, ...]]) -> str:
+    return "\n".join(" -> ".join(path) for path in paths)
+
+
+@cache
 def _runtime_dependency_names() -> frozenset[str]:
     with _PYPROJECT.open("rb") as stream:
         document = tomllib.load(stream)
@@ -238,6 +299,14 @@ def test_search_never_imports_intelligence() -> None:
     assert not violations, _format_edges(violations)
 
 
+def test_search_has_no_indirect_dependency_path_to_intelligence() -> None:
+    violations = _find_internal_paths(
+        importer_root=_SEARCH_ROOT,
+        forbidden_root=_INTELLIGENCE_ROOT,
+    )
+    assert not violations, _format_paths(violations)
+
+
 def test_intelligence_consumes_search_only_through_its_public_surface() -> None:
     violations = _forbidden_imports(
         importer_roots=(_INTELLIGENCE_ROOT,),
@@ -245,6 +314,15 @@ def test_intelligence_consumes_search_only_through_its_public_surface() -> None:
         allowed_imported_roots=_SEARCH_PUBLIC_SURFACES,
     )
     assert not violations, _format_edges(violations)
+
+
+def test_intelligence_has_no_indirect_dependency_path_to_private_search() -> None:
+    violations = _find_internal_paths(
+        importer_root=_INTELLIGENCE_ROOT,
+        forbidden_root=_SEARCH_ROOT,
+        allowed_forbidden_roots=_SEARCH_PUBLIC_SURFACES,
+    )
+    assert not violations, _format_paths(violations)
 
 
 def test_intelligence_has_no_database_or_sqlalchemy_authority() -> None:
