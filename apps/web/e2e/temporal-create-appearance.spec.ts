@@ -48,8 +48,11 @@ test('item appearance inherits Context by default and an override remains presen
   const urgent = dialog.getByRole('radio', {
     name: /Colore personalizzato · Urgenze/,
   });
+  const urgentChoice = dialog.locator(
+    '.temporal-create-appearance__tone[data-appearance-tone="urgent"]',
+  );
   await expect(inherit).toBeChecked();
-  await urgent.check();
+  await urgentChoice.click();
   await expect(urgent).toBeChecked();
   await expect(preview).toHaveAttribute('data-timeline-tone', 'urgent');
 
