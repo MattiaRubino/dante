@@ -501,6 +501,14 @@ test.describe('DANTE Access', () => {
       name: 'Continua con Google',
     });
 
+    await expect(
+      page.getByRole('heading', { level: 1, name: signInHeading }),
+    ).toBeVisible();
+    await expect(localeButton).toBeVisible();
+    await expect(localeButton).toBeEnabled();
+    await expect(googleButton).toBeVisible();
+    await expect(googleButton).toBeEnabled();
+
     await page.keyboard.press('Tab');
     await expect(localeButton).toBeFocused();
 
