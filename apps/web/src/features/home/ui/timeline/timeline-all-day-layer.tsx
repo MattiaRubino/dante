@@ -31,6 +31,12 @@ type VisibleAllDayItem = Readonly<{
   endsHere: boolean;
 }>;
 
+type VisibleDayCandidate = Readonly<{
+  dateKey: string;
+  distance: number;
+  containsProbe: boolean;
+}>;
+
 function coversDate(item: TimelineAllDayItem, dateKey: string): boolean {
   return item.startDateKey <= dateKey && dateKey < item.endDateExclusiveKey;
 }
@@ -42,7 +48,22 @@ function isLastCoveredDate(item: TimelineAllDayItem, dateKey: string): boolean {
   );
 }
 
-function activeTimelineDate(): string | null {
+function hasVisibleItem(
+  items: readonly TimelineAllDayItem[],
+  filters: ReadonlySet<TimelineGroupId>,
+  dateKey: string,
+): boolean {
+  return items.some(
+    (item) =>
+      coversDate(item, dateKey) &&
+      (filters.size === 0 || filters.has(item.groupId)),
+  );
+}
+
+function activeTimelineDate(
+  items: readonly TimelineAllDayItem[],
+  filters: ReadonlySet<TimelineGroupId>,
+): string | null {
   const grid = document.querySelector<HTMLElement>('.timeline-grid');
   if (!grid) {
     return null;
@@ -53,37 +74,48 @@ function activeTimelineDate(): string | null {
   }
 
   const probeY = gridRect.top + gridRect.height * 0.34;
-  const sections = Array.from(
+  const candidates = Array.from(
     grid.querySelectorAll<HTMLElement>(
       '.timeline-day-section[data-timeline-date]',
     ),
-  );
-  const direct = sections.find((section) => {
-    const rect = section.getBoundingClientRect();
-    return probeY >= rect.top && probeY < rect.bottom;
-  });
-  if (direct?.dataset.timelineDate) {
-    return direct.dataset.timelineDate;
-  }
-
-  let nearest: Readonly<{ dateKey: string; distance: number }> | null = null;
-  for (const section of sections) {
+  ).flatMap<VisibleDayCandidate>((section) => {
     const dateKey = section.dataset.timelineDate;
     if (!dateKey) {
-      continue;
+      return [];
     }
     const rect = section.getBoundingClientRect();
     const visibleTop = Math.max(rect.top, gridRect.top);
     const visibleBottom = Math.min(rect.bottom, gridRect.bottom);
     if (visibleBottom <= visibleTop) {
-      continue;
+      return [];
     }
-    const distance = Math.abs((visibleTop + visibleBottom) / 2 - probeY);
-    if (!nearest || distance < nearest.distance) {
-      nearest = { dateKey, distance };
-    }
+    return [
+      {
+        dateKey,
+        distance: Math.abs((visibleTop + visibleBottom) / 2 - probeY),
+        containsProbe: probeY >= rect.top && probeY < rect.bottom,
+      },
+    ];
+  });
+
+  const direct = candidates.find((candidate) => candidate.containsProbe);
+  if (direct && hasVisibleItem(items, filters, direct.dateKey)) {
+    return direct.dateKey;
   }
-  return nearest?.dateKey ?? null;
+
+  const nearestWithAllDay = candidates
+    .filter((candidate) => hasVisibleItem(items, filters, candidate.dateKey))
+    .sort((left, right) => left.distance - right.distance)[0];
+  if (nearestWithAllDay) {
+    return nearestWithAllDay.dateKey;
+  }
+
+  if (direct) {
+    return direct.dateKey;
+  }
+
+  candidates.sort((left, right) => left.distance - right.distance);
+  return candidates[0]?.dateKey ?? null;
 }
 
 export function TimelineAllDayLayer({
@@ -101,9 +133,9 @@ export function TimelineAllDayLayer({
     }
     frameRef.current = requestAnimationFrame(() => {
       frameRef.current = null;
-      setActiveDateKey(activeTimelineDate());
+      setActiveDateKey(activeTimelineDate(items, filters));
     });
-  }, []);
+  }, [filters, items]);
 
   useEffect(() => {
     const root = document.querySelector<HTMLElement>(
@@ -172,7 +204,6 @@ export function TimelineAllDayLayer({
     >
       <div className="timeline-all-day-strip__label">
         <span>{t(($) => $.common.home.timeline.create.timeSemantics.allDay)}</span>
-        <time dateTime={activeDateKey}>{activeDateKey}</time>
       </div>
       <div className="timeline-all-day-strip__items">
         {visibleItems.map(
