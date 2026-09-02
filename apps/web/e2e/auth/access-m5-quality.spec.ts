@@ -85,7 +85,9 @@ test.describe('DANTE Access/Auth M5 accessibility and responsive quality', () =>
     await useItalianLocale(page);
   });
 
-  test('meets WCAG AA on the unauthenticated Access surface', async ({ page }) => {
+  test('meets WCAG AA on the unauthenticated Access surface', async ({
+    page,
+  }) => {
     await page.goto('/');
     await expect(
       page.getByRole('heading', { level: 1, name: 'Accedi a DANTE' }),
@@ -131,7 +133,9 @@ test.describe('DANTE Access/Auth M5 accessibility and responsive quality', () =>
     await expect(passwordToggle).toBeFocused();
   });
 
-  test('keeps the Access surface inside a 320px mobile viewport', async ({ page }) => {
+  test('keeps the Access surface inside a 320px mobile viewport', async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 320, height: 800 });
     await page.goto('/');
 
