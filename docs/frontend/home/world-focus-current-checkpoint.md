@@ -1,6 +1,6 @@
 # DANTE — World Focus Current Checkpoint
 
-**Status:** CURRENT LIVE WORLD FOCUS CHECKPOINT — WS0 COMPLETE / WS1 NEXT  
+**Status:** CURRENT LIVE WORLD FOCUS CHECKPOINT — WS0 COMPLETE / WS1–WS5 CONVERGENCE LOOP NEXT  
 **Date:** 2026-09-02  
 **Branch:** `feature/home-react`  
 **Worktree:** `/home/mattia/projects/dante-frontend`
@@ -47,14 +47,12 @@ D1 validated code HEAD                 f17291de32e6bdced20536807b32928ec1be6aea
 D1 Frontend CI                         33552437179 — PASS
 
 WS0 Substrate Inventory                COMPLETE BASELINE
-WS1 Simulation Corpus                  NEXT ACTIVE GATE
-WS2 With/Without DANTE Stress          NOT STARTED
-WS3 Adversarial / Edge Stress          NOT STARTED
-WS4 Targeted Reverse Engineering       NOT STARTED
-WS5 Gap Closure                        NOT STARTED
-WS6 Universal Work Primitive Closure   NOT STARTED
-WS7 Executable Non-Visual Harness      NOT STARTED
-WS8 Final Falsification                NOT STARTED
+WS1–WS5 World Substrate Convergence    NEXT ACTIVE MACRO-BLOCK
+                                       ONE INDIVISIBLE CYCLIC GATE
+                                       NOT YET CLOSED
+WS6 Universal Work Primitive Closure   BLOCKED BY CONVERGENCE LOOP
+WS7 Executable Non-Visual Harness      BLOCKED BY WS6
+WS8 Final Falsification                BLOCKED BY WS7
 
 Materialization M0-M7                  BLOCKED UNTIL WS8 CLOSES
 D2-D6                                  PRESERVED / MATERIALIZATION-DEFERRED
@@ -122,16 +120,19 @@ Inventory:
 ## 3. Current closure program
 
 ```text
-WS0 — Substrate Inventory                COMPLETE
+WS0 — Substrate Inventory
+       COMPLETE BASELINE
 
-WS1 — Simulation Corpus
-WS2 — With/Without DANTE Stress
-WS3 — Adversarial / Edge Stress
-WS4 — Targeted Reverse Engineering
-WS5 — Gap Closure
-       ^
-       | repeat until convergence
-       +----------------------------
+WS1–WS5 — WORLD SUBSTRATE CONVERGENCE LOOP
+          ONE ACTIVE MACRO-BLOCK
+
+          Simulation Corpus
+          + With/Without DANTE Stress
+          + Adversarial / Edge Stress
+          + Targeted Reverse Engineering
+          + Gap Closure
+
+          repeat as one loop until convergence
 
 WS6 — Universal Work Primitive Closure
 WS7 — Executable Non-Visual Harness
@@ -140,9 +141,32 @@ WS8 — Final Falsification
 then Materialization M0-M7
 ```
 
-WS1–WS5 are a convergence loop, not a one-pass checklist.
+Critical sequencing rule:
 
-A genuinely new material substrate concept found in a cycle is closed in WS5 and causes another WS1→WS5 cycle. Before WS6 there must be at least one full confirmation cycle yielding **no new material substrate gap**.
+```text
+WS1 / WS2 / WS3 / WS4 / WS5
+= labels for activities inside the loop
+!= independent gates
+!= independent PASS states
+!= mandatory stopping points
+```
+
+A real working pass is:
+
+```text
+scenario
+-> without DANTE
+-> with DANTE
+-> adversarial pressure
+-> targeted research immediately if needed
+-> gap closure immediately
+-> propagate decision across corpus
+-> continue
+```
+
+The macro-block closes only after all material gaps are propagated and one complete confirmation pass produces **zero new material substrate gap**.
+
+Only then proceed to WS6.
 
 ---
 
@@ -172,7 +196,7 @@ BACKEND-DEFERRED
 REJECTED
 ```
 
-The inventory identifies ten primary WS1 falsification clusters:
+The inventory identifies ten primary convergence-loop falsification clusters:
 
 ```text
 P1  work primitive completeness
@@ -205,9 +229,9 @@ Should DANTE be a permanent chatbot column?
 Can mobile ongoing DANTE be squeezed into the narrow World workspace?
 ```
 
-Existing conclusions are constraints unless new WS evidence genuinely falsifies them.
+Existing conclusions are constraints unless new convergence-loop evidence genuinely falsifies them.
 
-Fresh external research is allowed in WS4 only for a **concrete unresolved gap produced by WS1–WS3**.
+Fresh external research is allowed only for a **concrete unresolved gap produced inside the active convergence loop**.
 
 ---
 
@@ -320,7 +344,7 @@ available authorized reality
 
 No fake cards, generic KPIs, fabricated progress, AI filler, dummy charts or prompt suggestions for visual density.
 
-A key WS1–WS6 question is what smaller reusable **work primitive vocabulary** sits underneath this product grammar. Do not assume `one answer family = one module = one primitive`.
+A key convergence-loop + WS6 question is what smaller reusable **work primitive vocabulary** sits underneath this product grammar. Do not assume `one answer family = one module = one primitive`.
 
 ---
 
@@ -419,7 +443,7 @@ AI-guessed relevance != continuity fact
 
 No fake Resume action exists without a real destination/capability.
 
-B2 remains the first real question-driven application/read vertical and becomes useful corpus evidence during WS1; it is not assumed to be the universal work model.
+B2 remains the first real question-driven application/read vertical and becomes useful corpus evidence during the convergence loop; it is not assumed to be the universal work model.
 
 ---
 
@@ -475,7 +499,7 @@ The former D7 integrated review is subsumed by Materialization M6.
 
 ---
 
-## 13. Multi-actor pressure that WS1–WS6 must carry
+## 13. Multi-actor pressure that convergence + WS6 must carry
 
 Do not reduce collaboration to single-user software × N.
 
@@ -566,7 +590,7 @@ No manual visual review may be claimed if it did not happen.
 11. world-focus-evidence-index.md
 ```
 
-Then read the evidence specific to the active WS gate.
+Then read the evidence specific to the active substrate problem.
 
 ---
 
@@ -578,8 +602,10 @@ Do not start materialization.
 
 Do not restart old World research from zero.
 
+Do **not** execute WS1, then stop for a separate WS2 gate.
+
 Resume at:
 
-> **WS1 — Simulation Corpus**
+> **WS1–WS5 — WORLD SUBSTRATE CONVERGENCE LOOP.**
 
-Build the durable scenario corpus against the ten WS0 pressure clusters, without encoding a preferred UI, then proceed into WS2–WS5 as one convergence cycle.
+Enter the loop with the ten WS0 pressure clusters and work simulation, with/without DANTE comparison, adversarial pressure, targeted reverse engineering and gap closure **together and continuously** until the macro-block converges and closes as a whole.
