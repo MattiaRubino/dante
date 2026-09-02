@@ -29,9 +29,9 @@ type TemporalCreateContextPickerProps = Readonly<{
   value: string;
   contexts: readonly TemporalCreateContextOption[];
   onChange: (contextId: string) => void;
-  onCreateContext: (
-    input: TemporalCreateContextInput,
-  ) => TemporalCreateContextOption;
+  onCreateContext:
+    | ((input: TemporalCreateContextInput) => TemporalCreateContextOption)
+    | null;
 }>;
 
 function normalizedQuery(value: string): string {
@@ -118,7 +118,7 @@ export function TemporalCreateContextPicker({
 
   const submitNewContext = () => {
     const label = newLabel.trim().replace(/\s+/g, ' ');
-    if (!label) {
+    if (!label || onCreateContext === null) {
       nameRef.current?.focus();
       return;
     }
@@ -199,6 +199,7 @@ export function TemporalCreateContextPicker({
                     role="option"
                     aria-selected={context.id === value}
                     className={context.id === value ? 'is-selected' : ''}
+                    data-context-tone={context.tone}
                     onClick={() => {
                       onChange(context.id);
                       setOpen(false);
@@ -218,14 +219,16 @@ export function TemporalCreateContextPicker({
                 ))}
               </div>
 
-              <button
-                className="temporal-create-context-new"
-                type="button"
-                onClick={beginCreate}
-              >
-                <span aria-hidden="true">＋</span>
-                <span>{createLabel}</span>
-              </button>
+              {onCreateContext ? (
+                <button
+                  className="temporal-create-context-new"
+                  type="button"
+                  onClick={beginCreate}
+                >
+                  <span aria-hidden="true">＋</span>
+                  <span>{createLabel}</span>
+                </button>
+              ) : null}
             </>
           ) : (
             <div className="temporal-create-context-create">
