@@ -3,8 +3,8 @@
 **Status:** FINAL HUMAN GATE — NOT YET EXECUTED  
 **Date:** 2026-09-02  
 **Branch:** `feature/home-timeline`  
-**Implementation candidate under acceptance:** `f092a3db2fbac28421b73e0629f7b4b83a1b0aec`  
-**Automated evidence:** Frontend CI `33631013598` / #621 — FULL PASS
+**Implementation candidate under acceptance:** `7028633921d1b438bd04961a718457afd82ccc13`  
+**Automated evidence:** Frontend CI `33635389124` / #632 — FULL PASS
 
 ## 1. Purpose
 
@@ -44,7 +44,7 @@ Expected:
 
 - branch `feature/home-timeline`;
 - clean worktree;
-- HEAD is the final CI-green documentation descendant of implementation candidate `f092a3db...`.
+- HEAD is the final CI-green documentation descendant of implementation candidate `7028633921d1b438bd04961a718457afd82ccc13`.
 
 Start the normal web development environment used for this repository and open `/home`.
 
@@ -462,7 +462,9 @@ Expected:
 - no existing card is accidentally captured;
 - no native drag ghost appears.
 
-This interaction must work after previously opening/closing Create as well; Timeline virtualization must not make the second gesture dead.
+This interaction must work after previously opening/closing Create as well; Timeline virtualization and page scrolling must not make the second gesture dead.
+
+The final automated candidate explicitly hardens this scenario by resolving an actually visible Timeline interaction band across the Timeline viewport and browser viewport before exercising the gestures.
 
 ---
 
@@ -521,7 +523,7 @@ Expected:
 - Undo corresponds to a real mutation;
 - Create has not re-authored Timeline interaction grammar.
 
-Firefox's critical interaction contract is already automated; this is only a human regression feel-check.
+Firefox's critical interaction contract is already automated and PASS on CI #632; this is only a human regression feel-check.
 
 ---
 
