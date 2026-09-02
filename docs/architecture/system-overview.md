@@ -1,11 +1,11 @@
 # DANTE System Overview
 
 - **Status:** CURRENT ARCHITECTURE / IMPLEMENTATION-BOUNDARY OVERVIEW
-- **Last reconciled:** 2026-09-01
+- **Last reconciled:** 2026-09-02
 - **Backend foundation:** CP1–CP6 CLOSED / integrated / directly validated
 - **Current PostgreSQL:** 18.6
 - **Current Alembic head:** `20260830_09`
-- **Current product work:** full Access/Auth vertical active and unmerged on `feature/access-auth`; AI-02.1 v0.5 and AI-03A Full Context Architecture structurally accepted; AI-03B Retrieval + Memory current on `feature/ai-architecture`
+- **Current product work:** full Access/Auth vertical active and unmerged on `feature/access-auth`; AI-02.1 v0.5 and AI-03 Context/Retrieval/Memory structurally accepted; AI-04 Productionization Architecture current on `feature/ai-architecture`
 
 ## 1. Product and authority
 
@@ -49,9 +49,14 @@ SOURCE STANDING != DOMAIN AUTHORITY
 INTERACTION SESSION CONTINUITY != PROVIDER-CONTEXT CONTINUITY
 MODEL-DISCOVERED INFORMATION NEED != WORKCONTRACT/POLICY SCOPE EXPANSION
 WORKCONTRACT PROPAGATION != PARENT-CONTEXT INHERITANCE
+PROCESSING / RETRIEVAL ELIGIBILITY != RETENTION / FUTURE-REUSE ELIGIBILITY
+APPROXIMATE != COMPLETE
+SEMANTIC AUTHORITY != FUNCTIONAL ROLE != SURVIVAL DISPOSITION != PHYSICAL OWNER
+MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT
+DANTE FEATURE/BUSINESS CODE != CONCRETE PROVIDER SDK
 ```
 
-Logical hardenings `WL-H01..WL-H12` remain active implementation contracts. AI-03A adds accepted Context hardenings `C01..C29`.
+Logical hardenings `WL-H01..WL-H12` remain active implementation contracts. AI-03 adds accepted Context `C01..C33`, Retrieval/Memory `B01..B35` and Materialization `MAT-01..MAT-15` invariants.
 
 The AI architecture is layered across:
 
@@ -65,14 +70,23 @@ docs/architecture/ai-production-engineering-state-of-the-art-2026.md
 docs/architecture/dante-ai-02-1-intelligence-reengineering.md
 → AI-02.1 v0.5 CLOSED / STRUCTURALLY ACCEPTED
 
-docs/architecture/dante-ai-03a-full-context-architecture.md
-→ AI-03A Full Context Architecture CLOSED / STRUCTURALLY ACCEPTED
-
 docs/architecture/dante-ai-03-context-retrieval-memory.md
-→ AI-03 ACTIVE / current macro-phase AI-03B Retrieval + Memory Architecture
+→ AI-03 CLOSED / STRUCTURALLY ACCEPTED
+
+docs/architecture/dante-ai-03a-full-context-architecture.md
+→ AI-03A CLOSED / C01..C33
+
+docs/architecture/dante-ai-03b-retrieval-memory-architecture.md
+→ AI-03B CLOSED / B01..B35
+
+docs/architecture/dante-ai-03c-destructive-validation-materialization-blueprint.md
+→ AI-03C CLOSED / MAT-01..MAT-15
+
+docs/workstreams/ai-architecture.md
+→ current branch-local routing: AI-04 Productionization Architecture
 ```
 
-AI-02.1 does not supersede AI-00. It pressure-tested and refined runtime/intelligence responsibilities while preserving the accepted semantic baseline. AI-03A then fixed detailed Context contracts inside that runtime. AI-03B consumes both and owns detailed Retrieval + Memory design.
+AI-02.1 does not supersede AI-00. It pressure-tested and refined runtime/intelligence responsibilities while preserving the accepted semantic baseline. AI-03 then closed detailed Context, Retrieval, Memory and materialization boundaries. AI-04 consumes those accepted contracts and resolves concrete production architecture without weakening them.
 
 ## 2. Repository / application topology
 
@@ -424,21 +438,22 @@ explicit MIXED frame
 
 No cross-frame laundering is allowed.
 
-## 9. AI-03A Context assembly contract
+## 9. AI-03 Context / Retrieval / Memory contracts
 
-The accepted structural path is:
+The accepted Context structural path is:
 
 ```text
 WorkContract
 → ContextPlan
 → InformationNeeds
+→ Reality Scope / Runtime Interpretation Frame where material
 → ContextStrategy per need
 → discovery/acquisition PEP
 → source read + source binding
 → ContextFragments
-→ Reality Scope / Provenance / Source Standing /
-  Integrity / Canonicality / Instruction Provenance /
-  Confidentiality / Temporal Validity / Contradiction
+→ source standing / provenance / integrity / canonicality /
+  instruction provenance / confidentiality /
+  temporal validity / contradiction
 → coverage + coherence
 → ContextReadiness
 → minimisation / transformation
@@ -446,7 +461,7 @@ WorkContract
 → consumer/provider exposure PEP
 → ConsumerContext
 → Harness / consumer invocation
-→ ContextManifest exposure receipt
+→ established exposure / ContextManifest
 → bounded iterative/JIT acquisition if legitimate need remains
 ```
 
@@ -463,15 +478,41 @@ CONTEXT MANIFEST != BASIS MANIFEST
 EXPOSED != USED != MATERIAL DEPENDENCY
 ```
 
-InformationNeed carries explicit criticality, coverage/currentness/coherence and reference-resolution requirements. Model-discovered needs may refine but cannot silently widen the WorkContract/policy scope.
-
-ContextPlan also supports explicit exclusions such as forbidden sources, data classes, purposes, provider exposure or derivative use.
-
-ContextReadiness is requirement-based, consumer-/step-specific and non-monotonic.
+AI-03B adds retrieval and memory boundaries:
 
 ```text
-READY now != READY forever
+RetrievalCandidate != ContextFragment
+APPROXIMATE != COMPLETE
+candidate count != coverage proof
+rank/similarity/rerank != Source Standing
+index/cache/embedding != source
+Memory survival defaults to NO
+MEMORY EXISTS != MEMORY MAY BE RECALLED
+MODEL REQUEST TO REMEMBER != MEMORY ADMISSION
+canonical application memory belongs to Domain/PostgreSQL
+correction != forgetting != source/use/inference suppression
+provider memory is replaceable optimization
+successful canonical promotion must not leave duplicate noncanonical authority
 ```
+
+AI-03C adds physical survival/materialization boundaries:
+
+```text
+ARCHITECTURE CONTRACT != PERSISTENCE OWNER
+DEFAULT NONCANONICAL PERSISTENCE = NO
+semantic authority != functional role != survival != physical owner
+Class-A durable coordination != Class-B durable execution
+DURABLE JOURNAL != PRIVACY-FREE RUNTIME
+persistent derivative requires truthful/scalable source basis
+ASYNC INVALIDATION != CURRENT ELIGIBILITY
+recomputable derived state is sacrificial in recovery
+ANN is optimization, not prerequisite
+representation generations do not mix silently
+serving generation requires build/catch-up/readiness/cutover discipline
+semantic obligation != execution/audit evidence
+```
+
+AI-03 is structurally closed at `C01..C33 / B01..B35 / MAT-01..MAT-15`. No new generic AI memory/conversation/Run/search table, database migration, vector/FTS activation, Restate/R2 activation or provider/model selection was justified by closure.
 
 ## 10. BasisManifest / freshness / coherence
 
@@ -513,6 +554,8 @@ BasisManifest
 ```
 
 They may overlap in source references but are not interchangeable.
+
+AI-03C additionally permits scalable typed basis envelopes where a derivative depends on a very large source set; this does not turn MVCC/LSN/hash/digest into `MaterialStateRef` or semantic truth.
 
 ## 11. Context continuity, provider state and compaction
 
@@ -622,7 +665,7 @@ deterministic calculation
 normal application/domain capability
 ```
 
-AI-03A explicitly preserves the fast path: Context machinery is bypassable where deterministic application logic can answer correctly without composed context.
+AI-03 explicitly preserves the fast path: Context/retrieval machinery is bypassable where deterministic application logic can answer correctly without composed model context.
 
 Potential isolation-triggering workloads include:
 
@@ -649,7 +692,7 @@ lifecycle/cleanup
 execution evidence
 ```
 
-No specific WASM/container/gVisor/microVM technology is mandated by this architecture.
+No specific WASM/container/gVisor/microVM technology is mandated by the accepted structural architecture. Concrete technology belongs to current AI-04 evidence-driven productionization.
 
 Generated/untrusted code must not receive raw privileged database/application/provider credentials. Privileged action uses bounded trusted broker/capability calls subject to current identity/delegation/policy/evidence.
 
@@ -683,6 +726,8 @@ CANCEL RUN != UNDO ALREADY-DISPATCHED EFFECTS
 
 Outcome-unknown effects remain real obligations. Optional resource/budget exhaustion may stop additional optional work but must not erase required reconciliation.
 
+AI-03C further separates the semantic pending/staged/reconciliation obligation from technical provider receipt/trace evidence; technical evidence does not become a new Domain reconciliation root.
+
 ## 16. Context, disclosure and publication
 
 ```text
@@ -696,11 +741,12 @@ Safe Publication
 = what may cross recipient/surface boundary now
 ```
 
-AI-03A adds a pre-disclosure distinction:
+AI-03 adds a pre-disclosure distinction:
 
 ```text
 acquisition eligibility
 != consumer/provider exposure eligibility
+!= retention/future-reuse eligibility
 != recipient disclosure
 ```
 
@@ -725,7 +771,7 @@ Lock-screen notification, private in-app view, shared UI and voice/realtime are 
 
 ## 17. Source lifecycle and anti-resurrection
 
-Context acquisition must distinguish materially different source states instead of collapsing them all to `None`:
+Context/retrieval must distinguish materially different source states instead of collapsing them all to `None`:
 
 ```text
 NOT_FOUND
@@ -743,9 +789,9 @@ An old ContextManifest may remain a truthful historical receipt that a consumer 
 
 That does not make a now-retired source or derivative eligible for future retrieval.
 
-Future durable derivatives such as embeddings, summaries, indexes, context caches, provider state or compaction checkpoints inherit source lifecycle/anti-resurrection obligations. Restoring old bytes from backup does not by itself restore semantic eligibility.
+Durable derivatives such as embeddings, summaries, indexes, context caches, provider state or compaction checkpoints inherit source lifecycle/anti-resurrection obligations. Restoring old bytes from backup does not by itself restore semantic eligibility.
 
-Exact physical invalidation mechanics remain AI-03C work if/when such durable derivatives exist.
+AI-03C closes the architecture rule: restored derived bytes are non-serving until rebuilt or explicitly reconciled against current authoritative lifecycle/suppression/basis state. Exact physical invalidation/rebuild mechanics remain activation-specific implementation/direct-proof work, not an open AI-03 semantic question.
 
 ## 18. Attention / proactivity
 
@@ -786,7 +832,7 @@ an external autonomous system performed an external effect
 
 DANTE must not claim its effect governance covered a side effect that happened outside it.
 
-For delegated reasoning, AI-03A additionally requires minimum-necessary child/delegated ConsumerContext. Parent context is not copied wholesale.
+For delegated reasoning, AI-03A requires minimum-necessary child/delegated ConsumerContext. Parent context is not copied wholesale.
 
 ## 20. Observability / audit / evaluation privacy
 
@@ -800,7 +846,9 @@ Sensitive prompts, ContextFragments, ContextManifests, tool results, traces or p
 
 Production trace reuse in an evaluation corpus requires legitimate purpose/handling rather than being automatic.
 
-## 21. Future rich intelligence
+AI-04 must convert these accepted boundaries into concrete observability/eval/control-plane behavior without exporting sensitive runtime state merely because a telemetry vendor supports it.
+
+## 21. Future rich intelligence and provider replaceability
 
 DANTE supports one semantic/application core with multiple interaction/intelligence surfaces.
 
@@ -839,6 +887,27 @@ A much larger context window changes `ContextStrategy`/packing economics; it doe
 
 Provider thread/memory is an optimization/integration detail, not DANTE truth.
 
+AI-04 now binds the concrete provider-replaceability seam:
+
+```text
+MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT
+DANTE FEATURE/BUSINESS CODE != CONCRETE PROVIDER SDK
+PROVIDER REPLACEABLE != LOWEST-COMMON-DENOMINATOR PROVIDER USAGE
+```
+
+Productionization direction:
+
+```text
+DANTE work / capability need
+→ ModelTarget
+→ HarnessProfile
+→ ProviderBinding
+→ Provider Adapter
+→ concrete provider / model / deployment
+```
+
+This boundary permits a V1 with one primary provider while keeping a later direct-provider/Azure-hosted/other-provider switch bounded to adapter/binding/harness/config/eval rather than a rewrite of DANTE semantics or feature logic.
+
 ## 22. AI phase state
 
 Completed AI-02 evidence:
@@ -852,15 +921,17 @@ Targeted v0.5 verification      COMPLETE
 More AI-02 mega-test cycles     NONE
 ```
 
-AI-03A evidence:
+AI-03 evidence:
 
 ```text
-Initial candidate               FAIL / HARDENING REQUIRED
-Dedicated AI-03A mega-test      COMPLETE
-Hardenings                      9
-Hardened candidate              STRUCTURAL PASS
-C01..C29                        ACCEPTED
-More AI-03A mega-test cycles    NONE unless contradictory downstream evidence
+AI-03A final closure             CLOSED / C01..C33
+AI-03B final closure             CLOSED / B01..B35
+AI-03C final closure             CLOSED / MAT-01..MAT-15
+AI-03 overall                   CLOSED / STRUCTURALLY ACCEPTED
+Domain/Logical/Physical reopen  NO
+PostgreSQL/Alembic change       NO
+provider/model selection        NO
+implementation PASS             NOT CLAIMED
 ```
 
 No evidence was found to reopen Domain, Logical, Physical or PostgreSQL.
@@ -874,19 +945,26 @@ AI-02.1
 v0.5 CLOSED / STRUCTURALLY ACCEPTED
 NO RUNTIME/BACKEND/PROVIDER IMPLEMENTATION CLAIM
 
-AI-03A
-FULL CONTEXT ARCHITECTURE
-CLOSED / STRUCTURALLY ACCEPTED
-
 AI-03
-ACTIVE — CONTEXT / RETRIEVAL / MEMORY
-CURRENT MACRO-PHASE AI-03B RETRIEVAL + MEMORY ARCHITECTURE
+CONTEXT / RETRIEVAL / MEMORY
+CLOSED / STRUCTURALLY ACCEPTED
+C01..C33 / B01..B35 / MAT-01..MAT-15
+
+AI-04
+PRODUCTIONIZATION ARCHITECTURE
+ACTIVE / CURRENT
 ```
 
-Current AI-03 authority:
+Current durable AI-03 authority:
 
 - `docs/architecture/dante-ai-03-context-retrieval-memory.md`;
-- `docs/architecture/dante-ai-03a-full-context-architecture.md`.
+- `docs/architecture/dante-ai-03a-full-context-architecture.md`;
+- `docs/architecture/dante-ai-03b-retrieval-memory-architecture.md`;
+- `docs/architecture/dante-ai-03c-destructive-validation-materialization-blueprint.md`.
+
+Current routing authority:
+
+- `docs/workstreams/ai-architecture.md`.
 
 ## 23. Frontend / client data authority
 
@@ -948,19 +1026,21 @@ dante_runtime    LOGIN NOINHERIT / runtime DML posture
 
 Future AI execution passes through application/domain mutation contracts rather than receiving direct unrestricted database mutation authority.
 
-Any future AI-03C structural DB recommendation must enter normal forward Alembic + SQLAlchemy + Dictionary + human reference + direct-test + recovery-impact governance; AI architecture documentation cannot bypass that same-change rule.
+Any later structural DB recommendation arising during AI-04/AI-05 or implementation must enter normal forward Alembic + SQLAlchemy + Dictionary + human reference + direct-test + recovery-impact governance. AI architecture documentation cannot bypass that same-change rule.
 
 ## 26. Current non-claims
 
 ```text
 FULL ACCESS/AUTH PRODUCT VERTICAL       NOT CLAIMED CLOSED
 DANTE AI-02.1                           CLOSED STRUCTURALLY / NOT IMPLEMENTATION PASS
-DANTE AI-03A                            CLOSED STRUCTURALLY / NOT IMPLEMENTATION PASS
-AI-03 RETRIEVAL/MEMORY                  ACTIVE DESIGN / NOT MATERIALIZED
+DANTE AI-03                             CLOSED STRUCTURALLY / NOT IMPLEMENTATION PASS
+AI-04 PRODUCTIONIZATION                 ACTIVE DESIGN / NOT IMPLEMENTATION PASS
 AI RUNTIME                              NOT IMPLEMENTED BY THIS DOCUMENT
 AI PROVIDER/MODEL                       NOT SELECTED
 AI EXECUTION ENVIRONMENT TECHNOLOGY     NOT SELECTED / NOT IMPLEMENTED
-AI MEMORY/EMBEDDING/INDEX PERSISTENCE   NOT SELECTED / NOT IMPLEMENTED
+AI MEMORY/EMBEDDING/INDEX PERSISTENCE   NOT ACTIVATED / NOT IMPLEMENTED
+RESTATE/R2 AI ACTIVATION                NOT CLAIMED
+SC/PSV DIRECT AI PROOFS                 NOT CLAIMED
 REMOTE/CLOUD RECOVERY                   NOT CLAIMED
 ```
 
