@@ -21,7 +21,7 @@ import {
   googleClientIdFromBuild,
   redirectToAppleAuthorization,
 } from '../../../platform/auth/web-auth-provider';
-import { authSessionQueryKey } from './auth-session';
+import { commitAuthoritativeAuthSession } from './auth-session';
 
 export type AccessProviderCode = 'google' | 'apple';
 
@@ -153,11 +153,11 @@ export function useProviderContinuationQuery(enabled = true) {
   return useQuery(providerContinuationQueryOptions(enabled));
 }
 
-function cacheAuthenticatedSession(
+async function cacheAuthenticatedSession(
   queryClient: ReturnType<typeof useQueryClient>,
   session: WebAuthenticatedSession,
-): void {
-  queryClient.setQueryData(authSessionQueryKey, session);
+): Promise<void> {
+  await commitAuthoritativeAuthSession(queryClient, session);
 }
 
 export function usePrepareGoogleAuthenticationMutation() {
@@ -172,9 +172,9 @@ export function useCompleteGoogleAuthenticationMutation() {
   return useMutation({
     mutationFn: completeGoogleAuthentication,
     retry: false,
-    onSuccess: (result) => {
+    onSuccess: async (result) => {
       if (result.outcome === 'authenticated') {
-        cacheAuthenticatedSession(queryClient, result);
+        await cacheAuthenticatedSession(queryClient, result);
       }
     },
   });
@@ -208,9 +208,9 @@ export function useVerifyProviderEnrollmentMutation() {
     mutationFn: ({ code }: { code: string }) =>
       webAuthRemote.verifyProviderEnrollment({ code }),
     retry: false,
-    onSuccess: (result: WebProviderEnrollmentVerificationResult) => {
+    onSuccess: async (result: WebProviderEnrollmentVerificationResult) => {
       if (result.outcome === 'authenticated') {
-        cacheAuthenticatedSession(queryClient, result);
+        await cacheAuthenticatedSession(queryClient, result);
       }
     },
   });
