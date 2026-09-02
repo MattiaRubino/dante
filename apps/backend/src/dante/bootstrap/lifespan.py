@@ -39,7 +39,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         stack.push_async_callback(auth_lifecycle_runtime.aclose)
         app.state.auth_lifecycle_runtime = auth_lifecycle_runtime
 
-        app.state.provider_flow_runtime = create_provider_flow_runtime(
+        app.state.auth_provider_flow_runtime = create_provider_flow_runtime(
             settings=settings.auth,
             database_runtime=database_runtime,
             auth_runtime=auth_runtime,
