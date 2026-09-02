@@ -1,5 +1,6 @@
 import type { PlainDate } from '@dante/time';
 import {
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -108,7 +109,9 @@ function minuteAtClientY(section: HTMLElement, clientY: number): number {
   return 1439;
 }
 
-function createMinutePixelMapper(section: HTMLElement): (minute: number) => number {
+function createMinutePixelMapper(
+  section: HTMLElement,
+): (minute: number) => number {
   const interval = TIMELINE_POLICY.grid.minorLineIntervalMinutes;
   const lineTops = Array.from(
     section.querySelectorAll<HTMLElement>('.timeline-hour-line'),
@@ -187,7 +190,25 @@ function suggestedStartMinute(dateKey: string): number {
   if (visibleBottom - visibleTop <= 80) {
     return 9 * 60;
   }
-  return snapMinute(minuteAtClientY(section, visibleTop + (visibleBottom - visibleTop) * 0.38));
+  return snapMinute(
+    minuteAtClientY(
+      section,
+      visibleTop + (visibleBottom - visibleTop) * 0.38,
+    ),
+  );
+}
+
+function setTimelinePlanningMode(active: boolean): void {
+  const root = document.querySelector<HTMLElement>(
+    '.home-timeline--production',
+  );
+  if (active) {
+    document.documentElement.setAttribute('data-timeline-planning-mode', 'true');
+    root?.setAttribute('data-timeline-planning-mode', 'true');
+    return;
+  }
+  document.documentElement.removeAttribute('data-timeline-planning-mode');
+  root?.removeAttribute('data-timeline-planning-mode');
 }
 
 export function TimelinePlanningTray({
@@ -212,11 +233,8 @@ export function TimelinePlanningTray({
   const [busyItemId, setBusyItemId] = useState<string | null>(null);
   const [errorItemId, setErrorItemId] = useState<string | null>(null);
   const [candidate, setCandidate] = useState<DropCandidate | null>(null);
+  const [dragActive, setDragActive] = useState(false);
 
-  const itemById = useMemo(
-    () => new Map(items.map((item) => [item.id, item])),
-    [items],
-  );
   const filteredItems = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase();
     if (!normalized) {
@@ -230,12 +248,11 @@ export function TimelinePlanningTray({
   }, [items, query]);
 
   useEffect(() => {
-    const resolveHost = () =>
+    const frame = requestAnimationFrame(() => {
       setActionsHost(
         document.querySelector<HTMLElement>('.dante-timeline-actions'),
       );
-    resolveHost();
-    const frame = requestAnimationFrame(resolveHost);
+    });
     return () => cancelAnimationFrame(frame);
   }, []);
 
@@ -247,31 +264,12 @@ export function TimelinePlanningTray({
     return () => cancelAnimationFrame(frame);
   }, [open]);
 
-  useEffect(() => {
-    if (!quickItemId || itemById.has(quickItemId)) {
-      return;
-    }
-    setQuickItemId(null);
-  }, [itemById, quickItemId]);
-
-  const setPlanningMode = (active: boolean) => {
-    const root = document.querySelector<HTMLElement>(
-      '.home-timeline--production',
-    );
-    if (active) {
-      document.documentElement.setAttribute('data-timeline-planning-mode', 'true');
-      root?.setAttribute('data-timeline-planning-mode', 'true');
-    } else {
-      document.documentElement.removeAttribute('data-timeline-planning-mode');
-      root?.removeAttribute('data-timeline-planning-mode');
-    }
-  };
-
-  const clearDrag = () => {
+  const clearDrag = useCallback(() => {
     dragRef.current = null;
     setCandidate(null);
-    setPlanningMode(false);
-  };
+    setDragActive(false);
+    setTimelinePlanningMode(false);
+  }, []);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -303,9 +301,10 @@ export function TimelinePlanningTray({
     document.addEventListener('keydown', onKeyDown, true);
     return () => {
       document.removeEventListener('keydown', onKeyDown, true);
-      clearDrag();
+      dragRef.current = null;
+      setTimelinePlanningMode(false);
     };
-  }, [deleteItemId, open, quickItemId]);
+  }, [clearDrag, deleteItemId, open, quickItemId]);
 
   const dropCandidateAt = (
     item: TimelinePlanningTrayItem,
@@ -317,7 +316,9 @@ export function TimelinePlanningTray({
       '.timeline-day-section[data-timeline-date]',
     );
     const dateKey = section?.dataset.timelineDate;
-    const eventsHost = section?.querySelector<HTMLElement>('.timeline-events-layer');
+    const eventsHost = section?.querySelector<HTMLElement>(
+      '.timeline-events-layer',
+    );
     if (!section || !dateKey || !eventsHost) {
       return null;
     }
@@ -411,7 +412,8 @@ export function TimelinePlanningTray({
     );
     if (!drag.active && distance >= DRAG_THRESHOLD_PX) {
       dragRef.current = { ...drag, active: true };
-      setPlanningMode(true);
+      setDragActive(true);
+      setTimelinePlanningMode(true);
     }
     if (!dragRef.current?.active) {
       return;
@@ -589,7 +591,7 @@ export function TimelinePlanningTray({
                   onPointerDown={(event) => beginPointer(event, item)}
                   onPointerMove={(event) => movePointer(event, item)}
                   onPointerUp={(event) => void finishPointer(event, item)}
-                  onPointerCancel={() => clearDrag()}
+                  onPointerCancel={clearDrag}
                   onDoubleClick={() => openQuickPlacement(item)}
                   onKeyDown={(event) => {
                     if (event.key === 'Enter') {
@@ -598,7 +600,10 @@ export function TimelinePlanningTray({
                     }
                   }}
                 >
-                  <span className="timeline-planning-card__grip" aria-hidden="true">
+                  <span
+                    className="timeline-planning-card__grip"
+                    aria-hidden="true"
+                  >
                     ⠿
                   </span>
                   <span className="timeline-planning-card__copy">
@@ -729,7 +734,7 @@ export function TimelinePlanningTray({
       {typeof document !== 'undefined' && panel
         ? createPortal(panel, document.body)
         : null}
-      {dragRef.current?.active && typeof document !== 'undefined'
+      {dragActive && typeof document !== 'undefined'
         ? createPortal(
             <div className="timeline-planning-scrim" aria-hidden="true" />,
             document.body,
@@ -746,7 +751,8 @@ export function TimelinePlanningTray({
             >
               <strong>{copy.dropHere}</strong>
               <span>
-                {formatMinute(candidate.startMinute)}–{formatMinute(candidate.endMinute)}
+                {formatMinute(candidate.startMinute)}–
+                {formatMinute(candidate.endMinute)}
               </span>
             </div>,
             candidate.host,
