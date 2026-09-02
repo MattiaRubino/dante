@@ -1,9 +1,11 @@
 # DANTE — World Focus WS0 Substrate Inventory
 
-**Status:** WS0 COMPLETE BASELINE — WS1 NEXT  
+**Status:** HISTORICAL WS0 BASELINE — CLOSED / SEQUENCING SUPERSEDED  
 **Date:** 2026-09-02  
 **Branch:** `feature/home-react`  
 **Baseline branch HEAD before WS0 documentation:** `cee9a50f2c0abc52bb1c10a9250ee1527b0fc16d`
+
+> **Authority note (2026-09-02):** this file preserves the WS0 baseline exactly as it existed before WS1–WS5. Any `WS1 NEXT`, `WS1–WS6 pressure`, or later-gate wording below is phase-time evidence only. Current sequencing is owned by `world-focus-current-checkpoint.md`; final WS1–WS5 closure authority is `world-focus-substrate-final-convergence-proof.md`. Do not execute old next-gate text from this baseline.
 
 This is the executable/research/contract inventory required by **WS0 — Substrate Inventory**.
 
