@@ -114,17 +114,19 @@ describe('WebAuthn browser serialization boundary', () => {
       ceremony: {
         webauthn_challenge_ref: '00000000-0000-4000-8000-000000000001',
         options: {
-          challenge: 'AQID',
-          rp: { name: 'DANTE' },
-          user: {
-            id: 'BAUG',
-            name: 'person@example.com',
-            displayName: 'Person',
+          publicKey: {
+            challenge: 'AQID',
+            rp: { name: 'DANTE' },
+            user: {
+              id: 'BAUG',
+              name: 'person@example.com',
+              displayName: 'Person',
+            },
+            pubKeyCredParams: [{ type: 'public-key', alg: -7 }],
+            excludeCredentials: [
+              { type: 'public-key', id: 'BwgJ', transports: ['internal'] },
+            ],
           },
-          pubKeyCredParams: [{ type: 'public-key', alg: -7 }],
-          excludeCredentials: [
-            { type: 'public-key', id: 'BwgJ', transports: ['internal'] },
-          ],
         },
       } as never,
       label: 'Laptop',
@@ -180,10 +182,12 @@ describe('WebAuthn browser serialization boundary', () => {
       ceremony: {
         webauthn_challenge_ref: '00000000-0000-4000-8000-000000000002',
         options: {
-          challenge: 'AQID',
-          allowCredentials: [
-            { type: 'public-key', id: 'BwgJ', transports: ['internal'] },
-          ],
+          publicKey: {
+            challenge: 'AQID',
+            allowCredentials: [
+              { type: 'public-key', id: 'BwgJ', transports: ['internal'] },
+            ],
+          },
         },
       } as never,
       signal,
@@ -223,7 +227,23 @@ describe('WebAuthn browser serialization boundary', () => {
       createPasskeyAuthenticationEvidence({
         ceremony: {
           webauthn_challenge_ref: '00000000-0000-4000-8000-000000000003',
-          options: { challenge: 'not base64url!' },
+          options: { publicKey: { challenge: 'not base64url!' } },
+        } as never,
+      }),
+    ).rejects.toBeInstanceOf(WebAuthnBrowserError);
+    expect(getMock).not.toHaveBeenCalled();
+  });
+
+  it('rejects a missing publicKey envelope before invoking the browser credential API', async () => {
+    const createMock = vi.fn(() => Promise.resolve(null));
+    const getMock = vi.fn(() => Promise.resolve(null));
+    installCredentials(createMock, getMock);
+
+    await expect(
+      createPasskeyAuthenticationEvidence({
+        ceremony: {
+          webauthn_challenge_ref: '00000000-0000-4000-8000-000000000004',
+          options: { challenge: 'AQID' },
         } as never,
       }),
     ).rejects.toBeInstanceOf(WebAuthnBrowserError);
