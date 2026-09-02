@@ -1,261 +1,321 @@
 # DANTE — Temporal Create Workstream Handoff
 
 **Status:** C1 AUTOMATED PASS — PENDING USER MANUAL ACCEPTANCE  
-**Date:** 2026-09-01  
+**Date:** 2026-09-02  
 **Repository:** `MattiaRubino/dante`  
 **Branch:** `feature/home-timeline`  
 **Local worktree:** `/home/mattia/projects/dante-timeline`  
 **Integration target:** `feature/home-react`  
-**Final C1 implementation candidate:** `36aa4652731cd9a09334fd52214e66bd87544e22`  
-**Frontend CI:** run `33542270688` / #416 — FULL PASS
+**Final C1 implementation candidate:** `81808814abb4e4998c7bde5b0c6cb8f5f903aa62`  
+**Frontend CI:** run `33613239926` / #536 — FULL PASS
 
 ## 1. Handoff authority
 
-This is the operational handoff for Timeline / Temporal Create on `feature/home-timeline`.
+This is the operational restart document for Timeline / Temporal Create C1.
 
-For this branch it supersedes older generic Home operational metadata in `production-depth-handoff.md` and `current-checkpoint.md`. Those files remain historical/parallel Home references, not the live C1 handoff.
-
-A new agent/chat must read in this order:
+Read in order:
 
 1. `temporal-live-status.md`;
-2. `temporal-create-c1-engineering-checkpoint.md`;
-3. `temporal-create-c1-manual-acceptance.md`;
-4. `temporal-create-c1-scope-amendment.md`;
-5. `temporal-create-q0-approval.md`;
-6. `temporal-create-q0-contract.md`;
-7. `temporal-frontend-roadmap.md`;
-8. `temporal-f0-contract.md`;
-9. `timeline-t1-frozen-contract.md`;
-10. `temporal-experience-architecture.md`;
-11. H0 structural contract plus current code under `apps/web/src/features/temporal-create/` and Home Timeline.
+2. `temporal-create-c1-traceability.md`;
+3. `temporal-create-c1-engineering-checkpoint.md`;
+4. `temporal-create-c1-manual-acceptance.md`;
+5. `temporal-create-c1-scope-amendment.md`;
+6. `temporal-frontend-roadmap.md`;
+7. `temporal-f0-contract.md`;
+8. `timeline-t1-frozen-contract.md`;
+9. `temporal-experience-architecture.md`;
+10. current code under `apps/web/src/features/temporal-create/` and the Home Timeline bridge.
 
-If C1 documents conflict, the scope amendment wins for product scope and this handoff/live status win for current checkpoint/gate state.
+Older generic Home checkpoint/handoff files are not the live authority for this isolated branch.
 
-## 2. Stable foundations — do not casually reopen
+## 2. Stable foundations
 
-- H0 Whole Home structural freeze.
-- T1/T1-A/T1-B Timeline interaction baseline.
-- F0 temporal application foundation at `7034b9b0d100709785ebe96e3816aab3e7b1d1f8`.
-- Schedule != Occurrence != Session != Actual.
-- Intention != placement != occurrence != execution.
-- Proposal != accepted state.
-- ViewModel != frontend application model != DTO != Domain != persistence.
-- Manual/keyboard/future AI/future voice converge on semantic application commands; AI/voice do not directly mutate state.
-- No fake backend/provider success.
-- Child capabilities consume the frozen Home structure; they do not renegotiate it.
+Do not casually reopen:
 
-## 3. Current C1 state
+- H0 Whole Home structure;
+- T1/T1-A/T1-B Timeline interaction and continuous navigation;
+- F0 application contract at `7034b9b0d100709785ebe96e3816aab3e7b1d1f8`;
+- closed Domain / Logical / Physical semantics;
+- CP6 materialized database;
+- Activity/Event/Routine/Occurrence/Session owner distinctions;
+- `Schedule != Session != Actual`;
+- `recurrence source != generated Occurrence`;
+- `proposal != accepted effect`;
+- `ViewModel != application model != DTO != persistence`;
+- no fake network/storage/provider/AI/voice behavior.
 
-C1 is **implemented and automated-green to complete pre-backend depth, but remains OPEN until user manual acceptance**.
-
-Final implementation candidate:
-
-`36aa4652731cd9a09334fd52214e66bd87544e22`
-
-A later docs-only descendant does not change the implementation candidate unless it also changes code.
-
-The product shape is:
+## 3. Current C1 architecture
 
 ```text
-Quick Create
-    +
-Expanded Create
-    +
-Full Create / deep authoring
-    +
-truthful external-vertical handoffs
+ENTRY
+  ├─ Timeline +
+  ├─ double-click
+  ├─ Shift-drag range
+  └─ typed semantic invocation/seed
+          ↓
+SHARED TEMPORAL CREATE SESSION
+          ↓
+Quick ↔ Expanded ↔ Full
+          ↓
+normalize → validate → preview
+          ↓
+explicit commit
+          ↓
+F0 application command
+          ↓
+local deterministic adapter NOW
+backend adapter LATER
 ```
 
-All levels share one draft/application contract.
+Quick/Expanded/Full are views of one draft and one application path.
 
-## 4. What is implemented
-
-### Shared Create lifecycle
-
-- title-first Quick Create;
-- structured draft lifecycle;
-- dirty/cancel/discard protection;
-- deterministic validation;
-- invalid-field focus;
-- Quick -> Expanded -> Full progressive disclosure without draft duplication;
-- keyboard/focus behavior;
-- responsive popover/sheet/full-screen editor behavior;
-- IT/EN i18n;
-- accessibility regression checks;
-- local F0 application runtime;
-- exact retry idempotency;
-- local rich-specification storage separate from Timeline projection;
-- preview -> apply -> reveal/focus -> Undo lifecycle.
+## 4. Correct owner semantics
 
 ### Activity
 
-The pre-backend authoring surface includes:
+Activity supports structured planning/execution intent but **does not own recurrence**.
 
-- context/life-area;
-- timed/all-day/unscheduled form where applicable;
-- expected duration;
-- fixed/open/window/preferred/deadline scheduling intent;
-- movement/replanning policy;
-- execution/session structure;
-- minimum/max session and buffer intent where applicable;
-- recurrence source specification;
-- confirmation/outcome/review policy seams;
-- notes/tags;
-- handoffs to verticals that own Project/World/etc. rather than duplicate CRUD.
+Do not reintroduce:
 
-Flexible scheduling intent is preserved as intent/specification; the UI does **not** fake a concrete placement that does not exist.
+```text
+Activity.repeat
+Activity recurrence editor
+Activity recurrence capability
+```
+
+Persistent repeated Activity intent belongs to:
+
+```text
+Routine
+→ Routine Recurrence
+→ generated Occurrence
+→ Activity/runtime semantics as defined downstream
+```
+
+Current C1 therefore shows a truthful Routine owning-vertical handoff.
 
 ### Event
 
-The pre-backend authoring surface includes:
+Event owns recurrence directly and exposes all four CP6 M4 recurrence families:
 
-- start/end/duration;
-- all-day/date-span;
-- floating/zoned timezone semantics;
-- location;
-- recurrence;
-- availability;
-- visibility;
-- reminder/policy seams where represented;
-- participants/resources/conference intent as truthful provider handoff only.
+- calendar wall-clock;
+- elapsed interval;
+- quota per period;
+- cyclic positional.
 
-No invitation, resource booking or conference link is claimed to have happened locally.
+Full Event authoring includes the current deeper semantic fields for recurrence, purpose, expected outcome, agenda, decision intent, participants, resources, pre-read, conference intent and buffers.
 
-### Timeline integration
+Provider actions remain intent only.
 
-- contextual double-click on empty Timeline time creates temporal defaults;
-- Shift-drag on empty Timeline creates range defaults;
-- cards are protected from accidental range-create capture;
-- applied local Create items render as Timeline projections;
-- filtering/context tone and expanded-group geometry are respected;
-- created placed items can be revealed/focused;
-- Undo removes F0 projection and local rich record;
-- cancelling a contextual Create returns focus to the Timeline grid rather than the global `+`.
+## 5. Current recurrence depth
 
-## 5. Hardening already completed — preserve it
+Preserve these implemented semantics:
 
-### Architecture cycles
+### Calendar
 
-Create UI component-to-component type cycles were removed by extracting shared UI types. Final dependency-cruiser result: **194 modules / 459 dependencies / zero violations**.
+- daily;
+- weekly + weekday set;
+- monthly civil-date anchor;
+- monthly ordinal weekday;
+- yearly civil-date anchor;
+- positive interval;
+- open / until-date / count termination.
 
-### i18n / accessibility contract
+### Elapsed
 
-Semantic labels such as `Durata prevista / Expected duration` are the current product contract. Recurrence controls have unambiguous accessible names.
+- positive elapsed interval;
+- backend later owns authoritative evaluator anchoring/checkpoint execution.
 
-### Contextual Shift-drag E2E
+### Quota
 
-The original E2E issue was an off-screen/stale raw mouse coordinate caused by recycled Timeline geometry. The accepted test explicitly brings the day section into view and remeasures before raw pointer input.
+- quota count;
+- day/week/month/year;
+- positive period span;
+- floating-local / named-zone / absolute-UTC frame;
+- week start only for weekly periods;
+- IANA zone only for named-zone frame.
 
-### Mobile width
+### Cyclic
 
-Browser sub-pixel geometry such as `390.0000028px` is tolerated only in the numeric bounding-box assertion. Real horizontal overflow remains strictly checked with `scrollWidth <= clientWidth`.
+- cycle length;
+- day/week unit;
+- multiple active positions;
+- UI positions are human-friendly 1-based;
+- CP6 technical position indexing remains a persistence concern.
 
-### DST
+No browser-side Occurrence generation is allowed.
 
-Zoned Event end/duration arithmetic uses actual Instants in the selected IANA zone. Dedicated tests cover Europe/Rome spring-forward, fall-back and multi-day arithmetic. Do not regress this to `PlainDateTime` wall-clock duration for zoned Events.
+## 6. Future-input / DANTE seam
 
-### Rich-intent idempotency
+`application/temporal-create-seed.ts` defines a source-neutral structured seed.
 
-F0 fingerprints the minimal projection command; C1 separately fingerprints full rich intent. Exact retries are valid. Reusing an operation ID with changed recurrence/session/provider metadata returns `operation-id-reused` and does not mutate rich records.
+`TemporalCreateInvocation` already carries that seed into `TemporalCreateEntry` and therefore into the same session used by manual UI.
 
-### Projection layout performance
-
-Timeline Create projection layout is single-pass O(n) with slot counters and cached group/day lookups; do not restore per-item `slice/filter/find` scans.
-
-### Runtime initialization
-
-`TemporalCreateEntry` lazily creates its local runtime once. Do not reintroduce `useRef(createLocalTemporalCreateRuntime())`, which evaluates a discarded runtime on every render.
-
-### Focus-return ownership
-
-Create stores the real return target:
-
-- open from global Timeline `+` -> close/discard returns to `+`;
-- open from Timeline double-click/Shift-drag -> clean close returns to `.timeline-grid`;
-- successful placed Create transfers focus to the created projection when reveal succeeds.
-
-### Dirty-discard modal lifecycle
-
-The confirmation is a named `alertdialog` with contained Tab order. While active, underlying composer header/form are natively `inert`, so keyboard, pointer and accessibility exposure do not conflict with the modal contract. Continuing editing restores the control from which close was attempted when still connected.
-
-## 6. Final automated evidence
-
-For implementation candidate `36aa4652731cd9a09334fd52214e66bd87544e22`:
-
-- Frontend CI run ID: `33542270688`;
-- run number: `416`;
-- Quality: **PASS**;
-- Mobile Bundle: **PASS**;
-- Chromium Web E2E: **PASS**;
-- frozen Firefox Timeline interaction contract: **PASS**;
-- Frontend CI Gate: **PASS**.
-
-Quality includes:
-
-- frontend contract drift PASS;
-- active Home format PASS;
-- lint PASS;
-- typecheck 5/5 PASS;
-- architecture PASS;
-- generated-source drift PASS;
-- web unit suite 25 files / 151 tests PASS, plus package suites;
-- production build PASS;
-- diff check PASS;
-- repository mutation check PASS.
-
-## 7. Bundle decision
-
-Final Home route build observed on #416:
+Future DANTE architecture must remain:
 
 ```text
-233.28 kB raw
-83.74 kB gzip
+DANTE interpretation
+→ structured seed / unresolved intent
+→ same Create normalize/validate/preview path
+→ user/governed commit
+→ same F0/backend port
 ```
 
-Earlier pre-expanded Create evidence was about `76.98 kB` gzip, so the complete deeper C1 surface adds roughly `6.8 kB` gzip to Home.
+Never implement DANTE by scripting the form.
 
-Decision: **keep Expanded/Full synchronous in C1**.
+No AI runtime exists in C1.
 
-Do not add dynamic import/Suspense merely to recover a few gzip kilobytes. The current advanced editor participates in deterministic validation/focus/draft continuity; an async boundary would add failure/loading/focus states and architectural complexity for too little measured benefit. Revisit route splitting only if future route growth creates a material performance case.
+## 7. External owner handoff seam
 
-## 8. Resume / next action
+`application/temporal-create-handoff.ts` is now the typed Create-side contract for external-owned objects.
 
-The engineering phase of C1 is automated-green. Do not continue speculative polishing.
+Targets:
 
-Next action is the versioned human gate:
+- project;
+- goal;
+- routine;
+- program;
+- world;
+- template;
+- reminder;
+- block;
+- asset.
 
-`docs/frontend/home/temporal-create-c1-manual-acceptance.md`
+All are explicitly `deferred` today.
 
-Resume procedure:
+`prepareTemporalCreateHandoff()` preserves a normalized immutable draft snapshot. It deliberately has no route/href/CRUD/provider effect. When an owning vertical becomes available, it must integrate at this contract rather than duplicating its CRUD inside Timeline Create.
 
-1. fresh-check branch HEAD;
-2. distinguish the final implementation candidate `36aa4652...` from later docs-only descendants;
-3. if a docs-only descendant has CI, require its docs/format workflow to be green as well;
-4. sync the local Timeline worktree;
-5. execute the manual protocol;
-6. if a defect is found, reopen only the demonstrated defect plus necessary adjacent contract and rerun full gates;
-7. if the user explicitly approves, document `C1 MANUAL PASS — APPROVED`, freeze C1 and only then start C2 Card -> structured Detail.
+## 8. Application-boundary hardening
 
-## 9. Backend/external stop line
+### Rich idempotency
 
-Do not implement or fake inside C1:
+F0 protects the minimal projection command. C1 additionally fingerprints rich Create specification by operation ID.
 
-- real API transport;
-- PostgreSQL persistence;
-- canonical server identities;
-- server auth/ACL;
-- provider calendar writes/sync;
-- participant invitations;
-- room/resource booking;
-- conference creation;
-- notification delivery;
-- authoritative solver execution;
+- exact replay remains idempotent;
+- same ID + changed rich specification rejects `operation-id-reused`;
+- rejection is side-effect free.
+
+### Prepare/execute snapshot ownership
+
+At final implementation candidate `81808814...`, `runtime.prepare()` re-normalizes and freezes its own copy of the specification before validation and command creation.
+
+Do not remove this. It prevents mutable callers/importers/future DANTE adapters from changing rich intent after preparation and producing a command/specification TOCTOU mismatch.
+
+## 9. Timeline integration hardening
+
+The contextual Create E2E must not use a retained `.timeline-day-section.first()` across Timeline virtualization.
+
+The Timeline recycles day-section DOM nodes. The final test:
+
+- finds a currently visible day;
+- chooses by stable `data-timeline-date`;
+- verifies visible geometry;
+- performs double-click/Shift-drag using current viewport coordinates;
+- reacquires after the first create/close boundary.
+
+This fixed a real test-locator/virtualization defect without weakening gesture coverage.
+
+T1 drag/focus behavior remains frozen.
+
+## 10. UI / accessibility state
+
+Preserve:
+
+- title-first Quick Create;
+- semantic grouping rather than a settings wall;
+- exact duration authoring in deeper Activity surfaces;
+- separate Event grammar;
+- shared section heading/check-grid visual grammar;
+- no obsolete one-off `.is-subsection` / `.checkline` CSS debt;
+- unambiguous accessible control names;
+- named dirty-discard `alertdialog`;
+- contained Tab loop;
+- exact connected-control focus restoration;
+- native `inert` background while confirmation is active;
+- mobile Full editor / no horizontal overflow;
+- no raw i18n keys.
+
+## 11. CP6 truth to preserve
+
+Current database system of record:
+
+- PostgreSQL 18.6;
+- Alembic `20260826_08`;
+- CP6 CLOSED;
+- 68 tables / 5 views / 14 routines / 75 triggers / 95 indexes / 68 FKs / 120 CHECKs.
+
+Critical migration boundaries:
+
+- M3 `20260825_03` — Schedule / Actual / Session;
+- M4 `20260825_04` — recurrence families exactly for Routine and Event;
+- M6 `20260826_06` — Occurrence generation and governing recurrence-state binding;
+- M7 `20260826_07` — runtime ACL activation;
+- `20260826_08` — final forward-only CP6 QA hardening, not an “M8” semantic stage.
+
+Schema existence never authorizes a generic frontend CRUD operation.
+
+## 12. Automated evidence
+
+Final implementation candidate:
+
+`81808814abb4e4998c7bde5b0c6cb8f5f903aa62`
+
+CI `33613239926` / #536:
+
+- Quality PASS;
+- Mobile Bundle PASS;
+- Chromium full Web E2E PASS;
+- Firefox frozen Timeline interaction contract PASS;
+- Frontend CI Gate PASS.
+
+Exact current Quality evidence:
+
+- 5/5 typecheck tasks;
+- architecture: 199 modules / 477 dependencies / zero violations;
+- web unit: 28 files / 168 tests;
+- generated-source drift PASS;
+- production build PASS;
+- diff/mutation checks PASS.
+
+Home route:
+
+`252.22 kB raw / 86.38 kB gzip`.
+
+## 13. Current stop and next transition
+
+C1 is **not** closed yet.
+
+Current state:
+
+```text
+IMPLEMENTATION COMPLETE
+AUTOMATED PASS
+DOCUMENTATION / TRACEABILITY ALIGNED
+USER MANUAL ACCEPTANCE PENDING
+```
+
+Once the docs-only descendant is CI-green:
+
+1. user syncs `feature/home-timeline` locally;
+2. user executes the single manual acceptance protocol;
+3. defect -> reopen only demonstrated defect + necessary adjacent contract;
+4. explicit `C1 MANUAL PASS — APPROVED` -> freeze C1;
+5. then and only then start C2 Card → structured Detail.
+
+## 14. Permanent stop line
+
+Do not implement in C1:
+
+- API or PostgreSQL writes;
+- server canonical IDs/idempotency;
+- Auth/ACL product enforcement;
+- provider sync/write/invitations/room booking/conference creation;
+- notifications;
+- solver;
+- recurrence evaluator/checkpoints;
+- Occurrence generation;
+- Session/Actual runtime;
 - multi-device reconciliation;
-- AI runtime;
-- voice runtime.
+- AI/voice runtime.
 
-The frontend seams should make these later adapter/provider integrations additive instead of forcing a Create rewrite.
-
-## 10. User gate
-
-**C2 must not start before the complete C1 Create capability is manually tested and explicitly approved by the user.** Automated green is necessary and is now achieved; manual approval is still outstanding.
+Those later capabilities must attach through the seams now present rather than force a Create rewrite.

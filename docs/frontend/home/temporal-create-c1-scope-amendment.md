@@ -1,31 +1,33 @@
 # DANTE — Temporal Create C1 Scope Amendment
 
-**Status:** ACTIVE AUTHORITY — USER-MANDATED SCOPE EXPANSION
-**Date:** 2026-09-01
-**Owner workstream:** `feature/home-timeline`
-**Integration target:** `feature/home-react`
-**Supersedes where conflicting:** `temporal-create-q0-contract.md`, `temporal-create-q0-approval.md`, and the C1 section of `temporal-frontend-roadmap.md`
-**Scope stop:** maximum useful pre-backend Create system; no real API, PostgreSQL persistence, provider synchronization, authoritative solver runtime, AI runtime, voice runtime, or server-side ACL/auth implementation
+**Status:** ACTIVE AUTHORITY — IMPLEMENTATION COMPLETE / AUTOMATED PASS / MANUAL ACCEPTANCE PENDING  
+**Original amendment date:** 2026-09-01  
+**Final implementation reconciliation:** 2026-09-02  
+**Owner workstream:** `feature/home-timeline`  
+**Integration target:** `feature/home-react`  
+**Final implementation candidate:** `81808814abb4e4998c7bde5b0c6cb8f5f903aa62`  
+**Frontend CI:** `33613239926` / #536 — FULL PASS  
+**Supersedes where conflicting:** `temporal-create-q0-contract.md`, `temporal-create-q0-approval.md`, and the original bounded C1 section of `temporal-frontend-roadmap.md`  
+**Scope stop:** maximum useful pre-backend Create system; no real API, PostgreSQL application persistence, provider execution, authoritative solver, recurrence evaluator, AI runtime, voice runtime or server-side product Auth/ACL implementation
 
 ## 1. Why this amendment exists
 
-The original Q0/C1 contract intentionally bounded the first Create vertical to a compact Activity/Event grammar and deferred recurrence, flexible scheduling and several richer authoring concerns to later temporal phases.
+The original Q0/C1 contract intentionally bounded the first Create vertical to a compact Activity/Event grammar.
 
-After implementation of that compact scope, the user explicitly clarified that the `+` workstream must not stop at a basic Quick Add. The target is the **complete DANTE Create system to the maximum useful frontend/application depth before backend integration**.
+The user later explicitly required the `+` workstream to reach the **maximum useful frontend/application depth before backend integration**, rather than stop at Quick Add.
 
-Therefore the earlier bounded C1 scope is no longer sufficient as the implementation stop line.
+This amendment therefore expands C1 while retaining Q0/F0 rules for semantics, architecture, validation, accessibility, performance, operation truth and backend separation.
 
-This amendment does not discard Q0. It preserves Q0's semantic, architecture, accessibility, performance, draft, validation, command, reconciliation and backend-boundary rules while expanding what Create must author before it can be considered complete.
+C1 closes only when its UI/application design can connect to future backend adapters without structural redesign.
 
-## 2. Permanent semantic invariants retained
-
-The expanded Create system must continue to preserve:
+## 2. Permanent semantic invariants
 
 ```text
 Activity != Event
 identity != placement
 Schedule != Occurrence != Session != Actual
 planned != actual
+recurrence source != generated Occurrence
 all-day != midnight hack
 floating local != zoned != absolute
 unscheduled != invalid
@@ -33,287 +35,358 @@ proposal != accepted effect
 calendar/context != sharing/ACL
 manual input != AI interpretation
 frontend projection id != canonical backend identity
+ViewModel != application model != DTO != DB row
 ```
 
 No richer UI may collapse these distinctions for convenience.
 
-## 3. Product topology — three progressive surfaces, one capability
-
-Create is one application capability with progressive presentation depth:
+## 3. Product topology — one capability, progressive surfaces
 
 ```text
 ENTRY
-  │
   ├── Timeline/header +
-  ├── contextual Timeline position/range
+  ├── contextual Timeline double-click
+  ├── contextual Timeline range
   ├── future global Create
   ├── future keyboard command
+  ├── future import
   ├── future deterministic/NL interpretation
   ├── future voice
-  └── future governed AI
+  └── future governed DANTE intelligence
           │
           ▼
-      CREATE DRAFT
+      SHARED CREATE DRAFT
           │
           ├── QUICK CREATE
-          │     fast title/type/time/context path
-          │
           ├── EXPANDED CREATE
-          │     richer scheduling/organization fields
-          │
           └── FULL CREATE EDITOR
-                deep entity-specific authoring surface
           │
           ▼
-    validation / candidate preview
+      normalize / validate
           │
           ▼
-      user commit
+      candidate preview
           │
           ▼
-       F0/application command boundary
+       user commit
+          │
+          ▼
+      F0 command boundary
           │
           ▼
  local deterministic adapter now
- authoritative adapter later
+ authoritative backend adapter later
 ```
 
-Quick, Expanded and Full Create are not three independent implementations. They must share the same draft/application model and command path.
+Quick, Expanded and Full are views of one application capability, never three independent Create engines.
 
-## 4. Quick Create — retained role
+## 4. Quick Create role
 
-Quick Create remains intentionally fast and calm. It may expose only the most common fields:
+Quick must remain intentionally fast and calm.
+
+Its common path is limited to high-frequency creation data such as:
 
 - title;
 - Activity/Event;
 - primary temporal placement;
 - context/calendar/life area;
-- one clear expansion path;
-- one truthful commit action.
+- clear expansion path;
+- truthful commit/cancel behavior.
 
-The existing compact composer is therefore a valid **entry surface**, not the complete Create product.
+Deep recurrence, planning and integration details belong to progressive disclosure, not the resting Quick surface.
 
-## 5. Expanded / Full Activity authoring
+## 5. Activity creation scope
 
-When semantically applicable and supported by current DANTE contracts, Activity creation must be able to progressively author:
+Activity may progressively author:
 
-### Identity and organization
+### Identity / organization
 
 - title;
-- context/calendar/life area;
+- context/life area;
 - notes;
-- tags/labels where a real owning model exists;
-- links/handoffs to Project, Goal, Routine, Program or World where those concepts already exist as authoritative references;
-- template reference when the template vertical/contract exists.
+- owning-vertical handoffs where real owners exist.
 
-Create must not implement independent CRUD for external verticals. A missing Project/Goal/Routine editor is a handoff dependency, not permission to duplicate that vertical inside Timeline.
+Generic tags/labels are **not** part of the current C1 contract because there is no approved generic owner model that justifies inventing one in Create.
 
 ### Scheduling intent
 
-Create must be able to represent, without collapsing semantics:
-
 - fixed placement;
-- all-day/date span where meaningful;
+- all-day/date form where meaningful;
 - unscheduled/open Activity;
 - bounded scheduling window;
 - deadline-constrained Activity;
 - preferred window;
-- earliest start;
-- explicit deadline/due boundary;
-- timezone/floating-local intent as applicable.
+- earliest start and due/deadline boundary where applicable;
+- floating/named-zone semantics where applicable.
 
-These authoring semantics may exist before an authoritative solver exists. In that case Create stores/validates the structured intent and shows truthful local behavior; it does not fake an optimized schedule.
+Flexible scheduling intent may exist before a solver. In that case C1 retains structured intent and **does not fake a concrete accepted Schedule**.
 
-### Duration and execution structure
+### Duration / execution intent
 
-As applicable:
-
-- expected duration/effort;
+- expected duration, including exact non-preset values in deeper surfaces;
+- indivisible/splittable structure;
 - minimum session duration;
-- splittable vs indivisible;
-- maximum/target session count only where product semantics justify it;
-- preparation/recovery/spacing constraints when already authoritative.
+- maximum sessions where meaningful;
+- preparation/recovery/spacing;
+- partial completion allowed;
+- early finish when result reached;
+- compatible merge intent.
 
-These fields describe planning intent. They do not fabricate Session or Actual records.
+These fields are planning intent. They do not fabricate Session or Actual records.
 
-### Replanning / movement policy
+### Replanning / fallback
 
-As applicable:
-
-- locked/fixed;
-- movable;
-- movable inside an accepted window;
+- locked;
+- movable inside window;
 - confirmation-required;
-- freely replannable where authoritative policy permits.
+- freely replannable;
+- fallback such as skip, same window, next valid date, shorten/split or dependency replan.
 
-Create authors the policy/intent. C5/C7 still own richer Timeline-wide replanning interaction and any future solver behavior.
+C7 still owns broader candidate-plan/conflict/replanning experience.
 
-### Priority / planning pressure
+### Recurrence ownership — final clarification
 
-Where supported by Product semantics:
+Activity does **not** own recurrence.
 
-- priority/importance;
-- deadline pressure;
-- preferred timing;
-- other solver-relevant constraints already present in authoritative models.
-
-Do not invent a competitor-style priority system if DANTE has a different canonical concept.
-
-### Recurrence
-
-Create must provide an architecture and UI path for recurrence authoring where the created source legitimately owns recurrence.
-
-The UI must preserve the distinction between:
+Current CP6/Alembic M4 materializes recurrence families only for Routine and Event. Therefore C1 must preserve:
 
 ```text
-recurrence source
-!= generated occurrence
+persistent repeated Activity intent
+→ Routine owning vertical
+→ Routine Recurrence
+→ backend Occurrence generation later
 ```
 
-Changing a recurrence source later remains a deeper C5/Detail responsibility. Create only establishes the initial recurrence specification and provenance-safe reference.
+No `Activity.repeat`, no Activity recurrence editor and no Activity recurrence capability may be introduced.
 
-### Reminder / confirmation policy
+### Confirmation / reminder intent
 
-Where already supported by DANTE contracts, Create may author reminder/confirmation policy. It must not fake notification delivery before the notification/backend vertical exists.
+C1 may author confirmation/outcome/review/reminder policy where product-defined, but must not fabricate notification delivery or Actual outcome.
 
-## 6. Expanded / Full Event authoring
+## 6. Event creation scope
 
-Event creation has its own grammar and must not inherit Activity-only semantics blindly.
-
-Progressively supported Event fields may include:
+Event has a distinct time-centred grammar and may author:
 
 - title;
-- start/end;
-- duration;
-- all-day/date span;
-- floating/zoned time semantics;
-- timezone;
-- context/calendar;
+- start/end/duration;
+- all-day multi-day date span;
+- floating-local / named-zone semantics;
+- IANA timezone;
+- context;
 - location;
 - notes;
-- recurrence/source semantics;
-- availability/busy semantics where supported;
-- visibility where supported independently from ACL;
-- reminder policy;
-- participant/resource/conferencing **integration seams**.
+- availability/busy intent;
+- visibility distinct from ACL;
+- purpose;
+- expected outcome;
+- agenda;
+- decision-required intent;
+- preparation/recovery buffers;
+- recurrence;
+- confirmation/reminder policy;
+- participant/resource/pre-read/conference integration intent.
 
-Participants, rooms/resources, external calendar invitations and conferencing links must remain truthful unavailable/integration states until their owning backend/provider capability exists. No fake invitation or meeting-link success is allowed.
+Invitations, resource booking, conferencing and provider writes remain truthful unavailable integration seams.
 
-## 7. Other DANTE object types
+## 7. Event recurrence scope
 
-The Timeline `+` is not required to become a universal CRUD factory.
+C1 Event recurrence must preserve all four CP6 M4 families:
 
-The Create system must nevertheless have a scalable handoff path such as `Altro tipo…` / global Create registry for types owned elsewhere, for example:
+```text
+calendar_wall_clock
+elapsed_interval
+quota_per_period
+cyclic_positional
+```
 
-- Goal;
+Current accepted creation depth:
+
+### Calendar / wall-clock
+
+- daily;
+- weekly + weekdays;
+- monthly civil-date anchor;
+- monthly ordinal weekday;
+- yearly civil-date anchor;
+- positive interval;
+- open/until/count termination.
+
+### Elapsed interval
+
+- positive elapsed interval authoring;
+- no browser-side evaluator execution.
+
+### Quota per period
+
+- quota count;
+- day/week/month/year;
+- every N periods;
+- frame `floating-local | named-zone | absolute-UTC`;
+- week start when weekly;
+- IANA period zone when named-zone.
+
+### Cyclic positional
+
+- cycle length;
+- day/week position unit;
+- multiple active positions;
+- human-friendly 1-based UI representation.
+
+C1 stores specification only. M6/backend owns recurrence-generated Occurrence creation and exact governing recurrence-state binding.
+
+## 8. Other DANTE object types / handoff
+
+Timeline `+` is not a universal CRUD factory.
+
+C1 has a typed owner handoff registry for:
+
 - Project;
-- Program;
+- Goal;
 - Routine;
-- Reminder where it becomes an independent type;
+- Program;
+- World;
 - Template;
-- Asset;
-- other future registry-backed entity types.
+- Reminder;
+- Block;
+- Asset.
 
-Handoff must preserve the user's draft/context where feasible and must not force every type into Activity/Event semantics.
+Current availability is explicitly `deferred` for all targets.
 
-## 8. UI / interaction quality target
+The application handoff contract preserves a normalized immutable Create draft snapshot and contains no route, href, fake CRUD or fake success.
 
-The expanded scope must not become a giant administrative form.
+An owning vertical may later activate the seam without moving its model into Timeline Create.
 
-Required interaction direction:
+## 9. Structured future-input seam
 
-- title remains dominant;
-- frequent properties are lightweight/editable;
-- deeper properties are grouped by semantic responsibility;
-- Activity and Event can expose different sections;
-- Quick Create remains fast even after Full Create exists;
-- Full Create may use a side sheet or dedicated editor surface instead of stretching one popup indefinitely;
-- contextual Timeline creation pre-fills temporal context;
-- candidate preview remains distinct from accepted state;
-- keyboard, focus, touch, mobile and reduced-motion behavior remain first-class;
-- no raw translation keys or debug-like status rows may leak into production UI;
-- visual density must remain comparable to mature large applications rather than a settings form.
+C1 owns a source-neutral `TemporalCreateFieldSeed` and invocation path.
 
-## 9. Application architecture expansion
+Future inputs may include:
 
-The existing F0 foundation remains valid but may be extended only where the richer Create system demonstrates a concrete need.
+- global Create;
+- keyboard command;
+- import;
+- governed DANTE interpretation;
+- voice adapter after that vertical exists.
 
-Likely additions must remain application-level and backend-agnostic, such as:
+They must all converge on the same normalization, validation, preview and commit path.
 
-- richer Create draft schema;
-- scheduling-constraint value objects;
-- recurrence specification;
-- reminder/confirmation intent;
-- external-reference/handoff contracts;
-- capability-specific validation;
-- candidate preview model;
-- operation result/reconciliation handling.
+DANTE must not automate Create by clicking UI controls.
 
-Do not mirror DB rows or invent REST DTOs.
+C1 does not implement AI/voice interpretation/runtime itself.
 
-## 10. Relationship with C5 and C7
+## 10. UI / interaction quality target
 
-This amendment expands **creation-time authoring**, not every later temporal runtime responsibility.
+The complete C1 system must remain a mature application surface rather than an administrative form.
 
-C1 now owns:
+Required:
 
-- authoring the initial structured scheduling/recurrence/replanning intent;
-- validating it;
-- previewing it;
-- applying it through the local application boundary;
-- preserving it for future adapter swap.
+- title dominance and fast common path;
+- semantic grouping;
+- Activity/Event-specific sections;
+- progressive disclosure;
+- contextual Timeline prefill;
+- distinct candidate preview;
+- responsive popover/full-screen strategy;
+- keyboard/focus ownership;
+- dirty-discard protection;
+- touch/pointer safety where applicable;
+- reduced-motion compatibility with frozen Timeline;
+- IT/EN i18n;
+- unambiguous accessible names;
+- no raw debug/i18n keys;
+- no misleading unavailable affordance;
+- mobile containment/no horizontal overflow.
 
-C5 still owns:
+## 11. Application architecture requirements
 
-- broader recurrence management;
-- occurrence/source scope editing;
-- scheduling-flexibility interaction across existing items;
-- deeper constraint editing after creation.
+C1's accepted application layer includes only abstractions demonstrated by real needs:
 
-C7 still owns:
+- structured Create draft/session;
+- Activity scheduling/execution intent;
+- Event recurrence/event intent;
+- confirmation/reminder intent;
+- candidate Timeline projection;
+- deterministic validation;
+- F0 prepared command/result path;
+- rich-intent metadata/idempotency;
+- structured field seed;
+- typed external-owner handoff;
+- immutable application-boundary prepared snapshot;
+- local deterministic runtime;
+- Undo/reveal integration.
 
-- conflict/replanning experience;
-- candidate plan comparison;
-- affected-item consequences;
-- accept/modify/reject of solver/replan proposals;
-- future authoritative solver integration seam.
+Do not mirror PostgreSQL rows or invent REST DTOs.
 
-This prevents Create from becoming the entire temporal product while still making it complete as an authoring system.
+## 12. Relationship with later temporal phases
 
-## 11. Backend stop line
+C1 owns **initial creation-time authoring**.
 
-The frontend Create system is complete pre-backend when its UI/application semantics no longer need structural redesign merely to connect a server.
+C5 still owns deeper editing of existing recurrence/flexibility/source scope, including this occurrence vs future/source behavior.
 
-The later backend vertical owns:
+C6 owns runtime Session/Actual/execution/correction surfaces.
+
+C7 owns conflict/proposal/affected-item/replanning experience and future solver integration.
+
+C2 remains the immediate next capability after C1 freeze: Card → structured Detail.
+
+## 13. Backend stop line
+
+The later backend/external vertical owns:
 
 - API transport;
-- canonical server identities;
-- auth/ACL enforcement;
-- PostgreSQL transactions/persistence;
-- durable idempotency;
-- provider/calendar synchronization;
-- multi-device reconciliation;
+- canonical identities;
+- PostgreSQL transactions/application persistence;
+- durable server idempotency;
+- product Auth/ACL enforcement;
+- provider/calendar sync and writes;
+- invitations/room/resource/conference execution;
 - notification delivery;
-- external invitation/conferencing execution;
-- authoritative solver runtime.
+- authoritative solver;
+- recurrence evaluator/checkpoints;
+- Occurrence generation;
+- Session runtime;
+- Actual/outcome runtime;
+- multi-device reconciliation;
+- AI runtime;
+- voice runtime.
 
-Connecting those must replace/extend adapters and integration ports rather than force a Create UI/application rewrite.
+Connecting these should extend/replace adapters and external seams rather than force a Create UI/application rewrite.
 
-## 12. Acceptance / closure rule
+## 14. Final implementation reconciliation
 
-C1 is **not closed** because Quick Create works or because CI is green.
+Implementation candidate:
 
-C1 closes only when:
+`81808814abb4e4998c7bde5b0c6cb8f5f903aa62`
 
-1. Quick Create is genuinely fast and polished;
-2. Expanded Create covers the meaningful pre-backend Activity/Event authoring grammar;
-3. Full Create/handoff exists for depth that should not live in the compact popup;
-4. all currently authoritative scheduling forms needed at creation can be represented without semantic collapse;
-5. recurrence and policy authoring seams are complete where applicable;
-6. external/backend-only capabilities are truthful seams, never fake success;
-7. draft/validation/preview/commit/recovery/Undo paths are coherent;
-8. responsive, accessibility, keyboard, focus, i18n and performance gates pass;
-9. automated CI is green on one final commit;
-10. the user manually reviews the **complete Create system** and explicitly accepts it.
+CI #536 / run `33613239926` proves:
 
-Until then, C1 remains OPEN / ACTIVE.
+- Quality PASS;
+- Mobile PASS;
+- full Chromium Web E2E PASS;
+- frozen Firefox Timeline interaction PASS;
+- final gate PASS.
+
+Current measurable evidence:
+
+- architecture 199 modules / 477 dependencies / zero violations;
+- web unit 28 files / 168 tests;
+- Home route `252.22 kB raw / 86.38 kB gzip`.
+
+Detailed semantic/technical mapping is frozen in `temporal-create-c1-traceability.md`.
+
+## 15. Closure rule
+
+C1 has satisfied the **automated implementation** side of this amendment.
+
+It is not closed until the user manually reviews the complete capability using `temporal-create-c1-manual-acceptance.md` and explicitly approves it.
+
+Current state:
+
+```text
+IMPLEMENTATION COMPLETE
+AUTOMATED PASS
+MANUAL ACCEPTANCE PENDING
+NOT YET FROZEN / CLOSED
+```
+
+Explicit user PASS is the only remaining closure gate.

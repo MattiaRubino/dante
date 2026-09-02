@@ -1,269 +1,487 @@
-# DANTE — C1 Temporal Create Manual Acceptance
+# DANTE — Temporal Create C1 Manual Acceptance
 
-**Status:** PREPARED — PENDING FINAL DOCS SYNC AND USER TEST  
-**Date:** 2026-09-01  
+**Status:** FINAL HUMAN GATE — NOT YET EXECUTED  
+**Date:** 2026-09-02  
 **Branch:** `feature/home-timeline`  
-**Implementation candidate:** `36aa4652731cd9a09334fd52214e66bd87544e22`  
-**Scope:** complete pre-backend Create capability only; this document does not authorize C2
+**Implementation candidate under acceptance:** `81808814abb4e4998c7bde5b0c6cb8f5f903aa62`  
+**Automated evidence:** Frontend CI `33613239926` / #536 — FULL PASS
 
-## Purpose
+## 1. Purpose
 
-This is the repeatable human acceptance gate for C1. Automated CI is necessary but not sufficient. The capability is frozen only after these checks are performed against the final branch descendant and the user explicitly approves the result.
+This is the **single coherent final manual acceptance** for C1. It is intentionally not a collection of micro-tests to run after every code change.
 
-## Local preparation
+The goal is to verify the complete user-facing Create capability after automated engineering closure:
 
-Use the real Timeline worktree:
+```text
+Quick
+→ Expanded
+→ Full
+→ Activity semantics
+→ Event semantics
+→ recurrence
+→ external seams
+→ contextual Timeline entry
+→ mobile
+→ frozen Timeline smoke
+```
+
+Only explicit user approval closes C1.
+
+## 2. Before starting
+
+Sync the Timeline worktree only after the documentation descendant is confirmed CI-green:
 
 ```bash
 cd /home/mattia/projects/dante-timeline
-
+git pull --ff-only
 git status --short --branch
-git fetch origin feature/home-timeline
-git merge --ff-only origin/feature/home-timeline
 git rev-parse HEAD
-
-corepack pnpm --filter @dante/web dev
 ```
-
-Before testing, the worktree must be on the documented final descendant of implementation candidate `36aa4652...` and must not contain unrelated local changes.
-
-Test primarily at a normal desktop viewport around 1440×900. Use browser responsive mode for the explicit mobile check.
-
-## Acceptance protocol
-
-### 1. Quick Activity — happy path + reveal + Undo
-
-1. Open Home.
-2. Press the Timeline `+`.
-3. Confirm title receives focus immediately.
-4. Keep type `Attività`.
-5. Enter a title such as `Nuova attività`.
-6. Set a visible time and duration, for example 13:30 / 60 min.
-7. Choose a context.
-8. Create.
 
 Expected:
 
-- editor closes without page jump;
-- created projection appears at the expected date/time/context;
-- created card receives focus;
-- feedback says the item was created;
-- `Annulla` removes it again;
-- no second/ghost card remains.
+- branch `feature/home-timeline`;
+- clean worktree;
+- HEAD is the final documentation descendant of implementation candidate `81808814...`.
 
-### 2. Dirty draft protection — keyboard, pointer and focus containment
+Start the normal web development environment used for this repository and open `/home`.
 
-1. Open Create from `+`.
-2. Type a title without saving.
+Do not judge backend persistence/provider behavior in this protocol: C1 intentionally stops before those runtimes.
+
+## 3. Acceptance rule
+
+A PASS requires all of the following:
+
+- no visual corruption or obviously prototype-grade control;
+- no raw translation/debug keys;
+- no misleading fake success;
+- no Activity recurrence editor;
+- no lost draft when moving Quick ↔ Expanded ↔ Full;
+- no fake fixed placement for flexible Activity;
+- Event recurrence remains understandable despite its depth;
+- focus/cancel/discard interactions feel deliberate;
+- mobile Full Create is usable and contained;
+- normal Timeline interactions still feel unchanged.
+
+If one material defect is observed, record exactly:
+
+```text
+surface
+steps
+expected
+actual
+viewport/browser if relevant
+```
+
+Do not compensate manually for a defect and call it PASS.
+
+---
+
+# 4. Desktop pass — Quick Create and Undo
+
+Use a desktop viewport around 1360–1440 px wide.
+
+1. Open Home.
+2. Click the Timeline `+`.
+3. Confirm Create opens focused on the title.
+4. Confirm the Quick surface is calm and does not look like a full configuration form.
+5. Enter a simple Activity title, for example `Studiare inglese`.
+6. Choose a visible time and ordinary duration/context.
+7. Create it.
+
+Expected:
+
+- composer closes;
+- placed Activity appears in the Timeline;
+- the created projection is revealed/focused when applicable;
+- success feedback describes the actual creation;
+- Undo is available.
+
+Use Undo.
+
+Expected:
+
+- created projection disappears;
+- no stale card/preview remains;
+- no second/fake mutation feedback appears.
+
+---
+
+# 5. Dirty draft / discard / focus
+
+1. Open `+` again.
+2. Type a title and change at least one field.
 3. Press Escape.
 
 Expected:
 
-- `Scartare questa bozza?` appears as the active confirmation;
-- focus is on the first confirmation action;
-- Tab cycles only between the two confirmation actions and never reaches fields/buttons behind the confirmation;
-- Escape from the confirmation means “continue editing” and returns focus to the control from which close was attempted;
-- draft content is unchanged.
+- a clear discard confirmation appears;
+- draft is still visible/preserved behind the confirmation;
+- underlying form is not interactable while confirmation is active;
+- Tab cycles only through confirmation actions.
 
-Then click outside the composer to request close again and choose `Scarta`.
+4. Press Escape or choose `Continua a modificare`.
+
+Expected:
+
+- confirmation closes;
+- focus returns to the control from which closing was attempted when still available;
+- draft values remain unchanged.
+
+5. Close again and choose `Scarta`.
 
 Expected:
 
 - composer closes;
-- focus returns to the Timeline `+` trigger;
-- discarded draft does not reappear on the next open.
+- focus returns to the original `+` opener;
+- no Create item appears.
 
-### 3. Progressive disclosure — Quick → Expanded → Full
+---
 
-1. Open Create and enter an Activity title.
-2. Open `Dettagli e pianificazione`.
-3. Confirm Expanded keeps the existing draft unchanged.
-4. Open `Editor completo →`.
-5. Confirm Full keeps the same draft unchanged.
-6. Return to Expanded/compact and verify values remain intact.
+# 6. Progressive disclosure / same draft
 
-Expected: one draft, one semantic operation path, no reset or duplicate state between surfaces.
-
-### 4. Flexible/window Activity — intent must not become fake placement
-
-1. Create an Activity such as `Montare il video`.
-2. Set expected duration to 180 min.
-3. In Expanded choose a bounded temporal window.
-4. Choose movement policy inside the window.
-5. Optionally add fallback/replanning policy.
-6. Create.
+1. Open a new Activity.
+2. Enter a distinctive title.
+3. Go from Quick to `Dettagli e pianificazione`.
+4. Change expected duration to a non-preset exact value, for example `195` minutes.
+5. Set a planning constraint and execution structure.
+6. Open `Editor completo`.
+7. Set a deeper fallback/session/confirmation/reminder value.
+8. Return to Expanded and then back to Full.
 
 Expected:
 
-- result is reported as created/accepted local intent;
-- UI identifies it as `Da pianificare` rather than pretending an exact schedule exists;
-- no fake fixed Timeline card is rendered at the draft's previous time;
-- Undo removes the local rich intent/projection truth cleanly.
+- title and every modified value survive each surface transition;
+- no second draft is created;
+- layout remains grouped by meaning rather than becoming a giant settings wall;
+- exact 195-minute duration remains intact.
 
-Repeat the truth check for open/deadline/preferred-window forms if desired: none may silently become an accepted exact placement.
+---
 
-### 5. Full Activity — execution/session/recurrence/policy depth
+# 7. Activity semantic truth
 
-Create an Activity and exercise:
+Use the same/new Activity and inspect its planning sections.
 
-- splittable execution;
-- minimum session;
-- maximum session count;
-- preparation/recovery/spacing if exposed;
-- weekly recurrence with multiple weekdays;
-- recurrence end rule;
-- non-confirmed outcome/review policy;
-- reminder;
-- notes/tags.
+Verify these concepts can be represented sensibly where shown:
 
-Expected:
+- fixed/timed placement;
+- open / da pianificare;
+- bounded window;
+- deadline-constrained;
+- preferred window;
+- movement policy;
+- indivisible vs splittable;
+- minimum/max session intent;
+- preparation/recovery/spacing;
+- fallback policy;
+- confirmation/review policy.
 
-- fields remain stable while moving Expanded ↔ Full;
-- recurrence controls are understandable and keyboard reachable;
-- Project/World or other external-owned object creation is not faked locally;
-- unavailable ownership is explained truthfully as a handoff/dependency.
-
-### 6. Advanced validation — focus the actual invalid control
-
-1. Create an Activity with duration 60 min.
-2. Set execution structure to splittable.
-3. Enter a minimum session larger than the total duration, e.g. 120 min.
-4. Submit.
+Then make an Activity `Da pianificare` / open or otherwise flexible and create it.
 
 Expected:
 
-- Create is rejected locally;
-- draft remains intact;
-- meaningful validation is shown;
-- focus moves to the real invalid minimum-session control;
-- no Timeline item is created;
-- no fake Undo appears.
+- Create succeeds truthfully as planning intent;
+- it is not fabricated into an arbitrary exact Timeline slot;
+- feedback identifies it as `Da pianificare` where appropriate.
 
-### 7. Event — distinct Event grammar
+### Mandatory recurrence ownership check
 
-1. Open Create.
-2. Switch type to `Evento`.
-3. Set start and end/date as needed.
-4. Open Expanded/Full.
-5. Set location, availability and visibility.
-6. Configure recurrence.
-7. In Full, enter participants/resources and choose provider-default video conference if available.
+Inspect Activity in Expanded and Full.
 
 Expected:
 
-- Activity-only flexible scheduling controls are absent from Event;
-- Event remains placed, never silently converted to unscheduled;
-- provider note explicitly says invitations/bookings/conference links require the real provider/backend;
-- locally creating the Event does not claim invitations, room booking or conference creation occurred;
-- recurring Event projection is visibly identified as recurring.
+- **there is no `Modello di ricorrenza` control for Activity**;
+- the UI explains that persistent repetition belongs to Routine;
+- Routine appears as an owning-vertical handoff/dependency;
+- there is no generic `repeat` checkbox;
+- there is no generic `Tag` field pretending an unsupported owner model.
 
-### 8. Zoned Event / timezone truth
+Any direct Activity recurrence editor is a manual FAIL.
 
-1. Create a timed Event.
-2. Select zoned/named-zone semantics.
-3. Use a valid IANA zone such as `Europe/Rome`.
-4. Edit the Event end time/date and verify duration readout remains coherent.
+---
 
-Expected:
+# 8. Owning-vertical handoff truth
 
-- the zone is preserved as semantic input;
-- no timezone validation error for a valid IANA zone;
-- invalid zone input is rejected rather than silently coerced.
-
-DST spring-forward/fall-back arithmetic is protected automatically by dedicated tests; manual acceptance only needs to confirm the zoned UI is coherent and does not collapse back to floating mode.
-
-### 9. All-day / multi-day Event
-
-1. Create an Event.
-2. Choose `Tutto il giorno`.
-3. Set an end date equal to or after the start date; test more than one day as well.
-4. Create.
+In Full Create inspect `Altro tipo` / external-owner options.
 
 Expected:
 
-- all-day representation appears in the all-day area, not as an arbitrary timed card;
-- multi-day range is preserved;
-- an end date before the start is rejected.
+- Project, Goal, Routine, Program, World, Template, Reminder, Block and Asset are represented as unavailable/deferred owner dependencies;
+- they do not navigate somewhere fake;
+- clicking cannot claim that an object was created;
+- wording makes ownership/dependency clear rather than looking broken.
 
-### 10. Unscheduled Activity
+The handoff contract itself is covered automatically; this manual step validates that the unavailable UI is understandable and product-quality.
 
-1. Create an Activity.
-2. Choose `Da pianificare` / unscheduled.
-3. Create.
+---
 
-Expected:
+# 9. Event base grammar
 
-- creation succeeds as intent;
-- feedback reports `Da pianificare`;
-- no fake exact Timeline placement appears.
+Open a fresh Create and switch to Event.
 
-### 11. Timeline contextual Create — double-click and Shift-drag
+Verify:
 
-On empty Timeline space:
+- Event requires temporal placement;
+- start/end behavior feels Event-specific rather than copied blindly from Activity;
+- all-day can represent a multi-day Event;
+- floating/local vs named-zone time semantics are understandable;
+- IANA timezone field appears only when appropriate;
+- location, availability and visibility are distinct concepts;
+- purpose, expected outcome and agenda are grouped meaningfully in Full;
+- `decision required` reads as intent, not as an executed decision.
 
-1. Double-click a time position.
-2. Confirm Create opens with contextual date/time defaults.
-3. Cancel with Escape while the draft is clean.
+Enter realistic data for a meeting/call.
 
-Expected:
+---
 
-- composer closes;
-- keyboard focus returns to the Timeline grid, not the distant `+` button.
+# 10. Provider/collaboration truth
 
-Then:
+In Full Event fill some of:
 
-1. Hold Shift.
-2. Drag vertically across an empty range.
-
-Expected:
-
-- Create opens with the contextual date/start and a duration derived from the range;
-- existing cards do not accidentally become range-create targets;
-- normal card drag semantics remain unchanged.
-
-### 12. Mobile Full Create
-
-Use responsive mode at **390×844**.
-
-1. Open Create.
-2. Go to Expanded and then Full.
-3. Scroll through all fields.
-4. Exercise a select, text field, recurrence control and close/discard flow.
+- required participant;
+- optional participant;
+- room/resource;
+- pre-read;
+- conference provider intent.
 
 Expected:
 
-- Full editor uses the mobile/full-screen treatment;
+- UI clearly says these are preserved intents/seams;
+- no invitation is reported sent;
+- no room is reported booked;
+- no conference link is fabricated;
+- visibility is not presented as product ACL/sharing authority.
+
+Any fake provider success is a manual FAIL.
+
+---
+
+# 11. Event recurrence — four CP6 families
+
+This is one guided inspection, not four separate acceptance sessions.
+
+Open Event → Expanded/Full and find `Modello di ricorrenza`.
+
+Expected family choices:
+
+1. Calendar / ora civile;
+2. Intervallo trascorso;
+3. Quota per periodo;
+4. Posizione ciclica;
+5. plus `Non si ripete`.
+
+## A. Calendar / wall-clock
+
+Select calendar recurrence.
+
+Verify frequency options include:
+
+- daily;
+- weekly;
+- monthly;
+- monthly by ordinal weekday;
+- yearly.
+
+For weekly, select multiple weekdays.
+
+For monthly ordinal, configure something equivalent to `ultimo venerdì`.
+
+For monthly/yearly anchored forms, verify the UI communicates that the authored civil date is the anchor rather than presenting a mysterious DB rule.
+
+## B. Elapsed interval
+
+Switch to elapsed interval and enter a valid value.
+
+Expected:
+
+- simple elapsed duration authoring;
+- no claim that browser runtime is evaluating future Occurrences.
+
+## C. Quota per period
+
+Switch to quota.
+
+Verify:
+
+- count;
+- day/week/month/year period;
+- every N periods;
+- Full surface allows period frame;
+- frame choices include local, named-zone and UTC/absolute basis;
+- weekly period exposes week start;
+- named-zone frame exposes period timezone;
+- explanatory copy makes clear period boundaries do not silently follow the device timezone.
+
+## D. Cyclic positional
+
+Switch to cyclic.
+
+Set a cycle length such as 4 and add at least two active positions, for example 1 and 3.
+
+Expected:
+
+- multiple active positions can coexist;
+- positions are human-readable 1-based values;
+- invalid/duplicate/out-of-range values are not accepted as valid state;
+- removing a position behaves predictably.
+
+## Surface round-trip
+
+After configuring a deep recurrence:
+
+1. return from Full to Expanded;
+2. open Full again.
+
+Expected:
+
+- family and deep values remain intact;
+- no recurrence state silently resets.
+
+The browser must not show generated Occurrences merely because a recurrence specification exists.
+
+---
+
+# 12. Zoned time sanity
+
+Create a zoned Event using `Europe/Rome`.
+
+Change start/end/duration in a normal date first.
+
+Expected:
+
+- end and duration remain coherent;
+- timezone remains attached to the Event intent.
+
+No need to manually reproduce DST transition math; spring-forward/fall-back arithmetic is already a blocking automated unit contract. This manual step checks the UI presentation and editing path only.
+
+---
+
+# 13. All-day multi-day Event vs unscheduled Activity
+
+### Event
+
+Create an all-day Event spanning more than one date.
+
+Expected:
+
+- it behaves as a true date span;
+- it does not look like a timed midnight event.
+
+### Activity
+
+Create an unscheduled Activity.
+
+Expected:
+
+- it remains valid without exact placement;
+- no arbitrary slot is invented.
+
+These two cases must feel semantically different.
+
+---
+
+# 14. Contextual Timeline creation
+
+## Double-click
+
+On an empty visible Timeline area, double-click a sensible time.
+
+Expected:
+
+- Create opens with contextual date/time defaults;
+- cancelling a clean contextual Create returns focus to the Timeline, not the global `+`.
+
+## Shift-drag range
+
+On an empty visible Timeline area, Shift-drag a meaningful vertical range.
+
+Expected:
+
+- Create opens;
+- duration reflects the selected range at a sensible snapped value;
+- no existing card is accidentally captured;
+- no native drag ghost appears.
+
+This interaction must work after previously opening/closing Create as well; Timeline virtualization must not make the second gesture dead.
+
+---
+
+# 15. Validation/recovery
+
+Create an Activity with an obviously invalid advanced relationship, for example expected duration 60 minutes but minimum session 120 minutes.
+
+Submit.
+
+Expected:
+
+- composer stays open;
+- meaningful validation appears;
+- focus moves to the actual invalid control;
+- title and other draft values remain intact;
+- no partial projection is committed.
+
+Correct it and verify the same draft can continue successfully.
+
+---
+
+# 16. Mobile Full Create
+
+Use a 390×844-equivalent viewport/devtools device.
+
+Open Create → Expanded → Full.
+
+Expected:
+
+- Full becomes a usable mobile full-screen editor;
 - no horizontal page overflow;
-- no control is clipped outside the viewport;
-- touch-sized actions remain usable;
-- discard confirmation remains contained and usable.
+- fields/actions remain reachable;
+- deep Event recurrence controls remain understandable and do not overflow disastrously;
+- close/discard remains operable;
+- no desktop-only floating geometry blocks the flow.
 
-### 13. Frozen Timeline regression smoke
+---
 
-Without changing Create, verify the accepted Timeline still behaves as before:
+# 17. Frozen Timeline smoke
 
-- normal wheel/trackpad scroll;
-- gray relative temporal scrubber moves both directions and returns to neutral on release;
-- orange expansion/split handle remains visually distinct;
-- `Ora` works;
-- existing card pointer drag still works;
-- keyboard Alt nudge + Undo still works;
-- direct time editor still works;
-- continuous day recycling does not visibly jump;
-- no regression at Home pressure boundaries around 900/901 and 1120/1121.
+After Create testing, do a short normal Timeline interaction smoke:
 
-## Acceptance rule
+- click/focus an existing card;
+- move/edit time using an already accepted interaction;
+- Undo;
+- use `Ora`/Now;
+- open/close calendar/time controls if convenient.
 
-Record one of these outcomes only after the protocol:
+Expected:
+
+- established T1 behavior feels unchanged;
+- first drag is not swallowed;
+- no native drag ghost;
+- Undo corresponds to a real mutation;
+- Create has not re-authored the Timeline interaction grammar.
+
+Firefox's critical interaction contract is already automated; this is only a human regression feel-check.
+
+---
+
+# 18. Final decision
+
+If a material issue exists, report it precisely and do **not** approve C1.
+
+If the complete flow is accepted, send exactly or equivalently:
 
 ```text
 C1 MANUAL PASS — APPROVED
 ```
 
-or
+Only then may repository status transition to:
 
 ```text
-C1 MANUAL FAIL — <precise defect>
+C1 TEMPORAL CREATE
+FROZEN / CLOSED
 ```
 
-A failure reopens only the demonstrated defect and its necessary adjacent contract. A pass freezes C1 and authorizes the roadmap to move to C2 Card → structured Detail.
+and only then may work begin on:
+
+```text
+C2 — Card → structured Detail
+```

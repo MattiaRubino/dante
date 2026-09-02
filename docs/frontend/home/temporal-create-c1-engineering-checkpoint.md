@@ -1,401 +1,406 @@
 # DANTE — Temporal Create C1 Engineering Checkpoint
 
-**Status:** FINAL AUTOMATED ENGINEERING PASS — PENDING USER MANUAL ACCEPTANCE  
-**Date:** 2026-09-01  
+**Status:** FINAL AUTOMATED ENGINEERING PASS — USER MANUAL ACCEPTANCE PENDING  
+**Date:** 2026-09-02  
 **Repository:** `MattiaRubino/dante`  
 **Branch:** `feature/home-timeline`  
 **Worktree:** `/home/mattia/projects/dante-timeline`  
-**Final implementation candidate:** `36aa4652731cd9a09334fd52214e66bd87544e22`  
-**Frontend CI:** run `33542270688` / #416 — FULL PASS
+**Final implementation candidate:** `81808814abb4e4998c7bde5b0c6cb8f5f903aa62`  
+**Frontend CI:** `33613239926` / #536 — FULL PASS
 
-## Purpose
+## 1. Purpose
 
-This file preserves the exact engineering state reached for C1 so a future chat/agent can continue without reconstructing decisions from conversation history.
+This checkpoint preserves the exact engineering state of C1 after the final semantic, accessibility, recurrence, input-boundary and integration-seam hardening.
 
-This is **not** user acceptance. Automated engineering closure is complete; C1 remains open until the manual protocol is executed and the user explicitly approves.
+It is not the user acceptance record. C1 remains open until the complete manual protocol is explicitly approved.
 
-## 1. Product/architecture state
-
-The amended C1 mandate is:
+## 2. Final C1 architecture
 
 ```text
-Quick Create
-+
-Expanded Create
-+
-Full Create / deep authoring
-+
-truthful external-vertical seams
+manual + / Timeline context / future typed input
+                    ↓
+           shared Create session
+                    ↓
+       Quick ↔ Expanded ↔ Full
+                    ↓
+       normalize / validate / preview
+                    ↓
+             explicit commit
+                    ↓
+               F0 command
+                    ↓
+       deterministic local runtime
+                    ║
+                    ║ STOP
+                    ║
+         future backend adapter
 ```
 
 Permanent boundaries:
 
 ```text
-ViewModel != frontend application model != DTO != Domain != persistence
-intention != placement != occurrence != execution
-Schedule != Occurrence != Session != Actual
-Proposal != accepted state
+Activity != Event
+Activity repetition -> Routine ownership
+recurrence source != generated Occurrence
+Schedule != Session != Actual
 planned != actual
-manual / keyboard / future AI / future voice -> same semantic application boundary
+floating != zoned != absolute
+preview != accepted projection
+manual/DANTE input != canonical truth
+frontend projection id != server canonical id
+ViewModel != app model != DTO != DB row
 ```
 
-No backend, provider, solver, AI or voice success is faked.
+## 3. Final implementation surface
 
-## 2. Major implemented areas
+Primary files:
 
-Primary code:
-
-- `apps/web/src/features/temporal-create/`
+- `apps/web/src/features/temporal-create/model/temporal-create-session.ts`
+- `apps/web/src/features/temporal-create/application/temporal-create-runtime.ts`
+- `apps/web/src/features/temporal-create/application/temporal-create-projection.ts`
+- `apps/web/src/features/temporal-create/application/temporal-create-seed.ts`
+- `apps/web/src/features/temporal-create/application/temporal-create-handoff.ts`
+- `apps/web/src/features/temporal-create/ui/`
 - `apps/web/src/features/home/ui/timeline/timeline-create-bridge.tsx`
 - `apps/web/e2e/temporal-create.spec.ts`
 
-The capability includes:
+### Shared lifecycle
 
-- model/session/draft semantics;
-- local application runtime over F0;
-- rich Create intent separate from Timeline projection;
-- Quick, Expanded and Full UI levels;
-- Activity-specific authoring;
-- Event-specific authoring;
-- recurrence;
-- context/organization fields;
-- truthful handoff fields;
-- responsive/mobile styling;
-- Timeline projection bridge;
-- validation/focus lifecycle;
-- unit and browser regression coverage.
+Implemented:
 
-### Activity semantics
+- one structured draft across all surfaces;
+- normalization at draft and application boundaries;
+- Quick/Expanded/Full round-trip without duplicated state;
+- contextual Timeline defaults;
+- structured seed path for future semantic inputs;
+- validation + invalid-control focus;
+- candidate preview;
+- prepared operation + deterministic execution;
+- applied projection + rich metadata record;
+- reveal/focus + Undo;
+- dirty draft confirmation and focus restoration;
+- responsive/mobile behavior.
 
-Supported pre-backend authoring includes:
+## 4. Activity final semantics
 
-- context/life-area;
-- expected duration;
-- fixed/open/bounded-window/deadline/preferred-window intent;
+Supported:
+
+- timed/all-day/unscheduled where applicable;
+- context and notes;
+- exact expected duration in deeper surfaces;
+- open/window/deadline/preferred scheduling intent;
+- earliest/deadline boundaries;
 - movement/replanning policy;
-- execution/session structure;
-- minimum/max sessions and buffers where applicable;
-- recurrence source specification;
-- outcome/confirmation/review policy seams;
-- notes/tags;
-- external owning-vertical handoffs.
+- indivisible/splittable session intent;
+- minimum/max sessions;
+- preparation/recovery/spacing;
+- partial/early-finish/merge intent;
+- fallback policy;
+- confirmation/review/inference policy;
+- reminder configuration;
+- owning-vertical handoff.
 
-Flexible/open/deadline/window/preferred intent produces **no fake accepted placement**.
+Not supported by design:
 
-### Event semantics
+- Activity recurrence.
 
-Supported authoring includes:
+Persistent repetition is represented as a required Routine owning-vertical handoff. `createTemporalCreateFields()` normalizes Event recurrence state to `none` whenever kind is Activity.
 
-- start/end/duration;
-- all-day/date-span;
-- floating vs zoned time mode;
-- timezone ID;
+Flexible Activity intent produces no fake exact placement.
+
+## 5. Event final semantics
+
+Supported:
+
+- timed and all-day/multi-day placement;
+- explicit start/end/duration;
+- floating-local and named-zone semantics;
+- IANA timezone validation;
+- DST-correct duration/end arithmetic;
 - location;
-- recurrence;
 - availability;
 - visibility;
-- participant/resource/conference intent as provider handoff only.
+- purpose;
+- expected outcome;
+- agenda;
+- decision-required intent;
+- required/optional participants;
+- rooms/resources;
+- pre-read;
+- preparation/recovery buffers;
+- conferencing intent;
+- reminder/confirmation policy;
+- all four CP6 recurrence families.
 
-Event is not silently converted to unscheduled.
+No external invitation, booking, conference creation or provider sync is claimed.
 
-## 3. Failure/fix history — preserve this knowledge
+## 6. Event recurrence final depth
 
-### A. Architecture cycles
-
-CI exposed two real Create UI import cycles.
-
-Resolution:
-
-- shared UI types extracted outside component-to-component imports;
-- final dependency-cruiser: 194 modules / 459 dependencies / zero violations.
-
-Do not hide/reintroduce cycles through barrels.
-
-### B. i18n contract drift
-
-Older tests expected generic `Durata`; product uses the more precise `Durata prevista / Expected duration`.
-
-Resolution:
-
-- preserve improved product wording;
-- align tests in both languages;
-- recurrence accessible names made unambiguous.
-
-### C. Contextual Shift-drag E2E
-
-Initial failure looked like a gesture bug. Trace showed raw pointer Y around `-1680px`: a recycled Timeline day was off-screen after the preceding dialog flow. Locator actions can auto-scroll; raw `page.mouse` does not.
-
-Resolution:
-
-- explicitly scroll target day into viewport;
-- remeasure current geometry;
-- then perform raw Shift-drag.
-
-Do not revert to stale/off-screen bounding boxes.
-
-### D. Mobile sub-pixel geometry
-
-Browser returned about `390.0000028px` on a 390px viewport.
-
-Resolution:
-
-- tiny tolerance only for numeric bounding-box noise;
-- strict `scrollWidth <= clientWidth` remains the real horizontal-overflow invariant.
-
-### E. Real DST defect
-
-Zoned Event end/duration editing initially used wall-clock `PlainDateTime` arithmetic.
-
-Example:
+M4/Alembic owner truth:
 
 ```text
-Europe/Rome spring forward
-2026-03-29 01:30 -> 03:30
-wall-clock difference = 120 min
-real elapsed difference = 60 min
+Routine recurrence family
+Event recurrence family
+NO Activity recurrence family
 ```
 
-Using 120 minutes as elapsed duration would move a zoned end to 04:30 and be wrong.
+C1 Event recurrence:
 
-Resolution:
+### calendar-wall-clock
 
-- shared Event end/duration helpers accept `timeMode` + `timeZoneId`;
-- floating uses wall-clock arithmetic;
-- zoned constructs `ZonedDateTime` and measures real Instants;
-- invalid zoned input is rejected/falls back rather than fabricated;
-- dedicated tests cover normal multi-day, Europe/Rome spring-forward and fall-back.
+- daily;
+- weekly + weekday set;
+- monthly anchored to civil date;
+- monthly ordinal weekday;
+- yearly anchored to civil date;
+- interval;
+- open/until/count termination.
 
-Files:
+### elapsed-interval
 
-- `temporal-create-field-shared.ts`;
-- `temporal-create-event-fields.tsx`;
-- `temporal-create-field-shared.test.ts`.
+- positive elapsed interval authoring.
 
-### F. Rich-intent idempotency
+### quota-per-period
 
-F0 fingerprints the minimal projection command, while C1 owns richer recurrence/session/provider metadata.
+- quota count;
+- period: day/week/month/year;
+- period span;
+- frame: floating-local/named-zone/absolute-UTC;
+- week start for weekly period;
+- named-zone IANA period zone.
 
-Resolution:
+### cyclic-positional
 
-- C1 adds canonical rich-intent fingerprinting by `operationId`;
-- exact prepared replay is accepted;
-- same operation ID with different rich intent rejects `operation-id-reused` side-effect-free;
-- Undo removes both projection and matching local rich record.
+- cycle length;
+- day/week unit;
+- multiple active positions;
+- human 1-based UI positions.
 
-Files:
+Occurrence generation remains exclusively downstream M6/backend work.
 
-- `temporal-create-runtime.ts`;
-- `temporal-create-runtime.test.ts`.
+## 7. Hardening history that must be preserved
 
-### G. Projection bridge O(n²)
+### Architecture cycles
 
-Audit found per-projection `slice().filter()` plus repeated group lookups.
+Earlier component/type cycles were removed. Current final architecture check:
 
-Resolution:
+```text
+199 modules
+477 dependencies
+0 violations
+```
 
-- precompute context tone/index maps;
-- cache mounted sections by date;
-- slot counters keyed by date/all-day/start minute;
-- single projection pass;
-- preserve collision offsets and expanded-group interpolation.
+Do not reintroduce cycles through convenience barrels or UI-to-UI type ownership.
 
-Current preparation complexity is O(n) in Create projections, aside from bounded mounted-day DOM queries.
+### i18n typing and accessible names
 
-### H. Unnecessary runtime allocations
+The resource shape is typed across IT/EN. Accessible labels were made semantically unambiguous rather than making Playwright locators weaker.
 
-`useRef(createLocalTemporalCreateRuntime())` preserved the first value but evaluated the constructor on every render, building discarded workspaces.
+Notable resolved collisions:
 
-Resolution at `891eab584f017f655eb5876169e848fc67a69f79`:
+- reminder vs confirmation section;
+- recurrence quota period;
+- monthly ordinal weekday vs frequency option wording.
 
-- runtime now uses lazy state initialization and is created once per mounted entry.
+### Zoned/DST arithmetic
 
-### I. Contextual focus return
+Zoned Event arithmetic uses `ZonedDateTime`/Instant elapsed truth rather than raw wall-clock subtraction.
 
-Contextual double-click/Shift-drag Create previously restored focus to the global `+` on cancel.
+Dedicated tests preserve Europe/Rome DST forward/backward behavior.
 
-Resolution at `891eab584f017f655eb5876169e848fc67a69f79`:
+### Rich-intent idempotency
 
-- Create records the actual return target;
-- global `+` returns to `+`;
-- contextual Timeline Create returns to `.timeline-grid`;
-- successful reveal can transfer focus to the created projection.
+F0 fingerprints minimal projection command. C1 separately fingerprints rich metadata. Exact replay is idempotent; changed rich intent under the same operation ID rejects without side effects.
 
-### J. Dirty-discard focus trap
+### Prepared-operation snapshot ownership
 
-The discard confirmation focused its first action but the Tab trap still considered the full composer, allowing keyboard traversal back into fields behind the confirmation. Continue-editing also always returned to title rather than the real prior control.
+Final hardening at `81808814...` makes `runtime.prepare()` own a normalized deep-frozen copy before validation/placement/command creation.
 
-Resolution at `6a0c46982238645db3caf7128017f28debd0d965`:
+This prevents a mutable caller from changing title, Event intent, recurrence arrays or other rich fields between prepare and execute.
 
-- discard confirmation is a named `alertdialog`;
-- Tab root switches to the confirmation while active;
-- Escape continues editing;
-- the close-attempt active control is remembered and restored when connected;
-- E2E asserts focus cycles only between the two confirmation actions.
+Test: `application/temporal-create-boundary.test.ts`.
 
-### K. Modal truth beyond keyboard
+### Typed semantic seed
 
-The confirmation was still semantically modal while underlying form/header remained pointer-operable.
+`TemporalCreateFieldSeed` deep-merges into normal Create defaults and then re-enters normal normalization/validation.
 
-Resolution at final candidate `36aa4652731cd9a09334fd52214e66bd87544e22`:
+It cannot use structured prefill to create an Activity recurrence or skip validation.
 
-- underlying composer header and form become natively `inert` while discard confirmation is active;
-- keyboard, pointer and accessibility semantics now agree with `alertdialog aria-modal`.
+`TemporalCreateInvocation` already transports the seed into the same UI session.
 
-## 4. Final hardening commit trail
+### Typed owner handoff
 
-Important checkpoints:
+The handoff registry is application-owned, not UI-owned.
 
-- `4e19a06a7b1e313a929a86d2b1013c0d58437824` — contextual gesture visibility + mobile sub-pixel E2E;
-- `14eccbf18d42c421d4609a8a4be1514f8f7c0afd` — DST-aware shared time helpers;
-- `3a5da6ca4aa25f006c805fa54dd377fced5e0f43` — Event fields integrate mode/timezone;
-- `8896dbb8e336328db23cc5d8526bc8f93cbe5fbf` — dedicated temporal arithmetic tests;
-- `3d08302272926e298857b7ba6235d82b35150c41` — rich Create idempotency;
-- `3bb1f888498ed36199c026216cef22cedf3ddfb2` — rich collision regression;
-- `4ca8de311e10fb03a4d5fd47903ebe4396271d95` — linear projection layout;
-- `4bbbe89508504876edb36a5103388a098bf9b2c9` — saved C1 docs checkpoint;
-- `891eab584f017f655eb5876169e848fc67a69f79` — lazy runtime + contextual focus return;
-- `6a0c46982238645db3caf7128017f28debd0d965` — discard alertdialog/focus containment;
-- `36aa4652731cd9a09334fd52214e66bd87544e22` — underlying draft inert while discard modal is active; **final implementation candidate**.
+All current targets are explicit `deferred` dependencies. `prepareTemporalCreateHandoff()` preserves an immutable normalized snapshot and has no route/href/fake operation.
 
-Earlier intermediates are evidence, not closure checkpoints.
+Test: `application/temporal-create-handoff.test.ts`.
 
-## 5. Final CI evidence
+### Timeline virtualization E2E
+
+A prior Shift-drag failure was traced to retaining `.first()` across virtualized day recycling. The resulting raw pointer coordinate was outside the viewport.
+
+Final test selects a currently visible date, reanchors by stable `data-timeline-date`, verifies visible geometry and reacquires after the first composer close.
+
+This preserves the real gesture contract without adding sleeps/timeouts or weakening assertions.
+
+### Dirty discard modal
+
+The discard flow remains a named `alertdialog`, traps Tab within its actions, restores the real prior control on continue and makes underlying form/header `inert` while active.
+
+### Projection performance
+
+Create projection layout remains O(n) over current Create projections through cached group/day maps and slot counters.
+
+### Runtime allocation
+
+Local runtime remains lazily initialized once per mounted Create entry.
+
+## 8. UI/CSS audit
+
+The previously identified Full Event one-off CSS debt is no longer present in the active component structure.
+
+Full Event uses shared:
+
+- `temporal-create-section__heading`;
+- `temporal-create-check-grid`.
+
+Do not reintroduce `.is-subsection` / `.temporal-create-checkline` merely to create a cosmetic diff.
+
+The UI target remains high-density but calm progressive disclosure, not an administrative DB editor.
+
+## 9. Physical/CP6 alignment
+
+Current database system of record:
+
+- PostgreSQL 18.6;
+- Alembic head `20260826_08`;
+- 68 tables;
+- 5 views;
+- 14 routines;
+- 75 triggers;
+- 95 indexes;
+- 68 FKs;
+- 120 CHECKs.
+
+Relevant migration chain:
+
+```text
+20260825_03  Schedule / Actual / Session
+20260825_04  Routine + Event Recurrence
+20260826_06  Occurrence generation
+20260826_07  runtime ACL activation
+20260826_08  final CP6 QA hardening
+```
+
+M4 recurrence families:
+
+`calendar_wall_clock`, `elapsed_interval`, `quota_per_period`, `cyclic_positional`.
+
+M6 preserves `recurrence_generated` vs `explicit_extra` and exact governing recurrence state.
+
+C1 does not attempt to execute any of that backend runtime.
+
+## 10. Final automated evidence
 
 Implementation candidate:
 
-`36aa4652731cd9a09334fd52214e66bd87544e22`
+`81808814abb4e4998c7bde5b0c6cb8f5f903aa62`
 
-Frontend CI:
+CI:
 
-- run ID `33542270688`;
-- run number `416`.
+- run ID `33613239926`;
+- run number `536`.
 
 ### Quality — PASS
 
-- frontend contract drift PASS;
+- frontend pre-production contract drift PASS;
 - active Home format PASS;
 - lint PASS;
-- typecheck: 5 successful / 5 total;
-- architecture: 194 modules / 459 dependencies / zero violations;
+- typecheck: 5/5;
+- architecture: 199 modules / 477 dependencies / zero violations;
 - generated-source drift PASS;
-- unit tests PASS;
-- web suite: 25 files / 151 tests PASS;
+- web unit: 28 files / 168 tests PASS;
+- package suites PASS;
 - production build PASS;
 - diff check PASS;
 - repository mutation check PASS.
 
-### Mobile Bundle — PASS
+### Mobile — PASS
 
 - Expo dependency compatibility PASS;
 - Android Hermes bundle smoke PASS.
 
 ### Web E2E — PASS
 
-- Chromium full Web E2E PASS;
-- frozen Timeline interaction contract in Firefox PASS;
-- no failure artifact uploaded.
+- full Chromium suite PASS;
+- frozen Timeline Firefox contract PASS;
+- failure artifact step skipped because no failure evidence existed.
 
 ### Final gate — PASS
 
-`Frontend CI Gate` completed successfully.
+`Frontend CI Gate` PASS.
 
-## 6. Bundle/performance decision
+## 11. Bundle decision
 
-Final production build on #416:
-
-```text
-Home route: 233.28 kB raw / 83.74 kB gzip
-```
-
-Earlier pre-expanded C1 evidence:
+Final Home route:
 
 ```text
-Home route: ~76.98 kB gzip
+252.22 kB raw
+86.38 kB gzip
 ```
 
-The full deeper C1 surface therefore costs about **+6.8 kB gzip** on Home.
+Earlier full C1 candidate #416 was 83.74 kB gzip. The additional recurrence/seed/handoff/boundary depth adds a small measured increment while materially strengthening the contract.
 
-Decision: **no dynamic import/Suspense split for Expanded/Full in C1**.
+Decision remains: no dynamic import/Suspense split for C1 solely for gzip recovery. Draft continuity, deterministic validation/focus and error handling remain synchronous. Revisit only on a future measured route-growth case.
 
-Reasoning:
+## 12. No demonstrated C1 engineering defect remains
 
-- saving is modest;
-- advanced validation participates in deterministic focus behavior;
-- draft continuity must remain synchronous/predictable;
-- a lazy boundary would require loading/error/focus recovery states;
-- added complexity is not justified by measured route cost.
+Final audit accepted for the automated candidate:
 
-This is a deliberate performance tradeoff. Revisit only if future route growth produces a material performance case.
+- owner-correct Activity/Event/Routine semantics;
+- recurrence four-family depth;
+- no local Occurrence generation;
+- flexible Activity without fake Schedule;
+- no fake Session/Actual;
+- provisional inference truth;
+- provider seams only;
+- typed external-owner handoff;
+- source-neutral structured seed;
+- application-boundary immutable snapshot;
+- minimal + rich idempotency;
+- preview/accepted separation;
+- Undo cleanup;
+- Timeline contextual entries;
+- virtualized day handling;
+- accessibility/focus/inert modal behavior;
+- responsive/mobile containment;
+- i18n;
+- architecture/performance gates.
 
-## 7. Final static audit result
+## 13. Human acceptance gate
 
-Checked and accepted for automated candidate:
-
-- semantic truth of flexible Activity vs exact placement;
-- Event placement distinction;
-- floating vs zoned time semantics;
-- invalid-range rejection;
-- rich idempotency;
-- Undo rich-record cleanup;
-- Timeline projection layout complexity;
-- requestAnimationFrame/timer/listener/MutationObserver cleanup paths;
-- local runtime allocation;
-- direct/contextual focus restoration;
-- dirty-modal Tab containment and inert background;
-- mobile full-screen overflow protection;
-- no fake provider effects;
-- no raw Create i18n key exposure;
-- frozen Timeline interaction regression gates.
-
-No demonstrated C1 defect remains from this audit.
-
-### Note on exact replay after later Undo
-
-F0 intentionally keeps an operation ID's original idempotent result even if a later independent Undo changes current truth. C1's current UI has no path that replays the same prepared Create after that Undo. Do not mutate F0's historical idempotency semantics to solve a hypothetical future transport case. A future remote adapter/reconciliation layer owns that scenario.
-
-## 8. Human acceptance gate
-
-The versioned manual protocol is:
+Use only:
 
 `docs/frontend/home/temporal-create-c1-manual-acceptance.md`
 
-It covers:
-
-- Quick Activity + Undo;
-- dirty discard keyboard/pointer/focus;
-- progressive disclosure;
-- flexible Activity without fake placement;
-- Full Activity depth;
-- invalid advanced focus;
-- Event grammar/provider truth;
-- zoned UI;
-- all-day multi-day Event;
-- unscheduled Activity;
-- Timeline double-click/Shift-drag;
-- mobile Full editor;
-- frozen Timeline regression smoke.
-
-Only the user can close this gate.
-
-## 9. Next state transition
-
-If manual test finds a defect:
+If manual acceptance finds a defect:
 
 ```text
 C1 MANUAL FAIL
--> reopen demonstrated defect + required adjacent contract
--> repair
--> full automated gate again
--> manual retest
+→ reopen demonstrated defect + necessary adjacent contract
+→ repair
+→ full automated CI again
+→ repeat only the required final manual protocol
 ```
 
-If user explicitly approves:
+If the user explicitly approves:
 
 ```text
 C1 MANUAL PASS — APPROVED
--> document acceptance
--> C1 FROZEN / CLOSED
--> next: C2 Card -> structured Detail
+→ record acceptance
+→ C1 TEMPORAL CREATE = FROZEN / CLOSED
+→ next C2 Card → structured Detail
 ```
 
-Until explicit approval, remain in C1.
+Until explicit approval, do not start C2.
