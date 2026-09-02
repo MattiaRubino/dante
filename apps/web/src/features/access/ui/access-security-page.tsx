@@ -106,6 +106,16 @@ export function AccessSecurityPage() {
     googleEnabled || appleEnabled || (methods?.providers.length ?? 0) > 0;
   const showPasskeyManagement = passkeyEnabled || activePasskeyCount > 0;
 
+  function providerDisplayName(providerCode: string): string {
+    if (providerCode === 'google') {
+      return t(($) => $.common.access.provider.googleName);
+    }
+    if (providerCode === 'apple') {
+      return t(($) => $.common.access.provider.appleName);
+    }
+    return providerCode;
+  }
+
   function errorFor(error: unknown): SecurityError {
     if (!(error instanceof WebAuthRemoteError)) {
       return {
@@ -544,6 +554,7 @@ export function AccessSecurityPage() {
                 <input
                   type="password"
                   autoComplete="current-password"
+                  aria-label={t(($) => $.common.access.field.password)}
                   value={passwordReauth}
                   placeholder={t(($) => $.common.access.field.password)}
                   onChange={(event) => setPasswordReauth(event.target.value)}
@@ -628,6 +639,7 @@ export function AccessSecurityPage() {
             <input
               type="password"
               autoComplete="new-password"
+              aria-label={t(($) => $.common.access.security.newPassword)}
               value={newPassword}
               placeholder={t(($) => $.common.access.security.newPassword)}
               onChange={(event) => setNewPassword(event.target.value)}
@@ -693,7 +705,7 @@ export function AccessSecurityPage() {
                 key={provider.external_identity_ref}
               >
                 <div>
-                  <strong>{provider.provider_code}</strong>
+                  <strong>{providerDisplayName(provider.provider_code)}</strong>
                   {provider.provider_email_address ? (
                     <span>{provider.provider_email_address}</span>
                   ) : null}
@@ -754,6 +766,7 @@ export function AccessSecurityPage() {
                     <input
                       value={editingPasskeyLabel}
                       maxLength={100}
+                      aria-label={t(($) => $.common.access.security.passkeyLabel)}
                       onChange={(event) =>
                         setEditingPasskeyLabel(event.target.value)
                       }
