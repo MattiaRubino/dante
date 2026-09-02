@@ -5,7 +5,7 @@
 - **Backend foundation:** CP1–CP6 CLOSED / integrated / directly validated
 - **Current PostgreSQL:** 18.6
 - **Current Alembic head:** `20260830_09`
-- **Current product work:** full Access/Auth vertical active and unmerged on `feature/access-auth`; AI-02.1 v0.5 and AI-03 Context/Retrieval/Memory structurally accepted; AI-04 Productionization Architecture current on `feature/ai-architecture`
+- **Current product work:** full Access/Auth vertical active and unmerged on `feature/access-auth`; AI-02.1, AI-03, AI-04 and PRE-AI05 structurally accepted; AI-05 Whole-System Acceptance + Implementation Blueprint current on `feature/ai-architecture`
 
 ## 1. Product and authority
 
@@ -36,6 +36,7 @@ SCENARIO STATE != CANONICAL CURRENT STATE
 INTERACTION SESSION != RUN != WORKER
 SUPERSEDE != CANCEL != ROLLBACK != RECONCILE
 RUN-START AUTHORIZATION != PERPETUAL AUTHORIZATION
+RUN-START AUTONOMY != PERPETUAL AUTONOMY
 DANTE canonical representation != external institutional System-of-Record authority
 SENT != DELIVERED != SEEN != ACKNOWLEDGED != ACCEPTED
 EXECUTION ENVIRONMENT != MANDATORY SANDBOX/CONTAINER
@@ -53,10 +54,16 @@ PROCESSING / RETRIEVAL ELIGIBILITY != RETENTION / FUTURE-REUSE ELIGIBILITY
 APPROXIMATE != COMPLETE
 SEMANTIC AUTHORITY != FUNCTIONAL ROLE != SURVIVAL DISPOSITION != PHYSICAL OWNER
 MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT
+MODEL VENDOR != SERVING PLATFORM != PROTOCOL FAMILY
+HARNESSPROFILE != PROVIDERBINDING
 DANTE FEATURE/BUSINESS CODE != CONCRETE PROVIDER SDK
+ATTENTION DECISION != PROACTIVE WORK ADMISSION != EFFECT AUTHORIZATION
+SAFE SINGLE DISCLOSURE != AUTOMATICALLY SAFE CUMULATIVE DISCLOSURE
+RECIPIENT != SURFACE != CHANNEL
+SOURCE FUTURE ELIGIBILITY != PRIOR DISCLOSURE OCCURRENCE
 ```
 
-Logical hardenings `WL-H01..WL-H12` remain active implementation contracts. AI-03 adds accepted Context `C01..C33`, Retrieval/Memory `B01..B35` and Materialization `MAT-01..MAT-15` invariants.
+Logical hardenings `WL-H01..WL-H12` remain active implementation contracts. AI-03 adds accepted Context `C01..C33`, Retrieval/Memory `B01..B35` and Materialization `MAT-01..MAT-15`; AI-04 adds `A01..A30 / EV01..EV20 / RT-01..RT-31 / PA-01..PA-61 / WP-01..WP-22`; PRE-AI05 adds `PRE05-H01..H19` and current eval coverage `DANTE-E01..DANTE-E14`.
 
 The AI architecture is layered across:
 
@@ -82,11 +89,31 @@ docs/architecture/dante-ai-03b-retrieval-memory-architecture.md
 docs/architecture/dante-ai-03c-destructive-validation-materialization-blueprint.md
 → AI-03C CLOSED / MAT-01..MAT-15
 
+docs/architecture/dante-ai-04-productionization-architecture.md
+→ AI-04 CLOSED / STRUCTURALLY ACCEPTED
+
+docs/architecture/dante-ai-04a-direct-eval-specification.md
+→ AI-04A CLOSED / A01..A30 / EV01..EV20 / E01..E14 current
+
+docs/architecture/dante-ai-04b-concrete-runtime-capability-architecture.md
+→ AI-04B CLOSED / RT-01..RT-31
+
+docs/architecture/dante-ai-04c-production-assurance-control-plane-operations.md
+→ AI-04C CLOSED / PA-01..PA-61
+
+docs/architecture/dante-ai-04-whole-phase-destructive-acceptance.md
+→ AI-04 WHOLE-PHASE CLOSED / WP-01..WP-22
+
+docs/architecture/dante-ai-pre05-cross-phase-hardening.md
+→ PRE-AI05 CLOSED / PRE05-H01..H19
+
 docs/workstreams/ai-architecture.md
-→ current branch-local routing: AI-04 Productionization Architecture
+→ current branch-local routing: AI-05
 ```
 
-AI-02.1 does not supersede AI-00. It pressure-tested and refined runtime/intelligence responsibilities while preserving the accepted semantic baseline. AI-03 then closed detailed Context, Retrieval, Memory and materialization boundaries. AI-04 consumes those accepted contracts and resolves concrete production architecture without weakening them.
+`docs/architecture/ai-context-runtime-boundaries.md` remains historical pre-Physical evidence and is not current runtime authority.
+
+AI-02.1 does not supersede AI-00. It pressure-tested and refined runtime/intelligence responsibilities while preserving the accepted semantic baseline. AI-03 then closed detailed Context, Retrieval, Memory and materialization boundaries. AI-04 closed productionization responsibilities. PRE-AI05 hardened the cross-phase joins. AI-05 now turns the accepted architecture into a buildable blueprint without weakening it.
 
 ## 2. Repository / application topology
 
@@ -208,7 +235,7 @@ universal Fact/Version semantic payload root
 JSONB required-semantic escape hatch
 ```
 
-Conversation state, embeddings, provider threads, agent/runtime journals, scenario overlays, ChangeSets, BasisManifests, WorkContracts, ContextPlans, ContextFragments, ContextManifests, target-resolution metadata, policy decisions or generated summaries do not become canonical DANTE truth by convenience.
+Conversation state, embeddings, provider threads, agent/runtime journals, scenario overlays, ChangeSets, BasisManifests, WorkContracts, ContextPlans, ContextFragments, ContextManifests, target-resolution metadata, policy decisions, Attention accounting or generated summaries do not become canonical DANTE truth by convenience.
 
 ## 5. Reference / material-state architecture
 
@@ -329,8 +356,10 @@ PROJECTION GATEWAY          ENGINE                   WORKSPACE
                            PostgreSQL
                                 │
                                 ▼
-          RESULT / DISCLOSURE / SAFE PUBLICATION
+     RESULT / DISCLOSURE / SAFE PUBLICATION / ATTENTION
 ```
+
+This retained AI-02 diagram is a responsibility skeleton. AI-04/PRE-AI05 subsequently refine the model route into qualified HarnessProfile + ProviderBinding compositions and separate Attention decision from proactive work admission.
 
 Cross-cutting:
 
@@ -566,23 +595,11 @@ INTERACTION SESSION CONTINUITY
 != PROVIDER-CONTEXT CONTINUITY
 ```
 
-Provider thread, prompt cache, provider compaction and prior ConsumerContext may be reused only when compatible with current:
-
-```text
-purpose
-WorkContract
-Principal / Actor / represented party
-processing rules
-confidentiality compartment
-consumer/provider eligibility
-recipient-related constraints where materially relevant
-```
+Provider thread, prompt cache, provider compaction and prior ConsumerContext may be reused only when compatible with current purpose, WorkContract, Principal/Actor/represented party, processing rules, confidentiality compartment and consumer/provider eligibility.
 
 If not compatible, the same product Interaction Session may continue with a new clean/sanitized ConsumerContext.
 
 Provider-managed opaque state remains explicitly opaque. DANTE records what it knows rather than inventing the provider's internal retained representation.
-
-Compaction is not source or memory authority:
 
 ```text
 COMPACTION != MEMORY != SOURCE != CANONICAL STATE
@@ -677,22 +694,9 @@ hostile document processing where execution risk exists
 other arbitrary execution workloads
 ```
 
-`Execution Environment` may constrain as appropriate:
+`Execution Environment` may constrain filesystem/artifact mounts, network/egress, credential mediation, CPU/RAM/disk, wall clock, process count, lifecycle/cleanup and execution evidence.
 
-```text
-filesystem/artifact mounts
-network/egress
-credential mediation
-CPU
-RAM
-disk
-wall clock
-process count
-lifecycle/cleanup
-execution evidence
-```
-
-No specific WASM/container/gVisor/microVM technology is mandated by the accepted structural architecture. Concrete technology belongs to current AI-04 evidence-driven productionization.
+No specific WASM/container/gVisor/microVM technology is mandated by the accepted structural architecture. Concrete technology remains evidence-gated in AI-05/later implementation.
 
 Generated/untrusted code must not receive raw privileged database/application/provider credentials. Privileged action uses bounded trusted broker/capability calls subject to current identity/delegation/policy/evidence.
 
@@ -719,6 +723,12 @@ EffectIntent
 ```
 
 Approval must bind to the materially approved target/proposal/basis/effect semantics. If a material ChangeSet changes after approval, old approval is not automatically reusable.
+
+Current autonomy is also re-evaluated where an autonomous consequential dispatch depends on it:
+
+```text
+RUN-START AUTONOMY != PERPETUAL AUTONOMY
+```
 
 ```text
 CANCEL RUN != UNDO ALREADY-DISPATCHED EFFECTS
@@ -750,18 +760,9 @@ acquisition eligibility
 != recipient disclosure
 ```
 
-Cumulative/cross-query inference protection applies when individually safe answers could compose into a protected fact/relationship.
+Cumulative/cross-query inference protection applies when individually safe answers could compose into a protected fact/relationship. PRE-AI05 makes this explicit across related Runs/Interactions/surfaces and known related sinks when the threat model requires.
 
-Safe Publication also checks:
-
-```text
-result maturity
-current work/supersession state
-recipient/surface
-policy/current authorization
-information-flow lineage
-external effect truth
-```
+Safe Publication also checks result maturity, current work/supersession state, recipient/surface/channel policy/current authorization, information-flow lineage and external effect truth.
 
 A superseded Run may reconcile old work but must not continue streaming obsolete output as the current recommendation.
 
@@ -785,31 +786,52 @@ STALE
 CONFLICTED
 ```
 
-An old ContextManifest may remain a truthful historical receipt that a consumer was exposed to material at time T.
-
-That does not make a now-retired source or derivative eligible for future retrieval.
+An old ContextManifest may remain a truthful historical receipt that a consumer was exposed to material at time T. That does not make a now-retired source or derivative eligible for future retrieval.
 
 Durable derivatives such as embeddings, summaries, indexes, context caches, provider state or compaction checkpoints inherit source lifecycle/anti-resurrection obligations. Restoring old bytes from backup does not by itself restore semantic eligibility.
 
-AI-03C closes the architecture rule: restored derived bytes are non-serving until rebuilt or explicitly reconciled against current authoritative lifecycle/suppression/basis state. Exact physical invalidation/rebuild mechanics remain activation-specific implementation/direct-proof work, not an open AI-03 semantic question.
+AI-03C closes the architecture rule: restored derived bytes are non-serving until rebuilt or explicitly reconciled against current authoritative lifecycle/suppression/basis state.
+
+PRE-AI05 adds another orthogonal distinction:
+
+```text
+SOURCE CONTENT / FUTURE SOURCE ELIGIBILITY
+!= PRIOR DISCLOSURE OCCURRENCE
+```
+
+Deleting or retiring a source does not make a disclosure that already occurred retroactively nonexistent. Where cumulative-disclosure safety still requires it, only minimum non-content technical exposure accounting may survive under its own purpose/access/retention/deletion lifecycle; it is not Context/Memory/source evidence and cannot reconstruct deleted content.
 
 ## 18. Attention / proactivity
 
-Trigger is not Attention.
+Trigger is not Attention, and Attention is not Work Admission.
+
+Correct composition:
 
 ```text
-Signal
-→ relevance
-→ materiality
-→ urgency
-→ causal-loop check
-→ attention policy + aggregate attention budget
-→ silent / review / notify / start work / escalate
+Trigger / Signal
+→ authenticity / currentness / materiality
+→ Work Intake / WorkContract when new work may be justified
+→ current autonomy + policy + provider/data + resource admission
+→ optional bounded work
+
+Result / Signal that may require user attention
+→ relevance / materiality / urgency / causal-loop check
+→ AttentionPolicy + AttentionBudget
+→ SILENT / DEFER-BATCH / REVIEW / NOTIFY / ESCALATE
+→ recipient/surface/channel disclosure checks
+→ governed transport
+→ truthful communication state from evidence
 ```
 
-Attention considers aggregate interruption load and batchability, not only whether each signal is individually relevant.
+```text
+ATTENTION DECISION != PROACTIVE WORK ADMISSION != EFFECT AUTHORIZATION
+ATTENTION BUDGET != RESOURCE BUDGET != COMMERCIAL QUOTA
+NOTIFY != SENT != DELIVERED != SEEN != ACKNOWLEDGED != ACCEPTED
+```
 
 The oscillation guard uses causal lineage/hysteresis/cooldown/material change so DANTE does not recursively react to its own adaptations without new reality.
+
+This behavior is now explicitly covered by core eval family `DANTE-E14`.
 
 ## 19. External AI / external-agent effects
 
@@ -846,7 +868,7 @@ Sensitive prompts, ContextFragments, ContextManifests, tool results, traces or p
 
 Production trace reuse in an evaluation corpus requires legitimate purpose/handling rather than being automatic.
 
-AI-04 must convert these accepted boundaries into concrete observability/eval/control-plane behavior without exporting sensitive runtime state merely because a telemetry vendor supports it.
+AI-04C closes the corresponding production-assurance responsibility. AI-05 must translate it into implementation boundaries without exporting sensitive runtime state merely because a telemetry/eval vendor supports it.
 
 ## 21. Future rich intelligence and provider replaceability
 
@@ -869,44 +891,43 @@ computer use
 DANTE-aware planning and effects
 ```
 
-Even a much more capable future model with huge context or persistent provider memory remains replaceable cognition.
-
-It does not inherit ownership of:
-
-```text
-canonical memory
-canonical application state
-Domain semantics
-Authority
-Visibility
-accepted-effect rules
-material history
-```
+Even a much more capable future model with huge context or persistent provider memory remains replaceable cognition. It does not inherit ownership of canonical memory, canonical application state, Domain semantics, Authority, Visibility, accepted-effect rules or material history.
 
 A much larger context window changes `ContextStrategy`/packing economics; it does not remove privacy, source lifecycle, contradiction, Reality Scope or purpose requirements.
 
 Provider thread/memory is an optimization/integration detail, not DANTE truth.
 
-AI-04 now binds the concrete provider-replaceability seam:
+Current provider-replaceability seam:
 
 ```text
 MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT
+MODEL VENDOR != SERVING PLATFORM != PROTOCOL FAMILY
+HARNESSPROFILE != PROVIDERBINDING
 DANTE FEATURE/BUSINESS CODE != CONCRETE PROVIDER SDK
+PROVIDER REPLACEABLE != PROVIDERS IDENTICAL
 PROVIDER REPLACEABLE != LOWEST-COMMON-DENOMINATOR PROVIDER USAGE
 ```
 
-Productionization direction:
+Production route composition:
 
 ```text
 DANTE work / capability need
-→ ModelTarget
-→ HarnessProfile
-→ ProviderBinding
-→ Provider Adapter
+→ ModelTarget / deterministic need
+→ eligible qualified route compositions
+→ Routing Policy
+→ compatible qualified:
+   HarnessProfile
+   + ProviderBinding
+   + feature mode
+   + capability projection
+   + security/control profile
+→ route-specific resource admission
+→ current egress authorization
+→ Provider Adapter when model route selected
 → concrete provider / model / deployment
 ```
 
-This boundary permits a V1 with one primary provider while keeping a later direct-provider/Azure-hosted/other-provider switch bounded to adapter/binding/harness/config/eval rather than a rewrite of DANTE semantics or feature logic.
+This boundary permits a V1 with one primary provider while keeping later rebinding/provider addition bounded. Auxiliary/sub-model calls are first-class governed data recipients; route selection/context assembly is not egress authorization; fallback does not inherit primary qualification; direct eval does not imply production-capacity qualification.
 
 ## 22. AI phase state
 
@@ -927,40 +948,39 @@ AI-03 evidence:
 AI-03A final closure             CLOSED / C01..C33
 AI-03B final closure             CLOSED / B01..B35
 AI-03C final closure             CLOSED / MAT-01..MAT-15
-AI-03 overall                   CLOSED / STRUCTURALLY ACCEPTED
+AI-03 overall                    CLOSED / STRUCTURALLY ACCEPTED
+```
+
+AI-04 / PRE-AI05 evidence:
+
+```text
+AI-04A                          CLOSED / A01..A30 / EV01..EV20
+AI-04B                          CLOSED / RT-01..RT-31
+AI-04C                          CLOSED / PA-01..PA-61
+AI-04 whole                     CLOSED / WP-01..WP-22
+AI-04 overall                   CLOSED / STRUCTURALLY ACCEPTED
+PRE-AI05                        CLOSED / PRE05-H01..H19
+current core eval               DANTE-E01..DANTE-E14
+fresh post-H19 hostile retest   PASS / 26 OF 26
+compound retest                 PASS
+reverse-order retest            PASS
+2026 state-of-art regression    PASS
 Domain/Logical/Physical reopen  NO
 PostgreSQL/Alembic change       NO
 provider/model selection        NO
 implementation PASS             NOT CLAIMED
 ```
 
-No evidence was found to reopen Domain, Logical, Physical or PostgreSQL.
-
-Future-extensibility structural criterion: **PASS**.
+No evidence was found to reopen Domain, Logical, Physical or PostgreSQL. Future-extensibility structural criterion: **PASS**.
 
 Current phase state:
 
 ```text
-AI-02.1
-v0.5 CLOSED / STRUCTURALLY ACCEPTED
-NO RUNTIME/BACKEND/PROVIDER IMPLEMENTATION CLAIM
-
-AI-03
-CONTEXT / RETRIEVAL / MEMORY
-CLOSED / STRUCTURALLY ACCEPTED
-C01..C33 / B01..B35 / MAT-01..MAT-15
-
-AI-04
-PRODUCTIONIZATION ARCHITECTURE
+AI-05
+WHOLE-SYSTEM ACCEPTANCE + IMPLEMENTATION BLUEPRINT
 ACTIVE / CURRENT
+FINAL ARCHITECTURE-TO-BUILD BOUNDARY
 ```
-
-Current durable AI-03 authority:
-
-- `docs/architecture/dante-ai-03-context-retrieval-memory.md`;
-- `docs/architecture/dante-ai-03a-full-context-architecture.md`;
-- `docs/architecture/dante-ai-03b-retrieval-memory-architecture.md`;
-- `docs/architecture/dante-ai-03c-destructive-validation-materialization-blueprint.md`.
 
 Current routing authority:
 
@@ -1026,7 +1046,7 @@ dante_runtime    LOGIN NOINHERIT / runtime DML posture
 
 Future AI execution passes through application/domain mutation contracts rather than receiving direct unrestricted database mutation authority.
 
-Any later structural DB recommendation arising during AI-04/AI-05 or implementation must enter normal forward Alembic + SQLAlchemy + Dictionary + human reference + direct-test + recovery-impact governance. AI architecture documentation cannot bypass that same-change rule.
+Any later structural DB recommendation arising during AI-05 or implementation must enter normal forward Alembic + SQLAlchemy + Dictionary + human reference + direct-test + recovery-impact governance. AI architecture documentation cannot bypass that same-change rule.
 
 ## 26. Current non-claims
 
@@ -1034,11 +1054,18 @@ Any later structural DB recommendation arising during AI-04/AI-05 or implementat
 FULL ACCESS/AUTH PRODUCT VERTICAL       NOT CLAIMED CLOSED
 DANTE AI-02.1                           CLOSED STRUCTURALLY / NOT IMPLEMENTATION PASS
 DANTE AI-03                             CLOSED STRUCTURALLY / NOT IMPLEMENTATION PASS
-AI-04 PRODUCTIONIZATION                 ACTIVE DESIGN / NOT IMPLEMENTATION PASS
+DANTE AI-04                             CLOSED STRUCTURALLY / NOT IMPLEMENTATION PASS
+PRE-AI05 H01..H19                       CLOSED STRUCTURALLY / NOT IMPLEMENTATION PASS
+AI-05                                   ACTIVE DESIGN / BLUEPRINT / NOT IMPLEMENTATION PASS
 AI RUNTIME                              NOT IMPLEMENTED BY THIS DOCUMENT
 AI PROVIDER/MODEL                       NOT SELECTED
+DIRECT PROVIDER EVAL                    NOT EXECUTED
+PRODUCTION CAPACITY                     NOT PROVEN
 AI EXECUTION ENVIRONMENT TECHNOLOGY     NOT SELECTED / NOT IMPLEMENTED
 AI MEMORY/EMBEDDING/INDEX PERSISTENCE   NOT ACTIVATED / NOT IMPLEMENTED
+ATTENTION ENGINE                        NOT IMPLEMENTED
+CUMULATIVE-DISCLOSURE MECHANISM         NOT SELECTED / NOT IMPLEMENTED
+FORMAL IFC / LEAKAGE-BUDGET / ACS       NOT SELECTED
 RESTATE/R2 AI ACTIVATION                NOT CLAIMED
 SC/PSV DIRECT AI PROOFS                 NOT CLAIMED
 REMOTE/CLOUD RECOVERY                   NOT CLAIMED
