@@ -283,7 +283,7 @@ export function TemporalCreateComposer({
           : fields.scheduling.constraintKind === 'preferred-window'
             ? t(($) => $.common.home.timeline.create.planning.constraintPreferred)
             : fields.timeSemantics === 'unscheduled'
-              ? t(($) => $.common.home.timeline.create.timeSemantics.unscheduled)
+              ? t(($) => $.common.home.timeline.create.planning.constraintOpen)
               : null;
 
   const submitForm = (event: FormEvent<HTMLFormElement>) => {
@@ -323,14 +323,38 @@ export function TemporalCreateComposer({
             ) : null}
           </div>
           <div className="temporal-create-composer__header-actions">
-            {session.surface === 'expanded' ? (
+            {session.surface === 'quick' ? (
               <button
                 type="button"
-                className="temporal-create-surface-action"
-                onClick={() => onSurfaceChange('full')}
+                className="temporal-create-composer__close"
+                disabled={pending}
+                onClick={() => onSurfaceChange('expanded')}
+                aria-label={t(($) => $.common.home.timeline.create.details.show)}
+                title={t(($) => $.common.home.timeline.create.details.show)}
               >
-                {t(($) => $.common.home.timeline.create.surface.openFull)}
+                +
               </button>
+            ) : null}
+            {session.surface === 'expanded' ? (
+              <>
+                <button
+                  type="button"
+                  className="temporal-create-composer__close"
+                  disabled={pending}
+                  onClick={() => onSurfaceChange('quick')}
+                  aria-label={t(($) => $.common.home.timeline.create.details.hide)}
+                  title={t(($) => $.common.home.timeline.create.details.hide)}
+                >
+                  −
+                </button>
+                <button
+                  type="button"
+                  className="temporal-create-surface-action"
+                  onClick={() => onSurfaceChange('full')}
+                >
+                  {t(($) => $.common.home.timeline.create.surface.openFull)}
+                </button>
+              </>
             ) : null}
             {session.surface === 'full' ? (
               <button
@@ -378,21 +402,11 @@ export function TemporalCreateComposer({
 
           <TemporalCreateCoreFields
             fields={fields}
+            surface={session.surface}
             contexts={contexts}
             onPatch={onPatch}
             renderError={renderError}
           />
-
-          {session.surface === 'quick' ? (
-            <button
-              className="temporal-create-details-toggle"
-              type="button"
-              onClick={() => onSurfaceChange('expanded')}
-            >
-              <span>{t(($) => $.common.home.timeline.create.details.show)}</span>
-              <span aria-hidden="true">→</span>
-            </button>
-          ) : null}
 
           <TemporalCreateAdvancedFields
             fields={fields}
@@ -431,15 +445,6 @@ export function TemporalCreateComposer({
           ) : null}
 
           <div className="temporal-create-actions">
-            {session.surface !== 'quick' ? (
-              <button
-                type="button"
-                disabled={pending}
-                onClick={() => onSurfaceChange('quick')}
-              >
-                {t(($) => $.common.home.timeline.create.surface.compact)}
-              </button>
-            ) : null}
             <button
               type="button"
               disabled={pending}
