@@ -1,6 +1,6 @@
 # DANTE — World Focus Handoff
 
-**Status:** CURRENT DURABLE HANDOFF — WS0 COMPLETE / WS1 NEXT  
+**Status:** CURRENT DURABLE HANDOFF — WS0 COMPLETE / WS1–WS5 CONVERGENCE LOOP NEXT  
 **Date:** 2026-09-02  
 **Repository:** `MattiaRubino/dante`  
 **Branch:** `feature/home-react`  
@@ -50,8 +50,11 @@ D1 code HEAD                            f17291de32e6bdced20536807b32928ec1be6aea
 D1 CI                                   33552437179 PASS
 
 WS0 Substrate Inventory                 COMPLETE BASELINE
-WS1 Simulation Corpus                   NEXT
-WS2-WS8                                 NOT STARTED
+WS1–WS5 World Substrate Convergence     NEXT ACTIVE MACRO-BLOCK
+                                        ONE INDIVISIBLE CYCLIC GATE
+WS6 Universal Work Primitive Closure    BLOCKED BY CONVERGENCE LOOP
+WS7 Executable Non-Visual Harness       BLOCKED BY WS6
+WS8 Final Falsification                 BLOCKED BY WS7
 Materialization M0-M7                   BLOCKED UNTIL WS8 CLOSES
 D2-D6                                   PRESERVED / MATERIALIZATION-DEFERRED
 ```
@@ -80,12 +83,14 @@ Therefore the project now deliberately performs:
 
 ```text
 WS0 inventory
--> WS1-WS5 cyclic falsification until convergence
+-> WS1-WS5 ONE cyclic convergence macro-block
 -> WS6 universal work primitive closure
 -> WS7 executable non-visual harness
 -> WS8 final falsification
 -> M0-M7 materialization
 ```
+
+`WS1`, `WS2`, `WS3`, `WS4` and `WS5` are internal activity labels, not five separate gates. The active work interleaves scenario simulation, with/without DANTE comparison, adversarial pressure, targeted reverse engineering and gap closure continuously until convergence.
 
 D2 is not cancelled. The accepted DANTE sequence is resumed after substrate closure so it consumes a proven primitive/reference model rather than accidentally defining that model itself.
 
@@ -330,7 +335,7 @@ available meaningful authorized reality
 
 Never fill missing answers with fake cards, fake KPIs, fake progress, recent-activity filler, AI prose, prompt suggestions or dummy charts.
 
-WS1–WS6 now investigates the smaller reusable **work primitive vocabulary beneath this grammar**. Do not assume one grammar family maps one-to-one to one primitive or one visual module.
+The convergence loop plus WS6 investigates the smaller reusable **work primitive vocabulary beneath this grammar**. Do not assume one grammar family maps one-to-one to one primitive or one visual module.
 
 ---
 
@@ -437,7 +442,7 @@ conflicts
 temporary delegation
 ```
 
-WS1–WS6 must decide what belongs to reusable frontend work primitives versus Domain/application/AuthZ/backend boundaries.
+The convergence loop plus WS6 must decide what belongs to reusable frontend work primitives versus Domain/application/AuthZ/backend boundaries.
 
 ---
 
@@ -581,7 +586,7 @@ A previous premature implementation added an ungrounded Body `Mobility Reset` co
 
 > plausible != authorized/grounded.
 
-B2 is implemented/automated PASS and becomes a real scenario/reference input for WS1; it is not presumed to be the universal work primitive model.
+B2 is implemented/automated PASS and becomes a real scenario/reference input for the convergence loop; it is not presumed to be the universal work primitive model.
 
 ---
 
@@ -747,7 +752,7 @@ Manual assistant visual review was **not performed**. User explicitly delegated 
 
 ---
 
-# 18. New WS0–WS8 program
+# 18. WS0–WS8 program
 
 Authority:
 
@@ -762,19 +767,21 @@ Sequence:
 ```text
 WS0 inventory                            COMPLETE
 
-WS1 simulation corpus
-WS2 with/without DANTE stress
-WS3 adversarial/edge stress
-WS4 targeted reverse engineering
-WS5 gap closure
-     -> repeat WS1-WS5 until convergence
+WS1–WS5 WORLD SUBSTRATE CONVERGENCE     NEXT ACTIVE MACRO-BLOCK
+       Simulation Corpus
+       + With/Without DANTE Stress
+       + Adversarial / Edge Stress
+       + Targeted Reverse Engineering
+       + Gap Closure
+       -> all interleaved
+       -> repeat whole loop until convergence
 
 WS6 universal work primitive closure
 WS7 executable non-visual harness
 WS8 final falsification
 ```
 
-Convergence means a full WS1→WS5 confirmation cycle yields no new material:
+Convergence means all known material gaps have been closed/propagated and a complete confirmation pass yields no new material:
 
 ```text
 work primitive
@@ -787,13 +794,19 @@ multi-actor/privacy architecture gap
 failure/race/responsive/a11y architecture class
 ```
 
+No independent `WS1 PASS` through `WS5 PASS` exists. The only disposition is:
+
+```text
+WORLD SUBSTRATE CONVERGENCE LOOP — CLOSED
+```
+
 Then WS6 closes the finite work primitive vocabulary; WS7 makes it executable without visual dependency; WS8 tries to break it one last time.
 
-There is no ceremonial PASS. A material WS8 failure reopens the earliest necessary WS phase.
+There is no ceremonial PASS. A material WS8 failure reopens the earliest necessary closure point, normally the convergence loop.
 
 ---
 
-# 19. WS0 findings / WS1 pressure clusters
+# 19. WS0 findings / convergence pressure clusters
 
 WS0 classification vocabulary:
 
@@ -807,7 +820,7 @@ BACKEND-DEFERRED
 REJECTED
 ```
 
-Primary WS1 clusters:
+Primary convergence-loop clusters:
 
 ```text
 P1  Work primitive completeness
@@ -822,7 +835,7 @@ P9  Scale / density
 P10 Failure / race / responsive class completeness
 ```
 
-WS1 scenarios must be UI-agnostic. They describe user jobs, reality, transitions, evidence/freshness, continuation and authority/disclosure — not preferred cards/widgets.
+Scenarios are UI-agnostic. They describe user jobs, reality, transitions, evidence/freshness, continuation and authority/disclosure — not preferred cards/widgets.
 
 ---
 
@@ -1001,6 +1014,6 @@ Do not introduce a generic `WorldItem`, `Thing`, `Widget` or property-bag escape
 
 Resume at:
 
-> **WS1 — Simulation Corpus**
+> **WS1–WS5 — WORLD SUBSTRATE CONVERGENCE LOOP.**
 
-Build the durable scenario corpus against the ten WS0 pressure clusters. After WS1, continue WS2→WS5 as one falsification cycle and repeat until the documented convergence rule is actually satisfied.
+Do not complete WS1 and stop for a separate WS2 phase. Work scenario simulation, without/with DANTE stress, adversarial pressure, targeted reverse engineering and gap closure together, continuously, and repeat the whole loop until the documented convergence rule is actually satisfied.
