@@ -320,6 +320,14 @@ export const home = {
         description:
           'Contesto e note aiutano a collocare e capire l’elemento senza inventare una tassonomia generica di tag priva di owner canonico.',
       },
+      appearance: {
+        title: 'Aspetto',
+        description:
+          'Per impostazione predefinita l’elemento eredita il colore del Contesto. Un override cambia solo la resa visiva, non il Contesto o i filtri.',
+        choice: 'Colore dell’elemento',
+        inherit: 'Eredita dal Contesto',
+        override: 'Colore personalizzato',
+      },
       handoffs: {
         otherTitle: 'Altro tipo',
         otherDescription:
