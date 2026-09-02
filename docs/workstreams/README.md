@@ -41,9 +41,12 @@ Branch-local workstream files may describe newer unmerged implementation/design 
 
 On `feature/ai-architecture`:
 
-- `ai-architecture.md` — durable branch-local workstream record;
+- `ai-architecture.md` — durable branch-local workstream record; current phase AI-04 Productionization Architecture;
 - `ai-architecture-live-handoff.md` — **TEMPORARY / MUST NOT MERGE TO protected main**; session/context save-game only;
-- `../architecture/dante-ai-03-context-retrieval-memory.md` — current AI-03 phase charter.
+- `../architecture/dante-ai-03-context-retrieval-memory.md` — closed AI-03 Context/Retrieval/Memory authority;
+- `../architecture/dante-ai-03a-full-context-architecture.md` — AI-03A closed / C01..C33;
+- `../architecture/dante-ai-03b-retrieval-memory-architecture.md` — AI-03B closed / B01..B35;
+- `../architecture/dante-ai-03c-destructive-validation-materialization-blueprint.md` — AI-03C closed / MAT-01..MAT-15.
 
 Current branch-local AI state:
 
@@ -52,8 +55,20 @@ AI-00  COMPLETE
 AI-01  COMPLETE
 AI-02  COMPLETE / STRUCTURALLY ACCEPTED
 AI-02.1 v0.5 CLOSED
-AI-03  ACTIVE
-AI-03A FULL CONTEXT ARCHITECTURE CURRENT
+AI-03  CLOSED / STRUCTURALLY ACCEPTED
+AI-03A CLOSED / C01..C33
+AI-03B CLOSED / B01..B35
+AI-03C CLOSED / MAT-01..MAT-15
+AI-04  ACTIVE / CURRENT — PRODUCTIONIZATION ARCHITECTURE
+AI-05  FUTURE — WHOLE-SYSTEM ACCEPTANCE + IMPLEMENTATION BLUEPRINT
+```
+
+AI-04 begins from representative DANTE workloads/evals and quality floors before concrete provider/model selection. Provider replaceability is binding:
+
+```text
+MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT
+DANTE FEATURE/BUSINESS CODE != CONCRETE PROVIDER SDK
+PROVIDER REPLACEABLE != LOWEST-COMMON-DENOMINATOR PROVIDER USAGE
 ```
 
 The temporary live handoff must be deleted/consolidated before integration. Durable architecture decisions must not live only in that file.
