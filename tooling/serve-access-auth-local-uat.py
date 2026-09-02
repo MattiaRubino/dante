@@ -6,12 +6,14 @@ from collections.abc import Callable
 from pathlib import Path
 from types import ModuleType
 
+import psycopg
 from dante.platform.config.auth import AuthSettings
 from dante.platform.config.auth_provider import (
     AuthProviderSettings,
     GoogleProviderSettings,
     WebAuthnSettings,
 )
+from psycopg import sql
 
 _CORE_PATH = Path(__file__).with_name("serve-access-auth-stack.py")
 _UAT_WEB_ORIGIN = "https://localhost:4173"
@@ -23,6 +25,13 @@ _TLS_CERT_ENV = "DANTE_UAT_TLS_CERT"
 _TLS_KEY_ENV = "DANTE_UAT_TLS_KEY"
 _TRUE_VALUES = frozenset({"1", "true", "yes", "on"})
 _FALSE_VALUES = frozenset({"0", "false", "no", "off"})
+_REQUIRED_EXTENSIONS: tuple[tuple[str, str | None], ...] = (
+    ("postgis", "3.6.4"),
+    ("vector", "0.8.6"),
+    ("pg_trgm", None),
+    ("unaccent", None),
+    ("pg_stat_statements", None),
+)
 
 
 def _load_core() -> ModuleType:
@@ -59,6 +68,43 @@ def _google_client_id(*, enabled: bool) -> str | None:
     if not raw or raw.strip() != raw or any(character in raw for character in "\r\n"):
         raise RuntimeError(f"{_GOOGLE_CLIENT_ID_ENV} must be non-blank and trimmed.")
     return raw
+
+
+def _extension_guard(database_name: str) -> Callable[..., None]:
+    def ensure_extensions(*, port: int, password: str) -> None:
+        with psycopg.connect(
+            host="127.0.0.1",
+            port=port,
+            dbname=database_name,
+            user="postgres",
+            password=password,
+            autocommit=True,
+        ) as connection:
+            for extension_name, expected_version in _REQUIRED_EXTENSIONS:
+                statement = sql.SQL("CREATE EXTENSION IF NOT EXISTS {}").format(
+                    sql.Identifier(extension_name)
+                )
+                if expected_version is not None:
+                    statement += sql.SQL(" VERSION {}").format(
+                        sql.Literal(expected_version)
+                    )
+                connection.execute(statement)
+
+                row = connection.execute(
+                    "SELECT extversion FROM pg_extension WHERE extname = %s",
+                    (extension_name,),
+                ).fetchone()
+                if row is None:
+                    raise RuntimeError(
+                        f"Required PostgreSQL extension is unavailable: {extension_name}"
+                    )
+                if expected_version is not None and row[0] != expected_version:
+                    raise RuntimeError(
+                        "PostgreSQL extension version mismatch: "
+                        f"{extension_name} expected {expected_version}, got {row[0]}"
+                    )
+
+    return ensure_extensions
 
 
 def _auth_settings_override(
@@ -164,12 +210,20 @@ def main() -> None:
 
     google_client_id = _google_client_id(enabled=google_enabled)
     if google_enabled:
-        assert google_client_id is not None
+        if google_client_id is None:
+            raise RuntimeError("Google client ID validation lost enabled configuration.")
         os.environ["VITE_DANTE_GOOGLE_CLIENT_ID"] = google_client_id
     else:
         os.environ.pop("VITE_DANTE_GOOGLE_CLIENT_ID", None)
 
+    database_name = getattr(core, "_DATABASE_NAME", None)
+    if not isinstance(database_name, str) or not database_name:
+        raise RuntimeError(
+            "Access/Auth harness core does not expose its disposable database name."
+        )
+
     core._WEB_ORIGIN = _UAT_WEB_ORIGIN
+    core._create_extensions = _extension_guard(database_name)
     core._auth_settings = _auth_settings_override(
         core._auth_settings,
         google_enabled=google_enabled,
