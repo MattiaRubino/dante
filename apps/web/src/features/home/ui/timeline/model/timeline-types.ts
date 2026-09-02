@@ -28,6 +28,16 @@ export type TimelineEvent = Readonly<{
   subitems?: readonly string[];
 }>;
 
+export type TimelineAllDayItem = Readonly<{
+  id: string;
+  startDateKey: string;
+  endDateExclusiveKey: string;
+  title: string;
+  groupId: TimelineGroupId;
+  origin?: 'create';
+  meta?: string;
+}>;
+
 export type TimelineDay = Readonly<{
   date: PlainDate;
   events: readonly TimelineEvent[];
