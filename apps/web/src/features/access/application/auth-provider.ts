@@ -70,10 +70,10 @@ function providerRequest(input: ProviderAuthenticationInput) {
 
 export async function prepareGoogleAuthentication(
   input: ProviderAuthenticationInput,
-): Promise<GoogleAuthenticationPreparation> {
+): Promise<GoogleAuthenticationPreparation | null> {
   const clientId = googleClientIdFromBuild();
   if (clientId.length === 0) {
-    throw new Error('Google sign-in is not configured for this build.');
+    return null;
   }
   const begun = await webAuthRemote.beginGoogleAuthentication(
     providerRequest(input),
