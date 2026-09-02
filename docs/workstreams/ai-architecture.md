@@ -11,18 +11,17 @@
 - **AI-04B:** CLOSED / RT-01..RT-31
 - **AI-04C:** CLOSED / PA-01..PA-61
 - **AI-04 whole-phase:** CLOSED / WP-01..WP-22
-- **PRE-AI05 hardening:** CLOSED / STRUCTURALLY ACCEPTED / PRE05-H01..H19
-- **Current core eval families:** DANTE-E01..DANTE-E14
-- **AI-05:** ACTIVE / CURRENT / FINAL ARCHITECTURE-TO-BUILD BOUNDARY
-- **AI-05A:** CANDIDATE / BD-01..BD-30 / DESTRUCTIVE ACCEPTANCE PENDING
+- **PRE-AI05:** CLOSED / STRUCTURALLY ACCEPTED / PRE05-H01..H19
+- **Current core eval:** DANTE-E01..DANTE-E14
+- **AI-05:** ACTIVE / CURRENT
+- **AI-05A:** CANDIDATE / FIRST T01..T26 PASS FAIL BOUNDED / BD-31..BD-40 MATERIALIZED / FRESH RETEST REQUIRED
 - **Implementation claim:** NONE
 - **Provider/model selection:** OPEN / EVIDENCE-DRIVEN
-- **Commercial packaging:** OPEN / ENTITLEMENT BOUNDARY ONLY
 - **Merge status:** UNMERGED
 
 Repository truth outranks conversation memory.
 
-## 1. Roadmap
+## 1. Current roadmap
 
 ```text
 AI-00 COMPLETE
@@ -31,11 +30,13 @@ AI-02 CLOSED / STRUCTURALLY ACCEPTED
 AI-03 CLOSED / STRUCTURALLY ACCEPTED
 AI-04 CLOSED / STRUCTURALLY ACCEPTED
 PRE-AI05 CLOSED / H01..H19
-GLOBAL CURRENT-TRUTH RECONCILIATION COMPLETE / QA PASS
+GLOBAL CURRENT-TRUTH RECONCILIATION COMPLETE
 
 AI-05 ACTIVE / CURRENT
   └ AI-05A WHOLE-SYSTEM BUILD BOUNDARY
-    CANDIDATE / DESTRUCTIVE ACCEPTANCE PENDING
+       FIRST DESTRUCTIVE PASS FAIL BOUNDED
+       BD-31..BD-40 HARDENED
+       FRESH RETEST REQUIRED
 
 THEN
 AI-05B CONCRETE IMPLEMENTATION BLUEPRINT
@@ -43,13 +44,10 @@ AI-05B CONCRETE IMPLEMENTATION BLUEPRINT
 → actual AI implementation workstream(s)
 ```
 
-The AI-05A/AI-05B labels are internal decomposition of the already-current AI-05 macro-phase; they do not add implementation claims.
-
-## 2. Mandatory AI authority
+## 2. Mandatory current AI authority
 
 ```text
 docs/architecture/dante-ai-foundation.md
-docs/architecture/ai-production-engineering-state-of-the-art-2026.md
 docs/architecture/dante-ai-02-1-intelligence-reengineering.md
 docs/architecture/dante-ai-03-context-retrieval-memory.md
 docs/architecture/dante-ai-03a-full-context-architecture.md
@@ -64,9 +62,10 @@ docs/architecture/dante-ai-pre05-cross-phase-hardening.md
 docs/architecture/dante-ai-05a-whole-system-build-boundary.md
 ```
 
+`ai-production-engineering-state-of-the-art-2026.md` remains current research evidence / NON-DANTE-DECISION.
 Temporary live handoff MUST NOT merge to protected `main`.
 
-## 3. Retained semantic/runtime invariants
+## 3. Retained upstream invariants
 
 ```text
 PostgreSQL = sole canonical persistence/material-history authority
@@ -74,145 +73,155 @@ MODEL OUTPUT != PUBLISHABLE OUTPUT
 Interaction Session != Run != Worker
 RUN-START AUTHORIZATION != PERPETUAL AUTHORIZATION
 RUN-START AUTONOMY != PERPETUAL AUTONOMY
-SUPERSEDE != CANCEL != ROLLBACK != RECONCILE
 Context != Retrieval != Memory
 APPROXIMATE != COMPLETE
-processing != retention != future reuse
-CACHE HIT != CURRENT DISCLOSURE AUTHORIZATION
-SAFE SINGLE DISCLOSURE != SAFE CUMULATIVE DISCLOSURE
-AUTONOMY != AUTHORITY != AUTHZ != APPROVAL
+DEFAULT NONCANONICAL PERSISTENCE = NO
+MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT
+HARNESSPROFILE != PROVIDERBINDING
+EVAL CANDIDATE != PRODUCTION ROUTE
+ENTITLED != SERVABLE
 ATTENTION DECISION != PROACTIVE WORK ADMISSION != EFFECT AUTHORIZATION
+SAFE SINGLE DISCLOSURE != SAFE CUMULATIVE DISCLOSURE
 RECIPIENT != SURFACE != CHANNEL
 SOURCE FUTURE ELIGIBILITY != PRIOR DISCLOSURE OCCURRENCE
 ```
 
-## 4. Closed upstream AI architecture
+## 4. AI-05A observed repository baseline
 
 ```text
-AI-03A       C01..C33
-AI-03B       B01..B35
-AI-03C       MAT-01..MAT-15
-AI-04A       A01..A30 / EV01..EV20
-AI-04B       RT-01..RT-31
-AI-04C       PA-01..PA-61
-AI-04 whole  WP-01..WP-22
-PRE-AI05     H01..H19
+apps/backend/src/dante/
+├ bootstrap/
+└ platform/
+
+kernel/                  NOT MATERIALIZED
+modules/                 NOT MATERIALIZED
+provider AI SDK          NONE
+tooling/ai-evals         NONE
+production AI runtime    NONE
 ```
+
+AI-05A is an architecture-to-build candidate only.
+
+## 5. AI-05A ownership candidate after first destructive pass
 
 ```text
-MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT
-MODEL VENDOR != SERVING PLATFORM != PROTOCOL FAMILY
-HARNESSPROFILE != PROVIDERBINDING
-EVAL CANDIDATE != PRODUCTION ROUTE
-ENTITLED != SERVABLE
+modules/search
+→ shared permission/disclosure-aware read/search capability
+→ deterministic structured/search path
+→ bounded cross-capability read projection
+→ DOES NOT own searched canonical semantics or mutations
+
+modules/intelligence
+→ DANTE intelligence application/orchestration semantics
+→ consumes Search/public capabilities
+→ provider-neutral Work/Context/routing/verification/publication
+
+provider SDK/protocol
+→ private outbound adapter behind DANTE-owned ModelAccessPort
+
+resource/commercial authority
+→ owns applicable shared/commercial quota/metering truth
+→ Intelligence consumes admission/reservation/settlement boundary
+
+platform
+→ shared technical mechanics only
+
+bootstrap
+→ composition/lifecycle
+
+tooling/ai-evals
+→ direct eval tooling outside ordinary runtime
 ```
 
-## 5. Current eval contract
+## 6. First destructive pass findings
 
 ```text
-E01 deterministic/model avoidance
-E02 target resolution
-E03 extraction
-E04 query/history/absence
-E05 context/privacy/Reality Scope/cumulative disclosure
-E06 planning/replanning/scenario
-E07 document/long-context/multimodal
-E08 tool/capability use
-E09 consequential effect/scoped autonomy
-E10 multi-actor/delegation/surface disclosure
-E11 adaptive memory/learning
-E12 failure/currentness/supersession/failover
-E13 open-world research/grounding
-E14 proactivity/Attention/causal-loop/notification truth
+T01 FAIL BOUNDED → Search separated from Intelligence / god-module pressure
+T03 FAIL BOUNDED → explicit Search cross-capability read projection
+T04 FAIL BOUNDED → deterministic Search independent of model runtime
+T06 FAIL BOUNDED → behavior config / snapshot / lifecycle hardening
+T08 FAIL BOUNDED → fake model != adapter conformance != direct qualification
+T13 FAIL BOUNDED → explicit resource admission/settlement ownership
+T14 FAIL BOUNDED → zero-persistence envelope must gate H19 cases
+T17 FAIL BOUNDED under original ownership → deterministic Search restores outage independence
 ```
 
-Hard failures remain non-averageable.
+Other T-cases were PASS candidates or only PASS within the explicit first-vertical envelope. Any FAIL prevented closure.
 
-## 6. PRE-AI05 acceptance evidence
+## 7. BD-31..BD-40 hardening
 
 ```text
-fresh full AI-01→AI-04 + H01..H19 retest     PASS / 26 OF 26
-compound collision retest                    PASS
-reverse PRE05→04→03→02→01                   PASS
-refreshed 2026 state-of-the-art regression   PASS
-global current-truth reconciliation          PASS / exact current-doc scope
+BD-31 Global Search != Intelligence orchestration.
+BD-32 Search may own bounded cross-capability read projection, not canonical semantics/mutation.
+BD-33 Deterministic Search independent of model/provider route availability.
+BD-34 Resource admission/reservation/settlement is explicit consumed boundary; Intelligence does not own ledger truth.
+BD-35 Behavior-bearing route/Harness/policy config != scattered env variables.
+BD-36 Static-first config still needs immutable revision, approved active selection, coherent invocation snapshot and emergency deny before production.
+BD-37 Zero-persistence first vertical limited to inline/single-turn/private-in-app/read-only envelope.
+BD-38 H19/durable-audit/resume/background needs gate expansion until minimum state exists.
+BD-39 Application fake != provider adapter conformance != direct eval != production capacity proof.
+BD-40 Chat-like UI / inline stream != generic conversation or Run persistence required.
 ```
 
-Structural/documentation evidence only; no provider/runtime/product-capacity proof.
-
-## 7. AI-05A build-boundary candidate
-
-Durable candidate:
-
-`docs/architecture/dante-ai-05a-whole-system-build-boundary.md`
-
-Current thesis:
+## 8. First vertical candidate
 
 ```text
-capability-first modular monolith remains
-modules/intelligence = candidate DANTE intelligence application/orchestration owner
-provider SDKs = outbound adapters behind DANTE-owned port
-bootstrap = concrete wiring/lifecycle
-platform = shared technical mechanics only
-tooling/ai-evals = direct eval boundary, outside ordinary runtime
-kernel = no AI-specific promotion without proven stable cross-capability value
-DEFAULT NONCANONICAL AI PERSISTENCE = NO
+GLOBAL SEARCH
+→ deterministic shared read/search capability
+→ canonical navigation + source/currentness
+
+ASK DANTE
+→ optional governed model-assisted synthesis over Search/public capability results
+→ source/provenance/currentness
+→ no consequential mutation
 ```
 
-Current first-vertical candidate:
+Initial envelope:
 
 ```text
-GLOBAL SEARCH / ASK DANTE
-READ-ONLY + CANONICAL NAVIGATION + PROVENANCE
-NO CONSEQUENTIAL MUTATION
+private authenticated in-app
+single-turn
+inline/request-owned
+read-only
+normal isolation
+no background/durable resume
+no shared/lock/voice/external recipient
+no case requiring H19 durable prior-exposure accounting
 ```
 
-This remains a candidate until destructive acceptance passes.
+No new generic AI table is justified by this envelope.
 
-## 8. Commercial boundary
+## 9. Open decisions / non-claims
 
 ```text
-COMMERCIAL SUBSCRIPTION / SERVICE TIER != DANTE DOMAIN Plan
+AI-05A PASS/CLOSED                     NO
+modules/search implemented             NO
+modules/intelligence implemented       NO
+provider/model/SDK selected            NO
+direct provider eval                   NO
+stream transport selected              NO
+new PostgreSQL/Alembic change          NO
+new AI table/index                     NO
+FTS/vector/pgvector activation         NO
+conversation persistence               NO
+control-plane persistence              NO
+commercial/resource ledger             NO
+Restate/R2/MCP/A2A activation          NO
+Execution Environment                  NO
 ```
-
-Commercial tiers can bound compute/concurrency/capability envelopes but cannot weaken truth, privacy, Authority, target safety, provider/data eligibility, reconciliation, scoped autonomy, Attention or disclosure floors. Names/prices/quotas remain OPEN.
-
-## 9. Direct proof obligations remain distinct
-
-Still unexecuted where applicable:
-
-```text
-PSV-06 / SC-017 hidden-result non-interference
-PSV-07 / SC-018 FTS mixed filter/query
-PSV-08 / SC-019 vector recall after filtering
-PSV-09 / SC-020 projection freshness/material basis
-PSV-10 / SC-021 deletion/redaction propagation
-PSV-21..28B durable execution / Restate / journal privacy / recovery
-PSV-37 pgvector source/model/freshness provenance
-```
-
-Concrete provider/model direct DANTE eval and production-capacity qualification remain unexecuted.
 
 ## 10. Current exact action
 
 ```text
-READ BACK AI-05A CANDIDATE
-→ run T01..T26 destructive buildability/minimality tests
-→ reverse-check against AI-04/PRE-AI05/AI-03/AI-02
-→ pressure-test first-vertical zero-persistence claim
-→ pressure-test module/platform/kernel ownership
-→ pressure-test provider adapter + static-control-config posture
+READ BACK HARDENED AI-05A
+→ restart T01..T26 from zero
+→ run compound Search/Intelligence/outage/hidden-result/config/resource/disclosure cases
+→ reverse-check AI-05A → AI-04 → PRE-AI05 → AI-03 → AI-02
 → harden only demonstrated gaps
 ```
 
-No AI-05A PASS claim exists before that retest.
+No AI-05A closure before a clean fresh retest.
 
-## 11. Open decisions
-
-Provider/model/SDK/eval runner, exact ModelAccessPort/API classes, streaming transport, concrete runtime implementation, Attention implementation, cumulative-disclosure mechanism/storage, formal IFC/leakage-budget/ACS adoption, dynamic control-plane topology, commercial packaging/billing, gateway/security products, MCP/A2A, Execution Environment, Restate/R2/vector/search activation and production-region mappings remain evidence-gated.
-
-AI-05A may constrain ownership; AI-05B may freeze implementation contracts. Neither may fabricate direct provider/prod evidence.
-
-## 12. Handoff policy
+## 11. Handoff policy
 
 Temporary live handoff must be deleted before protected-main integration.
