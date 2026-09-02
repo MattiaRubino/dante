@@ -225,6 +225,7 @@ export const access = {
     passkeysBody:
       'Le chiavi private restano nell’autenticatore. DANTE conserva solo la credenziale pubblica necessaria alla verifica.',
     passkeyLabel: 'Nome passkey',
+    passkeyLabelPlaceholder: 'Es. Portatile personale',
     passkeyLabelRequired: 'Inserisci un nome per la passkey.',
     addPasskey: 'Aggiungi passkey',
     passkeyAdded: 'Passkey aggiunta.',
@@ -234,6 +235,22 @@ export const access = {
     rename: 'Rinomina',
     save: 'Salva',
     remove: 'Rimuovi',
+    errorOperation: 'Non è stato possibile completare l’operazione di sicurezza.',
+    errorServiceUnreachable: 'Il servizio Access non è raggiungibile.',
+    errorReauthenticationRequired:
+      'Conferma di nuovo la tua identità prima di modificare le impostazioni di sicurezza.',
+    errorRemovalBlocked:
+      'DANTE ha bloccato la rimozione perché lascerebbe l’account senza un metodo di autenticazione sicuro.',
+    errorPasswordAlreadyEstablished: 'Questo account ha già una password.',
+    errorPasskeyAlreadyRegistered: 'Questa passkey è già registrata in DANTE.',
+    errorPasskeyNotFound: 'Questa passkey non è più attiva sull’account.',
+    errorServiceUnavailable:
+      'Il servizio di autenticazione è temporaneamente non disponibile.',
+    errorGoogleControl:
+      'Non è stato possibile inizializzare il controllo di accesso Google.',
+    errorSessionUnavailable: 'La sessione non è più disponibile.',
+    errorGoogleLinkIncomplete:
+      'Google non ha completato il collegamento richiesto all’account.',
   },
   setupName: {
     title: 'Come vuoi che DANTE ti chiami?',
