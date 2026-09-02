@@ -5,14 +5,14 @@
 - **Current phase:** AI-04 — Productionization Architecture
 - **AI-04A:** MATERIALIZED / DIRECT PROVIDER EVIDENCE DEFERRED UNTIL DECISION-CRITICAL
 - **AI-04B:** CLOSED / STRUCTURALLY ACCEPTED / RT-01..RT-31
-- **AI-04C:** CURRENT / SECURITY + PRIVACY + CONTROL PLANE + OPERATIONS
+- **AI-04C:** CANDIDATE MATERIALIZED / PA-01..PA-38 / INDEPENDENT VALIDATION CURRENT
 - **AI-03 overall:** CLOSED / STRUCTURALLY ACCEPTED
 - **AI-03A:** CLOSED / C01..C33
 - **AI-03B:** CLOSED / B01..B35
 - **AI-03C:** CLOSED / MAT-01..MAT-15
 - **Implementation claim:** NONE
 - **Provider/model selection:** OPEN / EVIDENCE-DRIVEN
-- **Commercial packaging:** OPEN / ARCHITECTURAL ENTITLEMENT BOUNDARY ONLY
+- **Commercial packaging:** OPEN / ARCHITECTURAL ENTITLEMENT + RESOURCE BOUNDARY ONLY
 - **Merge status:** UNMERGED
 
 This document is the durable branch-local continuation record for the DANTE AI architecture workstream. Repository truth outranks conversation memory.
@@ -26,7 +26,7 @@ repository  MattiaRubino/dante
 branch      feature/ai-architecture
 ```
 
-Protected `main` remains integrated authority for closed shared foundations and current PostgreSQL baseline. This branch owns only bounded newer AI architecture truth until protected-main integration.
+Protected `main` remains integrated authority for closed shared foundations and the current PostgreSQL baseline. This branch owns only bounded newer AI architecture truth until protected-main integration.
 
 A new chat/session does not create a new AI workstream.
 
@@ -67,6 +67,7 @@ docs/architecture/dante-ai-03c-destructive-validation-materialization-blueprint.
 docs/architecture/dante-ai-04-productionization-architecture.md
 docs/architecture/dante-ai-04a-direct-eval-specification.md
 docs/architecture/dante-ai-04b-concrete-runtime-capability-architecture.md
+docs/architecture/dante-ai-04c-production-assurance-control-plane-operations.md
 ```
 
 For AI-04 conclusions touching semantics/persistence, inspect Product/North Star, Domain, Whole Logical/WL-H01..H12, Physical, CP6/PostgreSQL Constitution, current DB/Alembic truth, Recovery and PSV obligations directly.
@@ -136,13 +137,16 @@ ACTIVE / CURRENT
 
   AI-04A — EVAL / MODEL / PROVIDER / ECONOMICS
   MATERIALIZED
-  direct provider/model eval evidence deferred until decision-critical
+  direct provider/model evidence deferred until decision-critical
 
   AI-04B — CONCRETE RUNTIME + CAPABILITIES
   CLOSED / STRUCTURALLY ACCEPTED / RT-01..RT-31
 
-  AI-04C — SECURITY / PRIVACY / CONTROL PLANE / OPERATIONS
-  CURRENT
+  AI-04C — PRODUCTION ASSURANCE / SECURITY / PRIVACY / CONTROL PLANE / OPERATIONS
+  CANDIDATE MATERIALIZED
+  PA-01..PA-38
+  first compound retest PASS CANDIDATE
+  fresh independent destructive validation CURRENT
 
 AI-05 — WHOLE-SYSTEM ACCEPTANCE + IMPLEMENTATION BLUEPRINT
 FUTURE / FINAL ARCHITECTURE-TO-BUILD BOUNDARY
@@ -159,7 +163,7 @@ AI-04 may use proof/benchmark code only where a production decision cannot respo
 
 Durable source: `docs/architecture/dante-ai-02-1-intelligence-reengineering.md`.
 
-Accepted responsibilities:
+Accepted responsibilities include:
 
 ```text
 Interaction Edge / Interaction Session
@@ -209,16 +213,14 @@ Do not reopen AI-02 broadly because a production technology prefers another shap
 Durable authority:
 
 ```text
-dante-ai-03-context-retrieval-memory.md
-dante-ai-03a-full-context-architecture.md
-dante-ai-03b-retrieval-memory-architecture.md
-dante-ai-03c-destructive-validation-materialization-blueprint.md
+docs/architecture/dante-ai-03-context-retrieval-memory.md
+docs/architecture/dante-ai-03a-full-context-architecture.md
+docs/architecture/dante-ai-03b-retrieval-memory-architecture.md
+docs/architecture/dante-ai-03c-destructive-validation-materialization-blueprint.md
 ```
 
 AI-03A: **CLOSED / C01..C33**.
-
 AI-03B: **CLOSED / B01..B35**.
-
 AI-03C: **CLOSED / MAT-01..MAT-15**.
 
 Binding materialization posture includes:
@@ -267,7 +269,7 @@ PRODUCTION TRACE != AUTOMATIC EVAL DATA
 IT-IT + EN-US CORE COVERAGE
 ```
 
-Provider replaceability:
+Provider boundary:
 
 ```text
 MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT
@@ -283,18 +285,16 @@ DANTE need
 → HarnessProfile
 → ProviderBinding
 → ProviderAdapter
-→ serving platform / model / deployment / qualified feature mode
+→ qualified serving platform/model/deployment/feature mode
 ```
 
-Economics metric:
+Primary economics metric:
 
 ```text
 EFFECTIVE COST PER SUCCESSFUL DANTE TASK
 ```
 
-No provider/model is selected.
-
-Direct eval tooling remains deferred until decision-critical.
+No concrete provider/model is selected. Direct eval tooling remains deferred until decision-critical.
 
 ---
 
@@ -372,61 +372,296 @@ Responsibilities do not imply microservices/tables.
 
 ## 11. AI-04B RT-01..RT-31
 
+Full normative wording lives in the AI-04B durable document.
+
+Key retained separations:
+
 ```text
-RT-01  RUN != MODEL INVOCATION != PROVIDER ATTEMPT.
-RT-02  RAW PROVIDER EVENT != DANTE RUNTIME EVENT != PUBLICATION EVENT.
-RT-03  CLIENT DISCONNECT != STREAM STOP != INVOCATION CANCEL != RUN CANCEL != EFFECT ROLLBACK.
-RT-04  PARTIAL TOOL ARGUMENTS != EXECUTABLE TOOL REQUEST.
-RT-05  PROVIDER PARALLEL TOOL CALL != EFFECTGRAPH PARALLEL AUTHORIZATION.
-RT-06  PROVIDER BACKGROUND EXECUTION != DANTE DURABLE EXECUTION.
-RT-07  PROVIDER-STORED CONTINUATION STATE != DANTE SESSION / CONTEXT / MEMORY.
-RT-08  RETRY CLASSIFICATION MUST ACCOUNT FOR ACCEPTANCE AND SIDE-EFFECT UNCERTAINTY.
-RT-09  REFUSAL != INFRASTRUCTURE FAILURE; NO SAFETY-ARBITRAGE FALLBACK.
-RT-10  SERVER-SIDE PROVIDER FALLBACK != DANTE ROUTING AUTHORITY.
-RT-11  ROUTING MUST USE MINIMUM NECESSARY INFORMATION AND SELECT ONLY QUALIFIED CURRENT BINDINGS.
-RT-12  HEDGED MULTI-PROVIDER EXECUTION IS NOT A SAFE DEFAULT.
-RT-13  PROVIDER TOOL != DANTE CAPABILITY; NATIVE TOOLS DO NOT BYPASS SOURCE/EFFECT GOVERNANCE.
-RT-14  MCP DISCOVERY / DESCRIPTION != TRUST / AUTHORITY.
-RT-15  MCP ELICITATION != DANTE APPROVAL; MCP TASK != DANTE RUN.
-RT-16  A2A DISCOVERY / TASK STATUS != DANTE AUTHORITY / CANONICAL STATE / RUN.
-RT-17  PROVIDER-HOSTED EXECUTION != DANTE EXECUTION ENVIRONMENT.
-RT-18  PROVIDER EVENT SEQUENCE / REPLAY != DANTE SEMANTIC EVENT IDENTITY.
-RT-19  ENTITLEMENT/BUDGET CHANGE MAY GOVERN FUTURE WORK BUT CANNOT ERASE EFFECT/RECONCILIATION OBLIGATIONS.
-RT-20  NO MODEL/PROVIDER FEATURE MAY SILENTLY REDEFINE DANTE RUNTIME SEMANTICS.
-RT-21  CANCELLATION REQUESTED != CANCELLATION CONFIRMED != EXECUTION QUIESCED.
-RT-22  PROVIDER CONTINUATION HANDLE != HARNESS / POLICY / TOOL / CAPABILITY CONTINUITY.
-RT-23  PROVIDER/BINDING QUALIFICATION MUST INCLUDE MATERIAL INVOCATION FEATURE MODE.
-RT-24  LOCAL DANTE REVOCATION/SUPPRESSION TAKES EFFECT BEFORE EXTERNAL DELETION CONFIRMATION.
-RT-25  PROVIDER TOOL/CALL/RESPONSE ID != DANTE CAPABILITY/EFFECT IDEMPOTENCY IDENTITY.
-RT-26  FROZEN EXECUTION CONFIGURATION != PERPETUAL CURRENT AUTHORIZATION.
-RT-27  PUBLISHED DELTA IS AN EXTERNALIZATION; DISCLOSURE/MATURITY PRECEDES IRREVERSIBLE PUBLICATION.
-RT-28  REMOTE CALLBACK / TASK UPDATE != CURRENT DANTE RUN ELIGIBILITY.
-RT-29  ATTACHED CHILD WORK != DETACHED CHILD WORK.
-RT-30  BUDGET ADMISSION != FINAL METERED COST != GUARANTEED IMMEDIATE PROVIDER STOP.
-RT-31  PROTOCOL INPUT_REQUIRED / AUTO-FULFILMENT != AUTHORIZED USER INPUT / CONSENT / DANTE APPROVAL.
+RUN != MODEL INVOCATION != PROVIDER ATTEMPT
+RAW PROVIDER EVENT != DANTE RUNTIME EVENT != PUBLICATION EVENT
+CLIENT DISCONNECT != STREAM STOP != INVOCATION CANCEL != RUN CANCEL != EFFECT ROLLBACK
+CANCELLATION REQUESTED != CANCELLATION CONFIRMED != EXECUTION QUIESCED
+PARTIAL TOOL ARGUMENTS != EXECUTABLE TOOL REQUEST
+PROVIDER PARALLEL TOOL CALL != EFFECTGRAPH PARALLEL AUTHORIZATION
+PROVIDER BACKGROUND EXECUTION != DANTE DURABLE EXECUTION
+PROVIDER CONTINUATION STATE != DANTE SESSION / CONTEXT / MEMORY
+CONTINUATION HANDLE != CURRENT HARNESS/POLICY/TOOLS/CAPABILITIES
+REFUSAL != INFRASTRUCTURE FAILURE
+PROVIDER SERVER-SIDE FALLBACK != DANTE ROUTING AUTHORITY
+PROVIDER TOOL != DANTE CAPABILITY
+MCP/A2A DISCOVERY/TASK STATE != DANTE TRUST/AUTHORITY/RUN TRUTH
+PROVIDER-HOSTED EXECUTION != DANTE EXECUTION ENVIRONMENT
+PROVIDER CALL ID != DANTE SEMANTIC IDEMPOTENCY IDENTITY
+FROZEN EXECUTION CONFIG != PERPETUAL CURRENT AUTHORIZATION
+PUBLISHED DELTA = EXTERNALIZATION
+REMOTE CALLBACK != CURRENT RUN ELIGIBILITY
+ATTACHED CHILD != DETACHED CHILD
+BUDGET ADMISSION != FINAL COST / GUARANTEED PROVIDER STOP
+MCP INPUT_REQUIRED/AUTO-FULFIL != USER INPUT/CONSENT/APPROVAL
 ```
 
 ---
 
-## 12. AI-04B operational consequences carried into AI-04C
-
-AI-04C must preserve:
+## 12. Class-A / Class-B durability
 
 ```text
-current feature-mode/provider/data eligibility
-DANTE-owned semantic idempotency
-current authorization despite frozen reproducibility config
-provider-state local suppression before provider purge completes
-late event/callback correlation and reconciliation
-attached/detached child distinction
-budget admission vs settlement/overshoot distinction
-DANTE-owned publication sequencing
-provider continuation rebinding to current Harness/capabilities/policy
+Class A → PostgreSQL transactional outbox + bounded worker
+Class B → Restate selected / dormant until first real qualifying consumer
+```
+
+Provider background execution does not replace Class-B semantics.
+
+Restate activation still requires applicable direct proof/privacy/recovery obligations.
+
+---
+
+## 13. AI-04C durable authority
+
+```text
+docs/architecture/dante-ai-04c-production-assurance-control-plane-operations.md
+```
+
+Current status:
+
+```text
+current 2026 production-pattern research COMPLETE ENOUGH
+first production-assurance candidate BUILT
+first destructive kill-test FAIL
+PA-01..PA-38 incorporated
+first compound retest PASS CANDIDATE
+fresh independent destructive validation CURRENT
+```
+
+AI-04C researched current public patterns from Microsoft 365 Copilot, Notion, Slack, GitHub Copilot, Salesforce Trust Layer, Azure AI Gateway/API Management, AWS Bedrock Guardrails, Google Model Armor, OpenTelemetry, guarded rollout tooling and Google SRE.
+
+Public behavior is evidence; named external products remain challengers/pattern sources, not DANTE technology selections.
+
+---
+
+## 14. AI-04C core control-plane posture
+
+```text
+CONTROL PLANE
+  qualification / eligibility
+  Harness/security/routing/budget/environment policy
+  rollout / kill switches / requalification
+
+!=
+
+RUNTIME DATA PLANE
+  admission
+  current Authority/AuthZ/Consent/Visibility
+  current provider/data eligibility
+  resource reservation
+  Context/Egress PEP
+  Model Access Runtime
+  Capability/Effect PEP
+  verification/reconciliation
+  Safe Publication
+  usage settlement
+```
+
+Responsibilities do not imply separate microservices.
+
+Binding:
+
+```text
+QUALIFIED != ELIGIBLE != AVAILABLE != ENTITLED
+```
+
+```text
+ROUTABLE
+=
+QUALIFIED
+∩ ELIGIBLE
+∩ AVAILABLE
+∩ ENTITLED
+∩ ROLLOUT-ACTIVE
+```
+
+New model/provider/material feature mode defaults to inactive until qualified and rolled out.
+
+---
+
+## 15. AI-04C config / security / credential posture
+
+```text
+ACTIVE POINTER != IMMUTABLE CONFIG REVISION
+FROZEN CONFIG != CURRENT AUTHORIZATION
+CONTROL-PLANE WRITE = PRIVILEGED SECURITY CAPABILITY
+CONTROL-PLANE OUTAGE != UNBOUNDED ALLOW
+KILL NEW WORK != ABANDON RECONCILIATION
+```
+
+Existing DANTE Authority/AuthZ/Consent/Visibility remains authoritative.
+
+Guardrails are layered security adapters/signals, not Authority.
+
+```text
+GUARDRAIL RESULT != DANTE AUTHORITY
+SECURITY SERVICE AVAILABLE != ELIGIBLE DATA RECIPIENT
+MASKING/REDACTION != SEMANTIC EQUIVALENCE
+```
+
+Credential posture:
+
+```text
+workload identity / short-lived credentials preferred where supported
+ADMIN CREDENTIAL != INFERENCE CREDENTIAL != DELEGATED USER CREDENTIAL
+SECRETS != RUNTIME CONFIG
+MODEL/SANDBOX gets no broad high-value credentials
+```
+
+No secret-manager/KMS/guardrail/gateway vendor is selected.
+
+---
+
+## 16. AI-04C evidence / telemetry posture
+
+Keep separate:
+
+```text
+CANONICAL DOMAIN/APPLICATION DATA
+AUDIT / EXECUTION EVIDENCE
+OPERATIONAL TELEMETRY
+EVAL EVIDENCE
+```
+
+```text
+TELEMETRY != AUDIT != EVAL EVIDENCE != CANONICAL TRUTH
+```
+
+Full prompt/response/ConsumerContext/tool-content telemetry is OFF by default.
+
+Required consequential/security audit cannot rely solely on sampled traces or provider log retention.
+
+---
+
+## 17. AI-04C budget / SRE posture
+
+```text
+COMMERCIAL CREDIT != PROVIDER TOKEN != ACTUAL PROVIDER COST
+ADMISSION ESTIMATE != RESERVATION != SETTLEMENT
+COMMERCIAL QUOTA != ABUSE RATE LIMIT != PROVIDER QUOTA != PLATFORM CAPACITY
+```
+
+Shared budget admission requires an atomic authority boundary.
+
+Commercial exhaustion cannot starve effect verification/reconciliation/security cleanup/provider-state revocation.
+
+Retry ownership must prevent SDK × gateway × runtime × durable-workflow amplification.
+
+Graceful degradation may reduce optional cost/performance but not safety/privacy/semantic floors.
+
+DANTE SLOs measure user-safe DANTE outcomes, not raw provider uptime.
+
+Security/privacy hard failures are incidents, not ordinary error-budget consumption.
+
+---
+
+## 18. AI-04C rollout / requalification posture
+
+AI config behavior is treated as a release:
+
+```text
+DRAFT
+→ VALIDATED
+→ APPROVED
+→ SHADOW when eligible
+→ CANARY
+→ PROGRESSIVE
+→ ACTIVE
+→ DRAINING
+→ RETIRED
+
+regression/security event
+→ PAUSE / ROLLBACK CONFIG / EMERGENCY_DISABLE
+```
+
+Shadow traffic is real disclosure and must be independently eligible.
+
+Shadow/canary must not create uncontrolled consequential effects.
+
+Config rollback affects future selection; it does not undo existing effects.
+
+Provider/subprocessor/retention/residency/model/guard/Harness material changes trigger risk-proportionate requalification.
+
+Feedback/model-improvement sharing is separate from normal telemetry/eval.
+
+---
+
+## 19. AI-04C PA-01..PA-38
+
+Full normative wording lives in the durable AI-04C document.
+
+Core set covers:
+
+```text
+application Authority reuse
+qualification/eligibility/availability/entitlement intersection
+feature-mode + retention/residency/processor eligibility
+new-capability default-off
+versioned control plane
+privileged/audited control-plane writes
+fail-safe control-plane outage
+kill-switch reconciliation survival
+non-bypassable PEP/egress enforcement
+guardrail authority/data-recipient/version boundaries
+instruction lineage and masking semantics
+credential class separation / workload identity
+telemetry/audit/eval/canonical separation
+content telemetry default-off
+commercial credit/token/cost separation
+admission/reservation/settlement
+atomic shared-budget admission
+quota/rate/provider/platform distinctions
+retry budgets
+protected reconciliation capacity
+graceful degradation floors
+shadow disclosure/effect isolation
+rollback != effect undo
+user-safe SLOs
+hard security/privacy incident semantics
+provider/subprocessor requalification
+privacy-minimal rollout targeting
+feedback/model-improvement separation
 ```
 
 ---
 
-## 13. Direct proof obligations remain distinct
+## 20. Current independent AI-04C validation
+
+Required pressure includes at least:
+
+```text
+control-plane stale/read partition/tamper
+control-plane authorization escalation
+configuration integrity/signing assumptions
+kill-switch race with in-flight work
+provider/data eligibility cache drift
+credential rotation during Run
+secret-manager outage
+security scanner false positives/negatives
+transformed prompt/tool injection
+telemetry cardinality/cost/backpressure
+required audit durability failure
+budget reservation leak after crash
+unknown provider settlement
+shared-pool fairness/starvation
+retry budget across SDK/gateway/DANTE/Restate
+fallback capacity/circuit interaction
+shadow/canary privacy + effect isolation
+bad automatic rollback
+upgrade/downgrade during reservation
+all-provider outage + deterministic degraded mode
+incident recovery + requalification
+```
+
+If a contradiction appears, harden the smallest affected boundary and rerun the compound set.
+
+---
+
+## 21. Direct proof obligations remain distinct
 
 Architecture acceptance does not execute existing Physical/Recovery proofs.
 
@@ -446,79 +681,46 @@ No production implementation PASS is claimed.
 
 ---
 
-## 14. AI-04C — current work
-
-Current phase:
-
-```text
-AI-04C — SECURITY / PRIVACY / CONTROL PLANE / OPERATIONS
-```
-
-Required research/design coverage:
-
-```text
-provider/data/feature-mode eligibility
-privacy/retention/residency policy
-information-flow / prompt-injection containment
-credential/workload identity
-secret brokerage / key lifecycle
-control-plane registries / configuration ownership
-routing policy governance
-configuration promotion and emergency kill switches
-commercial entitlement + budget architecture
-reservation / settlement / overshoot
-rate limiting / concurrency / backpressure / fairness
-observability vs audit vs eval evidence
-privacy-safe tracing/logging
-SLOs / error budgets
-provider incidents / degraded modes
-shadow / canary / progressive rollout / rollback
-model/harness/provider requalification triggers
-runtime evidence retention
-security incident response
-operational recovery / reconciliation
-```
-
-AI-04C must use current 2026 state-of-the-art evidence and publicly documented production patterns from relevant large-scale AI/application platforms, clearly separating verified public evidence from inference.
-
----
-
-## 15. Decisions explicitly still open
+## 22. Decisions explicitly still open
 
 ```text
 concrete provider/model set
 specific model/deployment mapping
-provider SDK choice
-exact ModelTarget vocabulary
+provider SDK
 actual direct benchmark results
 final eval runner
-routing/fallback algorithm and ordering
-normalized runtime event/error implementation schemas
-client-edge streaming transport
-voice/realtime transport
-provider background activation
-provider-native files/cache/thread/MCP use
+routing/fallback algorithm/order
+runtime event/error implementation schema
+client streaming / voice transport
+provider background/native features
 MCP/A2A implementation
-browser/computer-use implementation
 Execution Environment technology
-credential broker implementation
-physical runtime/evidence storage
-commercial offering names/prices/quotas
-exact EntitlementProfile representation
-exact budget reservation/settlement mechanics
-embedding model/dimensions
+control-plane physical topology/storage
+configuration integrity/signing mechanism
+admin approval workflow
+feature-flag/rollout vendor
+AI gateway product
+security/guardrail product
+secret-manager/KMS product
+commercial tier names/prices/quotas
+billing/credit provider
+budget persistence/reservation mechanism
+rate-limit/fairness/retry/circuit values
+SLO/error-budget values
+audit retention
+telemetry field/cardinality budgets
+production regions/residency mappings
 pgvector/ANN/FTS activation
-Restate activation for first qualifying AI Class-B consumer
-R2 activation
+Restate/R2 activation
 local-model activation
 production AI compute topology
 ```
 
 ---
 
-## 16. Cross-cutting quality bar
+## 23. Cross-cutting quality bar
 
-Every AI-04C decision is reviewed against:
+Every decision is reviewed against:
 
 ```text
 semantic correctness
@@ -548,7 +750,7 @@ Maximum quality does not mean maximum abstraction or maximum infrastructure.
 
 ---
 
-## 17. Live handoff policy
+## 24. Live handoff policy
 
 Temporary session continuity lives only in `docs/workstreams/ai-architecture-live-handoff.md`.
 
@@ -556,17 +758,21 @@ It is branch-operational, MUST NOT merge to protected `main`, and must be delete
 
 ---
 
-## 18. Current next action
+## 25. Current next action
 
 ```text
-AI-04C — STATE-OF-THE-ART PRODUCTION ASSURANCE RESEARCH
-→ build Security / Privacy / Control Plane / Operations candidate
-→ destructive kill-test
-→ hardening / compound retest
-→ independent validation
-→ close AI-04C only after contradictions are eliminated
+AI-04C — FRESH INDEPENDENT DESTRUCTIVE PRODUCTION-ASSURANCE VALIDATION
 ```
 
-Direct provider/model benchmarking remains deferred until a concrete selection decision requires it.
+Then, only if AI-04C closes:
 
-Do not preselect provider SDKs, model IDs, commercial prices, retrieval indexes, Restate/R2 activation or new persistence before applicable evidence exists.
+```text
+AI-04 WHOLE-PHASE DESTRUCTIVE ACCEPTANCE
+→ reconcile AI-04A + AI-04B + AI-04C
+→ activate direct provider/model proof where a concrete decision is blocked on evidence
+→ AI-04 closure
+→ AI-05 whole-system acceptance + exact implementation blueprint
+→ actual AI implementation workstream(s)
+```
+
+Do not preselect provider SDKs, model IDs, commercial prices, gateway/guardrail/flag vendors, retrieval indexes, Restate/R2 activation or new persistence before applicable evidence exists.
