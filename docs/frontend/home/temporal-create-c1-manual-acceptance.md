@@ -3,24 +3,26 @@
 **Status:** FINAL HUMAN GATE — NOT YET EXECUTED  
 **Date:** 2026-09-02  
 **Branch:** `feature/home-timeline`  
-**Implementation candidate under acceptance:** `81808814abb4e4998c7bde5b0c6cb8f5f903aa62`  
-**Automated evidence:** Frontend CI `33613239926` / #536 — FULL PASS
+**Implementation candidate under acceptance:** `f092a3db2fbac28421b73e0629f7b4b83a1b0aec`  
+**Automated evidence:** Frontend CI `33631013598` / #621 — FULL PASS
 
 ## 1. Purpose
 
 This is the **single coherent final manual acceptance** for C1. It is intentionally not a collection of micro-tests to run after every code change.
 
-The goal is to verify the complete user-facing Create capability after automated engineering closure:
+The goal is to verify the complete user-facing manual Create capability after automated engineering closure:
 
 ```text
-Quick
+manual + / contextual Timeline gesture
+→ Quick
 → Expanded
 → Full
 → Activity semantics
 → Event semantics
+→ Context / appearance
 → recurrence
-→ external seams
-→ contextual Timeline entry
+→ external-owner seams
+→ validation / Undo / focus
 → mobile
 → frozen Timeline smoke
 ```
@@ -29,7 +31,7 @@ Only explicit user approval closes C1.
 
 ## 2. Before starting
 
-Sync the Timeline worktree only after the documentation descendant is confirmed CI-green:
+Sync the Timeline worktree only after the **final documentation descendant** is confirmed CI-green:
 
 ```bash
 cd /home/mattia/projects/dante-timeline
@@ -42,7 +44,7 @@ Expected:
 
 - branch `feature/home-timeline`;
 - clean worktree;
-- HEAD is the final documentation descendant of implementation candidate `81808814...`.
+- HEAD is the final CI-green documentation descendant of implementation candidate `f092a3db...`.
 
 Start the normal web development environment used for this repository and open `/home`.
 
@@ -55,9 +57,11 @@ A PASS requires all of the following:
 - no visual corruption or obviously prototype-grade control;
 - no raw translation/debug keys;
 - no misleading fake success;
+- `+` behaves as a manual authoring surface, not chat/AI/NL input;
 - no Activity recurrence editor;
 - no lost draft when moving Quick ↔ Expanded ↔ Full;
 - no fake fixed placement for flexible Activity;
+- Context and appearance override remain distinct;
 - Event recurrence remains understandable despite its depth;
 - focus/cancel/discard interactions feel deliberate;
 - mobile Full Create is usable and contained;
@@ -77,7 +81,7 @@ Do not compensate manually for a defect and call it PASS.
 
 ---
 
-# 4. Desktop pass — Quick Create and Undo
+# 4. Desktop pass — manual Quick Create and Undo
 
 Use a desktop viewport around 1360–1440 px wide.
 
@@ -85,16 +89,17 @@ Use a desktop viewport around 1360–1440 px wide.
 2. Click the Timeline `+`.
 3. Confirm Create opens focused on the title.
 4. Confirm the Quick surface is calm and does not look like a full configuration form.
-5. Enter a simple Activity title, for example `Studiare inglese`.
-6. Choose a visible time and ordinary duration/context.
-7. Create it.
+5. Confirm there is **no chat prompt, natural-language instruction box, AI command affordance, microphone/voice control or “ask DANTE” input inside Create**.
+6. Enter a simple Activity title, for example `Studiare inglese`.
+7. Choose a visible time and ordinary duration/Context.
+8. Create it.
 
 Expected:
 
 - composer closes;
 - placed Activity appears in the Timeline;
-- the created projection is revealed/focused when applicable;
-- success feedback describes the actual creation;
+- created projection is revealed/focused when applicable;
+- success feedback describes the actual local creation;
 - Undo is available.
 
 Use Undo.
@@ -104,6 +109,10 @@ Expected:
 - created projection disappears;
 - no stale card/preview remains;
 - no second/fake mutation feedback appears.
+
+Manual-only failure condition:
+
+- if the `+` expects or encourages commands such as `Dentista domani alle 17`, C1 is a manual FAIL.
 
 ---
 
@@ -191,7 +200,7 @@ Inspect Activity in Expanded and Full.
 Expected:
 
 - **there is no `Modello di ricorrenza` control for Activity**;
-- the UI explains that persistent repetition belongs to Routine;
+- UI explains that persistent repetition belongs to Routine;
 - Routine appears as an owning-vertical handoff/dependency;
 - there is no generic `repeat` checkbox;
 - there is no generic `Tag` field pretending an unsupported owner model.
@@ -200,7 +209,55 @@ Any direct Activity recurrence editor is a manual FAIL.
 
 ---
 
-# 8. Owning-vertical handoff truth
+# 8. Context and appearance non-collapse
+
+This verifies that presentation does not silently become category/organization semantics.
+
+1. Open a new Activity or Event.
+2. Give it a distinctive title, for example `Focus colore rosso`.
+3. Select Context `Focus / lavoro profondo`.
+4. Observe the candidate preview before choosing an override.
+
+Expected:
+
+- default visual tone follows the selected Context.
+
+5. Open Expanded and find `Aspetto`.
+6. Confirm the inheritance option names the selected Context.
+7. Confirm manual override choices are **color words** such as `Viola`, `Ciano`, `Verde`, `Ambra`, `Rosa`, `Rosso`, not category names such as Focus/Urgenze.
+8. Choose `Rosso`.
+9. Open Full, then return to Expanded.
+
+Expected:
+
+- red appearance survives the surface round-trip;
+- title and Context remain unchanged;
+- preview changes visual tone only.
+
+10. Create the item.
+11. Confirm the Timeline card still displays `Focus / lavoro profondo` as its Context while using the chosen visual tone.
+12. Activate the `Urgenze` group filter.
+
+Expected:
+
+- the Focus item is hidden because it is **not** in the Urgenze Context merely because it is red.
+
+13. Use `Ripristina gruppi e focus`.
+14. Activate the `Focus` filter.
+
+Expected:
+
+- the item is visible;
+- it remains visually red/custom;
+- Context/filter membership remains Focus.
+
+15. Reset and use Undo on the created item.
+
+Any behavior where custom color changes Context/group/filter membership is a manual FAIL.
+
+---
+
+# 9. Owning-vertical handoff truth
 
 In Full Create inspect `Altro tipo` / external-owner options.
 
@@ -215,7 +272,7 @@ The handoff contract itself is covered automatically; this manual step validates
 
 ---
 
-# 9. Event base grammar
+# 10. Event base grammar
 
 Open a fresh Create and switch to Event.
 
@@ -234,7 +291,7 @@ Enter realistic data for a meeting/call.
 
 ---
 
-# 10. Provider/collaboration truth
+# 11. Provider/collaboration truth
 
 In Full Event fill some of:
 
@@ -256,7 +313,7 @@ Any fake provider success is a manual FAIL.
 
 ---
 
-# 11. Event recurrence — four CP6 families
+# 12. Event recurrence — four CP6 families
 
 This is one guided inspection, not four separate acceptance sessions.
 
@@ -286,7 +343,7 @@ For weekly, select multiple weekdays.
 
 For monthly ordinal, configure something equivalent to `ultimo venerdì`.
 
-For monthly/yearly anchored forms, verify the UI communicates that the authored civil date is the anchor rather than presenting a mysterious DB rule.
+For monthly/yearly anchored forms, verify UI communicates that the authored civil date is the anchor rather than presenting a mysterious DB rule.
 
 ## B. Elapsed interval
 
@@ -310,7 +367,7 @@ Verify:
 - frame choices include local, named-zone and UTC/absolute basis;
 - weekly period exposes week start;
 - named-zone frame exposes period timezone;
-- explanatory copy makes clear period boundaries do not silently follow the device timezone.
+- explanatory copy makes clear period boundaries do not silently follow device timezone.
 
 ## D. Cyclic positional
 
@@ -341,7 +398,7 @@ The browser must not show generated Occurrences merely because a recurrence spec
 
 ---
 
-# 12. Zoned time sanity
+# 13. Zoned time sanity
 
 Create a zoned Event using `Europe/Rome`.
 
@@ -350,13 +407,13 @@ Change start/end/duration in a normal date first.
 Expected:
 
 - end and duration remain coherent;
-- timezone remains attached to the Event intent.
+- timezone remains attached to Event intent.
 
-No need to manually reproduce DST transition math; spring-forward/fall-back arithmetic is already a blocking automated unit contract. This manual step checks the UI presentation and editing path only.
+No need to manually reproduce DST transition math; spring-forward/fall-back arithmetic is already a blocking automated unit contract. This manual step checks UI presentation and editing path only.
 
 ---
 
-# 13. All-day multi-day Event vs unscheduled Activity
+# 14. All-day multi-day Event vs unscheduled Activity
 
 ### Event
 
@@ -380,7 +437,9 @@ These two cases must feel semantically different.
 
 ---
 
-# 14. Contextual Timeline creation
+# 15. Contextual manual Timeline creation
+
+These gestures are manual entry shortcuts. They must prefill known temporal context, not turn into interpretation/AI input.
 
 ## Double-click
 
@@ -389,7 +448,8 @@ On an empty visible Timeline area, double-click a sensible time.
 Expected:
 
 - Create opens with contextual date/time defaults;
-- cancelling a clean contextual Create returns focus to the Timeline, not the global `+`.
+- normal manual fields remain editable;
+- cancelling a clean contextual Create returns focus to Timeline, not the global `+`.
 
 ## Shift-drag range
 
@@ -398,7 +458,7 @@ On an empty visible Timeline area, Shift-drag a meaningful vertical range.
 Expected:
 
 - Create opens;
-- duration reflects the selected range at a sensible snapped value;
+- duration reflects selected range at a sensible snapped value;
 - no existing card is accidentally captured;
 - no native drag ghost appears.
 
@@ -406,7 +466,7 @@ This interaction must work after previously opening/closing Create as well; Time
 
 ---
 
-# 15. Validation/recovery
+# 16. Validation/recovery
 
 Create an Activity with an obviously invalid advanced relationship, for example expected duration 60 minutes but minimum session 120 minutes.
 
@@ -424,7 +484,7 @@ Correct it and verify the same draft can continue successfully.
 
 ---
 
-# 16. Mobile Full Create
+# 17. Mobile Full Create
 
 Use a 390×844-equivalent viewport/devtools device.
 
@@ -436,12 +496,14 @@ Expected:
 - no horizontal page overflow;
 - fields/actions remain reachable;
 - deep Event recurrence controls remain understandable and do not overflow disastrously;
+- appearance controls remain usable;
 - close/discard remains operable;
-- no desktop-only floating geometry blocks the flow.
+- no desktop-only floating geometry blocks the flow;
+- no AI/NL/voice affordance appears in the mobile version either.
 
 ---
 
-# 17. Frozen Timeline smoke
+# 18. Frozen Timeline smoke
 
 After Create testing, do a short normal Timeline interaction smoke:
 
@@ -457,13 +519,13 @@ Expected:
 - first drag is not swallowed;
 - no native drag ghost;
 - Undo corresponds to a real mutation;
-- Create has not re-authored the Timeline interaction grammar.
+- Create has not re-authored Timeline interaction grammar.
 
 Firefox's critical interaction contract is already automated; this is only a human regression feel-check.
 
 ---
 
-# 18. Final decision
+# 19. Final decision
 
 If a material issue exists, report it precisely and do **not** approve C1.
 
