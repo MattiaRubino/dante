@@ -8,8 +8,8 @@
 **Integration target:** `feature/home-react`  
 **Frozen common base:** `98b486a308961022ba0d8f43bb79339518457741` — H0 Whole Home Structural Freeze / CI green  
 **F0 closed checkpoint:** `7034b9b0d100709785ebe96e3816aab3e7b1d1f8`  
-**C1 implementation candidate:** `f092a3db2fbac28421b73e0629f7b4b83a1b0aec`  
-**C1 automated evidence:** Frontend CI `33631013598` / #621 — FULL PASS  
+**C1 implementation candidate:** `7028633921d1b438bd04961a718457afd82ccc13`  
+**C1 automated evidence:** Frontend CI `33635389124` / #632 — FULL PASS  
 **Consumes:** `temporal-experience-architecture.md`, `timeline-t1-frozen-contract.md`, H0, Product V1 temporal documents and simulations, closed Domain/Logical/Physical semantics, CP6 PostgreSQL materialization, current frontend production standards  
 **Scope stop:** maximum production-depth frontend capability up to, but not including, real backend/API/provider/solver integration
 
@@ -274,8 +274,8 @@ F0 supports real Create without direct component mutation shortcuts and without 
 
 **Current status:** **IMPLEMENTATION COMPLETE / AUTOMATED FULL PASS / USER MANUAL ACCEPTANCE PENDING.**
 
-**Final implementation candidate:** `f092a3db2fbac28421b73e0629f7b4b83a1b0aec`  
-**Automated CI:** `33631013598` / #621 — FULL PASS  
+**Final implementation candidate:** `7028633921d1b438bd04961a718457afd82ccc13`  
+**Automated CI:** `33635389124` / #632 — FULL PASS  
 **Expanded authoritative scope:** `temporal-create-c1-scope-amendment.md`  
 **Final mapping/evidence:** `temporal-create-c1-traceability.md`
 
@@ -371,7 +371,7 @@ C1 stores recurrence specification only. Backend M6 owns recurrence evaluator/Oc
 
 ### Context / appearance depth
 
-C1 now supports an optional per-item visual override without collapsing it into Context/group semantics.
+C1 supports an optional per-item visual override without collapsing it into Context/group semantics.
 
 ```text
 Context/group membership
@@ -396,7 +396,8 @@ C1 includes:
 - candidate preview separate from accepted projection;
 - provider actions as intent only;
 - truthful local Undo/reveal/focus;
-- accessibility, i18n and mobile full-screen protection.
+- accessibility, i18n and mobile full-screen protection;
+- contextual double-click/Shift-drag E2E anchored to the real visible intersection of Timeline grid and browser viewport, with geometry reacquisition across Create open/close.
 
 ### Explicit non-scope
 
@@ -415,7 +416,7 @@ Future DANTE/voice verticals may share compatible **downstream semantic operatio
 
 ### C1 automated gate — satisfied
 
-CI #621 proves:
+CI #632 proves:
 
 - Quality PASS;
 - Mobile Bundle PASS;
@@ -819,20 +820,20 @@ Current state:
 T1    FROZEN / CLOSED
 F0    FROZEN / CLOSED
 C1    IMPLEMENTATION COMPLETE
-      AUTOMATED FULL PASS (#621)
-      DOCUMENTATION DESCENDANT VALIDATION PENDING
+      AUTOMATED FULL PASS (#632)
+      DOCUMENTATION RECONCILIATION COMPLETE
+      FINAL DOCUMENTATION DESCENDANT CI VALIDATION PENDING
       USER MANUAL ACCEPTANCE PENDING
 C2    BLOCKED UNTIL EXPLICIT C1 USER PASS
 ```
 
 Immediate sequence:
 
-1. complete documentation reconciliation on a descendant of implementation candidate `f092a3db...`;
-2. require that final documentation descendant to pass Frontend CI completely;
-3. user syncs `feature/home-timeline` locally once;
-4. user executes the one final protocol in `temporal-create-c1-manual-acceptance.md`;
-5. any demonstrated defect reopens only necessary C1 contract;
-6. explicit `C1 MANUAL PASS — APPROVED` freezes/closes C1;
-7. only then start C2 Card → structured Detail.
+1. require the final documentation descendant of implementation candidate `7028633921d1b438bd04961a718457afd82ccc13` to pass Frontend CI completely;
+2. user syncs `feature/home-timeline` locally once;
+3. user executes the one final protocol in `temporal-create-c1-manual-acceptance.md`;
+4. any demonstrated defect reopens only necessary C1 contract;
+5. explicit `C1 MANUAL PASS — APPROVED` freezes/closes C1;
+6. only then start C2 Card → structured Detail.
 
 The former `T1-A` current-stage instruction, old “do not activate + yet” instruction and any old statement that DANTE/NL/voice must enter through C1 Create are historical and superseded by this roadmap.
