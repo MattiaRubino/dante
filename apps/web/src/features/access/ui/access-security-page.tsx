@@ -41,6 +41,11 @@ type SecurityError = Readonly<{
   reauthenticationRequired: boolean;
 }>;
 
+type GoogleSecurityFlow = Readonly<{
+  kind: 'link' | 'reauthenticate';
+  preparation: GoogleAuthenticationPreparation;
+}>;
+
 export function AccessSecurityPage() {
   const { t } = useTranslation('common');
   const sessionQuery = useAuthSessionQuery();
@@ -69,8 +74,7 @@ export function AccessSecurityPage() {
     null,
   );
   const [editingPasskeyLabel, setEditingPasskeyLabel] = useState('');
-  const [googlePreparation, setGooglePreparation] =
-    useState<GoogleAuthenticationPreparation | null>(null);
+  const [googleFlow, setGoogleFlow] = useState<GoogleSecurityFlow | null>(null);
   const [lastError, setLastError] = useState<SecurityError | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -86,7 +90,18 @@ export function AccessSecurityPage() {
       ),
     [methods?.providers],
   );
+  const passwordEstablished = methods?.password_established === true;
   const activePasskeyCount = methods?.passkeys.length ?? 0;
+  const googleLinked = providerCodes.has('google');
+  const appleLinked = providerCodes.has('apple');
+  const canReauthenticateWithGoogle = googleEnabled && googleLinked;
+  const canReauthenticateWithApple = appleEnabled && appleLinked;
+  const canReauthenticateWithPasskey = passkeyEnabled && activePasskeyCount > 0;
+  const hasInlineReauthenticationMethod =
+    passwordEstablished ||
+    canReauthenticateWithGoogle ||
+    canReauthenticateWithApple ||
+    canReauthenticateWithPasskey;
   const showProviderManagement =
     googleEnabled || appleEnabled || (methods?.providers.length ?? 0) > 0;
   const showPasskeyManagement = passkeyEnabled || activePasskeyCount > 0;
@@ -165,6 +180,7 @@ export function AccessSecurityPage() {
   }
 
   function handleProviderBrowserError() {
+    setGoogleFlow(null);
     setSuccessMessage(null);
     setLastError({
       message: t(($) => $.common.access.security.errorGoogleControl),
@@ -220,47 +236,54 @@ export function AccessSecurityPage() {
     );
   }
 
-  function prepareGoogleLink() {
+  function prepareGoogleSecurityFlow(kind: GoogleSecurityFlow['kind']) {
     clearFeedback();
     if (!googleEnabled || csrfToken === null || prepareGoogleMutation.isPending) {
       return;
     }
-    setGooglePreparation(null);
+    setGoogleFlow(null);
     prepareGoogleMutation.mutate(
       {
-        purpose: 'link',
+        purpose: kind === 'link' ? 'link' : 'reauthenticate',
         returnTarget: 'security',
         csrfToken,
       },
       {
         onSuccess: (preparation) => {
-          if (preparation !== null) {
-            setGooglePreparation(preparation);
+          if (preparation === null) {
+            setLastError({
+              message: t(($) => $.common.access.security.errorOperation),
+              reauthenticationRequired: false,
+            });
+            return;
           }
+          setGoogleFlow({ kind, preparation });
         },
         onError: handleError,
       },
     );
   }
 
-  function completeGoogleLink(credential: string) {
-    const preparation = googlePreparation;
-    if (preparation === null || completeGoogleMutation.isPending) {
+  function completeGoogleSecurityFlow(credential: string) {
+    const flow = googleFlow;
+    if (flow === null || completeGoogleMutation.isPending) {
       return;
     }
     clearFeedback();
     completeGoogleMutation.mutate(
-      { preparation, credential },
+      { preparation: flow.preparation, credential },
       {
         onSuccess: (result) => {
-          setGooglePreparation(null);
+          setGoogleFlow(null);
           if (result.outcome !== 'authenticated') {
             setLastError({
-              message: t(
-                ($) => $.common.access.security.errorGoogleLinkIncomplete,
-              ),
+              message: t(($) => $.common.access.security.errorOperation),
               reauthenticationRequired: false,
             });
+            return;
+          }
+          if (flow.kind === 'reauthenticate') {
+            setSuccessMessage(t(($) => $.common.access.security.reauthComplete));
             return;
           }
           void refreshMethods()
@@ -271,7 +294,10 @@ export function AccessSecurityPage() {
             })
             .catch(handleError);
         },
-        onError: handleError,
+        onError: (error) => {
+          setGoogleFlow(null);
+          handleError(error);
+        },
       },
     );
   }
@@ -284,6 +310,25 @@ export function AccessSecurityPage() {
     appleMutation.mutate(
       {
         purpose: 'link',
+        returnTarget: 'security',
+        csrfToken,
+      },
+      { onError: handleError },
+    );
+  }
+
+  function reauthenticateApple() {
+    clearFeedback();
+    if (
+      !canReauthenticateWithApple ||
+      csrfToken === null ||
+      appleMutation.isPending
+    ) {
+      return;
+    }
+    appleMutation.mutate(
+      {
+        purpose: 'reauthenticate',
         returnTarget: 'security',
         csrfToken,
       },
@@ -378,7 +423,11 @@ export function AccessSecurityPage() {
   function reauthenticatePassword(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     clearFeedback();
-    if (csrfToken === null || passwordReauth.length === 0) {
+    if (
+      !passwordEstablished ||
+      csrfToken === null ||
+      passwordReauth.length === 0
+    ) {
       return;
     }
     passwordReauthMutation.mutate(
@@ -386,7 +435,7 @@ export function AccessSecurityPage() {
       {
         onSuccess: () => {
           setPasswordReauth('');
-          setGooglePreparation(null);
+          setGoogleFlow(null);
           setSuccessMessage(t(($) => $.common.access.security.reauthComplete));
         },
         onError: handleError,
@@ -396,14 +445,14 @@ export function AccessSecurityPage() {
 
   function reauthenticatePasskey() {
     clearFeedback();
-    if (!passkeyEnabled || activePasskeyCount === 0 || csrfToken === null) {
+    if (!canReauthenticateWithPasskey || csrfToken === null) {
       return;
     }
     passkeyReauthMutation.mutate(
       { csrfToken },
       {
         onSuccess: () => {
-          setGooglePreparation(null);
+          setGoogleFlow(null);
           setSuccessMessage(t(($) => $.common.access.security.reauthComplete));
         },
         onError: handleError,
@@ -464,42 +513,84 @@ export function AccessSecurityPage() {
       <section className="access-security-card">
         <h2>{t(($) => $.common.access.security.reauthTitle)}</h2>
         <p>{t(($) => $.common.access.security.reauthBody)}</p>
-        <div className="access-security-actions">
-          <form
-            className="access-security-inline-form"
-            onSubmit={reauthenticatePassword}
-          >
-            <input
-              type="password"
-              autoComplete="current-password"
-              value={passwordReauth}
-              placeholder={t(($) => $.common.access.field.password)}
-              onChange={(event) => setPasswordReauth(event.target.value)}
-            />
-            <button
-              className="access-secondary-button"
-              type="submit"
-              disabled={passwordReauthMutation.isPending}
-            >
-              {t(($) => $.common.access.security.reauthPassword)}
-            </button>
-          </form>
-          {passkeyEnabled && activePasskeyCount > 0 ? (
-            <button
-              className="access-secondary-button"
-              type="button"
-              disabled={passkeyReauthMutation.isPending}
-              onClick={reauthenticatePasskey}
-            >
-              {t(($) => $.common.access.security.reauthPasskey)}
-            </button>
-          ) : null}
-        </div>
+        {hasInlineReauthenticationMethod ? (
+          <div className="access-security-actions">
+            {passwordEstablished ? (
+              <form
+                className="access-security-inline-form"
+                onSubmit={reauthenticatePassword}
+              >
+                <input
+                  type="password"
+                  autoComplete="current-password"
+                  value={passwordReauth}
+                  placeholder={t(($) => $.common.access.field.password)}
+                  onChange={(event) => setPasswordReauth(event.target.value)}
+                />
+                <button
+                  className="access-secondary-button"
+                  type="submit"
+                  disabled={passwordReauthMutation.isPending}
+                >
+                  {t(($) => $.common.access.security.reauthPassword)}
+                </button>
+              </form>
+            ) : null}
+
+            {canReauthenticateWithGoogle ? (
+              googleFlow?.kind === 'reauthenticate' ? (
+                <GoogleIdentityButton
+                  label={t(($) => $.common.access.security.reauthGoogle)}
+                  clientId={googleFlow.preparation.clientId}
+                  nonce={googleFlow.preparation.begun.nonce}
+                  disabled={completeGoogleMutation.isPending}
+                  onCredential={completeGoogleSecurityFlow}
+                  onError={handleProviderBrowserError}
+                />
+              ) : (
+                <button
+                  className="access-secondary-button"
+                  type="button"
+                  disabled={prepareGoogleMutation.isPending}
+                  aria-busy={prepareGoogleMutation.isPending}
+                  onClick={() => prepareGoogleSecurityFlow('reauthenticate')}
+                >
+                  {t(($) => $.common.access.security.reauthGoogle)}
+                </button>
+              )
+            ) : null}
+
+            {canReauthenticateWithApple ? (
+              <button
+                className="access-secondary-button"
+                type="button"
+                disabled={appleMutation.isPending}
+                aria-busy={appleMutation.isPending}
+                onClick={reauthenticateApple}
+              >
+                {t(($) => $.common.access.security.reauthApple)}
+              </button>
+            ) : null}
+
+            {canReauthenticateWithPasskey ? (
+              <button
+                className="access-secondary-button"
+                type="button"
+                disabled={passkeyReauthMutation.isPending}
+                onClick={reauthenticatePasskey}
+              >
+                {t(($) => $.common.access.security.reauthPasskey)}
+              </button>
+            ) : null}
+          </div>
+        ) : (
+          <p>{t(($) => $.common.access.security.reauthNoInlineMethod)}</p>
+        )}
       </section>
 
       <section className="access-security-card">
         <h2>{t(($) => $.common.access.security.passwordTitle)}</h2>
-        {methods?.password_established ? (
+        {passwordEstablished ? (
           <button
             className="access-danger-button"
             type="button"
@@ -539,29 +630,29 @@ export function AccessSecurityPage() {
               <p>{t(($) => $.common.access.security.providersBody)}</p>
             </div>
             <div className="access-security-actions">
-              {googleEnabled && !providerCodes.has('google') ? (
-                googlePreparation === null ? (
+              {googleEnabled && !googleLinked ? (
+                googleFlow?.kind === 'link' ? (
+                  <GoogleIdentityButton
+                    label={t(($) => $.common.access.security.linkGoogle)}
+                    clientId={googleFlow.preparation.clientId}
+                    nonce={googleFlow.preparation.begun.nonce}
+                    disabled={completeGoogleMutation.isPending}
+                    onCredential={completeGoogleSecurityFlow}
+                    onError={handleProviderBrowserError}
+                  />
+                ) : (
                   <button
                     className="access-secondary-button"
                     type="button"
                     disabled={prepareGoogleMutation.isPending}
                     aria-busy={prepareGoogleMutation.isPending}
-                    onClick={prepareGoogleLink}
+                    onClick={() => prepareGoogleSecurityFlow('link')}
                   >
                     {t(($) => $.common.access.security.linkGoogle)}
                   </button>
-                ) : (
-                  <GoogleIdentityButton
-                    label={t(($) => $.common.access.security.linkGoogle)}
-                    clientId={googlePreparation.clientId}
-                    nonce={googlePreparation.begun.nonce}
-                    disabled={completeGoogleMutation.isPending}
-                    onCredential={completeGoogleLink}
-                    onError={handleProviderBrowserError}
-                  />
                 )
               ) : null}
-              {appleEnabled && !providerCodes.has('apple') ? (
+              {appleEnabled && !appleLinked ? (
                 <button
                   className="access-secondary-button"
                   type="button"
