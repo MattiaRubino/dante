@@ -3,9 +3,9 @@
 - **Status:** TEMPORARY / BRANCH-OPERATIONAL SAVE-GAME
 - **MUST NOT MERGE TO PROTECTED `main`**
 - **Branch:** `feature/ai-architecture`
-- **Current phase:** AI-05A — WHOLE-SYSTEM BUILD BOUNDARY / OWNERSHIP MAP
-- **AI-05A:** CANDIDATE / FIRST PASS FAIL → BD-31..BD-40 / SECOND INDIVIDUAL PASS + COMPOUND FAIL → BD-41
-- **Fresh retest after BD-41:** NOT YET EXECUTED
+- **Current phase:** AI-05B — CONCRETE IMPLEMENTATION BLUEPRINT
+- **AI-05A:** CLOSED / STRUCTURALLY ACCEPTED / BD-01..BD-41
+- **Fresh AI-05A retest:** PASS / T01..T26 + compounds + reverse
 - **Upstream AI-02/03/04/PRE-AI05:** CLOSED / STRUCTURALLY ACCEPTED
 - **Current core eval:** DANTE-E01..DANTE-E14
 - **Implementation:** NONE
@@ -19,62 +19,32 @@ Repository truth outranks this temporary handoff.
 
 ```text
 feature/ai-architecture
-→ read docs/architecture/dante-ai-05a-whole-system-build-boundary.md
-→ read docs/architecture/dante-ai-05a-eval-production-composition-hardening.md
-→ restart T01..T26 from zero
-→ rerun compound collisions including exact production-composition qualification
-→ reverse-check against AI-04/PRE-AI05/AI-03/AI-02
-→ if FAIL: harden smallest demonstrated boundary
-→ if clean: close AI-05A
-→ then AI-05B concrete implementation blueprint
+→ read docs/architecture/dante-ai-05a-whole-system-build-boundary-acceptance.md
+→ treat original AI-05A candidate + BD-41 supplement as pre-closure evidence
+→ read current workstream record
+→ begin AI-05B concrete implementation blueprint
+→ do NOT start production implementation
 ```
 
-## 2. AI-05A hardening state
-
-First destructive pass additions:
-
-```text
-BD-31 Global Search != Intelligence orchestration.
-BD-32 Search may own bounded cross-capability read projection, not canonical semantics/mutation.
-BD-33 Deterministic Search independent of model/provider route availability.
-BD-34 Resource admission/reservation/settlement explicit; Intelligence does not own ledger truth.
-BD-35 Behavior-bearing route/Harness/policy config != scattered env variables.
-BD-36 Static-first config still needs immutable revision, approved active selection, coherent invocation snapshot and emergency deny before production.
-BD-37 First zero-persistence envelope = inline/single-turn/private-in-app/read-only.
-BD-38 H19/audit/resume/background durability gates expansion until minimum justified state exists.
-BD-39 Application fake != provider adapter conformance != direct eval != production capacity proof.
-BD-40 Chat-like UI / inline stream != generic conversation or Run persistence required.
-```
-
-Second-pass compound finding:
-
-```text
-BD-41
-QUALIFICATION EVIDENCE MUST EXERCISE THE SAME MATERIAL PRODUCTION
-COMPOSITION THAT WILL BE PROMOTED, OR EVERY MATERIAL DELTA MUST BE
-INDEPENDENTLY QUALIFIED BEFORE PROMOTION.
-```
-
-The eval runner stays outside the ordinary production request path, but it must not create a second materially different provider stack and then promote that result as production qualification.
-
-## 3. Candidate first-build ownership
+## 2. AI-05A accepted ownership
 
 ```text
 modules/search
-→ shared deterministic permission-aware Search/read projection
-→ may use reviewed SQL/Core in its private search persistence adapter
+→ separate Global Search / discovery capability
+→ deterministic/no-model capable
+→ bounded permission/disclosure/current/history/source read projection
 → no canonical ownership / no mutation / no model-SQL
 
 modules/intelligence
-→ Work/Context/routing/model-assisted orchestration/verification/publication
-→ consumes Search/public capabilities
+→ WorkContract / Context / routing / model-assisted orchestration / verification / publication
+→ consumes Search and owning capability public seams
 
 provider SDK
-→ private outbound adapter behind DANTE ModelAccess port
+→ private outbound adapter behind DANTE-owned ModelAccessPort
 
 resource/commercial authority
-→ shared/commercial quota/metering truth
-→ consumed by Intelligence through admission/settlement boundary
+→ shared/commercial quota/metering truth when activated
+→ Intelligence consumes admission/reservation/settlement
 
 bootstrap
 → wiring/lifecycle
@@ -84,11 +54,42 @@ platform
 
 tooling/ai-evals
 → outside ordinary production request path
-→ qualifies same material HarnessProfile + ProviderBinding + ProviderAdapter + feature/control composition
-→ or independently qualifies material deltas
+→ must qualify same material production composition or independently qualify material deltas
 ```
 
-## 4. First vertical envelope
+## 3. AI-05A late hardening
+
+```text
+BD-31 Global Search != Intelligence orchestration.
+BD-32 Search cross-capability read projection != canonical owner/mutation.
+BD-33 deterministic Search independent of model/provider route availability.
+BD-34 resource admission/reservation/settlement explicit; Intelligence does not own ledger truth.
+BD-35 behavior-bearing route/Harness/policy config != scattered env variables.
+BD-36 static-first config still needs immutable revision, approved active selection, coherent invocation snapshot and emergency deny.
+BD-37 first zero-persistence envelope = inline/single-turn/private-in-app/read-only.
+BD-38 H19/audit/resume/background durability gates expansion until minimum justified state exists.
+BD-39 application fake != provider adapter conformance != direct eval != production capacity proof.
+BD-40 chat-like UI / inline stream != generic conversation or Run persistence required.
+BD-41 qualification evidence must exercise the same material production composition or independently qualify every material delta before promotion.
+```
+
+## 4. Final AI-05A acceptance evidence
+
+```text
+T01..T26                                      PASS / 26 OF 26
+Search + Intelligence + provider outage       PASS
+Search hidden-result + Ask synthesis          PASS
+config rollout + invocation + emergency deny  PASS
+quota + retry/failover + settlement            PASS
+inline stream + disconnect / no durable Run   PASS
+cumulative privacy + zero-persistence gate     PASS
+direct eval + production composition/deltas    PASS
+reverse AI-05A→04→PRE05→03→02                 PASS
+```
+
+No new canonical owner, generic persistence root, provider lock-in or upstream reopen was required.
+
+## 5. First vertical envelope
 
 ```text
 GLOBAL SEARCH
@@ -106,32 +107,6 @@ shared/lock/voice/external surfaces none
 H19-required cross-Run accounting cases not eligible until minimum state exists
 ```
 
-## 5. Retest pressure
-
-Run the same `T01..T26` plus compounds:
-
-```text
-Search + Intelligence + provider outage
-Search hidden result + model synthesis
-static config rollout + invocation snapshot + emergency deny
-quota admission + retry/failover + settlement
-inline stream + disconnect + no durable Run
-cumulative disclosure + zero-persistence envelope
-direct eval + exact material production composition / independently qualified deltas
-```
-
-Then reverse:
-
-```text
-AI-05A
-→ AI-04
-→ PRE-AI05
-→ AI-03
-→ AI-02
-```
-
-No changed exam: prior FAIL cases must pass under the hardened boundaries.
-
 ## 6. Evidence-plane distinctions
 
 ```text
@@ -142,33 +117,72 @@ APPLICATION FAKE
 != PRODUCTION CAPACITY QUALIFICATION
 ```
 
-Qualification artifacts must identify the exact material route composition they support and any separately qualified material delta.
+`tooling/ai-evals` may invoke production-owned route components through a bounded qualification seam; production code must never depend on eval tooling.
 
-## 7. Current non-claims
+## 7. AI-05B exact next work
+
+AI-05B must freeze concrete build contracts, not implement them.
+
+Required outputs:
 
 ```text
-AI-05A PASS/CLOSED                NO
-AI-05B STARTED                    NO
-modules/search implemented        NO
-modules/intelligence implemented  NO
-provider/model/SDK selected       NO
-direct provider eval              NO
-production capacity pass          NO
-stream transport selected         NO
-new PostgreSQL/Alembic change     NO
-new AI table/index                NO
-FTS/vector/pgvector activation    NO
-conversation persistence          NO
-control-plane persistence         NO
-commercial/resource ledger        NO
-Restate/R2/MCP/A2A activation     NO
-Execution Environment             NO
+1 module public boundaries
+2 ports + runtime DTO/types
+3 Search read/query contracts
+4 ModelAccessPort contract
+5 provider adapter conformance contract
+6 route/config artifact schemas
+7 resource admission/settlement seams
+8 first-vertical HTTP + streaming/publication shape
+9 runtime-only vs evidence/persistence classification
+10 exact unit/integration/eval/system test topology
+11 qualification artifact + promotion evidence schema
+12 feature/activation gates
+13 implementation dependency graph
+14 first build gates / commit sequence
+15 destructive AI-05B acceptance before whole AI-05 closure
 ```
 
-## 8. Git discipline
+Provider/model/SDK selection remains OPEN. If a concrete selection requires live API evidence, AI-05B records the exact gate and proof instead of guessing.
 
-Before every remote write: exact BRANCH / PRE-SCOPE / CREATE / UPDATE / DELETE / PURPOSE / OUT-OF-SCOPE gate, then refetch HEAD. After writes compare PRE-SCOPE..HEAD and prove path scope.
+## 8. Current non-claims
 
-## 9. Handoff lifecycle
+```text
+AI-05A CLOSED / STRUCTURAL          YES
+AI-05 WHOLE PHASE CLOSED            NO
+AI-05B SUBSTANTIVE DESIGN           NOT YET MATERIALIZED
+modules/search implemented          NO
+modules/intelligence implemented    NO
+provider/model/SDK selected         NO
+direct provider eval                NO
+production capacity pass            NO
+stream transport selected           NO
+new PostgreSQL/Alembic change       NO
+new AI table/index                  NO
+FTS/vector/pgvector activation      NO
+conversation persistence            NO
+control-plane persistence           NO
+commercial/resource ledger          NO
+Restate/R2/MCP/A2A activation       NO
+Execution Environment               NO
+```
+
+## 9. Git discipline
+
+Before every remote write:
+
+```text
+BRANCH
+PRE-SCOPE
+CREATE
+UPDATE
+DELETE
+PURPOSE
+EXPLICITLY OUT OF SCOPE
+```
+
+Then refetch the live branch HEAD before the first write. If it moved, STOP/re-gate. After writes compare PRE-SCOPE..HEAD and prove exact path scope/readback/status.
+
+## 10. Handoff lifecycle
 
 This file is temporary and MUST NOT merge to protected `main`. Before integration: propagate durable truth → verify coverage → DELETE this file.
