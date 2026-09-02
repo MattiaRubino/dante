@@ -5,19 +5,21 @@
 **Repository:** `MattiaRubino/dante`  
 **Branch:** `feature/home-timeline`  
 **Worktree:** `/home/mattia/projects/dante-timeline`  
-**Final implementation candidate:** `81808814abb4e4998c7bde5b0c6cb8f5f903aa62`  
-**Frontend CI:** `33613239926` / #536 — FULL PASS
+**Final implementation candidate:** `f092a3db2fbac28421b73e0629f7b4b83a1b0aec`  
+**Frontend CI:** `33631013598` / #621 — FULL PASS
 
 ## 1. Purpose
 
-This checkpoint preserves the exact engineering state of C1 after the final semantic, accessibility, recurrence, input-boundary and integration-seam hardening.
+This checkpoint preserves the exact engineering state of C1 after the final semantic, accessibility, recurrence, appearance, input-boundary and integration hardening.
 
 It is not the user acceptance record. C1 remains open until the complete manual protocol is explicitly approved.
 
 ## 2. Final C1 architecture
 
 ```text
-manual + / Timeline context / future typed input
+manual Timeline + / double-click / range gesture
+                    ↓
+          deterministic manual prefill
                     ↓
            shared Create session
                     ↓
@@ -46,10 +48,12 @@ Schedule != Session != Actual
 planned != actual
 floating != zoned != absolute
 preview != accepted projection
-manual/DANTE input != canonical truth
+manual Create != DANTE/AI/voice input
 frontend projection id != server canonical id
 ViewModel != app model != DTO != DB row
 ```
+
+C1 does not expose natural-language, AI or voice authoring. `TemporalCreateFieldSeed` is a deterministic prefill helper for the manual Create flow, not a generic semantic interpreter contract.
 
 ## 3. Final implementation surface
 
@@ -63,6 +67,7 @@ Primary files:
 - `apps/web/src/features/temporal-create/ui/`
 - `apps/web/src/features/home/ui/timeline/timeline-create-bridge.tsx`
 - `apps/web/e2e/temporal-create.spec.ts`
+- `apps/web/e2e/temporal-create-appearance.spec.ts`
 
 ### Shared lifecycle
 
@@ -71,8 +76,8 @@ Implemented:
 - one structured draft across all surfaces;
 - normalization at draft and application boundaries;
 - Quick/Expanded/Full round-trip without duplicated state;
-- contextual Timeline defaults;
-- structured seed path for future semantic inputs;
+- contextual manual Timeline defaults;
+- deterministic structured manual prefill;
 - validation + invalid-control focus;
 - candidate preview;
 - prepared operation + deterministic execution;
@@ -86,7 +91,7 @@ Implemented:
 Supported:
 
 - timed/all-day/unscheduled where applicable;
-- context and notes;
+- Context and notes;
 - exact expected duration in deeper surfaces;
 - open/window/deadline/preferred scheduling intent;
 - earliest/deadline boundaries;
@@ -178,15 +183,39 @@ C1 Event recurrence:
 
 Occurrence generation remains exclusively downstream M6/backend work.
 
-## 7. Hardening history that must be preserved
+## 7. Context / appearance hardening
+
+C1 now models the visual override explicitly without collapsing it into Context membership.
+
+```text
+Context/groupId
+→ grouping + filtering + inherited tone
+
+appearanceTone
+→ optional presentation override only
+```
+
+Guarantees:
+
+- default appearance inherits Context tone;
+- override persists Quick/Expanded/Full session state;
+- preview and accepted Timeline projection use the override visually;
+- override does not mutate `groupId`;
+- filters continue to use Context/group membership;
+- appearance color names are independent from Context names;
+- E2E verifies a Focus item with the red/urgent visual tone is hidden by Urgenze filtering and remains visible under Focus filtering after reset.
+
+The final vocabulary is stable presentation language rather than category language: Purple/Cyan/Green/Amber/Pink/Red and IT equivalents.
+
+## 8. Hardening history that must be preserved
 
 ### Architecture cycles
 
 Earlier component/type cycles were removed. Current final architecture check:
 
 ```text
-199 modules
-477 dependencies
+214 modules
+522 dependencies
 0 violations
 ```
 
@@ -202,6 +231,8 @@ Notable resolved collisions:
 - recurrence quota period;
 - monthly ordinal weekday vs frequency option wording.
 
+Appearance controls also use independent localized color names instead of Context labels.
+
 ### Zoned/DST arithmetic
 
 Zoned Event arithmetic uses `ZonedDateTime`/Instant elapsed truth rather than raw wall-clock subtraction.
@@ -214,19 +245,21 @@ F0 fingerprints minimal projection command. C1 separately fingerprints rich meta
 
 ### Prepared-operation snapshot ownership
 
-Final hardening at `81808814...` makes `runtime.prepare()` own a normalized deep-frozen copy before validation/placement/command creation.
+At final candidate `f092a3db...`, `runtime.prepare()` owns a normalized deep-frozen copy before validation/placement/command creation.
 
-This prevents a mutable caller from changing title, Event intent, recurrence arrays or other rich fields between prepare and execute.
+This prevents mutable callers from changing title, Event intent, recurrence arrays or other rich fields between prepare and execute.
 
 Test: `application/temporal-create-boundary.test.ts`.
 
-### Typed semantic seed
+### Manual prefill seed
 
-`TemporalCreateFieldSeed` deep-merges into normal Create defaults and then re-enters normal normalization/validation.
+`TemporalCreateFieldSeed` deep-merges deterministic structured prefill into normal Create defaults and then re-enters normal normalization/validation.
 
-It cannot use structured prefill to create an Activity recurrence or skip validation.
+It cannot create Activity recurrence or bypass validation.
 
-`TemporalCreateInvocation` already transports the seed into the same UI session.
+Its C1 role is deliberately bounded to manual Create/context prefill. It is **not** the contract for future DANTE/NL/voice input.
+
+Test: `application/temporal-create-seed.test.ts`.
 
 ### Typed owner handoff
 
@@ -240,9 +273,15 @@ Test: `application/temporal-create-handoff.test.ts`.
 
 A prior Shift-drag failure was traced to retaining `.first()` across virtualized day recycling. The resulting raw pointer coordinate was outside the viewport.
 
-Final test selects a currently visible date, reanchors by stable `data-timeline-date`, verifies visible geometry and reacquires after the first composer close.
+The hardened test selects a currently visible date, reanchors by stable `data-timeline-date`, verifies visible geometry and reacquires after the first composer close.
 
 This preserves the real gesture contract without adding sleeps/timeouts or weakening assertions.
+
+### Appearance E2E / card remount
+
+The appearance contract originally used a temporary imperative DOM marker as card identity. Filtering can unmount/remount the card, so that marker is not a persistent identity contract.
+
+The final E2E follows the native Timeline card by stable content identity across the remount while retaining strong assertions for tone, Context, filtering and Undo. T1 rendering was not modified merely to satisfy a test hook.
 
 ### Dirty discard modal
 
@@ -256,11 +295,19 @@ Create projection layout remains O(n) over current Create projections through ca
 
 Local runtime remains lazily initialized once per mounted Create entry.
 
-## 8. UI/CSS audit
+## 9. UI/CSS audit
 
-The previously identified Full Event one-off CSS debt is no longer present in the active component structure.
+Full Event reuses the existing Create section grammar.
 
-Full Event uses shared:
+Shared heading style now targets:
+
+```css
+.temporal-create-section__heading :is(h3, h4)
+```
+
+This lets semantic heading depth remain correct without adding a one-off visual subsection class.
+
+Preserve shared:
 
 - `temporal-create-section__heading`;
 - `temporal-create-check-grid`.
@@ -269,7 +316,7 @@ Do not reintroduce `.is-subsection` / `.temporal-create-checkline` merely to cre
 
 The UI target remains high-density but calm progressive disclosure, not an administrative DB editor.
 
-## 9. Physical/CP6 alignment
+## 10. Physical/CP6 alignment
 
 Current database system of record:
 
@@ -301,16 +348,16 @@ M6 preserves `recurrence_generated` vs `explicit_extra` and exact governing recu
 
 C1 does not attempt to execute any of that backend runtime.
 
-## 10. Final automated evidence
+## 11. Final automated evidence
 
 Implementation candidate:
 
-`81808814abb4e4998c7bde5b0c6cb8f5f903aa62`
+`f092a3db2fbac28421b73e0629f7b4b83a1b0aec`
 
 CI:
 
-- run ID `33613239926`;
-- run number `536`.
+- run ID `33631013598`;
+- run number `621`.
 
 ### Quality — PASS
 
@@ -318,9 +365,9 @@ CI:
 - active Home format PASS;
 - lint PASS;
 - typecheck: 5/5;
-- architecture: 199 modules / 477 dependencies / zero violations;
+- architecture: **214 modules / 522 dependencies / zero violations**;
 - generated-source drift PASS;
-- web unit: 28 files / 168 tests PASS;
+- web unit: **34 files / 183 tests PASS**;
 - package suites PASS;
 - production build PASS;
 - diff check PASS;
@@ -341,23 +388,22 @@ CI:
 
 `Frontend CI Gate` PASS.
 
-## 11. Bundle decision
+## 12. Bundle decision
 
 Final Home route:
 
 ```text
-252.22 kB raw
-86.38 kB gzip
+268.40 kB raw
+90.13 kB gzip
 ```
-
-Earlier full C1 candidate #416 was 83.74 kB gzip. The additional recurrence/seed/handoff/boundary depth adds a small measured increment while materially strengthening the contract.
 
 Decision remains: no dynamic import/Suspense split for C1 solely for gzip recovery. Draft continuity, deterministic validation/focus and error handling remain synchronous. Revisit only on a future measured route-growth case.
 
-## 12. No demonstrated C1 engineering defect remains
+## 13. No demonstrated C1 engineering defect remains
 
-Final audit accepted for the automated candidate:
+Final implementation audit accepted for the automated candidate:
 
+- manual-only authoring boundary;
 - owner-correct Activity/Event/Routine semantics;
 - recurrence four-family depth;
 - no local Occurrence generation;
@@ -366,9 +412,10 @@ Final audit accepted for the automated candidate:
 - provisional inference truth;
 - provider seams only;
 - typed external-owner handoff;
-- source-neutral structured seed;
+- deterministic manual prefill;
 - application-boundary immutable snapshot;
 - minimal + rich idempotency;
+- Context/appearance non-collapse;
 - preview/accepted separation;
 - Undo cleanup;
 - Timeline contextual entries;
@@ -378,7 +425,7 @@ Final audit accepted for the automated candidate:
 - i18n;
 - architecture/performance gates.
 
-## 13. Human acceptance gate
+## 14. Human acceptance gate
 
 Use only:
 
@@ -391,7 +438,7 @@ C1 MANUAL FAIL
 → reopen demonstrated defect + necessary adjacent contract
 → repair
 → full automated CI again
-→ repeat only the required final manual protocol
+→ repeat the required final manual protocol
 ```
 
 If the user explicitly approves:
