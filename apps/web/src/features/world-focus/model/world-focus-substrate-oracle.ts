@@ -1,4 +1,8 @@
-import type { WorldFocusContextReference } from './world-focus-workspace';
+import {
+  createWorldFocusContextReferenceSet,
+  type WorldFocusContextReference,
+  type WorldFocusContextReferenceSet,
+} from './world-focus-context-reference';
 
 export const WORLD_FOCUS_ORACLE_BASIS_LEVELS = [
   'current',
@@ -133,75 +137,22 @@ export type WorldFocusOracleOutcome = Readonly<{
   canReuseSavedDerivedResult: boolean;
 }>;
 
-export type WorldFocusOracleReferenceSet = Readonly<{
-  primary: WorldFocusContextReference;
-  supporting: readonly WorldFocusContextReference[];
-}>;
+export type WorldFocusOracleReferenceSet = WorldFocusContextReferenceSet;
 
-function assertNonEmptyToken(value: string, label: string): string {
-  const token = value.trim();
-  if (token.length === 0) {
-    throw new Error(`${label} must not be empty`);
-  }
-  return token;
-}
-
-function normalizeReference(
-  reference: WorldFocusContextReference,
-  label: string,
-): WorldFocusContextReference {
-  return Object.freeze({
-    kind: assertNonEmptyToken(reference.kind, `${label} kind`),
-    key: assertNonEmptyToken(reference.key, `${label} key`),
-  });
-}
-
-function referenceIdentity(reference: WorldFocusContextReference): string {
-  return `${reference.kind}\u0000${reference.key}`;
-}
-
+/**
+ * Compatibility helper for the WS7/WS8 proof corpus. Reference normalization,
+ * ordering, bounds and duplicate rejection are owned by the production-neutral
+ * reference model rather than reimplemented by the oracle.
+ */
 export function createWorldFocusOracleReferenceSet(input: Readonly<{
   primary: WorldFocusContextReference;
   supporting?: readonly WorldFocusContextReference[];
   maxSupportingReferences: number;
 }>): WorldFocusOracleReferenceSet {
-  if (
-    !Number.isInteger(input.maxSupportingReferences) ||
-    input.maxSupportingReferences < 0
-  ) {
-    throw new Error(
-      'World Focus maximum supporting references must be a non-negative integer',
-    );
-  }
-
-  const primary = normalizeReference(
-    input.primary,
-    'World Focus primary context reference',
-  );
-  const supportingInput = input.supporting ?? [];
-  if (supportingInput.length > input.maxSupportingReferences) {
-    throw new Error('World Focus supporting context references exceed policy');
-  }
-
-  const seen = new Set<string>([referenceIdentity(primary)]);
-  const supporting = supportingInput.map((reference, index) => {
-    const normalized = normalizeReference(
-      reference,
-      `World Focus supporting context reference[${index}]`,
-    );
-    const identity = referenceIdentity(normalized);
-    if (seen.has(identity)) {
-      throw new Error(
-        'World Focus context reference set must not contain duplicates',
-      );
-    }
-    seen.add(identity);
-    return normalized;
-  });
-
-  return Object.freeze({
-    primary,
-    supporting: Object.freeze(supporting),
+  return createWorldFocusContextReferenceSet({
+    primary: input.primary,
+    supporting: input.supporting,
+    maxSupportingReferences: input.maxSupportingReferences,
   });
 }
 
@@ -267,9 +218,6 @@ function resolveEffectDisposition(
     return 'not-applicable';
   }
 
-  // Once a real effect has partially occurred, later revocation, basis change or
-  // identity evolution may constrain disclosure/new action but cannot erase the
-  // obligation to compensate or reconcile the real-world consequence.
   if (scenario.effect === 'partial-real-compensating') {
     return 'compensate-or-reconcile';
   }
