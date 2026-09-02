@@ -6,7 +6,7 @@ import {
 import {
   normalizeWorldFocusId,
   type WorldFocusId,
-} from '../model/world-focus-fixtures';
+} from '../model/world-focus-identity';
 import {
   isWorldFocusContinuityPresentationState,
   WORLD_FOCUS_CONTINUITY_FIRST_OPEN_LIMIT,
@@ -59,18 +59,10 @@ function validateContinuityItem(
   const presentationState = input.presentationState;
   const issues: WorldFocusValidationIssue[] = [];
 
-  if (key === null) {
-    issues.push(issue('item.key', ['orderedItems', index, 'key']));
-  }
-  if (title === null) {
-    issues.push(issue('item.title', ['orderedItems', index, 'title']));
-  }
-  if (context === null) {
-    issues.push(issue('item.context', ['orderedItems', index, 'context']));
-  }
-  if (checkpoint === null) {
-    issues.push(issue('item.checkpoint', ['orderedItems', index, 'checkpoint']));
-  }
+  if (key === null) issues.push(issue('item.key', ['orderedItems', index, 'key']));
+  if (title === null) issues.push(issue('item.title', ['orderedItems', index, 'title']));
+  if (context === null) issues.push(issue('item.context', ['orderedItems', index, 'context']));
+  if (checkpoint === null) issues.push(issue('item.checkpoint', ['orderedItems', index, 'checkpoint']));
   if (!isWorldFocusContinuityPresentationState(presentationState)) {
     issues.push(
       issue('item.presentationState', [
