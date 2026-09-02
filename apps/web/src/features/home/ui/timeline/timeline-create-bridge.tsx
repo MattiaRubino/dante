@@ -22,6 +22,7 @@ import {
 } from '../../../temporal-create';
 import { TIMELINE_POLICY } from './model/timeline-policy';
 import type {
+  TimelineAllDayItem,
   TimelineEvent,
   TimelineGroup,
   TimelineGroupId,
@@ -37,7 +38,9 @@ type TimelineCreateBridgeProps = Readonly<{
   onRevealDate: (date: PlainDate) => void;
   onCreateContext: (label: string, tone: TimelineSemanticTone) => TimelineGroup;
   onMaterializeCreatedEvent: (dateKey: string, event: TimelineEvent) => void;
+  onMaterializeCreatedAllDay: (item: TimelineAllDayItem) => void;
   onRemoveCreatedEvent: (eventId: TimelineEvent['id']) => void;
+  onRemoveCreatedAllDay: (itemId: string) => void;
   onBeforeOpen?: () => void;
 }>;
 
@@ -149,7 +152,7 @@ function emptyTimelineTarget(target: EventTarget | null): HTMLElement | null {
   }
   if (
     target.closest(
-      'button, input, select, textarea, .timeline-event-card, .temporal-create-projection-card, .temporal-create-all-day',
+      'button, input, select, textarea, .timeline-event-card, .timeline-all-day-item, .temporal-create-projection-card, .temporal-create-all-day',
     )
   ) {
     return null;
@@ -193,6 +196,39 @@ function timelineEventFromProjection(
   });
 }
 
+function timelineAllDayFromProjection(
+  projection: TemporalCreateTimelineProjection,
+  meta: string,
+): TimelineAllDayItem | null {
+  if (
+    projection.preview ||
+    !projection.allDay ||
+    projection.dateKey === null ||
+    projection.endDateExclusiveKey === null
+  ) {
+    return null;
+  }
+
+  return Object.freeze({
+    id: projection.id,
+    startDateKey: projection.dateKey,
+    endDateExclusiveKey: projection.endDateExclusiveKey,
+    title: projection.title,
+    groupId: projection.contextId,
+    origin: 'create' as const,
+    meta,
+  });
+}
+
+function isNativeMaterializedProjection(
+  projection: TemporalCreateTimelineProjection,
+): boolean {
+  return (
+    timelineEventFromProjection(projection, '') !== null ||
+    timelineAllDayFromProjection(projection, '') !== null
+  );
+}
+
 export function TimelineCreateBridge({
   defaultDate,
   groups,
@@ -200,7 +236,9 @@ export function TimelineCreateBridge({
   onRevealDate,
   onCreateContext,
   onMaterializeCreatedEvent,
+  onMaterializeCreatedAllDay,
   onRemoveCreatedEvent,
+  onRemoveCreatedAllDay,
   onBeforeOpen,
 }: TimelineCreateBridgeProps) {
   const { t } = useTranslation('common');
@@ -407,7 +445,7 @@ export function TimelineCreateBridge({
         requestAnimationFrame(() => {
           const id = CSS.escape(projection.id);
           const card = document.querySelector<HTMLElement>(
-            `[data-timeline-event="${id}"], [data-temporal-create-projection="${id}"]`,
+            `[data-timeline-event="${id}"], [data-timeline-all-day-item="${id}"], [data-temporal-create-projection="${id}"]`,
           );
           const grid = document.querySelector<HTMLElement>('.timeline-grid');
           const day = card?.closest<HTMLElement>('.timeline-day-section');
@@ -442,25 +480,32 @@ export function TimelineCreateBridge({
         : projection.kind === 'activity'
           ? t(($) => $.common.home.timeline.create.kind.activity)
           : t(($) => $.common.home.timeline.create.kind.event);
-      const materialized = timelineEventFromProjection(projection, meta);
-      if (materialized) {
-        onMaterializeCreatedEvent(materialized.dateKey, materialized.event);
+      const timed = timelineEventFromProjection(projection, meta);
+      const allDay = timelineAllDayFromProjection(projection, meta);
+      if (timed) {
+        onMaterializeCreatedEvent(timed.dateKey, timed.event);
+      } else if (allDay) {
+        onMaterializeCreatedAllDay(allDay);
       }
       setEffects((current) => [...current, effect]);
       setPreview(null);
       showCreateFeedback(effect);
       return reveal(projection);
     },
-    [onMaterializeCreatedEvent, reveal, showCreateFeedback, t],
+    [
+      onMaterializeCreatedAllDay,
+      onMaterializeCreatedEvent,
+      reveal,
+      showCreateFeedback,
+      t,
+    ],
   );
 
   const projections = useMemo(
     () =>
       effects
         .map(temporalCreateTimelineProjectionFromEffect)
-        .filter((projection) =>
-          timelineEventFromProjection(projection, '') === null,
-        ),
+        .filter((projection) => !isNativeMaterializedProjection(projection)),
     [effects],
   );
 
@@ -585,9 +630,14 @@ export function TimelineCreateBridge({
     if (!effect) {
       return;
     }
+    const projection = temporalCreateTimelineProjectionFromEffect(effect);
     const result = await effect.undo();
     if (result.status === 'applied') {
-      onRemoveCreatedEvent(effect.projection.id);
+      if (projection.allDay) {
+        onRemoveCreatedAllDay(projection.id);
+      } else {
+        onRemoveCreatedEvent(projection.id);
+      }
       setEffects((current) =>
         current.filter(
           (candidate) => candidate.projection.id !== effect.projection.id,
