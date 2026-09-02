@@ -3,8 +3,8 @@
 **Status:** FINAL AUTOMATED TRACEABILITY — MANUAL ACCEPTANCE PENDING  
 **Date:** 2026-09-02  
 **Branch:** `feature/home-timeline`  
-**Implementation candidate:** `f092a3db2fbac28421b73e0629f7b4b83a1b0aec`  
-**Frontend CI:** `33631013598` / #621 — FULL PASS  
+**Implementation candidate:** `7028633921d1b438bd04961a718457afd82ccc13`  
+**Frontend CI:** `33635389124` / #632 — FULL PASS  
 **Scope:** complete pre-backend **manual** Timeline Temporal Create C1
 
 ## 1. Purpose
@@ -330,7 +330,7 @@ Automated proof:
 The E2E verifies:
 
 1. Focus Context inherits Focus tone by default;
-2. manual custom red/urgent tone changes preview/card presentation;
+2. manual custom red tone changes preview/card presentation;
 3. Full ↔ Expanded preserves the override;
 4. accepted card still displays Focus Context;
 5. Urgenze filter hides it;
@@ -401,7 +401,7 @@ C1 fingerprints canonical rich metadata by operation ID:
 
 ### Prepared-snapshot ownership
 
-At implementation candidate `f092a3db...`, `runtime.prepare()` re-normalizes and deeply freezes its own specification before validation, placement/capability projection and execution.
+At implementation candidate `7028633921d1b438bd04961a718457afd82ccc13`, `runtime.prepare()` re-normalizes and deeply freezes its own specification before validation, placement/capability projection and execution.
 
 This closes a prepare/execute TOCTOU class of bug: mutable caller data cannot change the prepared command/specification after preparation.
 
@@ -438,7 +438,8 @@ C1 protects:
 - automated Axe WCAG A/AA checks on advanced surfaces;
 - mobile Full Create at 390×844 with strict no-horizontal-overflow invariant;
 - Timeline double-click and Shift-drag contextual manual entry;
-- virtualized Timeline gesture test anchored to a stable visible date rather than unstable DOM index;
+- contextual gesture E2E anchored to a useful intersection of day-section, Timeline grid viewport and browser viewport, then reacquired after Create close;
+- no arbitrary sleep/retry masking of contextual gesture failures;
 - appearance-card filter/remount coverage without relying on an ephemeral imperative marker;
 - frozen Timeline pointer/focus/drag behavior in Firefox;
 - no AI/NL/voice affordance inside the Create product surface.
@@ -458,7 +459,7 @@ Relevant guarantees:
 - no UI component dependency cycles;
 - listener/RAF/observer cleanup remains covered by existing Timeline architecture/tests.
 
-CI #621 architecture result:
+CI #632 architecture result:
 
 ```text
 214 modules
@@ -470,11 +471,11 @@ CI #621 architecture result:
 
 Implementation candidate:
 
-`f092a3db2fbac28421b73e0629f7b4b83a1b0aec`
+`7028633921d1b438bd04961a718457afd82ccc13`
 
 Frontend CI:
 
-`33631013598` / #621
+`33635389124` / #632
 
 Result:
 
@@ -538,7 +539,8 @@ C1 remains:
 
 ```text
 IMPLEMENTATION FULL GREEN
-DOCUMENTATION RECONCILIATION MUST ALSO BE CI-GREEN
+DOCUMENTATION RECONCILIATION COMPLETE
+FINAL DOCUMENTATION DESCENDANT MUST BE CI-GREEN
 MANUAL ACCEPTANCE PENDING
 NOT YET FROZEN / CLOSED
 ```
