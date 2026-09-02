@@ -11,7 +11,7 @@ import {
   type WebSignupVerificationRequest,
   type WebSignupVerificationResult,
 } from '../../../platform/auth/web-auth-remote';
-import { authSessionQueryKey } from './auth-session';
+import { commitAuthoritativeAuthSession } from './auth-session';
 
 export type { RecoveryProofStore } from '../../../platform/auth/recovery-proof';
 
@@ -45,10 +45,10 @@ export function useVerifySignupMutation() {
     mutationFn: (request: WebSignupVerificationRequest) =>
       webAuthRemote.verifySignup(request),
     retry: false,
-    onSuccess: (result) => {
+    onSuccess: async (result) => {
       const session = authenticatedSessionFromSignup(result);
       if (session !== null) {
-        queryClient.setQueryData(authSessionQueryKey, session);
+        await commitAuthoritativeAuthSession(queryClient, session);
       }
     },
   });
@@ -84,9 +84,8 @@ export function useResetPasswordMutation() {
     mutationFn: (request: WebPasswordResetRequest) =>
       webAuthRemote.resetPassword(request),
     retry: false,
-    onSuccess: () => {
-      queryClient.setQueryData(authSessionQueryKey, { authenticated: false });
-    },
+    onSuccess: () =>
+      commitAuthoritativeAuthSession(queryClient, { authenticated: false }),
   });
 }
 
@@ -101,8 +100,7 @@ export function useReauthenticateMutation() {
       csrfToken: string;
     }) => webAuthRemote.reauthenticate({ password }, csrfToken),
     retry: false,
-    onSuccess: (session) => {
-      queryClient.setQueryData(authSessionQueryKey, session);
-    },
+    onSuccess: (session) =>
+      commitAuthoritativeAuthSession(queryClient, session),
   });
 }
