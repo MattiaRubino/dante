@@ -131,7 +131,9 @@ describe('WebAuthn browser serialization boundary', () => {
       signal,
     });
 
-    expect(byteValues(capturedCreation?.publicKey?.challenge)).toEqual([1, 2, 3]);
+    expect(byteValues(capturedCreation?.publicKey?.challenge)).toEqual([
+      1, 2, 3,
+    ]);
     expect(byteValues(capturedCreation?.publicKey?.user.id)).toEqual([4, 5, 6]);
     expect(
       byteValues(capturedCreation?.publicKey?.excludeCredentials?.[0]?.id),
@@ -187,10 +189,12 @@ describe('WebAuthn browser serialization boundary', () => {
       signal,
     });
 
-    expect(byteValues(capturedRequest?.publicKey?.challenge)).toEqual([1, 2, 3]);
-    expect(byteValues(capturedRequest?.publicKey?.allowCredentials?.[0]?.id)).toEqual([
-      7, 8, 9,
+    expect(byteValues(capturedRequest?.publicKey?.challenge)).toEqual([
+      1, 2, 3,
     ]);
+    expect(
+      byteValues(capturedRequest?.publicKey?.allowCredentials?.[0]?.id),
+    ).toEqual([7, 8, 9]);
     expect(capturedRequest?.signal).toBe(signal);
     expect(result).toEqual({
       webauthn_challenge_ref: '00000000-0000-4000-8000-000000000002',
