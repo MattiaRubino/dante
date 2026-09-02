@@ -41,7 +41,7 @@ export function sameWorldFocusContextReference(
 
 export function createWorldFocusContextReferenceSet(input: Readonly<{
   primary: WorldFocusContextReference;
-  supporting?: readonly WorldFocusContextReference[];
+  supporting?: readonly WorldFocusContextReference[] | undefined;
   maxSupportingReferences?: number;
 }>): WorldFocusContextReferenceSet {
   const maximum =
