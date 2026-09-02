@@ -1,4 +1,10 @@
-import { expect, test, type Page, type Response, type TestInfo } from '@playwright/test';
+import {
+  expect,
+  test,
+  type Page,
+  type Response,
+  type TestInfo,
+} from '@playwright/test';
 
 const password = 'correct horse battery staple';
 
