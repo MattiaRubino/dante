@@ -5,12 +5,12 @@
 **Repository:** `MattiaRubino/dante`  
 **Branch:** `feature/home-timeline`  
 **Worktree:** `/home/mattia/projects/dante-timeline`  
-**Final implementation candidate:** `f092a3db2fbac28421b73e0629f7b4b83a1b0aec`  
-**Frontend CI:** `33631013598` / #621 — FULL PASS
+**Final implementation candidate:** `7028633921d1b438bd04961a718457afd82ccc13`  
+**Frontend CI:** `33635389124` / #632 — FULL PASS
 
 ## 1. Purpose
 
-This checkpoint preserves the exact engineering state of C1 after the final semantic, accessibility, recurrence, appearance, input-boundary and integration hardening.
+This checkpoint preserves the exact engineering state of C1 after the final semantic, accessibility, recurrence, appearance, input-boundary, contextual-gesture and integration hardening.
 
 It is not the user acceptance record. C1 remains open until the complete manual protocol is explicitly approved.
 
@@ -185,7 +185,7 @@ Occurrence generation remains exclusively downstream M6/backend work.
 
 ## 7. Context / appearance hardening
 
-C1 now models the visual override explicitly without collapsing it into Context membership.
+C1 models the visual override explicitly without collapsing it into Context membership.
 
 ```text
 Context/groupId
@@ -203,7 +203,7 @@ Guarantees:
 - override does not mutate `groupId`;
 - filters continue to use Context/group membership;
 - appearance color names are independent from Context names;
-- E2E verifies a Focus item with the red/urgent visual tone is hidden by Urgenze filtering and remains visible under Focus filtering after reset.
+- E2E verifies a Focus item with the red visual tone is hidden by Urgenze filtering and remains visible under Focus filtering after reset.
 
 The final vocabulary is stable presentation language rather than category language: Purple/Cyan/Green/Amber/Pink/Red and IT equivalents.
 
@@ -245,7 +245,7 @@ F0 fingerprints minimal projection command. C1 separately fingerprints rich meta
 
 ### Prepared-operation snapshot ownership
 
-At final candidate `f092a3db...`, `runtime.prepare()` owns a normalized deep-frozen copy before validation/placement/command creation.
+At final candidate `7028633921d1b438bd04961a718457afd82ccc13`, `runtime.prepare()` owns a normalized deep-frozen copy before validation/placement/command creation.
 
 This prevents mutable callers from changing title, Event intent, recurrence arrays or other rich fields between prepare and execute.
 
@@ -269,13 +269,21 @@ All current targets are explicit `deferred` dependencies. `prepareTemporalCreate
 
 Test: `application/temporal-create-handoff.test.ts`.
 
-### Timeline virtualization E2E
+### Timeline virtualization / browser viewport E2E
 
-A prior Shift-drag failure was traced to retaining `.first()` across virtualized day recycling. The resulting raw pointer coordinate was outside the viewport.
+The final contextual-create hardening covers a real mismatch between mounted Timeline sections, the scrollable Timeline grid and the browser viewport.
 
-The hardened test selects a currently visible date, reanchors by stable `data-timeline-date`, verifies visible geometry and reacquires after the first composer close.
+The accepted E2E contract now:
 
-This preserves the real gesture contract without adding sleeps/timeouts or weakening assertions.
+- scrolls `.timeline-grid` into the browser viewport;
+- finds a day section with a useful visible intersection inside both the Timeline grid and browser viewport;
+- anchors it by stable `data-timeline-date`;
+- derives double-click coordinates from the visible section-local band;
+- reacquires geometry after Create closes;
+- derives Shift-drag coordinates from the current browser-space intersection;
+- uses no arbitrary sleeps/timeouts and weakens no gesture assertion.
+
+This replaces the stale assumption that any mounted Timeline day is automatically browser-visible. The hardened contextual gesture test passed in Chromium at CI #632 and the frozen Timeline Firefox contract also passed.
 
 ### Appearance E2E / card remount
 
@@ -299,7 +307,7 @@ Local runtime remains lazily initialized once per mounted Create entry.
 
 Full Event reuses the existing Create section grammar.
 
-Shared heading style now targets:
+Shared heading style targets:
 
 ```css
 .temporal-create-section__heading :is(h3, h4)
@@ -352,12 +360,12 @@ C1 does not attempt to execute any of that backend runtime.
 
 Implementation candidate:
 
-`f092a3db2fbac28421b73e0629f7b4b83a1b0aec`
+`7028633921d1b438bd04961a718457afd82ccc13`
 
 CI:
 
-- run ID `33631013598`;
-- run number `621`.
+- run ID `33635389124`;
+- run number `632`.
 
 ### Quality — PASS
 
@@ -419,7 +427,7 @@ Final implementation audit accepted for the automated candidate:
 - preview/accepted separation;
 - Undo cleanup;
 - Timeline contextual entries;
-- virtualized day handling;
+- browser/Timeline viewport-safe contextual gesture E2E;
 - accessibility/focus/inert modal behavior;
 - responsive/mobile containment;
 - i18n;
