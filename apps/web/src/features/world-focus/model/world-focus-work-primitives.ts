@@ -1,4 +1,4 @@
-import type { WorldFocusContextReference } from './world-focus-workspace';
+import type { WorldFocusContextReference } from './world-focus-context-reference';
 
 export const WORLD_FOCUS_WORK_PRIMITIVE_KINDS = [
   'continuity',
