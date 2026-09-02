@@ -6,9 +6,11 @@
 - **Active product vertical:** Access/Auth
 - **Current macro-phase:** M5 — Multi-authenticator Account Layer — **ACTIVE / FINAL EXTERNAL ACCEPTANCE OPEN**
 - **Reviewed product checkpoint:** `ab2716abe40de658d99d1908ba31c5d5744e3c57`
-- **Current branch checkpoint before docs reconciliation:** `9c0587af5891249d8a6e6b6a5d6e3af6934c6943`
+- **Email-UAT tooling checkpoint:** `9c0587af5891249d8a6e6b6a5d6e3af6934c6943`
+- **Documentation reconciliation base:** `bbf63fe0375c52ec2c49448ae7f6e9d238b4ba74`
 - **Accepted Alembic head:** `20260831_13`
 - **Current review evidence:** `workstreams/access-auth-m5-review-2026-09-02.md`
+- **Current email architecture:** `architecture/access-auth-email-delivery.md` + `decisions/ADR-012-email-delivery-platform.md`
 
 ## 1. Current state
 
@@ -35,8 +37,12 @@ GROUP 3 M5-H+I FastAPI/OpenAPI/client      COMPLETE / ENGINEERING PASS
 GROUP 4 Access Web engineering QA          PASS
 GROUP 4 local password/passkey UAT          PASS
 GROUP 4 real Google UAT                    PASS
-GROUP 4 real Internet email delivery       OPEN
-GROUP 4 real Apple registered-domain UAT    DEFERRED / OPEN
+
+Email delivery architecture direction      ACCEPTED
+Primary production delivery target         AMAZON SES API V2 / QUALIFICATION OPEN
+Durable email platform implementation       OPEN
+Real Internet signup/recovery delivery      OPEN
+Real Apple registered-domain UAT            DEFERRED / OPEN
 
 Whole M5                                    ACTIVE / NOT FORMALLY CLOSED
 M6 Native Mobile                           FUTURE / OPTIONAL / ONLY IF RE-GATED
@@ -80,6 +86,8 @@ standalone Dictionary entries 103
 
 Revision `20260831_13` is the bounded authenticator-lifecycle runtime ACL follow-up; it does not change the M5-A topology counts.
 
+The target email transactional outbox/delivery-state concepts are **not materialized yet** and therefore do not alter the current catalog counts.
+
 ## 4. Current Auth constitution
 
 ```text
@@ -100,14 +108,53 @@ reauthentication != signin
 frontend/provider/browser completion != backend-authoritative success
 ```
 
-## 5. Open items before M5 closure
+## 5. Email architecture current truth
+
+Architecture direction is now selected:
 
 ```text
-email-delivery architecture/research
-→ decide internal responsibility vs external delivery service boundary
-→ deliverability/DNS/bounce/complaint/retry/observability/privacy design
-→ qualify provider-neutral implementation
-→ real signup/recovery delivery UAT
+DANTE owns email intent/lifecycle/state
+external specialist provider owns last-mile Internet delivery
+PostgreSQL transactional outbox is the durable target
+EmailDeliveryPort remains provider-neutral application boundary
+Amazon SES API v2 is the primary production adapter target
+preferred initial SES region target: eu-south-1 Europe/Milan
+SMTP remains deterministic test/UAT/compatibility transport
+provider acceptance != recipient delivery
+blind retry after ambiguous send outcome is forbidden
+Auth/security tracking/link rewriting remain off
+SPF + DKIM + DMARC required before production sender acceptance
+```
+
+This is an architecture decision, **not** production acceptance. Exact outbox schema, SES account/sandbox/IAM, sender DNS, provider event ingestion, suppression lifecycle, failure-model proof and live Internet delivery remain open.
+
+The older SES-specific `3,000 message charges/month for the first 12 months` free-tier claim is stale for new AWS customers after July 21, 2026 and must not be used as current provider economics.
+
+## 6. Open items before M5 closure
+
+```text
+Email Platform operational/provider qualification
+→ SES account + sandbox/production-access model
+→ exact regional capability/quotas and current pricing
+→ IAM/workload-identity posture
+→ sender domain/subdomain + SPF/DKIM/DMARC
+→ privacy/retention/subprocessor review
+
+Email Platform exact implementation gate
+→ transactional outbox persistence design
+→ sensitive OTP/recovery payload protection
+→ SES API adapter
+→ delivery-attempt/provider-message state
+→ event ingestion and suppression/restriction mapping
+→ retry/idempotency/ambiguous-outcome handling
+→ observability/failure injection
+
+Real Internet UAT
+→ signup verification delivered to a real inbox
+→ provider-mailbox verification delivered to a real inbox
+→ recovery link delivered and consumed
+→ password-change notification delivered
+→ direct PostgreSQL + provider-event verification
 
 Apple
 → registered HTTPS domain/provider configuration
@@ -115,11 +162,11 @@ Apple
 → Private Email Relay sender/domain proof
 ```
 
-The opt-in real-SMTP local-UAT support introduced at `9c0587...` is **not** a provider selection and has not yet completed its targeted tooling/real-delivery qualification.
+The opt-in real-SMTP local-UAT support introduced at `9c0587...` remains useful tooling and still requires its targeted qualification before being treated as an accepted real-delivery harness path. It is not the production architecture.
 
-## 6. M7 maturity work
+## 7. M7 maturity work
 
-Compared with mature consumer/work tools, the main post-M5 account-security maturity work is already compatible with the current model:
+Compared with mature consumer/work tools, the main post-M5 account-security maturity work remains compatible with the current model:
 
 ```text
 session/device inventory
@@ -133,7 +180,23 @@ security-page component hardening
 
 No Auth redesign is required to add these surfaces.
 
-## 7. Documentation authority
+## 8. Deprecation/coherence reconciliation
+
+2026-09-02 review:
+
+```text
+Google GIS/FedCM button path                   CURRENT
+Google issuer+sub authority                    CURRENT
+WebAuthn/FIDO2 direction                       CURRENT
+Apple relay dual-domain handling               CURRENT
+old M2/M3-not-started workstream index          STALE → RECONCILED
+old pre-Access technical-decision status        STALE → RECONCILED
+old SES 3,000/month new-customer free-tier      STALE → REJECTED AS CURRENT CLAIM
+```
+
+Historical phase-time progress text inside otherwise durable contracts remains evidence only where newer operational authorities supersede it.
+
+## 9. Documentation authority
 
 Current operational truth:
 
@@ -141,8 +204,9 @@ Current operational truth:
 2. `ROADMAP.md`;
 3. `workstreams/access-auth.md`;
 4. `workstreams/access-auth-m5-review-2026-09-02.md`;
-5. current executable code/tests/migrations.
+5. `architecture/access-auth-email-delivery.md` and `decisions/ADR-012-email-delivery-platform.md` for email;
+6. current executable code/tests/migrations.
 
 Architecture/security/API contracts remain durable semantic authority. Old phase-progress statements embedded in those contracts are historical milestone snapshots and do not override the current operational state.
 
-The dated `workstreams/access-auth-m5-live-handoff-2026-08-29.md` is superseded and historical.
+The dated `workstreams/access-auth-m5-live-handoff-2026-08-29.md` is superseded/historical. While this branch remains active, the current branch-operational handoff is `workstreams/access-auth-m5-live-handoff-2026-09-02.md`; it must not merge into protected `main` without the documentation-lifecycle consolidation gate.
