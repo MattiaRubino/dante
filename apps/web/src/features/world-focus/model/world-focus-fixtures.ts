@@ -1,3 +1,5 @@
+import type { WorldFocusId } from './world-focus-identity';
+
 export const WORLD_FOCUS_IDS = [
   'body',
   'music',
@@ -11,7 +13,8 @@ export const WORLD_FOCUS_IDS = [
   'projects',
 ] as const;
 
-export type WorldFocusId = (typeof WORLD_FOCUS_IDS)[number];
+export type WorldFocusFixtureId = (typeof WORLD_FOCUS_IDS)[number];
+export type { WorldFocusId } from './world-focus-identity';
 
 export type WorldFocusMotionCharacter =
   | 'pulse'
@@ -29,8 +32,8 @@ export type WorldFocusThemeProfile = Readonly<{
   ambientIntensity: number;
 }>;
 
-export type WorldFocusWorld = Readonly<{
-  id: WorldFocusId;
+export type WorldFocusWorld<Id extends WorldFocusId = WorldFocusId> = Readonly<{
+  id: Id;
   accent: string;
   theme: WorldFocusThemeProfile;
 }>;
@@ -40,11 +43,11 @@ export type WorldFocusWorld = Readonly<{
  *
  * These IDs/colors/theme profiles are frontend fixture identity only. They are
  * not Domain identities, backend DTOs, database rows, persisted World entities,
- * relevance definitions, or authorization boundaries. Later product verticals
- * replace direct fixture use with explicit frontend application/projection
- * boundaries without changing the frozen World Focus shell.
+ * relevance definitions, or authorization boundaries. Production WorldFocusId
+ * is intentionally open-ended; route validity still requires resolving a real
+ * descriptor/catalog entry rather than accepting an arbitrary URL token.
  */
-export const WORLD_FOCUS_WORLDS: readonly WorldFocusWorld[] = [
+export const WORLD_FOCUS_WORLDS: readonly WorldFocusWorld<WorldFocusFixtureId>[] = [
   {
     id: 'body',
     accent: '#b060ff',
@@ -157,11 +160,12 @@ export const WORLD_FOCUS_WORLDS: readonly WorldFocusWorld[] = [
   },
 ] as const;
 
-const WORLD_BY_ID = new Map(
-  WORLD_FOCUS_WORLDS.map((world) => [world.id, world] as const),
-);
+const WORLD_BY_ID = new Map<
+  WorldFocusFixtureId,
+  WorldFocusWorld<WorldFocusFixtureId>
+>(WORLD_FOCUS_WORLDS.map((world) => [world.id, world]));
 
-const WORLD_ID_BY_LABEL = new Map<string, WorldFocusId>([
+const WORLD_ID_BY_LABEL = new Map<string, WorldFocusFixtureId>([
   ['corpo', 'body'],
   ['body', 'body'],
   ['musica', 'music'],
@@ -183,25 +187,23 @@ const WORLD_ID_BY_LABEL = new Map<string, WorldFocusId>([
   ['projects', 'projects'],
 ]);
 
-export function normalizeWorldFocusId(value: unknown): WorldFocusId | undefined {
-  if (typeof value !== 'string') {
-    return undefined;
-  }
-
-  return WORLD_BY_ID.has(value as WorldFocusId)
-    ? (value as WorldFocusId)
+export function normalizeWorldFocusFixtureId(
+  value: unknown,
+): WorldFocusFixtureId | undefined {
+  return typeof value === 'string' && WORLD_BY_ID.has(value as WorldFocusFixtureId)
+    ? (value as WorldFocusFixtureId)
     : undefined;
 }
 
 export function getWorldFocusWorld(
   id: WorldFocusId,
-): WorldFocusWorld | undefined {
-  return WORLD_BY_ID.get(id);
+): WorldFocusWorld<WorldFocusFixtureId> | undefined {
+  return WORLD_BY_ID.get(id as WorldFocusFixtureId);
 }
 
 export function resolveWorldFocusWorldByLabel(
   label: string,
-): WorldFocusWorld | undefined {
+): WorldFocusWorld<WorldFocusFixtureId> | undefined {
   const id = WORLD_ID_BY_LABEL.get(label.trim().toLocaleLowerCase());
   return id === undefined ? undefined : getWorldFocusWorld(id);
 }
