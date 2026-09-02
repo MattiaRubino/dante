@@ -246,6 +246,7 @@ describe('World Focus workspace surface allocation', () => {
       worldId: 'finance',
       generation: 4,
       selection: null,
+      contextReferences: null,
       surfaces: Object.freeze([
         Object.freeze({
           instanceId: 'dante:under',
