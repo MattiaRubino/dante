@@ -233,7 +233,7 @@
   gap: 16px;
 }
 
-.temporal-create-section__heading h3 {
+.temporal-create-section__heading :is(h3, h4) {
   margin: 0;
   color: var(--dante-semantic-color-home-text-primary, #edf2f8);
   font-size: 12px;
