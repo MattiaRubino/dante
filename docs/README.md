@@ -48,6 +48,9 @@ M5 GROUPS 1–3                        COMPLETE / ENGINEERING PASS
 M5 GROUP 4 ENGINEERING               AUTOMATED QA PASS
 LOCAL PASSWORD/PASSKEY UAT           PASS
 REAL GOOGLE UAT                      PASS
+EMAIL DELIVERY ARCHITECTURE          ACCEPTED DIRECTION
+PRIMARY EMAIL PROVIDER TARGET        AMAZON SES API V2 / QUALIFICATION OPEN
+DURABLE EMAIL PLATFORM               NOT MATERIALIZED
 REAL INTERNET EMAIL DELIVERY         OPEN
 REAL APPLE UAT                       DEFERRED / OPEN
 WHOLE M5                             ACTIVE / NOT FORMALLY CLOSED
@@ -80,6 +83,11 @@ For Access/Auth architecture/security/API/testing:
 - `architecture/access-auth-m5-persistence-api-contract.md`
 - `decisions/ADR-011-access-auth-architecture.md`
 
+For current email-delivery architecture:
+
+- `architecture/access-auth-email-delivery.md`
+- `decisions/ADR-012-email-delivery-platform.md`
+
 For current product/reference state:
 
 - `frontend/access.md`
@@ -94,6 +102,8 @@ Some large durable M5 contracts contain milestone-time sections such as `M5-F NE
 This distinction avoids destroying valuable design rationale merely to update chronology.
 
 The old dated file `workstreams/access-auth-m5-live-handoff-2026-08-29.md` is explicitly superseded/historical.
+
+While `feature/access-auth` remains active, `workstreams/access-auth-m5-live-handoff-2026-09-02.md` is a temporary branch-operational continuation aid. It must be consolidated/removed before protected-main integration under `development/documentation-lifecycle-policy.md`.
 
 ## 5. Product / Domain / Logical / Physical
 
@@ -128,6 +138,9 @@ Important ADRs:
 - `decisions/ADR-009-frontend-architecture-boundaries.md`
 - `decisions/ADR-010-postgresql-persistence-constitution.md`
 - `decisions/ADR-011-access-auth-architecture.md`
+- `decisions/ADR-012-email-delivery-platform.md`
+
+Email architecture deliberately preserves the existing `EmailDeliveryPort` while evolving the final production path toward a PostgreSQL transactional outbox + provider-neutral delivery orchestrator + Amazon SES API v2 primary adapter + provider-feedback ingestion.
 
 ## 7. Database
 
@@ -163,6 +176,8 @@ human DB reference
 ≈ direct tests
 ```
 
+The future email outbox/delivery state is target architecture only. It is not counted in the current catalog until an exact reviewed migration materializes it.
+
 ## 8. Frontend
 
 Start at:
@@ -184,13 +199,34 @@ PostgreSQL
 HTTP/OpenAPI/generated client
 browser full-stack
 real provider/authenticator UAT
+real external-delivery UAT
 ```
 
 The 2026-09-02 review records 68/68 Web unit/component tests, 60/60 Auth browser tests, real Windows Hello passkey UAT and real Google UAT.
 
-## 10. Current open research
+Real Internet email remains a separate open acceptance layer. Loopback SMTP capture does not prove inbox deliverability.
 
-The next architecture research is outbound transactional/security email. No vendor is selected yet. The research must cover provider-vs-internal responsibility, deliverability/DNS, feedback loops, retry ambiguity, observability, privacy and Apple relay requirements before implementation/provider choice.
+## 10. Current next architecture/operations gate
+
+The email architecture direction is now selected; the next step is **provider/operational qualification before production implementation**.
+
+Required research/evidence includes:
+
+```text
+AWS/SES account and billing posture
+sandbox vs production access
+current eu-south-1 capability/quotas/pricing
+sender identity + SPF/DKIM/DMARC
+IAM/workload identity
+SES API v2 integration
+configuration sets / event destinations
+SNS vs EventBridge ingestion
+privacy/retention/subprocessor posture
+exact outbox + sensitive Auth payload protection
+failure/retry/ambiguous-outcome model
+```
+
+Important correction: the older SES-specific 3,000-message/month first-year free-tier claim is stale for new AWS customers after July 21, 2026. Current provider evaluation must use current pricing/credits.
 
 ## 11. Documentation lifecycle
 
