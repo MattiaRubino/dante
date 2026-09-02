@@ -10,9 +10,9 @@
 - **AI-04B:** CLOSED / RT-01..RT-31
 - **AI-04C:** CLOSED / PA-01..PA-61
 - **AI-04 whole-phase:** CLOSED / WP-01..WP-22
-- **PRE-AI05 hardening:** CANDIDATE / PRE05-H01..H16
-- **First post-materialization retest:** FAIL BOUNDED / H15-H16 ADDED
-- **Full retest after H15-H16:** NOT YET EXECUTED
+- **PRE-AI05 hardening:** CANDIDATE / PRE05-H01..H18
+- **Retest history:** first FAIL bounded → H15-H16; second full FAIL bounded → H17-H18
+- **Fresh retest after H17-H18:** NOT YET EXECUTED
 - **AI-05:** FUTURE / NEXT ONLY AFTER PRE-AI05 PASS + CURRENT-TRUTH RECONCILIATION
 - **Implementation claim:** NONE
 - **Provider/model selection:** OPEN / EVIDENCE-DRIVEN
@@ -23,7 +23,7 @@ Repository truth outranks conversation memory.
 
 ---
 
-## 1. Current compact roadmap
+## 1. Current roadmap
 
 ```text
 AI-00  Semantic & Product Foundation                    COMPLETE
@@ -34,21 +34,14 @@ AI-04  Productionization Architecture                    CLOSED STRUCTURALLY
 
 CURRENT
 PRE-AI05 CROSS-PHASE HARDENING + WHOLE-CHAIN RETEST
-  PRE05-H01..H16 candidate
-  first retest FAIL bounded
-  full retest required after H15-H16
+  PRE05-H01..H18 candidate
+  fresh full retest required
 
 THEN IF PASS
 GLOBAL CURRENT-TRUTH RECONCILIATION
-
-THEN
-AI-05  Whole-System Acceptance + Implementation Blueprint
-
-THEN
-actual AI implementation workstream(s)
+→ AI-05 Whole-System Acceptance + Implementation Blueprint
+→ actual AI implementation workstream(s)
 ```
-
-No architecture closure implies implementation/provider PASS.
 
 ---
 
@@ -70,58 +63,33 @@ docs/architecture/dante-ai-04-whole-phase-destructive-acceptance.md
 docs/architecture/dante-ai-pre05-cross-phase-hardening.md   CURRENT CANDIDATE SUPPLEMENT
 ```
 
-Temporary branch continuity:
-
-```text
-docs/workstreams/ai-architecture-live-handoff.md
-MUST NOT MERGE TO PROTECTED main
-```
+Temporary `docs/workstreams/ai-architecture-live-handoff.md` MUST NOT merge to protected `main`.
 
 ---
 
-## 3. Accepted upstream foundation
+## 3. Accepted foundation / invariants
 
 ```text
-Product / North Star         CURRENT
-Domain                       CLOSED
-Logical                      CLOSED / 57 OF 57 / WL-H01..WL-H12
-Physical                     CLOSED
-PostgreSQL                   18.6 / sole canonical persistence + material-history authority
-Alembic                      20260830_09
-DB topology                  69 tables / 5 views / 15 routines / 76 triggers /
-                             97 indexes / 69 FKs / 123 CHECKs
-Recovery                     CP01–CP07 LOCAL PASS / CLOSED / INTEGRATED
-remote backup provider       TBD / NOT ACTIVATED
-production/cloud recovery    NOT CLAIMED
-```
-
-No AI convenience creates a second canonical database or generic universal Fact/Memory root.
-
----
-
-## 4. Retained semantic/runtime invariants
-
-```text
-Interaction Session != Run != Worker
+PostgreSQL = sole canonical persistence/material-history authority
 MODEL OUTPUT != PUBLISHABLE OUTPUT
-INTERNAL STREAM != RECIPIENT STREAM
 DISPLAY NAME != EFFECT TARGET
+Interaction Session != Run != Worker
 SUPERSEDE != CANCEL != ROLLBACK != RECONCILE
 RUN-START AUTHORIZATION != PERPETUAL AUTHORIZATION
 CANCEL RUN != UNDO ALREADY-DISPATCHED EFFECTS
-SCENARIO STATE != CANONICAL CURRENT STATE
-CONTEXT ACCESS != DISCLOSURE PERMISSION
-APPROVAL != PERPETUAL AUTHORIZATION
+Context != Retrieval != Memory
+APPROXIMATE != COMPLETE
+processing != retention != future reuse
 CACHE HIT != CURRENT DISCLOSURE AUTHORIZATION
 SAFE SINGLE DISCLOSURE != SAFE CUMULATIVE DISCLOSURE
 AUTONOMY != AUTHORITY != AUTHZ != APPROVAL
 ```
 
-AI-02 also owns Attention/aggregate attention budgeting, causal-loop/oscillation protection, surface-aware disclosure and cumulative/cross-query protection.
+AI-02 also owns Attention/aggregate attention budgeting, causal-loop protection, surface-aware disclosure and communication-state integrity.
 
 ---
 
-## 5. AI-04 base closure
+## 4. AI-04 closure truth
 
 ```text
 AI-04A  DANTE-E01..E13 / A01..A30 / EV01..EV20
@@ -130,14 +98,11 @@ AI-04C  PA-01..PA-61
 WHOLE   WP-01..WP-22
 ```
 
-Core route/provider rules:
-
 ```text
 MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT
 MODEL VENDOR != SERVING PLATFORM != PROTOCOL FAMILY
 HARNESSPROFILE != PROVIDERBINDING
 EVAL CANDIDATE != PRODUCTION ROUTE
-fallback independently qualifies
 route selection/context assembly != egress authorization
 ENTITLED != SERVABLE
 model picker != routing Authority
@@ -145,13 +110,7 @@ model picker != routing Authority
 
 ---
 
-## 6. PRE-AI05 candidate hardening
-
-Durable candidate:
-
-```text
-docs/architecture/dante-ai-pre05-cross-phase-hardening.md
-```
+## 5. PRE05-H01..H18 candidate
 
 ```text
 H01 AttentionBudget != ResourceBudget != commercial/provider quota
@@ -161,7 +120,7 @@ H04 DANTE-E14 proactive/Attention/loop safety is core eval
 H05 cumulative disclosure may span related work
 H06 recipient != surface != channel
 H07 scoped autonomy is policy ceiling, not Authority/AuthZ/approval
-H08 evaluate unsafe autonomy separately from excessive over-asking
+H08 unsafe autonomy and excessive over-asking are graded separately
 H09 current-tree executable eval coverage E01..E14
 H10 AI-01 old ModelTarget shorthand is historical terminology
 H11 WP route composition outranks older AI-04B local sequence
@@ -170,15 +129,17 @@ H13 formal IFC/leakage-budget/ACS mechanisms remain challengers
 H14 commercial tier cannot buy weaker attention/autonomy/privacy safety
 H15 AttentionDecision != proactive Work Admission != Effect authorization
 H16 cumulative disclosure may span Runs/Interactions/surfaces/known related sinks
+H17 RUN-START AUTONOMY != PERPETUAL AUTONOMY; re-evaluate before autonomous consequential dispatch
+H18 Attention/Notify decision != SENT != DELIVERED != SEEN != ACKNOWLEDGED != ACCEPTED
 ```
 
-First post-materialization retest found H15-H16. No PASS claim is allowed until the full chain is restarted and passes.
+No PRE-AI05 PASS claim yet.
 
 ---
 
-## 7. Current eval workload contract
+## 6. Current eval contract
 
-The current tree now carries implementation-readable coverage through the PRE-AI05 supplement:
+Current tree carries implementation-readable coverage through the PRE-AI05 supplement:
 
 ```text
 E01 deterministic/model avoidance
@@ -187,41 +148,31 @@ E03 extraction
 E04 query/history/absence
 E05 context/privacy/cumulative disclosure
 E06 planning/replanning/scenario
-E07 documents/long-context/multimodal
+E07 document/long-context/multimodal
 E08 tool/capability use
 E09 consequential effect/scoped autonomy
 E10 multi-actor/delegation/surface disclosure
 E11 adaptive memory/learning
 E12 failure/currentness/supersession/failover
 E13 open-world research/grounding
-E14 proactivity/Attention/causal-loop safety
+E14 proactivity/Attention/causal-loop/notification truth
 ```
 
 Hard failures remain non-averageable.
 
 ---
 
-## 8. Commercial/service-tier boundary
+## 7. Commercial/service-tier boundary
 
 ```text
 COMMERCIAL SUBSCRIPTION / SERVICE TIER != DANTE DOMAIN Plan
 ```
 
-```text
-CommercialOffering / ServiceTier
-→ EntitlementProfile
-→ capability + quota + resource envelope
-→ Budget / Routing Policy
-→ eligible route set
-```
-
-Commercial tiers cannot weaken truth, privacy, Authority, target safety, provider/data eligibility, reconciliation, scoped autonomy or Attention/disclosure policy.
-
-Names/prices/quotas remain OPEN.
+Commercial tiers may bound resource/capability envelopes but cannot weaken truth, privacy, Authority, target safety, provider/data eligibility, reconciliation, scoped autonomy, attention or disclosure floors. Names/prices/quotas remain OPEN.
 
 ---
 
-## 9. Direct proof obligations remain distinct
+## 8. Direct proof obligations remain distinct
 
 Still unexecuted where applicable:
 
@@ -235,34 +186,23 @@ PSV-21..28B durable execution / Restate / journal privacy / recovery
 PSV-37 pgvector source/model/freshness provenance
 ```
 
-No implementation PASS is claimed.
-
 ---
 
-## 10. Current exact action
+## 9. Current exact action
 
 ```text
-RESTART FULL AI-01→AI-04 DESTRUCTIVE RETEST FROM ZERO
+READ BACK H17-H18
+→ RESTART FULL AI-01→AI-04 DESTRUCTIVE RETEST FROM ZERO
 → reverse-order retest
 → refreshed state-of-the-art regression check
 ```
 
-Required focus includes:
-
-```text
-AttentionDecision vs Work admission
-cross-Run/cross-surface cumulative disclosure
-scoped autonomy/current authorization
-proactive loop safety
-AI-03 lifecycle + AI-04 provider/cache/failover
-whole-phase route composition
-commercial/resource pressure without safety downgrade
-```
+Fresh hostile set includes autonomy-only revocation during Run, notification transport UNKNOWN/replay, proactive+failover+surface+quota compound pressure, and privacy+deletion+restore+new-Run compound pressure.
 
 If PASS:
 
 ```text
-mark PRE-AI05 hardening accepted
+mark PRE-AI05 accepted
 → global current-truth reconciliation
 → AI-05 current
 ```
@@ -271,36 +211,26 @@ If FAIL, reopen only the smallest affected boundary.
 
 ---
 
-## 11. Decisions still open
+## 10. Decisions still open
 
 ```text
-provider/model set and SDKs
-direct provider benchmark results / eval runner
-exact runtime modules/contracts
-Attention implementation/state persistence if any
-cumulative-disclosure enforcement algorithm / persistence if any
-formal IFC / leakage-budget / ACS adoption
-control-plane physical topology
-commercial names/prices/quotas / billing
-AI gateway / guardrail / secret-manager products
-MCP/A2A activation
-Execution Environment technology
-Restate / R2 / pgvector / ANN / FTS activation
-production regions/residency mappings
+provider/model/SDK/eval runner
+actual direct benchmark evidence
+runtime implementation modules/contracts
+Attention implementation/state persistence
+cumulative-disclosure enforcement/persistence
+formal IFC/leakage-budget/ACS adoption
+control-plane topology
+commercial names/prices/quotas/billing
+gateway/guardrail/secrets products
+MCP/A2A / Execution Environment / Restate / R2 / pgvector / ANN / FTS activation
+production regions/residency
 ```
 
-Do not preselect them without applicable evidence.
+Do not preselect them without evidence.
 
 ---
 
-## 12. Live handoff policy
+## 11. Handoff policy
 
-`docs/workstreams/ai-architecture-live-handoff.md` is temporary and MUST NOT merge to protected `main`.
-
-Before integration:
-
-```text
-propagate durable truth
-→ verify coverage
-→ DELETE live handoff
-```
+Temporary live handoff must be deleted before protected-main integration.
