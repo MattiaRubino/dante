@@ -10,13 +10,13 @@ import {
   createPasskeyRegistrationEvidence,
 } from '../../../platform/auth/web-auth-webauthn';
 import { authenticationMethodsQueryKey } from './auth-methods';
-import { authSessionQueryKey } from './auth-session';
+import { commitAuthoritativeAuthSession } from './auth-session';
 
-function cacheAuthenticatedSession(
+async function cacheAuthenticatedSession(
   queryClient: ReturnType<typeof useQueryClient>,
   session: WebAuthenticatedSession,
-): void {
-  queryClient.setQueryData(authSessionQueryKey, session);
+): Promise<void> {
+  await commitAuthoritativeAuthSession(queryClient, session);
 }
 
 async function refreshMethods(
@@ -97,7 +97,7 @@ export function usePasskeyRegistrationMutation() {
       registerPasskey({ label, csrfToken }),
     retry: false,
     onSuccess: async (session) => {
-      cacheAuthenticatedSession(queryClient, session);
+      await cacheAuthenticatedSession(queryClient, session);
       await refreshMethods(queryClient);
     },
   });
@@ -143,7 +143,7 @@ export function useRemovePasskeyMutation() {
     }) => webAuthRemote.removePasskey(passkeyCredentialRef, csrfToken),
     retry: false,
     onSuccess: async (session) => {
-      cacheAuthenticatedSession(queryClient, session);
+      await cacheAuthenticatedSession(queryClient, session);
       await refreshMethods(queryClient);
     },
   });
