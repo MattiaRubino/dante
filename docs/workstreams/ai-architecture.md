@@ -2,7 +2,7 @@
 
 - **Status:** ACTIVE / BRANCH-LOCAL DURABLE WORKSTREAM RECORD
 - **Branch:** `feature/ai-architecture`
-- **Current phase:** PRE-AI05 CROSS-PHASE HARDENING + WHOLE-CHAIN RETEST
+- **Current phase:** GLOBAL CURRENT-TRUTH RECONCILIATION
 - **AI-02.1:** CLOSED / STRUCTURALLY ACCEPTED
 - **AI-03:** CLOSED / STRUCTURALLY ACCEPTED / C01..C33 / B01..B35 / MAT-01..MAT-15
 - **AI-04:** CLOSED / STRUCTURALLY ACCEPTED
@@ -10,10 +10,12 @@
 - **AI-04B:** CLOSED / RT-01..RT-31
 - **AI-04C:** CLOSED / PA-01..PA-61
 - **AI-04 whole-phase:** CLOSED / WP-01..WP-22
-- **PRE-AI05 hardening:** CANDIDATE / PRE05-H01..H19
-- **Retest history:** first FAIL bounded → H15-H16; second full FAIL bounded → H17-H18; third full FAIL bounded → H19
-- **Fresh retest after H19:** NOT YET EXECUTED
-- **AI-05:** FUTURE / NEXT ONLY AFTER PRE-AI05 PASS + CURRENT-TRUTH RECONCILIATION
+- **PRE-AI05 hardening:** CLOSED / STRUCTURALLY ACCEPTED / PRE05-H01..H19
+- **Current core eval families:** DANTE-E01..DANTE-E14
+- **Fresh post-H19 whole-chain retest:** PASS / 26 OF 26 STRUCTURAL CASES
+- **Reverse-order retest:** PASS
+- **2026 state-of-the-art regression:** PASS
+- **AI-05:** NEXT / BECOMES CURRENT AFTER GLOBAL RECONCILIATION
 - **Implementation claim:** NONE
 - **Provider/model selection:** OPEN / EVIDENCE-DRIVEN
 - **Commercial packaging:** OPEN / ENTITLEMENT BOUNDARY ONLY
@@ -26,19 +28,19 @@ Repository truth outranks conversation memory.
 ```text
 AI-00 COMPLETE
 AI-01 COMPLETE
-AI-02 CLOSED
-AI-03 CLOSED
-AI-04 CLOSED STRUCTURALLY
+AI-02 CLOSED / STRUCTURALLY ACCEPTED
+AI-03 CLOSED / STRUCTURALLY ACCEPTED
+AI-04 CLOSED / STRUCTURALLY ACCEPTED
+PRE-AI05 CROSS-PHASE HARDENING CLOSED / H01..H19
 
 CURRENT
-PRE-AI05 CROSS-PHASE HARDENING + WHOLE-CHAIN RETEST
-  H01..H19 candidate
-  fresh retest required
-
-IF PASS
 GLOBAL CURRENT-TRUTH RECONCILIATION
-→ AI-05 Whole-System Acceptance + Implementation Blueprint
-→ actual AI implementation workstream(s)
+
+THEN
+AI-05 — WHOLE-SYSTEM ACCEPTANCE + IMPLEMENTATION BLUEPRINT
+
+THEN
+ACTUAL AI IMPLEMENTATION WORKSTREAM(S)
 ```
 
 ## 2. Mandatory AI authority
@@ -61,13 +63,14 @@ docs/architecture/dante-ai-pre05-cross-phase-hardening.md
 
 Temporary live handoff MUST NOT merge to protected `main`.
 
-## 3. Retained invariants
+## 3. Retained semantic/runtime invariants
 
 ```text
 PostgreSQL = sole canonical persistence/material-history authority
 MODEL OUTPUT != PUBLISHABLE OUTPUT
 Interaction Session != Run != Worker
 RUN-START AUTHORIZATION != PERPETUAL AUTHORIZATION
+RUN-START AUTONOMY != PERPETUAL AUTONOMY
 SUPERSEDE != CANCEL != ROLLBACK != RECONCILE
 Context != Retrieval != Memory
 APPROXIMATE != COMPLETE
@@ -75,17 +78,22 @@ processing != retention != future reuse
 CACHE HIT != CURRENT DISCLOSURE AUTHORIZATION
 SAFE SINGLE DISCLOSURE != SAFE CUMULATIVE DISCLOSURE
 AUTONOMY != AUTHORITY != AUTHZ != APPROVAL
+ATTENTION DECISION != PROACTIVE WORK ADMISSION != EFFECT AUTHORIZATION
+RECIPIENT != SURFACE != CHANNEL
+SOURCE FUTURE ELIGIBILITY != PRIOR DISCLOSURE OCCURRENCE
 ```
 
-AI-02 also owns Attention, causal-loop safety, surface-aware disclosure and communication-state integrity.
-
-## 4. AI-04 closure truth
+## 4. Closed AI architecture
 
 ```text
-AI-04A  DANTE-E01..E13 / A01..A30 / EV01..EV20
+AI-03A  C01..C33
+AI-03B  B01..B35
+AI-03C  MAT-01..MAT-15
+AI-04A  A01..A30 / EV01..EV20
 AI-04B  RT-01..RT-31
 AI-04C  PA-01..PA-61
-WHOLE   WP-01..WP-22
+AI-04 whole  WP-01..WP-22
+PRE-AI05  H01..H19
 ```
 
 ```text
@@ -96,7 +104,7 @@ EVAL CANDIDATE != PRODUCTION ROUTE
 ENTITLED != SERVABLE
 ```
 
-## 5. PRE05-H01..H19 candidate
+## 5. PRE05-H01..H19 accepted hardening
 
 ```text
 H01 AttentionBudget != ResourceBudget != commercial/provider quota
@@ -116,11 +124,11 @@ H14 commercial tier cannot buy weaker attention/autonomy/privacy safety
 H15 AttentionDecision != proactive Work Admission != Effect authorization
 H16 cumulative disclosure may span Runs/Interactions/surfaces/known related sinks
 H17 RUN-START AUTONOMY != PERPETUAL AUTONOMY
-H18 Attention/Notify decision != SENT != DELIVERED != SEEN != ACKNOWLEDGED != ACCEPTED
-H19 SOURCE CONTENT/LIFECYCLE != PRIOR DISCLOSURE OCCURRENCE; minimum prior-exposure safety state has independent purpose/lifecycle and cannot resurrect source content
+H18 NOTIFY != SENT != DELIVERED != SEEN != ACKNOWLEDGED != ACCEPTED
+H19 SOURCE CONTENT/FUTURE ELIGIBILITY != PRIOR DISCLOSURE OCCURRENCE
 ```
 
-No PRE-AI05 PASS claim yet.
+H19 permits only minimum non-content technical security/accounting state when still necessary to prevent cumulative re-disclosure. It has independent purpose/lifecycle and cannot reconstruct or resurrect deleted source content.
 
 ## 6. Current eval contract
 
@@ -129,7 +137,7 @@ E01 deterministic/model avoidance
 E02 target resolution
 E03 extraction
 E04 query/history/absence
-E05 context/privacy/cumulative disclosure
+E05 context/privacy/Reality Scope/cumulative disclosure
 E06 planning/replanning/scenario
 E07 document/long-context/multimodal
 E08 tool/capability use
@@ -143,15 +151,29 @@ E14 proactivity/Attention/causal-loop/notification truth
 
 Hard failures remain non-averageable.
 
-## 7. Commercial boundary
+## 7. PRE-AI05 acceptance evidence
+
+```text
+fresh full AI-01→AI-04 + H01..H19 retest     PASS / 26 OF 26
+compound collision retest                    PASS
+reverse PRE05→04→03→02→01                   PASS
+refreshed 2026 state-of-the-art regression   PASS
+new Domain owner required                    NO
+new generic AI mega-layer required           NO
+AI-02/03/04 broad reopen required             NO
+```
+
+This is structural evidence only. It is not direct provider/backend/database/production-capacity proof.
+
+## 8. Commercial boundary
 
 ```text
 COMMERCIAL SUBSCRIPTION / SERVICE TIER != DANTE DOMAIN Plan
 ```
 
-Commercial tiers cannot weaken truth, privacy, Authority, target safety, provider/data eligibility, reconciliation, scoped autonomy, attention or disclosure floors. Names/prices/quotas remain OPEN.
+Commercial tiers can bound compute/concurrency/capability envelopes but cannot weaken truth, privacy, Authority, target safety, provider/data eligibility, reconciliation, scoped autonomy, Attention or disclosure floors. Names/prices/quotas remain OPEN.
 
-## 8. Direct proof obligations remain distinct
+## 9. Direct proof obligations remain distinct
 
 Still unexecuted where applicable:
 
@@ -165,24 +187,38 @@ PSV-21..28B durable execution / Restate / journal privacy / recovery
 PSV-37 pgvector source/model/freshness provenance
 ```
 
-## 9. Current exact action
+Concrete provider/model direct DANTE eval and production-capacity qualification are also unexecuted.
+
+## 10. Current exact action
 
 ```text
-READ BACK H19
-→ RESTART FULL AI-01→AI-04 DESTRUCTIVE RETEST FROM ZERO
-→ reverse-order retest
-→ refreshed state-of-the-art regression check
+GLOBAL CURRENT-TRUTH RECONCILIATION
 ```
 
-Special compound pressure includes privacy + prior disclosure + source deletion + stale cache/restore + new Run, with prior-exposure accounting allowed only as minimum non-content security state under independent purpose/lifecycle.
+Purpose:
 
-If PASS: mark PRE-AI05 accepted → global current-truth reconciliation → AI-05 current.
-If FAIL: reopen only the smallest affected boundary.
+```text
+mark AI-04 CLOSED consistently in global/current project navigation
+mark PRE-AI05 CLOSED / H01..H19
+make E01..E14 current
+classify old pre-Physical AI/context boundary as historical in current navigation
+remove stale AI-04 CURRENT / E01..E13 routing
+route AI work to AI-05
+preserve every implementation/provider/database non-claim
+```
 
-## 10. Open decisions
+After reconciliation:
 
-Provider/model/SDK/eval runner, concrete implementation, Attention implementation, cumulative-disclosure mechanism/storage, formal IFC/leakage-budget/ACS adoption, control-plane topology, commercial packaging/billing, gateway/security products, MCP/A2A, Execution Environment, Restate/R2/vector/search activation and production region mappings remain evidence-gated.
+```text
+AI-05 — WHOLE-SYSTEM ACCEPTANCE + IMPLEMENTATION BLUEPRINT
+```
 
-## 11. Handoff policy
+AI-05 is the final architecture-to-build boundary before actual AI implementation workstreams.
+
+## 11. Open decisions
+
+Provider/model/SDK/eval runner, concrete runtime implementation, Attention implementation, cumulative-disclosure mechanism/storage, formal IFC/leakage-budget/ACS adoption, control-plane topology, commercial packaging/billing, gateway/security products, MCP/A2A, Execution Environment, Restate/R2/vector/search activation and production-region mappings remain evidence-gated.
+
+## 12. Handoff policy
 
 Temporary live handoff must be deleted before protected-main integration.
