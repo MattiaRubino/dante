@@ -396,6 +396,7 @@ export function TemporalCreateComposer({
 
           <TemporalCreateAdvancedFields
             fields={fields}
+            contexts={contexts}
             depth={session.surface}
             onPatch={onPatch}
             renderError={renderError}
