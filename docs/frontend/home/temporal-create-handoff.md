@@ -1,13 +1,13 @@
 # DANTE — Temporal Create Workstream Handoff
 
-**Status:** C1 AUTOMATED PASS — PENDING USER MANUAL ACCEPTANCE  
+**Status:** C1 IMPLEMENTATION FULL GREEN — DOCUMENTATION RECONCILIATION / USER MANUAL ACCEPTANCE PENDING  
 **Date:** 2026-09-02  
 **Repository:** `MattiaRubino/dante`  
 **Branch:** `feature/home-timeline`  
 **Local worktree:** `/home/mattia/projects/dante-timeline`  
 **Integration target:** `feature/home-react`  
-**Final C1 implementation candidate:** `81808814abb4e4998c7bde5b0c6cb8f5f903aa62`  
-**Frontend CI:** run `33613239926` / #536 — FULL PASS
+**Final C1 implementation candidate:** `f092a3db2fbac28421b73e0629f7b4b83a1b0aec`  
+**Frontend CI:** run `33631013598` / #621 — FULL PASS
 
 ## 1. Handoff authority
 
@@ -44,30 +44,46 @@ Do not casually reopen:
 - `ViewModel != application model != DTO != persistence`;
 - no fake network/storage/provider/AI/voice behavior.
 
-## 3. Current C1 architecture
+## 3. C1 permanent product boundary — manual authoring only
+
+The Timeline `+` is DANTE's highest-depth **manual authoring** path before backend integration.
+
+It is explicitly not:
+
+- a chat;
+- an AI command bar;
+- a natural-language parser;
+- a voice surface;
+- a generic “intent interpreter” UI.
+
+Current C1 entry topology:
 
 ```text
-ENTRY
-  ├─ Timeline +
-  ├─ double-click
-  ├─ Shift-drag range
-  └─ typed semantic invocation/seed
-          ↓
+Timeline +
+Timeline double-click
+Timeline Shift-drag/range
+        ↓
+manual structured prefill
+        ↓
 SHARED TEMPORAL CREATE SESSION
-          ↓
+        ↓
 Quick ↔ Expanded ↔ Full
-          ↓
-normalize → validate → preview
-          ↓
-explicit commit
-          ↓
+        ↓
+normalize → validate → candidate preview
+        ↓
+explicit user commit
+        ↓
 F0 application command
-          ↓
+        ↓
 local deterministic adapter NOW
 backend adapter LATER
 ```
 
 Quick/Expanded/Full are views of one draft and one application path.
+
+`TemporalCreateFieldSeed` is a deterministic **manual-prefill** seam for values already known by the manual Timeline interaction. It is not an AI/NL/voice contract.
+
+A future DANTE/AI vertical remains a separate product surface. It may later reuse compatible downstream application/domain/backend commands when that vertical's own contract justifies the reuse; it is not required to enter through the C1 form, session or seed.
 
 ## 4. Correct owner semantics
 
@@ -88,11 +104,12 @@ Persistent repeated Activity intent belongs to:
 ```text
 Routine
 → Routine Recurrence
-→ generated Occurrence
-→ Activity/runtime semantics as defined downstream
+→ backend Occurrence generation later
 ```
 
 Current C1 therefore shows a truthful Routine owning-vertical handoff.
+
+Flexible/open/window/deadline/preferred Activity intent may be authored without fabricating an accepted exact Schedule.
 
 ### Event
 
@@ -103,13 +120,11 @@ Event owns recurrence directly and exposes all four CP6 M4 recurrence families:
 - quota per period;
 - cyclic positional.
 
-Full Event authoring includes the current deeper semantic fields for recurrence, purpose, expected outcome, agenda, decision intent, participants, resources, pre-read, conference intent and buffers.
+Full Event authoring includes recurrence, purpose, expected outcome, agenda, decision intent, participants, resources, pre-read, conference intent and buffers.
 
 Provider actions remain intent only.
 
 ## 5. Current recurrence depth
-
-Preserve these implemented semantics:
 
 ### Calendar
 
@@ -140,34 +155,41 @@ Preserve these implemented semantics:
 - cycle length;
 - day/week unit;
 - multiple active positions;
-- UI positions are human-friendly 1-based;
-- CP6 technical position indexing remains a persistence concern.
+- UI positions are human-friendly 1-based.
 
 No browser-side Occurrence generation is allowed.
 
-## 6. Future-input / DANTE seam
+## 6. Context and appearance semantics
 
-`application/temporal-create-seed.ts` defines a source-neutral structured seed.
-
-`TemporalCreateInvocation` already carries that seed into `TemporalCreateEntry` and therefore into the same session used by manual UI.
-
-Future DANTE architecture must remain:
+Do not collapse Context and appearance.
 
 ```text
-DANTE interpretation
-→ structured seed / unresolved intent
-→ same Create normalize/validate/preview path
-→ user/governed commit
-→ same F0/backend port
+Context/groupId
+→ organization
+→ grouping
+→ filtering
+→ inherited visual tone by default
+
+appearanceTone override
+→ presentation only
+→ does not mutate Context/groupId
+→ does not change filter membership
 ```
 
-Never implement DANTE by scripting the form.
+The manual Create appearance control now exposes stable color vocabulary independent from Context names:
 
-No AI runtime exists in C1.
+- Viola / Purple;
+- Ciano / Cyan;
+- Verde / Green;
+- Ambra / Amber;
+- Rosa / Pink;
+- Rosso / Red.
+
+The E2E contract proves that a Focus item with a red/urgent presentation override remains a Focus item for grouping/filtering.
 
 ## 7. External owner handoff seam
 
-`application/temporal-create-handoff.ts` is now the typed Create-side contract for external-owned objects.
+`application/temporal-create-handoff.ts` is the typed Create-side contract for objects owned by other verticals.
 
 Targets:
 
@@ -197,18 +219,18 @@ F0 protects the minimal projection command. C1 additionally fingerprints rich Cr
 
 ### Prepare/execute snapshot ownership
 
-At final implementation candidate `81808814...`, `runtime.prepare()` re-normalizes and freezes its own copy of the specification before validation and command creation.
+At final implementation candidate `f092a3db...`, `runtime.prepare()` re-normalizes and freezes its own copy of the specification before validation and command creation.
 
-Do not remove this. It prevents mutable callers/importers/future DANTE adapters from changing rich intent after preparation and producing a command/specification TOCTOU mismatch.
+Do not remove this. It prevents mutable callers from changing rich intent after preparation and producing a command/specification TOCTOU mismatch.
 
 ## 9. Timeline integration hardening
 
 The contextual Create E2E must not use a retained `.timeline-day-section.first()` across Timeline virtualization.
 
-The Timeline recycles day-section DOM nodes. The final test:
+The Timeline recycles day-section DOM nodes. The hardened test:
 
 - finds a currently visible day;
-- chooses by stable `data-timeline-date`;
+- chooses it by stable `data-timeline-date`;
 - verifies visible geometry;
 - performs double-click/Shift-drag using current viewport coordinates;
 - reacquires after the first create/close boundary.
@@ -216,6 +238,8 @@ The Timeline recycles day-section DOM nodes. The final test:
 This fixed a real test-locator/virtualization defect without weakening gesture coverage.
 
 T1 drag/focus behavior remains frozen.
+
+The appearance E2E also follows a stable native card identity across filter remounts rather than relying on an imperative DOM marker that disappears when React remounts the card.
 
 ## 10. UI / accessibility state
 
@@ -226,14 +250,15 @@ Preserve:
 - exact duration authoring in deeper Activity surfaces;
 - separate Event grammar;
 - shared section heading/check-grid visual grammar;
-- no obsolete one-off `.is-subsection` / `.checkline` CSS debt;
+- Full Event section headings using the same `:is(h3, h4)` grammar rather than one-off styles;
 - unambiguous accessible control names;
 - named dirty-discard `alertdialog`;
 - contained Tab loop;
 - exact connected-control focus restoration;
 - native `inert` background while confirmation is active;
 - mobile Full editor / no horizontal overflow;
-- no raw i18n keys.
+- no raw i18n keys;
+- no AI/NL/voice affordance inside manual Create.
 
 ## 11. CP6 truth to preserve
 
@@ -258,9 +283,9 @@ Schema existence never authorizes a generic frontend CRUD operation.
 
 Final implementation candidate:
 
-`81808814abb4e4998c7bde5b0c6cb8f5f903aa62`
+`f092a3db2fbac28421b73e0629f7b4b83a1b0aec`
 
-CI `33613239926` / #536:
+CI `33631013598` / #621:
 
 - Quality PASS;
 - Mobile Bundle PASS;
@@ -268,18 +293,18 @@ CI `33613239926` / #536:
 - Firefox frozen Timeline interaction contract PASS;
 - Frontend CI Gate PASS.
 
-Exact current Quality evidence:
+Exact Quality evidence:
 
-- 5/5 typecheck tasks;
-- architecture: 199 modules / 477 dependencies / zero violations;
-- web unit: 28 files / 168 tests;
+- typecheck 5/5;
+- architecture: **214 modules / 522 dependencies / zero violations**;
+- web unit: **34 files / 183 tests**;
 - generated-source drift PASS;
 - production build PASS;
 - diff/mutation checks PASS.
 
 Home route:
 
-`252.22 kB raw / 86.38 kB gzip`.
+`268.40 kB raw / 90.13 kB gzip`.
 
 ## 13. Current stop and next transition
 
@@ -289,12 +314,13 @@ Current state:
 
 ```text
 IMPLEMENTATION COMPLETE
-AUTOMATED PASS
-DOCUMENTATION / TRACEABILITY ALIGNED
+AUTOMATED FULL PASS
+DOCUMENTATION RECONCILIATION IN PROGRESS
 USER MANUAL ACCEPTANCE PENDING
+NOT FROZEN / CLOSED
 ```
 
-Once the docs-only descendant is CI-green:
+Once the final documentation descendant is itself CI-green:
 
 1. user syncs `feature/home-timeline` locally;
 2. user executes the single manual acceptance protocol;
@@ -316,6 +342,7 @@ Do not implement in C1:
 - Occurrence generation;
 - Session/Actual runtime;
 - multi-device reconciliation;
-- AI/voice runtime.
+- AI/NL runtime or input;
+- voice runtime or input.
 
-Those later capabilities must attach through the seams now present rather than force a Create rewrite.
+Those later capabilities must attach through their own verticals and compatible downstream seams rather than force a manual Create rewrite.
