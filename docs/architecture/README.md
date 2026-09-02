@@ -40,6 +40,8 @@ AI-04 whole-phase                    CLOSED / WP-01..WP-22
 PRE-AI05                             CLOSED / PRE05-H01..H19
 Current core AI eval                 DANTE-E01..DANTE-E14
 AI current macro-phase               AI-05 WHOLE-SYSTEM ACCEPTANCE + IMPLEMENTATION BLUEPRINT
+AI-05A build boundary                CLOSED / STRUCTURALLY ACCEPTED / BD-01..BD-41
+AI current sub-phase                 AI-05B CONCRETE IMPLEMENTATION BLUEPRINT
 ```
 
 Protected `main` is the integrated authority for closed shared foundations, CP6 and the integrated Recovery evolution. Active unmerged product/architecture work remains branch-local until normal protected-main integration.
@@ -62,6 +64,9 @@ Read according to the subject:
 - [`dante-ai-04c-production-assurance-control-plane-operations.md`](dante-ai-04c-production-assurance-control-plane-operations.md) — **AI-04C production-assurance/control-plane/operations authority**, PA-01..PA-61;
 - [`dante-ai-04-whole-phase-destructive-acceptance.md`](dante-ai-04-whole-phase-destructive-acceptance.md) — **AI-04 whole-phase destructive acceptance**, WP-01..WP-22;
 - [`dante-ai-pre05-cross-phase-hardening.md`](dante-ai-pre05-cross-phase-hardening.md) — **PRE-AI05 cross-phase hardening authority**, PRE05-H01..H19;
+- [`dante-ai-05a-whole-system-build-boundary-acceptance.md`](dante-ai-05a-whole-system-build-boundary-acceptance.md) — **current AI-05A closure authority**, CLOSED / STRUCTURALLY ACCEPTED / BD-01..BD-41;
+- [`dante-ai-05a-whole-system-build-boundary.md`](dante-ai-05a-whole-system-build-boundary.md) — AI-05A original candidate + first destructive-pass evidence; **pre-closure evidence**, not current status authority;
+- [`dante-ai-05a-eval-production-composition-hardening.md`](dante-ai-05a-eval-production-composition-hardening.md) — second-pass BD-41 hardening; **pre-closure evidence**, not current status authority;
 - [`technical-decisions.md`](technical-decisions.md) — current architecture decision register;
 - [`domain-model-logical-readiness.md`](domain-model-logical-readiness.md) — satisfied Domain → Logical semantic compatibility contract;
 - [`../domain/README.md`](../domain/README.md) — current Domain entry point;
@@ -77,7 +82,7 @@ Read according to the subject:
 
 Active branch continuation additionally uses:
 
-- [`../workstreams/ai-architecture.md`](../workstreams/ai-architecture.md) — durable branch-local AI workstream record and current AI-05 routing;
+- [`../workstreams/ai-architecture.md`](../workstreams/ai-architecture.md) — durable branch-local AI workstream record and current AI-05B routing;
 - [`../workstreams/ai-architecture-live-handoff.md`](../workstreams/ai-architecture-live-handoff.md) — TEMPORARY branch-operational save-game; must not merge to protected `main`.
 
 Important persistence ADRs:
@@ -154,6 +159,8 @@ Cross-Phase Whole-Chain Hardening
 AI-05
 Whole-System Acceptance + Implementation Blueprint
 → ACTIVE / CURRENT
+→ AI-05A CLOSED / STRUCTURALLY ACCEPTED / BD-01..BD-41
+→ AI-05B ACTIVE / CURRENT NEXT SUB-PHASE
 ```
 
 The previous longer exploratory AI-00..AI-12 decomposition is historical planning only. Current routing is:
@@ -174,6 +181,10 @@ AI-04  Productionization Architecture                         CLOSED / STRUCTURA
 PRE05  Cross-Phase Hardening                                  CLOSED / PRE05-H01..H19
        current eval families                                  DANTE-E01..DANTE-E14
 AI-05  Whole-System Acceptance + Implementation Blueprint     ACTIVE / CURRENT
+       ├ AI-05A Build Boundary / Ownership Map                CLOSED / BD-01..BD-41
+       └ AI-05B Concrete Implementation Blueprint             ACTIVE / CURRENT
+       ↓
+       whole AI-05 destructive acceptance / closure
        ↓
        actual implementation workstream(s)
 ```
@@ -495,6 +506,110 @@ Auxiliary/sub-model invocations are real governed recipients. Route selection/co
 
 No provider/model/SDK/runtime/persistence/security product is selected merely by architecture closure.
 
+### AI-05A accepted build boundary / AI-05B current
+
+AI-05A is **CLOSED / STRUCTURALLY ACCEPTED / BD-01..BD-41**.
+
+Accepted first-build ownership:
+
+```text
+modules/search
+→ separate Global Search / discovery capability candidate
+→ deterministic/no-model capable
+→ bounded permission/disclosure/current/history/source read projection
+→ may own a bounded Search-specific cross-capability read adapter
+→ no canonical business ownership / no mutation / no model-SQL
+
+modules/intelligence
+→ DANTE intelligence application/orchestration candidate
+→ WorkContract / Context / route/model orchestration / verification / publication
+→ consumes Search and owning capability public seams
+
+provider SDK / protocol
+→ private outbound adapter behind DANTE-owned ModelAccessPort
+
+resource/commercial authority
+→ owns shared/commercial quota/metering truth when activated
+→ Intelligence consumes admission/reservation/settlement
+
+bootstrap
+→ wiring/lifecycle only
+
+platform
+→ shared technical mechanics only
+
+tooling/ai-evals
+→ engineering qualification outside ordinary production request path
+```
+
+The accepted first vertical is:
+
+```text
+GLOBAL SEARCH
+DETERMINISTIC / READ-ONLY / CANONICAL NAVIGATION
++
+ASK DANTE
+READ-ONLY MODEL-ASSISTED SYNTHESIS WHEN NEEDED
++ SOURCE / PROVENANCE / CURRENTNESS
++ NO CONSEQUENTIAL MUTATION
+```
+
+Initial activation envelope remains private authenticated, single-turn, inline/request-owned, read-only, normal isolation, no background/durable resume and no shared/lock/voice/external-recipient publication. Cases requiring H19 cross-Run disclosure accounting are not eligible until their minimum justified state exists.
+
+AI-05A also binds:
+
+```text
+GLOBAL SEARCH != INTELLIGENCE ORCHESTRATION
+SEARCH CROSS-CAPABILITY READ PROJECTION != CANONICAL OWNER / MUTATION BYPASS
+INTELLIGENCE != SUBSCRIPTION / SHARED USAGE LEDGER OWNER
+BEHAVIOR-BEARING ROUTE/HARNESS/POLICY CONFIG != SCATTERED ENV VARS
+DEFAULT NONCANONICAL AI PERSISTENCE = NO
+CHAT-LIKE UI / INLINE STREAM != GENERIC CONVERSATION/RUN PERSISTENCE REQUIRED
+```
+
+Evidence planes stay separate:
+
+```text
+APPLICATION FAKE
+!= PROVIDER ADAPTER CONFORMANCE
+!= LIVE PROVIDER SMOKE / COMPATIBILITY PROOF
+!= DIRECT DANTE MODEL/ROUTE EVAL
+!= PRODUCTION CAPACITY QUALIFICATION
+```
+
+BD-41 adds:
+
+```text
+QUALIFICATION EVIDENCE MUST EXERCISE THE SAME MATERIAL PRODUCTION
+COMPOSITION THAT WILL BE PROMOTED, OR EVERY MATERIAL DELTA MUST BE
+INDEPENDENTLY QUALIFIED BEFORE PROMOTION.
+```
+
+```text
+SAME MATERIAL COMPOSITION != SAME PUBLIC HTTP ENTRYPOINT
+EVAL TOOLING OUTSIDE REQUEST PATH != SECOND PROVIDER INTEGRATION STACK
+```
+
+`tooling/ai-evals` may invoke production-owned route components through a bounded qualification seam. Production code must not depend on eval tooling.
+
+AI-05A final acceptance evidence:
+
+```text
+T01..T26                                      PASS / 26 OF 26
+Search + Intelligence + provider outage       PASS
+Search hidden-result + Ask synthesis          PASS
+config rollout + invocation + emergency deny  PASS
+quota + retry/failover + settlement            PASS
+inline stream + disconnect / no durable Run   PASS
+cumulative privacy + zero-persistence gate     PASS
+direct eval + production composition/deltas    PASS
+reverse AI-05A→AI-04→PRE-AI05→AI-03→AI-02   PASS
+```
+
+The exact current sub-phase is **AI-05B — Concrete Implementation Blueprint**. AI-05B must freeze concrete public module boundaries, ports/runtime DTOs, Search contracts, ModelAccessPort + adapter conformance, route/config schemas, resource seams, first-vertical HTTP/streaming/publication shape, runtime/evidence/persistence classification, exact test topology, qualification artifact schema, activation gates and implementation build sequence without starting production implementation.
+
+If a concrete provider/model/SDK or transport choice cannot responsibly be frozen without live proof, AI-05B must define the exact proof gate instead of guessing.
+
 ## 8. Non-negotiable AI invariants
 
 ```text
@@ -542,6 +657,8 @@ ATTENTION DECISION != PROACTIVE WORK ADMISSION != EFFECT AUTHORIZATION
 SAFE SINGLE DISCLOSURE != AUTOMATICALLY SAFE CUMULATIVE DISCLOSURE
 RECIPIENT != SURFACE != CHANNEL
 SOURCE FUTURE ELIGIBILITY != PRIOR DISCLOSURE OCCURRENCE
+EVAL CANDIDATE != PRODUCTION ROUTE
+QUALIFICATION EVIDENCE MUST MATCH MATERIAL PRODUCTION COMPOSITION OR QUALIFY MATERIAL DELTAS
 ```
 
 ## 9. Pressure-test acceptance state
@@ -571,22 +688,29 @@ fresh 26-case retest                 PASS
 compound collision retest            PASS
 reverse-order retest                 PASS
 2026 state-of-the-art regression     PASS
+
+AI-05A BD-01..BD-41                  CLOSED / STRUCTURALLY ACCEPTED
+AI-05A T01..T26                      PASS / 26 OF 26
+AI-05A compound collision suite       PASS
+AI-05A reverse-to-upstream            PASS
 ```
 
-The completed tests produced no evidence sufficient to reopen Domain, Logical, Physical or PostgreSQL and no need for a new generic AI mega-layer.
+The completed tests produced no evidence sufficient to reopen Domain, Logical, Physical or PostgreSQL and no need for a new generic AI mega-layer or canonical AI owner.
 
 The future-extensibility structural criterion passes: future substantially stronger general-purpose conversational intelligence can be added without transferring canonical memory, Authority, application state, Domain semantics or effect ownership to the provider/model.
 
 ## 10. Current bounded deferrals
 
-Still open or trigger-bound, now primarily owned by AI-05 or later implementation gates:
+Still open or trigger-bound, now primarily owned by AI-05B or later implementation gates:
 
 - exact AI model/provider set and routing policy;
+- provider/model/SDK direct selection;
 - AI agent/runtime/SDK implementation;
 - exact policy-engine technology;
 - exact Execution Environment/sandbox technology;
 - exact target-resolution implementation;
 - exact safe-streaming/publication implementation;
+- first-vertical transport selection;
 - exact Scenario Workspace physical representation, if any;
 - exact ChangeSet physical persistence, if any;
 - exact Interaction Session persistence, if any;
@@ -600,7 +724,7 @@ Still open or trigger-bound, now primarily owned by AI-05 or later implementatio
 - formal IFC / posterior-leakage / ACS adoption;
 - cloud compute/IaC and production infrastructure activation.
 
-A deferral does not authorize violating already accepted semantic/runtime/context/retrieval/memory/materialization/production-assurance invariants.
+A deferral does not authorize violating already accepted semantic/runtime/context/retrieval/memory/materialization/production-assurance/build-boundary invariants.
 
 ## 11. Architecture reopen discipline
 
@@ -610,7 +734,7 @@ Implementation evidence first reopens the smallest affected technology/adapter/b
 
 Do not reopen architecture because of ORM convenience, table shape preference, provider naming, UI naming, framework fashion, agent-framework conventions, vector-store convenience or one isolated implementation annoyance.
 
-AI-03/AI-04/PRE-AI05 are likewise not reopened merely because a provider/retrieval/memory/runtime technology prefers a weaker accepted contract.
+AI-03/AI-04/PRE-AI05/AI-05A are likewise not reopened merely because a provider/retrieval/memory/runtime technology prefers a weaker accepted contract.
 
 ## 12. Current next architecture posture
 
@@ -646,6 +770,15 @@ DANTE-E01..DANTE-E14 CURRENT
 AI-05
 WHOLE-SYSTEM ACCEPTANCE + IMPLEMENTATION BLUEPRINT
 ACTIVE / CURRENT
+
+AI-05A
+WHOLE-SYSTEM BUILD BOUNDARY / OWNERSHIP MAP
+CLOSED / STRUCTURALLY ACCEPTED / BD-01..BD-41
+
+AI-05B
+CONCRETE IMPLEMENTATION BLUEPRINT
+ACTIVE / CURRENT NEXT SUB-PHASE
+NO PRODUCTION IMPLEMENTATION YET
 ```
 
 Direct implementation evidence is claimed only after the relevant real artifact/scenario executes.
