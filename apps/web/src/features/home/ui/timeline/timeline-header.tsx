@@ -19,6 +19,7 @@ import {
   timelineDateKey,
 } from './model/timeline-temporal';
 import type {
+  TimelineAllDayItem,
   TimelineEvent,
   TimelineGroup,
   TimelineGroupId,
@@ -98,7 +99,9 @@ type TimelineHeaderProps = Readonly<{
   onGroupScroll: (scrollLeft: number) => void;
   onCreateContext: (label: string, tone: TimelineSemanticTone) => TimelineGroup;
   onMaterializeCreatedEvent: (dateKey: string, event: TimelineEvent) => void;
+  onMaterializeCreatedAllDay: (item: TimelineAllDayItem) => void;
   onRemoveCreatedEvent: (eventId: TimelineEvent['id']) => void;
+  onRemoveCreatedAllDay: (itemId: string) => void;
 }>;
 
 export function TimelineHeader({
@@ -125,7 +128,9 @@ export function TimelineHeader({
   onGroupScroll,
   onCreateContext,
   onMaterializeCreatedEvent,
+  onMaterializeCreatedAllDay,
   onRemoveCreatedEvent,
+  onRemoveCreatedAllDay,
 }: TimelineHeaderProps) {
   const { t } = useTranslation('common');
   const week = buildIsoWeek(viewDate);
@@ -193,7 +198,9 @@ export function TimelineHeader({
           onRevealDate={onDateSelect}
           onCreateContext={onCreateContext}
           onMaterializeCreatedEvent={onMaterializeCreatedEvent}
+          onMaterializeCreatedAllDay={onMaterializeCreatedAllDay}
           onRemoveCreatedEvent={onRemoveCreatedEvent}
+          onRemoveCreatedAllDay={onRemoveCreatedAllDay}
           onBeforeOpen={() => {
             if (calendarOpen) {
               onCalendarToggle();
