@@ -6,15 +6,17 @@
 - **Sub-phase:** AI-04A — Direct DANTE Eval Specification
 - **Original candidate PRE-SCOPE:** `f5ee7e1fc86c1f2e5675ee860bbbadfbc6bde68a`
 - **Pre-closure snapshot:** `57d9b6b325d0873e46efbe88eee646f994027d2d`
+- **Post-closure PRE-AI05 supplement:** CLOSED / PRE05-H01..H19
+- **Current core workload families:** DANTE-E01..DANTE-E14
 - **Direct provider evidence:** NOT EXECUTED / DEFERRED UNTIL DECISION-CRITICAL
 - **Provider/model selection:** OPEN / EVIDENCE-DRIVEN
 - **Eval runner selection:** OPEN
 - **Implementation claim:** NONE
 - **Database change:** NONE
 
-This document is the durable AI-04A closure authority.
+This document is the durable AI-04A closure authority. It must be read together with `docs/architecture/dante-ai-pre05-cross-phase-hardening.md`, which extends current executable coverage from `DANTE-E01..E13` to `DANTE-E01..E14` without reopening AI-04A methodology.
 
-The full executable-grade candidate specification, including DANTE-E01..E13, fixture/grader design, reliability/economics methodology, tooling comparison and commercial-entitlement pressure cases, is preserved immutably at commit `57d9b6b325d0873e46efbe88eee646f994027d2d`.
+The original executable-grade candidate specification is preserved immutably at commit `57d9b6b325d0873e46efbe88eee646f994027d2d`. Current implementation planning must use the current-tree E01..E14 contract rather than relying on Git archaeology.
 
 AI-04A closure is **structural**. It accepts the evaluation/provider/economics methodology. It does not claim that any provider/model has been directly benchmarked or selected.
 
@@ -55,37 +57,40 @@ FRAMEWORK SCORE != DANTE SEMANTIC PASS
 OUTCOME/ENVIRONMENT STATE > MODEL SELF-REPORT
 ```
 
-External eval products may execute or visualize tests. They do not define DANTE truth, Authority, Actual, effect success, history, privacy or memory semantics.
+External eval products may execute or visualize tests. They do not define DANTE truth, Authority, Actual, effect success, history, privacy, memory, autonomy or Attention semantics.
 
 ---
 
 # 3. Workload families
 
-Accepted core families:
+Accepted current core families:
 
 ```text
 DANTE-E01  model avoidance / deterministic fast path
 DANTE-E02  intent + reference / target resolution
 DANTE-E03  structured extraction / understanding
 DANTE-E04  native query + history + absence semantics
-DANTE-E05  context + privacy + Reality Scope
+DANTE-E05  context + privacy + Reality Scope + cumulative disclosure
 DANTE-E06  planning / replanning / scenarios
 DANTE-E07  document / long-context / multimodal
 DANTE-E08  tool / capability use
-DANTE-E09  consequential effect boundary
-DANTE-E10  multi-actor / delegation / disclosure
+DANTE-E09  consequential effect boundary + scoped autonomy
+DANTE-E10  multi-actor / delegation / recipient-surface-channel disclosure
 DANTE-E11  adaptive memory / learning
 DANTE-E12  currentness / failure / supersession / failover
 DANTE-E13  open-world research / grounding
+DANTE-E14  proactivity / Attention / causal-loop / notification truth
 ```
 
-Trigger-gated suites are created only when product/runtime scope activates them:
+E14 is core because proactive watches/reminders/adaptation are already accepted DANTE behavior; it is not merely a future trigger-gated suite.
+
+Additional trigger-gated suites are created only when product/runtime scope activates them:
 
 ```text
 voice/realtime
 browser/computer use
 code execution
-long-running durable background work
+long-running durable background-work mechanics
 embedding/vector retrieval
 specialized generation
 ```
@@ -130,8 +135,15 @@ risk/consequence class
 locale
 purpose
 Actor / represented party / Subject
+recipient
+surface / channel / delivery context
 Reality Scope
+Runtime Interpretation Frame
 initial state/source refs
+prior disclosure state / related-work disclosure basis
+trigger provenance / causal lineage
+attention state / user mode
+scoped autonomy posture + current autonomy revision/state
 provider/data eligibility profile
 required capabilities
 resource envelope
@@ -141,6 +153,8 @@ forbidden outcomes/actions
 grading profile
 repetition profile
 ```
+
+Family-specific payload remains preferred over one universal mega-schema.
 
 Hidden expected state and grader truth remain separated from candidate-visible state.
 
@@ -181,7 +195,10 @@ Applicable hard failures include:
 ```text
 wrong consequential target
 unauthorized effect
+autonomous effect when mandatory approval was required
 cross-actor/private disclosure
+surface/channel disclosure outside current eligibility
+cumulative/trajectory disclosure of protected information
 fabricated canonical fact
 false effect-success claim
 false Actual/completed state
@@ -193,7 +210,10 @@ source/derivative resurrection
 COMPLETE_REQUIRED answered from unproven approximate coverage
 failover to ineligible binding
 untrusted data gaining instruction authority
-current AuthZ/Consent/Visibility bypass
+current AuthZ/Consent/Visibility/autonomy bypass
+unbounded self-triggered consequential oscillation
+Attention/publication treated as work/effect authorization
+notification state stronger than evidence proves
 ```
 
 ```text
@@ -212,15 +232,15 @@ Prefer strongest objective evidence:
 ```text
 G1 deterministic state/result
 G2 schema/type/constraint
-G3 tool/effect receipt
+G3 tool/effect/transport receipt
 G4 source/citation/evidence
 G5 invariant/privacy/security
-G6 trajectory where material
+G6 trajectory/cross-work evidence where material
 G7 human-calibrated rubric
 G8 model judge for softer dimensions
 ```
 
-A model judge cannot overrule canonical fixture state, effect receipt, Authority/Visibility/Consent or hard security facts.
+A model judge cannot overrule canonical fixture state, effect receipt, Authority/Visibility/Consent, current autonomy policy or hard security facts.
 
 ---
 
@@ -245,6 +265,8 @@ CAPABILITY EVAL != REGRESSION EVAL
 ```
 
 Capability eval finds the frontier. Regression eval protects earned behavior.
+
+For E14, repeated reliability may additionally inspect false/duplicate intervention rate, causal-loop depth, missed material escalation, unnecessary model/tool work and truthful transport-state handling.
 
 ---
 
@@ -328,9 +350,13 @@ COMMERCIAL TIER != MODEL
 COMMERCIAL TIER != PROVIDER
 COMMERCIAL TIER != DEPLOYMENT
 COMMERCIAL TIER != HARNESSPROFILE
+HIGHER COMMERCIAL TIER != BROADER AUTHORITY
+HIGHER COMMERCIAL TIER != WEAKER PRIVACY
+HIGHER COMMERCIAL TIER != AUTOMATIC GREATER AUTONOMY
+HIGHER COMMERCIAL TIER != LICENSE TO INTERRUPT MORE OFTEN
 ```
 
-Commercial tiers may limit resource/capability envelopes but cannot weaken truth, privacy, Authority, target safety, provider/data eligibility, effect verification/reconciliation or anti-resurrection.
+Commercial tiers may limit resource/capability envelopes but cannot weaken truth, privacy, Authority, target safety, provider/data eligibility, effect verification/reconciliation, anti-resurrection, scoped autonomy or Attention floors.
 
 ```text
 BUDGET EXHAUSTION
@@ -367,6 +393,8 @@ LIST PRICE PER TOKEN != DANTE COMMERCIAL VIABILITY
 
 Commercial viability later compares measured task-cost distributions against candidate entitlement envelopes.
 
+Attention quality is separate: abundant compute/credits do not justify more interruptions.
+
 ---
 
 # 14. Runner/tooling posture
@@ -389,9 +417,11 @@ Promptfoo
 → possible red-team challenger
 ```
 
+Formal IFC / posterior-leakage systems / ACS-style agent-control middleware are also challengers where useful; none is selected by architecture closure.
+
 Remote stochastic paid-model evals should remain outside ordinary backend unit/integration CI by default.
 
-A future bounded tooling boundary may live under `tooling/ai-evals/`, but implementation is not part of AI-04 closure.
+A future bounded tooling boundary may live under `tooling/ai-evals/`, but implementation is not part of AI-04/PRE-AI05 closure.
 
 ---
 
@@ -459,11 +489,12 @@ EV20 QUOTA/COST EXHAUSTION MUST NOT ERASE CONSEQUENTIAL RECONCILIATION OBLIGATIO
 
 ---
 
-# 17. Whole-phase hardening applies
+# 17. Whole-phase and PRE-AI05 hardening apply
 
 AI-04A must be read together with:
 
 - `docs/architecture/dante-ai-04-whole-phase-destructive-acceptance.md`
+- `docs/architecture/dante-ai-pre05-cross-phase-hardening.md`
 
 Whole-phase `WP-01..WP-22` strengthen the transition from evaluation evidence to production routability, including:
 
@@ -483,7 +514,18 @@ per-invocation config coherence
 production capacity qualification
 ```
 
-Where a whole-phase rule is stronger than an earlier AI-04A candidate assumption, the whole-phase rule governs.
+PRE05-H01..H19 extend proof traceability for:
+
+```text
+Attention/proactivity/causal-loop safety
+cumulative/cross-work disclosure
+recipient/surface/channel differential disclosure
+scoped autonomy and current autonomy revalidation
+notification communication-state truth
+source lifecycle vs prior-disclosure occurrence
+```
+
+Where a later whole-phase/PRE-AI05 rule is stronger than an earlier AI-04A candidate assumption, the later accepted rule governs.
 
 ---
 
@@ -515,7 +557,9 @@ intended production capacity/service envelope
 
 ```text
 AI-04A CLOSED                         YES / STRUCTURAL
-DIRECT DANTE PROVIDER EVAL PASS        NO
+CURRENT CORE EVAL FAMILIES            E01..E14
+PRE-AI05 H01..H19                     ACCEPTED / STRUCTURAL
+DIRECT DANTE PROVIDER EVAL PASS       NO
 PROVIDER SELECTED                     NO
 MODEL DEFAULT SELECTED                NO
 MULTI-PROVIDER REQUIRED               NO
@@ -542,6 +586,6 @@ SC/PSV DIRECT PROOFS EXECUTED         NO
 
 The next phase is not a generic provider benchmark.
 
-AI-05 must translate the accepted AI architecture into a buildable implementation blueprint and identify exactly which concrete decisions are blocked on direct evidence.
+After global current-truth reconciliation, AI-05 must translate the accepted AI architecture into a buildable implementation blueprint and identify exactly which concrete decisions are blocked on direct evidence.
 
-Only then should the bounded eval tooling/provider proof be executed for decision-critical candidates.
+Only then should bounded eval tooling/provider proof be executed for decision-critical candidates.
