@@ -279,6 +279,7 @@ test.describe('DANTE Access/Auth M5 full-stack security surface', () => {
     expect(missingCsrf.status).toBe(403);
     expect(problemCodeFromText(missingCsrf.body)).toBe('security.csrf_failed');
 
+    await page.getByLabel('Nome passkey').fill('Browser test');
     const registrationPromise = page.waitForResponse(
       (response) =>
         response.url().endsWith(passkeyRegistrationBeginPath) &&
