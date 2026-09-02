@@ -96,6 +96,7 @@ test('Expanded and Full Activity author DANTE planning without fake recurrence o
   await dialog.getByRole('button', { name: /Dettagli e pianificazione/ }).click();
   await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'expanded');
 
+  await dialog.getByLabel('Durata prevista (min)').fill('195');
   await dialog.getByLabel('Vincolo temporale').selectOption('bounded-window');
   await dialog.getByLabel('Politica di spostamento').selectOption('window');
   await dialog.getByLabel('Struttura di esecuzione').selectOption('splittable');
@@ -110,6 +111,7 @@ test('Expanded and Full Activity author DANTE planning without fake recurrence o
 
   await dialog.getByRole('button', { name: 'Editor completo →' }).click();
   await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'full');
+  await expect(dialog.getByLabel('Durata prevista (min)')).toHaveValue('195');
   await dialog
     .getByLabel('Se il piano non è più fattibile')
     .selectOption('shorten-or-split');
@@ -201,7 +203,7 @@ test('Event Full Create preserves deep purpose, collaboration and provider inten
   await expect(card).toContainText('Ricorrente');
 });
 
-test('Event recurrence exposes all four CP6 families and preserves deep values across surface round-trips', async ({
+test('Event recurrence exposes CP6 families, precise calendar/quota/cycle semantics, and preserves them across surfaces', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1360, height: 860 });
@@ -216,25 +218,62 @@ test('Event recurrence exposes all four CP6 families and preserves deep values a
   const pattern = dialog.getByLabel('Modello di ricorrenza');
   await expect(pattern.locator('option')).toHaveCount(5);
 
+  await pattern.selectOption('calendar-wall-clock');
+  const frequency = dialog.getByLabel('Frequenza di calendario');
+  await expect(frequency.locator('option')).toHaveCount(5);
+  await frequency.selectOption('monthly-ordinal');
+  await dialog.getByLabel('Posizione nel mese').selectOption('-1');
+  await dialog.getByLabel('Giorno della settimana').selectOption('FR');
+  await frequency.selectOption('yearly');
+  await expect(dialog).toContainText('resta l’ancora civile del pattern');
+
   await pattern.selectOption('elapsed-interval');
   await dialog.getByLabel('Intervallo trascorso (minuti)').fill('720');
+
   await pattern.selectOption('quota-per-period');
   await dialog.getByLabel('Occorrenze richieste').fill('3');
-  await dialog.getByLabel('Periodo', { exact: true }).selectOption('week');
+  const quotaPeriod = dialog.getByLabel('Periodo', { exact: true });
+  await expect(quotaPeriod.locator('option')).toHaveCount(4);
+  await quotaPeriod.selectOption('year');
+  await quotaPeriod.selectOption('week');
+  await dialog.getByLabel('Confine del periodo').selectOption('named-zone');
+  await dialog.getByLabel('Inizio settimana').selectOption('MO');
+  await dialog.getByLabel('Fuso del periodo').fill('Europe/Rome');
+  await expect(dialog).toContainText('Non dipende implicitamente dal fuso del dispositivo');
+
   await pattern.selectOption('cyclic-positional');
-  await dialog.getByLabel('Lunghezza ciclo').fill('7');
-  await dialog.getByLabel('Posizione nel ciclo').fill('2');
+  await dialog.getByLabel('Lunghezza ciclo').fill('4');
+  await dialog.getByLabel('Nuova posizione attiva').fill('2');
+  await dialog.getByRole('button', { name: 'Aggiungi posizione' }).click();
+  await expect(
+    dialog.getByRole('button', { name: 'Rimuovi posizione 1' }),
+  ).toBeVisible();
+  await expect(
+    dialog.getByRole('button', { name: 'Rimuovi posizione 2' }),
+  ).toBeVisible();
   await dialog.getByLabel('Scopo').fill('Conservare il ciclo operativo');
 
   await dialog.getByRole('button', { name: '← Dettagli' }).click();
   await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'expanded');
   await dialog.getByRole('button', { name: 'Editor completo →' }).click();
   await expect(pattern).toHaveValue('cyclic-positional');
-  await expect(dialog.getByLabel('Lunghezza ciclo')).toHaveValue('7');
-  await expect(dialog.getByLabel('Posizione nel ciclo')).toHaveValue('2');
+  await expect(dialog.getByLabel('Lunghezza ciclo')).toHaveValue('4');
+  await expect(
+    dialog.getByRole('button', { name: 'Rimuovi posizione 1' }),
+  ).toBeVisible();
+  await expect(
+    dialog.getByRole('button', { name: 'Rimuovi posizione 2' }),
+  ).toBeVisible();
   await expect(dialog.getByLabel('Scopo')).toHaveValue(
     'Conservare il ciclo operativo',
   );
+  await expectNoRawCreateKeys(page);
+
+  const accessibility = await new AxeBuilder({ page })
+    .include('[data-temporal-create="composer"]')
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+    .analyze();
+  expect(accessibility.violations).toEqual([]);
 });
 
 test('all-day multi-day Event and unscheduled Activity preserve different temporal semantics', async ({
