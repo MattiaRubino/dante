@@ -71,6 +71,7 @@ export function readWorldFocusEntry(
   }
 
   if (pendingEntry.worldId !== worldId || pendingEntry.source !== source) {
+    pendingEntry = null;
     return null;
   }
 
