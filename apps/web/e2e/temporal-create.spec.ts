@@ -24,35 +24,67 @@ async function expectNoRawCreateKeys(page: Page) {
   await expect(page.locator('body')).not.toContainText('home.timeline.create.');
 }
 
-async function visibleTimelineDay(page: Page) {
-  const date = await page
-    .locator('.timeline-day-section[data-timeline-date]')
-    .evaluateAll((sections) => {
-      const viewportCenter = window.innerHeight / 2;
-      const candidates = sections.flatMap((section) => {
-        if (!(section instanceof HTMLElement)) {
-          return [];
-        }
-        const rect = section.getBoundingClientRect();
-        const dateValue = section.dataset.timelineDate;
-        if (
-          !dateValue ||
-          rect.height <= 0 ||
-          rect.bottom <= 0 ||
-          rect.top >= window.innerHeight
-        ) {
-          return [];
-        }
-        return [
-          {
-            date: dateValue,
-            distance: Math.abs((rect.top + rect.bottom) / 2 - viewportCenter),
-          },
-        ];
-      });
-      candidates.sort((left, right) => left.distance - right.distance);
-      return candidates[0]?.date ?? null;
-    });
+type VisibleTimelineDay = Readonly<{
+  section: Locator;
+  box: Readonly<{ x: number; y: number; width: number; height: number }>;
+  visibleTop: number;
+  visibleBottom: number;
+}>;
+
+async function visibleTimelineDay(page: Page): Promise<VisibleTimelineDay> {
+  const grid = page.locator('.timeline-grid');
+  await expect(grid).toBeVisible();
+  await grid.scrollIntoViewIfNeeded();
+
+  let date: string | null = null;
+  await expect
+    .poll(async () => {
+      date = await page
+        .locator('.timeline-day-section[data-timeline-date]')
+        .evaluateAll((sections) => {
+          const timelineGrid = document.querySelector('.timeline-grid');
+          if (!(timelineGrid instanceof HTMLElement)) {
+            return null;
+          }
+
+          const gridRect = timelineGrid.getBoundingClientRect();
+          const viewportTop = Math.max(0, gridRect.top);
+          const viewportBottom = Math.min(window.innerHeight, gridRect.bottom);
+          if (viewportBottom - viewportTop <= 80) {
+            return null;
+          }
+
+          const viewportCenter = (viewportTop + viewportBottom) / 2;
+          const candidates = sections.flatMap((section) => {
+            if (!(section instanceof HTMLElement)) {
+              return [];
+            }
+            const rect = section.getBoundingClientRect();
+            const dateValue = section.dataset.timelineDate;
+            const visibleTop = Math.max(rect.top, viewportTop);
+            const visibleBottom = Math.min(rect.bottom, viewportBottom);
+            if (
+              !dateValue ||
+              rect.height <= 0 ||
+              visibleBottom - visibleTop <= 80
+            ) {
+              return [];
+            }
+            return [
+              {
+                date: dateValue,
+                distance: Math.abs(
+                  (visibleTop + visibleBottom) / 2 - viewportCenter,
+                ),
+              },
+            ];
+          });
+          candidates.sort((left, right) => left.distance - right.distance);
+          return candidates[0]?.date ?? null;
+        });
+      return date;
+    })
+    .not.toBeNull();
 
   if (!date) {
     throw new Error('Expected a visible Timeline day section');
@@ -62,7 +94,32 @@ async function visibleTimelineDay(page: Page) {
     `.timeline-day-section[data-timeline-date="${date}"]`,
   );
   await expect(section).toBeVisible();
-  return section;
+
+  const [box, gridBox, viewportHeight] = await Promise.all([
+    section.boundingBox(),
+    grid.boundingBox(),
+    page.evaluate(() => window.innerHeight),
+  ]);
+  if (!box || !gridBox) {
+    throw new Error('Expected visible Timeline interaction geometry');
+  }
+
+  const visibleViewportTop = Math.max(box.y, gridBox.y, 0);
+  const visibleViewportBottom = Math.min(
+    box.y + box.height,
+    gridBox.y + gridBox.height,
+    viewportHeight,
+  );
+  if (visibleViewportBottom - visibleViewportTop <= 80) {
+    throw new Error('Expected useful visible Timeline day geometry');
+  }
+
+  return {
+    section,
+    box,
+    visibleTop: visibleViewportTop - box.y,
+    visibleBottom: visibleViewportBottom - box.y,
+  };
 }
 
 test('Quick Create stays title-first, protects drafts, and restores opener focus', async ({
@@ -405,17 +462,13 @@ test('double-click and Shift-drag on empty Timeline create contextual defaults',
   await page.setViewportSize(viewport);
   await page.goto('/home');
 
-  let section = await visibleTimelineDay(page);
-  const box = await section.boundingBox();
-  if (!box) {
-    throw new Error('Expected visible Timeline day geometry');
-  }
-  const visibleTop = Math.max(0, -box.y);
-  const visibleBottom = Math.min(box.height, viewport.height - box.y);
-  expect(visibleBottom - visibleTop).toBeGreaterThan(80);
+  let target = await visibleTimelineDay(page);
+  let section = target.section;
+  expect(target.visibleBottom - target.visibleTop).toBeGreaterThan(80);
 
-  const emptyX = Math.min(600, box.width - 40);
-  const emptyY = visibleTop + (visibleBottom - visibleTop) * 0.46;
+  const emptyX = Math.min(600, target.box.width - 40);
+  const emptyY =
+    target.visibleTop + (target.visibleBottom - target.visibleTop) * 0.46;
   await section.dblclick({ position: { x: emptyX, y: emptyY } });
   let dialog = page.locator('[data-temporal-create="composer"]');
   await expect(dialog).toBeVisible();
@@ -425,19 +478,13 @@ test('double-click and Shift-drag on empty Timeline create contextual defaults',
   await expect(dialog).toHaveCount(0);
   await expect(page.locator('.timeline-grid')).toBeFocused();
 
-  section = await visibleTimelineDay(page);
-  const rangeBox = await section.boundingBox();
-  if (!rangeBox) {
-    throw new Error('Expected visible Timeline day geometry after contextual create');
-  }
-  const rangeVisibleTop = Math.max(rangeBox.y, 0);
-  const rangeVisibleBottom = Math.min(
-    rangeBox.y + rangeBox.height,
-    viewport.height,
-  );
-  expect(rangeVisibleBottom - rangeVisibleTop).toBeGreaterThan(80);
+  target = await visibleTimelineDay(page);
+  section = target.section;
+  expect(target.visibleBottom - target.visibleTop).toBeGreaterThan(80);
 
-  const startX = rangeBox.x + Math.min(600, rangeBox.width - 40);
+  const startX = target.box.x + Math.min(600, target.box.width - 40);
+  const rangeVisibleTop = target.box.y + target.visibleTop;
+  const rangeVisibleBottom = target.box.y + target.visibleBottom;
   const startY =
     rangeVisibleTop + (rangeVisibleBottom - rangeVisibleTop) * 0.4;
   const endY = Math.min(rangeVisibleBottom - 20, startY + 130);
