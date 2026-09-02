@@ -47,7 +47,24 @@ export function TemporalCreateActivityFields({
         </div>
       </div>
 
-      <div className="temporal-create-grid two">
+      <div className="temporal-create-grid three">
+        <label className="temporal-create-control">
+          <span>{`${t(($) => $.common.home.timeline.create.duration)} (min)`}</span>
+          <input
+            data-create-path="durationMinutes"
+            type="number"
+            min="5"
+            max="10080"
+            step="5"
+            inputMode="numeric"
+            value={fields.durationMinutes}
+            onChange={(event) =>
+              onPatch({ durationMinutes: Number(event.currentTarget.value) })
+            }
+          />
+          {renderError('durationMinutes')}
+        </label>
+
         <label className="temporal-create-control">
           <span>{t(($) => $.common.home.timeline.create.planning.constraint)}</span>
           <select
