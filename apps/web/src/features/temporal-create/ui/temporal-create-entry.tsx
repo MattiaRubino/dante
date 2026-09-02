@@ -48,11 +48,22 @@ const QUICK_WIDTH_PX = 560;
 const EXPANDED_WIDTH_PX = 760;
 const QUICK_ESTIMATED_HEIGHT_PX = 650;
 const EXPANDED_ESTIMATED_HEIGHT_PX = 760;
+const FLOATING_COMPOSER_BREAKPOINT_PX = 900;
 
 type InvocationAnchor = Readonly<{
   left: number;
   top: number;
   bottom: number;
+}>;
+
+type ComposerDrag = Readonly<{
+  pointerId: number;
+  startX: number;
+  startY: number;
+  startLeft: number;
+  startTop: number;
+  width: number;
+  height: number;
 }>;
 
 export type TemporalCreateInvocation = Readonly<{
@@ -95,6 +106,7 @@ export function TemporalCreateEntry({
   const { t } = useTranslation('common');
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const focusReturnRef = useRef<HTMLElement | null>(null);
+  const composerDragRef = useRef<ComposerDrag | null>(null);
   const [runtime] = useState(() => createLocalTemporalCreateRuntime());
   const requestSeenRef = useRef<number | null>(null);
   const preparedRef = useRef<TemporalCreatePreparedOperation | null>(null);
@@ -166,6 +178,8 @@ export function TemporalCreateEntry({
       setFailureMessage('');
       setLifecycle('idle');
       setAnchor(null);
+      composerDragRef.current = null;
+      document.documentElement.removeAttribute('data-temporal-create-dragging');
       preparedRef.current = null;
       commitInFlightRef.current = false;
       onPreview(null);
@@ -287,6 +301,144 @@ export function TemporalCreateEntry({
     window.addEventListener('resize', updatePosition);
     return () => window.removeEventListener('resize', updatePosition);
   }, [anchor, open, session.surface]);
+
+  useLayoutEffect(() => {
+    if (!open || anchor || session.surface === 'full') {
+      return;
+    }
+
+    const clampFloatingPosition = () => {
+      const composer = document.querySelector<HTMLElement>(
+        '[data-temporal-create="composer"]',
+      );
+      if (!composer || window.innerWidth <= FLOATING_COMPOSER_BREAKPOINT_PX) {
+        return;
+      }
+      const rect = composer.getBoundingClientRect();
+      setPosition((current) => {
+        const next = {
+          left: clamp(
+            current.left,
+            VIEWPORT_PADDING_PX,
+            window.innerWidth - rect.width - VIEWPORT_PADDING_PX,
+          ),
+          top: clamp(
+            current.top,
+            VIEWPORT_PADDING_PX,
+            window.innerHeight - rect.height - VIEWPORT_PADDING_PX,
+          ),
+        };
+        return next.left === current.left && next.top === current.top
+          ? current
+          : next;
+      });
+    };
+
+    const frame = requestAnimationFrame(clampFloatingPosition);
+    window.addEventListener('resize', clampFloatingPosition);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('resize', clampFloatingPosition);
+    };
+  }, [anchor, open, session.surface]);
+
+  useEffect(() => {
+    if (!open || session.surface === 'full') {
+      composerDragRef.current = null;
+      document.documentElement.removeAttribute('data-temporal-create-dragging');
+      return;
+    }
+
+    const composer = document.querySelector<HTMLElement>(
+      '[data-temporal-create="composer"]',
+    );
+    const handle = composer?.querySelector<HTMLElement>(
+      '.temporal-create-composer__heading-copy',
+    );
+    if (!composer || !handle) {
+      return;
+    }
+
+    const finishDrag = (pointerId?: number) => {
+      if (
+        pointerId !== undefined &&
+        composerDragRef.current?.pointerId !== pointerId
+      ) {
+        return;
+      }
+      composerDragRef.current = null;
+      document.documentElement.removeAttribute('data-temporal-create-dragging');
+    };
+
+    const onPointerDown = (event: PointerEvent) => {
+      if (
+        window.innerWidth <= FLOATING_COMPOSER_BREAKPOINT_PX ||
+        event.button !== 0 ||
+        !event.isPrimary
+      ) {
+        return;
+      }
+      const target = event.target;
+      if (
+        target instanceof Element &&
+        target.closest('button, input, select, textarea, a')
+      ) {
+        return;
+      }
+      const rect = composer.getBoundingClientRect();
+      composerDragRef.current = {
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        startLeft: rect.left,
+        startTop: rect.top,
+        width: rect.width,
+        height: rect.height,
+      };
+      setAnchor(null);
+      document.documentElement.setAttribute(
+        'data-temporal-create-dragging',
+        'true',
+      );
+      handle.setPointerCapture(event.pointerId);
+      event.preventDefault();
+    };
+
+    const onPointerMove = (event: PointerEvent) => {
+      const drag = composerDragRef.current;
+      if (!drag || drag.pointerId !== event.pointerId) {
+        return;
+      }
+      setPosition({
+        left: clamp(
+          drag.startLeft + event.clientX - drag.startX,
+          VIEWPORT_PADDING_PX,
+          window.innerWidth - drag.width - VIEWPORT_PADDING_PX,
+        ),
+        top: clamp(
+          drag.startTop + event.clientY - drag.startY,
+          VIEWPORT_PADDING_PX,
+          window.innerHeight - drag.height - VIEWPORT_PADDING_PX,
+        ),
+      });
+      event.preventDefault();
+    };
+
+    const onPointerUp = (event: PointerEvent) => finishDrag(event.pointerId);
+    const onPointerCancel = (event: PointerEvent) => finishDrag(event.pointerId);
+
+    handle.addEventListener('pointerdown', onPointerDown);
+    handle.addEventListener('pointermove', onPointerMove);
+    handle.addEventListener('pointerup', onPointerUp);
+    handle.addEventListener('pointercancel', onPointerCancel);
+    return () => {
+      handle.removeEventListener('pointerdown', onPointerDown);
+      handle.removeEventListener('pointermove', onPointerMove);
+      handle.removeEventListener('pointerup', onPointerUp);
+      handle.removeEventListener('pointercancel', onPointerCancel);
+      finishDrag();
+    };
+  }, [open, session.surface]);
 
   const requestClose = () => {
     if (lifecycle === 'pending') {
