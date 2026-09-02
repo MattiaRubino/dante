@@ -9,7 +9,7 @@ import {
   webAuthRemote,
   type WebAuthenticationMethods,
 } from '../../../platform/auth/web-auth-remote';
-import { authSessionQueryKey } from './auth-session';
+import { commitAuthoritativeAuthSession } from './auth-session';
 
 export const authenticationMethodsQueryKey = ['auth', 'methods'] as const;
 
@@ -50,7 +50,7 @@ export function useEstablishPasswordMutation() {
       webAuthRemote.establishPassword({ new_password: newPassword }, csrfToken),
     retry: false,
     onSuccess: async (session) => {
-      queryClient.setQueryData(authSessionQueryKey, session);
+      await commitAuthoritativeAuthSession(queryClient, session);
       await cacheMethodsAfterMutation(queryClient);
     },
   });
@@ -63,7 +63,7 @@ export function useRemovePasswordMutation() {
       webAuthRemote.removePassword(csrfToken),
     retry: false,
     onSuccess: async (session) => {
-      queryClient.setQueryData(authSessionQueryKey, session);
+      await commitAuthoritativeAuthSession(queryClient, session);
       await cacheMethodsAfterMutation(queryClient);
     },
   });
