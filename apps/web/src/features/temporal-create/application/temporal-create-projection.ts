@@ -3,6 +3,7 @@ import {
   buildTemporalCreatePlacement,
   temporalCreateHasFlexibleIntent,
   validateTemporalCreateFields,
+  type TemporalCreateAppearanceTone,
   type TemporalCreateFields,
 } from '../model/temporal-create-session';
 import type {
@@ -15,6 +16,7 @@ export type TemporalCreateTimelineProjection = Readonly<{
   title: string;
   kind: 'activity' | 'event';
   contextId: string;
+  appearanceTone: TemporalCreateAppearanceTone | null;
   dateKey: string | null;
   endDateExclusiveKey: string | null;
   startMinute: number | null;
@@ -41,6 +43,7 @@ function projectPlacement(
   const recurring =
     specification.kind === 'event' &&
     specification.eventRecurrence.patternKind !== 'none';
+  const appearanceTone = specification.appearanceTone;
 
   if (!placement) {
     return Object.freeze({
@@ -48,6 +51,7 @@ function projectPlacement(
       title,
       kind: metadata.kind,
       contextId: metadata.contextId,
+      appearanceTone,
       dateKey: null,
       endDateExclusiveKey: null,
       startMinute: null,
@@ -65,6 +69,7 @@ function projectPlacement(
       title,
       kind: metadata.kind,
       contextId: metadata.contextId,
+      appearanceTone,
       dateKey: placement.startDate.toString(),
       endDateExclusiveKey: placement.endDateExclusive.toString(),
       startMinute: null,
@@ -90,6 +95,7 @@ function projectPlacement(
     title,
     kind: metadata.kind,
     contextId: metadata.contextId,
+    appearanceTone,
     dateKey: start.toPlainDate().toString(),
     endDateExclusiveKey: null,
     startMinute: minuteOfDay(start.hour, start.minute),
