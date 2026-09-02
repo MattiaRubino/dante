@@ -1,7 +1,10 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { TemporalCreateFields } from '../model/temporal-create-session';
+import type {
+  TemporalCreateFields,
+  TemporalCreateSurface,
+} from '../model/temporal-create-session';
 import { useTemporalCreateContextCreator } from './temporal-create-context-catalog';
 import { TemporalCreateContextPicker } from './temporal-create-context-picker';
 import {
@@ -12,6 +15,7 @@ import type { TemporalCreateContextOption } from './temporal-create-ui-types';
 
 type TemporalCreateCoreFieldsProps = Readonly<{
   fields: TemporalCreateFields;
+  surface: TemporalCreateSurface;
   contexts: readonly TemporalCreateContextOption[];
   onPatch: (patch: Partial<TemporalCreateFields>) => void;
   renderError: (path: string) => ReactNode;
@@ -19,6 +23,7 @@ type TemporalCreateCoreFieldsProps = Readonly<{
 
 export function TemporalCreateCoreFields({
   fields,
+  surface,
   contexts,
   onPatch,
   renderError,
@@ -118,10 +123,7 @@ export function TemporalCreateCoreFields({
                 ? t(($) => $.common.home.timeline.create.timeSemantics.timed)
                 : semantics === 'all-day'
                   ? t(($) => $.common.home.timeline.create.timeSemantics.allDay)
-                  : t(
-                      ($) =>
-                        $.common.home.timeline.create.timeSemantics.unscheduled,
-                    )}
+                  : t(($) => $.common.home.timeline.create.planning.constraintOpen)}
             </button>
           ))}
         </div>
@@ -153,7 +155,7 @@ export function TemporalCreateCoreFields({
             />
             {renderError('startTime')}
           </label>
-          {durationControl}
+          {surface === 'quick' ? durationControl : null}
         </div>
       ) : fields.timeSemantics === 'all-day' ? (
         <div
@@ -192,9 +194,9 @@ export function TemporalCreateCoreFields({
             </label>
           ) : null}
         </div>
-      ) : (
+      ) : surface === 'quick' ? (
         <div className="temporal-create-grid one">{durationControl}</div>
-      )}
+      ) : null}
     </>
   );
 }
