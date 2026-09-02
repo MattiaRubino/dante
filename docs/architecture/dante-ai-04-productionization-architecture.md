@@ -1,19 +1,19 @@
 # DANTE AI-04 — Productionization Architecture
 
-- **Status:** CANDIDATE / AI-04A MATERIALIZED / AI-04B CLOSED / AI-04C CLOSED / WHOLE-PHASE DESTRUCTIVE ACCEPTANCE CURRENT / NOT CLOSED
+- **Status:** CLOSED / STRUCTURALLY ACCEPTED
 - **Branch:** `feature/ai-architecture`
 - **Phase:** AI-04 — Productionization Architecture
-- **Current focus:** AI-04 Whole-Phase Destructive Acceptance
-- **Upstream:** AI-02.1 CLOSED / AI-03 CLOSED
-- **AI-04A:** MATERIALIZED / A01..A30 / EV01..EV20 / direct provider evidence DEFERRED UNTIL DECISION-CRITICAL
+- **Closure PRE-SCOPE:** `57d9b6b325d0873e46efbe88eee646f994027d2d`
+- **AI-04A:** CLOSED / STRUCTURALLY ACCEPTED / A01..A30 / EV01..EV20 / DIRECT PROVIDER EVIDENCE NOT EXECUTED
 - **AI-04B:** CLOSED / STRUCTURALLY ACCEPTED / RT-01..RT-31
 - **AI-04C:** CLOSED / STRUCTURALLY ACCEPTED / PA-01..PA-61
+- **Whole-phase:** CLOSED / STRUCTURALLY ACCEPTED / WP-01..WP-22
 - **Provider/model selection:** OPEN / EVIDENCE-DRIVEN
 - **Commercial tier/pricing selection:** OPEN
 - **Implementation claim:** NONE
 - **Database change:** NONE
 
-This document is the durable master for AI-04 Productionization Architecture.
+This document is the durable AI-04 master closure authority.
 
 Detailed authority:
 
@@ -21,55 +21,60 @@ Detailed authority:
 docs/architecture/dante-ai-04a-direct-eval-specification.md
 docs/architecture/dante-ai-04b-concrete-runtime-capability-architecture.md
 docs/architecture/dante-ai-04c-production-assurance-control-plane-operations.md
+docs/architecture/dante-ai-04-whole-phase-destructive-acceptance.md
 ```
 
-AI-04 converts accepted DANTE intelligence semantics into a production-ready responsibility architecture while keeping concrete provider/model/cloud/runtime-product choices evidence-driven.
+The full pre-closure AI-04 master candidate is preserved at commit `57d9b6b325d0873e46efbe88eee646f994027d2d`.
+
+AI-04 is closed **structurally**, not operationally. It defines the accepted responsibility architecture that later implementation/provider choices must satisfy.
 
 ---
 
-# 1. Current sequence
+# 1. Closure chronology
 
 ```text
-AI-04A — EVAL / MODEL / PROVIDER / ECONOMICS
-MATERIALIZED
-A01..A30 / EV01..EV20
-→ direct provider/model proof deferred until decision-critical
+AI-04A
+→ workload/eval/provider/economics architecture materialized
+→ CLOSED STRUCTURALLY at whole-phase acceptance
+→ direct provider/model evidence NOT EXECUTED
 
-AI-04B — CONCRETE RUNTIME + CAPABILITIES
-first candidate
+AI-04B
+→ first candidate
 → destructive FAIL
 → RT-01..RT-20
-→ PASS CANDIDATE
-→ fresh independent FAIL
+→ PASS candidate
+→ independent FAIL
 → RT-21..RT-31
-→ final compound PASS
-→ CLOSED / STRUCTURALLY ACCEPTED
+→ final PASS
+→ CLOSED
 
-AI-04C — PRODUCTION ASSURANCE / SECURITY / PRIVACY /
-CONTROL PLANE / OPERATIONS
-state-of-the-art research + candidate
+AI-04C
+→ state-of-the-art production-assurance candidate
 → destructive FAIL
 → PA-01..PA-38
-→ PASS CANDIDATE
-→ fresh independent FAIL
+→ PASS candidate
+→ independent FAIL
 → PA-39..PA-61
-→ final compound PASS
-→ CLOSED / STRUCTURALLY ACCEPTED
+→ final PASS
+→ CLOSED
 
-AI-04 WHOLE-PHASE DESTRUCTIVE ACCEPTANCE
-→ CURRENT
-
-then
-AI-04 closure
-→ AI-05 whole-system acceptance + implementation blueprint
-→ actual AI implementation workstream(s)
+WHOLE-PHASE
+→ first cross-phase pass FAIL
+→ WP-01..WP-11
+→ reverse-order retest PASS candidate
+→ third independent adversarial pass FAIL
+→ WP-12..WP-22
+→ adversarial retest PASS
+→ reverse composition C → B → A PASS
+→ upstream semantic check PASS
+→ AI-04 CLOSED / STRUCTURALLY ACCEPTED
 ```
-
-No API key is required for the current whole-phase architecture acceptance.
 
 ---
 
-# 2. Binding upstream authority
+# 2. Binding project authority
+
+AI-04 remains subordinate to accepted project semantics:
 
 ```text
 PostgreSQL = sole canonical persistence/material-history authority
@@ -77,91 +82,141 @@ MODEL OUTPUT != PUBLISHABLE OUTPUT
 MODEL CAPABILITY != AUTHORITY
 DISPLAY NAME != EFFECT TARGET
 Interaction Session != Run != Worker
+RUN-START AUTHORIZATION != PERPETUAL AUTHORIZATION
+CANCEL RUN != UNDO ALREADY-DISPATCHED EFFECTS
+SUPERSEDE != CANCEL != ROLLBACK != RECONCILE
 Context != Retrieval != Memory
 ConsumerContext != ContextManifest != BasisManifest
 APPROXIMATE != COMPLETE
-Memory exists != memory may be recalled
+Observation != Actual
+Schedule != Actual
+absence != false
+Authority != Visibility
 processing eligibility != retention eligibility != future-reuse eligibility
 provider state != canonical DANTE state
-semantic obligation != technical execution/audit evidence
 DEFAULT NONCANONICAL PERSISTENCE = NO
+semantic obligation != technical execution/audit evidence
 ```
 
-No AI provider/eval/commercial/runtime/security feature may silently create a second source of canonical truth or bypass accepted Domain/Logical/Physical authority.
+No provider, model, SDK, runtime protocol, commercial tier or security product may silently reopen those contracts.
 
 ---
 
-# 3. AI-04A — provider/eval/economics authority
-
-Representative workload families:
+# 3. Accepted production responsibility chain
 
 ```text
-DANTE-E01  model avoidance / deterministic fast path
-DANTE-E02  intent + reference / target resolution
-DANTE-E03  structured extraction / understanding
-DANTE-E04  native query + history + absence semantics
-DANTE-E05  context + privacy + Reality Scope
-DANTE-E06  planning / replanning / scenario reasoning
-DANTE-E07  document / long-context / multimodal reasoning
-DANTE-E08  tool / capability use
-DANTE-E09  consequential effect boundary
-DANTE-E10  multi-actor / delegation / disclosure
-DANTE-E11  adaptive memory / learning
-DANTE-E12  currentness / failure / supersession / failover
-DANTE-E13  open-world research / grounding
+WorkContract
++ ConsequenceProfile
++ current Actor / represented-party context
++ current Authority / AuthZ / Consent / Visibility
++ current EntitlementProfile / ResourceBudget
++ current provider/data/feature eligibility
+        ↓
+ModelTarget or deterministic/no-model route
+        ↓
+qualified candidate route compositions
+        ↓
+Routing Policy
+        ↓
+compatible qualified:
+  HarnessProfile
+  + ProviderBinding
+  + feature mode
+  + capability projection
+  + security/control profile
+        ↓
+route-specific resource admission
+        ↓
+current egress/data eligibility at send boundary
+        ↓
+Model Access Runtime / Capability Runtime / deterministic runtime
+        ↓
+Verifier / effect governance / reconciliation
+        ↓
+Result Maturity / Disclosure / Safe Publication
+        ↓
+usage settlement / audit / telemetry / eval evidence
 ```
 
-Core provider boundary:
+These are logical responsibilities, not mandatory microservices/tables.
+
+---
+
+# 4. Provider replaceability
 
 ```text
 MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT
 MODEL VENDOR != SERVING PLATFORM != PROTOCOL FAMILY
+HARNESSPROFILE != PROVIDERBINDING
 DANTE FEATURE/BUSINESS CODE != CONCRETE PROVIDER SDK
 PROVIDER REPLACEABLE != PROVIDERS IDENTICAL
 PROVIDER REPLACEABLE != LOWEST-COMMON-DENOMINATOR PROVIDER USAGE
 ```
 
-Production chain:
+Provider replaceability includes independent governance of:
 
 ```text
-DANTE need
-→ ModelTarget
-→ HarnessProfile
-→ ProviderBinding
-→ ProviderAdapter
-→ qualified serving platform / model / deployment / feature mode
+model/Harness quality
+serving platform/binding
+feature mode
+provider state/cache/continuation
+security controls
+capability projection
+routing
+commercial/resource policy
+rollout
+health/capacity
 ```
 
-DANTE owns eval semantics.
-
-```text
-OUTCOME/ENVIRONMENT STATE > MODEL SELF-REPORT
-HARD FAILURE CANNOT BE AVERAGED AWAY
-REPEATED RELIABILITY IS FIRST-CLASS
-```
-
-Concrete provider/model selection remains open until direct DANTE workload evidence is needed.
+A V1 may intentionally use one primary provider while preserving this boundary.
 
 ---
 
-# 4. Commercial/service-tier boundary
+# 5. AI-04A — accepted eval/provider/economics authority
+
+Accepted workload families:
+
+```text
+DANTE-E01..DANTE-E13
+```
+
+Accepted core rules include:
+
+```text
+DANTE OWNS EVAL SEMANTICS
+OUTCOME/ENVIRONMENT STATE > MODEL SELF-REPORT
+HARD FAILURE CANNOT BE AVERAGED AWAY
+COGNITION QUALITY != SERVING-BINDING RELIABILITY
+REPEATED RELIABILITY IS FIRST-CLASS
+CAPABILITY EVAL != REGRESSION EVAL
+PRODUCTION TRACE != AUTOMATIC EVAL DATA
+IT-IT + EN-US CORE COVERAGE
+```
+
+```text
+EFFECTIVE COST PER SUCCESSFUL DANTE TASK
+```
+
+Direct provider evidence is intentionally deferred until a concrete selection/activation decision requires it.
+
+---
+
+# 6. Commercial/service-tier boundary
 
 DANTE already owns Domain `Plan`.
 
 ```text
-COMMERCIAL SUBSCRIPTION / SERVICE TIER
-!= DANTE DOMAIN Plan
+COMMERCIAL SUBSCRIPTION / SERVICE TIER != DANTE DOMAIN Plan
 ```
 
-Accepted architectural chain:
+Accepted commercial-control chain:
 
 ```text
 CommercialOffering / ServiceTier
 → EntitlementProfile
 → capability + quota + resource envelope
 → Budget / Routing Policy
-→ ModelTarget eligibility
-→ ProviderBinding
+→ eligible route set
 ```
 
 ```text
@@ -170,21 +225,26 @@ COMMERCIAL TIER != PROVIDER
 COMMERCIAL TIER != DEPLOYMENT
 ```
 
-Commercial packaging may bound resources, concurrency, premium capabilities and priority, but cannot weaken semantic correctness, privacy, Authority, target safety, provider/data eligibility or effect reconciliation.
+Commercial tiers may limit resource/capability envelopes but may not weaken semantic/historical correctness, privacy, Authority/AuthZ/Consent/Visibility, target safety, provider/data eligibility, effect verification/reconciliation or anti-resurrection.
 
-No Base/Plus/Pro names, prices, quotas or packages are final.
+```text
+ENTITLED != SERVABLE
+COMMERCIAL CREDIT != PROVIDER TOKEN != ACTUAL PROVIDER COST
+```
+
+Exact offering names/prices/quotas remain open.
 
 ---
 
-# 5. AI-04B — accepted runtime shape
+# 7. AI-04B — accepted runtime authority
+
+Core runtime shape:
 
 ```text
 Interaction / WorkContract
         ↓
 Execution Kernel
-        ├ deterministic compute
-        ├ solver
-        ├ Context / Semantic Query boundary
+        ├ deterministic compute / solver
         ├ Model Access Runtime
         ├ Capability Runtime
         ├ Execution Environment Broker
@@ -197,293 +257,198 @@ ChangeSet / EffectGraph / Effect Runtime
 Result Maturity / Disclosure / Safe Publication
 ```
 
-Responsibilities do not imply microservices/tables.
-
-Core accepted separations include:
+Accepted distinctions include:
 
 ```text
 RUN != MODEL INVOCATION != PROVIDER ATTEMPT
 RAW PROVIDER EVENT != DANTE RUNTIME EVENT != PUBLICATION EVENT
-CANCELLATION REQUESTED != CANCELLATION CONFIRMED != EXECUTION QUIESCED
+CLIENT DISCONNECT != RUN CANCEL != EFFECT ROLLBACK
+CANCELLATION REQUESTED != CONFIRMED != QUIESCED
 PARTIAL TOOL ARGUMENTS != EXECUTABLE TOOL REQUEST
 PROVIDER PARALLEL TOOL CALL != EFFECTGRAPH AUTHORIZATION
 PROVIDER BACKGROUND != DANTE DURABLE EXECUTION
 PROVIDER CONTINUATION != DANTE SESSION/CONTEXT/MEMORY
-CONTINUATION HANDLE != CURRENT HARNESS/POLICY/TOOLS/CAPABILITIES
-REFUSAL != INFRASTRUCTURE FAILURE
-SERVER-SIDE FALLBACK != DANTE ROUTING AUTHORITY
+REFUSAL != INFRA FAILURE
 PROVIDER TOOL != DANTE CAPABILITY
 PROVIDER-HOSTED EXECUTION != DANTE Execution Environment
 PROVIDER CALL ID != DANTE SEMANTIC IDEMPOTENCY IDENTITY
-FROZEN EXECUTION CONFIG != PERPETUAL CURRENT AUTHORIZATION
 REMOTE CALLBACK != CURRENT RUN ELIGIBILITY
-ATTACHED CHILD != DETACHED CHILD
-BUDGET ADMISSION != FINAL COST / GUARANTEED PROVIDER STOP
 ```
 
-Full RT-01..RT-31 wording lives in AI-04B.
+Class-A/Class-B remains:
+
+```text
+Class A → PostgreSQL transactional outbox + bounded worker
+Class B → Restate selected / dormant until first real qualifying consumer
+```
+
+No activation is implied.
 
 ---
 
-# 6. Routing / failover / continuation
+# 8. AI-04C — accepted production-assurance authority
 
-Baseline routing uses minimum necessary metadata and current qualification/eligibility/entitlement/health.
+Accepted production posture includes:
 
 ```text
-classify work/failure
-→ determine qualified current routes
-→ current provider/data/feature-mode eligibility
-→ current entitlement/resource envelope
-→ select HarnessProfile / ProviderBinding
-→ invoke ProviderAttempt
+QUALIFIED != ELIGIBLE != AVAILABLE != ENTITLED
 ```
 
-Failover is not blind serialized-payload replay and cannot become refusal/safety shopping.
+and routability requires the intersection of every applicable current gate.
 
-Provider continuation/background state is bounded technical state, never DANTE memory or canonical continuity.
+Control plane and runtime enforcement remain distinct responsibilities.
 
-Provider-state reuse is locally suppressed immediately after DANTE revocation even if external purge remains pending.
+Accepted operational principles include:
+
+```text
+current application Authority remains authoritative
+new material provider/model/feature mode defaults inactive until qualification
+control-plane config is versioned/auditable
+revocation/emergency deny outranks stale cached allow
+mandatory security controls do not silently fail open
+guardrail service is itself a governed data recipient
+short-lived/workload identity preferred where available
+broad secrets never enter model/sandbox context
+telemetry != audit != eval evidence != canonical truth
+full prompt/context telemetry off by default
+admission estimate != reservation != settlement
+retry budget prevents multiplicative retries
+reconciliation cannot be starved by commercial exhaustion
+graceful degradation may reduce cost/performance, not safety floors
+shadow traffic is real disclosure and cannot create uncontrolled effects
+rollback config != rollback materialized effects
+SLO measures user-safe DANTE outcomes
+security/privacy hard failure is not ordinary error-budget consumption
+provider/subprocessor/retention/residency material change triggers requalification
+```
+
+`PA-01..PA-61` are the normative production-assurance hardenings.
 
 ---
 
-# 7. Tools / MCP / A2A / execution environment
+# 9. Whole-phase composition authority
 
-A model tool request is a proposal, not execution authority.
+Cross-phase rules `WP-01..WP-22` are normative and live in:
 
-```text
-finalized model proposal
-→ parse/schema
-→ semantic validation
-→ current capability/version
-→ Capability PEP
-→ Effect PEP where consequential
-→ dispatch
-→ receipt
-→ verify/reconcile
-```
+- `docs/architecture/dante-ai-04-whole-phase-destructive-acceptance.md`
 
-MCP and A2A remain protocol adapters, not DANTE ontology or Authority.
+They close gaps that were not visible inside A/B/C individually, including:
 
 ```text
-MCP DISCOVERY/DESCRIPTION != TRUST/AUTHORITY
-MCP ELICITATION / INPUT_REQUIRED != DANTE APPROVAL
-MCP TASK != DANTE RUN
-A2A AGENT CARD != TRUST
-A2A TASK/STATUS != DANTE RUN/CANONICAL STATE/AUTHORITY
+eval qualification != current production routability
+effective route quality after production transformations
+HarnessProfile + ProviderBinding compatibility qualification
+fallback independent qualification
+coherent per-invocation config snapshots
+continuation compatibility after config changes
+new attempt → new/current resource admission
+reconciliation after emergency disable
+multi-dimensional qualification staleness
+ENTITLED != SERVABLE
+provider outage != deterministic DANTE outage
+eval composition != production composition
+auxiliary/sub-model invocation governance
+route selection/context assembly != egress authorization
+fallback capability contraction != silent context truncation
+capability contract version drift
+cache hit != Harness/tool/security/Auth continuity
+operational hidden-result non-interference
+model picker != routing Authority
+route-specific resource admission
+per-invocation coherence != whole-Run config immutability
+direct eval != production capacity qualification
 ```
 
-Provider-hosted code/computer execution remains distinct from DANTE Execution Environment.
-
-Privileged execution uses trusted capability/credential brokerage rather than broad secrets in untrusted environments.
+Where a whole-phase rule is stronger than an earlier sub-phase candidate assumption, the whole-phase rule governs.
 
 ---
 
-# 8. Durability
+# 10. Concrete production route activation gate
 
-Accepted project decision remains:
+AI-04 architecture closes with provider/model selection OPEN.
+
+A concrete production route may not be activated solely from public benchmark/list-price/docs evidence.
+
+Applicable direct evidence must cover the actual production composition or independently qualify material deltas.
+
+Production activation evidence includes, as applicable:
 
 ```text
-Class A
-→ PostgreSQL transactional outbox + bounded worker
-
-Class B
-→ Restate selected / dormant until first real qualifying consumer
+DANTE workload quality
+hard semantic/privacy/safety gates
+serving-binding reliability
+feature-mode/data eligibility
+Harness/binding compatibility
+mandatory guard/control compatibility
+effective production-route quality
+resource/economic viability
+intended production capacity/service-envelope viability
 ```
 
-Provider background execution does not replace DANTE durability semantics.
-
-Restate activation remains subject to its existing direct proof/privacy/recovery obligations.
+```text
+ARCHITECTURE ACCEPTANCE != PROVIDER ACTIVATION
+```
 
 ---
 
-# 9. AI-04C — accepted production assurance
-
-Accepted control-plane/data-plane principle:
+# 11. Deterministic/no-model route
 
 ```text
-CENTRALIZE POLICY RESPONSIBILITY
-WITHOUT CENTRALIZING DOMAIN TRUTH.
+MODEL OUTAGE != WHOLE DANTE OUTAGE
 ```
 
-and:
+where work is legitimately satisfiable through:
 
 ```text
-CONFIGURE CENTRALLY
-ENFORCE AT THE MATERIAL BOUNDARY
-REVALIDATE WHEN REALITY CAN CHANGE.
+PostgreSQL/native application query
+validated application logic
+deterministic computation
+solver
+accepted non-model capability
 ```
 
-Production routing eligibility distinguishes:
-
-```text
-QUALIFIED
-!= ELIGIBLE
-!= AVAILABLE
-!= ENTITLED
-!= ROLLOUT-ACTIVE
-```
-
-Control-plane configuration is versioned; active pointers and immutable revisions are distinct.
-
-New material models/providers/feature modes are inactive until governed qualification and rollout.
+Model avoidance is a production route, not merely an eval baseline.
 
 ---
 
-# 10. AI-04C security/privacy posture
-
-Application/DANTE Authority remains authoritative; AI never widens access.
-
-Guardrails/security scanners are signals/PEP adapters, not Authority.
+# 12. Decisions intentionally open
 
 ```text
-GUARDRAIL RESULT != DANTE AUTHORITY
-SECURITY SIGNAL DISAGREEMENT != MODEL ARBITRATION
+concrete primary/fallback provider(s)
+concrete model snapshots/defaults
+provider SDKs
+exact ModelTarget vocabulary
+actual direct provider eval results
+final eval runner
+runtime module/class/API implementation
+physical control-plane storage/topology
+AI gateway product
+feature-flag/rollout implementation
+guard/security product
+secret manager/KMS/IAM implementation
+commercial offering names/prices/quotas
+billing/credit implementation
+budget reservation/settlement implementation
+rate-limit/retry/circuit values
+SLO/error-budget targets
+client/voice streaming transports
+provider native background/tools/files/cache activation
+MCP/A2A activation
+Execution Environment technology
+Restate activation
+R2 activation
+pgvector/ANN/FTS activation
+embedding model/dimensions
+production regions/residency mappings
 ```
-
-A guard/security service is itself a governed recipient.
-
-Instruction/source lineage survives transformation.
-
-```text
-MASKING / REDACTION != SEMANTIC EQUIVALENCE
-WITHHELD / SECURITY-INELIGIBLE != ABSENT / FALSE
-```
-
-Post-generation material transformations require renewed result/disclosure validity where meaning can change.
-
-Provider ineligibility after data egress does not undo prior disclosure; it triggers stop/suppress/purge/reconcile/investigate behavior as applicable.
 
 ---
 
-# 11. Credentials / privileged control
+# 13. Direct proof obligations remain unexecuted where applicable
 
-Prefer workload identity / short-lived credentials where supported.
+Architecture closure does not execute Physical/Recovery direct proofs.
 
-```text
-ADMIN CREDENTIAL
-!= INFERENCE CREDENTIAL
-!= USER-DELEGATED CREDENTIAL
-!= SANDBOX CREDENTIAL
-```
-
-Control-plane write authority is security-sensitive.
-
-Break-glass access, if used, is scoped, time-bound, attributable, audited and auto-expiring; it cannot bypass irreducible truth/privacy/effect-safety floors.
-
-Credential issuance/lease does not replace current DANTE authorization.
-
----
-
-# 12. Evidence / observability
-
-Keep distinct:
-
-```text
-CANONICAL DOMAIN TRUTH
-AUDIT / EXECUTION EVIDENCE
-OPERATIONAL TELEMETRY
-EVAL EVIDENCE
-```
-
-Full prompt/context/response telemetry is OFF by default.
-
-Required consequential/security audit evidence does not depend solely on sampled telemetry or provider log retention and requires integrity protection appropriate to purpose.
-
-Best-effort telemetry failure/backpressure is bounded and isolated; required audit has distinct failure semantics.
-
-High-cardinality/private data must not accidentally enter metric labels; cardinality overflow must be observable.
-
----
-
-# 13. Budget / accounting
-
-```text
-COMMERCIAL CREDIT != PROVIDER TOKEN != ACTUAL PROVIDER COST
-ADMISSION ESTIMATE != RESERVATION != SETTLEMENT
-BUDGET RESERVATION != SPEND
-PROVIDER METERING != DANTE COMMERCIAL SETTLEMENT AUTHORITY
-```
-
-Commercial usage requires DANTE-owned usage identity, idempotency, late settlement, adjustment/correction, price/mapping revision and auditability.
-
-Shared-budget admission is atomic at its authority boundary.
-
-Crash/unknown-cost cases must converge without unsafe early reservation release.
-
-Commercial exhaustion cannot starve reconciliation/security cleanup already required.
-
----
-
-# 14. Reliability / rollout
-
-Operational patterns include bounded retries, retry budgets, backoff+jitter, circuit breakers, load shedding, capacity-aware failover and graceful degradation.
-
-Provider health is scoped to material binding/region/feature mode rather than treated as one global boolean.
-
-Shadow traffic is real disclosure and independently eligible.
-
-Shadow output is not production output/evidence unless explicitly promoted through normal qualification/verification/publication.
-
-Mandatory security controls cannot silently fail open.
-
-Rollback target must still be currently qualified/eligible/not emergency-denied.
-
-Reliability/security incident state may freeze non-essential rollout.
-
-Critical degraded/recovery paths require risk-proportionate exercise; declared fallback is not proof of operability.
-
----
-
-# 15. AI-04C closure chronology
-
-```text
-state-of-the-art research
-→ candidate materialized
-→ first destructive FAIL
-→ PA-01..PA-38
-→ compound PASS CANDIDATE
-→ fresh independent FAIL
-→ PA-39..PA-61
-→ final compound PASS
-→ CLOSED / STRUCTURALLY ACCEPTED
-```
-
-Full PA-01..PA-61 wording and evidence ledger live in AI-04C.
-
----
-
-# 16. Whole-phase acceptance problem
-
-AI-04 sub-phases can each be locally coherent while still contradicting one another.
-
-The whole-phase review must attack at least:
-
-```text
-A provider/model can win eval but be operationally ineligible.
-An entitlement can allow a capability whose only qualified route is privacy-ineligible.
-A fallback can satisfy runtime semantics but violate economics/residency.
-A rollout can preserve provider qualification but invalidate HarnessProfile evidence.
-A guardrail can alter output enough to invalidate model-quality eval assumptions.
-A budget policy can choose a cheaper route below the workload quality floor.
-A control-plane config can select a ModelTarget with no currently qualified binding.
-A provider feature mode can alter retention and invalidate previously accepted eval evidence.
-A failover after partial provider work can break cost/idempotency/reconciliation assumptions.
-Shadow/canary data can violate eval-data/purpose restrictions.
-Telemetry/audit design can leak hidden eval oracle or private context.
-Commercial downgrade can collide with active reservation/durable/reconciliation work.
-A security kill switch can make the only model route unavailable while deterministic fallback remains possible.
-All-provider outage can expose whether deterministic/read-only DANTE remains useful and truthful.
-```
-
-The review must distinguish a structural contradiction from a decision that merely needs future direct benchmark/implementation evidence.
-
----
-
-# 17. Direct proof / implementation obligations remain distinct
-
-Architecture acceptance does not execute existing Physical/Recovery proofs.
-
-Still unexecuted where applicable include:
+Examples still distinct include:
 
 ```text
 PSV-06 / SC-017 hidden-result non-interference
@@ -495,96 +460,65 @@ PSV-21..28B durable execution / Restate / journal privacy / recovery
 PSV-37 pgvector source/model/freshness provenance
 ```
 
-No implementation or direct provider benchmark PASS is claimed.
+No production PASS is inferred from architecture acceptance.
 
 ---
 
-# 18. Decisions still open
+# 14. Explicit non-claims
 
 ```text
-actual provider/model set
-primary/fallback bindings
-provider SDK(s)
-exact ModelTarget vocabulary
-actual direct benchmark results
-final eval runner
-exact routing algorithm
-normalized implementation event/error schemas
-client streaming transport
-voice/realtime transport
-provider-native background/files/cache/MCP activation
-MCP/A2A implementation
-Execution Environment technology
-control-plane physical topology/storage
-configuration-signing implementation
-feature-flag/rollout product
-AI gateway product
-security/guardrail product
-secret manager/KMS
-commercial tier names/prices/quotas
-billing/credit vendor
-budget persistence/accounting mechanism
-rate-limit/fairness algorithms
-retry/circuit thresholds
-SLO/error-budget targets
-audit retention/implementation
-production regions/residency mappings
-embedding/vector/FTS activation
-Restate activation
-R2 activation
+AI-04 CLOSED                           YES / STRUCTURAL
+AI-04A CLOSED                          YES / STRUCTURAL
+AI-04B CLOSED                          YES / STRUCTURAL
+AI-04C CLOSED                          YES / STRUCTURAL
+WHOLE-PHASE ACCEPTANCE                 YES / WP-01..WP-22
+DIRECT PROVIDER EVAL PASS              NO
+PROVIDER SELECTED                      NO
+MODEL DEFAULT SELECTED                 NO
+PROVIDER SDK SELECTED                  NO
+EVAL RUNNER SELECTED                   NO
+API CREDENTIALS USED                   NO
+PAID MODEL API EXECUTED                NO
+PRODUCTION ROUTE CAPACITY PASS         NO
+PRODUCTION AI BACKEND IMPLEMENTED      NO
+FRONTEND AI IMPLEMENTED                NO
+CONTROL PLANE IMPLEMENTED              NO
+COMMERCIAL TIER NAMES/PRICES SET       NO
+BILLING IMPLEMENTED                    NO
+POSTGRESQL/ALEMBIC CHANGED             NO
+NEW AI TABLE/INDEX                     NO
+PGVECTOR/ANN/FTS ACTIVATED             NO
+RESTATE/R2 ACTIVATED                   NO
+MCP/A2A ACTIVATED                      NO
+EXECUTION ENVIRONMENT IMPLEMENTED      NO
+SC/PSV DIRECT PROOFS EXECUTED          NO
+AI-05 IMPLEMENTED                      NO
 ```
 
 ---
 
-# 19. Explicit non-claims
+# 15. Next exact phase boundary
+
+Do not jump directly from AI-04 closure into arbitrary provider/backend code.
+
+Next:
 
 ```text
-AI-04 CLOSED                         NO
-AI-04 WHOLE-PHASE PASS                NO
-AI-04A DIRECT PROVIDER EVAL PASS      NO
-AI-04B CLOSED                        YES / STRUCTURAL
-AI-04C CLOSED                        YES / STRUCTURAL
-PROVIDER SELECTED                    NO
-MODEL DEFAULT SELECTED               NO
-PROVIDER SDK SELECTED                NO
-API CREDENTIALS USED                 NO
-PAID MODEL API EXECUTED              NO
-COMMERCIAL TIER NAMES/PRICES SET     NO
-CONTROL PLANE IMPLEMENTED            NO
-AI GATEWAY / GUARDRAIL VENDOR SET    NO
-PRODUCTION AI BACKEND IMPLEMENTED    NO
-POSTGRESQL/ALEMBIC CHANGED           NO
-NEW AI TABLE/INDEX                   NO
-PGVECTOR/ANN/FTS ACTIVATED           NO
-RESTATE/R2 ACTIVATED                 NO
-MCP/A2A ACTIVATED                    NO
-EXECUTION ENVIRONMENT IMPLEMENTED    NO
-SC/PSV DIRECT PROOFS EXECUTED        NO
-AI-05 STARTED                        NO
-```
+GLOBAL CURRENT-TRUTH RECONCILIATION
+→ update project navigation/status/roadmap to AI-04 CLOSED
+→ route AI work to AI-05
 
----
+then
 
-# 20. Exact next action
-
-```text
-AI-04 — WHOLE-PHASE DESTRUCTIVE ACCEPTANCE
-```
-
-Method:
-
-```text
-reconstruct A/B/C independently
-→ generate cross-phase attacks before reading local conclusions
-→ compare against A01..A30 / EV01..EV20 / RT-01..RT-31 / PA-01..PA-61
-→ separate structural gaps from deferred evidence/product choices
-→ harden only real structural contradictions
-→ final whole-phase retest
-→ close AI-04 only if coherent
-```
-
-After AI-04 closure:
-
-```text
 AI-05 — WHOLE-SYSTEM ACCEPTANCE + IMPLEMENTATION BLUEPRINT
+→ reconcile Product / Domain / Logical / Physical / DB /
+  current application workstreams / AI-02 / AI-03 / AI-04
+→ produce the final architecture-to-build boundary
+→ identify exact decisions that require direct proof
+
+then
+
+actual AI implementation workstream(s)
 ```
+
+Concrete provider/model activation remains evidence-gated.
