@@ -41,7 +41,7 @@ export function TemporalCreateActivityFields({
       <div className="temporal-create-section__heading">
         <div>
           <h3 id="temporal-create-planning-heading">
-            {`${t(($) => $.common.home.timeline.create.timeSemantics.label)} · ${t(($) => $.common.home.timeline.create.planning.constraint)}`}
+            {t(($) => $.common.home.timeline.create.timeSemantics.label)}
           </h3>
           <p>{t(($) => $.common.home.timeline.create.planning.description)}</p>
         </div>
