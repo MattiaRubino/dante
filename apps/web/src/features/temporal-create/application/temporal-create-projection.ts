@@ -16,6 +16,7 @@ export type TemporalCreateTimelineProjection = Readonly<{
   kind: 'activity' | 'event';
   contextId: string;
   dateKey: string | null;
+  endDateExclusiveKey: string | null;
   startMinute: number | null;
   endMinute: number | null;
   allDay: boolean;
@@ -48,6 +49,7 @@ function projectPlacement(
       kind: metadata.kind,
       contextId: metadata.contextId,
       dateKey: null,
+      endDateExclusiveKey: null,
       startMinute: null,
       endMinute: null,
       allDay: false,
@@ -64,6 +66,7 @@ function projectPlacement(
       kind: metadata.kind,
       contextId: metadata.contextId,
       dateKey: placement.startDate.toString(),
+      endDateExclusiveKey: placement.endDateExclusive.toString(),
       startMinute: null,
       endMinute: null,
       allDay: true,
@@ -88,6 +91,7 @@ function projectPlacement(
     kind: metadata.kind,
     contextId: metadata.contextId,
     dateKey: start.toPlainDate().toString(),
+    endDateExclusiveKey: null,
     startMinute: minuteOfDay(start.hour, start.minute),
     endMinute: start.toPlainDate().equals(end.toPlainDate())
       ? Math.min(1440, minuteOfDay(end.hour, end.minute))
