@@ -248,12 +248,13 @@ test.describe('DANTE Access/Auth M5 full-stack security surface', () => {
   }, testInfo) => {
     await page.goto('/');
 
+    await page.getByRole('button', { name: 'Usa un altro metodo' }).click();
     const passkeySignInPromise = page.waitForResponse(
       (response) =>
         response.url().endsWith(passkeyAuthenticationBeginPath) &&
         response.request().method() === 'POST',
     );
-    await page.getByRole('button', { name: 'Accedi con passkey' }).click();
+    await page.getByRole('button', { name: /Accedi con passkey/ }).click();
     const passkeySignIn = await passkeySignInPromise;
 
     expect(passkeySignIn.request().headers()['x-dante-csrf']).toBeUndefined();
