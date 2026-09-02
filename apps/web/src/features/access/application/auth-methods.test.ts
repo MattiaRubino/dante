@@ -29,7 +29,11 @@ function createHarness() {
   });
 
   function Wrapper({ children }: PropsWithChildren) {
-    return createElement(QueryClientProvider, { client: queryClient }, children);
+    return createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   }
 
   return { queryClient, Wrapper };

@@ -49,8 +49,7 @@ class FakePublicKeyCredential {
   constructor(
     readonly rawId: ArrayBuffer,
     readonly response:
-      | FakeAuthenticatorAttestationResponse
-      | FakeAuthenticatorAssertionResponse,
+      FakeAuthenticatorAttestationResponse | FakeAuthenticatorAssertionResponse,
   ) {}
 
   getClientExtensionResults() {
@@ -71,7 +70,10 @@ function installCredentials(
 }
 
 beforeEach(() => {
-  credentialsDescriptor = Object.getOwnPropertyDescriptor(navigator, 'credentials');
+  credentialsDescriptor = Object.getOwnPropertyDescriptor(
+    navigator,
+    'credentials',
+  );
   vi.stubGlobal('PublicKeyCredential', FakePublicKeyCredential);
   vi.stubGlobal(
     'AuthenticatorAttestationResponse',
