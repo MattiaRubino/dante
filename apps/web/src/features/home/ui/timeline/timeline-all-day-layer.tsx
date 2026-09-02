@@ -190,7 +190,7 @@ export function TimelineAllDayLayer({
   }
 
   const host = document.querySelector<HTMLElement>(
-    '.home-timeline-head--production',
+    '.home-timeline--production > .dante-timeline-header',
   );
   if (!host) {
     return null;
