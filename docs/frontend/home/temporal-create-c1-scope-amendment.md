@@ -5,8 +5,8 @@
 **Final implementation reconciliation:** 2026-09-02  
 **Owner workstream:** `feature/home-timeline`  
 **Integration target:** `feature/home-react`  
-**Final implementation candidate:** `f092a3db2fbac28421b73e0629f7b4b83a1b0aec`  
-**Frontend CI:** `33631013598` / #621 — FULL PASS  
+**Final implementation candidate:** `7028633921d1b438bd04961a718457afd82ccc13`  
+**Frontend CI:** `33635389124` / #632 — FULL PASS  
 **Supersedes where conflicting:** `temporal-create-q0-contract.md`, `temporal-create-q0-approval.md`, and the original bounded C1 section of `temporal-frontend-roadmap.md`  
 **Scope stop:** maximum useful pre-backend **manual** Create system; no real API, PostgreSQL application persistence, provider execution, authoritative solver, recurrence evaluator, AI/NL runtime or input, voice runtime or input, or server-side product Auth/ACL implementation
 
@@ -397,9 +397,9 @@ Connecting these should extend/replace adapters and external seams rather than f
 
 Implementation candidate:
 
-`f092a3db2fbac28421b73e0629f7b4b83a1b0aec`
+`7028633921d1b438bd04961a718457afd82ccc13`
 
-CI #621 / run `33631013598` proves:
+CI #632 / run `33635389124` proves:
 
 - Quality PASS;
 - Mobile PASS;
@@ -412,6 +412,8 @@ Current measurable evidence:
 - architecture **214 modules / 522 dependencies / zero violations**;
 - web unit **34 files / 183 tests**;
 - Home route **268.40 kB raw / 90.13 kB gzip**.
+
+The final contextual-gesture test also proves Timeline double-click/Shift-drag after explicit browser/Timeline viewport anchoring without arbitrary sleeps or weakened assertions.
 
 Detailed semantic/technical mapping is maintained in `temporal-create-c1-traceability.md`.
 
@@ -429,8 +431,9 @@ Current state:
 
 ```text
 IMPLEMENTATION COMPLETE
-AUTOMATED PASS
-DOCUMENTATION RECONCILIATION IN PROGRESS
+AUTOMATED FULL PASS
+DOCUMENTATION RECONCILIATION COMPLETE
+FINAL DOCUMENTATION DESCENDANT MUST BE CI-GREEN
 MANUAL ACCEPTANCE PENDING
 NOT YET FROZEN / CLOSED
 ```
