@@ -72,12 +72,18 @@ export type TemporalCreateEventRecurrencePatternKind =
 export type TemporalCreateEventCalendarFrequency =
   | 'daily'
   | 'weekly'
-  | 'monthly';
+  | 'monthly'
+  | 'monthly-ordinal'
+  | 'yearly';
 export type TemporalCreateEventRecurrenceEnd =
   | 'none'
   | 'until-date'
   | 'count';
 export type TemporalCreateEventQuotaPeriodKind = 'day' | 'week' | 'month' | 'year';
+export type TemporalCreateEventQuotaFrame =
+  | 'floating-local'
+  | 'named-zone'
+  | 'absolute-utc';
 export type TemporalCreateEventCycleUnit = 'day' | 'week';
 
 export type TemporalCreateSchedulingIntent = Readonly<{
@@ -112,13 +118,18 @@ export type TemporalCreateEventRecurrenceIntent = Readonly<{
   patternKind: TemporalCreateEventRecurrencePatternKind;
   calendarFrequency: TemporalCreateEventCalendarFrequency;
   calendarInterval: number;
+  calendarOrdinal: number;
+  calendarOrdinalWeekday: TemporalCreateWeekday;
   weekdays: readonly TemporalCreateWeekday[];
   elapsedIntervalMinutes: number;
   quotaCount: number;
   quotaPeriodKind: TemporalCreateEventQuotaPeriodKind;
   quotaPeriodInterval: number;
+  quotaFrame: TemporalCreateEventQuotaFrame;
+  quotaWeekStart: TemporalCreateWeekday;
+  quotaTimeZoneId: string;
   cycleLength: number;
-  cycleOffset: number;
+  cyclePositions: readonly number[];
   cycleUnit: TemporalCreateEventCycleUnit;
   endMode: TemporalCreateEventRecurrenceEnd;
   untilDate: string;
@@ -192,6 +203,8 @@ const WEEKDAYS: readonly TemporalCreateWeekday[] = Object.freeze([
   'SU',
 ]);
 
+const RECURRENCE_ORDINALS = Object.freeze([-5, -4, -3, -2, -1, 1, 2, 3, 4, 5]);
+
 function freezeScheduling(
   value: TemporalCreateSchedulingIntent,
 ): TemporalCreateSchedulingIntent {
@@ -210,6 +223,7 @@ function freezeEventRecurrence(
   return Object.freeze({
     ...value,
     weekdays: Object.freeze([...value.weekdays]),
+    cyclePositions: Object.freeze([...value.cyclePositions]),
   });
 }
 
@@ -268,6 +282,7 @@ export function createTemporalCreateFields(
   options: TemporalCreateFieldOptions = {},
 ): TemporalCreateFields {
   const date = options.date ?? '1970-01-01';
+  const timeZoneId = options.timeZoneId ?? 'UTC';
   const scheduling = freezeScheduling(
     options.scheduling ?? {
       constraintKind: 'none',
@@ -303,13 +318,18 @@ export function createTemporalCreateFields(
       patternKind: 'none',
       calendarFrequency: 'weekly',
       calendarInterval: 1,
+      calendarOrdinal: 1,
+      calendarOrdinalWeekday: 'MO',
       weekdays: Object.freeze([]),
       elapsedIntervalMinutes: 1440,
       quotaCount: 1,
       quotaPeriodKind: 'week',
       quotaPeriodInterval: 1,
+      quotaFrame: 'floating-local',
+      quotaWeekStart: 'MO',
+      quotaTimeZoneId: timeZoneId,
       cycleLength: 7,
-      cycleOffset: 0,
+      cyclePositions: Object.freeze([1]),
       cycleUnit: 'day',
       endMode: 'none',
       untilDate: date,
@@ -351,7 +371,7 @@ export function createTemporalCreateFields(
       startTime: options.startTime ?? '09:00',
       durationMinutes: options.durationMinutes ?? 30,
       timeMode: options.timeMode ?? 'floating',
-      timeZoneId: options.timeZoneId ?? 'UTC',
+      timeZoneId,
       contextId: options.contextId ?? 'personale',
       notes: options.notes ?? '',
       scheduling,
@@ -367,6 +387,13 @@ function sameWeekdays(
   left: readonly TemporalCreateWeekday[],
   right: readonly TemporalCreateWeekday[],
 ): boolean {
+  return (
+    left.length === right.length &&
+    left.every((value, index) => value === right[index])
+  );
+}
+
+function sameNumbers(left: readonly number[], right: readonly number[]): boolean {
   return (
     left.length === right.length &&
     left.every((value, index) => value === right[index])
@@ -413,13 +440,19 @@ function temporalCreateFieldsEqual(
     left.eventRecurrence.patternKind === right.eventRecurrence.patternKind &&
     left.eventRecurrence.calendarFrequency === right.eventRecurrence.calendarFrequency &&
     left.eventRecurrence.calendarInterval === right.eventRecurrence.calendarInterval &&
+    left.eventRecurrence.calendarOrdinal === right.eventRecurrence.calendarOrdinal &&
+    left.eventRecurrence.calendarOrdinalWeekday ===
+      right.eventRecurrence.calendarOrdinalWeekday &&
     sameWeekdays(left.eventRecurrence.weekdays, right.eventRecurrence.weekdays) &&
     left.eventRecurrence.elapsedIntervalMinutes === right.eventRecurrence.elapsedIntervalMinutes &&
     left.eventRecurrence.quotaCount === right.eventRecurrence.quotaCount &&
     left.eventRecurrence.quotaPeriodKind === right.eventRecurrence.quotaPeriodKind &&
     left.eventRecurrence.quotaPeriodInterval === right.eventRecurrence.quotaPeriodInterval &&
+    left.eventRecurrence.quotaFrame === right.eventRecurrence.quotaFrame &&
+    left.eventRecurrence.quotaWeekStart === right.eventRecurrence.quotaWeekStart &&
+    left.eventRecurrence.quotaTimeZoneId === right.eventRecurrence.quotaTimeZoneId &&
     left.eventRecurrence.cycleLength === right.eventRecurrence.cycleLength &&
-    left.eventRecurrence.cycleOffset === right.eventRecurrence.cycleOffset &&
+    sameNumbers(left.eventRecurrence.cyclePositions, right.eventRecurrence.cyclePositions) &&
     left.eventRecurrence.cycleUnit === right.eventRecurrence.cycleUnit &&
     left.eventRecurrence.endMode === right.eventRecurrence.endMode &&
     left.eventRecurrence.untilDate === right.eventRecurrence.untilDate &&
@@ -585,6 +618,15 @@ function validNonNegativeMinutes(value: number): boolean {
   return Number.isInteger(value) && value >= 0 && value <= 1440;
 }
 
+function validTimeZoneId(value: string): boolean {
+  try {
+    Temporal.PlainDateTime.from('2000-01-01T12:00').toZonedDateTime(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function temporalCreateHasFlexibleIntent(
   fields: TemporalCreateFields,
 ): boolean {
@@ -637,20 +679,10 @@ export function validateTemporalCreateFields(
       );
     }
 
-    if (date && time && fields.timeMode === 'zoned') {
-      try {
-        Temporal.PlainDateTime.from({
-          year: date.year,
-          month: date.month,
-          day: date.day,
-          hour: time.hour,
-          minute: time.minute,
-        }).toZonedDateTime(fields.timeZoneId);
-      } catch {
-        issues.push(
-          temporalValidationIssue('temporal.create.timezone.invalid', ['timeZoneId']),
-        );
-      }
+    if (date && time && fields.timeMode === 'zoned' && !validTimeZoneId(fields.timeZoneId)) {
+      issues.push(
+        temporalValidationIssue('temporal.create.timezone.invalid', ['timeZoneId']),
+      );
     }
   }
 
@@ -769,6 +801,18 @@ export function validateTemporalCreateFields(
           ]),
         );
       }
+      if (
+        recurrence.calendarFrequency === 'monthly-ordinal' &&
+        (!Number.isInteger(recurrence.calendarOrdinal) ||
+          !RECURRENCE_ORDINALS.includes(recurrence.calendarOrdinal) ||
+          !WEEKDAYS.includes(recurrence.calendarOrdinalWeekday))
+      ) {
+        issues.push(
+          temporalValidationIssue('temporal.create.recurrence.ordinal_invalid', [
+            'eventRecurrence.calendarOrdinal',
+          ]),
+        );
+      }
     }
     if (
       recurrence.patternKind === 'elapsed-interval' &&
@@ -782,35 +826,56 @@ export function validateTemporalCreateFields(
         ]),
       );
     }
-    if (
-      recurrence.patternKind === 'quota-per-period' &&
-      (!Number.isInteger(recurrence.quotaCount) ||
+    if (recurrence.patternKind === 'quota-per-period') {
+      if (
+        !Number.isInteger(recurrence.quotaCount) ||
         recurrence.quotaCount < 1 ||
         recurrence.quotaCount > 999 ||
         !Number.isInteger(recurrence.quotaPeriodInterval) ||
         recurrence.quotaPeriodInterval < 1 ||
-        recurrence.quotaPeriodInterval > 365)
-    ) {
-      issues.push(
-        temporalValidationIssue('temporal.create.recurrence.quota_invalid', [
-          'eventRecurrence.quota',
-        ]),
-      );
+        recurrence.quotaPeriodInterval > 365 ||
+        (recurrence.quotaPeriodKind === 'week' &&
+          !WEEKDAYS.includes(recurrence.quotaWeekStart))
+      ) {
+        issues.push(
+          temporalValidationIssue('temporal.create.recurrence.quota_invalid', [
+            'eventRecurrence.quota',
+          ]),
+        );
+      }
+      if (
+        recurrence.quotaFrame === 'named-zone' &&
+        !validTimeZoneId(recurrence.quotaTimeZoneId)
+      ) {
+        issues.push(
+          temporalValidationIssue('temporal.create.recurrence.quota_timezone_invalid', [
+            'eventRecurrence.quotaTimeZoneId',
+          ]),
+        );
+      }
     }
-    if (
-      recurrence.patternKind === 'cyclic-positional' &&
-      (!Number.isInteger(recurrence.cycleLength) ||
+    if (recurrence.patternKind === 'cyclic-positional') {
+      const positions = recurrence.cyclePositions;
+      const uniquePositions = new Set(positions);
+      if (
+        !Number.isInteger(recurrence.cycleLength) ||
         recurrence.cycleLength < 1 ||
         recurrence.cycleLength > 10000 ||
-        !Number.isInteger(recurrence.cycleOffset) ||
-        recurrence.cycleOffset < 0 ||
-        recurrence.cycleOffset >= recurrence.cycleLength)
-    ) {
-      issues.push(
-        temporalValidationIssue('temporal.create.recurrence.cycle_invalid', [
-          'eventRecurrence.cycle',
-        ]),
-      );
+        positions.length === 0 ||
+        uniquePositions.size !== positions.length ||
+        positions.some(
+          (position) =>
+            !Number.isInteger(position) ||
+            position < 1 ||
+            position > recurrence.cycleLength,
+        )
+      ) {
+        issues.push(
+          temporalValidationIssue('temporal.create.recurrence.cycle_invalid', [
+            'eventRecurrence.cycle',
+          ]),
+        );
+      }
     }
     if (recurrence.patternKind !== 'none' && recurrence.endMode === 'until-date') {
       const until = parseDate(recurrence.untilDate);
