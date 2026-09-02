@@ -11,9 +11,27 @@ beforeAll(async () => {
 
 afterEach(() => {
   cleanup();
+  vi.unstubAllEnvs();
 });
 
-function renderPanel() {
+type Availability = Readonly<{
+  google?: boolean;
+  apple?: boolean;
+  passkey?: boolean;
+}>;
+
+function renderPanel({
+  google = true,
+  apple = true,
+  passkey = true,
+}: Availability = {}) {
+  vi.stubEnv(
+    'VITE_DANTE_GOOGLE_CLIENT_ID',
+    google ? 'google-client-id' : '',
+  );
+  vi.stubEnv('VITE_DANTE_APPLE_ENABLED', apple ? 'true' : 'false');
+  vi.stubEnv('VITE_DANTE_PASSKEY_ENABLED', passkey ? 'true' : 'false');
+
   const handlers = {
     onCreateAccount: vi.fn(),
     onForgotPassword: vi.fn(),
@@ -52,7 +70,7 @@ function renderPanel() {
 }
 
 describe('AccessSignInPanel', () => {
-  it('exposes localized sign-in controls and a working password visibility control', () => {
+  it('keeps providers primary and passkey as a distinct secondary authenticator', () => {
     renderPanel();
 
     expect(
@@ -66,9 +84,13 @@ describe('AccessSignInPanel', () => {
     const appleButton = screen.getByRole('button', {
       name: 'Continua con Apple',
     });
+    const passkeyButton = screen.getByRole('button', {
+      name: 'Accedi con passkey',
+    });
 
     expect(googleButton.disabled).toBe(true);
     expect(appleButton.getAttribute('data-provider')).toBe('apple');
+    expect(passkeyButton.closest('.access-provider-stack')).toBeNull();
 
     const emailInput = screen.getByLabelText<HTMLInputElement>('Email');
     const passwordInput = screen.getByLabelText<HTMLInputElement>('Password');
@@ -123,5 +145,21 @@ describe('AccessSignInPanel', () => {
       'person@example.com',
       'correct horse battery staple',
     );
+  });
+
+  it('does not render dead provider or passkey controls when a build disables them', () => {
+    renderPanel({ google: false, apple: false, passkey: false });
+
+    expect(
+      screen.queryByRole('button', { name: 'Continua con Google' }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: 'Continua con Apple' }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: 'Accedi con passkey' }),
+    ).toBeNull();
+    expect(screen.getByLabelText('Email')).toBeTruthy();
+    expect(screen.getByLabelText('Password')).toBeTruthy();
   });
 });
