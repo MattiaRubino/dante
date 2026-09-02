@@ -2,22 +2,17 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { TemporalCreateFields } from '../model/temporal-create-session';
+import { useTemporalCreateContextCreator } from './temporal-create-context-catalog';
 import { TemporalCreateContextPicker } from './temporal-create-context-picker';
 import {
   TEMPORAL_CREATE_DURATION_OPTIONS,
   temporalCreateDurationLabel,
 } from './temporal-create-field-shared';
-import type {
-  TemporalCreateContextInput,
-  TemporalCreateContextOption,
-} from './temporal-create-ui-types';
+import type { TemporalCreateContextOption } from './temporal-create-ui-types';
 
 type TemporalCreateCoreFieldsProps = Readonly<{
   fields: TemporalCreateFields;
   contexts: readonly TemporalCreateContextOption[];
-  onCreateContext: (
-    input: TemporalCreateContextInput,
-  ) => TemporalCreateContextOption;
   onPatch: (patch: Partial<TemporalCreateFields>) => void;
   renderError: (path: string) => ReactNode;
 }>;
@@ -25,11 +20,11 @@ type TemporalCreateCoreFieldsProps = Readonly<{
 export function TemporalCreateCoreFields({
   fields,
   contexts,
-  onCreateContext,
   onPatch,
   renderError,
 }: TemporalCreateCoreFieldsProps) {
   const { t } = useTranslation('common');
+  const onCreateContext = useTemporalCreateContextCreator();
   const patchEvent = (patch: Partial<TemporalCreateFields['event']>) =>
     onPatch({ event: { ...fields.event, ...patch } });
   const durationOptions = TEMPORAL_CREATE_DURATION_OPTIONS.includes(
