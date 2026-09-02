@@ -70,7 +70,7 @@ function renderPanel({
 }
 
 describe('AccessSignInPanel', () => {
-  it('keeps providers primary and passkey as a distinct secondary authenticator', () => {
+  it('keeps providers primary and reveals passkey only through the alternate-method disclosure', () => {
     renderPanel();
 
     expect(
@@ -84,13 +84,29 @@ describe('AccessSignInPanel', () => {
     const appleButton = screen.getByRole('button', {
       name: 'Continua con Apple',
     });
-    const passkeyButton = screen.getByRole('button', {
-      name: 'Accedi con passkey',
+    const alternateMethods = screen.getByRole('button', {
+      name: 'Usa un altro metodo',
     });
 
     expect(googleButton.disabled).toBe(true);
     expect(appleButton.getAttribute('data-provider')).toBe('apple');
+    expect(alternateMethods.getAttribute('aria-expanded')).toBe('false');
+    expect(
+      screen.queryByRole('button', { name: 'Accedi con passkey' }),
+    ).toBeNull();
+
+    fireEvent.click(alternateMethods);
+
+    const passkeyButton = screen.getByRole('button', {
+      name: /Accedi con passkey/,
+    });
+    expect(alternateMethods.getAttribute('aria-expanded')).toBe('true');
     expect(passkeyButton.closest('.access-provider-stack')).toBeNull();
+    expect(
+      screen.getByText(
+        'Usa una passkey già registrata su questo dispositivo o nel tuo password manager.',
+      ),
+    ).toBeTruthy();
 
     const emailInput = screen.getByLabelText<HTMLInputElement>('Email');
     const passwordInput = screen.getByLabelText<HTMLInputElement>('Password');
@@ -157,7 +173,10 @@ describe('AccessSignInPanel', () => {
       screen.queryByRole('button', { name: 'Continua con Apple' }),
     ).toBeNull();
     expect(
-      screen.queryByRole('button', { name: 'Accedi con passkey' }),
+      screen.queryByRole('button', { name: 'Usa un altro metodo' }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: /Accedi con passkey/ }),
     ).toBeNull();
     expect(screen.getByLabelText('Email')).toBeTruthy();
     expect(screen.getByLabelText('Password')).toBeTruthy();
