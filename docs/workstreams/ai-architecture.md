@@ -14,7 +14,7 @@
 - **PRE-AI05:** CLOSED / STRUCTURALLY ACCEPTED / PRE05-H01..H19
 - **Current core eval:** DANTE-E01..DANTE-E14
 - **AI-05:** ACTIVE / CURRENT
-- **AI-05A:** CANDIDATE / FIRST T01..T26 PASS FAIL BOUNDED / BD-31..BD-40 MATERIALIZED / FRESH RETEST REQUIRED
+- **AI-05A:** CANDIDATE / FIRST PASS FAIL → BD-31..BD-40 / SECOND INDIVIDUAL PASS + COMPOUND FAIL → BD-41 / FRESH RETEST REQUIRED
 - **Implementation claim:** NONE
 - **Provider/model selection:** OPEN / EVIDENCE-DRIVEN
 - **Merge status:** UNMERGED
@@ -36,9 +36,12 @@ AI-05 ACTIVE / CURRENT
   └ AI-05A WHOLE-SYSTEM BUILD BOUNDARY
        FIRST DESTRUCTIVE PASS FAIL BOUNDED
        BD-31..BD-40 HARDENED
-       FRESH RETEST REQUIRED
+       SECOND T01..T26 INDIVIDUAL PASS
+       COMPOUND/REVERSE FAIL BOUNDED
+       BD-41 EVAL↔PRODUCTION COMPOSITION HARDENING MATERIALIZED
+       FRESH FULL RETEST REQUIRED
 
-THEN
+THEN, ONLY IF PASS
 AI-05B CONCRETE IMPLEMENTATION BLUEPRINT
 → AI-05 whole-system acceptance/closure
 → actual AI implementation workstream(s)
@@ -60,6 +63,7 @@ docs/architecture/dante-ai-04c-production-assurance-control-plane-operations.md
 docs/architecture/dante-ai-04-whole-phase-destructive-acceptance.md
 docs/architecture/dante-ai-pre05-cross-phase-hardening.md
 docs/architecture/dante-ai-05a-whole-system-build-boundary.md
+docs/architecture/dante-ai-05a-eval-production-composition-hardening.md
 ```
 
 `ai-production-engineering-state-of-the-art-2026.md` remains current research evidence / NON-DANTE-DECISION.
@@ -102,7 +106,7 @@ production AI runtime    NONE
 
 AI-05A is an architecture-to-build candidate only.
 
-## 5. AI-05A ownership candidate after first destructive pass
+## 5. AI-05A ownership candidate
 
 ```text
 modules/search
@@ -130,25 +134,11 @@ bootstrap
 → composition/lifecycle
 
 tooling/ai-evals
-→ direct eval tooling outside ordinary runtime
+→ eval orchestration outside ordinary request path
+→ MUST qualify the same material production composition or independently qualify material deltas
 ```
 
-## 6. First destructive pass findings
-
-```text
-T01 FAIL BOUNDED → Search separated from Intelligence / god-module pressure
-T03 FAIL BOUNDED → explicit Search cross-capability read projection
-T04 FAIL BOUNDED → deterministic Search independent of model runtime
-T06 FAIL BOUNDED → behavior config / snapshot / lifecycle hardening
-T08 FAIL BOUNDED → fake model != adapter conformance != direct qualification
-T13 FAIL BOUNDED → explicit resource admission/settlement ownership
-T14 FAIL BOUNDED → zero-persistence envelope must gate H19 cases
-T17 FAIL BOUNDED under original ownership → deterministic Search restores outage independence
-```
-
-Other T-cases were PASS candidates or only PASS within the explicit first-vertical envelope. Any FAIL prevented closure.
-
-## 7. BD-31..BD-40 hardening
+## 6. First destructive pass findings / BD-31..BD-40
 
 ```text
 BD-31 Global Search != Intelligence orchestration.
@@ -162,6 +152,41 @@ BD-38 H19/durable-audit/resume/background needs gate expansion until minimum sta
 BD-39 Application fake != provider adapter conformance != direct eval != production capacity proof.
 BD-40 Chat-like UI / inline stream != generic conversation or Run persistence required.
 ```
+
+## 7. Second-pass bounded finding / BD-41
+
+Second `T01..T26` individual cases passed under BD-31..BD-40, but the compound/reverse qualification test exposed one remaining proof-seam gap.
+
+Binding:
+
+```text
+BD-41
+QUALIFICATION EVIDENCE MUST EXERCISE THE SAME MATERIAL PRODUCTION
+COMPOSITION THAT WILL BE PROMOTED, OR EVERY MATERIAL DELTA MUST BE
+INDEPENDENTLY QUALIFIED BEFORE PROMOTION.
+```
+
+Material composition includes, where applicable:
+
+```text
+HarnessProfile
+ProviderBinding
+ProviderAdapter / protocol translation
+feature mode
+structured-output/tool projection
+security/control/data transformations
+retry/fallback behavior material to the route
+```
+
+```text
+EVAL TOOLING OUTSIDE REQUEST PATH
+!= SECOND PROVIDER INTEGRATION STACK
+
+SAME MATERIAL COMPOSITION
+!= SAME PUBLIC HTTP ENTRYPOINT
+```
+
+Qualification evidence must bind to exact material composition identity and explicit delta evidence.
 
 ## 8. First vertical candidate
 
@@ -191,14 +216,28 @@ no case requiring H19 durable prior-exposure accounting
 
 No new generic AI table is justified by this envelope.
 
-## 9. Open decisions / non-claims
+## 9. Evidence planes remain separate
+
+```text
+APPLICATION FAKE
+!= PROVIDER ADAPTER CONFORMANCE
+!= LIVE PROVIDER SMOKE / COMPATIBILITY PROOF
+!= DIRECT DANTE MODEL/ROUTE EVAL
+!= PRODUCTION CAPACITY QUALIFICATION
+```
+
+No layer inherits the proof claims of another.
+
+## 10. Open decisions / non-claims
 
 ```text
 AI-05A PASS/CLOSED                     NO
+AI-05B STARTED                         NO
 modules/search implemented             NO
 modules/intelligence implemented       NO
 provider/model/SDK selected            NO
 direct provider eval                   NO
+production capacity qualification      NO
 stream transport selected              NO
 new PostgreSQL/Alembic change          NO
 new AI table/index                     NO
@@ -210,18 +249,26 @@ Restate/R2/MCP/A2A activation          NO
 Execution Environment                  NO
 ```
 
-## 10. Current exact action
+## 11. Current exact action
 
 ```text
-READ BACK HARDENED AI-05A
+READ BACK BD-41
 → restart T01..T26 from zero
-→ run compound Search/Intelligence/outage/hidden-result/config/resource/disclosure cases
+→ rerun compounds:
+   Search + Intelligence + provider outage
+   Search hidden-result + Ask synthesis
+   config rollout + invocation snapshot + emergency deny
+   quota admission + retry/failover + settlement
+   inline stream + disconnect + no durable Run
+   cumulative disclosure + zero-persistence envelope
+   direct eval + exact material production composition / qualified deltas
 → reverse-check AI-05A → AI-04 → PRE-AI05 → AI-03 → AI-02
-→ harden only demonstrated gaps
+→ if clean, close AI-05A
+→ then AI-05B
 ```
 
 No AI-05A closure before a clean fresh retest.
 
-## 11. Handoff policy
+## 12. Handoff policy
 
 Temporary live handoff must be deleted before protected-main integration.
