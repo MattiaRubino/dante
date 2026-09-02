@@ -1,8 +1,10 @@
 # DANTE — World Focus Architecture
 
-**Status:** CURRENT SUPPORTING ARCHITECTURE — PRE-BACKEND — WORKSPACE PLATFORM CLOSED / D2 NEXT  
+**Status:** SUPPORTING ARCHITECTURE SNAPSHOT — SEMANTICS RETAINED / SEQUENCING SUPERSEDED BY CURRENT CHECKPOINT  
 **Date:** 2026-09-01  
 **Branch:** `feature/home-react`
+
+> **Authority note (2026-09-02):** this file preserves the pre-WS closure architecture snapshot. Any `D2 NEXT`, `D2 active`, or `current next architectural question` wording below is phase-time sequencing evidence only. Current sequencing and closure authority is `world-focus-current-checkpoint.md` + `world-focus-substrate-final-convergence-proof.md` + `world-focus-frontend-roadmap.md`. D2–D6 remain preserved for Materialization M4 after WS8.
 
 This document describes the current supporting system architecture of World Focus. Product semantics are governed by `world-focus-product-contract.md`; platform ownership by `world-focus-platform-contract.md`; route/workspace/geometry by the structural and geometry contracts; live sequencing by `world-focus-current-checkpoint.md` and the roadmap.
 
