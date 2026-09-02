@@ -193,6 +193,7 @@ route-entry lifecycle under World switch
 orphaned frontend APIs/scaffolding
 superseded visual implementation residue
 WS7/WS8 closure claims vs executable evidence
+cross-workstream deprecated AppShell debt discovered during coherence review
 ```
 
 Result:
@@ -202,14 +203,15 @@ HYG-01 unknown popover pointer barrier       FIXED
 HYG-02 unused motion preference scaffold     REMOVED
 HYG-03 visual V2/V3 residue                  REMOVED
 HYG-04 legacy SVG base styling               REMOVED
-HYG-05 stale branch-level D2 routing          FIXED
+HYG-05 stale branch-level D2 routing         FIXED
 HYG-06 stale World-switch entry provenance   FIXED
+HYG-07 legacy Global Topbar Review           REMOVED BY APPSHELL/HOME OWNER
 new substrate class                          0
 WS0–WS8 reopen                               NO
 M0 started                                   NO
 ```
 
-Global Topbar Review remains tracked deprecated AppShell/Home debt outside this World Focus-local hygiene scope.
+HYG-07 records a separate AppShell/Home-owned cleanup. It does not change World Focus ownership or substrate semantics.
 
 ---
 
@@ -233,7 +235,7 @@ L8 Platform/User Policy
 
 Do not restart WS0–WS8 for a new provider, World noun, UI, renderer, viewport, AI model, config store or larger dataset.
 
-Reopen only when later executable/materialization evidence shows a concrete semantic/ownership/state/security/privacy/effect contradiction that cannot fit an existing owner, and reopen only the earliest necessary phase.
+Reopen only when later executable/materialization evidence shows a concrete semantic/ownership/state contradiction that cannot fit an existing owner, and reopen only the earliest necessary phase.
 
 ---
 

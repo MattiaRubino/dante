@@ -1,6 +1,6 @@
 # DANTE — Home / Frontend Current Checkpoint
 
-**Status:** CURRENT LIVE ENTRY POINT — WORLD FOCUS WS0–WS8 CLOSED / POST-WS8 HYGIENE APPLIED / M0 NEXT  
+**Status:** CURRENT LIVE ENTRY POINT — WORLD FOCUS WS0–WS8 CLOSED / POST-WS8 HYGIENE + APPSHELL REVIEW CLEANUP APPLIED / M0 NEXT  
 **Date:** 2026-09-02  
 **Working branch:** `feature/home-react`  
 **Worktree:** `/home/mattia/projects/dante-frontend`
@@ -56,7 +56,8 @@ WS1–WS5                                 CLOSED
 WS6                                     CLOSED
 WS7                                     CLOSED
 WS8                                     CLOSED
-POST-WS8 HYGIENE                        APPLIED
+POST-WS8 WORLD FOCUS HYGIENE             APPLIED
+APPSHELL LEGACY REVIEW CLEANUP           APPLIED
 NEXT                                     M0 MATERIALIZATION MAPPING — NOT STARTED
 ```
 
@@ -102,7 +103,7 @@ Frontend CI:
 33639741630 — PASS — attempt 1
 ```
 
-The later post-WS8 hygiene pass repairs local runtime/documentation debt without reopening WS0–WS8. Its CI status must be read from current branch evidence and must not be confused with the validated WS8 proof SHA above.
+The later hygiene passes repair local runtime/documentation/AppShell debt without reopening WS0–WS8. Their CI status must be read from current branch evidence and must not be confused with the validated WS8 proof SHA above.
 
 ---
 
@@ -118,9 +119,24 @@ unused immersive|instant localStorage preference scaffold removed
 superseded V2/V3 visual-frame styles removed
 base visual-frame CSS reduced to structural ownership only
 branch-level routers advanced from stale D2 sequencing to M0 NEXT
+World switch rebinds route-entry provenance / close policy
 ```
 
-Not changed by this pass:
+A separate bounded AppShell/Home cleanup then closed the legacy Global Topbar Review debt:
+
+```text
+disabled Review button removed
+hard-coded fake badge 3 removed
+unused Review icon removed
+Review-only CSS removed
+Review-only IT/EN shell copy removed
+shell.review.legacy removed from open decisions
+registry/contract/handoff updated to REMOVED/CLOSED truth
+```
+
+No replacement global Review workflow was invented. Context Rail Resolution remains a Home capability and was not moved into the Topbar.
+
+Not changed by these passes:
 
 ```text
 WS0–WS8 closure
@@ -129,10 +145,7 @@ D1 global contextReference:null
 backend stop line
 Timeline behavior
 Access/Auth
-Global Topbar Review debt
 ```
-
-The disabled legacy Global Topbar Review control remains separately tracked deprecated AppShell/Home debt. It is not silently removed from a World Focus-owned cleanup.
 
 ---
 
@@ -148,6 +161,8 @@ docs/frontend/home/home-structural-contract.md
 docs/frontend/app-shell/p1-global-app-shell.md
 docs/frontend/ui-registry.md
 ```
+
+The former disabled legacy Global Topbar Review control is removed. Do not reintroduce it as a placeholder, fake count or duplicate Resolution entry without a new explicit product contract.
 
 Do not modify shared shell behavior as collateral damage of World Focus work.
 
@@ -198,7 +213,7 @@ frontend view model != backend DTO != Domain model != persistence row
 
 > **M0 — Materialization Mapping / Scope Freeze**
 
-M0 is next and has not been started by the hygiene pass.
+M0 is next and has not been started by the hygiene passes.
 
 M0 maps the closed substrate to:
 

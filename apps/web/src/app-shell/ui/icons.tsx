@@ -44,14 +44,6 @@ export function TodayIcon(props: IconProps) {
   );
 }
 
-export function ReviewIcon(props: IconProps) {
-  return (
-    <IconBase {...props}>
-      <path d="M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Zm3 8 2.2 2.2L16 8.5" />
-    </IconBase>
-  );
-}
-
 export function CalendarIcon(props: IconProps) {
   return (
     <IconBase {...props}>

@@ -1,6 +1,6 @@
 # DANTE — World Focus Post-WS8 Coherence / Hygiene Audit
 
-**Status:** APPLIED — LOCAL POST-CLOSURE HYGIENE, WS0–WS8 NOT REOPENED  
+**Status:** APPLIED — LOCAL POST-CLOSURE HYGIENE + OWNER CLEANUP, WS0–WS8 NOT REOPENED  
 **Date:** 2026-09-02  
 **Branch:** `feature/home-react`  
 **Initial pre-scope:** `7b1a862e02475f9ecb8efcfb1111a9eca526a827`
@@ -184,13 +184,34 @@ not a new substrate/race class
 
 ---
 
-## 8. Explicitly not changed — Global Topbar Review
+## 8. HYG-07 — Global Topbar Review owner cleanup
 
-The global `Review` control remains visibly disabled and is already classified `DEPRECATED` in Home/AppShell authorities because its role overlaps the accepted Resolution concept.
+The global `Review` control was visibly disabled, carried a hard-coded badge `3`, and was already classified `DEPRECATED` in Home/AppShell authorities because its role overlapped the accepted Resolution concept without owning a real global workflow.
 
-It is real debt, but it is owned by shared AppShell/Home rather than World Focus. Removing or redirecting it changes a global access pattern and requires its own bounded AppShell/Home cleanup scope with synchronized `contract.md`, `ui-registry.md`, tests and shell behavior.
+The World Focus-local pass intentionally did not mutate it. A separate bounded AppShell/Home owner scope then closed the debt.
 
-This audit records but does not silently mutate it.
+Removed:
+
+```text
+disabled Global Topbar Review button
+hard-coded fake badge 3
+unused ReviewIcon
+Review-only AppShell CSS
+Review-only shell localization in IT/EN
+shell.review.legacy from open decisions
+active/deprecated Review rows from current UI registry
+```
+
+Contract decision:
+
+```text
+NO replacement global Review workflow invented
+NO automatic promotion of Context Rail Resolution into Topbar
+NO Home H0 macro-structure change
+NO World Focus ownership expansion
+```
+
+Classification: cross-workstream deprecated UI debt resolved by its actual owner; not a new substrate class.
 
 ---
 
@@ -203,7 +224,7 @@ HEAD 88db899391a3a41e23e76177d4896a657232b5eb
 Frontend CI 33639741630 PASS — attempt 1
 ```
 
-Post-WS8 hygiene is later code/documentation state and must be evaluated on its own final commit. This document does not pre-claim a PASS.
+Post-WS8 hygiene is later code/documentation state and must be evaluated on its own final commit. This document does not pre-claim a PASS for the owner cleanup until its attached CI actually completes.
 
 ---
 
@@ -217,9 +238,9 @@ orphaned persisted motion preference       REMOVED
 superseded V2/V3 visual CSS                 REMOVED
 legacy SVG visual CSS                       REMOVED
 live D2 routing drift                       FIXED
-Global Topbar Review debt                   DEFERRED TO ITS OWNER
+Global Topbar Review debt                   REMOVED BY APPSHELL/HOME OWNER
 M0                                          NEXT / NOT STARTED
 backend                                     NOT STARTED
 ```
 
-The repository is materially more coherent after this pass without manufacturing new product capability or changing closed substrate semantics.
+The repository is materially more coherent after these bounded passes without manufacturing new product capability or changing closed substrate semantics.

@@ -50,6 +50,7 @@ WS6 Universal Work Primitive Closure   CLOSED
 WS7 Executable Non-Visual Harness      CLOSED
 WS8 Final Falsification                CLOSED
 POST-WS8 HYGIENE                       APPLIED
+APPSHELL LEGACY REVIEW CLEANUP         APPLIED
 
 M0 Materialization Mapping             NEXT ACTIVE GATE — NOT STARTED
 M1–M7 Materialization                  BLOCKED UNTIL M0 SCOPE FREEZE
@@ -98,6 +99,7 @@ HYG-03 superseded V2/V3 visual CSS generations
 HYG-04 dead legacy SVG styling in the base visual-frame stylesheet
 HYG-05 branch-level live router docs still said D2 NEXT
 HYG-06 World switch could retain stale route-entry provenance / close policy
+HYG-07 deprecated Global Topbar Review placeholder removed by AppShell/Home owner
 ```
 
 Disposition:
@@ -109,7 +111,7 @@ M0 started by cleanup                 NO
 backend work needed                   NO
 ```
 
-The Global Topbar Review control remains separately tracked deprecated AppShell/Home debt and was deliberately not mutated from World Focus ownership.
+HYG-07 is explicitly cross-workstream cleanup: World Focus did not own the Global Topbar mutation. The shared AppShell/Home owner removed the already-deprecated disabled Review affordance, fake badge and supporting dead implementation without creating a new global Resolution/Review workflow.
 
 ---
 

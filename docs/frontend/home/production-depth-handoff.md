@@ -1,6 +1,6 @@
 # DANTE — Frontend Production-Depth Handoff
 
-**Status:** CURRENT HANDOFF — MULTI-WORKSTREAM FRONTEND BRANCH / WORLD FOCUS WS0–WS8 CLOSED / M0 NEXT  
+**Status:** CURRENT HANDOFF — MULTI-WORKSTREAM FRONTEND BRANCH / WORLD FOCUS WS0–WS8 CLOSED / POST-CLOSURE HYGIENE APPLIED / M0 NEXT  
 **Date:** 2026-09-02  
 **Working branch:** `feature/home-react`  
 **Worktree:** `/home/mattia/projects/dante-frontend`
@@ -74,7 +74,9 @@ docs/frontend/app-shell/p1-global-app-shell.md
 docs/frontend/ui-registry.md
 ```
 
-The disabled legacy Global Topbar Review control remains explicitly deprecated debt. This World Focus hygiene pass does not decide its final global replacement/removal path.
+The legacy Global Topbar Review debt is closed. The disabled button, hard-coded fake badge, dedicated icon/CSS and shell copy were removed in a bounded AppShell/Home hygiene scope. `shell.review.legacy` is no longer an open decision.
+
+No replacement global Review workflow was invented, and Home Context Rail Resolution was not promoted into the Topbar. Reintroducing a global unresolved-matter entry requires a new explicit product contract rather than resurrecting the deprecated placeholder.
 
 ---
 
@@ -134,7 +136,8 @@ WS1–WS5                               CLOSED
 WS6                                   CLOSED
 WS7                                   CLOSED
 WS8                                   CLOSED
-POST-WS8 HYGIENE                      APPLIED
+POST-WS8 WORLD FOCUS HYGIENE           APPLIED
+APPSHELL LEGACY REVIEW CLEANUP         APPLIED
 NEXT                                  M0 MATERIALIZATION MAPPING
 ```
 
@@ -172,9 +175,10 @@ unused localStorage motion-preference API/test was exported but not consumed
 V2/V3 visual-frame CSS generations remained in the tree after V4 became the active candidate
 base visual CSS retained dead SVG-renderer styling
 branch-level live checkpoint/handoff still routed a new chat to D2
+World switch could retain stale route-entry provenance / close policy
 ```
 
-The fix stays local to World Focus plus branch-level routing docs. It does not start M0.
+A separate AppShell/Home cleanup then removed the already-deprecated Global Topbar Review placeholder and synchronized its contracts. Neither cleanup starts M0.
 
 ---
 

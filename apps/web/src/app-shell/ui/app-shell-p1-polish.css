@@ -238,10 +238,6 @@
   .app-topbar-search-surface {
     width: min(100%, 520px);
   }
-
-  .app-topbar.is-searching .app-topbar-review {
-    display: none;
-  }
 }
 
 @media (max-width: 760px) {

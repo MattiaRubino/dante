@@ -154,6 +154,8 @@ describe('GlobalTopbar', () => {
   it('keeps create truthful and exposes launcher/account shells without fake writes', async () => {
     await renderTopbar();
 
+    expect(screen.queryByRole('button', { name: 'Review' })).toBeNull();
+
     fireEvent.click(screen.getByRole('button', { name: 'Crea' }));
     expect(screen.getByRole('menu', { name: 'Crea' })).toBeTruthy();
     expect(

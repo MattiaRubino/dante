@@ -10,7 +10,6 @@ export const shell = {
     searchLabel: 'Cerca in DANTE',
     searchShortcut: '/',
     create: 'Crea',
-    review: 'Review',
     launcher: 'Apri launcher',
     account: 'Account',
   },
@@ -82,10 +81,6 @@ export const shell = {
     languageValue: 'Italiano',
     logout: 'Esci',
     logoutUnavailable: 'Disponibile quando la sessione reale sarà collegata',
-  },
-  review: {
-    legacyHint:
-      'Review è una funzione legacy in attesa di riconciliazione con Risoluzione.',
   },
   placeholder: {
     eyebrow: 'DANTE · area applicativa',

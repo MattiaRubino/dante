@@ -129,7 +129,6 @@
 
 .app-topbar-search,
 .app-topbar-nav,
-.app-topbar-review,
 .app-topbar-icon-button,
 .app-topbar-account {
   border: 1px solid var(--dante-theme-home-border-subtle);
@@ -155,7 +154,6 @@
 
 .app-topbar-search svg,
 .app-topbar-nav svg,
-.app-topbar-review svg,
 .app-menu-item svg,
 .app-launcher-item svg,
 .app-icon-button svg,
@@ -227,7 +225,6 @@
 }
 
 .app-topbar-create,
-.app-topbar-review,
 .app-topbar-icon-button,
 .app-topbar-account {
   height: var(--app-shell-control-height);
@@ -260,33 +257,6 @@
 .app-topbar-plus {
   font-size: 19px;
   line-height: 1;
-}
-
-.app-topbar-review {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding-inline: 12px;
-  border-radius: 14px;
-  font-size: 0.78rem;
-  font-weight: 650;
-}
-
-.app-topbar-review-badge {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  display: grid;
-  min-width: 17px;
-  height: 17px;
-  place-items: center;
-  padding: 0 4px;
-  border: 2px solid var(--dante-theme-home-surface-panel);
-  border-radius: 999px;
-  color: var(--dante-theme-home-text-primary);
-  background: var(--dante-theme-home-chrome-active);
-  font-size: 9px;
 }
 
 .app-topbar-icon-button,
@@ -842,15 +812,8 @@
   }
 
   .app-topbar-search > span,
-  .app-topbar-search kbd,
-  .app-topbar-review-label {
+  .app-topbar-search kbd {
     display: none;
-  }
-
-  .app-topbar-review {
-    width: 40px;
-    justify-content: center;
-    padding: 0;
   }
 }
 
@@ -890,10 +853,6 @@
   .app-topbar-utilities {
     grid-area: utilities;
     gap: 6px;
-  }
-
-  .app-topbar-review {
-    display: none;
   }
 
   .app-topbar-create {

@@ -31,7 +31,6 @@ P1 implementation is frozen at `e11d6c53d2fe1361b37345bbc3f49792541bd45d`. Closu
 | `home.topbar.nav.worlds` | Mondi | ACTIVE | Real router destination `/worlds`. The destination is routable now; the actual Mondi vertical remains a later production-depth pass. |
 | `home.topbar.nav.today` | Oggi | ACTIVE | Real router destination `/today`. The route exists without inventing the future Oggi/day vertical implementation. |
 | `home.topbar.search` | lens / Cerca in DANTE | ACTIVE | Lens trigger enters inline Topbar Search mode; primary nav is temporarily replaced by the search field. `/` and Ctrl/Cmd+K are supported. Local destinations are searched live; Arrow Up/Down, Enter, Escape and click are supported. Remote/personal-data search is explicitly unavailable until backend integration. |
-| `home.topbar.reviewLegacy` | Review | DEPRECATED | Legacy Review remains visible/disabled bounded debt. It overlaps the accepted Resolution role and must later be removed, redirected or reframed; no new workflow investment in P1. |
 | `home.topbar.launcher` | launcher | ACTIVE | Opens the shared DANTE application launcher using real local router destinations. |
 | `home.topbar.account` | Account | ACTIVE / DEFERRED SESSION | Opens the shared account menu with a neutral user icon. Profile/settings destinations are real; identity/avatar/session/logout semantics remain deferred to Access/Auth. |
 
@@ -147,7 +146,6 @@ The accepted rail must **not** become:
 |---|---|---|---|
 | `home.overlay.search` | inline Search results | ACTIVE | No modal/backdrop. Results are anchored below the inline Topbar Search field; local destinations only until remote-search integration exists. |
 | `home.overlay.create` | create menu | DEFERRED | Shared AppShell menu; no fake backend write. |
-| `home.overlay.reviewLegacy` | Review | DEPRECATED | Legacy behavior is bounded/disabled pending reconciliation with Resolution. |
 | `home.overlay.launcher` | launcher | ACTIVE | Shared AppShell launcher using real application routes. |
 | `home.overlay.account` | account menu | ACTIVE / DEFERRED SESSION | Profile/settings routing is real; identity/session/logout is deferred to Access/Auth. |
 | `home.overlay.calendar` | calendar popover | ACTIVE | Date navigation; P2 owns viewed-day production-depth state/routing semantics. |
@@ -163,6 +161,7 @@ The accepted rail must **not** become:
 | Home-owned `global-topbar` component | REMOVED | Global Topbar ownership moved to shared `apps/web/src/app-shell/` in P1. |
 | modal `SearchCommandDialog` / dialog backdrop | REMOVED | Replaced in P1 visual polish by inline expanding Topbar Search + anchored results panel. |
 | fake account initials `MR` | REMOVED | Replaced by neutral user icon until real Access/Auth identity exists. |
+| `home.topbar.reviewLegacy` / `home.overlay.reviewLegacy` | REMOVED | Deprecated disabled global Review placeholder and hard-coded badge were removed by the AppShell/Home owner on 2026-09-02. No replacement global workflow was invented; Context Rail Resolution remains separately owned. |
 | side `Appunti` card | REMOVED | Replaced by `home.contextRail.capture`; old card was too note-centric and visually separate. |
 | side `Review` card | REMOVED | Replaced by `home.contextRail.resolution`; old generic review framing was weaker. |
 | `home.contextRail.focusExpand` | REJECTED | Focus/expand chevrons were ambiguous and created unnecessary state. Accepted rail keeps both functions visible. |
