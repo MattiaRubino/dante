@@ -1,6 +1,7 @@
 # DANTE Workstream Records
 
 - **Status:** CURRENT INDEX
+- **Last reconciled:** 2026-09-02
 - **Rule:** protected `main` stores durable workstream records/evidence, not active live/session handoffs
 
 ## Purpose
@@ -20,7 +21,7 @@ active branch handoffs
 
 ## Current project/workstream state
 
-Protected-main current truth is owned by:
+Protected-main shared-foundation truth is owned by:
 
 - `../PROJECT-STATUS.md`
 - `../ROADMAP.md`
@@ -29,7 +30,7 @@ Current high-level state on `feature/access-auth`:
 
 ```text
 Domain Model                       CLOSED
-Logical Model                      CLOSED
+Logical Model                      CLOSED / 57 OF 57
 Pre-Physical coherence             CLOSED
 Physical target                    CLOSED / ACCEPTED
 Engineering Foundation             CLOSED / ACCEPTED
@@ -38,43 +39,127 @@ Frontend Materialization           CLOSED / PASS / INTEGRATED
 Backend CP1–CP5 Scaffold           CLOSED / DIRECT QA / INTEGRATED
 Backend CP6 Database               CLOSED / DIRECT QA / INTEGRATED VIA PR #42
 Access pre-backend frontend        CLOSED / ACCEPTED
-Full-stack Access/Auth vertical    ACTIVE
-M1 Access Visual / UX Freeze       CLOSED / PASS WITH DEFERRED INTEGRATION CHECKS
-M2 Auth Architecture Freeze        ACTIVE
-M3 Signin + AuthSession Spine      NOT STARTED
+
+Full-stack Access/Auth vertical    ACTIVE / M5 FINAL EXTERNAL ACCEPTANCE OPEN
+M1 Access Visual / UX Freeze       CLOSED / ACCEPTED
+M2 Auth Architecture Freeze        CLOSED / ACCEPTED
+M3 Signin + AuthSession Spine      CLOSED / ACCEPTED
+M4 Signup/Recovery/Reauth          CLOSED / ACCEPTED
+M5 Groups 1–3                     COMPLETE / ENGINEERING PASS
+M5 Group 4 Web engineering         AUTOMATED QA PASS
+Local password/passkey UAT         PASS
+Real Google UAT                    PASS
+Email architecture                 ACCEPTED DIRECTION
+Email platform implementation      OPEN
+Real Internet email UAT            OPEN
+Real Apple registered-domain UAT   DEFERRED / OPEN
 ```
 
-## Active branch-local workstream
+The former index text that said `M2 ACTIVE / M3 NOT STARTED / production Auth NOT STARTED` is superseded and was stale relative to the executable branch.
 
-- `access-auth.md` — single durable branch-local workstream record, authority map, decision register, definitive seven-macro-phase roadmap and continuation entry point for `feature/access-auth`.
+## Active branch-local Access/Auth workstream
 
-Current Access/Auth state:
+Primary current record:
+
+- `access-auth.md` — durable current branch-local workstream authority and continuation entry point.
+
+Current review/evidence:
+
+- `access-auth-m5-review-2026-09-02.md` — engineering/UAT/deprecation/external-benchmark evidence.
+
+Current email architecture:
+
+- `../architecture/access-auth-email-delivery.md`
+- `../decisions/ADR-012-email-delivery-platform.md`
+
+Temporary active-branch continuation:
+
+- `access-auth-m5-live-handoff-2026-09-02.md` — branch-operational only; must be consolidated/removed before protected-main integration.
+
+Historical/superseded:
+
+- `access-auth-m5-live-handoff-2026-08-29.md` — historical milestone-time handoff, not current authority.
+- `access-auth-m4-live-handoff-2026-08-29.md` — historical milestone-time handoff, not current authority.
+- `access-auth-m4-m7-execution-plan.md` — useful historical planning where still accurate, but current execution status is owned by `../ROADMAP.md` and `access-auth.md`.
+
+## Current Access/Auth branch state
 
 ```text
 branch                         feature/access-auth
-baseline                       f011e252b6a294a12c38927ef2d528244ea1fee6
-last closed macro-phase        M1 — Access Visual / UX Freeze
-active macro-phase             M2 — Auth Architecture Freeze
-production Auth module         NOT STARTED
-Auth DB migrations             NOT STARTED
-real Access API wiring         NOT STARTED
-native Mobile Access           NOT STARTED
-first executable target        M3 — email/password signin + AuthSession spine
+intended worktree              /home/mattia/projects/dante
+protected-main relationship    branch-local newer Auth truth; not yet integrated
+accepted Alembic head          20260831_13
+PostgreSQL                     18.6
+DB topology                    83 tables / 5 views / 15 routines /
+                               75 triggers / 156 indexes / 85 FKs / 233 CHECKs
+
+reviewed product checkpoint    ab2716abe40de658d99d1908ba31c5d5744e3c57
+real-SMTP UAT tooling          9c0587af5891249d8a6e6b6a5d6e3af6934c6943
 ```
 
-M2 is intentionally architecture/security work before production Auth code. It must ratify deployment topology, Web session/cookie/CSRF/CORS behavior, core Account/AuthSession semantics, multi-session lifecycle, password implementation, passkey-ready/MFA-compatible boundaries, email comparison, API/error contract, M3 concurrency/transactions, generated-client boundary and the exact M3 test harness before migrations/endpoints begin.
+Automated final product-code evidence at `ab2716...`:
 
-The current definitive macro-roadmap is:
+```text
+format/typecheck/lint/architecture     PASS
+Web unit/component                     68 / 68 PASS
+Auth Playwright HTTPS                  60 / 60 PASS
+Chromium / Firefox / WebKit            PASS through canonical suite
+```
+
+Live UAT additionally proved real Windows Hello passkeys, password/passwordless lifecycle, session rotation, anti-lockout, real Google Identity Services and direct PostgreSQL coherence.
+
+Do not reopen accepted implementation blocks absent direct defect evidence.
+
+## Current macro-roadmap
 
 ```text
 M1  Access Visual / UX Freeze                         CLOSED
-M2  Auth Architecture Freeze                         ACTIVE
-M3  Email/Password Signin + AuthSession Spine        NOT STARTED
-M4  Signup + Verify + Recovery + Reset + Reauth      NOT STARTED
-M5  Google + Apple + Passkeys + Explicit Linking     NOT STARTED
-M6  Native Mobile Access                             NOT STARTED
-M7  Security Hardening + Home Handoff + Closure      NOT STARTED
+M2  Auth Architecture Freeze                         CLOSED
+M3  Email/Password Signin + AuthSession Spine        CLOSED
+M4  Signup + Verify + Recovery + Reset + Reauth      CLOSED
+M5  Google + Apple + Passkeys + Explicit Linking     ACTIVE / FINAL EXTERNAL ACCEPTANCE OPEN
+    ├── engineering Groups 1–3                       COMPLETE / PASS
+    ├── Group 4 Web QA                               PASS
+    ├── local password/passkey UAT                   PASS
+    ├── real Google UAT                              PASS
+    ├── email architecture                           ACCEPTED
+    ├── email provider/operations qualification      NEXT
+    ├── durable Email Platform implementation        OPEN
+    ├── real Internet email UAT                      OPEN
+    └── Apple real registered-domain UAT             DEFERRED / OPEN
+M6  Native Mobile Access                             FUTURE / OPTIONAL / RE-GATE
+M7  Security Hardening + Home Handoff + Closure      PLANNED
 ```
+
+## Email workstream direction inside M5
+
+Email is no longer an unspecified “pick an SMTP vendor” task.
+
+Accepted direction:
+
+```text
+DANTE owns email lifecycle/state
+external specialist owns last-mile delivery
+PostgreSQL transactional outbox is durable target
+Amazon SES API v2 is primary production adapter target
+SMTP is retained for deterministic tests/UAT/compatibility
+```
+
+Still open:
+
+```text
+SES operational/provider qualification
+exact outbox/delivery persistence design
+sensitive OTP/recovery payload protection
+SES API adapter
+provider event ingestion
+bounce/complaint suppression lifecycle
+sender domain + SPF/DKIM/DMARC
+real inbox signup/recovery UAT
+failure/ambiguous-outcome proof
+```
+
+`SELECTED != IMPLEMENTED != DIRECT PASS` remains binding.
 
 ## Durable closed/integrated records
 
@@ -94,10 +179,10 @@ Current CP6/database truth lives in:
 - `frontend-foundation.md` — frontend engineering foundation design/architecture closure, integrated via PR #22.
 - `frontend-materialization.md` — closed production materialization evidence, integrated via PR #28.
 - `frontend-materialization-integration.md` — durable integration/calibration/future-activation evidence for PR #28.
-- `../frontend/access.md` — current durable contract for the accepted Web Access frontend and its current full-stack integration obligations.
+- `../frontend/access.md` — current durable contract for the accepted full-stack Access Web surface.
 - `../archive/branches/2026-08-feature-access-frontend.md` — consolidated non-authoritative history for `feature/access-frontend`.
 
-The closed Access-frontend branch-local workstream record and live handoff are intentionally not retained after knowledge consolidation. The current full-stack Access/Auth workstream started from protected `main` on `feature/access-auth`; the closed `feature/access-frontend` branch is not a permanent reusable frontend line.
+The closed Access-frontend branch is not a permanent reusable frontend line. Current full-stack Access/Auth continues on `feature/access-auth`.
 
 ### Engineering / architecture preparation
 
@@ -124,18 +209,21 @@ Historical planning records may later move to `docs/archive/` or leave the worki
 
 `today-home.md` is a separate Home/Today product/UX workstream record. Its authority is limited to the scope explicitly stated by that file; it does not override production engineering, current frontend vertical or backend/database authority.
 
+The authenticated Access → real Home handoff remains M7 work on this vertical; current successful Auth UAT legitimately lands on the accepted Access/onboarding return rather than pretending Home is already integrated here.
+
 ## Operational continuation rule
 
 Before continuing work:
 
 1. read `../PROJECT-STATUS.md` and `../ROADMAP.md`;
-2. read development operating/safety/lifecycle policy;
-3. verify exact current branch and relation to `main`;
+2. read `../development/agent-operating-manual.md` and documentation lifecycle policy;
+3. verify exact current branch/remote HEAD and relation to `main`;
 4. if continuing Access/Auth, read `access-auth.md` completely;
-5. read `../frontend/access.md` and the subsystem authorities required by the active macro-phase;
-6. use a temporary handoff only when the active branch genuinely needs one;
-7. consume relevant accepted model/architecture/reference/code/tests;
-8. do not let an old workstream record override newer current truth.
+5. read `access-auth-m5-review-2026-09-02.md`;
+6. for email, read ADR-012 + `../architecture/access-auth-email-delivery.md` before researching or writing code;
+7. consume the subsystem authorities relevant to the next gate;
+8. do not let an old handoff/workstream record override newer current truth;
+9. version-sensitive external claims require current official evidence.
 
 ## Macro-phase closure rule
 
@@ -186,6 +274,8 @@ VERSION-SENSITIVE CLAIMS REQUIRE CURRENT EVIDENCE
 TEMPORARY HANDOFF != DURABLE DOCUMENTATION
 CURRENT SPECIFICATION != CHRONOLOGICAL DIARY
 NEW CHAT != NEW BRANCH
+NO PASS WITHOUT EXECUTED EVIDENCE
+DO NOT REOPEN ACCEPTED WORK WITHOUT DEFECT EVIDENCE
 ```
 
 Durable architecture changes belong in current specs/ADRs. Historical workstream records never override later accepted current truth.
