@@ -16,6 +16,7 @@ import {
 } from '../../temporal';
 import {
   buildTemporalCreatePlacement,
+  createTemporalCreateFields,
   validateTemporalCreateFields,
   type TemporalCreateFields,
   type TemporalCreateKind,
@@ -172,19 +173,24 @@ class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
     fields: TemporalCreateFields,
     operationId = this.ids.operationId(),
   ): TemporalCreatePreparation {
-    const issues = validateTemporalCreateFields(fields);
+    // Own the application-boundary snapshot. UI sessions are immutable already,
+    // but adapters/importers are not allowed to rely on that implementation
+    // detail: normalization here prevents mutable aliases or unnormalized seeds
+    // from changing rich intent after command preparation.
+    const specification = createTemporalCreateFields(fields);
+    const issues = validateTemporalCreateFields(specification);
     if (issues.length > 0) {
       return Object.freeze({ status: 'invalid', issues });
     }
 
     const projectionId = this.ids.projectionId();
     const metadata = Object.freeze({
-      kind: fields.kind,
-      contextId: fields.contextId,
-      notes: fields.notes.trim(),
-      timeSemantics: fields.timeSemantics,
-      timeZoneId: fields.timeZoneId,
-      specification: fields,
+      kind: specification.kind,
+      contextId: specification.contextId,
+      notes: specification.notes.trim(),
+      timeSemantics: specification.timeSemantics,
+      timeZoneId: specification.timeZoneId,
+      specification,
     }) satisfies TemporalCreateMetadata;
 
     const command = Object.freeze({
@@ -196,15 +202,15 @@ class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
         id: projectionId,
         subject: Object.freeze({
           source: 'native' as const,
-          kind: fields.kind,
+          kind: specification.kind,
           // Frontend-only provisional subject identity. A future backend adapter
           // owns canonical identity and can reconcile it without changing the
           // Create UI/application contract.
           id: `create-subject:${projectionId}`,
         }),
-        title: fields.title.trim(),
-        placement: buildTemporalCreatePlacement(fields),
-        capabilities: capabilitiesForFields(fields),
+        title: specification.title.trim(),
+        placement: buildTemporalCreatePlacement(specification),
+        capabilities: capabilitiesForFields(specification),
       }),
     });
 
