@@ -1,12 +1,12 @@
 # DANTE — World Focus Handoff
 
-**Status:** CURRENT DURABLE HANDOFF — WS1–WS5 CONVERGENCE CLOSED / WS6 NEXT  
+**Status:** CURRENT DURABLE HANDOFF — WS1–WS5 INDEPENDENT CONVERGENCE CLOSED / WS6 NEXT  
 **Date:** 2026-09-02  
 **Repository:** `MattiaRubino/dante`  
 **Branch:** `feature/home-react`  
 **Worktree:** `/home/mattia/projects/dante-frontend`
 
-This is the durable high-detail handoff for continuing World Focus without reconstructing architecture from conversation memory.
+This is the durable handoff for continuing World Focus without reconstructing architecture from conversation memory.
 
 Read first:
 
@@ -14,11 +14,12 @@ Read first:
 1. world-focus-current-checkpoint.md
 2. world-focus-substrate-closure-plan.md
 3. world-focus-ws0-substrate-inventory.md
-4. world-focus-substrate-convergence-review.md
-5. world-focus-substrate-convergence-corpus.md
-6. world-focus-frontend-roadmap.md
-7. this handoff
-8. world-focus-evidence-index.md
+4. world-focus-substrate-independent-confirmation.md
+5. world-focus-substrate-convergence-review.md
+6. world-focus-substrate-convergence-corpus.md
+7. world-focus-frontend-roadmap.md
+8. this handoff
+9. world-focus-evidence-index.md
 ```
 
 ---
@@ -48,6 +49,7 @@ D1 CI                                  33552437179 PASS
 
 WS0 Substrate Inventory                CLOSED BASELINE
 WS1–WS5 Convergence Loop               ANALYTICALLY CLOSED
+                                       after independent Cycle B + Cycle C
 WS6 Universal Work Primitive Closure   NEXT
 WS7 Executable Non-Visual Harness      NOT STARTED
 WS8 Final Falsification                NOT STARTED
@@ -56,29 +58,72 @@ Materialization M0–M7                  BLOCKED UNTIL WS8
 D2–D6                                  PRESERVED / MATERIALIZATION-DEFERRED
 ```
 
-The old `D2 NEXT` sequence was intentionally paused, not rejected. D2–D6 resume during Materialization M4 after substrate closure.
+The old `D2 NEXT` sequence was paused, not rejected. D2–D6 resume during Materialization M4.
 
 ---
 
-# 2. Working standard
+# 2. Critical correction to convergence history
+
+Do not repeat the earlier methodological mistake.
+
+Cycle A originally contained:
+
+```text
+44 domain/user-job scenarios
++ WITHOUT/WITH DANTE
++ 16 adversarial cross-products
+-> CG-32 revocation/disclosure invalidation found
+-> harden
+
+44-scenario rerun
++ 20 additional cases
+```
+
+That rerun is now classified as **regression evidence**, not the independent confirmation required for closure.
+
+The user correctly required a second attack that is genuinely different from the first.
+
+Corrected independent confirmation:
+
+```text
+Cycle B — mechanism-first / orthogonal domains
+40 scenarios
++ WITHOUT/WITH DANTE
++ 16 independent mechanism cross-products
+-> discovers CG-33..CG-36
+-> harden
+
+Cycle C — metamorphic/invariant driven
+40 transformations of actor sets, revision, basis, effects, time,
+configuration, navigation and failure conditions
+-> 0 new material substrate classes
+```
+
+Authority:
+
+`world-focus-substrate-independent-confirmation.md`
+
+Therefore WS1–WS5 is closed **only on the Cycle A + B + C evidence together**.
+
+---
+
+# 3. Working standard
 
 DANTE is not a prototype that will be cleaned up later.
-
-For every bounded task:
 
 ```text
 current authority
 -> exact unresolved question
 -> inspect real code/evidence
 -> simulate/falsify
--> targeted external research only where genuinely open
--> alternatives + explicit decision/rejects
+-> targeted external research only for a concrete open gap
+-> explicit alternatives/rejects
 -> architecture/state ownership
--> smallest complete implementation when implementation belongs in the phase
+-> smallest correct implementation when phase permits code
 -> responsive/a11y/security/performance/error/race handling
 -> strict automated gates
 -> real-browser acceptance when UI exists
--> human/user review when actually available/required
+-> human/user review only when actually performed
 -> truthful closure disposition
 -> documentation synchronization
 ```
@@ -89,12 +134,15 @@ Never fabricate:
 CI PASS
 manual visual review
 backend capability
-provider success semantics
+provider completion semantics
 AI result
 canonical effect completion
 ```
 
+Permanent honesty:
+
 ```text
+regression evidence != independent convergence confirmation
 analytical convergence != executable proof
 CI green != human visual review
 implemented != accepted
@@ -103,7 +151,7 @@ provider acknowledgement != canonical completion
 
 ---
 
-# 3. Global North Star
+# 4. Global North Star
 
 DANTE:
 
@@ -128,11 +176,11 @@ UNDERSTAND
 
 Not a mandatory workflow.
 
-Permanent constraints:
+Permanent product constraints:
 
 ```text
 life, not task/calendar/metric, is the center
-time is foundational but not container of all life
+time is foundational but not the container of all life
 planned != Actual
 effort != execution != outcome != Goal progress
 observed pattern != confirmed preference
@@ -140,12 +188,12 @@ correlation != causation
 AI inference != confirmed fact
 Proposal != Decision
 no universal Life Score
-no punitive streak/fill-every-minute optimization
+no punitive fill-every-minute optimization
 ```
 
 ---
 
-# 4. Domain / Logical / Physical barriers
+# 5. Domain / Logical / Physical barriers
 
 Frontend convenience cannot reinterpret canonical semantics.
 
@@ -180,13 +228,15 @@ universal Rule / Fact / Version root
 canonical EAV/property bag
 ```
 
-World must never become a DB partition, canonical owner or ACL boundary merely because the frontend has `/worlds/:worldId`.
+World never becomes a DB partition, owner or ACL boundary because the frontend has a World route.
 
-When future World work needs global DB truth, consult current protected-main DB authority at that time; do not trust an old Home-branch database snapshot and do not randomly merge/rebase main into Home.
+When later work needs global DB truth, read current protected-main DB authority at that time; do not randomly merge/rebase main into Home.
 
 ---
 
-# 5. Home / Worlds / Explore boundary
+# 6. World product definition
+
+Home / World / Explore:
 
 ```text
 HOME
@@ -196,7 +246,7 @@ MONDI OVERVIEW
 view/manage Worlds as a system
 
 WORLD FOCUS
-scoped expansion / understanding / continuation of one World
+scoped expansion / understanding / continuation
 
 EXPLORE / DETAIL
 specialist / evidence / history / deeper depth
@@ -206,17 +256,11 @@ World Focus route:
 
 `/worlds/:worldId`
 
-It is not a Home overlay and not a chat route disguised as a World.
-
----
-
-# 6. World definition
-
 World Focus compass:
 
 > **Understand this part of my life and continue from here.**
 
-A World is:
+World:
 
 > **A user-recognizable continuity context for a significant part of reality.**
 
@@ -224,20 +268,7 @@ Core thesis:
 
 > **A World is a shared coordinate system between the user and DANTE for one meaningful continuity context — not a shared source of truth.**
 
-World-worthiness pressure:
-
-```text
-recurring re-entry
-continuity/history/intent
-resumability
-situational understanding
-meaningful change
-scoped decisions/actions
-deeper exploration
-stable human-recognizable identity
-```
-
-Never auto-map:
+No automatic mapping:
 
 ```text
 Goal -> World
@@ -248,30 +279,13 @@ Calendar -> World
 Domain category -> World
 ```
 
-World is not:
-
-```text
-canonical Domain owner
-folder
-life-area taxonomy
-dashboard ontology
-universal relation/entity container
-DB partition
-ACL/security boundary
-AI memory bucket
-chat room
-mandatory Goal/time-range/KPI surface
-```
-
-Worlds overlap; the same canonical reality may be projected into several Worlds without duplication.
+Worlds may overlap. One canonical reality may be projected in several Worlds without duplication.
 
 World relevance is a contextual prior, not ownership or authorization.
 
 ---
 
 # 7. World Output Grammar
-
-World Focus is question-driven, not widget-driven:
 
 ```text
 O1  Orientation
@@ -280,7 +294,7 @@ O3  Continuity / Resume
 O4  Attention / Resolution
 O5  Next
 O6  Change
-O7  Trajectory / Comparison [when meaningful]
+O7  Trajectory / Comparison [optional]
 O8  Evidence / History
 O9  Explore
 O10 Act / Decide
@@ -290,74 +304,52 @@ O11 Intelligence
 A World need not answer all eleven.
 
 ```text
-available meaningful authorized reality
+meaningful authorized reality
 -> meaningful questions now
 -> rank
--> restrained subset
+-> restrained composition
 -> deeper evidence/action on demand
 ```
 
-Never fill missing answers with fake cards, fake KPI, fake progress, recent-activity filler, AI prose, prompt suggestions or dummy charts.
+Never fill missing answers with fake cards/KPIs/progress/AI filler.
 
 Crucial WS6 rule:
 
 ```text
 one Output Grammar family
-!= automatically one work primitive
+!= automatically one L1 work primitive
 != automatically one module
 != automatically one renderer
 ```
 
 ---
 
-# 8. WR0–WR2 closed findings
+# 8. WR0–WR2 / context model
 
-WR0 falsified several candidate World definitions and the universal first-open time Lens.
+WR0 falsified candidate World definitions and universal first-open Lens.
 
-WR1 found seven gaps around:
+WR1 found seven gaps around relevance, visible/DANTE basis, cross-World escalation, DANTE presence, deictic cursor, Home/World routing and LLM-independent first-open.
 
-```text
-World relevance definition
-visible/DANTE basis coherence
-cross-World escalation
-DANTE presence/proactivity
-deictic interaction cursor
-Home/World attention routing
-LLM-independent first open
-```
+WR2 closed all seven without structural Domain/Logical/Physical/DB/Intelligence reopen.
 
-WR2 closed all seven without finding a structural Domain/Logical/Physical/DB/Intelligence reopen.
-
-Four-layer context model:
+Four-layer World context:
 
 ```text
-1. WORLD IDENTITY / PURPOSE
-2. STABLE WORLD RELEVANCE DEFINITION
-3. CURRENT WORLD INTERACTION CURSOR / SESSION WHEN NEEDED
-4. AUTHORIZED PURPOSE-SCOPED DANTE CONTEXT
+1 WORLD IDENTITY / PURPOSE
+2 STABLE WORLD RELEVANCE DEFINITION
+3 CURRENT INTERACTION CURSOR / SESSION WHEN NEEDED
+4 AUTHORIZED PURPOSE-SCOPED DANTE CONTEXT
 ```
 
-Cursor contains bounded references/hints only, never:
+Cursor contains bounded refs/hints only, never DOM, secrets, authorization, copied canonical truth, provider creds or durable Run state.
 
-```text
-DOM
-React tree
-secrets
-authorization decision
-copied canonical truth
-provider credentials
-durable DANTE Run state
-```
-
-Future Context Builder combines actual user purpose with Principal/Actor/recipient, sensitivity/disclosure/governance and freshness/material basis.
-
-Current World is a relevance bias, not a reasoning prison.
+Current World is relevance bias, not reasoning prison.
 
 ---
 
-# 9. Multi-actor conclusions
+# 9. Multi-actor / disclosure
 
-Collaboration is not single-user software multiplied by N.
+Collaboration is not single-user software × N.
 
 Keep distinct:
 
@@ -365,42 +357,26 @@ Keep distinct:
 membership != visibility != authority
 assignment/execution != responsibility/stewardship
 RSVP/acceptance != Actual participation
-shared context != access to private overlays
 sent != delivered != seen != acknowledged != accepted != acted upon
+shared context != access to private overlays
 ```
 
-Partial adoption and external/non-user participants are normal.
+Partial adoption/external non-users are normal.
 
-Recurring needs include:
+Cycle B adds a stronger invariant:
 
 ```text
-shared resource dependency
-producer/consumer dependency
-simultaneity
-assignment/prerequisites
-selective disclosure
-shared canonical facts + private overlays
-handoff
-acknowledgement
-responsibility
-external participants
-authority/consent
-Actual participation
-provisional vs confirmed
-source provenance
-conflicts
-temporary delegation
+approval / consent / resource binding
+may need to remain tied to the exact materially identified subject/revision/policy/eligible-set
 ```
 
-The frontend may project these distinctions; real AuthZ/Authority/Consent enforcement remains upstream.
+A changed subject does not silently inherit old approval.
 
 ---
 
 # 10. WF0 / WF-G3 / VFX
 
-## WF0
-
-**FROZEN / USER AUTHORIZED**
+WF0 remains FROZEN / USER AUTHORIZED:
 
 ```text
 APP SHELL / GLOBAL TOPBAR
@@ -414,101 +390,23 @@ APP SHELL / GLOBAL TOPBAR
 
 Global Topbar is outside World ownership.
 
-Future route-owned overlays may cover the World but do not resize/re-own Global Topbar or frozen workspace geometry.
-
-## WF-G3
-
-**LOCKED / USER AUTHORIZED**
-
-Reference geometry remains:
-
-```text
-center 50/50
-outer ellipse rx 52.25%, ry 90%
-origin rx 50%, ry 87%
-inner rx 47.75%, ry 84%
-standard inline inset clamp(136px, 14vw, 224px)
-compact inline inset clamp(76px, 18vw, 112px)
-standard block inset clamp(32px, 5vh, 64px)
-compact block inset 20px
-compact <=720px
-```
+WF-G3 remains LOCKED. The workspace is rectangular; ellipse/corona/VFX geometry does not own content layout.
 
 Rule:
 
 > the visual skin must fit the geometry; the geometry does not chase the visual skin.
 
-## WF-V4
-
-VFX remains candidate and degrades before interaction/performance quality.
+VFX remains candidate and degrades before interaction/performance.
 
 ---
 
-# 11. B0 reusable foundation
+# 11. B0 / B1 / B2
 
-B0 established:
+B0 established production-grade layering, validation, latest-read/cancellation, safe links, error isolation, container query foundation, performance instrumentation, accessibility/reduced-motion and backend stop line.
 
-```text
-model -> application -> ui -> route
-strict typed frontend vocabulary
-runtime validation seam
-latest-only async commit protection
-AbortSignal/cancellation
-safe HTTPS external URL parsing
-route error boundary
-local renderer boundary
-persistent rectangular workspace
-container-query foundation
-User Timing/open-to-usable instrumentation
-a11y/focus/reduced-motion foundations
-ornamental WebGL degradation
-explicit dependency non-adoptions
-backend/provider/LLM stop line
-```
+B1 Orientation closed with universal Lens fully removed.
 
-No generic repository/data-port abstraction was invented without a real read intent.
-
----
-
-# 12. B1 Orientation
-
-B1 originally carried a universal time Lens.
-
-WR0 showed it was product-wrong across materially different Worlds.
-
-Retained:
-
-```text
-World identity/orientation
-route-owned active World
-entry/exit lifecycle
-loading/error/unavailable
-responsive/a11y shell behavior
-```
-
-Removed fully:
-
-```text
-universal visible time Lens
-Lens fixture capability
-?time= route contract
-Lens model/tests
-Lens-only Session scaffolding
-```
-
-Lesson:
-
-> When product semantics reject a capability, remove hidden infrastructure unless another real vertical independently earns it.
-
----
-
-# 13. B2 Continuity / Resume
-
-Question:
-
-> **What is actually in motion and where can I continue?**
-
-Permanent semantics:
+B2 Continuity / Resume permanent semantics:
 
 ```text
 RECENT != RESUMABLE
@@ -518,48 +416,13 @@ UNFINISHED != IMPORTANT
 AI-GUESSED RELEVANCE != CONTINUITY FACT
 ```
 
-First-open continuity requires recognizable thread identity + meaningful current/unfinished state + meaningful checkpoint.
+No fake Resume without a real destination.
 
-No fake Resume action exists without a real continuation destination.
-
-A previous premature implementation added an ungrounded Body `Mobility Reset` item and fake DANTE conversation surface; commit `aa495e38304ae26a4635e9c843cabbe1cb954f6e` reverted both.
-
-Durable lesson:
-
-> plausible != authorized/grounded.
-
-B2 is implemented/automated PASS; integrated polish remains M6.
+B2 is implemented / automated PASS; integrated product/visual review remains M6.
 
 ---
 
-# 14. Workspace/module uncertainty research
-
-Broad unknown-module research is already done.
-
-Accepted:
-
-```text
-one shared World workspace platform
-not page-per-World
-finite approved module/surface registries
-controlled specialist extension
-no arbitrary model-generated executable UI
-stable/adaptive/ephemeral distinct
-AI cannot silently rewrite stable composition
-DANTE can request Insight/Explore/deeper-surface intents
-typed source drill-down on demand
-large data bounded/aggregated before React
-same canonical reality reused across Worlds
-future persisted stable config needs revision/version/migration/concurrency
-```
-
-Specialist renderer only when generic primitives materially damage semantics/interaction.
-
-Travel remains a possible specialist candidate only when integrated time/place/transport/booking/participation interaction earns it.
-
----
-
-# 15. Existing executable Workspace Platform
+# 12. Existing executable Workspace Platform
 
 Engineering closure:
 
@@ -568,32 +431,28 @@ HEAD 6c441335a75bb913af8da1eda569d8094d38a539
 CI   33549465793 PASS
 ```
 
-Mechanics:
+Mechanics include:
 
 ```text
 stable/adaptive/ephemeral
 origin system-default/user/dante-proposed/application-derived
 lead/primary/supporting
 wide/standard/compact
-12-unit logical composition planner
-finite module registry
-finite surface registry
+12-unit planner
+finite module/surface registries
 transient workspace reducer
-singular bounded selection/context reference today
+singular bounded selection/context ref today
 interaction generation
 open/replace/promote/close surfaces
 Escape ownership
 blocking-tail barrier
 expectedGeneration stale-intent guard
-mainAllocation full/split
-topLayer none/overlay/focus
-interaction interactive/inert
-sidecar/overlay/focus/dormant/external slots
+full/split allocation
+overlay/focus
+interactive/inert
+sidecar/overlay/focus/dormant/external
 ResizeObserver allocation
-nested world-focus-main container ownership
-wide sidecar real-width allocation
-narrow sidecar workspace-local overlay degradation
-modal/full-focus inert behavior
+nested main container query
 local failure isolation
 ```
 
@@ -604,264 +463,146 @@ Stress evidence:
 500 deterministic allocation/surface-stack scenarios
 ```
 
-Important limitation:
-
-The current executable interaction cursor is singular. WS1–WS5 found that real comparison/deictic cases require future bounded primary + supporting refs. Do not claim this is already implemented.
-
-The platform owns allocation inside the rectangular workspace; route-owned full-width DANTE materialization remains future D2/M4 work.
+Do not report later analytical hardenings as implemented runtime.
 
 ---
 
-# 16. D0 / D1
+# 13. D0 / D1
 
-## D0 — ACCEPTED
-
-External product research synthesized:
+D0 accepted:
 
 > **AI availability is persistent; AI footprint is not.**
 
 Accepted ladder:
 
 ```text
-P0 quiet World + small invoke
-P1 compact transient non-modal composer
-ongoing + wide -> internal sidecar
-ongoing + constrained/mobile -> route-owned focus overlay below Topbar
-wide deep work -> explicit maximize
-restore -> same logical conversation
-explicit contextual use -> bounded context reference
+quiet invoke
+compact non-modal composer
+wide ongoing sidecar
+constrained/mobile route-owned focus overlay
+explicit maximize/restore
+explicit contextual invocation
 ```
 
-Rejected universal models:
-
-```text
-always-open chatbot column
-support-widget-only model
-focus-overlay-only model
-Home AI copied into World
-fixed pane at every width
-mobile conversation trapped in narrow World workspace
-AI prose first-open
-random prompt suggestions
-```
-
-## D1 — CLOSED FOR SEQUENCING
+D1:
 
 ```text
 HEAD f17291de32e6bdced20536807b32928ec1be6aea
 CI   33552437179 PASS
+status CLOSED FOR SEQUENCING
 ```
 
-Implemented:
+Global invoke remains `contextReference: null`; selected UI does not leak implicitly into DANTE context.
 
-```text
-quiet invoke
->=44px target
-no auto-open
-registered dante-composer
-peek + popover + user origin
-non-modal semantics
-World remains interactive
-textarea focus
-close/Escape focus restoration
-truthful unavailable/pre-backend failure
-draft preservation
-no fake assistant/model/tool/effect
-IT/EN
-390px containment
-axe wide/compact
-```
-
-Critical:
-
-```text
-global invoke -> contextReference: null
-```
-
-Current selection is not silently inherited.
-
-D1 exposed and fixed a generic popover pointer interaction bug. Manual assistant visual review was not performed; user delegated sequencing closure on strong automated/browser evidence. Do not rewrite that history.
+D2–D6 remain later M4 work.
 
 ---
 
-# 17. WS0 — Substrate Inventory
+# 14. WS0 / WS1–WS5 evidence
 
-WS0 closed the truthful baseline:
-
-```text
-composition/workspace/surface mechanics = substantially executable
-real application/work-semantic breadth  = partial
-broad work-pattern knowledge            = research-evidenced
-universal work primitive vocabulary     = not closed
-whole-corpus executable oracle          = missing
-```
-
-Authority:
+WS0 baseline:
 
 `world-focus-ws0-substrate-inventory.md`
 
----
-
-# 18. WS1–WS5 Convergence Loop — CLOSED AS ONE MACRO-BLOCK
-
-Authorities:
+Cycle-A evidence:
 
 ```text
 world-focus-substrate-convergence-corpus.md
 world-focus-substrate-convergence-review.md
 ```
 
-The user explicitly required WS1–WS5 to be one indivisible block to avoid endless phase-by-phase churn.
+Independent confirmation:
 
-Execution shape:
+`world-focus-substrate-independent-confirmation.md`
 
-```text
-simulation corpus
-+ without/with DANTE stress
-+ adversarial/edge stress
-+ targeted reverse engineering
-+ gap closure
--> repeat until converged
-```
-
-Evidence:
+Correct status:
 
 ```text
-44 primary scenarios
-16 adversarial cross-product mutations
-first confirmation discovers CG-32 revocation/disclosure gap
-44 primary scenarios re-evaluated after hardening
-20 additional alien confirmation cases
-32 concern/closure records
-final new material classes = 0
+Cycle A discovers CG-32
+Cycle A rerun = regression evidence
+Cycle B discovers CG-33..CG-36
+Cycle C = independent metamorphic clean confirmation
+WS1–WS5 = ANALYTICALLY CLOSED
 ```
-
-This is analytical closure, not executable WS7 proof.
 
 ---
 
-# 19. Main convergence result — layered substrate
-
-Do not turn all recurring needs into one work-primitive taxonomy.
+# 15. Hardened L0–L8 substrate
 
 ```text
-L0 higher authorities
-   Domain / Logical / Physical / AuthZ
+L0 Higher authority
+   Domain / Logical / Physical / AuthZ / governed application truth
 
-L1 work-semantic projections
-   WS6 closes the finite vocabulary
+L1 Work-semantic projections
+   WS6 closes the finite universal vocabulary
 
-L2 evidence / basis envelope
-   source / provenance / basis / freshness / coverage / unresolved
+L2 Evidence / basis
+   source/provenance/material basis
+   freshness/coverage/unresolved
+   optional integrity/attestation
+   validity/supersession/correction/retraction
 
-L3 coordination / disclosure envelope
-   participant state / responsibility / acknowledgement / private overlay
+L3 Coordination / disclosure
+   participant/responsibility/acknowledgement
+   selective disclosure/private overlay
+   scoped approval/consent/binding applicability
 
-L4 interaction / cursor state
+L4 Interaction / cursor
    World / generation / primary ref / bounded supporting refs / surface
 
-L5 composition configuration
-   stable/adaptive/ephemeral + personal/shared explicit configuration
+L5 Composition config
+   stable/adaptive/ephemeral
+   favorite / saved view/query / personal/shared config
+   revision/version/migration/concurrency
 
-L6 operation / effect presentation grammar
-   proposal / confirmation / pending / ambiguity / reconciliation / receipt
+L6 Operation/effect presentation
+   Proposal / confirmation / dispatch / pending / ambiguity
+   cancel-before-effect / partial effect / reverse/refund/release
+   compensation/repair / reconciliation / receipt
 
-L7 renderer / specialist extension
-   finite code-shipped catalog + truthful fallback
+L7 Renderer/specialist extension
+   finite trusted catalog + truthful fallback
 
-L8 platform / user policies
-   scale / offline / sync / a11y / notifications / performance / responsive
+L8 Platform/user policy
+   scale / offline/replay / a11y / notifications / performance / responsive
 ```
 
-DANTE consumes, but does not own, these layers.
+DANTE consumes these layers. DANTE does not own them.
 
 ---
 
-# 20. WS1–WS5 hardenings that must survive WS6
-
-## 20.1 Evidence/basis
-
-Important outputs may need source/evidence refs, material/basis ref, as-of/freshness, coverage/missingness and conflict/unresolved semantics.
-
-Resource lifecycle status does not replace evidence basis.
-
-## 20.2 Attention
+# 16. CG-32..CG-36 that must not be lost
 
 ```text
-read/clear/dismiss/snooze/ack
-!= underlying matter resolved
+CG-32 revocation/disclosure invalidation
+CG-33 revision/basis-scoped approval/consent/binding validity
+CG-34 evidence integrity/attestation != provenance/freshness
+CG-35 cancel != reversal/refund/compensation
+CG-36 basis validity/supersession/retraction != freshness
 ```
 
-## 20.3 Decision preparation
-
-Alternatives/constraints/trade-offs/evidence can be reusable work semantics without being the Domain Decision itself.
-
-## 20.4 Resource/capacity
-
-Keep requirement, availability, candidate, request/reservation/allocation intent, acceptance/binding and Actual use distinct.
-
-## 20.5 Coordination/disclosure
-
-Keep participant response, responsibility, assignment, acknowledgement, acceptance, Actual participation and private/shared information boundaries distinct.
-
-## 20.6 Configuration/pinning
+Important consequences:
 
 ```text
-personal favorite/shortcut
-!= pinned/stable composition
-!= saved typed query/view
-!= shared config
-!= source data
+previous authorization != perpetual authorization
+old approval != approval of materially changed subject
+fresh copy != valid current basis if source was retracted
+pinned output != immune from basis invalidation
+Cancel UI != historical effect erased
+idempotent retry != compensation
+integrity unknown != corrupted
 ```
-
-Persistent/shared configuration later needs ownership/audience + revision/version/migration/concurrency.
-
-## 20.7 Effect presentation
-
-Proposal/confirmation/request/pending/external ACK/ambiguity/reconciliation/completion cannot collapse.
-
-## 20.8 Specialist fallback
-
-Generic fallback is valid only when semantics and required interaction remain truthful. Missing essential specialist capability degrades safely rather than lying.
-
-## 20.9 Conflicting claims
-
-Keep incompatible claims/evidence unresolved if necessary. No LWW/provider-wins/AI-wins.
-
-## 20.10 Multiple explicit interaction refs
-
-Future cursor direction:
-
-```text
-primaryReference
-+ bounded ordered supportingReferences
-```
-
-Primary owns deictic “this”. Supporting refs do not widen authorization and do not become payload bags.
-
-## 20.11 Revocation/disclosure invalidation
-
-This was the material gap that forced the loop restart.
-
-```text
-previous authorization
-!= perpetual authorization
-mounted/cached ref
-!= continued eligibility
-```
-
-Authoritative app/context layer revalidates; revoked reference/result becomes unusable/redacted. Workspace generation is not AuthZ version.
 
 ---
 
-# 21. Explicit non-universalizations
+# 17. Explicit non-universalizations
 
-Do not resurrect:
+Never resurrect as generic L1 primitives solely for convenience:
 
 ```text
-TemporaryMode universal lifecycle
-offline/sync work primitive
-universal World Lens/filter
+TemporaryMode
+offline/sync
+universal World Lens
 large-data semantic primitive
 a11y/low-attention semantic object
 WorldItem
@@ -872,17 +613,17 @@ generic Relationship/Edge
 universal Register root
 ```
 
-Real problems remain handled by the correct layer rather than deleted.
+A real need must live in the correct layer rather than disappear.
 
 ---
 
-# 22. WS6 — CURRENT NEXT GATE
+# 18. WS6 — CURRENT NEXT GATE
 
 Question:
 
-> **What is the smallest finite work-semantic vocabulary that expresses the converged corpus without duplicating Domain semantics or creating a generic escape hatch?**
+> **What is the smallest finite L1 work-semantic vocabulary that expresses Cycle A/B/C without duplicating Domain semantics or absorbing L2–L8 into a giant escape hatch?**
 
-Candidate pressure clusters, not final decisions:
+Candidate pressure clusters:
 
 ```text
 attention / unresolved work
@@ -895,74 +636,63 @@ pipeline/stage
 capture/review
 ```
 
-Every candidate must be classified as:
+Classification options:
 
 ```text
-universal work primitive
-composition of smaller primitives
-existing Domain projection pattern
-interaction/configuration pattern
-specialist extension
-rejected universalization
+UNIVERSAL WORK PRIMITIVE
+COMPOSITION OF SMALLER PRIMITIVES
+EXISTING DOMAIN PROJECTION PATTERN
+EVIDENCE / COORDINATION ENVELOPE
+INTERACTION / CONFIGURATION PATTERN
+EFFECT PRESENTATION PATTERN
+SPECIALIST EXTENSION
+PLATFORM POLICY
+REJECTED UNIVERSALIZATION
 ```
 
-WS6 should use deletion/merge pressure aggressively: if a candidate can be removed or composed without material loss across the corpus, do not keep it as a primitive.
+Deletion/merge pressure is mandatory. A candidate that can disappear without material loss must not survive as a primitive.
 
-WS6 is non-visual and must not start D2/UI materialization.
-
----
-
-# 23. WS7 / WS8
-
-## WS7
-
-Build deterministic non-visual executable oracle over WS6 contracts.
-
-Must exercise primitive applicability, absence/unresolved state, evidence basis, composition, primary/supporting refs, revocation seam, surface intent/blocking, responsive allocation, DANTE context-ref eligibility, late-result rejection, cross-World reuse and specialist fallback.
-
-## WS8
-
-Run full hostile corpus against executable substrate.
-
-No ceremonial PASS. Any material gap returns to earliest necessary phase.
+WS6 is non-visual. Do not start D2/UI materialization.
 
 ---
 
-# 24. Materialization M0–M7
+# 19. WS7 / WS8
 
-Only after WS8:
+WS7 creates the deterministic executable oracle.
+
+It must now include tests for CG-33..CG-36 in addition to earlier basis/cursor/revocation/composition/allocation cases.
+
+WS8 runs final hostile falsification against the executable substrate.
+
+No ceremonial PASS.
+
+---
+
+# 20. Materialization after WS8
 
 ```text
 M0 Materialization Mapping / Scope Freeze
 M1 Core Non-Visual Production Materialization
 M2 Shared Visual Primitive Layer
-M3 Adaptive World Composition Materialization
-M4 Contextual DANTE Materialization
+M3 Adaptive World Composition
+M4 Contextual DANTE
 M5 Contrasting Complete Worlds
 M6 Integrated Product / Visual / Accessibility Review
 M7 Pre-Backend Frontend Freeze / Handoff
 ```
 
-M4 preserves D0/D1 and resumes:
-
-```text
-D2 adaptive ongoing conversation surface
-D3 deterministic pre-backend conversation adapter
-D4 explicit contextual/deictic invocation
-D5 Insight
-D6 Proposal/confirmation/receipt
-```
+M4 preserves D0/D1 then resumes D2–D6.
 
 M6 subsumes old D7 integrated review.
 
 ---
 
-# 25. Backend / Intelligence stop line
+# 21. Backend / Intelligence stop line
 
 Before explicit backend vertical:
 
 ```text
-NO real World business API
+NO real World API
 NO World persistence/Alembic
 NO provider runtime
 NO model routing/streaming
@@ -970,16 +700,13 @@ NO canonical chat persistence
 NO durable Run/Task backend
 NO real tool/effect execution
 NO fake success
-NO provider acknowledgement treated as canonical completion
 ```
-
-AI/context/runtime representation remains distinct from canonical truth.
 
 No second canonical AI memory.
 
 ---
 
-# 26. Operational repository rules
+# 22. Repository rules
 
 Authority order:
 
@@ -992,9 +719,7 @@ Authority order:
 6 conversation
 ```
 
-`NEW CHAT != NEW BRANCH`.
-
-For each remote write:
+For every remote write:
 
 ```text
 BRANCH
@@ -1006,36 +731,21 @@ PURPOSE
 EXPLICITLY OUT OF SCOPE
 ```
 
-Immediately before first write refetch active branch. If HEAD differs, stop/inspect/re-gate.
-
-No merge/rebase/force/history rewrite/main mutation without explicit authorization.
-
-No guessed status. Documentation is implementation.
+Immediately before first branch-visible write, refetch HEAD. No merge/rebase/force/main mutation without explicit authorization.
 
 Do not weaken TypeScript/lint/a11y/E2E gates.
 
 ---
 
-# 27. Current branch/global DB caution
+# 23. Read / continuation rule
 
-Home is a bounded frontend branch and may not contain latest protected-main PostgreSQL state.
-
-Do not randomly merge/rebase main into Home.
-
-If WS6 requires current global semantic/DB truth, read protected main at that time.
-
-Before final integration, Home must reconcile against then-current main and branch-up-to-date policy.
-
----
-
-# 28. Documentation reading rule
-
-Current authority/evidence order:
+Current read order:
 
 ```text
 world-focus-current-checkpoint.md
 world-focus-substrate-closure-plan.md
 world-focus-ws0-substrate-inventory.md
+world-focus-substrate-independent-confirmation.md
 world-focus-substrate-convergence-review.md
 world-focus-substrate-convergence-corpus.md
 world-focus-frontend-roadmap.md
@@ -1048,20 +758,8 @@ world-focus-delivery-methodology.md
 world-focus-evidence-index.md
 ```
 
-Old research status lines are historical unless explicitly marked current disposition.
-
----
-
-# 29. Immediate instruction to next chat
-
-Do not restart broad World simulations.
-
-Do not implement D2.
-
-Do not build beautiful cards/renderers yet.
-
-Do not turn old discovery nouns into primitives automatically.
+Do not restart Cycle A as the confirmation strategy.
 
 Resume at:
 
-> **WS6 — Universal Work Primitive Closure. Use the converged 44-scenario corpus + 32 concern decisions, aggressively merge/delete candidate primitives, and stop only when the finite vocabulary has no generic escape hatch or semantic overlap.**
+> **WS6 — Universal Work Primitive Closure using the complete Cycle A + independent Cycle B + metamorphic Cycle C evidence.**
