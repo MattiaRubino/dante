@@ -117,7 +117,7 @@ beforeAll(async () => {
 });
 
 beforeEach(() => {
-  vi.resetAllMocks();
+  vi.clearAllMocks();
 
   establishPasswordMutation = mutationMock();
   removePasswordMutation = mutationMock();
