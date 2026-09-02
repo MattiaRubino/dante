@@ -6,8 +6,8 @@
 - **Architecture authority:** `../architecture/dante-ai-implementation-baseline-final.md`
 - **Post-AI05 acceptance:** `../architecture/dante-ai-post05-final-mega-acceptance.md`
 - **Current implementation step:** I0 — repository/application ownership + architecture-test skeleton
-- **Current code checkpoint:** `a6e769c8f79beea6dd531beb899b44cffb699da5`
-- **Implementation claim:** C1 architecture-boundary checks materialized; I0 NOT CLOSED until repository gates execute cleanly
+- **Current code checkpoint:** `3019b9a97650c50bcc04d33769e79a7d0c75d28e`
+- **Implementation claim:** C1 architecture-boundary checks materialized and hardened; I0 NOT CLOSED until repository gates execute cleanly
 - **Provider/model/SDK:** OPEN / EVIDENCE-DRIVEN
 - **Database/Alembic change:** NONE
 - **Production activation:** NONE
@@ -16,9 +16,9 @@ Repository truth and executable tests outrank this workstream record.
 
 ## 1. Purpose
 
-This workstream turns the accepted DANTE Intelligence architecture into production code without weakening the Product/Domain/Logical/Physical/PostgreSQL or AI-02..AI-05 contracts.
+This workstream turns the accepted DANTE Intelligence architecture into production code without weakening Product/Domain/Logical/Physical/PostgreSQL or AI-02..AI-05 contracts.
 
-The current implementation order is governed by the final baseline. This file records only present implementation state and the next executable gate; it is not a second architecture specification.
+The final implementation baseline owns architecture. This file records only current implementation state and the next executable gate.
 
 ## 2. Current phase — I0
 
@@ -30,41 +30,54 @@ Current materialization:
 apps/backend/tests/unit/test_architecture_boundaries.py
 ```
 
-The test currently enforces:
+The checker currently enforces:
 
 ```text
-runtime dependency set remains at the accepted pre-provider baseline
-Search cannot import Intelligence
-Intelligence can consume Search only through Search public/contracts surfaces
+runtime dependencies remain at the accepted pre-provider baseline
+Search cannot directly import Intelligence
+Search cannot reach Intelligence through an indirect internal dependency path
+Intelligence can directly consume Search only through Search public/contracts surfaces
+Intelligence cannot indirectly reach private Search implementation
 Intelligence cannot import SQLAlchemy or dante.platform.database
 Search DB/SQLAlchemy access is restricted to its outbound persistence adapter namespace
 FastAPI is restricted to inbound adapters inside Search/Intelligence
 production capability modules cannot import eval tooling
-forbidden universal AI abstractions such as EntityRef / Repository / UnitOfWork / entity_id are rejected
+forbidden universal AI abstractions EntityRef / Repository / UnitOfWork / entity_id are rejected
 ```
 
-The checker uses only Python stdlib `ast` + `tomllib`, caches source parsing for the test process and adds zero production-runtime overhead.
-
-No empty `modules/search` or `modules/intelligence` package was created at I0. Those paths materialize only when I1/I2 add real implementation content.
-
-## 3. Why no architecture-test framework yet
-
-Current 2026 tooling such as Import Linter can enforce forbidden/protected/layer/independence contracts and supports Python 3.14. I0 deliberately does not add it yet because the accepted boundaries can currently be enforced with a small deterministic stdlib checker and no new dependency.
-
-Reconsider a dedicated dependency-graph tool when one of these becomes true:
+Implementation properties:
 
 ```text
-indirect dependency paths become materially difficult to review
-module graph size makes the stdlib checker hard to maintain
+Python stdlib only: ast + tomllib
+no production dependency
+no dev dependency
+no runtime code path
+source AST parsed once per test process via functools.cache
+internal DANTE import graph resolved from actual source modules
+relative and absolute imports normalized
+indirect-path failures report the dependency path
+```
+
+No empty `modules/search` or `modules/intelligence` package is created at I0. Those paths materialize only when I1/I2 add real implementation content.
+
+## 3. Architecture-testing technology posture
+
+Current 2026 tooling such as Import Linter can enforce forbidden/protected/layer/independence contracts and supports Python 3.14. DANTE does not add it at I0 because the accepted rules are currently small enough to enforce with a deterministic stdlib checker and no additional supply-chain surface.
+
+Re-evaluate a dedicated dependency-graph tool when:
+
+```text
+module-graph scale makes the checker materially harder to maintain
 cycle/layer diagnostics need richer graph reporting
-custom boundary logic becomes larger than the dependency it avoids
+additional contracts make custom code larger or riskier than the dependency
+benchmarking shows a dedicated tool is more reliable at acceptable CI cost
 ```
 
 Adoption remains evidence-driven rather than stylistic.
 
 ## 4. I0 validation gate
 
-I0 may be marked PASS only after the real branch/worktree executes the normal backend gates against the materialized commit.
+I0 may be marked PASS only after the real branch/worktree executes the normal backend gates against the current code checkpoint.
 
 Required fast gate:
 
@@ -80,21 +93,24 @@ uv run --locked pytest -m "not postgres"
 uv build
 ```
 
-The repository-wide backend contract also retains the real PostgreSQL acceptance suite. Because I0 changes no DB/runtime behavior, no special AI database fixture is introduced; existing PostgreSQL gates must remain green before broader integration.
+The normal repository backend contract also retains the real PostgreSQL acceptance suite. I0 introduces no AI database fixture and no DB/Alembic change.
 
 ## 5. Current evidence
 
 Completed:
 
 ```text
-branch write gate verified at 5e2c67559670b2bc5780fbcdb3c1aae90975e5ca
-C1 commit created at a6e769c8f79beea6dd531beb899b44cffb699da5
+implementation-entry write gate verified at 5e2c67559670b2bc5780fbcdb3c1aae90975e5ca
+initial C1 architecture test commit a6e769c8f79beea6dd531beb899b44cffb699da5
+transitive dependency-graph hardening commit 3019b9a97650c50bcc04d33769e79a7d0c75d28e
 readback exact
-PRE-SCOPE..HEAD diff = one added architecture-test file only
 checker syntax compiled independently
-synthetic negative cases confirmed for:
+synthetic positive baseline PASS
+synthetic negative cases caught:
   Search -> Intelligence relative import
-  Intelligence -> private Search import
+  Search -> bridge -> Intelligence indirect path
+  Intelligence -> private Search direct import
+  Intelligence -> bridge -> private Search indirect path
   Intelligence -> SQLAlchemy
   Search application -> DB runtime
   FastAPI inside Intelligence core
@@ -113,34 +129,33 @@ PostgreSQL suite PASS at this checkpoint
 I0 CLOSED
 ```
 
-No GitHub Actions run is attached to the C1 commit because the existing workflow triggers on protected-main push, pull request to main, or manual dispatch rather than ordinary feature-branch push.
+No GitHub Actions run is attached because the existing workflow triggers on protected-main push, pull request to main or manual dispatch, not an ordinary feature-branch push.
 
-## 6. Quality posture
+## 6. Engineering quality posture
 
-Implementation must optimize for:
+Implementation optimizes for:
 
 ```text
 correctness before convenience
 explicit ownership before abstraction
 fail-closed authority/security boundaries
 bounded deterministic behavior before provider/model dependence
-minimal dependency surface
-strict typing
-small public APIs
+minimal dependency and supply-chain surface
+strict typing and small public APIs
 immutable/value-oriented contracts where appropriate
 no hidden global mutable state
-no request-path blocking I/O disguised as async
-bounded time/deadline/cancellation behavior
-observability without turning telemetry into audit/canonical truth
-performance measured at material boundaries rather than micro-optimized by guess
+no blocking request-path I/O disguised as async
+bounded deadlines/cancellation/retry behavior
+telemetry != audit != canonical truth
+performance measured at material boundaries rather than guessed micro-optimization
 ```
 
-FastAPI process-scoped resources continue to use the existing `lifespan` ownership model. Existing PostgreSQL runtime/pool behavior is not changed by I0.
+FastAPI process-scoped resources continue to use the existing `lifespan` model. Existing PostgreSQL runtime/pool behavior is unchanged by I0.
 
 ## 7. Next step
 
 ```text
-FIRST: close I0 only after the real backend gate passes
+FIRST: execute and close the real I0 backend gate
 THEN: I1 — Search public contracts / eligibility / family registry / deterministic shell
 ```
 
