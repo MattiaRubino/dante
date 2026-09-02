@@ -53,7 +53,10 @@ function SurfaceHarness({
             depth: 'insight',
             presentation: 'sidecar',
             origin: 'dante',
-            expectedGeneration: workspace.state.generation,
+            expectedWorkspace: {
+              worldId: workspace.state.worldId,
+              generation: workspace.state.generation,
+            },
           })
         }
       >
