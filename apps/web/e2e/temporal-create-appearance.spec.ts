@@ -79,21 +79,28 @@ test('item appearance inherits Context by default and an override remains presen
   await expect(card).toHaveAttribute('data-timeline-tone', 'urgent');
   await expect(card).toContainText('Focus / lavoro profondo');
 
+  const resetGroupsFocus = page.getByRole('button', {
+    name: 'Ripristina gruppi e focus',
+  });
   const urgentContext = page.locator(
     '.dante-timeline-group-chip[data-group-id="urgenze"]',
   );
   await urgentContext.click();
+  await expect(urgentContext).toHaveAttribute('aria-pressed', 'true');
   await expect(card).toHaveCount(0);
-  await urgentContext.click();
+  await resetGroupsFocus.click();
+  await expect(urgentContext).toHaveAttribute('aria-pressed', 'false');
   await expect(card).toBeVisible();
 
   const focusContext = page.locator(
     '.dante-timeline-group-chip[data-group-id="focus"]',
   );
   await focusContext.click();
+  await expect(focusContext).toHaveAttribute('aria-pressed', 'true');
   await expect(card).toBeVisible();
   await expect(card).toHaveAttribute('data-timeline-tone', 'urgent');
-  await focusContext.click();
+  await resetGroupsFocus.click();
+  await expect(focusContext).toHaveAttribute('aria-pressed', 'false');
 
   const toast = page.locator('.temporal-create-toast.is-on');
   await expect(toast).toContainText('Deep work override');
