@@ -1,6 +1,7 @@
 const GOOGLE_IDENTITY_SCRIPT_ID = 'dante-google-identity-services';
 const GOOGLE_IDENTITY_SCRIPT_SRC = 'https://accounts.google.com/gsi/client';
 const APPLE_AUTHORIZATION_HOST = 'appleid.apple.com';
+const ENABLED_BUILD_VALUES = new Set(['1', 'true', 'yes', 'on']);
 
 type GoogleCredentialResponse = Readonly<{
   credential?: string;
@@ -52,6 +53,13 @@ export class ProviderBrowserUnavailableError extends Error {
     super(message);
     this.name = 'ProviderBrowserUnavailableError';
   }
+}
+
+function buildFlagEnabled(value: unknown): boolean {
+  return (
+    typeof value === 'string' &&
+    ENABLED_BUILD_VALUES.has(value.trim().toLowerCase())
+  );
 }
 
 function googleAccountsId(): GoogleAccountsId | null {
@@ -137,6 +145,18 @@ export function loadGoogleIdentityServices(): Promise<GoogleAccountsId> {
 export function googleClientIdFromBuild(): string {
   const value: unknown = import.meta.env.VITE_DANTE_GOOGLE_CLIENT_ID;
   return typeof value === 'string' ? value.trim() : '';
+}
+
+export function googleAuthenticationEnabledFromBuild(): boolean {
+  return googleClientIdFromBuild().length > 0;
+}
+
+export function appleAuthenticationEnabledFromBuild(): boolean {
+  return buildFlagEnabled(import.meta.env.VITE_DANTE_APPLE_ENABLED);
+}
+
+export function passkeyAuthenticationEnabledFromBuild(): boolean {
+  return buildFlagEnabled(import.meta.env.VITE_DANTE_PASSKEY_ENABLED);
 }
 
 export async function renderGoogleIdentityButton({
