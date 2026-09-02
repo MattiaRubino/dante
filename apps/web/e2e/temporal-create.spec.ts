@@ -223,7 +223,9 @@ test('Event recurrence exposes CP6 families, precise calendar/quota/cycle semant
   await expect(frequency.locator('option')).toHaveCount(5);
   await frequency.selectOption('monthly-ordinal');
   await dialog.getByLabel('Posizione nel mese').selectOption('-1');
-  await dialog.getByLabel('Giorno della settimana').selectOption('FR');
+  await dialog
+    .getByLabel('Giorno della settimana · Mensile · giorno della settimana')
+    .selectOption('FR');
   await frequency.selectOption('yearly');
   await expect(dialog).toContainText('resta l’ancora civile del pattern');
 
