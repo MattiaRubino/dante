@@ -1,6 +1,6 @@
 # DANTE — World Focus Current Checkpoint
 
-**Status:** CURRENT LIVE WORLD FOCUS CHECKPOINT — WS7 CLOSED / WS8 NEXT  
+**Status:** CURRENT LIVE WORLD FOCUS CHECKPOINT — WS0–WS8 CLOSED / M0 NEXT  
 **Date:** 2026-09-02  
 **Branch:** `feature/home-react`  
 **Worktree:** `/home/mattia/projects/dante-frontend`
@@ -12,15 +12,16 @@ This is the first document a new chat/agent must read when continuing World Focu
 ```text
 1. world-focus-current-checkpoint.md
 2. world-focus-substrate-closure-plan.md
-3. world-focus-ws7-executable-harness-review.md
-4. world-focus-ws6-universal-work-primitives.md
-5. world-focus-ws6-primitive-pressure-matrix.md
-6. world-focus-substrate-final-convergence-proof.md
-7. world-focus-substrate-combinatorial-evidence.md
-8. world-focus-handoff.md
-9. world-focus-frontend-roadmap.md
-10. product/platform/structure/geometry contracts as needed
-11. older WS0 / Cycle A/B/C evidence only for historical detail
+3. world-focus-ws8-final-falsification-review.md
+4. world-focus-ws7-executable-harness-review.md
+5. world-focus-ws6-universal-work-primitives.md
+6. world-focus-ws6-primitive-pressure-matrix.md
+7. world-focus-substrate-final-convergence-proof.md
+8. world-focus-substrate-combinatorial-evidence.md
+9. world-focus-handoff.md
+10. world-focus-frontend-roadmap.md
+11. product/platform/structure/geometry contracts as needed
+12. older WS0 / Cycle A/B/C evidence only for historical detail
 ```
 
 Historical `current/next gate` wording never overrides this checkpoint.
@@ -46,9 +47,10 @@ WS0 Substrate Inventory                CLOSED
 WS1–WS5 Convergence Loop               MAXIMAL PRACTICAL ANALYTICAL CLOSURE
 WS6 Universal Work Primitive Closure   CLOSED
 WS7 Executable Non-Visual Harness      CLOSED
-WS8 Final Falsification                NEXT ACTIVE GATE
+WS8 Final Falsification                CLOSED
 
-M0–M7 Materialization                  BLOCKED UNTIL WS8 CLOSES
+M0 Materialization Mapping             NEXT ACTIVE GATE — NOT STARTED
+M1–M7 Materialization                  BLOCKED UNTIL M0 SCOPE FREEZE
 D2–D6                                  PRESERVED / MATERIALIZATION-DEFERRED
 assistant manual visual review          NOT PERFORMED
 ```
@@ -57,7 +59,94 @@ No backend/API/database/provider/real-LLM/effect implementation is active in thi
 
 ---
 
-# 2. WS7 validated executable evidence
+# 2. WS8 validated final falsification evidence
+
+Closure authority:
+
+`world-focus-ws8-final-falsification-review.md`
+
+Validated proof/runtime HEAD:
+
+```text
+88db899391a3a41e23e76177d4896a657232b5eb
+```
+
+Frontend CI:
+
+```text
+33639741630 — PASS — attempt 1
+```
+
+All required jobs passed on that SHA:
+
+```text
+Quality
+Web E2E Chromium
+frozen Timeline Firefox contract
+Mobile Bundle
+Frontend CI Gate
+```
+
+Quality includes contract drift, active Home formatting, lint, typecheck, architecture, generated drift, unit tests, production build, diff and repository-mutation checks.
+
+WS8 did not merely rerun WS7. It added stateful hostile scenarios, mutation-kill pressure and an independent post-hardening confirmation pass.
+
+Material finding:
+
+```text
+CG-40 proof gap:
+the resolver correctly rejected saved/derived reuse after invalidation,
+but the auditor could fail to kill a falsified outcome that re-enabled reuse.
+```
+
+The auditor was hardened so saved/derived reuse is impossible when any of the following is invalid:
+
+```text
+basis freshness/currentness
+disclosure / recipient-purpose permission
+identity stability
+shared configuration conflict state
+```
+
+The adversarial test remained unchanged and subsequently killed the mutant family.
+
+Post-hardening confirmation then re-ran the frozen 224 vectors through independent metamorphic transformations covering:
+
+```text
+without-DANTE invariance
+responsive/a11y presentation-only variation
+unknown future Worlds
+wrong-World expectation
+independent basis/disclosure/identity/config invalidation
+positive saved-result reuse implications
+```
+
+No new L1 primitive, ownership layer, generic escape hatch, page-per-World requirement or backend authority was required.
+
+A recurring Access keyboard E2E flake was also removed with a test-only readiness guard before the first Tab. Production Access behavior and tab order were not changed; the final CI then passed completely on attempt 1.
+
+WS8 closure matrix:
+
+```text
+unresolved material substrate gap       0
+new work primitive                      0
+new ownership layer                     0
+generic semantic escape hatch           0
+page-per-World architecture requirement 0
+AI-only basic-usefulness path           0
+Domain/Logical/Physical contradiction   0
+privacy/non-interference contradiction  0
+state/race redesign required            0
+responsive semantic redesign required   0
+new consequential-effect owner          0
+surviving mutation                      0
+```
+
+The later docs-only synchronization HEAD is documentation state, not a replacement for the validated proof/runtime HEAD above.
+
+---
+
+# 3. WS7 validated executable evidence retained
 
 Closure authority:
 
@@ -76,19 +165,7 @@ Frontend CI:
 33633635890 — PASS — attempt 1
 ```
 
-All required jobs passed:
-
-```text
-Quality
-Web E2E Chromium
-frozen Timeline Firefox contract
-Mobile Bundle
-Frontend CI Gate
-```
-
-Quality includes contract drift, prettier, lint, typecheck, architecture, generated drift, unit tests, production build, diff and mutation checks.
-
-WS7 executable scope:
+Executable scope:
 
 ```text
 WP-01 Continuity
@@ -105,19 +182,19 @@ SHA ca2e8b4aa19285eecd61ac072c0bc9a4f938e7863eea8393d2f2da26827610a0
 SHA d6efbcd0306ee7d37fac0b4cbc59c7af356c8ac8cbf9ee0d08ed8efbc8f5d835
 ```
 
-Final code review hardened three points before closure:
+Final WS7 hardenings remain:
 
 ```text
-1. ambiguous identity cannot attach derived/DANTE output;
-2. DANTE consequential proposal/action retains execution-time revalidation even before an effect occurs;
-3. Trajectory explicitly represents missing positions and aggregation basis.
+ambiguous identity cannot attach derived/DANTE output
+DANTE consequential proposal/action retains execution-time revalidation
+Trajectory explicitly represents missing positions and aggregation basis
 ```
 
-Do not rewrite those as backend/AuthZ/effect implementation. They are executable non-visual proof seams.
+These are executable non-visual proof seams, not real backend/AuthZ/effect implementation.
 
 ---
 
-# 3. Existing bounded engineering evidence retained
+# 4. Existing bounded engineering evidence retained
 
 Workspace Platform:
 
@@ -139,7 +216,7 @@ These bounded historical PASS states remain valid.
 
 ---
 
-# 4. Frozen substrate semantics
+# 5. Frozen substrate semantics
 
 WS6 finite L1 catalog:
 
@@ -188,7 +265,7 @@ No universal Entity/Thing/Relationship/Fact/property-bag escape hatch.
 
 ---
 
-# 5. Critical CG carry-forward
+# 6. Critical CG carry-forward
 
 Final convergence ledger remains `CG-01..CG-40`.
 
@@ -206,11 +283,11 @@ CG-39 redaction/tombstone/reference continuity
 CG-40 recipient/purpose-bound non-interference
 ```
 
-WS7 now provides executable seams/properties for these classes; real authoritative runtime remains later.
+WS7 established executable seams; WS8 falsified and hardened their hostile behavior. Real authoritative runtime remains later.
 
 ---
 
-# 6. Existing Workspace Platform stays intact
+# 7. Existing Workspace Platform stays intact
 
 Preserve rather than rebuild:
 
@@ -219,7 +296,7 @@ stable/adaptive/ephemeral composition
 finite module/surface registries
 12-unit planner
 workspace reducer
-generation + expectedGeneration stale guard
+generation + expected workspace stale guard
 single bounded selection TODAY
 surface open/replace/promote/close
 blocking-tail barrier
@@ -229,16 +306,16 @@ ResizeObserver/container-query ownership
 local failure isolation
 ```
 
-WS7 proves future primary + ordered bounded supporting refs outside the current reducer. It does not force that future production shape prematurely.
+WS7/WS8 prove future primary + ordered bounded supporting refs outside the current reducer. They do not force that future production shape prematurely.
 
 ---
 
-# 7. DANTE status
+# 8. DANTE status
 
 ```text
 D0 spatial/presence direction        ACCEPTED
 D1 quiet invoke/composer             CLOSED FOR SEQUENCING
-D2–D6                                MATERIALIZATION-DEFERRED
+D2–D6                                MATERIALIZATION-DEFERRED TO M4
 ```
 
 D1 global invoke remains `contextReference: null`; no implicit current-selection leakage.
@@ -247,9 +324,9 @@ Future contextual DANTE must consume explicit bounded refs and authoritative min
 
 ---
 
-# 8. Strict reopen rule
+# 9. Strict reopen rule
 
-Do not reopen WS1–WS7 because of a new World name, provider, API, renderer, viewport, model, config store, sync engine or larger dataset.
+Do not reopen WS0–WS8 because of a new World name, provider, API, renderer, viewport, model, config store, sync engine or larger dataset.
 
 Reopen only on concrete evidence that the closed substrate cannot represent a real job without one of:
 
@@ -263,11 +340,11 @@ specialist capability requiring core ownership change
 consequential effect that cannot fit revalidation/reconciliation boundaries
 ```
 
-A real WS8 counterexample may reopen the earliest required phase. Curiosity does not.
+Later materialization evidence may reopen only the earliest phase actually contradicted. Curiosity does not.
 
 ---
 
-# 9. Backend stop line
+# 10. Backend stop line
 
 Before the later explicitly gated backend vertical:
 
@@ -285,12 +362,24 @@ NO provider ACK treated as canonical completion
 
 ---
 
-# 10. CURRENT ACTIVE GATE — WS8
+# 11. CURRENT ACTIVE GATE — M0
 
-> **WS8 — Final Falsification**
+> **M0 — Materialization Mapping / Scope Freeze**
 
-Use the executable WS7 substrate and attempt to break it with the complete hostile evidence, unknown future Worlds, high-risk cross-products, DANTE/no-DANTE paths, multi-actor/privacy pressure, large/dense histories, responsive/a11y variants, specialist failure, late results and consequential operation ambiguity.
+M0 is the next gate but has **not started** in this checkpoint.
 
-WS8 is not broad rediscovery. A failure must identify the concrete violated owner/invariant and return only to the earliest necessary phase.
+Its job is to map each closed invariant/primitive to exactly one materialization disposition:
 
-Do not begin M0–M7 until WS8 genuinely closes.
+```text
+already satisfied by existing production code
+existing code requiring bounded generalization
+missing model/application production code
+missing shared renderer
+specialist extension
+DANTE seam
+backend-deferred seam
+```
+
+M0 must not silently start M1 implementation, D2–D6, backend/API/DB/AuthZ/LLM/effect work or visual polish.
+
+Stop here until M0 is explicitly entered.

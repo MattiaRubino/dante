@@ -1,6 +1,6 @@
 # DANTE — World Focus Research / Review Evidence Index
 
-**Status:** CURRENT EVIDENCE MAP — WS7 CLOSED / WS8 NEXT  
+**Status:** CURRENT EVIDENCE MAP — WS0–WS8 CLOSED / M0 NEXT  
 **Date:** 2026-09-02  
 **Branch:** `feature/home-react`
 
@@ -17,6 +17,7 @@ Rule:
 ```text
 world-focus-current-checkpoint.md
 world-focus-substrate-closure-plan.md
+world-focus-ws8-final-falsification-review.md
 world-focus-ws7-executable-harness-review.md
 world-focus-ws6-universal-work-primitives.md
 world-focus-ws6-primitive-pressure-matrix.md
@@ -195,8 +196,6 @@ All other discovery candidates are classified to Domain, L2–L8, composition/qu
 
 `world-focus-ws7-executable-harness-review.md`
 
-**Current executable closure authority.**
-
 Validated code:
 
 ```text
@@ -232,6 +231,51 @@ Executable coverage confirms the fixed vector hashes and all 4,455 / 2,835 inter
 
 This remains non-visual pre-backend proof, not real AuthZ/provider/effect or human visual acceptance.
 
+## E15 — WS8 final falsification
+
+`world-focus-ws8-final-falsification-review.md`
+
+**Final substrate falsification authority.**
+
+Validated proof/runtime HEAD:
+
+```text
+88db899391a3a41e23e76177d4896a657232b5eb
+```
+
+Frontend CI:
+
+```text
+33639741630 PASS — attempt 1
+```
+
+WS8 added three independent pressure styles:
+
+```text
+stateful hostile scenarios
+mutation-kill against falsified outcomes
+post-hardening metamorphic confirmation
+```
+
+The mutation stage found a real CG-40 proof gap: the resolver rejected invalid saved/derived reuse, but the auditor could fail to kill a falsified outcome that re-enabled reuse after invalidation. The auditor was hardened without weakening the adversarial test.
+
+Reuse now requires:
+
+```text
+current basis
+allowed recipient/purpose disclosure
+stable identity
+no concurrent shared-config conflict
+```
+
+The mutant family was then killed. A separate confirmation pass re-ran all 224 frozen vectors under no-DANTE, responsive/a11y, unknown future World, wrong-World and independent invalidation transformations.
+
+Final WS8 closure matrix is zero across unresolved material gaps, new primitives, new owner layers, generic escape hatches, page-per-World requirements, AI-only paths, Domain/Logical/Physical contradictions, privacy/non-interference contradictions, state/race/responsive redesign classes, new consequential-effect owners and surviving mutants.
+
+A recurring Access keyboard E2E flake was separately stabilized by waiting for the interactive surface before the first Tab. This was a test-readiness change only; production Access behavior and tab order were unchanged. The final CI was fully green on attempt 1.
+
+The later docs-only synchronization commit is not a new proof/runtime evidence point.
+
 ---
 
 # 3. Current layered result
@@ -252,17 +296,17 @@ L8 Platform/User Policy
 
 # 4. Reopen rule
 
-Do not restart WS1–WS7 for a new provider, World noun, UI, renderer, viewport, AI model, config store or larger dataset.
+Do not restart WS0–WS8 for a new provider, World noun, UI, renderer, viewport, AI model, config store or larger dataset.
 
-Reopen only when executable evidence shows a concrete semantic/ownership/state/security/privacy/effect contradiction that cannot fit an existing owner.
+Reopen only when later executable/materialization evidence shows a concrete semantic/ownership/state/security/privacy/effect contradiction that cannot fit an existing owner, and reopen only the earliest necessary phase.
 
 ---
 
 # 5. Current next evidence gate
 
-> **WS8 — Final Falsification**
+> **M0 — Materialization Mapping / Scope Freeze**
 
-WS8 must attack the executable closed substrate with hostile sequences and unknown future cases. It is not permission to start M0 or broad competitor research.
+M0 is next but is not started by this evidence-index synchronization. It must map closed substrate responsibilities to existing code, bounded generalization, missing production model/application code, shared renderers, specialist extensions, DANTE seams and backend-deferred seams before any M1 implementation begins.
 
 ---
 

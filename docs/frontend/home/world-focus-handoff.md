@@ -1,6 +1,6 @@
 # DANTE — World Focus Handoff
 
-**Status:** CURRENT DURABLE HANDOFF — WS7 CLOSED / WS8 NEXT  
+**Status:** CURRENT DURABLE HANDOFF — WS0–WS8 CLOSED / M0 NEXT  
 **Date:** 2026-09-02  
 **Repository:** `MattiaRubino/dante`  
 **Branch:** `feature/home-react`  
@@ -11,14 +11,15 @@ Read in order:
 ```text
 1. world-focus-current-checkpoint.md
 2. world-focus-substrate-closure-plan.md
-3. world-focus-ws7-executable-harness-review.md
-4. world-focus-ws6-universal-work-primitives.md
-5. world-focus-ws6-primitive-pressure-matrix.md
-6. world-focus-substrate-final-convergence-proof.md
-7. world-focus-substrate-combinatorial-evidence.md
-8. world-focus-frontend-roadmap.md
-9. world-focus-evidence-index.md
-10. product/platform/structure/geometry contracts as needed
+3. world-focus-ws8-final-falsification-review.md
+4. world-focus-ws7-executable-harness-review.md
+5. world-focus-ws6-universal-work-primitives.md
+6. world-focus-ws6-primitive-pressure-matrix.md
+7. world-focus-substrate-final-convergence-proof.md
+8. world-focus-substrate-combinatorial-evidence.md
+9. world-focus-frontend-roadmap.md
+10. world-focus-evidence-index.md
+11. product/platform/structure/geometry contracts as needed
 ```
 
 Older current/next-gate prose is phase-time evidence only.
@@ -42,22 +43,25 @@ WS0                                    CLOSED
 WS1–WS5                                MAXIMAL PRACTICAL ANALYTICAL CLOSURE
 WS6                                    CLOSED
 WS7                                    CLOSED
-WS8                                    NEXT ACTIVE GATE
-M0–M7                                  BLOCKED UNTIL WS8
+WS8                                    CLOSED
+M0                                     NEXT ACTIVE GATE — NOT STARTED
+M1–M7                                  BLOCKED UNTIL M0 SCOPE FREEZE
 D2–D6                                  PRESERVED / MATERIALIZATION-DEFERRED
 ```
 
-WS7 validated code:
+Final WS8 validated proof/runtime code:
 
 ```text
-ca89e733893959af7dcc40fd0b8c8ba08e056ba4
+88db899391a3a41e23e76177d4896a657232b5eb
 ```
 
 Frontend CI:
 
 ```text
-33633635890 PASS — attempt 1
+33639741630 PASS — attempt 1
 ```
+
+The later docs-only synchronization commit is documentation state, not a replacement for this validated proof point.
 
 ---
 
@@ -170,6 +174,18 @@ Authority:
 
 `world-focus-ws7-executable-harness-review.md`
 
+Validated code:
+
+```text
+ca89e733893959af7dcc40fd0b8c8ba08e056ba4
+```
+
+Frontend CI:
+
+```text
+33633635890 PASS — attempt 1
+```
+
 Exact vectors:
 
 ```text
@@ -182,30 +198,60 @@ SHA ca2e8b4aa19285eecd61ac072c0bc9a4f938e7863eea8393d2f2da26827610a0
 SHA d6efbcd0306ee7d37fac0b4cbc59c7af356c8ac8cbf9ee0d08ed8efbc8f5d835
 ```
 
-WS7 executable semantics include:
-
-```text
-finite WP catalog
-primitive structural contracts
-Trajectory explicit missingness/aggregation basis
-basis validity/conflict
-revocation/purpose-recipient mismatch
-identity ambiguity/retirement
-config concurrency
-partial/ambiguous effect presentation
-consequential execution-time revalidation
-late DANTE result rejection
-primary + bounded ordered supporting ref proof
-specialist safe failure
-responsive/a11y semantic invariance
-existing planner/reducer/allocation integration
-```
+WS7 executable semantics include finite WP catalog, primitive structural contracts, basis/disclosure/identity/config/effect/DANTE oracle, bounded reference proof, specialist safe failure, responsive/a11y semantic invariance and existing planner/reducer/allocation integration.
 
 The current production workspace reducer remains single-selection. WS7 does not prematurely materialize multi-reference production ownership.
 
 ---
 
-# 7. Existing platform remains valid
+# 7. WS8 final falsification proof
+
+Authority:
+
+`world-focus-ws8-final-falsification-review.md`
+
+WS8 did not simply replay WS7. It used:
+
+```text
+stateful hostile scenario pressure
+mutation-kill against falsified outcomes
+independent post-hardening metamorphic confirmation
+```
+
+It exposed one real proof gap around CG-40 non-interference: after an invalidation, the resolver correctly rejected saved/derived reuse but the auditor could fail to kill a falsified outcome that re-enabled reuse.
+
+The auditor was hardened without changing the adversarial test. Reuse now requires:
+
+```text
+current basis
+allowed disclosure for recipient/purpose
+stable identity
+no concurrent shared-config conflict
+```
+
+The mutation suite then killed the mutant family. The independent confirmation re-ran all 224 frozen vectors under no-DANTE, responsive/a11y, unknown future World, wrong-World and independent invalidation transformations.
+
+Final WS8 result:
+
+```text
+0 unresolved material substrate gaps
+0 new primitives
+0 new ownership layers
+0 generic escape hatch
+0 page-per-World requirement
+0 AI-only basic path
+0 Domain/Logical/Physical contradiction
+0 privacy/non-interference contradiction
+0 state/race/responsive redesign class
+0 new consequential-effect owner
+0 surviving mutation
+```
+
+A recurring Access keyboard E2E flake was stabilized in test readiness only; no production Access behavior or tab order changed. The final full Frontend CI passed on attempt 1.
+
+---
+
+# 8. Existing platform remains valid
 
 Reuse:
 
@@ -214,7 +260,7 @@ stable/adaptive/ephemeral composition
 finite module/surface registries
 12-unit planner
 workspace generation
-expectedGeneration stale guard
+expected workspace stale guard
 surface open/replace/promote/close
 blocking-tail barrier
 full/split allocation
@@ -239,7 +285,7 @@ CI 33552437179 PASS
 
 ---
 
-# 8. DANTE disposition
+# 9. DANTE disposition
 
 D0 accepted:
 
@@ -253,46 +299,20 @@ DANTE is never truth, authorization, mandatory navigation or automatic effect co
 
 ---
 
-# 9. WS8 next
-
-WS8 must falsify the **executable** substrate with hostile sequences/cross-products, including:
+# 10. Materialization sequence
 
 ```text
-unknown future World
-unknown specialist
-without/with DANTE
-sparse/dense/large data
-conflicted/retracted basis
-revocation/redaction/non-interference
-identity ambiguity/retirement
-multi-actor/external participant
-config concurrency
-cross-World source reuse
-late async/World switch
-offline/provider lag
-revision-bound governance
-queued/partial/ambiguous effects
-cancel/reverse/compensate
-recurrence/DST
-mobile/a11y/reduced-motion
+M0 Materialization Mapping / Scope Freeze      NEXT — NOT STARTED
+M1 Core Non-Visual Production Materialization  BLOCKED BY M0
+M2 Shared Visual Primitive Layer               BLOCKED BY M1
+M3 Adaptive World Composition                  BLOCKED BY M2
+M4 Contextual DANTE                            BLOCKED BY M3
+M5 Contrasting Complete Worlds                 BLOCKED BY M4
+M6 Integrated Product / Visual / A11y Review   BLOCKED BY M5
+M7 Pre-Backend Frontend Freeze                 BLOCKED BY M6
 ```
 
-A material failure returns only to the earliest necessary owner. No ceremonial PASS.
-
----
-
-# 10. After WS8
-
-```text
-M0 Materialization Mapping / Scope Freeze
-M1 Core Non-Visual Production Materialization
-M2 Shared Visual Primitive Layer
-M3 Adaptive World Composition
-M4 Contextual DANTE — preserve D0/D1, resume D2–D6
-M5 Contrasting Complete Worlds
-M6 Integrated Product / Visual / Accessibility Review
-M7 Pre-Backend Frontend Freeze
-```
+M0 maps the closed substrate to already-satisfied code, bounded generalizations, missing production model/application code, shared renderers, specialist extensions, DANTE seams and backend-deferred seams. M0 must not silently begin M1 implementation.
 
 ---
 
@@ -312,7 +332,15 @@ NO fake success
 
 ---
 
-# 12. Repository discipline
+# 12. Strict reopen policy
+
+Do not restart WS0–WS8 for a new provider, World noun, UI, renderer, viewport, AI model, config store or larger dataset.
+
+Reopen only when later executable/materialization evidence shows a concrete semantic/ownership/state/security/privacy/effect contradiction that cannot fit an existing owner, and reopen only the earliest necessary phase.
+
+---
+
+# 13. Repository discipline
 
 Authority order:
 
@@ -329,4 +357,4 @@ Every write needs exact branch/PRE-SCOPE/path gate and live HEAD recheck. No mer
 
 Immediate continuation:
 
-> **WS8 only. Do not start M0 until WS8 genuinely closes.**
+> **M0 only. M0 is not started by this handoff synchronization.**
