@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import time
 from dataclasses import dataclass
@@ -15,6 +16,8 @@ import psycopg
 _CONTAINER_PREFIX = "dante-fullstack-"
 _DATABASE_PORT_KEY = "5432/tcp"
 _SMTP_CONTROL_LABEL = "dante.e2e.smtp_control_port"
+_E2E_CONTROL_ID_ENV = "DANTE_E2E_CONTROL_ID"
+_E2E_CONTROL_LABEL = "dante.e2e.control_id"
 
 
 @dataclass(frozen=True, slots=True)
@@ -35,20 +38,30 @@ def _docker(*args: str) -> subprocess.CompletedProcess[str]:
     )
 
 
+def _control_id() -> str:
+    value = os.environ.get(_E2E_CONTROL_ID_ENV)
+    if value is None or not value or value.strip() != value:
+        raise RuntimeError(f"{_E2E_CONTROL_ID_ENV} must be a non-blank trimmed value.")
+    return value
+
+
 def _find_container() -> _ContainerDatabase:
+    control_id = _control_id()
     listing = _docker(
         "ps",
         "--all",
         "--filter",
         f"name={_CONTAINER_PREFIX}",
+        "--filter",
+        f"label={_E2E_CONTROL_LABEL}={control_id}",
         "--format",
         "{{.Names}}",
     )
     names = [line.strip() for line in listing.stdout.splitlines() if line.strip()]
     if len(names) != 1:
         raise RuntimeError(
-            "Expected exactly one disposable DANTE Access/Auth container; "
-            f"found {len(names)}: {names}"
+            "Expected exactly one disposable DANTE Access/Auth container for "
+            f"control id {control_id!r}; found {len(names)}: {names}"
         )
 
     name = names[0]

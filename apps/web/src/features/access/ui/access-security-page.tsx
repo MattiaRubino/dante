@@ -2,12 +2,12 @@ import { useMemo, useState, type FormEvent } from 'react';
 import { Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
-import { WebAuthRemoteError } from '../../../platform/auth/web-auth-remote';
 import {
   appleAuthenticationEnabledFromBuild,
   googleAuthenticationEnabledFromBuild,
   passkeyAuthenticationEnabledFromBuild,
-} from '../../../platform/auth/web-auth-provider';
+  WebAuthRemoteError,
+} from '../application/auth-ui-boundary';
 import {
   useEstablishPasswordMutation,
   useAuthenticationMethodsQuery,

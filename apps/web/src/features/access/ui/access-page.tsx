@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next';
 
 import danteSymbolUrl from '../../../../../../assets/brand/logo/master/dante-symbol-master-v0.svg?url';
 import danteWordmarkUrl from '../../../../../../assets/brand/wordmark/master/dante-wordmark-master-v0.svg?url';
-import type { WebProviderAuthenticationResult } from '../../../platform/auth/web-auth-remote';
+import type { WebProviderAuthenticationResult } from '../application/auth-ui-boundary';
 import {
   type RecoveryProofStore,
   useBeginSignupMutation,

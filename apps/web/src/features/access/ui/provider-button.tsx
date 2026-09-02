@@ -5,7 +5,7 @@ import {
   googleAuthenticationEnabledFromBuild,
   ProviderBrowserUnavailableError,
   renderGoogleIdentityButton,
-} from '../../../platform/auth/web-auth-provider';
+} from '../application/auth-ui-boundary';
 
 type AccessProvider = 'google' | 'apple';
 

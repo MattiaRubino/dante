@@ -21,6 +21,8 @@ _REQUIRED_EXTENSIONS: tuple[tuple[str, str | None], ...] = (
     ("pg_stat_statements", None),
 )
 _E2E_RATE_CAPACITY_ENV = "DANTE_E2E_SIGNIN_RATE_CAPACITY"
+_E2E_CONTROL_ID_ENV = "DANTE_E2E_CONTROL_ID"
+_E2E_CONTROL_LABEL = "dante.e2e.control_id"
 _E2E_ACCOUNT_COUNT = 64
 
 
@@ -32,6 +34,30 @@ def _load_core() -> ModuleType:
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def _control_id() -> str:
+    value = os.environ.get(_E2E_CONTROL_ID_ENV)
+    if value is None or not value or value.strip() != value:
+        raise RuntimeError(f"{_E2E_CONTROL_ID_ENV} must be a non-blank trimmed value.")
+    return value
+
+
+def _docker_with_control_label(
+    original: Callable[..., object], control_id: str
+) -> Callable[..., object]:
+    def run(*args: str, **kwargs: object) -> object:
+        if args and args[0] == "run":
+            return original(
+                "run",
+                "--label",
+                f"{_E2E_CONTROL_LABEL}={control_id}",
+                *args[1:],
+                **kwargs,
+            )
+        return original(*args, **kwargs)
+
+    return run
 
 
 def _extension_guard(database_name: str) -> Callable[..., None]:
@@ -210,6 +236,8 @@ def main() -> None:
     os.environ["VITE_DANTE_APPLE_ENABLED"] = "true"
     os.environ["VITE_DANTE_PASSKEY_ENABLED"] = "true"
 
+    control_id = _control_id()
+    core._docker = _docker_with_control_label(core._docker, control_id)
     core._create_extensions = _extension_guard(database_name)
     core._auth_settings = _auth_settings_override(core._auth_settings)
     core._seed_account = _seed_account_with_e2e_accounts(

@@ -65,7 +65,7 @@ vi.mock('../application/auth-lifecycle', () => ({
 }));
 
 import { i18n } from '../../../bootstrap/i18n';
-import { WebAuthRemoteError } from '../../../platform/auth/web-auth-remote';
+import { WebAuthRemoteError } from '../application/auth-ui-boundary';
 import {
   useAuthenticationMethodsQuery,
   useEstablishPasswordMutation,

@@ -6,7 +6,7 @@ import {
   googleAuthenticationEnabledFromBuild,
   passkeyAuthenticationEnabledFromBuild,
   type ProviderBrowserUnavailableError,
-} from '../../../platform/auth/web-auth-provider';
+} from '../application/auth-ui-boundary';
 import { usePasskeySignInMutation } from '../application/auth-passkey';
 import { isValidAccessEmail, type AccessCondition } from '../model/access-flow';
 import { AccessConditionNotice } from './access-condition-notice';

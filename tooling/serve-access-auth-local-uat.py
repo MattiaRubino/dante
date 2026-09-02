@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import logging
 import os
 from collections.abc import Callable
 from pathlib import Path
@@ -32,6 +33,7 @@ _REQUIRED_EXTENSIONS: tuple[tuple[str, str | None], ...] = (
     ("unaccent", None),
     ("pg_stat_statements", None),
 )
+_LOGGER = logging.getLogger("dante.access_auth_uat")
 
 
 def _load_core() -> ModuleType:
@@ -192,6 +194,35 @@ def _seed_email(core: ModuleType) -> str:
     return configured
 
 
+def _log_configuration(
+    *,
+    google_enabled: bool,
+    webauthn_enabled: bool,
+    seed_email: str,
+    seed_password: str,
+) -> None:
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
+    _LOGGER.info("DANTE Access/Auth local real-UAT configuration")
+    _LOGGER.info("  origin          : %s", _UAT_WEB_ORIGIN)
+    _LOGGER.info("  Google          : %s", "enabled" if google_enabled else "disabled")
+    _LOGGER.info("  Apple           : disabled (registered-domain UAT only)")
+    _LOGGER.info(
+        "  WebAuthn/passkey: %s", "enabled" if webauthn_enabled else "disabled"
+    )
+    _LOGGER.info("  seeded email    : %s", seed_email)
+    _LOGGER.info("  seeded password : %s", seed_password)
+    if os.environ.get(_TLS_CERT_ENV) is None:
+        _LOGGER.info(
+            "  TLS             : ephemeral self-signed localhost certificate; "
+            "use DANTE_UAT_TLS_CERT/DANTE_UAT_TLS_KEY for a locally trusted certificate"
+        )
+    else:
+        _LOGGER.info("  TLS             : caller-supplied certificate/key")
+    _LOGGER.info(
+        "  database        : disposable PostgreSQL 18.6; Ctrl-C destroys this UAT state"
+    )
+
+
 def main() -> None:
     core = _load_core()
     google_enabled = _enabled(_ENABLE_GOOGLE_ENV)
@@ -230,22 +261,12 @@ def main() -> None:
     if not isinstance(seed_password, str) or not seed_password:
         raise RuntimeError("Access/Auth harness core does not expose its seed password.")
 
-    print("DANTE Access/Auth local real-UAT configuration")
-    print(f"  origin          : {_UAT_WEB_ORIGIN}")
-    print(f"  Google          : {'enabled' if google_enabled else 'disabled'}")
-    print("  Apple           : disabled (registered-domain UAT only)")
-    print(f"  WebAuthn/passkey: {'enabled' if webauthn_enabled else 'disabled'}")
-    print(f"  seeded email    : {seed_email}")
-    print(f"  seeded password : {seed_password}")
-    if os.environ.get(_TLS_CERT_ENV) is None:
-        print(
-            "  TLS             : ephemeral self-signed localhost certificate; "
-            "use DANTE_UAT_TLS_CERT/DANTE_UAT_TLS_KEY for a locally trusted certificate"
-        )
-    else:
-        print("  TLS             : caller-supplied certificate/key")
-    print("  database        : disposable PostgreSQL 18.6; Ctrl-C destroys this UAT state")
-
+    _log_configuration(
+        google_enabled=google_enabled,
+        webauthn_enabled=webauthn_enabled,
+        seed_email=seed_email,
+        seed_password=seed_password,
+    )
     core.main()
 
 
