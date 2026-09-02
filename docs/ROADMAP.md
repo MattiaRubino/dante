@@ -205,6 +205,14 @@ DANTE-E01..DANTE-E14 CURRENT CORE EVAL
         ↓
 AI-05 — WHOLE-SYSTEM ACCEPTANCE + IMPLEMENTATION BLUEPRINT
 ACTIVE / CURRENT / FINAL ARCHITECTURE-TO-BUILD BOUNDARY
+    ├ AI-05A WHOLE-SYSTEM BUILD BOUNDARY / OWNERSHIP MAP
+    │        CLOSED / STRUCTURALLY ACCEPTED / BD-01..BD-41
+    │        T01..T26 + COMPOUNDS + REVERSE PASS
+    └ AI-05B CONCRETE IMPLEMENTATION BLUEPRINT
+             ACTIVE / CURRENT NEXT SUB-PHASE
+             SUBSTANTIVE BLUEPRINT NOT YET MATERIALIZED
+        ↓
+AI-05 WHOLE-SYSTEM DESTRUCTIVE ACCEPTANCE / CLOSURE
         ↓
 IMPLEMENTATION WORKSTREAM(S)
 ACTUAL AI BACKEND / PROVIDER / RUNTIME / FIRST VERTICAL
@@ -474,7 +482,74 @@ implementation dependency/order graph
 
 AI-05 must preserve all accepted Product/Domain/Logical/Physical/PostgreSQL/AI semantics and identify which concrete choices require direct evidence before selection or activation.
 
-After AI-05 closure, actual AI implementation proceeds under explicit implementation gates/workstreams rather than extending architecture documentation indefinitely.
+#### AI-05A — CLOSED / STRUCTURALLY ACCEPTED
+
+Durable current closure authority:
+
+- `architecture/dante-ai-05a-whole-system-build-boundary-acceptance.md`
+
+Pre-closure evidence remains:
+
+- `architecture/dante-ai-05a-whole-system-build-boundary.md` — original candidate + first destructive-pass hardening `BD-31..BD-40`;
+- `architecture/dante-ai-05a-eval-production-composition-hardening.md` — second-pass bounded failure + `BD-41`.
+
+Accepted AI-05A build direction includes:
+
+```text
+Global Search != Intelligence orchestration
+modules/search = separate deterministic/read-search capability candidate
+modules/intelligence = intelligence application/orchestration candidate
+Search may own bounded cross-capability read projection, not canonical semantics/mutation
+provider SDK stays behind DANTE ModelAccessPort + adapter
+resource/commercial durable quota truth stays outside Intelligence
+static typed/versioned control config first; no scattered env-var behavior policy
+default noncanonical AI persistence remains NO
+first vertical = Global Search + read-only Ask DANTE
+first activation envelope = private authenticated / single-turn / inline / read-only
+chat-like UI / inline stream != generic conversation or Run persistence
+application fake != adapter conformance != direct eval != production capacity proof
+qualification must exercise the same material production composition or independently qualify every material delta
+```
+
+Final AI-05A acceptance:
+
+```text
+BD-01..BD-41                                   ACCEPTED
+T01..T26                                       PASS / 26 OF 26
+compound collision suite                       PASS
+reverse AI-05A→AI-04→PRE-AI05→AI-03→AI-02    PASS
+new canonical AI owner                         NO
+new generic AI persistence root                NO
+provider lock-in                               NO
+upstream broad reopen                          NO
+```
+
+AI-05A closure is structural/documentary and claims no provider/backend/database implementation.
+
+#### AI-05B — ACTIVE / CURRENT NEXT SUB-PHASE
+
+AI-05B must freeze the concrete build contracts without starting production implementation:
+
+```text
+module public boundaries
+ports + runtime DTO/types
+Search read/query contracts
+ModelAccessPort contract
+provider adapter conformance contract
+route/config artifact schemas
+resource admission/settlement seams
+first-vertical HTTP + streaming/publication shape
+runtime-only vs evidence/persistence ownership
+exact unit/integration/eval/system test topology
+qualification artifact + promotion-evidence schema
+feature/activation gates
+implementation dependency graph
+first build gates / commit sequence
+```
+
+Provider/model/SDK selection remains direct-evidence gated. If a concrete choice cannot responsibly be frozen without live API evidence, AI-05B must define the exact proof gate instead of guessing.
+
+After AI-05B, run whole AI-05 destructive acceptance/closure. Only after AI-05 closure does actual AI implementation begin under explicit implementation gates/workstreams.
 
 AI-05 is not a license to reopen accepted semantics for implementation convenience.
 
@@ -598,9 +673,11 @@ PROVIDER REPLACEABLE != LOWEST-COMMON-DENOMINATOR PROVIDER USAGE
 4. AI-03 is CLOSED / C01..C33 / B01..B35 / MAT-01..MAT-15
 5. AI-04 is CLOSED / A01..A30 / EV01..EV20 / RT-01..RT-31 / PA-01..PA-61 / WP-01..WP-22
 6. PRE-AI05 is CLOSED / PRE05-H01..H19 / DANTE-E01..E14 current
-7. current exact AI phase = AI-05 Whole-System Acceptance + Implementation Blueprint
-8. produce the buildable implementation boundary before provider/backend implementation
-9. preserve qualified HarnessProfile + ProviderBinding route composition and all current egress/autonomy/disclosure gates
-10. identify direct-evidence gates for provider/model/SDK/runtime/persistence/activation choices
-11. after AI-05 closure begin actual AI implementation workstream(s) under explicit gates
+7. AI-05A is CLOSED / STRUCTURALLY ACCEPTED / BD-01..BD-41
+8. current exact AI sub-phase = AI-05B Concrete Implementation Blueprint
+9. freeze concrete module/port/DTO/config/HTTP-streaming/persistence/test/qualification/build-gate contracts without starting production implementation
+10. preserve AI-05A Search/Intelligence ownership, bounded first-vertical envelope and exact-production-composition qualification rule
+11. run destructive AI-05B acceptance
+12. then run whole AI-05 acceptance/closure
+13. only after AI-05 closure begin actual AI implementation workstream(s) under explicit gates
 ```
