@@ -4,57 +4,43 @@ DANTE is a personal operating system designed to help people understand, organiz
 
 **Compass:** *Understand life. Shape what comes next.*
 
-## Current state
+## Current repository state
+
+The integrated foundation on protected `main` remains closed. The active branch-local product vertical is Access/Auth on `feature/access-auth`.
 
 ```text
-PRODUCT / NORTH STAR
-CURRENT
+PRODUCT / NORTH STAR                    CURRENT
+DOMAIN / LOGICAL / PHYSICAL             CLOSED
+ENGINEERING / FRONTEND FOUNDATION       CLOSED / ACCEPTED
+BACKEND CP1–CP6                         CLOSED / ACCEPTED
+POSTGRESQL                              18.6
+PROTECTED-MAIN CP6 ALEMBIC              20260826_08
 
-DOMAIN MODEL
-CLOSED / SEMANTICALLY COMPLETE FOR CURRENT SCOPE
+ACCESS/AUTH M1–M4                       CLOSED / ACCEPTED
+M5.1 / M5.2 / M5-A–D                    COMPLETE
+M5 GROUPS 1–3                           COMPLETE / ENGINEERING PASS
+M5 GROUP 4 WEB ENGINEERING              AUTOMATED QA PASS
+LOCAL PASSWORD/PASSKEY UAT              PASS
+REAL GOOGLE UAT                         PASS
+REAL INTERNET EMAIL DELIVERY            OPEN / RESEARCH + UAT REQUIRED
+REAL APPLE REGISTERED-DOMAIN UAT        DEFERRED / OPEN
+WHOLE ACCESS/AUTH M5                     ACTIVE / NOT FORMALLY CLOSED
 
-LOGICAL MODEL
-CLOSED / 57 OF 57 CLASSIFIED
-WL-H01..WL-H12 REMAIN BINDING
-
-PHYSICAL TARGET
-CLOSED / SELECTED / ACCEPTED
-PostgreSQL 18 major family is canonical persistence/material-history authority
-Physical phase-time exact patch 18.4 / historical evidence
-
-ENGINEERING FOUNDATION
-CLOSED / ACCEPTED
-
-FRONTEND ENGINEERING FOUNDATION
-CLOSED / ACCEPTED / INTEGRATED VIA PR #22
-
-FRONTEND MATERIALIZATION
-CLOSED / PASS / INTEGRATED VIA PR #28
-
-PRODUCTION BACKEND SCAFFOLD
-CP1–CP5 CLOSED / DIRECT QA PASS / INTEGRATED VIA PR #24
-
-CP6 — CONCRETE POSTGRESQL DATABASE
-CLOSED / DIRECT QA PASS / INTEGRATED VIA PR #42
-
-CURRENT POSTGRESQL
-18.6
-
-CURRENT DANTE DATABASE
-Alembic 20260826_08
-68 tables / 5 views / 14 routines / 75 triggers /
-95 physical indexes / 68 FKs / 120 CHECKs
-
-ACCESS PRE-BACKEND FRONTEND
-CLOSED / ACCEPTED / RELEASE-HARDENED
-AF-01D PASS / AF-02A PASS / AF-02B PASS / AF-03A PASS
-
-FULL ACCESS/AUTH PRODUCT VERTICAL
-NOT CLOSED / REAL BACKEND AUTH NOT IMPLEMENTED
-NEXT DEDICATED FULL-STACK VERTICAL NOT YET STARTED
+ACCESS/AUTH BRANCH POSTGRESQL            18.6
+ACCESS/AUTH ALEMBIC HEAD                 20260831_13
+ACCESS/AUTH DB TOPOLOGY                  83 tables / 5 views / 15 routines /
+                                         75 triggers / 156 indexes / 85 FKs /
+                                         233 CHECKs
 ```
 
-For exact current truth use `docs/PROJECT-STATUS.md`. Do not reconstruct current state from old phase documents, historical workstream continuations or conversation memory.
+For exact branch truth use:
+
+- `docs/PROJECT-STATUS.md`
+- `docs/ROADMAP.md`
+- `docs/workstreams/access-auth.md`
+- `docs/workstreams/access-auth-m5-review-2026-09-02.md`
+
+Do not reconstruct current state from old handoffs or phase-time progress labels.
 
 ## Repository
 
@@ -64,54 +50,55 @@ Production development continues in the single monorepo:
 MattiaRubino/dante
 ```
 
-Accepted ownership boundaries:
+Ownership boundaries:
 
 ```text
 apps/
-├── backend/
-├── web/
-└── mobile/
-packages/
-infra/
-tooling/
-tests/system/
-docs/
-prototypes/
-.github/
+├── backend/      Python/FastAPI product backend
+├── web/          React Web application
+└── mobile/       React Native/Expo boundary
+packages/         genuine shared packages only
+infra/            infrastructure definitions
+tooling/          repository/runtime/QA tooling
+tests/system/     system-level proof
+docs/             durable project authority
+prototypes/       non-production design/reference evidence
+.github/          CI/repository automation
 ```
 
-These are ownership boundaries, not an instruction to create empty ceremonial directories.
+Production applications do not import prototype implementation. A new feature does not justify a new repository or a generic abstraction layer by default.
 
-- `apps/backend` owns the server application;
-- `apps/web` and `apps/mobile` are sibling client boundaries;
-- `packages/` contains only real multi-consumer packages;
-- `infra/` owns infrastructure definitions when real infrastructure exists, never business logic;
-- production applications do not import from `prototypes/`;
-- do not create a second implementation repository for normal product development.
+## Current technical baseline
 
-## Backend baseline
+Backend:
 
 ```text
 Python                   3.14.x
-initial exact pin         3.14.7
-package manager           uv
-source root               apps/backend/src/dante
-format/lint               Ruff
-type checking             mypy strict
-testing                   pytest + Hypothesis where meaningful
-server semantics          Linux
-Windows workflow          WSL2/Linux
-IDE                       PyCharm with WSL interpreter supported
-local stateful infra      Docker Compose
-
-canonical persistence     PostgreSQL 18 major family
-current patch             PostgreSQL 18.6
-ORM/SQL toolkit           SQLAlchemy 2.0 stable line
-driver                    psycopg 3
+package manager          uv
+server                    FastAPI
+ORM/SQL                   SQLAlchemy 2.x
+PostgreSQL driver         psycopg 3
 migrations                Alembic
+format/lint               Ruff
+typecheck                 mypy strict
+testing                   pytest / Hypothesis where meaningful
 ```
 
-Current database roles:
+Frontend:
+
+```text
+Node                      24 LTS
+TypeScript                6 strict
+pnpm                      11
+Turborepo                 2
+React                     19.2
+Vite                      8
+TanStack Router / Query
+Expo / React Native       mobile boundary
+Zod / Orval               governed API contract
+```
+
+Database roles:
 
 ```text
 dante_owner      NOLOGIN ownership identity
@@ -119,281 +106,79 @@ dante_migrator   LOGIN migration identity
 dante_runtime    LOGIN application runtime identity
 ```
 
-The outer application-operation boundary owns commit/rollback. Persistence adapters may flush but never commit implicitly. No generic `Repository[T]`, generic Unit of Work, BaseService or service-locator architecture is introduced merely for uniformity.
+Canonical persistence is PostgreSQL. The outer application-operation boundary owns commit/rollback; persistence adapters may flush but never commit implicitly.
 
-Backend entry point:
+## Access/Auth architecture
 
-- `apps/backend/README.md`
-
-## Concrete PostgreSQL database
-
-CP6 is complete and integrated into protected `main` through PR #42.
-
-Current baseline:
+Current Access/Auth preserves:
 
 ```text
-PostgreSQL          18.6
-Alembic head        20260826_08
-
-tables              68
-views                5
-routines             14
-triggers             75
-physical indexes    95
-foreign keys         68
-CHECK constraints   120
-
-custom enum/domain    0
-sequences             0
-materialized views    0
-RLS policies          0
+Person != Account != Principal != Actor
+AuthSession != DANTE Session
+EmailIdentity != Account
+PasswordCredential optional
+Principal runtime-derived
+provider identity = issuer + subject
+provider email != Account/link authority
+provider auth != provider-data authorization
+provider token/assertion != DANTE AuthSession
+passwordless Account valid
+PasskeyCredential != Account
+WebAuthn user_handle = opaque Account binding
+reauthentication != signin
+frontend/provider/browser completion != backend-authoritative success
 ```
 
-Final CP6 acceptance included:
+Web sessions are opaque, server-authoritative and cookie-backed. Browser Auth state is not stored as JWT/localStorage authority. Unsafe authenticated mutations are protected by session-bound CSRF plus origin/fetch-metadata policy.
+
+Google, Apple, password and passkeys are authentication methods for the same DANTE Account; they do not create parallel Account/session systems.
+
+## Access/Auth proof state
+
+The reviewed product checkpoint `ab2716...` passed:
 
 ```text
-Ruff format/check                    PASS
-mypy strict                          PASS
-non-PostgreSQL tests                 37 / 37 PASS
-real PostgreSQL tests                76 / 76 PASS
-build                                PASS
-Dictionary JSON-Schema               PASS
-Dictionary ↔ SQLAlchemy              PASS
-Dictionary ↔ Alembic                 PASS
-Dictionary ↔ live PostgreSQL         PASS
-persistent LOCAL upgrade/restart     PASS
-security / ACL posture               PASS
-GET /health/live                     200
-GET /health/ready                    200
+Prettier / TypeScript / ESLint / architecture     PASS
+Web unit/component                               68 / 68 PASS
+Auth Playwright HTTPS                            60 / 60 PASS
+Chromium / Firefox / WebKit                      PASS through canonical suite
 ```
 
-Current database documentation starts at:
+Manual UAT then proved real Windows Hello passkeys, passwordless signin, recent-auth/session rotation, authenticator lifecycle/anti-lockout and direct PostgreSQL coherence.
 
+Real Google UAT proved official Google Identity Services → real ID token → DANTE backend verification → direct mailbox proof where Google was not authoritative → passwordless Account + ExternalIdentity + canonical AuthSession. Details are in `docs/workstreams/access-auth-m5-review-2026-09-02.md`.
+
+## Current open boundary — email delivery
+
+No production email provider has been selected.
+
+The next gate must research the architecture before choosing a vendor:
+
+```text
+DANTE-owned email intent/security state
+vs external delivery responsibility
+SMTP vs provider HTTP API
+SPF/DKIM/DMARC
+bounce/complaint/suppression handling
+ambiguous delivery outcome and retry semantics
+observability/privacy/secrets
+Apple Private Email Relay requirements
+self-hosted SMTP operational/deliverability cost
+provider portability
+```
+
+The opt-in real-SMTP local-UAT capability at `9c0587...` is only a test transport path; deterministic automated tests continue to use loopback SMTP capture.
+
+## Documentation entry points
+
+Start at:
+
+- `docs/README.md`
+- `docs/PROJECT-STATUS.md`
+- `docs/ROADMAP.md`
+- `docs/architecture/README.md`
 - `docs/database/README.md`
-- `docs/database/dictionary/README.md`
-- `docs/database/dictionary/scope.json`
-
-Permanent consistency rule:
-
-```text
-Database Architecture & Reference
-≈ Database Dictionary
-≈ SQLAlchemy metadata / mappings
-≈ Alembic head
-≈ real PostgreSQL schema
-```
-
-A later schema change is incomplete if these representations remain inconsistent.
-
-Historical exact PostgreSQL 18.4 evidence for the Physical/CP2/CP3 phases remains historical truth. Current patch 18.6 does not rewrite what executed on 18.4.
-
-## Frontend baseline
-
-```text
-Node 24 LTS
-TypeScript 6.0.x strict
-pnpm 11
-Turborepo 2.x
-
-Web
-React 19.2 + React DOM
-Vite 8
-TanStack Router
-
-Mobile
-React Native 0.86
-Expo SDK 57
-Expo Router
-
-Data / forms / validation
-PowerSync + encrypted SQLite when activated
-TanStack Query 5
-TanStack Form
-Zod 4
-Orval 8 when real OpenAPI exists
-```
-
-Accepted architecture includes:
-
-- feature-first Web/Mobile applications;
-- thin route/navigation adapters;
-- public-API-only acyclic feature dependencies;
-- shared packages only for real multi-consumer value;
-- backend + PostgreSQL as canonical accepted-effect authority;
-- Web online-first baseline;
-- Mobile bounded local/offline state as noncanonical;
-- identity-scoped local data;
-- platform-specific UI implementations over shared semantic tokens;
-- production code never importing prototypes.
-
-Current protected-main frontend docs start at:
-
 - `docs/frontend/README.md`
-
-## Access frontend baseline
-
-The completed pre-backend Access frontend materialization is the accepted Web baseline for the later full-stack Access/Auth vertical.
-
-Accepted checkpoints:
-
-```text
-AF-01D  shell completion / professional polish      PASS
-AF-02A  complete pre-backend frontend state graph   PASS
-AF-02B  downstream surface hardening                PASS
-AF-03A  release-hardening viewport matrix           PASS
-```
-
-Current durable Access frontend authority:
-
-- `docs/frontend/access.md`
-- `apps/web/src/features/access/`
-- `apps/web/e2e/access.spec.ts`
-
-The frontend deliberately stops backend-authoritative transitions rather than fabricating account/session/authentication success.
-
-The whole Access/Auth product vertical is **not closed**. Remaining product work includes real backend Auth/account/session/provider/recovery behavior, stable OpenAPI, generated client integration, full-stack E2E, real authenticated Home handoff and applicable release/legal/mobile gates.
-
-## Post-CP6 product direction
-
-There is no remaining CP6 design/materialization/merge step.
-
-The next implementation boundary is a new bounded **full-stack product vertical** created from current protected `main` when explicitly started. For Access/Auth, that branch may modify backend and frontend together where the real contract requires it rather than maintaining permanent backend/frontend branch lines.
-
-A product vertical consumes the existing database and may evolve it only when a genuine new requirement appears. Normal evolution uses forward Alembic migrations and the same-change Database System-of-Record rule; CP6 is not reopened.
-
-Pure later UX polish may use a short-lived UI branch from then-current `main` when it is independent of the active product vertical.
-
-## Capability-triggered components
-
-Selected specialist components remain dormant until a real consuming boundary exists:
-
-```text
-PowerSync + encrypted SQLite
-→ real offline/multi-device capability
-
-PostgreSQL transactional outbox
-→ real Class-A async requirement
-
-R2
-→ real ContentArtifact byte flow
-
-OR-Tools
-→ solver-backed capability
-
-Restate
-→ first real Class-B durable workflow
-
-PgBouncer
-→ demonstrated connection-management need
-
-pgBackRest + AWS S3
-→ recovery/production boundary or real rehearsal
-```
-
-Selected architecture is not the same thing as activated implementation or direct PASS.
-
-## Protected `main`
-
-The effective `lifeos-main-safety` ruleset requires:
-
-```text
-PR before integration
-normal merge commit only
-branch up to date with main
-review threads resolved
-non-fast-forward protection
-no bypass actor
-
-required checks:
-Backend CI Gate
-Dependency Review
-Frontend CI Gate
-```
-
-Do not use squash, rebase or force-push as a shortcut around protected-main policy.
-
-The live GitHub ruleset is enforcement authority; a documentation snapshot is informative only and must not override live remote state.
-
-## Environment model
-
-Exactly:
-
-```text
-LOCAL
-DEV
-UAT
-PROD
-```
-
-Environment != Git branch.
-
-Activation remains progressive. Provider-specific infrastructure is selected/materialized only when the real deployment or operational boundary requires it.
-
-## Documentation lifecycle
-
-DANTE documentation is part of the implementation, but the working tree is not a chat transcript.
-
-Rules:
-
-```text
-current specifications describe current truth directly
-historical evidence is clearly labelled
-active branch handoffs stay branch-local
-temporary live/session handoffs do not merge into main
-completed workstreams retain at most one useful branch-history narrative
-Git remains complete recoverable history
-frozen split documents may be compacted only losslessly
-```
-
-Normative policy:
-
-- `docs/development/documentation-lifecycle-policy.md`
-
-Historical archive boundary:
-
-- `docs/archive/README.md`
-
-## Where to start
-
-General continuation order:
-
-1. `README.md`
-2. `docs/README.md`
-3. `docs/PROJECT-STATUS.md`
-4. `docs/ROADMAP.md`
-5. `docs/development/agent-operating-manual.md`
-6. `docs/development/operating-rules.md`
-7. `docs/development/documentation-and-handoff.md`
-8. `docs/development/documentation-lifecycle-policy.md`
-9. `docs/development/branching-and-environments.md`
-10. `docs/development/repository-engineering-safety.md`
-11. the current subsystem/workstream authority
-12. current branch/ref and relation to protected `main`
-
-Backend/database continuation:
-
 - `apps/backend/README.md`
-- `docs/database/README.md`
-- `docs/database/dictionary/README.md`
-- `docs/development/backend-cp6-05-whole-database-qa.md`
 
-Access frontend baseline:
-
-- `docs/frontend/access.md`
-- `apps/web/src/features/access/`
-- `apps/web/e2e/access.spec.ts`
-
-## Persistent truth rules
-
-```text
-SELECTED ARCHITECTURE != IMPLEMENTED COMPONENT
-DOCUMENTATION PASS != DIRECT IMPLEMENTATION PASS
-UNMERGED BRANCH TRUTH != PROTECTED-main TRUTH
-HISTORICAL 18.4 EVIDENCE != CURRENT 18.6 EXECUTION CLAIM
-CLIENT LOCAL STATE != CANONICAL ACCEPTED EFFECT
-DATABASE MATERIALIZATION != PRODUCT APPLICATION IMPLEMENTATION
-ENVIRONMENT != GIT BRANCH
-TEMPORARY HANDOFF != DURABLE DOCUMENTATION
-```
-
-The goal is a repository a new developer or agent can understand from current sources without reconstructing obsolete operational chronology.
+Repository executable truth and accepted current documentation beat conversation memory.
