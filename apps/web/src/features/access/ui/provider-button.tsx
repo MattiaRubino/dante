@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 
 import {
+  appleAuthenticationEnabledFromBuild,
+  googleAuthenticationEnabledFromBuild,
   ProviderBrowserUnavailableError,
   renderGoogleIdentityButton,
 } from '../../../platform/auth/web-auth-provider';
@@ -78,10 +80,16 @@ export function GoogleIdentityButton({
   disabled = false,
 }: GoogleIdentityButtonProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const configured = googleAuthenticationEnabledFromBuild();
 
   useEffect(() => {
     const container = containerRef.current;
-    if (container === null || clientId === null || nonce === null) {
+    if (
+      !configured ||
+      container === null ||
+      clientId === null ||
+      nonce === null
+    ) {
       return;
     }
     let active = true;
@@ -115,7 +123,11 @@ export function GoogleIdentityButton({
       active = false;
       container.replaceChildren();
     };
-  }, [clientId, nonce, onCredential, onError]);
+  }, [clientId, configured, nonce, onCredential, onError]);
+
+  if (!configured) {
+    return null;
+  }
 
   if (clientId === null || nonce === null) {
     return (
@@ -152,6 +164,13 @@ export function ProviderButton({
   onClick,
   disabled = false,
 }: ProviderButtonProps) {
+  if (
+    (provider === 'apple' && !appleAuthenticationEnabledFromBuild()) ||
+    (provider === 'google' && !googleAuthenticationEnabledFromBuild())
+  ) {
+    return null;
+  }
+
   const iconClassName =
     provider === 'apple'
       ? 'access-provider-mark access-provider-mark-apple'
