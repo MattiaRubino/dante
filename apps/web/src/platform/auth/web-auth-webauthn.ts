@@ -115,6 +115,12 @@ function decodeCredentialDescriptors(
   });
 }
 
+function publicKeyOptionsFromCeremony(
+  options: Record<string, unknown>,
+): Record<string, unknown> {
+  return requiredRecord(options, 'publicKey');
+}
+
 function creationOptionsFromJson(
   options: Record<string, unknown>,
 ): PublicKeyCredentialCreationOptions {
@@ -250,7 +256,9 @@ export async function createPasskeyRegistrationEvidence({
   ensureWebAuthnAvailable();
   const credential = publicKeyCredential(
     await navigator.credentials.create({
-      publicKey: creationOptionsFromJson(ceremony.options),
+      publicKey: creationOptionsFromJson(
+        publicKeyOptionsFromCeremony(ceremony.options),
+      ),
       ...(signal === undefined ? {} : { signal }),
     }),
   );
@@ -278,7 +286,9 @@ export async function createPasskeyAuthenticationEvidence({
   ensureWebAuthnAvailable();
   const credential = publicKeyCredential(
     await navigator.credentials.get({
-      publicKey: requestOptionsFromJson(ceremony.options),
+      publicKey: requestOptionsFromJson(
+        publicKeyOptionsFromCeremony(ceremony.options),
+      ),
       ...(signal === undefined ? {} : { signal }),
     }),
   );
