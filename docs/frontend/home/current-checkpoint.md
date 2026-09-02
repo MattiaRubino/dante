@@ -1,32 +1,27 @@
 # DANTE — Home / Frontend Current Checkpoint
 
-**Status:** CURRENT LIVE ENTRY POINT — WORLD FOCUS D2 NEXT  
-**Date:** 2026-09-01  
+**Status:** CURRENT LIVE ENTRY POINT — WORLD FOCUS WS0–WS8 CLOSED / POST-WS8 HYGIENE APPLIED / M0 NEXT  
+**Date:** 2026-09-02  
 **Working branch:** `feature/home-react`  
 **Worktree:** `/home/mattia/projects/dante-frontend`
 
-This file is the **branch-level live entry point** for a new chat/agent. Do not reconstruct current state from older phase labels, historical roadmaps or old conversational summaries.
+This file is the branch-level live entry point for a new chat/agent. Do not reconstruct current state from older phase labels, historical roadmaps or conversational summaries.
 
-For the currently active World Focus workstream, `world-focus-current-checkpoint.md` is the detailed live authority immediately after this file.
+For World Focus, `world-focus-current-checkpoint.md` remains the detailed live authority immediately after this file.
 
 ---
 
-## 1. Workstreams currently present on this branch
+## 1. Branch workstreams
 
 Three distinct frontend concerns coexist:
 
 ```text
 APP SHELL / HOME
-shared application shell and Home composition
-
 TEMPORAL / TIMELINE
-Home Timeline + shared temporal capability
-
 WORLD FOCUS
-one focused World as its own route/application surface
 ```
 
-They share product/domain authorities but do not own one another's layout or interaction semantics.
+They share higher product/domain authority but do not own one another's layout or interaction semantics.
 
 Permanent distinctions:
 
@@ -37,77 +32,130 @@ World Focus != Home overlay
 Mondi Overview != World Focus
 ```
 
-Do not transfer component geometry/state semantics from one surface to another merely because the underlying capability is related.
-
 ---
 
 ## 2. Active workstream
 
-**World Focus is the active product workstream.**
+World Focus is the active workstream.
 
-Current top-level state:
+Current state:
 
 ```text
 WF0 structural shell / route            FROZEN / USER AUTHORIZED
 WF-G3 geometry                          LOCKED / USER AUTHORIZED
 WF-V4 visual treatment                  CANDIDATE
 B0 production foundation                ENGINEERING CLOSED
-WR0-WR2 World/DANTE product model       CLOSED
+WR0–WR2                                 CLOSED
 B1 Orientation                          CLOSED FOR SEQUENCING
 B2 Continuity / Resume                  IMPLEMENTED / AUTOMATED PASS
 Workspace Platform                      ENGINEERING CLOSED
 D0 contextual DANTE spatial direction   ACCEPTED
 D1 quiet invoke + compact composer       CLOSED FOR SEQUENCING
-NEXT                                     D2 ADAPTIVE CONVERSATION SURFACE
+WS0                                     CLOSED
+WS1–WS5                                 CLOSED
+WS6                                     CLOSED
+WS7                                     CLOSED
+WS8                                     CLOSED
+POST-WS8 HYGIENE                        APPLIED
+NEXT                                     M0 MATERIALIZATION MAPPING — NOT STARTED
 ```
 
-Final reusable Workspace Platform code evidence:
-
-```text
-HEAD 6c441335a75bb913af8da1eda569d8094d38a539
-CI   33549465793 — PASS
-```
-
-Final D1 code evidence:
-
-```text
-HEAD f17291de32e6bdced20536807b32928ec1be6aea
-CI   33552437179 — PASS
-```
-
-D1 closure is based on strict engineering + real Chromium functional/a11y acceptance. Human/manual visual review is **not falsely claimed**; the user delegated sequencing closure and integrated visual polish remains D7 work.
+D2–D6 are preserved as materialization-deferred work under M4. They are not the current gate.
 
 ---
 
-## 3. Global AppShell / Home baseline
+## 3. World Focus live read order
 
-The shared AppShell/Global Topbar is already productionized and remains outside World Focus ownership.
+Read:
 
-Durable rules:
+```text
+1. docs/frontend/home/world-focus-current-checkpoint.md
+2. docs/frontend/home/world-focus-post-ws8-hygiene-audit.md
+3. docs/frontend/home/world-focus-substrate-closure-plan.md
+4. docs/frontend/home/world-focus-ws8-final-falsification-review.md
+5. docs/frontend/home/world-focus-ws7-executable-harness-review.md
+6. docs/frontend/home/world-focus-ws6-universal-work-primitives.md
+7. docs/frontend/home/world-focus-ws6-primitive-pressure-matrix.md
+8. docs/frontend/home/world-focus-substrate-final-convergence-proof.md
+9. docs/frontend/home/world-focus-substrate-combinatorial-evidence.md
+10. docs/frontend/home/world-focus-handoff.md
+11. docs/frontend/home/world-focus-frontend-roadmap.md
+12. product/platform/structure/geometry contracts as needed
+13. world-focus-evidence-index.md
+```
 
-- persistent shared AppShell / Global Topbar;
-- real application routing;
-- Home / Mondi / Oggi navigation;
-- inline Topbar Search rather than Home-owned modal behavior;
-- centralized design-token/theme ownership;
-- no fake backend writes;
-- Access/Auth remains a separate workstream and must not be casually modified here.
+Historical `NEXT D2`, old WS phase-time status or removed prototype sequencing never overrides the live checkpoint.
 
-Durable Home authorities:
+---
+
+## 4. Validated WS8 evidence remains the semantic closure evidence
+
+Validated WS8 proof/runtime HEAD:
+
+```text
+88db899391a3a41e23e76177d4896a657232b5eb
+```
+
+Frontend CI:
+
+```text
+33639741630 — PASS — attempt 1
+```
+
+The later post-WS8 hygiene pass repairs local runtime/documentation debt without reopening WS0–WS8. Its CI status must be read from current branch evidence and must not be confused with the validated WS8 proof SHA above.
+
+---
+
+## 5. Post-WS8 hygiene result
+
+The coherence review found local debt, not a new substrate class.
+
+Applied World Focus-local cleanup:
+
+```text
+unknown popover fallback no longer turns the full overlay into a pointer barrier
+unused immersive|instant localStorage preference scaffold removed
+superseded V2/V3 visual-frame styles removed
+base visual-frame CSS reduced to structural ownership only
+branch-level routers advanced from stale D2 sequencing to M0 NEXT
+```
+
+Not changed by this pass:
+
+```text
+WS0–WS8 closure
+WF0/WF-G3
+D1 global contextReference:null
+backend stop line
+Timeline behavior
+Access/Auth
+Global Topbar Review debt
+```
+
+The disabled legacy Global Topbar Review control remains separately tracked deprecated AppShell/Home debt. It is not silently removed from a World Focus-owned cleanup.
+
+---
+
+## 6. Global AppShell / Home baseline
+
+The shared AppShell/Global Topbar remains application infrastructure outside World Focus ownership.
+
+Durable authorities:
 
 ```text
 docs/frontend/home/contract.md
 docs/frontend/home/home-structural-contract.md
 docs/frontend/app-shell/p1-global-app-shell.md
+docs/frontend/ui-registry.md
 ```
+
+Do not modify shared shell behavior as collateral damage of World Focus work.
 
 ---
 
-## 4. Timeline current state
+## 7. Timeline state
 
-Timeline Phase T1 is **user-accepted and frozen** for observable interaction/geometry behavior.
-
-No Timeline work is authorized merely because later temporal roadmap phases exist.
+Timeline T1 observable interaction/geometry behavior remains frozen and user accepted.
 
 When Timeline is explicitly resumed, read:
 
@@ -119,142 +167,24 @@ When Timeline is explicitly resumed, read:
 5. docs/frontend/home/temporal-frontend-roadmap.md
 ```
 
-Never weaken Timeline regression tests to accommodate unrelated World Focus work. Current World Focus CI intentionally continues to run the frozen Firefox Timeline interaction contract.
+Never weaken Timeline regression tests for unrelated World Focus work.
 
 ---
 
-## 5. World Focus current state and read order
+## 8. Backend stop line
 
-World Focus detailed live state is in:
-
-```text
-1. docs/frontend/home/world-focus-current-checkpoint.md
-2. docs/frontend/home/world-focus-handoff.md
-3. docs/frontend/home/world-focus-frontend-roadmap.md
-```
-
-Then read current product/architecture contracts and active evidence:
+Pre-backend remains strict:
 
 ```text
-4. world-focus-product-contract.md
-5. world-focus-platform-contract.md
-6. world-focus-structural-contract.md
-7. world-focus-geometry-contract.md
-8. world-focus-workspace-platform-checkpoint.md
-9. world-focus-dynamic-composition-allocation-review.md
-10. world-focus-dante-spatial-presence-review.md
-11. world-focus-d1-dante-entry-review.md
-12. world-focus-workspace-scenario-oracle-evidence.md
-13. world-focus-delivery-methodology.md
-14. world-focus-evidence-index.md
+NO real World DB/Alembic persistence
+NO real World business API merely for frontend completeness
+NO real AuthZ/provider runtime
+NO real LLM/model routing/streaming
+NO canonical chat persistence
+NO durable DANTE Run backend
+NO real tool/effect execution
+NO fake successful backend state
 ```
-
-Do not restart WR0/WR1/WR2, broad unknown-module research or broad DANTE spatial research from zero.
-
----
-
-## 6. D0/D1 state in one paragraph
-
-D0 reverse engineering compared current mature AI workspace patterns and accepted an adaptive hybrid:
-
-```text
-quiet invoke
--> compact non-modal composer
--> wide ongoing conversation sidecar
--> constrained/mobile route-owned focus overlay
--> explicit maximize/restore
--> explicit bounded contextual invocation
-```
-
-D1 implemented only the first two steps truthfully:
-
-```text
-quiet invoke
-compact composer
-no automatic chat
-no fake prompt suggestions
-no fake assistant response
-no real backend/model/Run/tool/effect
-```
-
-The global invoke deliberately uses `contextReference:null`; explicit deictic context is D4.
-
----
-
-## 7. Immediate next gate — D2 Adaptive Conversation Surface
-
-Do **not** start D3 message/model semantics yet.
-
-D2 must prove the spatial/presentation behavior of one ongoing DANTE conversation:
-
-```text
-wide allocated workspace
--> internal split sidecar
-
-constrained/mobile
--> route-owned focus overlay below Global Topbar
-
-explicit deep work
--> maximize sidecar -> focus overlay
-
-restore
--> same logical conversation / appropriate presentation
-```
-
-Critical warning:
-
-The current Workspace Platform's `full-screen` slot is workspace-local. At 390px viewport the frozen World workspace can be roughly ~238px wide, so that slot alone is **not** the mobile ongoing-conversation solution.
-
-D2 must define a route-owned World focus-overlay seam that can cover the World while using route width below Global Topbar, without resizing/re-owning the Topbar or changing WF-G3 workspace geometry.
-
-Presentation geometry must not become conversation identity.
-
-D2 must not fabricate assistant transcript, streaming, provider/model calls or backend persistence.
-
----
-
-## 8. Production-depth delivery method
-
-Every bounded frontend capability follows:
-
-```text
-authority/current evidence
--> requirements
--> targeted simulations/adversarial pressure
--> focused product/technology comparison where genuinely open
--> architecture alternatives
--> explicit decision / rejected paths
--> complete frontend implementation
--> responsive / a11y / security / performance / async / errors
--> automated gates
--> real-browser automated acceptance
--> human/user functional + visual review when available
--> truthful disposition
--> next vertical
-```
-
-A green CI run is necessary but does not itself prove human visual acceptance.
-
-If the user explicitly delegates closure authority, sequencing may proceed on sufficient evidence, but no manual review may be claimed unless it actually occurred.
-
----
-
-## 9. Backend stop line
-
-Current frontend phase remains pre-backend.
-
-Do not invent:
-
-- real business APIs;
-- DB/Alembic changes;
-- persistence rows as frontend contracts;
-- provider integrations;
-- real LLM/model routing/streaming;
-- durable Run/Task backend;
-- real tool/effect execution;
-- fake durable success.
-
-Use narrow typed frontend/application seams and deterministic local adapters only when a real product vertical proves need.
 
 Permanent rule:
 
@@ -264,46 +194,35 @@ frontend view model != backend DTO != Domain model != persistence row
 
 ---
 
-## 10. Global semantic alignment
+## 9. Immediate next gate
 
-Frontend consumes rather than redefines:
+> **M0 — Materialization Mapping / Scope Freeze**
 
-- Product Identity / North Star;
-- product simulations;
-- Domain Atlas / Language Map;
-- Logical Model;
-- Physical Model;
-- current DB/Alembic source of record;
-- Intelligence Context/Runtime boundaries;
-- Governed Operation/Effect contracts;
-- frontend production-readiness contracts.
+M0 is next and has not been started by the hygiene pass.
 
-Permanent examples:
+M0 maps the closed substrate to:
 
 ```text
-AI output != canonical fact
-AI proposal != Decision
-Decision != effect
-World != canonical Domain owner
-World relevance != authorization
-selected context != authorization
-planned != actual
-absence != false
-UI hiding != authorization
+existing production code already satisfying the invariant
+bounded generalization needed
+missing model/application production code
+missing shared renderer
+specialist extension
+DANTE seam
+backend-deferred seam
 ```
 
-A frontend label/layout convenience never creates a new Domain concept.
+M0 must not silently start M1, D2–D6 or backend work.
 
 ---
 
-## 11. Operational rules
+## 10. Operational rules
 
 - continue on `feature/home-react` until explicitly authorized otherwise;
-- inspect fresh branch HEAD before production writes;
-- do not casually touch parallel Access/Auth work;
+- inspect fresh branch HEAD before every write scope;
 - no merge/rebase/force/history rewrite/main mutation without explicit authorization;
+- do not casually modify Access/Auth, Timeline or shared AppShell;
 - never manually edit generated route-tree output;
 - preserve frozen Timeline and World geometry contracts unless explicitly reopened;
 - fix CI/test root causes rather than weaken gates;
-- do not carry failure ZIPs/artifacts as project state;
-- update this file + relevant workstream checkpoint/handoff whenever the active gate materially changes.
+- keep docs synchronized whenever the active gate materially changes.

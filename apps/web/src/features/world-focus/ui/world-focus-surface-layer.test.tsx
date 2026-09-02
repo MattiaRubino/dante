@@ -75,6 +75,36 @@ function SurfaceHarness({
   );
 }
 
+function UnknownHarness({
+  registry,
+  presentation,
+}: Readonly<{
+  registry: WorldFocusSurfaceRegistry<WorldFocusSurfaceRegistration>;
+  presentation: 'sidecar' | 'popover';
+}>) {
+  const workspace = useWorldFocusWorkspace();
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() =>
+          workspace.openSurface({
+            instanceId: `future:${presentation}`,
+            kind: 'future-specialist',
+            depth: presentation === 'popover' ? 'peek' : 'explore',
+            presentation,
+            origin: 'application',
+          })
+        }
+      >
+        Open future
+      </button>
+      <AllocatedSurfaceLayer registry={registry} />
+    </>
+  );
+}
+
 describe('WorldFocusSurfaceLayer', () => {
   it('renders only registered shipped surface kinds and keeps the initiating generation visible after context changes', () => {
     const registry = new WorldFocusSurfaceRegistry<WorldFocusSurfaceRegistration>([
@@ -117,37 +147,14 @@ describe('WorldFocusSurfaceLayer', () => {
     expect(screen.queryByText('Bound insight')).toBeNull();
   });
 
-  it('degrades an unregistered surface locally and lets a dismissible surface close', () => {
+  it('degrades an unregistered sidecar locally and lets a dismissible surface close', () => {
     const registry = new WorldFocusSurfaceRegistry<WorldFocusSurfaceRegistration>(
       [],
     );
 
-    function UnknownHarness() {
-      const workspace = useWorldFocusWorkspace();
-      return (
-        <>
-          <button
-            type="button"
-            onClick={() =>
-              workspace.openSurface({
-                instanceId: 'future:1',
-                kind: 'future-specialist',
-                depth: 'explore',
-                presentation: 'sidecar',
-                origin: 'application',
-              })
-            }
-          >
-            Open future
-          </button>
-          <AllocatedSurfaceLayer registry={registry} />
-        </>
-      );
-    }
-
     render(
       <WorldFocusWorkspaceHost worldId="travel">
-        <UnknownHarness />
+        <UnknownHarness registry={registry} presentation="sidecar" />
       </WorldFocusWorkspaceHost>,
     );
 
@@ -155,6 +162,32 @@ describe('WorldFocusSurfaceLayer', () => {
     expect(screen.getByText('Questo contenuto non è disponibile.')).toBeTruthy();
 
     fireEvent.click(screen.getByRole('button', { name: 'Chiudi' }));
+    expect(screen.queryByText('Questo contenuto non è disponibile.')).toBeNull();
+  });
+
+  it('keeps an unregistered popover pointer-transparent outside its close control', () => {
+    const registry = new WorldFocusSurfaceRegistry<WorldFocusSurfaceRegistration>(
+      [],
+    );
+
+    const { container } = render(
+      <WorldFocusWorkspaceHost worldId="finance">
+        <UnknownHarness registry={registry} presentation="popover" />
+      </WorldFocusWorkspaceHost>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open future' }));
+
+    const fallback = container.querySelector<HTMLElement>(
+      '[data-world-focus-surface-id="future:popover"]',
+    );
+    const close = screen.getByRole('button', { name: 'Chiudi' });
+
+    expect(fallback?.dataset.worldFocusSurfacePresentation).toBe('popover');
+    expect(fallback?.style.pointerEvents).toBe('none');
+    expect(close.style.pointerEvents).toBe('auto');
+
+    fireEvent.click(close);
     expect(screen.queryByText('Questo contenuto non è disponibile.')).toBeNull();
   });
 });

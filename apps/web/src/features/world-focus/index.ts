@@ -9,16 +9,6 @@ export {
   type WorldFocusWorld,
 } from './model/world-focus-fixtures';
 export {
-  DEFAULT_WORLD_FOCUS_MOTION_PREFERENCE,
-  normalizeWorldFocusMotionPreference,
-  readWorldFocusMotionPreference,
-  shouldAnimateWorldFocusEntry,
-  WORLD_FOCUS_MOTION_STORAGE_KEY,
-  writeWorldFocusMotionPreference,
-  type WorldFocusMotionPreference,
-  type WorldFocusPreferenceStorage,
-} from './model/world-focus-motion-preference';
-export {
   clearWorldFocusEntry,
   primeWorldFocusEntry,
   readWorldFocusEntry,

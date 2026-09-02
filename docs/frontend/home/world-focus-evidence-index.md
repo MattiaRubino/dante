@@ -1,10 +1,10 @@
 # DANTE — World Focus Research / Review Evidence Index
 
-**Status:** CURRENT EVIDENCE MAP — WS0–WS8 CLOSED / M0 NEXT  
+**Status:** CURRENT EVIDENCE MAP — WS0–WS8 CLOSED / POST-WS8 HYGIENE APPLIED / M0 NEXT  
 **Date:** 2026-09-02  
 **Branch:** `feature/home-react`
 
-This index separates live sequencing authority, closure authority and historical/supporting evidence.
+This index separates live sequencing authority, closure authority, post-closure hygiene and historical/supporting evidence.
 
 Rule:
 
@@ -16,6 +16,7 @@ Rule:
 
 ```text
 world-focus-current-checkpoint.md
+world-focus-post-ws8-hygiene-audit.md
 world-focus-substrate-closure-plan.md
 world-focus-ws8-final-falsification-review.md
 world-focus-ws7-executable-harness-review.md
@@ -48,8 +49,6 @@ Protected-main Domain/Logical/Physical authority outranks frontend convenience w
 `world-focus-workspace-scenario-oracle-evidence.md`
 
 Retained proof for one shared World workspace, unknown World/module pressure, finite registration, specialist extension, stable/adaptive/ephemeral composition, typed drill-down, large-data bounding and cross-World reuse.
-
-Do not restart broad workspace research from zero.
 
 ## E1 — World product reverse engineering
 
@@ -91,8 +90,6 @@ CI 33549465793 PASS
 500 allocation/surface-stack scenarios
 ```
 
-Workspace engineering closure is not by itself universal work-semantic closure.
-
 ## E5 — DANTE spatial/presence
 
 `world-focus-dante-spatial-presence-review.md`
@@ -131,7 +128,7 @@ world-focus-substrate-convergence-corpus.md
 world-focus-substrate-convergence-review.md
 ```
 
-44 primary scenarios + DANTE/no-DANTE + 16 cross-products; X04 exposed CG-32. The later same-space rerun is regression evidence, not independent closure proof.
+44 primary scenarios + DANTE/no-DANTE + 16 cross-products; X04 exposed CG-32.
 
 ## E10 — Cycle B/C
 
@@ -143,26 +140,11 @@ Mechanism-first orthogonal scenarios exposed CG-33..CG-36; metamorphic Cycle C t
 
 `world-focus-substrate-final-convergence-proof.md`
 
-**Final analytical convergence authority.**
-
-Adds:
-
-```text
-48/48 architecture mutants killed
-WL-H01..WL-H12 = 12/12 mapped
-CG-37..CG-40
-all 3-way / high-risk 4-way covering evidence
-18/18 layer remove/merge mutants killed
-18 future-authority substitutions with 0 new World layers
-```
-
-Concern ledger: `CG-01..CG-40`.
+Final analytical convergence authority. Concern ledger: `CG-01..CG-40`.
 
 ## E12 — Fixed combinatorial evidence
 
 `world-focus-substrate-combinatorial-evidence.md`
-
-Canonical vectors:
 
 ```text
 67 rows / 11 axes / strength 3
@@ -190,8 +172,6 @@ WP-03 Comparison
 WP-04 Trajectory
 ```
 
-All other discovery candidates are classified to Domain, L2–L8, composition/query/renderer or rejected universalization.
-
 ## E14 — WS7 executable harness
 
 `world-focus-ws7-executable-harness-review.md`
@@ -208,34 +188,11 @@ Frontend CI:
 33633635890 PASS — attempt 1
 ```
 
-Proof code:
-
-```text
-model/world-focus-work-primitives.ts
-model/world-focus-work-primitives.test.ts
-model/world-focus-substrate-oracle.ts
-model/world-focus-substrate-oracle.test.ts
-model/world-focus-substrate-combinatorial-vectors.ts
-ui/world-focus-substrate-integration.test.tsx
-```
-
-Final hardenings before closure:
-
-```text
-WP-04 missingness + aggregation basis made executable
-ambiguous identity cannot attach derived/DANTE output
-consequential DANTE proposal/action retains execution-time revalidation before effect
-```
-
-Executable coverage confirms the fixed vector hashes and all 4,455 / 2,835 interactions, plus planner/reducer/allocation/registry integration.
-
-This remains non-visual pre-backend proof, not real AuthZ/provider/effect or human visual acceptance.
+This is non-visual pre-backend proof, not real AuthZ/provider/effect or human visual acceptance.
 
 ## E15 — WS8 final falsification
 
 `world-focus-ws8-final-falsification-review.md`
-
-**Final substrate falsification authority.**
 
 Validated proof/runtime HEAD:
 
@@ -249,32 +206,36 @@ Frontend CI:
 33639741630 PASS — attempt 1
 ```
 
-WS8 added three independent pressure styles:
+WS8 added stateful hostile scenarios, mutation-kill against falsified outcomes and post-hardening metamorphic confirmation. The mutation stage found and closed the CG-40 audit gap without weakening the adversarial test.
+
+## E16 — Post-WS8 coherence / hygiene audit
+
+`world-focus-post-ws8-hygiene-audit.md`
+
+Scope:
 
 ```text
-stateful hostile scenarios
-mutation-kill against falsified outcomes
-post-hardening metamorphic confirmation
+live authority routing vs current branch state
+World Focus runtime fallback behavior
+orphaned frontend APIs/scaffolding
+superseded visual implementation residue
+WS7/WS8 closure claims vs executable evidence
 ```
 
-The mutation stage found a real CG-40 proof gap: the resolver rejected invalid saved/derived reuse, but the auditor could fail to kill a falsified outcome that re-enabled reuse after invalidation. The auditor was hardened without weakening the adversarial test.
-
-Reuse now requires:
+Result:
 
 ```text
-current basis
-allowed recipient/purpose disclosure
-stable identity
-no concurrent shared-config conflict
+HYG-01 unknown popover pointer barrier      FIXED
+HYG-02 unused motion preference scaffold    REMOVED
+HYG-03 visual V2/V3 residue                 REMOVED
+HYG-04 legacy SVG base styling              REMOVED
+HYG-05 stale branch-level D2 routing         FIXED
+new substrate class                         0
+WS0–WS8 reopen                              NO
+M0 started                                  NO
 ```
 
-The mutant family was then killed. A separate confirmation pass re-ran all 224 frozen vectors under no-DANTE, responsive/a11y, unknown future World, wrong-World and independent invalidation transformations.
-
-Final WS8 closure matrix is zero across unresolved material gaps, new primitives, new owner layers, generic escape hatches, page-per-World requirements, AI-only paths, Domain/Logical/Physical contradictions, privacy/non-interference contradictions, state/race/responsive redesign classes, new consequential-effect owners and surviving mutants.
-
-A recurring Access keyboard E2E flake was separately stabilized by waiting for the interactive surface before the first Tab. This was a test-readiness change only; production Access behavior and tab order were unchanged. The final CI was fully green on attempt 1.
-
-The later docs-only synchronization commit is not a new proof/runtime evidence point.
+Global Topbar Review remains tracked deprecated AppShell/Home debt outside this World Focus-local hygiene scope.
 
 ---
 
@@ -306,7 +267,7 @@ Reopen only when later executable/materialization evidence shows a concrete sema
 
 > **M0 — Materialization Mapping / Scope Freeze**
 
-M0 is next but is not started by this evidence-index synchronization. It must map closed substrate responsibilities to existing code, bounded generalization, missing production model/application code, shared renderers, specialist extensions, DANTE seams and backend-deferred seams before any M1 implementation begins.
+M0 is next but is not started by this hygiene synchronization.
 
 ---
 

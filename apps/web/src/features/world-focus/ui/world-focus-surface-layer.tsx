@@ -63,15 +63,29 @@ export function WorldFocusSurfaceLayer({
               className="world-focus-surface world-focus-surface-unsupported"
               data-world-focus-surface-id={surface.instanceId}
               data-world-focus-surface-kind={surface.kind}
+              data-world-focus-surface-presentation={surface.presentation}
               data-world-focus-surface-slot={placement.slot}
               data-world-focus-surface-interaction={placement.interaction}
               data-world-focus-surface-status="unsupported"
               inert={surfaceIsInert ? true : undefined}
               role="alert"
+              style={
+                wrapperIsPointerTransparent
+                  ? { pointerEvents: 'none' }
+                  : undefined
+              }
             >
               <p>{t(($) => $.common.worldFocus.surfaces.unavailable)}</p>
               {surface.dismissible ? (
-                <button type="button" onClick={requestClose}>
+                <button
+                  type="button"
+                  onClick={requestClose}
+                  style={
+                    wrapperIsPointerTransparent
+                      ? { pointerEvents: 'auto' }
+                      : undefined
+                  }
+                >
                   {t(($) => $.common.worldFocus.surfaces.close)}
                 </button>
               ) : null}
