@@ -77,8 +77,8 @@ export type TemporalCreateEventRecurrenceEnd =
   | 'none'
   | 'until-date'
   | 'count';
-export type TemporalCreateEventQuotaPeriodKind = 'day' | 'week' | 'month';
-export type TemporalCreateEventCycleUnit = 'day' | 'week' | 'month';
+export type TemporalCreateEventQuotaPeriodKind = 'day' | 'week' | 'month' | 'year';
+export type TemporalCreateEventCycleUnit = 'day' | 'week';
 
 export type TemporalCreateSchedulingIntent = Readonly<{
   constraintKind: TemporalCreateConstraintKind;
