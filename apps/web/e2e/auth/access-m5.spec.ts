@@ -16,6 +16,7 @@ const projectEmailOffset: Readonly<Record<string, number>> = {
 
 const methodsPath = '/api/v1/auth/methods';
 const removePasswordPath = '/api/v1/auth/password';
+const reauthenticatePath = '/api/v1/auth/reauthenticate';
 const googleBeginPath = '/api/v1/auth/google/begin';
 const appleBeginPath = '/api/v1/auth/apple/begin';
 const passkeyAuthenticationBeginPath =
@@ -195,6 +196,38 @@ test.describe('DANTE Access/Auth M5 full-stack security surface', () => {
       page.getByText(
         'DANTE ha bloccato la rimozione perché lascerebbe l’account senza un metodo di autenticazione sicuro.',
       ),
+    ).toBeVisible();
+  });
+
+  test('keeps password reauthentication authoritative across bearer rotation and reload', async ({
+    page,
+  }, testInfo) => {
+    const signInResponse = await signIn(page, emailFor(testInfo, 5));
+    const initialCsrf = await csrfToken(signInResponse);
+    await openSecurity(page);
+
+    await page.getByPlaceholder('Password').fill(password);
+    const reauthenticationPromise = page.waitForResponse(
+      (response) =>
+        response.url().endsWith(reauthenticatePath) &&
+        response.request().method() === 'POST',
+    );
+    await page
+      .getByRole('button', { name: 'Conferma con password' })
+      .click();
+    const reauthentication = await reauthenticationPromise;
+
+    expect(reauthentication.status()).toBe(200);
+    expect(await csrfToken(reauthentication)).not.toBe(initialCsrf);
+
+    await page.getByRole('link', { name: 'Torna ad Accesso' }).click();
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Accesso confermato' }),
+    ).toBeVisible();
+
+    await page.reload();
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Accesso confermato' }),
     ).toBeVisible();
   });
 
