@@ -36,55 +36,53 @@ async function visibleTimelineDay(page: Page): Promise<VisibleTimelineDay> {
   await expect(grid).toBeVisible();
   await grid.scrollIntoViewIfNeeded();
 
-  let date: string | null = null;
-  await expect
-    .poll(async () => {
-      date = await page
-        .locator('.timeline-day-section[data-timeline-date]')
-        .evaluateAll((sections) => {
-          const timelineGrid = document.querySelector('.timeline-grid');
-          if (!(timelineGrid instanceof HTMLElement)) {
-            return null;
-          }
+  const readVisibleDate = async (): Promise<string | null> =>
+    page
+      .locator('.timeline-day-section[data-timeline-date]')
+      .evaluateAll((sections) => {
+        const timelineGrid = document.querySelector('.timeline-grid');
+        if (!(timelineGrid instanceof HTMLElement)) {
+          return null;
+        }
 
-          const gridRect = timelineGrid.getBoundingClientRect();
-          const viewportTop = Math.max(0, gridRect.top);
-          const viewportBottom = Math.min(window.innerHeight, gridRect.bottom);
-          if (viewportBottom - viewportTop <= 80) {
-            return null;
-          }
+        const gridRect = timelineGrid.getBoundingClientRect();
+        const viewportTop = Math.max(0, gridRect.top);
+        const viewportBottom = Math.min(window.innerHeight, gridRect.bottom);
+        if (viewportBottom - viewportTop <= 80) {
+          return null;
+        }
 
-          const viewportCenter = (viewportTop + viewportBottom) / 2;
-          const candidates = sections.flatMap((section) => {
-            if (!(section instanceof HTMLElement)) {
-              return [];
-            }
-            const rect = section.getBoundingClientRect();
-            const dateValue = section.dataset.timelineDate;
-            const visibleTop = Math.max(rect.top, viewportTop);
-            const visibleBottom = Math.min(rect.bottom, viewportBottom);
-            if (
-              !dateValue ||
-              rect.height <= 0 ||
-              visibleBottom - visibleTop <= 80
-            ) {
-              return [];
-            }
-            return [
-              {
-                date: dateValue,
-                distance: Math.abs(
-                  (visibleTop + visibleBottom) / 2 - viewportCenter,
-                ),
-              },
-            ];
-          });
-          candidates.sort((left, right) => left.distance - right.distance);
-          return candidates[0]?.date ?? null;
+        const viewportCenter = (viewportTop + viewportBottom) / 2;
+        const candidates = sections.flatMap((section) => {
+          if (!(section instanceof HTMLElement)) {
+            return [];
+          }
+          const rect = section.getBoundingClientRect();
+          const dateValue = section.dataset.timelineDate;
+          const visibleTop = Math.max(rect.top, viewportTop);
+          const visibleBottom = Math.min(rect.bottom, viewportBottom);
+          if (
+            !dateValue ||
+            rect.height <= 0 ||
+            visibleBottom - visibleTop <= 80
+          ) {
+            return [];
+          }
+          return [
+            {
+              date: dateValue,
+              distance: Math.abs(
+                (visibleTop + visibleBottom) / 2 - viewportCenter,
+              ),
+            },
+          ];
         });
-      return date;
-    })
-    .not.toBeNull();
+        candidates.sort((left, right) => left.distance - right.distance);
+        return candidates[0]?.date ?? null;
+      });
+
+  await expect.poll(readVisibleDate).not.toBeNull();
+  const date = await readVisibleDate();
 
   if (!date) {
     throw new Error('Expected a visible Timeline day section');
@@ -463,7 +461,7 @@ test('double-click and Shift-drag on empty Timeline create contextual defaults',
   await page.goto('/home');
 
   let target = await visibleTimelineDay(page);
-  let section = target.section;
+  const section = target.section;
   expect(target.visibleBottom - target.visibleTop).toBeGreaterThan(80);
 
   const emptyX = Math.min(600, target.box.width - 40);
@@ -479,7 +477,6 @@ test('double-click and Shift-drag on empty Timeline create contextual defaults',
   await expect(page.locator('.timeline-grid')).toBeFocused();
 
   target = await visibleTimelineDay(page);
-  section = target.section;
   expect(target.visibleBottom - target.visibleTop).toBeGreaterThan(80);
 
   const startX = target.box.x + Math.min(600, target.box.width - 40);
