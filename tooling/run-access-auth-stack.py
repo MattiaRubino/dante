@@ -25,9 +25,7 @@ _E2E_ACCOUNT_COUNT = 64
 
 
 def _load_core() -> ModuleType:
-    spec = importlib.util.spec_from_file_location(
-        "dante_access_auth_stack_core", _CORE_PATH
-    )
+    spec = importlib.util.spec_from_file_location("dante_access_auth_stack_core", _CORE_PATH)
     if spec is None or spec.loader is None:
         raise RuntimeError("Could not load the Access/Auth full-stack harness core.")
 
@@ -51,9 +49,7 @@ def _extension_guard(database_name: str) -> Callable[..., None]:
                     sql.Identifier(extension_name)
                 )
                 if expected_version is not None:
-                    statement += sql.SQL(" VERSION {}").format(
-                        sql.Literal(expected_version)
-                    )
+                    statement += sql.SQL(" VERSION {}").format(sql.Literal(expected_version))
                 connection.execute(statement)
 
                 row = connection.execute(
@@ -85,9 +81,7 @@ def _auth_settings_override(
         try:
             capacity = int(raw_capacity)
         except ValueError as exc:
-            raise RuntimeError(
-                f"{_E2E_RATE_CAPACITY_ENV} must be a positive integer."
-            ) from exc
+            raise RuntimeError(f"{_E2E_RATE_CAPACITY_ENV} must be a positive integer.") from exc
         if capacity < 1:
             raise RuntimeError(f"{_E2E_RATE_CAPACITY_ENV} must be at least 1.")
 
@@ -142,15 +136,11 @@ def _seed_account_with_e2e_accounts(
                 (primary_comparison_key,),
             ).fetchone()
             if credential is None:
-                raise RuntimeError(
-                    "Synthetic Access/Auth E2E credential was not seeded."
-                )
+                raise RuntimeError("Synthetic Access/Auth E2E credential was not seeded.")
             verifier, pepper_key_id = credential
 
             for index in range(1, _E2E_ACCOUNT_COUNT + 1):
-                normalized = normalize_email(
-                    f"synthetic.user+e2e-{index:02d}@example.com"
-                )
+                normalized = normalize_email(f"synthetic.user+e2e-{index:02d}@example.com")
                 account_ref = uuid7()
                 connection.execute(
                     """
@@ -213,13 +203,9 @@ def main() -> None:
     database_name = getattr(core, "_DATABASE_NAME", None)
     primary_email = getattr(core, "_EMAIL", None)
     if not isinstance(database_name, str) or not database_name:
-        raise RuntimeError(
-            "Access/Auth harness core does not expose its database name."
-        )
+        raise RuntimeError("Access/Auth harness core does not expose its database name.")
     if not isinstance(primary_email, str) or not primary_email:
-        raise RuntimeError(
-            "Access/Auth harness core does not expose its synthetic email."
-        )
+        raise RuntimeError("Access/Auth harness core does not expose its synthetic email.")
 
     os.environ["VITE_DANTE_APPLE_ENABLED"] = "true"
     os.environ["VITE_DANTE_PASSKEY_ENABLED"] = "true"

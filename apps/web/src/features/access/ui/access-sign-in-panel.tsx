@@ -319,8 +319,12 @@ export function AccessSignInPanel({
                     <path d="M11 12h9m-3 0v3m-3-3v2" />
                   </svg>
                   <span className="access-alternate-method-copy">
-                    <strong>{t(($) => $.common.access.provider.passkey)}</strong>
-                    <small>{t(($) => $.common.access.signin.passkeyHint)}</small>
+                    <strong>
+                      {t(($) => $.common.access.provider.passkey)}
+                    </strong>
+                    <small>
+                      {t(($) => $.common.access.signin.passkeyHint)}
+                    </small>
                   </span>
                 </button>
               </div>
@@ -329,7 +333,10 @@ export function AccessSignInPanel({
         ) : null}
 
         {passkeyError ? (
-          <p className="access-field-error access-authenticator-error" role="alert">
+          <p
+            className="access-field-error access-authenticator-error"
+            role="alert"
+          >
             {passkeyError}
           </p>
         ) : null}

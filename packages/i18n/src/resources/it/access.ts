@@ -241,7 +241,8 @@ export const access = {
     rename: 'Rinomina',
     save: 'Salva',
     remove: 'Rimuovi',
-    errorOperation: 'Non è stato possibile completare l’operazione di sicurezza.',
+    errorOperation:
+      'Non è stato possibile completare l’operazione di sicurezza.',
     errorServiceUnreachable: 'Il servizio Access non è raggiungibile.',
     errorReauthenticationRequired:
       'Conferma di nuovo la tua identità prima di modificare le impostazioni di sicurezza.',

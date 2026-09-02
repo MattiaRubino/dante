@@ -209,7 +209,8 @@ export const access = {
     reauthTitle: 'Recent confirmation',
     reauthBody:
       'Sensitive changes require recent proof that you still control an authenticator.',
-    reauthHint: 'Refresh your identity confirmation, then repeat the operation.',
+    reauthHint:
+      'Refresh your identity confirmation, then repeat the operation.',
     reauthNoInlineMethod:
       'To refresh recent confirmation, return to Access and sign in again with an available method.',
     reauthPassword: 'Confirm with password',
@@ -249,7 +250,8 @@ export const access = {
     errorRemovalBlocked:
       'DANTE blocked this removal because it would leave the account without a safe authenticator.',
     errorPasswordAlreadyEstablished: 'This account already has a password.',
-    errorPasskeyAlreadyRegistered: 'That passkey is already registered with DANTE.',
+    errorPasskeyAlreadyRegistered:
+      'That passkey is already registered with DANTE.',
     errorPasskeyNotFound: 'That passkey is no longer active on this account.',
     errorServiceUnavailable:
       'The authentication service is temporarily unavailable.',

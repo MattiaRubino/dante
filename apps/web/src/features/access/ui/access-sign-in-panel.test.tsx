@@ -25,10 +25,7 @@ function renderPanel({
   apple = true,
   passkey = true,
 }: Availability = {}) {
-  vi.stubEnv(
-    'VITE_DANTE_GOOGLE_CLIENT_ID',
-    google ? 'google-client-id' : '',
-  );
+  vi.stubEnv('VITE_DANTE_GOOGLE_CLIENT_ID', google ? 'google-client-id' : '');
   vi.stubEnv('VITE_DANTE_APPLE_ENABLED', apple ? 'true' : 'false');
   vi.stubEnv('VITE_DANTE_PASSKEY_ENABLED', passkey ? 'true' : 'false');
 

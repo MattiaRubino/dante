@@ -76,7 +76,9 @@ describe('Provider application boundary', () => {
     );
 
     if (preparation === null) {
-      throw new Error('configured Google preparation unexpectedly returned null');
+      throw new Error(
+        'configured Google preparation unexpectedly returned null',
+      );
     }
     await completeGoogleAuthentication({
       preparation,

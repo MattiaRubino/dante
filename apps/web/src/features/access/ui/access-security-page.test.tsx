@@ -452,10 +452,16 @@ describe('AccessSecurityPage', () => {
 
     render(<AccessSecurityPage />);
 
-    expect(screen.getByText('Caricamento delle impostazioni di sicurezza…')).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Aggiungi password' })).toBeNull();
+    expect(
+      screen.getByText('Caricamento delle impostazioni di sicurezza…'),
+    ).toBeTruthy();
+    expect(
+      screen.queryByRole('button', { name: 'Aggiungi password' }),
+    ).toBeNull();
     expect(screen.queryByRole('button', { name: 'Collega Google' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Aggiungi passkey' })).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: 'Aggiungi passkey' }),
+    ).toBeNull();
   });
 
   it('surfaces methods-query failure without guessing account security state and allows retry', () => {
@@ -473,7 +479,9 @@ describe('AccessSecurityPage', () => {
     expect(screen.getByRole('alert').textContent).toContain(
       'Il servizio Access non è raggiungibile.',
     );
-    expect(screen.queryByRole('button', { name: 'Aggiungi password' })).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: 'Aggiungi password' }),
+    ).toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: 'Riprova' }));
     expect(methodsRefetch).toHaveBeenCalledTimes(1);

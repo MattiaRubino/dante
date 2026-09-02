@@ -248,7 +248,11 @@ export function AccessSecurityPage() {
 
   function prepareGoogleSecurityFlow(kind: GoogleSecurityFlow['kind']) {
     clearFeedback();
-    if (!googleEnabled || csrfToken === null || prepareGoogleMutation.isPending) {
+    if (
+      !googleEnabled ||
+      csrfToken === null ||
+      prepareGoogleMutation.isPending
+    ) {
       return;
     }
     setGoogleFlow(null);
@@ -293,7 +297,9 @@ export function AccessSecurityPage() {
             return;
           }
           if (flow.kind === 'reauthenticate') {
-            setSuccessMessage(t(($) => $.common.access.security.reauthComplete));
+            setSuccessMessage(
+              t(($) => $.common.access.security.reauthComplete),
+            );
             return;
           }
           void refreshMethods()
@@ -766,7 +772,9 @@ export function AccessSecurityPage() {
                     <input
                       value={editingPasskeyLabel}
                       maxLength={100}
-                      aria-label={t(($) => $.common.access.security.passkeyLabel)}
+                      aria-label={t(
+                        ($) => $.common.access.security.passkeyLabel,
+                      )}
                       onChange={(event) =>
                         setEditingPasskeyLabel(event.target.value)
                       }
@@ -777,8 +785,7 @@ export function AccessSecurityPage() {
                   <span>
                     {passkey.transports.join(', ') ||
                       t(
-                        ($) =>
-                          $.common.access.security.passkeyTransportUnknown,
+                        ($) => $.common.access.security.passkeyTransportUnknown,
                       )}
                   </span>
                 </div>
@@ -810,7 +817,9 @@ export function AccessSecurityPage() {
                     className="access-danger-button"
                     type="button"
                     disabled={removePasskeyMutation.isPending}
-                    onClick={() => removePasskey(passkey.passkey_credential_ref)}
+                    onClick={() =>
+                      removePasskey(passkey.passkey_credential_ref)
+                    }
                   >
                     {t(($) => $.common.access.security.remove)}
                   </button>
