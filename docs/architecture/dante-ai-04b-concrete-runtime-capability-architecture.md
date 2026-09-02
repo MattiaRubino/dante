@@ -1,42 +1,61 @@
 # DANTE AI-04B — Concrete Runtime + Capability Architecture
 
-- **Status:** CANDIDATE / FIRST DESTRUCTIVE KILL-TEST HARDENED / INDEPENDENT VALIDATION NEXT / NOT CLOSED
+- **Status:** CLOSED / STRUCTURALLY ACCEPTED / FINAL INDEPENDENT VALIDATION COMPLETE
 - **Branch:** `feature/ai-architecture`
 - **Phase:** AI-04 — Productionization Architecture
 - **Sub-phase:** AI-04B — Concrete Runtime + Capability Architecture
-- **PRE-SCOPE:** `cef3105aafc7adbbe77f60a578a1e450e5cad5d3`
+- **Initial PRE-SCOPE:** `cef3105aafc7adbbe77f60a578a1e450e5cad5d3`
+- **Independent-validation PRE-SCOPE:** `221cb9473df8f7b3264d3cef2f3bc6a3ab145430`
 - **Upstream:** AI-02.1 CLOSED / AI-03 CLOSED / AI-04A candidate materialized
+- **Final runtime hardenings:** `RT-01..RT-31`
 - **Provider/model selection:** OPEN / EVIDENCE-DRIVEN
 - **Provider SDK selection:** OPEN
 - **Implementation claim:** NONE
 - **Database change:** NONE
 
-This document converts the accepted DANTE intelligence responsibilities into a concrete provider-neutral runtime architecture without selecting a concrete provider, SDK, transport, sandbox product or production deployment topology.
+This document converts the accepted DANTE intelligence responsibilities into a concrete provider-neutral runtime architecture without selecting a concrete provider, SDK, client transport, sandbox product or production deployment topology.
 
-It is intentionally a **runtime responsibility and failure-semantics specification**, not implementation code and not a microservice map.
+It is a **runtime responsibility and failure-semantics specification**, not implementation code, not a persistence schema and not a microservice map.
+
+The validation chronology is intentionally preserved:
+
+```text
+RESEARCH / CURRENT PROVIDER-PROTOCOL VERIFICATION
+→ FIRST RUNTIME CANDIDATE
+→ FIRST DESTRUCTIVE KILL-TEST FAIL
+→ RT-01..RT-20
+→ COMPOUND RETEST PASS CANDIDATE
+→ FRESH INDEPENDENT VALIDATION FAIL
+→ RT-21..RT-31
+→ FINAL COMPOUND RETEST PASS
+→ AI-04B CLOSED / STRUCTURALLY ACCEPTED
+```
+
+No historical FAIL is rewritten as an earlier PASS.
 
 ---
 
 # 1. Objective
 
-AI-04B must answer how DANTE executes intelligence work when real providers, streams, tools, external effects, background work, external protocols and isolated execution environments are involved.
+AI-04B defines how DANTE executes intelligence work when real models, streams, tools, external effects, background execution, external protocols and isolated execution environments are involved.
 
-The target is:
+Target:
 
 ```text
 one DANTE semantic runtime
 + replaceable model/provider bindings
 + explicit capability/effect governance
 + explicit failure/cancellation/reconciliation semantics
-+ bounded use of provider-native features
-+ no provider protocol becoming DANTE ontology
++ bounded provider-native features
++ protocol adapters that never become DANTE ontology
++ no implementation convenience that weakens accepted semantics
 ```
 
-The runtime must remain compatible with the accepted capability-first modular-monolith backend posture unless later measured evidence justifies extraction.
+The runtime remains compatible with the accepted capability-first modular-monolith backend posture unless future measured evidence justifies extraction.
 
 ---
 
-# 2. Binding upstream invariants
+# 2. Binding upstream authority
 
 AI-04B inherits without weakening:
 
@@ -50,6 +69,7 @@ RUN-START AUTHORIZATION != PERPETUAL AUTHORIZATION
 CANCEL RUN != UNDO ALREADY-DISPATCHED EFFECTS
 SUPERSEDE != CANCEL != ROLLBACK != RECONCILE
 Context != Retrieval != Memory
+ConsumerContext != ContextManifest != BasisManifest
 provider state != canonical DANTE state
 ProviderBinding != Domain identity
 MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT
@@ -59,13 +79,11 @@ DEFAULT NONCANONICAL PERSISTENCE = NO
 semantic obligation != technical execution/audit evidence
 ```
 
-AI-04B does not reopen Domain, Logical, Physical, PostgreSQL Constitution, AI-02 or AI-03 merely because a provider exposes a different API shape.
+AI-04B does **not** reopen Product, Domain, Logical, Physical, PostgreSQL Constitution, AI-02 or AI-03 merely because a provider exposes a different API or protocol shape.
 
 ---
 
 # 3. Runtime responsibility map
-
-Candidate production responsibility flow:
 
 ```text
 Interaction Edge / Session
@@ -76,9 +94,8 @@ WorkContract
         ↓
 Execution Kernel
         │
-        ├─ deterministic compute
-        ├─ solver
-        │
+        ├─ Deterministic Compute
+        ├─ Solver
         ├─ Context Engine / Semantic Query boundary
         │
         ├─ Model Access Runtime
@@ -119,13 +136,11 @@ ChangeSet / EffectGraph / Effect Runtime
 Result Maturity / Disclosure / Safe Publication
 ```
 
-These are responsibilities. They do not imply one service, table, queue or deployment per box.
+These are logical responsibilities. They do not imply one deployment, service, table, queue or worker class per box.
 
 ---
 
 # 4. Run, ModelInvocation and ProviderAttempt
-
-The runtime must not collapse the lifetime of DANTE work into one external API call.
 
 ```text
 Run
@@ -138,42 +153,39 @@ ProviderAttempt
 = one concrete attempt to execute a ModelInvocation against one ProviderBinding
 ```
 
-Example:
+Binding:
 
 ```text
-Run R17
-  └ ModelInvocation M4
-       ├ ProviderAttempt P1 → timeout before accepted outcome known
-       └ ProviderAttempt P2 → alternate eligible binding → completed
+RUN != MODEL INVOCATION != PROVIDER ATTEMPT
 ```
 
-A ProviderAttempt may fail while the ModelInvocation or Run remains recoverable.
+A ProviderAttempt may fail while the logical ModelInvocation or Run remains recoverable.
 
-A Run may complete without any ModelInvocation when deterministic compute or a solver is sufficient.
+A Run may contain zero model invocations when deterministic compute or a solver is sufficient.
 
-These names are runtime concepts, not automatic persistence/table requirements.
+Provider identity belongs at binding/attempt level, not in DANTE work semantics.
+
+These runtime concepts do not automatically require durable rows or new persistence owners.
 
 ---
 
 # 5. Model Access Runtime
 
-The Model Access Runtime owns orchestration around provider-neutral model execution.
-
-Responsibilities include:
+Owns:
 
 ```text
-resolve qualified candidate bindings
-apply routing/budget/entitlement policy
-select HarnessProfile
-construct provider-neutral invocation intent
-invoke ProviderAdapter
-normalize provider events/results/errors
-supervise timeout/cancellation/retry/fallback
-account usage/cost
-surface evidence to Verifier and observability
+qualified binding resolution
+routing / entitlement / budget inputs
+HarnessProfile selection
+provider-neutral invocation intent
+ProviderAdapter invocation
+provider event/result/error normalization
+timeout / cancellation / retry / fallback supervision
+usage/cost evidence
+runtime evidence for verification/observability
 ```
 
-It must not own:
+Does not own:
 
 ```text
 Domain truth
@@ -181,319 +193,317 @@ Authority
 canonical Context/Memory semantics
 Effect authorization
 publication permission
-provider-specific business logic
+provider-specific business meaning
 ```
 
 ---
 
-# 6. ProviderAdapter boundary
+# 6. ProviderAdapter
 
-A ProviderAdapter owns protocol/SDK mechanics only.
-
-Candidate responsibilities:
+Owns only provider/SDK/protocol mechanics:
 
 ```text
 request serialization
-provider auth transport
-stream connection mechanics
-provider event decoding
+provider authentication transport
+stream connection/reconnection mechanics
+raw provider event decoding
 structured-output transport
-function/tool-call transport
+tool/function-call transport
 provider-native built-in-tool transport
 provider continuation/background locators
-usage accounting extraction
+usage extraction
 provider error normalization
-provider cancellation API
-provider response/receipt IDs
+provider cancellation mechanics
+provider response/tool/event IDs
 ```
 
-It must not decide:
-
-```text
-which user data may leave DANTE
-whether a tool is authorized
-whether an effect may execute
-whether a provider refusal should be bypassed
-whether output is publishable
-whether provider state is canonical memory
-```
+It does not decide which data may leave DANTE, whether a capability/effect is authorized, whether a refusal should be bypassed, whether output is publishable or whether provider state is memory/truth.
 
 ---
 
 # 7. Three event planes
 
-DANTE must separate provider wire events from runtime semantics and publication semantics.
-
 ```text
 RAW PROVIDER EVENT
         ↓ ProviderAdapter
 DANTE RUNTIME EVENT
-        ↓ verification / disclosure / publication
+        ↓ verification / disclosure / result maturity
 DANTE PUBLICATION EVENT
 ```
 
-Examples of raw provider events include provider-specific text deltas, function-argument deltas, reasoning metadata, tool lifecycle events, sequence numbers or background status changes.
-
-Candidate normalized runtime event families may include:
+Binding:
 
 ```text
-InvocationStarted
-OutputDelta
-StructuredOutputCandidate
-ToolRequestPartial
-ToolRequestFinalized
-ToolExecutionStarted
-ToolExecutionFinished
-ProviderUsageUpdated
-ProviderAttemptFailed
-ProviderAttemptCancelled
-InvocationCompleted
-InvocationIncomplete
-InvocationRefused
+RAW PROVIDER EVENT
+!= DANTE RUNTIME EVENT
+!= DANTE PUBLICATION EVENT
 ```
 
-Exact names remain implementation-detail candidates.
+Provider sequence/event IDs may support transport reconnection and deduplication but never become DANTE semantic event identity.
 
-Important:
-
-```text
-RAW PROVIDER EVENT IDENTITY
-!= DANTE SEMANTIC EVENT IDENTITY
-```
-
-Provider event sequence numbers may be used to reconnect/deduplicate transport but do not become canonical DANTE history.
+Candidate runtime event families may later include invocation lifecycle, output deltas, finalized structured output, tool request lifecycle, usage updates and provider-attempt outcomes. Exact implementation names remain open.
 
 ---
 
-# 8. Streaming semantics
+# 8. Streaming and publication
 
-Streaming is a transport/presentation optimization, not semantic authority.
-
-A model may stream text while DANTE still withholds publication of claims/effects that require verification or disclosure checks.
+Streaming is transport/presentation optimization, not semantic authority.
 
 ```text
-model stream
+provider stream
 → normalized runtime stream
-→ maturity/disclosure checks
-→ client-safe stream
+→ maturity / disclosure / verification
+→ recipient-safe publication stream
 ```
 
 For consequential work:
 
 ```text
-STREAMED PROPOSAL
-!= EXECUTED EFFECT
+STREAMED PROPOSAL != EXECUTED EFFECT
 ```
 
 For structured output/tool calls:
 
 ```text
-PARTIAL DELTA
-!= FINALIZED VALUE
+PARTIAL DELTA != FINALIZED VALUE
 ```
 
-Backpressure and bounded buffering must be explicit so a slow/disconnected client does not force unbounded memory growth or implicitly cancel all underlying work.
+Backpressure/buffering must be bounded. Slow or disconnected clients do not automatically own cancellation semantics for the underlying Run.
+
+Independent validation adds a stronger publication rule:
+
+```text
+PUBLISHED DELTA = EXTERNALIZATION
+```
+
+Once recipient-visible bytes leave DANTE they cannot be assumed retractable. Required disclosure/result-maturity checks therefore occur **before** irreversible publication of protected or consequential claims.
+
+DANTE publication sequencing is DANTE-owned and independent from provider stream sequence numbers.
 
 ---
 
-# 9. Reconnect and replay
+# 9. Reconnect, replay and deduplication
 
-Providers may expose reconnect/replay primitives such as sequence numbers or event IDs.
-
-DANTE may use them as transport state when current eligibility allows it.
-
-Requirements:
+Provider replay cursors/event IDs are bounded transport state.
 
 ```text
-replayed raw event
-→ deduplicate at transport/runtime boundary
-→ do not repeat a finalized tool/effect dispatch
-→ do not duplicate client-visible semantic events
+replayed provider event
+→ transport/runtime deduplication
+→ no repeated finalized capability/effect dispatch
+→ no duplicate DANTE publication semantic event
 ```
 
-A provider reconnect cursor is bounded technical state, not DANTE memory.
+Binding:
 
-If replay safety cannot be established, DANTE must reconcile from provider/current state rather than guessing.
+```text
+PROVIDER EVENT SEQUENCE / REPLAY
+!= DANTE SEMANTIC EVENT IDENTITY
+```
+
+If replay safety cannot be established, reconcile against provider/current application state rather than guessing.
 
 ---
 
 # 10. Cancellation scopes
 
-Cancellation must be explicit by scope.
+Keep distinct:
+
+```text
+client disconnect
+output stream stop
+ProviderAttempt cancel request
+ModelInvocation cancel
+future Run-work cancel
+Class-B workflow cancellation
+supersession
+effect rollback / compensation / reconciliation
+```
+
+Binding:
 
 ```text
 CLIENT DISCONNECT
-!= OUTPUT STREAM STOP
-!= MODEL INVOCATION CANCEL
-!= PROVIDER ATTEMPT CANCEL
-!= FUTURE RUN-WORK CANCEL
-!= DURABLE WORKFLOW CANCEL
+!= STREAM STOP
+!= INVOCATION CANCEL
+!= RUN CANCEL
 != EFFECT ROLLBACK
 ```
 
-Candidate cancellation path:
+Candidate stop path:
 
 ```text
-user/client requests stop
+request stop
 → stop scheduling optional future work
-→ stop publication stream where applicable
-→ request cancellation of current eligible ProviderAttempt
-→ cancel bounded local/sandbox work where safe
-→ propagate cancellation to durable children where semantics permit
-→ preserve verification/reconciliation for already-dispatched effects
+→ stop publication where applicable
+→ request provider/local cancellation where safe
+→ propagate cancellation to attached children where semantics permit
+→ preserve verification/reconciliation for dispatched or uncertain effects
 ```
 
-If an external effect may already have been accepted, cancellation cannot replace reconciliation.
+Independent validation adds:
+
+```text
+CANCELLATION REQUESTED
+!= CANCELLATION CONFIRMED
+!= EXECUTION QUIESCED
+```
+
+Late provider/tool/background events remain eligible for correlation/reconciliation until the runtime has evidence of the actual outcome.
 
 ---
 
-# 11. Supersession is not cancellation
-
-A new user instruction may supersede prior work without implying that all prior side effects disappear.
+# 11. Supersession
 
 ```text
 new WorkContract
-→ supersedes remaining objective of old Run
+→ supersedes obsolete remaining objective
 → stop obsolete future reasoning where possible
-→ retain already materialized consequences/evidence
-→ reconcile unresolved attempts/effects
+→ retain already materialized consequence/evidence
+→ reconcile unresolved effects/provider attempts
+→ prevent stale superseded output from current publication
 ```
 
-The runtime must make stale/superseded output ineligible for current publication when appropriate.
+```text
+SUPERSEDE != CANCEL != ROLLBACK != RECONCILE
+```
 
 ---
 
 # 12. Provider outcome taxonomy
 
-Provider/API outcomes must be normalized without pretending every failure is equivalent.
-
-Candidate classes:
+Provider outcomes require materially distinct normalized classes such as:
 
 ```text
 completed
 incomplete
 refused
-cancelled
-invalid_request
-invalid_configuration
-auth_failure
-rate_limited
+cancel requested / cancel observed
+invalid request/configuration
+auth failure
+rate limited
 overloaded
-provider_unavailable
-network_failure
-timeout_before_acceptance_known
-timeout_after_acceptance_possible
-context_exhausted
-structured_output_invalid
-tool_transport_failure
-provider_background_unknown
+provider unavailable
+network failure
+timeout before acceptance known
+timeout after acceptance possible
+context exhausted
+structured-output failure
+tool transport failure
+provider-background unknown
 unknown
 ```
 
-Exact implementation enum remains open.
+Exact enums remain implementation-detail work.
 
-The distinction between failure-before-acceptance and outcome-unknown-after-possible-acceptance is critical for safe retry behavior.
+The architecture requires distinction between safe pre-acceptance failure and uncertainty after possible acceptance/side effect.
 
 ---
 
-# 13. Retry policy
+# 13. Retry
 
-Retry is an evidence-driven operation, not a generic `for attempt in range(3)`.
+Retry is evidence-driven, never generic fixed repetition.
 
 ```text
-safe transient failure before side effect / before provider acceptance
-→ bounded retry may be allowed
+safe transient failure before acceptance/side effect
+→ bounded retry MAY be allowed
 
-possible accepted provider/tool/effect state but response lost
-→ outcome unknown
-→ retrieve/reconcile before replay
+possible accepted provider/tool/effect state with lost response
+→ OUTCOME UNKNOWN
+→ retrieve/reread/reconcile before replay
 ```
 
-Retry decisions consider:
+Retry considers:
 
 ```text
 operation purity
 provider idempotency guarantees
-idempotency key/scope
-effect state
+DANTE semantic idempotency scope
+current effect state
 attempt evidence
-remaining budget
-current provider eligibility
-current WorkContract/supersession state
+current WorkContract/supersession
+current eligibility
+remaining resource envelope
 ```
 
 ---
 
-# 14. Refusal is not infrastructure failure
+# 14. Provider IDs vs DANTE idempotency
 
-Provider/model refusal is a semantic output class, not automatically an outage.
+Independent validation found a critical gap:
 
-Rejected:
+```text
+PROVIDER TOOL/CALL/RESPONSE ID
+!= DANTE CAPABILITY/EFFECT IDEMPOTENCY IDENTITY
+```
+
+Provider IDs are attempt-level correlation/evidence only. Retry/replay/failover may produce different provider IDs for the same intended DANTE operation.
+
+DANTE semantic effect identity/idempotency must bind to DANTE-owned operation scope such as bounded work/effect intent, resolved target, normalized operation/arguments, expected state and permit/idempotency scope.
+
+A provider call ID must never be the sole duplicate-effect barrier.
+
+---
+
+# 15. Refusal
+
+```text
+REFUSAL != INFRASTRUCTURE FAILURE
+```
+
+Rejected generic policy:
 
 ```text
 provider A refuses
-→ provider B refuses
-→ provider C maybe agrees
+→ provider B
+→ provider C
+→ use whoever eventually complies
 ```
 
-as a generic fallback algorithm.
-
-```text
-REFUSAL
-!= INFRASTRUCTURE FAILURE
-```
-
-DANTE routing/fallback may not become safety-arbitrage or policy shopping.
-
-A refusal may trigger bounded clarification, safe alternative behavior or escalation according to DANTE policy, not blind vendor hopping.
+Failover cannot become safety-arbitrage or refusal shopping. Refusal may instead lead to safe alternative behavior, clarification or governed escalation.
 
 ---
 
-# 15. Routing policy
+# 16. Routing
 
-Baseline routing should be deterministic/inspectable from minimum necessary metadata.
+Baseline routing is deterministic/inspectable using minimum necessary information.
 
-Candidate input dimensions:
+Inputs may include:
 
 ```text
 required capability
 quality floor
-latency class
-context envelope
+latency/context class
 structured-output/tool requirements
 consequence class
-data/provider eligibility
-region/residency constraints
+provider/data eligibility
+region/residency
 EntitlementProfile
 ResourceBudget
 qualified binding health
-current price/cost policy
+cost policy
 rollout/canary state
 ```
 
-The router should not require sending private full task context to a separate LLM merely to decide which provider is allowed to receive it.
-
 ```text
-ROUTING DECISION
-SHOULD USE MINIMUM NECESSARY INFORMATION
+ROUTING SHOULD USE MINIMUM NECESSARY INFORMATION
 ```
 
-A learned/model router remains a future optimization only if direct eval proves value without weakening privacy/inspectability.
+Do not disclose a full private task to an auxiliary routing model merely to decide which provider may receive the task.
+
+Learned/model routing remains optional and benchmark-gated.
 
 ---
 
-# 16. Provider failover
-
-Failover chain:
+# 17. Failover
 
 ```text
-primary ProviderAttempt fails
+primary attempt fails
 → classify failure
-→ determine whether failover is semantically allowed
-→ re-evaluate alternate binding qualification
+→ establish whether failover is semantically allowed
+→ qualify alternate binding now
 → re-evaluate current provider/data eligibility
 → rebuild/minimize ConsumerContext where required
-→ apply alternate HarnessProfile
+→ bind current alternate HarnessProfile
 → create new ProviderAttempt
 ```
 
@@ -501,50 +511,34 @@ Rejected:
 
 ```text
 primary fails
-→ copy identical serialized payload to another provider
+→ replay identical serialized provider request to another vendor
 ```
-
-The alternate provider may have different retention, state, tooling or context behavior.
-
-Provider server-side fallback features may be used only as a bounded optimization if DANTE can still prove the resulting binding remains within its routing/eligibility policy.
 
 ```text
-PROVIDER SERVER-SIDE FALLBACK
-!= DANTE ROUTING AUTHORITY
+PROVIDER SERVER-SIDE FALLBACK != DANTE ROUTING AUTHORITY
 ```
+
+Any server-side fallback facility is usable only if DANTE can prove all resulting bindings/features remain inside current qualification and eligibility policy.
 
 ---
 
-# 17. Hedged requests
-
-Sending the same task to multiple providers concurrently can reduce tail latency but also multiplies cost and data exposure.
+# 18. Hedged execution
 
 Default:
 
 ```text
-HEDGED MULTI-PROVIDER REQUESTS
-DISABLED
+HEDGED MULTI-PROVIDER EXECUTION = DISABLED
 ```
 
-A future exception requires direct evidence and at least:
-
-```text
-read-only/pure workload
-all providers independently eligible
-no consequential tool/effect path
-bounded duplicate state exposure
-measured tail-latency benefit
-measured economic benefit
-explicit deduplication semantics
-```
+Future exception requires direct evidence and at least pure/read-only workload, independent eligibility for every recipient, no consequential effect path, bounded duplicate exposure, explicit deduplication and measured latency/economic value.
 
 ---
 
-# 18. Provider continuation state
+# 19. Provider continuation state
 
-Provider-native continuation artifacts may include response IDs, interaction IDs, conversation IDs, cache handles, encrypted reasoning/continuation blocks, background job IDs or provider environment IDs.
+Provider continuation artifacts may include response/interaction/conversation IDs, cache handles, encrypted continuation blocks, background IDs or provider environment IDs.
 
-They are classified as bounded technical/provider state.
+They are bounded provider/technical state only.
 
 ```text
 PROVIDER CONTINUATION STATE
@@ -556,51 +550,71 @@ PROVIDER CONTINUATION STATE
 != canonical history
 ```
 
-If retained, they require:
+If retained, bind at least provider/binding identity, purpose, source Run/Invocation, eligibility, expiry/retention and deletion/revocation posture.
+
+Cross-provider failover rebuilds DANTE context instead of translating opaque provider memory.
+
+Independent validation strengthens this boundary:
 
 ```text
-binding/provider identity
-purpose
-eligibility
-retention/expiry
-source Run/Invocation linkage
-safe deletion/revocation posture
+PROVIDER CONTINUATION HANDLE
+!= HARNESS / POLICY / TOOL / CAPABILITY CONTINUITY
 ```
 
-Cross-provider failover reconstructs DANTE context rather than attempting to translate opaque provider memory.
+A continued provider interaction must bind the **current qualified HarnessProfile, current capability projection and current applicable policy**. Provider history reuse must not silently freeze old tools, instructions, policy or delegation.
 
 ---
 
-# 19. Provider background execution
+# 20. Feature-mode qualification
 
-Provider-native background execution can be useful for long model operations, but it is not DANTE durable execution.
+Provider qualification is not a blanket approval for every feature exposed by that provider.
 
 ```text
-PROVIDER BACKGROUND JOB
-!= DANTE DURABLE RUN
+PROVIDER/BINDING ELIGIBLE
+!= EVERY INVOCATION FEATURE MODE ELIGIBLE
 ```
 
-Candidate execution modes:
+Material feature modes include, where applicable:
+
+```text
+stored vs non-stored invocation
+provider conversation/continuation
+background mode
+provider-native search/file state
+provider-native MCP
+provider code/computer execution
+extended prompt/cache state
+provider server-side fallback
+```
+
+Each material mode can change retention, third-party exposure, continuity, deletion, regional or security behavior and therefore belongs to binding/runtime qualification.
+
+Feature-mode choice is not an innocent arbitrary request flag.
+
+---
+
+# 21. Provider background execution
+
+```text
+PROVIDER BACKGROUND JOB != DANTE DURABLE RUN
+```
+
+Execution modes:
 
 ```text
 INLINE
-ordinary interactive request
-
 BOUNDED ASYNC
-short/retryable work whose durability semantics are simple
-
-PROVIDER BACKGROUND
-provider-owned continued execution only when state/retention/data eligibility permits
-
+ELIGIBLE PROVIDER BACKGROUND
 CLASS-B DURABLE
-DANTE durable workflow when crash/wait/callback/human-approval/reconciliation semantics require it
 ```
 
-Provider background state may be orchestrated by a durable DANTE workflow when a real consumer requires both.
+Provider background work is permitted only when its storage/retention/data feature mode is currently eligible.
+
+A Class-B DANTE workflow may orchestrate a provider background job by storing only bounded technical locators when justified, then polling/resuming/reconciling rather than blindly replaying after crash.
 
 ---
 
-# 20. Class-A and Class-B remain binding
+# 22. Class-A and Class-B
 
 Accepted project decision remains:
 
@@ -609,23 +623,38 @@ Class A
 PostgreSQL transactional outbox + bounded worker
 
 Class B
-Restate selected but dormant until first real Class-B durable workflow
+Restate selected / dormant until first real qualifying Class-B workflow
 ```
-
-AI-04B does not reactivate the selection debate because providers now expose background APIs.
 
 ```text
-BACKGROUND CAPABILITY
-!= DURABILITY SEMANTICS
+BACKGROUND CAPABILITY != DURABILITY SEMANTICS
 ```
 
-Restate activation still requires a real qualifying consumer and its existing privacy/recovery proof obligations.
+Provider background APIs do not reopen this architecture decision.
+
+Restate activation remains trigger-based and still requires applicable privacy/recovery/direct-proof obligations.
 
 ---
 
-# 21. Structured output
+# 23. Attached vs detached child work
 
-Structured generation has multiple correctness layers:
+Independent validation found another necessary distinction:
+
+```text
+ATTACHED CHILD WORK != DETACHED CHILD WORK
+```
+
+Attached child work may inherit parent cancellation/lifecycle semantics.
+
+Detached/one-way/delayed work can outlive its initiator and therefore must be explicit, with clear lifecycle owner, purpose, current eligibility and reconciliation responsibility.
+
+Consequential detached work must never be created as an accidental side effect of a provider/runtime API convenience.
+
+---
+
+# 24. Structured output
+
+Correctness layers:
 
 ```text
 provider constrained generation
@@ -634,133 +663,93 @@ provider constrained generation
 → grounding/evidence validation
 ```
 
-Valid JSON does not prove a valid DANTE action or fact.
+Valid JSON is not proof of a valid DANTE fact/action.
 
-Provider-specific structured-output mechanics live in HarnessProfile/ProviderAdapter; DANTE semantic schema/invariants do not.
+Provider mechanics stay in HarnessProfile/ProviderAdapter; DANTE semantic validation remains DANTE-owned.
 
 ---
 
-# 22. Tool request lifecycle
-
-A model tool request is a proposal to invoke a capability, not authority to execute it.
-
-Required flow:
+# 25. Tool request lifecycle
 
 ```text
-model emits tool request/deltas
-→ wait for finalized arguments
+model emits request/deltas
+→ WAIT for finalized arguments
 → transport parse
 → schema/type validation
 → semantic validation
-→ resolve capability version
-→ Capability PEP / eligibility
-→ Effect PEP when consequential
+→ resolve DANTE capability/version
+→ Capability PEP / current eligibility
+→ Effect PEP where consequential
 → dispatch
 → receipt
 → verification/reconciliation where required
 → normalized tool result
-→ model continuation / result maturity
+→ model continuation/result maturity
 ```
-
-Critical:
 
 ```text
-PARTIAL TOOL ARGUMENTS
-!= EXECUTABLE TOOL REQUEST
+PARTIAL TOOL ARGUMENTS != EXECUTABLE TOOL REQUEST
 ```
 
-Provider streaming may expose function-call argument deltas before a final argument object exists. Those deltas are never dispatched.
+Partial streamed argument fragments never dispatch a capability.
 
 ---
 
-# 23. Capability registry, discovery and runtime
-
-Keep separate:
+# 26. Capability Registry / Discovery / Runtime
 
 ```text
 Capability Registry
-= identity/version/contract/policy metadata
+= identity / version / semantic contract / policy metadata
 
 Capability Discovery
-= select the small relevant capability subset
+= select bounded relevant subset
 
 Capability Runtime
-= validate/authorize/dispatch/observe/reconcile
+= validate / authorize / dispatch / observe / reconcile
 ```
 
-The model receives only a bounded projection of capability metadata necessary for current work.
-
-A large global tool catalog should not be injected into every prompt merely because it exists.
-
-Lazy discovery/search is preferred when capability cardinality grows.
+The model receives only a purpose-bounded projection of capability metadata. Large catalogs are lazily searched/discovered rather than injected wholesale into every prompt.
 
 ---
 
-# 24. Parallel tool calls
-
-Providers may emit multiple tool calls in parallel.
-
-That does not authorize DANTE to run consequential effects concurrently.
+# 27. Parallel tool proposals
 
 ```text
 PROVIDER PARALLEL TOOL CALL
 != EFFECTGRAPH PARALLEL AUTHORIZATION
 ```
 
-Independent read-only operations may execute concurrently when policy/resource limits permit.
+Independent read-only operations may be parallelized when policy/resource rules allow.
 
-Consequential operations obey ChangeSet/EffectGraph dependencies, target state, approval and verification regardless of provider emission order.
-
----
-
-# 25. Provider-native tools
-
-Built-in provider tools such as search, file search, code execution or computer use are provider capabilities, not DANTE semantic capabilities by definition.
-
-```text
-PROVIDER TOOL
-!= DANTE CAPABILITY
-```
-
-Use requires:
-
-```text
-WorkContract fit
-provider/data eligibility
-source standing/currentness treatment
-retention/state review
-cost/resource budget
-security/injection review
-result normalization
-verification where consequential
-```
-
-Native-tool quality belongs to the AI-04A augmentation track, not core portability proof.
+Consequential operations obey ChangeSet/EffectGraph dependencies, target state, current approval/authorization and verification regardless of provider emission order.
 
 ---
 
-# 26. MCP boundary
+# 28. Provider-native tools
 
-MCP is an external protocol adapter, not DANTE's internal capability ontology.
+```text
+PROVIDER TOOL != DANTE CAPABILITY
+```
 
-Preferred direction:
+Native search, file tools, code execution, computer use or similar features require WorkContract fit, source/currentness semantics, provider/data eligibility, retention/state review, security/injection controls, resource budget, result normalization and verification where needed.
+
+Native tool quality is augmentation evidence, not proof of portable DANTE cognition.
+
+---
+
+# 29. MCP
+
+Preferred boundary:
 
 ```text
 DANTE Capability Registry / Runtime
-        ↓
-MCP client/server adapter
-        ↓
-external MCP ecosystem
+→ MCP adapter/gateway
+→ external MCP ecosystem
 ```
 
-not:
+MCP wire contracts never become DANTE capability ontology by convenience.
 
-```text
-MCP tool schema
-= DANTE canonical capability definition
-```
-
-Binding rules:
+Binding:
 
 ```text
 MCP TOOL DISCOVERY != TRUST
@@ -770,62 +759,46 @@ MCP TASK != DANTE RUN
 MCP ELICITATION != DANTE APPROVAL
 ```
 
-A remote MCP server may supply data or requests; DANTE still owns identity/delegation, policy, capability/effect governance and result truth.
+Current MCP stateless-core / Tasks-extension direction reinforces the separation between protocol state and DANTE continuity/durable execution.
+
+Cached capability lists require current trust/eligibility/version revalidation.
 
 ---
 
-# 27. MCP 2026-07-28 implications
+# 30. MCP input-required / auto-fulfilment
 
-Current MCP `2026-07-28` moved the protocol core to stateless request/response semantics, made requests self-describing, introduced header-based routing/cacheable list results, strengthened authorization and moved Tasks into an extension.
-
-DANTE implications:
+Independent validation strengthens the MCP boundary:
 
 ```text
-protocol session state is not required for DANTE continuity
-cached tool discovery requires current trust/eligibility revalidation
-MCP Tasks extension does not become DANTE durable execution automatically
-MRTR/input-required behavior does not become DANTE approval automatically
-protocol authorization does not replace application Authority
+PROTOCOL INPUT_REQUIRED / AUTO-FULFILMENT
+!= AUTHORIZED USER INPUT
+!= CONSENT
+!= DANTE APPROVAL
 ```
 
-Legacy MCP transport/session assumptions must not leak into DANTE architecture.
+No protocol SDK convenience may auto-answer a consequential elicitation with model-generated content and thereby manufacture user approval/Consent/Authority.
+
+DANTE must intercept and govern any interaction that semantically requires the user or an external approver.
 
 ---
 
-# 28. Provider-native MCP
+# 31. Provider-native MCP
 
-Some model platforms can connect directly to remote MCP servers.
-
-Default DANTE posture remains:
+Default:
 
 ```text
 model
 → DANTE Capability Runtime / controlled MCP gateway
-→ registered external MCP server
+→ registered remote server
 ```
 
-Provider-native MCP is an optional augmentation only when DANTE can still govern:
+Provider-native remote MCP is optional augmentation only when DANTE still governs server registration, credentials/scopes, purpose/data/retention eligibility, capability/effect policy, evidence and revocation.
 
-```text
-server identity/registration
-credentials/scopes
-purpose/data eligibility
-retention/third-party exposure
-capability set
-effect policy
-observability/evidence
-revocation
-```
-
-No provider-native MCP feature may bypass DANTE capability/effect enforcement.
+No provider-native connector bypasses DANTE PEPs.
 
 ---
 
-# 29. A2A boundary
-
-A2A is for interoperating with independent agent systems.
-
-Candidate direction:
+# 32. A2A
 
 ```text
 External Agent
@@ -839,7 +812,7 @@ Work Intake / WorkContract
 normal DANTE runtime
 ```
 
-Binding rules:
+Binding:
 
 ```text
 A2A AGENT CARD / CAPABILITY CLAIM != TRUST
@@ -848,50 +821,62 @@ A2A TASK STATUS != DANTE CANONICAL STATE
 A2A AUTHENTICATION != DANTE AUTHORITY
 ```
 
-Do not decompose DANTE internally into artificial “Calendar Agent / Goal Agent / Memory Agent” services merely to use A2A.
+DANTE does not decompose itself into permanent Calendar/Goal/Memory agents merely because an inter-agent protocol exists.
 
 ---
 
-# 30. External-agent delegation
+# 33. Late remote callbacks and task updates
 
-External agents create a confused-deputy risk.
+Independent validation adds:
 
-Runtime must preserve enough context to distinguish:
+```text
+REMOTE CALLBACK / TASK UPDATE
+!= CURRENT DANTE RUN ELIGIBILITY
+```
+
+A late provider/MCP/A2A/background callback must be correlated to the original bounded work and then checked against current:
+
+```text
+Run lifecycle
+supersession
+Actor / represented-party / delegation
+purpose/eligibility
+expected target/material state
+applicability
+```
+
+It may require verification/reconciliation. A remote `completed` status does not automatically mutate DANTE canonical state or resurrect superseded work.
+
+---
+
+# 34. Delegated identity / confused deputy
+
+Runtime preserves enough context to distinguish:
 
 ```text
 technical Principal
-initiating Actor where applicable
+initiating Actor when applicable
 represented party
 external client/application
 external agent identity
-delegation/scopes
+delegation basis/scopes
 purpose
 recipient
 ```
 
-An authenticated external agent must not silently inherit all Authority of a represented human.
+Authentication of an external agent does not grant full Authority of the represented human.
 
-DANTE credentials must not be blindly forwarded downstream.
+DANTE credentials are never blindly forwarded downstream.
 
 ---
 
-# 31. Execution Environment boundary
+# 35. Execution Environment
 
-`Execution Environment` is an AI-02 responsibility activated only for workloads that actually need an execution environment.
+Activated only where a real execution surface is needed, such as generated code, browser/computer automation, repository/file manipulation, complex artifact transformation or untrusted tooling.
 
-Typical cases:
+Ordinary conversation/reasoning does not require a sandbox.
 
-```text
-model-generated code
-browser/computer automation
-repository/file manipulation
-complex artifact transformation
-untrusted third-party tooling
-```
-
-Ordinary conversation/reasoning does not require creating a sandbox.
-
-Candidate environment manifest dimensions:
+Candidate manifest dimensions remain:
 
 ```text
 environment identity/version
@@ -908,111 +893,87 @@ verification/test commands
 
 ---
 
-# 32. Provider-hosted execution vs DANTE environment
-
-Provider-hosted code/computer/sandbox features may be useful but remain provider environments.
+# 36. Provider-hosted execution
 
 ```text
-PROVIDER-HOSTED EXECUTION
-!= DANTE Execution Environment
+PROVIDER-HOSTED EXECUTION != DANTE Execution Environment
 ```
 
-They may be used for eligible bounded computation/file analysis where DANTE does not need to grant broad trusted credentials.
+Provider-hosted code/computer environments may be useful for eligible bounded computation or file analysis but do not silently receive broad DANTE/database/service secrets.
 
-They must not silently receive:
-
-```text
-PostgreSQL owner/runtime credentials
-secret-manager credentials
-broad service tokens
-unbounded user delegation
-high-value application secrets
-```
-
-When generated code needs privileged DANTE/external operations, use a DANTE-controlled capability/credential broker.
+Privileged operations go through DANTE-controlled typed capability/credential brokerage.
 
 ---
 
-# 33. Isolation posture
+# 37. Isolation and credential/egress broker
 
-AI-04B retains threat-model-driven isolation rather than choosing one technology now.
-
-Candidate tiers remain:
+Technology remains trigger/evidence-driven:
 
 ```text
 T0 trusted deterministic compute
 T1 WASM/WASI where workload fits
-T2 hardened container / syscall-isolated environment
-T3 microVM/VM for stronger arbitrary-code isolation
+T2 hardened container/syscall-isolated execution
+T3 microVM/VM when stronger arbitrary-code isolation is required
 ```
 
-Technology selection remains open and must be benchmarked against real workload compatibility, startup latency, isolation strength, resource controls and operational burden.
-
----
-
-# 34. Credential and egress broker
-
-Untrusted/model-generated execution should not hold high-value credentials directly.
-
-Preferred shape:
+Preferred privileged path:
 
 ```text
-Execution Environment
-(no broad secret material)
-        ↓ typed capability request
-Trusted Broker / Capability Runtime
-        ├ identity/delegation
-        ├ policy
-        ├ credential acquisition
-        ├ target restriction
-        ├ egress restriction
-        └ evidence/audit
-        ↓
-DANTE / external system
+isolated environment
+(no broad high-value credentials)
+→ typed capability request
+→ trusted broker / Capability Runtime
+   ├ identity/delegation
+   ├ current policy
+   ├ scoped credential acquisition
+   ├ target restrictions
+   ├ egress restrictions
+   └ evidence
+→ DANTE / external system
 ```
 
-Network egress should be deny-by-default or capability-bounded for untrusted environments where feasible.
+Deny-by-default or capability-bounded network egress is preferred for untrusted execution where workload compatibility permits.
+
+No sandbox product is selected by AI-04B.
 
 ---
 
-# 35. Browser and computer-use hierarchy
+# 38. Browser/computer-use hierarchy
 
 Prefer the least fragile interface that expresses the required operation:
 
 ```text
 1 DANTE/native semantic capability
-2 external provider/application API
+2 external application/provider API
 3 accessibility/DOM/OS semantic automation
 4 visual/pixel computer use
 ```
 
-Moving down the hierarchy generally increases fragility, latency, security surface and verification burden.
+Moving downward generally increases fragility, latency, security surface and verification burden.
 
-Computer use remains trigger-gated, not baseline runtime.
+Computer use remains trigger-gated.
 
 ---
 
-# 36. Multi-agent topology
+# 39. Multi-agent topology
 
 Default:
 
 ```text
 one logical DANTE orchestration responsibility
 + deterministic tools
-+ selective parallel workers when evidence justifies them
++ selective parallel workers where evidence justifies them
 ```
 
-Multi-agent decomposition is justified only for real independent subproblems, isolation, specialization, latency or scale benefits.
+Multi-agent decomposition requires real independent subproblems, isolation/specialization/latency/scale value.
 
-Do not mirror product domains into permanent agent identities by default.
+Parallel agents do not acquire independent Authority by existing.
 
-Parallel workers do not gain independent Authority merely because they are separate agents.
+No permanent domain-agent taxonomy is accepted.
 
 ---
 
-# 37. Resource and entitlement integration
-
-Runtime routing consumes the commercial/resource boundary defined in AI-04A.
+# 40. Entitlement / ResourceBudget integration
 
 ```text
 WorkContract
@@ -1021,66 +982,108 @@ WorkContract
 + ResourceBudget
 + required quality floor
 + provider/data eligibility
-        ↓
-qualified execution routes
+→ qualified execution routes
 ```
-
-Commercial entitlement can govern future optional resource use, not truth/safety floors.
 
 ```text
-ENTITLEMENT AT RUN START
-!= PERPETUAL ENTITLEMENT FOR ALL FUTURE WORK
+ENTITLEMENT AT RUN START != PERPETUAL ENTITLEMENT
 ```
 
-An upgrade/downgrade or quota change may affect future model/tool/background work.
-
-It cannot erase already-created effect, verification or reconciliation obligations.
+Upgrade/downgrade/quota changes can govern future optional work but cannot erase effect, verification or reconciliation obligations already created.
 
 ---
 
-# 38. Resource accounting
+# 41. Budget admission and metering
 
-Budgeting includes more than tokens:
+Resource governance includes more than model tokens:
 
 ```text
-model calls
-input/output/reasoning tokens
-money
-native tool/search charges
-tool/external calls
+model calls/tokens/money
+native tools/search
+external calls
 DB work where meaningful
 sandbox CPU/RAM/disk
 network egress
 parallel workers
-active compute time
+active compute
 ```
 
-Waiting calendar time is distinct from active compute.
+Independent validation adds:
 
-Backpressure/degradation policy may reduce optional work, model tier or parallelism only while preserving the applicable quality/safety floor.
+```text
+BUDGET ADMISSION
+!= FINAL METERED COST
+!= GUARANTEED IMMEDIATE PROVIDER STOP
+```
+
+A provider may consume additional billable work between a local budget decision and actual cancellation/quiescence; final usage can arrive after execution.
+
+AI-04C owns concrete reservation/settlement/overshoot/rate-limit mechanics. AI-04B only binds the semantic requirement that quota exhaustion must not be treated as proof that external work stopped or that unresolved consequences disappeared.
 
 ---
 
-# 39. Operational evidence boundary
+# 42. Frozen configuration vs current authorization
 
-AI-04B produces runtime evidence for later AI-04C observability/audit/control-plane design.
+Stable configuration references are required for reproducibility, but independent validation found a critical distinction:
 
-At minimum the runtime must make it possible to distinguish:
+```text
+FROZEN EXECUTION CONFIGURATION
+!= PERPETUAL CURRENT AUTHORIZATION
+```
+
+A Run may record stable references to model target, HarnessProfile, routing/capability/security policy versions and environment specification.
+
+Consequential boundaries still re-evaluate current Authority/AuthZ/Consent/provider eligibility/target MaterialState/entitlement where required by accepted DANTE semantics.
+
+Reproducibility and current authorization are complementary responsibilities, not alternatives.
+
+---
+
+# 43. Provider-state revocation and deletion
+
+Provider deletion can be asynchronous or unavailable for a time.
+
+DANTE suppression/revocation must therefore take effect locally before physical external deletion is confirmed:
+
+```text
+DANTE forget/revoke/suppress
+→ immediately mark provider continuation/cache/background state INELIGIBLE FOR REUSE
+→ request provider deletion/cancellation where supported
+→ track/reconcile external purge/expiry as needed
+```
+
+Binding:
+
+```text
+PHYSICALLY STILL PRESENT AT PROVIDER
+!= CURRENTLY ELIGIBLE FOR DANTE REUSE
+```
+
+This extends AI-03 anti-resurrection/source-lifecycle rules into runtime provider state.
+
+---
+
+# 44. Operational evidence boundary
+
+AI-04B requires enough runtime evidence for later AI-04C observability/audit/control-plane design to distinguish at least:
 
 ```text
 Run identity
 ModelInvocation identity
-ProviderAttempt/binding identity
+ProviderAttempt + binding + feature mode
 routing reason/version
-provider result/error class
-usage/cost
+provider result/error/cancellation state
+usage/cost evidence
 capability/tool requests
-cancellation/fallback/retry events
+DANTE semantic idempotency identity
+retry/failover/reconnect events
 provider continuation/background locator refs
+late callback/task correlation
 verification/effect/reconciliation refs
+publication sequencing refs where needed
 ```
 
-This does not decide physical telemetry/audit persistence.
+This does not choose physical evidence storage.
 
 ```text
 TELEMETRY != AUDIT != CANONICAL DOMAIN TRUTH
@@ -1088,237 +1091,212 @@ TELEMETRY != AUDIT != CANONICAL DOMAIN TRUTH
 
 ---
 
-# 40. Current official-source evidence ledger
+# 45. Official-source runtime evidence posture
 
-AI-04B used current provider/protocol documentation only to validate runtime boundary assumptions, not to select a vendor.
+AI-04B used current provider/protocol documentation only to validate runtime boundary assumptions, never to select a vendor.
 
-Current evidence includes:
+Evidence checked during the candidate and independent pass included materially different behavior around:
 
 ```text
-OpenAI Responses API
-- response status includes completed/failed/in_progress/cancelled/queued/incomplete
-- response cancellation endpoint exists
-- streaming events carry provider sequence numbers
-- function/custom-tool inputs can arrive as partial delta events before done/final events
-- background execution is an available request mode
-- retrieval can resume streaming from a provider sequence position
-
-Gemini Interactions API
-- background execution returns an interaction identity
-- clients can poll/stream/reconnect
-- stream reconnect can use event_id / last_event_id
-- provider continuation can use previous_interaction_id
-- provider-managed execution/environment state exists for some workloads
-
-MCP 2026-07-28
-- stateless protocol core
-- self-describing requests / header-based routing
-- cacheable ordered list responses
-- MRTR/input-required flow
-- Tasks moved to extension
-- authorization hardening
-
-A2A
-- current released specification 1.0.0
-- intended for communication between independent agent systems
+provider response/background/cancellation/replay
+partial streamed tool/function arguments
+provider continuation IDs and interaction-scoped settings
+provider feature-specific storage/retention eligibility
+MCP stateless core / Tasks / input-required semantics
+A2A independent task lifecycle
+Restate cancellation propagation / detached work behavior
 ```
 
-Official references used during this pass:
-
-- `https://developers.openai.com/api/reference/cli/resources/beta/subresources/responses`
-- `https://developers.openai.com/api/reference/cli/resources/responses/methods/create`
-- `https://developers.openai.com/api/reference/cli/resources/responses/methods/retrieve`
-- `https://ai.google.dev/gemini-api/docs/background-execution`
-- `https://blog.modelcontextprotocol.io/posts/2026-07-28/`
-- `https://a2a-protocol.org/dev/specification/`
-
-Provider facts are time-sensitive and must be rechecked before implementation/qualification.
+Provider/protocol facts are time-sensitive and MUST be rechecked immediately before implementation/qualification.
 
 ---
 
-# 41. First destructive runtime kill-test
+# 46. First destructive kill-test record
 
-The initial AI-04B candidate was attacked with compound cases including:
+The first candidate was attacked with compound cases including:
 
 ```text
 client disconnect during stream
-user STOP while model call remains active
+STOP while provider call remains active
 STOP after external effect dispatch
 partial streamed tool arguments
-parallel read and consequential write calls
-provider 429 / overload / outage
-provider refusal followed by alternate provider
-provider timeout after native tool/effect-like work
-OpenAI-direct → cloud-hosted/alternate binding failover
-provider background task + DANTE process crash
-provider background state + later deletion/revocation
-provider background requiring storage on a no-retention workload
-active Run + commercial tier downgrade
-provider continuation reused after Actor/represented-party switch
-MCP catalog cached across authorization/trust change
-malicious MCP tool description
-MCP input-required/elicitation mistaken for approval
-provider-native MCP with broad credential
-A2A Agent Card capability/authority overclaim
-A2A task outliving DANTE Run semantics
-provider-hosted code requesting DANTE secret
-sandbox timeout after external dispatch
+parallel read + consequential write calls
+provider rate limit / overload / outage
+provider refusal + alternate provider
+outcome-unknown retry
+provider background + process crash
+provider background + deletion/revocation
+provider storage on no-retention workload
+commercial downgrade/quota exhaustion mid-run
+provider continuation after Actor switch
+MCP catalog/cache/trust drift
+malicious MCP descriptions
+MCP elicitation mistaken for approval
+provider-native MCP broad credentials
+A2A authority/capability overclaim
+provider-hosted execution requesting DANTE secrets
 routing requiring full private context
-hedged two-provider request
-stream replay duplicating events/tool call
-context window exhaustion mid-Run
-untrusted search/web result carrying instructions
-opaque provider continuation/reasoning state
-provider server-side fallback changing binding
-budget exhausted while external outcome is UNKNOWN
+hedged multi-provider execution
+stream replay duplicating tool/effect
+provider-side fallback
+budget exhaustion while effect outcome UNKNOWN
 ```
 
-The first candidate **FAILED** these combined pressures until the RT hardenings below were made explicit.
-
----
-
-# 42. AI-04B runtime invariants
+Result:
 
 ```text
-RT-01
-RUN != MODEL INVOCATION != PROVIDER ATTEMPT.
-
-RT-02
-RAW PROVIDER EVENT != DANTE RUNTIME EVENT
-!= PUBLICATION EVENT.
-
-RT-03
-CLIENT DISCONNECT != STREAM STOP != INVOCATION CANCEL
-!= RUN CANCEL != EFFECT ROLLBACK.
-
-RT-04
-PARTIAL TOOL ARGUMENTS != EXECUTABLE TOOL REQUEST.
-
-RT-05
-PROVIDER PARALLEL TOOL CALL
-!= EFFECTGRAPH PARALLEL AUTHORIZATION.
-
-RT-06
-PROVIDER BACKGROUND EXECUTION
-!= DANTE DURABLE EXECUTION.
-
-RT-07
-PROVIDER-STORED CONTINUATION STATE
-!= DANTE SESSION / CONTEXT / MEMORY.
-
-RT-08
-RETRY CLASSIFICATION MUST ACCOUNT FOR
-ACCEPTANCE AND SIDE-EFFECT UNCERTAINTY.
-
-RT-09
-REFUSAL != INFRASTRUCTURE FAILURE.
-NO SAFETY-ARBITRAGE FALLBACK.
-
-RT-10
-SERVER-SIDE PROVIDER FALLBACK
-!= DANTE ROUTING AUTHORITY.
-
-RT-11
-ROUTING MUST USE MINIMUM NECESSARY INFORMATION
-AND SELECT ONLY QUALIFIED CURRENT BINDINGS.
-
-RT-12
-HEDGED MULTI-PROVIDER EXECUTION IS NOT A SAFE DEFAULT.
-
-RT-13
-PROVIDER TOOL != DANTE CAPABILITY.
-NATIVE TOOLS DO NOT BYPASS SOURCE/EFFECT GOVERNANCE.
-
-RT-14
-MCP DISCOVERY / DESCRIPTION != TRUST / AUTHORITY.
-
-RT-15
-MCP ELICITATION != DANTE APPROVAL.
-MCP TASK != DANTE RUN.
-
-RT-16
-A2A DISCOVERY / TASK STATUS
-!= DANTE AUTHORITY / CANONICAL STATE / RUN.
-
-RT-17
-PROVIDER-HOSTED EXECUTION
-!= DANTE EXECUTION ENVIRONMENT.
-
-RT-18
-PROVIDER EVENT SEQUENCE / REPLAY
-!= DANTE SEMANTIC EVENT IDENTITY.
-
-RT-19
-ENTITLEMENT/BUDGET CHANGE MAY GOVERN FUTURE WORK
-BUT CANNOT ERASE EFFECT/RECONCILIATION OBLIGATIONS.
-
-RT-20
-NO MODEL/PROVIDER FEATURE MAY SILENTLY
-REDEFINE DANTE RUNTIME SEMANTICS.
+FIRST CANDIDATE → FAIL
+RT-01..RT-20 ADDED
+FIRST COMPOUND RETEST → PASS CANDIDATE
 ```
 
 ---
 
-# 43. Compound retest after RT-01..RT-20
+# 47. Fresh independent validation record
 
-After incorporating RT-01..RT-20, the candidate survives the first compound runtime retest at the **architecture level**:
+A fresh review was then performed **without assuming RT-01..RT-20 were sufficient**.
+
+New compound failures found:
 
 ```text
-provider swap does not redefine DANTE Run
-stream reconnect cannot authorize duplicate effect
-cancel does not pretend rollback
-partial tool args cannot dispatch
-parallel model proposals remain EffectGraph-governed
-background provider work does not become durability authority
-provider state remains replaceable technical state
-refusal cannot be bypassed through provider shopping
-MCP/A2A claims do not create Authority
-provider sandbox does not inherit trusted credentials
-commercial downgrade cannot erase reconciliation
+cancel requested but provider/runtime still running
+provider continuation reused while tools/system/HarnessProfile changed
+provider generally eligible but specific stored/background/native mode ineligible
+DANTE forget while provider physical state remains present
+retry/failover changes provider call ID for same semantic effect
+frozen Run configuration mistakenly treated as perpetual authorization
+recipient stream publishes bytes before final disclosure maturity
+late MCP/A2A/provider callback arrives after cancellation/supersession
+one-way/detached child survives parent lifecycle unexpectedly
+quota admission assumed to equal exact final bill/instant stop
+MCP input-required/SDK auto-fulfilment manufactures apparent user input/approval
 ```
 
-This is **PASS CANDIDATE**, not closure.
+Result:
 
-AI-04B requires a fresh independent destructive validation before it may become CLOSED / STRUCTURALLY ACCEPTED.
+```text
+FRESH INDEPENDENT VALIDATION → FAIL
+11 NEW HARDENINGS REQUIRED
+RT-21..RT-31 ADDED
+```
+
+No Domain/Logical/Physical/PostgreSQL reopen was required.
 
 ---
 
-# 44. Decisions intentionally still open
+# 48. Final AI-04B invariants — RT-01..RT-31
+
+```text
+RT-01  RUN != MODEL INVOCATION != PROVIDER ATTEMPT.
+RT-02  RAW PROVIDER EVENT != DANTE RUNTIME EVENT != PUBLICATION EVENT.
+RT-03  CLIENT DISCONNECT != STREAM STOP != INVOCATION CANCEL != RUN CANCEL != EFFECT ROLLBACK.
+RT-04  PARTIAL TOOL ARGUMENTS != EXECUTABLE TOOL REQUEST.
+RT-05  PROVIDER PARALLEL TOOL CALL != EFFECTGRAPH PARALLEL AUTHORIZATION.
+RT-06  PROVIDER BACKGROUND EXECUTION != DANTE DURABLE EXECUTION.
+RT-07  PROVIDER-STORED CONTINUATION STATE != DANTE SESSION / CONTEXT / MEMORY.
+RT-08  RETRY CLASSIFICATION MUST ACCOUNT FOR ACCEPTANCE AND SIDE-EFFECT UNCERTAINTY.
+RT-09  REFUSAL != INFRASTRUCTURE FAILURE; NO SAFETY-ARBITRAGE FALLBACK.
+RT-10  SERVER-SIDE PROVIDER FALLBACK != DANTE ROUTING AUTHORITY.
+RT-11  ROUTING MUST USE MINIMUM NECESSARY INFORMATION AND SELECT ONLY QUALIFIED CURRENT BINDINGS.
+RT-12  HEDGED MULTI-PROVIDER EXECUTION IS NOT A SAFE DEFAULT.
+RT-13  PROVIDER TOOL != DANTE CAPABILITY; NATIVE TOOLS DO NOT BYPASS SOURCE/EFFECT GOVERNANCE.
+RT-14  MCP DISCOVERY / DESCRIPTION != TRUST / AUTHORITY.
+RT-15  MCP ELICITATION != DANTE APPROVAL; MCP TASK != DANTE RUN.
+RT-16  A2A DISCOVERY / TASK STATUS != DANTE AUTHORITY / CANONICAL STATE / RUN.
+RT-17  PROVIDER-HOSTED EXECUTION != DANTE EXECUTION ENVIRONMENT.
+RT-18  PROVIDER EVENT SEQUENCE / REPLAY != DANTE SEMANTIC EVENT IDENTITY.
+RT-19  ENTITLEMENT/BUDGET CHANGE MAY GOVERN FUTURE WORK BUT CANNOT ERASE EFFECT/RECONCILIATION OBLIGATIONS.
+RT-20  NO MODEL/PROVIDER FEATURE MAY SILENTLY REDEFINE DANTE RUNTIME SEMANTICS.
+RT-21  CANCELLATION REQUESTED != CANCELLATION CONFIRMED != EXECUTION QUIESCED.
+RT-22  PROVIDER CONTINUATION HANDLE != HARNESS / POLICY / TOOL / CAPABILITY CONTINUITY.
+RT-23  PROVIDER/BINDING QUALIFICATION MUST INCLUDE MATERIAL INVOCATION FEATURE MODE.
+RT-24  LOCAL DANTE REVOCATION/SUPPRESSION TAKES EFFECT BEFORE EXTERNAL DELETION CONFIRMATION.
+RT-25  PROVIDER TOOL/CALL/RESPONSE ID != DANTE CAPABILITY/EFFECT IDEMPOTENCY IDENTITY.
+RT-26  FROZEN EXECUTION CONFIGURATION != PERPETUAL CURRENT AUTHORIZATION.
+RT-27  PUBLISHED DELTA IS AN EXTERNALIZATION; DISCLOSURE/MATURITY PRECEDES IRREVERSIBLE PUBLICATION.
+RT-28  REMOTE CALLBACK / TASK UPDATE != CURRENT DANTE RUN ELIGIBILITY.
+RT-29  ATTACHED CHILD WORK != DETACHED CHILD WORK.
+RT-30  BUDGET ADMISSION != FINAL METERED COST != GUARANTEED IMMEDIATE PROVIDER STOP.
+RT-31  PROTOCOL INPUT_REQUIRED / AUTO-FULFILMENT != AUTHORIZED USER INPUT / CONSENT / DANTE APPROVAL.
+```
+
+---
+
+# 49. Final compound retest
+
+The complete runtime candidate with `RT-01..RT-31` was retested against both the original and fresh-independent pressure sets:
+
+```text
+stream reconnect / replay / duplicate-effect prevention
+cancel requested vs confirmed vs late provider events
+cancel + supersession + outcome-unknown reconciliation
+failover after partial provider/tool state
+semantic idempotency across provider attempts
+provider continuation after Harness/capability/policy change
+provider background + crash + deletion/revocation
+feature-mode retention/storage restrictions
+commercial downgrade/quota exhaustion mid-effect
+budget overshoot after admission/cancel
+MCP catalog/cache/trust drift
+MCP input-required / auto-fulfilment vs DANTE approval
+late MCP/A2A/background callbacks
+A2A delegation / confused deputy
+provider-native tools + prompt injection + egress
+provider-hosted execution + credential boundary
+attached vs detached child work
+multi-agent parallelism + Authority
+current authorization vs frozen reproducibility config
+recipient publication irreversibility
+retry/idempotency/reconciliation interaction
+```
+
+Final architecture result:
+
+```text
+FINAL COMPOUND RETEST → PASS
+STRUCTURAL CONTRADICTION REMAINING IN AI-04B → NONE FOUND
+```
+
+This is an **architecture closure**, not implementation or direct-provider PASS.
+
+---
+
+# 50. Decisions intentionally still open
 
 ```text
 concrete provider/model set
 provider SDK choice
 exact ModelTarget vocabulary
-exact routing algorithm
-exact normalized event type names/schema
-exact error enum
-exact retry limits/backoff
-exact failover ordering
-exact client-edge transport: SSE/WebSocket/etc.
+exact routing algorithm/fallback ordering
+exact normalized runtime event/error schemas
+retry/backoff numeric limits
+exact client-edge SSE/WebSocket/etc. transport
 voice/realtime transport
-provider background feature activation
+provider-background feature activation
 Restate activation for first AI Class-B consumer
 MCP client/server implementation
 provider-native MCP activation
 A2A implementation
 browser/computer-use implementation
 Execution Environment technology
-WASM/gVisor/microVM/container selection
+WASM/gVisor/container/microVM product selection
 credential broker implementation technology
-physical Run/Invocation/Attempt evidence storage
+physical Run/Invocation/Attempt/evidence storage
+concrete budget reservation/settlement mechanics
 commercial tier names/prices/quotas
 ```
 
-These require later AI-04 evidence and/or AI-05 implementation blueprint decisions.
+These are downstream AI-04C, direct-evidence or AI-05 implementation-blueprint decisions.
 
 ---
 
-# 45. Explicit non-claims
+# 51. Explicit non-claims
 
 ```text
 AI-04 CLOSED                         NO
-AI-04B CLOSED                        NO
-AI-04B FINAL INDEPENDENT PASS         NO
+AI-04B CLOSED                        YES / STRUCTURALLY ACCEPTED
+AI-04B FINAL INDEPENDENT PASS         YES / ARCHITECTURE LEVEL
+DIRECT PROVIDER EVAL PASS            NO
 PROVIDER SELECTED                    NO
 MODEL DEFAULT SELECTED               NO
 PROVIDER SDK SELECTED                NO
@@ -1340,33 +1318,32 @@ AI-05 STARTED                        NO
 
 ---
 
-# 46. Exact next action
+# 52. Exact next action
 
 ```text
-AI-04B — FRESH INDEPENDENT DESTRUCTIVE RUNTIME VALIDATION
+AI-04C — SECURITY / PRIVACY / CONTROL PLANE / OPERATIONS ARCHITECTURE
 ```
 
-The independent pass must attempt to break the candidate without assuming RT-01..RT-20 are sufficient.
-
-At minimum retest:
+AI-04C must consume — not reopen casually — `RT-01..RT-31` while resolving:
 
 ```text
-stream reconnect + duplicate tool/effect prevention
-cancel + supersession + outcome-unknown interaction
-provider failover after partial output/tool state
-provider background + crash + deletion/revocation
-commercial downgrade/quota exhaustion mid-effect
-MCP catalog/cache/trust drift
-MCP input-required vs user approval
-A2A delegation/confused-deputy cases
-provider-native tools + prompt injection + egress
-provider-hosted execution + credential boundary
-multi-agent parallelism + Authority
-retry/idempotency/reconciliation interaction
+provider/data/feature-mode eligibility
+credential and workload identity
+secret brokerage and key lifecycle
+information-flow / prompt-injection containment
+control-plane registry/version/rollout ownership
+commercial entitlement + budget reservation/settlement
+rate limits / backpressure / fairness
+observability vs audit vs eval data
+privacy-safe tracing/logging
+provider incident/degraded mode
+release/shadow/canary/rollback
+configuration promotion / emergency kill switches
+runtime evidence retention
+security/reliability SLOs
+operational recovery and reconciliation
 ```
 
-If a fresh structural contradiction appears, harden the smallest affected boundary and rerun the compound set.
+Direct provider/model eval remains activation-on-need when a concrete production choice is blocked on evidence.
 
-Only after independent AI-04B closure should routing move to AI-04C security/privacy/control-plane/operations architecture.
-
-No provider/model/API key is required for this architecture validation.
+No provider/model/API key is required to begin AI-04C architecture work.
