@@ -1,15 +1,11 @@
 # DANTE — Home / Frontend Current Checkpoint
 
-**Status:** CURRENT LIVE ENTRY POINT — WORLD FOCUS WS0–WS8 + PRE-M0 CLOSED / M0 CLOSED / M1 NEXT  
+**Status:** CURRENT LIVE ENTRY POINT — WORLD FOCUS M0 CLOSED / M1 ACTIVE / SUBBLOCK 1 CLOSED  
 **Date:** 2026-09-02  
 **Working branch:** `feature/home-react`  
 **Worktree:** `/home/mattia/projects/dante-frontend`
 
-This is the branch-level live entry point. Do not reconstruct current state from older phase labels, historical roadmaps or conversational summaries.
-
-For World Focus, read `world-focus-current-checkpoint.md` immediately after this file.
-
----
+This is the branch-level live entry point. Do not reconstruct current state from older phase labels or chat summaries.
 
 ## 1. Branch workstreams
 
@@ -28,150 +24,128 @@ World Focus != Home overlay
 Mondi Overview != World Focus
 ```
 
----
-
-## 2. Active workstream state
+## 2. Live World Focus state
 
 ```text
-WF0 structural shell / route            FROZEN / USER AUTHORIZED
-WF-G3 geometry                          LOCKED / USER AUTHORIZED
-WF-V4 visual treatment                  CANDIDATE
-B0 production foundation                ENGINEERING CLOSED
-WR0–WR2                                 CLOSED
-B1 Orientation                          CLOSED FOR SEQUENCING
-B2 Continuity / Resume                  IMPLEMENTED / AUTOMATED PASS
-Workspace Platform                      ENGINEERING CLOSED
-D0 contextual DANTE spatial direction   ACCEPTED
-D1 quiet invoke + compact composer       CLOSED FOR SEQUENCING
-WS0–WS8                                 CLOSED
-POST-WS8 HYGIENE                        CLOSED / APPLIED
-PRE-M0 FALSIFICATION                    CLOSED / PASS
-M0 MATERIALIZATION MAPPING              CLOSED
-M1 CORE NON-VISUAL MATERIALIZATION      NEXT — NOT STARTED
-M2–M7                                   BLOCKED BY SEQUENCE
-D2–D6                                   DEFERRED TO M4
+WF0 route/shell                         FROZEN / USER AUTHORIZED
+WF-G3 geometry                         LOCKED / USER AUTHORIZED
+WF-V4 visual treatment                 CANDIDATE
+B0 foundation                          ENGINEERING CLOSED
+WR0–WR2                                CLOSED
+B1 Orientation                         CLOSED FOR SEQUENCING
+B2 Continuity / Resume                 IMPLEMENTED / AUTOMATED PASS
+Workspace Platform                     ENGINEERING CLOSED
+D0 contextual DANTE spatial contract   ACCEPTED
+D1 quiet invoke + compact composer      CLOSED FOR SEQUENCING
+WS0–WS8                                CLOSED
+POST-WS8 HYGIENE                       CLOSED / APPLIED
+PRE-M0 FALSIFICATION                   CLOSED / PASS
+M0 Materialization Mapping             CLOSED
+M1 Core Non-Visual Materialization     ACTIVE
+M1 subblock 1 identity/reference       CLOSED / VALIDATED
+M1 next non-visual facets              NEXT
+M2–M7                                  BLOCKED
+D2–D6                                  DEFERRED TO M4
+BACKEND                                BLOCKED UNTIL M7
 ```
 
-No backend/API/database/provider/real-LLM/effect implementation is active.
-
----
-
-## 3. Current evidence chain
+## 3. Current validated evidence
 
 ```text
-WS8 proof/runtime
-HEAD 88db899391a3a41e23e76177d4896a657232b5eb
-CI   33639741630 PASS — attempt 1
+M0 docs closure
+HEAD 6ea74f630cb35af65d58e7ae873882d6d975411e
+CI   33668744509 PASS
 
-PRE-M0 red-first discovery
-HEAD 798170e0c1ad12e0263364ab5c542a6ffe3d5e06
-2 failed / 227 passed web tests
-
-PRE-M0 validated fix
-HEAD 7c9feab50c6e2a04a9a3b1e36c92958362dba704
-CI   33664655614 PASS
+M1 subblock 1 production code
+HEAD e0f4003496bfbf828ed9ab7718af8e7e30342ad3
+CI   33679425668 PASS
 ```
 
-M0 authority:
-
-`world-focus-m0-materialization-mapping.md`
-
-M0 result:
+M1 subblock 1 introduced/connected:
 
 ```text
-66 production-disposition decisions assigned
-WP-01..WP-04 classified
-L0–L8 classified
-O1–O11 classified
-D0–D6 classified
-unowned material rows 0
-backend authority pulled forward 0
-generic semantic roots introduced 0
+open-ended production WorldFocusId + identity descriptor
+fixed ten-World IDs retained only as fixture/catalog identity
+explicit route resolver so unknown URL tokens do not auto-create Worlds
+neutral context-reference owner
+primary + bounded ordered supporting reference set
+workspace/cursor materialization of the reference set
+surface default inheritance of primary only
+WP/oracle imports decoupled from workspace ownership
+Continuity validation on production World identity
+Context/Page descriptor consumption
+public API separation of production identity vs fixture types
 ```
 
----
-
-## 4. World Focus read order
+## 4. Read order
 
 ```text
-1. docs/frontend/home/world-focus-current-checkpoint.md
-2. docs/frontend/home/world-focus-m0-materialization-mapping.md
-3. docs/frontend/home/world-focus-pre-m0-falsification-review.md
-4. docs/frontend/home/world-focus-post-ws8-hygiene-audit.md
-5. docs/frontend/home/world-focus-substrate-closure-plan.md
-6. docs/frontend/home/world-focus-ws8-final-falsification-review.md
-7. docs/frontend/home/world-focus-ws7-executable-harness-review.md
-8. docs/frontend/home/world-focus-ws6-universal-work-primitives.md
-9. docs/frontend/home/world-focus-substrate-final-convergence-proof.md
-10. docs/frontend/home/world-focus-frontend-roadmap.md
-11. product/platform/structure/geometry contracts as needed
+1. world-focus-current-checkpoint.md
+2. world-focus-m1-core-nonvisual-materialization-review.md
+3. world-focus-m1-next-subblock.md
+4. world-focus-m0-materialization-mapping.md
+5. world-focus-contract-sequencing-supersession.md
+6. world-focus-frontend-roadmap.md
+7. world-focus-handoff.md
+8. world-focus-evidence-index.md
+9. world-focus-substrate-closure-plan.md
+10. product/platform/structure/geometry contracts as needed
 ```
 
-Historical `NEXT D2`, `M0 NEXT` or `M0 ACTIVE` prose never overrides the live checkpoint/M0 map.
-
----
-
-## 5. M1 frozen scope
-
-M1 must:
+## 5. Next M1 work
 
 ```text
-decouple production World identity/descriptor from fixed fixture IDs
-extract neutral context-reference ownership from workspace
-materialize primary + bounded ordered supporting references
-connect WP-01..WP-04 to production application seams
-add narrow basis/freshness/validity/reference/disclosure/offline/effect-presentation facets
-add typed O2 Situation / O5 Next / O8 Evidence application seams
-retain deterministic pre-backend adapters + aggressive tests
+reference-resolution safe frontend vocabulary
+L2 basis/freshness/validity/evidence facets
+L3 sanitized disclosure outcome facet
+L6 effect-presentation lifecycle + execution-revalidation state
+L8 offline/replay/provider-lag representation
+O2 Situation typed application seam
+O5 Next typed application seam
+O8 Evidence/History typed application seam
+WP-01 stronger production alignment
+WP-02 Attention application/model seam
+WP-03 Comparison application/model seam
+WP-04 Trajectory application/model seam
+deterministic adapters + aggressive tests
 ```
 
-M1 must not pull forward:
+Do not create a giant generic projection envelope/property bag.
+
+## 6. Permanent barriers
 
 ```text
-M2 shared visual renderers
-M3 composition customization
-D2–D6 / M4
-complete Worlds / M5
-integrated visual acceptance / M6
-backend/API/DB/Alembic/AuthZ/provider/LLM/tools/effects
+World != canonical Domain owner
+World relevance != authorization
+projection != canonical truth
+derived output != disclosure permission
+AI output != accepted fact
+Proposal != Decision != effect
+provider ACK != canonical completion
+absence/unknown != false
+Evidence != Provenance
+Authority != Visibility
 ```
-
----
-
-## 6. AppShell / Timeline boundaries
-
-The removed Global Topbar Review placeholder remains removed. Timeline T1 observable interaction/geometry remains frozen and user accepted. World Focus work must not weaken those contracts.
-
----
 
 ## 7. Backend stop line
 
 ```text
 frontend view model != backend DTO != Domain model != persistence row
-```
-
-Until the explicit later backend vertical:
-
-```text
-NO World DB/Alembic persistence
-NO business API merely for frontend completeness
+NO World DB/Alembic
+NO real business API merely for frontend completeness
 NO real AuthZ/provider runtime
-NO real LLM/model routing/streaming
-NO canonical chat persistence
+NO real LLM routing/streaming
 NO durable DANTE Run backend
 NO real tool/effect execution
-NO fake successful backend state
+NO fake success
 ```
-
----
 
 ## 8. Operational rules
 
 - stay on `feature/home-react` unless explicitly authorized otherwise;
-- fresh HEAD check before every write scope;
+- fresh live HEAD before every write scope;
 - no merge/rebase/force/history rewrite/main mutation without explicit authorization;
-- do not casually modify Access/Auth, Timeline or shared AppShell;
+- do not modify Access/Auth, frozen Timeline or AppShell as collateral work;
 - generated route tree is never manually edited;
-- preserve frozen Timeline and World geometry contracts unless explicitly reopened;
-- fix root causes rather than weaken tests;
-- keep live docs synchronized when the active gate changes.
+- fix CI root causes rather than weaken tests;
+- human visual review is recorded only when actually performed.
