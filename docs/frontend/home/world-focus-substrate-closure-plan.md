@@ -1,21 +1,28 @@
 # DANTE — World Focus Substrate Closure Program
 
-**Status:** CURRENT PROGRAM — WS0 CLOSED / WS1–WS5 MAXIMAL ANALYTICAL CONVERGENCE CLOSED / WS6 NEXT  
+**Status:** CURRENT PROGRAM — WS0 CLOSED / WS1–WS5 CLOSED / WS6 CLOSED / WS7 NEXT  
 **Date:** 2026-09-02  
-**Branch:** `feature/home-react`  
-**Scope:** pre-materialization closure of the reusable non-visual World substrate before further World/DANTE surface materialization.
+**Branch:** `feature/home-react`
 
 This document is the sequencing authority for the **World Substrate Closure Program**.
 
-Final WS1–WS5 proof authority:
+Current semantic authorities:
 
-`world-focus-substrate-final-convergence-proof.md`
+```text
+WS1–WS5 final proof
+world-focus-substrate-final-convergence-proof.md
 
-Exact N-way evidence:
+N-way evidence
+world-focus-substrate-combinatorial-evidence.md
 
-`world-focus-substrate-combinatorial-evidence.md`
+WS6 primitive authority
+world-focus-ws6-universal-work-primitives.md
 
-Older corpus/review/independent-confirmation documents remain supporting evidence for Cycles A–C. They do not independently override the final proof.
+WS6 pressure matrix
+world-focus-ws6-primitive-pressure-matrix.md
+```
+
+Older WS0/Cycle-A/B/C status wording is phase-time evidence only.
 
 ---
 
@@ -23,233 +30,124 @@ Older corpus/review/independent-confirmation documents remain supporting evidenc
 
 ```text
 Workspace Platform engineering closed
-!=
-World substrate universally falsified and closed
+!= World substrate universally closed
+!= executable whole-corpus proof
+!= visual/materialized product freeze
 ```
 
-The program therefore separates:
+Sequence:
 
 ```text
-SUBSTRATE DISCOVERY / FALSIFICATION
+SUBSTRATE
 WS0 -> WS8
 
-FRONTEND MATERIALIZATION
+MATERIALIZATION
 M0 -> M7
 
 REAL BACKEND / INTELLIGENCE / EFFECT INTEGRATION
 after frontend freeze
 ```
 
-The goal is to close the smallest reusable World substrate before polished UI or backend integration makes weak abstractions expensive to remove.
-
 ---
 
-# 2. Permanent higher-authority barriers
-
-All phases preserve:
+# 2. Permanent barriers
 
 ```text
 World != canonical Domain owner
 WorldProjection != canonical truth
-ModuleConfig != canonical source data
-LayoutConfig != Domain semantics
 World relevance != authorization
 surface visibility != disclosure permission
-frontend cursor != authorization
 derived output != permission to disclose source
 AI output != accepted fact
 Proposal != Decision != effect
-provider acknowledgement != canonical completion
-planned/intended != Actual
+provider ACK != canonical completion
+planned != Actual
 absence/unknown != false
 Evidence != Provenance
 Authority != Visibility
 Agreement != Consent
-Ownership != Possession
 idempotency != semantic identity
 ```
 
-Current protected-main Logical hardenings `WL-H01..WL-H12` are explicit inputs and have 12/12 World traceability in the final convergence proof.
+No universal Entity/Thing/Relationship/Fact/property-bag shortcut.
 
-No frontend convenience may create a universal `Entity`, `Thing`, `Relationship`, `Fact`, `Version`, property bag, persistence owner or ACL boundary.
+Protected-main Domain/Logical/Physical remain higher authority. Logical `WL-H01..WL-H12` have 12/12 World carry-forward traceability.
 
 ---
 
-# 3. Current sequence
+# 3. Live program
 
 ```text
 WS0 — Substrate Inventory
       CLOSED
 
-WS1–WS5 — WORLD SUBSTRATE CONVERGENCE LOOP
+WS1–WS5 — World Substrate Convergence Loop
       MAXIMAL PRACTICAL ANALYTICAL CLOSURE
-      FINAL PROOF ACTIVE
 
 WS6 — Universal Work Primitive Closure
-      NEXT ACTIVE GATE
+      CLOSED
+      WP-01 Continuity
+      WP-02 Attention
+      WP-03 Comparison
+      WP-04 Trajectory
 
 WS7 — Executable Non-Visual Harness
-      NOT STARTED
+      NEXT ACTIVE GATE
 
 WS8 — Final Falsification
       NOT STARTED
 
-ONLY AFTER WS8:
-M0–M7 Materialization
+M0–M7 — Materialization
+      BLOCKED UNTIL WS8
 ```
-
-WS1–WS5 are labels for activities inside one convergence macro-block, never separate feature milestones/PASS gates.
 
 ---
 
-# 4. WS0 — Substrate Inventory
+# 4. WS0 result
 
-**CLOSED BASELINE**
-
-Authority:
-
-`world-focus-ws0-substrate-inventory.md`
-
-Result retained:
+WS0 remains historical baseline:
 
 ```text
-workspace/composition/surface mechanics = substantially executable
-application/work-semantic breadth       = partial
-broad work-pattern knowledge             = research-evidenced
-universal primitive vocabulary           = not yet closed
-whole-corpus executable oracle           = not yet built
+workspace/composition/surface mechanics substantially executable
+application/work-semantic breadth partial
+universal primitive catalog then open
+whole-corpus executable oracle open
 ```
 
-Existing Workspace Platform engineering closure remains valid and must be reused, not rebuilt.
+Do not rewrite WS0 with later knowledge.
 
 ---
 
-# 5. WS1–WS5 — final convergence method
+# 5. WS1–WS5 result
 
-The closure methodology is intentionally multi-method.
-
-## A — domain/user-job discovery
+Final evidence methods:
 
 ```text
-44 primary scenarios
-without + with DANTE
-16 adversarial cross-products
--> CG-32 discovered
+A domain/user-job              -> CG-32
+B mechanism-first              -> CG-33..CG-36
+C metamorphic                  -> clean after CG-36
+D architecture mutation        -> 48/48 killed
+E Logical traceability         -> 12/12; CG-37..CG-40
+F N-way combinatorial          -> 4455/4455 + 2835/2835
+G post-last-hardening proof    -> 48/48 + 18/18 killed, 0 new classes
+H future substitution          -> 18 substitutions, 0 new layers
 ```
 
-## A-regression
-
-```text
-44 rerun + 20 cases
--> regression only
-```
-
-## B — mechanism-first independent attack
-
-```text
-40 new orthogonal-domain scenarios
-16 new cross-products
--> CG-33..CG-36 discovered
-```
-
-## C — metamorphic/invariant attack
-
-```text
-40 transformations
--> 0 new classes after CG-36
-```
-
-## D — architecture mutation kill
-
-```text
-48 wrong architectures
--> 48/48 killed
-```
-
-## E — cross-authority traceability
-
-```text
-WL-H01..WL-H12
--> 12/12 mapped
--> missing World carry-forwards CG-37..CG-40 discovered
-```
-
-## F — systematic N-way combinatorial
-
-```text
-11 axes x 3 levels
-all 3-way interactions
-4455/4455 covered by 67 rows
-
-7 highest-risk axes x 3 levels
-all 4-way interactions
-2835/2835 covered by 157 rows
-```
-
-After CG-40 hardening:
-
-```text
-unowned 3-way rows = 0
-unowned 4-way rows = 0
-```
-
-## G — post-last-hardening structure proof
-
-```text
-48/48 architecture mutants killed
-18/18 layer-remove/merge mutants killed
-12/12 Logical hardenings mapped
-0 new material classes
-```
-
-## H — future-authority substitution proof
-
-```text
-18 substitutions
-0 new World substrate layers
-```
-
-Critical exit rule satisfied:
-
-> **After the LAST material hardening, at least two independent methods remained clean.**
-
----
-
-# 6. Final concern ledger
+Final ledger:
 
 ```text
 CG-01..CG-40
 ```
 
-Counts:
-
-```text
-ACCEPT / carry-forward requirement                    26
-DEFER classification to WS6/materialization            6
-REJECT universalization                                3
-CONFIRM existing invariant                             3
-CLOSE as platform/user policy                          2
-TOTAL                                                  40
-```
-
-Newest concerns:
-
-```text
-CG-37 deferred/queued consequential execution revalidation
-CG-38 reference resolution under retirement/merge/split ambiguity
-CG-39 redaction/tombstone/reference continuity
-CG-40 recipient/purpose-bound derived-output non-interference
-```
-
-These extend World carry-forward; they do not reopen Domain/Logical.
+Strict reopen triggers live in the final proof. New nouns/providers/renderers do not reopen convergence.
 
 ---
 
-# 7. Fixed layer model handed to WS6
+# 6. Fixed layer model
 
 ```text
 L0 Higher Authorities
-L1 Work-Semantic Projections       <- WS6 closes vocabulary
+L1 Work-Semantic Projections
 L2 Evidence / Basis
 L3 Coordination / Disclosure
 L4 Interaction / Reference
@@ -259,242 +157,264 @@ L7 Renderer / Specialist Extension
 L8 Platform / User Policies
 ```
 
-Final proof shows why L2–L8 cannot be deleted or casually collapsed without losing required semantics/ownership.
-
-WS6 must not solve vocabulary pressure by absorbing these layers into one giant primitive model.
+DANTE consumes these layers; it does not own them.
 
 ---
 
-# 8. Strong WS1–WS5 reopen rule
+# 7. WS6 result — finite L1 catalog
 
-Do **not** reopen because a new scenario merely has different nouns.
+WS6 tested old discovery candidates against current protected-main Domain and the final A–H evidence.
 
-Reopen requires concrete evidence of at least one:
+Final L1:
 
 ```text
-R1 real user job cannot fit L0–L8 without generic escape hatch;
-R2 WS6/WS7/WS8 finds a new semantic/ownership/state class;
-R3 executable security/privacy/race failure cannot be repaired within an existing owner;
-R4 accepted upstream Domain/Logical change contradicts a World assumption;
-R5 specialist capability requires core-engine ownership change, not extension;
-R6 required disclosure/non-interference cannot be preserved;
-R7 governed operation cannot fit effect/revalidation/reconciliation boundaries truthfully.
+WP-01 Continuity
+WP-02 Attention
+WP-03 Comparison
+WP-04 Trajectory
 ```
 
-Not reopen evidence:
+Interpretation:
+
+> **L1 is only reusable derived user-work semantics with no existing owner. It is not a wrapper around all World content.**
+
+Direct Domain/application projections remain valid without an L1 wrapper.
+
+Examples removed from L1:
 
 ```text
-new provider
-new API shape
-new World name
-new renderer
-new DANTE model
-new config store
-new sync engine
-more data
-another viewport
-another competitor pattern
+Dependency / Resource Requirement / Allocation / Session
+Decision / Proposal / Request / Conditional Policy / Reconciliation
+-> Domain
+
+Evidence/basis/integrity/validity
+-> L2
+
+coordination/disclosure
+-> L3
+
+cursor/ref resolution
+-> L4
+
+pin/view/config
+-> L5
+
+effect lifecycle
+-> L6
+
+collection/list/table/chart/timeline/pipeline/breakdown/map
+-> L7 renderer/query/specialist
+
+offline/scale/a11y/responsive
+-> L8
+```
+
+Composition decisions:
+
+```text
+Change                = WP-03 from/to Comparison
+Planned-vs-Actual     = WP-03 + direct planned/Actual projections
+Decision preparation = WP-03 + Domain Decision/Proposal/Criterion + L2/L6
+Review queue          = view/composition over WP-02
+Measurement/trend     = WP-04
+```
+
+WS6 closure evidence:
+
+```text
+44/44 primary scenarios mapped
+40/40 Cycle-B mechanism scenarios classified
+0 Cycle-C new L1 classes
+40/40 CG concerns owned
+11/11 Output Grammar families mapped
+4/4 primitive deletion mutants killed
+6/6 pairwise merges rejected
+0 fifth primitive required
+0 Domain duplicates accepted
+0 generic root
+0 DANTE-required primitive
 ```
 
 ---
 
-# 9. WS6 — Universal Work Primitive Closure
+# 8. WS7 — Executable Non-Visual Harness
 
 **NEXT ACTIVE GATE**
 
-Question:
+Purpose:
 
-> What is the smallest finite L1 work-semantic vocabulary that can express the converged evidence without duplicating Domain semantics or creating a generic escape hatch?
+> Turn WP-01..WP-04 plus CG-01..CG-40 into executable deterministic/property/state-machine/combinatorial proof without final UI or backend.
 
-Candidate pressure clusters, not pre-approved primitives:
+WS7 must reuse:
 
 ```text
-attention / unresolved work
-choice / decision preparation
-measurement / series
-movement / balance / reconciliation
-dependency / requirement
-execution/session projection
-pipeline/stage
-capture/review
+existing composition planner
+workspace reducer
+module/surface registries
+allocation resolver
+500 composition scenarios
+500 allocation/surface-stack scenarios
 ```
 
-Each candidate must be classified as exactly one of:
+and consume/regenerate:
 
 ```text
-UNIVERSAL WORK PRIMITIVE
-COMPOSITION OF SMALLER PRIMITIVES
-EXISTING DOMAIN PROJECTION PATTERN
-INTERACTION / CONFIGURATION PATTERN
-SPECIALIST EXTENSION
-REJECTED UNIVERSALIZATION
+67 fixed general 3-way covering rows
+157 fixed high-risk 4-way covering rows
 ```
 
-A primitive earns universal status only when it:
+## 8.1 Primitive oracle
+
+### WP-01
 
 ```text
-solves several materially different jobs
-has explicit semantics and non-semantics
-does not duplicate canonical Domain owner
-does not require DANTE
-does not own Evidence/Disclosure/Config/Effect state
-composes without page-per-World branch
-does not become an escape hatch
+recent != resumable
+checkpoint must be grounded
+no fake continuation destination
 ```
 
-WS6 exit:
+### WP-02
 
 ```text
-finite catalog
-full mapping to converged evidence
-no unexplained overlap
-no generic escape hatch
-specialist boundary explicit
-DANTE optionality intact
-Domain/Logical/Physical barriers intact
+notification/read/dismiss/snooze != semantic resolution
+grounded reason/consequence
+empty Attention valid
 ```
 
-No visual materialization is required.
-
----
-
-# 10. WS7 — Executable Non-Visual Harness
-
-WS7 turns WS6 + final convergence contracts into deterministic executable proof.
-
-It must consume or deterministically regenerate the fixed N-way vectors in:
-
-`world-focus-substrate-combinatorial-evidence.md`
-
-Minimum assertions now include:
+### WP-03
 
 ```text
-primitive applicability/absence/unresolved
-basis/freshness/coverage/integrity/validity
-primary + bounded supporting refs
-retired/ambiguous ref resolution
-revocation/redaction/tombstone
-recipient/purpose non-interference
-queued/offline effect execution-time revalidation
-approval/binding material-revision applicability
-partial effect / cancel / reversal / compensation
-provider ACK ambiguity
-config revision/concurrency
-pinned result basis invalidation
-cross-World reuse without disclosure widening
-recurrence/occurrence exception/DST
-specialist fallback
-large-data bounding
-responsive/a11y semantic invariance
+2+ explicit refs
+explicit comparison basis/dimensions
+missing/incomparable preserved
+change = from/to comparison
+no automatic winner/Decision
+```
+
+### WP-04
+
+```text
+ordered axis/window
+point vs interval/flow distinction when material
+missing != zero
+aggregation/downsampling basis
+no causal/progress inference
+```
+
+## 8.2 Cross-layer oracle
+
+At minimum:
+
+```text
+L2 freshness/coverage/integrity/validity/redaction
+L3 recipient/purpose non-interference + revocation
+L4 primary/supporting refs + retirement/ambiguity
+L5 config revision/concurrency/pinning
+L6 queued execution revalidation + partial/cancel/reverse/compensate
+L7 specialist fallback/failure
+L8 scale/offline/a11y/responsive semantic invariance
 late DANTE result rejection
+cross-World reuse without disclosure widening
+provider ACK ambiguity
+recurrence/occurrence/DST
 ```
 
-Reuse existing planner/reducer/registry/allocation code. Do not build a second architecture.
+## 8.3 Harness quality bar
 
----
+WS7 is not an ugly duplicate product architecture. It is a deterministic oracle over the real shared model.
 
-# 11. WS8 — Final Falsification
-
-**NOT STARTED**
-
-Run the closed WS6 vocabulary and executable WS7 oracle against the full hostile evidence plus unknown future Worlds.
-
-Closure requires:
+Required principles:
 
 ```text
-0 unresolved material substrate gaps
-0 generic escape hatch
-0 page-per-World architecture requirement
-0 AI-only basic-usefulness path
-0 known Domain/Logical/Physical contradiction
-0 known multi-actor/privacy/disclosure contradiction
-0 known state/race/responsive class requiring redesign
+no fake backend
+no arbitrary UI
+no second workspace reducer
+no second composition planner
+no test-only semantics that production cannot consume later
+seeded/reproducible generators
+shrunk/minimal counterexamples where practical
+explicit invariant names
+bounded runtime suitable for CI
 ```
 
-Any real failure returns to the earliest necessary WS phase. No ceremonial PASS.
+A material failing case reopens only the earliest required semantic owner.
 
 ---
 
-# 12. Materialization after WS8
+# 9. WS7 exit
+
+WS7 closes only when:
+
+```text
+WP-01..04 executable contracts exist
+all required primitive invariants have deterministic tests
+CG-01..CG-40 have executable owner assertions where frontend-testable
+fixed N-way vectors execute or are deterministically regenerated/verified
+existing Workspace Platform suites remain green
+state-machine/race tests cover stale/revoked/late/conflicting transitions
+no test needs generic semantic payload escape hatch
+no new unowned material class remains
+```
+
+Do not claim backend/AuthZ/real provider semantics beyond frontend seams.
+
+---
+
+# 10. WS8 — Final Falsification
+
+After WS7, run the complete hostile corpus and unknown future Worlds against the executable substrate.
+
+Closure requires zero unresolved material substrate gap and no generic escape hatch/page-per-World/AI-only basic-usefulness path.
+
+---
+
+# 11. Materialization after WS8
 
 ```text
 M0 Materialization Mapping / Scope Freeze
 M1 Core Non-Visual Production Materialization
 M2 Shared Visual Primitive Layer
-M3 Adaptive World Composition Materialization
-M4 Contextual DANTE Materialization
+M3 Adaptive World Composition
+M4 Contextual DANTE — preserve D0/D1, resume D2–D6
 M5 Contrasting Complete Worlds
 M6 Integrated Product / Visual / Accessibility Review
-M7 Pre-Backend Frontend Freeze / Handoff
+M7 Pre-Backend Frontend Freeze
 ```
 
-M4 preserves D0/D1 and resumes D2–D6 only after M0–M3.
-
-M6 subsumes the former D7 integrated review.
+Visual renderer names do not retroactively become L1 semantic primitives.
 
 ---
 
-# 13. Backend stop line
+# 12. Backend stop line
 
-Until explicit later backend vertical:
+Until the later explicit backend vertical:
 
 ```text
-NO real World business API merely for frontend completeness
+NO real World business API for convenience
 NO World DB/Alembic persistence
 NO provider runtime
-NO model routing/streaming
+NO real model routing/streaming
 NO canonical chat persistence
-NO durable DANTE Run backend
+NO durable DANTE Run
 NO real tool/effect execution
-NO fake success
-NO provider ACK treated as canonical completion
+NO fake successful effect
+NO provider ACK as canonical completion
 ```
 
 ---
 
-# 14. Documentation discipline
-
-Never collapse:
+# 13. Current disposition
 
 ```text
-analytical convergence
-!= primitive closure
-!= executable proof
-!= materialization
-!= browser acceptance
-!= human visual acceptance
-!= backend/runtime proof
-```
-
-Current read order while WS6 is active:
-
-```text
-1. world-focus-current-checkpoint.md
-2. world-focus-substrate-closure-plan.md
-3. world-focus-substrate-final-convergence-proof.md
-4. world-focus-substrate-combinatorial-evidence.md
-5. world-focus-ws0-substrate-inventory.md
-6. earlier Cycle A/B/C evidence as needed
-7. product/platform/structure/geometry contracts
-8. current protected-main Domain/Logical evidence when a semantic boundary is questioned
-```
-
-Older `current next gate` wording is phase-time evidence where it conflicts with this live sequence.
-
----
-
-# 15. Current disposition
-
-```text
-WS0 Substrate Inventory                    CLOSED
-WS1–WS5 Substrate Convergence Loop         MAXIMAL PRACTICAL ANALYTICAL CLOSURE
-WS6 Universal Work Primitive Closure       NEXT
-WS7 Executable Non-Visual Harness          NOT STARTED
-WS8 Final Falsification                    NOT STARTED
-M0–M7 Materialization                      BLOCKED UNTIL WS8
-D2–D6                                      PRESERVED / MATERIALIZATION-DEFERRED
+WS0       CLOSED
+WS1–WS5   MAXIMAL PRACTICAL ANALYTICAL CLOSURE
+WS6       CLOSED — WP-01..WP-04
+WS7       NEXT ACTIVE GATE
+WS8       NOT STARTED
+M0–M7     BLOCKED UNTIL WS8
+D2–D6     PRESERVED / MATERIALIZATION-DEFERRED
 ```
 
 Immediate next action:
 
-> **WS6 only — close L1 from the final proof. Do not restart WS1–WS5 without a concrete reopen trigger.**
+> **WS7 only — executable non-visual proof over the closed L1 vocabulary and existing Workspace Platform.**
