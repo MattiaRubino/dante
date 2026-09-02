@@ -328,6 +328,14 @@ export const home = {
         choice: 'Item color',
         inherit: 'Inherit from Context',
         override: 'Custom color',
+        colors: {
+          purple: 'Purple',
+          cyan: 'Cyan',
+          green: 'Green',
+          amber: 'Amber',
+          rose: 'Rose',
+          red: 'Red',
+        },
       },
       handoffs: {
         otherTitle: 'Other type',
