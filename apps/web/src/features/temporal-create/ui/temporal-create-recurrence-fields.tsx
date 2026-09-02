@@ -256,6 +256,7 @@ export function TemporalCreateRecurrenceFields({
                     {t(($) => $.common.home.timeline.create.recurrence.quotaPeriod)}
                   </span>
                   <select
+                    aria-label={t(($) => $.common.home.timeline.create.recurrence.quotaPeriod)}
                     value={recurrence.quotaPeriodKind}
                     onChange={(event) =>
                       patchRecurrence({
@@ -346,9 +347,6 @@ export function TemporalCreateRecurrenceFields({
                     </option>
                     <option value="week">
                       {t(($) => $.common.home.timeline.create.recurrence.periodWeek)}
-                    </option>
-                    <option value="month">
-                      {t(($) => $.common.home.timeline.create.recurrence.periodMonth)}
                     </option>
                   </select>
                 </label>
@@ -487,6 +485,7 @@ export function TemporalCreateRecurrenceFields({
                 {t(($) => $.common.home.timeline.create.confirmation.reminder)}
               </span>
               <select
+                aria-label={t(($) => $.common.home.timeline.create.confirmation.reminder)}
                 data-create-path="confirmation.reminderLeadMinutes"
                 value={
                   confirmation.reminderLeadMinutes === null
