@@ -8,6 +8,10 @@ import {
 } from 'react';
 
 import type {
+  WorldFocusContextReference,
+  WorldFocusContextReferenceSet,
+} from '../model/world-focus-context-reference';
+import type {
   WorldFocusInteractionDepth,
   WorldFocusPresentationSurface,
 } from '../model/world-focus-platform';
@@ -16,7 +20,6 @@ import {
   getWorldFocusEscapeDisposition,
   getWorldFocusInteractionCursor,
   reduceWorldFocusWorkspaceState,
-  type WorldFocusContextReference,
   type WorldFocusEscapeDisposition,
   type WorldFocusInteractionCursor,
   type WorldFocusSurfaceRequest,
@@ -29,6 +32,7 @@ export type WorldFocusWorkspaceApi = Readonly<{
   state: WorldFocusWorkspaceState;
   cursor: WorldFocusInteractionCursor;
   selectContext: (reference: WorldFocusContextReference) => void;
+  setContextReferences: (references: WorldFocusContextReferenceSet) => void;
   clearContext: () => void;
   openSurface: (surface: WorldFocusSurfaceRequest) => void;
   replaceSurface: (
@@ -74,6 +78,13 @@ function WorldFocusWorkspaceHostInstance({
   const selectContext = useCallback((reference: WorldFocusContextReference) => {
     dispatch({ type: 'select-context', reference });
   }, []);
+
+  const setContextReferences = useCallback(
+    (references: WorldFocusContextReferenceSet) => {
+      dispatch({ type: 'set-context', references });
+    },
+    [],
+  );
 
   const clearContext = useCallback(() => {
     dispatch({ type: 'clear-context' });
@@ -136,6 +147,7 @@ function WorldFocusWorkspaceHostInstance({
       state,
       cursor,
       selectContext,
+      setContextReferences,
       clearContext,
       openSurface,
       replaceSurface,
@@ -152,6 +164,7 @@ function WorldFocusWorkspaceHostInstance({
       replaceSurface,
       requestEscape,
       selectContext,
+      setContextReferences,
       state,
     ],
   );
@@ -166,8 +179,8 @@ function WorldFocusWorkspaceHostInstance({
 /**
  * Owns only transient workspace interaction state for the current mounted
  * World. The keyed inner owner guarantees that changing worldId cannot retain
- * another World's selection/surface state even when a caller forgets to key
- * the host itself. Durable truth, authorization and DANTE Run lifetime remain
+ * another World's context/surface state even when a caller forgets to key the
+ * host itself. Durable truth, authorization and DANTE Run lifetime remain
  * outside this frontend host.
  */
 export function WorldFocusWorkspaceHost({
