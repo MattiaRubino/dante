@@ -73,6 +73,8 @@ AI-04 WHOLE-PHASE                     CLOSED / WP-01..WP-22
 PRE-AI05 CROSS-PHASE HARDENING        CLOSED / PRE05-H01..H19
 CURRENT CORE AI EVAL                  DANTE-E01..DANTE-E14
 AI-05 CURRENT MACRO-PHASE             WHOLE-SYSTEM ACCEPTANCE + IMPLEMENTATION BLUEPRINT
+AI-05A BUILD BOUNDARY                 CLOSED / STRUCTURALLY ACCEPTED / BD-01..BD-41
+AI-05B CURRENT SUB-PHASE              CONCRETE IMPLEMENTATION BLUEPRINT
 AI BACKEND/DB/PROVIDER IMPLEMENTATION NOT CLAIMED
 ```
 
@@ -99,8 +101,11 @@ Repository truth beats incomplete conversation memory.
 
 For the active AI workstream, branch-local continuation additionally uses:
 
-- `workstreams/ai-architecture.md` — durable active-workstream record and current AI-05 routing;
+- `workstreams/ai-architecture.md` — durable active-workstream record and current AI-05B routing;
 - `workstreams/ai-architecture-live-handoff.md` — TEMPORARY branch-operational handoff while the branch is active; MUST NOT MERGE TO `main`;
+- `architecture/dante-ai-05a-whole-system-build-boundary-acceptance.md` — current AI-05A closure authority, CLOSED / BD-01..BD-41;
+- `architecture/dante-ai-05a-whole-system-build-boundary.md` — original AI-05A candidate and first destructive-pass evidence; pre-closure evidence, not current status authority;
+- `architecture/dante-ai-05a-eval-production-composition-hardening.md` — second-pass BD-41 hardening evidence; pre-closure evidence, not current status authority;
 - `architecture/dante-ai-04-productionization-architecture.md` — closed AI-04 master authority;
 - `architecture/dante-ai-04a-direct-eval-specification.md` — closed AI-04A eval/provider/economics authority with current DANTE-E01..E14 coverage;
 - `architecture/dante-ai-04b-concrete-runtime-capability-architecture.md` — closed AI-04B runtime/capability authority, RT-01..RT-31;
@@ -255,8 +260,17 @@ architecture/dante-ai-04-whole-phase-destructive-acceptance.md
 architecture/dante-ai-pre05-cross-phase-hardening.md
 → PRE-AI05 CLOSED / PRE05-H01..H19
 
+architecture/dante-ai-05a-whole-system-build-boundary-acceptance.md
+→ AI-05A CLOSED / STRUCTURALLY ACCEPTED / BD-01..BD-41
+
+architecture/dante-ai-05a-whole-system-build-boundary.md
+→ AI-05A original candidate / PRE-CLOSURE EVIDENCE
+
+architecture/dante-ai-05a-eval-production-composition-hardening.md
+→ AI-05A second-pass BD-41 / PRE-CLOSURE EVIDENCE
+
 workstreams/ai-architecture.md
-→ current branch-local routing: AI-05 Whole-System Acceptance + Implementation Blueprint
+→ current branch-local routing: AI-05B Concrete Implementation Blueprint
 ```
 
 AI-00 remains semantically binding for its inherited/derived baseline. Its original `AI-01 next step` sequencing is historical; later product-form/research/reengineering work has already occurred.
@@ -297,9 +311,14 @@ PRE-AI05  Cross-Phase Hardening
 
 AI-05  Whole-System Acceptance + Implementation Blueprint
        ACTIVE / CURRENT / FINAL ARCHITECTURE-TO-BUILD BOUNDARY
+       ├ AI-05A Build Boundary / Ownership Map
+       │        CLOSED / BD-01..BD-41
+       └ AI-05B Concrete Implementation Blueprint
+                ACTIVE / CURRENT NEXT SUB-PHASE
 
 THEN
-actual AI implementation workstream(s)
+AI-05 whole-system acceptance/closure
+→ actual AI implementation workstream(s)
 ```
 
 The earlier longer AI-00..AI-12 decomposition is historical planning only, not current routing.
@@ -463,9 +482,13 @@ The post-H19 PRE-AI05 acceptance passed 26/26 structural hostile cases, compound
 
 ### AI-05 current whole-system acceptance + implementation blueprint
 
-AI-05 is now the **ACTIVE / CURRENT** architecture-to-build phase.
+AI-05 is the **ACTIVE / CURRENT** architecture-to-build phase.
 
-Its job is to translate the accepted AI semantics/architecture into exact implementation boundaries and decision-specific proof gates without reopening accepted upstream semantics for convenience. It remains architecture/blueprint work until explicit implementation gates begin.
+AI-05A is **CLOSED / STRUCTURALLY ACCEPTED** at `BD-01..BD-41`. It accepts a separate deterministic Global Search capability, a bounded Intelligence orchestration module, a provider-neutral ModelAccessPort + adapter seam, an explicit resource admission/settlement dependency, static typed/versioned control config first, a bounded zero-generic-persistence first envelope, and exact material eval↔production qualification or independent delta qualification.
+
+The current exact sub-phase is **AI-05B — Concrete Implementation Blueprint**. AI-05B must freeze concrete public module boundaries, ports/DTOs, Search contracts, ModelAccessPort/adapter conformance, route/config schemas, resource-control seams, first-vertical HTTP/streaming shape, persistence/evidence classification, test topology, qualification artifacts and build gates without starting production implementation.
+
+AI-05 remains architecture/blueprint work until explicit implementation gates begin.
 
 ## 10. Database System of Record
 
@@ -600,6 +623,8 @@ ATTENTION DECISION != PROACTIVE WORK ADMISSION != EFFECT AUTHORIZATION
 RECIPIENT != SURFACE != CHANNEL
 SAFE SINGLE DISCLOSURE != AUTOMATICALLY SAFE CUMULATIVE DISCLOSURE
 SOURCE FUTURE ELIGIBILITY != PRIOR DISCLOSURE OCCURRENCE
+EVAL CANDIDATE != PRODUCTION ROUTE
+QUALIFICATION EVIDENCE MUST MATCH MATERIAL PRODUCTION COMPOSITION OR QUALIFY MATERIAL DELTAS
 ENVIRONMENT != GIT BRANCH
 TEMPORARY HANDOFF != DURABLE DOCUMENTATION
 ```
