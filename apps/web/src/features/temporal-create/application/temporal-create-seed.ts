@@ -9,12 +9,14 @@ import {
 } from '../model/temporal-create-session';
 
 /**
- * Structured prefill accepted by Temporal Create before a draft is opened.
+ * Structured prefill accepted by the manual Temporal Create flow before its
+ * draft is opened.
  *
- * The seed is intentionally source-neutral: Timeline gestures, a future global
- * Create command, keyboard workflows, imports, or a governed DANTE
- * interpretation can all prepare the same semantic draft without scripting the
- * UI. Provenance and authoritative execution remain separate contracts.
+ * The seed lets deterministic manual entry points such as Timeline gestures
+ * preserve known date/time/range/context without scripting UI controls. It is
+ * deliberately not an AI, natural-language, or voice input contract. Those
+ * future verticals remain separate and may reuse downstream application/domain
+ * commands only when their own contracts justify it.
  */
 export type TemporalCreateFieldSeed = Readonly<{
   title?: TemporalCreateFields['title'];
