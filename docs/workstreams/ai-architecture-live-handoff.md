@@ -6,15 +6,14 @@
 - **Workstream:** DANTE AI architecture
 - **Current phase:** AI-04 — Productionization Architecture
 - **AI-04A:** MATERIALIZED / DIRECT PROVIDER EVIDENCE DEFERRED UNTIL DECISION-CRITICAL
-- **AI-04B:** RUNTIME/CAPABILITY CANDIDATE MATERIALIZED / RT-01..RT-20 / FRESH INDEPENDENT VALIDATION CURRENT
-- **AI-04C:** FUTURE / NEXT AFTER AI-04B CLOSURE
+- **AI-04B:** CLOSED / STRUCTURALLY ACCEPTED / RT-01..RT-31
+- **AI-04C:** CURRENT / STATE-OF-THE-ART SECURITY + PRIVACY + CONTROL PLANE + OPERATIONS RESEARCH
 - **AI-03A:** CLOSED / C01..C33
 - **AI-03B:** CLOSED / B01..B35
 - **AI-03C:** CLOSED / MAT-01..MAT-15
 - **AI-03 overall:** CLOSED / STRUCTURALLY ACCEPTED
 - **Refreshed:** 2026-09-02
-- **Current gate PRE-SCOPE:** `cef3105aafc7adbbe77f60a578a1e450e5cad5d3`
-- **AI-04B candidate commit:** `76db6e3e188caccaa3aea05f43961f0b42f7f0d0`
+- **AI-04B closure PRE-SCOPE:** `221cb9473df8f7b3264d3cef2f3bc6a3ab145430`
 - **Current branch HEAD:** FETCH LIVE before every write
 
 This file exists only to survive chat/session/context saturation while `feature/ai-architecture` is active. Durable architecture truth lives in architecture/current workstream sources.
@@ -29,8 +28,8 @@ Repository truth outranks this handoff.
 repository  MattiaRubino/dante
 branch      feature/ai-architecture
 workstream  DANTE AI architecture
-current     AI-04B Fresh Independent Destructive Runtime Validation
-next        AI-04C only after AI-04B closure
+current     AI-04C State-of-the-Art Production Assurance Research
+next        AI-04C candidate → kill-test → hardening/retest
 ```
 
 Closed upstream:
@@ -41,9 +40,10 @@ AI-03A         CLOSED / C01..C33
 AI-03B         CLOSED / B01..B35
 AI-03C         CLOSED / MAT-01..MAT-15
 AI-03 overall  CLOSED / STRUCTURALLY ACCEPTED
+AI-04B         CLOSED / STRUCTURALLY ACCEPTED / RT-01..RT-31
 ```
 
-Do not restart generic Context/Retrieval/Memory or AI-02 redesign without concrete contradictory downstream evidence.
+Do not restart generic AI-02/AI-03/AI-04B redesign without concrete contradictory downstream evidence.
 
 ---
 
@@ -77,94 +77,56 @@ docs/architecture/dante-ai-04a-direct-eval-specification.md
 docs/architecture/dante-ai-04b-concrete-runtime-capability-architecture.md
 ```
 
-For any AI-04 conclusion touching semantics/persistence, inspect Product/North Star, Domain, Whole Logical/WL-H01..H12, Physical, CP6/PostgreSQL Constitution, current DB/Alembic/SQLAlchemy truth, Recovery and PSV obligations directly.
+For AI-04C conclusions touching semantics/persistence, inspect Product/North Star, Domain, Whole Logical/WL-H01..H12, Physical, CP6/PostgreSQL Constitution, current DB/Alembic truth, Recovery and PSV obligations directly.
 
 ---
 
-# 3. Closed project state
+# 3. Current project truth
 
 ```text
-PRODUCT / NORTH STAR
-CURRENT
-
-DOMAIN
-CLOSED
-
-LOGICAL
-CLOSED / 57 OF 57 / WL-H01..H12
-
-PHYSICAL
-CLOSED
-PostgreSQL = sole canonical persistence/material-history authority
-
-BACKEND CP1–CP5
-CLOSED / integrated
-
-CP6 DATABASE
-CLOSED / integrated
-
-CURRENT PostgreSQL
-18.6
-Alembic 20260830_09
-69 tables / 5 views / 15 routines / 76 triggers /
-97 indexes / 69 FKs / 123 CHECKs
-
-RECOVERY
-CP01–CP07 LOCAL PASS / CLOSED / integrated
-remote backup provider TBD / NOT ACTIVATED
-production/cloud recovery NOT CLAIMED
+PRODUCT / NORTH STAR       CURRENT
+DOMAIN                     CLOSED
+LOGICAL                    CLOSED / 57 OF 57 / WL-H01..WL-H12
+PHYSICAL                   CLOSED
+PostgreSQL                 18.6 / sole canonical persistence + material-history authority
+Alembic                    20260830_09
+DB topology                69 tables / 5 views / 15 routines / 76 triggers /
+                           97 indexes / 69 FKs / 123 CHECKs
+RECOVERY                   CP01–CP07 LOCAL PASS / CLOSED / integrated
+remote backup provider     TBD / NOT ACTIVATED
+production/cloud recovery  NOT CLAIMED
 ```
 
-No provider/runtime convenience may redefine these contracts.
+No AI provider/runtime convenience may redefine these contracts.
 
 ---
 
 # 4. Current compact roadmap
 
 ```text
-AI-00  COMPLETE
-AI-01  COMPLETE
-AI-02  CLOSED / STRUCTURALLY ACCEPTED
-AI-03  CLOSED / STRUCTURALLY ACCEPTED
+AI-00 COMPLETE
+AI-01 COMPLETE
+AI-02 CLOSED / STRUCTURALLY ACCEPTED
+AI-03 CLOSED / STRUCTURALLY ACCEPTED
 
-AI-04  PRODUCTIONIZATION ARCHITECTURE — CURRENT
+AI-04 PRODUCTIONIZATION ARCHITECTURE — CURRENT
+  AI-04A eval/model/provider/economics
+    MATERIALIZED
+    direct provider/model evidence DEFERRED UNTIL DECISION-CRITICAL
 
-  AI-04A
-  eval/model/provider/economics + entitlement boundary
-  MATERIALIZED
-  direct provider/model eval evidence DEFERRED UNTIL NEEDED
+  AI-04B concrete runtime/capabilities
+    CLOSED / STRUCTURALLY ACCEPTED / RT-01..RT-31
 
-  AI-04B
-  concrete runtime + capabilities
-  CANDIDATE MATERIALIZED
-  first kill-test FAIL
-  RT-01..RT-20
-  compound retest PASS CANDIDATE
-  fresh independent validation CURRENT
+  AI-04C security/privacy/control-plane/operations
+    CURRENT
 
-  AI-04C
-  security/privacy/control-plane/operations
-  FUTURE / NEXT AFTER AI-04B CLOSURE
-
-AI-05
-WHOLE-SYSTEM ACCEPTANCE + IMPLEMENTATION BLUEPRINT — FUTURE
-
-THEN
-ACTUAL AI IMPLEMENTATION WORKSTREAM(S)
+AI-05 WHOLE-SYSTEM ACCEPTANCE + IMPLEMENTATION BLUEPRINT — FUTURE
+THEN ACTUAL AI IMPLEMENTATION WORKSTREAM(S)
 ```
 
 ---
 
 # 5. AI-04A retained authority
-
-Durable sources:
-
-```text
-docs/architecture/dante-ai-04-productionization-architecture.md
-docs/architecture/dante-ai-04a-direct-eval-specification.md
-```
-
-Provider boundary:
 
 ```text
 MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT
@@ -180,25 +142,20 @@ DANTE need
 → HarnessProfile
 → ProviderBinding
 → ProviderAdapter
-→ serving platform/model/deployment
+→ qualified serving platform/model/deployment/feature mode
 ```
 
-Eval authority remains DANTE-owned. Hard semantic/privacy/safety failures cannot be averaged away by quality/cost.
+DANTE owns eval semantics. Hard semantic/privacy/safety failure cannot be averaged away.
 
 No provider/model/default is selected.
-
-Direct eval tooling remains deferred until provider/model selection is actually blocked on evidence; no API key is required for current work.
 
 ---
 
 # 6. Commercial/service-tier boundary
 
 ```text
-COMMERCIAL SUBSCRIPTION / SERVICE TIER
-!= DANTE DOMAIN Plan
+COMMERCIAL SUBSCRIPTION / SERVICE TIER != DANTE DOMAIN Plan
 ```
-
-Candidate chain:
 
 ```text
 CommercialOffering / ServiceTier
@@ -209,243 +166,136 @@ CommercialOffering / ServiceTier
 → ProviderBinding
 ```
 
-```text
-COMMERCIAL TIER != MODEL
-COMMERCIAL TIER != PROVIDER
-COMMERCIAL TIER != DEPLOYMENT
-```
-
-Commercial tiers may bound resources; they may not weaken semantic correctness, privacy, Authority, target safety, provider/data eligibility, effect verification/reconciliation or anti-resurrection/currentness.
+Commercial tiers may bound resources but may not weaken correctness, privacy, Authority, target safety, provider/data eligibility or reconciliation obligations.
 
 No Base/Plus/Pro names, prices or quotas are fixed.
 
 ---
 
-# 7. AI-04B durable authority
+# 7. AI-04B closure chronology
 
 ```text
-docs/architecture/dante-ai-04b-concrete-runtime-capability-architecture.md
+first candidate
+→ destructive kill-test FAIL
+→ RT-01..RT-20
+→ compound retest PASS CANDIDATE
+→ fresh independent validation FAIL
+→ RT-21..RT-31
+→ final compound retest PASS
+→ CLOSED / STRUCTURALLY ACCEPTED
 ```
 
-Current candidate status:
+The independent pass found and closed gaps around cancellation acknowledgement, continuation rebinding, feature-mode qualification, provider-state revocation, semantic idempotency, frozen config/current auth, irreversible publication, late callbacks, attached/detached work, budget settlement and MCP auto-fulfilment.
 
-```text
-research / protocol verification COMPLETE ENOUGH
-first candidate BUILT
-first destructive kill-test FAIL
-RT-01..RT-20 incorporated
-compound retest PASS CANDIDATE
-independent validation CURRENT
-```
-
-Runtime shape:
-
-```text
-Interaction / WorkContract
-        ↓
-Execution Kernel
-        ├ deterministic compute
-        ├ solver
-        ├ Model Access Runtime
-        ├ Capability Runtime
-        ├ Execution Environment Broker
-        └ Async / Durable Supervisor
-        ↓
-Verifier
-        ↓
-ChangeSet / EffectGraph / Effect Runtime
-        ↓
-Safe Publication
-```
-
-Responsibilities do not imply microservices/tables.
+No Domain/Logical/Physical/PostgreSQL reopen was required.
 
 ---
 
-# 8. AI-04B binding separations
+# 8. RT-01..RT-31 summary
 
 ```text
 RUN != MODEL INVOCATION != PROVIDER ATTEMPT
 RAW PROVIDER EVENT != DANTE RUNTIME EVENT != PUBLICATION EVENT
 CLIENT DISCONNECT != STREAM STOP != INVOCATION CANCEL != RUN CANCEL != EFFECT ROLLBACK
+CANCELLATION REQUESTED != CANCELLATION CONFIRMED != EXECUTION QUIESCED
 PARTIAL TOOL ARGUMENTS != EXECUTABLE TOOL REQUEST
-PROVIDER PARALLEL TOOL CALL != EFFECTGRAPH PARALLEL AUTHORIZATION
-PROVIDER BACKGROUND EXECUTION != DANTE DURABLE EXECUTION
-PROVIDER CONTINUATION STATE != DANTE SESSION/CONTEXT/MEMORY
-REFUSAL != INFRASTRUCTURE FAILURE
-PROVIDER SERVER-SIDE FALLBACK != DANTE ROUTING AUTHORITY
+PROVIDER PARALLEL TOOL CALL != EFFECTGRAPH AUTHORIZATION
+PROVIDER BACKGROUND != DANTE DURABLE EXECUTION
+PROVIDER CONTINUATION != DANTE SESSION/CONTEXT/MEMORY
+CONTINUATION HANDLE != CURRENT HARNESS/POLICY/TOOLS/CAPABILITIES
+REFUSAL != INFRA FAILURE / no safety-arbitrage fallback
+SERVER-SIDE FALLBACK != DANTE ROUTING AUTHORITY
 PROVIDER TOOL != DANTE CAPABILITY
-MCP DISCOVERY/DESCRIPTION != TRUST/AUTHORITY
-MCP ELICITATION != DANTE APPROVAL
-MCP TASK != DANTE RUN
-A2A TASK/STATUS != DANTE RUN/CANONICAL STATE/AUTHORITY
+MCP/A2A discovery/task state != DANTE trust/authority/run truth
 PROVIDER-HOSTED EXECUTION != DANTE Execution Environment
+PROVIDER EVENT/TOOL IDs != DANTE semantic identity/idempotency
+ENTITLEMENT CHANGE cannot erase consequence/reconciliation obligations
+FEATURE MODE participates in provider/binding qualification
+DANTE revocation suppresses provider-state reuse before provider purge confirmation
+FROZEN EXECUTION CONFIG != PERPETUAL CURRENT AUTHORIZATION
+PUBLISHED DELTA = EXTERNALIZATION
+REMOTE CALLBACK != CURRENT RUN ELIGIBILITY
+ATTACHED CHILD != DETACHED CHILD
+BUDGET ADMISSION != FINAL COST / GUARANTEED PROVIDER STOP
+MCP INPUT_REQUIRED/AUTO-FULFIL != USER INPUT/CONSENT/APPROVAL
 ```
+
+Full normative wording lives in the AI-04B durable document.
 
 ---
 
-# 9. Runtime routing/failure posture
-
-Routing uses minimum necessary metadata plus current qualification/eligibility/budget.
-
-Failover is:
-
-```text
-classify failure
-→ determine if failover allowed
-→ qualify alternate binding now
-→ fresh provider/data eligibility
-→ rebuild/minimize ConsumerContext if required
-→ alternate HarnessProfile
-→ new ProviderAttempt
-```
-
-No blind request replay.
-No refusal/provider safety shopping.
-No hedged multi-provider requests by default.
-
-Retry must distinguish safe pre-acceptance failure from outcome-unknown state requiring reconciliation.
-
-Cancellation cannot erase already-dispatched effect verification/reconciliation.
-
----
-
-# 10. Tool/capability posture
-
-```text
-model request/deltas
-→ finalized args
-→ parse/schema
-→ semantic validation
-→ capability resolution
-→ policy
-→ effect policy if consequential
-→ dispatch
-→ receipt
-→ verify/reconcile
-→ normalized result
-```
-
-Keep distinct:
-
-```text
-Capability Registry
-Capability Discovery
-Capability Runtime
-```
-
-Provider native tools/MCP/A2A adapters do not define DANTE semantic capability authority.
-
----
-
-# 11. Durable/background posture
-
-```text
-INLINE
-BOUNDED ASYNC
-ELIGIBLE PROVIDER BACKGROUND
-CLASS-B DURABLE
-```
-
-Accepted project decision remains:
+# 9. Class-A / Class-B durability
 
 ```text
 Class A → PostgreSQL transactional outbox + bounded worker
-Class B → Restate selected / dormant until real qualifying consumer
+Class B → Restate selected / dormant until first real qualifying consumer
 ```
 
-Provider background execution does not replace Class-B durability semantics.
+Provider background execution does not replace Class-B semantics.
+
+Restate activation still requires applicable direct proof/privacy/recovery obligations.
 
 ---
 
-# 12. Execution Environment posture
-
-Execution Environment is trigger-based for code/browser/file/untrusted execution.
+# 10. AI-04C current scope
 
 ```text
-PROVIDER-HOSTED EXECUTION
-!= DANTE Execution Environment
+provider/data/feature-mode eligibility
+privacy / retention / residency
+information-flow / prompt-injection containment
+credential/workload identity
+secret brokerage / key lifecycle
+control-plane registry and configuration ownership
+routing policy governance
+configuration promotion / emergency kill switches
+CommercialOffering / EntitlementProfile / Budget Policy integration
+budget reservation / settlement / overshoot
+rate limits / concurrency / backpressure / fairness
+observability vs audit vs eval evidence
+privacy-safe logs/traces
+SLOs / error budgets
+provider incidents / degraded modes
+shadow / canary / progressive rollout / rollback
+model/harness/provider requalification triggers
+runtime evidence retention
+security incident response
+operational recovery / reconciliation
 ```
 
-Isolation technology remains open:
-
-```text
-T0 trusted deterministic compute
-T1 WASM/WASI where compatible
-T2 hardened container/syscall isolation
-T3 microVM/VM where required
-```
-
-Untrusted/model-generated execution does not receive broad DB/service secrets; privileged actions go through trusted typed capability/credential/egress brokerage.
+Research must use current 2026 state-of-the-art sources and publicly documented production patterns from relevant large platforms. Clearly separate verified public evidence from architectural inference.
 
 ---
 
-# 13. RT-01..RT-20
+# 11. Exact next action
 
 ```text
-RT-01  RUN != MODEL INVOCATION != PROVIDER ATTEMPT.
-RT-02  RAW PROVIDER EVENT != DANTE RUNTIME EVENT != PUBLICATION EVENT.
-RT-03  CLIENT DISCONNECT != STREAM STOP != INVOCATION CANCEL != RUN CANCEL != EFFECT ROLLBACK.
-RT-04  PARTIAL TOOL ARGUMENTS != EXECUTABLE TOOL REQUEST.
-RT-05  PROVIDER PARALLEL TOOL CALL != EFFECTGRAPH PARALLEL AUTHORIZATION.
-RT-06  PROVIDER BACKGROUND EXECUTION != DANTE DURABLE EXECUTION.
-RT-07  PROVIDER-STORED CONTINUATION STATE != DANTE SESSION / CONTEXT / MEMORY.
-RT-08  RETRY CLASSIFICATION MUST ACCOUNT FOR ACCEPTANCE AND SIDE-EFFECT UNCERTAINTY.
-RT-09  REFUSAL != INFRASTRUCTURE FAILURE; NO SAFETY-ARBITRAGE FALLBACK.
-RT-10  SERVER-SIDE PROVIDER FALLBACK != DANTE ROUTING AUTHORITY.
-RT-11  ROUTING MUST USE MINIMUM NECESSARY INFORMATION AND SELECT ONLY QUALIFIED CURRENT BINDINGS.
-RT-12  HEDGED MULTI-PROVIDER EXECUTION IS NOT A SAFE DEFAULT.
-RT-13  PROVIDER TOOL != DANTE CAPABILITY; NATIVE TOOLS DO NOT BYPASS SOURCE/EFFECT GOVERNANCE.
-RT-14  MCP DISCOVERY / DESCRIPTION != TRUST / AUTHORITY.
-RT-15  MCP ELICITATION != DANTE APPROVAL; MCP TASK != DANTE RUN.
-RT-16  A2A DISCOVERY / TASK STATUS != DANTE AUTHORITY / CANONICAL STATE / RUN.
-RT-17  PROVIDER-HOSTED EXECUTION != DANTE EXECUTION ENVIRONMENT.
-RT-18  PROVIDER EVENT SEQUENCE / REPLAY != DANTE SEMANTIC EVENT IDENTITY.
-RT-19  ENTITLEMENT/BUDGET CHANGE MAY GOVERN FUTURE WORK BUT CANNOT ERASE EFFECT/RECONCILIATION OBLIGATIONS.
-RT-20  NO MODEL/PROVIDER FEATURE MAY SILENTLY REDEFINE DANTE RUNTIME SEMANTICS.
+AI-04C — STATE-OF-THE-ART PRODUCTION ASSURANCE RESEARCH
 ```
+
+Required approach:
+
+```text
+DANTE obligations + RT-01..RT-31
+→ current official provider/cloud/security docs
+→ publicly documented large-app/platform patterns
+→ candidate security/privacy/control-plane/ops architecture
+→ destructive kill-test
+→ hardening
+→ compound retest
+→ fresh independent validation
+→ AI-04C closure only if no structural contradiction remains
+```
+
+Do not select provider/model/SDK merely from documentation or popularity.
 
 ---
 
-# 14. Exact next action
-
-```text
-AI-04B — FRESH INDEPENDENT DESTRUCTIVE RUNTIME VALIDATION
-```
-
-Must pressure at least:
-
-```text
-stream reconnect + duplicate tool/effect prevention
-cancel + supersession + outcome-unknown
-provider failover after partial output/tool state
-provider background + crash + deletion/revocation
-quota/downgrade during consequential work
-MCP catalog/cache/trust drift
-MCP input-required vs DANTE approval
-A2A delegation/confused-deputy
-provider-native tools + prompt injection + egress
-provider-hosted execution + credential boundary
-multi-agent parallelism + Authority
-retry/idempotency/reconciliation
-```
-
-If AI-04B closes, route next to:
-
-```text
-AI-04C — SECURITY / PRIVACY / CONTROL PLANE / OPERATIONS
-```
-
-Do not start production AI backend or AI-05 yet.
-
----
-
-# 15. Current non-claims
+# 12. Current non-claims
 
 ```text
 AI-04 CLOSED                         NO
-AI-04B CLOSED                        NO
-AI-04B FINAL INDEPENDENT PASS         NO
+AI-04B CLOSED                        YES / STRUCTURAL
+AI-04C CLOSED                        NO
 DIRECT PROVIDER EVAL PASS            NO
 PROVIDER SELECTED                    NO
 MODEL DEFAULT SELECTED               NO
@@ -469,7 +319,7 @@ AI-05 STARTED                        NO
 
 ---
 
-# 16. Git write-gate discipline
+# 13. Git write-gate discipline
 
 Before every new remote write:
 
@@ -502,7 +352,7 @@ After writes compare PRE-SCOPE..HEAD and prove exact path classification/no scop
 
 ---
 
-# 17. Handoff lifecycle
+# 14. Handoff lifecycle
 
 This file is temporary and **MUST NOT MERGE TO PROTECTED `main`**.
 
