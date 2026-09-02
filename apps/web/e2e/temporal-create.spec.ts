@@ -329,7 +329,7 @@ test('Event recurrence exposes CP6 families, precise calendar/quota/cycle semant
   expect(accessibility.violations).toEqual([]);
 });
 
-test('all-day multi-day Event and unscheduled Activity preserve different temporal semantics', async ({
+test('all-day multi-day Event materializes one native date span while unscheduled Activity stays unplaced', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1280, height: 820 });
@@ -340,11 +340,27 @@ test('all-day multi-day Event and unscheduled Activity preserve different tempor
   await dialog.getByLabel('Tipo').selectOption('event');
   await dialog.getByRole('radio', { name: 'Tutto il giorno' }).click();
   const startDate = await dialog.getByLabel('Data inizio').inputValue();
-  await dialog.getByLabel('Data fine').fill(startDate);
+  const nextDate = await page.evaluate((value) => {
+    const date = new Date(`${value}T12:00:00Z`);
+    date.setUTCDate(date.getUTCDate() + 1);
+    return date.toISOString().slice(0, 10);
+  }, startDate);
+  await dialog.getByLabel('Data fine').fill(nextDate);
   await dialog.getByRole('button', { name: 'Aggiungi' }).click();
-  await expect(
-    page.locator('.temporal-create-all-day').filter({ hasText: 'Fiera' }),
-  ).toBeVisible();
+  await expect(dialog).toHaveCount(0);
+
+  const allDaySegments = page
+    .locator('.timeline-all-day-item[data-temporal-create-projection]')
+    .filter({ hasText: 'Fiera' });
+  await expect(allDaySegments).toHaveCount(2);
+  await expect(allDaySegments.first()).toHaveAttribute('data-range-start', 'true');
+  await expect(allDaySegments.last()).toHaveAttribute('data-range-end', 'true');
+  await expect(page.locator('.temporal-create-all-day:not(.is-preview)')).toHaveCount(0);
+
+  const allDayToast = page.locator('.temporal-create-toast.is-on');
+  await expect(allDayToast).toContainText('Fiera');
+  await allDayToast.getByRole('button', { name: 'Annulla' }).click();
+  await expect(allDaySegments).toHaveCount(0);
 
   dialog = await openCreate(page);
   await dialog.getByRole('textbox', { name: 'Titolo' }).fill('Da organizzare');
@@ -409,9 +425,6 @@ test('double-click and Shift-drag on empty Timeline create contextual defaults',
   await expect(dialog).toHaveCount(0);
   await expect(page.locator('.timeline-grid')).toBeFocused();
 
-  // The Timeline recycles day-section DOM nodes while it maintains the mounted
-  // window. Reacquire a currently visible date instead of retaining `.first()`
-  // across that virtualization boundary.
   section = await visibleTimelineDay(page);
   const rangeBox = await section.boundingBox();
   if (!rangeBox) {
