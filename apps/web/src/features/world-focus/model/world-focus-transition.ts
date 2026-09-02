@@ -1,4 +1,4 @@
-import type { WorldFocusId } from './world-focus-fixtures';
+import type { WorldFocusId } from './world-focus-identity';
 
 export type WorldFocusEntrySource = 'home' | 'worlds';
 
