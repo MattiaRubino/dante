@@ -1,6 +1,14 @@
 import './ui/temporal-create-expanded.css';
 
 export {
+  prepareTemporalCreateHandoff,
+  temporalCreateHandoffRegistry,
+  type TemporalCreateHandoffAvailability,
+  type TemporalCreateHandoffDescriptor,
+  type TemporalCreateHandoffIntent,
+  type TemporalCreateHandoffTarget,
+} from './application/temporal-create-handoff';
+export {
   createLocalTemporalCreateRuntime,
   temporalCreateRevealDate,
   type TemporalCreateAppliedEffect,

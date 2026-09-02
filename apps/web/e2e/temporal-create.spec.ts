@@ -14,6 +14,47 @@ async function expectNoRawCreateKeys(page: Page) {
   await expect(page.locator('body')).not.toContainText('home.timeline.create.');
 }
 
+async function visibleTimelineDay(page: Page) {
+  const date = await page
+    .locator('.timeline-day-section[data-timeline-date]')
+    .evaluateAll((sections) => {
+      const viewportCenter = window.innerHeight / 2;
+      const candidates = sections.flatMap((section) => {
+        if (!(section instanceof HTMLElement)) {
+          return [];
+        }
+        const rect = section.getBoundingClientRect();
+        const dateValue = section.dataset.timelineDate;
+        if (
+          !dateValue ||
+          rect.height <= 0 ||
+          rect.bottom <= 0 ||
+          rect.top >= window.innerHeight
+        ) {
+          return [];
+        }
+        return [
+          {
+            date: dateValue,
+            distance: Math.abs((rect.top + rect.bottom) / 2 - viewportCenter),
+          },
+        ];
+      });
+      candidates.sort((left, right) => left.distance - right.distance);
+      return candidates[0]?.date ?? null;
+    });
+
+  if (!date) {
+    throw new Error('Expected a visible Timeline day section');
+  }
+
+  const section = page.locator(
+    `.timeline-day-section[data-timeline-date="${date}"]`,
+  );
+  await expect(section).toBeVisible();
+  return section;
+}
+
 test('Quick Create stays title-first, protects drafts, and restores opener focus', async ({
   page,
 }) => {
@@ -334,17 +375,21 @@ test('advanced validation focuses the real invalid control without losing the dr
 test('double-click and Shift-drag on empty Timeline create contextual defaults', async ({
   page,
 }) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
+  const viewport = { width: 1440, height: 900 };
+  await page.setViewportSize(viewport);
   await page.goto('/home');
 
-  const section = page.locator('.timeline-day-section').first();
+  let section = await visibleTimelineDay(page);
   const box = await section.boundingBox();
   if (!box) {
-    throw new Error('Expected a visible Timeline day section');
+    throw new Error('Expected visible Timeline day geometry');
   }
+  const visibleTop = Math.max(0, -box.y);
+  const visibleBottom = Math.min(box.height, viewport.height - box.y);
+  expect(visibleBottom - visibleTop).toBeGreaterThan(80);
 
   const emptyX = Math.min(600, box.width - 40);
-  const emptyY = box.height * 0.46;
+  const emptyY = visibleTop + (visibleBottom - visibleTop) * 0.46;
   await section.dblclick({ position: { x: emptyX, y: emptyY } });
   let dialog = page.locator('[data-temporal-create="composer"]');
   await expect(dialog).toBeVisible();
@@ -354,14 +399,29 @@ test('double-click and Shift-drag on empty Timeline create contextual defaults',
   await expect(dialog).toHaveCount(0);
   await expect(page.locator('.timeline-grid')).toBeFocused();
 
-  await section.scrollIntoViewIfNeeded();
+  // The Timeline recycles day-section DOM nodes while it maintains the mounted
+  // window. Reacquire a currently visible date instead of retaining `.first()`
+  // across that virtualization boundary.
+  section = await visibleTimelineDay(page);
   const rangeBox = await section.boundingBox();
   if (!rangeBox) {
     throw new Error('Expected visible Timeline day geometry after contextual create');
   }
+  const rangeVisibleTop = Math.max(rangeBox.y, 0);
+  const rangeVisibleBottom = Math.min(
+    rangeBox.y + rangeBox.height,
+    viewport.height,
+  );
+  expect(rangeVisibleBottom - rangeVisibleTop).toBeGreaterThan(80);
+
   const startX = rangeBox.x + Math.min(600, rangeBox.width - 40);
-  const startY = rangeBox.y + rangeBox.height * 0.46;
-  const endY = Math.min(rangeBox.y + rangeBox.height - 30, startY + 130);
+  const startY =
+    rangeVisibleTop + (rangeVisibleBottom - rangeVisibleTop) * 0.4;
+  const endY = Math.min(rangeVisibleBottom - 20, startY + 130);
+  expect(startY).toBeGreaterThanOrEqual(0);
+  expect(endY).toBeLessThanOrEqual(viewport.height);
+  expect(endY - startY).toBeGreaterThanOrEqual(30);
+
   await page.keyboard.down('Shift');
   await page.mouse.move(startX, startY);
   await page.mouse.down();

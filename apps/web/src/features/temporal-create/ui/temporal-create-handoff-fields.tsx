@@ -1,23 +1,15 @@
 import { useTranslation } from 'react-i18next';
 
-const HANDOFFS = [
-  'project',
-  'goal',
-  'routine',
-  'program',
-  'world',
-  'template',
-  'reminder',
-  'block',
-  'asset',
-] as const;
-
-type Handoff = (typeof HANDOFFS)[number];
+import {
+  temporalCreateHandoffRegistry,
+  type TemporalCreateHandoffTarget,
+} from '../application/temporal-create-handoff';
 
 export function TemporalCreateHandoffFields() {
   const { t } = useTranslation('common');
+  const handoffs = temporalCreateHandoffRegistry();
 
-  const label = (handoff: Handoff): string => {
+  const label = (handoff: TemporalCreateHandoffTarget): string => {
     switch (handoff) {
       case 'project':
         return t(($) => $.common.home.timeline.create.handoffs.project);
@@ -55,9 +47,15 @@ export function TemporalCreateHandoffFields() {
       </div>
 
       <div className="temporal-create-handoff-grid">
-        {HANDOFFS.map((handoff) => (
-          <button key={handoff} type="button" disabled>
-            <strong>{label(handoff)}</strong>
+        {handoffs.map((handoff) => (
+          <button
+            key={handoff.target}
+            type="button"
+            disabled
+            data-temporal-create-handoff-target={handoff.target}
+            data-temporal-create-handoff-availability={handoff.availability}
+          >
+            <strong>{label(handoff.target)}</strong>
             <small>{t(($) => $.common.home.timeline.create.handoffs.ownerRequired)}</small>
           </button>
         ))}
