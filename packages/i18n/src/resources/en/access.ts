@@ -20,6 +20,9 @@ export const access = {
     body: 'Continue with your account or use email and password.',
     forgot: 'Forgot password?',
     new: 'New to DANTE?',
+    otherMethods: 'Use another method',
+    passkeyHint:
+      'Use a passkey already registered on this device or in your password manager.',
   },
   signup: {
     title: 'Create your DANTE account',
@@ -206,7 +209,9 @@ export const access = {
     reauthTitle: 'Recent confirmation',
     reauthBody:
       'Sensitive changes require recent proof that you still control an authenticator.',
-    reauthHint: 'Use password or passkey below, then repeat the operation.',
+    reauthHint: 'Refresh your identity confirmation, then repeat the operation.',
+    reauthNoInlineMethod:
+      'To refresh recent confirmation, return to Access and sign in again with an available method.',
     reauthPassword: 'Confirm with password',
     reauthPasskey: 'Confirm with passkey',
     reauthComplete: 'Identity confirmed recently.',
