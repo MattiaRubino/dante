@@ -2,15 +2,22 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { TemporalCreateFields } from '../model/temporal-create-session';
+import { TemporalCreateContextPicker } from './temporal-create-context-picker';
 import {
   TEMPORAL_CREATE_DURATION_OPTIONS,
   temporalCreateDurationLabel,
 } from './temporal-create-field-shared';
-import type { TemporalCreateContextOption } from './temporal-create-ui-types';
+import type {
+  TemporalCreateContextInput,
+  TemporalCreateContextOption,
+} from './temporal-create-ui-types';
 
 type TemporalCreateCoreFieldsProps = Readonly<{
   fields: TemporalCreateFields;
   contexts: readonly TemporalCreateContextOption[];
+  onCreateContext: (
+    input: TemporalCreateContextInput,
+  ) => TemporalCreateContextOption;
   onPatch: (patch: Partial<TemporalCreateFields>) => void;
   renderError: (path: string) => ReactNode;
 }>;
@@ -18,6 +25,7 @@ type TemporalCreateCoreFieldsProps = Readonly<{
 export function TemporalCreateCoreFields({
   fields,
   contexts,
+  onCreateContext,
   onPatch,
   renderError,
 }: TemporalCreateCoreFieldsProps) {
@@ -76,20 +84,12 @@ export function TemporalCreateCoreFields({
           </select>
         </label>
 
-        <label className="temporal-create-compact-control">
-          <span>{t(($) => $.common.home.timeline.create.context)}</span>
-          <select
-            data-create-path="contextId"
-            value={fields.contextId}
-            onChange={(event) => onPatch({ contextId: event.currentTarget.value })}
-          >
-            {contexts.map((context) => (
-              <option key={context.id} value={context.id}>
-                {context.label}
-              </option>
-            ))}
-          </select>
-        </label>
+        <TemporalCreateContextPicker
+          value={fields.contextId}
+          contexts={contexts}
+          onChange={(contextId) => onPatch({ contextId })}
+          onCreateContext={onCreateContext}
+        />
       </div>
 
       <fieldset
