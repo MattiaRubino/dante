@@ -39,7 +39,7 @@ export type TimelinePlanningTrayItem = Readonly<{
 type TimelinePlanningTrayProps = Readonly<{
   items: readonly TimelinePlanningTrayItem[];
   defaultDate: PlainDate;
-  onBeforeOpen?: () => void;
+  onBeforeOpen?: (() => void) | undefined;
   onPlace: (
     itemId: string,
     dateKey: string,
