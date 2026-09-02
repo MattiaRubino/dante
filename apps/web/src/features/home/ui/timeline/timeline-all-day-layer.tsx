@@ -120,7 +120,7 @@ export function TimelineAllDayLayer({
           dateKey,
           host: section,
           lane,
-          tone: group?.tone ?? 'personal',
+          tone: item.appearanceTone ?? group?.tone ?? 'personal',
           groupLabel: group?.label ?? item.groupId,
           startsHere: dateKey === item.startDateKey,
           endsHere: isLastCoveredDate(item, dateKey),
