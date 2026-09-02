@@ -209,6 +209,8 @@ def main() -> None:
         os.environ["VITE_DANTE_GOOGLE_CLIENT_ID"] = google_client_id
     else:
         os.environ.pop("VITE_DANTE_GOOGLE_CLIENT_ID", None)
+    os.environ["VITE_DANTE_APPLE_ENABLED"] = "false"
+    os.environ["VITE_DANTE_PASSKEY_ENABLED"] = "true" if webauthn_enabled else "false"
 
     database_name = getattr(core, "_DATABASE_NAME", None)
     if not isinstance(database_name, str) or not database_name:
@@ -231,6 +233,7 @@ def main() -> None:
     print("DANTE Access/Auth local real-UAT configuration")
     print(f"  origin          : {_UAT_WEB_ORIGIN}")
     print(f"  Google          : {'enabled' if google_enabled else 'disabled'}")
+    print("  Apple           : disabled (registered-domain UAT only)")
     print(f"  WebAuthn/passkey: {'enabled' if webauthn_enabled else 'disabled'}")
     print(f"  seeded email    : {seed_email}")
     print(f"  seeded password : {seed_password}")
