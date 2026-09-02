@@ -41,8 +41,11 @@ Branch-local workstream files may describe newer unmerged implementation/design 
 
 On `feature/ai-architecture`:
 
-- `ai-architecture.md` — durable branch-local workstream record; current phase **AI-05 Whole-System Acceptance + Implementation Blueprint**;
+- `ai-architecture.md` — durable branch-local workstream record; current sub-phase **AI-05B Concrete Implementation Blueprint**;
 - `ai-architecture-live-handoff.md` — **TEMPORARY / MUST NOT MERGE TO protected main**; session/context save-game only;
+- `../architecture/dante-ai-05a-whole-system-build-boundary-acceptance.md` — **current AI-05A closure authority**, CLOSED / STRUCTURALLY ACCEPTED / BD-01..BD-41;
+- `../architecture/dante-ai-05a-whole-system-build-boundary.md` — AI-05A original candidate + first destructive-pass evidence; pre-closure evidence only;
+- `../architecture/dante-ai-05a-eval-production-composition-hardening.md` — AI-05A second-pass BD-41 hardening; pre-closure evidence only;
 - `../architecture/dante-ai-03-context-retrieval-memory.md` — closed AI-03 Context/Retrieval/Memory authority;
 - `../architecture/dante-ai-03a-full-context-architecture.md` — AI-03A closed / C01..C33;
 - `../architecture/dante-ai-03b-retrieval-memory-architecture.md` — AI-03B closed / B01..B35;
@@ -75,6 +78,8 @@ AI-04 WHOLE-PHASE CLOSED / WP-01..WP-22
 PRE-AI05 CLOSED / PRE05-H01..H19
 DANTE-E01..DANTE-E14 CURRENT CORE EVAL
 AI-05  ACTIVE / CURRENT — WHOLE-SYSTEM ACCEPTANCE + IMPLEMENTATION BLUEPRINT
+AI-05A CLOSED / STRUCTURALLY ACCEPTED / BD-01..BD-41
+AI-05B ACTIVE / CURRENT NEXT SUB-PHASE — CONCRETE IMPLEMENTATION BLUEPRINT
 ```
 
 Provider replaceability remains binding:
@@ -91,6 +96,63 @@ PROVIDER REPLACEABLE != LOWEST-COMMON-DENOMINATOR PROVIDER USAGE
 Current route selection works over eligible qualified route compositions; it does not select a universal Harness and attach an arbitrary provider later.
 
 PRE-AI05 adds binding cross-phase hardening around Attention/proactivity/causal loops, cumulative cross-work disclosure, surface/channel-aware publication, scoped-autonomy revalidation and truthful notification-state handling. `ATTENTION DECISION != PROACTIVE WORK ADMISSION != EFFECT AUTHORIZATION`.
+
+AI-05A adds the accepted build boundary:
+
+```text
+GLOBAL SEARCH != INTELLIGENCE ORCHESTRATION
+
+modules/search
+→ deterministic/no-model capable shared Search/read capability
+→ bounded cross-capability read projection where required
+→ no canonical business ownership / no mutation / no model-SQL
+
+modules/intelligence
+→ DANTE intelligence application/orchestration
+→ consumes Search and owning capability public seams
+
+INTELLIGENCE
+!= SUBSCRIPTION / SHARED USAGE LEDGER OWNER
+
+BEHAVIOR-BEARING ROUTE/HARNESS/POLICY CONFIG
+!= SCATTERED ENVIRONMENT VARIABLES
+
+DEFAULT NONCANONICAL AI PERSISTENCE = NO
+
+FIRST VERTICAL
+= Global Search + read-only Ask DANTE
+= private authenticated / single-turn / inline / read-only envelope
+```
+
+Evidence planes remain distinct:
+
+```text
+APPLICATION FAKE
+!= PROVIDER ADAPTER CONFORMANCE
+!= LIVE PROVIDER SMOKE / COMPATIBILITY PROOF
+!= DIRECT DANTE MODEL/ROUTE EVAL
+!= PRODUCTION CAPACITY QUALIFICATION
+```
+
+AI-05A `BD-41` additionally binds:
+
+```text
+QUALIFICATION EVIDENCE MUST EXERCISE THE SAME MATERIAL PRODUCTION
+COMPOSITION THAT WILL BE PROMOTED, OR EVERY MATERIAL DELTA MUST BE
+INDEPENDENTLY QUALIFIED BEFORE PROMOTION.
+```
+
+Eval tooling stays outside the ordinary production request path; production code must not depend on `tooling/ai-evals`. The qualification seam may invoke production-owned route components so the tested HarnessProfile / ProviderBinding / ProviderAdapter / material feature-control composition matches the promoted claim.
+
+AI-05A final acceptance evidence:
+
+```text
+T01..T26                                      PASS / 26 OF 26
+compound collision suite                      PASS
+reverse AI-05A→AI-04→PRE-AI05→AI-03→AI-02   PASS
+```
+
+The current next work is AI-05B. It freezes concrete module public boundaries, ports/DTOs, Search contracts, ModelAccessPort + adapter conformance, route/config artifacts, resource-control seams, first-vertical HTTP/streaming shape, runtime/evidence/persistence ownership, test topology, qualification artifacts and implementation build gates. It does **not** start production implementation.
 
 The temporary live handoff must be deleted/consolidated before integration. Durable architecture decisions must not live only in that file.
 
