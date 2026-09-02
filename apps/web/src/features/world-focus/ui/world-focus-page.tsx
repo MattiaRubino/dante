@@ -70,14 +70,12 @@ type WorldFocusPageProps = Readonly<{
 }>;
 
 type WorldFocusWorkspaceExperienceProps = Readonly<{
-  world: WorldFocusWorld;
   identity: WorldFocusIdentityDescriptor;
   status: WorldFocusShellStatus;
   onRequestWorldClose: () => void;
 }>;
 
 function WorldFocusWorkspaceExperience({
-  world,
   identity,
   status,
   onRequestWorldClose,
@@ -247,7 +245,6 @@ export function WorldFocusPage({
 
       <WorldFocusWorkspaceHost key={identity.id} worldId={identity.id}>
         <WorldFocusWorkspaceExperience
-          world={world}
           identity={identity}
           status={status}
           onRequestWorldClose={requestWorldClose}
