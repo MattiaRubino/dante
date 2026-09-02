@@ -1,268 +1,209 @@
 # DANTE AI Architecture Workstream
 
-- **Status:** ACTIVE / BRANCH-LOCAL DURABLE WORKSTREAM RECORD
+- **Status:** CLOSED / STRUCTURALLY ACCEPTED / READY TO HAND OFF TO IMPLEMENTATION
 - **Branch:** `feature/ai-architecture`
-- **Current phase:** AI-05B — CONCRETE IMPLEMENTATION BLUEPRINT
-- **Global current-truth reconciliation:** COMPLETE / QA PASS
+- **Closed:** 2026-09-02
 - **AI-02.1:** CLOSED / STRUCTURALLY ACCEPTED
-- **AI-03:** CLOSED / STRUCTURALLY ACCEPTED / C01..C33 / B01..B35 / MAT-01..MAT-15
-- **AI-04:** CLOSED / STRUCTURALLY ACCEPTED
-- **AI-04A:** CLOSED / A01..A30 / EV01..EV20 / DIRECT PROVIDER EVIDENCE NOT EXECUTED
-- **AI-04B:** CLOSED / RT-01..RT-31
-- **AI-04C:** CLOSED / PA-01..PA-61
-- **AI-04 whole-phase:** CLOSED / WP-01..WP-22
-- **PRE-AI05:** CLOSED / STRUCTURALLY ACCEPTED / PRE05-H01..H19
-- **AI-05A:** CLOSED / STRUCTURALLY ACCEPTED / BD-01..BD-41
-- **Current core eval:** DANTE-E01..DANTE-E14
-- **AI-05:** ACTIVE / CURRENT
-- **AI-05B:** ACTIVE / CURRENT NEXT SUB-PHASE / SUBSTANTIVE DESIGN NOT YET MATERIALIZED
-- **Implementation claim:** NONE
-- **Provider/model selection:** OPEN / EVIDENCE-DRIVEN
+- **AI-03:** CLOSED / C01..C33 / B01..B35 / MAT-01..MAT-15
+- **AI-04:** CLOSED / A01..A30 / EV01..EV20 / RT-01..RT-31 / PA-01..PA-61 / WP-01..WP-22
+- **PRE-AI05:** CLOSED / PRE05-H01..H19
+- **AI-05A:** CLOSED / BD-01..BD-41
+- **AI-05B:** CLOSED / AI05B-H01..H15 / B05-01..B05-50 PASS
+- **AI-05 whole-system:** CLOSED / STRUCTURALLY ACCEPTED
+- **Post-AI05 hardening:** POST05-H01..H25
+- **Final mega test:** MKT-001..MKT-100 PASS / C01..C20 PASS / reverse PASS / Product-simulation replay PASS
+- **Implementation:** NONE YET
+- **Provider/model/SDK:** OPEN / EVIDENCE-DRIVEN
+- **Database/Alembic change:** NONE
 - **Merge status:** UNMERGED
+- **Next work:** actual AI implementation workstream, beginning at I0
 
 Repository truth outranks conversation memory.
 
-## 1. Current roadmap
+## 1. Final architecture state
 
 ```text
-AI-00 COMPLETE
-AI-01 COMPLETE
-AI-02 CLOSED / STRUCTURALLY ACCEPTED
-AI-03 CLOSED / STRUCTURALLY ACCEPTED
-AI-04 CLOSED / STRUCTURALLY ACCEPTED
-PRE-AI05 CLOSED / H01..H19
-GLOBAL CURRENT-TRUTH RECONCILIATION COMPLETE
+AI-00  Semantic & Product Foundation                         COMPLETE
+AI-01  Product Form + Production Engineering Research        COMPLETE
+AI-02  Intelligence Runtime Architecture                     CLOSED / STRUCTURALLY ACCEPTED
+AI-03  Context / Retrieval / Memory                          CLOSED / STRUCTURALLY ACCEPTED
+AI-04  Productionization Architecture                        CLOSED / STRUCTURALLY ACCEPTED
+PRE05  Cross-Phase Hardening                                 CLOSED / STRUCTURALLY ACCEPTED
+AI-05  Whole-System Acceptance + Implementation Blueprint    CLOSED / STRUCTURALLY ACCEPTED
+POST05 Independent Pre-Implementation Mega Test              CLOSED / PASS
 
-AI-05 ACTIVE / CURRENT
-  ├ AI-05A WHOLE-SYSTEM BUILD BOUNDARY
-  │    CLOSED / STRUCTURALLY ACCEPTED / BD-01..BD-41
-  │
-  └ AI-05B CONCRETE IMPLEMENTATION BLUEPRINT
-       CURRENT / NEXT SUB-PHASE
-       substantive blueprint not yet materialized
-
-THEN
-AI-05 whole-system destructive acceptance / closure
-→ actual AI implementation workstream(s)
+MKT-001..MKT-100                                             PASS / 100 OF 100
+C01..C20 compound collisions                                 PASS / 20 OF 20
+reverse authority                                            PASS
+Product/simulation replay                                    PASS
 ```
 
-## 2. Mandatory current AI authority
+No evidence required a Domain, Logical, Physical or PostgreSQL reopen.
+
+## 2. Current implementation authority
+
+A coder or agent starting implementation must begin from:
 
 ```text
-docs/architecture/dante-ai-foundation.md
-docs/architecture/dante-ai-02-1-intelligence-reengineering.md
-docs/architecture/dante-ai-03-context-retrieval-memory.md
-docs/architecture/dante-ai-03a-full-context-architecture.md
-docs/architecture/dante-ai-03b-retrieval-memory-architecture.md
-docs/architecture/dante-ai-03c-destructive-validation-materialization-blueprint.md
-docs/architecture/dante-ai-04-productionization-architecture.md
-docs/architecture/dante-ai-04a-direct-eval-specification.md
-docs/architecture/dante-ai-04b-concrete-runtime-capability-architecture.md
-docs/architecture/dante-ai-04c-production-assurance-control-plane-operations.md
-docs/architecture/dante-ai-04-whole-phase-destructive-acceptance.md
-docs/architecture/dante-ai-pre05-cross-phase-hardening.md
-docs/architecture/dante-ai-05a-whole-system-build-boundary.md
-docs/architecture/dante-ai-05a-eval-production-composition-hardening.md
-docs/architecture/dante-ai-05a-whole-system-build-boundary-acceptance.md
-```
-
-Current AI-05A status is owned by the acceptance document. The original candidate and BD-41 supplement remain truthful pre-closure evidence.
-
-`ai-production-engineering-state-of-the-art-2026.md` remains research evidence / NON-DANTE-DECISION.
-Temporary live handoff MUST NOT merge to protected `main`.
-
-## 3. Retained upstream invariants
-
-```text
-PostgreSQL = sole canonical persistence/material-history authority
-MODEL OUTPUT != PUBLISHABLE OUTPUT
-Interaction Session != Run != Worker
-RUN-START AUTHORIZATION != PERPETUAL AUTHORIZATION
-RUN-START AUTONOMY != PERPETUAL AUTONOMY
-Context != Retrieval != Memory
-APPROXIMATE != COMPLETE
-DEFAULT NONCANONICAL PERSISTENCE = NO
-MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT
-HARNESSPROFILE != PROVIDERBINDING
-EVAL CANDIDATE != PRODUCTION ROUTE
-ENTITLED != SERVABLE
-ATTENTION DECISION != PROACTIVE WORK ADMISSION != EFFECT AUTHORIZATION
-SAFE SINGLE DISCLOSURE != SAFE CUMULATIVE DISCLOSURE
-RECIPIENT != SURFACE != CHANNEL
-SOURCE FUTURE ELIGIBILITY != PRIOR DISCLOSURE OCCURRENCE
-```
-
-## 4. AI-05A accepted ownership map
-
-```text
-modules/search
-→ separate Global Search / discovery capability
-→ deterministic/no-model capable
-→ bounded permission/disclosure/current/history/source read projection
-→ no canonical business ownership / no mutation authority
-
-modules/intelligence
-→ DANTE intelligence application/orchestration boundary
-→ Work/Context/route/model-assisted orchestration/verification/publication
-→ consumes Search and owning capability public seams
-
-provider SDK/protocol
-→ private outbound adapter behind DANTE-owned ModelAccessPort
-
-resource/commercial authority
-→ owns shared/commercial quota/metering truth when activated
-→ Intelligence consumes admission/reservation/settlement
-
-bootstrap
-→ composition/lifecycle only
-
-platform
-→ genuinely shared technical mechanics only
-
-tooling/ai-evals
-→ outside ordinary production request path
-→ qualification uses same material production composition or independently qualifies material deltas
-```
-
-## 5. AI-05A final hardening / acceptance
-
-Accepted build invariants are `BD-01..BD-41`.
-
-Key late hardenings:
-
-```text
-BD-31 Global Search != Intelligence orchestration.
-BD-32 Search may own bounded cross-capability read projection, not canonical semantics/mutation.
-BD-33 Deterministic Search independent of model/provider route availability.
-BD-34 Resource admission/reservation/settlement explicit; Intelligence does not own ledger truth.
-BD-35 Behavior-bearing route/Harness/policy config != scattered env variables.
-BD-36 Static-first config still needs immutable revision, approved active selection, coherent invocation snapshot and emergency deny before production.
-BD-37 First zero-persistence envelope = inline/single-turn/private-in-app/read-only.
-BD-38 H19/audit/resume/background durability gates expansion until minimum justified state exists.
-BD-39 Application fake != provider adapter conformance != direct eval != production capacity proof.
-BD-40 Chat-like UI / inline stream != generic conversation or Run persistence required.
-BD-41 Qualification evidence must exercise the same material production composition or independently qualify every material delta before promotion.
+docs/architecture/dante-ai-implementation-baseline-final.md
 ```
 
 Final acceptance evidence:
 
 ```text
-T01..T26                                      PASS / 26 OF 26
-Search + Intelligence + provider outage       PASS
-Search hidden-result + Ask synthesis          PASS
-config rollout + invocation + emergency deny  PASS
-quota + retry/failover + settlement            PASS
-inline stream + disconnect / no durable Run   PASS
-cumulative privacy + zero-persistence gate     PASS
-direct eval + production composition/deltas    PASS
-reverse AI-05A→04→PRE05→03→02                 PASS
+docs/architecture/dante-ai-post05-final-mega-acceptance.md
 ```
 
-## 6. First vertical accepted direction
+Earlier AI-05B candidates, hardenings, baseline v1/v2/v3 and post-AI05 failure reports are validation evidence. They do not override the final baseline.
+
+## 3. Accepted implementation boundary
 
 ```text
-GLOBAL SEARCH
-→ deterministic shared read/search capability
-→ canonical navigation + source/currentness
+modules/search
+→ independent deterministic Global Search/discovery capability
+→ bounded permission-safe read projection
+→ no canonical mutation authority
 
-ASK DANTE
-→ optional governed model-assisted synthesis over Search/public capability results
-→ source/provenance/currentness
-→ no consequential mutation
+modules/intelligence
+→ Work/Context/Reference/SemanticQuery/Retrieval orchestration
+→ optional governed model access
+→ verification / Result Maturity / Effect NO_EFFECT / safe publication
+→ no raw DB/canonical ownership
+
+provider SDK/protocol
+→ private admitted outbound adapter behind ModelAccessPort
+
+bootstrap
+→ composition/lifecycle only
+
+platform
+→ shared technical mechanics only
+
+tooling/ai-evals
+→ qualification tooling outside ordinary production request path
 ```
 
-Initial envelope:
+Search remains independent from Intelligence. Structured DANTE questions use owning capability typed query seams rather than raw SQL/model-to-SQL.
+
+## 4. First implementation envelope
+
+Initial technical target remains:
 
 ```text
-private authenticated in-app
-single-turn
-inline/request-owned
-read-only
-normal isolation
-no background/durable resume
-no shared/lock/voice/external recipient
-no case requiring H19 durable prior-exposure accounting
+GLOBAL SEARCH subset
++ READ-ONLY ASK DANTE
+
+surface          private authenticated in-app
+interaction      single-turn
+runtime          inline / request-owned
+consequence      READ_ONLY
+public streaming OFF
+background       OFF
+durable resume   OFF
+shared/external recipient surfaces OFF
+consequential mutation OFF
 ```
-
-No new generic AI table is justified by this envelope.
-
-## 7. Evidence planes remain separate
 
 ```text
-APPLICATION FAKE
-!= PROVIDER ADAPTER CONFORMANCE
-!= LIVE PROVIDER SMOKE / COMPATIBILITY PROOF
-!= DIRECT DANTE MODEL/ROUTE EVAL
-!= PRODUCTION CAPACITY QUALIFICATION
+READ_ONLY
+→ explicit EffectOutcome.NO_EFFECT
 ```
 
-Qualification evidence must identify the exact material route composition it supports and any separately qualified material delta.
+No generic AI table, conversation store, Run registry, memory store, Context store or embedding/vector store is justified by this envelope.
 
-## 8. AI-05B exact scope
-
-AI-05B must translate the accepted AI-05A ownership map into concrete build contracts without starting implementation.
-
-It must freeze, as far as architecture evidence permits:
+## 5. Critical retained implementation invariants
 
 ```text
-module public boundaries
-ports + runtime DTO/types
-Search read/query contracts
-ModelAccessPort contract
-provider adapter conformance contract
-route/config artifact schemas
-resource admission/settlement seams
-HTTP + streaming/publication shape for first vertical
-runtime-only vs evidence/persistence ownership
-exact unit/integration/eval/system test layout
-qualification artifact schema + promotion evidence
-feature/activation gates
-implementation dependency graph
-first build gates / commit sequence
+PostgreSQL = sole canonical persistence/material-history authority
+GLOBAL SEARCH != INTELLIGENCE
+SEARCH RESULT / CURSOR / TARGET REF != AUTHORIZATION
+SEMANTIC QUERY GATEWAY != INTELLIGENCE-OWNED CROSS-CAPABILITY SQL
+Context != Retrieval != Memory
+RetrievalCandidate != ContextFragment
+ContextManifest != BasisManifest
+DATA != INSTRUCTION
+MASKING / REDACTION != SEMANTIC EQUIVALENCE
+MODEL OUTPUT != PUBLISHABLE OUTPUT
+PROVIDER COMPLETED != VERIFIED != PUBLISHABLE
+PROVIDER FAILURE != DISCLOSURE DID NOT HAPPEN
+AUXILIARY MODEL CALL != FREE PROVIDER CALL
+CANDIDATE ADMISSION != PRODUCTION QUALIFICATION
+APPLICATION FAKE != ADAPTER CONFORMANCE != LIVE COMPATIBILITY != DIRECT EVAL != CAPACITY PROOF
+BUILD-READY != INTEGRATION-READY != ACTIVATION-READY
+DEFAULT NONCANONICAL PERSISTENCE = NO
 ```
 
-Provider/model/SDK selection remains direct-evidence gated. If a concrete selection cannot be made responsibly without API evidence, AI-05B must specify the exact proof gate rather than guess.
+## 6. Provider and proof posture
 
-## 9. Open decisions / non-claims
+No provider/model/SDK is selected by architecture closure.
+
+Provider sequence remains:
 
 ```text
-AI-05A PASS/CLOSED                     YES / STRUCTURAL
-AI-05 WHOLE PHASE CLOSED               NO
-AI-05B SUBSTANTIVE BLUEPRINT           NOT YET MATERIALIZED
-modules/search implemented             NO
-modules/intelligence implemented       NO
-provider/model/SDK selected            NO
-direct provider eval                   NO
-production capacity qualification      NO
-stream transport selected              NO
-new PostgreSQL/Alembic change          NO
-new AI table/index                     NO
-FTS/vector/pgvector activation         NO
-conversation persistence               NO
-control-plane persistence              NO
-commercial/resource ledger             NO
-Restate/R2/MCP/A2A activation          NO
-Execution Environment                  NO
+candidate shortlist
+→ candidate admission
+→ inactive adapter/binding
+→ conformance
+→ live compatibility on eligible/minimized test data
+→ direct DANTE eval using production-owned composition
+→ applicable privacy/security/capacity/economics evidence
+→ qualification
+→ promotion
 ```
 
-## 10. Current exact action
+Applicable direct proofs remain activation gates, including:
 
 ```text
-AI-05B
-→ inspect accepted AI-05A ownership + first-vertical envelope
-→ define concrete module public APIs / ports / DTO/runtime types
-→ define Search query/read contracts
-→ define ModelAccessPort + provider adapter conformance contract
-→ define route/config artifact schemas and resource-control seams
-→ decide simplest first-vertical HTTP/streaming shape
-→ classify exact runtime/evidence/persistence state
-→ define qualification artifacts + test topology
-→ produce implementation dependency graph and build gates
-→ destructively test AI-05B before whole AI-05 closure
+PSV-06 / SC-017  protected Search/semantic/reference non-interference
+PSV-07 / SC-018  FTS mixed filter/query when activated
+PSV-08 / SC-019  vector filtered recall/relevance when activated
+PSV-09 / SC-020  derived/current projection freshness
+PSV-10 / SC-021  deletion/redaction propagation
+PSV-21..28B      durable/Restate activation
+PSV-37           pgvector provenance when activated
 ```
 
-Do not start provider/backend implementation simply because AI-05A is closed.
+Missing applicable evidence is never treated as `N/A`.
 
-## 11. Handoff policy
+## 7. Current next action
 
-Temporary live handoff must be deleted before protected-main integration.
+The architecture workstream itself is closed.
+
+The next actual work is:
+
+```text
+ACTUAL AI IMPLEMENTATION WORKSTREAM
+→ I0 repository/application ownership + architecture-test skeleton
+→ I1 Search contracts/registry/application shell
+→ I2 Intelligence pure contracts + deterministic fakes
+→ advance later stages only when their real integration/activation prerequisites exist
+```
+
+I0 is build-authorized. This does not activate Search, Ask DANTE or any provider route in production.
+
+## 8. Non-claims
+
+```text
+architecture design/reengineering closed      YES
+post-AI05 mega structural pass                YES
+implementation baseline accepted              YES
+I0 implementation started                     NO
+modules/search implemented                    NO
+modules/intelligence implemented              NO
+Auth/AuthZ integrated on this branch          NO
+provider/model/SDK selected                   NO
+direct provider eval executed                 NO
+production capacity qualified                 NO
+production Search/Ask active                  NO
+PostgreSQL/Alembic changed                    NO
+new AI table/index                            NO
+FTS/vector activated                          NO
+Restate/R2/MCP/A2A activated                  NO
+Execution Environment selected                NO
+```
+
+## 9. Handoff / integration
+
+Durable continuation is fully represented by the final implementation baseline, final mega acceptance, this closed workstream record and current project navigation.
+
+The temporary `ai-architecture-live-handoff.md` is no longer needed and must not enter protected `main`.
