@@ -212,9 +212,7 @@ test.describe('DANTE Access/Auth M5 full-stack security surface', () => {
         response.url().endsWith(reauthenticatePath) &&
         response.request().method() === 'POST',
     );
-    await page
-      .getByRole('button', { name: 'Conferma con password' })
-      .click();
+    await page.getByRole('button', { name: 'Conferma con password' }).click();
     const reauthentication = await reauthenticationPromise;
 
     expect(reauthentication.status()).toBe(200);
