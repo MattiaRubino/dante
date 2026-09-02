@@ -1,0 +1,109 @@
+.timeline-all-day-item {
+  --timeline-group-color: var(--dante-timeline-tone-personal, #f2778c);
+
+  position: absolute;
+  z-index: 13;
+  top: calc(31px + var(--timeline-all-day-lane, 0) * 27px);
+  right: 18px;
+  left: 92px;
+  display: grid;
+  grid-template-columns: 10px minmax(0, auto) minmax(0, 1fr) 10px;
+  align-items: center;
+  min-height: 23px;
+  gap: 7px;
+  padding: 3px 9px;
+  border: 1px solid
+    color-mix(in srgb, var(--timeline-group-color) 34%, transparent);
+  border-radius: 8px;
+  color: var(--dante-semantic-color-home-text-primary);
+  background: color-mix(
+    in srgb,
+    var(--timeline-group-color) 10%,
+    var(--dante-semantic-color-home-surface-primary)
+  );
+  box-shadow:
+    inset 3px 0 0 var(--timeline-group-color),
+    0 8px 20px rgba(0, 0, 0, 0.16);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.timeline-all-day-item[data-timeline-tone='focus'] {
+  --timeline-group-color: var(--dante-timeline-tone-focus);
+}
+.timeline-all-day-item[data-timeline-tone='meeting'] {
+  --timeline-group-color: var(--dante-timeline-tone-meeting);
+}
+.timeline-all-day-item[data-timeline-tone='health'] {
+  --timeline-group-color: var(--dante-timeline-tone-health);
+}
+.timeline-all-day-item[data-timeline-tone='creative'] {
+  --timeline-group-color: var(--dante-timeline-tone-creative);
+}
+.timeline-all-day-item[data-timeline-tone='urgent'] {
+  --timeline-group-color: var(--dante-timeline-tone-urgent);
+}
+
+.timeline-all-day-item:not([data-range-start='true']) {
+  border-top-left-radius: 3px;
+  border-bottom-left-radius: 3px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.13);
+}
+
+.timeline-all-day-item:not([data-range-end='true']) {
+  border-top-right-radius: 3px;
+  border-bottom-right-radius: 3px;
+}
+
+.timeline-all-day-item strong,
+.timeline-all-day-item__meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timeline-all-day-item strong {
+  font-size: 9.5px;
+  font-weight: 720;
+  line-height: 1.15;
+}
+
+.timeline-all-day-item__meta {
+  color: color-mix(
+    in srgb,
+    var(--timeline-group-color) 60%,
+    var(--dante-semantic-color-home-text-secondary)
+  );
+  font-size: 8px;
+  line-height: 1.1;
+}
+
+.timeline-all-day-item__continuation {
+  color: color-mix(in srgb, var(--timeline-group-color) 72%, white);
+  font-size: 10px;
+  text-align: center;
+}
+
+.timeline-all-day-item:focus-visible {
+  outline: 2px solid var(--timeline-group-color);
+  outline-offset: 2px;
+}
+
+@media (max-width: 760px) {
+  .timeline-all-day-item {
+    right: 10px;
+    left: 72px;
+    grid-template-columns: 8px minmax(0, 1fr) 8px;
+  }
+
+  .timeline-all-day-item__meta {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .timeline-all-day-item {
+    scroll-behavior: auto;
+  }
+}
