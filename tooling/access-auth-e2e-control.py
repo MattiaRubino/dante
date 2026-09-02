@@ -67,9 +67,7 @@ def _find_container() -> _ContainerDatabase:
     name = names[0]
     inspection_payload = json.loads(_docker("inspect", name).stdout)
     if not isinstance(inspection_payload, list) or len(inspection_payload) != 1:
-        raise RuntimeError(
-            "Docker did not return one Access/Auth container inspection."
-        )
+        raise RuntimeError("Docker did not return one Access/Auth container inspection.")
     inspection = inspection_payload[0]
 
     environment = {}
@@ -88,9 +86,7 @@ def _find_container() -> _ContainerDatabase:
 
     host_port_raw = bindings[0].get("HostPort")
     if not host_port_raw:
-        raise RuntimeError(
-            "Disposable Access/Auth PostgreSQL host port is unavailable."
-        )
+        raise RuntimeError("Disposable Access/Auth PostgreSQL host port is unavailable.")
 
     try:
         smtp_control_port = int(smtp_control_port_raw)
@@ -137,9 +133,7 @@ def _wait_for_database(database: _ContainerDatabase) -> None:
     )
 
 
-def _mutate_session(
-    database: _ContainerDatabase, session_ref: UUID, *, expire: bool
-) -> None:
+def _mutate_session(database: _ContainerDatabase, session_ref: UUID, *, expire: bool) -> None:
     with _connect(database) as connection:
         connection.execute("SET ROLE dante_owner")
         connection.execute("SET search_path TO pg_catalog,dante,pg_temp")
@@ -164,9 +158,7 @@ def _mutate_session(
                 (session_ref,),
             )
         if cursor.rowcount != 1:
-            raise RuntimeError(
-                f"Synthetic AuthSession mutation affected {cursor.rowcount} rows."
-            )
+            raise RuntimeError(f"Synthetic AuthSession mutation affected {cursor.rowcount} rows.")
         connection.commit()
 
 

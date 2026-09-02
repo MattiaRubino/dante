@@ -206,9 +206,7 @@ def _log_configuration(
     _LOGGER.info("  origin          : %s", _UAT_WEB_ORIGIN)
     _LOGGER.info("  Google          : %s", "enabled" if google_enabled else "disabled")
     _LOGGER.info("  Apple           : disabled (registered-domain UAT only)")
-    _LOGGER.info(
-        "  WebAuthn/passkey: %s", "enabled" if webauthn_enabled else "disabled"
-    )
+    _LOGGER.info("  WebAuthn/passkey: %s", "enabled" if webauthn_enabled else "disabled")
     _LOGGER.info("  seeded email    : %s", seed_email)
     _LOGGER.info("  seeded password : %s", seed_password)
     if os.environ.get(_TLS_CERT_ENV) is None:
@@ -218,9 +216,7 @@ def _log_configuration(
         )
     else:
         _LOGGER.info("  TLS             : caller-supplied certificate/key")
-    _LOGGER.info(
-        "  database        : disposable PostgreSQL 18.6; Ctrl-C destroys this UAT state"
-    )
+    _LOGGER.info("  database        : disposable PostgreSQL 18.6; Ctrl-C destroys this UAT state")
 
 
 def main() -> None:
