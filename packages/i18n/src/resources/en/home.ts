@@ -212,6 +212,7 @@ export const home = {
         periodDay: 'Day',
         periodWeek: 'Week',
         periodMonth: 'Month',
+        periodYear: 'Year',
         cycleLength: 'Cycle length',
         cycleOffset: 'Position in cycle',
         cycleUnit: 'Cycle unit',
