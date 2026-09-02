@@ -15,6 +15,8 @@ export {
   type TemporalCreateAppliedEffect,
   type TemporalCreateExecution,
   type TemporalCreateMetadata,
+  type TemporalCreateMutationEffect,
+  type TemporalCreateMutationExecution,
   type TemporalCreatePreparation,
   type TemporalCreatePreparedOperation,
   type TemporalCreateRecord,
