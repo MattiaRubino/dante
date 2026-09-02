@@ -1,10 +1,10 @@
 # DANTE — World Focus Research / Review Evidence Index
 
-**Status:** CURRENT EVIDENCE MAP — WS0–WS8 CLOSED / PRE-M0 FALSIFICATION CLOSED / M0 ACTIVE  
+**Status:** CURRENT EVIDENCE MAP — WS0–WS8 CLOSED / PRE-M0 FALSIFICATION CLOSED / M0 CLOSED / M1 ACTIVE / M1-1 CLOSED + VALIDATED / M1-2 NEXT  
 **Date:** 2026-09-02  
 **Branch:** `feature/home-react`
 
-This index separates live sequencing authority, closure authority, post-closure hygiene, pre-M0 falsification and historical/supporting evidence.
+This index separates live sequencing authority, closure authority, post-closure hygiene, pre-M0 falsification, materialization evidence and historical/supporting evidence.
 
 Rule:
 
@@ -16,6 +16,10 @@ Rule:
 
 ```text
 world-focus-current-checkpoint.md
+world-focus-m1-core-nonvisual-materialization-review.md
+world-focus-m1-next-subblock.md
+world-focus-m0-materialization-mapping.md
+world-focus-contract-sequencing-supersession.md
 world-focus-pre-m0-falsification-review.md
 world-focus-post-ws8-hygiene-audit.md
 world-focus-substrate-closure-plan.md
@@ -223,9 +227,46 @@ The adversarial test was unchanged. Quality, build, Mobile, Chromium, Firefox Ti
 
 ## E18 — M0 materialization map
 
-**ACTIVE / being produced.**
+`world-focus-m0-materialization-mapping.md`
 
-M0 will become the production-disposition authority only when its complete mapping and scope freeze are explicitly closed. Until then, no M1 implementation is authorized.
+**CLOSED.**
+
+```text
+HEAD 6ea74f630cb35af65d58e7ae873882d6d975411e
+CI   33668744509 PASS
+66 production-disposition decisions
+unowned material rows            0
+generic semantic roots           0
+page-per-World requirement       0
+backend authority pulled forward 0
+AI-required basic path           0
+WS reopen required               0
+```
+
+M0 freezes the assignments into M1–M7; it is no longer the active implementation gate.
+
+## E19 — M1-1 identity/reference production materialization
+
+`world-focus-m1-core-nonvisual-materialization-review.md`
+
+**CLOSED / VALIDATED.**
+
+```text
+CODE HEAD e0f4003496bfbf828ed9ab7718af8e7e30342ad3
+CI        33679425668 PASS
+```
+
+Materialized neutral production World identity/descriptor, fixture-ID separation, neutral context-reference ownership, primary + bounded ordered supporting refs, generalized workspace context, route/continuity/transition alignment and related falsification pressure.
+
+The CODE HEAD above remains the validated M1-1 production evidence point. Later docs-only synchronization has its own HEAD/CI and does not replace it.
+
+## E20 — M1-2 frozen next subblock
+
+`world-focus-m1-next-subblock.md`
+
+**NEXT.**
+
+M1 remains active. The next bounded block is narrow reusable non-visual facets + typed WP/O2/O5/O8 application seams. M2–M7 and backend remain blocked by sequence.
 
 ---
 
@@ -249,15 +290,17 @@ L8 Platform/User Policy
 
 Do not restart WS0–WS8 for a new provider, World noun, UI, renderer, viewport, AI model, config store or larger dataset.
 
-Reopen only when M0/later executable/materialization evidence shows a concrete semantic/ownership/state contradiction that cannot fit an existing owner, and reopen only the earliest necessary phase.
+Reopen only when M1/later executable/materialization evidence shows a concrete semantic/ownership/state contradiction that cannot fit an existing owner, and reopen only the earliest necessary phase.
 
 ---
 
 # 5. Current evidence gate
 
-> **M0 — Materialization Mapping / Scope Freeze — ACTIVE**
+> **M1 — Core Non-Visual Materialization — ACTIVE**
 
-M0 must classify the entire closed substrate against current production code before M1 begins.
+> **M1-1 CLOSED / VALIDATED. M1-2 is NEXT. M2–M7 and backend are BLOCKED.**
+
+The frozen M0 map remains the disposition authority for the remaining M1 work.
 
 ---
 
