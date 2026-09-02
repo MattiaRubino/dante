@@ -21,7 +21,7 @@ _REQUIRED_EXTENSIONS: tuple[tuple[str, str | None], ...] = (
     ("pg_stat_statements", None),
 )
 _E2E_RATE_CAPACITY_ENV = "DANTE_E2E_SIGNIN_RATE_CAPACITY"
-_E2E_ACCOUNT_COUNT = 32
+_E2E_ACCOUNT_COUNT = 64
 
 
 def _load_core() -> ModuleType:
