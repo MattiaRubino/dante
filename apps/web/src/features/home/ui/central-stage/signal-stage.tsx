@@ -7,7 +7,7 @@ type SignalGraphicProps = Readonly<{
   ariaLabel?: string;
 }>;
 
-function FocusGraphic(_: SignalGraphicProps) {
+function FocusGraphic({}: SignalGraphicProps) {
   return (
     <div className="home-synthesis-bars" aria-hidden="true">
       {[42, 68, 54, 82, 62].map((height, index) => (
@@ -31,7 +31,7 @@ function SleepGraphic({ ariaLabel }: SignalGraphicProps) {
   );
 }
 
-function SpendGraphic(_: SignalGraphicProps) {
+function SpendGraphic({}: SignalGraphicProps) {
   return (
     <div
       className="home-synthesis-bars home-synthesis-bars-spend"
