@@ -1,9 +1,11 @@
 # DANTE — World Focus Independent Convergence Confirmation
 
-**Status:** CURRENT WS1–WS5 INDEPENDENT CONFIRMATION — CYCLE A CORRECTED / CYCLE B HARDENED / CYCLE C CLEAN  
+**Status:** SUPPORTING CYCLE-B/C CONFIRMATION EVIDENCE — CG-33..CG-36 / FINAL CLOSURE RATIONALE SUPERSEDED  
 **Date:** 2026-09-02  
 **Branch:** `feature/home-react`  
 **Purpose:** correct the methodological weakness in the first WS1–WS5 confirmation and establish a genuinely independent analytical convergence signal before WS6.
+
+> **Authority note (2026-09-02):** this file remains the durable Cycle-B/C evidence record and owns the discovery/closure rationale for `CG-33..CG-36`. Its internal Cycle-C clean conclusion is historical confirmation evidence only. Final WS1–WS5 closure authority is `world-focus-substrate-final-convergence-proof.md`, which adds Cycle D–H and `CG-37..CG-40`; current sequencing is owned by `world-focus-current-checkpoint.md`.
 
 This document exists because the first closure record was not strong enough.
 
