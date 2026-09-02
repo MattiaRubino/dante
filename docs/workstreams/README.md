@@ -41,12 +41,20 @@ Branch-local workstream files may describe newer unmerged implementation/design 
 
 On `feature/ai-architecture`:
 
-- `ai-architecture.md` — durable branch-local workstream record; current phase AI-04 Productionization Architecture;
+- `ai-architecture.md` — durable branch-local workstream record; current phase **AI-05 Whole-System Acceptance + Implementation Blueprint**;
 - `ai-architecture-live-handoff.md` — **TEMPORARY / MUST NOT MERGE TO protected main**; session/context save-game only;
 - `../architecture/dante-ai-03-context-retrieval-memory.md` — closed AI-03 Context/Retrieval/Memory authority;
 - `../architecture/dante-ai-03a-full-context-architecture.md` — AI-03A closed / C01..C33;
 - `../architecture/dante-ai-03b-retrieval-memory-architecture.md` — AI-03B closed / B01..B35;
-- `../architecture/dante-ai-03c-destructive-validation-materialization-blueprint.md` — AI-03C closed / MAT-01..MAT-15.
+- `../architecture/dante-ai-03c-destructive-validation-materialization-blueprint.md` — AI-03C closed / MAT-01..MAT-15;
+- `../architecture/dante-ai-04-productionization-architecture.md` — AI-04 closed / structurally accepted;
+- `../architecture/dante-ai-04a-direct-eval-specification.md` — AI-04A closed / A01..A30 / EV01..EV20 / DANTE-E01..E14 current;
+- `../architecture/dante-ai-04b-concrete-runtime-capability-architecture.md` — AI-04B closed / RT-01..RT-31;
+- `../architecture/dante-ai-04c-production-assurance-control-plane-operations.md` — AI-04C closed / PA-01..PA-61;
+- `../architecture/dante-ai-04-whole-phase-destructive-acceptance.md` — AI-04 whole-phase closed / WP-01..WP-22;
+- `../architecture/dante-ai-pre05-cross-phase-hardening.md` — PRE-AI05 closed / PRE05-H01..H19.
+
+`../architecture/ai-context-runtime-boundaries.md` is historical/pre-Physical reference, not current runtime authority.
 
 Current branch-local AI state:
 
@@ -59,17 +67,30 @@ AI-03  CLOSED / STRUCTURALLY ACCEPTED
 AI-03A CLOSED / C01..C33
 AI-03B CLOSED / B01..B35
 AI-03C CLOSED / MAT-01..MAT-15
-AI-04  ACTIVE / CURRENT — PRODUCTIONIZATION ARCHITECTURE
-AI-05  FUTURE — WHOLE-SYSTEM ACCEPTANCE + IMPLEMENTATION BLUEPRINT
+AI-04  CLOSED / STRUCTURALLY ACCEPTED
+AI-04A CLOSED / A01..A30 / EV01..EV20
+AI-04B CLOSED / RT-01..RT-31
+AI-04C CLOSED / PA-01..PA-61
+AI-04 WHOLE-PHASE CLOSED / WP-01..WP-22
+PRE-AI05 CLOSED / PRE05-H01..H19
+DANTE-E01..DANTE-E14 CURRENT CORE EVAL
+AI-05  ACTIVE / CURRENT — WHOLE-SYSTEM ACCEPTANCE + IMPLEMENTATION BLUEPRINT
 ```
 
-AI-04 begins from representative DANTE workloads/evals and quality floors before concrete provider/model selection. Provider replaceability is binding:
+Provider replaceability remains binding:
 
 ```text
 MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT
+MODEL VENDOR != SERVING PLATFORM != PROTOCOL FAMILY
+HARNESSPROFILE != PROVIDERBINDING
 DANTE FEATURE/BUSINESS CODE != CONCRETE PROVIDER SDK
+PROVIDER REPLACEABLE != PROVIDERS IDENTICAL
 PROVIDER REPLACEABLE != LOWEST-COMMON-DENOMINATOR PROVIDER USAGE
 ```
+
+Current route selection works over eligible qualified route compositions; it does not select a universal Harness and attach an arbitrary provider later.
+
+PRE-AI05 adds binding cross-phase hardening around Attention/proactivity/causal loops, cumulative cross-work disclosure, surface/channel-aware publication, scoped-autonomy revalidation and truthful notification-state handling. `ATTENTION DECISION != PROACTIVE WORK ADMISSION != EFFECT AUTHORIZATION`.
 
 The temporary live handoff must be deleted/consolidated before integration. Durable architecture decisions must not live only in that file.
 
