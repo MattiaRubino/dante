@@ -1,18 +1,14 @@
 # DANTE — Project Status
 
 - **Status:** CURRENT TRUTH FOR `feature/access-auth`
-- **Last reconciled:** 2026-09-01
+- **Last reconciled:** 2026-09-02
 - **Protected `main`:** integrated source authority; Access/Auth remains branch-local until explicit merge gate
 - **Active product vertical:** Access/Auth
-- **Current macro-phase:** M5 — Multi-authenticator Account Layer — **ACTIVE**
-- **Last accepted execution block:** **GROUP 3 — M5-H + M5-I — COMPLETE / ENGINEERING PASS**
-- **Current execution block:** **GROUP 4 — M5-J + M5-K+ — Access Web + browser/provider/security/UAT — ACTIVE / ENGINEERING CANDIDATE / QA PENDING**
-- **Group 4 PRE-SCOPE:** `a04009e645aa476af8a2b6ab1628142890b326d9`
-- **Current Group 4 code checkpoint:** `4fd8068e1e51379f75c2bfaf59b46336f4e14637`
+- **Current macro-phase:** M5 — Multi-authenticator Account Layer — **ACTIVE / FINAL EXTERNAL ACCEPTANCE OPEN**
+- **Reviewed product checkpoint:** `ab2716abe40de658d99d1908ba31c5d5744e3c57`
+- **Current branch checkpoint before docs reconciliation:** `9c0587af5891249d8a6e6b6a5d6e3af6934c6943`
 - **Accepted Alembic head:** `20260831_13`
-- **Forward execution authority:** `workstreams/access-auth-m4-m7-execution-plan.md`
-- **M5 exact design authority:** `architecture/access-auth-m5-persistence-api-contract.md`
-- **M5 live handoff:** `workstreams/access-auth-m5-live-handoff-2026-08-29.md`
+- **Current review evidence:** `workstreams/access-auth-m5-review-2026-09-02.md`
 
 ## 1. Current state
 
@@ -23,9 +19,9 @@ Engineering + Frontend + Backend CP1–CP6  CLOSED / ACCEPTED
 Access pre-backend Web materialization     CLOSED / ACCEPTED
 
 M1 Visual / UX Freeze                      CLOSED / ACCEPTED
-M2 Auth Architecture Freeze                CLOSED / QA PASS
-M3 Email/Password + AuthSession            CLOSED / ENGINEERING PASS / USER ACCEPTED
-M4 Lifecycle / Recovery / Reauth           CLOSED / ENGINEERING PASS / USER ACCEPTED
+M2 Auth Architecture Freeze                CLOSED / ACCEPTED
+M3 Email/Password + AuthSession            CLOSED / ACCEPTED
+M4 Lifecycle / Recovery / Reauth           CLOSED / ACCEPTED
 
 M5.1 architecture/external authority       COMPLETE
 M5.2 persistence/API design                COMPLETE
@@ -36,139 +32,55 @@ M5-D Apple backend/grants/notifications    COMPLETE / ENGINEERING PASS
 GROUP 1 M5-E+G lifecycle/passwordless      COMPLETE / ENGINEERING PASS
 GROUP 2 M5-F passkeys                      COMPLETE / ENGINEERING PASS
 GROUP 3 M5-H+I FastAPI/OpenAPI/client      COMPLETE / ENGINEERING PASS
-GROUP 4 M5-J+K+ Access Web/UAT             ACTIVE / ENGINEERING CANDIDATE / QA PENDING
+GROUP 4 Access Web engineering QA          PASS
+GROUP 4 local password/passkey UAT          PASS
+GROUP 4 real Google UAT                    PASS
+GROUP 4 real Internet email delivery       OPEN
+GROUP 4 real Apple registered-domain UAT    DEFERRED / OPEN
 
+Whole M5                                    ACTIVE / NOT FORMALLY CLOSED
 M6 Native Mobile                           FUTURE / OPTIONAL / ONLY IF RE-GATED
-M7 Hardening/Observability/Handoff         PLANNED / FINAL WHOLE-VERTICAL GATE
-
-Whole Access/Auth vertical                 ACTIVE / NOT CLOSED
+M7 Hardening/Observability/Handoff         PLANNED
 ```
 
-The M5-E…M5-K+ labels are semantic ownership labels, not separate execution gates. The grouped execution above is authoritative.
+## 2. Current evidence
 
-## 2. Accepted engineering checkpoints
+Automated product-code gate at `ab2716...`:
 
 ```text
-M5-A persistence                           7e40e02d301b0812b3f55e0d9d4ce6439e420b2a
-M5-B provider/runtime                      e2d40a7666e3c0130afecd8113b8063390b86b9d
-M5-C Google backend                        e6f738a1ea3f5152caa7d99f1d6ccd108747c806
-M5-D Apple backend                         7d13b712f032e8d41d7cf03d406555fd9f3c0160
-GROUP 1                                    1c4b7c988eaae130d6a90d43940a42e2a550870d
-GROUP 2 / M5-F                             f6a8da43fbe674ca18c366cd3731afc8f97ec045
-GROUP 3 PRE-SCOPE                          ee099dc7c6bef4742c6e66e5d15f9a0428dd8ffa
-GROUP 3 engineering checkpoint             05b348e9e0293cd9cd0cc3f190824527761b24d9
-GROUP 4 PRE-SCOPE                          a04009e645aa476af8a2b6ab1628142890b326d9
-GROUP 4 current code checkpoint            4fd8068e1e51379f75c2bfaf59b46336f4e14637
+Prettier                     PASS
+TypeScript                   PASS
+ESLint                       PASS
+architecture                 PASS
+Web unit/component           68 / 68 PASS
+Auth Playwright HTTPS        60 / 60 PASS
+Chromium/Firefox/WebKit      PASS through canonical suite
 ```
 
-Group 4 is **not accepted yet**. `4fd8068e...` is a handoff/checkpoint, not a PASS claim.
+Manual UAT directly proved password/session rotation, Windows Hello passkey registration/signin/reauth, rename persistence, passwordless state, authenticator anti-lockout, password restore and direct PostgreSQL coherence.
 
-## 3. Closed Group 2 / Group 3 proof
+Real Google UAT directly proved official GIS interaction, real Google ID-token verification, third-party-mailbox verification policy, passwordless Account creation, ExternalIdentity `issuer + subject` authority and canonical AuthSession creation. Direct DB inspection showed no PasswordCredential for the Google-created Account.
 
-Group 2 / passkeys:
+Detailed evidence and repaired UAT defects are recorded in `workstreams/access-auth-m5-review-2026-09-02.md`.
 
-```text
-Ruff / mypy                     PASS
-non-PostgreSQL                  191 PASS
-PostgreSQL                      132 PASS
-total                           323 PASS
-backend build                   PASS
-scope audit                     PASS
-```
-
-Group 3 / public API + governed client:
-
-```text
-uv lock / Ruff / mypy           PASS
-focused M5 HTTP/OpenAPI          35 PASS
-full non-PostgreSQL             225 PASS
-provider-continuation PG          2 PASS
-full PostgreSQL                 134 PASS
-backend build                   PASS
-api-client lint/typecheck       PASS
-api-client tests                 11 PASS
-generated determinism           PASS / 78 files
-architecture                    PASS / 151 modules / 287 dependencies
-workspace typecheck             PASS / 6 of 6
-workspace build                 PASS / 2 of 2
-scope / clean-tree audit        PASS
-```
-
-Do not reopen Groups 2–3 absent direct defect evidence.
-
-## 4. Group 4 materialized candidate
-
-PRE-SCOPE `a04009e6...` → code checkpoint `4fd8068e...` is ahead-only by 30 commits and contains 21 Web/i18n paths, all within the approved Group-4 macro-scope. No backend, DB, migration, ACL or unrelated frontend path entered the delta.
-
-Materialized direction now includes:
-
-```text
-governed Web remote over @dante/api-client
-Google build-time public client-id configuration
-Google official GIS renderButton flow
-DANTE /google/begin transaction + nonce before Google credential
-DANTE /google/complete as the only Google success authority
-Apple backend begin + fixed redirect return target
-HttpOnly provider enrollment/link continuation resume
-provider enrollment email/verify/resend
-provider collision → existing Account auth → explicit confirm
-browser WebAuthn JSON/Base64URL ↔ ArrayBuffer adapter only
-navigator.credentials.create/get; no frontend crypto verification
-passkey signin / register / reauth / rename / remove
-/security route
-methods/password lifecycle
-provider link/unlink
-password establish/remove
-password/passkey reauthentication
-Security link from authenticated Access return
-IT/EN Group-4 copy
-```
-
-Google was corrected during implementation: DANTE no longer tries to launch Google One Tap/programmatic prompt from a custom Google button. The current design uses the official Google Identity Services rendered button (`renderButton`) with the DANTE-issued nonce.
-
-## 5. Group 4 still pending before UAT
-
-No authoritative QA has yet been recorded for `4fd8068e...` after the official-Google lifecycle propagation. Therefore the following remain mandatory:
-
-```text
-pull exact candidate
-canonical Prettier/ESLint/typecheck
-web unit/component tests
-fix any TS/lint/test regressions
-canonical TanStack route generation so /security enters routeTree.gen.ts
-materialize generator-owned routeTree only through the canonical generator
-complete the approved focused Group-4 tests still missing
-extend Web remote tests
-create/complete Group-4 Playwright M5 coverage
-Chromium / Firefox / WebKit HTTPS stack proof
-accessibility/keyboard/focus/responsive checks
-then real Google UAT
-real Apple registered-domain UAT
-Apple Private Email Relay sender setup/proof
-real passkey/browser/authenticator UAT
-manual integrated user UAT
-```
-
-Only after those proofs may Group 4 and whole M5 be declared closed.
-
-## 6. Database truth
+## 3. Current database truth
 
 ```text
 PostgreSQL          18.6
 Alembic             20260831_13
-83 tables
-5 views
-15 routines
-75 triggers
-156 physical indexes
-85 foreign keys
-233 CHECK constraints
-103 standalone Dictionary entries
+tables              83
+views                5
+routines             15
+triggers             75
+physical indexes     156
+foreign keys         85
+CHECK constraints    233
+standalone Dictionary entries 103
 ```
 
-Group 4 is Web-only unless direct defect evidence justifies a separately gated backend/DB change.
+Revision `20260831_13` is the bounded authenticator-lifecycle runtime ACL follow-up; it does not change the M5-A topology counts.
 
-## 7. Binding Auth constitution
+## 4. Current Auth constitution
 
 ```text
 Person != Account != Principal != Actor
@@ -177,43 +89,60 @@ EmailIdentity != Account
 PasswordCredential optional
 Principal runtime-derived
 provider identity = issuer + subject
-provider email != link/ownership authority
+provider email != Account/link authority
+provider auth != provider-data authorization
 provider token/assertion != DANTE AuthSession
+passwordless Account valid
 PasskeyCredential != Account
 WebAuthn user_handle = opaque Account binding
-passwordless Account valid
+method != factor != assurance
 reauthentication != signin
 frontend/provider/browser completion != backend-authoritative success
 ```
 
-Forbidden without a new architecture gate: JWT/localStorage browser Auth, sessionStorage auth authority, persisted Principal, silent provider-email merge, provider-specific Account/session authority, fake frontend Auth success, raw generated-operation bypass, ad-hoc fetch proliferation, hand-rolled WebAuthn crypto, biometric/PIN/device-fingerprint persistence.
-
-## 8. Exact continuation pointer
-
-Continue **Group 4**, from the existing implementation. Do not restart discovery or rebuild Access from scratch.
-
-First objective in the next chat:
+## 5. Open items before M5 closure
 
 ```text
-verify feature/access-auth HEAD
-→ pull 4fd8068e... (or later docs-only handoff HEAD)
-→ run canonical frontend generation/static/unit QA
-→ fix defects in authorized Group-4 paths
-→ complete missing focused tests/E2E
-→ Chromium/Firefox/WebKit
-→ real provider/passkey UAT
-→ user UAT
-→ only then Group 4 / M5 closure
+email-delivery architecture/research
+→ decide internal responsibility vs external delivery service boundary
+→ deliverability/DNS/bounce/complaint/retry/observability/privacy design
+→ qualify provider-neutral implementation
+→ real signup/recovery delivery UAT
+
+Apple
+→ registered HTTPS domain/provider configuration
+→ real Apple account UAT when available
+→ Private Email Relay sender/domain proof
 ```
 
-A stray remote ref `tmp-not-used` exists and points to the Group-4 PRE-SCOPE only. It contains no feature changes and must not be used. Clean it with `git push origin --delete tmp-not-used` when convenient.
+The opt-in real-SMTP local-UAT support introduced at `9c0587...` is **not** a provider selection and has not yet completed its targeted tooling/real-delivery qualification.
 
-## 9. Branch/worktree safety
+## 6. M7 maturity work
+
+Compared with mature consumer/work tools, the main post-M5 account-security maturity work is already compatible with the current model:
 
 ```text
-repo:      MattiaRubino/dante
-branch:    feature/access-auth
-worktree:  /home/mattia/projects/dante
+session/device inventory
+revoke one / revoke all others / log out everywhere
+new-login/security-event notifications
+“this wasn't me” response
+production observability/alerting
+final authenticated Home handoff
+security-page component hardening
 ```
 
-Do not touch `main`, `feature/home-react`, `feature/access-frontend` or `/home/mattia/projects/dante-frontend` without explicit topology authorization.
+No Auth redesign is required to add these surfaces.
+
+## 7. Documentation authority
+
+Current operational truth:
+
+1. this file;
+2. `ROADMAP.md`;
+3. `workstreams/access-auth.md`;
+4. `workstreams/access-auth-m5-review-2026-09-02.md`;
+5. current executable code/tests/migrations.
+
+Architecture/security/API contracts remain durable semantic authority. Old phase-progress statements embedded in those contracts are historical milestone snapshots and do not override the current operational state.
+
+The dated `workstreams/access-auth-m5-live-handoff-2026-08-29.md` is superseded and historical.
