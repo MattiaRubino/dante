@@ -6,8 +6,8 @@
 **Branch:** `feature/home-timeline`  
 **Worktree:** `/home/mattia/projects/dante-timeline`  
 **Integration target:** `feature/home-react`  
-**Final C1 implementation candidate:** `f092a3db2fbac28421b73e0629f7b4b83a1b0aec`  
-**Frontend CI:** run `33631013598` / #621 — FULL PASS
+**Final C1 implementation candidate:** `7028633921d1b438bd04961a718457afd82ccc13`  
+**Frontend CI:** run `33635389124` / #632 — FULL PASS
 
 ## Live authority
 
@@ -199,9 +199,9 @@ Critical Create mapping:
 
 Implementation candidate:
 
-`f092a3db2fbac28421b73e0629f7b4b83a1b0aec`
+`7028633921d1b438bd04961a718457afd82ccc13`
 
-Frontend CI `33631013598` / #621:
+Frontend CI `33635389124` / #632:
 
 - Quality: **PASS**;
 - Mobile Bundle: **PASS**;
@@ -222,6 +222,8 @@ Quality details:
 - diff check PASS;
 - repository mutation check PASS.
 
+The final candidate also hardens contextual Create E2E against Timeline/browser viewport mismatch without adding sleeps or weakening gesture assertions. The hardened double-click and Shift-drag contract passed in Chromium, and the frozen Timeline interaction contract passed in Firefox.
+
 Production Home route:
 
 ```text
@@ -237,7 +239,8 @@ C1 is still:
 
 ```text
 IMPLEMENTATION FULL GREEN
-DOCUMENTATION RECONCILIATION REQUIRED TO REMAIN CI-GREEN
+DOCUMENTATION RECONCILIATION COMPLETE
+FINAL DOCUMENTATION DESCENDANT MUST BE CI-GREEN
 USER MANUAL ACCEPTANCE PENDING
 NOT FROZEN / CLOSED
 ```
