@@ -3,6 +3,7 @@
 - **Status:** ACTIVE / BRANCH-LOCAL DURABLE WORKSTREAM RECORD
 - **Branch:** `feature/ai-architecture`
 - **Current phase:** AI-04 — Productionization Architecture
+- **AI-04A:** CANDIDATE MATERIALIZED / DIRECT EVAL DESIGN CURRENT
 - **AI-03 overall:** CLOSED / STRUCTURALLY ACCEPTED
 - **AI-03A:** CLOSED / C01..C33
 - **AI-03B:** CLOSED / B01..B35
@@ -56,7 +57,7 @@ current AI architecture sources relevant to the phase
 current branch/ref and relation to protected main
 ```
 
-For AI-04, accepted upstream AI authority includes:
+For AI-04, accepted/current AI authority includes:
 
 ```text
 docs/architecture/dante-ai-foundation.md
@@ -66,6 +67,7 @@ docs/architecture/dante-ai-03-context-retrieval-memory.md
 docs/architecture/dante-ai-03a-full-context-architecture.md
 docs/architecture/dante-ai-03b-retrieval-memory-architecture.md
 docs/architecture/dante-ai-03c-destructive-validation-materialization-blueprint.md
+docs/architecture/dante-ai-04-productionization-architecture.md
 ```
 
 Repository truth beats conversation memory.
@@ -142,8 +144,9 @@ CLOSED / STRUCTURALLY ACCEPTED
 
 AI-04 — PRODUCTIONIZATION ARCHITECTURE
 ACTIVE / CURRENT
-  representative eval workloads + quality floors
-  model/provider/economics + routing/fallback
+  AI-04A eval/model/provider productionization boundary
+           CANDIDATE MATERIALIZED
+           direct eval specification CURRENT
   concrete runtime/capabilities/external intelligence
   security/privacy/persistence/control-plane/operations
 
@@ -357,100 +360,209 @@ Do not rerun generic AI-03 mega-tests without concrete contradictory downstream 
 
 ## 8. AI-04 — CURRENT Productionization Architecture
 
+Durable candidate authority:
+
+- `docs/architecture/dante-ai-04-productionization-architecture.md`
+
 AI-04 converts the accepted responsibility architecture into concrete production choices without jumping directly into production implementation.
 
-It proceeds in one coherent phase with an eval-first front end.
+### 8.1 AI-04A candidate — eval/model/provider boundary
 
-### 8.1 Workload / eval / quality floor first
+The first AI-04A materialization fixes the selection method before selecting a vendor.
 
-Before selecting concrete providers/models, define representative DANTE workload families and evaluation criteria covering at minimum:
-
-```text
-deterministic/no-model fast paths
-structured extraction/understanding
-DANTE-native query + reasoning
-planning/replanning/scenario work
-long-context/document work
-multimodal work
-tool/capability use
-consequential effect preparation
-reference/target ambiguity
-multi-actor/privacy-sensitive work
-currentness/revocation/supersession
-provider/tool failure and degraded behavior
-background/durable work
-open-world research
-code/browser/computer-use where product scope requires it
-```
-
-Quality must include more than answer preference:
+Candidate DANTE workload families:
 
 ```text
-semantic correctness
-structured-output reliability
-tool-call/capability reliability
-instruction following
-coverage/absence handling
-reference-resolution behavior
-context/long-context behavior
-privacy/provider eligibility
-failure/retry/fallback behavior
-latency
-cost/token economics
-observability/evaluation feasibility
+DANTE-E01  model avoidance / deterministic fast path
+DANTE-E02  intent + reference / target resolution
+DANTE-E03  structured extraction / understanding
+DANTE-E04  native query + history + absence semantics
+DANTE-E05  context + privacy + Reality Scope
+DANTE-E06  planning / replanning / scenario reasoning
+DANTE-E07  document / long-context / multimodal reasoning
+DANTE-E08  tool / capability use
+DANTE-E09  consequential effect boundary
+DANTE-E10  multi-actor / delegation / disclosure
+DANTE-E11  adaptive memory / learning
+DANTE-E12  currentness / failure / supersession / failover
+DANTE-E13  open-world research / grounding
 ```
 
-A benchmark/eval harness may be implemented during AI-04 when needed for direct evidence. Such proof code is not the production AI backend.
+Trigger-gated families remain outside baseline qualification until real product scope activates them:
 
-### 8.2 Provider/model replaceability — binding now
+```text
+voice/realtime
+browser/computer-use
+code execution
+long-running durable background work
+embedding/vector retrieval
+specialized generation
+```
 
-Concrete provider/model selection remains OPEN, but the replaceability seam is accepted:
+### 8.2 Hard gates before scores
+
+DANTE does not use one weighted quality score that can hide a semantic/privacy failure.
+
+Examples of hard-fail conditions:
+
+```text
+wrong consequential target
+unauthorized effect
+cross-actor/private disclosure
+fabricated canonical fact
+false effect-success claim
+false Actual/completed state
+stale/superseded result published as current
+Reality Scope laundering
+invalid durable-memory promotion
+blind failover to an ineligible provider
+source/derivative resurrection
+```
+
+Only eligible configurations proceed to graded quality/latency/economics comparison.
+
+### 8.3 Grading order
+
+Use strongest evidence first:
+
+```text
+deterministic state/result
+→ schema/type/constraint
+→ tool/effect receipt
+→ source/citation
+→ invariant/privacy/security
+→ human-calibrated rubric/model judge for softer dimensions
+```
+
+Model judges do not override canonical state or deterministic validation.
+
+### 8.4 Provider/model replaceability
+
+Binding separation:
 
 ```text
 MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT
+MODEL VENDOR != SERVING PLATFORM != PROTOCOL FAMILY
 DANTE FEATURE/BUSINESS CODE != CONCRETE PROVIDER SDK
 PROVIDER REPLACEABLE != PROVIDERS IDENTICAL
 PROVIDER REPLACEABLE != LOWEST-COMMON-DENOMINATOR PROVIDER USAGE
 ```
 
-Expected production boundary:
+Production chain:
 
 ```text
 DANTE work/capability need
 → ModelTarget
 → HarnessProfile
 → ProviderBinding
-→ Provider Adapter
-→ concrete provider / model / deployment
+→ ProviderAdapter
+→ concrete serving platform / model / deployment
 ```
 
-Responsibilities:
+`ProviderBinding` must be capable of representing model vendor separately from serving platform, including direct-provider versus cloud-hosted bindings.
+
+### 8.5 Core portability and native augmentation
+
+Two tracks remain distinct:
 
 ```text
-ModelTarget
-→ capability/quality class DANTE needs
+CORE PORTABILITY
+same DANTE semantic obligation
++ provider-specific HarnessProfile
+→ portable cognition comparison
 
-HarnessProfile
-→ model/provider-specific controllable behavior
-  without leaking it into DANTE semantic contracts
-
-ProviderBinding
-→ concrete endpoint/provider/model/deployment/auth/config binding
-
-ProviderAdapter
-→ SDK/protocol-specific request, streaming, tool, structured-output,
-  usage/error/receipt translation
+PROVIDER-NATIVE AUGMENTATION
+native search/files/cache/state/background/browser/computer/etc.
+→ independent value + eligibility assessment
 ```
 
-This must support a later direct-provider → Azure-hosted deployment or different-provider adapter without rewriting DANTE Domain, feature, WorkContract, Context, Retrieval, Memory or Effect semantics.
+Native provider features do not define DANTE semantics.
 
-It does **not** require multiple providers on day one. If one provider wins the V1 eval/cost/operational tradeoff, DANTE may deliberately start with one primary provider behind this boundary.
+### 8.6 Feature eligibility
 
-Fallback is not blind replay. An alternate provider must be currently eligible for the WorkContract/data/purpose and may require a newly built ConsumerContext/HarnessProfile.
+Binding candidate rule:
 
-### 8.3 Concrete runtime / capability work
+```text
+FEATURE AVAILABLE != FEATURE ELIGIBLE
+```
 
-After workload requirements are defined, AI-04 resolves concrete production behavior for:
+Provider state/cache/files/background/tools must be checked against current WorkContract purpose, data class, sensitivity, retention, region, third-party exposure and governance constraints before use.
+
+### 8.7 Failover
+
+Rejected:
+
+```text
+primary fails
+→ replay identical request/context to another provider
+```
+
+Required:
+
+```text
+primary failure
+→ alternate binding qualification
+→ current provider/data eligibility
+→ rebuild/minimize ConsumerContext if needed
+→ alternate HarnessProfile
+→ invoke
+```
+
+### 8.8 Economics
+
+Primary metric:
+
+```text
+EFFECTIVE COST PER SUCCESSFUL DANTE TASK
+```
+
+rather than list price per token.
+
+Cost includes applicable input/output/thinking/cache/native-tool/retry/failure/fallback costs and is measured across workload/context buckets.
+
+### 8.9 AI-04A candidate invariants
+
+The durable AI-04 candidate currently records `A01..A22`, including:
+
+```text
+workload evidence precedes vendor selection
+hard gates precede economics
+same semantic contract != same byte prompt
+model+Harness quality != serving-platform qualification
+provider-native augmentation != portability proof
+FEATURE AVAILABLE != FEATURE ELIGIBLE
+failover != blind replay
+preview quality win != production qualification
+long-context capacity != context correctness
+model avoidance is a valid preferred route
+```
+
+These are candidate productionization rules pending direct eval evidence and later whole AI-04 destructive review.
+
+### 8.10 Current official-source candidate landscape
+
+Current official documentation has been used only to establish challenger/binding candidates and provider-feature constraints.
+
+Current families under consideration include:
+
+```text
+OpenAI direct / Azure OpenAI
+→ GPT-5.6 Sol / Terra / Luna candidate tiers
+
+Anthropic direct / qualified alternate hosting
+→ Claude Opus 5 / Sonnet 5 and cost-tier candidates
+
+Google Gemini
+→ Gemini 3.7 Flash stable/GA
+→ Gemini 3.5 Flash-Lite cost candidate
+→ preview models challenger-only until production-qualified
+```
+
+No provider/model/deployment is selected by this list.
+
+### 8.11 Concrete runtime / capability work still to follow
+
+After the direct eval specification/evidence boundary, AI-04 still owns:
 
 ```text
 model invocation / streaming / cancellation
@@ -467,9 +579,7 @@ provider-native files/cache/thread usage
 artifact flows
 ```
 
-Technology activation remains consumer/benchmark driven.
-
-### 8.4 Security / privacy / control plane / operations
+### 8.12 Security / privacy / control plane / operations still to follow
 
 AI-04 must concretize:
 
@@ -488,7 +598,7 @@ release/canary/rollback behavior
 runtime/control-plane ownership
 ```
 
-Provider/model choice is not accepted until these production dimensions are considered along with raw model quality.
+Provider/model choice is not accepted until these production dimensions are considered along with direct DANTE workload quality.
 
 ---
 
@@ -523,6 +633,8 @@ Do not claim these are decided before evidence:
 OpenAI / Azure OpenAI / Anthropic / Gemini / other concrete provider set
 specific model/deployment mapping
 routing/fallback policy
+exact ModelTarget vocabulary
+exact eval fixture corpus / thresholds
 embedding model/dimensions
 pgvector/ANN activation
 FTS index additions
@@ -596,22 +708,22 @@ Before branch integration, its meaningful payload must be classified and propaga
 ## 13. Current next action
 
 ```text
-AI-04 — PRODUCTIONIZATION ARCHITECTURE
-
-FIRST BOUNDARY
-REPRESENTATIVE DANTE EVAL WORKLOAD + QUALITY FLOORS
+AI-04A — DIRECT DANTE EVAL SPECIFICATION
 ```
 
-Do not choose a provider/model first and then design evaluations around it.
+Do not choose a provider/model from public benchmark reputation.
 
 Required sequence:
 
 ```text
-accepted DANTE obligations + AI-02/AI-03 contracts
-→ representative workload taxonomy
-→ success/failure/quality criteria
-→ current provider/model capability research
-→ direct eval/benchmark where decision-relevant
+DANTE-E01..E13 candidate workload taxonomy
+→ executable-grade fixture types
+→ hard pass/fail contracts
+→ deterministic vs rubric grading rules
+→ development / validation / held-out split
+→ small exact current candidate model set per likely ModelTarget
+→ frozen model snapshot / serving binding / HarnessProfile
+→ direct eval/benchmark proof where decision-relevant
 → provider/model/economics/routing/fallback candidate
 → concrete runtime/capability architecture
 → security/privacy/control-plane/operations architecture
@@ -628,7 +740,7 @@ DANTE need
 → ModelTarget
 → HarnessProfile
 → ProviderBinding
-→ Provider Adapter
+→ ProviderAdapter
 → provider/model/deployment
 ```
 
