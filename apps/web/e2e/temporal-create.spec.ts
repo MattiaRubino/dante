@@ -413,7 +413,7 @@ test('all-day Event uses a dedicated strip outside the timed grid while unschedu
   ).resolves.toBe(true);
   await expect(
     strip.evaluate(
-      (element) => element.closest('.home-timeline-head--production') !== null,
+      (element) => element.closest('.dante-timeline-header') !== null,
     ),
   ).resolves.toBe(true);
 
