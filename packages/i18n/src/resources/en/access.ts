@@ -227,6 +227,7 @@ export const access = {
     passkeysBody:
       'Private keys remain inside the authenticator. DANTE stores only the public credential needed for verification.',
     passkeyLabel: 'Passkey label',
+    passkeyLabelPlaceholder: 'e.g. Personal laptop',
     passkeyLabelRequired: 'Enter a label for the passkey.',
     addPasskey: 'Add passkey',
     passkeyAdded: 'Passkey added.',
@@ -236,6 +237,22 @@ export const access = {
     rename: 'Rename',
     save: 'Save',
     remove: 'Remove',
+    errorOperation: 'The security operation could not be completed.',
+    errorServiceUnreachable: 'The Access service is unreachable.',
+    errorReauthenticationRequired:
+      'Confirm your identity again before changing security settings.',
+    errorRemovalBlocked:
+      'DANTE blocked this removal because it would leave the account without a safe authenticator.',
+    errorPasswordAlreadyEstablished: 'This account already has a password.',
+    errorPasskeyAlreadyRegistered: 'That passkey is already registered with DANTE.',
+    errorPasskeyNotFound: 'That passkey is no longer active on this account.',
+    errorServiceUnavailable:
+      'The authentication service is temporarily unavailable.',
+    errorGoogleControl:
+      'The Google authentication control could not be initialized.',
+    errorSessionUnavailable: 'Your session is no longer available.',
+    errorGoogleLinkIncomplete:
+      'Google did not complete the requested account link.',
   },
   setupName: {
     title: 'What should DANTE call you?',
