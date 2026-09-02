@@ -8,24 +8,40 @@ from pathlib import Path
 from types import ModuleType
 
 import psycopg
-from dante.platform.config.auth import AuthSettings
+from dante.platform.config.auth import AuthSettings, SmtpSecurity
 from dante.platform.config.auth_provider import (
     AuthProviderSettings,
     GoogleProviderSettings,
     WebAuthnSettings,
 )
 from psycopg import sql
+from pydantic import SecretStr
 
 _CORE_PATH = Path(__file__).with_name("serve-access-auth-stack.py")
 _UAT_WEB_ORIGIN = "https://localhost:4173"
 _GOOGLE_CLIENT_ID_ENV = "DANTE_UAT_GOOGLE_CLIENT_ID"
 _ENABLE_GOOGLE_ENV = "DANTE_UAT_ENABLE_GOOGLE"
 _ENABLE_WEBAUTHN_ENV = "DANTE_UAT_ENABLE_WEBAUTHN"
+_ENABLE_REAL_SMTP_ENV = "DANTE_UAT_ENABLE_REAL_SMTP"
+_SMTP_HOST_ENV = "DANTE_UAT_SMTP_HOST"
+_SMTP_PORT_ENV = "DANTE_UAT_SMTP_PORT"
+_SMTP_SECURITY_ENV = "DANTE_UAT_SMTP_SECURITY"
+_SMTP_USERNAME_ENV = "DANTE_UAT_SMTP_USERNAME"
+_SMTP_PASSWORD_ENV = "DANTE_UAT_SMTP_PASSWORD"
+_SMTP_FROM_ADDRESS_ENV = "DANTE_UAT_SMTP_FROM_ADDRESS"
 _ACCOUNT_EMAIL_ENV = "DANTE_UAT_ACCOUNT_EMAIL"
 _TLS_CERT_ENV = "DANTE_UAT_TLS_CERT"
 _TLS_KEY_ENV = "DANTE_UAT_TLS_KEY"
 _TRUE_VALUES = frozenset({"1", "true", "yes", "on"})
 _FALSE_VALUES = frozenset({"0", "false", "no", "off"})
+_REAL_SMTP_ENV_NAMES = (
+    _SMTP_HOST_ENV,
+    _SMTP_PORT_ENV,
+    _SMTP_SECURITY_ENV,
+    _SMTP_USERNAME_ENV,
+    _SMTP_PASSWORD_ENV,
+    _SMTP_FROM_ADDRESS_ENV,
+)
 _REQUIRED_EXTENSIONS: tuple[tuple[str, str | None], ...] = (
     ("postgis", "3.6.4"),
     ("vector", "0.8.6"),
@@ -70,6 +86,73 @@ def _google_client_id(*, enabled: bool) -> str | None:
     return raw
 
 
+def _required_trimmed_env(name: str) -> str:
+    raw = os.environ.get(name)
+    if raw is None or not raw or raw.strip() != raw or any(
+        character in raw for character in "\r\n"
+    ):
+        raise RuntimeError(f"{name} must be non-blank, trimmed and single-line.")
+    return raw
+
+
+def _real_smtp_overrides(*, enabled: bool) -> dict[str, object]:
+    configured = tuple(name for name in _REAL_SMTP_ENV_NAMES if name in os.environ)
+    if not enabled:
+        if configured:
+            raise RuntimeError(
+                "Real SMTP settings were supplied without explicit opt-in. Set "
+                f"{_ENABLE_REAL_SMTP_ENV}=true or remove: {', '.join(configured)}."
+            )
+        return {}
+
+    host = _required_trimmed_env(_SMTP_HOST_ENV)
+    from_address = _required_trimmed_env(_SMTP_FROM_ADDRESS_ENV)
+
+    port_raw = os.environ.get(_SMTP_PORT_ENV, "587")
+    try:
+        port = int(port_raw)
+    except ValueError as exc:
+        raise RuntimeError(f"{_SMTP_PORT_ENV} must be an integer TCP port.") from exc
+    if not 1 <= port <= 65_535:
+        raise RuntimeError(f"{_SMTP_PORT_ENV} must be within 1..65535.")
+
+    security_raw = os.environ.get(_SMTP_SECURITY_ENV, SmtpSecurity.STARTTLS.value)
+    try:
+        security = SmtpSecurity(security_raw.strip().casefold())
+    except ValueError as exc:
+        supported = ", ".join(mode.value for mode in SmtpSecurity)
+        raise RuntimeError(
+            f"{_SMTP_SECURITY_ENV} must be one of: {supported}."
+        ) from exc
+
+    username_raw = os.environ.get(_SMTP_USERNAME_ENV)
+    password_raw = os.environ.get(_SMTP_PASSWORD_ENV)
+    if (username_raw is None) != (password_raw is None):
+        raise RuntimeError(
+            f"{_SMTP_USERNAME_ENV} and {_SMTP_PASSWORD_ENV} must be supplied together."
+        )
+
+    username: str | None = None
+    password: SecretStr | None = None
+    if username_raw is not None and password_raw is not None:
+        username = _required_trimmed_env(_SMTP_USERNAME_ENV)
+        if not password_raw or any(character in password_raw for character in "\r\n"):
+            raise RuntimeError(
+                f"{_SMTP_PASSWORD_ENV} must be non-blank and single-line."
+            )
+        password = SecretStr(password_raw)
+
+    return {
+        "smtp_host": host,
+        "smtp_port": port,
+        "smtp_security": security,
+        "smtp_username": username,
+        "smtp_password": password,
+        "smtp_from_address": from_address,
+        "smtp_timeout_seconds": 10.0,
+    }
+
+
 def _extension_guard(database_name: str) -> Callable[..., None]:
     def ensure_extensions(*, port: int, password: str) -> None:
         with psycopg.connect(
@@ -111,6 +194,7 @@ def _auth_settings_override(
     google_enabled: bool,
     google_client_id: str | None,
     webauthn_enabled: bool,
+    smtp_overrides: dict[str, object],
 ) -> Callable[[str, int], AuthSettings]:
     def build(hibp_base_url: str, smtp_port: int) -> AuthSettings:
         settings = original(hibp_base_url, smtp_port)
@@ -126,12 +210,15 @@ def _auth_settings_override(
                 expected_origins=(_UAT_WEB_ORIGIN,),
             ),
         )
-        return settings.model_copy(
-            update={
+        payload = settings.model_dump(mode="python")
+        payload.update(
+            {
                 "canonical_web_origin": _UAT_WEB_ORIGIN,
                 "provider": provider,
+                **smtp_overrides,
             }
         )
+        return AuthSettings.model_validate(payload)
 
     return build
 
@@ -200,6 +287,7 @@ def _log_configuration(
     webauthn_enabled: bool,
     seed_email: str,
     seed_password: str,
+    smtp_overrides: dict[str, object],
 ) -> None:
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     _LOGGER.info("DANTE Access/Auth local real-UAT configuration")
@@ -207,6 +295,15 @@ def _log_configuration(
     _LOGGER.info("  Google          : %s", "enabled" if google_enabled else "disabled")
     _LOGGER.info("  Apple           : disabled (registered-domain UAT only)")
     _LOGGER.info("  WebAuthn/passkey: %s", "enabled" if webauthn_enabled else "disabled")
+    if smtp_overrides:
+        _LOGGER.info(
+            "  email transport : real SMTP %s:%s (%s)",
+            smtp_overrides["smtp_host"],
+            smtp_overrides["smtp_port"],
+            smtp_overrides["smtp_security"],
+        )
+    else:
+        _LOGGER.info("  email transport : loopback SMTP capture")
     _LOGGER.info("  seeded email    : %s", seed_email)
     _LOGGER.info("  seeded password : %s", seed_password)
     if os.environ.get(_TLS_CERT_ENV) is None:
@@ -223,13 +320,16 @@ def main() -> None:
     core = _load_core()
     google_enabled = _enabled(_ENABLE_GOOGLE_ENV)
     webauthn_enabled = _enabled(_ENABLE_WEBAUTHN_ENV)
-    if not google_enabled and not webauthn_enabled:
+    real_smtp_enabled = _enabled(_ENABLE_REAL_SMTP_ENV)
+    if not google_enabled and not webauthn_enabled and not real_smtp_enabled:
         raise RuntimeError(
             "Enable at least one real UAT surface with "
-            f"{_ENABLE_GOOGLE_ENV}=true or {_ENABLE_WEBAUTHN_ENV}=true."
+            f"{_ENABLE_GOOGLE_ENV}=true, {_ENABLE_WEBAUTHN_ENV}=true or "
+            f"{_ENABLE_REAL_SMTP_ENV}=true."
         )
 
     google_client_id = _google_client_id(enabled=google_enabled)
+    smtp_overrides = _real_smtp_overrides(enabled=real_smtp_enabled)
     if google_enabled:
         if google_client_id is None:
             raise RuntimeError("Google client ID validation lost enabled configuration.")
@@ -250,6 +350,7 @@ def main() -> None:
         google_enabled=google_enabled,
         google_client_id=google_client_id,
         webauthn_enabled=webauthn_enabled,
+        smtp_overrides=smtp_overrides,
     )
     core._generate_tls_material = _tls_material_override(core)
     seed_email = _seed_email(core)
@@ -262,6 +363,7 @@ def main() -> None:
         webauthn_enabled=webauthn_enabled,
         seed_email=seed_email,
         seed_password=seed_password,
+        smtp_overrides=smtp_overrides,
     )
     core.main()
 
