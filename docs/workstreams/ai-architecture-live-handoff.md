@@ -4,19 +4,23 @@
 - **MUST NOT MERGE TO PROTECTED `main`**
 - **Branch:** `feature/ai-architecture`
 - **Workstream:** DANTE AI architecture
-- **Current phase:** AI-04 — Productionization Architecture
-- **AI-04A:** MATERIALIZED / A01..A30 / EV01..EV20
-- **AI-04B:** CLOSED / STRUCTURALLY ACCEPTED / RT-01..RT-31
-- **AI-04C:** CLOSED / STRUCTURALLY ACCEPTED / PA-01..PA-61
-- **Current action:** AI-04 WHOLE-PHASE DESTRUCTIVE ACCEPTANCE
+- **Current phase:** POST-AI-04 GLOBAL CURRENT-TRUTH RECONCILIATION
+- **AI-04 overall:** CLOSED / STRUCTURALLY ACCEPTED
+- **AI-04A:** CLOSED / A01..A30 / EV01..EV20 / DIRECT PROVIDER EVIDENCE NOT EXECUTED
+- **AI-04B:** CLOSED / RT-01..RT-31
+- **AI-04C:** CLOSED / PA-01..PA-61
+- **AI-04 whole-phase:** CLOSED / WP-01..WP-22
 - **AI-03 overall:** CLOSED / STRUCTURALLY ACCEPTED
+- **AI-05:** NEXT AFTER GLOBAL RECONCILIATION
 - **Refreshed:** 2026-09-02
-- **AI-04C closure PRE-SCOPE:** `d7c13bacc170fe14645d5f4bf69408c5e31d128b`
+- **AI-04 closure PRE-SCOPE:** `57d9b6b325d0873e46efbe88eee646f994027d2d`
 - **Current branch HEAD:** FETCH LIVE before every write
 
-This file exists only to survive chat/session/context saturation while `feature/ai-architecture` is active. Durable architecture truth lives in architecture/current workstream sources.
+This file exists only to survive chat/session/context saturation while `feature/ai-architecture` remains active.
 
 Repository truth outranks this handoff.
+
+The complete pre-closure handoff/workstream state is preserved at commit `57d9b6b325d0873e46efbe88eee646f994027d2d`.
 
 ---
 
@@ -26,12 +30,12 @@ Repository truth outranks this handoff.
 repository  MattiaRubino/dante
 branch      feature/ai-architecture
 workstream  DANTE AI architecture
-current     AI-04 Whole-Phase Destructive Acceptance
-next        AI-04 closure only if whole-phase PASS
-then        AI-05 Whole-System Acceptance + Implementation Blueprint
+current     GLOBAL CURRENT-TRUTH RECONCILIATION
+next        AI-05 Whole-System Acceptance + Implementation Blueprint
+then        actual AI implementation workstream(s)
 ```
 
-Closed upstream:
+Closed architecture:
 
 ```text
 AI-02.1        CLOSED / STRUCTURALLY ACCEPTED
@@ -39,32 +43,20 @@ AI-03A         CLOSED / C01..C33
 AI-03B         CLOSED / B01..B35
 AI-03C         CLOSED / MAT-01..MAT-15
 AI-03 overall  CLOSED / STRUCTURALLY ACCEPTED
+AI-04A         CLOSED / A01..A30 / EV01..EV20
 AI-04B         CLOSED / RT-01..RT-31
 AI-04C         CLOSED / PA-01..PA-61
+AI-04 whole    CLOSED / WP-01..WP-22
+AI-04 overall  CLOSED / STRUCTURALLY ACCEPTED
 ```
 
-Do not restart generic AI-02/AI-03/AI-04B/AI-04C redesign without concrete contradictory evidence.
+Do not restart AI-02/03/04 redesign without concrete contradictory downstream evidence.
 
 ---
 
-# 2. Mandatory reading order
+# 2. Mandatory AI authority
 
 ```text
-README.md
-docs/README.md
-docs/PROJECT-STATUS.md
-docs/ROADMAP.md
-
-docs/development/agent-operating-manual.md
-docs/development/operating-rules.md
-docs/development/documentation-and-handoff.md
-docs/development/documentation-lifecycle-policy.md
-docs/development/branching-and-environments.md
-docs/development/repository-engineering-safety.md
-
-docs/workstreams/ai-architecture.md
-this file
-
 docs/architecture/dante-ai-foundation.md
 docs/architecture/ai-production-engineering-state-of-the-art-2026.md
 docs/architecture/dante-ai-02-1-intelligence-reengineering.md
@@ -76,200 +68,158 @@ docs/architecture/dante-ai-04-productionization-architecture.md
 docs/architecture/dante-ai-04a-direct-eval-specification.md
 docs/architecture/dante-ai-04b-concrete-runtime-capability-architecture.md
 docs/architecture/dante-ai-04c-production-assurance-control-plane-operations.md
+docs/architecture/dante-ai-04-whole-phase-destructive-acceptance.md
 ```
+
+For AI-05 and any conclusion touching persistence/semantics, also inspect Product/North Star, Domain, Whole Logical/WL-H01..H12, Physical, CP6/PostgreSQL Constitution, current Alembic/DB truth, Recovery, Access/Home/current app workstreams and PSV obligations directly.
 
 ---
 
-# 3. Current project truth
+# 3. AI-04 closure truth
+
+Accepted invariants:
 
 ```text
-PRODUCT / NORTH STAR       CURRENT
-DOMAIN                     CLOSED
-LOGICAL                    CLOSED / 57 OF 57 / WL-H01..WL-H12
-PHYSICAL                   CLOSED
-PostgreSQL                 18.6 / sole canonical persistence + material-history authority
-Alembic                    20260830_09
-DB topology                69 tables / 5 views / 15 routines / 76 triggers /
-                           97 indexes / 69 FKs / 123 CHECKs
-RECOVERY                   CP01–CP07 LOCAL PASS / CLOSED / integrated
-remote backup provider     TBD / NOT ACTIVATED
-production/cloud recovery  NOT CLAIMED
+A01..A30
+EV01..EV20
+RT-01..RT-31
+PA-01..PA-61
+WP-01..WP-22
 ```
+
+Key whole-phase rules:
+
+```text
+EVAL CANDIDATE != PRODUCTION ROUTE
+HARNESSPROFILE != PROVIDERBINDING
+routing selects compatible qualified Harness+Binding composition
+fallback independently qualifies
+auxiliary/sub-model inference is governed first-class
+route selection/context assembly != egress authorization
+fallback capability contraction != silent context truncation
+capability version N != automatic version N+1 compatibility
+CACHE HIT != Harness/tool/security/Auth continuity
+operational behavior must preserve hidden-result non-interference
+model picker/preference != routing Authority
+route selection + resource admission must be coherent
+per-invocation coherent snapshot != whole-Run immutable config
+DIRECT EVAL != PRODUCTION CAPACITY QUALIFICATION
+```
+
+Provider/model selection remains OPEN.
 
 ---
 
-# 4. Current compact roadmap
-
-```text
-AI-00 COMPLETE
-AI-01 COMPLETE
-AI-02 CLOSED / STRUCTURALLY ACCEPTED
-AI-03 CLOSED / STRUCTURALLY ACCEPTED
-
-AI-04 PRODUCTIONIZATION ARCHITECTURE — CURRENT
-  AI-04A MATERIALIZED / A01..A30 / EV01..EV20
-  AI-04B CLOSED / RT-01..RT-31
-  AI-04C CLOSED / PA-01..PA-61
-  WHOLE-PHASE DESTRUCTIVE ACCEPTANCE CURRENT
-
-AI-05 WHOLE-SYSTEM ACCEPTANCE + IMPLEMENTATION BLUEPRINT — FUTURE
-THEN ACTUAL AI IMPLEMENTATION WORKSTREAM(S)
-```
-
----
-
-# 5. AI-04A retained boundary
-
-```text
-MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT
-MODEL VENDOR != SERVING PLATFORM != PROTOCOL FAMILY
-DANTE FEATURE/BUSINESS CODE != CONCRETE PROVIDER SDK
-PROVIDER REPLACEABLE != PROVIDERS IDENTICAL
-```
-
-```text
-DANTE need
-→ ModelTarget
-→ HarnessProfile
-→ ProviderBinding
-→ ProviderAdapter
-→ qualified serving platform/model/deployment/feature mode
-```
-
-Direct provider/model evidence remains deferred until a concrete decision requires it.
-
----
-
-# 6. Commercial boundary
+# 4. Commercial/service-tier truth
 
 ```text
 COMMERCIAL SUBSCRIPTION / SERVICE TIER != DANTE DOMAIN Plan
-COMMERCIAL TIER != MODEL / PROVIDER / DEPLOYMENT
 ```
 
 ```text
 CommercialOffering / ServiceTier
 → EntitlementProfile
-→ capability + quota + resource envelope
+→ resource/capability envelope
 → Budget / Routing Policy
-→ ModelTarget eligibility
-→ ProviderBinding
+→ eligible route set
+```
+
+```text
+COMMERCIAL TIER != MODEL / PROVIDER / DEPLOYMENT
+ENTITLED != SERVABLE
 ```
 
 No Base/Plus/Pro names, prices or quotas are fixed.
 
----
-
-# 7. AI-04B retained runtime truth
-
-```text
-RUN != MODEL INVOCATION != PROVIDER ATTEMPT
-RAW PROVIDER EVENT != DANTE RUNTIME EVENT != PUBLICATION EVENT
-CANCELLATION REQUESTED != CANCELLATION CONFIRMED != EXECUTION QUIESCED
-PARTIAL TOOL ARGS != EXECUTABLE TOOL CALL
-PROVIDER BACKGROUND != DANTE DURABLE EXECUTION
-PROVIDER CONTINUATION != DANTE MEMORY/SESSION
-PROVIDER CALL ID != DANTE SEMANTIC IDEMPOTENCY
-FROZEN CONFIG != PERPETUAL CURRENT AUTHORIZATION
-REMOTE CALLBACK != CURRENT RUN ELIGIBILITY
-BUDGET ADMISSION != FINAL COST / GUARANTEED PROVIDER STOP
-```
-
-Full RT-01..RT-31 lives in AI-04B.
+Commercial tiers may not weaken correctness/privacy/Authority/target safety/provider-data eligibility/reconciliation.
 
 ---
 
-# 8. AI-04C retained production-assurance truth
+# 5. Provider activation gate
+
+AI-04 architecture closure does not activate a provider.
+
+Before a concrete production route is activated, applicable direct DANTE evidence must cover the actual material production composition, including as required:
 
 ```text
-QUALIFIED != ELIGIBLE != AVAILABLE != ENTITLED
-new material model/provider/feature mode inactive by default
-control-plane config versioned + coherent
-revocation/emergency deny beats stale cached Allow
-existing DANTE Authority remains authoritative
-guardrail result != DANTE Authority
-security service itself is a governed recipient
-short-lived scoped identity preferred where supported
-admin/runtime/delegated/sandbox credentials are distinct
-telemetry != audit != eval != canonical truth
-full private content telemetry OFF by default
-admission estimate != reservation != settlement
-provider metering != DANTE commercial settlement authority
-commercial exhaustion cannot starve reconciliation
-shadow traffic is real disclosure
-shadow result != production result
-rollback config != rollback effects
-rollback target must still be currently safe
-provider health scoped by binding/region/feature mode
-withheld/security-ineligible != absent/false
-post-generation masking may invalidate verified meaning
-required audit evidence has integrity/failure semantics distinct from debug logs
-critical degraded/recovery paths require exercise
-reliability/security state can freeze non-essential rollout
+workload quality
+hard semantic/privacy/safety gates
+serving-binding reliability
+feature/data eligibility
+Harness+binding compatibility
+security/control compatibility
+effective production-route quality
+economics/resource behavior
+intended production capacity/service envelope
 ```
 
-Full PA-01..PA-61 lives in AI-04C.
+No API credentials are required for the current global-reconciliation / AI-05 design work.
 
 ---
 
-# 9. Whole-phase acceptance target
-
-Review AI-04A/B/C **together**, not as three already-correct modules.
-
-Generate cross-phase attacks before reading local conclusions.
-
-At minimum pressure:
+# 6. Current exact action
 
 ```text
-quality winner but privacy-ineligible
-quality/economics winner but operationally unavailable
-commercial tier grants capability with zero routable bindings
-cheaper route below quality floor
-feature-mode/retention change invalidates previous eval qualification
-HarnessProfile/model/guard profile versions drift independently
-fallback satisfies runtime but violates capacity/budget/residency
-partial attempt + failover duplicates cost/effect intent
-shadow/canary violates eval-purpose/data-eligibility constraints
-guard/DLP transformation invalidates evaluated output quality
-control-plane chooses ModelTarget with no current qualified binding
-provider requalification changes during active background/durable work
-commercial downgrade during reservation/reconciliation
-telemetry/audit accidentally leaks hidden oracle or private context
-security kill switch removes model path but deterministic route remains
-all-provider outage and safe deterministic/read-only mode
+GLOBAL CURRENT-TRUTH RECONCILIATION
 ```
 
-Classify each finding as:
+Expected bounded targets are global/current navigation and status documents only, so that repository truth consistently says:
 
 ```text
-STRUCTURAL CONTRADICTION
-→ must harden AI-04 before closure
-
-DIRECT-EVIDENCE BLOCKER
-→ architecture coherent, but concrete provider/model choice requires benchmark/proof
-
-IMPLEMENTATION-BLUEPRINT DETAIL
-→ defer to AI-05
-
-PRODUCT/COMMERCIAL CHOICE
-→ remain open unless required for architecture
+AI-04 CLOSED / STRUCTURALLY ACCEPTED
+AI-05 NEXT / CURRENT AFTER RECONCILIATION
 ```
+
+No implementation/provider/database claim should be added.
+
+This reconciliation requires a fresh Git write gate.
 
 ---
 
-# 10. Current non-claims
+# 7. AI-05 intent
+
+After reconciliation:
 
 ```text
-AI-04 CLOSED                         NO
-AI-04 WHOLE-PHASE PASS                NO
+AI-05 — WHOLE-SYSTEM ACCEPTANCE + IMPLEMENTATION BLUEPRINT
+```
+
+AI-05 must reconcile the accepted project layers into a concrete architecture-to-build plan:
+
+```text
+Product / North Star
+Domain
+Whole Logical
+Physical / PostgreSQL
+Access / app boundaries
+AI-02 runtime semantics
+AI-03 context/retrieval/memory
+AI-04 productionization
+```
+
+and produce exact implementation boundaries, ports/adapters/config/control-plane/evidence responsibilities, first vertical sequencing and decision-specific proof gates.
+
+AI-05 is still architecture/blueprint work until explicitly gated implementation begins.
+
+---
+
+# 8. Current non-claims
+
+```text
+AI-04 CLOSED                         YES / STRUCTURAL
+AI-05 STARTED                        NO
 DIRECT PROVIDER EVAL PASS            NO
 PROVIDER SELECTED                    NO
 MODEL DEFAULT SELECTED               NO
 PROVIDER SDK SELECTED                NO
+EVAL RUNNER SELECTED                 NO
 API CREDENTIALS USED                 NO
 PAID API CALL EXECUTED               NO
-COMMERCIAL TIER NAMES/PRICES SET     NO
+PRODUCTION CAPACITY PASS             NO
 AI BACKEND IMPLEMENTED               NO
+FRONTEND AI IMPLEMENTED              NO
+CONTROL PLANE IMPLEMENTED            NO
+COMMERCIAL TIER NAMES/PRICES SET     NO
 POSTGRESQL/ALEMBIC CHANGED           NO
 NEW AI TABLE/INDEX                   NO
 PGVECTOR/ANN/FTS ACTIVATED           NO
@@ -277,12 +227,11 @@ RESTATE/R2 ACTIVATED                 NO
 MCP/A2A ACTIVATED                    NO
 EXECUTION ENVIRONMENT IMPLEMENTED    NO
 SC/PSV DIRECT PROOFS EXECUTED        NO
-AI-05 STARTED                        NO
 ```
 
 ---
 
-# 11. Git write-gate discipline
+# 9. Git write-gate discipline
 
 Before every new remote write:
 
@@ -315,7 +264,7 @@ After writes compare PRE-SCOPE..HEAD and prove exact path classification/no scop
 
 ---
 
-# 12. Handoff lifecycle
+# 10. Handoff lifecycle
 
 This file is temporary and **MUST NOT MERGE TO PROTECTED `main`**.
 
@@ -327,3 +276,5 @@ classify meaningful handoff content
 → verify knowledge coverage
 → DELETE THIS FILE
 ```
+
+Temporary handoff count entering protected main must be zero.
