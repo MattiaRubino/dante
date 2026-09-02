@@ -11,9 +11,12 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
 import {
+  TemporalCreateContextCatalogProvider,
   TemporalCreateEntry,
   temporalCreateTimelineProjectionFromEffect,
   type TemporalCreateAppliedEffect,
+  type TemporalCreateContextInput,
+  type TemporalCreateContextOption,
   type TemporalCreateInvocation,
   type TemporalCreateTimelineProjection,
 } from '../../../temporal-create';
@@ -22,6 +25,7 @@ import type {
   TimelineEvent,
   TimelineGroup,
   TimelineGroupId,
+  TimelineSemanticTone,
 } from './model/timeline-types';
 
 import './timeline-create-bridge.css';
@@ -31,6 +35,7 @@ type TimelineCreateBridgeProps = Readonly<{
   groups: readonly TimelineGroup[];
   filters: ReadonlySet<TimelineGroupId>;
   onRevealDate: (date: PlainDate) => void;
+  onCreateContext: (label: string, tone: TimelineSemanticTone) => TimelineGroup;
   onMaterializeCreatedEvent: (dateKey: string, event: TimelineEvent) => void;
   onRemoveCreatedEvent: (eventId: TimelineEvent['id']) => void;
   onBeforeOpen?: () => void;
@@ -193,6 +198,7 @@ export function TimelineCreateBridge({
   groups,
   filters,
   onRevealDate,
+  onCreateContext,
   onMaterializeCreatedEvent,
   onRemoveCreatedEvent,
   onBeforeOpen,
@@ -213,9 +219,28 @@ export function TimelineCreateBridge({
   const toastTimerRef = useRef<number | null>(null);
   const rangeGestureRef = useRef<RangeGesture | null>(null);
 
-  const contextOptions = useMemo(
-    () => groups.map((group) => ({ id: group.id, label: group.label })),
+  const contextOptions = useMemo<readonly TemporalCreateContextOption[]>(
+    () =>
+      groups.map((group) => ({
+        id: group.id,
+        label: group.label,
+        tone: group.tone,
+        local: group.id.startsWith('local-context:'),
+      })),
     [groups],
+  );
+
+  const createContext = useCallback(
+    (input: TemporalCreateContextInput): TemporalCreateContextOption => {
+      const group = onCreateContext(input.label, input.tone);
+      return Object.freeze({
+        id: group.id,
+        label: group.label,
+        tone: group.tone,
+        local: group.id.startsWith('local-context:'),
+      });
+    },
+    [onCreateContext],
   );
 
   const scheduleLayoutRefresh = useCallback(() => {
@@ -583,14 +608,16 @@ export function TimelineCreateBridge({
 
   return (
     <>
-      <TemporalCreateEntry
-        defaultDate={defaultDate}
-        contexts={contextOptions}
-        request={request}
-        onPreview={setPreview}
-        onApplied={applied}
-        onBeforeOpen={onBeforeOpen}
-      />
+      <TemporalCreateContextCatalogProvider onCreateContext={createContext}>
+        <TemporalCreateEntry
+          defaultDate={defaultDate}
+          contexts={contextOptions}
+          request={request}
+          onPreview={setPreview}
+          onApplied={applied}
+          onBeforeOpen={onBeforeOpen}
+        />
+      </TemporalCreateContextCatalogProvider>
 
       {portalTargets.map(({ projection, host, style, tone }) =>
         createPortal(
