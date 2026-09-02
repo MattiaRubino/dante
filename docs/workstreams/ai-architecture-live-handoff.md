@@ -4,8 +4,8 @@
 - **MUST NOT MERGE TO PROTECTED `main`**
 - **Branch:** `feature/ai-architecture`
 - **Current phase:** AI-05A — WHOLE-SYSTEM BUILD BOUNDARY / OWNERSHIP MAP
-- **AI-05A:** CANDIDATE / FIRST T01..T26 PASS FAIL BOUNDED / BD-31..BD-40 MATERIALIZED
-- **Fresh retest after hardening:** NOT YET EXECUTED
+- **AI-05A:** CANDIDATE / FIRST PASS FAIL → BD-31..BD-40 / SECOND INDIVIDUAL PASS + COMPOUND FAIL → BD-41
+- **Fresh retest after BD-41:** NOT YET EXECUTED
 - **Upstream AI-02/03/04/PRE-AI05:** CLOSED / STRUCTURALLY ACCEPTED
 - **Current core eval:** DANTE-E01..DANTE-E14
 - **Implementation:** NONE
@@ -19,21 +19,19 @@ Repository truth outranks this temporary handoff.
 
 ```text
 feature/ai-architecture
-→ AI-05A hardened candidate
 → read docs/architecture/dante-ai-05a-whole-system-build-boundary.md
+→ read docs/architecture/dante-ai-05a-eval-production-composition-hardening.md
 → restart T01..T26 from zero
-→ run compound collisions
+→ rerun compound collisions including exact production-composition qualification
 → reverse-check against AI-04/PRE-AI05/AI-03/AI-02
-→ if FAIL: harden smallest boundary
+→ if FAIL: harden smallest demonstrated boundary
 → if clean: close AI-05A
 → then AI-05B concrete implementation blueprint
 ```
 
-## 2. First-pass hardening
+## 2. AI-05A hardening state
 
-The first destructive pass did not accept the original candidate.
-
-Binding additions:
+First destructive pass additions:
 
 ```text
 BD-31 Global Search != Intelligence orchestration.
@@ -47,6 +45,17 @@ BD-38 H19/audit/resume/background durability gates expansion until minimum justi
 BD-39 Application fake != provider adapter conformance != direct eval != production capacity proof.
 BD-40 Chat-like UI / inline stream != generic conversation or Run persistence required.
 ```
+
+Second-pass compound finding:
+
+```text
+BD-41
+QUALIFICATION EVIDENCE MUST EXERCISE THE SAME MATERIAL PRODUCTION
+COMPOSITION THAT WILL BE PROMOTED, OR EVERY MATERIAL DELTA MUST BE
+INDEPENDENTLY QUALIFIED BEFORE PROMOTION.
+```
+
+The eval runner stays outside the ordinary production request path, but it must not create a second materially different provider stack and then promote that result as production qualification.
 
 ## 3. Candidate first-build ownership
 
@@ -74,7 +83,9 @@ platform
 → shared technical mechanics only
 
 tooling/ai-evals
-→ direct provider/model qualification tooling
+→ outside ordinary production request path
+→ qualifies same material HarnessProfile + ProviderBinding + ProviderAdapter + feature/control composition
+→ or independently qualifies material deltas
 ```
 
 ## 4. First vertical envelope
@@ -106,18 +117,43 @@ static config rollout + invocation snapshot + emergency deny
 quota admission + retry/failover + settlement
 inline stream + disconnect + no durable Run
 cumulative disclosure + zero-persistence envelope
+direct eval + exact material production composition / independently qualified deltas
 ```
 
-No changed exam: prior FAIL cases must pass under the new boundaries.
+Then reverse:
 
-## 6. Current non-claims
+```text
+AI-05A
+→ AI-04
+→ PRE-AI05
+→ AI-03
+→ AI-02
+```
+
+No changed exam: prior FAIL cases must pass under the hardened boundaries.
+
+## 6. Evidence-plane distinctions
+
+```text
+APPLICATION FAKE
+!= PROVIDER ADAPTER CONFORMANCE
+!= LIVE PROVIDER SMOKE / COMPATIBILITY PROOF
+!= DIRECT DANTE MODEL/ROUTE EVAL
+!= PRODUCTION CAPACITY QUALIFICATION
+```
+
+Qualification artifacts must identify the exact material route composition they support and any separately qualified material delta.
+
+## 7. Current non-claims
 
 ```text
 AI-05A PASS/CLOSED                NO
+AI-05B STARTED                    NO
 modules/search implemented        NO
 modules/intelligence implemented  NO
 provider/model/SDK selected       NO
 direct provider eval              NO
+production capacity pass          NO
 stream transport selected         NO
 new PostgreSQL/Alembic change     NO
 new AI table/index                NO
@@ -129,10 +165,10 @@ Restate/R2/MCP/A2A activation     NO
 Execution Environment             NO
 ```
 
-## 7. Git discipline
+## 8. Git discipline
 
 Before every remote write: exact BRANCH / PRE-SCOPE / CREATE / UPDATE / DELETE / PURPOSE / OUT-OF-SCOPE gate, then refetch HEAD. After writes compare PRE-SCOPE..HEAD and prove path scope.
 
-## 8. Handoff lifecycle
+## 9. Handoff lifecycle
 
 This file is temporary and MUST NOT merge to protected `main`. Before integration: propagate durable truth → verify coverage → DELETE this file.
