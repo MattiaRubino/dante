@@ -45,23 +45,23 @@ test('item appearance inherits Context by default and an override remains presen
   const inherit = dialog.getByRole('radio', {
     name: /Eredita dal Contesto/,
   });
-  const urgent = dialog.getByRole('radio', {
-    name: /Colore personalizzato · Urgenze/,
+  const red = dialog.getByRole('radio', {
+    name: /Colore personalizzato · Rosso/,
   });
-  const urgentChoice = dialog.locator(
+  const redChoice = dialog.locator(
     '.temporal-create-appearance__tone[data-appearance-tone="urgent"]',
   );
   await expect(inherit).toBeChecked();
-  await urgentChoice.click();
-  await expect(urgent).toBeChecked();
+  await redChoice.click();
+  await expect(red).toBeChecked();
   await expect(preview).toHaveAttribute('data-timeline-tone', 'urgent');
 
   await dialog.getByRole('button', { name: 'Editor completo →' }).click();
   await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'full');
-  await expect(urgent).toBeChecked();
+  await expect(red).toBeChecked();
   await dialog.getByRole('button', { name: '← Dettagli' }).click();
   await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'expanded');
-  await expect(urgent).toBeChecked();
+  await expect(red).toBeChecked();
 
   const accessibility = await new AxeBuilder({ page })
     .include('[data-temporal-create="composer"]')
