@@ -54,6 +54,8 @@ export type WorldFocusSurfaceRequest<Kind extends string = string> = Readonly<{
 export type WorldFocusWorkspaceState<Kind extends string = string> = Readonly<{
   worldId: string;
   generation: number;
+  /** Compatibility projection of contextReferences.primary for existing callers. */
+  selection: WorldFocusContextReference | null;
   contextReferences: WorldFocusContextReferenceSet | null;
   surfaces: readonly WorldFocusSurfaceDescriptor<Kind>[];
 }>;
@@ -61,6 +63,8 @@ export type WorldFocusWorkspaceState<Kind extends string = string> = Readonly<{
 export type WorldFocusInteractionCursor = Readonly<{
   worldId: string;
   generation: number;
+  /** Compatibility projection of contextReferences.primary. */
+  selection: WorldFocusContextReference | null;
   contextReferences: WorldFocusContextReferenceSet | null;
   activeSurface: Readonly<{
     instanceId: string;
@@ -241,21 +245,18 @@ function withContextReferences<Kind extends string>(
   return Object.freeze({
     ...state,
     generation: state.generation + 1,
+    selection: contextReferences?.primary ?? null,
     contextReferences,
   });
 }
 
-/**
- * Creates transient World workspace state. This is intentionally presentation /
- * interaction state only: it never owns canonical World truth, authorization,
- * provider state or durable DANTE run lifetime.
- */
 export function createWorldFocusWorkspaceState<Kind extends string = string>(
   worldId: string,
 ): WorldFocusWorkspaceState<Kind> {
   return Object.freeze({
     worldId: assertNonEmptyToken(worldId, 'World Focus workspace world id'),
     generation: 0,
+    selection: null,
     contextReferences: null,
     surfaces: Object.freeze([]),
   });
@@ -267,21 +268,14 @@ export function getWorldFocusTopSurface<Kind extends string = string>(
   return state.surfaces.at(-1) ?? null;
 }
 
-/**
- * Produces the bounded transient cursor a future contextual DANTE request may
- * reference. It contains identities/hints only and intentionally excludes raw
- * module payloads, canonical truth, authorization decisions and React/DOM
- * state.
- */
 export function getWorldFocusInteractionCursor(
   state: WorldFocusWorkspaceState,
 ): WorldFocusInteractionCursor {
   const activeSurface = getWorldFocusTopSurface(state);
-
-  return Object.freeze({
+  const cursor = {
     worldId: state.worldId,
     generation: state.generation,
-    contextReferences: state.contextReferences,
+    selection: state.selection,
     activeSurface:
       activeSurface === null
         ? null
@@ -292,7 +286,17 @@ export function getWorldFocusInteractionCursor(
             boundGeneration: activeSurface.boundGeneration,
             contextReference: activeSurface.contextReference,
           }),
+  } as Omit<WorldFocusInteractionCursor, 'contextReferences'> &
+    Partial<Pick<WorldFocusInteractionCursor, 'contextReferences'>>;
+
+  Object.defineProperty(cursor, 'contextReferences', {
+    value: state.contextReferences,
+    enumerable: false,
+    configurable: false,
+    writable: false,
   });
+
+  return Object.freeze(cursor) as WorldFocusInteractionCursor;
 }
 
 export function getWorldFocusEscapeDisposition(
@@ -310,11 +314,16 @@ export function reduceWorldFocusWorkspaceState<Kind extends string = string>(
   intent: WorldFocusWorkspaceIntent<Kind>,
 ): WorldFocusWorkspaceState<Kind> {
   switch (intent.type) {
-    case 'select-context':
+    case 'select-context': {
+      const primary = normalizeWorldFocusContextReference(
+        intent.reference,
+        'World Focus context reference',
+      );
       return withContextReferences(
         state,
-        createWorldFocusContextReferenceSet({ primary: intent.reference }),
+        createWorldFocusContextReferenceSet({ primary }),
       );
+    }
 
     case 'set-context':
       return withContextReferences(
