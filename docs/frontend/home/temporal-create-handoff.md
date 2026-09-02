@@ -1,13 +1,13 @@
 # DANTE — Temporal Create Workstream Handoff
 
-**Status:** C1 IMPLEMENTATION FULL GREEN — DOCUMENTATION RECONCILIATION / USER MANUAL ACCEPTANCE PENDING  
+**Status:** C1 IMPLEMENTATION FULL GREEN — USER MANUAL ACCEPTANCE PENDING  
 **Date:** 2026-09-02  
 **Repository:** `MattiaRubino/dante`  
 **Branch:** `feature/home-timeline`  
 **Local worktree:** `/home/mattia/projects/dante-timeline`  
 **Integration target:** `feature/home-react`  
-**Final C1 implementation candidate:** `f092a3db2fbac28421b73e0629f7b4b83a1b0aec`  
-**Frontend CI:** run `33631013598` / #621 — FULL PASS
+**Final C1 implementation candidate:** `7028633921d1b438bd04961a718457afd82ccc13`  
+**Frontend CI:** run `33635389124` / #632 — FULL PASS
 
 ## 1. Handoff authority
 
@@ -176,7 +176,7 @@ appearanceTone override
 → does not change filter membership
 ```
 
-The manual Create appearance control now exposes stable color vocabulary independent from Context names:
+The manual Create appearance control exposes stable color vocabulary independent from Context names:
 
 - Viola / Purple;
 - Ciano / Cyan;
@@ -185,7 +185,7 @@ The manual Create appearance control now exposes stable color vocabulary indepen
 - Rosa / Pink;
 - Rosso / Red.
 
-The E2E contract proves that a Focus item with a red/urgent presentation override remains a Focus item for grouping/filtering.
+The E2E contract proves that a Focus item with a red presentation override remains a Focus item for grouping/filtering.
 
 ## 7. External owner handoff seam
 
@@ -219,23 +219,26 @@ F0 protects the minimal projection command. C1 additionally fingerprints rich Cr
 
 ### Prepare/execute snapshot ownership
 
-At final implementation candidate `f092a3db...`, `runtime.prepare()` re-normalizes and freezes its own copy of the specification before validation and command creation.
+At the final implementation candidate `7028633921d1b438bd04961a718457afd82ccc13`, `runtime.prepare()` re-normalizes and freezes its own copy of the specification before validation and command creation.
 
 Do not remove this. It prevents mutable callers from changing rich intent after preparation and producing a command/specification TOCTOU mismatch.
 
 ## 9. Timeline integration hardening
 
-The contextual Create E2E must not use a retained `.timeline-day-section.first()` across Timeline virtualization.
+The contextual Create E2E must not assume that a mounted `.timeline-day-section` is already intersecting the browser viewport after `/home` loads, and it must not retain a stale virtualized day node across Create open/close.
 
-The Timeline recycles day-section DOM nodes. The hardened test:
+The final hardened test:
 
-- finds a currently visible day;
-- chooses it by stable `data-timeline-date`;
-- verifies visible geometry;
-- performs double-click/Shift-drag using current viewport coordinates;
-- reacquires after the first create/close boundary.
+- scrolls the Timeline grid into the browser viewport;
+- intersects day-section geometry with both the Timeline grid viewport and browser viewport;
+- requires a useful visible interaction band rather than accepting zero-height/edge-only visibility;
+- anchors the chosen section by stable `data-timeline-date`;
+- performs double-click using the section-local visible band;
+- reacquires current geometry before Shift-drag;
+- performs Shift-drag with current browser coordinates;
+- uses no arbitrary sleeps/retries and weakens no gesture assertion.
 
-This fixed a real test-locator/virtualization defect without weakening gesture coverage.
+This closes the demonstrated virtualization/viewport locator defect while preserving real contextual-create coverage. The resulting contract passed Chromium and the frozen Timeline Firefox suite at CI #632.
 
 T1 drag/focus behavior remains frozen.
 
@@ -283,9 +286,9 @@ Schema existence never authorizes a generic frontend CRUD operation.
 
 Final implementation candidate:
 
-`f092a3db2fbac28421b73e0629f7b4b83a1b0aec`
+`7028633921d1b438bd04961a718457afd82ccc13`
 
-CI `33631013598` / #621:
+CI `33635389124` / #632:
 
 - Quality PASS;
 - Mobile Bundle PASS;
@@ -295,10 +298,12 @@ CI `33631013598` / #621:
 
 Exact Quality evidence:
 
+- frontend contract drift / active Home format PASS;
+- lint PASS;
 - typecheck 5/5;
 - architecture: **214 modules / 522 dependencies / zero violations**;
-- web unit: **34 files / 183 tests**;
 - generated-source drift PASS;
+- web unit: **34 files / 183 tests**;
 - production build PASS;
 - diff/mutation checks PASS.
 
@@ -315,7 +320,8 @@ Current state:
 ```text
 IMPLEMENTATION COMPLETE
 AUTOMATED FULL PASS
-DOCUMENTATION RECONCILIATION IN PROGRESS
+DOCUMENTATION RECONCILIATION COMPLETE
+FINAL DOCUMENTATION DESCENDANT MUST BE CI-GREEN
 USER MANUAL ACCEPTANCE PENDING
 NOT FROZEN / CLOSED
 ```
