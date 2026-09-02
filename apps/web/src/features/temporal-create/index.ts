@@ -1,4 +1,5 @@
 import './ui/temporal-create-expanded.css';
+import './ui/temporal-create-manual-hardening.css';
 
 export {
   prepareTemporalCreateHandoff,
