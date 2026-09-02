@@ -1,30 +1,37 @@
 # DANTE — World Focus Research / Review Evidence Index
 
-**Status:** CURRENT EVIDENCE MAP — WS6 NEXT  
+**Status:** CURRENT EVIDENCE MAP — FINAL WS1–WS5 PROOF ACTIVE / WS6 NEXT  
 **Date:** 2026-09-02  
 **Branch:** `feature/home-react`
 
-This file identifies World Focus documents retained as current authority, bounded closure evidence or historical research/review evidence.
+This index distinguishes live sequencing authority, final closure authority and supporting historical evidence.
 
-Important rule:
+Rule:
 
-> A status line inside a historical evidence document describes the moment it was produced unless explicitly declared current authority. It does not override the live checkpoint, substrate program or current roadmap.
+> A status line inside an older research/evidence document describes its phase-time state unless a newer live authority explicitly adopts it. Older evidence never overrides the current checkpoint/program/final proof.
 
 ---
 
-## 1. Current live / sequencing authority
+# 1. Current live / closure authority
 
 Read first:
 
 ```text
 world-focus-current-checkpoint.md
 world-focus-substrate-closure-plan.md
+world-focus-substrate-final-convergence-proof.md
+world-focus-substrate-combinatorial-evidence.md
 world-focus-ws0-substrate-inventory.md
+world-focus-frontend-roadmap.md
+world-focus-handoff.md
+```
+
+Supporting convergence evidence:
+
+```text
 world-focus-substrate-independent-confirmation.md
 world-focus-substrate-convergence-review.md
 world-focus-substrate-convergence-corpus.md
-world-focus-frontend-roadmap.md
-world-focus-handoff.md
 ```
 
 Current semantic/structural contracts remain:
@@ -37,7 +44,7 @@ world-focus-geometry-contract.md
 world-focus-delivery-methodology.md
 ```
 
-If an older contract still contains stale sequencing prose, the live checkpoint/program controls sequencing; do not reinterpret that prose as reopening semantic authority.
+When a semantic boundary is questioned, current protected-main Domain/Logical/Physical authority outranks frontend convenience.
 
 ---
 
@@ -45,65 +52,75 @@ If an older contract still contains stale sequencing prose, the live checkpoint/
 
 ### `world-focus-workspace-scenario-oracle-evidence.md`
 
-Retains:
+Retains evidence for:
 
 ```text
-one shared workspace platform
+one shared World workspace
 not page-per-World
-unknown future World/module as explicit pressure
+unknown future World/module pressure
 finite renderer/surface registration
 controlled specialist extension
 stable/adaptive/ephemeral
 no arbitrary model-generated executable UI
-typed source drill-down
+typed drill-down
 large-data bounding
 cross-World source reuse
-schema/config evolution pressure
+config/schema evolution pressure
 ```
 
-Do not restart this research from zero.
+Do not restart this broad study from zero.
 
 ---
 
 ## E1 — World product reverse engineering
 
 ### `world-focus-product-reverse-engineering-stress-test.md`
-
-Falsifies candidate World definitions, derives Output Grammar direction and exposes failure of the universal first-open Lens.
-
 ### `world-focus-product-reverse-engineering-stress-matrix.md`
 
-Pressure on World-worthiness, overlap, lifecycle, proliferation, density and candidate verticals.
+Evidence for:
 
-WR0 is closed; old gate wording is historical.
+```text
+World definition/world-worthiness
+overlap and proliferation
+lifecycle/re-entry
+Output Grammar
+sparse/dense behavior
+universal first-open Lens falsification
+```
+
+WR0 is closed. Historical gate wording does not reopen it.
 
 ---
 
 ## E2 — DANTE <-> user reverse engineering
 
 ### `world-focus-dante-user-reverse-engineering-stress-test.md`
-
-Found G1..G7.
-
 ### `world-focus-dante-user-gap-closure-stress-test.md`
 
-Closed G1..G7 and established the four-layer World context, purpose-scoped authorized DANTE context, visible/DANTE basis coherence, cross-World expansion, bounded cursor, P0–P5 depths and LLM-independent first-open.
+Found/closed G1..G7 and established:
+
+```text
+four-layer World context
+purpose-scoped authorized DANTE context
+visible/DANTE basis coherence
+cross-World expansion rule
+bounded interaction cursor
+DANTE P0–P5 semantic depths
+LLM-independent first-open
+```
 
 ---
 
-## E3 — Foundation / early vertical evidence
+## E3 — Foundation / early verticals
 
 ### `world-focus-b0-foundation-review.md`
-
-B0 engineering closure.
+B0 engineering closure evidence.
 
 ### `world-focus-b1-product-disposition.md`
-
 B1 final disposition after Lens removal.
 
 ### `world-focus-b2-continuity-resume-review.md`
 ### `world-focus-b2-continuity-resume-disposition.md`
-
 B2 research/implementation evidence; automated PASS, integrated visual review deferred to M6.
 
 ---
@@ -117,11 +134,12 @@ HEAD 6c441335a75bb913af8da1eda569d8094d38a539
 CI   33549465793 PASS
 ```
 
-Covers reducer/cursor, registries, composition planner, 500 composition scenarios, allocator, 500 allocation/surface-stack scenarios, blocking/inert/container behavior and failure isolation.
+Covers reducer/cursor, registries, planner, 500 composition scenarios, allocator, 500 allocation/surface-stack scenarios, blocking/inert/container behavior and local failure isolation.
 
 ### `world-focus-dynamic-composition-allocation-review.md`
+Detailed architecture evidence behind dynamic composition/allocation.
 
-Detailed architecture evidence behind composition/allocation.
+Workspace Platform engineering closure != universal World work-semantic closure.
 
 ---
 
@@ -129,7 +147,7 @@ Detailed architecture evidence behind composition/allocation.
 
 ### `world-focus-dante-spatial-presence-review.md`
 
-D0 research. Accepted synthesis:
+D0 evidence. Accepted synthesis:
 
 > **AI availability is persistent; AI footprint is not.**
 
@@ -145,7 +163,7 @@ CI   33552437179 PASS
 status CLOSED FOR SEQUENCING
 ```
 
-Human visual review was not performed; do not claim it.
+Human/manual assistant visual review was not performed.
 
 ---
 
@@ -153,7 +171,7 @@ Human visual review was not performed; do not claim it.
 
 ### `world-focus-vfx-research.md`
 
-WF0/WF-G3 remain frozen; WF-V4 is candidate. VFX has no layout authority.
+WF0/WF-G3 remain frozen; WF-V4 candidate. VFX has no authority to rewrite geometry/product semantics.
 
 ---
 
@@ -161,13 +179,21 @@ WF0/WF-G3 remain frozen; WF-V4 is candidate. VFX has no layout authority.
 
 ### `world-focus-ws0-substrate-inventory.md`
 
-Established the executable-vs-research baseline and classification vocabulary.
+Historical truthful baseline:
 
-WS0 is closed and remains historical baseline, not retroactively rewritten with later knowledge.
+```text
+workspace mechanics substantially executable
+application/work-semantic breadth partial
+broad work-pattern knowledge research-evidenced
+universal primitive vocabulary open
+whole-corpus executable oracle open
+```
+
+Do not rewrite WS0 to pretend it knew later proof results.
 
 ---
 
-## E9 — Cycle A WS1–WS5 discovery/regression evidence
+## E9 — Cycle A WS1–WS5 discovery / regression evidence
 
 ### `world-focus-substrate-convergence-corpus.md`
 
@@ -184,118 +210,194 @@ X04 -> CG-32 revocation/disclosure gap
 
 ### `world-focus-substrate-convergence-review.md`
 
-Records Cycle-A layered substrate and `CG-01..CG-32` decisions.
+Records Cycle-A layered architecture and `CG-01..CG-32`.
 
-Important correction:
+Correction retained:
 
-> The original post-CG32 rerun is now classified as **regression evidence**, not sufficient independent convergence confirmation by itself.
-
-Its evidence remains valid; only the strength of the old closure rationale is superseded.
+> The post-CG32 rerun is regression evidence, not sufficient independent closure proof.
 
 ---
 
-## E10 — Independent WS1–WS5 confirmation
+## E10 — Cycle B/C independent confirmation
 
 ### `world-focus-substrate-independent-confirmation.md`
-
-This is the current confirmation authority for closing the WS1–WS5 macro-block.
-
-It was created after the user correctly challenged the old confirmation method.
 
 Contains:
 
 ```text
-Cycle B — mechanism-first / orthogonal domains
-40 new scenarios
-40 WITHOUT/WITH DANTE evaluations
+Cycle B mechanism-first / orthogonal domains
+40 new scenarios + WITHOUT/WITH DANTE
 16 mechanism cross-products
--> CG-33..CG-36 discovered
+-> CG-33..CG-36
 
-Cycle C — metamorphic/invariant driven
+Cycle C metamorphic/invariant
 40 transformations
--> 0 new material substrate classes
+-> 0 new classes after CG-36
 ```
 
 New concerns:
 
 ```text
-CG-33 scope/revision-bound approval/consent/binding validity
-CG-34 evidence integrity/attestation != provenance/freshness
+CG-33 revision/scope-bound approval/consent/binding validity
+CG-34 integrity/attestation != provenance/freshness
 CG-35 cancel != reversal/refund/compensation
-CG-36 basis validity/supersession/retraction != freshness
+CG-36 validity/supersession/retraction != freshness
 ```
 
-Targeted external research used official/current sources for the exact gaps:
+This remains supporting confirmation evidence. Its former closure rationale is superseded by E11 final proof.
+
+---
+
+## E11 — Final WS1–WS5 convergence proof
+
+### `world-focus-substrate-final-convergence-proof.md`
+
+**Current final analytical closure authority.**
+
+Extends the proof beyond Cycle C:
 
 ```text
-GitHub protected-branch stale approvals
-Google Calendar room/resource rebooking
-NIST digital evidence / chain of custody / integrity
-Stripe PaymentIntent cancellation + idempotency
-AWS Saga compensation
-Crossref correction/retraction/versioning
-NLM retraction/correction links
-RFC 5545 recurrence/exceptions/timezone semantics
+D architecture mutation kill
+   48 / 48 bad mutants killed
+
+E protected-main Logical traceability
+   WL-H01..WL-H12 = 12 / 12 mapped
+   -> CG-37..CG-40 discovered
+
+F systematic combinatorial interaction proof
+   4,455 / 4,455 three-way interactions covered
+   2,835 / 2,835 high-risk four-way interactions covered
+   0 unowned rows after CG-40
+
+G post-last-hardening structural proof
+   48 / 48 architecture mutants killed
+   18 / 18 layer remove/merge mutants killed
+   12 / 12 Logical mappings retained
+   0 new classes
+
+H future-authority/implementation substitution
+   18 substitutions
+   0 new World substrate layers
 ```
 
-Patterns were used as falsification evidence, never imported as DANTE ontology.
+Final concern ledger:
 
-Correct final disposition:
+```text
+CG-01..CG-40
+```
+
+Newest carry-forwards:
+
+```text
+CG-37 queued/deferred execution-time revalidation
+CG-38 authoritative reference resolution under identity evolution
+CG-39 redaction/tombstone/reference continuity
+CG-40 recipient/purpose-bound derivation and non-interference
+```
+
+Final closure condition satisfied:
+
+> **After the last material hardening, two independent confirmation methods produced zero new material classes.**
+
+Final status:
 
 ```text
 WS1–WS5 WORLD SUBSTRATE CONVERGENCE LOOP
-ANALYTICALLY CLOSED
-AFTER INDEPENDENT CYCLE B + METAMORPHIC CYCLE C
+MAXIMAL PRACTICAL ANALYTICAL CLOSURE
 ```
 
-This remains analytical evidence, not WS7 executable proof.
+This is still not WS7 executable proof.
 
 ---
 
-## 2. Corrected layered result entering WS6
+## E12 — N-way combinatorial evidence
+
+### `world-focus-substrate-combinatorial-evidence.md`
+
+Preserves exact axes and fixed covering vectors for later executable reuse.
+
+General matrix:
 
 ```text
-L0 Higher authority
-L1 Work-semantic projections
-L2 Evidence/basis + optional integrity/attestation + basis validity/supersession
-L3 Coordination/disclosure + scoped binding applicability
-L4 Interaction/cursor
-L5 Composition configuration
-L6 Operation/effect + cancel/reversal/compensation distinctions
-L7 Renderer/specialist extension
-L8 Platform/user policy
+11 axes
+3 levels each
+all 3-way interactions
+required  4,455
+covered   4,455
+rows          67
+uncovered      0
+vectors SHA-256 ca2e8b4aa19285eecd61ac072c0bc9a4f938e7863eea8393d2f2da26827610a0
 ```
 
-DANTE consumes these layers; it does not own them.
+High-risk matrix:
+
+```text
+7 axes
+3 levels each
+all 4-way interactions
+required  2,835
+covered   2,835
+rows         157
+uncovered      0
+vectors SHA-256 d6efbcd0306ee7d37fac0b4cbc59c7af356c8ac8cbf9ee0d08ed8efbc8f5d835
+```
+
+The vectors are analytical evidence now and required WS7 automation inputs later.
 
 ---
 
-## 3. Reading rule for WS6
+# 2. Final layered result entering WS6
+
+```text
+L0 Higher Authorities
+L1 Work-Semantic Projections — WS6 closes vocabulary
+L2 Evidence/Basis
+L3 Coordination/Disclosure
+L4 Interaction/Reference
+L5 Composition Configuration
+L6 Operation/Effect Presentation
+L7 Renderer/Specialist Extension
+L8 Platform/User Policy
+```
+
+Final proof demonstrates why L2–L8 are materially distinct and should not be collapsed into L1.
+
+---
+
+# 3. Strict reopen reading rule
+
+Do not restart WS1–WS5 for a new provider, new World noun, new UI, new renderer, more data, another viewport or another competitor pattern.
+
+The final proof defines seven explicit reopen triggers. A future task must show a real counterexample satisfying one of those triggers before broad convergence work is reopened.
+
+---
+
+# 4. WS6 reading order
 
 Before WS6 decisions:
 
 ```text
 1. world-focus-current-checkpoint.md
 2. world-focus-substrate-closure-plan.md
-3. world-focus-ws0-substrate-inventory.md
-4. world-focus-substrate-independent-confirmation.md
-5. world-focus-substrate-convergence-review.md
-6. world-focus-substrate-convergence-corpus.md
-7. world-focus-product-contract.md
-8. world-focus-platform-contract.md
-9. world-focus-handoff.md
-10. historical evidence only for a concrete primitive question
+3. world-focus-substrate-final-convergence-proof.md
+4. world-focus-substrate-combinatorial-evidence.md
+5. world-focus-ws0-substrate-inventory.md
+6. world-focus-substrate-independent-confirmation.md only for Cycle B/C details
+7. world-focus-substrate-convergence-review.md only for CG-01..CG-32 details
+8. world-focus-substrate-convergence-corpus.md only for Cycle-A scenario detail
+9. world-focus-product-contract.md
+10. world-focus-platform-contract.md
+11. protected-main Domain/Logical authority only when a semantic boundary is questioned
+12. historical evidence only for a concrete primitive question
 ```
 
-Do not restart Cycle A as the confirmation strategy.
-
-If WS6 reveals a genuinely new contradiction, use targeted mechanism/metamorphic falsification rather than ritual broad competitor research.
+WS6 is not permission to restart broad competitor research or materialize UI.
 
 ---
 
-## Removed / superseded historical files
+# 5. Removed / superseded historical files
 
-The following remain intentionally removed because newer authority/evidence carries their durable meaning:
+These remain intentionally removed because newer authority/evidence preserves their durable meaning:
 
 ```text
 world-focus-b1-world-context-lens-review.md
@@ -304,4 +406,4 @@ world-focus-wf1-checkpoint.md
 world-focus-wf0-scenario-oracle.md
 ```
 
-Historical payload remains recoverable from Git.
+Their historical payload remains recoverable from Git.

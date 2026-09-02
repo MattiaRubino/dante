@@ -1,29 +1,33 @@
 # DANTE — World Focus Current Checkpoint
 
-**Status:** CURRENT LIVE WORLD FOCUS CHECKPOINT — WS1–WS5 INDEPENDENT CONVERGENCE CLOSED / WS6 NEXT  
+**Status:** CURRENT LIVE WORLD FOCUS CHECKPOINT — WS1–WS5 MAXIMAL ANALYTICAL CONVERGENCE CLOSED / WS6 NEXT  
 **Date:** 2026-09-02  
 **Branch:** `feature/home-react`  
 **Worktree:** `/home/mattia/projects/dante-frontend`
 
 This is the **first document a new chat/agent must read** when continuing World Focus.
 
-Then read:
+Current read order:
 
 ```text
-1. world-focus-substrate-closure-plan.md
-2. world-focus-ws0-substrate-inventory.md
-3. world-focus-substrate-independent-confirmation.md
-4. world-focus-substrate-convergence-review.md
-5. world-focus-substrate-convergence-corpus.md
-6. world-focus-handoff.md
-7. world-focus-frontend-roadmap.md
+1. world-focus-current-checkpoint.md
+2. world-focus-substrate-closure-plan.md
+3. world-focus-substrate-final-convergence-proof.md
+4. world-focus-substrate-combinatorial-evidence.md
+5. world-focus-ws0-substrate-inventory.md
+6. world-focus-substrate-independent-confirmation.md
+7. world-focus-substrate-convergence-review.md
+8. world-focus-substrate-convergence-corpus.md
+9. world-focus-handoff.md
+10. world-focus-frontend-roadmap.md
+11. product/platform/structure/geometry contracts as needed
 ```
 
-Historical evidence is indexed by `world-focus-evidence-index.md`.
+Historical/phase-time `current next gate` wording inside older semantic/research documents does **not** override this checkpoint.
 
 ---
 
-## 1. Live state — authoritative sequencing
+# 1. Live sequencing
 
 ```text
 WF0 structural route/shell             FROZEN / USER AUTHORIZED
@@ -34,7 +38,6 @@ B0 production foundation               ENGINEERING CLOSED
 WR0 World product reverse engineering  CLOSED
 WR1 DANTE <-> user reverse engineering COMPLETE / 7 material gaps found
 WR2 gap closure                        CLOSED / 7 of 7
-
 B1 Orientation                         CLOSED FOR SEQUENCING
 B2 Continuity / Resume                 IMPLEMENTED / AUTOMATED PASS
 B2 integrated visual acceptance        DEFERRED TO MATERIALIZATION M6
@@ -49,8 +52,8 @@ D1 validated code HEAD                 f17291de32e6bdced20536807b32928ec1be6aea
 D1 Frontend CI                         33552437179 — PASS
 
 WS0 Substrate Inventory                CLOSED BASELINE
-WS1–WS5 Convergence Loop               ANALYTICALLY CLOSED
-                                       independent Cycle B + metamorphic Cycle C complete
+WS1–WS5 Convergence Loop               MAXIMAL PRACTICAL ANALYTICAL CLOSURE
+                                       FINAL PROOF ACTIVE
 WS6 Universal Work Primitive Closure   NEXT ACTIVE GATE
 WS7 Executable Non-Visual Harness      NOT STARTED
 WS8 Final Falsification                NOT STARTED
@@ -60,304 +63,405 @@ D2–D6                                  PRESERVED / MATERIALIZATION-DEFERRED
 assistant manual visual review          NOT PERFORMED
 ```
 
-There is no active backend/API/database/provider/real-LLM/effect work in this sequence.
+There is no active backend/API/database/provider/real-LLM/effect implementation in this sequence.
 
 ---
 
-## 2. Correction to the previous convergence claim
+# 2. Final WS1–WS5 proof authority
 
-The earlier commit `b29dab367d7c4c21275fce40085eac5396b6c785` correctly recorded a useful Cycle-A convergence exercise, but the user identified a real methodological weakness:
+Primary closure authority:
 
-> **A confirmation cycle must attack the model differently, not mostly replay the corpus that produced it.**
+`world-focus-substrate-final-convergence-proof.md`
 
-That criticism is accepted.
+Combinatorial evidence:
 
-The prior post-hardening rerun is now treated as **regression evidence**, not sufficient independent confirmation.
+`world-focus-substrate-combinatorial-evidence.md`
 
-Durable corrected evidence:
-
-`world-focus-substrate-independent-confirmation.md`
-
----
-
-## 3. Corrected convergence sequence
+Supporting earlier evidence:
 
 ```text
-CYCLE A — DOMAIN / USER-JOB DRIVEN
+world-focus-substrate-convergence-corpus.md          Cycle A
+world-focus-substrate-convergence-review.md          CG-01..CG-32 / Cycle A review
+world-focus-substrate-independent-confirmation.md    Cycle B/C / CG-33..CG-36
+```
+
+Those earlier files remain valuable evidence. They are no longer the final closure rationale by themselves.
+
+---
+
+# 3. Why the closure claim is now materially stronger
+
+The previous independent closure after Cycle C was intentionally challenged again.
+
+Final evidence chain:
+
+```text
+CYCLE A — domain / user-job driven
 44 primary scenarios
-+ WITHOUT/WITH DANTE
++ without/with DANTE
 + 16 adversarial cross-products
--> discovers CG-32 revocation/disclosure invalidation
+-> finds CG-32
 -> harden
 
 CYCLE A REGRESSION
-44-scenario rerun
-+ 20 additional cases
--> useful regression evidence
--> not sufficient alone for independent closure
+44 rerun + 20 additional cases
+-> regression evidence only
 
-CYCLE B — MECHANISM-FIRST / ORTHOGONAL DOMAINS
-40 new scenarios starting from mechanics rather than Cycle-A World families
-+ WITHOUT/WITH DANTE
-+ 16 new mechanism cross-products
--> discovers CG-33..CG-36
+CYCLE B — mechanism-first / orthogonal domains
+40 new scenarios
++ without/with DANTE
++ 16 new cross-products
+-> finds CG-33..CG-36
 -> harden
 
-CYCLE C — METAMORPHIC / INVARIANT DRIVEN
-40 model transformations
--> 0 new material substrate classes
+CYCLE C — metamorphic/invariant
+40 transformations
+-> 0 new classes
+
+CYCLE D — architecture mutation kill
+48 intentionally wrong architectures
+-> 48 / 48 killed
+
+CYCLE E — cross-authority traceability
+Logical WL-H01..WL-H12
+-> 12 / 12 mapped
+-> exposes four missing World carry-forwards
+-> CG-37..CG-40 accepted
+-> harden
+
+CYCLE F — N-way combinatorial
+11 axes / 3 levels / all 3-way combinations
+-> 4,455 / 4,455 covered with 67 rows
+
+7 highest-risk axes / 3 levels / all 4-way combinations
+-> 2,835 / 2,835 covered with 157 rows
+
+post-CG40 row ownership
+-> 0 unowned rows
+
+CYCLE G — post-hardening structure/deletion proof
+48 / 48 architecture mutants killed
+18 / 18 layer remove/merge mutants killed
+12 / 12 Logical hardenings still mapped
+-> 0 new classes
+
+CYCLE H — future-authority/implementation substitution
+18 substitutions
+-> 0 new World substrate layers
 ```
 
-Therefore the **correct** disposition is:
+The important closure condition is not the raw scenario count.
 
-> **WS1–WS5 ANALYTICALLY CLOSED only after Cycle B and Cycle C.**
+> **After the last material hardening, two independent methods remained clean.**
 
 ---
 
-## 4. New concerns discovered by the independent attack
-
-### CG-33 — scope/revision-bound validity
-
-Acceptance, approval, consent, reservation or another consequential binding may need to remain tied to the exact subject/configuration/revision/policy/eligible-set to which it applied.
+# 4. Final concern ledger
 
 ```text
-old approval
-+ materially changed subject
-!= automatically valid approval of new subject
+CG-01..CG-40
 ```
 
-Subject changes may require authoritative revalidation/rebinding.
-
-### CG-34 — evidence integrity / attestation
+Current disposition:
 
 ```text
-provenance
-!= integrity/attestation
-!= freshness
+ACCEPT / carry-forward requirement                    26
+DEFER classification to WS6/materialization            6
+REJECT universalization                                3
+CONFIRM existing invariant                             3
+CLOSE as platform/user policy                          2
+TOTAL                                                  40
 ```
 
-High-consequence evidence may optionally require integrity/verification/custody information. Integrity unknown is not the same as corruption; a failed integrity check is not ordinary staleness.
-
-### CG-35 — cancel / reverse / compensate
+Newest required hardenings:
 
 ```text
-cancel-before-effect
-!= reverse/refund after effect
-!= compensation after partial multi-step effect
-!= idempotent retry
+CG-37 queued/deferred consequential execution revalidation
+CG-38 reference resolution under retirement/merge/split ambiguity
+CG-39 redaction/tombstone/reference continuity
+CG-40 recipient/purpose-bound derived-output non-interference
 ```
 
-Partial effects remain real and cannot be erased by UI wording.
-
-### CG-36 — basis validity / supersession / retraction
-
-```text
-freshness
-!= current validity
-superseded/retracted basis
-!= deleted historical basis
-```
-
-A pinned/application/DANTE output must not remain presented as current merely because its source is still retrievable after the source has been corrected, superseded or retracted.
+Do not report these as implemented production code yet.
 
 ---
 
-## 5. Hardened layered substrate entering WS6
+# 5. Hardened layer model WS6 must preserve
 
 ```text
-L0 Higher authorities
+L0 Higher Authorities
    Domain / Logical / Physical / AuthZ / governed application truth
 
-L1 Work-semantic projections
-   finite reusable work meanings — WS6 closes these
+L1 Work-Semantic Projections
+   finite reusable user-facing work meanings
+   FINAL VOCABULARY = WS6
 
-L2 Evidence / basis envelope
-   source refs
-   provenance
-   material/basis ref
-   as-of/freshness
-   coverage/missingness
-   conflict/unresolved
-   optional integrity/attestation
+L2 Evidence / Basis
+   source/provenance/material basis
+   freshness/coverage/conflict
+   integrity/attestation where material
    validity/supersession/correction/retraction
+   authorized tombstone/redaction continuity
 
-L3 Coordination / disclosure envelope
-   participant state
+L3 Coordination / Disclosure
+   participant-facing state
    responsibility/acknowledgement
-   selective disclosure
-   shared fact + private overlay
-   scope/revision-bound binding applicability where required
+   selective disclosure/private overlays
+   revision/scope-bound consent/binding applicability
+   recipient/purpose disclosure basis
+   derived-output non-interference
 
-L4 Interaction / cursor state
-   World / generation / primary ref / bounded supporting refs / surface
+L4 Interaction / Reference
+   active World/generation
+   primary deictic ref
+   bounded ordered supporting refs
+   surface refs
+   authoritative reference-resolution result
+   retired/ambiguous safe degradation
 
-L5 Composition configuration
+L5 Composition Configuration
    stable/adaptive/ephemeral
-   personal favorite
+   personal favorite/shortcut
    saved query/view
    personal/shared config
+   explicit ownership/audience
    revision/version/migration/concurrency
 
-L6 Operation / effect presentation
-   intent / Proposal / confirmation
-   dispatch / pending / ambiguity
-   cancel-before-effect where applicable
-   partial effect
-   reverse/refund/release
-   compensation/repair
-   reconciliation / receipt
+L6 Operation / Effect Presentation
+   intent/Proposal/confirmation
+   dispatch/queued/pending/ambiguous
+   execution-time revalidation seam
+   partial real effect
+   cancel vs reversal/refund/release vs compensation
+   reconciliation/receipt
 
-L7 Renderer / specialist extension
-   finite trusted catalog + truthful fallback
+L7 Renderer / Specialist Extension
+   finite trusted registry
+   truthful generic fallback or safe local failure
 
-L8 Platform / user policies
-   scale / offline / sync / a11y / notifications / performance / responsive
+L8 Platform / User Policies
+   scale/offline/sync/replay
+   a11y/reduced motion
+   notification/performance/responsive
+   failure isolation
 ```
 
-DANTE consumes these layers. DANTE does not define or authorize them.
+DANTE consumes these layers; it does not own them.
 
 ---
 
-## 6. What remains intentionally unimplemented
+# 6. Critical whole-Logical carry-forward
 
-Do **not** report the analytical hardenings as production code.
-
-Current executable Workspace Platform still has, among other things:
+Protected-main Logical Model is CLOSED and retains:
 
 ```text
-singular bounded selection/context reference today
-no generic integrity/attestation envelope implementation yet
-no generic approval-revision invalidation implementation yet
-no generic supersession/retraction implementation yet
-no generic cancellation/compensation effect grammar implementation yet
+WL-H01 Agreement material owner/state
+WL-H02 Governed Operation / Effect
+WL-H03 Projection / Disclosure
+WL-H04 absence != false
+WL-H05 expected-state / optimistic concurrency
+WL-H06 idempotency != identity
+WL-H07 multi-owner consistency / staged reconciliation
+WL-H08 canonical != provider sync state
+WL-H09 derived freshness / consequential revalidation
+WL-H10 retention / redaction / tombstone integrity
+WL-H11 consequential AuthZ provenance
+WL-H12 non-interference / inference leakage
 ```
 
-These are inputs to WS6/WS7/M1 and later governed backend integration, not claims about current runtime.
+Final World traceability:
+
+```text
+12 / 12 mapped
+0 new Domain owners
+0 new Logical owners
+0 World-local AuthZ invention
+```
+
+Do not casually reopen Domain/Logical because a future frontend/provider example has a new noun.
 
 ---
 
-## 7. Existing executable Workspace Platform — preserve
+# 7. New hardenings in practical terms
+
+## CG-37 — queued/deferred execution
 
 ```text
-stable/adaptive/ephemeral
-system-default/user/dante-proposed/application-derived
-lead/primary/supporting
-wide/standard/compact
-12-unit composition planner
+prepared/queued/confirmed earlier
+!= executable later automatically
+```
+
+Before real effect, authoritative runtime revalidates target/current state/AuthZ/applicable governance. Offline replay and retry do not bypass this.
+
+## CG-38 — reference evolution
+
+```text
+old bounded ref
+!= permanent alias
+!= permission to choose successor
+```
+
+Authoritative resolution may return active, retired, one explicit successor, multiple/ambiguous candidates or unavailable. Never silently retarget by display name/AI similarity. Never reuse retired NativeRef.
+
+## CG-39 — redaction/tombstone
+
+```text
+redacted != never existed
+historical existence != payload still visible
+```
+
+Pins/caches/DANTE context do not bypass retention/redaction.
+
+## CG-40 — non-interference
+
+Disclosure applies to every observable derived result:
+
+```text
+raw data
+aggregate/count/ranking
+candidate list
+error/timing
+DANTE explanation/Insight
+cache
+saved/pinned derived result
+cross-World derivation
+```
+
+Recipient/purpose-A output is not automatically reusable for recipient/purpose-B.
+
+---
+
+# 8. Strict no-reopen policy
+
+WS1–WS5 is **not** reopened for:
+
+```text
+new World name/domain
+new provider/API shape
+new backend storage shape
+new DANTE provider/model
+new config store
+new sync engine
+new screen size
+a different visual renderer
+larger data
+another competitor UX pattern
+```
+
+Reopen only on a concrete counterexample proving one of:
+
+```text
+1. real user job cannot fit L0–L8 without generic escape hatch;
+2. WS6/WS7/WS8 discovers a genuinely new semantic/ownership/state family;
+3. executable security/privacy/race failure cannot be repaired in an existing owner;
+4. accepted upstream Domain/Logical change contradicts a World assumption;
+5. specialist capability requires changing core engine ownership rather than extension;
+6. required disclosure/non-interference cannot be preserved;
+7. consequential operation cannot be represented truthfully by existing effect/revalidation/reconciliation boundaries.
+```
+
+Reopen requires evidence, not curiosity.
+
+---
+
+# 9. Existing executable Workspace Platform remains valid
+
+Preserve, do not rebuild:
+
+```text
+stable/adaptive/ephemeral composition
 finite module registry
 finite surface registry
-transient workspace reducer
-singular bounded selection/context ref today
+12-unit planner
+workspace reducer
+singular bounded selection/ref TODAY
 interaction generation
-open/replace/promote/close surfaces
-Escape precedence
+open/replace/promote/close
 blocking-tail barrier
 expectedGeneration stale-intent guard
 full/split allocation
-overlay/focus top layer
-interactive/inert interaction
-sidecar/overlay/focus/dormant/external slots
-actual ResizeObserver workspace sizing
-nested main container query
+overlay/focus/inert semantics
+ResizeObserver actual allocated width
+container-query ownership
 local failure isolation
 ```
 
-Existing executable stress evidence remains:
+Stress already retained:
 
 ```text
-500 deterministic composition scenarios
-500 deterministic allocation/surface-stack scenarios
+500 composition scenarios
+500 allocation/surface-stack scenarios
 ```
+
+Important:
+
+```text
+future primary + supporting refs          NOT IMPLEMENTED YET
+CG-32 revocation application seam        NOT IMPLEMENTED YET
+CG-33..CG-40 hardenings                  NOT IMPLEMENTED YET
+```
+
+These become WS7/M1 obligations after WS6 contracts are closed.
 
 ---
 
-## 8. Product North Star / World definition — unchanged
-
-DANTE compass:
-
-> **Understand life. Shape what comes next.**
-
-World Focus compass:
-
-> **Understand this part of my life and continue from here.**
-
-A World is:
-
-> **A user-recognizable continuity context for a significant part of reality.**
-
-Core thesis:
-
-> **A World is a shared coordinate system between the user and DANTE for one meaningful continuity context — not a shared source of truth.**
-
-World relevance is a contextual prior, not ownership or authorization.
-
----
-
-## 9. Permanent semantic barriers
+# 10. DANTE status — unchanged
 
 ```text
-World != canonical Domain owner
-WorldProjection != canonical truth
-World relevance != authorization
-surface visibility != disclosure permission
-AI output != accepted fact
-Proposal != Decision != effect
-provider acknowledgement != canonical completion
-planned/intended != Actual
-Evidence != Provenance
-Authority != Visibility
-Ownership != Possession
-Routine != Recurrence != Occurrence
-Occurrence != Schedule != Session != Actual
-absence/unknown != false
+D0 spatial/presence direction            ACCEPTED
+D1 quiet invoke + compact composer        CLOSED FOR SEQUENCING
+D2–D6                                     MATERIALIZATION-DEFERRED
 ```
 
-No generic `WorldItem`, `Thing`, `Widget`, `Fact`, `Relationship/Edge`, canonical EAV/property bag or frontend canonical resource model.
-
----
-
-## 10. DANTE current disposition
-
-D0 accepted:
-
-> **AI availability is persistent; AI footprint is not.**
-
-D1 closed for sequencing:
-
-```text
-HEAD f17291de32e6bdced20536807b32928ec1be6aea
-CI   33552437179 PASS
-```
-
-Global quiet invoke remains:
+D1 global invoke remains:
 
 ```text
 contextReference: null
 ```
 
-D2–D6 remain materialization-deferred until after WS8/M0–M3.
+No implicit current-selection leakage.
 
-Future D4/M4 must now consume:
+Future contextual DANTE must consume:
 
 ```text
-primary + bounded supporting references
-revocation/disclosure invalidation
-revision/basis applicability
-basis validity/supersession
-integrity signal where material
+primary + bounded supporting refs
+authorized purpose/recipient context
+basis validity
+revocation/redaction
+reference-resolution state
+non-interference
+execution-time revalidation for consequential actions
 ```
 
 ---
 
-## 11. CURRENT ACTIVE GATE — WS6
+# 11. Backend stop line
+
+Before explicit later backend vertical:
+
+```text
+NO real World API merely for frontend completeness
+NO World DB/Alembic persistence
+NO provider runtime
+NO real LLM/model routing/streaming
+NO canonical chat persistence
+NO durable Run backend
+NO real tool/effect execution
+NO fake success
+NO provider ACK treated as canonical completion
+```
+
+---
+
+# 12. CURRENT ACTIVE GATE — WS6
 
 > **WS6 — Universal Work Primitive Closure**
 
 Question:
 
-> What is the smallest finite L1 work-semantic vocabulary that expresses the now independently confirmed corpus without absorbing L2/L3/L4/L5/L6/L8 concerns into a giant frontend object system?
+> What is the smallest finite L1 work-semantic vocabulary that expresses the converged evidence without duplicating Domain semantics or creating a generic Thing/Widget escape hatch?
 
-Candidate pressure clusters remain candidates, not pre-approved primitives:
+Candidate pressure only, not pre-approved primitives:
 
 ```text
 attention / unresolved work
@@ -370,72 +474,35 @@ pipeline/stage
 capture/review
 ```
 
-WS6 must aggressively ask whether each candidate is actually:
+WS6 must aggressively merge/delete candidates and keep L2–L8 out of the primitive vocabulary unless a direct contradiction requires otherwise.
 
-```text
-UNIVERSAL WORK PRIMITIVE
-COMPOSITION OF SMALLER PRIMITIVES
-EXISTING DOMAIN PROJECTION PATTERN
-EVIDENCE / COORDINATION ENVELOPE
-INTERACTION / CONFIGURATION PATTERN
-EFFECT PRESENTATION PATTERN
-SPECIALIST EXTENSION
-PLATFORM POLICY
-REJECTED UNIVERSALIZATION
-```
-
-No visual materialization is required for WS6.
+Do not implement D2 or final UI in WS6.
 
 ---
 
-## 12. WS7 executable obligations added by the corrected confirmation
-
-WS7 must include deterministic tests for at least:
+# 13. What is still deliberately unproven
 
 ```text
-approval bound to exact subject revision
-approval invalidated/revalidated after material mutation
-resource binding invalidated after scope change
-integrity unknown vs integrity failed
-superseded/retracted basis invalidating dependent current output
-cancel before effect
-cancel after partial effect
-compensation as separate operation
-idempotent retry != compensation
-recurrence series + exception + DST
-revocation during mounted surface/in-flight DANTE result
-pinned derived result whose basis becomes invalid
+WS6 primitive catalog                         OPEN
+WS7 executable/property-based oracle          OPEN
+WS8 final hostile executable falsification    OPEN
+future primitive browser/a11y PASS            OPEN
+final visual/product acceptance               OPEN
+real backend/AuthZ/provider/LLM/effects        OPEN
 ```
 
-Analytical convergence is not executable proof.
+Analytical closure is strong; it is not executable proof.
 
 ---
 
-## 13. Backend stop line
+# 14. Immediate continuation instruction
 
-Before explicit backend vertical:
+Do not restart broad World simulation/research.
 
-```text
-NO real World business API
-NO World persistence/Alembic
-NO provider runtime
-NO real model routing/streaming
-NO canonical chat persistence
-NO durable DANTE Run backend
-NO real tool/effect execution
-NO fake successful effects
-```
+Do not reopen D0/D1, universal Lens, page-per-World or unknown-module debates.
 
----
-
-## 14. Immediate instruction
-
-Do **not** restart the old Cycle-A scenario list.
-
-Do **not** implement D2.
-
-Do **not** materialize beautiful cards/renderers yet.
+Do not implement beautiful cards yet.
 
 Resume at:
 
-> **WS6 — close the finite L1 universal work-primitive vocabulary using the complete Cycle A + independent Cycle B + metamorphic Cycle C evidence.**
+> **WS6 only — close the finite L1 work-primitive vocabulary using the final 40-concern proof and preserve L0/L2–L8 as fixed ownership boundaries.**
