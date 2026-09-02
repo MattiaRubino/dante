@@ -284,6 +284,11 @@ export function TemporalCreateRecurrenceFields({
                         {t(($) => $.common.home.timeline.create.recurrence.ordinalWeekday)}
                       </span>
                       <select
+                        aria-label={`${t(
+                          ($) => $.common.home.timeline.create.recurrence.ordinalWeekday,
+                        )} · ${t(
+                          ($) => $.common.home.timeline.create.recurrence.monthlyOrdinal,
+                        )}`}
                         value={recurrence.calendarOrdinalWeekday}
                         onChange={(event) =>
                           patchRecurrence({
