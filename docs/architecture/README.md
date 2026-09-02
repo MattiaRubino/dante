@@ -32,7 +32,14 @@ AI-03                                CLOSED / STRUCTURALLY ACCEPTED
 AI-03A                               CLOSED / C01..C33
 AI-03B                               CLOSED / B01..B35
 AI-03C                               CLOSED / MAT-01..MAT-15
-AI current macro-phase               AI-04 PRODUCTIONIZATION ARCHITECTURE
+AI-04                                CLOSED / STRUCTURALLY ACCEPTED
+AI-04A                               CLOSED / A01..A30 / EV01..EV20
+AI-04B                               CLOSED / RT-01..RT-31
+AI-04C                               CLOSED / PA-01..PA-61
+AI-04 whole-phase                    CLOSED / WP-01..WP-22
+PRE-AI05                             CLOSED / PRE05-H01..H19
+Current core AI eval                 DANTE-E01..DANTE-E14
+AI current macro-phase               AI-05 WHOLE-SYSTEM ACCEPTANCE + IMPLEMENTATION BLUEPRINT
 ```
 
 Protected `main` is the integrated authority for closed shared foundations, CP6 and the integrated Recovery evolution. Active unmerged product/architecture work remains branch-local until normal protected-main integration.
@@ -49,6 +56,12 @@ Read according to the subject:
 - [`dante-ai-03a-full-context-architecture.md`](dante-ai-03a-full-context-architecture.md) — **AI-03A accepted Full Context Architecture**, C01..C33;
 - [`dante-ai-03b-retrieval-memory-architecture.md`](dante-ai-03b-retrieval-memory-architecture.md) — **AI-03B accepted Retrieval + Memory Architecture**, B01..B35;
 - [`dante-ai-03c-destructive-validation-materialization-blueprint.md`](dante-ai-03c-destructive-validation-materialization-blueprint.md) — **AI-03C accepted Materialization Blueprint**, MAT-01..MAT-15;
+- [`dante-ai-04-productionization-architecture.md`](dante-ai-04-productionization-architecture.md) — **AI-04 master closure authority**;
+- [`dante-ai-04a-direct-eval-specification.md`](dante-ai-04a-direct-eval-specification.md) — **AI-04A eval/provider/economics authority**, A01..A30 / EV01..EV20 and current E01..E14 workload coverage;
+- [`dante-ai-04b-concrete-runtime-capability-architecture.md`](dante-ai-04b-concrete-runtime-capability-architecture.md) — **AI-04B runtime/capability authority**, RT-01..RT-31;
+- [`dante-ai-04c-production-assurance-control-plane-operations.md`](dante-ai-04c-production-assurance-control-plane-operations.md) — **AI-04C production-assurance/control-plane/operations authority**, PA-01..PA-61;
+- [`dante-ai-04-whole-phase-destructive-acceptance.md`](dante-ai-04-whole-phase-destructive-acceptance.md) — **AI-04 whole-phase destructive acceptance**, WP-01..WP-22;
+- [`dante-ai-pre05-cross-phase-hardening.md`](dante-ai-pre05-cross-phase-hardening.md) — **PRE-AI05 cross-phase hardening authority**, PRE05-H01..H19;
 - [`technical-decisions.md`](technical-decisions.md) — current architecture decision register;
 - [`domain-model-logical-readiness.md`](domain-model-logical-readiness.md) — satisfied Domain → Logical semantic compatibility contract;
 - [`../domain/README.md`](../domain/README.md) — current Domain entry point;
@@ -60,9 +73,11 @@ Read according to the subject:
 - [`frontend-engineering-foundation.md`](frontend-engineering-foundation.md) and accepted companion/review records — frontend engineering foundation;
 - [`../frontend/README.md`](../frontend/README.md) — current frontend documentation entry point.
 
+`ai-context-runtime-boundaries.md` is retained as **HISTORICAL / PRE-PHYSICAL REFERENCE**. Its old `CURRENT — Phase 6` header does not override the current AI authority above.
+
 Active branch continuation additionally uses:
 
-- [`../workstreams/ai-architecture.md`](../workstreams/ai-architecture.md) — durable branch-local AI workstream record and current AI-04 routing;
+- [`../workstreams/ai-architecture.md`](../workstreams/ai-architecture.md) — durable branch-local AI workstream record and current AI-05 routing;
 - [`../workstreams/ai-architecture-live-handoff.md`](../workstreams/ai-architecture-live-handoff.md) — TEMPORARY branch-operational save-game; must not merge to protected `main`.
 
 Important persistence ADRs:
@@ -110,6 +125,7 @@ AI-01
 Product Form + Production Engineering Research
 → completed interaction/product-form + engineering evidence
 → research technology remains NON-DANTE-DECISION unless later selected
+→ old ModelTarget shorthand is historical terminology
 
 AI-02
 DANTE Intelligence Runtime Architecture
@@ -124,6 +140,19 @@ Context / Retrieval / Memory
 
 AI-04
 Productionization Architecture
+→ CLOSED / STRUCTURALLY ACCEPTED
+→ AI-04A A01..A30 / EV01..EV20
+→ AI-04B RT-01..RT-31
+→ AI-04C PA-01..PA-61
+→ whole-phase WP-01..WP-22
+
+PRE-AI05
+Cross-Phase Whole-Chain Hardening
+→ CLOSED / PRE05-H01..H19
+→ DANTE-E01..DANTE-E14 current
+
+AI-05
+Whole-System Acceptance + Implementation Blueprint
 → ACTIVE / CURRENT
 ```
 
@@ -137,8 +166,14 @@ AI-03  Context / Retrieval / Memory                           CLOSED / STRUCTURA
        ├ AI-03A Full Context Architecture                     CLOSED / C01..C33
        ├ AI-03B Retrieval + Memory Architecture               CLOSED / B01..B35
        └ AI-03C Destructive Validation + Materialization      CLOSED / MAT-01..MAT-15
-AI-04  Productionization Architecture                         ACTIVE / CURRENT
-AI-05  Whole-System Acceptance + Implementation Blueprint     FUTURE / FINAL ARCHITECTURE-TO-BUILD BOUNDARY
+AI-04  Productionization Architecture                         CLOSED / STRUCTURALLY ACCEPTED
+       ├ AI-04A                                               A01..A30 / EV01..EV20
+       ├ AI-04B                                               RT-01..RT-31
+       ├ AI-04C                                               PA-01..PA-61
+       └ Whole-Phase                                          WP-01..WP-22
+PRE05  Cross-Phase Hardening                                  CLOSED / PRE05-H01..H19
+       current eval families                                  DANTE-E01..DANTE-E14
+AI-05  Whole-System Acceptance + Implementation Blueprint     ACTIVE / CURRENT
        ↓
        actual implementation workstream(s)
 ```
@@ -192,9 +227,9 @@ Semantic Query and Context are distinct. Structured DANTE-native state is access
 
 Scenario Workspace is hypothetical/derived and does not create a second canonical reality.
 
-`BasisManifest` tracks relevant dependencies, source identity/version, temporal validity, assumptions and constraints. It also captures **Basis coherence**: independently fresh values are not automatically one coherent world-state.
+`BasisManifest` tracks relevant dependencies, source identity/version, temporal validity, assumptions and constraints. It also captures Basis coherence: independently fresh values are not automatically one coherent world-state.
 
-Detailed Context, Retrieval, Memory and materialization boundaries are closed by AI-03 and are fixed upstream inputs to current AI-04 productionization work.
+Detailed Context, Retrieval, Memory and materialization boundaries are closed by AI-03 and are fixed upstream inputs to AI-04/PRE-AI05/AI-05.
 
 ### Reasoning / capabilities
 
@@ -240,6 +275,13 @@ Approval binds to the materially approved target/proposal/basis/effect semantics
 
 Resource exhaustion may stop optional work but must not erase a reconciliation obligation created by an already-dispatched ambiguous effect.
 
+PRE-AI05 further binds:
+
+```text
+RUN-START AUTONOMY != PERPETUAL AUTONOMY
+ATTENTION DECISION != PROACTIVE WORK ADMISSION != EFFECT AUTHORIZATION
+```
+
 ### Publication / privacy / attention
 
 ```text
@@ -257,13 +299,16 @@ causal-loop / oscillation guard
 MODEL OUTPUT != PUBLISHABLE OUTPUT
 INTERNAL STREAM != RECIPIENT STREAM
 SAFE SINGLE DISCLOSURE != AUTOMATICALLY SAFE CUMULATIVE DISCLOSURE
+RECIPIENT != SURFACE != CHANNEL
 ```
 
 Safe Publication rechecks recipient/surface eligibility, result maturity and work currentness. A superseded/stale Run may reconcile old work but must not continue presenting obsolete output as the current result.
 
 Disclosure is surface-aware: lock screen, voice/realtime, shared UI and another recipient may require different safe representations.
 
-Attention is a scarce resource and may aggregate/suppress individually relevant signals.
+Attention is a scarce resource and may aggregate/suppress individually relevant signals. Attention governs interruption/publication behavior; proactive work admission remains a separate WorkContract/policy/resource decision.
+
+Cumulative-disclosure protection may span related Runs/Interactions/surfaces and known related sinks when the threat model requires. Minimum prior-exposure accounting, where justified, is technical security state and may not resurrect deleted source content.
 
 ### External AI / agents
 
@@ -335,7 +380,7 @@ WorkContract
 → bounded JIT acquisition when required
 ```
 
-Final Context hardening adds, among other boundaries, multimodal derivative discipline, established exposure vs assembled context, and provider-cache/currentness rules. Final accepted invariants are `C01..C33`.
+Final Context hardening adds multimodal derivative discipline, established exposure vs assembled context, and provider-cache/currentness rules. Final accepted invariants are `C01..C33`.
 
 ### AI-03B — Retrieval + Memory / B01..B35
 
@@ -399,55 +444,56 @@ implementation PASS                               NOT CLAIMED
 
 SC-017..SC-021 and relevant PSV obligations remain direct proof work when actual activation makes them applicable.
 
-## 7. AI-04 current productionization boundary
+## 7. AI-04 + PRE-AI05 accepted productionization boundary
 
-AI-04 is the current exact architecture phase.
-
-It resolves:
+AI-04 is **CLOSED / STRUCTURALLY ACCEPTED** with:
 
 ```text
-A. representative DANTE eval workload + quality floors
-   → model/provider/economics
-   → routing/fallback/local-model triggers
-
-B. concrete runtime/capabilities/external intelligence
-   → streaming/cancellation/tool execution
-   → background/durable work
-   → MCP/A2A/API boundaries
-   → browser/computer-use/code execution
-   → Execution Environment
-
-C. security/privacy/persistence/control-plane/operations
-   → credentials/provider eligibility
-   → observability vs audit/evals
-   → rate/cost/resource governance
-   → failure/degradation/release/operational controls
+AI-04A  A01..A30 / EV01..EV20
+AI-04B  RT-01..RT-31
+AI-04C  PA-01..PA-61
+WHOLE   WP-01..WP-22
 ```
 
-Provider/model selection is downstream of representative workload/eval evidence.
+PRE-AI05 is **CLOSED / PRE05-H01..H19** after a fresh 26-case whole-chain retest, compound collision retest, reverse-order retest and refreshed 2026 state-of-the-art regression.
+
+Current eval workload coverage is `DANTE-E01..DANTE-E14`.
+
+Provider/model selection remains downstream of representative workload/eval evidence.
 
 Provider replaceability is binding now:
 
 ```text
 MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT
+MODEL VENDOR != SERVING PLATFORM != PROTOCOL FAMILY
+HARNESSPROFILE != PROVIDERBINDING
 DANTE FEATURE/BUSINESS CODE != CONCRETE PROVIDER SDK
+PROVIDER REPLACEABLE != PROVIDERS IDENTICAL
 PROVIDER REPLACEABLE != LOWEST-COMMON-DENOMINATOR PROVIDER USAGE
 ```
 
-Expected boundary:
+Current production route composition:
 
 ```text
-DANTE need
-→ ModelTarget
-→ HarnessProfile
-→ ProviderBinding
-→ Provider Adapter
-→ concrete provider / model / deployment
+DANTE work/capability need
+→ ModelTarget / deterministic need
+→ eligible qualified route compositions
+→ Routing Policy
+→ compatible qualified:
+   HarnessProfile
+   + ProviderBinding
+   + feature mode
+   + capability projection
+   + security/control profile
+→ route-specific admission
+→ current egress authorization
+→ Provider Adapter when model route selected
+→ concrete provider/model/deployment
 ```
 
-This allows, for example, a future OpenAI-direct → Azure OpenAI rebinding or an Anthropic/Gemini adapter to remain bounded rather than rewriting DANTE feature/Domain/Context/Memory/effect logic. It does not require implementing multiple providers on day one.
+Auxiliary/sub-model invocations are real governed recipients. Route selection/context assembly is not egress authorization. Fallback is independently qualified and cannot silently truncate context/capability guarantees. Direct eval is not production-capacity qualification.
 
-AI-04 may create targeted benchmark/proof code when necessary to choose responsibly; this is not production-runtime implementation PASS.
+No provider/model/SDK/runtime/persistence/security product is selected merely by architecture closure.
 
 ## 8. Non-negotiable AI invariants
 
@@ -469,6 +515,7 @@ CONTEXT ACCESS != DISCLOSURE PERMISSION
 INTERACTION SESSION != RUN != WORKER
 SUPERSEDE != CANCEL != ROLLBACK != RECONCILE
 RUN-START AUTHORIZATION != PERPETUAL AUTHORIZATION
+RUN-START AUTONOMY != PERPETUAL AUTONOMY
 DANTE REPRESENTATION != EXTERNAL SYSTEM-OF-RECORD AUTHORITY
 SENT != DELIVERED != SEEN != ACKNOWLEDGED != ACCEPTED
 EXECUTION ENVIRONMENT != MANDATORY SANDBOX/CONTAINER
@@ -489,7 +536,12 @@ WORKCONTRACT PROPAGATION != PARENT-CONTEXT INHERITANCE
 APPROXIMATE != COMPLETE
 PROCESSING / RETRIEVAL ELIGIBILITY != RETENTION / FUTURE-REUSE ELIGIBILITY
 MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT
+HARNESSPROFILE != PROVIDERBINDING
 DANTE FEATURE/BUSINESS CODE != CONCRETE PROVIDER SDK
+ATTENTION DECISION != PROACTIVE WORK ADMISSION != EFFECT AUTHORIZATION
+SAFE SINGLE DISCLOSURE != AUTOMATICALLY SAFE CUMULATIVE DISCLOSURE
+RECIPIENT != SURFACE != CHANNEL
+SOURCE FUTURE ELIGIBILITY != PRIOR DISCLOSURE OCCURRENCE
 ```
 
 ## 9. Pressure-test acceptance state
@@ -503,19 +555,31 @@ AI-02 Targeted v0.5 verification      COMPLETE
 Additional AI-02 mega-tests           NONE
 AI-02.1 closure                       CLOSED / STRUCTURALLY ACCEPTED
 
-AI-03A final closure                   CLOSED / C01..C33
-AI-03B final closure                   CLOSED / B01..B35
-AI-03C final closure                   CLOSED / MAT-01..MAT-15
+AI-03A final closure                  CLOSED / C01..C33
+AI-03B final closure                  CLOSED / B01..B35
+AI-03C final closure                  CLOSED / MAT-01..MAT-15
 AI-03 overall                         CLOSED / STRUCTURALLY ACCEPTED
+
+AI-04A                               CLOSED / A01..A30 / EV01..EV20
+AI-04B                               CLOSED / RT-01..RT-31
+AI-04C                               CLOSED / PA-01..PA-61
+AI-04 whole                          CLOSED / WP-01..WP-22
+AI-04 overall                        CLOSED / STRUCTURALLY ACCEPTED
+
+PRE-AI05 H01..H19                    CLOSED / STRUCTURALLY ACCEPTED
+fresh 26-case retest                 PASS
+compound collision retest            PASS
+reverse-order retest                 PASS
+2026 state-of-the-art regression     PASS
 ```
 
-The completed tests produced no evidence sufficient to reopen Domain, Logical, Physical or PostgreSQL.
+The completed tests produced no evidence sufficient to reopen Domain, Logical, Physical or PostgreSQL and no need for a new generic AI mega-layer.
 
 The future-extensibility structural criterion passes: future substantially stronger general-purpose conversational intelligence can be added without transferring canonical memory, Authority, application state, Domain semantics or effect ownership to the provider/model.
 
 ## 10. Current bounded deferrals
 
-Still open or trigger-bound, now primarily owned by AI-04/AI-05 or later implementation gates:
+Still open or trigger-bound, now primarily owned by AI-05 or later implementation gates:
 
 - exact AI model/provider set and routing policy;
 - AI agent/runtime/SDK implementation;
@@ -531,9 +595,12 @@ Still open or trigger-bound, now primarily owned by AI-04/AI-05 or later impleme
 - embeddings/index lifecycle activation and model/dimension choice;
 - optional local-model choice/activation;
 - provider-specific commercial/cost selections;
+- Attention implementation;
+- cumulative-disclosure accounting mechanism/storage;
+- formal IFC / posterior-leakage / ACS adoption;
 - cloud compute/IaC and production infrastructure activation.
 
-A deferral does not authorize violating already accepted semantic/runtime/context/retrieval/memory/materialization invariants.
+A deferral does not authorize violating already accepted semantic/runtime/context/retrieval/memory/materialization/production-assurance invariants.
 
 ## 11. Architecture reopen discipline
 
@@ -543,7 +610,7 @@ Implementation evidence first reopens the smallest affected technology/adapter/b
 
 Do not reopen architecture because of ORM convenience, table shape preference, provider naming, UI naming, framework fashion, agent-framework conventions, vector-store convenience or one isolated implementation annoyance.
 
-AI-03 is likewise not reopened merely because a provider/retrieval/memory technology prefers a weaker accepted contract.
+AI-03/AI-04/PRE-AI05 are likewise not reopened merely because a provider/retrieval/memory/runtime technology prefers a weaker accepted contract.
 
 ## 12. Current next architecture posture
 
@@ -564,15 +631,21 @@ v0.5 CLOSED / STRUCTURALLY ACCEPTED
 AI-03
 CONTEXT / RETRIEVAL / MEMORY
 CLOSED / STRUCTURALLY ACCEPTED
-AI-03A C01..C33
-AI-03B B01..B35
-AI-03C MAT-01..MAT-15
+C01..C33 / B01..B35 / MAT-01..MAT-15
 
 AI-04
 PRODUCTIONIZATION ARCHITECTURE
+CLOSED / STRUCTURALLY ACCEPTED
+A01..A30 / EV01..EV20 / RT-01..RT-31 / PA-01..PA-61 / WP-01..WP-22
+
+PRE-AI05
+CROSS-PHASE HARDENING
+CLOSED / PRE05-H01..H19
+DANTE-E01..DANTE-E14 CURRENT
+
+AI-05
+WHOLE-SYSTEM ACCEPTANCE + IMPLEMENTATION BLUEPRINT
 ACTIVE / CURRENT
-START WITH REPRESENTATIVE DANTE EVAL WORKLOADS
-BEFORE CONCRETE PROVIDER/MODEL SELECTION
 ```
 
 Direct implementation evidence is claimed only after the relevant real artifact/scenario executes.
