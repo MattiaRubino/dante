@@ -712,6 +712,12 @@ export function TimelineSurface({
             grid.scrollLeft = scrollLeft;
           }
         }}
+        onMaterializeCreatedEvent={(dateKey, event) =>
+          dispatch({ type: 'materialize-event', dateKey, event })
+        }
+        onRemoveCreatedEvent={(eventId) =>
+          dispatch({ type: 'remove-event', eventId })
+        }
       />
 
       <TimelineDayStream
