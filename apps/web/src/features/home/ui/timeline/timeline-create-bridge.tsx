@@ -18,7 +18,11 @@ import {
   type TemporalCreateTimelineProjection,
 } from '../../../temporal-create';
 import { TIMELINE_POLICY } from './model/timeline-policy';
-import type { TimelineGroup, TimelineGroupId } from './model/timeline-types';
+import type {
+  TimelineEvent,
+  TimelineGroup,
+  TimelineGroupId,
+} from './model/timeline-types';
 
 import './timeline-create-bridge.css';
 
@@ -27,6 +31,8 @@ type TimelineCreateBridgeProps = Readonly<{
   groups: readonly TimelineGroup[];
   filters: ReadonlySet<TimelineGroupId>;
   onRevealDate: (date: PlainDate) => void;
+  onMaterializeCreatedEvent: (dateKey: string, event: TimelineEvent) => void;
+  onRemoveCreatedEvent: (eventId: TimelineEvent['id']) => void;
   onBeforeOpen?: () => void;
 }>;
 
@@ -154,11 +160,41 @@ function slotKey(projection: TemporalCreateTimelineProjection): string {
   }`;
 }
 
+function timelineEventFromProjection(
+  projection: TemporalCreateTimelineProjection,
+  meta: string,
+): Readonly<{ dateKey: string; event: TimelineEvent }> | null {
+  if (
+    projection.preview ||
+    projection.allDay ||
+    projection.dateKey === null ||
+    projection.startMinute === null ||
+    projection.endMinute === null
+  ) {
+    return null;
+  }
+
+  return Object.freeze({
+    dateKey: projection.dateKey,
+    event: Object.freeze({
+      id: projection.id,
+      startMinute: projection.startMinute,
+      endMinute: projection.endMinute,
+      title: projection.title,
+      groupId: projection.contextId,
+      origin: 'create' as const,
+      meta,
+    }),
+  });
+}
+
 export function TimelineCreateBridge({
   defaultDate,
   groups,
   filters,
   onRevealDate,
+  onMaterializeCreatedEvent,
+  onRemoveCreatedEvent,
   onBeforeOpen,
 }: TimelineCreateBridgeProps) {
   const { t } = useTranslation('common');
@@ -344,12 +380,15 @@ export function TimelineCreateBridge({
       onRevealDate(Temporal.PlainDate.from(projection.dateKey));
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          const selector = `[data-temporal-create-projection="${CSS.escape(
-            projection.id,
-          )}"]`;
-          const card = document.querySelector<HTMLElement>(selector);
+          const id = CSS.escape(projection.id);
+          const card = document.querySelector<HTMLElement>(
+            `[data-timeline-event="${id}"], [data-temporal-create-projection="${id}"]`,
+          );
           const grid = document.querySelector<HTMLElement>('.timeline-grid');
           const day = card?.closest<HTMLElement>('.timeline-day-section');
+          if (card?.matches('[data-timeline-event]')) {
+            card.dataset.temporalCreateProjection = projection.id;
+          }
           if (card && grid && day) {
             grid.scrollTo({
               top: Math.max(
@@ -373,16 +412,30 @@ export function TimelineCreateBridge({
   const applied = useCallback(
     (effect: TemporalCreateAppliedEffect) => {
       const projection = temporalCreateTimelineProjectionFromEffect(effect);
+      const meta = projection.recurring
+        ? t(($) => $.common.home.timeline.create.recurrence.recurringBadge)
+        : projection.kind === 'activity'
+          ? t(($) => $.common.home.timeline.create.kind.activity)
+          : t(($) => $.common.home.timeline.create.kind.event);
+      const materialized = timelineEventFromProjection(projection, meta);
+      if (materialized) {
+        onMaterializeCreatedEvent(materialized.dateKey, materialized.event);
+      }
       setEffects((current) => [...current, effect]);
       setPreview(null);
       showCreateFeedback(effect);
       return reveal(projection);
     },
-    [reveal, showCreateFeedback],
+    [onMaterializeCreatedEvent, reveal, showCreateFeedback, t],
   );
 
   const projections = useMemo(
-    () => effects.map(temporalCreateTimelineProjectionFromEffect),
+    () =>
+      effects
+        .map(temporalCreateTimelineProjectionFromEffect)
+        .filter((projection) =>
+          timelineEventFromProjection(projection, '') === null,
+        ),
     [effects],
   );
 
@@ -509,6 +562,7 @@ export function TimelineCreateBridge({
     }
     const result = await effect.undo();
     if (result.status === 'applied') {
+      onRemoveCreatedEvent(effect.projection.id);
       setEffects((current) =>
         current.filter(
           (candidate) => candidate.projection.id !== effect.projection.id,
