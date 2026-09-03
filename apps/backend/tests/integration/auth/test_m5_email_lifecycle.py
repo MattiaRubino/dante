@@ -5,7 +5,6 @@ from __future__ import annotations
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
 from typing import Any, cast
 from uuid import UUID, uuid7
 
@@ -38,6 +37,13 @@ _PASSWORD_KEY = b"p" * 32
 _OTP_KEY = b"o" * 32
 _EMAIL_KEY = b"e" * 32
 _CSRF_KEY = b"c" * 32
+_COUNT_QUERIES = {
+    "password_signup_challenge": "SELECT count(*) FROM dante.password_signup_challenge",
+    "password_recovery_challenge": "SELECT count(*) FROM dante.password_recovery_challenge",
+    "email_delivery_intent": "SELECT count(*) FROM dante.email_delivery_intent",
+    "account": "SELECT count(*) FROM dante.account",
+    "auth_session": "SELECT count(*) FROM dante.auth_session",
+}
 
 
 def _encoded(raw: bytes) -> str:
@@ -181,17 +187,11 @@ def _admin(database: Any) -> psycopg.Connection[Any]:
 
 
 def _count(database: Any, table_name: str) -> int:
-    allowed = {
-        "password_signup_challenge",
-        "password_recovery_challenge",
-        "email_delivery_intent",
-        "account",
-        "auth_session",
-    }
-    if table_name not in allowed:
+    query = _COUNT_QUERIES.get(table_name)
+    if query is None:
         raise AssertionError("test requested an unapproved table")
     with _admin(database) as connection:
-        row = connection.execute(f"SELECT count(*) FROM dante.{table_name}").fetchone()
+        row = connection.execute(query).fetchone()
     assert row is not None
     return int(row[0])
 
@@ -262,13 +262,14 @@ async def test_email_stage_conflict_rolls_back_signup_challenge(
     migrated_database: Any,
 ) -> None:
     async with _lifecycle(migrated_database) as harness:
+        settings = _settings()
         failing_service = AuthLifecycleService(
             session_factory=harness.database_runtime.session_factory,
-            settings=_settings(),
+            settings=settings,
             password_kdf=harness.password_kdf,
             breach_checker=cast(Any, _CleanBreachChecker()),
             otp_codec=SignupOtpCodec(
-                key_ring=_settings().signup_otp_key_bytes,
+                key_ring=settings.signup_otp_key_bytes,
                 current_key_id=_OTP_KEY_ID,
             ),
             email_delivery=harness.fallback,
