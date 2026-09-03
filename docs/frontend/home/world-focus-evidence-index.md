@@ -1,6 +1,6 @@
 # DANTE — World Focus Research / Review Evidence Index
 
-**Status:** CURRENT EVIDENCE MAP — WS0–WS8 / M0 / M1 / POST-M1 SAFETY CLOSED — M2 ACTIVE / M2-1 VALIDATED  
+**Status:** CURRENT EVIDENCE MAP — WS0–WS8 / M0 / M1 / POST-M1 SAFETY CLOSED — M2 ACTIVE / M2-1 + M2-2 VALIDATED / FINAL M2 AUDIT NEXT  
 **Date:** 2026-09-03  
 **Branch:** `feature/home-react`
 
@@ -286,11 +286,7 @@ CI   33740212989 EXPECTED FAILURE
 whole web suite: 1 failed / 288 passed
 ```
 
-The three passing cases confirmed cross-axis independence, unknown future World O2/O5/O8 + WP-01..04 without DANTE, and same-generation wrong-World rejection.
-
-The sole failure found the planned transitional compatibility residue:
-
-> `WorldFocusInteractionCursor` declared canonical `contextReferences`, but runtime hid the property from normal enumerable object shape.
+The sole failure found the planned transitional compatibility residue: `WorldFocusInteractionCursor` declared canonical `contextReferences`, but runtime hid the property from normal enumerable object shape.
 
 Fix and final code validation:
 
@@ -298,8 +294,6 @@ Fix and final code validation:
 HEAD 7369c51e7ba04f8913728a0770f700c728c3b9f9
 CI   33740710290 PASS
 ```
-
-Quality, Mobile, Chromium, Firefox frozen Timeline and Frontend CI Gate all passed. The cursor exposes `contextReferences` as a normal enumerable frozen property; `selection` remains only a compatibility projection of primary.
 
 This closed M1 without reopening WS0–WS8.
 
@@ -338,8 +332,6 @@ web unit tests 301 / 301 PASS
 full Frontend CI Gate PASS
 ```
 
-No new semantic primitive/layer, M1 reopen, WS reopen, frontend AuthZ, universal projection root or backend authority was required.
-
 ## E23 — M2-1 shared visual primitive layer
 
 `world-focus-m2-shared-visual-primitives.md`
@@ -368,25 +360,7 @@ shared semantic heading/state structure
 binding/order mismatch fails closed
 ```
 
-Intermediate production pressure found two implementation/setup issues without changing those expectations:
-
-```text
-TS6 noUncheckedIndexedAccess
-  -> explicit fail-closed guards for indexed semantic references
-
-isolated renderer tests lacked real i18n initialization
-  -> initialize the existing i18n instance
-  -> semantic expectations unchanged
-```
-
-Validated code baseline:
-
-```text
-HEAD 5e8aaba2477803e931a3394d90bbf01ff534f673
-CI   33765049842 PASS
-```
-
-Responsive pressure was then added to the real WP-01 Continuity vertical. Authoritative validation after the pressure test and M2 record commit:
+Validated production and pressure evidence:
 
 ```text
 HEAD 2e639f108d5cb01e53395013a55346b7ac2e4294
@@ -403,16 +377,7 @@ architecture            262 modules / 684 dependencies / 0 violations
 generated               112 tokens / 3 deterministic files
 ```
 
-Real-browser M2 pressure covers:
-
-```text
-720 px
-719 px
-390 px
-shared presentation marker
-Continuity bounded inside World workspace
-no document horizontal overflow
-```
+Real-browser M2 pressure covers 720 / 719 / 390 px, shared presentation marker, Continuity workspace containment and no document horizontal overflow.
 
 Materialized M2-1 production presentation:
 
@@ -427,16 +392,103 @@ English/Italian finite presentation copy
 container-query + forced-colors support
 ```
 
-Critical evidence boundary:
+WP-02..WP-04 are not claimed as live composition merely because renderers exist.
+
+## E24 — M2-2 truthfulness + direct Output Grammar visual layer
+
+`world-focus-m2-shared-visual-primitives.md`
+
+**M2 ACTIVE / M2-2 CLOSED / VALIDATED.**
+
+Red-first owner proof:
 
 ```text
-WP-01 Continuity is live on the M2 grammar
-WP-02..WP-04 renderers exist and are tested
-WP-02..WP-04 are not claimed as live composition merely because renderers exist
-M2 overall remains ACTIVE
+HEAD 5374f77d7cf7b52ef87ce64315a606bc1d96cf0b
+CI   33787162755 EXPECTED FAILURE
+Lint PASS
+Typecheck FAIL
+exactly 8 TS2307 unresolved presentation owners
 ```
 
-No universal Card<T>, semantic-owner renderer, page-per-World fork, frontend AuthZ, backend authority or M3 customization was introduced.
+Red contracts fixed before implementation:
+
+```text
+qualifier meaning visible in text, not color only
+nominal basis/disclosure/sync states remain quiet
+freshness / validity / coverage / retirement remain separate
+reasonCode and material reference key never become display copy
+available disclosure is quiet and is not frontend authorization
+restricted != unavailable
+effect state != execution revalidation
+partial-real != failed
+reversed != compensated
+offline / replay / provider delivery / timing remain orthogonal
+O2/O5 semantic order preserved through exact display bindings
+O8 Evidence / Provenance / Integrity / History remain separate roles
+missing display binding fails closed
+```
+
+Initial production:
+
+```text
+HEAD 78633df2b3b1949d5d7b3bc4e7c9ee3e01ebc6bb
+```
+
+One strict i18n typing issue in disclosure presentation was corrected with explicit finite branching, no cast/`any`, and no semantic-test weakening:
+
+```text
+HEAD b9856d497273d22face94fcd14f0deda853bbdb8
+CI   33787905171 PASS
+```
+
+Final integration validation:
+
+```text
+HEAD 26d79b0dcdeaac1cb094bf97b71e901003ac5fa5
+CI   33788370490 PASS
+
+Quality                 PASS
+Web E2E / Chromium      PASS
+frozen Timeline Firefox PASS
+Mobile Bundle           PASS
+Frontend CI Gate        PASS
+production build        PASS
+repository mutation     PASS
+```
+
+Materialized M2-2 presentation:
+
+```text
+WorldFocusQualifier / QualifierGroup
+WorldFocusPresentationSubsection
+L2 freshness / validity / coverage / material-retirement presentation
+L3 sanitized disclosure presentation
+L6 effect + separate execution-revalidation presentation
+L8 connectivity / replay / provider-delivery / request-timing presentation
+O2 Situation renderer
+O5 Next renderer
+O8 Evidence / History role-preserving renderer
+Continuity partial -> coverage/incomplete qualifier
+Continuity stale -> freshness/stale qualifier
+English/Italian finite copy
+```
+
+M0 shared visual disposition audit after M2-2:
+
+```text
+M0-19 WP-02 shared rendering                  DONE / M2-1
+M0-21 WP-03 shared rendering                  DONE / M2-1
+M0-23 WP-04 shared rendering                  DONE / M2-1
+M0-28 shared Evidence / History affordance    DONE / M2-2
+M0-42 shared effect presentation              DONE / M2-2
+M0-49 WP shared renderer family               DONE / M2-1
+O2 Situation visual presentation              DONE / M2-2
+O5 Next visual presentation                   DONE / M2-2
+O8 Evidence / History visual presentation     DONE / M2-2
+L2/L3/L6/L8 truthfulness presentation         DONE / M2-2
+```
+
+This audit does not itself close M2. It establishes the precondition for a final hostile M2 closure audit/falsification.
 
 ---
 
@@ -456,7 +508,9 @@ L8 Platform/User Policy
 M2 presentation boundary
   display-safe bindings
   shared semantic presentation grammar
-  finite earned renderers
+  L1 renderers
+  truthfulness qualifiers
+  O2/O5/O8 direct renderers
 ```
 
 ---
@@ -468,6 +522,8 @@ Do not restart WS0–WS8 or M1 for a new provider, World noun, UI, renderer, vie
 Reopen only when later executable/materialization evidence shows a concrete semantic/ownership/state/security/privacy/effect contradiction that cannot fit an existing owner, and reopen only the earliest necessary phase.
 
 Do not reopen M2-1 merely because a specialist renderer needs a different visual treatment. Reopen it only if evidence contradicts the shared display-binding/presentation boundary itself.
+
+Do not reopen M2-2 merely because later composition or a specialist renderer needs more domain-specific presentation. Reopen it only for a concrete contradiction in shared truthfulness/direct-output presentation semantics.
 
 ---
 
@@ -481,9 +537,13 @@ Do not reopen M2-1 merely because a specialist renderer needs a different visual
 
 > **M2-1 — Shared Presentation / L1 Renderer Grammar — CLOSED / VALIDATED**
 
+> **M2-2 — Truthfulness / Direct Output Visual Layer — CLOSED / VALIDATED**
+
+> **M2 FINAL CLOSURE AUDIT / FALSIFICATION — NEXT**
+
 > **M3–M7 and backend remain BLOCKED by sequence. D2–D6 remain deferred to M4.**
 
-The frozen M0 map remains the production-disposition authority; M1 evidence proves the assigned non-visual production owners exist; post-M1 safety confirms the pre-M2 hardening; M2-1 evidence proves a bounded shared visual grammar can render those semantics without taking ownership or fabricating live composition.
+The frozen M0 map remains the production-disposition authority; M1 evidence proves the assigned non-visual production owners exist; post-M1 safety confirms pre-M2 hardening; M2-1 and M2-2 now cover every currently mapped shared visual disposition assigned to M2. Only a final hostile M2 closure audit may advance sequencing to M3.
 
 ---
 
