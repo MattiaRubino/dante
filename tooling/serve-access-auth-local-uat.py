@@ -9,14 +9,15 @@ from pathlib import Path
 from types import ModuleType
 
 import psycopg
+from psycopg import sql
+from pydantic import SecretStr
+
 from dante.platform.config.auth import AuthSettings, EmailTransport, SmtpSecurity
 from dante.platform.config.auth_provider import (
     AuthProviderSettings,
     GoogleProviderSettings,
     WebAuthnSettings,
 )
-from psycopg import sql
-from pydantic import SecretStr
 
 _CORE_PATH = Path(__file__).with_name("serve-access-auth-stack.py")
 _UAT_WEB_ORIGIN = "https://localhost:4173"
@@ -30,7 +31,7 @@ _SMTP_HOST_ENV = "DANTE_UAT_SMTP_HOST"
 _SMTP_PORT_ENV = "DANTE_UAT_SMTP_PORT"
 _SMTP_SECURITY_ENV = "DANTE_UAT_SMTP_SECURITY"
 _SMTP_USERNAME_ENV = "DANTE_UAT_SMTP_USERNAME"
-_SMTP_PASSWORD_ENV = "DANTE_UAT_SMTP_PASSWORD"
+_SMTP_SECRET_ENV = "DANTE_UAT_SMTP_PASSWORD"  # noqa: S105 - env variable name, not a credential
 _SMTP_FROM_ADDRESS_ENV = "DANTE_UAT_SMTP_FROM_ADDRESS"
 _SES_REGION_ENV = "DANTE_UAT_SES_REGION"
 _SES_FROM_ADDRESS_ENV = "DANTE_UAT_SES_FROM_ADDRESS"
@@ -45,7 +46,7 @@ _REAL_SMTP_ENV_NAMES = (
     _SMTP_PORT_ENV,
     _SMTP_SECURITY_ENV,
     _SMTP_USERNAME_ENV,
-    _SMTP_PASSWORD_ENV,
+    _SMTP_SECRET_ENV,
     _SMTP_FROM_ADDRESS_ENV,
 )
 _SES_ENV_NAMES = (
@@ -100,8 +101,11 @@ def _google_client_id(*, enabled: bool) -> str | None:
 
 def _required_trimmed_env(name: str) -> str:
     raw = os.environ.get(name)
-    if raw is None or not raw or raw.strip() != raw or any(
-        character in raw for character in "\r\n"
+    if (
+        raw is None
+        or not raw
+        or raw.strip() != raw
+        or any(character in raw for character in "\r\n")
     ):
         raise RuntimeError(f"{name} must be non-blank, trimmed and single-line.")
     return raw
@@ -151,15 +155,13 @@ def _real_smtp_overrides(*, enabled: bool) -> dict[str, object]:
         security = SmtpSecurity(security_raw.strip().casefold())
     except ValueError as exc:
         supported = ", ".join(mode.value for mode in SmtpSecurity)
-        raise RuntimeError(
-            f"{_SMTP_SECURITY_ENV} must be one of: {supported}."
-        ) from exc
+        raise RuntimeError(f"{_SMTP_SECURITY_ENV} must be one of: {supported}.") from exc
 
     username_raw = os.environ.get(_SMTP_USERNAME_ENV)
-    password_raw = os.environ.get(_SMTP_PASSWORD_ENV)
+    password_raw = os.environ.get(_SMTP_SECRET_ENV)
     if (username_raw is None) != (password_raw is None):
         raise RuntimeError(
-            f"{_SMTP_USERNAME_ENV} and {_SMTP_PASSWORD_ENV} must be supplied together."
+            f"{_SMTP_USERNAME_ENV} and {_SMTP_SECRET_ENV} must be supplied together."
         )
 
     username: str | None = None
@@ -167,9 +169,7 @@ def _real_smtp_overrides(*, enabled: bool) -> dict[str, object]:
     if username_raw is not None and password_raw is not None:
         username = _required_trimmed_env(_SMTP_USERNAME_ENV)
         if not password_raw or any(character in password_raw for character in "\r\n"):
-            raise RuntimeError(
-                f"{_SMTP_PASSWORD_ENV} must be non-blank and single-line."
-            )
+            raise RuntimeError(f"{_SMTP_SECRET_ENV} must be non-blank and single-line.")
         password = SecretStr(password_raw)
 
     return {
@@ -404,7 +404,9 @@ def main() -> None:
     seed_account = _enabled(_SEED_ACCOUNT_ENV, default=True)
 
     if real_smtp_enabled and ses_enabled:
-        raise RuntimeError("Real SMTP and SES UAT are mutually exclusive; enable only one transport.")
+        raise RuntimeError(
+            "Real SMTP and SES UAT are mutually exclusive; enable only one transport."
+        )
     if not google_enabled and not webauthn_enabled and not real_smtp_enabled and not ses_enabled:
         raise RuntimeError(
             "Enable at least one real UAT surface with "
