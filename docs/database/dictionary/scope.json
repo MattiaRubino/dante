@@ -22,7 +22,7 @@
     ],
     "standalone_entries": {"tables": 87, "views": 5, "routines": 15, "total": 107},
     "embedded_objects": {"triggers": 75, "physical_indexes": 170},
-    "constraints": {"foreign_keys": 88, "check_constraints": 266}
+    "constraints": {"foreign_keys": 88, "check_constraints": 267}
   },
   "technical_foundation": {
     "excluded_tables": ["dante.alembic_version"],
