@@ -5,7 +5,7 @@
 - **Protected `main`:** integrated source authority; read the live Git ref for the current SHA
 - **Backend CP6 integration:** PR #42 MERGED
 - **PostgreSQL Recovery integration:** PR #47 MERGED / CP01–CP07 LOCAL PASS / CLOSED
-- **Current product boundary:** protected `main` includes the accepted PostgreSQL Recovery evolution; Access/Auth, Home React and platform observability remain active bounded workstreams; AI architecture is closed on `feature/ai-architecture`; AI implementation is active on `feature/ai-implementation` with I0-I2, C6 and C7 CLOSED/PASS, I3 deferred pending owner data/seams and C8/I4 provider candidate admission as the current executable checkpoint
+- **Current product boundary:** protected `main` includes the accepted PostgreSQL Recovery evolution; Access/Auth, Home React and platform observability remain active bounded workstreams; AI architecture is closed on `feature/ai-architecture`; AI implementation is active on `feature/ai-implementation` with I0-I2, C6, C7 and C8 CLOSED, I3 deferred pending owner data/seams, OpenAI native Responses API + GPT-5.6 Terra admitted for qualification only, and C9 as the current executable checkpoint
 
 ## 1. Executive state
 
@@ -95,13 +95,20 @@ C6 validated code checkpoint 2f96d4fb85300fdbfd00e66b9b6d23b26141397f
 C7 CLOSED / PASS
 C7 validated code checkpoint 65b4bdfe6987e7a2cbb9d543fd4a92b87264cf97
 I3/C3 DEFERRED / WAITING OWNER DATA + SEAMS
-CURRENT EXECUTABLE CHECKPOINT C8 / I4 PROVIDER CANDIDATE ADMISSION
+C8/P1 CLOSED / PROVIDER CANDIDATE ADMITTED FOR QUALIFICATION ONLY
+provider     OpenAI native API
+API          Responses API
+model        gpt-5.6-terra
+record       docs/workstreams/ai-provider-candidate-admission-2026-09.md
+CURRENT EXECUTABLE CHECKPOINT C9
 
 CURRENT AI EXECUTION OVERLAY
 C6 control/safety/publication contracts CLOSED / PASS
 → C7 route-config identity/loader/digest CLOSED / PASS
-→ C8/I4 provider candidate admission CURRENT
-→ C9-C11 inactive adapter + conformance/live/direct qualification
+→ C8/P1 provider candidate admission CLOSED
+→ C9 inactive admitted adapter + conformance/live compatibility CURRENT
+→ C10 direct DANTE qualification
+→ C11 qualification/promotion decision
 
 I3/C3 remains parallel/conditional and must converge before I6
 when real owner data/seams and required permission/currentness proofs are ready
@@ -110,11 +117,11 @@ PARALLEL BOUNDED UNMERGED WORKSTREAMS
 feature/access-auth
 feature/home-react
 feature/platform-observability
-feature/ai-implementation — active / I0-I2 + C6+C7 closed / C8 next
+feature/ai-implementation — active / I0-I2 + C6+C7+C8 closed / C9 next
 feature/ai-architecture — architecture closed / retained authority/evidence
 ```
 
-Architecture closure is not runtime/product completion. I0-I2, C6 and C7 are implemented and directly validated on the AI implementation branch; production Search, Ask DANTE, provider routes and any new persistence remain unactivated.
+Architecture closure is not runtime/product completion. I0-I2, C6 and C7 are implemented and directly validated; C8 is a reviewed evidence/admission decision. No provider SDK/adapter, live provider route, production qualification, private-data eligibility, production Search/Ask or new persistence is claimed by C8.
 
 ## 2. Current protected-main backend/database truth
 
@@ -193,7 +200,7 @@ Database Architecture & Reference
 ≈ real PostgreSQL schema
 ```
 
-A later structural change remains a normal forward same-change package. AI I0-I2/C6/C7 introduced **no database/Alembic change**.
+A later structural change remains a normal forward same-change package. AI I0-I2/C6/C7/C8 introduced **no database/Alembic change**.
 
 ## 4. Binding semantic invariants
 
@@ -239,6 +246,7 @@ AUXILIARY MODEL CALL != FREE PROVIDER CALL
 MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT
 HARNESSPROFILE != PROVIDERBINDING
 CANDIDATE ADMISSION != PRODUCTION QUALIFICATION
+QUALIFIED != ELIGIBLE != AVAILABLE != ENTITLED != ROLLOUT-ACTIVE
 DEFAULT NONCANONICAL PERSISTENCE = NO
 BUILD-READY != INTEGRATION-READY != ACTIVATION-READY
 ```
@@ -279,6 +287,12 @@ Branch-local execution record:
 docs/workstreams/ai-implementation.md
 ```
 
+Current provider admission record:
+
+```text
+docs/workstreams/ai-provider-candidate-admission-2026-09.md
+```
+
 Final structural acceptance evidence:
 
 ```text
@@ -300,7 +314,18 @@ background/durable resume OFF
 consequential mutation OFF
 ```
 
-Search remains independently deterministic. Structured semantic questions consume owning capability typed query seams. Provider SDKs remain private adapters behind `ModelAccessPort` and no provider candidate is admitted yet.
+Search remains independently deterministic. Structured semantic questions consume owning capability typed query seams. Provider SDKs remain private adapters behind `ModelAccessPort`.
+
+C8 has admitted exactly one initial qualification candidate:
+
+```text
+OpenAI native API
+Responses API
+gpt-5.6-terra
+ADMITTED FOR QUALIFICATION ONLY
+```
+
+This does not establish production qualification, private-data eligibility, entitlement, availability or rollout. Claude Sonnet 5 and Gemini 3.8 Flash on Vertex AI remain non-admitted shortlist challengers.
 
 No generic persistence is justified for Work, Run, Context, SearchResult, ProviderAttempt, AI memory, conversation or embeddings.
 
@@ -314,26 +339,38 @@ I3 real deterministic Search/structured families      DEFERRED / WAITING OWNER S
 C6 Policy/Resource/Verification/Publication/
    Effect/Egress/Evidence contracts                   CLOSED / PASS
 C7 route-config identity/loader/digest                CLOSED / PASS
-C8/I4 provider candidate-admission decision           READY / NEXT
+C8/P1 provider candidate admission                    CLOSED / ADMITTED FOR QUALIFICATION ONLY
+C9 inactive admitted adapter + conformance/live       READY / NEXT
 ```
 
 I3 is not cancelled or falsely closed. It remains a conditional lane and must re-enter before I6 when the accepted first vertical requires the real deterministic source/query path.
 
 ## 7. Provider / direct-proof state
 
-Provider/model/SDK remains OPEN / evidence-driven. C8 is now the current admission decision boundary.
+Current admitted qualification candidate:
 
 ```text
-candidate shortlist
-→ reviewed candidate admission
-→ inactive adapter/binding
+provider          OpenAI native API
+API               Responses API
+model             gpt-5.6-terra
+production status NOT QUALIFIED
+```
+
+Correct sequence:
+
+```text
+candidate shortlist                         COMPLETE
+→ reviewed candidate admission              C8 / COMPLETE
+→ inactive adapter/binding                  C9 / NEXT
 → conformance
-→ live compatibility on eligible/minimized data
+→ live compatibility on synthetic/public/minimized data
 → direct DANTE eval
 → applicable security/privacy/capacity/economics evidence
 → qualification
 → promotion
 ```
+
+C9 must start fail-closed: `store=false`, SDK automatic retries disabled, background/provider conversation/built-in tools OFF, no private/sensitive data until the applicable retention/ZDR/regional/security evidence passes.
 
 Candidate admission is not production qualification. Direct proof obligations remain trigger/applicability gated, including protected Search/reference non-interference, FTS/vector behavior, projection freshness, deletion propagation, durable execution and pgvector provenance.
 
@@ -345,7 +382,7 @@ Missing applicable evidence is not `N/A`.
 feature/access-auth             active product implementation
 feature/home-react              active frontend work
 feature/platform-observability  active platform work
-feature/ai-implementation       active AI implementation / I0-I2 + C6+C7 closed / C8 next
+feature/ai-implementation       active AI implementation / I0-I2 + C6+C7+C8 closed / C9 next
 feature/ai-architecture         architecture design CLOSED / retained authority/evidence
 ```
 
@@ -355,12 +392,13 @@ Do not infer one branch's implementation from another branch.
 
 ```text
 feature/ai-implementation
-→ C8 / I4 provider candidate-admission decision
-→ no SDK/adapter until that reviewed decision is recorded
+→ C9 admitted inactive OpenAI Responses / gpt-5.6-terra adapter/binding
+→ provider conformance
+→ live compatibility only on synthetic/public/minimized data
 
 parallel conditional lane:
 I3/C3 resumes only when real owner data/seams are integration-ready
 and must converge before I6 read-only Ask DANTE
 ```
 
-C8 is an evidence/review decision only. User-visible/private-data Search/Ask still requires the real integration and activation gates defined by the final baseline.
+C9 is not production activation. User-visible/private-data Search/Ask still requires the real integration and activation gates defined by the final baseline.
