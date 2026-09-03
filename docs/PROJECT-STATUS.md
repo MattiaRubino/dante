@@ -1,16 +1,14 @@
 # DANTE — Project Status
 
 - **Status:** CURRENT TRUTH FOR `feature/access-auth`
-- **Last reconciled:** 2026-09-02
+- **Last reconciled:** 2026-09-03
 - **Protected `main`:** integrated source authority; Access/Auth remains branch-local until explicit merge gate
-- **Active product vertical:** Access/Auth
-- **Current macro-phase:** M5 — Multi-authenticator Account Layer — **ACTIVE / FINAL EXTERNAL ACCEPTANCE OPEN**
-- **Reviewed product checkpoint:** `ab2716abe40de658d99d1908ba31c5d5744e3c57`
-- **Email-UAT tooling checkpoint:** `9c0587af5891249d8a6e6b6a5d6e3af6934c6943`
-- **Documentation reconciliation base:** `bbf63fe0375c52ec2c49448ae7f6e9d238b4ba74`
-- **Accepted Alembic head:** `20260831_13`
-- **Current review evidence:** `workstreams/access-auth-m5-review-2026-09-02.md`
-- **Current email architecture:** `architecture/access-auth-email-delivery.md` + `decisions/ADR-012-email-delivery-platform.md`
+- **Active product workstream:** Access/Auth
+- **Current macro-phase:** M5 — Multi-authenticator Account Layer — **ACTIVE / FINAL CLOSURE RECONCILIATION**
+- **Current Access/Auth Alembic head:** `20260903_15`
+- **Current Email Platform authority:** `architecture/email-platform.md`
+- **Email Platform decision:** `decisions/ADR-012-email-delivery-platform.md`
+- **Real-provider acceptance evidence:** `development/email-platform-acceptance-2026-09-03.md`
 
 ## 1. Current state
 
@@ -38,55 +36,81 @@ GROUP 4 Access Web engineering QA          PASS
 GROUP 4 local password/passkey UAT          PASS
 GROUP 4 real Google UAT                    PASS
 
-Email delivery architecture direction      ACCEPTED
-Primary production delivery target         AMAZON SES API V2 / QUALIFICATION OPEN
-Durable email platform implementation       OPEN
-Real Internet signup/recovery delivery      OPEN
-Real Apple registered-domain UAT            DEFERRED / OPEN
+Email Platform architecture                ACCEPTED / SHARED DANTE SUBSYSTEM
+Email Platform persistence/worker           ACCEPTED
+Amazon SES API v2 adapter                   ACCEPTED
+Email Platform automated acceptance         PASS
+real SES signup UAT                         PASS
+real SES recovery UAT                       PASS
+real reset-notification UAT                 PASS
+Email Platform engineering work             CLOSED
 
-Whole M5                                    ACTIVE / NOT FORMALLY CLOSED
-M6 Native Mobile                           FUTURE / OPTIONAL / ONLY IF RE-GATED
-M7 Hardening/Observability/Handoff         PLANNED
+real Apple registered-domain UAT            DEFERRED / OPEN
+whole M5                                    ACTIVE / FINAL CLOSURE RECONCILIATION
+M6 Native Mobile                            FUTURE / OPTIONAL / ONLY IF RE-GATED
+M7 Hardening/Observability/Handoff          PLANNED
 ```
 
 ## 2. Current evidence
 
-Automated product-code gate at `ab2716...`:
+Automated product-code evidence already established the Access/Auth frontend/backend contract, browser suite, local password/session flows, passkeys/Windows Hello and real Google provider flow.
+
+Email Platform closure added the following observed evidence:
 
 ```text
-Prettier                     PASS
-TypeScript                   PASS
-ESLint                       PASS
-architecture                 PASS
-Web unit/component           68 / 68 PASS
-Auth Playwright HTTPS        60 / 60 PASS
-Chromium/Firefox/WebKit      PASS through canonical suite
+uv lock --check                               PASS
+Ruff format/lint                              PASS
+targeted mypy src                             PASS
+backend non-PostgreSQL regression             234 PASS
+focused PostgreSQL Email/Auth acceptance      10 PASS
+Email Platform unit/SES semantics             9 / 9 PASS
+uv build                                      PASS
 ```
 
-Manual UAT directly proved password/session rotation, Windows Hello passkey registration/signin/reauth, rename persistence, passwordless state, authenticator anti-lockout, password restore and direct PostgreSQL coherence.
+Real-provider UAT directly proved:
 
-Real Google UAT directly proved official GIS interaction, real Google ID-token verification, third-party-mailbox verification policy, passwordless Account creation, ExternalIdentity `issuer + subject` authority and canonical AuthSession creation. Direct DB inspection showed no PasswordCredential for the Google-created Account.
+```text
+dedicated non-root IAM user/profile
+SES eu-west-3 preflight SUCCESS
+DANTE signup → SES → real mailbox
+received OTP → Account creation
+DANTE password recovery → SES → real mailbox
+recovery URL → password reset
+no auto-login after reset
+previous AuthSession revoked
+password-reset notification → SES → real mailbox
+```
 
-Detailed evidence and repaired UAT defects are recorded in `workstreams/access-auth-m5-review-2026-09-02.md`.
+Runtime emitted three SES `provider_accepted` outcomes, each on attempt 1.
+
+Direct PostgreSQL UAT inspection observed all three corresponding intents as `provider_accepted`, each with provider MessageId present and sensitive payload material wiped.
+
+Exact evidence and one explicit manual non-claim are recorded in `development/email-platform-acceptance-2026-09-03.md`.
 
 ## 3. Current database truth
 
 ```text
 PostgreSQL          18.6
-Alembic             20260831_13
-tables              83
+Alembic             20260903_15
+tables              87
 views                5
 routines             15
 triggers             75
-physical indexes     156
-foreign keys         85
-CHECK constraints    233
-standalone Dictionary entries 103
+physical indexes     170
+foreign keys         88
+CHECK constraints    267
 ```
 
-Revision `20260831_13` is the bounded authenticator-lifecycle runtime ACL follow-up; it does not change the M5-A topology counts.
+The Email Platform adds four bounded technical persistence structures:
 
-The target email transactional outbox/delivery-state concepts are **not materialized yet** and therefore do not alter the current catalog counts.
+```text
+dante.email_delivery_intent
+dante.email_delivery_attempt
+dante.email_provider_event
+dante.email_recipient_suppression
+```
+
+These are delivery-control structures, not Domain identity owners and not DANTE MaterialState.
 
 ## 4. Current Auth constitution
 
@@ -108,93 +132,84 @@ reauthentication != signin
 frontend/provider/browser completion != backend-authoritative success
 ```
 
-## 5. Email architecture current truth
+No Email Platform work changes these invariants.
 
-Architecture direction is now selected:
+## 5. Email Platform current truth
+
+The shared platform is now closed as engineering infrastructure:
 
 ```text
 DANTE owns email intent/lifecycle/state
-external specialist provider owns last-mile Internet delivery
-PostgreSQL transactional outbox is the durable target
-EmailDeliveryPort remains provider-neutral application boundary
-Amazon SES API v2 is the primary production adapter target
-preferred initial SES region target: eu-south-1 Europe/Milan
-SMTP remains deterministic test/UAT/compatibility transport
-provider acceptance != recipient delivery
-blind retry after ambiguous send outcome is forbidden
-Auth/security tracking/link rewriting remain off
-SPF + DKIM + DMARC required before production sender acceptance
+PostgreSQL transactional outbox is materialized
+feature mutation + EmailIntent commit atomically
+provider I/O happens after commit
+Amazon SES API v2 is the accepted primary external adapter
+SMTP remains local/CI/generic compatibility adapter
+provider accepted != recipient delivery
+network ambiguity != definitely unsent
+no blind retry after ambiguous outcome
+short-lived sensitive payload is AEAD-protected and terminally wiped
+provider feedback/suppression model is materialized and automated-test accepted
+privacy-minimized observability is materialized
+real signup/recovery/reset-notification SES UAT PASS
 ```
 
-This is an architecture decision, **not** production acceptance. Exact outbox schema, SES account/sandbox/IAM, sender DNS, provider event ingestion, suppression lifecycle, failure-model proof and live Internet delivery remain open.
+Access/Auth is the first consumer, not the owner of the Email Platform.
 
-The older SES-specific `3,000 message charges/month for the first 12 months` free-tier claim is stale for new AWS customers after July 21, 2026 and must not be used as current provider economics.
+The final real UAT used `eu-west-3`/Paris. SES region is deployment configuration and no longer hard-coded in current architecture/status as “Milan preferred”.
 
-## 6. Open items before M5 closure
+## 6. Production email deployment — separate open gate
+
+Email Platform closure does **not** equal production mail deployment acceptance.
+
+Still required before production sender acceptance:
 
 ```text
-Email Platform operational/provider qualification
-→ SES account + sandbox/production-access model
-→ exact regional capability/quotas and current pricing
-→ IAM/workload-identity posture
-→ sender domain/subdomain + SPF/DKIM/DMARC
-→ privacy/retention/subprocessor review
-
-Email Platform exact implementation gate
-→ transactional outbox persistence design
-→ sensitive OTP/recovery payload protection
-→ SES API adapter
-→ delivery-attempt/provider-message state
-→ event ingestion and suppression/restriction mapping
-→ retry/idempotency/ambiguous-outcome handling
-→ observability/failure injection
-
-Real Internet UAT
-→ signup verification delivered to a real inbox
-→ provider-mailbox verification delivered to a real inbox
-→ recovery link delivered and consumed
-→ password-change notification delivered
-→ direct PostgreSQL + provider-event verification
-
-Apple
-→ registered HTTPS domain/provider configuration
-→ real Apple account UAT when available
-→ Private Email Relay sender/domain proof
+DANTE-controlled sender domain/subdomain
+SPF
+DKIM
+DMARC
+production workload identity / IAM role
+SES production account/quota/reputation posture
+live provider feedback/event routing
+production alerting/SLOs
+traffic/reputation segmentation
+privacy/legal/subprocessor deployment review where required
+Apple Private Email Relay sender-domain compatibility where applicable
 ```
 
-The opt-in real-SMTP local-UAT support introduced at `9c0587...` remains useful tooling and still requires its targeted qualification before being treated as an accepted real-delivery harness path. It is not the production architecture.
+These tasks may configure/harden the accepted platform; they do not reopen its architecture absent defect evidence.
 
-## 7. M7 maturity work
+## 7. Real UAT precision
 
-Compared with mature consumer/work tools, the main post-M5 account-security maturity work remains compatible with the current model:
+Observed live recovery behavior:
 
 ```text
-session/device inventory
-revoke one / revoke all others / log out everywhere
-new-login/security-event notifications
-“this wasn't me” response
-production observability/alerting
-final authenticated Home handoff
-security-page component hardening
+recovery email received
+recovery URL consumed successfully
+password reset succeeded
+prior session revoked
+no auto-login
+reset notification received
 ```
 
-No Auth redesign is required to add these surfaces.
+The exact same consumed recovery URL was **not manually opened a second time** in the final live run because the message had already been removed before that check. Do not report manual replay rejection as observed evidence.
 
-## 8. Deprecation/coherence reconciliation
+## 8. Open items before whole-M5 closure
 
-2026-09-02 review:
+The Email Platform is no longer an M5 blocker.
+
+Remaining closure work is bounded to:
 
 ```text
-Google GIS/FedCM button path                   CURRENT
-Google issuer+sub authority                    CURRENT
-WebAuthn/FIDO2 direction                       CURRENT
-Apple relay dual-domain handling               CURRENT
-old M2/M3-not-started workstream index          STALE → RECONCILED
-old pre-Access technical-decision status        STALE → RECONCILED
-old SES 3,000/month new-customer free-tier      STALE → REJECTED AS CURRENT CLAIM
+final M5 status/documentation reconciliation
+Apple real registered-domain UAT disposition
+  → execute when prerequisites exist, or
+  → record an explicit bounded deferral accepted for M5 closure
+final branch/integration gate when authorized
 ```
 
-Historical phase-time progress text inside otherwise durable contracts remains evidence only where newer operational authorities supersede it.
+M7 continues to own later maturity work such as session/device inventory, remote revoke, new-login/security alerts, production operations/observability and final authenticated Home handoff.
 
 ## 9. Documentation authority
 
@@ -203,10 +218,9 @@ Current operational truth:
 1. this file;
 2. `ROADMAP.md`;
 3. `workstreams/access-auth.md`;
-4. `workstreams/access-auth-m5-review-2026-09-02.md`;
-5. `architecture/access-auth-email-delivery.md` and `decisions/ADR-012-email-delivery-platform.md` for email;
-6. current executable code/tests/migrations.
+4. `architecture/email-platform.md` for shared Email Platform architecture;
+5. `development/email-platform-acceptance-2026-09-03.md` for observed live SES evidence;
+6. `architecture/access-auth-email-delivery.md` for Access/Auth consumer integration;
+7. executable code/tests/migrations/live schema.
 
-Architecture/security/API contracts remain durable semantic authority. Old phase-progress statements embedded in those contracts are historical milestone snapshots and do not override the current operational state.
-
-The dated `workstreams/access-auth-m5-live-handoff-2026-08-29.md` is superseded/historical. While this branch remains active, the current branch-operational handoff is `workstreams/access-auth-m5-live-handoff-2026-09-02.md`; it must not merge into protected `main` without the documentation-lifecycle consolidation gate.
+Historical M5 handoffs and phase-time “NEXT/OPEN/not materialized” statements do not override these current authorities.
