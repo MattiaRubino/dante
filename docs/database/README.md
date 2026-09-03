@@ -1,72 +1,83 @@
 # DANTE Database System of Record
 
-- **Status:** CURRENT / CP6 CLOSED ON `main` / ACCESS-AUTH + EMAIL PLATFORM MATERIALIZED ON `feature/access-auth`
+- **Status:** CURRENT / PRE-INTEGRATION
 - **Last reconciled:** 2026-09-03
 - **PostgreSQL:** 18.6
-- **Current accepted Access/Auth Alembic head:** `20260903_15`
-- **Protected-main CP6 baseline:** `20260826_08`
+- **Protected-main Alembic head:** `20260830_09` — Recovery integrated
+- **Feature/access-auth Alembic head:** `20260903_15` — Access/Auth + Email branch-local
 - **Current Access/Auth reference:** `access-auth.md`
 - **Shared Email Platform authority:** `../architecture/email-platform.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
-- **ADR:** `../decisions/ADR-010-postgresql-persistence-constitution.md`
+- **Persistence ADR:** `../decisions/ADR-010-postgresql-persistence-constitution.md`
 
 ## 1. Authority model
 
 ```text
-Domain / Logical / Physical semantics
-→ persistence constitution / ADR-010
-→ Alembic evolution
-→ SQLAlchemy mappings
-→ Database Dictionary
-→ human reference
-→ real PostgreSQL introspection + tests
+Product / Domain / Logical / Physical
+→ PostgreSQL Persistence Constitution / ADR-010
+→ current human DB reference + Dictionary semantic contract
+→ Alembic forward evolution
+→ SQLAlchemy mappings/MetaData
+→ real PostgreSQL catalog
+→ direct tests / recovery proof
 ```
 
-A mismatch is a defect.
-
-Permanent rule:
+Permanent reconciliation invariant:
 
 ```text
-human reference
-≈ Dictionary
-≈ SQLAlchemy
-≈ Alembic
-≈ real PostgreSQL
-≈ direct tests
+CURRENT DB REFERENCE
+≈ DATABASE DICTIONARY
+≈ SQLALCHEMY
+≈ ALEMBIC
+≈ REAL POSTGRESQL
+≈ DIRECT TESTS
 ```
 
-## 2. Baseline progression
+A mismatch is a defect. Applied Alembic revisions are immutable historical evidence; corrections use new forward revisions.
 
-Protected-main CP6:
+## 2. Two accepted histories currently awaiting convergence
+
+### Protected main
+
+The CP6 baseline was `20260826_08`, but that is no longer the protected-main head.
+
+Current protected main contains the closed Recovery evolution:
 
 ```text
-Alembic             20260826_08
-68 tables / 5 views / 14 routines / 75 triggers
-95 indexes / 68 FKs / 120 CHECKs
+20260826_08
+└── 20260830_09 recovery_material_state_retirement
 ```
 
-Access/Auth evolution:
+Current protected-main catalog:
 
 ```text
-20260827_09  Account / EmailIdentity / PasswordCredential / AuthSession
-20260827_10  bounded Account security-lock capability
-20260829_11  signup/recovery challenges + lifecycle ACL
-20260830_12  ExternalIdentity/provider/Apple/WebAuthn/passkey persistence
-20260831_13  bounded authenticator-lifecycle runtime ACL follow-up
+69 tables
+5 views
+15 routines
+76 triggers
+97 physical indexes
+69 foreign keys
+123 CHECK constraints
 ```
 
-Shared Email Platform evolution:
+### `feature/access-auth`
+
+The active branch independently evolved from the same `20260826_08` parent:
 
 ```text
-20260903_14  durable Email Platform persistence
-20260903_15  exact Email Platform runtime ACL hardening
+20260826_08
+└── 20260827_09 Account / Email / Password / AuthSession
+    └── 20260827_10 Account security-lock capability
+        └── 20260829_11 signup/recovery challenges
+            └── 20260830_12 multi-authenticator persistence
+                └── 20260831_13 authenticator-lifecycle ACL
+                    └── 20260903_14 shared Email Platform
+                        └── 20260903_15 Email Platform ACL hardening
 ```
 
 Current branch catalog:
 
 ```text
-PostgreSQL          18.6
-Alembic             20260903_15
 87 tables
 5 views
 15 routines
@@ -76,19 +87,49 @@ Alembic             20260903_15
 267 CHECK constraints
 ```
 
-The exact Dictionary count is governed by `dictionary/scope.json` and the current Dictionary tree; stale historical “103 entries” counts must not be treated as current after Email Platform materialization.
+These are **two branch-local accepted histories**, not one combined database yet. Recovery must not be claimed as present on `feature/access-auth` before main is merged; Access/Auth/Email must not be claimed as present on protected main before the PR lands.
 
-## 3. Current Access/Auth shape
+## 3. Integration rule for the divergent Alembic DAG
+
+The correct integration is forward-only:
+
+```text
+merge protected main into feature/access-auth
+→ retain main Recovery revision unchanged
+→ retain Access/Auth/Email revisions unchanged
+→ Alembic temporarily has two heads
+→ add one normal merge revision referencing both heads
+→ reconcile Dictionary/reference/mappings/tests for combined truth
+→ prove fresh PostgreSQL + upgrade paths
+```
+
+Forbidden:
+
+```text
+rebase migration history
+renumber an applied revision
+change down_revision of an existing revision
+copy Recovery DDL into an Access revision
+flatten one branch away
+stamp over a missing history
+claim combined topology before live introspection
+```
+
+The exact combined object counts are deliberately **not predicted here**. They become accepted only after the merged graph is materialized and introspected on real PostgreSQL 18.6.
+
+## 4. Access/Auth branch persistence
+
+Current semantic shape:
 
 ```text
 Account
-├── EmailIdentity 1..N over lifecycle
+├── EmailIdentity 1..N
 ├── PasswordCredential 0..1
 ├── AuthSession 0..N
 ├── ExternalIdentity 0..N
 ├── WebAuthnAccount 0..1
 │   └── PasskeyCredential 0..N
-└── current recovery state
+└── bounded lifecycle/challenge state
 
 PasswordSignupChallenge
 PasswordRecoveryChallenge
@@ -100,11 +141,11 @@ AppleAuthGrant
 WebAuthnChallenge
 ```
 
-No generic auth-token/proof god-table exists.
+Account is the durable security serialization root. Principal remains runtime-derived and is not persisted.
 
-## 4. Shared Email Platform persistence
+## 5. Shared Email Platform persistence
 
-The reusable outbound Email Platform adds exactly four bounded technical structures:
+Exactly four bounded technical structures are currently materialized on the Access branch:
 
 ```text
 dante.email_delivery_intent
@@ -113,161 +154,122 @@ dante.email_provider_event
 dante.email_recipient_suppression
 ```
 
-They represent technical delivery lifecycle, not new Domain semantic owners.
+They are shared Email Platform state, not Access/Auth semantic owners and not DANTE MaterialState.
 
-They are **not** DANTE MaterialState and must not be routed through generic MaterialState semantics.
-
-### `email_delivery_intent`
-
-Owns durable DANTE send intent, including:
+Core doctrine:
 
 ```text
-UUIDv7 identity
-purpose/stream/template revision
-recipient + comparison key
-operation scope + idempotency key
-supersession key
-payload fingerprint
-short-lived protected sensitive bundle
-eligibility/expiry
-claim token + lease
-attempt budget / retry scheduling
-accepted / terminal / wipe state
+feature mutation + EmailIntent atomically coordinated
+provider network I/O only after COMMIT
+operation_scope + idempotency_key + fingerprint
+bounded claim / lease / SKIP LOCKED
+exact claim ownership to finalize
+explicit ambiguous outcome
+no blind retry after ambiguity
+short-lived AES-256-GCM protected payload
+terminal/unsafe-state sensitive wipe
+provider evidence distinct from DANTE intent truth
+suppression distinct from EmailIdentity verification truth
 ```
 
-### `email_delivery_attempt`
+Access/Auth is the first consumer. Future consumers reuse this platform rather than creating another outbox/mailer lifecycle.
 
-Owns each exact provider attempt:
-
-```text
-attempt number
-provider code
-start/finish
-normalized result
-provider MessageId
-safe error code
-```
-
-### `email_provider_event`
-
-Owns normalized asynchronous provider evidence:
+## 6. Security / transaction baseline
 
 ```text
-delivered
-delivery_delayed
-bounced
-complained
-rejected
-```
-
-### `email_recipient_suppression`
-
-Owns current operational hard-bounce/complaint suppression projection. It does not redefine `EmailIdentity` verification or ownership truth.
-
-## 5. Email Platform DB invariants
-
-```text
-feature/Auth mutation + EmailIntent commit atomically
-provider I/O never inside caller DB transaction
-operation_scope + idempotency_key is unique
-payload fingerprint makes replay semantics immutable
-claim/lease ownership is exact
-workers use short transactions + SKIP LOCKED
-ambiguous in-flight work is not blindly replayed
-sensitive payload uses dedicated AEAD protection
-terminal/unsafe state wipes sensitive payload
-post-PITR uncertain nonterminal email work is recovery_quarantined
-runtime ACL remains least privilege
-```
-
-Recovery order:
-
-```text
-email workers CLOSED
-→ physical restore
-→ reconciliation
-→ quarantine uncertain restored nonterminal email work
-→ wipe sensitive payload
-→ reopen workers
-```
-
-## 6. Security/ownership rules
-
-```text
-Account is the durable security root
-EmailIdentity is separate
-PasswordCredential is optional
-ExternalIdentity authority = issuer + subject
-provider email is metadata/evidence, never link key
-AuthSession stores verifier, not raw session secret
-WebAuthn stores public credential material, not private key/biometric/PIN
-passkey credential IDs remain lifetime-unique
-runtime role remains least-privilege
-Account-wide security mutation uses bounded DB-owned serialization
-Email Platform technical rows do not become semantic identity owners
-```
-
-## 7. Transaction doctrine
-
-```text
-READ COMMITTED
+PostgreSQL 18.6
+READ COMMITTED baseline
 short authoritative transactions
-network/provider/WebAuthn wait outside DB transaction
-Account lock only for Account-wide security mutation
-email work claim uses bounded row ownership / SKIP LOCKED
-no blanket SERIALIZABLE
-no blind mutation retry
-ambiguous commit/send handled by operation-specific reconciliation
+no provider/browser/network wait inside authoritative DB transactions
+dante_owner      NOLOGIN owner
+dante_migrator   dedicated migration identity
+dante_runtime    least-privilege runtime identity
+trusted search_path = pg_catalog,dante,pg_temp
+Account-wide security mutation uses bounded DB serialization
+constraints remain final race arbiters
+no blanket transaction retry
+ambiguous commit/effect requires operation-specific reconciliation
 ```
 
-## 8. Same-change database rule
+## 7. Database Dictionary contract
 
-A structural DB change is incomplete unless the same reviewed slice updates affected:
+`dictionary/` is the machine-readable current database companion.
+
+For every materialized DANTE object, same-change review must keep aligned:
 
 ```text
-semantic/security contract
+purpose/classification/traceability
+columns + types + nullability/defaults
+PK / UNIQUE / FK / CHECK
+indexes / triggers
+lifecycle / state-history meaning
+runtime ACL
+introducing Alembic revision
+SQLAlchemy mapping
+proof obligations
+```
+
+The CP6 stage list in `dictionary/scope.json` is a frozen CP6 materialization provenance sequence. Later object provenance belongs on each Dictionary object through `implementation.introducing_stage`, `alembic_revision` and `runtime_acl_stage`; current topology counts live separately in `current_materialization`.
+
+## 8. Direct proof already established on the Access branch
+
+Current PostgreSQL acceptance tests prove, among other things:
+
+```text
+fresh DB reaches one Access-branch head 20260903_15
+head → base → head round trip
+Alembic check reports no mapping/schema drift
+migrator identity + trusted search_path
+current live table/view/routine/index/constraint/trigger sets
+Dictionary ↔ SQLAlchemy mapping parity
+object owner = dante_owner
+exact Auth runtime ACL
+Email Platform migration / lifecycle / ACL behavior
+```
+
+Real SES UAT additionally proved three accepted Email intents with one SES attempt each, provider MessageId present and terminal sensitive-payload wipe.
+
+## 9. Whole-database Blueprint lifecycle
+
+The `dante-postgresql-database*.md` corpus contains the deep CP6 derivation, design rationale and closure chronology. It has continuing reference value, but historical phase banners such as `CP6-03 ACTIVE`, `GATE NOT EARNED`, early M3 counts or old DB-U OPEN states are **checkpoint evidence**, not current operational status.
+
+Current routing is:
+
+```text
+this README                       → current database System of Record
+access-auth.md                    → current Access/Auth + Email branch DB reference
+dictionary/                       → current machine-readable object contract
+Alembic + mappings + PostgreSQL   → executable/materialized truth
+dante-postgresql-database*.md     → deep CP6 design/reference history and rationale
+```
+
+Where a historical Blueprint progress label conflicts with current executable/current-reference truth, it does not override this System of Record.
+
+## 10. Same-change database rule
+
+A structural database change is incomplete until the same reviewed slice updates all affected:
+
+```text
+semantic/security authority
 Alembic forward migration
-SQLAlchemy mapping/metadata
-Dictionary
-human current DB reference
+SQLAlchemy mapping/MetaData
+Database Dictionary
+current human DB reference
 direct tests
 real PostgreSQL proof
-status/workstream docs when milestone state changes
+status/routing docs when phase state changes
 ```
 
-Applied migrations are immutable historical evidence.
+## 11. Current pre-integration gate
 
-## 9. Current proof
-
-M5 persistence/API/backend suites closed against real PostgreSQL. Live Auth UAT additionally confirmed passkey lifecycle, passwordless Google Account state and session coherence.
-
-Email Platform PostgreSQL acceptance proved:
+Before main is merged into this branch:
 
 ```text
-migration/head correctness
-exact runtime ACL
-atomic Auth state + EmailIntent
-rollback on staging failure
-idempotency/conflict
-claim/lease concurrency
-ambiguous no-blind-retry
-secret wipe
-feedback idempotency
-suppression projection
-post-restore quarantine
-privacy-minimized observability
+Dictionary scope/schema internally coherent
+current docs no longer claim stale M5/CP6 state
+no temporary branch handoff is allowed to leak to main
+Access Alembic line remains single-head and green
+current PostgreSQL catalog parity remains green
 ```
 
-Final real SES UAT direct PostgreSQL inspection observed three accepted intents — signup verification, password recovery and password-reset notification — each with one SES attempt, provider MessageId present and sensitive payload bundle wiped.
-
-Exact evidence: `../development/email-platform-acceptance-2026-09-03.md`.
-
-## 10. Documentation
-
-- `access-auth.md` — current Access/Auth + Email consumer DB semantics
-- `../architecture/email-platform.md` — shared Email Platform architecture
-- `dictionary/README.md` — structured Dictionary contract
-- `../architecture/access-auth-m5-persistence-api-contract.md` — detailed exact M5 design/milestone reconciliation
-- `../development/email-platform-acceptance-2026-09-03.md` — final real-provider + DB evidence
-
-The large `dante-postgresql-database.md` blueprint contains historical CP6 and early Access/Auth reconciliation sections. Where its old branch-progress labels or counts conflict with this System of Record, this file plus executable Alembic/Dictionary/live PostgreSQL own current truth.
+After main is merged, the database gate is repeated against the **combined** Recovery + Access/Auth + Email DAG before any PR to protected main.
