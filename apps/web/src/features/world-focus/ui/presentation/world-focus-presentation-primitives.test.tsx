@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import {
   WorldFocusPresentationSection,
   WorldFocusPresentationState,
+  WorldFocusPresentationSubsection,
 } from './world-focus-presentation-primitives';
 
 afterEach(cleanup);
@@ -30,5 +31,16 @@ describe('World Focus M2 presentation primitives', () => {
     );
 
     expect(screen.getByText('Bloccato')).toBeTruthy();
+  });
+
+  it('gives nested presentation roles their own accessible group heading', () => {
+    render(
+      <WorldFocusPresentationSubsection title="Evidenze">
+        <p>Revisione mix</p>
+      </WorldFocusPresentationSubsection>,
+    );
+
+    expect(screen.getByRole('heading', { level: 3, name: 'Evidenze' })).toBeTruthy();
+    expect(screen.getByRole('group', { name: 'Evidenze' })).toBeTruthy();
   });
 });
