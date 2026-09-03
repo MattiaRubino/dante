@@ -43,7 +43,7 @@ _GUARANTEE_STRENGTH: Mapping[SearchGuarantee, int] = MappingProxyType(
 _REQUIRED_HIT_PROJECTION_FIELDS = frozenset({"title"})
 
 
-class SearchContractViolation(RuntimeError):
+class SearchContractViolationError(RuntimeError):
     """Raised when a Search adapter violates the admitted observable contract."""
 
 
@@ -188,7 +188,9 @@ class SearchApplication:
             result.family_id != request.family_id
             or result.owning_capability != registration.owning_capability
         ):
-            raise SearchContractViolation("navigation adapter escaped admitted Search family/owner")
+            raise SearchContractViolationError(
+                "navigation adapter escaped admitted Search family/owner"
+            )
         return result
 
     def _eligible_family_pairs(
@@ -324,25 +326,27 @@ def _validate_search_result(
     for hit in result.hits:
         scope = scopes.get(hit.family_id)
         if scope is None:
-            raise SearchContractViolation("Search adapter returned an unadmitted family")
+            raise SearchContractViolationError("Search adapter returned an unadmitted family")
         if hit.snippet is not None and not scope.include_snippets:
-            raise SearchContractViolation("Search adapter returned a disallowed snippet")
+            raise SearchContractViolationError("Search adapter returned a disallowed snippet")
 
     for facet in result.facets:
         scope = scopes.get(facet.family_id)
         if scope is None:
-            raise SearchContractViolation("Search adapter returned facet for unadmitted family")
+            raise SearchContractViolationError(
+                "Search adapter returned facet for unadmitted family"
+            )
         if not scope.include_facets or facet.field not in scope.facet_fields:
-            raise SearchContractViolation("Search adapter returned a disallowed facet")
+            raise SearchContractViolationError("Search adapter returned a disallowed facet")
 
     if result.total_count is not None and not execution.include_count:
-        raise SearchContractViolation("Search adapter returned a disallowed count")
+        raise SearchContractViolationError("Search adapter returned a disallowed count")
 
     if (
         result.achieved_guarantee is not None
         and _GUARANTEE_STRENGTH[result.achieved_guarantee]
         > _GUARANTEE_STRENGTH[execution.maximum_guarantee]
     ):
-        raise SearchContractViolation(
+        raise SearchContractViolationError(
             "Search adapter claimed a guarantee above family registration"
         )

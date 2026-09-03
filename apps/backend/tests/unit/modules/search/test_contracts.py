@@ -109,7 +109,7 @@ def test_trusted_request_requires_query_or_filter_and_route_coherence() -> None:
 def test_interpretation_frame_requires_timezone_aware_reference() -> None:
     with pytest.raises(ValueError, match="timezone-aware"):
         SearchInterpretationFrame(
-            reference_instant=datetime(2026, 9, 3, 10, 0),
+            reference_instant=datetime.fromisoformat("2026-09-03T10:00:00"),
             timezone="Europe/Rome",
             locale="it-IT",
         )

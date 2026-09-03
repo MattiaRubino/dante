@@ -6,7 +6,7 @@ import pytest
 
 from dante.modules.search.application import (
     SearchApplication,
-    SearchContractViolation,
+    SearchContractViolationError,
     SearchFamilyRegistry,
 )
 from dante.modules.search.contracts import (
@@ -366,7 +366,7 @@ async def test_adapter_cannot_return_hit_from_unadmitted_family() -> None:
         max_page_size=50,
     )
 
-    with pytest.raises(SearchContractViolation, match="unadmitted family"):
+    with pytest.raises(SearchContractViolationError, match="unadmitted family"):
         await app.search(_request(_envelope(_family_eligibility("schedule")), "schedule"))
 
 
@@ -395,7 +395,7 @@ async def test_adapter_cannot_publish_disallowed_snippet_or_count() -> None:
         max_page_size=50,
     )
 
-    with pytest.raises(SearchContractViolation, match="disallowed snippet"):
+    with pytest.raises(SearchContractViolationError, match="disallowed snippet"):
         await app.search(
             _request(
                 _envelope(
@@ -434,7 +434,7 @@ async def test_adapter_cannot_publish_unadmitted_facet_field() -> None:
         max_page_size=50,
     )
 
-    with pytest.raises(SearchContractViolation, match="disallowed facet"):
+    with pytest.raises(SearchContractViolationError, match="disallowed facet"):
         await app.search(_request(_envelope(_family_eligibility("schedule")), "schedule"))
 
 
