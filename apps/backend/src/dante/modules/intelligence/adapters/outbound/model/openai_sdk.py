@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from typing import cast
+from typing import Final, Literal, cast
 
 import openai
 from openai import AsyncOpenAI
@@ -20,10 +20,10 @@ from dante.modules.intelligence.adapters.outbound.model.openai_responses import 
     OpenAITransportErrorKind,
 )
 
-_OPENAI_SDK_MAX_RETRIES = 0
-_OPENAI_REASONING_EFFORT = "medium"
-_OPENAI_SERVICE_TIER = "default"
-_OPENAI_TRUNCATION = "disabled"
+_OPENAI_SDK_MAX_RETRIES: Final = 0
+_OPENAI_REASONING_EFFORT: Final[Literal["medium"]] = "medium"
+_OPENAI_SERVICE_TIER: Final[Literal["default"]] = "default"
+_OPENAI_TRUNCATION: Final[Literal["disabled"]] = "disabled"
 
 
 def _require_secret(value: str, *, name: str) -> None:
