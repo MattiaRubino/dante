@@ -4,37 +4,61 @@
 - **Last reconciled:** 2026-09-03
 - **Branch:** `feature/access-auth`
 - **PostgreSQL:** 18.6
-- **Current accepted Alembic head:** `20260903_15`
-- **Protected-main CP6 baseline:** `20260826_08`
+- **Feature branch Alembic head:** `20260903_15`
+- **Protected-main Alembic head:** `20260830_09` — Recovery integrated separately
+- **Historical CP6 common ancestor:** `20260826_08`
 - **Database System of Record:** `README.md`
 - **M5 architecture:** `../architecture/access-auth-m5-contract.md`
 - **Exact M5 design:** `../architecture/access-auth-m5-persistence-api-contract.md`
 - **Shared Email Platform:** `../architecture/email-platform.md`
-- **Access/Auth Email integration:** `../architecture/access-auth-email-delivery.md`
 
 ## 1. Current evidence state
 
 ```text
 M3 persistence                         MATERIALIZED / PG PROVEN / CLOSED
 M4 persistence                         MATERIALIZED / PG PROVEN / CLOSED
-M5.1 / M5.2                            COMPLETE
-M5-A persistence                       MATERIALIZED / PG PROVEN
-M5-B–D + Groups 1–3                    APPLICATION/API ENGINEERING PASS
-20260831_13 lifecycle ACL               ACCEPTED
-Email Platform 20260903_14              MATERIALIZED / PG PROVEN
-Email Platform ACL 20260903_15          ACCEPTED
-Email Platform real SES UAT             PASS
-manual passkey/Google DB UAT            PASS
+M5 multi-authenticator persistence     MATERIALIZED / PG PROVEN
+M5 application/API/Web                 ENGINEERING + UAT ACCEPTED
+Email Platform 20260903_14             MATERIALIZED / PG PROVEN
+Email Platform ACL 20260903_15         ACCEPTED
+real SES UAT                           PASS
+manual passkey/Google DB UAT           PASS
+M5 whole scope                         CLOSED / ACCEPTED
+Apple real external UAT                BOUNDED DEFERRED / NON-BLOCKING
 ```
 
-Current catalog:
+Current branch catalog before main convergence:
 
 ```text
 87 tables / 5 views / 15 routines / 75 triggers
 170 physical indexes / 88 foreign keys / 267 CHECKs
 ```
 
-## 2. Canonical Auth topology
+## 2. Protected-main relationship
+
+Protected main is **not** still at the CP6 `20260826_08` head. It independently contains the closed Recovery revision:
+
+```text
+20260826_08
+└── 20260830_09 recovery_material_state_retirement
+```
+
+This Access branch independently contains:
+
+```text
+20260826_08
+└── 20260827_09
+    └── 20260827_10
+        └── 20260829_11
+            └── 20260830_12
+                └── 20260831_13
+                    └── 20260903_14
+                        └── 20260903_15
+```
+
+Recovery objects are not claimed as branch-local materialization before main is merged. The future integration must preserve both histories and add a forward Alembic merge revision rather than rewriting either line.
+
+## 3. Canonical Auth topology
 
 ```text
 Account
@@ -44,7 +68,7 @@ Account
 ├── ExternalIdentity 0..N
 ├── WebAuthnAccount 0..1
 │   └── PasskeyCredential 0..N
-└── recovery lifecycle
+└── bounded signup/recovery/provider/WebAuthn lifecycle state
 
 PasswordSignupChallenge
 PasswordRecoveryChallenge
@@ -65,11 +89,11 @@ EmailProviderEvent
 EmailRecipientSuppression
 ```
 
-Those four structures are not children in the semantic Account identity model; they are bounded shared technical delivery state.
+Those four structures belong to the shared Email Platform and are not semantic Account children.
 
-## 3. `dante.account`
+## 4. `dante.account`
 
-Durable Access/security root:
+Durable security root:
 
 ```text
 account_ref UUIDv7 PK
@@ -78,13 +102,17 @@ created_at
 disabled_at nullable
 ```
 
-It does not directly store password/email/provider/passkey/profile/device payload.
+Account does not embed email/password/provider/passkey/profile/device payload.
 
-Account-wide security mutation serializes through the bounded database capability `dante.acquire_account_security_lock(uuid)` rather than broad runtime UPDATE authority.
+Account-wide security mutations serialize through the bounded database capability:
 
-## 4. `dante.email_identity`
+```text
+dante.acquire_account_security_lock(uuid)
+```
 
-Canonical contact/login/recovery email identity:
+The routine is owner-controlled, `SECURITY DEFINER`, uses trusted `pg_catalog,dante,pg_temp` search path and exposes only the required runtime EXECUTE capability.
+
+## 5. `dante.email_identity`
 
 ```text
 email_identity_ref
@@ -97,15 +125,11 @@ recovery_restriction_code nullable
 recovery_restriction_observed_at nullable
 ```
 
-`verified_at` is historical mailbox-control evidence. Provider reachability restrictions are separate current state.
+`verified_at` is historical direct mailbox-control evidence. Current provider delivery restrictions/suppression are separate state and never rewrite canonical ownership meaning.
 
-EmailIdentity is not Account and is never the federated-provider identity key.
+Provider email is never the federated identity key.
 
-Email provider suppression/reachability state does not rewrite `verified_at`; the shared Email Platform projects only the bounded recovery-delivery restriction when current hard-bounce/complaint policy requires it.
-
-## 5. `dante.password_credential`
-
-Optional current credential:
+## 6. `dante.password_credential`
 
 ```text
 password_credential_ref
@@ -116,13 +140,9 @@ created_at
 updated_at
 ```
 
-Raw password, normalized password bytes, pepper and HIBP material are never persisted.
+Raw password, normalized password bytes, pepper and HIBP material are never persisted. Password is optional; passwordless Accounts are first-class.
 
-Passwordless Accounts are first-class. Group 1 lifecycle supports add/remove password under recent-auth + anti-lockout policy.
-
-## 6. `dante.auth_session`
-
-Canonical independent server-authoritative session:
+## 7. `dante.auth_session`
 
 ```text
 auth_session_ref
@@ -137,63 +157,142 @@ revoked_at nullable
 revocation_reason_code nullable
 ```
 
-Raw session secrets are never persisted. Provider/passkey success always converges here rather than turning provider tokens into DANTE sessions.
+Raw bearer secrets are never persisted. All successful authentication methods converge on this canonical DANTE session rather than provider tokens becoming sessions.
 
-Final live recovery UAT directly observed that reset did not auto-login and an existing prior session was revoked.
+Real recovery UAT observed that reset did not auto-login and revoked an existing prior AuthSession.
 
-## 7. Signup / recovery challenges
+## 8. Signup / recovery challenges
 
-`password_signup_challenge` owns anonymous/pre-Account password signup state and verifier-only OTP evidence.
+`password_signup_challenge` owns anonymous pre-Account password signup and verifier-only OTP proof state.
 
-`password_recovery_challenge` owns one-use high-entropy recovery proof bound to the exact Account/EmailIdentity. Recovery can create the first PasswordCredential for a passwordless Account or replace an existing credential, revokes prior sessions and requires fresh signin.
+`password_recovery_challenge` owns one-use high-entropy recovery proof bound to the exact Account/EmailIdentity.
 
-When real delivery is required, challenge mutation and the corresponding durable EmailIntent are staged in the same PostgreSQL transaction.
+When delivery is required:
 
 ```text
-signup challenge + signup-verification EmailIntent
-→ one commit
+signup challenge mutation + signup-verification EmailIntent
+→ same PostgreSQL transaction
 
-recovery challenge + password-recovery EmailIntent
-→ one commit
+recovery challenge mutation + password-recovery EmailIntent
+→ same PostgreSQL transaction
 ```
 
-Provider network I/O happens only after commit.
+Provider network I/O occurs only after commit.
 
-## 8. Shared Email Platform persistence
+Recovery reset replaces/creates PasswordCredential, revokes existing sessions and requires fresh normal signin.
+
+## 9. External provider persistence
+
+### `dante.external_identity`
+
+```text
+external_identity_ref
+account_ref
+email_identity_ref nullable
+provider_code google | apple
+issuer
+subject
+provider email metadata nullable
+status active | revoked
+lifecycle timestamps
+```
+
+Hard external identity authority:
+
+```text
+UNIQUE(issuer, subject)
+```
+
+Email coincidence never silently links Accounts.
+
+### `external_auth_transaction`
+
+Short-lived server-authoritative provider transaction with verifier-only state/nonce and exact AuthSession binding where required.
+
+### `external_link_challenge`
+
+Bounded explicit provider collision/link continuation; prevents provider-email auto-merge.
+
+### `external_signup_challenge`
+
+Provider evidence that still requires direct DANTE mailbox proof when current mailbox authority is not provider-established.
+
+### `account_profile_bootstrap`
+
+One-shot non-canonical provider bootstrap staging; later provider login does not continuously overwrite DANTE-owned profile state.
+
+### `apple_auth_grant`
+
+Encrypted minimal Apple server grant lifecycle:
+
+```text
+pending → active → revocation_pending → revoked
+```
+
+Encryption keys remain outside PostgreSQL/Git/logs.
+
+## 10. WebAuthn persistence
+
+### `dante.webauthn_account`
+
+```text
+account_ref PK/FK
+user_handle bytea(32) UNIQUE
+```
+
+User handle is random opaque state, not AccountRef/email/PersonRef.
+
+### `dante.passkey_credential`
+
+```text
+passkey_credential_ref
+account_ref
+credential_id UNIQUE
+credential_public_key
+cose_algorithm
+sign_count
+backup_eligible / backup_state
+transports
+label
+status active | revoked
+created/updated/last-used/revocation timestamps
+```
+
+DANTE stores no private key, biometric template or device PIN. Removal is logical revoke so credential identity cannot be silently recycled.
+
+### `dante.webauthn_challenge`
+
+Bounded verifier-only ceremony state for registration/authentication/reauthentication with exact Account/AuthSession/user-handle binding where applicable.
+
+## 11. Shared Email Platform persistence
+
+The Email Platform is reusable DANTE infrastructure; Access/Auth is its first current consumer.
 
 ### `dante.email_delivery_intent`
 
-Durable technical decision to send one message.
-
-Key responsibilities:
+Owns the durable decision to send one bounded message:
 
 ```text
 UUIDv7 intent
 purpose / stream / template revision
-recipient address + comparison key
+recipient snapshot + comparison key
 operation_scope + idempotency_key
 supersession key
 payload fingerprint
 short-lived protected payload bundle
 eligibility / expiry
 claim token + lease
-attempt budget / next-attempt state
+attempt budget / retry schedule
 accepted / terminal / wipe timestamps
 ```
 
-Current Auth purpose vocabulary:
+Current Auth-security purposes:
 
 ```text
 signup_verification
 provider_enrollment_verification
 password_recovery
 password_reset_notification
-```
-
-Current stream:
-
-```text
-auth_security
 ```
 
 Dispatch states:
@@ -212,15 +311,14 @@ recovery_quarantined
 
 ### `dante.email_delivery_attempt`
 
-One row per provider attempt:
+One exact external attempt:
 
 ```text
 email_attempt_ref
 email_intent_ref
 attempt_number
 provider_code smtp | ses
-started_at
-finished_at
+started_at / finished_at
 result_code
 provider_message_id
 error_code
@@ -230,7 +328,7 @@ Provider MessageId is correlation evidence, not canonical DANTE identity.
 
 ### `dante.email_provider_event`
 
-Normalized asynchronous SES evidence:
+Privacy-minimized normalized SES evidence:
 
 ```text
 delivered
@@ -240,140 +338,54 @@ complained
 rejected
 ```
 
-Provider event identity is idempotent and raw message body/content is not persisted.
+Provider events are idempotent evidence rows; raw message content/provider payload is not retained.
 
 ### `dante.email_recipient_suppression`
 
-Current operational projection for hard-bounce/complaint suppression. It is separate from EmailIdentity verification truth.
+Current operational hard-bounce/complaint suppression projection. It does not redefine EmailIdentity verification/ownership truth.
 
-## 9. Email Platform DB doctrine
+## 12. Email Platform DB doctrine
 
 ```text
-Auth/business state + EmailIntent atomically coordinated
-provider network wait forbidden inside DB transaction
+feature state + EmailIntent atomically coordinated
+provider network wait forbidden inside authoritative DB transaction
 READ COMMITTED baseline
 claim/lease uses short transactions + FOR UPDATE SKIP LOCKED
 exact claim token required for finalize
 same operation_scope/idempotency_key + same fingerprint = replay
 same idempotency identity + different fingerprint = conflict
-expired/uncertain in-flight work can become ambiguous
-ambiguous is not blindly retried
-sensitive delivery payload uses dedicated AES-256-GCM ring
+ambiguous external outcome is preserved explicitly
+ambiguous outcome is not blindly retried
+sensitive payload uses dedicated AES-256-GCM ring
 terminal/unsafe state wipes sensitive payload
-restored uncertain nonterminal work is recovery_quarantined before workers reopen
+restored uncertain nonterminal work becomes recovery_quarantined before workers reopen
 ```
 
-The Email Platform is technical delivery state and is **not** MaterialState.
+Email Platform state is technical delivery state and is **not MaterialState**.
 
-## 10. `dante.external_identity`
+## 13. Runtime ACL through `20260903_15`
 
-Durable lifetime provider binding:
+Post-CP6 migrations own the exact runtime privileges required by their objects.
 
-```text
-external_identity_ref
-account_ref
-email_identity_ref nullable
-provider_code google | apple
-issuer
-subject
-provider_email_address nullable
-provider_email_private nullable
-status_code active | revoked
-created/status/last-auth/revocation timestamps
-```
+`20260903_15` specifically replaces broad Email lifecycle UPDATE capability with exact reviewed column-level UPDATE grants.
 
-Hard identity authority:
+Applied revisions are immutable. Any future privilege correction uses a new forward migration.
 
-```text
-UNIQUE(issuer, subject)
-```
-
-No `UNIQUE(account_ref, provider_code)` is imposed. Normal unlink is logical revoke, preserving lifetime identity uniqueness.
-
-Live Google UAT verified an active ExternalIdentity keyed by canonical Google issuer + provider subject while the corresponding Account had zero PasswordCredential.
-
-## 11. Provider transaction/collision state
-
-`external_auth_transaction` is the bounded server-authoritative sign-in/link/reauth transaction with verifier-only state/nonce and optional exact AuthSession bearer snapshot.
-
-`external_link_challenge` prevents silent email merge and carries bounded explicit link continuation.
-
-`external_signup_challenge` carries provider evidence that still requires direct DANTE mailbox proof before Account creation.
-
-No Account is created before the accepted proof set.
-
-## 12. `dante.account_profile_bootstrap`
-
-One-shot, non-canonical provider bootstrap staging for useful first-account data such as name/locale/picture hint. Later provider login does not continuously overwrite DANTE-owned profile values.
-
-## 13. `dante.apple_auth_grant`
-
-Durable encrypted Apple server-side grant lifecycle:
-
-```text
-pending → active → revocation_pending → revoked
-```
-
-Refresh-token material is application-layer AEAD encrypted with key material outside PostgreSQL/Git/logs. Local provider revoke precedes remote revoke so provider outage does not keep local authentication active.
-
-## 14. WebAuthn persistence
-
-### `dante.webauthn_account`
-
-```text
-account_ref PK/FK
-user_handle bytea(32) UNIQUE
-```
-
-The user handle is opaque random state, not AccountRef/email/PersonRef.
-
-### `dante.passkey_credential`
-
-```text
-passkey_credential_ref
-account_ref
-credential_id UNIQUE
-credential_public_key
-cose_algorithm
-sign_count
-backup_eligible
-backup_state
-transports
-label
-status_code active | revoked
-created/updated/last-used/revocation timestamps
-```
-
-DANTE stores no biometric template, device PIN or private key. Passkey removal is logical revoke; lifetime credential-id uniqueness remains.
-
-### `dante.webauthn_challenge`
-
-Bounded verifier-only ceremony state for registration/authentication/reauthentication with exact Account/AuthSession/user-handle binding where applicable. Raw browser challenge is not persisted.
-
-## 15. Runtime ACL through `20260903_15`
-
-`20260831_13` grants only bounded runtime operations required by authenticator lifecycle.
-
-`20260903_14` materializes Email Platform persistence and initial runtime capabilities.
-
-`20260903_15` hardens Email Platform runtime access to exact lifecycle columns, preserving deny-by-default/least-privilege posture.
-
-Applied revisions are historical evidence and must not be rewritten.
-
-## 16. Transaction/race doctrine
+## 14. Transaction / race doctrine
 
 ```text
 READ COMMITTED
 short authoritative transactions
 network/provider/browser ceremony outside DB transaction
-Account security lock for Account-wide mutation
+Account row serialization for Account-wide security mutation
 constraints as final race arbiters
 bounded claim/lease for email work
 no blanket SERIALIZABLE
 no blind mutation/send retry
+ambiguous commit/effect handled by explicit reconciliation
 ```
 
-## 17. Live UAT database evidence
+## 15. Live UAT database evidence
 
 Manual UAT observed coherent durable state for:
 
@@ -386,9 +398,10 @@ Google passwordless Account
 verified EmailIdentity
 Google ExternalIdentity
 active AuthSession
+post-reset session revocation
 ```
 
-Final Email Platform real SES UAT observed three accepted intents:
+Final Email UAT observed three accepted intents:
 
 ```text
 signup_verification
@@ -402,26 +415,43 @@ For each:
 dispatch_state_code = provider_accepted
 attempt_count = 1
 accepted_at present
+provider_code = ses
+result_code = provider_accepted
+provider_message_id present
+error_code NULL
 sensitive bundle NULL
 sensitive_wiped_at present
 ```
 
-Corresponding attempts:
+Personal mailbox/provider-subject values are intentionally excluded from repository documentation.
+
+## 16. Cross-representation invariant
+
+Current branch database acceptance requires:
 
 ```text
-provider_code = ses
-attempt_number = 1
-result_code = provider_accepted
-provider_message_id present
-error_code NULL
+Dictionary
+≈ SQLAlchemy mappings
+≈ Alembic 20260903_15
+≈ real PostgreSQL catalog
+≈ this human reference
+≈ direct tests
 ```
 
-Personal email/provider subject values are intentionally excluded from repository documentation.
+`apps/backend/tests/integration/database/test_current_catalog.py` proves current object-set/mapping/head parity against real PostgreSQL. Historical CP6 tests independently prove the frozen `20260826_08` baseline.
 
-Exact real-provider evidence: `../development/email-platform-acceptance-2026-09-03.md`.
+## 17. Pre-integration rule
 
-## 18. Current source relationship
+Before main is merged, this document describes only branch-local Access/Auth + Email truth plus the exact protected-main divergence.
 
-Detailed exact constraint/FK/ACL rationale remains recoverable in the M5 persistence/API contract, Email Platform architecture, Dictionary, SQLAlchemy mappings, Alembic and direct tests.
+After main is merged:
 
-Where older milestone sections say `M5-B NEXT`, `20260830_12 current`, `Email Platform not materialized` or show 83-table counts, those are historical progress metadata. This file plus `README.md`, executable migrations/Dictionary and direct PostgreSQL proof own current database-reference state.
+```text
+preserve Recovery revision
+preserve Access/Auth/Email revisions
+add forward Alembic merge revision
+reconcile combined Dictionary/reference
+re-run real PostgreSQL acceptance
+```
+
+Combined topology/counts are not accepted until that merged live proof exists.
