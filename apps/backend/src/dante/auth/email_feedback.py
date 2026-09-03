@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from hashlib import sha256
-from typing import Any, Mapping
+from typing import Any
 from uuid import UUID, uuid7
 
 from sqlalchemy import select, update
@@ -36,134 +37,106 @@ class SesFeedbackError(ValueError):
 
 
 @dataclass(frozen=True, slots=True)
-class SesFeedbackEvent:
-    """Privacy-minimized normalized provider evidence."""
+class NormalizedSesFeedback:
+    """Safe normalized provider observation without raw message content or headers."""
 
+    provider_event_ref: UUID
     provider_event_id: str
     provider_message_id: str
-    email_intent_ref: UUID
     event_type_code: str
-    observed_at: datetime
+    provider_occurred_at: datetime
     payload_digest: bytes
-    safe_detail_code: str | None
-    permanent_suppression_reason: str | None
+    safe_subtype_code: str | None
+    hard_failure: bool
 
 
-def parse_ses_feedback(raw_body: bytes) -> SesFeedbackEvent | None:
-    """Normalize one EventBridge/SES JSON event; tracking-only events are ignored."""
-    if not raw_body or len(raw_body) > _MAX_EVENT_BYTES:
-        raise SesFeedbackError("SES event body violates size bounds")
-    digest = sha256(raw_body).digest()
-    try:
-        envelope = json.loads(raw_body)
-    except json.JSONDecodeError as exc:
-        raise SesFeedbackError("SES event body is not JSON") from exc
-    if not isinstance(envelope, dict):
-        raise SesFeedbackError("SES event envelope must be an object")
+def normalize_ses_feedback(payload: bytes | str | Mapping[str, Any]) -> NormalizedSesFeedback:
+    """Normalize one bounded SES event envelope and reject malformed/unsupported input."""
+    if isinstance(payload, Mapping):
+        raw: Mapping[str, Any] = payload
+        encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    else:
+        encoded = payload.encode("utf-8") if isinstance(payload, str) else payload
+        if len(encoded) > _MAX_EVENT_BYTES:
+            raise SesFeedbackError("SES feedback exceeds admission bound")
+        try:
+            parsed = json.loads(encoded)
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise SesFeedbackError("SES feedback is not valid JSON") from exc
+        if not isinstance(parsed, Mapping):
+            raise SesFeedbackError("SES feedback root must be an object")
+        raw = parsed
 
-    detail_obj = envelope.get("detail", envelope)
-    if not isinstance(detail_obj, dict):
-        raise SesFeedbackError("SES event detail must be an object")
-    detail = _mapping(detail_obj)
+    if len(encoded) > _MAX_EVENT_BYTES:
+        raise SesFeedbackError("SES feedback exceeds admission bound")
 
-    raw_type = detail.get("eventType") or detail.get("event_type")
-    if raw_type in {"Open", "Click", "Subscription"}:
-        return None
-    if not isinstance(raw_type, str) or raw_type not in _SUPPORTED_EVENTS:
-        raise SesFeedbackError("SES event type is unsupported")
+    event_type = raw.get("eventType")
+    if not isinstance(event_type, str) or event_type not in _SUPPORTED_EVENTS:
+        raise SesFeedbackError("SES feedback event type is unsupported")
+    event_type_code = _SUPPORTED_EVENTS[event_type]
 
-    mail = _mapping(detail.get("mail"))
+    mail = raw.get("mail")
+    if not isinstance(mail, Mapping):
+        raise SesFeedbackError("SES feedback mail envelope is missing")
     message_id = mail.get("messageId")
     if not isinstance(message_id, str) or not message_id.strip():
-        raise SesFeedbackError("SES event has no provider message id")
+        raise SesFeedbackError("SES feedback messageId is missing")
 
-    intent_ref = _intent_ref_from_tags(_mapping(mail.get("tags")))
-    if intent_ref is None:
-        raise SesFeedbackError("SES event has no DANTE intent correlation tag")
+    timestamp_value = mail.get("timestamp")
+    if not isinstance(timestamp_value, str):
+        raise SesFeedbackError("SES feedback mail timestamp is missing")
+    try:
+        occurred_at = datetime.fromisoformat(timestamp_value.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise SesFeedbackError("SES feedback timestamp is invalid") from exc
+    if occurred_at.tzinfo is None:
+        raise SesFeedbackError("SES feedback timestamp must be timezone-aware")
+    occurred_at = occurred_at.astimezone(UTC)
 
-    event_id = envelope.get("id")
-    if not isinstance(event_id, str) or not event_id.strip():
-        event_id = digest.hex()
-
-    observed_at = _event_timestamp(detail=detail, mail=mail)
-    safe_detail: str | None = None
-    suppression_reason: str | None = None
-    if raw_type == "Bounce":
-        bounce = _mapping(detail.get("bounce"))
-        bounce_type = bounce.get("bounceType")
-        if isinstance(bounce_type, str):
-            safe_detail = bounce_type[:64]
-            if bounce_type == "Permanent":
-                suppression_reason = "hard_bounce"
-    elif raw_type == "Complaint":
-        complaint = _mapping(detail.get("complaint"))
-        feedback = complaint.get("complaintFeedbackType")
-        safe_detail = feedback[:64] if isinstance(feedback, str) else None
-        suppression_reason = "complaint"
-    elif raw_type == "DeliveryDelay":
-        delay = _mapping(detail.get("deliveryDelay"))
-        delay_type = delay.get("delayType")
-        safe_detail = delay_type[:64] if isinstance(delay_type, str) else None
-    elif raw_type == "Reject":
-        reject = _mapping(detail.get("reject"))
-        reason = reject.get("reason")
-        safe_detail = reason[:64] if isinstance(reason, str) else None
-
-    return SesFeedbackEvent(
+    event_id = _provider_event_id(raw, encoded)
+    subtype = _safe_subtype(raw, event_type)
+    hard_failure = _is_hard_failure(raw, event_type)
+    return NormalizedSesFeedback(
+        provider_event_ref=uuid7(),
         provider_event_id=event_id,
         provider_message_id=message_id,
-        email_intent_ref=intent_ref,
-        event_type_code=_SUPPORTED_EVENTS[raw_type],
-        observed_at=observed_at,
-        payload_digest=digest,
-        safe_detail_code=safe_detail,
-        permanent_suppression_reason=suppression_reason,
+        event_type_code=event_type_code,
+        provider_occurred_at=occurred_at,
+        payload_digest=sha256(encoded).digest(),
+        safe_subtype_code=subtype,
+        hard_failure=hard_failure,
     )
 
 
-class SesFeedbackStore:
-    """Persist normalized SES evidence idempotently and project durable suppression."""
+class EmailFeedbackStore:
+    """Idempotently record provider observations and maintain bounded suppression projection."""
 
-    async def ingest(
+    async def record(
         self,
         database_session: AsyncSession,
         *,
-        event: SesFeedbackEvent,
-        received_at: datetime | None = None,
+        feedback: NormalizedSesFeedback,
     ) -> bool:
-        """Accept one correlated event; duplicates become safe no-ops."""
-        now = datetime.now(UTC) if received_at is None else received_at
-        intent = await database_session.scalar(
-            select(EmailDeliveryIntentRow).where(
-                EmailDeliveryIntentRow.email_intent_ref == event.email_intent_ref
-            )
-        )
-        if intent is None:
-            raise SesFeedbackError("SES event references an unknown DANTE email intent")
         attempt = await database_session.scalar(
-            select(EmailDeliveryAttemptRow.email_attempt_ref).where(
-                EmailDeliveryAttemptRow.email_intent_ref == event.email_intent_ref,
-                EmailDeliveryAttemptRow.provider_code == "ses",
-                EmailDeliveryAttemptRow.provider_message_id == event.provider_message_id,
+            select(EmailDeliveryAttemptRow).where(
+                EmailDeliveryAttemptRow.provider_message_id == feedback.provider_message_id
             )
         )
         if attempt is None:
-            raise SesFeedbackError("SES event message id does not match the DANTE intent")
+            return False
 
-        event_ref = uuid7()
-        inserted = await database_session.scalar(
+        insert_stmt = (
             pg_insert(EmailProviderEventRow)
             .values(
-                email_provider_event_ref=event_ref,
-                provider_code="ses",
-                provider_event_id=event.provider_event_id,
-                provider_message_id=event.provider_message_id,
-                email_intent_ref=event.email_intent_ref,
-                event_type_code=event.event_type_code,
-                observed_at=event.observed_at,
-                received_at=now,
-                payload_digest=event.payload_digest,
-                safe_detail_code=event.safe_detail_code,
+                email_provider_event_ref=feedback.provider_event_ref,
+                provider_code=attempt.provider_code,
+                provider_event_id=feedback.provider_event_id,
+                email_delivery_attempt_ref=attempt.email_delivery_attempt_ref,
+                event_type_code=feedback.event_type_code,
+                safe_subtype_code=feedback.safe_subtype_code,
+                provider_occurred_at=feedback.provider_occurred_at,
+                received_at=datetime.now(UTC),
+                payload_digest=feedback.payload_digest,
             )
             .on_conflict_do_nothing(
                 index_elements=[
@@ -173,95 +146,125 @@ class SesFeedbackStore:
             )
             .returning(EmailProviderEventRow.email_provider_event_ref)
         )
+        inserted = await database_session.scalar(insert_stmt)
         if inserted is None:
-            return False
+            return True
 
-        if event.permanent_suppression_reason is not None:
-            await self._apply_suppression(
-                database_session,
-                intent=intent,
-                source_event_ref=event_ref,
-                reason_code=event.permanent_suppression_reason,
-                observed_at=event.observed_at,
+        if feedback.event_type_code == "delivered":
+            await database_session.execute(
+                update(EmailDeliveryIntentRow)
+                .where(
+                    EmailDeliveryIntentRow.email_delivery_intent_ref
+                    == attempt.email_delivery_intent_ref,
+                    EmailDeliveryIntentRow.delivered_at.is_(None),
+                )
+                .values(delivered_at=feedback.provider_occurred_at)
             )
+        elif feedback.event_type_code in {"bounced", "complained"}:
+            await self._apply_suppression(database_session, attempt=attempt, feedback=feedback)
         return True
 
     async def _apply_suppression(
         self,
         database_session: AsyncSession,
         *,
-        intent: EmailDeliveryIntentRow,
-        source_event_ref: UUID,
-        reason_code: str,
-        observed_at: datetime,
+        attempt: EmailDeliveryAttemptRow,
+        feedback: NormalizedSesFeedback,
     ) -> None:
-        await database_session.execute(
+        intent = await database_session.scalar(
+            select(EmailDeliveryIntentRow).where(
+                EmailDeliveryIntentRow.email_delivery_intent_ref
+                == attempt.email_delivery_intent_ref
+            )
+        )
+        if intent is None:
+            return
+
+        reason_code = (
+            "complaint"
+            if feedback.event_type_code == "complained"
+            else ("hard_bounce" if feedback.hard_failure else "soft_bounce")
+        )
+        if reason_code == "soft_bounce":
+            return
+
+        now = datetime.now(UTC)
+        suppression_stmt = (
             pg_insert(EmailRecipientSuppressionRow)
             .values(
                 email_recipient_suppression_ref=uuid7(),
                 recipient_comparison_key=intent.recipient_comparison_key,
                 reason_code=reason_code,
-                source_provider_event_ref=source_event_ref,
-                suppressed_at=observed_at,
-                updated_at=observed_at,
-                cleared_at=None,
+                source_provider_code=attempt.provider_code,
+                source_provider_message_id=attempt.provider_message_id,
+                first_observed_at=feedback.provider_occurred_at,
+                last_observed_at=feedback.provider_occurred_at,
+                active=True,
+                created_at=now,
+                updated_at=now,
             )
             .on_conflict_do_update(
                 index_elements=[EmailRecipientSuppressionRow.recipient_comparison_key],
                 set_={
                     "reason_code": reason_code,
-                    "source_provider_event_ref": source_event_ref,
-                    "updated_at": observed_at,
-                    "cleared_at": None,
+                    "source_provider_code": attempt.provider_code,
+                    "source_provider_message_id": attempt.provider_message_id,
+                    "last_observed_at": feedback.provider_occurred_at,
+                    "active": True,
+                    "updated_at": now,
                 },
-                where=EmailRecipientSuppressionRow.updated_at <= observed_at,
             )
         )
+        await database_session.execute(suppression_stmt)
         await database_session.execute(
             update(EmailIdentityRow)
             .where(
                 EmailIdentityRow.comparison_key == intent.recipient_comparison_key,
-                (
-                    EmailIdentityRow.recovery_restriction_observed_at.is_(None)
-                    | (EmailIdentityRow.recovery_restriction_observed_at <= observed_at)
-                ),
+                EmailIdentityRow.recovery_restriction_code.is_(None),
             )
             .values(
-                recovery_restriction_code="provider_delivery_disabled",
-                recovery_restriction_observed_at=observed_at,
+                recovery_restriction_code="provider_suppressed",
+                updated_at=now,
             )
         )
 
 
-def _mapping(value: object) -> Mapping[str, Any]:
-    return value if isinstance(value, dict) else {}
+def _provider_event_id(raw: Mapping[str, Any], encoded: bytes) -> str:
+    for key in ("eventId", "id"):
+        value = raw.get(key)
+        if isinstance(value, str) and value.strip():
+            return value
+    return sha256(encoded).hexdigest()
 
 
-def _intent_ref_from_tags(tags: Mapping[str, Any]) -> UUID | None:
-    value = tags.get("dante_intent")
-    if isinstance(value, list) and len(value) == 1:
-        value = value[0]
-    if not isinstance(value, str):
+def _safe_subtype(raw: Mapping[str, Any], event_type: str) -> str | None:
+    key = {
+        "Bounce": "bounce",
+        "Complaint": "complaint",
+        "DeliveryDelay": "deliveryDelay",
+        "Reject": "reject",
+    }.get(event_type)
+    section = raw.get(key) if key is not None else None
+    if not isinstance(section, Mapping):
         return None
-    try:
-        return UUID(value)
-    except ValueError:
-        return None
+    candidates = (
+        "bounceType",
+        "bounceSubType",
+        "complaintFeedbackType",
+        "delayType",
+        "reason",
+    )
+    for candidate in candidates:
+        value = section.get(candidate)
+        if isinstance(value, str) and value.strip():
+            return value[:128]
+    return None
 
 
-def _event_timestamp(*, detail: Mapping[str, Any], mail: Mapping[str, Any]) -> datetime:
-    candidates: list[object] = [
-        detail.get("timestamp"),
-        mail.get("timestamp"),
-    ]
-    for value in candidates:
-        if not isinstance(value, str):
-            continue
-        candidate = value[:-1] + "+00:00" if value.endswith("Z") else value
-        try:
-            parsed = datetime.fromisoformat(candidate)
-        except ValueError:
-            continue
-        if parsed.tzinfo is not None:
-            return parsed.astimezone(UTC)
-    raise SesFeedbackError("SES event has no valid timezone-aware timestamp")
+def _is_hard_failure(raw: Mapping[str, Any], event_type: str) -> bool:
+    if event_type == "Complaint":
+        return True
+    if event_type != "Bounce":
+        return False
+    bounce = raw.get("bounce")
+    return isinstance(bounce, Mapping) and bounce.get("bounceType") == "Permanent"
