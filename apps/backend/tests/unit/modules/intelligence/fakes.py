@@ -5,12 +5,29 @@ from __future__ import annotations
 from collections.abc import Mapping
 from uuid import UUID
 
+from dante.modules.intelligence.contracts.evidence import RuntimeEvidenceEvent
+from dante.modules.intelligence.contracts.policy import (
+    ContextExposurePolicyRequest,
+    EffectPolicyRequest,
+    ModelEgressPolicyRequest,
+    PolicyBoundary,
+    PolicyDecision,
+    PublicationPolicyRequest,
+)
 from dante.modules.intelligence.contracts.references import (
     ReferenceBindingRequirement,
     ReferenceCandidateMatch,
     ReferenceResolutionRequest,
     ReferenceResolutionResult,
     ReferenceResolutionStatus,
+)
+from dante.modules.intelligence.contracts.resource import (
+    ResourceAdmission,
+    ResourceAdmissionRequest,
+    ResourceEstimate,
+    ResourceEstimateRequest,
+    ResourceSettlement,
+    ResourceSettlementRequest,
 )
 from dante.modules.intelligence.contracts.retrieval import (
     CandidateValidationResult,
@@ -127,3 +144,97 @@ class ScriptedRetrievalGateway:
             return self._validations[candidate.candidate_id]
         except KeyError as exc:
             raise LookupError("deterministic fake has no scripted validation") from exc
+
+
+class ScriptedPolicyPort:
+    """Return explicit boundary decisions without inventing application authorization truth."""
+
+    def __init__(self, decisions: Mapping[PolicyBoundary, PolicyDecision]) -> None:
+        self._decisions = dict(decisions)
+        self.context_exposure_requests: list[ContextExposurePolicyRequest] = []
+        self.model_egress_requests: list[ModelEgressPolicyRequest] = []
+        self.effect_requests: list[EffectPolicyRequest] = []
+        self.publication_requests: list[PublicationPolicyRequest] = []
+
+    def _decision(self, boundary: PolicyBoundary) -> PolicyDecision:
+        try:
+            decision = self._decisions[boundary]
+        except KeyError as exc:
+            raise LookupError("deterministic fake has no scripted policy decision") from exc
+        if decision.boundary is not boundary:
+            raise ValueError("scripted PolicyDecision does not match requested boundary")
+        return decision
+
+    async def authorize_context_exposure(
+        self,
+        request: ContextExposurePolicyRequest,
+    ) -> PolicyDecision:
+        self.context_exposure_requests.append(request)
+        return self._decision(PolicyBoundary.CONTEXT_EXPOSURE)
+
+    async def authorize_model_egress(
+        self,
+        request: ModelEgressPolicyRequest,
+    ) -> PolicyDecision:
+        self.model_egress_requests.append(request)
+        return self._decision(PolicyBoundary.MODEL_EGRESS)
+
+    async def authorize_effect(self, request: EffectPolicyRequest) -> PolicyDecision:
+        self.effect_requests.append(request)
+        return self._decision(PolicyBoundary.EFFECT)
+
+    async def authorize_publication(
+        self,
+        request: PublicationPolicyRequest,
+    ) -> PolicyDecision:
+        self.publication_requests.append(request)
+        return self._decision(PolicyBoundary.PUBLICATION)
+
+
+class ScriptedResourceControl:
+    """Return predeclared request-local resource decisions and record each phase."""
+
+    def __init__(
+        self,
+        *,
+        estimates: Mapping[UUID, ResourceEstimate],
+        admissions: Mapping[UUID, ResourceAdmission],
+        settlements: Mapping[UUID, ResourceSettlement],
+    ) -> None:
+        self._estimates = dict(estimates)
+        self._admissions = dict(admissions)
+        self._settlements = dict(settlements)
+        self.estimate_requests: list[ResourceEstimateRequest] = []
+        self.admission_requests: list[ResourceAdmissionRequest] = []
+        self.settlement_requests: list[ResourceSettlementRequest] = []
+
+    async def estimate(self, request: ResourceEstimateRequest) -> ResourceEstimate:
+        self.estimate_requests.append(request)
+        try:
+            return self._estimates[request.request_id]
+        except KeyError as exc:
+            raise LookupError("deterministic fake has no scripted resource estimate") from exc
+
+    async def admit(self, request: ResourceAdmissionRequest) -> ResourceAdmission:
+        self.admission_requests.append(request)
+        try:
+            return self._admissions[request.request_id]
+        except KeyError as exc:
+            raise LookupError("deterministic fake has no scripted resource admission") from exc
+
+    async def settle(self, request: ResourceSettlementRequest) -> ResourceSettlement:
+        self.settlement_requests.append(request)
+        try:
+            return self._settlements[request.request_id]
+        except KeyError as exc:
+            raise LookupError("deterministic fake has no scripted resource settlement") from exc
+
+
+class RecordingRuntimeEvidencePort:
+    """Capture minimized runtime evidence without external I/O."""
+
+    def __init__(self) -> None:
+        self.events: list[RuntimeEvidenceEvent] = []
+
+    async def emit(self, event: RuntimeEvidenceEvent) -> None:
+        self.events.append(event)
