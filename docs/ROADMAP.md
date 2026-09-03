@@ -2,10 +2,9 @@
 
 - **Status:** CURRENT FOR `feature/access-auth`
 - **Last reconciled:** 2026-09-03
-- **Active workstream:** Access/Auth
-- **Current macro-phase:** M5 — Multi-authenticator Account Layer — **FINAL CLOSURE RECONCILIATION**
-- **Current Access/Auth Alembic head:** `20260903_15`
-- **Email Platform acceptance evidence:** `development/email-platform-acceptance-2026-09-03.md`
+- **Current macro state:** **M5 CLOSED / PRE-INTEGRATION AUDIT ACTIVE**
+- **Feature branch Alembic head:** `20260903_15`
+- **Protected-main Alembic head:** `20260830_09`
 
 ## 1. Current sequence
 
@@ -22,219 +21,235 @@ Engineering + Frontend + Backend CP1–CP6
 Access M1–M4
         CLOSED / ACCEPTED
           ↓
-M5.1 / M5.2 / M5-A–D
-        COMPLETE
+Access M5 Multi-authenticator Account Layer
+        CLOSED / ACCEPTED
           ↓
-GROUP 1 / GROUP 2 / GROUP 3
-        COMPLETE / ENGINEERING PASS
+Shared Email Platform
+        CLOSED / REAL SES UAT PASS
           ↓
-GROUP 4 PRODUCT ENGINEERING
-        AUTOMATED QA PASS
-          ↓
-LOCAL PASSWORD/PASSKEY UAT
-        PASS
-          ↓
-REAL GOOGLE UAT
-        PASS
-          ↓
-SHARED EMAIL PLATFORM
-        ARCHITECTURE + IMPLEMENTATION ACCEPTED
-          ↓
-REAL DANTE → SES SIGNUP/RECOVERY UAT
-        PASS
-          ↓
-EMAIL PLATFORM ENGINEERING WORKSTREAM
-        CLOSED
-          ↓
-REAL APPLE REGISTERED-DOMAIN UAT
-        DEFERRED / OPEN
-          ↓
-M5 FINAL CLOSURE RECONCILIATION
+PRE-INTEGRATION AUDIT
         CURRENT
           ↓
-M6 Native Mobile
-        FUTURE / OPTIONAL / ONLY IF RE-GATED
+MERGE protected main → feature/access-auth
+        Recovery + Access/Auth + Email convergence
           ↓
-M7 Security Hardening / Observability / Authenticated Handoff
-        PLANNED
+ALEMBIC FORWARD MERGE + FULL INTEGRATION QA
+          ↓
+PR feature/access-auth → protected main
+          ↓
+MERGE enriched main → feature/platform-observability
+          ↓
+OBSERVABILITY INTEGRATION RECHECK
+          ↓
+PR platform-observability → protected main
+          ↓
+SHARED FOUNDATION UNBLOCKED ON MAIN
+          ↓
+new bounded feature branches
 ```
 
-## 2. What is already proved
+This order is intentional. Do not start additional Access/M7/Mobile feature scope while core shared foundations are still trapped on long-lived branches.
+
+## 2. M5 closure
+
+M5 is closed for its accepted engineering scope.
+
+Proved:
 
 ```text
-password + opaque AuthSession
+password + opaque PostgreSQL-backed AuthSession
 signup / verification / recovery / reset / reauth
-Google backend + official GIS Web integration
+Google backend + real provider UAT
 Apple backend/grant/notification lifecycle
-passkeys / WebAuthn with real fido2 verification
+passkeys / WebAuthn + real Windows Hello UAT
 passwordless Accounts
-provider linking/unlinking
-safe authenticator lifecycle + anti-lockout
-public FastAPI/OpenAPI/generated-client contract
-/security management Web surface
-real Windows Hello passkey UAT
-real Google provider UAT + direct PostgreSQL inspection
+explicit provider linking/unlinking
+anti-lockout authenticator lifecycle
+FastAPI/OpenAPI/generated client
+/security Web management surface
 shared durable Email Platform
-real SES signup verification
-real SES password recovery
-real SES password-reset notification
-post-reset no-auto-login
-post-reset prior-session revocation
-Email Platform provider correlation + secret wipe in real PostgreSQL UAT
+real SES signup/recovery/reset-notification UAT
+post-reset no-auto-login + prior-session revocation
 ```
 
-Do not reopen closed implementation blocks absent direct defect evidence.
+### Apple disposition
 
-## 3. Email Platform — closed engineering direction
+Real Apple registered-domain UAT is **BOUNDED DEFERRED / NON-BLOCKING** because the required real Apple account + registered HTTPS domain are unavailable.
 
-Current accepted architecture and implementation:
+This means:
 
 ```text
-DANTE owns email lifecycle
-external provider owns last-mile Internet delivery
-PostgreSQL transactional outbox is materialized
-feature mutation + EmailIntent are atomically coordinated
-provider I/O stays outside caller transaction
-Amazon SES API v2 is accepted primary external adapter
-SMTP remains LOCAL/CI/compatibility transport behind same durable worker
-provider feedback returns into DANTE delivery/suppression state
-sensitive delivery payload uses dedicated AEAD protection + terminal wipe
-no blind retry after ambiguous outcome
+Apple implementation             IMPLEMENTED / ENGINEERING PROVED
+real Apple external UAT           NOT EXECUTED
+M5 blocked by unavailable Apple   NO
+future Apple enablement           MUST run real external acceptance first
 ```
 
-Authorities:
+Never rewrite this as a fake real-UAT PASS.
 
-- `architecture/email-platform.md`
-- `decisions/ADR-012-email-delivery-platform.md`
-- `development/email-platform-local-uat.md`
-- `development/email-platform-acceptance-2026-09-03.md`
+## 3. Email Platform
 
-Access/Auth integration is intentionally separate in `architecture/access-auth-email-delivery.md`.
+The shared Email Platform is closed as engineering infrastructure and is not an Access/Auth-owned mailer.
 
-## 4. Real Internet delivery acceptance — completed for current Auth consumer
-
-Observed final UAT:
+Current accepted path:
 
 ```text
-normal email/password signup
-→ real verification email arrived
-→ received code worked
-→ Account created
-
-password recovery
-→ real recovery email arrived
-→ bearer URL opened reset surface
-→ password changed
-→ no auto-login
-→ existing session revoked
-→ password-change notification arrived
+DANTE feature mutation
++ durable EmailIntent
+→ PostgreSQL COMMIT
+→ claim / lease / bounded worker
+→ protected versioned payload/template
+→ provider-neutral adapter
+→ SES API v2 / SMTP local-CI compatibility
+→ provider evidence / suppression
 ```
 
-Runtime showed three `provider_accepted` SES attempts, all attempt 1.
+Exact real-provider evidence: `development/email-platform-acceptance-2026-09-03.md`.
 
-Direct PostgreSQL inspection showed provider MessageId for all three accepted attempts and terminal sensitive-payload wipe for the corresponding intents.
+Production sender domain, SPF/DKIM/DMARC, production IAM/workload identity, SES production posture, live cloud feedback routing and reputation operations remain deployment work.
 
-One precise manual non-claim remains recorded: the same consumed recovery URL was not manually reopened in the final run because the message had already been deleted. This does not reopen the Email Platform workstream.
+## 4. Immediate gate — pre-integration audit
 
-## 5. Production email deployment — future operational gate
-
-Do not confuse the closed Email Platform with production sender deployment.
-
-Before production email is called accepted, materialize and prove as applicable:
+Before merging main into this feature branch, verify and repair:
 
 ```text
-DANTE-controlled sender domain/subdomain
-SPF / DKIM / DMARC
-production workload identity / IAM role
-SES production account, quota and reputation posture
-live provider event-ingress wiring
-production alerting/SLOs
-traffic/reputation segmentation
-privacy/legal/subprocessor deployment review
-Apple Private Email Relay sender-domain requirements when Apple is enabled
+documentation lifecycle
+CURRENT vs historical classification
+stale DEFERRED / OPEN / NEXT claims
+protected-main vs branch-local status
+Database System of Record
+Database Dictionary + scope/schema
+SQLAlchemy mappings
+Alembic DAG/head
+runtime ACL
+frozen CP6 proof
+Access/Auth + Email direct tests
+OpenAPI/generated client
+Web/backend regressions
 ```
 
-SES region is explicit deployment configuration. The accepted local real-provider UAT used `eu-west-3` (Paris); the architecture no longer hardcodes a preferred Milan production region.
+No applied migration is rewritten to make the graphs look simpler.
 
-## 6. Immediate next gate — whole M5 closure
+## 5. Access/Auth ↔ protected-main convergence
 
-The Email Platform is no longer the blocker.
-
-The immediate next gate is:
+Protected main currently owns Recovery on a different Alembic child of `20260826_08`:
 
 ```text
-1. final documentation/branch coherence check
-2. decide Apple real-UAT disposition
-   - execute when real Apple + registered HTTPS domain prerequisites exist, OR
-   - explicitly accept a bounded deferral for M5 closure
-3. close M5 if no other direct defect evidence is open
-4. proceed to M7 / authenticated Home handoff according to project priority
+main
+20260826_08
+└── 20260830_09 recovery_material_state_retirement
 ```
 
-Do not invent an additional email milestone after this closure.
-
-## 7. Apple acceptance
-
-Apple backend architecture is implemented. Real Web acceptance remains deferred until a usable Apple account and registered HTTPS domain configuration are available.
-
-The implementation/documentation must continue accepting both:
+Feature Access/Auth owns:
 
 ```text
-privaterelay.appleid.com
-private.icloud.com
+20260826_08
+└── 20260827_09
+    └── 20260827_10
+        └── 20260829_11
+            └── 20260830_12
+                └── 20260831_13
+                    └── 20260903_14
+                        └── 20260903_15
 ```
 
-per the accepted relay semantics.
+Integration policy:
 
-Production Email sender/domain work must preserve Apple Private Email Relay compatibility.
+```text
+merge main into feature/access-auth
+DO NOT rebase
+DO NOT rewrite applied migrations
+preserve both heads
+add one normal forward Alembic merge revision
+prove fresh DB + upgrade path + catalog parity
+prove Recovery + Auth + Email behavior together
+then PR to protected main
+```
 
-## 8. M7 target
+The combined topology is not pre-declared. Exact counts are accepted only after the merged branch is migrated and introspected against real PostgreSQL.
 
-M7 should close the maturity gap visible in mature account/security products without changing the core Auth model:
+## 6. Platform observability integration after Access
+
+`feature/platform-observability` is already source-closed and operationally accepted, but not integrated.
+
+After Access/Auth lands on main:
+
+```text
+new protected main
+→ merge into feature/platform-observability
+→ resolve only real integration deltas
+→ re-run release identity / redaction / correlation / CI checks
+→ PR platform-observability → main
+```
+
+Do not recreate OTel/Alloy/Grafana/Faro/observer/dashboard/alert work that the observability branch has already proved.
+
+## 7. Foundation state after both integrations
+
+Target protected-main common base:
+
+```text
+Product / Domain / Logical / Physical
+Engineering + Frontend foundations
+PostgreSQL CP1–CP6
+Recovery
+Access/Auth
+Email Platform
+Platform Observability
+```
+
+At that point other product workstreams can branch from main without depending on Access/Auth or Observability feature branches.
+
+## 8. Later Access maturity / M7
+
+Later Access/security maturity remains future work, not a prerequisite for the current integration:
 
 ```text
 session/device inventory
 per-session revoke
-revoke all other sessions / log out everywhere
-new-login/security-event alerts
-“this wasn't me” response
-production observability/alerting
-final accessibility/release/legal review
+revoke all others / logout everywhere
+security-event history
+new-login/security notifications
+"this wasn't me" response
+Security UI refinement/componentization
 final authenticated Home handoff
-bounded componentization of the large Security UI
+release/accessibility/security polish
 ```
 
-The shared Email Platform should carry future security-event notifications instead of creating a second mail subsystem.
+When this work starts, it should start from the enriched protected main on a new bounded branch.
 
-## 9. Permanent email invariants
+## 9. M6 Native Mobile
+
+Native Mobile remains **FUTURE / OPTIONAL / RE-GATE**.
+
+Do not build mobile merely to advance a roadmap number. When the product priority is explicit, create a fresh branch from the then-current protected main and reuse the same backend Account/AuthSession/Email/Observability foundations.
+
+## 10. Permanent integration rules
 
 ```text
-OTP/recovery proof never in logs/metrics/traces
-no long-lived plaintext sensitive outbox payload
-provider accepted != delivered
-network timeout != definitely not sent
-no blind retry after ambiguous outcome
-stable DANTE intent reference before external send
-Auth/security tracking OFF
-Auth/security link rewriting OFF
-Auth/security marketing content FORBIDDEN
-production SPF + DKIM + DMARC required before sender acceptance
-Auth/security / product notifications / marketing separable
+protected main is the integration authority
+feature branch truth must be clearly scoped until merged
+applied Alembic revisions are immutable
+Dictionary ≈ SQLAlchemy ≈ Alembic ≈ PostgreSQL ≈ current DB reference
+no blind retry after ambiguous external effects
+no network I/O in authoritative DB transactions
+no generic Entity/EAV/JSONB semantic escape hatch
+no fake PASS
 ```
 
-## 10. Authorities
+## 11. Current authorities
 
 ```text
 docs/PROJECT-STATUS.md
 docs/ROADMAP.md
 docs/workstreams/access-auth.md
-docs/architecture/email-platform.md
-docs/architecture/access-auth-email-delivery.md
-docs/development/email-platform-local-uat.md
-docs/development/email-platform-acceptance-2026-09-03.md
-docs/decisions/ADR-012-email-delivery-platform.md
 docs/database/README.md
 docs/database/access-auth.md
+docs/database/dictionary/
+docs/architecture/access-auth-*.md
+docs/architecture/email-platform.md
+docs/development/email-platform-acceptance-2026-09-03.md
+docs/development/documentation-lifecycle-policy.md
 ```
 
-Historical handoffs remain evidence only and must not override current executable or current-reference truth.
+Historical handoffs/reviews are evidence only and never override these current sources.
