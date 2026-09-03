@@ -1,15 +1,16 @@
 # DANTE AI Implementation Workstream
 
-- **Status:** ACTIVE / I0 CLOSED-PASS / I1 VALIDATION PENDING
+- **Status:** ACTIVE / I0 CLOSED-PASS / I1 CLOSED-PASS / I2 READY
 - **Branch:** `feature/ai-implementation`
 - **Started:** 2026-09-02
 - **I0 closed:** 2026-09-03
+- **I1 closed:** 2026-09-03
 - **Architecture authority:** `../architecture/dante-ai-implementation-baseline-final.md`
 - **Post-AI05 acceptance:** `../architecture/dante-ai-post05-final-mega-acceptance.md`
-- **Current implementation step:** I1 — Search public contracts / eligibility / family registry / deterministic shell
+- **Current implementation step:** I2 — Intelligence pure contracts + deterministic fakes
 - **I0 validated code checkpoint:** `506b7f6c9dcf6c241b9f0f77bfec53a7e8d2d663`
-- **I1 candidate code checkpoint:** `888a8673251f6867aac83875bb6ef09f3f8cdf15`
-- **Implementation claim:** I0 CLOSED / PASS; I1 Search contracts/registry/shell materialized but NOT CLOSED until repository gates pass on the current candidate
+- **I1 validated code checkpoint:** `2eadac22a43a001abbf8ecaacf2da67fde7d2489`
+- **Implementation claim:** I0 and I1 CLOSED / PASS; I2 not yet materialized
 - **Provider/model/SDK:** OPEN / EVIDENCE-DRIVEN
 - **Database/Alembic change:** NONE
 - **Production activation:** NONE
@@ -60,7 +61,7 @@ relative and absolute imports normalized
 indirect-path failures report the dependency path
 ```
 
-No empty `modules/search` or `modules/intelligence` package was created at I0. Search paths materialize only now because I1 contains real code.
+No empty `modules/search` or `modules/intelligence` package was created at I0. Search paths materialized only when I1 contained real code.
 
 ## 3. I0 acceptance evidence
 
@@ -109,9 +110,9 @@ I0 CLOSED / PASS
 
 No GitHub Actions run is attached because the existing workflow does not run for an ordinary feature-branch push. Local direct execution is the evidence for this checkpoint.
 
-## 5. I1 candidate — VALIDATION PENDING
+## 5. I1 — CLOSED / PASS
 
-I1 materializes only the accepted deterministic Search boundary.
+I1 materialized only the accepted deterministic Search boundary.
 
 Current code:
 
@@ -127,7 +128,7 @@ apps/backend/tests/unit/modules/search/test_contracts.py
 apps/backend/tests/unit/modules/search/test_application.py
 ```
 
-Candidate commits:
+Implementation commits:
 
 ```text
 888205ae33e1fb7a7df3443ace94c414584fc59c
@@ -135,6 +136,12 @@ feat(search): add public contracts eligibility registry and shell
 
 888a8673251f6867aac83875bb6ef09f3f8cdf15
 feat(search): harden eligibility and query boundary
+
+ebd1ffcf32938cadeb5f6b80c7a6b76f99bfef14
+style(search): format I1 search implementation
+
+2eadac22a43a001abbf8ecaacf2da67fde7d2489
+fix(search): satisfy I1 lint contracts
 ```
 
 ### 5.1 Public/application contract posture
@@ -164,7 +171,7 @@ No universal `EntityRef` / `entity_id` abstraction is introduced, and public Sea
 
 The application shell constructs the active + eligible family intersection before invoking any query adapter.
 
-Current boundary carries only admitted Search execution state, including:
+The outbound Search boundary carries only admitted execution state, including:
 
 ```text
 owner scopes
@@ -219,51 +226,61 @@ navigation result escaping admitted family/owner
 
 No eligible family yields a uniform safe empty result and does not call the query port. A registered-but-hidden family and a nonexistent family therefore do not become distinguishable through this shell.
 
-### 5.3 Explicit non-claims
+### 5.3 I1 acceptance evidence
+
+Final validated code checkpoint:
 
 ```text
-real Search family activated              NO
-PostgreSQL Search adapter                 NO
-Search database query                     NO
-Search HTTP route                         NO
-Auth/AuthZ integration                    NO
-provider/model/SDK                        NO
-FTS / pg_trgm / vector                    NO
-Intelligence implementation               NO
-database/Alembic change                   NO
-production activation                     NO
-I1 CLOSED                                 NO
+2eadac22a43a001abbf8ecaacf2da67fde7d2489
+```
+
+Fast gate executed fail-fast in the real worktree:
+
+```text
+uv lock --check                              PASS
+uv sync --locked                            PASS
+ruff format --check                         PASS / 60 files already formatted
+ruff check                                  PASS
+mypy                                        PASS / no issues in 55 source files
+architecture + Search targeted suite        PASS / 26 passed
+non-PostgreSQL backend suite                PASS / 74 passed, 80 deselected
+backend source distribution + wheel build   PASS
+fail-fast gate exit code                    0
+```
+
+The targeted suite covered the I0 architecture boundaries plus I1 registry, active/eligible intersection, hidden-family non-interference, minimized access/scopes, filter admission, truthful guarantee downgrade, page bounds, adapter postconditions, safe facet/snippet/count behavior, navigation eligibility, typed Search references, filter-shape validation, trusted request coherence and timezone-aware interpretation requirements.
+
+PostgreSQL regression gate executed after the final I1 code was committed:
+
+```text
+canonical PostgreSQL 18.6 image build        PASS
+PostgreSQL acceptance suite                  PASS / 80 passed, 74 deselected
+PostgreSQL gate exit code                    0
+```
+
+The PostgreSQL gate reconfirmed CP6 M1..M7/final, exact current catalog, Alembic single-head/fresh DB/round trips/drift, role and ACL hardening, recovery material-state retirement, runtime readiness/pool behavior and transaction/savepoint semantics.
+
+I1 made no database or Alembic change.
+
+### 5.4 Explicit non-claims
+
+```text
+I1 CLOSED / PASS                         YES
+real Search family activated             NO
+PostgreSQL Search adapter                NO
+Search database query                    NO
+Search HTTP route                        NO
+Auth/AuthZ integration                   NO
+provider/model/SDK                       NO
+FTS / pg_trgm / vector                   NO
+Intelligence implementation              NO
+database/Alembic change                  NO
+production activation                    NO
 ```
 
 Protected Search still requires real owning data/seams, authoritative Auth/disclosure integration and applicable direct non-interference/currentness proofs before activation.
 
-## 6. I1 validation gate
-
-Run against the exact current candidate in the real worktree:
-
-```text
-cd apps/backend
-uv lock --check
-uv sync --locked
-uv run --locked ruff format --check .
-uv run --locked ruff check .
-uv run --locked mypy
-uv run --locked pytest tests/unit/test_architecture_boundaries.py tests/unit/modules/search -vv
-uv run --locked pytest -m "not postgres"
-uv build
-```
-
-The existing PostgreSQL acceptance gate remains binding before I1 closure even though I1 makes no database change:
-
-```text
-docker build --pull --tag dante-postgres-local:18.6 infra/local/postgres
-cd apps/backend
-uv run --locked pytest -m postgres -vv
-```
-
-I1 may move to CLOSED / PASS only from real execution evidence on the final candidate checkpoint.
-
-## 7. Engineering quality posture
+## 6. Engineering quality posture
 
 Implementation optimizes for:
 
@@ -284,12 +301,12 @@ performance measured at material boundaries rather than guessed micro-optimizati
 
 FastAPI process-scoped resources continue to use the existing `lifespan` model. Existing PostgreSQL runtime/pool behavior is unchanged.
 
-## 8. Next boundary after I1
-
-Only after I1 closes:
+## 7. Next boundary — I2
 
 ```text
 I2 — Intelligence pure contracts + deterministic fakes
 ```
 
-I2 does not authorize provider admission. Provider/model/SDK selection remains evidence-driven and belongs to the later candidate-admission boundary.
+I2 may materialize pure request-local Intelligence contracts and deterministic fakes only. It does not authorize provider admission, provider SDK installation, database/Alembic changes, production HTTP activation, durable Work/Run persistence, AI memory or generic cross-capability database authority.
+
+Before I2 writes, reread the exact Intelligence/Work/Context/Reference/SemanticQuery/Retrieval sections of the final implementation baseline, inspect current repository style and declare a fresh exact write gate.
