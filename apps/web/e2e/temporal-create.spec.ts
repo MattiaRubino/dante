@@ -158,7 +158,9 @@ test('Activity Orario plus Divisibile remains placed and Undo removes the same c
   await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
   await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'advanced');
 
-  await dialog.getByLabel('Struttura di esecuzione').selectOption('splittable');
+  await dialog
+    .getByRole('combobox', { name: /Struttura di esecuzione/ })
+    .selectOption('splittable');
   await dialog.getByLabel('Sessione minima (min)').fill('45');
   await dialog.getByLabel('Numero massimo di sessioni').fill('4');
   await expect(dialog.getByRole('radio', { name: 'Orario' })).toHaveAttribute(
@@ -175,9 +177,9 @@ test('Activity Orario plus Divisibile remains placed and Undo removes the same c
   await expect(dialog.getByLabel('Durata prevista')).toHaveValue('180');
 
   await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
-  await expect(dialog.getByLabel('Struttura di esecuzione')).toHaveValue(
-    'splittable',
-  );
+  await expect(
+    dialog.getByRole('combobox', { name: /Struttura di esecuzione/ }),
+  ).toHaveValue('splittable');
   await expect(dialog.getByLabel('Sessione minima (min)')).toHaveValue('45');
   await expect(dialog.getByLabel('Numero massimo di sessioni')).toHaveValue('4');
 
@@ -394,7 +396,9 @@ test('Advanced validation focuses the invalid execution control without losing t
   await dialog.getByRole('textbox', { name: 'Titolo' }).fill('Studio');
   await dialog.getByLabel('Durata prevista').selectOption('60');
   await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
-  await dialog.getByLabel('Struttura di esecuzione').selectOption('splittable');
+  await dialog
+    .getByRole('combobox', { name: /Struttura di esecuzione/ })
+    .selectOption('splittable');
   await dialog.getByLabel('Sessione minima (min)').fill('120');
   await dialog.getByRole('button', { name: 'Aggiungi' }).click();
 

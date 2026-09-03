@@ -134,8 +134,9 @@ test('an unplaced Activity lives in the tray, quick placement keeps one identity
 
   await undoPlanningMutation(page);
   await expect(card).toHaveCount(0);
-  await expect(planningItem(tray, 'Preparare portfolio')).toBeVisible();
-  await expect(trigger).toContainText('1');
+  const restored = await openPlanningTray(page);
+  await expect(planningItem(restored.tray, 'Preparare portfolio')).toBeVisible();
+  await expect(restored.trigger).toContainText('1');
 });
 
 test('dragging from the tray foregrounds Timeline, previews a snapped timed slot, commits once, and Escape cancels', async ({
@@ -147,6 +148,7 @@ test('dragging from the tray foregrounds Timeline, previews a snapped timed slot
   await createUnplacedActivity(page, 'Rivedere note', 30);
 
   const { tray } = await openPlanningTray(page);
+  const target = await visibleTimedDropPoint(page);
   const first = planningItem(tray, 'Scrivere proposta').locator(
     '.timeline-planning-card__main',
   );
@@ -154,7 +156,6 @@ test('dragging from the tray foregrounds Timeline, previews a snapped timed slot
   if (!itemBox) {
     throw new Error('Expected Planning Tray card geometry');
   }
-  const target = await visibleTimedDropPoint(page);
 
   await page.mouse.move(
     itemBox.x + Math.min(80, itemBox.width / 2),
@@ -182,9 +183,10 @@ test('dragging from the tray foregrounds Timeline, previews a snapped timed slot
   ).toBeVisible();
 
   await undoPlanningMutation(page);
-  await expect(planningItem(tray, 'Scrivere proposta')).toBeVisible();
+  const restored = await openPlanningTray(page);
+  await expect(planningItem(restored.tray, 'Scrivere proposta')).toBeVisible();
 
-  const second = planningItem(tray, 'Rivedere note').locator(
+  const second = planningItem(restored.tray, 'Rivedere note').locator(
     '.timeline-planning-card__main',
   );
   const secondBox = await second.boundingBox();
@@ -204,7 +206,7 @@ test('dragging from the tray foregrounds Timeline, previews a snapped timed slot
     'true',
   );
   await page.mouse.up();
-  await expect(planningItem(tray, 'Rivedere note')).toBeVisible();
+  await expect(planningItem(restored.tray, 'Rivedere note')).toBeVisible();
   await expect(
     page.locator('.timeline-event-card').filter({ hasText: 'Rivedere note' }),
   ).toHaveCount(0);
@@ -227,7 +229,8 @@ test('tray delete is explicit and Undo restores the unplaced Activity', async ({
   await expect(planningItem(tray, 'Pulire archivio')).toHaveCount(0);
 
   await undoPlanningMutation(page);
-  await expect(planningItem(tray, 'Pulire archivio')).toBeVisible();
+  const restored = await openPlanningTray(page);
+  await expect(planningItem(restored.tray, 'Pulire archivio')).toBeVisible();
 });
 
 test('Planning Tray becomes a bounded bottom sheet on mobile', async ({ page }) => {
