@@ -1,19 +1,21 @@
 # DANTE AI Implementation Workstream
 
-- **Status:** ACTIVE / I0 CLOSED-PASS / I1 CLOSED-PASS / I2 CLOSED-PASS / I3 DEFERRED-WAITING-OWNER-SEAMS / C6 READY
+- **Status:** ACTIVE / I0 CLOSED-PASS / I1 CLOSED-PASS / I2 CLOSED-PASS / I3 DEFERRED-WAITING-OWNER-SEAMS / C6 CLOSED-PASS / C7 READY
 - **Branch:** `feature/ai-implementation`
 - **Started:** 2026-09-02
 - **I0 closed:** 2026-09-03
 - **I1 closed:** 2026-09-03
 - **I2 closed:** 2026-09-03
+- **C6 closed:** 2026-09-03
 - **Architecture authority:** `../architecture/dante-ai-implementation-baseline-final.md`
 - **Post-AI05 acceptance:** `../architecture/dante-ai-post05-final-mega-acceptance.md`
-- **Current executable checkpoint:** C6 — Policy / Resource / Verification / Publication / Effect / Egress / Evidence contracts
+- **Current executable checkpoint:** C7 — route-config identity / loader / content digest snapshot
 - **Deferred conditional lane:** I3/C3 — real deterministic Search/structured families when owning data/seams become integration-ready
 - **I0 validated code checkpoint:** `506b7f6c9dcf6c241b9f0f77bfec53a7e8d2d663`
 - **I1 validated code checkpoint:** `2eadac22a43a001abbf8ecaacf2da67fde7d2489`
 - **I2 validated code checkpoint:** `359707b8d628347f82a0344d44f9fd42d0f59dcd`
-- **Implementation claim:** I0, I1 and I2 CLOSED / PASS; I3 not materialized; C6 not yet materialized
+- **C6 validated code checkpoint:** `2f96d4fb85300fdbfd00e66b9b6d23b26141397f`
+- **Implementation claim:** I0, I1, I2 and C6 CLOSED / PASS; I3 not materialized; C7 not yet materialized
 - **Provider/model/SDK:** OPEN / EVIDENCE-DRIVEN
 - **Database/Alembic change:** NONE
 - **Production activation:** NONE
@@ -432,7 +434,9 @@ The accepted architecture stage numbering remains unchanged. The implementation 
 ```text
 C6  Policy / Resource / Verification / Publication /
     Effect / Egress / Evidence contracts
+    CLOSED / PASS
     ↓
+CURRENT
 C7  route-config identity / loader / content digest snapshot
     ↓
 I4 / C8
@@ -455,37 +459,40 @@ bounded PostgreSQL Search adapter + first real deterministic family proof
 Mandatory convergence:
 
 ```text
-C6 → C7 → I4 → I5
-                 \
-                  +→ JOIN GATE → I6 READ-ONLY ASK
-                 /
+C7 → I4 → I5
+            \
+             +→ JOIN GATE → I6 READ-ONLY ASK
+            /
 I3/C3 when owner seams become ready
 ```
 
 I6 may not activate the accepted first vertical until the required real source/query path, authoritative Auth/AuthZ/disclosure, currentness/publication behavior and applicable direct proofs are ready.
 
-## 7. Current executable boundary — C6
+## 7. C6 — CLOSED / PASS; C7 READY
 
-Baseline candidate commit:
+C6 materialized the provider-independent control/safety/publication contract layer without activating provider, database or production behavior.
 
-```text
-C6 feat(ai): Policy/Resource/Verification/Publication/Effect/Egress/Evidence contracts
-```
-
-C6 may materialize pure provider-independent application contracts and deterministic fakes/tests for:
+Materialized contract domains:
 
 ```text
-Policy decision consumption
-Resource estimate/admit/settle semantics
-VerificationResult
-ResultMaturity transition constraints as applicable
-EffectOutcome / first-vertical NO_EFFECT boundary
-EgressAttempt / exposure accounting semantics
-PublicationDecision / safe publication result
-runtime Evidence emission contract
+Policy
+Resource estimate / admission / settlement
+Verification
+Effect / explicit first-vertical NO_EFFECT
+Egress / exposure accounting
+Publication
+Runtime Evidence
 ```
 
-C6 must preserve:
+Materialized consumer ports:
+
+```text
+PolicyPort
+ResourceControl
+RuntimeEvidencePort
+```
+
+C6 preserves the accepted boundaries:
 
 ```text
 Policy consumer != Authority/AuthZ owner
@@ -493,29 +500,107 @@ Resource admission != commercial accounting truth
 UNKNOWN usage != ZERO usage
 MODEL OUTPUT != PUBLISHABLE OUTPUT
 provider completed != verified != publishable
-Effect first vertical = NO_EFFECT
+READ_ONLY -> NO_EFFECT
+provider attempt failed != disclosure did not happen
 ContextManifest != EgressAttempt != audit evidence
 telemetry != audit != canonical truth
 request-local/no-store unless an independent durability trigger exists
 ```
 
-C6 does **not** authorize:
+Final validated code checkpoint:
 
 ```text
-provider candidate selection
-provider SDK installation
-route-config implementation beyond C6 needs
-HTTP production activation
-real Auth/AuthZ ownership
-real billing/quota accounting ownership
-durable Work/Run
-AI memory
-new DB/Alembic schema
-generic AI persistence
-consequential mutation/effect execution
+2f96d4fb85300fdbfd00e66b9b6d23b26141397f
 ```
 
-Before C6 writes, reread the Policy/Resource/Verification/Publication/Effect/Egress/Evidence sections of the final baseline and relevant AI-04/AI-05 authorities, inspect current repository style and declare a fresh exact write gate.
+Acceptance evidence:
+
+```text
+uv lock --check                              PASS
+uv sync --locked                            PASS
+ruff format --check                         PASS / 95 files already formatted
+ruff check                                  PASS
+mypy strict                                 PASS / no issues in 90 source files
+architecture + Search + Intelligence suite  PASS / 75 passed
+non-PostgreSQL backend suite                PASS / 123 passed, 80 deselected
+backend source distribution + wheel build   PASS
+FAST GATE                                   PASS
+
+canonical PostgreSQL 18.6 image build       PASS
+PostgreSQL acceptance suite                 PASS / 80 passed, 123 deselected
+
+C6 OVERALL                                  PASS
+C6 gate exit code                           0
+```
+
+The PostgreSQL gate reconfirmed CP6 M1..M7/final, exact current catalog, fresh-DB/single-head migration behavior, Alembic round trips/drift, roles/ACL/search_path, Recovery material-state retirement, runtime readiness/pool recovery and transaction/savepoint semantics.
+
+Explicit non-claims:
+
+```text
+C6 CLOSED / PASS                         YES
+I3/C3 materialized                       NO / DEFERRED
+provider candidate admitted              NO
+provider/model/SDK                       NO
+route-config C7 implemented              NO
+HTTP production route                    NO
+Auth/AuthZ integration                   NO
+durable Work/Run                         NO
+AI memory                                NO
+commercial/shared ledger                 NO
+consequential Effect execution           NO
+database/Alembic change                  NO
+production activation                    NO
+```
+
+### 7.1 Current executable boundary — C7
+
+Accepted candidate commit:
+
+```text
+C7 feat(ai): route-config identity/loader/digest snapshot
+```
+
+C7 may materialize only the provider-neutral configuration identity and loading boundary required before provider candidate admission.
+
+Binding target:
+
+```text
+apps/backend/config/intelligence/revisions/<revision>.json
+
+RouteConfigIdentity
+= logical revision
++ content digest
+```
+
+C7 must preserve:
+
+```text
+behavior-bearing config = static / versioned / typed first
+ACTIVE POINTER != IMMUTABLE CONFIG REVISION
+RouteConfigSnapshot immutable for one invocation
+coherent config revision required
+content digest binds the exact loaded bytes
+secrets are not configuration payload
+deployment selectors/locators do not become hidden behavior policy
+frozen execution configuration != perpetual current authorization
+```
+
+C7 does not authorize:
+
+```text
+provider candidate admission
+provider SDK installation
+provider adapter
+live provider calls
+production route activation
+new database/Alembic state
+dynamic control-plane database
+Auth bypass
+commercial ledger
+```
+
+I3/C3 remains independently deferred and must converge before I6 when the real deterministic source/query path is required.
 
 ## 8. Engineering quality posture
 
