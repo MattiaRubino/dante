@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "revision": "openai-terra-candidate-v1",
+  "model_targets": [
+    "ask-readonly-terra-v1"
+  ],
+  "harness_profiles": [
+    "ask-readonly-openai-v1"
+  ],
+  "provider_bindings": [
+    "openai-responses-terra-candidate-v1"
+  ],
+  "route_policies": [
+    "qualification-only:no-production-routing"
+  ],
+  "feature_modes": [
+    "ask_dante:disabled",
+    "background:off",
+    "provider_continuation:off",
+    "provider_native_tools:off",
+    "provider_storage:off",
+    "streaming:off"
+  ],
+  "qualification_requirements": [
+    "candidate-admission:c8",
+    "adapter-conformance:c9",
+    "live-compatibility:c9",
+    "direct-dante-eval:c10",
+    "privacy-security:before-private-data",
+    "production-qualification:before-promotion"
+  ],
+  "control_profiles": [
+    "provider-attempt:dante-owned",
+    "egress:synthetic-public-minimized-only"
+  ],
+  "retry_profiles": [
+    "provider-sdk:auto-retry-off",
+    "dante-retry:classified-pre-acceptance-only"
+  ],
+  "fallback_profiles": [
+    "provider-fallback:off"
+  ],
+  "resource_profiles": [
+    "attempt-resource-admission:required"
+  ],
+  "security_profiles": [
+    "private-data:ineligible",
+    "store:false"
+  ],
+  "rollout_profiles": [
+    "binding:inactive",
+    "production:off"
+  ]
+}
