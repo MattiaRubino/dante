@@ -1,13 +1,14 @@
 # DANTE AI Implementation Workstream
 
-- **Status:** ACTIVE / I0 VALIDATION PENDING
-- **Branch:** `feature/ai-architecture`
+- **Status:** ACTIVE / I0 CLOSED-PASS / I1 READY
+- **Branch:** `feature/ai-implementation`
 - **Started:** 2026-09-02
+- **I0 closed:** 2026-09-03
 - **Architecture authority:** `../architecture/dante-ai-implementation-baseline-final.md`
 - **Post-AI05 acceptance:** `../architecture/dante-ai-post05-final-mega-acceptance.md`
-- **Current implementation step:** I0 — repository/application ownership + architecture-test skeleton
-- **Current code checkpoint:** `3019b9a97650c50bcc04d33769e79a7d0c75d28e`
-- **Implementation claim:** C1 architecture-boundary checks materialized and hardened; I0 NOT CLOSED until repository gates execute cleanly
+- **Current implementation step:** I1 — Search public contracts / eligibility / family registry / deterministic shell
+- **I0 validated code checkpoint:** `506b7f6c9dcf6c241b9f0f77bfec53a7e8d2d663`
+- **Implementation claim:** I0 repository/application ownership and executable architecture-boundary checks CLOSED / PASS; no Search or Intelligence product behavior is claimed yet
 - **Provider/model/SDK:** OPEN / EVIDENCE-DRIVEN
 - **Database/Alembic change:** NONE
 - **Production activation:** NONE
@@ -20,17 +21,17 @@ This workstream turns the accepted DANTE Intelligence architecture into producti
 
 The final implementation baseline owns architecture. This file records only current implementation state and the next executable gate.
 
-## 2. Current phase — I0
+## 2. I0 — CLOSED / PASS
 
-I0 establishes executable architecture boundaries before Search or Intelligence behavior is implemented.
+I0 established executable architecture boundaries before Search or Intelligence behavior is implemented.
 
-Current materialization:
+Materialized implementation:
 
 ```text
 apps/backend/tests/unit/test_architecture_boundaries.py
 ```
 
-The checker currently enforces:
+The checker enforces:
 
 ```text
 runtime dependencies remain at the accepted pre-provider baseline
@@ -58,11 +59,11 @@ relative and absolute imports normalized
 indirect-path failures report the dependency path
 ```
 
-No empty `modules/search` or `modules/intelligence` package is created at I0. Those paths materialize only when I1/I2 add real implementation content.
+No empty `modules/search` or `modules/intelligence` package was created at I0. Those paths materialize only when I1/I2 add real implementation content.
 
 ## 3. Architecture-testing technology posture
 
-Current 2026 tooling such as Import Linter can enforce forbidden/protected/layer/independence contracts and supports Python 3.14. DANTE does not add it at I0 because the accepted rules are currently small enough to enforce with a deterministic stdlib checker and no additional supply-chain surface.
+Current 2026 tooling such as Import Linter can enforce forbidden/protected/layer/independence contracts and supports Python 3.14. DANTE did not add it at I0 because the accepted rules are currently small enough to enforce with a deterministic stdlib checker and no additional supply-chain surface.
 
 Re-evaluate a dedicated dependency-graph tool when:
 
@@ -75,11 +76,17 @@ benchmarking shows a dedicated tool is more reliable at acceptable CI cost
 
 Adoption remains evidence-driven rather than stylistic.
 
-## 4. I0 validation gate
+## 4. I0 acceptance gate — CLOSED / PASS
 
-I0 may be marked PASS only after the real branch/worktree executes the normal backend gates against the current code checkpoint.
+I0 was accepted only after the real `feature/ai-implementation` worktree executed the normal backend gates against validated code checkpoint:
 
-Required fast gate:
+```text
+506b7f6c9dcf6c241b9f0f77bfec53a7e8d2d663
+```
+
+### 4.1 Fast gate
+
+Executed fail-fast:
 
 ```text
 cd apps/backend
@@ -93,9 +100,48 @@ uv run --locked pytest -m "not postgres"
 uv build
 ```
 
-The normal repository backend contract also retains the real PostgreSQL acceptance suite. I0 introduces no AI database fixture and no DB/Alembic change.
+Observed result:
 
-## 5. Current evidence
+```text
+uv lock --check                              PASS
+uv sync --locked                            PASS
+ruff format --check                         PASS / 51 files already formatted
+ruff check                                  PASS
+mypy                                        PASS / no issues in 46 source files
+architecture-boundary suite                 PASS / 10 passed
+non-PostgreSQL backend suite                PASS / 58 passed, 80 deselected
+backend source distribution + wheel build   PASS
+```
+
+The isolated architecture suite emits coverage warnings because it inspects source through AST rather than importing `dante`; this is not treated as production-code coverage evidence. The complete non-PostgreSQL suite collected normal coverage and passed.
+
+### 4.2 PostgreSQL gate
+
+The canonical local PostgreSQL image was rebuilt from the repository boundary:
+
+```text
+docker build --pull --tag dante-postgres-local:18.6 infra/local/postgres
+```
+
+Then the real PostgreSQL acceptance suite executed:
+
+```text
+cd apps/backend
+uv run --locked pytest -m postgres -vv
+```
+
+Observed result:
+
+```text
+canonical PostgreSQL 18.6 image build        PASS
+PostgreSQL acceptance suite                  PASS / 80 passed, 58 deselected
+```
+
+The passing suite includes the existing CP6 M1..M7/final contracts, exact current catalog, fresh-database single-head migration, head/base/head and recovery-head round trips, Alembic drift check, role/ACL hardening, runtime readiness/pool behavior and transaction/savepoint behavior.
+
+I0 introduced no AI database fixture and no database or Alembic change.
+
+## 5. I0 evidence ledger
 
 Completed:
 
@@ -103,6 +149,8 @@ Completed:
 implementation-entry write gate verified at 5e2c67559670b2bc5780fbcdb3c1aae90975e5ca
 initial C1 architecture test commit a6e769c8f79beea6dd531beb899b44cffb699da5
 transitive dependency-graph hardening commit 3019b9a97650c50bcc04d33769e79a7d0c75d28e
+workstream synchronization commit 634d1714645147ccf8eb434942a873e44c0c1d2c
+Ruff-format repair commit 506b7f6c9dcf6c241b9f0f77bfec53a7e8d2d663
 readback exact
 checker syntax compiled independently
 synthetic positive baseline PASS
@@ -116,20 +164,12 @@ synthetic negative cases caught:
   FastAPI inside Intelligence core
   universal EntityRef introduction
   provider runtime dependency addition
+real worktree fast gate PASS
+real PostgreSQL acceptance gate PASS
+I0 CLOSED / PASS
 ```
 
-Not yet claimed:
-
-```text
-ruff PASS on real worktree
-mypy PASS on real worktree
-pytest PASS on real worktree
-build PASS on real worktree
-PostgreSQL suite PASS at this checkpoint
-I0 CLOSED
-```
-
-No GitHub Actions run is attached because the existing workflow triggers on protected-main push, pull request to main or manual dispatch, not an ordinary feature-branch push.
+No GitHub Actions run is attached because the existing workflow triggers on protected-main push, pull request to main or manual dispatch, not an ordinary feature-branch push. Local direct execution is the evidence for this I0 checkpoint.
 
 ## 6. Engineering quality posture
 
@@ -152,11 +192,15 @@ performance measured at material boundaries rather than guessed micro-optimizati
 
 FastAPI process-scoped resources continue to use the existing `lifespan` model. Existing PostgreSQL runtime/pool behavior is unchanged by I0.
 
-## 7. Next step
+## 7. Next step — I1
 
 ```text
-FIRST: execute and close the real I0 backend gate
-THEN: I1 — Search public contracts / eligibility / family registry / deterministic shell
+I1 — Search public contracts
+   + eligibility contracts
+   + SearchFamilyRegistry
+   + deterministic application shell
 ```
 
-I1 must not add a provider dependency, database migration, FTS/vector activation or production HTTP activation.
+I1 must preserve the accepted Search ownership boundary and must not add a provider dependency, database migration, FTS/vector activation or production HTTP activation.
+
+Before I1 writes, reread the final implementation baseline and current repository package/testing style, declare a fresh exact write gate, and materialize only real package content rather than ceremonial empty scaffolding.
