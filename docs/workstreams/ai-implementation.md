@@ -1,6 +1,6 @@
 # DANTE AI Implementation Workstream
 
-- **Status:** ACTIVE / I0 CLOSED-PASS / I1 CLOSED-PASS / I2 CLOSED-PASS / I3 DEFERRED-WAITING-OWNER-SEAMS / C6 CLOSED-PASS / C7 CLOSED-PASS / C8 READY
+- **Status:** ACTIVE / I0 CLOSED-PASS / I1 CLOSED-PASS / I2 CLOSED-PASS / I3 DEFERRED-WAITING-OWNER-SEAMS / C6 CLOSED-PASS / C7 CLOSED-PASS / C8 CLOSED-P1-ADMITTED / C9 READY
 - **Branch:** `feature/ai-implementation`
 - **Started:** 2026-09-02
 - **I0 closed:** 2026-09-03
@@ -8,486 +8,266 @@
 - **I2 closed:** 2026-09-03
 - **C6 closed:** 2026-09-03
 - **C7 closed:** 2026-09-03
+- **C8 closed:** 2026-09-03
 - **Architecture authority:** `../architecture/dante-ai-implementation-baseline-final.md`
 - **Post-AI05 acceptance:** `../architecture/dante-ai-post05-final-mega-acceptance.md`
-- **Current executable checkpoint:** C8 / I4 — provider candidate-admission decision
+- **Provider admission record:** `ai-provider-candidate-admission-2026-09.md`
+- **Current executable checkpoint:** C9 — admitted inactive OpenAI Responses / `gpt-5.6-terra` adapter + conformance/live compatibility
 - **Deferred conditional lane:** I3/C3 — real deterministic Search/structured families when owning data/seams become integration-ready
 - **I0 validated code checkpoint:** `506b7f6c9dcf6c241b9f0f77bfec53a7e8d2d663`
 - **I1 validated code checkpoint:** `2eadac22a43a001abbf8ecaacf2da67fde7d2489`
 - **I2 validated code checkpoint:** `359707b8d628347f82a0344d44f9fd42d0f59dcd`
 - **C6 validated code checkpoint:** `2f96d4fb85300fdbfd00e66b9b6d23b26141397f`
 - **C7 validated code checkpoint:** `65b4bdfe6987e7a2cbb9d543fd4a92b87264cf97`
-- **Implementation claim:** I0, I1, I2, C6 and C7 CLOSED / PASS; I3 not materialized; C8 admission decision not yet recorded
-- **Provider/model/SDK:** OPEN / EVIDENCE-DRIVEN
+- **C8 decision checkpoint:** provider admission record committed after C7 closure; read live Git for the exact current SHA
+- **Provider candidate:** OpenAI native API / Responses API / `gpt-5.6-terra` — ADMITTED FOR QUALIFICATION ONLY
+- **Provider SDK:** NOT INSTALLED YET
+- **Provider adapter:** NOT MATERIALIZED YET
+- **Production qualification:** NO
+- **Private-data eligibility:** NO
 - **Database/Alembic change:** NONE
 - **Production activation:** NONE
 
-Repository truth and executable tests outrank this workstream record.
+Repository truth and executable tests outrank this workstream record. Current documentation describes present truth directly; Git preserves the fine-grained chronology of implementation and hardening commits.
 
-## 1. Purpose
+---
 
-This workstream turns the accepted DANTE Intelligence architecture into production code without weakening Product/Domain/Logical/Physical/PostgreSQL or AI-02..AI-05 contracts.
+## 1. Purpose and authority
 
-The final implementation baseline owns architecture. This file records current branch-local implementation state, validated checkpoints, trigger-gated deferrals and the next executable gate.
+This workstream turns the accepted DANTE Intelligence architecture into production code without weakening Product, Domain, Logical, Physical, PostgreSQL or AI-02..AI-05 contracts.
 
-The accepted I0-I10 identifiers remain architecture-stage labels. The execution overlay may defer a conditional integration lane without renumbering, silently closing or weakening that stage.
+The accepted I0-I10 identifiers remain architectural stage labels. The execution overlay may defer a trigger-gated integration lane without renumbering, silently closing or weakening that stage.
+
+Binding implementation invariants include:
+
+```text
+DANTE != chatbot / provider / model / transcript
+PostgreSQL = sole canonical persistence + material-history authority
+GLOBAL SEARCH != INTELLIGENCE
+Context != Retrieval != Memory
+ConsumerContext != ContextManifest != BasisManifest
+DATA != INSTRUCTION
+MODEL OUTPUT != PUBLISHABLE OUTPUT
+PROVIDER COMPLETED != VERIFIED != PUBLISHABLE
+PROVIDER FAILURE != DISCLOSURE DID NOT HAPPEN
+MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT
+HARNESSPROFILE != PROVIDERBINDING
+PROVIDER SDK != APPLICATION CONTRACT
+CANDIDATE ADMISSION != PRODUCTION QUALIFICATION
+QUALIFIED != ELIGIBLE != AVAILABLE != ENTITLED != ROLLOUT-ACTIVE
+BUILD-READY != INTEGRATION-READY != ACTIVATION-READY
+DEFAULT NONCANONICAL AI PERSISTENCE = NO
+```
+
+No generic Repository/UoW, universal EntityRef/entity_id, model-to-SQL, provider-owned application semantics, generic AI persistence or hidden provider retry authority is accepted.
+
+---
 
 ## 2. I0 — CLOSED / PASS
 
-I0 established executable architecture boundaries before Search or Intelligence behavior was implemented.
-
-Materialized implementation:
+I0 materialized the executable architecture boundary checker:
 
 ```text
 apps/backend/tests/unit/test_architecture_boundaries.py
 ```
 
-The checker enforces:
+It enforces at least:
 
 ```text
-runtime dependencies remain at the accepted pre-provider baseline
-Search cannot directly import Intelligence
-Search cannot reach Intelligence through an indirect internal dependency path
-Intelligence can directly consume Search only through Search public/contracts surfaces
-Intelligence cannot indirectly reach private Search implementation
+runtime dependencies remain inside the accepted baseline
+Search cannot import/reach Intelligence
+Intelligence consumes Search only through public Search surfaces
+Intelligence cannot reach private Search implementation
 Intelligence cannot import SQLAlchemy or dante.platform.database
-Search DB/SQLAlchemy access is restricted to its outbound persistence adapter namespace
-FastAPI is restricted to inbound adapters inside Search/Intelligence
-production capability modules cannot import eval tooling
-forbidden universal AI abstractions EntityRef / Repository / UnitOfWork / entity_id are rejected
+Search DB access is confined to its outbound persistence adapter namespace
+FastAPI is confined to inbound adapters in Search/Intelligence
+production modules cannot import eval tooling
+EntityRef / Repository / UnitOfWork / entity_id remain forbidden convenience semantics
 ```
 
-Implementation properties:
-
-```text
-Python stdlib only: ast + tomllib
-no production dependency
-no dev dependency
-no runtime code path
-source AST parsed once per test process via functools.cache
-internal DANTE import graph resolved from actual source modules
-relative and absolute imports normalized
-indirect-path failures report the dependency path
-```
-
-I0 acceptance checkpoint:
+Validated code checkpoint:
 
 ```text
 506b7f6c9dcf6c241b9f0f77bfec53a7e8d2d663
 ```
 
-Fast gate:
+Acceptance evidence:
 
 ```text
-uv lock --check                              PASS
-uv sync --locked                            PASS
-ruff format --check                         PASS / 51 files already formatted
-ruff check                                  PASS
-mypy                                        PASS / no issues in 46 source files
-architecture-boundary suite                 PASS / 10 passed
-non-PostgreSQL backend suite                PASS / 58 passed, 80 deselected
-backend source distribution + wheel build   PASS
+ruff / mypy / architecture suite            PASS
+non-PostgreSQL backend suite                PASS / 58
+backend build                               PASS
+canonical PostgreSQL 18.6 image             PASS
+PostgreSQL acceptance suite                 PASS / 80
 ```
 
-PostgreSQL gate:
+I0 introduced no provider dependency and no database/Alembic change.
 
-```text
-canonical PostgreSQL 18.6 image build        PASS
-PostgreSQL acceptance suite                  PASS / 80 passed, 58 deselected
-```
-
-Evidence ledger:
-
-```text
-implementation-entry write gate verified at 5e2c67559670b2bc5780fbcdb3c1aae90975e5ca
-initial C1 architecture test commit a6e769c8f79beea6dd531beb899b44cffb699da5
-transitive dependency-graph hardening commit 3019b9a97650c50bcc04d33769e79a7d0c75d28e
-workstream synchronization commit 634d1714645147ccf8eb434942a873e44c0c1d2c
-Ruff-format repair commit 506b7f6c9dcf6c241b9f0f77bfec53a7e8d2d663
-real worktree fast gate PASS
-real PostgreSQL acceptance gate PASS
-I0 CLOSED / PASS
-```
-
-I0 introduced no database/Alembic change and no provider dependency.
+---
 
 ## 3. I1 — CLOSED / PASS
 
-I1 materialized only the accepted deterministic Search boundary.
-
-Current code:
+I1 materialized the deterministic Global Search public/application shell:
 
 ```text
-apps/backend/src/dante/modules/__init__.py
-apps/backend/src/dante/modules/search/__init__.py
-apps/backend/src/dante/modules/search/contracts.py
-apps/backend/src/dante/modules/search/public.py
-apps/backend/src/dante/modules/search/application.py
-apps/backend/src/dante/modules/search/ports/__init__.py
-apps/backend/src/dante/modules/search/ports/query.py
-apps/backend/tests/unit/modules/search/test_contracts.py
-apps/backend/tests/unit/modules/search/test_application.py
+modules/search/contracts.py
+modules/search/public.py
+modules/search/application.py
+modules/search/ports/query.py
 ```
 
-Implementation commits:
+Key behavior:
 
 ```text
-888205ae33e1fb7a7df3443ace94c414584fc59c
-feat(search): add public contracts eligibility registry and shell
-
-888a8673251f6867aac83875bb6ef09f3f8cdf15
-feat(search): harden eligibility and query boundary
-
-ebd1ffcf32938cadeb5f6b80c7a6b76f99bfef14
-style(search): format I1 search implementation
-
-2eadac22a43a001abbf8ecaacf2da67fde7d2489
-fix(search): satisfy I1 lint contracts
+immutable SearchEligibilityEnvelope
+SearchFamilyRegistry
+active + eligible family intersection before query I/O
+permission-safe owner/source/projection/filter/facet/count scope
+truthful maximum guarantee handling
+safe empty result when no eligible family
+SearchTargetRef typed/discriminated by accepted reference family
+no real Search family, PG adapter or HTTP route activated
 ```
 
-### 3.1 Public/application contract posture
-
-Implemented as immutable stdlib-oriented contracts and Protocols:
-
-```text
-frozen/slotted dataclasses
-StrEnum / NewType / Python 3.14 type aliases
-SearchService Protocol
-SearchQueryPort Protocol
-immutable SearchFamilyRegistry
-```
-
-Search target references preserve the accepted semantic families:
-
-```text
-NativeSearchTargetRef
-ScopedRecordSearchTargetRef
-MaterialStateSearchTargetRef
-ExternalSearchTargetRef
-```
-
-No universal `EntityRef` / `entity_id` abstraction is introduced, and public Search does not import persistence-owned database reference modules.
-
-### 3.2 Eligibility/non-interference posture
-
-The application shell constructs the active + eligible family intersection before query I/O.
-
-The outbound boundary carries only admitted execution state, including:
-
-```text
-owner/source scopes
-safe projection fields
-permitted filter/facet fields
-current/history support
-navigation/snippet/facet/count eligibility
-source lifecycle exclusions
-negative scopes
-sensitivity ceiling
-current access/basis refs
-family source/coherence/snapshot/currentness/publication requirements
-```
-
-Explicit pre-query checks include active registration, current request eligibility, owner/source scope presence, temporal compatibility, query/filter compatibility, filter-field admission, minimum safe hit projection, page bounds and truthful guarantee admission.
-
-Observable features are contracted before the outbound port and adapter-result postconditions reject unadmitted family hits, disallowed snippets/facets/counts, guarantee overclaims and navigation owner/family escape.
-
-No eligible family yields a uniform safe empty result without query-port I/O, preventing registered-but-hidden versus nonexistent family distinction through this shell.
-
-### 3.3 I1 acceptance evidence
-
-Final validated code checkpoint:
+Validated code checkpoint:
 
 ```text
 2eadac22a43a001abbf8ecaacf2da67fde7d2489
 ```
 
-Fast gate:
+Acceptance evidence:
 
 ```text
-uv lock --check                              PASS
-uv sync --locked                            PASS
-ruff format --check                         PASS / 60 files already formatted
-ruff check                                  PASS
-mypy                                        PASS / no issues in 55 source files
-architecture + Search targeted suite        PASS / 26 passed
-non-PostgreSQL backend suite                PASS / 74 passed, 80 deselected
-backend source distribution + wheel build   PASS
-fail-fast gate exit code                    0
+architecture + Search suite                 PASS / 26
+non-PostgreSQL backend suite                PASS / 74
+backend build                               PASS
+PostgreSQL acceptance suite                 PASS / 80
 ```
-
-PostgreSQL regression gate:
-
-```text
-canonical PostgreSQL 18.6 image build        PASS
-PostgreSQL acceptance suite                  PASS / 80 passed, 74 deselected
-PostgreSQL gate exit code                    0
-```
-
-The DB gate reconfirmed CP6 M1..M7/final, exact current catalog, Alembic fresh-DB/single-head/round-trip/drift behavior, roles/ACL, recovery material-state retirement, runtime readiness/pool behavior and transaction/savepoint semantics.
 
 Explicit non-claims:
 
 ```text
-I1 CLOSED / PASS                         YES
-real Search family activated             NO
-PostgreSQL Search adapter                NO
-Search database query                    NO
-Search HTTP route                        NO
-Auth/AuthZ integration                   NO
-provider/model/SDK                       NO
-FTS / pg_trgm / vector                   NO
-database/Alembic change                  NO
-production activation                    NO
+real Search family                          NO
+Search PostgreSQL adapter                   NO
+Search HTTP                                 NO
+Auth/AuthZ integration                      NO
+FTS / pg_trgm / vector                      NO
+DB/Alembic change                           NO
 ```
 
-## 4. I2 — CLOSED / PASS
+---
 
-I2 materialized the accepted request-local Intelligence C5 contracts and deterministic test fakes only. It did not activate a provider, real owning query seam, durable Run model or production route.
+## 4. I2 / C5 — CLOSED / PASS
 
-Current production contracts:
+I2 materialized provider/DB-agnostic request-local Intelligence contracts and deterministic fakes for:
 
 ```text
-apps/backend/src/dante/modules/intelligence/__init__.py
-apps/backend/src/dante/modules/intelligence/contracts/__init__.py
-apps/backend/src/dante/modules/intelligence/contracts/work.py
-apps/backend/src/dante/modules/intelligence/contracts/context.py
-apps/backend/src/dante/modules/intelligence/contracts/references.py
-apps/backend/src/dante/modules/intelligence/contracts/semantic_query.py
-apps/backend/src/dante/modules/intelligence/contracts/retrieval.py
+Work / Execution
+Context / InformationNeed / ContextStrategy
+Reference Resolution
+Semantic Query
+Retrieval
+ContextFragment / readiness / manifests
 ```
 
-Current deterministic test support:
+Key boundaries:
 
 ```text
-apps/backend/tests/unit/modules/intelligence/fakes.py
-apps/backend/tests/unit/modules/intelligence/test_work_contracts.py
-apps/backend/tests/unit/modules/intelligence/test_context_contracts.py
-apps/backend/tests/unit/modules/intelligence/test_reference_resolution.py
-apps/backend/tests/unit/modules/intelligence/test_semantic_query.py
-apps/backend/tests/unit/modules/intelligence/test_retrieval.py
-```
-
-Implementation/hardening commits:
-
-```text
-935ae1388e7d95176f7c43cd93efed559e7a40dc
-feat(ai): add request-local intelligence contracts and fakes
-
-a324576c313135df9a9768702c76a993a8ef3a1c
-fix(ai): harden reference resolution proof
-
-c19eaff04af8b5117c4c2c8f155029529627c644
-style(ai): format I2 intelligence contracts
-
-56ac1e3a2b5a52560822bf58223b4451f6233828
-style(ai): sort I2 test imports
-
-4e9e3d7606f8747907ccf9ddb815ddad608a9974
-test(ai): fix I2 test package identity
-
-359707b8d628347f82a0344d44f9fd42d0f59dcd
-test(ai): close I2 static test hygiene
-```
-
-### 4.1 Contract posture
-
-I2 preserves the accepted separations:
-
-```text
-Interaction Session != WorkContract != request-local execution state
-Context != Retrieval != Memory
-ConsumerContext != ContextManifest != BasisManifest
+WorkContract immutable / first vertical READ_ONLY
+request-local execution state != Domain Actual/Outcome
+Reference Resolution operates only over already-eligible candidates
+hidden candidates cannot manufacture visible ambiguity
+SemanticQueryGateway != raw DB/SQL authority
+missing owner seam -> NOT_INTEGRATION_READY
 RetrievalCandidate != ContextFragment
-DATA != INSTRUCTION
-current != historical != scenario/open-world assertion
-MODEL CONFIDENCE != REFERENCE RESOLUTION
-Search != Semantic Query
-Semantic Query != raw DB authority
-provider completion != verified != publishable
+rank/count/score do not upgrade truth/currentness guarantees
 ```
 
-`WorkContract` is immutable and first-vertical/read-only. Request-local execution status, result maturity, deadline, cancellation and cleanup state remain runtime state rather than Domain Actual/Outcome.
-
-Context preserves the AI-03A contract families plus `BasisManifest`, Reality Scope, source standing/currentness, instruction provenance, readiness, exposure and bounded resource semantics.
-
-Reference Resolution operates over an already-eligible bounded candidate universe. Hidden candidates cannot manufacture visible ambiguity. `RESOLVED` preserves the accepted target-reference family and achieved binding proof (`EXACT_CANONICAL` or `UNIQUE_IN_SCOPE`).
-
-Semantic Query exposes a provider/DB-agnostic typed application seam. Missing owning-capability integration returns `NOT_INTEGRATION_READY` rather than bypassing capability ownership through SQLAlchemy/SQL/table access.
-
-Retrieval preserves candidate discovery separately from validation/promotion to `ContextFragment`; rank, score and candidate count do not upgrade truth/currentness/coverage guarantees.
-
-### 4.2 I2 acceptance evidence
-
-Final validated code checkpoint:
+Validated code checkpoint:
 
 ```text
 359707b8d628347f82a0344d44f9fd42d0f59dcd
 ```
 
-Final diagnostic fast gate:
+Acceptance evidence:
 
 ```text
-uv lock --check                              PASS
-uv sync --locked                            PASS
-ruff format --check                         PASS / 77 files already formatted
-ruff check                                  PASS
-mypy strict                                 PASS / no issues in 72 source files
-architecture + Search + Intelligence suite  PASS / 51 passed
-non-PostgreSQL backend suite                PASS / 99 passed, 80 deselected
-backend source distribution + wheel build   PASS
-overall diagnostic                          PASS
-diagnostic exit code                       0
+architecture + Search + Intelligence suite  PASS / 51
+non-PostgreSQL backend suite                PASS / 99
+backend build                               PASS
+PostgreSQL acceptance suite                 PASS / 80
 ```
 
-PostgreSQL regression gate against the same code checkpoint:
+No provider, production route, durable Run, AI memory or DB/Alembic change was introduced.
+
+---
+
+## 5. I3 / C3 — DEFERRED / WAITING OWNER DATA + SEAMS
+
+Accepted stage:
 
 ```text
-canonical PostgreSQL 18.6 image build        PASS
-PostgreSQL acceptance suite                  PASS / 80 passed, 99 deselected
-PostgreSQL gate exit code                    0
+real deterministic Search / structured families
+only when owning product data/seams are integration-ready
 ```
 
-The PostgreSQL gate reconfirmed:
+Repository audit after I2 found the PostgreSQL substrate healthy but the first useful real Search/structured family not yet integration-ready without inventing product semantics.
+
+Observed blockers:
 
 ```text
-CP6 M1..M7/final
-exact current database catalog
-fresh database -> single Alembic head
-head/base/head migration round trip
-recovery-head round trip
-Alembic drift detection
-migrator identity
-roles / ACL / search_path hardening
-recovery material-state retirement
-runtime readiness and pool recovery
-transaction / rollback / flush / savepoint behavior
-```
-
-Explicit non-claims:
-
-```text
-I2 CLOSED / PASS                         YES
-real deterministic capability family     NO
-real Search family activated             NO
-real Semantic Query capability seam      NO
-provider/model/SDK                       NO
-provider adapter                         NO
-HTTP production route                    NO
-Auth/AuthZ integration                   NO
-durable Work/Run persistence             NO
-AI memory persistence                    NO
-database/Alembic change                  NO
-production activation                    NO
-```
-
-## 5. I3 readiness assessment — DEFERRED / WAITING OWNER SEAMS
-
-Accepted architectural stage:
-
-```text
-I3 — real deterministic Search/structured families only when owning data/seams are ready
-```
-
-A repository audit after I2 found that the PostgreSQL substrate is materialized and healthy, but the first real family is not yet integration-ready without inventing application semantics.
-
-Observed repository facts:
-
-```text
-dante/modules currently contains Search + Intelligence only
-CP6 business mappings exist under platform/database/mappings
-native owner rows are persistence identity shells, not product/domain application services
-Schedule/Actual/Session/Recurrence materialize structural/current-history semantics
-SearchHit requires a truthful title projection
-real owning capability public/query seams are not yet materialized on this branch
+CP6 persistence owners exist but are not automatically product/application seams
+native identity rows are structural identity shells
+Schedule/Actual/etc. provide structural/current-history semantics but no generic product title
+SearchHit requires a truthful display/title projection
+owning capability public typed query seams are not yet materialized on this branch
 full Access/Auth remains a separate active workstream
 ```
 
-Therefore I3 is **not failed, cancelled or closed**. It is deferred by its own accepted readiness condition.
-
-Forbidden readiness shortcuts:
+Forbidden shortcuts:
 
 ```text
-synthetic "<type> <uuid>" titles presented as product search semantics
-Intelligence -> SQLAlchemy / database mappings
-model-generated SQL or ORM predicates
-generic Repository/UoW cross-capability authority
-activating FTS/pg_trgm/vector merely to manufacture progress
-claiming persistence rows are automatically an owning application seam
+synthetic "<type> <uuid>" titles
+Intelligence -> SQLAlchemy/database mappings
+generic Repository/UoW
+model-generated SQL/ORM predicates
+fake Search family
+premature FTS/pg_trgm/vector activation
 ```
 
-I3/C3 may resume when one real family can prove, as applicable:
+I3 resumes only when one real family can prove, as applicable:
 
 ```text
 real owner/product data semantics
-safe display/projection fields
+safe projection/display fields
 current/history behavior
 owner/source scope
 permission/disclosure basis
 bounded query semantics
 truthful guarantee/currentness/basis mapping
 family tests
-PSV-06 / SC-017 protected non-interference proof when applicable
+PSV-06 / SC-017 non-interference proof when applicable
 ```
 
-## 6. Current execution overlay
+I3 is not failed, cancelled or falsely closed. It must converge before I6 when the accepted first vertical requires the real deterministic source/query path.
 
-The accepted architecture stage numbering remains unchanged. The implementation blueprint contains parallel dependency lanes, so the trigger-gated I3 lane can wait while provider preparation continues under the accepted gates.
+---
 
-```text
-C6  Policy / Resource / Verification / Publication /
-    Effect / Egress / Evidence contracts
-    CLOSED / PASS
-    ↓
-C7  route-config identity / loader / content digest snapshot
-    CLOSED / PASS
-    ↓
-CURRENT
-C8 / I4
-    provider candidate-admission decision
-    ↓
-C9-C11 / I4-I5
-    admitted inactive adapter
-    conformance + live compatibility
-    direct DANTE qualification
-    qualification/promotion decision
-```
+## 6. C6 — CLOSED / PASS
 
-Parallel conditional lane:
-
-```text
-I3 / C3
-bounded PostgreSQL Search adapter + first real deterministic family proof
-```
-
-Mandatory convergence:
-
-```text
-C8 → C9-C11 / I5
-                 \
-                  +→ JOIN GATE → I6 READ-ONLY ASK
-                 /
-I3/C3 when owner seams become ready
-```
-
-I6 may not activate the accepted first vertical until the required real source/query path, authoritative Auth/AuthZ/disclosure, currentness/publication behavior and applicable direct proofs are ready.
-
-## 7. C6 — CLOSED / PASS
-
-C6 materialized the provider-independent control/safety/publication contract layer without activating provider, database or production behavior.
-
-Materialized contract domains:
+C6 materialized provider-independent control/safety/publication contracts:
 
 ```text
 Policy
 Resource estimate / admission / settlement
 Verification
-Effect / explicit first-vertical NO_EFFECT
+Effect / explicit NO_EFFECT
 Egress / exposure accounting
 Publication
 Runtime Evidence
 ```
 
-Materialized consumer ports:
+Consumer ports:
 
 ```text
 PolicyPort
@@ -495,22 +275,21 @@ ResourceControl
 RuntimeEvidencePort
 ```
 
-C6 preserves the accepted boundaries:
+Binding behavior:
 
 ```text
 Policy consumer != Authority/AuthZ owner
-Resource admission != commercial accounting truth
 UNKNOWN usage != ZERO usage
-MODEL OUTPUT != PUBLISHABLE OUTPUT
-provider completed != verified != publishable
+estimate != final cost
 READ_ONLY -> NO_EFFECT
-provider attempt failed != disclosure did not happen
-ContextManifest != EgressAttempt != audit evidence
-telemetry != audit != canonical truth
-request-local/no-store unless an independent durability trigger exists
+provider timeout/failure != no disclosure
+MODEL_EGRESS dispatch requires ALLOW + ADMITTED resource decision
+positive publication requires PUBLICATION ALLOW
+publication also requires maturity/verification/currentness/disclosure conditions
+runtime evidence is minimized and distinct from audit/canonical truth
 ```
 
-Final validated code checkpoint:
+Validated code checkpoint:
 
 ```text
 2f96d4fb85300fdbfd00e66b9b6d23b26141397f
@@ -519,50 +298,33 @@ Final validated code checkpoint:
 Acceptance evidence:
 
 ```text
-uv lock --check                              PASS
-uv sync --locked                            PASS
-ruff format --check                         PASS / 95 files already formatted
-ruff check                                  PASS
-mypy strict                                 PASS / no issues in 90 source files
-architecture + Search + Intelligence suite  PASS / 75 passed
-non-PostgreSQL backend suite                PASS / 123 passed, 80 deselected
-backend source distribution + wheel build   PASS
-FAST GATE                                   PASS
-canonical PostgreSQL 18.6 image build       PASS
-PostgreSQL acceptance suite                 PASS / 80 passed, 123 deselected
-C6 OVERALL                                  PASS
-C6 gate exit code                           0
+ruff format/check                           PASS
+mypy                                       PASS / 90 source files
+architecture + Search + Intelligence       PASS / 75
+non-PostgreSQL backend                     PASS / 123
+build                                      PASS
+PostgreSQL image                           PASS
+PostgreSQL acceptance                      PASS / 80
+C6 OVERALL                                 PASS
+exit code                                  0
 ```
 
-C6 introduced no database/Alembic change, provider dependency or production activation.
+No provider dependency, DB/Alembic change or production activation was introduced.
 
-## 8. C7 — CLOSED / PASS
+---
 
-C7 materialized the provider-neutral behavior-config identity and loading boundary required before provider admission.
+## 7. C7 — CLOSED / PASS
 
-Materialized implementation:
+C7 materialized provider-neutral behavior-bearing route-config identity and loading:
 
 ```text
 apps/backend/config/intelligence/revisions/pre-provider-v1.json
-apps/backend/src/dante/modules/intelligence/contracts/route_config.py
-apps/backend/src/dante/modules/intelligence/route_config.py
-apps/backend/tests/unit/modules/intelligence/test_route_config.py
+modules/intelligence/contracts/route_config.py
+modules/intelligence/route_config.py
+tests/unit/modules/intelligence/test_route_config.py
 ```
 
-Implementation/hardening commits:
-
-```text
-0079dbbb8617e481b5d8aa4d6044aa46dacf3dfe
-feat(ai): add C7 route config identity loader
-
-82bfb63e2bf6dc745f1063bcb33e3b0fd078926e
-fix(ai): harden C7 route config revision identity
-
-65b4bdfe6987e7a2cbb9d543fd4a92b87264cf97
-style(ai): normalize C7 route config test formatting
-```
-
-C7 materializes:
+Contracts/runtime:
 
 ```text
 RouteConfigDocument
@@ -575,113 +337,215 @@ load_route_config(...)
 Binding behavior:
 
 ```text
-RouteConfigIdentity = logical revision + SHA-256 content digest
-snapshot identity binds exact validated artifact bytes
-semantically equivalent JSON with different bytes has different identity
-revision identifiers are fail-closed and path-safe
-UTF-8 / JSON structure / duplicate keys / unknown fields are rejected
+RouteConfigIdentity = logical revision + SHA-256 exact-byte digest
+snapshot binds exact validated artifact bytes
+semantically equal JSON with different bytes != same identity
+UTF-8 / JSON / duplicate keys / missing or unknown fields fail closed
+revision identifiers are bounded/path-safe
 artifact revision must equal selected logical revision
-artifact size is bounded
-secrets are not part of the behavior-bearing artifact
-pre-provider-v1 contains no ModelTarget or ProviderBinding
-ask_dante remains explicitly disabled
+artifact size bounded to 1 MiB
+snapshot rechecks content digest
+secrets are not behavior-bearing config payload
 ```
 
-Final validated code checkpoint:
+`pre-provider-v1` contains no ModelTarget or ProviderBinding and keeps `ask_dante:disabled`.
+
+Validated code checkpoint:
 
 ```text
 65b4bdfe6987e7a2cbb9d543fd4a92b87264cf97
 ```
 
-Acceptance evidence:
+Acceptance evidence from the real worktree:
 
 ```text
 uv lock --check                              PASS
 uv sync --locked                            PASS
-ruff format --check                         PASS / 98 files already formatted
+ruff format --check                         PASS / 98 files
 ruff check                                  PASS
-mypy strict                                 PASS / no issues in 93 source files
-architecture + Search + Intelligence suite  PASS / 83 passed
-non-PostgreSQL backend suite                PASS / 131 passed, 80 deselected
-backend source distribution + wheel build   PASS
+mypy strict                                 PASS / 93 source files
+architecture + Search + Intelligence suite  PASS / 83
+non-PostgreSQL backend suite                PASS / 131, 80 deselected
+backend build                               PASS
 FAST GATE                                   PASS
-canonical PostgreSQL 18.6 image build       PASS
-PostgreSQL acceptance suite                 PASS / 80 passed, 131 deselected
+canonical PostgreSQL 18.6 image             PASS
+PostgreSQL acceptance suite                 PASS / 80, 131 deselected
 C7 OVERALL                                  PASS
 C7 gate exit code                           0
 ```
 
-The PostgreSQL regression reconfirmed CP6 M1..M7/final, exact current catalog, Alembic fresh/single-head/round-trip/drift behavior, roles/ACL/search_path hardening, Recovery material-state retirement, runtime readiness/pool recovery and transaction/savepoint semantics.
+The PostgreSQL regression reconfirmed CP6 M1..M7/final, exact catalog, Alembic fresh/single-head/round-trip/drift behavior, roles/ACL/search_path hardening, Recovery material-state retirement, runtime recovery and transaction/savepoint semantics.
 
-Explicit non-claims:
+Explicit non-claims at C7 closure:
 
 ```text
-C7 CLOSED / PASS                         YES
-I3/C3 materialized                       NO / DEFERRED
-provider candidate admitted              NO
-provider/model/SDK                       NO
-provider adapter                         NO
-live provider call                       NO
-HTTP production route                    NO
-Auth/AuthZ integration                   NO
-durable Work/Run                         NO
-AI memory                                NO
-database/Alembic change                  NO
-production activation                    NO
+provider candidate                          NO at C7 closure
+provider SDK                                NO
+provider adapter                            NO
+live provider call                          NO
+production qualification                   NO
+private-data eligibility                    NO
+DB/Alembic change                           NO
 ```
 
-## 9. Current executable boundary — C8 / I4
+---
 
-Accepted candidate commit:
+## 8. C8 / P0-P1 — CLOSED / PROVIDER CANDIDATE ADMITTED FOR QUALIFICATION
+
+Durable evidence/decision record:
 
 ```text
-C8 chore(ai): provider candidate-admission decision
+ai-provider-candidate-admission-2026-09.md
 ```
 
-C8 is an evidence/review checkpoint. It may select one candidate for qualification work, but admission is not production eligibility, qualification or promotion.
-
-The admission review must evaluate current provider/model evidence for at least:
+P0 shortlist reviewed with current public provider evidence:
 
 ```text
-first-vertical capability fit
-structured-output and required feature semantics
-protocol/SDK isolation feasibility behind DANTE-owned ports
-retry/timeout/cancellation/ambiguous-acceptance behavior
-usage-evidence semantics
-privacy/security/data-processing posture
-region/residency/deployment constraints as applicable
-live compatibility testability
-conformance-test feasibility
-direct DANTE eval feasibility
-capacity/reliability/economics evidence path
-material qualification composition
+OpenAI native API / Responses API / GPT-5.6 Terra
+Anthropic native Claude API / Claude Sonnet 5
+Google Cloud Vertex AI / Gemini 3.8 Flash
 ```
 
-C8 must preserve:
+P1 decision:
 
 ```text
-MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT
-HARNESSPROFILE != PROVIDERBINDING
-PROVIDER SDK != APPLICATION CONTRACT
-CANDIDATE ADMISSION != PRODUCTION QUALIFICATION
-QUALIFIED != ELIGIBLE != AVAILABLE != ENTITLED != ROLLOUT-ACTIVE
+PROVIDER CANDIDATE        OpenAI native API
+API SURFACE               Responses API
+MODEL CANDIDATE           gpt-5.6-terra
+STATUS                    ADMITTED FOR QUALIFICATION ONLY
+PRODUCTION QUALIFICATION  NO
+PRIVATE-DATA ELIGIBILITY  NO
+PRODUCTION PROMOTION      NO
 ```
 
-C8 does not authorize:
+Retained non-admitted challengers:
 
 ```text
-provider SDK installation
-provider adapter implementation
-live private-data calls
+Claude Sonnet 5
+Gemini 3.8 Flash on Vertex AI
+```
+
+Admission rationale is bounded to the first read-only, non-streaming vertical: explicit Responses lifecycle/usage/cancellation semantics, structured-output support, SDK retries that can be disabled, a current ZDR path for eligible organizations and a sufficiently broad context/output/cost envelope for qualification.
+
+C8 explicitly does **not** claim that GPT-5.6 Terra is globally superior. Model quality, reliability, capacity and economics remain direct DANTE qualification questions.
+
+C8 introduced no code, SDK, adapter, live call, DB/Alembic change or production/private-data activation.
+
+---
+
+## 9. Current execution overlay
+
+```text
+C6  CLOSED / PASS
+ ↓
+C7  CLOSED / PASS
+ ↓
+C8 / P0-P1  CLOSED / candidate admitted for qualification only
+ ↓
+CURRENT
+C9  inactive admitted adapter/binding
+    provider conformance
+    live compatibility on synthetic/public/minimized data
+ ↓
+C10 direct DANTE qualification
+ ↓
+C11 qualification/promotion decision
+```
+
+Parallel conditional lane:
+
+```text
+I3 / C3
+bounded PostgreSQL Search adapter + first real deterministic family proof
+```
+
+Mandatory convergence:
+
+```text
+C9 → C10 → C11
+             \
+              +→ JOIN GATE → I6 READ-ONLY ASK
+             /
+I3/C3 when owner seams become ready
+```
+
+I6 may not activate until the required real source/query path, authoritative Auth/AuthZ/disclosure, currentness/publication behavior and applicable direct proofs are ready.
+
+---
+
+## 10. Current executable boundary — C9
+
+C9 may materialize the admitted **inactive** provider binding/adapter and its conformance/live-compatibility proof surface.
+
+Admitted composition:
+
+```text
+provider                  OpenAI native API
+API                       Responses API
+model                     gpt-5.6-terra
+```
+
+Mandatory initial feature profile:
+
+```text
+public streaming          OFF
+background mode           OFF
+provider conversation     OFF
+previous_response_id      OFF
+provider built-in tools   OFF
+web search                OFF
+file search               OFF
+code interpreter          OFF
+shell / computer use      OFF
+MCP / external tools      OFF
+provider memory           OFF
+store                     false
+SDK automatic retries     OFF / max_retries=0
+DANTE retries             only after classified safe pre-acceptance failure
+live compatibility data   synthetic/public/minimized until private-data gates pass
+production activation     OFF
+```
+
+C9 must preserve:
+
+```text
+DANTE allocates ProviderAttemptId before dispatch
+ProviderAdapter owns protocol translation only
+SDK/provider types do not escape private adapter boundary
+SDK hidden retries disabled or every real wire attempt DANTE-visible
+timeout after possible acceptance != safe replay
+possible accepted + lost response -> indeterminate outcome
+refusal != infrastructure failure
+usage known != estimated != unknown
+provider error != recipient-safe error automatically
+provider response/tool IDs != DANTE semantic/idempotency identity
+ProviderAdapter != routing authority
+ProviderAdapter != Auth/AuthZ/Policy authority
+ProviderAdapter != Effect authority
+no DB mappings / SQLAlchemy / inbound HTTP schema imports in provider adapter
+```
+
+C9 may add the admitted provider SDK only inside the private adapter dependency surface and lock an exact compatible version through normal `uv` authority. It may not broaden provider feature modes merely because the SDK exposes them.
+
+Live compatibility is real disclosure. Before private/sensitive data eligibility, use only synthetic/public/minimized fixtures sufficient to exercise protocol behavior.
+
+C9 does **not** authorize:
+
+```text
+production qualification PASS
+private/sensitive DANTE content
 production route activation
-qualification PASS claim
-new DB/Alembic state
-Auth bypass
+public Ask activation
+provider background work
+provider memory/conversation state
+provider built-in tool activation
+consequential effects
+new database/Alembic state
 ```
 
-I3/C3 remains independently deferred and must converge before I6 when the real deterministic source/query path is required.
+---
 
-## 10. Engineering quality posture
+## 11. Engineering quality posture
 
 Implementation optimizes for:
 
@@ -695,9 +559,9 @@ strict typing and small public APIs
 immutable/value-oriented contracts where appropriate
 no hidden global mutable state
 no blocking request-path I/O disguised as async
-bounded deadlines/cancellation/retry behavior
+DANTE-owned bounded deadlines/cancellation/retry behavior
 telemetry != audit != canonical truth
 performance measured at material boundaries rather than guessed micro-optimization
 ```
 
-FastAPI process-scoped resources continue to use the existing `lifespan` model. Existing PostgreSQL runtime/pool behavior is unchanged.
+FastAPI process-scoped resources continue to use the existing `lifespan` model. Existing PostgreSQL runtime/pool behavior remains unchanged unless a later separately justified change earns normal project governance.
