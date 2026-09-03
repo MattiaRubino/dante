@@ -89,6 +89,17 @@ def validate_repo(root: Path) -> None:
             raise RuntimeError(f"unexpected blob for {relative}: {actual} != {expected}")
 
 
+def _tighten_nullable_provider_timestamp(text: str, *, label: str) -> str:
+    old = "if row.verification_expires_at is None:\n"
+    new = (
+        "if row.verification_expires_at is None or row.verification_issued_at is None:\n"
+    )
+    count = text.count(old)
+    if count != 1:
+        raise RuntimeError(f"{label}: expected one provider timestamp guard, found {count}")
+    return text.replace(old, new, 1)
+
+
 def main() -> None:
     root = Path(__file__).resolve().parents[3]
     validate_repo(root)
@@ -98,14 +109,18 @@ def main() -> None:
         relative: (root / relative).read_text()
         for relative in phase_b.EXPECTED_HASHES
     }
+    google = _tighten_nullable_provider_timestamp(
+        phase_b.patch_google(targets["apps/backend/src/dante/auth/provider_flow.py"]),
+        label="google provider timestamp guard",
+    )
+    apple = _tighten_nullable_provider_timestamp(
+        phase_b.patch_apple(targets["apps/backend/src/dante/auth/apple_flow.py"]),
+        label="apple provider timestamp guard",
+    )
     # Every transformation completes in memory before any target file is written.
     patched = {
-        "apps/backend/src/dante/auth/provider_flow.py": phase_b.patch_google(
-            targets["apps/backend/src/dante/auth/provider_flow.py"]
-        ),
-        "apps/backend/src/dante/auth/apple_flow.py": phase_b.patch_apple(
-            targets["apps/backend/src/dante/auth/apple_flow.py"]
-        ),
+        "apps/backend/src/dante/auth/provider_flow.py": google,
+        "apps/backend/src/dante/auth/apple_flow.py": apple,
         "apps/backend/src/dante/auth/provider_flow_runtime.py": phase_b.patch_runtime(
             targets["apps/backend/src/dante/auth/provider_flow_runtime.py"]
         ),
