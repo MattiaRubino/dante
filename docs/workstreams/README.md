@@ -91,11 +91,10 @@ I1  CLOSED / PASS
 I2  CLOSED / PASS
 I3/C3 real deterministic Search/structured family
     DEFERRED / WAITING OWNER DATA + SEAMS
+C6  CLOSED / PASS
 
 CURRENT EXECUTABLE
-C6 Policy / Resource / Verification / Publication /
-   Effect / Egress / Evidence contracts
-→ C7 route-config identity / loader / digest snapshot
+C7 route-config identity / loader / digest snapshot
 → I4 provider candidate admission
 → I5 adapter qualification
 
@@ -107,7 +106,7 @@ Search/structured source path.
 
 The baseline I0-I10 identifiers remain architectural stage labels. The execution overlay may defer trigger-gated I3 without renumbering or falsely closing it.
 
-Provider/model/SDK selection remains open and evidence-driven. No AI runtime/provider/database activation is implied by architecture closure or I0-I2 completion.
+Provider/model/SDK selection remains open and evidence-driven. No AI runtime/provider/database activation is implied by architecture closure or I0-I2/C6 completion.
 
 Binding implementation separations include:
 
@@ -182,7 +181,7 @@ Current project authority includes bounded unmerged work such as:
 feature/access-auth             active product vertical
 feature/home-react              active frontend workstream
 feature/platform-observability  active platform workstream
-feature/ai-implementation       active AI implementation / I0-I2 closed / C6 next
+feature/ai-implementation       active AI implementation / I0-I2 + C6 closed / C7 next
 feature/ai-architecture         architecture design closed / retained authority/evidence
 ```
 
