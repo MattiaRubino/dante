@@ -63,6 +63,10 @@ describe('World Focus workspace orchestration model', () => {
       worldId: 'music',
       generation: 1,
       selection: { kind: 'projection', key: 'continuity:track-a' },
+      contextReferences: {
+        primary: { kind: 'projection', key: 'continuity:track-a' },
+        supporting: [],
+      },
       activeSurface: {
         instanceId: 'explore:versions',
         kind: 'artifact-explore',

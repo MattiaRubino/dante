@@ -41,7 +41,7 @@ describe('World Focus workspace bounded reference-set materialization', () => {
     expect(repeated).toBe(selected);
   });
 
-  it('exposes the full set to the cursor while surfaces inherit only the primary reference', () => {
+  it('exposes the full set as a canonical cursor property while surfaces inherit only the primary reference', () => {
     const selected = reduceWorldFocusWorkspaceState(
       createWorldFocusWorkspaceState('future-craft'),
       {
@@ -64,6 +64,10 @@ describe('World Focus workspace bounded reference-set materialization', () => {
     });
 
     const cursor = getWorldFocusInteractionCursor(opened);
+    expect(Object.keys(cursor)).toContain('contextReferences');
+    expect(
+      Object.getOwnPropertyDescriptor(cursor, 'contextReferences')?.enumerable,
+    ).toBe(true);
     expect(cursor.contextReferences).toEqual({
       primary: { kind: 'artifact', key: 'draft:1' },
       supporting: [{ kind: 'source', key: 'brief:1' }],

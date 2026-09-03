@@ -272,10 +272,12 @@ export function getWorldFocusInteractionCursor(
   state: WorldFocusWorkspaceState,
 ): WorldFocusInteractionCursor {
   const activeSurface = getWorldFocusTopSurface(state);
-  const cursor = {
+
+  return Object.freeze({
     worldId: state.worldId,
     generation: state.generation,
     selection: state.selection,
+    contextReferences: state.contextReferences,
     activeSurface:
       activeSurface === null
         ? null
@@ -286,17 +288,7 @@ export function getWorldFocusInteractionCursor(
             boundGeneration: activeSurface.boundGeneration,
             contextReference: activeSurface.contextReference,
           }),
-  } as Omit<WorldFocusInteractionCursor, 'contextReferences'> &
-    Partial<Pick<WorldFocusInteractionCursor, 'contextReferences'>>;
-
-  Object.defineProperty(cursor, 'contextReferences', {
-    value: state.contextReferences,
-    enumerable: false,
-    configurable: false,
-    writable: false,
   });
-
-  return Object.freeze(cursor) as WorldFocusInteractionCursor;
 }
 
 export function getWorldFocusEscapeDisposition(
