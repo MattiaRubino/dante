@@ -1,9 +1,14 @@
 import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 
+import { i18n } from '../../../../bootstrap/i18n';
 import { createWorldFocusTrajectoryPrimitive } from '../../model/world-focus-work-primitives';
 import { createWorldFocusDisplayBinding } from './world-focus-display-bindings';
 import { WorldFocusTrajectory } from './world-focus-trajectory';
+
+beforeAll(async () => {
+  await i18n.changeLanguage('it');
+});
 
 afterEach(cleanup);
 
