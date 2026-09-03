@@ -27,33 +27,6 @@ _OLD_KEY = b"o" * 32
 _NEW_KEY = b"n" * 32
 
 
-def _claim(
-    *,
-    protected_key_id: str,
-    nonce: bytes,
-    ciphertext: bytes,
-    purpose_code: str = "signup_verification",
-    template_code: str = "auth.signup_verification",
-    template_revision: str = "2",
-) -> ClaimedEmailIntent:
-    return ClaimedEmailIntent(
-        email_intent_ref=uuid7(),
-        email_attempt_ref=uuid7(),
-        claim_token=uuid7(),
-        purpose_code=purpose_code,
-        template_code=template_code,
-        template_revision=template_revision,
-        locale_code="en",
-        recipient_address="user@example.com",
-        recipient_comparison_key="user@example.com",
-        sensitive_key_id=protected_key_id,
-        sensitive_nonce=nonce,
-        sensitive_ciphertext=ciphertext,
-        attempt_number=1,
-        expires_at=datetime.now(UTC) + timedelta(minutes=15),
-    )
-
-
 def _protected_claim(
     *,
     cipher: EmailPayloadCipher,
@@ -239,8 +212,9 @@ async def test_ses_config_has_one_total_sdk_attempt_and_request_has_no_tracking_
 
     monkeypatch.setattr(email_provider_module.boto3, "client", fake_client)
     provider = SesEmailProvider(settings=_ses_settings())
+    message = _provider_message()
 
-    result = await provider.send(_provider_message())
+    result = await provider.send(message)
 
     assert result.outcome is ProviderOutcome.ACCEPTED
     assert result.provider_message_id == "ses-message-1"
@@ -260,13 +234,9 @@ async def test_ses_config_has_one_total_sdk_attempt_and_request_has_no_tracking_
     }
     assert set(request["Content"]["Simple"]["Body"]) == {"Text", "Html"}
     assert request["EmailTags"] == [
-        {"Name": "dante_intent", "Value": str(_provider_message().email_intent_ref)}
-        if False
-        else request["EmailTags"][0],
+        {"Name": "dante_intent", "Value": str(message.email_intent_ref)},
         {"Name": "dante_stream", "Value": "auth_security"},
     ]
-    assert request["EmailTags"][0]["Name"] == "dante_intent"
-    assert request["EmailTags"][0]["Value"]
 
 
 @pytest.mark.asyncio
@@ -288,7 +258,11 @@ async def test_ses_classifies_known_and_unknown_provider_errors_without_retry(
         {"Error": {"Code": code, "Message": "safe test message"}},
         "SendEmail",
     )
-    monkeypatch.setattr(email_provider_module.boto3, "client", lambda *args, **kwargs: fake)
+
+    def fake_client(*_args: Any, **_kwargs: Any) -> _FakeSesClient:
+        return fake
+
+    monkeypatch.setattr(email_provider_module.boto3, "client", fake_client)
     provider = SesEmailProvider(settings=_ses_settings())
 
     result = await provider.send(_provider_message())
@@ -304,7 +278,11 @@ async def test_ses_transport_disconnect_is_ambiguous_and_never_retried(
 ) -> None:
     fake = _FakeSesClient()
     fake.error = EndpointConnectionError(endpoint_url="https://email.eu-west-3.amazonaws.com")
-    monkeypatch.setattr(email_provider_module.boto3, "client", lambda *args, **kwargs: fake)
+
+    def fake_client(*_args: Any, **_kwargs: Any) -> _FakeSesClient:
+        return fake
+
+    monkeypatch.setattr(email_provider_module.boto3, "client", fake_client)
     provider = SesEmailProvider(settings=_ses_settings())
 
     result = await provider.send(_provider_message())
