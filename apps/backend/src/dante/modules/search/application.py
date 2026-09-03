@@ -10,6 +10,7 @@ from dante.modules.search.contracts import (
     NavigationExecutionRequest,
     NavigationResult,
     NavigationStatus,
+    SearchEligibilityEnvelope,
     SearchExecutionRequest,
     SearchFamilyActivationState,
     SearchFamilyEligibility,
@@ -18,10 +19,12 @@ from dante.modules.search.contracts import (
     SearchGuarantee,
     SearchLimitation,
     SearchLimitationCode,
+    SearchQueryMode,
     SearchResult,
     SearchTemporalIntent,
 )
 from dante.modules.search.ports.query import (
+    SearchExecutionAccessContext,
     SearchFamilyExecutionScope,
     SearchNavigationExecution,
     SearchQueryExecution,
@@ -37,6 +40,7 @@ _GUARANTEE_STRENGTH: Mapping[SearchGuarantee, int] = MappingProxyType(
         SearchGuarantee.EXACT: 5,
     }
 )
+_REQUIRED_HIT_PROJECTION_FIELDS = frozenset({"title"})
 
 
 class SearchContractViolation(RuntimeError):
@@ -111,13 +115,11 @@ class SearchApplication:
             _execution_scope(
                 registration,
                 eligibility,
+                include_navigation=False,
                 include_snippets=request.presentation.include_snippets,
+                include_facets=request.presentation.include_facets,
             )
             for registration, eligibility in family_pairs
-        )
-
-        include_facets = request.presentation.include_facets and all(
-            eligibility.allow_facets for _, eligibility in family_pairs
         )
         include_count = request.presentation.include_count and all(
             eligibility.allow_counts for _, eligibility in family_pairs
@@ -131,10 +133,10 @@ class SearchApplication:
             page=request.page,
             requested_guarantee=admitted_guarantee,
             maximum_guarantee=maximum_guarantee,
-            include_facets=include_facets,
             include_count=include_count,
             purpose=request.purpose,
             surface=request.surface,
+            access=_access_context(request.eligibility),
             interpretation_frame=request.interpretation_frame,
         )
         result = await self._query_port.search(execution)
@@ -157,23 +159,29 @@ class SearchApplication:
         """Resolve navigation only for an active and currently eligible family."""
         registration = self._registry.active(request.family_id)
         eligibility = request.eligibility.for_family(request.family_id)
-        if registration is None or eligibility is None or not eligibility.source_scopes:
+        if (
+            registration is None
+            or eligibility is None
+            or not eligibility.allow_navigation
+            or not eligibility.owner_scopes
+            or not eligibility.source_scopes
+        ):
             return NavigationResult.unavailable()
 
         scope = _execution_scope(
             registration,
             eligibility,
+            include_navigation=True,
             include_snippets=False,
+            include_facets=False,
         )
-        if not scope.projection_fields:
-            return NavigationResult.unavailable()
-
         result = await self._query_port.resolve_navigation(
             SearchNavigationExecution(
                 family=scope,
                 target=request.target,
                 purpose=request.purpose,
                 surface=request.surface,
+                access=_access_context(request.eligibility),
             )
         )
         if result.status is NavigationStatus.UNAVAILABLE:
@@ -192,12 +200,16 @@ class SearchApplication:
         request: SearchExecutionRequest,
     ) -> tuple[tuple[SearchFamilyRegistration, SearchFamilyEligibility], ...]:
         pairs: list[tuple[SearchFamilyRegistration, SearchFamilyEligibility]] = []
+        requested_filter_fields = frozenset(
+            search_filter.field for search_filter in request.filters
+        )
+
         for family_id in request.requested_family_ids:
             registration = self._registry.active(family_id)
             eligibility = request.eligibility.for_family(family_id)
             if registration is None or eligibility is None:
                 continue
-            if not eligibility.source_scopes:
+            if not eligibility.owner_scopes or not eligibility.source_scopes:
                 continue
             if not _temporal_allowed(
                 request.temporal_intent,
@@ -205,9 +217,27 @@ class SearchApplication:
                 eligibility=eligibility,
             ):
                 continue
-            if not registration.safe_projection_fields.intersection(
-                eligibility.projection_fields
+            if (
+                request.query.strip()
+                and SearchQueryMode.KEYWORD not in registration.query_modes
             ):
+                continue
+            if (
+                request.filters
+                and SearchQueryMode.STRUCTURED_FILTER not in registration.query_modes
+            ):
+                continue
+
+            admitted_filter_fields = registration.filter_fields.intersection(
+                eligibility.permitted_filter_fields
+            )
+            if not requested_filter_fields.issubset(admitted_filter_fields):
+                continue
+
+            projection_fields = registration.safe_projection_fields.intersection(
+                eligibility.projection_fields
+            )
+            if not _REQUIRED_HIT_PROJECTION_FIELDS.issubset(projection_fields):
                 continue
             pairs.append((registration, eligibility))
         return tuple(pairs)
@@ -224,26 +254,64 @@ def _temporal_allowed(
     return registration.supports_history and eligibility.allow_history
 
 
+def _access_context(
+    eligibility: SearchEligibilityEnvelope,
+) -> SearchExecutionAccessContext:
+    return SearchExecutionAccessContext(
+        principal_binding=eligibility.principal_binding,
+        represented_party_binding=eligibility.represented_party_binding,
+        recipient=eligibility.recipient,
+        authority_basis_refs=eligibility.authority_basis_refs,
+        authz_basis_refs=eligibility.authz_basis_refs,
+        visibility_basis_refs=eligibility.visibility_basis_refs,
+        consent_basis_refs=eligibility.consent_basis_refs,
+    )
+
+
 def _execution_scope(
     registration: SearchFamilyRegistration,
     eligibility: SearchFamilyEligibility,
     *,
+    include_navigation: bool,
     include_snippets: bool,
+    include_facets: bool,
 ) -> SearchFamilyExecutionScope:
     return SearchFamilyExecutionScope(
         family_id=registration.family_id,
+        owning_capability=registration.owning_capability,
+        source_semantics=registration.source_semantics,
         query_implementation_id=registration.query_implementation_id,
+        owner_scopes=eligibility.owner_scopes,
         source_scopes=eligibility.source_scopes,
+        filter_fields=frozenset(
+            registration.filter_fields.intersection(eligibility.permitted_filter_fields)
+        ),
         projection_fields=frozenset(
             registration.safe_projection_fields.intersection(
                 eligibility.projection_fields
+            )
+        ),
+        facet_fields=frozenset(
+            registration.safe_facet_fields.intersection(
+                eligibility.permitted_facet_fields
             )
         ),
         source_lifecycle_exclusions=eligibility.source_lifecycle_exclusions,
         excluded_scopes=eligibility.excluded_scopes,
         sensitivity_ceiling=eligibility.sensitivity_ceiling,
         revalidation_requirement=eligibility.revalidation_requirement,
+        supports_source_reread=registration.supports_source_reread,
+        maximum_guarantee=registration.maximum_guarantee,
+        basis_mapping=registration.basis_mapping,
+        coherence_requirement=registration.coherence_requirement,
+        snapshot_requirement=registration.snapshot_requirement,
+        currentness_rule=registration.currentness_rule,
+        publication_revalidation_requirement=(
+            registration.publication_revalidation_requirement
+        ),
+        include_navigation=include_navigation and eligibility.allow_navigation,
         include_snippets=include_snippets and eligibility.allow_snippets,
+        include_facets=include_facets and eligibility.allow_facets,
     )
 
 
@@ -273,10 +341,13 @@ def _validate_search_result(
         if hit.snippet is not None and not scope.include_snippets:
             raise SearchContractViolation("Search adapter returned a disallowed snippet")
 
-    if result.facets and not execution.include_facets:
-        raise SearchContractViolation("Search adapter returned disallowed facets")
-    if any(facet.family_id not in scopes for facet in result.facets):
-        raise SearchContractViolation("Search adapter returned facet for unadmitted family")
+    for facet in result.facets:
+        scope = scopes.get(facet.family_id)
+        if scope is None:
+            raise SearchContractViolation("Search adapter returned facet for unadmitted family")
+        if not scope.include_facets or facet.field not in scope.facet_fields:
+            raise SearchContractViolation("Search adapter returned a disallowed facet")
+
     if result.total_count is not None and not execution.include_count:
         raise SearchContractViolation("Search adapter returned a disallowed count")
 

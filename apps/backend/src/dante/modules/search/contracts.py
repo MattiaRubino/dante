@@ -218,10 +218,14 @@ class SearchFamilyEligibility:
     """Request-scoped Search projection for one family after authority evaluation."""
 
     family_id: SearchFamilyId
+    owner_scopes: frozenset[str]
     source_scopes: frozenset[str]
     projection_fields: frozenset[str]
+    permitted_filter_fields: frozenset[str]
+    permitted_facet_fields: frozenset[str]
     allow_current: bool
     allow_history: bool
+    allow_navigation: bool
     allow_snippets: bool
     allow_facets: bool
     allow_counts: bool
@@ -232,8 +236,11 @@ class SearchFamilyEligibility:
 
     def __post_init__(self) -> None:
         _require_text(str(self.family_id), name="family_id")
+        _require_texts(self.owner_scopes, name="owner_scopes")
         _require_texts(self.source_scopes, name="source_scopes")
         _require_texts(self.projection_fields, name="projection_fields")
+        _require_texts(self.permitted_filter_fields, name="permitted_filter_fields")
+        _require_texts(self.permitted_facet_fields, name="permitted_facet_fields")
         _require_texts(self.source_lifecycle_exclusions, name="source_lifecycle_exclusions")
         _require_texts(self.excluded_scopes, name="excluded_scopes")
         _require_text(self.revalidation_requirement, name="revalidation_requirement")
@@ -438,15 +445,18 @@ class SearchFamilyRegistration:
     owning_capability: str
     source_semantics: str
     query_modes: frozenset[SearchQueryMode]
+    filter_fields: frozenset[str]
+    safe_projection_fields: frozenset[str]
+    safe_facet_fields: frozenset[str]
     supports_current: bool
     supports_history: bool
     supports_source_reread: bool
     maximum_guarantee: SearchGuarantee
-    safe_projection_fields: frozenset[str]
     eligibility_requirement_codes: frozenset[str]
     query_implementation_id: str
     basis_mapping: str
     coherence_requirement: str
+    snapshot_requirement: str
     currentness_rule: str
     publication_revalidation_requirement: str
     activation_evidence_ref: str | None
@@ -459,7 +469,9 @@ class SearchFamilyRegistration:
         _require_text(self.source_semantics, name="source_semantics")
         if not self.query_modes:
             raise ValueError("query_modes must not be empty")
+        _require_texts(self.filter_fields, name="filter_fields")
         _require_texts(self.safe_projection_fields, name="safe_projection_fields")
+        _require_texts(self.safe_facet_fields, name="safe_facet_fields")
         _require_texts(
             self.eligibility_requirement_codes,
             name="eligibility_requirement_codes",
@@ -467,6 +479,7 @@ class SearchFamilyRegistration:
         _require_text(self.query_implementation_id, name="query_implementation_id")
         _require_text(self.basis_mapping, name="basis_mapping")
         _require_text(self.coherence_requirement, name="coherence_requirement")
+        _require_text(self.snapshot_requirement, name="snapshot_requirement")
         _require_text(self.currentness_rule, name="currentness_rule")
         _require_text(
             self.publication_revalidation_requirement,

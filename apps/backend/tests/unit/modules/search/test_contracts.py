@@ -39,10 +39,14 @@ def _eligibility() -> SearchEligibilityEnvelope:
         families=(
             SearchFamilyEligibility(
                 family_id=family_id,
-                source_scopes=frozenset({"owner:self"}),
+                owner_scopes=frozenset({"owner:self"}),
+                source_scopes=frozenset({"schedule:current"}),
                 projection_fields=frozenset({"title", "starts_at"}),
+                permitted_filter_fields=frozenset({"status"}),
+                permitted_facet_fields=frozenset({"status"}),
                 allow_current=True,
                 allow_history=False,
+                allow_navigation=True,
                 allow_snippets=True,
                 allow_facets=False,
                 allow_counts=False,

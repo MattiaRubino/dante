@@ -17,10 +17,13 @@ from dante.modules.search.contracts import (
     SearchCurrentness,
     SearchEligibilityEnvelope,
     SearchExecutionRequest,
+    SearchFacet,
     SearchFamilyActivationState,
     SearchFamilyEligibility,
     SearchFamilyId,
     SearchFamilyRegistration,
+    SearchFilter,
+    SearchFilterOperator,
     SearchGuarantee,
     SearchHit,
     SearchPageRequest,
@@ -74,15 +77,18 @@ def _registration(
         query_modes=frozenset(
             {SearchQueryMode.KEYWORD, SearchQueryMode.STRUCTURED_FILTER}
         ),
+        filter_fields=frozenset({"status"}),
+        safe_projection_fields=frozenset({"title", "starts_at"}),
+        safe_facet_fields=frozenset({"status"}),
         supports_current=True,
         supports_history=False,
         supports_source_reread=True,
         maximum_guarantee=maximum_guarantee,
-        safe_projection_fields=frozenset({"title", "starts_at"}),
         eligibility_requirement_codes=frozenset({"current_access"}),
         query_implementation_id=f"{family}:query:v1",
         basis_mapping="source_row_revision",
         coherence_requirement="single_statement",
+        snapshot_requirement="statement_snapshot",
         currentness_rule="reread_before_publication",
         publication_revalidation_requirement="current_access_and_source",
         activation_evidence_ref=(
@@ -98,16 +104,23 @@ def _registration(
 def _family_eligibility(
     family: str,
     *,
+    allow_navigation: bool = True,
     allow_snippets: bool = True,
     allow_facets: bool = True,
     allow_counts: bool = True,
+    permitted_filter_fields: frozenset[str] = frozenset({"status"}),
+    permitted_facet_fields: frozenset[str] = frozenset({"status"}),
 ) -> SearchFamilyEligibility:
     return SearchFamilyEligibility(
         family_id=SearchFamilyId(family),
-        source_scopes=frozenset({"owner:self"}),
+        owner_scopes=frozenset({"owner:self"}),
+        source_scopes=frozenset({f"{family}:current"}),
         projection_fields=frozenset({"title"}),
+        permitted_filter_fields=permitted_filter_fields,
+        permitted_facet_fields=permitted_facet_fields,
         allow_current=True,
         allow_history=False,
+        allow_navigation=allow_navigation,
         allow_snippets=allow_snippets,
         allow_facets=allow_facets,
         allow_counts=allow_counts,
@@ -136,6 +149,7 @@ def _envelope(*families: SearchFamilyEligibility) -> SearchEligibilityEnvelope:
 def _request(
     eligibility: SearchEligibilityEnvelope,
     *families: str,
+    filters: tuple[SearchFilter, ...] = (),
     requested_guarantee: SearchGuarantee = SearchGuarantee.EXACT,
     include_snippets: bool = True,
     include_facets: bool = True,
@@ -144,7 +158,7 @@ def _request(
 ) -> SearchExecutionRequest:
     return SearchExecutionRequest(
         query="dentist",
-        filters=(),
+        filters=filters,
         eligibility=eligibility,
         requested_family_ids=tuple(SearchFamilyId(family) for family in families),
         temporal_intent=SearchTemporalIntent.CURRENT,
@@ -231,7 +245,7 @@ async def test_hidden_family_presence_does_not_change_no_eligible_result() -> No
 
 
 @pytest.mark.asyncio
-async def test_observable_features_are_conservatively_intersected_before_query() -> None:
+async def test_access_basis_and_observable_scopes_are_minimized_before_query() -> None:
     port = RecordingQueryPort(_empty_result())
     app = SearchApplication(
         registry=SearchFamilyRegistry(
@@ -253,10 +267,41 @@ async def test_observable_features_are_conservatively_intersected_before_query()
     await app.search(_request(eligibility, "schedule", "notes"))
 
     execution = port.search_requests[0]
-    assert execution.include_facets is False
+    assert execution.access.principal_binding == "principal:self"
+    assert execution.access.authority_basis_refs == ("authority:1",)
     assert execution.include_count is False
     assert execution.families[0].include_snippets is True
+    assert execution.families[0].include_facets is True
     assert execution.families[1].include_snippets is False
+    assert execution.families[1].include_facets is False
+
+
+@pytest.mark.asyncio
+async def test_disallowed_filter_excludes_family_before_query_observables() -> None:
+    port = RecordingQueryPort(_empty_result())
+    app = SearchApplication(
+        registry=SearchFamilyRegistry((_registration("schedule"),)),
+        query_port=port,
+        max_page_size=50,
+    )
+    eligibility = _envelope(
+        _family_eligibility(
+            "schedule",
+            permitted_filter_fields=frozenset(),
+        )
+    )
+    private_filter = SearchFilter(
+        field="status",
+        operator=SearchFilterOperator.EQ,
+        value="private",
+    )
+
+    result = await app.search(
+        _request(eligibility, "schedule", filters=(private_filter,))
+    )
+
+    assert result == SearchResult.no_eligible_source()
+    assert port.search_requests == []
 
 
 @pytest.mark.asyncio
@@ -376,6 +421,36 @@ async def test_adapter_cannot_publish_disallowed_snippet_or_count() -> None:
 
 
 @pytest.mark.asyncio
+async def test_adapter_cannot_publish_unadmitted_facet_field() -> None:
+    port = RecordingQueryPort(
+        SearchResult(
+            hits=(),
+            facets=(
+                SearchFacet(
+                    family_id=SearchFamilyId("schedule"),
+                    field="private_category",
+                    value="secret",
+                    count=1,
+                ),
+            ),
+            total_count=None,
+            next_cursor=None,
+            achieved_guarantee=SearchGuarantee.EXACT,
+        )
+    )
+    app = SearchApplication(
+        registry=SearchFamilyRegistry((_registration("schedule"),)),
+        query_port=port,
+        max_page_size=50,
+    )
+
+    with pytest.raises(SearchContractViolation, match="disallowed facet"):
+        await app.search(
+            _request(_envelope(_family_eligibility("schedule")), "schedule")
+        )
+
+
+@pytest.mark.asyncio
 async def test_navigation_uses_same_active_eligible_intersection() -> None:
     port = RecordingQueryPort(_empty_result())
     app = SearchApplication(
@@ -389,7 +464,9 @@ async def test_navigation_uses_same_active_eligible_intersection() -> None:
         NavigationExecutionRequest(
             family_id=SearchFamilyId("schedule"),
             target=target,
-            eligibility=_envelope(),
+            eligibility=_envelope(
+                _family_eligibility("schedule", allow_navigation=False)
+            ),
             purpose="global_search",
             surface="web",
         )
@@ -408,3 +485,4 @@ async def test_navigation_uses_same_active_eligible_intersection() -> None:
     )
     assert resolved.status is NavigationStatus.RESOLVED
     assert port.navigation_requests[0].family.family_id == SearchFamilyId("schedule")
+    assert port.navigation_requests[0].access.recipient == "self"
