@@ -220,6 +220,13 @@ class ProviderAttemptResult:
                 raise ValueError("COMPLETED cannot carry provider error/refusal state")
             return
 
+        if self.outcome is ProviderAttemptOutcome.INCOMPLETE:
+            if self.acceptance is not ProviderAcceptanceCertainty.ESTABLISHED:
+                raise ValueError("INCOMPLETE requires ESTABLISHED provider acceptance")
+            if self.refusal_reason is not None:
+                raise ValueError("INCOMPLETE cannot carry refusal state")
+            return
+
         if self.outcome is ProviderAttemptOutcome.REFUSED:
             if self.acceptance is not ProviderAcceptanceCertainty.ESTABLISHED:
                 raise ValueError("REFUSED requires ESTABLISHED provider acceptance")
@@ -242,6 +249,6 @@ class ProviderAttemptResult:
             raise ValueError("post-dispatch outcome cannot claim NOT_ACCEPTED certainty")
 
         if self.error_class is None:
-            raise ValueError("non-completed/refused provider outcome requires error_class")
+            raise ValueError("failure provider outcome requires error_class")
         if has_output or self.refusal_reason is not None:
             raise ValueError("failure provider outcome cannot carry output/refusal state")
