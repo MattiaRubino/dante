@@ -1,6 +1,6 @@
 # DANTE — World Focus Substrate Closure Program
 
-**Status:** HISTORICAL SUBSTRATE CLOSURE AUTHORITY — WS0–WS8 + PRE-M0 + M0 CLOSED / M1 CLOSED / M2 NEXT AFTER POST-M1 SAFETY GATE  
+**Status:** HISTORICAL SUBSTRATE CLOSURE AUTHORITY — WS0–WS8 + PRE-M0 + M0 + M1 + POST-M1 SAFETY CLOSED / M2 NEXT  
 **Date:** 2026-09-03  
 **Branch:** `feature/home-react`
 
@@ -18,6 +18,7 @@ PRE-M0   world-focus-pre-m0-falsification-review.md
 M0       world-focus-m0-materialization-mapping.md
 M1       world-focus-m1-core-nonvisual-materialization-review.md
 M1 operational closure world-focus-m1-operational-handoff.md
+POST-M1 safety world-focus-post-m1-safety-falsification-review.md
 ```
 
 ---
@@ -33,6 +34,7 @@ analytical convergence
 != pre-M0 regression falsification
 != materialization mapping
 != materialization implementation
+!= post-materialization safety falsification
 != human visual acceptance
 != backend/runtime proof
 ```
@@ -80,8 +82,8 @@ M1 — Core Non-Visual Materialization         CLOSED / VALIDATED
 M1-1 identity/reference ownership            CLOSED / VALIDATED
 M1-2 non-visual facets + seams               CLOSED / VALIDATED
 M1 final falsification                       CLOSED / PASS
-POST-M1 safety audit/falsification            ACTIVE PRE-M2 SAFETY GATE
-M2 — Shared Visual Primitive Layer           NEXT IF POST-M1 SAFETY PASSES
+POST-M1 safety audit/falsification            CLOSED / PASS
+M2 — Shared Visual Primitive Layer           NEXT
 M3–M7                                        BLOCKED BY SEQUENCE
 BACKEND                                      BLOCKED UNTIL M7
 ```
@@ -286,7 +288,7 @@ FINAL CODE HEAD    7369c51e7ba04f8913728a0770f700c728c3b9f9
 CI                 33740710290 PASS
 ```
 
-Therefore M1 is formally closed. The currently active post-M1 safety gate is additional falsification before M2, not unfinished M1 scope.
+Therefore M1 is formally closed.
 
 M1 did not pull forward:
 
@@ -303,12 +305,49 @@ Existing planner/registries/workspace generation/allocation/failure isolation re
 
 ---
 
-# 9. Materialization sequence
+# 9. Post-M1 safety closure
+
+The bounded post-M1 safety audit/falsification was additional pressure before M2, not unfinished M1 scope.
+
+Red-first evidence:
+
+```text
+HEAD 0b674effa292881303288dd90c88db2c14e61872
+CI   33747167897 FAIL
+7 / 9 hostile tests PASS
+296 PASS / 2 FAIL overall web unit tests
+```
+
+It found two concrete production defects:
+
+```text
+cancelled non-cooperative World read could still reach validation
+O8 Evidence/History could retain mutable caller evidence aliases
+```
+
+Both fit existing owners. No M1/WS reopen or new semantic layer was required.
+
+Validated hardening:
+
+```text
+HEAD ecc2128b62395f82eab9ee7ff239355b4ca81ee4
+CI   33754084001 PASS
+9 / 9 hostile tests PASS
+56 / 56 web test files PASS
+301 / 301 web unit tests PASS
+full Frontend CI Gate PASS
+```
+
+The adversarial test was not weakened.
+
+---
+
+# 10. Materialization sequence
 
 ```text
 M1 Core Non-Visual Production Materialization — CLOSED
-POST-M1 Safety Audit / Falsification          — ACTIVE
-M2 Shared Visual Primitive Layer              — NEXT AFTER SAFETY PASS
+POST-M1 Safety Audit / Falsification          — CLOSED / PASS
+M2 Shared Visual Primitive Layer              — NEXT
 M3 Adaptive World Composition                 — BLOCKED
 M4 Contextual DANTE Materialization           — BLOCKED
 M5 Contrasting Complete Worlds                — BLOCKED
@@ -319,23 +358,23 @@ BACKEND                                       — BLOCKED UNTIL M7
 
 ---
 
-# 10. Sequencing note
+# 11. Sequencing note
 
 Historical paragraphs in the product/platform contracts that name the contextual DANTE spatial review as the current/next gate are sequencing-stale. Their semantic invariants remain authoritative; sequencing is superseded by `world-focus-contract-sequencing-supersession.md`, `world-focus-current-checkpoint.md`, the M1 operational handoff and current roadmap.
 
 ---
 
-# 11. Strict reopen rule
+# 12. Strict reopen rule
 
-Do not restart WS0–WS8 for a new World noun, provider, API, renderer, model, viewport, config store, sync engine or larger dataset.
+Do not restart WS0–WS8 or M1 for a new World noun, provider, API, renderer, model, viewport, config store, sync engine or larger dataset.
 
 Reopen only when later executable/materialization evidence demonstrates a concrete contradiction that cannot fit an existing owner, and only at the earliest genuinely contradicted phase.
 
-A post-M1 safety test failure reopens only the earliest concrete owner it disproves. It does not automatically reopen the complete substrate program or M1 as a whole.
+A later safety/rendering failure reopens only the earliest concrete owner it disproves. It does not automatically reopen the complete substrate program or M1 as a whole.
 
 ---
 
-# 12. Backend stop line
+# 13. Backend stop line
 
 ```text
 NO World DB/Alembic persistence
@@ -351,6 +390,6 @@ NO provider ACK treated as canonical completion
 
 ---
 
-# 13. Immediate continuation
+# 14. Immediate continuation
 
-> **M1 is CLOSED / VALIDATED. Complete the bounded POST-M1 SAFETY AUDIT / FALSIFICATION before starting M2. If it passes, M2 becomes the active engineering gate. If it fails, classify and repair only the concrete disproved owner before proceeding.**
+> **POST-M1 safety is CLOSED / PASS. Begin M2 only. M3–M7, D2–D6/M4 and backend remain blocked by sequence.**
