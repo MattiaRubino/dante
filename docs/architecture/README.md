@@ -1,7 +1,7 @@
 # DANTE Architecture Index
 
 - **Status:** CURRENT / AUTHORITATIVE NAVIGATION FOR `feature/access-auth`
-- **Last reconciled:** 2026-09-02
+- **Last reconciled:** 2026-09-03
 
 ## 1. Current architecture state
 
@@ -23,25 +23,26 @@ Group 4 product engineering          AUTOMATED QA PASS
 local password/passkey UAT           PASS
 real Google UAT                      PASS
 
-email-delivery architecture          ACCEPTED DIRECTION
-primary production delivery target   AMAZON SES API V2 / QUALIFICATION OPEN
-durable email platform               NOT YET MATERIALIZED
-real Internet email delivery         OPEN
+Email Platform architecture          MATERIALIZED / SHARED DANTE SUBSYSTEM
+Email Platform automated acceptance  PASS
+primary external delivery adapter    AMAZON SES API V2
+real DANTE → SES Internet UAT         OPEN
 real Apple registered-domain UAT     DEFERRED / OPEN
 whole M5                             ACTIVE / NOT FORMALLY CLOSED
 
-Access/Auth Alembic head             20260831_13
-Access/Auth DB topology              83 tables / 5 views / 15 routines /
-                                     75 triggers / 156 indexes / 85 FKs /
-                                     233 CHECKs
+Access/Auth Alembic head             20260903_15
+Access/Auth DB topology              87 tables / 5 views / 15 routines /
+                                     75 triggers / 170 indexes / 88 FKs /
+                                     267 CHECKs
 ```
 
-Protected `main` remains integrated authority for closed shared foundations. Newer Access/Auth truth is branch-local until explicit integration.
+Protected `main` remains integrated authority for closed shared foundations. Newer Access/Auth and Email Platform truth is branch-local until explicit integration.
 
 ## 2. Current architecture entry points
 
 - `system-overview.md` — system/component/authority overview
 - `technical-decisions.md` — architecture decision register
+- `email-platform.md` — standalone reusable DANTE Email Platform architecture
 - `access-auth-architecture.md` — identity/authenticator/session architecture
 - `access-auth-security-contract.md` — security/session/password/email/provider/passkey policy
 - `access-auth-api-contract.md` — `/api/v1`, RFC 9457, OpenAPI/generated-client contract
@@ -49,9 +50,9 @@ Protected `main` remains integrated authority for closed shared foundations. New
 - `access-auth-m4-contract.md` — closed lifecycle authority
 - `access-auth-m5-contract.md` — durable M5 multi-authenticator semantics
 - `access-auth-m5-persistence-api-contract.md` — exact M5 persistence/API design and milestone reconciliation
-- `access-auth-email-delivery.md` — current target for durable outbound Auth/security email
+- `access-auth-email-delivery.md` — Access/Auth consumer integration with the shared Email Platform
 - `../workstreams/access-auth.md` — current operational state
-- `../workstreams/access-auth-m5-review-2026-09-02.md` — current review/UAT evidence
+- `../workstreams/access-auth-m5-review-2026-09-02.md` — review/UAT evidence
 - `../database/README.md` and `../database/access-auth.md`
 - `../frontend/access.md`
 
@@ -140,31 +141,42 @@ DANTE stores credential public material, never biometric/PIN/private key
 
 Frontend owns only browser ceremony conversion/interaction; backend `python-fido2` owns cryptographic/RP verification.
 
-## 7. Email delivery architecture
+## 7. Email Platform architecture
 
-Current direction:
+The Email Platform is a **shared DANTE infrastructure subsystem**, not an Access/Auth-owned implementation detail.
+
+Canonical platform authority:
 
 ```text
-DANTE application/security state
-        │
-        ├── durable Email Intent
-        ▼
-PostgreSQL transactional outbox
-        ▼
-bounded Email worker/orchestrator
-        ▼
-provider-neutral EmailDeliveryPort / adapter boundary
-        ▼
-Amazon SES API v2 primary production target
-        ▼
-Internet delivery
-        ▼
-provider delivery/bounce/complaint feedback
-        ▼
-DANTE delivery state / suppression / metrics
+docs/architecture/email-platform.md
 ```
 
-Permanent email rules:
+Current shape:
+
+```text
+DANTE feature/application mutation
+        │
+        ├── canonical state
+        └── durable EmailIntent
+                 ▼
+PostgreSQL transactional outbox
+                 ▼
+claim / lease / worker
+                 ▼
+template + protected payload
+                 ▼
+provider-neutral adapter
+        ├── Amazon SES API v2
+        └── SMTP local/CI last mile
+                 ▼
+provider feedback
+                 ▼
+DANTE delivery-event / suppression state
+                 ▼
+privacy-minimized observability
+```
+
+Permanent rules:
 
 ```text
 DANTE owns lifecycle/state; provider owns last-mile transport
@@ -172,17 +184,15 @@ PostgreSQL remains canonical authority
 provider accepted != delivered
 network timeout != definitely not sent
 no blind retry after ambiguous outcome
+no provider I/O in caller DB transaction
 OTP/recovery proof excluded from logs/metrics/traces
-no indefinite plaintext sensitive outbox payload
+short-lived encrypted sensitive payload + terminal wipe
 Auth/security open tracking OFF
 Auth/security click tracking/link rewriting OFF
-SPF + DKIM + DMARC required for production sender
-Auth/security, product notifications and future marketing separable
+future product consumers reuse platform rather than rebuilding delivery machinery
 ```
 
-The current `SmtpEmailDispatcher` remains a valid bounded implementation/UAT adapter. It is not the final durable production email platform.
-
-Exact outbox schema, SES operational qualification, IAM, sender DNS, event ingestion, suppression and live Internet acceptance remain separate open gates.
+Access/Auth is currently the first consumer and is documented separately in `access-auth-email-delivery.md`.
 
 ## 8. Current standards/deprecation review
 
@@ -205,17 +215,18 @@ The M5 contracts contain detailed milestone-time reconciliation sections. Statem
 ## 10. Current architecture gaps — deliberate, not hidden
 
 ```text
-email provider/operational qualification
-exact durable email outbox/delivery-state materialization
-SES API adapter + provider-event/suppression implementation
-real Internet signup/recovery delivery UAT
+real DANTE signup → SES → mailbox UAT
+real DANTE password recovery → SES → mailbox UAT
+final Email Platform documentation/closure reconciliation
+controlled production sender/domain
+SPF + DKIM + DMARC production posture
+live cloud feedback wiring when deployment scope requires it
 real Apple registered-domain UAT
 M7 session/device management UX
 M7 new-login/security-event response
-M7 production observability
 final authenticated Home handoff
 ```
 
-The **email architecture itself is no longer an open question**; its production implementation and qualification are open.
+The Email Platform architecture and durable implementation are materialized. External real-provider acceptance and production deployment controls remain open.
 
-No current evidence requires replacing the accepted Account/AuthSession/authenticator architecture to implement these gaps.
+No current evidence requires replacing the accepted Account/AuthSession/authenticator architecture to complete these gaps.
