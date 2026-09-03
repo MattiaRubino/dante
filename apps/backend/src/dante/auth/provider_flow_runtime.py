@@ -10,6 +10,7 @@ from dante.auth.apple import (
 )
 from dante.auth.apple_flow import AppleFlowService
 from dante.auth.authenticator_lifecycle import AuthenticatorLifecycleService
+from dante.auth.email_delivery import UnavailableEmailDelivery
 from dante.auth.google import GoogleTokenVerifier
 from dante.auth.lifecycle import KeyedRateLimiter
 from dante.auth.lifecycle_runtime import AuthLifecycleRuntime
@@ -63,6 +64,7 @@ def create_provider_flow_runtime(
         key_ring=settings.signup_otp_key_bytes,
         current_key_id=settings.signup_otp_current_key_id,
     )
+    unavailable_email = UnavailableEmailDelivery()
 
     google_service = (
         ProviderFlowService(
@@ -73,7 +75,7 @@ def create_provider_flow_runtime(
                 provider_runtime=auth_runtime.provider_runtime,
             ),
             otp_codec=otp_codec,
-            email_delivery=lifecycle_runtime.email_dispatcher,
+            email_delivery=unavailable_email,
             limiters=limiters,
             email_outbox=(
                 lifecycle_runtime.email_platform.outbox
@@ -127,7 +129,7 @@ def create_provider_flow_runtime(
             protocol_client=protocol_client,
             grant_cipher=auth_runtime.apple_grant_cipher,
             otp_codec=otp_codec,
-            email_delivery=lifecycle_runtime.email_dispatcher,
+            email_delivery=unavailable_email,
             limiters=limiters,
             email_outbox=(
                 lifecycle_runtime.email_platform.outbox
