@@ -27,6 +27,17 @@ describe('World Focus M2 Trajectory renderer', () => {
   );
 
   it('renders the ordered known sequence and missingness as separate semantics rather than a fake chart or zero', () => {
+    const firstPointReference = primitive.orderedPointReferences[0];
+    const secondPointReference = primitive.orderedPointReferences[1];
+    const missingPositionReference = primitive.missingPositionReferences[0];
+    if (
+      firstPointReference === undefined ||
+      secondPointReference === undefined ||
+      missingPositionReference === undefined
+    ) {
+      throw new Error('Expected bounded Trajectory fixture references');
+    }
+
     const { container } = render(
       <WorldFocusTrajectory
         primitive={primitive}
@@ -36,19 +47,19 @@ describe('World Focus M2 Trajectory renderer', () => {
         })}
         points={[
           createWorldFocusDisplayBinding({
-            reference: primitive.orderedPointReferences[0],
+            reference: firstPointReference,
             label: 'Lunedì',
             supportingText: '7 h 20 min',
           }),
           createWorldFocusDisplayBinding({
-            reference: primitive.orderedPointReferences[1],
+            reference: secondPointReference,
             label: 'Martedì',
             supportingText: '6 h 55 min',
           }),
         ]}
         missingPositions={[
           createWorldFocusDisplayBinding({
-            reference: primitive.missingPositionReferences[0],
+            reference: missingPositionReference,
             label: 'Mercoledì',
           }),
         ]}
@@ -74,12 +85,18 @@ describe('World Focus M2 Trajectory renderer', () => {
   });
 
   it('fails closed if a point binding order no longer matches the semantic trajectory order', () => {
+    const firstPointReference = primitive.orderedPointReferences[0];
+    const secondPointReference = primitive.orderedPointReferences[1];
+    if (firstPointReference === undefined || secondPointReference === undefined) {
+      throw new Error('Expected bounded Trajectory fixture references');
+    }
+
     const first = createWorldFocusDisplayBinding({
-      reference: primitive.orderedPointReferences[0],
+      reference: firstPointReference,
       label: 'Lunedì',
     });
     const second = createWorldFocusDisplayBinding({
-      reference: primitive.orderedPointReferences[1],
+      reference: secondPointReference,
       label: 'Martedì',
     });
 
