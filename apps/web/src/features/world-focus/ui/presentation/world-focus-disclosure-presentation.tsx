@@ -17,16 +17,18 @@ export function WorldFocusDisclosurePresentation({
 
   if (disclosure.status === 'available') return null;
 
+  const label =
+    disclosure.status === 'restricted'
+      ? t(($) => $.common.worldFocus.presentation.disclosure.states.restricted)
+      : t(($) => $.common.worldFocus.presentation.disclosure.states.unavailable);
+
   return (
     <WorldFocusQualifierGroup
       aria-label={t(($) => $.common.worldFocus.presentation.qualifiers.disclosure)}
       data-world-focus-disclosure-presentation="true"
     >
       <WorldFocusQualifier axis="disclosure" state={disclosure.status}>
-        {t(
-          ($) =>
-            $.common.worldFocus.presentation.disclosure.states[disclosure.status],
-        )}
+        {label}
       </WorldFocusQualifier>
     </WorldFocusQualifierGroup>
   );
