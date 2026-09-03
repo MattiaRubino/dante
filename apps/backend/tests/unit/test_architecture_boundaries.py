@@ -22,6 +22,7 @@ _SEARCH_PUBLIC_SURFACES = (
     "dante.modules.search.contracts",
 )
 _SEARCH_PERSISTENCE_ADAPTER = "dante.modules.search.adapters.outbound.persistence"
+_OPENAI_SDK_ADAPTER = "dante.modules.intelligence.adapters.outbound.model.openai_sdk"
 _INBOUND_ADAPTER_ROOTS = (
     "dante.modules.search.adapters.inbound",
     "dante.modules.intelligence.adapters.inbound",
@@ -31,6 +32,7 @@ _RUNTIME_DEPENDENCY_ALLOWLIST = frozenset(
     {
         "alembic",
         "fastapi",
+        "openai",
         "psycopg",
         "pydantic",
         "pydantic-settings",
@@ -284,7 +286,7 @@ def _semantic_name_violations() -> tuple[_SemanticNameViolation, ...]:
     return tuple(violations)
 
 
-def test_runtime_dependencies_remain_inside_the_pre_provider_allowlist() -> None:
+def test_runtime_dependencies_remain_inside_the_admitted_allowlist() -> None:
     assert _runtime_dependency_names() == _RUNTIME_DEPENDENCY_ALLOWLIST
 
 
@@ -344,6 +346,15 @@ def test_fastapi_is_confined_to_inbound_adapters_inside_ai_capabilities() -> Non
         importer_roots=(_SEARCH_ROOT, _INTELLIGENCE_ROOT),
         imported_roots=("fastapi",),
         allowed_importer_roots=_INBOUND_ADAPTER_ROOTS,
+    )
+    assert not violations, _format_edges(violations)
+
+
+def test_openai_sdk_import_is_confined_to_private_outbound_adapter() -> None:
+    violations = _forbidden_imports(
+        importer_roots=("dante",),
+        imported_roots=("openai",),
+        allowed_importer_roots=(_OPENAI_SDK_ADAPTER,),
     )
     assert not violations, _format_edges(violations)
 
