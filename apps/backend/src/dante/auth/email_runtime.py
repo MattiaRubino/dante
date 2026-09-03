@@ -36,9 +36,12 @@ async def create_email_platform_runtime(
     database_runtime: DatabaseRuntime,
 ) -> EmailPlatformRuntime:
     """Construct the durable email platform without performing provider network I/O."""
+    current_key_id = settings.email_payload_current_key_id
+    if current_key_id is None:
+        raise RuntimeError("enabled Email Platform lost validated payload-key identity")
     cipher = EmailPayloadCipher(
         key_ring=settings.email_payload_key_bytes,
-        current_key_id=settings.email_payload_current_key_id,
+        current_key_id=current_key_id,
     )
     outbox = DurableEmailOutbox(
         cipher=cipher,
