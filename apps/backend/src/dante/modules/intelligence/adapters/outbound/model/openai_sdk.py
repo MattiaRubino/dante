@@ -9,6 +9,7 @@ import openai
 from openai import AsyncOpenAI
 from openai.types.responses.response import Response
 from openai.types.responses.response_text_config_param import ResponseTextConfigParam
+from openai.types.shared_params.reasoning import Reasoning
 
 from dante.modules.intelligence.adapters.outbound.model.openai_responses import (
     OPENAI_TERRA_MODEL,
@@ -190,7 +191,7 @@ class OpenAISDKResponsesTransport(OpenAIResponsesTransport):
             )
 
         text_config = _structured_text_config(request)
-        reasoning = {
+        reasoning: Reasoning = {
             "effort": _OPENAI_REASONING_EFFORT,
             "context": _OPENAI_REASONING_CONTEXT,
         }
