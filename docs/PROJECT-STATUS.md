@@ -5,7 +5,7 @@
 - **Protected `main`:** integrated source authority; read the live Git ref for the current SHA
 - **Backend CP6 integration:** PR #42 MERGED
 - **PostgreSQL Recovery integration:** PR #47 MERGED / CP01–CP07 LOCAL PASS / CLOSED
-- **Current product boundary:** protected `main` includes the accepted PostgreSQL Recovery evolution; Access/Auth, Home React and platform observability remain active bounded workstreams; AI architecture is closed on `feature/ai-architecture`; AI implementation is active on `feature/ai-implementation` with I0-I2 CLOSED/PASS, I3 deferred pending owner data/seams and C6 as the current executable checkpoint
+- **Current product boundary:** protected `main` includes the accepted PostgreSQL Recovery evolution; Access/Auth, Home React and platform observability remain active bounded workstreams; AI architecture is closed on `feature/ai-architecture`; AI implementation is active on `feature/ai-implementation` with I0-I2 and C6 CLOSED/PASS, I3 deferred pending owner data/seams and C7 as the current executable checkpoint
 
 ## 1. Executive state
 
@@ -90,12 +90,14 @@ I0 CLOSED / PASS
 I1 CLOSED / PASS
 I2 CLOSED / PASS
 I2 validated code checkpoint 359707b8d628347f82a0344d44f9fd42d0f59dcd
+C6 CLOSED / PASS
+C6 validated code checkpoint 2f96d4fb85300fdbfd00e66b9b6d23b26141397f
 I3/C3 DEFERRED / WAITING OWNER DATA + SEAMS
-CURRENT EXECUTABLE CHECKPOINT C6
+CURRENT EXECUTABLE CHECKPOINT C7
 
 CURRENT AI EXECUTION OVERLAY
-C6 control/safety/publication contracts
-→ C7 route-config identity/loader/digest
+C6 control/safety/publication contracts CLOSED / PASS
+→ C7 route-config identity/loader/digest CURRENT
 → I4 provider candidate admission
 → I5 adapter qualification
 
@@ -106,11 +108,11 @@ PARALLEL BOUNDED UNMERGED WORKSTREAMS
 feature/access-auth
 feature/home-react
 feature/platform-observability
-feature/ai-implementation — active / I0-I2 closed / C6 next
+feature/ai-implementation — active / I0-I2 + C6 closed / C7 next
 feature/ai-architecture — architecture closed / retained authority/evidence
 ```
 
-Architecture closure is not runtime/product completion. I0-I2 are implemented and directly validated on the AI implementation branch; production Search, Ask DANTE, provider routes and any new persistence remain unactivated.
+Architecture closure is not runtime/product completion. I0-I2 and C6 are implemented and directly validated on the AI implementation branch; production Search, Ask DANTE, provider routes and any new persistence remain unactivated.
 
 ## 2. Current protected-main backend/database truth
 
@@ -189,7 +191,7 @@ Database Architecture & Reference
 ≈ real PostgreSQL schema
 ```
 
-A later structural change remains a normal forward same-change package. AI I0-I2 introduced **no database/Alembic change**.
+A later structural change remains a normal forward same-change package. AI I0-I2/C6 introduced **no database/Alembic change**.
 
 ## 4. Binding semantic invariants
 
@@ -308,8 +310,8 @@ I1 Search contracts/registry/application shell        CLOSED / PASS
 I2 Work/Context/Reference/SemanticQuery/Retrieval     CLOSED / PASS
 I3 real deterministic Search/structured families      DEFERRED / WAITING OWNER SEAMS
 C6 Policy/Resource/Verification/Publication/
-   Effect/Egress/Evidence contracts                   READY / NEXT
-C7 route-config identity/loader/digest                 AFTER C6
+   Effect/Egress/Evidence contracts                   CLOSED / PASS
+C7 route-config identity/loader/digest                READY / NEXT
 ```
 
 I3 is not cancelled or falsely closed. It remains a conditional lane and must re-enter before I6 when the accepted first vertical requires the real deterministic source/query path.
@@ -340,7 +342,7 @@ Missing applicable evidence is not `N/A`.
 feature/access-auth             active product implementation
 feature/home-react              active frontend work
 feature/platform-observability  active platform work
-feature/ai-implementation       active AI implementation / I0-I2 closed / C6 next
+feature/ai-implementation       active AI implementation / I0-I2 + C6 closed / C7 next
 feature/ai-architecture         architecture design CLOSED / retained authority/evidence
 ```
 
@@ -350,13 +352,11 @@ Do not infer one branch's implementation from another branch.
 
 ```text
 feature/ai-implementation
-→ C6 Policy / Resource / Verification / Publication /
-     Effect / Egress / Evidence contracts
-→ then C7 route-config identity / loader / digest snapshot
+→ C7 route-config identity / loader / digest snapshot
 
 parallel conditional lane:
 I3/C3 resumes only when real owner data/seams are integration-ready
 and must converge before I6 read-only Ask DANTE
 ```
 
-C6/C7 remain provider-free/provider-neutral implementation work. User-visible/private-data Search/Ask still requires the real integration and activation gates defined by the final baseline.
+C7 remains provider-neutral implementation work. User-visible/private-data Search/Ask still requires the real integration and activation gates defined by the final baseline.
