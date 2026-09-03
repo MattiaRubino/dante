@@ -3,19 +3,18 @@
 from __future__ import annotations
 
 import asyncio
-import logging
 import smtplib
 import ssl
 from email.message import EmailMessage
-from typing import Any, cast
+from typing import Any, cast, override
 
 import boto3  # type: ignore[import-untyped]
 from botocore.config import Config  # type: ignore[import-untyped]
 from botocore.exceptions import (  # type: ignore[import-untyped]
     BotoCoreError,
     ClientError,
-    ConnectTimeoutError,
     ConnectionClosedError,
+    ConnectTimeoutError,
     EndpointConnectionError,
     ReadTimeoutError,
 )
@@ -28,7 +27,6 @@ from dante.auth.email_contracts import (
 )
 from dante.platform.config.auth import AuthSettings, SmtpSecurity
 
-_LOGGER = logging.getLogger(__name__)
 _AMBIGUOUS_BOTO_ERRORS = (
     ConnectTimeoutError,
     ConnectionClosedError,
@@ -57,6 +55,11 @@ _SES_DEFINITIVE_CODES = frozenset(
         "SendingPausedException",
     }
 )
+_SMTP_DEFINITIVE_ERRORS = (
+    smtplib.SMTPAuthenticationError,
+    smtplib.SMTPRecipientsRefused,
+    smtplib.SMTPSenderRefused,
+)
 
 
 class SesEmailProvider(EmailProviderPort):
@@ -79,6 +82,7 @@ class SesEmailProvider(EmailProviderPort):
             ),
         )
 
+    @override
     async def send(self, message: ProviderMessage) -> ProviderSendResult:
         """Execute one SES send; any uncertain transport result remains ambiguous."""
         try:
@@ -101,7 +105,7 @@ class SesEmailProvider(EmailProviderPort):
                     outcome=ProviderOutcome.DEFINITIVE_FAILURE,
                     safe_error_code=code,
                 )
-            # Unknown provider errors are not proof that SES did not accept the request.
+            # Unknown SES responses are not proof that the request was rejected before acceptance.
             return ProviderSendResult(
                 outcome=ProviderOutcome.AMBIGUOUS,
                 safe_error_code=code,
@@ -110,12 +114,6 @@ class SesEmailProvider(EmailProviderPort):
             return ProviderSendResult(
                 outcome=ProviderOutcome.AMBIGUOUS,
                 safe_error_code=type(exc).__name__,
-            )
-        except Exception:
-            _LOGGER.exception("auth.email_ses_unclassified_provider_failure")
-            return ProviderSendResult(
-                outcome=ProviderOutcome.AMBIGUOUS,
-                safe_error_code="unclassified_provider_failure",
             )
 
         message_id = response.get("MessageId")
@@ -162,13 +160,19 @@ class SmtpEmailProvider(EmailProviderPort):
     def __init__(self, *, settings: AuthSettings) -> None:
         self._settings = settings
 
+    @override
     async def send(self, message: ProviderMessage) -> ProviderSendResult:
         """Perform one SMTP transaction with no process queue and no transport retry."""
         try:
             await asyncio.to_thread(self._send_sync, message)
-        except Exception as exc:
-            # Once send_message begins there is no portable way to prove whether a remote
-            # server accepted the message. Preserve uncertainty rather than blind-retrying.
+        except _SMTP_DEFINITIVE_ERRORS as exc:
+            return ProviderSendResult(
+                outcome=ProviderOutcome.DEFINITIVE_FAILURE,
+                safe_error_code=type(exc).__name__,
+            )
+        except (OSError, smtplib.SMTPException) as exc:
+            # After the transport starts, disconnect/timeout/general SMTP failure may occur
+            # after remote acceptance. Preserve uncertainty rather than blind-retrying.
             return ProviderSendResult(
                 outcome=ProviderOutcome.AMBIGUOUS,
                 safe_error_code=type(exc).__name__,
