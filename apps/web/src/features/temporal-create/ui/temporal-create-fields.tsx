@@ -9,7 +9,6 @@ import { TemporalCreateActivityFields } from './temporal-create-activity-fields'
 import { TemporalCreateAppearanceFields } from './temporal-create-appearance-fields';
 import { TemporalCreateCoreFields } from './temporal-create-core-fields';
 import { TemporalCreateEventFields } from './temporal-create-event-fields';
-import { TemporalCreateHandoffFields } from './temporal-create-handoff-fields';
 import { TemporalCreateOrganizationFields } from './temporal-create-organization-fields';
 import { TemporalCreateRecurrenceFields } from './temporal-create-recurrence-fields';
 import type { TemporalCreateContextOption } from './temporal-create-ui-types';
@@ -38,7 +37,7 @@ export function TemporalCreateAdvancedFields({
   }
 
   return (
-    <div className="temporal-create-advanced">
+    <div className="temporal-create-advanced" data-create-advanced={fields.kind}>
       {fields.timeSemantics === 'timed' ? (
         <section
           className="temporal-create-section is-compact"
@@ -98,29 +97,30 @@ export function TemporalCreateAdvancedFields({
       {fields.kind === 'activity' ? (
         <TemporalCreateActivityFields
           fields={fields}
-          depth={depth}
+          depth="full"
           onPatch={onPatch}
           renderError={renderError}
         />
       ) : (
-        <TemporalCreateEventFields
-          fields={fields}
-          depth={depth}
-          onPatch={onPatch}
-          renderError={renderError}
-        />
+        <>
+          <TemporalCreateEventFields
+            fields={fields}
+            depth="full"
+            onPatch={onPatch}
+            renderError={renderError}
+          />
+          <TemporalCreateRecurrenceFields
+            fields={fields}
+            depth="full"
+            onPatch={onPatch}
+            renderError={renderError}
+          />
+        </>
       )}
-
-      <TemporalCreateRecurrenceFields
-        fields={fields}
-        depth={depth}
-        onPatch={onPatch}
-        renderError={renderError}
-      />
 
       <TemporalCreateOrganizationFields
         fields={fields}
-        depth={depth}
+        depth="full"
         onPatch={onPatch}
       />
 
@@ -129,8 +129,6 @@ export function TemporalCreateAdvancedFields({
         contexts={contexts}
         onPatch={onPatch}
       />
-
-      {depth === 'full' ? <TemporalCreateHandoffFields /> : null}
     </div>
   );
 }
