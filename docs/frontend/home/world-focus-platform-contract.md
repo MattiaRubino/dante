@@ -1,10 +1,12 @@
 # DANTE — World Focus Platform Contract
 
-**Status:** CURRENT PRE-BACKEND PLATFORM AUTHORITY  
-**Date:** 2026-09-01  
+**Status:** CURRENT PRE-BACKEND PLATFORM AUTHORITY — SEMANTICS CURRENT / HISTORICAL GATE PROSE SUPERSEDED  
+**Date:** 2026-09-03  
 **Branch:** `feature/home-react`
 
 This document defines implementation ownership and platform invariants for World Focus inside the frozen route/shell/workspace. Product semantics are governed by `world-focus-product-contract.md`; exact structural geometry is governed by the structural/geometry contracts.
+
+**Sequencing note:** platform semantics in this file remain authoritative. Phase-time statements that described contextual DANTE spatial behavior as the current/next gate are historical. D0/D1 are closed, D2–D6 are deferred to M4, M1 is closed, and live sequencing is owned by `world-focus-current-checkpoint.md`, `world-focus-m1-operational-handoff.md` and `world-focus-contract-sequencing-supersession.md`.
 
 ## 1. Platform thesis
 
@@ -37,7 +39,7 @@ stable + adaptive + ephemeral             presentation over shared Intelligence
              real backend adapter         [LATER]
 ```
 
-The exact spatial relation between contextual DANTE and dynamic composition is intentionally unresolved and is the current product gate.
+The spatial relationship was resolved for D0/D1: quiet invoke + compact composer, wide ongoing conversation as sidecar where viable, constrained/mobile ongoing conversation through the route-owned focus layer, with explicit maximize/restore. Deeper D2–D6 semantics remain deferred to M4. This contract does not make them the current gate.
 
 ## 2. Permanent invariants
 
@@ -121,7 +123,8 @@ Do **not** maintain a feature Session object merely because the route has an act
 A session/cursor is introduced only when a real interaction needs transient ownership beyond route state, e.g.:
 
 ```text
-selected projection/source
+primary selected/context projection/source
+bounded ordered supporting context references
 current Explore/Insight
 contextual conversation reference
 deictic follow-up target
@@ -131,7 +134,7 @@ query/Lens scope when actually justified
 
 The old Lens-only Session was removed with B1.
 
-A cursor stores bounded references/hints, not copied canonical truth, secrets or serialized React state.
+The M1 production cursor owns `contextReferences { primary, supporting[] }`; `selection` is only a compatibility projection of primary. A cursor stores bounded references/hints, not copied canonical truth, secrets or serialized React state.
 
 ## 6. Application / projection boundaries
 
@@ -155,13 +158,15 @@ The application boundary owns:
 - validation of unknown adapter payloads;
 - conversion into frontend projection semantics;
 - truthful resource state;
-- provenance/freshness fields where meaningful;
+- basis/freshness/validity metadata where meaningful;
+- evidence/provenance/integrity reference metadata where meaningful;
+- sanitized disclosure outcome where meaningful;
 - intent invocation seams;
 - cancellation/race ownership.
 
 It does not invent backend DTOs/ORM rows.
 
-B2 Continuity is the first concrete production example.
+B2 Continuity was the first concrete production example; M1 generalized the production seams across WP-01..WP-04 and O2/O5/O8.
 
 ## 7. Runtime validation
 
@@ -194,6 +199,17 @@ B supersedes A
 ```
 
 Upstream AbortSignal may cancel obsolete reads.
+
+Workspace-local async surface intents use the stronger M1-era expectation:
+
+```text
+expectedWorkspace {
+  worldId
+  generation
+}
+```
+
+Generation alone is not sufficient, because two Worlds may have the same generation. Wrong-World and stale-generation presentation both no-op.
 
 Important distinction:
 
@@ -228,6 +244,19 @@ provider timeout == no result
 ```
 
 Not every component must expose every state; the owning projection defines applicable lifecycle.
+
+M1 additionally keeps these dimensions orthogonal when applicable:
+
+```text
+reference resolution
+freshness/as-of
+validity/supersession/retraction
+coverage/conflict/missingness
+material-payload retirement
+sanitized disclosure
+sync/replay/provider lag/timeout
+effect lifecycle/execution revalidation
+```
 
 ## 10. Composition model
 
@@ -311,7 +340,18 @@ P5 ACTION / RECEIPT
 
 Keep source-backed facts distinct from DANTE explanation/Insight/candidate/recommendation/Proposal/effect receipt.
 
-The platform does not yet freeze whether these appear inline, sidecar, dock, overlay, full-surface or another combination. That geometry is the current next gate.
+Accepted D0/D1 spatial behavior:
+
+```text
+quiet invoke
+compact non-modal composer
+wide ongoing conversation -> workspace sidecar
+constrained/mobile ongoing conversation -> route-owned focus overlay
+explicit maximize / restore
+bounded contextual/deictic invocation only
+```
+
+D2–D6 remain intentionally deferred to M4 and must not be pulled forward by historical wording in this contract.
 
 Critical non-collapse:
 
@@ -330,11 +370,15 @@ request/projection generation
 basis/material-state reference
 as-of/freshness
 source/provider freshness
+validity / supersession / retraction
+coverage / missingness / conflict
 ```
 
 DANTE may reuse a compatible basis or re-read/revalidate.
 
 If refreshed reality materially differs, the result must make the changed basis truthful.
+
+Reference continuity, payload availability, freshness, validity and disclosure remain separate dimensions. A retired/redacted material payload may preserve authorized reference/history continuity without becoming readable/current/disclosable source payload.
 
 ## 15. Interaction depth / presentation surface
 
@@ -378,6 +422,8 @@ Removing a module changes presentation configuration only.
 Future persistence must define version/revision/migration/concurrency semantics; do not assume silent last-write-wins.
 
 AI-suggested stable configuration remains a proposal until accepted under product policy.
+
+`promote surface` in the current workspace reducer is transient surface-stack behavior and is not persistent pin/config promotion.
 
 ## 17. Error isolation
 
@@ -426,7 +472,7 @@ Features should adapt to allocated space using CSS layout/container queries wher
 
 The 720px structural tuning boundary does not authorize a different undocumented product surface.
 
-The current DANTE spatial gate must explicitly define how contextual DANTE and dynamic content coexist across large desktop, laptop, narrow/tablet and mobile.
+D0/D1 already define how contextual DANTE's basic footprint changes across wide versus constrained/mobile allocation. Later M4 must preserve that contract while materializing D2–D6; it does not reopen the frozen macro shell.
 
 ## 20. Accessibility
 
@@ -469,7 +515,7 @@ dante.world-focus.open-to-usable
 
 Instrumentation failure is non-authoritative/non-blocking and remains separate from audit.
 
-The DANTE spatial gate must later profile conversation expansion/reflow against real content density before performance budgets are frozen.
+Conversation expansion/reflow performance remains subject to later integrated profiling with real composition density; D0/D1 geometry acceptance did not freeze universal performance budgets.
 
 ## 22. Security / privacy / disclosure
 
@@ -488,6 +534,10 @@ what needs authoritative revalidation?
 World relevance does not expand permissions.
 
 Multi-actor projection/context must be disclosure-safe before presentation.
+
+M1's disclosure outcome is a sanitized presentation result only. It is not frontend AuthZ and must not carry recipient/purpose/policy/source payload across that boundary.
+
+Supporting context references must not silently widen disclosure. Saved/pinned/derived output must later respect purpose/recipient-compatible reuse or authoritative revalidation; frontend convenience is not a retention/disclosure exception.
 
 No sensitive uncontrolled localStorage.
 
@@ -541,12 +591,22 @@ Before the final backend vertical, World Focus may not introduce/fake:
 
 The final backend integration should replace local adapters, not force a product/platform rewrite.
 
-## 26. Current next platform gate
+## 26. Historical next platform gate
 
-No new content vertical starts now.
+The contextual DANTE presence / spatial interaction contract was the immediate platform gate at the pre-D0 stage. It is retained here as phase-time history only.
 
-Immediate gate:
+That gate has since produced the accepted D0/D1 behavior documented above. The current materialization sequence is:
 
-> **World contextual DANTE presence / spatial interaction contract**
+```text
+M1 Core Non-Visual Materialization — CLOSED
+POST-M1 safety audit/falsification — bounded pre-M2 gate
+M2 Shared Visual Primitive Layer — NEXT after safety pass
+M3 Adaptive World Composition
+M4 Contextual DANTE D2–D6
+M5 Contrasting Complete Worlds
+M6 Integrated Product / Visual / A11y / Performance Review
+M7 Pre-Backend Frontend Freeze
+BACKEND after M7
+```
 
-It consumes all semantic/context rules above and decides only the still-open presentation/layout behavior required before more dynamic content is composed.
+No historical wording in this contract authorizes skipping that sequence.
