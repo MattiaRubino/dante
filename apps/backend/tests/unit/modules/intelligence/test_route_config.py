@@ -90,8 +90,8 @@ def test_loader_rejects_duplicate_json_keys(tmp_path: Path) -> None:
     path = _write_artifact(root, "test-v1", _artifact())
     text = path.read_text(encoding="utf-8")
     duplicate = text.replace(
-        "\"schema_version\": 1,",
-        "\"schema_version\": 1,\n  \"schema_version\": 1,",
+        '"schema_version": 1,',
+        '"schema_version": 1,\n  "schema_version": 1,',
         1,
     )
     path.write_text(duplicate, encoding="utf-8")
