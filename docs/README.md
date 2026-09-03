@@ -74,6 +74,7 @@ Read in this order:
 For the standalone Email Platform:
 
 - `architecture/email-platform.md`
+- `development/email-platform-local-uat.md` — reproducible AWS CLI / SES local UAT runbook
 - `decisions/ADR-012-email-delivery-platform.md`
 - `database/dictionary/tables/email_delivery_intent.json`
 - `database/dictionary/tables/email_delivery_attempt.json`
@@ -242,7 +243,9 @@ The next gate is no longer provider research or outbox design. Those are complet
 Current sequence:
 
 ```text
-final static-quality rerun after last lint cleanup
+repository-owned AWS CLI prerequisite bootstrap
+→ temporary named-profile login (`dante-uat`)
+→ SES eu-west-3 credential + sender-identity preflight
 → DANTE runtime configured for SES eu-west-3
 → real signup through DANTE
 → mailbox receives signup verification
@@ -251,6 +254,8 @@ final static-quality rerun after last lint cleanup
 → reconcile ADR/status/workstream documentation
 → close Email Platform external UAT
 ```
+
+The exact reproducible local procedure is `development/email-platform-local-uat.md`; ad-hoc shell history is not authority.
 
 Production deployment remains separately gated on:
 
