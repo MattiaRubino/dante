@@ -2,16 +2,24 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from hashlib import sha256
 
 _SCHEMA_VERSION = 1
 _HEX_DIGITS = frozenset("0123456789abcdef")
+_REVISION_PATTERN = re.compile(r"^[a-z0-9][a-z0-9._-]{0,63}$")
 
 
 def _require_text(value: str, *, name: str) -> None:
     if not value or not value.strip():
         raise ValueError(f"{name} must be non-empty")
+
+
+def _require_revision(value: str) -> None:
+    _require_text(value, name="revision")
+    if _REVISION_PATTERN.fullmatch(value) is None:
+        raise ValueError("revision has an invalid route-config identifier")
 
 
 def _require_unique_texts(values: tuple[str, ...], *, name: str) -> None:
@@ -43,7 +51,7 @@ class RouteConfigDocument:
     def __post_init__(self) -> None:
         if self.schema_version != _SCHEMA_VERSION:
             raise ValueError(f"unsupported route config schema_version: {self.schema_version}")
-        _require_text(self.revision, name="revision")
+        _require_revision(self.revision)
 
         for name, values in (
             ("model_targets", self.model_targets),
@@ -70,7 +78,7 @@ class RouteConfigIdentity:
     content_sha256: str
 
     def __post_init__(self) -> None:
-        _require_text(self.revision, name="revision")
+        _require_revision(self.revision)
         if len(self.content_sha256) != 64 or any(
             character not in _HEX_DIGITS for character in self.content_sha256
         ):

@@ -42,7 +42,7 @@ def _write_artifact(root: Path, revision: str, document: dict[str, object]) -> P
     return path
 
 
-def test_repository_pre_provider_revision_is_disabled_and_bound_to_exact_bytes() -> None:
+def test_repository_revision_is_disabled_and_exact_byte_bound() -> None:
     snapshot = load_route_config(_REVISIONS_ROOT, "pre-provider-v1")
     artifact_path = _REVISIONS_ROOT / "pre-provider-v1.json"
     artifact_bytes = artifact_path.read_bytes()
@@ -55,7 +55,7 @@ def test_repository_pre_provider_revision_is_disabled_and_bound_to_exact_bytes()
     assert snapshot.document.feature_modes == ("ask_dante:disabled",)
 
 
-def test_semantically_equal_json_with_different_bytes_has_different_identity(tmp_path: Path) -> None:
+def test_equal_json_with_different_bytes_has_different_identity(tmp_path: Path) -> None:
     root = tmp_path / "revisions"
     root.mkdir()
     path = root / "test-v1.json"
@@ -75,9 +75,14 @@ def test_semantically_equal_json_with_different_bytes_has_different_identity(tmp
     assert first.artifact_bytes != second.artifact_bytes
 
 
-def test_loader_rejects_unsafe_revision_before_path_resolution(tmp_path: Path) -> None:
+def test_unsafe_revision_is_rejected_before_path_resolution(tmp_path: Path) -> None:
     with pytest.raises(RouteConfigLoadError, match="invalid route-config identifier"):
         load_route_config(tmp_path, "../escape")
+
+
+def test_identity_rejects_unsafe_revision() -> None:
+    with pytest.raises(ValueError, match="invalid route-config identifier"):
+        RouteConfigIdentity(revision="../escape", content_sha256="0" * 64)
 
 
 def test_loader_rejects_duplicate_json_keys(tmp_path: Path) -> None:
