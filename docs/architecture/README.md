@@ -1,7 +1,7 @@
 # DANTE Architecture Index
 
 - **Status:** CURRENT / AUTHORITATIVE NAVIGATION
-- **Last reconciled:** 2026-09-02
+- **Last reconciled:** 2026-09-03
 
 This file describes current architecture truth directly. Historical candidates, hardenings and phase-time status remain evidence in their owning documents/Git history and do not override this index.
 
@@ -36,19 +36,27 @@ AI-05 whole-system                   CLOSED / STRUCTURALLY ACCEPTED
 POST-AI05 hardening                  CLOSED / POST05-H01..H25
 POST-AI05 final mega test            PASS / MKT-001..100 / C01..20 / reverse / Product simulation replay
 AI architecture design/reengineering CLOSED / STRUCTURALLY ACCEPTED
-AI implementation                    NOT STARTED
-AI current next action               I0 — repository/application ownership + architecture-test skeleton
+AI implementation                    ACTIVE ON feature/ai-implementation
+I0 / I1 / I2                         CLOSED / PASS
+I3/C3                                DEFERRED / WAITING OWNER DATA + SEAMS
+C6 / C7                              CLOSED / PASS
+C8 / P1 provider admission           CLOSED / OPENAI NATIVE + RESPONSES + GPT-5.6 TERRA ADMITTED FOR QUALIFICATION
+AI current next action               C9 — admitted inactive provider adapter/binding + conformance/live compatibility
 ```
 
-Protected `main` remains the integrated authority for shared closed foundations. `feature/ai-architecture` contains newer bounded AI architecture truth until normal protected-main integration.
+Protected `main` remains the integrated authority for shared closed foundations. `feature/ai-architecture` retains the accepted architecture authority/evidence. `feature/ai-implementation` contains newer bounded implementation truth until normal protected-main integration.
 
 ## 2. Current AI implementation authority
 
-Implementation starts from exactly:
+Implementation remains governed by:
 
-- [`dante-ai-implementation-baseline-final.md`](dante-ai-implementation-baseline-final.md) — **CURRENT / ACCEPTED FOR IMPLEMENTATION ENTRY**;
+- [`dante-ai-implementation-baseline-final.md`](dante-ai-implementation-baseline-final.md) — **CURRENT / ACCEPTED implementation-facing architecture authority**;
 - [`dante-ai-post05-final-mega-acceptance.md`](dante-ai-post05-final-mega-acceptance.md) — final independent structural acceptance evidence;
+- [`../workstreams/ai-implementation.md`](../workstreams/ai-implementation.md) — current branch-local implementation state and validated checkpoints;
+- [`../workstreams/ai-provider-candidate-admission-2026-09.md`](../workstreams/ai-provider-candidate-admission-2026-09.md) — current C8/P1 provider candidate admission evidence;
 - [`../workstreams/ai-architecture.md`](../workstreams/ai-architecture.md) — closed branch-local architecture workstream record.
+
+The final implementation baseline is intentionally an implementation-entry authority. Its phase-time `Implementation: NONE YET` / `Current next action: I0` statements describe the accepted entry point and are superseded for current execution status by material repository truth and the active implementation workstream; its architecture contracts remain binding unless deliberately evolved through normal governance.
 
 The temporary AI live handoff has been deleted after durable knowledge coverage.
 
@@ -154,23 +162,41 @@ No generic AI conversation/Run/Context/Memory/SearchResult/embedding persistence
 
 ## 6. Provider / qualification posture
 
-Provider/model/SDK selection is still OPEN.
+C8/P1 has admitted exactly one initial qualification candidate:
 
-Correct sequence:
+```text
+provider          OpenAI native API
+API               Responses API
+model candidate   gpt-5.6-terra
+status            ADMITTED FOR QUALIFICATION ONLY
+```
+
+Current evidence record:
+
+- [`../workstreams/ai-provider-candidate-admission-2026-09.md`](../workstreams/ai-provider-candidate-admission-2026-09.md).
+
+Retained non-admitted challengers:
+
+```text
+Claude Sonnet 5
+Gemini 3.8 Flash on Vertex AI
+```
+
+Correct sequence remains:
 
 ```text
 candidate shortlist
-→ candidate admission
-→ inactive adapter/binding
+→ candidate admission                         C8 / CLOSED
+→ inactive adapter/binding                    C9 / NEXT
 → adapter conformance
-→ live compatibility with eligible/minimized test data
+→ live compatibility with synthetic/public/minimized test data
 → direct DANTE eval on production-owned composition
 → applicable security/privacy/capacity/economics evidence
 → qualification
 → promotion
 ```
 
-Qualification traffic is real disclosure. Auxiliary model calls use the same governed ModelAccess/egress/resource/eval boundary.
+Admission does **not** establish production qualification, private-data eligibility, entitlement, availability or rollout status. Qualification traffic is real disclosure. Auxiliary model calls use the same governed ModelAccess/egress/resource/eval boundary.
 
 Applicable SC/PSV direct proofs remain activation gates; missing applicable evidence is not `N/A`.
 
@@ -187,7 +213,7 @@ current Alembic head
 = 20260830_09
 ```
 
-The post-AI05 mega test found no evidence requiring a database/Alembic change.
+I0-I2/C6/C7/C8 introduced no database/Alembic change.
 
 Specialist components remain trigger-gated: FTS/pg_trgm, pgvector/ANN/embeddings, Restate, R2, MCP/A2A, Execution Environment, commercial/shared usage ledger, cross-Run disclosure accounting and AI memory persistence.
 
@@ -217,12 +243,14 @@ Important frontend ADRs:
 
 ## 9. Current next action
 
-Architecture design/reengineering is closed.
+Architecture design/reengineering remains closed. Current implementation has reached the provider qualification lane.
 
 ```text
 NEXT
-→ ACTUAL AI IMPLEMENTATION WORKSTREAM
-→ I0 repository/application ownership + architecture-test skeleton
+→ C9
+→ admitted inactive OpenAI Responses / gpt-5.6-terra binding
+→ provider adapter + conformance
+→ live compatibility only on synthetic/public/minimized data
 ```
 
-I0 is build-authorized. This does not activate production Search, Ask DANTE, a provider route or any new persistence.
+C9 does not activate production Search/Ask, private-data routing or any new persistence. I3/C3 remains deferred until real owner data/seams are integration-ready and must converge before I6.
