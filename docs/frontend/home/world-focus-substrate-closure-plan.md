@@ -1,10 +1,10 @@
 # DANTE — World Focus Substrate Closure Program
 
-**Status:** CURRENT PROGRAM — WS0–WS8 + PRE-M0 CLOSED / M0 CLOSED / M1 ACTIVE / M1-1 CLOSED + VALIDATED / M1-2 NEXT  
-**Date:** 2026-09-02  
+**Status:** HISTORICAL SUBSTRATE CLOSURE AUTHORITY — WS0–WS8 + PRE-M0 + M0 CLOSED / M1 CLOSED / M2 NEXT AFTER POST-M1 SAFETY GATE  
+**Date:** 2026-09-03  
 **Branch:** `feature/home-react`
 
-This document is the sequencing authority from closed substrate work into Materialization.
+This document is the durable closure authority for the World Focus substrate program and its handoff into Materialization. It no longer owns the live gate by itself; current sequencing is in `world-focus-current-checkpoint.md` and `world-focus-m1-operational-handoff.md`.
 
 Current authorities:
 
@@ -16,8 +16,8 @@ WS8      world-focus-ws8-final-falsification-review.md
 POST-WS8 world-focus-post-ws8-hygiene-audit.md
 PRE-M0   world-focus-pre-m0-falsification-review.md
 M0       world-focus-m0-materialization-mapping.md
-M1-1     world-focus-m1-core-nonvisual-materialization-review.md
-M1-2     world-focus-m1-next-subblock.md
+M1       world-focus-m1-core-nonvisual-materialization-review.md
+M1 operational closure world-focus-m1-operational-handoff.md
 ```
 
 ---
@@ -76,10 +76,13 @@ WS8 — Final Falsification                    CLOSED
 POST-WS8 Hygiene                             CLOSED / APPLIED
 PRE-M0 Falsification                         CLOSED / PASS
 M0 — Materialization Mapping / Scope Freeze  CLOSED
-M1 — Core Non-Visual Materialization         ACTIVE
+M1 — Core Non-Visual Materialization         CLOSED / VALIDATED
 M1-1 identity/reference ownership            CLOSED / VALIDATED
-M1-2 non-visual facets + seams               NEXT
-M2–M7                                        BLOCKED BY SEQUENCE
+M1-2 non-visual facets + seams               CLOSED / VALIDATED
+M1 final falsification                       CLOSED / PASS
+POST-M1 safety audit/falsification            ACTIVE PRE-M2 SAFETY GATE
+M2 — Shared Visual Primitive Layer           NEXT IF POST-M1 SAFETY PASSES
+M3–M7                                        BLOCKED BY SEQUENCE
 BACKEND                                      BLOCKED UNTIL M7
 ```
 
@@ -213,9 +216,9 @@ No M0 evidence reopens WS0–WS8.
 
 ---
 
-# 8. M1 scope freeze and progress
+# 8. M1 closure
 
-M1 frozen scope remains:
+M1 frozen scope was:
 
 ```text
 decouple production World identity/descriptor from the fixed fixture union
@@ -228,7 +231,7 @@ add direct typed O2 Situation / O5 Next / O8 Evidence application seams
 retain deterministic pre-backend adapters + aggressive tests
 ```
 
-M1-1 has already materialized and validated:
+M1-1 materialized and validated:
 
 ```text
 neutral production World identity / descriptor
@@ -240,14 +243,14 @@ primary-only surface inheritance
 route / continuity / transition identity alignment
 ```
 
-Validated M1-1 code evidence:
+Validated M1-1 evidence:
 
 ```text
 CODE HEAD e0f4003496bfbf828ed9ab7718af8e7e30342ad3
 CI        33679425668 PASS
 ```
 
-The remaining M1 work is M1-2 as frozen in `world-focus-m1-next-subblock.md`:
+M1-2 then materialized and validated:
 
 ```text
 reference-resolution safe presentation vocabulary
@@ -256,19 +259,36 @@ WP-02 Attention application/model seam
 WP-03 Comparison application/model seam
 WP-04 Trajectory application/model seam
 freshness / as-of / material-basis frontend semantics
-conflict / incomplete / superseded / retracted / redacted / tombstoned safe states
-evidence / provenance / integrity / attestation presentation metadata where materially needed
+conflict / incomplete / superseded / retracted / retired safe states
+evidence / provenance / integrity / attestation reference metadata
 sanitized disclosure outcome
 effect lifecycle presentation contract
-offline / replay / provider-lag frontend representation
+offline / replay / provider-lag / timeout frontend representation
 O2 Situation direct typed application seam
 O5 Next direct typed application seam
 O8 Evidence / History direct typed application seam
 ```
 
-The current non-enumerable `contextReferences` cursor compatibility property is transitional and must be reviewed/removed before M1 closure.
+Validated M1-2 evidence:
 
-M1 must not do:
+```text
+CODE HEAD 5e98e4b97639cd018badc23e35e7a523f2940875
+CI        33738873773 PASS
+```
+
+M1 final red-first falsification exposed one real transitional representation issue: `contextReferences` was hidden as a non-enumerable compatibility property on the interaction cursor. The test was not weakened. Production was hardened so `contextReferences` is now a normal enumerable frozen cursor property; `selection` remains only a compatibility projection of primary.
+
+```text
+EXPECTED-FAIL HEAD 67bd06d63d84273ba2077761919d714c8d442254
+CI                33740212989 EXPECTED FAILURE
+
+FINAL CODE HEAD    7369c51e7ba04f8913728a0770f700c728c3b9f9
+CI                 33740710290 PASS
+```
+
+Therefore M1 is formally closed. The currently active post-M1 safety gate is additional falsification before M2, not unfinished M1 scope.
+
+M1 did not pull forward:
 
 ```text
 shared visual primitive rendering            -> M2
@@ -279,15 +299,16 @@ integrated visual/a11y/performance acceptance -> M6
 backend/API/DB/Alembic/AuthZ/LLM/effects       -> after M7
 ```
 
-Existing planner/registries/workspace generation/allocation/failure isolation must be reused, not rebuilt.
+Existing planner/registries/workspace generation/allocation/failure isolation remain the required substrate for later materialization.
 
 ---
 
 # 9. Materialization sequence
 
 ```text
-M1 Core Non-Visual Production Materialization — ACTIVE
-M2 Shared Visual Primitive Layer              — BLOCKED
+M1 Core Non-Visual Production Materialization — CLOSED
+POST-M1 Safety Audit / Falsification          — ACTIVE
+M2 Shared Visual Primitive Layer              — NEXT AFTER SAFETY PASS
 M3 Adaptive World Composition                 — BLOCKED
 M4 Contextual DANTE Materialization           — BLOCKED
 M5 Contrasting Complete Worlds                — BLOCKED
@@ -300,7 +321,7 @@ BACKEND                                       — BLOCKED UNTIL M7
 
 # 10. Sequencing note
 
-Historical paragraphs in the product/platform contracts that name the contextual DANTE spatial review as the current/next gate are sequencing-stale. Their semantic invariants remain authoritative; sequencing is superseded by `world-focus-contract-sequencing-supersession.md`, `world-focus-current-checkpoint.md`, the M0 map and current roadmap.
+Historical paragraphs in the product/platform contracts that name the contextual DANTE spatial review as the current/next gate are sequencing-stale. Their semantic invariants remain authoritative; sequencing is superseded by `world-focus-contract-sequencing-supersession.md`, `world-focus-current-checkpoint.md`, the M1 operational handoff and current roadmap.
 
 ---
 
@@ -309,6 +330,8 @@ Historical paragraphs in the product/platform contracts that name the contextual
 Do not restart WS0–WS8 for a new World noun, provider, API, renderer, model, viewport, config store, sync engine or larger dataset.
 
 Reopen only when later executable/materialization evidence demonstrates a concrete contradiction that cannot fit an existing owner, and only at the earliest genuinely contradicted phase.
+
+A post-M1 safety test failure reopens only the earliest concrete owner it disproves. It does not automatically reopen the complete substrate program or M1 as a whole.
 
 ---
 
@@ -330,6 +353,4 @@ NO provider ACK treated as canonical completion
 
 # 13. Immediate continuation
 
-> **M1 remains ACTIVE. M1-1 is CLOSED / VALIDATED. Continue with M1-2 only.**
-
-Open each M1-2 write subblock under a fresh live HEAD/write gate derived from the frozen M0 map and `world-focus-m1-next-subblock.md`. Do not begin M2 until M1 is formally closed.
+> **M1 is CLOSED / VALIDATED. Complete the bounded POST-M1 SAFETY AUDIT / FALSIFICATION before starting M2. If it passes, M2 becomes the active engineering gate. If it fails, classify and repair only the concrete disproved owner before proceeding.**
