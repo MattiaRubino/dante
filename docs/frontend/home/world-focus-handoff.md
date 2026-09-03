@@ -1,6 +1,6 @@
 # DANTE — World Focus Handoff
 
-**Status:** CURRENT DURABLE HANDOFF — WS0–WS8 / M0 / M1 / POST-M1 SAFETY CLOSED — M2 NEXT  
+**Status:** CURRENT DURABLE HANDOFF — WS0–WS8 / M0 / M1 / POST-M1 SAFETY CLOSED — M2 ACTIVE / M2-1 VALIDATED  
 **Date:** 2026-09-03  
 **Repository:** `MattiaRubino/dante`  
 **Branch:** `feature/home-react`  
@@ -10,23 +10,24 @@ Read in order:
 
 ```text
 1. world-focus-current-checkpoint.md
-2. world-focus-post-m1-safety-falsification-review.md
-3. world-focus-m1-core-nonvisual-materialization-review.md
-4. world-focus-m1-next-subblock.md
-5. world-focus-m0-materialization-mapping.md
-6. world-focus-contract-sequencing-supersession.md
-7. world-focus-pre-m0-falsification-review.md
-8. world-focus-post-ws8-hygiene-audit.md
-9. world-focus-substrate-closure-plan.md
-10. world-focus-ws8-final-falsification-review.md
-11. world-focus-ws7-executable-harness-review.md
-12. world-focus-ws6-universal-work-primitives.md
-13. world-focus-ws6-primitive-pressure-matrix.md
-14. world-focus-substrate-final-convergence-proof.md
-15. world-focus-substrate-combinatorial-evidence.md
-16. world-focus-frontend-roadmap.md
-17. world-focus-evidence-index.md
-18. product/platform/structure/geometry contracts as needed
+2. world-focus-m2-shared-visual-primitives.md
+3. world-focus-post-m1-safety-falsification-review.md
+4. world-focus-m1-core-nonvisual-materialization-review.md
+5. world-focus-m1-next-subblock.md
+6. world-focus-m0-materialization-mapping.md
+7. world-focus-contract-sequencing-supersession.md
+8. world-focus-pre-m0-falsification-review.md
+9. world-focus-post-ws8-hygiene-audit.md
+10. world-focus-substrate-closure-plan.md
+11. world-focus-ws8-final-falsification-review.md
+12. world-focus-ws7-executable-harness-review.md
+13. world-focus-ws6-universal-work-primitives.md
+14. world-focus-ws6-primitive-pressure-matrix.md
+15. world-focus-substrate-final-convergence-proof.md
+16. world-focus-substrate-combinatorial-evidence.md
+17. world-focus-frontend-roadmap.md
+18. world-focus-evidence-index.md
+19. product/platform/structure/geometry contracts as needed
 ```
 
 Older `NEXT` or `ACTIVE` prose is phase-time evidence only unless adopted by a newer live authority.
@@ -54,7 +55,9 @@ M1 Core Non-Visual Materialization     CLOSED / VALIDATED
 M1-1 identity/reference ownership      CLOSED / VALIDATED
 M1-2 non-visual facets + seams         CLOSED / VALIDATED
 POST-M1 SAFETY FALSIFICATION           CLOSED / PASS
-M2 shared visual primitive layer       NEXT
+M2 shared visual primitive layer       ACTIVE
+M2-1 shared presentation/renderers     CLOSED / VALIDATED
+M2 remaining visual work               NEXT WITHIN M2
 M3–M7                                  BLOCKED BY SEQUENCE
 BACKEND                                BLOCKED UNTIL M7
 D2–D6                                  PRESERVED / DEFERRED TO M4
@@ -100,6 +103,13 @@ POST-M1 safety closure
 HEAD ecc2128b62395f82eab9ee7ff239355b4ca81ee4
 CI   33754084001 PASS
 9 / 9 hostile tests; 56 / 56 web test files; 301 / 301 web unit tests
+
+M2-1 validation
+HEAD 2e639f108d5cb01e53395013a55346b7ac2e4294
+CI   33781753823 PASS
+61 / 61 web test files; 312 / 312 web unit tests
+262 modules / 684 dependencies / 0 architecture violations
+Chromium 720/719/390 pressure PASS; frozen Timeline Firefox PASS
 ```
 
 Later documentation synchronization is a separate evidence point and does not replace validated code heads above.
@@ -190,6 +200,8 @@ reference exists != payload available != current != disclosable != fresh
 stale != superseded != retracted
 timeout != semantic negative
 offline != source absent
+Comparison != Decision
+missing trajectory position != zero
 ```
 
 No generic Entity/Thing/Relationship/Fact/property-bag root.
@@ -221,6 +233,8 @@ Pre-M0 discovered and fixed stale route-origin handoff resurrection without a ne
 M1 final hostile pressure found only the planned transitional cursor representation residue and closed it red-first.
 
 The post-M1 safety gate then found two additional implementation defects at existing boundaries: cancelled non-cooperative reads could reach validation, and O8 could retain caller evidence aliases. Both were fixed without reopening M1 or WS0–WS8.
+
+M2-1 red-first then proved the visual layer had no pre-existing owner; implementation pressure subsequently caught strict TypeScript indexing and isolated-test i18n setup defects. The semantic tests were not weakened. The final M2-1 run is green across Quality, Chromium, Mobile and frozen Timeline Firefox.
 
 ---
 
@@ -278,7 +292,46 @@ Do not turn proof/oracle-only structures into production owners automatically. A
 
 ---
 
-# 7. DANTE disposition
+# 7. M2 production presentation state
+
+M2-1 introduces a presentation-only boundary over M1:
+
+```text
+WorldFocusDisplayBinding
+  exact semantic reference match
+  display-safe label/supporting text
+  no semantic key fallback
+
+shared presentation grammar
+  semantic section/heading
+  textual finite state
+  existing DANTE tokens
+  container-query adaptation
+  forced-colors support
+
+finite work-semantic renderers
+  WP-02 Attention
+  WP-03 Comparison
+  WP-04 Trajectory
+```
+
+WP-01 Continuity is the live production vertical migrated onto the same grammar without changing its reader, cancellation/race protection, sparse behavior, degraded states or no-fake-Resume rule.
+
+WP-02..WP-04 are real renderer contracts but **not live composition claims**. Do not mount them merely to make M2 look populated. An actual application/composition seam must justify their presence.
+
+Presentation must not promote internal semantics:
+
+```text
+reasonCode != display explanation
+Comparison != winner/recommendation/Decision
+Trajectory missing != zero
+renderer != semantic owner
+responsive adaptation != semantic rewrite
+```
+
+---
+
+# 8. DANTE disposition
 
 D0 accepted:
 
@@ -294,17 +347,17 @@ M1's useful World path remains functional without DANTE.
 
 ---
 
-# 8. M2 handoff
+# 9. Current M2 handoff
 
 M0 remains the production-disposition authority in `world-focus-m0-materialization-mapping.md`.
 
-M1 is CLOSED / VALIDATED and the bounded post-M1 safety gate is CLOSED / PASS. The next bounded engineering block is:
+M1 and POST-M1 safety are closed. M2 is active, with M2-1 closed/validated.
 
-> **M2 — Shared Visual Primitive Layer.**
+The next bounded engineering block must remain inside M2:
 
-M2 renders already-earned semantics. It does not redefine them.
+> **Continue shared visual materialization using the validated M2-1 grammar.**
 
-Binding M2 constraints:
+Binding constraints:
 
 ```text
 primitive != card
@@ -315,13 +368,14 @@ no hidden semantic inference from visual shape
 no fabricated urgency/density
 unknown future World safe degradation
 responsive changes presentation, not meaning
+renderer availability != automatic live mounting
 ```
 
 Persistent pin/hide/reorder/customization remains M3. Contextual DANTE D2–D6 remains M4.
 
 ---
 
-# 9. Backend stop line
+# 10. Backend stop line
 
 ```text
 NO World DB/Alembic
@@ -335,15 +389,17 @@ NO fake success
 
 ---
 
-# 10. Strict reopen policy
+# 11. Strict reopen policy
 
 Do not restart WS0–WS8 or M1 for a new provider, World noun, renderer, viewport, AI model, config store or larger dataset.
 
 Reopen only when later executable evidence shows a concrete semantic/ownership/state/security/privacy/effect contradiction that cannot fit an existing owner, and reopen only the earliest necessary phase.
 
+M2-1 itself should be reopened only for a concrete contradiction in the display-binding/shared-presentation boundary, not merely because a later renderer needs a specialist treatment.
+
 ---
 
-# 11. Repository discipline
+# 12. Repository discipline
 
 Authority order:
 
@@ -356,8 +412,8 @@ Git history
 conversation
 ```
 
-Every write needs exact branch/PRE-SCOPE/path gate and live HEAD recheck. No merge/rebase/force/main mutation without explicit authorization.
+Every new write scope needs exact branch/PRE-SCOPE/path gate and live HEAD recheck. No merge/rebase/force/main mutation without explicit authorization.
 
 Immediate continuation:
 
-> **Proceed with M2 only. M3–M7 and backend remain blocked by sequence.**
+> **Continue M2 only. M3–M7 and backend remain blocked by sequence.**
