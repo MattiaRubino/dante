@@ -1,6 +1,6 @@
 # DANTE — World Focus Research / Review Evidence Index
 
-**Status:** CURRENT EVIDENCE MAP — WS0–WS8 / M0 / M1 / POST-M1 SAFETY CLOSED — M2 ACTIVE / M2-1 + M2-2 VALIDATED / FINAL M2 AUDIT NEXT  
+**Status:** CURRENT EVIDENCE MAP — WS0–WS8 / M0 / M1 / POST-M1 SAFETY / M2 CLOSED — M3 NEXT  
 **Date:** 2026-09-03  
 **Branch:** `feature/home-react`
 
@@ -336,7 +336,7 @@ full Frontend CI Gate PASS
 
 `world-focus-m2-shared-visual-primitives.md`
 
-**M2 ACTIVE / M2-1 CLOSED / VALIDATED.**
+**M2-1 CLOSED / VALIDATED.**
 
 Red-first evidence:
 
@@ -346,19 +346,7 @@ CI   33763229784 EXPECTED FAILURE
 Quality / Lint failed because new M2 presentation owners did not yet exist
 ```
 
-The red tests fixed presentation obligations before implementation:
-
-```text
-exact semantic reference -> display binding
-no raw reference key leakage
-no reasonCode leakage
-Comparison subject order preserved
-Comparison does not invent winner/recommendation
-Trajectory missingness remains distinct from zero
-base Trajectory does not fabricate a chart
-shared semantic heading/state structure
-binding/order mismatch fails closed
-```
+Red contracts included exact semantic reference -> display binding, no raw key/reasonCode leakage, Comparison order/no winner, Trajectory missingness != zero, no fabricated chart, semantic heading/state structure and fail-closed binding/order mismatch.
 
 Validated production and pressure evidence:
 
@@ -398,7 +386,7 @@ WP-02..WP-04 are not claimed as live composition merely because renderers exist.
 
 `world-focus-m2-shared-visual-primitives.md`
 
-**M2 ACTIVE / M2-2 CLOSED / VALIDATED.**
+**M2-2 CLOSED / VALIDATED.**
 
 Red-first owner proof:
 
@@ -488,7 +476,73 @@ O8 Evidence / History visual presentation     DONE / M2-2
 L2/L3/L6/L8 truthfulness presentation         DONE / M2-2
 ```
 
-This audit does not itself close M2. It establishes the precondition for a final hostile M2 closure audit/falsification.
+## E25 — M2 final hostile falsification / closure
+
+Final hostile test:
+
+`apps/web/src/features/world-focus/ui/presentation/world-focus-m2-final-falsification.test.tsx`
+
+**M2 CLOSED / VALIDATED.**
+
+Red evidence:
+
+```text
+HEAD 3adbd958ee3e3bf2fd55b7d2a2562dd6de5aa011
+CI   33790674375 EXPECTED FAILURE
+hostile 4 PASS / 1 FAIL
+whole web unit suite 331 PASS / 1 FAIL
+Lint / Typecheck / Architecture / Generated PASS
+Mobile PASS
+Chromium PASS
+```
+
+The four immediate PASS cases proved:
+
+```text
+simultaneous L2/L3/L6/L8 degraded axes remain separate
+protected reason/policy/reference/provider detail does not leak
+unknown-future World renders O2/O5/O8 while preserving semantic order
+Evidence / Provenance / Integrity / History stay separate
+wrong semantic reference fails closed even with convincing display copy
+combined nominal basis/disclosure/sync remains quiet
+```
+
+The sole failure exposed one implementation gap under the existing M2 display-binding owner:
+
+> `WorldFocusDisplayBinding` claimed bounded display-safe copy but accepted pathological 100,000-character label/supporting text.
+
+The hostile test was not modified. Production hardening:
+
+```text
+label max          512 characters
+supportingText max 2048 characters
+blank/oversize     fail closed
+silent truncation  none
+```
+
+Final evidence:
+
+```text
+HEAD e3865e0cde095acae7e3022815538f35ee0706ef
+CI   33790953644 PASS
+
+hostile tests            5 / 5 PASS
+web test files           70 / 70 PASS
+web unit tests           332 / 332 PASS
+architecture             279 modules / 770 dependencies / 0 violations
+generated                112 tokens / 3 deterministic files
+Quality                  PASS
+Mobile Bundle            PASS
+Web E2E / Chromium       PASS
+frozen Timeline Firefox  PASS
+Frontend CI Gate         PASS
+production build         PASS
+repository mutation      PASS
+```
+
+Repository inspection confirmed live core composition still mounts only Continuity; WP-02..04 and O2/O5/O8 were not injected to fabricate proof. No universal card/projection envelope, page-per-World fork, M3 customization, D2–D6 or backend authority was introduced.
+
+This closes M2.
 
 ---
 
@@ -505,8 +559,8 @@ L6 Operation/Effect Presentation
 L7 Renderer/Specialist Extension
 L8 Platform/User Policy
 
-M2 presentation boundary
-  display-safe bindings
+M2 presentation boundary — CLOSED
+  bounded display-safe bindings
   shared semantic presentation grammar
   L1 renderers
   truthfulness qualifiers
@@ -533,17 +587,19 @@ Do not reopen M2-2 merely because later composition or a specialist renderer nee
 
 > **POST-M1 SAFETY FALSIFICATION — CLOSED / PASS**
 
-> **M2 — Shared Visual Primitive Layer — ACTIVE**
+> **M2 — Shared Visual Primitive Layer — CLOSED / VALIDATED**
 
 > **M2-1 — Shared Presentation / L1 Renderer Grammar — CLOSED / VALIDATED**
 
 > **M2-2 — Truthfulness / Direct Output Visual Layer — CLOSED / VALIDATED**
 
-> **M2 FINAL CLOSURE AUDIT / FALSIFICATION — NEXT**
+> **M2 FINAL HOSTILE CLOSURE — CLOSED / PASS**
 
-> **M3–M7 and backend remain BLOCKED by sequence. D2–D6 remain deferred to M4.**
+> **M3 — Adaptive World Composition — NEXT / NOT STARTED**
 
-The frozen M0 map remains the production-disposition authority; M1 evidence proves the assigned non-visual production owners exist; post-M1 safety confirms pre-M2 hardening; M2-1 and M2-2 now cover every currently mapped shared visual disposition assigned to M2. Only a final hostile M2 closure audit may advance sequencing to M3.
+> **M4–M7 and backend remain BLOCKED by sequence. D2–D6 remain deferred to M4.**
+
+The frozen M0 map remains the production-disposition authority. M1 evidence proves the assigned non-visual owners exist; post-M1 safety confirms pre-M2 hardening; M2-1/M2-2 cover all mapped shared visual dispositions; E25 provides final hostile closure evidence. M3 now becomes the next phase but requires a fresh bounded gate.
 
 ---
 
