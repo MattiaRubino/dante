@@ -20,6 +20,7 @@ import {
   TemporalCreateAdvancedFields,
   TemporalCreateCoreFields,
 } from './temporal-create-fields';
+import { temporalCreateProductCopy } from './temporal-create-product-copy';
 import type {
   TemporalCreateComposerPosition,
   TemporalCreateContextOption,
@@ -87,7 +88,8 @@ export function TemporalCreateComposer({
   onDiscard,
   onSubmit,
 }: TemporalCreateComposerProps) {
-  const { t } = useTranslation('common');
+  const { t, i18n } = useTranslation('common');
+  const copy = temporalCreateProductCopy(i18n.resolvedLanguage ?? i18n.language);
   const titleId = useId();
   const dialogTitleId = useId();
   const discardTitleId = useId();
@@ -100,6 +102,7 @@ export function TemporalCreateComposer({
   const fields = session.draft.current;
   const pending = lifecycle === 'pending';
   const discardPending = session.closeDecision === 'confirm-discard';
+  const advanced = session.surface !== 'quick';
 
   useLayoutEffect(() => {
     titleRef.current?.focus();
@@ -266,13 +269,6 @@ export function TemporalCreateComposer({
     left: `${position.left}px`,
   } satisfies CSSProperties;
 
-  const surfaceTitle =
-    session.surface === 'full'
-      ? t(($) => $.common.home.timeline.create.surface.full)
-      : session.surface === 'expanded'
-        ? t(($) => $.common.home.timeline.create.surface.expanded)
-        : t(($) => $.common.home.timeline.create.title);
-
   const constraintLabel =
     fields.scheduling.constraintKind === 'open'
       ? t(($) => $.common.home.timeline.create.planning.constraintOpen)
@@ -283,13 +279,15 @@ export function TemporalCreateComposer({
           : fields.scheduling.constraintKind === 'preferred-window'
             ? t(($) => $.common.home.timeline.create.planning.constraintPreferred)
             : fields.timeSemantics === 'unscheduled'
-              ? t(($) => $.common.home.timeline.create.planning.constraintOpen)
+              ? copy.activity.toPlace
               : null;
 
   const submitForm = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     onSubmit();
   };
+
+  const showAdvanced = () => onSurfaceChange('full');
 
   return (
     <div
@@ -299,9 +297,9 @@ export function TemporalCreateComposer({
     >
       <div
         ref={dialogRef}
-        className={`temporal-create-composer is-${session.surface}`}
+        className={`temporal-create-composer${advanced ? ' is-advanced' : ''}`}
         data-temporal-create="composer"
-        data-temporal-create-surface={session.surface}
+        data-temporal-create-surface={advanced ? 'advanced' : 'base'}
         role="dialog"
         aria-modal="true"
         aria-labelledby={dialogTitleId}
@@ -317,64 +315,19 @@ export function TemporalCreateComposer({
             <span className="temporal-create-composer__eyebrow">
               {t(($) => $.common.home.timeline.create.draft)}
             </span>
-            <h2 id={dialogTitleId}>{surfaceTitle}</h2>
-            {session.surface !== 'quick' ? (
-              <p>{t(($) => $.common.home.timeline.create.surface.description)}</p>
-            ) : null}
+            <h2 id={dialogTitleId}>
+              {t(($) => $.common.home.timeline.create.title)}
+            </h2>
           </div>
-          <div className="temporal-create-composer__header-actions">
-            {session.surface === 'quick' ? (
-              <button
-                type="button"
-                className="temporal-create-composer__close"
-                disabled={pending}
-                onClick={() => onSurfaceChange('expanded')}
-                aria-label={t(($) => $.common.home.timeline.create.details.show)}
-                title={t(($) => $.common.home.timeline.create.details.show)}
-              >
-                +
-              </button>
-            ) : null}
-            {session.surface === 'expanded' ? (
-              <>
-                <button
-                  type="button"
-                  className="temporal-create-composer__close"
-                  disabled={pending}
-                  onClick={() => onSurfaceChange('quick')}
-                  aria-label={t(($) => $.common.home.timeline.create.details.hide)}
-                  title={t(($) => $.common.home.timeline.create.details.hide)}
-                >
-                  −
-                </button>
-                <button
-                  type="button"
-                  className="temporal-create-surface-action"
-                  onClick={() => onSurfaceChange('full')}
-                >
-                  {t(($) => $.common.home.timeline.create.surface.openFull)}
-                </button>
-              </>
-            ) : null}
-            {session.surface === 'full' ? (
-              <button
-                type="button"
-                className="temporal-create-surface-action"
-                onClick={() => onSurfaceChange('expanded')}
-              >
-                {t(($) => $.common.home.timeline.create.surface.backExpanded)}
-              </button>
-            ) : null}
-            <button
-              className="temporal-create-composer__close"
-              type="button"
-              disabled={pending}
-              onClick={requestCloseFromCurrentFocus}
-              aria-label={t(($) => $.common.home.timeline.create.close)}
-            >
-              ×
-            </button>
-          </div>
+          <button
+            className="temporal-create-composer__close"
+            type="button"
+            disabled={pending}
+            onClick={requestCloseFromCurrentFocus}
+            aria-label={t(($) => $.common.home.timeline.create.close)}
+          >
+            ×
+          </button>
         </div>
 
         <form
@@ -402,16 +355,26 @@ export function TemporalCreateComposer({
 
           <TemporalCreateCoreFields
             fields={fields}
-            surface={session.surface}
             contexts={contexts}
             onPatch={onPatch}
+            onRequestAdvanced={showAdvanced}
             renderError={renderError}
           />
+
+          <button
+            type="button"
+            className={`temporal-create-advanced-toggle${advanced ? ' is-open' : ''}`}
+            aria-expanded={advanced}
+            onClick={() => onSurfaceChange(advanced ? 'quick' : 'full')}
+          >
+            <span>{advanced ? copy.hideAdvanced : copy.advanced}</span>
+            <span aria-hidden="true">{advanced ? '⌃' : '⌄'}</span>
+          </button>
 
           <TemporalCreateAdvancedFields
             fields={fields}
             contexts={contexts}
-            depth={session.surface}
+            depth={advanced ? 'full' : 'quick'}
             onPatch={onPatch}
             renderError={renderError}
           />
