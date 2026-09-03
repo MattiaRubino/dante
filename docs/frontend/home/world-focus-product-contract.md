@@ -1,10 +1,12 @@
 # DANTE — World Focus Product Contract
 
-**Status:** CURRENT PRE-BACKEND PRODUCT AUTHORITY — WR0/WR1/WR2 CLOSED  
-**Date:** 2026-09-01  
+**Status:** CURRENT PRE-BACKEND PRODUCT AUTHORITY — SEMANTICS CURRENT / HISTORICAL GATE PROSE SUPERSEDED  
+**Date:** 2026-09-03  
 **Branch:** `feature/home-react`
 
 This document is the current product authority for World Focus. It incorporates the WR0/WR1/WR2 reverse-engineering results and the final B1/B2 dispositions. Historical review documents are evidence only where they do not conflict with this contract.
+
+**Sequencing note:** product semantics in this file remain authoritative. Phase-time statements in section 25 that describe the contextual DANTE spatial review as the immediate/current gate are historical. D0 and D1 are closed, D2–D6 are deferred to M4, M1 is closed, and current phase sequencing is owned by `world-focus-current-checkpoint.md`, `world-focus-m1-operational-handoff.md` and `world-focus-contract-sequencing-supersession.md`.
 
 ## 1. Product compass
 
@@ -146,7 +148,8 @@ May conceptually hold:
 active World reference
 interaction generation
 current query/Lens if applicable
-selected projection/source reference
+primary selected/context projection/source reference
+bounded ordered supporting context references where materially needed
 current Insight/Explore reference
 entry/surface context
 ```
@@ -230,13 +233,16 @@ immediacy/time sensitivity
 resumability value
 meaningful change
 explicit current user intent/selection
-confidence/provenance quality
+validated material-basis / evidence / provenance quality where the owning projection explicitly defines it
 ```
+
+There is **no universal confidence score**. Evidence, provenance, integrity/attestation, freshness, coverage/conflict and validity are separate dimensions and must not be collapsed into a generic confidence number for ranking.
 
 Hard reject:
 
 ```text
 AI relevance score alone decides page composition
+universal confidence score silently decides page composition
 ```
 
 Stable user-owned content remains predictable. Adaptive content is bounded. Ephemeral content stays temporary unless deliberately promoted through accepted configuration semantics.
@@ -533,11 +539,11 @@ Automated gates passed.
 
 **Integrated user visual acceptance is deferred**, not failed: the user correctly identified that DANTE's real spatial footprint must be established before more content is judged/composed against the workspace. B2 remains valid capability/evidence and will be re-reviewed inside the real post-DANTE composition.
 
-## 25. Immediate product gate — World contextual DANTE spatial/presence model
+## 25. Historical product gate — World contextual DANTE spatial/presence model
 
-The next gate is not another content module.
+This section records the product problem that was the immediate gate at the WR/B2 stage. It is retained as phase-time evidence; it is **not the current sequencing authority**.
 
-DANTE's semantic role is already established; what remains is product interaction/space:
+The problem space was:
 
 ```text
 persistent vs transient presence
@@ -565,9 +571,9 @@ Critical rule:
 Home AI surface != World contextual DANTE surface
 ```
 
-Do not copy Home geometry/components as the answer. Reverse-engineer the World-specific product problem first, pressure-test materially different Worlds, compare mature external interaction patterns where useful, present alternatives to the user, then implement only the accepted direction.
+The accepted outcome is now carried by D0/D1: quiet invoke, compact composer, wide sidecar where viable, constrained/mobile route-owned focus overlay, explicit maximize/restore, and bounded contextual/deictic invocation. D2–D6 remain intentionally deferred to M4.
 
-No production DANTE World UI is authorized before that review.
+The historical rule against copying Home geometry/components remains binding. No later phase may reinterpret DANTE as a decorative chatbot or silently widen context/authorization.
 
 ## 26. Product invariants
 
@@ -614,7 +620,7 @@ G1..G7 closure + adversarial rerun
 -> no new structural gap
 ```
 
-Final structural scan:
+Final structural scan at WR closure:
 
 ```text
 NEW DOMAIN GAP                 0
@@ -624,4 +630,4 @@ NEW INTELLIGENCE ARCH GAP      0
 NEW WORLD PRODUCT STRUCTURAL   0
 ```
 
-That closure remains valid. The current DANTE spatial/presence gate is a product/interaction/layout question inside those closed semantic boundaries, not a reopening of Domain/Logical/Physical/DB or Intelligence architecture.
+That closure remains valid. Later D0/D1, WS0–WS8, M0 and M1 materialized and hardened the accepted semantics without changing the World product definition above. Live sequencing is not owned by this historical closure section.
