@@ -24,8 +24,11 @@ export type TemporalCreateTimelineProjection = Readonly<{
   allDay: boolean;
   flexible: boolean;
   recurring: boolean;
+  agendaParts: readonly string[];
   preview: boolean;
 }>;
+
+const EMPTY_AGENDA_PARTS: readonly string[] = Object.freeze([]);
 
 function minuteOfDay(hour: number, minute: number): number {
   return hour * 60 + minute;
@@ -44,6 +47,10 @@ function projectPlacement(
     specification.kind === 'event' &&
     specification.eventRecurrence.patternKind !== 'none';
   const appearanceTone = specification.appearanceTone;
+  const agendaParts =
+    specification.kind === 'event'
+      ? Object.freeze([...specification.event.agendaParts])
+      : EMPTY_AGENDA_PARTS;
 
   if (!placement) {
     return Object.freeze({
@@ -59,6 +66,7 @@ function projectPlacement(
       allDay: false,
       flexible,
       recurring,
+      agendaParts,
       preview,
     });
   }
@@ -77,6 +85,7 @@ function projectPlacement(
       allDay: true,
       flexible,
       recurring,
+      agendaParts,
       preview,
     });
   }
@@ -105,6 +114,7 @@ function projectPlacement(
     allDay: false,
     flexible,
     recurring,
+    agendaParts,
     preview,
   });
 }

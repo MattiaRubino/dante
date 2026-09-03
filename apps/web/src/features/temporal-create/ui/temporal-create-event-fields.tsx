@@ -5,6 +5,7 @@ import type {
   TemporalCreateFields,
   TemporalCreateSurface,
 } from '../model/temporal-create-session';
+import { TemporalCreateEventAgenda } from './temporal-create-event-agenda';
 import {
   TEMPORAL_CREATE_BUFFER_OPTIONS,
   temporalCreateDurationFromEndDateTime,
@@ -220,19 +221,10 @@ export function TemporalCreateEventFields({
               />
             </label>
           </div>
-          <label className="temporal-create-control">
-            <span>{t(($) => $.common.home.timeline.create.eventDetails.agenda)}</span>
-            <textarea
-              rows={4}
-              value={event.agenda}
-              onChange={(inputEvent) =>
-                patchEvent({ agenda: inputEvent.currentTarget.value })
-              }
-              placeholder={t(
-                ($) => $.common.home.timeline.create.eventDetails.agendaPlaceholder,
-              )}
-            />
-          </label>
+          <TemporalCreateEventAgenda
+            parts={event.agendaParts}
+            onChange={(agendaParts) => patchEvent({ agendaParts })}
+          />
           <div className="temporal-create-check-grid">
             <label>
               <input

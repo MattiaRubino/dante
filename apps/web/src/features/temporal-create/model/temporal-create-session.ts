@@ -161,7 +161,8 @@ export type TemporalCreateEventIntent = Readonly<{
   visibility: TemporalCreateVisibility;
   purpose: string;
   expectedOutcome: string;
-  agenda: string;
+  /** Ordered parts remain internal to the Event unless another owner is explicit. */
+  agendaParts: readonly string[];
   decisionRequired: boolean;
   requiredParticipants: string;
   optionalParticipants: string;
@@ -247,8 +248,17 @@ function freezeConfirmation(
   return Object.freeze({ ...value });
 }
 
+function freezeAgendaParts(value: readonly string[]): readonly string[] {
+  return Object.freeze(
+    value.map((part) => part.trim()).filter((part) => part.length > 0),
+  );
+}
+
 function freezeEvent(value: TemporalCreateEventIntent): TemporalCreateEventIntent {
-  return Object.freeze({ ...value });
+  return Object.freeze({
+    ...value,
+    agendaParts: freezeAgendaParts(value.agendaParts ?? []),
+  });
 }
 
 function normalizeFields(fields: TemporalCreateFields): TemporalCreateFields {
@@ -364,7 +374,7 @@ export function createTemporalCreateFields(
       visibility: 'default',
       purpose: '',
       expectedOutcome: '',
-      agenda: '',
+      agendaParts: Object.freeze([]),
       decisionRequired: false,
       requiredParticipants: '',
       optionalParticipants: '',
@@ -409,6 +419,13 @@ function sameWeekdays(
 }
 
 function sameNumbers(left: readonly number[], right: readonly number[]): boolean {
+  return (
+    left.length === right.length &&
+    left.every((value, index) => value === right[index])
+  );
+}
+
+function sameStrings(left: readonly string[], right: readonly string[]): boolean {
   return (
     left.length === right.length &&
     left.every((value, index) => value === right[index])
@@ -481,7 +498,7 @@ function temporalCreateFieldsEqual(
     left.event.visibility === right.event.visibility &&
     left.event.purpose === right.event.purpose &&
     left.event.expectedOutcome === right.event.expectedOutcome &&
-    left.event.agenda === right.event.agenda &&
+    sameStrings(left.event.agendaParts, right.event.agendaParts) &&
     left.event.decisionRequired === right.event.decisionRequired &&
     left.event.requiredParticipants === right.event.requiredParticipants &&
     left.event.optionalParticipants === right.event.optionalParticipants &&

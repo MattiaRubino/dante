@@ -89,7 +89,7 @@ describe('Temporal Create enterprise authoring semantics', () => {
     expect(validateTemporalCreateFields(fields)).toEqual([]);
   });
 
-  it('preserves deep Event preparation and provider intent without fake execution', async () => {
+  it('preserves deep Event preparation, ordered agenda and provider intent without fake execution', async () => {
     const runtime = enterpriseRuntime();
     const eventBase = createTemporalCreateFields({
       title: 'Call cliente',
@@ -106,7 +106,12 @@ describe('Temporal Create enterprise authoring semantics', () => {
         visibility: 'private',
         purpose: 'Allineare il rilascio',
         expectedOutcome: 'Decisione sul piano finale',
-        agenda: 'Rischi\nDecisioni\nProssimi passi',
+        agendaParts: Object.freeze([
+          '  Rischi ',
+          '',
+          'Decisioni',
+          ' Prossimi passi ',
+        ]),
         decisionRequired: true,
         requiredParticipants: 'cliente@example.com',
         optionalParticipants: 'collega@example.com',
@@ -124,6 +129,12 @@ describe('Temporal Create enterprise authoring semantics', () => {
     await runtime.execute(preparation.prepared);
 
     const event = (await runtime.listRecords())[0]?.metadata.specification.event;
+    expect(event?.agendaParts).toEqual([
+      'Rischi',
+      'Decisioni',
+      'Prossimi passi',
+    ]);
+    expect(Object.isFrozen(event?.agendaParts)).toBe(true);
     expect(event?.requiredParticipants).toContain('cliente@example.com');
     expect(event?.optionalParticipants).toContain('collega@example.com');
     expect(event?.resources).toBe('Sala Atlas');

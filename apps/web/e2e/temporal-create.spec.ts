@@ -204,7 +204,7 @@ test('Activity Orario plus Divisibile remains placed and Undo removes the same c
   await expect(card).toHaveCount(0);
 });
 
-test('Event Advanced preserves deep intent and provider requests without claiming provider execution', async ({
+test('Event Advanced preserves structured agenda, deep intent and provider requests without claiming provider execution', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1360, height: 860 });
@@ -219,7 +219,22 @@ test('Event Advanced preserves deep intent and provider requests without claimin
 
   await dialog.getByLabel('Scopo').fill('Definire il rilascio');
   await dialog.getByLabel('Risultato atteso').fill('Decisione sul piano finale');
-  await dialog.getByLabel('Agenda').fill('Rischi\nDecisioni\nProssimi passi');
+
+  const agendaInput = dialog.getByLabel('Nuova voce agenda');
+  for (const part of ['Rischi', 'Decisioni', 'Prossimi passi']) {
+    await agendaInput.fill(part);
+    await agendaInput.press('Enter');
+  }
+  await expect(dialog.locator('[data-temporal-create-agenda-part]')).toHaveCount(3);
+  await dialog.getByLabel('Voce agenda 3').press('Alt+ArrowUp');
+  await expect(dialog.getByLabel('Voce agenda 2')).toHaveValue('Prossimi passi');
+  await dialog.getByRole('button', { name: 'Sposta voce 2 giù' }).click();
+  await expect(dialog.getByLabel('Voce agenda 3')).toHaveValue('Prossimi passi');
+  await agendaInput.fill('   ');
+  await agendaInput.press('Enter');
+  await expect(dialog.locator('[data-temporal-create-agenda-part]')).toHaveCount(3);
+  await agendaInput.fill('');
+
   await dialog
     .getByRole('checkbox', { name: 'Da questo evento è attesa una decisione' })
     .check();
@@ -240,10 +255,16 @@ test('Event Advanced preserves deep intent and provider requests without claimin
   await dialog.getByRole('button', { name: 'Aggiungi' }).click();
   await expect(dialog).toHaveCount(0);
   const card = page
-    .locator('[data-temporal-create-projection]:not(.is-preview)')
+    .locator('.timeline-event-card[data-temporal-create-projection]')
     .filter({ hasText: 'Call cliente' });
   await expect(card).toBeVisible();
   await expect(card).toContainText('Ricorrente');
+  const expander = card.getByRole('button', { name: /3 sotto-attività/ });
+  await expect(expander).toBeVisible();
+  await expander.click();
+  await expect(card).toContainText('Rischi');
+  await expect(card).toContainText('Decisioni');
+  await expect(card).toContainText('Prossimi passi');
 });
 
 test('Event quick recurrence enters truthful CP6 authoring and survives base Advanced round trips', async ({

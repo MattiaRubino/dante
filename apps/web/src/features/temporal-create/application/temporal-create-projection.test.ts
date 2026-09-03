@@ -43,4 +43,28 @@ describe('Temporal Create Timeline projection', () => {
     expect(projection?.allDay).toBe(false);
     expect(projection?.endDateExclusiveKey).toBeNull();
   });
+
+  it('carries ordered Event agenda parts without creating child Event identities', () => {
+    const baseline = createTemporalCreateFields({
+      title: 'Lezione inglese',
+      kind: 'event',
+      date: '2026-08-04',
+      startTime: '18:00',
+      durationMinutes: 90,
+    });
+    const fields = createTemporalCreateFields({
+      ...baseline,
+      event: {
+        ...baseline.event,
+        agendaParts: Object.freeze(['Listening', 'Orale', 'Scritto']),
+      },
+    });
+
+    const projection = temporalCreateTimelinePreviewFromFields(fields);
+
+    expect(projection?.kind).toBe('event');
+    expect(projection?.id).toBe('temporal-create-preview');
+    expect(projection?.agendaParts).toEqual(['Listening', 'Orale', 'Scritto']);
+    expect(Object.isFrozen(projection?.agendaParts)).toBe(true);
+  });
 });

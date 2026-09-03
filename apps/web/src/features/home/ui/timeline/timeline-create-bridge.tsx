@@ -215,6 +215,9 @@ function timelineEventFromProjection(
       ...(projection.appearanceTone
         ? { appearanceTone: projection.appearanceTone }
         : {}),
+      ...(projection.kind === 'event' && projection.agendaParts.length > 0
+        ? { subitems: projection.agendaParts }
+        : {}),
       origin: 'create' as const,
       meta,
     }),

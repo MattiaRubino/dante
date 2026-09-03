@@ -35,6 +35,8 @@ describe('temporal create session', () => {
     expect(session.draft.current.eventRecurrence.quotaTimeZoneId).toBe(
       'Europe/Rome',
     );
+    expect(session.draft.current.event.agendaParts).toEqual([]);
+    expect(Object.isFrozen(session.draft.current.event.agendaParts)).toBe(true);
     expect(session.draft.dirty).toBe(false);
   });
 
@@ -53,6 +55,39 @@ describe('temporal create session', () => {
     expect(edited.draft.dirty).toBe(true);
     expect(restored.draft.dirty).toBe(false);
     expect(restored.draft.editRevision).toBe(2);
+  });
+
+  it('normalizes Event agenda into ordered non-empty internal parts', () => {
+    const baseline = createTemporalCreateFields({
+      title: 'Lezione inglese',
+      kind: 'event',
+      date: '2026-09-01',
+    });
+    const fields = createTemporalCreateFields({
+      ...baseline,
+      event: {
+        ...baseline.event,
+        agendaParts: Object.freeze([' Listening ', '', 'Orale', '  ', 'Scritto ']),
+      },
+    });
+
+    expect(fields.event.agendaParts).toEqual(['Listening', 'Orale', 'Scritto']);
+    expect(Object.isFrozen(fields.event.agendaParts)).toBe(true);
+
+    const session = createTemporalCreateSession(fields);
+    const edited = updateTemporalCreateFields(session, {
+      event: {
+        ...session.draft.current.event,
+        agendaParts: Object.freeze(['Listening', 'Scritto', 'Orale']),
+      },
+    });
+
+    expect(edited.draft.current.event.agendaParts).toEqual([
+      'Listening',
+      'Scritto',
+      'Orale',
+    ]);
+    expect(edited.draft.dirty).toBe(true);
   });
 
   it('protects a dirty structured draft behind an explicit discard decision', () => {
@@ -86,6 +121,7 @@ describe('temporal create session', () => {
       event: {
         ...baseline.event,
         purpose: 'Decisione progetto',
+        agendaParts: Object.freeze(['Rischi', 'Decisioni']),
       },
     });
     const edited = updateTemporalCreateTitle(
@@ -112,6 +148,10 @@ describe('temporal create session', () => {
       'Europe/Rome',
     );
     expect(reopened.draft.current.event.purpose).toBe('Decisione progetto');
+    expect(reopened.draft.current.event.agendaParts).toEqual([
+      'Rischi',
+      'Decisioni',
+    ]);
   });
 
   it('normalizes Event creation away from Activity-only unscheduled/flexible states', () => {
