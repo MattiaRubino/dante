@@ -75,6 +75,5 @@ class VerificationResult:
                 raise ValueError("VERIFIED result must not carry unresolved limitations")
         if self.status is VerificationStatus.LIMITED and not self.limitations:
             raise ValueError("LIMITED result requires declared limitations")
-        if self.status in {VerificationStatus.STALE, VerificationStatus.NEEDS_REREAD}:
-            if not self.limitations:
-                raise ValueError("stale/reread verification requires a declared limitation")
+        if self.status in {VerificationStatus.STALE, VerificationStatus.NEEDS_REREAD} and not self.limitations:
+            raise ValueError("stale/reread verification requires a declared limitation")
