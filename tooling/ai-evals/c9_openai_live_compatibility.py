@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import sys
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from uuid import uuid7
@@ -119,7 +120,7 @@ class QualificationPostureError(RuntimeError):
 
 
 def _emit(payload: dict[str, object]) -> None:
-    print(json.dumps(payload, sort_keys=True, separators=(",", ":")))
+    sys.stdout.write(json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n")
 
 
 def _require_exact_set(
