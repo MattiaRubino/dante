@@ -74,6 +74,42 @@ describe('World Focus M1-2 direct Output Grammar projections', () => {
     expect('sourcePayload' in projection).toBe(false);
   });
 
+  it('owns an immutable O8 evidence snapshot instead of retaining caller aliases', () => {
+    const evidenceReferences = [ref('observation', 'mix-review')];
+    const provenanceReferences = [ref('provenance', 'studio-import')];
+    const integrityAttestationReferences = [
+      ref('attestation', 'studio-import-integrity'),
+    ];
+    const evidence = {
+      evidenceReferences,
+      provenanceReferences,
+      integrityAttestationReferences,
+    };
+    const projection = createWorldFocusEvidenceHistoryProjection({
+      worldId: 'music',
+      evidence,
+      orderedHistoryReferences: [ref('material-state', 'master-v2')],
+    });
+
+    evidenceReferences.push(ref('observation', 'late-mutation'));
+    provenanceReferences.push(ref('provenance', 'late-mutation'));
+    integrityAttestationReferences.push(ref('attestation', 'late-mutation'));
+
+    expect(projection.evidence).toEqual({
+      evidenceReferences: [{ kind: 'observation', key: 'mix-review' }],
+      provenanceReferences: [{ kind: 'provenance', key: 'studio-import' }],
+      integrityAttestationReferences: [
+        { kind: 'attestation', key: 'studio-import-integrity' },
+      ],
+    });
+    expect(Object.isFrozen(projection.evidence)).toBe(true);
+    expect(Object.isFrozen(projection.evidence.evidenceReferences)).toBe(true);
+    expect(Object.isFrozen(projection.evidence.provenanceReferences)).toBe(true);
+    expect(
+      Object.isFrozen(projection.evidence.integrityAttestationReferences),
+    ).toBe(true);
+  });
+
   it('rejects duplicate and unbounded direct projection references', () => {
     expect(() =>
       createWorldFocusSituationProjection({
