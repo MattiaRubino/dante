@@ -43,6 +43,35 @@ export const worldFocus = {
       blocked: 'Bloccato',
     },
   },
+  presentation: {
+    attention: {
+      title: 'Da vedere',
+      resolution: 'Risoluzione:',
+      states: {
+        unresolved: 'Da risolvere',
+        'awaiting-response': 'In attesa',
+        blocked: 'Bloccato',
+      },
+    },
+    comparison: {
+      title: 'Confronto',
+      basis: 'Base:',
+      modes: {
+        difference: 'Differenza',
+        change: 'Cambiamento',
+        'trade-off': 'Compromesso',
+        'planned-actual': 'Pianificato vs reale',
+      },
+    },
+    trajectory: {
+      title: 'Andamento',
+      missing: 'Dati mancanti',
+      axes: {
+        time: 'Nel tempo',
+        sequence: 'In sequenza',
+      },
+    },
+  },
   worlds: {
     body: {
       label: 'Corpo',
