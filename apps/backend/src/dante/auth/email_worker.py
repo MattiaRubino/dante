@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from contextlib import suppress
 from datetime import UTC, datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
@@ -88,13 +89,11 @@ class EmailDeliveryWorkerPool:
             if processed > 0:
                 continue
             self._wake.clear()
-            try:
+            with suppress(TimeoutError):
                 await asyncio.wait_for(
                     self._wake.wait(),
                     timeout=self._settings.email_poll_interval_seconds,
                 )
-            except TimeoutError:
-                pass
 
     async def _run_batch(self) -> int:
         claims = await self._claim_batch()
@@ -166,7 +165,7 @@ class EmailDeliveryWorkerPool:
             )
 
     def _retry_delay_seconds(self, attempt_number: int) -> float:
-        base = self._settings.email_retry_base_seconds
-        cap = self._settings.email_retry_max_seconds
+        base = float(self._settings.email_retry_base_seconds)
+        cap = float(self._settings.email_retry_max_seconds)
         exponent = max(0, attempt_number - 1)
         return min(cap, base * (2**exponent))
