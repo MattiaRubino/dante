@@ -1,11 +1,11 @@
 # DANTE — World Focus Current Checkpoint
 
-**Status:** CURRENT LIVE WORLD FOCUS CHECKPOINT — M2 ACTIVE / M2-1 CLOSED / VALIDATED  
+**Status:** CURRENT LIVE WORLD FOCUS CHECKPOINT — M2 ACTIVE / M2-1 + M2-2 CLOSED / VALIDATED  
 **Date:** 2026-09-03  
 **Branch:** `feature/home-react`  
 **Worktree:** `/home/mattia/projects/dante-frontend`
 
-This is the first World Focus authority a new chat/agent must read. Older `D2 NEXT`, `M0 NEXT`, `M1 ACTIVE`, `M1-2 NEXT`, `POST-M1 SAFETY ACTIVE`, `M2 NEXT` or similar prose is phase-time history only.
+This is the first World Focus authority a new chat/agent must read. Older `D2 NEXT`, `M0 NEXT`, `M1 ACTIVE`, `M1-2 NEXT`, `POST-M1 SAFETY ACTIVE`, `M2 NEXT`, `M2-1 NEXT` or similar prose is phase-time history only.
 
 # 1. Read order
 
@@ -49,8 +49,9 @@ M1-1 identity/reference ownership     CLOSED / VALIDATED
 M1-2 non-visual facets + seams        CLOSED / VALIDATED
 POST-M1 SAFETY FALSIFICATION          CLOSED / PASS
 M2 shared visual primitive layer      ACTIVE
-M2-1 shared presentation/renderers    CLOSED / VALIDATED
-M2 remaining visual work              NEXT WITHIN M2
+M2-1 shared presentation/L1 renderers CLOSED / VALIDATED
+M2-2 truthfulness/direct output       CLOSED / VALIDATED
+M2 FINAL CLOSURE AUDIT                NEXT
 M3–M7                                 BLOCKED BY SEQUENCE
 D2–D6                                 DEFERRED TO M4
 BACKEND                               BLOCKED UNTIL M7
@@ -83,7 +84,6 @@ CI   33738873773 PASS
 M1 final red-first falsification
 HEAD 67bd06d63d84273ba2077761919d714c8d442254
 CI   33740212989 EXPECTED FAILURE
-1 failed / 288 passed — cursor contextReferences hidden representation
 
 M1 final code closure
 HEAD 7369c51e7ba04f8913728a0770f700c728c3b9f9
@@ -92,12 +92,10 @@ CI   33740710290 PASS
 POST-M1 safety red-first falsification
 HEAD 0b674effa292881303288dd90c88db2c14e61872
 CI   33747167897 FAIL
-7 / 9 hostile tests PASS; 296 PASS / 2 FAIL overall web units
 
 POST-M1 safety closure
 HEAD ecc2128b62395f82eab9ee7ff239355b4ca81ee4
 CI   33754084001 PASS
-9 / 9 hostile tests PASS; 56 / 56 web test files; 301 / 301 web unit tests
 
 M2-1 shared visual primitive validation
 HEAD 2e639f108d5cb01e53395013a55346b7ac2e4294
@@ -106,6 +104,20 @@ CI   33781753823 PASS
 262 modules / 684 dependencies / 0 violations
 Continuity pressure at 720 / 719 / 390 PASS in Chromium
 frozen Timeline Firefox PASS
+
+M2-2 red-first owner proof
+HEAD 5374f77d7cf7b52ef87ce64315a606bc1d96cf0b
+CI   33787162755 EXPECTED FAILURE
+exactly 8 unresolved M2-2 presentation owners at Typecheck
+
+M2-2 production baseline
+HEAD b9856d497273d22face94fcd14f0deda853bbdb8
+CI   33787905171 PASS
+
+M2-2 final integration validation
+HEAD 26d79b0dcdeaac1cb094bf97b71e901003ac5fa5
+CI   33788370490 PASS
+Quality / Chromium / frozen Timeline Firefox / Mobile / Frontend CI Gate PASS
 ```
 
 # 4. Closed non-visual production result
@@ -174,22 +186,11 @@ B. O8 evidence snapshot ownership
    caller-provided evidence facet could remain aliased
 ```
 
-Both were fixed under existing owners:
-
-```text
-shared read boundary
-  reject aborted result before validation, including late non-cooperative completion
-
-O8 Evidence/History seam
-  rebuild through existing L2 evidence creator
-  own normalized frozen evidence snapshot
-```
-
-No new semantic class, substrate layer, DB authority or M1 reopen was required.
+Both were fixed under existing owners. No new semantic class, substrate layer, DB authority or M1 reopen was required.
 
 # 6. M2-1 validated result
 
-M2-1 now owns only the presentation boundary and shared renderer grammar earned by M1:
+M2-1 owns only the presentation boundary and shared L1 renderer grammar earned by M1:
 
 ```text
 WorldFocusDisplayBinding
@@ -213,74 +214,127 @@ real vertical integration
   WP-01 Continuity migrated to shared M2 grammar
 ```
 
-Truthfulness retained:
+WP-02..WP-04 are production renderer contracts and are tested directly against M1 primitives, but they are not inserted into live World composition simply to demonstrate them.
+
+# 7. M2-2 validated result
+
+M2-2 reuses the M2-1 display/presentation grammar to materialize the remaining mapped shared truthfulness/direct-output rendering:
 
 ```text
-reasonCode != user-facing explanation
-Comparison != winner/ranking/recommendation/Decision
-Trajectory missing != zero/false/inferred value
-renderer availability != live composition selection
-responsive presentation != semantic rewrite
+WorldFocusQualifier / WorldFocusQualifierGroup
+WorldFocusPresentationSubsection
+
+L2
+  freshness / validity / coverage / material-payload retirement
+
+L3
+  disclosure available/restricted/unavailable
+
+L6
+  effect lifecycle + execution revalidation
+
+L8
+  connectivity / replay / provider delivery / request timing
+
+O2 Situation
+O5 Next
+O8 Evidence / History
 ```
 
-WP-02..WP-04 are production renderer contracts and are tested directly against M1 primitives, but they are not inserted into live World composition simply to demonstrate them. Continuity remains the real live vertical proving the M2 grammar.
+The O2/O5/O8 renderers require exact `WorldFocusDisplayBinding` ownership and preserve semantic order. O8 keeps Evidence, Provenance, integrity-attestation and History as separate accessible roles.
 
-# 7. Permanent non-collapses retained
+Nominal basis/disclosure/sync states remain quiet. Degraded states use visible textual qualifiers and do not rely on color alone.
+
+Continuity integrates the same qualifier grammar only for states it already owns:
+
+```text
+partial -> coverage / incomplete
+stale   -> freshness / stale
+```
+
+No `reasonCode`, protected provider/policy detail or raw reference key becomes display copy.
+
+# 8. Permanent non-collapses retained
 
 ```text
 reference exists != payload available != current != disclosable != fresh
 stale != superseded != retracted
 Evidence != Provenance != integrity attestation
 restricted != nonexistent
+available disclosure != frontend authorization
 offline != source absent
 provider lag != canonical stale
 timeout != semantic negative
 partial-real effect != generic failure != success
 cancel != reverse != compensate
+reversed != compensated
+execution revalidation != effect state
 Comparison != Decision
 missing trajectory position != zero
 World relevance != AuthZ
 AI output != fact
 ```
 
-No universal `ProjectionEnvelope`, generic `Thing/Entity/Fact/PropertyBag`, frontend ACL/AuthZ, World-owned canonical state, universal Card<T> renderer or backend owner was introduced.
+No universal `ProjectionEnvelope`, generic `Thing/Entity/Fact/PropertyBag`, frontend ACL/AuthZ, World-owned canonical state, universal `Card<T>` renderer or backend owner was introduced.
 
-# 8. Current gate — continue M2
+# 9. M0 M2-disposition audit
 
-M2 remains active after M2-1. The next bounded visual slice must reuse the validated display/presentation grammar and materialize only semantics actually justified by M1/product evidence.
-
-Constraints:
+Known shared visual dispositions assigned to M2 now have concrete production owners:
 
 ```text
-primitive != card
-renderer != semantic owner
-Output Grammar family != mandatory module
-finite renderer registry
-safe degradation for unknown future Worlds
-no fabricated urgency or density
-no visual collapse of semantic axes
-no fake mounting of WP-02..04 merely because renderers exist
-no M3 customization yet
-no D2–D6 yet
-no backend yet
+M0-19 WP-02 shared rendering                  DONE / M2-1
+M0-21 WP-03 shared rendering                  DONE / M2-1
+M0-23 WP-04 shared rendering                  DONE / M2-1
+M0-28 shared Evidence / History affordance    DONE / M2-2
+M0-42 shared effect presentation              DONE / M2-2
+M0-49 WP shared renderer family               DONE / M2-1
+
+O2 Situation visual presentation              DONE / M2-2
+O5 Next visual presentation                   DONE / M2-2
+O8 Evidence / History visual presentation     DONE / M2-2
+L2/L3/L6/L8 truthfulness presentation         DONE / M2-2
 ```
 
-# 9. Stop lines
+This does not itself close M2; it establishes that a final falsification may now test closure instead of materializing another arbitrary renderer family.
+
+# 10. Current gate — M2 final closure audit
+
+M2 remains active. The next bounded gate is a hostile closure audit/falsification over the combined M2-1/M2-2 production layer.
+
+It must pressure at least:
 
 ```text
-M2 remaining shared visual work               NEXT WITHIN M2
-M3 adaptive composition/customization         BLOCKED BY M2
-M4 D2–D6 contextual DANTE                     BLOCKED BY M3
-M5 complete contrasting Worlds                BLOCKED BY M4
-M6 integrated visual/a11y/performance review  BLOCKED BY M5
-M7 pre-backend frontend freeze                BLOCKED BY M6
-BACKEND                                       BLOCKED UNTIL M7
+cross-axis visual non-collapse
+unknown future World
+exact binding/fail-closed behavior
+reasonCode/reference-key non-leakage
+nominal-state quietness
+sparse/no-fake-live composition
+long-copy and compact responsive safety
+forced-colors/textual-state semantics
+finite renderer registry boundaries
+no universal card/envelope emergence
+no M3 customization pulled forward
 ```
 
-# 10. Contract sequencing
+Only real executable PASS may advance to M3.
 
-`world-focus-product-contract.md` and `world-focus-platform-contract.md` retain semantic authority. Historical next-gate wording is superseded only for sequencing by the live checkpoint and `world-focus-contract-sequencing-supersession.md`.
+# 11. Stop lines
 
-# 11. Immediate continuation
+```text
+M2 FINAL CLOSURE AUDIT                     NEXT
+M3 adaptive composition/customization      BLOCKED BY M2
+M4 D2–D6 contextual DANTE                  BLOCKED BY M3
+M5 complete contrasting Worlds             BLOCKED BY M4
+M6 integrated visual/a11y/performance      BLOCKED BY M5
+M7 pre-backend frontend freeze             BLOCKED BY M6
+BACKEND                                    BLOCKED UNTIL M7
+```
 
-> **Continue M2 only. Reuse the validated M2-1 display/presentation layer and materialize the next bounded visual semantics without starting M3, D2–D6/M4 or backend work.**
+# 12. Contract sequencing
+
+`world-focus-product-contract.md` and `world-focus-platform-contract.md` retain semantic authority. Historical next-gate wording is superseded only for sequencing by this live checkpoint and `world-focus-contract-sequencing-supersession.md`.
+
+# 13. Immediate continuation
+
+> **Run the final M2 closure audit/falsification only. Do not start M3, D2–D6/M4 or backend work unless M2 is actually closed by executable evidence.**
