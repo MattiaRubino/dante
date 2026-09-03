@@ -1,8 +1,9 @@
 # DANTE Email Platform — Local SES UAT Runbook
 
-- **Status:** CURRENT / REPRODUCIBLE LOCAL UAT PROCEDURE
+- **Status:** CURRENT / REPRODUCIBLE / REAL SES UAT PROVEN
 - **Last reconciled:** 2026-09-03
 - **Platform authority:** `../architecture/email-platform.md`
+- **Acceptance evidence:** `email-platform-acceptance-2026-09-03.md`
 - **Current first consumer:** Access/Auth
 - **Target provider/region for current UAT:** Amazon SES API v2 / `eu-west-3` (Paris)
 
@@ -58,7 +59,27 @@ If a developer chooses to expose the binary on `PATH`, this is shell configurati
 export PATH="$HOME/.local/bin:$PATH"
 ```
 
-## 3. Dedicated IAM topology for local UAT
+## 3. Backend UAT dependency baseline
+
+Botocore's browser-login credential provider requires AWS CRT support inside the Python environment used by DANTE.
+
+This is repository-owned, not an ad-hoc local install:
+
+```text
+backend UAT dependency: botocore[crt]
+observed resolved package: awscrt==0.36.0
+```
+
+After pulling a lock change:
+
+```bash
+cd apps/backend
+uv sync --locked
+```
+
+Never repair this with an untracked `pip install`. The lockfile is the reproducibility authority.
+
+## 4. Dedicated IAM topology for local UAT
 
 Local UAT must not authenticate as the AWS account root user and must not depend on a long-lived IAM access key.
 
@@ -117,7 +138,7 @@ Before the first `aws login`, complete the IAM user's required first console sig
 
 The generated initial IAM password is a credential. Store it only in an appropriate password manager long enough to complete first sign-in; never commit it, paste it into chat, or place it in DANTE configuration.
 
-## 4. Local AWS login profile
+## 5. Local AWS login profile
 
 Use a dedicated CLI profile for DANTE UAT:
 
@@ -133,7 +154,9 @@ $HOME/.local/bin/aws login \
   --region eu-west-3
 ```
 
-If WSL/browser callback handling is unavailable, use the AWS-supported remote flow instead:
+If WSL cannot launch the browser automatically and prints a `gio: ... Operation not supported` line, the login can still succeed after the authorization URL is opened manually. Do not treat that desktop-launch failure as an AWS login failure if the CLI later reports that the profile was updated.
+
+If the normal callback path itself is unavailable, use the AWS-supported remote flow:
 
 ```bash
 $HOME/.local/bin/aws login \
@@ -142,7 +165,7 @@ $HOME/.local/bin/aws login \
   --region eu-west-3
 ```
 
-The IAM principal used for this login must be explicitly authorized for local-development sign-in and for the narrow SES UAT operations it needs. Do not use a root account as the normal DANTE development path.
+If a profile was previously associated with root, logout first and then explicitly overwrite the profile with the dedicated IAM principal when `aws login` asks for confirmation.
 
 The login session is temporary. Re-run `aws login` when it expires. Cached login credentials remain outside the repository under the normal AWS CLI user configuration/cache locations.
 
@@ -152,7 +175,7 @@ To end the session explicitly:
 $HOME/.local/bin/aws logout --profile dante-uat
 ```
 
-## 5. Provider preflight
+## 6. Provider preflight
 
 Before starting the full DANTE stack, prove all four external prerequisites:
 
@@ -182,6 +205,7 @@ Expected result:
 ```text
 SES PREFLIGHT PASS
 profile: dante-uat
+principal: arn:aws:iam::<account>:user/dante-uat
 region: eu-west-3
 sender identity: <verified-sender-address>
 verification: SUCCESS
@@ -189,9 +213,9 @@ verification: SUCCESS
 
 This preflight performs no email send. It proves credential/profile resolution, non-root caller posture and SES sender identity state only.
 
-## 6. Full DANTE SES UAT
+## 7. Full DANTE SES UAT
 
-The real UAT must exercise the DANTE durable Email Platform, not a direct SES console send and not the retired process-memory SMTP dispatcher.
+The real UAT must exercise the DANTE durable Email Platform, not a direct SES console send and not a process-memory SMTP queue.
 
 Environment posture:
 
@@ -216,9 +240,35 @@ Run the real local full-stack harness from `apps/backend`:
 uv run --locked python ../../tooling/serve-access-auth-local-uat.py
 ```
 
-The harness provisions disposable PostgreSQL, migrates to the repository Alembic head, starts the DANTE backend and Web surface, enables the durable Email Platform, selects `EmailTransport.SES`, and uses the standard AWS credential chain inherited from `AWS_PROFILE`.
+The harness provisions disposable PostgreSQL 18.6, migrates to the repository Alembic head, starts the DANTE backend and Web surface, enables the durable Email Platform, selects `EmailTransport.SES`, and uses the standard AWS credential chain inherited from `AWS_PROFILE`.
 
-## 7. Acceptance sequence
+The disposable database is destroyed on harness shutdown. Capture DB evidence before `Ctrl-C`.
+
+## 8. Important credential-refresh requirement
+
+The SES adapter must bind the configured region at the boto3 **session** level, not only at the SES client call.
+
+Why:
+
+```text
+aws login credentials
+→ Botocore may refresh through an internal signin client
+→ that credential refresh also needs region context
+```
+
+A real UAT exposed the failure mode:
+
+```text
+NoRegionError during mandatory temporary-credential refresh
+→ DANTE classified the send as ambiguous
+→ no blind retry
+```
+
+The accepted provider implementation now uses a region-bound `boto3.Session` and creates the SES v2 client from that session. A focused unit test protects this behavior.
+
+Do not paper over a regression by adding unrelated shell-region variables; the provider must remain correct from its explicit `ses_region` setting.
+
+## 9. Acceptance sequence
 
 The current Access/Auth consumer acceptance is:
 
@@ -230,21 +280,28 @@ fresh disposable database
 → SES API v2 accepts message
 → mailbox receives verification email
 → user verifies signup
-→ request password recovery through DANTE
+→ Account created
+→ request password recovery from an unauthenticated browser
 → recovery EmailIntent committed
 → SES accepts recovery message
 → mailbox receives recovery email
-→ complete reset
+→ consume recovery URL
+→ reset password
+→ no automatic signin
+→ prior AuthSession revoked
 → password-reset security notification emitted
+→ mailbox receives reset notification
 ```
 
 Provider console test-send alone does not satisfy this gate.
 
-## 8. Database evidence after real send
+For a security-link replay check, preserve the original recovery message until after the reset and then attempt to open the same URL again. If that exact manual step is skipped, record it as not manually observed rather than manufacturing a PASS.
+
+## 10. Database evidence after real send
 
 For accepted messages, DANTE must retain safe lifecycle evidence while sensitive payload material is wiped.
 
-Expected high-level state:
+Expected state:
 
 ```text
 email_delivery_intent.dispatch_state_code = provider_accepted
@@ -256,9 +313,29 @@ sensitive_ciphertext                     = NULL
 sensitive_wiped_at                       = present
 ```
 
-A provider acceptance is not equivalent to inbox delivery. Mailbox receipt is a separate UAT observation.
+The accepted 2026-09-03 UAT observed three intents:
 
-## 9. Security rules
+```text
+signup_verification
+password_recovery
+password_reset_notification
+```
+
+All three had:
+
+```text
+attempt_count = 1
+provider_code = ses
+provider_accepted
+provider_message_id present
+error_code NULL
+secret bundle wiped
+sensitive_wiped_at present
+```
+
+A provider acceptance is not equivalent to inbox delivery. Mailbox receipt was separately observed for all three messages in the accepted run.
+
+## 11. Security rules
 
 Permanent rules for local provider UAT:
 
@@ -276,7 +353,21 @@ use temporary aws login credentials where available
 logout/expire local credentials after UAT
 ```
 
-## 10. Reproducibility source map
+## 12. Accepted evidence and non-claims
+
+Canonical observed evidence is recorded in:
+
+```text
+docs/development/email-platform-acceptance-2026-09-03.md
+```
+
+That run directly proved real signup, real recovery, reset notification, no auto-login, prior-session revocation, provider correlation and sensitive-payload wipe.
+
+The same consumed recovery URL was **not** manually re-opened in that final run because the message had already been removed before the replay check. Preserve that distinction.
+
+Production domain/DNS/reputation and live AWS event-ingress acceptance remain separate.
+
+## 13. Reproducibility source map
 
 Repository-owned pieces:
 
@@ -285,7 +376,10 @@ tooling/bootstrap-aws-cli-local.sh
 tooling/email-platform-aws-preflight.py
 tooling/serve-access-auth-local-uat.py
 tooling/aws/dante-uat-ses-policy.template.json
+apps/backend/pyproject.toml
+apps/backend/uv.lock
 docs/development/email-platform-local-uat.md
+docs/development/email-platform-acceptance-2026-09-03.md
 docs/architecture/email-platform.md
 ```
 
@@ -304,7 +398,7 @@ mailbox delivery observation
 
 These external dependencies must always be re-proven by the preflight/UAT instead of being assumed from old screenshots or a prior session.
 
-## 11. Version-update policy
+## 14. Version-update policy
 
 `2.36.38` is the current tested AWS CLI baseline, not a forever product dependency.
 
@@ -319,4 +413,6 @@ When changing the baseline:
 6. update this runbook in the same reviewed change
 ```
 
-Do not silently change the documented baseline without rerunning the relevant acceptance proof.
+Likewise, changing Botocore/AWS CRT or the credential-provider path requires rerunning the session-region test and SES preflight.
+
+Do not silently change a documented baseline without rerunning the relevant acceptance proof.
