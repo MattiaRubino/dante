@@ -4,6 +4,8 @@ import {
   type ReactNode,
 } from 'react';
 
+import './world-focus-presentation.css';
+
 type WorldFocusPresentationSectionProps = Omit<
   ComponentPropsWithoutRef<'section'>,
   'children' | 'title'
