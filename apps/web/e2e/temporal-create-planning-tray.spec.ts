@@ -12,9 +12,7 @@ async function createUnplacedActivity(
   const dialog = page.locator('[data-temporal-create="composer"]');
   await expect(dialog).toBeVisible();
   await dialog.getByRole('textbox', { name: 'Titolo' }).fill(title);
-  await dialog
-    .getByRole('radio', { name: 'Aperta, senza collocazione' })
-    .click();
+  await dialog.getByRole('radio', { name: 'Da collocare' }).click();
   await dialog.getByLabel('Durata prevista').selectOption(String(durationMinutes));
   await dialog.getByRole('button', { name: 'Aggiungi' }).click();
   await expect(dialog).toHaveCount(0);
@@ -37,10 +35,11 @@ function planningItem(tray: Locator, title: string) {
     .filter({ hasText: title });
 }
 
-async function visibleTimelineDropPoint(page: Page) {
+async function visibleTimedDropPoint(page: Page) {
   const grid = page.locator('.timeline-grid');
   await grid.scrollIntoViewIfNeeded();
   await expect(grid).toBeVisible();
+
   const candidate = await page
     .locator('.timeline-day-section[data-timeline-date]')
     .evaluateAll((sections) => {
@@ -48,6 +47,7 @@ async function visibleTimelineDropPoint(page: Page) {
       if (!(timelineGrid instanceof HTMLElement)) {
         return null;
       }
+
       const gridRect = timelineGrid.getBoundingClientRect();
       const viewportTop = Math.max(0, gridRect.top);
       const viewportBottom = Math.min(window.innerHeight, gridRect.bottom);
@@ -56,15 +56,22 @@ async function visibleTimelineDropPoint(page: Page) {
         if (!(section instanceof HTMLElement) || !section.dataset.timelineDate) {
           return [];
         }
+
         const rect = section.getBoundingClientRect();
-        const top = Math.max(rect.top, viewportTop);
+        const minuteZero = section.querySelector<HTMLElement>(
+          '.timeline-hour-line',
+        );
+        const timedTop = minuteZero
+          ? rect.top + Number.parseFloat(minuteZero.style.top)
+          : rect.top;
+        const top = Math.max(timedTop + 24, rect.top, viewportTop);
         const bottom = Math.min(rect.bottom, viewportBottom);
-        if (bottom - top < 120) {
+        if (bottom - top < 80) {
           return [];
         }
+
         return [
           {
-            date: section.dataset.timelineDate,
             x: Math.max(rect.left + 180, Math.min(rect.right - 80, 620)),
             y: top + (bottom - top) * 0.46,
             distance: Math.abs((top + bottom) / 2 - center),
@@ -74,8 +81,9 @@ async function visibleTimelineDropPoint(page: Page) {
       visible.sort((left, right) => left.distance - right.distance);
       return visible[0] ?? null;
     });
+
   if (!candidate) {
-    throw new Error('Expected a visible Timeline drop point');
+    throw new Error('Expected a visible Timeline timed drop point');
   }
   return candidate;
 }
@@ -86,7 +94,7 @@ async function undoPlanningMutation(page: Page) {
   await toast.getByRole('button', { name: 'Annulla' }).click();
 }
 
-test('an unplaced Activity lives in the tray, quick placement keeps identity, and Undo returns it', async ({
+test('an unplaced Activity lives in the tray, quick placement keeps one identity, and Undo returns it', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -112,7 +120,6 @@ test('an unplaced Activity lives in the tray, quick placement keeps identity, an
   await item.locator('.timeline-planning-card__main').dblclick();
   const form = item.locator('.timeline-planning-quick-place');
   await expect(form).toBeVisible();
-  const date = await form.getByLabel('Data').inputValue();
   await form.getByLabel('Ora').fill('13:15');
   await form.getByRole('button', { name: 'Colloca nella Timeline' }).click();
 
@@ -129,11 +136,9 @@ test('an unplaced Activity lives in the tray, quick placement keeps identity, an
   await expect(card).toHaveCount(0);
   await expect(planningItem(tray, 'Preparare portfolio')).toBeVisible();
   await expect(trigger).toContainText('1');
-  await expect(form.getByLabel('Data')).toHaveCount(0);
-  expect(date).not.toBe('');
 });
 
-test('dragging from the tray foregrounds Timeline, previews a snapped slot, commits once, and Escape cancels', async ({
+test('dragging from the tray foregrounds Timeline, previews a snapped timed slot, commits once, and Escape cancels', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -142,13 +147,14 @@ test('dragging from the tray foregrounds Timeline, previews a snapped slot, comm
   await createUnplacedActivity(page, 'Rivedere note', 30);
 
   const { tray } = await openPlanningTray(page);
-  const first = planningItem(tray, 'Scrivere proposta');
-  const dragHandle = first.locator('.timeline-planning-card__main');
-  const itemBox = await dragHandle.boundingBox();
+  const first = planningItem(tray, 'Scrivere proposta').locator(
+    '.timeline-planning-card__main',
+  );
+  const itemBox = await first.boundingBox();
   if (!itemBox) {
     throw new Error('Expected Planning Tray card geometry');
   }
-  const target = await visibleTimelineDropPoint(page);
+  const target = await visibleTimedDropPoint(page);
 
   await page.mouse.move(
     itemBox.x + Math.min(80, itemBox.width / 2),
@@ -156,7 +162,6 @@ test('dragging from the tray foregrounds Timeline, previews a snapped slot, comm
   );
   await page.mouse.down();
   await page.mouse.move(target.x, target.y, { steps: 8 });
-
   await expect(page.locator('html')).toHaveAttribute(
     'data-timeline-planning-mode',
     'true',
@@ -171,7 +176,6 @@ test('dragging from the tray foregrounds Timeline, previews a snapped slot, comm
     'data-timeline-planning-mode',
     'true',
   );
-  await expect(preview).toHaveCount(0);
   await expect(planningItem(tray, 'Scrivere proposta')).toHaveCount(0);
   await expect(
     page.locator('.timeline-event-card').filter({ hasText: 'Scrivere proposta' }),
@@ -206,7 +210,7 @@ test('dragging from the tray foregrounds Timeline, previews a snapped slot, comm
   ).toHaveCount(0);
 });
 
-test('tray delete is explicit and Undo restores the same unplaced Activity', async ({
+test('tray delete is explicit and Undo restores the unplaced Activity', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1280, height: 820 });

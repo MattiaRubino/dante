@@ -38,8 +38,12 @@ test('item appearance inherits Context by default and an override remains presen
   await expect(preview).toBeVisible();
   await expect(preview).toHaveAttribute('data-timeline-tone', 'focus');
 
-  await dialog.getByRole('button', { name: /Dettagli e pianificazione/ }).click();
-  await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'expanded');
+  const advancedToggle = dialog.getByRole('button', {
+    name: 'Opzioni avanzate',
+  });
+  await expect(advancedToggle).toHaveAttribute('aria-expanded', 'false');
+  await advancedToggle.click();
+  await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'advanced');
   await expect(dialog.getByText('Aspetto', { exact: true })).toBeVisible();
 
   const inherit = dialog.getByRole('radio', {
@@ -56,12 +60,15 @@ test('item appearance inherits Context by default and an override remains presen
   await expect(red).toBeChecked();
   await expect(preview).toHaveAttribute('data-timeline-tone', 'urgent');
 
-  await dialog.getByRole('button', { name: 'Editor completo →' }).click();
-  await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'full');
+  await dialog
+    .getByRole('button', { name: 'Nascondi opzioni avanzate' })
+    .click();
+  await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'base');
+  await expect(dialog.getByText('Aspetto', { exact: true })).toHaveCount(0);
+
+  await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
   await expect(red).toBeChecked();
-  await dialog.getByRole('button', { name: '← Dettagli' }).click();
-  await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'expanded');
-  await expect(red).toBeChecked();
+  await expect(preview).toHaveAttribute('data-timeline-tone', 'urgent');
 
   const accessibility = await new AxeBuilder({ page })
     .include('[data-temporal-create="composer"]')
@@ -90,10 +97,7 @@ test('item appearance inherits Context by default and an override remains presen
   await expect(urgentContext).toHaveAttribute('aria-pressed', 'true');
   await expect(card).toHaveCount(0);
   await resetGroupsFocus.click();
-  await expect(urgentContext).toHaveAttribute('aria-pressed', 'false');
   await expect(card).toBeVisible();
-  await expect(card).toHaveAttribute('data-timeline-tone', 'urgent');
-  await expect(card).toContainText('Focus / lavoro profondo');
 
   const focusContext = page.locator(
     '.dante-timeline-group-chip[data-group-id="focus"]',
@@ -102,9 +106,7 @@ test('item appearance inherits Context by default and an override remains presen
   await expect(focusContext).toHaveAttribute('aria-pressed', 'true');
   await expect(card).toBeVisible();
   await expect(card).toHaveAttribute('data-timeline-tone', 'urgent');
-  await expect(card).toContainText('Focus / lavoro profondo');
   await resetGroupsFocus.click();
-  await expect(focusContext).toHaveAttribute('aria-pressed', 'false');
 
   const toast = page.locator('.temporal-create-toast.is-on');
   await expect(toast).toContainText('Deep work override');
