@@ -80,6 +80,41 @@ describe('World Focus B0 application foundation', () => {
     expect(observed.signal?.aborted).toBe(false);
   });
 
+  it('rejects a pre-aborted scoped read without invoking the adapter or validator', async () => {
+    const adapter = vi.fn<WorldFocusScopedReadAdapter>(() =>
+      Promise.resolve({ worldId: 'apiary', value: 'too-late' }),
+    );
+    const validator = vi.fn(() => ({ ok: true as const, value: 'too-late' }));
+    const reader = createWorldFocusScopedReader(adapter, validator);
+    const upstream = new AbortController();
+    upstream.abort();
+
+    await expect(reader('apiary', upstream.signal)).rejects.toMatchObject({
+      name: 'AbortError',
+    });
+    expect(adapter).not.toHaveBeenCalled();
+    expect(validator).not.toHaveBeenCalled();
+  });
+
+  it('rejects a late non-cooperative adapter result after upstream cancellation', async () => {
+    let resolveLate!: (value: unknown) => void;
+    const adapter: WorldFocusScopedReadAdapter = () =>
+      new Promise((resolve) => {
+        resolveLate = resolve;
+      });
+    const validator = vi.fn(() => ({ ok: true as const, value: 'late-result' }));
+    const reader = createWorldFocusScopedReader(adapter, validator);
+    const upstream = new AbortController();
+
+    const pending = reader('apiary', upstream.signal);
+    await Promise.resolve();
+    upstream.abort();
+    resolveLate({ worldId: 'apiary', value: 'late-result' });
+
+    await expect(pending).rejects.toMatchObject({ name: 'AbortError' });
+    expect(validator).not.toHaveBeenCalled();
+  });
+
   it('prevents a superseded read from committing', () => {
     const coordinator = new WorldFocusLatestReadCoordinator();
     const first = coordinator.begin();
