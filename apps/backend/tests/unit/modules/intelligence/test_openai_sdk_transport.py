@@ -127,7 +127,10 @@ async def test_sdk_serializes_one_attempt_with_all_disabled_provider_modes() -> 
     assert body["stream"] is False
     assert body["background"] is False
     assert body["tools"] == []
-    assert body["reasoning"] == {"effort": "medium"}
+    assert body["reasoning"] == {
+        "effort": "medium",
+        "context": "current_turn",
+    }
     assert body["service_tier"] == "default"
     assert body["truncation"] == "disabled"
     assert "conversation" not in body
