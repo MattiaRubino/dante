@@ -9,7 +9,10 @@ from typing import Any, cast
 from uuid import uuid7
 
 import pytest
-from botocore.exceptions import ClientError, EndpointConnectionError
+from botocore.exceptions import (  # type: ignore[import-untyped]
+    ClientError,
+    EndpointConnectionError,
+)
 
 import dante.auth.email_provider as email_provider_module
 from dante.auth.email_contracts import (
@@ -25,6 +28,7 @@ from dante.platform.config.auth import AuthSettings
 
 _OLD_KEY = b"o" * 32
 _NEW_KEY = b"n" * 32
+_EMAIL_PROVIDER_MODULE = cast(Any, email_provider_module)
 
 
 def _protected_claim(
@@ -70,13 +74,15 @@ def test_payload_aad_binds_intent_purpose_template_and_revision() -> None:
     )
 
     assert cipher.unprotect(claim=claim) == {"code": "123456", "expires_minutes": 15}
+    ciphertext = claim.sensitive_ciphertext
+    assert ciphertext is not None
 
     mutated_claims = (
         replace(claim, email_intent_ref=uuid7()),
         replace(claim, purpose_code="provider_enrollment_verification"),
         replace(claim, template_code="auth.provider_enrollment_verification"),
         replace(claim, template_revision="3"),
-        replace(claim, sensitive_ciphertext=claim.sensitive_ciphertext[:-1] + b"\x00"),
+        replace(claim, sensitive_ciphertext=ciphertext[:-1] + b"\x00"),
     )
     for mutated in mutated_claims:
         with pytest.raises(EmailPayloadError, match="authentication failed"):
@@ -85,7 +91,7 @@ def test_payload_aad_binds_intent_purpose_template_and_revision() -> None:
 
 def test_fingerprint_replay_survives_retained_key_rotation() -> None:
     old_cipher = EmailPayloadCipher(key_ring={"old": _OLD_KEY}, current_key_id="old")
-    payload = {"code": "123456", "expires_minutes": 15}
+    payload: dict[str, str | int] = {"code": "123456", "expires_minutes": 15}
     old_fingerprint = old_cipher.fingerprint(
         purpose_code="signup_verification",
         template_code="auth.signup_verification",
@@ -210,7 +216,7 @@ async def test_ses_config_has_one_total_sdk_attempt_and_request_has_no_tracking_
         captured.update(kwargs)
         return fake
 
-    monkeypatch.setattr(email_provider_module.boto3, "client", fake_client)
+    monkeypatch.setattr(_EMAIL_PROVIDER_MODULE.boto3, "client", fake_client)
     provider = SesEmailProvider(settings=_ses_settings())
     message = _provider_message()
 
@@ -262,7 +268,7 @@ async def test_ses_classifies_known_and_unknown_provider_errors_without_retry(
     def fake_client(*_args: Any, **_kwargs: Any) -> _FakeSesClient:
         return fake
 
-    monkeypatch.setattr(email_provider_module.boto3, "client", fake_client)
+    monkeypatch.setattr(_EMAIL_PROVIDER_MODULE.boto3, "client", fake_client)
     provider = SesEmailProvider(settings=_ses_settings())
 
     result = await provider.send(_provider_message())
@@ -282,7 +288,7 @@ async def test_ses_transport_disconnect_is_ambiguous_and_never_retried(
     def fake_client(*_args: Any, **_kwargs: Any) -> _FakeSesClient:
         return fake
 
-    monkeypatch.setattr(email_provider_module.boto3, "client", fake_client)
+    monkeypatch.setattr(_EMAIL_PROVIDER_MODULE.boto3, "client", fake_client)
     provider = SesEmailProvider(settings=_ses_settings())
 
     result = await provider.send(_provider_message())
