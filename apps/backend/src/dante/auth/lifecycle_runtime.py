@@ -24,7 +24,7 @@ class AuthLifecycleRuntime:
 
     async def aclose(self) -> None:
         """Lifecycle owns no delivery worker resources of its own."""
-        return None
+        return
 
 
 async def create_auth_lifecycle_runtime(
