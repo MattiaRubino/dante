@@ -46,6 +46,69 @@ export const worldFocus = {
     },
   },
   presentation: {
+    qualifiers: {
+      basis: 'Information quality',
+      disclosure: 'Availability',
+      effect: 'Operation status',
+      sync: 'Synchronization conditions',
+    },
+    basis: {
+      freshness: {
+        stale: 'Out of date',
+        unknown: 'Freshness unknown',
+      },
+      validity: {
+        superseded: 'Superseded',
+        retracted: 'Retracted',
+        unresolved: 'Validity unresolved',
+      },
+      coverage: {
+        incomplete: 'Incomplete',
+        conflicted: 'Conflicted',
+        unknown: 'Coverage unknown',
+      },
+      material: {
+        retired: 'Content retired',
+      },
+    },
+    disclosure: {
+      states: {
+        restricted: 'Restricted access',
+        unavailable: 'Unavailable',
+      },
+    },
+    effect: {
+      states: {
+        pending: 'Pending',
+        ambiguous: 'Ambiguous outcome',
+        'partial-real': 'Partially real effect',
+        'reconciliation-required': 'Reconciliation required',
+        reversed: 'Reversed',
+        compensated: 'Compensated',
+      },
+      revalidationRequired: 'Recheck required before execution',
+    },
+    sync: {
+      offline: 'Offline',
+      replayPending: 'Replay pending',
+      providerLagging: 'Delivery lagging',
+      providerUnknown: 'Delivery unknown',
+      timedOut: 'Request timed out',
+      timingUnknown: 'Request timing unknown',
+    },
+    situation: {
+      title: 'Situation',
+    },
+    next: {
+      title: 'Next',
+    },
+    evidenceHistory: {
+      title: 'Evidence and history',
+      evidence: 'Evidence',
+      provenance: 'Provenance',
+      integrity: 'Integrity',
+      history: 'History',
+    },
     attention: {
       title: 'Needs attention',
       resolution: 'Resolution:',

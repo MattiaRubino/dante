@@ -32,6 +32,11 @@
   text-transform: uppercase;
 }
 
+.world-focus-presentation-subheading {
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+}
+
 .world-focus-presentation-qualification,
 .world-focus-presentation-row-meta,
 .world-focus-presentation-footnote {
@@ -64,6 +69,7 @@
   font-weight: 590;
   line-height: 1.28;
   letter-spacing: -0.016em;
+  overflow-wrap: anywhere;
   text-wrap: pretty;
 }
 
@@ -77,6 +83,7 @@
   color: var(--dante-theme-shell-text-secondary);
   font-size: 0.83rem;
   line-height: 1.5;
+  overflow-wrap: anywhere;
   text-wrap: pretty;
 }
 
@@ -110,9 +117,50 @@
   background: color-mix(in srgb, var(--world-focus-hot) 7%, transparent);
 }
 
+.world-focus-qualifier-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px 16px;
+  min-width: 0;
+  margin-top: 10px;
+}
+
+.world-focus-qualifier {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  color: var(--dante-theme-shell-text-muted);
+  font-size: 0.72rem;
+  font-weight: 590;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.world-focus-qualifier::before {
+  width: 5px;
+  height: 5px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: currentColor;
+  content: '';
+  opacity: 0.68;
+}
+
+.world-focus-qualifier[data-world-focus-qualifier-state='retracted'],
+.world-focus-qualifier[data-world-focus-qualifier-state='conflicted'],
+.world-focus-qualifier[data-world-focus-qualifier-state='restricted'],
+.world-focus-qualifier[data-world-focus-qualifier-state='partial-real'],
+.world-focus-qualifier[data-world-focus-qualifier-state='reconciliation-required'],
+.world-focus-qualifier[data-world-focus-qualifier-state='required-before-execution'] {
+  color: var(--dante-theme-shell-text-secondary);
+  font-weight: 650;
+}
+
 .world-focus-comparison-subjects,
 .world-focus-trajectory-points,
-.world-focus-trajectory-missing-list {
+.world-focus-trajectory-missing-list,
+.world-focus-direct-list {
   margin: 12px 0 0;
   padding: 0;
   list-style: none;
@@ -130,6 +178,17 @@
 
 .world-focus-presentation-subject {
   margin-top: 12px;
+}
+
+.world-focus-presentation-subsection {
+  min-width: 0;
+  margin-top: 18px;
+}
+
+.world-focus-direct-row {
+  min-width: 0;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--dante-theme-shell-border-subtle);
 }
 
 .world-focus-trajectory-missing {
@@ -172,6 +231,10 @@
   .world-focus-presentation-state {
     justify-self: start;
   }
+
+  .world-focus-qualifier-group {
+    gap: 7px 12px;
+  }
 }
 
 @media (forced-colors: active) {
@@ -180,7 +243,13 @@
   .world-focus-comparison-subjects,
   .world-focus-trajectory-points,
   .world-focus-trajectory-missing,
-  .world-focus-attention-row {
+  .world-focus-attention-row,
+  .world-focus-direct-list,
+  .world-focus-direct-row {
     border-color: CanvasText;
+  }
+
+  .world-focus-qualifier::before {
+    background: CanvasText;
   }
 }

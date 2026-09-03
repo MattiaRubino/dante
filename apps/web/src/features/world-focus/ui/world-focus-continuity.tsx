@@ -13,6 +13,10 @@ import {
   WorldFocusPresentationSection,
   WorldFocusPresentationState,
 } from './presentation/world-focus-presentation-primitives';
+import {
+  WorldFocusQualifier,
+  WorldFocusQualifierGroup,
+} from './presentation/world-focus-qualifiers';
 
 type WorldFocusContinuitySettledState =
   | Readonly<{ status: 'error' }>
@@ -113,20 +117,37 @@ export function WorldFocusContinuity({
   }
 
   const projection = state.projection;
-  const qualification =
+  const qualifier =
     state.status === 'partial'
-      ? t(($) => $.common.worldFocus.continuity.partial)
+      ? {
+          axis: 'coverage',
+          state: 'incomplete',
+          label: t(($) => $.common.worldFocus.continuity.partial),
+        }
       : state.status === 'stale'
-        ? t(($) => $.common.worldFocus.continuity.stale)
+        ? {
+            axis: 'freshness',
+            state: 'stale',
+            label: t(($) => $.common.worldFocus.continuity.stale),
+          }
         : null;
 
   return (
     <WorldFocusPresentationSection
       className="world-focus-continuity"
       title={title}
-      qualification={qualification}
       data-world-focus-continuity-status={state.status}
     >
+      {qualifier === null ? null : (
+        <WorldFocusQualifierGroup
+          aria-label={t(($) => $.common.worldFocus.presentation.qualifiers.basis)}
+          role="status"
+        >
+          <WorldFocusQualifier axis={qualifier.axis} state={qualifier.state}>
+            {qualifier.label}
+          </WorldFocusQualifier>
+        </WorldFocusQualifierGroup>
+      )}
       <ul className="world-focus-continuity-list">
         {projection.orderedItems.map((item) => (
           <li

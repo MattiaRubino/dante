@@ -44,6 +44,69 @@ export const worldFocus = {
     },
   },
   presentation: {
+    qualifiers: {
+      basis: 'Qualità delle informazioni',
+      disclosure: 'Disponibilità',
+      effect: 'Stato dell’operazione',
+      sync: 'Condizioni di sincronizzazione',
+    },
+    basis: {
+      freshness: {
+        stale: 'Non aggiornato',
+        unknown: 'Aggiornamento sconosciuto',
+      },
+      validity: {
+        superseded: 'Superato',
+        retracted: 'Ritirato',
+        unresolved: 'Validità non risolta',
+      },
+      coverage: {
+        incomplete: 'Incompleto',
+        conflicted: 'In conflitto',
+        unknown: 'Copertura sconosciuta',
+      },
+      material: {
+        retired: 'Contenuto ritirato',
+      },
+    },
+    disclosure: {
+      states: {
+        restricted: 'Accesso limitato',
+        unavailable: 'Non disponibile',
+      },
+    },
+    effect: {
+      states: {
+        pending: 'In attesa',
+        ambiguous: 'Esito ambiguo',
+        'partial-real': 'Effetto parzialmente reale',
+        'reconciliation-required': 'Riconciliazione richiesta',
+        reversed: 'Reverso',
+        compensated: 'Compensato',
+      },
+      revalidationRequired: 'Ricontrollo richiesto prima di eseguire',
+    },
+    sync: {
+      offline: 'Offline',
+      replayPending: 'Riproduzione in attesa',
+      providerLagging: 'Consegna in ritardo',
+      providerUnknown: 'Consegna sconosciuta',
+      timedOut: 'Richiesta scaduta',
+      timingUnknown: 'Tempi della richiesta sconosciuti',
+    },
+    situation: {
+      title: 'Situazione',
+    },
+    next: {
+      title: 'Prossimo',
+    },
+    evidenceHistory: {
+      title: 'Evidenze e cronologia',
+      evidence: 'Evidenze',
+      provenance: 'Provenienza',
+      integrity: 'Integrità',
+      history: 'Cronologia',
+    },
     attention: {
       title: 'Da vedere',
       resolution: 'Risoluzione:',

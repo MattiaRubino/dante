@@ -53,6 +53,41 @@ export function WorldFocusPresentationSection({
   );
 }
 
+type WorldFocusPresentationSubsectionProps = Omit<
+  ComponentPropsWithoutRef<'div'>,
+  'children' | 'title'
+> &
+  Readonly<{
+    title: string;
+    children: ReactNode;
+  }>;
+
+export function WorldFocusPresentationSubsection({
+  title,
+  children,
+  className,
+  ...groupProps
+}: WorldFocusPresentationSubsectionProps) {
+  const headingId = useId();
+  const groupClassName = ['world-focus-presentation-subsection', className]
+    .filter(Boolean)
+    .join(' ');
+
+  return (
+    <div
+      {...groupProps}
+      className={groupClassName}
+      role="group"
+      aria-labelledby={headingId}
+    >
+      <h3 className="world-focus-presentation-subheading" id={headingId}>
+        {title}
+      </h3>
+      {children}
+    </div>
+  );
+}
+
 type WorldFocusPresentationStateProps = Readonly<{
   state: string;
   children: ReactNode;
