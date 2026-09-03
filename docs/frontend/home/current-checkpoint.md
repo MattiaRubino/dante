@@ -1,6 +1,6 @@
 # DANTE — Home / Frontend Current Checkpoint
 
-**Status:** CURRENT LIVE ENTRY POINT — WORLD FOCUS M1 CLOSED / M2 NEXT  
+**Status:** CURRENT LIVE ENTRY POINT — WORLD FOCUS M1 + POST-M1 SAFETY CLOSED / M2 NEXT  
 **Date:** 2026-09-03  
 **Working branch:** `feature/home-react`  
 **Worktree:** `/home/mattia/projects/dante-frontend`
@@ -44,6 +44,7 @@ M0 Materialization Mapping             CLOSED
 M1 Core Non-Visual Materialization     CLOSED / VALIDATED
 M1-1 identity/reference ownership      CLOSED / VALIDATED
 M1-2 facets + WP/O2/O5/O8 seams        CLOSED / VALIDATED
+POST-M1 SAFETY FALSIFICATION           CLOSED / PASS
 M2 Shared Visual Primitive Layer       NEXT
 M3–M7                                  BLOCKED BY SEQUENCE
 D2–D6                                  DEFERRED TO M4
@@ -74,11 +75,21 @@ CI   33740212989 EXPECTED FAILURE
 M1 final code closure
 HEAD 7369c51e7ba04f8913728a0770f700c728c3b9f9
 CI   33740710290 PASS
+
+POST-M1 safety falsification — red discovery
+HEAD 0b674effa292881303288dd90c88db2c14e61872
+CI   33747167897 FAIL
+7 / 9 hostile tests PASS; 296 PASS / 2 FAIL overall web units
+
+POST-M1 safety closure
+HEAD ecc2128b62395f82eab9ee7ff239355b4ca81ee4
+CI   33754084001 PASS
+9 / 9 hostile tests PASS; 56 / 56 web test files; 301 / 301 web unit tests
 ```
 
-## 4. M1 closed result
+## 4. M1 + safety closed result
 
-M1 now has production-grade non-visual ownership for:
+M1 has production-grade non-visual ownership for:
 
 ```text
 open-ended World identity + explicit descriptor
@@ -106,7 +117,19 @@ unknown-future World compatibility
 basic useful path without DANTE
 ```
 
-The final M1 falsification proved the only remaining compatibility debt was the non-enumerable `cursor.contextReferences`. It is now a normal enumerable frozen property. `selection` remains only a compatibility projection of `contextReferences.primary`, not the semantic owner.
+The final M1 falsification closed the hidden non-enumerable `cursor.contextReferences` compatibility residue.
+
+The bounded post-M1 safety gate then found and closed two concrete implementation defects without introducing new semantic owners:
+
+```text
+cancelled non-cooperative World read
+  -> late adapter completion is rejected before validation
+
+O8 Evidence/History caller alias
+  -> projection owns a normalized frozen evidence snapshot
+```
+
+The hostile safety test was not weakened. M1 and WS0–WS8 remain closed.
 
 No universal `ProjectionEnvelope`, generic `Thing/Entity/Fact/PropertyBag`, frontend ACL/AuthZ, World canonical ownership or backend authority was introduced.
 
@@ -114,15 +137,16 @@ No universal `ProjectionEnvelope`, generic `Thing/Entity/Fact/PropertyBag`, fron
 
 ```text
 1. world-focus-current-checkpoint.md
-2. world-focus-m1-core-nonvisual-materialization-review.md
-3. world-focus-m1-next-subblock.md
-4. world-focus-m0-materialization-mapping.md
-5. world-focus-contract-sequencing-supersession.md
-6. world-focus-frontend-roadmap.md
-7. world-focus-handoff.md
-8. world-focus-evidence-index.md
-9. world-focus-substrate-closure-plan.md
-10. product/platform/structure/geometry contracts as needed
+2. world-focus-post-m1-safety-falsification-review.md
+3. world-focus-m1-core-nonvisual-materialization-review.md
+4. world-focus-m1-next-subblock.md
+5. world-focus-m0-materialization-mapping.md
+6. world-focus-contract-sequencing-supersession.md
+7. world-focus-frontend-roadmap.md
+8. world-focus-handoff.md
+9. world-focus-evidence-index.md
+10. world-focus-substrate-closure-plan.md
+11. product/platform/structure/geometry contracts as needed
 ```
 
 ## 6. Next gate — M2 only
