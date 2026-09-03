@@ -1,6 +1,6 @@
 # DANTE — World Focus M2 Shared Visual Primitive Layer
 
-**Status:** M2-1 IMPLEMENTED / PRESSURE VALIDATION IN PROGRESS  
+**Status:** M2 ACTIVE / M2-1 CLOSED / VALIDATED  
 **Date:** 2026-09-03  
 **Branch:** `feature/home-react`
 
@@ -164,6 +164,12 @@ Internal reference keys and `reasonCode` are not translated into user copy as an
 
 The M2 tests were committed before the production owners. The observed red failed because the new presentation owners were unresolved, establishing a real red-first boundary.
 
+```text
+red HEAD 26adf872...
+CI       33763229784 EXPECTED FAILURE
+failure  Quality / Lint — unresolved M2 owners
+```
+
 Two later implementation failures were preserved and fixed at root cause:
 
 ```text
@@ -177,9 +183,9 @@ isolated renderer test i18n environment
 
 No hostile/semantic expectation was weakened.
 
-## 9. Current validated baseline
+## 9. Validated code baseline
 
-Production baseline after the fixes:
+Production baseline after the implementation fixes:
 
 ```text
 HEAD 5e8aaba2477803e931a3394d90bbf01ff534f673
@@ -197,13 +203,25 @@ architecture      262 modules / 684 dependencies / 0 violations
 generated         112 tokens / 3 deterministic files
 ```
 
-## 10. Responsive pressure gate
+## 10. Responsive pressure gate — VALIDATED
 
-Additional real-browser pressure is committed at:
+The real-browser pressure test was introduced at:
 
 ```text
 HEAD b1504ed6c1587204cfb6fa7900c66109909201b0
-CI   33781535757 IN PROGRESS
+```
+
+Its first run was superseded operationally by the subsequent documentation commit while the same pressure test remained unchanged in the branch. The authoritative validation is therefore the later complete run:
+
+```text
+VALIDATED HEAD 2e639f108d5cb01e53395013a55346b7ac2e4294
+CI             33781753823 PASS
+
+Frontend CI Gate       PASS
+Quality                PASS
+Web E2E / Chromium     PASS
+frozen Timeline Firefox PASS
+Mobile Bundle          PASS
 ```
 
 The E2E vertical checks Continuity inside the real World workspace at:
@@ -222,14 +240,42 @@ Continuity remains inside workspace horizontal bounds
 no document horizontal overflow
 ```
 
-This section must be updated to PASS/FAIL only after the run actually completes.
+The same authoritative run confirms:
 
-## 11. Current sequencing
+```text
+web test files 61 / 61 PASS
+web unit tests 312 / 312 PASS
+architecture   262 modules / 684 dependencies / 0 violations
+generated      112 tokens / 3 deterministic files
+production build PASS
+repository mutation check PASS
+```
+
+## 11. M2-1 closure result
+
+M2-1 is closed only for the bounded layer materialized here:
+
+```text
+display-safe reference binding boundary
+shared semantic presentation section/state grammar
+WP-02 Attention renderer contract
+WP-03 Comparison renderer contract
+WP-04 Trajectory renderer contract
+WP-01 Continuity migrated as a real production vertical
+English/Italian finite presentation labels
+responsive 720/719/390 pressure evidence
+forced-colors presentation support
+```
+
+This does **not** mean all of M2 is closed. WP-02..WP-04 being available renderers does not mean they have been selected into a live World composition. That selection/composition work must remain evidence-driven and cannot be fabricated merely to exercise the components.
+
+## 12. Current sequencing
 
 ```text
 M1 + POST-M1 safety             CLOSED / VALIDATED
-M2-1 shared presentation layer  IMPLEMENTED / PRESSURE VALIDATION IN PROGRESS
-M2 remaining renderer work      BLOCKED UNTIL M2-1 pressure evidence is closed
+M2                              ACTIVE
+M2-1 shared presentation layer  CLOSED / VALIDATED
+M2 remaining visual work        NEXT WITHIN M2
 M3                              BLOCKED BY M2
 M4 D2–D6                        BLOCKED BY M3
 M5                              BLOCKED BY M4
@@ -238,4 +284,4 @@ M7                              BLOCKED BY M6
 BACKEND                         BLOCKED UNTIL M7
 ```
 
-Human/manual visual acceptance is not claimed by automated green.
+Human/manual visual acceptance is not claimed by automated green. Integrated human visual/a11y/performance acceptance remains later sequencing work, especially M6.
