@@ -22,6 +22,7 @@ from dante.modules.intelligence.adapters.outbound.model.openai_responses import 
 
 _OPENAI_SDK_MAX_RETRIES: Final = 0
 _OPENAI_REASONING_EFFORT: Final[Literal["medium"]] = "medium"
+_OPENAI_REASONING_CONTEXT: Final[Literal["current_turn"]] = "current_turn"
 _OPENAI_SERVICE_TIER: Final[Literal["default"]] = "default"
 _OPENAI_TRUNCATION: Final[Literal["disabled"]] = "disabled"
 
@@ -189,6 +190,10 @@ class OpenAISDKResponsesTransport(OpenAIResponsesTransport):
             )
 
         text_config = _structured_text_config(request)
+        reasoning = {
+            "effort": _OPENAI_REASONING_EFFORT,
+            "context": _OPENAI_REASONING_CONTEXT,
+        }
         try:
             if text_config is None:
                 response = await self._client.responses.create(
@@ -196,7 +201,7 @@ class OpenAISDKResponsesTransport(OpenAIResponsesTransport):
                     input=request.input_text,
                     instructions=request.instructions,
                     max_output_tokens=request.max_output_tokens,
-                    reasoning={"effort": _OPENAI_REASONING_EFFORT},
+                    reasoning=reasoning,
                     service_tier=_OPENAI_SERVICE_TIER,
                     store=False,
                     stream=False,
@@ -211,7 +216,7 @@ class OpenAISDKResponsesTransport(OpenAIResponsesTransport):
                     input=request.input_text,
                     instructions=request.instructions,
                     max_output_tokens=request.max_output_tokens,
-                    reasoning={"effort": _OPENAI_REASONING_EFFORT},
+                    reasoning=reasoning,
                     service_tier=_OPENAI_SERVICE_TIER,
                     store=False,
                     stream=False,
