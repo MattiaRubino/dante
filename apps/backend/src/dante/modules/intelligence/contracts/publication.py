@@ -76,22 +76,22 @@ class PublicationDecision:
     limitations: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
-        for name, value in (
+        for uuid_name, uuid_value in (
             ("decision_id", self.decision_id),
             ("work_id", self.work_id),
             ("verification_result_id", self.verification_result_id),
             ("basis_manifest_id", self.basis_manifest_id),
             ("policy_decision_id", self.policy_decision_id),
         ):
-            _require_uuid7(value, name=name)
+            _require_uuid7(uuid_value, name=uuid_name)
         if self.work_revision <= 0:
             raise ValueError("work_revision must be positive")
-        for name, value in (
+        for text_name, text_value in (
             ("representation_ref", self.representation_ref),
             ("recipient", self.recipient),
             ("surface", self.surface),
         ):
-            _require_text(value, name=name)
+            _require_text(text_value, name=text_name)
         _require_aware(self.evaluated_at, name="evaluated_at")
         _require_texts(self.limitations, name="limitations")
         if self.policy_boundary is not PolicyBoundary.PUBLICATION:
@@ -129,9 +129,8 @@ class PublicationDecision:
                 raise ValueError("unlimited publication requires VERIFIED status")
             if self.limitations:
                 raise ValueError("PUBLISH must not carry limitations")
-        if self.status is PublicationDecisionStatus.PUBLISH_WITH_LIMITATIONS:
-            if not self.limitations:
-                raise ValueError("limited publication requires declared limitations")
+        if self.status is PublicationDecisionStatus.PUBLISH_WITH_LIMITATIONS and not self.limitations:
+            raise ValueError("limited publication requires declared limitations")
 
 
 @dataclass(frozen=True, slots=True)
