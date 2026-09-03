@@ -93,23 +93,20 @@ def normalize_ses_feedback(payload: bytes | str | Mapping[str, Any]) -> Normaliz
         raise SesFeedbackError("SES feedback timestamp must be timezone-aware")
     occurred_at = occurred_at.astimezone(UTC)
 
-    event_id = _provider_event_id(raw, encoded)
-    subtype = _safe_subtype(raw, event_type)
-    hard_failure = _is_hard_failure(raw, event_type)
     return NormalizedSesFeedback(
         provider_event_ref=uuid7(),
-        provider_event_id=event_id,
+        provider_event_id=_provider_event_id(raw, encoded),
         provider_message_id=message_id,
         event_type_code=event_type_code,
         provider_occurred_at=occurred_at,
         payload_digest=sha256(encoded).digest(),
-        safe_subtype_code=subtype,
-        hard_failure=hard_failure,
+        safe_subtype_code=_safe_subtype(raw, event_type),
+        hard_failure=_is_hard_failure(raw, event_type),
     )
 
 
 class EmailFeedbackStore:
-    """Idempotently record provider observations and maintain bounded suppression projection."""
+    """Idempotently persist SES observations and current delivery suppression projection."""
 
     async def record(
         self,
@@ -117,26 +114,28 @@ class EmailFeedbackStore:
         *,
         feedback: NormalizedSesFeedback,
     ) -> bool:
+        """Record one SES observation; return False only when correlation is not yet known."""
         attempt = await database_session.scalar(
             select(EmailDeliveryAttemptRow).where(
                 EmailDeliveryAttemptRow.provider_message_id == feedback.provider_message_id
             )
         )
-        if attempt is None:
+        if attempt is None or attempt.provider_code != "ses":
             return False
 
         insert_stmt = (
             pg_insert(EmailProviderEventRow)
             .values(
                 email_provider_event_ref=feedback.provider_event_ref,
-                provider_code=attempt.provider_code,
+                provider_code="ses",
                 provider_event_id=feedback.provider_event_id,
-                email_delivery_attempt_ref=attempt.email_delivery_attempt_ref,
+                provider_message_id=feedback.provider_message_id,
+                email_intent_ref=attempt.email_intent_ref,
                 event_type_code=feedback.event_type_code,
-                safe_subtype_code=feedback.safe_subtype_code,
-                provider_occurred_at=feedback.provider_occurred_at,
+                observed_at=feedback.provider_occurred_at,
                 received_at=datetime.now(UTC),
                 payload_digest=feedback.payload_digest,
+                safe_detail_code=feedback.safe_subtype_code,
             )
             .on_conflict_do_nothing(
                 index_elements=[
@@ -146,22 +145,17 @@ class EmailFeedbackStore:
             )
             .returning(EmailProviderEventRow.email_provider_event_ref)
         )
-        inserted = await database_session.scalar(insert_stmt)
-        if inserted is None:
+        inserted_event_ref = await database_session.scalar(insert_stmt)
+        if inserted_event_ref is None:
             return True
 
-        if feedback.event_type_code == "delivered":
-            await database_session.execute(
-                update(EmailDeliveryIntentRow)
-                .where(
-                    EmailDeliveryIntentRow.email_delivery_intent_ref
-                    == attempt.email_delivery_intent_ref,
-                    EmailDeliveryIntentRow.delivered_at.is_(None),
-                )
-                .values(delivered_at=feedback.provider_occurred_at)
+        if feedback.event_type_code in {"bounced", "complained"}:
+            await self._apply_suppression(
+                database_session,
+                attempt=attempt,
+                feedback=feedback,
+                source_provider_event_ref=inserted_event_ref,
             )
-        elif feedback.event_type_code in {"bounced", "complained"}:
-            await self._apply_suppression(database_session, attempt=attempt, feedback=feedback)
         return True
 
     async def _apply_suppression(
@@ -170,22 +164,21 @@ class EmailFeedbackStore:
         *,
         attempt: EmailDeliveryAttemptRow,
         feedback: NormalizedSesFeedback,
+        source_provider_event_ref: UUID,
     ) -> None:
         intent = await database_session.scalar(
             select(EmailDeliveryIntentRow).where(
-                EmailDeliveryIntentRow.email_delivery_intent_ref
-                == attempt.email_delivery_intent_ref
+                EmailDeliveryIntentRow.email_intent_ref == attempt.email_intent_ref
             )
         )
         if intent is None:
             return
 
-        reason_code = (
-            "complaint"
-            if feedback.event_type_code == "complained"
-            else ("hard_bounce" if feedback.hard_failure else "soft_bounce")
-        )
-        if reason_code == "soft_bounce":
+        if feedback.event_type_code == "complained":
+            reason_code = "complaint"
+        elif feedback.hard_failure:
+            reason_code = "hard_bounce"
+        else:
             return
 
         now = datetime.now(UTC)
@@ -195,36 +188,29 @@ class EmailFeedbackStore:
                 email_recipient_suppression_ref=uuid7(),
                 recipient_comparison_key=intent.recipient_comparison_key,
                 reason_code=reason_code,
-                source_provider_code=attempt.provider_code,
-                source_provider_message_id=attempt.provider_message_id,
-                first_observed_at=feedback.provider_occurred_at,
-                last_observed_at=feedback.provider_occurred_at,
-                active=True,
-                created_at=now,
+                source_provider_event_ref=source_provider_event_ref,
+                suppressed_at=feedback.provider_occurred_at,
                 updated_at=now,
+                cleared_at=None,
             )
             .on_conflict_do_update(
                 index_elements=[EmailRecipientSuppressionRow.recipient_comparison_key],
                 set_={
                     "reason_code": reason_code,
-                    "source_provider_code": attempt.provider_code,
-                    "source_provider_message_id": attempt.provider_message_id,
-                    "last_observed_at": feedback.provider_occurred_at,
-                    "active": True,
+                    "source_provider_event_ref": source_provider_event_ref,
+                    "suppressed_at": feedback.provider_occurred_at,
                     "updated_at": now,
+                    "cleared_at": None,
                 },
             )
         )
         await database_session.execute(suppression_stmt)
         await database_session.execute(
             update(EmailIdentityRow)
-            .where(
-                EmailIdentityRow.comparison_key == intent.recipient_comparison_key,
-                EmailIdentityRow.recovery_restriction_code.is_(None),
-            )
+            .where(EmailIdentityRow.comparison_key == intent.recipient_comparison_key)
             .values(
-                recovery_restriction_code="provider_suppressed",
-                updated_at=now,
+                recovery_restriction_code="provider_delivery_disabled",
+                recovery_restriction_observed_at=feedback.provider_occurred_at,
             )
         )
 
@@ -247,14 +233,13 @@ def _safe_subtype(raw: Mapping[str, Any], event_type: str) -> str | None:
     section = raw.get(key) if key is not None else None
     if not isinstance(section, Mapping):
         return None
-    candidates = (
+    for candidate in (
         "bounceType",
         "bounceSubType",
         "complaintFeedbackType",
         "delayType",
         "reason",
-    )
-    for candidate in candidates:
+    ):
         value = section.get(candidate)
         if isinstance(value, str) and value.strip():
             return value[:128]
