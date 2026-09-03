@@ -41,11 +41,11 @@ from dante.auth.contracts import (
 )
 from dante.auth.email_delivery import (
     EmailDeliveryPort,
-    EmailDispatchCapacityError,
     NoopEmail,
     PasswordRecoveryEmail,
     PasswordResetNotificationEmail,
 )
+from dante.auth.email_outbox import DurableEmailOutbox
 from dante.auth.lifecycle import AuthLifecycleService, LifecycleLimiters
 from dante.auth.passwords import HibpPasswordChecker, PasswordKdf
 from dante.auth.proofs import (
@@ -299,6 +299,8 @@ class MultiAuthenticatorLifecycleService(AuthLifecycleService):
         otp_codec: SignupOtpCodec,
         email_delivery: EmailDeliveryPort,
         limiters: LifecycleLimiters,
+        email_outbox: DurableEmailOutbox | None = None,
+        email_wake: Callable[[], None] | None = None,
     ) -> None:
         super().__init__(
             session_factory=session_factory,
@@ -308,6 +310,8 @@ class MultiAuthenticatorLifecycleService(AuthLifecycleService):
             otp_codec=otp_codec,
             email_delivery=email_delivery,
             limiters=limiters,
+            email_outbox=email_outbox,
+            email_wake=email_wake,
         )
 
     async def establish_password(
@@ -538,23 +542,23 @@ class MultiAuthenticatorLifecycleService(AuthLifecycleService):
 
         recovery_ref = uuid7()
         proof = issue_recovery_proof()
-        committed = await self._persist_passwordless_recovery_challenge(
+        email_command = PasswordRecoveryEmail(
+            to_address=channel.email_address,
+            password_recovery_ref=recovery_ref,
+            secret=proof.secret,
+        )
+        committed, staged = await self._persist_passwordless_recovery_challenge(
             channel=channel,
             password_recovery_ref=recovery_ref,
             secret_verifier=proof.verifier,
+            email_command=email_command,
         )
         if not committed:
             await self._enqueue(NoopEmail())
             await self._pad_recovery_success(started_at)
             return
 
-        await self._enqueue(
-            PasswordRecoveryEmail(
-                to_address=channel.email_address,
-                password_recovery_ref=recovery_ref,
-                secret=proof.secret,
-            )
-        )
+        await self._after_email_commit(email_command, staged=staged)
         await self._pad_recovery_success(started_at)
 
     @override
@@ -602,6 +606,8 @@ class MultiAuthenticatorLifecycleService(AuthLifecycleService):
 
         mutation_at: datetime | None = None
         ambiguous_commit = False
+        notification = PasswordResetNotificationEmail(to_address=snapshot.email_address)
+        notification_staged = False
         database_session = self._session_factory()
         try:
             await database_session.begin()
@@ -674,6 +680,13 @@ class MultiAuthenticatorLifecycleService(AuthLifecycleService):
                     revocation_reason_code="password_reset",
                 )
             )
+            notification_staged = await self._stage_email_intent(
+                database_session,
+                command=notification,
+                operation_scope="auth.password_reset_notification",
+                idempotency_key=str(password_recovery_ref),
+                expires_at=mutation_at + timedelta(days=1),
+            )
             try:
                 await database_session.commit()
             except DBAPIError as exc:
@@ -699,12 +712,7 @@ class MultiAuthenticatorLifecycleService(AuthLifecycleService):
                 mutation_at=mutation_at,
             )
 
-        try:
-            await self._email_delivery.enqueue(
-                PasswordResetNotificationEmail(to_address=snapshot.email_address)
-            )
-        except EmailDispatchCapacityError:
-            _LOGGER.warning("auth.password_reset_notification_queue_unavailable")
+        await self._after_email_commit(notification, staged=notification_staged)
 
     async def _read_recovery_channel(self, comparison_key: str) -> _RecoveryChannel | None:
         try:
@@ -740,11 +748,13 @@ class MultiAuthenticatorLifecycleService(AuthLifecycleService):
         channel: _RecoveryChannel,
         password_recovery_ref: UUID,
         secret_verifier: bytes,
-    ) -> bool:
+        email_command: PasswordRecoveryEmail,
+    ) -> tuple[bool, bool]:
         await self._cleanup_expired_challenges(datetime.now(UTC))
         issued_at: datetime | None = None
         expires_at: datetime | None = None
         ambiguous_commit = False
+        staged = False
         database_session = self._session_factory()
         try:
             await database_session.begin()
@@ -765,7 +775,7 @@ class MultiAuthenticatorLifecycleService(AuthLifecycleService):
             )
             if current is None or current.address != channel.email_address:
                 await database_session.rollback()
-                return False
+                return False, False
 
             issued_at = datetime.now(UTC)
             expires_at = issued_at + timedelta(seconds=self._settings.recovery_lifetime_seconds)
@@ -784,6 +794,14 @@ class MultiAuthenticatorLifecycleService(AuthLifecycleService):
                     expires_at=expires_at,
                 )
             )
+            staged = await self._stage_email_intent(
+                database_session,
+                command=email_command,
+                operation_scope="auth.password_recovery",
+                idempotency_key=str(password_recovery_ref),
+                expires_at=expires_at,
+                supersession_key=f"password-recovery:{channel.account_ref}",
+            )
             try:
                 await database_session.commit()
             except DBAPIError as exc:
@@ -799,7 +817,7 @@ class MultiAuthenticatorLifecycleService(AuthLifecycleService):
         if issued_at is None or expires_at is None:
             raise AuthIntegrityError("passwordless recovery issuance lost timestamps")
         if not ambiguous_commit:
-            return True
+            return True, staged
         try:
             async with self._session_factory() as database_session, database_session.begin():
                 persisted = await database_session.scalar(
@@ -817,7 +835,7 @@ class MultiAuthenticatorLifecycleService(AuthLifecycleService):
             and persisted.issued_at == issued_at
             and persisted.expires_at == expires_at
         ):
-            return True
+            return True, staged
         if persisted is None:
             raise AuthServiceUnavailableError(retryable=True)
         raise AuthIntegrityError("ambiguous passwordless recovery issuance mismatched state")

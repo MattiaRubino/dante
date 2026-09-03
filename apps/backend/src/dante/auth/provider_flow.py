@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hmac
 import math
+from collections.abc import Callable
 from contextlib import suppress
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -42,11 +43,13 @@ from dante.auth.contracts import (
     SignupResendCooldownError,
 )
 from dante.auth.email import EmailNormalizationError, NormalizedEmail, normalize_email
+from dante.auth.email_contracts import EmailIntentConflictError
 from dante.auth.email_delivery import (
     EmailDeliveryPort,
     EmailDispatchCapacityError,
     ProviderEnrollmentVerificationEmail,
 )
+from dante.auth.email_outbox import DurableEmailOutbox
 from dante.auth.google import (
     GoogleIdentityEvidence,
     GoogleProofError,
@@ -153,12 +156,16 @@ class ProviderFlowService:
         otp_codec: ProviderEnrollmentOtpCodec,
         email_delivery: EmailDeliveryPort,
         limiters: ProviderFlowLimiters,
+        email_outbox: DurableEmailOutbox | None = None,
+        email_wake: Callable[[], None] | None = None,
     ) -> None:
         self._session_factory = session_factory
         self._settings = settings
         self._google_verifier = google_verifier
         self._otp_codec = otp_codec
         self._email_delivery = email_delivery
+        self._email_outbox = email_outbox
+        self._email_wake = email_wake
         self._limiters = limiters
         self._csrf_key = settings.csrf_key_bytes
 
@@ -303,6 +310,8 @@ class ProviderFlowService:
         now = datetime.now(UTC)
         expires_at: datetime | None = None
         verification_expires_at: datetime | None = None
+        email_command: ProviderEnrollmentVerificationEmail | None = None
+        staged = False
 
         database_session = self._session_factory()
         try:
@@ -326,6 +335,19 @@ class ProviderFlowService:
             challenge.verification_expires_at = verification_expires_at
             challenge.failed_verification_attempts = 0
             challenge.updated_at = now
+            email_command = self._provider_email_command(
+                email_address=normalized.address,
+                code=otp.code,
+                expires_at=verification_expires_at,
+                now=now,
+            )
+            staged = await self._stage_provider_email(
+                database_session,
+                command=email_command,
+                idempotency_key=f"{external_signup_ref}:{now.isoformat()}",
+                expires_at=verification_expires_at,
+                supersession_key=f"provider-enrollment:{external_signup_ref}",
+            )
             await database_session.commit()
         except ProviderEnrollmentInvalidOrExpiredError:
             raise
@@ -335,14 +357,9 @@ class ProviderFlowService:
         finally:
             await database_session.close()
 
-        if expires_at is None or verification_expires_at is None:
+        if expires_at is None or verification_expires_at is None or email_command is None:
             raise AuthIntegrityError("provider enrollment email update lost challenge timestamps")
-        await self._enqueue_provider_otp(
-            email_address=normalized.address,
-            code=otp.code,
-            expires_at=verification_expires_at,
-            now=now,
-        )
+        await self._after_provider_email_commit(email_command, staged=staged)
         return ProviderEnrollmentRequired(
             external_signup_ref=external_signup_ref,
             continuation_secret=SecretStr(continuation_secret),
@@ -377,6 +394,8 @@ class ProviderFlowService:
         email_address: str | None = None
         expires_at: datetime | None = None
         verification_expires_at: datetime | None = None
+        email_command: ProviderEnrollmentVerificationEmail | None = None
+        staged = False
         database_session = self._session_factory()
         try:
             await database_session.begin()
@@ -411,6 +430,19 @@ class ProviderFlowService:
             locked.verification_expires_at = verification_expires_at
             locked.failed_verification_attempts = 0
             locked.updated_at = now
+            email_command = self._provider_email_command(
+                email_address=email_address,
+                code=otp.code,
+                expires_at=verification_expires_at,
+                now=now,
+            )
+            staged = await self._stage_provider_email(
+                database_session,
+                command=email_command,
+                idempotency_key=f"{external_signup_ref}:{now.isoformat()}",
+                expires_at=verification_expires_at,
+                supersession_key=f"provider-enrollment:{external_signup_ref}",
+            )
             await database_session.commit()
         except ProviderEnrollmentInvalidOrExpiredError, SignupResendCooldownError:
             raise
@@ -420,14 +452,14 @@ class ProviderFlowService:
         finally:
             await database_session.close()
 
-        if email_address is None or expires_at is None or verification_expires_at is None:
+        if (
+            email_address is None
+            or expires_at is None
+            or verification_expires_at is None
+            or email_command is None
+        ):
             raise AuthIntegrityError("provider enrollment resend lost challenge state")
-        await self._enqueue_provider_otp(
-            email_address=email_address,
-            code=otp.code,
-            expires_at=verification_expires_at,
-            now=now,
-        )
+        await self._after_provider_email_commit(email_command, staged=staged)
         return ProviderEnrollmentRequired(
             external_signup_ref=external_signup_ref,
             continuation_secret=SecretStr(continuation_secret),
@@ -1060,14 +1092,21 @@ class ProviderFlowService:
             updated_at=now,
             expires_at=expires_at,
         )
-        await self._persist_provider_enrollment(row)
-        if otp is not None and evidence.email is not None and verification_expires_at is not None:
-            await self._enqueue_provider_otp(
+        email_command = (
+            self._provider_email_command(
                 email_address=evidence.email.address,
                 code=otp.code,
                 expires_at=verification_expires_at,
                 now=now,
             )
+            if otp is not None
+            and evidence.email is not None
+            and verification_expires_at is not None
+            else None
+        )
+        staged = await self._persist_provider_enrollment(row, email_command=email_command)
+        if email_command is not None:
+            await self._after_provider_email_commit(email_command, staged=staged)
         return ProviderEnrollmentRequired(
             external_signup_ref=external_signup_ref,
             continuation_secret=continuation.secret,
@@ -1251,8 +1290,14 @@ class ProviderFlowService:
         ):
             raise AuthServiceUnavailableError(retryable=False)
 
-    async def _persist_provider_enrollment(self, row: ExternalSignupChallengeRow) -> None:
+    async def _persist_provider_enrollment(
+        self,
+        row: ExternalSignupChallengeRow,
+        *,
+        email_command: ProviderEnrollmentVerificationEmail | None,
+    ) -> bool:
         ambiguous_commit = False
+        staged = False
         database_session = self._session_factory()
         try:
             await database_session.begin()
@@ -1264,6 +1309,18 @@ class ProviderFlowService:
                 )
             )
             database_session.add(row)
+            if email_command is not None:
+                if row.verification_expires_at is None or row.verification_issued_at is None:
+                    raise AuthIntegrityError("provider enrollment email lost verification expiry")
+                staged = await self._stage_provider_email(
+                    database_session,
+                    command=email_command,
+                    idempotency_key=(
+                        f"{row.external_signup_ref}:{row.verification_issued_at.isoformat()}"
+                    ),
+                    expires_at=row.verification_expires_at,
+                    supersession_key=f"provider-enrollment:{row.external_signup_ref}",
+                )
             try:
                 await database_session.commit()
             except DBAPIError as exc:
@@ -1277,7 +1334,7 @@ class ProviderFlowService:
             await database_session.close()
 
         if not ambiguous_commit:
-            return
+            return staged
         persisted = await self._read_provider_enrollment(row.external_signup_ref)
         if (
             persisted is None
@@ -1289,6 +1346,7 @@ class ProviderFlowService:
             )
         ):
             raise AuthServiceUnavailableError(retryable=False)
+        return staged
 
     async def _persist_link_challenge(self, row: ExternalLinkChallengeRow) -> None:
         ambiguous_commit = False
@@ -2054,6 +2112,59 @@ class ProviderFlowService:
             or row.expires_at != expected.expires_at
         ):
             raise AuthServiceUnavailableError(retryable=False)
+
+    async def _stage_provider_email(
+        self,
+        database_session: AsyncSession,
+        *,
+        command: ProviderEnrollmentVerificationEmail,
+        idempotency_key: str,
+        expires_at: datetime,
+        supersession_key: str,
+    ) -> bool:
+        if self._email_outbox is None:
+            return False
+        try:
+            await self._email_outbox.stage(
+                database_session,
+                command=command,
+                operation_scope="auth.provider_enrollment_verification",
+                idempotency_key=idempotency_key,
+                expires_at=expires_at,
+                supersession_key=supersession_key,
+            )
+        except EmailIntentConflictError as exc:
+            raise AuthIntegrityError("provider email intent idempotency conflict") from exc
+        return True
+
+    async def _after_provider_email_commit(
+        self,
+        command: ProviderEnrollmentVerificationEmail,
+        *,
+        staged: bool,
+    ) -> None:
+        if staged:
+            if self._email_wake is not None:
+                self._email_wake()
+            return
+        try:
+            await self._email_delivery.enqueue(command)
+        except EmailDispatchCapacityError as exc:
+            raise EmailDeliveryUnavailableError() from exc
+
+    @staticmethod
+    def _provider_email_command(
+        *,
+        email_address: str,
+        code: SecretStr,
+        expires_at: datetime,
+        now: datetime,
+    ) -> ProviderEnrollmentVerificationEmail:
+        return ProviderEnrollmentVerificationEmail(
+            to_address=email_address,
+            code=code,
+            expires_minutes=max(1, math.ceil((expires_at - now).total_seconds() / 60)),
+        )
 
     async def _enqueue_provider_otp(
         self,

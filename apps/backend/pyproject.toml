@@ -21,6 +21,8 @@ dependencies = [
     "fido2==2.2.1",
     "joserfc==1.7.4",
     "cryptography==50.0.1",
+    "boto3>=1.40,<2",
+    "botocore>=1.40,<2",
 ]
 
 [build-system]

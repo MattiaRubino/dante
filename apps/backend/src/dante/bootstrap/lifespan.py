@@ -6,6 +6,7 @@ from typing import cast
 
 from fastapi import FastAPI
 
+from dante.auth.email_runtime import create_email_platform_runtime
 from dante.auth.lifecycle_runtime import create_auth_lifecycle_runtime
 from dante.auth.provider_flow_runtime import create_provider_flow_runtime
 from dante.auth.service import create_auth_runtime
@@ -31,10 +32,23 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         stack.push_async_callback(auth_runtime.aclose)
         app.state.auth_runtime = auth_runtime
 
+        email_platform_runtime = (
+            await create_email_platform_runtime(
+                settings=settings.auth,
+                database_runtime=database_runtime,
+            )
+            if settings.auth.email_platform_enabled
+            else None
+        )
+        if email_platform_runtime is not None:
+            stack.push_async_callback(email_platform_runtime.aclose)
+            app.state.email_platform_runtime = email_platform_runtime
+
         auth_lifecycle_runtime = await create_auth_lifecycle_runtime(
             settings=settings.auth,
             database_runtime=database_runtime,
             auth_runtime=auth_runtime,
+            email_platform=email_platform_runtime,
         )
         stack.push_async_callback(auth_lifecycle_runtime.aclose)
         app.state.auth_lifecycle_runtime = auth_lifecycle_runtime

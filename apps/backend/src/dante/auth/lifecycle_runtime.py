@@ -6,6 +6,7 @@ from dataclasses import dataclass
 
 from dante.auth.authenticator_lifecycle import MultiAuthenticatorLifecycleService
 from dante.auth.email_delivery import SmtpEmailDispatcher
+from dante.auth.email_runtime import EmailPlatformRuntime
 from dante.auth.lifecycle import KeyedRateLimiter, LifecycleLimiters
 from dante.auth.passwords import HibpPasswordChecker
 from dante.auth.proofs import SignupOtpCodec
@@ -20,9 +21,10 @@ class AuthLifecycleRuntime:
 
     service: MultiAuthenticatorLifecycleService
     email_dispatcher: SmtpEmailDispatcher
+    email_platform: EmailPlatformRuntime | None
 
     async def aclose(self) -> None:
-        """Drain admitted email work before shared M3 Auth resources are disposed."""
+        """Drain only the legacy dispatcher; durable workers are owned by bootstrap."""
         await self.email_dispatcher.aclose()
 
 
@@ -31,6 +33,7 @@ async def create_auth_lifecycle_runtime(
     settings: AuthSettings,
     database_runtime: DatabaseRuntime,
     auth_runtime: AuthRuntime,
+    email_platform: EmailPlatformRuntime | None = None,
 ) -> AuthLifecycleRuntime:
     """Construct lifecycle capabilities while reusing M3 KDF/HIBP transport resources."""
     email_dispatcher = SmtpEmailDispatcher(settings=settings)
@@ -80,10 +83,13 @@ async def create_auth_lifecycle_runtime(
             otp_codec=otp_codec,
             email_delivery=email_dispatcher,
             limiters=limiters,
+            email_outbox=(email_platform.outbox if email_platform is not None else None),
+            email_wake=(email_platform.wake if email_platform is not None else None),
         )
         return AuthLifecycleRuntime(
             service=service,
             email_dispatcher=email_dispatcher,
+            email_platform=email_platform,
         )
     except BaseException:
         await email_dispatcher.aclose()

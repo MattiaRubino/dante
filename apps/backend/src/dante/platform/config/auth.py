@@ -25,6 +25,13 @@ class SmtpSecurity(StrEnum):
     TLS = "tls"
 
 
+class EmailTransport(StrEnum):
+    """Last-mile email transport behind the durable PostgreSQL outbox."""
+
+    SMTP = "smtp"
+    SES = "ses"
+
+
 def _encode_urlsafe(raw: bytes) -> str:
     return urlsafe_b64encode(raw).rstrip(b"=").decode("ascii")
 
@@ -129,6 +136,22 @@ class AuthSettings(BaseModel):
     email_worker_count: PositiveInt = 2
     email_shutdown_drain_seconds: PositiveFloat = 10.0
 
+    email_platform_enabled: bool = False
+    email_transport: EmailTransport = EmailTransport.SMTP
+    email_from_address: str | None = None
+    email_payload_current_key_id: str | None = None
+    email_payload_keys: dict[str, SecretStr] = Field(default_factory=dict)
+    email_attempt_limit: PositiveInt = 3
+    email_claim_batch_size: PositiveInt = 16
+    email_claim_lease_seconds: PositiveFloat = 30.0
+    email_poll_interval_seconds: PositiveFloat = 0.5
+    email_retry_base_seconds: PositiveFloat = 1.0
+    email_retry_max_seconds: PositiveFloat = 30.0
+    email_provider_connect_timeout_seconds: PositiveFloat = 2.0
+    email_provider_read_timeout_seconds: PositiveFloat = 5.0
+    ses_region: str | None = None
+    ses_configuration_set: str | None = None
+
     session_max_age_seconds: PositiveInt = 2_592_000
     session_idle_timeout_seconds: PositiveInt = 2_592_000
     recent_auth_window_seconds: PositiveInt = 600
@@ -202,6 +225,19 @@ class AuthSettings(BaseModel):
         """Keep the configured envelope/header sender injection-safe."""
         return _smtp_mailbox(value)
 
+    @field_validator("email_from_address")
+    @classmethod
+    def validate_email_from_address(cls, value: str | None) -> str | None:
+        """Validate the provider-neutral From mailbox when explicitly configured."""
+        return None if value is None else _smtp_mailbox(value)
+
+    @field_validator("email_payload_current_key_id", "ses_region", "ses_configuration_set")
+    @classmethod
+    def validate_optional_email_identity(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return _trimmed_identity(value, name="email platform identity")
+
     @field_validator("smtp_username")
     @classmethod
     def validate_smtp_username(cls, value: str | None) -> str | None:
@@ -229,6 +265,21 @@ class AuthSettings(BaseModel):
             name="csrf_key",
         )
         apple_grant_bytes = self.provider.apple.grant_encryption_key_bytes
+        email_payload_bytes = (
+            self._decode_ring(self.email_payload_keys, name="email_payload_keys")
+            if self.email_payload_keys
+            else {}
+        )
+
+        if self.email_platform_enabled:
+            if not email_payload_bytes:
+                raise ValueError(
+                    "email_payload_keys must be configured when Email Platform is enabled"
+                )
+            if self.email_payload_current_key_id not in email_payload_bytes:
+                raise ValueError("email_payload_current_key_id is absent from email_payload_keys")
+            if self.email_transport is EmailTransport.SES and self.ses_region is None:
+                raise ValueError("SES email transport requires ses_region")
 
         if len(set(pepper_bytes.values())) != len(pepper_bytes):
             raise ValueError("password_peppers must not alias secret material across key ids")
@@ -240,6 +291,7 @@ class AuthSettings(BaseModel):
             set(otp_bytes.values()),
             {csrf_bytes},
             set(apple_grant_bytes.values()),
+            set(email_payload_bytes.values()),
         ]
         for index, values in enumerate(purpose_sets):
             if any(values & other for other in purpose_sets[index + 1 :]):
@@ -282,6 +334,16 @@ class AuthSettings(BaseModel):
     def signup_otp_key_bytes(self) -> dict[str, bytes]:
         """Return validated decoded signup-OTP HMAC keys by stable non-secret ID."""
         return self._decode_ring(self.signup_otp_keys, name="signup_otp_keys")
+
+    @property
+    def email_payload_key_bytes(self) -> dict[str, bytes]:
+        """Return the validated dedicated Email Platform AEAD/HMAC key ring."""
+        return self._decode_ring(self.email_payload_keys, name="email_payload_keys")
+
+    @property
+    def email_sender_address(self) -> str:
+        """Return the provider-neutral visible From mailbox."""
+        return self.email_from_address or self.smtp_from_address
 
     @property
     def csrf_key_bytes(self) -> bytes:

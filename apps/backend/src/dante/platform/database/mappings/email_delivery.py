@@ -58,7 +58,9 @@ class EmailDeliveryIntentRow(Base):
             "AND idempotency_key = btrim(idempotency_key) AND idempotency_key <> ''",
             name="idempotency_identity",
         ),
-        CheckConstraint("octet_length(payload_fingerprint) = 32", name="payload_fingerprint_length"),
+        CheckConstraint(
+            "octet_length(payload_fingerprint) = 32", name="payload_fingerprint_length"
+        ),
         CheckConstraint(
             "(sensitive_key_id IS NULL AND sensitive_nonce IS NULL "
             "AND sensitive_ciphertext IS NULL) OR "
@@ -152,7 +154,9 @@ class EmailDeliveryIntentRow(Base):
     last_error_code: Mapped[str | None] = mapped_column(Text, nullable=True)
     accepted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     terminal_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    sensitive_wiped_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    sensitive_wiped_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
 
 class EmailDeliveryAttemptRow(Base):

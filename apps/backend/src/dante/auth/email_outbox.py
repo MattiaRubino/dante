@@ -314,9 +314,7 @@ class DurableEmailOutbox:
             return True
 
         intent.dispatch_state_code = "retryable_failure"
-        intent.next_attempt_at = effective_now + timedelta(
-            seconds=max(0.0, retry_delay_seconds)
-        )
+        intent.next_attempt_at = effective_now + timedelta(seconds=max(0.0, retry_delay_seconds))
         return True
 
     async def quarantine_after_restore(
@@ -386,9 +384,7 @@ class DurableEmailOutbox:
         await database_session.execute(
             update(EmailDeliveryIntentRow)
             .where(
-                EmailDeliveryIntentRow.dispatch_state_code.in_(
-                    ("pending", "retryable_failure")
-                ),
+                EmailDeliveryIntentRow.dispatch_state_code.in_(("pending", "retryable_failure")),
                 EmailDeliveryIntentRow.expires_at <= now,
             )
             .values(

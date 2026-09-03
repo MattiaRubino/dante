@@ -272,8 +272,7 @@ def upgrade() -> None:
             name=op.f("ck_email_provider_event_provider_identity"),
         ),
         sa.CheckConstraint(
-            "event_type_code IN "
-            "('delivered','delivery_delayed','bounced','complained','rejected')",
+            "event_type_code IN ('delivered','delivery_delayed','bounced','complained','rejected')",
             name=op.f("ck_email_provider_event_event_type_code"),
         ),
         sa.CheckConstraint(
@@ -354,9 +353,7 @@ def upgrade() -> None:
         )
     )
     op.execute(
-        sa.text(
-            f"GRANT SELECT, INSERT ON TABLE {_SCHEMA}.email_provider_event TO {_RUNTIME}"
-        )
+        sa.text(f"GRANT SELECT, INSERT ON TABLE {_SCHEMA}.email_provider_event TO {_RUNTIME}")
     )
 
 

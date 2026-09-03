@@ -75,6 +75,16 @@ def create_provider_flow_runtime(
             otp_codec=otp_codec,
             email_delivery=lifecycle_runtime.email_dispatcher,
             limiters=limiters,
+            email_outbox=(
+                lifecycle_runtime.email_platform.outbox
+                if lifecycle_runtime.email_platform is not None
+                else None
+            ),
+            email_wake=(
+                lifecycle_runtime.email_platform.wake
+                if lifecycle_runtime.email_platform is not None
+                else None
+            ),
         )
         if settings.provider.google.enabled
         else None
@@ -119,6 +129,16 @@ def create_provider_flow_runtime(
             otp_codec=otp_codec,
             email_delivery=lifecycle_runtime.email_dispatcher,
             limiters=limiters,
+            email_outbox=(
+                lifecycle_runtime.email_platform.outbox
+                if lifecycle_runtime.email_platform is not None
+                else None
+            ),
+            email_wake=(
+                lifecycle_runtime.email_platform.wake
+                if lifecycle_runtime.email_platform is not None
+                else None
+            ),
         )
 
     authenticator_service = AuthenticatorLifecycleService(

@@ -8,6 +8,7 @@ import logging
 import math
 import time
 from collections import OrderedDict
+from collections.abc import Callable
 from contextlib import suppress
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -42,6 +43,7 @@ from dante.auth.contracts import (
     VerificationInvalidOrExpiredError,
 )
 from dante.auth.email import EmailNormalizationError, NormalizedEmail, normalize_email
+from dante.auth.email_contracts import EmailIntentConflictError
 from dante.auth.email_delivery import (
     EmailCommand,
     EmailDeliveryPort,
@@ -51,6 +53,7 @@ from dante.auth.email_delivery import (
     PasswordResetNotificationEmail,
     SignupVerificationEmail,
 )
+from dante.auth.email_outbox import DurableEmailOutbox
 from dante.auth.passwords import (
     BreachCheckUnavailableError,
     HibpPasswordChecker,
@@ -193,6 +196,8 @@ class AuthLifecycleService:
         otp_codec: SignupOtpCodec,
         email_delivery: EmailDeliveryPort,
         limiters: LifecycleLimiters,
+        email_outbox: DurableEmailOutbox | None = None,
+        email_wake: Callable[[], None] | None = None,
     ) -> None:
         self._session_factory = session_factory
         self._settings = settings
@@ -200,6 +205,8 @@ class AuthLifecycleService:
         self._breach_checker = breach_checker
         self._otp_codec = otp_codec
         self._email_delivery = email_delivery
+        self._email_outbox = email_outbox
+        self._email_wake = email_wake
         self._limiters = limiters
         self._csrf_key = settings.csrf_key_bytes
 
@@ -255,14 +262,13 @@ class AuthLifecycleService:
             failed_verification_attempts=0,
         )
 
-        await self._insert_signup_challenge(row)
-        await self._enqueue(
-            SignupVerificationEmail(
-                to_address=normalized_email.address,
-                code=otp.code,
-                expires_minutes=max(1, math.ceil(self._settings.signup_otp_lifetime_seconds / 60)),
-            )
+        email_command = SignupVerificationEmail(
+            to_address=normalized_email.address,
+            code=otp.code,
+            expires_minutes=max(1, math.ceil(self._settings.signup_otp_lifetime_seconds / 60)),
         )
+        staged = await self._insert_signup_challenge(row, email_command=email_command)
+        await self._after_email_commit(email_command, staged=staged)
         return SignupCreated(
             signup_ref=signup_ref,
             signup_expires_at=signup_expires_at,
@@ -307,6 +313,12 @@ class AuthLifecycleService:
             snapshot.signup_expires_at,
             now + timedelta(seconds=self._settings.signup_otp_lifetime_seconds),
         )
+        email_command = SignupVerificationEmail(
+            to_address=snapshot.email_address,
+            code=otp.code,
+            expires_minutes=max(1, math.ceil(self._settings.signup_otp_lifetime_seconds / 60)),
+        )
+        staged = False
         try:
             async with (
                 self._session_factory() as database_session,
@@ -334,18 +346,20 @@ class AuthLifecycleService:
                 locked.verification_issued_at = now
                 locked.verification_expires_at = verification_expires_at
                 locked.failed_verification_attempts = 0
+                staged = await self._stage_email_intent(
+                    database_session,
+                    command=email_command,
+                    operation_scope="auth.signup_verification",
+                    idempotency_key=f"{signup_ref}:{now.isoformat()}",
+                    expires_at=verification_expires_at,
+                    supersession_key=f"signup:{signup_ref}",
+                )
         except VerificationInvalidOrExpiredError, SignupResendCooldownError:
             raise
         except SQLAlchemyError as exc:
             raise AuthServiceUnavailableError(retryable=True) from exc
 
-        await self._enqueue(
-            SignupVerificationEmail(
-                to_address=snapshot.email_address,
-                code=otp.code,
-                expires_minutes=max(1, math.ceil(self._settings.signup_otp_lifetime_seconds / 60)),
-            )
-        )
+        await self._after_email_commit(email_command, staged=staged)
         return SignupCreated(
             signup_ref=signup_ref,
             signup_expires_at=snapshot.signup_expires_at,
@@ -550,23 +564,23 @@ class AuthLifecycleService:
 
         recovery_ref = uuid7()
         proof = issue_recovery_proof()
-        committed = await self._persist_recovery_challenge(
+        email_command = PasswordRecoveryEmail(
+            to_address=snapshot.email_address,
+            password_recovery_ref=recovery_ref,
+            secret=proof.secret,
+        )
+        committed, staged = await self._persist_recovery_challenge(
             snapshot=snapshot,
             password_recovery_ref=recovery_ref,
             secret_verifier=proof.verifier,
+            email_command=email_command,
         )
         if not committed:
             await self._enqueue(NoopEmail())
             await self._pad_recovery_success(started_at)
             return
 
-        await self._enqueue(
-            PasswordRecoveryEmail(
-                to_address=snapshot.email_address,
-                password_recovery_ref=recovery_ref,
-                secret=proof.secret,
-            )
-        )
+        await self._after_email_commit(email_command, staged=staged)
         await self._pad_recovery_success(started_at)
 
     async def validate_password_recovery(
@@ -664,6 +678,8 @@ class AuthLifecycleService:
 
         ambiguous_commit = False
         mutation_at: datetime | None = None
+        notification = PasswordResetNotificationEmail(to_address=snapshot.email_address)
+        notification_staged = False
         database_session = self._session_factory()
         try:
             await database_session.begin()
@@ -728,6 +744,13 @@ class AuthLifecycleService:
                     revocation_reason_code="password_reset",
                 )
             )
+            notification_staged = await self._stage_email_intent(
+                database_session,
+                command=notification,
+                operation_scope="auth.password_reset_notification",
+                idempotency_key=str(password_recovery_ref),
+                expires_at=mutation_at + timedelta(days=1),
+            )
             try:
                 await database_session.commit()
             except DBAPIError as exc:
@@ -752,12 +775,7 @@ class AuthLifecycleService:
                 mutation_at=mutation_at,
             )
 
-        try:
-            await self._email_delivery.enqueue(
-                PasswordResetNotificationEmail(to_address=snapshot.email_address)
-            )
-        except EmailDispatchCapacityError:
-            _LOGGER.warning("auth.password_reset_notification_queue_unavailable")
+        await self._after_email_commit(notification, staged=notification_staged)
 
     async def reauthenticate(
         self,
@@ -948,13 +966,61 @@ class AuthLifecycleService:
         if deadline <= datetime.now(UTC):
             raise ReauthenticationRequiredError()
 
-    async def _insert_signup_challenge(self, row: PasswordSignupChallengeRow) -> None:
+    async def _stage_email_intent(
+        self,
+        database_session: AsyncSession,
+        *,
+        command: EmailCommand,
+        operation_scope: str,
+        idempotency_key: str,
+        expires_at: datetime,
+        supersession_key: str | None = None,
+    ) -> bool:
+        if self._email_outbox is None or isinstance(command, NoopEmail):
+            return False
+        try:
+            await self._email_outbox.stage(
+                database_session,
+                command=command,
+                operation_scope=operation_scope,
+                idempotency_key=idempotency_key,
+                expires_at=expires_at,
+                supersession_key=supersession_key,
+            )
+        except EmailIntentConflictError as exc:
+            raise AuthIntegrityError("email intent idempotency conflict") from exc
+        return True
+
+    async def _after_email_commit(self, command: EmailCommand, *, staged: bool) -> None:
+        if staged:
+            if self._email_wake is not None:
+                self._email_wake()
+            return
+        if self._email_outbox is not None and isinstance(command, NoopEmail):
+            return
+        await self._enqueue(command)
+
+    async def _insert_signup_challenge(
+        self,
+        row: PasswordSignupChallengeRow,
+        *,
+        email_command: SignupVerificationEmail,
+    ) -> bool:
         await self._cleanup_expired_challenges(datetime.now(UTC))
         ambiguous_commit = False
+        staged = False
         database_session = self._session_factory()
         try:
             await database_session.begin()
             database_session.add(row)
+            staged = await self._stage_email_intent(
+                database_session,
+                command=email_command,
+                operation_scope="auth.signup_verification",
+                idempotency_key=f"{row.signup_ref}:{row.verification_issued_at.isoformat()}",
+                expires_at=row.verification_expires_at,
+                supersession_key=f"signup:{row.signup_ref}",
+            )
             try:
                 await database_session.commit()
             except DBAPIError as exc:
@@ -968,7 +1034,7 @@ class AuthLifecycleService:
             await database_session.close()
 
         if not ambiguous_commit:
-            return
+            return staged
 
         persisted = await self._read_signup_challenge(row.signup_ref)
         if persisted is None:
@@ -988,6 +1054,7 @@ class AuthLifecycleService:
             or persisted.failed_verification_attempts != row.failed_verification_attempts
         ):
             raise AuthIntegrityError("ambiguous signup challenge reconciliation mismatched state")
+        return staged
 
     async def _persist_recovery_challenge(
         self,
@@ -995,11 +1062,13 @@ class AuthLifecycleService:
         snapshot: _EligibleRecoveryIdentity,
         password_recovery_ref: UUID,
         secret_verifier: bytes,
-    ) -> bool:
+        email_command: PasswordRecoveryEmail,
+    ) -> tuple[bool, bool]:
         await self._cleanup_expired_challenges(datetime.now(UTC))
         ambiguous_commit = False
         issued_at: datetime | None = None
         expires_at: datetime | None = None
+        staged = False
         database_session = self._session_factory()
         try:
             await database_session.begin()
@@ -1012,7 +1081,7 @@ class AuthLifecycleService:
             )
             if current is None:
                 await database_session.rollback()
-                return False
+                return False, False
 
             issued_at = datetime.now(UTC)
             expires_at = issued_at + timedelta(seconds=self._settings.recovery_lifetime_seconds)
@@ -1031,6 +1100,14 @@ class AuthLifecycleService:
                     expires_at=expires_at,
                 )
             )
+            staged = await self._stage_email_intent(
+                database_session,
+                command=email_command,
+                operation_scope="auth.password_recovery",
+                idempotency_key=str(password_recovery_ref),
+                expires_at=expires_at,
+                supersession_key=f"password-recovery:{snapshot.account_ref}",
+            )
             try:
                 await database_session.commit()
             except DBAPIError as exc:
@@ -1046,7 +1123,7 @@ class AuthLifecycleService:
         if issued_at is None or expires_at is None:
             raise AuthIntegrityError("recovery issuance completed without challenge timestamps")
         if not ambiguous_commit:
-            return True
+            return True, staged
 
         try:
             async with (
@@ -1071,7 +1148,7 @@ class AuthLifecycleService:
             or persisted.expires_at != expires_at
         ):
             raise AuthIntegrityError("ambiguous recovery issuance reconciliation mismatched state")
-        return True
+        return True, staged
 
     async def _resolve_signup_collision(self, comparison_key: str) -> None:
         try:
