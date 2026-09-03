@@ -6,6 +6,7 @@ from dataclasses import dataclass
 
 from dante.auth.email_crypto import EmailPayloadCipher
 from dante.auth.email_feedback import EmailFeedbackStore
+from dante.auth.email_observability import EmailObservabilityProbe, EmailOperationalSnapshot
 from dante.auth.email_outbox import DurableEmailOutbox
 from dante.auth.email_provider import SesEmailProvider, SmtpEmailProvider
 from dante.auth.email_worker import EmailDeliveryWorkerPool
@@ -20,10 +21,15 @@ class EmailPlatformRuntime:
     outbox: DurableEmailOutbox
     worker_pool: EmailDeliveryWorkerPool
     feedback_store: EmailFeedbackStore
+    observability: EmailObservabilityProbe
 
     def wake(self) -> None:
         """Nudge workers after a caller has committed newly staged intent."""
         self.worker_pool.wake()
+
+    async def operational_snapshot(self, *, window_seconds: int = 900) -> EmailOperationalSnapshot:
+        """Expose privacy-minimized durable delivery metrics to observability adapters."""
+        return await self.observability.snapshot(window_seconds=window_seconds)
 
     async def aclose(self) -> None:
         """Stop claiming new work and finish bounded provider calls."""
@@ -63,6 +69,7 @@ async def create_email_platform_runtime(
         outbox=outbox,
         worker_pool=worker_pool,
         feedback_store=EmailFeedbackStore(),
+        observability=EmailObservabilityProbe(session_factory=database_runtime.session_factory),
     )
     await worker_pool.start()
     return runtime
