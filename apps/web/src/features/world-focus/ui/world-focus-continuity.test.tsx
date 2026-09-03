@@ -107,6 +107,11 @@ describe('World Focus B2 Continuity UI', () => {
         'Alcune informazioni di continuità non sono disponibili.',
       ),
     ).toBeTruthy();
+    const partialQualifier = document.querySelector(
+      '[data-world-focus-qualifier-axis="coverage"][data-world-focus-qualifier-state="incomplete"]',
+    );
+    expect(partialQualifier).toBeTruthy();
+    expect(screen.queryByText('source-partial')).toBeNull();
 
     const staleReader: WorldFocusContinuityReader = () =>
       Promise.resolve({
@@ -119,6 +124,11 @@ describe('World Focus B2 Continuity UI', () => {
     expect(await screen.findByText('Stale thread')).toBeTruthy();
     expect(
       screen.getByText('Questa vista usa informazioni non aggiornate.'),
+    ).toBeTruthy();
+    expect(
+      document.querySelector(
+        '[data-world-focus-qualifier-axis="freshness"][data-world-focus-qualifier-state="stale"]',
+      ),
     ).toBeTruthy();
   });
 
