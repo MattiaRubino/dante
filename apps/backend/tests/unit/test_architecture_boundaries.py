@@ -119,9 +119,7 @@ def _import_edges() -> tuple[_ImportEdge, ...]:
                 base = _resolve_from_import(package, node)
                 for alias in node.names:
                     imported = (
-                        base
-                        if alias.name == "*"
-                        else ".".join(filter(None, (base, alias.name)))
+                        base if alias.name == "*" else ".".join(filter(None, (base, alias.name)))
                     )
                     if imported:
                         edges.append(
@@ -155,8 +153,7 @@ def _forbidden_imports(
 
 def _format_edges(edges: list[_ImportEdge]) -> str:
     return "\n".join(
-        f"{edge.path.relative_to(_BACKEND_ROOT)}:{edge.line}: "
-        f"{edge.importer} -> {edge.imported}"
+        f"{edge.path.relative_to(_BACKEND_ROOT)}:{edge.line}: {edge.importer} -> {edge.imported}"
         for edge in edges
     )
 
