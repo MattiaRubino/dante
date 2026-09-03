@@ -59,6 +59,9 @@ describe('World Focus reference resolution', () => {
       key: 'retired-7',
     });
     expect(resolution.status).toBe('retired');
+    if (resolution.status !== 'retired') {
+      throw new Error('Expected a retired World Focus reference resolution');
+    }
     expect(resolution.reasonCode).toBe('retired-canonical-reference');
   });
 
