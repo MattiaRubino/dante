@@ -5,7 +5,12 @@ import sys
 
 import boto3
 from botocore.config import Config
-from botocore.exceptions import ClientError, NoCredentialsError, ProfileNotFound
+from botocore.exceptions import (
+    ClientError,
+    MissingDependencyException,
+    NoCredentialsError,
+    ProfileNotFound,
+)
 
 _PROFILE_ENV = "DANTE_UAT_AWS_PROFILE"
 _REGION_ENV = "DANTE_UAT_SES_REGION"
@@ -74,6 +79,14 @@ def main() -> int:
             file=sys.stderr,
         )
         raise SystemExit(2) from exc
+    except MissingDependencyException as exc:
+        print(
+            "AWS PREFLIGHT FAIL: Botocore's browser-login credential provider requires AWS CRT. "
+            "Use the repository-locked UAT dependency set; do not pip-install it ad hoc. "
+            "From apps/backend run `uv sync --locked` after updating uv.lock.",
+            file=sys.stderr,
+        )
+        raise SystemExit(6) from exc
     except ClientError as exc:
         code = exc.response.get("Error", {}).get("Code", "UnknownClientError")
         print(f"AWS PREFLIGHT FAIL: {code}", file=sys.stderr)
@@ -90,6 +103,7 @@ def main() -> int:
 
     print("SES PREFLIGHT PASS")
     print(f"profile: {profile}")
+    print(f"principal: {caller_arn}")
     print(f"region: {region}")
     print(f"sender identity: {from_address}")
     print(f"verification: {verification}")
