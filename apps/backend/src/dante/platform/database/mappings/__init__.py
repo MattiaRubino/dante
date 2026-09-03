@@ -8,6 +8,7 @@ from . import (
     actual,
     addressing,
     auth,
+    email_delivery,
     identity,
     occurrence_generation,
     recurrence,
@@ -101,6 +102,10 @@ MAPPED_TABLES: tuple[Table, ...] = cast(
         auth.WebAuthnAccountRow.__table__,
         auth.PasskeyCredentialRow.__table__,
         auth.WebAuthnChallengeRow.__table__,
+        email_delivery.EmailDeliveryIntentRow.__table__,
+        email_delivery.EmailDeliveryAttemptRow.__table__,
+        email_delivery.EmailProviderEventRow.__table__,
+        email_delivery.EmailRecipientSuppressionRow.__table__,
     ),
 )
 
