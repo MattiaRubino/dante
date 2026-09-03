@@ -36,6 +36,7 @@ class EmailPayloadCipher:
         email_intent_ref: UUID,
         purpose_code: str,
         template_code: str,
+        template_revision: str,
         payload: dict[str, str | int],
     ) -> EncryptedEmailPayload | None:
         """Encrypt canonical payload bytes and return a keyed immutable fingerprint."""
@@ -43,6 +44,7 @@ class EmailPayloadCipher:
         fingerprint = self.fingerprint(
             purpose_code=purpose_code,
             template_code=template_code,
+            template_revision=template_revision,
             payload=payload,
         )
         if not canonical:
@@ -55,6 +57,7 @@ class EmailPayloadCipher:
                 email_intent_ref=email_intent_ref,
                 purpose_code=purpose_code,
                 template_code=template_code,
+                template_revision=template_revision,
             ),
         )
         return EncryptedEmailPayload(
@@ -69,20 +72,39 @@ class EmailPayloadCipher:
         *,
         purpose_code: str,
         template_code: str,
+        template_revision: str,
         payload: dict[str, str | int],
     ) -> bytes:
-        """Derive a keyed fingerprint so six-digit OTPs cannot be brute-forced from DB state."""
-        canonical = _canonical_payload(payload)
-        return hmac.digest(
-            self._key_ring[self._current_key_id],
-            _FINGERPRINT_PREFIX
-            + purpose_code.encode("utf-8")
-            + b"\x00"
-            + template_code.encode("utf-8")
-            + b"\x00"
-            + canonical,
-            "sha256",
+        """Derive a keyed fingerprint so low-entropy proofs are not exposed by DB state."""
+        return _fingerprint_with_key(
+            key=self._key_ring[self._current_key_id],
+            purpose_code=purpose_code,
+            template_code=template_code,
+            template_revision=template_revision,
+            payload=payload,
         )
+
+    def matches_fingerprint(
+        self,
+        expected: bytes,
+        *,
+        purpose_code: str,
+        template_code: str,
+        template_revision: str,
+        payload: dict[str, str | int],
+    ) -> bool:
+        """Compare an immutable fingerprint across retained keys during key rotation."""
+        matched = False
+        for key in self._key_ring.values():
+            candidate = _fingerprint_with_key(
+                key=key,
+                purpose_code=purpose_code,
+                template_code=template_code,
+                template_revision=template_revision,
+                payload=payload,
+            )
+            matched = hmac.compare_digest(expected, candidate) or matched
+        return matched
 
     def unprotect(self, *, claim: ClaimedEmailIntent) -> dict[str, str | int]:
         """Authenticate and decode the exact claim payload; never guess on corruption."""
@@ -103,6 +125,7 @@ class EmailPayloadCipher:
                     email_intent_ref=claim.email_intent_ref,
                     purpose_code=claim.purpose_code,
                     template_code=claim.template_code,
+                    template_revision=claim.template_revision,
                 ),
             )
         except Exception as exc:
@@ -121,14 +144,45 @@ class EmailPayloadCipher:
         return result
 
     @staticmethod
-    def _aad(*, email_intent_ref: UUID, purpose_code: str, template_code: str) -> bytes:
+    def _aad(
+        *,
+        email_intent_ref: UUID,
+        purpose_code: str,
+        template_code: str,
+        template_revision: str,
+    ) -> bytes:
         return (
             _AAD_PREFIX
             + email_intent_ref.bytes
             + purpose_code.encode("utf-8")
             + b"\x00"
             + template_code.encode("utf-8")
+            + b"\x00"
+            + template_revision.encode("utf-8")
         )
+
+
+def _fingerprint_with_key(
+    *,
+    key: bytes,
+    purpose_code: str,
+    template_code: str,
+    template_revision: str,
+    payload: dict[str, str | int],
+) -> bytes:
+    canonical = _canonical_payload(payload)
+    return hmac.digest(
+        key,
+        _FINGERPRINT_PREFIX
+        + purpose_code.encode("utf-8")
+        + b"\x00"
+        + template_code.encode("utf-8")
+        + b"\x00"
+        + template_revision.encode("utf-8")
+        + b"\x00"
+        + canonical,
+        "sha256",
+    )
 
 
 def _canonical_payload(payload: dict[str, str | int]) -> bytes:
