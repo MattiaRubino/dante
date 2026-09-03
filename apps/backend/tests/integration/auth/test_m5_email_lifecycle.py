@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from typing import Any, cast
+from typing import Any, cast, override
 from uuid import UUID, uuid7
 
 import psycopg
@@ -28,12 +28,12 @@ from dante.platform.database.runtime import DatabaseRuntime, create_database_run
 pytestmark = pytest.mark.postgres
 
 _EMAIL = "m5.email.lifecycle@example.com"
-_PASSWORD = "correct horse battery staple"
-_REPLACEMENT_PASSWORD = "replacement horse battery staple"
-_PASSWORD_KEY_ID = "test-password-v1"
+_ACCOUNT_CREDENTIAL = "correct horse battery staple"
+_REPLACEMENT_CREDENTIAL = "replacement horse battery staple"
+_PEPPER_KEY_ID = "test-password-v1"
 _OTP_KEY_ID = "test-signup-otp-v1"
 _EMAIL_KEY_ID = "test-email-v1"
-_PASSWORD_KEY = b"p" * 32
+_PEPPER_KEY = b"p" * 32
 _OTP_KEY = b"o" * 32
 _EMAIL_KEY = b"e" * 32
 _CSRF_KEY = b"c" * 32
@@ -61,6 +61,7 @@ class _MemoryEmailDelivery(EmailDeliveryPort):
     def __init__(self) -> None:
         self.commands: list[EmailCommand] = []
 
+    @override
     async def enqueue(self, command: EmailCommand) -> None:
         self.commands.append(command)
 
@@ -81,8 +82,8 @@ class _ConflictingOutbox:
 def _settings() -> AuthSettings:
     return AuthSettings(
         canonical_web_origin="https://dante.test",
-        password_current_pepper_key_id=_PASSWORD_KEY_ID,
-        password_peppers={_PASSWORD_KEY_ID: SecretStr(_encoded(_PASSWORD_KEY))},
+        password_current_pepper_key_id=_PEPPER_KEY_ID,
+        password_peppers={_PEPPER_KEY_ID: SecretStr(_encoded(_PEPPER_KEY))},
         csrf_key=SecretStr(_encoded(_CSRF_KEY)),
         signup_otp_current_key_id=_OTP_KEY_ID,
         signup_otp_keys={_OTP_KEY_ID: SecretStr(_encoded(_OTP_KEY))},
@@ -236,7 +237,7 @@ async def test_signup_challenge_and_email_intent_commit_together(
     async with _lifecycle(migrated_database) as harness:
         created = await harness.service.create_signup(
             email=_EMAIL,
-            password=_PASSWORD,
+            password=_ACCOUNT_CREDENTIAL,
             source_context="email-lifecycle-signup",
         )
 
@@ -281,7 +282,7 @@ async def test_email_stage_conflict_rolls_back_signup_challenge(
         with pytest.raises(AuthIntegrityError, match="email intent idempotency conflict"):
             await failing_service.create_signup(
                 email="rollback@example.com",
-                password=_PASSWORD,
+                password=_ACCOUNT_CREDENTIAL,
                 source_context="email-lifecycle-rollback",
             )
 
@@ -298,7 +299,7 @@ async def test_recovery_and_reset_security_intents_follow_canonical_auth_mutatio
     async with _lifecycle(migrated_database) as harness:
         created = await harness.service.create_signup(
             email=_EMAIL,
-            password=_PASSWORD,
+            password=_ACCOUNT_CREDENTIAL,
             source_context="email-lifecycle-account",
         )
         _signup_intent, signup_payload = await _latest_intent_payload(
@@ -325,12 +326,15 @@ async def test_recovery_and_reset_security_intents_follow_canonical_auth_mutatio
 
         assert _count(migrated_database, "password_recovery_challenge") == 1
         assert recovery_intent.idempotency_key == str(recovery_ref)
-        assert recovery_intent.supersession_key == f"password-recovery:{issued.principal.account_ref}"
+        assert (
+            recovery_intent.supersession_key
+            == f"password-recovery:{issued.principal.account_ref}"
+        )
 
         await harness.service.reset_password(
             password_recovery_ref=recovery_ref,
             secret=recovery_secret,
-            new_password=_REPLACEMENT_PASSWORD,
+            new_password=_REPLACEMENT_CREDENTIAL,
         )
 
         assert _count(migrated_database, "password_recovery_challenge") == 0
