@@ -116,9 +116,7 @@ async def test_policy_fake_rejects_decision_for_different_request_context() -> N
         recipient_binding="provider-candidate:test",
         projection_ref="consumer-projection:v1",
     )
-    policy = ScriptedPolicyPort(
-        {PolicyBoundary.MODEL_EGRESS: _decision(stale_context)}
-    )
+    policy = ScriptedPolicyPort({PolicyBoundary.MODEL_EGRESS: _decision(stale_context)})
 
     with pytest.raises(ValueError, match="current request context"):
         await policy.authorize_model_egress(request)
