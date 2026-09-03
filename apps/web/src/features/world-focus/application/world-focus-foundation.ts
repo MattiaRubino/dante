@@ -60,6 +60,16 @@ export type WorldFocusScopedReader<Value> = (
   signal?: AbortSignal,
 ) => Promise<Value>;
 
+function assertWorldFocusReadActive(signal: AbortSignal): void {
+  if (!signal.aborted) {
+    return;
+  }
+
+  const error = new Error('World Focus scoped read aborted');
+  error.name = 'AbortError';
+  throw error;
+}
+
 /**
  * Shared mechanics for pre-backend World-scoped reads. This owns cancellation
  * relay and boundary validation only; projection semantics remain with each
@@ -80,7 +90,9 @@ export function createWorldFocusScopedReader<Value>(
     }
 
     try {
+      assertWorldFocusReadActive(controller.signal);
       const input = await read({ worldId, signal: controller.signal });
+      assertWorldFocusReadActive(controller.signal);
       return validateWorldFocusBoundary(input, (value) =>
         validator(value, worldId),
       );
