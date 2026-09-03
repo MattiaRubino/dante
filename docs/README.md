@@ -1,8 +1,8 @@
 # DANTE Documentation Index
 
 - **Status:** CURRENT NAVIGATION / AUTHORITY INDEX
-- **Last reconciled:** 2026-09-02
-- **Active branch-local vertical:** `feature/access-auth`
+- **Last reconciled:** 2026-09-03
+- **Active branch-local workstream:** `feature/access-auth`
 
 This directory is the durable documentation surface for DANTE. Current specifications describe present truth directly; historical handoffs and phase-time evidence do not silently override current operational documents.
 
@@ -28,7 +28,7 @@ When sources conflict, prefer the narrowest accepted current authority for the s
 6. conversation memory
 ```
 
-Protected `main` remains integrated authority for closed shared foundations. `feature/access-auth` contains newer branch-local truth for the bounded Access/Auth vertical until explicit integration.
+Protected `main` remains integrated authority for closed shared foundations. `feature/access-auth` contains newer branch-local truth for Access/Auth and the newly materialized shared Email Platform until explicit integration.
 
 ## 2. Current lifecycle
 
@@ -48,15 +48,15 @@ M5 GROUPS 1–3                        COMPLETE / ENGINEERING PASS
 M5 GROUP 4 ENGINEERING               AUTOMATED QA PASS
 LOCAL PASSWORD/PASSKEY UAT           PASS
 REAL GOOGLE UAT                      PASS
-EMAIL DELIVERY ARCHITECTURE          ACCEPTED DIRECTION
-PRIMARY EMAIL PROVIDER TARGET        AMAZON SES API V2 / QUALIFICATION OPEN
-DURABLE EMAIL PLATFORM               NOT MATERIALIZED
-REAL INTERNET EMAIL DELIVERY         OPEN
+EMAIL PLATFORM ARCHITECTURE          MATERIALIZED / SHARED SUBSYSTEM
+EMAIL PLATFORM AUTOMATED ACCEPTANCE  PASS
+PRIMARY EMAIL PROVIDER ADAPTER       AMAZON SES API V2
+REAL DANTE → SES INTERNET UAT         OPEN
 REAL APPLE UAT                       DEFERRED / OPEN
 WHOLE M5                             ACTIVE / NOT FORMALLY CLOSED
 
-ACCESS/AUTH ALEMBIC                  20260831_13
-ACCESS/AUTH TOPOLOGY                 83/5/15/75/156/85/233
+ACCESS/AUTH ALEMBIC                  20260903_15
+ACCESS/AUTH TOPOLOGY                 87/5/15/75/170/88/267
 ```
 
 ## 3. Mandatory continuation entry points
@@ -68,9 +68,17 @@ Read in this order:
 3. `ROADMAP.md`
 4. `development/agent-operating-manual.md`
 5. `workstreams/access-auth.md`
-6. `workstreams/access-auth-m5-review-2026-09-02.md`
-7. subject authority relevant to the task
-8. current Git branch/ref and its relation to protected `main`
+6. subject authority relevant to the task
+7. current Git branch/ref and its relation to protected `main`
+
+For the standalone Email Platform:
+
+- `architecture/email-platform.md`
+- `decisions/ADR-012-email-delivery-platform.md`
+- `database/dictionary/tables/email_delivery_intent.json`
+- `database/dictionary/tables/email_delivery_attempt.json`
+- `database/dictionary/tables/email_provider_event.json`
+- `database/dictionary/tables/email_recipient_suppression.json`
 
 For Access/Auth architecture/security/API/testing:
 
@@ -81,12 +89,8 @@ For Access/Auth architecture/security/API/testing:
 - `architecture/access-auth-m4-contract.md`
 - `architecture/access-auth-m5-contract.md`
 - `architecture/access-auth-m5-persistence-api-contract.md`
+- `architecture/access-auth-email-delivery.md` — Access/Auth integration with the shared Email Platform only
 - `decisions/ADR-011-access-auth-architecture.md`
-
-For current email-delivery architecture:
-
-- `architecture/access-auth-email-delivery.md`
-- `decisions/ADR-012-email-delivery-platform.md`
 
 For current product/reference state:
 
@@ -97,7 +101,7 @@ For current product/reference state:
 
 ## 4. Progress-metadata reconciliation
 
-Some large durable M5 contracts contain milestone-time sections such as `M5-F NEXT` or `public routes later`. Those statements are preserved as historical reconciliation of the slice in which they were written. They are **not current progress authority** when they conflict with `PROJECT-STATUS.md`, `ROADMAP.md`, the active workstream or the 2026-09-02 review.
+Some large durable M5 contracts contain milestone-time sections such as `M5-F NEXT` or `public routes later`. Those statements are preserved as historical reconciliation of the slice in which they were written. They are **not current progress authority** when they conflict with `PROJECT-STATUS.md`, `ROADMAP.md` or the active workstream.
 
 This distinction avoids destroying valuable design rationale merely to update chronology.
 
@@ -131,6 +135,12 @@ Permanent cross-model invariants remain binding unless deliberately superseded t
 
 Start at `architecture/README.md`.
 
+Important subsystem documents:
+
+- `architecture/email-platform.md` — reusable outbound Email Platform
+- `architecture/access-auth-architecture.md` — Account/authenticator/session architecture
+- `architecture/access-auth-email-delivery.md` — Access/Auth consumer integration with Email Platform
+
 Important ADRs:
 
 - `decisions/ADR-007-domain-model-informed-persistence-boundaries.md`
@@ -140,7 +150,9 @@ Important ADRs:
 - `decisions/ADR-011-access-auth-architecture.md`
 - `decisions/ADR-012-email-delivery-platform.md`
 
-Email architecture deliberately preserves the existing `EmailDeliveryPort` while evolving the final production path toward a PostgreSQL transactional outbox + provider-neutral delivery orchestrator + Amazon SES API v2 primary adapter + provider-feedback ingestion.
+The Email Platform is no longer merely a future Auth email direction. It is a materialized shared subsystem built around PostgreSQL transactional intent, provider-neutral delivery orchestration, Amazon SES API v2, feedback/suppression and privacy-minimized observability.
+
+Access/Auth is its first consumer, not its architectural owner.
 
 ## 7. Database
 
@@ -150,19 +162,18 @@ Start at:
 - `database/access-auth.md`
 - `database/dictionary/README.md`
 
-Current Access/Auth branch DB:
+Current branch DB:
 
 ```text
 PostgreSQL          18.6
-Alembic             20260831_13
-83 tables
+Alembic             20260903_15
+87 tables
 5 views
 15 routines
 75 triggers
-156 physical indexes
-85 foreign keys
-233 CHECK constraints
-103 standalone Dictionary entries
+170 physical indexes
+88 foreign keys
+267 CHECK constraints
 ```
 
 Permanent rule:
@@ -176,7 +187,14 @@ human DB reference
 ≈ direct tests
 ```
 
-The future email outbox/delivery state is target architecture only. It is not counted in the current catalog until an exact reviewed migration materializes it.
+The Email Platform persistence is materialized and included in the current catalog through:
+
+```text
+dante.email_delivery_intent
+dante.email_delivery_attempt
+dante.email_provider_event
+dante.email_recipient_suppression
+```
 
 ## 8. Frontend
 
@@ -191,7 +209,7 @@ Access is now a real full-stack Auth surface on `feature/access-auth`; old pre-b
 
 ## 9. Testing / proof
 
-Access/Auth proof deliberately separates:
+Access/Auth and Email Platform proof deliberately separate:
 
 ```text
 unit/application
@@ -202,31 +220,49 @@ real provider/authenticator UAT
 real external-delivery UAT
 ```
 
-The 2026-09-02 review records 68/68 Web unit/component tests, 60/60 Auth browser tests, real Windows Hello passkey UAT and real Google UAT.
+Current observed evidence includes:
 
-Real Internet email remains a separate open acceptance layer. Loopback SMTP capture does not prove inbox deliverability.
+```text
+local password/passkey UAT PASS
+real Windows Hello passkey UAT PASS
+real Google UAT PASS
+Email Platform unit tests PASS
+Email Platform PostgreSQL acceptance PASS
+Auth mutation + EmailIntent atomicity PASS
+Email observability PostgreSQL acceptance PASS
+backend non-PostgreSQL regression PASS
+```
+
+Real DANTE-originated SES signup/recovery delivery remains a separate open acceptance layer. Loopback SMTP or direct provider console send does not substitute for this proof.
 
 ## 10. Current next architecture/operations gate
 
-The email architecture direction is now selected; the next step is **provider/operational qualification before production implementation**.
+The next gate is no longer provider research or outbox design. Those are complete enough for implementation acceptance.
 
-Required research/evidence includes:
+Current sequence:
 
 ```text
-AWS/SES account and billing posture
-sandbox vs production access
-current eu-south-1 capability/quotas/pricing
-sender identity + SPF/DKIM/DMARC
-IAM/workload identity
-SES API v2 integration
-configuration sets / event destinations
-SNS vs EventBridge ingestion
-privacy/retention/subprocessor posture
-exact outbox + sensitive Auth payload protection
-failure/retry/ambiguous-outcome model
+final static-quality rerun after last lint cleanup
+→ DANTE runtime configured for SES eu-west-3
+→ real signup through DANTE
+→ mailbox receives signup verification
+→ real password recovery through DANTE
+→ mailbox receives recovery email
+→ reconcile ADR/status/workstream documentation
+→ close Email Platform external UAT
 ```
 
-Important correction: the older SES-specific 3,000-message/month first-year free-tier claim is stale for new AWS customers after July 21, 2026. Current provider evaluation must use current pricing/credits.
+Production deployment remains separately gated on:
+
+```text
+controlled DANTE sender/domain
+DKIM
+SPF
+DMARC
+production IAM/workload identity
+live cloud feedback/event routing where required
+reputation/traffic segmentation
+```
 
 ## 11. Documentation lifecycle
 
