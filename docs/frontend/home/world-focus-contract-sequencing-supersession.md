@@ -1,7 +1,7 @@
 # DANTE — World Focus Contract Sequencing Supersession
 
 **Status:** CURRENT SEQUENCING ERRATA — SEMANTIC CONTRACTS PRESERVED  
-**Date:** 2026-09-02  
+**Date:** 2026-09-03  
 **Branch:** `feature/home-react`
 
 This file resolves sequencing drift without rewriting or weakening the semantic payload of:
@@ -32,19 +32,25 @@ WS0–WS8 — CLOSED
 POST-WS8 hygiene — CLOSED
 PRE-M0 falsification — CLOSED / PASS
 M0 — CLOSED
-M1 — ACTIVE
+M1-1 identity/reference ownership — CLOSED / VALIDATED
+M1-2 non-visual facets + application seams — CLOSED / VALIDATED
+M1 final red-first falsification — CLOSED / PASS AFTER REAL CURSOR HARDENING
+M1 — CLOSED
 ```
+
+A bounded post-M1 safety audit/falsification gate is being run before M2 implementation. It does not reopen M1 merely by existing. M2 remains the next materialization phase and must not start until that safety gate has either passed or any concrete finding has been classified and repaired under its proper owner.
 
 Current sequencing authority order:
 
 ```text
 1. world-focus-current-checkpoint.md
-2. world-focus-m1-core-nonvisual-materialization-review.md
-3. world-focus-m0-materialization-mapping.md
-4. world-focus-frontend-roadmap.md
-5. world-focus-substrate-closure-plan.md
-6. this sequencing supersession record
-7. product/platform contracts for semantic invariants
+2. world-focus-m1-operational-handoff.md
+3. world-focus-m1-core-nonvisual-materialization-review.md
+4. world-focus-m0-materialization-mapping.md
+5. world-focus-frontend-roadmap.md
+6. world-focus-substrate-closure-plan.md
+7. this sequencing supersession record
+8. product/platform contracts for semantic invariants
 ```
 
 This supersession does NOT change:
