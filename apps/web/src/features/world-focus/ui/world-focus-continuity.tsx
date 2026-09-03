@@ -13,6 +13,7 @@ import {
   WorldFocusPresentationSection,
   WorldFocusPresentationState,
 } from './presentation/world-focus-presentation-primitives';
+import './presentation/world-focus-presentation.css';
 
 type WorldFocusContinuitySettledState =
   | Readonly<{ status: 'error' }>
