@@ -3,6 +3,9 @@ import {
   type WorldFocusContextReference,
 } from '../../model/world-focus-context-reference';
 
+const WORLD_FOCUS_DISPLAY_LABEL_MAX_LENGTH = 512;
+const WORLD_FOCUS_DISPLAY_SUPPORTING_TEXT_MAX_LENGTH = 2048;
+
 export type WorldFocusDisplayBinding = Readonly<{
   reference: WorldFocusContextReference;
   label: string;
@@ -11,10 +14,17 @@ export type WorldFocusDisplayBinding = Readonly<{
 
 export type WorldFocusDisplayBindingSet = readonly WorldFocusDisplayBinding[];
 
-function normalizeDisplayText(value: string, label: string): string {
+function normalizeDisplayText(
+  value: string,
+  label: string,
+  maxLength: number,
+): string {
   const normalized = value.trim();
   if (normalized.length === 0) {
     throw new Error(`${label} must not be empty`);
+  }
+  if (normalized.length > maxLength) {
+    throw new Error(`${label} must not exceed ${maxLength} characters`);
   }
   return normalized;
 }
@@ -37,6 +47,7 @@ export function createWorldFocusDisplayBinding(
   const label = normalizeDisplayText(
     input.label,
     'World Focus display binding label',
+    WORLD_FOCUS_DISPLAY_LABEL_MAX_LENGTH,
   );
   const supportingText =
     input.supportingText === undefined
@@ -44,6 +55,7 @@ export function createWorldFocusDisplayBinding(
       : normalizeDisplayText(
           input.supportingText,
           'World Focus display binding supporting text',
+          WORLD_FOCUS_DISPLAY_SUPPORTING_TEXT_MAX_LENGTH,
         );
 
   return Object.freeze({
