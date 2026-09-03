@@ -25,9 +25,7 @@ def upgrade() -> None:
         "email_delivery_attempt",
         "email_recipient_suppression",
     ):
-        op.execute(
-            sa.text(f"REVOKE UPDATE ON TABLE {_SCHEMA}.{table_name} FROM {_RUNTIME}")
-        )
+        op.execute(sa.text(f"REVOKE UPDATE ON TABLE {_SCHEMA}.{table_name} FROM {_RUNTIME}"))
 
     op.execute(
         sa.text(

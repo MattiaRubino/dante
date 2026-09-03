@@ -127,6 +127,10 @@ def _mapped_table_names() -> set[str]:
         "passkey_credential",
         "webauthn_account",
         "webauthn_challenge",
+        "email_delivery_intent",
+        "email_delivery_attempt",
+        "email_provider_event",
+        "email_recipient_suppression",
     }
     return {
         table.name for table in Base.metadata.tables.values() if table.name not in post_cp6_tables

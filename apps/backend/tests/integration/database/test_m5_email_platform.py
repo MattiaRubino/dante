@@ -452,7 +452,9 @@ async def test_feedback_is_idempotent_and_suppresses_future_claims(
             assert await feedback_store.record(session, feedback=normalized)
 
         async with runtime.session_factory() as session, session.begin():
-            event_count = await session.scalar(select(func.count()).select_from(EmailProviderEventRow))
+            event_count = await session.scalar(
+                select(func.count()).select_from(EmailProviderEventRow)
+            )
             suppression = await session.scalar(
                 select(EmailRecipientSuppressionRow).where(
                     EmailRecipientSuppressionRow.recipient_comparison_key == address

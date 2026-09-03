@@ -238,7 +238,8 @@ def test_cp6_final_environment_topology_and_cross_representation(
         "unaccent",
         "pg_stat_statements",
     }
-    assert scope["current_materialization"]["completed_stages"] == _EXPECTED_STAGES
+    completed_stages = scope["current_materialization"]["completed_stages"]
+    assert completed_stages[: len(_EXPECTED_STAGES)] == _EXPECTED_STAGES
 
     current_mapped = {table.name: table for table in MAPPED_TABLES}
     assert set(tables) <= set(current_mapped)

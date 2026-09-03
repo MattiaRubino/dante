@@ -46,6 +46,10 @@ _POST_CP6_TABLES = {
     "passkey_credential",
     "webauthn_account",
     "webauthn_challenge",
+    "email_delivery_intent",
+    "email_delivery_attempt",
+    "email_provider_event",
+    "email_recipient_suppression",
 }
 _M6_ROUTINE = "enforce_occurrence_generation_integrity"
 _VIEWS = {
