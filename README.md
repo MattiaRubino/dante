@@ -6,7 +6,7 @@ DANTE is a personal operating system designed to help people understand, organiz
 
 ## Current repository state
 
-The integrated foundation on protected `main` remains closed. The active branch-local product workstream is Access/Auth on `feature/access-auth`.
+Protected `main` remains the integrated source authority. `feature/access-auth` currently contains newer accepted Access/Auth + shared Email Platform work and is in **pre-integration audit**.
 
 ```text
 PRODUCT / NORTH STAR                    CURRENT
@@ -14,47 +14,41 @@ DOMAIN / LOGICAL / PHYSICAL             CLOSED
 ENGINEERING / FRONTEND FOUNDATION       CLOSED / ACCEPTED
 BACKEND CP1–CP6                         CLOSED / ACCEPTED
 POSTGRESQL                              18.6
-PROTECTED-MAIN CP6 ALEMBIC              20260826_08
 
-ACCESS/AUTH M1–M4                       CLOSED / ACCEPTED
-M5.1 / M5.2 / M5-A–D                    COMPLETE
-M5 GROUPS 1–3                           COMPLETE / ENGINEERING PASS
-M5 GROUP 4 WEB ENGINEERING              AUTOMATED QA PASS
-LOCAL PASSWORD/PASSKEY UAT              PASS
-REAL GOOGLE UAT                         PASS
+PROTECTED MAIN
+  Recovery                              CLOSED / INTEGRATED
+  Alembic head                          20260830_09
 
-SHARED EMAIL PLATFORM                   ACCEPTED / MATERIALIZED
-EMAIL PLATFORM AUTOMATED ACCEPTANCE     PASS
-REAL SES SIGNUP UAT                     PASS
-REAL SES PASSWORD RECOVERY UAT          PASS
-REAL SES RESET-NOTIFICATION UAT         PASS
-EMAIL PLATFORM ENGINEERING WORK         CLOSED
+FEATURE/ACCESS-AUTH
+  Access M1–M5                          CLOSED / ACCEPTED
+  local password/passkey UAT            PASS
+  real Windows Hello UAT                PASS
+  real Google UAT                       PASS
+  real Apple registered-domain UAT      BOUNDED DEFERRED / NON-BLOCKING
+  shared Email Platform                 CLOSED / ACCEPTED
+  real SES signup/recovery/notification PASS
+  Alembic head                          20260903_15
+  DB topology                           87 tables / 5 views / 15 routines /
+                                        75 triggers / 170 indexes / 88 FKs /
+                                        267 CHECKs
+  current work                          PRE-INTEGRATION AUDIT
 
-REAL APPLE REGISTERED-DOMAIN UAT        DEFERRED / OPEN
-WHOLE ACCESS/AUTH M5                    FINAL CLOSURE RECONCILIATION
-
-ACCESS/AUTH BRANCH POSTGRESQL            18.6
-ACCESS/AUTH ALEMBIC HEAD                 20260903_15
-ACCESS/AUTH DB TOPOLOGY                  87 tables / 5 views / 15 routines /
-                                         75 triggers / 170 indexes / 88 FKs /
-                                         267 CHECKs
+M6 Native Mobile                        FUTURE / OPTIONAL
+later Access/M7 maturity                FUTURE
 ```
 
-Email Platform closure is an engineering + real-provider UAT closure. Production sender-domain/DNS/reputation, workload identity and live cloud provider-event routing remain separate deployment gates.
+The feature branch and protected main currently have divergent Alembic children of `20260826_08`. They are not yet one database history. Integration will preserve both histories and use a normal forward Alembic merge revision.
 
-For exact branch truth use:
+For exact status use:
 
 - `docs/PROJECT-STATUS.md`
 - `docs/ROADMAP.md`
 - `docs/workstreams/access-auth.md`
-- `docs/architecture/email-platform.md`
-- `docs/development/email-platform-acceptance-2026-09-03.md`
-
-Do not reconstruct current state from old handoffs or phase-time progress labels.
+- `docs/database/README.md`
 
 ## Repository
 
-Production development continues in the single monorepo:
+Production development uses the single monorepo:
 
 ```text
 MattiaRubino/dante
@@ -76,9 +70,9 @@ prototypes/       non-production design/reference evidence
 .github/          CI/repository automation
 ```
 
-Production applications do not import prototype implementation. A new feature does not justify a new repository or a generic abstraction layer by default.
+Production applications do not import prototype implementation. A new feature does not justify a new repository or generic abstraction layer by default.
 
-## Current technical baseline
+## Technical baseline
 
 Backend:
 
@@ -120,7 +114,7 @@ Canonical persistence is PostgreSQL. The outer application-operation boundary ow
 
 ## Access/Auth architecture
 
-Current Access/Auth preserves:
+Permanent rules:
 
 ```text
 Person != Account != Principal != Actor
@@ -130,7 +124,6 @@ PasswordCredential optional
 Principal runtime-derived
 provider identity = issuer + subject
 provider email != Account/link authority
-provider auth != provider-data authorization
 provider token/assertion != DANTE AuthSession
 passwordless Account valid
 PasskeyCredential != Account
@@ -139,27 +132,26 @@ reauthentication != signin
 frontend/provider/browser completion != backend-authoritative success
 ```
 
-Web sessions are opaque, server-authoritative and cookie-backed. Browser Auth state is not stored as JWT/localStorage authority. Unsafe authenticated mutations are protected by session-bound CSRF plus origin/fetch-metadata policy.
+Web sessions are opaque, server-authoritative and cookie-backed. Browser Auth state is not localStorage/sessionStorage JWT authority. Unsafe authenticated mutations use session-bound CSRF plus exact same-origin protections.
 
-Google, Apple, password and passkeys are authentication methods for the same DANTE Account; they do not create parallel Account/session systems.
+Google, Apple, password and passkeys are authentication methods for the same Account and converge on the same AuthSession model.
 
 ## Shared Email Platform
 
-Email is now a reusable DANTE infrastructure subsystem, separate from Access/Auth ownership.
+Email is reusable DANTE infrastructure, separate from Access/Auth ownership.
 
 ```text
-feature/Auth transaction
-+
-durable EmailIntent
-→ PostgreSQL commit
+feature/application mutation
++ durable EmailIntent
+→ PostgreSQL COMMIT
 → claim / lease / worker
 → protected payload + versioned template
 → provider-neutral adapter
 → Amazon SES API v2 / SMTP local-CI compatibility
-→ provider feedback/suppression/observability
+→ provider evidence / suppression
 ```
 
-Current Email Platform persistence:
+Current Email persistence:
 
 ```text
 dante.email_delivery_intent
@@ -176,51 +168,45 @@ provider owns last-mile transport
 provider accepted != delivered
 no provider I/O in caller DB transaction
 no blind retry after ambiguous send
+operation-scoped idempotency + immutable fingerprint
 short-lived AEAD-protected sensitive payload
 terminal/unsafe-state secret wipe
-future DANTE consumers reuse the platform rather than creating parallel mail stacks
+future consumers reuse the shared platform
 ```
 
-## Current proof state
-
-Access/Auth proof includes automated Web/backend/PostgreSQL acceptance, manual password/session UAT, real Windows Hello passkeys and real Google provider UAT.
-
-Final Email Platform UAT on 2026-09-03 directly proved:
-
-```text
-dedicated non-root AWS UAT principal       PASS
-SES eu-west-3 preflight                    PASS
-DANTE signup → SES → real mailbox          PASS
-received OTP → Account creation            PASS
-DANTE recovery → SES → real mailbox        PASS
-recovery URL → password reset              PASS
-no auto-login after reset                  PASS
-prior AuthSession revoked                  PASS
-reset security notification → mailbox      PASS
-```
-
-Runtime produced three SES `provider_accepted` outcomes, all attempt 1. Direct PostgreSQL inspection observed provider MessageId present and the sensitive delivery bundle wiped for all three accepted intents.
-
-One explicit manual non-claim is preserved: the exact same consumed recovery URL was not reopened a second time in the final live run because the message had already been removed before that check.
+Final real SES UAT on 2026-09-03 proved signup verification, password recovery, reset notification, no auto-login and prior-session revocation. Direct PostgreSQL inspection showed provider MessageId and sensitive-payload wipe for all three accepted intents.
 
 Exact evidence: `docs/development/email-platform-acceptance-2026-09-03.md`.
 
-## Production email deployment boundary
+## Production email boundary
 
-The Email Platform is closed as engineering infrastructure. Production sender deployment still requires, as applicable:
+The Email Platform is closed as engineering infrastructure. Production sender deployment remains separately gated on, as applicable:
 
 ```text
 DANTE-controlled sender domain/subdomain
 SPF / DKIM / DMARC
-production IAM workload identity
+production workload identity
 SES production account/quota/reputation posture
-live cloud provider feedback/event routing
+live cloud provider-feedback routing
 production alerting/SLOs
 traffic/reputation segmentation
-Apple Private Email Relay sender-domain compatibility
+Apple Private Email Relay compatibility when enabled
 ```
 
-These deployment tasks do not reopen the accepted shared Email Platform absent concrete defect evidence.
+## Current integration order
+
+```text
+feature/access-auth pre-integration audit
+→ merge protected main into feature/access-auth
+→ forward Alembic merge revision + combined QA
+→ PR Access/Auth + Email Platform to protected main
+→ merge enriched main into feature/platform-observability
+→ observability integration/release rechecks
+→ PR observability to protected main
+→ open future bounded product branches from enriched main
+```
+
+No rebase/history rewrite/force push/direct protected-main write.
 
 ## Documentation entry points
 
@@ -229,12 +215,9 @@ Start at:
 - `docs/README.md`
 - `docs/PROJECT-STATUS.md`
 - `docs/ROADMAP.md`
-- `docs/architecture/README.md`
-- `docs/architecture/email-platform.md`
-- `docs/development/email-platform-local-uat.md`
-- `docs/development/email-platform-acceptance-2026-09-03.md`
 - `docs/database/README.md`
+- `docs/architecture/README.md`
 - `docs/frontend/README.md`
 - `apps/backend/README.md`
 
-Repository executable truth and accepted current documentation beat conversation memory.
+Repository executable truth and accepted current documentation beat conversation memory and historical handoffs.
