@@ -5,7 +5,6 @@ from __future__ import annotations
 from dataclasses import asdict
 from datetime import UTC, datetime, timedelta
 from typing import Any
-from uuid import uuid7
 
 import pytest
 from pydantic import SecretStr
