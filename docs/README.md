@@ -113,9 +113,14 @@ For current product/reference state:
 
 Some large durable M5 contracts contain milestone-time sections such as `M5-F NEXT` or `public routes later`. Those statements are preserved as historical reconciliation of the slice in which they were written. They are **not current progress authority** when they conflict with `PROJECT-STATUS.md`, `ROADMAP.md` or the active workstream.
 
-The old dated file `workstreams/access-auth-m5-live-handoff-2026-08-29.md` is superseded/historical.
+Both dated M5 live handoffs are now historical/superseded:
 
-While `feature/access-auth` remains active, `workstreams/access-auth-m5-live-handoff-2026-09-02.md` is a temporary branch-operational continuation aid. It must be consolidated/removed before protected-main integration under `development/documentation-lifecycle-policy.md`.
+```text
+workstreams/access-auth-m5-live-handoff-2026-08-29.md
+workstreams/access-auth-m5-live-handoff-2026-09-02.md
+```
+
+The 2026-09-02 handoff was explicitly consolidated after Email Platform materialization and real SES UAT. It must not be used as a continuation authority. Current continuation starts from Section 3 above.
 
 ## 5. Product / Domain / Logical / Physical
 
