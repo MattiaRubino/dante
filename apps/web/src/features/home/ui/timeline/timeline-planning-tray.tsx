@@ -53,7 +53,17 @@ type DragState = Readonly<{
   itemId: string;
   startX: number;
   startY: number;
+  offsetX: number;
+  offsetY: number;
+  width: number;
   active: boolean;
+}>;
+
+type DragVisual = Readonly<{
+  item: TimelinePlanningTrayItem;
+  left: number;
+  top: number;
+  width: number;
 }>;
 
 type DropCandidate = Readonly<{
@@ -70,6 +80,13 @@ const PANEL_ID = 'timeline-planning-tray';
 const DRAG_THRESHOLD_PX = 7;
 const EDGE_SCROLL_ZONE_PX = 72;
 const EDGE_SCROLL_STEP_PX = 28;
+const PANEL_GAP_PX = 8;
+const PANEL_VIEWPORT_PADDING_PX = 12;
+const PANEL_DESKTOP_WIDTH_PX = 370;
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
 
 function parsePixel(value: string): number {
   const parsed = Number.parseFloat(value);
@@ -221,6 +238,7 @@ export function TimelinePlanningTray({
   const { i18n } = useTranslation('common');
   const copy = timelinePlanningCopy(i18n.resolvedLanguage ?? i18n.language);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const panelRef = useRef<HTMLElement | null>(null);
   const searchRef = useRef<HTMLInputElement | null>(null);
   const dragRef = useRef<DragState | null>(null);
   const [actionsHost, setActionsHost] = useState<HTMLElement | null>(null);
@@ -233,7 +251,9 @@ export function TimelinePlanningTray({
   const [busyItemId, setBusyItemId] = useState<string | null>(null);
   const [errorItemId, setErrorItemId] = useState<string | null>(null);
   const [candidate, setCandidate] = useState<DropCandidate | null>(null);
+  const [dragVisual, setDragVisual] = useState<DragVisual | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [panelStyle, setPanelStyle] = useState<CSSProperties | undefined>();
 
   const filteredItems = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase();
@@ -256,17 +276,81 @@ export function TimelinePlanningTray({
     return () => cancelAnimationFrame(frame);
   }, []);
 
+  const positionPanel = useCallback(() => {
+    const trigger = triggerRef.current;
+    if (!trigger || window.matchMedia('(max-width: 900px)').matches) {
+      setPanelStyle(undefined);
+      return;
+    }
+    const rect = trigger.getBoundingClientRect();
+    const width = Math.min(
+      PANEL_DESKTOP_WIDTH_PX,
+      window.innerWidth - PANEL_VIEWPORT_PADDING_PX * 2,
+    );
+    const left = clamp(
+      rect.right - width,
+      PANEL_VIEWPORT_PADDING_PX,
+      window.innerWidth - width - PANEL_VIEWPORT_PADDING_PX,
+    );
+    const top = Math.max(
+      PANEL_VIEWPORT_PADDING_PX,
+      rect.bottom + PANEL_GAP_PX,
+    );
+    setPanelStyle({
+      top,
+      left,
+      right: 'auto',
+      width,
+      maxHeight: `calc(100dvh - ${top + PANEL_VIEWPORT_PADDING_PX}px)`,
+    });
+  }, []);
+
   useEffect(() => {
     if (!open) {
       return;
     }
-    const frame = requestAnimationFrame(() => searchRef.current?.focus());
-    return () => cancelAnimationFrame(frame);
-  }, [open]);
+    const frame = requestAnimationFrame(() => {
+      positionPanel();
+      searchRef.current?.focus();
+    });
+    const refresh = () => positionPanel();
+    window.addEventListener('resize', refresh);
+    document.addEventListener('scroll', refresh, true);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('resize', refresh);
+      document.removeEventListener('scroll', refresh, true);
+    };
+  }, [open, positionPanel]);
+
+  useEffect(() => {
+    if (!open || dragActive) {
+      return;
+    }
+    const closeOutside = (event: globalThis.PointerEvent) => {
+      if (!(event.target instanceof Node)) {
+        return;
+      }
+      if (
+        panelRef.current?.contains(event.target) ||
+        triggerRef.current?.contains(event.target)
+      ) {
+        return;
+      }
+      setOpen(false);
+      setQuery('');
+      setQuickItemId(null);
+      setDeleteItemId(null);
+      setErrorItemId(null);
+    };
+    document.addEventListener('pointerdown', closeOutside, true);
+    return () => document.removeEventListener('pointerdown', closeOutside, true);
+  }, [dragActive, open]);
 
   const clearDrag = useCallback(() => {
     dragRef.current = null;
     setCandidate(null);
+    setDragVisual(null);
     setDragActive(false);
     setTimelinePlanningMode(false);
   }, []);
@@ -388,11 +472,18 @@ export function TimelinePlanningTray({
     if (event.button !== 0 || !event.isPrimary || busyItemId) {
       return;
     }
+    const card = event.currentTarget.closest<HTMLElement>(
+      '[data-timeline-planning-item]',
+    );
+    const rect = card?.getBoundingClientRect() ?? event.currentTarget.getBoundingClientRect();
     dragRef.current = {
       pointerId: event.pointerId,
       itemId: item.id,
       startX: event.clientX,
       startY: event.clientY,
+      offsetX: event.clientX - rect.left,
+      offsetY: event.clientY - rect.top,
+      width: rect.width,
       active: false,
     };
     event.currentTarget.setPointerCapture(event.pointerId);
@@ -411,14 +502,26 @@ export function TimelinePlanningTray({
       event.clientY - drag.startY,
     );
     if (!drag.active && distance >= DRAG_THRESHOLD_PX) {
-      dragRef.current = { ...drag, active: true };
+      const activeDrag = { ...drag, active: true };
+      dragRef.current = activeDrag;
       setDragActive(true);
+      setDeleteItemId(null);
+      setQuickItemId(null);
       setTimelinePlanningMode(true);
     }
-    if (!dragRef.current?.active) {
+    const activeDrag = dragRef.current;
+    if (!activeDrag?.active) {
       return;
     }
     autoScrollTimeline(event.clientY);
+    setDragVisual(
+      Object.freeze({
+        item,
+        left: event.clientX - activeDrag.offsetX,
+        top: event.clientY - activeDrag.offsetY,
+        width: activeDrag.width,
+      }),
+    );
     setCandidate(dropCandidateAt(item, event.clientX, event.clientY));
     event.preventDefault();
   };
@@ -441,7 +544,10 @@ export function TimelinePlanningTray({
     setErrorItemId(null);
     const placed = await onPlace(item.id, target.dateKey, target.startMinute);
     setBusyItemId(null);
-    if (!placed) {
+    if (placed) {
+      setOpen(false);
+      setQuery('');
+    } else {
       setErrorItemId(item.id);
     }
   };
@@ -467,6 +573,8 @@ export function TimelinePlanningTray({
     setBusyItemId(null);
     if (placed) {
       setQuickItemId(null);
+      setOpen(false);
+      setQuery('');
     } else {
       setErrorItemId(item.id);
     }
@@ -500,6 +608,11 @@ export function TimelinePlanningTray({
         }
         setOpen(next);
         setErrorItemId(null);
+        if (!next) {
+          setQuery('');
+          setQuickItemId(null);
+          setDeleteItemId(null);
+        }
       }}
     >
       <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -517,10 +630,12 @@ export function TimelinePlanningTray({
 
   const panel = open ? (
     <aside
+      ref={panelRef}
       id={PANEL_ID}
-      className="timeline-planning-tray"
+      className={`timeline-planning-tray${dragActive ? ' is-dragging' : ''}`}
       aria-label={copy.title}
       data-timeline-planning-tray="true"
+      style={panelStyle}
     >
       <header className="timeline-planning-tray__header">
         <div>
@@ -534,6 +649,7 @@ export function TimelinePlanningTray({
           aria-label={copy.close}
           onClick={() => {
             setOpen(false);
+            setQuery('');
             requestAnimationFrame(() => triggerRef.current?.focus());
           }}
         >
@@ -576,10 +692,13 @@ export function TimelinePlanningTray({
             const deleting = deleteItemId === item.id;
             const busy = busyItemId === item.id;
             const failed = errorItemId === item.id;
+            const dragging = dragVisual?.item.id === item.id;
             return (
               <article
                 key={item.id}
-                className={`timeline-planning-card${busy ? ' is-busy' : ''}`}
+                className={`timeline-planning-card${busy ? ' is-busy' : ''}${
+                  dragging ? ' is-drag-source' : ''
+                }`}
                 data-timeline-planning-item={item.id}
                 data-timeline-tone={item.tone}
               >
@@ -600,10 +719,7 @@ export function TimelinePlanningTray({
                     }
                   }}
                 >
-                  <span
-                    className="timeline-planning-card__grip"
-                    aria-hidden="true"
-                  >
+                  <span className="timeline-planning-card__grip" aria-hidden="true">
                     ⠿
                   </span>
                   <span className="timeline-planning-card__copy">
@@ -630,6 +746,7 @@ export function TimelinePlanningTray({
                     {copy.place}
                   </button>
                   <button
+                    className="timeline-planning-card__remove"
                     type="button"
                     disabled={busy}
                     onClick={() => {
@@ -638,8 +755,9 @@ export function TimelinePlanningTray({
                       setErrorItemId(null);
                     }}
                     aria-label={`${copy.remove}: ${item.title}`}
+                    title={copy.remove}
                   >
-                    ⋯
+                    ×
                   </button>
                 </div>
 
@@ -673,10 +791,7 @@ export function TimelinePlanningTray({
                       />
                     </label>
                     <div className="timeline-planning-quick-place__actions">
-                      <button
-                        type="button"
-                        onClick={() => setQuickItemId(null)}
-                      >
+                      <button type="button" onClick={() => setQuickItemId(null)}>
                         {copy.cancel}
                       </button>
                       <button type="submit" disabled={busy}>
@@ -691,10 +806,7 @@ export function TimelinePlanningTray({
                     <strong>{copy.removeTitle}</strong>
                     <p>{copy.removeBody}</p>
                     <div>
-                      <button
-                        type="button"
-                        onClick={() => setDeleteItemId(null)}
-                      >
+                      <button type="button" onClick={() => setDeleteItemId(null)}>
                         {copy.cancel}
                       </button>
                       <button
@@ -737,6 +849,33 @@ export function TimelinePlanningTray({
       {dragActive && typeof document !== 'undefined'
         ? createPortal(
             <div className="timeline-planning-scrim" aria-hidden="true" />,
+            document.body,
+          )
+        : null}
+      {dragVisual && typeof document !== 'undefined'
+        ? createPortal(
+            <div
+              className="timeline-planning-drag-card"
+              data-timeline-planning-drag-card="true"
+              data-timeline-tone={dragVisual.item.tone}
+              style={{
+                left: dragVisual.left,
+                top: dragVisual.top,
+                width: dragVisual.width,
+              }}
+              aria-hidden="true"
+            >
+              <span className="timeline-planning-card__grip">⠿</span>
+              <span className="timeline-planning-card__copy">
+                <strong>{dragVisual.item.title}</strong>
+                <span className="timeline-planning-card__meta">
+                  <i />
+                  {dragVisual.item.contextLabel}
+                  <b>·</b>
+                  {dragVisual.item.durationMinutes} min
+                </span>
+              </span>
+            </div>,
             document.body,
           )
         : null}
