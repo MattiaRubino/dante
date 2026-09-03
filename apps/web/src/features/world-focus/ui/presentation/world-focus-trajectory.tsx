@@ -55,9 +55,15 @@ export function WorldFocusTrajectory({
     );
   }
   points.forEach((point, index) => {
+    const semanticReference = primitive.orderedPointReferences[index];
+    if (semanticReference === undefined) {
+      throw new Error(
+        `World Focus Trajectory semantic point ${index} is unavailable`,
+      );
+    }
     assertWorldFocusDisplayBindingMatchesReference(
       point,
-      primitive.orderedPointReferences[index],
+      semanticReference,
       `World Focus Trajectory point ${index} order`,
     );
   });
@@ -68,9 +74,15 @@ export function WorldFocusTrajectory({
     );
   }
   missingPositions.forEach((position, index) => {
+    const semanticReference = primitive.missingPositionReferences[index];
+    if (semanticReference === undefined) {
+      throw new Error(
+        `World Focus Trajectory missing semantic position ${index} is unavailable`,
+      );
+    }
     assertWorldFocusDisplayBindingMatchesReference(
       position,
-      primitive.missingPositionReferences[index],
+      semanticReference,
       `World Focus Trajectory missing position ${index} order`,
     );
   });
@@ -140,9 +152,7 @@ export function WorldFocusTrajectory({
 
       {orderingBasis === null && aggregationBasis === null ? null : (
         <p className="world-focus-presentation-footnote">
-          {orderingBasis === null ? null : (
-            <span>{orderingBasis.label}</span>
-          )}
+          {orderingBasis === null ? null : <span>{orderingBasis.label}</span>}
           {orderingBasis === null || aggregationBasis === null ? null : (
             <span aria-hidden="true"> · </span>
           )}
