@@ -1,13 +1,14 @@
 # DANTE — Access Web Contract
 
 - **Status:** CURRENT / AUTHORITATIVE FOR BRANCH-LOCAL ACCESS WEB
-- **Last reconciled:** 2026-09-02
+- **Last reconciled:** 2026-09-03
 - **Branch:** `feature/access-auth`
 - **Architecture:** `../architecture/access-auth-architecture.md`
 - **Security:** `../architecture/access-auth-security-contract.md`
 - **M5:** `../architecture/access-auth-m5-contract.md`
 - **Current workstream:** `../workstreams/access-auth.md`
-- **Current review:** `../workstreams/access-auth-m5-review-2026-09-02.md`
+- **Email Platform:** `../architecture/email-platform.md`
+- **Real Email evidence:** `../development/email-platform-acceptance-2026-09-03.md`
 
 ## 1. Purpose
 
@@ -74,7 +75,7 @@ backend anti-lockout
 IT/EN localization
 ```
 
-This supersedes old statements that “runtime ends at M4” or that M5 Web semantics are not materialized.
+This supersedes old statements that runtime ends at M4 or that M5 Web semantics are not materialized.
 
 ## 5. Application/transport ownership
 
@@ -99,6 +100,8 @@ backend + PostgreSQL
 ```
 
 No presentation component may decide that Google/passkey/browser completion means DANTE authentication succeeded.
+
+Email provider details are also not Web authority. Access UI triggers/consumes Auth lifecycle; the shared backend Email Platform owns durable delivery and provider interaction.
 
 ## 6. Session bootstrap and rotation
 
@@ -193,41 +196,78 @@ Public recovery remains anti-enumeration neutral.
 
 ```text
 request
-→ email proof
+→ shared Email Platform durable intent
+→ real email proof
 → one-use recovery bearer
 → create-or-replace PasswordCredential as applicable
 → revoke prior sessions
-→ fresh signin
+→ fresh signin required
+→ password-reset security notification
 ```
 
-Real Internet delivery of signup/recovery mail is still an open external-delivery UAT/architecture gate; loopback SMTP capture remains deterministic automated-test infrastructure.
+Final real SES UAT on 2026-09-03 directly proved:
 
-## 13. Accessibility / responsive quality
+```text
+recovery email received in a real mailbox
+recovery link opened the DANTE reset surface
+password reset succeeded
+reset did not auto-login
+previous authenticated session was revoked
+password-change security notification arrived
+```
+
+The exact same consumed recovery link was not manually opened a second time in that final live run because the message had already been removed before that check. Do not label same-link replay rejection as manually observed evidence from this UAT.
+
+## 13. Signup email verification
+
+Final real SES UAT directly proved the normal password-signup browser path:
+
+```text
+Create account
+→ DANTE signup challenge + durable EmailIntent
+→ SES provider_accepted
+→ real mailbox receives six-digit verification mail
+→ user enters received code
+→ verification succeeds
+→ Account created
+```
+
+This replaces the old claim that signup/recovery Internet delivery was still open.
+
+## 14. Accessibility / responsive quality
 
 Release target remains WCAG 2.2 AA-quality behavior. Group-4 browser tests cover accessibility/keyboard/focus/responsive concerns across the canonical browser matrix. Provider/passkey native dialogs remain browser/platform-owned.
 
-## 14. Current evidence
+## 15. Current evidence
 
-Reviewed product checkpoint:
+Automated product evidence:
 
 ```text
 format/typecheck/lint/architecture PASS
-68 / 68 Web unit/component PASS
-60 / 60 Auth Playwright PASS
-Chromium / Firefox / WebKit PASS through canonical suite
+Web unit/component PASS
+Auth Playwright PASS across Chromium/Firefox/WebKit
 ```
 
-Manual:
+Manual/real-boundary evidence:
 
 ```text
 password/session/security-management PASS
 Windows Hello passkey PASS
 Google real-provider PASS
+real SES signup verification PASS
+real SES password recovery PASS
+real SES reset-notification PASS
+post-reset no-auto-login PASS
+post-reset previous-session revocation PASS
 PostgreSQL direct inspection PASS
 ```
 
-## 15. Remaining product maturity
+Exact Email Platform live evidence: `../development/email-platform-acceptance-2026-09-03.md`.
+
+## 16. Remaining product maturity
 
 M7 should add session/device inventory, remote revoke, new-login/security-event response and final authenticated Home handoff. The large Security page should also be componentized by bounded responsibility without changing accepted semantics.
 
-Current implementation/code/tests plus the current workstream/review beat older pre-M5 phase labels.
+Production email sender-domain/DNS/reputation and live cloud-event routing are deployment/operations concerns, not reasons to reopen the Access Web recovery/signup implementation.
+
+Current implementation/code/tests plus current workstream/status documents beat older pre-M5 phase labels.
