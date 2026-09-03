@@ -1,9 +1,10 @@
 # DANTE — Access/Auth Integration with the Email Platform
 
-- **Status:** CURRENT / ACCESS-AUTH CONSUMER INTEGRATION CONTRACT FOR `feature/access-auth`
+- **Status:** CURRENT / ACCESS-AUTH CONSUMER INTEGRATION ACCEPTED ON `feature/access-auth`
 - **Last reconciled:** 2026-09-03
 - **Platform authority:** `email-platform.md`
 - **Decision authority:** `../decisions/ADR-012-email-delivery-platform.md`
+- **Real-provider evidence:** `../development/email-platform-acceptance-2026-09-03.md`
 
 ## 1. Scope
 
@@ -84,6 +85,8 @@ Access/Auth supplies the compact typed payload to the Email Platform. The platfo
 
 Auth code must not place those secrets into normal logs, metrics, traces or provider tags.
 
+Final live UAT direct PostgreSQL inspection observed the sensitive payload bundle wiped after provider acceptance for signup verification and password recovery.
+
 ## 7. Rendering
 
 Access/Auth owns the security-message meaning/copy requirements; the shared Email Platform owns repository rendering/versioning and provider-neutral message construction.
@@ -122,7 +125,7 @@ Auth lifecycle
 → SES / SMTP last mile
 ```
 
-Amazon SES API v2 is the selected external provider adapter for real UAT/production direction. SMTP remains a shared platform last-mile adapter for local/CI compatibility; there is no Access-owned process-memory SMTP queue in the canonical runtime.
+Amazon SES API v2 is the accepted external provider adapter. SMTP remains a shared platform last-mile adapter for local/CI compatibility; there is no Access-owned process-memory SMTP queue in the canonical runtime.
 
 ## 9. Feedback integration
 
@@ -136,7 +139,9 @@ EmailIdentity.recovery_restriction_code = provider_delivery_disabled
 
 This does not redefine email verification or identity ownership. Reachability/provider suppression remains distinct from Auth identity truth.
 
-## 10. Current proof
+Live AWS feedback-event ingress remains a production/deployment concern; the normalization/persistence/projection behavior is already covered by automated PostgreSQL acceptance.
+
+## 10. Real Access/Auth consumer acceptance
 
 Observed automated proof includes:
 
@@ -149,14 +154,63 @@ provider ambiguity does not create blind duplicate security mail
 post-restore uncertain Auth email work is quarantined
 ```
 
-The remaining external acceptance gate is real DANTE-originated delivery for signup and password recovery through SES to the UAT mailbox.
+Observed real SES UAT on 2026-09-03 proved:
 
-## 11. References
+```text
+signup
+→ DANTE creates signup state + EmailIntent
+→ SES provider_accepted attempt 1
+→ real mailbox receives verification mail
+→ received OTP verifies successfully
+→ Account created
+
+password recovery
+→ DANTE creates recovery state + EmailIntent
+→ SES provider_accepted attempt 1
+→ real mailbox receives recovery mail
+→ recovery URL opens reset surface
+→ password reset succeeds
+→ no automatic login
+→ previously authenticated AuthSession revoked
+
+password reset notification
+→ EmailIntent emitted
+→ SES provider_accepted attempt 1
+→ real mailbox receives security notification
+```
+
+Direct PostgreSQL inspection observed all three live intents as `provider_accepted`, all with one SES attempt, provider MessageId present, no error code and sensitive payload bundle wiped.
+
+### Explicit non-claim
+
+The exact same consumed recovery URL was not manually opened a second time in the final live UAT because the message had already been removed before that check. Do not label same-link replay rejection as manually observed in this final run.
+
+## 11. Closure
+
+For Access/Auth specifically:
+
+```text
+signup email integration                    ACCEPTED
+password recovery email integration         ACCEPTED
+password-reset notification integration     ACCEPTED
+atomic Auth state + EmailIntent              ACCEPTED
+real SES/mailbox UAT                         PASS
+session revoke after reset                   PASS
+no-auto-login after reset                    PASS
+
+ACCESS/AUTH EMAIL CONSUMER INTEGRATION       CLOSED
+```
+
+This does not make production sender-domain/DNS/reputation deployment complete, and it does not make Access/Auth the owner of the shared Email Platform.
+
+## 12. References
 
 Shared platform:
 
 ```text
 docs/architecture/email-platform.md
+docs/development/email-platform-local-uat.md
+docs/development/email-platform-acceptance-2026-09-03.md
 ```
 
 Access/Auth architecture:
