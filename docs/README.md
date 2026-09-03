@@ -2,70 +2,63 @@
 
 - **Status:** CURRENT NAVIGATION / AUTHORITY INDEX
 - **Last reconciled:** 2026-09-03
-- **Active branch-local workstream:** `feature/access-auth`
+- **Active branch:** `feature/access-auth`
+- **Current work:** PRE-INTEGRATION AUDIT
 
-This directory is the durable documentation surface for DANTE. Current specifications describe present truth directly; historical handoffs and phase-time evidence do not silently override current operational documents.
+This directory is the durable documentation surface for DANTE. Current specifications describe present truth directly; historical checkpoints never silently override current operational documents.
 
 ## 1. Authority order
 
-When sources conflict, prefer the narrowest accepted current authority for the subject:
+When sources conflict, use the narrowest accepted current authority:
 
 ```text
-1. executable repository truth
-   code / migrations / tests / governed generated artifacts
+1. executable/materialized repository truth
+   code / migrations / tests / governed generated artifacts / real schema evidence
 
 2. accepted semantic + architectural authority
-   Product / Domain / Logical / Physical / ADRs / durable contracts
+   Product / Domain / Logical / Physical / constitutions / ADRs / durable contracts
 
 3. current subsystem reference
    database / frontend / backend / security / API contracts
 
-4. current operational status
-   PROJECT-STATUS / ROADMAP / active workstream / current review
+4. current operational routing
+   PROJECT-STATUS / ROADMAP / active workstream
 
-5. historical handoffs / milestone reconciliation / Git chronology
+5. evidence / historical checkpoints / Git chronology
 
 6. conversation memory
 ```
 
-Protected `main` remains integrated authority for closed shared foundations. `feature/access-auth` contains newer branch-local truth for Access/Auth and the shared Email Platform until explicit integration.
+Protected `main` owns integrated shared truth. `feature/access-auth` currently owns newer branch-local Access/Auth + Email Platform truth until the integration gate completes.
 
 ## 2. Current lifecycle
 
 ```text
-PRODUCT / NORTH STAR                 CURRENT
-DOMAIN MODEL                         CLOSED
-LOGICAL MODEL                        CLOSED / 57 OF 57
-PHYSICAL TARGET                      CLOSED / ACCEPTED
-ENGINEERING FOUNDATION               CLOSED / ACCEPTED
-FRONTEND FOUNDATION                  CLOSED / ACCEPTED
-BACKEND CP1–CP6                      CLOSED / ACCEPTED
-POSTGRESQL                           18.6
+PRODUCT / NORTH STAR                    CURRENT
+DOMAIN / LOGICAL / PHYSICAL             CLOSED
+ENGINEERING / FRONTEND FOUNDATION       CLOSED / ACCEPTED
+BACKEND CP1–CP6                         CLOSED / ACCEPTED
+POSTGRESQL                              18.6
 
-ACCESS/AUTH M1–M4                    CLOSED / ACCEPTED
-M5.1 / M5.2 / M5-A–D                 COMPLETE
-M5 GROUPS 1–3                        COMPLETE / ENGINEERING PASS
-M5 GROUP 4 ENGINEERING               AUTOMATED QA PASS
-LOCAL PASSWORD/PASSKEY UAT           PASS
-REAL GOOGLE UAT                      PASS
+PROTECTED MAIN
+  Recovery                              CLOSED / INTEGRATED
+  Alembic                               20260830_09
 
-EMAIL PLATFORM ARCHITECTURE          ACCEPTED / SHARED SUBSYSTEM
-EMAIL PLATFORM IMPLEMENTATION        ACCEPTED
-EMAIL PLATFORM AUTOMATED ACCEPTANCE  PASS
-PRIMARY EMAIL PROVIDER ADAPTER       AMAZON SES API V2
-REAL DANTE → SES SIGNUP UAT           PASS
-REAL DANTE → SES RECOVERY UAT         PASS
-REAL RESET-NOTIFICATION UAT          PASS
-EMAIL PLATFORM ENGINEERING WORK      CLOSED
+FEATURE/ACCESS-AUTH
+  M1–M5                                 CLOSED / ACCEPTED
+  local password/passkey UAT            PASS
+  real Windows Hello UAT                PASS
+  real Google UAT                       PASS
+  real Apple external UAT               BOUNDED DEFERRED / NON-BLOCKING
+  shared Email Platform                 CLOSED / ACCEPTED
+  real SES signup/recovery/notification PASS
+  Alembic                               20260903_15
+  DB topology                           87/5/15/75/170/88/267
+  work                                  PRE-INTEGRATION AUDIT
 
-REAL APPLE UAT                       DEFERRED / OPEN
-WHOLE M5                             ACTIVE / FINAL CLOSURE RECONCILIATION
-
-ACCESS/AUTH ALEMBIC                  20260903_15
-ACCESS/AUTH TOPOLOGY                 87/5/15/75/170/88/267
+M6 Native Mobile                        FUTURE / OPTIONAL
+later Access/M7 maturity                FUTURE
 ```
-
-Email Platform closure is an engineering/UAT closure. Production sender-domain/DNS/reputation and cloud-event deployment remain separate operational gates.
 
 ## 3. Mandatory continuation entry points
 
@@ -75,22 +68,14 @@ Read in this order:
 2. `PROJECT-STATUS.md`
 3. `ROADMAP.md`
 4. `development/agent-operating-manual.md`
-5. `workstreams/access-auth.md`
-6. subject authority relevant to the task
-7. current Git branch/ref and its relation to protected `main`
+5. `development/documentation-lifecycle-policy.md`
+6. `workstreams/access-auth.md` while this branch remains active
+7. subsystem authority relevant to the task
+8. exact current Git branch/ref and its relation to protected main
 
-For the standalone Email Platform:
+## 4. Access/Auth authorities
 
-- `architecture/email-platform.md`
-- `development/email-platform-local-uat.md` — reproducible AWS CLI / SES local UAT runbook
-- `development/email-platform-acceptance-2026-09-03.md` — observed real-provider acceptance evidence
-- `decisions/ADR-012-email-delivery-platform.md`
-- `database/dictionary/tables/email_delivery_intent.json`
-- `database/dictionary/tables/email_delivery_attempt.json`
-- `database/dictionary/tables/email_provider_event.json`
-- `database/dictionary/tables/email_recipient_suppression.json`
-
-For Access/Auth architecture/security/API/testing:
+Architecture/security/API/testing:
 
 - `architecture/access-auth-architecture.md`
 - `architecture/access-auth-security-contract.md`
@@ -99,32 +84,67 @@ For Access/Auth architecture/security/API/testing:
 - `architecture/access-auth-m4-contract.md`
 - `architecture/access-auth-m5-contract.md`
 - `architecture/access-auth-m5-persistence-api-contract.md`
-- `architecture/access-auth-email-delivery.md` — Access/Auth integration with the shared Email Platform only
 - `decisions/ADR-011-access-auth-architecture.md`
 
-For current product/reference state:
+Current implementation/reference:
 
+- `workstreams/access-auth.md`
 - `frontend/access.md`
-- `database/README.md`
 - `database/access-auth.md`
 - `../apps/backend/README.md`
 
-## 4. Progress-metadata reconciliation
+Evidence:
 
-Some large durable M5 contracts contain milestone-time sections such as `M5-F NEXT` or `public routes later`. Those statements are preserved as historical reconciliation of the slice in which they were written. They are **not current progress authority** when they conflict with `PROJECT-STATUS.md`, `ROADMAP.md` or the active workstream.
+- `workstreams/access-auth-m5-review-2026-09-02.md`
 
-Both dated M5 live handoffs are now historical/superseded:
+Large M5 contracts contain milestone-time phrases such as `M5-F NEXT` or `public routes later`. Those sections preserve the implementation decomposition at that checkpoint; they do **not** override current status documents now that M5 is closed.
+
+## 5. Shared Email Platform authorities
+
+- `architecture/email-platform.md` — platform architecture
+- `architecture/access-auth-email-delivery.md` — Access/Auth consumer integration only
+- `decisions/ADR-012-email-delivery-platform.md`
+- `development/email-platform-local-uat.md`
+- `development/email-platform-acceptance-2026-09-03.md`
+- `database/dictionary/tables/email_delivery_intent.json`
+- `database/dictionary/tables/email_delivery_attempt.json`
+- `database/dictionary/tables/email_provider_event.json`
+- `database/dictionary/tables/email_recipient_suppression.json`
+
+Email Platform is shared DANTE technical infrastructure. Access/Auth is its first consumer, not its architectural owner.
+
+Engineering + real-provider UAT is closed. Production sender-domain/DNS/reputation/workload-identity/cloud-event deployment remains a separate operations gate.
+
+## 6. Database authorities
+
+Start at:
+
+- `database/README.md` — current Database System of Record
+- `database/access-auth.md` — current branch Auth/Email database reference
+- `database/dictionary/README.md` — machine-readable contract
+- `development/backend-cp6-02-postgresql-persistence-constitution.md`
+- `decisions/ADR-010-postgresql-persistence-constitution.md`
+
+Permanent invariant:
 
 ```text
-workstreams/access-auth-m5-live-handoff-2026-08-29.md
-workstreams/access-auth-m5-live-handoff-2026-09-02.md
+current human DB reference
+≈ Database Dictionary
+≈ SQLAlchemy mappings
+≈ Alembic
+≈ real PostgreSQL
+≈ direct tests
 ```
 
-The 2026-09-02 handoff was explicitly consolidated after Email Platform materialization and real SES UAT. It must not be used as a continuation authority. Current continuation starts from Section 3 above.
+### Whole-database Blueprint corpus
 
-## 5. Product / Domain / Logical / Physical
+`database/dante-postgresql-database.md` and its continuation parts contain deep CP6 derivation/design/closure rationale. They remain valuable reference history, but old phase banners and historical `OPEN/NEXT/NOT MATERIALIZED` statements inside that corpus are not current operational routing when later accepted work has satisfied their trigger.
 
-Product entry point:
+For present materialized truth, use `database/README.md`, current subsystem DB references, Dictionary, migrations/mappings and direct PostgreSQL proof.
+
+## 7. Product / Domain / Logical / Physical
+
+Product:
 
 - `product/README.md`
 - `product/product-identity-and-north-star.md`
@@ -144,71 +164,6 @@ Physical:
 
 Permanent cross-model invariants remain binding unless deliberately superseded through an accepted architecture gate.
 
-## 6. Architecture
-
-Start at `architecture/README.md`.
-
-Important subsystem documents:
-
-- `architecture/email-platform.md` — reusable outbound Email Platform
-- `architecture/access-auth-architecture.md` — Account/authenticator/session architecture
-- `architecture/access-auth-email-delivery.md` — Access/Auth consumer integration with Email Platform
-
-Important ADRs:
-
-- `decisions/ADR-007-domain-model-informed-persistence-boundaries.md`
-- `decisions/ADR-008-frontend-engineering-stack.md`
-- `decisions/ADR-009-frontend-architecture-boundaries.md`
-- `decisions/ADR-010-postgresql-persistence-constitution.md`
-- `decisions/ADR-011-access-auth-architecture.md`
-- `decisions/ADR-012-email-delivery-platform.md`
-
-The Email Platform is a materialized shared subsystem built around PostgreSQL transactional intent, provider-neutral delivery orchestration, Amazon SES API v2, feedback/suppression and privacy-minimized observability.
-
-Access/Auth is its first consumer, not its architectural owner.
-
-## 7. Database
-
-Start at:
-
-- `database/README.md`
-- `database/access-auth.md`
-- `database/dictionary/README.md`
-
-Current branch DB:
-
-```text
-PostgreSQL          18.6
-Alembic             20260903_15
-87 tables
-5 views
-15 routines
-75 triggers
-170 physical indexes
-88 foreign keys
-267 CHECK constraints
-```
-
-Permanent rule:
-
-```text
-human DB reference
-≈ Dictionary
-≈ SQLAlchemy
-≈ Alembic
-≈ real PostgreSQL
-≈ direct tests
-```
-
-The Email Platform persistence is included in the current catalog through:
-
-```text
-dante.email_delivery_intent
-dante.email_delivery_attempt
-dante.email_provider_event
-dante.email_recipient_suppression
-```
-
 ## 8. Frontend
 
 Start at:
@@ -218,74 +173,28 @@ Start at:
 - `frontend/home/current-checkpoint.md`
 - `frontend/home/contract.md`
 
-Access is now a real full-stack Auth surface on `feature/access-auth`; old pre-backend statements are historical baseline context, not current runtime truth.
+Access is a real full-stack Auth surface on the branch; old statements that it is still pre-backend are historical context only.
 
-## 9. Testing / proof
-
-Access/Auth and Email Platform proof deliberately separate:
+## 9. Current integration sequence
 
 ```text
-unit/application
-PostgreSQL
-HTTP/OpenAPI/generated client
-browser full-stack
-real provider/authenticator UAT
-real external-delivery UAT
+pre-integration audit on feature/access-auth
+→ merge protected main into feature/access-auth
+→ reconcile divergent Alembic histories with forward merge revision
+→ combined Recovery + Access/Auth + Email QA
+→ PR Access/Auth + Email Platform to protected main
+→ merge enriched main into feature/platform-observability
+→ observability integration/release rechecks
+→ PR observability to protected main
+→ future bounded product branches from enriched main
 ```
 
-Current observed evidence includes:
+No M6/M7 feature expansion belongs on the Access branch before this sequence is complete.
 
-```text
-local password/passkey UAT PASS
-real Windows Hello passkey UAT PASS
-real Google UAT PASS
-Email Platform unit tests PASS
-Email Platform PostgreSQL acceptance PASS
-Auth mutation + EmailIntent atomicity PASS
-Email observability PostgreSQL acceptance PASS
-backend non-PostgreSQL regression PASS
-real SES signup/recovery/reset-notification UAT PASS
-direct UAT DB provider-correlation + secret-wipe PASS
-```
+## 10. Documentation lifecycle
 
-The exact accepted live evidence is `development/email-platform-acceptance-2026-09-03.md`.
+Temporary live/session handoffs are branch-operational artifacts and must not reach protected main. Before removal they pass the knowledge-coverage gate in `development/documentation-lifecycle-policy.md`.
 
-One explicit non-claim is preserved there: the exact same consumed recovery URL was not manually reopened a second time in the final live run.
+At most one branch closure/history record should remain if it has continuing value beyond normal Git/PR history. Pure duplicates should leave the working tree; Git already preserves their exact content.
 
-## 10. Email Platform closure and production boundary
-
-Email Platform engineering is closed:
-
-```text
-architecture                    ACCEPTED
-persistence                     ACCEPTED
-SES API v2 adapter              ACCEPTED
-SMTP compatibility adapter      ACCEPTED
-automated/PostgreSQL proof      PASS
-real signup SES UAT             PASS
-real recovery SES UAT           PASS
-real reset-notification UAT     PASS
-reproducible AWS local UAT      MATERIALIZED
-```
-
-Production deployment remains separately gated on:
-
-```text
-controlled DANTE sender/domain
-DKIM
-SPF
-DMARC
-production IAM/workload identity
-SES production account/quota/reputation posture
-live cloud feedback/event routing
-operational alerting and traffic/reputation segmentation
-Apple relay sender-domain compatibility where applicable
-```
-
-These are deployment/operations tasks. They do not mean the shared Email Platform must be redesigned.
-
-## 11. Documentation lifecycle
-
-Current docs are not an append-only diary. Historical evidence remains recoverable in Git; current subject/index documents should not carry stale `NEXT/TBD/NOT IMPLEMENTED` claims after their trigger is satisfied.
-
-Repository truth beats conversation memory.
+Current specs must not become append-only diaries. Repository truth beats conversation memory.
