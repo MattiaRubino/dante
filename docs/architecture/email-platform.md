@@ -1,17 +1,18 @@
 # DANTE Email Platform
 
-- **Status:** CURRENT / AUTHORITATIVE PLATFORM ARCHITECTURE FOR `feature/access-auth`
+- **Status:** CURRENT / AUTHORITATIVE / ENGINEERING + REAL-PROVIDER UAT ACCEPTED ON `feature/access-auth`
 - **Last reconciled:** 2026-09-03
 - **Decision authority:** `../decisions/ADR-012-email-delivery-platform.md`
 - **Persistence authority:** ADR-010, Alembic, SQLAlchemy mappings, Database Dictionary and executable PostgreSQL tests
 - **Current first consumer:** Access/Auth security lifecycle
 - **Platform ownership:** DANTE core infrastructure; not owned by Access/Auth
+- **Real-provider acceptance evidence:** `../development/email-platform-acceptance-2026-09-03.md`
 
 ## 1. Purpose and boundary
 
 This document defines the reusable DANTE outbound Email Platform.
 
-The Email Platform is a shared technical subsystem. Access/Auth is its first production consumer, but the platform is intentionally designed so future Account, security, notification and product workflows can reuse the same durable delivery machinery without rebuilding provider, retry, persistence, encryption, feedback or observability logic.
+The Email Platform is a shared technical subsystem. Access/Auth is its first production-intent consumer, but the platform is intentionally designed so future Account, security, notification and product workflows can reuse the same durable delivery machinery without rebuilding provider, retry, persistence, encryption, feedback or observability logic.
 
 The permanent boundary is:
 
@@ -272,6 +273,8 @@ connection loss / read timeout / uncertain transport outcome
 
 Amazon SES API v2 is deliberately configured for one SDK wire attempt. DANTE, not the SDK, owns retry policy so a transport ambiguity cannot silently generate duplicate OTP/recovery messages.
 
+The real UAT exposed one credential-refresh integration defect: the SES region had been supplied only to the SES client while Botocore's browser-login credential refresh needed region context at the boto3 session level. The provider now creates a region-bound `boto3.Session` and then the SES v2 client from that session. A focused test covers this behavior.
+
 ## 8. Sensitive payload protection
 
 OTP and password-recovery bearer material are protected with a dedicated Email Platform key ring, separate from password peppers, signup OTP HMAC keys, CSRF keys and Apple grant encryption keys.
@@ -302,6 +305,8 @@ recovery quarantine
 
 Secrets must never enter ordinary logs, metrics, traces or provider tags.
 
+The final real SES UAT directly inspected PostgreSQL and observed `sensitive_key_id`, `sensitive_nonce` and `sensitive_ciphertext` cleared, with `sensitive_wiped_at` present, for signup verification, password recovery and reset notification.
+
 ## 9. Templates and rendering
 
 Templates are repository-owned and revisioned.
@@ -331,6 +336,7 @@ Properties:
 
 ```text
 process-scoped SDK client
+region-bound boto3 Session
 configurable AWS region
 bounded connect/read timeout
 TCP keepalive
@@ -343,6 +349,8 @@ standard AWS credential provider chain
 ```
 
 Credentials are not DANTE application settings and never belong in frontend/public configuration.
+
+Real UAT acceptance used a dedicated non-root IAM user/profile with temporary `aws login` credentials and least-privilege SES permissions. Production should use workload identity / IAM role rather than reproducing a developer IAM user.
 
 ### SMTP
 
@@ -370,6 +378,8 @@ Soft/transient bounce does not automatically create permanent suppression.
 
 Feedback order must not fabricate delivery success or resurrect terminal intents.
 
+The feedback/suppression implementation is accepted through automated PostgreSQL tests. Live AWS cloud-event ingress was not part of the final real-provider UAT and remains a deployment/operations gate rather than an Email Platform implementation blocker.
+
 ## 12. Recovery / PITR posture
 
 Physical database restore can resurrect historical nonterminal outbox rows whose real-world provider outcome is unknowable after the restore point.
@@ -386,6 +396,8 @@ email workers CLOSED
 ```
 
 Restored outbox state is never blindly replayed merely because PostgreSQL shows it as pending/claimed before reconciliation.
+
+Email intent/attempt state is technical delivery state and is **not** DANTE MaterialState semantic history.
 
 ## 13. Observability
 
@@ -471,9 +483,11 @@ provider dashboard becoming canonical lifecycle state
 
 The platform is technical delivery infrastructure. Feature semantics remain in their owning bounded context.
 
-## 17. Current acceptance evidence
+## 17. Acceptance status
 
-Observed automated evidence on `feature/access-auth` includes:
+### 17.1 Automated / PostgreSQL evidence
+
+Observed evidence on `feature/access-auth` includes:
 
 ```text
 Email unit tests PASS
@@ -490,21 +504,92 @@ feedback idempotency PASS
 hard-bounce suppression PASS
 post-restore quarantine PASS
 privacy-minimized observability PASS
+build PASS
 ```
 
-The platform is implemented and technically qualified at automated/local PostgreSQL level.
+### 17.2 Real SES UAT — observed PASS
 
-Still open before full external acceptance:
+On 2026-09-03 the repository-owned UAT flow directly proved:
 
 ```text
-real DANTE signup → SES → mailbox UAT
-real DANTE password recovery → SES → mailbox UAT
-final documentation reconciliation / closure evidence
+non-root dedicated AWS UAT principal
+SES eu-west-3 preflight SUCCESS
+real DANTE signup
+→ SES provider_accepted attempt 1
+→ real mailbox receipt
+→ OTP verification
+→ Account creation
+
+real DANTE password recovery
+→ SES provider_accepted attempt 1
+→ real mailbox receipt
+→ recovery URL consumed
+→ password reset succeeds
+→ no auto-login
+→ prior AuthSession revoked
+
+password reset notification
+→ SES provider_accepted attempt 1
+→ real mailbox receipt
 ```
 
-Production deployment remains separately gated on controlled sender identity/domain and operational DNS/reputation controls such as SPF, DKIM and DMARC.
+Direct PostgreSQL inspection observed exactly these three UAT intents with:
 
-## 18. Source map
+```text
+dispatch_state_code = provider_accepted
+attempt_count = 1
+accepted_at present
+secret bundle wiped
+sensitive_wiped_at present
+provider_code = ses
+result_code = provider_accepted
+provider_message_id present
+error_code NULL
+```
+
+Exact live evidence is preserved in `../development/email-platform-acceptance-2026-09-03.md`.
+
+### 17.3 Explicit non-claim
+
+The exact same consumed recovery URL was **not manually replayed a second time in the final live UAT**, because the message had already been removed before that check. The live claim is therefore one successful consumption, not manually re-observed replay rejection.
+
+### 17.4 Closure
+
+```text
+Email Platform architecture                    ACCEPTED
+Email Platform implementation                  ACCEPTED
+Automated/PostgreSQL acceptance                PASS
+Amazon SES API v2 adapter                      ACCEPTED
+Real DANTE → SES signup UAT                    PASS
+Real DANTE → SES recovery UAT                  PASS
+Real reset-notification UAT                    PASS
+Local UAT reproducibility                      MATERIALIZED
+
+EMAIL PLATFORM ENGINEERING WORKSTREAM          CLOSED
+```
+
+Production deployment remains separate and is **not** implied by this closure.
+
+## 18. Production deployment gates — separate from platform closure
+
+Before calling production email accepted, deployment must materialize and verify as applicable:
+
+```text
+DANTE-controlled sender domain/subdomain
+SPF
+DKIM
+DMARC
+production workload identity / IAM role
+SES production-access/quota/reputation posture
+live provider feedback/event routing
+operational alerting and traffic/reputation segmentation
+privacy/legal/subprocessor review for the deployed configuration
+Apple Private Email Relay sender-domain requirements where Apple is enabled
+```
+
+These gates may harden or configure the platform; they do not reopen the accepted durable Email Platform architecture absent concrete defect evidence.
+
+## 19. Source map
 
 Primary implementation:
 
@@ -535,6 +620,17 @@ apps/backend/tests/test_auth_email_platform.py
 apps/backend/tests/integration/auth/test_m5_email_lifecycle.py
 apps/backend/tests/integration/database/test_m5_email_platform.py
 apps/backend/tests/integration/database/test_m5_email_observability.py
+```
+
+Reproducible external UAT:
+
+```text
+tooling/bootstrap-aws-cli-local.sh
+tooling/email-platform-aws-preflight.py
+tooling/serve-access-auth-local-uat.py
+tooling/aws/dante-uat-ses-policy.template.json
+docs/development/email-platform-local-uat.md
+docs/development/email-platform-acceptance-2026-09-03.md
 ```
 
 Database Dictionary:
