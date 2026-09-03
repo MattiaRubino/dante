@@ -80,6 +80,7 @@ CURRENT IMPLEMENTATION AUTHORITY
 On `feature/ai-implementation`:
 
 - `ai-implementation.md` — current implementation state, validation evidence and executable gate;
+- `ai-provider-candidate-admission-2026-09.md` — current C8/P1 provider admission decision and public evidence snapshot;
 - `../ROADMAP.md` — current cross-workstream execution overlay;
 - `../PROJECT-STATUS.md` — project-level current state.
 
@@ -93,11 +94,16 @@ I3/C3 real deterministic Search/structured family
     DEFERRED / WAITING OWNER DATA + SEAMS
 C6  CLOSED / PASS
 C7  CLOSED / PASS
+C8/P1
+    OpenAI native Responses API + gpt-5.6-terra
+    ADMITTED FOR QUALIFICATION ONLY
 
 CURRENT EXECUTABLE
-C8 / I4 provider candidate-admission decision
-→ C9 inactive admitted adapter
-→ I5 conformance/live compatibility/direct qualification
+C9 admitted inactive provider adapter/binding
+→ provider conformance
+→ live compatibility on synthetic/public/minimized data
+→ C10 direct DANTE qualification
+→ C11 qualification/promotion decision
 
 MANDATORY CONVERGENCE
 I3/C3 must re-enter when owner seams are ready and converge
@@ -107,7 +113,7 @@ Search/structured source path.
 
 The baseline I0-I10 identifiers remain architectural stage labels. The execution overlay may defer trigger-gated I3 without renumbering or falsely closing it.
 
-Provider/model/SDK remains open and evidence-driven until the C8 admission decision is recorded. C7 completion alone does not admit or qualify any provider and implies no AI runtime/provider/database activation.
+The provider candidate is admitted only for qualification work. No provider SDK/adapter, live provider call, production qualification, private-data eligibility or production activation is implied by C8. Claude Sonnet 5 and Gemini 3.8 Flash remain non-admitted shortlist challengers.
 
 Binding implementation separations include:
 
@@ -182,7 +188,7 @@ Current project authority includes bounded unmerged work such as:
 feature/access-auth             active product vertical
 feature/home-react              active frontend workstream
 feature/platform-observability  active platform workstream
-feature/ai-implementation       active AI implementation / I0-I2 + C6+C7 closed / C8 next
+feature/ai-implementation       active AI implementation / I0-I2 + C6+C7+C8 closed / C9 next
 feature/ai-architecture         architecture design closed / retained authority/evidence
 ```
 
