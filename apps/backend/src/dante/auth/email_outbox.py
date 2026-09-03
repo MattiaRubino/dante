@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import hmac
 from datetime import UTC, datetime, timedelta
 from typing import Any, cast
 from uuid import UUID, uuid7
@@ -27,7 +26,7 @@ from dante.platform.database.mappings.email_delivery import (
 )
 
 _STREAM = "auth_security"
-_TEMPLATE_REVISION = "1"
+_TEMPLATE_REVISION = "2"
 
 
 class DurableEmailOutbox:
@@ -59,11 +58,6 @@ class DurableEmailOutbox:
         if expires_at <= now:
             raise ValueError("email intent expiry must be in the future")
         spec = email_intent_spec(command)
-        fingerprint = self._cipher.fingerprint(
-            purpose_code=spec.purpose_code,
-            template_code=spec.template_code,
-            payload=spec.payload,
-        )
 
         existing = await database_session.scalar(
             select(EmailDeliveryIntentRow).where(
@@ -72,17 +66,30 @@ class DurableEmailOutbox:
             )
         )
         if existing is not None:
-            if hmac.compare_digest(existing.payload_fingerprint, fingerprint):
+            if self._cipher.matches_fingerprint(
+                existing.payload_fingerprint,
+                purpose_code=spec.purpose_code,
+                template_code=spec.template_code,
+                template_revision=existing.template_revision,
+                payload=spec.payload,
+            ):
                 return existing.email_intent_ref
             raise EmailIntentConflictError(
                 "email idempotency identity was reused for different work"
             )
 
+        fingerprint = self._cipher.fingerprint(
+            purpose_code=spec.purpose_code,
+            template_code=spec.template_code,
+            template_revision=_TEMPLATE_REVISION,
+            payload=spec.payload,
+        )
         email_intent_ref = uuid7()
         protected = self._cipher.protect(
             email_intent_ref=email_intent_ref,
             purpose_code=spec.purpose_code,
             template_code=spec.template_code,
+            template_revision=_TEMPLATE_REVISION,
             payload=spec.payload,
         )
 
