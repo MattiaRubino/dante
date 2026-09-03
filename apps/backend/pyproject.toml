@@ -45,9 +45,15 @@ test = [
     "pytest-cov>=7.1.0,<8",
     "pytest-asyncio>=1.4.0,<2",
 ]
+uat = [
+    # Botocore's browser-login credential provider requires AWS CRT. Keep this out of the
+    # production dependency set: workload/role credentials do not need the local UAT login stack.
+    "botocore[crt]>=1.40,<2",
+]
 dev = [
     { include-group = "quality" },
     { include-group = "test" },
+    { include-group = "uat" },
 ]
 
 [tool.alembic]
