@@ -10,7 +10,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { i18n } from '../../../bootstrap/i18n';
 import type { WorldFocusContinuityReader } from '../application/world-focus-continuity';
 import type { WorldFocusContinuityReadResult } from '../model/world-focus-continuity';
-import type { WorldFocusId } from '../model/world-focus-fixtures';
+import type { WorldFocusId } from '../model/world-focus-identity';
 import { WorldFocusContinuity } from './world-focus-continuity';
 
 beforeAll(async () => {
@@ -23,7 +23,7 @@ afterEach(() => {
 });
 
 function readyResult(
-  worldId: 'music' | 'travel',
+  worldId: WorldFocusId,
   title: string,
 ): Extract<WorldFocusContinuityReadResult, Readonly<{ status: 'ready' }>> {
   return {
@@ -37,6 +37,9 @@ function readyResult(
           title,
           context: 'Project',
           checkpoint: 'Checkpoint',
+          threadReference: { kind: 'project', key: `${worldId}-thread` },
+          checkpointReference: { kind: 'checkpoint', key: `${worldId}-checkpoint` },
+          continuationReference: null,
           presentationState: 'active',
         },
       ],
@@ -84,9 +87,7 @@ describe('World Focus B2 Continuity UI', () => {
     );
 
     expect(await screen.findByText('Partial thread')).toBeTruthy();
-    expect(
-      screen.getByText('Alcune informazioni di continuità non sono disponibili.'),
-    ).toBeTruthy();
+    expect(screen.getByText('Alcune informazioni di continuità non sono disponibili.')).toBeTruthy();
 
     const staleReader: WorldFocusContinuityReader = () =>
       Promise.resolve({
@@ -97,9 +98,7 @@ describe('World Focus B2 Continuity UI', () => {
     rerender(<WorldFocusContinuity worldId="music" reader={staleReader} />);
 
     expect(await screen.findByText('Stale thread')).toBeTruthy();
-    expect(
-      screen.getByText('Questa vista usa informazioni non aggiornate.'),
-    ).toBeTruthy();
+    expect(screen.getByText('Questa vista usa informazioni non aggiornate.')).toBeTruthy();
   });
 
   it('contains unexpected failures locally and retries with a new read', async () => {
@@ -113,9 +112,7 @@ describe('World Focus B2 Continuity UI', () => {
 
     render(<WorldFocusContinuity worldId="music" reader={reader} />);
 
-    expect(
-      await screen.findByText('Non riesco a recuperare ciò che è in movimento.'),
-    ).toBeTruthy();
+    expect(await screen.findByText('Non riesco a recuperare ciò che è in movimento.')).toBeTruthy();
     expect(screen.queryByText('private-adapter-detail')).toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: 'Riprova' }));
@@ -131,9 +128,7 @@ describe('World Focus B2 Continuity UI', () => {
     );
     const reader: WorldFocusContinuityReader = readerMock;
 
-    const { rerender } = render(
-      <WorldFocusContinuity worldId="music" reader={reader} />,
-    );
+    const { rerender } = render(<WorldFocusContinuity worldId="music" reader={reader} />);
     await waitFor(() => expect(readerMock).toHaveBeenCalledTimes(1));
 
     rerender(<WorldFocusContinuity worldId="travel" reader={reader} />);

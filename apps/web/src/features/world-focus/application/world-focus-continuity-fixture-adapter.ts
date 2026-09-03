@@ -1,9 +1,12 @@
 import type { WorldFocusContinuityReadAdapter } from './world-focus-continuity';
 import type { WorldFocusContinuityItem } from '../model/world-focus-continuity';
-import type { WorldFocusId } from '../model/world-focus-fixtures';
+import {
+  normalizeWorldFocusFixtureId,
+  type WorldFocusFixtureId,
+} from '../model/world-focus-fixtures';
 
 const CONTINUITY_FIXTURES: Partial<
-  Readonly<Record<WorldFocusId, readonly WorldFocusContinuityItem[]>>
+  Readonly<Record<WorldFocusFixtureId, readonly WorldFocusContinuityItem[]>>
 > = {
   music: [
     {
@@ -11,6 +14,9 @@ const CONTINUITY_FIXTURES: Partial<
       title: 'Neon Static',
       context: 'Release',
       checkpoint: 'Master v3',
+      threadReference: { kind: 'release', key: 'neon-static' },
+      checkpointReference: { kind: 'material-state', key: 'neon-static-master-v3' },
+      continuationReference: { kind: 'continuation-intent', key: 'neon-static-release' },
       presentationState: 'active',
     },
     {
@@ -18,6 +24,9 @@ const CONTINUITY_FIXTURES: Partial<
       title: 'Glass Signal',
       context: 'Song',
       checkpoint: 'Arrangement draft',
+      threadReference: { kind: 'song', key: 'glass-signal' },
+      checkpointReference: { kind: 'material-state', key: 'glass-signal-arrangement-draft' },
+      continuationReference: null,
       presentationState: 'paused',
     },
   ],
@@ -27,6 +36,9 @@ const CONTINUITY_FIXTURES: Partial<
       title: 'Japan 2027',
       context: 'Planning',
       checkpoint: 'Flight shortlist',
+      threadReference: { kind: 'plan', key: 'japan-2027' },
+      checkpointReference: { kind: 'checkpoint', key: 'japan-flight-shortlist' },
+      continuationReference: { kind: 'continuation-intent', key: 'japan-flight-review' },
       presentationState: 'active',
     },
   ],
@@ -36,6 +48,9 @@ const CONTINUITY_FIXTURES: Partial<
       title: 'English B2',
       context: 'Course',
       checkpoint: 'Unit 4',
+      threadReference: { kind: 'course', key: 'english-b2' },
+      checkpointReference: { kind: 'checkpoint', key: 'english-b2-unit-4' },
+      continuationReference: { kind: 'continuation-intent', key: 'english-b2-next-unit' },
       presentationState: 'active',
     },
   ],
@@ -45,6 +60,9 @@ const CONTINUITY_FIXTURES: Partial<
       title: 'Launch brief',
       context: 'Workstream',
       checkpoint: 'Review notes',
+      threadReference: { kind: 'workstream', key: 'launch-brief' },
+      checkpointReference: { kind: 'checkpoint', key: 'launch-brief-review-notes' },
+      continuationReference: null,
       presentationState: 'active',
     },
   ],
@@ -54,6 +72,9 @@ const CONTINUITY_FIXTURES: Partial<
       title: 'Portfolio redesign',
       context: 'Project',
       checkpoint: 'Wireframe pass',
+      threadReference: { kind: 'project', key: 'portfolio-redesign' },
+      checkpointReference: { kind: 'checkpoint', key: 'portfolio-wireframe-pass' },
+      continuationReference: { kind: 'continuation-intent', key: 'portfolio-next-pass' },
       presentationState: 'active',
     },
     {
@@ -61,6 +82,9 @@ const CONTINUITY_FIXTURES: Partial<
       title: 'Home archive',
       context: 'Project',
       checkpoint: 'Source cleanup',
+      threadReference: { kind: 'project', key: 'home-archive' },
+      checkpointReference: { kind: 'checkpoint', key: 'home-archive-source-cleanup' },
+      continuationReference: null,
       presentationState: 'blocked',
     },
   ],
@@ -72,20 +96,15 @@ function createAbortError() {
   return error;
 }
 
-/**
- * Deterministic pre-backend product adapter. The scenario data validates the
- * frontend contract and cross-World sparsity rules; it is not a backend DTO,
- * Domain owner model, database row set, or authorization source.
- */
+/** Deterministic pre-backend product adapter; fixture identity stays local here. */
 export const worldFocusContinuityFixtureAdapter: WorldFocusContinuityReadAdapter =
   Object.freeze({
     read: async ({ worldId, signal }) => {
       await Promise.resolve();
-      if (signal.aborted) {
-        throw createAbortError();
-      }
+      if (signal.aborted) throw createAbortError();
 
-      const orderedItems = CONTINUITY_FIXTURES[worldId];
+      const fixtureId = normalizeWorldFocusFixtureId(worldId);
+      const orderedItems = fixtureId === undefined ? undefined : CONTINUITY_FIXTURES[fixtureId];
       if (orderedItems === undefined || orderedItems.length === 0) {
         return Object.freeze({ status: 'empty' as const, worldId });
       }

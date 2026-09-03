@@ -1,3 +1,5 @@
+import type { WorldFocusId } from '../model/world-focus-identity';
+
 export type WorldFocusValidationIssue = Readonly<{
   code: string;
   path: readonly (string | number)[];
@@ -37,6 +39,55 @@ export function validateWorldFocusBoundary<Value>(
   }
 
   throw new WorldFocusBoundaryValidationError(result.issues.length);
+}
+
+export type WorldFocusScopedReadRequest = Readonly<{
+  worldId: WorldFocusId;
+  signal: AbortSignal;
+}>;
+
+export type WorldFocusScopedReadAdapter = (
+  request: WorldFocusScopedReadRequest,
+) => Promise<unknown>;
+
+export type WorldFocusScopedReadValidator<Value> = (
+  input: unknown,
+  expectedWorldId: WorldFocusId,
+) => WorldFocusValidationResult<Value>;
+
+export type WorldFocusScopedReader<Value> = (
+  worldId: WorldFocusId,
+  signal?: AbortSignal,
+) => Promise<Value>;
+
+/**
+ * Shared mechanics for pre-backend World-scoped reads. This owns cancellation
+ * relay and boundary validation only; projection semantics remain with each
+ * intent-specific owner and an opaque World id never grants route/AuthZ rights.
+ */
+export function createWorldFocusScopedReader<Value>(
+  read: WorldFocusScopedReadAdapter,
+  validator: WorldFocusScopedReadValidator<Value>,
+): WorldFocusScopedReader<Value> {
+  return async (worldId, upstreamSignal) => {
+    const controller = new AbortController();
+    const abort = () => controller.abort();
+
+    if (upstreamSignal?.aborted === true) {
+      controller.abort();
+    } else {
+      upstreamSignal?.addEventListener('abort', abort, { once: true });
+    }
+
+    try {
+      const input = await read({ worldId, signal: controller.signal });
+      return validateWorldFocusBoundary(input, (value) =>
+        validator(value, worldId),
+      );
+    } finally {
+      upstreamSignal?.removeEventListener('abort', abort);
+    }
+  };
 }
 
 export type WorldFocusReadLease = Readonly<{

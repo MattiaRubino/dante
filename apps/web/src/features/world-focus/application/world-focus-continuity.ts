@@ -1,5 +1,6 @@
 import {
-  validateWorldFocusBoundary,
+  createWorldFocusScopedReader,
+  type WorldFocusScopedReader,
   type WorldFocusValidationIssue,
   type WorldFocusValidationResult,
 } from './world-focus-foundation';
@@ -14,15 +15,17 @@ import {
   type WorldFocusContinuityProjection,
   type WorldFocusContinuityReadResult,
 } from '../model/world-focus-continuity';
+import {
+  normalizeWorldFocusContextReference,
+  type WorldFocusContextReference,
+} from '../model/world-focus-context-reference';
+import { createWorldFocusContinuityPrimitive } from '../model/world-focus-work-primitives';
 
 export type WorldFocusContinuityReadAdapter = Readonly<{
   read: (request: Readonly<{ worldId: WorldFocusId; signal: AbortSignal }>) => Promise<unknown>;
 }>;
 
-export type WorldFocusContinuityReader = (
-  worldId: WorldFocusId,
-  signal?: AbortSignal,
-) => Promise<WorldFocusContinuityReadResult>;
+export type WorldFocusContinuityReader = WorldFocusScopedReader<WorldFocusContinuityReadResult>;
 
 function issue(
   code: string,
@@ -36,12 +39,20 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function readNonEmptyString(value: unknown): string | null {
-  if (typeof value !== 'string') {
-    return null;
-  }
-
+  if (typeof value !== 'string') return null;
   const trimmed = value.trim();
   return trimmed.length === 0 ? null : trimmed;
+}
+
+function readReference(value: unknown): WorldFocusContextReference | null {
+  if (!isRecord(value) || typeof value.kind !== 'string' || typeof value.key !== 'string') {
+    return null;
+  }
+  try {
+    return normalizeWorldFocusContextReference({ kind: value.kind, key: value.key });
+  } catch {
+    return null;
+  }
 }
 
 function validateContinuityItem(
@@ -56,6 +67,12 @@ function validateContinuityItem(
   const title = readNonEmptyString(input.title);
   const context = readNonEmptyString(input.context);
   const checkpoint = readNonEmptyString(input.checkpoint);
+  const threadReference = readReference(input.threadReference);
+  const checkpointReference = readReference(input.checkpointReference);
+  const continuationReference =
+    input.continuationReference === null
+      ? null
+      : readReference(input.continuationReference);
   const presentationState = input.presentationState;
   const issues: WorldFocusValidationIssue[] = [];
 
@@ -63,14 +80,13 @@ function validateContinuityItem(
   if (title === null) issues.push(issue('item.title', ['orderedItems', index, 'title']));
   if (context === null) issues.push(issue('item.context', ['orderedItems', index, 'context']));
   if (checkpoint === null) issues.push(issue('item.checkpoint', ['orderedItems', index, 'checkpoint']));
+  if (threadReference === null) issues.push(issue('item.threadReference', ['orderedItems', index, 'threadReference']));
+  if (checkpointReference === null) issues.push(issue('item.checkpointReference', ['orderedItems', index, 'checkpointReference']));
+  if (input.continuationReference !== null && continuationReference === null) {
+    issues.push(issue('item.continuationReference', ['orderedItems', index, 'continuationReference']));
+  }
   if (!isWorldFocusContinuityPresentationState(presentationState)) {
-    issues.push(
-      issue('item.presentationState', [
-        'orderedItems',
-        index,
-        'presentationState',
-      ]),
-    );
+    issues.push(issue('item.presentationState', ['orderedItems', index, 'presentationState']));
   }
 
   if (
@@ -79,10 +95,20 @@ function validateContinuityItem(
     title === null ||
     context === null ||
     checkpoint === null ||
+    threadReference === null ||
+    checkpointReference === null ||
     !isWorldFocusContinuityPresentationState(presentationState)
   ) {
     return { ok: false, issues };
   }
+
+  const primitive = createWorldFocusContinuityPrimitive({
+    instanceId: key,
+    threadReference,
+    checkpointReference,
+    continuationReference,
+    state: presentationState,
+  });
 
   return {
     ok: true,
@@ -91,7 +117,10 @@ function validateContinuityItem(
       title,
       context,
       checkpoint,
-      presentationState,
+      threadReference: primitive.threadReference,
+      checkpointReference: primitive.checkpointReference,
+      continuationReference: primitive.continuationReference,
+      presentationState: primitive.state,
     }),
   };
 }
@@ -108,21 +137,15 @@ function validateProjection(
   const orderedItems = input.orderedItems;
   const issues: WorldFocusValidationIssue[] = [];
 
-  if (input.schemaVersion !== 1) {
-    issues.push(issue('projection.schemaVersion', ['projection', 'schemaVersion']));
-  }
-  if (worldId !== expectedWorldId) {
-    issues.push(issue('projection.worldId', ['projection', 'worldId']));
-  }
+  if (input.schemaVersion !== 1) issues.push(issue('projection.schemaVersion', ['projection', 'schemaVersion']));
+  if (worldId !== expectedWorldId) issues.push(issue('projection.worldId', ['projection', 'worldId']));
   if (!Array.isArray(orderedItems)) {
     issues.push(issue('projection.orderedItems', ['projection', 'orderedItems']));
   } else if (
     orderedItems.length === 0 ||
     orderedItems.length > WORLD_FOCUS_CONTINUITY_FIRST_OPEN_LIMIT
   ) {
-    issues.push(
-      issue('projection.orderedItems.bounds', ['projection', 'orderedItems']),
-    );
+    issues.push(issue('projection.orderedItems.bounds', ['projection', 'orderedItems']));
   }
 
   if (issues.length > 0 || worldId === undefined || !Array.isArray(orderedItems)) {
@@ -165,10 +188,7 @@ export function validateWorldFocusContinuityReadResult(
   input: unknown,
   expectedWorldId: WorldFocusId,
 ): WorldFocusValidationResult<WorldFocusContinuityReadResult> {
-  if (!isRecord(input)) {
-    return { ok: false, issues: [issue('result.record')] };
-  }
-
+  if (!isRecord(input)) return { ok: false, issues: [issue('result.record')] };
   const status = input.status;
 
   if (status === 'empty') {
@@ -181,25 +201,12 @@ export function validateWorldFocusContinuityReadResult(
   if (status === 'unavailable') {
     const worldId = normalizeWorldFocusId(input.worldId);
     const reasonCode = readNonEmptyString(input.reasonCode);
-    if (
-      worldId !== expectedWorldId ||
-      reasonCode === null ||
-      typeof input.retryable !== 'boolean'
-    ) {
-      return {
-        ok: false,
-        issues: [issue('result.unavailable')],
-      };
+    if (worldId !== expectedWorldId || reasonCode === null || typeof input.retryable !== 'boolean') {
+      return { ok: false, issues: [issue('result.unavailable')] };
     }
-
     return {
       ok: true,
-      value: Object.freeze({
-        status,
-        worldId,
-        reasonCode,
-        retryable: input.retryable,
-      }),
+      value: Object.freeze({ status, worldId, reasonCode, retryable: input.retryable }),
     };
   }
 
@@ -208,15 +215,10 @@ export function validateWorldFocusContinuityReadResult(
   }
 
   const projectionResult = validateProjection(input.projection, expectedWorldId);
-  if (!projectionResult.ok) {
-    return projectionResult;
-  }
+  if (!projectionResult.ok) return projectionResult;
 
   if (status === 'ready') {
-    return {
-      ok: true,
-      value: Object.freeze({ status, projection: projectionResult.value }),
-    };
+    return { ok: true, value: Object.freeze({ status, projection: projectionResult.value }) };
   }
 
   if (status === 'partial') {
@@ -225,11 +227,7 @@ export function validateWorldFocusContinuityReadResult(
       ? { ok: false, issues: [issue('result.reasonCode', ['reasonCode'])] }
       : {
           ok: true,
-          value: Object.freeze({
-            status,
-            projection: projectionResult.value,
-            reasonCode,
-          }),
+          value: Object.freeze({ status, projection: projectionResult.value, reasonCode }),
         };
   }
 
@@ -237,37 +235,17 @@ export function validateWorldFocusContinuityReadResult(
   if (asOf === null || Number.isNaN(Date.parse(asOf))) {
     return { ok: false, issues: [issue('result.asOf', ['asOf'])] };
   }
-
   return {
     ok: true,
-    value: Object.freeze({
-      status,
-      projection: projectionResult.value,
-      asOf,
-    }),
+    value: Object.freeze({ status, projection: projectionResult.value, asOf }),
   };
 }
 
 export function createWorldFocusContinuityReader(
   adapter: WorldFocusContinuityReadAdapter,
 ): WorldFocusContinuityReader {
-  return async (worldId, upstreamSignal) => {
-    const controller = new AbortController();
-    const abort = () => controller.abort();
-
-    if (upstreamSignal?.aborted === true) {
-      controller.abort();
-    } else {
-      upstreamSignal?.addEventListener('abort', abort, { once: true });
-    }
-
-    try {
-      const input = await adapter.read({ worldId, signal: controller.signal });
-      return validateWorldFocusBoundary(input, (value) =>
-        validateWorldFocusContinuityReadResult(value, worldId),
-      );
-    } finally {
-      upstreamSignal?.removeEventListener('abort', abort);
-    }
-  };
+  return createWorldFocusScopedReader(
+    adapter.read,
+    validateWorldFocusContinuityReadResult,
+  );
 }

@@ -8,7 +8,7 @@ import type {
   WorldFocusContinuityPresentationState,
   WorldFocusContinuityReadResult,
 } from '../model/world-focus-continuity';
-import type { WorldFocusId } from '../model/world-focus-fixtures';
+import type { WorldFocusId } from '../model/world-focus-identity';
 
 type WorldFocusContinuitySettledState =
   | Readonly<{ status: 'error' }>
@@ -31,13 +31,8 @@ export function WorldFocusContinuity({
     state: WorldFocusContinuitySettledState;
   }> | null>(null);
   const requestKey = `${worldId}:${retryGeneration}`;
-  const state =
-    settled?.requestKey === requestKey
-      ? settled.state
-      : ({ status: 'loading' } as const);
-  const stateLabels: Readonly<
-    Record<WorldFocusContinuityPresentationState, string>
-  > = {
+  const state = settled?.requestKey === requestKey ? settled.state : ({ status: 'loading' } as const);
+  const stateLabels: Readonly<Record<WorldFocusContinuityPresentationState, string>> = {
     active: t(($) => $.common.worldFocus.continuity.states.active),
     paused: t(($) => $.common.worldFocus.continuity.states.paused),
     blocked: t(($) => $.common.worldFocus.continuity.states.blocked),
@@ -51,41 +46,22 @@ export function WorldFocusContinuity({
         lease.commit(() => setSettled({ requestKey, state: result }));
       })
       .catch(() => {
-        if (lease.signal.aborted) {
-          return;
-        }
-        lease.commit(() =>
-          setSettled({ requestKey, state: { status: 'error' } }),
-        );
+        if (lease.signal.aborted) return;
+        lease.commit(() => setSettled({ requestKey, state: { status: 'error' } }));
       })
       .finally(() => lease.release());
 
     return () => coordinator.cancelCurrent();
   }, [coordinator, reader, requestKey, worldId]);
 
-  if (state.status === 'empty') {
-    return null;
-  }
-
+  if (state.status === 'empty') return null;
   const retry = () => setRetryGeneration((generation) => generation + 1);
 
   if (state.status === 'loading') {
     return (
-      <section
-        className="world-focus-continuity world-focus-continuity-loading"
-        aria-busy="true"
-        aria-labelledby="world-focus-continuity-title"
-        data-world-focus-continuity-status="loading"
-      >
-        <h2
-          className="world-focus-continuity-title"
-          id="world-focus-continuity-title"
-        >
-          {t(($) => $.common.worldFocus.continuity.title)}
-        </h2>
-        <p className="world-focus-continuity-status" role="status">
-          {t(($) => $.common.worldFocus.continuity.loading)}
-        </p>
+      <section className="world-focus-continuity world-focus-continuity-loading" aria-busy="true" aria-labelledby="world-focus-continuity-title" data-world-focus-continuity-status="loading">
+        <h2 className="world-focus-continuity-title" id="world-focus-continuity-title">{t(($) => $.common.worldFocus.continuity.title)}</h2>
+        <p className="world-focus-continuity-status" role="status">{t(($) => $.common.worldFocus.continuity.loading)}</p>
       </section>
     );
   }
@@ -93,83 +69,42 @@ export function WorldFocusContinuity({
   if (state.status === 'error' || state.status === 'unavailable') {
     const retryable = state.status === 'error' || state.retryable;
     return (
-      <section
-        className="world-focus-continuity world-focus-continuity-degraded"
-        aria-labelledby="world-focus-continuity-title"
-        data-world-focus-continuity-status={state.status}
-      >
-        <h2
-          className="world-focus-continuity-title"
-          id="world-focus-continuity-title"
-        >
-          {t(($) => $.common.worldFocus.continuity.title)}
-        </h2>
+      <section className="world-focus-continuity world-focus-continuity-degraded" aria-labelledby="world-focus-continuity-title" data-world-focus-continuity-status={state.status}>
+        <h2 className="world-focus-continuity-title" id="world-focus-continuity-title">{t(($) => $.common.worldFocus.continuity.title)}</h2>
         <div className="world-focus-continuity-degraded-row">
           <p className="world-focus-continuity-status" role="alert">
-            {state.status === 'error'
-              ? t(($) => $.common.worldFocus.continuity.error)
-              : t(($) => $.common.worldFocus.continuity.unavailable)}
+            {state.status === 'error' ? t(($) => $.common.worldFocus.continuity.error) : t(($) => $.common.worldFocus.continuity.unavailable)}
           </p>
-          {retryable ? (
-            <button
-              className="world-focus-continuity-retry"
-              type="button"
-              onClick={retry}
-            >
-              {t(($) => $.common.worldFocus.continuity.retry)}
-            </button>
-          ) : null}
+          {retryable ? <button className="world-focus-continuity-retry" type="button" onClick={retry}>{t(($) => $.common.worldFocus.continuity.retry)}</button> : null}
         </div>
       </section>
     );
   }
 
   const projection = state.projection;
-  const qualification =
-    state.status === 'partial'
-      ? t(($) => $.common.worldFocus.continuity.partial)
-      : state.status === 'stale'
-        ? t(($) => $.common.worldFocus.continuity.stale)
-        : null;
+  const qualification = state.status === 'partial'
+    ? t(($) => $.common.worldFocus.continuity.partial)
+    : state.status === 'stale'
+      ? t(($) => $.common.worldFocus.continuity.stale)
+      : null;
 
   return (
-    <section
-      className="world-focus-continuity"
-      aria-labelledby="world-focus-continuity-title"
-      data-world-focus-continuity-status={state.status}
-    >
+    <section className="world-focus-continuity" aria-labelledby="world-focus-continuity-title" data-world-focus-continuity-status={state.status}>
       <div className="world-focus-continuity-heading">
-        <h2
-          className="world-focus-continuity-title"
-          id="world-focus-continuity-title"
-        >
-          {t(($) => $.common.worldFocus.continuity.title)}
-        </h2>
-        {qualification === null ? null : (
-          <p className="world-focus-continuity-qualification" role="status">
-            {qualification}
-          </p>
-        )}
+        <h2 className="world-focus-continuity-title" id="world-focus-continuity-title">{t(($) => $.common.worldFocus.continuity.title)}</h2>
+        {qualification === null ? null : <p className="world-focus-continuity-qualification" role="status">{qualification}</p>}
       </div>
 
       <ul className="world-focus-continuity-list">
         {projection.orderedItems.map((item) => (
-          <li
-            className="world-focus-continuity-item"
-            data-world-focus-continuity-state={item.presentationState}
-            key={item.key}
-          >
+          <li className="world-focus-continuity-item" data-world-focus-continuity-state={item.presentationState} key={item.key}>
             <div className="world-focus-continuity-item-copy">
               <p className="world-focus-continuity-item-title">{item.title}</p>
               <p className="world-focus-continuity-item-meta">
-                <span>{item.context}</span>
-                <span aria-hidden="true">·</span>
-                <span>{item.checkpoint}</span>
+                <span>{item.context}</span><span aria-hidden="true">·</span><span>{item.checkpoint}</span>
               </p>
             </div>
-            <span className="world-focus-continuity-item-state">
-              {stateLabels[item.presentationState]}
-            </span>
+            <span className="world-focus-continuity-item-state">{stateLabels[item.presentationState]}</span>
           </li>
         ))}
       </ul>

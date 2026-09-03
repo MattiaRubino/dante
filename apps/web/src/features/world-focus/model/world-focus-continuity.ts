@@ -1,14 +1,15 @@
-import type { WorldFocusId } from './world-focus-fixtures';
+import type { WorldFocusContextReference } from './world-focus-context-reference';
+import type { WorldFocusId } from './world-focus-identity';
 import type { WorldFocusVersionedPayload } from './world-focus-platform';
+import {
+  WORLD_FOCUS_CONTINUITY_STATES,
+  type WorldFocusContinuityState,
+} from './world-focus-work-primitives';
 
-export const WORLD_FOCUS_CONTINUITY_PRESENTATION_STATES = [
-  'active',
-  'paused',
-  'blocked',
-] as const;
+export const WORLD_FOCUS_CONTINUITY_PRESENTATION_STATES =
+  WORLD_FOCUS_CONTINUITY_STATES;
 
-export type WorldFocusContinuityPresentationState =
-  (typeof WORLD_FOCUS_CONTINUITY_PRESENTATION_STATES)[number];
+export type WorldFocusContinuityPresentationState = WorldFocusContinuityState;
 
 export const WORLD_FOCUS_CONTINUITY_FIRST_OPEN_LIMIT = 4;
 
@@ -17,6 +18,9 @@ export type WorldFocusContinuityItem = Readonly<{
   title: string;
   context: string;
   checkpoint: string;
+  threadReference: WorldFocusContextReference;
+  checkpointReference: WorldFocusContextReference;
+  continuationReference: WorldFocusContextReference | null;
   presentationState: WorldFocusContinuityPresentationState;
 }>;
 

@@ -1,12 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import {
+  createWorldFocusScopedReader,
   startWorldFocusPerformanceSpan,
   validateWorldFocusBoundary,
   WORLD_FOCUS_PERFORMANCE_MEASURES,
   WorldFocusBoundaryValidationError,
   WorldFocusLatestReadCoordinator,
   type WorldFocusPerformanceTarget,
+  type WorldFocusScopedReadAdapter,
 } from './world-focus-foundation';
 
 describe('World Focus B0 application foundation', () => {
@@ -51,6 +53,31 @@ describe('World Focus B0 application foundation', () => {
         expect(error.code).toBe('WORLD_FOCUS_BOUNDARY_VALIDATION');
       }
     }
+  });
+
+  it('shares cancellation and validation mechanics without owning projection semantics', async () => {
+    let observedSignal: AbortSignal | null = null;
+    const adapter: WorldFocusScopedReadAdapter = ({ worldId, signal }) => {
+      observedSignal = signal;
+      return Promise.resolve({ worldId, value: 'bounded' });
+    };
+    const reader = createWorldFocusScopedReader(adapter, (input, expectedWorldId) => {
+      if (
+        typeof input === 'object' &&
+        input !== null &&
+        'worldId' in input &&
+        input.worldId === expectedWorldId &&
+        'value' in input &&
+        input.value === 'bounded'
+      ) {
+        return { ok: true, value: input.value };
+      }
+      return { ok: false, issues: [{ code: 'invalid', path: [] }] };
+    });
+    const upstream = new AbortController();
+
+    await expect(reader('apiary', upstream.signal)).resolves.toBe('bounded');
+    expect(observedSignal?.aborted).toBe(false);
   });
 
   it('prevents a superseded read from committing', () => {
