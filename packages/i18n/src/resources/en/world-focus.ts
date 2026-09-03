@@ -45,6 +45,35 @@ export const worldFocus = {
       blocked: 'Blocked',
     },
   },
+  presentation: {
+    attention: {
+      title: 'Needs attention',
+      resolution: 'Resolution:',
+      states: {
+        unresolved: 'Unresolved',
+        'awaiting-response': 'Awaiting response',
+        blocked: 'Blocked',
+      },
+    },
+    comparison: {
+      title: 'Comparison',
+      basis: 'Basis:',
+      modes: {
+        difference: 'Difference',
+        change: 'Change',
+        'trade-off': 'Trade-off',
+        'planned-actual': 'Planned vs actual',
+      },
+    },
+    trajectory: {
+      title: 'Trajectory',
+      missing: 'Missing data',
+      axes: {
+        time: 'Over time',
+        sequence: 'In sequence',
+      },
+    },
+  },
   worlds: {
     body: {
       label: 'Body',
