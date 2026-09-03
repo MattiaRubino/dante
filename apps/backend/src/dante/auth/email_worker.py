@@ -111,7 +111,7 @@ class EmailDeliveryWorkerPool:
                 message = render_claim(
                     claim=claim,
                     cipher=self._cipher,
-                    from_address=self._settings.email_from_address,
+                    from_address=self._settings.email_sender_address,
                     canonical_web_origin=self._settings.canonical_web_origin,
                 )
             except EmailPayloadError:
