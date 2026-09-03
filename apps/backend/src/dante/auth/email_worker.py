@@ -168,4 +168,5 @@ class EmailDeliveryWorkerPool:
         base = float(self._settings.email_retry_base_seconds)
         cap = float(self._settings.email_retry_max_seconds)
         exponent = max(0, attempt_number - 1)
-        return min(cap, base * (2**exponent))
+        delay = base * float(2**exponent)
+        return cap if delay > cap else delay
