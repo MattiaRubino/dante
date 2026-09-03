@@ -1,9 +1,4 @@
-import {
-  useEffect,
-  useRef,
-  useState,
-  type KeyboardEvent,
-} from 'react';
+import { useRef, useState, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import './temporal-create-event-agenda.css';
@@ -32,11 +27,6 @@ function AgendaPartEditor({
 }: AgendaPartEditorProps) {
   const { t } = useTranslation('common');
   const [draft, setDraft] = useState(part);
-
-  useEffect(() => {
-    setDraft(part);
-  }, [part]);
-
   const commit = () => onCommit(index, draft);
 
   const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
@@ -52,13 +42,13 @@ function AgendaPartEditor({
     }
     if (event.key === 'Enter') {
       event.preventDefault();
-      commit();
+      event.currentTarget.blur();
       return;
     }
     if (event.key === 'Escape' && draft !== part) {
       event.preventDefault();
       event.stopPropagation();
-      commit();
+      setDraft(part);
     }
   };
 
@@ -230,7 +220,7 @@ export function TemporalCreateEventAgenda({
         <div className="temporal-create-event-agenda__list" role="list">
           {parts.map((part, index) => (
             <AgendaPartEditor
-              key={index}
+              key={`${index}:${part}`}
               part={part}
               index={index}
               total={parts.length}
