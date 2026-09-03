@@ -1,10 +1,10 @@
 # DANTE Technical Decisions
 
 - **Status:** CURRENT DECISION REGISTER
-- **Last reconciled:** 2026-09-02
-- **Branch note:** protected `main` remains the integrated baseline; `feature/access-auth` contains newer accepted/materialized Access/Auth truth until explicit integration
+- **Last reconciled:** 2026-09-03
+- **Branch note:** protected `main` remains the integrated baseline; `feature/access-auth` contains newer accepted/materialized Access/Auth + Email Platform truth until explicit integration
 
-This file summarizes current accepted technical decisions. Detailed rationale and constraints live in linked Domain/Logical/Physical/Engineering/Frontend/Access authorities and ADRs. Historical phase-time status does not override later accepted/materialized evidence.
+This file summarizes current accepted technical decisions. Detailed rationale and constraints live in linked Domain/Logical/Physical/Engineering/Frontend/Access authorities and ADRs. Historical phase-time status does not override later executable/materialized evidence.
 
 ## TD-01 — Canonical persistence
 
@@ -14,16 +14,20 @@ This file summarizes current accepted technical decisions. Detailed rationale an
 PostgreSQL 18 major family
 sole canonical persistence + material-history authority
 
-Physical exact phase-time patch   18.4 / HISTORICAL
-CP2 / CP3 original direct patch   18.4 / HISTORICAL EXACT
-current repository patch          18.6
-protected-main CP6 Alembic        20260826_08
-feature/access-auth Alembic       20260831_13
+Physical/CP2/CP3 historical exact patch  18.4
+current repository patch                 18.6
+protected-main CP6 Alembic               20260826_08
+feature/access-auth Alembic              20260903_15
 ```
 
-Patch maintenance inside PostgreSQL 18 does not reopen the selected architecture and does not rewrite historical 18.4 evidence.
+Current `feature/access-auth` catalog:
 
-No separate graph/vector/search/event-store database is canonical by default.
+```text
+87 tables / 5 views / 15 routines / 75 triggers
+170 physical indexes / 88 FKs / 267 CHECKs
+```
+
+Patch maintenance inside PostgreSQL 18 does not reopen the selected architecture. No separate graph/vector/search/event-store database is canonical by default.
 
 ## TD-02 — PostgreSQL capability envelope
 
@@ -37,9 +41,7 @@ Selected target:
 - pg_trgm;
 - unaccent;
 - pg_stat_statements;
-- PgBouncer 1.25.2.
-
-The current repository-owned PostgreSQL 18.6 image preserves the selected PostGIS/pgvector envelope. PgBouncer activation remains tied to concrete validation.
+- PgBouncer 1.25.2 when concretely activated/validated.
 
 ## TD-03 — Offline/sync
 
@@ -55,23 +57,30 @@ local pending mutation != canonical accepted effect
 consequential offline mutation → backend governance/revalidation → PostgreSQL
 ```
 
-Frontend Data Authority Matrix further qualifies client ownership without changing Physical authority.
-
 ## TD-04 — Async/durable work
 
-**ACCEPTED / FIRST CLASS-A CONSUMER NOW IDENTIFIED**
+**ACCEPTED / FIRST CLASS-A CONSUMER MATERIALIZED**
 
 Class A: PostgreSQL transactional outbox + bounded worker.
 
-Access/Auth outbound security email is now the first concrete Class-A consumer target under ADR-012. Its exact outbox/delivery schema is not yet materialized and requires a separate ADR-010 persistence gate.
+The shared Email Platform is the first concrete Class-A consumer and is materialized through:
 
-Class B: Restate selected, initially dormant; activate at first real Class-B durable workflow.
+```text
+dante.email_delivery_intent
+dante.email_delivery_attempt
+dante.email_provider_event
+dante.email_recipient_suppression
+```
+
+Auth/business mutation + EmailIntent are atomically coordinated; external provider I/O occurs after commit. Email is technical durable-work state, not DANTE MaterialState.
+
+Class B: Restate remains selected/dormant until first real Class-B durable workflow.
 
 ## TD-05 — Object bytes
 
 **ACCEPTED TARGET / TRIGGER-BASED ACTIVATION**
 
-Cloudflare R2 Standard, private, EU jurisdiction, raw bytes only. PostgreSQL owns ContentArtifact authority/metadata/provenance/visibility/retention/hash/locator semantics.
+Cloudflare R2 Standard, private, EU-jurisdiction posture, raw bytes only. PostgreSQL owns ContentArtifact authority/metadata/provenance/visibility/retention/hash/locator semantics.
 
 ## TD-06 — Recovery
 
@@ -84,7 +93,16 @@ pgBackRest 2.59.0
 + WAL/PITR
 ```
 
-Recovery copies remain noncanonical and anti-resurrection obligations remain active.
+Email Platform adds a specific post-restore rule:
+
+```text
+email workers CLOSED
+→ restore
+→ reconciliation
+→ uncertain restored nonterminal email work = recovery_quarantined
+→ sensitive payload wiped
+→ workers reopen
+```
 
 ## TD-07 — Solver
 
@@ -98,9 +116,9 @@ OR-Tools CP-SAT. `UNKNOWN != INFEASIBLE`. Solver output remains candidate/derive
 
 Backend: OpenTelemetry + Grafana Alloy + Grafana Cloud EU + pg_stat_statements.
 
-Frontend: Sentry selected behind bounded Web/Mobile observability adapters when activated.
+Frontend: Sentry behind bounded Web/Mobile observability adapters when activated.
 
-Operational telemetry is privacy-minimized and noncanonical. Security/email telemetry must never expose OTP/recovery proof material or raw high-cardinality recipient data by default.
+Email Platform currently exposes privacy-minimized DB-backed operational signals without recipient/secret dimensions. No OTP/recovery proof belongs in logs, metrics or traces.
 
 ## TD-09 — Repository strategy and root ownership
 
@@ -108,13 +126,10 @@ Operational telemetry is privacy-minimized and noncanonical. Security/email tele
 
 One DANTE product monorepo; keep current repository.
 
-Accepted root ownership reserves:
+Reserved root ownership:
 
 ```text
 apps/
-  backend/
-  web/
-  mobile/
 packages/
 infra/
 tooling/
@@ -124,9 +139,7 @@ prototypes/
 .github/
 ```
 
-Paths are created only when real content exists. No empty ceremonial tree.
-
-`infra/` owns infrastructure definitions, never business logic. Production apps do not import prototypes.
+Paths are created only when real content exists.
 
 ## TD-10 — Backend architecture
 
@@ -134,7 +147,7 @@ Paths are created only when real content exists. No empty ceremonial tree.
 
 Capability-first modular monolith.
 
-- no 57 owners → 57 modules mechanical translation;
+- no mechanical 57 owners → 57 modules translation;
 - no generic CRUD `Repository[T]` semantic model;
 - no BaseService/service locator/global DB session;
 - Domain/application meaning independent of FastAPI/SQLAlchemy/provider SDK identity;
@@ -142,41 +155,22 @@ Capability-first modular monolith.
 - private module implementation is not a public interface;
 - cross-module ACID transaction allowed when semantics require it.
 
-Access/Auth follows this model: provider/SMTP/WebAuthn SDK details remain outside Domain/application authority.
+Access/Auth and Email Platform follow this model: provider SDK/SMTP/WebAuthn details remain outside Domain/application authority.
 
 ## TD-11 — Frontend application architecture
 
-**ACCEPTED / FRONTEND FOUNDATION FINAL REVIEW PASS / INTEGRATED VIA PR #22**
-
-Platform boundary:
+**ACCEPTED / INTEGRATED**
 
 ```text
 apps/web     React DOM + Vite + TanStack Router
 apps/mobile  React Native + Expo + Expo Router
 ```
 
-Structural rules:
-
-- feature-first Web/Mobile architecture;
-- route/navigation files are thin adapters;
-- bootstrap/router consume other layers only through public APIs;
-- feature dependency cycles are forbidden;
-- Web and Mobile never import each other's private/platform implementation;
-- app-local `ui/` and `platform/` boundaries;
-- production never imports `prototypes/`;
-- architecture rules become executable lint/package/cycle checks.
-
-Shared-package policy:
-
-- only real multi-consumer packages;
-- current shared examples include `@dante/design-tokens`, `@dante/i18n`, `@dante/time`, `@dante/api-client`;
-- shared feature package only after real Web+Mobile reuse;
-- framework-free shared cores by default;
-- shared frontend logic never owns canonical Domain/AuthZ/conflict/persistence/accepted-effect authority.
+Feature-first boundaries, thin route adapters, no Web/Mobile private cross-imports, executable architecture rules, shared packages only for real multi-consumer value.
 
 ## TD-12 — Frontend language/toolchain
 
-**ACCEPTED / INTEGRATED VIA PR #22**
+**ACCEPTED / INTEGRATED**
 
 ```text
 Node 24 LTS
@@ -185,21 +179,14 @@ pnpm 11
 Turborepo 2.x
 ```
 
-pnpm isolated layout is preferred/direct-validation-required. Evidence-driven `nodeLinker: hoisted` fallback is allowed without reopening the architecture.
-
-Turbo orchestrates the JS/frontend task graph only; GitHub Actions remains repository-wide CI/CD authority.
-
 ## TD-13 — Frontend data/state authority
 
-**ACCEPTED / INTEGRATED VIA PR #22**
-
-Data Authority Matrix:
+**ACCEPTED / INTEGRATED**
 
 ```text
 canonical accepted state/effect   backend + PostgreSQL
 synced local projection           PowerSync/SQLite noncanonical
 offline pending mutation          local staging only
-offline acceptance                backend governance/conflict checks
 remote request state              TanStack Query + typed API
 online governed command           FastAPI/backend
 form draft                        TanStack Form
@@ -207,72 +194,46 @@ component transient               React
 cross-tree transient              Zustand only when justified
 ```
 
-Feature UI uses feature data/model boundaries rather than direct HTTP/PowerSync/query-cache/storage ownership. No universal frontend `Repository<T>`.
-
-Access/Auth additionally treats browser/provider/WebAuthn completion as evidence only; backend canonical response remains the Auth success authority.
+Browser/provider/WebAuthn completion is evidence only; backend response remains Auth success authority.
 
 ## TD-14 — Frontend offline posture
 
-**ACCEPTED / INTEGRATED VIA PR #22**
+**ACCEPTED / INTEGRATED**
 
-Mobile activates PowerSync + encrypted SQLite when materialized for a capability that needs it, initially app-owned under the Mobile platform sync boundary.
-
-Web baseline is online-first. PowerSync Web local DB is available/dormant.
-
-Browser PWA/service-worker offline behavior is dormant/not baseline and requires explicit design before activation.
-
-Local mobile data is identity-scoped; cross-account local-data leakage is forbidden.
+Mobile activates PowerSync + encrypted SQLite only for capabilities that need it. Web baseline remains online-first. Browser PWA/service-worker offline behavior is not baseline.
 
 ## TD-15 — Frontend API/codegen
 
 **ACCEPTED / MATERIALIZED FOR ACCESS/AUTH**
 
-Canonical chain:
-
 ```text
 FastAPI/Pydantic
-→ committed deterministic OpenAPI 3.1 snapshot
+→ deterministic OpenAPI 3.1 snapshot
 → Orval 8 Fetch generation
-→ React-free/auth-storage-agnostic @dante/api-client
-→ Web/Native transport/application boundary
+→ @dante/api-client
+→ Web/Native application boundary
 → UI
 ```
 
-This is no longer merely “when real OpenAPI exists”: Access/Auth has activated and proved the generated client chain. Generated transport source is deterministic and drift checked. Generated Query ownership is not forced onto PowerSync-backed reads.
+Generated source is deterministic and drift checked.
 
 ## TD-16 — Frontend UI/tokens/i18n/time
 
-**ACCEPTED / INTEGRATED VIA PR #22**
+**ACCEPTED / INTEGRATED**
 
-Web UI: DANTE layer over Radix + Tailwind/CSS variables + Motion where required.
-
-Mobile UI: DANTE RN layer over StyleSheet/Reanimated/Gesture Handler.
-
-One DTCG-compatible semantic token source produces platform outputs; shared token meaning does not require identical pixel values.
-
-`@dante/i18n` is framework-free; app bootstrap wires React integration/detection/persistence.
-
-`@dante/time` owns Temporal-based semantic time handling; JavaScript `Date` is not the universal DANTE time type.
+Web UI uses the DANTE layer over Radix + Tailwind/CSS variables + Motion where required. Mobile uses DANTE RN components over native RN styling/animation primitives. Shared semantic tokens/i18n/time cores remain framework-bounded as accepted.
 
 ## TD-17 — Frontend Web runtime config/delivery
 
-**ACCEPTED / INTEGRATED VIA PR #22**
+**ACCEPTED / INTEGRATED**
 
-Web supports one immutable SPA artifact promoted across environments where the platform permits, with versioned Zod-validated public runtime configuration.
-
-Cloudflare Workers Static Assets remains selected Web delivery target. An app-coupled Worker may serve bounded bootstrap config such as `/client-config` but is not a DANTE BFF/business backend.
-
-Provider public identifiers may be exposed through governed public config/build inputs; secrets never belong there.
+Immutable SPA promotion with validated public runtime config where supported. Cloudflare Workers Static Assets remains selected Web delivery target. Client config never contains secrets.
 
 ## TD-18 — Mobile build/release
 
-**ACCEPTED / INTEGRATED VIA PR #22**
+**ACCEPTED / INTEGRATED AS ARCHITECTURE**
 
-EAS Build/Submit/Update selected. EAS Workflows optional/dormant because GitHub Actions remains primary orchestration.
-
-Android and iOS are supported architectural targets; signed/device/store gates apply when each platform is activated for release.
-
-M6 remains future/optional and requires re-gating before materialization.
+EAS Build/Submit/Update selected. GitHub Actions remains primary orchestration. M6 remains future/optional and requires re-gating.
 
 ## TD-19 — Backend language/runtime
 
@@ -280,7 +241,6 @@ M6 remains future/optional and requires re-gating before materialization.
 
 ```text
 Python 3.14.x
-initial pin 3.14.7
 uv
 apps/backend/src/dante
 Ruff
@@ -291,13 +251,9 @@ Hypothesis
 
 ## TD-20 — Developer OS/workflow
 
-**ACCEPTED / FRONTEND QUALIFIED**
+**ACCEPTED**
 
-Backend canonical semantics: Linux. Primary Windows posture uses one authoritative WSL-backed repository checkout with PyCharm/JetBrains supported.
-
-Frontend keeps the same single-checkout posture. WSL↔Windows Metro/ADB mechanics are a tooling adapter requiring direct validation, not a product architecture invariant.
-
-No divergent Windows/WSL source-tree clones or shared cross-OS `node_modules` environment.
+Backend canonical semantics: Linux. Primary Windows posture uses one authoritative WSL-backed repository checkout. No divergent Windows/WSL source clones or shared cross-OS dependency trees.
 
 ## TD-21 — LOCAL container/persistence toolkit
 
@@ -305,17 +261,13 @@ No divergent Windows/WSL source-tree clones or shared cross-OS `node_modules` en
 
 Backend process direct in WSL/Linux for normal reload/debug; Docker Compose owns LOCAL stateful dependencies; future backend deployable uses OCI packaging.
 
-Persistence toolkit:
-
 ```text
-SQLAlchemy 2.x stable
+SQLAlchemy 2.x
 psycopg 3
 Alembic
 ```
 
-Async DB I/O at technical boundaries; Domain/application sync/pure by default; application boundary owns transaction.
-
-Disposable PostgreSQL harnesses may isolate automated/manual UAT. Their disposable state does not replace the normal local development database or canonical production persistence policy.
+Disposable PostgreSQL harnesses may isolate automated/manual UAT.
 
 ## TD-22 — Migration/copy/recovery governance
 
@@ -325,16 +277,12 @@ Disposable PostgreSQL harnesses may isolate automated/manual UAT. Their disposab
 - autogenerate candidate only;
 - applied revisions immutable;
 - schema drift tested;
-- risk review + PostgreSQL staged/online techniques;
 - expand → migrate → contract;
-- large backfills bounded/resumable/idempotent;
+- bounded resumable backfills;
 - separated DB privilege classes;
-- non-transactional PostgreSQL DDL isolated explicitly when required;
-- `pg_dump`/`pg_restore` logical-copy role distinct from pgBackRest/WAL/PITR recovery;
+- logical copy distinct from physical PITR recovery;
 - raw PROD → DEV forbidden by default;
 - PostgreSQL major upgrade is a separate platform operation.
-
-Detailed current PostgreSQL persistence/migration doctrine is governed by ADR-010 and the closed CP6-02 Constitution.
 
 ## TD-23 — Environment/config/secrets
 
@@ -351,11 +299,9 @@ PROD
 
 Environment != Git branch.
 
-Backend uses typed fail-fast pydantic-settings and remote workload identity/secret-manager/OIDC posture.
+Backend uses typed fail-fast settings and remote workload-identity/secret-manager posture. Client config is public and never contains secrets.
 
-Frontend tool-specific profiles/channels map to the same four contexts. Client config is public and never contains secrets.
-
-Real-provider UAT is explicit opt-in; provider credentials/secrets are not committed to the repository.
+Real-provider UAT is explicit opt-in. Email local UAT uses a named `dante-uat` AWS profile with temporary `aws login` credentials; no Access Key is required for the dedicated IAM user.
 
 ## TD-24 — Testing/CI/supply chain
 
@@ -363,104 +309,87 @@ Real-provider UAT is explicit opt-in; provider credentials/secrets are not commi
 
 GitHub Actions primary CI/CD.
 
-Backend uses risk-layered unit/application/property/architecture/real-PostgreSQL/migration/concurrency/provider/API/privacy/release validation.
+Backend uses risk-layered unit/application/property/architecture/real-PostgreSQL/migration/concurrency/provider/API/privacy/release validation. Frontend uses strict type/boundary/cycle checks plus unit/component/E2E layers.
 
-Frontend uses co-located unit/component tests, app-level Web E2E/Mobile Maestro, strict type/boundary/cycle checks and higher-cost release validation only where applicable.
-
-Protected-main required contexts are repository-enforced current contexts, not guessed names. Current documented required contexts are:
-
-```text
-Backend CI Gate
-Dependency Review
-Frontend CI Gate
-```
-
-Live GitHub ruleset remains enforcement authority if it changes.
-
-Access/Auth adds explicit real-boundary proof layers: deterministic CI substitutes for external providers, real same-origin HTTPS browser tests, and separate manual real-provider/authenticator UAT. A simulated provider test never becomes a real-provider acceptance claim.
-
-Protected workflows use least privilege and immutable Action SHA pinning. Supply-chain controls activate with real artifacts/manifests/capabilities; production artifact provenance/SBOM applies at release boundary.
+Access/Auth and Email Platform retain separate manual real-boundary proof: a simulated provider test never becomes a real-provider acceptance claim.
 
 ## TD-25 — Cloud/IaC and current implementation boundary
 
 **PARTLY DEFERRED / CURRENT**
 
-Backend general compute provider, IaC engine, registry and remote sizing remain deliberately deferred until first remote infrastructure. Bounded provider selections for a concrete capability do not automatically select the entire DANTE hosting platform.
+Backend general compute provider, IaC engine, registry and remote sizing remain deliberately deferred until first remote infrastructure. A bounded provider selection for email does not automatically select the entire DANTE hosting platform.
 
-Closed/integrated foundations:
-
-```text
-Frontend Engineering Foundation   CLOSED / INTEGRATED VIA PR #22
-Frontend Materialization          CLOSED / PASS / INTEGRATED VIA PR #28
-Backend CP1–CP5 scaffold          CLOSED / DIRECT QA / INTEGRATED VIA PR #24
-Backend CP6 database              CLOSED / DIRECT QA / INTEGRATED VIA PR #42
-```
-
-Current protected-main CP6 persistence baseline remains historical/integrated authority for the shared foundation. Current `feature/access-auth` branch has evolved it through accepted forward migrations:
+Current branch truth:
 
 ```text
 PostgreSQL                         18.6
-Access/Auth Alembic                20260831_13
-Access/Auth tables                 83
+Access/Auth Alembic                20260903_15
+Access/Auth + Email tables         87
 views                              5
 routines                           15
 triggers                           75
-physical indexes                  156
-foreign keys                       85
-CHECK constraints                 233
+physical indexes                  170
+foreign keys                       88
+CHECK constraints                 267
 ```
 
 Current product boundary:
 
 ```text
 feature/access-auth
-→ active full-stack Access/Auth vertical
 → M1–M4 closed
-→ M5 Groups 1–3 complete / engineering pass
+→ M5 Groups 1–3 engineering pass
 → Group 4 automated QA pass
 → real Windows Hello/passkey UAT pass
 → real Google UAT pass
-→ email external acceptance + Apple real UAT remain open
+→ shared Email Platform engineering + real SES UAT closed
+→ real Apple registered-domain UAT deferred/open
+→ whole M5 final closure reconciliation current
 ```
-
-The old `feature/access-frontend ACTIVE / backend vertical NOT STARTED` statement is superseded history, not current truth.
 
 ## TD-26 — PostgreSQL Persistence Constitution
 
 **ACCEPTED / CROSS-CUTTING**
 
-DANTE accepts the reusable PostgreSQL persistence doctrine closed by CP6-02 and implemented through CP6, then consumed by Access/Auth forward migrations.
-
-ADR authority:
-
-`docs/decisions/ADR-010-postgresql-persistence-constitution.md`
-
-Detailed normative authority:
-
-`docs/development/backend-cp6-02-postgresql-persistence-constitution.md`
-
-The durable consequences include stable UUID/reference addressing, bounded heterogeneous anchors, material-state/current-history separation, typed relation/constraint doctrine, transaction/concurrency/idempotency rules, migration/evolution posture and owner/migrator/runtime privilege separation. The technical decision register intentionally does not duplicate the full Constitution.
-
-## TD-27 — Transactional/security email platform
-
-**ACCEPTED ARCHITECTURAL DIRECTION / IMPLEMENTATION + PROVIDER QUALIFICATION OPEN**
-
 Authority:
 
+- `docs/decisions/ADR-010-postgresql-persistence-constitution.md`
+- `docs/development/backend-cp6-02-postgresql-persistence-constitution.md`
+
+Durable consequences include stable reference addressing, material-state/current-history separation, transaction/concurrency/idempotency rules, migration/evolution posture and owner/migrator/runtime privilege separation.
+
+## TD-27 — Shared transactional Email Platform
+
+**ACCEPTED / MATERIALIZED / REAL-PROVIDER UAT PASS**
+
+Authorities:
+
+- `docs/architecture/email-platform.md`
 - `docs/decisions/ADR-012-email-delivery-platform.md`
-- `docs/architecture/access-auth-email-delivery.md`
+- `docs/development/email-platform-local-uat.md`
+- `docs/development/email-platform-acceptance-2026-09-03.md`
+- `docs/architecture/access-auth-email-delivery.md` for the first consumer only
 
 Decision:
 
 ```text
 DANTE owns email intent/lifecycle/state
 specialist provider owns last-mile Internet delivery
-PostgreSQL transactional outbox is durable target
-EmailDeliveryPort stays provider-neutral
-Amazon SES API v2 is primary production adapter target
-preferred initial SES region target: eu-south-1 Europe/Milan
-SMTP remains deterministic LOCAL/UAT/compatibility transport
-provider delivery feedback returns into DANTE state
+PostgreSQL transactional outbox is materialized
+feature mutation + EmailIntent commit atomically
+provider I/O occurs after commit
+Amazon SES API v2 is accepted primary external adapter
+SMTP remains LOCAL/CI/generic compatibility adapter
+provider feedback returns into DANTE event/suppression state
+```
+
+Current persistence:
+
+```text
+dante.email_delivery_intent
+dante.email_delivery_attempt
+dante.email_provider_event
+dante.email_recipient_suppression
 ```
 
 Security/operational consequences:
@@ -470,20 +399,23 @@ provider accepted != delivered
 network timeout != definitely not sent
 no blind retry after ambiguous send
 OTP/recovery secret excluded from logs/metrics/traces
-no indefinite plaintext sensitive outbox payload
+short-lived dedicated AEAD-protected sensitive payload
+terminal/unsafe-state secret wipe
 hard bounce/complaint may create DANTE delivery restriction
 Auth/security tracking + click rewriting OFF
-SPF + DKIM + DMARC required before production sender acceptance
+production SPF + DKIM + DMARC required before sender acceptance
 Auth/security / product notifications / future marketing separable
-prefer IAM workload identity over long-lived SMTP/static credentials where deployment permits
+production workload identity preferred over developer IAM user/static credentials
 ```
 
-Amazon SES is selected because it fits the desired provider-as-delivery-engine boundary, not because of a temporary free promotion. The former SES-specific 3,000-message/month first-year allowance is not available to new AWS customers after July 21, 2026; current pricing/credits must be rechecked at deployment time.
+Accepted real SES UAT used `eu-west-3`/Paris and proved signup verification, password recovery, reset notification, no auto-login, prior-session revocation, provider MessageId correlation and secret wipe in direct PostgreSQL inspection.
 
-Exact outbox tables, SES account/sandbox qualification, IAM policy, sender domain/DNS, provider event ingestion, suppression lifecycle and real Internet UAT remain separate gates. `SELECTED != IMPLEMENTED != DIRECT PASS` remains binding.
+SES region is deployment configuration; no current architecture hardcodes Milan as the preferred production region.
+
+Production sender-domain/DNS/reputation, workload identity and live cloud event-ingress remain separate deployment gates. `ACCEPTED PLATFORM != PRODUCTION DEPLOYED` remains binding.
 
 ## Selected technologies not to reintroduce casually
 
-Closed Physical/Engineering/Frontend selections exclude or do not select as current defaults, among others: separate graph/vector/search/event-store canonical databases; Redis/Valkey/Kafka/RabbitMQ/NATS/Debezium by default; universal event sourcing; Temporal/DBOS/Celery default workflow stack; Zero/Electric/CRDT canonical authority; Next.js for the authenticated DANTE Web app; Flutter/React Native Web universal renderer; Nx baseline; Redux as default state authority; browser PowerSync TanStack adapter alpha; generic PWA/service-worker offline baseline; self-hosted production MTA as the default DANTE email architecture.
+Closed Physical/Engineering/Frontend selections exclude or do not select as defaults, among others: separate graph/vector/search/event-store canonical databases; Redis/Valkey/Kafka/RabbitMQ/NATS/Debezium by default; universal event sourcing; Temporal/DBOS/Celery default workflow stack; Zero/Electric/CRDT canonical authority; Next.js for the authenticated DANTE Web app; Flutter/React Native Web universal renderer; Nx baseline; Redux as default state authority; generic PWA/service-worker offline baseline; self-hosted production MTA as the default DANTE email architecture.
 
 Reopen only with materially changed requirements/evidence and explicit scope.
