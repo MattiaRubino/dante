@@ -1,12 +1,14 @@
 # DANTE — World Focus Workspace Platform Checkpoint
 
-**Status:** ENGINEERING CLOSED — FINAL PLATFORM AUTOMATED PASS — CONCRETE DANTE SEQUENCING ACTIVE  
-**Date:** 2026-09-01  
+**Status:** ENGINEERING CLOSED — PLATFORM EVIDENCE RETAINED / M1 INTEGRATION ALIGNED  
+**Date:** 2026-09-03  
 **Branch:** `feature/home-react`  
 **Final platform HEAD:** `6c441335a75bb913af8da1eda569d8094d38a539`  
 **Frontend CI:** `33549465793` — PASS
 
 This checkpoint is the durable engineering closure record for the reusable World Focus composition / interaction / surface platform. It no longer represents the active live gate; current sequencing is in `world-focus-current-checkpoint.md`.
+
+The platform closure evidence above predates M1. M1 later generalized the cursor/reference contract without changing platform ownership. Sections 1, 3 and 5 below describe the current integrated production contract while retaining the original platform closure SHA/CI as historical evidence.
 
 ## 1. What this platform owns
 
@@ -14,8 +16,10 @@ This checkpoint is the durable engineering closure record for the reusable World
 WORLD FOCUS WORKSPACE HOST
 ├ transient workspace interaction state
 ├ bounded interaction cursor references
+│  ├ primary context reference
+│  └ bounded ordered supporting context references
 ├ interaction generation
-├ selected context reference
+├ compatibility selection projection of primary
 ├ finite surface stack
 ├ composition host
 │  └ finite approved module registry
@@ -55,18 +59,25 @@ renderer != canonical truth
 
 ## 3. Bounded interaction cursor
 
-The workspace cursor exposes only bounded presentation references:
+The current production workspace cursor exposes only bounded presentation references:
 
 ```text
 worldId
 generation
-selection reference
-active surface reference
+contextReferences
+  primary
+  supporting[]    [bounded + ordered]
+selection         [compatibility projection of primary only]
+activeSurface
 ```
+
+`contextReferences` is a normal enumerable frozen cursor property. The cursor and reference set remain presentation/context coordinates only.
+
+A surface inherits the **primary** context reference by default. Supporting references do not silently widen a surface's context/disclosure basis.
 
 It explicitly does not contain DOM nodes, secrets, authorization decisions, copied canonical source data or durable Run state.
 
-Selection changes advance generation. Repeating the same selection is a no-op.
+Changing the semantic context-reference set advances generation. Repeating the same normalized set is a no-op. `selection` exists only for compatibility and must not become a second context owner.
 
 Future DANTE Context Builder logic remains purpose/recipient/sensitivity/freshness aware and reconstructs authorized context outside this React cursor.
 
@@ -76,6 +87,7 @@ The pure reducer supports finite operations:
 
 ```text
 select context
+set context
 clear context
 open surface
 replace surface
@@ -83,6 +95,8 @@ promote surface
 close surface
 close top surface
 ```
+
+`select context` remains a compatibility path around primary-context semantics; new production context ownership is `contextReferences`.
 
 A surface descriptor keeps only finite presentation metadata:
 
@@ -93,26 +107,37 @@ semantic depth
 presentation surface
 origin
 bound generation
-bounded context reference
+bounded primary context reference when inherited/explicit
 dismissibility
 ```
 
 Semantic depth and geometry are separate axes.
 
+`promote surface` remains transient surface-stack semantics. It does not mean persistent pin/config promotion.
+
 ## 5. Race / stale presentation protection
 
-Async presentation intents may carry `expectedGeneration`.
+Async presentation intents may carry a bounded workspace expectation:
+
+```text
+expectedWorkspace {
+  worldId
+  generation
+}
+```
 
 Invariant:
 
 ```text
-request starts at generation N
-selection changes -> generation N+1
-late presentation intent still expects N
+request starts in World A at generation N
+World/context changes or result is routed into World B
+late presentation intent still expects { World A, N }
 -> deterministic no-op
 ```
 
-This prevents late frontend presentation results from attaching to a newer context. It does not replace future durable DANTE Run/effect semantics.
+This closes both stale-generation and same-generation cross-World attachment classes. Generation alone is not a sufficient route/context identity.
+
+This prevents late frontend presentation results from attaching to a newer or different World context. It does not replace future durable DANTE Run/effect semantics, backend authorization or execution revalidation.
 
 ## 6. Escape and blocking-stack ownership
 
@@ -238,15 +263,15 @@ This is controlled extensibility, not an executable plugin marketplace and not m
 
 ## 12. Stress / automated evidence
 
-Final platform HEAD:
+Original platform closure HEAD:
 
 `6c441335a75bb913af8da1eda569d8094d38a539`
 
-CI:
+Original platform CI:
 
 `33549465793`
 
-Final gate evidence:
+Final platform gate evidence at that closure:
 
 ```text
 Frontend contract drift check       PASS
@@ -278,6 +303,8 @@ blocking-stack barrier
 compact containment
 ```
 
+M1 later added production validation for the generalized context-reference set and `expectedWorkspace { worldId, generation }` semantics. See `world-focus-m1-core-nonvisual-materialization-review.md` and `world-focus-m1-operational-handoff.md` for that later evidence.
+
 No gate was weakened to obtain PASS.
 
 ## 13. Relationship to DANTE D0/D1
@@ -295,7 +322,9 @@ explicit maximize / restore
 contextual/deictic invocation only with explicit bounded reference
 ```
 
-D1 is now the first concrete registered surface consumer. See `world-focus-d1-dante-entry-review.md` for its final engineering disposition.
+D1 became the first concrete registered surface consumer. See `world-focus-d1-dante-entry-review.md` for its final engineering disposition.
+
+D2–D6 remain deferred to M4 by current sequencing authority.
 
 ## 14. Historical notes superseded by this checkpoint
 
@@ -305,9 +334,11 @@ Earlier versions of this file stated:
 DANTE spatial gate still open
 production registry intentionally empty
 next gate = DANTE spatial reverse engineering
+cursor = worldId + generation + selection + activeSurface only
+race expectation = expectedGeneration only
 ```
 
-Those statements described the earlier implementation moment and are no longer live. They are replaced by the final platform closure above and the D0/D1 documents.
+Those statements described earlier implementation moments and are no longer live. D0/D1 and M1 provide the later accepted contracts described above.
 
 ## 15. Permanent barriers
 
@@ -316,6 +347,8 @@ World != canonical Domain owner
 layout policy != Domain semantics
 surface stack != authorization
 surface visibility != disclosure permission
+contextReferences != authorization
+supporting references != disclosure widening
 AI output != accepted fact
 AI proposal != user Decision
 tool call != authorization
