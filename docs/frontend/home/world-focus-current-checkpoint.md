@@ -1,28 +1,29 @@
 # DANTE — World Focus Current Checkpoint
 
-**Status:** CURRENT LIVE WORLD FOCUS CHECKPOINT — M1 CLOSED / M2 NEXT  
+**Status:** CURRENT LIVE WORLD FOCUS CHECKPOINT — M1 + POST-M1 SAFETY CLOSED / M2 NEXT  
 **Date:** 2026-09-03  
 **Branch:** `feature/home-react`  
 **Worktree:** `/home/mattia/projects/dante-frontend`
 
-This is the first World Focus authority a new chat/agent must read. Older `D2 NEXT`, `M0 NEXT`, `M1 ACTIVE`, `M1-2 NEXT` or similar prose is phase-time history only.
+This is the first World Focus authority a new chat/agent must read. Older `D2 NEXT`, `M0 NEXT`, `M1 ACTIVE`, `M1-2 NEXT`, `POST-M1 SAFETY ACTIVE` or similar prose is phase-time history only.
 
 # 1. Read order
 
 ```text
 1. world-focus-current-checkpoint.md
-2. world-focus-m1-core-nonvisual-materialization-review.md
-3. world-focus-m1-next-subblock.md
-4. world-focus-m0-materialization-mapping.md
-5. world-focus-contract-sequencing-supersession.md
-6. world-focus-pre-m0-falsification-review.md
-7. world-focus-post-ws8-hygiene-audit.md
-8. world-focus-substrate-closure-plan.md
-9. world-focus-frontend-roadmap.md
-10. world-focus-handoff.md
-11. world-focus-evidence-index.md
-12. WS7/WS8/WS6 evidence as needed
-13. product/platform/structure/geometry contracts as needed
+2. world-focus-post-m1-safety-falsification-review.md
+3. world-focus-m1-core-nonvisual-materialization-review.md
+4. world-focus-m1-next-subblock.md
+5. world-focus-m0-materialization-mapping.md
+6. world-focus-contract-sequencing-supersession.md
+7. world-focus-pre-m0-falsification-review.md
+8. world-focus-post-ws8-hygiene-audit.md
+9. world-focus-substrate-closure-plan.md
+10. world-focus-frontend-roadmap.md
+11. world-focus-handoff.md
+12. world-focus-evidence-index.md
+13. WS7/WS8/WS6 evidence as needed
+14. product/platform/structure/geometry contracts as needed
 ```
 
 # 2. Live sequence
@@ -45,6 +46,7 @@ M0                                    CLOSED
 M1                                    CLOSED / VALIDATED
 M1-1 identity/reference ownership     CLOSED / VALIDATED
 M1-2 non-visual facets + seams        CLOSED / VALIDATED
+POST-M1 SAFETY FALSIFICATION          CLOSED / PASS
 M2 shared visual primitive layer      NEXT
 M3–M7                                 BLOCKED BY SEQUENCE
 D2–D6                                 DEFERRED TO M4
@@ -83,11 +85,21 @@ CI   33740212989 EXPECTED FAILURE
 M1 final code closure
 HEAD 7369c51e7ba04f8913728a0770f700c728c3b9f9
 CI   33740710290 PASS
+
+POST-M1 safety red-first falsification
+HEAD 0b674effa292881303288dd90c88db2c14e61872
+CI   33747167897 FAIL
+7 / 9 hostile tests PASS; 296 PASS / 2 FAIL overall web units
+
+POST-M1 safety closure
+HEAD ecc2128b62395f82eab9ee7ff239355b4ca81ee4
+CI   33754084001 PASS
+9 / 9 hostile tests PASS; 56 / 56 web test files; 301 / 301 web unit tests
 ```
 
-# 4. M1 closed production result
+# 4. Closed non-visual production result
 
-Production identity remains open-ended and descriptor-driven while routability remains explicit. The current deterministic fixture catalog is not a permanent World taxonomy.
+Production identity remains open-ended and descriptor-driven while routability remains explicit. The deterministic fixture catalog is not a permanent World taxonomy.
 
 Canonical transient interaction context is:
 
@@ -97,9 +109,9 @@ WorldFocusContextReferenceSet
   ordered bounded supporting[]
 ```
 
-Workspace and interaction cursor now expose this canonical set normally. `selection` remains a compatibility projection of primary only. Surfaces inherit primary only by default so supporting context is never silently widened.
+Workspace and interaction cursor expose this canonical set normally. `selection` remains a compatibility projection of primary only. Surfaces inherit primary only by default so supporting context is never silently widened.
 
-M1-2 also materialized narrow, orthogonal production semantics:
+M1 materialized narrow, orthogonal production semantics:
 
 ```text
 reference resolution
@@ -139,18 +151,30 @@ L1 application seams
 
 The shared read foundation owns only cancellation/latest-read/boundary-validation mechanics. It is not a universal semantic envelope or backend authority.
 
-# 5. Final M1 falsification result
+# 5. Post-M1 safety result
 
-The final hostile production test deliberately combined unknown-future World handling, bounded context, cross-axis facets, O2/O5/O8, WP-01..04, same-generation wrong-World rejection and a useful non-DANTE path.
-
-The red run found exactly one remaining issue:
+The bounded safety gate preserved the hostile test and found two real production defects:
 
 ```text
-cursor type said contextReferences was canonical
-runtime hid it as a non-enumerable compatibility property
+A. cancelled non-cooperative World read
+   late adapter completion could still reach validation
+
+B. O8 evidence snapshot ownership
+   caller-provided evidence facet could remain aliased
 ```
 
-The other hostile cases passed. The fix removed the `Object.defineProperty(... enumerable: false)` representation and returns a normal frozen `contextReferences` property. Exact-shape tests were migrated rather than weakening the canonical cursor.
+Both were fixed under existing owners:
+
+```text
+shared read boundary
+  reject aborted result before validation, including late non-cooperative completion
+
+O8 Evidence/History seam
+  rebuild through existing L2 evidence creator
+  own normalized frozen evidence snapshot
+```
+
+No new semantic class, substrate layer, DB authority or M1 reopen was required.
 
 # 6. Permanent non-collapses retained
 
