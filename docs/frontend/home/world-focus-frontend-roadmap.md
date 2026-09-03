@@ -1,6 +1,6 @@
 # DANTE — World Focus Frontend Roadmap
 
-**Status:** CURRENT WORKING ROADMAP — M1 CLOSED / M2 NEXT  
+**Status:** CURRENT WORKING ROADMAP — M1 + POST-M1 SAFETY CLOSED / M2 NEXT  
 **Date:** 2026-09-03  
 **Branch:** `feature/home-react`
 
@@ -26,6 +26,8 @@ World Focus route/shell
 -> M1-2 non-visual facets + WP/O2/O5/O8 seams
 -> M1 final production falsification
 -> canonical cursor closure
+-> post-M1 safety red-first falsification
+-> post-M1 read/O8 snapshot hardening
 ```
 
 ## 2. Evidence checkpoints
@@ -41,6 +43,8 @@ M1-1 code           HEAD e0f4003496bfbf828ed9ab7718af8e7e30342ad3  CI 3367942566
 M1-2 code           HEAD 5e98e4b97639cd018badc23e35e7a523f2940875  CI 33738873773 PASS
 M1 final red        HEAD 67bd06d63d84273ba2077761919d714c8d442254  CI 33740212989 EXPECTED FAIL
 M1 final code       HEAD 7369c51e7ba04f8913728a0770f700c728c3b9f9  CI 33740710290 PASS
+POST-M1 safety red  HEAD 0b674effa292881303288dd90c88db2c14e61872  CI 33747167897 FAIL
+POST-M1 safety fix  HEAD ecc2128b62395f82eab9ee7ff239355b4ca81ee4  CI 33754084001 PASS
 ```
 
 ## 3. Materialization sequence
@@ -50,6 +54,7 @@ M0 — Materialization Mapping / Scope Freeze          CLOSED
 M1 — Core Non-Visual Production Materialization     CLOSED / VALIDATED
   M1-1 identity/reference ownership                  CLOSED / VALIDATED
   M1-2 non-visual facets + WP/O2/O5/O8 seams         CLOSED / VALIDATED
+POST-M1 Safety Falsification                         CLOSED / PASS
 M2 — Shared Visual Primitive Layer                  NEXT
 M3 — Adaptive World Composition                     BLOCKED BY M2
 M4 — Contextual DANTE                               BLOCKED BY M3
@@ -59,7 +64,7 @@ M7 — Pre-Backend Frontend Freeze                    BLOCKED BY M6
 BACKEND                                              AFTER M7 ONLY
 ```
 
-## 4. M1 closed result
+## 4. Closed non-visual result
 
 M1 established the non-visual production substrate needed for reusable World rendering:
 
@@ -90,7 +95,16 @@ unknown-future World compatibility
 useful non-DANTE path
 ```
 
-The final red-first falsification found and closed the last known M1 compatibility residue: `cursor.contextReferences` was typed canonical but hidden as non-enumerable. It is now a normal enumerable frozen property.
+The final M1 red-first falsification found and closed the non-enumerable `cursor.contextReferences` compatibility residue.
+
+The post-M1 safety gate then pressure-tested the closed substrate and found two concrete implementation defects:
+
+```text
+cancelled non-cooperative read could resolve into validation
+O8 Evidence/History could retain mutable caller evidence aliases
+```
+
+Both were fixed in production without weakening the hostile test and without introducing a new semantic owner. Final safety evidence is 9/9 hostile tests, 56/56 web test files and 301/301 web unit tests PASS, with the full Frontend CI Gate green.
 
 M1 did not create a universal projection envelope, generic entity/property-bag root, frontend AuthZ, World canonical ownership or backend dependency.
 
@@ -158,6 +172,8 @@ no universal Entity/Thing/Fact/Relationship/property bag
 ## 8. Sequencing supersession
 
 Old product/platform contract language naming the DANTE spatial review as the current next gate is historical. See `world-focus-contract-sequencing-supersession.md`. Semantic invariants remain intact; D2–D6 remain M4.
+
+The bounded post-M1 safety hold is also closed. Its durable red→green evidence lives in `world-focus-post-m1-safety-falsification-review.md`.
 
 ## 9. Immediate continuation
 
