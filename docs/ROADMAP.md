@@ -1,12 +1,11 @@
 # DANTE Roadmap
 
 - **Status:** CURRENT FOR `feature/access-auth`
-- **Last reconciled:** 2026-09-02
-- **Active vertical:** Access/Auth
-- **Current macro-phase:** M5 — Multi-authenticator Account Layer — **FINAL EXTERNAL ACCEPTANCE OPEN**
-- **Reviewed product checkpoint:** `ab2716abe40de658d99d1908ba31c5d5744e3c57`
-- **Email-UAT tooling checkpoint:** `9c0587af5891249d8a6e6b6a5d6e3af6934c6943`
-- **Documentation reconciliation base:** `bbf63fe0375c52ec2c49448ae7f6e9d238b4ba74`
+- **Last reconciled:** 2026-09-03
+- **Active workstream:** Access/Auth
+- **Current macro-phase:** M5 — Multi-authenticator Account Layer — **FINAL CLOSURE RECONCILIATION**
+- **Current Access/Auth Alembic head:** `20260903_15`
+- **Email Platform acceptance evidence:** `development/email-platform-acceptance-2026-09-03.md`
 
 ## 1. Current sequence
 
@@ -38,23 +37,20 @@ LOCAL PASSWORD/PASSKEY UAT
 REAL GOOGLE UAT
         PASS
           ↓
-EMAIL DELIVERY ARCHITECTURE
-        ACCEPTED DIRECTION
+SHARED EMAIL PLATFORM
+        ARCHITECTURE + IMPLEMENTATION ACCEPTED
           ↓
-EMAIL PROVIDER / OPERATIONS QUALIFICATION
-        NEXT
+REAL DANTE → SES SIGNUP/RECOVERY UAT
+        PASS
           ↓
-EMAIL PLATFORM EXACT PERSISTENCE + IMPLEMENTATION GATE
-        OPEN
-          ↓
-REAL INTERNET SIGNUP / RECOVERY DELIVERY UAT
-        OPEN
+EMAIL PLATFORM ENGINEERING WORKSTREAM
+        CLOSED
           ↓
 REAL APPLE REGISTERED-DOMAIN UAT
         DEFERRED / OPEN
           ↓
-M5 closure
-        BLOCKED ON REMAINING EXTERNAL ACCEPTANCE
+M5 FINAL CLOSURE RECONCILIATION
+        CURRENT
           ↓
 M6 Native Mobile
         FUTURE / OPTIONAL / ONLY IF RE-GATED
@@ -76,111 +72,141 @@ provider linking/unlinking
 safe authenticator lifecycle + anti-lockout
 public FastAPI/OpenAPI/generated-client contract
 /security management Web surface
-68 Web unit/component tests
-60 Auth browser tests across Chromium/Firefox/WebKit
 real Windows Hello passkey UAT
 real Google provider UAT + direct PostgreSQL inspection
+shared durable Email Platform
+real SES signup verification
+real SES password recovery
+real SES password-reset notification
+post-reset no-auto-login
+post-reset prior-session revocation
+Email Platform provider correlation + secret wipe in real PostgreSQL UAT
 ```
 
 Do not reopen closed implementation blocks absent direct defect evidence.
 
-## 3. Email architecture — selected direction
+## 3. Email Platform — closed engineering direction
 
-Current architectural decision:
+Current accepted architecture and implementation:
 
 ```text
 DANTE owns email lifecycle
 external provider owns last-mile Internet delivery
-PostgreSQL transactional outbox is durable target
-EmailDeliveryPort remains provider-neutral
-Amazon SES API v2 is primary production adapter target
-preferred initial region target: eu-south-1 Europe/Milan
-SMTP remains LOCAL/UAT/compatibility transport
+PostgreSQL transactional outbox is materialized
+feature mutation + EmailIntent are atomically coordinated
+provider I/O stays outside caller transaction
+Amazon SES API v2 is accepted primary external adapter
+SMTP remains LOCAL/CI/compatibility transport behind same durable worker
 provider feedback returns into DANTE delivery/suppression state
+sensitive delivery payload uses dedicated AEAD protection + terminal wipe
+no blind retry after ambiguous outcome
 ```
 
 Authorities:
 
-- `architecture/access-auth-email-delivery.md`
+- `architecture/email-platform.md`
 - `decisions/ADR-012-email-delivery-platform.md`
+- `development/email-platform-local-uat.md`
+- `development/email-platform-acceptance-2026-09-03.md`
 
-This direction does **not** mean email production acceptance is closed.
+Access/Auth integration is intentionally separate in `architecture/access-auth-email-delivery.md`.
 
-## 4. Immediate next gate — provider / operational qualification
+## 4. Real Internet delivery acceptance — completed for current Auth consumer
 
-Do not start the production outbox/SES implementation until this gate produces concrete evidence.
-
-Research and prove:
-
-```text
-AWS account / billing posture
-SES sandbox and production-access requirements
-SES eu-south-1 exact capability, quotas and current pricing
-sender identity/domain verification flow
-DKIM / SPF / DMARC mechanics
-IAM role/workload identity and least privilege
-SES API v2 SDK/runtime integration posture
-configuration sets and traffic segmentation
-provider event destinations
-SNS vs EventBridge boundary for DANTE ingestion
-provider retention / privacy / subprocessors
-current operational limits and failure semantics
-manual UAT route without committing credentials
-```
-
-Provider comparison may be reopened if this qualification reveals a material blocker. SES is selected because it fits the desired architecture, not because of a temporary free allowance.
-
-Important current correction: the old SES-specific 3,000-message/month first-year free tier is no longer available to **new** AWS customers after July 21, 2026. Use current pricing/credits when evaluating cost.
-
-## 5. Exact Email Platform implementation gate — after qualification
-
-Only after Section 4 is closed, freeze the bounded implementation slice:
-
-```text
-transactional outbox logical/physical design
-delivery-attempt/provider-message state
-claim/lease/recovery semantics
-sensitive OTP/recovery payload protection
-SES API adapter
-idempotency and ambiguous-send reconciliation
-provider event verification + normalization
-bounce/complaint suppression mapping
-observability / metrics / SLOs
-failure-injection matrix
-ACL/migration/dictionary alignment
-```
-
-Exact table names and migrations are deliberately **not** pre-authorized by the architecture document. They must pass ADR-010/CP6 persistence discipline.
-
-## 6. Real Internet delivery acceptance
-
-After implementation, execute real inbox UAT:
+Observed final UAT:
 
 ```text
 normal email/password signup
-→ real verification email arrives
-→ code works
-→ Account/AuthSession/DB state verified
-
-Google account with third-party mailbox
-→ DANTE mailbox proof delivered for real
-→ provider enrollment completes
+→ real verification email arrived
+→ received code worked
+→ Account created
 
 password recovery
-→ real recovery email arrives
-→ bearer URL validates and scrubs correctly
-→ password changes
-→ existing sessions revoked
-→ password-change notification arrives
-
-provider feedback
-→ delivery/bounce/complaint path proved where feasible
-→ direct PostgreSQL state inspected
+→ real recovery email arrived
+→ bearer URL opened reset surface
+→ password changed
+→ no auto-login
+→ existing session revoked
+→ password-change notification arrived
 ```
 
-Loopback SMTP remains CI proof; real inbox proof is a separate acceptance layer.
+Runtime showed three `provider_accepted` SES attempts, all attempt 1.
 
-## 7. Current email security / delivery invariants
+Direct PostgreSQL inspection showed provider MessageId for all three accepted attempts and terminal sensitive-payload wipe for the corresponding intents.
+
+One precise manual non-claim remains recorded: the same consumed recovery URL was not manually reopened in the final run because the message had already been deleted. This does not reopen the Email Platform workstream.
+
+## 5. Production email deployment — future operational gate
+
+Do not confuse the closed Email Platform with production sender deployment.
+
+Before production email is called accepted, materialize and prove as applicable:
+
+```text
+DANTE-controlled sender domain/subdomain
+SPF / DKIM / DMARC
+production workload identity / IAM role
+SES production account, quota and reputation posture
+live provider event-ingress wiring
+production alerting/SLOs
+traffic/reputation segmentation
+privacy/legal/subprocessor deployment review
+Apple Private Email Relay sender-domain requirements when Apple is enabled
+```
+
+SES region is explicit deployment configuration. The accepted local real-provider UAT used `eu-west-3` (Paris); the architecture no longer hardcodes a preferred Milan production region.
+
+## 6. Immediate next gate — whole M5 closure
+
+The Email Platform is no longer the blocker.
+
+The immediate next gate is:
+
+```text
+1. final documentation/branch coherence check
+2. decide Apple real-UAT disposition
+   - execute when real Apple + registered HTTPS domain prerequisites exist, OR
+   - explicitly accept a bounded deferral for M5 closure
+3. close M5 if no other direct defect evidence is open
+4. proceed to M7 / authenticated Home handoff according to project priority
+```
+
+Do not invent an additional email milestone after this closure.
+
+## 7. Apple acceptance
+
+Apple backend architecture is implemented. Real Web acceptance remains deferred until a usable Apple account and registered HTTPS domain configuration are available.
+
+The implementation/documentation must continue accepting both:
+
+```text
+privaterelay.appleid.com
+private.icloud.com
+```
+
+per the accepted relay semantics.
+
+Production Email sender/domain work must preserve Apple Private Email Relay compatibility.
+
+## 8. M7 target
+
+M7 should close the maturity gap visible in mature account/security products without changing the core Auth model:
+
+```text
+session/device inventory
+per-session revoke
+revoke all other sessions / log out everywhere
+new-login/security-event alerts
+“this wasn't me” response
+production observability/alerting
+final accessibility/release/legal review
+final authenticated Home handoff
+bounded componentization of the large Security UI
+```
+
+The shared Email Platform should carry future security-event notifications instead of creating a second mail subsystem.
+
+## 9. Permanent email invariants
 
 ```text
 OTP/recovery proof never in logs/metrics/traces
@@ -192,75 +218,23 @@ stable DANTE intent reference before external send
 Auth/security tracking OFF
 Auth/security link rewriting OFF
 Auth/security marketing content FORBIDDEN
-SPF + DKIM + DMARC before production acceptance
+production SPF + DKIM + DMARC required before sender acceptance
 Auth/security / product notifications / marketing separable
 ```
 
-## 8. External benchmark conclusion
-
-Public evidence supports the selected split without claiming undocumented internals for unrelated products:
-
-```text
-Netflix
-→ retired in-house email delivery for Amazon SES
-→ separates reputation by traffic class
-→ consumes delivery/bounce/complaint feedback
-
-Fanatics
-→ builds/owns its email platform lifecycle
-→ uses Amazon SES as scalable delivery infrastructure
-→ separates transactional/marketing streams
-```
-
-This is directional validation for `DANTE platform + external delivery engine`, not permission to copy another company's internal design mechanically.
-
-Do not claim “Notion uses provider X” or “Linear uses provider Y” without current public evidence.
-
-## 9. Apple acceptance
-
-Apple backend architecture is implemented. Real Web acceptance remains deferred until a usable Apple account and registered HTTPS domain configuration are available.
-
-The implementation/documentation must continue accepting both:
-
-```text
-privaterelay.appleid.com
-private.icloud.com
-```
-
-per Apple's current 2026 Sign in with Apple relay guidance.
-
-Email sender/domain work must preserve Apple Private Email Relay compatibility.
-
-## 10. M7 target
-
-M7 should close the maturity gap visible in mature account/security products without changing the core Auth model:
-
-```text
-session/device inventory
-per-session revoke
-revoke all other sessions / log out everywhere
-new-login/security-event alerts
-“this wasn't me” response
-production observability
-final accessibility/release/legal review
-final authenticated Home handoff
-bounded componentization of the large Security UI
-```
-
-The email platform created for M5 recovery/signup should later carry security-event notifications rather than creating a second mail subsystem.
-
-## 11. Authorities
+## 10. Authorities
 
 ```text
 docs/PROJECT-STATUS.md
 docs/ROADMAP.md
 docs/workstreams/access-auth.md
-docs/workstreams/access-auth-m5-review-2026-09-02.md
+docs/architecture/email-platform.md
 docs/architecture/access-auth-email-delivery.md
+docs/development/email-platform-local-uat.md
+docs/development/email-platform-acceptance-2026-09-03.md
 docs/decisions/ADR-012-email-delivery-platform.md
-docs/architecture/access-auth-*.md
 docs/database/README.md
-docs/frontend/access.md
+docs/database/access-auth.md
 ```
 
-The old dated M5 live-handoff from 2026-08-29 is historical/superseded. The current 2026-09-02 handoff is branch-operational only and must be consolidated/removed before protected-main integration.
+Historical handoffs remain evidence only and must not override current executable or current-reference truth.
