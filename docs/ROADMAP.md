@@ -82,7 +82,7 @@ feature/home-react              active frontend work
 feature/platform-observability  active platform work
 feature/ai-implementation       active AI implementation; I0-I2 CLOSED/PASS
                                 I3/C3 deferred pending owner data/seams
-                                C6 CLOSED/PASS; current executable checkpoint C7
+                                C6+C7 CLOSED/PASS; current executable checkpoint C8/I4
 feature/ai-architecture         AI architecture design CLOSED / retained authority/evidence
 ```
 
@@ -103,7 +103,7 @@ real structural database change
 → affected recovery/operational assertions updated
 ```
 
-Applied migrations are immutable. AI architecture and I0-I2/C6 implementation produced no DB/Alembic change.
+Applied migrations are immutable. AI architecture and I0-I2/C6/C7 implementation produced no DB/Alembic change.
 
 ## 5. Capability-triggered implementation
 
@@ -254,17 +254,17 @@ I10 proactive/background/durable/external-agent capabilities
 
 ### 7.1 Current executable lane
 
-The implementation blueprint already separates the Search lane from the Intelligence/provider-preparation lane. Because I3 is conditional on real owner data/seams, execution continues without fabricating a Search family:
+The implementation blueprint separates the Search lane from the Intelligence/provider-preparation lane. Because I3 is conditional on real owner data/seams, execution continues without fabricating a Search family:
 
 ```text
 C6  Policy / Resource / Verification / Publication /
     Effect / Egress / Evidence contracts
     CLOSED / PASS
     ↓
-CURRENT
 C7  route-config identity / loader / content digest snapshot
-    provider-neutral
+    CLOSED / PASS
     ↓
+CURRENT
 I4 / C8
     provider candidate-admission decision
     ↓
@@ -275,7 +275,7 @@ I4-I5 / C9-C11
     qualification/promotion decision
 ```
 
-C6 introduced no provider/model/SDK. C7 remains provider-neutral and does not itself admit a candidate.
+C7 introduced no provider/model/SDK and did not admit any candidate. C8 is a reviewed evidence decision, not production qualification or activation.
 
 ### 7.2 Deferred deterministic/Search lane
 
@@ -304,15 +304,15 @@ No fake title from UUIDs, Intelligence-owned cross-capability SQL, generic Repos
 
 ### 7.3 Mandatory join before I6
 
-C7/provider qualification and the deferred deterministic lane may progress independently, but **I6 cannot activate the accepted first vertical until the required real source/query path is ready**.
+Provider qualification and the deferred deterministic lane may progress independently, but **I6 cannot activate the accepted first vertical until the required real source/query path is ready**.
 
 Operational convergence:
 
 ```text
-C7 → I4 → I5
-            \
-             +→ JOIN GATE → I6 READ-ONLY ASK
-            /
+C8 → I4/I5 qualification lane
+                       \
+                        +→ JOIN GATE → I6 READ-ONLY ASK
+                       /
 I3/C3 when owner seams become ready
 ```
 
@@ -321,19 +321,26 @@ The join gate requires the real Search/structured source path needed by the sele
 ### 7.4 Current exact next action
 
 ```text
-C7 — route-config identity / loader / content digest snapshot
+C8 / I4 — provider candidate-admission decision
 
-RouteConfigIdentity = logical revision + content digest
-static / versioned / typed configuration
-immutable snapshot identity over exact loaded bytes
-secrets excluded from behavior-bearing config
+review current provider/model candidates against:
+capability fit
+structured output/tooling requirements
+privacy/security/data-processing posture
+regional/deployment constraints
+retry/cancellation/error semantics
+SDK/protocol isolation feasibility
+live compatibility testability
+direct-eval feasibility
+capacity/reliability/economics evidence path
 
-NO provider candidate admission yet
-NO provider SDK
-NO live provider adapter
+OUTPUT = reviewed candidate-admission decision only
+
+NO provider SDK installation yet
+NO provider adapter yet
+NO production qualification claim
+NO private-data production route
 NO database/Alembic change
-NO durable Work/Run
-NO AI memory persistence
 NO production activation
 ```
 
@@ -362,7 +369,7 @@ Search is deterministic/no-model capable. Structured DANTE questions use owning 
 
 ## 9. Provider / activation gates
 
-Provider/model/SDK remains OPEN / evidence-driven.
+Provider/model/SDK remains OPEN / evidence-driven until C8 records a candidate-admission decision.
 
 ```text
 candidate shortlist
@@ -376,7 +383,7 @@ candidate shortlist
 → promotion
 ```
 
-Build-ready is not activation-ready. Private-data Search/Ask requires real Auth/AuthZ, source/query semantics, applicable SC/PSV proofs, safe publication, evidence/privacy/audit and provider qualification when a model route is used.
+Candidate admission is not production eligibility. Build-ready is not activation-ready. Private-data Search/Ask requires real Auth/AuthZ, source/query semantics, applicable SC/PSV proofs, safe publication, evidence/privacy/audit and provider qualification when a model route is used.
 
 ## 10. Current implementation state / non-claims
 
@@ -392,8 +399,9 @@ Search shell/contracts implemented     YES
 Intelligence C5 contracts/fakes        YES
 I3 real family / PG adapter            NO / DEFERRED
 C6 control contracts                   YES / CLOSED-PASS
-C7 route-config loader                 NOT YET / CURRENT NEXT
-provider/model/SDK selected            NO
+C7 route-config loader                 YES / CLOSED-PASS
+C8 provider candidate admission        NOT YET / CURRENT NEXT
+provider/model/SDK admitted            NO
 provider adapter                       NO
 production Search/Ask active           NO
 new PostgreSQL/Alembic change          NO
