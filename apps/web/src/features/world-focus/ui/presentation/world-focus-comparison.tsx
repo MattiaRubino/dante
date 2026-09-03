@@ -26,9 +26,15 @@ export function WorldFocusComparison({
     );
   }
   subjects.forEach((subject, index) => {
+    const semanticReference = primitive.subjectReferences[index];
+    if (semanticReference === undefined) {
+      throw new Error(
+        `World Focus Comparison semantic subject ${index} is unavailable`,
+      );
+    }
     assertWorldFocusDisplayBindingMatchesReference(
       subject,
-      primitive.subjectReferences[index],
+      semanticReference,
       `World Focus Comparison subject ${index}`,
     );
   });
