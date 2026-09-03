@@ -1,7 +1,7 @@
 # DANTE — World Focus Frontend Roadmap
 
-**Status:** CURRENT WORKING ROADMAP — M0 CLOSED / M1 ACTIVE / SUBBLOCK 1 CLOSED  
-**Date:** 2026-09-02  
+**Status:** CURRENT WORKING ROADMAP — M1 CLOSED / M2 NEXT  
+**Date:** 2026-09-03  
 **Branch:** `feature/home-react`
 
 Scope stop: production-grade frontend freeze before real backend/API/database/provider/LLM/effect integration.
@@ -22,7 +22,10 @@ World Focus route/shell
 -> post-WS8 hygiene
 -> pre-M0 red-first falsification
 -> M0 materialization mapping / scope freeze
--> M1 subblock 1 production identity + reference ownership
+-> M1-1 production identity + reference ownership
+-> M1-2 non-visual facets + WP/O2/O5/O8 seams
+-> M1 final production falsification
+-> canonical cursor closure
 ```
 
 ## 2. Evidence checkpoints
@@ -34,17 +37,20 @@ WS7                 HEAD ca89e733893959af7dcc40fd0b8c8ba08e056ba4  CI 3363363589
 WS8                 HEAD 88db899391a3a41e23e76177d4896a657232b5eb  CI 33639741630 PASS
 PRE-M0 fix          HEAD 7c9feab50c6e2a04a9a3b1e36c92958362dba704  CI 33664655614 PASS
 M0 closure docs     HEAD 6ea74f630cb35af65d58e7ae873882d6d975411e  CI 33668744509 PASS
-M1 subblock 1 code  HEAD e0f4003496bfbf828ed9ab7718af8e7e30342ad3  CI 33679425668 PASS
+M1-1 code           HEAD e0f4003496bfbf828ed9ab7718af8e7e30342ad3  CI 33679425668 PASS
+M1-2 code           HEAD 5e98e4b97639cd018badc23e35e7a523f2940875  CI 33738873773 PASS
+M1 final red        HEAD 67bd06d63d84273ba2077761919d714c8d442254  CI 33740212989 EXPECTED FAIL
+M1 final code       HEAD 7369c51e7ba04f8913728a0770f700c728c3b9f9  CI 33740710290 PASS
 ```
 
 ## 3. Materialization sequence
 
 ```text
 M0 — Materialization Mapping / Scope Freeze          CLOSED
-M1 — Core Non-Visual Production Materialization     ACTIVE
-  M1-1 identity/reference ownership                  CLOSED
-  M1-2 non-visual facets + WP/O2/O5/O8 seams         NEXT
-M2 — Shared Visual Primitive Layer                  BLOCKED BY M1
+M1 — Core Non-Visual Production Materialization     CLOSED / VALIDATED
+  M1-1 identity/reference ownership                  CLOSED / VALIDATED
+  M1-2 non-visual facets + WP/O2/O5/O8 seams         CLOSED / VALIDATED
+M2 — Shared Visual Primitive Layer                  NEXT
 M3 — Adaptive World Composition                     BLOCKED BY M2
 M4 — Contextual DANTE                               BLOCKED BY M3
 M5 — Contrasting Complete Worlds                    BLOCKED BY M4
@@ -53,62 +59,77 @@ M7 — Pre-Backend Frontend Freeze                    BLOCKED BY M6
 BACKEND                                              AFTER M7 ONLY
 ```
 
-## 4. M1-1 closed result
+## 4. M1 closed result
 
-Implemented and validated:
-
-```text
-open-ended production WorldFocusId
-WorldFocusIdentityDescriptor
-fixture World IDs separated as WorldFocusFixtureId
-unknown URL does not auto-create World
-neutral WorldFocusContextReference owner
-primary + bounded ordered supporting reference set
-workspace canonical contextReferences
-compatibility selection = primary only
-surface default inherits primary only
-cursor exposes full bounded reference set
-Context/Page consume explicit identity descriptor
-Continuity validates production World id
-WP/oracle import neutral reference owner
-public API exports production and fixture identities distinctly
-```
-
-The current visual theme still uses deterministic fixture data pre-backend. That does not make fixture IDs production ontology.
-
-## 5. M1-2 frozen continuation
-
-Implement narrow non-visual reusable facets and application seams:
+M1 established the non-visual production substrate needed for reusable World rendering:
 
 ```text
-reference-resolution safe state vocabulary
-basis/freshness/as-of/material-basis facet
-coverage/conflict/incomplete/validity/retraction/redaction facets
-evidence/provenance presentation metadata where needed
-disclosure-safe available/restricted/unavailable outcome
-offline/replay/provider-lag representation
-effect lifecycle presentation + execution revalidation state
+open-ended production World identity
+explicit descriptor/routability separation
+neutral bounded context references
+canonical workspace/cursor context
+reference-resolution safe vocabulary
+freshness/as-of
+validity/supersession/retraction
+coverage/conflict/incomplete/unknown
+exact material-state retirement presentation
+evidence/provenance/integrity role separation
+sanitized disclosure outcome
+effect lifecycle presentation + execution revalidation
+sync/offline/replay/provider-lag/timeout axes
 O2 Situation typed seam
 O5 Next typed seam
 O8 Evidence/History typed seam
-WP-01 stronger production alignment
-WP-02 Attention seam
-WP-03 Comparison seam
-WP-04 Trajectory seam
-deterministic local adapters/tests
+WP-01 Continuity
+WP-02 Attention
+WP-03 Comparison
+WP-04 Trajectory
+World-scoped validated/cancellable read mechanics
+deterministic pre-backend adapters
+unknown-future World compatibility
+useful non-DANTE path
 ```
 
-Reject a giant generic projection envelope. Narrow facets compose only where needed.
+The final red-first falsification found and closed the last known M1 compatibility residue: `cursor.contextReferences` was typed canonical but hidden as non-enumerable. It is now a normal enumerable frozen property.
 
-Before M1 closes, deliberately retire/review the transitional non-enumerable `cursor.contextReferences` compatibility mechanism.
+M1 did not create a universal projection envelope, generic entity/property-bag root, frontend AuthZ, World canonical ownership or backend dependency.
 
-## 6. M2–M7 intent
+## 5. M2 — next scope
 
-M2: shared visual renderer layer for the semantics earned by M1; primitive != card.
+M2 is the shared visual primitive layer for semantics already earned by M1.
+
+M2 must answer:
+
+```text
+How is each semantic state rendered consistently?
+How do sparse/dense projections degrade safely?
+How do unknown future Worlds use the same finite renderer grammar?
+How are freshness/validity/disclosure/effect/sync distinctions visible without noise?
+How do responsive changes alter presentation without altering semantics?
+```
+
+Binding rules:
+
+```text
+primitive != card
+renderer != semantic owner
+Output Grammar family != mandatory module
+no one universal card shell
+no page-per-World renderer fork
+no data-shape inference as semantic authority
+no fake empty urgency
+no visual collapse of unknown into false/zero
+finite registered shipped renderers only
+specialist renderer only where semantically earned
+```
+
+M2 does not implement persistent pin/hide/reorder/customization; that remains M3.
+
+## 6. M3–M7 intent
 
 M3: dynamic composition candidate resolution + Customize Draft / Apply / Cancel + pin/hide/reorder/conflict UX; no fake persistence.
 
-M4: preserve D0/D1 and resume D2–D6.
+M4: preserve D0/D1 and resume D2–D6 contextual DANTE.
 
 M5: contrasting complete Worlds over the same engine, including unknown-future World and specialist rendering only where earned.
 
@@ -125,9 +146,12 @@ projection != canonical truth
 AI output != fact
 Proposal != Decision != effect
 provider ACK != canonical completion
-absence != false
+absence/unknown != false
 Evidence != Provenance
+Provenance != integrity attestation
 Authority != Visibility
+timeout != semantic negative
+retired reference != automatic replacement
 no universal Entity/Thing/Fact/Relationship/property bag
 ```
 
@@ -137,4 +161,4 @@ Old product/platform contract language naming the DANTE spatial review as the cu
 
 ## 9. Immediate continuation
 
-> **M1-2 only. Finish non-visual semantics/application seams before any shared renderer is built.**
+> **M2 only. Build shared visual primitives over the closed M1 semantic substrate. Do not start M3 customization, M4 DANTE or backend integration.**

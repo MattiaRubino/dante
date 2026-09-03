@@ -1,10 +1,10 @@
 # DANTE — World Focus Research / Review Evidence Index
 
-**Status:** CURRENT EVIDENCE MAP — WS0–WS8 CLOSED / PRE-M0 FALSIFICATION CLOSED / M0 CLOSED / M1 ACTIVE / M1-1 CLOSED + VALIDATED / M1-2 NEXT  
-**Date:** 2026-09-02  
+**Status:** CURRENT EVIDENCE MAP — WS0–WS8 CLOSED / M0 CLOSED / M1 CLOSED / M2 NEXT  
+**Date:** 2026-09-03  
 **Branch:** `feature/home-react`
 
-This index separates live sequencing authority, closure authority, post-closure hygiene, pre-M0 falsification, materialization evidence and historical/supporting evidence.
+This index separates live sequencing authority, closure authority, falsification, materialization evidence and historical/supporting evidence.
 
 Rule:
 
@@ -166,7 +166,7 @@ WP-04 Trajectory
 
 ```text
 HEAD ca89e733893959af7dcc40fd0b8c8ba08e056ba4
-CI 33633635890 PASS — attempt 1
+CI   33633635890 PASS
 ```
 
 ## E15 — WS8 final falsification
@@ -175,7 +175,7 @@ CI 33633635890 PASS — attempt 1
 
 ```text
 HEAD 88db899391a3a41e23e76177d4896a657232b5eb
-CI 33639741630 PASS — attempt 1
+CI   33639741630 PASS
 ```
 
 Stateful hostile scenarios + mutation-kill + independent post-hardening confirmation. CG-40 audit weakness closed without weakening the adversarial test.
@@ -184,46 +184,22 @@ Stateful hostile scenarios + mutation-kill + independent post-hardening confirma
 
 `world-focus-post-ws8-hygiene-audit.md`
 
-Resolved:
-
-```text
-HYG-01 unknown popover pointer barrier
-HYG-02 unused motion preference scaffold
-HYG-03 visual V2/V3 residue
-HYG-04 legacy SVG base styling
-HYG-05 stale D2 live routing
-HYG-06 stale World-switch entry provenance
-HYG-07 legacy Global Topbar Review
-HYG-08 stale transient handoff resurrection after route mismatch
-```
-
-No new substrate class; WS0–WS8 remained closed.
+Resolved HYG-01..HYG-08, including stale transient handoff resurrection after route mismatch. No new substrate class; WS0–WS8 remained closed.
 
 ## E17 — Pre-M0 adversarial regression gate
 
 `world-focus-pre-m0-falsification-review.md`
 
-Red-first discovery:
-
 ```text
-commit 798170e0c1ad12e0263364ab5c542a6ffe3d5e06
-new falsification file: 5 tests
-2 failed / 3 passed
-whole web suite: 2 failed / 227 passed
+red commit 798170e0c1ad12e0263364ab5c542a6ffe3d5e06
+2 failed / 3 passed in new falsification
+whole web suite 2 failed / 227 passed
+
+fix HEAD 7c9feab50c6e2a04a9a3b1e36c92958362dba704
+CI       33664655614 PASS
 ```
 
-Finding:
-
-> mismatched World/source route reads rejected the current handoff but did not invalidate it, allowing stale origin resurrection within TTL.
-
-Fix and validation:
-
-```text
-HEAD 7c9feab50c6e2a04a9a3b1e36c92958362dba704
-CI   33664655614 PASS
-```
-
-The adversarial test was unchanged. Quality, build, Mobile, Chromium, Firefox Timeline and Frontend CI Gate all passed.
+Finding: mismatched World/source route reads rejected the current handoff but did not invalidate it, allowing stale origin resurrection within TTL.
 
 ## E18 — M0 materialization map
 
@@ -243,8 +219,6 @@ AI-required basic path           0
 WS reopen required               0
 ```
 
-M0 freezes the assignments into M1–M7; it is no longer the active implementation gate.
-
 ## E19 — M1-1 identity/reference production materialization
 
 `world-focus-m1-core-nonvisual-materialization-review.md`
@@ -256,17 +230,77 @@ CODE HEAD e0f4003496bfbf828ed9ab7718af8e7e30342ad3
 CI        33679425668 PASS
 ```
 
-Materialized neutral production World identity/descriptor, fixture-ID separation, neutral context-reference ownership, primary + bounded ordered supporting refs, generalized workspace context, route/continuity/transition alignment and related falsification pressure.
+Materialized production World identity/descriptor, fixture-ID separation, neutral bounded context-reference ownership, workspace context sets, route/continuity alignment and related production pressure.
 
-The CODE HEAD above remains the validated M1-1 production evidence point. Later docs-only synchronization has its own HEAD/CI and does not replace it.
+## E20 — M1-2 non-visual production materialization
 
-## E20 — M1-2 frozen next subblock
+`world-focus-m1-next-subblock.md` is now the historical frozen scope + closure record.
 
-`world-focus-m1-next-subblock.md`
+**CLOSED / VALIDATED.**
 
-**NEXT.**
+```text
+CODE HEAD 5e98e4b97639cd018badc23e35e7a523f2940875
+CI        33738873773 PASS
+```
 
-M1 remains active. The next bounded block is narrow reusable non-visual facets + typed WP/O2/O5/O8 application seams. M2–M7 and backend remain blocked by sequence.
+Materialized:
+
+```text
+reference resolution usable/unresolved/retired
+freshness/as-of
+validity current/superseded/retracted/unresolved
+coverage complete/incomplete/conflicted/unknown
+exact material payload present/retired
+Evidence / Provenance / integrity-attestation separation
+sanitized disclosure available/restricted/unavailable
+effect lifecycle + execution revalidation
+connectivity/replay/provider delivery/request timing axes
+O2 Situation
+O5 Next
+O8 Evidence / History
+WP-01 stronger Continuity
+WP-02 Attention
+WP-03 Comparison
+WP-04 Trajectory
+World-scoped read validation/cancellation/latest mechanics
+deterministic pre-backend adapters
+unknown future World + useful non-DANTE path
+```
+
+No universal projection envelope, generic Entity/Thing/Fact/PropertyBag, frontend AuthZ or backend authority was introduced.
+
+## E21 — M1 final production falsification / closure
+
+Final red-first production test:
+
+`apps/web/src/features/world-focus/application/world-focus-m1-final-falsification.test.ts`
+
+Red evidence:
+
+```text
+HEAD 67bd06d63d84273ba2077761919d714c8d442254
+CI   33740212989 EXPECTED FAILURE
+4 hostile tests
+3 PASS / 1 FAIL
+whole web suite: 1 failed / 288 passed
+```
+
+The three passing cases confirmed cross-axis independence, unknown future World O2/O5/O8 + WP-01..04 without DANTE, and same-generation wrong-World rejection.
+
+The sole failure found the planned transitional compatibility residue:
+
+> `WorldFocusInteractionCursor` declared canonical `contextReferences`, but runtime hid the property from normal enumerable object shape.
+
+Fix and final code validation:
+
+```text
+HEAD 7369c51e7ba04f8913728a0770f700c728c3b9f9
+CI   33740710290 PASS
+```
+
+Quality, Mobile, Chromium, Firefox frozen Timeline and Frontend CI Gate all passed. The cursor now exposes `contextReferences` as a normal enumerable frozen property; `selection` remains only a compatibility projection of primary.
+
+This closes M1 without reopening WS0–WS8.
 
 ---
 
@@ -288,19 +322,21 @@ L8 Platform/User Policy
 
 # 4. Reopen rule
 
-Do not restart WS0–WS8 for a new provider, World noun, UI, renderer, viewport, AI model, config store or larger dataset.
+Do not restart WS0–WS8 or M1 for a new provider, World noun, UI, renderer, viewport, AI model, config store or larger dataset.
 
-Reopen only when M1/later executable/materialization evidence shows a concrete semantic/ownership/state contradiction that cannot fit an existing owner, and reopen only the earliest necessary phase.
+Reopen only when later executable/materialization evidence shows a concrete semantic/ownership/state/security/privacy/effect contradiction that cannot fit an existing owner, and reopen only the earliest necessary phase.
 
 ---
 
 # 5. Current evidence gate
 
-> **M1 — Core Non-Visual Materialization — ACTIVE**
+> **M1 — Core Non-Visual Materialization — CLOSED / VALIDATED**
 
-> **M1-1 CLOSED / VALIDATED. M1-2 is NEXT. M2–M7 and backend are BLOCKED.**
+> **M2 — Shared Visual Primitive Layer — NEXT**
 
-The frozen M0 map remains the disposition authority for the remaining M1 work.
+> **M3–M7 and backend remain BLOCKED by sequence. D2–D6 remain deferred to M4.**
+
+The frozen M0 map remains the production-disposition authority; M1 evidence proves the assigned non-visual production owners exist and survive final falsification.
 
 ---
 

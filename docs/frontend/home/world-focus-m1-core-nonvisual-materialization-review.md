@@ -1,10 +1,10 @@
 # DANTE — World Focus M1 Core Non-Visual Materialization Review
 
-**Status:** M1 ACTIVE — SUBBLOCK 1 IDENTITY / REFERENCE OWNERSHIP CLOSED / NON-VISUAL FACETS NEXT  
-**Date:** 2026-09-02  
+**Status:** M1 CLOSED / VALIDATED — M2 NEXT  
+**Date:** 2026-09-03  
 **Branch:** `feature/home-react`
 
-This document is the live M1 execution evidence. M0 remains the scope-freeze authority; this review records what has actually been materialized and validated in production code.
+This document is the durable M1 execution evidence. M0 remains the scope-freeze/disposition authority; M1 records the production materialization and red-green validation of the non-visual World Focus substrate.
 
 ## 1. M0 prerequisite
 
@@ -12,25 +12,270 @@ M0 is CLOSED.
 
 ```text
 M0 closure docs HEAD  6ea74f630cb35af65d58e7ae873882d6d975411e
-Frontend CI           33668744509 — PASS
+Frontend CI           33668744509 PASS
 66 decisions assigned
 unowned material rows 0
 ```
 
 Authority: `world-focus-m0-materialization-mapping.md`.
 
-## 2. Subblock 1 validated result
+## 2. M1-1 — identity/reference ownership
 
-Validated code HEAD:
+Validated code:
 
 ```text
-e0f4003496bfbf828ed9ab7718af8e7e30342ad3
+HEAD e0f4003496bfbf828ed9ab7718af8e7e30342ad3
+CI   33679425668 PASS
+```
+
+M1-1 materialized:
+
+```text
+open-ended WorldFocusId
+WorldFocusIdentityDescriptor
+fixture IDs separated as WorldFocusFixtureId
+explicit fixture/catalog routability
+neutral WorldFocusContextReference
+bounded ordered WorldFocusContextReferenceSet
+workspace canonical contextReferences
+selection compatibility projection = primary only
+surface default inheritance = primary only
+Context/Page explicit descriptor consumption
+production World binding in Continuity
+proof/oracle imports decoupled from workspace ownership
+```
+
+An opaque World id validates identity shape only. It does not establish existence, routability, canonical membership, authorization, disclosure or persistence.
+
+## 3. M1-2 — narrow facets and application seams
+
+Validated production code:
+
+```text
+HEAD 5e98e4b97639cd018badc23e35e7a523f2940875
+CI   33738873773 PASS
+```
+
+This tranche completed the remaining M0-frozen non-visual production work without introducing a universal semantic envelope.
+
+### 3.1 Reference resolution
+
+Finite presentation vocabulary:
+
+```text
+usable
+unresolved
+retired
+```
+
+Resolution preserves the exact reference. It never silently chooses a merge/split successor, copies payload, widens disclosure or promotes provider state to canonical identity.
+
+### 3.2 L2 basis / evidence facets
+
+Freshness:
+
+```text
+current + asOf
+stale + asOf
+unknown
+```
+
+Validity:
+
+```text
+current
+superseded + reasonCode
+retracted + reasonCode
+unresolved + reasonCode
+```
+
+Coverage:
+
+```text
+complete
+incomplete + reasonCode
+conflicted + reasonCode
+unknown
+```
+
+Material payload:
+
+```text
+present + exact materialStateReference
+retired + exact materialStateReference + reasonCode + retiredAt
+```
+
+Evidence metadata remains role-preserving:
+
+```text
+evidenceReferences
+provenanceReferences
+integrityAttestationReferences
+```
+
+No confidence score, provider winner, payload copy or generic truth wrapper was added.
+
+### 3.3 L3 sanitized disclosure
+
+Frontend outcome:
+
+```text
+available
+restricted
+unavailable
+```
+
+This is only an already-sanitized presentation outcome. The frontend does not decide AuthZ, recipient, purpose or policy. Extra authorization/purpose/recipient fields are not copied through the boundary.
+
+### 3.4 L6 effect presentation
+
+Effect states:
+
+```text
+pending
+ambiguous
+partial-real
+reconciliation-required
+reversed
+compensated
+```
+
+Execution revalidation:
+
+```text
+not-required
+required-before-execution
+```
+
+The model does not execute, authorize, cancel, reverse, refund, compensate or infer canonical completion from provider acknowledgements.
+
+### 3.5 L8 sync/platform presentation
+
+Independent axes:
+
+```text
+connectivity       online / offline
+replay             idle / pending
+provider delivery  nominal / lagging / unknown
+request timing     within-window / timed-out / unknown
+```
+
+Therefore:
+
+```text
+offline != source absent
+provider lag != canonical stale
+timeout != semantic negative
+replay pending != replay success/failure
+```
+
+### 3.6 Direct Output Grammar seams
+
+Production reference-only seams now exist for:
+
+```text
+O2 Situation
+O5 Next
+O8 Evidence / History
+```
+
+They preserve bounded ordered references and do not become Domain owners or generic projection containers.
+
+### 3.7 L1 application seams
+
+Finite work semantics remain exactly:
+
+```text
+WP-01 Continuity
+WP-02 Attention
+WP-03 Comparison
+WP-04 Trajectory
+```
+
+WP-01 now carries meaningful thread/checkpoint/continuation references.
+
+WP-02 carries material matter/reason/resolution references; notification/unread alone is not Attention.
+
+WP-03 remains bounded comparison, not ranking, recommendation, winner, Decision or causality.
+
+WP-04 preserves ordered points, explicit missing positions and ordering/aggregation basis; missing interval/position is never rewritten as zero.
+
+### 3.8 Shared read mechanics
+
+`world-focus-foundation.ts` owns only reusable mechanics:
+
+```text
+World-scoped request
+abort relay
+runtime boundary validation
+latest-read generation
+obsolete-read commit rejection
+```
+
+Semantic validation remains with intent-specific owners. The shared reader is not a universal `ProjectionEnvelope`, backend DTO or source-of-truth abstraction.
+
+### 3.9 Deterministic adapters
+
+Pre-backend adapters remain deterministic and bounded. Unknown future World IDs can flow through production identity/application seams without extending the fixed visual fixture catalog.
+
+A useful authorized basic path does not require DANTE.
+
+## 4. M1 final red-first falsification
+
+Final adversarial test:
+
+`apps/web/src/features/world-focus/application/world-focus-m1-final-falsification.test.ts`
+
+Red commit:
+
+```text
+67bd06d63d84273ba2077761919d714c8d442254
+```
+
+CI:
+
+```text
+33740212989 — EXPECTED FAILURE
+```
+
+Pre-unit gates were green. Web unit result:
+
+```text
+55 test files total
+1 failed / 54 passed
+289 tests total
+1 failed / 288 passed
+```
+
+The three cross-semantic hostile tests passed:
+
+```text
+reference/basis/disclosure/sync/effect axes remained independent
+unknown future World supported O2/O5/O8 + WP-01..04 without DANTE
+same-generation late surface from wrong World was rejected
+```
+
+The only failure was deliberate and precise:
+
+```text
+WorldFocusInteractionCursor type declared canonical contextReferences
+but runtime Object.keys(cursor) did not expose contextReferences
+```
+
+Root cause: the M1-1 compatibility layer still installed `contextReferences` with `Object.defineProperty(... enumerable: false)`.
+
+## 5. Final cursor closure
+
+Fix HEAD:
+
+```text
+7369c51e7ba04f8913728a0770f700c728c3b9f9
 ```
 
 Frontend CI:
 
 ```text
-33679425668 — PASS
+33740710290 PASS
 ```
 
 Validated jobs:
@@ -52,292 +297,56 @@ Firefox frozen Timeline       PASS
 Frontend CI Gate              PASS
 ```
 
-This closes M0-03, M0-09, M0-11 and the production materialization portion of M0-12. M1 overall remains ACTIVE.
+`getWorldFocusInteractionCursor()` now returns `contextReferences` as a normal enumerable frozen property. Historical exact-object tests were migrated to the canonical shape rather than hiding the field.
 
-## 3. Production World identity
+`selection` remains a compatibility projection of `contextReferences.primary`; it is not the semantic owner.
 
-New neutral owner:
+## 6. M1 permanent barriers preserved
 
-`apps/web/src/features/world-focus/model/world-focus-identity.ts`
-
-Production identity is now open-ended:
+M1 introduced none of the forbidden generic escapes:
 
 ```text
-WorldFocusId = string
-WorldFocusIdentityDescriptor = { id, label, description }
+NO universal ProjectionEnvelope
+NO Thing / Entity / Fact / Relationship / PropertyBag root
+NO frontend ACL/AuthZ engine
+NO World canonical data ownership
+NO page-per-World semantic architecture
+NO backend DTO/persistence ownership
+NO provider authority
+NO durable DANTE Run backend
+NO real effect execution
+NO AI-required basic path
 ```
 
-`normalizeWorldFocusId()` validates/normalizes an opaque identifier only. It does NOT establish:
+Permanent non-collapses include:
 
 ```text
-World existence
-routability
-canonical membership
-authorization
-disclosure
-backend persistence
+reference exists != payload available != current != disclosable != fresh
+stale != superseded != retracted
+Evidence != Provenance != integrity attestation
+restricted != nonexistent
+partial-real != failed != completed
+cancel != reversed != compensated
+Comparison != Decision
+provider state != canonical state
+absence/unknown != false
 ```
 
-The ten current World IDs remain deterministic fixture/catalog data only.
-
-`world-focus-fixtures.ts` now owns `WorldFocusFixtureId`; it is explicitly not the permanent World taxonomy.
-
-## 4. Route validity remains explicit
-
-`/_app/worlds/$worldId` now performs two distinct steps:
+## 7. M1 closure disposition
 
 ```text
-URL token
--> normalize opaque WorldFocusId
--> resolve registered deterministic fixture/catalog entry
--> if unresolved: redirect /worlds
--> if resolved: build WorldFocusIdentityDescriptor
--> render WorldFocusPage
-```
-
-Therefore `/worlds/arbitrary-token` does not create a World merely because production identity is open-ended.
-
-This is deliberate:
-
-```text
-open-ended identity != open-ended routability
-```
-
-A future real application resolver may replace the deterministic fixture catalog without changing Page/Context identity ownership.
-
-## 5. Neutral context-reference owner
-
-New neutral owner:
-
-`apps/web/src/features/world-focus/model/world-focus-context-reference.ts`
-
-It owns:
-
-```text
-WorldFocusContextReference { kind, key }
-WorldFocusContextReferenceSet {
-  primary
-  supporting[]
-}
-```
-
-Properties:
-
-```text
-normalization
-non-empty kind/key
-bounded supporting references
-ordered supporting semantics
-deduplication
-primary/supporting duplicate rejection
-semantic comparison
-```
-
-Default supporting-reference maximum is 4. This is a frontend bounded-context policy, not a backend/domain relationship limit.
-
-References remain identity/hints only; they are never canonical payload copies or authorization grants.
-
-## 6. Workspace / cursor materialization
-
-`world-focus-workspace.ts` no longer owns the generic reference type.
-
-Canonical transient context state is now:
-
-```text
-contextReferences: WorldFocusContextReferenceSet | null
-```
-
-The old `selection` remains temporarily as a compatibility projection of `contextReferences.primary` for existing callers/tests. It is no longer the semantic owner.
-
-New reducer intent:
-
-```text
-set-context
-```
-
-Existing `select-context` remains a single-primary convenience.
-
-Behavior:
-
-```text
-same semantic reference set -> exact no-op
-changed set -> generation +1
-clear-context -> clears entire set atomically
-surface default context -> primary only
-interaction cursor -> full primary + ordered supporting set
-```
-
-Supporting references are deliberately NOT silently copied into every surface. This prevents accidental over-context/disclosure widening.
-
-`WorldFocusWorkspaceHost` exposes `setContextReferences()` while retaining `selectContext()` for bounded compatibility.
-
-## 7. Transitional compatibility note
-
-`getWorldFocusInteractionCursor()` currently preserves the historical enumerable cursor shape while exposing `contextReferences` as a non-enumerable frozen property.
-
-Purpose:
-
-```text
-avoid unrelated exact-object-shape regression while M1 migrates callers
-```
-
-This is transitional compatibility, not the desired permanent representation. Before M1 closes, deliberately review/remove this compatibility trick and migrate exact-shape tests/callers to the canonical cursor contract.
-
-Do not let this become accidental permanent architecture.
-
-## 8. WP / oracle ownership cleanup
-
-`world-focus-work-primitives.ts` imports `WorldFocusContextReference` from the neutral owner, not workspace.
-
-`world-focus-substrate-oracle.ts` no longer duplicates primary/supporting normalization, bounds and dedup logic. Its compatibility helper delegates to `createWorldFocusContextReferenceSet()`.
-
-The WS7/WS8 oracle remains proof/audit code. It is NOT promoted into runtime authority.
-
-## 9. Continuity / Orientation alignment
-
-`application/world-focus-continuity.ts` now validates against production `WorldFocusId`, while still requiring returned projection `worldId` to equal the requested World.
-
-Open-ended identity therefore does not weaken request/result binding.
-
-`WorldFocusContext` now consumes `WorldFocusIdentityDescriptor` directly instead of indexing the fixture union for label/description.
-
-A test renders an unknown future descriptor (`future-craft`) without new component branching or invented analytical controls.
-
-`WorldFocusPage` separates:
-
-```text
-identity descriptor -> id / label / description / workspace / DANTE coordinate
-fixture presentation profile -> current pre-backend accent / VFX theme only
-```
-
-This keeps the existing VFX fixture concern from becoming the production identity model.
-
-## 10. Public API alignment
-
-The World Focus public feature API exports:
-
-```text
-production World identity + descriptor
-fixture catalog types distinctly
-neutral context-reference owner
-```
-
-This prevents downstream callers from treating the ten fixture IDs as the only legal production identity type.
-
-## 11. Red-green engineering evidence
-
-During this subblock the gates found real integration issues and were not weakened.
-
-### Run 33678846241
-
-Lint found a stale unused nested `world` prop after descriptor extraction.
-
-Resolution: remove only that dead nested prop; the outer `world` fixture remains required by the visual frame.
-
-### Run 33679150160
-
-Typecheck found:
-
-```text
-exactOptionalPropertyTypes incompatibility for explicitly absent supporting refs
-manual malformed allocation fixture missing contextReferences
-```
-
-Resolution:
-
-```text
-neutral constructor explicitly tolerates supporting: undefined at its input boundary
-legacy malformed test fixture explicitly declares contextReferences: null
-```
-
-The production workspace type was not weakened to optional.
-
-That run also had one unrelated Timeline Chromium flake in `split and merge remain reversible...`; all World Focus E2Es were green. No Timeline production code was modified.
-
-### Run 33679425668
-
-Full PASS. The Timeline failure did not reproduce; Chromium and Firefox both passed.
-
-## 12. New/updated tests
-
-Added:
-
-```text
-world-focus-identity.test.ts
-world-focus-context-reference.test.ts
-world-focus-workspace-context-set.test.ts
-```
-
-Updated:
-
-```text
-world-focus-context.test.tsx
-world-focus-page.test.tsx
-world-focus-workspace-allocation.test.ts
-```
-
-Coverage includes:
-
-```text
-opaque future World id
-explicit production descriptor
-unknown future descriptor rendering
-primary + ordered supporting references
-reference bounds and duplicate rejection
-semantic no-op equality
-workspace generation change
-surface-primary inheritance only
-full cursor reference set
-atomic context clear
-existing route/VFX/transition/focus behavior
-```
-
-## 13. Remaining M1 work
-
-M1 is NOT closed. Next non-visual materialization must cover the remaining M0-frozen deltas:
-
-```text
-M0-15 reference resolution presentation vocabulary
-M0-17 stronger WP-01 production alignment
-M0-18 WP-02 Attention application/model seam
-M0-20 WP-03 Comparison application/model seam
-M0-22 WP-04 Trajectory application/model seam
-M0-25..27 L2 basis/freshness/validity/evidence facets
-M0-31 L3 sanitized disclosure outcome facet
-M0-41 L6 effect lifecycle presentation model
-M0-54 L8 offline/replay/provider-lag representation
-O2 Situation typed direct application seam
-O5 Next typed direct application seam
-O8 Evidence/History typed direct application seam
-deterministic pre-backend adapters/tests for these seams
-```
-
-Also revisit the transitional cursor enumerable-shape compatibility before M1 closure.
-
-## 14. Stop lines
-
-Still forbidden in M1:
-
-```text
-M2 shared visual renderers
-M3 customization / pin / hide / reorder
-D2–D6 / M4
-complete World materialization / M5
-integrated visual acceptance / M6
-backend/API/DB/Alembic/AuthZ/provider/LLM/tools/effects
-```
-
-## 15. Final disposition
-
-```text
-M0                                  CLOSED / CI PASS
-M1 overall                          ACTIVE
-M1 subblock 1 identity/reference    CLOSED / CI PASS
-M1 non-visual facets                NEXT
-M2–M7                               BLOCKED
+M0                                  CLOSED / VALIDATED
+M1                                  CLOSED / VALIDATED
+M1-1 identity/reference             CLOSED / VALIDATED
+M1-2 non-visual facets + seams      CLOSED / VALIDATED
+M2 shared visual primitives         NEXT
+M3–M7                               BLOCKED BY SEQUENCE
+D2–D6                               DEFERRED TO M4
 BACKEND                              BLOCKED UNTIL M7
 ```
 
+M2 may now render the semantics earned by M1, but renderer components do not become semantic owners and `primitive != card` remains binding.
+
 Immediate continuation:
 
-> Continue M1 with the narrow reusable non-visual state/facet layer and typed O2/O5/O8 + WP application seams. Do not start renderers.
+> **Begin M2 only. Do not start M3 customization, M4 DANTE D2–D6, complete Worlds, integrated visual acceptance or backend work.**

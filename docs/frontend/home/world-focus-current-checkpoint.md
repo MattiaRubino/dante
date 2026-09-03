@@ -1,11 +1,11 @@
 # DANTE — World Focus Current Checkpoint
 
-**Status:** CURRENT LIVE WORLD FOCUS CHECKPOINT — M0 CLOSED / M1 ACTIVE / SUBBLOCK 1 CLOSED  
-**Date:** 2026-09-02  
+**Status:** CURRENT LIVE WORLD FOCUS CHECKPOINT — M1 CLOSED / M2 NEXT  
+**Date:** 2026-09-03  
 **Branch:** `feature/home-react`  
 **Worktree:** `/home/mattia/projects/dante-frontend`
 
-This is the first World Focus authority a new chat/agent must read. Older `D2 NEXT`, `M0 NEXT`, `M0 ACTIVE` or `M1 NOT STARTED` prose is phase-time history only.
+This is the first World Focus authority a new chat/agent must read. Older `D2 NEXT`, `M0 NEXT`, `M1 ACTIVE`, `M1-2 NEXT` or similar prose is phase-time history only.
 
 # 1. Read order
 
@@ -42,10 +42,11 @@ WS0–WS8                               CLOSED
 POST-WS8 HYGIENE                      CLOSED / APPLIED
 PRE-M0 FALSIFICATION                  CLOSED / PASS
 M0                                    CLOSED
-M1                                    ACTIVE
+M1                                    CLOSED / VALIDATED
 M1-1 identity/reference ownership     CLOSED / VALIDATED
-M1 remaining non-visual facets        NEXT
-M2–M7                                 BLOCKED
+M1-2 non-visual facets + seams        CLOSED / VALIDATED
+M2 shared visual primitive layer      NEXT
+M3–M7                                 BLOCKED BY SEQUENCE
 D2–D6                                 DEFERRED TO M4
 BACKEND                               BLOCKED UNTIL M7
 assistant manual visual review         NOT PERFORMED
@@ -66,105 +67,146 @@ M0 closure docs
 HEAD 6ea74f630cb35af65d58e7ae873882d6d975411e
 CI   33668744509 PASS
 
-M1 subblock 1 validated production code
+M1-1 production identity/reference
 HEAD e0f4003496bfbf828ed9ab7718af8e7e30342ad3
 CI   33679425668 PASS
+
+M1-2 production non-visual semantics
+HEAD 5e98e4b97639cd018badc23e35e7a523f2940875
+CI   33738873773 PASS
+
+M1 final red-first falsification
+HEAD 67bd06d63d84273ba2077761919d714c8d442254
+CI   33740212989 EXPECTED FAILURE
+1 failed / 288 passed — cursor contextReferences hidden representation
+
+M1 final code closure
+HEAD 7369c51e7ba04f8913728a0770f700c728c3b9f9
+CI   33740710290 PASS
 ```
 
-# 4. M1 subblock 1 result
+# 4. M1 closed production result
 
-Production identity is now open-ended and descriptor-driven, while routability remains explicit. The ten deterministic World fixture IDs are not a permanent taxonomy.
+Production identity remains open-ended and descriptor-driven while routability remains explicit. The current deterministic fixture catalog is not a permanent World taxonomy.
 
-Neutral reference ownership exists outside workspace:
+Canonical transient interaction context is:
 
 ```text
-WorldFocusContextReference
 WorldFocusContextReferenceSet
   primary
   ordered bounded supporting[]
 ```
 
-Workspace canonical transient context now uses the set. `selection` remains only a temporary compatibility projection of primary. Surfaces inherit primary only by default; the cursor exposes the full bounded set.
+Workspace and interaction cursor now expose this canonical set normally. `selection` remains a compatibility projection of primary only. Surfaces inherit primary only by default so supporting context is never silently widened.
 
-The route still redirects unknown `/worlds/:worldId` tokens unless the current deterministic resolver has a registered World descriptor/fixture. Therefore:
-
-```text
-opaque ID accepted != World exists
-World exists != authorized
-World relevance != disclosure permission
-```
-
-Continuity, WP constructors, oracle compatibility and public exports now consume the neutral owners rather than fixture/workspace-owned identity types.
-
-# 5. Transitional item to close before M1 ends
-
-`getWorldFocusInteractionCursor()` currently exposes `contextReferences` as a non-enumerable frozen property to preserve historical exact-object test compatibility.
-
-This is explicitly transitional. Before M1 closure, migrate callers/tests to the canonical cursor shape and decide/remove that compatibility representation. Do not allow it to become accidental architecture.
-
-# 6. Remaining M1 scope
+M1-2 also materialized narrow, orthogonal production semantics:
 
 ```text
-M0-15 reference-resolution presentation state
-M0-17 WP-01 production alignment
-M0-18 WP-02 Attention seam
-M0-20 WP-03 Comparison seam
-M0-22 WP-04 Trajectory seam
-M0-25..27 L2 basis/freshness/validity/evidence facets
-M0-31 L3 disclosure-safe frontend outcome
-M0-41 L6 effect-presentation lifecycle
-M0-54 L8 offline/replay/provider-lag representation
-O2 Situation typed seam
-O5 Next typed seam
-O8 Evidence/History typed seam
-deterministic pre-backend adapters/tests
+reference resolution
+  usable / unresolved / retired
+
+L2
+  freshness current/stale/unknown + as-of where known
+  validity current/superseded/retracted/unresolved
+  coverage complete/incomplete/conflicted/unknown
+  exact material-state payload present/retired
+  evidence / provenance / integrity-attestation roles kept distinct
+
+L3
+  sanitized disclosure available/restricted/unavailable
+
+L6
+  pending / ambiguous / partial-real / reconciliation-required / reversed / compensated
+  execution revalidation not-required / required-before-execution
+
+L8
+  online/offline
+  replay idle/pending
+  provider nominal/lagging/unknown
+  request within-window/timed-out/unknown
+
+Output Grammar seams
+  O2 Situation
+  O5 Next
+  O8 Evidence / History
+
+L1 application seams
+  WP-01 Continuity
+  WP-02 Attention
+  WP-03 Comparison
+  WP-04 Trajectory
 ```
 
-Use narrow reusable facets. Do NOT introduce one universal projection envelope/property bag.
+The shared read foundation owns only cancellation/latest-read/boundary-validation mechanics. It is not a universal semantic envelope or backend authority.
 
-# 7. Closed substrate remains authoritative
+# 5. Final M1 falsification result
+
+The final hostile production test deliberately combined unknown-future World handling, bounded context, cross-axis facets, O2/O5/O8, WP-01..04, same-generation wrong-World rejection and a useful non-DANTE path.
+
+The red run found exactly one remaining issue:
 
 ```text
-L0 Higher Authorities
-L1 Work-Semantic Projections
-L2 Evidence / Basis
-L3 Coordination / Disclosure
-L4 Interaction / Reference
-L5 Composition Configuration
-L6 Operation / Effect Presentation
-L7 Renderer / Specialist Extension
-L8 Platform / User Policies
+cursor type said contextReferences was canonical
+runtime hid it as a non-enumerable compatibility property
 ```
 
-Finite L1:
+The other hostile cases passed. The fix removed the `Object.defineProperty(... enumerable: false)` representation and returns a normal frozen `contextReferences` property. Exact-shape tests were migrated rather than weakening the canonical cursor.
+
+# 6. Permanent non-collapses retained
 
 ```text
-WP-01 Continuity
-WP-02 Attention
-WP-03 Comparison
-WP-04 Trajectory
+reference exists != payload available != current != disclosable != fresh
+stale != superseded != retracted
+Evidence != Provenance != integrity attestation
+restricted != nonexistent
+offline != source absent
+provider lag != canonical stale
+timeout != semantic negative
+partial-real effect != generic failure != success
+cancel != reverse != compensate
+Comparison != Decision
+missing trajectory position != zero
+World relevance != AuthZ
+AI output != fact
 ```
 
-L1 remains optional.
+No universal `ProjectionEnvelope`, generic `Thing/Entity/Fact/PropertyBag`, frontend ACL/AuthZ, World-owned canonical state or backend owner was introduced.
+
+# 7. Next gate — M2
+
+M2 may now build shared visual primitives over M1 semantics.
+
+Constraints:
+
+```text
+primitive != card
+renderer != semantic owner
+Output Grammar family != mandatory module
+finite renderer registry
+safe degradation for unknown future Worlds
+no fabricated urgency or density
+no visual collapse of semantic axes
+no M3 customization yet
+no D2–D6 yet
+no backend yet
+```
 
 # 8. Stop lines
 
 ```text
-M2 shared visual renderer layer              BLOCKED
-M3 adaptive composition/customization        BLOCKED
-M4 D2–D6 contextual DANTE                    BLOCKED
-M5 complete contrasting Worlds               BLOCKED
-M6 integrated visual/a11y/performance review BLOCKED
-M7 pre-backend frontend freeze               BLOCKED
-BACKEND                                      BLOCKED
+M2 shared visual renderer layer              NEXT
+M3 adaptive composition/customization        BLOCKED BY M2
+M4 D2–D6 contextual DANTE                    BLOCKED BY M3
+M5 complete contrasting Worlds               BLOCKED BY M4
+M6 integrated visual/a11y/performance review BLOCKED BY M5
+M7 pre-backend frontend freeze               BLOCKED BY M6
+BACKEND                                      BLOCKED UNTIL M7
 ```
-
-No DB/Alembic/API/AuthZ/provider/LLM/tool/effect work in M1.
 
 # 9. Contract sequencing
 
-`world-focus-product-contract.md` and `world-focus-platform-contract.md` keep their semantic authority. Their historical paragraphs naming the DANTE spatial/presence review as the current next gate are superseded only for sequencing by `world-focus-contract-sequencing-supersession.md` and the live authorities above.
+`world-focus-product-contract.md` and `world-focus-platform-contract.md` retain semantic authority. Historical next-gate wording is superseded only for sequencing by the live checkpoint and `world-focus-contract-sequencing-supersession.md`.
 
 # 10. Immediate continuation
 
-> **Continue M1 only: narrow non-visual facets + WP/O2/O5/O8 application seams. Do not start M2 renderers.**
+> **Begin M2 only: materialize the shared visual primitive layer over the closed M1 semantics. Do not start M3, D2–D6/M4 or backend work.**

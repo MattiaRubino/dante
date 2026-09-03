@@ -1,7 +1,7 @@
 # DANTE — Home / Frontend Current Checkpoint
 
-**Status:** CURRENT LIVE ENTRY POINT — WORLD FOCUS M0 CLOSED / M1 ACTIVE / SUBBLOCK 1 CLOSED  
-**Date:** 2026-09-02  
+**Status:** CURRENT LIVE ENTRY POINT — WORLD FOCUS M1 CLOSED / M2 NEXT  
+**Date:** 2026-09-03  
 **Working branch:** `feature/home-react`  
 **Worktree:** `/home/mattia/projects/dante-frontend`
 
@@ -41,12 +41,14 @@ WS0–WS8                                CLOSED
 POST-WS8 HYGIENE                       CLOSED / APPLIED
 PRE-M0 FALSIFICATION                   CLOSED / PASS
 M0 Materialization Mapping             CLOSED
-M1 Core Non-Visual Materialization     ACTIVE
-M1 subblock 1 identity/reference       CLOSED / VALIDATED
-M1 next non-visual facets              NEXT
-M2–M7                                  BLOCKED
+M1 Core Non-Visual Materialization     CLOSED / VALIDATED
+M1-1 identity/reference ownership      CLOSED / VALIDATED
+M1-2 facets + WP/O2/O5/O8 seams        CLOSED / VALIDATED
+M2 Shared Visual Primitive Layer       NEXT
+M3–M7                                  BLOCKED BY SEQUENCE
 D2–D6                                  DEFERRED TO M4
 BACKEND                                BLOCKED UNTIL M7
+assistant manual visual review         NOT PERFORMED
 ```
 
 ## 3. Current validated evidence
@@ -56,28 +58,59 @@ M0 docs closure
 HEAD 6ea74f630cb35af65d58e7ae873882d6d975411e
 CI   33668744509 PASS
 
-M1 subblock 1 production code
+M1-1 production identity/reference
 HEAD e0f4003496bfbf828ed9ab7718af8e7e30342ad3
 CI   33679425668 PASS
+
+M1-2 non-visual production materialization
+HEAD 5e98e4b97639cd018badc23e35e7a523f2940875
+CI   33738873773 PASS
+
+M1 final production falsification — red discovery
+HEAD 67bd06d63d84273ba2077761919d714c8d442254
+CI   33740212989 EXPECTED FAILURE
+1 failed / 288 passed — hidden cursor contextReferences representation only
+
+M1 final code closure
+HEAD 7369c51e7ba04f8913728a0770f700c728c3b9f9
+CI   33740710290 PASS
 ```
 
-M1 subblock 1 introduced/connected:
+## 4. M1 closed result
+
+M1 now has production-grade non-visual ownership for:
 
 ```text
-open-ended production WorldFocusId + identity descriptor
-fixed ten-World IDs retained only as fixture/catalog identity
-explicit route resolver so unknown URL tokens do not auto-create Worlds
-neutral context-reference owner
-primary + bounded ordered supporting reference set
-workspace/cursor materialization of the reference set
-surface default inheritance of primary only
-WP/oracle imports decoupled from workspace ownership
-Continuity validation on production World identity
-Context/Page descriptor consumption
-public API separation of production identity vs fixture types
+open-ended World identity + explicit descriptor
+neutral bounded context-reference sets
+canonical workspace/cursor context
+reference resolution: usable / unresolved / retired
+freshness/as-of
+validity: current / superseded / retracted / unresolved
+coverage: complete / incomplete / conflicted / unknown
+material payload: present / retired with exact material-state reference
+evidence / provenance / integrity-attestation as distinct bounded roles
+sanitized disclosure: available / restricted / unavailable
+effect presentation + execution revalidation
+connectivity / replay / provider delivery / request timing
+O2 Situation
+O5 Next
+O8 Evidence / History
+WP-01 Continuity
+WP-02 Attention
+WP-03 Comparison
+WP-04 Trajectory
+World-scoped validated/cancellable read mechanics
+deterministic pre-backend adapters
+unknown-future World compatibility
+basic useful path without DANTE
 ```
 
-## 4. Read order
+The final M1 falsification proved the only remaining compatibility debt was the non-enumerable `cursor.contextReferences`. It is now a normal enumerable frozen property. `selection` remains only a compatibility projection of `contextReferences.primary`, not the semantic owner.
+
+No universal `ProjectionEnvelope`, generic `Thing/Entity/Fact/PropertyBag`, frontend ACL/AuthZ, World canonical ownership or backend authority was introduced.
+
+## 5. Read order
 
 ```text
 1. world-focus-current-checkpoint.md
@@ -92,27 +125,25 @@ public API separation of production identity vs fixture types
 10. product/platform/structure/geometry contracts as needed
 ```
 
-## 5. Next M1 work
+## 6. Next gate — M2 only
+
+M2 materializes the **shared visual primitive layer** for semantics already earned by M1.
+
+Rules:
 
 ```text
-reference-resolution safe frontend vocabulary
-L2 basis/freshness/validity/evidence facets
-L3 sanitized disclosure outcome facet
-L6 effect-presentation lifecycle + execution-revalidation state
-L8 offline/replay/provider-lag representation
-O2 Situation typed application seam
-O5 Next typed application seam
-O8 Evidence/History typed application seam
-WP-01 stronger production alignment
-WP-02 Attention application/model seam
-WP-03 Comparison application/model seam
-WP-04 Trajectory application/model seam
-deterministic adapters + aggressive tests
+primitive != card
+question/output family != mandatory visible module
+no page-per-World architecture
+no renderer may become canonical semantic owner
+no visual treatment may collapse freshness/validity/disclosure/effect/sync axes
+unknown future Worlds must safe-degrade through finite registries
+sparse Worlds remain sparse
 ```
 
-Do not create a giant generic projection envelope/property bag.
+M3 adaptive customization, M4 contextual DANTE D2–D6, M5 complete Worlds, M6 integrated visual/a11y/performance review, M7 frontend freeze and backend all remain blocked by sequence.
 
-## 6. Permanent barriers
+## 7. Permanent barriers
 
 ```text
 World != canonical Domain owner
@@ -124,10 +155,14 @@ Proposal != Decision != effect
 provider ACK != canonical completion
 absence/unknown != false
 Evidence != Provenance
+Provenance != integrity attestation
 Authority != Visibility
+timeout != semantic negative
+offline != source absent
+retired reference != replacement reference
 ```
 
-## 7. Backend stop line
+## 8. Backend stop line
 
 ```text
 frontend view model != backend DTO != Domain model != persistence row
@@ -140,7 +175,7 @@ NO real tool/effect execution
 NO fake success
 ```
 
-## 8. Operational rules
+## 9. Operational rules
 
 - stay on `feature/home-react` unless explicitly authorized otherwise;
 - fresh live HEAD before every write scope;

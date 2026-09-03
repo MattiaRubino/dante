@@ -1,7 +1,7 @@
 # DANTE — World Focus Handoff
 
-**Status:** CURRENT DURABLE HANDOFF — WS0–WS8 CLOSED / PRE-M0 FALSIFICATION CLOSED / M0 CLOSED / M1 ACTIVE / M1-1 CLOSED + VALIDATED / M1-2 NEXT  
-**Date:** 2026-09-02  
+**Status:** CURRENT DURABLE HANDOFF — WS0–WS8 CLOSED / M0 CLOSED / M1 CLOSED / M2 NEXT  
+**Date:** 2026-09-03  
 **Repository:** `MattiaRubino/dante`  
 **Branch:** `feature/home-react`  
 **Worktree:** `/home/mattia/projects/dante-frontend`
@@ -49,44 +49,48 @@ WS0–WS8                                CLOSED
 POST-WS8 HYGIENE                       CLOSED / APPLIED
 PRE-M0 FALSIFICATION                   CLOSED / PASS
 M0 Materialization Mapping             CLOSED
-M1 Core Non-Visual Materialization     ACTIVE
+M1 Core Non-Visual Materialization     CLOSED / VALIDATED
 M1-1 identity/reference ownership      CLOSED / VALIDATED
-M1-2 non-visual facets + seams         NEXT
-M2–M7                                  BLOCKED
+M1-2 non-visual facets + seams         CLOSED / VALIDATED
+M2 shared visual primitive layer       NEXT
+M3–M7                                  BLOCKED BY SEQUENCE
 BACKEND                                BLOCKED UNTIL M7
 D2–D6                                  PRESERVED / DEFERRED TO M4
 ```
 
-Semantic WS8 proof remains:
+Key executable evidence:
 
 ```text
+WS8
 HEAD 88db899391a3a41e23e76177d4896a657232b5eb
-CI   33639741630 PASS — attempt 1
-```
+CI   33639741630 PASS
 
-Final pre-M0 runtime regression gate:
+PRE-M0 fix
+HEAD 7c9feab50c6e2a04a9a3b1e36c92958362dba704
+CI   33664655614 PASS
 
-```text
-red discovery  798170e0c1ad12e0263364ab5c542a6ffe3d5e06
-fix HEAD       7c9feab50c6e2a04a9a3b1e36c92958362dba704
-CI             33664655614 PASS
-```
-
-M0 closure:
-
-```text
+M0 closure
 HEAD 6ea74f630cb35af65d58e7ae873882d6d975411e
 CI   33668744509 PASS
+
+M1-1 code
+HEAD e0f4003496bfbf828ed9ab7718af8e7e30342ad3
+CI   33679425668 PASS
+
+M1-2 code
+HEAD 5e98e4b97639cd018badc23e35e7a523f2940875
+CI   33738873773 PASS
+
+M1 final red
+HEAD 67bd06d63d84273ba2077761919d714c8d442254
+CI   33740212989 EXPECTED FAILURE
+
+M1 final code closure
+HEAD 7369c51e7ba04f8913728a0770f700c728c3b9f9
+CI   33740710290 PASS
 ```
 
-Validated M1-1 production code evidence remains a distinct evidence point:
-
-```text
-CODE HEAD e0f4003496bfbf828ed9ab7718af8e7e30342ad3
-CI        33679425668 PASS
-```
-
-Later documentation-only synchronization does not replace that code evidence point.
+Later documentation synchronization is a separate evidence point and does not replace the validated code heads above.
 
 ---
 
@@ -163,12 +167,17 @@ Routine != Recurrence != Occurrence
 Occurrence != Schedule != Session != Actual
 Actual != Observation != Outcome
 Evidence != Provenance
+Provenance != integrity attestation
 Authority != Visibility
 Agreement != Consent
 Proposal != Decision != effect
 provider state != canonical state
 absence/unknown != false
 idempotency != semantic identity
+reference exists != payload available != current != disclosable != fresh
+stale != superseded != retracted
+timeout != semantic negative
+offline != source absent
 ```
 
 No generic Entity/Thing/Relationship/Fact/property-bag root.
@@ -181,7 +190,7 @@ WS7:
 
 ```text
 HEAD ca89e733893959af7dcc40fd0b8c8ba08e056ba4
-CI   33633635890 PASS — attempt 1
+CI   33633635890 PASS
 67 fixed 3-way rows / 4,455 interactions
 157 fixed high-risk 4-way rows / 2,835 interactions
 ```
@@ -195,17 +204,15 @@ independent post-hardening confirmation
 0 unresolved substrate gaps after final hardening
 ```
 
-Pre-M0 red-first gate then attacked post-cleanup transient route behavior and discovered HYG-08:
+Pre-M0 then discovered and fixed stale route-origin handoff resurrection without a new substrate owner.
 
-> mismatch returned null but did not consume the old handoff, allowing stale origin resurrection within TTL.
-
-The existing transition owner now invalidates mismatched pending handoffs. No test weakening and no new substrate owner.
+M1 final hostile pressure did not reopen WS0–WS8. It found only the planned transitional cursor representation residue and closed it red-first.
 
 ---
 
-# 6. Existing platform and M1-1 materialization remain valid
+# 6. Platform + M1 production substrate
 
-Reuse:
+Reuse remains:
 
 ```text
 stable/adaptive/ephemeral composition
@@ -224,20 +231,27 @@ boundary validation
 safe external URL policy
 ```
 
-M1-1 has already materialized:
+M1 production materialization now adds:
 
 ```text
 neutral production World identity / descriptor
-fixture IDs separated from production identity
-neutral context-reference ownership
-primary + bounded ordered supporting references
-workspace contextReferences as canonical transient owner
-selection as temporary compatibility projection of primary
+fixture identity separated from production identity
+neutral bounded context references
+canonical enumerable frozen cursor.contextReferences
+selection compatibility projection of primary only
 surface primary-only inheritance
-production continuity World identity alignment at the application boundary
+reference-resolution presentation
+freshness/as-of, validity, coverage, material retirement facets
+evidence/provenance/integrity role-preserving metadata
+sanitized disclosure outcome
+effect lifecycle presentation + execution revalidation
+sync/offline/replay/provider lag/request timing axes
+O2/O5/O8 direct typed seams
+WP-01..WP-04 production/application seams
+World-scoped cancellable validated read mechanics
+deterministic local adapters
+unknown future World support at the non-visual seam
 ```
-
-The interaction cursor currently exposes `contextReferences` through a frozen non-enumerable compatibility property for legacy exact-shape callers/tests. This is transitional and must be reviewed/removed before M1 closes.
 
 Do not turn proof/oracle-only structures into production owners automatically. A proof seam earns a production review, not necessarily a production type with the same shape.
 
@@ -255,23 +269,34 @@ D2–D6 remain deferred to M4.
 
 DANTE is never truth, authorization, mandatory navigation or automatic effect completion.
 
+M1's useful World path remains functional without DANTE.
+
 ---
 
-# 8. M1 — active handoff
+# 8. M1 closed / M2 handoff
 
-M0 is closed and remains the production-disposition authority in:
+M0 remains the production-disposition authority in `world-focus-m0-materialization-mapping.md`.
 
-`world-focus-m0-materialization-mapping.md`
+M1 is now formally CLOSED / VALIDATED. The next bounded engineering block is:
 
-M1-1 is closed/validated. The next bounded engineering block remains M1:
+> **M2 — Shared Visual Primitive Layer.**
 
-> **M1-2 — narrow reusable non-visual facets + typed application seams.**
+M2 renders already-earned semantics. It does not redefine them.
 
-The frozen M1-2 delta is defined by `world-focus-m1-next-subblock.md`. It includes the remaining M0 decisions for reference resolution, WP-01 stronger production alignment, WP-02/03/04 application/model seams, basis/freshness/validity/disclosure/effect/sync presentation semantics, and direct typed O2/O5/O8 application seams.
+Binding M2 constraints:
 
-M1-2 must not introduce universal projection envelopes, generic Entity/Thing/Fact/property bags, frontend AuthZ, backend DTOs, World persistence, provider runtime, durable DANTE Runs or real effects.
+```text
+primitive != card
+renderer != semantic owner
+no universal card/module grammar
+no page-per-World fork
+no hidden semantic inference from visual shape
+no fabricated urgency/density
+unknown future World safe degradation
+responsive changes presentation, not meaning
+```
 
-M2 does not begin until M1 is formally closed.
+Persistent pin/hide/reorder/customization remains M3. Contextual DANTE D2–D6 remains M4.
 
 ---
 
@@ -291,9 +316,9 @@ NO fake success
 
 # 10. Strict reopen policy
 
-Do not restart WS0–WS8 for a new provider, World noun, UI, renderer, viewport, AI model, config store or larger dataset.
+Do not restart WS0–WS8 or M1 for a new provider, World noun, renderer, viewport, AI model, config store or larger dataset.
 
-Reopen only when M1/later executable evidence shows a concrete semantic/ownership/state/security/privacy/effect contradiction that cannot fit an existing owner, and reopen only the earliest necessary phase.
+Reopen only when later executable evidence shows a concrete semantic/ownership/state/security/privacy/effect contradiction that cannot fit an existing owner, and reopen only the earliest necessary phase.
 
 ---
 
@@ -314,4 +339,4 @@ Every write needs exact branch/PRE-SCOPE/path gate and live HEAD recheck. No mer
 
 Immediate continuation:
 
-> **Continue M1 with M1-2 only. M2–M7 and backend remain blocked.**
+> **Proceed with M2 only. M3–M7 and backend remain blocked by sequence.**
