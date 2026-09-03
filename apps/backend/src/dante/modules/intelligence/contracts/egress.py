@@ -89,13 +89,13 @@ class EgressAttempt:
     completed_at: datetime | None = None
 
     def __post_init__(self) -> None:
-        for name, value in (
+        for uuid_name, uuid_value in (
             ("egress_attempt_id", self.egress_attempt_id),
             ("work_id", self.work_id),
             ("consumer_context_id", self.consumer_context_id),
             ("policy_decision_id", self.policy_decision_id),
         ):
-            _require_uuid7(value, name=name)
+            _require_uuid7(uuid_value, name=uuid_name)
         if self.work_revision <= 0:
             raise ValueError("work_revision must be positive")
         _require_text(self.recipient_binding, name="recipient_binding")
@@ -109,12 +109,12 @@ class EgressAttempt:
             raise ValueError("resource admission identity/outcome must be provided together")
         if self.resource_admission_id is not None:
             _require_uuid7(self.resource_admission_id, name="resource_admission_id")
-        for name, value in (
+        for text_name, text_value in (
             ("invocation_ref", self.invocation_ref),
             ("provider_attempt_ref", self.provider_attempt_ref),
         ):
-            if value is not None:
-                _require_text(value, name=name)
+            if text_value is not None:
+                _require_text(text_value, name=text_name)
         if self.completed_at is not None:
             _require_aware(self.completed_at, name="completed_at")
             if self.completed_at < self.created_at:
