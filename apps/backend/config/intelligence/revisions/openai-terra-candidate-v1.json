@@ -33,6 +33,7 @@
     "provider-attempt:dante-owned",
     "egress:synthetic-public-minimized-only",
     "reasoning-effort:medium",
+    "reasoning-context:current_turn",
     "service-tier:default",
     "truncation:disabled"
   ],
