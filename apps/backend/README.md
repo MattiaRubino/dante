@@ -1,9 +1,9 @@
 # DANTE Backend
 
 - **Status:** CURRENT BACKEND ENTRY POINT
-- **Last reconciled:** 2026-09-02 for `feature/access-auth`
+- **Last reconciled:** 2026-09-03 for `feature/access-auth`
 - **Backend root:** `apps/backend`
-- **Current Access/Auth Alembic head:** `20260831_13`
+- **Current Access/Auth Alembic head:** `20260903_15`
 - **PostgreSQL:** 18.6
 
 This README describes current backend engineering/runtime boundaries. Historical CP/M3 acceptance details remain recoverable in Git and dedicated documentation rather than being duplicated as current state here.
@@ -64,13 +64,15 @@ Migrations use the dedicated migrator identity and explicit owner role. Normal a
 20260829_11  signup/recovery lifecycle challenges + ACL
 20260830_12  M5 provider/Apple/WebAuthn/passkey persistence
 20260831_13  bounded authenticator-lifecycle runtime ACL
+20260903_14  durable shared Email Platform persistence
+20260903_15  exact Email Platform runtime ACL hardening
 ```
 
 Applied migration history is immutable; corrections use new forward revisions.
 
 ## 5. Current Access/Auth backend
 
-The branch now contains the complete M3–M5 backend/public API needed by the current Web vertical, including:
+The branch contains the M3–M5 backend/public API needed by the current Web workstream, including:
 
 ```text
 email/password signin/session/logout
@@ -85,7 +87,7 @@ canonical AuthSession creation/rotation/revocation
 anti-lockout
 ```
 
-Do not treat this list as a manually maintained wire contract. Exact paths, models, operation IDs and machine problems are owned by the FastAPI declarations, deterministic OpenAPI snapshot, generated client and Access/Auth API contracts.
+Exact wire authority remains FastAPI declarations, deterministic OpenAPI snapshot, generated client and Access/Auth API contracts.
 
 ## 6. Auth security model
 
@@ -121,7 +123,7 @@ verified Workspace + hd       provider-authoritative
 third-party Google mailbox    requires additional DANTE mailbox proof where current control matters
 ```
 
-This exact third-party-mailbox branch passed real Google UAT on 2026-09-02.
+This third-party-mailbox branch passed real Google UAT.
 
 ## 8. WebAuthn
 
@@ -140,15 +142,76 @@ multiple passkeys
 
 DANTE persists credential public key/material only; no biometric template/PIN/private key.
 
-## 9. Email delivery
+## 9. Shared Email Platform
 
-The application owns bounded email intents/commands and uses `SmtpEmailDispatcher` as the current delivery adapter. Automated acceptance uses a deterministic loopback SMTP capture.
+Email delivery is no longer owned by a process-memory SMTP dispatcher.
 
-Production/external delivery architecture is **not yet selected**. Do not infer that SMTP or any specific provider is the permanent production choice merely because the current adapter and UAT tooling can speak SMTP.
+Current architecture:
 
-The next architecture gate must evaluate SMTP vs provider HTTP APIs, provider neutrality, deliverability/DNS, bounce/complaint/suppression, retry ambiguity, observability/privacy and Apple relay requirements.
+```text
+feature/Auth transaction
++
+durable EmailIntent
+→ PostgreSQL commit
+→ durable claim/lease worker
+→ protected payload + versioned template
+→ provider-neutral adapter
+→ Amazon SES API v2 or SMTP local/CI compatibility
+```
 
-## 10. Run locally
+Current platform persistence:
+
+```text
+dante.email_delivery_intent
+dante.email_delivery_attempt
+dante.email_provider_event
+dante.email_recipient_suppression
+```
+
+Permanent rules:
+
+```text
+provider I/O outside caller DB transaction
+provider accepted != delivered
+no blind retry after ambiguous send outcome
+stable DANTE intent before external send
+short-lived dedicated AES-GCM protected payload
+terminal/unsafe-state payload wipe
+provider SDK types do not cross into Auth/application contracts
+```
+
+Amazon SES API v2 is the accepted primary external adapter. The SES client is created from a region-bound boto3 Session so temporary `aws login` credential refresh also receives the configured region.
+
+SMTP remains a last-mile compatibility adapter behind the same durable worker; it is not a second queue or canonical lifecycle.
+
+Architecture/evidence:
+
+- `../../docs/architecture/email-platform.md`
+- `../../docs/architecture/access-auth-email-delivery.md`
+- `../../docs/development/email-platform-local-uat.md`
+- `../../docs/development/email-platform-acceptance-2026-09-03.md`
+
+## 10. Real Email UAT posture
+
+Repository-owned local real-provider tooling supports:
+
+```text
+AWS CLI user-local bootstrap
+named dante-uat profile
+non-root SES preflight
+least-privilege IAM policy template
+SES eu-west-3 UAT
+fresh disposable PostgreSQL 18.6
+fresh signup/recovery flow
+```
+
+Backend UAT dependencies include Botocore AWS CRT support through the lockfile. Do not repair browser-login support with ad-hoc `pip install` state.
+
+The final real UAT directly proved signup verification, password recovery, reset notification, no auto-login after reset, prior-session revocation and direct PostgreSQL provider-correlation/secret-wipe state.
+
+Production sender-domain/DKIM/SPF/DMARC, workload identity and live cloud feedback ingress remain separate deployment gates.
+
+## 11. Run locally
 
 After PostgreSQL roles/schema and local configuration are prepared:
 
@@ -168,29 +231,24 @@ GET /health/ready
 
 Health endpoints deliberately expose no credentials/DSN/SQL details and are not product API authority.
 
-## 11. Quality commands
+For real Email UAT, follow the dedicated runbook instead of composing ad-hoc environment variables from old shell history.
+
+## 12. Quality commands
 
 From `apps/backend`:
 
 ```bash
-uv run ruff format --check .
-uv run ruff check .
-uv run mypy
-uv run pytest -m "not postgres"
-uv run pytest -m postgres
-uv run pytest
+uv run --locked ruff format --check .
+uv run --locked ruff check .
+uv run --locked mypy src
+uv run --locked pytest -m "not postgres"
+uv run --locked pytest -m postgres
 uv build
 ```
 
-PostgreSQL-marked tests use the disposable canonical PostgreSQL 18.6 image. If needed from repository root:
+PostgreSQL-marked tests use the disposable canonical PostgreSQL 18.6 image. Automated acceptance must not mutate the ordinary persistent LOCAL DANTE database.
 
-```bash
-docker compose -f infra/compose/local.yaml build postgres
-```
-
-Automated acceptance must not mutate the ordinary persistent LOCAL DANTE database.
-
-## 12. API generation
+## 13. API generation
 
 FastAPI/Pydantic declarations feed the deterministic OpenAPI 3.1 snapshot and governed Orval/Zod client. Live `/openapi.json` is not the CI generation authority.
 
@@ -201,12 +259,14 @@ LOCAL / DEV / UAT   docs/openapi enabled as configured for engineering
 PROD                interactive docs/openapi disabled unless explicitly governed
 ```
 
-## 13. Current proof pointer
+## 14. Current proof pointers
 
-Current product-code Web gate and manual UAT are recorded in:
+Current authorities/evidence:
 
-- `../../docs/workstreams/access-auth-m5-review-2026-09-02.md`
 - `../../docs/PROJECT-STATUS.md`
+- `../../docs/workstreams/access-auth.md`
 - `../../docs/database/access-auth.md`
+- `../../docs/architecture/email-platform.md`
+- `../../docs/development/email-platform-acceptance-2026-09-03.md`
 
 Historical CP5/CP6/M3/M4 acceptance details remain available in dedicated development/database docs and Git history.
