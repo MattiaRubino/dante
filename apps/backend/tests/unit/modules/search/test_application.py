@@ -74,9 +74,7 @@ def _registration(
         family_id=SearchFamilyId(family),
         owning_capability=owner,
         source_semantics="canonical_schedule",
-        query_modes=frozenset(
-            {SearchQueryMode.KEYWORD, SearchQueryMode.STRUCTURED_FILTER}
-        ),
+        query_modes=frozenset({SearchQueryMode.KEYWORD, SearchQueryMode.STRUCTURED_FILTER}),
         filter_fields=frozenset({"status"}),
         safe_projection_fields=frozenset({"title", "starts_at"}),
         safe_facet_fields=frozenset({"status"}),
@@ -92,9 +90,7 @@ def _registration(
         currentness_rule="reread_before_publication",
         publication_revalidation_requirement="current_access_and_source",
         activation_evidence_ref=(
-            f"synthetic:{family}"
-            if state is SearchFamilyActivationState.ACTIVE
-            else None
+            f"synthetic:{family}" if state is SearchFamilyActivationState.ACTIVE else None
         ),
         direct_proof_ids=(),
         activation_state=state,
@@ -296,9 +292,7 @@ async def test_disallowed_filter_excludes_family_before_query_observables() -> N
         value="private",
     )
 
-    result = await app.search(
-        _request(eligibility, "schedule", filters=(private_filter,))
-    )
+    result = await app.search(_request(eligibility, "schedule", filters=(private_filter,)))
 
     assert result == SearchResult.no_eligible_source()
     assert port.search_requests == []
@@ -320,9 +314,7 @@ async def test_family_maximum_guarantee_downgrades_request_explicitly() -> None:
         max_page_size=50,
     )
 
-    result = await app.search(
-        _request(_envelope(_family_eligibility("schedule")), "schedule")
-    )
+    result = await app.search(_request(_envelope(_family_eligibility("schedule")), "schedule"))
 
     assert port.search_requests[0].requested_guarantee is SearchGuarantee.BEST_EFFORT
     assert tuple(limitation.code.value for limitation in result.limitations) == (
@@ -375,9 +367,7 @@ async def test_adapter_cannot_return_hit_from_unadmitted_family() -> None:
     )
 
     with pytest.raises(SearchContractViolation, match="unadmitted family"):
-        await app.search(
-            _request(_envelope(_family_eligibility("schedule")), "schedule")
-        )
+        await app.search(_request(_envelope(_family_eligibility("schedule")), "schedule"))
 
 
 @pytest.mark.asyncio
@@ -445,9 +435,7 @@ async def test_adapter_cannot_publish_unadmitted_facet_field() -> None:
     )
 
     with pytest.raises(SearchContractViolation, match="disallowed facet"):
-        await app.search(
-            _request(_envelope(_family_eligibility("schedule")), "schedule")
-        )
+        await app.search(_request(_envelope(_family_eligibility("schedule")), "schedule"))
 
 
 @pytest.mark.asyncio
@@ -464,9 +452,7 @@ async def test_navigation_uses_same_active_eligible_intersection() -> None:
         NavigationExecutionRequest(
             family_id=SearchFamilyId("schedule"),
             target=target,
-            eligibility=_envelope(
-                _family_eligibility("schedule", allow_navigation=False)
-            ),
+            eligibility=_envelope(_family_eligibility("schedule", allow_navigation=False)),
             purpose="global_search",
             surface="web",
         )

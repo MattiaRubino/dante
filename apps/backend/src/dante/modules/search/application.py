@@ -57,9 +57,7 @@ class SearchFamilyRegistry:
         if len(by_id) != len(registrations):
             raise ValueError("SearchFamilyRegistry contains duplicate family_id values")
         self._registrations = registrations
-        self._by_id: Mapping[SearchFamilyId, SearchFamilyRegistration] = MappingProxyType(
-            by_id
-        )
+        self._by_id: Mapping[SearchFamilyId, SearchFamilyRegistration] = MappingProxyType(by_id)
 
     @property
     def registrations(self) -> tuple[SearchFamilyRegistration, ...]:
@@ -190,9 +188,7 @@ class SearchApplication:
             result.family_id != request.family_id
             or result.owning_capability != registration.owning_capability
         ):
-            raise SearchContractViolation(
-                "navigation adapter escaped admitted Search family/owner"
-            )
+            raise SearchContractViolation("navigation adapter escaped admitted Search family/owner")
         return result
 
     def _eligible_family_pairs(
@@ -217,10 +213,7 @@ class SearchApplication:
                 eligibility=eligibility,
             ):
                 continue
-            if (
-                request.query.strip()
-                and SearchQueryMode.KEYWORD not in registration.query_modes
-            ):
+            if request.query.strip() and SearchQueryMode.KEYWORD not in registration.query_modes:
                 continue
             if (
                 request.filters
@@ -287,14 +280,10 @@ def _execution_scope(
             registration.filter_fields.intersection(eligibility.permitted_filter_fields)
         ),
         projection_fields=frozenset(
-            registration.safe_projection_fields.intersection(
-                eligibility.projection_fields
-            )
+            registration.safe_projection_fields.intersection(eligibility.projection_fields)
         ),
         facet_fields=frozenset(
-            registration.safe_facet_fields.intersection(
-                eligibility.permitted_facet_fields
-            )
+            registration.safe_facet_fields.intersection(eligibility.permitted_facet_fields)
         ),
         source_lifecycle_exclusions=eligibility.source_lifecycle_exclusions,
         excluded_scopes=eligibility.excluded_scopes,
@@ -306,9 +295,7 @@ def _execution_scope(
         coherence_requirement=registration.coherence_requirement,
         snapshot_requirement=registration.snapshot_requirement,
         currentness_rule=registration.currentness_rule,
-        publication_revalidation_requirement=(
-            registration.publication_revalidation_requirement
-        ),
+        publication_revalidation_requirement=(registration.publication_revalidation_requirement),
         include_navigation=include_navigation and eligibility.allow_navigation,
         include_snippets=include_snippets and eligibility.allow_snippets,
         include_facets=include_facets and eligibility.allow_facets,

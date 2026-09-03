@@ -404,9 +404,7 @@ class SearchResult:
             total_count=None,
             next_cursor=None,
             achieved_guarantee=None,
-            limitations=(
-                SearchLimitation(code=SearchLimitationCode.NO_ELIGIBLE_RESULT_SOURCE),
-            ),
+            limitations=(SearchLimitation(code=SearchLimitationCode.NO_ELIGIBLE_RESULT_SOURCE),),
         )
 
 
@@ -426,8 +424,7 @@ class NavigationResult:
             _require_text(str(self.family_id), name="family_id")
             _require_text(self.owning_capability, name="owning_capability")
         elif any(
-            value is not None
-            for value in (self.family_id, self.owning_capability, self.target)
+            value is not None for value in (self.family_id, self.owning_capability, self.target)
         ):
             raise ValueError("unavailable navigation must not expose target metadata")
 
