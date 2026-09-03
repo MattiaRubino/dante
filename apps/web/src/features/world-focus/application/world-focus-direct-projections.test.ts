@@ -54,10 +54,10 @@ describe('World Focus M1-2 direct projection application seams', () => {
   });
 
   it('propagates cancellation through the shared World-scoped read boundary', () => {
-    let observedSignal: AbortSignal | null = null;
+    const observed: { signal: AbortSignal | null } = { signal: null };
     const adapter: WorldFocusDirectProjectionReadAdapter = {
       readSituation: ({ signal }) => {
-        observedSignal = signal;
+        observed.signal = signal;
         return new Promise(() => undefined);
       },
       readNext: () => Promise.resolve({ status: 'empty', worldId: 'music' }),
@@ -69,6 +69,6 @@ describe('World Focus M1-2 direct projection application seams', () => {
 
     upstream.abort();
 
-    expect(observedSignal?.aborted).toBe(true);
+    expect(observed.signal?.aborted).toBe(true);
   });
 });

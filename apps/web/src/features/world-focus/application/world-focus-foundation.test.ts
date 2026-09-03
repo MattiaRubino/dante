@@ -56,9 +56,9 @@ describe('World Focus B0 application foundation', () => {
   });
 
   it('shares cancellation and validation mechanics without owning projection semantics', async () => {
-    let observedSignal: AbortSignal | null = null;
+    const observed: { signal: AbortSignal | null } = { signal: null };
     const adapter: WorldFocusScopedReadAdapter = ({ worldId, signal }) => {
-      observedSignal = signal;
+      observed.signal = signal;
       return Promise.resolve({ worldId, value: 'bounded' });
     };
     const reader = createWorldFocusScopedReader(adapter, (input, expectedWorldId) => {
@@ -77,7 +77,7 @@ describe('World Focus B0 application foundation', () => {
     const upstream = new AbortController();
 
     await expect(reader('apiary', upstream.signal)).resolves.toBe('bounded');
-    expect(observedSignal?.aborted).toBe(false);
+    expect(observed.signal?.aborted).toBe(false);
   });
 
   it('prevents a superseded read from committing', () => {
