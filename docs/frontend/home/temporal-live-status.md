@@ -1,249 +1,279 @@
 # DANTE — Temporal Workstream Live Status
 
-**Status:** C1 AUTOMATED FULL PASS — FINAL DOCUMENTATION VALIDATION / USER MANUAL ACCEPTANCE PENDING  
-**Date:** 2026-09-02  
+**Status:** C1 MANUAL FAIL RECORDED — RE-ARCHITECTURE ACTIVE  
+**Date:** 2026-09-03  
 **Repository:** `MattiaRubino/dante`  
 **Branch:** `feature/home-timeline`  
 **Worktree:** `/home/mattia/projects/dante-timeline`  
 **Integration target:** `feature/home-react`  
-**Validated implementation / harness candidate:** `2b910092ecd70de74338427924666a965938ba9f`  
-**Frontend CI:** run `33660540265` / #676 — **FULL PASS**
+**Current code checkpoint:** `bd9bc6db13301763393c5345685dd38a1837aaaa`  
+**Checkpoint CI:** Frontend CI `33744558905` / #759 — Quality PASS, Mobile PASS, Chromium 83/96 with 13 stale-contract failures, Firefox skipped, Gate FAIL  
+**C1:** NOT FROZEN / NOT CLOSED  
+**C2:** BLOCKED
 
 ## Live authority
 
-This file is the operational status for the isolated Timeline / Temporal Create workstream.
+This file is the current operational status for Timeline / Temporal Create C1.
 
 Read in this order:
 
-1. `temporal-create-c1-final-validation.md` — latest candidate/evidence/status authority;
-2. `temporal-create-c1-manual-acceptance.md` — single final human gate;
-3. `temporal-create-c1-traceability.md` — semantic/product/physical mapping;
-4. `temporal-create-c1-engineering-checkpoint.md` — detailed engineering history;
-5. `temporal-create-handoff.md`;
-6. `temporal-create-c1-scope-amendment.md`;
-7. `temporal-frontend-roadmap.md`;
-8. `temporal-f0-contract.md`;
-9. `timeline-t1-frozen-contract.md`;
-10. `temporal-experience-architecture.md`.
+1. `temporal-create-c1-rearchitecture-2026-09-03.md` — current product/engineering authority;
+2. `temporal-create-c1-manual-findings-2026-09-03.md` — binding user findings that reopened C1;
+3. `temporal-create-handoff.md` — exact restart instructions;
+4. `temporal-create-c1-scope-amendment.md` — current C1 scope/stop line;
+5. `temporal-create-c1-traceability.md` — requirement → implementation/test mapping;
+6. `temporal-frontend-roadmap.md` — sequence and C2 gate;
+7. `temporal-f0-contract.md` and `timeline-t1-frozen-contract.md` — frozen foundations.
 
-Where older C1 documents contain a stale candidate SHA, CI run, architecture/test count, bundle measurement or gate status, `temporal-create-c1-final-validation.md` wins **only for that current evidence metadata**. Their detailed semantic/history content remains authoritative and must not be deleted merely to align numbers.
+The old `temporal-create-c1-final-validation.md`, 2026-09-02 manual acceptance and pre-refactor engineering checkpoint are historical evidence only. They must not be used as current closure authority.
 
-## Stable closed foundations
+## Historical pre-refactor evidence
 
-Do not casually reopen:
+The old Create contract had strong automated evidence:
 
-- H0 Whole Home structural baseline;
-- T1/T1-A/T1-B Timeline interaction/navigation baseline;
-- F0 at `7034b9b0d100709785ebe96e3816aab3e7b1d1f8`;
+- code/harness candidate `2b910092ecd70de74338427924666a965938ba9f`;
+- Frontend CI #676 / `33660540265` — FULL GREEN;
+- docs descendant `27dd5093d21b0a49c8413068aacca139fb2366a4`;
+- Frontend CI #680 / `33665329466` — FULL GREEN.
+
+The user then executed the real manual product pass and rejected the UX. Therefore these green runs are historical regression evidence, not proof that current C1 is acceptable.
+
+## Stable foundations — do not casually reopen
+
+- H0 Whole Home structure and breakpoints;
+- T1/T1-A/T1-B Timeline interaction/navigation/continuous window;
+- F0 temporal application contract at `7034b9b0d100709785ebe96e3816aab3e7b1d1f8`;
 - closed Domain and Logical model;
-- accepted Physical Model;
-- CP6 PostgreSQL materialization / Alembic head `20260826_08`;
+- accepted Physical model;
+- CP6 materialized PostgreSQL / Alembic head `20260826_08`;
+- `Activity != Event != Routine`;
 - `Schedule != Occurrence != Session != Actual`;
-- `planned != actual`;
-- `recurrence source != generated Occurrence`;
+- `planned/intended != happened`;
+- `recurrence specification != generated Occurrence`;
 - `Context/group membership != appearance override`;
-- `ViewModel != frontend application model != DTO != DB row`;
+- `ViewModel != application model != DTO != DB row`;
 - no fake backend/provider/AI/voice success.
 
-## C1 product boundary — manual only
+Database authority remains PostgreSQL 18.6, CP6 CLOSED, 68 DANTE tables, 5 views, 14 routines, 75 trigger attachments, 95 indexes, 68 FKs and 120 CHECK constraints.
 
-Timeline Create remains a manual authoring capability:
+Recurrence authority remains M4/M6:
 
-```text
-Timeline +
-Timeline double-click
-Timeline Shift-drag/range
-        ↓
-deterministic structured manual prefill
-        ↓
-one shared Create draft/session
-        ↓
-Quick ↔ Expanded ↔ Full
-        ↓
-normalize → validate → preview
-        ↓
-explicit user commit
-        ↓
-F0 application command
-        ↓
-deterministic local runtime
-```
+- recurrence owners: Routine and Event only;
+- families: `calendar_wall_clock`, `elapsed_interval`, `quota_per_period`, `cyclic_positional`;
+- no Activity recurrence;
+- repeated Activities go through Routine;
+- backend owns canonical Occurrence generation.
 
-Permanent:
+## Permanent C1 input contract — manual only
 
-- no chat inside `+`;
-- no natural-language parser;
-- no AI command bar;
-- no voice input;
-- `TemporalCreateFieldSeed` is deterministic prefill, not an AI/NL abstraction;
-- future DANTE/AI stays a separate product vertical.
+Timeline Create remains a manual authoring path.
 
-## Current C1 capability
+It is NOT:
 
-### Activity
+- chat;
+- AI command bar;
+- natural-language parser;
+- voice input;
+- a generic DANTE interpretation surface.
 
-Activity supports structured scheduling/execution intent without fabricating lived reality:
+`TemporalCreateFieldSeed` is deterministic manual prefill only. Future AI/DANTE/voice verticals may reuse compatible downstream application/domain/backend operations when justified, but they must not be coupled to the C1 form/session/seed contract.
 
-- timed, all-day and unplaced forms where semantically valid;
-- exact expected duration;
-- open/window/deadline/preferred constraints;
-- movement/replanning policy;
-- indivisible/splittable execution intent;
-- minimum/max sessions;
-- preparation/recovery/spacing;
-- partial/finish-early/merge intent;
-- fallback policy;
-- confirmation/review/reminder policy;
-- Context, notes and appearance override;
-- external-owner handoff.
+## Current product direction
 
-**Activity does not own recurrence.** Persistent repetition belongs to Routine.
-
-### `Da collocare` / Planning Tray
-
-An Activity without an accepted exact slot is now represented explicitly in the Planning Tray.
-
-Keep these meanings separate:
+The previous UI exposed too much model complexity directly. The new rule is:
 
 ```text
-Da collocare = current unplaced Activity state
-Collocazione = placement area/process
-Vincolo temporale = scheduling constraint
-Durata prevista = expected work duration
+user intent
+→ sensible default
+→ only relevant controls
+→ conditional progressive disclosure
+→ advanced depth on demand
+→ deep DANTE semantics underneath
 ```
 
-Planning Tray provides:
-
-- searchable unplaced-Activity list;
-- quick date/time placement;
-- drag into Timeline with snapped live preview;
-- planning foreground mode while dragging;
-- Escape cancellation with no mutation;
-- explicit remove/delete;
-- Undo restoring the exact prior state;
-- same Activity identity across unplaced ↔ placed transitions;
-- mobile bounded bottom sheet.
-
-### Event
-
-Event supports:
-
-- timed and all-day multi-day placement;
-- floating-local / named-zone semantics and IANA timezone;
-- location, availability and visibility;
-- purpose, expected outcome, agenda and decision intent;
-- participants/resources/pre-read/conference intent;
-- buffers, reminders and confirmation;
-- all four CP6 recurrence families.
-
-The all-day Event strip now mounts on the real `.dante-timeline-header` and remains outside the timed grid.
-
-### Recurrence
-
-Event recurrence remains:
-
-- calendar wall-clock;
-- elapsed interval;
-- quota per period;
-- cyclic positional.
-
-Browser Create stores specification only. Backend M6 remains the owner of recurrence-generated Occurrences and governing recurrence-state binding.
-
-### Context / appearance
-
-Context/group membership remains organizational/filtering truth. Appearance override is presentation-only and never changes membership.
-
-### External owners
-
-Typed handoff targets remain:
-
-`Project`, `Goal`, `Routine`, `Program`, `World`, `Template`, `Reminder`, `Block`, `Asset`.
-
-All remain explicitly deferred; no fake route/CRUD/success.
-
-## Final automated evidence
-
-Validated SHA:
-
-`2b910092ecd70de74338427924666a965938ba9f`
-
-Frontend CI `33660540265` / #676:
-
-- Quality: **PASS**;
-- Mobile Bundle: **PASS**;
-- Chromium full Web E2E: **96 / 96 PASS**;
-- Firefox frozen Timeline interactions: **10 / 10 PASS**;
-- Frontend CI Gate: **PASS**.
-
-Quality evidence:
-
-- frontend contract drift PASS;
-- format PASS;
-- lint PASS;
-- typecheck **5/5** PASS;
-- architecture **218 modules / 537 dependencies / 0 violations**;
-- generated-source drift PASS;
-- web unit **35 files / 185 tests PASS**;
-- package suites PASS;
-- production build PASS;
-- diff PASS;
-- repository mutation PASS.
-
-Production Home route:
+### Create structure
 
 ```text
-287.61 kB raw
-94.69 kB gzip
+BOZZA / Aggiungi / ×
+
+Titolo
+↓
+Tipo registry/grid
+↓
+selected-type base configuration
+↓
+Context + relevant common fields
+↓
+conditional branches
+↓
+Opzioni avanzate
 ```
 
-## Late hardening record
+No `+` beside close. No user-visible Quick/Expanded/Full mental model.
 
-The final validation also preserves three demonstrated fixes:
+### Type availability
 
-1. all-day Event no longer targets obsolete Timeline header markup;
-2. Planning Tray state/cleanup satisfies current React, lint and `exactOptionalPropertyTypes` contracts;
-3. global Access keyboard E2E now starts from an explicit neutral document focus origin instead of relying on runner/browser startup focus.
+Currently expose only genuinely creatable types:
 
-The Access harness change adds no product autofocus, no sleeps and removes no assertion. Final compare against the pre-harness candidate was `10 additions / 0 deletions` in the Access E2E file.
+- Activity;
+- Event.
 
-## Backend / external stop line
+Do not expose Routine as a dead owner tile. Do not expose Reminder/Alarm until a truthful semantic/runtime boundary exists.
 
-Still outside C1:
+### Activity base
 
-- API/PostgreSQL writes;
-- canonical server identity and durable server idempotency;
+Default:
+
+```text
+[ Orario ✓ ] [ Tutto il giorno ] [ Da collocare ]
+Data | Ora | Durata
+Context
+```
+
+Changing placement changes only dependent controls.
+
+Execution/session structure never silently changes placement.
+
+### Event base
+
+Default:
+
+```text
+[ Orario ✓ ] [ Tutto il giorno ]
+Data | Inizio | Fine
+Context
+Luogo
+Ripeti
+```
+
+Quick recurrence:
+
+- Mai;
+- Ogni giorno;
+- Ogni settimana;
+- Ogni mese;
+- Ogni anno;
+- Personalizza…
+
+`Personalizza…` reveals the existing CP6-deep Event recurrence authoring.
+
+### Advanced
+
+Advanced shows only relevant capabilities. No dead/deferred owner blocks.
+
+For Activity, multi-session controls appear only when execution is `Divisibile`.
+
+## Planning Tray v2
+
+Required/current direction:
+
+- desktop popover anchored under/near trigger;
+- mobile bottom sheet;
+- direct `×` remove with confirmation;
+- carried-card drag rather than detached clone feeling;
+- tray recedes during drag;
+- Timeline foregrounds;
+- snapped target slot appears;
+- drop mutates placement of the SAME Activity;
+- Escape cancels with zero mutation;
+- Undo placement returns same Activity to tray.
+
+## All-day v2
+
+The old global header strip is rejected.
+
+Correct model:
+
+- per-day all-day lane;
+- real lane height in day geometry;
+- minute zero begins below lane;
+- all-day card/bar lives in lane;
+- multi-day continuation across covered days;
+- never fake 00:00–24:00 timed occupation.
+
+Current code already has per-day geometry/mapper support, but the visual lane still needs final mounting/CSS cleanup.
+
+## Current re-architecture commit chain
+
+From the pre-refactor docs baseline:
+
+- `0e21164355b39d76d27b2192cb5d510e77e765f8` — type-driven base flow;
+- `0d863a3765c88ded440bae45ab6a1d1e6d1257c2` — exact advanced Activity duration;
+- `586105ca46cd8f3b5f7fbeb663892032c9eb37f0` — conditional execution options;
+- `757a5d198353544cac4568f7804e2c39e1d86ea5` — quick Event recurrence;
+- `788deee039324631575e52f871ad476a0e9165a9` — anchored Planning Tray;
+- `a0cf00ef5507ff6eab4b00d5b97749e7d8d19aa2` — carried-card planning drag;
+- `8413f2f0a2c7c6a2b82b6c06216039977cef437b` — direct remove action;
+- `2ec74d25f57e8b749273e0baf10e3f3d2eaa57f7` — Orario + split-execution regression groundwork;
+- `833e59a8df8063bdcfb359c8b70250619cc74e7a` — per-day all-day geometry model;
+- `87aa3925fe6e275d230781e8f32a95953149a4bb` — per-day all-day lane preparation;
+- `bd9bc6db13301763393c5345685dd38a1837aaaa` — all-day geometry integrated into Timeline runtime.
+
+## CI truth at current code checkpoint
+
+Frontend CI #759 / run `33744558905`:
+
+- Quality PASS;
+- Mobile Bundle PASS;
+- Chromium: 83/96 PASS, 13 failures;
+- Firefox frozen skipped after Chromium failure;
+- Gate FAIL.
+
+The 13 Chromium failures are principally stale pre-refactor C1 test assumptions: old `Dettagli e pianificazione`, old `+/-` depth, old `Aperta, senza collocazione`, old `quick` surface name, old Type select, and old Full progression.
+
+Do not weaken/delete those tests. Rewrite them to protect the new IA.
+
+All normal Timeline control/hardening/interaction tests that ran after the C1 failures passed in Chromium.
+
+## Exact next work
+
+1. mount `TimelineAllDayLane` per rendered Timeline day;
+2. finish lane/card CSS;
+3. remove transitional old header-layer code;
+4. rewrite C1 E2E for base + Advanced/type-grid/new placement vocabulary;
+5. harden Planning Tray v2 E2E;
+6. explicit `Orario + Divisibile → remains placed` E2E;
+7. quick Event recurrence + CP6 custom round-trip E2E;
+8. implement Event Agenda/internal parts;
+9. decide Reminder/Alarm only after semantic owner review;
+10. full Quality + Mobile + Chromium + Firefox frozen + Gate;
+11. reconcile docs to new green candidate;
+12. one new coherent user manual acceptance.
+
+## Backend/external stop line
+
+Outside C1:
+
+- real API transport;
+- PostgreSQL application writes;
+- canonical server IDs;
+- durable server idempotency;
 - product Auth/ACL enforcement;
-- provider execution/sync;
-- notifications;
+- provider writes/sync/invitations/room booking/conference creation;
+- real notification/alarm delivery;
 - authoritative solver;
 - recurrence evaluator/checkpoints;
-- Occurrence generation;
-- Session/Actual runtime;
+- canonical Occurrence generation;
+- Session runtime;
+- Actual/outcome runtime;
 - multi-device reconciliation;
-- AI/NL runtime/input;
-- voice runtime/input.
+- AI/NL/voice runtime/input.
 
-## Current gate
+## Closure gate
 
 Current state:
 
 ```text
-IMPLEMENTATION COMPLETE
-AUTOMATED FULL PASS
-FINAL AUTOMATED VALIDATION RECORDED
-FINAL DOCUMENTATION DESCENDANT MUST BE CI-GREEN
-USER MANUAL ACCEPTANCE PENDING
+C1 MANUAL FAIL RECORDED
+C1 RE-ARCHITECTURE ACTIVE
+AUTOMATED PARTIAL PASS AT CURRENT CHECKPOINT
+USER RETEST NOT YET AUTHORIZED
 NOT FROZEN / CLOSED
+C2 BLOCKED
 ```
 
-No C2 work starts before explicit user approval.
+Only after a new full-green candidate and a rewritten manual acceptance may the user approve with:
 
-## Next action
+`C1 MANUAL PASS — APPROVED`
 
-After the documentation descendant itself is fully CI-green:
-
-1. sync `/home/mattia/projects/dante-timeline` with `git pull --ff-only`;
-2. execute the **single** protocol in `temporal-create-c1-manual-acceptance.md`;
-3. report any real defect precisely, or approve with `C1 MANUAL PASS — APPROVED`;
-4. only then record `C1 TEMPORAL CREATE → FROZEN / CLOSED`;
-5. only then begin C2 Card → structured Detail.
+Only then may C1 transition to FROZEN / CLOSED and C2 begin.
