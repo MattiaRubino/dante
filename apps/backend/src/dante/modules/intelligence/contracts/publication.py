@@ -129,7 +129,10 @@ class PublicationDecision:
                 raise ValueError("unlimited publication requires VERIFIED status")
             if self.limitations:
                 raise ValueError("PUBLISH must not carry limitations")
-        if self.status is PublicationDecisionStatus.PUBLISH_WITH_LIMITATIONS and not self.limitations:
+        if (
+            self.status is PublicationDecisionStatus.PUBLISH_WITH_LIMITATIONS
+            and not self.limitations
+        ):
             raise ValueError("limited publication requires declared limitations")
 
 
