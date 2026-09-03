@@ -1,6 +1,6 @@
 # DANTE — World Focus Frontend Roadmap
 
-**Status:** CURRENT WORKING ROADMAP — M2 ACTIVE / M2-1 + M2-2 CLOSED / VALIDATED / FINAL M2 AUDIT NEXT  
+**Status:** CURRENT WORKING ROADMAP — M2 CLOSED / VALIDATED — M3 NEXT  
 **Date:** 2026-09-03  
 **Branch:** `feature/home-react`
 
@@ -32,6 +32,8 @@ World Focus route/shell
 -> WP-01 Continuity migration + 720/719/390 browser pressure
 -> M2-2 shared qualifier/truthfulness grammar
 -> M2-2 O2 Situation / O5 Next / O8 Evidence-History renderers
+-> M2 final hostile falsification
+-> bounded display-copy closure
 ```
 
 ## 2. Evidence checkpoints
@@ -53,11 +55,15 @@ M2-1 validation     HEAD 2e639f108d5cb01e53395013a55346b7ac2e4294  CI 3378175382
 M2-2 red            HEAD 5374f77d7cf7b52ef87ce64315a606bc1d96cf0b  CI 33787162755 EXPECTED FAIL
 M2-2 baseline       HEAD b9856d497273d22face94fcd14f0deda853bbdb8  CI 33787905171 PASS
 M2-2 validation     HEAD 26d79b0dcdeaac1cb094bf97b71e901003ac5fa5  CI 33788370490 PASS
+M2 final red        HEAD 3adbd958ee3e3bf2fd55b7d2a2562dd6de5aa011  CI 33790674375 EXPECTED FAIL
+M2 final code       HEAD e3865e0cde095acae7e3022815538f35ee0706ef  CI 33790953644 PASS
 ```
 
 M2-1 validation includes 61/61 web test files, 312/312 web unit tests, 262 modules / 684 dependencies with zero architecture violations, Chromium pressure at 720/719/390, Mobile Bundle PASS and frozen Timeline Firefox PASS.
 
-M2-2 final validation is green across Quality, production build, Chromium, frozen Timeline Firefox, Mobile Bundle and the Frontend CI Gate.
+M2-2 final integration validation is green across Quality, production build, Chromium, frozen Timeline Firefox, Mobile Bundle and the Frontend CI Gate.
+
+M2 final hostile closure found one concrete gap red-first: the display binding had no finite copy-length bound. The unmodified hostile suite then passed 5/5 after adding fail-closed limits. Final evidence is 70/70 web test files, 332/332 web unit tests and 279 modules / 770 dependencies with zero architecture violations.
 
 ## 3. Materialization sequence
 
@@ -67,11 +73,11 @@ M1 — Core Non-Visual Production Materialization     CLOSED / VALIDATED
   M1-1 identity/reference ownership                  CLOSED / VALIDATED
   M1-2 non-visual facets + WP/O2/O5/O8 seams         CLOSED / VALIDATED
 POST-M1 Safety Falsification                         CLOSED / PASS
-M2 — Shared Visual Primitive Layer                   ACTIVE
+M2 — Shared Visual Primitive Layer                   CLOSED / VALIDATED
   M2-1 shared presentation + L1 renderer grammar     CLOSED / VALIDATED
   M2-2 truthfulness + direct-output visual layer     CLOSED / VALIDATED
-  M2 final closure audit / falsification             NEXT
-M3 — Adaptive World Composition                      BLOCKED BY M2
+  M2 final hostile closure                           CLOSED / PASS
+M3 — Adaptive World Composition                      NEXT
 M4 — Contextual DANTE                                BLOCKED BY M3
 M5 — Contrasting Complete Worlds                     BLOCKED BY M4
 M6 — Integrated Product / Visual / A11y / Perf       BLOCKED BY M5
@@ -112,11 +118,11 @@ useful non-DANTE path
 
 M1 did not create a universal projection envelope, generic entity/property-bag root, frontend AuthZ, World canonical ownership or backend dependency.
 
-## 5. M2 — active scope and materialized result
+## 5. M2 — closed materialized result
 
-M2 renders semantics already earned by M1. It must never become semantic owner or a universal dashboard/card system.
+M2 renders semantics already earned by M1 and remains presentation-only.
 
-Binding rules:
+Binding rules retained:
 
 ```text
 primitive != card
@@ -159,6 +165,15 @@ accessible nested presentation subsections
 Continuity partial/stale mapped to coverage/freshness qualifier axes
 ```
 
+Final closure hardening established:
+
+```text
+WorldFocusDisplayBinding label max 512
+WorldFocusDisplayBinding supportingText max 2048
+blank/oversize copy fails closed
+no silent truncation
+```
+
 Permanent visual truthfulness:
 
 ```text
@@ -184,9 +199,9 @@ responsive presentation != semantic rewrite
 
 O2/O5/O8 and WP-02..WP-04 remain renderer capabilities, not fabricated live composition claims.
 
-## 6. M0 disposition audit after M2-2
+## 6. M0 disposition audit after M2 closure
 
-Every currently mapped shared-renderer disposition assigned to M2 now has a production owner:
+Every mapped shared-renderer disposition assigned to M2 has a production owner and final hostile evidence:
 
 ```text
 M0-19 WP-02 shared rendering                  M2-1 DONE
@@ -202,11 +217,11 @@ O8 Evidence / History visual presentation     M2-2 DONE
 L2/L3/L6/L8 truthfulness presentation         M2-2 DONE
 ```
 
-This audit allows the next step to be **closure falsification**, not invention of another generic visual family.
+The final closure audit confirmed there is no justified M2-3 generic visual family.
 
-## 7. Final M2 closure gate
+## 7. Final M2 closure evidence
 
-Before M3, M2 must survive one final hostile production-only audit/falsification covering at minimum:
+The final hostile suite pressured:
 
 ```text
 cross-axis visual non-collapse
@@ -214,15 +229,36 @@ unknown future World compatibility
 binding missing/mismatch fail-closed behavior
 no raw reference/reasonCode/protected-detail leakage
 nominal-state quietness
-sparse/no-fake-live composition
-long copy + compact responsive safety
-textual state / forced-colors semantics
-finite renderer boundaries
-no universal card/projection envelope
-no M3 customization or candidate resolution pulled forward
+long realistic copy + pathological copy pressure
+semantic order and O8 role separation
+no fake live composition
+no M3 customization pulled forward
 ```
 
-A failure stops sequencing and opens a bounded M2 fix. A complete PASS may close M2 and make M3 the next gate.
+Red result:
+
+```text
+HEAD 3adbd958ee3e3bf2fd55b7d2a2562dd6de5aa011
+CI   33790674375 EXPECTED FAILURE
+hostile 4 / 5 PASS
+whole web suite 331 PASS / 1 FAIL
+```
+
+Only pathological copy bounds failed. All semantic cross-axis/future-World/non-leakage/quietness cases passed.
+
+Fix/result:
+
+```text
+HEAD e3865e0cde095acae7e3022815538f35ee0706ef
+CI   33790953644 PASS
+hostile 5 / 5 PASS
+web test files 70 / 70 PASS
+web unit tests 332 / 332 PASS
+architecture 279 modules / 770 dependencies / 0 violations
+Quality / Mobile / Chromium / frozen Timeline Firefox / Frontend CI Gate PASS
+```
+
+M2 is therefore CLOSED / VALIDATED.
 
 ## 8. M3–M7 intent
 
@@ -260,10 +296,8 @@ no universal Entity/Thing/Fact/Relationship/property bag
 
 Old product/platform contract language naming the DANTE spatial review as the current next gate is historical. See `world-focus-contract-sequencing-supersession.md`. Semantic invariants remain intact; D2–D6 remain M4.
 
-The bounded post-M1 safety hold is closed. Its durable red→green evidence lives in `world-focus-post-m1-safety-falsification-review.md`.
-
-M2-1 and M2-2 evidence live in `world-focus-m2-shared-visual-primitives.md`.
+M2 closure does not authorize M4 or backend work.
 
 ## 11. Immediate continuation
 
-> **Run the final M2 closure audit/falsification. Do not start M3 customization, M4 DANTE or backend integration unless M2 closes on executable evidence.**
+> **M3 Adaptive World Composition is NEXT but unstarted. Begin only from a fresh bounded M3 gate; do not start M4 DANTE or backend integration.**
