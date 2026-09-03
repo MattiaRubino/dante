@@ -1,32 +1,31 @@
 # DANTE Database Dictionary
 
-**Status:** CURRENT / MATERIALIZED / CP6 BASELINE CLOSED / M5-A CURRENT MATERIALIZATION PROVEN  
-**Schema version:** 1  
-**Serialization:** JSON  
-**Structural validation dialect:** JSON Schema Draft 2020-12  
-**PostgreSQL:** 18.6  
-**Current branch Alembic head:** `20260830_12`  
-**Frozen CP6 head:** `20260826_08`  
+- **Status:** CURRENT / MATERIALIZED / PRE-INTEGRATION
+- **Schema version:** 1
+- **Serialization:** JSON
+- **Structural dialect:** JSON Schema Draft 2020-12
+- **PostgreSQL:** 18.6
+- **Feature/access-auth Alembic head:** `20260903_15`
+- **Frozen CP6 head:** `20260826_08`
 
-## Purpose
+## 1. Purpose
 
-This directory is the machine-readable companion to the human-readable DANTE Database Architecture & Reference.
+This directory is the machine-readable companion to the current DANTE Database System of Record.
 
-It does not replace Domain, Logical, Physical, the PostgreSQL Persistence Constitution, Alembic, SQLAlchemy or real PostgreSQL introspection. It provides one structured **current** metadata surface that those authorities can be reconciled against while preserving frozen historical acceptance baselines separately.
-
-The long-lived consistency target is:
+It does not replace Domain, Logical, Physical, the PostgreSQL Persistence Constitution, Alembic, SQLAlchemy or real PostgreSQL introspection. It provides one structured current object contract that all of those representations must reconcile against.
 
 ```text
-Current Database Architecture & Reference
-≈ current Database Dictionary
-≈ current SQLAlchemy MetaData / mappings
-≈ current Alembic head
-≈ current real PostgreSQL schema
+Current DB Reference
+≈ Database Dictionary
+≈ SQLAlchemy MetaData / mappings
+≈ Alembic
+≈ real PostgreSQL
+≈ direct tests
 ```
 
-A mismatch is a defect to investigate.
+A mismatch is a defect.
 
-## Current materialized shape
+## 2. Current Access-branch inventory
 
 ```text
 dictionary/
@@ -35,212 +34,149 @@ dictionary/
 ├── schema/
 │   ├── object-v1.schema.json
 │   └── scope-v1.schema.json
-├── tables/       # 83 current entries
-├── views/        # 5 current entries
-└── routines/     # 15 current entries
+├── tables/       87
+├── views/         5
+└── routines/     15
 ```
 
-Current standalone object total:
+Standalone total:
 
 ```text
-83 tables
+87 tables
 5 views
 15 routines
------------
-103 standalone Dictionary entries
+----------
+107 standalone entries
 ```
 
-Object directories exist because real PostgreSQL objects are represented by the current branch schema. Empty ceremonial object directories remain forbidden.
-
----
-
-## Frozen baseline vs current materialization
-
-`scope.json` deliberately separates immutable historical closure benchmarks from current materialization.
-
-### `expected_baseline`
-
-Immutable CP6 closure benchmark at `20260826_08`:
+Embedded/current topology:
 
 ```text
-68 table entries
-5 view entries
-14 routine entries
-------------------
-87 standalone entries
-
 75 trigger attachments
-95 physical indexes
-68 foreign keys
-120 CHECK constraints
+170 physical indexes
+88 foreign keys
+267 CHECK constraints
 ```
 
-### `current_materialization`
+These values are branch-local through Alembic `20260903_15`. They do not include protected-main Recovery until the branches are deliberately integrated.
 
-Current accepted `feature/access-auth` inventory through M5-A revision `20260830_12`:
+## 3. Frozen CP6 baseline vs current materialization
+
+`scope.json` intentionally separates the historical CP6 closure benchmark from the evolving current inventory.
+
+Frozen `expected_baseline` at `20260826_08`:
 
 ```text
-83 table entries
-5 view entries
-15 routine entries
-------------------
-103 standalone entries
-
-75 trigger attachments
-156 physical indexes
-85 foreign keys
-233 CHECK constraints
+68 tables / 5 views / 14 routines / 87 standalone entries
+75 triggers / 95 physical indexes / 68 FKs / 120 CHECKs
 ```
 
-Post-CP6 schema growth **must not rewrite the CP6 benchmark** merely to keep baseline and current counts equal.
-
-`completed_stages` continues to record the frozen CP6 materialization sequence because those stages describe how the baseline was established. Later object provenance is recorded on each object through `implementation.introducing_stage` and `implementation.alembic_revision`.
-
-Object entry keys remain stable and typed:
+Current branch `current_materialization`:
 
 ```text
-table:dante.<name>
-view:dante.<name>
-routine:dante.<name>
+87 tables / 5 views / 15 routines / 107 standalone entries
+75 triggers / 170 physical indexes / 88 FKs / 267 CHECKs
 ```
 
-The exact PostgreSQL object name is also the JSON filename in the applicable directory.
+The two sets must not be forced equal merely because later product work added real objects.
 
----
+### `completed_stages`
 
-## Current Access/Auth Dictionary evolution
-
-M3 introduced:
+This field records the **frozen CP6 materialization sequence only**:
 
 ```text
+CP6-M01
+CP6-M02
+CP6-M03
+CP6-M04
+CP6-M05
+CP6-M06
+CP6-M07
+```
+
+Post-CP6 provenance is not appended to that list. It belongs on each object entry through:
+
+```text
+implementation.introducing_stage
+implementation.alembic_revision
+implementation.runtime_acl_stage
+```
+
+This distinction keeps `scope.json` valid against `scope-v1.schema.json` while allowing current inventory counts to evolve.
+
+## 4. Post-CP6 Access/Auth evolution
+
+M3:
+
+```text
+20260827_09
 account
 email_identity
 password_credential
 auth_session
+
+20260827_10
 acquire_account_security_lock(uuid)
 ```
 
-M4 introduced:
+M4:
 
 ```text
+20260829_11
 password_signup_challenge
 password_recovery_challenge
 ```
 
-M5-A introduced:
+M5 multi-authenticator persistence:
 
 ```text
+20260830_12
 external_identity
 external_auth_transaction
+apple_auth_grant
 external_link_challenge
 external_signup_challenge
 account_profile_bootstrap
-apple_auth_grant
 webauthn_account
 passkey_credential
 webauthn_challenge
+
+20260831_13
+authenticator-lifecycle ACL only
 ```
 
-M5-A also evolves current entries for:
+Shared Email Platform:
 
 ```text
-email_identity
-→ recovery_restriction_code
-→ recovery_restriction_observed_at
-→ exact current ACL metadata
+20260903_14
+email_delivery_intent
+email_delivery_attempt
+email_provider_event
+email_recipient_suppression
 
-auth_session
-→ composite exact ownership target used by WebAuthn challenge binding
+20260903_15
+exact Email Platform lifecycle UPDATE ACL hardening
 ```
 
-M5-A physical implementation hardening is represented in current object metadata, including exact Apple issuer+subject binding, WebAuthn Account/session/userHandle ownership, passkey logical revocation, explicit `cose_algorithm`, backup-state implication and cleanup indexes.
+## 5. Shared Email Platform classification
 
----
+The four Email Platform objects are bounded shared technical infrastructure. Access/Auth is the first current consumer, but it is not the platform owner.
 
-## Embedded objects
-
-The Dictionary is object-complete without creating a separate file for every PostgreSQL sub-object.
-
-Embedded in the owning table entry:
+Dictionary semantics must therefore preserve:
 
 ```text
-primary keys
-foreign keys
-unique constraints
-check constraints
-indexes
-trigger attachments
+technical persistence role
+no Domain owner invented
+not MaterialState
+shared Email Platform architecture/ADR as authority
+Access/Auth may remain a current logical/consumer traceability source
 ```
 
-Integrity/security routines remain standalone entries because they are independently owned PostgreSQL objects with their own signature/security/ACL properties and may have multiple trigger attachments or expose a deliberately narrow callable capability.
+The platform must not become a generic event bus, generic outbox semantic root or JSON/EAV escape hatch.
 
----
+## 6. Object entry contract
 
-## Ownership spaces
-
-`scope.json` distinguishes three spaces.
-
-### DANTE-owned
-
-Current business/control/security objects governed by DANTE migrations and the current Database System of Record. This includes the frozen CP6 object set and reviewed post-CP6 Access/Auth evolution through M5-A.
-
-### Technical foundation
-
-Includes:
-
-```text
-dante.alembic_version
-dante_owner
-dante_migrator
-dante_runtime
-```
-
-`dante.alembic_version` is not a DANTE semantic/business table entry.
-
-### Extension-owned
-
-The current foundation extension registry remains exactly:
-
-```text
-postgis
-vector
-pg_trgm
-unaccent
-pg_stat_statements
-```
-
-Objects internally created/owned by those extensions are not promoted into DANTE object entries merely because PostgreSQL introspection exposes them.
-
----
-
-## Materialization lifecycle in `scope.json`
-
-Lifecycle statuses remain:
-
-```text
-readiness_only
-→ no materialized DANTE object inventory yet
-
-materializing
-→ accepted baseline materialization is in progress
-
-materialized
-→ the frozen CP6 materialization completed and the current inventory is fully represented
-```
-
-For `materialized`, `completed_stages` remains the exact completed CP6 list:
-
-```text
-CP6-M01 .. CP6-M07
-```
-
-Current inventory counts are evolving values that must reconcile mechanically to current Dictionary entries, mappings and PostgreSQL.
-
----
-
-## Object schema
-
-Every standalone entry has ten required top-level blocks:
+Every standalone entry contains:
 
 ```text
 object
@@ -263,176 +199,68 @@ view
 routine
 ```
 
-The schema remains intentionally strict (`additionalProperties: false` throughout governed shapes) so accidental metadata fields require reviewed Dictionary-schema evolution rather than silently becoming convention.
+Strict `additionalProperties: false` schema shapes prevent accidental metadata conventions from becoming silent contract.
 
-Post-CP6 provenance fields accept governed stage identifiers such as:
-
-```text
-CP6-M03
-CP6-M07
-M3-A
-M4
-M5-A
-```
-
-Existing historical entries retain their actual introducing stage; later updates to constraints/ACL/current structure do not rewrite provenance.
-
----
-
-## Structural truth and semantic truth
-
-### Mechanically reconcilable
-
-These facts MUST be verified automatically against SQLAlchemy/Alembic/PostgreSQL where applicable:
+Object key/filename contract:
 
 ```text
-object name/type
-columns/types/nullability/defaults
-PK/FK/UQ/CK
-constraint deferrability/enforcement/validation
-indexes and valid/ready/live state
-trigger physical properties
-view definition/security/default/CHECK OPTION
-routine signature/properties
-relation persistence/access method/RLS/partitioning/replica identity
-owner
-ACL
-Alembic revision
-SQLAlchemy mapping
-current object/count inventory
+table:dante.<name>    → tables/<name>.json
+view:dante.<name>     → views/<name>.json
+routine:dante.<name>  → routines/<name>.json
 ```
 
-### Human-authored semantic metadata
+## 7. Embedded objects
 
-These facts MUST remain reviewed semantic documentation:
-
-```text
-why the object exists
-what a column/reference means
-why a constraint/index exists
-semantic owner/facet
-current/history interpretation
-lifecycle meaning
-canonicality boundary
-proof rationale
-```
-
-Generated DDL must not overwrite human semantic fields.
-
----
-
-## Table entries
-
-A table entry includes exact columns, physical relation properties and embedded:
+Table entries own their embedded:
 
 ```text
 primary key
 foreign keys
 unique constraints
-check constraints
-indexes
+CHECK constraints
+physical indexes
 trigger attachments
 ```
 
-Normal physical table properties reconcile as applicable to:
+Standalone routines remain separate because signature/security/search-path/ACL are independently governed PostgreSQL facts.
+
+## 8. Structural vs semantic metadata
+
+Mechanically reconcilable facts include:
 
 ```text
-persistence        permanent
-access_method      heap
-partitioned        false
-row_security       false
-force_row_security false
-replica_identity   default
-reloptions         [] unless a reviewed evolution says otherwise
+object name/type
+columns/types/nullability/defaults
+PK/FK/UQ/CK
+indexes + validity/readiness/liveness
+trigger properties
+view definitions/properties
+routine signature/security/volatility/search_path
+relation persistence/RLS/partitioning/replica identity
+owner + ACL
+Alembic revision
+SQLAlchemy mapping
+current inventory counts
 ```
 
-Foreign-key metadata includes reference-family/cardinality/semantic reason plus MATCH / update-delete action / deferrability / enforcement / validation.
-
-CHECK metadata includes exact expression contract plus enforcement/validation/NO INHERIT state.
-
-Index metadata identifies whether a physical index originates from:
+Human-authored reviewed facts include:
 
 ```text
-primary_key
-unique_constraint
-explicit_index
+why an object exists
+what fields/references mean
+canonicality/technical role
+state/history semantics
+lifecycle/redaction meaning
+index/constraint rationale
+semantic traceability
+proof rationale
 ```
 
-and records PostgreSQL valid/ready/live state.
+Generated structural tooling must never overwrite semantic meaning automatically.
 
----
+## 9. Security metadata
 
-## View entries
-
-Current views describe:
-
-```text
-base relations
-exact predicate contract
-CHECK OPTION
-automatically-updatable posture
-runtime DML surface
-SQLAlchemy Core handle
-security_invoker
-security_barrier
-view-column defaults
-```
-
-Views are not ORM row entities.
-
----
-
-## Routine entries
-
-Current routine entries describe:
-
-```text
-routine kind
-language
-argument types
-return type
-security mode
-volatility
-parallel safety
-leakproof posture
-function_search_path
-direct runtime EXECUTE posture
-```
-
-The frozen CP6 trigger-function baseline remains `() → trigger`, `plpgsql`, `SECURITY INVOKER`, `VOLATILE`, `PARALLEL UNSAFE`, non-leakproof, with fixed `pg_catalog,dante,pg_temp` search path.
-
-`dante.acquire_account_security_lock(uuid)` remains the bounded post-CP6 `SECURITY DEFINER` capability owned by `dante_owner`, with trusted exact search path and direct `dante_runtime` EXECUTE only.
-
----
-
-## Trigger attachments
-
-Each table-owned trigger record includes:
-
-```text
-exact name
-routine reference
-events
-timing
-ROW/STATEMENT orientation
-constraint-trigger flag
-deferrability / initially-deferred
-enabled mode
-UPDATE OF column set
-WHEN condition
-arguments
-invariant role/reason
-```
-
-M3–M5-A add no triggers, so the current branch remains at the 75 CP6 attachments.
-
----
-
-## Security
-
-Dictionary security metadata is grant-oriented, not a vague writable/readable boolean.
-
-Each expected grant contains:
+Expected grants are represented explicitly as:
 
 ```text
 grantee
@@ -441,173 +269,91 @@ columns
 grant_option
 ```
 
-This represents column-level INSERT/UPDATE and view-specific DML truth without broadening it into table-level CRUD.
+Column-scoped INSERT/UPDATE authority must not be widened into generic CRUD merely for convenience.
 
-M5-A proof specifically requires that `email_identity` keeps column-scoped INSERT while adding the two new nullable recovery columns, and that UPDATE remains limited to the two recovery-restriction fields.
-
-Durable ExternalIdentity/PasskeyCredential entries intentionally expose no runtime DELETE; logical revocation is represented in lifecycle/current-state metadata.
-
----
-
-## Proof metadata
-
-Object entries contain proof targets:
+Examples:
 
 ```text
-obligations
-test_refs
-staged_evidence
+Account/security mutation  → bounded exact capabilities
+ExternalIdentity/passkeys  → logical revoke where required
+Email intents/attempts      → only reviewed lifecycle columns mutable
+provider events             → insert-only evidence for runtime
 ```
 
-Do not store mutable outcome flags such as `tests_passed=true` inside current object metadata. Actual PASS/FAIL belongs to test/CI/evidence records.
+## 10. Validation contract
 
----
+Two levels are required.
 
-## Two-level validation contract
+### Level 1 — structural schema consistency
 
-JSON Schema is necessary but intentionally not treated as sufficient.
+`scope.json` and object entries must obey their declared schema contracts. In particular, a value cannot be added to `completed_stages` unless the scope schema admits it and the field's lifecycle meaning actually requires it.
 
-### Level 1 — Draft 2020-12 structural validation
+### Level 2 — DANTE semantic/cross-representation consistency
 
-Proves each JSON document has the governed shape, types, enums, required fields and type-specific object shape.
-
-### Level 2 — DANTE semantic/cross-file validation
-
-Must prove at least:
+At minimum:
 
 ```text
-unique object keys + exact filename/name agreement
-exact extension key set
-unique columns and embedded object identifiers in applicable scope
-all local columns referenced by keys/FKs/indexes/grants/triggers exist
-all FK targets and target columns resolve
-all trigger routine references resolve
-trigger/routine signatures are compatible
-object type ↔ SQLAlchemy mode is correct
-frozen CP6 completed-stage record remains valid
-current scope counts reconcile to the current entry set
-current Dictionary ↔ SQLAlchemy ↔ Alembic ↔ PostgreSQL reconciliation
-routine security/search_path facts reconcile where applicable
-extension-owned objects do not become false DANTE drift
+unique exact object keys
+filename/name agreement
+all referenced columns exist
+all FK targets resolve
+trigger routine references resolve
+object type ↔ SQLAlchemy mode
+current scope counts ↔ entry tree
+Dictionary ↔ SQLAlchemy ↔ Alembic ↔ PostgreSQL
+owner/ACL parity
+routine search_path/security parity
+extension-owned objects excluded correctly
 ```
 
-At the accepted M5-A backend head the current reconciliation target is:
+`apps/backend/tests/integration/database/test_current_catalog.py` provides the live PostgreSQL cross-representation gate for current branch materialization. Historical CP6 tests independently migrate/prove the frozen CP6 baseline rather than mutating that evidence to match later stages.
+
+## 11. Same-change rule
+
+A real database structural change is incomplete unless its reviewed change updates affected:
 
 ```text
-83 tables / 5 views / 15 routines / 103 standalone entries
-75 triggers / 156 physical indexes / 85 FKs / 233 CHECKs
+Dictionary entry/schema/scope where needed
+SQLAlchemy mapping
+Alembic forward revision
+current human DB reference
+direct tests
+real PostgreSQL proof
 ```
 
-The frozen CP6 acceptance test independently proves its own historical `68/5/14/87 + 75/95 + 68/120` topology by migrating to revision `20260826_08`.
+No real object → no ceremonial Dictionary entry.
 
----
+Real current DANTE object → matching Dictionary entry required.
 
-## Materialization and same-change rule
+## 12. Protected-main Recovery divergence
 
-A real structural database change is incomplete unless all affected Dictionary entries are created/updated in the same reviewed change.
+Protected main currently owns Recovery at `20260830_09` and has independently evolved its Dictionary scope/schema to represent that integrated history.
 
-The original CP6 materialization followed the frozen DAG:
+Do **not** copy main's Recovery scope values into this branch before main is merged. Until then, this branch must remain internally truthful to its own materialized object set.
+
+During integration:
 
 ```text
-CP6-M01  +16 table entries
-CP6-M02  +6 table entries
-CP6-M03  +15 table entries
-CP6-M04  +26 table entries
-CP6-M05  +5 view +13 routine entries +66 trigger registrations
-CP6-M06  +5 table +1 routine entry +9 trigger registrations
-CP6-M07   no new standalone entries; reconcile/activate exact ACL values
+merge main into feature/access-auth
+→ reconcile the two Dictionary evolutions deliberately
+→ preserve both semantic histories
+→ update scope/schema for the combined current inventory
+→ add forward Alembic merge revision
+→ prove combined real PostgreSQL parity
 ```
 
-Post-CP6 current evolution:
+The combined counts are accepted only from the merged live catalog.
 
-```text
-M3 / 20260827_09
-+ account
-+ email_identity
-+ password_credential
-+ auth_session
+## 13. Current proof status
 
-M3 / 20260827_10
-+ acquire_account_security_lock(uuid)
+Access/Auth branch PostgreSQL acceptance already proves the current object sets, mapping parity, owners, Alembic single head and exact runtime ACL. Email-specific PostgreSQL acceptance proves durable intent/attempt lifecycle, idempotency, claim/lease, ambiguity, secret wipe, feedback/suppression and least privilege.
 
-M4 / 20260829_11
-+ password_signup_challenge
-+ password_recovery_challenge
+Real SES UAT additionally observed three accepted intents with provider MessageId and wiped sensitive payload.
 
-M5-A / 20260830_12
-+ 9 multi-authenticator tables
-+ EmailIdentity reachability evolution
-+ current exact physical/ACL metadata
-```
+Current truth:
 
-Hard boundary remains:
-
-```text
-no real DANTE object
-→ no object-specific Dictionary entry pretending it exists
-
-real current DANTE object
-→ matching current Dictionary entry required
-```
-
----
-
-## Schema evolution
-
-`object-v1.schema.json` and `scope-v1.schema.json` are versioned contracts.
-
-Ordinary forward product evolution may add governed stage identifiers and increase current inventory counts without rewriting historical CP6 entries.
-
-An incompatible metadata meaning/shape change still requires an explicit later Dictionary schema version/migration rather than silent reinterpretation.
-
----
-
-## Validation target
-
-Current and future database QA must detect at minimum:
-
-```text
-invalid JSON/schema
-semantic/cross-file Dictionary inconsistency
-missing real object entry
-stale object entry
-column/type/nullability/default drift
-PK/FK/UQ/CK drift or non-enforced/unvalidated state
-index drift or invalid/not-ready/not-live state
-trigger attachment/property drift
-view definition/security/default drift
-routine signature/property/search_path drift
-physical table persistence/RLS/partitioning drift
-owner/ACL drift
-SQLAlchemy mapping drift
-Alembic/head traceability drift
-scope-count mismatch
-frozen-baseline mutation presented as current evolution
-extension-owned false positives
-```
-
----
-
-## Current M5-A acceptance boundary
-
-The current M5-A Dictionary/database state has been directly proved against disposable PostgreSQL 18.6 at Alembic `20260830_12`:
-
-```text
-current 83/5/15/103 inventory                              PASS
-75 triggers / 156 indexes / 85 FKs / 233 CHECKs           PASS
-Dictionary ↔ SQLAlchemy ↔ Alembic ↔ PostgreSQL             PASS
-Auth table/column ACL                                      PASS
-M3/M4 historical database regressions                      PASS
-M5 persistence constraint/ownership tests                   8 / 8 PASS
-migration head/base/head                                    PASS
-Alembic autogenerate drift                                  PASS
-real PostgreSQL marked suite                               95 / 95 PASS
-```
-
-This persistence PASS does not imply later M5 provider/API/Web/browser closure.
-
-See:
-
-- `../access-auth.md` for current Access/Auth database meaning;
-- `../../workstreams/access-auth-m5-live-handoff-2026-08-29.md` for current continuation state;
-- `../development/backend-cp6-05-whole-database-qa.md` for retained CP6 acceptance evidence.
+- `../README.md` — Database System of Record
+- `../access-auth.md` — Access/Auth/Email branch DB reference
+- `../../architecture/email-platform.md` — shared Email Platform architecture
+- `../../development/email-platform-acceptance-2026-09-03.md` — live Email evidence
+- `../../development/backend-cp6-05-whole-database-qa.md` — retained frozen CP6 QA evidence
