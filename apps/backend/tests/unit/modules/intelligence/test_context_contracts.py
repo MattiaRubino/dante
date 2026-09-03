@@ -93,7 +93,9 @@ def test_context_plan_protected_and_unresolved_needs_must_belong_to_plan() -> No
 
 
 def test_source_content_is_not_current_user_instruction() -> None:
-    assert InstructionProvenance.SOURCE_CONTENT is not InstructionProvenance.CURRENT_USER_INSTRUCTION
+    assert (
+        InstructionProvenance.SOURCE_CONTENT is not InstructionProvenance.CURRENT_USER_INSTRUCTION
+    )
     assert InstructionProvenance.DATA is not InstructionProvenance.TRUSTED_SYSTEM_INSTRUCTION
 
 

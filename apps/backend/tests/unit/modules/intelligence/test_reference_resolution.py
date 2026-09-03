@@ -107,10 +107,7 @@ async def test_empty_declared_universe_has_bounded_not_found_semantics() -> None
 
     result = await resolver.resolve(_request(()))
 
-    assert (
-        result.status
-        is ReferenceResolutionStatus.NOT_FOUND_IN_DECLARED_BOUNDED_UNIVERSE
-    )
+    assert result.status is ReferenceResolutionStatus.NOT_FOUND_IN_DECLARED_BOUNDED_UNIVERSE
 
 
 def test_non_resolved_outcome_cannot_smuggle_resolved_target() -> None:

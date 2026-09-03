@@ -165,8 +165,6 @@ class RequestExecutionScope:
             ExecutionStatus.ACCEPTED,
             ExecutionStatus.RUNNING,
         }:
-            raise ValueError(
-                "cancellation_requested requires cancellation-aware execution status"
-            )
+            raise ValueError("cancellation_requested requires cancellation-aware execution status")
         if self.status is ExecutionStatus.CANCELLED and not self.cancellation_requested:
             raise ValueError("CANCELLED requires cancellation_requested")

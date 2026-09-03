@@ -175,9 +175,7 @@ class ReferenceResolutionResult:
             return
 
         if self.resolved_target is not None or self.achieved_binding is not None:
-            raise ValueError(
-                "non-RESOLVED result must not carry resolved_target/achieved_binding"
-            )
+            raise ValueError("non-RESOLVED result must not carry resolved_target/achieved_binding")
 
         if self.status is ReferenceResolutionStatus.AMBIGUOUS:
             if len(self.eligible_candidates) < 2:
