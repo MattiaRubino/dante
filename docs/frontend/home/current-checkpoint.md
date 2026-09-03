@@ -1,6 +1,6 @@
 # DANTE — Home / Frontend Current Checkpoint
 
-**Status:** CURRENT LIVE ENTRY POINT — WORLD FOCUS M2 ACTIVE / M2-1 VALIDATED  
+**Status:** CURRENT LIVE ENTRY POINT — WORLD FOCUS M2 ACTIVE / M2-1 + M2-2 VALIDATED  
 **Date:** 2026-09-03  
 **Working branch:** `feature/home-react`  
 **Worktree:** `/home/mattia/projects/dante-frontend`
@@ -46,8 +46,9 @@ M1-1 identity/reference ownership      CLOSED / VALIDATED
 M1-2 facets + WP/O2/O5/O8 seams        CLOSED / VALIDATED
 POST-M1 SAFETY FALSIFICATION           CLOSED / PASS
 M2 Shared Visual Primitive Layer       ACTIVE
-M2-1 shared presentation + renderers   CLOSED / VALIDATED
-M2 remaining visual work               NEXT WITHIN M2
+M2-1 shared presentation + L1 renderers CLOSED / VALIDATED
+M2-2 truthfulness + direct output       CLOSED / VALIDATED
+M2 FINAL CLOSURE AUDIT                  NEXT
 M3–M7                                  BLOCKED BY SEQUENCE
 D2–D6                                  DEFERRED TO M4
 BACKEND                                BLOCKED UNTIL M7
@@ -95,6 +96,20 @@ CI   33781753823 PASS
 262 modules / 684 dependencies / 0 architecture violations
 Chromium pressure at 720 / 719 / 390 PASS
 frozen Timeline Firefox PASS
+
+M2-2 red-first owner proof
+HEAD 5374f77d7cf7b52ef87ce64315a606bc1d96cf0b
+CI   33787162755 EXPECTED FAILURE
+Lint PASS; Typecheck FAIL on exactly 8 unresolved M2-2 presentation owners
+
+M2-2 production fix baseline
+HEAD b9856d497273d22face94fcd14f0deda853bbdb8
+CI   33787905171 PASS
+
+M2-2 final integration validation
+HEAD 26d79b0dcdeaac1cb094bf97b71e901003ac5fa5
+CI   33788370490 PASS
+Quality / Mobile / Chromium / frozen Timeline Firefox / Frontend CI Gate PASS
 ```
 
 ## 4. M1 + safety closed result
@@ -166,10 +181,51 @@ Critical scope truth:
 WP-01 Continuity is live and uses the M2 grammar
 WP-02..WP-04 renderer contracts exist and are tested
 WP-02..WP-04 are NOT injected into live composition merely as demonstrations
-M2 overall is NOT closed
 ```
 
-## 6. Read order
+## 6. M2-2 validated result
+
+M2-2 completes the currently mapped shared truthfulness/direct-output presentation owners over the same M2-1 grammar:
+
+```text
+shared qualifier grammar
+L2 freshness / validity / coverage / material-retirement presentation
+L3 sanitized disclosure presentation
+L6 effect + execution-revalidation presentation
+L8 connectivity / replay / provider-delivery / request-timing presentation
+O2 Situation renderer
+O5 Next renderer
+O8 Evidence / History renderer with separate Evidence / Provenance / Integrity / History roles
+accessible presentation subsections
+Continuity partial -> coverage/incomplete qualifier
+Continuity stale -> freshness/stale qualifier
+English/Italian finite copy
+```
+
+Permanent visual non-collapses:
+
+```text
+stale != invalid
+retracted != stale
+incomplete != empty
+conflicted != winner
+retired payload != missing reference
+available disclosure != frontend AuthZ
+restricted != unavailable
+offline != content absent
+provider lag != stale
+timeout != semantic negative
+partial-real != failure
+reversed != compensated
+execution revalidation != effect state
+Evidence != Provenance != integrity attestation
+reasonCode != display copy
+reference key != display copy
+```
+
+Nominal states remain quiet; M2-2 does not create badge soup. O2/O5/O8 and WP-02..04 remain **unmounted unless real application/composition evidence justifies them**.
+
+## 7. Read order
 
 ```text
 1. world-focus-current-checkpoint.md
@@ -186,26 +242,27 @@ M2 overall is NOT closed
 12. product/platform/structure/geometry contracts as needed
 ```
 
-## 7. Current gate — continue M2 only
+## 8. Current gate — M2 final closure audit only
 
-M2 remains the active phase. Further visual materialization must remain evidence-driven over the closed M1 semantic substrate and the validated M2-1 presentation grammar.
+The known M0 shared-renderer dispositions assigned to M2 now have materialized production owners through M2-1/M2-2. M2 is **not yet declared closed**.
 
-Rules:
+The next bounded gate must be a final hostile M2 closure audit/falsification checking at minimum:
 
 ```text
-primitive != card
-question/output family != mandatory visible module
-no page-per-World architecture
-no renderer may become canonical semantic owner
-no visual treatment may collapse freshness/validity/disclosure/effect/sync axes
-unknown future Worlds must safe-degrade through finite registries
-sparse Worlds remain sparse
-renderer availability != permission to mount fake content
+cross-axis visual non-collapse
+unknown-future World renderer compatibility
+exact display binding / no raw-key fallback
+reasonCode and protected detail non-leakage
+sparse/no-fake-live composition
+long-copy and responsive pressure
+finite renderer ownership
+no universal card/envelope emergence
+no M3 customization pulled forward
 ```
 
-M3 adaptive customization, M4 contextual DANTE D2–D6, M5 complete Worlds, M6 integrated visual/a11y/performance review, M7 frontend freeze and backend all remain blocked by sequence.
+Only a clean executable result may advance sequencing to M3.
 
-## 8. Permanent barriers
+## 9. Permanent barriers
 
 ```text
 World != canonical Domain owner
@@ -226,7 +283,7 @@ Comparison != Decision
 missing trajectory position != zero
 ```
 
-## 9. Backend stop line
+## 10. Backend stop line
 
 ```text
 frontend view model != backend DTO != Domain model != persistence row
@@ -239,7 +296,7 @@ NO real tool/effect execution
 NO fake success
 ```
 
-## 10. Operational rules
+## 11. Operational rules
 
 - stay on `feature/home-react` unless explicitly authorized otherwise;
 - fresh live HEAD before every new write scope;
