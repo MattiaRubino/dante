@@ -1,6 +1,6 @@
 # DANTE AI Implementation Workstream
 
-- **Status:** ACTIVE / I0 CLOSED-PASS / I1 READY
+- **Status:** ACTIVE / I0 CLOSED-PASS / I1 VALIDATION PENDING
 - **Branch:** `feature/ai-implementation`
 - **Started:** 2026-09-02
 - **I0 closed:** 2026-09-03
@@ -8,7 +8,8 @@
 - **Post-AI05 acceptance:** `../architecture/dante-ai-post05-final-mega-acceptance.md`
 - **Current implementation step:** I1 — Search public contracts / eligibility / family registry / deterministic shell
 - **I0 validated code checkpoint:** `506b7f6c9dcf6c241b9f0f77bfec53a7e8d2d663`
-- **Implementation claim:** I0 repository/application ownership and executable architecture-boundary checks CLOSED / PASS; no Search or Intelligence product behavior is claimed yet
+- **I1 candidate code checkpoint:** `888a8673251f6867aac83875bb6ef09f3f8cdf15`
+- **Implementation claim:** I0 CLOSED / PASS; I1 Search contracts/registry/shell materialized but NOT CLOSED until repository gates pass on the current candidate
 - **Provider/model/SDK:** OPEN / EVIDENCE-DRIVEN
 - **Database/Alembic change:** NONE
 - **Production activation:** NONE
@@ -23,7 +24,7 @@ The final implementation baseline owns architecture. This file records only curr
 
 ## 2. I0 — CLOSED / PASS
 
-I0 established executable architecture boundaries before Search or Intelligence behavior is implemented.
+I0 established executable architecture boundaries before Search or Intelligence behavior was implemented.
 
 Materialized implementation:
 
@@ -59,48 +60,17 @@ relative and absolute imports normalized
 indirect-path failures report the dependency path
 ```
 
-No empty `modules/search` or `modules/intelligence` package was created at I0. Those paths materialize only when I1/I2 add real implementation content.
+No empty `modules/search` or `modules/intelligence` package was created at I0. Search paths materialize only now because I1 contains real code.
 
-## 3. Architecture-testing technology posture
+## 3. I0 acceptance evidence
 
-Current 2026 tooling such as Import Linter can enforce forbidden/protected/layer/independence contracts and supports Python 3.14. DANTE did not add it at I0 because the accepted rules are currently small enough to enforce with a deterministic stdlib checker and no additional supply-chain surface.
-
-Re-evaluate a dedicated dependency-graph tool when:
-
-```text
-module-graph scale makes the checker materially harder to maintain
-cycle/layer diagnostics need richer graph reporting
-additional contracts make custom code larger or riskier than the dependency
-benchmarking shows a dedicated tool is more reliable at acceptable CI cost
-```
-
-Adoption remains evidence-driven rather than stylistic.
-
-## 4. I0 acceptance gate — CLOSED / PASS
-
-I0 was accepted only after the real `feature/ai-implementation` worktree executed the normal backend gates against validated code checkpoint:
+I0 was accepted only after the real `feature/ai-implementation` worktree executed the normal backend gates against:
 
 ```text
 506b7f6c9dcf6c241b9f0f77bfec53a7e8d2d663
 ```
 
-### 4.1 Fast gate
-
-Executed fail-fast:
-
-```text
-cd apps/backend
-uv lock --check
-uv sync --locked
-uv run --locked ruff format --check .
-uv run --locked ruff check .
-uv run --locked mypy
-uv run --locked pytest tests/unit/test_architecture_boundaries.py -vv
-uv run --locked pytest -m "not postgres"
-uv build
-```
-
-Observed result:
+Fast gate:
 
 ```text
 uv lock --check                              PASS
@@ -113,37 +83,18 @@ non-PostgreSQL backend suite                PASS / 58 passed, 80 deselected
 backend source distribution + wheel build   PASS
 ```
 
-The isolated architecture suite emits coverage warnings because it inspects source through AST rather than importing `dante`; this is not treated as production-code coverage evidence. The complete non-PostgreSQL suite collected normal coverage and passed.
-
-### 4.2 PostgreSQL gate
-
-The canonical local PostgreSQL image was rebuilt from the repository boundary:
-
-```text
-docker build --pull --tag dante-postgres-local:18.6 infra/local/postgres
-```
-
-Then the real PostgreSQL acceptance suite executed:
-
-```text
-cd apps/backend
-uv run --locked pytest -m postgres -vv
-```
-
-Observed result:
+PostgreSQL gate:
 
 ```text
 canonical PostgreSQL 18.6 image build        PASS
 PostgreSQL acceptance suite                  PASS / 80 passed, 58 deselected
 ```
 
-The passing suite includes the existing CP6 M1..M7/final contracts, exact current catalog, fresh-database single-head migration, head/base/head and recovery-head round trips, Alembic drift check, role/ACL hardening, runtime readiness/pool behavior and transaction/savepoint behavior.
+The PostgreSQL suite covered existing CP6 M1..M7/final contracts, exact current catalog, fresh-database single-head migration, migration round trips, Alembic drift, roles/ACL, runtime readiness/pool behavior and transaction/savepoint behavior.
 
 I0 introduced no AI database fixture and no database or Alembic change.
 
-## 5. I0 evidence ledger
-
-Completed:
+## 4. I0 evidence ledger
 
 ```text
 implementation-entry write gate verified at 5e2c67559670b2bc5780fbcdb3c1aae90975e5ca
@@ -151,27 +102,168 @@ initial C1 architecture test commit a6e769c8f79beea6dd531beb899b44cffb699da5
 transitive dependency-graph hardening commit 3019b9a97650c50bcc04d33769e79a7d0c75d28e
 workstream synchronization commit 634d1714645147ccf8eb434942a873e44c0c1d2c
 Ruff-format repair commit 506b7f6c9dcf6c241b9f0f77bfec53a7e8d2d663
-readback exact
-checker syntax compiled independently
-synthetic positive baseline PASS
-synthetic negative cases caught:
-  Search -> Intelligence relative import
-  Search -> bridge -> Intelligence indirect path
-  Intelligence -> private Search direct import
-  Intelligence -> bridge -> private Search indirect path
-  Intelligence -> SQLAlchemy
-  Search application -> DB runtime
-  FastAPI inside Intelligence core
-  universal EntityRef introduction
-  provider runtime dependency addition
 real worktree fast gate PASS
 real PostgreSQL acceptance gate PASS
 I0 CLOSED / PASS
 ```
 
-No GitHub Actions run is attached because the existing workflow triggers on protected-main push, pull request to main or manual dispatch, not an ordinary feature-branch push. Local direct execution is the evidence for this I0 checkpoint.
+No GitHub Actions run is attached because the existing workflow does not run for an ordinary feature-branch push. Local direct execution is the evidence for this checkpoint.
 
-## 6. Engineering quality posture
+## 5. I1 candidate — VALIDATION PENDING
+
+I1 materializes only the accepted deterministic Search boundary.
+
+Current code:
+
+```text
+apps/backend/src/dante/modules/__init__.py
+apps/backend/src/dante/modules/search/__init__.py
+apps/backend/src/dante/modules/search/contracts.py
+apps/backend/src/dante/modules/search/public.py
+apps/backend/src/dante/modules/search/application.py
+apps/backend/src/dante/modules/search/ports/__init__.py
+apps/backend/src/dante/modules/search/ports/query.py
+apps/backend/tests/unit/modules/search/test_contracts.py
+apps/backend/tests/unit/modules/search/test_application.py
+```
+
+Candidate commits:
+
+```text
+888205ae33e1fb7a7df3443ace94c414584fc59c
+feat(search): add public contracts eligibility registry and shell
+
+888a8673251f6867aac83875bb6ef09f3f8cdf15
+feat(search): harden eligibility and query boundary
+```
+
+### 5.1 Public/application contract posture
+
+Implemented as stdlib immutable contracts and Protocols rather than making Pydantic a universal internal abstraction:
+
+```text
+frozen/slotted dataclasses
+StrEnum / NewType / Python 3.14 type aliases
+SearchService Protocol
+SearchQueryPort Protocol
+immutable SearchFamilyRegistry
+```
+
+Search target references preserve the accepted semantic families through discriminated Search projections:
+
+```text
+NativeSearchTargetRef
+ScopedRecordSearchTargetRef
+MaterialStateSearchTargetRef
+ExternalSearchTargetRef
+```
+
+No universal `EntityRef` / `entity_id` abstraction is introduced, and public Search does not import persistence-owned database reference modules.
+
+### 5.2 Eligibility/non-interference posture
+
+The application shell constructs the active + eligible family intersection before invoking any query adapter.
+
+Current boundary carries only admitted Search execution state, including:
+
+```text
+owner scopes
+source scopes
+safe projection fields
+permitted filter fields
+permitted facet fields
+current/history support
+navigation/snippet/facet/count eligibility
+source lifecycle exclusions
+negative scopes
+sensitivity ceiling
+current access/basis refs required for later revalidation
+family source/coherence/snapshot/currentness/publication requirements
+```
+
+The query adapter therefore must not discover an unrestricted universe and filter it after ranking/count/faceting.
+
+Explicit pre-query checks include:
+
+```text
+active registration
+current request eligibility
+owner/source scope presence
+current/history compatibility
+keyword/structured-filter mode compatibility
+filter-field registration + eligibility intersection
+minimum safe hit projection
+application-owned maximum page bound
+family maximum truthful guarantee
+```
+
+Observable features are contracted before the outbound port:
+
+```text
+snippet eligibility is per family
+facet eligibility and allowed fields are per family
+count eligibility is conservatively intersected for the multi-family result
+navigation requires explicit family eligibility
+```
+
+Adapter-result postconditions reject:
+
+```text
+hit from an unadmitted family
+disallowed snippet
+facet from unadmitted family or unadmitted field
+disallowed count
+guarantee stronger than the admitted family maximum
+navigation result escaping admitted family/owner
+```
+
+No eligible family yields a uniform safe empty result and does not call the query port. A registered-but-hidden family and a nonexistent family therefore do not become distinguishable through this shell.
+
+### 5.3 Explicit non-claims
+
+```text
+real Search family activated              NO
+PostgreSQL Search adapter                 NO
+Search database query                     NO
+Search HTTP route                         NO
+Auth/AuthZ integration                    NO
+provider/model/SDK                        NO
+FTS / pg_trgm / vector                    NO
+Intelligence implementation               NO
+database/Alembic change                   NO
+production activation                     NO
+I1 CLOSED                                 NO
+```
+
+Protected Search still requires real owning data/seams, authoritative Auth/disclosure integration and applicable direct non-interference/currentness proofs before activation.
+
+## 6. I1 validation gate
+
+Run against the exact current candidate in the real worktree:
+
+```text
+cd apps/backend
+uv lock --check
+uv sync --locked
+uv run --locked ruff format --check .
+uv run --locked ruff check .
+uv run --locked mypy
+uv run --locked pytest tests/unit/test_architecture_boundaries.py tests/unit/modules/search -vv
+uv run --locked pytest -m "not postgres"
+uv build
+```
+
+The existing PostgreSQL acceptance gate remains binding before I1 closure even though I1 makes no database change:
+
+```text
+docker build --pull --tag dante-postgres-local:18.6 infra/local/postgres
+cd apps/backend
+uv run --locked pytest -m postgres -vv
+```
+
+I1 may move to CLOSED / PASS only from real execution evidence on the final candidate checkpoint.
+
+## 7. Engineering quality posture
 
 Implementation optimizes for:
 
@@ -190,17 +282,14 @@ telemetry != audit != canonical truth
 performance measured at material boundaries rather than guessed micro-optimization
 ```
 
-FastAPI process-scoped resources continue to use the existing `lifespan` model. Existing PostgreSQL runtime/pool behavior is unchanged by I0.
+FastAPI process-scoped resources continue to use the existing `lifespan` model. Existing PostgreSQL runtime/pool behavior is unchanged.
 
-## 7. Next step — I1
+## 8. Next boundary after I1
+
+Only after I1 closes:
 
 ```text
-I1 — Search public contracts
-   + eligibility contracts
-   + SearchFamilyRegistry
-   + deterministic application shell
+I2 — Intelligence pure contracts + deterministic fakes
 ```
 
-I1 must preserve the accepted Search ownership boundary and must not add a provider dependency, database migration, FTS/vector activation or production HTTP activation.
-
-Before I1 writes, reread the final implementation baseline and current repository package/testing style, declare a fresh exact write gate, and materialize only real package content rather than ceremonial empty scaffolding.
+I2 does not authorize provider admission. Provider/model/SDK selection remains evidence-driven and belongs to the later candidate-admission boundary.
