@@ -4,7 +4,6 @@ from datetime import UTC, datetime
 from uuid import uuid7
 
 import pytest
-from tests.unit.modules.intelligence.fakes import ScriptedRetrievalGateway
 
 from dante.modules.intelligence.contracts.context import (
     ContextFragment,
@@ -30,6 +29,7 @@ from dante.modules.intelligence.contracts.retrieval import (
     RetrievalPlan,
     SourceLifecycleHint,
 )
+from tests.unit.modules.intelligence.fakes import ScriptedRetrievalGateway
 
 
 def _scope() -> RealityScope:

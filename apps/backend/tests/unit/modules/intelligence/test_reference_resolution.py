@@ -3,7 +3,6 @@
 from uuid import uuid7
 
 import pytest
-from tests.unit.modules.intelligence.fakes import EligibleUniverseReferenceResolverFake
 
 from dante.modules.intelligence.contracts.references import (
     NativeRefBinding,
@@ -14,6 +13,7 @@ from dante.modules.intelligence.contracts.references import (
     ReferenceResolutionResult,
     ReferenceResolutionStatus,
 )
+from tests.unit.modules.intelligence.fakes import EligibleUniverseReferenceResolverFake
 
 
 def _candidate(

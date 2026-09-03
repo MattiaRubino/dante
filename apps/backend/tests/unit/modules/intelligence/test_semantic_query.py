@@ -3,7 +3,6 @@
 from uuid import uuid7
 
 import pytest
-from tests.unit.modules.intelligence.fakes import ScriptedSemanticQueryGateway
 
 from dante.modules.intelligence.contracts.context import (
     ContextStrategy,
@@ -28,6 +27,7 @@ from dante.modules.intelligence.contracts.semantic_query import (
     SemanticQueryRequest,
     SemanticQueryStatus,
 )
+from tests.unit.modules.intelligence.fakes import ScriptedSemanticQueryGateway
 
 
 def _need() -> InformationNeed:
