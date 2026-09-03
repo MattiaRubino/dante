@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "revision": "pre-provider-v1",
+  "model_targets": [],
+  "harness_profiles": [],
+  "provider_bindings": [],
+  "route_policies": [],
+  "feature_modes": [
+    "ask_dante:disabled"
+  ],
+  "qualification_requirements": [],
+  "control_profiles": [],
+  "retry_profiles": [],
+  "fallback_profiles": [],
+  "resource_profiles": [],
+  "security_profiles": [],
+  "rollout_profiles": []
+}
