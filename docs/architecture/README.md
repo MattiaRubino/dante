@@ -23,12 +23,17 @@ Group 4 product engineering          AUTOMATED QA PASS
 local password/passkey UAT           PASS
 real Google UAT                      PASS
 
-Email Platform architecture          MATERIALIZED / SHARED DANTE SUBSYSTEM
+Email Platform architecture          ACCEPTED / SHARED DANTE SUBSYSTEM
+Email Platform implementation        ACCEPTED
 Email Platform automated acceptance  PASS
 primary external delivery adapter    AMAZON SES API V2
-real DANTE → SES Internet UAT         OPEN
+real DANTE → SES signup UAT           PASS
+real DANTE → SES recovery UAT         PASS
+real reset-notification UAT          PASS
+Email Platform engineering           CLOSED
+
 real Apple registered-domain UAT     DEFERRED / OPEN
-whole M5                             ACTIVE / NOT FORMALLY CLOSED
+whole M5                             ACTIVE / FINAL CLOSURE RECONCILIATION
 
 Access/Auth Alembic head             20260903_15
 Access/Auth DB topology              87 tables / 5 views / 15 routines /
@@ -51,8 +56,10 @@ Protected `main` remains integrated authority for closed shared foundations. New
 - `access-auth-m5-contract.md` — durable M5 multi-authenticator semantics
 - `access-auth-m5-persistence-api-contract.md` — exact M5 persistence/API design and milestone reconciliation
 - `access-auth-email-delivery.md` — Access/Auth consumer integration with the shared Email Platform
+- `../development/email-platform-local-uat.md` — reproducible SES UAT runbook
+- `../development/email-platform-acceptance-2026-09-03.md` — observed real-provider acceptance evidence
 - `../workstreams/access-auth.md` — current operational state
-- `../workstreams/access-auth-m5-review-2026-09-02.md` — review/UAT evidence
+- `../workstreams/access-auth-m5-review-2026-09-02.md` — review/UAT evidence before final Email closure
 - `../database/README.md` and `../database/access-auth.md`
 - `../frontend/access.md`
 
@@ -194,39 +201,62 @@ future product consumers reuse platform rather than rebuilding delivery machiner
 
 Access/Auth is currently the first consumer and is documented separately in `access-auth-email-delivery.md`.
 
-## 8. Current standards/deprecation review
+## 8. Email Platform real-provider evidence
 
-Review on 2026-09-02 found no material deprecated primitive in the current Google/WebAuthn path:
-
-- Google uses current GIS `accounts.google.com/gsi/client` and official `renderButton`.
-- `use_fedcm_for_button` remains current; DANTE does not use deprecated `use_fedcm_for_prompt`.
-- Google identity is keyed by `sub`, not email, matching current OIDC guidance.
-- WebAuthn browser APIs and FIDO2 verification remain current.
-- Apple M5 semantics already accept the new `private.icloud.com` Sign in with Apple relay domain alongside `privaterelay.appleid.com`.
-
-Email/provider review also corrected one stale economic claim: the former SES-specific 3,000-message/month first-year allowance is not available to new AWS customers after July 21, 2026. Provider cost must use current pricing/credits; this does not change the architectural SES selection.
-
-See `../workstreams/access-auth-m5-review-2026-09-02.md` for sources and benchmark details.
-
-## 9. Progress metadata inside frozen contracts
-
-The M5 contracts contain detailed milestone-time reconciliation sections. Statements such as `M5-F NEXT` or `public routes later` are historical for the slice when written if they conflict with the current status/workstream. Their semantic/security/persistence design remains authoritative; operational progress is owned by `PROJECT-STATUS`, `ROADMAP`, the active workstream and current review.
-
-## 10. Current architecture gaps — deliberate, not hidden
+Final 2026-09-03 evidence directly proved:
 
 ```text
-real DANTE signup → SES → mailbox UAT
-real DANTE password recovery → SES → mailbox UAT
-final Email Platform documentation/closure reconciliation
+AWS non-root UAT principal + SES preflight       PASS
+signup EmailIntent → SES → real mailbox         PASS
+received OTP → Account creation                  PASS
+password recovery → SES → real mailbox          PASS
+recovery URL → reset                             PASS
+no auto-login after reset                        PASS
+prior AuthSession revoked                        PASS
+reset security notification → real mailbox       PASS
+```
+
+Runtime emitted three SES `provider_accepted` outcomes, each on attempt 1.
+
+Direct PostgreSQL inspection observed the three corresponding intents with provider MessageId present and the short-lived sensitive payload bundle wiped.
+
+The first live attempt also proved the ambiguous failure path when Botocore temporary-credential refresh lacked region context. That defect was fixed by propagating `ses_region` through a boto3 Session and is now unit-covered.
+
+The exact same consumed recovery link was not manually replayed in the final run; that one specific manual claim remains unasserted.
+
+## 9. Current standards/deprecation review
+
+Current Google/WebAuthn primitives remain accepted:
+
+- Google uses current GIS and canonical `issuer + sub` identity authority.
+- WebAuthn/FIDO2 remains the accepted passwordless/passkey direction.
+- Apple semantics accept both `privaterelay.appleid.com` and `private.icloud.com` relay domains.
+
+Email provider economics and deployment settings are not architectural constants. Production region, quotas and pricing must be checked at deployment time.
+
+## 10. Progress metadata inside frozen contracts
+
+The M5 contracts contain detailed milestone-time reconciliation sections. Statements such as `M5-F NEXT`, `email outbox later` or `public routes later` are historical for the slice when written if they conflict with current status/workstream/executable truth.
+
+Current progress is owned by `PROJECT-STATUS`, `ROADMAP`, the active workstream and the current subsystem/evidence docs.
+
+## 11. Current architecture gaps — deliberate, not hidden
+
+Email Platform engineering is no longer an architecture gap.
+
+Remaining deliberate gaps are:
+
+```text
 controlled production sender/domain
 SPF + DKIM + DMARC production posture
-live cloud feedback wiring when deployment scope requires it
+production SES account/quota/reputation posture
+production workload identity / IAM role
+live cloud feedback/event routing when deployment requires it
+production alerting / SLO / traffic segmentation
 real Apple registered-domain UAT
 M7 session/device management UX
 M7 new-login/security-event response
 final authenticated Home handoff
 ```
 
-The Email Platform architecture and durable implementation are materialized. External real-provider acceptance and production deployment controls remain open.
-
-No current evidence requires replacing the accepted Account/AuthSession/authenticator architecture to complete these gaps.
+These are deployment, product-maturity or Apple-specific gates. No current evidence requires replacing the accepted Email Platform or Account/AuthSession/authenticator architecture.
