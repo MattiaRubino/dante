@@ -31,7 +31,10 @@
   ],
   "control_profiles": [
     "provider-attempt:dante-owned",
-    "egress:synthetic-public-minimized-only"
+    "egress:synthetic-public-minimized-only",
+    "reasoning-effort:medium",
+    "service-tier:default",
+    "truncation:disabled"
   ],
   "retry_profiles": [
     "provider-sdk:auto-retry-off",
@@ -45,7 +48,8 @@
   ],
   "security_profiles": [
     "private-data:ineligible",
-    "store:false"
+    "store:false",
+    "provider-cache:unqualified-for-private-data"
   ],
   "rollout_profiles": [
     "binding:inactive",
