@@ -82,7 +82,7 @@ feature/home-react              active frontend work
 feature/platform-observability  active platform work
 feature/ai-implementation       active AI implementation; I0-I2 CLOSED/PASS
                                 I3/C3 deferred pending owner data/seams
-                                C6+C7 CLOSED/PASS; current executable checkpoint C8/I4
+                                C6+C7+C8 CLOSED; current executable checkpoint C9
 feature/ai-architecture         AI architecture design CLOSED / retained authority/evidence
 ```
 
@@ -103,7 +103,7 @@ real structural database change
 → affected recovery/operational assertions updated
 ```
 
-Applied migrations are immutable. AI architecture and I0-I2/C6/C7 implementation produced no DB/Alembic change.
+Applied migrations are immutable. AI architecture and I0-I2/C6/C7/C8 produced no DB/Alembic change.
 
 ## 5. Capability-triggered implementation
 
@@ -207,6 +207,12 @@ Current implementation authority:
 docs/architecture/dante-ai-implementation-baseline-final.md
 ```
 
+Current C8 provider admission evidence:
+
+```text
+docs/workstreams/ai-provider-candidate-admission-2026-09.md
+```
+
 Final mega acceptance:
 
 ```text
@@ -264,18 +270,26 @@ C6  Policy / Resource / Verification / Publication /
 C7  route-config identity / loader / content digest snapshot
     CLOSED / PASS
     ↓
-CURRENT
-I4 / C8
-    provider candidate-admission decision
+C8 / P0-P1
+    provider shortlist + candidate-admission decision
+    CLOSED
+    OpenAI native Responses API + gpt-5.6-terra
+    ADMITTED FOR QUALIFICATION ONLY
     ↓
-I4-I5 / C9-C11
-    admitted inactive adapter
-    conformance + live compatibility
+CURRENT
+C9
+    admitted inactive provider adapter/binding
+    provider conformance
+    live compatibility on synthetic/public/minimized data
+    ↓
+C10
     direct DANTE qualification
+    ↓
+C11
     qualification/promotion decision
 ```
 
-C7 introduced no provider/model/SDK and did not admit any candidate. C8 is a reviewed evidence decision, not production qualification or activation.
+C8 admits a qualification candidate only. No provider SDK/adapter, live call, production qualification or private-data eligibility was materialized by the admission decision.
 
 ### 7.2 Deferred deterministic/Search lane
 
@@ -309,10 +323,10 @@ Provider qualification and the deferred deterministic lane may progress independ
 Operational convergence:
 
 ```text
-C8 → I4/I5 qualification lane
-                       \
-                        +→ JOIN GATE → I6 READ-ONLY ASK
-                       /
+C9 → C10 → C11
+             \
+              +→ JOIN GATE → I6 READ-ONLY ASK
+             /
 I3/C3 when owner seams become ready
 ```
 
@@ -321,27 +335,32 @@ The join gate requires the real Search/structured source path needed by the sele
 ### 7.4 Current exact next action
 
 ```text
-C8 / I4 — provider candidate-admission decision
+C9 — admitted inactive provider adapter/binding
 
-review current provider/model candidates against:
-capability fit
-structured output/tooling requirements
-privacy/security/data-processing posture
-regional/deployment constraints
-retry/cancellation/error semantics
-SDK/protocol isolation feasibility
-live compatibility testability
-direct-eval feasibility
-capacity/reliability/economics evidence path
+admitted candidate:
+provider          OpenAI native API
+API               Responses API
+model             gpt-5.6-terra
+status            ADMITTED FOR QUALIFICATION ONLY
 
-OUTPUT = reviewed candidate-admission decision only
+mandatory initial feature profile:
+public streaming          OFF
+background mode           OFF
+provider conversation     OFF
+previous_response_id      OFF
+provider built-in tools   OFF
+web/file search           OFF
+code/shell/computer use   OFF
+MCP/external tools        OFF
+provider memory           OFF
+store                     false
+SDK automatic retries     OFF / max_retries=0
+live compatibility data   synthetic/public/minimized only
+production activation     OFF
 
-NO provider SDK installation yet
-NO provider adapter yet
-NO production qualification claim
-NO private-data production route
+C9 MAY materialize SDK + private inactive adapter
+C9 MUST NOT claim direct DANTE qualification or production eligibility
 NO database/Alembic change
-NO production activation
 ```
 
 ## 8. First implementation vertical boundary
@@ -369,18 +388,25 @@ Search is deterministic/no-model capable. Structured DANTE questions use owning 
 
 ## 9. Provider / activation gates
 
-Provider/model/SDK remains OPEN / evidence-driven until C8 records a candidate-admission decision.
+Current admission state:
 
 ```text
-candidate shortlist
-→ candidate admission
-→ inactive adapter
+OpenAI native Responses API + gpt-5.6-terra
+ADMITTED FOR QUALIFICATION ONLY
+```
+
+Correct progression:
+
+```text
+candidate shortlist                         COMPLETE
+→ candidate admission                       C8 / COMPLETE
+→ inactive adapter                          C9 / CURRENT
 → conformance
-→ live compatibility on eligible/minimized data
-→ direct DANTE eval using production-owned composition
+→ live compatibility on synthetic/public/minimized data
+→ direct DANTE eval                         C10
 → security/privacy/capacity/economics evidence
 → qualification
-→ promotion
+→ promotion decision                        C11
 ```
 
 Candidate admission is not production eligibility. Build-ready is not activation-ready. Private-data Search/Ask requires real Auth/AuthZ, source/query semantics, applicable SC/PSV proofs, safe publication, evidence/privacy/audit and provider qualification when a model route is used.
@@ -400,9 +426,13 @@ Intelligence C5 contracts/fakes        YES
 I3 real family / PG adapter            NO / DEFERRED
 C6 control contracts                   YES / CLOSED-PASS
 C7 route-config loader                 YES / CLOSED-PASS
-C8 provider candidate admission        NOT YET / CURRENT NEXT
-provider/model/SDK admitted            NO
-provider adapter                       NO
+C8/P1 provider candidate admission     YES / CLOSED
+admitted qualification candidate       OpenAI Responses / gpt-5.6-terra
+provider SDK installed                 NO
+provider adapter                       NO / C9 NEXT
+live provider call                     NO
+production qualification              NO
+private-data eligibility               NO
 production Search/Ask active           NO
 new PostgreSQL/Alembic change          NO
 new generic AI persistence             NO
