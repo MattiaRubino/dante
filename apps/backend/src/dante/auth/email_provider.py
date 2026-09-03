@@ -71,7 +71,8 @@ class SesEmailProvider(EmailProviderPort):
         if settings.ses_region is None:
             raise ValueError("SES email transport requires an AWS region")
         self._configuration_set = settings.ses_configuration_set
-        self._client: Any = boto3.client(
+        session = boto3.Session(region_name=settings.ses_region)
+        self._client: Any = session.client(
             "sesv2",
             region_name=settings.ses_region,
             config=Config(
