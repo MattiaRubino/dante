@@ -1,6 +1,6 @@
 # DANTE — World Focus M2 Shared Visual Primitive Layer
 
-**Status:** M2 ACTIVE / M2-1 CLOSED / VALIDATED / M2-2 CLOSED / VALIDATED  
+**Status:** M2 CLOSED / VALIDATED — M2-1 + M2-2 + FINAL HOSTILE CLOSURE PASS  
 **Date:** 2026-09-03  
 **Branch:** `feature/home-react`
 
@@ -73,6 +73,9 @@ Required behavior:
 ```text
 exact reference match or fail closed
 blank/invalid display labels rejected
+label max 512 characters
+supportingText max 2048 characters
+oversize display copy rejected; never silently truncated
 internal reference keys never become fallback user copy
 reasonCode remains non-display metadata
 renderer cannot silently reorder semantic references
@@ -190,28 +193,9 @@ Production baseline after the implementation fixes:
 ```text
 HEAD 5e8aaba2477803e931a3394d90bbf01ff534f673
 CI   33765049842 PASS
-
-Frontend CI Gate  PASS
-Quality           PASS
-Web E2E           PASS
-Mobile Bundle     PASS
-Timeline Firefox  PASS
-
-web test files    61 / 61 PASS
-web unit tests    312 / 312 PASS
-architecture      262 modules / 684 dependencies / 0 violations
-generated         112 tokens / 3 deterministic files
 ```
 
-## 10. Responsive pressure gate — VALIDATED
-
-The real-browser pressure test was introduced at:
-
-```text
-HEAD b1504ed6c1587204cfb6fa7900c66109909201b0
-```
-
-Its first run was superseded operationally by the subsequent documentation commit while the same pressure test remained unchanged in the branch. The authoritative validation is therefore the later complete run:
+Authoritative validation after responsive pressure:
 
 ```text
 VALIDATED HEAD 2e639f108d5cb01e53395013a55346b7ac2e4294
@@ -222,7 +206,13 @@ Quality                 PASS
 Web E2E / Chromium      PASS
 frozen Timeline Firefox PASS
 Mobile Bundle           PASS
+web test files          61 / 61 PASS
+web unit tests          312 / 312 PASS
+architecture            262 modules / 684 dependencies / 0 violations
+generated               112 tokens / 3 deterministic files
 ```
+
+## 10. Responsive pressure gate — VALIDATED
 
 The E2E vertical checks Continuity inside the real World workspace at:
 
@@ -240,20 +230,11 @@ Continuity remains inside workspace horizontal bounds
 no document horizontal overflow
 ```
 
-The same authoritative run confirms:
-
-```text
-web test files 61 / 61 PASS
-web unit tests 312 / 312 PASS
-architecture   262 modules / 684 dependencies / 0 violations
-generated      112 tokens / 3 deterministic files
-production build PASS
-repository mutation check PASS
-```
+Shared CSS additionally owns compact container adaptation and forced-colors treatment. Automated green is not recorded as human visual acceptance.
 
 ## 11. M2-1 closure result
 
-M2-1 is closed only for the bounded layer materialized here:
+M2-1 is closed for:
 
 ```text
 display-safe reference binding boundary
@@ -267,7 +248,7 @@ responsive 720/719/390 pressure evidence
 forced-colors presentation support
 ```
 
-This does **not** mean all of M2 is closed. WP-02..WP-04 being available renderers does not mean they have been selected into a live World composition. That selection/composition work must remain evidence-driven and cannot be fabricated merely to exercise the components.
+WP-02..WP-04 being available renderers does not mean they have been selected into live World composition.
 
 ## 12. M2-2 — truthfulness + direct Output Grammar visual layer
 
@@ -328,16 +309,14 @@ Nominal basis/disclosure/sync states remain visually quiet. The renderer does no
 
 `WorldFocusPresentationSubsection` adds accessible nested role ownership for O8 Evidence/History without creating a generic card/container ontology.
 
-WP-01 Continuity now uses the same qualifier grammar for its already-existing degraded read states:
+WP-01 Continuity uses the same qualifier grammar for its already-existing degraded read states:
 
 ```text
 partial -> coverage / incomplete presentation qualifier
 stale   -> freshness / stale presentation qualifier
 ```
 
-This does not retrofit new M1 semantics into Continuity: it is a presentation mapping of states Continuity already truthfully owned.
-
-Situation/Next/Evidence-History remain renderer contracts only. They are **not inserted into the live core composition** merely because the renderers now exist.
+Situation/Next/Evidence-History remain renderer contracts only. They are **not inserted into the live core composition** merely because the renderers exist.
 
 ## 13. M2-2 red-first and validation evidence
 
@@ -367,7 +346,7 @@ O8 keeps Evidence / Provenance / Integrity / History as separate roles
 missing display binding fails closed
 ```
 
-Initial production commit:
+Initial production:
 
 ```text
 HEAD 78633df2b3b1949d5d7b3bc4e7c9ee3e01ebc6bb
@@ -395,11 +374,11 @@ production build        PASS
 repository mutation     PASS
 ```
 
-The final regression adds explicit executable proof that Continuity partial/stale map to the shared `coverage/incomplete` and `freshness/stale` qualifier axes and that `reasonCode` remains absent from user-facing DOM. It also verifies accessible subsection ownership for nested Evidence/History roles.
+The final regression explicitly proves that Continuity partial/stale map to the shared `coverage/incomplete` and `freshness/stale` qualifier axes and that `reasonCode` remains absent from user-facing DOM. It also verifies accessible subsection ownership for nested Evidence/History roles.
 
-## 14. M2 current disposition
+## 14. M0 disposition audit after M2-2
 
-After M2-1 + M2-2, every currently known M0 **shared visual renderer** disposition assigned to M2 has a production owner:
+Every known M0 shared visual renderer disposition assigned to M2 has a production owner:
 
 ```text
 M0-19 WP-02 shared rendering                  M2-1 DONE
@@ -415,17 +394,118 @@ O8 Evidence / History visual presentation     M2-2 DONE
 L2/L3/L6/L8 shared truthfulness presentation  M2-2 DONE
 ```
 
-This is a disposition audit, **not yet M2 closure**. Before advancing to M3, M2 requires a final hostile closure audit/falsification that attacks cross-axis visual non-collapse, unknown future World rendering, safe display-binding behavior, sparse/no-fake-live composition, responsive/long-copy pressure and finite renderer boundaries.
+This allowed the next step to be closure falsification rather than invention of another generic visual family.
 
-## 15. Current sequencing
+## 15. M2 final hostile closure — RED
+
+Final test owner:
+
+```text
+apps/web/src/features/world-focus/ui/presentation/
+  world-focus-m2-final-falsification.test.tsx
+```
+
+Red-first evidence:
+
+```text
+HEAD 3adbd958ee3e3bf2fd55b7d2a2562dd6de5aa011
+CI   33790674375 EXPECTED FAILURE
+
+hostile file  4 PASS / 1 FAIL
+web suite     331 PASS / 1 FAIL
+Lint          PASS
+Typecheck     PASS
+Architecture PASS
+Generated     PASS
+Mobile        PASS
+Chromium      PASS
+```
+
+The five hostile cases attacked:
+
+```text
+simultaneous degraded L2/L3/L6/L8 axes + protected-detail non-leakage
+pathological display-copy bounds
+unknown-future World through O2/O5/O8 + semantic order/role separation
+convincing label bound to wrong semantic reference
+combined nominal-state quietness
+```
+
+Four passed immediately. The sole failure was precise:
+
+> The presentation boundary claimed bounded display-safe copy, but `createWorldFocusDisplayBinding()` accepted a 100,000-character label/supporting text.
+
+No semantic-axis collapse, future-World failure, binding mismatch bug, reasonCode leakage or fake nominal density was found.
+
+## 16. M2 final hostile closure — FIX / PASS
+
+The hostile test was left unchanged. Only its existing direct owner was hardened:
+
+```text
+apps/web/src/features/world-focus/ui/presentation/world-focus-display-bindings.ts
+```
+
+Final bounds:
+
+```text
+label            <= 512 characters
+supportingText   <= 2048 characters
+blank            rejected
+oversize         rejected
+truncation       none
+```
+
+Final code evidence:
+
+```text
+HEAD e3865e0cde095acae7e3022815538f35ee0706ef
+CI   33790953644 PASS
+
+M2 hostile tests          5 / 5 PASS
+web test files            70 / 70 PASS
+web unit tests            332 / 332 PASS
+architecture              279 modules / 770 dependencies / 0 violations
+generated                 112 tokens / 3 deterministic files
+Quality                   PASS
+Mobile Bundle             PASS
+Web E2E / Chromium        PASS
+frozen Timeline Firefox   PASS
+Frontend CI Gate          PASS
+production build          PASS
+repository mutation       PASS
+```
+
+Repository inspection also confirmed that the live core composition still mounts only Continuity; Situation/Next/Evidence-History and WP-02..04 were not injected merely to demonstrate renderer availability.
+
+## 17. M2 closure disposition
+
+M2 is **CLOSED / VALIDATED**.
+
+Closure is justified by the combination of:
+
+```text
+all known frozen M0 M2 visual dispositions have owners
+M2-1 responsive + forced-colors presentation foundation validated
+M2-2 truthfulness/direct-output owners validated
+final cross-axis/future-World/fail-closed/non-leakage/quietness hostile pressure validated
+pathological copy gap found red-first and fixed under the existing owner
+no fake live renderer mounting
+no universal Card<T>/ProjectionEnvelope/page-per-World architecture
+no M3 candidate/customization work pulled forward
+no D2–D6 or backend authority pulled forward
+```
+
+Human/manual visual acceptance is still **not claimed**. Integrated human visual/a11y/performance acceptance remains later sequencing work, especially M6.
+
+## 18. Current sequencing
 
 ```text
 M1 + POST-M1 safety             CLOSED / VALIDATED
-M2                              ACTIVE
+M2                              CLOSED / VALIDATED
 M2-1 shared presentation layer  CLOSED / VALIDATED
 M2-2 truthfulness/direct output CLOSED / VALIDATED
-M2 FINAL CLOSURE AUDIT          NEXT
-M3                              BLOCKED BY M2
+M2 final hostile closure        CLOSED / PASS
+M3 Adaptive World Composition   NEXT
 M4 D2–D6                        BLOCKED BY M3
 M5                              BLOCKED BY M4
 M6                              BLOCKED BY M5
@@ -433,4 +513,4 @@ M7                              BLOCKED BY M6
 BACKEND                         BLOCKED UNTIL M7
 ```
 
-Human/manual visual acceptance is not claimed by automated green. Integrated human visual/a11y/performance acceptance remains later sequencing work, especially M6.
+M3 is not started by this document. A fresh bounded M3 gate requires explicit authorization.
