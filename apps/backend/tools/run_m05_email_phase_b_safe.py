@@ -26,7 +26,7 @@ _SECTION_BY_LABEL: dict[str, tuple[str, str]] = {
     ),
     "google persistence atomic stage": (
         "    async def _persist_provider_enrollment(\n",
-        "    async def _persist_link_challenge(\n",
+        "    async def _persist_link_challenge",
     ),
     "apple set-email staged state": (
         "    async def set_provider_enrollment_email(\n",
@@ -46,7 +46,7 @@ _SECTION_BY_LABEL: dict[str, tuple[str, str]] = {
     ),
     "apple persistence atomic stage": (
         "    async def _persist_enrollment(\n",
-        "    async def _persist_link(\n",
+        "    async def _persist_link",
     ),
 }
 
