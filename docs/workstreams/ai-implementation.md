@@ -1,16 +1,18 @@
 # DANTE AI Implementation Workstream
 
-- **Status:** ACTIVE / I0 CLOSED-PASS / I1 CLOSED-PASS / I2 READY
+- **Status:** ACTIVE / I0 CLOSED-PASS / I1 CLOSED-PASS / I2 CLOSED-PASS / I3 READY
 - **Branch:** `feature/ai-implementation`
 - **Started:** 2026-09-02
 - **I0 closed:** 2026-09-03
 - **I1 closed:** 2026-09-03
+- **I2 closed:** 2026-09-03
 - **Architecture authority:** `../architecture/dante-ai-implementation-baseline-final.md`
 - **Post-AI05 acceptance:** `../architecture/dante-ai-post05-final-mega-acceptance.md`
-- **Current implementation step:** I2 — Intelligence pure contracts + deterministic fakes
+- **Current implementation step:** I3 — real deterministic Search/structured families only when owning data/seams are ready
 - **I0 validated code checkpoint:** `506b7f6c9dcf6c241b9f0f77bfec53a7e8d2d663`
 - **I1 validated code checkpoint:** `2eadac22a43a001abbf8ecaacf2da67fde7d2489`
-- **Implementation claim:** I0 and I1 CLOSED / PASS; I2 not yet materialized
+- **I2 validated code checkpoint:** `359707b8d628347f82a0344d44f9fd42d0f59dcd`
+- **Implementation claim:** I0, I1 and I2 CLOSED / PASS; I3 not yet materialized
 - **Provider/model/SDK:** OPEN / EVIDENCE-DRIVEN
 - **Database/Alembic change:** NONE
 - **Production activation:** NONE
@@ -280,7 +282,155 @@ production activation                    NO
 
 Protected Search still requires real owning data/seams, authoritative Auth/disclosure integration and applicable direct non-interference/currentness proofs before activation.
 
-## 6. Engineering quality posture
+## 6. I2 — CLOSED / PASS
+
+I2 materialized only the accepted request-local Intelligence contracts and deterministic test fakes. It did not activate a provider, database seam, durable run model or production route.
+
+Current production contracts:
+
+```text
+apps/backend/src/dante/modules/intelligence/__init__.py
+apps/backend/src/dante/modules/intelligence/contracts/__init__.py
+apps/backend/src/dante/modules/intelligence/contracts/work.py
+apps/backend/src/dante/modules/intelligence/contracts/context.py
+apps/backend/src/dante/modules/intelligence/contracts/references.py
+apps/backend/src/dante/modules/intelligence/contracts/semantic_query.py
+apps/backend/src/dante/modules/intelligence/contracts/retrieval.py
+```
+
+Current deterministic test support:
+
+```text
+apps/backend/tests/unit/modules/intelligence/fakes.py
+apps/backend/tests/unit/modules/intelligence/test_work_contracts.py
+apps/backend/tests/unit/modules/intelligence/test_context_contracts.py
+apps/backend/tests/unit/modules/intelligence/test_reference_resolution.py
+apps/backend/tests/unit/modules/intelligence/test_semantic_query.py
+apps/backend/tests/unit/modules/intelligence/test_retrieval.py
+```
+
+Test package marker files were added only to give pytest/mypy a single deterministic package identity; they do not create runtime ownership.
+
+Implementation/hardening commits:
+
+```text
+935ae1388e7d95176f7c43cd93efed559e7a40dc
+feat(ai): add request-local intelligence contracts and fakes
+
+a324576c313135df9a9768702c76a993a8ef3a1c
+fix(ai): harden reference resolution proof
+
+c19eaff04af8b5117c4c2c8f155029529627c644
+style(ai): format I2 intelligence contracts
+
+56ac1e3a2b5a52560822bf58223b4451f6233828
+style(ai): sort I2 test imports
+
+4e9e3d7606f8747907ccf9ddb815ddad608a9974
+test(ai): fix I2 test package identity
+
+359707b8d628347f82a0344d44f9fd42d0f59dcd
+test(ai): close I2 static test hygiene
+```
+
+### 6.1 Contract posture
+
+I2 preserves the accepted separations:
+
+```text
+Interaction Session != WorkContract != request-local execution state
+Context != Retrieval != Memory
+ConsumerContext != ContextManifest != BasisManifest
+RetrievalCandidate != ContextFragment
+DATA != INSTRUCTION
+current != historical != scenario/open-world assertion
+MODEL CONFIDENCE != REFERENCE RESOLUTION
+Search != Semantic Query
+Semantic Query != raw DB authority
+provider completion != verified != publishable
+```
+
+`WorkContract` is immutable and first-vertical/read-only. Request-local execution status, result maturity, deadline, cancellation and cleanup state remain runtime state rather than Domain Actual/Outcome.
+
+Context preserves the AI-03A contract families plus `BasisManifest` and explicit Reality Scope, source standing/currentness, instruction provenance, readiness, exposure and bounded resource semantics.
+
+Reference Resolution operates over an already-eligible bounded candidate universe. Hidden candidates therefore cannot manufacture externally visible ambiguity. `RESOLVED` preserves the accepted target-reference family and the achieved binding proof (`EXACT_CANONICAL` or `UNIQUE_IN_SCOPE`) rather than treating candidate/model confidence as resolution proof.
+
+Semantic Query exposes a provider/DB-agnostic application seam for typed structured results. Missing owning-capability integration returns `NOT_INTEGRATION_READY` rather than bypassing capability ownership through SQLAlchemy/SQL/table access.
+
+Retrieval preserves candidate discovery separately from validation/promotion to `ContextFragment`; rank, score and candidate count do not upgrade truth/currentness/coverage guarantees.
+
+### 6.2 I2 acceptance evidence
+
+Final validated code checkpoint:
+
+```text
+359707b8d628347f82a0344d44f9fd42d0f59dcd
+```
+
+Final diagnostic fast gate executed in the real worktree:
+
+```text
+uv lock --check                              PASS
+uv sync --locked                            PASS
+ruff format --check                         PASS / 77 files already formatted
+ruff check                                  PASS
+mypy strict                                 PASS / no issues in 72 source files
+architecture + Search + Intelligence suite  PASS / 51 passed
+non-PostgreSQL backend suite                PASS / 99 passed, 80 deselected
+backend source distribution + wheel build   PASS
+overall diagnostic                          PASS
+diagnostic exit code                       0
+```
+
+The targeted suite covered all I0 architecture boundaries, all I1 Search contracts and I2 request-local Work/Context/Reference/SemanticQuery/Retrieval semantics and deterministic fakes.
+
+PostgreSQL regression gate executed against the same final I2 code checkpoint:
+
+```text
+canonical PostgreSQL 18.6 image build        PASS
+PostgreSQL acceptance suite                  PASS / 80 passed, 99 deselected
+PostgreSQL gate exit code                    0
+```
+
+The PostgreSQL gate reconfirmed:
+
+```text
+CP6 M1..M7/final
+exact current database catalog
+fresh database -> single Alembic head
+head/base/head migration round trip
+recovery-head round trip
+Alembic drift detection
+migrator identity
+roles / ACL / search_path hardening
+recovery material-state retirement
+runtime readiness and pool recovery
+transaction / rollback / flush / savepoint behavior
+```
+
+I2 made no database or Alembic change.
+
+### 6.3 Explicit non-claims
+
+```text
+I2 CLOSED / PASS                         YES
+real deterministic capability family     NO
+real Search family activated             NO
+real Semantic Query capability seam      NO
+provider/model/SDK                       NO
+provider adapter                         NO
+HTTP production route                    NO
+Auth/AuthZ integration                   NO
+durable Work/Run persistence             NO
+AI memory persistence                    NO
+database/Alembic change                  NO
+production activation                    NO
+```
+
+The contracts are build-ready only. Integration/activation still require actual owning capability seams, authority/disclosure integration and applicable direct proof.
+
+## 7. Engineering quality posture
 
 Implementation optimizes for:
 
@@ -301,12 +451,14 @@ performance measured at material boundaries rather than guessed micro-optimizati
 
 FastAPI process-scoped resources continue to use the existing `lifespan` model. Existing PostgreSQL runtime/pool behavior is unchanged.
 
-## 7. Next boundary — I2
+## 8. Next boundary — I3
 
 ```text
-I2 — Intelligence pure contracts + deterministic fakes
+I3 — real deterministic Search/structured families only when owning data/seams are ready
 ```
 
-I2 may materialize pure request-local Intelligence contracts and deterministic fakes only. It does not authorize provider admission, provider SDK installation, database/Alembic changes, production HTTP activation, durable Work/Run persistence, AI memory or generic cross-capability database authority.
+I3 is conditional: a real deterministic family may materialize only when its owning capability data/query seam is actually integration-ready and the family can preserve current/history, authorization/disclosure, guarantee, source/basis/currentness and non-interference contracts without inventing cross-capability persistence authority.
 
-Before I2 writes, reread the exact Intelligence/Work/Context/Reference/SemanticQuery/Retrieval sections of the final implementation baseline, inspect current repository style and declare a fresh exact write gate.
+I3 does not authorize a provider/model/SDK, generic Search database authority, model-to-SQL, a vector/search database, durable AI memory, production HTTP activation or database/Alembic changes without a separately proven capability-owned need.
+
+Before any I3 write, identify the exact owning capability/seam candidate from repository truth, prove that it is integration-ready, reread its Product/Domain/Logical/Physical/PostgreSQL ownership and declare a fresh exact write gate. If no candidate seam is ready, I3 must remain blocked rather than fabricate one.
