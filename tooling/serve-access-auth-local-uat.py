@@ -3,12 +3,13 @@ from __future__ import annotations
 import importlib.util
 import logging
 import os
+import secrets
 from collections.abc import Callable
 from pathlib import Path
 from types import ModuleType
 
 import psycopg
-from dante.platform.config.auth import AuthSettings, SmtpSecurity
+from dante.platform.config.auth import AuthSettings, EmailTransport, SmtpSecurity
 from dante.platform.config.auth_provider import (
     AuthProviderSettings,
     GoogleProviderSettings,
@@ -23,12 +24,17 @@ _GOOGLE_CLIENT_ID_ENV = "DANTE_UAT_GOOGLE_CLIENT_ID"
 _ENABLE_GOOGLE_ENV = "DANTE_UAT_ENABLE_GOOGLE"
 _ENABLE_WEBAUTHN_ENV = "DANTE_UAT_ENABLE_WEBAUTHN"
 _ENABLE_REAL_SMTP_ENV = "DANTE_UAT_ENABLE_REAL_SMTP"
+_ENABLE_SES_ENV = "DANTE_UAT_ENABLE_SES"
+_SEED_ACCOUNT_ENV = "DANTE_UAT_SEED_ACCOUNT"
 _SMTP_HOST_ENV = "DANTE_UAT_SMTP_HOST"
 _SMTP_PORT_ENV = "DANTE_UAT_SMTP_PORT"
 _SMTP_SECURITY_ENV = "DANTE_UAT_SMTP_SECURITY"
 _SMTP_USERNAME_ENV = "DANTE_UAT_SMTP_USERNAME"
 _SMTP_PASSWORD_ENV = "DANTE_UAT_SMTP_PASSWORD"
 _SMTP_FROM_ADDRESS_ENV = "DANTE_UAT_SMTP_FROM_ADDRESS"
+_SES_REGION_ENV = "DANTE_UAT_SES_REGION"
+_SES_FROM_ADDRESS_ENV = "DANTE_UAT_SES_FROM_ADDRESS"
+_SES_CONFIGURATION_SET_ENV = "DANTE_UAT_SES_CONFIGURATION_SET"
 _ACCOUNT_EMAIL_ENV = "DANTE_UAT_ACCOUNT_EMAIL"
 _TLS_CERT_ENV = "DANTE_UAT_TLS_CERT"
 _TLS_KEY_ENV = "DANTE_UAT_TLS_KEY"
@@ -42,6 +48,11 @@ _REAL_SMTP_ENV_NAMES = (
     _SMTP_PASSWORD_ENV,
     _SMTP_FROM_ADDRESS_ENV,
 )
+_SES_ENV_NAMES = (
+    _SES_REGION_ENV,
+    _SES_FROM_ADDRESS_ENV,
+    _SES_CONFIGURATION_SET_ENV,
+)
 _REQUIRED_EXTENSIONS: tuple[tuple[str, str | None], ...] = (
     ("postgis", "3.6.4"),
     ("vector", "0.8.6"),
@@ -50,6 +61,7 @@ _REQUIRED_EXTENSIONS: tuple[tuple[str, str | None], ...] = (
     ("pg_stat_statements", None),
 )
 _LOGGER = logging.getLogger("dante.access_auth_uat")
+_EMAIL_PAYLOAD_KEY_ID = "uat-email-payload-v1"
 
 
 def _load_core() -> ModuleType:
@@ -62,8 +74,8 @@ def _load_core() -> ModuleType:
     return module
 
 
-def _enabled(name: str) -> bool:
-    raw = os.environ.get(name, "false")
+def _enabled(name: str, *, default: bool = False) -> bool:
+    raw = os.environ.get(name, "true" if default else "false")
     value = raw.strip().casefold()
     if value in _TRUE_VALUES:
         return True
@@ -93,6 +105,24 @@ def _required_trimmed_env(name: str) -> str:
     ):
         raise RuntimeError(f"{name} must be non-blank, trimmed and single-line.")
     return raw
+
+
+def _optional_trimmed_env(name: str) -> str | None:
+    raw = os.environ.get(name)
+    if raw is None:
+        return None
+    if not raw or raw.strip() != raw or any(character in raw for character in "\r\n"):
+        raise RuntimeError(f"{name} must be non-blank, trimmed and single-line when supplied.")
+    return raw
+
+
+def _email_crypto_overrides() -> dict[str, object]:
+    return {
+        "email_payload_current_key_id": _EMAIL_PAYLOAD_KEY_ID,
+        "email_payload_keys": {
+            _EMAIL_PAYLOAD_KEY_ID: SecretStr(secrets.token_urlsafe(32)),
+        },
+    }
 
 
 def _real_smtp_overrides(*, enabled: bool) -> dict[str, object]:
@@ -150,6 +180,36 @@ def _real_smtp_overrides(*, enabled: bool) -> dict[str, object]:
         "smtp_password": password,
         "smtp_from_address": from_address,
         "smtp_timeout_seconds": 10.0,
+        "email_platform_enabled": True,
+        "email_transport": EmailTransport.SMTP,
+        "email_from_address": from_address,
+        **_email_crypto_overrides(),
+    }
+
+
+def _ses_overrides(*, enabled: bool) -> dict[str, object]:
+    configured = tuple(name for name in _SES_ENV_NAMES if name in os.environ)
+    if not enabled:
+        if configured:
+            raise RuntimeError(
+                "SES settings were supplied without explicit opt-in. Set "
+                f"{_ENABLE_SES_ENV}=true or remove: {', '.join(configured)}."
+            )
+        return {}
+
+    region = os.environ.get(_SES_REGION_ENV, "eu-west-3")
+    if not region or region.strip() != region or any(character in region for character in "\r\n"):
+        raise RuntimeError(f"{_SES_REGION_ENV} must be non-blank, trimmed and single-line.")
+    from_address = _required_trimmed_env(_SES_FROM_ADDRESS_ENV)
+    configuration_set = _optional_trimmed_env(_SES_CONFIGURATION_SET_ENV)
+
+    return {
+        "email_platform_enabled": True,
+        "email_transport": EmailTransport.SES,
+        "email_from_address": from_address,
+        "ses_region": region,
+        "ses_configuration_set": configuration_set,
+        **_email_crypto_overrides(),
     }
 
 
@@ -194,7 +254,7 @@ def _auth_settings_override(
     google_enabled: bool,
     google_client_id: str | None,
     webauthn_enabled: bool,
-    smtp_overrides: dict[str, object],
+    email_overrides: dict[str, object],
 ) -> Callable[[str, int], AuthSettings]:
     def build(hibp_base_url: str, smtp_port: int) -> AuthSettings:
         settings = original(hibp_base_url, smtp_port)
@@ -215,7 +275,7 @@ def _auth_settings_override(
             {
                 "canonical_web_origin": _UAT_WEB_ORIGIN,
                 "provider": provider,
-                **smtp_overrides,
+                **email_overrides,
             }
         )
         return AuthSettings.model_validate(payload)
@@ -281,13 +341,23 @@ def _seed_email(core: ModuleType) -> str:
     return configured
 
 
+def _disable_seed_account(core: ModuleType) -> None:
+    def skip_seed_account(**_kwargs: object) -> None:
+        return
+
+    core._seed_account = skip_seed_account
+
+
 def _log_configuration(
     *,
     google_enabled: bool,
     webauthn_enabled: bool,
-    seed_email: str,
+    seed_account: bool,
+    account_email: str,
     seed_password: str,
-    smtp_overrides: dict[str, object],
+    real_smtp_enabled: bool,
+    ses_enabled: bool,
+    email_overrides: dict[str, object],
 ) -> None:
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     _LOGGER.info("DANTE Access/Auth local real-UAT configuration")
@@ -295,17 +365,26 @@ def _log_configuration(
     _LOGGER.info("  Google          : %s", "enabled" if google_enabled else "disabled")
     _LOGGER.info("  Apple           : disabled (registered-domain UAT only)")
     _LOGGER.info("  WebAuthn/passkey: %s", "enabled" if webauthn_enabled else "disabled")
-    if smtp_overrides:
+    if ses_enabled:
         _LOGGER.info(
-            "  email transport : real SMTP %s:%s (%s)",
-            smtp_overrides["smtp_host"],
-            smtp_overrides["smtp_port"],
-            smtp_overrides["smtp_security"],
+            "  email transport : Amazon SES API v2 (%s)",
+            email_overrides["ses_region"],
+        )
+    elif real_smtp_enabled:
+        _LOGGER.info(
+            "  email transport : durable SMTP %s:%s (%s)",
+            email_overrides["smtp_host"],
+            email_overrides["smtp_port"],
+            email_overrides["smtp_security"],
         )
     else:
         _LOGGER.info("  email transport : loopback SMTP capture")
-    _LOGGER.info("  seeded email    : %s", seed_email)
-    _LOGGER.info("  seeded password : %s", seed_password)
+    _LOGGER.info(
+        "  account email   : %s (%s)",
+        account_email,
+        "pre-seeded" if seed_account else "signup target; database starts without account",
+    )
+    _LOGGER.info("  test password   : %s", seed_password)
     if os.environ.get(_TLS_CERT_ENV) is None:
         _LOGGER.info(
             "  TLS             : ephemeral self-signed localhost certificate; "
@@ -321,15 +400,24 @@ def main() -> None:
     google_enabled = _enabled(_ENABLE_GOOGLE_ENV)
     webauthn_enabled = _enabled(_ENABLE_WEBAUTHN_ENV)
     real_smtp_enabled = _enabled(_ENABLE_REAL_SMTP_ENV)
-    if not google_enabled and not webauthn_enabled and not real_smtp_enabled:
+    ses_enabled = _enabled(_ENABLE_SES_ENV)
+    seed_account = _enabled(_SEED_ACCOUNT_ENV, default=True)
+
+    if real_smtp_enabled and ses_enabled:
+        raise RuntimeError("Real SMTP and SES UAT are mutually exclusive; enable only one transport.")
+    if not google_enabled and not webauthn_enabled and not real_smtp_enabled and not ses_enabled:
         raise RuntimeError(
             "Enable at least one real UAT surface with "
-            f"{_ENABLE_GOOGLE_ENV}=true, {_ENABLE_WEBAUTHN_ENV}=true or "
-            f"{_ENABLE_REAL_SMTP_ENV}=true."
+            f"{_ENABLE_GOOGLE_ENV}=true, {_ENABLE_WEBAUTHN_ENV}=true, "
+            f"{_ENABLE_REAL_SMTP_ENV}=true or {_ENABLE_SES_ENV}=true."
         )
 
+    account_email = _seed_email(core)
     google_client_id = _google_client_id(enabled=google_enabled)
     smtp_overrides = _real_smtp_overrides(enabled=real_smtp_enabled)
+    ses_overrides = _ses_overrides(enabled=ses_enabled)
+    email_overrides = {**smtp_overrides, **ses_overrides}
+
     if google_enabled:
         if google_client_id is None:
             raise RuntimeError("Google client ID validation lost enabled configuration.")
@@ -350,10 +438,17 @@ def main() -> None:
         google_enabled=google_enabled,
         google_client_id=google_client_id,
         webauthn_enabled=webauthn_enabled,
-        smtp_overrides=smtp_overrides,
+        email_overrides=email_overrides,
     )
     core._generate_tls_material = _tls_material_override(core)
-    seed_email = _seed_email(core)
+    if not seed_account:
+        _disable_seed_account(core)
+
+    if ses_enabled:
+        core._EMAIL_RUNTIME_LABEL = f"Amazon SES API v2 ({email_overrides['ses_region']})"
+    elif real_smtp_enabled:
+        core._EMAIL_RUNTIME_LABEL = "durable real SMTP"
+
     seed_password = getattr(core, "_PASSWORD", None)
     if not isinstance(seed_password, str) or not seed_password:
         raise RuntimeError("Access/Auth harness core does not expose its seed password.")
@@ -361,9 +456,12 @@ def main() -> None:
     _log_configuration(
         google_enabled=google_enabled,
         webauthn_enabled=webauthn_enabled,
-        seed_email=seed_email,
+        seed_account=seed_account,
+        account_email=account_email,
         seed_password=seed_password,
-        smtp_overrides=smtp_overrides,
+        real_smtp_enabled=real_smtp_enabled,
+        ses_enabled=ses_enabled,
+        email_overrides=email_overrides,
     )
     core.main()
 
