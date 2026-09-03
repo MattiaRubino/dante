@@ -1,3 +1,5 @@
+import './temporal-create-product-flow.css';
+
 export type TemporalCreateProductCopy = Readonly<{
   typeLabel: string;
   advanced: string;
