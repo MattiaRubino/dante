@@ -1,21 +1,23 @@
 # DANTE AI Implementation Workstream
 
-- **Status:** ACTIVE / I0 CLOSED-PASS / I1 CLOSED-PASS / I2 CLOSED-PASS / I3 DEFERRED-WAITING-OWNER-SEAMS / C6 CLOSED-PASS / C7 READY
+- **Status:** ACTIVE / I0 CLOSED-PASS / I1 CLOSED-PASS / I2 CLOSED-PASS / I3 DEFERRED-WAITING-OWNER-SEAMS / C6 CLOSED-PASS / C7 CLOSED-PASS / C8 READY
 - **Branch:** `feature/ai-implementation`
 - **Started:** 2026-09-02
 - **I0 closed:** 2026-09-03
 - **I1 closed:** 2026-09-03
 - **I2 closed:** 2026-09-03
 - **C6 closed:** 2026-09-03
+- **C7 closed:** 2026-09-03
 - **Architecture authority:** `../architecture/dante-ai-implementation-baseline-final.md`
 - **Post-AI05 acceptance:** `../architecture/dante-ai-post05-final-mega-acceptance.md`
-- **Current executable checkpoint:** C7 — route-config identity / loader / content digest snapshot
+- **Current executable checkpoint:** C8 / I4 — provider candidate-admission decision
 - **Deferred conditional lane:** I3/C3 — real deterministic Search/structured families when owning data/seams become integration-ready
 - **I0 validated code checkpoint:** `506b7f6c9dcf6c241b9f0f77bfec53a7e8d2d663`
 - **I1 validated code checkpoint:** `2eadac22a43a001abbf8ecaacf2da67fde7d2489`
 - **I2 validated code checkpoint:** `359707b8d628347f82a0344d44f9fd42d0f59dcd`
 - **C6 validated code checkpoint:** `2f96d4fb85300fdbfd00e66b9b6d23b26141397f`
-- **Implementation claim:** I0, I1, I2 and C6 CLOSED / PASS; I3 not materialized; C7 not yet materialized
+- **C7 validated code checkpoint:** `65b4bdfe6987e7a2cbb9d543fd4a92b87264cf97`
+- **Implementation claim:** I0, I1, I2, C6 and C7 CLOSED / PASS; I3 not materialized; C8 admission decision not yet recorded
 - **Provider/model/SDK:** OPEN / EVIDENCE-DRIVEN
 - **Database/Alembic change:** NONE
 - **Production activation:** NONE
@@ -429,20 +431,21 @@ PSV-06 / SC-017 protected non-interference proof when applicable
 
 ## 6. Current execution overlay
 
-The accepted architecture stage numbering remains unchanged. The implementation blueprint contains parallel dependency lanes, so the trigger-gated I3 lane can wait while provider-free Intelligence preparation continues.
+The accepted architecture stage numbering remains unchanged. The implementation blueprint contains parallel dependency lanes, so the trigger-gated I3 lane can wait while provider preparation continues under the accepted gates.
 
 ```text
 C6  Policy / Resource / Verification / Publication /
     Effect / Egress / Evidence contracts
     CLOSED / PASS
     ↓
-CURRENT
 C7  route-config identity / loader / content digest snapshot
+    CLOSED / PASS
     ↓
-I4 / C8
+CURRENT
+C8 / I4
     provider candidate-admission decision
     ↓
-I4-I5 / C9-C11
+C9-C11 / I4-I5
     admitted inactive adapter
     conformance + live compatibility
     direct DANTE qualification
@@ -459,16 +462,16 @@ bounded PostgreSQL Search adapter + first real deterministic family proof
 Mandatory convergence:
 
 ```text
-C7 → I4 → I5
-            \
-             +→ JOIN GATE → I6 READ-ONLY ASK
-            /
+C8 → C9-C11 / I5
+                 \
+                  +→ JOIN GATE → I6 READ-ONLY ASK
+                 /
 I3/C3 when owner seams become ready
 ```
 
 I6 may not activate the accepted first vertical until the required real source/query path, authoritative Auth/AuthZ/disclosure, currentness/publication behavior and applicable direct proofs are ready.
 
-## 7. C6 — CLOSED / PASS; C7 READY
+## 7. C6 — CLOSED / PASS
 
 C6 materialized the provider-independent control/safety/publication contract layer without activating provider, database or production behavior.
 
@@ -525,84 +528,160 @@ architecture + Search + Intelligence suite  PASS / 75 passed
 non-PostgreSQL backend suite                PASS / 123 passed, 80 deselected
 backend source distribution + wheel build   PASS
 FAST GATE                                   PASS
-
 canonical PostgreSQL 18.6 image build       PASS
 PostgreSQL acceptance suite                 PASS / 80 passed, 123 deselected
-
 C6 OVERALL                                  PASS
 C6 gate exit code                           0
 ```
 
-The PostgreSQL gate reconfirmed CP6 M1..M7/final, exact current catalog, fresh-DB/single-head migration behavior, Alembic round trips/drift, roles/ACL/search_path, Recovery material-state retirement, runtime readiness/pool recovery and transaction/savepoint semantics.
+C6 introduced no database/Alembic change, provider dependency or production activation.
+
+## 8. C7 — CLOSED / PASS
+
+C7 materialized the provider-neutral behavior-config identity and loading boundary required before provider admission.
+
+Materialized implementation:
+
+```text
+apps/backend/config/intelligence/revisions/pre-provider-v1.json
+apps/backend/src/dante/modules/intelligence/contracts/route_config.py
+apps/backend/src/dante/modules/intelligence/route_config.py
+apps/backend/tests/unit/modules/intelligence/test_route_config.py
+```
+
+Implementation/hardening commits:
+
+```text
+0079dbbb8617e481b5d8aa4d6044aa46dacf3dfe
+feat(ai): add C7 route config identity loader
+
+82bfb63e2bf6dc745f1063bcb33e3b0fd078926e
+fix(ai): harden C7 route config revision identity
+
+65b4bdfe6987e7a2cbb9d543fd4a92b87264cf97
+style(ai): normalize C7 route config test formatting
+```
+
+C7 materializes:
+
+```text
+RouteConfigDocument
+RouteConfigIdentity
+RouteConfigSnapshot
+RouteConfigLoadError
+load_route_config(...)
+```
+
+Binding behavior:
+
+```text
+RouteConfigIdentity = logical revision + SHA-256 content digest
+snapshot identity binds exact validated artifact bytes
+semantically equivalent JSON with different bytes has different identity
+revision identifiers are fail-closed and path-safe
+UTF-8 / JSON structure / duplicate keys / unknown fields are rejected
+artifact revision must equal selected logical revision
+artifact size is bounded
+secrets are not part of the behavior-bearing artifact
+pre-provider-v1 contains no ModelTarget or ProviderBinding
+ask_dante remains explicitly disabled
+```
+
+Final validated code checkpoint:
+
+```text
+65b4bdfe6987e7a2cbb9d543fd4a92b87264cf97
+```
+
+Acceptance evidence:
+
+```text
+uv lock --check                              PASS
+uv sync --locked                            PASS
+ruff format --check                         PASS / 98 files already formatted
+ruff check                                  PASS
+mypy strict                                 PASS / no issues in 93 source files
+architecture + Search + Intelligence suite  PASS / 83 passed
+non-PostgreSQL backend suite                PASS / 131 passed, 80 deselected
+backend source distribution + wheel build   PASS
+FAST GATE                                   PASS
+canonical PostgreSQL 18.6 image build       PASS
+PostgreSQL acceptance suite                 PASS / 80 passed, 131 deselected
+C7 OVERALL                                  PASS
+C7 gate exit code                           0
+```
+
+The PostgreSQL regression reconfirmed CP6 M1..M7/final, exact current catalog, Alembic fresh/single-head/round-trip/drift behavior, roles/ACL/search_path hardening, Recovery material-state retirement, runtime readiness/pool recovery and transaction/savepoint semantics.
 
 Explicit non-claims:
 
 ```text
-C6 CLOSED / PASS                         YES
+C7 CLOSED / PASS                         YES
 I3/C3 materialized                       NO / DEFERRED
 provider candidate admitted              NO
 provider/model/SDK                       NO
-route-config C7 implemented              NO
+provider adapter                         NO
+live provider call                       NO
 HTTP production route                    NO
 Auth/AuthZ integration                   NO
 durable Work/Run                         NO
 AI memory                                NO
-commercial/shared ledger                 NO
-consequential Effect execution           NO
 database/Alembic change                  NO
 production activation                    NO
 ```
 
-### 7.1 Current executable boundary — C7
+## 9. Current executable boundary — C8 / I4
 
 Accepted candidate commit:
 
 ```text
-C7 feat(ai): route-config identity/loader/digest snapshot
+C8 chore(ai): provider candidate-admission decision
 ```
 
-C7 may materialize only the provider-neutral configuration identity and loading boundary required before provider candidate admission.
+C8 is an evidence/review checkpoint. It may select one candidate for qualification work, but admission is not production eligibility, qualification or promotion.
 
-Binding target:
+The admission review must evaluate current provider/model evidence for at least:
 
 ```text
-apps/backend/config/intelligence/revisions/<revision>.json
-
-RouteConfigIdentity
-= logical revision
-+ content digest
+first-vertical capability fit
+structured-output and required feature semantics
+protocol/SDK isolation feasibility behind DANTE-owned ports
+retry/timeout/cancellation/ambiguous-acceptance behavior
+usage-evidence semantics
+privacy/security/data-processing posture
+region/residency/deployment constraints as applicable
+live compatibility testability
+conformance-test feasibility
+direct DANTE eval feasibility
+capacity/reliability/economics evidence path
+material qualification composition
 ```
 
-C7 must preserve:
+C8 must preserve:
 
 ```text
-behavior-bearing config = static / versioned / typed first
-ACTIVE POINTER != IMMUTABLE CONFIG REVISION
-RouteConfigSnapshot immutable for one invocation
-coherent config revision required
-content digest binds the exact loaded bytes
-secrets are not configuration payload
-deployment selectors/locators do not become hidden behavior policy
-frozen execution configuration != perpetual current authorization
+MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT
+HARNESSPROFILE != PROVIDERBINDING
+PROVIDER SDK != APPLICATION CONTRACT
+CANDIDATE ADMISSION != PRODUCTION QUALIFICATION
+QUALIFIED != ELIGIBLE != AVAILABLE != ENTITLED != ROLLOUT-ACTIVE
 ```
 
-C7 does not authorize:
+C8 does not authorize:
 
 ```text
-provider candidate admission
 provider SDK installation
-provider adapter
-live provider calls
+provider adapter implementation
+live private-data calls
 production route activation
-new database/Alembic state
-dynamic control-plane database
+qualification PASS claim
+new DB/Alembic state
 Auth bypass
-commercial ledger
 ```
 
 I3/C3 remains independently deferred and must converge before I6 when the real deterministic source/query path is required.
 
-## 8. Engineering quality posture
+## 10. Engineering quality posture
 
 Implementation optimizes for:
 
