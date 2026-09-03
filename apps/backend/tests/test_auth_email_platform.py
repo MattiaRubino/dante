@@ -181,6 +181,27 @@ class _FakeSesClient:
         return self.response
 
 
+def _install_fake_boto_session(
+    monkeypatch: pytest.MonkeyPatch,
+    fake: _FakeSesClient,
+    *,
+    captured: dict[str, Any] | None = None,
+) -> None:
+    def fake_session(*, region_name: str) -> SimpleNamespace:
+        if captured is not None:
+            captured["session_region_name"] = region_name
+
+        def fake_client(service_name: str, **kwargs: Any) -> _FakeSesClient:
+            if captured is not None:
+                captured["service_name"] = service_name
+                captured.update(kwargs)
+            return fake
+
+        return SimpleNamespace(client=fake_client)
+
+    monkeypatch.setattr(_EMAIL_PROVIDER_MODULE.boto3, "Session", fake_session)
+
+
 def _ses_settings() -> AuthSettings:
     return cast(
         AuthSettings,
@@ -210,13 +231,8 @@ async def test_ses_config_has_one_total_sdk_attempt_and_request_has_no_tracking_
 ) -> None:
     fake = _FakeSesClient()
     captured: dict[str, Any] = {}
+    _install_fake_boto_session(monkeypatch, fake, captured=captured)
 
-    def fake_client(service_name: str, **kwargs: Any) -> _FakeSesClient:
-        captured["service_name"] = service_name
-        captured.update(kwargs)
-        return fake
-
-    monkeypatch.setattr(_EMAIL_PROVIDER_MODULE.boto3, "client", fake_client)
     provider = SesEmailProvider(settings=_ses_settings())
     message = _provider_message()
 
@@ -225,6 +241,7 @@ async def test_ses_config_has_one_total_sdk_attempt_and_request_has_no_tracking_
     assert result.outcome is ProviderOutcome.ACCEPTED
     assert result.provider_message_id == "ses-message-1"
     assert len(fake.calls) == 1
+    assert captured["session_region_name"] == "eu-west-3"
     assert captured["service_name"] == "sesv2"
     assert captured["region_name"] == "eu-west-3"
     config = captured["config"]
@@ -264,11 +281,8 @@ async def test_ses_classifies_known_and_unknown_provider_errors_without_retry(
         {"Error": {"Code": code, "Message": "safe test message"}},
         "SendEmail",
     )
+    _install_fake_boto_session(monkeypatch, fake)
 
-    def fake_client(*_args: Any, **_kwargs: Any) -> _FakeSesClient:
-        return fake
-
-    monkeypatch.setattr(_EMAIL_PROVIDER_MODULE.boto3, "client", fake_client)
     provider = SesEmailProvider(settings=_ses_settings())
 
     result = await provider.send(_provider_message())
@@ -284,11 +298,8 @@ async def test_ses_transport_disconnect_is_ambiguous_and_never_retried(
 ) -> None:
     fake = _FakeSesClient()
     fake.error = EndpointConnectionError(endpoint_url="https://email.eu-west-3.amazonaws.com")
+    _install_fake_boto_session(monkeypatch, fake)
 
-    def fake_client(*_args: Any, **_kwargs: Any) -> _FakeSesClient:
-        return fake
-
-    monkeypatch.setattr(_EMAIL_PROVIDER_MODULE.boto3, "client", fake_client)
     provider = SesEmailProvider(settings=_ses_settings())
 
     result = await provider.send(_provider_message())
