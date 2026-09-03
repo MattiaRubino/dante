@@ -12,6 +12,7 @@ from dante.modules.intelligence.contracts.policy import (
     ModelEgressPolicyRequest,
     PolicyBoundary,
     PolicyDecision,
+    PolicyRequestContext,
     PublicationPolicyRequest,
 )
 from dante.modules.intelligence.contracts.references import (
@@ -156,13 +157,42 @@ class ScriptedPolicyPort:
         self.effect_requests: list[EffectPolicyRequest] = []
         self.publication_requests: list[PublicationPolicyRequest] = []
 
-    def _decision(self, boundary: PolicyBoundary) -> PolicyDecision:
+    @staticmethod
+    def _require_context_match(
+        decision: PolicyDecision,
+        context: PolicyRequestContext,
+    ) -> None:
+        actual = (
+            decision.work_id,
+            decision.work_revision,
+            decision.principal_binding,
+            decision.recipient,
+            decision.surface,
+            decision.purpose,
+        )
+        expected = (
+            context.work_id,
+            context.work_revision,
+            context.principal_binding,
+            context.recipient,
+            context.surface,
+            context.purpose,
+        )
+        if actual != expected:
+            raise ValueError("scripted PolicyDecision does not match current request context")
+
+    def _decision(
+        self,
+        boundary: PolicyBoundary,
+        context: PolicyRequestContext,
+    ) -> PolicyDecision:
         try:
             decision = self._decisions[boundary]
         except KeyError as exc:
             raise LookupError("deterministic fake has no scripted policy decision") from exc
         if decision.boundary is not boundary:
             raise ValueError("scripted PolicyDecision does not match requested boundary")
+        self._require_context_match(decision, context)
         return decision
 
     async def authorize_context_exposure(
@@ -170,25 +200,25 @@ class ScriptedPolicyPort:
         request: ContextExposurePolicyRequest,
     ) -> PolicyDecision:
         self.context_exposure_requests.append(request)
-        return self._decision(PolicyBoundary.CONTEXT_EXPOSURE)
+        return self._decision(PolicyBoundary.CONTEXT_EXPOSURE, request.context)
 
     async def authorize_model_egress(
         self,
         request: ModelEgressPolicyRequest,
     ) -> PolicyDecision:
         self.model_egress_requests.append(request)
-        return self._decision(PolicyBoundary.MODEL_EGRESS)
+        return self._decision(PolicyBoundary.MODEL_EGRESS, request.context)
 
     async def authorize_effect(self, request: EffectPolicyRequest) -> PolicyDecision:
         self.effect_requests.append(request)
-        return self._decision(PolicyBoundary.EFFECT)
+        return self._decision(PolicyBoundary.EFFECT, request.context)
 
     async def authorize_publication(
         self,
         request: PublicationPolicyRequest,
     ) -> PolicyDecision:
         self.publication_requests.append(request)
-        return self._decision(PolicyBoundary.PUBLICATION)
+        return self._decision(PolicyBoundary.PUBLICATION, request.context)
 
 
 class ScriptedResourceControl:

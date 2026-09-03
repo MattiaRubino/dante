@@ -7,6 +7,7 @@ from datetime import datetime
 from enum import StrEnum
 from uuid import UUID
 
+from dante.modules.intelligence.contracts.policy import PolicyBoundary, PolicyDecisionOutcome
 from dante.modules.intelligence.contracts.verification import VerificationStatus
 from dante.modules.intelligence.contracts.work import ResultMaturity
 
@@ -63,6 +64,8 @@ class PublicationDecision:
     verification_status: VerificationStatus
     basis_manifest_id: UUID
     policy_decision_id: UUID
+    policy_boundary: PolicyBoundary
+    policy_outcome: PolicyDecisionOutcome
     work_current: bool
     access_current: bool
     basis_current: bool
@@ -91,12 +94,16 @@ class PublicationDecision:
             _require_text(value, name=name)
         _require_aware(self.evaluated_at, name="evaluated_at")
         _require_texts(self.limitations, name="limitations")
+        if self.policy_boundary is not PolicyBoundary.PUBLICATION:
+            raise ValueError("PublicationDecision requires PUBLICATION policy boundary")
 
         publishable = self.status in {
             PublicationDecisionStatus.PUBLISH,
             PublicationDecisionStatus.PUBLISH_WITH_LIMITATIONS,
         }
         if publishable:
+            if self.policy_outcome is not PolicyDecisionOutcome.ALLOW:
+                raise ValueError("publication requires an ALLOW policy decision")
             if self.result_maturity is not ResultMaturity.PUBLISHABLE:
                 raise ValueError("publication requires PUBLISHABLE result maturity")
             if self.verification_status not in {

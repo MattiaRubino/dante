@@ -104,3 +104,21 @@ async def test_policy_fake_is_boundary_specific_and_records_current_request() ->
     assert result == decision
     assert policy.model_egress_requests == [request]
     assert result.boundary is PolicyBoundary.MODEL_EGRESS
+
+
+@pytest.mark.asyncio
+async def test_policy_fake_rejects_decision_for_different_request_context() -> None:
+    current_context = _context()
+    stale_context = _context()
+    request = ModelEgressPolicyRequest(
+        context=current_context,
+        consumer_context_id=uuid7(),
+        recipient_binding="provider-candidate:test",
+        projection_ref="consumer-projection:v1",
+    )
+    policy = ScriptedPolicyPort(
+        {PolicyBoundary.MODEL_EGRESS: _decision(stale_context)}
+    )
+
+    with pytest.raises(ValueError, match="current request context"):
+        await policy.authorize_model_egress(request)

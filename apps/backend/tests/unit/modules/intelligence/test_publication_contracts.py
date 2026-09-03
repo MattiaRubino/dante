@@ -5,6 +5,7 @@ from uuid import uuid7
 
 import pytest
 
+from dante.modules.intelligence.contracts.policy import PolicyBoundary, PolicyDecisionOutcome
 from dante.modules.intelligence.contracts.publication import (
     PublicationDecision,
     PublicationDecisionStatus,
@@ -20,6 +21,8 @@ def _decision(
     status: PublicationDecisionStatus,
     maturity: ResultMaturity,
     verification: VerificationStatus,
+    policy_boundary: PolicyBoundary = PolicyBoundary.PUBLICATION,
+    policy_outcome: PolicyDecisionOutcome = PolicyDecisionOutcome.ALLOW,
     emergency_denied: bool = False,
     limitations: tuple[str, ...] = (),
 ) -> PublicationDecision:
@@ -36,6 +39,8 @@ def _decision(
         verification_status=verification,
         basis_manifest_id=uuid7(),
         policy_decision_id=uuid7(),
+        policy_boundary=policy_boundary,
+        policy_outcome=policy_outcome,
         work_current=True,
         access_current=True,
         basis_current=True,
@@ -60,6 +65,24 @@ def test_publication_rejects_provisional_or_unverified_result() -> None:
             status=PublicationDecisionStatus.PUBLISH,
             maturity=ResultMaturity.PUBLISHABLE,
             verification=VerificationStatus.STALE,
+        )
+
+
+def test_publication_requires_publication_allow_policy() -> None:
+    with pytest.raises(ValueError, match="PUBLICATION"):
+        _decision(
+            status=PublicationDecisionStatus.PUBLISH,
+            maturity=ResultMaturity.PUBLISHABLE,
+            verification=VerificationStatus.VERIFIED,
+            policy_boundary=PolicyBoundary.MODEL_EGRESS,
+        )
+
+    with pytest.raises(ValueError, match="ALLOW"):
+        _decision(
+            status=PublicationDecisionStatus.PUBLISH,
+            maturity=ResultMaturity.PUBLISHABLE,
+            verification=VerificationStatus.VERIFIED,
+            policy_outcome=PolicyDecisionOutcome.DENY,
         )
 
 

@@ -8,6 +8,8 @@ from enum import StrEnum
 from uuid import UUID
 
 from dante.modules.intelligence.contracts.context import ExposureState
+from dante.modules.intelligence.contracts.policy import PolicyBoundary, PolicyDecisionOutcome
+from dante.modules.intelligence.contracts.resource import ResourceAdmissionOutcome
 
 
 class EgressSendState(StrEnum):
@@ -72,11 +74,15 @@ class EgressAttempt:
     consumer_context_id: UUID
     projection_ref: str
     policy_decision_id: UUID
+    policy_boundary: PolicyBoundary
+    policy_outcome: PolicyDecisionOutcome
     send_state: EgressSendState
     acceptance_certainty: EgressAcceptanceCertainty
     exposure_state: ExposureState
     outcome_state: EgressOutcomeState
     created_at: datetime
+    resource_admission_id: UUID | None = None
+    resource_admission_outcome: ResourceAdmissionOutcome | None = None
     invocation_ref: str | None = None
     provider_attempt_ref: str | None = None
     prior_egress_attempt_refs: tuple[str, ...] = ()
@@ -97,6 +103,12 @@ class EgressAttempt:
         _require_text(self.projection_ref, name="projection_ref")
         _require_texts(self.prior_egress_attempt_refs, name="prior_egress_attempt_refs")
         _require_aware(self.created_at, name="created_at")
+        if self.policy_boundary is not PolicyBoundary.MODEL_EGRESS:
+            raise ValueError("EgressAttempt requires MODEL_EGRESS policy boundary")
+        if (self.resource_admission_id is None) != (self.resource_admission_outcome is None):
+            raise ValueError("resource admission identity/outcome must be provided together")
+        if self.resource_admission_id is not None:
+            _require_uuid7(self.resource_admission_id, name="resource_admission_id")
         for name, value in (
             ("invocation_ref", self.invocation_ref),
             ("provider_attempt_ref", self.provider_attempt_ref),
@@ -121,6 +133,12 @@ class EgressAttempt:
                 raise ValueError("pre-send egress state must be NOT_DISPATCHED")
             return
 
+        if self.policy_outcome is not PolicyDecisionOutcome.ALLOW:
+            raise ValueError("dispatched egress requires an ALLOW policy decision")
+        if self.resource_admission_id is None:
+            raise ValueError("dispatched egress requires current ResourceAdmission")
+        if self.resource_admission_outcome is not ResourceAdmissionOutcome.ADMITTED:
+            raise ValueError("dispatched egress requires ADMITTED resource outcome")
         if self.exposure_state is ExposureState.NOT_SENT:
             raise ValueError("dispatched egress cannot claim NOT_SENT exposure")
         if self.outcome_state is EgressOutcomeState.NOT_DISPATCHED:
