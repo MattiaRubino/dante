@@ -1,6 +1,6 @@
 # DANTE — World Focus Handoff
 
-**Status:** CURRENT DURABLE HANDOFF — WS0–WS8 CLOSED / M0 CLOSED / M1 CLOSED / M2 NEXT  
+**Status:** CURRENT DURABLE HANDOFF — WS0–WS8 / M0 / M1 / POST-M1 SAFETY CLOSED — M2 NEXT  
 **Date:** 2026-09-03  
 **Repository:** `MattiaRubino/dante`  
 **Branch:** `feature/home-react`  
@@ -10,25 +10,26 @@ Read in order:
 
 ```text
 1. world-focus-current-checkpoint.md
-2. world-focus-m1-core-nonvisual-materialization-review.md
-3. world-focus-m1-next-subblock.md
-4. world-focus-m0-materialization-mapping.md
-5. world-focus-contract-sequencing-supersession.md
-6. world-focus-pre-m0-falsification-review.md
-7. world-focus-post-ws8-hygiene-audit.md
-8. world-focus-substrate-closure-plan.md
-9. world-focus-ws8-final-falsification-review.md
-10. world-focus-ws7-executable-harness-review.md
-11. world-focus-ws6-universal-work-primitives.md
-12. world-focus-ws6-primitive-pressure-matrix.md
-13. world-focus-substrate-final-convergence-proof.md
-14. world-focus-substrate-combinatorial-evidence.md
-15. world-focus-frontend-roadmap.md
-16. world-focus-evidence-index.md
-17. product/platform/structure/geometry contracts as needed
+2. world-focus-post-m1-safety-falsification-review.md
+3. world-focus-m1-core-nonvisual-materialization-review.md
+4. world-focus-m1-next-subblock.md
+5. world-focus-m0-materialization-mapping.md
+6. world-focus-contract-sequencing-supersession.md
+7. world-focus-pre-m0-falsification-review.md
+8. world-focus-post-ws8-hygiene-audit.md
+9. world-focus-substrate-closure-plan.md
+10. world-focus-ws8-final-falsification-review.md
+11. world-focus-ws7-executable-harness-review.md
+12. world-focus-ws6-universal-work-primitives.md
+13. world-focus-ws6-primitive-pressure-matrix.md
+14. world-focus-substrate-final-convergence-proof.md
+15. world-focus-substrate-combinatorial-evidence.md
+16. world-focus-frontend-roadmap.md
+17. world-focus-evidence-index.md
+18. product/platform/structure/geometry contracts as needed
 ```
 
-Older `NEXT` prose is phase-time evidence only.
+Older `NEXT` or `ACTIVE` prose is phase-time evidence only unless adopted by a newer live authority.
 
 ---
 
@@ -52,6 +53,7 @@ M0 Materialization Mapping             CLOSED
 M1 Core Non-Visual Materialization     CLOSED / VALIDATED
 M1-1 identity/reference ownership      CLOSED / VALIDATED
 M1-2 non-visual facets + seams         CLOSED / VALIDATED
+POST-M1 SAFETY FALSIFICATION           CLOSED / PASS
 M2 shared visual primitive layer       NEXT
 M3–M7                                  BLOCKED BY SEQUENCE
 BACKEND                                BLOCKED UNTIL M7
@@ -88,9 +90,19 @@ CI   33740212989 EXPECTED FAILURE
 M1 final code closure
 HEAD 7369c51e7ba04f8913728a0770f700c728c3b9f9
 CI   33740710290 PASS
+
+POST-M1 safety red
+HEAD 0b674effa292881303288dd90c88db2c14e61872
+CI   33747167897 FAIL
+7 / 9 hostile tests PASS
+
+POST-M1 safety closure
+HEAD ecc2128b62395f82eab9ee7ff239355b4ca81ee4
+CI   33754084001 PASS
+9 / 9 hostile tests; 56 / 56 web test files; 301 / 301 web unit tests
 ```
 
-Later documentation synchronization is a separate evidence point and does not replace the validated code heads above.
+Later documentation synchronization is a separate evidence point and does not replace validated code heads above.
 
 ---
 
@@ -204,9 +216,11 @@ independent post-hardening confirmation
 0 unresolved substrate gaps after final hardening
 ```
 
-Pre-M0 then discovered and fixed stale route-origin handoff resurrection without a new substrate owner.
+Pre-M0 discovered and fixed stale route-origin handoff resurrection without a new substrate owner.
 
-M1 final hostile pressure did not reopen WS0–WS8. It found only the planned transitional cursor representation residue and closed it red-first.
+M1 final hostile pressure found only the planned transitional cursor representation residue and closed it red-first.
+
+The post-M1 safety gate then found two additional implementation defects at existing boundaries: cancelled non-cooperative reads could reach validation, and O8 could retain caller evidence aliases. Both were fixed without reopening M1 or WS0–WS8.
 
 ---
 
@@ -231,7 +245,7 @@ boundary validation
 safe external URL policy
 ```
 
-M1 production materialization now adds:
+M1 production materialization adds:
 
 ```text
 neutral production World identity / descriptor
@@ -251,6 +265,13 @@ WP-01..WP-04 production/application seams
 World-scoped cancellable validated read mechanics
 deterministic local adapters
 unknown future World support at the non-visual seam
+```
+
+Post-M1 hardening strengthens existing ownership only:
+
+```text
+aborted read results are rejected before semantic validation
+O8 evidence/history owns a normalized frozen evidence snapshot
 ```
 
 Do not turn proof/oracle-only structures into production owners automatically. A proof seam earns a production review, not necessarily a production type with the same shape.
@@ -273,11 +294,11 @@ M1's useful World path remains functional without DANTE.
 
 ---
 
-# 8. M1 closed / M2 handoff
+# 8. M2 handoff
 
 M0 remains the production-disposition authority in `world-focus-m0-materialization-mapping.md`.
 
-M1 is now formally CLOSED / VALIDATED. The next bounded engineering block is:
+M1 is CLOSED / VALIDATED and the bounded post-M1 safety gate is CLOSED / PASS. The next bounded engineering block is:
 
 > **M2 — Shared Visual Primitive Layer.**
 
