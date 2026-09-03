@@ -252,7 +252,7 @@ test('Event Advanced preserves structured agenda, deep intent and provider reque
   );
   await expectNoRawCreateKeys(page);
 
-  await dialog.getByRole('button', { name: 'Aggiungi' }).click();
+  await dialog.getByRole('button', { name: 'Aggiungi', exact: true }).click();
   await expect(dialog).toHaveCount(0);
   const card = page
     .locator('.timeline-event-card[data-temporal-create-projection]')
