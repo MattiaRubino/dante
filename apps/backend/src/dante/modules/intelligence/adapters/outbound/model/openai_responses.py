@@ -69,9 +69,42 @@ class OpenAIResponsesWireRequest:
     instructions: str | None
     max_output_tokens: int
     store: bool
+    timeout_seconds: float
     structured_output_name: str | None = None
     structured_output_schema_json: str | None = None
     structured_output_strict: bool | None = None
+
+    def __post_init__(self) -> None:
+        if self.model != OPENAI_TERRA_MODEL:
+            raise ValueError("wire request model must be the admitted Terra candidate")
+        if not self.input_text or not self.input_text.strip():
+            raise ValueError("wire request input_text must be non-empty")
+        if self.instructions is not None and not self.instructions.strip():
+            raise ValueError("wire request instructions must be non-empty when present")
+        if self.max_output_tokens <= 0:
+            raise ValueError("wire request max_output_tokens must be positive")
+        if self.store:
+            raise ValueError("C9 OpenAI Responses wire request must force store=false")
+        if self.timeout_seconds <= 0:
+            raise ValueError("wire request timeout_seconds must be positive")
+
+        structured_values = (
+            self.structured_output_name,
+            self.structured_output_schema_json,
+            self.structured_output_strict,
+        )
+        present = tuple(value is not None for value in structured_values)
+        if any(present) and not all(present):
+            raise ValueError("structured-output wire fields must be provided together")
+        if self.structured_output_name is not None and not self.structured_output_name.strip():
+            raise ValueError("structured_output_name must be non-empty")
+        if self.structured_output_schema_json is not None:
+            try:
+                schema = json.loads(self.structured_output_schema_json)
+            except json.JSONDecodeError as exc:
+                raise ValueError("structured_output_schema_json must contain valid JSON") from exc
+            if not isinstance(schema, dict):
+                raise ValueError("structured_output_schema_json must contain a JSON object")
 
 
 @dataclass(frozen=True, slots=True)
@@ -89,7 +122,7 @@ class OpenAIResponsesWireResponse:
 
 
 class OpenAIResponsesTransport(Protocol):
-    """Narrow provider transport seam implemented later by the private OpenAI SDK wrapper."""
+    """Narrow provider transport seam implemented by the private OpenAI SDK wrapper."""
 
     async def create(self, request: OpenAIResponsesWireRequest) -> OpenAIResponsesWireResponse: ...
 
@@ -191,12 +224,14 @@ class OpenAIResponsesAdapter:
         if preflight_error is not None:
             return preflight_error
 
+        timeout_seconds = (request.deadline - started_at).total_seconds()
         wire_request = OpenAIResponsesWireRequest(
             model=OPENAI_TERRA_MODEL,
             input_text=request.rendered_input,
             instructions=request.rendered_instructions,
             max_output_tokens=request.max_output_tokens,
             store=False,
+            timeout_seconds=timeout_seconds,
             structured_output_name=(
                 request.structured_output.name if request.structured_output is not None else None
             ),
