@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -22,6 +23,7 @@ from dante.platform.database.mappings.email_delivery import (
     EmailRecipientSuppressionRow,
 )
 
+_LOGGER = logging.getLogger(__name__)
 _MAX_EVENT_BYTES = 262_144
 _SUPPORTED_EVENTS = {
     "Delivery": "delivered",
@@ -121,6 +123,10 @@ class EmailFeedbackStore:
             )
         )
         if attempt is None or attempt.provider_code != "ses":
+            _LOGGER.warning(
+                "auth.email_feedback_uncorrelated provider=ses event_type=%s",
+                feedback.event_type_code,
+            )
             return False
 
         insert_stmt = (
@@ -156,6 +162,13 @@ class EmailFeedbackStore:
                 feedback=feedback,
                 source_provider_event_ref=inserted_event_ref,
             )
+
+        _LOGGER.info(
+            "auth.email_feedback_recorded provider=ses event_type=%s hard_failure=%s intent_ref=%s",
+            feedback.event_type_code,
+            feedback.hard_failure,
+            attempt.email_intent_ref,
+        )
         return True
 
     async def _apply_suppression(
