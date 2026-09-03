@@ -126,15 +126,15 @@ class ProviderInvocationRequest:
     security_basis_refs: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
-        for name, value in (
+        for name, uuid_value in (
             ("provider_attempt_id", self.provider_attempt_id),
             ("model_invocation_id", self.model_invocation_id),
             ("work_id", self.work_id),
         ):
-            _require_uuid7(value, name=name)
+            _require_uuid7(uuid_value, name=name)
         if self.work_revision <= 0:
             raise ValueError("work_revision must be positive")
-        for name, value in (
+        for name, text_value in (
             ("provider_binding_ref", self.provider_binding_ref),
             ("model_target_ref", self.model_target_ref),
             ("provider_model", self.provider_model),
@@ -142,7 +142,7 @@ class ProviderInvocationRequest:
             ("purpose", self.purpose),
             ("rendered_input", self.rendered_input),
         ):
-            _require_text(value, name=name)
+            _require_text(text_value, name=name)
         if self.rendered_instructions is not None:
             _require_text(self.rendered_instructions, name="rendered_instructions")
         _require_aware(self.deadline, name="deadline")
