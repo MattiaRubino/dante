@@ -162,7 +162,7 @@ function emptyTimelineTarget(target: EventTarget | null): HTMLElement | null {
   }
   if (
     target.closest(
-      'button, input, select, textarea, .timeline-event-card, .timeline-all-day-item, .temporal-create-projection-card, .temporal-create-all-day',
+      'button, input, select, textarea, .timeline-event-card, .timeline-all-day-lane, .timeline-all-day-item, .temporal-create-projection-card, .temporal-create-all-day',
     )
   ) {
     return null;
@@ -170,6 +170,18 @@ function emptyTimelineTarget(target: EventTarget | null): HTMLElement | null {
   return target.closest<HTMLElement>(
     '.timeline-day-section[data-timeline-date]',
   );
+}
+
+function clientYInsideAllDayLane(
+  section: HTMLElement,
+  clientY: number,
+): boolean {
+  const lane = section.querySelector<HTMLElement>('.timeline-all-day-lane');
+  if (!lane) {
+    return false;
+  }
+  const rect = lane.getBoundingClientRect();
+  return clientY >= rect.top && clientY < rect.bottom;
 }
 
 function slotKey(projection: TemporalCreateTimelineProjection): string {
@@ -459,6 +471,9 @@ export function TimelineCreateBridge({
       }
       rangeGestureRef.current = null;
       document.documentElement.removeAttribute('data-temporal-create-ranging');
+      if (clientYInsideAllDayLane(gesture.section, event.clientY)) {
+        return;
+      }
       const endMinute = snapMinute(
         minuteAtClientY(gesture.section, event.clientY),
       );
@@ -558,15 +573,18 @@ export function TimelineCreateBridge({
             `[data-timeline-event="${id}"], [data-timeline-all-day-item="${id}"], [data-temporal-create-projection="${id}"]`,
           );
           const grid = document.querySelector<HTMLElement>('.timeline-grid');
-          const day = card?.closest<HTMLElement>('.timeline-day-section');
           if (card?.matches('[data-timeline-event]')) {
             card.dataset.temporalCreateProjection = projection.id;
           }
-          if (card && grid && day) {
+          if (card && grid) {
+            const gridRect = grid.getBoundingClientRect();
+            const cardRect = card.getBoundingClientRect();
+            const cardContentTop =
+              grid.scrollTop + (cardRect.top - gridRect.top);
             grid.scrollTo({
               top: Math.max(
                 0,
-                day.offsetTop + card.offsetTop - grid.clientHeight * 0.28,
+                cardContentTop - grid.clientHeight * 0.28,
               ),
               behavior: window.matchMedia('(prefers-reduced-motion: reduce)')
                 .matches

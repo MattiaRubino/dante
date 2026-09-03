@@ -385,7 +385,7 @@ test('Event recurrence exposes CP6 families, precise calendar/quota/cycle semant
   expect(accessibility.violations).toEqual([]);
 });
 
-test('all-day Event uses a dedicated strip outside the timed grid while unscheduled Activity stays unplaced', async ({
+test('all-day date spans live inside each day before minute zero while unscheduled Activity stays unplaced', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1280, height: 820 });
@@ -393,7 +393,7 @@ test('all-day Event uses a dedicated strip outside the timed grid while unschedu
 
   let dialog = await openCreate(page);
   await dialog.getByRole('textbox', { name: 'Titolo' }).fill('Fiera');
-  await dialog.getByLabel('Tipo').selectOption('event');
+  await dialog.getByRole('radio', { name: 'Evento' }).click();
   await dialog.getByRole('radio', { name: 'Tutto il giorno' }).click();
   const startDate = await dialog.getByLabel('Data inizio').inputValue();
   const nextDate = await page.evaluate((value) => {
@@ -405,36 +405,111 @@ test('all-day Event uses a dedicated strip outside the timed grid while unschedu
   await dialog.getByRole('button', { name: 'Aggiungi' }).click();
   await expect(dialog).toHaveCount(0);
 
-  const strip = page.locator(`[data-timeline-all-day-strip="${startDate}"]`);
-  await expect(strip).toBeVisible();
-  await expect(strip).toContainText('Tutto il giorno');
+  const startDay = page.locator(
+    `.timeline-day-section[data-timeline-date="${startDate}"]`,
+  );
+  const nextDay = page.locator(
+    `.timeline-day-section[data-timeline-date="${nextDate}"]`,
+  );
+  const startLane = startDay.locator(
+    `[data-timeline-all-day-lane="${startDate}"]`,
+  );
+  const nextLane = nextDay.locator(
+    `[data-timeline-all-day-lane="${nextDate}"]`,
+  );
+  await expect(startLane).toBeVisible();
+  await expect(nextLane).toHaveCount(1);
+  await expect(page.locator('[data-timeline-all-day-strip]')).toHaveCount(0);
   await expect(
-    strip.evaluate((element) => element.closest('.timeline-grid') === null),
+    startLane.evaluate((element) => element.closest('.timeline-grid') !== null),
   ).resolves.toBe(true);
   await expect(
-    strip.evaluate(
-      (element) => element.closest('.dante-timeline-header') !== null,
+    startLane.evaluate(
+      (element) => element.closest('.dante-timeline-header') === null,
     ),
   ).resolves.toBe(true);
 
-  const allDayItem = strip
+  const startItem = startLane
     .locator('.timeline-all-day-item[data-temporal-create-projection]')
     .filter({ hasText: 'Fiera' });
-  await expect(allDayItem).toHaveCount(1);
-  await expect(allDayItem).toHaveAttribute('data-range-start', 'true');
+  const endItem = nextLane
+    .locator('.timeline-all-day-item[data-temporal-create-projection]')
+    .filter({ hasText: 'Fiera' });
+  await expect(startItem).toHaveCount(1);
+  await expect(endItem).toHaveCount(1);
+  await expect(startItem).toHaveAttribute('data-range-position', 'start');
+  await expect(startItem).toHaveAttribute('data-range-start', 'true');
+  await expect(startItem).not.toHaveAttribute('data-range-end', 'true');
+  await expect(endItem).toHaveAttribute('data-range-position', 'end');
+  await expect(endItem).toHaveAttribute('data-range-end', 'true');
+  await expect(endItem).not.toHaveAttribute('data-range-start', 'true');
+
+  const projectionId = await startItem.getAttribute(
+    'data-temporal-create-projection',
+  );
+  expect(projectionId).not.toBeNull();
+  if (!projectionId) {
+    throw new Error('Expected a canonical all-day Create projection identity');
+  }
+  await expect(endItem).toHaveAttribute(
+    'data-temporal-create-projection',
+    projectionId,
+  );
   await expect(page.locator('.temporal-create-all-day:not(.is-preview)')).toHaveCount(0);
+
+  expect(
+    await startDay.evaluate((section) => {
+      const lane = section.querySelector<HTMLElement>('.timeline-all-day-lane');
+      const minuteZero = section.querySelector<HTMLElement>('.timeline-hour-line');
+      if (!lane || !minuteZero) {
+        return false;
+      }
+      return (
+        Math.abs(
+          Number.parseFloat(minuteZero.style.top) -
+            lane.getBoundingClientRect().height,
+        ) <= 1
+      );
+    }),
+  ).toBe(true);
+
+  await startLane.locator('.timeline-all-day-lane__label').dblclick();
+  await expect(page.locator('[data-temporal-create="composer"]')).toHaveCount(0);
 
   const allDayToast = page.locator('.temporal-create-toast.is-on');
   await expect(allDayToast).toContainText('Fiera');
   await allDayToast.getByRole('button', { name: 'Annulla' }).click();
-  await expect(allDayItem).toHaveCount(0);
-  await expect(strip).toHaveCount(0);
+  await expect(startItem).toHaveCount(0);
+  await expect(endItem).toHaveCount(0);
+  await expect(startLane).toHaveCount(0);
+  await expect(nextLane).toHaveCount(0);
+
+  dialog = await openCreate(page);
+  await dialog.getByRole('textbox', { name: 'Titolo' }).fill('Giornata studio');
+  await dialog.getByRole('radio', { name: 'Tutto il giorno' }).click();
+  const activityDate = await dialog.getByLabel('Data').inputValue();
+  await dialog.getByRole('button', { name: 'Aggiungi' }).click();
+  await expect(dialog).toHaveCount(0);
+
+  const activityLane = page.locator(
+    `.timeline-day-section[data-timeline-date="${activityDate}"] [data-timeline-all-day-lane="${activityDate}"]`,
+  );
+  const activityItem = activityLane
+    .locator('.timeline-all-day-item[data-temporal-create-projection]')
+    .filter({ hasText: 'Giornata studio' });
+  await expect(activityItem).toBeVisible();
+  await expect(activityItem).toHaveAttribute('data-range-position', 'single');
+  await expect(activityItem).toHaveAttribute('data-range-start', 'true');
+  await expect(activityItem).toHaveAttribute('data-range-end', 'true');
+  await page
+    .locator('.temporal-create-toast.is-on')
+    .getByRole('button', { name: 'Annulla' })
+    .click();
+  await expect(activityItem).toHaveCount(0);
 
   dialog = await openCreate(page);
   await dialog.getByRole('textbox', { name: 'Titolo' }).fill('Da organizzare');
-  await dialog
-    .getByRole('radio', { name: 'Aperta, senza collocazione' })
-    .click();
+  await dialog.getByRole('radio', { name: 'Da collocare' }).click();
   await dialog.getByRole('button', { name: 'Aggiungi' }).click();
   await expect(dialog).toHaveCount(0);
   await expect(page.locator('.temporal-create-toast.is-on')).toContainText(

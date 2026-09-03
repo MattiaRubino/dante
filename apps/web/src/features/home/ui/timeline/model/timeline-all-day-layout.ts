@@ -3,9 +3,20 @@ import type {
   TimelineGroupId,
   TimelineTimeMapper,
 } from './timeline-types';
+import {
+  addTimelineDays,
+  parseTimelineDate,
+  timelineDateKey,
+} from './timeline-temporal';
 
-const ALL_DAY_LANE_BASE_HEIGHT_PX = 34;
-const ALL_DAY_ITEM_ROW_HEIGHT_PX = 30;
+export const TIMELINE_ALL_DAY_LANE_HEADER_HEIGHT_PX = 34;
+export const TIMELINE_ALL_DAY_ITEM_ROW_HEIGHT_PX = 30;
+
+export type TimelineAllDayRangePosition =
+  | 'single'
+  | 'start'
+  | 'middle'
+  | 'end';
 
 export function timelineAllDayItemsForVisibleDate(
   items: readonly TimelineAllDayItem[],
@@ -24,7 +35,31 @@ export function timelineAllDayLaneHeightPx(itemCount: number): number {
   if (itemCount <= 0) {
     return 0;
   }
-  return ALL_DAY_LANE_BASE_HEIGHT_PX + itemCount * ALL_DAY_ITEM_ROW_HEIGHT_PX;
+  return (
+    TIMELINE_ALL_DAY_LANE_HEADER_HEIGHT_PX +
+    itemCount * TIMELINE_ALL_DAY_ITEM_ROW_HEIGHT_PX
+  );
+}
+
+export function timelineAllDayRangePosition(
+  item: TimelineAllDayItem,
+  dateKey: string,
+): TimelineAllDayRangePosition {
+  const startsHere = dateKey === item.startDateKey;
+  const endsHere =
+    timelineDateKey(addTimelineDays(parseTimelineDate(dateKey), 1)) ===
+    item.endDateExclusiveKey;
+
+  if (startsHere && endsHere) {
+    return 'single';
+  }
+  if (startsHere) {
+    return 'start';
+  }
+  if (endsHere) {
+    return 'end';
+  }
+  return 'middle';
 }
 
 /**

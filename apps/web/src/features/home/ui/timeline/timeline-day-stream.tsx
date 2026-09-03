@@ -30,6 +30,7 @@ import type {
   TimelineGroup,
   TimelineTimeMapper,
 } from './model/timeline-types';
+import { TimelineAllDayLane } from './timeline-all-day-layer';
 
 export type TimelineRenderedDay = Readonly<{
   date: PlainDate;
@@ -404,6 +405,13 @@ function TimelineDay({
     >
       <div className="timeline-day-section__label">{fullLabel}</div>
 
+      <TimelineAllDayLane
+        dateKey={day.dateKey}
+        items={state.allDayItems}
+        groups={state.groups}
+        filters={state.filters}
+      />
+
       {Array.from(
         {
           length:
@@ -719,10 +727,17 @@ export function TimelineDayStream({
       return;
     }
 
+    const rawLocalY = contentTop - targetDay.offsetTop;
+    const timedCanvasTop = targetDay.mapper.map(0);
+    if (rawLocalY < timedCanvasTop) {
+      finishDragVisual();
+      return;
+    }
+
     const localY = clamp(
-      contentTop - targetDay.offsetTop,
-      0,
-      Math.max(0, targetDay.height - overlayHeight),
+      rawLocalY,
+      timedCanvasTop,
+      Math.max(timedCanvasTop, targetDay.height - overlayHeight),
     );
     const minute = targetDay.mapper.inv(localY);
     const snap = timelineDragSnapMinutes(stateRef.current.zoom);
