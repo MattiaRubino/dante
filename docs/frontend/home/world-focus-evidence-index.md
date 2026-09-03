@@ -1,6 +1,6 @@
 # DANTE — World Focus Research / Review Evidence Index
 
-**Status:** CURRENT EVIDENCE MAP — WS0–WS8 / M0 / M1 / POST-M1 SAFETY CLOSED — M2 NEXT  
+**Status:** CURRENT EVIDENCE MAP — WS0–WS8 / M0 / M1 / POST-M1 SAFETY CLOSED — M2 ACTIVE / M2-1 VALIDATED  
 **Date:** 2026-09-03  
 **Branch:** `feature/home-react`
 
@@ -16,6 +16,7 @@ Rule:
 
 ```text
 world-focus-current-checkpoint.md
+world-focus-m2-shared-visual-primitives.md
 world-focus-post-m1-safety-falsification-review.md
 world-focus-m1-core-nonvisual-materialization-review.md
 world-focus-m1-next-subblock.md
@@ -339,6 +340,104 @@ full Frontend CI Gate PASS
 
 No new semantic primitive/layer, M1 reopen, WS reopen, frontend AuthZ, universal projection root or backend authority was required.
 
+## E23 — M2-1 shared visual primitive layer
+
+`world-focus-m2-shared-visual-primitives.md`
+
+**M2 ACTIVE / M2-1 CLOSED / VALIDATED.**
+
+Red-first evidence:
+
+```text
+HEAD 26adf872...
+CI   33763229784 EXPECTED FAILURE
+Quality / Lint failed because new M2 presentation owners did not yet exist
+```
+
+The red tests fixed presentation obligations before implementation:
+
+```text
+exact semantic reference -> display binding
+no raw reference key leakage
+no reasonCode leakage
+Comparison subject order preserved
+Comparison does not invent winner/recommendation
+Trajectory missingness remains distinct from zero
+base Trajectory does not fabricate a chart
+shared semantic heading/state structure
+binding/order mismatch fails closed
+```
+
+Intermediate production pressure found two implementation/setup issues without changing those expectations:
+
+```text
+TS6 noUncheckedIndexedAccess
+  -> explicit fail-closed guards for indexed semantic references
+
+isolated renderer tests lacked real i18n initialization
+  -> initialize the existing i18n instance
+  -> semantic expectations unchanged
+```
+
+Validated code baseline:
+
+```text
+HEAD 5e8aaba2477803e931a3394d90bbf01ff534f673
+CI   33765049842 PASS
+```
+
+Responsive pressure was then added to the real WP-01 Continuity vertical. Authoritative validation after the pressure test and M2 record commit:
+
+```text
+HEAD 2e639f108d5cb01e53395013a55346b7ac2e4294
+CI   33781753823 PASS
+
+Frontend CI Gate        PASS
+Quality                 PASS
+Web E2E / Chromium      PASS
+Mobile Bundle           PASS
+frozen Timeline Firefox PASS
+web test files          61 / 61 PASS
+web unit tests          312 / 312 PASS
+architecture            262 modules / 684 dependencies / 0 violations
+generated               112 tokens / 3 deterministic files
+```
+
+Real-browser M2 pressure covers:
+
+```text
+720 px
+719 px
+390 px
+shared presentation marker
+Continuity bounded inside World workspace
+no document horizontal overflow
+```
+
+Materialized M2-1 production presentation:
+
+```text
+WorldFocusDisplayBinding display-safe reference boundary
+shared section/state presentation grammar
+WP-02 Attention renderer
+WP-03 Comparison renderer
+WP-04 Trajectory renderer
+WP-01 Continuity migrated as live vertical
+English/Italian finite presentation copy
+container-query + forced-colors support
+```
+
+Critical evidence boundary:
+
+```text
+WP-01 Continuity is live on the M2 grammar
+WP-02..WP-04 renderers exist and are tested
+WP-02..WP-04 are not claimed as live composition merely because renderers exist
+M2 overall remains ACTIVE
+```
+
+No universal Card<T>, semantic-owner renderer, page-per-World fork, frontend AuthZ, backend authority or M3 customization was introduced.
+
 ---
 
 # 3. Current layered result
@@ -353,6 +452,11 @@ L5 Composition Configuration
 L6 Operation/Effect Presentation
 L7 Renderer/Specialist Extension
 L8 Platform/User Policy
+
+M2 presentation boundary
+  display-safe bindings
+  shared semantic presentation grammar
+  finite earned renderers
 ```
 
 ---
@@ -363,6 +467,8 @@ Do not restart WS0–WS8 or M1 for a new provider, World noun, UI, renderer, vie
 
 Reopen only when later executable/materialization evidence shows a concrete semantic/ownership/state/security/privacy/effect contradiction that cannot fit an existing owner, and reopen only the earliest necessary phase.
 
+Do not reopen M2-1 merely because a specialist renderer needs a different visual treatment. Reopen it only if evidence contradicts the shared display-binding/presentation boundary itself.
+
 ---
 
 # 5. Current evidence gate
@@ -371,11 +477,13 @@ Reopen only when later executable/materialization evidence shows a concrete sema
 
 > **POST-M1 SAFETY FALSIFICATION — CLOSED / PASS**
 
-> **M2 — Shared Visual Primitive Layer — NEXT**
+> **M2 — Shared Visual Primitive Layer — ACTIVE**
+
+> **M2-1 — Shared Presentation / L1 Renderer Grammar — CLOSED / VALIDATED**
 
 > **M3–M7 and backend remain BLOCKED by sequence. D2–D6 remain deferred to M4.**
 
-The frozen M0 map remains the production-disposition authority; M1 evidence proves the assigned non-visual production owners exist, and the post-M1 safety gate confirms the final pre-M2 boundary hardening is closed.
+The frozen M0 map remains the production-disposition authority; M1 evidence proves the assigned non-visual production owners exist; post-M1 safety confirms the pre-M2 hardening; M2-1 evidence proves a bounded shared visual grammar can render those semantics without taking ownership or fabricating live composition.
 
 ---
 
