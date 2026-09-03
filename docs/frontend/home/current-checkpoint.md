@@ -1,6 +1,6 @@
 # DANTE — Home / Frontend Current Checkpoint
 
-**Status:** CURRENT LIVE ENTRY POINT — WORLD FOCUS M1 + POST-M1 SAFETY CLOSED / M2 NEXT  
+**Status:** CURRENT LIVE ENTRY POINT — WORLD FOCUS M2 ACTIVE / M2-1 VALIDATED  
 **Date:** 2026-09-03  
 **Working branch:** `feature/home-react`  
 **Worktree:** `/home/mattia/projects/dante-frontend`
@@ -45,7 +45,9 @@ M1 Core Non-Visual Materialization     CLOSED / VALIDATED
 M1-1 identity/reference ownership      CLOSED / VALIDATED
 M1-2 facets + WP/O2/O5/O8 seams        CLOSED / VALIDATED
 POST-M1 SAFETY FALSIFICATION           CLOSED / PASS
-M2 Shared Visual Primitive Layer       NEXT
+M2 Shared Visual Primitive Layer       ACTIVE
+M2-1 shared presentation + renderers   CLOSED / VALIDATED
+M2 remaining visual work               NEXT WITHIN M2
 M3–M7                                  BLOCKED BY SEQUENCE
 D2–D6                                  DEFERRED TO M4
 BACKEND                                BLOCKED UNTIL M7
@@ -85,6 +87,14 @@ POST-M1 safety closure
 HEAD ecc2128b62395f82eab9ee7ff239355b4ca81ee4
 CI   33754084001 PASS
 9 / 9 hostile tests PASS; 56 / 56 web test files; 301 / 301 web unit tests
+
+M2-1 shared visual primitive validation
+HEAD 2e639f108d5cb01e53395013a55346b7ac2e4294
+CI   33781753823 PASS
+61 / 61 web test files; 312 / 312 web unit tests
+262 modules / 684 dependencies / 0 architecture violations
+Chromium pressure at 720 / 719 / 390 PASS
+frozen Timeline Firefox PASS
 ```
 
 ## 4. M1 + safety closed result
@@ -133,25 +143,52 @@ The hostile safety test was not weakened. M1 and WS0–WS8 remain closed.
 
 No universal `ProjectionEnvelope`, generic `Thing/Entity/Fact/PropertyBag`, frontend ACL/AuthZ, World canonical ownership or backend authority was introduced.
 
-## 5. Read order
+## 5. M2-1 validated result
+
+M2-1 materializes a bounded shared visual language over M1 without acquiring semantic ownership:
+
+```text
+display-safe reference binding boundary
+shared semantic section/state presentation grammar
+WP-02 Attention renderer
+WP-03 Comparison renderer
+WP-04 Trajectory renderer
+WP-01 Continuity migrated as the real production vertical
+existing DANTE design tokens only
+English/Italian finite presentation labels
+container-query + forced-colors support
+real-browser 720/719/390 pressure coverage
+```
+
+Critical scope truth:
+
+```text
+WP-01 Continuity is live and uses the M2 grammar
+WP-02..WP-04 renderer contracts exist and are tested
+WP-02..WP-04 are NOT injected into live composition merely as demonstrations
+M2 overall is NOT closed
+```
+
+## 6. Read order
 
 ```text
 1. world-focus-current-checkpoint.md
-2. world-focus-post-m1-safety-falsification-review.md
-3. world-focus-m1-core-nonvisual-materialization-review.md
-4. world-focus-m1-next-subblock.md
-5. world-focus-m0-materialization-mapping.md
-6. world-focus-contract-sequencing-supersession.md
-7. world-focus-frontend-roadmap.md
-8. world-focus-handoff.md
-9. world-focus-evidence-index.md
-10. world-focus-substrate-closure-plan.md
-11. product/platform/structure/geometry contracts as needed
+2. world-focus-m2-shared-visual-primitives.md
+3. world-focus-post-m1-safety-falsification-review.md
+4. world-focus-m1-core-nonvisual-materialization-review.md
+5. world-focus-m1-next-subblock.md
+6. world-focus-m0-materialization-mapping.md
+7. world-focus-contract-sequencing-supersession.md
+8. world-focus-frontend-roadmap.md
+9. world-focus-handoff.md
+10. world-focus-evidence-index.md
+11. world-focus-substrate-closure-plan.md
+12. product/platform/structure/geometry contracts as needed
 ```
 
-## 6. Next gate — M2 only
+## 7. Current gate — continue M2 only
 
-M2 materializes the **shared visual primitive layer** for semantics already earned by M1.
+M2 remains the active phase. Further visual materialization must remain evidence-driven over the closed M1 semantic substrate and the validated M2-1 presentation grammar.
 
 Rules:
 
@@ -163,11 +200,12 @@ no renderer may become canonical semantic owner
 no visual treatment may collapse freshness/validity/disclosure/effect/sync axes
 unknown future Worlds must safe-degrade through finite registries
 sparse Worlds remain sparse
+renderer availability != permission to mount fake content
 ```
 
 M3 adaptive customization, M4 contextual DANTE D2–D6, M5 complete Worlds, M6 integrated visual/a11y/performance review, M7 frontend freeze and backend all remain blocked by sequence.
 
-## 7. Permanent barriers
+## 8. Permanent barriers
 
 ```text
 World != canonical Domain owner
@@ -184,9 +222,11 @@ Authority != Visibility
 timeout != semantic negative
 offline != source absent
 retired reference != replacement reference
+Comparison != Decision
+missing trajectory position != zero
 ```
 
-## 8. Backend stop line
+## 9. Backend stop line
 
 ```text
 frontend view model != backend DTO != Domain model != persistence row
@@ -199,10 +239,10 @@ NO real tool/effect execution
 NO fake success
 ```
 
-## 9. Operational rules
+## 10. Operational rules
 
 - stay on `feature/home-react` unless explicitly authorized otherwise;
-- fresh live HEAD before every write scope;
+- fresh live HEAD before every new write scope;
 - no merge/rebase/force/history rewrite/main mutation without explicit authorization;
 - do not modify Access/Auth, frozen Timeline or AppShell as collateral work;
 - generated route tree is never manually edited;
