@@ -42,7 +42,7 @@ import type {
   TimelineGroupId,
   TimelineSemanticTone,
 } from './model/timeline-types';
-import { TimelineAllDayLayer } from './timeline-all-day-layer';
+import { applyTimelineAllDayGeometry } from './timeline-all-day-runtime';
 import { TimelineDayStream } from './timeline-day-stream';
 import { TimelineHeader } from './timeline-header';
 import {
@@ -160,7 +160,7 @@ export function TimelineSurface({
     }),
     [state.eventsByDate, state.expandedEventIds, state.groups, state.zoom],
   );
-  const renderedDays = useMemo(
+  const baseRenderedDays = useMemo(
     () =>
       buildTimelineRenderedDays(
         anchor,
@@ -169,6 +169,15 @@ export function TimelineSurface({
         renderedDayInputs,
       ),
     [anchor, renderedDayInputs],
+  );
+  const renderedDays = useMemo(
+    () =>
+      applyTimelineAllDayGeometry(
+        baseRenderedDays,
+        state.allDayItems,
+        state.filters,
+      ),
+    [baseRenderedDays, state.allDayItems, state.filters],
   );
 
   useLayoutEffect(() => {
@@ -799,12 +808,6 @@ export function TimelineSurface({
           dispatch({ type: 'move-event', ...move });
         }}
         onMoveFeedback={showFeedback}
-      />
-
-      <TimelineAllDayLayer
-        items={state.allDayItems}
-        groups={state.groups}
-        filters={state.filters}
       />
 
       <button
