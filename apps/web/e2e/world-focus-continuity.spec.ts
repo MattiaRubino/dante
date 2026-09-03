@@ -9,6 +9,10 @@ test('Continuity surfaces meaningful in-motion threads without a fake Resume act
 
   const continuity = page.locator('.world-focus-continuity');
   await expect(continuity).toBeVisible();
+  await expect(continuity).toHaveAttribute(
+    'data-world-focus-presentation',
+    'section',
+  );
   await expect(
     continuity.getByRole('heading', { level: 2, name: 'In movimento' }),
   ).toBeVisible();
@@ -37,28 +41,43 @@ test('Travel continuity represents planning rather than misclassifying the next 
   await expect(continuity.getByText('Flight shortlist')).toBeVisible();
 });
 
-test('Continuity remains bounded in the compact World workspace', async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('/worlds/music');
+test('M2 Continuity presentation remains bounded across compact and 720px tuning pressure', async ({
+  page,
+}) => {
+  for (const width of [720, 719, 390] as const) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/worlds/music');
 
-  const workspace = await page
-    .locator('[data-world-focus-region="workspace"]')
-    .boundingBox();
-  const continuity = await page.locator('.world-focus-continuity').boundingBox();
+    const workspaceLocator = page.locator(
+      '[data-world-focus-region="workspace"]',
+    );
+    const continuityLocator = page.locator('.world-focus-continuity');
 
-  expect(workspace).not.toBeNull();
-  expect(continuity).not.toBeNull();
-  if (workspace === null || continuity === null) {
-    throw new Error('Expected compact Continuity geometry');
+    await expect(continuityLocator).toBeVisible();
+    await expect(continuityLocator).toHaveAttribute(
+      'data-world-focus-presentation',
+      'section',
+    );
+
+    const workspace = await workspaceLocator.boundingBox();
+    const continuity = await continuityLocator.boundingBox();
+
+    expect(workspace).not.toBeNull();
+    expect(continuity).not.toBeNull();
+    if (workspace === null || continuity === null) {
+      throw new Error(`Expected Continuity geometry at ${width}px`);
+    }
+
+    expect(continuity.x).toBeGreaterThanOrEqual(workspace.x);
+    expect(continuity.x + continuity.width).toBeLessThanOrEqual(
+      workspace.x + workspace.width,
+    );
+
+    const hasHorizontalOverflow = await page.evaluate(
+      () =>
+        document.documentElement.scrollWidth >
+        document.documentElement.clientWidth + 1,
+    );
+    expect(hasHorizontalOverflow).toBe(false);
   }
-
-  expect(continuity.x).toBeGreaterThanOrEqual(workspace.x);
-  expect(continuity.x + continuity.width).toBeLessThanOrEqual(
-    workspace.x + workspace.width,
-  );
-
-  const hasHorizontalOverflow = await page.evaluate(
-    () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
-  );
-  expect(hasHorizontalOverflow).toBe(false);
 });
