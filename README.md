@@ -6,7 +6,7 @@ DANTE is a personal operating system designed to help people understand, organiz
 
 ## Current repository state
 
-The integrated foundation on protected `main` remains closed. The active branch-local product vertical is Access/Auth on `feature/access-auth`.
+The integrated foundation on protected `main` remains closed. The active branch-local product workstream is Access/Auth on `feature/access-auth`.
 
 ```text
 PRODUCT / NORTH STAR                    CURRENT
@@ -22,23 +22,33 @@ M5 GROUPS 1–3                           COMPLETE / ENGINEERING PASS
 M5 GROUP 4 WEB ENGINEERING              AUTOMATED QA PASS
 LOCAL PASSWORD/PASSKEY UAT              PASS
 REAL GOOGLE UAT                         PASS
-REAL INTERNET EMAIL DELIVERY            OPEN / RESEARCH + UAT REQUIRED
+
+SHARED EMAIL PLATFORM                   ACCEPTED / MATERIALIZED
+EMAIL PLATFORM AUTOMATED ACCEPTANCE     PASS
+REAL SES SIGNUP UAT                     PASS
+REAL SES PASSWORD RECOVERY UAT          PASS
+REAL SES RESET-NOTIFICATION UAT         PASS
+EMAIL PLATFORM ENGINEERING WORK         CLOSED
+
 REAL APPLE REGISTERED-DOMAIN UAT        DEFERRED / OPEN
-WHOLE ACCESS/AUTH M5                     ACTIVE / NOT FORMALLY CLOSED
+WHOLE ACCESS/AUTH M5                    FINAL CLOSURE RECONCILIATION
 
 ACCESS/AUTH BRANCH POSTGRESQL            18.6
-ACCESS/AUTH ALEMBIC HEAD                 20260831_13
-ACCESS/AUTH DB TOPOLOGY                  83 tables / 5 views / 15 routines /
-                                         75 triggers / 156 indexes / 85 FKs /
-                                         233 CHECKs
+ACCESS/AUTH ALEMBIC HEAD                 20260903_15
+ACCESS/AUTH DB TOPOLOGY                  87 tables / 5 views / 15 routines /
+                                         75 triggers / 170 indexes / 88 FKs /
+                                         267 CHECKs
 ```
+
+Email Platform closure is an engineering + real-provider UAT closure. Production sender-domain/DNS/reputation, workload identity and live cloud provider-event routing remain separate deployment gates.
 
 For exact branch truth use:
 
 - `docs/PROJECT-STATUS.md`
 - `docs/ROADMAP.md`
 - `docs/workstreams/access-auth.md`
-- `docs/workstreams/access-auth-m5-review-2026-09-02.md`
+- `docs/architecture/email-platform.md`
+- `docs/development/email-platform-acceptance-2026-09-03.md`
 
 Do not reconstruct current state from old handoffs or phase-time progress labels.
 
@@ -133,41 +143,84 @@ Web sessions are opaque, server-authoritative and cookie-backed. Browser Auth st
 
 Google, Apple, password and passkeys are authentication methods for the same DANTE Account; they do not create parallel Account/session systems.
 
-## Access/Auth proof state
+## Shared Email Platform
 
-The reviewed product checkpoint `ab2716...` passed:
-
-```text
-Prettier / TypeScript / ESLint / architecture     PASS
-Web unit/component                               68 / 68 PASS
-Auth Playwright HTTPS                            60 / 60 PASS
-Chromium / Firefox / WebKit                      PASS through canonical suite
-```
-
-Manual UAT then proved real Windows Hello passkeys, passwordless signin, recent-auth/session rotation, authenticator lifecycle/anti-lockout and direct PostgreSQL coherence.
-
-Real Google UAT proved official Google Identity Services → real ID token → DANTE backend verification → direct mailbox proof where Google was not authoritative → passwordless Account + ExternalIdentity + canonical AuthSession. Details are in `docs/workstreams/access-auth-m5-review-2026-09-02.md`.
-
-## Current open boundary — email delivery
-
-No production email provider has been selected.
-
-The next gate must research the architecture before choosing a vendor:
+Email is now a reusable DANTE infrastructure subsystem, separate from Access/Auth ownership.
 
 ```text
-DANTE-owned email intent/security state
-vs external delivery responsibility
-SMTP vs provider HTTP API
-SPF/DKIM/DMARC
-bounce/complaint/suppression handling
-ambiguous delivery outcome and retry semantics
-observability/privacy/secrets
-Apple Private Email Relay requirements
-self-hosted SMTP operational/deliverability cost
-provider portability
+feature/Auth transaction
++
+durable EmailIntent
+→ PostgreSQL commit
+→ claim / lease / worker
+→ protected payload + versioned template
+→ provider-neutral adapter
+→ Amazon SES API v2 / SMTP local-CI compatibility
+→ provider feedback/suppression/observability
 ```
 
-The opt-in real-SMTP local-UAT capability at `9c0587...` is only a test transport path; deterministic automated tests continue to use loopback SMTP capture.
+Current Email Platform persistence:
+
+```text
+dante.email_delivery_intent
+dante.email_delivery_attempt
+dante.email_provider_event
+dante.email_recipient_suppression
+```
+
+Permanent delivery rules:
+
+```text
+DANTE owns lifecycle/state
+provider owns last-mile transport
+provider accepted != delivered
+no provider I/O in caller DB transaction
+no blind retry after ambiguous send
+short-lived AEAD-protected sensitive payload
+terminal/unsafe-state secret wipe
+future DANTE consumers reuse the platform rather than creating parallel mail stacks
+```
+
+## Current proof state
+
+Access/Auth proof includes automated Web/backend/PostgreSQL acceptance, manual password/session UAT, real Windows Hello passkeys and real Google provider UAT.
+
+Final Email Platform UAT on 2026-09-03 directly proved:
+
+```text
+dedicated non-root AWS UAT principal       PASS
+SES eu-west-3 preflight                    PASS
+DANTE signup → SES → real mailbox          PASS
+received OTP → Account creation            PASS
+DANTE recovery → SES → real mailbox        PASS
+recovery URL → password reset              PASS
+no auto-login after reset                  PASS
+prior AuthSession revoked                  PASS
+reset security notification → mailbox      PASS
+```
+
+Runtime produced three SES `provider_accepted` outcomes, all attempt 1. Direct PostgreSQL inspection observed provider MessageId present and the sensitive delivery bundle wiped for all three accepted intents.
+
+One explicit manual non-claim is preserved: the exact same consumed recovery URL was not reopened a second time in the final live run because the message had already been removed before that check.
+
+Exact evidence: `docs/development/email-platform-acceptance-2026-09-03.md`.
+
+## Production email deployment boundary
+
+The Email Platform is closed as engineering infrastructure. Production sender deployment still requires, as applicable:
+
+```text
+DANTE-controlled sender domain/subdomain
+SPF / DKIM / DMARC
+production IAM workload identity
+SES production account/quota/reputation posture
+live cloud provider feedback/event routing
+production alerting/SLOs
+traffic/reputation segmentation
+Apple Private Email Relay sender-domain compatibility
+```
+
+These deployment tasks do not reopen the accepted shared Email Platform absent concrete defect evidence.
 
 ## Documentation entry points
 
@@ -177,6 +230,9 @@ Start at:
 - `docs/PROJECT-STATUS.md`
 - `docs/ROADMAP.md`
 - `docs/architecture/README.md`
+- `docs/architecture/email-platform.md`
+- `docs/development/email-platform-local-uat.md`
+- `docs/development/email-platform-acceptance-2026-09-03.md`
 - `docs/database/README.md`
 - `docs/frontend/README.md`
 - `apps/backend/README.md`
