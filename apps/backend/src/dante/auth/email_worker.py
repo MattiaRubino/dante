@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
 from contextlib import suppress
 from datetime import UTC, datetime
 
@@ -103,6 +104,7 @@ class EmailDeliveryWorkerPool:
                 # keeps its outcome conservative rather than fabricating a safe retry.
                 break
             result: ProviderSendResult
+            provider_elapsed_ms: float | None = None
             try:
                 still_owned = await self._claim_still_owned(claim)
                 if not still_owned:
@@ -124,9 +126,21 @@ class EmailDeliveryWorkerPool:
                 )
             else:
                 # This is intentionally outside every PostgreSQL transaction.
+                started = time.perf_counter()
                 result = await self._provider.send(message)
+                provider_elapsed_ms = max(0.0, (time.perf_counter() - started) * 1000.0)
 
-            await self._finalize(claim=claim, result=result)
+            finalized = await self._finalize(claim=claim, result=result)
+            if finalized:
+                _LOGGER.info(
+                    "auth.email_delivery_result provider=%s outcome=%s attempt=%d "
+                    "provider_elapsed_ms=%s intent_ref=%s",
+                    self._provider.provider_code,
+                    result.outcome.value,
+                    claim.attempt_number,
+                    provider_elapsed_ms,
+                    claim.email_intent_ref,
+                )
         return len(claims)
 
     async def _claim_batch(self) -> list[ClaimedEmailIntent]:
@@ -147,7 +161,7 @@ class EmailDeliveryWorkerPool:
         *,
         claim: ClaimedEmailIntent,
         result: ProviderSendResult,
-    ) -> None:
+    ) -> bool:
         retry_delay = self._retry_delay_seconds(claim.attempt_number)
         async with self._session_factory() as database_session, database_session.begin():
             finalized = await self._outbox.finalize(
@@ -163,6 +177,7 @@ class EmailDeliveryWorkerPool:
                 claim.email_intent_ref,
                 claim.attempt_number,
             )
+        return finalized
 
     def _retry_delay_seconds(self, attempt_number: int) -> float:
         base = float(self._settings.email_retry_base_seconds)
