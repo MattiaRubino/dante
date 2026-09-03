@@ -1,6 +1,6 @@
 # DANTE — Home / Frontend Current Checkpoint
 
-**Status:** CURRENT LIVE ENTRY POINT — WORLD FOCUS M2 ACTIVE / M2-1 + M2-2 VALIDATED  
+**Status:** CURRENT LIVE ENTRY POINT — WORLD FOCUS M2 CLOSED / VALIDATED — M3 NEXT  
 **Date:** 2026-09-03  
 **Working branch:** `feature/home-react`  
 **Worktree:** `/home/mattia/projects/dante-frontend`
@@ -45,11 +45,12 @@ M1 Core Non-Visual Materialization     CLOSED / VALIDATED
 M1-1 identity/reference ownership      CLOSED / VALIDATED
 M1-2 facets + WP/O2/O5/O8 seams        CLOSED / VALIDATED
 POST-M1 SAFETY FALSIFICATION           CLOSED / PASS
-M2 Shared Visual Primitive Layer       ACTIVE
+M2 Shared Visual Primitive Layer       CLOSED / VALIDATED
 M2-1 shared presentation + L1 renderers CLOSED / VALIDATED
 M2-2 truthfulness + direct output       CLOSED / VALIDATED
-M2 FINAL CLOSURE AUDIT                  NEXT
-M3–M7                                  BLOCKED BY SEQUENCE
+M2 FINAL CLOSURE FALSIFICATION          CLOSED / PASS
+M3 Adaptive World Composition           NEXT
+M4–M7                                  BLOCKED BY SEQUENCE
 D2–D6                                  DEFERRED TO M4
 BACKEND                                BLOCKED UNTIL M7
 assistant manual visual review         NOT PERFORMED
@@ -109,6 +110,19 @@ CI   33787905171 PASS
 M2-2 final integration validation
 HEAD 26d79b0dcdeaac1cb094bf97b71e901003ac5fa5
 CI   33788370490 PASS
+Quality / Mobile / Chromium / frozen Timeline Firefox / Frontend CI Gate PASS
+
+M2 final hostile falsification — red discovery
+HEAD 3adbd958ee3e3bf2fd55b7d2a2562dd6de5aa011
+CI   33790674375 EXPECTED FAILURE
+hostile tests 4 / 5 PASS; web units 331 PASS / 1 FAIL
+sole finding: unbounded display-binding label/supporting copy
+
+M2 final code closure
+HEAD e3865e0cde095acae7e3022815538f35ee0706ef
+CI   33790953644 PASS
+hostile tests 5 / 5 PASS; web test files 70 / 70; web unit tests 332 / 332
+279 modules / 770 dependencies / 0 architecture violations
 Quality / Mobile / Chromium / frozen Timeline Firefox / Frontend CI Gate PASS
 ```
 
@@ -185,7 +199,7 @@ WP-02..WP-04 are NOT injected into live composition merely as demonstrations
 
 ## 6. M2-2 validated result
 
-M2-2 completes the currently mapped shared truthfulness/direct-output presentation owners over the same M2-1 grammar:
+M2-2 completes the mapped shared truthfulness/direct-output presentation owners over the same M2-1 grammar:
 
 ```text
 shared qualifier grammar
@@ -225,7 +239,31 @@ reference key != display copy
 
 Nominal states remain quiet; M2-2 does not create badge soup. O2/O5/O8 and WP-02..04 remain **unmounted unless real application/composition evidence justifies them**.
 
-## 7. Read order
+## 7. M2 final closure result
+
+The final hostile falsification attacked the combined M2-1/M2-2 layer rather than adding another renderer family.
+
+Four of five hostile cases passed immediately:
+
+```text
+simultaneous degraded truthfulness axes remain orthogonal
+unknown future World renders through O2/O5/O8 with order/role separation
+wrong-reference display binding fails closed even with convincing copy
+combined nominal basis/disclosure/sync state remains visually quiet
+```
+
+The only red finding was a real presentation-boundary gap: `WorldFocusDisplayBinding` accepted pathological 100,000-character label/supporting copy even though the boundary was defined as bounded. The fix remained under the existing M2 owner:
+
+```text
+label max           512 characters
+supportingText max  2048 characters
+blank or over-bound copy -> fail closed
+no truncation
+```
+
+The hostile test was not weakened. Final CI proves 5/5 hostile PASS and full frontend green. The M0 disposition audit has no remaining known shared visual owner assigned to M2. Therefore M2 is closed without pulling M3 customization, DANTE D2–D6 or backend authority forward.
+
+## 8. Read order
 
 ```text
 1. world-focus-current-checkpoint.md
@@ -242,27 +280,24 @@ Nominal states remain quiet; M2-2 does not create badge soup. O2/O5/O8 and WP-02
 12. product/platform/structure/geometry contracts as needed
 ```
 
-## 8. Current gate — M2 final closure audit only
+## 9. Current gate — M3 next, not started
 
-The known M0 shared-renderer dispositions assigned to M2 now have materialized production owners through M2-1/M2-2. M2 is **not yet declared closed**.
+M2 is **CLOSED / VALIDATED**. The next phase in the frozen frontend sequence is M3 Adaptive World Composition.
 
-The next bounded gate must be a final hostile M2 closure audit/falsification checking at minimum:
+M3 remains unstarted until a fresh bounded gate is explicitly authorized. Its intended scope remains:
 
 ```text
-cross-axis visual non-collapse
-unknown-future World renderer compatibility
-exact display binding / no raw-key fallback
-reasonCode and protected detail non-leakage
-sparse/no-fake-live composition
-long-copy and responsive pressure
-finite renderer ownership
-no universal card/envelope emergence
-no M3 customization pulled forward
+dynamic candidate resolution over already-earned semantics
+Customize Draft / Apply / Cancel
+pin / hide / reorder
+configuration-conflict UX
+stable vs adaptive vs ephemeral composition behavior
+no fake persistence
 ```
 
-Only a clean executable result may advance sequencing to M3.
+M3 must reuse the existing Workspace Platform and M2 renderers. It must not turn Output Grammar families into mandatory modules, manufacture content to populate Worlds, or pull DANTE D2–D6/backend work forward.
 
-## 9. Permanent barriers
+## 10. Permanent barriers
 
 ```text
 World != canonical Domain owner
@@ -283,7 +318,7 @@ Comparison != Decision
 missing trajectory position != zero
 ```
 
-## 10. Backend stop line
+## 11. Backend stop line
 
 ```text
 frontend view model != backend DTO != Domain model != persistence row
@@ -296,7 +331,7 @@ NO real tool/effect execution
 NO fake success
 ```
 
-## 11. Operational rules
+## 12. Operational rules
 
 - stay on `feature/home-react` unless explicitly authorized otherwise;
 - fresh live HEAD before every new write scope;
