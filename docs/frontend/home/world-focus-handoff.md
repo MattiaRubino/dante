@@ -1,6 +1,6 @@
 # DANTE — World Focus Handoff
 
-**Status:** CURRENT DURABLE HANDOFF — WS0–WS8 / M0 / M1 / POST-M1 SAFETY CLOSED — M2 ACTIVE / M2-1 + M2-2 VALIDATED / FINAL M2 AUDIT NEXT  
+**Status:** CURRENT DURABLE HANDOFF — WS0–WS8 / M0 / M1 / POST-M1 SAFETY / M2 CLOSED — M3 NEXT  
 **Date:** 2026-09-03  
 **Repository:** `MattiaRubino/dante`  
 **Branch:** `feature/home-react`  
@@ -55,11 +55,12 @@ M1 Core Non-Visual Materialization     CLOSED / VALIDATED
 M1-1 identity/reference ownership      CLOSED / VALIDATED
 M1-2 non-visual facets + seams         CLOSED / VALIDATED
 POST-M1 SAFETY FALSIFICATION           CLOSED / PASS
-M2 shared visual primitive layer       ACTIVE
+M2 shared visual primitive layer       CLOSED / VALIDATED
 M2-1 shared presentation/L1 renderers  CLOSED / VALIDATED
 M2-2 truthfulness/direct output        CLOSED / VALIDATED
-M2 FINAL CLOSURE AUDIT                 NEXT
-M3–M7                                  BLOCKED BY SEQUENCE
+M2 FINAL HOSTILE CLOSURE               CLOSED / PASS
+M3 Adaptive World Composition          NEXT
+M4–M7                                  BLOCKED BY SEQUENCE
 BACKEND                                BLOCKED UNTIL M7
 D2–D6                                  PRESERVED / DEFERRED TO M4
 ```
@@ -119,6 +120,19 @@ CI   33787905171 PASS
 M2-2 final integration validation
 HEAD 26d79b0dcdeaac1cb094bf97b71e901003ac5fa5
 CI   33788370490 PASS
+Quality / Chromium / frozen Timeline Firefox / Mobile / Frontend CI Gate PASS
+
+M2 final hostile red
+HEAD 3adbd958ee3e3bf2fd55b7d2a2562dd6de5aa011
+CI   33790674375 EXPECTED FAILURE
+hostile 4 / 5 PASS; web 331 PASS / 1 FAIL
+sole defect: display copy not actually length bounded
+
+M2 final hostile closure
+HEAD e3865e0cde095acae7e3022815538f35ee0706ef
+CI   33790953644 PASS
+hostile 5 / 5 PASS; web files 70 / 70; web units 332 / 332
+279 modules / 770 dependencies / 0 architecture violations
 Quality / Chromium / frozen Timeline Firefox / Mobile / Frontend CI Gate PASS
 ```
 
@@ -242,11 +256,13 @@ Pre-M0 discovered and fixed stale route-origin handoff resurrection without a ne
 
 M1 final hostile pressure found only the planned transitional cursor representation residue and closed it red-first.
 
-The post-M1 safety gate then found two additional implementation defects at existing boundaries: cancelled non-cooperative reads could reach validation, and O8 could retain caller evidence aliases. Both were fixed without reopening M1 or WS0–WS8.
+The post-M1 safety gate found two implementation defects at existing boundaries: cancelled non-cooperative reads could reach validation, and O8 could retain caller evidence aliases. Both were fixed without reopening M1 or WS0–WS8.
 
-M2-1 red-first proved the shared presentation layer had no pre-existing owner and then closed the L1 renderer/display-binding foundation.
+M2-1 red-first proved the shared presentation layer had no pre-existing owner and closed the L1 renderer/display-binding foundation.
 
-M2-2 red-first proved the remaining truthfulness/direct-output visual owners were absent. Production then materialized them, with one strict i18n typing issue corrected through explicit finite branching and without weakening any semantic expectation.
+M2-2 red-first proved the remaining truthfulness/direct-output visual owners were absent. Production materialized them with no semantic-test weakening.
+
+M2 final hostile pressure then found one remaining implementation gap at the existing display-binding boundary: display copy had no finite maximum. The hostile test stayed unchanged; the boundary was hardened and the full suite passed.
 
 ---
 
@@ -304,7 +320,7 @@ Do not turn proof/oracle-only structures into production owners automatically.
 
 ---
 
-# 7. M2 production presentation state
+# 7. M2 closed production presentation state
 
 M2-1 owns:
 
@@ -376,6 +392,15 @@ partial -> coverage/incomplete
 stale   -> freshness/stale
 ```
 
+The final hostile closure added finite display-copy enforcement:
+
+```text
+label max          512
+supportingText max 2048
+blank/oversize     fail closed
+silent truncation  forbidden
+```
+
 Presentation must not promote internal semantics:
 
 ```text
@@ -396,7 +421,7 @@ renderer != semantic owner
 responsive adaptation != semantic rewrite
 ```
 
-WP-02..WP-04 and O2/O5/O8 renderer capabilities are **not live composition claims**. Do not mount them merely to make M2 look populated.
+WP-02..WP-04 and O2/O5/O8 renderer capabilities are **not live composition claims**. Repository inspection at M2 closure confirms live core composition still mounts only Continuity.
 
 ---
 
@@ -416,9 +441,9 @@ M1's useful World path remains functional without DANTE.
 
 ---
 
-# 9. M0 disposition audit after M2-2
+# 9. M0 disposition audit after M2 closure
 
-All currently mapped shared visual dispositions assigned to M2 now have owners:
+All mapped shared visual dispositions assigned to M2 have owners and final hostile evidence:
 
 ```text
 M0-19 WP-02 shared rendering                  M2-1 DONE
@@ -433,41 +458,63 @@ O8 Evidence / History visual presentation     M2-2 DONE
 L2/L3/L6/L8 truthfulness presentation         M2-2 DONE
 ```
 
-This authorizes a closure audit, not an automatic M2 closure.
+No generic M2-3 renderer family is justified.
 
 ---
 
-# 10. Current M2 handoff
+# 10. M2 final hostile closure result
+
+Red:
+
+```text
+HEAD 3adbd958ee3e3bf2fd55b7d2a2562dd6de5aa011
+CI   33790674375 EXPECTED FAILURE
+hostile 4 / 5 PASS
+web 331 PASS / 1 FAIL
+```
+
+The four immediate PASS cases proved cross-axis independence/non-leakage, unknown-future World O2/O5/O8 rendering, wrong-reference fail-closed binding and nominal-state quietness.
+
+The sole red found unbounded display copy. Fix:
+
+```text
+HEAD e3865e0cde095acae7e3022815538f35ee0706ef
+CI   33790953644 PASS
+hostile 5 / 5 PASS
+web files 70 / 70
+web units 332 / 332
+architecture 279 modules / 770 dependencies / 0 violations
+full Frontend CI Gate PASS
+```
+
+M2 is **CLOSED / VALIDATED**.
+
+---
+
+# 11. Current M3 handoff
 
 M0 remains the production-disposition authority in `world-focus-m0-materialization-mapping.md`.
 
-M1 and POST-M1 safety are closed. M2-1 and M2-2 are closed/validated. M2 itself remains active pending a final hostile closure audit/falsification.
+M3 Adaptive World Composition is next but **has not started**.
 
-The next bounded engineering block is:
-
-> **M2 final closure audit / falsification.**
-
-Required pressure includes:
+Expected M3 concerns:
 
 ```text
-cross-axis visual non-collapse
-unknown future World rendering
-exact display binding / fail closed
-reasonCode/reference key non-leakage
-nominal-state quietness
-sparse/no-fake-live composition
-long-copy and compact responsive safety
-forced-colors/textual meaning
-finite renderer ownership
-no universal card/projection envelope
-no M3 candidate/customization work pulled forward
+candidate resolver over meaningful available answers
+stable / adaptive / ephemeral composition
+Customize Draft / Apply / Cancel
+pin / hide / reorder
+configuration-conflict UX
+no fake persistence
 ```
 
-Persistent pin/hide/reorder/customization remains M3. Contextual DANTE D2–D6 remains M4.
+M3 must reuse Workspace Platform + M2 rendering rather than reinterpret them. Renderer availability must not become mandatory mounting. Sparse Worlds remain sparse.
+
+Persistent pin/hide/reorder/customization belongs to M3. Contextual DANTE D2–D6 remains M4.
 
 ---
 
-# 11. Backend stop line
+# 12. Backend stop line
 
 ```text
 NO World DB/Alembic
@@ -481,17 +528,17 @@ NO fake success
 
 ---
 
-# 12. Strict reopen policy
+# 13. Strict reopen policy
 
 Do not restart WS0–WS8 or M1 for a new provider, World noun, renderer, viewport, AI model, config store or larger dataset.
 
 Reopen only when later executable evidence shows a concrete semantic/ownership/state/security/privacy/effect contradiction that cannot fit an existing owner, and reopen only the earliest necessary phase.
 
-M2-1 should reopen only for a contradiction in display-binding/shared-presentation ownership. M2-2 should reopen only for a contradiction in the shared truthfulness/direct-output presentation layer, not merely because M5 later earns a specialist renderer.
+M2-1 should reopen only for a contradiction in display-binding/shared-presentation ownership. M2-2 should reopen only for a contradiction in shared truthfulness/direct-output presentation semantics, not merely because M5 later earns a specialist renderer.
 
 ---
 
-# 13. Repository discipline
+# 14. Repository discipline
 
 Authority order:
 
@@ -508,4 +555,4 @@ Every new write scope needs exact branch/PRE-SCOPE/path gate and live HEAD reche
 
 Immediate continuation:
 
-> **Run M2 final closure audit only. M3–M7 and backend remain blocked by sequence.**
+> **M3 is NEXT but unstarted. Start only with a fresh bounded M3 gate. M4–M7 and backend remain blocked by sequence.**
