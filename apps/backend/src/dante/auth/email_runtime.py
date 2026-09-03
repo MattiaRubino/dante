@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from dante.auth.email_crypto import EmailPayloadCipher
-from dante.auth.email_feedback import SesFeedbackStore
+from dante.auth.email_feedback import EmailFeedbackStore
 from dante.auth.email_outbox import DurableEmailOutbox
 from dante.auth.email_provider import SesEmailProvider, SmtpEmailProvider
 from dante.auth.email_worker import EmailDeliveryWorkerPool
@@ -19,7 +19,7 @@ class EmailPlatformRuntime:
 
     outbox: DurableEmailOutbox
     worker_pool: EmailDeliveryWorkerPool
-    feedback_store: SesFeedbackStore
+    feedback_store: EmailFeedbackStore
 
     def wake(self) -> None:
         """Nudge workers after a caller has committed newly staged intent."""
@@ -62,7 +62,7 @@ async def create_email_platform_runtime(
     runtime = EmailPlatformRuntime(
         outbox=outbox,
         worker_pool=worker_pool,
-        feedback_store=SesFeedbackStore(),
+        feedback_store=EmailFeedbackStore(),
     )
     await worker_pool.start()
     return runtime
