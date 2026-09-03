@@ -1,3 +1,5 @@
+import './timeline-planning-tray-v2.css';
+
 export type TimelinePlanningLocale = 'it' | 'en';
 
 export type TimelinePlanningCopy = Readonly<{
