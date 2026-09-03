@@ -51,6 +51,7 @@ _PEPPER = urlsafe_b64encode(b"p" * 32).rstrip(b"=").decode("ascii")
 _CSRF_KEY = urlsafe_b64encode(b"c" * 32).rstrip(b"=").decode("ascii")
 _OTP_KEY = urlsafe_b64encode(b"o" * 32).rstrip(b"=").decode("ascii")
 _SMTP_CONTROL_LABEL = "dante.e2e.smtp_control_port"
+_EMAIL_RUNTIME_LABEL = "loopback SMTP capture"
 
 
 class _HibpHandler(BaseHTTPRequestHandler):
@@ -522,7 +523,7 @@ def main() -> None:
             )
             print(
                 "DANTE Access/Auth full-stack ready: "
-                f"{_WEB_ORIGIN} using disposable PostgreSQL 18.6 + loopback SMTP capture."
+                f"{_WEB_ORIGIN} using disposable PostgreSQL 18.6 + {_EMAIL_RUNTIME_LABEL}."
             )
 
             while not stop_event.wait(0.25):
