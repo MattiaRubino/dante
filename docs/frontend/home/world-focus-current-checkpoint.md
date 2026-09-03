@@ -1,11 +1,11 @@
 # DANTE — World Focus Current Checkpoint
 
-**Status:** CURRENT LIVE WORLD FOCUS CHECKPOINT — M2 ACTIVE / M2-1 + M2-2 CLOSED / VALIDATED  
+**Status:** CURRENT LIVE WORLD FOCUS CHECKPOINT — M2 CLOSED / VALIDATED — M3 NEXT  
 **Date:** 2026-09-03  
 **Branch:** `feature/home-react`  
 **Worktree:** `/home/mattia/projects/dante-frontend`
 
-This is the first World Focus authority a new chat/agent must read. Older `D2 NEXT`, `M0 NEXT`, `M1 ACTIVE`, `M1-2 NEXT`, `POST-M1 SAFETY ACTIVE`, `M2 NEXT`, `M2-1 NEXT` or similar prose is phase-time history only.
+This is the first World Focus authority a new chat/agent must read. Older `D2 NEXT`, `M0 NEXT`, `M1 ACTIVE`, `M1-2 NEXT`, `POST-M1 SAFETY ACTIVE`, `M2 NEXT`, `M2-1 NEXT`, `M2 ACTIVE` or similar prose is phase-time history only.
 
 # 1. Read order
 
@@ -48,11 +48,12 @@ M1                                    CLOSED / VALIDATED
 M1-1 identity/reference ownership     CLOSED / VALIDATED
 M1-2 non-visual facets + seams        CLOSED / VALIDATED
 POST-M1 SAFETY FALSIFICATION          CLOSED / PASS
-M2 shared visual primitive layer      ACTIVE
+M2 shared visual primitive layer      CLOSED / VALIDATED
 M2-1 shared presentation/L1 renderers CLOSED / VALIDATED
 M2-2 truthfulness/direct output       CLOSED / VALIDATED
-M2 FINAL CLOSURE AUDIT                NEXT
-M3–M7                                 BLOCKED BY SEQUENCE
+M2 FINAL CLOSURE FALSIFICATION        CLOSED / PASS
+M3 Adaptive World Composition         NEXT
+M4–M7                                 BLOCKED BY SEQUENCE
 D2–D6                                 DEFERRED TO M4
 BACKEND                               BLOCKED UNTIL M7
 assistant manual visual review         NOT PERFORMED
@@ -117,6 +118,21 @@ CI   33787905171 PASS
 M2-2 final integration validation
 HEAD 26d79b0dcdeaac1cb094bf97b71e901003ac5fa5
 CI   33788370490 PASS
+Quality / Chromium / frozen Timeline Firefox / Mobile / Frontend CI Gate PASS
+
+M2 final hostile falsification — red
+HEAD 3adbd958ee3e3bf2fd55b7d2a2562dd6de5aa011
+CI   33790674375 EXPECTED FAILURE
+hostile 4 / 5 PASS
+web 331 PASS / 1 FAIL
+sole finding: display-safe copy was not actually length-bounded
+
+M2 final code closure
+HEAD e3865e0cde095acae7e3022815538f35ee0706ef
+CI   33790953644 PASS
+hostile 5 / 5 PASS
+web test files 70 / 70; web unit tests 332 / 332
+architecture 279 modules / 770 dependencies / 0 violations
 Quality / Chromium / frozen Timeline Firefox / Mobile / Frontend CI Gate PASS
 ```
 
@@ -254,7 +270,32 @@ stale   -> freshness / stale
 
 No `reasonCode`, protected provider/policy detail or raw reference key becomes display copy.
 
-# 8. Permanent non-collapses retained
+# 8. M2 final hostile closure
+
+The final hostile suite was committed unchanged before the closing fix and pressured the combined M2 layer across five cases:
+
+```text
+1. simultaneous degraded L2/L3/L6/L8 axes + non-leakage
+2. pathological display-copy bounds
+3. unknown-future World through O2/O5/O8 + long realistic copy
+4. convincing-label / wrong-reference fail-closed behavior
+5. combined nominal state quietness
+```
+
+The red run passed cases 1, 3, 4 and 5. Case 2 exposed the only remaining gap: `WorldFocusDisplayBinding` trimmed/rejected blank text but did not enforce a finite maximum.
+
+The existing owner was hardened without changing the hostile test:
+
+```text
+WorldFocusDisplayBinding label            max 512 characters
+WorldFocusDisplayBinding supportingText   max 2048 characters
+oversize                                  fail closed
+truncation                                none
+```
+
+The final run passes all five hostile cases and all 332 web unit tests. Combined with the M0 disposition audit, real-browser pressure, forced-colors support and live core-composition inspection showing Continuity as the only mounted M2 renderer, this closes M2 without creating fake density or pulling M3 forward.
+
+# 9. Permanent non-collapses retained
 
 ```text
 reference exists != payload available != current != disclosable != fresh
@@ -277,9 +318,9 @@ AI output != fact
 
 No universal `ProjectionEnvelope`, generic `Thing/Entity/Fact/PropertyBag`, frontend ACL/AuthZ, World-owned canonical state, universal `Card<T>` renderer or backend owner was introduced.
 
-# 9. M0 M2-disposition audit
+# 10. M0 M2-disposition closure audit
 
-Known shared visual dispositions assigned to M2 now have concrete production owners:
+Known shared visual dispositions assigned to M2 all have concrete production owners and survived final hostile pressure:
 
 ```text
 M0-19 WP-02 shared rendering                  DONE / M2-1
@@ -295,46 +336,40 @@ O8 Evidence / History visual presentation     DONE / M2-2
 L2/L3/L6/L8 truthfulness presentation         DONE / M2-2
 ```
 
-This does not itself close M2; it establishes that a final falsification may now test closure instead of materializing another arbitrary renderer family.
+No additional generic M2 renderer family is justified.
 
-# 10. Current gate — M2 final closure audit
+# 11. Current gate — M3 next
 
-M2 remains active. The next bounded gate is a hostile closure audit/falsification over the combined M2-1/M2-2 production layer.
+M2 is **CLOSED / VALIDATED**. M3 Adaptive World Composition is the next phase but has not started.
 
-It must pressure at least:
-
-```text
-cross-axis visual non-collapse
-unknown future World
-exact binding/fail-closed behavior
-reasonCode/reference-key non-leakage
-nominal-state quietness
-sparse/no-fake-live composition
-long-copy and compact responsive safety
-forced-colors/textual-state semantics
-finite renderer registry boundaries
-no universal card/envelope emergence
-no M3 customization pulled forward
-```
-
-Only real executable PASS may advance to M3.
-
-# 11. Stop lines
+A future M3 write gate must be fresh-scoped and explicitly authorized. Intended M3 concerns remain:
 
 ```text
-M2 FINAL CLOSURE AUDIT                     NEXT
-M3 adaptive composition/customization      BLOCKED BY M2
-M4 D2–D6 contextual DANTE                  BLOCKED BY M3
-M5 complete contrasting Worlds             BLOCKED BY M4
-M6 integrated visual/a11y/performance      BLOCKED BY M5
-M7 pre-backend frontend freeze             BLOCKED BY M6
-BACKEND                                    BLOCKED UNTIL M7
+candidate resolver over meaningful available answers
+stable / adaptive / ephemeral composition behavior
+Customize Draft / Apply / Cancel
+pin / hide / reorder
+configuration-conflict UX
+no fake persistence
 ```
 
-# 12. Contract sequencing
+M3 must not reinterpret M2 renderers as mandatory modules or manufacture content. D2–D6 remain M4. Backend remains after M7.
+
+# 12. Stop lines
+
+```text
+M3 Adaptive World Composition                NEXT
+M4 D2–D6 contextual DANTE                    BLOCKED BY M3
+M5 complete contrasting Worlds               BLOCKED BY M4
+M6 integrated visual/a11y/performance review BLOCKED BY M5
+M7 pre-backend frontend freeze               BLOCKED BY M6
+BACKEND                                      BLOCKED UNTIL M7
+```
+
+# 13. Contract sequencing
 
 `world-focus-product-contract.md` and `world-focus-platform-contract.md` retain semantic authority. Historical next-gate wording is superseded only for sequencing by this live checkpoint and `world-focus-contract-sequencing-supersession.md`.
 
-# 13. Immediate continuation
+# 14. Immediate continuation
 
-> **Run the final M2 closure audit/falsification only. Do not start M3, D2–D6/M4 or backend work unless M2 is actually closed by executable evidence.**
+> **M3 is next but unstarted. Start only from a fresh bounded M3 gate. Do not pull D2–D6/M4 or backend work forward.**
