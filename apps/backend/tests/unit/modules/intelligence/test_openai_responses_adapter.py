@@ -12,9 +12,9 @@ from dante.modules.intelligence.adapters.outbound.model.openai_responses import 
     OPENAI_TERRA_MODEL_TARGET_REF,
     OPENAI_TERRA_ROUTE_CONFIG_REVISION,
     OpenAIResponsesAdapter,
+    OpenAIResponseStatus,
     OpenAIResponsesWireRequest,
     OpenAIResponsesWireResponse,
-    OpenAIResponseStatus,
     OpenAITransportError,
     OpenAITransportErrorKind,
 )
