@@ -48,7 +48,17 @@ def main() -> int:
             ),
         )
 
-        sts.get_caller_identity()
+        caller = sts.get_caller_identity()
+        caller_arn = str(caller.get("Arn", ""))
+        if caller_arn.endswith(":root"):
+            print(
+                "AWS PREFLIGHT FAIL: profile resolves to the AWS account root user. "
+                "Root credentials are forbidden for normal DANTE local UAT. "
+                "Logout this profile and authenticate as a dedicated least-privilege IAM/federated principal.",
+                file=sys.stderr,
+            )
+            return 5
+
         identity = ses.get_email_identity(EmailIdentity=from_address)
     except ProfileNotFound as exc:
         print(
