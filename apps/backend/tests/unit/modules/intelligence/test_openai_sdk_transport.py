@@ -79,7 +79,8 @@ def _body(request: httpx2.Request) -> dict[str, object]:
 
 @pytest.mark.asyncio
 async def test_sdk_transport_rejects_client_with_hidden_retries() -> None:
-    http_client = httpx2.AsyncClient(transport=httpx2.MockTransport(lambda request: None))
+    seen: list[httpx2.Request] = []
+    http_client = httpx2.AsyncClient(transport=httpx2.MockTransport(_server_error_handler(seen)))
     client = AsyncOpenAI(
         api_key="synthetic-test-key",
         base_url=_BASE_URL,
@@ -91,6 +92,7 @@ async def test_sdk_transport_rejects_client_with_hidden_retries() -> None:
             OpenAISDKResponsesTransport(client)
     finally:
         await client.close()
+    assert seen == []
 
 
 @pytest.mark.asyncio
