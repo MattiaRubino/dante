@@ -1,37 +1,47 @@
 # DANTE System Overview
 
 - **Status:** CURRENT ARCHITECTURE / IMPLEMENTATION-BOUNDARY OVERVIEW
-- **Last reconciled:** 2026-08-26
+- **Last reconciled:** 2026-09-03
 - **Backend foundation:** CP1–CP6 CLOSED / integrated / directly validated
 - **Current PostgreSQL:** 18.6
-- **Current Alembic head:** `20260826_08`
-- **Current product work:** Access frontend active and unmerged on `feature/access-frontend`
+- **Current Access/Auth Alembic head:** `20260903_15`
+- **Current branch work:** `feature/access-auth` / M5 final closure reconciliation
+- **Shared Email Platform:** ENGINEERING + REAL SES UAT ACCEPTED
 
 ## 1. Product and authority
 
 DANTE is a personal operating system whose canonical truth represents real life over time while preserving authority, provenance, uncertainty and distinctions between intention, execution and outcome.
 
-Compass: **Understand life. Shape what comes next.**
-
-Implementation consumes closed Product/Domain/Logical/Physical models and closed engineering foundations. Framework or storage convenience does not redefine accepted semantics.
-
-Core invariants include:
+North Star execution loop:
 
 ```text
+Understand
+→ Discover
+→ Orchestrate
+→ Decide
+→ Plan & Coordinate
+→ Act
+→ Observe
+→ Learn & Adapt
+```
+
+Permanent semantic constraints include:
+
+```text
+reality != plan
+inference != fact
+Effort != Execution != Outcome != Goal progress
+unknown != false
 Person != Account != Principal != Actor
-Authority != AuthZ decision
-Consent != Authority
-Visibility != Authority
 provider state != canonical DANTE state
 derived projection != canonical truth
-absence/unknown != false
 MaterialStateRef != ETag/MVCC/provider revision
 idempotency != semantic identity
 AI/solver output != accepted canonical effect
 client local state != canonical accepted effect
 ```
 
-Logical hardenings `WL-H01..WL-H12` remain active implementation contracts.
+Implementation consumes the closed Product/Domain/Logical/Physical authorities. Framework/storage convenience does not redefine accepted semantics.
 
 ## 2. Repository / application topology
 
@@ -52,92 +62,49 @@ DANTE repository
 └── .github
 ```
 
-Backend accepted internal shape:
+Backend accepted internal posture is a capability-first modular monolith with explicit application transaction ownership and provider/ORM/HTTP details kept outside semantic authority.
+
+## 3. Foundation state
 
 ```text
-apps/backend/src/dante
-├── bootstrap
-├── kernel
-├── platform
-└── modules/<capability>
-    ├── domain
-    ├── application
-    ├── ports
-    └── adapters
-        ├── inbound/http
-        └── outbound/persistence|integrations
+Engineering Foundation                  CLOSED / ACCEPTED
+Frontend Foundation                     CLOSED / ACCEPTED
+Backend CP1–CP6                         CLOSED / ACCEPTED
+PostgreSQL 18.6                         CURRENT
+schema dante                            CURRENT
+owner/migrator/runtime privilege split  CURRENT
+real PostgreSQL acceptance testing      CURRENT
 ```
 
-FastAPI is an inbound adapter/process host. SQLAlchemy/provider/runtime objects stay outside Domain identity. Capability boundaries are behavior/cohesion based, not one owner/table/route per module.
-
-## 3. Backend technical foundation
-
-```text
-CP1 process/config foundation                   CLOSED / DIRECT QA PASS
-CP2 LOCAL PostgreSQL foundation                 CLOSED / DIRECT QA PASS
-CP3 persistence/migrations/privileges           CLOSED / DIRECT QA PASS
-CP4 CI enforcement                              CLOSED / DIRECT REMOTE QA PASS
-CP5 integrated scaffold QA                      CLOSED / DIRECT INTEGRATED QA PASS
-Backend scaffold integration PR #24             MERGED
-CP6 concrete PostgreSQL database                CLOSED / DIRECT QA / INTEGRATED VIA PR #42
-```
-
-Current technical baseline:
-
-```text
-Python 3.14.x
-uv
-FastAPI
-SQLAlchemy async
-psycopg 3
-Alembic
-PostgreSQL 18.6
-schema dante
-owner / migrator / runtime role separation
-explicit application transaction ownership
-real PostgreSQL acceptance testing
-```
-
-The earlier CP2/CP3 PostgreSQL 18.4 runs remain exact historical phase-time evidence. Patch maintenance inside PostgreSQL major line 18 does not reopen the architecture.
+Historical PostgreSQL 18.4 CP2/CP3 evidence remains exact for those runs; current repository patch is 18.6.
 
 ## 4. Canonical persistence authority
 
 ```text
 PostgreSQL 18 major family
 SOLE CANONICAL PERSISTENCE / MATERIAL-HISTORY AUTHORITY
-
-current repository/runtime patch
-18.6
-
-current Alembic head
-20260826_08
 ```
 
-Current concrete topology:
+Current `feature/access-auth` database:
 
 ```text
-68 tables
-5 ordinary views
-14 integrity routines
+Alembic             20260903_15
+87 tables
+5 views
+15 routines
 75 triggers
-95 physical indexes
-68 foreign keys
-120 named CHECK constraints
-0 custom enum/domain
-0 sequences
-0 materialized views
-0 RLS policies
+170 physical indexes
+88 foreign keys
+267 CHECK constraints
 ```
 
-Selected PostgreSQL capability envelope remains bounded by the accepted Physical/technical decisions, including PostGIS, pgvector, native FTS, `pg_trgm`, `unaccent`, `pg_stat_statements` and a trigger-based PgBouncer activation posture.
-
-Accepted relational thesis:
+The accepted relational thesis remains:
 
 ```text
 owner-specific canonical families
 + owner-specific material-state/history families
 + specific typed relation families
-+ bounded technical address/control structures only where genuine heterogeneous addressing requires them
++ bounded technical address/control structures where required
 + separate provider / derived / runtime concerns
 ```
 
@@ -163,78 +130,127 @@ MaterialStateRef
 ExternalRef
 ```
 
-Current PostgreSQL rules preserve:
-
-```text
-homogeneous NativeRef
-→ direct FK
-
-genuinely heterogeneous NativeRef
-→ bounded native-address anchor
-
-MaterialStateRef
-→ stable PostgreSQL UUID address
-→ bounded material-state address/control
-→ exact owner + facet
-→ owner-specific material-state row
-→ explicit current accepted-state binding where required
-```
-
 Provider revisions, MVCC tokens, timestamps and ETags do not become MaterialStateRef.
+
+The shared Email Platform persistence is a bounded technical delivery-control subsystem and is **not** MaterialState.
 
 ## 6. CP6 — Concrete PostgreSQL Database
 
-CP6 is complete. It converted the closed Domain + Logical + Physical model into the concrete DANTE PostgreSQL database and then validated the result directly.
+CP6 is closed and integrated. It converted closed semantic/physical authority into concrete PostgreSQL and validated the result directly.
 
-Closure state:
+Later product work evolves that database through forward Alembic migrations under ADR-010 without rewriting applied CP6 history.
 
-```text
-CP6-00 COMPLETE
-CP6-01 CLOSED / GATE 01 PASS
-CP6-02 CLOSED / GATE 02 PASS
-CP6-03 CLOSED / GATE 03 PASS
-CP6-04 CLOSED / MATERIALIZATION PASS
-CP6-05 CLOSED / DIRECT QA PASS
-CP6 CLOSED / CONCRETE POSTGRESQL DATABASE PASS
-```
+## 7. Access/Auth current architecture
 
-Durable acceptance evidence:
+Access/Auth is now a real full-stack capability, not a future backend vertical.
 
-- `docs/development/backend-cp6-05-whole-database-qa.md`
-- `docs/database/README.md`
-- `docs/database/dictionary/README.md`
-- `docs/decisions/ADR-010-postgresql-persistence-constitution.md`
-
-The former CP6 blueprint/materialization sequence is historical execution evidence. It is not a current next-step plan.
-
-## 7. Boundary to product verticals
-
-Database materialization is not the same thing as product-vertical application implementation.
-
-Post-CP6 product verticals own, where applicable:
+Permanent model:
 
 ```text
-application use cases
-application services
-business persistence adapters encoding application behavior
-business API routes
-frontend behavior
-product workflow orchestration
+Account
+├── EmailIdentity 1..N
+├── PasswordCredential 0..1
+├── AuthSession 0..N
+├── ExternalIdentity 0..N
+└── PasskeyCredential 0..N through WebAuthnAccount
 ```
 
-They consume the already-materialized canonical database. A later real requirement may evolve the DB normally, but accepted schema/semantic invariants are not casually reopened.
-
-Current state:
+Core rules:
 
 ```text
-Access frontend
-ACTIVE / UNMERGED on feature/access-frontend
-
-first dedicated post-CP6 backend product vertical
-NOT STARTED
+Person != Account
+EmailIdentity != Account
+PasswordCredential optional
+passwordless Account valid
+provider identity = issuer + subject
+provider email != linking authority
+provider token/assertion != DANTE AuthSession
+opaque server-authoritative AuthSession
+recent-auth required for sensitive mutation
+passkeys use WebAuthn/FIDO2, not custom crypto
 ```
 
-## 8. Frontend / client data authority
+Current evidence includes local password/session UAT, real Windows Hello/passkey UAT and real Google provider UAT.
+
+## 8. Shared Email Platform
+
+The Email Platform is shared DANTE infrastructure. Access/Auth is the first consumer.
+
+```text
+feature/Auth transaction
+        │
+        ├── canonical state mutation
+        └── durable EmailIntent
+                 │
+                 ▼
+          PostgreSQL commit
+                 │
+                 ▼
+         claim / lease / worker
+                 │
+                 ├── protected payload
+                 ├── template rendering
+                 ├── retry/ambiguity policy
+                 └── provider-neutral adapter
+                          │
+                          ├── Amazon SES API v2
+                          └── SMTP local/CI compatibility
+                                   │
+                                   ▼
+                         provider feedback/events
+                                   │
+                                   ▼
+                     DANTE suppression/observability
+```
+
+Current persistence:
+
+```text
+dante.email_delivery_intent
+dante.email_delivery_attempt
+dante.email_provider_event
+dante.email_recipient_suppression
+```
+
+Permanent rules:
+
+```text
+DANTE owns lifecycle/state
+provider owns last-mile transport
+provider accepted != delivered
+no provider I/O in caller DB transaction
+no blind retry after ambiguous send
+short-lived AES-GCM protected sensitive payload
+terminal/unsafe-state wipe
+Auth/security tracking OFF
+future consumers reuse platform rather than creating a second mail subsystem
+```
+
+## 9. Email Platform acceptance
+
+Final 2026-09-03 real-provider UAT proved:
+
+```text
+dedicated non-root AWS UAT principal       PASS
+SES eu-west-3 preflight                    PASS
+DANTE signup → SES → real mailbox          PASS
+received OTP → Account creation            PASS
+DANTE recovery → SES → real mailbox        PASS
+recovery URL → password reset              PASS
+no auto-login                              PASS
+prior AuthSession revoked                  PASS
+reset security notification → mailbox      PASS
+```
+
+Three runtime sends were `provider_accepted`, each on attempt 1.
+
+Direct PostgreSQL UAT inspection observed provider MessageId present and sensitive-payload wipe for signup verification, password recovery and reset notification.
+
+The first live attempt also exposed a real Botocore temporary-credential region-refresh defect; DANTE correctly classified the uncertain send as `ambiguous`, did not blind-retry, and the provider was fixed to propagate region through a boto3 Session. Focused unit coverage now protects this path.
+
+Exact evidence: `../development/email-platform-acceptance-2026-09-03.md`.
+
+## 10. Frontend / client data authority
 
 Frontend Data Authority Matrix remains:
 
@@ -252,25 +268,21 @@ cross-tree transient              Zustand only when justified
 
 Local arrival/staging never defines canonical truth.
 
-Generic frontend foundation/materialization is already closed and integrated. Product verticals proceed on bounded branches under their own gates.
+## 11. Offline / specialist capabilities
 
-## 9. Offline / specialist capabilities
-
-Selected Physical targets remain activation-triggered rather than automatically enabled everywhere.
+Selected targets remain activation-triggered:
 
 ```text
-PowerSync + encrypted SQLite      offline/sync consumer required
-PgBouncer                         real connection-pressure value
-PostgreSQL outbox                 real Class-A async requirement
-Restate                           real Class-B durable workflow
-Cloudflare R2                     real ContentArtifact byte flow
+PowerSync + encrypted SQLite      when real offline/sync consumer exists
+PgBouncer                         when connection-pressure value is proven
+PostgreSQL outbox                 ACTIVE for Email Platform Class-A work
+Restate                           when real Class-B workflow exists
+Cloudflare R2                     when real ContentArtifact byte flow exists
 pgBackRest + S3                   recovery/production boundary or rehearsal
 OR-Tools                          solver-backed capability
 ```
 
-A PostgreSQL-native structure required by the canonical schema may exist without activating the surrounding runtime/product capability.
-
-## 10. Transactions / migrations / privileges
+## 12. Transactions / migrations / privileges
 
 Current durable posture:
 
@@ -284,64 +296,51 @@ expire_on_commit=False
 outer application operation owns transaction
 adapter may flush / never implicit commit
 READ COMMITTED default
-one Alembic DAG / one canonical head
+one Alembic DAG / one canonical branch head
 metadata.create_all() not deployment authority
 
 dante_owner      NOLOGIN
 dante_migrator   LOGIN NOINHERIT + bounded SET ROLE
-dante_runtime    LOGIN NOINHERIT / runtime DML posture
+dante_runtime    LOGIN NOINHERIT / least-privilege runtime posture
 ```
 
-Migration/evolution, idempotency, material-state and privilege doctrine is governed by the accepted PostgreSQL Constitution and the real Alembic/mapping implementation.
+External side effects follow operation-specific idempotency/ambiguity policy rather than blanket retry.
 
-## 11. Current direct database evidence
+## 13. Recovery posture
 
-Final CP6 acceptance established, among other gates:
+Physical recovery uses the accepted pgBackRest/WAL/PITR direction when activated.
+
+Email Platform adds an anti-resurrection obligation:
 
 ```text
-uv lock/sync                     PASS
-Ruff format/check                PASS
-mypy                             PASS
-non-PostgreSQL backend tests     PASS
-backend build                    PASS
-real PostgreSQL selected tests   PASS
-schema/topology checks           PASS
-security/ACL checks              PASS
-Database Dictionary checks       PASS
-restart/health                   PASS
-persistent volume retained       PASS
+email workers CLOSED
+→ restore
+→ recovery reconciliation
+→ uncertain restored nonterminal email work = recovery_quarantined
+→ sensitive payload wiped
+→ reopen workers
 ```
 
-The accepted implementation/database evidence is the CP6 closure package, not older pre-materialization foundation runs.
-
-## 12. Current non-claims
-
-```text
-FIRST POST-CP6 BACKEND PRODUCT VERTICAL   NOT IMPLEMENTED
-SEMANTIC HG BLANKET PASS                  NO
-RESTORE/PITR PRODUCTION REHEARSAL         NOT CLAIMED BY CP6
-POWERSYNC PRODUCT DIRECT TEST             ONLY WHEN ACTIVATED BY A REAL VERTICAL
-RESTATE DIRECT TEST                       ONLY WHEN ACTIVATED BY A REAL WORKFLOW
-PRODUCTION DEPLOYMENT                     NOT IMPLIED BY LOCAL/CI DATABASE CLOSURE
-```
-
-## 13. Testing / CI
+## 14. Testing / CI
 
 GitHub Actions remains repository-wide CI/CD authority.
 
-Protected `main` currently requires:
+Proof layers intentionally separate:
 
 ```text
-Backend CI Gate
-Dependency Review
-Frontend CI Gate
+unit/application
+architecture/static checks
+real PostgreSQL
+migration/catalog/ACL
+HTTP/OpenAPI/generated client
+browser full-stack
+real provider/authenticator UAT
+real external-delivery UAT
 ```
 
-Required-check names come from real emitted contexts and repository rules, not guessed prose.
+A simulated provider never becomes a real-provider acceptance claim.
 
-Historical successful runs remain evidence for the exact commit/environment on which they executed. Current claims require current evidence appropriate to the affected scope.
-
-## 14. Environments / developer posture
+## 15. Environment / developer posture
 
 Exactly:
 
@@ -349,11 +348,39 @@ Exactly:
 LOCAL → DEV → UAT → PROD
 ```
 
-Environments are runtime contexts, not Git branches.
+Environment != Git branch.
 
 Canonical backend semantics remain Linux. Windows development uses the authoritative WSL-backed checkout; divergent Windows/WSL source clones are forbidden.
 
-## 15. Current execution posture
+For local SES UAT, repository-owned tooling provides:
+
+```text
+AWS CLI bootstrap
+named dante-uat profile
+non-root preflight
+least-privilege IAM policy template
+disposable full-stack harness
+real SES/mailbox acceptance procedure
+```
+
+Production should use workload identity/IAM role rather than a developer IAM user.
+
+## 16. Current non-claims
+
+```text
+EMAIL PLATFORM ENGINEERING                   CLOSED
+PRODUCTION EMAIL SENDER DEPLOYMENT           NOT IMPLIED
+DKIM/SPF/DMARC PRODUCTION PROOF              OPEN
+LIVE AWS FEEDBACK CLOUD INGRESS              DEPLOYMENT GATE
+REAL APPLE REGISTERED-DOMAIN UAT             DEFERRED / OPEN
+WHOLE M5                                     FINAL CLOSURE RECONCILIATION
+M6 NATIVE MOBILE                             FUTURE / OPTIONAL
+M7 SECURITY MATURITY/HANDOFF                 PLANNED
+```
+
+The exact same consumed recovery URL was not manually reopened in the final Email UAT; do not label that one step manually observed.
+
+## 17. Current execution posture
 
 ```text
 DOMAIN MODEL          CLOSED
@@ -362,7 +389,9 @@ PHYSICAL MODEL        CLOSED
 BACKEND FOUNDATION    CLOSED
 CP6 DATABASE          CLOSED / INTEGRATED
 FRONTEND FOUNDATION   CLOSED / INTEGRATED
-ACCESS FRONTEND       ACTIVE / UNMERGED
+ACCESS/AUTH M1–M4     CLOSED
+ACCESS/AUTH M5        FINAL CLOSURE RECONCILIATION
+EMAIL PLATFORM        CLOSED / REAL SES UAT PASS
 ```
 
-Current general repository status is owned by `docs/PROJECT-STATUS.md`; branch-local product work is owned by the relevant workstream documentation and executable branch truth.
+Current general status is owned by `docs/PROJECT-STATUS.md`; branch-local work by `docs/workstreams/access-auth.md`; Email Platform by `email-platform.md` and its acceptance evidence.
