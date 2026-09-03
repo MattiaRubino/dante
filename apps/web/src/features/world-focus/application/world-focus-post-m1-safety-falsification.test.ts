@@ -439,9 +439,13 @@ describe('World Focus post-M1 safety falsification', () => {
   });
 
   it('does not accept a late adapter result after upstream cancellation even if the adapter ignores AbortSignal', async () => {
-    let resolveLate: ((value: unknown) => void) | null = null;
+    let resolverInstalled = false;
+    let resolveLate: (value: unknown) => void = () => {
+      throw new Error('late adapter resolver was not installed');
+    };
     const adapter: WorldFocusScopedReadAdapter = () =>
       new Promise((resolve) => {
+        resolverInstalled = true;
         resolveLate = resolve;
       });
     const validator = vi.fn(() => ({ ok: true as const, value: 'late-result' }));
@@ -451,10 +455,7 @@ describe('World Focus post-M1 safety falsification', () => {
     const pending = reader('future-apiary', upstream.signal);
     await Promise.resolve();
     upstream.abort();
-    expect(resolveLate).not.toBeNull();
-    if (resolveLate === null) {
-      throw new Error('late adapter resolver was not installed');
-    }
+    expect(resolverInstalled).toBe(true);
     resolveLate({ worldId: 'future-apiary', value: 'late-result' });
 
     let resolved = false;
