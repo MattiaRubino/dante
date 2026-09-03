@@ -1,11 +1,11 @@
 # DANTE — Project Status
 
 - **Status:** CURRENT TRUTH
-- **Last reconciled:** 2026-09-02
+- **Last reconciled:** 2026-09-03
 - **Protected `main`:** integrated source authority; read the live Git ref for the current SHA
 - **Backend CP6 integration:** PR #42 MERGED
 - **PostgreSQL Recovery integration:** PR #47 MERGED / CP01–CP07 LOCAL PASS / CLOSED
-- **Current product boundary:** protected `main` includes the accepted PostgreSQL Recovery evolution; Access/Auth, Home React and platform observability remain active bounded workstreams; AI architecture design/reengineering is closed on `feature/ai-architecture` and ready to hand off to implementation
+- **Current product boundary:** protected `main` includes the accepted PostgreSQL Recovery evolution; Access/Auth, Home React and platform observability remain active bounded workstreams; AI architecture is closed on `feature/ai-architecture`; AI implementation is active on `feature/ai-implementation` with I0-I2 CLOSED/PASS, I3 deferred pending owner data/seams and C6 as the current executable checkpoint
 
 ## 1. Executive state
 
@@ -84,21 +84,33 @@ PRODUCT/SIMULATION REPLAY PASS
 CURRENT AI IMPLEMENTATION AUTHORITY
 docs/architecture/dante-ai-implementation-baseline-final.md
 
-CURRENT AI NEXT ACTION
-ACTUAL AI IMPLEMENTATION WORKSTREAM
-I0 repository/application ownership + architecture-test skeleton
+AI IMPLEMENTATION WORKSTREAM
+feature/ai-implementation
+I0 CLOSED / PASS
+I1 CLOSED / PASS
+I2 CLOSED / PASS
+I2 validated code checkpoint 359707b8d628347f82a0344d44f9fd42d0f59dcd
+I3/C3 DEFERRED / WAITING OWNER DATA + SEAMS
+CURRENT EXECUTABLE CHECKPOINT C6
 
-AI IMPLEMENTATION CLAIM
-NONE YET
+CURRENT AI EXECUTION OVERLAY
+C6 control/safety/publication contracts
+→ C7 route-config identity/loader/digest
+→ I4 provider candidate admission
+→ I5 adapter qualification
+
+I3/C3 remains parallel/conditional and must converge before I6
+when real owner data/seams and required permission/currentness proofs are ready
 
 PARALLEL BOUNDED UNMERGED WORKSTREAMS
 feature/access-auth
 feature/home-react
 feature/platform-observability
-feature/ai-architecture — architecture closed / implementation handoff ready
+feature/ai-implementation — active / I0-I2 closed / C6 next
+feature/ai-architecture — architecture closed / retained authority/evidence
 ```
 
-Architecture closure is not runtime/product completion. `I0` is build-authorized; production Search, Ask DANTE, provider routes, new persistence and new database schema are not activated by this status.
+Architecture closure is not runtime/product completion. I0-I2 are implemented and directly validated on the AI implementation branch; production Search, Ask DANTE, provider routes and any new persistence remain unactivated.
 
 ## 2. Current protected-main backend/database truth
 
@@ -177,7 +189,7 @@ Database Architecture & Reference
 ≈ real PostgreSQL schema
 ```
 
-A later structural change remains a normal forward same-change package; AI architecture closure produced **no database/Alembic change**.
+A later structural change remains a normal forward same-change package. AI I0-I2 introduced **no database/Alembic change**.
 
 ## 4. Binding semantic invariants
 
@@ -257,6 +269,12 @@ Final implementation-facing authority:
 docs/architecture/dante-ai-implementation-baseline-final.md
 ```
 
+Branch-local execution record:
+
+```text
+docs/workstreams/ai-implementation.md
+```
+
 Final structural acceptance evidence:
 
 ```text
@@ -281,6 +299,20 @@ consequential mutation OFF
 Search remains independently deterministic. Structured semantic questions consume owning capability typed query seams. Provider SDKs remain private adapters behind `ModelAccessPort` and are not selected yet.
 
 No generic persistence is justified for Work, Run, Context, SearchResult, ProviderAttempt, AI memory, conversation or embeddings.
+
+Current branch-local implementation posture:
+
+```text
+I0 architecture boundaries                           CLOSED / PASS
+I1 Search contracts/registry/application shell        CLOSED / PASS
+I2 Work/Context/Reference/SemanticQuery/Retrieval     CLOSED / PASS
+I3 real deterministic Search/structured families      DEFERRED / WAITING OWNER SEAMS
+C6 Policy/Resource/Verification/Publication/
+   Effect/Egress/Evidence contracts                   READY / NEXT
+C7 route-config identity/loader/digest                 AFTER C6
+```
+
+I3 is not cancelled or falsely closed. It remains a conditional lane and must re-enter before I6 when the accepted first vertical requires the real deterministic source/query path.
 
 ## 7. Provider / direct-proof state
 
@@ -308,7 +340,8 @@ Missing applicable evidence is not `N/A`.
 feature/access-auth             active product implementation
 feature/home-react              active frontend work
 feature/platform-observability  active platform work
-feature/ai-architecture         architecture design CLOSED / implementation entry ready
+feature/ai-implementation       active AI implementation / I0-I2 closed / C6 next
+feature/ai-architecture         architecture design CLOSED / retained authority/evidence
 ```
 
 Do not infer one branch's implementation from another branch.
@@ -316,8 +349,14 @@ Do not infer one branch's implementation from another branch.
 ## 9. Current next action
 
 ```text
-ACTUAL AI IMPLEMENTATION WORKSTREAM
-→ I0 repository/application ownership + architecture-test skeleton
+feature/ai-implementation
+→ C6 Policy / Resource / Verification / Publication /
+     Effect / Egress / Evidence contracts
+→ then C7 route-config identity / loader / digest snapshot
+
+parallel conditional lane:
+I3/C3 resumes only when real owner data/seams are integration-ready
+and must converge before I6 read-only Ask DANTE
 ```
 
-I0 may implement accepted contracts with deterministic fakes/synthetic trusted contexts. User-visible/private-data Search/Ask still requires the real integration and activation gates defined by the final baseline.
+C6/C7 remain provider-free/provider-neutral implementation work. User-visible/private-data Search/Ask still requires the real integration and activation gates defined by the final baseline.

@@ -1,7 +1,7 @@
 # DANTE Documentation Index
 
 - **Status:** CURRENT NAVIGATION / AUTHORITY INDEX
-- **Last reconciled:** 2026-09-02
+- **Last reconciled:** 2026-09-03
 
 This directory is the durable documentation surface for DANTE. Current specifications describe the present directly; historical evidence, phase-time continuations and completed workstream records do not silently override current truth.
 
@@ -67,8 +67,13 @@ AI-05 WHOLE-SYSTEM                    CLOSED / STRUCTURALLY ACCEPTED
 POST-AI05 HARDENING                   CLOSED / POST05-H01..H25
 POST-AI05 MEGA TEST                   PASS / MKT-001..100 / C01..20 / reverse / simulations
 AI ARCHITECTURE DESIGN                CLOSED / STRUCTURALLY ACCEPTED
-AI IMPLEMENTATION                     NOT STARTED
-AI NEXT                               I0 repository/application ownership + architecture-test skeleton
+
+AI IMPLEMENTATION BRANCH              feature/ai-implementation
+I0                                    CLOSED / PASS
+I1                                    CLOSED / PASS
+I2                                    CLOSED / PASS
+I3/C3                                 DEFERRED / WAITING OWNER DATA + SEAMS
+AI NEXT EXECUTABLE                    C6 control/safety/publication contracts
 ```
 
 For exact current project state, read `PROJECT-STATUS.md`.
@@ -94,23 +99,36 @@ Repository truth beats conversation memory.
 
 ## 4. Current AI continuation
 
-For AI implementation on `feature/ai-architecture`, read:
+For AI implementation on `feature/ai-implementation`, read in this order:
 
-1. `architecture/dante-ai-implementation-baseline-final.md` — **CURRENT / ACCEPTED FOR IMPLEMENTATION ENTRY**;
-2. `architecture/dante-ai-post05-final-mega-acceptance.md` — final independent acceptance evidence;
-3. `workstreams/ai-architecture.md` — closed architecture workstream record and implementation handoff;
-4. upstream AI-02/03/04/PRE05/AI-05 authorities only when changing or validating those contracts.
+1. `architecture/dante-ai-implementation-baseline-final.md` — **CURRENT / ACCEPTED implementation-facing authority**;
+2. `workstreams/ai-implementation.md` — current branch-local implementation state, validated checkpoints and next executable gate;
+3. `ROADMAP.md` — current execution overlay and cross-workstream convergence;
+4. `PROJECT-STATUS.md` — project-level current state;
+5. `architecture/dante-ai-post05-final-mega-acceptance.md` — final independent acceptance evidence;
+6. `workstreams/ai-architecture.md` — closed architecture workstream record and handoff evidence;
+7. upstream AI-02/03/04/PRE05/AI-05 authorities only when changing or validating those contracts.
 
 The temporary `workstreams/ai-architecture-live-handoff.md` has been deleted after durable knowledge coverage.
 
-Current next action:
+Current branch-local implementation state:
 
 ```text
-ACTUAL AI IMPLEMENTATION WORKSTREAM
-→ I0 repository/application ownership + architecture-test skeleton
+I0 CLOSED / PASS
+I1 CLOSED / PASS
+I2 CLOSED / PASS
+I3/C3 DEFERRED / WAITING OWNER DATA + SEAMS
+
+NEXT EXECUTABLE
+C6 Policy / Resource / Verification / Publication /
+   Effect / Egress / Evidence contracts
+→ C7 route-config identity / loader / digest snapshot
+
+I3/C3 remains a parallel conditional lane and must converge before I6
+when the first vertical requires its real deterministic source/query path.
 ```
 
-No provider/model/SDK is selected by architecture closure.
+No provider/model/SDK is selected by architecture closure or by I0-I2.
 
 ## 5. Product
 
@@ -180,6 +198,10 @@ Current AI implementation authority:
 
 - `architecture/dante-ai-implementation-baseline-final.md`.
 
+Current AI implementation workstream:
+
+- `workstreams/ai-implementation.md`.
+
 Final post-AI05 acceptance:
 
 - `architecture/dante-ai-post05-final-mega-acceptance.md`.
@@ -214,7 +236,7 @@ Entry point:
 
 - `workstreams/README.md`
 
-Current bounded branch state includes active Access/Auth, Home React and platform observability work. The AI branch's architecture design is closed and handed off to implementation entry at I0.
+Current bounded branch state includes active Access/Auth, Home React, platform observability and AI implementation work. `feature/ai-architecture` remains closed architecture authority/evidence; `feature/ai-implementation` owns newer branch-local AI implementation truth.
 
 ## 12. Documentation lifecycle
 

@@ -1,6 +1,7 @@
 # DANTE Workstream Records
 
 - **Status:** CURRENT INDEX
+- **Last reconciled:** 2026-09-03
 - **Rule:** current subsystem/workstream files describe present truth; Git/PR/archive preserve chronology.
 
 ## Current authority
@@ -52,7 +53,7 @@ On `feature/ai-architecture`:
 
 The temporary `ai-architecture-live-handoff.md` has been deleted after durable knowledge coverage and must not be recreated merely for chronology.
 
-Current AI state:
+Architecture status:
 
 ```text
 AI-00  COMPLETE
@@ -72,13 +73,41 @@ POST05 PRE-IMPLEMENTATION MEGA TEST
 
 CURRENT IMPLEMENTATION AUTHORITY
        ../architecture/dante-ai-implementation-baseline-final.md
-
-NEXT
-       ACTUAL AI IMPLEMENTATION WORKSTREAM
-       I0 repository/application ownership + architecture-test skeleton
 ```
 
-Provider/model/SDK selection remains open and evidence-driven. No AI runtime/provider/database implementation is claimed by architecture closure.
+### AI implementation — active branch-local workstream
+
+On `feature/ai-implementation`:
+
+- `ai-implementation.md` — current implementation state, validation evidence and executable gate;
+- `../ROADMAP.md` — current cross-workstream execution overlay;
+- `../PROJECT-STATUS.md` — project-level current state.
+
+Current implementation state:
+
+```text
+I0  CLOSED / PASS
+I1  CLOSED / PASS
+I2  CLOSED / PASS
+I3/C3 real deterministic Search/structured family
+    DEFERRED / WAITING OWNER DATA + SEAMS
+
+CURRENT EXECUTABLE
+C6 Policy / Resource / Verification / Publication /
+   Effect / Egress / Evidence contracts
+→ C7 route-config identity / loader / digest snapshot
+→ I4 provider candidate admission
+→ I5 adapter qualification
+
+MANDATORY CONVERGENCE
+I3/C3 must re-enter when owner seams are ready and converge
+before I6 whenever the accepted first vertical requires the real
+Search/structured source path.
+```
+
+The baseline I0-I10 identifiers remain architectural stage labels. The execution overlay may defer trigger-gated I3 without renumbering or falsely closing it.
+
+Provider/model/SDK selection remains open and evidence-driven. No AI runtime/provider/database activation is implied by architecture closure or I0-I2 completion.
 
 Binding implementation separations include:
 
@@ -153,7 +182,8 @@ Current project authority includes bounded unmerged work such as:
 feature/access-auth             active product vertical
 feature/home-react              active frontend workstream
 feature/platform-observability  active platform workstream
-feature/ai-architecture         architecture design closed; implementation handoff ready
+feature/ai-implementation       active AI implementation / I0-I2 closed / C6 next
+feature/ai-architecture         architecture design closed / retained authority/evidence
 ```
 
 Live Git refs and each branch's durable authority outrank this index for later movement.

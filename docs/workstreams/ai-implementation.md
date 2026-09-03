@@ -1,6 +1,6 @@
 # DANTE AI Implementation Workstream
 
-- **Status:** ACTIVE / I0 CLOSED-PASS / I1 CLOSED-PASS / I2 CLOSED-PASS / I3 READY
+- **Status:** ACTIVE / I0 CLOSED-PASS / I1 CLOSED-PASS / I2 CLOSED-PASS / I3 DEFERRED-WAITING-OWNER-SEAMS / C6 READY
 - **Branch:** `feature/ai-implementation`
 - **Started:** 2026-09-02
 - **I0 closed:** 2026-09-03
@@ -8,11 +8,12 @@
 - **I2 closed:** 2026-09-03
 - **Architecture authority:** `../architecture/dante-ai-implementation-baseline-final.md`
 - **Post-AI05 acceptance:** `../architecture/dante-ai-post05-final-mega-acceptance.md`
-- **Current implementation step:** I3 — real deterministic Search/structured families only when owning data/seams are ready
+- **Current executable checkpoint:** C6 — Policy / Resource / Verification / Publication / Effect / Egress / Evidence contracts
+- **Deferred conditional lane:** I3/C3 — real deterministic Search/structured families when owning data/seams become integration-ready
 - **I0 validated code checkpoint:** `506b7f6c9dcf6c241b9f0f77bfec53a7e8d2d663`
 - **I1 validated code checkpoint:** `2eadac22a43a001abbf8ecaacf2da67fde7d2489`
 - **I2 validated code checkpoint:** `359707b8d628347f82a0344d44f9fd42d0f59dcd`
-- **Implementation claim:** I0, I1 and I2 CLOSED / PASS; I3 not yet materialized
+- **Implementation claim:** I0, I1 and I2 CLOSED / PASS; I3 not materialized; C6 not yet materialized
 - **Provider/model/SDK:** OPEN / EVIDENCE-DRIVEN
 - **Database/Alembic change:** NONE
 - **Production activation:** NONE
@@ -23,7 +24,9 @@ Repository truth and executable tests outrank this workstream record.
 
 This workstream turns the accepted DANTE Intelligence architecture into production code without weakening Product/Domain/Logical/Physical/PostgreSQL or AI-02..AI-05 contracts.
 
-The final implementation baseline owns architecture. This file records only current implementation state and the next executable gate.
+The final implementation baseline owns architecture. This file records current branch-local implementation state, validated checkpoints, trigger-gated deferrals and the next executable gate.
+
+The accepted I0-I10 identifiers remain architecture-stage labels. The execution overlay may defer a conditional integration lane without renumbering, silently closing or weakening that stage.
 
 ## 2. I0 — CLOSED / PASS
 
@@ -63,11 +66,7 @@ relative and absolute imports normalized
 indirect-path failures report the dependency path
 ```
 
-No empty `modules/search` or `modules/intelligence` package was created at I0. Search paths materialized only when I1 contained real code.
-
-## 3. I0 acceptance evidence
-
-I0 was accepted only after the real `feature/ai-implementation` worktree executed the normal backend gates against:
+I0 acceptance checkpoint:
 
 ```text
 506b7f6c9dcf6c241b9f0f77bfec53a7e8d2d663
@@ -93,11 +92,7 @@ canonical PostgreSQL 18.6 image build        PASS
 PostgreSQL acceptance suite                  PASS / 80 passed, 58 deselected
 ```
 
-The PostgreSQL suite covered existing CP6 M1..M7/final contracts, exact current catalog, fresh-database single-head migration, migration round trips, Alembic drift, roles/ACL, runtime readiness/pool behavior and transaction/savepoint behavior.
-
-I0 introduced no AI database fixture and no database or Alembic change.
-
-## 4. I0 evidence ledger
+Evidence ledger:
 
 ```text
 implementation-entry write gate verified at 5e2c67559670b2bc5780fbcdb3c1aae90975e5ca
@@ -110,9 +105,9 @@ real PostgreSQL acceptance gate PASS
 I0 CLOSED / PASS
 ```
 
-No GitHub Actions run is attached because the existing workflow does not run for an ordinary feature-branch push. Local direct execution is the evidence for this checkpoint.
+I0 introduced no database/Alembic change and no provider dependency.
 
-## 5. I1 — CLOSED / PASS
+## 3. I1 — CLOSED / PASS
 
 I1 materialized only the accepted deterministic Search boundary.
 
@@ -146,9 +141,9 @@ style(search): format I1 search implementation
 fix(search): satisfy I1 lint contracts
 ```
 
-### 5.1 Public/application contract posture
+### 3.1 Public/application contract posture
 
-Implemented as stdlib immutable contracts and Protocols rather than making Pydantic a universal internal abstraction:
+Implemented as immutable stdlib-oriented contracts and Protocols:
 
 ```text
 frozen/slotted dataclasses
@@ -158,7 +153,7 @@ SearchQueryPort Protocol
 immutable SearchFamilyRegistry
 ```
 
-Search target references preserve the accepted semantic families through discriminated Search projections:
+Search target references preserve the accepted semantic families:
 
 ```text
 NativeSearchTargetRef
@@ -169,66 +164,32 @@ ExternalSearchTargetRef
 
 No universal `EntityRef` / `entity_id` abstraction is introduced, and public Search does not import persistence-owned database reference modules.
 
-### 5.2 Eligibility/non-interference posture
+### 3.2 Eligibility/non-interference posture
 
-The application shell constructs the active + eligible family intersection before invoking any query adapter.
+The application shell constructs the active + eligible family intersection before query I/O.
 
-The outbound Search boundary carries only admitted execution state, including:
+The outbound boundary carries only admitted execution state, including:
 
 ```text
-owner scopes
-source scopes
+owner/source scopes
 safe projection fields
-permitted filter fields
-permitted facet fields
+permitted filter/facet fields
 current/history support
 navigation/snippet/facet/count eligibility
 source lifecycle exclusions
 negative scopes
 sensitivity ceiling
-current access/basis refs required for later revalidation
+current access/basis refs
 family source/coherence/snapshot/currentness/publication requirements
 ```
 
-The query adapter therefore must not discover an unrestricted universe and filter it after ranking/count/faceting.
+Explicit pre-query checks include active registration, current request eligibility, owner/source scope presence, temporal compatibility, query/filter compatibility, filter-field admission, minimum safe hit projection, page bounds and truthful guarantee admission.
 
-Explicit pre-query checks include:
+Observable features are contracted before the outbound port and adapter-result postconditions reject unadmitted family hits, disallowed snippets/facets/counts, guarantee overclaims and navigation owner/family escape.
 
-```text
-active registration
-current request eligibility
-owner/source scope presence
-current/history compatibility
-keyword/structured-filter mode compatibility
-filter-field registration + eligibility intersection
-minimum safe hit projection
-application-owned maximum page bound
-family maximum truthful guarantee
-```
+No eligible family yields a uniform safe empty result without query-port I/O, preventing registered-but-hidden versus nonexistent family distinction through this shell.
 
-Observable features are contracted before the outbound port:
-
-```text
-snippet eligibility is per family
-facet eligibility and allowed fields are per family
-count eligibility is conservatively intersected for the multi-family result
-navigation requires explicit family eligibility
-```
-
-Adapter-result postconditions reject:
-
-```text
-hit from an unadmitted family
-disallowed snippet
-facet from unadmitted family or unadmitted field
-disallowed count
-guarantee stronger than the admitted family maximum
-navigation result escaping admitted family/owner
-```
-
-No eligible family yields a uniform safe empty result and does not call the query port. A registered-but-hidden family and a nonexistent family therefore do not become distinguishable through this shell.
-
-### 5.3 I1 acceptance evidence
+### 3.3 I1 acceptance evidence
 
 Final validated code checkpoint:
 
@@ -236,7 +197,7 @@ Final validated code checkpoint:
 2eadac22a43a001abbf8ecaacf2da67fde7d2489
 ```
 
-Fast gate executed fail-fast in the real worktree:
+Fast gate:
 
 ```text
 uv lock --check                              PASS
@@ -250,9 +211,7 @@ backend source distribution + wheel build   PASS
 fail-fast gate exit code                    0
 ```
 
-The targeted suite covered the I0 architecture boundaries plus I1 registry, active/eligible intersection, hidden-family non-interference, minimized access/scopes, filter admission, truthful guarantee downgrade, page bounds, adapter postconditions, safe facet/snippet/count behavior, navigation eligibility, typed Search references, filter-shape validation, trusted request coherence and timezone-aware interpretation requirements.
-
-PostgreSQL regression gate executed after the final I1 code was committed:
+PostgreSQL regression gate:
 
 ```text
 canonical PostgreSQL 18.6 image build        PASS
@@ -260,11 +219,9 @@ PostgreSQL acceptance suite                  PASS / 80 passed, 74 deselected
 PostgreSQL gate exit code                    0
 ```
 
-The PostgreSQL gate reconfirmed CP6 M1..M7/final, exact current catalog, Alembic single-head/fresh DB/round trips/drift, role and ACL hardening, recovery material-state retirement, runtime readiness/pool behavior and transaction/savepoint semantics.
+The DB gate reconfirmed CP6 M1..M7/final, exact current catalog, Alembic fresh-DB/single-head/round-trip/drift behavior, roles/ACL, recovery material-state retirement, runtime readiness/pool behavior and transaction/savepoint semantics.
 
-I1 made no database or Alembic change.
-
-### 5.4 Explicit non-claims
+Explicit non-claims:
 
 ```text
 I1 CLOSED / PASS                         YES
@@ -275,16 +232,13 @@ Search HTTP route                        NO
 Auth/AuthZ integration                   NO
 provider/model/SDK                       NO
 FTS / pg_trgm / vector                   NO
-Intelligence implementation              NO
 database/Alembic change                  NO
 production activation                    NO
 ```
 
-Protected Search still requires real owning data/seams, authoritative Auth/disclosure integration and applicable direct non-interference/currentness proofs before activation.
+## 4. I2 — CLOSED / PASS
 
-## 6. I2 — CLOSED / PASS
-
-I2 materialized only the accepted request-local Intelligence contracts and deterministic test fakes. It did not activate a provider, database seam, durable run model or production route.
+I2 materialized the accepted request-local Intelligence C5 contracts and deterministic test fakes only. It did not activate a provider, real owning query seam, durable Run model or production route.
 
 Current production contracts:
 
@@ -309,8 +263,6 @@ apps/backend/tests/unit/modules/intelligence/test_semantic_query.py
 apps/backend/tests/unit/modules/intelligence/test_retrieval.py
 ```
 
-Test package marker files were added only to give pytest/mypy a single deterministic package identity; they do not create runtime ownership.
-
 Implementation/hardening commits:
 
 ```text
@@ -333,7 +285,7 @@ test(ai): fix I2 test package identity
 test(ai): close I2 static test hygiene
 ```
 
-### 6.1 Contract posture
+### 4.1 Contract posture
 
 I2 preserves the accepted separations:
 
@@ -352,15 +304,15 @@ provider completion != verified != publishable
 
 `WorkContract` is immutable and first-vertical/read-only. Request-local execution status, result maturity, deadline, cancellation and cleanup state remain runtime state rather than Domain Actual/Outcome.
 
-Context preserves the AI-03A contract families plus `BasisManifest` and explicit Reality Scope, source standing/currentness, instruction provenance, readiness, exposure and bounded resource semantics.
+Context preserves the AI-03A contract families plus `BasisManifest`, Reality Scope, source standing/currentness, instruction provenance, readiness, exposure and bounded resource semantics.
 
-Reference Resolution operates over an already-eligible bounded candidate universe. Hidden candidates therefore cannot manufacture externally visible ambiguity. `RESOLVED` preserves the accepted target-reference family and the achieved binding proof (`EXACT_CANONICAL` or `UNIQUE_IN_SCOPE`) rather than treating candidate/model confidence as resolution proof.
+Reference Resolution operates over an already-eligible bounded candidate universe. Hidden candidates cannot manufacture visible ambiguity. `RESOLVED` preserves the accepted target-reference family and achieved binding proof (`EXACT_CANONICAL` or `UNIQUE_IN_SCOPE`).
 
-Semantic Query exposes a provider/DB-agnostic application seam for typed structured results. Missing owning-capability integration returns `NOT_INTEGRATION_READY` rather than bypassing capability ownership through SQLAlchemy/SQL/table access.
+Semantic Query exposes a provider/DB-agnostic typed application seam. Missing owning-capability integration returns `NOT_INTEGRATION_READY` rather than bypassing capability ownership through SQLAlchemy/SQL/table access.
 
 Retrieval preserves candidate discovery separately from validation/promotion to `ContextFragment`; rank, score and candidate count do not upgrade truth/currentness/coverage guarantees.
 
-### 6.2 I2 acceptance evidence
+### 4.2 I2 acceptance evidence
 
 Final validated code checkpoint:
 
@@ -368,7 +320,7 @@ Final validated code checkpoint:
 359707b8d628347f82a0344d44f9fd42d0f59dcd
 ```
 
-Final diagnostic fast gate executed in the real worktree:
+Final diagnostic fast gate:
 
 ```text
 uv lock --check                              PASS
@@ -383,9 +335,7 @@ overall diagnostic                          PASS
 diagnostic exit code                       0
 ```
 
-The targeted suite covered all I0 architecture boundaries, all I1 Search contracts and I2 request-local Work/Context/Reference/SemanticQuery/Retrieval semantics and deterministic fakes.
-
-PostgreSQL regression gate executed against the same final I2 code checkpoint:
+PostgreSQL regression gate against the same code checkpoint:
 
 ```text
 canonical PostgreSQL 18.6 image build        PASS
@@ -409,9 +359,7 @@ runtime readiness and pool recovery
 transaction / rollback / flush / savepoint behavior
 ```
 
-I2 made no database or Alembic change.
-
-### 6.3 Explicit non-claims
+Explicit non-claims:
 
 ```text
 I2 CLOSED / PASS                         YES
@@ -428,9 +376,148 @@ database/Alembic change                  NO
 production activation                    NO
 ```
 
-The contracts are build-ready only. Integration/activation still require actual owning capability seams, authority/disclosure integration and applicable direct proof.
+## 5. I3 readiness assessment — DEFERRED / WAITING OWNER SEAMS
 
-## 7. Engineering quality posture
+Accepted architectural stage:
+
+```text
+I3 — real deterministic Search/structured families only when owning data/seams are ready
+```
+
+A repository audit after I2 found that the PostgreSQL substrate is materialized and healthy, but the first real family is not yet integration-ready without inventing application semantics.
+
+Observed repository facts:
+
+```text
+dante/modules currently contains Search + Intelligence only
+CP6 business mappings exist under platform/database/mappings
+native owner rows are persistence identity shells, not product/domain application services
+Schedule/Actual/Session/Recurrence materialize structural/current-history semantics
+SearchHit requires a truthful title projection
+real owning capability public/query seams are not yet materialized on this branch
+full Access/Auth remains a separate active workstream
+```
+
+Therefore I3 is **not failed, cancelled or closed**. It is deferred by its own accepted readiness condition.
+
+Forbidden readiness shortcuts:
+
+```text
+synthetic "<type> <uuid>" titles presented as product search semantics
+Intelligence -> SQLAlchemy / database mappings
+model-generated SQL or ORM predicates
+generic Repository/UoW cross-capability authority
+activating FTS/pg_trgm/vector merely to manufacture progress
+claiming persistence rows are automatically an owning application seam
+```
+
+I3/C3 may resume when one real family can prove, as applicable:
+
+```text
+real owner/product data semantics
+safe display/projection fields
+current/history behavior
+owner/source scope
+permission/disclosure basis
+bounded query semantics
+truthful guarantee/currentness/basis mapping
+family tests
+PSV-06 / SC-017 protected non-interference proof when applicable
+```
+
+## 6. Current execution overlay
+
+The accepted architecture stage numbering remains unchanged. The implementation blueprint contains parallel dependency lanes, so the trigger-gated I3 lane can wait while provider-free Intelligence preparation continues.
+
+```text
+C6  Policy / Resource / Verification / Publication /
+    Effect / Egress / Evidence contracts
+    ↓
+C7  route-config identity / loader / content digest snapshot
+    ↓
+I4 / C8
+    provider candidate-admission decision
+    ↓
+I4-I5 / C9-C11
+    admitted inactive adapter
+    conformance + live compatibility
+    direct DANTE qualification
+    qualification/promotion decision
+```
+
+Parallel conditional lane:
+
+```text
+I3 / C3
+bounded PostgreSQL Search adapter + first real deterministic family proof
+```
+
+Mandatory convergence:
+
+```text
+C6 → C7 → I4 → I5
+                 \
+                  +→ JOIN GATE → I6 READ-ONLY ASK
+                 /
+I3/C3 when owner seams become ready
+```
+
+I6 may not activate the accepted first vertical until the required real source/query path, authoritative Auth/AuthZ/disclosure, currentness/publication behavior and applicable direct proofs are ready.
+
+## 7. Current executable boundary — C6
+
+Baseline candidate commit:
+
+```text
+C6 feat(ai): Policy/Resource/Verification/Publication/Effect/Egress/Evidence contracts
+```
+
+C6 may materialize pure provider-independent application contracts and deterministic fakes/tests for:
+
+```text
+Policy decision consumption
+Resource estimate/admit/settle semantics
+VerificationResult
+ResultMaturity transition constraints as applicable
+EffectOutcome / first-vertical NO_EFFECT boundary
+EgressAttempt / exposure accounting semantics
+PublicationDecision / safe publication result
+runtime Evidence emission contract
+```
+
+C6 must preserve:
+
+```text
+Policy consumer != Authority/AuthZ owner
+Resource admission != commercial accounting truth
+UNKNOWN usage != ZERO usage
+MODEL OUTPUT != PUBLISHABLE OUTPUT
+provider completed != verified != publishable
+Effect first vertical = NO_EFFECT
+ContextManifest != EgressAttempt != audit evidence
+telemetry != audit != canonical truth
+request-local/no-store unless an independent durability trigger exists
+```
+
+C6 does **not** authorize:
+
+```text
+provider candidate selection
+provider SDK installation
+route-config implementation beyond C6 needs
+HTTP production activation
+real Auth/AuthZ ownership
+real billing/quota accounting ownership
+durable Work/Run
+AI memory
+new DB/Alembic schema
+generic AI persistence
+consequential mutation/effect execution
+```
+
+Before C6 writes, reread the Policy/Resource/Verification/Publication/Effect/Egress/Evidence sections of the final baseline and relevant AI-04/AI-05 authorities, inspect current repository style and declare a fresh exact write gate.
+
+## 8. Engineering quality posture
 
 Implementation optimizes for:
 
@@ -450,15 +537,3 @@ performance measured at material boundaries rather than guessed micro-optimizati
 ```
 
 FastAPI process-scoped resources continue to use the existing `lifespan` model. Existing PostgreSQL runtime/pool behavior is unchanged.
-
-## 8. Next boundary — I3
-
-```text
-I3 — real deterministic Search/structured families only when owning data/seams are ready
-```
-
-I3 is conditional: a real deterministic family may materialize only when its owning capability data/query seam is actually integration-ready and the family can preserve current/history, authorization/disclosure, guarantee, source/basis/currentness and non-interference contracts without inventing cross-capability persistence authority.
-
-I3 does not authorize a provider/model/SDK, generic Search database authority, model-to-SQL, a vector/search database, durable AI memory, production HTTP activation or database/Alembic changes without a separately proven capability-owned need.
-
-Before any I3 write, identify the exact owning capability/seam candidate from repository truth, prove that it is integration-ready, reread its Product/Domain/Logical/Physical/PostgreSQL ownership and declare a fresh exact write gate. If no candidate seam is ready, I3 must remain blocked rather than fabricate one.

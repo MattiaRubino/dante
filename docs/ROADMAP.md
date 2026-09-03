@@ -1,8 +1,9 @@
 # DANTE Roadmap
 
 - **Status:** CURRENT
-- **Last reconciled:** 2026-09-02
+- **Last reconciled:** 2026-09-03
 - **Protected `main`:** integrated source authority; read the live Git ref for the current SHA
+- **Branch-local AI implementation overlay:** `feature/ai-implementation`
 
 ## 1. Completed foundations
 
@@ -79,7 +80,10 @@ Current authority begins at `database/README.md`, the Dictionary, PostgreSQL Rec
 feature/access-auth             active full-stack product work
 feature/home-react              active frontend work
 feature/platform-observability  active platform work
-feature/ai-architecture         AI architecture design CLOSED / implementation handoff ready
+feature/ai-implementation       active AI implementation; I0-I2 CLOSED/PASS
+                                I3/C3 deferred pending owner data/seams
+                                current executable checkpoint C6
+feature/ai-architecture         AI architecture design CLOSED / retained authority/evidence
 ```
 
 Each branch owns only its bounded newer truth until protected-main integration.
@@ -99,7 +103,7 @@ real structural database change
 → affected recovery/operational assertions updated
 ```
 
-Applied migrations are immutable. AI architecture closure produced no DB/Alembic change.
+Applied migrations are immutable. AI architecture and I0-I2 implementation produced no DB/Alembic change.
 
 ## 5. Capability-triggered implementation
 
@@ -209,50 +213,124 @@ Final mega acceptance:
 docs/architecture/dante-ai-post05-final-mega-acceptance.md
 ```
 
-## 7. Current AI implementation roadmap
+## 7. AI implementation roadmap — architectural stages and execution overlay
 
-Architecture is now an upstream contract. The current sequence is implementation:
+The baseline stage identifiers remain authoritative architectural labels; they are **not** redefined merely because one conditional integration lane is not ready yet.
+
+Accepted stage map:
 
 ```text
 I0  repository/application ownership + architecture-test skeleton
-    ↓
+    CLOSED / PASS
+
 I1  Search public contracts / eligibility / family registry / deterministic shell
-    ↓
-I2  Intelligence pure contracts + deterministic fakes
+    CLOSED / PASS
+
+I2  Intelligence pure request-local contracts + deterministic fakes
     Work / Execution / Context / Reference Resolution /
-    Semantic Query / Retrieval / Policy / Resource /
-    Verification / Publication / Effect / Egress evidence
-    ↓
-I3  first real deterministic Search / structured query families
+    Semantic Query / Retrieval
+    CLOSED / PASS
+
+I3  real deterministic Search / structured families
     only when owning product data/seams are integration-ready
-    ↓
+    DEFERRED / WAITING OWNER DATA + SEAMS
+
 I4  provider candidate admission + inactive adapter candidate
-    ↓
+
 I5  adapter conformance + live compatibility + direct DANTE qualification
-    ↓
+
 I6  read-only Ask DANTE
-    ↓
+
 I7  production hardening / observability / privacy / audit /
     resource / rollout / capacity
-    ↓
+
 I8  scenario/planning proposal vertical
-    ↓
+
 I9  first bounded consequential Effect vertical
-    ↓
+
 I10 proactive/background/durable/external-agent capabilities
     only on their real triggers
 ```
 
-Current exact next action:
+### 7.1 Current executable lane
+
+The implementation blueprint already separates the Search lane from the Intelligence/provider-preparation lane. Because I3 is conditional on real owner data/seams, execution now continues without fabricating a Search family:
 
 ```text
-I0
-→ establish modules/search and modules/intelligence ownership only as needed
-→ establish executable architecture-boundary tests
-→ preserve green existing backend gates
-→ no provider dependency
-→ no database migration
-→ no production activation
+CURRENT
+C6  Policy / Resource / Verification / Publication /
+    Effect / Egress / Evidence contracts
+    provider-free / request-local where required
+    ↓
+C7  route-config identity / loader / content digest snapshot
+    provider-neutral
+    ↓
+I4 / C8
+    provider candidate-admission decision
+    ↓
+I4-I5 / C9-C11
+    admitted inactive adapter
+    conformance + live compatibility
+    direct DANTE qualification
+    qualification/promotion decision
+```
+
+No provider/model/SDK is selected merely by entering C6 or C7.
+
+### 7.2 Deferred deterministic/Search lane
+
+```text
+I3 / C3
+bounded PostgreSQL Search adapter + first real family proof
+```
+
+remains open and must resume only when a real owner/data seam can truthfully supply the family. Current CP6 PostgreSQL materialization is a strong persistence substrate, but persistence rows alone do not create a complete product/application query seam.
+
+I3 readiness requires, as applicable:
+
+```text
+real owner/product data semantics
+safe display/projection fields
+current/history behavior
+owner/source scope
+permission/disclosure basis
+bounded query semantics
+truthful guarantee/currentness/basis mapping
+family tests
+PSV-06 / SC-017 protected non-interference proof when applicable
+```
+
+No fake title from UUIDs, Intelligence-owned cross-capability SQL, generic Repository/UoW, model-to-SQL or premature FTS/vector activation is allowed to manufacture readiness.
+
+### 7.3 Mandatory join before I6
+
+C6/C7/provider qualification and the deferred deterministic lane may progress independently, but **I6 cannot activate the accepted first vertical until the required real source/query path is ready**.
+
+Operational convergence:
+
+```text
+C6 → C7 → I4 → I5
+                 \
+                  +→ JOIN GATE → I6 READ-ONLY ASK
+                 /
+I3/C3 when owner seams become ready
+```
+
+The join gate requires the real Search/structured source path needed by the selected first vertical, authoritative Auth/AuthZ/disclosure integration, currentness/publication behavior and every applicable direct proof.
+
+### 7.4 Current exact next action
+
+```text
+C6 — Intelligence control/safety/publication contracts
+Policy / Resource / Verification / Publication /
+Effect / Egress / Evidence
+
+NO provider selection
+NO provider SDK
+NO database/Alembic change
+NO durable Work/Run
+NO AI memory persistence
+NO production activation
 ```
 
 ## 8. First implementation vertical boundary
@@ -296,16 +374,23 @@ candidate shortlist
 
 Build-ready is not activation-ready. Private-data Search/Ask requires real Auth/AuthZ, source/query semantics, applicable SC/PSV proofs, safe publication, evidence/privacy/audit and provider qualification when a model route is used.
 
-## 10. Current non-claims
+## 10. Current implementation state / non-claims
 
 ```text
 AI architecture design closed          YES
 post-AI05 structural mega pass         YES
 implementation baseline accepted       YES
-I0 started                              NO
-Search implemented                     NO
-Intelligence implemented               NO
+AI implementation started              YES
+I0 closed / pass                       YES
+I1 closed / pass                       YES
+I2 closed / pass                       YES
+Search shell/contracts implemented     YES
+Intelligence C5 contracts/fakes        YES
+I3 real family / PG adapter            NO / DEFERRED
+C6 control contracts                   NOT YET
+C7 route-config loader                 NOT YET
 provider/model/SDK selected            NO
+provider adapter                       NO
 production Search/Ask active           NO
 new PostgreSQL/Alembic change          NO
 new generic AI persistence             NO
