@@ -74,7 +74,8 @@ I1                                    CLOSED / PASS
 I2                                    CLOSED / PASS
 I3/C3                                 DEFERRED / WAITING OWNER DATA + SEAMS
 C6 CONTROL/SAFETY/PUBLICATION         CLOSED / PASS
-AI NEXT EXECUTABLE                    C7 route-config identity/loader/digest
+C7 ROUTE-CONFIG IDENTITY/LOADER       CLOSED / PASS
+AI NEXT EXECUTABLE                    C8/I4 provider candidate admission
 ```
 
 For exact current project state, read `PROJECT-STATUS.md`.
@@ -120,15 +121,16 @@ I1 CLOSED / PASS
 I2 CLOSED / PASS
 I3/C3 DEFERRED / WAITING OWNER DATA + SEAMS
 C6 CLOSED / PASS
+C7 CLOSED / PASS
 
 NEXT EXECUTABLE
-C7 route-config identity / loader / digest snapshot
+C8 / I4 provider candidate-admission decision
 
 I3/C3 remains a parallel conditional lane and must converge before I6
 when the first vertical requires its real deterministic source/query path.
 ```
 
-No provider/model/SDK is selected by architecture closure or by I0-I2/C6 completion.
+No provider/model/SDK is admitted merely by architecture closure or by I0-I2/C6/C7 completion.
 
 ## 5. Product
 
