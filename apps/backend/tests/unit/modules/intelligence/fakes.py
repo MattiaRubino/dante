@@ -7,7 +7,6 @@ from uuid import UUID
 
 from dante.modules.intelligence.contracts.references import (
     ReferenceBindingRequirement,
-    ReferenceCandidate,
     ReferenceCandidateMatch,
     ReferenceResolutionRequest,
     ReferenceResolutionResult,
@@ -44,22 +43,20 @@ class EligibleUniverseReferenceResolverFake:
                 if candidate.match is ReferenceCandidateMatch.EXACT
             )
         else:
-            accepted_matches = tuple(
-                candidate
-                for candidate in request.eligible_candidates
-                if candidate.match
-                in {
-                    ReferenceCandidateMatch.EXACT,
-                    ReferenceCandidateMatch.UNIQUE_IN_SCOPE,
-                }
-            )
+            accepted_matches = request.eligible_candidates
 
         if len(accepted_matches) == 1:
+            achieved_binding = (
+                ReferenceBindingRequirement.EXACT_CANONICAL
+                if accepted_matches[0].match is ReferenceCandidateMatch.EXACT
+                else ReferenceBindingRequirement.UNIQUE_IN_SCOPE
+            )
             return ReferenceResolutionResult(
                 request_id=request.request_id,
                 status=ReferenceResolutionStatus.RESOLVED,
                 declared_bounded_universe_id=request.declared_bounded_universe_id,
                 resolved_target=accepted_matches[0].target,
+                achieved_binding=achieved_binding,
             )
         if len(accepted_matches) > 1:
             return ReferenceResolutionResult(

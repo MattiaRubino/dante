@@ -16,10 +16,9 @@ class ReferenceBindingRequirement(StrEnum):
 
 
 class ReferenceCandidateMatch(StrEnum):
-    """Deterministic candidate match class; never model confidence."""
+    """Candidate evidence class; never model confidence or a resolution outcome."""
 
     EXACT = "exact"
-    UNIQUE_IN_SCOPE = "unique_in_scope"
     POSSIBLE = "possible"
 
 
@@ -149,12 +148,13 @@ class ReferenceResolutionRequest:
 
 @dataclass(frozen=True, slots=True)
 class ReferenceResolutionResult:
-    """Immutable resolution outcome; only RESOLVED carries an accepted target."""
+    """Immutable resolution outcome carrying target plus achieved binding proof."""
 
     request_id: UUID
     status: ReferenceResolutionStatus
     declared_bounded_universe_id: str
     resolved_target: TargetRef | None = None
+    achieved_binding: ReferenceBindingRequirement | None = None
     eligible_candidates: tuple[ReferenceCandidate, ...] = ()
     limitations: tuple[str, ...] = ()
 
@@ -168,14 +168,16 @@ class ReferenceResolutionResult:
             raise ValueError("limitations entries must be non-empty")
 
         if self.status is ReferenceResolutionStatus.RESOLVED:
-            if self.resolved_target is None:
-                raise ValueError("RESOLVED requires resolved_target")
+            if self.resolved_target is None or self.achieved_binding is None:
+                raise ValueError("RESOLVED requires resolved_target and achieved_binding")
             if self.eligible_candidates:
                 raise ValueError("RESOLVED must not carry ambiguity candidates")
             return
 
-        if self.resolved_target is not None:
-            raise ValueError("non-RESOLVED result must not carry resolved_target")
+        if self.resolved_target is not None or self.achieved_binding is not None:
+            raise ValueError(
+                "non-RESOLVED result must not carry resolved_target/achieved_binding"
+            )
 
         if self.status is ReferenceResolutionStatus.AMBIGUOUS:
             if len(self.eligible_candidates) < 2:
