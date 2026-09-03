@@ -2,7 +2,10 @@ import {
   normalizeWorldFocusContextReference,
   type WorldFocusContextReference,
 } from './world-focus-context-reference';
-import type { WorldFocusEvidenceReferenceFacet } from './world-focus-evidence';
+import {
+  createWorldFocusEvidenceReferenceFacet,
+  type WorldFocusEvidenceReferenceFacet,
+} from './world-focus-evidence';
 import {
   normalizeWorldFocusId,
   type WorldFocusId,
@@ -73,6 +76,17 @@ function normalizeDistinctReferences(
   );
 }
 
+function snapshotEvidenceReferenceFacet(
+  evidence: WorldFocusEvidenceReferenceFacet,
+): WorldFocusEvidenceReferenceFacet {
+  return createWorldFocusEvidenceReferenceFacet(evidence, {
+    maxEvidenceReferences: evidence.evidenceReferences.length,
+    maxProvenanceReferences: evidence.provenanceReferences.length,
+    maxIntegrityAttestationReferences:
+      evidence.integrityAttestationReferences.length,
+  });
+}
+
 /** O2 — direct typed/application Situation references only. */
 export function createWorldFocusSituationProjection(input: Readonly<{
   worldId: WorldFocusId;
@@ -114,7 +128,7 @@ export function createWorldFocusEvidenceHistoryProjection(input: Readonly<{
   return Object.freeze({
     schemaVersion: 1 as const,
     worldId: normalizeWorldId(input.worldId),
-    evidence: input.evidence,
+    evidence: snapshotEvidenceReferenceFacet(input.evidence),
     orderedHistoryReferences: normalizeDistinctReferences(
       input.orderedHistoryReferences,
       WORLD_FOCUS_EVIDENCE_HISTORY_FIRST_OPEN_LIMIT,
