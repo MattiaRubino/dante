@@ -132,6 +132,7 @@ async def test_completed_response_preserves_attempt_identity_usage_and_forces_no
     wire_request = transport.requests[0]
     assert wire_request.model == OPENAI_TERRA_MODEL
     assert wire_request.store is False
+    assert wire_request.timeout_seconds == 30.0
 
 
 @pytest.mark.asyncio
