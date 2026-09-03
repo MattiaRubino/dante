@@ -7,6 +7,7 @@ import type {
 } from '../model/temporal-create-session';
 import { TemporalCreateActivityFields } from './temporal-create-activity-fields';
 import { TemporalCreateAppearanceFields } from './temporal-create-appearance-fields';
+import { TemporalCreateConfirmationFields } from './temporal-create-confirmation-fields';
 import { TemporalCreateCoreFields } from './temporal-create-core-fields';
 import { TemporalCreateEventFields } from './temporal-create-event-fields';
 import { TemporalCreateOrganizationFields } from './temporal-create-organization-fields';
@@ -95,12 +96,19 @@ export function TemporalCreateAdvancedFields({
       ) : null}
 
       {fields.kind === 'activity' ? (
-        <TemporalCreateActivityFields
-          fields={fields}
-          depth="full"
-          onPatch={onPatch}
-          renderError={renderError}
-        />
+        <>
+          <TemporalCreateActivityFields
+            fields={fields}
+            depth="full"
+            onPatch={onPatch}
+            renderError={renderError}
+          />
+          <TemporalCreateConfirmationFields
+            fields={fields}
+            onPatch={onPatch}
+            renderError={renderError}
+          />
+        </>
       ) : (
         <>
           <TemporalCreateEventFields
