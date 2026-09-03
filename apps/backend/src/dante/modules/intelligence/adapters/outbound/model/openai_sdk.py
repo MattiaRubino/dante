@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from typing import Final, Literal, cast
+from typing import Final, Literal, cast, override
 
 import openai
 from openai import AsyncOpenAI
@@ -12,10 +12,10 @@ from openai.types.responses.response_text_config_param import ResponseTextConfig
 
 from dante.modules.intelligence.adapters.outbound.model.openai_responses import (
     OPENAI_TERRA_MODEL,
+    OpenAIResponseStatus,
     OpenAIResponsesTransport,
     OpenAIResponsesWireRequest,
     OpenAIResponsesWireResponse,
-    OpenAIResponseStatus,
     OpenAITransportError,
     OpenAITransportErrorKind,
 )
@@ -180,6 +180,7 @@ class OpenAISDKResponsesTransport(OpenAIResponsesTransport):
         )
         return cls(client)
 
+    @override
     async def create(self, request: OpenAIResponsesWireRequest) -> OpenAIResponsesWireResponse:
         if request.model != OPENAI_TERRA_MODEL:
             raise OpenAITransportError(
