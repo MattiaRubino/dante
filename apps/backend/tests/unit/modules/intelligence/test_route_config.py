@@ -55,6 +55,20 @@ def test_repository_revision_is_disabled_and_exact_byte_bound() -> None:
     assert snapshot.document.feature_modes == ("ask_dante:disabled",)
 
 
+def test_openai_candidate_revision_is_inactive_and_qualification_only() -> None:
+    snapshot = load_route_config(_REVISIONS_ROOT, "openai-terra-candidate-v1")
+
+    assert snapshot.document.model_targets == ("ask-readonly-terra-v1",)
+    assert snapshot.document.provider_bindings == ("openai-responses-terra-candidate-v1",)
+    assert "ask_dante:disabled" in snapshot.document.feature_modes
+    assert "binding:inactive" in snapshot.document.rollout_profiles
+    assert "production:off" in snapshot.document.rollout_profiles
+    assert "private-data:ineligible" in snapshot.document.security_profiles
+    assert "store:false" in snapshot.document.security_profiles
+    assert "provider-sdk:auto-retry-off" in snapshot.document.retry_profiles
+    assert "provider-fallback:off" in snapshot.document.fallback_profiles
+
+
 def test_equal_json_with_different_bytes_has_different_identity(tmp_path: Path) -> None:
     root = tmp_path / "revisions"
     root.mkdir()
