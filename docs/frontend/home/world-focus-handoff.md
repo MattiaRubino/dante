@@ -1,6 +1,6 @@
 # DANTE — World Focus Handoff
 
-**Status:** CURRENT DURABLE HANDOFF — WS0–WS8 / M0 / M1 / POST-M1 SAFETY CLOSED — M2 ACTIVE / M2-1 VALIDATED  
+**Status:** CURRENT DURABLE HANDOFF — WS0–WS8 / M0 / M1 / POST-M1 SAFETY CLOSED — M2 ACTIVE / M2-1 + M2-2 VALIDATED / FINAL M2 AUDIT NEXT  
 **Date:** 2026-09-03  
 **Repository:** `MattiaRubino/dante`  
 **Branch:** `feature/home-react`  
@@ -56,8 +56,9 @@ M1-1 identity/reference ownership      CLOSED / VALIDATED
 M1-2 non-visual facets + seams         CLOSED / VALIDATED
 POST-M1 SAFETY FALSIFICATION           CLOSED / PASS
 M2 shared visual primitive layer       ACTIVE
-M2-1 shared presentation/renderers     CLOSED / VALIDATED
-M2 remaining visual work               NEXT WITHIN M2
+M2-1 shared presentation/L1 renderers  CLOSED / VALIDATED
+M2-2 truthfulness/direct output        CLOSED / VALIDATED
+M2 FINAL CLOSURE AUDIT                 NEXT
 M3–M7                                  BLOCKED BY SEQUENCE
 BACKEND                                BLOCKED UNTIL M7
 D2–D6                                  PRESERVED / DEFERRED TO M4
@@ -97,19 +98,28 @@ CI   33740710290 PASS
 POST-M1 safety red
 HEAD 0b674effa292881303288dd90c88db2c14e61872
 CI   33747167897 FAIL
-7 / 9 hostile tests PASS
 
 POST-M1 safety closure
 HEAD ecc2128b62395f82eab9ee7ff239355b4ca81ee4
 CI   33754084001 PASS
-9 / 9 hostile tests; 56 / 56 web test files; 301 / 301 web unit tests
 
 M2-1 validation
 HEAD 2e639f108d5cb01e53395013a55346b7ac2e4294
 CI   33781753823 PASS
-61 / 61 web test files; 312 / 312 web unit tests
-262 modules / 684 dependencies / 0 architecture violations
-Chromium 720/719/390 pressure PASS; frozen Timeline Firefox PASS
+
+M2-2 red
+HEAD 5374f77d7cf7b52ef87ce64315a606bc1d96cf0b
+CI   33787162755 EXPECTED FAILURE
+exactly 8 unresolved presentation owners at Typecheck
+
+M2-2 production baseline
+HEAD b9856d497273d22face94fcd14f0deda853bbdb8
+CI   33787905171 PASS
+
+M2-2 final integration validation
+HEAD 26d79b0dcdeaac1cb094bf97b71e901003ac5fa5
+CI   33788370490 PASS
+Quality / Chromium / frozen Timeline Firefox / Mobile / Frontend CI Gate PASS
 ```
 
 Later documentation synchronization is a separate evidence point and does not replace validated code heads above.
@@ -234,7 +244,9 @@ M1 final hostile pressure found only the planned transitional cursor representat
 
 The post-M1 safety gate then found two additional implementation defects at existing boundaries: cancelled non-cooperative reads could reach validation, and O8 could retain caller evidence aliases. Both were fixed without reopening M1 or WS0–WS8.
 
-M2-1 red-first then proved the visual layer had no pre-existing owner; implementation pressure subsequently caught strict TypeScript indexing and isolated-test i18n setup defects. The semantic tests were not weakened. The final M2-1 run is green across Quality, Chromium, Mobile and frozen Timeline Firefox.
+M2-1 red-first proved the shared presentation layer had no pre-existing owner and then closed the L1 renderer/display-binding foundation.
+
+M2-2 red-first proved the remaining truthfulness/direct-output visual owners were absent. Production then materialized them, with one strict i18n typing issue corrected through explicit finite branching and without weakening any semantic expectation.
 
 ---
 
@@ -288,13 +300,13 @@ aborted read results are rejected before semantic validation
 O8 evidence/history owns a normalized frozen evidence snapshot
 ```
 
-Do not turn proof/oracle-only structures into production owners automatically. A proof seam earns a production review, not necessarily a production type with the same shape.
+Do not turn proof/oracle-only structures into production owners automatically.
 
 ---
 
 # 7. M2 production presentation state
 
-M2-1 introduces a presentation-only boundary over M1:
+M2-1 owns:
 
 ```text
 WorldFocusDisplayBinding
@@ -313,21 +325,78 @@ finite work-semantic renderers
   WP-02 Attention
   WP-03 Comparison
   WP-04 Trajectory
+
+real live vertical
+  WP-01 Continuity
 ```
 
-WP-01 Continuity is the live production vertical migrated onto the same grammar without changing its reader, cancellation/race protection, sparse behavior, degraded states or no-fake-Resume rule.
+M2-2 extends the same grammar with:
 
-WP-02..WP-04 are real renderer contracts but **not live composition claims**. Do not mount them merely to make M2 look populated. An actual application/composition seam must justify their presence.
+```text
+WorldFocusQualifier / QualifierGroup
+WorldFocusPresentationSubsection
+
+L2 truthfulness
+  freshness
+  validity
+  coverage
+  material retirement
+
+L3
+  sanitized disclosure
+
+L6
+  effect state
+  execution revalidation kept separate
+
+L8
+  connectivity
+  replay
+  provider delivery
+  request timing
+
+O2 Situation renderer
+O5 Next renderer
+O8 Evidence / History renderer
+```
+
+O8 presentation preserves distinct accessible roles:
+
+```text
+Evidence
+Provenance
+Integrity / attestation
+History
+```
+
+Continuity uses qualifier axes only for the degraded read states it already owned:
+
+```text
+partial -> coverage/incomplete
+stale   -> freshness/stale
+```
 
 Presentation must not promote internal semantics:
 
 ```text
 reasonCode != display explanation
+reference key != display copy
+available disclosure != AuthZ
+stale != invalid
+incomplete != empty
+conflicted != winner
+offline != content absent
+timeout != semantic negative
+partial-real != failed
+reversed != compensated
+execution revalidation != effect state
 Comparison != winner/recommendation/Decision
 Trajectory missing != zero
 renderer != semantic owner
 responsive adaptation != semantic rewrite
 ```
+
+WP-02..WP-04 and O2/O5/O8 renderer capabilities are **not live composition claims**. Do not mount them merely to make M2 look populated.
 
 ---
 
@@ -347,35 +416,58 @@ M1's useful World path remains functional without DANTE.
 
 ---
 
-# 9. Current M2 handoff
+# 9. M0 disposition audit after M2-2
+
+All currently mapped shared visual dispositions assigned to M2 now have owners:
+
+```text
+M0-19 WP-02 shared rendering                  M2-1 DONE
+M0-21 WP-03 shared rendering                  M2-1 DONE
+M0-23 WP-04 shared rendering                  M2-1 DONE
+M0-28 shared Evidence / History affordance    M2-2 DONE
+M0-42 shared effect presentation              M2-2 DONE
+M0-49 WP shared renderer family               M2-1 DONE
+O2 Situation visual presentation              M2-2 DONE
+O5 Next visual presentation                   M2-2 DONE
+O8 Evidence / History visual presentation     M2-2 DONE
+L2/L3/L6/L8 truthfulness presentation         M2-2 DONE
+```
+
+This authorizes a closure audit, not an automatic M2 closure.
+
+---
+
+# 10. Current M2 handoff
 
 M0 remains the production-disposition authority in `world-focus-m0-materialization-mapping.md`.
 
-M1 and POST-M1 safety are closed. M2 is active, with M2-1 closed/validated.
+M1 and POST-M1 safety are closed. M2-1 and M2-2 are closed/validated. M2 itself remains active pending a final hostile closure audit/falsification.
 
-The next bounded engineering block must remain inside M2:
+The next bounded engineering block is:
 
-> **Continue shared visual materialization using the validated M2-1 grammar.**
+> **M2 final closure audit / falsification.**
 
-Binding constraints:
+Required pressure includes:
 
 ```text
-primitive != card
-renderer != semantic owner
-no universal card/module grammar
-no page-per-World fork
-no hidden semantic inference from visual shape
-no fabricated urgency/density
-unknown future World safe degradation
-responsive changes presentation, not meaning
-renderer availability != automatic live mounting
+cross-axis visual non-collapse
+unknown future World rendering
+exact display binding / fail closed
+reasonCode/reference key non-leakage
+nominal-state quietness
+sparse/no-fake-live composition
+long-copy and compact responsive safety
+forced-colors/textual meaning
+finite renderer ownership
+no universal card/projection envelope
+no M3 candidate/customization work pulled forward
 ```
 
 Persistent pin/hide/reorder/customization remains M3. Contextual DANTE D2–D6 remains M4.
 
 ---
 
-# 10. Backend stop line
+# 11. Backend stop line
 
 ```text
 NO World DB/Alembic
@@ -389,17 +481,17 @@ NO fake success
 
 ---
 
-# 11. Strict reopen policy
+# 12. Strict reopen policy
 
 Do not restart WS0–WS8 or M1 for a new provider, World noun, renderer, viewport, AI model, config store or larger dataset.
 
 Reopen only when later executable evidence shows a concrete semantic/ownership/state/security/privacy/effect contradiction that cannot fit an existing owner, and reopen only the earliest necessary phase.
 
-M2-1 itself should be reopened only for a concrete contradiction in the display-binding/shared-presentation boundary, not merely because a later renderer needs a specialist treatment.
+M2-1 should reopen only for a contradiction in display-binding/shared-presentation ownership. M2-2 should reopen only for a contradiction in the shared truthfulness/direct-output presentation layer, not merely because M5 later earns a specialist renderer.
 
 ---
 
-# 12. Repository discipline
+# 13. Repository discipline
 
 Authority order:
 
@@ -416,4 +508,4 @@ Every new write scope needs exact branch/PRE-SCOPE/path gate and live HEAD reche
 
 Immediate continuation:
 
-> **Continue M2 only. M3–M7 and backend remain blocked by sequence.**
+> **Run M2 final closure audit only. M3–M7 and backend remain blocked by sequence.**
