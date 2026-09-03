@@ -52,10 +52,17 @@ export type WorldFocusCoverageState =
 
 export type WorldFocusCoverageFacet =
   | Readonly<{
-      status: 'complete' | 'unknown';
+      status: 'complete';
     }>
   | Readonly<{
-      status: 'incomplete' | 'conflicted';
+      status: 'unknown';
+    }>
+  | Readonly<{
+      status: 'incomplete';
+      reasonCode: string;
+    }>
+  | Readonly<{
+      status: 'conflicted';
       reasonCode: string;
     }>;
 
@@ -144,9 +151,14 @@ export function createWorldFocusValidityFacet(
  */
 export function createWorldFocusCoverageFacet(
   input:
-    | Readonly<{ status: 'complete' | 'unknown' }>
+    | Readonly<{ status: 'complete' }>
+    | Readonly<{ status: 'unknown' }>
     | Readonly<{
-        status: 'incomplete' | 'conflicted';
+        status: 'incomplete';
+        reasonCode: string;
+      }>
+    | Readonly<{
+        status: 'conflicted';
         reasonCode: string;
       }>,
 ): WorldFocusCoverageFacet {
