@@ -1,6 +1,6 @@
 # DANTE — World Focus Frontend Roadmap
 
-**Status:** CURRENT WORKING ROADMAP — M1 + POST-M1 SAFETY CLOSED / M2 NEXT  
+**Status:** CURRENT WORKING ROADMAP — M2 ACTIVE / M2-1 CLOSED / VALIDATED  
 **Date:** 2026-09-03  
 **Branch:** `feature/home-react`
 
@@ -28,6 +28,8 @@ World Focus route/shell
 -> canonical cursor closure
 -> post-M1 safety red-first falsification
 -> post-M1 read/O8 snapshot hardening
+-> M2-1 shared display/presentation grammar + WP-02..04 renderers
+-> WP-01 Continuity migration + 720/719/390 browser pressure
 ```
 
 ## 2. Evidence checkpoints
@@ -45,7 +47,10 @@ M1 final red        HEAD 67bd06d63d84273ba2077761919d714c8d442254  CI 3374021298
 M1 final code       HEAD 7369c51e7ba04f8913728a0770f700c728c3b9f9  CI 33740710290 PASS
 POST-M1 safety red  HEAD 0b674effa292881303288dd90c88db2c14e61872  CI 33747167897 FAIL
 POST-M1 safety fix  HEAD ecc2128b62395f82eab9ee7ff239355b4ca81ee4  CI 33754084001 PASS
+M2-1 validation     HEAD 2e639f108d5cb01e53395013a55346b7ac2e4294  CI 33781753823 PASS
 ```
+
+M2-1 validation includes 61/61 web test files, 312/312 web unit tests, 262 modules / 684 dependencies with zero architecture violations, Chromium pressure at 720/719/390, Mobile Bundle PASS and frozen Timeline Firefox PASS.
 
 ## 3. Materialization sequence
 
@@ -55,13 +60,15 @@ M1 — Core Non-Visual Production Materialization     CLOSED / VALIDATED
   M1-1 identity/reference ownership                  CLOSED / VALIDATED
   M1-2 non-visual facets + WP/O2/O5/O8 seams         CLOSED / VALIDATED
 POST-M1 Safety Falsification                         CLOSED / PASS
-M2 — Shared Visual Primitive Layer                  NEXT
-M3 — Adaptive World Composition                     BLOCKED BY M2
-M4 — Contextual DANTE                               BLOCKED BY M3
-M5 — Contrasting Complete Worlds                    BLOCKED BY M4
-M6 — Integrated Product / Visual / A11y / Perf      BLOCKED BY M5
-M7 — Pre-Backend Frontend Freeze                    BLOCKED BY M6
-BACKEND                                              AFTER M7 ONLY
+M2 — Shared Visual Primitive Layer                   ACTIVE
+  M2-1 shared presentation + L1 renderer grammar     CLOSED / VALIDATED
+  M2 remaining visual materialization                NEXT WITHIN M2
+M3 — Adaptive World Composition                      BLOCKED BY M2
+M4 — Contextual DANTE                                BLOCKED BY M3
+M5 — Contrasting Complete Worlds                     BLOCKED BY M4
+M6 — Integrated Product / Visual / A11y / Perf       BLOCKED BY M5
+M7 — Pre-Backend Frontend Freeze                     BLOCKED BY M6
+BACKEND                                               AFTER M7 ONLY
 ```
 
 ## 4. Closed non-visual result
@@ -97,25 +104,18 @@ useful non-DANTE path
 
 The final M1 red-first falsification found and closed the non-enumerable `cursor.contextReferences` compatibility residue.
 
-The post-M1 safety gate then pressure-tested the closed substrate and found two concrete implementation defects:
-
-```text
-cancelled non-cooperative read could resolve into validation
-O8 Evidence/History could retain mutable caller evidence aliases
-```
-
-Both were fixed in production without weakening the hostile test and without introducing a new semantic owner. Final safety evidence is 9/9 hostile tests, 56/56 web test files and 301/301 web unit tests PASS, with the full Frontend CI Gate green.
+The post-M1 safety gate then pressure-tested the closed substrate and found two concrete implementation defects: cancelled non-cooperative reads could resolve into validation, and O8 Evidence/History could retain mutable caller evidence aliases. Both were fixed in production without weakening the hostile test and without introducing a new semantic owner.
 
 M1 did not create a universal projection envelope, generic entity/property-bag root, frontend AuthZ, World canonical ownership or backend dependency.
 
-## 5. M2 — next scope
+## 5. M2 — active scope
 
 M2 is the shared visual primitive layer for semantics already earned by M1.
 
-M2 must answer:
+M2 must continue to answer:
 
 ```text
-How is each semantic state rendered consistently?
+How is each earned semantic state rendered consistently?
 How do sparse/dense projections degrade safely?
 How do unknown future Worlds use the same finite renderer grammar?
 How are freshness/validity/disclosure/effect/sync distinctions visible without noise?
@@ -135,11 +135,49 @@ no fake empty urgency
 no visual collapse of unknown into false/zero
 finite registered shipped renderers only
 specialist renderer only where semantically earned
+renderer availability != automatic live mounting
 ```
 
 M2 does not implement persistent pin/hide/reorder/customization; that remains M3.
 
-## 6. M3–M7 intent
+## 6. M2-1 validated foundation
+
+M2-1 establishes:
+
+```text
+WorldFocusDisplayBinding
+  exact semantic reference match
+  bounded display-safe label/supporting text
+  no internal key fallback
+
+shared presentation grammar
+  semantic section/heading
+  textual state
+  existing DANTE design tokens
+  container-query adaptation
+  forced-colors support
+
+renderers
+  WP-02 Attention
+  WP-03 Comparison
+  WP-04 Trajectory
+
+real vertical
+  WP-01 Continuity migrated onto shared grammar
+```
+
+Truthfulness preserved:
+
+```text
+reasonCode != display explanation
+Comparison != ranking/winner/recommendation/Decision
+Trajectory missing != zero
+responsive presentation != semantic rewrite
+```
+
+WP-02..WP-04 are renderer contracts, not fabricated live content. They remain unmounted until an actual composition/application seam justifies them.
+
+## 7. M3–M7 intent
 
 M3: dynamic composition candidate resolution + Customize Draft / Apply / Cancel + pin/hide/reorder/conflict UX; no fake persistence.
 
@@ -151,7 +189,7 @@ M6: integrated visual/a11y/performance review; automated green != human visual a
 
 M7: pre-backend frontend freeze/handoff.
 
-## 7. Permanent barriers
+## 8. Permanent barriers
 
 ```text
 World != Domain owner
@@ -166,15 +204,19 @@ Provenance != integrity attestation
 Authority != Visibility
 timeout != semantic negative
 retired reference != automatic replacement
+Comparison != Decision
+missing trajectory position != zero
 no universal Entity/Thing/Fact/Relationship/property bag
 ```
 
-## 8. Sequencing supersession
+## 9. Sequencing supersession
 
 Old product/platform contract language naming the DANTE spatial review as the current next gate is historical. See `world-focus-contract-sequencing-supersession.md`. Semantic invariants remain intact; D2–D6 remain M4.
 
-The bounded post-M1 safety hold is also closed. Its durable red→green evidence lives in `world-focus-post-m1-safety-falsification-review.md`.
+The bounded post-M1 safety hold is closed. Its durable red→green evidence lives in `world-focus-post-m1-safety-falsification-review.md`.
 
-## 9. Immediate continuation
+M2-1 closure evidence lives in `world-focus-m2-shared-visual-primitives.md`.
 
-> **M2 only. Build shared visual primitives over the closed M1 semantic substrate. Do not start M3 customization, M4 DANTE or backend integration.**
+## 10. Immediate continuation
+
+> **Continue M2 only. Reuse M2-1 rather than inventing another visual grammar. Do not start M3 customization, M4 DANTE or backend integration.**
