@@ -56,9 +56,7 @@ def test_fresh_database_reaches_the_single_repository_head(
         user=provisioned_database.cluster.admin_user,
         password=provisioned_database.cluster.admin_password,
     ) as connection:
-        before = connection.execute(
-            "SELECT to_regclass('dante.alembic_version')"
-        ).fetchone()
+        before = connection.execute("SELECT to_regclass('dante.alembic_version')").fetchone()
         assert before == (None,)
 
     script = ScriptDirectory.from_config(alembic_config)
