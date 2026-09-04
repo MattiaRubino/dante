@@ -4,6 +4,7 @@ export type TemporalCreateProductCopy = Readonly<{
   typeLabel: string;
   advanced: string;
   hideAdvanced: string;
+  backToQuick: string;
   activity: Readonly<{
     placement: string;
     timed: string;
@@ -30,6 +31,7 @@ const IT: TemporalCreateProductCopy = Object.freeze({
   typeLabel: 'Tipo',
   advanced: 'Opzioni avanzate',
   hideAdvanced: 'Nascondi opzioni avanzate',
+  backToQuick: 'Torna alla creazione rapida',
   activity: Object.freeze({
     placement: 'Collocazione',
     timed: 'Orario',
@@ -47,7 +49,7 @@ const IT: TemporalCreateProductCopy = Object.freeze({
     repeatWeekly: 'Ogni settimana',
     repeatMonthly: 'Ogni mese',
     repeatYearly: 'Ogni anno',
-    repeatCustom: 'Personalizza…',
+    repeatCustom: 'Personalizzata…',
   }),
   futureTypesHint: 'Altri tipi potranno essere aggiunti qui senza cambiare il flusso.',
 });
@@ -56,6 +58,7 @@ const EN: TemporalCreateProductCopy = Object.freeze({
   typeLabel: 'Type',
   advanced: 'Advanced options',
   hideAdvanced: 'Hide advanced options',
+  backToQuick: 'Back to quick create',
   activity: Object.freeze({
     placement: 'Placement',
     timed: 'Timed',
