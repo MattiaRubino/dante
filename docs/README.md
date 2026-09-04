@@ -1,7 +1,7 @@
 # DANTE Documentation Index
 
 - **Status:** CURRENT NAVIGATION / AUTHORITY INDEX
-- **Last reconciled:** 2026-09-03
+- **Last reconciled:** 2026-09-04
 
 This directory is the durable documentation surface for DANTE. Current specifications describe the present directly; historical evidence, phase-time continuations and completed workstream records do not silently override current truth.
 
@@ -76,7 +76,11 @@ I3/C3                                 DEFERRED / WAITING OWNER DATA + SEAMS
 C6 CONTROL/SAFETY/PUBLICATION         CLOSED / PASS
 C7 ROUTE-CONFIG IDENTITY/LOADER       CLOSED / PASS
 C8/P1 PROVIDER ADMISSION              CLOSED / OPENAI RESPONSES + GPT-5.6 TERRA ADMITTED FOR QUALIFICATION ONLY
-AI NEXT EXECUTABLE                    C9 inactive admitted adapter + conformance/live compatibility
+C9                                    OPEN / PRE-LIVE READY
+C9 P2/P3 + SDK + CONFORMANCE          PASS
+C9 P4 PRE-LIVE                       PASS
+C9 P4 REAL PROVIDER LIVE             NOT RUN
+AI NEXT EXECUTABLE                    C9 P4 real provider live compatibility
 ```
 
 For exact current project state, read `PROJECT-STATUS.md`.
@@ -106,12 +110,13 @@ For AI implementation on `feature/ai-implementation`, read in this order:
 
 1. `architecture/dante-ai-implementation-baseline-final.md` — **CURRENT / ACCEPTED implementation-facing authority**;
 2. `workstreams/ai-implementation.md` — current branch-local implementation state, validated checkpoints and next executable gate;
-3. `workstreams/ai-provider-candidate-admission-2026-09.md` — current C8/P1 provider candidate admission evidence;
-4. `ROADMAP.md` — current execution overlay and cross-workstream convergence;
-5. `PROJECT-STATUS.md` — project-level current state;
-6. `architecture/dante-ai-post05-final-mega-acceptance.md` — final independent acceptance evidence;
-7. `workstreams/ai-architecture.md` — closed architecture workstream record and handoff evidence;
-8. upstream AI-02/03/04/PRE05/AI-05 authorities only when changing or validating those contracts.
+3. `workstreams/ai-c9-pre-live-checkpoint-2026-09.md` — current C9 pre-live deterministic/material evidence and exact remaining live gate;
+4. `workstreams/ai-provider-candidate-admission-2026-09.md` — current C8/P1 provider candidate admission evidence;
+5. `ROADMAP.md` — current execution overlay and cross-workstream convergence;
+6. `PROJECT-STATUS.md` — project-level current state;
+7. `architecture/dante-ai-post05-final-mega-acceptance.md` — final independent acceptance evidence;
+8. `workstreams/ai-architecture.md` — closed architecture workstream record and handoff evidence;
+9. upstream AI-02/03/04/PRE05/AI-05 authorities only when changing or validating those contracts.
 
 The temporary `workstreams/ai-architecture-live-handoff.md` has been deleted after durable knowledge coverage.
 
@@ -127,16 +132,24 @@ C7 CLOSED / PASS
 C8/P1 CLOSED / OpenAI native Responses API + gpt-5.6-terra
               ADMITTED FOR QUALIFICATION ONLY
 
+C9 OPEN / PRE-LIVE READY
+P2/P3 contracts + inactive adapter               PASS
+OpenAI SDK 3.7.0 + lock                          PASS
+material SDK conformance                         PASS
+P4 pre-live                                      PASS
+final deterministic + PostgreSQL regression      PASS
+P4 real provider live compatibility              NOT RUN
+blocker: no user-owned qualification API credential provisioned
+
 NEXT EXECUTABLE
-C9 admitted inactive provider adapter/binding
-   + conformance
-   + live compatibility on synthetic/public/minimized data
+C9 P4 real provider live compatibility
+synthetic/public/minimized data only
 
 I3/C3 remains a parallel conditional lane and must converge before I6
 when the first vertical requires its real deterministic source/query path.
 ```
 
-The provider candidate is admitted for qualification only. No provider SDK/adapter is materialized by C8, no live provider call has been executed, and no production/private-data qualification or activation is claimed.
+The provider candidate remains admitted for qualification only. C9 has materially implemented the private inactive SDK/adapter and passed pre-live proof, but no real provider live call has been executed and no production/private-data qualification or activation is claimed.
 
 ## 5. Product
 
@@ -209,6 +222,10 @@ Current AI implementation authority:
 Current AI implementation workstream:
 
 - `workstreams/ai-implementation.md`.
+
+Current C9 pre-live checkpoint:
+
+- `workstreams/ai-c9-pre-live-checkpoint-2026-09.md`.
 
 Current provider admission evidence:
 
