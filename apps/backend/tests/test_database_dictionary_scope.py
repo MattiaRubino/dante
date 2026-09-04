@@ -8,6 +8,12 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 _DICTIONARY_ROOT = _REPO_ROOT / "docs" / "database" / "dictionary"
 _SCOPE_PATH = _DICTIONARY_ROOT / "scope.json"
 _SCOPE_SCHEMA_PATH = _DICTIONARY_ROOT / "schema" / "scope-v1.schema.json"
+_EMAIL_PLATFORM_TABLES = (
+    "email_delivery_intent",
+    "email_delivery_attempt",
+    "email_provider_event",
+    "email_recipient_suppression",
+)
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -78,3 +84,23 @@ def test_dictionary_scope_preserves_frozen_cp6_baseline() -> None:
         "embedded_objects": {"triggers": 75, "physical_indexes": 95},
         "constraints": {"foreign_keys": 68, "check_constraints": 120},
     }
+
+
+def test_email_platform_dictionary_entries_are_shared_technical_infrastructure() -> None:
+    for table_name in _EMAIL_PLATFORM_TABLES:
+        entry = _load_json(_DICTIONARY_ROOT / "tables" / f"{table_name}.json")
+
+        assert entry["classification"]["canonicality"] == "technical"
+        assert entry["classification"]["family"] == "email_platform"
+        assert entry["semantic_traceability"]["domain_concepts"] == []
+        assert entry["semantic_traceability"]["material_facets"] == []
+        assert "docs/architecture/email-platform.md" in entry["semantic_traceability"][
+            "authority_sources"
+        ]
+        assert "docs/decisions/ADR-012-email-delivery-platform.md" in entry[
+            "semantic_traceability"
+        ]["authority_sources"]
+
+        # Access/Auth is the first consumer, not the platform owner. Keeping it here records
+        # current consumer traceability without collapsing platform ownership into Auth.
+        assert entry["semantic_traceability"]["logical_families"] == ["Access/Auth"]
