@@ -111,24 +111,7 @@
 }
 
 .temporal-create-event-quick-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: end;
-  gap: 8px;
-}
-
-.temporal-create-inline-action {
-  min-height: 42px;
-  padding: 0 12px;
-  border: 1px solid
-    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
-  border-radius: 10px;
-  color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
-  background: rgba(255, 255, 255, 0.018);
-  font: inherit;
-  font-size: 10px;
-  font-weight: 650;
-  cursor: pointer;
+  display: block;
 }
 
 .temporal-create-context-row {
@@ -137,6 +120,37 @@
 
 .temporal-create-location-control {
   margin-top: 1px;
+}
+
+.temporal-create-composer__heading-stack {
+  display: grid;
+  min-width: 0;
+  gap: 8px;
+}
+
+.temporal-create-composer__back {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  min-height: 28px;
+  padding: 0;
+  gap: 7px;
+  border: 0;
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  background: transparent;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.temporal-create-composer__back:hover {
+  color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
+}
+
+.temporal-create-composer__back > span:first-child {
+  font-size: 13px;
+  line-height: 1;
 }
 
 .temporal-create-advanced-toggle {
@@ -159,8 +173,7 @@
   cursor: pointer;
 }
 
-.temporal-create-advanced-toggle:hover,
-.temporal-create-advanced-toggle.is-open {
+.temporal-create-advanced-toggle:hover {
   color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
   background: color-mix(
     in srgb,
@@ -196,8 +209,7 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .temporal-create-event-time-grid,
-  .temporal-create-event-quick-row {
+  .temporal-create-event-time-grid {
     grid-template-columns: 1fr;
   }
 

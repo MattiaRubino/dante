@@ -99,6 +99,7 @@ export function TemporalCreateComposer({
   const titleRef = useRef<HTMLInputElement | null>(null);
   const continueRef = useRef<HTMLButtonElement | null>(null);
   const closeAttemptFocusRef = useRef<HTMLElement | null>(null);
+  const advancedTargetRef = useRef<'recurrence' | null>(null);
   const fields = session.draft.current;
   const pending = lifecycle === 'pending';
   const discardPending = session.closeDecision === 'confirm-discard';
@@ -113,6 +114,20 @@ export function TemporalCreateComposer({
       continueRef.current?.focus();
     }
   }, [discardPending]);
+
+  useEffect(() => {
+    if (!advanced || advancedTargetRef.current !== 'recurrence') {
+      return;
+    }
+    const frame = requestAnimationFrame(() => {
+      const target = dialogRef.current?.querySelector<HTMLElement>(
+        '[data-create-recurrence-owner]',
+      );
+      target?.scrollIntoView({ block: 'start' });
+      advancedTargetRef.current = null;
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [advanced]);
 
   useEffect(() => {
     if (issues.length === 0 || discardPending) {
@@ -287,7 +302,10 @@ export function TemporalCreateComposer({
     onSubmit();
   };
 
-  const showAdvanced = () => onSurfaceChange('full');
+  const showAdvanced = (target?: 'recurrence') => {
+    advancedTargetRef.current = target ?? null;
+    onSurfaceChange('full');
+  };
 
   return (
     <div
@@ -313,13 +331,28 @@ export function TemporalCreateComposer({
           className="temporal-create-composer__header"
           inert={discardPending || undefined}
         >
-          <div className="temporal-create-composer__heading-copy">
-            <span className="temporal-create-composer__eyebrow">
-              {t(($) => $.common.home.timeline.create.draft)}
-            </span>
-            <h2 id={dialogTitleId}>
-              {t(($) => $.common.home.timeline.create.title)}
-            </h2>
+          <div className="temporal-create-composer__heading-stack">
+            {advanced ? (
+              <button
+                className="temporal-create-composer__back"
+                type="button"
+                aria-label={copy.hideAdvanced}
+                aria-expanded="true"
+                disabled={pending}
+                onClick={() => onSurfaceChange('quick')}
+              >
+                <span aria-hidden="true">←</span>
+                <span>{copy.backToQuick}</span>
+              </button>
+            ) : null}
+            <div className="temporal-create-composer__heading-copy">
+              <span className="temporal-create-composer__eyebrow">
+                {t(($) => $.common.home.timeline.create.draft)}
+              </span>
+              <h2 id={dialogTitleId}>
+                {t(($) => $.common.home.timeline.create.title)}
+              </h2>
+            </div>
           </div>
           <button
             className="temporal-create-composer__close"
@@ -363,15 +396,17 @@ export function TemporalCreateComposer({
             renderError={renderError}
           />
 
-          <button
-            type="button"
-            className={`temporal-create-advanced-toggle${advanced ? ' is-open' : ''}`}
-            aria-expanded={advanced}
-            onClick={() => onSurfaceChange(advanced ? 'quick' : 'full')}
-          >
-            <span>{advanced ? copy.hideAdvanced : copy.advanced}</span>
-            <span aria-hidden="true">{advanced ? '⌃' : '⌄'}</span>
-          </button>
+          {!advanced ? (
+            <button
+              type="button"
+              className="temporal-create-advanced-toggle"
+              aria-expanded="false"
+              onClick={() => showAdvanced()}
+            >
+              <span>{copy.advanced}</span>
+              <span aria-hidden="true">⌄</span>
+            </button>
+          ) : null}
 
           <TemporalCreateAdvancedFields
             fields={fields}

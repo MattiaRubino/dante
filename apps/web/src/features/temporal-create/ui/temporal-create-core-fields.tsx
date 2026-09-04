@@ -26,7 +26,7 @@ type TemporalCreateCoreFieldsProps = Readonly<{
   fields: TemporalCreateFields;
   contexts: readonly TemporalCreateContextOption[];
   onPatch: (patch: Partial<TemporalCreateFields>) => void;
-  onRequestAdvanced: () => void;
+  onRequestAdvanced: (target?: 'recurrence') => void;
   renderError: (path: string) => ReactNode;
 }>;
 
@@ -208,7 +208,7 @@ export function TemporalCreateCoreFields({
                 owner: recurrenceOwner,
               },
       });
-      onRequestAdvanced();
+      onRequestAdvanced('recurrence');
       return;
     }
     if (value === 'none') {
@@ -435,18 +435,9 @@ export function TemporalCreateCoreFields({
             <option value="weekly">{copy.event.repeatWeekly}</option>
             <option value="monthly">{copy.event.repeatMonthly}</option>
             <option value="yearly">{copy.event.repeatYearly}</option>
-            {quickRecurrence(fields) === 'custom' ? (
-              <option value="custom">{copy.event.repeatCustom}</option>
-            ) : null}
+            <option value="custom">{copy.event.repeatCustom}</option>
           </select>
         </label>
-        <button
-          className="temporal-create-inline-action"
-          type="button"
-          onClick={() => changeQuickRecurrence('custom')}
-        >
-          {copy.event.repeatCustom}
-        </button>
       </div>
 
       <div className="temporal-create-context-row">
