@@ -71,9 +71,6 @@ type DropCandidate = Readonly<{
   dateKey: string;
   startMinute: number;
   endMinute: number;
-  host: HTMLElement;
-  style: CSSProperties;
-  tone: TimelineSemanticTone;
 }>;
 
 const PANEL_ID = 'timeline-planning-tray';
@@ -124,31 +121,6 @@ function minuteAtClientY(section: HTMLElement, clientY: number): number {
   }
 
   return 1439;
-}
-
-function createMinutePixelMapper(
-  section: HTMLElement,
-): (minute: number) => number {
-  const interval = TIMELINE_POLICY.grid.minorLineIntervalMinutes;
-  const lineTops = Array.from(
-    section.querySelectorAll<HTMLElement>('.timeline-hour-line'),
-    (line) => parsePixel(line.style.top),
-  );
-
-  if (lineTops.length < 2) {
-    const sectionHeight = section.clientHeight;
-    return (minute) =>
-      (Math.max(0, Math.min(1440, minute)) / 1440) * sectionHeight;
-  }
-
-  return (minute) => {
-    const normalized = Math.max(0, Math.min(1440, minute)) / interval;
-    const lowerIndex = Math.min(lineTops.length - 1, Math.floor(normalized));
-    const upperIndex = Math.min(lineTops.length - 1, lowerIndex + 1);
-    const lower = lineTops[lowerIndex] ?? 0;
-    const upper = lineTops[upperIndex] ?? lower;
-    return lower + (upper - lower) * (normalized - lowerIndex);
-  };
 }
 
 function snapMinute(minute: number): number {
@@ -395,57 +367,27 @@ export function TimelinePlanningTray({
     clientX: number,
     clientY: number,
   ): DropCandidate | null => {
-    const target = document.elementFromPoint(clientX, clientY);
-    const section = target?.closest<HTMLElement>(
+    const eventsHost = document
+      .elementsFromPoint(clientX, clientY)
+      .map((element) => element.closest<HTMLElement>('.timeline-events-layer'))
+      .find((element): element is HTMLElement => element !== null);
+    const section = eventsHost?.closest<HTMLElement>(
       '.timeline-day-section[data-timeline-date]',
     );
     const dateKey = section?.dataset.timelineDate;
-    const eventsHost = section?.querySelector<HTMLElement>(
-      '.timeline-events-layer',
-    );
-    if (!section || !dateKey || !eventsHost) {
+    if (!section || !eventsHost || !dateKey) {
       return null;
     }
 
     const duration = Math.max(15, Math.min(1440, item.durationMinutes));
     const rawStart = snapMinute(minuteAtClientY(section, clientY));
     const startMinute = Math.max(0, Math.min(1440 - duration, rawStart));
-    const endMinute = startMinute + duration;
-    const pixelAtMinute = createMinutePixelMapper(section);
-    const top = pixelAtMinute(startMinute);
-    const bottom = pixelAtMinute(endMinute);
-    const root = document.querySelector<HTMLElement>('.home-timeline--production');
-    const rootStyle = root ? getComputedStyle(root) : null;
-    const expansionProgress =
-      Number.parseFloat(
-        rootStyle?.getPropertyValue('--timeline-expansion-progress') ?? '0',
-      ) || 0;
-    const groupWidth =
-      Number.parseFloat(
-        rootStyle?.getPropertyValue('--timeline-expanded-group-width') ?? '260',
-      ) || 260;
-    const compactLeft = 14;
-    const compactWidth = Math.min(
-      300,
-      Math.max(180, eventsHost.clientWidth * 0.34),
-    );
-    const expandedLeft = item.groupIndex * groupWidth + 6;
-    const expandedWidth = Math.max(150, groupWidth - 12);
 
     return Object.freeze({
       itemId: item.id,
       dateKey,
       startMinute,
-      endMinute,
-      host: eventsHost,
-      tone: item.tone,
-      style: Object.freeze({
-        top,
-        left: compactLeft + (expandedLeft - compactLeft) * expansionProgress,
-        width:
-          compactWidth + (expandedWidth - compactWidth) * expansionProgress,
-        height: Math.max(38, bottom - top),
-      }),
+      endMinute: startMinute + duration,
     });
   };
 
@@ -840,17 +782,14 @@ export function TimelinePlanningTray({
     </aside>
   ) : null;
 
+  const snappedCandidate =
+    dragVisual && candidate?.itemId === dragVisual.item.id ? candidate : null;
+
   return (
     <>
       {actionsHost ? createPortal(trigger, actionsHost) : null}
       {typeof document !== 'undefined' && panel
         ? createPortal(panel, document.body)
-        : null}
-      {dragActive && typeof document !== 'undefined'
-        ? createPortal(
-            <div className="timeline-planning-scrim" aria-hidden="true" />,
-            document.body,
-          )
         : null}
       {dragVisual && typeof document !== 'undefined'
         ? createPortal(
@@ -874,27 +813,18 @@ export function TimelinePlanningTray({
                   <b>·</b>
                   {dragVisual.item.durationMinutes} min
                 </span>
+                {snappedCandidate ? (
+                  <span
+                    className="timeline-planning-drag-card__slot"
+                    data-timeline-planning-snap="true"
+                  >
+                    {formatMinute(snappedCandidate.startMinute)}–
+                    {formatMinute(snappedCandidate.endMinute)}
+                  </span>
+                ) : null}
               </span>
             </div>,
             document.body,
-          )
-        : null}
-      {candidate
-        ? createPortal(
-            <div
-              className="timeline-planning-drop-preview"
-              data-timeline-planning-drop-preview="true"
-              data-timeline-tone={candidate.tone}
-              style={candidate.style}
-              aria-hidden="true"
-            >
-              <strong>{copy.dropHere}</strong>
-              <span>
-                {formatMinute(candidate.startMinute)}–
-                {formatMinute(candidate.endMinute)}
-              </span>
-            </div>,
-            candidate.host,
           )
         : null}
     </>

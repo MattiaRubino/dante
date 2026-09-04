@@ -37,6 +37,9 @@ export function TemporalCreateAdvancedFields({
     return null;
   }
 
+  const activityHasRepeat =
+    fields.kind === 'activity' && fields.eventRecurrence.patternKind !== 'none';
+
   return (
     <div className="temporal-create-advanced" data-create-advanced={fields.kind}>
       {fields.timeSemantics === 'timed' ? (
@@ -96,34 +99,34 @@ export function TemporalCreateAdvancedFields({
       ) : null}
 
       {fields.kind === 'activity' ? (
-        <>
-          <TemporalCreateActivityFields
-            fields={fields}
-            depth="full"
-            onPatch={onPatch}
-            renderError={renderError}
-          />
-          <TemporalCreateConfirmationFields
-            fields={fields}
-            onPatch={onPatch}
-            renderError={renderError}
-          />
-        </>
+        <TemporalCreateActivityFields
+          fields={fields}
+          depth="full"
+          onPatch={onPatch}
+          renderError={renderError}
+        />
       ) : (
-        <>
-          <TemporalCreateEventFields
-            fields={fields}
-            depth="full"
-            onPatch={onPatch}
-            renderError={renderError}
-          />
-          <TemporalCreateRecurrenceFields
-            fields={fields}
-            depth="full"
-            onPatch={onPatch}
-            renderError={renderError}
-          />
-        </>
+        <TemporalCreateEventFields
+          fields={fields}
+          depth="full"
+          onPatch={onPatch}
+          renderError={renderError}
+        />
+      )}
+
+      {fields.kind === 'event' || activityHasRepeat ? (
+        <TemporalCreateRecurrenceFields
+          fields={fields}
+          depth="full"
+          onPatch={onPatch}
+          renderError={renderError}
+        />
+      ) : (
+        <TemporalCreateConfirmationFields
+          fields={fields}
+          onPatch={onPatch}
+          renderError={renderError}
+        />
       )}
 
       <TemporalCreateOrganizationFields

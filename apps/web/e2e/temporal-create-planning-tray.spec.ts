@@ -23,8 +23,10 @@ async function openPlanningTray(page: Page) {
     name: 'Apri attività da collocare',
   });
   await expect(trigger).toBeVisible();
-  await trigger.click();
   const tray = page.locator('[data-timeline-planning-tray="true"]');
+  if (!(await tray.isVisible().catch(() => false))) {
+    await trigger.click();
+  }
   await expect(tray).toBeVisible();
   return { trigger, tray };
 }
@@ -139,7 +141,7 @@ test('an unplaced Activity lives in the tray, quick placement keeps one identity
   await expect(restored.trigger).toContainText('1');
 });
 
-test('dragging from the tray foregrounds Timeline, previews a snapped timed slot, commits once, and Escape cancels', async ({
+test('dragging carries one card over the foreground Timeline, commits once, and Escape cancels', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -167,16 +169,23 @@ test('dragging from the tray foregrounds Timeline, previews a snapped timed slot
     'data-timeline-planning-mode',
     'true',
   );
-  const preview = page.locator('[data-timeline-planning-drop-preview="true"]');
-  await expect(preview).toBeVisible();
-  await expect(preview).toContainText('Rilascia qui');
-  await expect(preview).toContainText(/\d{2}:\d{2}–\d{2}:\d{2}/);
+  const carried = page.locator('[data-timeline-planning-drag-card="true"]');
+  await expect(carried).toBeVisible();
+  await expect(carried).toContainText('Scrivere proposta');
+  await expect(carried.locator('[data-timeline-planning-snap="true"]')).toContainText(
+    /\d{2}:\d{2}–\d{2}:\d{2}/,
+  );
+  await expect(page.locator('.timeline-planning-scrim')).toHaveCount(0);
+  await expect(
+    page.locator('[data-timeline-planning-drop-preview="true"]'),
+  ).toHaveCount(0);
 
   await page.mouse.up();
   await expect(page.locator('html')).not.toHaveAttribute(
     'data-timeline-planning-mode',
     'true',
   );
+  await expect(carried).toHaveCount(0);
   await expect(planningItem(tray, 'Scrivere proposta')).toHaveCount(0);
   await expect(
     page.locator('.timeline-event-card').filter({ hasText: 'Scrivere proposta' }),
@@ -186,6 +195,7 @@ test('dragging from the tray foregrounds Timeline, previews a snapped timed slot
   const restored = await openPlanningTray(page);
   await expect(planningItem(restored.tray, 'Scrivere proposta')).toBeVisible();
 
+  const secondTarget = await visibleTimedDropPoint(page);
   const second = planningItem(restored.tray, 'Rivedere note').locator(
     '.timeline-planning-card__main',
   );
@@ -195,11 +205,12 @@ test('dragging from the tray foregrounds Timeline, previews a snapped timed slot
   }
   await page.mouse.move(secondBox.x + 70, secondBox.y + secondBox.height / 2);
   await page.mouse.down();
-  await page.mouse.move(target.x, target.y, { steps: 8 });
+  await page.mouse.move(secondTarget.x, secondTarget.y, { steps: 8 });
   await expect(page.locator('html')).toHaveAttribute(
     'data-timeline-planning-mode',
     'true',
   );
+  await expect(page.locator('[data-timeline-planning-drag-card="true"]')).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(page.locator('html')).not.toHaveAttribute(
     'data-timeline-planning-mode',

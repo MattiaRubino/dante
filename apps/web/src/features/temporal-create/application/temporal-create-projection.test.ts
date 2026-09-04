@@ -37,7 +37,6 @@ describe('Temporal Create Timeline projection', () => {
       startTime: '16:00',
       durationMinutes: 60,
     });
-
     const projection = temporalCreateTimelinePreviewFromFields(fields);
 
     expect(projection?.allDay).toBe(false);
@@ -66,5 +65,32 @@ describe('Temporal Create Timeline projection', () => {
     expect(projection?.id).toBe('temporal-create-preview');
     expect(projection?.agendaParts).toEqual(['Listening', 'Orale', 'Scritto']);
     expect(Object.isFrozen(projection?.agendaParts)).toBe(true);
+  });
+
+  it('marks a repeated Activity projection recurring without inventing child identities', () => {
+    const baseline = createTemporalCreateFields({
+      title: 'Allenamento',
+      kind: 'activity',
+      date: '2026-08-04',
+      startTime: '18:00',
+      durationMinutes: 60,
+    });
+    const fields = createTemporalCreateFields({
+      ...baseline,
+      eventRecurrence: {
+        ...baseline.eventRecurrence,
+        patternKind: 'quota-per-period',
+        quotaCount: 3,
+        quotaPeriodKind: 'week',
+        quotaPeriodInterval: 1,
+      },
+    });
+
+    const projection = temporalCreateTimelinePreviewFromFields(fields);
+
+    expect(projection?.kind).toBe('activity');
+    expect(projection?.recurring).toBe(true);
+    expect(projection?.id).toBe('temporal-create-preview');
+    expect(projection?.agendaParts).toEqual([]);
   });
 });

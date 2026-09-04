@@ -9,6 +9,7 @@ import {
 import type {
   TemporalCreateAppliedEffect,
   TemporalCreateMetadata,
+  TemporalCreateRecurrenceOwner,
 } from './temporal-create-runtime';
 
 export type TemporalCreateTimelineProjection = Readonly<{
@@ -34,6 +35,13 @@ function minuteOfDay(hour: number, minute: number): number {
   return hour * 60 + minute;
 }
 
+function recurrenceOwner(fields: TemporalCreateFields): TemporalCreateRecurrenceOwner {
+  if (fields.eventRecurrence.patternKind === 'none') {
+    return null;
+  }
+  return fields.kind === 'event' ? 'event' : 'routine';
+}
+
 function projectPlacement(
   id: string,
   title: string,
@@ -43,9 +51,7 @@ function projectPlacement(
 ): TemporalCreateTimelineProjection {
   const specification = metadata.specification;
   const flexible = temporalCreateHasFlexibleIntent(specification);
-  const recurring =
-    specification.kind === 'event' &&
-    specification.eventRecurrence.patternKind !== 'none';
+  const recurring = specification.eventRecurrence.patternKind !== 'none';
   const appearanceTone = specification.appearanceTone;
   const agendaParts =
     specification.kind === 'event'
@@ -151,6 +157,7 @@ export function temporalCreateTimelinePreviewFromFields(
       notes: fields.notes.trim(),
       timeSemantics: fields.timeSemantics,
       timeZoneId: fields.timeZoneId,
+      recurrenceOwner: recurrenceOwner(fields),
       specification: fields,
     }),
     true,

@@ -141,10 +141,7 @@ export function TemporalCreateCoreFields({
       });
       return;
     }
-    onPatch({
-      kind,
-      eventRecurrence: { ...fields.eventRecurrence, patternKind: 'none' },
-    });
+    onPatch({ kind });
   };
 
   const changeTimeSemantics = (semantics: TemporalCreateTimeSemantics) => {
@@ -185,6 +182,20 @@ export function TemporalCreateCoreFields({
 
   const changeQuickRecurrence = (value: QuickRecurrence) => {
     if (value === 'custom') {
+      if (
+        fields.kind === 'activity' &&
+        fields.eventRecurrence.patternKind === 'none'
+      ) {
+        onPatch({
+          eventRecurrence: {
+            ...fields.eventRecurrence,
+            patternKind: 'calendar-wall-clock',
+            calendarFrequency: 'weekly',
+            calendarInterval: 1,
+            weekdays: Object.freeze([weekdayForDate(fields.date)]),
+          },
+        });
+      }
       onRequestAdvanced();
       return;
     }
@@ -393,35 +404,33 @@ export function TemporalCreateCoreFields({
         </div>
       ) : null}
 
-      {fields.kind === 'event' ? (
-        <div className="temporal-create-event-quick-row">
-          <label className="temporal-create-control">
-            <span>{copy.event.repeat}</span>
-            <select
-              value={quickRecurrence(fields)}
-              onChange={(event) =>
-                changeQuickRecurrence(event.currentTarget.value as QuickRecurrence)
-              }
-            >
-              <option value="none">{copy.event.repeatNever}</option>
-              <option value="daily">{copy.event.repeatDaily}</option>
-              <option value="weekly">{copy.event.repeatWeekly}</option>
-              <option value="monthly">{copy.event.repeatMonthly}</option>
-              <option value="yearly">{copy.event.repeatYearly}</option>
-              {quickRecurrence(fields) === 'custom' ? (
-                <option value="custom">{copy.event.repeatCustom}</option>
-              ) : null}
-            </select>
-          </label>
-          <button
-            className="temporal-create-inline-action"
-            type="button"
-            onClick={onRequestAdvanced}
+      <div className="temporal-create-event-quick-row">
+        <label className="temporal-create-control">
+          <span>{copy.event.repeat}</span>
+          <select
+            value={quickRecurrence(fields)}
+            onChange={(event) =>
+              changeQuickRecurrence(event.currentTarget.value as QuickRecurrence)
+            }
           >
-            {copy.event.repeatCustom}
-          </button>
-        </div>
-      ) : null}
+            <option value="none">{copy.event.repeatNever}</option>
+            <option value="daily">{copy.event.repeatDaily}</option>
+            <option value="weekly">{copy.event.repeatWeekly}</option>
+            <option value="monthly">{copy.event.repeatMonthly}</option>
+            <option value="yearly">{copy.event.repeatYearly}</option>
+            {quickRecurrence(fields) === 'custom' ? (
+              <option value="custom">{copy.event.repeatCustom}</option>
+            ) : null}
+          </select>
+        </label>
+        <button
+          className="temporal-create-inline-action"
+          type="button"
+          onClick={() => changeQuickRecurrence('custom')}
+        >
+          {copy.event.repeatCustom}
+        </button>
+      </div>
 
       <div className="temporal-create-context-row">
         <TemporalCreateContextPicker

@@ -132,10 +132,12 @@ describe('temporal create session', () => {
     const resumed = continueTemporalCreateEditing(protectedSession);
     const expanded = setTemporalCreateDetailsOpen(resumed, true);
     const full = setTemporalCreateSurface(expanded, 'full');
-    const backToExpanded = setTemporalCreateSurface(full, 'expanded');
-    const compact = setTemporalCreateSurface(backToExpanded, 'quick');
+    const legacyExpanded = setTemporalCreateSurface(full, 'expanded');
+    const compact = setTemporalCreateSurface(legacyExpanded, 'quick');
     const reopened = setTemporalCreateSurface(compact, 'full');
 
+    expect(expanded.surface).toBe('full');
+    expect(legacyExpanded.surface).toBe('full');
     expect(reopened.closeDecision).toBe('none');
     expect(reopened.surface).toBe('full');
     expect(reopened.draft.current.title).toBe('Call ricorrente aggiornata');
@@ -179,7 +181,7 @@ describe('temporal create session', () => {
     expect(eventSession.draft.current.scheduling.constraintKind).toBe('none');
   });
 
-  it('does not permit Activity to become a fake direct recurrence owner', () => {
+  it('preserves a repeated rule across Event to Activity while ownership stays outside the field shape', () => {
     const event = createTemporalCreateFields({
       title: 'Call',
       kind: 'event',
@@ -196,7 +198,34 @@ describe('temporal create session', () => {
     );
 
     expect(event.eventRecurrence.patternKind).toBe('elapsed-interval');
-    expect(activity.draft.current.eventRecurrence.patternKind).toBe('none');
+    expect(activity.draft.current.eventRecurrence.patternKind).toBe(
+      'elapsed-interval',
+    );
+    expect(validateTemporalCreateFields(activity.draft.current)).toEqual([]);
+  });
+
+  it('validates a Routine-backed Activity quota such as three times per week', () => {
+    const baseline = createTemporalCreateFields({
+      title: 'Allenamento',
+      kind: 'activity',
+      date: '2026-09-01',
+    });
+    const repeated = createTemporalCreateFields({
+      ...baseline,
+      eventRecurrence: {
+        ...baseline.eventRecurrence,
+        patternKind: 'quota-per-period',
+        quotaCount: 3,
+        quotaPeriodKind: 'week',
+        quotaPeriodInterval: 1,
+        quotaFrame: 'floating-local',
+        quotaWeekStart: 'MO',
+      },
+    });
+
+    expect(validateTemporalCreateFields(repeated)).toEqual([]);
+    expect(repeated.eventRecurrence.quotaCount).toBe(3);
+    expect(repeated.eventRecurrence.quotaPeriodKind).toBe('week');
   });
 
   it('still rejects an externally malformed Event without placement', () => {

@@ -68,11 +68,13 @@ export type TemporalCreateAppearanceTone =
   | 'urgent';
 
 /**
- * Event recurrence is deliberately Event-specific. Persistent repetition that
- * produces Activities belongs to the Routine -> Recurrence -> Occurrence
- * vertical and is represented in Create as a Routine handoff, not as a repeat
- * flag on Activity.
+ * Owner-bound recurrence authoring grammar shared by the Create surface.
+ * Event uses it as Event-owned recurrence. When the selected kind is Activity,
+ * the same authored rule is explicitly Routine-backed: Activity never becomes
+ * the canonical recurrence owner and the browser never fabricates Occurrences.
  *
+ * The historical Event-prefixed type/property names are retained inside C1 to
+ * avoid a gratuitous data-shape migration while preserving the CP6 owner rule.
  * These four families mirror the recurrence capabilities materialized by CP6
  * without making the frontend draft a PostgreSQL row shape.
  */
@@ -264,7 +266,6 @@ function freezeEvent(value: TemporalCreateEventIntent): TemporalCreateEventInten
 function normalizeFields(fields: TemporalCreateFields): TemporalCreateFields {
   let timeSemantics = fields.timeSemantics;
   let scheduling = fields.scheduling;
-  let eventRecurrence = fields.eventRecurrence;
 
   if (fields.kind === 'event') {
     if (timeSemantics === 'unscheduled') {
@@ -286,9 +287,6 @@ function normalizeFields(fields: TemporalCreateFields): TemporalCreateFields {
     } else if (timeSemantics !== 'unscheduled') {
       scheduling = { ...scheduling, constraintKind: 'none' };
     }
-    if (eventRecurrence.patternKind !== 'none') {
-      eventRecurrence = { ...eventRecurrence, patternKind: 'none' };
-    }
   }
 
   return Object.freeze({
@@ -296,7 +294,7 @@ function normalizeFields(fields: TemporalCreateFields): TemporalCreateFields {
     timeSemantics,
     scheduling: freezeScheduling(scheduling),
     execution: freezeExecution(fields.execution),
-    eventRecurrence: freezeEventRecurrence(eventRecurrence),
+    eventRecurrence: freezeEventRecurrence(fields.eventRecurrence),
     confirmation: freezeConfirmation(fields.confirmation),
     event: freezeEvent(fields.event),
   });
@@ -515,11 +513,12 @@ function freezeSession(
   closeDecision: TemporalCreateCloseDecision,
   surface: TemporalCreateSurface,
 ): TemporalCreateSession {
+  const normalizedSurface = surface === 'expanded' ? 'full' : surface;
   return Object.freeze({
     draft,
     closeDecision,
-    detailsOpen: surface !== 'quick',
-    surface,
+    detailsOpen: normalizedSurface !== 'quick',
+    surface: normalizedSurface,
   });
 }
 
@@ -579,7 +578,7 @@ export function setTemporalCreateDetailsOpen(
   session: TemporalCreateSession,
   detailsOpen: boolean,
 ): TemporalCreateSession {
-  return setTemporalCreateSurface(session, detailsOpen ? 'expanded' : 'quick');
+  return setTemporalCreateSurface(session, detailsOpen ? 'full' : 'quick');
 }
 
 export function requestTemporalCreateClose(
@@ -664,6 +663,132 @@ export function temporalCreateHasFlexibleIntent(
   fields: TemporalCreateFields,
 ): boolean {
   return fields.kind === 'activity' && fields.scheduling.constraintKind !== 'none';
+}
+
+function validateRecurrence(
+  recurrence: TemporalCreateEventRecurrenceIntent,
+  date: ReturnType<typeof Temporal.PlainDate.from> | null,
+  issues: TemporalValidationIssue[],
+): void {
+  if (recurrence.patternKind === 'calendar-wall-clock') {
+    if (
+      !Number.isInteger(recurrence.calendarInterval) ||
+      recurrence.calendarInterval < 1 ||
+      recurrence.calendarInterval > 365
+    ) {
+      issues.push(
+        temporalValidationIssue('temporal.create.recurrence.interval_invalid', [
+          'eventRecurrence.calendarInterval',
+        ]),
+      );
+    }
+    if (
+      recurrence.calendarFrequency === 'weekly' &&
+      recurrence.weekdays.length === 0
+    ) {
+      issues.push(
+        temporalValidationIssue('temporal.create.recurrence.weekdays_required', [
+          'eventRecurrence.weekdays',
+        ]),
+      );
+    }
+    if (
+      recurrence.calendarFrequency === 'monthly-ordinal' &&
+      (!Number.isInteger(recurrence.calendarOrdinal) ||
+        !RECURRENCE_ORDINALS.includes(recurrence.calendarOrdinal) ||
+        !WEEKDAYS.includes(recurrence.calendarOrdinalWeekday))
+    ) {
+      issues.push(
+        temporalValidationIssue('temporal.create.recurrence.ordinal_invalid', [
+          'eventRecurrence.calendarOrdinal',
+        ]),
+      );
+    }
+  }
+  if (
+    recurrence.patternKind === 'elapsed-interval' &&
+    (!Number.isInteger(recurrence.elapsedIntervalMinutes) ||
+      recurrence.elapsedIntervalMinutes < 1 ||
+      recurrence.elapsedIntervalMinutes > 525600)
+  ) {
+    issues.push(
+      temporalValidationIssue('temporal.create.recurrence.elapsed_invalid', [
+        'eventRecurrence.elapsedIntervalMinutes',
+      ]),
+    );
+  }
+  if (recurrence.patternKind === 'quota-per-period') {
+    if (
+      !Number.isInteger(recurrence.quotaCount) ||
+      recurrence.quotaCount < 1 ||
+      recurrence.quotaCount > 999 ||
+      !Number.isInteger(recurrence.quotaPeriodInterval) ||
+      recurrence.quotaPeriodInterval < 1 ||
+      recurrence.quotaPeriodInterval > 365 ||
+      (recurrence.quotaPeriodKind === 'week' &&
+        !WEEKDAYS.includes(recurrence.quotaWeekStart))
+    ) {
+      issues.push(
+        temporalValidationIssue('temporal.create.recurrence.quota_invalid', [
+          'eventRecurrence.quota',
+        ]),
+      );
+    }
+    if (
+      recurrence.quotaFrame === 'named-zone' &&
+      !validTimeZoneId(recurrence.quotaTimeZoneId)
+    ) {
+      issues.push(
+        temporalValidationIssue('temporal.create.recurrence.quota_timezone_invalid', [
+          'eventRecurrence.quotaTimeZoneId',
+        ]),
+      );
+    }
+  }
+  if (recurrence.patternKind === 'cyclic-positional') {
+    const positions = recurrence.cyclePositions;
+    const uniquePositions = new Set(positions);
+    if (
+      !Number.isInteger(recurrence.cycleLength) ||
+      recurrence.cycleLength < 1 ||
+      recurrence.cycleLength > 10000 ||
+      positions.length === 0 ||
+      uniquePositions.size !== positions.length ||
+      positions.some(
+        (position) =>
+          !Number.isInteger(position) ||
+          position < 1 ||
+          position > recurrence.cycleLength,
+      )
+    ) {
+      issues.push(
+        temporalValidationIssue('temporal.create.recurrence.cycle_invalid', [
+          'eventRecurrence.cycle',
+        ]),
+      );
+    }
+  }
+  if (recurrence.patternKind !== 'none' && recurrence.endMode === 'until-date') {
+    const until = parseDate(recurrence.untilDate);
+    if (!date || !until || Temporal.PlainDate.compare(until, date) < 0) {
+      issues.push(
+        temporalValidationIssue('temporal.create.recurrence.until_invalid', [
+          'eventRecurrence.untilDate',
+        ]),
+      );
+    }
+  }
+  if (
+    recurrence.patternKind !== 'none' &&
+    recurrence.endMode === 'count' &&
+    (!Number.isInteger(recurrence.count) || recurrence.count < 1 || recurrence.count > 999)
+  ) {
+    issues.push(
+      temporalValidationIssue('temporal.create.recurrence.count_invalid', [
+        'eventRecurrence.count',
+      ]),
+    );
+  }
 }
 
 export function validateTemporalCreateFields(
@@ -810,128 +935,9 @@ export function validateTemporalCreateFields(
     }
   }
 
-  if (fields.kind === 'event') {
-    const recurrence = fields.eventRecurrence;
-    if (recurrence.patternKind === 'calendar-wall-clock') {
-      if (
-        !Number.isInteger(recurrence.calendarInterval) ||
-        recurrence.calendarInterval < 1 ||
-        recurrence.calendarInterval > 365
-      ) {
-        issues.push(
-          temporalValidationIssue('temporal.create.recurrence.interval_invalid', [
-            'eventRecurrence.calendarInterval',
-          ]),
-        );
-      }
-      if (
-        recurrence.calendarFrequency === 'weekly' &&
-        recurrence.weekdays.length === 0
-      ) {
-        issues.push(
-          temporalValidationIssue('temporal.create.recurrence.weekdays_required', [
-            'eventRecurrence.weekdays',
-          ]),
-        );
-      }
-      if (
-        recurrence.calendarFrequency === 'monthly-ordinal' &&
-        (!Number.isInteger(recurrence.calendarOrdinal) ||
-          !RECURRENCE_ORDINALS.includes(recurrence.calendarOrdinal) ||
-          !WEEKDAYS.includes(recurrence.calendarOrdinalWeekday))
-      ) {
-        issues.push(
-          temporalValidationIssue('temporal.create.recurrence.ordinal_invalid', [
-            'eventRecurrence.calendarOrdinal',
-          ]),
-        );
-      }
-    }
-    if (
-      recurrence.patternKind === 'elapsed-interval' &&
-      (!Number.isInteger(recurrence.elapsedIntervalMinutes) ||
-        recurrence.elapsedIntervalMinutes < 1 ||
-        recurrence.elapsedIntervalMinutes > 525600)
-    ) {
-      issues.push(
-        temporalValidationIssue('temporal.create.recurrence.elapsed_invalid', [
-          'eventRecurrence.elapsedIntervalMinutes',
-        ]),
-      );
-    }
-    if (recurrence.patternKind === 'quota-per-period') {
-      if (
-        !Number.isInteger(recurrence.quotaCount) ||
-        recurrence.quotaCount < 1 ||
-        recurrence.quotaCount > 999 ||
-        !Number.isInteger(recurrence.quotaPeriodInterval) ||
-        recurrence.quotaPeriodInterval < 1 ||
-        recurrence.quotaPeriodInterval > 365 ||
-        (recurrence.quotaPeriodKind === 'week' &&
-          !WEEKDAYS.includes(recurrence.quotaWeekStart))
-      ) {
-        issues.push(
-          temporalValidationIssue('temporal.create.recurrence.quota_invalid', [
-            'eventRecurrence.quota',
-          ]),
-        );
-      }
-      if (
-        recurrence.quotaFrame === 'named-zone' &&
-        !validTimeZoneId(recurrence.quotaTimeZoneId)
-      ) {
-        issues.push(
-          temporalValidationIssue('temporal.create.recurrence.quota_timezone_invalid', [
-            'eventRecurrence.quotaTimeZoneId',
-          ]),
-        );
-      }
-    }
-    if (recurrence.patternKind === 'cyclic-positional') {
-      const positions = recurrence.cyclePositions;
-      const uniquePositions = new Set(positions);
-      if (
-        !Number.isInteger(recurrence.cycleLength) ||
-        recurrence.cycleLength < 1 ||
-        recurrence.cycleLength > 10000 ||
-        positions.length === 0 ||
-        uniquePositions.size !== positions.length ||
-        positions.some(
-          (position) =>
-            !Number.isInteger(position) ||
-            position < 1 ||
-            position > recurrence.cycleLength,
-        )
-      ) {
-        issues.push(
-          temporalValidationIssue('temporal.create.recurrence.cycle_invalid', [
-            'eventRecurrence.cycle',
-          ]),
-        );
-      }
-    }
-    if (recurrence.patternKind !== 'none' && recurrence.endMode === 'until-date') {
-      const until = parseDate(recurrence.untilDate);
-      if (!date || !until || Temporal.PlainDate.compare(until, date) < 0) {
-        issues.push(
-          temporalValidationIssue('temporal.create.recurrence.until_invalid', [
-            'eventRecurrence.untilDate',
-          ]),
-        );
-      }
-    }
-    if (
-      recurrence.patternKind !== 'none' &&
-      recurrence.endMode === 'count' &&
-      (!Number.isInteger(recurrence.count) || recurrence.count < 1 || recurrence.count > 999)
-    ) {
-      issues.push(
-        temporalValidationIssue('temporal.create.recurrence.count_invalid', [
-          'eventRecurrence.count',
-        ]),
-      );
-    }
+  validateRecurrence(fields.eventRecurrence, date, issues);
 
+  if (fields.kind === 'event') {
     if (
       !validNonNegativeMinutes(fields.event.preparationMinutes) ||
       !validNonNegativeMinutes(fields.event.recoveryMinutes)

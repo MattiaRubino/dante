@@ -24,12 +24,15 @@ import {
   type TemporalCreateTimeSemantics,
 } from '../model/temporal-create-session';
 
+export type TemporalCreateRecurrenceOwner = 'event' | 'routine' | null;
+
 export type TemporalCreateMetadata = Readonly<{
   kind: TemporalCreateKind;
   contextId: string;
   notes: string;
   timeSemantics: TemporalCreateTimeSemantics;
   timeZoneId: string;
+  recurrenceOwner: TemporalCreateRecurrenceOwner;
   specification: TemporalCreateFields;
 }>;
 
@@ -118,6 +121,15 @@ export interface TemporalCreateRuntime {
   ): Promise<TemporalCreateExecution>;
   list(): Promise<readonly TemporalProjectionItem[]>;
   listRecords(): Promise<readonly TemporalCreateRecord[]>;
+}
+
+function recurrenceOwnerForFields(
+  fields: TemporalCreateFields,
+): TemporalCreateRecurrenceOwner {
+  if (fields.eventRecurrence.patternKind === 'none') {
+    return null;
+  }
+  return fields.kind === 'event' ? 'event' : 'routine';
 }
 
 function capabilitiesForFields(
@@ -223,6 +235,7 @@ class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
       notes: specification.notes.trim(),
       timeSemantics: specification.timeSemantics,
       timeZoneId: specification.timeZoneId,
+      recurrenceOwner: recurrenceOwnerForFields(specification),
       specification,
     }) satisfies TemporalCreateMetadata;
 

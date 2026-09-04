@@ -9,7 +9,7 @@ async function openCreate(page: Page) {
   return dialog;
 }
 
-test('floating Create can move and Advanced expands inline without reviving Quick Expanded Full chrome', async ({
+test('Quick Create stays compact while Advanced opens a centered bounded workspace', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -50,8 +50,14 @@ test('floating Create can move and Advanced expands inline without reviving Quic
 
   const advanced = dialog.getByRole('button', { name: 'Opzioni avanzate' });
   await expect(advanced).toHaveAttribute('aria-expanded', 'false');
+  const advancedBox = await advanced.boundingBox();
+  expect(advancedBox).not.toBeNull();
+  expect(advancedBox?.width ?? 999).toBeLessThan(220);
+  expect(advancedBox?.height ?? 999).toBeLessThanOrEqual(36);
+
   await advanced.click();
   await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'advanced');
+  await expect(dialog).toHaveClass(/is-full/);
   await expect(
     dialog.getByRole('button', { name: 'Nascondi opzioni avanzate' }),
   ).toHaveAttribute('aria-expanded', 'true');
@@ -62,12 +68,29 @@ test('floating Create can move and Advanced expands inline without reviving Quic
     throw new Error('Expected Advanced Create geometry');
   }
   expect(expanded.x).toBeGreaterThanOrEqual(0);
+  expect(expanded.y).toBeGreaterThanOrEqual(0);
   expect(expanded.x + expanded.width).toBeLessThanOrEqual(1440.5);
+  expect(expanded.y + expanded.height).toBeLessThanOrEqual(900.5);
+  expect(Math.abs(expanded.x + expanded.width / 2 - 720)).toBeLessThan(2);
+  expect(expanded.width).toBeGreaterThan(900);
 
+  const body = dialog.locator('.temporal-create-composer__body');
+  const overflowY = await body.evaluate((element) => getComputedStyle(element).overflowY);
+  expect(['auto', 'scroll']).toContain(overflowY);
+  await body.evaluate((element) => {
+    element.scrollTop = element.scrollHeight;
+  });
+  await expect(dialog.locator('.temporal-create-composer__close')).toBeInViewport();
+  await expect(dialog.locator('.temporal-create-actions')).toBeInViewport();
+
+  await body.evaluate((element) => {
+    element.scrollTop = 0;
+  });
   await dialog
     .getByRole('button', { name: 'Nascondi opzioni avanzate' })
     .click();
   await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'base');
+  await expect(dialog).not.toHaveClass(/is-full/);
   await expect(dialog.locator('[data-create-advanced]')).toHaveCount(0);
   await expect(
     dialog.getByRole('button', { name: 'Opzioni avanzate' }),

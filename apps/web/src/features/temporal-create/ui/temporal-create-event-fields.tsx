@@ -8,9 +8,7 @@ import type {
 import { TemporalCreateEventAgenda } from './temporal-create-event-agenda';
 import {
   TEMPORAL_CREATE_BUFFER_OPTIONS,
-  temporalCreateDurationFromEndDateTime,
   temporalCreateDurationLabel,
-  temporalCreateEndDateTime,
 } from './temporal-create-field-shared';
 
 type EventFieldsProps = Readonly<{
@@ -30,27 +28,6 @@ export function TemporalCreateEventFields({
   const event = fields.event;
   const patchEvent = (patch: Partial<TemporalCreateFields['event']>) =>
     onPatch({ event: { ...event, ...patch } });
-  const end = temporalCreateEndDateTime(
-    fields.date,
-    fields.startTime,
-    fields.durationMinutes,
-    fields.timeMode,
-    fields.timeZoneId,
-  );
-
-  const patchEnd = (endDate: string, endTime: string) => {
-    const duration = temporalCreateDurationFromEndDateTime(
-      fields.date,
-      fields.startTime,
-      endDate,
-      endTime,
-      fields.timeMode,
-      fields.timeZoneId,
-    );
-    if (duration !== null) {
-      onPatch({ durationMinutes: duration });
-    }
-  };
 
   return (
     <section
@@ -67,61 +44,6 @@ export function TemporalCreateEventFields({
           </p>
         </div>
       </div>
-
-      {fields.timeSemantics === 'timed' ? (
-        <div className="temporal-create-grid three">
-          <label className="temporal-create-control">
-            <span>
-              {t(($) => $.common.home.timeline.create.eventDetails.endDate)}
-            </span>
-            <input
-              type="date"
-              value={end.date}
-              onChange={(inputEvent) =>
-                patchEnd(inputEvent.currentTarget.value, end.time)
-              }
-            />
-          </label>
-          <label className="temporal-create-control">
-            <span>
-              {t(($) => $.common.home.timeline.create.eventDetails.endTime)}
-            </span>
-            <input
-              type="time"
-              value={end.time}
-              onChange={(inputEvent) =>
-                patchEnd(end.date, inputEvent.currentTarget.value)
-              }
-            />
-            {end.dayOffset > 0 ? (
-              <small className="temporal-create-field-note">
-                {t(
-                  ($) => $.common.home.timeline.create.eventDetails.nextDay,
-                  { count: end.dayOffset },
-                )}
-              </small>
-            ) : null}
-          </label>
-          <div className="temporal-create-field-readout">
-            <span>{t(($) => $.common.home.timeline.create.duration)}</span>
-            <strong>{fields.durationMinutes} min</strong>
-          </div>
-        </div>
-      ) : null}
-
-      <label className="temporal-create-control">
-        <span>{t(($) => $.common.home.timeline.create.eventDetails.location)}</span>
-        <input
-          type="text"
-          value={event.location}
-          onChange={(inputEvent) =>
-            patchEvent({ location: inputEvent.currentTarget.value })
-          }
-          placeholder={t(
-            ($) => $.common.home.timeline.create.eventDetails.locationPlaceholder,
-          )}
-        />
-      </label>
 
       <div className="temporal-create-grid two">
         <label className="temporal-create-control">

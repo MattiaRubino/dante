@@ -297,7 +297,9 @@ export function TemporalCreateComposer({
     >
       <div
         ref={dialogRef}
-        className={`temporal-create-composer${advanced ? ' is-advanced' : ''}`}
+        className={`temporal-create-composer${
+          advanced ? ' is-advanced is-full' : ''
+        }`}
         data-temporal-create="composer"
         data-temporal-create-surface={advanced ? 'advanced' : 'base'}
         role="dialog"
@@ -386,8 +388,7 @@ export function TemporalCreateComposer({
                 : t(($) => $.common.home.timeline.create.kind.event)}
             </span>
             {constraintLabel ? <span>{constraintLabel}</span> : null}
-            {fields.kind === 'event' &&
-            fields.eventRecurrence.patternKind !== 'none' ? (
+            {fields.eventRecurrence.patternKind !== 'none' ? (
               <span>
                 {t(
                   ($) => $.common.home.timeline.create.recurrence.recurringBadge,
