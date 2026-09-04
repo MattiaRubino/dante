@@ -1,14 +1,12 @@
 # DANTE — World Focus M3 Adaptive Composition
 
-**Status:** M3 ACTIVE / M3-1 COMPOSITION CONFIGURATION FOUNDATION CLOSED / VALIDATED / M3-2 NEXT  
+**Status:** M3 ACTIVE / M3-1 CLOSED / VALIDATED / M3-2 CLOSED / VALIDATED / M3-3 NEXT  
 **Date:** 2026-09-04  
 **Branch:** `feature/home-react`
 
-This document is the bounded engineering record for M3. It inherits the closed M0–M2 semantics and does not reopen renderer, Domain, AuthZ, DANTE-runtime or backend ownership.
+This is the bounded engineering record for M3. It inherits closed M0–M2 semantics and does not reopen Domain, rendering, AuthZ, DANTE runtime or backend ownership.
 
 ## 1. M3 scope
-
-M3 owns adaptive World composition over already-earned application semantics and approved renderers.
 
 Frozen M0 assignments:
 
@@ -19,242 +17,243 @@ M0-39 client config revision/conflict/migration representation      M3
 M0-40 durable persistence/cross-device sync/conflict authority      BACKEND
 ```
 
-M3 must reuse:
+M3 must reuse M1 application projections, M2 renderer vocabulary, the existing Workspace Platform composition planner, finite registry and CompositionHost. It must not create a second planner, page-per-World renderer fork, universal ranking score or fake persistence.
 
-```text
-M1 semantic/application projections
-M2 finite renderer vocabulary
-Workspace Platform composition planner
-finite module registry
-CompositionHost placement/isolation
-```
-
-M3 must not create a second planner, page-per-World renderer fork, universal ranking score or fake backend persistence.
-
-## 2. Product rule — manual capability and DANTE use the same canonical path
-
-Permanent product rule established before M3:
+## 2. Permanent product rule — manual and DANTE share canonical paths
 
 > Canonical app capabilities that DANTE may propose or accelerate must remain usable through a manual/non-AI path where they are meaningful product functions.
 
-M3-1 encodes this at the configuration-command boundary:
-
 ```text
-MANUAL UI [M3-3]
-        \
-         -> finite customization commands -> DRAFT -> REVIEW/APPLY -> CONFIG
-        /
-DANTE proposal [M4]
+MANUAL UI [M3-3] ----\
+                       -> finite commands -> DRAFT -> REVIEW/APPLY -> CONFIG
+DANTE proposal [M4] --/
 ```
 
-DANTE does not receive a hidden mutation path. A `dante-proposed` command modifies the same draft as a manual command and cannot bypass Apply, revision checking or later review UX.
+DANTE has no hidden mutation path and cannot bypass Apply, revision checking or conflict handling.
 
-This does not require a one-button UI equivalent for arbitrary natural-language requests. It requires that canonical application state transitions remain product capabilities rather than chat-only magic.
+## 3. M3-1 — Composition Configuration Foundation — CLOSED / VALIDATED
 
-## 3. M3-1 production owners
-
-```text
-apps/web/src/features/world-focus/model/
-  world-focus-composition-config.ts
-
-apps/web/src/features/world-focus/application/
-  world-focus-composition-customization.ts
-```
-
-Tests:
+Production owners:
 
 ```text
-apps/web/src/features/world-focus/model/
-  world-focus-composition-config.test.ts
-
-apps/web/src/features/world-focus/application/
-  world-focus-composition-customization.test.ts
+model/world-focus-composition-config.ts
+application/world-focus-composition-customization.ts
 ```
 
-M3-1 does not touch live `world-focus-core-composition.tsx` and does not mount new renderers.
-
-## 4. Composition configuration snapshot
-
-`WorldFocusCompositionConfig` is client composition metadata only:
+Client configuration snapshot:
 
 ```text
 schemaVersion
 revision
 worldId
 ordered entries[]
+
+entry
+  instanceId
+  kind
+  visibility: visible | hidden
+  pinned: boolean
+  prominenceOverride: lead | null
 ```
 
-Each entry contains only:
+It carries composition metadata only: no canonical Domain payload, AuthZ/disclosure authority, provider/runtime truth, renderer code or generic property bag.
+
+Schema disposition is explicit:
+
+```text
+current
+migration-required
+unsupported
+```
+
+Customization transaction:
+
+```text
+CURRENT revision N
+  -> DRAFT(baseRevision=N)
+  -> pin / unpin / hide / show / move / promote / restore
+  -> Apply | Cancel
+```
+
+Apply is the only transition creating revision `N+1`. Stale Apply returns `revision-conflict`; cross-World Apply fails closed; no implicit merge.
+
+Evidence:
+
+```text
+RED  b68b6e8fa0d70844f6d058c7b77ded676f1e675f / CI 33850177297 EXPECTED FAILURE
+PASS 49304c9231375a22ef74a81b4fffa920d5a1e849 / CI 33850441232 PASS
+72 / 72 web test files
+344 / 344 web unit tests
+283 modules / 777 dependencies / 0 violations
+```
+
+## 4. M3-2 — Adaptive Candidate Resolver — CLOSED / VALIDATED
+
+Production owners:
+
+```text
+application/world-focus-composition-opportunities.ts
+application/world-focus-composition-resolver.ts
+```
+
+Tests:
+
+```text
+application/world-focus-composition-opportunities.test.ts
+application/world-focus-composition-resolver.test.ts
+```
+
+M3-2 remains pre-planner and pre-renderer:
+
+```text
+validated M1 results
+  -> meaningful opportunity extraction
+  -> user config + finite value signals
+  -> candidate resolver
+  -> WorldFocusCompositionCandidate[]
+  -> existing resolveWorldFocusCompositionPlan()
+```
+
+It does **not** mount UI and does not modify `world-focus-core-composition.tsx`.
+
+### 4.1 Meaningful opportunity extraction
+
+Only validated, meaningful application results become opportunities:
+
+```text
+Situation ready + non-empty               -> situation
+Continuity ready/partial/stale + content  -> continuity
+Continuity empty/unavailable              -> no opportunity
+Attention ready                           -> attention:<primitive.instanceId> per item
+Next ready + non-empty                    -> next
+Comparison ready                          -> comparison:<primitive.instanceId> per item
+Trajectory ready                          -> trajectory:<primitive.instanceId> per item
+Evidence/History ready + any role content -> evidence-history
+```
+
+Sparse Worlds stay sparse. Renderer availability does not create an opportunity.
+
+Opportunity metadata is deliberately narrow:
 
 ```text
 instanceId
 kind
-visibility: visible | hidden
-pinned: boolean
-prominenceOverride: lead | null
+defaultProminence
+footprint
 ```
 
-The constructor reconstructs only allowed fields, so arbitrary extra payload is stripped rather than retained.
+No source projection, context reference, `reasonCode`, canonical payload, disclosure/AuthZ state or executable renderer crosses this boundary. Opportunity set is bounded to 16 and rejects duplicate instance ids. Unknown future World/module kinds remain representable.
 
-Explicit exclusions:
+### 4.2 Finite value signals — no magic score
+
+Allowed value signals:
 
 ```text
-NO canonical Domain payload
-NO AuthZ/disclosure authority
-NO provider/runtime truth
-NO renderer JSX/functions/executable code
-NO generic property bag
+material-consequence
+immediacy
+resumability
+meaningful-change
+current-intent
 ```
 
-Unknown future `kind` values remain representable because module kind is an open renderer identifier, not a permanent World/Domain taxonomy.
+There is no `score`, `confidence` or `aiRelevance` authority.
 
-## 5. Schema/revision semantics
-
-Current client schema:
+Deterministic bands:
 
 ```text
-WORLD_FOCUS_COMPOSITION_CONFIG_SCHEMA_VERSION = 1
+FOREGROUND
+material-consequence OR immediacy OR current-intent
+-> minimum prominence lead
+
+ACTIVE
+resumability OR meaningful-change
+-> minimum prominence primary
+
+ORDINARY
+no asserted value signal
+-> default opportunity prominence
 ```
 
-Version inspection is explicit:
+Signals are positive, explicit application-owned assertions. Their absence is not interpreted as false.
+
+### 4.3 Config precedence and user ownership
+
+Precedence is explicit:
 
 ```text
-current
-migration-required { fromVersion }
-unsupported { schemaVersion }
+hidden user config > ranking signals
+pinned user config > adaptive budget
+configured relative order > adaptive ranking
+explicit promote -> lead presentation override only
 ```
 
-M3-1 does not silently migrate and does not invent a universal migrator.
+Configured visible entries become user-origin candidates. Pinned meaningful entries become stable/user-owned and therefore survive adaptive budget pressure.
 
-`revision` must be a non-negative safe integer. `worldId`, `instanceId` and `kind` are normalized/non-empty. Duplicate `instanceId` fails closed.
+`hide != delete`, `pin != semantic truth`, `promote != semantic truth`.
 
-Durable persistence, server revision, cross-device merge and authoritative conflict resolution remain backend-deferred.
-
-## 6. Customization transaction
-
-Customization begins from an immutable current config:
+If a pinned visible config entry currently has no meaningful projection:
 
 ```text
-CURRENT CONFIG revision N
-        ↓
-begin customization
-        ↓
-DRAFT
-  worldId
-  baseRevision = N
-  baseConfig
-  workingConfig
-  operations[]
+NO fabricated candidate
+-> unresolvedPinned {
+     reason: meaningful-projection-unavailable
+   }
 ```
 
-Draft operations never mutate the current config.
+This preserves user intent without manufacturing content.
 
-Finite command language:
+Unconfigured opportunities remain adaptive/application-derived and are ordered deterministically by value band, then source order.
+
+### 4.4 Fail-closed boundaries
+
+Resolver rejects:
 
 ```text
-pin
-unpin
-hide
-show
-move
-promote
-restore
+config World != opportunity World
+config kind != meaningful opportunity kind
+signal World != opportunity World
+signal kind != opportunity kind
+signal target no longer meaningful
+multiple signal assignments for one opportunity
+duplicate opportunity ids
+duplicate signal kinds
 ```
 
-Sources are finite:
+Same inputs yield identical output.
+
+### 4.5 Red-first and validation evidence
+
+Operational PRE-SCOPE:
 
 ```text
-manual
-dante-proposed
+c5fb717754792c2ad757444533302fbe0e0d5710
 ```
 
-No generic `patch`, arbitrary `Record<string, unknown>` or remote/model-generated mutation language exists.
+Its tree is byte-for-byte identical to the authorized `4f18f89e35d217c05ca0c2153e82573957e8f42d`; intervening commits only created/deleted empty connector side-effect files.
 
-## 7. Command semantics
+Red test-only proof:
 
 ```text
-hide      != delete
-pin       != canonical truth/freeze
-promote   != semantic importance fact
-move      != Domain ordering
-restore   = restore that entry to the draft-start base state + base position
+HEAD c2688c46bcbdaf06f2c5da9470bae967550b456d
+CI   33854105057 EXPECTED FAILURE
 ```
 
-`move` may place before another existing instance or at the end. Missing target/destination fails closed. Same command sequence over the same base config is deterministic.
+Pre-production contracts passed. Quality failed because the two M3-2 owner modules did not yet exist.
 
-## 8. Apply / Cancel / conflict
-
-Cancel:
+Initial production candidate:
 
 ```text
-DRAFT -> CANCEL -> baseConfig
+HEAD 6486c99ce1f83d3fe463c2a1b065fa994b206c6a
+CI   33854374288
 ```
 
-No side effect is committed.
+Production itself had no observed lint issue; Quality stopped on one unsafe Vitest matcher in the new opportunity test. The assertion was strengthened, not weakened, to check every opportunity directly for absence of `projection`.
 
-Apply is the only M3-1 operation that creates a new current revision:
-
-```text
-current.worldId == draft.worldId
-AND
-current.revision == draft.baseRevision
-        ↓
-APPLIED config revision N+1
-```
-
-Stale revision:
+Validated code head:
 
 ```text
-revision-conflict {
-  baseRevision
-  currentRevision
-}
-```
-
-No implicit merge.
-
-Cross-World Apply is rejected even if numeric revisions happen to match.
-
-A `dante-proposed` operation has exactly the same Apply barrier as a manual operation.
-
-## 9. Red-first evidence
-
-Test-only red commit:
-
-```text
-HEAD b68b6e8fa0d70844f6d058c7b77ded676f1e675f
-CI   33850177297 EXPECTED FAILURE
-```
-
-The two M3-1 tests were committed before production owners. Frontend pre-production contracts passed; Quality failed at lint/type resolution because the two new M3 modules did not yet exist. The cascade was caused by unresolved owner modules, not weakened assertions.
-
-The tests fixed obligations before implementation, including:
-
-```text
-immutable current config / isolated draft
-Cancel no-op on current state
-Apply revision +1 exactly once
-stale revision conflict
-cross-World rejection
-duplicate instance rejection
-unknown future kind representation
-schema disposition current/migration-required/unsupported
-hide != delete
-restore base state/order
-missing move target fail closed
-deterministic command sequence
-no generic patch/property bag
-manual and dante-proposed share one command language
-DANTE proposal cannot bypass Apply
-```
-
-## 10. Validated implementation evidence
-
-Production head:
-
-```text
-HEAD 49304c9231375a22ef74a81b4fffa920d5a1e849
-CI   33850441232 PASS
+HEAD b7892642dd66104ec04ea4b08ca11aa123789fa4
+CI   33854543037 PASS
 ```
 
 Observed validation:
@@ -265,9 +264,9 @@ Lint                              PASS
 Typecheck                         PASS
 Architecture                      PASS
 Generated-source drift            PASS
-Web test files                    72 / 72 PASS
-Web unit tests                    344 / 344 PASS
-Architecture graph                283 modules / 777 dependencies / 0 violations
+Web test files                    74 / 74 PASS
+Web unit tests                    356 / 356 PASS
+Architecture graph                287 modules / 797 dependencies / 0 violations
 Production build                  PASS
 Diff check                        PASS
 Repository mutation check         PASS
@@ -277,74 +276,62 @@ frozen Timeline Firefox           PASS
 Frontend CI Gate                  PASS
 ```
 
-No test expectation was weakened after the red run.
-
-## 11. M3-1 closure
-
-M3-1 is closed for:
+## 5. M0 L5 disposition after M3-2
 
 ```text
-client composition config snapshot
-schema-version disposition
-client revision representation
-isolated customization draft
-finite manual/DANTE-proposed command language
-pin/unpin/hide/show/move/promote/restore semantics
-Cancel without side effects
-Apply with optimistic revision guard
-explicit revision-conflict result
-cross-World apply rejection
+M0-35 stability/origin semantics                         EXISTING / PRESERVE
+M0-36 prominence/footprint/grid planner                  EXISTING / PRESERVE
+M0-37 production candidate resolver                      M3-2 CLOSED / VALIDATED
+M0-38 Draft/Apply/Cancel + pin/hide/reorder/promote     MODEL M3-1 CLOSED; UI M3-3 NEXT
+M0-39 client revision/conflict/migration representation M3-1 CLOSED / VALIDATED
+M0-40 durable persistence/cross-device sync/conflict    BACKEND-DEFERRED
 ```
 
-M3 itself remains active.
-
-## 12. Explicitly not implemented by M3-1
+## 6. Explicit non-work in M3-2
 
 ```text
-NO candidate ranking/resolver                       -> M3-2
-NO Customize UI / drag/drop / keyboard controls    -> M3-3
-NO integration into live World composition          -> M3-4
-NO localStorage fake persistence
-NO durable persistence/cross-device sync            -> backend
-NO new live O2/O5/O8 or WP-02..04 mounting
-NO DANTE runtime / D2–D6                            -> M4
+NO live `world-focus-core-composition.tsx` changes
+NO new renderer mounting
+NO Customize UI / drag-drop / keyboard controls
+NO localStorage or server persistence
+NO DANTE D2–D6 runtime work
 NO backend/API/DB/Alembic/AuthZ/provider/LLM
-NO Timeline/AppShell/Access/Auth collateral work
+NO Timeline/AppShell/Access/Auth collateral changes
 ```
 
-## 13. Next gate — M3-2
+## 7. Next gate — M3-3 Manual Customize UX
 
-M3-2 is the Adaptive Candidate Resolver.
+M3-3 is next and not started. It must materialize the **manual** product surface over the already-validated M3-1 command language and respect M3-2 composition truth.
 
-It must derive bounded composition candidates from meaningful already-authorized application projections and user composition configuration, then feed the existing planner rather than replacing it.
-
-Conceptual path:
+Expected capabilities:
 
 ```text
-meaningful available projections
-+ current user composition config
-+ bounded contextual ranking inputs
-        ↓
-M3-2 candidate resolver
-        ↓
-WorldFocusCompositionCandidate[]
-        ↓
-existing resolveWorldFocusCompositionPlan()
-        ↓
-existing CompositionHost
+enter Customize explicitly
+operate on a draft, never current config directly
+pin / unpin
+hide / show
+reorder
+promote / restore
+review changed state
+Apply / Cancel
+revision-conflict treatment
+keyboard + touch accessibility
+responsive behavior
 ```
 
-Permanent constraints for M3-2:
+Drag-and-drop may be one interaction, but it is not the state model and cannot be the only accessible reorder path.
+
+M3-3 must not integrate adaptive candidates into live World composition yet; that remains M3-4.
+
+## 8. Stop line
 
 ```text
-stable/pinned user intent cannot be silently overridden
-sparse World remains sparse
-renderer availability != mandatory mounting
-no AI relevance score as sole authority
-no universal confidence score
-ranking cannot invent semantic truth
-candidate resolver != AuthZ
-no backend/persistence pulled forward
+M3-3 Manual Customize UX                 NEXT
+M3-4 Integrated Adaptive Composition     BLOCKED BY M3-3
+M3 final hostile closure                 BLOCKED BY M3-4
+M4 D2–D6 contextual DANTE                BLOCKED BY M3
+M5–M7                                    BLOCKED BY SEQUENCE
+BACKEND                                  BLOCKED UNTIL M7
 ```
 
-M3-2 requires a fresh explicit write gate before implementation.
+A fresh explicit write gate is required before M3-3.
