@@ -9,6 +9,7 @@
     "src",
     "vite.config.ts",
     "playwright.config.ts",
+    "playwright.auth.config.ts",
     "e2e",
     "vitest.config.ts"
   ]

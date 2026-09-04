@@ -1,61 +1,88 @@
 # DANTE — Frontend Product Contract
 
-**Status:** current product/UX authority for the materialized frontend.
+- **Status:** CURRENT FRONTEND NAVIGATION / `feature/access-auth`
+- **Last reconciled:** 2026-09-02
 
-This directory contains durable product-facing frontend contracts carried from approved exploratory work into the production-shaped React workspace. Current implementation truth remains the checked-out production code/tests; prototype branches are frozen design/history sources, not runtime dependencies.
+This directory contains durable product-facing frontend contracts carried into the production React workspace. Current implementation truth is the checked-out code/tests; prototype branches remain design/history evidence only.
 
 ## Read order
 
-1. `docs/frontend/access.md` — current materialized Access Web baseline and remaining full-stack boundary
-2. `docs/frontend/home/current-checkpoint.md`
-3. `docs/frontend/home/contract.md`
-4. `docs/frontend/ui-registry.md`
-5. `docs/frontend/design-tokens.md`
-6. `docs/frontend/terminology.md`
-7. `docs/frontend/localization.md`
-8. `docs/frontend/production-readiness/component-architecture.md`
-9. `docs/frontend/production-readiness/backend-integration-contract.md`
-10. `docs/frontend/production-readiness/quality-gates.md`
+1. `access.md` — current Access/Auth Web contract
+2. `home/current-checkpoint.md`
+3. `home/contract.md`
+4. `ui-registry.md`
+5. `design-tokens.md`
+6. `terminology.md`
+7. `localization.md`
+8. `production-readiness/component-architecture.md`
+9. `production-readiness/backend-integration-contract.md`
+10. `production-readiness/quality-gates.md`
 
-Engineering/runtime authority remains the materialized frontend workspace, repository architecture, CI and local-development documentation. Product contracts do not replace those engineering authorities.
+## Access current state
 
-## Access
+The old pre-backend Access materialization remains the visual/product baseline, but Access is no longer a fake/pre-backend surface on `feature/access-auth`.
 
-`docs/frontend/access.md` is the current durable contract for the completed pre-backend Access Web materialization. The approved cross-platform design source remains frozen on `prototype/access-system`; it is historical design evidence and must not override newer production code/current documentation.
-
-The completed frontend work deliberately does **not** claim real Auth backend behavior. Real account/session/provider/recovery integration belongs to a later full-stack Access/Auth vertical created from current protected `main`.
-
-## Home React migration rule
-
-The accepted Home prototype is an executable UX/reference specification, **not** code to transliterate line-by-line into React.
-
-Implementation must:
-
-- preserve the accepted visual and behavioral contract before introducing redesigns;
-- use the React/TypeScript architecture already materialized in the repository;
-- componentize by ownership boundary rather than arbitrary pieces of the old monolith;
-- separate view models from backend DTOs/domain/persistence shapes;
-- preserve semantic IDs, localization keys and machine-readable Home-stage contracts;
-- keep semantic World/group/event colors distinct from generic DANTE chrome.
-
-## Deliberately not imported from exploratory branches
-
-Exploratory branches contain extensive historical material intentionally excluded from current production documentation, including intermediate patch/archive chains, reconstruction fragments, obsolete checkpoints, abandoned experiments and regression tooling tied only to superseded prototype internals.
-
-That history remains available on its source branch if archaeology is required, but it is not an implementation dependency.
-
-## Frozen Home prototype evidence
-
-Historical Home prototype authority is pinned to `prototype/frontend` commit:
-
-`2203c96c4aa1dc10258a84bcf461aa0b923e8951`
-
-The final user-reviewed local Home wrapper corresponding to the accepted B2 v27 state was:
+Current branch-local Web capability includes:
 
 ```text
-DANTE_Home_v43_VERIFIED_INJECTION_COLOR_FIX.html
-size       87386 bytes
-SHA-256    e82058e4e980208feb3f0c055dab3eec81812be1fa47e5f036e8d5d0e1fe859d
+email/password signin
+session bootstrap/logout
+signup/OTP/recovery/reset/reauth
+Google official GIS signin/link/reauth flow
+Apple browser begin/continuation integration
+provider enrollment/link collision flow
+passkey signin/register/reauth/rename/remove
+password establish/remove
+/security authenticator management
+backend-authoritative anti-lockout
+IT/EN copy
 ```
 
-The wrapper itself is not copied into current production documentation; durable behavior/visual decisions and machine-readable contracts are retained instead.
+Automated product proof at the reviewed checkpoint:
+
+```text
+68 / 68 Web unit/component tests PASS
+60 / 60 Auth Playwright PASS
+Chromium / Firefox / WebKit through canonical HTTPS suite
+```
+
+Manual UAT additionally proved real Windows Hello passkeys and real Google authentication.
+
+## Frontend architecture
+
+```text
+TanStack Router
+→ feature public API
+→ TanStack Query
+→ Access application boundary
+→ platform Web Auth adapters
+→ governed @dante/api-client
+→ same-origin /api/v1
+→ FastAPI/PostgreSQL canonical authority
+```
+
+Rules:
+
+```text
+feature-first ownership
+route adapters remain thin
+presentation does not import raw generated operations/platform adapters
+no ad-hoc Auth fetch proliferation
+no browser-persisted Auth token
+provider/browser success != DANTE authenticated success
+WebAuthn crypto remains backend-owned
+```
+
+## Current maintainability note
+
+The accepted Security UI is functionally proved but has accumulated substantial responsibility in `access-security-page.tsx`. Later hardening should split bounded password/provider/passkey/reauth sections before substantially expanding the page. This is a component-ownership cleanup, not a semantic Auth redesign.
+
+## Home
+
+The accepted Home prototype remains an executable UX/reference specification, not code to transliterate line-by-line. Home React work must preserve accepted behavior while using the production React/TypeScript architecture and current shared semantic tokens.
+
+The true authenticated Home handoff remains an M7/current-product integration obligation; the Access branch must not fake Home completion merely to close Auth.
+
+## Historical prototype rule
+
+Production code never imports prototype implementation. Prototype branches are recoverable evidence, not runtime dependencies.

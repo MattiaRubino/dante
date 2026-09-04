@@ -5,9 +5,15 @@ from typing import cast
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
+from dante.auth.api import router as auth_router
+from dante.auth.dependencies import AuthRequestBodyLimitMiddleware, BrowserAuthSecurityMiddleware
+from dante.auth.m5_api import router as auth_m5_router
+from dante.auth.m5_passkey_api import router as auth_m5_passkey_router
+from dante.auth.m5_provider_api import router as auth_m5_provider_router
 from dante.bootstrap.lifespan import lifespan
 from dante.platform.config.settings import Environment, Settings
 from dante.platform.database.runtime import DatabaseRuntime
+from dante.platform.http.problem import RequestContextMiddleware, install_problem_handlers
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -25,6 +31,22 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         lifespan=lifespan,
     )
     app.state.settings = effective_settings
+
+    # Starlette executes the last registered middleware first. Keep request context
+    # outermost, reject invalid first-party browser mutations before reading bodies,
+    # then bound accepted Auth payloads before framework parsing/application allocation.
+    app.add_middleware(AuthRequestBodyLimitMiddleware)
+    app.add_middleware(
+        BrowserAuthSecurityMiddleware,
+        canonical_web_origin=effective_settings.auth.canonical_web_origin,
+    )
+    app.add_middleware(RequestContextMiddleware)
+
+    install_problem_handlers(app)
+    app.include_router(auth_router)
+    app.include_router(auth_m5_router)
+    app.include_router(auth_m5_provider_router)
+    app.include_router(auth_m5_passkey_router)
 
     @app.get("/health/live", include_in_schema=False)
     def health_live() -> dict[str, str]:

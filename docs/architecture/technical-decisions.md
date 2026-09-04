@@ -1,9 +1,10 @@
 # DANTE Technical Decisions
 
 - **Status:** CURRENT DECISION REGISTER
-- **Last reconciled:** 2026-08-26
+- **Last reconciled:** 2026-09-03
+- **Branch note:** protected `main` is integrated authority; `feature/access-auth` contains newer accepted Auth + Email truth until its integration gate completes
 
-This file summarizes current accepted technical decisions. Detailed rationale and constraints live in linked Domain/Logical/Physical/Engineering/Frontend Foundation sources and ADRs. Historical phase-time status does not override later closure/integration evidence.
+Historical milestone progress does not override later accepted executable/materialized evidence.
 
 ## TD-01 — Canonical persistence
 
@@ -13,31 +14,33 @@ This file summarizes current accepted technical decisions. Detailed rationale an
 PostgreSQL 18 major family
 sole canonical persistence + material-history authority
 
-Physical exact phase-time patch   18.4 / HISTORICAL
-CP2 / CP3 original direct patch   18.4 / HISTORICAL EXACT
-current repository patch          18.6
-current Alembic head              20260826_08
+Physical/CP2/CP3 historical exact patch  18.4
+current repository patch                 18.6
+historical common CP6 head               20260826_08
+protected-main current Alembic           20260830_09 / Recovery
+feature/access-auth current Alembic      20260903_15 / Auth + Email
 ```
 
-Patch maintenance inside PostgreSQL 18 does not reopen the selected architecture and does not rewrite historical 18.4 evidence.
+Current Access-branch catalog before convergence:
 
-No separate graph/vector/search/event-store database is canonical by default.
+```text
+87 tables / 5 views / 15 routines / 75 triggers
+170 physical indexes / 88 FKs / 267 CHECKs
+```
+
+The two Alembic histories diverge after `20260826_08`; integration preserves both and uses a forward merge revision. No separate graph/vector/search/event-store database is canonical by default.
 
 ## TD-02 — PostgreSQL capability envelope
 
 **ACCEPTED**
 
-Selected target:
-
-- PostGIS 3.6.4;
-- pgvector 0.8.6;
-- native FTS;
-- pg_trgm;
-- unaccent;
-- pg_stat_statements;
-- PgBouncer 1.25.2.
-
-The current repository-owned PostgreSQL 18.6 image preserves the selected PostGIS/pgvector envelope. PgBouncer activation remains tied to concrete validation.
+- PostGIS 3.6.4
+- pgvector 0.8.6
+- native FTS
+- pg_trgm
+- unaccent
+- pg_stat_statements
+- PgBouncer 1.25.2 when concretely activated/validated
 
 ## TD-03 — Offline/sync
 
@@ -53,25 +56,36 @@ local pending mutation != canonical accepted effect
 consequential offline mutation → backend governance/revalidation → PostgreSQL
 ```
 
-Frontend Data Authority Matrix further qualifies client ownership without changing Physical authority.
-
 ## TD-04 — Async/durable work
 
-**ACCEPTED**
+**ACCEPTED / FIRST CLASS-A CONSUMER MATERIALIZED**
 
-Class A: PostgreSQL transactional outbox + bounded worker.
+Class A = PostgreSQL transactional outbox + bounded worker.
 
-Class B: Restate selected, initially dormant; activate at first real Class-B durable workflow.
+The shared Email Platform is the first concrete Class-A consumer:
+
+```text
+dante.email_delivery_intent
+dante.email_delivery_attempt
+dante.email_provider_event
+dante.email_recipient_suppression
+```
+
+Feature mutation + EmailIntent are atomically coordinated; provider I/O occurs after commit. Email delivery state is technical control/evidence, not DANTE MaterialState.
+
+Class B Restate remains selected/dormant until first real Class-B durable workflow.
 
 ## TD-05 — Object bytes
 
 **ACCEPTED TARGET / TRIGGER-BASED ACTIVATION**
 
-Cloudflare R2 Standard, private, EU jurisdiction, raw bytes only. PostgreSQL owns ContentArtifact authority/metadata/provenance/visibility/retention/hash/locator semantics.
+Cloudflare R2 Standard, private, EU-jurisdiction posture, raw bytes only. PostgreSQL owns ContentArtifact authority/metadata/provenance/visibility/retention/hash/locator semantics.
 
 ## TD-06 — Recovery
 
-**ACCEPTED TARGET / ACTIVATION AT RECOVERY OR PRODUCTION BOUNDARY**
+**ACCEPTED / PROTECTED-MAIN RECOVERY EVOLUTION INTEGRATED**
+
+Recovery architecture remains:
 
 ```text
 pgBackRest 2.59.0
@@ -80,7 +94,18 @@ pgBackRest 2.59.0
 + WAL/PITR
 ```
 
-Recovery copies remain noncanonical and anti-resurrection obligations remain active.
+Protected main includes the bounded material-state retirement/recovery evolution at Alembic `20260830_09`.
+
+Email Platform adds:
+
+```text
+email workers CLOSED
+→ restore
+→ reconciliation
+→ uncertain restored nonterminal email work = recovery_quarantined
+→ sensitive payload wiped
+→ workers reopen
+```
 
 ## TD-07 — Solver
 
@@ -90,27 +115,34 @@ OR-Tools CP-SAT. `UNKNOWN != INFEASIBLE`. Solver output remains candidate/derive
 
 ## TD-08 — Observability
 
-**ACCEPTED TARGET**
+**ACCEPTED / IMPLEMENTED ON SEPARATE CLOSED BRANCH / NOT YET MAIN-INTEGRATED**
 
-Backend: OpenTelemetry + Grafana Alloy + Grafana Cloud EU + pg_stat_statements.
+Accepted platform implementation lives on `feature/platform-observability` and includes:
 
-Frontend: Sentry selected behind bounded Web/Mobile observability adapters when activated.
+```text
+backend OpenTelemetry
+Grafana Alloy
+Grafana Cloud EU
+Prometheus/Loki/Tempo paths
+pg_stat_statements + bounded PostgreSQL observer
+Web Grafana Faro instrumentation
+black-box readiness
+dashboards + governed alerts
+privacy/redaction/cardinality/failure-isolation contracts
+```
 
-Operational telemetry is privacy-minimized and noncanonical.
+The older Sentry-as-frontend-target wording is superseded by the accepted Faro implementation on that closed workstream. This Access branch does not claim Observability is already integrated into protected main.
+
+Email Platform exposes privacy-minimized operational signals without recipient/secret dimensions. OTP/recovery proof never belongs in logs, metrics or traces.
 
 ## TD-09 — Repository strategy and root ownership
 
 **ACCEPTED**
 
-One DANTE product monorepo; keep current repository.
-
-Accepted root ownership reserves:
+One DANTE product monorepo.
 
 ```text
 apps/
-  backend/
-  web/
-  mobile/
 packages/
 infra/
 tooling/
@@ -120,9 +152,7 @@ prototypes/
 .github/
 ```
 
-Paths are created only when real content exists. No empty ceremonial tree.
-
-`infra/` owns infrastructure definitions, never business logic. Production apps do not import prototypes.
+Paths exist only when real content exists.
 
 ## TD-10 — Backend architecture
 
@@ -130,71 +160,46 @@ Paths are created only when real content exists. No empty ceremonial tree.
 
 Capability-first modular monolith.
 
-- no 57 owners → 57 modules mechanical translation;
-- no generic CRUD `Repository[T]` semantic model;
-- no BaseService/service locator/global DB session;
-- Domain/application meaning independent of FastAPI/SQLAlchemy/provider SDK identity;
-- explicit composition root;
-- private module implementation is not a public interface;
-- cross-module ACID transaction allowed when semantics require it.
+- no mechanical 57 owners → 57 modules translation
+- no generic CRUD `Repository[T]` semantic model
+- no BaseService/service locator/global DB session
+- Domain/application meaning independent of FastAPI/SQLAlchemy/provider SDK identity
+- explicit composition root
+- private module implementation is not a public interface
+- cross-module ACID transaction allowed when semantics require it
+
+Access/Auth and Email Platform follow this model.
 
 ## TD-11 — Frontend application architecture
 
-**ACCEPTED / FRONTEND FOUNDATION FINAL REVIEW PASS / INTEGRATED VIA PR #22**
-
-Platform boundary:
+**ACCEPTED / INTEGRATED FOUNDATION**
 
 ```text
 apps/web     React DOM + Vite + TanStack Router
-apps/mobile  React Native + Expo + Expo Router
+apps/mobile  React Native + Expo + Expo Router boundary
 ```
 
-Structural rules:
-
-- feature-first Web/Mobile architecture;
-- route/navigation files are thin adapters;
-- bootstrap/router consume other layers only through public APIs;
-- feature dependency cycles are forbidden;
-- Web and Mobile never import each other's private/platform implementation;
-- app-local `ui/` and `platform/` boundaries;
-- production never imports `prototypes/`;
-- architecture rules become executable lint/package/cycle checks during materialization.
-
-Shared-package policy:
-
-- only real multi-consumer packages;
-- initial real candidates: `@dante/design-tokens`, `@dante/i18n`, `@dante/time`;
-- API client only when real OpenAPI exists;
-- shared feature package only after real Web+Mobile reuse;
-- framework-free shared cores by default;
-- shared frontend logic never owns canonical Domain/AuthZ/conflict/persistence/accepted-effect authority.
+Feature-first boundaries, thin route adapters, no Web/Mobile private cross-imports, executable architecture rules, shared packages only for real multi-consumer value.
 
 ## TD-12 — Frontend language/toolchain
 
-**ACCEPTED / INTEGRATED VIA PR #22**
+**ACCEPTED / INTEGRATED**
 
 ```text
 Node 24 LTS
-TypeScript 6.0.x strict
+TypeScript 6 strict
 pnpm 11
-Turborepo 2.x
+Turborepo 2
 ```
-
-pnpm isolated layout is preferred/direct-validation-required. Evidence-driven `nodeLinker: hoisted` fallback is allowed without reopening the architecture.
-
-Turbo orchestrates the JS/frontend task graph only; GitHub Actions remains repository-wide CI/CD authority.
 
 ## TD-13 — Frontend data/state authority
 
-**ACCEPTED / INTEGRATED VIA PR #22**
-
-Data Authority Matrix:
+**ACCEPTED / INTEGRATED**
 
 ```text
 canonical accepted state/effect   backend + PostgreSQL
 synced local projection           PowerSync/SQLite noncanonical
 offline pending mutation          local staging only
-offline acceptance                backend governance/conflict checks
 remote request state              TanStack Query + typed API
 online governed command           FastAPI/backend
 form draft                        TanStack Form
@@ -202,57 +207,46 @@ component transient               React
 cross-tree transient              Zustand only when justified
 ```
 
-Feature UI uses feature data/model boundaries rather than direct HTTP/PowerSync/query-cache/storage ownership. No universal frontend `Repository<T>`.
+Browser/provider/WebAuthn completion is evidence only; backend response remains Auth success authority.
 
 ## TD-14 — Frontend offline posture
 
-**ACCEPTED / INTEGRATED VIA PR #22**
+**ACCEPTED / INTEGRATED FOUNDATION**
 
-Mobile activates PowerSync + encrypted SQLite when materialized for a capability that needs it, initially app-owned under the Mobile platform sync boundary.
-
-Web baseline is online-first. PowerSync Web local DB is available/dormant.
-
-Browser PWA/service-worker offline behavior is dormant/not baseline and requires explicit design before activation.
-
-Local mobile data is identity-scoped; cross-account local-data leakage is forbidden.
+Mobile activates PowerSync + encrypted SQLite only for capabilities that need it. Web remains online-first. Generic browser PWA/service-worker offline behavior is not baseline.
 
 ## TD-15 — Frontend API/codegen
 
-**ACCEPTED / INTEGRATED VIA PR #22**
+**ACCEPTED / MATERIALIZED FOR ACCESS/AUTH**
 
-FastAPI OpenAPI → Orval 8 → React-free/auth-storage-agnostic `@dante/api-client` when real OpenAPI exists.
+```text
+FastAPI/Pydantic
+→ deterministic OpenAPI 3.1 snapshot
+→ Orval Fetch generation
+→ @dante/api-client
+→ Web/Native application boundary
+→ UI
+```
 
-Generated transport source is deterministic, committed where runtime/reviewability requires it and drift checked. Generated Query ownership is not forced onto PowerSync-backed reads.
+Generated source is deterministic and drift checked.
 
 ## TD-16 — Frontend UI/tokens/i18n/time
 
-**ACCEPTED / INTEGRATED VIA PR #22**
+**ACCEPTED / INTEGRATED FOUNDATION**
 
-Web UI: DANTE layer over Radix + Tailwind/CSS variables + Motion where required.
-
-Mobile UI: DANTE RN layer over StyleSheet/Reanimated/Gesture Handler.
-
-One DTCG-compatible semantic token source produces platform outputs; shared token meaning does not require identical pixel values.
-
-`@dante/i18n` is framework-free; app bootstrap wires React integration/detection/persistence.
-
-`@dante/time` owns Temporal-based semantic time handling; JavaScript `Date` is not the universal DANTE time type.
+Web UI uses the DANTE layer over accepted primitives/tokens. Mobile uses DANTE RN components over native RN styling/animation primitives. Shared semantic tokens/i18n/time cores remain framework-bounded.
 
 ## TD-17 — Frontend Web runtime config/delivery
 
-**ACCEPTED / INTEGRATED VIA PR #22**
+**ACCEPTED / INTEGRATED FOUNDATION**
 
-Web supports one immutable SPA artifact promoted across environments where the platform permits, with versioned Zod-validated public runtime configuration.
-
-Cloudflare Workers Static Assets remains selected Web delivery target. An app-coupled Worker may serve bounded bootstrap config such as `/client-config` but is not a DANTE BFF/business backend.
+Immutable SPA promotion with validated public runtime config where supported. Cloudflare Workers Static Assets remains selected Web delivery target. Client config never contains secrets.
 
 ## TD-18 — Mobile build/release
 
-**ACCEPTED / INTEGRATED VIA PR #22**
+**ACCEPTED AS ARCHITECTURE / IMPLEMENTATION FUTURE**
 
-EAS Build/Submit/Update selected. EAS Workflows optional/dormant because GitHub Actions remains primary orchestration.
-
-Android and iOS are supported architectural targets; signed/device/store gates apply when each platform is activated for release.
+EAS Build/Submit/Update selected. GitHub Actions remains primary orchestration. Native Mobile product work remains future/optional and requires explicit re-gating.
 
 ## TD-19 — Backend language/runtime
 
@@ -260,59 +254,49 @@ Android and iOS are supported architectural targets; signed/device/store gates a
 
 ```text
 Python 3.14.x
-initial pin 3.14.7
 uv
 apps/backend/src/dante
 Ruff
 mypy strict
 pytest
-Hypothesis
+Hypothesis where meaningful
 ```
 
 ## TD-20 — Developer OS/workflow
 
-**ACCEPTED / FRONTEND QUALIFIED**
+**ACCEPTED**
 
-Backend canonical semantics: Linux. Primary Windows posture uses one authoritative WSL-backed repository checkout with PyCharm/JetBrains supported.
-
-Frontend keeps the same single-checkout posture. WSL↔Windows Metro/ADB mechanics are a tooling adapter requiring direct validation, not a product architecture invariant.
-
-No divergent Windows/WSL source-tree clones or shared cross-OS `node_modules` environment.
+Backend canonical semantics are Linux. Primary Windows posture uses one authoritative WSL-backed repository checkout. No divergent Windows/WSL source clones or shared cross-OS dependency trees.
 
 ## TD-21 — LOCAL container/persistence toolkit
 
 **ACCEPTED**
 
-Backend process direct in WSL/Linux for normal reload/debug; Docker Compose owns LOCAL stateful dependencies; future backend deployable uses OCI packaging.
-
-Persistence toolkit:
+Backend process runs directly in WSL/Linux for normal reload/debug; Docker Compose owns LOCAL stateful dependencies; future backend deployable uses OCI packaging.
 
 ```text
-SQLAlchemy 2.0 stable
+SQLAlchemy 2.x
 psycopg 3
 Alembic
 ```
 
-Async DB I/O at technical boundaries; Domain/application sync/pure by default; application boundary owns transaction.
+Disposable PostgreSQL harnesses isolate automated/manual UAT.
 
 ## TD-22 — Migration/copy/recovery governance
 
 **ACCEPTED / QUALIFIED BY POSTGRESQL CONSTITUTION**
 
-- Alembic revision history = deployment schema-change authority;
-- autogenerate candidate only;
-- applied revisions immutable;
-- schema drift tested;
-- risk review + PostgreSQL staged/online techniques;
-- expand → migrate → contract;
-- large backfills bounded/resumable/idempotent;
-- separated DB privilege classes;
-- non-transactional PostgreSQL DDL isolated explicitly when required;
-- `pg_dump`/`pg_restore` logical-copy role distinct from pgBackRest/WAL/PITR recovery;
-- raw PROD → DEV forbidden by default;
-- PostgreSQL major upgrade is a separate platform operation.
-
-Detailed current PostgreSQL persistence/migration doctrine is governed by ADR-010 and the closed CP6-02 Constitution.
+- Alembic revision history = deployment schema-change authority
+- autogenerate candidate only
+- applied revisions immutable
+- schema drift tested
+- expand → migrate → contract
+- bounded resumable backfills
+- separated DB privilege classes
+- logical copy distinct from physical PITR recovery
+- raw PROD → DEV forbidden by default
+- PostgreSQL major upgrade is separate platform work
+- divergent accepted feature histories converge through explicit Alembic merge revisions, never history rewriting
 
 ## TD-23 — Environment/config/secrets
 
@@ -329,89 +313,125 @@ PROD
 
 Environment != Git branch.
 
-Backend uses typed fail-fast pydantic-settings and remote workload identity/secret-manager/OIDC posture.
+Backend uses typed fail-fast settings and remote workload-identity/secret-manager posture. Client config is public and never contains secrets.
 
-Frontend tool-specific profiles/channels map to the same four contexts. Client config is public and never contains secrets.
+Real-provider UAT is explicit opt-in. Email local UAT uses a named `dante-uat` AWS profile with temporary browser-login credentials; no static Access Key is required for the dedicated UAT IAM user.
 
 ## TD-24 — Testing/CI/supply chain
 
 **ACCEPTED**
 
-GitHub Actions primary CI/CD.
+GitHub Actions is primary CI/CD.
 
-Backend uses risk-layered unit/application/property/architecture/real-PostgreSQL/migration/concurrency/provider/API/privacy/release validation.
+Backend uses risk-layered unit/application/property/architecture/real-PostgreSQL/migration/concurrency/provider/API/privacy/release validation. Frontend uses strict type/boundary/cycle checks plus unit/component/E2E layers.
 
-Frontend uses co-located unit/component tests, app-level Web E2E/Mobile Maestro, strict type/boundary/cycle checks and higher-cost release validation only where applicable.
-
-Protected-main required contexts are repository-enforced current contexts, not guessed names. Current required contexts are:
-
-```text
-Backend CI Gate
-Dependency Review
-Frontend CI Gate
-```
-
-Protected workflows use least privilege and immutable Action SHA pinning. Supply-chain controls activate with real artifacts/manifests/capabilities; production artifact provenance/SBOM applies at release boundary.
+A simulated provider test never becomes a real-provider acceptance claim.
 
 ## TD-25 — Cloud/IaC and current implementation boundary
 
 **PARTLY DEFERRED / CURRENT**
 
-Backend compute provider, IaC engine, registry and remote sizing remain deliberately deferred until first remote infrastructure.
+General backend compute provider, IaC engine, registry and remote sizing remain deliberately deferred until real remote infrastructure requires them. Email-provider selection does not select the whole hosting platform.
 
-Closed/integrated foundations:
-
-```text
-Frontend Engineering Foundation   CLOSED / INTEGRATED VIA PR #22
-Frontend Materialization          CLOSED / PASS / INTEGRATED VIA PR #28
-Backend CP1–CP5 scaffold          CLOSED / DIRECT QA / INTEGRATED VIA PR #24
-Backend CP6 database              CLOSED / DIRECT QA / INTEGRATED VIA PR #42
-```
-
-Current concrete persistence baseline:
+Current branch truth:
 
 ```text
-PostgreSQL 18.6
-Alembic 20260826_08
-68 tables
-5 views
-14 routines
-75 triggers
-95 indexes
-68 FKs
-120 CHECKs
+PostgreSQL                         18.6
+feature/access-auth Alembic        20260903_15
+Access branch topology             87/5/15/75/170/88/267
+Access M1–M5                       CLOSED / ACCEPTED
+Windows Hello UAT                  PASS
+Google real UAT                    PASS
+Email Platform + real SES UAT      CLOSED / PASS
+Apple real registered-domain UAT   BOUNDED DEFERRED / NON-BLOCKING
+current work                       PRE-INTEGRATION AUDIT
 ```
 
-Current product boundary:
-
-```text
-Access Frontend
-ACTIVE / UNMERGED on feature/access-frontend
-
-first dedicated post-CP6 backend product vertical
-NOT STARTED
-```
-
-The old CP6-03 → Gate 03 → CP6-04 → CP6-05 sequence is completed historical execution, not a current next-step plan.
+Protected main separately owns Recovery at `20260830_09`. Combined truth is not claimed before merge + proof.
 
 ## TD-26 — PostgreSQL Persistence Constitution
 
 **ACCEPTED / CROSS-CUTTING**
 
-DANTE accepts the reusable PostgreSQL persistence doctrine closed by CP6-02 and implemented through CP6.
+Authority:
 
-ADR authority:
+- `../decisions/ADR-010-postgresql-persistence-constitution.md`
+- `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 
-`docs/decisions/ADR-010-postgresql-persistence-constitution.md`
+Durable consequences include stable reference addressing, material-state/current-history separation, transaction/concurrency/idempotency rules, migration/evolution posture and owner/migrator/runtime privilege separation.
 
-Detailed normative authority:
+## TD-27 — Shared transactional Email Platform
 
-`docs/development/backend-cp6-02-postgresql-persistence-constitution.md`
+**ACCEPTED / MATERIALIZED / REAL-PROVIDER UAT PASS**
 
-The durable consequences include stable UUID/reference addressing, bounded heterogeneous anchors, material-state/current-history separation, typed relation/constraint doctrine, transaction/concurrency/idempotency rules, migration/evolution posture and owner/migrator/runtime privilege separation. The technical decision register intentionally does not duplicate the full Constitution.
+Authorities:
 
-## Selected technologies not to reintroduce casually
+- `email-platform.md`
+- `../decisions/ADR-012-email-delivery-platform.md`
+- `../development/email-platform-local-uat.md`
+- `../development/email-platform-acceptance-2026-09-03.md`
+- `access-auth-email-delivery.md` for the first consumer only
 
-Closed Physical/Engineering/Frontend selections exclude or do not select as current defaults, among others: separate graph/vector/search/event-store canonical databases; Redis/Valkey/Kafka/RabbitMQ/NATS/Debezium by default; universal event sourcing; Temporal/DBOS/Celery default workflow stack; Zero/Electric/CRDT canonical authority; Next.js for the authenticated DANTE Web app; Flutter/React Native Web universal renderer; Nx baseline; Redux as default state authority; browser PowerSync TanStack adapter alpha; generic PWA/service-worker offline baseline.
+Decision:
+
+```text
+DANTE owns email intent/lifecycle/state
+specialist provider owns last-mile Internet delivery
+PostgreSQL transactional outbox is materialized
+feature mutation + EmailIntent commit atomically
+provider I/O occurs after commit
+Amazon SES API v2 is accepted primary external adapter
+SMTP remains LOCAL/CI/generic compatibility adapter
+provider feedback returns into DANTE event/suppression state
+```
+
+Current persistence:
+
+```text
+dante.email_delivery_intent
+dante.email_delivery_attempt
+dante.email_provider_event
+dante.email_recipient_suppression
+```
+
+Security/operational consequences:
+
+```text
+provider accepted != delivered
+network timeout != definitely not sent
+no blind retry after ambiguous send
+OTP/recovery secret excluded from logs/metrics/traces
+short-lived dedicated AEAD-protected sensitive payload
+terminal/unsafe-state secret wipe
+hard bounce/complaint may create delivery restriction
+Auth/security tracking + click rewriting OFF
+production SPF + DKIM + DMARC required before sender acceptance
+production workload identity preferred over developer credentials
+```
+
+Accepted SES UAT used `eu-west-3`/Paris and proved signup verification, password recovery, reset notification, no auto-login, prior-session revocation, provider MessageId correlation and secret wipe.
+
+SES region remains deployment configuration. Production sender-domain/DNS/reputation, workload identity and live cloud event-ingress are separate deployment gates.
+
+## TD-28 — Shared-foundation integration order
+
+**ACCEPTED / CURRENT EXECUTION POSTURE**
+
+```text
+close/audit feature/access-auth
+→ merge protected main into Access branch
+→ forward Alembic merge + combined QA
+→ PR Access/Auth + Email to main
+→ merge enriched main into already-closed platform-observability branch
+→ observability integration/release rechecks
+→ PR Observability to main
+→ future product branches start from enriched main
+```
+
+This prevents long-lived foundation branches from blocking unrelated product work and avoids layering new M6/M7 scope onto a branch that first needs to return shared capability to main.
+
+## Technologies not to reintroduce casually
+
+Closed Physical/Engineering/Frontend selections exclude or do not select as defaults, among others: separate graph/vector/search/event-store canonical databases; Redis/Valkey/Kafka/RabbitMQ/NATS/Debezium by default; universal event sourcing; Temporal/DBOS/Celery as default workflow stack; CRDT canonical authority; Next.js for the authenticated DANTE Web app; universal Web/Native renderer; Redux as default state authority; generic PWA/service-worker offline baseline; self-hosted production MTA as default email architecture.
 
 Reopen only with materially changed requirements/evidence and explicit scope.

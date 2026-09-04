@@ -1,28 +1,63 @@
 """HTTP/process bootstrap tests for the DANTE FastAPI application factory."""
 
 import importlib
+from base64 import urlsafe_b64encode
+from datetime import UTC, datetime
+from types import SimpleNamespace
+from typing import Any, cast
+from uuid import uuid7
 
 import pytest
 from fastapi.testclient import TestClient
 from pydantic import SecretStr
+from sqlalchemy.exc import DBAPIError
 
+from dante.auth.sessions import WEB_CLIENT_HEADER_NAME, WEB_CLIENT_HEADER_VALUE
 from dante.bootstrap.app import create_app
+from dante.platform.config.auth import AuthSettings
 from dante.platform.config.database import DatabaseSettings
 from dante.platform.config.settings import Environment, Settings
 
 _lifespan_module = importlib.import_module("dante.bootstrap.lifespan")
+_auth_service_module = importlib.import_module("dante.auth.service")
+_TEST_PEPPER_KEY_ID = "test-password-v1"
+_TEST_OTP_KEY_ID = "test-signup-otp-v1"
+_CANONICAL_ORIGIN = "https://dante.test"
+
+
+def _secret(raw: bytes) -> str:
+    return urlsafe_b64encode(raw).rstrip(b"=").decode("ascii")
 
 
 class _FakeDatabaseRuntime:
     def __init__(self, *, ready: bool) -> None:
-        self.ready = ready
-        self.disposed = False
+        self.ready: bool = ready
+        self.disposed: bool = False
+        self.session_factory = object()
 
     async def is_ready(self) -> bool:
         return self.ready
 
     async def dispose(self) -> None:
         self.disposed = True
+
+
+class _FakeAuthRuntime:
+    def __init__(self) -> None:
+        self.closed: bool = False
+        self.service = object()
+
+    async def aclose(self) -> None:
+        self.closed = True
+
+
+class _FakeAuthLifecycleRuntime:
+    def __init__(self) -> None:
+        self.closed: bool = False
+        self.service = object()
+
+    async def aclose(self) -> None:
+        self.closed = True
 
 
 def _database_settings() -> DatabaseSettings:
@@ -35,6 +70,23 @@ def _database_settings() -> DatabaseSettings:
     )
 
 
+def _auth_settings() -> AuthSettings:
+    return AuthSettings(
+        canonical_web_origin=_CANONICAL_ORIGIN,
+        password_current_pepper_key_id=_TEST_PEPPER_KEY_ID,
+        password_peppers={_TEST_PEPPER_KEY_ID: SecretStr(_secret(b"p" * 32))},
+        csrf_key=SecretStr(_secret(b"c" * 32)),
+        signup_otp_current_key_id=_TEST_OTP_KEY_ID,
+        signup_otp_keys={_TEST_OTP_KEY_ID: SecretStr(_secret(b"o" * 32))},
+        smtp_host="smtp.dante.test",
+        smtp_from_address="no-reply@dante.test",
+        kdf_max_concurrency=1,
+        kdf_max_queue_depth=1,
+        signin_rate_capacity=10,
+        signin_rate_window_seconds=60,
+    )
+
+
 def _settings(env: Environment = Environment.LOCAL, *, debug: bool = False) -> Settings:
     local_environment = env is Environment.LOCAL
     return Settings(
@@ -43,21 +95,51 @@ def _settings(env: Environment = Environment.LOCAL, *, debug: bool = False) -> S
         build_id="local" if local_environment else "build-42",
         debug=debug,
         database=_database_settings(),
+        auth=_auth_settings(),
     )
 
 
-def _install_fake_database_runtime(
+def _install_fake_runtimes(
     monkeypatch: pytest.MonkeyPatch,
     *,
     ready: bool,
-) -> _FakeDatabaseRuntime:
-    runtime = _FakeDatabaseRuntime(ready=ready)
+) -> tuple[_FakeDatabaseRuntime, _FakeAuthRuntime, _FakeAuthLifecycleRuntime]:
+    database_runtime = _FakeDatabaseRuntime(ready=ready)
+    auth_runtime = _FakeAuthRuntime()
+    lifecycle_runtime = _FakeAuthLifecycleRuntime()
+
     monkeypatch.setattr(
         _lifespan_module,
         "create_database_runtime",
-        lambda _settings: runtime,
+        lambda _settings: database_runtime,
     )
-    return runtime
+
+    async def create_fake_auth_runtime(**_kwargs: object) -> _FakeAuthRuntime:
+        return auth_runtime
+
+    async def create_fake_lifecycle_runtime(**_kwargs: object) -> _FakeAuthLifecycleRuntime:
+        return lifecycle_runtime
+
+    monkeypatch.setattr(
+        _lifespan_module,
+        "create_auth_runtime",
+        create_fake_auth_runtime,
+    )
+    monkeypatch.setattr(
+        _lifespan_module,
+        "create_auth_lifecycle_runtime",
+        create_fake_lifecycle_runtime,
+    )
+    return database_runtime, auth_runtime, lifecycle_runtime
+
+
+def _web_headers() -> dict[str, str]:
+    return {
+        "Origin": _CANONICAL_ORIGIN,
+        "Sec-Fetch-Site": "same-origin",
+        WEB_CLIENT_HEADER_NAME: WEB_CLIENT_HEADER_VALUE,
+        "Content-Type": "application/json",
+    }
 
 
 def test_application_factory_accepts_explicit_valid_settings() -> None:
@@ -67,7 +149,9 @@ def test_application_factory_accepts_explicit_valid_settings() -> None:
     assert app.debug is False
 
 
-def test_liveness_probe_uses_real_http_transport() -> None:
+def test_liveness_probe_uses_real_http_transport(monkeypatch: pytest.MonkeyPatch) -> None:
+    _install_fake_runtimes(monkeypatch, ready=True)
+
     with TestClient(create_app(_settings())) as client:
         response = client.get("/health/live")
 
@@ -76,7 +160,7 @@ def test_liveness_probe_uses_real_http_transport() -> None:
 
 
 def test_readiness_probe_uses_real_http_transport(monkeypatch: pytest.MonkeyPatch) -> None:
-    _install_fake_database_runtime(monkeypatch, ready=True)
+    _install_fake_runtimes(monkeypatch, ready=True)
 
     with TestClient(create_app(_settings())) as client:
         response = client.get("/health/ready")
@@ -88,7 +172,7 @@ def test_readiness_probe_uses_real_http_transport(monkeypatch: pytest.MonkeyPatc
 def test_readiness_reports_dependency_unavailable_without_details(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    _install_fake_database_runtime(monkeypatch, ready=False)
+    _install_fake_runtimes(monkeypatch, ready=False)
 
     with TestClient(create_app(_settings())) as client:
         response = client.get("/health/ready")
@@ -97,17 +181,159 @@ def test_readiness_reports_dependency_unavailable_without_details(
     assert response.json() == {"status": "not_ready"}
 
 
-def test_lifespan_disposes_process_database_runtime(monkeypatch: pytest.MonkeyPatch) -> None:
-    runtime = _install_fake_database_runtime(monkeypatch, ready=True)
+def test_lifespan_disposes_process_resources_in_reverse_ownership_order(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    database_runtime, auth_runtime, lifecycle_runtime = _install_fake_runtimes(
+        monkeypatch,
+        ready=True,
+    )
 
     with TestClient(create_app(_settings())):
-        assert runtime.disposed is False
+        assert (database_runtime.disposed, auth_runtime.closed, lifecycle_runtime.closed) == (
+            False,
+            False,
+            False,
+        )
 
-    assert runtime.disposed is True
+    assert (database_runtime.disposed, auth_runtime.closed, lifecycle_runtime.closed) == (
+        True,
+        True,
+        True,
+    )
+
+
+@pytest.mark.asyncio
+async def test_auth_runtime_partial_startup_closes_already_owned_kdf(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    lifecycle = {"started": False, "closed": False}
+
+    class FakePasswordKdf:
+        def __init__(self, **_kwargs: object) -> None:
+            pass
+
+        async def start(self) -> None:
+            lifecycle["started"] = True
+
+        async def aclose(self) -> None:
+            lifecycle["closed"] = True
+
+    def fail_http_client(**_kwargs: object) -> object:
+        raise RuntimeError("synthetic http client construction failure")
+
+    monkeypatch.setattr(_auth_service_module, "PasswordKdf", FakePasswordKdf)
+    monkeypatch.setattr(_auth_service_module.httpx2, "AsyncClient", fail_http_client)
+
+    with pytest.raises(RuntimeError, match="synthetic http client construction failure"):
+        await _auth_service_module.create_auth_runtime(
+            settings=_auth_settings(),
+            database_runtime=cast(Any, _FakeDatabaseRuntime(ready=True)),
+            release_sha="test-release",
+        )
+
+    assert lifecycle == {"started": True, "closed": True}
+
+
+@pytest.mark.asyncio
+async def test_ambiguous_commit_closes_original_session_before_reconciliation(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    now = datetime.now(UTC)
+    account_ref = uuid7()
+    email_identity_ref = uuid7()
+    credential_ref = uuid7()
+
+    account = SimpleNamespace(status_code="active")
+    email_identity = SimpleNamespace(verified_at=now)
+    credential = SimpleNamespace(
+        password_credential_ref=credential_ref,
+        verifier="$argon2id$v=19$synthetic",
+        pepper_key_id=_TEST_PEPPER_KEY_ID,
+        updated_at=now,
+    )
+
+    class FakeSession:
+        def __init__(self) -> None:
+            self.closed = False
+            self._scalar_values = iter((account, email_identity, credential))
+
+        async def begin(self) -> None:
+            return None
+
+        async def execute(self, _statement: object) -> None:
+            return None
+
+        async def scalar(self, _statement: object) -> object:
+            return next(self._scalar_values)
+
+        def add(self, _row: object) -> None:
+            return None
+
+        async def commit(self) -> None:
+            raise DBAPIError(
+                statement=None,
+                params=None,
+                orig=RuntimeError("synthetic ambiguous commit"),
+                connection_invalidated=True,
+            )
+
+        async def rollback(self) -> None:
+            return None
+
+        def in_transaction(self) -> bool:
+            return True
+
+        async def close(self) -> None:
+            self.closed = True
+
+    database_session = FakeSession()
+
+    def session_factory() -> FakeSession:
+        return database_session
+
+    service = _auth_service_module.AuthService(
+        session_factory=cast(Any, session_factory),
+        settings=_auth_settings(),
+        password_kdf=cast(Any, object()),
+        breach_checker=cast(Any, object()),
+        signin_limiter=cast(Any, object()),
+    )
+    snapshot = SimpleNamespace(
+        account_ref=account_ref,
+        email_identity_ref=email_identity_ref,
+        password_credential_ref=credential_ref,
+        verifier=credential.verifier,
+        pepper_key_id=credential.pepper_key_id,
+        credential_updated_at=credential.updated_at,
+    )
+    sentinel = object()
+    reconciled = {"called": False}
+
+    async def reconcile(**_kwargs: object) -> object:
+        assert database_session.closed is True
+        reconciled["called"] = True
+        return sentinel
+
+    monkeypatch.setattr(service, "_reconcile_ambiguous_session", reconcile)
+
+    result = await service._finalize_signin(
+        snapshot=cast(Any, snapshot),
+        expected_comparison_key="person@example.com",
+        replacement_verifier=None,
+    )
+
+    assert result is sentinel
+    assert reconciled == {"called": True}
 
 
 @pytest.mark.parametrize("env", [Environment.LOCAL, Environment.DEV, Environment.UAT])
-def test_non_production_environments_expose_docs_and_openapi(env: Environment) -> None:
+def test_non_production_environments_expose_docs_and_openapi(
+    env: Environment,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _install_fake_runtimes(monkeypatch, ready=True)
+
     with TestClient(create_app(_settings(env))) as client:
         docs_response = client.get("/docs")
         openapi_response = client.get("/openapi.json")
@@ -120,12 +346,26 @@ def test_non_production_environments_expose_docs_and_openapi(env: Environment) -
     schema = openapi_response.json()
     assert "/health/live" not in schema["paths"]
     assert "/health/ready" not in schema["paths"]
+    expected_operations = {
+        ("/api/v1/auth/signin", "post"): "auth_sign_in",
+        ("/api/v1/auth/signup", "post"): "auth_begin_signup",
+        ("/api/v1/auth/signup/verify", "post"): "auth_verify_signup",
+        ("/api/v1/auth/signup/resend", "post"): "auth_resend_signup_verification",
+        ("/api/v1/auth/recovery", "post"): "auth_request_password_recovery",
+        ("/api/v1/auth/recovery/validate", "post"): "auth_validate_password_recovery",
+        ("/api/v1/auth/reset-password", "post"): "auth_reset_password",
+        ("/api/v1/auth/reauthenticate", "post"): "auth_reauthenticate",
+        ("/api/v1/auth/session", "get"): "auth_get_session",
+        ("/api/v1/auth/session", "delete"): "auth_log_out",
+    }
+    for (path, method), operation_id in expected_operations.items():
+        assert schema["paths"][path][method]["operationId"] == operation_id
 
 
 def test_production_disables_interactive_docs_and_openapi(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    _install_fake_database_runtime(monkeypatch, ready=True)
+    _install_fake_runtimes(monkeypatch, ready=True)
 
     with TestClient(create_app(_settings(Environment.PROD))) as client:
         assert client.get("/docs").status_code == 404
@@ -139,3 +379,114 @@ def test_fastapi_debug_reflects_validated_settings() -> None:
     app = create_app(_settings(debug=True))
 
     assert app.debug is True
+
+
+def test_malformed_json_is_400_not_field_validation_422(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _install_fake_runtimes(monkeypatch, ready=True)
+
+    with TestClient(create_app(_settings()), base_url=_CANONICAL_ORIGIN) as client:
+        response = client.post(
+            "/api/v1/auth/signin",
+            content=b'{"email":',
+            headers=_web_headers(),
+        )
+
+    assert response.status_code == 400
+    assert response.headers["content-type"].startswith("application/problem+json")
+    assert response.json()["code"] == "request.malformed"
+
+
+def test_valid_json_field_failure_is_422(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _install_fake_runtimes(monkeypatch, ready=True)
+
+    with TestClient(create_app(_settings()), base_url=_CANONICAL_ORIGIN) as client:
+        response = client.post(
+            "/api/v1/auth/signin",
+            content=b'{"email":"person@example.com"}',
+            headers=_web_headers(),
+        )
+
+    assert response.status_code == 422
+    body = response.json()
+    assert body["code"] == "request.validation_failed"
+    assert body["errors"][0]["pointer"] == "/password"
+
+
+def test_duplicate_origin_fails_closed_before_body_parsing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _install_fake_runtimes(monkeypatch, ready=True)
+    headers = [
+        ("Origin", _CANONICAL_ORIGIN),
+        ("Origin", "https://evil.example"),
+        ("Sec-Fetch-Site", "same-origin"),
+        (WEB_CLIENT_HEADER_NAME, WEB_CLIENT_HEADER_VALUE),
+        ("Content-Type", "application/json"),
+    ]
+
+    with TestClient(create_app(_settings()), base_url=_CANONICAL_ORIGIN) as client:
+        response = client.post(
+            "/api/v1/auth/signin",
+            content=b'{"email":',
+            headers=headers,
+        )
+
+    assert response.status_code == 403
+    assert response.json()["code"] == "security.csrf_failed"
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/api/v1/auth/signup",
+        "/api/v1/auth/signup/verify",
+        "/api/v1/auth/signup/resend",
+        "/api/v1/auth/recovery",
+        "/api/v1/auth/recovery/validate",
+        "/api/v1/auth/reset-password",
+        "/api/v1/auth/reauthenticate",
+    ],
+)
+def test_m4_mutations_fail_closed_before_body_parsing_without_browser_origin(
+    path: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _install_fake_runtimes(monkeypatch, ready=True)
+    headers = {
+        "Sec-Fetch-Site": "same-origin",
+        WEB_CLIENT_HEADER_NAME: WEB_CLIENT_HEADER_VALUE,
+        "Content-Type": "application/json",
+    }
+
+    with TestClient(create_app(_settings()), base_url=_CANONICAL_ORIGIN) as client:
+        response = client.post(path, content=b'{"malformed":', headers=headers)
+
+    assert response.status_code == 403
+    assert response.json()["code"] == "security.csrf_failed"
+
+
+def test_duplicate_content_type_is_malformed_request(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _install_fake_runtimes(monkeypatch, ready=True)
+    headers = [
+        ("Origin", _CANONICAL_ORIGIN),
+        ("Sec-Fetch-Site", "same-origin"),
+        (WEB_CLIENT_HEADER_NAME, WEB_CLIENT_HEADER_VALUE),
+        ("Content-Type", "application/json"),
+        ("Content-Type", "text/plain"),
+    ]
+
+    with TestClient(create_app(_settings()), base_url=_CANONICAL_ORIGIN) as client:
+        response = client.post(
+            "/api/v1/auth/signin",
+            content=b"{}",
+            headers=headers,
+        )
+
+    assert response.status_code == 400
+    assert response.json()["code"] == "request.malformed"

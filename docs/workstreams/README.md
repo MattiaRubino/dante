@@ -1,135 +1,83 @@
 # DANTE Workstream Records
 
 - **Status:** CURRENT INDEX
-- **Rule:** current subsystem/workstream files describe present truth; Git/PR/archive preserve chronology.
+- **Last reconciled:** 2026-09-04
+- **Rule:** protected `main` stores durable current records/evidence, not active chat/session handoffs
 
-## Current authority
+## Current project state
 
-Protected-main project truth is owned by:
+```text
+Product / Domain / Logical / Physical            CLOSED / CURRENT
+Engineering / Frontend / Backend CP1–CP6        CLOSED / ACCEPTED
+PostgreSQL                                       18.6
+Protected-main Recovery                          CLOSED / INTEGRATED
 
+Access/Auth M1–M5                                CLOSED / ACCEPTED
+Shared Email Platform                            CLOSED / ACCEPTED / OWNERSHIP VERIFIED
+Google / Windows Hello / SES real UAT            PASS
+Apple registered-domain UAT                      BOUNDED DEFERRED / NON-BLOCKING
+
+integration/access-auth-main-20260904
+  proof HEAD                                     81639c61478b476c995652d0060dde8f53aef089
+  main Recovery                                  INCLUDED
+  Alembic                                        20260904_17
+  topology                                       88/5/16/76/172/89/270
+  combined CI                                    PASS
+  CP07 whole LOCAL recovery                      PASS
+  state                                          READY FOR PROTECTED-MAIN MERGE
+
+feature/platform-observability                   CLOSED / OPERATIONAL PASS / NOT INTEGRATED
+M6 Native Mobile                                 FUTURE / OPTIONAL
+later M7 Access/security maturity                FUTURE
+```
+
+## Current Access/Auth authority
+
+- `access-auth.md`
+- `access-auth-integration-acceptance-2026-09-04.md`
 - `../PROJECT-STATUS.md`
 - `../ROADMAP.md`
+- `../database/README.md`
+- `../database/access-auth.md`
+- `../architecture/access-auth-*.md`
+- `../architecture/email-platform.md`
+- `../operations/postgres-recovery-runbook.md`
+- `../development/email-platform-acceptance-2026-09-03.md`
 
-Branch-local workstream files may describe newer unmerged implementation only inside their own bounded branch. They never silently become protected-main truth.
+M5 is closed. Apple real external UAT is an explicit bounded deferral, not a PASS. CP07 is a LOCAL operator-recovery PASS, not production/cloud recovery acceptance.
 
-## Current durable subsystem entry points
+## Documentation lifecycle
 
-### Database
+Temporary Access/Auth handoffs were removed after knowledge coverage. Durable review/closure/integration evidence may remain, but historical checkpoints never override current executable/current-reference truth.
 
-- `../database/README.md` — current DANTE PostgreSQL System of Record.
-- `../database/dante-postgresql-database.md` + current continuation parts — human-readable database reference.
-- `../database/dictionary/` — machine-readable current database contract.
+The old `access-auth-m4-m7-execution-plan.md` is historical planning; current execution order is owned only by `../ROADMAP.md` and `access-auth.md`.
 
-### Backend
-
-- `backend-scaffold.md` — accepted backend foundation/closure record.
-
-### Frontend
-
-- `frontend-foundation.md`
-- `frontend-materialization.md`
-- `frontend-materialization-integration.md`
-- `../frontend/access.md`
-
-### Engineering / architecture
-
-- `engineering-foundation.md`
-- `physical-model.md`
-- `pre-physical-coherence.md`
-
-### Domain / Logical
-
-Current semantic authority lives in:
-
-- `../domain/README.md`
-- `../logical-model/README.md`
-
-## PostgreSQL Recovery
-
-The LOCAL PostgreSQL Recovery workstream is **closed and integrated into protected `main` via PR #47**. It no longer has an active workstream file or execution-plan overlay in current navigation.
-
-Current durable operational authority:
+## Current integration order
 
 ```text
-database contract   ../database/README.md
-operator runbook    ../operations/postgres-recovery-runbook.md
-bootstrap           ../../infra/local/postgres/recovery/bootstrap-local-recovery.sh
-whole rehearsal     ../../infra/local/postgres/recovery/cp07-whole-recovery-rehearsal.sh
+accepted Access/Auth + Recovery + Email candidate
+→ protected-main PR #52
+→ post-merge main verification + current-document reconciliation
+→ enriched main into feature/platform-observability
+→ observability release rechecks
+→ protected-main PR
+→ future bounded workstreams
 ```
 
-Closed branch history:
+## Closed durable records
 
-- `../archive/branches/2026-08-feature-postgres-recovery.md` — **NON-AUTHORITATIVE**
+Backend/database history is retained through current DB authority plus archive/Git chronology. Frontend/engineering/domain/logical historical workstream records remain evidence only unless explicitly marked current.
 
-Current protected-main Recovery truth:
+`access-auth-closure-2026-09-03.md` remains historical feature-branch closure evidence and must continue to say integration was pending at that historical checkpoint. `access-auth-integration-acceptance-2026-09-04.md` is the durable record for the accepted combined candidate immediately before protected-main integration.
 
-```text
-PostgreSQL                              18.6
-Alembic                                 20260830_09
-topology                                69|5|15|76|97|69|123|0|0|0
-CP01–CP07                               LOCAL PASS / CLOSED
-exact reusable-runner proof HEAD        789e946a8f096b52f2a440b967120cc3e0a340a3
-final Recovery branch HEAD              e46ae3d9d5918b27ebf86f4e291b51312f1e7c4d
-integration PR                          #47
-protected-main merge commit             bdd2b2370d41423dbaecd00fde86bb2bf2466f2b
-remote backup provider                  TBD / NOT ACTIVATED
-production/cloud recovery               NOT CLAIMED
-```
-
-Permanent rules:
+## Permanent rules
 
 ```text
-PostgreSQL = sole canonical persistence authority
-backup repository != canonical truth
-restored bytes != accepted semantic truth
-pg_isready != traffic-open proof
-pg_is_in_recovery=false + semantic acceptance required
-old backup restore != permission to resurrect retired payload
-recovery suppression ledger != second canonical database
-successful LOCAL proof != remote/cloud production proof
-```
-
-The permanent bootstrap/runner is branch-agnostic and fails closed unless the current branch is attached, clean, has a configured upstream and exact `HEAD == upstream` after fetch. The historical `feature/postgres-recovery` branch name is evidence only and is not a current execution requirement.
-
-Detailed CP01–CP07 chronology, proof heads, failure findings, measurements and the disposition of removed active-workstream documents are retained in the single Recovery branch-history record plus Git history.
-
-## Current bounded unmerged workstreams
-
-At the 2026-08-31 reconciliation, current project authority records bounded unmerged work including:
-
-```text
-feature/access-auth             active product vertical
-feature/home-react              active frontend workstream
-feature/platform-observability  active platform workstream
-```
-
-PostgreSQL Recovery is intentionally absent: it is already integrated in protected `main` via PR #47.
-
-Live Git refs and each active branch's own durable authority outrank this index for later movement.
-
-## Operational continuation rule
-
-Before continuing an active workstream:
-
-1. verify exact branch/worktree/remote relation;
-2. read current global/subsystem authority;
-3. read the active branch-local workstream record when one legitimately exists;
-4. prefer repository/code/tests over conversation memory;
-5. do not write to protected `main` outside the repository integration path;
-6. do not treat selected/unimplemented capability as PASS;
-7. keep current docs aligned with materialized repository truth;
-8. remove live/session/resume handoffs before integration;
-9. after merge, reconcile candidate/branch-local wording to protected-main truth and repair links to intentionally removed overlays.
-
-## Carry-forward engineering rules
-
-```text
-SELECTED != IMPLEMENTED
-IMPLEMENTED != PROVEN
-PROVEN != CLOSED UNTIL THE CHECKPOINT CONTRACT IS SATISFIED
-UNMERGED BRANCH TRUTH != protected-main TRUTH
-MERGED BRANCH CANDIDATE STATE != CURRENT protected-main STATUS
-VERSION-SENSITIVE CLAIMS REQUIRE CURRENT EVIDENCE
-CURRENT DOCUMENTATION != DEPRECATED SNAPSHOT
-TEMPORARY HANDOFF != DURABLE main DOCUMENTATION
+SELECTED != IMPLEMENTED != PASS != REAL UAT != PRODUCTION DEPLOYED
+UNMERGED CANDIDATE TRUTH != PROTECTED-MAIN TRUTH
+CURRENT SPECIFICATION != APPEND-ONLY DIARY
+TEMPORARY HANDOFF != DURABLE DOCUMENTATION
+APPLIED MIGRATION HISTORY IS IMMUTABLE
+NO PASS WITHOUT EXECUTED EVIDENCE
+LOCAL RECOVERY PASS != PRODUCTION/CLOUD RECOVERY PASS
 ```

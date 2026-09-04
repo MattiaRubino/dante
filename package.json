@@ -2,7 +2,8 @@
   "name": "dante",
   "private": true,
   "scripts": {
-    "architecture:check": "dependency-cruise --config dependency-cruiser.config.mjs -- apps/web/src apps/mobile/app apps/mobile/src packages/design-tokens packages/i18n packages/time",
+    "api:generate": "node tooling/generate-api-client.mjs",
+    "architecture:check": "dependency-cruise --config dependency-cruiser.config.mjs -- apps/web/src apps/mobile/app apps/mobile/src packages/api-client packages/design-tokens packages/i18n packages/time",
     "build": "turbo run build",
     "dev": "turbo run dev",
     "format": "prettier --write .",

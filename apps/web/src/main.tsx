@@ -1,14 +1,31 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider, createRouter } from '@tanstack/react-router';
 
 import '@dante/design-tokens/web.css';
 import './bootstrap/i18n';
+import { captureWindowRecoveryProof } from './platform/auth/recovery-proof';
 import { routeTree } from './routeTree.gen';
 import './styles.css';
 
+const recoveryProofStore = captureWindowRecoveryProof();
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    mutations: {
+      retry: false,
+    },
+  },
+});
+
 const router = createRouter({
   routeTree,
+  context: {
+    queryClient,
+    recoveryProofStore,
+  },
+  defaultPreloadStaleTime: 0,
 });
 
 declare module '@tanstack/react-router' {
@@ -25,6 +42,8 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
   </StrictMode>,
 );

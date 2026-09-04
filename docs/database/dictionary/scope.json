@@ -4,15 +4,23 @@
   "status": "materialized",
   "postgresql": {"major": 18, "schema": "dante"},
   "expected_baseline": {
-    "standalone_entries": {"tables": 69, "views": 5, "routines": 15, "total": 89},
-    "embedded_objects": {"triggers": 76, "physical_indexes": 97},
-    "constraints": {"foreign_keys": 69, "check_constraints": 123}
+    "standalone_entries": {"tables": 68, "views": 5, "routines": 14, "total": 87},
+    "embedded_objects": {"triggers": 75, "physical_indexes": 95},
+    "constraints": {"foreign_keys": 68, "check_constraints": 120}
   },
   "current_materialization": {
-    "completed_stages": ["CP6-M01", "CP6-M02", "CP6-M03", "CP6-M04", "CP6-M05", "CP6-M06", "CP6-M07", "RECOVERY-CP06"],
-    "standalone_entries": {"tables": 69, "views": 5, "routines": 15, "total": 89},
-    "embedded_objects": {"triggers": 76, "physical_indexes": 97},
-    "constraints": {"foreign_keys": 69, "check_constraints": 123}
+    "completed_stages": [
+      "CP6-M01",
+      "CP6-M02",
+      "CP6-M03",
+      "CP6-M04",
+      "CP6-M05",
+      "CP6-M06",
+      "CP6-M07"
+    ],
+    "standalone_entries": {"tables": 88, "views": 5, "routines": 16, "total": 109},
+    "embedded_objects": {"triggers": 76, "physical_indexes": 172},
+    "constraints": {"foreign_keys": 89, "check_constraints": 270}
   },
   "technical_foundation": {
     "excluded_tables": ["dante.alembic_version"],

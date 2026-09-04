@@ -1,14 +1,16 @@
 # DANTE — PostgreSQL Local Recovery Operator Runbook
 
-- **Status:** CURRENT / REHEARSED / CP07 LOCAL PASS / REUSABLE RUNNER PROVEN
+- **Status:** CURRENT / REHEARSED / CP07 LOCAL PASS / INTEGRATED-CANDIDATE CONTRACT PROVEN
 - **Scope:** whole local PostgreSQL disaster recovery and semantic acceptance
 - **Remote backup provider:** TBD / NOT ACTIVATED
 - **Production/cloud recovery:** NOT CLAIMED
 - **Canonical database:** PostgreSQL 18.6
-- **Alembic head:** `20260830_09`
+- **Accepted candidate Alembic head:** `20260904_17`
+- **Protected-main head before PR #52:** `20260830_09`
+- **Accepted candidate proof HEAD:** `81639c61478b476c995652d0060dde8f53aef089`
 - **Whole-rehearsal harness:** `infra/local/postgres/recovery/cp07-whole-recovery-rehearsal.sh`
 
-> This runbook is deliberately provider-neutral. It describes the DANTE recovery contract that exists now. A future remote-storage provider is selected only when production deployment actually requires one.
+> This runbook is deliberately provider-neutral. It describes the accepted DANTE LOCAL recovery contract for the current integration candidate. A future remote-storage provider is selected only when production deployment actually requires one.
 
 ## 1. Operator objective
 
@@ -135,12 +137,12 @@ derived/object reconciliation requirement
 
 ## 6. Structural and security acceptance
 
-Current accepted local contract:
+Accepted current integration-candidate LOCAL contract:
 
 ```text
 PostgreSQL       18.6
-Alembic          20260830_09
-topology         69|5|15|76|97|69|123|0|0|0
+Alembic          20260904_17
+topology         88|5|16|76|172|89|270|0|0|0
 owners           dante_owner
 roles            dante_owner / dante_migrator / dante_runtime
 runtime Alembic  denied
@@ -153,6 +155,15 @@ extensions       postgis 3.6.4
 ```
 
 Any mismatch blocks reopen.
+
+Historical protected-main Recovery-only contract before PR #52:
+
+```text
+Alembic          20260830_09
+topology         69|5|15|76|97|69|123|0|0|0
+```
+
+That historical/current-before-merge contract must not be used to accept a restore of the enriched candidate.
 
 ## 7. Anti-resurrection reconciliation
 
@@ -183,6 +194,8 @@ prove payload reinsertion is rejected
 ```
 
 Only then may the database-local reopen gate continue.
+
+A PREPARED-only ledger state is intentionally ambiguous and must block automatic suppression. The current CP07 directly exercised this fail-closed path before canonical retirement + COMMITTED suppression were completed.
 
 ## 8. Reopen decision
 
@@ -265,21 +278,28 @@ remote-provider status
 
 These are local observations, never invented production RPO/RTO targets.
 
-### CP07 initial exact local evidence
+### Latest accepted integrated-candidate CP07 evidence — 2026-09-04
 
-Implementation/runtime proof HEAD:
+Exact proof relation:
 
 ```text
-8893efe629ff1dc9fc2b512779aa56457b802be6
+branch          integration/access-auth-main-20260904
+upstream        origin/integration/access-auth-main-20260904
+proof HEAD      81639c61478b476c995652d0060dde8f53aef089
+recovery image  dante-postgres-recovery:18.6-pgbackrest-2.59.1
 ```
 
 Direct whole-rehearsal result:
 
 ```text
 whole local operator rehearsal                  PASS
+PostgreSQL                                      18.6
+Alembic                                         20260904_17
+topology                                        88|5|16|76|172|89|270|0|0|0
 database-local reopen                           PASS
 deterministic PITR A-present / B-absent         PASS
 old protected X physical resurrection           PROVEN
+PREPARED-only suppression ambiguity             BLOCKED / PASS
 ledger anti-resurrection reconciliation         PASS
 payload reinsertion after retirement            REJECTED
 structural/security/runtime acceptance          PASS
@@ -294,21 +314,26 @@ production/cloud recovery                       NOT CLAIMED
 Measured LOCAL observations:
 
 ```text
-backup label                              20260831-091947F
-backup duration                           52.598280 s
-backup repository size                    5743174 bytes
-WAL archive freshness at disaster         0.904446 s
-restore-point age at disaster             3.980700 s
-physical restore                          7.947759 s
-PITR replay to target                     0.145295 s
-recovery to ready                         0.389248 s
-semantic reconciliation                   0.603417 s
-structural/security acceptance            0.928466 s
-PGDATA loss → database-local reopen       15.614213 s
+run id                                    cp07-20260904T135801Z-15861
+backup label                              20260904-135821F
+backup duration                           65.226133 s
+backup repository size                    5897962 bytes
+WAL archive freshness at disaster         0.817316 s
+restore-point age at disaster             3.748588 s
+physical restore                          8.171384 s
+PITR replay to target                     0.144118 s
+recovery to ready                         0.372819 s
+semantic reconciliation                   0.584630 s
+structural/security acceptance            2.857058 s
+PGDATA loss → database-local reopen       17.679584 s
+whole harness                             103.912062 s
 ```
+
+The report status was `LOCAL_PASS`.
 
 These are LOCAL rehearsal observations only. They are not production RPO/RTO targets.
 
+Durable repository-level integration evidence is also summarized in `../workstreams/access-auth-integration-acceptance-2026-09-04.md`; the ignored local JSON remains the machine observation for that workstation run.
 
 ## 11. Cleanup
 
@@ -353,66 +378,18 @@ suppression evidence retained for the full resurrection horizon
 
 Provider-specific implementation, costs, credentials, production RPO/RTO and production recovery acceptance are deferred until DANTE actually needs production deployment.
 
+## 13. Historical reusable-runner proof
 
-## 13. Reusable-runner proof
+The Recovery workstream previously proved the branch-agnostic/idempotent bootstrap and runner on its own exact pushed Recovery-only implementation heads, including fresh-clone secret bootstrap, image build, exact branch/upstream gating, PITR, anti-resurrection and cleanup.
 
-The repository now owns a branch-agnostic, idempotent fresh-clone bootstrap and CP07 invokes it automatically. Exact-head runtime acceptance of that hardened runner is recorded here only after the implementation commit itself is pushed and rerun.
+Those older measurements remain historical evidence in Git/archive records. They must not override the latest accepted enriched-candidate contract in sections 6 and 10.
 
-### Reproducible LOCAL recovery exact-head proof
-
-Implementation/runtime proof HEAD:
-
-```text
-789e946a8f096b52f2a440b967120cc3e0a340a3
-```
-
-Reusable-bootstrap / runner proof:
+The permanent conclusion carried forward is:
 
 ```text
-validation clone started without recovery secrets         PASS
-first bootstrap created all three LOCAL secrets           PASS
-second bootstrap preserved exact secret contents          PASS
-secret files mode 0600 / ignored / untracked              PASS
-repository Compose validation                              PASS
-repository-built pinned recovery image                     PASS
-runner independent from feature/postgres-recovery name     PASS
-clean attached branch + configured upstream gate           PASS
-whole backend QA on exact hardened tree                    PASS
-pre-push whole CP07 rehearsal                              PASS
-exact pushed implementation HEAD whole CP07 rehearsal      PASS
-database-local reopen                                      PASS
-deterministic PITR A-present / B-absent                    PASS
-old protected X physical resurrection                      PROVEN
-ledger anti-resurrection reconciliation                    PASS
-payload reinsertion after retirement                       REJECTED
-normal LOCAL / retained recovery / CP05 non-interference   PASS
-disposable cleanup                                         PASS
-remote backup provider                                     TBD / NOT ACTIVATED
-production/cloud recovery                                  NOT CLAIMED
+runner does not depend on historical branch name
+bootstrap is repository-owned and idempotent
+recovery target must be exact-head/current-contract aware
+LOCAL rehearsal evidence is not production RPO/RTO
+remote/provider recovery is never claimed without real activation + proof
 ```
-
-Exact-head runtime relation:
-
-```text
-branch          feature/postgres-recovery
-upstream        origin/feature/postgres-recovery
-recovery image  dante-postgres-recovery:18.6-pgbackrest-2.59.1
-```
-
-Measured LOCAL observations from the exact pushed hardened runner:
-
-```text
-backup label                              20260831-120208F
-backup duration                           53.964433 s
-backup repository size                    5743173 bytes
-WAL archive freshness at disaster         0.834662 s
-restore-point age at disaster             3.629809 s
-physical restore                          7.650652 s
-PITR replay to target                     0.144582 s
-recovery to ready                         0.382306 s
-semantic reconciliation                   1.021309 s
-structural/security acceptance            0.910673 s
-PGDATA loss → database-local reopen       16.261533 s
-```
-
-These are LOCAL rehearsal observations, not production RPO/RTO targets.
