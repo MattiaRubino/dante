@@ -1,17 +1,11 @@
-"""Repository-owned Auth/security email intent derivation and rendering."""
+"""Access/Auth email intent derivation and repository-owned security rendering."""
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from html import escape
 
 from dante.auth.email import normalize_email
-from dante.auth.email_contracts import (
-    ClaimedEmailIntent,
-    EmailIntentSpec,
-    EmailPayloadError,
-    ProviderMessage,
-)
-from dante.auth.email_crypto import EmailPayloadCipher
 from dante.auth.email_delivery import (
     DeliverableEmail,
     PasswordRecoveryEmail,
@@ -19,8 +13,41 @@ from dante.auth.email_delivery import (
     ProviderEnrollmentVerificationEmail,
     SignupVerificationEmail,
 )
+from dante.platform.email.contracts import (
+    ClaimedEmailIntent,
+    EmailIntentSpec,
+    EmailPayloadError,
+    ProviderMessage,
+)
+from dante.platform.email.crypto import EmailPayloadCipher
 
-_SUPPORTED_TEMPLATE_REVISIONS = frozenset({"1", "2"})
+AUTH_EMAIL_STREAM = "auth_security"
+AUTH_EMAIL_TEMPLATE_REVISION = "2"
+_SUPPORTED_TEMPLATE_REVISIONS = frozenset({"1", AUTH_EMAIL_TEMPLATE_REVISION})
+
+
+@dataclass(frozen=True, slots=True)
+class AuthSecurityEmailRenderer:
+    """Consumer-owned renderer injected into the shared Email Platform worker."""
+
+    canonical_web_origin: str
+
+    def render(
+        self,
+        *,
+        claim: ClaimedEmailIntent,
+        cipher: EmailPayloadCipher,
+        from_address: str,
+    ) -> ProviderMessage:
+        """Render one claimed Auth/security intent without owning delivery mechanics."""
+        if claim.stream_code != AUTH_EMAIL_STREAM:
+            raise EmailPayloadError("Auth renderer received an intent from another email stream")
+        return render_claim(
+            claim=claim,
+            cipher=cipher,
+            from_address=from_address,
+            canonical_web_origin=self.canonical_web_origin,
+        )
 
 
 def email_intent_spec(command: DeliverableEmail) -> EmailIntentSpec:
@@ -78,6 +105,8 @@ def render_claim(
     canonical_web_origin: str,
 ) -> ProviderMessage:
     """Render reviewed repository-owned Auth/security copy from one authenticated payload."""
+    if claim.stream_code != AUTH_EMAIL_STREAM:
+        raise EmailPayloadError("Auth renderer received an intent from another email stream")
     if claim.template_revision not in _SUPPORTED_TEMPLATE_REVISIONS:
         raise EmailPayloadError("email intent references an unsupported template revision")
 
@@ -93,7 +122,7 @@ def render_claim(
             f"It expires in {expires_minutes} minutes. "
             "If you did not request this, you can ignore this email.\n"
         )
-        if claim.template_revision == "2":
+        if claim.template_revision == AUTH_EMAIL_TEMPLATE_REVISION:
             html_body = _html_document(
                 heading="Verify your DANTE email",
                 content=(
@@ -113,7 +142,7 @@ def render_claim(
             f"It expires in {expires_minutes} minutes. "
             "If you did not start this sign-in, you can ignore this email.\n"
         )
-        if claim.template_revision == "2":
+        if claim.template_revision == AUTH_EMAIL_TEMPLATE_REVISION:
             html_body = _html_document(
                 heading="Verify your email for DANTE",
                 content=(
@@ -135,7 +164,7 @@ def render_claim(
             "This link expires shortly and can be used only once. "
             "If you did not request this, you can ignore this email.\n"
         )
-        if claim.template_revision == "2":
+        if claim.template_revision == AUTH_EMAIL_TEMPLATE_REVISION:
             safe_url = escape(recovery_url, quote=True)
             html_body = _html_document(
                 heading="Reset your DANTE password",
@@ -155,7 +184,7 @@ def render_claim(
             "All existing sessions were signed out. If you did not perform this change, "
             "secure your email account and contact DANTE support through the official channel.\n"
         )
-        if claim.template_revision == "2":
+        if claim.template_revision == AUTH_EMAIL_TEMPLATE_REVISION:
             html_body = _html_document(
                 heading="Your DANTE password was changed",
                 content=(
@@ -175,6 +204,7 @@ def render_claim(
         subject=subject,
         text_body=text_body,
         html_body=html_body,
+        stream_code=claim.stream_code,
     )
 
 
