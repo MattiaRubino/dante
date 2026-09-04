@@ -1,181 +1,74 @@
 # DANTE — Temporal Create C1 Manual Acceptance
 
-**Status:** BLOCKED / SUPERSEDED — DO NOT EXECUTE THE 2026-09-02 PRE-REFACTOR PROTOCOL  
-**Date reconciled:** 2026-09-03  
+**Status:** MANUAL ITERATION ACTIVE — FINAL C1 ACCEPTANCE NOT YET RUN  
+**Reconciled:** 2026-09-04  
 **Branch:** `feature/home-timeline`  
-**C1:** MANUAL FAIL RECORDED / RE-ARCHITECTURE ACTIVE
+**Current automated-green code checkpoint:** `1e7b7752b69f006a4b632e2e2d3ef1522d30e95e`  
+**CI:** Frontend CI #937 / `33905239085` — FULL GREEN
 
-## Why this protocol is blocked
+## 1. Current manual process
 
-The old C1 manual acceptance was written for a UI based on visible Quick → Expanded → Full progression, the old Planning Tray and the old global all-day strip.
+The old pre-refactor acceptance protocol is retired. The user is now deliberately validating Create **one UX foundation at a time** before a final closure pass.
 
-The user executed the manual product review and found material issues. The result is authoritative:
+Do not convert this into a long checklist during incremental discussion. For each iteration, test only the behavior just agreed.
 
-```text
-C1 MANUAL FAIL
-```
+## 2. Current candidate to inspect
 
-The current Create re-architecture intentionally removes/replaces major assumptions from the old protocol:
+The current manual target is the Create/window coexistence foundation:
 
-- no `+` beside the close `×`;
-- no user-facing Quick/Expanded/Full mental model;
-- title-first + extensible type registry/grid;
-- Activity/Event sensible defaults immediately visible;
-- conditional fields instead of dead/disabled sections;
-- one `Opzioni avanzate` path;
-- quick Event recurrence;
-- anchored Planning Tray;
-- carried-card planning drag;
-- direct remove action;
-- per-day all-day lane rather than global header strip;
-- no visible unavailable-owner clutter.
+### Desktop simple Create
 
-Running the old protocol now would produce false failures for intentionally removed UI and false PASS confidence for behaviors whose UX contract has changed.
+- click `+`;
+- panel opens floating at a stable initial position;
+- Timeline/Home is not dimmed/frozen;
+- Timeline can still be scrolled/interacted with;
+- simple panel can be moved;
+- draft remains alive while inspecting Timeline;
+- outside/backdrop does not silently discard;
+- close/Cancel/Escape follow the explicit draft protection contract.
 
-## Current authority
+### Desktop Advanced
 
-Read:
-
-1. `temporal-live-status.md`;
-2. `temporal-create-c1-rearchitecture-2026-09-03.md`;
-3. `temporal-create-c1-manual-findings-2026-09-03.md`;
-4. `temporal-create-handoff.md`.
-
-## When a new manual acceptance may be written
-
-Only after a post-refactor code candidate passes ALL automated frontend gates:
-
-- Quality;
-- Mobile Bundle;
-- Chromium full Web E2E;
-- Firefox frozen Timeline interaction contract;
-- Frontend CI Gate.
-
-The new protocol should be much more user-oriented than the old one. It should validate the questions automation cannot answer:
-
-1. Is it immediately obvious what I am creating?
-2. Can I create a normal Activity/Event quickly without wizard friction?
-3. Do I see only controls relevant to my current choice?
-4. When I choose `Tutto il giorno`, do irrelevant time controls disappear naturally?
-5. Does `Da collocare` have an understandable home and drag interaction?
-6. Does all-day look like a real calendar-grade per-day lane/card, not a header hack or 24-hour timed block?
-7. Can I make common Event recurrence such as daily in one obvious action?
-8. Can I access CP6-deep recurrence only when I actually need custom recurrence?
-9. Does `Divisibile` reveal session controls without silently unscheduling an Activity?
-10. Are Event Agenda/internal parts understandable?
-11. Does Advanced feel like depth on demand rather than a DB form?
-12. Are Context and appearance still clearly different?
-13. Does mobile remain usable?
-14. Does normal frozen Timeline interaction still feel unchanged?
-
-## Planned targeted manual scenarios
-
-### Activity normal path
-
-```text
-Title
-→ Activity
-→ default Orario
-→ Data/Ora/Durata/Context already visible
-→ Add
-→ native Timeline card
-→ Undo
-```
-
-### Activity all-day
-
-```text
-Activity
-→ Tutto il giorno
-→ clock fields disappear
-→ create
-→ real per-day all-day lane/card
-```
-
-### Activity unplaced
-
-```text
-Activity
-→ Da collocare
-→ Duration + Context
-→ create
-→ anchored Planning Tray
-→ quick place / Undo
-→ carried-card drag / Escape / drop / Undo
-```
-
-### Placement/execution non-collapse
-
-```text
-Activity
-→ Orario
-→ Advanced
-→ Divisibile
-→ multi-session details
-→ Add
-```
-
-Expected: it remains placed at the authored time.
-
-### Event normal + recurrence
-
-```text
-Title
-→ Event
-→ default timed fields already visible
-→ Ripeti: Ogni giorno
-→ Add
-```
-
-Then a separate custom recurrence inspection proving `Personalizza…` retains all four CP6 families without generating Occurrences in browser.
-
-### Event Agenda
-
-Once implemented, create an Event with internal parts such as:
-
-- Listening;
-- Orale;
-- Scritto.
-
-Verify they read as Event-internal agenda/parts, not fake independent Events unless explicitly promoted later.
+- `Opzioni avanzate` opens greater depth as a larger floating surface;
+- it remains inside viewport;
+- Timeline remains usable behind it;
+- internal content can scroll without an intrusive visible scrollbar;
+- back to simple, close and actions remain reachable.
 
 ### Mobile
 
-390×844 equivalent:
+- no horizontal overflow;
+- Advanced remains viewport-bounded.
 
-- base Create;
-- Advanced;
-- Planning Tray bottom sheet;
-- Event recurrence;
-- no horizontal overflow.
+The possible simple-only left pin/dock mode is NOT part of this current test because it is not implemented.
 
-### Frozen Timeline smoke
+## 3. Known recurrence limitation — do not fail the wrong layer
 
-- focus existing card;
-- drag/move;
-- time edit;
-- Undo;
-- Ora/Now;
-- expansion/group controls.
+Choosing a repeating rule correctly authors recurrence intent, but the current local bridge does not generate the full future recurring series.
 
-## Current gate
+That future series belongs to backend recurrence evaluation/canonical Occurrences + temporal range query.
 
-At the current code checkpoint `bd9bc6db13301763393c5345685dd38a1837aaaa`, CI #759 is NOT full green, so user retest is blocked.
+Therefore this incremental manual pass should judge recurrence authoring usability, ownership truth and stored intent, not demand browser-generated canonical future cards.
 
-Do not ask the user to execute manual acceptance yet.
+## 4. Final closure pass — later
 
-## Final approval token
+When the user has finished the incremental visual/functional polish and asks for final C1 acceptance, write/run one coherent pass covering at least:
 
-Only after a new full-green candidate and a newly written protocol may the user close C1 with:
+- normal Activity speed/clarity;
+- normal Event speed/clarity;
+- all-day behavior;
+- unplaced Activity + Planning Tray;
+- Repeat / custom recurrence authoring;
+- Event Agenda;
+- Advanced disclosure;
+- Context vs appearance;
+- mobile;
+- frozen Timeline regression feel;
+- draft close/discard behavior;
+- no fake provider/backend success.
 
-```text
-C1 MANUAL PASS — APPROVED
-```
+Final manual approval token:
 
-Until then:
+`C1 MANUAL PASS — APPROVED`
 
-```text
-C1 RE-ARCHITECTURE ACTIVE
-NOT FROZEN / CLOSED
-C2 BLOCKED
-```
+Until that exact explicit approval, C1 remains OPEN and C2 remains BLOCKED.

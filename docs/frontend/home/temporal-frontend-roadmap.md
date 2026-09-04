@@ -1,285 +1,156 @@
 # DANTE — Temporal Frontend Production-Depth Roadmap
 
-**Status:** ACTIVE AUTHORITY — C1 RE-ARCHITECTURE IN PROGRESS / C2 BLOCKED  
-**Original roadmap:** 2026-08-31  
-**Reconciled:** 2026-09-03  
-**Workstream owner:** `feature/home-timeline`  
+**Status:** ACTIVE AUTHORITY — C1 MANUAL UX ITERATION / C2 BLOCKED  
+**Reconciled:** 2026-09-04  
+**Workstream:** `feature/home-timeline`  
 **Worktree:** `/home/mattia/projects/dante-timeline`  
 **Integration target:** `feature/home-react`  
-**Frozen H0 base:** `98b486a308961022ba0d8f43bb79339518457741`  
 **F0 closed:** `7034b9b0d100709785ebe96e3816aab3e7b1d1f8`  
-**Current C1 code checkpoint:** `bd9bc6db13301763393c5345685dd38a1837aaaa`  
-**Current checkpoint CI:** #759 / `33744558905` — Quality PASS, Mobile PASS, Chromium 83/96 with 13 stale-contract failures, Firefox skipped, Gate FAIL  
-**Scope stop:** maximum production-depth frontend capability before real backend/API/provider/solver/Occurrence/runtime integration
+**Current code checkpoint:** `1e7b7752b69f006a4b632e2e2d3ef1522d30e95e`  
+**Checkpoint CI:** #937 / `33905239085` — FULL GREEN
 
-## 1. Authority
+## 1. Frozen foundations
 
-This roadmap governs the isolated Temporal/Timeline frontend workstream.
+### H0 — FROZEN
 
-Current C1 product authority is:
+Whole Home macro structure/breakpoints.
 
-- `temporal-create-c1-rearchitecture-2026-09-03.md`;
-- `temporal-create-c1-manual-findings-2026-09-03.md`;
-- `temporal-live-status.md`;
-- `temporal-create-handoff.md`.
+### T1 — FROZEN
 
-The pre-refactor C1 full-green candidates remain historical evidence only.
-
-## 2. Frozen foundations
-
-### H0 — CLOSED/FROZEN
-
-Whole Home macro structure and breakpoints.
-
-### T1 — CLOSED/FROZEN
-
-Timeline continuous viewport, semantic anchoring, Now, custom drag/focus, time edit, Undo and frozen Firefox interactions.
+Timeline engine behavior: continuous temporal window, semantic anchor, Now, zoom, density/overlap, custom drag/focus, time edit, move/Undo, expanded group geometry and Firefox regression contract.
 
 ### F0 — CLOSED/FROZEN
 
-Typed temporal application foundation, deterministic local adapter, idempotency/revision/Undo/Clock/placement semantics.
+Typed temporal application seam: commands/results/queries, Clock, deterministic local adapter, placement semantics, operation IDs/idempotency, revisions, guarded Undo, subscriptions, no fake network/storage.
 
-These are dependencies of C1, not targets to redesign while fixing Create UX.
+## 2. C1 — Manual Temporal Create
 
-## 3. C1 — Manual Temporal Create
+**Current state: OPEN.** Automated candidate is green, but product/manual refinement is still active.
 
-### Current gate
+### Completed foundation
 
-```text
-C1 MANUAL FAIL RECORDED
-RE-ARCHITECTURE ACTIVE
-NOT FROZEN / CLOSED
-```
-
-The old C1 reached full automated green but failed the final human product test. The roadmap therefore keeps C1 open until the new intent-driven Create is both automated-green and manually accepted.
-
-### C1 permanent boundaries
-
-- manual input only;
-- Activity/Event semantic truth;
-- no Activity recurrence;
-- Event custom recurrence maps all four CP6 families;
-- no browser canonical Occurrence generation;
-- no fake backend/provider/notification execution;
-- Context != appearance;
-- Schedule != Session != Actual;
-- user placement choice != execution/session structure.
-
-### C1 re-architecture objective
-
-```text
-user intent
-→ sensible default
-→ only relevant controls
-→ conditional disclosure
-→ Advanced depth on demand
-→ DANTE semantic/application rigor underneath
-```
-
-### C1-R1 — Type-driven base Create
-
-Status: IMPLEMENTED CHECKPOINT / TEST MIGRATION PENDING.
-
-- title first;
-- extensible type grid/registry;
-- only actionable Activity/Event types shown;
-- normal fields immediately visible;
-- no dead owner tiles.
-
-Primary checkpoint: `0e211643...` and descendants.
-
-### C1-R2 — Coherent Base + Advanced disclosure
-
-Status: IMPLEMENTED CHECKPOINT / TEST MIGRATION PENDING.
-
-- retire user-visible Quick/Expanded/Full mental model;
-- one Create editor;
-- `Opzioni avanzate` for deeper relevant capabilities;
-- conditional execution fields.
-
-Primary checkpoint: `586105ca...` and descendants.
-
-### C1-R3 — Activity placement truth
-
-Status: IMPLEMENTED LOGIC / BLOCKING E2E REQUIRED.
-
-- Orario;
-- Tutto il giorno;
-- Da collocare;
-- execution/session structure cannot silently change placement.
-
-Required proof:
-
-`Orario + Divisibile → remains placed`.
-
-### C1-R4 — Event quick recurrence
-
-Status: IMPLEMENTED / E2E MIGRATION REQUIRED.
-
-Quick choices:
-
-- never;
-- daily;
-- weekly;
-- monthly;
-- yearly;
-- custom.
-
-Custom retains full CP6 deep grammar.
-
-Checkpoint: `757a5d19...`.
-
-### C1-R5 — Planning Tray v2
-
-Status: IMPLEMENTED CHECKPOINT / E2E MIGRATION REQUIRED.
-
-- anchored desktop popover;
-- mobile bottom sheet;
-- carried-card drag;
-- direct remove;
-- same identity placement;
-- Escape/Undo correctness.
-
-Checkpoints:
-
-- `788deee0...`;
-- `a0cf00ef...`;
-- `8413f2f0...`.
-
-### C1-R6 — All-day lane v2
-
-Status: IN PROGRESS.
-
-Geometry foundation:
-
-- per-day lane height;
-- offset time mapper;
-- rendered-day height/offset recalculation.
-
-Current checkpoint: `bd9bc6db...`.
-
-Remaining:
-
-- mount `TimelineAllDayLane` visually per day;
-- final lane/card CSS;
-- remove transitional old header strip implementation;
-- blocking viewport/Now/drag/zoom/all-day E2E.
-
-### C1-R7 — Event Agenda/internal parts
-
-Status: NOT YET COMPLETE.
-
-Need structured Event-internal agenda authoring without inventing generic nested domain entities.
-
-Example:
-
-```text
-Lezione inglese
-- Listening
-- Orale
-- Scritto
-```
-
-Use native Timeline subitem presentation only with explicit semantic mapping.
-
-### C1-R8 — Reminder/Alarm feasibility
-
-Status: SEMANTIC REVIEW REQUIRED.
-
-Do not expose until the frontend can author truthful reminder intent without claiming notification/device delivery.
-
-Real alarm/push delivery is outside C1.
-
-### C1-R9 — Automated contract migration
-
-Status: BLOCKING.
-
-CI #759 has 13 C1 failures because old tests assert removed controls/vocabulary.
-
-Rewrite coverage for:
-
-- base/Advanced;
-- type grid;
-- new placement controls;
-- conditional fields;
+- title-first Create;
+- Activity/Event actionable type registry;
+- timed/all-day/unplaced Activity semantics;
+- timed/all-day Event semantics;
+- Context and appearance remain distinct;
+- base + Advanced disclosure;
+- conditional execution/session controls;
+- Event Agenda/internal parts;
 - Planning Tray v2;
-- all-day lane v2;
-- quick recurrence;
-- Orario + Divisibile;
-- Agenda;
-- mobile.
+- per-day all-day v2;
+- Event recurrence;
+- user-facing Activity repeat represented as Routine-backed recurrence intent;
+- recurrence ownership explicit;
+- no browser canonical Occurrence generation;
+- `Personalizzata…` recurrence entry integrated into `Ripeti`;
+- simple Create floating/draggable on desktop;
+- Advanced larger floating surface;
+- Home/Timeline remains interactive while Create is open;
+- explicit dirty-draft close/discard behavior.
 
-Never revert product IA simply to satisfy stale tests.
+### C1-P — Manual product polish — ACTIVE
 
-### C1-R10 — New full green
+From this point, work **one issue at a time**. Do not package several UX ideas together.
 
-Required:
-
-- Quality PASS;
-- Mobile PASS;
-- Chromium full PASS;
-- Firefox frozen PASS;
-- Frontend CI Gate PASS.
-
-### C1-R11 — New manual acceptance
-
-Only after C1-R10.
-
-Manual test should judge:
-
-- obviousness;
-- speed;
-- relevance of visible fields;
-- quality of disclosure;
-- all-day feel;
-- Planning Tray drag feel;
-- recurrence usability;
-- Agenda usability;
-- mobile;
-- frozen Timeline regression feel.
-
-Explicit token required:
-
-`C1 MANUAL PASS — APPROVED`
-
-Only then:
+Current candidate to inspect manually:
 
 ```text
-C1 TEMPORAL CREATE → FROZEN / CLOSED
+click +
+→ simple floating Create at stable position
+→ Timeline remains usable/scrollable
+→ simple panel can be moved
+→ Advanced opens as larger floating depth
+→ no modal-style Home freeze
 ```
 
-## 4. C2 — Card → Structured Detail
+A simple-only left pin/dock mode has been discussed as a possible later improvement. It is not implemented and must not be assumed as decided.
 
-**BLOCKED until C1 is explicitly closed.**
+### Recurrence stop line during C1
 
-Do not start C2 opportunistically while C1 remains red or manually unaccepted.
+Do not “fix” repeated Activity/Event by synthesizing canonical future cards in the browser.
 
-Once unblocked, C2 must consume the frozen C1/F0/T1 contracts rather than reinterpret them.
+Current C1 authors the recurrence rule. Future vertical/backend work owns:
 
-## 5. Later temporal roadmap
+```text
+Routine/Event recurrence
+→ recurrence evaluator/checkpoint
+→ canonical Occurrences
+→ temporal range query
+→ Timeline projections
+```
 
-After C1/C2, future verticals may include richer detail/edit, Routine-specific authoring, Reminder/notification runtime, backend temporal adapter, provider integration, recurrence materialization, Session/Actual runtime and DANTE intelligence inputs.
+The current local UI may therefore show the authored first/master placement while the real recurring series remains a future integration concern.
 
-Each must preserve owner and temporal non-collapse rules.
+### C1 closure
 
-## 6. Backend stop line for current frontend roadmap
+C1 closes only when:
 
-Not part of C1 implementation:
+1. remaining user-selected UX foundation issues are resolved one-by-one;
+2. final automated gates are green;
+3. the user performs one coherent final manual pass;
+4. the user explicitly says `C1 MANUAL PASS — APPROVED`.
 
-- real API transport;
-- PostgreSQL writes;
-- canonical server identity allocation;
-- server durable idempotency;
-- runtime Auth/ACL;
-- provider writes/sync/invitations/booking/conferencing;
-- real notification delivery;
-- authoritative scheduling solver;
-- recurrence evaluator/checkpoints;
-- canonical Occurrence generation;
-- Session/Actual runtime;
-- multi-device reconciliation;
-- AI/NL/voice runtime.
+Until then C1 is not frozen.
 
-## 7. Current next action
+## 3. C2 — Card → Structured Detail
 
-Resume C1-R6 first: finish all-day per-day visual lane on the already integrated geometry. Then migrate the stale C1 tests and continue through Agenda/full CI. Do not ask the user to retest before a new full-green candidate exists.
+**BLOCKED until C1 closes.**
+
+Once unblocked, C2 should connect Timeline cards to structured detail/edit while consuming F0/C1/T1 contracts rather than reinterpret them.
+
+No opportunistic C2 work while C1 remains manually open.
+
+## 4. Timeline read-model/backend bridge — later vertical work
+
+The existing Timeline engine should remain a consumer.
+
+Target architecture:
+
+```text
+canonical temporal sources
+Activity / Event / Routine / Occurrence / provider data
+                    ↓
+        backend/application range query
+                    ↓
+         normalized Timeline read-model
+                    ↓
+             Timeline engine
+```
+
+This future bridge should provide date/window queries, pagination/horizon semantics, provenance/source identity, reconciliation and authoritative recurrence outputs without coupling rendering to DB rows or source-specific SDKs.
+
+## 5. Later temporal verticals
+
+After C1/C2, sequence should be driven by owning vertical needs rather than frontend mimicry. Expected work includes:
+
+1. real temporal API/adapter and range/window query;
+2. Routine vertical + recurrence evaluator/materialization;
+3. Event backend/provider integration where authorized;
+4. Reminder/notification intent and real delivery boundary;
+5. Session runtime;
+6. Actual/outcome runtime;
+7. multi-device reconciliation;
+8. DANTE intelligence/AI/voice inputs through governed downstream operations.
+
+Order may be refined when those verticals begin, but permanent semantic distinctions cannot be collapsed.
+
+## 6. Permanent boundaries
+
+```text
+Activity != Event != Routine
+Schedule != Occurrence != Session != Actual
+planned != happened
+recurrence rule != generated Occurrence
+Context != appearance
+manual Create != AI/NL/voice
+Timeline ViewModel != application model != DTO != DB row
+```
+
+C1 remains pre-backend/manual. No fake provider, persistence, solver, recurrence materialization or notification success.
+
+## 7. Immediate next step
+
+Do not autonomously start a new feature.
+
+The user should first test the current floating/non-modal Create foundation. The next implementation scope is whichever **single** UX issue the user chooses after that check.

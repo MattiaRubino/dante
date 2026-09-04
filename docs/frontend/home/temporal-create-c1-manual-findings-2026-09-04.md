@@ -1,45 +1,134 @@
 # C1 Manual Findings — 2026-09-04
 
-## Checkpoint
+**Status:** ACTIVE BINDING MANUAL FINDINGS  
+**Branch:** `feature/home-timeline`  
+**Current code checkpoint after recovery:** `1e7b7752b69f006a4b632e2e2d3ef1522d30e95e`  
+**Checkpoint CI:** Frontend CI #937 / `33905239085` — FULL GREEN  
+**C1 manual closure:** NOT YET APPROVED
 
-- Branch: `feature/home-timeline`
-- Pre-scope checkpoint: `bbff55b58720d9f8e1cb83565510bfbe924275f7`
-- Manual result: **FAIL**
+This document records the 2026-09-04 user findings and the decisions that supersede conflicting 2026-09-03 Create UX assumptions.
 
-This manual pass supersedes the previous automated-green candidate as a product acceptance signal. The automated gates were healthy, but the Create experience still exposed material UX failures that must be corrected before a new manual acceptance.
+## 1. Advanced / recurrence recovery findings
 
-## Findings
+The first 2026-09-04 manual pass found:
 
-1. **Advanced was effectively an inline expansion of Quick Create.** The small floating composer grew into a very tall surface, made navigation difficult and could leave closing controls unreachable while the page itself was locked.
-2. **The Advanced entry control was visually over-weighted.** `Opzioni avanzate` presented as a large full-width bar rather than a secondary action.
-3. **Event temporal authoring was duplicated.** Date/start/end/location existed in the fast path and portions of the same temporal intent were rendered again inside Advanced.
-4. **Activity repetition was not authorable from Create.** The UI exposed recurrence only for Event even though a user must be able to express repeated Activities without making Activity the canonical recurrence owner.
-5. **Quota repetition such as “3 times per week” was not reachable as an Activity authoring flow.** This must be represented as Routine-backed recurrence intent, preserving the Activity/ Routine ownership distinction.
-6. **Planning Tray drag used excessive visual indirection.** The Timeline was dimmed while a carried card and a second drop-preview ghost were shown simultaneously. The intended interaction is direct manipulation: one lifted card follows the pointer and carries its snapped target time.
+1. Advanced expanded into an oversized/tall surface that trapped the workflow and could make navigation/closing difficult.
+2. `Opzioni avanzate` was visually over-weighted.
+3. Event temporal information was duplicated between base and Advanced.
+4. Activity could not express repetition even though repeated Activity intent must be authorable without making Activity the recurrence owner.
+5. quota patterns such as N times/week needed a truthful Activity authoring path;
+6. Planning Tray drag dimmed Timeline and showed both a carried card and a second ghost/preview.
 
-## Recovery decisions
+Recovery decisions implemented:
 
-- Quick Create remains compact, fast and draggable on desktop.
-- Advanced activates a large centered workspace, bounded to the viewport, with a permanently reachable header/close affordance, internal scrolling and reachable actions.
-- Event date/start/end/location are authored in one place only; Advanced contains only genuine depth.
-- `Ripeti` is available for both Event and Activity in the fast path.
-- Event recurrence remains Event-owned.
-- Activity repetition is preserved as **Routine-backed recurrence intent**. Activity never becomes the canonical recurrence owner, and the browser does not fabricate canonical Occurrences.
-- Quota patterns such as N times per week use the existing recurrence grammar rather than an ad-hoc Activity repeat flag.
-- Planning Tray drag presents one carried card, no dimming scrim and no second ghost card. The snapped time is shown on the carried card itself; drop preserves the same Activity identity, Escape is zero mutation, and Undo returns the Activity to the tray.
+- base Create remains compact;
+- Event time/location appears once;
+- common Repeat is available to Event and Activity;
+- Event recurrence is Event-owned;
+- Activity Repeat is Routine-backed;
+- quota uses CP6 `quota_per_period`;
+- `Personalizzata…` lives inside `Ripeti` and opens Advanced recurrence depth;
+- Planning drag uses one carried card, no scrim and no duplicate ghost;
+- Agenda/internal Event parts are structured and mapped to native Timeline subitems;
+- per-day all-day lane is used instead of a global strip/fake 24-hour timed block.
 
-## Frozen boundaries
+## 2. Recurrence materialization finding
 
-This recovery does not change PostgreSQL, Alembic, CP6 schema/migrations, F0 architecture, T1 native Timeline drag grammar, All-Day architecture, Reminder/Alarm delivery, provider/backend execution, backend Occurrence generation, C2, World Focus or Home macro geometry.
+The user tested `Ripeti → Ogni giorno` and observed that local Create adds only the first/master card to Timeline.
 
-## Validation gate
+Diagnosis:
 
-A new manual pass is allowed only after the recovery candidate has completed the full automated sequence:
+- C1 stores/authors the recurrence specification;
+- the local bridge currently materializes the authored master/first placed projection;
+- canonical future Occurrences are not generated in the browser;
+- CP6/backend recurrence evaluator is the correct future owner of canonical recurring instances.
 
-- Quality PASS
-- Mobile Bundle PASS
-- Chromium Web E2E PASS
-- Firefox frozen T1 PASS
-- Frontend CI Gate PASS
+Decision:
 
-Only then can C1 manual acceptance be attempted again.
+**Do not build a fake browser recurrence engine just to duplicate cards.**
+
+Repeated Activity remains:
+
+```text
+Activity intent
+→ Routine-backed recurrence
+→ future backend evaluator
+→ canonical Occurrences
+→ future temporal range query
+→ Timeline
+```
+
+Repeated Event remains Event-owned through the same future evaluator/read-model path.
+
+This limitation must remain visible in engineering/handoff truth, but it does not authorize semantic collapse.
+
+## 3. Create blocking/placement finding
+
+The user then identified a more basic usability problem: while Create was open, the surrounding Home/Timeline effectively became frozen, making it impossible to inspect free time or continue navigating the Timeline during authoring.
+
+Binding decision for the current foundation:
+
+### Simple/base desktop
+
+```text
+click +
+→ floating simple Create
+→ stable initial position
+→ Timeline remains interactive/scrollable
+```
+
+- simple panel is draggable;
+- no modal dimming/freeze;
+- backdrop no longer owns outside-click close;
+- explicit close/Cancel/Escape paths remain;
+- dirty draft still requires explicit discard.
+
+### Advanced desktop
+
+Advanced is a larger floating surface, not a giant modal workspace. It remains bounded and does not freeze Timeline.
+
+The user explicitly rejected building a complex matrix of pinned/floating × simple/advanced states.
+
+A possible **simple-only left pin/dock** has been discussed for later, but it is NOT implemented and is not yet final product authority. Advanced should not be coupled to pinning.
+
+## 4. Interaction-design working rule
+
+The user wants to finish remaining Create polish **one issue at a time**.
+
+Do not turn a single observation into a large feature bundle. Foundation before “cool” capabilities.
+
+Correct iteration:
+
+```text
+one user finding
+→ agree one behavior
+→ implement only that
+→ automated green
+→ manual check
+→ next finding
+```
+
+## 5. Current validation
+
+`1e7b7752...` completed Frontend CI #937 / `33905239085` with:
+
+- Quality PASS;
+- Mobile PASS;
+- Chromium PASS;
+- Firefox frozen Timeline PASS;
+- Gate PASS.
+
+The current candidate is therefore ready for the next manual UX inspection, but C1 is still OPEN.
+
+## 6. Frozen stop lines
+
+These findings do not authorize changes to:
+
+- PostgreSQL/Alembic/CP6 schema;
+- F0 frozen application architecture;
+- T1 frozen Timeline behavior;
+- canonical backend Occurrence generation;
+- Session/Actual runtime;
+- provider/notification execution;
+- C2 structured detail;
+- World Focus or Home macro geometry.
