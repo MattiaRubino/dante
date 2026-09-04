@@ -1,30 +1,40 @@
-# DANTE — Access/Auth M4–M7 Execution Plan
+# DANTE — Access/Auth Integration + M7 Transition Plan
 
-- **Status:** CURRENT EXECUTION PLAN / M4 CLOSED / M5 FINAL EXTERNAL ACCEPTANCE OPEN
+- **Status:** CURRENT EXECUTION PLAN / M5 CLOSED / PRE-INTEGRATION AUDIT ACTIVE
 - **Branch:** `feature/access-auth`
 - **Worktree:** `/home/mattia/projects/dante`
-- **Last reconciled:** 2026-09-02
-- **Reviewed product checkpoint:** `ab2716abe40de658d99d1908ba31c5d5744e3c57`
-- **Current branch checkpoint before docs reconciliation:** `9c0587af5891249d8a6e6b6a5d6e3af6934c6943`
-- **Accepted Alembic head:** `20260831_13`
-- **Review evidence:** `access-auth-m5-review-2026-09-02.md`
+- **Last reconciled:** 2026-09-04
+- **Current branch Alembic head:** `20260903_15`
+- **Protected-main Alembic head:** `20260830_09`
+- **Current workstream authority:** `access-auth.md`
+- **Closure record:** `access-auth-closure-2026-09-03.md`
+- **Email Platform acceptance:** `../development/email-platform-acceptance-2026-09-03.md`
 
-## 1. Closed implementation sequence
+This file originally planned M4 through M7. Its execution role is now narrowed to the safe transition from the closed M5 branch into protected `main` and then toward later M7 work. Old phase-time instructions such as “Email architecture research next”, “durable Email Platform open”, or “real Internet email UAT open” are superseded by observed implementation and real-provider evidence.
+
+## 1. Closed Access/Auth state
 
 ```text
-M4 lifecycle/recovery/reauth                 CLOSED / ACCEPTED
-M5.1 architecture                            COMPLETE
-M5.2 persistence/API design                  COMPLETE
-M5-A–D                                       COMPLETE
-GROUP 1 M5-E+G                               COMPLETE
-GROUP 2 M5-F                                 COMPLETE
-GROUP 3 M5-H+I                               COMPLETE
-GROUP 4 Web product engineering              AUTOMATED QA PASS
-GROUP 4 local password/passkey UAT            PASS
-GROUP 4 real Google UAT                      PASS
+M1 Access Visual / UX Freeze                 CLOSED / ACCEPTED
+M2 Auth Architecture Freeze                  CLOSED / ACCEPTED
+M3 Signin + AuthSession                      CLOSED / ACCEPTED
+M4 Signup / Recovery / Reauth                CLOSED / ACCEPTED
+M5 Multi-authenticator Account               CLOSED / ACCEPTED
+
+M5 persistence / provider backend            COMPLETE / ENGINEERING PASS
+authenticator lifecycle/passwordless         COMPLETE / ENGINEERING PASS
+passkeys / WebAuthn                          COMPLETE / ENGINEERING PASS
+FastAPI / OpenAPI / generated client         COMPLETE / ENGINEERING PASS
+Web product engineering                      AUTOMATED QA PASS
+local password/passkey UAT                   PASS
+real Windows Hello UAT                       PASS
+real Google UAT                              PASS
+shared Email Platform                        CLOSED / ACCEPTED
+real SES signup/recovery/reset UAT            PASS
+real Apple registered-domain UAT             BOUNDED DEFERRED / NON-BLOCKING
 ```
 
-Do not restart the old Group-4 candidate QA plan; it has executed and is preserved in Git history/review evidence.
+Apple is not labelled PASS. Real Apple Web/provider UAT remains a future enablement/release prerequisite when a usable Apple account and registered HTTPS domain are available.
 
 ## 2. Permanent implementation boundaries
 
@@ -43,102 +53,144 @@ WebAuthn private-key/biometric material never stored by DANTE
 OpenAPI → governed @dante/api-client → bounded Web remote
 ```
 
-## 3. Current execution block — EMAIL ARCHITECTURE RESEARCH
+The shared Email Platform is separate infrastructure. Access/Auth is its first consumer, not its owner.
 
-Before another email-delivery code change, answer:
+## 3. Current integration problem
 
-1. What must DANTE own canonically: message intent, security-event state, delivery attempt state, provider message ID, bounce/complaint/suppression state?
-2. What should an external provider own: SMTP/HTTP transport, reputation, DKIM signing, feedback loops, global routing?
-3. Does DANTE need a provider-neutral delivery port now or only when a second provider/real production requirement exists?
-4. How are ambiguous SMTP/HTTP outcomes handled without duplicate security mail or silent loss?
-5. Which messages are resendable (OTP/recovery) and which are notification-only?
-6. Is an outbox/queue justified by the actual Class-A correctness requirement, or is the current bounded process queue sufficient for the first deployment stage?
-7. What are the exact SPF/DKIM/DMARC, bounce, complaint and suppression responsibilities?
-8. How do LOCAL/DEV/UAT/PROD prevent accidental delivery to real users?
-9. What does Apple Private Email Relay require from sender/domain configuration?
-10. Compare self-hosted SMTP operational burden with transactional providers before vendor selection.
+Both accepted lines descend from CP6 revision `20260826_08` but are not yet converged.
 
-The existing `9c0587...` real-SMTP UAT opt-in remains a transport experiment only. It is not production architecture authority.
-
-## 4. Real email UAT after architecture selection
-
-Once the boundary is accepted:
+Access/Auth + Email branch:
 
 ```text
-real signup
-→ real mailbox delivery
-→ OTP verification
-→ Account creation
-→ DB inspection
-
-real password recovery
-→ neutral request
-→ real recovery email
-→ one-use reset
-→ old sessions revoked
-→ fresh signin
-→ DB inspection
+20260826_08
+→ 20260827_09
+→ 20260827_10
+→ 20260829_11
+→ 20260830_12
+→ 20260831_13
+→ 20260903_14
+→ 20260903_15
 ```
 
-Delivery proof must include the actual external delivery path, not loopback capture.
-
-## 5. Apple real UAT
-
-Deferred until real Apple account + registered HTTPS domain configuration are available.
-
-Must prove:
+Protected `main` Recovery line:
 
 ```text
-real Apple authorization
-form_post/callback
-server-side code exchange
-canonical issuer+subject binding
-Private Email Relay handling
-Account/AuthSession result
-revoke/grant lifecycle as practically testable
-outbound relay sender configuration
+20260826_08
+→ 20260830_09  recovery_material_state_retirement
 ```
 
-Current 2026 guidance requires support for both legacy `privaterelay.appleid.com` and new `private.icloud.com` Sign in with Apple relay addresses.
+This is an Alembic DAG divergence, not permission to rewrite either applied history.
 
-## 6. M5 closure gate
+## 4. Required pre-integration gate
 
-M5 closes only when:
+Before merging protected `main` into `feature/access-auth`:
 
 ```text
-closed engineering proof remains green
-real external email architecture selected + qualified
-real signup/recovery delivery UAT passes
-Apple real UAT passes or is explicitly accepted as a bounded deferred release prerequisite by the user
-all current docs reconciled
-explicit user acceptance
+documentation lifecycle debt                    CLOSED
+current docs contain current truth               PASS
+branch-only handoffs removed/consolidated        PASS
+Dictionary scope/schema parity                   PASS
+Dictionary current counts                        PASS
+SQLAlchemy mapped-table inventory parity         PASS
+single Access/Auth Alembic head                  PASS
+fresh DB → 20260903_15                           PASS
+head → base → head                               PASS
+Alembic drift check                              PASS
+current catalog ↔ Dictionary ↔ mappings          PASS
+runtime ACL exactness                            PASS
+backend static/test/build gates                  PASS
+Web/API generated-contract gates                 PASS
 ```
 
-Do not convert an unavailable Apple account into fake PASS.
+A PASS is recorded only from executed evidence.
 
-## 7. M6
+## 5. Main convergence procedure
 
-Native Mobile remains future/optional and requires a deliberate gate. Do not install or materialize native Auth merely to make the roadmap look complete.
+Integration is forward-only and history-preserving:
 
-## 8. M7
+```text
+1. fetch protected main
+2. merge main into feature/access-auth
+3. resolve ordinary source/document conflicts without discarding either accepted workstream
+4. preserve both Alembic heads
+5. add one explicit Alembic merge revision whose down_revision contains both heads
+6. reconcile Dictionary/current DB counts against the combined schema
+7. run fresh-database, migration, catalog, ACL, Auth, Email and Recovery regressions
+8. run full backend/Web gates
+9. open PR feature/access-auth → main
+10. merge only after required evidence is green
+```
 
-Target mature account-security UX and production hardening:
+No rebase, force push, migration renumbering or edit of already-applied revisions is allowed.
+
+## 6. Combined-database acceptance
+
+After convergence the combined topology must be **measured**, not calculated by casually adding old counts.
+
+Required proof includes:
+
+```text
+Recovery material_state_retirement still materializes and enforces anti-resurrection
+Access/Auth M3–M5 persistence remains unchanged semantically
+Email Platform durable intent/attempt/event/suppression remains intact
+all SQLAlchemy mapped tables equal current Dictionary/current PostgreSQL catalog
+all migration heads collapse to one repository head through the merge revision
+runtime least privilege remains exact
+Recovery and Email post-restore doctrines do not contradict each other
+no generic Entity/EAV/JSONB/event-log shortcut is introduced by conflict resolution
+```
+
+## 7. Production-email boundary
+
+Email engineering closure does not equal production sender deployment.
+
+Future deployment still owns, as applicable:
+
+```text
+DANTE-controlled sender domain/subdomain
+SPF / DKIM / DMARC
+production workload identity
+SES production account/quota/reputation posture
+live cloud provider-event ingress
+production alerting/SLOs
+traffic/reputation segmentation
+Apple Private Email Relay sender-domain compatibility
+```
+
+These tasks do not reopen the shared Email Platform without concrete defect evidence.
+
+## 8. M6
+
+Native Mobile remains future/optional and requires an explicit re-gate. It is not required merely to complete Access/Auth integration.
+
+## 9. M7 after protected-main integration
+
+M7 remains later maturity work:
 
 ```text
 session/device list
 per-session revoke
 revoke all others / log out everywhere
 new-login/security-event alerts
-“this wasn't me” flow
+“this wasn't me” response
 security-event retention/observability
 production operational dashboards/alerts
 final accessibility/legal/release checks
 final authenticated Home handoff
-componentization/hardening of Security UI
+bounded componentization/hardening of Security UI
 ```
 
-The existing Account/AuthSession/authenticator architecture is intentionally capable of supporting this without semantic rewrite.
+The accepted Account/AuthSession/authenticator architecture is intentionally capable of supporting this without semantic rewrite.
 
-## 9. Safety
+## 10. Safety
 
-No merge/rebase/history rewrite/protected-main write without explicit authorization. Implementation/debug remains assistant-owned; the user supplies UAT/external-account actions and raw evidence.
+```text
+no rebase/history rewrite
+no force push
+no direct protected-main write
+no applied-migration rewrite
+no fake PASS
+no feature work mixed into integration repair unless required by a demonstrated regression
+```
+
+Repository/executable truth beats this plan if later evidence exposes a contradiction; in that case update this file in the same reviewed change.
