@@ -2,7 +2,7 @@
 
 - **Status:** CURRENT INDEX
 - **Last reconciled:** 2026-09-04
-- **Rule:** protected `main` stores durable current records/evidence, not active chat/session handoffs
+- **Rule:** current subsystem/workstream files describe present truth; Git/PR/archive preserve chronology
 
 ## Current project state
 
@@ -21,7 +21,8 @@ protected main
   Access integration merge                       5f76ec54ad78542f137e8730e904f805d9e59e56
   Alembic                                        20260904_17
   topology                                       88/5/16/76/172/89/270
-  CP07 whole LOCAL recovery                      PASS
+  database-local CP07                            PASS
+  Email post-restore whole-flow gate             REMEDIATION REQUIRED
   post-merge Backend CI                          PASS
   post-merge Frontend CI                         PASS
 
@@ -30,29 +31,70 @@ M6 Native Mobile                                 FUTURE / OPTIONAL
 later M7 Access/security maturity                FUTURE
 ```
 
-## Current Access/Auth authority
+The historical CP07 execution remains a valid **LOCAL PostgreSQL/database-local + MaterialState recovery proof**. A post-merge audit found that it did not directly exercise Email `quarantine_after_restore()` before Email workers resume; application Email traffic reopen after PITR is therefore not claimed by that historical run alone. Current remediation belongs to a separate forward change, not a rewrite of historical evidence.
 
-- `access-auth.md`
+## Current authority
+
+Protected-main project truth is owned by:
+
 - `../PROJECT-STATUS.md`
 - `../ROADMAP.md`
-- `../database/README.md`
+
+Access/Auth M1–M5 is integrated and therefore has **no active workstream authority file**. Current subsystem authority lives in:
+
 - `../database/access-auth.md`
-- `../architecture/access-auth-*.md`
+- `../architecture/access-auth-architecture.md`
+- `../architecture/access-auth-security-contract.md`
+- `../architecture/access-auth-api-contract.md`
+- `../architecture/access-auth-testing-contract.md`
+- `../architecture/access-auth-m5-contract.md`
+- `../architecture/access-auth-m5-persistence-api-contract.md`
+- `../frontend/access.md`
 - `../architecture/email-platform.md`
+- `../architecture/access-auth-email-delivery.md`
 - `../operations/postgres-recovery-runbook.md`
-- `../development/email-platform-acceptance-2026-09-03.md`
 
-Durable executed integration evidence remains in `access-auth-integration-acceptance-2026-09-04.md`; it is historical evidence, not an active handoff.
+## Access/Auth closure disposition
 
-M5 is closed and integrated. Apple real external UAT is an explicit bounded deferral, not a PASS. CP07 is a LOCAL operator-recovery PASS, not production/cloud recovery acceptance.
+The completed Access/Auth workstream now follows the same lifecycle shape as the integrated Recovery workstream:
 
-## Documentation lifecycle
+```text
+active branch/workstream authority       RETIRED
+obsolete execution-plan overlay          RETIRED
+old pre-integration closure duplicate     CONSOLIDATED
+live/session handoffs                     ABSENT
+one branch-history record                 ARCHIVED / NON-AUTHORITATIVE
+dated validation evidence                 RETAINED WHERE USEFUL
+current subsystem references              CURRENT / EVOLVING
+```
 
-Temporary Access/Auth handoffs were removed after knowledge coverage. Durable review/closure/integration evidence remains, but historical checkpoints never override current executable/current-reference truth.
+Historical branch record:
 
-The old `access-auth-m4-m7-execution-plan.md` is historical planning; current execution order is owned only by `../ROADMAP.md` and current workstream documents.
+- `../archive/branches/2026-09-feature-access-auth.md` — **NON-AUTHORITATIVE**
 
-The former integration branch `integration/access-auth-main-20260904` is no longer current authority after PR #52. Its history remains Git evidence only.
+Retained dated evidence:
+
+- `access-auth-m5-review-2026-09-02.md` — historical validation/UAT evidence
+- `access-auth-integration-acceptance-2026-09-04.md` — historical integration/CP07/CI evidence
+
+Those evidence files never override current executable or current-reference truth.
+
+## PostgreSQL Recovery
+
+The PostgreSQL Recovery workstream is closed/integrated and has no active Recovery workstream overlay.
+
+Current durable operational authority:
+
+```text
+database contract   ../database/README.md
+operator runbook    ../operations/postgres-recovery-runbook.md
+bootstrap           ../../infra/local/postgres/recovery/bootstrap-local-recovery.sh
+whole rehearsal     ../../infra/local/postgres/recovery/cp07-whole-recovery-rehearsal.sh
+```
+
+Historical branch record:
+
+- `../archive/branches/2026-08-feature-postgres-recovery.md` — **NON-AUTHORITATIVE**
 
 ## Current integration order
 
@@ -64,11 +106,20 @@ enriched protected main
 → future bounded workstreams
 ```
 
-## Closed durable records
+## Operational continuation rule
 
-Backend/database history is retained through current DB authority plus archive/Git chronology. Frontend/engineering/domain/logical historical workstream records remain evidence only unless explicitly marked current.
+Before continuing an active workstream:
 
-`access-auth-closure-2026-09-03.md` remains historical feature-branch closure evidence and truthfully records that integration was pending at that checkpoint. `access-auth-integration-acceptance-2026-09-04.md` records the accepted combined candidate and later post-merge closure evidence without rewriting its original chronology.
+1. verify exact branch/worktree/remote relation;
+2. read current global/subsystem authority;
+3. read an active branch-local workstream record only when one legitimately exists;
+4. prefer repository/code/tests over conversation memory;
+5. do not write to protected `main` outside the repository integration path;
+6. do not treat selected/unimplemented capability as PASS;
+7. keep current docs aligned with materialized repository truth;
+8. remove live/session/resume handoffs before integration;
+9. after merge, reconcile candidate/branch-local wording to protected-main truth and repair links to intentionally removed overlays;
+10. keep at most one justified branch-history/closure narrative and classify retained dated audits as evidence rather than current authority.
 
 ## Permanent rules
 
@@ -79,5 +130,6 @@ CURRENT SPECIFICATION != APPEND-ONLY DIARY
 TEMPORARY HANDOFF != DURABLE DOCUMENTATION
 APPLIED MIGRATION HISTORY IS IMMUTABLE
 NO PASS WITHOUT EXECUTED EVIDENCE
+LOCAL DATABASE RECOVERY PASS != APPLICATION TRAFFIC REOPEN PASS
 LOCAL RECOVERY PASS != PRODUCTION/CLOUD RECOVERY PASS
 ```
