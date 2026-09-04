@@ -264,8 +264,7 @@ def test_runtime_table_and_column_acl_matches_dictionary(migrated_database: Any)
             relation = f"dante.{table_name}"
 
             actual_table = connection.execute(
-                "SELECT "
-                + ", ".join("has_table_privilege(%s,%s,%s)" for _ in _TABLE_PRIVILEGES),
+                "SELECT " + ", ".join("has_table_privilege(%s,%s,%s)" for _ in _TABLE_PRIVILEGES),
                 tuple(
                     value
                     for privilege in _TABLE_PRIVILEGES
@@ -279,9 +278,7 @@ def test_runtime_table_and_column_acl_matches_dictionary(migrated_database: Any)
             for column in map(str, (item["name"] for item in entry["structure"]["columns"])):
                 actual_column = connection.execute(
                     "SELECT "
-                    + ", ".join(
-                        "has_column_privilege(%s,%s,%s,%s)" for _ in _COLUMN_PRIVILEGES
-                    ),
+                    + ", ".join("has_column_privilege(%s,%s,%s,%s)" for _ in _COLUMN_PRIVILEGES),
                     tuple(
                         value
                         for privilege in _COLUMN_PRIVILEGES
