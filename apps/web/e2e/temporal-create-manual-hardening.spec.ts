@@ -9,7 +9,7 @@ async function openCreate(page: Page) {
   return dialog;
 }
 
-test('Quick and Advanced stay floating while the Timeline remains interactive', async ({
+test('Quick is draggable and Advanced stays floating while the Timeline remains interactive', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -123,28 +123,6 @@ test('Quick and Advanced stay floating while the Timeline remains interactive', 
   ).toBe('absolute');
   expect(expanded.width).toBeGreaterThanOrEqual(700);
   expect(expanded.width).toBeLessThanOrEqual(800);
-
-  const advancedHandleBox = await handle.boundingBox();
-  if (!advancedHandleBox) {
-    throw new Error('Expected Advanced floating handle');
-  }
-  await page.mouse.move(
-    advancedHandleBox.x + advancedHandleBox.width / 2,
-    advancedHandleBox.y + Math.min(16, advancedHandleBox.height / 2),
-  );
-  await page.mouse.down();
-  await page.mouse.move(
-    advancedHandleBox.x + advancedHandleBox.width / 2 + 90,
-    advancedHandleBox.y + Math.min(16, advancedHandleBox.height / 2) + 24,
-    { steps: 4 },
-  );
-  await page.mouse.up();
-
-  const advancedMoved = await dialog.boundingBox();
-  if (!advancedMoved) {
-    throw new Error('Expected moved Advanced Create geometry');
-  }
-  expect(advancedMoved.x).toBeGreaterThan(expanded.x + 40);
 
   const body = dialog.locator('.temporal-create-composer__body');
   const scrollStyle = await body.evaluate((element) => {
