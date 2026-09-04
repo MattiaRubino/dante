@@ -106,40 +106,150 @@ function compareCandidates(
 }
 
 /**
- * Budget selection may move user-owned candidates between stability/prominence
- * buckets, but those classifications must never become implicit move commands.
- * Restore only the relative order of already-selected user candidates while
- * leaving every non-user slot and the selected membership untouched.
+ * M3-4 combines several independently valid ordering laws:
+ * - explicit user move order must survive pin/promote classification;
+ * - stable entries keep their established relative order;
+ * - non-user dynamic leads keep the platform lead policy;
+ * - stable content still precedes non-user dynamic non-lead content.
+ *
+ * A positional slot replacement can satisfy one law while silently breaking
+ * another. Resolve the selected membership as a deterministic partial order
+ * instead. The previous platform-policy order is only the tie-break between
+ * candidates that are not otherwise constrained.
  */
-function preserveSelectedUserOrder<Kind extends string>(
-  selected: readonly WorldFocusCompositionCandidate<Kind>[],
+function orderSelectedCandidates<Kind extends string>(
+  selectedByPolicy: readonly WorldFocusCompositionCandidate<Kind>[],
 ): readonly WorldFocusCompositionCandidate<Kind>[] {
-  const orderedUsers = selected
-    .map((candidate, selectedIndex) => ({ candidate, selectedIndex }))
-    .filter(({ candidate }) => candidate.ownership.origin === 'user')
-    .sort(
-      (left, right) =>
-        left.candidate.order - right.candidate.order ||
-        left.selectedIndex - right.selectedIndex,
-    )
-    .map(({ candidate }) => candidate);
-
-  if (orderedUsers.length <= 1) {
-    return selected;
+  if (selectedByPolicy.length <= 1) {
+    return selectedByPolicy;
   }
 
-  let userIndex = 0;
-  return selected.map((candidate) => {
-    if (candidate.ownership.origin !== 'user') {
-      return candidate;
+  const policyIndex = new Map(
+    selectedByPolicy.map((candidate, index) => [candidate.instanceId, index]),
+  );
+  const outgoing = new Map<string, Set<string>>();
+  const indegree = new Map<string, number>();
+  const byId = new Map<string, WorldFocusCompositionCandidate<Kind>>();
+
+  for (const candidate of selectedByPolicy) {
+    outgoing.set(candidate.instanceId, new Set());
+    indegree.set(candidate.instanceId, 0);
+    byId.set(candidate.instanceId, candidate);
+  }
+
+  const getPolicyIndex = (candidate: WorldFocusCompositionCandidate<Kind>) =>
+    policyIndex.get(candidate.instanceId) ?? Number.MAX_SAFE_INTEGER;
+  const compareByOrderThenPolicy = (
+    left: WorldFocusCompositionCandidate<Kind>,
+    right: WorldFocusCompositionCandidate<Kind>,
+  ) => left.order - right.order || getPolicyIndex(left) - getPolicyIndex(right);
+  const compareByPolicy = (
+    left: WorldFocusCompositionCandidate<Kind>,
+    right: WorldFocusCompositionCandidate<Kind>,
+  ) => getPolicyIndex(left) - getPolicyIndex(right);
+
+  const addEdge = (
+    from: WorldFocusCompositionCandidate<Kind>,
+    to: WorldFocusCompositionCandidate<Kind>,
+  ) => {
+    if (from.instanceId === to.instanceId) {
+      return;
     }
-    const ordered = orderedUsers[userIndex];
-    if (ordered === undefined) {
-      throw new Error('World Focus selected user order is inconsistent');
+    const targets = outgoing.get(from.instanceId);
+    if (targets === undefined) {
+      throw new Error('World Focus composition ordering source is missing');
     }
-    userIndex += 1;
-    return ordered;
-  });
+    if (targets.has(to.instanceId)) {
+      return;
+    }
+    targets.add(to.instanceId);
+    indegree.set(to.instanceId, (indegree.get(to.instanceId) ?? 0) + 1);
+  };
+
+  const connectChain = (
+    candidates: readonly WorldFocusCompositionCandidate<Kind>[],
+  ) => {
+    for (let index = 1; index < candidates.length; index += 1) {
+      const previous = candidates[index - 1];
+      const current = candidates[index];
+      if (previous !== undefined && current !== undefined) {
+        addEdge(previous, current);
+      }
+    }
+  };
+
+  const userOrdered = selectedByPolicy
+    .filter((candidate) => candidate.ownership.origin === 'user')
+    .sort(compareByOrderThenPolicy);
+  const stableOrdered = selectedByPolicy
+    .filter((candidate) => candidate.ownership.stability === 'stable')
+    .sort(compareByOrderThenPolicy);
+  connectChain(userOrdered);
+  connectChain(stableOrdered);
+
+  const nonUserDynamicLeads = selectedByPolicy.filter(
+    (candidate) =>
+      candidate.ownership.origin !== 'user' &&
+      candidate.ownership.stability !== 'stable' &&
+      candidate.prominence === 'lead',
+  );
+  const nonUserDynamicNonLeads = selectedByPolicy.filter(
+    (candidate) =>
+      candidate.ownership.origin !== 'user' &&
+      candidate.ownership.stability !== 'stable' &&
+      candidate.prominence !== 'lead',
+  );
+
+  for (const lead of nonUserDynamicLeads) {
+    for (const candidate of selectedByPolicy) {
+      if (!nonUserDynamicLeads.includes(candidate)) {
+        addEdge(lead, candidate);
+      }
+    }
+  }
+
+  for (const stable of stableOrdered) {
+    for (const dynamic of nonUserDynamicNonLeads) {
+      addEdge(stable, dynamic);
+    }
+  }
+
+  const ready = selectedByPolicy
+    .filter((candidate) => (indegree.get(candidate.instanceId) ?? 0) === 0)
+    .sort(compareByPolicy);
+  const ordered: WorldFocusCompositionCandidate<Kind>[] = [];
+
+  while (ready.length > 0) {
+    const current = ready.shift();
+    if (current === undefined) {
+      break;
+    }
+    ordered.push(current);
+
+    const targets = outgoing.get(current.instanceId);
+    if (targets === undefined) {
+      continue;
+    }
+    for (const targetId of targets) {
+      const nextIndegree = (indegree.get(targetId) ?? 0) - 1;
+      indegree.set(targetId, nextIndegree);
+      if (nextIndegree !== 0) {
+        continue;
+      }
+      const target = byId.get(targetId);
+      if (target === undefined) {
+        throw new Error('World Focus composition ordering target is missing');
+      }
+      ready.push(target);
+      ready.sort(compareByPolicy);
+    }
+  }
+
+  if (ordered.length !== selectedByPolicy.length) {
+    throw new Error('World Focus composition ordering constraints conflict');
+  }
+
+  return ordered;
 }
 
 function selectCandidates<Kind extends string>(
@@ -197,9 +307,6 @@ function selectCandidates<Kind extends string>(
     })),
   ];
 
-  // Stable content keeps its user/application-defined relative order. Dynamic
-  // non-user content can lead when explicitly classified as lead. User-owned
-  // pin/promote metadata affects survival/prominence without becoming reorder.
   const selectedByPolicy = [
     ...selectedAdaptive.filter((candidate) => candidate.prominence === 'lead'),
     ...selectedEphemeral.filter((candidate) => candidate.prominence === 'lead'),
@@ -207,7 +314,7 @@ function selectCandidates<Kind extends string>(
     ...selectedAdaptive.filter((candidate) => candidate.prominence !== 'lead'),
     ...selectedEphemeral.filter((candidate) => candidate.prominence !== 'lead'),
   ];
-  const selected = preserveSelectedUserOrder(selectedByPolicy);
+  const selected = orderSelectedCandidates(selectedByPolicy);
 
   return Object.freeze({
     selected: Object.freeze(selected),
