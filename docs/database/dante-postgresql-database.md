@@ -1,21 +1,21 @@
 # DANTE PostgreSQL Database — Current Architecture & Reference
 
-- **Status:** CURRENT / MATERIALIZED / INTEGRATION CANDIDATE ACCEPTED
+- **Status:** CURRENT / MATERIALIZED / PROTECTED MAIN
 - **Product:** DANTE
 - **PostgreSQL:** 18.6
 - **Schema:** `dante`
-- **Accepted candidate Alembic head:** `20260904_17`
-- **Protected-main Alembic head before PR #52:** `20260830_09`
-- **Accepted candidate proof HEAD:** `81639c61478b476c995652d0060dde8f53aef089`
+- **Current protected-main Alembic head:** `20260904_17`
+- **Access integration merge:** `5f76ec54ad78542f137e8730e904f805d9e59e56`
+- **Accepted implementation proof HEAD:** `81639c61478b476c995652d0060dde8f53aef089`
 - **Database SoR:** `README.md`
 - **Persistence Constitution:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 - **ADR:** `../decisions/ADR-010-postgresql-persistence-constitution.md`
 
 ## 1. Purpose
 
-This is the current human-readable architecture entry point for the accepted DANTE PostgreSQL integration candidate.
+This is the current human-readable architecture entry point for the protected-main DANTE PostgreSQL database.
 
-It describes the database contract accepted for protected-main integration **now**. Protected `main` remains at Recovery-only `20260830_09` until PR #52 is merged; Git and Alembic preserve that integration chronology.
+It describes the database contract integrated through PR #52 and currently owned by protected `main`. Git and Alembic preserve the earlier Recovery-only and Access/Auth branch chronology as historical evidence; they do not override this current contract.
 
 The complete current contract is jointly represented by:
 
@@ -59,7 +59,7 @@ metadata JSONB
 version integer
 ```
 
-## 3. Current accepted candidate topology
+## 3. Current protected-main topology
 
 ```text
 PostgreSQL          18.6
@@ -99,11 +99,11 @@ Alembic             20260830_09
 97 indexes / 69 FKs / 123 CHECKs
 ```
 
-That historical/current-before-merge topology does not override the accepted candidate contract above.
+That historical topology does not override the current protected-main contract above.
 
 ### 3.1 Migration convergence
 
-The accepted candidate preserves both post-CP6 histories:
+Protected `main` preserves both post-CP6 histories:
 
 ```text
 20260826_08
@@ -136,15 +136,14 @@ runbook    docs/operations/postgres-recovery-runbook.md
 
 The runner is branch-agnostic and fail-closed on Git/upstream alignment. The bootstrap may create missing ignored LOCAL credentials and build the pinned recovery image, but it does not make the suppression ledger or backup repository canonical application state.
 
-### Integrated candidate CP07 exact-head proof
+### CP07 exact-head proof retained as integration evidence
 
-Exact accepted candidate:
+Exact accepted implementation proof:
 
 ```text
-branch          integration/access-auth-main-20260904
-upstream        origin/integration/access-auth-main-20260904
-proof HEAD      81639c61478b476c995652d0060dde8f53aef089
-recovery image  dante-postgres-recovery:18.6-pgbackrest-2.59.1
+historical branch  integration/access-auth-main-20260904
+proof HEAD         81639c61478b476c995652d0060dde8f53aef089
+recovery image     dante-postgres-recovery:18.6-pgbackrest-2.59.1
 ```
 
 The 2026-09-04 whole LOCAL operator rehearsal proved:
@@ -171,7 +170,7 @@ production/cloud recovery                                  NOT CLAIMED
 disposable cleanup                                         PASS
 ```
 
-Measured LOCAL observations from that accepted candidate rehearsal:
+Measured LOCAL observations from that rehearsal:
 
 ```text
 backup label                              20260904-135821F
@@ -189,7 +188,9 @@ PGDATA loss → database-local reopen       17.679584 s
 
 These are LOCAL rehearsal observations, not production RPO/RTO targets.
 
-Historical Recovery-only exact-head evidence remains valid as historical evidence in Git/archive records, but it is not the current accepted candidate topology/proof.
+PR #52 later merged the final candidate into protected `main` at `5f76ec54ad78542f137e8730e904f805d9e59e56`; the merge tree is identical to the final candidate tree and post-merge Backend/Frontend CI passed. Therefore the CP07-proven schema/recovery contract is now the protected-main contract.
+
+Historical Recovery-only exact-head evidence remains valid as historical evidence in Git/archive records, but it is not current topology authority.
 
 ## 4. Semantic/non-collapse architecture
 
@@ -641,7 +642,7 @@ Direct negative testing established that PostgreSQL can accept read-only connect
 
 Therefore `pg_isready` alone is insufficient.
 
-For the accepted integration candidate, at minimum database-local reopen requires:
+For the current protected-main contract, at minimum database-local reopen requires:
 
 ```text
 pg_is_in_recovery() = false
@@ -688,13 +689,13 @@ shared Email Platform tests
 recovery harnesses
 ```
 
-Accepted candidate topology:
+Current protected-main topology:
 
 ```text
 88|5|16|76|172|89|270|0|0|0
 ```
 
-Accepted candidate head:
+Current protected-main head:
 
 ```text
 20260904_17
@@ -725,9 +726,10 @@ Access/Auth regression
 Email Platform regression
 backend/frontend generated-client/build regression
 CP07 enriched-baseline recovery acceptance
+post-merge protected-main Backend/Frontend CI
 ```
 
-Those gates are accepted on proof HEAD `81639c61478b476c995652d0060dde8f53aef089`; the final documentation-only acceptance commit must still receive fresh CI before PR #52 is marked ready.
+The pre-merge implementation gates were accepted on proof HEAD `81639c61478b476c995652d0060dde8f53aef089`; PR #52 merged the final candidate without tree delta and the exact merge commit `5f76ec54ad78542f137e8730e904f805d9e59e56` passed post-merge Backend and Frontend CI.
 
 ## 22. Detailed current reference map
 
@@ -771,12 +773,12 @@ executable tests
 current workstream documentation
 ```
 
-A protected-main integration is incomplete until the accepted combined contract is reflected consistently in current docs, the resulting main tree is verified and branch-only wording is retired without rewriting historical evidence.
+The Access/Auth + Email + Recovery protected-main integration is complete. Future database changes must repeat this same-change discipline against the then-current protected-main contract.
 
 ## 24. Acceptance bar
 
-A new engineer must be able to derive the same present candidate database contract from repository documentation, migrations, mappings, Dictionary and live PostgreSQL without conversation memory.
+A new engineer must be able to derive the same present protected-main database contract from repository documentation, migrations, mappings, Dictionary and live PostgreSQL without conversation memory.
 
-After PR #52 lands, current protected-main documentation must expose the same `20260904_17 / 88|5|16|76|172|89|270` contract without requiring knowledge of the former integration branch.
+Current protected-main documentation exposes the `20260904_17 / 88|5|16|76|172|89|270` contract without requiring knowledge of the former integration branch.
 
 The goal is not maximum prose. The goal is full current knowledge coverage with no stale/deprecated contract left masquerading as current truth.

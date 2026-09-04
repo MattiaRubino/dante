@@ -1,11 +1,12 @@
 # DANTE — Access/Auth Integration with the Email Platform
 
-- **Status:** CURRENT / ACCESS-AUTH CONSUMER CONTRACT / OWNERSHIP VERIFIED
+- **Status:** CURRENT / ACCESS-AUTH CONSUMER CONTRACT / OWNERSHIP VERIFIED / INTEGRATED
 - **Last reconciled:** 2026-09-04
 - **Platform authority:** `email-platform.md`
 - **Decision authority:** `../decisions/ADR-012-email-delivery-platform.md`
 - **Accepted real-provider evidence:** `../development/email-platform-acceptance-2026-09-03.md`
-- **Accepted integration-candidate proof HEAD:** `81639c61478b476c995652d0060dde8f53aef089`
+- **Accepted implementation proof HEAD:** `81639c61478b476c995652d0060dde8f53aef089`
+- **Protected-main integration:** PR #52 / `5f76ec54ad78542f137e8730e904f805d9e59e56`
 
 ## 1. Scope
 
@@ -208,7 +209,7 @@ That remains valid historical real-provider evidence.
 
 The later ownership refactor moved reusable mechanics under `dante.platform.email`, introduced renderer/projection ports, hardened replay identity and added forward migration `20260904_16` for shared bounded stream/purpose vocabulary.
 
-Those later changes are now **re-accepted for the integration candidate** on exact proof HEAD `81639c61478b476c995652d0060dde8f53aef089`:
+Those later changes were accepted on implementation proof HEAD `81639c61478b476c995652d0060dde8f53aef089` through:
 
 ```text
 architecture/dependency guard              PASS
@@ -220,22 +221,24 @@ combined Frontend CI                        PASS
 CP07 enriched-baseline LOCAL recovery       PASS
 ```
 
+PR #52 then integrated that exact accepted capability into protected `main`. Post-merge CI on `5f76ec54ad78542f137e8730e904f805d9e59e56` passed Backend Quality, real PostgreSQL, Backend CI Gate, Frontend Quality, Web E2E, Mobile Bundle and Frontend CI Gate.
+
 The real SES UAT was not rerun after every structural refactor commit and is not represented as if it were. Production sender/domain deployment remains separate.
 
 ## 12. Closure boundary
 
-The accepted Auth email capability is not being redesigned. Structural pre-integration hardening is complete for the current candidate.
+The accepted Auth email capability and shared platform ownership are **CLOSED / INTEGRATED** on protected `main`.
 
 Current disposition:
 
 ```text
-Access/Auth consumer semantics       CLOSED / ACCEPTED
-shared Email Platform ownership      VERIFIED / ACCEPTED
+Access/Auth consumer semantics       CLOSED / INTEGRATED
+shared Email Platform ownership      VERIFIED / INTEGRATED
 real SES UAT evidence                ACCEPTED HISTORICAL EVIDENCE
 production sender/domain deployment  SEPARATE FUTURE GATE
 ```
 
-Remaining work is protected-main integration and post-merge verification, not another Email architecture refactor.
+There is no remaining protected-main Access/Email integration step. Future Email work is activated only by a real consumer/deployment requirement.
 
 ## 13. References
 
