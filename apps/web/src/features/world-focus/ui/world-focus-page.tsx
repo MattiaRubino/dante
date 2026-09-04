@@ -30,6 +30,10 @@ import {
 } from '../model/world-focus-transition';
 import { WORLD_FOCUS_VISUAL_VERSION } from '../model/world-focus-visual';
 import { WorldFocusCompositionHost } from './world-focus-composition-host';
+import {
+  WorldFocusCompositionCustomizationProvider,
+  WorldFocusCompositionCustomizeInvoke,
+} from './world-focus-composition-customization-context';
 import { WorldFocusContext } from './world-focus-context';
 import {
   getCoreWorldFocusComposition,
@@ -48,6 +52,7 @@ import {
   useWorldFocusWorkspace,
 } from './world-focus-workspace-host';
 import './world-focus.css';
+import './world-focus-composition-customization.css';
 import './world-focus-dante-entry.css';
 import './world-focus-visual-frame-v4.css';
 import './world-focus-states.css';
@@ -102,31 +107,37 @@ function WorldFocusWorkspaceExperience({
   }, [onRequestWorldClose, requestEscape]);
 
   return (
-    <WorldFocusDanteEntryProvider
+    <WorldFocusCompositionCustomizationProvider
       worldId={identity.id}
       worldLabel={identity.label}
-      availability={PRE_BACKEND_DANTE_ENTRY_AVAILABILITY}
     >
-      <WorldFocusWorkspace
+      <WorldFocusDanteEntryProvider
+        worldId={identity.id}
         worldLabel={identity.label}
-        status={status}
-        context={<WorldFocusContext identity={identity} />}
-        surfaces={
-          <>
-            <WorldFocusDanteInvoke />
-            <WorldFocusSurfaceLayer
-              registry={getCoreWorldFocusSurfaceRegistry()}
-            />
-          </>
-        }
+        availability={PRE_BACKEND_DANTE_ENTRY_AVAILABILITY}
       >
-        <WorldFocusCompositionHost
-          worldId={identity.id}
-          entries={compositionPlan.entries}
-          registry={getCoreWorldFocusModuleRegistry()}
-        />
-      </WorldFocusWorkspace>
-    </WorldFocusDanteEntryProvider>
+        <WorldFocusWorkspace
+          worldLabel={identity.label}
+          status={status}
+          context={<WorldFocusContext identity={identity} />}
+          surfaces={
+            <>
+              <WorldFocusCompositionCustomizeInvoke />
+              <WorldFocusDanteInvoke />
+              <WorldFocusSurfaceLayer
+                registry={getCoreWorldFocusSurfaceRegistry()}
+              />
+            </>
+          }
+        >
+          <WorldFocusCompositionHost
+            worldId={identity.id}
+            entries={compositionPlan.entries}
+            registry={getCoreWorldFocusModuleRegistry()}
+          />
+        </WorldFocusWorkspace>
+      </WorldFocusDanteEntryProvider>
+    </WorldFocusCompositionCustomizationProvider>
   );
 }
 
