@@ -339,6 +339,7 @@ describe('temporal create session', () => {
       validateTemporalCreateFields(invalidDeadline).map((issue) => issue.code),
     ).toContain('temporal.create.deadline.invalid');
   });
+
   it('validates split-session Activity authoring independently from execution instances', () => {
     const baseline = createTemporalCreateFields({
       title: 'Studiare inglese',
