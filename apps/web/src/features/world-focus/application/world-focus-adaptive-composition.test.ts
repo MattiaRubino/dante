@@ -42,6 +42,7 @@ describe('World Focus M3-4 adaptive composition application integration', () => 
   it('reads every owned M1 seam exactly once and keeps a truly sparse World sparse', async () => {
     const calls = new Map<string, number>();
     const emptyReader = (name: string) => async (worldId: string, signal?: AbortSignal) => {
+      await Promise.resolve();
       calls.set(name, (calls.get(name) ?? 0) + 1);
       if (signal?.aborted === true) throw abortError();
       return Object.freeze({ status: 'empty' as const, worldId });
@@ -75,7 +76,7 @@ describe('World Focus M3-4 adaptive composition application integration', () => 
   it('propagates cancellation to all seven M1 reads instead of converting abort into empty meaning', async () => {
     let aborted = 0;
     const blockedReader = (worldId: string, signal?: AbortSignal) =>
-      new Promise<Readonly<{ status: 'empty'; worldId: string }>>((resolve, reject) => {
+      new Promise<Readonly<{ status: 'empty'; worldId: string }>>((_resolve, reject) => {
         if (signal === undefined) {
           reject(new Error('missing signal'));
           return;
@@ -93,7 +94,6 @@ describe('World Focus M3-4 adaptive composition application integration', () => 
           },
           { once: true },
         );
-        void resolve;
       });
     const reader = createWorldFocusAdaptiveCompositionReader({
       readSituation: blockedReader,

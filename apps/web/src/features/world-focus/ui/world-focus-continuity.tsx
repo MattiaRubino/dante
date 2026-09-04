@@ -19,7 +19,8 @@ import {
 } from './presentation/world-focus-qualifiers';
 
 type WorldFocusContinuitySettledState =
-  | Readonly<{ status: 'loading' | 'error' }>
+  | Readonly<{ status: 'loading' }>
+  | Readonly<{ status: 'error' }>
   | WorldFocusContinuityReadResult;
 
 type WorldFocusContinuityResultProps = Readonly<{
@@ -63,7 +64,7 @@ function WorldFocusContinuityState({
   if (state.status === 'error' || state.status === 'unavailable') {
     const retryable =
       onRetry !== undefined &&
-      (state.status === 'error' || state.retryable);
+      (state.status === 'error' ? true : state.retryable);
     return (
       <WorldFocusPresentationSection
         className="world-focus-continuity world-focus-continuity-degraded"
@@ -173,7 +174,7 @@ export function WorldFocusContinuity({
     state: WorldFocusContinuitySettledState;
   }> | null>(null);
   const requestKey = `${worldId}:${retryGeneration}`;
-  const state =
+  const state: WorldFocusContinuitySettledState =
     settled?.requestKey === requestKey
       ? settled.state
       : ({ status: 'loading' } as const);

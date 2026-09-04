@@ -36,10 +36,13 @@ export function WorldFocusAdaptiveComposition({
     state: WorldFocusAdaptiveCompositionState;
   }> | null>(null);
   const requestKey = `${worldId}:${retryGeneration}`;
-  const state =
-    settled?.requestKey === requestKey
-      ? settled.state
-      : ({ status: 'loading' } as const);
+  const state = useMemo<WorldFocusAdaptiveCompositionState>(
+    () =>
+      settled?.requestKey === requestKey
+        ? settled.state
+        : ({ status: 'loading' } as const),
+    [requestKey, settled],
+  );
 
   useEffect(() => {
     const lease = coordinator.begin();
