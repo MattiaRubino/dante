@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from dante.platform.database.runtime import DatabaseRuntime
+from dante.platform.email.contracts import EmailProviderPort
 from dante.platform.email.crypto import EmailPayloadCipher
 from dante.platform.email.feedback import EmailFeedbackStore, EmailSuppressionProjectionPort
 from dante.platform.email.observability import EmailObservabilityProbe, EmailOperationalSnapshot
@@ -56,6 +57,7 @@ async def create_email_platform_runtime(
         attempt_limit=settings.email_attempt_limit,
     )
     transport = _enum_value(settings.email_transport)
+    provider: EmailProviderPort
     if transport == "ses":
         provider = SesEmailProvider(settings=settings)
     elif transport == "smtp":
