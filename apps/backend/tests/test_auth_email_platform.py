@@ -53,6 +53,7 @@ def _protected_claim(
         email_attempt_ref=uuid7(),
         claim_token=uuid7(),
         purpose_code=purpose_code,
+        stream_code="auth_security",
         template_code=template_code,
         template_revision=template_revision,
         locale_code="en",
@@ -222,6 +223,7 @@ def _provider_message() -> ProviderMessage:
         subject="Security message",
         text_body="Plain text",
         html_body="<html><body>HTML</body></html>",
+        stream_code="auth_security",
     )
 
 
