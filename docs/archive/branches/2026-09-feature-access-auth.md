@@ -7,6 +7,8 @@
 
 - Repository: `MattiaRubino/dante`
 - Original feature branch: `feature/access-auth`
+- Original protected-main anchor: `f011e252b6a294a12c38927ef2d528244ea1fee6`
+- Feature-work closure checkpoint before integration cleanup: `deba7781ffd3567440232f4d72cbcd138231399a`
 - Final feature-branch HEAD before isolated integration: `f2845238091c0c7d445709446a5acac1d14fa9ca`
 - Integration branch: `integration/access-auth-main-20260904`
 - Accepted implementation proof HEAD: `81639c61478b476c995652d0060dde8f53aef089`
@@ -71,9 +73,23 @@ method != factor != assurance
 reauthentication != signin
 ```
 
-## Database integration
+## Database evolution and integration
 
-Access/Auth + Email and Recovery evolved from the same accepted CP6 parent and were preserved as separate forward histories:
+The feature branch evolved from the common CP6 head through:
+
+```text
+20260826_08
+→ 20260827_09  Account / EmailIdentity / PasswordCredential / AuthSession
+→ 20260827_10  Account security-lock capability
+→ 20260829_11  signup/recovery challenge persistence
+→ 20260830_12  multi-authenticator / Apple / WebAuthn persistence
+→ 20260831_13  authenticator-lifecycle ACL follow-up
+→ 20260903_14  shared Email Platform persistence
+→ 20260903_15  Email Platform exact runtime ACL hardening
+→ 20260904_16  Email Platform forward vocabulary/current contract
+```
+
+Protected-main Recovery independently evolved from the same CP6 parent at `20260830_09`. The two accepted histories were preserved as siblings and joined without rewriting either history:
 
 ```text
 20260826_08
@@ -110,6 +126,56 @@ CHECK constraints    270
 
 Real PostgreSQL acceptance proved Dictionary / SQLAlchemy / Alembic / live-catalog reconciliation, Access/Auth persistence and concurrency behavior, Email Platform persistence/ACL behavior, Recovery retirement integrity, and convergence from both the prior Access head and prior Recovery head to the single merge head.
 
+## Important real-UAT defects and repairs retained from branch closure
+
+Manual UAT exposed issues that automated tests had not initially caught and that remain useful engineering history:
+
+1. **AuthSession rotation/read race** — an in-flight session read could overwrite freshly rotated authoritative session state. The application boundary was hardened to cancel the exact stale read before committing the new session state.
+2. **Cross-chunk remote-error identity** — lazy/chunk boundaries could break remote-error classification; the boundary handling was hardened.
+3. **WebAuthn response-envelope mismatch** — frontend code consumed flattened ceremony options while the backend correctly returned `ceremony.options.publicKey`; the adapter/tests were corrected and real Windows Hello then passed.
+
+Real Google UAT used a third-party mailbox. DANTE correctly required direct DANTE mailbox proof rather than treating provider authentication or provider email as sufficient Account/link authority. Direct database inspection proved a passwordless Google-created Account with verified EmailIdentity, active Google ExternalIdentity and active AuthSession.
+
+The first real SES attempt exposed a Botocore temporary browser-login credential-refresh region defect. DANTE classified the uncertain operation as `ambiguous` and did not blind retry. The SES adapter was repaired to construct a region-bound `boto3.Session`; focused unit coverage protects that path. Final SES UAT then proved signup verification, recovery/reset, prior-session revocation and reset notification delivery, with provider message IDs recorded and sensitive delivery material wiped after acceptance.
+
+Apple registered-domain real UAT was not executable because the required external account/domain prerequisites were unavailable. Engineering acceptance is historical fact; real Apple PASS is **not** claimed.
+
+## Shared Email Platform carry-forward rules
+
+The workstream evolved the original process-memory delivery slice into shared DANTE infrastructure:
+
+```text
+feature/application state
++ durable EmailIntent
+→ PostgreSQL COMMIT
+→ claim / lease / bounded worker
+→ protected payload + versioned template
+→ provider-neutral adapter
+→ provider evidence / suppression
+```
+
+Persistence added:
+
+```text
+dante.email_delivery_intent
+dante.email_delivery_attempt
+dante.email_provider_event
+dante.email_recipient_suppression
+```
+
+Permanent rules retained by current subsystem authority:
+
+```text
+provider accepted != delivered
+no provider I/O in caller transaction
+operation-scoped idempotency + immutable fingerprint
+no blind retry after ambiguous provider outcome
+short-lived AES-256-GCM protected sensitive payload
+terminal/unsafe-state secret wipe
+provider feedback != canonical Account truth
+Email Platform is shared infrastructure; Access/Auth is its first consumer only
+```
+
 ## Recovery evidence boundary discovered after integration
 
 The integration candidate ran the existing CP07 whole LOCAL PostgreSQL recovery rehearsal against the enriched `20260904_17` topology and directly proved database/PITR, structural/security acceptance and MaterialState anti-resurrection behavior.
@@ -118,11 +184,40 @@ A post-merge red-team audit identified a narrower cross-subsystem acceptance gap
 
 Therefore the historical CP07 result remains valid for the PostgreSQL/database-local and MaterialState scope it actually executed, but this archive must not be used to claim that application Email traffic reopen after PITR was already end-to-end proven. That remediation is a separate forward protected-main change; history is not rewritten to pretend it was part of PR #52.
 
+## Production items deliberately not claimed
+
+Feature closure/integration did not equal deployment acceptance for:
+
+```text
+Apple real registered-domain UAT
+DANTE production sender domain
+SPF / DKIM / DMARC
+SES production quota/reputation posture
+production workload identity
+live cloud provider-event ingress
+production observability release integration
+Native Mobile
+later session/device/security-event maturity
+remote/cloud backup provider activation
+production recovery acceptance / production RPO-RTO
+```
+
+Those remain future bounded gates where applicable.
+
 ## Documentation lifecycle disposition
 
-Temporary live/session Access handoffs had already been removed before integration. After PR #52, the active `docs/workstreams/access-auth.md` and execution-plan overlay were no longer valid current authorities and were retired during post-merge reconciliation.
+Temporary live/session Access handoffs were removed before integration after knowledge coverage. During final post-merge reconciliation:
 
-Durable dated evidence may remain under `docs/workstreams/` where explicitly historical, including closure/review/integration acceptance records. Those records do not override current executable or current-reference truth.
+```text
+current truth        → protected-main status/roadmap/subsystem references
+normative rules      → Access/Auth + Email architecture/database references
+validation evidence  → retained dated M5/integration acceptance records
+branch chronology    → this single NON-AUTHORITATIVE archive record
+future requirements  → roadmap/current subsystem owners
+pure planning history→ Git history
+```
+
+The former active `docs/workstreams/access-auth.md`, the obsolete M4–M7 execution-plan overlay and the superseded pre-integration branch-closure record were removed after this coverage transfer. The detailed `access-auth-m5-review-2026-09-02.md` and `access-auth-integration-acceptance-2026-09-04.md` remain as historical **EVIDENCE / VALIDATION**, not branch-operational or current-authority documents.
 
 ## Deliberately later
 
