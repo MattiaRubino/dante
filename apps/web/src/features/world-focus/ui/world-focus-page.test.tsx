@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import {
   afterAll,
   afterEach,
@@ -48,7 +48,7 @@ function requireIdentity(id: 'music' | 'travel') {
 }
 
 describe('WorldFocusPage', () => {
-  it('keeps WF0/WF-G3 frozen while mounting a performance-safe peripheral VFX surface', () => {
+  it('keeps WF0/WF-G3 frozen while mounting the integrated adaptive composition and performance-safe peripheral VFX surface', async () => {
     primeWorldFocusEntry({
       worldId: 'music',
       source: 'home',
@@ -89,19 +89,23 @@ describe('WorldFocusPage', () => {
     ).toHaveLength(3);
     expect(container.querySelector('.world-focus-corona-fallback-svg')).toBeNull();
 
-    const composition = container.querySelector<HTMLElement>(
-      '.world-focus-composition',
-    );
-    expect(composition?.getAttribute('data-world-focus-composition-count')).toBe(
-      '1',
-    );
+    await waitFor(() => {
+      expect(
+        container
+          .querySelector('.world-focus-composition')
+          ?.getAttribute('data-world-focus-composition-count'),
+      ).toBe('4');
+    });
     const continuity = container.querySelector<HTMLElement>(
       '[data-world-focus-composition-id="continuity"]',
     );
     expect(continuity).not.toBeNull();
+    expect(continuity?.getAttribute('data-world-focus-origin')).toBe(
+      'application-derived',
+    );
     expect(continuity?.getAttribute('data-world-focus-prominence')).toBe('primary');
     expect(continuity?.getAttribute('data-world-focus-footprint')).toBe('standard');
-    expect(continuity?.getAttribute('data-world-focus-grid-span')).toBe('12');
+    expect(continuity?.getAttribute('data-world-focus-grid-span')).toBe('6');
     expect(continuity?.getAttribute('data-world-focus-grid-row')).toBe('0');
 
     const energy = container.querySelector<HTMLElement>(

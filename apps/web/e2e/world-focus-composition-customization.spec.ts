@@ -7,15 +7,22 @@ const PRESSURE_WIDTHS = [
   1856, 1600, 1366, 1200, 1024, 901, 900, 760, 721, 720, 719, 390,
 ] as const;
 
-test('M3-3 keeps customization explicit, applies accepted metadata once, and does not mount M3-4', async ({
+test('M3-4 keeps customization explicit while accepted metadata governs the normal adaptive composition', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1600, height: 900 });
   await page.goto('/worlds/music');
 
   const composition = page.locator('.world-focus-composition');
+  const situation = page.locator(
+    '[data-world-focus-composition-id="situation"]',
+  );
   const invoke = page.getByRole('button', { name: 'Personalizza composizione' });
-  await expect(composition).toHaveAttribute('data-world-focus-composition-count', '1');
+  await expect(composition).toHaveAttribute('data-world-focus-composition-count', '4');
+  await expect(situation).toHaveAttribute(
+    'data-world-focus-origin',
+    'application-derived',
+  );
   await expect(page.getByRole('dialog', { name: 'Personalizza Musica' })).toHaveCount(0);
 
   await invoke.focus();
@@ -41,7 +48,7 @@ test('M3-3 keeps customization explicit, applies accepted metadata once, and doe
     'interactive',
   );
   await expect(dialog).toHaveAttribute('data-world-focus-customization-revision', '0');
-  await expect(composition).toHaveAttribute('data-world-focus-composition-count', '1');
+  await expect(composition).toHaveAttribute('data-world-focus-composition-count', '4');
 
   const add = page.getByRole('button', { name: /^Aggiungi / }).first();
   await expect(add).toBeVisible();
@@ -53,7 +60,8 @@ test('M3-3 keeps customization explicit, applies accepted metadata once, and doe
 
   await expect(dialog).toHaveCount(0);
   await expect(invoke).toBeFocused();
-  await expect(composition).toHaveAttribute('data-world-focus-composition-count', '1');
+  await expect(composition).toHaveAttribute('data-world-focus-composition-count', '4');
+  await expect(situation).toHaveAttribute('data-world-focus-origin', 'user');
 
   await invoke.click();
   const reopened = page.getByRole('dialog', { name: 'Personalizza Musica' });

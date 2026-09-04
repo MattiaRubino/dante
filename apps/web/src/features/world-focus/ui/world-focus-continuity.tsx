@@ -154,7 +154,12 @@ export function WorldFocusContinuityResult({
   result,
   onRetry,
 }: WorldFocusContinuityResultProps) {
-  return <WorldFocusContinuityState state={result} onRetry={onRetry} />;
+  return (
+    <WorldFocusContinuityState
+      state={result}
+      {...(onRetry === undefined ? {} : { onRetry })}
+    />
+  );
 }
 
 type WorldFocusContinuityProps = Readonly<{

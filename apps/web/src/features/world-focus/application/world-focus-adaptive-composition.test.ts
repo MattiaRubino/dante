@@ -8,6 +8,7 @@ import {
   createWorldFocusAdaptiveCompositionReader,
   readWorldFocusAdaptiveCompositionSnapshot,
   resolveWorldFocusAdaptiveComposition,
+  type WorldFocusAdaptiveCompositionSnapshot,
 } from './world-focus-adaptive-composition';
 import {
   createWorldFocusCompositionOpportunity,
@@ -36,6 +37,28 @@ function abortError() {
   const error = new Error('aborted');
   error.name = 'AbortError';
   return error;
+}
+
+async function twoOpportunitySnapshot(): Promise<WorldFocusAdaptiveCompositionSnapshot> {
+  const source = await readWorldFocusAdaptiveCompositionSnapshot('music');
+  const opportunitySet = createWorldFocusCompositionOpportunitySet({
+    worldId: 'music',
+    opportunities: [
+      createWorldFocusCompositionOpportunity({
+        instanceId: 'comparison:music-master-change',
+        kind: 'comparison',
+        defaultProminence: 'supporting',
+        footprint: 'standard',
+      }),
+      createWorldFocusCompositionOpportunity({
+        instanceId: 'situation',
+        kind: 'situation',
+        defaultProminence: 'primary',
+        footprint: 'standard',
+      }),
+    ],
+  });
+  return Object.freeze({ ...source, opportunitySet });
 }
 
 describe('World Focus M3-4 adaptive composition application integration', () => {
@@ -178,25 +201,7 @@ describe('World Focus M3-4 adaptive composition application integration', () => 
   });
 
   it('preserves configured relative order ahead of adaptive prominence ranking', async () => {
-    const source = await readWorldFocusAdaptiveCompositionSnapshot('music');
-    const opportunitySet = createWorldFocusCompositionOpportunitySet({
-      worldId: 'music',
-      opportunities: [
-        createWorldFocusCompositionOpportunity({
-          instanceId: 'comparison:music-master-change',
-          kind: 'comparison',
-          defaultProminence: 'supporting',
-          footprint: 'standard',
-        }),
-        createWorldFocusCompositionOpportunity({
-          instanceId: 'situation',
-          kind: 'situation',
-          defaultProminence: 'primary',
-          footprint: 'standard',
-        }),
-      ],
-    });
-    const snapshot = Object.freeze({ ...source, opportunitySet });
+    const snapshot = await twoOpportunitySnapshot();
     const resolved = resolveWorldFocusAdaptiveComposition(
       snapshot,
       config('music', [
@@ -222,5 +227,63 @@ describe('World Focus M3-4 adaptive composition application integration', () => 
       'situation',
     ]);
     expect(resolved.plan.entries[0]?.prominence).toBe('supporting');
+  });
+
+  it('lets pin protect budget survival without turning pin into an implicit reorder command', async () => {
+    const snapshot = await twoOpportunitySnapshot();
+    const resolved = resolveWorldFocusAdaptiveComposition(
+      snapshot,
+      config('music', [
+        {
+          instanceId: 'comparison:music-master-change',
+          kind: 'comparison',
+          visibility: 'visible',
+          pinned: false,
+          prominenceOverride: null,
+        },
+        {
+          instanceId: 'situation',
+          kind: 'situation',
+          visibility: 'visible',
+          pinned: true,
+          prominenceOverride: null,
+        },
+      ]),
+    );
+
+    expect(resolved.plan.entries.map((entry) => entry.instanceId)).toEqual([
+      'comparison:music-master-change',
+      'situation',
+    ]);
+    expect(resolved.plan.entries[1]?.ownership.stability).toBe('stable');
+  });
+
+  it('lets promote change prominence without turning promote into an implicit reorder command', async () => {
+    const snapshot = await twoOpportunitySnapshot();
+    const resolved = resolveWorldFocusAdaptiveComposition(
+      snapshot,
+      config('music', [
+        {
+          instanceId: 'comparison:music-master-change',
+          kind: 'comparison',
+          visibility: 'visible',
+          pinned: false,
+          prominenceOverride: null,
+        },
+        {
+          instanceId: 'situation',
+          kind: 'situation',
+          visibility: 'visible',
+          pinned: false,
+          prominenceOverride: 'lead',
+        },
+      ]),
+    );
+
+    expect(resolved.plan.entries.map((entry) => entry.instanceId)).toEqual([
+      'comparison:music-master-change',
+      'situation',
+    ]);
+    expect(resolved.plan.entries[1]?.prominence).toBe('lead');
   });
 });
