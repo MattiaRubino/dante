@@ -68,7 +68,7 @@ function renderPanel({
 
 describe('AccessSignInPanel', () => {
   it('keeps providers primary and reveals passkey only through the alternate-method disclosure', () => {
-    renderPanel();
+    const handlers = renderPanel();
 
     expect(
       screen.getByRole('heading', { level: 1, name: 'Accedi a DANTE' })
@@ -85,7 +85,9 @@ describe('AccessSignInPanel', () => {
       name: 'Usa un altro metodo',
     });
 
-    expect(googleButton.disabled).toBe(true);
+    expect(googleButton.disabled).toBe(false);
+    fireEvent.click(googleButton);
+    expect(handlers.googleError).toHaveBeenCalledTimes(1);
     expect(appleButton.getAttribute('data-provider')).toBe('apple');
     expect(alternateMethods.getAttribute('aria-expanded')).toBe('false');
     expect(
@@ -139,7 +141,7 @@ describe('AccessSignInPanel', () => {
     expect(handlers.onCreateAccount).toHaveBeenCalledTimes(1);
     expect(handlers.onApple).toHaveBeenCalledTimes(1);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Continua' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Accedi' }));
     expect(handlers.onCredentialSubmit).not.toHaveBeenCalled();
     expect(
       screen.getByText('Inserisci un indirizzo email valido.'),
@@ -152,7 +154,7 @@ describe('AccessSignInPanel', () => {
     fireEvent.change(screen.getByLabelText('Password'), {
       target: { value: 'correct horse battery staple' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Continua' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Accedi' }));
 
     expect(handlers.onCredentialSubmit).toHaveBeenCalledWith(
       'person@example.com',
