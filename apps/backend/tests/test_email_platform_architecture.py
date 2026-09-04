@@ -20,8 +20,10 @@ def test_shared_email_platform_does_not_import_access_auth() -> None:
                 imported = [node.module or ""]
             else:
                 continue
-            for module in imported:
-                if module == "dante.auth" or module.startswith("dante.auth."):
-                    violations.append(f"{path.name}:{node.lineno}:{module}")
+            violations.extend(
+                f"{path.name}:{node.lineno}:{module}"
+                for module in imported
+                if module == "dante.auth" or module.startswith("dante.auth.")
+            )
 
     assert violations == []
