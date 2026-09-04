@@ -4,10 +4,7 @@
     {
       "Sid": "DanteUatSesIdentity",
       "Effect": "Allow",
-      "Action": [
-        "ses:GetEmailIdentity",
-        "ses:SendEmail"
-      ],
+      "Action": ["ses:GetEmailIdentity", "ses:SendEmail"],
       "Resource": "arn:aws:ses:__SES_REGION__:__AWS_ACCOUNT_ID__:identity/__SES_VERIFIED_IDENTITY__"
     }
   ]
