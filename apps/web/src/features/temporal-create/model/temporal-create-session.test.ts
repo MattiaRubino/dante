@@ -181,7 +181,7 @@ describe('temporal create session', () => {
     expect(eventSession.draft.current.scheduling.constraintKind).toBe('none');
   });
 
-  it('preserves a repeated rule across Event to Activity while ownership stays outside the field shape', () => {
+  it('drops Event-owned recurrence when switching to Activity without explicit Routine ownership', () => {
     const event = createTemporalCreateFields({
       title: 'Call',
       kind: 'event',
@@ -197,10 +197,10 @@ describe('temporal create session', () => {
       { kind: 'activity' },
     );
 
+    expect(event.eventRecurrence.owner).toBe('event');
     expect(event.eventRecurrence.patternKind).toBe('elapsed-interval');
-    expect(activity.draft.current.eventRecurrence.patternKind).toBe(
-      'elapsed-interval',
-    );
+    expect(activity.draft.current.eventRecurrence.owner).toBeNull();
+    expect(activity.draft.current.eventRecurrence.patternKind).toBe('none');
     expect(validateTemporalCreateFields(activity.draft.current)).toEqual([]);
   });
 
@@ -214,6 +214,7 @@ describe('temporal create session', () => {
       ...baseline,
       eventRecurrence: {
         ...baseline.eventRecurrence,
+        owner: 'routine',
         patternKind: 'quota-per-period',
         quotaCount: 3,
         quotaPeriodKind: 'week',
@@ -224,6 +225,8 @@ describe('temporal create session', () => {
     });
 
     expect(validateTemporalCreateFields(repeated)).toEqual([]);
+    expect(repeated.eventRecurrence.owner).toBe('routine');
+    expect(repeated.eventRecurrence.patternKind).toBe('quota-per-period');
     expect(repeated.eventRecurrence.quotaCount).toBe(3);
     expect(repeated.eventRecurrence.quotaPeriodKind).toBe('week');
   });
@@ -336,7 +339,6 @@ describe('temporal create session', () => {
       validateTemporalCreateFields(invalidDeadline).map((issue) => issue.code),
     ).toContain('temporal.create.deadline.invalid');
   });
-
   it('validates split-session Activity authoring independently from execution instances', () => {
     const baseline = createTemporalCreateFields({
       title: 'Studiare inglese',
