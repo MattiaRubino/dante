@@ -5,7 +5,7 @@
 - **Protected `main`:** integrated source authority; read the live Git ref for the current SHA
 - **Backend CP6 integration:** PR #42 MERGED
 - **PostgreSQL Recovery integration:** PR #47 MERGED / CP01–CP07 LOCAL PASS / CLOSED
-- **Current product boundary:** protected `main` includes the accepted PostgreSQL Recovery evolution; Access/Auth, Home React and platform observability remain active bounded workstreams; AI architecture is closed on `feature/ai-architecture`; AI implementation is active on `feature/ai-implementation` with I0-I2, C6, C7 and C8 CLOSED, I3 deferred pending owner data/seams, OpenAI native Responses API + GPT-5.6 Terra admitted for qualification only, and C9 OPEN / PRE-LIVE READY with real provider live compatibility still NOT RUN
+- **Current product boundary:** protected `main` includes the accepted PostgreSQL Recovery evolution; Access/Auth, Home React and platform observability remain active bounded workstreams; AI architecture is closed on `feature/ai-architecture`; AI implementation is active on `feature/ai-implementation` with I0-I2, C6, C7 and C8 CLOSED, I3 Search deferred pending owner data/seams, OpenAI native Responses API + GPT-5.6 Terra admitted for qualification only, and C9 OPEN / PRE-LIVE READY with real provider live compatibility still NOT RUN
 
 ## 1. Executive state
 
@@ -84,6 +84,11 @@ PRODUCT/SIMULATION REPLAY PASS
 CURRENT AI IMPLEMENTATION AUTHORITY
 docs/architecture/dante-ai-implementation-baseline-final.md
 
+CURRENT SEARCH/INTELLIGENCE SEQUENCING AMENDMENT
+docs/architecture/dante-ai-search-intelligence-boundary-amendment-2026-09.md
+GLOBAL SEARCH != INTELLIGENCE
+I3 Search != global prerequisite for I6 Ask
+
 AI IMPLEMENTATION WORKSTREAM
 feature/ai-implementation
 I0 CLOSED / PASS
@@ -94,7 +99,7 @@ C6 CLOSED / PASS
 C6 validated code checkpoint 2f96d4fb85300fdbfd00e66b9b6d23b26141397f
 C7 CLOSED / PASS
 C7 validated code checkpoint 65b4bdfe6987e7a2cbb9d543fd4a92b87264cf97
-I3/C3 DEFERRED / WAITING OWNER DATA + SEAMS
+I3/C3 SEARCH DEFERRED / WAITING OWNER DATA + SEAMS
 C8/P1 CLOSED / PROVIDER CANDIDATE ADMITTED FOR QUALIFICATION ONLY
 provider     OpenAI native API
 API          Responses API
@@ -116,8 +121,9 @@ C6 control/safety/publication contracts CLOSED / PASS
 → C10 direct DANTE qualification
 → C11 qualification/promotion decision
 
-I3/C3 remains parallel/conditional and must converge before I6
-when real owner data/seams and required permission/currentness proofs are ready
+I3/C3 remains a parallel/conditional SEARCH lane.
+It joins a concrete Ask vertical only when that vertical genuinely needs Search discovery.
+A first real Intelligence product vertical is not yet selected.
 
 PARALLEL BOUNDED UNMERGED WORKSTREAMS
 feature/access-auth
@@ -127,7 +133,7 @@ feature/ai-implementation — active / I0-I2 + C6+C7+C8 closed / C9 OPEN-PRE-LIV
 feature/ai-architecture — architecture closed / retained authority/evidence
 ```
 
-Architecture closure is not runtime/product completion. I0-I2, C6 and C7 are implemented and directly validated; C8 is a reviewed evidence/admission decision. C9 has now materially implemented the admitted inactive provider SDK/adapter and passed deterministic/material pre-live gates, but no real provider live call, production qualification, private-data eligibility, production Search/Ask or new persistence is claimed.
+Architecture closure is not runtime/product completion. I0-I2, C6 and C7 are implemented and directly validated; C8 is a reviewed evidence/admission decision. C9 has now materially implemented the admitted inactive provider SDK/adapter and passed deterministic/material pre-live gates, but no real provider live call, production qualification, private-data eligibility, production Search, production Ask or new persistence is claimed.
 
 ## 2. Current protected-main backend/database truth
 
@@ -235,6 +241,8 @@ Current AI implementation invariants additionally include:
 
 ```text
 GLOBAL SEARCH != INTELLIGENCE
+ASK MAY USE SEARCH != ASK REQUIRES SEARCH GENERALLY
+SEARCH READINESS != GLOBAL INTELLIGENCE PREREQUISITE
 SEARCH RESULT / CURSOR / TARGET REF != AUTHORIZATION
 SEMANTIC QUERY GATEWAY != INTELLIGENCE-OWNED CROSS-CAPABILITY SQL
 MODEL OUTPUT != PUBLISHABLE OUTPUT
@@ -287,6 +295,14 @@ Final implementation-facing authority:
 docs/architecture/dante-ai-implementation-baseline-final.md
 ```
 
+Current sequencing correction:
+
+```text
+docs/architecture/dante-ai-search-intelligence-boundary-amendment-2026-09.md
+```
+
+The amendment supersedes the earlier composite `GLOBAL SEARCH subset + READ-ONLY ASK DANTE` first-vertical wording for current implementation sequencing. Search and Intelligence remain separate capabilities.
+
 Branch-local execution record:
 
 ```text
@@ -311,22 +327,31 @@ Final structural acceptance evidence:
 docs/architecture/dante-ai-post05-final-mega-acceptance.md
 ```
 
-Accepted first technical vertical:
+Current capability boundaries:
 
 ```text
-GLOBAL SEARCH subset
-+ READ-ONLY ASK DANTE
+GLOBAL SEARCH
+independent cross-cutting discovery/navigation capability
+deterministic/no-model capable
+I3 real family lane remains owner-seam triggered
 
-private authenticated in-app
-single-turn
-inline/request-owned
-READ_ONLY
-public streaming OFF
-background/durable resume OFF
-consequential mutation OFF
+INTELLIGENCE / ASK DANTE
+independent orchestration capability
+may use owning typed query seams directly
+may use Search only when the information need requires discovery
+first real Intelligence product vertical NOT YET SELECTED
 ```
 
-Search remains independently deterministic. Structured semantic questions consume owning capability typed query seams. Provider SDKs remain private adapters behind `ModelAccessPort`.
+Initial Intelligence integration remains bounded unless a later accepted decision changes it:
+
+```text
+private authenticated in-app
+single-turn/request-owned initially
+READ_ONLY initially
+public streaming OFF initially
+background/durable resume OFF initially
+consequential mutation OFF initially
+```
 
 C8 admitted exactly one initial qualification candidate, and C9 has materially implemented its inactive qualification-only adapter:
 
@@ -356,9 +381,10 @@ C7 route-config identity/loader/digest                CLOSED / PASS
 C8/P1 provider candidate admission                    CLOSED / ADMITTED FOR QUALIFICATION ONLY
 C9 inactive adapter + SDK + conformance + P4 pre-live OPEN / PRE-LIVE READY
 C9 P4 real provider compatibility                     NOT RUN
+first real Intelligence product vertical              NOT YET SELECTED
 ```
 
-I3 is not cancelled or falsely closed. It remains a conditional lane and must re-enter before I6 when the accepted first vertical requires the real deterministic source/query path.
+I3 is not cancelled or falsely closed. It remains a conditional Search lane and joins Intelligence only for concrete Ask workloads that actually require Search discovery.
 
 ## 7. Provider / direct-proof state
 
@@ -418,9 +444,12 @@ feature/ai-implementation
 → synthetic/public/minimized fixture only
 → no private DANTE data
 
-parallel conditional lane:
-I3/C3 resumes only when real owner data/seams are integration-ready
-and must converge before I6 read-only Ask DANTE
+parallel independent Search lane:
+I3/C3 resumes only when a real Search owner/data seam is integration-ready
+
+parallel Intelligence product-selection lane:
+select the first real read-only Intelligence vertical from an actual application capability/owner seam
+Search is a dependency only if that selected vertical genuinely requires Search discovery
 ```
 
-Until that credential is provisioned, C9 remains **OPEN / PRE-LIVE READY** rather than falsely CLOSED. C9 is not production activation. User-visible/private-data Search/Ask still requires the real integration and activation gates defined by the final baseline.
+Until that credential is provisioned, C9 remains **OPEN / PRE-LIVE READY** rather than falsely CLOSED. C9 is not production activation. User-visible/private-data Search and user-visible/private-data Ask remain separate activation problems and each must satisfy its applicable integration/security/currentness/publication gates.
