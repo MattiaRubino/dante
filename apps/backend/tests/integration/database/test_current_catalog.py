@@ -20,7 +20,7 @@ from dante.platform.database.metadata import Base
 
 pytestmark = pytest.mark.postgres
 
-_CURRENT_REVISION = "20260904_16"
+_CURRENT_REVISION = "20260904_17"
 _REPO_ROOT = Path(__file__).resolve().parents[5]
 _DICTIONARY_ROOT = _REPO_ROOT / "docs" / "database" / "dictionary"
 _RUNTIME_ROLE = "dante_runtime"
