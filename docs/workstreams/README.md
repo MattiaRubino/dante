@@ -19,10 +19,11 @@ Apple registered-domain UAT                      BOUNDED DEFERRED / NON-BLOCKING
 
 protected main
   Access integration merge                       5f76ec54ad78542f137e8730e904f805d9e59e56
+  Recovery↔Email hardening merge                 c67a18c24a6cf22b003ffd2c14243af53fec5077
   Alembic                                        20260904_17
   topology                                       88/5/16/76/172/89/270
   database-local CP07                            PASS
-  Email post-restore whole-flow gate             REMEDIATION REQUIRED
+  application / Email reopen CP08                PASS
   post-merge Backend CI                          PASS
   post-merge Frontend CI                         PASS
 
@@ -31,7 +32,9 @@ M6 Native Mobile                                 FUTURE / OPTIONAL
 later M7 Access/security maturity                FUTURE
 ```
 
-The historical CP07 execution remains a valid **LOCAL PostgreSQL/database-local + MaterialState recovery proof**. A post-merge audit found that it did not directly exercise Email `quarantine_after_restore()` before Email workers resume; application Email traffic reopen after PITR is therefore not claimed by that historical run alone. Current remediation belongs to a separate forward change, not a rewrite of historical evidence.
+The historical CP07 execution remains a valid **LOCAL PostgreSQL/database-local + MaterialState recovery proof** and is intentionally not widened beyond what it executed. PR #55 and CP08 closed the separate Email/application reopen gap forward: restored sendable Email work was physically resurrected by PITR, quarantined while workers remained stopped, sensitive material was wiped, the second reconciliation was idempotent, claimable work became `0`, and application/Email reopen passed.
+
+Remote-provider and production/cloud recovery remain unclaimed separate gates.
 
 ## Current authority
 

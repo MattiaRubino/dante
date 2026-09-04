@@ -2,7 +2,7 @@
 
 - **Status:** CURRENT NAVIGATION / AUTHORITY INDEX
 - **Last reconciled:** 2026-09-04
-- **Protected main:** Access/Auth + shared Email Platform + Recovery integrated
+- **Protected main:** Access/Auth + shared Email Platform + Recovery integrated; Recovery↔Email CP08 hardening integrated
 - **Current Alembic:** `20260904_17`
 - **Current work:** `feature/platform-observability` integration
 
@@ -17,7 +17,7 @@
 6. conversation memory
 ```
 
-Protected `main` owns the combined Access/Auth + shared Email Platform + Recovery truth at Alembic `20260904_17`. PR #52 integrated the accepted candidate at merge commit `5f76ec54ad78542f137e8730e904f805d9e59e56`; post-merge Backend and Frontend CI passed on that exact commit.
+Protected `main` owns the combined Access/Auth + shared Email Platform + Recovery truth at Alembic `20260904_17`. PR #52 integrated the accepted candidate at merge commit `5f76ec54ad78542f137e8730e904f805d9e59e56`; PR #55 later integrated the forward Recovery↔Email reopen hardening at `c67a18c24a6cf22b003ffd2c14243af53fec5077` after mandatory CI and real LOCAL CP08 acceptance.
 
 ## Current lifecycle
 
@@ -32,7 +32,7 @@ Apple real external UAT                        BOUNDED DEFERRED
 Protected-main Alembic                         20260904_17
 Protected-main DB                              88/5/16/76/172/89/270
 database-local CP07                            PASS
-Email post-restore whole-flow gate             REMEDIATION REQUIRED
+application / Email reopen CP08                PASS
 post-merge Backend CI                          PASS
 post-merge Frontend CI                         PASS
 feature/platform-observability                 CLOSED / OPERATIONAL PASS / NEXT INTEGRATION
@@ -40,7 +40,7 @@ M6 Native Mobile                               FUTURE / OPTIONAL
 later M7 Access/security maturity              FUTURE
 ```
 
-The historical CP07 run directly proves its executed LOCAL PostgreSQL/database-local and MaterialState recovery scope. It did not directly prove Email `quarantine_after_restore()` ordering before Email workers resume, so application Email traffic reopen after PITR is not inferred from that run. Remote-provider and production/cloud recovery remain separate future gates.
+The historical CP07 run directly proves its executed LOCAL PostgreSQL/database-local and MaterialState recovery scope; it did not directly prove Email quarantine ordering. CP08 closed that distinct evidence gap forward by proving PITR → worker isolation → Email quarantine/sensitive wipe → zero claimable work → application/Email reopen. Remote-provider and production/cloud recovery remain separate future gates.
 
 ## Mandatory continuation entry points
 
@@ -88,7 +88,7 @@ Historical/evidence routing:
 - `database/dictionary/README.md` — machine-readable current contract
 - `database/dante-postgresql-database.md` — current human-readable architecture/reference
 - `database/dante-postgresql-database-part-*.md` — detailed design/reference evidence; historical phase banners do not override current authority
-- `operations/postgres-recovery-runbook.md` — current LOCAL recovery operator contract
+- `operations/postgres-recovery-runbook.md` — current LOCAL recovery + application/Email reopen operator contract
 - `development/backend-cp6-02-postgresql-persistence-constitution.md`
 - `decisions/ADR-010-postgresql-persistence-constitution.md`
 
