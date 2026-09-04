@@ -149,8 +149,16 @@ export function WorldFocusCompositionCustomizationProvider({
 
   const restoreFocus = useCallback(() => {
     const invoker = invokerRef.current;
+    if (invoker?.isConnected !== true) {
+      return;
+    }
+
+    // Focus the stable invoker before the active surface unmounts so removing
+    // that surface cannot drop DOM focus to <body>. The microtask is a
+    // defense-in-depth retry for browser/React ordering differences.
+    invoker.focus({ preventScroll: true });
     queueMicrotask(() => {
-      if (invoker?.isConnected === true) {
+      if (invoker.isConnected && document.activeElement !== invoker) {
         invoker.focus({ preventScroll: true });
       }
     });
@@ -227,9 +235,9 @@ export function WorldFocusCompositionCustomizationProvider({
 
   const cancel = useCallback(() => {
     if (draft === null) return;
+    restoreFocus();
     resetDraftState();
     workspace.closeSurface(WORLD_FOCUS_COMPOSITION_CUSTOMIZATION_SURFACE_ID);
-    restoreFocus();
   }, [draft, resetDraftState, restoreFocus, workspace]);
 
   const apply = useCallback(() => {
@@ -243,9 +251,9 @@ export function WorldFocusCompositionCustomizationProvider({
       }
 
       setAcceptedConfig(result.config);
+      restoreFocus();
       resetDraftState();
       workspace.closeSurface(WORLD_FOCUS_COMPOSITION_CUSTOMIZATION_SURFACE_ID);
-      restoreFocus();
     } catch {
       setIssue({ status: 'invalid-state' });
     } finally {
