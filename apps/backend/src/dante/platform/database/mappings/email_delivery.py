@@ -1,4 +1,4 @@
-"""SQLAlchemy mappings for the bounded DANTE email delivery platform."""
+"""SQLAlchemy mappings for the shared DANTE Email Platform persistence."""
 
 from datetime import datetime
 from uuid import UUID
@@ -29,12 +29,15 @@ class EmailDeliveryIntentRow(Base):
             name="uuidv7",
         ),
         CheckConstraint(
-            "purpose_code IN "
-            "('signup_verification','provider_enrollment_verification',"
-            "'password_recovery','password_reset_notification')",
+            "purpose_code = btrim(purpose_code) "
+            "AND purpose_code ~ '^[a-z][a-z0-9_]{0,63}$'",
             name="purpose_code",
         ),
-        CheckConstraint("stream_code = 'auth_security'", name="stream_code"),
+        CheckConstraint(
+            "stream_code = btrim(stream_code) "
+            "AND stream_code ~ '^[a-z][a-z0-9_]{0,63}$'",
+            name="stream_code",
+        ),
         CheckConstraint(
             "recipient_address = btrim(recipient_address) AND recipient_address <> ''",
             name="recipient_address",
