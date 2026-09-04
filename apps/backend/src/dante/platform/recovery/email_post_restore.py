@@ -9,9 +9,10 @@ unsafe remainder.  Email workers must remain stopped while it runs.
 from __future__ import annotations
 
 import asyncio
-from dataclasses import asdict, dataclass
 import json
 import os
+import sys
+from dataclasses import asdict, dataclass
 
 from pydantic import SecretStr
 from sqlalchemy import func, or_, select
@@ -167,7 +168,7 @@ def main() -> None:
     """CLI entry point used by the recovery runbook/CP08 harness."""
 
     result = asyncio.run(_run_operator())
-    print(json.dumps(asdict(result), sort_keys=True))
+    sys.stdout.write(json.dumps(asdict(result), sort_keys=True) + "\n")
 
 
 if __name__ == "__main__":
