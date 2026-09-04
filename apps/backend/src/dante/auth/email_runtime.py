@@ -9,11 +9,9 @@ from dante.auth.email_outbox import DurableEmailOutbox
 from dante.auth.email_render import AuthSecurityEmailRenderer
 from dante.platform.config.auth import AuthSettings
 from dante.platform.database.runtime import DatabaseRuntime
-from dante.platform.email.crypto import EmailPayloadCipher
 from dante.platform.email.feedback import EmailFeedbackStore
 from dante.platform.email.observability import EmailObservabilityProbe, EmailOperationalSnapshot
-from dante.platform.email.outbox import DurableEmailOutbox as SharedDurableEmailOutbox
-from dante.platform.email.provider import SesEmailProvider, SmtpEmailProvider
+from dante.platform.email.runtime import create_email_platform_runtime as create_shared_runtime
 from dante.platform.email.worker import EmailDeliveryWorkerPool
 
 
@@ -44,46 +42,18 @@ async def create_email_platform_runtime(
     settings: AuthSettings,
     database_runtime: DatabaseRuntime,
 ) -> EmailPlatformRuntime:
-    """Compose Auth rendering/projection into shared delivery mechanics."""
-    current_key_id = settings.email_payload_current_key_id
-    if current_key_id is None:
-        raise RuntimeError("enabled Email Platform lost validated payload-key identity")
-
-    cipher = EmailPayloadCipher(
-        key_ring=settings.email_payload_key_bytes,
-        current_key_id=current_key_id,
-    )
-    core_outbox = SharedDurableEmailOutbox(
-        cipher=cipher,
-        attempt_limit=settings.email_attempt_limit,
-    )
-    auth_outbox = DurableEmailOutbox.from_shared(core_outbox)
-
-    transport = settings.email_transport.value
-    if transport == "ses":
-        provider = SesEmailProvider(settings=settings)
-    elif transport == "smtp":
-        provider = SmtpEmailProvider(settings=settings)
-    else:
-        raise RuntimeError(f"unsupported Email Platform transport: {transport}")
-
-    worker_pool = EmailDeliveryWorkerPool(
-        session_factory=database_runtime.session_factory,
-        outbox=core_outbox,
-        cipher=cipher,
-        provider=provider,
+    """Inject Auth rendering/projection into the shared runtime composer."""
+    shared = await create_shared_runtime(
+        settings=settings,
+        database_runtime=database_runtime,
         renderer=AuthSecurityEmailRenderer(
             canonical_web_origin=settings.canonical_web_origin,
         ),
-        settings=settings,
+        suppression_projection=AuthEmailSuppressionProjection(),
     )
-    runtime = EmailPlatformRuntime(
-        outbox=auth_outbox,
-        worker_pool=worker_pool,
-        feedback_store=EmailFeedbackStore(
-            suppression_projection=AuthEmailSuppressionProjection(),
-        ),
-        observability=EmailObservabilityProbe(session_factory=database_runtime.session_factory),
+    return EmailPlatformRuntime(
+        outbox=DurableEmailOutbox.from_shared(shared.outbox),
+        worker_pool=shared.worker_pool,
+        feedback_store=shared.feedback_store,
+        observability=shared.observability,
     )
-    await worker_pool.start()
-    return runtime
