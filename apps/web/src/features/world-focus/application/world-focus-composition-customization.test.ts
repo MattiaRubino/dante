@@ -5,6 +5,7 @@ import {
   WORLD_FOCUS_COMPOSITION_CONFIG_SCHEMA_VERSION,
   type WorldFocusCompositionConfig,
 } from '../model/world-focus-composition-config';
+import { createWorldFocusCompositionOpportunity } from './world-focus-composition-opportunities';
 import {
   applyWorldFocusCompositionDraft,
   beginWorldFocusCompositionCustomization,
@@ -172,27 +173,75 @@ describe('World Focus composition customization draft', () => {
     ).toMatchObject({ visibility: 'visible', pinned: false, prominenceOverride: null });
   });
 
+  it('adopts only opportunity metadata and restore removes an entry that was absent from the base snapshot', () => {
+    const current = makeConfig();
+    const comparison = createWorldFocusCompositionOpportunity({
+      instanceId: 'comparison:release',
+      kind: 'comparison',
+      defaultProminence: 'supporting',
+      footprint: 'standard',
+    });
+    const adopted = runCommands(current, [
+      { source: 'manual', type: 'adopt', opportunity: comparison },
+      { source: 'manual', type: 'pin', instanceId: 'comparison:release' },
+    ]);
+
+    expect(adopted.workingConfig.entries.at(-1)).toEqual({
+      instanceId: 'comparison:release',
+      kind: 'comparison',
+      visibility: 'visible',
+      pinned: true,
+      prominenceOverride: null,
+    });
+
+    const restored = updateWorldFocusCompositionDraft(adopted, {
+      source: 'manual',
+      type: 'restore',
+      instanceId: 'comparison:release',
+    });
+    expect(
+      restored.workingConfig.entries.some(
+        (entry) => entry.instanceId === 'comparison:release',
+      ),
+    ).toBe(false);
+    expect(restored.workingConfig.entries).toEqual(current.entries);
+  });
+
   it('uses the same command language for DANTE proposals without letting them bypass review/apply', () => {
     const current = makeConfig();
+    const comparison = createWorldFocusCompositionOpportunity({
+      instanceId: 'comparison:release',
+      kind: 'comparison',
+      defaultProminence: 'supporting',
+      footprint: 'standard',
+    });
     const draft = runCommands(current, [
-      { source: 'dante-proposed', type: 'pin', instanceId: 'next' },
+      { source: 'dante-proposed', type: 'adopt', opportunity: comparison },
+      { source: 'dante-proposed', type: 'pin', instanceId: 'comparison:release' },
       {
         source: 'dante-proposed',
         type: 'move',
-        instanceId: 'next',
+        instanceId: 'comparison:release',
         beforeInstanceId: 'continuity',
       },
     ]);
 
     expect(current.revision).toBe(4);
-    expect(current.entries[2]?.instanceId).toBe('next');
-    expect(current.entries[2]?.pinned).toBe(false);
+    expect(
+      current.entries.some((entry) => entry.instanceId === 'comparison:release'),
+    ).toBe(false);
     expect(draft.baseRevision).toBe(4);
     expect(draft.operations.map((operation) => operation.source)).toEqual([
       'dante-proposed',
       'dante-proposed',
+      'dante-proposed',
     ]);
-    expect(draft.workingConfig.entries[0]?.instanceId).toBe('next');
+    expect(draft.workingConfig.entries[0]?.instanceId).toBe('comparison:release');
+    expect(
+      draft.workingConfig.entries.find(
+        (entry) => entry.instanceId === 'comparison:release',
+      )?.pinned,
+    ).toBe(true);
   });
 
   it('is deterministic for the same command sequence and rejects commands that target missing instances', () => {

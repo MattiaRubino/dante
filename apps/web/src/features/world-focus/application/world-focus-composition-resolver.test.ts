@@ -174,7 +174,7 @@ describe('World Focus M3-2 adaptive candidate resolver', () => {
     ]);
   });
 
-  it('preserves configured relative order, ignores adaptive signals for that order, and honors explicit promote', () => {
+  it('preserves configured relative order and opportunity prominence, ignores adaptive signals for configured entries, and honors explicit promote', () => {
     const opportunitySet = createWorldFocusCompositionOpportunitySet({
       worldId: 'music',
       opportunities: [
@@ -205,7 +205,7 @@ describe('World Focus M3-2 adaptive candidate resolver', () => {
     );
     expect(byId.get('continuity')).toMatchObject({
       ownership: { stability: 'adaptive', origin: 'user' },
-      prominence: 'primary',
+      prominence: 'supporting',
       order: 0,
     });
     expect(byId.get('situation')).toMatchObject({

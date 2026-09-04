@@ -264,7 +264,10 @@ export function resolveWorldFocusCompositionCandidates(input: Readonly<{
       makeCandidate(opportunity, {
         stability: entry.pinned ? 'stable' : 'adaptive',
         origin: 'user',
-        prominence: entry.prominenceOverride === 'lead' ? 'lead' : 'primary',
+        prominence:
+          entry.prominenceOverride === 'lead'
+            ? 'lead'
+            : opportunity.defaultProminence,
         order: index,
       }),
     );

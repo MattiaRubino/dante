@@ -4,6 +4,10 @@ import {
   type WorldFocusCompositionConfig,
   type WorldFocusCompositionConfigEntry,
 } from '../model/world-focus-composition-config';
+import {
+  createWorldFocusCompositionOpportunity,
+  type WorldFocusCompositionOpportunity,
+} from './world-focus-composition-opportunities';
 
 export const WORLD_FOCUS_COMPOSITION_CUSTOMIZATION_SOURCES = [
   'manual',
@@ -21,7 +25,14 @@ type WorldFocusCompositionInstanceCommand<
   instanceId: string;
 }>;
 
+type WorldFocusCompositionAdoptCommand = Readonly<{
+  source: WorldFocusCompositionCustomizationSource;
+  type: 'adopt';
+  opportunity: WorldFocusCompositionOpportunity;
+}>;
+
 export type WorldFocusCompositionCustomizationCommand =
+  | WorldFocusCompositionAdoptCommand
   | WorldFocusCompositionInstanceCommand<'pin'>
   | WorldFocusCompositionInstanceCommand<'unpin'>
   | WorldFocusCompositionInstanceCommand<'hide'>
@@ -35,12 +46,21 @@ export type WorldFocusCompositionCustomizationCommand =
       beforeInstanceId: string | null;
     }>;
 
+export type WorldFocusCompositionCustomizationOperation =
+  | Readonly<{
+      source: WorldFocusCompositionCustomizationSource;
+      type: 'adopt';
+      instanceId: string;
+      kind: string;
+    }>
+  | Exclude<WorldFocusCompositionCustomizationCommand, WorldFocusCompositionAdoptCommand>;
+
 export type WorldFocusCompositionCustomizationDraft = Readonly<{
   worldId: string;
   baseRevision: number;
   baseConfig: WorldFocusCompositionConfig;
   workingConfig: WorldFocusCompositionConfig;
-  operations: readonly WorldFocusCompositionCustomizationCommand[];
+  operations: readonly WorldFocusCompositionCustomizationOperation[];
 }>;
 
 export type WorldFocusCompositionDraftApplyResult =
@@ -123,19 +143,76 @@ function freezeInstanceCommand<
   return Object.freeze({ source, type, instanceId });
 }
 
+function sameConfigEntry(
+  left: WorldFocusCompositionConfigEntry,
+  right: WorldFocusCompositionConfigEntry,
+): boolean {
+  return (
+    left.instanceId === right.instanceId &&
+    left.kind === right.kind &&
+    left.visibility === right.visibility &&
+    left.pinned === right.pinned &&
+    left.prominenceOverride === right.prominenceOverride
+  );
+}
+
+function sameConfigSnapshot(
+  left: WorldFocusCompositionConfig,
+  right: WorldFocusCompositionConfig,
+): boolean {
+  return (
+    left.schemaVersion === right.schemaVersion &&
+    left.revision === right.revision &&
+    left.worldId === right.worldId &&
+    left.entries.length === right.entries.length &&
+    left.entries.every((entry, index) => {
+      const other = right.entries[index];
+      return other !== undefined && sameConfigEntry(entry, other);
+    })
+  );
+}
+
 function applyCommandToEntries(
   draft: WorldFocusCompositionCustomizationDraft,
   command: WorldFocusCompositionCustomizationCommand,
 ): Readonly<{
   entries: readonly WorldFocusCompositionConfigEntry[];
-  operation: WorldFocusCompositionCustomizationCommand;
+  operation: WorldFocusCompositionCustomizationOperation;
 }> {
   const source = assertCommandSource(command.source);
+  const workingEntries = draft.workingConfig.entries;
+
+  if (command.type === 'adopt') {
+    const opportunity = createWorldFocusCompositionOpportunity(command.opportunity);
+    if (workingEntries.some((entry) => entry.instanceId === opportunity.instanceId)) {
+      throw new Error(
+        `Duplicate World Focus composition instance: ${opportunity.instanceId}`,
+      );
+    }
+
+    const entry: WorldFocusCompositionConfigEntry = Object.freeze({
+      instanceId: opportunity.instanceId,
+      kind: opportunity.kind,
+      visibility: 'visible',
+      pinned: false,
+      prominenceOverride: null,
+    });
+
+    return Object.freeze({
+      entries: Object.freeze([...workingEntries, entry]),
+      operation: Object.freeze({
+        source,
+        type: 'adopt' as const,
+        instanceId: opportunity.instanceId,
+        kind: opportunity.kind,
+      }),
+    });
+  }
+
   const instanceId = normalizeToken(
     command.instanceId,
     'World Focus composition customization instance id',
   );
-  const workingEntries = draft.workingConfig.entries;
   const index = findRequiredEntryIndex(workingEntries, instanceId);
   const currentEntry = workingEntries[index];
   if (currentEntry === undefined) {
@@ -239,7 +316,19 @@ function applyCommandToEntries(
       });
     }
     case 'restore': {
-      const baseIndex = findRequiredEntryIndex(draft.baseConfig.entries, instanceId);
+      const baseIndex = draft.baseConfig.entries.findIndex(
+        (entry) => entry.instanceId === instanceId,
+      );
+
+      if (baseIndex < 0) {
+        return Object.freeze({
+          entries: Object.freeze(
+            workingEntries.filter((entry) => entry.instanceId !== instanceId),
+          ),
+          operation: freezeInstanceCommand(source, 'restore', instanceId),
+        });
+      }
+
       const baseEntry = draft.baseConfig.entries[baseIndex];
       if (baseEntry === undefined) {
         throw new Error(`Missing World Focus base composition instance: ${instanceId}`);
@@ -300,20 +389,23 @@ export function cancelWorldFocusCompositionDraft(
 }
 
 /**
- * Apply is the only M3-1 operation that produces a new current revision. A
- * stale draft never merges implicitly, and DANTE-proposed commands have no
- * bypass around this same revision gate.
+ * Apply is the only M3 operation that produces a new current revision. A stale
+ * draft never merges implicitly, a same-revision draft must still prove it was
+ * based on the exact current snapshot, and DANTE-proposed commands have no
+ * bypass around these same guards.
  */
 export function applyWorldFocusCompositionDraft(
   currentConfig: WorldFocusCompositionConfig,
   draft: WorldFocusCompositionCustomizationDraft,
 ): WorldFocusCompositionDraftApplyResult {
   const current = cloneCurrentConfig(currentConfig);
+  const base = cloneCurrentConfig(draft.baseConfig);
+  const working = cloneCurrentConfig(draft.workingConfig);
 
   if (
     current.worldId !== draft.worldId ||
-    draft.baseConfig.worldId !== draft.worldId ||
-    draft.workingConfig.worldId !== draft.worldId
+    base.worldId !== draft.worldId ||
+    working.worldId !== draft.worldId
   ) {
     throw new Error('World Focus composition draft belongs to a different World');
   }
@@ -326,11 +418,19 @@ export function applyWorldFocusCompositionDraft(
     });
   }
 
+  if (
+    base.revision !== draft.baseRevision ||
+    working.revision !== draft.baseRevision ||
+    !sameConfigSnapshot(current, base)
+  ) {
+    throw new Error('Invalid World Focus composition draft base snapshot');
+  }
+
   const config = createWorldFocusCompositionConfig({
     schemaVersion: WORLD_FOCUS_COMPOSITION_CONFIG_SCHEMA_VERSION,
     revision: current.revision + 1,
     worldId: current.worldId,
-    entries: draft.workingConfig.entries,
+    entries: working.entries,
   });
 
   return Object.freeze({ status: 'applied', config });
