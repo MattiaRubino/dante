@@ -131,16 +131,21 @@ pretty = true
 files = ["src", "tests"]
 enable_error_code = ["explicit-override", "exhaustive-match"]
 
-# fido2 2.2.1 exposes ES256.from_cryptography_key without typing metadata. Keep the
-# exception restricted to the focused tests that exercise the real third-party boundary.
+# Tests are discovered by mypy as top-level or namespace-package modules depending on
+# their directory depth. Match both shapes while keeping every exception bounded to the
+# exact test module that crosses an intentionally untyped/runtime-shaped boundary.
 [[tool.mypy.overrides]]
-module = ["tests.test_auth_webauthn"]
+module = [
+    "test_auth_webauthn",
+    "*.test_auth_webauthn",
+]
 disable_error_code = ["no-untyped-call"]
 
-# This concurrency module crosses both the untyped fido2 key conversion and a SQLAlchemy
-# runtime-shaped column_descriptions tuple that mypy cannot narrow after the exact length guard.
 [[tool.mypy.overrides]]
-module = ["tests.integration.auth.test_m5_passkeys"]
+module = [
+    "test_m5_passkeys",
+    "*.test_m5_passkeys",
+]
 disable_error_code = ["no-untyped-call", "misc"]
 
 # These HTTP-contract tests intentionally use minimal structural fakes instead of constructing
@@ -148,9 +153,12 @@ disable_error_code = ["no-untyped-call", "misc"]
 # argument compatibility is suppressed in these focused test modules.
 [[tool.mypy.overrides]]
 module = [
-    "tests.test_auth_m5_provider_api",
-    "tests.test_auth_m5_passkey_api",
-    "tests.test_auth_m5_api",
+    "test_auth_m5_provider_api",
+    "*.test_auth_m5_provider_api",
+    "test_auth_m5_passkey_api",
+    "*.test_auth_m5_passkey_api",
+    "test_auth_m5_api",
+    "*.test_auth_m5_api",
 ]
 disable_error_code = ["arg-type"]
 
