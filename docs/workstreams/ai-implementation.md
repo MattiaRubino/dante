@@ -1,6 +1,6 @@
 # DANTE AI Implementation Workstream
 
-- **Status:** ACTIVE / I0 CLOSED-PASS / I1 CLOSED-PASS / I2 CLOSED-PASS / I3 DEFERRED-WAITING-OWNER-SEAMS / C6 CLOSED-PASS / C7 CLOSED-PASS / C8 CLOSED-P1-ADMITTED / C9 READY
+- **Status:** ACTIVE / I0 CLOSED-PASS / I1 CLOSED-PASS / I2 CLOSED-PASS / I3 DEFERRED-WAITING-OWNER-SEAMS / C6 CLOSED-PASS / C7 CLOSED-PASS / C8 CLOSED-P1-ADMITTED / C9 OPEN-PRE-LIVE-READY
 - **Branch:** `feature/ai-implementation`
 - **Started:** 2026-09-02
 - **I0 closed:** 2026-09-03
@@ -12,7 +12,8 @@
 - **Architecture authority:** `../architecture/dante-ai-implementation-baseline-final.md`
 - **Post-AI05 acceptance:** `../architecture/dante-ai-post05-final-mega-acceptance.md`
 - **Provider admission record:** `ai-provider-candidate-admission-2026-09.md`
-- **Current executable checkpoint:** C9 — admitted inactive OpenAI Responses / `gpt-5.6-terra` adapter + conformance/live compatibility
+- **C9 pre-live checkpoint:** `ai-c9-pre-live-checkpoint-2026-09.md`
+- **Current executable checkpoint:** C9 P4 — real live compatibility for the admitted inactive OpenAI Responses / `gpt-5.6-terra` candidate; not run until a user-owned qualification credential is provisioned
 - **Deferred conditional lane:** I3/C3 — real deterministic Search/structured families when owning data/seams become integration-ready
 - **I0 validated code checkpoint:** `506b7f6c9dcf6c241b9f0f77bfec53a7e8d2d663`
 - **I1 validated code checkpoint:** `2eadac22a43a001abbf8ecaacf2da67fde7d2489`
@@ -20,9 +21,11 @@
 - **C6 validated code checkpoint:** `2f96d4fb85300fdbfd00e66b9b6d23b26141397f`
 - **C7 validated code checkpoint:** `65b4bdfe6987e7a2cbb9d543fd4a92b87264cf97`
 - **C8 decision checkpoint:** provider admission record committed after C7 closure; read live Git for the exact current SHA
+- **C9 validated pre-live code checkpoint:** `4bc02b783fad58ca32acd577881ccf1a9ee0998c`
 - **Provider candidate:** OpenAI native API / Responses API / `gpt-5.6-terra` — ADMITTED FOR QUALIFICATION ONLY
-- **Provider SDK:** NOT INSTALLED YET
-- **Provider adapter:** NOT MATERIALIZED YET
+- **Provider SDK:** MATERIALIZED / `openai==3.7.0` / locked / private adapter dependency only
+- **Provider adapter:** MATERIALIZED / INACTIVE / QUALIFICATION-ONLY
+- **C9 P4 live provider call:** NOT RUN / no user-owned qualification API credential provisioned
 - **Production qualification:** NO
 - **Private-data eligibility:** NO
 - **Database/Alembic change:** NONE
@@ -443,9 +446,14 @@ C7  CLOSED / PASS
 C8 / P0-P1  CLOSED / candidate admitted for qualification only
  ↓
 CURRENT
-C9  inactive admitted adapter/binding
-    provider conformance
-    live compatibility on synthetic/public/minimized data
+C9  OPEN / PRE-LIVE READY
+    P2/P3 contracts + inactive adapter        PASS
+    SDK materialization + locked dependency   PASS
+    material SDK conformance                  PASS
+    P4 pre-live                               PASS
+    final deterministic + PostgreSQL regression PASS
+    P4 real provider compatibility            NOT RUN
+    blocker: no user-owned qualification API credential provisioned
  ↓
 C10 direct DANTE qualification
  ↓
@@ -473,9 +481,9 @@ I6 may not activate until the required real source/query path, authoritative Aut
 
 ---
 
-## 10. Current executable boundary — C9
+## 10. Current executable boundary — C9 P4 LIVE
 
-C9 may materialize the admitted **inactive** provider binding/adapter and its conformance/live-compatibility proof surface.
+The admitted inactive provider binding/adapter and deterministic conformance surface are now materialized and directly validated. C9 remains open because a real provider live-compatibility call has not yet been executed.
 
 Admitted composition:
 
@@ -483,9 +491,11 @@ Admitted composition:
 provider                  OpenAI native API
 API                       Responses API
 model                     gpt-5.6-terra
+SDK                       openai 3.7.0
+binding                    inactive / qualification-only
 ```
 
-Mandatory initial feature profile:
+Mandatory feature profile remains:
 
 ```text
 public streaming          OFF
@@ -502,17 +512,22 @@ provider memory           OFF
 store                     false
 SDK automatic retries     OFF / max_retries=0
 DANTE retries             only after classified safe pre-acceptance failure
-live compatibility data   synthetic/public/minimized until private-data gates pass
+reasoning effort          medium
+reasoning context         current_turn
+service tier              default
+truncation                disabled
+live compatibility data   synthetic/public/minimized only
 production activation     OFF
 ```
 
-C9 must preserve:
+C9 currently proves:
 
 ```text
 DANTE allocates ProviderAttemptId before dispatch
 ProviderAdapter owns protocol translation only
 SDK/provider types do not escape private adapter boundary
-SDK hidden retries disabled or every real wire attempt DANTE-visible
+SDK hidden retries disabled / max_retries=0
+material SDK 500 conformance -> exactly one HTTP attempt
 timeout after possible acceptance != safe replay
 possible accepted + lost response -> indeterminate outcome
 refusal != infrastructure failure
@@ -523,11 +538,65 @@ ProviderAdapter != routing authority
 ProviderAdapter != Auth/AuthZ/Policy authority
 ProviderAdapter != Effect authority
 no DB mappings / SQLAlchemy / inbound HTTP schema imports in provider adapter
+route-config identity remains exact-byte SHA-256 bound
+candidate route remains inactive / production-off / private-data-ineligible
 ```
 
-C9 may add the admitted provider SDK only inside the private adapter dependency surface and lock an exact compatible version through normal `uv` authority. It may not broaden provider feature modes merely because the SDK exposes them.
+Validated pre-live code checkpoint:
 
-Live compatibility is real disclosure. Before private/sensitive data eligibility, use only synthetic/public/minimized fixtures sufficient to exercise protocol behavior.
+```text
+4bc02b783fad58ca32acd577881ccf1a9ee0998c
+```
+
+Final pre-live regression evidence:
+
+```text
+uv lock --check                              PASS
+uv sync --locked                            PASS
+uv / Python / OpenAI SDK                    0.12.5 / 3.14.7 / 3.7.0
+backend Ruff format/check                    PASS
+P4 runner Ruff format/check                  PASS
+backend mypy                                 PASS / 103 source files
+P4 runner mypy                               PASS / 1 source file
+material SDK + route-config suite            PASS / 12
+non-PostgreSQL backend                       PASS / 153, 80 deselected
+backend build                                PASS
+no-key / no-network guard                    PASS
+canonical PostgreSQL 18.6 image              PASS
+PostgreSQL acceptance                        PASS / 80, 153 deselected
+C9 PRE-LIVE FINAL DETERMINISTIC REGRESSION   PASS
+exit code                                    0
+```
+
+Durable evidence record:
+
+```text
+ai-c9-pre-live-checkpoint-2026-09.md
+```
+
+The P4 runner deliberately blocks before dispatch when `DANTE_OPENAI_QUALIFICATION_API_KEY` is absent. That guard is PASS evidence, not a provider-live PASS.
+
+Remaining C9 step:
+
+```text
+P4 real provider compatibility
+→ one user-owned qualification credential
+→ synthetic/public/minimized fixture only
+→ no secret or DANTE private content persisted
+→ exact outcome / acceptance / usage / provider IDs / route identity evidence
+```
+
+Until that real call executes successfully:
+
+```text
+C9 overall                  OPEN / PRE-LIVE READY
+P4 provider live            NOT RUN
+production qualification    NO
+private-data eligibility    NO
+production activation       OFF
+```
+
+Live compatibility is real disclosure. Before private/sensitive data eligibility, only synthetic/public/minimized fixtures sufficient to exercise protocol behavior are allowed.
 
 C9 does **not** authorize:
 
