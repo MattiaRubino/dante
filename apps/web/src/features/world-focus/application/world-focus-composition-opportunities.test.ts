@@ -191,11 +191,9 @@ describe('World Focus M3-2 composition opportunities', () => {
       'trajectory',
       'evidence-history',
     ]);
-    expect(opportunities.opportunities).not.toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ projection: expect.anything() }),
-      ]),
-    );
+    opportunities.opportunities.forEach((item) => {
+      expect(item).not.toHaveProperty('projection');
+    });
     expect(JSON.stringify(opportunities)).not.toContain('release-copy');
     expect(JSON.stringify(opportunities)).not.toContain('blocked-copy');
     expect(JSON.stringify(opportunities)).not.toContain('release-state');
