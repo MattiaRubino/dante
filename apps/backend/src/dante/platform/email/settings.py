@@ -8,31 +8,66 @@ from pydantic import SecretStr
 
 
 class EmailPlatformSettings(Protocol):
-    """Minimum validated configuration consumed by shared email infrastructure.
+    """Read-only validated configuration consumed by shared email infrastructure.
 
     Bootstrap may compose these fields inside a broader application settings object; the
     platform depends only on this structural contract and never on Access/Auth settings.
+    Read-only properties keep concrete enum/value types covariant at the consumer boundary.
     """
 
-    email_transport: object
-    email_worker_count: int
-    email_claim_batch_size: int
-    email_claim_lease_seconds: float
-    email_poll_interval_seconds: float
-    email_retry_base_seconds: float
-    email_retry_max_seconds: float
-    email_attempt_limit: int
-    email_provider_connect_timeout_seconds: float
-    email_provider_read_timeout_seconds: float
-    email_payload_current_key_id: str | None
-    ses_region: str | None
-    ses_configuration_set: str | None
+    @property
+    def email_transport(self) -> object: ...
 
-    smtp_host: str
-    smtp_port: int
-    smtp_security: object
-    smtp_username: str | None
-    smtp_password: SecretStr | None
+    @property
+    def email_worker_count(self) -> int: ...
+
+    @property
+    def email_claim_batch_size(self) -> int: ...
+
+    @property
+    def email_claim_lease_seconds(self) -> float: ...
+
+    @property
+    def email_poll_interval_seconds(self) -> float: ...
+
+    @property
+    def email_retry_base_seconds(self) -> float: ...
+
+    @property
+    def email_retry_max_seconds(self) -> float: ...
+
+    @property
+    def email_attempt_limit(self) -> int: ...
+
+    @property
+    def email_provider_connect_timeout_seconds(self) -> float: ...
+
+    @property
+    def email_provider_read_timeout_seconds(self) -> float: ...
+
+    @property
+    def email_payload_current_key_id(self) -> str | None: ...
+
+    @property
+    def ses_region(self) -> str | None: ...
+
+    @property
+    def ses_configuration_set(self) -> str | None: ...
+
+    @property
+    def smtp_host(self) -> str: ...
+
+    @property
+    def smtp_port(self) -> int: ...
+
+    @property
+    def smtp_security(self) -> object: ...
+
+    @property
+    def smtp_username(self) -> str | None: ...
+
+    @property
+    def smtp_password(self) -> SecretStr | None: ...
 
     @property
     def email_payload_key_bytes(self) -> dict[str, bytes]: ...
