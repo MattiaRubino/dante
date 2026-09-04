@@ -38,15 +38,13 @@ def upgrade() -> None:
     op.create_check_constraint(
         op.f(_PURPOSE_CONSTRAINT),
         _TABLE,
-        "purpose_code = btrim(purpose_code) "
-        "AND purpose_code ~ '^[a-z][a-z0-9_]{0,63}$'",
+        "purpose_code = btrim(purpose_code) AND purpose_code ~ '^[a-z][a-z0-9_]{0,63}$'",
         schema=_SCHEMA,
     )
     op.create_check_constraint(
         op.f(_STREAM_CONSTRAINT),
         _TABLE,
-        "stream_code = btrim(stream_code) "
-        "AND stream_code ~ '^[a-z][a-z0-9_]{0,63}$'",
+        "stream_code = btrim(stream_code) AND stream_code ~ '^[a-z][a-z0-9_]{0,63}$'",
         schema=_SCHEMA,
     )
 
