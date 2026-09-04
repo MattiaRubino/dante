@@ -24,7 +24,8 @@ export default defineConfig({
     stdout: 'pipe',
     stderr: 'pipe',
     env: {
-      VITE_DANTE_GOOGLE_CLIENT_ID: 'dante-e2e-client.apps.googleusercontent.com',
+      VITE_DANTE_GOOGLE_CLIENT_ID:
+        'dante-e2e-client.apps.googleusercontent.com',
       VITE_DANTE_APPLE_ENABLED: 'true',
     },
   },
