@@ -1,7 +1,7 @@
 # DANTE Architecture Index
 
 - **Status:** CURRENT / AUTHORITATIVE NAVIGATION
-- **Last reconciled:** 2026-09-03
+- **Last reconciled:** 2026-09-04
 
 This file describes current architecture truth directly. Historical candidates, hardenings and phase-time status remain evidence in their owning documents/Git history and do not override this index.
 
@@ -41,7 +41,11 @@ I0 / I1 / I2                         CLOSED / PASS
 I3/C3                                DEFERRED / WAITING OWNER DATA + SEAMS
 C6 / C7                              CLOSED / PASS
 C8 / P1 provider admission           CLOSED / OPENAI NATIVE + RESPONSES + GPT-5.6 TERRA ADMITTED FOR QUALIFICATION
-AI current next action               C9 — admitted inactive provider adapter/binding + conformance/live compatibility
+C9                                   OPEN / PRE-LIVE READY
+C9 P2/P3 + SDK + conformance         PASS
+C9 P4 pre-live                       PASS
+C9 P4 real provider live             NOT RUN
+AI current next action               C9 P4 real provider live compatibility
 ```
 
 Protected `main` remains the integrated authority for shared closed foundations. `feature/ai-architecture` retains the accepted architecture authority/evidence. `feature/ai-implementation` contains newer bounded implementation truth until normal protected-main integration.
@@ -53,6 +57,7 @@ Implementation remains governed by:
 - [`dante-ai-implementation-baseline-final.md`](dante-ai-implementation-baseline-final.md) — **CURRENT / ACCEPTED implementation-facing architecture authority**;
 - [`dante-ai-post05-final-mega-acceptance.md`](dante-ai-post05-final-mega-acceptance.md) — final independent structural acceptance evidence;
 - [`../workstreams/ai-implementation.md`](../workstreams/ai-implementation.md) — current branch-local implementation state and validated checkpoints;
+- [`../workstreams/ai-c9-pre-live-checkpoint-2026-09.md`](../workstreams/ai-c9-pre-live-checkpoint-2026-09.md) — current C9 pre-live deterministic/material evidence and remaining live gate;
 - [`../workstreams/ai-provider-candidate-admission-2026-09.md`](../workstreams/ai-provider-candidate-admission-2026-09.md) — current C8/P1 provider candidate admission evidence;
 - [`../workstreams/ai-architecture.md`](../workstreams/ai-architecture.md) — closed branch-local architecture workstream record.
 
@@ -162,18 +167,23 @@ No generic AI conversation/Run/Context/Memory/SearchResult/embedding persistence
 
 ## 6. Provider / qualification posture
 
-C8/P1 has admitted exactly one initial qualification candidate:
+C8/P1 admitted exactly one initial qualification candidate and C9 has now materialized its inactive qualification-only SDK/adapter:
 
 ```text
 provider          OpenAI native API
 API               Responses API
 model candidate   gpt-5.6-terra
+SDK               openai 3.7.0 / locked
+adapter           MATERIALIZED / INACTIVE
 status            ADMITTED FOR QUALIFICATION ONLY
+C9 pre-live       PASS
+C9 live provider  NOT RUN
 ```
 
-Current evidence record:
+Current evidence records:
 
-- [`../workstreams/ai-provider-candidate-admission-2026-09.md`](../workstreams/ai-provider-candidate-admission-2026-09.md).
+- [`../workstreams/ai-provider-candidate-admission-2026-09.md`](../workstreams/ai-provider-candidate-admission-2026-09.md);
+- [`../workstreams/ai-c9-pre-live-checkpoint-2026-09.md`](../workstreams/ai-c9-pre-live-checkpoint-2026-09.md).
 
 Retained non-admitted challengers:
 
@@ -187,16 +197,18 @@ Correct sequence remains:
 ```text
 candidate shortlist
 → candidate admission                         C8 / CLOSED
-→ inactive adapter/binding                    C9 / NEXT
-→ adapter conformance
-→ live compatibility with synthetic/public/minimized test data
-→ direct DANTE eval on production-owned composition
+→ inactive adapter/binding + SDK              C9 / MATERIALIZED
+→ deterministic/material adapter conformance  C9 / PASS
+→ P4 pre-live                                 C9 / PASS
+→ final deterministic + PostgreSQL regression C9 / PASS
+→ live compatibility with synthetic/public/minimized test data C9 / NOT RUN
+→ direct DANTE eval on production-owned composition C10
 → applicable security/privacy/capacity/economics evidence
 → qualification
-→ promotion
+→ promotion                                  C11
 ```
 
-Admission does **not** establish production qualification, private-data eligibility, entitlement, availability or rollout status. Qualification traffic is real disclosure. Auxiliary model calls use the same governed ModelAccess/egress/resource/eval boundary.
+Admission and pre-live PASS do **not** establish production qualification, private-data eligibility, entitlement, availability or rollout status. Qualification traffic is real disclosure. Auxiliary model calls use the same governed ModelAccess/egress/resource/eval boundary.
 
 Applicable SC/PSV direct proofs remain activation gates; missing applicable evidence is not `N/A`.
 
@@ -213,7 +225,7 @@ current Alembic head
 = 20260830_09
 ```
 
-I0-I2/C6/C7/C8 introduced no database/Alembic change.
+I0-I2/C6/C7/C8/C9 pre-live introduced no database/Alembic change.
 
 Specialist components remain trigger-gated: FTS/pg_trgm, pgvector/ANN/embeddings, Restate, R2, MCP/A2A, Execution Environment, commercial/shared usage ledger, cross-Run disclosure accounting and AI memory persistence.
 
@@ -243,14 +255,14 @@ Important frontend ADRs:
 
 ## 9. Current next action
 
-Architecture design/reengineering remains closed. Current implementation has reached the provider qualification lane.
+Architecture design/reengineering remains closed. Current implementation has reached the final C9 provider-live compatibility gate.
 
 ```text
 NEXT
-→ C9
-→ admitted inactive OpenAI Responses / gpt-5.6-terra binding
-→ provider adapter + conformance
-→ live compatibility only on synthetic/public/minimized data
+→ C9 P4 real OpenAI Responses / gpt-5.6-terra live compatibility
+→ user-owned qualification credential required
+→ one synthetic/public/minimized fixture
+→ binding remains inactive / production off / private-data ineligible
 ```
 
-C9 does not activate production Search/Ask, private-data routing or any new persistence. I3/C3 remains deferred until real owner data/seams are integration-ready and must converge before I6.
+C9 pre-live deterministic/material proof is already PASS at code checkpoint `4bc02b783fad58ca32acd577881ccf1a9ee0998c`. The live provider call is still `NOT RUN`; C9 therefore remains **OPEN / PRE-LIVE READY**, not CLOSED. C9 does not activate production Search/Ask, private-data routing or any new persistence. I3/C3 remains deferred until real owner data/seams are integration-ready and must converge before I6.
