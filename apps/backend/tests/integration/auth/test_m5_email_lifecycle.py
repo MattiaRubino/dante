@@ -214,6 +214,7 @@ async def _latest_intent_payload(
             email_intent_ref=row.email_intent_ref,
             email_attempt_ref=uuid7(),
             claim_token=uuid7(),
+            stream_code=row.stream_code,
             purpose_code=row.purpose_code,
             template_code=row.template_code,
             template_revision=row.template_revision,

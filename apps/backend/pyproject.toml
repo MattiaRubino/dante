@@ -131,6 +131,32 @@ pretty = true
 files = ["src", "tests"]
 enable_error_code = ["explicit-override", "exhaustive-match"]
 
+# fido2 2.2.1 exposes ES256.from_cryptography_key without typing metadata. Keep the
+# exception restricted to the two tests that exercise the real third-party boundary.
+[[tool.mypy.overrides]]
+module = [
+    "tests.test_auth_webauthn",
+    "tests.integration.auth.test_m5_passkeys",
+]
+disable_error_code = ["no-untyped-call"]
+
+# These HTTP-contract tests intentionally use minimal structural fakes instead of constructing
+# heavyweight runtime services. Production code remains fully strict; only fake-to-concrete
+# argument compatibility is suppressed in these focused test modules.
+[[tool.mypy.overrides]]
+module = [
+    "tests.test_auth_m5_provider_api",
+    "tests.test_auth_m5_passkey_api",
+    "tests.test_auth_m5_api",
+]
+disable_error_code = ["arg-type"]
+
+# SQLAlchemy exposes column_descriptions through a runtime-shaped tuple that mypy cannot narrow
+# after the exact length guard used by this concurrency test.
+[[tool.mypy.overrides]]
+module = ["tests.integration.auth.test_m5_passkeys"]
+disable_error_code = ["misc"]
+
 [tool.pydantic-mypy]
 init_forbid_extra = true
 init_typed = true
