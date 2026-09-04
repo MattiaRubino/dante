@@ -2,9 +2,9 @@
 
 - **Status:** CURRENT NAVIGATION / AUTHORITY INDEX
 - **Last reconciled:** 2026-09-04
-- **Current candidate:** `integration/access-auth-main-20260904`
-- **Accepted candidate proof HEAD:** `81639c61478b476c995652d0060dde8f53aef089`
-- **Current work:** PROTECTED-MAIN INTEGRATION READY
+- **Protected main:** Access/Auth + shared Email Platform + Recovery integrated
+- **Current Alembic:** `20260904_17`
+- **Current work:** `feature/platform-observability` integration
 
 ## Authority order
 
@@ -17,7 +17,7 @@
 6. conversation memory
 ```
 
-Protected `main` still owns integrated Recovery-only truth at Alembic `20260830_09`. The accepted integration candidate contains Recovery + Access/Auth + shared Email Platform at the no-DDL merge head `20260904_17` and has passed combined CI plus the enriched-baseline CP07 whole LOCAL recovery rehearsal.
+Protected `main` now owns the combined Access/Auth + shared Email Platform + Recovery truth at Alembic `20260904_17`. PR #52 integrated the accepted candidate at merge commit `5f76ec54ad78542f137e8730e904f805d9e59e56`; post-merge Backend and Frontend CI passed on that exact commit.
 
 ## Current lifecycle
 
@@ -25,16 +25,16 @@ Protected `main` still owns integrated Recovery-only truth at Alembic `20260830_
 Product / Domain / Logical / Physical          CLOSED / CURRENT
 Engineering / Frontend / Backend CP1–CP6      CLOSED / ACCEPTED
 PostgreSQL                                     18.6
-Protected-main Recovery                        CLOSED / INTEGRATED
-Access/Auth M1–M5                              CLOSED / ACCEPTED
-Shared Email Platform                          CLOSED / ACCEPTED / OWNERSHIP VERIFIED
+Recovery                                       CLOSED / INTEGRATED
+Access/Auth M1–M5                              CLOSED / INTEGRATED
+Shared Email Platform                          CLOSED / INTEGRATED / OWNERSHIP VERIFIED
 Apple real external UAT                        BOUNDED DEFERRED
-Candidate Alembic                              20260904_17
-Candidate DB                                   88/5/16/76/172/89/270
-Combined candidate CI                          PASS
+Protected-main Alembic                         20260904_17
+Protected-main DB                              88/5/16/76/172/89/270
 CP07 whole LOCAL recovery                      PASS
-Integration candidate                          READY FOR PROTECTED-MAIN MERGE
-feature/platform-observability                 CLOSED / OPERATIONAL PASS / NOT INTEGRATED
+post-merge Backend CI                          PASS
+post-merge Frontend CI                         PASS
+feature/platform-observability                 CLOSED / OPERATIONAL PASS / NEXT INTEGRATION
 M6 Native Mobile                               FUTURE / OPTIONAL
 later M7 Access/security maturity              FUTURE
 ```
@@ -55,7 +55,7 @@ CP07 `LOCAL PASS` does not claim a remote backup provider or production/cloud re
 ## Access/Auth
 
 - `workstreams/access-auth.md`
-- `workstreams/access-auth-integration-acceptance-2026-09-04.md`
+- `workstreams/access-auth-integration-acceptance-2026-09-04.md` — historical/executed integration evidence
 - `architecture/access-auth-architecture.md`
 - `architecture/access-auth-security-contract.md`
 - `architecture/access-auth-api-contract.md`
@@ -94,15 +94,13 @@ current human DB reference
 ≈ direct tests
 ```
 
-## Integration sequence
+## Current integration sequence
 
 ```text
-accepted combined candidate
-→ PR #52 to protected main
-→ post-merge main verification + current-document reconciliation
-→ enriched main into feature/platform-observability
-→ observability release rechecks
-→ protected-main PR
+enriched protected main
+→ feature/platform-observability
+→ observability release/integration rechecks
+→ protected-main Observability PR
 → future bounded workstreams
 ```
 

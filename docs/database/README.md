@@ -1,11 +1,11 @@
 # DANTE Database System of Record
 
-- **Status:** CURRENT / INTEGRATION CANDIDATE / COMBINED QA PASS
+- **Status:** CURRENT / PROTECTED MAIN / COMBINED QA PASS
 - **Last reconciled:** 2026-09-04
 - **PostgreSQL:** 18.6
-- **Protected-main Alembic head:** `20260830_09`
-- **Integration-candidate Alembic head:** `20260904_17`
-- **Accepted candidate proof HEAD:** `81639c61478b476c995652d0060dde8f53aef089`
+- **Protected-main Alembic head:** `20260904_17`
+- **Access integration merge:** `5f76ec54ad78542f137e8730e904f805d9e59e56`
+- **Accepted implementation proof HEAD:** `81639c61478b476c995652d0060dde8f53aef089`
 - **Access/Auth reference:** `access-auth.md`
 - **Shared Email Platform authority:** `../architecture/email-platform.md`
 - **Recovery operator authority:** `../operations/postgres-recovery-runbook.md`
@@ -35,11 +35,11 @@ CURRENT DB REFERENCE
 ≈ DIRECT TESTS
 ```
 
-Protected `main` remains Recovery-only until PR #52 lands. The accepted integration candidate is the current forward database contract for the pending protected-main integration; candidate truth must not be mislabeled as already merged main truth.
+Protected `main` now owns the combined Recovery + Access/Auth + shared Email Platform database contract. The former integration candidate is historical evidence only.
 
 ## 2. Current migration graph
 
-Protected main and Access/Auth originated as sibling children of `20260826_08`. The candidate preserves both histories:
+Recovery and Access/Auth originated as sibling children of `20260826_08`; protected `main` preserves both histories:
 
 ```text
 20260826_08
@@ -58,9 +58,9 @@ Protected main and Access/Auth originated as sibling children of `20260826_08`. 
         20260904_17
 ```
 
-`20260904_17` is forward-only and performs no DDL.
+`20260904_17` is forward-only and performs no DDL. No accepted migration was rebased, renumbered or flattened.
 
-## 3. Accepted candidate topology
+## 3. Current protected-main topology
 
 ```text
 88 tables
@@ -72,14 +72,14 @@ Protected main and Access/Auth originated as sibling children of `20260826_08`. 
 270 CHECK constraints
 ```
 
-Frozen CP6 baseline remains:
+Frozen CP6 baseline remains historical evidence:
 
 ```text
 68 tables / 5 views / 14 routines / 75 triggers
 95 indexes / 68 FKs / 120 CHECKs
 ```
 
-Protected-main Recovery-only historical/current-before-merge topology remains:
+The pre-PR-#52 Recovery-only protected-main state also remains historical evidence:
 
 ```text
 20260830_09
@@ -87,11 +87,11 @@ Protected-main Recovery-only historical/current-before-merge topology remains:
 97 indexes / 69 FKs / 123 CHECKs
 ```
 
-That Recovery-only topology is not the accepted integration-candidate topology.
+Neither historical topology overrides the current protected-main contract above.
 
 ## 4. Combined acceptance proof
 
-On exact candidate proof HEAD `81639c61478b476c995652d0060dde8f53aef089`:
+On implementation proof HEAD `81639c61478b476c995652d0060dde8f53aef089`:
 
 ```text
 Backend Quality         PASS
@@ -116,9 +116,11 @@ DATABASE LOCAL REOPEN   PASS
 
 Derived/object gates were `NOT_ACTIVATED / NO FALSE PASS`. Remote backup provider remained `TBD / NOT ACTIVATED`; production/cloud recovery was not claimed.
 
+PR #52 then merged the accepted final candidate into protected `main` at `5f76ec54ad78542f137e8730e904f805d9e59e56`. The merge tree is identical to the accepted final candidate tree. Push CI on the exact merge commit passed Backend Quality, real PostgreSQL acceptance, Backend CI Gate, Frontend Quality, Web E2E, Mobile Bundle and Frontend CI Gate.
+
 Durable evidence: `../workstreams/access-auth-integration-acceptance-2026-09-04.md`.
 
-## 5. Integration rule
+## 5. Migration/integration rule
 
 Forbidden:
 
@@ -131,7 +133,7 @@ stamp over missing history
 flatten an accepted branch away
 ```
 
-Accepted proof on the candidate includes:
+Accepted proof includes:
 
 ```text
 fresh DB → 20260904_17
@@ -143,9 +145,10 @@ Dictionary ↔ SQLAlchemy ↔ live catalog
 owners / ACL
 Recovery + Auth + Email behavior together
 CP07 enriched-baseline recovery acceptance
+post-merge protected-main Backend/Frontend CI
 ```
 
-If protected `main` changes before merge, this acceptance must be re-evaluated against the new base. Any database/recovery-contract delta requires the affected real-PostgreSQL gates and CP07 to be rerun.
+Future schema changes must evolve forward from the current protected-main head and rerun every affected proof layer.
 
 ## 6. Access/Auth persistence
 
@@ -176,13 +179,13 @@ provider evidence distinct from DANTE intent truth
 suppression distinct from EmailIdentity ownership/verification
 ```
 
-The shared-ownership refactor and forward shared-vocabulary migration `20260904_16` are accepted on the current candidate through static/unit/PostgreSQL regression and exact-HEAD CI.
+The shared-ownership refactor and forward shared-vocabulary migration `20260904_16` are integrated on protected `main`.
 
 ## 8. Dictionary contract
 
-`dictionary/scope.json` keeps the CP6 `expected_baseline` frozen and uses `current_materialization` for the accepted combined candidate inventory. `completed_stages` remains CP6 provenance only; post-CP6 provenance lives on each object entry.
+`dictionary/scope.json` keeps the CP6 `expected_baseline` frozen and uses `current_materialization` for the current protected-main inventory. `completed_stages` remains CP6 provenance only; post-CP6 provenance lives on each object entry.
 
-The Dictionary currently describes the candidate contract `20260904_17 / 88|5|16|76|172|89|270`. After PR #52 lands, only the lifecycle label changes from integration-candidate truth to protected-main truth; object semantics/counts do not change unless the merge result itself differs and is revalidated.
+The Dictionary describes the protected-main contract `20260904_17 / 88|5|16|76|172|89|270`. Its current object semantics/counts must remain aligned with Alembic, SQLAlchemy, the human reference and real PostgreSQL.
 
 ## 9. Blueprint lifecycle
 
@@ -192,4 +195,4 @@ The Dictionary currently describes the candidate contract `20260904_17 / 88|5|16
 
 A structural database change is incomplete until the reviewed slice aligns semantic authority, forward Alembic, SQLAlchemy, Dictionary, current human reference, direct tests and real PostgreSQL proof.
 
-A branch integration is incomplete until the accepted candidate state is also reflected consistently in the current DB reference, recovery runbook and project/workstream status without rewriting historical evidence.
+The Access/Auth + Email + Recovery integration is complete on protected `main`; future verticals consume this current contract and evolve it only through normal reviewed forward changes.

@@ -10,23 +10,22 @@
 Product / Domain / Logical / Physical            CLOSED / CURRENT
 Engineering / Frontend / Backend CP1–CP6        CLOSED / ACCEPTED
 PostgreSQL                                       18.6
-Protected-main Recovery                          CLOSED / INTEGRATED
+Recovery                                         CLOSED / INTEGRATED
 
-Access/Auth M1–M5                                CLOSED / ACCEPTED
-Shared Email Platform                            CLOSED / ACCEPTED / OWNERSHIP VERIFIED
+Access/Auth M1–M5                                CLOSED / INTEGRATED
+Shared Email Platform                            CLOSED / INTEGRATED / OWNERSHIP VERIFIED
 Google / Windows Hello / SES real UAT            PASS
 Apple registered-domain UAT                      BOUNDED DEFERRED / NON-BLOCKING
 
-integration/access-auth-main-20260904
-  proof HEAD                                     81639c61478b476c995652d0060dde8f53aef089
-  main Recovery                                  INCLUDED
+protected main
+  Access integration merge                       5f76ec54ad78542f137e8730e904f805d9e59e56
   Alembic                                        20260904_17
   topology                                       88/5/16/76/172/89/270
-  combined CI                                    PASS
   CP07 whole LOCAL recovery                      PASS
-  state                                          READY FOR PROTECTED-MAIN MERGE
+  post-merge Backend CI                          PASS
+  post-merge Frontend CI                         PASS
 
-feature/platform-observability                   CLOSED / OPERATIONAL PASS / NOT INTEGRATED
+feature/platform-observability                   CLOSED / OPERATIONAL PASS / NEXT INTEGRATION
 M6 Native Mobile                                 FUTURE / OPTIONAL
 later M7 Access/security maturity                FUTURE
 ```
@@ -34,7 +33,6 @@ later M7 Access/security maturity                FUTURE
 ## Current Access/Auth authority
 
 - `access-auth.md`
-- `access-auth-integration-acceptance-2026-09-04.md`
 - `../PROJECT-STATUS.md`
 - `../ROADMAP.md`
 - `../database/README.md`
@@ -44,23 +42,25 @@ later M7 Access/security maturity                FUTURE
 - `../operations/postgres-recovery-runbook.md`
 - `../development/email-platform-acceptance-2026-09-03.md`
 
-M5 is closed. Apple real external UAT is an explicit bounded deferral, not a PASS. CP07 is a LOCAL operator-recovery PASS, not production/cloud recovery acceptance.
+Durable executed integration evidence remains in `access-auth-integration-acceptance-2026-09-04.md`; it is historical evidence, not an active handoff.
+
+M5 is closed and integrated. Apple real external UAT is an explicit bounded deferral, not a PASS. CP07 is a LOCAL operator-recovery PASS, not production/cloud recovery acceptance.
 
 ## Documentation lifecycle
 
-Temporary Access/Auth handoffs were removed after knowledge coverage. Durable review/closure/integration evidence may remain, but historical checkpoints never override current executable/current-reference truth.
+Temporary Access/Auth handoffs were removed after knowledge coverage. Durable review/closure/integration evidence remains, but historical checkpoints never override current executable/current-reference truth.
 
-The old `access-auth-m4-m7-execution-plan.md` is historical planning; current execution order is owned only by `../ROADMAP.md` and `access-auth.md`.
+The old `access-auth-m4-m7-execution-plan.md` is historical planning; current execution order is owned only by `../ROADMAP.md` and current workstream documents.
+
+The former integration branch `integration/access-auth-main-20260904` is no longer current authority after PR #52. Its history remains Git evidence only.
 
 ## Current integration order
 
 ```text
-accepted Access/Auth + Recovery + Email candidate
-→ protected-main PR #52
-→ post-merge main verification + current-document reconciliation
-→ enriched main into feature/platform-observability
-→ observability release rechecks
-→ protected-main PR
+enriched protected main
+→ feature/platform-observability
+→ observability release/integration rechecks
+→ protected-main Observability PR
 → future bounded workstreams
 ```
 
@@ -68,7 +68,7 @@ accepted Access/Auth + Recovery + Email candidate
 
 Backend/database history is retained through current DB authority plus archive/Git chronology. Frontend/engineering/domain/logical historical workstream records remain evidence only unless explicitly marked current.
 
-`access-auth-closure-2026-09-03.md` remains historical feature-branch closure evidence and must continue to say integration was pending at that historical checkpoint. `access-auth-integration-acceptance-2026-09-04.md` is the durable record for the accepted combined candidate immediately before protected-main integration.
+`access-auth-closure-2026-09-03.md` remains historical feature-branch closure evidence and truthfully records that integration was pending at that checkpoint. `access-auth-integration-acceptance-2026-09-04.md` records the accepted combined candidate and later post-merge closure evidence without rewriting its original chronology.
 
 ## Permanent rules
 

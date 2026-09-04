@@ -6,7 +6,7 @@ DANTE is a personal operating system designed to help people understand, organiz
 
 ## Current repository state
 
-Protected `main` remains the integration authority. The accepted integration candidate is `integration/access-auth-main-20260904`, which contains protected-main Recovery plus Access/Auth M1–M5 and the shared Email Platform.
+Protected `main` is the single integrated authority. Access/Auth M1–M5, the shared Email Platform and PostgreSQL Recovery are now integrated together on `main` through PR #52.
 
 ```text
 PRODUCT / DOMAIN / LOGICAL / PHYSICAL      CLOSED / CURRENT
@@ -14,32 +14,29 @@ ENGINEERING / FRONTEND / BACKEND CP1–CP6  CLOSED / ACCEPTED
 POSTGRESQL                                 18.6
 
 PROTECTED MAIN
+  Access/Auth M1–M5                        CLOSED / INTEGRATED
+  Shared Email Platform                    CLOSED / INTEGRATED
   Recovery                                 CLOSED / INTEGRATED
-  Alembic                                  20260830_09
-
-INTEGRATION CANDIDATE
-  branch                                   integration/access-auth-main-20260904
-  accepted proof HEAD                      81639c61478b476c995652d0060dde8f53aef089
-  Access/Auth M1–M5                        CLOSED / ACCEPTED
-  Shared Email Platform                    CLOSED / ACCEPTED
   Windows Hello / Google / SES real UAT    PASS
   Apple registered-domain UAT              BOUNDED DEFERRED / NON-BLOCKING
-  Recovery from main                       INCLUDED
   Alembic                                  20260904_17
   DB topology                              88 tables / 5 views / 16 routines /
                                            76 triggers / 172 indexes / 89 FKs /
                                            270 CHECKs
-  combined CI                              PASS
+  post-merge Backend CI                    PASS
+  post-merge Frontend CI                   PASS
   CP07 whole LOCAL recovery rehearsal      PASS
-  current work                             READY FOR PROTECTED-MAIN MERGE
 
+feature/platform-observability             CLOSED / OPERATIONAL PASS / NEXT INTEGRATION
 M6 Native Mobile                           FUTURE / OPTIONAL
 later Access/M7 maturity                   FUTURE
 ```
 
 `20260904_17` is a no-DDL forward Alembic merge revision with parents `20260830_09` and `20260904_16`. Neither accepted migration history was rewritten.
 
-The accepted CP07 rehearsal on exact proof HEAD `81639c61478b476c995652d0060dde8f53aef089` proved the integrated `20260904_17` database contract, deterministic PITR, anti-resurrection reconciliation, rejected protected-payload reinsertion and `DATABASE LOCAL REOPEN = PASS`. Remote backup provider activation and production/cloud recovery remain **NOT CLAIMED**.
+PR #52 merged the accepted Access/Auth + shared Email Platform candidate with protected-main Recovery at merge commit `5f76ec54ad78542f137e8730e904f805d9e59e56`. The merge tree is identical to the accepted final candidate tree, and protected-main Backend/Frontend CI passed after the merge.
+
+The accepted CP07 rehearsal on implementation proof HEAD `81639c61478b476c995652d0060dde8f53aef089` proved the integrated `20260904_17` database contract, deterministic PITR, anti-resurrection reconciliation, rejected protected-payload reinsertion and `DATABASE LOCAL REOPEN = PASS`. Remote backup provider activation and production/cloud recovery remain **NOT CLAIMED**.
 
 Durable integration evidence lives in `docs/workstreams/access-auth-integration-acceptance-2026-09-04.md`.
 
@@ -64,10 +61,8 @@ The Email Platform is shared DANTE infrastructure; Access/Auth is its first cons
 ## Current integration order
 
 ```text
-accepted Recovery + Access/Auth + Email candidate
-→ PR #52 to protected main
-→ post-merge main verification and current-authority reconciliation
-→ enriched main into feature/platform-observability
+enriched protected main
+→ merge into feature/platform-observability
 → observability integration/release rechecks
 → PR observability to protected main
 → future bounded workstreams from enriched main

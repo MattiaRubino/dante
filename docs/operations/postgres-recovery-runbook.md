@@ -1,16 +1,16 @@
 # DANTE — PostgreSQL Local Recovery Operator Runbook
 
-- **Status:** CURRENT / REHEARSED / CP07 LOCAL PASS / INTEGRATED-CANDIDATE CONTRACT PROVEN
+- **Status:** CURRENT / REHEARSED / CP07 LOCAL PASS / PROTECTED-MAIN CONTRACT
 - **Scope:** whole local PostgreSQL disaster recovery and semantic acceptance
 - **Remote backup provider:** TBD / NOT ACTIVATED
 - **Production/cloud recovery:** NOT CLAIMED
 - **Canonical database:** PostgreSQL 18.6
-- **Accepted candidate Alembic head:** `20260904_17`
-- **Protected-main head before PR #52:** `20260830_09`
-- **Accepted candidate proof HEAD:** `81639c61478b476c995652d0060dde8f53aef089`
+- **Current protected-main Alembic head:** `20260904_17`
+- **Access integration merge:** `5f76ec54ad78542f137e8730e904f805d9e59e56`
+- **Accepted CP07 implementation proof HEAD:** `81639c61478b476c995652d0060dde8f53aef089`
 - **Whole-rehearsal harness:** `infra/local/postgres/recovery/cp07-whole-recovery-rehearsal.sh`
 
-> This runbook is deliberately provider-neutral. It describes the accepted DANTE LOCAL recovery contract for the current integration candidate. A future remote-storage provider is selected only when production deployment actually requires one.
+> This runbook is deliberately provider-neutral. It describes the accepted DANTE LOCAL recovery contract now owned by protected `main`. A future remote-storage provider is selected only when production deployment actually requires one.
 
 ## 1. Operator objective
 
@@ -137,7 +137,7 @@ derived/object reconciliation requirement
 
 ## 6. Structural and security acceptance
 
-Accepted current integration-candidate LOCAL contract:
+Accepted current protected-main LOCAL contract:
 
 ```text
 PostgreSQL       18.6
@@ -163,7 +163,7 @@ Alembic          20260830_09
 topology         69|5|15|76|97|69|123|0|0|0
 ```
 
-That historical/current-before-merge contract must not be used to accept a restore of the enriched candidate.
+That historical contract must not be used to accept a restore of the current enriched protected-main database.
 
 ## 7. Anti-resurrection reconciliation
 
@@ -195,7 +195,7 @@ prove payload reinsertion is rejected
 
 Only then may the database-local reopen gate continue.
 
-A PREPARED-only ledger state is intentionally ambiguous and must block automatic suppression. The current CP07 directly exercised this fail-closed path before canonical retirement + COMMITTED suppression were completed.
+A PREPARED-only ledger state is intentionally ambiguous and must block automatic suppression. The accepted CP07 directly exercised this fail-closed path before canonical retirement + COMMITTED suppression were completed.
 
 ## 8. Reopen decision
 
@@ -278,15 +278,14 @@ remote-provider status
 
 These are local observations, never invented production RPO/RTO targets.
 
-### Latest accepted integrated-candidate CP07 evidence — 2026-09-04
+### Latest accepted CP07 evidence — 2026-09-04
 
 Exact proof relation:
 
 ```text
-branch          integration/access-auth-main-20260904
-upstream        origin/integration/access-auth-main-20260904
-proof HEAD      81639c61478b476c995652d0060dde8f53aef089
-recovery image  dante-postgres-recovery:18.6-pgbackrest-2.59.1
+historical branch  integration/access-auth-main-20260904
+proof HEAD         81639c61478b476c995652d0060dde8f53aef089
+recovery image     dante-postgres-recovery:18.6-pgbackrest-2.59.1
 ```
 
 Direct whole-rehearsal result:
@@ -332,6 +331,8 @@ whole harness                             103.912062 s
 The report status was `LOCAL_PASS`.
 
 These are LOCAL rehearsal observations only. They are not production RPO/RTO targets.
+
+PR #52 subsequently merged the CP07-proven schema/recovery contract into protected `main` at `5f76ec54ad78542f137e8730e904f805d9e59e56`; the merge tree is identical to the final candidate tree and post-merge real PostgreSQL plus Backend/Frontend CI passed. Therefore `20260904_17 / 88|5|16|76|172|89|270` is now the current protected-main recovery acceptance target.
 
 Durable repository-level integration evidence is also summarized in `../workstreams/access-auth-integration-acceptance-2026-09-04.md`; the ignored local JSON remains the machine observation for that workstation run.
 
@@ -382,7 +383,7 @@ Provider-specific implementation, costs, credentials, production RPO/RTO and pro
 
 The Recovery workstream previously proved the branch-agnostic/idempotent bootstrap and runner on its own exact pushed Recovery-only implementation heads, including fresh-clone secret bootstrap, image build, exact branch/upstream gating, PITR, anti-resurrection and cleanup.
 
-Those older measurements remain historical evidence in Git/archive records. They must not override the latest accepted enriched-candidate contract in sections 6 and 10.
+Those older measurements remain historical evidence in Git/archive records. They must not override the current protected-main contract in sections 6 and 10.
 
 The permanent conclusion carried forward is:
 

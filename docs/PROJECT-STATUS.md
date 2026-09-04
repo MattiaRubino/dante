@@ -1,12 +1,11 @@
 # DANTE — Project Status
 
-- **Status:** CURRENT INTEGRATION-CANDIDATE TRUTH / READY FOR PROTECTED-MAIN MERGE
+- **Status:** CURRENT PROTECTED-MAIN TRUTH
 - **Last reconciled:** 2026-09-04
-- **Protected `main`:** Recovery integrated at Alembic `20260830_09`
-- **Integration candidate:** `integration/access-auth-main-20260904`
-- **Accepted candidate proof HEAD:** `81639c61478b476c995652d0060dde8f53aef089`
-- **Current candidate Alembic head:** `20260904_17`
-- **Current macro state:** **M5 CLOSED / COMBINED INTEGRATION QA PASS**
+- **Protected `main` integration merge:** `5f76ec54ad78542f137e8730e904f805d9e59e56`
+- **Current Alembic head:** `20260904_17`
+- **Current macro state:** **ACCESS/AUTH M1–M5 + SHARED EMAIL + RECOVERY CLOSED / INTEGRATED**
+- **Next bounded integration:** `feature/platform-observability`
 
 ## 1. Current state
 
@@ -16,32 +15,34 @@ Domain / Logical / Physical                CLOSED
 Engineering + Frontend + Backend CP1–CP6  CLOSED / ACCEPTED
 PostgreSQL                                 18.6
 
-Access M1–M5                               CLOSED / ACCEPTED
+Access M1–M5                               CLOSED / INTEGRATED
 local password/passkey UAT                 PASS
 real Windows Hello UAT                     PASS
 real Google UAT                            PASS
 real Apple registered-domain UAT           BOUNDED DEFERRED / NON-BLOCKING
 
-Shared Email Platform                      CLOSED / ACCEPTED / OWNERSHIP VERIFIED
+Shared Email Platform                      CLOSED / INTEGRATED / OWNERSHIP VERIFIED
 real SES signup UAT                        PASS
 real SES recovery UAT                      PASS
 real reset-notification UAT                PASS
 
-Protected-main Recovery                    MERGED INTO CANDIDATE
-Combined Alembic                           20260904_17
-Combined candidate CI                      PASS
+PostgreSQL Recovery                        CLOSED / INTEGRATED
+Alembic                                    20260904_17
+protected-main DB                          88/5/16/76/172/89/270
 CP07 whole LOCAL recovery rehearsal        PASS
-Integration candidate                      READY FOR PROTECTED-MAIN MERGE
+post-merge Backend CI                      PASS
+post-merge Frontend CI                     PASS
 
+feature/platform-observability             CLOSED / OPERATIONAL PASS / NEXT INTEGRATION
 M6 Native Mobile                           FUTURE / OPTIONAL
 later Access/M7 maturity                   FUTURE
 ```
 
 Apple is not reported as PASS. Real Apple external acceptance remains a future enablement prerequisite when its external account/domain prerequisites exist.
 
-CP07 proves only the documented LOCAL PostgreSQL operator recovery scope. Remote backup provider activation and production/cloud recovery are not claimed.
+CP07 proves only the documented LOCAL PostgreSQL operator recovery scope. Remote backup provider activation and production/cloud recovery remain not claimed.
 
-## 2. Combined database truth
+## 2. Current database truth
 
 ```text
 PostgreSQL          18.6
@@ -74,19 +75,17 @@ Migration graph:
         20260904_17
 ```
 
-`20260904_17` performs no schema mutation. It only joins the two accepted histories.
+`20260904_17` performs no schema mutation. It joins the two accepted forward histories without rewriting either one.
 
-## 3. Combined acceptance evidence
+## 3. Integration and acceptance evidence
 
-Exact accepted candidate:
+Implementation proof HEAD:
 
 ```text
-branch             integration/access-auth-main-20260904
-upstream           origin/integration/access-auth-main-20260904
-proof HEAD         81639c61478b476c995652d0060dde8f53aef089
+81639c61478b476c995652d0060dde8f53aef089
 ```
 
-GitHub Actions on that exact HEAD:
+On that exact implementation state:
 
 ```text
 Dependency Review  PASS
@@ -94,9 +93,10 @@ Frontend CI        PASS
 Backend Quality    PASS
 Backend PostgreSQL PASS
 Backend CI Gate    PASS
+CP07 LOCAL recovery PASS
 ```
 
-The 2026-09-04 CP07 whole LOCAL operator rehearsal on that exact HEAD additionally proved:
+The CP07 rehearsal additionally proved:
 
 ```text
 Alembic head                                  20260904_17
@@ -111,7 +111,18 @@ remote provider                               TBD / NOT ACTIVATED
 production/cloud recovery                     NOT CLAIMED
 ```
 
-Durable evidence: `workstreams/access-auth-integration-acceptance-2026-09-04.md`.
+PR #52 then merged the final candidate into protected `main`:
+
+```text
+old main       fe87d3c8a71f0c56d9acf5e8acbcdb274b18f282
+candidate      6cee5506d404d0684b0679aca54c03f0ca433c72
+merge commit   5f76ec54ad78542f137e8730e904f805d9e59e56
+merge tree     b610ece4fbfa0049749bb8454345a96a0385e6e5
+```
+
+The merge tree is identical to the accepted final candidate tree. Push CI on the exact merge commit passed Backend Quality, real PostgreSQL acceptance, Backend CI Gate, Frontend Quality, Web E2E, Mobile Bundle and Frontend CI Gate.
+
+Durable pre-merge and CP07 evidence remains in `workstreams/access-auth-integration-acceptance-2026-09-04.md`.
 
 ## 4. Frozen Access/Auth constitution
 
@@ -133,29 +144,23 @@ reauthentication != signin
 
 ## 5. Shared Email Platform
 
-The Email Platform is reusable DANTE infrastructure. Access/Auth owns its own message meaning/templates; the platform owns durable delivery lifecycle, encryption, claim/lease, retry/ambiguity policy, providers, feedback, suppression and observability.
+The Email Platform is reusable DANTE infrastructure. Access/Auth owns message meaning/templates; the platform owns durable delivery lifecycle, encryption, claim/lease, retry/ambiguity policy, providers, feedback, suppression and privacy-minimized observability.
 
-The shared-ownership refactor and forward vocabulary migration are accepted on the combined candidate through the current static/unit/PostgreSQL regression and exact-HEAD CI. Accepted real SES evidence remains in `development/email-platform-acceptance-2026-09-03.md`. Production sender-domain/DNS/reputation/workload-identity deployment remains a separate gate.
+The shared-ownership refactor and forward vocabulary migration are integrated on protected `main`. Accepted real SES evidence remains in `development/email-platform-acceptance-2026-09-03.md`. Production sender-domain/DNS/reputation/workload-identity deployment remains a separate gate.
 
 ## 6. Current gate
 
-Feature expansion remains frozen. The candidate acceptance gate is **PASS** for its declared integration scope.
+Access/Auth + Email + Recovery integration is **CLOSED / INTEGRATED**. There is no active Access integration candidate.
 
-Remaining work before branch retirement is procedural integration only:
+Current execution order:
 
 ```text
-reconcile current documentation to measured candidate truth
-verify protected main has not advanced unexpectedly
-review exact documentation-only acceptance commit
-require fresh CI on that commit
-mark PR #52 ready
-merge through protected-main PR flow
-verify the resulting main commit/tree and CI
-reconcile current docs from candidate wording to protected-main wording
-only then retire the integration branch
+enriched protected main
+→ integrate into feature/platform-observability
+→ rerun Observability release/integration gates
+→ protected-main Observability PR
+→ future bounded workstreams from enriched main
 ```
-
-If `main` changes before merge, stop and re-integrate the new main delta forward; rerun every affected acceptance gate, including CP07 when the database/recovery contract is affected.
 
 ## 7. Integration safety
 
