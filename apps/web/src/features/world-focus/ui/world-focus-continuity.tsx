@@ -19,30 +19,23 @@ import {
 } from './presentation/world-focus-qualifiers';
 
 type WorldFocusContinuitySettledState =
-  | Readonly<{ status: 'error' }>
+  | Readonly<{ status: 'loading' | 'error' }>
   | WorldFocusContinuityReadResult;
 
-type WorldFocusContinuityProps = Readonly<{
-  worldId: WorldFocusId;
-  reader?: WorldFocusContinuityReader;
+type WorldFocusContinuityResultProps = Readonly<{
+  result: WorldFocusContinuityReadResult;
+  onRetry?: () => void;
 }>;
 
-export function WorldFocusContinuity({
-  worldId,
-  reader = readWorldFocusContinuity,
-}: WorldFocusContinuityProps) {
+function WorldFocusContinuityState({
+  state,
+  onRetry,
+}: Readonly<{
+  state: WorldFocusContinuitySettledState;
+  onRetry?: () => void;
+}>) {
   const { t } = useTranslation('common');
-  const [coordinator] = useState(() => new WorldFocusLatestReadCoordinator());
-  const [retryGeneration, setRetryGeneration] = useState(0);
-  const [settled, setSettled] = useState<Readonly<{
-    requestKey: string;
-    state: WorldFocusContinuitySettledState;
-  }> | null>(null);
-  const requestKey = `${worldId}:${retryGeneration}`;
-  const state =
-    settled?.requestKey === requestKey
-      ? settled.state
-      : ({ status: 'loading' } as const);
+  const title = t(($) => $.common.worldFocus.continuity.title);
   const stateLabels: Readonly<
     Record<WorldFocusContinuityPresentationState, string>
   > = {
@@ -51,28 +44,7 @@ export function WorldFocusContinuity({
     blocked: t(($) => $.common.worldFocus.continuity.states.blocked),
   };
 
-  useEffect(() => {
-    const lease = coordinator.begin();
-
-    void reader(worldId, lease.signal)
-      .then((result) => {
-        lease.commit(() => setSettled({ requestKey, state: result }));
-      })
-      .catch(() => {
-        if (lease.signal.aborted) return;
-        lease.commit(() =>
-          setSettled({ requestKey, state: { status: 'error' } }),
-        );
-      })
-      .finally(() => lease.release());
-
-    return () => coordinator.cancelCurrent();
-  }, [coordinator, reader, requestKey, worldId]);
-
   if (state.status === 'empty') return null;
-  const retry = () => setRetryGeneration((generation) => generation + 1);
-  const title = t(($) => $.common.worldFocus.continuity.title);
-
   if (state.status === 'loading') {
     return (
       <WorldFocusPresentationSection
@@ -89,7 +61,9 @@ export function WorldFocusContinuity({
   }
 
   if (state.status === 'error' || state.status === 'unavailable') {
-    const retryable = state.status === 'error' || state.retryable;
+    const retryable =
+      onRetry !== undefined &&
+      (state.status === 'error' || state.retryable);
     return (
       <WorldFocusPresentationSection
         className="world-focus-continuity world-focus-continuity-degraded"
@@ -106,7 +80,7 @@ export function WorldFocusContinuity({
             <button
               className="world-focus-continuity-retry"
               type="button"
-              onClick={retry}
+              onClick={onRetry}
             >
               {t(($) => $.common.worldFocus.continuity.retry)}
             </button>
@@ -116,18 +90,17 @@ export function WorldFocusContinuity({
     );
   }
 
-  const projection = state.projection;
   const qualifier =
     state.status === 'partial'
       ? {
-          axis: 'coverage',
-          state: 'incomplete',
+          axis: 'coverage' as const,
+          state: 'incomplete' as const,
           label: t(($) => $.common.worldFocus.continuity.partial),
         }
       : state.status === 'stale'
         ? {
-            axis: 'freshness',
-            state: 'stale',
+            axis: 'freshness' as const,
+            state: 'stale' as const,
             label: t(($) => $.common.worldFocus.continuity.stale),
           }
         : null;
@@ -149,7 +122,7 @@ export function WorldFocusContinuity({
         </WorldFocusQualifierGroup>
       )}
       <ul className="world-focus-continuity-list">
-        {projection.orderedItems.map((item) => (
+        {state.projection.orderedItems.map((item) => (
           <li
             className="world-focus-continuity-item world-focus-presentation-row"
             data-world-focus-continuity-state={item.presentationState}
@@ -172,5 +145,57 @@ export function WorldFocusContinuity({
         ))}
       </ul>
     </WorldFocusPresentationSection>
+  );
+}
+
+/** Pure result renderer used by M3-4 so planning and rendering share one read. */
+export function WorldFocusContinuityResult({
+  result,
+  onRetry,
+}: WorldFocusContinuityResultProps) {
+  return <WorldFocusContinuityState state={result} onRetry={onRetry} />;
+}
+
+type WorldFocusContinuityProps = Readonly<{
+  worldId: WorldFocusId;
+  reader?: WorldFocusContinuityReader;
+}>;
+
+/** Backward-compatible self-reading wrapper for isolated Continuity consumers/tests. */
+export function WorldFocusContinuity({
+  worldId,
+  reader = readWorldFocusContinuity,
+}: WorldFocusContinuityProps) {
+  const [coordinator] = useState(() => new WorldFocusLatestReadCoordinator());
+  const [retryGeneration, setRetryGeneration] = useState(0);
+  const [settled, setSettled] = useState<Readonly<{
+    requestKey: string;
+    state: WorldFocusContinuitySettledState;
+  }> | null>(null);
+  const requestKey = `${worldId}:${retryGeneration}`;
+  const state =
+    settled?.requestKey === requestKey
+      ? settled.state
+      : ({ status: 'loading' } as const);
+
+  useEffect(() => {
+    const lease = coordinator.begin();
+    void reader(worldId, lease.signal)
+      .then((result) => {
+        lease.commit(() => setSettled({ requestKey, state: result }));
+      })
+      .catch(() => {
+        if (lease.signal.aborted) return;
+        lease.commit(() => setSettled({ requestKey, state: { status: 'error' } }));
+      })
+      .finally(() => lease.release());
+    return () => coordinator.cancelCurrent();
+  }, [coordinator, reader, requestKey, worldId]);
+
+  return (
+    <WorldFocusContinuityState
+      state={state}
+      onRetry={() => setRetryGeneration((generation) => generation + 1)}
+    />
   );
 }

@@ -29,16 +29,12 @@ import {
   type WorldFocusEntrySource,
 } from '../model/world-focus-transition';
 import { WORLD_FOCUS_VISUAL_VERSION } from '../model/world-focus-visual';
-import { WorldFocusCompositionHost } from './world-focus-composition-host';
+import { WorldFocusAdaptiveComposition } from './world-focus-adaptive-composition';
 import {
   WorldFocusCompositionCustomizationProvider,
   WorldFocusCompositionCustomizeInvoke,
 } from './world-focus-composition-customization-context';
 import { WorldFocusContext } from './world-focus-context';
-import {
-  getCoreWorldFocusComposition,
-  getCoreWorldFocusModuleRegistry,
-} from './world-focus-core-composition';
 import { getCoreWorldFocusSurfaceRegistry } from './world-focus-core-surfaces';
 import {
   WorldFocusDanteEntryProvider,
@@ -86,7 +82,6 @@ function WorldFocusWorkspaceExperience({
   onRequestWorldClose,
 }: WorldFocusWorkspaceExperienceProps) {
   const { requestEscape } = useWorldFocusWorkspace();
-  const compositionPlan = getCoreWorldFocusComposition();
 
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
@@ -130,11 +125,7 @@ function WorldFocusWorkspaceExperience({
             </>
           }
         >
-          <WorldFocusCompositionHost
-            worldId={identity.id}
-            entries={compositionPlan.entries}
-            registry={getCoreWorldFocusModuleRegistry()}
-          />
+          <WorldFocusAdaptiveComposition worldId={identity.id} />
         </WorldFocusWorkspace>
       </WorldFocusDanteEntryProvider>
     </WorldFocusCompositionCustomizationProvider>
