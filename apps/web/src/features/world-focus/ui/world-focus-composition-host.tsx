@@ -31,6 +31,20 @@ type WorldFocusCompositionHostProps<WorldId extends string = string> = Readonly<
   >;
 }>;
 
+type WorldFocusRegisteredModuleProps<WorldId extends string = string> = Readonly<{
+  registration: WorldFocusCompositionRegistration<string, WorldId>;
+  worldId: WorldId;
+  entry: WorldFocusCompositionPlanEntry;
+}>;
+
+function WorldFocusRegisteredModule<WorldId extends string = string>({
+  registration,
+  worldId,
+  entry,
+}: WorldFocusRegisteredModuleProps<WorldId>) {
+  return <>{registration.render({ worldId, entry })}</>;
+}
+
 /**
  * Owns placement/isolation for an already-resolved World composition plan.
  * Ranking, canonical meaning and authorization remain outside this renderer.
@@ -99,7 +113,11 @@ export function WorldFocusCompositionHost<WorldId extends string = string>({
                 </section>
               )}
             >
-              {registration.render({ worldId, entry })}
+              <WorldFocusRegisteredModule
+                registration={registration}
+                worldId={worldId}
+                entry={entry}
+              />
             </WorldFocusRenderBoundary>
           </div>
         );
