@@ -108,7 +108,7 @@ function renderCustomizationHarness(overrides: CustomizationOverrides = {}) {
         worldId="music"
         worldLabel="Musica"
         reader={overrides.reader ?? deterministicReader()}
-        applyDraft={overrides.applyDraft}
+        applyDraft={overrides.applyDraft ?? applyWorldFocusCompositionDraft}
       >
         <WorldFocusWorkspace
           worldLabel="Musica"
