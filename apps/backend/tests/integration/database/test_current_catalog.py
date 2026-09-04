@@ -20,9 +20,12 @@ from dante.platform.database.metadata import Base
 
 pytestmark = pytest.mark.postgres
 
-_CURRENT_REVISION = "20260903_15"
+_CURRENT_REVISION = "20260904_16"
 _REPO_ROOT = Path(__file__).resolve().parents[5]
 _DICTIONARY_ROOT = _REPO_ROOT / "docs" / "database" / "dictionary"
+_RUNTIME_ROLE = "dante_runtime"
+_TABLE_PRIVILEGES = ("SELECT", "INSERT", "UPDATE", "DELETE", "TRUNCATE", "REFERENCES", "TRIGGER")
+_COLUMN_PRIVILEGES = ("SELECT", "INSERT", "UPDATE", "REFERENCES")
 
 
 def _entries(kind: str) -> dict[str, dict[str, Any]]:
@@ -230,101 +233,71 @@ def test_current_catalog_matches_dictionary_sqlalchemy_and_alembic(
     assert scripts.get_heads() == [_CURRENT_REVISION]
 
 
-def test_auth_runtime_acl_is_exact(migrated_database: Any) -> None:
+def _expected_runtime_acl(entry: dict[str, Any]) -> tuple[set[str], dict[str, set[str]]]:
+    table_privileges: set[str] = set()
+    column_privileges: dict[str, set[str]] = {}
+    for grant in entry["security"]["expected_grants"]:
+        if grant["grantee"] != _RUNTIME_ROLE:
+            continue
+        privilege = str(grant["privilege"])
+        columns = {str(column) for column in grant["columns"]}
+        if columns:
+            column_privileges.setdefault(privilege, set()).update(columns)
+        else:
+            table_privileges.add(privilege)
+    return table_privileges, column_privileges
+
+
+def test_runtime_table_and_column_acl_matches_dictionary(migrated_database: Any) -> None:
+    tables = _entries("tables")
+
     with _admin(migrated_database) as connection:
-        table_privileges = connection.execute(
-            """
-            SELECT
-              has_table_privilege('dante_runtime','dante.account','SELECT'),
-              has_table_privilege('dante_runtime','dante.account','INSERT'),
-              has_table_privilege('dante_runtime','dante.account','UPDATE'),
-              has_table_privilege('dante_runtime','dante.account','DELETE'),
-              has_table_privilege('dante_runtime','dante.email_identity','SELECT'),
-              has_table_privilege('dante_runtime','dante.email_identity','INSERT'),
-              has_table_privilege('dante_runtime','dante.email_identity','UPDATE'),
-              has_table_privilege('dante_runtime','dante.email_identity','DELETE'),
-              has_table_privilege('dante_runtime','dante.password_credential','SELECT'),
-              has_table_privilege('dante_runtime','dante.password_credential','INSERT'),
-              has_table_privilege('dante_runtime','dante.password_credential','UPDATE'),
-              has_table_privilege('dante_runtime','dante.password_credential','DELETE'),
-              has_table_privilege('dante_runtime','dante.auth_session','SELECT'),
-              has_table_privilege('dante_runtime','dante.auth_session','INSERT'),
-              has_table_privilege('dante_runtime','dante.auth_session','UPDATE'),
-              has_table_privilege('dante_runtime','dante.auth_session','DELETE')
-            """
+        schema_acl = connection.execute(
+            "SELECT has_schema_privilege(%s,'dante','USAGE'), "
+            "has_schema_privilege(%s,'dante','CREATE')",
+            (_RUNTIME_ROLE, _RUNTIME_ROLE),
         ).fetchone()
-        creation_columns = connection.execute(
-            """
-            SELECT
-              has_column_privilege('dante_runtime','dante.account','account_ref','INSERT'),
-              has_column_privilege('dante_runtime','dante.account','status_code','INSERT'),
-              has_column_privilege('dante_runtime','dante.account','created_at','INSERT'),
-              has_column_privilege('dante_runtime','dante.account','disabled_at','INSERT'),
-              has_column_privilege('dante_runtime','dante.email_identity','email_identity_ref','INSERT'),
-              has_column_privilege('dante_runtime','dante.email_identity','account_ref','INSERT'),
-              has_column_privilege('dante_runtime','dante.email_identity','address','INSERT'),
-              has_column_privilege('dante_runtime','dante.email_identity','comparison_key','INSERT'),
-              has_column_privilege('dante_runtime','dante.email_identity','created_at','INSERT'),
-              has_column_privilege('dante_runtime','dante.email_identity','verified_at','INSERT'),
-              has_column_privilege('dante_runtime','dante.password_credential','password_credential_ref','INSERT'),
-              has_column_privilege('dante_runtime','dante.password_credential','account_ref','INSERT'),
-              has_column_privilege('dante_runtime','dante.password_credential','verifier','INSERT'),
-              has_column_privilege('dante_runtime','dante.password_credential','pepper_key_id','INSERT'),
-              has_column_privilege('dante_runtime','dante.password_credential','created_at','INSERT'),
-              has_column_privilege('dante_runtime','dante.password_credential','updated_at','INSERT')
-            """
-        ).fetchone()
-        password_columns = connection.execute(
-            """
-            SELECT
-              has_column_privilege('dante_runtime','dante.password_credential','verifier','UPDATE'),
-              has_column_privilege('dante_runtime','dante.password_credential','pepper_key_id','UPDATE'),
-              has_column_privilege('dante_runtime','dante.password_credential','updated_at','UPDATE'),
-              has_column_privilege('dante_runtime','dante.password_credential','account_ref','UPDATE'),
-              has_column_privilege('dante_runtime','dante.password_credential','password_credential_ref','UPDATE')
-            """
-        ).fetchone()
-        session_columns = connection.execute(
-            """
-            SELECT
-              has_column_privilege('dante_runtime','dante.auth_session','last_user_activity_at','UPDATE'),
-              has_column_privilege('dante_runtime','dante.auth_session','revoked_at','UPDATE'),
-              has_column_privilege('dante_runtime','dante.auth_session','revocation_reason_code','UPDATE'),
-              has_column_privilege('dante_runtime','dante.auth_session','secret_verifier','UPDATE'),
-              has_column_privilege('dante_runtime','dante.auth_session','recent_auth_at','UPDATE'),
-              has_column_privilege('dante_runtime','dante.auth_session','expires_at','UPDATE'),
-              has_column_privilege('dante_runtime','dante.auth_session','account_ref','UPDATE'),
-              has_column_privilege('dante_runtime','dante.auth_session','auth_session_ref','UPDATE'),
-              has_column_privilege('dante_runtime','dante.auth_session','authenticated_at','UPDATE')
-            """
-        ).fetchone()
-        challenge_privileges = connection.execute(
-            """
-            SELECT
-              has_table_privilege('dante_runtime','dante.password_signup_challenge','SELECT'),
-              has_table_privilege('dante_runtime','dante.password_signup_challenge','INSERT'),
-              has_table_privilege('dante_runtime','dante.password_signup_challenge','UPDATE'),
-              has_table_privilege('dante_runtime','dante.password_signup_challenge','DELETE'),
-              has_table_privilege('dante_runtime','dante.password_recovery_challenge','SELECT'),
-              has_table_privilege('dante_runtime','dante.password_recovery_challenge','INSERT'),
-              has_table_privilege('dante_runtime','dante.password_recovery_challenge','UPDATE'),
-              has_table_privilege('dante_runtime','dante.password_recovery_challenge','DELETE')
-            """
-        ).fetchone()
-        signup_update_columns = connection.execute(
-            """
-            SELECT
-              has_column_privilege('dante_runtime','dante.password_signup_challenge','otp_verifier','UPDATE'),
-              has_column_privilege('dante_runtime','dante.password_signup_challenge','otp_key_id','UPDATE'),
-              has_column_privilege('dante_runtime','dante.password_signup_challenge','updated_at','UPDATE'),
-              has_column_privilege('dante_runtime','dante.password_signup_challenge','verification_issued_at','UPDATE'),
-              has_column_privilege('dante_runtime','dante.password_signup_challenge','verification_expires_at','UPDATE'),
-              has_column_privilege('dante_runtime','dante.password_signup_challenge','failed_verification_attempts','UPDATE'),
-              has_column_privilege('dante_runtime','dante.password_signup_challenge','signup_ref','UPDATE'),
-              has_column_privilege('dante_runtime','dante.password_signup_challenge','email_address','UPDATE'),
-              has_column_privilege('dante_runtime','dante.password_signup_challenge','password_verifier','UPDATE')
-            """
-        ).fetchone()
+        assert schema_acl == (True, False)
+
+        for table_name, entry in tables.items():
+            table_privileges, column_privileges = _expected_runtime_acl(entry)
+            relation = f"dante.{table_name}"
+
+            actual_table = connection.execute(
+                "SELECT "
+                + ", ".join("has_table_privilege(%s,%s,%s)" for _ in _TABLE_PRIVILEGES),
+                tuple(
+                    value
+                    for privilege in _TABLE_PRIVILEGES
+                    for value in (_RUNTIME_ROLE, relation, privilege)
+                ),
+            ).fetchone()
+            assert actual_table == tuple(
+                privilege in table_privileges for privilege in _TABLE_PRIVILEGES
+            ), table_name
+
+            for column in map(str, (item["name"] for item in entry["structure"]["columns"])):
+                actual_column = connection.execute(
+                    "SELECT "
+                    + ", ".join(
+                        "has_column_privilege(%s,%s,%s,%s)" for _ in _COLUMN_PRIVILEGES
+                    ),
+                    tuple(
+                        value
+                        for privilege in _COLUMN_PRIVILEGES
+                        for value in (_RUNTIME_ROLE, relation, column, privilege)
+                    ),
+                ).fetchone()
+                expected_column = tuple(
+                    privilege in table_privileges
+                    or column in column_privileges.get(privilege, set())
+                    for privilege in _COLUMN_PRIVILEGES
+                )
+                assert actual_column == expected_column, f"{table_name}.{column}"
+
+
+def test_account_security_lock_capability_is_exact(migrated_database: Any) -> None:
+    with _admin(migrated_database) as connection:
         function_acl = connection.execute(
             """
             SELECT
@@ -348,29 +321,6 @@ def test_auth_runtime_acl_is_exact(migrated_database: Any) -> None:
             """
         ).fetchone()
 
-    assert table_privileges == (
-        True,
-        False,
-        False,
-        False,
-        True,
-        False,
-        False,
-        False,
-        True,
-        False,
-        False,
-        True,
-        True,
-        True,
-        False,
-        False,
-    )
-    assert creation_columns == (True,) * 16
-    assert password_columns == (True, True, True, False, False)
-    assert session_columns == (True, True, True, True, True, True, False, False, False)
-    assert challenge_privileges == (True, True, False, True, True, True, False, True)
-    assert signup_update_columns == (True, True, True, True, True, True, False, False, False)
     assert function_acl is not None
     assert function_acl[0:5] == ("dante_owner", True, "v", "u", False)
     assert function_acl[5] == ["search_path=pg_catalog, dante, pg_temp"]
