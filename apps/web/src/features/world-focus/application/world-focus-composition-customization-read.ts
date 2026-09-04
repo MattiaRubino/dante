@@ -84,7 +84,7 @@ export function createWorldFocusCompositionCustomizationReader(
         readers.readEvidenceHistory(worldId, controller.signal),
       ]);
 
-      if (signal?.aborted === true) {
+      if (controller.signal.aborted) {
         throw createAbortError();
       }
 
