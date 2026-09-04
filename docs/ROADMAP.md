@@ -81,7 +81,7 @@ feature/access-auth             active full-stack product work
 feature/home-react              active frontend work
 feature/platform-observability  active platform work
 feature/ai-implementation       active AI implementation; I0-I2 CLOSED/PASS
-                                I3/C3 deferred pending owner data/seams
+                                I3/C3 Search deferred pending owner data/seams
                                 C6+C7+C8 CLOSED
                                 C9 OPEN / PRE-LIVE READY
 feature/ai-architecture         AI architecture design CLOSED / retained authority/evidence
@@ -208,6 +208,14 @@ Current implementation authority:
 docs/architecture/dante-ai-implementation-baseline-final.md
 ```
 
+Current implementation sequencing amendment:
+
+```text
+docs/architecture/dante-ai-search-intelligence-boundary-amendment-2026-09.md
+```
+
+The amendment is binding for current Search/Intelligence sequencing and supersedes the earlier composite `Global Search subset + read-only Ask DANTE` first-vertical wording. It does not reopen Product, Domain, Logical, Physical, database or the accepted ownership invariants.
+
 Current C8 provider admission evidence:
 
 ```text
@@ -252,7 +260,9 @@ I4  provider candidate admission + inactive adapter candidate
 
 I5  adapter conformance + live compatibility + direct DANTE qualification
 
-I6  read-only Ask DANTE
+I6  first real read-only Ask DANTE product integration
+    selected from an actual application capability/owner seam;
+    Search is required only if that selected Ask information need requires discovery
 
 I7  production hardening / observability / privacy / audit /
     resource / rollout / capacity
@@ -265,9 +275,9 @@ I10 proactive/background/durable/external-agent capabilities
     only on their real triggers
 ```
 
-### 7.1 Current executable lane
+### 7.1 Current executable Intelligence/provider lane
 
-The implementation blueprint separates the Search lane from the Intelligence/provider-preparation lane. Because I3 is conditional on real owner data/seams, execution continues without fabricating a Search family:
+Search and Intelligence are separate capabilities. Because I3 is conditional on a real Search owner/data seam, the Intelligence/provider lane continues without fabricating a Search family:
 
 ```text
 C6  Policy / Resource / Verification / Publication /
@@ -309,7 +319,7 @@ I3 / C3
 bounded PostgreSQL Search adapter + first real family proof
 ```
 
-remains open and must resume only when a real owner/data seam can truthfully supply the family. Current CP6 PostgreSQL materialization is a strong persistence substrate, but persistence rows alone do not create a complete product/application query seam.
+remains open and must resume only when a real Search owner/data seam can truthfully supply a family. Current CP6 PostgreSQL materialization is a strong persistence substrate, but persistence rows alone do not create a complete product/application query seam.
 
 I3 readiness requires, as applicable:
 
@@ -327,23 +337,42 @@ PSV-06 / SC-017 protected non-interference proof when applicable
 
 No fake title from UUIDs, Intelligence-owned cross-capability SQL, generic Repository/UoW, model-to-SQL or premature FTS/vector activation is allowed to manufacture readiness.
 
-### 7.3 Mandatory join before I6
+I3 is a Search capability checkpoint. It is **not** a global prerequisite for Ask DANTE.
 
-Provider qualification and the deferred deterministic lane may progress independently, but **I6 cannot activate the accepted first vertical until the required real source/query path is ready**.
+### 7.3 Intelligence integration gate before I6
 
-Operational convergence:
+Provider qualification and Search may progress independently. I6 requires the real source/query path needed by the **selected Intelligence product vertical**.
+
+Correct convergence is conditional:
 
 ```text
-C9 → C10 → C11
-             \
-              +→ JOIN GATE → I6 READ-ONLY ASK
-             /
-I3/C3 when owner seams become ready
+C9 → C10 → C11 ───────────────┐
+                               │
+real Intelligence owner seam ──┼→ I6 READ-ONLY ASK DANTE
+                               │
+Auth/AuthZ/disclosure/etc. ─────┤
+                               │
+I3/Search family ───────────────┘  ONLY WHEN THAT ASK VERTICAL NEEDS SEARCH DISCOVERY
 ```
 
-The join gate requires the real Search/structured source path needed by the selected first vertical, authoritative Auth/AuthZ/disclosure integration, currentness/publication behavior and every applicable direct proof.
+The integration gate requires, as applicable:
 
-### 7.4 Current exact next action
+```text
+real product/application owner
+real source data semantics
+owning public typed query/read seam or accepted projection
+safe display/result semantics
+current/history semantics
+Auth/AuthZ/Visibility/Consent/disclosure
+source/provenance/basis/currentness
+verification + publication behavior
+qualified model route when a model is used
+applicable direct proofs
+```
+
+A typed owning-capability query seam may satisfy an Ask information need without Global Search. Search becomes mandatory only for Ask workloads that genuinely require Search discovery.
+
+### 7.4 Current exact next provider action
 
 ```text
 C9 P4 — REAL PROVIDER LIVE COMPATIBILITY
@@ -390,28 +419,47 @@ C9 MUST NOT claim direct DANTE qualification or production eligibility
 NO database/Alembic change
 ```
 
-## 8. First implementation vertical boundary
+## 8. Search and first Intelligence vertical boundaries
 
-Target:
+### 8.1 Global Search
+
+Global Search remains an independent cross-cutting product capability:
 
 ```text
-GLOBAL SEARCH subset
-+ READ-ONLY ASK DANTE
+Search contracts / eligibility / registry
+→ real Search families when owner seams exist
+→ deterministic discovery/navigation
+→ protected Search proofs when applicable
 ```
 
-Initial envelope:
+It is deterministic/no-model capable and is not Ask DANTE, not the Intelligence UI and not a mandatory LLM workload.
+
+### 8.2 First real Intelligence vertical
+
+No concrete first Intelligence product vertical is selected by this roadmap after the Search/Intelligence boundary correction.
+
+It must be selected from a real application capability with:
+
+```text
+real owner
+real data/query seam
+real projection/display semantics
+permission/currentness/provenance behavior
+bounded read-only question/answer contract for the initial integration
+```
+
+The initial Intelligence envelope remains deliberately bounded unless a later accepted decision changes it:
 
 ```text
 private authenticated in-app
-single-turn
-inline/request-owned
-READ_ONLY
-public streaming OFF
-background/durable resume OFF
-consequential mutation OFF
+single-turn / request-owned initially
+READ_ONLY initially
+public streaming OFF initially
+background/durable resume OFF initially
+consequential mutation OFF initially
 ```
 
-Search is deterministic/no-model capable. Structured DANTE questions use owning capability typed query seams; no raw model-to-SQL or Intelligence-owned cross-capability SQL is permitted.
+This bounded envelope limits activation risk; it does not make Search part of Intelligence.
 
 ## 9. Provider / activation gates
 
@@ -439,7 +487,7 @@ candidate shortlist                         COMPLETE
 → promotion decision                        C11
 ```
 
-Candidate admission and pre-live PASS are not production eligibility. Build-ready is not activation-ready. Private-data Search/Ask requires real Auth/AuthZ, source/query semantics, applicable SC/PSV proofs, safe publication, evidence/privacy/audit and provider qualification when a model route is used.
+Candidate admission and pre-live PASS are not production eligibility. Build-ready is not activation-ready. Private-data Search and private-data Ask each require their own real source/query semantics, authoritative Auth/AuthZ, applicable SC/PSV proofs, safe publication, evidence/privacy/audit and provider qualification when a model route is used.
 
 ## 10. Current implementation state / non-claims
 
@@ -447,13 +495,14 @@ Candidate admission and pre-live PASS are not production eligibility. Build-read
 AI architecture design closed          YES
 post-AI05 structural mega pass         YES
 implementation baseline accepted       YES
+Search/Intelligence boundary amendment CURRENT / BINDING
 AI implementation started              YES
 I0 closed / pass                       YES
 I1 closed / pass                       YES
 I2 closed / pass                       YES
 Search shell/contracts implemented     YES
 Intelligence C5 contracts/fakes        YES
-I3 real family / PG adapter            NO / DEFERRED
+I3 real Search family / PG adapter     NO / DEFERRED
 C6 control contracts                   YES / CLOSED-PASS
 C7 route-config loader                 YES / CLOSED-PASS
 C8/P1 provider candidate admission     YES / CLOSED
@@ -467,7 +516,9 @@ live provider call                     NO / NOT RUN
 C9 overall                             OPEN / PRE-LIVE READY
 production qualification              NO
 private-data eligibility               NO
-production Search/Ask active           NO
+first real Intelligence product vertical NOT YET SELECTED
+production Search active               NO
+production Ask active                  NO
 new PostgreSQL/Alembic change          NO
 new generic AI persistence             NO
 FTS/vector activated                   NO
