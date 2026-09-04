@@ -1,6 +1,6 @@
 # DANTE — World Focus Research / Review Evidence Index
 
-**Status:** CURRENT EVIDENCE MAP — M0 / M1 / POST-M1 SAFETY / M2 CLOSED — M3 ACTIVE / M3-1 + M3-2 VALIDATED / PRE-M3-3 SAFETY CLOSED / PASS / M3-3 NEXT  
+**Status:** CURRENT EVIDENCE MAP — M0 / M1 / POST-M1 SAFETY / M2 CLOSED — M3 ACTIVE / M3-1 + M3-2 VALIDATED / PRE-M3-3 SAFETY CLOSED / PASS / M3-3 CLOSED / VALIDATED / M3-4 NEXT  
 **Date:** 2026-09-04  
 **Branch:** `feature/home-react`
 
@@ -14,6 +14,7 @@ world-focus-m3-adaptive-composition.md
 world-focus-frontend-roadmap.md
 world-focus-handoff.md
 world-focus-evidence-index.md
+current-checkpoint.md
 world-focus-m2-shared-visual-primitives.md
 world-focus-post-m1-safety-falsification-review.md
 world-focus-m1-core-nonvisual-materialization-review.md
@@ -22,7 +23,7 @@ world-focus-m0-materialization-mapping.md
 
 Protected-main Domain/Logical/Physical authority outranks frontend convenience whenever semantic boundaries are questioned.
 
-## 2. Historical substrate evidence retained
+## 2. Evidence families
 
 ```text
 E0  workspace/module uncertainty
@@ -49,6 +50,7 @@ E23–E25 M2 materialization/final hostile closure
 E26 M3-1 composition configuration foundation
 E27 M3-2 adaptive candidate resolver
 E28 PRE-M3-3 customization reachability safety
+E29 M3-3 Manual Customize UX + hostile closure
 ```
 
 Key anchors:
@@ -63,11 +65,26 @@ M2 final          e3865e0cde095acae7e3022815538f35ee0706ef / CI 33790953644 PASS
 M3-1              49304c9231375a22ef74a81b4fffa920d5a1e849 / CI 33850441232 PASS
 M3-2              b7892642dd66104ec04ea4b08ca11aa123789fa4 / CI 33854543037 PASS
 PRE-M3-3 safety   7781c6751a455767595eaf159747da833117f8b2 / CI 33862549244 PASS
+M3-3 baseline     168d3c9565914c8fcc47a578c0750b030d42223f / CI 33876915226 PASS
+M3-3 hostile      1978fe5c77c0e2661239372bf0f9bee238021faa / CI 33879774332 PASS
 ```
 
 ## E26 — M3-1 Composition Configuration Foundation
 
-Authority: `world-focus-m3-adaptive-composition.md`.
+Materialized:
+
+```text
+revisioned WorldFocusCompositionConfig
+schema disposition current / migration-required / unsupported
+ordered visibility/pin/prominence metadata
+isolated customization draft
+finite commands
+manual + dante-proposed command sources
+Cancel without committed effect
+Apply as revision-producing transition
+revision-conflict result
+cross-World Apply rejection
+```
 
 Evidence:
 
@@ -79,34 +96,7 @@ PASS 49304c9231375a22ef74a81b4fffa920d5a1e849 / CI 33850441232 PASS
 283 modules / 777 dependencies / 0 violations
 ```
 
-Materialized:
-
-```text
-revisioned WorldFocusCompositionConfig
-schema disposition current / migration-required / unsupported
-ordered visibility/pin/prominence metadata
-isolated customization draft
-finite pin/unpin/hide/show/move/promote/restore commands
-manual + dante-proposed command sources
-Cancel without committed effect
-Apply as revision-producing transition
-revision-conflict result
-cross-World Apply rejection
-```
-
-PRE-M3-3 later strengthens this owner without reopening its Domain/persistence scope.
-
 ## E27 — M3-2 Adaptive Candidate Resolver
-
-Evidence:
-
-```text
-RED  c2688c46bcbdaf06f2c5da9470bae967550b456d / CI 33854105057 EXPECTED FAILURE
-PASS b7892642dd66104ec04ea4b08ca11aa123789fa4 / CI 33854543037 PASS
-74 / 74 web test files
-356 / 356 web unit tests
-287 modules / 797 dependencies / 0 violations
-```
 
 Materialized:
 
@@ -135,181 +125,181 @@ current-intent
 
 No confidence, `aiRelevance` or weighted score authority.
 
+Evidence:
+
+```text
+RED  c2688c46bcbdaf06f2c5da9470bae967550b456d / CI 33854105057 EXPECTED FAILURE
+PASS b7892642dd66104ec04ea4b08ca11aa123789fa4 / CI 33854543037 PASS
+74 / 74 web test files
+356 / 356 web unit tests
+287 modules / 797 dependencies / 0 violations
+```
+
 ## E28 — PRE-M3-3 Customization Reachability Safety
 
-### E28.1 Authorization / PRE-SCOPE
+Purpose: falsify M3-1/M3-2 specifically for a real Manual Customize UX before visual work.
+
+Findings:
+
+```text
+A. unconfigured meaningful opportunity was unreachable
+B. configured supporting content could be forced to primary by config presence
+C. same-revision different-base draft could Apply
+```
+
+Closure added bounded `adopt`, corrected configured prominence and exact Apply base-snapshot checking.
+
+Evidence:
+
+```text
+PRE-SCOPE 959c9077b4726a0a89b479d23ebe0edab216018b
+RED       be63d49c43c88a491439b4014668a51c8ff8ad6b / CI 33861956558 EXPECTED FAILURE
+PASS      7781c6751a455767595eaf159747da833117f8b2 / CI 33862549244 PASS
+5 / 5 hostile safety tests PASS
+75 / 75 web test files
+362 / 362 web unit tests
+288 modules / 804 dependencies / 0 violations
+```
+
+`adopt` and `restore` remain composition metadata operations, not truth/AuthZ/persistence operations.
+
+## E29 — M3-3 Manual Customize UX + Hostile Closure
+
+### E29.1 Authorization / PRE-SCOPE
 
 ```text
 PRE-SCOPE
-959c9077b4726a0a89b479d23ebe0edab216018b
+7b50a5f96739f500bd52ab5f4e35d8f05ce02e3b
 ```
 
-Purpose: falsify M3-1/M3-2 specifically for the requirements of a real Manual Customize UX before writing UI.
+Authorized production area was intentionally narrow: one M1 aggregate customization read, one route-scoped customization owner, one finite surface, existing World page/surface wiring, local CSS, IT/EN copy and dedicated tests. M3-4 live candidate mounting, AppShell, Timeline, Access/Auth, backend/API/DB/Alembic/AuthZ/provider/LLM and fake persistence were excluded.
 
-Authorized material scope:
+### E29.2 Red-first
 
 ```text
-CREATE
-apps/web/src/features/world-focus/application/
-  world-focus-pre-m3-3-customization-safety.test.ts
-
-UPDATE production
-apps/web/src/features/world-focus/application/
-  world-focus-composition-customization.ts
-  world-focus-composition-resolver.ts
-
-UPDATE existing tests
-apps/web/src/features/world-focus/application/
-  world-focus-composition-customization.test.ts
-  world-focus-composition-resolver.test.ts
-
-UPDATE after green
-six live authority docs under docs/frontend/home
+f1b08fc1766f801d4573f81194a6e66a147c9433  initial RED test-only commit
+fd1d503268608df89724e216f3a5fc59f697dbef  test lint correction
+CI 33875210161 EXPECTED FAILURE
 ```
 
-Explicitly excluded: Customize UI, page/context/core composition, surface registry, drag/drop, React Aria dependency, live candidate mounting, M3-4, D2–D6, backend/API/DB/Alembic/AuthZ/provider/LLM, Timeline/AppShell/Access/Auth.
-
-### E28.2 Red-first
+Observed valid RED:
 
 ```text
-HEAD be63d49c43c88a491439b4014668a51c8ff8ad6b
-CI   33861956558 EXPECTED FAILURE
+pre-existing web tests 362 / 362 PASS
+new M3-3 tests         0 / 5 PASS
+failure                Customize product surface/orchestration absent
+contract/lint/typecheck/architecture/generated checks passed before functional failure
 ```
 
-The hostile file was committed before production changes and fixed five obligations:
+The RED was not weakened.
+
+### E29.3 Materialized production behavior
 
 ```text
-1. unconfigured meaningful opportunity must enter the customization path
-2. configured + no Promote must preserve opportunity default prominence
-3. same revision + different base snapshot must not Apply
-4. adopt must not retain arbitrary payload / disclosure / AI score data
-5. duplicate / blank / malformed adopt target must fail closed
+View mode distinct from Customize mode
+explicit invocation only
+accepted config unchanged during draft editing
+one route-scoped accepted-config + transaction owner
+lazy aggregate read of existing M1 runtime readers
+projection results reduced to bounded M3 opportunity metadata before UI state
+explicit adopt of meaningful unconfigured opportunity
+finite pin/unpin/hide/show/move/promote/restore controls
+keyboard-accessible deterministic reorder without drag dependency
+moved-row focus retention + screen-reader position announcement
+explicit Apply / Cancel
+revision conflict treatment
+invalid base/state fail-closed treatment
+exact focus return to invocation control
+finite sidecar surface through existing registry
+compact overlay degradation through existing Workspace allocator
 ```
 
-Observed red result:
+No localStorage, backend, fake durable persistence, direct Domain payload, reference/reasonCode/AuthZ leakage or M3-4 live candidate mounting exists.
+
+### E29.4 Implementation falsification findings
+
+CI exposed two production issues during the green path:
 
 ```text
-new hostile safety tests 0 / 5 PASS
-all pre-existing web unit tests 356 / 356 PASS
-frontend pre-production contracts PASS
-Lint PASS
-Typecheck PASS
-Architecture PASS
-Generated PASS
-Mobile PASS
+a1e6709e375cdeab984e9625a326ae5fcdc4e919 / CI 33876283735
+-> TypeScript exposed incorrect post-await external AbortSignal check
+-> corrected to internal controller signal while preserving cancellation semantics
+
+c2f2f3e875c73a3ec54938c206f2fad873f5bc21 / CI 33876436413
+-> typecheck / architecture passed
+-> 365 web tests passed
+-> 2 tests failed because Cancel/Escape focus returned to body instead of exact invoker
+
+168d3c9565914c8fcc47a578c0750b030d42223f / CI 33876915226
+-> deterministic immediate + microtask fallback invoker focus restoration
+-> FULL PASS
 ```
 
-This isolated real contract defects rather than test-harness failures.
+The fixes strengthened production behavior rather than relaxing tests.
 
-### E28.3 Findings
+### E29.5 Hostile hardening
+
+Test-only hardening commits:
 
 ```text
-A. customization reachability gap
-   command path required an already-existing config entry
-   -> adaptive meaningful opportunity could not be manually customized
-
-B. prominence ownership bug
-   configured non-lead entry became primary
-   -> config presence silently changed presentation importance
-
-C. Apply base-identity gap
-   revision was checked but exact draft.baseConfig identity was not
-   -> same-revision stale/different snapshot could Apply
+0dd816fe03fc45c5fe1799a5cd41e75c59c726ee  add hostile unit/E2E layer
+93effa1278b4a3d33c289f6467ee35551d0324b0  test-only require-await lint fix
+1978fe5c77c0e2661239372bf0f9bee238021faa  test-only exactOptional typing fix
 ```
 
-The hostile suite additionally required bounded adopt normalization and duplicate/blank/malformed rejection.
+The test harness corrections did not alter production semantics or weaken assertions.
 
-### E28.4 Fix ownership
-
-`world-focus-composition-customization.ts` now supports the finite command:
+Hardening covers:
 
 ```text
-adopt
+seven-reader bounded aggregate seam
+cancellation propagation
+no payload/reference/reasonCode/authorization leakage
+adopt + canonical mutation commands
+keyboard reorder + focus + SR announcement
+Apply exactly once / revision 0 -> 1
+revision conflict without merge/rebase
+invalid base fail closed
+sparse World remains sparse
+wide sidecar / compact overlay
+12 pressure widths
+390px pressure
+no horizontal document overflow
+axe at wide and compact pressure
+forced-colors operability
 ```
 
-Current language:
+### E29.6 Final green
 
 ```text
-adopt / pin / unpin / hide / show / move / promote / restore
+CODE/TEST HEAD                      1978fe5c77c0e2661239372bf0f9bee238021faa
+Frontend CI                         33879774332 / run #907 PASS
+Web test files                      77 / 77 PASS
+Web unit tests                      376 / 376 PASS
+Architecture                        294 modules / 851 dependencies / 0 violations
+Frontend pre-production contracts   PASS
+Lint                                PASS
+Typecheck                           PASS
+Generated-source drift              PASS
+Production build                    PASS
+Diff / repository mutation          PASS
+Mobile Bundle                       PASS
+Chromium                            PASS
+frozen Timeline Firefox             PASS
+Frontend CI Gate                    PASS
 ```
 
-Adopt semantics:
+Human visual acceptance was **NOT PERFORMED** and is not inferred from automation.
 
-```text
-input: known WorldFocusCompositionOpportunity
-normalize through existing opportunity constructor
-append draft config metadata only:
-  instanceId
-  kind
-  visible
-  unpinned
-  prominenceOverride = null
-record operation only as:
-  source/type/instanceId/kind
-```
+### E29.7 Scope audit
 
-Explicit non-ownership:
-
-```text
-adopt != semantic truth
-adopt != canonical payload ownership
-adopt != reference ownership
-adopt != AuthZ/disclosure proof
-adopt != renderer availability
-adopt != persistence
-adopt != AI relevance/confidence/score
-```
-
-Restore semantics are base-relative. Adopted-only entries are removed by restore because absence was their base state.
-
-Apply now requires exact current/base structural equality after revision matching. Same numeric revision is insufficient when snapshot contents differ.
-
-`world-focus-composition-resolver.ts` now preserves `opportunity.defaultProminence` for configured entries unless `prominenceOverride === lead`.
-
-Therefore:
-
-```text
-configured != automatically primary
-pin != promote
-adopt != promote
-supporting stays supporting unless explicitly promoted or still unconfigured and elevated by allowed adaptive signals
-```
-
-### E28.5 Green closure
-
-```text
-HEAD 7781c6751a455767595eaf159747da833117f8b2
-CI   33862549244 PASS
-```
-
-Observed validation:
-
-```text
-hostile safety tests              5 / 5 PASS
-web test files                    75 / 75 PASS
-web unit tests                    362 / 362 PASS
-architecture                      288 modules / 804 dependencies / 0 violations
-Frontend pre-production contracts PASS
-Lint                             PASS
-Typecheck                        PASS
-Generated-source drift           PASS
-Production build                 PASS
-Diff/repository mutation         PASS
-Mobile Bundle                    PASS
-Web E2E / Chromium               PASS
-frozen Timeline Firefox          PASS
-Frontend CI Gate                 PASS
-```
-
-The hostile file was not weakened.
-
-Two connector-side-effect commits temporarily created and removed an empty `__dummy__` file. The final project tree is clean; `__dummy__` is absent. Do not rewrite history to erase those commits because no force/rebase/history rewrite is authorized. The final scope compare from `959c9077...` must be judged by resulting changed paths, where the side effect nets to zero.
+Compare `7b50a5f...` -> `1978fe5...` is linear (`ahead`, `behind_by = 0`) and contains only authorized M3-3 application/UI/test/i18n/CSS paths. No Timeline/AppShell/Access/Auth/route-tree/backend/DB/M3-4 collateral path appears.
 
 ## 3. Current layered result
 
 ```text
 L0 Higher Authorities
-L1 Work-Semantic Projections — WP-01..WP-04
+L1 Work-Semantic Projections — M1
 L2 Evidence/Basis
 L3 Coordination/Disclosure
 L4 Interaction/Reference
@@ -317,13 +307,15 @@ L5 Composition
   existing Workspace planner/registry
   M3-1 revisioned config + draft
   M3-2 meaningful opportunities + adaptive candidate resolver
-  PRE-M3-3 adopt reachability + exact Apply snapshot guard
+  PRE-M3-3 adopt reachability + exact Apply base guard
+  M3-3 manual Customize transaction/surface CLOSED
 L6 Operation/Effect presentation
 L7 Renderer/Specialist Extension
 L8 Platform/User Policy
 
 M2 presentation boundary CLOSED
 M3 Adaptive Composition ACTIVE
+M3-4 Integrated Adaptive Composition NEXT
 ```
 
 ## 4. Current evidence gate
@@ -340,14 +332,16 @@ M3 Adaptive Composition ACTIVE
 
 > **M3-2 — CLOSED / VALIDATED**
 
-> **PRE-M3-3 CUSTOMIZATION REACHABILITY SAFETY — CLOSED / PASS**
+> **PRE-M3-3 CUSTOMIZATION SAFETY — CLOSED / PASS**
 
-> **M3-3 — MANUAL CUSTOMIZE UX — NEXT / NOT STARTED**
+> **M3-3 MANUAL CUSTOMIZE UX — CLOSED / VALIDATED**
 
-> **M3-4, M4–M7 and backend remain BLOCKED by sequence. D2–D6 remain deferred to M4.**
+> **M3-4 INTEGRATED ADAPTIVE COMPOSITION — NEXT / NOT STARTED**
+
+> **M3 final, M4–M7 and backend remain blocked by sequence. D2–D6 remain deferred to M4.**
 
 ## 5. Reopen rule
 
-Do not reopen WS0–WS8, M1, M2 or M3-1/M3-2 just because a later component would be easier with broader semantics. Reopen an earlier owner only when executable evidence proves a contradiction in that owner.
+Do not reopen WS0–WS8, M1, M2, M3-1, M3-2 or M3-3 just because a later phase would be easier with broader semantics. Reopen an earlier owner only when executable evidence proves a contradiction in that owner.
 
-M3-3 UX needs remain M3-3 unless they expose a real contradiction in the config/customization/opportunity/resolver contracts. M3-3 must not use UI code to bypass those contracts.
+M3-4 integration needs remain M3-4 unless they expose a real contradiction in the already-validated configuration/customization/opportunity/resolver contracts.

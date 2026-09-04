@@ -1,11 +1,11 @@
 # DANTE — World Focus Current Checkpoint
 
-**Status:** CURRENT LIVE WORLD FOCUS CHECKPOINT — M3 ACTIVE / M3-1 CLOSED / VALIDATED / M3-2 CLOSED / VALIDATED / PRE-M3-3 CUSTOMIZATION SAFETY CLOSED / PASS / M3-3 NEXT  
+**Status:** CURRENT LIVE WORLD FOCUS CHECKPOINT — M3 ACTIVE / M3-1 CLOSED / VALIDATED / M3-2 CLOSED / VALIDATED / PRE-M3-3 SAFETY CLOSED / PASS / M3-3 CLOSED / VALIDATED / M3-4 NEXT  
 **Date:** 2026-09-04  
 **Branch:** `feature/home-react`  
 **Worktree:** `/home/mattia/projects/dante-frontend`
 
-This is the first World Focus authority a new chat/agent must read. Historical `NEXT`/`ACTIVE` prose remains evidence only unless adopted here. Do not infer current sequencing from old review files.
+This is the first World Focus authority a new chat/agent must read. Historical `NEXT`/`ACTIVE` prose is evidence only unless adopted here. Fresh live code inspection is still required before every new write scope.
 
 # 1. Read order
 
@@ -15,12 +15,13 @@ This is the first World Focus authority a new chat/agent must read. Historical `
 3. world-focus-frontend-roadmap.md
 4. world-focus-handoff.md
 5. world-focus-evidence-index.md
-6. world-focus-m2-shared-visual-primitives.md
-7. world-focus-post-m1-safety-falsification-review.md
-8. world-focus-m1-core-nonvisual-materialization-review.md
-9. world-focus-m0-materialization-mapping.md
-10. world-focus-contract-sequencing-supersession.md
-11. product/platform/structure/geometry contracts as needed
+6. current-checkpoint.md
+7. world-focus-m2-shared-visual-primitives.md
+8. world-focus-post-m1-safety-falsification-review.md
+9. world-focus-m1-core-nonvisual-materialization-review.md
+10. world-focus-m0-materialization-mapping.md
+11. world-focus-contract-sequencing-supersession.md
+12. product/platform/structure/geometry contracts as needed
 ```
 
 # 2. Live sequence
@@ -48,8 +49,8 @@ M3 Adaptive World Composition            ACTIVE
 M3-1 composition configuration foundation CLOSED / VALIDATED
 M3-2 adaptive candidate resolver         CLOSED / VALIDATED
 PRE-M3-3 customization reachability safety CLOSED / PASS
-M3-3 Manual Customize UX                 NEXT / NOT STARTED
-M3-4 integrated adaptive composition     BLOCKED BY M3-3
+M3-3 Manual Customize UX                 CLOSED / VALIDATED
+M3-4 integrated adaptive composition     NEXT / NOT STARTED
 M3 final falsification                   BLOCKED BY M3-4
 M4 Contextual DANTE / D2–D6             BLOCKED BY M3
 M5 complete contrasting Worlds          BLOCKED BY M4
@@ -59,56 +60,17 @@ BACKEND                                  BLOCKED UNTIL M7
 assistant manual visual review           NOT PERFORMED
 ```
 
-# 3. Evidence anchors
+# 3. Permanent product / semantic law
 
-```text
-M1 final code closure
-HEAD 7369c51e7ba04f8913728a0770f700c728c3b9f9
-CI   33740710290 PASS
+DANTE:
 
-POST-M1 safety closure
-HEAD ecc2128b62395f82eab9ee7ff239355b4ca81ee4
-CI   33754084001 PASS
+> **Understand life. Shape what comes next.**
 
-M2 final hostile closure
-HEAD e3865e0cde095acae7e3022815538f35ee0706ef
-CI   33790953644 PASS
-70 / 70 web test files; 332 / 332 web unit tests
-279 modules / 770 dependencies / 0 violations
+World Focus:
 
-M3-1 validation
-HEAD 49304c9231375a22ef74a81b4fffa920d5a1e849
-CI   33850441232 PASS
-72 / 72 web test files; 344 / 344 web unit tests
-283 modules / 777 dependencies / 0 violations
+> **Understand this part of my life and continue from here.**
 
-M3-2 validated code
-HEAD b7892642dd66104ec04ea4b08ca11aa123789fa4
-CI   33854543037 PASS
-74 / 74 web test files; 356 / 356 web unit tests
-287 modules / 797 dependencies / 0 violations
-
-PRE-M3-3 red-first safety proof
-PRE-SCOPE 959c9077b4726a0a89b479d23ebe0edab216018b
-HEAD      be63d49c43c88a491439b4014668a51c8ff8ad6b
-CI        33861956558 EXPECTED FAILURE
-new hostile safety tests 0 / 5 PASS
-all 356 pre-existing web unit tests PASS
-
-PRE-M3-3 safety closure
-HEAD 7781c6751a455767595eaf159747da833117f8b2
-CI   33862549244 PASS
-hostile safety tests 5 / 5 PASS
-75 / 75 web test files; 362 / 362 web unit tests
-288 modules / 804 dependencies / 0 violations
-Quality / Chromium / frozen Timeline Firefox / Mobile / Frontend CI Gate PASS
-```
-
-The red safety test was not weakened between red and green.
-
-# 4. Closed semantic/presentation substrate retained
-
-M1 owns validated non-visual semantics and application seams. M2 owns bounded display/presentation and finite renderer vocabulary. Workspace Platform remains the only planner/packing/placement owner.
+A World is a shared coordinate system between user and DANTE, not a shared source of truth.
 
 Permanent non-collapses:
 
@@ -119,20 +81,23 @@ projection != canonical truth
 reference exists != payload available != current != disclosable != fresh
 Evidence != Provenance != integrity attestation
 available disclosure != frontend authorization
-timeout != semantic negative
-offline != source absent
-provider ACK != canonical completion
+AI output != accepted fact
+Possibility != Goal != Proposal != Decision
+planned != actual
+Actual != Observation != Outcome
 Proposal != Decision != effect
+provider ACK != canonical completion
+cancel != reverse != compensation
 Comparison != Decision
 missing trajectory position != zero
-AI output != fact
 client composition config != canonical Domain state
 client revision != backend persistence revision
+adopt != semantic truth != authorization != persistence
 ```
 
-# 5. Existing composition engine — preserve
+# 4. Existing engine ownership — preserve
 
-Workspace Platform already owns:
+Workspace Platform remains the only composition/placement engine and already owns:
 
 ```text
 stable / adaptive / ephemeral
@@ -143,12 +108,13 @@ wide / standard / compact
 adaptive / ephemeral budgets
 stable relative-order preservation
 finite module registry
+surface stack and deterministic allocation
 local renderer failure isolation
 ```
 
-M3 feeds this engine. M3 must not create a second planner.
+M1 owns non-visual semantic/application substrate. M2 owns display-safe bindings, truthfulness qualifiers and finite accessible presentation vocabulary. M3 feeds these existing owners; it does not create a second planner or redefine Domain/AuthZ/persistence authority.
 
-# 6. M3-1 + customization reachability contract
+# 5. M3-1 / PRE-M3-3 transaction retained
 
 Production owners:
 
@@ -157,7 +123,7 @@ model/world-focus-composition-config.ts
 application/world-focus-composition-customization.ts
 ```
 
-Configuration:
+Configuration remains client composition metadata only:
 
 ```text
 schemaVersion
@@ -173,20 +139,20 @@ entry
   prominenceOverride: lead | null
 ```
 
-Current finite command language:
+Canonical command language:
 
 ```text
 adopt / pin / unpin / hide / show / move / promote / restore
 ```
 
-Finite origins:
+Origins:
 
 ```text
 manual
 dante-proposed
 ```
 
-Manual and future DANTE proposals use the **same** transaction path:
+Single transaction path:
 
 ```text
 CURRENT CONFIG
@@ -197,52 +163,28 @@ CURRENT CONFIG
   -> Apply | Cancel
 ```
 
-`adopt` exists because M3-3 must be able to customize a meaningful adaptive opportunity that is not already present in config. It accepts only an already-known `WorldFocusCompositionOpportunity`, normalizes it through the existing constructor, and creates:
+`adopt` accepts only an already-known meaningful opportunity and creates composition metadata only: visible, unpinned, `prominenceOverride = null`. It never imports canonical payload, references, disclosure/AuthZ state, provider state, confidence/score/AI relevance or renderer code.
+
+`restore` is base-snapshot relative:
 
 ```text
-instanceId
-kind
-visibility = visible
-pinned = false
-prominenceOverride = null
+base entry existed -> restore exact base values + base position
+adopted-only entry absent from base -> remove from draft
 ```
 
-It never imports projection data, canonical payload, references, disclosure/AuthZ state, confidence, `aiRelevance`, provider data or renderer code. Operation history retains only `source/type/instanceId/kind`.
-
-`restore` is base-snapshot semantics:
+Apply remains fail-closed:
 
 ```text
-entry existed in base
--> restore exact base state + base position
-
-entry was adopted and absent from base
--> remove it from working draft
+revision mismatch -> revision-conflict
+same revision + different base snapshot -> invalid base / FAIL CLOSED
+same revision + exact base snapshot -> revision N+1
 ```
 
-`hide != delete`; `pin != semantic truth`; `promote != semantic truth`.
+No implicit merge/rebase exists.
 
-# 7. Apply semantics after PRE-M3-3 hardening
+# 6. M3-2 result retained
 
-Apply now proves both revision freshness and base identity:
-
-```text
-current.revision != draft.baseRevision
--> revision-conflict { baseRevision, currentRevision }
-
-current.revision == draft.baseRevision
-AND current snapshot structurally equals draft.baseConfig
-AND working/base revisions equal baseRevision
--> Apply allowed -> config revision N+1
-
-same numeric revision but base snapshot differs
--> invalid draft base snapshot / FAIL CLOSED
-```
-
-Snapshot equality covers schema version, revision, World id, entry count/order and every entry field (`instanceId/kind/visibility/pinned/prominenceOverride`). No implicit merge exists.
-
-# 8. M3-2 result retained + corrected precedence
-
-M3-2 owns:
+M3-2 remains a pre-planner/pre-renderer boundary:
 
 ```text
 validated meaningful M1 results
@@ -253,7 +195,7 @@ validated meaningful M1 results
   -> existing planner
 ```
 
-Meaningful opportunities remain sparse. Empty/unavailable results do not create modules. Opportunity metadata carries only:
+Opportunity metadata remains only:
 
 ```text
 instanceId
@@ -262,133 +204,197 @@ defaultProminence
 footprint
 ```
 
-Finite ranking signals:
-
-```text
-material-consequence
-immediacy
-resumability
-meaningful-change
-current-intent
-```
-
-No universal confidence, AI relevance or weighted score.
-
-Precedence:
+Sparse remains sparse. Renderer presence never creates an opportunity. Configuration precedence remains:
 
 ```text
 hidden > signals
 pinned > adaptive budget
 configured relative order > adaptive ranking
+configured + null override -> preserve opportunity.defaultProminence
+configured + lead override -> lead
 ```
 
-Corrected prominence rule:
+Pinned intent without a meaningful current projection remains explicit unresolved intent, never fabricated content.
+
+# 7. M3-3 Manual Customize UX — CLOSED / VALIDATED
+
+Authorized M3-3 PRE-SCOPE:
 
 ```text
-configured + prominenceOverride = null
--> preserve opportunity.defaultProminence
-
-configured + prominenceOverride = lead
--> lead
+7b50a5f96739f500bd52ab5f4e35d8f05ce02e3b
 ```
 
-Config presence alone never means primary. Pin affects stability/ownership; it does not imply importance. Signals rank/elevate only unconfigured opportunities. Pinned visible intent without a meaningful projection remains explicit `unresolvedPinned`, never fabricated content.
+M3-3 materialized a manual/non-AI customization experience over the canonical M3-1 transaction rather than creating a UI-only state model.
 
-# 9. Why PRE-M3-3 existed
-
-The M3-3 preflight found three real contract defects before visual work:
+Production ownership added:
 
 ```text
-1. M3-1 could mutate only entries already present in config.
-   -> a new meaningful adaptive opportunity could not enter Customize.
-
-2. M3-2 treated any configured non-lead entry as primary.
-   -> merely materializing/adopting a supporting Comparison/Trajectory changed its prominence.
-
-3. Apply checked revision but not exact base snapshot identity.
-   -> a draft from a different same-revision snapshot could be applied.
+application/world-focus-composition-customization-read.ts
+ui/world-focus-composition-customization-context.tsx
+ui/world-focus-composition-customization-surface.tsx
+ui/world-focus-composition-customization.css
 ```
 
-The hostile test also required adopt to reject/strip arbitrary payload and reject duplicate/blank/malformed targets. All five hostile cases now pass.
-
-# 10. M0 M3 disposition state
+Bounded existing owners updated:
 
 ```text
-M0-35 stability/origin semantics                         EXISTING / PRESERVE
-M0-36 prominence/footprint/grid planner                  EXISTING / PRESERVE
-M0-37 production candidate resolver                      M3-2 CLOSED / VALIDATED
-M0-38 Draft/Apply/Cancel + customization commands       MODEL/SAFETY CLOSED; UI M3-3 NEXT
-M0-39 client revision/conflict/migration representation M3-1 + safety CLOSED / VALIDATED
-M0-40 durable persistence/cross-device sync/conflict    BACKEND-DEFERRED
+ui/world-focus-page.tsx
+ui/world-focus-core-surfaces.tsx
+packages/i18n/src/resources/en/world-focus.ts
+packages/i18n/src/resources/it/world-focus.ts
 ```
 
-# 11. Current gate — M3-3 Manual Customize UX
-
-M3-3 is next but unstarted. It must create the actual manual product experience over the validated transaction model.
-
-Mandatory behavior:
+Behavior now proven:
 
 ```text
-View mode and Customize mode are distinct
-enter Customize explicitly
-construct a real isolated draft
-show currently configured entries and meaningful available opportunities
-unconfigured meaningful opportunity -> adopt before later mutations
-pin/unpin
-hide/show
-reorder
-promote/restore
-indicate changed/dirty state without fake persistence
-Apply only through applyWorldFocusCompositionDraft
-Cancel returns base snapshot
-revision-conflict and invalid-state UX
-focus entry/return
-keyboard operability
-touch operability
-screen-reader semantics
-responsive geometry
-```
-
-Reorder must have a keyboard-accessible non-drag path. Drag/drop may be layered later only with equivalent mouse/touch/keyboard/screen-reader behavior. Do not add React Aria automatically; evaluate it during M3-3 only if the actual interaction earns it.
-
-# 12. M3-3 testing obligations
-
-At minimum pressure:
-
-```text
-entering Customize does not mutate current config
-unconfigured opportunity is adoptable
-adopted entry has visible/unpinned/null override defaults
-pin/unpin/hide/show are draft-only
-move is deterministic and keyboard-operable
-promote only creates lead override
-restore existing -> base state/order
+View mode != Customize mode
+explicit Customize invocation
+accepted config unchanged while editing
+single isolated route-scoped draft
+lazy aggregate read of existing M1 Situation / Continuity / Attention / Next /
+  Comparison / Trajectory / Evidence-History readers
+aggregate read immediately reduces projections to bounded opportunity metadata
+no payload/reference/reasonCode/AuthZ leakage into customization opportunity output
+meaningful unconfigured opportunity -> explicit adopt
+pin / unpin / hide / show / move / promote / restore mutate draft only
+move is deterministic and has a non-drag keyboard-operable path
+focus remains on the moved item and screen reader receives useful position state
+promote creates only prominenceOverride = lead
+restore existing -> exact base state/order
 restore adopted-only -> removes from draft
-Cancel -> exact base snapshot
-Apply -> revision +1 exactly once
-stale revision -> revision-conflict
-same revision/different base -> fail-closed UX path
-manual and dante-proposed state model remains one canonical command language
-raw reference/reasonCode/payload never becomes UI copy
+Cancel -> exact accepted/base state, no revision bump, focus returns to invoker
+Apply -> canonical application operation exactly once, revision N -> N+1
+revision-conflict -> no merge/rebase
+invalid/same-revision wrong-base path -> fail closed
 sparse World remains sparse
-unresolved pin does not become fake content
-720 / 719 / 390 and desktop pressure
-no horizontal overflow
-forced-colors and reduced-motion behavior
+no localStorage/backend/fake persistence
+normal live composition remains pre-M3-4 core composition
 ```
 
-M3-3 does **not** mount the M3-2 candidate resolver into normal live World composition. That is M3-4.
+The finite customization surface is registered in the existing surface registry and requested as a sidecar. Existing Workspace allocation owns compact degradation to overlay; no AppShell modal hack or new surface platform was introduced.
 
-# 13. Stop lines
+# 8. M3-3 red-first / correction / closure evidence
+
+Valid RED sequence:
 
 ```text
-NO M3-4 live integration
+RED test commit      f1b08fc1766f801d4573f81194a6e66a147c9433
+RED lint-fix commit  fd1d503268608df89724e216f3a5fc59f697dbef
+CI                   33875210161 EXPECTED FAILURE
+pre-existing web     362 / 362 PASS
+new M3-3 tests       0 / 5 PASS
+failure cause        Customize product behavior absent
+```
+
+The red contract was not weakened.
+
+Production/hardening sequence intentionally exposed and fixed root causes:
+
+```text
+a1e6709e375cdeab984e9625a326ae5fcdc4e919
+  initial M3-3 shell; CI 33876283735 exposed AbortSignal TypeScript issue
+
+c2f2f3e875c73a3ec54938c206f2fad873f5bc21
+  preserved internal cancellation semantics; CI 33876436413 then exposed
+  two real focus-return failures while 365 tests passed
+
+168d3c9565914c8fcc47a578c0750b030d42223f
+  deterministic invoker focus restoration; CI 33876915226 FULL PASS
+
+0dd816fe03fc45c5fe1799a5cd41e75c59c726ee
+93effa1278b4a3d33c289f6467ee35551d0324b0
+1978fe5c77c0e2661239372bf0f9bee238021faa
+  hostile hardening tests + test-harness lint/typing fixes only
+```
+
+Final M3-3 hardening evidence:
+
+```text
+CODE/TEST HEAD                     1978fe5c77c0e2661239372bf0f9bee238021faa
+Frontend CI                        33879774332 / run #907 PASS
+Web test files                     77 / 77 PASS
+Web unit tests                     376 / 376 PASS
+Architecture                       294 modules / 851 dependencies / 0 violations
+Frontend pre-production contracts  PASS
+Lint                               PASS
+Typecheck                          PASS
+Generated-source drift             PASS
+Production build                   PASS
+Diff check                         PASS
+Repository mutation check          PASS
+Mobile Bundle                      PASS
+Chromium                           PASS
+frozen Timeline Firefox            PASS
+Frontend CI Gate                   PASS
+```
+
+Browser hardening includes wide sidecar, compact overlay, all pressure widths `1856 / 1600 / 1366 / 1200 / 1024 / 901 / 900 / 760 / 721 / 720 / 719 / 390`, no horizontal overflow, compact terminal-target pressure, axe checks and forced-colors operability.
+
+Automated green is not human visual acceptance. Human visual acceptance remains **NOT PERFORMED**.
+
+# 9. Final M3-3 scope audit
+
+Compare from authorized PRE-SCOPE through code/test hardening HEAD is linear (`ahead`, no behind) and contains only authorized M3-3 paths:
+
+```text
+apps/web/e2e/world-focus-composition-customization.spec.ts
+apps/web/src/features/world-focus/application/world-focus-composition-customization-read.ts
+apps/web/src/features/world-focus/application/world-focus-composition-customization-read.test.ts
+apps/web/src/features/world-focus/ui/world-focus-composition-customization-context.tsx
+apps/web/src/features/world-focus/ui/world-focus-composition-customization-surface.tsx
+apps/web/src/features/world-focus/ui/world-focus-composition-customization.css
+apps/web/src/features/world-focus/ui/world-focus-composition-customization.test.tsx
+apps/web/src/features/world-focus/ui/world-focus-core-surfaces.tsx
+apps/web/src/features/world-focus/ui/world-focus-page.tsx
+packages/i18n/src/resources/en/world-focus.ts
+packages/i18n/src/resources/it/world-focus.ts
+```
+
+No Timeline, AppShell, Access/Auth, generated route-tree, backend/API/DB/Alembic/AuthZ/provider/LLM or M3-4 production path changed.
+
+# 10. Current gate — M3-4 Integrated Adaptive Composition
+
+M3-4 is **NEXT / NOT STARTED**. It is the first phase allowed to replace the nominal fixed core-composition feed with the already-built meaningful-opportunity/config/resolver path.
+
+Expected integrated direction:
+
+```text
+validated M1 projection results
+-> M3-2 meaningful opportunities
++ accepted M3 composition config
++ finite value signals
+-> M3-2 candidate resolver
+-> existing Workspace planner
+-> finite module registry
+-> CompositionHost
+```
+
+M3-4 must preserve:
+
+```text
+sparse remains sparse
+hidden remains hidden
+pin survives adaptive budget
+configured relative order remains user-owned
+configured supporting remains supporting unless explicitly promoted
+unresolved pin does not fabricate content
+unknown future World/module kinds remain representable
+renderer failure remains local
+no fake persistence
+no frontend AuthZ/canonical-truth invention
+```
+
+Before M3-4 writes, perform a fresh read-only preflight and propose a new bounded gate with exact branch HEAD / PRE-SCOPE / CREATE / UPDATE / DELETE / tests / out-of-scope. M3-4 must not be started implicitly by M3-3 closure.
+
+# 11. Stop lines
+
+```text
+NO M3 final closure before M3-4
+NO M4 / D2–D6 before M3 closes
 NO fake localStorage persistence
-NO durable server persistence/cross-device sync
-NO DANTE D2–D6 before M4
+NO durable server/cross-device persistence yet
 NO backend/API/DB/Alembic/AuthZ/provider/LLM
 NO Timeline/AppShell/Access/Auth collateral changes
 NO generated route-tree edits
+NO claim of human visual acceptance from CI
 ```
-
-A fresh bounded write gate is required before M3-3 production writes.
