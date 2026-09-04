@@ -54,7 +54,9 @@ Protected-main Domain/Logical/Physical authority outranks frontend convenience w
 
 ## E0 — Workspace/module uncertainty
 
-`world-focus-workspace-scenario-oracle-evidence.md` — shared World workspace, unknown World/module pressure, finite registration, specialist extension, stable/adaptive/ephemeral composition and large-data bounding.
+`world-focus-workspace-scenario-oracle-evidence.md`
+
+Shared World workspace, unknown World/module pressure, finite registration, specialist extension, stable/adaptive/ephemeral composition, typed drill-down, large-data bounding and cross-World reuse.
 
 ## E1 — World product reverse engineering
 
@@ -109,7 +111,9 @@ Human/manual assistant visual review was not performed.
 
 ## E7 — VFX
 
-`world-focus-vfx-research.md` — visual research only; cannot rewrite product/geometry semantics.
+`world-focus-vfx-research.md`
+
+Visual research only. It cannot rewrite WF0/WF-G3/product semantics.
 
 ## E8 — WS0 inventory
 
@@ -123,11 +127,13 @@ world-focus-substrate-convergence-review.md
 world-focus-substrate-independent-confirmation.md
 ```
 
-Historical/supporting after later convergence proof.
+Supporting/historical after later convergence proof.
 
 ## E11 — Final WS1–WS5 convergence
 
-`world-focus-substrate-final-convergence-proof.md` — final analytical convergence authority; concern ledger `CG-01..CG-40`.
+`world-focus-substrate-final-convergence-proof.md`
+
+Final analytical convergence authority. Concern ledger: `CG-01..CG-40`.
 
 ## E12 — Fixed combinatorial evidence
 
@@ -148,6 +154,9 @@ SHA d6efbcd0306ee7d37fac0b4cbc59c7af356c8ac8cbf9ee0d08ed8efbc8f5d835
 ```text
 world-focus-ws6-universal-work-primitives.md
 world-focus-ws6-primitive-pressure-matrix.md
+```
+
+```text
 WP-01 Continuity
 WP-02 Attention
 WP-03 Comparison
@@ -172,26 +181,33 @@ HEAD 88db899391a3a41e23e76177d4896a657232b5eb
 CI   33639741630 PASS
 ```
 
-Stateful hostile scenarios + mutation-kill + independent post-hardening confirmation.
+Stateful hostile scenarios + mutation-kill + independent post-hardening confirmation. CG-40 audit weakness closed without weakening the adversarial test.
 
 ## E16 — Post-WS8 coherence / hygiene
 
-`world-focus-post-ws8-hygiene-audit.md` — resolved HYG-01..HYG-08 without a new substrate class.
+`world-focus-post-ws8-hygiene-audit.md`
+
+Resolved HYG-01..HYG-08, including stale transient handoff resurrection after route mismatch. No new substrate class; WS0–WS8 remained closed.
 
 ## E17 — Pre-M0 adversarial regression gate
 
 `world-focus-pre-m0-falsification-review.md`
 
 ```text
-red 798170e0c1ad12e0263364ab5c542a6ffe3d5e06 — 2 failing / 227 passing
-fix 7c9feab50c6e2a04a9a3b1e36c92958362dba704 — CI 33664655614 PASS
+red commit 798170e0c1ad12e0263364ab5c542a6ffe3d5e06
+2 failing adversarial tests / 227 passing web tests
+
+fix HEAD 7c9feab50c6e2a04a9a3b1e36c92958362dba704
+CI       33664655614 PASS
 ```
 
-Finding: stale route-origin handoff resurrection after mismatched World/source read.
+Finding: mismatched World/source route reads rejected the current handoff but did not invalidate it, allowing stale origin resurrection within TTL.
 
 ## E18 — M0 materialization map
 
-`world-focus-m0-materialization-mapping.md` — **CLOSED**.
+`world-focus-m0-materialization-mapping.md`
+
+**CLOSED.**
 
 ```text
 HEAD 6ea74f630cb35af65d58e7ae873882d6d975411e
@@ -202,100 +218,332 @@ generic semantic roots 0
 page-per-World requirement 0
 backend authority pulled forward 0
 AI-required basic path 0
+WS reopen required 0
 ```
 
-## E19 — M1-1 identity/reference materialization
+## E19 — M1-1 identity/reference production materialization
 
-`world-focus-m1-core-nonvisual-materialization-review.md` — **CLOSED / VALIDATED**.
+`world-focus-m1-core-nonvisual-materialization-review.md`
+
+**CLOSED / VALIDATED.**
 
 ```text
-HEAD e0f4003496bfbf828ed9ab7718af8e7e30342ad3
-CI   33679425668 PASS
+CODE HEAD e0f4003496bfbf828ed9ab7718af8e7e30342ad3
+CI        33679425668 PASS
 ```
 
-## E20 — M1-2 non-visual materialization
+Materialized production World identity/descriptor, fixture-ID separation, neutral bounded context-reference ownership, workspace context sets, route/continuity alignment and related production pressure.
 
-`world-focus-m1-next-subblock.md` — historical frozen scope + closure record.
+## E20 — M1-2 non-visual production materialization
+
+`world-focus-m1-next-subblock.md` is now the historical frozen scope + closure record.
+
+**CLOSED / VALIDATED.**
 
 ```text
-HEAD 5e98e4b97639cd018badc23e35e7a523f2940875
-CI   33738873773 PASS
+CODE HEAD 5e98e4b97639cd018badc23e35e7a523f2940875
+CI        33738873773 PASS
 ```
 
-Materialized reference resolution, truthfulness/basis, disclosure, effect/revalidation, sync axes, O2/O5/O8, WP-01..04, cancellable validated reads, deterministic local adapters and unknown-future World support. No universal projection envelope or frontend AuthZ.
-
-## E21 — M1 final falsification / closure
+Materialized:
 
 ```text
-red HEAD 67bd06d63d84273ba2077761919d714c8d442254
-CI       33740212989 EXPECTED FAILURE
-
-fix HEAD 7369c51e7ba04f8913728a0770f700c728c3b9f9
-CI       33740710290 PASS
+reference resolution usable/unresolved/retired
+freshness/as-of
+validity current/superseded/retracted/unresolved
+coverage complete/incomplete/conflicted/unknown
+exact material payload present/retired
+Evidence / Provenance / integrity-attestation separation
+sanitized disclosure available/restricted/unavailable
+effect lifecycle + execution revalidation
+connectivity/replay/provider delivery/request timing axes
+O2 Situation
+O5 Next
+O8 Evidence / History
+WP-01 stronger Continuity
+WP-02 Attention
+WP-03 Comparison
+WP-04 Trajectory
+World-scoped read validation/cancellation/latest mechanics
+deterministic pre-backend adapters
+unknown future World + useful non-DANTE path
 ```
 
-Closed canonical enumerable cursor context representation.
+No universal projection envelope, generic Entity/Thing/Fact/PropertyBag, frontend AuthZ or backend authority was introduced.
+
+## E21 — M1 final production falsification / closure
+
+Final red-first production test:
+
+`apps/web/src/features/world-focus/application/world-focus-m1-final-falsification.test.ts`
+
+Red evidence:
+
+```text
+HEAD 67bd06d63d84273ba2077761919d714c8d442254
+CI   33740212989 EXPECTED FAILURE
+4 hostile tests
+3 PASS / 1 FAIL
+whole web suite: 1 failed / 288 passed
+```
+
+The sole failure found the planned transitional compatibility residue: `WorldFocusInteractionCursor` declared canonical `contextReferences`, but runtime hid the property from normal enumerable object shape.
+
+Fix and final code validation:
+
+```text
+HEAD 7369c51e7ba04f8913728a0770f700c728c3b9f9
+CI   33740710290 PASS
+```
+
+This closed M1 without reopening WS0–WS8.
 
 ## E22 — Post-M1 safety falsification / closure
 
 `world-focus-post-m1-safety-falsification-review.md`
 
-```text
-red HEAD 0b674effa292881303288dd90c88db2c14e61872
-CI       33747167897 FAIL
+**CLOSED / PASS.**
 
-fix HEAD ecc2128b62395f82eab9ee7ff239355b4ca81ee4
-CI       33754084001 PASS
-9 / 9 hostile tests; 301 / 301 web units
+Red-first evidence:
+
+```text
+HEAD 0b674effa292881303288dd90c88db2c14e61872
+CI   33747167897 FAIL
+post-M1 hostile tests 7 PASS / 2 FAIL
+whole web unit suite 296 PASS / 2 FAIL
 ```
 
-Findings: cancelled non-cooperative read could reach validation; O8 could retain mutable caller evidence aliases.
+Concrete findings:
+
+```text
+cancelled non-cooperative World read could still reach validation
+O8 Evidence/History could retain mutable caller evidence aliases
+```
+
+Both fit existing production owners. The adversarial test was not weakened.
+
+Final hardening evidence:
+
+```text
+HEAD ecc2128b62395f82eab9ee7ff239355b4ca81ee4
+CI   33754084001 PASS
+post-M1 hostile tests 9 / 9 PASS
+web test files 56 / 56 PASS
+web unit tests 301 / 301 PASS
+full Frontend CI Gate PASS
+```
 
 ## E23 — M2-1 shared visual primitive layer
 
 `world-focus-m2-shared-visual-primitives.md`
 
+**M2-1 CLOSED / VALIDATED.**
+
+Red-first evidence:
+
+```text
+HEAD 26adf872...
+CI   33763229784 EXPECTED FAILURE
+Quality / Lint failed because new M2 presentation owners did not yet exist
+```
+
+Red contracts included exact semantic reference -> display binding, no raw key/reasonCode leakage, Comparison order/no winner, Trajectory missingness != zero, no fabricated chart, semantic heading/state structure and fail-closed binding/order mismatch.
+
+Validated production and pressure evidence:
+
 ```text
 HEAD 2e639f108d5cb01e53395013a55346b7ac2e4294
 CI   33781753823 PASS
-61 / 61 web test files
-312 / 312 web unit tests
-262 modules / 684 dependencies / 0 violations
-Chromium 720 / 719 / 390 pressure PASS
+
+Frontend CI Gate        PASS
+Quality                 PASS
+Web E2E / Chromium      PASS
+Mobile Bundle           PASS
+frozen Timeline Firefox PASS
+web test files          61 / 61 PASS
+web unit tests          312 / 312 PASS
+architecture            262 modules / 684 dependencies / 0 violations
+generated               112 tokens / 3 deterministic files
 ```
 
-Materialized bounded display binding, shared presentation grammar, WP-02..04 renderers and real WP-01 Continuity integration.
+Real-browser M2 pressure covers 720 / 719 / 390 px, shared presentation marker, Continuity workspace containment and no document horizontal overflow.
 
-## E24 — M2-2 truthfulness + direct Output Grammar layer
+Materialized M2-1 production presentation:
 
 ```text
-red HEAD 5374f77d7cf7b52ef87ce64315a606bc1d96cf0b
-CI       33787162755 EXPECTED FAILURE
-
-validation HEAD 26d79b0dcdeaac1cb094bf97b71e901003ac5fa5
-CI              33788370490 PASS
+WorldFocusDisplayBinding display-safe reference boundary
+shared section/state presentation grammar
+WP-02 Attention renderer
+WP-03 Comparison renderer
+WP-04 Trajectory renderer
+WP-01 Continuity migrated as live vertical
+English/Italian finite presentation copy
+container-query + forced-colors support
 ```
 
-Materialized L2/L3/L6/L8 presentation, O2 Situation, O5 Next, O8 Evidence/History and Continuity partial/stale qualifier integration.
+WP-02..WP-04 are not claimed as live composition merely because renderers exist.
 
-## E25 — M2 final hostile closure
+## E24 — M2-2 truthfulness + direct Output Grammar visual layer
+
+`world-focus-m2-shared-visual-primitives.md`
+
+**M2-2 CLOSED / VALIDATED.**
+
+Red-first owner proof:
+
+```text
+HEAD 5374f77d7cf7b52ef87ce64315a606bc1d96cf0b
+CI   33787162755 EXPECTED FAILURE
+Lint PASS
+Typecheck FAIL
+exactly 8 TS2307 unresolved presentation owners
+```
+
+Red contracts fixed before implementation:
+
+```text
+qualifier meaning visible in text, not color only
+nominal basis/disclosure/sync states remain quiet
+freshness / validity / coverage / retirement remain separate
+reasonCode and material reference key never become display copy
+available disclosure is quiet and is not frontend authorization
+restricted != unavailable
+effect state != execution revalidation
+partial-real != failed
+reversed != compensated
+offline / replay / provider delivery / timing remain orthogonal
+O2/O5 semantic order preserved through exact display bindings
+O8 Evidence / Provenance / Integrity / History remain separate roles
+missing display binding fails closed
+```
+
+Initial production:
+
+```text
+HEAD 78633df2b3b1949d5d7b3bc4e7c9ee3e01ebc6bb
+```
+
+One strict i18n typing issue in disclosure presentation was corrected with explicit finite branching, no cast/`any`, and no semantic-test weakening:
+
+```text
+HEAD b9856d497273d22face94fcd14f0deda853bbdb8
+CI   33787905171 PASS
+```
+
+Final integration validation:
+
+```text
+HEAD 26d79b0dcdeaac1cb094bf97b71e901003ac5fa5
+CI   33788370490 PASS
+
+Quality                 PASS
+Web E2E / Chromium      PASS
+frozen Timeline Firefox PASS
+Mobile Bundle           PASS
+Frontend CI Gate        PASS
+production build        PASS
+repository mutation     PASS
+```
+
+Materialized M2-2 presentation:
+
+```text
+WorldFocusQualifier / QualifierGroup
+WorldFocusPresentationSubsection
+L2 freshness / validity / coverage / material-retirement presentation
+L3 sanitized disclosure presentation
+L6 effect + separate execution-revalidation presentation
+L8 connectivity / replay / provider-delivery / request-timing presentation
+O2 Situation renderer
+O5 Next renderer
+O8 Evidence / History role-preserving renderer
+Continuity partial -> coverage/incomplete qualifier
+Continuity stale -> freshness/stale qualifier
+English/Italian finite copy
+```
+
+M0 shared visual disposition audit after M2-2:
+
+```text
+M0-19 WP-02 shared rendering                  DONE / M2-1
+M0-21 WP-03 shared rendering                  DONE / M2-1
+M0-23 WP-04 shared rendering                  DONE / M2-1
+M0-28 shared Evidence / History affordance    DONE / M2-2
+M0-42 shared effect presentation              DONE / M2-2
+M0-49 WP shared renderer family               DONE / M2-1
+O2 Situation visual presentation              DONE / M2-2
+O5 Next visual presentation                   DONE / M2-2
+O8 Evidence / History visual presentation     DONE / M2-2
+L2/L3/L6/L8 truthfulness presentation         DONE / M2-2
+```
+
+## E25 — M2 final hostile falsification / closure
+
+Final hostile test:
 
 `apps/web/src/features/world-focus/ui/presentation/world-focus-m2-final-falsification.test.tsx`
 
-```text
-red HEAD 3adbd958ee3e3bf2fd55b7d2a2562dd6de5aa011
-CI       33790674375 EXPECTED FAILURE
-hostile 4 / 5 PASS; web 331 PASS / 1 FAIL
+**M2 CLOSED / VALIDATED.**
 
-fix HEAD e3865e0cde095acae7e3022815538f35ee0706ef
-CI       33790953644 PASS
-hostile 5 / 5 PASS
-web files 70 / 70
-web units 332 / 332
-architecture 279 modules / 770 dependencies / 0 violations
+Red evidence:
+
+```text
+HEAD 3adbd958ee3e3bf2fd55b7d2a2562dd6de5aa011
+CI   33790674375 EXPECTED FAILURE
+hostile 4 PASS / 1 FAIL
+whole web unit suite 331 PASS / 1 FAIL
+Lint / Typecheck / Architecture / Generated PASS
+Mobile PASS
+Chromium PASS
 ```
 
-Sole red finding: display-safe copy was not actually length bounded. Final binding limits are label 512 / supportingText 2048, fail closed, no truncation. Live core composition remained Continuity-only.
+The four immediate PASS cases proved:
+
+```text
+simultaneous L2/L3/L6/L8 degraded axes remain separate
+protected reason/policy/reference/provider detail does not leak
+unknown-future World renders O2/O5/O8 while preserving semantic order
+Evidence / Provenance / Integrity / History stay separate
+wrong semantic reference fails closed even with convincing display copy
+combined nominal basis/disclosure/sync remains quiet
+```
+
+The sole failure exposed one implementation gap under the existing M2 display-binding owner:
+
+> `WorldFocusDisplayBinding` claimed bounded display-safe copy but accepted pathological 100,000-character label/supporting text.
+
+The hostile test was not modified. Production hardening:
+
+```text
+label max          512 characters
+supportingText max 2048 characters
+blank/oversize     fail closed
+silent truncation  none
+```
+
+Final evidence:
+
+```text
+HEAD e3865e0cde095acae7e3022815538f35ee0706ef
+CI   33790953644 PASS
+
+hostile tests            5 / 5 PASS
+web test files           70 / 70 PASS
+web unit tests           332 / 332 PASS
+architecture             279 modules / 770 dependencies / 0 violations
+generated                112 tokens / 3 deterministic files
+Quality                  PASS
+Mobile Bundle            PASS
+Web E2E / Chromium       PASS
+frozen Timeline Firefox  PASS
+Frontend CI Gate         PASS
+production build         PASS
+repository mutation      PASS
+```
+
+Repository inspection confirmed live core composition still mounts only Continuity; WP-02..04 and O2/O5/O8 were not injected to fabricate proof. No universal card/projection envelope, page-per-World fork, M3 customization, D2–D6 or backend authority was introduced.
+
+This closes M2.
 
 ## E26 — M3-1 composition configuration foundation
 
@@ -310,33 +558,52 @@ HEAD b68b6e8fa0d70844f6d058c7b77ded676f1e675f
 CI   33850177297 EXPECTED FAILURE
 ```
 
-Only the two M3-1 tests were present. Frontend pre-production contracts passed. Quality failed from the intentionally unresolved M3-1 config/customization owner modules; production was not present yet.
+The red commit contained only:
 
-Validated production:
+```text
+apps/web/src/features/world-focus/model/world-focus-composition-config.test.ts
+apps/web/src/features/world-focus/application/world-focus-composition-customization.test.ts
+```
+
+Frontend pre-production contracts passed. Quality then failed because the intentionally referenced M3-1 production owner modules did not exist yet. The red expectations were not weakened after implementation.
+
+Validated production evidence:
 
 ```text
 HEAD 49304c9231375a22ef74a81b4fffa920d5a1e849
 CI   33850441232 PASS
 
-web test files           72 / 72 PASS
-web unit tests           344 / 344 PASS
-architecture             283 modules / 777 dependencies / 0 violations
-Lint                     PASS
-Typecheck                PASS
-Generated                PASS
-Production build         PASS
-Mobile Bundle            PASS
-Web E2E / Chromium       PASS
-frozen Timeline Firefox  PASS
-Frontend CI Gate         PASS
+Frontend pre-production contracts PASS
+Lint                              PASS
+Typecheck                         PASS
+Architecture                      PASS
+Generated-source drift            PASS
+web test files                    72 / 72 PASS
+web unit tests                    344 / 344 PASS
+architecture graph                283 modules / 777 dependencies / 0 violations
+production build                  PASS
+diff check                        PASS
+repository mutation check         PASS
+Mobile Bundle                     PASS
+Web E2E / Chromium                PASS
+frozen Timeline Firefox           PASS
+Frontend CI Gate                  PASS
 ```
 
-Materialized:
+Materialized M3-1 owners:
 
 ```text
-revisioned WorldFocusCompositionConfig
+apps/web/src/features/world-focus/model/world-focus-composition-config.ts
+apps/web/src/features/world-focus/application/world-focus-composition-customization.ts
+```
+
+Materialized semantics:
+
+```text
+revisioned client composition config
 schema disposition current / migration-required / unsupported
-ordered visibility/pin/prominence metadata only
+ordered entry metadata: visible/hidden, pinned, lead override
+unknown future module-kind representation
 isolated customization draft
 finite pin/unpin/hide/show/move/promote/restore commands
 manual + dante-proposed command sources
@@ -346,25 +613,36 @@ revision-conflict fail-closed result
 cross-World Apply rejection
 ```
 
-Critical rule:
+Critical product rule:
 
 ```text
 manual UI [M3-3] ----\
-                       -> same commands -> DRAFT -> REVIEW/APPLY -> CONFIG
+                       -> same finite commands -> DRAFT -> REVIEW/APPLY -> CONFIG
 DANTE proposal [M4] --/
 ```
 
 DANTE cannot bypass Apply/revision guards. Canonical app capabilities remain manually available where they are meaningful product functions.
 
-Not introduced:
+Explicit M3-1 non-work:
 
 ```text
-candidate resolver/ranking
-Customize UI
-localStorage/server persistence
-new live modules
-DANTE runtime work
-backend/API/DB/AuthZ
+candidate resolver/ranking             NOT STARTED
+Customize UI / drag-drop               NOT STARTED
+localStorage/server persistence        NOT INTRODUCED
+new live renderer mounting             NOT INTRODUCED
+DANTE D2–D6 runtime                    NOT STARTED
+backend/API/DB/Alembic/AuthZ           NOT STARTED
+```
+
+M0 L5 disposition after M3-1:
+
+```text
+M0-35 stability/origin semantics                         EXISTING / PRESERVE
+M0-36 prominence/footprint/grid planner                  EXISTING / PRESERVE
+M0-37 production candidate resolver                      M3-2 NEXT
+M0-38 Customize Draft/Apply/Cancel + commands            M3-1 FOUNDATION CLOSED; UI M3-3
+M0-39 client config revision/conflict/migration          M3-1 CLOSED / VALIDATED
+M0-40 durable persistence/cross-device sync/conflict     BACKEND-DEFERRED
 ```
 
 ---
@@ -378,25 +656,36 @@ L2 Evidence/Basis
 L3 Coordination/Disclosure
 L4 Interaction/Reference
 L5 Composition Configuration
-  existing planner/registry
+  existing deterministic planner/registry
   M3-1 revisioned config + draft command foundation
+  M3-2 candidate resolver NEXT
 L6 Operation/Effect Presentation
 L7 Renderer/Specialist Extension
 L8 Platform/User Policy
 
 M2 presentation boundary — CLOSED
-M3 Adaptive Composition — ACTIVE
+  bounded display-safe bindings
+  shared semantic presentation grammar
+  L1 renderers
+  truthfulness qualifiers
+  O2/O5/O8 direct renderers
+
+M3 Adaptive World Composition — ACTIVE
 ```
 
 ---
 
 # 4. Reopen rule
 
-Do not restart WS0–WS8, M1 or M2 for a new provider, World noun, UI, renderer, viewport, AI model, config store or larger dataset.
+Do not restart WS0–WS8 or M1 for a new provider, World noun, UI, renderer, viewport, AI model, config store or larger dataset.
 
-Reopen only when later executable/materialization evidence shows a concrete contradiction that cannot fit an existing owner, and reopen only the earliest necessary phase.
+Reopen only when later executable/materialization evidence shows a concrete semantic/ownership/state/security/privacy/effect contradiction that cannot fit an existing owner, and reopen only the earliest necessary phase.
 
-M3-1 reopens only for a contradiction in client composition-config/revision/draft-command ownership, not because M3-2 ranking or M3-3 interaction needs additional behavior.
+Do not reopen M2-1 merely because a specialist renderer needs a different visual treatment. Reopen it only if evidence contradicts the shared display-binding/presentation boundary itself.
+
+Do not reopen M2-2 merely because later composition or a specialist renderer needs more domain-specific presentation. Reopen it only for a concrete contradiction in shared truthfulness/direct-output presentation semantics.
+
+M3-1 reopens only for a concrete contradiction in client composition-config/revision/draft-command ownership, not because M3-2 ranking or M3-3 interaction needs additional behavior.
 
 ---
 
@@ -407,6 +696,12 @@ M3-1 reopens only for a contradiction in client composition-config/revision/draf
 > **POST-M1 SAFETY FALSIFICATION — CLOSED / PASS**
 
 > **M2 — Shared Visual Primitive Layer — CLOSED / VALIDATED**
+
+> **M2-1 — Shared Presentation / L1 Renderer Grammar — CLOSED / VALIDATED**
+
+> **M2-2 — Truthfulness / Direct Output Visual Layer — CLOSED / VALIDATED**
+
+> **M2 FINAL HOSTILE CLOSURE — CLOSED / PASS**
 
 > **M3 — Adaptive World Composition — ACTIVE**
 
