@@ -100,4 +100,56 @@ describe('WorldFocusCompositionHost', () => {
         ?.getAttribute('data-world-focus-module-status'),
     ).toBe('unsupported');
   });
+
+  it('isolates a throwing registered renderer and keeps healthy siblings rendered', () => {
+    const plan = resolveWorldFocusCompositionPlan(
+      [
+        {
+          instanceId: 'broken',
+          kind: 'broken',
+          ownership: { stability: 'adaptive', origin: 'application-derived' },
+          prominence: 'primary',
+          footprint: 'standard',
+          order: 0,
+        },
+        {
+          instanceId: 'healthy',
+          kind: 'healthy',
+          ownership: { stability: 'adaptive', origin: 'application-derived' },
+          prominence: 'primary',
+          footprint: 'standard',
+          order: 1,
+        },
+      ],
+      TEST_POLICY,
+    );
+    const registry = new WorldFocusModuleRegistry<WorldFocusCompositionRegistration>([
+      {
+        kind: 'broken',
+        render: () => {
+          throw new Error('renderer failed');
+        },
+      },
+      {
+        kind: 'healthy',
+        render: () => <p>Healthy sibling</p>,
+      },
+    ]);
+
+    const { container } = render(
+      <WorldFocusCompositionHost
+        worldId="music"
+        entries={plan.entries}
+        registry={registry}
+      />,
+    );
+
+    expect(screen.getByText('Healthy sibling')).toBeTruthy();
+    expect(screen.getByText('Non riesco a mostrare questo contenuto.')).toBeTruthy();
+    expect(
+      container
+        .querySelector('[data-world-focus-composition-id="broken"]')
+        ?.querySelector('[data-world-focus-module-status="error"]'),
+    ).toBeTruthy();
+  });
 });
