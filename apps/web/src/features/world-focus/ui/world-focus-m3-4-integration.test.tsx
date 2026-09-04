@@ -14,7 +14,9 @@ afterEach(() => {
   cleanup();
 });
 
-function requireWorld(id: 'music' | 'travel') {
+type TestWorldId = 'music' | 'finance';
+
+function requireWorld(id: TestWorldId) {
   const world = getWorldFocusWorld(id);
   if (world === undefined) {
     throw new Error(`Missing World Focus fixture: ${id}`);
@@ -22,15 +24,15 @@ function requireWorld(id: 'music' | 'travel') {
   return world;
 }
 
-function identity(id: 'music' | 'travel') {
+function identity(id: TestWorldId) {
   return createWorldFocusIdentityDescriptor(
     id === 'music'
       ? { id, label: 'Musica', description: 'Il tuo mondo musicale' }
-      : { id, label: 'Viaggi', description: 'Il tuo mondo dei viaggi' },
+      : { id, label: 'Finanza', description: 'Il tuo mondo finanziario' },
   );
 }
 
-function renderWorld(id: 'music' | 'travel') {
+function renderWorld(id: TestWorldId) {
   return render(
     <WorldFocusPage
       world={requireWorld(id)}
@@ -62,8 +64,8 @@ describe('World Focus M3-4 integrated adaptive composition', () => {
     expect(Number(composition?.dataset.worldFocusCompositionCount ?? '0')).toBeGreaterThan(1);
   });
 
-  it('keeps a sparse Travel World sparse instead of mounting the legacy synthetic Continuity candidate', async () => {
-    const { container } = renderWorld('travel');
+  it('keeps a truly sparse Finance World sparse instead of mounting the legacy synthetic Continuity candidate', async () => {
+    const { container } = renderWorld('finance');
 
     await waitFor(() => {
       expect(
