@@ -1,6 +1,6 @@
 """Compatibility imports for shared Email Platform provider adapters."""
 
-import boto3  # type: ignore[import-untyped]
+import boto3 as boto3  # type: ignore[import-untyped]
 
 from dante.platform.email.provider import SesEmailProvider, SmtpEmailProvider
 
@@ -8,4 +8,4 @@ from dante.platform.email.provider import SesEmailProvider, SmtpEmailProvider
 # this historical import path. Python imports share the same module object, so this still
 # affects the production implementation in dante.platform.email.provider.
 
-__all__ = ["SesEmailProvider", "SmtpEmailProvider"]
+__all__ = ["SesEmailProvider", "SmtpEmailProvider", "boto3"]
