@@ -6,7 +6,6 @@ import {
   type CSSProperties,
   type FormEvent,
   type KeyboardEvent,
-  type PointerEvent,
   type ReactNode,
 } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -183,10 +182,10 @@ export function TemporalCreateComposer({
       return;
     }
 
-    if (event.key !== 'Tab') {
+    if (event.key !== 'Tab' || !discardPending) {
       return;
     }
-    const root = discardPending ? discardRef.current : dialogRef.current;
+    const root = discardRef.current;
     if (!root) {
       return;
     }
@@ -203,13 +202,6 @@ export function TemporalCreateComposer({
     } else if (!event.shiftKey && document.activeElement === last) {
       event.preventDefault();
       first?.focus();
-    }
-  };
-
-  const handleBackdropPointerDown = (event: PointerEvent<HTMLDivElement>) => {
-    if (event.target === event.currentTarget && !pending) {
-      event.preventDefault();
-      requestCloseFromCurrentFocus();
     }
   };
 
@@ -309,9 +301,8 @@ export function TemporalCreateComposer({
 
   return (
     <div
-      className="temporal-create-backdrop"
+      className={`temporal-create-backdrop${discardPending ? ' is-modal' : ''}`}
       data-temporal-create="backdrop"
-      onPointerDown={handleBackdropPointerDown}
     >
       <div
         ref={dialogRef}
@@ -321,7 +312,7 @@ export function TemporalCreateComposer({
         data-temporal-create="composer"
         data-temporal-create-surface={advanced ? 'advanced' : 'base'}
         role="dialog"
-        aria-modal="true"
+        aria-modal={discardPending || undefined}
         aria-labelledby={dialogTitleId}
         aria-busy={pending || undefined}
         onKeyDown={handleKeyDown}

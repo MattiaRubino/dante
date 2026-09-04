@@ -1,28 +1,41 @@
 @media (min-width: 901px) {
-  .temporal-create-composer:not(.is-full)
-    .temporal-create-composer__heading-copy {
+  .temporal-create-backdrop {
+    background: transparent !important;
+    overscroll-behavior: auto;
+    pointer-events: none !important;
+  }
+
+  .temporal-create-backdrop.is-modal {
+    background: rgba(2, 6, 12, 0.42) !important;
+    overscroll-behavior: contain;
+    pointer-events: auto !important;
+  }
+
+  .temporal-create-composer {
+    pointer-events: auto !important;
+  }
+
+  .temporal-create-composer .temporal-create-composer__heading-copy {
     cursor: grab;
     user-select: none;
     touch-action: none;
   }
 
   html[data-temporal-create-dragging='true']
-    .temporal-create-composer:not(.is-full)
+    .temporal-create-composer
     .temporal-create-composer__heading-copy {
     cursor: grabbing;
   }
 
   .temporal-create-composer.is-full {
-    position: fixed;
-    top: 24px !important;
+    position: absolute;
     right: auto;
     bottom: auto;
-    left: 50% !important;
     display: grid;
-    grid-template-rows: auto minmax(0, 1fr) auto;
-    width: min(1040px, calc(100vw - 48px));
-    height: min(860px, calc(100dvh - 48px));
-    max-height: calc(100dvh - 48px);
+    grid-template-rows: auto minmax(0, 1fr);
+    width: min(760px, calc(100vw - 32px));
+    height: min(780px, calc(100dvh - 32px));
+    max-height: calc(100dvh - 32px);
     overflow: hidden;
     border: 1px solid
       color-mix(
@@ -35,17 +48,16 @@
         var(--dante-semantic-color-home-chrome-active, #ea5c12)
       );
     border-radius: 20px;
-    transform: translateX(-50%);
-    animation: temporal-create-full-workspace-enter 180ms
+    transform: none;
+    animation: temporal-create-advanced-enter 160ms
       cubic-bezier(0.2, 0.75, 0.25, 1);
   }
 
   .temporal-create-composer.is-full .temporal-create-composer__header {
     position: relative;
     z-index: 5;
-    top: auto;
-    margin: 0 -24px;
-    padding: 18px 24px 16px;
+    margin: 0;
+    padding-bottom: 14px;
     border-bottom: 1px solid
       var(
         --dante-semantic-color-home-border-subtle,
@@ -56,14 +68,13 @@
       var(--dante-semantic-color-home-surface-primary, #0d1522) 98%,
       black
     );
-    backdrop-filter: blur(18px);
   }
 
   .temporal-create-composer.is-full .temporal-create-composer__body {
     min-height: 0;
     max-width: none;
     margin-top: 0;
-    padding: 18px 2px 2px;
+    padding: 16px 2px 2px;
     overflow-y: auto;
     overscroll-behavior: contain;
     scrollbar-width: none;
@@ -101,15 +112,15 @@
   }
 }
 
-@keyframes temporal-create-full-workspace-enter {
+@keyframes temporal-create-advanced-enter {
   from {
     opacity: 0;
-    transform: translate(-50%, 10px) scale(0.992);
+    transform: translateY(8px) scale(0.992);
   }
 
   to {
     opacity: 1;
-    transform: translate(-50%, 0) scale(1);
+    transform: translateY(0) scale(1);
   }
 }
 

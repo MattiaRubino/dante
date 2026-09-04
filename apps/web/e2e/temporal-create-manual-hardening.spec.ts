@@ -9,7 +9,7 @@ async function openCreate(page: Page) {
   return dialog;
 }
 
-test('Quick Create stays compact while Advanced has a persistent back path and no visible inner scrollbar', async ({
+test('Quick and Advanced stay floating while the Timeline remains interactive', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -22,11 +22,48 @@ test('Quick Create stays compact while Advanced has a persistent back path and n
     1,
   );
 
-  const handle = dialog.locator('.temporal-create-composer__heading-copy');
+  const backdrop = page.locator('[data-temporal-create="backdrop"]');
+  const backdropStyle = await backdrop.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return {
+      pointerEvents: style.pointerEvents,
+      backgroundColor: style.backgroundColor,
+    };
+  });
+  expect(backdropStyle.pointerEvents).toBe('none');
+  expect(backdropStyle.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+
   const initial = await dialog.boundingBox();
-  const handleBox = await handle.boundingBox();
-  if (!initial || !handleBox) {
+  if (!initial) {
     throw new Error('Expected floating Create geometry');
+  }
+  expect(initial.x).toBeGreaterThanOrEqual(15);
+  expect(initial.x).toBeLessThan(40);
+  expect(initial.y).toBeGreaterThanOrEqual(48);
+  expect(initial.y).toBeLessThan(96);
+
+  const timeline = page.locator('.timeline-grid');
+  await timeline.evaluate((element) => {
+    element.scrollTop = 0;
+  });
+  const timelineBox = await timeline.boundingBox();
+  if (!timelineBox) {
+    throw new Error('Expected Timeline geometry');
+  }
+  await page.mouse.move(
+    timelineBox.x + timelineBox.width - 40,
+    timelineBox.y + Math.min(180, timelineBox.height / 2),
+  );
+  await page.mouse.wheel(0, 520);
+  await expect
+    .poll(() => timeline.evaluate((element) => element.scrollTop))
+    .toBeGreaterThan(0);
+  await expect(dialog).toBeVisible();
+
+  const handle = dialog.locator('.temporal-create-composer__heading-copy');
+  const handleBox = await handle.boundingBox();
+  if (!handleBox) {
+    throw new Error('Expected floating Create handle');
   }
 
   await page.mouse.move(
@@ -81,8 +118,31 @@ test('Quick Create stays compact while Advanced has a persistent back path and n
   expect(expanded.y).toBeGreaterThanOrEqual(0);
   expect(expanded.x + expanded.width).toBeLessThanOrEqual(1440.5);
   expect(expanded.y + expanded.height).toBeLessThanOrEqual(900.5);
-  expect(Math.abs(expanded.x + expanded.width / 2 - 720)).toBeLessThan(2);
-  expect(expanded.width).toBeGreaterThan(900);
+  expect(Math.abs(expanded.x - moved.x)).toBeLessThan(4);
+  expect(expanded.width).toBeGreaterThanOrEqual(700);
+  expect(expanded.width).toBeLessThanOrEqual(800);
+
+  const advancedHandleBox = await handle.boundingBox();
+  if (!advancedHandleBox) {
+    throw new Error('Expected Advanced floating handle');
+  }
+  await page.mouse.move(
+    advancedHandleBox.x + advancedHandleBox.width / 2,
+    advancedHandleBox.y + Math.min(16, advancedHandleBox.height / 2),
+  );
+  await page.mouse.down();
+  await page.mouse.move(
+    advancedHandleBox.x + advancedHandleBox.width / 2 + 90,
+    advancedHandleBox.y + Math.min(16, advancedHandleBox.height / 2) + 24,
+    { steps: 4 },
+  );
+  await page.mouse.up();
+
+  const advancedMoved = await dialog.boundingBox();
+  if (!advancedMoved) {
+    throw new Error('Expected moved Advanced Create geometry');
+  }
+  expect(advancedMoved.x).toBeGreaterThan(expanded.x + 40);
 
   const body = dialog.locator('.temporal-create-composer__body');
   const scrollStyle = await body.evaluate((element) => {

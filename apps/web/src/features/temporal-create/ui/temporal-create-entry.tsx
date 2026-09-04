@@ -43,11 +43,7 @@ import {
 import './temporal-create.css';
 
 const VIEWPORT_PADDING_PX = 16;
-const COMPOSER_GAP_PX = 10;
-const QUICK_WIDTH_PX = 560;
-const EXPANDED_WIDTH_PX = 760;
-const QUICK_ESTIMATED_HEIGHT_PX = 650;
-const EXPANDED_ESTIMATED_HEIGHT_PX = 760;
+const DEFAULT_COMPOSER_TOP_PX = 64;
 const FLOATING_COMPOSER_BREAKPOINT_PX = 900;
 
 type InvocationAnchor = Readonly<{
@@ -120,9 +116,8 @@ export function TemporalCreateEntry({
     'idle',
   );
   const [failureMessage, setFailureMessage] = useState('');
-  const [anchor, setAnchor] = useState<InvocationAnchor | null>(null);
   const [position, setPosition] = useState<TemporalCreateComposerPosition>({
-    top: 72,
+    top: DEFAULT_COMPOSER_TOP_PX,
     left: VIEWPORT_PADDING_PX,
   });
 
@@ -177,7 +172,6 @@ export function TemporalCreateEntry({
       setIssues([]);
       setFailureMessage('');
       setLifecycle('idle');
-      setAnchor(null);
       composerDragRef.current = null;
       document.documentElement.removeAttribute('data-temporal-create-dragging');
       preparedRef.current = null;
@@ -207,17 +201,11 @@ export function TemporalCreateEntry({
       setLifecycle('idle');
       preparedRef.current = null;
       focusReturnRef.current = focusReturnTarget ?? triggerRef.current;
-      const triggerRect = triggerRef.current?.getBoundingClientRect();
-      setAnchor(
-        externalAnchor ??
-          (triggerRect
-            ? {
-                left: triggerRect.left,
-                top: triggerRect.top,
-                bottom: triggerRect.bottom,
-              }
-            : null),
-      );
+      void externalAnchor;
+      setPosition({
+        top: DEFAULT_COMPOSER_TOP_PX,
+        left: VIEWPORT_PADDING_PX,
+      });
       setOpen(true);
     },
     [freshFields, onBeforeOpen],
@@ -242,17 +230,6 @@ export function TemporalCreateEntry({
   }, [open, openComposer, request]);
 
   useEffect(() => {
-    if (!open) {
-      return;
-    }
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = previous;
-    };
-  }, [open]);
-
-  useEffect(() => {
     if (!open || session.closeDecision === 'confirm-discard') {
       onPreview(null);
       return;
@@ -264,46 +241,7 @@ export function TemporalCreateEntry({
   }, [onPreview, open, session.closeDecision, session.draft]);
 
   useLayoutEffect(() => {
-    if (!open || !anchor || session.surface === 'full') {
-      return;
-    }
-    const updatePosition = () => {
-      const desiredWidth =
-        session.surface === 'expanded' ? EXPANDED_WIDTH_PX : QUICK_WIDTH_PX;
-      const width = Math.min(
-        desiredWidth,
-        Math.max(0, window.innerWidth - VIEWPORT_PADDING_PX * 2),
-      );
-      const left = clamp(
-        anchor.left,
-        VIEWPORT_PADDING_PX,
-        window.innerWidth - width - VIEWPORT_PADDING_PX,
-      );
-      const below = anchor.bottom + COMPOSER_GAP_PX;
-      const estimatedHeight = Math.min(
-        session.surface === 'expanded'
-          ? EXPANDED_ESTIMATED_HEIGHT_PX
-          : QUICK_ESTIMATED_HEIGHT_PX,
-        window.innerHeight - VIEWPORT_PADDING_PX * 2,
-      );
-      const above = anchor.top - COMPOSER_GAP_PX - estimatedHeight;
-      const top =
-        below + estimatedHeight <= window.innerHeight - VIEWPORT_PADDING_PX
-          ? below
-          : clamp(
-              above,
-              VIEWPORT_PADDING_PX,
-              window.innerHeight - estimatedHeight - VIEWPORT_PADDING_PX,
-            );
-      setPosition({ top, left });
-    };
-    updatePosition();
-    window.addEventListener('resize', updatePosition);
-    return () => window.removeEventListener('resize', updatePosition);
-  }, [anchor, open, session.surface]);
-
-  useLayoutEffect(() => {
-    if (!open || anchor || session.surface === 'full') {
+    if (!open) {
       return;
     }
 
@@ -340,10 +278,10 @@ export function TemporalCreateEntry({
       cancelAnimationFrame(frame);
       window.removeEventListener('resize', clampFloatingPosition);
     };
-  }, [anchor, open, session.surface]);
+  }, [open, session.surface]);
 
   useEffect(() => {
-    if (!open || session.surface === 'full') {
+    if (!open) {
       composerDragRef.current = null;
       document.documentElement.removeAttribute('data-temporal-create-dragging');
       return;
@@ -395,7 +333,6 @@ export function TemporalCreateEntry({
         width: rect.width,
         height: rect.height,
       };
-      setAnchor(null);
       document.documentElement.setAttribute(
         'data-temporal-create-dragging',
         'true',
