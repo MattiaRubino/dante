@@ -1,4 +1,4 @@
-.temporal-create-composer.is-advanced {
+.temporal-create-composer.is-advanced:not(.is-full) {
   width: min(760px, calc(100vw - 32px));
 }
 
@@ -186,7 +186,7 @@
 }
 
 @media (max-width: 900px) {
-  .temporal-create-composer.is-advanced {
+  .temporal-create-composer.is-advanced:not(.is-full) {
     width: min(100%, 720px);
   }
 }

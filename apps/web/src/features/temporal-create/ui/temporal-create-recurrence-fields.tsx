@@ -29,9 +29,19 @@ export function TemporalCreateRecurrenceFields({
   const recurrence = fields.eventRecurrence;
   const confirmation = fields.confirmation;
   const [cyclePositionDraft, setCyclePositionDraft] = useState('');
+  const recurrenceOwner = fields.kind === 'event' ? 'event' : 'routine';
   const patchRecurrence = (
     patch: Partial<TemporalCreateFields['eventRecurrence']>,
-  ) => onPatch({ eventRecurrence: { ...recurrence, ...patch } });
+  ) => {
+    const patternKind = patch.patternKind ?? recurrence.patternKind;
+    onPatch({
+      eventRecurrence: {
+        ...recurrence,
+        ...patch,
+        owner: patternKind === 'none' ? null : recurrenceOwner,
+      },
+    });
+  };
   const patchConfirmation = (
     patch: Partial<TemporalCreateFields['confirmation']>,
   ) => onPatch({ confirmation: { ...confirmation, ...patch } });
@@ -95,8 +105,6 @@ export function TemporalCreateRecurrenceFields({
       ),
     });
   };
-
-  const recurrenceOwner = fields.kind === 'event' ? 'event' : 'routine';
 
   return (
     <>

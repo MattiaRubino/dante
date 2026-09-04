@@ -53,6 +53,7 @@ export type TemporalCreateOutcomePolicy =
 export type TemporalCreateAvailability = 'busy' | 'free';
 export type TemporalCreateVisibility = 'default' | 'private' | 'public';
 export type TemporalCreateConferenceMode = 'none' | 'provider-default';
+export type TemporalCreateRecurrenceOwner = 'event' | 'routine' | null;
 
 /**
  * Presentation-only override for the Timeline visual grammar. It never changes
@@ -75,8 +76,7 @@ export type TemporalCreateAppearanceTone =
  *
  * The historical Event-prefixed type/property names are retained inside C1 to
  * avoid a gratuitous data-shape migration while preserving the CP6 owner rule.
- * These four families mirror the recurrence capabilities materialized by CP6
- * without making the frontend draft a PostgreSQL row shape.
+ * `owner` makes that semantic boundary explicit at the draft boundary.
  */
 export type TemporalCreateEventRecurrencePatternKind =
   | 'none'
@@ -130,6 +130,7 @@ export type TemporalCreateExecutionIntent = Readonly<{
 }>;
 
 export type TemporalCreateEventRecurrenceIntent = Readonly<{
+  owner?: TemporalCreateRecurrenceOwner;
   patternKind: TemporalCreateEventRecurrencePatternKind;
   calendarFrequency: TemporalCreateEventCalendarFrequency;
   calendarInterval: number;
@@ -239,6 +240,7 @@ function freezeEventRecurrence(
 ): TemporalCreateEventRecurrenceIntent {
   return Object.freeze({
     ...value,
+    owner: value.owner ?? null,
     weekdays: Object.freeze([...value.weekdays]),
     cyclePositions: Object.freeze([...value.cyclePositions]),
   });
@@ -266,6 +268,7 @@ function freezeEvent(value: TemporalCreateEventIntent): TemporalCreateEventInten
 function normalizeFields(fields: TemporalCreateFields): TemporalCreateFields {
   let timeSemantics = fields.timeSemantics;
   let scheduling = fields.scheduling;
+  let eventRecurrence = fields.eventRecurrence;
 
   if (fields.kind === 'event') {
     if (timeSemantics === 'unscheduled') {
@@ -281,11 +284,27 @@ function normalizeFields(fields: TemporalCreateFields): TemporalCreateFields {
         fallbackPolicy: 'inherit',
       };
     }
+    eventRecurrence =
+      eventRecurrence.patternKind === 'none'
+        ? { ...eventRecurrence, owner: null }
+        : { ...eventRecurrence, owner: 'event' };
   } else {
     if (scheduling.constraintKind !== 'none') {
       timeSemantics = 'unscheduled';
     } else if (timeSemantics !== 'unscheduled') {
       scheduling = { ...scheduling, constraintKind: 'none' };
+    }
+    if (
+      eventRecurrence.patternKind !== 'none' &&
+      eventRecurrence.owner !== 'routine'
+    ) {
+      eventRecurrence = {
+        ...eventRecurrence,
+        owner: null,
+        patternKind: 'none',
+      };
+    } else if (eventRecurrence.patternKind === 'none') {
+      eventRecurrence = { ...eventRecurrence, owner: null };
     }
   }
 
@@ -294,7 +313,7 @@ function normalizeFields(fields: TemporalCreateFields): TemporalCreateFields {
     timeSemantics,
     scheduling: freezeScheduling(scheduling),
     execution: freezeExecution(fields.execution),
-    eventRecurrence: freezeEventRecurrence(fields.eventRecurrence),
+    eventRecurrence: freezeEventRecurrence(eventRecurrence),
     confirmation: freezeConfirmation(fields.confirmation),
     event: freezeEvent(fields.event),
   });
@@ -337,6 +356,7 @@ export function createTemporalCreateFields(
   );
   const eventRecurrence = freezeEventRecurrence(
     options.eventRecurrence ?? {
+      owner: null,
       patternKind: 'none',
       calendarFrequency: 'weekly',
       calendarInterval: 1,
@@ -468,6 +488,8 @@ function temporalCreateFieldsEqual(
     left.execution.preparationMinutes === right.execution.preparationMinutes &&
     left.execution.recoveryMinutes === right.execution.recoveryMinutes &&
     left.execution.spacingMinutes === right.execution.spacingMinutes &&
+    (left.eventRecurrence.owner ?? null) ===
+      (right.eventRecurrence.owner ?? null) &&
     left.eventRecurrence.patternKind === right.eventRecurrence.patternKind &&
     left.eventRecurrence.calendarFrequency === right.eventRecurrence.calendarFrequency &&
     left.eventRecurrence.calendarInterval === right.eventRecurrence.calendarInterval &&

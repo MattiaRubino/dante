@@ -67,7 +67,7 @@ describe('Temporal Create Timeline projection', () => {
     expect(Object.isFrozen(projection?.agendaParts)).toBe(true);
   });
 
-  it('marks a repeated Activity projection recurring without inventing child identities', () => {
+  it('marks a Routine-backed repeated Activity projection recurring without inventing child identities', () => {
     const baseline = createTemporalCreateFields({
       title: 'Allenamento',
       kind: 'activity',
@@ -79,6 +79,7 @@ describe('Temporal Create Timeline projection', () => {
       ...baseline,
       eventRecurrence: {
         ...baseline.eventRecurrence,
+        owner: 'routine',
         patternKind: 'quota-per-period',
         quotaCount: 3,
         quotaPeriodKind: 'week',

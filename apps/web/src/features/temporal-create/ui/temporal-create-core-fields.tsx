@@ -6,6 +6,7 @@ import type {
   TemporalCreateEventCalendarFrequency,
   TemporalCreateFields,
   TemporalCreateKind,
+  TemporalCreateRecurrenceOwner,
   TemporalCreateTimeSemantics,
   TemporalCreateWeekday,
 } from '../model/temporal-create-session';
@@ -92,6 +93,8 @@ export function TemporalCreateCoreFields({
   const copy = temporalCreateProductCopy(i18n.resolvedLanguage ?? i18n.language);
   const onCreateContext = useTemporalCreateContextCreator();
   const typeRegistry = temporalCreateTypeRegistry();
+  const recurrenceOwner: Exclude<TemporalCreateRecurrenceOwner, null> =
+    fields.kind === 'event' ? 'event' : 'routine';
   const patchEvent = (patch: Partial<TemporalCreateFields['event']>) =>
     onPatch({ event: { ...fields.event, ...patch } });
   const durationOptions = TEMPORAL_CREATE_DURATION_OPTIONS.includes(
@@ -128,6 +131,12 @@ export function TemporalCreateCoreFields({
     if (kind === fields.kind) {
       return;
     }
+    const targetOwner = kind === 'event' ? 'event' : 'routine';
+    const eventRecurrence = {
+      ...fields.eventRecurrence,
+      owner:
+        fields.eventRecurrence.patternKind === 'none' ? null : targetOwner,
+    } as const;
     if (kind === 'event') {
       onPatch({
         kind,
@@ -138,10 +147,11 @@ export function TemporalCreateCoreFields({
           constraintKind: 'none',
           fallbackPolicy: 'inherit',
         },
+        eventRecurrence,
       });
       return;
     }
-    onPatch({ kind });
+    onPatch({ kind, eventRecurrence });
   };
 
   const changeTimeSemantics = (semantics: TemporalCreateTimeSemantics) => {
@@ -182,26 +192,32 @@ export function TemporalCreateCoreFields({
 
   const changeQuickRecurrence = (value: QuickRecurrence) => {
     if (value === 'custom') {
-      if (
-        fields.kind === 'activity' &&
-        fields.eventRecurrence.patternKind === 'none'
-      ) {
-        onPatch({
-          eventRecurrence: {
-            ...fields.eventRecurrence,
-            patternKind: 'calendar-wall-clock',
-            calendarFrequency: 'weekly',
-            calendarInterval: 1,
-            weekdays: Object.freeze([weekdayForDate(fields.date)]),
-          },
-        });
-      }
+      onPatch({
+        eventRecurrence:
+          fields.eventRecurrence.patternKind === 'none'
+            ? {
+                ...fields.eventRecurrence,
+                owner: recurrenceOwner,
+                patternKind: 'calendar-wall-clock',
+                calendarFrequency: 'weekly',
+                calendarInterval: 1,
+                weekdays: Object.freeze([weekdayForDate(fields.date)]),
+              }
+            : {
+                ...fields.eventRecurrence,
+                owner: recurrenceOwner,
+              },
+      });
       onRequestAdvanced();
       return;
     }
     if (value === 'none') {
       onPatch({
-        eventRecurrence: { ...fields.eventRecurrence, patternKind: 'none' },
+        eventRecurrence: {
+          ...fields.eventRecurrence,
+          owner: null,
+          patternKind: 'none',
+        },
       });
       return;
     }
@@ -209,6 +225,7 @@ export function TemporalCreateCoreFields({
     onPatch({
       eventRecurrence: {
         ...fields.eventRecurrence,
+        owner: recurrenceOwner,
         patternKind: 'calendar-wall-clock',
         calendarFrequency: frequency,
         calendarInterval: 1,

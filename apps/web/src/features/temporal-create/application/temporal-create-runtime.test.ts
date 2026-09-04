@@ -103,6 +103,7 @@ describe('Temporal Create rich application runtime', () => {
     expect(execution.result.status).toBe('applied');
     expect(execution.effect?.projection.capabilities).toContain('recurrence');
     expect(record?.metadata.recurrenceOwner).toBe('event');
+    expect(record?.metadata.specification.eventRecurrence.owner).toBe('event');
     expect(record?.metadata.specification.eventRecurrence.patternKind).toBe(
       'calendar-wall-clock',
     );
@@ -121,6 +122,7 @@ describe('Temporal Create rich application runtime', () => {
       ...baseline,
       eventRecurrence: {
         ...baseline.eventRecurrence,
+        owner: 'routine',
         patternKind: 'quota-per-period',
         quotaCount: 3,
         quotaPeriodKind: 'week',
@@ -141,6 +143,9 @@ describe('Temporal Create rich application runtime', () => {
     expect(execution.effect?.projection.capabilities).not.toContain('recurrence');
     expect(records).toHaveLength(1);
     expect(records[0]?.metadata.recurrenceOwner).toBe('routine');
+    expect(records[0]?.metadata.specification.eventRecurrence.owner).toBe(
+      'routine',
+    );
     expect(records[0]?.metadata.specification.eventRecurrence.patternKind).toBe(
       'quota-per-period',
     );
