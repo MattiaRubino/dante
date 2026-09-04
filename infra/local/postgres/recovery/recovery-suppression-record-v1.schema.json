@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dante.local/schemas/recovery-suppression-record-v1.schema.json",
+  "title": "DANTE Recovery Suppression Record v1",
+  "oneOf": [
+    {"$ref": "#/$defs/prepared"},
+    {"$ref": "#/$defs/committed"}
+  ],
+  "$defs": {
+    "uuid": {"type":"string","pattern":"^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"},
+    "timestamp": {"type":"string","format":"date-time"},
+    "prepared": {
+      "type":"object","additionalProperties":false,
+      "required":["record_version","state","recovery_suppression_ref","target_reference_family","material_state_ref","facet_code","effect","retirement_code","accepted_at"],
+      "properties": {
+        "record_version":{"const":1},"state":{"const":"PREPARED"},
+        "recovery_suppression_ref":{"$ref":"#/$defs/uuid"},
+        "target_reference_family":{"const":"MaterialStateRef"},
+        "material_state_ref":{"$ref":"#/$defs/uuid"},
+        "facet_code":{"enum":["schedule.placement","actual.realization","session.timing","routine.recurrence","event.recurrence"]},
+        "effect":{"const":"suppress_payload"},
+        "retirement_code":{"enum":["redacted","unavailable"]},
+        "accepted_at":{"$ref":"#/$defs/timestamp"}
+      }
+    },
+    "committed": {
+      "type":"object","additionalProperties":false,
+      "required":["record_version","state","recovery_suppression_ref","material_state_ref","prepared_sha256","committed_at"],
+      "properties": {
+        "record_version":{"const":1},"state":{"const":"COMMITTED"},
+        "recovery_suppression_ref":{"$ref":"#/$defs/uuid"},
+        "material_state_ref":{"$ref":"#/$defs/uuid"},
+        "prepared_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+        "committed_at":{"$ref":"#/$defs/timestamp"}
+      }
+    }
+  }
+}

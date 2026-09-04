@@ -1,0 +1,86 @@
+/* dante-palette-f-preview */
+:root{
+  --f-surface:#151D21;
+  --f-surface-raised:#1B252A;
+  --f-control:#202B30;
+  --f-text:#F2F4F2;
+  --f-text-2:#B2BDC1;
+  --f-muted:#7D8A90;
+  --f-border:rgba(159,177,184,.125);
+  --f-border-strong:rgba(177,192,198,.19);
+  --f-accent:#EA5C12;
+  --f-accent-soft:rgba(234,92,18,.095);
+  --f-accent-border:rgba(234,92,18,.255);
+}
+.topbar,.tb-a{
+  background:rgba(21,29,33,.93)!important;
+  border-color:var(--f-border)!important;
+}
+.hero-left-panel,.hero-right-panel,.ai-card,.context-rail,.capture-panel,.resolution-panel,
+.today,.stat-card,.metric,.mini-stat,.tb-pop{
+  background-color:rgba(21,29,33,.92)!important;
+  border-color:var(--f-border)!important;
+}
+.ai-card,.hero-right-panel,.context-rail,.capture-panel,.resolution-panel,.stat-card,.tb-pop{
+  background-image:linear-gradient(180deg,rgba(255,255,255,.010),rgba(255,255,255,0))!important;
+}
+h1,h2,h3,.chat-copy,.chat-user-bubble,.stat-title,.hero-right-title,.hero-left-title,
+.summary-line b,.mini-stat strong,.tb-nav button.active{
+  color:var(--f-text)!important;
+}
+p,small,.meta,.eyebrow,.stat-kicker,.summary-line span,.mini-stat span,.tb-nav button,
+.tb-search,.tb-grid-launcher,.tb-review,.tb-avatar,.hero-right-desc{
+  color:var(--f-text-2)!important;
+}
+.tb-search kbd,.muted,.od-kicker,.od-sub{color:var(--f-muted)!important}
+.tb-nav-a,.tb-utility-a>button,.chat-tool,.chat-send,.stage-dock,.stat-arrow,.arrow,.ghostBtn{
+  border-color:var(--f-border)!important;
+  background-color:var(--f-control)!important;
+}
+.tb-nav-a button.active,.controls .on,.stage-hub{
+  background:var(--f-accent-soft)!important;
+  border-color:var(--f-accent-border)!important;
+  box-shadow:inset 0 -2px 0 rgba(234,92,18,.78)!important;
+}
+.tb-create-main,.tb-create{
+  background:linear-gradient(135deg,#EA5C12,#D8510E)!important;
+  border-color:rgba(234,92,18,.38)!important;
+  color:#fff!important;
+  box-shadow:0 5px 18px rgba(234,92,18,.12)!important;
+}
+.tb-badge{background:#EA5C12!important}
+
+/* dante-cosmos-reference-bg-v1 */
+html{
+  background:#02070B!important;
+}
+body{
+  position:relative!important;
+  min-height:100%!important;
+  background-color:#02070B!important;
+  background-image:
+    linear-gradient(180deg,rgba(1,5,8,.10),rgba(1,5,8,.24)),
+    url("./dante-home-cosmos-mirrored-v1.webp")!important;
+  background-repeat:no-repeat,no-repeat!important;
+  background-size:cover,cover!important;
+  background-position:center top,center center!important;
+  background-attachment:fixed,fixed!important;
+}
+.app{
+  position:relative!important;
+  z-index:1!important;
+}
+/* Let the new atmosphere actually read through the central-stage area
+   without altering layout or behavior. */
+.hero{
+  background:
+    radial-gradient(680px 360px at 54% 50%,rgba(234,92,18,.020),transparent 72%),
+    rgba(4,10,16,.30)!important;
+}
+
+/* dante-remove-legacy-network-only */
+#netCanvas{
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+}
