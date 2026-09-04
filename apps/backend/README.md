@@ -8,7 +8,7 @@ CP6 then consumed that foundation and is **CLOSED / CONCRETE POSTGRESQL DATABASE
 
 The PostgreSQL Recovery workstream added forward revision `20260830_09`, retirement/anti-resurrection integrity and a complete LOCAL pgBackRest restore/PITR operator rehearsal. PR #47 integrated that accepted Recovery evolution into protected `main`.
 
-The current integration candidate `integration/access-auth-main-20260904` preserves that Recovery history and joins it with accepted Access/Auth M1–M5 plus the shared Email Platform through no-DDL merge revision `20260904_17`. The combined candidate has passed backend/frontend CI, real PostgreSQL acceptance and the enriched-baseline CP07 whole LOCAL recovery rehearsal.
+Access/Auth M1–M5 and the shared Email Platform evolved forward from the same CP6 baseline through `20260904_16`. Protected-main Recovery and Access/Auth/Email histories were preserved and joined with no-DDL Alembic merge revision `20260904_17`; PR #52 then integrated the accepted combined foundation into protected `main` at `5f76ec54ad78542f137e8730e904f805d9e59e56`. Post-merge Backend and Frontend CI passed on that exact merge commit.
 
 ## Current status
 
@@ -33,35 +33,40 @@ POSTGRESQL 18.6
 HISTORICAL PRE-RECOVERY ALEMBIC 20260826_08
 HISTORICAL PRE-RECOVERY TOPOLOGY 68 / 5 / 14 / 75 / 95 / 68 / 120
 
-CURRENT PROTECTED-MAIN ALEMBIC BEFORE PR #52 20260830_09
-CURRENT PROTECTED-MAIN TOPOLOGY BEFORE PR #52 69 / 5 / 15 / 76 / 97 / 69 / 123
-PR #47 MERGED INTO PROTECTED main
+HISTORICAL RECOVERY-ONLY MAIN BEFORE PR #52
+Alembic                     20260830_09
+Topology                    69 / 5 / 15 / 76 / 97 / 69 / 123
+Recovery PR                 #47
 
-ACCEPTED INTEGRATION CANDIDATE
-branch                      integration/access-auth-main-20260904
-implementation proof HEAD   81639c61478b476c995652d0060dde8f53aef089
+CURRENT PROTECTED MAIN
+Access integration merge    5f76ec54ad78542f137e8730e904f805d9e59e56
 Alembic                     20260904_17
 Topology                    88 / 5 / 16 / 76 / 172 / 89 / 270
-Access/Auth M1–M5           CLOSED / ACCEPTED
-Shared Email Platform       CLOSED / ACCEPTED / OWNERSHIP VERIFIED
-Backend CI                  PASS
-Frontend CI                 PASS
+Access/Auth M1–M5           CLOSED / INTEGRATED
+Shared Email Platform       CLOSED / INTEGRATED / OWNERSHIP VERIFIED
+Recovery                    CLOSED / INTEGRATED
 CP07 LOCAL Recovery         PASS
-Disposition                 READY FOR PROTECTED-MAIN MERGE
+post-merge Backend CI       PASS
+post-merge Frontend CI      PASS
 ```
 
-The candidate CP07 proof earned `DATABASE LOCAL REOPEN = PASS` against `20260904_17 / 88|5|16|76|172|89|270|0|0|0`, proved old protected-payload physical resurrection followed by suppression-ledger reconciliation, and rejected protected-payload reinsertion. Remote backup provider activation and production/cloud recovery remain **NOT CLAIMED**.
+The CP07 proof on implementation HEAD `81639c61478b476c995652d0060dde8f53aef089` earned `DATABASE LOCAL REOPEN = PASS` against `20260904_17 / 88|5|16|76|172|89|270|0|0|0`, proved old protected-payload physical resurrection followed by suppression-ledger reconciliation, and rejected protected-payload reinsertion. Remote backup provider activation and production/cloud recovery remain **NOT CLAIMED**.
 
-Protected-main integration milestones already completed:
+Protected-main integration milestones:
 
 ```text
-CP6 final feature HEAD  9297b64c7c912c2cc8e344a6617beb5c91457bbb
-CP6 PR                  #42
-CP6 merge commit        117360b9333fd1a8a62d0dfeb0398a4d5811e393
+CP6 final feature HEAD       9297b64c7c912c2cc8e344a6617beb5c91457bbb
+CP6 PR                       #42
+CP6 merge commit             117360b9333fd1a8a62d0dfeb0398a4d5811e393
 
-Recovery final head     e46ae3d9d5918b27ebf86f4e291b51312f1e7c4d
-Recovery PR             #47
-Recovery merge commit   bdd2b2370d41423dbaecd00fde86bb2bf2466f2b
+Recovery final head          e46ae3d9d5918b27ebf86f4e291b51312f1e7c4d
+Recovery PR                  #47
+Recovery merge commit        bdd2b2370d41423dbaecd00fde86bb2bf2466f2b
+
+Access implementation proof 81639c61478b476c995652d0060dde8f53aef089
+Access final candidate       6cee5506d404d0684b0679aca54c03f0ca433c72
+Access integration PR        #52
+Access merge commit          5f76ec54ad78542f137e8730e904f805d9e59e56
 ```
 
 Current backend transition boundary:
@@ -70,25 +75,24 @@ Current backend transition boundary:
 CP6 CLOSED + INTEGRATED
         ↓
 RECOVERY EVOLUTION 20260830_09 + LOCAL RECOVERY SYSTEM
-CLOSED + INTEGRATED VIA PR #47
+CLOSED + INTEGRATED
         ↓
 ACCESS/AUTH M1–M5 + SHARED EMAIL PLATFORM
-CLOSED / ACCEPTED
+CLOSED + INTEGRATED
         ↓
 NO-DDL ALEMBIC CONVERGENCE 20260904_17
         ↓
 COMBINED CI + REAL POSTGRESQL + CP07
 PASS
         ↓
-PR #52 → PROTECTED MAIN
-NEXT
-        ↓
-POST-MERGE MAIN VERIFICATION
+PR #52 + POST-MERGE MAIN CI
+PASS / INTEGRATED
         ↓
 OBSERVABILITY INTEGRATION
+NEXT
 ```
 
-There is no remaining CP6 design or Recovery feature-development step. Remaining work for this candidate is protected-main integration procedure and post-merge verification. Final CP6 closure evidence lives in `docs/development/backend-cp6-05-whole-database-qa.md`; current Recovery operation lives in `docs/operations/postgres-recovery-runbook.md`; durable combined-candidate evidence lives in `docs/workstreams/access-auth-integration-acceptance-2026-09-04.md`; historical branch records remain non-authoritative for current state.
+There is no remaining CP6, Recovery or Access/Auth integration step. Final CP6 closure evidence lives in `docs/development/backend-cp6-05-whole-database-qa.md`; current Recovery operation lives in `docs/operations/postgres-recovery-runbook.md`; durable combined integration evidence lives in `docs/workstreams/access-auth-integration-acceptance-2026-09-04.md`; historical branch records remain non-authoritative for current state.
 
 ## Runtime contract
 
@@ -178,7 +182,7 @@ Historical Recovery branch chronology lives in:
 
 `docs/archive/branches/2026-08-feature-postgres-recovery.md`
 
-No live/session CP6 or Recovery handoff is current authority after integration.
+No live/session CP6, Recovery or Access/Auth handoff is current authority after integration.
 
 ## LOCAL database security provisioning
 
@@ -220,7 +224,7 @@ DDL owner role       dante_owner via explicit SET ROLE
 
 Migration commands must receive the dedicated migrator password separately from runtime config. Normal application startup never runs migrations.
 
-The migration history begins with the technical CP3 baseline `20260820_01`. CP6 materialized the concrete business database through the reviewed M1..M7 linear stages and the CP6-05 hardening revision `20260826_08`. Recovery then added sibling forward revision `20260830_09` for MaterialState retirement/anti-resurrection integrity. Access/Auth and Email evolved independently from `20260826_08` through `20260904_16`. The accepted integration candidate preserves both histories and joins them with forward no-DDL merge revision `20260904_17`.
+The migration history begins with the technical CP3 baseline `20260820_01`. CP6 materialized the concrete business database through the reviewed M1..M7 linear stages and the CP6-05 hardening revision `20260826_08`. Recovery then added sibling forward revision `20260830_09` for MaterialState retirement/anti-resurrection integrity. Access/Auth and Email evolved independently from `20260826_08` through `20260904_16`. Protected `main` preserves both histories and joins them with forward no-DDL merge revision `20260904_17`.
 
 ```text
 20260826_08
@@ -373,7 +377,7 @@ Backend CI Gate               SUCCESS
 current test corpus           50 / 50 covered across the two mandatory CI lanes
 ```
 
-This remains historical **DIRECT REMOTE QA PASS for the technical PostgreSQL 18.6 foundation regression**. It predates and does not replace the final CP6-05 disposable PostgreSQL acceptance, later Recovery proof or current combined-candidate acceptance.
+This remains historical **DIRECT REMOTE QA PASS for the technical PostgreSQL 18.6 foundation regression**. It predates and does not replace the final CP6-05 disposable PostgreSQL acceptance, later Recovery proof or current integrated protected-main acceptance.
 
 ## CP6 final direct acceptance evidence
 
@@ -406,7 +410,7 @@ GET /health/ready                 200 {"status":"ready"}
 
 See `docs/development/backend-cp6-05-whole-database-qa.md` for the full closure record, including historical failures and repairs.
 
-## Current combined-candidate acceptance evidence
+## Access/Auth + Email + Recovery integration evidence
 
 Exact accepted implementation proof HEAD:
 
@@ -435,11 +439,13 @@ ledger reconciliation         PASS
 payload reinsertion           REJECTED
 ```
 
+PR #52 merged the final candidate `6cee5506d404d0684b0679aca54c03f0ca433c72` into protected main at `5f76ec54ad78542f137e8730e904f805d9e59e56`. The merge tree matches the final candidate tree exactly. Post-merge Backend Quality, real PostgreSQL acceptance, Backend CI Gate, Frontend Quality, Web E2E, Mobile Bundle and Frontend CI Gate all passed.
+
 See `docs/workstreams/access-auth-integration-acceptance-2026-09-04.md` for the durable integration record and `docs/operations/postgres-recovery-runbook.md` for the operator contract.
 
 ## Post-CP6 boundaries
 
-The concrete PostgreSQL kernel and Recovery evolution are closed. The accepted Access/Auth + shared Email Platform candidate extends the database through normal forward migrations and is ready for protected-main integration after final documentation-only CI and ref recheck.
+The concrete PostgreSQL kernel, Recovery evolution, Access/Auth M1–M5 and shared Email Platform are closed and integrated on protected `main` at `20260904_17`.
 
 Database existence alone still does **not** authorize or prove:
 
@@ -453,15 +459,14 @@ Database existence alone still does **not** authorize or prove:
 - Apple real registered-domain acceptance without the external prerequisites and real UAT;
 - production Email sender-domain/DNS/reputation/workload-identity acceptance from development SES UAT.
 
-Current branch sequence:
+Current sequence:
 
 ```text
-integration/access-auth-main-20260904
-accepted candidate
-→ PR #52 to protected main
-→ verify resulting protected-main tree and CI
-→ reconcile branch wording to protected-main truth
-→ enriched main into feature/platform-observability
+enriched protected main
+→ feature/platform-observability
+→ observability integration/release rechecks
+→ protected-main Observability PR
+→ future bounded workstreams
 ```
 
 Future new verticals start only from the then-current enriched protected `main` under an explicit bounded gate.

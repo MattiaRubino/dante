@@ -1,7 +1,7 @@
 # Branching and Environments
 
 - **Status:** CURRENT
-- **Last reconciled:** 2026-08-31
+- **Last reconciled:** 2026-09-04
 
 ## 1. Core rule
 
@@ -200,24 +200,20 @@ While one regular maintainer exists:
 
 ## 12. Current branch/workstream truth
 
-Protected `main` contains the integrated CP1–CP6 backend/database baseline and the closed LOCAL PostgreSQL Recovery evolution:
+Protected `main` contains the integrated CP1–CP6 backend/database baseline, the closed LOCAL PostgreSQL Recovery evolution, Access/Auth M1–M5, the Shared Email Platform and the forward Recovery↔Email reopen hardening:
 
 ```text
-CP6                  integrated via PR #42
-PostgreSQL Recovery  CP01–CP07 LOCAL PASS / CLOSED / integrated via PR #47
-current Alembic      20260830_09
-current topology     69|5|15|76|97|69|123|0|0|0
+CP6                              integrated via PR #42
+PostgreSQL Recovery              CP01–CP07 LOCAL PASS / CLOSED / integrated via PR #47
+Access/Auth + Shared Email       CLOSED / integrated via PR #52
+Recovery↔Email application gate  CP08 PASS / integrated via PR #55
+current Alembic                  20260904_17
+current topology                 88|5|16|76|172|89|270|0|0|0
 ```
 
-At the 2026-08-31 reconciliation, bounded unmerged work observed in current project authority includes:
+Current project authority selects `feature/platform-observability` as the next bounded integration after its operational closure/rechecks. Branch existence by itself is not evidence that a workstream is still active or should be resumed; exact workstream state must be reread from current authority and live Git before writes.
 
-```text
-feature/access-auth             active unmerged product vertical
-feature/home-react              active unmerged frontend workstream
-feature/platform-observability  active unmerged platform workstream
-```
-
-`feature/postgres-recovery` and `feature/access-frontend` are closed historical branch state. Their accepted results remain current protected-main/baseline evidence where applicable, but those branches are not current resume/integration lines.
+`feature/access-auth`, `feature/postgres-recovery` and `feature/access-frontend` are closed/integrated historical branch state. Their accepted results remain current protected-main/baseline evidence where applicable, but those branches are not current resume/integration lines.
 
 Closed feature branches are not reusable development lines. New work starts from current protected `main` under a fresh bounded branch unless an already-active workstream explicitly continues on its existing branch.
 
@@ -295,18 +291,22 @@ Selected technology != implemented capability.
 
 ```text
 ACCESS/AUTH
-continue the existing bounded feature/access-auth workstream
-→ do not recreate Access from closed feature/access-frontend
-→ reconcile branch-local behavior/migrations with current main before integration
+CLOSED / INTEGRATED VIA PR #52
+→ do not resume feature/access-auth as an active workstream
+→ future M6/M7 work is a new bounded scope from current protected main when explicitly activated
 
 HOME
-continue feature/home-react only inside its bounded frontend scope
+continue/resume frontend work only according to its own current bounded authority and live branch state
+→ Access closure does not silently mutate or redefine that separate workstream
 
 OBSERVABILITY
-continue feature/platform-observability only inside its bounded platform scope
+feature/platform-observability is the current next bounded integration
+→ integrate enriched protected main into that branch
+→ rerun Observability release/integration gates before its protected-main PR
 
 POSTGRESQL RECOVERY
 CLOSED / INTEGRATED VIA PR #47
+→ CP08 application/Email reopen hardening integrated via PR #55
 → do not resume feature/postgres-recovery
 → permanent bootstrap/runner/runbook remain reusable from current protected main
 → remote provider remains TBD until production deployment creates the real boundary

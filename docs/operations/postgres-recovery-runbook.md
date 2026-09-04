@@ -1,22 +1,24 @@
 # DANTE — PostgreSQL Local Recovery Operator Runbook
 
-- **Status:** CURRENT / REHEARSED / CP07 LOCAL PASS / INTEGRATED-CANDIDATE CONTRACT PROVEN
+- **Status:** CURRENT / DATABASE-LOCAL CP07 PASS / APPLICATION+EMAIL REOPEN CP08 PASS
 - **Scope:** whole local PostgreSQL disaster recovery and semantic acceptance
 - **Remote backup provider:** TBD / NOT ACTIVATED
 - **Production/cloud recovery:** NOT CLAIMED
 - **Canonical database:** PostgreSQL 18.6
-- **Accepted candidate Alembic head:** `20260904_17`
-- **Protected-main head before PR #52:** `20260830_09`
-- **Accepted candidate proof HEAD:** `81639c61478b476c995652d0060dde8f53aef089`
+- **Current protected-main Alembic head:** `20260904_17`
+- **Access integration merge:** `5f76ec54ad78542f137e8730e904f805d9e59e56`
+- **Recovery↔Email hardening merge:** `c67a18c24a6cf22b003ffd2c14243af53fec5077`
+- **Historical accepted CP07 implementation proof HEAD:** `81639c61478b476c995652d0060dde8f53aef089`
+- **Accepted CP08 proof HEAD:** `1a5a7f1fbbdc1e5723d58fa90721a8693cce49e9`
 - **Whole-rehearsal harness:** `infra/local/postgres/recovery/cp07-whole-recovery-rehearsal.sh`
 
-> This runbook is deliberately provider-neutral. It describes the accepted DANTE LOCAL recovery contract for the current integration candidate. A future remote-storage provider is selected only when production deployment actually requires one.
+> This runbook is deliberately provider-neutral. It describes the DANTE LOCAL recovery contract owned by protected `main`. The 2026-09-04 CP07 run remains valid for the PostgreSQL/database-local and MaterialState scope it directly executed. CP08 later closed the separate Email/application reopen evidence gap forward through PR #55; the CP07 record itself is not rewritten.
 
 ## 1. Operator objective
 
-Recover a lost PostgreSQL cluster without confusing restored physical bytes with accepted DANTE truth.
+Recover a lost PostgreSQL cluster without confusing restored physical bytes with accepted DANTE truth or allowing restored external-effect work to escape before reconciliation.
 
-The whole local recovery flow is:
+The required whole local recovery flow is:
 
 ```text
 healthy PostgreSQL
@@ -28,9 +30,12 @@ healthy PostgreSQL
 → clean restore + PITR
 → PostgreSQL promotion
 → structural/security acceptance
-→ anti-resurrection reconciliation
+→ MaterialState anti-resurrection reconciliation
+→ Email post-restore quarantine while Email workers remain stopped
+→ verify quarantined state + sensitive-payload wipe
 → runtime verification
 → database-local reopen decision
+→ application/Email traffic reopen only after all activated-effect gates pass
 ```
 
 A recovery is not accepted merely because PostgreSQL starts or `pg_isready` succeeds.
@@ -48,6 +53,7 @@ suppression ledger
 restore target
 Git proof HEAD
 target restore point
+activated external-effect queues/workers
 ```
 
 Permanent rules:
@@ -61,6 +67,8 @@ pg_isready != traffic-open permission
 PREPARED-only suppression evidence = BLOCK
 ambiguous/tampered suppression evidence = BLOCK
 retired payload resurrection = BLOCK
+restored non-terminal EmailIntent != permission to send
+Email workers must remain stopped until post-restore quarantine is accepted
 derived/object state != canonical authority
 ```
 
@@ -80,6 +88,7 @@ repository recovery bootstrap can materialize image + ignored LOCAL credentials
 backup/WAL repository identity is known
 suppression ledger identity is known
 restore target remains isolated from application traffic
+Email/application workers capable of external effects are stopped
 ```
 
 For repository-level prerequisite bootstrap only:
@@ -88,7 +97,7 @@ For repository-level prerequisite bootstrap only:
 bash infra/local/postgres/recovery/bootstrap-local-recovery.sh
 ```
 
-For the complete CP07 local rehearsal:
+For the complete CP07 local database recovery rehearsal:
 
 ```bash
 bash infra/local/postgres/recovery/cp07-whole-recovery-rehearsal.sh
@@ -97,6 +106,8 @@ bash infra/local/postgres/recovery/cp07-whole-recovery-rehearsal.sh
 CP07 invokes the bootstrap automatically. Neither command requires the historical `feature/postgres-recovery` branch name; both fail closed unless the current attached branch is clean and exactly aligned with its configured upstream.
 
 The CP07 destructive topology is non-interactive because every mutation target is generated uniquely for that run.
+
+The versioned recovery/reopen implementation on protected `main` must also perform the Email reconciliation described in sections 7–8 before outbound workers resume. CP08 directly exercised that stronger path on proof head `1a5a7f1fbbdc1e5723d58fa90721a8693cce49e9`.
 
 ## 4. Restore versus PITR decision
 
@@ -112,6 +123,7 @@ target restore point / timestamp / LSN as applicable
 target timeline
 required WAL continuity
 expected semantic state at the target
+expected restored external-effect work requiring reconciliation
 ```
 
 Do not choose "latest possible" implicitly when the incident requires a bounded target.
@@ -130,6 +142,9 @@ extension drift
 ambiguous suppression ledger
 retired payload present
 runtime-path failure
+Email post-restore quarantine incomplete or ambiguous
+Email sensitive restored work not wiped
+activated external-effect reconciliation requirement
 derived/object reconciliation requirement
 ```
 
@@ -137,7 +152,7 @@ derived/object reconciliation requirement
 
 ## 6. Structural and security acceptance
 
-Accepted current integration-candidate LOCAL contract:
+Accepted current protected-main LOCAL database contract:
 
 ```text
 PostgreSQL       18.6
@@ -163,9 +178,11 @@ Alembic          20260830_09
 topology         69|5|15|76|97|69|123|0|0|0
 ```
 
-That historical/current-before-merge contract must not be used to accept a restore of the enriched candidate.
+That historical contract must not be used to accept a restore of the current enriched protected-main database.
 
-## 7. Anti-resurrection reconciliation
+## 7. Semantic and external-effect reconciliation
+
+### 7.1 MaterialState anti-resurrection
 
 Old backups may predate a later canonical retirement/redaction.
 
@@ -182,7 +199,7 @@ On restore:
 
 ```text
 load all committed suppression evidence
-BLOCK on missing/unavailable records/
+BLOCK on missing/unavailable records
 BLOCK on unexpected entries
 BLOCK on duplicate MaterialStateRef target
 BLOCK on orphan PREPARED/COMMITTED
@@ -193,21 +210,56 @@ preserve truthful address/current/history continuity
 prove payload reinsertion is rejected
 ```
 
-Only then may the database-local reopen gate continue.
+A PREPARED-only ledger state is intentionally ambiguous and must block automatic suppression. The historical 2026-09-04 CP07 directly exercised this fail-closed path before canonical retirement + COMMITTED suppression were completed.
 
-A PREPARED-only ledger state is intentionally ambiguous and must block automatic suppression. The current CP07 directly exercised this fail-closed path before canonical retirement + COMMITTED suppression were completed.
+### 7.2 Email post-restore quarantine
 
-## 8. Reopen decision
+A backup/PITR target may contain EmailIntent work that was non-terminal at the target but was already sent, failed ambiguously, superseded or otherwise resolved later in real history. Restoring that old state must not automatically make it sendable again.
 
-The current project can earn:
+The shared Email Platform owns `DurableEmailOutbox.quarantine_after_restore()`. Before Email workers can resume after restore, the accepted operator/runtime sequence must guarantee:
+
+```text
+Email workers stopped
+→ restored database structurally accepted
+→ MaterialState anti-resurrection accepted
+→ quarantine_after_restore() runs in an explicit transaction
+→ every restored pending / claimed / retryable_failure intent becomes recovery_quarantined
+→ restored in_progress attempt becomes ambiguous
+→ claim_token / claimed_until / next_attempt_at cleared
+→ terminal/recovery marker recorded
+→ sensitive key / nonce / ciphertext cleared
+→ sensitive_wiped_at recorded
+→ commit + read-back verification
+→ second reconciliation is idempotent
+→ claimable Email work = 0
+→ only then may Email workers/application traffic resume
+```
+
+If quarantine cannot run or verification is ambiguous, application Email traffic remains closed.
+
+Focused real-PostgreSQL tests prove the state transitions and sensitive wipe. CP08 additionally proved the ordering as a real destructive/disposable PITR → quarantine → reopen scenario.
+
+## 8. Reopen decisions
+
+DANTE separates database recovery acceptance from application/external-effect reopen acceptance.
+
+The historical CP07 earned:
 
 ```text
 DATABASE LOCAL REOPEN = PASS
 ```
 
-when all PostgreSQL and semantic checks pass.
+for the PostgreSQL/MaterialState recovery scope it directly executed.
 
-The current project must **not** claim:
+CP08 subsequently earned the stronger gate:
+
+```text
+APPLICATION / EMAIL REOPEN = PASS
+```
+
+by proving that sendable Email state physically resurrected at the PITR target, workers remained stopped, reconciliation quarantined the restored work, sensitive material was wiped, a second reconciliation was idempotent and claimable Email work after reconciliation was `0`.
+
+The current project still does **not** claim:
 
 ```text
 production/cloud recovery PASS
@@ -215,7 +267,7 @@ remote object-store recovery PASS
 PowerSync/search/vector recovery PASS
 ```
 
-because those capabilities are not activated here.
+because those capabilities are not activated/proved here.
 
 When a derived/object capability is not activated, record:
 
@@ -242,6 +294,10 @@ extension mismatch
 suppression-ledger ambiguity/tamper
 retired payload survives reconciliation
 payload reinsertion succeeds
+Email workers started before quarantine acceptance
+Email post-restore quarantine failure/ambiguity
+restored sendable EmailIntent remains after quarantine
+restored sensitive Email payload remains after quarantine
 runtime-path failure
 protected non-test resource changes
 ```
@@ -250,13 +306,13 @@ Do not "repair" the recovered database by inventing canonical state.
 
 ## 10. Evidence capture
 
-Every whole rehearsal records a local ignored JSON report:
+The historical CP07 whole rehearsal records a local ignored JSON report:
 
 ```text
 infra/compose/secrets/postgres_recovery_cp07_report.json.local
 ```
 
-It contains:
+It contains the database-local observations implemented by the CP07 harness, including:
 
 ```text
 Git proof HEAD + current branch/upstream
@@ -271,22 +327,23 @@ semantic reconciliation duration
 structural/security acceptance duration
 PGDATA-loss → database-local-reopen duration
 A/B deterministic recovery result
-anti-resurrection result
+MaterialState anti-resurrection result
 non-interference result
 remote-provider status
 ```
 
+The CP07 JSON is evidence for what CP07 executed; it is not retroactively treated as CP08 evidence. CP08 acceptance is bound to its own exact proof head and recorded real rehearsal result.
+
 These are local observations, never invented production RPO/RTO targets.
 
-### Latest accepted integrated-candidate CP07 evidence — 2026-09-04
+### Historical accepted database-local CP07 evidence — 2026-09-04
 
 Exact proof relation:
 
 ```text
-branch          integration/access-auth-main-20260904
-upstream        origin/integration/access-auth-main-20260904
-proof HEAD      81639c61478b476c995652d0060dde8f53aef089
-recovery image  dante-postgres-recovery:18.6-pgbackrest-2.59.1
+historical branch  integration/access-auth-main-20260904
+proof HEAD         81639c61478b476c995652d0060dde8f53aef089
+recovery image     dante-postgres-recovery:18.6-pgbackrest-2.59.1
 ```
 
 Direct whole-rehearsal result:
@@ -309,6 +366,8 @@ retained CP05 target non-interference            PASS
 disposable cleanup                              PASS
 remote backup provider                          TBD / NOT ACTIVATED
 production/cloud recovery                       NOT CLAIMED
+Email post-restore whole-flow quarantine         NOT EXERCISED BY THIS RUN
+application / Email reopen                      NOT CLAIMED BY THIS RUN
 ```
 
 Measured LOCAL observations:
@@ -329,11 +388,43 @@ PGDATA loss → database-local reopen       17.679584 s
 whole harness                             103.912062 s
 ```
 
-The report status was `LOCAL_PASS`.
+The historical report status was `LOCAL_PASS`. That status is preserved as evidence of what the harness executed; this runbook narrows its interpretation rather than rewriting the measurement.
 
-These are LOCAL rehearsal observations only. They are not production RPO/RTO targets.
+PR #52 subsequently merged the CP07-proven schema/database-local recovery contract into protected `main` at `5f76ec54ad78542f137e8730e904f805d9e59e56`; the merge tree is identical to the final candidate tree and post-merge real PostgreSQL plus Backend/Frontend CI passed.
 
-Durable repository-level integration evidence is also summarized in `../workstreams/access-auth-integration-acceptance-2026-09-04.md`; the ignored local JSON remains the machine observation for that workstation run.
+### Accepted CP08 application/Email reopen evidence — 2026-09-04
+
+Exact proof relation:
+
+```text
+proof HEAD                                    1a5a7f1fbbdc1e5723d58fa90721a8693cce49e9
+Alembic                                       20260904_17
+mandatory GitHub CI                           PASS
+Backend PostgreSQL                            154 passed / 250 deselected
+```
+
+Observed real recovery path:
+
+```text
+full backup with sendable Email work          CREATED
+PITR target with pending/claimed/retryable    CREATED
+later source-history quarantine               CREATED
+complete PGDATA loss                          SIMULATED
+B0 restore + PITR to earlier sendable target  PASS
+sendable Email work physically resurrected    PROVEN
+Email workers                                 STOPPED
+provider I/O                                  NOT EXERCISED
+all 3 sendable intents quarantined             PASS
+in-progress attempt → ambiguous               PASS
+sensitive + claim/retry state wiped           PASS
+second reconciliation                         IDEMPOTENT / 0
+claimable Email work                           0
+APPLICATION / EMAIL REOPEN                    PASS
+```
+
+PR #55 merged the accepted implementation at `c67a18c24a6cf22b003ffd2c14243af53fec5077`.
+
+Durable repository-level integration evidence is summarized in `../workstreams/access-auth-integration-acceptance-2026-09-04.md`; that dated file remains historical CP07/integration evidence and does not override the later CP08 forward closure.
 
 ## 11. Cleanup
 
@@ -382,7 +473,7 @@ Provider-specific implementation, costs, credentials, production RPO/RTO and pro
 
 The Recovery workstream previously proved the branch-agnostic/idempotent bootstrap and runner on its own exact pushed Recovery-only implementation heads, including fresh-clone secret bootstrap, image build, exact branch/upstream gating, PITR, anti-resurrection and cleanup.
 
-Those older measurements remain historical evidence in Git/archive records. They must not override the latest accepted enriched-candidate contract in sections 6 and 10.
+Those older measurements remain historical evidence in Git/archive records. They must not override the current protected-main contract or the later CP08 application/Email reopen evidence.
 
 The permanent conclusion carried forward is:
 
@@ -390,6 +481,8 @@ The permanent conclusion carried forward is:
 runner does not depend on historical branch name
 bootstrap is repository-owned and idempotent
 recovery target must be exact-head/current-contract aware
+LOCAL database recovery evidence != application external-effect reopen evidence
+application/external-effect reopen requires its own direct proof
 LOCAL rehearsal evidence is not production RPO/RTO
 remote/provider recovery is never claimed without real activation + proof
 ```

@@ -1,34 +1,36 @@
 # DANTE Access/Auth Database Reference
 
-- **Status:** CURRENT / INTEGRATION CANDIDATE / M3–M5 + EMAIL + RECOVERY ACCEPTED
+- **Status:** CURRENT / PROTECTED MAIN / M3–M5 + EMAIL + RECOVERY INTEGRATED
 - **Last reconciled:** 2026-09-04
 - **PostgreSQL:** 18.6
-- **Candidate Alembic head:** `20260904_17`
-- **Protected-main Alembic head:** `20260830_09`
-- **Accepted candidate proof HEAD:** `81639c61478b476c995652d0060dde8f53aef089`
+- **Protected-main Alembic head:** `20260904_17`
+- **Access integration merge:** `5f76ec54ad78542f137e8730e904f805d9e59e56`
+- **Accepted implementation proof HEAD:** `81639c61478b476c995652d0060dde8f53aef089`
 - **Shared Email Platform:** `../architecture/email-platform.md`
 - **Recovery runbook:** `../operations/postgres-recovery-runbook.md`
 
 ## 1. Evidence state
 
 ```text
-M3 persistence                         MATERIALIZED / PG PROVEN / CLOSED
-M4 persistence                         MATERIALIZED / PG PROVEN / CLOSED
-M5 multi-authenticator persistence     MATERIALIZED / PG PROVEN / CLOSED
-M5 application/API/Web                 CLOSED / ACCEPTED
-Shared Email Platform                  CLOSED / ACCEPTED
+M3 persistence                         MATERIALIZED / PG PROVEN / INTEGRATED
+M4 persistence                         MATERIALIZED / PG PROVEN / INTEGRATED
+M5 multi-authenticator persistence     MATERIALIZED / PG PROVEN / INTEGRATED
+M5 application/API/Web                 CLOSED / INTEGRATED
+Shared Email Platform                  CLOSED / INTEGRATED
 shared-ownership refactor              STATIC + UNIT + PG + CI PASS
-Email vocabulary hardening 16          PG PROVEN
-Recovery 20260830_09                   MERGED INTO CANDIDATE
-Alembic convergence 20260904_17        ACCEPTED / COMBINED QA PASS
+Email vocabulary hardening 16          PG PROVEN / INTEGRATED
+Recovery 20260830_09                   INTEGRATED
+Alembic convergence 20260904_17        CURRENT PROTECTED-MAIN HEAD
 CP07 enriched-baseline LOCAL recovery  PASS
 real SES UAT                           PASS
 real Google UAT                        PASS
 real Windows Hello UAT                 PASS
 Apple real external UAT                BOUNDED DEFERRED / NON-BLOCKING
+post-merge Backend CI                  PASS
+post-merge Frontend CI                 PASS
 ```
 
-Accepted candidate catalog:
+Current protected-main catalog:
 
 ```text
 88 tables / 5 views / 16 routines / 76 triggers
@@ -52,7 +54,7 @@ Accepted candidate catalog:
 20260830_09 + 20260904_16 → 20260904_17
 ```
 
-No historical migration was rebased, renumbered or rewritten. Revision `20260904_17` performs no DDL; it only joins the two accepted histories.
+No historical migration was rebased, renumbered or rewritten. Revision `20260904_17` performs no DDL; it joins the two accepted histories.
 
 ## 3. Canonical Auth topology
 
@@ -107,15 +109,15 @@ terminal/unsafe-state sensitive wipe
 restored uncertain work → recovery_quarantined
 ```
 
-The persistence layer admits bounded shared stream/purpose identifiers; Access/Auth's own adapter owns the `auth_security` vocabulary and four current Auth purposes.
+The persistence layer admits bounded shared stream/purpose identifiers; Access/Auth's adapter owns the `auth_security` vocabulary and four current Auth purposes.
 
-The shared-ownership refactor is accepted on the current candidate: the architecture/replay/static/unit coverage and real PostgreSQL acceptance suite passed on exact proof HEAD `81639c61478b476c995652d0060dde8f53aef089`.
+The shared-ownership refactor is integrated on protected `main`; its architecture/replay/static/unit coverage and real PostgreSQL acceptance passed before merge and the exact protected-main merge commit passed real PostgreSQL and full frontend/backend push CI afterward.
 
 ## 6. Recovery interaction
 
 Recovery `20260830_09` preserves the MaterialState retirement/anti-resurrection contract. Access/Auth and Email do not rewrite that history.
 
-The 2026-09-04 CP07 rehearsal on the combined candidate proved:
+The 2026-09-04 CP07 rehearsal on implementation proof HEAD `81639c61478b476c995652d0060dde8f53aef089` proved:
 
 ```text
 Alembic head                                  20260904_17
@@ -142,25 +144,23 @@ Dictionary
 
 Historical CP6 tests independently prove the frozen `20260826_08` baseline.
 
-## 8. Candidate acceptance disposition
+## 8. Protected-main integration disposition
 
-The declared integration acceptance gate is **PASS** on exact proof HEAD `81639c61478b476c995652d0060dde8f53aef089`:
+The integration is **CLOSED / INTEGRATED / POST-MERGE CI PASS**.
 
 ```text
-fresh DB → merged head                    PASS
-Access head → merged head                 PASS
-Recovery head → merged head               PASS
-head → base → head                        PASS
-Alembic drift                             PASS
-Dictionary/mapping/catalog/ACL parity     PASS
-Recovery regression                       PASS
-Access/Auth regression                    PASS
-Email Platform regression                 PASS
-Backend CI                                PASS
-Frontend CI                               PASS
-CP07 enriched-baseline recovery           PASS
+implementation proof HEAD                 81639c61478b476c995652d0060dde8f53aef089
+final candidate HEAD                      6cee5506d404d0684b0679aca54c03f0ca433c72
+PR                                        #52
+protected-main merge                      5f76ec54ad78542f137e8730e904f805d9e59e56
+merge tree                                identical to final candidate
+post-merge Backend Quality                PASS
+post-merge Backend PostgreSQL             PASS
+post-merge Backend CI Gate                PASS
+post-merge Frontend Quality               PASS
+post-merge Web E2E                        PASS
+post-merge Mobile Bundle                  PASS
+post-merge Frontend CI Gate               PASS
 ```
 
-Remaining work is protected-main integration procedure and post-merge verification. If `main` advances before merge, affected gates must be rerun against the new base.
-
-No M6/M7 feature scope belongs in this integration candidate.
+There is no remaining Access/Auth database integration procedure. No M6/M7 feature scope belongs in this closed workstream; future work starts from then-current protected `main`.

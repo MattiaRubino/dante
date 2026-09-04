@@ -6,12 +6,14 @@ Current protected-main database/recovery baseline:
 
 ```text
 PostgreSQL       18.6
-Alembic          20260830_09
-topology         69|5|15|76|97|69|123|0|0|0
-LOCAL Recovery   CP01–CP07 PASS / CLOSED / integrated via PR #47
+Alembic          20260904_17
+topology         88|5|16|76|172|89|270|0|0|0
+LOCAL Recovery   CP07 DATABASE-LOCAL PASS / CP08 APPLICATION+EMAIL REOPEN PASS
 remote provider  TBD / NOT ACTIVATED
 cloud recovery   NOT CLAIMED
 ```
+
+Recovery was integrated through PR #47, the Access/Auth + Shared Email database history was integrated through PR #52, and the forward Recovery↔Email reopen hardening/CP08 proof was integrated through PR #55.
 
 ## 1. Normal LOCAL PostgreSQL
 
@@ -21,6 +23,7 @@ Prerequisites:
 Docker Desktop + WSL2 backend
 Ubuntu WSL integration
 Docker CLI / Compose available without sudo
+Docker Compose >= 2.24.4 for the recovery overlay `!override` tag
 repository on Linux filesystem
 ```
 
@@ -76,7 +79,7 @@ dante_migrator   LOGIN migration identity
 dante_runtime    LOGIN application runtime identity
 ```
 
-The current canonical application schema is `dante`; the current protected-main Alembic head is `20260830_09`.
+The current canonical application schema is `dante`; the current protected-main Alembic head is `20260904_17`.
 
 ## 2. Normal persistence/reset behavior
 
@@ -86,13 +89,13 @@ Preserve LOCAL data:
 docker compose -f infra/compose/local.yaml down
 ```
 
-Destroy LOCAL data intentionally:
+Destroy LOCAL named-volume state intentionally:
 
 ```bash
 docker compose -f infra/compose/local.yaml down --volumes
 ```
 
-`down --volumes` destroys the PostgreSQL cluster. Application roles/schema must then be provisioned again before normal runtime use.
+`down --volumes` destroys the ordinary LOCAL PostgreSQL cluster and any named volumes attached by `infra/compose/local.yaml`. The current base Compose also declares the ordinary-local `pgbackrest-repository` volume, so this command removes that volume as well. Application roles/schema must then be provisioned again before normal runtime use.
 
 Initdb scripts bootstrap extensions only; they are not a migration system.
 
@@ -123,6 +126,8 @@ It is idempotent, branch-agnostic and fail-closed. It requires a clean attached 
 The whole CP07 rehearsal invokes this bootstrap automatically.
 
 ### Reproducible LOCAL recovery exact-head proof
+
+The following block records the historical Recovery-workstream exact-head proof that established the reusable LOCAL harness before later Access/Auth + Email integration. It is evidence, not the current database-topology declaration.
 
 Implementation/runtime proof HEAD:
 
@@ -262,21 +267,25 @@ semantic recovery checks
 suppression-ledger reconciliation
 ```
 
+For application/Email reopen, CP08 adds the fail-closed Email reconciliation gate before Email workers or provider I/O may resume.
+
 ## 6. Current database acceptance contract
 
-Reusable recovery harnesses now expect:
+Reusable current recovery harnesses expect:
 
 ```text
-Alembic          20260830_09
-tables           69
+Alembic          20260904_17
+tables           88
 views             5
-routines         15
+routines         16
 triggers         76
-indexes          97
-foreign keys      69
-CHECKs           123
+indexes          172
+foreign keys      89
+CHECKs           270
 other forbidden   0
 ```
+
+The current CP07 and CP08 executables encode the same Alembic/topology contract.
 
 They also verify the presence/security posture of:
 
@@ -361,7 +370,9 @@ It writes ignored local evidence to:
 infra/compose/secrets/postgres_recovery_cp07_report.json.local
 ```
 
-### CP07 exact local evidence
+The current script validates `20260904_17` and `88|5|16|76|172|89|270|0|0|0`. The historical evidence block below records an earlier Recovery-workstream proof and is intentionally not rewritten to pretend it ran against later Access/Auth + Email topology.
+
+### CP07 historical exact local evidence
 
 Implementation/runtime proof HEAD:
 
@@ -404,6 +415,36 @@ PGDATA loss → database-local reopen       15.614213 s
 ```
 
 These are LOCAL rehearsal observations only. They are not production RPO/RTO targets.
+
+### CP08 Email/application reopen rehearsal
+
+```bash
+bash infra/local/postgres/recovery/cp08-email-application-reopen-rehearsal.sh
+```
+
+CP08 is the current forward application-reopen proof layered after database-local recovery. It restores sendable Email work through PITR while Email workers remain stopped, runs fail-closed post-restore Email reconciliation/quarantine, verifies sensitive delivery material and claim/retry state are cleared as required, proves idempotent second reconciliation and requires zero claimable Email work before application/Email reopen.
+
+It writes ignored local evidence to:
+
+```text
+infra/compose/secrets/postgres_recovery_cp08_email_report.json.local
+```
+
+Current accepted CP08 result:
+
+```text
+PITR to earlier sendable Email state                  PASS
+restored sendable Email work physically resurrected   PROVEN
+Email workers during reconciliation                   STOPPED
+provider I/O during reconciliation                    NOT EXERCISED
+sendable restored intents quarantined                 PASS
+restored in-progress attempt marked ambiguous         PASS
+claim / retry state cleared                           PASS
+sensitive delivery material wiped                     PASS
+second reconciliation                                 IDEMPOTENT
+claimable Email work before reopen                    0
+APPLICATION / EMAIL REOPEN                            PASS
+```
 
 ## 8. Suppression ledger contract
 

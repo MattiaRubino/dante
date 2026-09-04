@@ -312,3 +312,64 @@ BRANCH RETIREMENT                            NOT YET CLAIMED
 ```
 
 This distinction is intentional: **accepted candidate != merged main != safely closed branch**.
+
+## 11. Post-merge closure evidence — 2026-09-04
+
+This section is a later append-only evidence continuation. It does not rewrite the truthful pre-merge state recorded above.
+
+PR #52 was subsequently marked ready and merged through the normal protected-main PR flow.
+
+Exact merge relation:
+
+```text
+PR                    #52
+old protected main    fe87d3c8a71f0c56d9acf5e8acbcdb274b18f282
+final candidate       6cee5506d404d0684b0679aca54c03f0ca433c72
+merge commit          5f76ec54ad78542f137e8730e904f805d9e59e56
+merge tree            b610ece4fbfa0049749bb8454345a96a0385e6e5
+```
+
+The merge commit has exactly the old protected-main commit and final candidate as parents. Its tree is identical to the final candidate tree, so the protected-main merge introduced no hidden file delta beyond the accepted candidate.
+
+Push CI on exact protected-main merge commit `5f76ec54ad78542f137e8730e904f805d9e59e56` then proved:
+
+```text
+Backend Quality                 PASS
+Backend PostgreSQL              PASS
+Backend CI Gate                 PASS
+Frontend Quality                PASS
+Web E2E                         PASS
+Mobile Bundle                   PASS
+Frontend CI Gate                PASS
+```
+
+Therefore protected `main` now owns the integrated database/application contract:
+
+```text
+PostgreSQL          18.6
+Alembic             20260904_17
+tables              88
+views                5
+routines             16
+triggers             76
+physical indexes     172
+foreign keys         89
+CHECK constraints    270
+```
+
+The current-specification reconciliation following this evidence removes candidate-only wording without rewriting the historical sections above.
+
+Final closure meaning after that current-document reconciliation:
+
+```text
+Access/Auth M1–M5                         CLOSED / INTEGRATED
+Shared Email Platform                     CLOSED / INTEGRATED
+Recovery                                  CLOSED / INTEGRATED
+protected-main post-merge CI              PASS
+CP07 whole LOCAL recovery                 PASS
+former integration branch                 HISTORICAL / NOT AUTHORITY
+next bounded integration                  feature/platform-observability
+production/cloud recovery                 NOT CLAIMED
+Apple real registered-domain UAT          BOUNDED DEFERRED
+production Email sender/domain deployment SEPARATE FUTURE GATE
+```

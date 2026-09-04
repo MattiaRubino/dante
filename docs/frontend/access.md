@@ -1,12 +1,12 @@
 # DANTE — Access Web Contract
 
-- **Status:** CURRENT / AUTHORITATIVE FOR BRANCH-LOCAL ACCESS WEB
-- **Last reconciled:** 2026-09-03
-- **Branch:** `feature/access-auth`
+- **Status:** CURRENT / AUTHORITATIVE ON PROTECTED MAIN
+- **Last reconciled:** 2026-09-04
+- **Protected-main integration:** PR #52 / `5f76ec54ad78542f137e8730e904f805d9e59e56`
 - **Architecture:** `../architecture/access-auth-architecture.md`
 - **Security:** `../architecture/access-auth-security-contract.md`
 - **M5:** `../architecture/access-auth-m5-contract.md`
-- **Current workstream:** `../workstreams/access-auth.md`
+- **Workstream closure:** `../workstreams/access-auth.md`
 - **Email Platform:** `../architecture/email-platform.md`
 - **Real Email evidence:** `../development/email-platform-acceptance-2026-09-03.md`
 
@@ -124,7 +124,7 @@ compromised screening   server-side HIBP
 periodic forced change  no absent security reason
 ```
 
-Password is optional. Provider/passkey-created Accounts may add it later; it can be removed only when backend anti-lockout says the Account remains viable.
+The backend current contract additionally bounds password input at 1024 Unicode code points and 4096 normalized UTF-8 bytes; the Web must not impose a smaller silent limit. Password is optional. Provider/passkey-created Accounts may add it later; it can be removed only when backend anti-lockout says the Account remains viable.
 
 ## 8. Google Web UX
 
@@ -246,6 +246,10 @@ Automated product evidence:
 format/typecheck/lint/architecture PASS
 Web unit/component PASS
 Auth Playwright PASS across Chromium/Firefox/WebKit
+protected-main Frontend Quality PASS
+protected-main Web E2E PASS
+protected-main Mobile Bundle PASS
+protected-main Frontend CI Gate PASS
 ```
 
 Manual/real-boundary evidence:
@@ -264,10 +268,12 @@ PostgreSQL direct inspection PASS
 
 Exact Email Platform live evidence: `../development/email-platform-acceptance-2026-09-03.md`.
 
+Protected-main integration evidence: PR #52 merged at `5f76ec54ad78542f137e8730e904f805d9e59e56`; the merge tree matched the accepted final candidate tree and post-merge Frontend CI passed.
+
 ## 16. Remaining product maturity
 
 M7 should add session/device inventory, remote revoke, new-login/security-event response and final authenticated Home handoff. The large Security page should also be componentized by bounded responsibility without changing accepted semantics.
 
 Production email sender-domain/DNS/reputation and live cloud-event routing are deployment/operations concerns, not reasons to reopen the Access Web recovery/signup implementation.
 
-Current implementation/code/tests plus current workstream/status documents beat older pre-M5 phase labels.
+Current protected-main implementation/code/tests plus current workstream/status documents beat older branch-local/pre-M5 phase labels.
