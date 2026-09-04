@@ -10,6 +10,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from dante.platform.database.mappings.auth import EmailIdentityRow
 from dante.platform.email.feedback import (
     EmailFeedbackStore as SharedEmailFeedbackStore,
+)
+from dante.platform.email.feedback import (
     NormalizedSesFeedback,
     SesFeedbackError,
     normalize_ses_feedback,
