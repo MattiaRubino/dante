@@ -132,7 +132,7 @@ function openCustomization() {
 }
 
 describe('World Focus M3-3 manual composition customization', () => {
-  it('keeps View mode distinct from Customize mode until explicit invocation', () => {
+  it('keeps View mode distinct from Customize mode until explicit invocation', async () => {
     const { container } = renderMusicWorld();
 
     expect(
@@ -141,16 +141,25 @@ describe('World Focus M3-3 manual composition customization', () => {
     expect(
       screen.queryByRole('dialog', { name: 'Personalizza Musica' }),
     ).toBeNull();
-    expect(
-      container.querySelector('[data-world-focus-composition-count]')?.getAttribute(
-        'data-world-focus-composition-count',
-      ),
-    ).toBe('1');
+    await waitFor(() => {
+      expect(
+        container.querySelector('[data-world-focus-composition-count]')?.getAttribute(
+          'data-world-focus-composition-count',
+        ),
+      ).toBe('4');
+    });
   });
 
-  it('opens an isolated non-modal Customize surface without changing the accepted View composition', () => {
+  it('opens an isolated non-modal Customize surface without changing the accepted View composition', async () => {
     const { container } = renderMusicWorld();
 
+    await waitFor(() => {
+      expect(
+        container.querySelector('[data-world-focus-composition-count]')?.getAttribute(
+          'data-world-focus-composition-count',
+        ),
+      ).toBe('4');
+    });
     openCustomization();
 
     const dialog = screen.getByRole('dialog', { name: 'Personalizza Musica' });
@@ -160,7 +169,7 @@ describe('World Focus M3-3 manual composition customization', () => {
       container.querySelector('[data-world-focus-composition-count]')?.getAttribute(
         'data-world-focus-composition-count',
       ),
-    ).toBe('1');
+    ).toBe('4');
   });
 
   it('exposes explicit Apply and Cancel terminals only after Customize begins', () => {
@@ -290,7 +299,7 @@ describe('World Focus M3-3 manual composition customization', () => {
     expect(screen.getByText('Situazione, posizione 2 di 2')).toBeTruthy();
   });
 
-  it('applies exactly once, advances the accepted revision once, and still leaves normal composition to M3-4', async () => {
+  it('applies exactly once and advances the accepted revision once', async () => {
     const applyDraft = vi.fn(applyWorldFocusCompositionDraft);
     renderCustomizationHarness({ applyDraft });
     openCustomization();

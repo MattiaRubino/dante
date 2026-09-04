@@ -105,6 +105,43 @@ function compareCandidates(
   return prominenceDelta !== 0 ? prominenceDelta : left.order - right.order;
 }
 
+/**
+ * Budget selection may move user-owned candidates between stability/prominence
+ * buckets, but those classifications must never become implicit move commands.
+ * Restore only the relative order of already-selected user candidates while
+ * leaving every non-user slot and the selected membership untouched.
+ */
+function preserveSelectedUserOrder<Kind extends string>(
+  selected: readonly WorldFocusCompositionCandidate<Kind>[],
+): readonly WorldFocusCompositionCandidate<Kind>[] {
+  const orderedUsers = selected
+    .map((candidate, selectedIndex) => ({ candidate, selectedIndex }))
+    .filter(({ candidate }) => candidate.ownership.origin === 'user')
+    .sort(
+      (left, right) =>
+        left.candidate.order - right.candidate.order ||
+        left.selectedIndex - right.selectedIndex,
+    )
+    .map(({ candidate }) => candidate);
+
+  if (orderedUsers.length <= 1) {
+    return selected;
+  }
+
+  let userIndex = 0;
+  return selected.map((candidate) => {
+    if (candidate.ownership.origin !== 'user') {
+      return candidate;
+    }
+    const ordered = orderedUsers[userIndex];
+    if (ordered === undefined) {
+      throw new Error('World Focus selected user order is inconsistent');
+    }
+    userIndex += 1;
+    return ordered;
+  });
+}
+
 function selectCandidates<Kind extends string>(
   candidates: readonly WorldFocusCompositionCandidate<Kind>[],
   policy: WorldFocusCompositionPolicy,
@@ -161,15 +198,16 @@ function selectCandidates<Kind extends string>(
   ];
 
   // Stable content keeps its user/application-defined relative order. Dynamic
-  // content can lead when explicitly classified as lead, but never silently
-  // reorders stable entries relative to each other.
-  const selected = [
+  // non-user content can lead when explicitly classified as lead. User-owned
+  // pin/promote metadata affects survival/prominence without becoming reorder.
+  const selectedByPolicy = [
     ...selectedAdaptive.filter((candidate) => candidate.prominence === 'lead'),
     ...selectedEphemeral.filter((candidate) => candidate.prominence === 'lead'),
     ...stable,
     ...selectedAdaptive.filter((candidate) => candidate.prominence !== 'lead'),
     ...selectedEphemeral.filter((candidate) => candidate.prominence !== 'lead'),
   ];
+  const selected = preserveSelectedUserOrder(selectedByPolicy);
 
   return Object.freeze({
     selected: Object.freeze(selected),

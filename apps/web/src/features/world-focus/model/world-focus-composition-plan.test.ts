@@ -23,6 +23,7 @@ function makeCandidate(
     prominence?: WorldFocusCompositionProminence;
     footprint?: WorldFocusCompositionFootprint;
     order?: number;
+    origin?: WorldFocusCompositionCandidate['ownership']['origin'];
   }> = {},
 ): WorldFocusCompositionCandidate {
   return Object.freeze({
@@ -30,7 +31,7 @@ function makeCandidate(
     kind: `kind:${instanceId}`,
     ownership: Object.freeze({
       stability: options.stability ?? 'adaptive',
-      origin: 'application-derived' as const,
+      origin: options.origin ?? 'application-derived',
     }),
     prominence: options.prominence ?? 'primary',
     footprint: options.footprint ?? 'standard',
@@ -120,6 +121,46 @@ describe('World Focus dynamic composition planner', () => {
       'stable-second',
     ]);
     expect(plan.entries[0]).toMatchObject({ gridSpan: 12, row: 0 });
+  });
+
+  it('preserves selected user relative order across pin and prominence while leaving non-user lead policy intact', () => {
+    const plan = resolveWorldFocusCompositionPlan(
+      [
+        makeCandidate('application-lead', {
+          prominence: 'lead',
+          order: 99,
+        }),
+        makeCandidate('user-pinned-second', {
+          stability: 'stable',
+          prominence: 'primary',
+          order: 1,
+          origin: 'user',
+        }),
+        makeCandidate('user-supporting-first', {
+          stability: 'adaptive',
+          prominence: 'supporting',
+          order: 0,
+          origin: 'user',
+        }),
+        makeCandidate('user-promoted-third', {
+          stability: 'adaptive',
+          prominence: 'lead',
+          order: 2,
+          origin: 'user',
+        }),
+      ],
+      DEFAULT_POLICY,
+    );
+
+    expect(plan.entries.map((entry) => entry.instanceId)).toEqual([
+      'application-lead',
+      'user-supporting-first',
+      'user-pinned-second',
+      'user-promoted-third',
+    ]);
+    expect(plan.entries[1]?.prominence).toBe('supporting');
+    expect(plan.entries[2]?.ownership.stability).toBe('stable');
+    expect(plan.entries[3]?.prominence).toBe('lead');
   });
 
   it('fills ordinary rows using finite footprint spans instead of free coordinates', () => {
