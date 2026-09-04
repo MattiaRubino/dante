@@ -134,9 +134,16 @@ export function GoogleIdentityButton({
       <button
         className="access-provider-button"
         type="button"
-        disabled
+        disabled={disabled}
         aria-label={label}
         aria-busy={disabled || undefined}
+        onClick={() =>
+          onError(
+            new ProviderBrowserUnavailableError(
+              'Google sign-in is temporarily unavailable.',
+            ),
+          )
+        }
       >
         <span className="access-provider-mark" aria-hidden="true">
           <GoogleMark />
