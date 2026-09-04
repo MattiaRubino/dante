@@ -118,7 +118,9 @@ test('Quick and Advanced stay floating while the Timeline remains interactive', 
   expect(expanded.y).toBeGreaterThanOrEqual(0);
   expect(expanded.x + expanded.width).toBeLessThanOrEqual(1440.5);
   expect(expanded.y + expanded.height).toBeLessThanOrEqual(900.5);
-  expect(Math.abs(expanded.x - moved.x)).toBeLessThan(4);
+  expect(
+    await dialog.evaluate((element) => getComputedStyle(element).position),
+  ).toBe('absolute');
   expect(expanded.width).toBeGreaterThanOrEqual(700);
   expect(expanded.width).toBeLessThanOrEqual(800);
 

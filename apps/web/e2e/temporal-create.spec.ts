@@ -137,9 +137,9 @@ test('Create base is title-first, exposes actionable types, protects drafts, and
   await expect(discard).toHaveCount(0);
   await expect(title).toBeFocused();
 
-  await page.locator('[data-temporal-create="backdrop"]').click({
-    position: { x: 2, y: 2 },
-  });
+  await dialog.locator('.temporal-create-composer__close').click();
+  await expect(discard).toBeVisible();
+  await expect(title).toHaveValue('Studiare inglese');
   await dialog.getByRole('button', { name: 'Scarta' }).click();
   await expect(dialog).toHaveCount(0);
   await expect(trigger).toBeFocused();
