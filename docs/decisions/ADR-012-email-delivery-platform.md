@@ -1,12 +1,13 @@
 # ADR-012: DANTE Email Delivery Platform
 
-- **Status:** ACCEPTED ARCHITECTURE / IMPLEMENTED BASELINE / SHARED-OWNERSHIP REFACTOR UNDER VERIFICATION
+- **Status:** ACCEPTED ARCHITECTURE / IMPLEMENTED / SHARED-OWNERSHIP VERIFIED
 - **Date:** 2026-09-02
 - **Last reconciled:** 2026-09-04
 - **Scope:** reusable outbound DANTE Email Platform; Access/Auth is the first consumer
 - **Detailed authority:** `../architecture/email-platform.md`
 - **Access/Auth consumer contract:** `../architecture/access-auth-email-delivery.md`
 - **Accepted real-provider evidence:** `../development/email-platform-acceptance-2026-09-03.md`
+- **Accepted integration-candidate proof HEAD:** `81639c61478b476c995652d0060dde8f53aef089`
 - **Consumes:** ADR-010 PostgreSQL Persistence Constitution, ADR-011 Access/Auth Architecture Constitution, TD-04 Class-A transactional-outbox direction
 
 ## Context
@@ -332,19 +333,25 @@ Marketing/newsletter traffic requires separate product/legal/reputation policy a
 
 The accepted 2026-09-03 baseline and real SES UAT proved the original durable platform behavior, including real signup/recovery/reset-notification delivery, session revocation and terminal secret wipe.
 
-The later 2026-09-04 shared-ownership refactor changes code organization and hardens idempotency/persistence vocabulary without intentionally changing user-visible delivery semantics.
+The later 2026-09-04 shared-ownership refactor changed code organization, separated consumer rendering/projection, hardened replay identity and introduced forward migration `20260904_16` without intentionally changing user-visible delivery semantics.
 
-Current truth:
+Current truth on exact proof HEAD `81639c61478b476c995652d0060dde8f53aef089`:
 
 ```text
 architecture decision                         ACCEPTED
 2026-09-03 real-provider UAT                  ACCEPTED HISTORICAL EVIDENCE
-shared ownership refactor                     IMPLEMENTED
-forward shared-vocabulary migration 16        IMPLEMENTED
-post-refactor focused regression gate         NOT YET EXECUTED
+shared ownership refactor                     VERIFIED / ACCEPTED
+forward shared-vocabulary migration 16        PG PROVEN / ACCEPTED
+backend static + fast regression              PASS
+real PostgreSQL acceptance                    PASS
+combined Backend CI                           PASS
+combined Frontend CI                          PASS
+CP07 enriched-baseline LOCAL recovery         PASS
 ```
 
-Do not claim the refactor PASS until that gate actually runs.
+The post-refactor focused regression gate is no longer pending. The 2026-09-03 SES run remains the real-provider evidence; this ADR does not pretend the real-provider UAT was rerun after each structural refactor commit.
+
+Production sender/domain/DNS/reputation/workload-identity and live feedback ingress remain separate deployment gates.
 
 ## Consequences
 

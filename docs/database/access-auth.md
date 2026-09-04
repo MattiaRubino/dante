@@ -1,11 +1,13 @@
 # DANTE Access/Auth Database Reference
 
-- **Status:** CURRENT / INTEGRATION CANDIDATE / M3–M5 + EMAIL + RECOVERY MATERIALIZED
+- **Status:** CURRENT / INTEGRATION CANDIDATE / M3–M5 + EMAIL + RECOVERY ACCEPTED
 - **Last reconciled:** 2026-09-04
 - **PostgreSQL:** 18.6
 - **Candidate Alembic head:** `20260904_17`
 - **Protected-main Alembic head:** `20260830_09`
+- **Accepted candidate proof HEAD:** `81639c61478b476c995652d0060dde8f53aef089`
 - **Shared Email Platform:** `../architecture/email-platform.md`
+- **Recovery runbook:** `../operations/postgres-recovery-runbook.md`
 
 ## 1. Evidence state
 
@@ -15,17 +17,18 @@ M4 persistence                         MATERIALIZED / PG PROVEN / CLOSED
 M5 multi-authenticator persistence     MATERIALIZED / PG PROVEN / CLOSED
 M5 application/API/Web                 CLOSED / ACCEPTED
 Shared Email Platform                  CLOSED / ACCEPTED
-shared-ownership refactor              PRE-INTEGRATION STATIC + PG PASS
+shared-ownership refactor              STATIC + UNIT + PG + CI PASS
 Email vocabulary hardening 16          PG PROVEN
 Recovery 20260830_09                   MERGED INTO CANDIDATE
-Alembic convergence 20260904_17        IMPLEMENTED / COMBINED QA ACTIVE
+Alembic convergence 20260904_17        ACCEPTED / COMBINED QA PASS
+CP07 enriched-baseline LOCAL recovery  PASS
 real SES UAT                           PASS
 real Google UAT                        PASS
 real Windows Hello UAT                 PASS
 Apple real external UAT                BOUNDED DEFERRED / NON-BLOCKING
 ```
 
-Current candidate catalog:
+Accepted candidate catalog:
 
 ```text
 88 tables / 5 views / 16 routines / 76 triggers
@@ -49,7 +52,7 @@ Current candidate catalog:
 20260830_09 + 20260904_16 → 20260904_17
 ```
 
-No historical migration was rebased, renumbered or rewritten.
+No historical migration was rebased, renumbered or rewritten. Revision `20260904_17` performs no DDL; it only joins the two accepted histories.
 
 ## 3. Canonical Auth topology
 
@@ -106,7 +109,27 @@ restored uncertain work → recovery_quarantined
 
 The persistence layer admits bounded shared stream/purpose identifiers; Access/Auth's own adapter owns the `auth_security` vocabulary and four current Auth purposes.
 
-## 6. Cross-representation invariant
+The shared-ownership refactor is accepted on the current candidate: the architecture/replay/static/unit coverage and real PostgreSQL acceptance suite passed on exact proof HEAD `81639c61478b476c995652d0060dde8f53aef089`.
+
+## 6. Recovery interaction
+
+Recovery `20260830_09` preserves the MaterialState retirement/anti-resurrection contract. Access/Auth and Email do not rewrite that history.
+
+The 2026-09-04 CP07 rehearsal on the combined candidate proved:
+
+```text
+Alembic head                                  20260904_17
+accepted topology                             88|5|16|76|172|89|270|0|0|0
+A before target / B after target              PASS
+old protected X physical resurrection         PROVEN
+suppression-ledger reconciliation             PASS
+payload reinsertion after retirement          REJECTED
+DATABASE LOCAL REOPEN                         PASS
+```
+
+Remote backup provider remains `TBD / NOT ACTIVATED`; production/cloud recovery is not claimed.
+
+## 7. Cross-representation invariant
 
 ```text
 Dictionary
@@ -119,18 +142,25 @@ Dictionary
 
 Historical CP6 tests independently prove the frozen `20260826_08` baseline.
 
-## 7. Current acceptance gate
+## 8. Candidate acceptance disposition
+
+The declared integration acceptance gate is **PASS** on exact proof HEAD `81639c61478b476c995652d0060dde8f53aef089`:
 
 ```text
-fresh DB → merged head
-Access head → merged head
-Recovery head → merged head
-head → base → head
-Alembic drift
-Dictionary/mapping/catalog/ACL parity
-Recovery regression
-Access/Auth regression
-Email Platform regression
+fresh DB → merged head                    PASS
+Access head → merged head                 PASS
+Recovery head → merged head               PASS
+head → base → head                        PASS
+Alembic drift                             PASS
+Dictionary/mapping/catalog/ACL parity     PASS
+Recovery regression                       PASS
+Access/Auth regression                    PASS
+Email Platform regression                 PASS
+Backend CI                                PASS
+Frontend CI                               PASS
+CP07 enriched-baseline recovery           PASS
 ```
+
+Remaining work is protected-main integration procedure and post-merge verification. If `main` advances before merge, affected gates must be rerun against the new base.
 
 No M6/M7 feature scope belongs in this integration candidate.

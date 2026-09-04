@@ -2,7 +2,8 @@
 
 - **Status:** CURRENT INTEGRATION-CANDIDATE ROADMAP
 - **Last reconciled:** 2026-09-04
-- **Current macro state:** **M5 CLOSED / COMBINED INTEGRATION QA ACTIVE**
+- **Current macro state:** **M5 CLOSED / COMBINED INTEGRATION QA PASS / READY FOR PROTECTED-MAIN MERGE**
+- **Candidate proof HEAD:** `81639c61478b476c995652d0060dde8f53aef089`
 - **Candidate Alembic head:** `20260904_17`
 - **Protected-main Alembic head:** `20260830_09`
 
@@ -28,9 +29,15 @@ Alembic 20260904_17
         SINGLE FORWARD MERGE HEAD
               ↓
 COMBINED RECOVERY + ACCESS + EMAIL QA
-        CURRENT
+        PASS
               ↓
-PR Access/Auth + Email foundation → protected main
+CP07 WHOLE LOCAL OPERATOR RECOVERY
+        PASS
+              ↓
+PR #52 Access/Auth + Email foundation → protected main
+        NEXT
+              ↓
+POST-MERGE MAIN VERIFICATION + DOC RECONCILIATION
               ↓
 enriched main → feature/platform-observability
               ↓
@@ -51,6 +58,8 @@ Apple real registered-domain UAT is **BOUNDED DEFERRED / NON-BLOCKING**. It is n
 
 The Email Platform is shared DANTE infrastructure, not an Access-owned mailer. Current persistence is the four bounded delivery/attempt/provider-event/suppression structures. No second mail subsystem or generic event-bus abstraction is authorized.
 
+The 2026-09-04 shared-ownership refactor and vocabulary hardening are accepted on the current candidate through static/unit/PostgreSQL regression and exact-HEAD CI. The 2026-09-03 real SES UAT remains accepted historical real-provider evidence; production sender/domain deployment remains separate.
+
 ## 4. Database convergence
 
 ```text
@@ -61,18 +70,34 @@ The Email Platform is shared DANTE infrastructure, not an Access-owned mailer. C
 20260830_09 + 20260904_16 → 20260904_17
 ```
 
-Current candidate topology:
+Accepted candidate topology:
 
 ```text
 88 tables / 5 views / 16 routines
 76 triggers / 172 indexes / 89 FKs / 270 CHECKs
 ```
 
-The counts become accepted integration truth only after the real PostgreSQL gate passes on the candidate.
+The enriched-baseline CP07 rehearsal on exact proof HEAD `81639c61478b476c995652d0060dde8f53aef089` independently re-proved this head/topology during restore acceptance and earned `DATABASE LOCAL REOPEN = PASS`. Remote backup provider and production/cloud recovery remain not activated/not claimed.
 
-## 5. Platform observability after Access integration
+## 5. Protected-main integration gate
 
-`feature/platform-observability` is already source-closed and operationally accepted but not integrated. After Access/Auth lands on main:
+Before PR #52 is merged:
+
+```text
+current documentation reconciled to measured candidate truth
+candidate HEAD/upstream alignment rechecked
+protected main ref rechecked
+fresh CI required on the final candidate commit
+no migration/code/schema drift introduced by documentation closure
+```
+
+If protected `main` advances before merge, stop and integrate that delta into the candidate first. Rerun every affected gate; rerun CP07 whenever the database/recovery contract changes.
+
+After merge, the resulting protected-main tree and CI are verified before the integration branch is retired.
+
+## 6. Platform observability after Access integration
+
+`feature/platform-observability` is already source-closed and operationally accepted but not integrated. After Access/Auth lands on main and post-merge main verification passes:
 
 ```text
 enriched protected main
@@ -84,7 +109,7 @@ enriched protected main
 
 Do not recreate accepted OTel/Alloy/Grafana/Faro/PostgreSQL-observer work.
 
-## 6. Later Access maturity / M7
+## 7. Later Access maturity / M7
 
 Future only:
 
@@ -101,11 +126,11 @@ release/accessibility/security polish
 
 Start this later from enriched protected main on a new bounded branch.
 
-## 7. M6 Native Mobile
+## 8. M6 Native Mobile
 
 **FUTURE / OPTIONAL / RE-GATE.** It does not block current integration.
 
-## 8. Permanent rules
+## 9. Permanent rules
 
 ```text
 protected main is integration authority
@@ -115,4 +140,5 @@ no network I/O in authoritative DB transactions
 no blind retry after ambiguous external effects
 no generic EAV/JSONB semantic escape hatch
 no fake PASS
+LOCAL recovery PASS != production/cloud recovery PASS
 ```

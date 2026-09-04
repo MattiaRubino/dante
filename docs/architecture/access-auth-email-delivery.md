@@ -1,10 +1,11 @@
 # DANTE — Access/Auth Integration with the Email Platform
 
-- **Status:** CURRENT / ACCESS-AUTH CONSUMER CONTRACT / OWNERSHIP REFACTOR UNDER VERIFICATION
+- **Status:** CURRENT / ACCESS-AUTH CONSUMER CONTRACT / OWNERSHIP VERIFIED
 - **Last reconciled:** 2026-09-04
 - **Platform authority:** `email-platform.md`
 - **Decision authority:** `../decisions/ADR-012-email-delivery-platform.md`
 - **Accepted real-provider evidence:** `../development/email-platform-acceptance-2026-09-03.md`
+- **Accepted integration-candidate proof HEAD:** `81639c61478b476c995652d0060dde8f53aef089`
 
 ## 1. Scope
 
@@ -188,9 +189,9 @@ That write is performed by the Auth-owned `AuthEmailSuppressionProjection`, inje
 
 This projection does not redefine email verification or ownership truth.
 
-## 11. Accepted UAT evidence vs current refactor
+## 11. Acceptance evidence
 
-The accepted 2026-09-03 real SES UAT proved the pre-refactor behavior end to end:
+The accepted 2026-09-03 real SES UAT proved the original durable behavior end to end:
 
 ```text
 signup verification delivery + OTP use
@@ -203,24 +204,38 @@ three provider_accepted attempts with provider MessageId
 terminal sensitive-payload wipe
 ```
 
-That evidence remains valid historical acceptance evidence.
+That remains valid historical real-provider evidence.
 
-The later ownership refactor moves reusable mechanics under `dante.platform.email`, introduces renderer/projection ports and hardens replay identity. Those changes are implemented but **must pass the current regression gate before being called re-accepted**.
+The later ownership refactor moved reusable mechanics under `dante.platform.email`, introduced renderer/projection ports, hardened replay identity and added forward migration `20260904_16` for shared bounded stream/purpose vocabulary.
 
-Do not treat the older UAT as proof that later refactor commits have already passed.
+Those later changes are now **re-accepted for the integration candidate** on exact proof HEAD `81639c61478b476c995652d0060dde8f53aef089`:
+
+```text
+architecture/dependency guard              PASS
+fast/static regression                      PASS
+real PostgreSQL acceptance                  PASS
+shared replay/idempotency coverage          PASS
+combined Backend CI                         PASS
+combined Frontend CI                        PASS
+CP07 enriched-baseline LOCAL recovery       PASS
+```
+
+The real SES UAT was not rerun after every structural refactor commit and is not represented as if it were. Production sender/domain deployment remains separate.
 
 ## 12. Closure boundary
 
-The accepted Auth email capability is not being redesigned. The current task is structural pre-integration hardening.
+The accepted Auth email capability is not being redesigned. Structural pre-integration hardening is complete for the current candidate.
 
-After the focused static/unit/PostgreSQL gate returns green:
+Current disposition:
 
 ```text
-Access/Auth consumer semantics       remain CLOSED
-shared Email Platform ownership      VERIFIED
-real SES UAT evidence                remains ACCEPTED historical evidence
-production sender/domain deployment  still separate
+Access/Auth consumer semantics       CLOSED / ACCEPTED
+shared Email Platform ownership      VERIFIED / ACCEPTED
+real SES UAT evidence                ACCEPTED HISTORICAL EVIDENCE
+production sender/domain deployment  SEPARATE FUTURE GATE
 ```
+
+Remaining work is protected-main integration and post-merge verification, not another Email architecture refactor.
 
 ## 13. References
 
@@ -230,4 +245,5 @@ docs/decisions/ADR-012-email-delivery-platform.md
 docs/development/email-platform-local-uat.md
 docs/development/email-platform-acceptance-2026-09-03.md
 docs/database/access-auth.md
+docs/workstreams/access-auth-integration-acceptance-2026-09-04.md
 ```

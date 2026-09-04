@@ -1,12 +1,13 @@
 # DANTE Email Platform
 
-- **Status:** CURRENT / AUTHORITATIVE / ARCHITECTURE ACCEPTED / SHARED-OWNERSHIP REFACTOR UNDER VERIFICATION
+- **Status:** CURRENT / AUTHORITATIVE / ARCHITECTURE ACCEPTED / SHARED-OWNERSHIP VERIFIED
 - **Last reconciled:** 2026-09-04
 - **Decision authority:** `../decisions/ADR-012-email-delivery-platform.md`
 - **Persistence authority:** ADR-010, Alembic, SQLAlchemy mappings, Database Dictionary and executable PostgreSQL tests
 - **Current first consumer:** Access/Auth security lifecycle
 - **Platform ownership:** DANTE shared technical infrastructure; not owned by Access/Auth
 - **Accepted real-provider evidence:** `../development/email-platform-acceptance-2026-09-03.md`
+- **Accepted candidate proof HEAD:** `81639c61478b476c995652d0060dde8f53aef089`
 
 ## 1. Purpose and permanent boundary
 
@@ -118,6 +119,7 @@ Alembic authority remains immutable:
 ```text
 20260903_14  shared Email Platform persistence
 20260903_15  exact runtime ACL hardening
+20260904_16  forward shared stream/purpose vocabulary hardening
 ```
 
 Current tables:
@@ -130,6 +132,8 @@ dante.email_recipient_suppression
 ```
 
 They are bounded technical delivery structures, not Domain owners, not DANTE MaterialState and not Access/Auth-owned semantic state.
+
+The shared stream/purpose CHECKs use bounded lower-case ASCII identifiers of at most 64 characters. Consumer code still owns its exact typed vocabulary; this is not a generic event/property-bag escape hatch.
 
 ### `email_delivery_intent`
 
@@ -408,7 +412,7 @@ EmailIdentity.recovery_restriction_code = provider_delivery_disabled
 
 That projection remains Auth-owned and does not redefine email verification/ownership.
 
-Live AWS cloud-event ingress was not part of the real-provider UAT. Normalization/persistence/suppression were previously accepted through PostgreSQL tests; production event routing remains a deployment gate.
+Live AWS cloud-event ingress was not part of the real-provider UAT. Normalization/persistence/suppression were accepted through PostgreSQL tests; production event routing remains a deployment gate.
 
 ## 13. Recovery / PITR posture
 
@@ -427,6 +431,8 @@ email workers closed
 
 Restored work is never blindly replayed merely because an older database snapshot says `pending` or `claimed`.
 
+The current combined candidate also passed the whole LOCAL PostgreSQL CP07 recovery rehearsal at Alembic `20260904_17`. That proves the enriched database/recovery contract, not live provider-effect replay and not production/cloud recovery.
+
 ## 14. Observability
 
 Operational truth is derived from durable PostgreSQL state rather than volatile counters.
@@ -444,6 +450,8 @@ active complaint suppressions
 ```
 
 No recipient, address, secret, payload or message content may become metric dimensions.
+
+The separate `feature/platform-observability` workstream is accepted but not yet integrated; its future merge must preserve these privacy/cardinality boundaries.
 
 ## 15. Current first consumer: Access/Auth
 
@@ -489,7 +497,7 @@ An executable test currently enforces the first rule.
 
 ## 18. Acceptance truth
 
-### Accepted baseline evidence before the ownership refactor
+### Historical real-provider evidence
 
 The 2026-09-03 accepted implementation/UAT evidence proved:
 
@@ -512,17 +520,29 @@ three provider_accepted attempts with MessageId and terminal wipe
 
 Exact evidence remains in `../development/email-platform-acceptance-2026-09-03.md` and is historical fact.
 
-### Current shared-ownership refactor
+### Shared-ownership refactor acceptance
 
-The subsequent ownership cleanup moved reusable implementation under `dante.platform.email`, separated consumer rendering/projection, hardened replay identity and added architecture/replay tests.
+The subsequent ownership cleanup moved reusable implementation under `dante.platform.email`, separated consumer rendering/projection, hardened replay identity, added architecture/replay tests and added forward migration `20260904_16` for shared bounded stream/purpose vocabulary.
 
-These code changes are **IMPLEMENTED BUT NOT YET RE-ACCEPTED** until the current branch executes the focused static/unit/PostgreSQL regression gate.
+Current truth on exact integration-candidate proof HEAD `81639c61478b476c995652d0060dde8f53aef089`:
 
-Do not reinterpret the prior UAT as proof that later refactor commits have already passed.
+```text
+architecture decision                         ACCEPTED
+2026-09-03 real-provider UAT                  ACCEPTED HISTORICAL EVIDENCE
+shared ownership refactor                     VERIFIED / ACCEPTED
+forward shared-vocabulary migration 16        PG PROVEN / ACCEPTED
+backend static + fast regression              PASS
+real PostgreSQL acceptance                    PASS
+combined candidate Backend CI                 PASS
+combined candidate Frontend CI                PASS
+CP07 enriched-baseline LOCAL recovery         PASS
+```
+
+The post-refactor gate is no longer pending. The older real SES UAT remains historical evidence for real-provider behavior; it is not rewritten as if it occurred after every later refactor commit.
 
 ## 19. Production deployment gates
 
-Engineering architecture closure never implied production sender acceptance. Deployment still owns, as applicable:
+Engineering architecture/integration acceptance never implied production sender acceptance. Deployment still owns, as applicable:
 
 ```text
 DANTE-controlled sender domain/subdomain
@@ -577,6 +597,7 @@ Persistence:
 ```text
 apps/backend/migrations/versions/20260903_14_m5_email_platform.py
 apps/backend/migrations/versions/20260903_15_m5_email_platform_acl.py
+apps/backend/migrations/versions/20260904_16_email_platform_shared_vocabulary.py
 ```
 
 Decision / evidence:
@@ -586,4 +607,5 @@ docs/decisions/ADR-012-email-delivery-platform.md
 docs/architecture/access-auth-email-delivery.md
 docs/development/email-platform-local-uat.md
 docs/development/email-platform-acceptance-2026-09-03.md
+docs/workstreams/access-auth-integration-acceptance-2026-09-04.md
 ```
