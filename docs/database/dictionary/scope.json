@@ -24,7 +24,7 @@
   },
   "technical_foundation": {
     "excluded_tables": ["dante.alembic_version"],
-    "roles": ["dante_owner", "dante_migrator", "dante_runtime"]
+    "roles": ["dante_owner", "dante_migrator", "dante_runtime", "dante_observer"]
   },
   "extension_owned": {
     "postgis": {"version_policy": "foundation dependency; current repository baseline 3.6.4"},

@@ -119,7 +119,9 @@
       "required": ["excluded_tables", "roles"],
       "properties": {
         "excluded_tables": {"const": ["dante.alembic_version"]},
-        "roles": {"const": ["dante_owner", "dante_migrator", "dante_runtime"]}
+        "roles": {
+          "const": ["dante_owner", "dante_migrator", "dante_runtime", "dante_observer"]
+        }
       }
     },
     "extension_owned": {

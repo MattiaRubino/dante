@@ -153,6 +153,7 @@ def _provision_database(
     admin_password: str,
     migrator_password: str,
     runtime_password: str,
+    observer_password: str,
 ) -> None:
     asyncio.run(
         provision_database(
@@ -164,6 +165,7 @@ def _provision_database(
                 admin_password=SecretStr(admin_password),
                 migrator_password=SecretStr(migrator_password),
                 runtime_password=SecretStr(runtime_password),
+                observer_password=SecretStr(observer_password),
                 connect_timeout_seconds=2,
             )
         )
@@ -448,6 +450,7 @@ def main() -> None:
     admin_password = secrets.token_urlsafe(32)
     migrator_password = secrets.token_urlsafe(32)
     runtime_password = secrets.token_urlsafe(32)
+    observer_password = secrets.token_urlsafe(32)
     container_name = f"dante-fullstack-{uuid.uuid4().hex[:12]}"
 
     hibp_server = ThreadingHTTPServer(("127.0.0.1", 0), _HibpHandler)
@@ -494,6 +497,7 @@ def main() -> None:
             admin_password=admin_password,
             migrator_password=migrator_password,
             runtime_password=runtime_password,
+            observer_password=observer_password,
         )
         _migrate_database(port=postgres_port, migrator_password=migrator_password)
 
