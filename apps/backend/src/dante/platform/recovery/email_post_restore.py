@@ -54,9 +54,7 @@ async def reconcile_restored_email_delivery(
             await session.scalar(
                 select(func.count())
                 .select_from(EmailDeliveryIntentRow)
-                .where(
-                    EmailDeliveryIntentRow.dispatch_state_code.in_(_RESTORED_SENDABLE_STATES)
-                )
+                .where(EmailDeliveryIntentRow.dispatch_state_code.in_(_RESTORED_SENDABLE_STATES))
             )
             or 0
         )
