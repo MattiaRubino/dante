@@ -48,9 +48,9 @@ def test_dictionary_scope_matches_declared_scope_schema_contract() -> None:
         for rule in schema["allOf"]
         if rule["if"]["properties"]["status"].get("const") == "materialized"
     )
-    materialized_stages = materialized_rule["then"]["properties"][
-        "current_materialization"
-    ]["properties"]["completed_stages"]["const"]
+    materialized_stages = materialized_rule["then"]["properties"]["current_materialization"][
+        "properties"
+    ]["completed_stages"]["const"]
 
     if scope["status"] == "materialized":
         assert completed_stages == materialized_stages
@@ -94,12 +94,14 @@ def test_email_platform_dictionary_entries_are_shared_technical_infrastructure()
         assert entry["classification"]["family"] == "email_platform"
         assert entry["semantic_traceability"]["domain_concepts"] == []
         assert entry["semantic_traceability"]["material_facets"] == []
-        assert "docs/architecture/email-platform.md" in entry["semantic_traceability"][
-            "authority_sources"
-        ]
-        assert "docs/decisions/ADR-012-email-delivery-platform.md" in entry[
-            "semantic_traceability"
-        ]["authority_sources"]
+        assert (
+            "docs/architecture/email-platform.md"
+            in entry["semantic_traceability"]["authority_sources"]
+        )
+        assert (
+            "docs/decisions/ADR-012-email-delivery-platform.md"
+            in entry["semantic_traceability"]["authority_sources"]
+        )
 
         # Access/Auth is the first consumer, not the platform owner. Keeping it here records
         # current consumer traceability without collapsing platform ownership into Auth.
