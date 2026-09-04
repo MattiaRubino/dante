@@ -69,32 +69,36 @@ type CustomizationOverrides = Pick<
 >;
 
 function deterministicReader(): WorldFocusCompositionCustomizationReader {
-  return async (worldId) =>
-    createWorldFocusCompositionOpportunitySet({
-      worldId,
-      opportunities: [
-        createWorldFocusCompositionOpportunity({
-          instanceId: 'situation',
-          kind: 'situation',
-          defaultProminence: 'primary',
-          footprint: 'standard',
-        }),
-        createWorldFocusCompositionOpportunity({
-          instanceId: 'comparison:manual',
-          kind: 'comparison',
-          defaultProminence: 'supporting',
-          footprint: 'standard',
-        }),
-      ],
-    });
+  return (worldId) =>
+    Promise.resolve(
+      createWorldFocusCompositionOpportunitySet({
+        worldId,
+        opportunities: [
+          createWorldFocusCompositionOpportunity({
+            instanceId: 'situation',
+            kind: 'situation',
+            defaultProminence: 'primary',
+            footprint: 'standard',
+          }),
+          createWorldFocusCompositionOpportunity({
+            instanceId: 'comparison:manual',
+            kind: 'comparison',
+            defaultProminence: 'supporting',
+            footprint: 'standard',
+          }),
+        ],
+      }),
+    );
 }
 
 function emptyReader(): WorldFocusCompositionCustomizationReader {
-  return async (worldId) =>
-    createWorldFocusCompositionOpportunitySet({
-      worldId,
-      opportunities: [],
-    });
+  return (worldId) =>
+    Promise.resolve(
+      createWorldFocusCompositionOpportunitySet({
+        worldId,
+        opportunities: [],
+      }),
+    );
 }
 
 function renderCustomizationHarness(overrides: CustomizationOverrides = {}) {

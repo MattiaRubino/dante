@@ -19,7 +19,7 @@ function emptyResult(worldId: WorldFocusId): EmptyResult {
 describe('World Focus composition customization read', () => {
   it('aggregates the seven existing M1 readers through one bounded opportunity seam', async () => {
     const calls: Array<Readonly<{ worldId: WorldFocusId; signal: AbortSignal }>> = [];
-    const readEmpty: WorldFocusScopedReader<EmptyResult> = async (
+    const readEmpty: WorldFocusScopedReader<EmptyResult> = (
       worldId,
       signal,
     ) => {
@@ -27,7 +27,7 @@ describe('World Focus composition customization read', () => {
         throw new Error('Expected bounded customization AbortSignal');
       }
       calls.push({ worldId, signal });
-      return emptyResult(worldId);
+      return Promise.resolve(emptyResult(worldId));
     };
     const read = createWorldFocusCompositionCustomizationReader({
       readSituation: readEmpty,
