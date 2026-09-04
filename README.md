@@ -6,7 +6,7 @@ DANTE is a personal operating system designed to help people understand, organiz
 
 ## Current repository state
 
-Protected `main` is the single integrated authority. Access/Auth M1–M5, the shared Email Platform and PostgreSQL Recovery are now integrated together on `main` through PR #52.
+Protected `main` is the single integrated authority. Access/Auth M1–M5, the shared Email Platform and PostgreSQL Recovery are integrated together through PR #52.
 
 ```text
 PRODUCT / DOMAIN / LOGICAL / PHYSICAL      CLOSED / CURRENT
@@ -25,9 +25,10 @@ PROTECTED MAIN
                                            270 CHECKs
   post-merge Backend CI                    PASS
   post-merge Frontend CI                   PASS
-  CP07 whole LOCAL recovery rehearsal      PASS
+  database-local CP07                      PASS
+  Email post-restore whole-flow gate       REMEDIATION REQUIRED
 
-feature/platform-observability             CLOSED / OPERATIONAL PASS / NEXT INTEGRATION
+feature/platform-observability             CLOSED / OPERATIONAL PASS / NEXT INTEGRATION AFTER REMEDIATION
 M6 Native Mobile                           FUTURE / OPTIONAL
 later Access/M7 maturity                   FUTURE
 ```
@@ -36,9 +37,9 @@ later Access/M7 maturity                   FUTURE
 
 PR #52 merged the accepted Access/Auth + shared Email Platform candidate with protected-main Recovery at merge commit `5f76ec54ad78542f137e8730e904f805d9e59e56`. The merge tree is identical to the accepted final candidate tree, and protected-main Backend/Frontend CI passed after the merge.
 
-The accepted CP07 rehearsal on implementation proof HEAD `81639c61478b476c995652d0060dde8f53aef089` proved the integrated `20260904_17` database contract, deterministic PITR, anti-resurrection reconciliation, rejected protected-payload reinsertion and `DATABASE LOCAL REOPEN = PASS`. Remote backup provider activation and production/cloud recovery remain **NOT CLAIMED**.
+The historical CP07 rehearsal on implementation proof HEAD `81639c61478b476c995652d0060dde8f53aef089` proved the integrated `20260904_17` database contract, deterministic PITR, MaterialState anti-resurrection reconciliation, rejected protected-payload reinsertion and `DATABASE LOCAL REOPEN = PASS` for the scope it executed. A post-merge audit found that the harness did **not** directly exercise Email `quarantine_after_restore()` before Email workers resume, so application Email traffic reopen after PITR is not claimed by that run. Remote backup-provider activation and production/cloud recovery also remain **NOT CLAIMED**.
 
-Durable integration evidence lives in `docs/workstreams/access-auth-integration-acceptance-2026-09-04.md`.
+Durable historical integration evidence lives in `docs/workstreams/access-auth-integration-acceptance-2026-09-04.md`. Consolidated Access branch chronology lives in `docs/archive/branches/2026-09-feature-access-auth.md` and is **NON-AUTHORITATIVE**.
 
 ## Permanent architecture rules
 
@@ -53,6 +54,7 @@ PasskeyCredential != Account
 PostgreSQL is canonical persistence
 no provider/network I/O inside authoritative DB transactions
 no blind retry after ambiguous external effects
+restored external-effect work is not automatically safe to replay
 applied migrations are immutable
 ```
 
@@ -61,7 +63,9 @@ The Email Platform is shared DANTE infrastructure; Access/Auth is its first cons
 ## Current integration order
 
 ```text
-enriched protected main
+post-merge Email recovery/reopen remediation
+→ whole-flow recovery proof
+→ enriched protected main
 → merge into feature/platform-observability
 → observability integration/release rechecks
 → PR observability to protected main
@@ -76,10 +80,12 @@ No rebase, history rewrite, force push or direct protected-main write.
 - `docs/ROADMAP.md`
 - `docs/database/README.md`
 - `docs/database/dictionary/README.md`
-- `docs/workstreams/access-auth.md`
-- `docs/workstreams/access-auth-integration-acceptance-2026-09-04.md`
+- `docs/architecture/access-auth-architecture.md`
+- `docs/database/access-auth.md`
 - `docs/architecture/email-platform.md`
 - `docs/operations/postgres-recovery-runbook.md`
+- `docs/workstreams/access-auth-integration-acceptance-2026-09-04.md` — historical evidence
+- `docs/archive/branches/2026-09-feature-access-auth.md` — historical branch record
 - `apps/backend/README.md`
 
 Executable repository truth and accepted current documentation outrank conversation memory and historical handoffs.
