@@ -112,6 +112,7 @@ export function WorldFocusWorkspace({
           className="world-focus-main-plane"
           data-world-focus-main-plane="true"
           inert={mainIsInert ? true : undefined}
+          tabIndex={mainIsInert ? undefined : 0}
         >
           {context}
           {statusMessage === null ? null : (

@@ -11,7 +11,7 @@ test('World Focus mounts current content through the controlled composition host
   await expect(composition).toBeVisible();
   await expect(composition).toHaveAttribute(
     'data-world-focus-composition-count',
-    '1',
+    '4',
   );
 
   const continuity = composition.locator(
