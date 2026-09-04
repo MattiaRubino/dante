@@ -14,6 +14,10 @@ from pydantic import BaseModel, ConfigDict, Field
 from starlette.datastructures import MutableHeaders
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
+from dante.platform.observability.context import bind_request_id
+from dante.platform.observability.logging import log_event
+from dante.platform.observability.runtime import mark_current_span_error
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -111,6 +115,8 @@ def _payload(problem: ProblemError, *, request_id: str) -> dict[str, Any]:
 def problem_response(request: Request, problem: ProblemError) -> JSONResponse:
     """Serialize one safe RFC 9457 problem."""
     request_id = ensure_request_id(request.scope)
+    if problem.status >= 500:
+        mark_current_span_error(error_code=problem.code)
     headers = {**problem.headers, "X-Request-ID": request_id}
     return JSONResponse(
         status_code=problem.status,
@@ -158,7 +164,8 @@ class RequestContextMiddleware:
                     headers["Cache-Control"] = "no-store"
             await send(message)
 
-        await self._app(scope, receive, send_with_headers)
+        with bind_request_id(request_id):
+            await self._app(scope, receive, send_with_headers)
 
 
 def _validation_field_error(error: Mapping[str, Any]) -> ProblemFieldError:
@@ -239,11 +246,18 @@ def install_problem_handlers(app: FastAPI) -> None:
         )
 
     async def handle_unexpected(request: Request, exc: Exception) -> JSONResponse:
-        request_id = ensure_request_id(request.scope)
-        _LOGGER.error(
-            "internal.unexpected request_id=%s exception_type=%s",
-            request_id,
-            type(exc).__name__,
+        ensure_request_id(request.scope)
+        mark_current_span_error(error_code="internal.unexpected", exception=exc)
+        log_event(
+            _LOGGER,
+            logging.ERROR,
+            "internal.unexpected",
+            fields={
+                "error_code": "internal.unexpected",
+                "error_category": "internal",
+                "http_status_code": 500,
+            },
+            exception=exc,
         )
         problem = ProblemError(
             status=500,
