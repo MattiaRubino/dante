@@ -1,130 +1,28 @@
 # DANTE Workstream Records
 
 - **Status:** CURRENT INDEX
-- **Last reconciled:** 2026-09-03
-- **Rule:** protected `main` stores durable current records/evidence, not active chat/session handoffs
+- **Rule:** current subsystem/workstream files describe present truth; Git/PR/archive preserve chronology.
 
-## 1. Purpose
+## Current authority
 
-This directory contains durable workstream references and selected evidence. Temporary branch save-games are allowed only while useful and must be removed before protected-main integration under `../development/documentation-lifecycle-policy.md`.
-
-```text
-temporary handoff
-→ knowledge coverage
-→ current truth in current docs
-→ durable rationale/evidence retained where needed
-→ Git keeps chronology
-→ handoff removed before main
-```
-
-## 2. Current project state
-
-```text
-Product / Domain / Logical / Physical            CLOSED / CURRENT
-Engineering / Frontend Foundation                CLOSED / ACCEPTED
-Backend CP1–CP6                                  CLOSED / ACCEPTED
-PostgreSQL                                       18.6
-Protected-main Recovery                          CLOSED / INTEGRATED
-
-Access/Auth M1–M5                                CLOSED / ACCEPTED
-local password/passkey UAT                       PASS
-real Windows Hello UAT                           PASS
-real Google UAT                                  PASS
-real Apple registered-domain UAT                 BOUNDED DEFERRED / NON-BLOCKING
-
-Shared Email Platform                            CLOSED / ACCEPTED
-real SES signup/recovery/reset notification       PASS
-
-feature/access-auth                              PRE-INTEGRATION AUDIT
-feature/platform-observability                   CLOSED / OPERATIONAL PASS / NOT INTEGRATED
-M6 Native Mobile                                 FUTURE / OPTIONAL
-later M7 Access/security maturity                FUTURE
-```
-
-## 3. Active Access/Auth record
-
-Current branch-local operational authority:
-
-- `access-auth.md`
-
-Current project routing:
+Protected-main project truth is owned by:
 
 - `../PROJECT-STATUS.md`
 - `../ROADMAP.md`
 
-Durable implementation/evidence authorities:
+Branch-local workstream files may describe newer unmerged implementation only inside their own bounded branch. They never silently become protected-main truth.
 
-- `../architecture/access-auth-architecture.md`
-- `../architecture/access-auth-security-contract.md`
-- `../architecture/access-auth-api-contract.md`
-- `../architecture/access-auth-testing-contract.md`
-- `../architecture/access-auth-m4-contract.md`
-- `../architecture/access-auth-m5-contract.md`
-- `../architecture/access-auth-m5-persistence-api-contract.md`
-- `access-auth-m5-review-2026-09-02.md` — historical engineering/UAT evidence checkpoint
-- `../frontend/access.md`
-- `../database/access-auth.md`
+## Current durable subsystem entry points
 
-Shared Email Platform:
+### Database
 
-- `../architecture/email-platform.md`
-- `../architecture/access-auth-email-delivery.md`
-- `../decisions/ADR-012-email-delivery-platform.md`
-- `../development/email-platform-local-uat.md`
-- `../development/email-platform-acceptance-2026-09-03.md`
+- `../database/README.md` — current DANTE PostgreSQL System of Record.
+- `../database/dante-postgresql-database.md` + current continuation parts — human-readable database reference.
+- `../database/dictionary/` — machine-readable current database contract.
 
-## 4. Access/Auth closure disposition
+### Backend
 
-M5 is closed. Apple real external UAT was explicitly accepted as a bounded deferral because its external prerequisites are unavailable; it is not represented as a PASS.
-
-The current branch is feature-frozen for integration. No session/device/M7/mobile feature work should be added before Access/Auth and Email Platform are returned to protected main.
-
-Current branch database before convergence:
-
-```text
-Alembic             20260903_15
-87 tables
-5 views
-15 routines
-75 triggers
-170 physical indexes
-88 foreign keys
-267 CHECK constraints
-```
-
-Protected main independently owns Recovery at `20260830_09`. The histories will be converged later through merge + a forward Alembic merge revision, never by rewriting applied migrations.
-
-## 5. Pre-integration documentation lifecycle
-
-The dated Access/Auth live handoffs are temporary/superseded artifacts, not durable current authority. Before the PR to protected main they must pass knowledge coverage and leave the working tree.
-
-The durable M5 review is retained because it contains useful evidence about real Windows Hello, Google UAT and defects discovered by manual full-stack testing. It must remain clearly evidentiary, not current-status authority.
-
-The old `access-auth-m4-m7-execution-plan.md` path is historical planning. Current execution order is owned only by `../ROADMAP.md` and `access-auth.md`.
-
-## 6. Current integration order
-
-```text
-feature/access-auth pre-integration audit
-→ merge protected main into feature/access-auth
-→ Alembic merge + combined QA
-→ PR Access/Auth + Email Platform to protected main
-→ merge enriched main into feature/platform-observability
-→ observability integration/release rechecks
-→ PR observability to protected main
-→ new bounded workstreams from enriched main
-```
-
-This order returns shared foundations to main and removes long-lived feature-branch dependencies for other product work.
-
-## 7. Closed/integrated durable records
-
-### Backend / database
-
-- `backend-scaffold.md` — CP1–CP5 closure/integration evidence.
-- `../archive/branches/2026-08-feature-logical-postgresql.md` — consolidated historical CP6 branch record.
-- `../database/README.md` — current database System of Record.
-- `../development/backend-cp6-05-whole-database-qa.md` — retained CP6 acceptance evidence.
+- `backend-scaffold.md` — accepted backend foundation/closure record.
 
 ### Frontend
 
@@ -132,7 +30,6 @@ This order returns shared foundations to main and removes long-lived feature-bra
 - `frontend-materialization.md`
 - `frontend-materialization-integration.md`
 - `../frontend/access.md`
-- `../archive/branches/2026-08-feature-access-frontend.md`
 
 ### Engineering / architecture
 
@@ -140,40 +37,99 @@ This order returns shared foundations to main and removes long-lived feature-bra
 - `physical-model.md`
 - `pre-physical-coherence.md`
 
-Domain/Logical current semantics live in `../domain/README.md` and `../logical-model/README.md`; old chronological workstream records do not override them.
+### Domain / Logical
 
-## 8. Platform observability
+Current semantic authority lives in:
 
-`feature/platform-observability` is a separate already-closed branch-local workstream. It owns the accepted OTel/Alloy/Grafana/Faro/PostgreSQL-observer platform and its operational evidence. It is deliberately integrated only after Access/Auth + Email have first returned to main.
+- `../domain/README.md`
+- `../logical-model/README.md`
 
-Its branch-local workstream file is not copied into Access/Auth as current authority.
+## PostgreSQL Recovery
 
-## 9. `today-home.md`
+The LOCAL PostgreSQL Recovery workstream is **closed and integrated into protected `main` via PR #47**. It no longer has an active workstream file or execution-plan overlay in current navigation.
 
-`today-home.md` remains a separate Home/Today product/UX workstream record. It does not override current backend/database/Auth authority.
-
-The remaining authenticated Home integration work should eventually start from the enriched main rather than extending this pre-integration Access branch.
-
-## 10. Continuation rule
-
-Before work:
-
-1. read `../PROJECT-STATUS.md` and `../ROADMAP.md`;
-2. verify exact branch, remote HEAD and protected-main relationship;
-3. read `../development/documentation-lifecycle-policy.md`;
-4. read the current workstream record for the active branch;
-5. consume subsystem architecture/database authority relevant to the task;
-6. use historical reviews only as evidence;
-7. never let a dated handoff override current executable/current-reference truth.
-
-## 11. Permanent rules
+Current durable operational authority:
 
 ```text
-SELECTED != IMPLEMENTED != PASS != REAL UAT != PRODUCTION DEPLOYED
-UNMERGED BRANCH TRUTH != PROTECTED-MAIN TRUTH
-CURRENT SPECIFICATION != APPEND-ONLY DIARY
-TEMPORARY HANDOFF != DURABLE DOCUMENTATION
-APPLIED MIGRATION HISTORY IS IMMUTABLE
-NO PASS WITHOUT EXECUTED EVIDENCE
-DO NOT REOPEN ACCEPTED WORK WITHOUT DIRECT DEFECT EVIDENCE
+database contract   ../database/README.md
+operator runbook    ../operations/postgres-recovery-runbook.md
+bootstrap           ../../infra/local/postgres/recovery/bootstrap-local-recovery.sh
+whole rehearsal     ../../infra/local/postgres/recovery/cp07-whole-recovery-rehearsal.sh
+```
+
+Closed branch history:
+
+- `../archive/branches/2026-08-feature-postgres-recovery.md` — **NON-AUTHORITATIVE**
+
+Current protected-main Recovery truth:
+
+```text
+PostgreSQL                              18.6
+Alembic                                 20260830_09
+topology                                69|5|15|76|97|69|123|0|0|0
+CP01–CP07                               LOCAL PASS / CLOSED
+exact reusable-runner proof HEAD        789e946a8f096b52f2a440b967120cc3e0a340a3
+final Recovery branch HEAD              e46ae3d9d5918b27ebf86f4e291b51312f1e7c4d
+integration PR                          #47
+protected-main merge commit             bdd2b2370d41423dbaecd00fde86bb2bf2466f2b
+remote backup provider                  TBD / NOT ACTIVATED
+production/cloud recovery               NOT CLAIMED
+```
+
+Permanent rules:
+
+```text
+PostgreSQL = sole canonical persistence authority
+backup repository != canonical truth
+restored bytes != accepted semantic truth
+pg_isready != traffic-open proof
+pg_is_in_recovery=false + semantic acceptance required
+old backup restore != permission to resurrect retired payload
+recovery suppression ledger != second canonical database
+successful LOCAL proof != remote/cloud production proof
+```
+
+The permanent bootstrap/runner is branch-agnostic and fails closed unless the current branch is attached, clean, has a configured upstream and exact `HEAD == upstream` after fetch. The historical `feature/postgres-recovery` branch name is evidence only and is not a current execution requirement.
+
+Detailed CP01–CP07 chronology, proof heads, failure findings, measurements and the disposition of removed active-workstream documents are retained in the single Recovery branch-history record plus Git history.
+
+## Current bounded unmerged workstreams
+
+At the 2026-08-31 reconciliation, current project authority records bounded unmerged work including:
+
+```text
+feature/access-auth             active product vertical
+feature/home-react              active frontend workstream
+feature/platform-observability  active platform workstream
+```
+
+PostgreSQL Recovery is intentionally absent: it is already integrated in protected `main` via PR #47.
+
+Live Git refs and each active branch's own durable authority outrank this index for later movement.
+
+## Operational continuation rule
+
+Before continuing an active workstream:
+
+1. verify exact branch/worktree/remote relation;
+2. read current global/subsystem authority;
+3. read the active branch-local workstream record when one legitimately exists;
+4. prefer repository/code/tests over conversation memory;
+5. do not write to protected `main` outside the repository integration path;
+6. do not treat selected/unimplemented capability as PASS;
+7. keep current docs aligned with materialized repository truth;
+8. remove live/session/resume handoffs before integration;
+9. after merge, reconcile candidate/branch-local wording to protected-main truth and repair links to intentionally removed overlays.
+
+## Carry-forward engineering rules
+
+```text
+SELECTED != IMPLEMENTED
+IMPLEMENTED != PROVEN
+PROVEN != CLOSED UNTIL THE CHECKPOINT CONTRACT IS SATISFIED
+UNMERGED BRANCH TRUTH != protected-main TRUTH
+MERGED BRANCH CANDIDATE STATE != CURRENT protected-main STATUS
+VERSION-SENSITIVE CLAIMS REQUIRE CURRENT EVIDENCE
+CURRENT DOCUMENTATION != DEPRECATED SNAPSHOT
+TEMPORARY HANDOFF != DURABLE main DOCUMENTATION
 ```

@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 from uuid import UUID, uuid7
 
 import psycopg
@@ -13,7 +13,6 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from psycopg import errors
-from sqlalchemy import Table
 
 from dante.platform.database.mappings import MAPPED_TABLES
 from dante.platform.database.mappings.views import VIEW_METADATA
@@ -29,27 +28,6 @@ _M6_TABLES = {
     "occurrence_generation_elapsed",
     "occurrence_generation_quota",
     "occurrence_generation_cyclic",
-}
-_POST_CP6_TABLES = {
-    "account",
-    "email_identity",
-    "password_credential",
-    "auth_session",
-    "password_signup_challenge",
-    "password_recovery_challenge",
-    "account_profile_bootstrap",
-    "apple_auth_grant",
-    "external_auth_transaction",
-    "external_identity",
-    "external_link_challenge",
-    "external_signup_challenge",
-    "passkey_credential",
-    "webauthn_account",
-    "webauthn_challenge",
-    "email_delivery_intent",
-    "email_delivery_attempt",
-    "email_provider_event",
-    "email_recipient_suppression",
 }
 _M6_ROUTINE = "enforce_occurrence_generation_integrity"
 _VIEWS = {
@@ -220,16 +198,24 @@ def test_m6_materializes_exact_final_structural_topology(
 
 
 def test_m6_sqlalchemy_mapping_is_exact_and_relationship_free() -> None:
-    cp6_tables = tuple(table for table in MAPPED_TABLES if table.name not in _POST_CP6_TABLES)
-    cp6_mappers = tuple(
-        mapper
-        for mapper in Base.registry.mappers
-        if cast(Table, mapper.local_table).name not in _POST_CP6_TABLES
+    m6_stages = {"CP6-M01", "CP6-M02", "CP6-M03", "CP6-M04", "CP6-M06"}
+    m6_table_names = {
+        path.stem
+        for path in (_DICTIONARY_ROOT / "tables").glob("*.json")
+        if json.loads(path.read_text(encoding="utf-8"))["implementation"]["introducing_stage"]
+        in m6_stages
+    }
+    m6_tables = tuple(table for table in MAPPED_TABLES if table.name in m6_table_names)
+    m6_table_objects = set(m6_tables)
+    m6_mappers = tuple(
+        mapper for mapper in Base.registry.mappers if mapper.local_table in m6_table_objects
     )
-    assert len(cp6_tables) == 68
-    assert len(cp6_mappers) == 68
-    assert {table.name for table in cp6_tables} >= _M6_TABLES
-    assert all(len(mapper.relationships) == 0 for mapper in cp6_mappers)
+    assert len(m6_table_names) == 68
+    assert {table.name for table in m6_tables} == m6_table_names
+    assert len(m6_mappers) == 68
+    assert {mapper.local_table for mapper in m6_mappers} == m6_table_objects
+    assert m6_table_names >= _M6_TABLES
+    assert all(len(mapper.relationships) == 0 for mapper in m6_mappers)
     assert set(VIEW_METADATA.tables) == {f"dante.{name}" for name in _VIEWS}
 
 
@@ -432,24 +418,23 @@ def test_m6_dictionary_reconciles_final_structural_surface() -> None:
         for path in (_DICTIONARY_ROOT / "routines").glob("*.json")
     }
     scope = json.loads((_DICTIONARY_ROOT / "scope.json").read_text(encoding="utf-8"))
-
-    cp6_table_entries = {
+    m6_table_stages = {"CP6-M01", "CP6-M02", "CP6-M03", "CP6-M04", "CP6-M06"}
+    m6_routine_stages = {"CP6-M05", "CP6-M06"}
+    m6_table_entries = {
         name: entry
         for name, entry in table_entries.items()
-        if str(entry["implementation"]["introducing_stage"]).startswith("CP6-")
+        if entry["implementation"]["introducing_stage"] in m6_table_stages
     }
-    cp6_routine_entries = {
+    m6_routine_entries = {
         name: entry
         for name, entry in routine_entries.items()
-        if str(entry["implementation"]["introducing_stage"]).startswith("CP6-")
+        if entry["implementation"]["introducing_stage"] in m6_routine_stages
     }
-
-    assert len(cp6_table_entries) == 68
-    assert set(cp6_table_entries) >= _M6_TABLES
+    assert len(m6_table_entries) == 68
+    assert set(m6_table_entries) >= _M6_TABLES
     assert set(view_entries) == _VIEWS
-    assert len(cp6_routine_entries) == 14
-    assert _M6_ROUTINE in cp6_routine_entries
-
+    assert len(m6_routine_entries) == 14
+    assert _M6_ROUTINE in m6_routine_entries
     current = scope["current_materialization"]
     assert current["completed_stages"][:6] == [
         "CP6-M01",
@@ -459,22 +444,30 @@ def test_m6_dictionary_reconciles_final_structural_surface() -> None:
         "CP6-M05",
         "CP6-M06",
     ]
-    assert scope["expected_baseline"] == {
-        "standalone_entries": {"tables": 68, "views": 5, "routines": 14, "total": 87},
-        "embedded_objects": {"triggers": 75, "physical_indexes": 95},
-        "constraints": {"foreign_keys": 68, "check_constraints": 120},
-    }
-
     triggers = [
-        trigger
-        for entry in cp6_table_entries.values()
-        for trigger in entry["structure"]["triggers"]
+        trigger for entry in m6_table_entries.values() for trigger in entry["structure"]["triggers"]
+    ]
+    indexes = [
+        index for entry in m6_table_entries.values() for index in entry["structure"]["indexes"]
+    ]
+    foreign_keys = [
+        foreign_key
+        for entry in m6_table_entries.values()
+        for foreign_key in entry["structure"]["foreign_keys"]
+    ]
+    check_constraints = [
+        check
+        for entry in m6_table_entries.values()
+        for check in entry["structure"]["check_constraints"]
     ]
     assert len(triggers) == 75
     assert len({trigger["name"] for trigger in triggers}) == 75
     assert sum(not trigger["constraint_trigger"] for trigger in triggers) == 18
     assert sum(trigger["constraint_trigger"] for trigger in triggers) == 57
-    m6_routine = cp6_routine_entries[_M6_ROUTINE]["structure"]["routine"]
+    assert len(indexes) == 95
+    assert len(foreign_keys) == 68
+    assert len(check_constraints) == 120
+    m6_routine = m6_routine_entries[_M6_ROUTINE]["structure"]["routine"]
     assert m6_routine == {
         "routine_kind": "function",
         "language": "plpgsql",

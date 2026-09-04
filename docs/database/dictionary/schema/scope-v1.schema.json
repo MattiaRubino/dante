@@ -16,47 +16,98 @@
     "materialization_rules"
   ],
   "properties": {
-    "$schema": {"type": "string"},
-    "dictionary_version": {"const": 1},
-    "status": {"enum": ["readiness_only", "materializing", "materialized"]},
+    "$schema": {
+      "type": "string"
+    },
+    "dictionary_version": {
+      "const": 1
+    },
+    "status": {
+      "enum": [
+        "readiness_only",
+        "materializing",
+        "materialized"
+      ]
+    },
     "postgresql": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["major", "schema"],
-      "properties": {"major": {"const": 18}, "schema": {"const": "dante"}}
+      "required": [
+        "major",
+        "schema"
+      ],
+      "properties": {
+        "major": {
+          "const": 18
+        },
+        "schema": {
+          "const": "dante"
+        }
+      }
     },
     "expected_baseline": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["standalone_entries", "embedded_objects", "constraints"],
+      "required": [
+        "standalone_entries",
+        "embedded_objects",
+        "constraints"
+      ],
       "properties": {
         "standalone_entries": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["tables", "views", "routines", "total"],
+          "required": [
+            "tables",
+            "views",
+            "routines",
+            "total"
+          ],
           "properties": {
-            "tables": {"const": 68},
-            "views": {"const": 5},
-            "routines": {"const": 14},
-            "total": {"const": 87}
+            "tables": {
+              "const": 69
+            },
+            "views": {
+              "const": 5
+            },
+            "routines": {
+              "const": 15
+            },
+            "total": {
+              "const": 89
+            }
           }
         },
         "embedded_objects": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["triggers", "physical_indexes"],
+          "required": [
+            "triggers",
+            "physical_indexes"
+          ],
           "properties": {
-            "triggers": {"const": 75},
-            "physical_indexes": {"const": 95}
+            "triggers": {
+              "const": 76
+            },
+            "physical_indexes": {
+              "const": 97
+            }
           }
         },
         "constraints": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["foreign_keys", "check_constraints"],
+          "required": [
+            "foreign_keys",
+            "check_constraints"
+          ],
           "properties": {
-            "foreign_keys": {"const": 68},
-            "check_constraints": {"const": 120}
+            "foreign_keys": {
+              "const": 69
+            },
+            "check_constraints": {
+              "const": 123
+            }
           }
         }
       }
@@ -64,11 +115,16 @@
     "current_materialization": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["completed_stages", "standalone_entries", "embedded_objects", "constraints"],
+      "required": [
+        "completed_stages",
+        "standalone_entries",
+        "embedded_objects",
+        "constraints"
+      ],
       "properties": {
         "completed_stages": {
           "type": "array",
-          "maxItems": 7,
+          "maxItems": 8,
           "uniqueItems": true,
           "items": {
             "enum": [
@@ -78,37 +134,81 @@
               "CP6-M04",
               "CP6-M05",
               "CP6-M06",
-              "CP6-M07"
+              "CP6-M07",
+              "RECOVERY-CP06"
             ]
           }
         },
         "standalone_entries": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["tables", "views", "routines", "total"],
+          "required": [
+            "tables",
+            "views",
+            "routines",
+            "total"
+          ],
           "properties": {
-            "tables": {"type": "integer", "minimum": 0},
-            "views": {"type": "integer", "minimum": 0},
-            "routines": {"type": "integer", "minimum": 0},
-            "total": {"type": "integer", "minimum": 0}
+            "tables": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 69
+            },
+            "views": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5
+            },
+            "routines": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 15
+            },
+            "total": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 89
+            }
           }
         },
         "embedded_objects": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["triggers", "physical_indexes"],
+          "required": [
+            "triggers",
+            "physical_indexes"
+          ],
           "properties": {
-            "triggers": {"type": "integer", "minimum": 0},
-            "physical_indexes": {"type": "integer", "minimum": 0}
+            "triggers": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 76
+            },
+            "physical_indexes": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 97
+            }
           }
         },
         "constraints": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["foreign_keys", "check_constraints"],
+          "required": [
+            "foreign_keys",
+            "check_constraints"
+          ],
           "properties": {
-            "foreign_keys": {"type": "integer", "minimum": 0},
-            "check_constraints": {"type": "integer", "minimum": 0}
+            "foreign_keys": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 69
+            },
+            "check_constraints": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 123
+            }
           }
         }
       }
@@ -116,22 +216,51 @@
     "technical_foundation": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["excluded_tables", "roles"],
+      "required": [
+        "excluded_tables",
+        "roles"
+      ],
       "properties": {
-        "excluded_tables": {"const": ["dante.alembic_version"]},
-        "roles": {"const": ["dante_owner", "dante_migrator", "dante_runtime"]}
+        "excluded_tables": {
+          "const": [
+            "dante.alembic_version"
+          ]
+        },
+        "roles": {
+          "const": [
+            "dante_owner",
+            "dante_migrator",
+            "dante_runtime"
+          ]
+        }
       }
     },
     "extension_owned": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["postgis", "vector", "pg_trgm", "unaccent", "pg_stat_statements"],
+      "required": [
+        "postgis",
+        "vector",
+        "pg_trgm",
+        "unaccent",
+        "pg_stat_statements"
+      ],
       "properties": {
-        "postgis": {"$ref": "#/$defs/extension"},
-        "vector": {"$ref": "#/$defs/extension"},
-        "pg_trgm": {"$ref": "#/$defs/extension"},
-        "unaccent": {"$ref": "#/$defs/extension"},
-        "pg_stat_statements": {"$ref": "#/$defs/extension"}
+        "postgis": {
+          "$ref": "#/$defs/extension"
+        },
+        "vector": {
+          "$ref": "#/$defs/extension"
+        },
+        "pg_trgm": {
+          "$ref": "#/$defs/extension"
+        },
+        "unaccent": {
+          "$ref": "#/$defs/extension"
+        },
+        "pg_stat_statements": {
+          "$ref": "#/$defs/extension"
+        }
       }
     },
     "materialization_rules": {
@@ -146,12 +275,24 @@
         "semantic_cross_file_validation_required"
       ],
       "properties": {
-        "object_entries_only_with_real_objects": {"const": true},
-        "same_change_required": {"const": true},
-        "empty_object_directories_forbidden": {"const": true},
-        "semantic_fields_human_authored": {"const": true},
-        "structural_fields_mechanically_reconciled": {"const": true},
-        "semantic_cross_file_validation_required": {"const": true}
+        "object_entries_only_with_real_objects": {
+          "const": true
+        },
+        "same_change_required": {
+          "const": true
+        },
+        "empty_object_directories_forbidden": {
+          "const": true
+        },
+        "semantic_fields_human_authored": {
+          "const": true
+        },
+        "structural_fields_mechanically_reconciled": {
+          "const": true
+        },
+        "semantic_cross_file_validation_required": {
+          "const": true
+        }
       }
     }
   },
@@ -159,36 +300,67 @@
     "extension": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["version_policy"],
-      "properties": {"version_policy": {"type": "string", "minLength": 1}}
+      "required": [
+        "version_policy"
+      ],
+      "properties": {
+        "version_policy": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
     }
   },
   "allOf": [
     {
-      "if": {"properties": {"status": {"const": "readiness_only"}}},
+      "if": {
+        "properties": {
+          "status": {
+            "const": "readiness_only"
+          }
+        }
+      },
       "then": {
         "properties": {
           "current_materialization": {
             "properties": {
-              "completed_stages": {"maxItems": 0},
+              "completed_stages": {
+                "maxItems": 0
+              },
               "standalone_entries": {
                 "properties": {
-                  "tables": {"const": 0},
-                  "views": {"const": 0},
-                  "routines": {"const": 0},
-                  "total": {"const": 0}
+                  "tables": {
+                    "const": 0
+                  },
+                  "views": {
+                    "const": 0
+                  },
+                  "routines": {
+                    "const": 0
+                  },
+                  "total": {
+                    "const": 0
+                  }
                 }
               },
               "embedded_objects": {
                 "properties": {
-                  "triggers": {"const": 0},
-                  "physical_indexes": {"const": 0}
+                  "triggers": {
+                    "const": 0
+                  },
+                  "physical_indexes": {
+                    "const": 0
+                  }
                 }
               },
               "constraints": {
                 "properties": {
-                  "foreign_keys": {"const": 0},
-                  "check_constraints": {"const": 0}
+                  "foreign_keys": {
+                    "const": 0
+                  },
+                  "check_constraints": {
+                    "const": 0
+                  }
                 }
               }
             }
@@ -197,7 +369,13 @@
       }
     },
     {
-      "if": {"properties": {"status": {"const": "materialized"}}},
+      "if": {
+        "properties": {
+          "status": {
+            "const": "materialized"
+          }
+        }
+      },
       "then": {
         "properties": {
           "current_materialization": {
@@ -210,8 +388,45 @@
                   "CP6-M04",
                   "CP6-M05",
                   "CP6-M06",
-                  "CP6-M07"
+                  "CP6-M07",
+                  "RECOVERY-CP06"
                 ]
+              },
+              "standalone_entries": {
+                "properties": {
+                  "tables": {
+                    "const": 69
+                  },
+                  "views": {
+                    "const": 5
+                  },
+                  "routines": {
+                    "const": 15
+                  },
+                  "total": {
+                    "const": 89
+                  }
+                }
+              },
+              "embedded_objects": {
+                "properties": {
+                  "triggers": {
+                    "const": 76
+                  },
+                  "physical_indexes": {
+                    "const": 97
+                  }
+                }
+              },
+              "constraints": {
+                "properties": {
+                  "foreign_keys": {
+                    "const": 69
+                  },
+                  "check_constraints": {
+                    "const": 123
+                  }
+                }
               }
             }
           }

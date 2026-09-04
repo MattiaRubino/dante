@@ -1,255 +1,285 @@
 # DANTE Roadmap
 
-- **Status:** CURRENT FOR `feature/access-auth`
-- **Last reconciled:** 2026-09-03
-- **Current macro state:** **M5 CLOSED / PRE-INTEGRATION AUDIT ACTIVE**
-- **Feature branch Alembic head:** `20260903_15`
-- **Protected-main Alembic head:** `20260830_09`
+- **Status:** CURRENT
+- **Last reconciled:** 2026-08-31
+- **Protected `main`:** integrated source authority; read the live Git ref for the current SHA
 
-## 1. Current sequence
+## 1. Completed foundations
 
 ```text
 Product / North Star
         CURRENT
           ↓
-Domain / Logical / Physical
+Domain Model
         CLOSED
           ↓
-Engineering + Frontend + Backend CP1–CP6
+Logical Model
+        CLOSED / 57 OF 57 / WL-H01..WL-H12
+          ↓
+Pre-Physical Repository & Architecture Coherence
+        CLOSED / FINAL QA PASS
+          ↓
+Physical Model / Target Selection
+        CLOSED / SELECTED / ACCEPTED
+        PostgreSQL 18 major family canonical
+        exact Physical phase-time patch 18.4 / historical
+          ↓
+Engineering Foundation v0
         CLOSED / ACCEPTED
           ↓
-Access M1–M4
-        CLOSED / ACCEPTED
+Frontend Engineering Foundation
+        CLOSED / ACCEPTED / INTEGRATED VIA PR #22
           ↓
-Access M5 Multi-authenticator Account Layer
-        CLOSED / ACCEPTED
+Frontend Production Materialization
+        CLOSED / PASS / INTEGRATED VIA PR #28
           ↓
-Shared Email Platform
-        CLOSED / REAL SES UAT PASS
+Backend CP1–CP5 Scaffold
+        CLOSED / DIRECT QA PASS / INTEGRATED VIA PR #24
           ↓
-PRE-INTEGRATION AUDIT
-        CURRENT
+Backend CP6 Concrete PostgreSQL Database
+        CLOSED / DIRECT QA PASS / INTEGRATED VIA PR #42
           ↓
-MERGE protected main → feature/access-auth
-        Recovery + Access/Auth + Email convergence
+PostgreSQL LOCAL Recovery
+        CP01–CP07 CLOSED / LOCAL PASS / INTEGRATED VIA PR #47
           ↓
-ALEMBIC FORWARD MERGE + FULL INTEGRATION QA
-          ↓
-PR feature/access-auth → protected main
-          ↓
-MERGE enriched main → feature/platform-observability
-          ↓
-OBSERVABILITY INTEGRATION RECHECK
-          ↓
-PR platform-observability → protected main
-          ↓
-SHARED FOUNDATION UNBLOCKED ON MAIN
-          ↓
-new bounded feature branches
+Access Pre-Backend Web Materialization
+        CLOSED / ACCEPTED / RELEASE-HARDENED
+        AF-01D / AF-02A / AF-02B / AF-03A PASS
 ```
 
-This order is intentional. Do not start additional Access/M7/Mobile feature scope while core shared foundations are still trapped on long-lived branches.
+Architecture closure remains distinct from product/runtime completion. Closing the pre-backend Access frontend does not close the real full-stack Access/Auth product vertical. Closing LOCAL PostgreSQL Recovery does not claim remote/cloud production recovery.
 
-## 2. M5 closure
+## 2. CP6 and PostgreSQL Recovery are complete
 
-M5 is closed for its accepted engineering scope.
-
-Proved:
+CP6 converted the closed Domain + Logical + Physical model into the concrete DANTE PostgreSQL database.
 
 ```text
-password + opaque PostgreSQL-backed AuthSession
-signup / verification / recovery / reset / reauth
-Google backend + real provider UAT
-Apple backend/grant/notification lifecycle
-passkeys / WebAuthn + real Windows Hello UAT
-passwordless Accounts
-explicit provider linking/unlinking
-anti-lockout authenticator lifecycle
-FastAPI/OpenAPI/generated client
-/security Web management surface
-shared durable Email Platform
-real SES signup/recovery/reset-notification UAT
-post-reset no-auto-login + prior-session revocation
+CP6-00  COMPLETE
+CP6-01  CLOSED / GATE 01 PASS
+CP6-02  CLOSED / GATE 02 PASS
+CP6-03  CLOSED / GATE 03 PASS
+CP6-04  CLOSED / MATERIALIZATION PASS
+CP6-05  CLOSED / DIRECT QA PASS
+CP6      CLOSED / CONCRETE POSTGRESQL DATABASE PASS
+         INTEGRATED VIA PR #42
 ```
 
-### Apple disposition
-
-Real Apple registered-domain UAT is **BOUNDED DEFERRED / NON-BLOCKING** because the required real Apple account + registered HTTPS domain are unavailable.
-
-This means:
+Historical pre-recovery CP6 baseline:
 
 ```text
-Apple implementation             IMPLEMENTED / ENGINEERING PROVED
-real Apple external UAT           NOT EXECUTED
-M5 blocked by unavailable Apple   NO
-future Apple enablement           MUST run real external acceptance first
+PostgreSQL          18.6
+Alembic             20260826_08
+68 tables
+5 views
+14 routines
+75 triggers
+95 physical indexes
+68 foreign keys
+120 CHECK constraints
 ```
 
-Never rewrite this as a fake real-UAT PASS.
-
-## 3. Email Platform
-
-The shared Email Platform is closed as engineering infrastructure and is not an Access/Auth-owned mailer.
-
-Current accepted path:
+Current protected-main database / Recovery baseline:
 
 ```text
-DANTE feature mutation
-+ durable EmailIntent
-→ PostgreSQL COMMIT
-→ claim / lease / bounded worker
-→ protected versioned payload/template
-→ provider-neutral adapter
-→ SES API v2 / SMTP local-CI compatibility
-→ provider evidence / suppression
+PostgreSQL          18.6
+Alembic             20260830_09
+69 tables
+5 views
+15 routines
+76 triggers
+97 physical indexes
+69 foreign keys
+123 CHECK constraints
+CP01–CP07           LOCAL PASS / CLOSED
+Recovery            INTEGRATED VIA PR #47
+remote provider     TBD / NOT ACTIVATED
+cloud recovery      NOT CLAIMED
 ```
 
-Exact real-provider evidence: `development/email-platform-acceptance-2026-09-03.md`.
+PR #47 integrated the closed Recovery branch into protected `main` with merge commit `bdd2b2370d41423dbaecd00fde86bb2bf2466f2b`. Recovery is therefore no longer an integration candidate or active branch boundary.
 
-Production sender domain, SPF/DKIM/DMARC, production IAM/workload identity, SES production posture, live cloud feedback routing and reputation operations remain deployment work.
+CP6 and Recovery checkpoint chronology are historical implementation/acceptance work now. Do not route new work through old Gate 03, DB-U*, CP6-04, Recovery CP01–CP07 or protected-main-alignment steps.
 
-## 4. Immediate gate — pre-integration audit
+Current database / Recovery authority:
 
-Before merging main into this feature branch, verify and repair:
+- `database/README.md`
+- `database/dictionary/`
+- `operations/postgres-recovery-runbook.md`
+- `development/backend-cp6-02-postgresql-persistence-constitution.md`
+- `decisions/ADR-010-postgresql-persistence-constitution.md`
+- `development/backend-cp6-05-whole-database-qa.md`
+- executable Recovery harnesses under `../infra/local/postgres/recovery/`
+
+Historical branch records:
+
+- `archive/branches/2026-08-feature-logical-postgresql.md`
+- `archive/branches/2026-08-feature-postgres-recovery.md`
+
+## 3. Access frontend materialization is closed
+
+The pre-backend Access Web workstream completed:
 
 ```text
-documentation lifecycle
-CURRENT vs historical classification
-stale DEFERRED / OPEN / NEXT claims
-protected-main vs branch-local status
-Database System of Record
-Database Dictionary + scope/schema
-SQLAlchemy mappings
-Alembic DAG/head
-runtime ACL
-frozen CP6 proof
-Access/Auth + Email direct tests
-OpenAPI/generated client
-Web/backend regressions
+AF-01D  shell completion / professional polish      PASS
+AF-02A  complete pre-backend frontend state graph   PASS
+AF-02B  downstream surface hardening                PASS
+AF-03A  release-hardening viewport matrix           PASS
 ```
 
-No applied migration is rewritten to make the graphs look simpler.
+It intentionally stops backend-authoritative transitions instead of fabricating authentication success. Current frontend truth is `frontend/access.md` plus current code/tests. The closed branch history is `archive/branches/2026-08-feature-access-frontend.md`.
 
-## 5. Access/Auth ↔ protected-main convergence
+Closing this workstream does not mean real Access/Auth is complete.
 
-Protected main currently owns Recovery on a different Alembic child of `20260826_08`:
+## 4. Active bounded unmerged workstreams
+
+The project is no longer waiting to start its first post-CP6 vertical. At the 2026-08-31 reconciliation, bounded unmerged work includes:
 
 ```text
-main
-20260826_08
-└── 20260830_09 recovery_material_state_retirement
+feature/access-auth             active full-stack product work
+feature/home-react              active frontend work
+feature/platform-observability  active platform work
 ```
 
-Feature Access/Auth owns:
+PostgreSQL Recovery is intentionally absent from this list because it is closed and integrated via PR #47.
+
+These active branches are intentionally independent and own only their bounded truth until integration. Do not collapse them into a single mega-branch and do not rewrite protected-main truth from an unmerged branch.
+
+## 5. Database evolution after CP6 / Recovery
+
+Permanent same-change rule:
 
 ```text
-20260826_08
-└── 20260827_09
-    └── 20260827_10
-        └── 20260829_11
-            └── 20260830_12
-                └── 20260831_13
-                    └── 20260903_14
-                        └── 20260903_15
+real structural database change
+→ Alembic forward migration
+→ SQLAlchemy mapping/metadata update
+→ Database Dictionary update
+→ human-readable reference update when meaning/topology changes
+→ generated artifacts/diagrams where governed
+→ direct tests
+→ affected recovery/operational assertions updated when head/topology changes
 ```
 
-Integration policy:
+Applied revisions are immutable. A product vertical may reveal a legitimate schema evolution need; that becomes a normal reviewed forward change and does not reopen CP6 or the closed Recovery workstream.
+
+The current protected-main migration baseline is `20260830_09`. Any branch-local migration chain created from an older common baseline must be explicitly reconciled before its own integration rather than creating accidental multiple Alembic heads.
+
+## 6. Capability-triggered implementation
+
+Selected specialist components activate only at real product/operational triggers:
 
 ```text
-merge main into feature/access-auth
-DO NOT rebase
-DO NOT rewrite applied migrations
-preserve both heads
-add one normal forward Alembic merge revision
-prove fresh DB + upgrade path + catalog parity
-prove Recovery + Auth + Email behavior together
-then PR to protected main
+PowerSync + encrypted SQLite
+→ real offline/multi-device implementation
+
+PostgreSQL transactional outbox
+→ real Class-A async requirement
+
+R2
+→ real ContentArtifact byte flow
+
+OR-Tools
+→ solver-backed capability
+
+Restate
+→ first real Class-B durable workflow
+
+PgBouncer
+→ concrete connection-management need + direct validation
+
+pgBackRest LOCAL recovery
+→ implemented, directly rehearsed and integrated via PR #47
+
+remote backup provider
+→ TBD; trigger only at a real production deployment boundary
 ```
 
-The combined topology is not pre-declared. Exact counts are accepted only after the merged branch is migrated and introspected against real PostgreSQL.
+A selected component is not implemented merely because it appears in architecture.
 
-## 6. Platform observability integration after Access
+## 7. Persistent frontend direction
 
-`feature/platform-observability` is already source-closed and operationally accepted, but not integrated.
+The generic frontend engineering foundation, production materialization and pre-backend Access Web materialization are closed. Future frontend work is vertical/product work rather than another generic foundation phase.
 
-After Access/Auth lands on main:
+Persistent rules remain:
 
 ```text
-new protected main
-→ merge into feature/platform-observability
-→ resolve only real integration deltas
-→ re-run release identity / redaction / correlation / CI checks
-→ PR platform-observability → main
+backend + PostgreSQL own canonical accepted effect
+Web baseline online-first
+Mobile local/offline state remains noncanonical
+identity-scoped local data
+feature-first app boundaries
+route/navigation adapters remain thin
+shared packages require real multi-consumer value
+production never imports prototypes
+current design tokens / i18n / time contracts remain governed
 ```
 
-Do not recreate OTel/Alloy/Grafana/Faro/observer/dashboard/alert work that the observability branch has already proved.
+## 8. Infrastructure / release boundaries still deferred
 
-## 7. Foundation state after both integrations
+Do not prematurely materialize infrastructure merely to complete a diagram.
 
-Target protected-main common base:
+Still trigger-bound/not currently complete:
 
 ```text
-Product / Domain / Logical / Physical
-Engineering + Frontend foundations
-PostgreSQL CP1–CP6
-Recovery
-Access/Auth
-Email Platform
-Platform Observability
+production backend compute provider / sizing
+IaC engine and production infrastructure rollout
+production registry/release pipeline where not yet required
+remote-provider production recovery/retention acceptance
+real V1→V2 business-schema evolution rehearsal
+PowerSync product activation
+Restate product activation
+production deployment
 ```
 
-At that point other product workstreams can branch from main without depending on Access/Auth or Observability feature branches.
+When these become real workstreams, current evidence must replace design-time assumptions.
 
-## 8. Later Access maturity / M7
-
-Later Access/security maturity remains future work, not a prerequisite for the current integration:
+## 9. Documentation lifecycle baseline
 
 ```text
-session/device inventory
-per-session revoke
-revoke all others / logout everywhere
-security-event history
-new-login/security notifications
-"this wasn't me" response
-Security UI refinement/componentization
-final authenticated Home handoff
-release/accessibility/security polish
+current specifications state current truth directly
+temporary live/session handoffs do not enter protected main
+completed branch history is retained only when materially useful
+historical evidence is explicitly non-authoritative
+frozen split documents are compacted only when lossless knowledge coverage is proven
+Git remains the complete recoverable chronology
+post-merge documentation must be reconciled from candidate state to protected-main state
 ```
 
-When this work starts, it should start from the enriched protected main on a new bounded branch.
+Current authority:
 
-## 9. M6 Native Mobile
+- `development/documentation-lifecycle-policy.md`
+- `development/documentation-and-handoff.md`
+- `development/branching-and-environments.md`
+- `development/operating-rules.md`
+- `docs/README.md`
 
-Native Mobile remains **FUTURE / OPTIONAL / RE-GATE**.
+Fewer files is not a success criterion by itself. Remove/compact only after knowledge coverage.
 
-Do not build mobile merely to advance a roadmap number. When the product priority is explicit, create a fresh branch from the then-current protected main and reuse the same backend Account/AuthSession/Email/Observability foundations.
-
-## 10. Permanent integration rules
+## 10. Persistent engineering rules
 
 ```text
-protected main is the integration authority
-feature branch truth must be clearly scoped until merged
-applied Alembic revisions are immutable
-Dictionary ≈ SQLAlchemy ≈ Alembic ≈ PostgreSQL ≈ current DB reference
-no blind retry after ambiguous external effects
-no network I/O in authoritative DB transactions
-no generic Entity/EAV/JSONB semantic escape hatch
-no fake PASS
+SELECTED ARCHITECTURE != IMPLEMENTED COMPONENT
+DOCUMENTATION PASS != DIRECT IMPLEMENTATION PASS
+HISTORICAL 18.4 EVIDENCE != CURRENT 18.6 RUNTIME CLAIM
+POSTGRESQL PATCH REFRESH != PHYSICAL ARCHITECTURE REOPEN
+CLIENT LOCAL STATE != CANONICAL EFFECT AUTHORITY
+ENVIRONMENT != GIT BRANCH
+UNMERGED BRANCH TRUTH != PROTECTED-main TRUTH
+DATABASE MATERIALIZATION != PRODUCT APPLICATION IMPLEMENTATION
+DETERMINABLE SCHEMA EVOLUTION != SPECULATIVE PRE-MATERIALIZATION
+TEMPORARY HANDOFF != DURABLE main DOCUMENTATION
+MERGED BRANCH CANDIDATE STATE != CURRENT protected-main STATUS
 ```
 
-## 11. Current authorities
+## 11. Immediate sequence
 
 ```text
-docs/PROJECT-STATUS.md
-docs/ROADMAP.md
-docs/workstreams/access-auth.md
-docs/database/README.md
-docs/database/access-auth.md
-docs/database/dictionary/
-docs/architecture/access-auth-*.md
-docs/architecture/email-platform.md
-docs/development/email-platform-acceptance-2026-09-03.md
-docs/development/documentation-lifecycle-policy.md
+1. Recovery is CLOSED / integrated; do not resume feature/postgres-recovery
+2. continue feature/access-auth, feature/home-react and feature/platform-observability independently
+3. before each integration, reconcile the active branch against the then-current protected-main baseline
+4. evolve the database only through same-change forward migrations when a real vertical requires it
+5. keep remote backup/cloud recovery deferred until production deployment creates a real need
+6. apply documentation lifecycle cleanup before integration AND post-merge current-state reconciliation afterward
+7. use live Git refs and branch-local authority rather than stale global assumptions
 ```
 
-Historical handoffs/reviews are evidence only and never override these current sources.
+This roadmap intentionally does not pre-create future branches, migrations, APIs or infrastructure before their concrete scope is authorized.

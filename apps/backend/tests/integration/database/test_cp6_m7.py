@@ -16,7 +16,6 @@ from dante.platform.database.locking import (
     advisory_lock_key,
     occurrence_generation_lock_keys,
 )
-from dante.platform.database.metadata import Base
 
 pytestmark = pytest.mark.postgres
 
@@ -110,30 +109,13 @@ def _upgrade_m7(database: Any, alembic_config: Config) -> Any:
     return database
 
 
-def _mapped_table_names() -> set[str]:
-    post_cp6_tables = {
-        "account",
-        "email_identity",
-        "password_credential",
-        "auth_session",
-        "password_signup_challenge",
-        "password_recovery_challenge",
-        "account_profile_bootstrap",
-        "apple_auth_grant",
-        "external_auth_transaction",
-        "external_identity",
-        "external_link_challenge",
-        "external_signup_challenge",
-        "passkey_credential",
-        "webauthn_account",
-        "webauthn_challenge",
-        "email_delivery_intent",
-        "email_delivery_attempt",
-        "email_provider_event",
-        "email_recipient_suppression",
-    }
+def _database_table_names(connection: psycopg.Connection[Any]) -> set[str]:
     return {
-        table.name for table in Base.metadata.tables.values() if table.name not in post_cp6_tables
+        str(row[0])
+        for row in connection.execute(
+            "SELECT tablename FROM pg_tables "
+            "WHERE schemaname='dante' AND tablename<>'alembic_version'"
+        )
     }
 
 
@@ -270,14 +252,14 @@ def test_m7_activates_exact_table_and_view_acl_matrix(
     alembic_config: Config,
 ) -> None:
     database = _upgrade_m7(provisioned_database, alembic_config)
-    tables = _mapped_table_names()
-    assert len(tables) == 68
-    assert len(_NO_INSERT) == 14
-    assert len(_HISTORY_COLUMNS) == 5
-    table_insert = tables - _NO_INSERT - set(_HISTORY_COLUMNS)
-    assert len(table_insert) == 49
-
     with _admin_connection(database) as connection:
+        tables = _database_table_names(connection)
+        assert len(tables) == 68
+        assert len(_NO_INSERT) == 14
+        assert len(_HISTORY_COLUMNS) == 5
+        table_insert = tables - _NO_INSERT - set(_HISTORY_COLUMNS)
+        assert len(table_insert) == 49
+
         actual_table_grants = {
             (str(row[0]), str(row[1]))
             for row in connection.execute(
@@ -473,8 +455,9 @@ def test_m7_downgrade_restores_m6_deny_by_default_and_role13_owner_lock(
 ) -> None:
     command.upgrade(alembic_config, _M7_REVISION)
     command.downgrade(alembic_config, _M6_REVISION)
-    tables = _mapped_table_names()
     with _admin_connection(provisioned_database) as connection:
+        tables = _database_table_names(connection)
+        assert len(tables) == 68
         granted = {
             str(row[0])
             for row in connection.execute(
