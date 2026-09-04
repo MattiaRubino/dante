@@ -29,13 +29,11 @@ class EmailDeliveryIntentRow(Base):
             name="uuidv7",
         ),
         CheckConstraint(
-            "purpose_code = btrim(purpose_code) "
-            "AND purpose_code ~ '^[a-z][a-z0-9_]{0,63}$'",
+            "purpose_code = btrim(purpose_code) AND purpose_code ~ '^[a-z][a-z0-9_]{0,63}$'",
             name="purpose_code",
         ),
         CheckConstraint(
-            "stream_code = btrim(stream_code) "
-            "AND stream_code ~ '^[a-z][a-z0-9_]{0,63}$'",
+            "stream_code = btrim(stream_code) AND stream_code ~ '^[a-z][a-z0-9_]{0,63}$'",
             name="stream_code",
         ),
         CheckConstraint(
