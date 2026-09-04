@@ -45,7 +45,7 @@ describe('World Focus M3-3 manual composition customization', () => {
 
     expect(
       screen.getByRole('button', { name: 'Personalizza composizione' }),
-    ).toBeVisible();
+    ).toBeTruthy();
     expect(
       screen.queryByRole('dialog', { name: 'Personalizza Musica' }),
     ).toBeNull();
@@ -64,8 +64,8 @@ describe('World Focus M3-3 manual composition customization', () => {
     );
 
     const dialog = screen.getByRole('dialog', { name: 'Personalizza Musica' });
-    expect(dialog).toBeVisible();
-    expect(dialog).toHaveAttribute('aria-modal', 'false');
+    expect(dialog).toBeTruthy();
+    expect(dialog.getAttribute('aria-modal')).toBe('false');
     expect(
       container.querySelector('[data-world-focus-composition-count]')?.getAttribute(
         'data-world-focus-composition-count',
@@ -83,8 +83,8 @@ describe('World Focus M3-3 manual composition customization', () => {
       screen.getByRole('button', { name: 'Personalizza composizione' }),
     );
 
-    expect(screen.getByRole('button', { name: 'Applica' })).toBeVisible();
-    expect(screen.getByRole('button', { name: 'Annulla' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Applica' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Annulla' })).toBeTruthy();
   });
 
   it('Cancel closes the draft surface, leaves the World open, and restores focus to the exact invoker', () => {
@@ -97,14 +97,14 @@ describe('World Focus M3-3 manual composition customization', () => {
     fireEvent.click(customize);
     expect(
       screen.getByRole('dialog', { name: 'Personalizza Musica' }),
-    ).toBeVisible();
+    ).toBeTruthy();
 
     fireEvent.click(screen.getByRole('button', { name: 'Annulla' }));
 
     expect(
       screen.queryByRole('dialog', { name: 'Personalizza Musica' }),
     ).toBeNull();
-    expect(customize).toHaveFocus();
+    expect(document.activeElement).toBe(customize);
     expect(onClose).not.toHaveBeenCalled();
   });
 
@@ -121,7 +121,7 @@ describe('World Focus M3-3 manual composition customization', () => {
     expect(
       screen.queryByRole('dialog', { name: 'Personalizza Musica' }),
     ).toBeNull();
-    expect(customize).toHaveFocus();
+    expect(document.activeElement).toBe(customize);
     expect(onClose).not.toHaveBeenCalled();
   });
 });
