@@ -12,12 +12,12 @@
 1. executable/materialized repository truth
 2. accepted Product / Domain / Logical / Physical / constitutions / ADRs
 3. current subsystem references
-4. PROJECT-STATUS / ROADMAP / current workstream
+4. PROJECT-STATUS / ROADMAP / legitimate active workstream
 5. durable evidence / Git chronology
 6. conversation memory
 ```
 
-Protected `main` now owns the combined Access/Auth + shared Email Platform + Recovery truth at Alembic `20260904_17`. PR #52 integrated the accepted candidate at merge commit `5f76ec54ad78542f137e8730e904f805d9e59e56`; post-merge Backend and Frontend CI passed on that exact commit.
+Protected `main` owns the combined Access/Auth + shared Email Platform + Recovery truth at Alembic `20260904_17`. PR #52 integrated the accepted candidate at merge commit `5f76ec54ad78542f137e8730e904f805d9e59e56`; post-merge Backend and Frontend CI passed on that exact commit.
 
 ## Current lifecycle
 
@@ -31,7 +31,8 @@ Shared Email Platform                          CLOSED / INTEGRATED / OWNERSHIP V
 Apple real external UAT                        BOUNDED DEFERRED
 Protected-main Alembic                         20260904_17
 Protected-main DB                              88/5/16/76/172/89/270
-CP07 whole LOCAL recovery                      PASS
+database-local CP07                            PASS
+Email post-restore whole-flow gate             REMEDIATION REQUIRED
 post-merge Backend CI                          PASS
 post-merge Frontend CI                         PASS
 feature/platform-observability                 CLOSED / OPERATIONAL PASS / NEXT INTEGRATION
@@ -39,7 +40,7 @@ M6 Native Mobile                               FUTURE / OPTIONAL
 later M7 Access/security maturity              FUTURE
 ```
 
-CP07 `LOCAL PASS` does not claim a remote backup provider or production/cloud recovery. Those remain separate future deployment gates.
+The historical CP07 run directly proves its executed LOCAL PostgreSQL/database-local and MaterialState recovery scope. It did not directly prove Email `quarantine_after_restore()` ordering before Email workers resume, so application Email traffic reopen after PITR is not inferred from that run. Remote-provider and production/cloud recovery remain separate future gates.
 
 ## Mandatory continuation entry points
 
@@ -48,14 +49,16 @@ CP07 `LOCAL PASS` does not claim a remote backup provider or production/cloud re
 3. `ROADMAP.md`
 4. `development/agent-operating-manual.md`
 5. `development/documentation-lifecycle-policy.md`
-6. active workstream record
+6. legitimate active workstream record, when one exists
 7. subsystem authority relevant to the task
 8. exact current Git refs
 
 ## Access/Auth
 
-- `workstreams/access-auth.md`
-- `workstreams/access-auth-integration-acceptance-2026-09-04.md` — historical/executed integration evidence
+Access/Auth M1–M5 is integrated and has no active workstream authority file.
+
+Current subsystem authority:
+
 - `architecture/access-auth-architecture.md`
 - `architecture/access-auth-security-contract.md`
 - `architecture/access-auth-api-contract.md`
@@ -64,6 +67,12 @@ CP07 `LOCAL PASS` does not claim a remote backup provider or production/cloud re
 - `architecture/access-auth-m5-persistence-api-contract.md`
 - `database/access-auth.md`
 - `frontend/access.md`
+
+Historical/evidence routing:
+
+- `archive/branches/2026-09-feature-access-auth.md` — consolidated branch history, **NON-AUTHORITATIVE**
+- `workstreams/access-auth-m5-review-2026-09-02.md` — historical validation/UAT evidence
+- `workstreams/access-auth-integration-acceptance-2026-09-04.md` — historical integration/CI/CP07 evidence
 
 ## Shared Email Platform
 
