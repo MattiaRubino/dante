@@ -1,7 +1,7 @@
 # DANTE Roadmap
 
 - **Status:** CURRENT
-- **Last reconciled:** 2026-09-03
+- **Last reconciled:** 2026-09-04
 - **Protected `main`:** integrated source authority; read the live Git ref for the current SHA
 - **Branch-local AI implementation overlay:** `feature/ai-implementation`
 
@@ -82,7 +82,8 @@ feature/home-react              active frontend work
 feature/platform-observability  active platform work
 feature/ai-implementation       active AI implementation; I0-I2 CLOSED/PASS
                                 I3/C3 deferred pending owner data/seams
-                                C6+C7+C8 CLOSED; current executable checkpoint C9
+                                C6+C7+C8 CLOSED
+                                C9 OPEN / PRE-LIVE READY
 feature/ai-architecture         AI architecture design CLOSED / retained authority/evidence
 ```
 
@@ -103,7 +104,7 @@ real structural database change
 → affected recovery/operational assertions updated
 ```
 
-Applied migrations are immutable. AI architecture and I0-I2/C6/C7/C8 produced no DB/Alembic change.
+Applied migrations are immutable. AI architecture and I0-I2/C6/C7/C8/C9 pre-live produced no DB/Alembic change.
 
 ## 5. Capability-triggered implementation
 
@@ -213,6 +214,12 @@ Current C8 provider admission evidence:
 docs/workstreams/ai-provider-candidate-admission-2026-09.md
 ```
 
+Current C9 pre-live evidence:
+
+```text
+docs/workstreams/ai-c9-pre-live-checkpoint-2026-09.md
+```
+
 Final mega acceptance:
 
 ```text
@@ -277,10 +284,14 @@ C8 / P0-P1
     ADMITTED FOR QUALIFICATION ONLY
     ↓
 CURRENT
-C9
-    admitted inactive provider adapter/binding
-    provider conformance
-    live compatibility on synthetic/public/minimized data
+C9  OPEN / PRE-LIVE READY
+    inactive provider adapter/binding           MATERIALIZED
+    OpenAI SDK 3.7.0                            LOCKED
+    deterministic + material SDK conformance    PASS
+    P4 pre-live                                 PASS
+    final deterministic + PostgreSQL regression PASS
+    P4 real provider compatibility              NOT RUN
+    blocker: no user-owned qualification API credential provisioned
     ↓
 C10
     direct DANTE qualification
@@ -289,7 +300,7 @@ C11
     qualification/promotion decision
 ```
 
-C8 admits a qualification candidate only. No provider SDK/adapter, live call, production qualification or private-data eligibility was materialized by the admission decision.
+C8 admits a qualification candidate only. C9 now materializes the SDK/private inactive adapter and deterministic proof surface, but no real provider live call, production qualification or private-data eligibility is claimed.
 
 ### 7.2 Deferred deterministic/Search lane
 
@@ -335,13 +346,27 @@ The join gate requires the real Search/structured source path needed by the sele
 ### 7.4 Current exact next action
 
 ```text
-C9 — admitted inactive provider adapter/binding
+C9 P4 — REAL PROVIDER LIVE COMPATIBILITY
 
 admitted candidate:
 provider          OpenAI native API
 API               Responses API
 model             gpt-5.6-terra
+SDK               openai 3.7.0
 status            ADMITTED FOR QUALIFICATION ONLY
+binding           INACTIVE / PRODUCTION OFF
+
+already proven:
+P2/P3 contracts + inactive adapter       PASS
+SDK materialization + lock               PASS
+material SDK conformance                 PASS
+P4 pre-live                              PASS
+final deterministic + PostgreSQL gate    PASS
+
+remaining:
+P4 live compatibility                    NOT RUN
+credential                               user-owned qualification API key required
+traffic                                  synthetic/public/minimized only
 
 mandatory initial feature profile:
 public streaming          OFF
@@ -355,10 +380,12 @@ MCP/external tools        OFF
 provider memory           OFF
 store                     false
 SDK automatic retries     OFF / max_retries=0
-live compatibility data   synthetic/public/minimized only
+reasoning effort          medium
+reasoning context         current_turn
+service tier              default
+truncation                disabled
 production activation     OFF
 
-C9 MAY materialize SDK + private inactive adapter
 C9 MUST NOT claim direct DANTE qualification or production eligibility
 NO database/Alembic change
 ```
@@ -393,6 +420,7 @@ Current admission state:
 ```text
 OpenAI native Responses API + gpt-5.6-terra
 ADMITTED FOR QUALIFICATION ONLY
+C9 PRE-LIVE READY
 ```
 
 Correct progression:
@@ -400,16 +428,18 @@ Correct progression:
 ```text
 candidate shortlist                         COMPLETE
 → candidate admission                       C8 / COMPLETE
-→ inactive adapter                          C9 / CURRENT
-→ conformance
-→ live compatibility on synthetic/public/minimized data
+→ inactive adapter + SDK                    C9 / MATERIALIZED
+→ deterministic/material conformance        C9 / PASS
+→ P4 pre-live                               C9 / PASS
+→ final deterministic + PostgreSQL gate     C9 / PASS
+→ live compatibility on synthetic/public/minimized data C9 / NOT RUN
 → direct DANTE eval                         C10
 → security/privacy/capacity/economics evidence
 → qualification
 → promotion decision                        C11
 ```
 
-Candidate admission is not production eligibility. Build-ready is not activation-ready. Private-data Search/Ask requires real Auth/AuthZ, source/query semantics, applicable SC/PSV proofs, safe publication, evidence/privacy/audit and provider qualification when a model route is used.
+Candidate admission and pre-live PASS are not production eligibility. Build-ready is not activation-ready. Private-data Search/Ask requires real Auth/AuthZ, source/query semantics, applicable SC/PSV proofs, safe publication, evidence/privacy/audit and provider qualification when a model route is used.
 
 ## 10. Current implementation state / non-claims
 
@@ -428,9 +458,13 @@ C6 control contracts                   YES / CLOSED-PASS
 C7 route-config loader                 YES / CLOSED-PASS
 C8/P1 provider candidate admission     YES / CLOSED
 admitted qualification candidate       OpenAI Responses / gpt-5.6-terra
-provider SDK installed                 NO
-provider adapter                       NO / C9 NEXT
-live provider call                     NO
+provider SDK installed                 YES / openai 3.7.0 / locked
+provider adapter                       YES / INACTIVE / QUALIFICATION-ONLY
+C9 deterministic/material conformance  PASS
+C9 P4 pre-live                         PASS
+C9 final deterministic + PG regression PASS
+live provider call                     NO / NOT RUN
+C9 overall                             OPEN / PRE-LIVE READY
 production qualification              NO
 private-data eligibility               NO
 production Search/Ask active           NO
