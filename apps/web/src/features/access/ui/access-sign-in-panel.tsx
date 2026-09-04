@@ -264,7 +264,7 @@ export function AccessSignInPanel({
           disabled={interactionPending}
           aria-busy={pending}
         >
-          {t(($) => $.common.access.action.continue)}
+          {t(($) => $.common.access.action.signin)}
         </button>
 
         {passkeyEnabled ? (
