@@ -3,11 +3,9 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
-from typing import Any, cast
 from uuid import UUID, uuid7
 
 from sqlalchemy import exists, or_, select, update
-from sqlalchemy.engine import CursorResult
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dante.platform.database.mappings.email_delivery import (
@@ -23,6 +21,7 @@ from dante.platform.email.contracts import (
     ProviderSendResult,
 )
 from dante.platform.email.crypto import EmailPayloadCipher
+from dante.platform.email.recovery import quarantine_restored_email_delivery
 
 
 class DurableEmailOutbox:
@@ -337,29 +336,8 @@ class DurableEmailOutbox:
         now: datetime | None = None,
     ) -> int:
         """Quarantine restored non-terminal work before runtime reopen."""
-        effective_now = datetime.now(UTC) if now is None else now
-        result = await database_session.execute(
-            update(EmailDeliveryIntentRow)
-            .where(
-                EmailDeliveryIntentRow.dispatch_state_code.in_(
-                    ("pending", "claimed", "retryable_failure")
-                )
-            )
-            .values(
-                dispatch_state_code="recovery_quarantined",
-                claim_token=None,
-                claimed_until=None,
-                next_attempt_at=None,
-                last_error_code="post_restore_quarantine",
-                terminal_at=effective_now,
-                updated_at=effective_now,
-                sensitive_key_id=None,
-                sensitive_nonce=None,
-                sensitive_ciphertext=None,
-                sensitive_wiped_at=effective_now,
-            )
-        )
-        return int(cast(CursorResult[Any], result).rowcount or 0)
+        result = await quarantine_restored_email_delivery(database_session, now=now)
+        return result.quarantined_intent_count
 
     async def _quarantine_expired_claims(
         self,
