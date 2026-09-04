@@ -69,12 +69,14 @@ class DurableEmailOutbox:
             )
         )
         if existing is not None:
-            if self._cipher.matches_fingerprint(
-                existing.payload_fingerprint,
-                purpose_code=spec.purpose_code,
-                template_code=spec.template_code,
-                template_revision=existing.template_revision,
-                payload=spec.payload,
+            if _same_immutable_work(
+                existing=existing,
+                spec=spec,
+                stream_code=stream_code,
+                template_revision=template_revision,
+                locale_code=locale_code,
+                supersession_key=supersession_key,
+                cipher=self._cipher,
             ):
                 return existing.email_intent_ref
             raise EmailIntentConflictError(
@@ -439,6 +441,36 @@ class DurableEmailOutbox:
                 sensitive_wiped_at=now,
             )
         )
+
+
+def _same_immutable_work(
+    *,
+    existing: EmailDeliveryIntentRow,
+    spec: EmailIntentSpec,
+    stream_code: str,
+    template_revision: str,
+    locale_code: str,
+    supersession_key: str | None,
+    cipher: EmailPayloadCipher,
+) -> bool:
+    """Require replay equality across every immutable non-temporal intent dimension."""
+    return (
+        existing.purpose_code == spec.purpose_code
+        and existing.stream_code == stream_code
+        and existing.recipient_address == spec.recipient_address
+        and existing.recipient_comparison_key == spec.recipient_comparison_key
+        and existing.template_code == spec.template_code
+        and existing.template_revision == template_revision
+        and existing.locale_code == locale_code
+        and existing.supersession_key == supersession_key
+        and cipher.matches_fingerprint(
+            existing.payload_fingerprint,
+            purpose_code=spec.purpose_code,
+            template_code=spec.template_code,
+            template_revision=template_revision,
+            payload=spec.payload,
+        )
+    )
 
 
 def _wipe_sensitive(row: EmailDeliveryIntentRow, when: datetime) -> None:
