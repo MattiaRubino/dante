@@ -1,7 +1,7 @@
 # DANTE — World Focus Frontend Roadmap
 
-**Status:** CURRENT WORKING ROADMAP — M2 CLOSED / VALIDATED — M3 NEXT  
-**Date:** 2026-09-03  
+**Status:** CURRENT WORKING ROADMAP — M3 ACTIVE / M3-1 CLOSED / VALIDATED / M3-2 NEXT  
+**Date:** 2026-09-04  
 **Branch:** `feature/home-react`
 
 Scope stop: production-grade frontend freeze before real backend/API/database/provider/LLM/effect integration.
@@ -34,6 +34,7 @@ World Focus route/shell
 -> M2-2 O2 Situation / O5 Next / O8 Evidence-History renderers
 -> M2 final hostile falsification
 -> bounded display-copy closure
+-> M3-1 revisioned composition config + isolated customization draft
 ```
 
 ## 2. Evidence checkpoints
@@ -47,224 +48,202 @@ PRE-M0 fix          HEAD 7c9feab50c6e2a04a9a3b1e36c92958362dba704  CI 3366465561
 M0 closure docs     HEAD 6ea74f630cb35af65d58e7ae873882d6d975411e  CI 33668744509 PASS
 M1-1 code           HEAD e0f4003496bfbf828ed9ab7718af8e7e30342ad3  CI 33679425668 PASS
 M1-2 code           HEAD 5e98e4b97639cd018badc23e35e7a523f2940875  CI 33738873773 PASS
-M1 final red        HEAD 67bd06d63d84273ba2077761919d714c8d442254  CI 33740212989 EXPECTED FAIL
 M1 final code       HEAD 7369c51e7ba04f8913728a0770f700c728c3b9f9  CI 33740710290 PASS
-POST-M1 safety red  HEAD 0b674effa292881303288dd90c88db2c14e61872  CI 33747167897 FAIL
 POST-M1 safety fix  HEAD ecc2128b62395f82eab9ee7ff239355b4ca81ee4  CI 33754084001 PASS
 M2-1 validation     HEAD 2e639f108d5cb01e53395013a55346b7ac2e4294  CI 33781753823 PASS
-M2-2 red            HEAD 5374f77d7cf7b52ef87ce64315a606bc1d96cf0b  CI 33787162755 EXPECTED FAIL
-M2-2 baseline       HEAD b9856d497273d22face94fcd14f0deda853bbdb8  CI 33787905171 PASS
 M2-2 validation     HEAD 26d79b0dcdeaac1cb094bf97b71e901003ac5fa5  CI 33788370490 PASS
 M2 final red        HEAD 3adbd958ee3e3bf2fd55b7d2a2562dd6de5aa011  CI 33790674375 EXPECTED FAIL
 M2 final code       HEAD e3865e0cde095acae7e3022815538f35ee0706ef  CI 33790953644 PASS
+M3-1 red            HEAD b68b6e8fa0d70844f6d058c7b77ded676f1e675f  CI 33850177297 EXPECTED FAIL
+M3-1 validation     HEAD 49304c9231375a22ef74a81b4fffa920d5a1e849  CI 33850441232 PASS
 ```
 
-M2-1 validation includes 61/61 web test files, 312/312 web unit tests, 262 modules / 684 dependencies with zero architecture violations, Chromium pressure at 720/719/390, Mobile Bundle PASS and frozen Timeline Firefox PASS.
+M2 final evidence remains 70/70 web test files, 332/332 web unit tests and 279 modules / 770 dependencies with zero architecture violations.
 
-M2-2 final integration validation is green across Quality, production build, Chromium, frozen Timeline Firefox, Mobile Bundle and the Frontend CI Gate.
-
-M2 final hostile closure found one concrete gap red-first: the display binding had no finite copy-length bound. The unmodified hostile suite then passed 5/5 after adding fail-closed limits. Final evidence is 70/70 web test files, 332/332 web unit tests and 279 modules / 770 dependencies with zero architecture violations.
+M3-1 validation adds 72/72 web test files, 344/344 web unit tests and 283 modules / 777 dependencies with zero architecture violations. Quality, production build, Chromium, frozen Timeline Firefox, Mobile Bundle and Frontend CI Gate all pass.
 
 ## 3. Materialization sequence
 
 ```text
-M0 — Materialization Mapping / Scope Freeze          CLOSED
-M1 — Core Non-Visual Production Materialization     CLOSED / VALIDATED
-  M1-1 identity/reference ownership                  CLOSED / VALIDATED
-  M1-2 non-visual facets + WP/O2/O5/O8 seams         CLOSED / VALIDATED
-POST-M1 Safety Falsification                         CLOSED / PASS
-M2 — Shared Visual Primitive Layer                   CLOSED / VALIDATED
-  M2-1 shared presentation + L1 renderer grammar     CLOSED / VALIDATED
-  M2-2 truthfulness + direct-output visual layer     CLOSED / VALIDATED
-  M2 final hostile closure                           CLOSED / PASS
-M3 — Adaptive World Composition                      NEXT
-M4 — Contextual DANTE                                BLOCKED BY M3
-M5 — Contrasting Complete Worlds                     BLOCKED BY M4
-M6 — Integrated Product / Visual / A11y / Perf       BLOCKED BY M5
-M7 — Pre-Backend Frontend Freeze                     BLOCKED BY M6
-BACKEND                                               AFTER M7 ONLY
+M0 — Materialization Mapping / Scope Freeze             CLOSED
+M1 — Core Non-Visual Production Materialization        CLOSED / VALIDATED
+POST-M1 Safety Falsification                            CLOSED / PASS
+M2 — Shared Visual Primitive Layer                      CLOSED / VALIDATED
+M3 — Adaptive World Composition                         ACTIVE
+  M3-1 Composition Configuration Foundation             CLOSED / VALIDATED
+  M3-2 Adaptive Candidate Resolver                      NEXT
+  M3-3 Manual Customize UX                              BLOCKED BY M3-2
+  M3-4 Integrated Adaptive Composition                  BLOCKED BY M3-3
+  M3 final hostile closure                              BLOCKED BY M3-4
+M4 — Contextual DANTE                                   BLOCKED BY M3
+M5 — Contrasting Complete Worlds                        BLOCKED BY M4
+M6 — Integrated Product / Visual / A11y / Perf          BLOCKED BY M5
+M7 — Pre-Backend Frontend Freeze                        BLOCKED BY M6
+BACKEND                                                  AFTER M7 ONLY
 ```
 
-## 4. Closed non-visual result
+## 4. Closed substrate before M3
 
-M1 established the non-visual production substrate needed for reusable World rendering:
+M1 established open-ended World identity, bounded references, truthful basis/disclosure/effect/sync semantics, direct O2/O5/O8 seams and WP-01..04 application seams.
+
+M2 established bounded display-safe reference binding, shared presentation grammar, WP renderers, O2/O5/O8 rendering, orthogonal truthfulness qualifiers and responsive/forced-colors behavior. Renderer availability remains distinct from live mounting.
+
+M3 must consume these layers; it must not reinterpret them.
+
+## 5. Existing composition engine — preserve, do not replace
+
+Workspace Platform already provides:
 
 ```text
-open-ended production World identity
-explicit descriptor/routability separation
-neutral bounded context references
-canonical workspace/cursor context
-reference-resolution safe vocabulary
-freshness/as-of
-validity/supersession/retraction
-coverage/conflict/incomplete/unknown
-exact material-state retirement presentation
-evidence/provenance/integrity role separation
-sanitized disclosure outcome
-effect lifecycle presentation + execution revalidation
-sync/offline/replay/provider-lag/timeout axes
-O2 Situation typed seam
-O5 Next typed seam
-O8 Evidence/History typed seam
-WP-01 Continuity
-WP-02 Attention
-WP-03 Comparison
-WP-04 Trajectory
-World-scoped validated/cancellable read mechanics
-deterministic pre-backend adapters
-unknown-future World compatibility
-useful non-DANTE path
+stable / adaptive / ephemeral stability
+system-default / user / dante-proposed / application-derived origin
+lead / primary / supporting prominence
+wide / standard / compact footprint
+12-unit deterministic packing
+adaptive / ephemeral budgets
+stable relative-order preservation
+finite module registry
+local render-failure isolation
 ```
 
-M1 did not create a universal projection envelope, generic entity/property-bag root, frontend AuthZ, World canonical ownership or backend dependency.
+`WorldFocusCompositionHost` receives an already-resolved plan and owns placement only. Ranking, canonical truth and authorization stay outside it.
 
-## 5. M2 — closed materialized result
+M3 therefore fills missing L5 ownership rather than introducing another composition engine.
 
-M2 renders semantics already earned by M1 and remains presentation-only.
+## 6. M3-1 — closed materialized result
 
-Binding rules retained:
+M3-1 satisfies the configuration/revision foundation needed before adaptive ranking or Customize UI.
+
+Client snapshot:
 
 ```text
-primitive != card
-renderer != semantic owner
-Output Grammar family != mandatory module
-no one universal card shell
-no page-per-World renderer fork
-no data-shape inference as semantic authority
-no fake empty urgency
-no visual collapse of unknown into false/zero
-finite registered shipped renderers only
-specialist renderer only where semantically earned
-renderer availability != automatic live mounting
+schemaVersion
+revision
+worldId
+ordered entries[]
 ```
 
-M2-1 established:
+Entry metadata is deliberately narrow:
 
 ```text
-WorldFocusDisplayBinding exact reference -> display-safe copy
-shared semantic section/state presentation grammar
-WP-02 Attention renderer
-WP-03 Comparison renderer
-WP-04 Trajectory renderer
-WP-01 Continuity migrated as the real live vertical
-container-query + forced-colors presentation behavior
+instanceId
+kind
+visibility: visible | hidden
+pinned: boolean
+prominenceOverride: lead | null
 ```
 
-M2-2 established:
+It contains no canonical Domain payload, AuthZ/disclosure authority, provider truth, executable renderer or arbitrary property bag.
+
+Schema disposition:
 
 ```text
-shared textual qualifier grammar
-L2 freshness / validity / coverage / material retirement presentation
-L3 sanitized disclosure presentation
-L6 effect lifecycle + separate execution revalidation presentation
-L8 connectivity / replay / provider-delivery / timing presentation
-O2 Situation renderer
-O5 Next renderer
-O8 Evidence / History role-preserving renderer
-accessible nested presentation subsections
-Continuity partial/stale mapped to coverage/freshness qualifier axes
+current
+migration-required
+unsupported
 ```
 
-Final closure hardening established:
+No fake automatic migration and no persistence are introduced.
+
+Customization transaction:
 
 ```text
-WorldFocusDisplayBinding label max 512
-WorldFocusDisplayBinding supportingText max 2048
-blank/oversize copy fails closed
-no silent truncation
+CURRENT revision N
+       ↓
+DRAFT(baseRevision=N)
+       ↓
+pin / unpin / hide / show / move / promote / restore
+       ↓
+Apply | Cancel
 ```
 
-Permanent visual truthfulness:
+Apply creates revision `N+1` only when the base revision is still current. Stale Apply returns explicit `revision-conflict`; cross-World Apply fails closed; no implicit merge occurs.
+
+## 7. Manual + DANTE product rule
+
+M3-1 establishes the canonical customization command language for both manual UI and future DANTE proposals:
 
 ```text
-reasonCode != display explanation
-reference key != display copy
-stale != invalid
-retracted != stale
-incomplete != empty
-conflicted != winner
-restricted != unavailable
-available disclosure != frontend AuthZ
-offline != content absent
-provider lag != stale
-timeout != semantic negative
-partial-real != generic failure
-reversed != compensated
-execution revalidation != effect state
-Evidence != Provenance != integrity attestation
-Comparison != winner/ranking/recommendation/Decision
-Trajectory missing != zero
-responsive presentation != semantic rewrite
+manual UI [M3-3] ----\
+                       -> DRAFT -> REVIEW/APPLY -> CONFIG
+DANTE proposal [M4] --/
 ```
 
-O2/O5/O8 and WP-02..WP-04 remain renderer capabilities, not fabricated live composition claims.
+DANTE cannot obtain a private mutation path or skip Apply/revision conflict semantics.
 
-## 6. M0 disposition audit after M2 closure
+Permanent rule:
 
-Every mapped shared-renderer disposition assigned to M2 has a production owner and final hostile evidence:
+> Canonical app capabilities that DANTE may propose or accelerate must remain usable through a manual/non-AI path where they are meaningful application functions.
+
+This keeps DANTE an intelligence/acceleration layer over the product rather than the mandatory remote control for it.
+
+## 8. M0 L5 disposition state
 
 ```text
-M0-19 WP-02 shared rendering                  M2-1 DONE
-M0-21 WP-03 shared rendering                  M2-1 DONE
-M0-23 WP-04 shared rendering                  M2-1 DONE
-M0-28 shared Evidence / History affordance    M2-2 DONE
-M0-42 shared effect presentation              M2-2 DONE
-M0-49 WP shared renderer family               M2-1 DONE
-
-O2 Situation visual presentation              M2-2 DONE
-O5 Next visual presentation                   M2-2 DONE
-O8 Evidence / History visual presentation     M2-2 DONE
-L2/L3/L6/L8 truthfulness presentation         M2-2 DONE
+M0-35 stability/origin semantics                         DONE / existing
+M0-36 prominence/footprint/grid planner                  DONE / existing
+M0-37 production candidate resolver                      M3-2 NEXT
+M0-38 Draft/Apply/Cancel + pin/hide/reorder/promote     MODEL FOUNDATION M3-1; UI M3-3
+M0-39 client config revision/conflict/migration         DONE / M3-1
+M0-40 durable persistence/cross-device sync/conflict    BACKEND-DEFERRED
 ```
 
-The final closure audit confirmed there is no justified M2-3 generic visual family.
+M3-1 does not falsely close the visual/manual Customize interaction surface.
 
-## 7. Final M2 closure evidence
+## 9. M3-2 intent
 
-The final hostile suite pressured:
+M3-2 must materialize the production candidate resolver from meaningful already-authorized application projections.
+
+Conceptual path:
 
 ```text
-cross-axis visual non-collapse
-unknown future World compatibility
-binding missing/mismatch fail-closed behavior
-no raw reference/reasonCode/protected-detail leakage
-nominal-state quietness
-long realistic copy + pathological copy pressure
-semantic order and O8 role separation
-no fake live composition
-no M3 customization pulled forward
+meaningful available projections
++ current user composition config
++ bounded product ranking inputs
+        ↓
+M3-2 resolver
+        ↓
+WorldFocusCompositionCandidate[]
+        ↓
+existing resolveWorldFocusCompositionPlan()
+        ↓
+existing CompositionHost
 ```
 
-Red result:
+Allowed product signals may include, only where the owning projection provides them truthfully:
 
 ```text
-HEAD 3adbd958ee3e3bf2fd55b7d2a2562dd6de5aa011
-CI   33790674375 EXPECTED FAILURE
-hostile 4 / 5 PASS
-whole web suite 331 PASS / 1 FAIL
+stable/pinned user importance
+material consequence
+immediacy/time sensitivity
+resumability
+meaningful change
+explicit current user intent/selection
+validated basis/evidence dimensions without collapsing them
 ```
 
-Only pathological copy bounds failed. All semantic cross-axis/future-World/non-leakage/quietness cases passed.
-
-Fix/result:
+Hard rejects:
 
 ```text
-HEAD e3865e0cde095acae7e3022815538f35ee0706ef
-CI   33790953644 PASS
-hostile 5 / 5 PASS
-web test files 70 / 70 PASS
-web unit tests 332 / 332 PASS
-architecture 279 modules / 770 dependencies / 0 violations
-Quality / Mobile / Chromium / frozen Timeline Firefox / Frontend CI Gate PASS
+AI relevance score alone decides page composition
+universal confidence score
+renderer exists -> renderer must mount
+missing Output Grammar -> fabricate content
+adaptive logic silently removes/reorders stable pinned user intent
+candidate resolver becomes AuthZ
 ```
 
-M2 is therefore CLOSED / VALIDATED.
+Sparse Worlds remain sparse.
 
-## 8. M3–M7 intent
+## 10. M3-3 / M3-4 intent
 
-M3: dynamic composition candidate resolution + Customize Draft / Apply / Cancel + pin/hide/reorder/conflict UX; no fake persistence.
+M3-3 will materialize the actual manual Customize UX over the M3-1 command language, including accessible keyboard/touch controls for pin/hide/reorder/promote and explicit Apply/Cancel/conflict treatment. Drag/drop is an interaction option, not the canonical state model.
 
-M4: preserve D0/D1 and resume D2–D6 contextual DANTE.
+M3-4 will integrate resolver + user config + planner + registered renderers into the live World while retaining deterministic fallback and no fake persistence.
+
+## 11. M4–M7 intent
+
+M4: preserve D0/D1 and resume D2–D6 contextual DANTE. DANTE proposals reuse governed application paths; they do not bypass manual/canonical state transitions.
 
 M5: contrasting complete Worlds over the same engine, including unknown-future World and specialist rendering only where earned.
 
@@ -272,7 +251,9 @@ M6: integrated visual/a11y/performance review; automated green != human visual a
 
 M7: pre-backend frontend freeze/handoff.
 
-## 9. Permanent barriers
+After M7, real vertical integration may connect UI → application → Access/Auth/AuthZ → API → Domain → PostgreSQL according to backend authority, rather than turning frontend config into DB truth.
+
+## 12. Permanent barriers
 
 ```text
 World != Domain owner
@@ -283,21 +264,20 @@ Proposal != Decision != effect
 provider ACK != canonical completion
 absence/unknown != false
 Evidence != Provenance
-Provenance != integrity attestation
 Authority != Visibility
 timeout != semantic negative
 retired reference != automatic replacement
 Comparison != Decision
 missing trajectory position != zero
 no universal Entity/Thing/Fact/Relationship/property bag
+client composition config != canonical Domain state
+client revision != backend persistence revision
 ```
 
-## 10. Sequencing supersession
+## 13. Sequencing supersession
 
-Old product/platform contract language naming the DANTE spatial review as the current next gate is historical. See `world-focus-contract-sequencing-supersession.md`. Semantic invariants remain intact; D2–D6 remain M4.
+Historical product/platform `NEXT` prose is superseded for sequencing by the current checkpoint. Semantic invariants remain authoritative. D2–D6 remain M4; backend remains blocked until M7.
 
-M2 closure does not authorize M4 or backend work.
+## 14. Immediate continuation
 
-## 11. Immediate continuation
-
-> **M3 Adaptive World Composition is NEXT but unstarted. Begin only from a fresh bounded M3 gate; do not start M4 DANTE or backend integration.**
+> **M3-2 Adaptive Candidate Resolver is NEXT but unstarted. Begin only from a fresh bounded gate; do not start M3-3, M4 DANTE or backend integration automatically.**
