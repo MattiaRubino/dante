@@ -213,6 +213,8 @@ describe('World Focus D5 standalone Insight ownership', () => {
     renderHarness(readyConversationReader(), insightReader);
 
     const invoker = await openContextualConversation();
+    const logicalInvokerId = invoker.dataset.worldFocusDanteInsightInvoker;
+    expect(logicalInvokerId).toBeTruthy();
     invoker.focus();
     fireEvent.click(invoker);
 
@@ -235,7 +237,13 @@ describe('World Focus D5 standalone Insight ownership', () => {
       expect(
         screen.queryByRole('dialog', { name: 'Insight contestuale' }),
       ).toBeNull();
-      expect(invoker).toBe(document.activeElement);
+      const currentInvoker = screen.getByRole('button', {
+        name: 'Apri come Insight',
+      });
+      expect(currentInvoker.dataset.worldFocusDanteInsightInvoker).toBe(
+        logicalInvokerId,
+      );
+      expect(currentInvoker).toBe(document.activeElement);
     });
   });
 
