@@ -210,12 +210,12 @@ Principal, Actor, application runtime or SQLAlchemy model.
 Exact posture:
 
 ```text
-LOGIN / INHERIT
+LOGIN / NOINHERIT
 NOSUPERUSER / NOCREATEDB / NOCREATEROLE / NOREPLICATION / NOBYPASSRLS
 CONNECT dante
 NO TEMP / CREATE
 search_path = pg_catalog
-pg_read_all_stats membership only
+pg_read_all_stats membership only (INHERIT TRUE / SET FALSE / ADMIN FALSE)
 NO dante/public schema usage
 NO DANTE object privileges
 NO DANTE role membership
