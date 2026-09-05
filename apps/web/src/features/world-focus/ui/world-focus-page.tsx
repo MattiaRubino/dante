@@ -109,6 +109,27 @@ function WorldFocusDanteConversationOwner({
   );
 }
 
+type WorldFocusDanteGovernedOperationOwnerProps = Readonly<{
+  worldId: WorldFocusIdentityDescriptor['id'];
+  children: ReactNode;
+}>;
+
+/**
+ * D6 intentionally lives inside the D5 Insight owner. This nesting is part of
+ * the sequencing contract: Proposal materialization reads the current validated
+ * D5 artifact from that owner rather than accepting an Insight payload from UI.
+ */
+function WorldFocusDanteGovernedOperationOwner({
+  worldId,
+  children,
+}: WorldFocusDanteGovernedOperationOwnerProps) {
+  return (
+    <WorldFocusDanteProposalProvider worldId={worldId}>
+      {children}
+    </WorldFocusDanteProposalProvider>
+  );
+}
+
 function WorldFocusWorkspaceExperience({
   identity,
   status,
@@ -148,7 +169,7 @@ function WorldFocusWorkspaceExperience({
       >
         <WorldFocusDanteConversationOwner worldId={identity.id}>
           <WorldFocusDanteInsightProvider worldId={identity.id}>
-            <WorldFocusDanteProposalProvider worldId={identity.id}>
+            <WorldFocusDanteGovernedOperationOwner worldId={identity.id}>
               <WorldFocusWorkspace
                 worldLabel={identity.label}
                 status={status}
@@ -169,7 +190,7 @@ function WorldFocusWorkspaceExperience({
               >
                 <WorldFocusAdaptiveComposition worldId={identity.id} />
               </WorldFocusWorkspace>
-            </WorldFocusDanteProposalProvider>
+            </WorldFocusDanteGovernedOperationOwner>
           </WorldFocusDanteInsightProvider>
         </WorldFocusDanteConversationOwner>
       </WorldFocusDanteEntryProvider>
