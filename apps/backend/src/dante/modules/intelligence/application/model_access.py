@@ -110,9 +110,7 @@ def _usage_metrics(usage: ProviderUsageEvidence) -> tuple[RuntimeEvidenceMetric,
         ("total_tokens", usage.total_tokens),
     )
     return tuple(
-        RuntimeEvidenceMetric(name=name, value=value)
-        for name, value in values
-        if value is not None
+        RuntimeEvidenceMetric(name=name, value=value) for name, value in values if value is not None
     )
 
 
@@ -366,8 +364,9 @@ class ModelAccessRuntime:
                 error_code="model_target_not_active",
             )
 
-        assert route.champion_binding_ref is not None
-        assert route.harness_profile_ref is not None
+        if route.champion_binding_ref is None or route.harness_profile_ref is None:
+            raise RuntimeError("validated active route is missing champion binding or harness")
+
         binding = self._binding(route.champion_binding_ref)
         harness = self._harness(route.harness_profile_ref)
 
@@ -558,7 +557,9 @@ class ModelAccessRuntime:
             harness_profile_ref=harness.ref,
             provider_model=binding.model,
             attempts=(attempt,),
-            output_text=attempt.output_text if outcome is ModelInvocationOutcome.COMPLETED else None,
+            output_text=attempt.output_text
+            if outcome is ModelInvocationOutcome.COMPLETED
+            else None,
             structured_output_json=(
                 attempt.structured_output_json
                 if outcome is ModelInvocationOutcome.COMPLETED
