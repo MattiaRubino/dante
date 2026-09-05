@@ -25,7 +25,9 @@ class GeminiCandidateConfig:
     def from_environment(cls) -> "GeminiCandidateConfig":
         api_key = os.environ.get(_DANTE_KEY_ENV)
         if api_key is None or not api_key.strip():
-            raise ValueError("missing Gemini candidate configuration; set DANTE_EVAL_GEMINI_API_KEY")
+            raise ValueError(
+                "missing Gemini candidate configuration; set DANTE_EVAL_GEMINI_API_KEY"
+            )
 
         model = os.environ.get(_DANTE_MODEL_ENV, _DEFAULT_MODEL).strip()
         if not model:
