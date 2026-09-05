@@ -1,6 +1,6 @@
 # DANTE — Home / Frontend Current Checkpoint
 
-**Status:** CURRENT LIVE ENTRY POINT — WORLD FOCUS M4 CLOSED / VALIDATED — MAIN RECONCILIATION NEXT  
+**Status:** CURRENT LIVE ENTRY POINT — WORLD FOCUS M4 CLOSED / VALIDATED — M5 CONTRASTING WORLDS ACTIVE  
 **Date:** 2026-09-05  
 **Working branch:** `feature/home-react`  
 **Worktree:** `/home/mattia/projects/dante-frontend`
@@ -50,12 +50,12 @@ D4 contextual/deictic invocation           CLOSED / VALIDATED
 D5 Insight presentation integration        CLOSED / VALIDATED
 D6 Proposal/confirmation/receipt           CLOSED / VALIDATED
 M4 final hostile closure                   CLOSED / PASS
-MAIN RECONCILIATION / INTEGRATION          NEXT BEFORE M5
-M5 complete contrasting Worlds             NOT STARTED
+M5 complete contrasting Worlds             ACTIVE — MUSIC VS TRAVEL FALSIFICATION
 M6 integrated visual/a11y/performance      BLOCKED BY M5
-M7 pre-backend frontend freeze              BLOCKED BY M6
+M7 pre-backend frontend freeze             BLOCKED BY M6
 BACKEND                                    BLOCKED UNTIL M7
-human/manual visual review                  NOT PERFORMED
+MAIN RECONCILIATION / INTEGRATION          DEFERRED UNTIL AFTER M5
+human/manual visual review                 NOT PERFORMED
 ```
 
 ## 3. Current evidence anchors
@@ -93,6 +93,9 @@ M4 final hostile lifecycle
 HEAD 1b8ae1a3d953d85dcc14d513e512428d1f268c8d
 CI   33990483780 / run #1087 PASS
 Quality / Mobile / Chromium / frozen Timeline Firefox / Frontend CI Gate PASS
+
+M4 documentation closure
+HEAD 969e0f0058c5ca573282cbfc5aebc6c3715d1141
 ```
 
 Detailed closure authority:
@@ -140,7 +143,51 @@ D4 -> D3 arbitrary same-generation context-reference substitution
 
 All three were closed by deriving semantic source from the existing owner rather than trusting the caller.
 
-## 5. Permanent non-collapses
+## 5. M5 active contrast
+
+M5 now proves that materially different Worlds can share the same finite engine and owners.
+
+Chosen contrast:
+
+```text
+MUSIC
+Situation          READY
+Continuity         READY
+Attention          READY
+Next               READY
+Comparison         READY
+Trajectory         READY
+Evidence/History   READY
+
+TRAVEL target
+Situation          READY
+Continuity         READY
+Attention          EMPTY
+Next               READY
+Comparison         EMPTY
+Trajectory         EMPTY
+Evidence/History   READY
+```
+
+Travel already has an owned Continuity fixture. The current pre-backend direct-projection/display fixtures remain incomplete for Travel and are the first falsification target.
+
+M5 law:
+
+```text
+same WorldFocusPage
+same Workspace owner
+same adaptive-composition engine
+same finite renderer registry
+same DANTE D2-D6 chain
+
+missing output != zero
+missing output != failure
+World-specific fixture data != World-specific semantic engine
+```
+
+No Travel-specific page, Workspace, composition owner, renderer engine or DANTE owner is authorized.
+
+## 6. Permanent non-collapses
 
 ```text
 World != Domain owner
@@ -164,46 +211,47 @@ confirmed != executed
 Receipt != canonical/provider/runtime completion
 ```
 
-## 6. Immediate next gate — integration before M5
+## 7. Immediate next gate — M5-A falsification
 
-M5 is **NOT STARTED** and must not start on the long-lived divergent `feature/home-react` branch.
-
-Next sequence:
+Proceed on the current `feature/home-react` branch under exact write gates.
 
 ```text
-freeze exact M4 documentation closure SHA
--> fetch current protected main
--> inspect divergence and current authorities
--> reconcile main INTO feature/home-react
--> resolve conflicts by semantic/ownership authority
--> full repository QA
--> documentation lifecycle cleanup
--> PR to protected main
--> merge commit only
--> protected-main readback
--> archive/delete feature/home-react only after verified integration
--> fresh bounded M5 branch from integrated main
+M5-A RED
+-> read real Music and Travel adaptive-composition snapshots
+-> require truthful asymmetric Travel materialization
+-> mount real Travel WorldFocusPage
+-> prove same page/registry/composition path
+-> traverse Travel Continuity -> D4 -> D3 -> D5 -> D6
+-> inspect exact RED evidence
+-> fix only the existing owner seam justified by the failure
 ```
 
-No main write, merge, rebase, squash or force-push is authorized by this checkpoint alone. A separate exact integration gate is required.
+Main reconciliation is explicitly deferred until after M5 by user decision. No main write, merge, rebase, squash or force-push is authorized by this checkpoint alone.
 
-## 7. Visual sequence and truth
+## 8. Visual sequence and truth
 
 ```text
-M4 complete -> structural visual check only
-M5 complete -> serious product/visual review
-M6 -> visual/responsive/motion/a11y/performance refinement
+M5 -> structural/functionality validation only
+      no serious visual polish
+      no human/manual visual acceptance claim
+
+M6 -> serious product/visual refinement
+      responsive detail
+      motion
+      a11y/performance refinement
+      final manual visual validation recorded separately
+
 M7 -> pre-backend frontend freeze
 ```
 
-Automated structural/browser/a11y validation is green.
-
 Human/manual visual acceptance remains **NOT PERFORMED**.
 
-## 8. Operational stop lines
+## 9. Operational stop lines
 
 ```text
-NO M5 implementation before main reconciliation
+NO serious visual polish in M5
+NO fake Travel clone of Music
+NO Travel-specific semantic engine/page/Workspace/DANTE owner
 NO second DANTE surface/conversation/operation state engine
 NO AppShell/GlobalTopbar ownership rewrite by convenience
 NO WF0/WF-G3 macro geometry rewrite
@@ -213,5 +261,6 @@ NO arbitrary DOM/component payload serialization as DANTE context
 NO Timeline/Access/Auth collateral work
 NO real effect execution
 NO claim of human visual acceptance from automated green
-NO main/rebase/force-push without a separately approved gate
+NO main reconciliation/write during M5 without a separately approved gate
+NO rebase/squash/force-push
 ```
