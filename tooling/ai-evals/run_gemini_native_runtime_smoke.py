@@ -86,6 +86,7 @@ async def _run(execute: bool) -> int:
     resources = create_development_model_access_runtime(
         api_key=api_key,
         revisions_root=_REVISIONS_ROOT,
+        route_revision=GEMINI_INTERACTIONS_ROUTE_REVISION,
     )
     runtime = resources.runtime
     request = ModelInvocationRequest(
