@@ -11,7 +11,6 @@ from typing import Protocol, cast
 import httpx2
 
 from dante.modules.intelligence.adapters.outbound.model.gemini_interactions import (
-    GEMINI_INTERACTIONS_ENDPOINT,
     GeminiInteractionStatus,
     GeminiInteractionsWireRequest,
     GeminiInteractionsWireResponse,
@@ -46,6 +45,14 @@ def _text(value: object, *, field: str) -> str:
     return value
 
 
+def _optional_text(value: object, *, field: str) -> str | None:
+    if value is None:
+        return None
+    if not isinstance(value, str) or not value.strip():
+        raise GeminiTransportError(GeminiTransportErrorKind.INVALID_RESPONSE, code=field)
+    return value
+
+
 def _optional_nonnegative_int(value: object) -> int | None:
     if value is None:
         return None
@@ -75,18 +82,30 @@ def _error_kind(status_code: int) -> GeminiTransportErrorKind:
     return GeminiTransportErrorKind.UNKNOWN
 
 
+def _error_code_from_object(value: object) -> str | None:
+    if not isinstance(value, dict):
+        return None
+    for key in ("status", "code", "reason"):
+        candidate = value.get(key)
+        if isinstance(candidate, str) and candidate.strip():
+            return candidate
+        if isinstance(candidate, int) and not isinstance(candidate, bool):
+            return str(candidate)
+    return None
+
+
 def _provider_error_code(payload: object) -> str | None:
     if not isinstance(payload, dict):
         return None
-    error = payload.get("error")
-    if not isinstance(error, dict):
-        return None
-    for key in ("status", "code"):
-        value = error.get(key)
-        if isinstance(value, str) and value.strip():
-            return value
-        if isinstance(value, int) and not isinstance(value, bool):
-            return str(value)
+    direct = _error_code_from_object(payload.get("error"))
+    if direct is not None:
+        return direct
+    errors = payload.get("errors")
+    if isinstance(errors, list):
+        for error in errors:
+            code = _error_code_from_object(error)
+            if code is not None:
+                return code
     return None
 
 
@@ -116,9 +135,10 @@ def _request_payload(request: GeminiInteractionsWireRequest) -> dict[str, object
     payload: dict[str, object] = {
         "model": request.model,
         "input": request.input_text,
-        "stream": False,
-        "store": False,
-        "background": False,
+        "stream": request.stream,
+        "store": request.store,
+        "background": request.background,
+        "service_tier": request.service_tier,
         "generation_config": {
             "max_output_tokens": request.max_output_tokens,
             "thinking_level": request.thinking_level,
@@ -158,10 +178,13 @@ class GeminiInteractionsHttpTransport:
         headers = {
             "x-goog-api-key": self._api_key,
             "content-type": "application/json",
+            # Retained as an explicit schema marker. Google's post-June-2026 service may ignore
+            # this header because the May-20 schema is now the only supported Interactions shape.
+            "Api-Revision": request.api_revision,
         }
         try:
             response = await self._client.post(
-                GEMINI_INTERACTIONS_ENDPOINT,
+                request.endpoint,
                 headers=headers,
                 json=_request_payload(request),
                 timeout=request.timeout_seconds,
@@ -220,6 +243,10 @@ class GeminiInteractionsHttpTransport:
             cached_tokens=_optional_nonnegative_int(usage.get("total_cached_tokens")),
             tool_use_tokens=_optional_nonnegative_int(usage.get("total_tool_use_tokens")),
             total_tokens=_optional_nonnegative_int(usage.get("total_tokens")),
+            model=_optional_text(document.get("model"), field="invalid_model"),
+            service_tier=_optional_text(
+                document.get("service_tier"), field="invalid_service_tier"
+            ),
             error_code=_provider_error_code(document),
         )
 
