@@ -193,7 +193,7 @@ tooling/ai-evals/run_ai_foundation_closure_gate.sh
 Full local closure invocation:
 
 ```bash
-tooling/ai-evals/run_ai_foundation_closure_gate.sh --with-postgres --execute-live
+bash tooling/ai-evals/run_ai_foundation_closure_gate.sh --with-postgres --execute-live
 ```
 
 The script regenerates/checks `uv.lock`, syncs the locked environment, runs Ruff, mypy, non-PostgreSQL tests, build, native dry-run, optional canonical PostgreSQL acceptance and exactly one native live smoke when requested.
