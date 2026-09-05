@@ -15,6 +15,7 @@ from dante_eval_core import (
     MAX_HARD_CALLS,
     AssertionFailure,
     BudgetGuard,
+    CandidateResult,
     EvalFixture,
     Pricing,
     TrialVerdict,
@@ -23,7 +24,7 @@ from dante_eval_core import (
 )
 
 _TOOL_ROOT: Final = Path(__file__).resolve().parent
-_DEFAULT_SUITE: Final = _TOOL_ROOT / "fixtures" / "mini-baseline-v2.json"
+_DEFAULT_SUITE: Final = _TOOL_ROOT / "fixtures" / "mini-baseline-v3.json"
 _DEFAULT_TIMEOUT_SECONDS: Final = 60.0
 
 
@@ -40,6 +41,7 @@ def _parser() -> argparse.ArgumentParser:
         choices=[
             "azure-openai-responses",
             "google-gemini-openai-compat",
+            "google-gemini-native-modelaccess",
         ],
         default="azure-openai-responses",
     )
@@ -115,6 +117,18 @@ def _failure_document(failure: AssertionFailure) -> dict[str, Any]:
     }
 
 
+def _usage_document(result: CandidateResult) -> dict[str, int | None]:
+    return {
+        "input_tokens": result.input_tokens,
+        "output_tokens": result.output_tokens,
+        "reasoning_tokens": result.reasoning_tokens,
+        "cached_input_tokens": result.cached_input_tokens,
+        "tool_use_tokens": result.tool_use_tokens,
+        "billable_output_tokens": result.billable_output_tokens,
+        "total_tokens": result.total_tokens,
+    }
+
+
 def _emit(document: dict[str, Any]) -> None:
     sys.stdout.write(json.dumps(document, ensure_ascii=False, sort_keys=True) + "\n")
 
@@ -139,6 +153,11 @@ def _candidate_from_environment(candidate_id: str) -> Any:
         from gemini_openai_compat_candidate import GeminiOpenAICompatCandidate
 
         return GeminiOpenAICompatCandidate(GeminiCandidateConfig.from_environment())
+
+    if candidate_id == "google-gemini-native-modelaccess":
+        from gemini_native_modelaccess_candidate import GeminiNativeModelAccessCandidate
+
+        return GeminiNativeModelAccessCandidate()
 
     raise ValueError(f"unsupported candidate: {candidate_id}")
 
@@ -242,27 +261,39 @@ async def _execute(args: argparse.Namespace) -> int:
                     "verdict": TrialVerdict.INCONCLUSIVE.value,
                     "latency_ms": result.latency_ms,
                     "provider_status": result.provider_status,
-                    "input_tokens": result.input_tokens,
-                    "output_tokens": result.output_tokens,
-                    "total_tokens": result.total_tokens,
                     "provider_request_id": result.provider_request_id,
                     "provider_response_id": result.provider_response_id,
+                    "finish_reason": result.finish_reason,
+                    **_usage_document(result),
                 }
                 trials.append(trial)
                 _emit({"trial": trial})
                 continue
 
             if result.error_class is not None:
+                invalid_harness = result.error_class in {
+                    "invalid_request",
+                    "route_mismatch",
+                    "capability_unavailable",
+                }
                 trial = {
                     "fixture_id": fixture.fixture_id,
                     "family": fixture.family,
                     "locale": fixture.locale,
-                    "execution_state": "PROVIDER_ERROR",
-                    "verdict": TrialVerdict.PROVIDER_INFRA_FAILURE.value,
+                    "execution_state": "MODEL_OR_PROVIDER_ERROR",
+                    "verdict": (
+                        TrialVerdict.INVALID_HARNESS.value
+                        if invalid_harness
+                        else TrialVerdict.PROVIDER_INFRA_FAILURE.value
+                    ),
                     "latency_ms": result.latency_ms,
                     "error_class": result.error_class,
                     "error_code": result.error_code,
+                    "provider_status": result.provider_status,
                     "provider_request_id": result.provider_request_id,
+                    "provider_response_id": result.provider_response_id,
+                    "finish_reason": result.finish_reason,
+                    **_usage_document(result),
                 }
                 trials.append(trial)
                 _emit({"trial": trial})
@@ -276,12 +307,11 @@ async def _execute(args: argparse.Namespace) -> int:
                 "execution_state": "COMPLETED",
                 "verdict": grade.verdict.value,
                 "latency_ms": result.latency_ms,
-                "input_tokens": result.input_tokens,
-                "output_tokens": result.output_tokens,
-                "total_tokens": result.total_tokens,
                 "provider_request_id": result.provider_request_id,
                 "provider_response_id": result.provider_response_id,
                 "provider_status": result.provider_status,
+                "finish_reason": result.finish_reason,
+                **_usage_document(result),
                 "assertion_failures": [
                     _failure_document(failure) for failure in grade.failures
                 ],
@@ -318,7 +348,7 @@ async def _execute(args: argparse.Namespace) -> int:
     )
 
     report = {
-        "schema": "dante-direct-eval-report-v1",
+        "schema": "dante-direct-eval-report-v2",
         "suite_id": suite.suite_id,
         "suite_version": suite.version,
         "candidate": candidate.identity,
@@ -329,6 +359,10 @@ async def _execute(args: argparse.Namespace) -> int:
             "calls_used": budget.calls_used,
             "input_tokens_used": budget.input_tokens_used,
             "output_tokens_used": budget.output_tokens_used,
+            "reasoning_tokens_used": budget.reasoning_tokens_used,
+            "cached_input_tokens_used": budget.cached_input_tokens_used,
+            "tool_use_tokens_used": budget.tool_use_tokens_used,
+            "billable_output_tokens_used": budget.billable_output_tokens_used,
             "estimated_cost_eur": round(budget.estimated_cost_eur, 8)
             if pricing is not None
             else None,
@@ -347,7 +381,7 @@ async def _execute(args: argparse.Namespace) -> int:
         },
         "trials": trials,
         "non_claims": [
-            "This report is model-candidate evidence, not production qualification.",
+            "This report is model/runtime candidate evidence, not production qualification.",
             "E01 model-avoidance requires DANTE runtime-routing proof and is not graded here.",
             "Estimated cost is not a cloud billing authority.",
             "No private or production DANTE data is permitted in this suite.",
