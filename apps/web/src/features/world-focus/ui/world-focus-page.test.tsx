@@ -172,7 +172,7 @@ describe('WorldFocusPage', () => {
     })[0];
     expect(action).toBeDefined();
 
-    fireEvent.click(action!);
+    fireEvent.click(action);
 
     const composer = screen.getByRole('dialog', { name: 'DANTE' });
     const textarea = screen.getByRole('textbox', {
