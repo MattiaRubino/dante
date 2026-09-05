@@ -6,6 +6,7 @@ import {
   useMemo,
   useRef,
   useState,
+  type FormEvent,
   type ReactNode,
 } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -16,12 +17,18 @@ import type {
   WorldFocusWorkspaceState,
 } from '../model/world-focus-workspace';
 import type { WorldFocusSurfaceRendererProps } from './world-focus-surface-registry';
+import {
+  WORLD_FOCUS_DANTE_CONVERSATION_INSTANCE_ID,
+  WORLD_FOCUS_DANTE_CONVERSATION_KIND,
+  useOptionalWorldFocusDanteConversation,
+} from './world-focus-dante-conversation-context';
 import { useWorldFocusWorkspaceAllocation } from './world-focus-workspace-allocation-context';
 import { useWorldFocusWorkspace } from './world-focus-workspace-host';
 
-export const WORLD_FOCUS_DANTE_CONVERSATION_KIND = 'dante-conversation' as const;
-export const WORLD_FOCUS_DANTE_CONVERSATION_INSTANCE_ID =
-  'dante:conversation' as const;
+export {
+  WORLD_FOCUS_DANTE_CONVERSATION_INSTANCE_ID,
+  WORLD_FOCUS_DANTE_CONVERSATION_KIND,
+} from './world-focus-dante-conversation-context';
 
 export const WORLD_FOCUS_DANTE_CONVERSATION_PREFERENCES = [
   'adaptive',
@@ -176,18 +183,6 @@ function WorldFocusDanteConversationPresentationSession({
  * Owns only D2 presentation preference for the one contextual conversation
  * surface. It does not own messages, a conversation transcript, model output,
  * provider state, authorization, or durable DANTE Run lifetime.
- *
- * Adaptive mode asks the existing Workspace allocation resolver whether this
- * exact surface can consume a real sidecar slot. If not, the same surface is
- * promoted to the already-defined external `route` presentation. Route focus
- * explicitly blocks the rectangular World workspace; generic route surfaces do
- * not inherit that behavior. No viewport breakpoint or second responsive
- * policy is introduced here.
- *
- * The keyed session deliberately remounts across idle -> active -> idle. That
- * gives every newly opened conversation surface a fresh `adaptive` preference
- * without an effect-driven state reset, while sidecar/route changes within the
- * same open surface preserve the user's explicit maximize/restore preference.
  */
 export function WorldFocusDanteConversationPresentationController({
   children,
@@ -220,10 +215,9 @@ export function useWorldFocusDanteConversationPresentation(): WorldFocusDanteCon
 }
 
 /**
- * D2-only structural conversation shell. It deliberately renders no messages,
- * generated answer, transcript, composer submission result, or backend state.
- * D3 will own the deterministic conversation adapter and feed real typed state
- * into this already-proven presentation surface.
+ * D2 remains the geometry owner. When D3's route-scoped conversation provider
+ * is present this surface renders its mounted transcript/request state; without
+ * D3 it remains the original empty structural D2 shell used by D2 tests.
  */
 export function WorldFocusDanteConversation({
   surface,
@@ -231,9 +225,12 @@ export function WorldFocusDanteConversation({
 }: WorldFocusSurfaceRendererProps) {
   const { t } = useTranslation('common');
   const presentation = useWorldFocusDanteConversationPresentation();
+  const conversation = useOptionalWorldFocusDanteConversation();
   const maximizeRef = useRef<HTMLButtonElement | null>(null);
   const restoreRef = useRef<HTMLButtonElement | null>(null);
   const closeRef = useRef<HTMLButtonElement | null>(null);
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
+  const [draft, setDraft] = useState('');
 
   useEffect(() => {
     const transition = presentation.focusTransition;
@@ -257,11 +254,42 @@ export function WorldFocusDanteConversation({
     });
   }, [presentation.focusTransition, surface.presentation]);
 
+  useEffect(() => {
+    if (
+      conversation === null ||
+      conversation.messages.length === 0 ||
+      surface.presentation === 'route' ||
+      conversation.requestState.status === 'pending'
+    ) {
+      return;
+    }
+
+    queueMicrotask(() => inputRef.current?.focus({ preventScroll: true }));
+  }, [
+    conversation,
+    conversation?.messages.length,
+    conversation?.requestState.status,
+    surface.presentation,
+  ]);
+
   const canRestore =
     surface.presentation === 'route' && presentation.preference === 'focus';
+  const pending = conversation?.requestState.status === 'pending';
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (conversation === null) return;
+    const request = draft.trim();
+    if (request.length === 0) return;
+
+    if (conversation.submitTurn(request)) {
+      setDraft('');
+    }
+  };
 
   return (
     <section
+      id="world-focus-dante-conversation"
       className="world-focus-dante-conversation"
       data-world-focus-dante-surface="conversation"
       data-world-focus-dante-conversation-presentation={surface.presentation}
@@ -309,8 +337,104 @@ export function WorldFocusDanteConversation({
       </header>
       <div
         className="world-focus-dante-conversation-body"
-        data-world-focus-dante-conversation-body="empty"
-      />
+        data-world-focus-dante-conversation-body={
+          conversation === null ? 'empty' : 'active'
+        }
+      >
+        {conversation === null ? null : (
+          <>
+            <ol
+              className="world-focus-dante-conversation-messages"
+              aria-label={t(($) => $.common.worldFocus.dante.messages)}
+              aria-live="polite"
+            >
+              {conversation.messages.map((message) => (
+                <li
+                  key={message.id}
+                  className="world-focus-dante-conversation-message"
+                  data-world-focus-dante-message-role={message.role}
+                  {...(message.role === 'assistant'
+                    ? {
+                        'data-world-focus-dante-response': 'true',
+                        'data-world-focus-dante-result-class':
+                          message.resultClass,
+                      }
+                    : {})}
+                >
+                  <span className="world-focus-dante-conversation-message-speaker">
+                    {message.role === 'user'
+                      ? t(($) => $.common.worldFocus.dante.you)
+                      : 'DANTE'}
+                  </span>
+                  <p>{message.text}</p>
+                </li>
+              ))}
+            </ol>
+
+            {conversation.requestState.status === 'pending' ? (
+              <p className="world-focus-dante-conversation-status" role="status">
+                {t(($) => $.common.worldFocus.dante.localPending)}
+              </p>
+            ) : conversation.requestState.status === 'unavailable' ? (
+              <p className="world-focus-dante-conversation-status" role="status">
+                {t(($) => $.common.worldFocus.dante.localUnavailable)}
+              </p>
+            ) : conversation.requestState.status === 'error' ? (
+              <p className="world-focus-dante-conversation-status" role="alert">
+                {t(($) => $.common.worldFocus.dante.localError)}
+              </p>
+            ) : conversation.requestState.status === 'cancelled' ? (
+              <p className="world-focus-dante-conversation-status" role="status">
+                {t(($) => $.common.worldFocus.dante.localCancelled)}
+              </p>
+            ) : conversation.requestState.status === 'superseded' ? (
+              <p className="world-focus-dante-conversation-status" role="status">
+                {t(($) => $.common.worldFocus.dante.localSuperseded)}
+              </p>
+            ) : null}
+
+            <form
+              className="world-focus-dante-conversation-composer"
+              onSubmit={handleSubmit}
+            >
+              <label
+                className="world-focus-dante-conversation-composer-label"
+                htmlFor="world-focus-dante-conversation-draft"
+              >
+                {t(($) => $.common.worldFocus.dante.followUpLabel)}
+              </label>
+              <textarea
+                ref={inputRef}
+                id="world-focus-dante-conversation-draft"
+                className="world-focus-dante-conversation-input"
+                rows={2}
+                value={draft}
+                placeholder={t(($) => $.common.worldFocus.dante.followUpPlaceholder)}
+                disabled={pending}
+                onChange={(event) => setDraft(event.currentTarget.value)}
+              />
+              <div className="world-focus-dante-conversation-composer-actions">
+                {pending ? (
+                  <button
+                    className="world-focus-dante-conversation-cancel-request"
+                    type="button"
+                    onClick={conversation.cancelPending}
+                  >
+                    {t(($) => $.common.worldFocus.dante.cancelRequest)}
+                  </button>
+                ) : null}
+                <button
+                  className="world-focus-dante-conversation-send"
+                  type="submit"
+                  disabled={pending || draft.trim().length === 0}
+                >
+                  {t(($) => $.common.worldFocus.dante.send)}
+                </button>
+              </div>
+            </form>
+          </>
+        )}
+      </div>
     </section>
   );
 }
