@@ -19,6 +19,7 @@ async def test_development_model_access_composition_loads_exact_route_without_ne
     resources = create_development_model_access_runtime(
         api_key="synthetic-secret-not-used",
         revisions_root=_REVISIONS_ROOT,
+        route_revision=GEMINI_INTERACTIONS_ROUTE_REVISION,
     )
     try:
         snapshot = resources.runtime.route_config
@@ -37,4 +38,5 @@ def test_development_model_access_composition_rejects_empty_secret() -> None:
         create_development_model_access_runtime(
             api_key="",
             revisions_root=_REVISIONS_ROOT,
+            route_revision=GEMINI_INTERACTIONS_ROUTE_REVISION,
         )
