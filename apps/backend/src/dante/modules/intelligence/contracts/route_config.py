@@ -4,11 +4,31 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from enum import StrEnum
 from hashlib import sha256
+from urllib.parse import urlparse
 
-_SCHEMA_VERSION = 1
+_SUPPORTED_SCHEMA_VERSIONS = frozenset({1, 2})
 _HEX_DIGITS = frozenset("0123456789abcdef")
 _REVISION_PATTERN = re.compile(r"^[a-z0-9][a-z0-9._-]{0,63}$")
+
+
+class RouteTargetState(StrEnum):
+    ACTIVE = "active"
+    DORMANT = "dormant"
+    DISABLED = "disabled"
+
+
+class ProviderBindingState(StrEnum):
+    DEVELOPMENT = "development"
+    INACTIVE = "inactive"
+    ACTIVE = "active"
+
+
+class ReasoningLevel(StrEnum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
 
 
 def _require_text(value: str, *, name: str) -> None:
@@ -30,6 +50,89 @@ def _require_unique_texts(values: tuple[str, ...], *, name: str) -> None:
 
 
 @dataclass(frozen=True, slots=True)
+class TargetRouteDefinition:
+    """Deterministic route for one logical ModelTarget in one revision."""
+
+    target_ref: str
+    state: RouteTargetState
+    champion_binding_ref: str | None = None
+    harness_profile_ref: str | None = None
+    challenger_binding_refs: tuple[str, ...] = ()
+    fallback_binding_refs: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        _require_text(self.target_ref, name="target_ref")
+        _require_unique_texts(self.challenger_binding_refs, name="challenger_binding_refs")
+        _require_unique_texts(self.fallback_binding_refs, name="fallback_binding_refs")
+        if self.state is RouteTargetState.ACTIVE:
+            if self.champion_binding_ref is None or self.harness_profile_ref is None:
+                raise ValueError("active target route requires champion binding and harness")
+            _require_text(self.champion_binding_ref, name="champion_binding_ref")
+            _require_text(self.harness_profile_ref, name="harness_profile_ref")
+            if self.champion_binding_ref in self.challenger_binding_refs:
+                raise ValueError("champion binding cannot also be a challenger")
+            if self.champion_binding_ref in self.fallback_binding_refs:
+                raise ValueError("champion binding cannot also be a fallback")
+            return
+        if self.champion_binding_ref is not None or self.harness_profile_ref is not None:
+            raise ValueError("dormant/disabled target route cannot select champion/harness")
+        if self.challenger_binding_refs or self.fallback_binding_refs:
+            raise ValueError("dormant/disabled target route cannot select challengers/fallbacks")
+
+
+@dataclass(frozen=True, slots=True)
+class HarnessProfileDefinition:
+    """Behavior-bearing provider-neutral model harness profile."""
+
+    ref: str
+    reasoning_level: ReasoningLevel
+    max_output_tokens: int
+    timeout_seconds: float
+    feature_modes: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        _require_text(self.ref, name="harness ref")
+        if self.max_output_tokens <= 0:
+            raise ValueError("harness max_output_tokens must be positive")
+        if self.timeout_seconds <= 0 or self.timeout_seconds > 300:
+            raise ValueError("harness timeout_seconds must be >0 and <=300")
+        _require_unique_texts(self.feature_modes, name="harness feature_modes")
+
+
+@dataclass(frozen=True, slots=True)
+class ProviderBindingDefinition:
+    """Exact provider/model/protocol identity eligible for deterministic routing."""
+
+    ref: str
+    provider: str
+    serving_platform: str
+    protocol_family: str
+    endpoint: str
+    model: str
+    region: str
+    state: ProviderBindingState
+    capabilities: tuple[str, ...]
+    security_profiles: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        for name, value in (
+            ("binding ref", self.ref),
+            ("provider", self.provider),
+            ("serving_platform", self.serving_platform),
+            ("protocol_family", self.protocol_family),
+            ("endpoint", self.endpoint),
+            ("model", self.model),
+            ("region", self.region),
+        ):
+            _require_text(value, name=name)
+        parsed = urlparse(self.endpoint)
+        if parsed.scheme != "https" or not parsed.netloc:
+            raise ValueError("provider binding endpoint must be an absolute HTTPS URL")
+        _require_unique_texts(self.capabilities, name="binding capabilities")
+        _require_unique_texts(self.security_profiles, name="binding security_profiles")
+
+
+@dataclass(frozen=True, slots=True)
 class RouteConfigDocument:
     """Typed behavior-bearing route configuration document for one logical revision."""
 
@@ -47,9 +150,12 @@ class RouteConfigDocument:
     resource_profiles: tuple[str, ...]
     security_profiles: tuple[str, ...]
     rollout_profiles: tuple[str, ...]
+    target_routes: tuple[TargetRouteDefinition, ...] = ()
+    harness_definitions: tuple[HarnessProfileDefinition, ...] = ()
+    provider_binding_definitions: tuple[ProviderBindingDefinition, ...] = ()
 
     def __post_init__(self) -> None:
-        if self.schema_version != _SCHEMA_VERSION:
+        if self.schema_version not in _SUPPORTED_SCHEMA_VERSIONS:
             raise ValueError(f"unsupported route config schema_version: {self.schema_version}")
         _require_revision(self.revision)
 
@@ -68,6 +174,54 @@ class RouteConfigDocument:
             ("rollout_profiles", self.rollout_profiles),
         ):
             _require_unique_texts(values, name=name)
+
+        if self.schema_version == 1:
+            if self.target_routes or self.harness_definitions or self.provider_binding_definitions:
+                raise ValueError("schema v1 cannot contain typed route definitions")
+            return
+
+        target_refs = tuple(route.target_ref for route in self.target_routes)
+        harness_refs = tuple(profile.ref for profile in self.harness_definitions)
+        binding_refs = tuple(binding.ref for binding in self.provider_binding_definitions)
+        for name, values in (
+            ("target route refs", target_refs),
+            ("harness definition refs", harness_refs),
+            ("provider binding definition refs", binding_refs),
+        ):
+            _require_unique_texts(values, name=name)
+
+        if set(target_refs) != set(self.model_targets):
+            raise ValueError("schema v2 target_routes must exactly cover model_targets")
+        if set(harness_refs) != set(self.harness_profiles):
+            raise ValueError("schema v2 harness_definitions must exactly cover harness_profiles")
+        if set(binding_refs) != set(self.provider_bindings):
+            raise ValueError(
+                "schema v2 provider_binding_definitions must exactly cover provider_bindings"
+            )
+
+        known_harnesses = set(harness_refs)
+        known_bindings = set(binding_refs)
+        global_feature_modes = set(self.feature_modes)
+        global_security_profiles = set(self.security_profiles)
+        for profile in self.harness_definitions:
+            if not set(profile.feature_modes).issubset(global_feature_modes):
+                raise ValueError("harness feature_modes must be declared by route config")
+        for binding in self.provider_binding_definitions:
+            if not set(binding.security_profiles).issubset(global_security_profiles):
+                raise ValueError("binding security_profiles must be declared by route config")
+        for route in self.target_routes:
+            if route.state is not RouteTargetState.ACTIVE:
+                continue
+            assert route.champion_binding_ref is not None
+            assert route.harness_profile_ref is not None
+            if route.champion_binding_ref not in known_bindings:
+                raise ValueError("target route references unknown champion binding")
+            if route.harness_profile_ref not in known_harnesses:
+                raise ValueError("target route references unknown harness profile")
+            if any(ref not in known_bindings for ref in route.challenger_binding_refs):
+                raise ValueError("target route references unknown challenger binding")
+            if any(ref not in known_bindings for ref in route.fallback_binding_refs):
+                raise ValueError("target route references unknown fallback binding")
 
 
 @dataclass(frozen=True, slots=True)
