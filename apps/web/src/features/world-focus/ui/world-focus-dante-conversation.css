@@ -1,0 +1,131 @@
+.world-focus-route-surface-host {
+  position: absolute;
+  z-index: 6;
+  inset: 0;
+  min-width: 0;
+  min-height: 0;
+  pointer-events: none;
+}
+
+.world-focus-route-surface-layer {
+  position: absolute;
+  inset: 0;
+  min-width: 0;
+  min-height: 0;
+  pointer-events: auto;
+}
+
+.world-focus-route-surface-layer
+  > .world-focus-surface[data-world-focus-surface-slot='external'] {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.world-focus-dante-conversation {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+  color: rgba(242, 246, 255, 0.94);
+  background:
+    radial-gradient(
+      ellipse 70% 46% at 50% 0%,
+      color-mix(in srgb, var(--world-focus-accent) 11%, transparent),
+      transparent 72%
+    ),
+    linear-gradient(180deg, rgba(9, 12, 29, 0.98), rgba(3, 5, 16, 0.99));
+}
+
+.world-focus-surface[data-world-focus-surface-slot='sidecar']
+  .world-focus-dante-conversation {
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.world-focus-route-surface-layer .world-focus-dante-conversation {
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.world-focus-dante-conversation-header {
+  display: flex;
+  min-height: 64px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px clamp(16px, 2.5vw, 28px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(4, 7, 19, 0.72);
+  backdrop-filter: blur(18px);
+}
+
+.world-focus-dante-conversation-title {
+  margin: 0;
+  color: rgba(247, 249, 255, 0.96);
+  font-size: 0.9rem;
+  font-weight: 680;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.world-focus-dante-conversation-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.world-focus-dante-conversation-action,
+.world-focus-dante-conversation-close {
+  min-height: 44px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(238, 243, 255, 0.88);
+  background: rgba(255, 255, 255, 0.045);
+  font: inherit;
+  cursor: pointer;
+}
+
+.world-focus-dante-conversation-action {
+  padding: 8px 13px;
+  border-radius: 12px;
+  font-size: 0.76rem;
+  font-weight: 650;
+}
+
+.world-focus-dante-conversation-close {
+  width: 44px;
+  min-width: 44px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.world-focus-dante-conversation-action:hover,
+.world-focus-dante-conversation-close:hover {
+  background: rgba(255, 255, 255, 0.075);
+}
+
+.world-focus-dante-conversation-action:focus-visible,
+.world-focus-dante-conversation-close:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--world-focus-accent) 72%, white);
+  outline-offset: 3px;
+}
+
+.world-focus-dante-conversation-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+@media (forced-colors: active) {
+  .world-focus-dante-conversation,
+  .world-focus-dante-conversation-header,
+  .world-focus-dante-conversation-action,
+  .world-focus-dante-conversation-close {
+    border-color: CanvasText;
+  }
+}
