@@ -44,6 +44,7 @@ export type WorldFocusWorkspaceApi = Readonly<{
     depth: WorldFocusInteractionDepth,
     presentation: WorldFocusPresentationSurface,
     expectedWorkspace?: WorldFocusWorkspaceExpectation,
+    blocksWorkspaceInteraction?: boolean,
   ) => void;
   closeSurface: (instanceId: string) => void;
   requestEscape: () => WorldFocusEscapeDisposition;
@@ -107,23 +108,35 @@ function WorldFocusWorkspaceHostInstance({
       depth: WorldFocusInteractionDepth,
       presentation: WorldFocusPresentationSurface,
       expectedWorkspace?: WorldFocusWorkspaceExpectation,
+      blocksWorkspaceInteraction?: boolean,
     ) => {
-      dispatch(
-        expectedWorkspace === undefined
-          ? {
-              type: 'promote-surface',
-              instanceId,
-              depth,
-              presentation,
-            }
-          : {
-              type: 'promote-surface',
-              instanceId,
-              depth,
-              presentation,
-              expectedWorkspace,
-            },
-      );
+      const baseIntent = {
+        type: 'promote-surface' as const,
+        instanceId,
+        depth,
+        presentation,
+      };
+
+      if (
+        expectedWorkspace === undefined &&
+        blocksWorkspaceInteraction === undefined
+      ) {
+        dispatch(baseIntent);
+        return;
+      }
+      if (expectedWorkspace === undefined) {
+        dispatch({ ...baseIntent, blocksWorkspaceInteraction });
+        return;
+      }
+      if (blocksWorkspaceInteraction === undefined) {
+        dispatch({ ...baseIntent, expectedWorkspace });
+        return;
+      }
+      dispatch({
+        ...baseIntent,
+        expectedWorkspace,
+        blocksWorkspaceInteraction,
+      });
     },
     [],
   );
