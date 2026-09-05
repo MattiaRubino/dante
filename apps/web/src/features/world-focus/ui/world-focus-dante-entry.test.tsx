@@ -8,9 +8,11 @@ import {
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import { i18n } from '../../../bootstrap/i18n';
+import { createWorldFocusContextReferenceSet } from '../model/world-focus-context-reference';
 import type { WorldFocusFeatureAvailability } from '../model/world-focus-platform';
 import { resolveWorldFocusWorkspaceAllocation } from '../model/world-focus-workspace-allocation';
 import { getCoreWorldFocusSurfaceRegistry } from './world-focus-core-surfaces';
+import { WorldFocusDanteContextualEntry } from './world-focus-dante-contextual-entry';
 import {
   WorldFocusDanteEntryProvider,
   WorldFocusDanteInvoke,
@@ -29,6 +31,10 @@ const UNAVAILABLE: WorldFocusFeatureAvailability = Object.freeze({
   status: 'unavailable',
   reasonCode: 'pre_backend_unavailable',
   retryable: false,
+});
+const CONTEXTUAL_REFERENCES = createWorldFocusContextReferenceSet({
+  primary: { kind: 'project', key: 'neon-static' },
+  supporting: [{ kind: 'checkpoint', key: 'master-v3' }],
 });
 
 beforeAll(async () => {
@@ -68,6 +74,9 @@ function DanteHarness({
         <output data-testid="surface-count">
           {workspace.state.surfaces.length}
         </output>
+        <output data-testid="workspace-generation">
+          {workspace.state.generation}
+        </output>
         <output data-testid="context-reference">
           {activeSurface === null
             ? 'none'
@@ -75,6 +84,10 @@ function DanteHarness({
               ? 'null'
               : 'bound'}
         </output>
+        <WorldFocusDanteContextualEntry
+          intent="continue"
+          contextReferences={CONTEXTUAL_REFERENCES}
+        />
         <WorldFocusDanteInvoke />
         <WorldFocusSurfaceLayer registry={getCoreWorldFocusSurfaceRegistry()} />
       </WorldFocusDanteEntryProvider>
@@ -128,6 +141,49 @@ describe('World Focus D1 contextual DANTE entry', () => {
     expect(invoke.getAttribute('disabled')).not.toBeNull();
   });
 
+  it('opens an explicit contextual composer, preserves its draft when the bound generation becomes stale and restores the exact invoker', async () => {
+    renderDanteEntry();
+
+    const contextualInvoke = screen.getByRole('button', {
+      name: 'Chiedi a DANTE: Continua da qui',
+    });
+    contextualInvoke.focus();
+    fireEvent.click(contextualInvoke);
+
+    const dialog = screen.getByRole('dialog', { name: 'DANTE' });
+    const textarea = screen.getByRole<HTMLTextAreaElement>('textbox', {
+      name: 'Scrivi una richiesta per DANTE',
+    });
+    expect(dialog.getAttribute('data-world-focus-dante-contextual')).toBe('true');
+    expect(textarea.value).toBe('Continua da qui');
+    expect(textarea).toBe(document.activeElement);
+    expect(screen.getByTestId('context-reference').textContent).toBe('bound');
+    expect(screen.getByTestId('workspace-generation').textContent).toBe('0');
+
+    fireEvent.change(textarea, {
+      target: { value: 'Continua da qui con il nuovo checkpoint' },
+    });
+    fireEvent.click(screen.getByTestId('select-context'));
+    expect(screen.getByTestId('workspace-generation').textContent).toBe('1');
+    fireEvent.click(screen.getByRole('button', { name: 'Invia richiesta' }));
+
+    expect(
+      screen.getByText(
+        'Il contesto da cui hai aperto DANTE è cambiato. La richiesta non è stata inviata.',
+      ),
+    ).toBeTruthy();
+    expect(textarea.value).toBe('Continua da qui con il nuovo checkpoint');
+    expect(textarea).toBe(document.activeElement);
+    expect(screen.getByRole('dialog', { name: 'DANTE' })).toBeTruthy();
+    expect(screen.getByTestId('surface-count').textContent).toBe('1');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Chiudi DANTE' }));
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).toBeNull();
+      expect(contextualInvoke).toBe(document.activeElement);
+    });
+  });
+
   it('preserves the draft and reports a truthful unavailable submit without inventing an answer', () => {
     renderDanteEntry();
 
@@ -158,6 +214,11 @@ describe('World Focus D1 contextual DANTE entry', () => {
   it('renders a truthful unavailable entry state and focuses the close action', () => {
     renderDanteEntry(UNAVAILABLE);
 
+    expect(
+      screen
+        .getByRole('button', { name: 'Chiedi a DANTE: Continua da qui' })
+        .getAttribute('disabled'),
+    ).not.toBeNull();
     fireEvent.click(
       screen.getByRole('button', { name: 'Apri DANTE per il Mondo Musica' }),
     );
