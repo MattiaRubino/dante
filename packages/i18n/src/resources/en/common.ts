@@ -1,5 +1,8 @@
 import type { CommonResource } from '../it/common';
 import { access } from './access';
+import { home } from './home';
+import { shell } from './shell';
+import { worldFocus } from './world-focus';
 
 export const common = {
   runtime: {
@@ -37,4 +40,7 @@ export const common = {
     },
   },
   access,
+  shell,
+  home,
+  worldFocus,
 } as const satisfies CommonResource;

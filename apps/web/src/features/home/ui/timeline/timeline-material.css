@@ -1,0 +1,633 @@
+/*
+ * Timeline Phase 1 parity material layer.
+ *
+ * Source of truth: accepted A2 Timeline cascade plus the explicit DANTE
+ * v12/v13/v38/v43 overrides preserved by the v43 restore artifact.
+ * Do not redesign here during Phase 1: React owns behavior; this layer mirrors
+ * the accepted prototype surface.
+ */
+
+/* The Home grid row can be taller than Timeline because the Context Rail is
+ * independent. The accepted Timeline itself is exactly header + groups +
+ * frame. Prevent CSS-grid stretch from creating dead space below the frame. */
+@media (min-width: 1121px) {
+  .home-m1 .home-timeline--production {
+    height: var(--dante-timeline-home-min-height);
+    min-height: var(--dante-timeline-home-min-height);
+    max-height: var(--dante-timeline-home-min-height);
+    align-self: start;
+  }
+}
+
+.dante-timeline-header {
+  min-height: var(--dante-timeline-header-stack-height);
+  border-bottom: 0;
+  background: transparent;
+}
+
+/* v7 temporal header + v13 real quick-add column. The 56px add column is NOT
+ * the ruler: those are different coordinate systems in the prototype. */
+.dante-timeline-header-row {
+  display: grid;
+  grid-template-columns: 56px auto auto minmax(330px, 1fr) auto;
+  grid-template-areas: 'add month now week actions';
+  align-items: center;
+  width: 100%;
+  height: var(--dante-timeline-header-row-height);
+  min-height: var(--dante-timeline-header-row-height);
+  min-width: 0;
+  gap: 12px;
+  padding: 0 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.045);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.009),
+    rgba(255, 255, 255, 0.001)
+  );
+}
+
+.dante-timeline-quick-add {
+  grid-area: add;
+  display: grid;
+  width: 42px;
+  min-width: 42px;
+  height: 42px;
+  place-items: center;
+  justify-self: start;
+  align-self: center;
+  padding: 0;
+  border: 1px solid rgba(234, 92, 18, 0.34);
+  border-radius: 14px;
+  color: var(--dante-timeline-accent-bright);
+  background: linear-gradient(
+    180deg,
+    rgba(18, 27, 40, 0.96),
+    rgba(11, 18, 29, 0.98)
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 10px 24px rgba(0, 0, 0, 0.18);
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1;
+  opacity: 1;
+}
+
+.dante-timeline-quick-add:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.dante-timeline-month {
+  grid-area: month;
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: 6px;
+  height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--dante-timeline-control-radius);
+  color: var(--dante-timeline-text-secondary);
+  background: transparent;
+  box-shadow: none;
+  font-size: 11px;
+  font-weight: 660;
+  line-height: 1;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.dante-timeline-month:hover,
+.dante-timeline-month[aria-expanded='true'] {
+  color: var(--dante-timeline-text-primary);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.dante-timeline-month > span {
+  color: inherit;
+}
+
+.dante-timeline-month > i {
+  color: var(--dante-timeline-text-muted);
+  font-size: 8px;
+  font-style: normal;
+  opacity: 0.7;
+  transition: transform 160ms ease;
+}
+
+.dante-timeline-month[aria-expanded='true'] > i {
+  transform: rotate(180deg);
+}
+
+/* v43 exact orange chrome recolor. */
+.dante-timeline-now {
+  grid-area: now;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: start;
+  gap: 6px;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid rgba(234, 92, 18, 0.38);
+  border-radius: var(--dante-timeline-control-radius);
+  color: var(--dante-timeline-accent-text);
+  background: rgba(234, 92, 18, 0.11);
+  box-shadow: none;
+  font-size: 10px;
+  font-weight: 650;
+  line-height: 1;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.dante-timeline-now:hover {
+  color: #fff;
+  background: rgba(234, 92, 18, 0.14);
+}
+
+.dante-timeline-now-dot {
+  width: 5px;
+  height: 5px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  color: var(--dante-timeline-accent);
+  background: var(--dante-timeline-accent);
+  opacity: 1;
+}
+
+.dante-timeline-week-nav {
+  grid-area: week;
+  display: grid;
+  grid-template-columns: 28px auto 28px;
+  align-items: center;
+  justify-self: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.dante-timeline-week-step {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 9px;
+  color: var(--dante-timeline-text-muted);
+  background: transparent;
+  font-size: 19px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.dante-timeline-week-step:hover {
+  color: #e6ecf5;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.dante-timeline-week {
+  display: flex;
+  width: auto;
+  gap: 2px;
+  padding: 3px;
+  border: 0;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.012);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.024);
+}
+
+.dante-timeline-week > button {
+  position: relative;
+  display: grid;
+  width: 40px;
+  min-width: 40px;
+  height: 46px;
+  place-items: center;
+  align-content: center;
+  gap: 3px;
+  padding: 3px 2px 6px;
+  border: 0;
+  border-radius: var(--dante-timeline-control-radius);
+  color: var(--dante-timeline-text-tertiary);
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.dante-timeline-week > button:hover {
+  color: #dce4f0;
+  background: rgba(255, 255, 255, 0.032);
+}
+
+.dante-timeline-week > button.is-viewing {
+  color: var(--dante-timeline-accent-text);
+  background: rgba(234, 92, 18, 0.11);
+  box-shadow: none;
+}
+
+.dante-timeline-week > button.is-today:not(.is-viewing) {
+  color: #dce4f0;
+}
+
+.dante-timeline-week b {
+  color: inherit;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1;
+}
+
+.dante-timeline-week strong {
+  color: inherit;
+  font-size: 10px;
+  font-weight: 680;
+  line-height: 1;
+}
+
+.dante-timeline-week-mark {
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: var(--dante-timeline-accent);
+  opacity: 0;
+}
+
+.dante-timeline-week > button.is-today .dante-timeline-week-mark {
+  opacity: 1;
+}
+
+.dante-timeline-actions {
+  grid-area: actions;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-self: end;
+  gap: 5px;
+}
+
+.dante-timeline-actions > button {
+  display: grid;
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--dante-timeline-control-radius);
+  color: var(--dante-timeline-text-muted);
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.dante-timeline-actions > button:hover {
+  color: #e6ecf5;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.dante-timeline-actions > button.is-active {
+  color: var(--dante-timeline-accent-text);
+  background: rgba(234, 92, 18, 0.11);
+}
+
+.dante-timeline-actions svg,
+.dante-timeline-group-reset svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.55;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Prototype v7 group geometry: ruler | reset | groups | handle. */
+.dante-timeline-group-row {
+  display: grid;
+  grid-template-columns:
+    var(--dante-timeline-ruler-width) 44px minmax(0, 1fr)
+    var(--dante-timeline-expansion-handle-gutter);
+  align-items: center;
+  width: 100%;
+  height: var(--dante-timeline-group-row-height);
+  min-height: var(--dante-timeline-group-row-height);
+  min-width: 0;
+  gap: 0;
+  padding: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.002);
+  overflow: visible;
+}
+
+.dante-timeline-group-reset {
+  grid-column: 2;
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  justify-self: center;
+  align-self: center;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 9px;
+  color: #91a0b7;
+  background: rgba(255, 255, 255, 0.018);
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.dante-timeline-group-reset:hover {
+  color: #e5ebf6;
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.dante-timeline-group-reset.is-active {
+  border-color: rgba(234, 92, 18, 0.38);
+  color: var(--dante-timeline-accent-text);
+  background: rgba(234, 92, 18, 0.11);
+}
+
+.dante-timeline-group-scroller {
+  grid-column: 3;
+  position: relative;
+  align-self: center;
+  width: auto;
+  min-width: 0;
+  height: 42px;
+  margin: 0;
+  padding: 6px 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.13) transparent;
+  overscroll-behavior-x: contain;
+}
+
+.dante-timeline-group-track {
+  display: grid;
+  grid-template-columns: repeat(
+    var(--timeline-group-count),
+    var(--dante-timeline-group-min-width)
+  );
+  align-items: center;
+  width: max(
+    100%,
+    calc(
+      var(--timeline-group-count) * var(--dante-timeline-group-min-width) + 16px
+    )
+  );
+  min-width: 100%;
+  height: var(--dante-timeline-group-chip-height);
+}
+
+.dante-timeline-group-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: calc(100% - 8px);
+  height: var(--dante-timeline-group-chip-height);
+  min-width: 0;
+  padding: 0 12px;
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--timeline-group-color) 28%,
+      rgba(255, 255, 255, 0.08)
+    );
+  border-radius: var(--dante-timeline-pill-radius);
+  color: color-mix(in srgb, var(--timeline-group-color) 72%, white);
+  background: color-mix(
+    in srgb,
+    var(--timeline-group-color) 12%,
+    rgba(10, 19, 34, 0.92)
+  );
+  box-shadow: none;
+  font-size: var(--dante-timeline-group-label-font-size);
+  font-weight: var(--dante-timeline-group-label-font-weight);
+  line-height: 1;
+  cursor: grab;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  user-select: none;
+}
+
+.dante-timeline-group-chip:active {
+  cursor: grabbing;
+}
+
+.dante-timeline-group-chip > span:not(.home-visually-hidden) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dante-timeline-group-chip.is-active {
+  color: var(--dante-timeline-text-strong);
+  background: color-mix(
+    in srgb,
+    var(--timeline-group-color) 18%,
+    rgba(10, 19, 34, 0.92)
+  );
+}
+
+.dante-timeline-group-chip.is-dimmed {
+  opacity: 0.45;
+  filter: saturate(0.55);
+}
+
+.dante-timeline-group-chip.is-reordering {
+  opacity: 0.45;
+}
+
+.dante-timeline-group-chip.is-drop-target {
+  box-shadow: 0 0 0 2px var(--dante-timeline-accent);
+}
+
+/* Exact A2 event surface. Scope with the production root so the old M1 static
+ * Timeline cannot win on specificity. */
+.home-m1 .home-timeline--production .timeline-ruler-label {
+  right: 12px;
+  color: var(--dante-timeline-ruler-text);
+  font-size: 9px;
+  line-height: 1;
+}
+
+.home-m1 .home-timeline--production .timeline-event-card,
+.timeline-event-drag-overlay {
+  border: 1px solid
+    color-mix(in srgb, var(--timeline-group-color) 42%, transparent);
+  border-radius: var(--dante-timeline-event-radius);
+  background: linear-gradient(
+    180deg,
+    rgba(13, 24, 42, 0.94),
+    rgba(9, 17, 31, 0.94)
+  );
+  box-shadow:
+    inset 3px 0 0 var(--timeline-group-color),
+    0 10px 22px rgba(0, 0, 0, 0.13);
+}
+
+.home-m1 .home-timeline--production .timeline-event-card.is-expanded {
+  box-shadow:
+    inset 3px 0 0 var(--timeline-group-color),
+    0 20px 40px rgba(0, 0, 0, 0.28),
+    0 0 0 1px
+      color-mix(
+        in srgb,
+        var(--timeline-group-color) 34%,
+        rgba(255, 255, 255, 0.08)
+      );
+}
+
+.home-m1 .home-timeline--production .timeline-event-card.is-focused {
+  box-shadow:
+    inset 3px 0 0 var(--timeline-group-color),
+    0 0 0 1px color-mix(in srgb, var(--timeline-group-color) 42%, transparent),
+    0 14px 28px rgba(0, 0, 0, 0.22);
+}
+
+.home-m1 .home-timeline--production .timeline-event-card__top {
+  padding: 7px 10px 3px 12px;
+}
+
+.home-m1 .home-timeline--production .timeline-event-card__title {
+  color: var(--dante-timeline-event-title);
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0;
+  line-height: 1.28;
+}
+
+.home-m1 .home-timeline--production .timeline-event-card__title:hover {
+  color: color-mix(in srgb, var(--timeline-group-color) 54%, white);
+}
+
+.home-m1 .home-timeline--production .timeline-event-card__time {
+  margin-top: 5px;
+  color: var(--dante-timeline-event-time);
+  font-size: 9px;
+}
+
+.home-m1 .home-timeline--production .timeline-event-card__meta {
+  margin-top: 4px;
+  color: var(--dante-timeline-event-meta);
+  font-size: 8.5px;
+}
+
+.home-m1 .home-timeline--production .timeline-event-card__subitems {
+  padding: 4px 5px 28px 8px;
+  margin: 2px 4px 0;
+  border-top: 1px dashed rgba(255, 255, 255, 0.07);
+}
+
+.home-m1 .home-timeline--production .timeline-event-card__subitem {
+  min-height: 25px;
+  padding: 4px 5px;
+  border-radius: 6px;
+  color: var(--dante-timeline-text-tertiary);
+  font-size: 10.5px;
+  line-height: 1.25;
+}
+
+.home-m1 .home-timeline--production .timeline-event-card__expander {
+  right: 5px;
+  bottom: 4px;
+  left: 5px;
+  min-height: 25px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  color: var(--dante-timeline-text-subtle);
+  background: rgba(6, 14, 26, 0.72);
+  font-size: 9.5px;
+  font-weight: 650;
+}
+
+/* v43 exact now chrome. */
+.home-m1 .home-timeline--production .timeline-now-line {
+  background: linear-gradient(
+    90deg,
+    var(--dante-timeline-accent),
+    rgba(234, 92, 18, 0.6),
+    transparent
+  );
+}
+
+.home-m1 .home-timeline--production .timeline-now-line::before {
+  border-color: var(--dante-timeline-accent-text);
+  background: var(--dante-timeline-accent);
+  box-shadow: none;
+}
+
+.home-m1 .home-timeline--production .timeline-now-line > span {
+  color: #fff;
+  background: var(--dante-timeline-accent-strong);
+  font-size: 9px;
+  font-weight: 750;
+}
+
+.home-m1 .home-timeline--production .timeline-split-columns > span {
+  border-left-color: color-mix(
+    in srgb,
+    var(--timeline-group-color) 18%,
+    transparent
+  );
+  border-right-color: rgba(255, 255, 255, 0.018);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--timeline-group-color) 2.8%, transparent),
+    rgba(255, 255, 255, 0.002)
+  );
+}
+
+@media (max-width: 1120px) {
+  .dante-timeline-header-row {
+    grid-template-columns: 56px auto auto minmax(300px, 1fr) auto;
+    gap: 8px;
+  }
+
+  .dante-timeline-week > button {
+    width: 36px;
+    min-width: 36px;
+  }
+}
+
+@media (max-width: 760px) {
+  .dante-timeline-header {
+    min-height: 176px;
+  }
+
+  .dante-timeline-header-row {
+    grid-template-columns: 56px auto auto 1fr auto;
+    grid-template-rows: 56px 68px;
+    grid-template-areas:
+      'add month now spacer actions'
+      'week week week week week';
+    height: 124px;
+    padding: 0 10px;
+  }
+
+  .dante-timeline-week-nav {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .dante-timeline-group-row {
+    grid-template-columns: 64px 40px minmax(0, 1fr) 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dante-timeline-header *,
+  .dante-timeline-group-row * {
+    transition-duration: 0.001ms !important;
+    animation-duration: 0.001ms !important;
+  }
+}

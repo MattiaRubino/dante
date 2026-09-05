@@ -10,11 +10,22 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppRouteImport } from './routes/_app'
 import { Route as SecurityRouteImport } from './routes/security'
+import { Route as AppHomeRouteImport } from './routes/_app.home'
+import { Route as AppProfileRouteImport } from './routes/_app.profile'
+import { Route as AppSettingsRouteImport } from './routes/_app.settings'
+import { Route as AppTodayRouteImport } from './routes/_app.today'
+import { Route as AppWorldsRouteImport } from './routes/_app.worlds'
+import { Route as AppWorldsWorldIdRouteImport } from './routes/_app.worlds.$worldId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SecurityRoute = SecurityRouteImport.update({
@@ -22,30 +33,106 @@ const SecurityRoute = SecurityRouteImport.update({
   path: '/security',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppHomeRoute = AppHomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProfileRoute = AppProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTodayRoute = AppTodayRouteImport.update({
+  id: '/today',
+  path: '/today',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppWorldsRoute = AppWorldsRouteImport.update({
+  id: '/worlds',
+  path: '/worlds',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppWorldsWorldIdRoute = AppWorldsWorldIdRouteImport.update({
+  id: '/$worldId',
+  path: '/$worldId',
+  getParentRoute: () => AppWorldsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/security': typeof SecurityRoute
+  '/home': typeof AppHomeRoute
+  '/profile': typeof AppProfileRoute
+  '/settings': typeof AppSettingsRoute
+  '/today': typeof AppTodayRoute
+  '/worlds': typeof AppWorldsRouteWithChildren
+  '/worlds/$worldId': typeof AppWorldsWorldIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/security': typeof SecurityRoute
+  '/home': typeof AppHomeRoute
+  '/profile': typeof AppProfileRoute
+  '/settings': typeof AppSettingsRoute
+  '/today': typeof AppTodayRoute
+  '/worlds': typeof AppWorldsRouteWithChildren
+  '/worlds/$worldId': typeof AppWorldsWorldIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_app': typeof AppRouteWithChildren
   '/security': typeof SecurityRoute
+  '/_app/home': typeof AppHomeRoute
+  '/_app/profile': typeof AppProfileRoute
+  '/_app/settings': typeof AppSettingsRoute
+  '/_app/today': typeof AppTodayRoute
+  '/_app/worlds': typeof AppWorldsRouteWithChildren
+  '/_app/worlds/$worldId': typeof AppWorldsWorldIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/security'
+  fullPaths:
+    | '/'
+    | '/security'
+    | '/home'
+    | '/profile'
+    | '/settings'
+    | '/today'
+    | '/worlds'
+    | '/worlds/$worldId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/security'
-  id: '__root__' | '/' | '/security'
+  to:
+    | '/'
+    | '/security'
+    | '/home'
+    | '/profile'
+    | '/settings'
+    | '/today'
+    | '/worlds'
+    | '/worlds/$worldId'
+  id:
+    | '__root__'
+    | '/'
+    | '/_app'
+    | '/security'
+    | '/_app/home'
+    | '/_app/profile'
+    | '/_app/settings'
+    | '/_app/today'
+    | '/_app/worlds'
+    | '/_app/worlds/$worldId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
   SecurityRoute: typeof SecurityRoute
 }
 
@@ -58,6 +145,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/security': {
       id: '/security'
       path: '/security'
@@ -65,11 +159,84 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SecurityRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/home': {
+      id: '/_app/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof AppHomeRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/profile': {
+      id: '/_app/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AppProfileRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/settings': {
+      id: '/_app/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/today': {
+      id: '/_app/today'
+      path: '/today'
+      fullPath: '/today'
+      preLoaderRoute: typeof AppTodayRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/worlds': {
+      id: '/_app/worlds'
+      path: '/worlds'
+      fullPath: '/worlds'
+      preLoaderRoute: typeof AppWorldsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/worlds/$worldId': {
+      id: '/_app/worlds/$worldId'
+      path: '/$worldId'
+      fullPath: '/worlds/$worldId'
+      preLoaderRoute: typeof AppWorldsWorldIdRouteImport
+      parentRoute: typeof AppWorldsRoute
+    }
   }
 }
 
+interface AppWorldsRouteChildren {
+  AppWorldsWorldIdRoute: typeof AppWorldsWorldIdRoute
+}
+
+const AppWorldsRouteChildren: AppWorldsRouteChildren = {
+  AppWorldsWorldIdRoute: AppWorldsWorldIdRoute,
+}
+
+const AppWorldsRouteWithChildren = AppWorldsRoute._addFileChildren(
+  AppWorldsRouteChildren,
+)
+
+interface AppRouteChildren {
+  AppHomeRoute: typeof AppHomeRoute
+  AppProfileRoute: typeof AppProfileRoute
+  AppSettingsRoute: typeof AppSettingsRoute
+  AppTodayRoute: typeof AppTodayRoute
+  AppWorldsRoute: typeof AppWorldsRouteWithChildren
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppHomeRoute: AppHomeRoute,
+  AppProfileRoute: AppProfileRoute,
+  AppSettingsRoute: AppSettingsRoute,
+  AppTodayRoute: AppTodayRoute,
+  AppWorldsRoute: AppWorldsRouteWithChildren,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
   SecurityRoute: SecurityRoute,
 }
 export const routeTree = rootRouteImport

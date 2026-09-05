@@ -1,0 +1,353 @@
+.temporal-create-context-picker {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.temporal-create-context-picker__label {
+  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.temporal-create-context-trigger {
+  display: grid;
+  grid-template-columns: 9px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 42px;
+  padding: 0 10px;
+  border: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08));
+  border-radius: 11px;
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-surface-control, #151f2e) 76%,
+    black
+  );
+  font: inherit;
+  cursor: pointer;
+}
+
+.temporal-create-context-trigger:hover,
+.temporal-create-context-trigger[aria-expanded='true'] {
+  border-color: color-mix(
+    in srgb,
+    var(--temporal-context-current-color, var(--dante-timeline-accent, #ea5c12))
+      44%,
+    rgba(255, 255, 255, 0.1)
+  );
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-surface-control, #151f2e) 90%,
+    white 2%
+  );
+}
+
+.temporal-create-context-trigger__label {
+  overflow: hidden;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.temporal-create-context-trigger__chevron {
+  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
+  font-size: 8px;
+  transition: transform 120ms ease;
+}
+
+.temporal-create-context-trigger[aria-expanded='true']
+  .temporal-create-context-trigger__chevron {
+  transform: rotate(180deg);
+}
+
+.temporal-create-context-swatch {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--temporal-context-color);
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--temporal-context-color) 16%, transparent),
+    0 0 14px color-mix(in srgb, var(--temporal-context-color) 22%, transparent);
+}
+
+.temporal-create-context-popover {
+  position: absolute;
+  z-index: 12;
+  top: calc(100% + 7px);
+  right: 0;
+  display: grid;
+  width: min(330px, calc(100vw - 48px));
+  max-height: min(430px, 60dvh);
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08))
+        78%,
+      var(--dante-semantic-color-home-chrome-active, #ea5c12)
+    );
+  border-radius: 14px;
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-surface-primary, #0d1522) 98%,
+    black
+  );
+  box-shadow:
+    0 22px 52px rgba(0, 0, 0, 0.44),
+    inset 0 1px 0 rgba(255, 255, 255, 0.045);
+}
+
+.temporal-create-context-search {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: center;
+  border: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08));
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.temporal-create-context-search > span {
+  justify-self: center;
+  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
+}
+
+.temporal-create-composer .temporal-create-context-search input {
+  min-height: 36px;
+  padding-left: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: 11px;
+}
+
+.temporal-create-context-options {
+  display: grid;
+  gap: 3px;
+  max-height: 250px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.temporal-create-context-options > button {
+  display: grid;
+  grid-template-columns: 9px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 9px;
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  background: transparent;
+  font: inherit;
+  font-size: 10.5px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.temporal-create-context-options > button:hover,
+.temporal-create-context-options > button.is-selected {
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  background: color-mix(
+    in srgb,
+    var(--temporal-context-color) 9%,
+    rgba(255, 255, 255, 0.025)
+  );
+}
+
+.temporal-create-context-options > button small {
+  padding: 2px 5px;
+  border-radius: 999px;
+  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
+  background: rgba(255, 255, 255, 0.035);
+  font-size: 7.5px;
+  font-weight: 680;
+  text-transform: uppercase;
+}
+
+.temporal-create-context-options > button i {
+  color: var(--temporal-context-color);
+  font-size: 10px;
+  font-style: normal;
+  opacity: 0;
+}
+
+.temporal-create-context-options > button.is-selected i {
+  opacity: 1;
+}
+
+.temporal-create-context-new {
+  display: flex;
+  min-height: 38px;
+  align-items: center;
+  gap: 7px;
+  padding: 0 9px;
+  border: 1px dashed
+    color-mix(
+      in srgb,
+      var(--dante-semantic-color-home-chrome-active, #ea5c12) 36%,
+      transparent
+    );
+  border-radius: 9px;
+  color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
+  background: color-mix(
+    in srgb,
+    var(
+        --dante-semantic-color-home-chrome-active-soft,
+        rgba(234, 92, 18, 0.095)
+      )
+      28%,
+    transparent
+  );
+  font: inherit;
+  font-size: 10px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.temporal-create-context-create {
+  display: grid;
+  gap: 12px;
+}
+
+.temporal-create-context-create > label {
+  display: grid;
+  gap: 6px;
+}
+
+.temporal-create-context-create > label > span {
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.temporal-create-context-tone-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 7px;
+}
+
+.temporal-create-context-tone-grid > button {
+  display: grid;
+  min-height: 34px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.015);
+  cursor: pointer;
+}
+
+.temporal-create-context-tone-grid > button > span {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--temporal-context-color);
+  box-shadow: 0 0 18px
+    color-mix(in srgb, var(--temporal-context-color) 26%, transparent);
+}
+
+.temporal-create-context-tone-grid > button.is-selected {
+  border-color: color-mix(
+    in srgb,
+    var(--temporal-context-color) 68%,
+    white 10%
+  );
+  background: color-mix(
+    in srgb,
+    var(--temporal-context-color) 12%,
+    transparent
+  );
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--temporal-context-color) 24%, transparent);
+}
+
+.temporal-create-context-create__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+.temporal-create-context-create__actions > button {
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08));
+  border-radius: 9px;
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  background: rgba(255, 255, 255, 0.025);
+  font: inherit;
+  font-size: 9.5px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.temporal-create-context-create__actions > button.is-primary {
+  border-color: var(
+    --dante-semantic-color-home-chrome-active-border,
+    rgba(234, 92, 18, 0.255)
+  );
+  color: #fff2e9;
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-chrome-active, #ea5c12) 19%,
+    rgba(9, 17, 29, 0.94)
+  );
+}
+
+.temporal-create-context-create__actions > button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+[data-context-tone='focus'] {
+  --temporal-context-color: var(--dante-timeline-tone-focus, #8d63ff);
+}
+
+[data-context-tone='meeting'] {
+  --temporal-context-color: var(--dante-timeline-tone-meeting, #43d9ef);
+}
+
+[data-context-tone='health'] {
+  --temporal-context-color: var(--dante-timeline-tone-health, #45e5a6);
+}
+
+[data-context-tone='creative'] {
+  --temporal-context-color: var(--dante-timeline-tone-creative, #f0ac48);
+}
+
+[data-context-tone='personal'] {
+  --temporal-context-color: var(--dante-timeline-tone-personal, #f2778c);
+}
+
+[data-context-tone='urgent'] {
+  --temporal-context-color: var(--dante-timeline-tone-urgent, #ff5b64);
+}
+
+@media (max-width: 560px) {
+  .temporal-create-context-popover {
+    right: auto;
+    left: 0;
+    width: min(100%, calc(100vw - 32px));
+  }
+
+  .temporal-create-context-tone-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .temporal-create-context-trigger__chevron {
+    transition: none;
+  }
+}

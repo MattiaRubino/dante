@@ -1,0 +1,207 @@
+/*
+ * Final Phase 1 visual reference lock for Timeline chrome.
+ *
+ * The accepted prototype is the visual authority. This file only resolves
+ * differences caused by the production Home composition (Context Rail width,
+ * shared legacy Home cascade and current browser rendering). Timeline event
+ * geometry remains owned by the pure layout/density engine.
+ */
+
+@import './timeline-tokens.css';
+
+.home-m1 .home-timeline--production .dante-timeline-header-row {
+  position: relative;
+}
+
+/* timeline.css intentionally normalizes button typography via `font: inherit`.
+ * The group chips are a frozen Timeline-owned visual element, so re-assert their
+ * semantic label typography at higher specificity instead of letting the Home
+ * button normalization erase the dedicated Timeline tokens. */
+.home-m1 .home-timeline--production .dante-timeline-group-chip {
+  font-size: var(--dante-timeline-group-label-font-size);
+  font-weight: var(--dante-timeline-group-label-font-weight);
+  line-height: 1;
+}
+
+/* Expanded header and event canvas consume the exact geometry published by the
+ * runtime. The group scroller starts where the event layer starts and carries
+ * the event layer's right gutter inside its track, making both scroll ranges
+ * identical instead of relying on two almost-equal CSS/JS calculations. */
+.home-m1 .home-timeline--production .dante-timeline-group-row {
+  grid-template-columns:
+    var(--dante-timeline-ruler-width)
+    var(--timeline-events-left-inset, 44px)
+    minmax(0, 1fr)
+    var(--dante-timeline-expansion-handle-gutter);
+}
+
+.home-m1 .home-timeline--production .dante-timeline-group-track {
+  box-sizing: border-box;
+  grid-template-columns: repeat(
+    var(--timeline-group-count),
+    var(--timeline-expanded-group-width, var(--dante-timeline-group-min-width))
+  );
+  width: var(--timeline-expanded-group-track-width, 100%);
+  min-width: var(--timeline-expanded-group-track-width, 100%);
+  padding-right: var(--timeline-events-right-inset, 16px);
+}
+
+.home-m1 .home-timeline--production .timeline-split-columns,
+.home-m1 .home-timeline--production .timeline-events-layer {
+  inset: 0 var(--timeline-events-right-inset, 16px) 0
+    var(--timeline-events-left-inset, 44px);
+}
+
+/* Event cards are explicitly sized by the temporal layout engine, therefore a
+ * size container is safe here and lets typography breathe progressively with
+ * the real rendered card height instead of using one fixed scale everywhere. */
+.home-m1 .home-timeline--production .timeline-event-card,
+.timeline-event-drag-overlay {
+  container-type: size;
+}
+
+/* The Timeline owns drag, not the browser. Prevent native text/image dragging
+ * and selection from creating a second ghost interaction under the custom
+ * pointer-driven event move. */
+.home-m1 .home-timeline--production .timeline-event-card,
+.home-m1 .home-timeline--production .timeline-event-card * {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.home-m1 .home-timeline--production .timeline-event-card__top,
+.timeline-event-drag-overlay .timeline-event-card__top {
+  padding-top: clamp(6px, calc(4.8px + 1.6cqh), 8.5px);
+  padding-bottom: clamp(2px, calc(1.2px + 0.9cqh), 3.5px);
+}
+
+/* Title, time and metadata expose intrinsic content width to the compact-card
+ * measurement runtime. Keeping metadata shrink-wrapped is important: a normal
+ * block would report the card's current width as scrollWidth, creating a
+ * positive feedback loop where repeated moves progressively widened the card. */
+.home-m1 .home-timeline--production .timeline-event-card__title,
+.home-m1 .home-timeline--production .timeline-event-card__time,
+.home-m1 .home-timeline--production .timeline-event-card__meta,
+.timeline-event-drag-overlay .timeline-event-card__title,
+.timeline-event-drag-overlay .timeline-event-card__time,
+.timeline-event-drag-overlay .timeline-event-card__meta {
+  display: block;
+  width: max-content;
+  max-width: 100%;
+}
+
+.home-m1 .home-timeline--production .timeline-event-card__title,
+.timeline-event-drag-overlay .timeline-event-card__title {
+  font-size: clamp(10.5px, calc(9px + 2cqh), 12px);
+}
+
+.home-m1 .home-timeline--production .timeline-event-card__time,
+.timeline-event-drag-overlay .timeline-event-card__time {
+  margin-top: clamp(2.5px, calc(1.5px + 1.1cqh), 4.5px);
+  font-size: clamp(8.5px, calc(7.7px + 1.3cqh), 9.75px);
+}
+
+.home-m1 .home-timeline--production .timeline-event-card__time:hover {
+  color: color-mix(in srgb, var(--timeline-group-color) 54%, white);
+}
+
+.home-m1 .home-timeline--production .timeline-event-card__meta,
+.timeline-event-drag-overlay .timeline-event-card__meta {
+  margin-top: clamp(2.5px, calc(1.5px + 1cqh), 4.5px);
+  font-size: clamp(8px, calc(7.4px + 1.1cqh), 9.25px);
+}
+
+/* Pointer grammar: the card body is a neutral selectable/draggable canvas.
+ * Explicit actions use the hand. A grabbing cursor appears only after the drag
+ * runtime has actually crossed its movement threshold (is-drag-source). */
+.home-m1 .home-timeline--production .timeline-event-card,
+.home-m1 .home-timeline--production .timeline-event-card__drag-zone {
+  cursor: default;
+}
+
+.home-m1
+  .home-timeline--production
+  :is(
+    .timeline-event-card__title,
+    .timeline-event-card__time,
+    .timeline-event-card__subitem,
+    .timeline-event-card__expander
+  ) {
+  cursor: pointer;
+}
+
+.home-m1
+  .home-timeline--production:has(.timeline-event-card.is-drag-source)
+  .timeline-grid,
+.home-m1
+  .home-timeline--production:has(.timeline-event-card.is-drag-source)
+  .timeline-grid
+  * {
+  cursor: grabbing !important;
+}
+
+/* A surrounding card whose actions are inactive still needs one deterministic
+ * hit surface. Disabling only nested buttons with pointer-events:none allowed
+ * pointer hit-testing to fall through differently depending on the exact pixel
+ * and overlap stack. A transparent shield makes the originating card itself the
+ * interaction target: click-without-move is consumed by the grid focus-dismiss
+ * boundary, while movement can activate the card's drag runtime immediately. */
+.home-m1
+  .home-timeline--production
+  .timeline-event-card:is(.is-groupmate, .is-dim)::after {
+  position: absolute;
+  z-index: 6;
+  inset: 0;
+  border-radius: inherit;
+  background: transparent;
+  content: '';
+  cursor: default;
+  touch-action: none;
+}
+
+/* Compact/normal keeps the prototype's native header-grid placement. Only the
+ * fully expanded Timeline overrides the week strip so it sits on the Home's
+ * central optical axis beneath Home / Mondi / Oggi. */
+@media (min-width: 1121px) {
+  .home-m1
+    .home-today-layout[data-expanded='true']
+    .home-timeline--production
+    .dante-timeline-week-nav {
+    position: absolute;
+    z-index: 3;
+    top: 50%;
+    left: 50%;
+    justify-self: auto;
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* Desktop Home owns the row height. Timeline and Context Rail are peers in
+ * that row and keep the same bottom breathing room. Timeline stays a normal
+ * grid item: do not turn the root into an internal grid, otherwise the
+ * unbounded day stream can feed back into row sizing. The frame is instead
+ * anchored below the fixed header/group chrome and fills the remaining
+ * already-resolved root height without contributing to parent height sizing. */
+@media (min-width: 1121px) {
+  .home-m1 .home-today-layout > .home-timeline--production {
+    position: relative;
+    height: auto;
+    min-height: var(--dante-timeline-home-min-height);
+    max-height: none;
+    margin-bottom: var(--dante-timeline-home-bottom-gap);
+    align-self: stretch;
+  }
+
+  .home-m1
+    .home-today-layout
+    > .home-timeline--production
+    .timeline-frame--production {
+    position: absolute;
+    top: var(--dante-timeline-header-stack-height);
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: auto;
+    min-height: 0;
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "$schema": "https://www.designtokens.org/schemas/2025.10/format.json",
+  "theme": {
+    "shell": {
+      "$type": "color",
+      "canvas": {
+        "$value": "{theme.home.canvas}"
+      },
+      "text": {
+        "primary": {
+          "$value": "{theme.home.text.primary}"
+        },
+        "secondary": {
+          "$value": "{theme.home.text.secondary}"
+        },
+        "muted": {
+          "$value": "{theme.home.text.muted}"
+        }
+      },
+      "chrome": {
+        "active": {
+          "$value": "{theme.home.chrome.active}"
+        },
+        "active-text": {
+          "$value": "{theme.home.chrome.active-text}"
+        },
+        "active-soft": {
+          "$value": "{theme.home.chrome.active-soft}"
+        },
+        "active-border": {
+          "$value": "{theme.home.chrome.active-border}"
+        },
+        "inactive": {
+          "$value": "{theme.home.chrome.inactive}"
+        },
+        "inactive-border": {
+          "$value": "{theme.home.chrome.inactive-border}"
+        }
+      },
+      "surface": {
+        "panel": {
+          "$value": "{theme.home.surface.panel}"
+        },
+        "panel-soft": {
+          "$value": "{theme.home.surface.panel-soft}"
+        },
+        "raised": {
+          "$value": "{theme.home.surface.raised}"
+        },
+        "control": {
+          "$value": "{theme.home.surface.control}"
+        },
+        "overlay": {
+          "$value": "{theme.home.surface.overlay}"
+        },
+        "highlight": {
+          "$value": "{theme.home.surface.highlight}"
+        }
+      },
+      "border": {
+        "subtle": {
+          "$value": "{theme.home.border.subtle}"
+        },
+        "strong": {
+          "$value": "{theme.home.border.strong}"
+        },
+        "panel": {
+          "$value": "{theme.home.border.panel}"
+        },
+        "panel-strong": {
+          "$value": "{theme.home.border.panel-strong}"
+        }
+      },
+      "atmosphere": {
+        "accent": {
+          "$value": "{theme.home.atmosphere.accent}"
+        },
+        "soft": {
+          "$value": "{theme.home.atmosphere.soft}"
+        },
+        "glow": {
+          "$value": "{theme.home.atmosphere.glow}"
+        }
+      },
+      "shadow": {
+        "panel": {
+          "$value": "{theme.home.shadow.panel}"
+        },
+        "control": {
+          "$value": "{theme.home.shadow.control}"
+        }
+      },
+      "backdrop": {
+        "shade": {
+          "$value": "{theme.home.backdrop.shade}"
+        }
+      }
+    }
+  }
+}

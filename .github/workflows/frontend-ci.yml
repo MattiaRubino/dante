@@ -49,6 +49,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Frontend contract drift check
+        run: python3 tests/prototypes/frontend-preprod-contracts.py
+
       - name: Format check
         run: pnpm format:check
 
@@ -107,6 +110,12 @@ jobs:
 
       - name: Run Web E2E
         run: pnpm test:e2e:web
+
+      - name: Install Firefox and Linux dependencies
+        run: pnpm --filter @dante/web exec playwright install --with-deps firefox
+
+      - name: Run frozen Timeline interaction contract in Firefox
+        run: pnpm --filter @dante/web exec playwright test e2e/timeline-interactions.spec.ts --browser=firefox
 
       - name: Upload Playwright failure evidence
         if: failure()

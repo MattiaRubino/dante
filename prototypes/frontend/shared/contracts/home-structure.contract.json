@@ -1,0 +1,152 @@
+{
+  "format": "dante-home-structure-contract-v1",
+  "contractVersion": "1.0.0",
+  "status": "frozen",
+  "scope": "whole-home macro structure",
+  "changeControl": {
+    "explicitUserApprovalRequiredForObservableStructuralChange": true,
+    "implementationRefactorAllowedWhenContractEquivalent": true,
+    "regressionGuardsMayBeWeakenedToAcceptAccidentalDrift": false
+  },
+  "appShellBoundary": {
+    "owner": "app-shell",
+    "insideHomeFeature": false,
+    "homeMayRenderOwnGlobalTopbar": false
+  },
+  "regions": [
+    {
+      "id": "home.shell",
+      "parent": "app-shell.routeOutlet",
+      "required": true,
+      "ownsMacroComposition": true
+    },
+    {
+      "id": "home.dayContext",
+      "parent": "home.hero",
+      "required": true,
+      "ownsMacroComposition": false
+    },
+    {
+      "id": "home.aiSurface",
+      "parent": "home.heroBody",
+      "required": true,
+      "ownsMacroComposition": false
+    },
+    {
+      "id": "home.orientation",
+      "parent": "home.upperWorkspace",
+      "required": true,
+      "ownsMacroComposition": false
+    },
+    {
+      "id": "home.stage",
+      "parent": "home.upperWorkspace",
+      "required": true,
+      "ownsMacroComposition": false
+    },
+    {
+      "id": "home.timeline",
+      "parent": "home.todayWorkspace",
+      "required": true,
+      "ownsMacroComposition": false
+    },
+    {
+      "id": "home.contextRail",
+      "parent": "home.todayWorkspace",
+      "required": true,
+      "ownsMacroComposition": false
+    }
+  ],
+  "composition": {
+    "home.hero": ["home.dayContext", "home.heroBody"],
+    "home.heroBody": ["home.aiSurface", "home.upperWorkspace"],
+    "home.upperWorkspace": ["home.orientation", "home.stage"],
+    "home.todayWorkspace": ["home.timeline", "home.contextRail"]
+  },
+  "orientationResponsibilities": [
+    "now-next",
+    "highlight",
+    "for-you"
+  ],
+  "contextRailResponsibilities": {
+    "captureDirection": "user-to-dante",
+    "resolutionDirection": "dante-to-user",
+    "independentFloatingHomeRegionsAllowed": false
+  },
+  "stateInvariants": {
+    "aiCollapseOwner": "home.shell",
+    "aiRoundTripMustBeGeometryReversible": true,
+    "stageModeMayChangeStageOuterGeometry": false,
+    "timelineExpansionMayConsumeContextRailWidthOnWide": true,
+    "timelineExpansionMayReauthorHeroGeometry": false,
+    "worldFocusEntryIsRouteTransitionNotHomeOverlay": true
+  },
+  "geometry": {
+    "macroBreakpointsPx": {
+      "wideMin": 1121,
+      "compressedMin": 901,
+      "compressedMax": 1120,
+      "compactMax": 900
+    },
+    "acceptedMacroAnchorsPx": {
+      "contextRailNominalWidth": 306,
+      "todayNominalGap": 16,
+      "defaultOuterInset": 34,
+      "compressedOuterInset": 24,
+      "desktopHeroBaselineHeight": 650
+    },
+    "secondaryTuningBreakpointsPx": [1240, 1180, 1100, 980],
+    "secondaryTuningMayCreateNewMacroComposition": false
+  },
+  "responsiveModes": [
+    {
+      "id": "H0-WIDE",
+      "minWidthPx": 1121,
+      "hero": "ai-beside-upper-workspace",
+      "today": "timeline-beside-context-rail",
+      "contextRailVisible": true
+    },
+    {
+      "id": "H0-COMPRESSED",
+      "minWidthPx": 901,
+      "maxWidthPx": 1120,
+      "hero": "ai-beside-upper-workspace",
+      "today": "timeline-full-width",
+      "contextRailVisible": false
+    },
+    {
+      "id": "H0-COMPACT",
+      "maxWidthPx": 900,
+      "hero": "ai-above-upper-workspace",
+      "orientation": "stacked-before-stage",
+      "today": "timeline-full-width",
+      "contextRailVisible": false
+    }
+  ],
+  "forbiddenDrift": [
+    "home-owned-global-topbar",
+    "required-region-removed",
+    "context-rail-reparented-under-timeline",
+    "orientation-reparented-under-stage",
+    "stage-mode-changes-stage-outer-bounds",
+    "timeline-expansion-reauthors-hero",
+    "ai-round-trip-leaves-permanent-macro-drift",
+    "undocumented-fourth-responsive-macro-mode",
+    "stage-add-control-changes-home-outer-geometry",
+    "world-focus-mounted-as-home-structural-overlay",
+    "unexpected-horizontal-page-overflow"
+  ],
+  "intentionallyOpen": [
+    "backend-and-api-semantics",
+    "global-create-persistence",
+    "remote-search",
+    "ai-provider-integration",
+    "timeline-quick-add-semantics",
+    "capture-persistence",
+    "resolution-mutations",
+    "stage-management-api",
+    "access-auth-handoff-details",
+    "future-compact-representation-of-hidden-capabilities",
+    "non-structural-microcopy-icons-microspacing"
+  ]
+}

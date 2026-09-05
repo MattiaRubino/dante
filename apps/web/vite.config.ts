@@ -4,6 +4,8 @@ import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig, type PreviewOptions } from 'vite';
 
+import { dayRibbonBackdropPlugin } from './config/day-ribbon-backdrop-plugin.ts';
+
 function accessAuthPreview(): PreviewOptions | undefined {
   const apiTarget = process.env.DANTE_E2E_API_TARGET;
   const certPath = process.env.DANTE_E2E_TLS_CERT;
@@ -51,6 +53,7 @@ export default defineConfig({
     manifest: true,
   },
   plugins: [
+    dayRibbonBackdropPlugin(),
     tanstackRouter({
       target: 'react',
       autoCodeSplitting: true,

@@ -1,0 +1,196 @@
+@media (min-width: 901px) {
+  .temporal-create-backdrop {
+    background: transparent !important;
+    overscroll-behavior: auto;
+    pointer-events: none !important;
+  }
+
+  .temporal-create-backdrop.is-modal {
+    background: rgba(2, 6, 12, 0.42) !important;
+    overscroll-behavior: contain;
+    pointer-events: auto !important;
+  }
+
+  .temporal-create-composer {
+    pointer-events: auto !important;
+  }
+
+  .temporal-create-composer .temporal-create-composer__heading-copy {
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+  }
+
+  html[data-temporal-create-dragging='true']
+    .temporal-create-composer
+    .temporal-create-composer__heading-copy {
+    cursor: grabbing;
+  }
+
+  .temporal-create-composer.is-full {
+    position: absolute;
+    right: auto;
+    bottom: auto;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    width: min(760px, calc(100vw - 32px));
+    height: min(780px, calc(100dvh - 32px));
+    max-height: calc(100dvh - 32px);
+    overflow: hidden;
+    border: 1px solid
+      color-mix(
+        in srgb,
+        var(
+            --dante-semantic-color-home-border-subtle,
+            rgba(255, 255, 255, 0.08)
+          )
+          82%,
+        var(--dante-semantic-color-home-chrome-active, #ea5c12)
+      );
+    border-radius: 20px;
+    transform: none;
+    animation: temporal-create-advanced-enter 160ms
+      cubic-bezier(0.2, 0.75, 0.25, 1);
+  }
+
+  .temporal-create-composer.is-full .temporal-create-composer__header {
+    position: relative;
+    z-index: 5;
+    margin: 0;
+    padding-bottom: 14px;
+    border-bottom: 1px solid
+      var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08));
+    background: color-mix(
+      in srgb,
+      var(--dante-semantic-color-home-surface-primary, #0d1522) 98%,
+      black
+    );
+  }
+
+  .temporal-create-composer.is-full .temporal-create-composer__body {
+    min-height: 0;
+    max-width: none;
+    margin-top: 0;
+    padding: 16px 2px 2px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+  }
+
+  .temporal-create-composer.is-full
+    .temporal-create-composer__body::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  .temporal-create-composer.is-full .temporal-create-actions {
+    position: sticky;
+    z-index: 4;
+    bottom: -2px;
+    margin: 6px -2px -2px;
+    padding: 16px 2px 4px;
+    background: linear-gradient(
+      180deg,
+      transparent,
+      color-mix(
+          in srgb,
+          var(--dante-semantic-color-home-surface-primary, #0d1522) 98%,
+          black
+        )
+        26%
+    );
+    backdrop-filter: blur(12px);
+  }
+
+  .temporal-create-composer.is-full .temporal-create-discard {
+    z-index: 7;
+    margin: 0 0 2px;
+  }
+}
+
+@keyframes temporal-create-advanced-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.992);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 900px) {
+  .temporal-create-composer.is-full {
+    position: fixed;
+    inset: 0 !important;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    width: 100%;
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    overflow: hidden;
+    padding: 0 16px max(16px, env(safe-area-inset-bottom));
+    border: 0;
+    border-radius: 0;
+    transform: none;
+    animation: temporal-create-sheet-enter 160ms
+      cubic-bezier(0.2, 0.75, 0.25, 1);
+  }
+
+  .temporal-create-composer.is-full .temporal-create-composer__header {
+    position: relative;
+    z-index: 5;
+    margin: 0 -16px;
+    padding: max(12px, env(safe-area-inset-top)) 16px 14px;
+    border-bottom: 1px solid
+      var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08));
+    background: color-mix(
+      in srgb,
+      var(--dante-semantic-color-home-surface-primary, #0d1522) 98%,
+      black
+    );
+  }
+
+  .temporal-create-composer.is-full .temporal-create-composer__body {
+    min-height: 0;
+    margin-top: 0;
+    padding: 16px 0 2px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+  }
+
+  .temporal-create-composer.is-full
+    .temporal-create-composer__body::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  .temporal-create-composer.is-full .temporal-create-actions {
+    position: sticky;
+    z-index: 4;
+    bottom: -2px;
+    margin: 6px 0 -2px;
+    padding: 14px 0 2px;
+    background: linear-gradient(
+      180deg,
+      transparent,
+      color-mix(
+          in srgb,
+          var(--dante-semantic-color-home-surface-primary, #0d1522) 98%,
+          black
+        )
+        24%
+    );
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .temporal-create-composer.is-full {
+    animation: none;
+  }
+}

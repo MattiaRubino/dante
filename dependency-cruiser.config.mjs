@@ -8,6 +8,7 @@ export default {
         path: '^(apps/(web|mobile)|packages/(api-client|design-tokens|i18n|time))/',
       },
       to: {
+        pathNot: '^virtual:dante-day-ribbon-backdrop$',
         couldNotResolve: true,
       },
     },
@@ -26,13 +27,13 @@ export default {
     {
       name: 'web-routes-use-feature-public-api',
       comment:
-        'Web routes may consume a feature only through its public index, never through feature internals.',
+        'Web routes may consume a feature only through approved public entrypoints, never through feature internals.',
       severity: 'error',
       from: {
         path: '^apps/web/src/routes/',
       },
       to: {
-        path: '^apps/web/src/features/[^/]+/(?!index\\.(ts|tsx)$)',
+        path: '^apps/web/src/features/[^/]+/(?!(?:index|route-contract)\\.(ts|tsx)$)',
       },
     },
     {
