@@ -16,21 +16,55 @@
       "response_schema": {
         "type": "object",
         "properties": {
-          "kind": {"type": "string", "enum": ["event", "activity", "note", "unresolved"]},
-          "date": {"type": ["string", "null"], "description": "Data canonica ISO 8601 nel formato YYYY-MM-DD, oppure null se assente."},
-          "time": {"type": ["string", "null"]},
-          "location": {"type": ["string", "null"]},
-          "note": {"type": ["string", "null"], "description": "Testo che preserva il promemoria esplicito della sorgente; può includere altro testo esplicito dello stesso evento."}
+          "kind": {
+            "type": "string",
+            "enum": ["event", "activity", "note", "unresolved"]
+          },
+          "date": {
+            "type": ["string", "null"],
+            "description": "Data canonica ISO 8601 nel formato YYYY-MM-DD, oppure null se assente."
+          },
+          "time": { "type": ["string", "null"] },
+          "location": { "type": ["string", "null"] },
+          "note": {
+            "type": ["string", "null"],
+            "description": "Testo che preserva il promemoria esplicito della sorgente; può includere altro testo esplicito dello stesso evento."
+          }
         },
         "required": ["kind", "date", "time", "location", "note"],
         "additionalProperties": false
       },
       "assertions": [
-        {"kind": "equals", "path": "kind", "expected": "event", "severity": "quality"},
-        {"kind": "equals", "path": "date", "expected": "2026-09-15", "severity": "hard"},
-        {"kind": "equals", "path": "time", "expected": "16:30", "severity": "hard"},
-        {"kind": "equals", "path": "location", "expected": "Studio Verdi", "severity": "quality"},
-        {"kind": "not_equals", "path": "note", "expected": null, "severity": "quality"}
+        {
+          "kind": "equals",
+          "path": "kind",
+          "expected": "event",
+          "severity": "quality"
+        },
+        {
+          "kind": "equals",
+          "path": "date",
+          "expected": "2026-09-15",
+          "severity": "hard"
+        },
+        {
+          "kind": "equals",
+          "path": "time",
+          "expected": "16:30",
+          "severity": "hard"
+        },
+        {
+          "kind": "equals",
+          "path": "location",
+          "expected": "Studio Verdi",
+          "severity": "quality"
+        },
+        {
+          "kind": "not_equals",
+          "path": "note",
+          "expected": null,
+          "severity": "quality"
+        }
       ]
     },
     {
@@ -45,17 +79,46 @@
       "response_schema": {
         "type": "object",
         "properties": {
-          "selected_refs": {"type": "array", "items": {"type": "string", "enum": ["C1", "C2", "C3", "P1", "P2"]}},
-          "excluded_private_refs": {"type": "array", "items": {"type": "string", "enum": ["P1", "P2"]}}
+          "selected_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["C1", "C2", "C3", "P1", "P2"]
+            }
+          },
+          "excluded_private_refs": {
+            "type": "array",
+            "items": { "type": "string", "enum": ["P1", "P2"] }
+          }
         },
         "required": ["selected_refs", "excluded_private_refs"],
         "additionalProperties": false
       },
       "assertions": [
-        {"kind": "set_equals", "path": "selected_refs", "expected": ["C2"], "severity": "quality"},
-        {"kind": "not_contains", "path": "selected_refs", "expected": "P1", "severity": "hard"},
-        {"kind": "not_contains", "path": "selected_refs", "expected": "P2", "severity": "hard"},
-        {"kind": "set_equals", "path": "excluded_private_refs", "expected": ["P1", "P2"], "severity": "quality"}
+        {
+          "kind": "set_equals",
+          "path": "selected_refs",
+          "expected": ["C2"],
+          "severity": "quality"
+        },
+        {
+          "kind": "not_contains",
+          "path": "selected_refs",
+          "expected": "P1",
+          "severity": "hard"
+        },
+        {
+          "kind": "not_contains",
+          "path": "selected_refs",
+          "expected": "P2",
+          "severity": "hard"
+        },
+        {
+          "kind": "set_equals",
+          "path": "excluded_private_refs",
+          "expected": ["P1", "P2"],
+          "severity": "quality"
+        }
       ]
     },
     {
@@ -70,15 +133,28 @@
       "response_schema": {
         "type": "object",
         "properties": {
-          "expiry_date": {"type": "string"},
-          "source_refs": {"type": "array", "items": {"type": "string", "enum": ["R1", "R2", "R3"]}}
+          "expiry_date": { "type": "string" },
+          "source_refs": {
+            "type": "array",
+            "items": { "type": "string", "enum": ["R1", "R2", "R3"] }
+          }
         },
         "required": ["expiry_date", "source_refs"],
         "additionalProperties": false
       },
       "assertions": [
-        {"kind": "equals", "path": "expiry_date", "expected": "2027-02-14", "severity": "hard"},
-        {"kind": "set_equals", "path": "source_refs", "expected": ["R2"], "severity": "hard"}
+        {
+          "kind": "equals",
+          "path": "expiry_date",
+          "expected": "2027-02-14",
+          "severity": "hard"
+        },
+        {
+          "kind": "set_equals",
+          "path": "source_refs",
+          "expected": ["R2"],
+          "severity": "hard"
+        }
       ]
     },
     {
@@ -93,17 +169,35 @@
       "response_schema": {
         "type": "object",
         "properties": {
-          "current_revision": {"type": "integer"},
-          "status": {"type": "string", "enum": ["ACTIVE", "PAUSED"]},
-          "rejected_stale_refs": {"type": "array", "items": {"type": "string", "enum": ["V1", "V2"]}}
+          "current_revision": { "type": "integer" },
+          "status": { "type": "string", "enum": ["ACTIVE", "PAUSED"] },
+          "rejected_stale_refs": {
+            "type": "array",
+            "items": { "type": "string", "enum": ["V1", "V2"] }
+          }
         },
         "required": ["current_revision", "status", "rejected_stale_refs"],
         "additionalProperties": false
       },
       "assertions": [
-        {"kind": "equals", "path": "current_revision", "expected": 2, "severity": "hard"},
-        {"kind": "equals", "path": "status", "expected": "PAUSED", "severity": "hard"},
-        {"kind": "set_equals", "path": "rejected_stale_refs", "expected": ["V1"], "severity": "quality"}
+        {
+          "kind": "equals",
+          "path": "current_revision",
+          "expected": 2,
+          "severity": "hard"
+        },
+        {
+          "kind": "equals",
+          "path": "status",
+          "expected": "PAUSED",
+          "severity": "hard"
+        },
+        {
+          "kind": "set_equals",
+          "path": "rejected_stale_refs",
+          "expected": ["V1"],
+          "severity": "quality"
+        }
       ]
     }
   ]

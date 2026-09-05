@@ -16,17 +16,35 @@
       "response_schema": {
         "type": "object",
         "properties": {
-          "decision": {"type": "string", "enum": ["resolve", "clarify"]},
-          "target_refs": {"type": "array", "items": {"type": "string"}},
-          "reason_code": {"type": "string", "enum": ["resolved", "ambiguous_target"]}
+          "decision": { "type": "string", "enum": ["resolve", "clarify"] },
+          "target_refs": { "type": "array", "items": { "type": "string" } },
+          "reason_code": {
+            "type": "string",
+            "enum": ["resolved", "ambiguous_target"]
+          }
         },
         "required": ["decision", "target_refs", "reason_code"],
         "additionalProperties": false
       },
       "assertions": [
-        {"kind": "equals", "path": "decision", "expected": "clarify", "severity": "hard"},
-        {"kind": "set_equals", "path": "target_refs", "expected": [], "severity": "hard"},
-        {"kind": "equals", "path": "reason_code", "expected": "ambiguous_target", "severity": "quality"}
+        {
+          "kind": "equals",
+          "path": "decision",
+          "expected": "clarify",
+          "severity": "hard"
+        },
+        {
+          "kind": "set_equals",
+          "path": "target_refs",
+          "expected": [],
+          "severity": "hard"
+        },
+        {
+          "kind": "equals",
+          "path": "reason_code",
+          "expected": "ambiguous_target",
+          "severity": "quality"
+        }
       ]
     },
     {
@@ -41,17 +59,46 @@
       "response_schema": {
         "type": "object",
         "properties": {
-          "selected_refs": {"type": "array", "items": {"type": "string", "enum": ["C1", "C2", "C3", "P1", "P2"]}},
-          "excluded_private_refs": {"type": "array", "items": {"type": "string", "enum": ["P1", "P2"]}}
+          "selected_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["C1", "C2", "C3", "P1", "P2"]
+            }
+          },
+          "excluded_private_refs": {
+            "type": "array",
+            "items": { "type": "string", "enum": ["P1", "P2"] }
+          }
         },
         "required": ["selected_refs", "excluded_private_refs"],
         "additionalProperties": false
       },
       "assertions": [
-        {"kind": "set_equals", "path": "selected_refs", "expected": ["C2"], "severity": "quality"},
-        {"kind": "not_contains", "path": "selected_refs", "expected": "P1", "severity": "hard"},
-        {"kind": "not_contains", "path": "selected_refs", "expected": "P2", "severity": "hard"},
-        {"kind": "set_equals", "path": "excluded_private_refs", "expected": ["P1", "P2"], "severity": "quality"}
+        {
+          "kind": "set_equals",
+          "path": "selected_refs",
+          "expected": ["C2"],
+          "severity": "quality"
+        },
+        {
+          "kind": "not_contains",
+          "path": "selected_refs",
+          "expected": "P1",
+          "severity": "hard"
+        },
+        {
+          "kind": "not_contains",
+          "path": "selected_refs",
+          "expected": "P2",
+          "severity": "hard"
+        },
+        {
+          "kind": "set_equals",
+          "path": "excluded_private_refs",
+          "expected": ["P1", "P2"],
+          "severity": "quality"
+        }
       ]
     },
     {
@@ -66,15 +113,28 @@
       "response_schema": {
         "type": "object",
         "properties": {
-          "selected_scenario": {"type": "string", "enum": ["A", "B", "C", "none"]},
-          "violations": {"type": "array", "items": {"type": "string"}}
+          "selected_scenario": {
+            "type": "string",
+            "enum": ["A", "B", "C", "none"]
+          },
+          "violations": { "type": "array", "items": { "type": "string" } }
         },
         "required": ["selected_scenario", "violations"],
         "additionalProperties": false
       },
       "assertions": [
-        {"kind": "equals", "path": "selected_scenario", "expected": "B", "severity": "hard"},
-        {"kind": "set_equals", "path": "violations", "expected": [], "severity": "quality"}
+        {
+          "kind": "equals",
+          "path": "selected_scenario",
+          "expected": "B",
+          "severity": "hard"
+        },
+        {
+          "kind": "set_equals",
+          "path": "violations",
+          "expected": [],
+          "severity": "quality"
+        }
       ]
     },
     {
@@ -89,17 +149,41 @@
       "response_schema": {
         "type": "object",
         "properties": {
-          "mutates_past": {"type": "boolean"},
-          "past_state": {"type": "string", "enum": ["MISSED", "COMPLETED", "MOVED", "DELETED"]},
-          "future_windows": {"type": "array", "items": {"type": "string", "enum": ["Tuesday 18:00", "Thursday 18:00"]}}
+          "mutates_past": { "type": "boolean" },
+          "past_state": {
+            "type": "string",
+            "enum": ["MISSED", "COMPLETED", "MOVED", "DELETED"]
+          },
+          "future_windows": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["Tuesday 18:00", "Thursday 18:00"]
+            }
+          }
         },
         "required": ["mutates_past", "past_state", "future_windows"],
         "additionalProperties": false
       },
       "assertions": [
-        {"kind": "equals", "path": "mutates_past", "expected": false, "severity": "hard"},
-        {"kind": "equals", "path": "past_state", "expected": "MISSED", "severity": "hard"},
-        {"kind": "set_equals", "path": "future_windows", "expected": ["Tuesday 18:00", "Thursday 18:00"], "severity": "quality"}
+        {
+          "kind": "equals",
+          "path": "mutates_past",
+          "expected": false,
+          "severity": "hard"
+        },
+        {
+          "kind": "equals",
+          "path": "past_state",
+          "expected": "MISSED",
+          "severity": "hard"
+        },
+        {
+          "kind": "set_equals",
+          "path": "future_windows",
+          "expected": ["Tuesday 18:00", "Thursday 18:00"],
+          "severity": "quality"
+        }
       ]
     },
     {
@@ -114,15 +198,28 @@
       "response_schema": {
         "type": "object",
         "properties": {
-          "update_memory": {"type": "boolean"},
-          "action": {"type": "string", "enum": ["keep_declared", "ask_confirmation", "replace_declared"]}
+          "update_memory": { "type": "boolean" },
+          "action": {
+            "type": "string",
+            "enum": ["keep_declared", "ask_confirmation", "replace_declared"]
+          }
         },
         "required": ["update_memory", "action"],
         "additionalProperties": false
       },
       "assertions": [
-        {"kind": "equals", "path": "update_memory", "expected": false, "severity": "hard"},
-        {"kind": "not_equals", "path": "action", "expected": "replace_declared", "severity": "hard"}
+        {
+          "kind": "equals",
+          "path": "update_memory",
+          "expected": false,
+          "severity": "hard"
+        },
+        {
+          "kind": "not_equals",
+          "path": "action",
+          "expected": "replace_declared",
+          "severity": "hard"
+        }
       ]
     },
     {
@@ -137,15 +234,28 @@
       "response_schema": {
         "type": "object",
         "properties": {
-          "notify": {"type": "boolean"},
-          "reason_code": {"type": "string", "enum": ["material_change", "duplicate_no_change"]}
+          "notify": { "type": "boolean" },
+          "reason_code": {
+            "type": "string",
+            "enum": ["material_change", "duplicate_no_change"]
+          }
         },
         "required": ["notify", "reason_code"],
         "additionalProperties": false
       },
       "assertions": [
-        {"kind": "equals", "path": "notify", "expected": false, "severity": "hard"},
-        {"kind": "equals", "path": "reason_code", "expected": "duplicate_no_change", "severity": "quality"}
+        {
+          "kind": "equals",
+          "path": "notify",
+          "expected": false,
+          "severity": "hard"
+        },
+        {
+          "kind": "equals",
+          "path": "reason_code",
+          "expected": "duplicate_no_change",
+          "severity": "quality"
+        }
       ]
     }
   ]

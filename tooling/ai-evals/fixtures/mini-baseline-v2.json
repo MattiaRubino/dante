@@ -18,46 +18,23 @@
         "properties": {
           "kind": {
             "type": "string",
-            "enum": [
-              "event",
-              "activity",
-              "note",
-              "unresolved"
-            ]
+            "enum": ["event", "activity", "note", "unresolved"]
           },
           "date": {
-            "type": [
-              "string",
-              "null"
-            ],
+            "type": ["string", "null"],
             "description": "Data canonica ISO 8601 nel formato YYYY-MM-DD, oppure null se assente."
           },
           "time": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": ["string", "null"]
           },
           "location": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": ["string", "null"]
           },
           "note": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": ["string", "null"]
           }
         },
-        "required": [
-          "kind",
-          "date",
-          "time",
-          "location",
-          "note"
-        ],
+        "required": ["kind", "date", "time", "location", "note"],
         "additionalProperties": false
       },
       "assertions": [
@@ -110,17 +87,10 @@
           },
           "action": {
             "type": "string",
-            "enum": [
-              "keep_declared",
-              "ask_confirmation",
-              "replace_declared"
-            ]
+            "enum": ["keep_declared", "ask_confirmation", "replace_declared"]
           }
         },
-        "required": [
-          "update_memory",
-          "action"
-        ],
+        "required": ["update_memory", "action"],
         "additionalProperties": false
       },
       "assertions": [
@@ -155,27 +125,17 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "ACTIVE",
-              "PAUSED"
-            ]
+            "enum": ["ACTIVE", "PAUSED"]
           },
           "rejected_stale_refs": {
             "type": "array",
             "items": {
               "type": "string",
-              "enum": [
-                "V1",
-                "V2"
-              ]
+              "enum": ["V1", "V2"]
             }
           }
         },
-        "required": [
-          "current_revision",
-          "status",
-          "rejected_stale_refs"
-        ],
+        "required": ["current_revision", "status", "rejected_stale_refs"],
         "additionalProperties": false
       },
       "assertions": [
@@ -194,9 +154,7 @@
         {
           "kind": "set_equals",
           "path": "rejected_stale_refs",
-          "expected": [
-            "V1"
-          ],
+          "expected": ["V1"],
           "severity": "quality"
         }
       ]

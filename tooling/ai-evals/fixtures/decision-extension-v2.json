@@ -30,20 +30,11 @@
             "type": "array",
             "items": {
               "type": "integer",
-              "enum": [
-                1,
-                2,
-                3
-              ]
+              "enum": [1, 2, 3]
             }
           }
         },
-        "required": [
-          "invoice_ref",
-          "total_eur",
-          "due_date",
-          "source_pages"
-        ],
+        "required": ["invoice_ref", "total_eur", "due_date", "source_pages"],
         "additionalProperties": false
       },
       "assertions": [

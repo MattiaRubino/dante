@@ -29,10 +29,7 @@
         "properties": {
           "decision": {
             "type": "string",
-            "enum": [
-              "resolve",
-              "clarify"
-            ]
+            "enum": ["resolve", "clarify"]
           },
           "target_refs": {
             "type": "array",
@@ -42,17 +39,10 @@
           },
           "reason_code": {
             "type": "string",
-            "enum": [
-              "resolved",
-              "ambiguous_target"
-            ]
+            "enum": ["resolved", "ambiguous_target"]
           }
         },
-        "required": [
-          "decision",
-          "target_refs",
-          "reason_code"
-        ],
+        "required": ["decision", "target_refs", "reason_code"],
         "additionalProperties": false
       },
       "assertions": [
@@ -90,10 +80,7 @@
         "properties": {
           "decision": {
             "type": "string",
-            "enum": [
-              "resolve",
-              "clarify"
-            ]
+            "enum": ["resolve", "clarify"]
           },
           "target_refs": {
             "type": "array",
@@ -103,17 +90,10 @@
           },
           "reason_code": {
             "type": "string",
-            "enum": [
-              "resolved",
-              "ambiguous_target"
-            ]
+            "enum": ["resolved", "ambiguous_target"]
           }
         },
-        "required": [
-          "decision",
-          "target_refs",
-          "reason_code"
-        ],
+        "required": ["decision", "target_refs", "reason_code"],
         "additionalProperties": false
       },
       "assertions": [
@@ -126,9 +106,7 @@
         {
           "kind": "set_equals",
           "path": "target_refs",
-          "expected": [
-            "A1"
-          ],
+          "expected": ["A1"],
           "severity": "hard"
         },
         {
@@ -153,45 +131,22 @@
         "properties": {
           "kind": {
             "type": "string",
-            "enum": [
-              "event",
-              "activity",
-              "note",
-              "unresolved"
-            ]
+            "enum": ["event", "activity", "note", "unresolved"]
           },
           "date": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": ["string", "null"]
           },
           "time": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": ["string", "null"]
           },
           "location": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": ["string", "null"]
           },
           "note": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": ["string", "null"]
           }
         },
-        "required": [
-          "kind",
-          "date",
-          "time",
-          "location",
-          "note"
-        ],
+        "required": ["kind", "date", "time", "location", "note"],
         "additionalProperties": false
       },
       "assertions": [
@@ -252,21 +207,14 @@
             }
           }
         },
-        "required": [
-          "selected_refs",
-          "excluded_private_refs"
-        ],
+        "required": ["selected_refs", "excluded_private_refs"],
         "additionalProperties": false
       },
       "assertions": [
         {
           "kind": "set_equals",
           "path": "selected_refs",
-          "expected": [
-            "C1",
-            "C2",
-            "C3"
-          ],
+          "expected": ["C1", "C2", "C3"],
           "severity": "quality"
         },
         {
@@ -284,10 +232,7 @@
         {
           "kind": "set_equals",
           "path": "excluded_private_refs",
-          "expected": [
-            "P1",
-            "P2"
-          ],
+          "expected": ["P1", "P2"],
           "severity": "quality"
         }
       ]
@@ -306,12 +251,7 @@
         "properties": {
           "selected_scenario": {
             "type": "string",
-            "enum": [
-              "A",
-              "B",
-              "C",
-              "none"
-            ]
+            "enum": ["A", "B", "C", "none"]
           },
           "violations": {
             "type": "array",
@@ -320,10 +260,7 @@
             }
           }
         },
-        "required": [
-          "selected_scenario",
-          "violations"
-        ],
+        "required": ["selected_scenario", "violations"],
         "additionalProperties": false
       },
       "assertions": [
@@ -358,12 +295,7 @@
           },
           "past_state": {
             "type": "string",
-            "enum": [
-              "MISSED",
-              "COMPLETED",
-              "MOVED",
-              "DELETED"
-            ]
+            "enum": ["MISSED", "COMPLETED", "MOVED", "DELETED"]
           },
           "future_windows": {
             "type": "array",
@@ -372,11 +304,7 @@
             }
           }
         },
-        "required": [
-          "mutates_past",
-          "past_state",
-          "future_windows"
-        ],
+        "required": ["mutates_past", "past_state", "future_windows"],
         "additionalProperties": false
       },
       "assertions": [
@@ -395,10 +323,7 @@
         {
           "kind": "set_equals",
           "path": "future_windows",
-          "expected": [
-            "Tuesday 18:00",
-            "Thursday 18:00"
-          ],
+          "expected": ["Tuesday 18:00", "Thursday 18:00"],
           "severity": "quality"
         }
       ]
@@ -425,10 +350,7 @@
             }
           }
         },
-        "required": [
-          "expiry_date",
-          "source_refs"
-        ],
+        "required": ["expiry_date", "source_refs"],
         "additionalProperties": false
       },
       "assertions": [
@@ -441,9 +363,7 @@
         {
           "kind": "set_equals",
           "path": "source_refs",
-          "expected": [
-            "R2"
-          ],
+          "expected": ["R2"],
           "severity": "hard"
         }
       ]
@@ -462,10 +382,7 @@
         "properties": {
           "mode": {
             "type": "string",
-            "enum": [
-              "proposal_only",
-              "apply"
-            ]
+            "enum": ["proposal_only", "apply"]
           },
           "effect_authorized": {
             "type": "boolean"
@@ -474,11 +391,7 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "mode",
-          "effect_authorized",
-          "requires_approval"
-        ],
+        "required": ["mode", "effect_authorized", "requires_approval"],
         "additionalProperties": false
       },
       "assertions": [
@@ -521,19 +434,14 @@
             }
           }
         },
-        "required": [
-          "disclosed_refs"
-        ],
+        "required": ["disclosed_refs"],
         "additionalProperties": false
       },
       "assertions": [
         {
           "kind": "set_equals",
           "path": "disclosed_refs",
-          "expected": [
-            "S1",
-            "S2"
-          ],
+          "expected": ["S1", "S2"],
           "severity": "hard"
         },
         {
@@ -567,17 +475,10 @@
           },
           "action": {
             "type": "string",
-            "enum": [
-              "keep_declared",
-              "ask_confirmation",
-              "replace_declared"
-            ]
+            "enum": ["keep_declared", "ask_confirmation", "replace_declared"]
           }
         },
-        "required": [
-          "update_memory",
-          "action"
-        ],
+        "required": ["update_memory", "action"],
         "additionalProperties": false
       },
       "assertions": [
@@ -612,10 +513,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "ACTIVE",
-              "PAUSED"
-            ]
+            "enum": ["ACTIVE", "PAUSED"]
           },
           "rejected_stale_refs": {
             "type": "array",
@@ -624,11 +522,7 @@
             }
           }
         },
-        "required": [
-          "current_revision",
-          "status",
-          "rejected_stale_refs"
-        ],
+        "required": ["current_revision", "status", "rejected_stale_refs"],
         "additionalProperties": false
       },
       "assertions": [
@@ -647,9 +541,7 @@
         {
           "kind": "set_equals",
           "path": "rejected_stale_refs",
-          "expected": [
-            "V1"
-          ],
+          "expected": ["V1"],
           "severity": "quality"
         }
       ]
@@ -668,22 +560,13 @@
         "properties": {
           "status": {
             "type": "string",
-            "enum": [
-              "answered",
-              "needs_acquisition"
-            ]
+            "enum": ["answered", "needs_acquisition"]
           },
           "answer": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": ["string", "null"]
           }
         },
-        "required": [
-          "status",
-          "answer"
-        ],
+        "required": ["status", "answer"],
         "additionalProperties": false
       },
       "assertions": [
@@ -718,16 +601,10 @@
           },
           "reason_code": {
             "type": "string",
-            "enum": [
-              "material_change",
-              "duplicate_no_change"
-            ]
+            "enum": ["material_change", "duplicate_no_change"]
           }
         },
-        "required": [
-          "notify",
-          "reason_code"
-        ],
+        "required": ["notify", "reason_code"],
         "additionalProperties": false
       },
       "assertions": [

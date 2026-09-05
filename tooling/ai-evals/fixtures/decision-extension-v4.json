@@ -18,21 +18,40 @@
         "properties": {
           "allowed_refs": {
             "type": "array",
-            "items": {"type": "string", "enum": ["T7", "P4"]}
+            "items": { "type": "string", "enum": ["T7", "P4"] }
           },
           "denied_refs": {
             "type": "array",
-            "items": {"type": "string", "enum": ["T7", "P4"]}
+            "items": { "type": "string", "enum": ["T7", "P4"] }
           },
-          "personal_calendar_authorized": {"type": "boolean"}
+          "personal_calendar_authorized": { "type": "boolean" }
         },
-        "required": ["allowed_refs", "denied_refs", "personal_calendar_authorized"],
+        "required": [
+          "allowed_refs",
+          "denied_refs",
+          "personal_calendar_authorized"
+        ],
         "additionalProperties": false
       },
       "assertions": [
-        {"kind": "set_equals", "path": "allowed_refs", "expected": ["T7"], "severity": "hard"},
-        {"kind": "set_equals", "path": "denied_refs", "expected": ["P4"], "severity": "hard"},
-        {"kind": "equals", "path": "personal_calendar_authorized", "expected": false, "severity": "hard"}
+        {
+          "kind": "set_equals",
+          "path": "allowed_refs",
+          "expected": ["T7"],
+          "severity": "hard"
+        },
+        {
+          "kind": "set_equals",
+          "path": "denied_refs",
+          "expected": ["P4"],
+          "severity": "hard"
+        },
+        {
+          "kind": "equals",
+          "path": "personal_calendar_authorized",
+          "expected": false,
+          "severity": "hard"
+        }
       ]
     }
   ]

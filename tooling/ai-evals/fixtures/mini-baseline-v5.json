@@ -16,7 +16,7 @@
       "response_schema": {
         "type": "object",
         "properties": {
-          "update_memory": {"type": "boolean"},
+          "update_memory": { "type": "boolean" },
           "action": {
             "type": "string",
             "enum": ["keep_declared", "ask_confirmation", "replace_declared"]
@@ -26,8 +26,18 @@
         "additionalProperties": false
       },
       "assertions": [
-        {"kind": "equals", "path": "update_memory", "expected": false, "severity": "hard"},
-        {"kind": "not_equals", "path": "action", "expected": "replace_declared", "severity": "hard"}
+        {
+          "kind": "equals",
+          "path": "update_memory",
+          "expected": false,
+          "severity": "hard"
+        },
+        {
+          "kind": "not_equals",
+          "path": "action",
+          "expected": "replace_declared",
+          "severity": "hard"
+        }
       ]
     }
   ]
