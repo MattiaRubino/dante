@@ -77,7 +77,9 @@
 }
 
 .world-focus-dante-conversation-action,
-.world-focus-dante-conversation-close {
+.world-focus-dante-conversation-close,
+.world-focus-dante-conversation-cancel-request,
+.world-focus-dante-conversation-send {
   min-height: 44px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: rgba(238, 243, 255, 0.88);
@@ -86,7 +88,9 @@
   cursor: pointer;
 }
 
-.world-focus-dante-conversation-action {
+.world-focus-dante-conversation-action,
+.world-focus-dante-conversation-cancel-request,
+.world-focus-dante-conversation-send {
   padding: 8px 13px;
   border-radius: 12px;
   font-size: 0.76rem;
@@ -103,29 +107,142 @@
 }
 
 .world-focus-dante-conversation-action:hover,
-.world-focus-dante-conversation-close:hover {
+.world-focus-dante-conversation-close:hover,
+.world-focus-dante-conversation-cancel-request:hover,
+.world-focus-dante-conversation-send:hover {
   background: rgba(255, 255, 255, 0.075);
 }
 
 .world-focus-dante-conversation-action:focus-visible,
-.world-focus-dante-conversation-close:focus-visible {
+.world-focus-dante-conversation-close:focus-visible,
+.world-focus-dante-conversation-cancel-request:focus-visible,
+.world-focus-dante-conversation-send:focus-visible,
+.world-focus-dante-conversation-input:focus-visible {
   outline: 2px solid color-mix(in srgb, var(--world-focus-accent) 72%, white);
   outline-offset: 3px;
 }
 
+.world-focus-dante-conversation-action:disabled,
+.world-focus-dante-conversation-cancel-request:disabled,
+.world-focus-dante-conversation-send:disabled,
+.world-focus-dante-conversation-input:disabled {
+  cursor: default;
+  opacity: 0.52;
+}
+
 .world-focus-dante-conversation-body {
+  display: flex;
   flex: 1 1 auto;
   min-width: 0;
   min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.world-focus-dante-conversation-messages {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 18px clamp(16px, 2.5vw, 28px);
   overflow: auto;
   overscroll-behavior: contain;
+  list-style: none;
+}
+
+.world-focus-dante-conversation-message {
+  max-width: min(42rem, 92%);
+  padding: 11px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.world-focus-dante-conversation-message[data-world-focus-dante-message-role='user'] {
+  align-self: flex-end;
+  background: color-mix(
+    in srgb,
+    var(--world-focus-accent) 14%,
+    rgba(255, 255, 255, 0.035)
+  );
+}
+
+.world-focus-dante-conversation-message-speaker {
+  display: block;
+  margin-bottom: 5px;
+  color: rgba(205, 215, 240, 0.72);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.world-focus-dante-conversation-message p,
+.world-focus-dante-conversation-status {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.world-focus-dante-conversation-message p {
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.world-focus-dante-conversation-status {
+  padding: 0 clamp(16px, 2.5vw, 28px) 10px;
+  color: rgba(218, 226, 247, 0.74);
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
+.world-focus-dante-conversation-composer {
+  display: grid;
+  flex: 0 0 auto;
+  gap: 8px;
+  padding: 12px clamp(16px, 2.5vw, 28px) 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(4, 7, 19, 0.66);
+}
+
+.world-focus-dante-conversation-composer-label {
+  font-size: 0.74rem;
+  font-weight: 650;
+  color: rgba(226, 233, 250, 0.78);
+}
+
+.world-focus-dante-conversation-input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 72px;
+  resize: vertical;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: rgba(247, 249, 255, 0.94);
+  background: rgba(255, 255, 255, 0.04);
+  font: inherit;
+  line-height: 1.45;
+}
+
+.world-focus-dante-conversation-composer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 @media (forced-colors: active) {
   .world-focus-dante-conversation,
   .world-focus-dante-conversation-header,
   .world-focus-dante-conversation-action,
-  .world-focus-dante-conversation-close {
+  .world-focus-dante-conversation-close,
+  .world-focus-dante-conversation-message,
+  .world-focus-dante-conversation-input,
+  .world-focus-dante-conversation-cancel-request,
+  .world-focus-dante-conversation-send {
     border-color: CanvasText;
   }
 }
