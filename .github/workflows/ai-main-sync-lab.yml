@@ -32,7 +32,7 @@ jobs:
           secret_dir="$(mktemp -d)"
           trap 'rm -rf -- "$secret_dir"' EXIT
           printf '%s' 'ci-not-a-real-token' > "$secret_dir/cloud-api-key"
-          printf '%s' 'Basic Y2k6Y2ktbm90LWEtcmVhbC10b2tlbg==' > "$secret_dir/otlp-authorization"
+          printf '%s' 'Basic Y2k6Y2ktbm90LWEtcmlnaHQ=' > "$secret_dir/otlp-authorization"
           printf '%s' 'postgresql://dante_observer:ci@127.0.0.1:5432/dante?sslmode=disable' > "$secret_dir/observer-dsn"
           docker run --rm \
             --env DANTE_ENV=ci \
@@ -62,15 +62,65 @@ jobs:
         working-directory: apps/backend
         run: uv python install
 
-      - name: Canonically format AI eval tooling
+      - name: Restore bounded eval-tooling Ruff exceptions
         run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          insertions = {
+              Path("tooling/ai-evals/run_gemini_native_runtime_smoke.py"): (
+                  '"""\n\nfrom __future__ import annotations\n',
+                  '"""\n\n# Ruff exceptions are intentional for this standalone CLI: it bootstraps the backend import path\n'
+                  '# before importing DANTE modules and writes its machine-readable result directly to stdout.\n'
+                  '# ruff: noqa: E402, T201\n\nfrom __future__ import annotations\n',
+              ),
+              Path("tooling/ai-evals/tests/test_decision_extension_v4.py"): (
+                  '"""\n\nfrom __future__ import annotations\n',
+                  '"""\n\n# Standalone eval-tooling tests bootstrap their local module path and use pytest assertions.\n'
+                  '# ruff: noqa: E402, S101\n\nfrom __future__ import annotations\n',
+              ),
+              Path("tooling/ai-evals/tests/test_eval_tooling.py"): (
+                  '"""\n\nfrom __future__ import annotations\n',
+                  '"""\n\n# This isolated historical harness intentionally retains unittest-style assertions and local\n'
+                  '# sys.path bootstrapping while remaining executable under pytest.\n'
+                  '# ruff: noqa: E402, PT009, PT027\n\nfrom __future__ import annotations\n',
+              ),
+          }
+          for path, (anchor, replacement) in insertions.items():
+              text = path.read_text(encoding="utf-8")
+              if "# ruff: noqa:" not in text:
+                  if anchor not in text:
+                      raise SystemExit(f"missing Ruff exception anchor: {path}")
+                  text = text.replace(anchor, replacement, 1)
+                  path.write_text(text, encoding="utf-8")
+
+          core = Path("tooling/ai-evals/dante_eval_core.py")
+          text = core.read_text(encoding="utf-8")
+          plain = '    PASS = "PASS"\n'
+          annotated = '    PASS = "PASS"  # noqa: S105 - verdict label, not a credential\n'
+          if annotated not in text:
+              if plain not in text:
+                  raise SystemExit("TrialVerdict.PASS anchor missing")
+              core.write_text(text.replace(plain, annotated, 1), encoding="utf-8")
+
+          runner = Path("tooling/ai-evals/run_ai_foundation_closure_gate.sh")
+          text = runner.read_text(encoding="utf-8")
+          old = '''echo '=== AI FOUNDATION: eval tooling ruff lint ==='\n# S105 is a single tooling-only false positive: TrialVerdict.PASS = "PASS" is an enum value,\n# not a credential. All other selected Ruff rules remain active for the whole eval-tooling tree.\nuv run --project apps/backend --locked ruff check \\\n  --config apps/backend/pyproject.toml --ignore S105 tooling/ai-evals\n'''
+          new = '''echo '=== AI FOUNDATION: eval tooling ruff lint ==='\nuv run --project apps/backend --locked ruff check \\\n  --config apps/backend/pyproject.toml tooling/ai-evals\n'''
+          if old in text:
+              runner.write_text(text.replace(old, new, 1), encoding="utf-8")
+          elif new not in text:
+              raise SystemExit("closure-runner lint anchor missing")
+          PY
+
           uv run --project apps/backend --locked ruff format \
             --config apps/backend/pyproject.toml tooling/ai-evals
+
           if ! git diff --quiet -- tooling/ai-evals; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add tooling/ai-evals
-            git commit -m "style(ai): align eval tooling with backend Ruff config"
+            git commit -m "chore(ai): restore bounded eval lint contracts"
             git push origin HEAD:integration/ai-main-sync-lab-2026-09-05-a1
           fi
 
