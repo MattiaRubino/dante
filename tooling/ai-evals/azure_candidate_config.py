@@ -23,7 +23,7 @@ class AzureCandidateConfig:
     deployment: str
 
     @classmethod
-    def from_environment(cls) -> "AzureCandidateConfig":
+    def from_environment(cls) -> AzureCandidateConfig:
         endpoint = _first_env(_DANTE_ENDPOINT_ENV, _LEGACY_ENDPOINT_ENV)
         api_key = _first_env(_DANTE_KEY_ENV, _LEGACY_KEY_ENV)
         deployment = _first_env(_DANTE_DEPLOYMENT_ENV, _LEGACY_DEPLOYMENT_ENV)
