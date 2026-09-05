@@ -20,6 +20,7 @@ from dante.modules.intelligence.adapters.outbound.model.gemini_interactions impo
     GEMINI_INTERACTIONS_API_REVISION,
     GEMINI_INTERACTIONS_BINDING_REF,
     GEMINI_INTERACTIONS_MODEL,
+    GEMINI_INTERACTIONS_ROUTE_REVISION,
     GEMINI_INTERACTIONS_SERVICE_TIER,
 )
 from dante.modules.intelligence.contracts.model_access import (
@@ -58,6 +59,7 @@ class GeminiNativeModelAccessCandidate:
         self._resources = create_development_model_access_runtime(
             api_key=_api_key_from_environment(),
             revisions_root=_REVISIONS_ROOT,
+            route_revision=GEMINI_INTERACTIONS_ROUTE_REVISION,
         )
         self._runtime = self._resources.runtime
         self._snapshot = self._runtime.route_config
