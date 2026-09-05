@@ -83,46 +83,49 @@ jobs:
         working-directory: apps/backend
         run: uv lock
 
-      - name: Commit deterministic reconciliation if needed
-        id: reconcile
+      - name: Commit dependency reconciliation if needed
         run: |
-          if git diff --quiet -- apps/backend/pyproject.toml apps/backend/uv.lock apps/backend/tests/unit/test_architecture_boundaries.py; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-          else
+          if ! git diff --quiet -- apps/backend/pyproject.toml apps/backend/uv.lock apps/backend/tests/unit/test_architecture_boundaries.py; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add apps/backend/pyproject.toml apps/backend/uv.lock apps/backend/tests/unit/test_architecture_boundaries.py
             git commit -m "chore(ai): reconcile main dependency graph"
             git push origin HEAD:integration/ai-main-sync-lab-2026-09-05-a1
-            echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Verify locked dependency graph
-        if: steps.reconcile.outputs.changed == 'false'
         working-directory: apps/backend
         run: uv lock --check
 
       - name: Synchronize locked environment
-        if: steps.reconcile.outputs.changed == 'false'
         working-directory: apps/backend
         run: uv sync --locked
 
+      - name: Reformat AI eval tooling with current main Ruff
+        run: uv run --project apps/backend --locked ruff format tooling/ai-evals
+
+      - name: Commit formatter reconciliation if needed
+        run: |
+          if ! git diff --quiet -- tooling/ai-evals; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add tooling/ai-evals
+            git commit -m "style(ai): align eval tooling with main Ruff"
+            git push origin HEAD:integration/ai-main-sync-lab-2026-09-05-a1
+          fi
+
       - name: Ruff AI and backend quality
-        if: steps.reconcile.outputs.changed == 'false'
         run: |
           uv run --project apps/backend --locked ruff format --check apps/backend/src apps/backend/tests tooling/ai-evals
           uv run --project apps/backend --locked ruff check apps/backend/src apps/backend/tests tooling/ai-evals
 
       - name: Mypy backend
-        if: steps.reconcile.outputs.changed == 'false'
         working-directory: apps/backend
         run: uv run --locked mypy
 
       - name: Backend non-PostgreSQL tests
-        if: steps.reconcile.outputs.changed == 'false'
         working-directory: apps/backend
         run: uv run --locked pytest -m "not postgres"
 
       - name: AI eval deterministic tests
-        if: steps.reconcile.outputs.changed == 'false'
         run: uv run --project apps/backend --locked pytest tooling/ai-evals/tests
