@@ -18,26 +18,26 @@ from uuid import uuid7
 _BACKEND_ROOT = Path(__file__).resolve().parents[2] / "apps" / "backend"
 sys.path.insert(0, str(_BACKEND_ROOT / "src"))
 
-from dante.bootstrap.intelligence import (  # noqa: E402
-    create_development_model_access_runtime,
-)
-from dante.modules.intelligence.adapters.outbound.model.gemini_interactions import (  # noqa: E402
+from dante.bootstrap.intelligence import create_development_model_access_runtime
+from dante.modules.intelligence.adapters.outbound.model.gemini_interactions import (
     GEMINI_INTERACTIONS_BINDING_REF,
     GEMINI_INTERACTIONS_ROUTE_REVISION,
 )
-from dante.modules.intelligence.contracts.model_access import (  # noqa: E402
+from dante.modules.intelligence.contracts.model_access import (
     ModelInvocationRequest,
     ModelTarget,
     StructuredOutputContract,
 )
-from dante.modules.intelligence.route_config import load_route_config  # noqa: E402
+from dante.modules.intelligence.route_config import load_route_config
 
 _REVISIONS_ROOT = _BACKEND_ROOT / "config" / "intelligence" / "revisions"
 _KEY_ENV_NAMES = ("DANTE_GEMINI_API_KEY", "DANTE_EVAL_GEMINI_API_KEY")
 
 
 def _parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Synthetic native Gemini ModelAccess smoke")
+    parser = argparse.ArgumentParser(
+        description="Synthetic native Gemini ModelAccess smoke"
+    )
     parser.add_argument("--execute", action="store_true")
     return parser
 
@@ -145,15 +145,21 @@ async def _run(execute: bool) -> int:
                     "tool_use_tokens": result.usage.tool_use_tokens,
                     "total_tokens": result.usage.total_tokens,
                 },
-                "attempt_outcomes": [attempt.outcome.value for attempt in result.attempts],
-                "provider_status": attempt.provider_status if attempt is not None else None,
+                "attempt_outcomes": [
+                    attempt.outcome.value for attempt in result.attempts
+                ],
+                "provider_status": attempt.provider_status
+                if attempt is not None
+                else None,
                 "finish_reason": result.finish_reason,
                 "output": (
                     json.loads(result.structured_output_json)
                     if result.structured_output_json is not None
                     else None
                 ),
-                "error_class": result.error_class.value if result.error_class is not None else None,
+                "error_class": result.error_class.value
+                if result.error_class is not None
+                else None,
                 "error_code": result.error_code,
             },
             ensure_ascii=False,
