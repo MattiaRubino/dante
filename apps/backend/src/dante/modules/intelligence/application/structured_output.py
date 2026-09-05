@@ -34,9 +34,7 @@ _SUPPORTED_KEYWORDS = frozenset(
         "pattern",
     }
 )
-_SUPPORTED_TYPES = frozenset(
-    {"object", "array", "string", "integer", "number", "boolean", "null"}
-)
+_SUPPORTED_TYPES = frozenset({"object", "array", "string", "integer", "number", "boolean", "null"})
 
 
 @dataclass(frozen=True, slots=True)
@@ -67,9 +65,7 @@ def _validate_schema_shape(schema: dict[str, object], *, path: str) -> None:
     if type_value is not None:
         if isinstance(type_value, str):
             types = (type_value,)
-        elif isinstance(type_value, list) and all(
-            isinstance(item, str) for item in type_value
-        ):
+        elif isinstance(type_value, list) and all(isinstance(item, str) for item in type_value):
             types = tuple(cast(list[str], type_value))
         else:
             raise StructuredOutputValidationError("invalid_schema_type", path)
@@ -91,15 +87,11 @@ def _validate_schema_shape(schema: dict[str, object], *, path: str) -> None:
                 raise StructuredOutputValidationError(
                     "property_schema_not_object", f"{path}.{name}"
                 )
-            _validate_schema_shape(
-                cast(dict[str, object], child), path=f"{path}.{name}"
-            )
+            _validate_schema_shape(cast(dict[str, object], child), path=f"{path}.{name}")
 
     required = schema.get("required")
     if required is not None:
-        if not isinstance(required, list) or not all(
-            isinstance(item, str) for item in required
-        ):
+        if not isinstance(required, list) or not all(isinstance(item, str) for item in required):
             raise StructuredOutputValidationError("required_not_string_array", path)
         required_names = cast(list[str], required)
         if len(required_names) != len(set(required_names)):
@@ -124,9 +116,7 @@ def _validate_schema_shape(schema: dict[str, object], *, path: str) -> None:
 
     for keyword in ("minimum", "maximum"):
         value = schema.get(keyword)
-        if value is not None and (
-            isinstance(value, bool) or not isinstance(value, (int, float))
-        ):
+        if value is not None and (isinstance(value, bool) or not isinstance(value, (int, float))):
             raise StructuredOutputValidationError(f"invalid_{keyword}", path)
 
     pattern = schema.get("pattern")
@@ -171,9 +161,7 @@ def _validate_value(value: object, schema: dict[str, object], *, path: str) -> N
         accepted_types = tuple(cast(list[str], type_value))
     else:
         accepted_types = ()
-    if accepted_types and not any(
-        _matches_type(value, item) for item in accepted_types
-    ):
+    if accepted_types and not any(_matches_type(value, item) for item in accepted_types):
         raise StructuredOutputValidationError("type_mismatch", path)
 
     enum_values = schema.get("enum")
@@ -188,17 +176,13 @@ def _validate_value(value: object, schema: dict[str, object], *, path: str) -> N
     if isinstance(value, dict):
         properties_raw = schema.get("properties", {})
         properties = (
-            cast(dict[str, object], properties_raw)
-            if isinstance(properties_raw, dict)
-            else {}
+            cast(dict[str, object], properties_raw) if isinstance(properties_raw, dict) else {}
         )
         required_raw = schema.get("required", [])
         required = cast(list[str], required_raw) if isinstance(required_raw, list) else []
         for name in required:
             if name not in value:
-                raise StructuredOutputValidationError(
-                    "required_property_missing", f"{path}.{name}"
-                )
+                raise StructuredOutputValidationError("required_property_missing", f"{path}.{name}")
         if schema.get("additionalProperties") is False:
             extra = set(value) - set(properties)
             if extra:
