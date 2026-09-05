@@ -11,7 +11,6 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Final
 
-from azure_candidate_config import AzureCandidateConfig
 from dante_eval_core import (
     MAX_HARD_CALLS,
     AssertionFailure,
@@ -38,7 +37,10 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--suite", type=Path, default=_DEFAULT_SUITE)
     parser.add_argument(
         "--candidate",
-        choices=["azure-openai-responses"],
+        choices=[
+            "azure-openai-responses",
+            "google-gemini-openai-compat",
+        ],
         default="azure-openai-responses",
     )
     parser.add_argument(
@@ -125,6 +127,22 @@ def _write_report(path: Path, document: dict[str, Any]) -> None:
     )
 
 
+def _candidate_from_environment(candidate_id: str) -> Any:
+    if candidate_id == "azure-openai-responses":
+        from azure_candidate_config import AzureCandidateConfig
+        from azure_openai_responses_candidate import AzureOpenAIResponsesCandidate
+
+        return AzureOpenAIResponsesCandidate(AzureCandidateConfig.from_environment())
+
+    if candidate_id == "google-gemini-openai-compat":
+        from gemini_candidate_config import GeminiCandidateConfig
+        from gemini_openai_compat_candidate import GeminiOpenAICompatCandidate
+
+        return GeminiOpenAICompatCandidate(GeminiCandidateConfig.from_environment())
+
+    raise ValueError(f"unsupported candidate: {candidate_id}")
+
+
 async def _execute(args: argparse.Namespace) -> int:
     suite = load_suite(args.suite)
     fixtures = _selected_fixtures(suite.fixtures, args.only)
@@ -171,10 +189,7 @@ async def _execute(args: argparse.Namespace) -> int:
         max_cost_eur=args.max_cost_eur,
         pricing=pricing,
     )
-    from azure_openai_responses_candidate import AzureOpenAIResponsesCandidate
-
-    config = AzureCandidateConfig.from_environment()
-    candidate = AzureOpenAIResponsesCandidate(config)
+    candidate = _candidate_from_environment(args.candidate)
 
     trials: list[dict[str, Any]] = []
     started_at = datetime.now(UTC)
