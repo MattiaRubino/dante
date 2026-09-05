@@ -1,4 +1,4 @@
-"""Native Google Gemini Interactions adapter for the first DANTE development binding.
+"""Native Google Gemini Interactions adapter for the DANTE development binding.
 
 Provider mechanics remain private. This adapter is not DANTE routing, memory, policy, truth,
 or publication authority.
@@ -23,9 +23,13 @@ from dante.modules.intelligence.contracts.model_access import (
     ProviderUsageState,
 )
 
-GEMINI_INTERACTIONS_BINDING_REF = "google-gemini-interactions-flash-v1"
+GEMINI_INTERACTIONS_BINDING_REF = "google-gemini-interactions-flash-v2"
+GEMINI_INTERACTIONS_HARNESS_REF = "gemini-flash-low-v1"
+GEMINI_INTERACTIONS_ROUTE_REVISION = "gemini-flash-dev-v2"
 GEMINI_INTERACTIONS_MODEL = "gemini-3.8-flash"
 GEMINI_INTERACTIONS_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/interactions"
+GEMINI_INTERACTIONS_API_REVISION = "2026-05-20"
+GEMINI_INTERACTIONS_SERVICE_TIER = "standard"
 _REQUIRED_FEATURE_MODES = frozenset(
     {
         "streaming:off",
@@ -42,10 +46,12 @@ _ALLOWED_REASONING_LEVELS = frozenset({"low", "medium", "high"})
 class GeminiInteractionStatus(StrEnum):
     COMPLETED = "completed"
     INCOMPLETE = "incomplete"
+    BUDGET_EXCEEDED = "budget_exceeded"
     FAILED = "failed"
     CANCELLED = "cancelled"
     IN_PROGRESS = "in_progress"
     REQUIRES_ACTION = "requires_action"
+    QUEUED = "queued"
 
 
 class GeminiTransportErrorKind(StrEnum):
@@ -70,6 +76,9 @@ class GeminiInteractionsWireRequest:
     max_output_tokens: int
     thinking_level: str
     timeout_seconds: float
+    endpoint: str = GEMINI_INTERACTIONS_ENDPOINT
+    api_revision: str = GEMINI_INTERACTIONS_API_REVISION
+    service_tier: str = GEMINI_INTERACTIONS_SERVICE_TIER
     store: bool = False
     stream: bool = False
     background: bool = False
@@ -80,6 +89,12 @@ class GeminiInteractionsWireRequest:
     def __post_init__(self) -> None:
         if self.model != GEMINI_INTERACTIONS_MODEL:
             raise ValueError("Gemini wire request model must match admitted binding")
+        if self.endpoint != GEMINI_INTERACTIONS_ENDPOINT:
+            raise ValueError("Gemini wire request endpoint must match admitted binding")
+        if self.api_revision != GEMINI_INTERACTIONS_API_REVISION:
+            raise ValueError("Gemini wire request API revision must match admitted binding")
+        if self.service_tier != GEMINI_INTERACTIONS_SERVICE_TIER:
+            raise ValueError("Gemini wire request service tier must match admitted binding")
         if not self.input_text or not self.input_text.strip():
             raise ValueError("Gemini wire request input_text must be non-empty")
         if self.system_instruction is not None and not self.system_instruction.strip():
@@ -91,11 +106,11 @@ class GeminiInteractionsWireRequest:
         if self.timeout_seconds <= 0:
             raise ValueError("timeout_seconds must be positive")
         if self.store or self.stream or self.background:
-            raise ValueError("foundation Gemini binding must be stateless unary store=false")
+            raise ValueError("development Gemini binding must be stateless unary store=false")
         if self.tool_choice != "none":
-            raise ValueError("foundation Gemini binding must disable provider-native tools")
+            raise ValueError("development Gemini binding must disable provider-native tools")
         if self.thinking_summaries != "none":
-            raise ValueError("foundation Gemini binding must disable thinking summaries")
+            raise ValueError("development Gemini binding must disable thinking summaries")
 
 
 @dataclass(frozen=True, slots=True)
@@ -110,6 +125,8 @@ class GeminiInteractionsWireResponse:
     cached_tokens: int | None
     tool_use_tokens: int | None
     total_tokens: int | None
+    model: str | None = None
+    service_tier: str | None = None
     error_code: str | None = None
 
 
@@ -219,15 +236,21 @@ class GeminiInteractionsAdapter:
         if request.structured_output is not None:
             loaded = json.loads(request.structured_output.schema_json)
             if not isinstance(loaded, dict):
-                return self._preflight_invalid_response(
+                return self._preflight_invalid_request(
                     request,
                     started_at,
                     code="structured_schema_not_object",
                 )
             structured_schema = loaded
 
+        assert request.provider_endpoint is not None
+        assert request.provider_api_revision is not None
+        assert request.provider_service_tier is not None
         wire_request = GeminiInteractionsWireRequest(
             model=request.provider_model,
+            endpoint=request.provider_endpoint,
+            api_revision=request.provider_api_revision,
+            service_tier=request.provider_service_tier,
             input_text=request.rendered_input,
             system_instruction=request.rendered_instructions,
             max_output_tokens=request.max_output_tokens,
@@ -276,6 +299,11 @@ class GeminiInteractionsAdapter:
         admitted = (
             request.provider_binding_ref == GEMINI_INTERACTIONS_BINDING_REF
             and request.provider_model == GEMINI_INTERACTIONS_MODEL
+            and request.harness_profile_ref == GEMINI_INTERACTIONS_HARNESS_REF
+            and request.route_config_identity.revision == GEMINI_INTERACTIONS_ROUTE_REVISION
+            and request.provider_endpoint == GEMINI_INTERACTIONS_ENDPOINT
+            and request.provider_api_revision == GEMINI_INTERACTIONS_API_REVISION
+            and request.provider_service_tier == GEMINI_INTERACTIONS_SERVICE_TIER
             and request.reasoning_level in _ALLOWED_REASONING_LEVELS
             and frozenset(request.feature_modes) == _REQUIRED_FEATURE_MODES
         )
@@ -290,11 +318,11 @@ class GeminiInteractionsAdapter:
             started_at=started_at,
             completed_at=started_at,
             error_class=ProviderErrorClass.UNSUPPORTED_FEATURE,
-            error_code="binding_or_feature_mode_not_admitted",
+            error_code="binding_protocol_or_feature_mode_not_admitted",
         )
 
     @staticmethod
-    def _preflight_invalid_response(
+    def _preflight_invalid_request(
         request: ProviderInvocationRequest,
         started_at: datetime,
         *,
@@ -320,6 +348,30 @@ class GeminiInteractionsAdapter:
         completed_at: datetime,
     ) -> ProviderAttemptResult:
         usage = _usage_from_response(response)
+        provider_status = response.status.value
+
+        if response.model is not None and response.model != request.provider_model:
+            return self._invalid_response(
+                request,
+                response,
+                usage,
+                started_at,
+                completed_at,
+                code="provider_model_identity_mismatch",
+            )
+        if (
+            response.service_tier is not None
+            and response.service_tier != request.provider_service_tier
+        ):
+            return self._invalid_response(
+                request,
+                response,
+                usage,
+                started_at,
+                completed_at,
+                code="provider_service_tier_mismatch",
+            )
+
         if response.status is GeminiInteractionStatus.CANCELLED:
             return ProviderAttemptResult(
                 provider_attempt_id=request.provider_attempt_id,
@@ -331,6 +383,8 @@ class GeminiInteractionsAdapter:
                 completed_at=completed_at,
                 provider_request_id=response.request_id,
                 provider_response_id=response.interaction_id,
+                provider_status=provider_status,
+                finish_reason="provider_cancelled",
                 error_class=ProviderErrorClass.CANCELLATION,
                 error_code=response.error_code or "provider_cancelled",
             )
@@ -345,12 +399,15 @@ class GeminiInteractionsAdapter:
                 completed_at=completed_at,
                 provider_request_id=response.request_id,
                 provider_response_id=response.interaction_id,
+                provider_status=provider_status,
+                finish_reason="provider_failed",
                 error_class=ProviderErrorClass.SERVER,
                 error_code=response.error_code or "interaction_failed",
             )
         if response.status in {
             GeminiInteractionStatus.IN_PROGRESS,
             GeminiInteractionStatus.REQUIRES_ACTION,
+            GeminiInteractionStatus.QUEUED,
         }:
             return self._invalid_response(
                 request,
@@ -358,7 +415,21 @@ class GeminiInteractionsAdapter:
                 usage,
                 started_at,
                 completed_at,
-                code="unexpected_nonterminal_or_tool_status",
+                code="unexpected_nonterminal_or_action_status",
+            )
+        if response.status is GeminiInteractionStatus.BUDGET_EXCEEDED:
+            return ProviderAttemptResult(
+                provider_attempt_id=request.provider_attempt_id,
+                model_invocation_id=request.model_invocation_id,
+                outcome=ProviderAttemptOutcome.INCOMPLETE,
+                acceptance=ProviderAcceptanceCertainty.ESTABLISHED,
+                usage=usage,
+                started_at=started_at,
+                completed_at=completed_at,
+                provider_request_id=response.request_id,
+                provider_response_id=response.interaction_id,
+                provider_status=provider_status,
+                finish_reason="budget_exceeded",
             )
         if response.output_text is None:
             return self._invalid_response(
@@ -412,6 +483,12 @@ class GeminiInteractionsAdapter:
             completed_at=completed_at,
             provider_request_id=response.request_id,
             provider_response_id=response.interaction_id,
+            provider_status=provider_status,
+            finish_reason=(
+                None
+                if response.status is GeminiInteractionStatus.COMPLETED
+                else "provider_incomplete"
+            ),
             output_text=output_text,
             structured_output_json=structured_output_json,
         )
@@ -436,6 +513,8 @@ class GeminiInteractionsAdapter:
             completed_at=completed_at,
             provider_request_id=response.request_id,
             provider_response_id=response.interaction_id,
+            provider_status=response.status.value,
+            finish_reason=code,
             error_class=ProviderErrorClass.INVALID_RESPONSE,
             error_code=code,
         )
