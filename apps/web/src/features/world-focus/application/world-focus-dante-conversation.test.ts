@@ -124,13 +124,15 @@ describe('World Focus D3 deterministic conversation boundary', () => {
 
   it('relays cancellation to the adapter and never validates a late aborted result', async () => {
     const request = createRequest();
-    let release: (() => void) | null = null;
-    let receivedSignal: AbortSignal | null = null;
+    const observed: {
+      release?: () => void;
+      signal?: AbortSignal;
+    } = {};
     const adapter: WorldFocusDanteConversationReadAdapter = {
       read: ({ signal }) => {
-        receivedSignal = signal;
+        observed.signal = signal;
         return new Promise((resolve) => {
-          release = () =>
+          observed.release = () =>
             resolve({
               schemaVersion: WORLD_FOCUS_DANTE_CONVERSATION_SCHEMA_VERSION,
               status: 'ready',
@@ -149,10 +151,10 @@ describe('World Focus D3 deterministic conversation boundary', () => {
 
     await Promise.resolve();
     controller.abort();
-    release?.();
+    observed.release?.();
 
     await expect(pending).rejects.toMatchObject({ name: 'AbortError' });
-    expect(receivedSignal?.aborted).toBe(true);
+    expect(observed.signal?.aborted).toBe(true);
   });
 
   it('keeps unavailable as a technical result rather than fabricating assistant output', async () => {
