@@ -1,24 +1,32 @@
 # DANTE — Frontend Product Contract
 
-- **Status:** CURRENT FRONTEND NAVIGATION / current `main` platform + Home/Temporal workstream
+- **Status:** CURRENT FRONTEND NAVIGATION — integrated Home/Temporal candidate over current `main`
 - **Last reconciled:** 2026-09-05
+- **Integration state:** `feature/home-timeline` contains `main` through `7bc7c0136cb5579528be1e2be0e71a6399004f90`; no PR is opened by this checkpoint.
 
-This directory contains durable product-facing frontend contracts carried into the production React workspace. Current implementation truth is the checked-out code/tests; prototype branches remain design/history evidence only.
+This directory contains durable product-facing frontend contracts carried into the production React workspace. Current implementation truth is the checked-out code/tests plus current CI evidence. Prototype branches and dated checkpoints remain design/history evidence only.
+
+Operational handoff documents under `docs/frontend/home/` are retired pointers, not live authority. They remain only so historical links do not break.
 
 ## Read order
 
 1. `access.md` — current Access/Auth Web contract
 2. `home/home-structural-contract.md` — frozen Whole-Home H0 macro structure and responsive composition
-3. `home/production-depth-handoff.md` — current Home workstream handoff
-4. `home/current-checkpoint.md`
-5. `home/contract.md`
-6. `ui-registry.md`
-7. `design-tokens.md`
-8. `terminology.md`
-9. `localization.md`
-10. `production-readiness/component-architecture.md`
-11. `production-readiness/backend-integration-contract.md`
-12. `production-readiness/quality-gates.md`
+3. `home/current-checkpoint.md` — current Home/Temporal integration state
+4. `home/temporal-frontend-roadmap.md` — current Temporal frontend authority
+5. `home/temporal-f0-contract.md` — frozen temporal application foundation
+6. `home/timeline-t1-frozen-contract.md` — frozen Timeline behavior
+7. `home/temporal-create-c1-manual-acceptance.md` — C1 manual product gate
+8. `home/world-focus-architecture.md` — World Focus frontend architecture
+9. `home/world-focus-frontend-roadmap.md` — World Focus pre-backend roadmap
+10. `home/contract.md` — durable Home product/behavior intent
+11. `ui-registry.md`
+12. `design-tokens.md`
+13. `terminology.md`
+14. `localization.md`
+15. `production-readiness/component-architecture.md`
+16. `production-readiness/backend-integration-contract.md`
+17. `production-readiness/quality-gates.md`
 
 Engineering/runtime authority remains the materialized frontend workspace, repository architecture, CI and local-development documentation. Product contracts do not replace those engineering authorities.
 
@@ -67,22 +75,36 @@ WebAuthn crypto remains backend-owned
 
 The accepted Security UI is functionally proved but has accumulated substantial responsibility in `access-security-page.tsx`. Later hardening should split bounded password/provider/passkey/reauth sections before substantially expanding the page. This is a component-ownership cleanup, not a semantic Auth redesign.
 
-## Home / Temporal React workstream
+## Home / Temporal integrated candidate
 
-The accepted Home prototype remains an executable UX/reference specification, not code to transliterate line-by-line. The production React materialization on the Home/Temporal workstream must preserve accepted behavior while consuming the current platform, Access/Auth and shared frontend architecture from `main`.
+The accepted Home prototype remains an executable UX/reference specification, not code to transliterate line-by-line. The production React Home/AppShell/Timeline/Temporal materialization now lives together on the integration candidate and consumes the current platform, Access/Auth, Recovery, Email, Observability, OpenAPI and shared frontend baseline from `main`.
 
 The Whole-Home macro skeleton is change-controlled by H0. Child feature work consumes that skeleton and may not silently change region ownership, macro hierarchy or responsive composition merely because a local implementation would be easier.
 
+Frozen foundations remain distinct from open product acceptance:
+
+```text
+H0 Whole Home structure        FROZEN
+P1 AppShell / Topbar           FROZEN
+T1 Timeline behavior           FROZEN
+F0 Temporal application seam   CLOSED / FROZEN
+C1 Manual Temporal Create      OPEN — manual product acceptance not granted
+C2 Structured Detail           BLOCKED until C1 closes
+```
+
+Merging the integration branch must never be interpreted as `C1 MANUAL PASS — APPROVED`.
+
 Implementation must:
 
-- preserve the accepted visual and behavioral contract before introducing redesigns;
-- preserve the frozen H0 Whole-Home structural contract unless an explicit user-approved change reopens it;
-- use the React/TypeScript architecture already materialized in the repository;
+- preserve accepted visual and behavioral contracts before introducing redesigns;
+- preserve H0 unless an explicit user-approved change reopens it;
+- use the React/TypeScript architecture materialized in the repository;
 - componentize by ownership boundary rather than arbitrary pieces of the old monolith;
 - separate view models from backend DTOs/domain/persistence shapes;
 - preserve semantic IDs, localization keys and machine-readable Home-stage/Whole-Home contracts;
 - keep semantic World/group/event colors distinct from generic DANTE chrome;
-- keep Timeline/Temporal application seams independent from raw persistence and provider SDKs.
+- keep Timeline/Temporal application seams independent from raw persistence and provider SDKs;
+- keep pre-backend C1 behavior truthful: no fake PostgreSQL/provider/recurrence-materialization success.
 
 Machine-readable H0 authority lives in:
 
@@ -91,6 +113,8 @@ Machine-readable H0 authority lives in:
 
 Those contracts are blocking CI through `tests/prototypes/frontend-preprod-contracts.py`; runtime structure and geometry are additionally protected by React and Playwright regression tests.
 
-## Historical prototype rule
+## Historical prototype / branch rule
 
-Production code never imports prototype implementation. Prototype branches are recoverable evidence, not runtime dependencies.
+Production code never imports prototype implementation. Prototype branches and retired handoffs are recoverable evidence, not runtime or operating dependencies.
+
+Branch/worktree/SHA labels inside dated frozen or historical records describe provenance. They do not override `home/current-checkpoint.md`, the checked-out branch, or current repository/CI truth.
