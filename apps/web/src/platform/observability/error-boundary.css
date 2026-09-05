@@ -1,0 +1,80 @@
+.observability-failure {
+  display: grid;
+  min-height: 100dvh;
+  padding: clamp(1rem, 4vw, 3rem);
+  place-items: center;
+  background: var(--dante-semantic-color-surface-soft);
+  color: var(--dante-semantic-color-text-primary);
+}
+
+.observability-failure__panel {
+  width: min(100%, 36rem);
+  padding: clamp(1.5rem, 5vw, 3rem);
+  border: 1px solid var(--dante-semantic-color-border-divider);
+  border-radius: var(--dante-semantic-radius-card);
+  background: var(--dante-semantic-color-surface-base);
+  box-shadow: 0 1.25rem 4rem
+    color-mix(in srgb, var(--dante-semantic-color-brand-ink) 10%, transparent);
+}
+
+.observability-failure__panel h1 {
+  margin: 0.35rem 0 0.75rem;
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
+  line-height: 1.08;
+}
+
+.observability-failure__panel p {
+  color: var(--dante-semantic-color-text-secondary);
+  line-height: 1.6;
+}
+
+.observability-failure__eyebrow {
+  margin: 0;
+  color: var(--dante-semantic-color-brand-accent-text);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.observability-failure__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.observability-failure__actions button {
+  min-height: 2.75rem;
+  padding: 0.65rem 1rem;
+  border: 1px solid var(--dante-semantic-color-border-control);
+  border-radius: var(--dante-semantic-radius-control);
+  background: var(--dante-semantic-color-surface-base);
+  color: var(--dante-semantic-color-text-primary);
+  cursor: pointer;
+}
+
+.observability-failure__actions button:first-child {
+  border-color: var(--dante-semantic-color-brand-ink);
+  background: var(--dante-semantic-color-brand-ink);
+  color: var(--dante-semantic-color-surface-base);
+}
+
+.observability-failure__actions button:hover {
+  border-color: var(--dante-semantic-color-border-hover);
+  background: var(--dante-semantic-color-surface-soft);
+}
+
+.observability-failure__actions button:first-child:hover {
+  border-color: var(--dante-semantic-color-brand-ink);
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-brand-ink) 92%,
+    var(--dante-semantic-color-surface-base)
+  );
+}
+
+.observability-failure__actions button:focus-visible {
+  outline: 3px solid var(--dante-semantic-color-focus-ring);
+  outline-offset: 3px;
+}

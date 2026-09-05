@@ -1,7 +1,7 @@
 # Branching and Environments
 
 - **Status:** CURRENT
-- **Last reconciled:** 2026-09-04
+- **Last reconciled:** 2026-09-05
 
 ## 1. Core rule
 
@@ -211,7 +211,7 @@ current Alembic                  20260904_17
 current topology                 88|5|16|76|172|89|270|0|0|0
 ```
 
-Current project authority selects `feature/platform-observability` as the next bounded integration after its operational closure/rechecks. Branch existence by itself is not evidence that a workstream is still active or should be resumed; exact workstream state must be reread from current authority and live Git before writes.
+Platform Observability source work is closed. The accepted integration candidate is `integration/platform-observability-v2`, created from current protected `main` and carrying the real two-parent merge of the frozen source closure. `feature/platform-observability` is closed source history; `integration/platform-observability` is an abandoned integration attempt and must never be resumed or merged. Branch existence by itself is not evidence that a workstream is still active or should be resumed; exact workstream state must be reread from current authority and live Git before writes.
 
 `feature/access-auth`, `feature/postgres-recovery` and `feature/access-frontend` are closed/integrated historical branch state. Their accepted results remain current protected-main/baseline evidence where applicable, but those branches are not current resume/integration lines.
 
@@ -300,9 +300,11 @@ continue/resume frontend work only according to its own current bounded authorit
 → Access closure does not silently mutate or redefine that separate workstream
 
 OBSERVABILITY
-feature/platform-observability is the current next bounded integration
-→ integrate enriched protected main into that branch
-→ rerun Observability release/integration gates before its protected-main PR
+integration/platform-observability-v2 is the accepted integration candidate
+→ source closure + true merge + source verification + PostgreSQL/ACL + runtime smoke PASS
+→ documentation lifecycle gate PASS
+→ open v2 → protected-main PR
+→ require exact PR-head / synthetic-merge CI before merge
 
 POSTGRESQL RECOVERY
 CLOSED / INTEGRATED VIA PR #47

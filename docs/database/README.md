@@ -1,11 +1,9 @@
 # DANTE Database System of Record
 
-- **Status:** CURRENT / PROTECTED MAIN / COMBINED QA PASS
-- **Last reconciled:** 2026-09-04
+- **Status:** CURRENT / AUTHORITATIVE DATABASE REFERENCE
+- **Last reconciled:** 2026-09-05
 - **PostgreSQL:** 18.6
-- **Protected-main Alembic head:** `20260904_17`
-- **Access integration merge:** `5f76ec54ad78542f137e8730e904f805d9e59e56`
-- **Accepted implementation proof HEAD:** `81639c61478b476c995652d0060dde8f53aef089`
+- **Alembic head:** `20260904_17`
 - **Access/Auth reference:** `access-auth.md`
 - **Shared Email Platform authority:** `../architecture/email-platform.md`
 - **Recovery operator authority:** `../operations/postgres-recovery-runbook.md`
@@ -35,11 +33,9 @@ CURRENT DB REFERENCE
 ≈ DIRECT TESTS
 ```
 
-Protected `main` now owns the combined Recovery + Access/Auth + shared Email Platform database contract. The former integration candidate is historical evidence only.
-
 ## 2. Current migration graph
 
-Recovery and Access/Auth originated as sibling children of `20260826_08`; protected `main` preserves both histories:
+Recovery and Access/Auth originated as sibling children of `20260826_08`; both accepted histories are preserved:
 
 ```text
 20260826_08
@@ -60,7 +56,7 @@ Recovery and Access/Auth originated as sibling children of `20260826_08`; protec
 
 `20260904_17` is forward-only and performs no DDL. No accepted migration was rebased, renumbered or flattened.
 
-## 3. Current protected-main topology
+## 3. Current topology
 
 ```text
 88 tables
@@ -72,68 +68,13 @@ Recovery and Access/Auth originated as sibling children of `20260826_08`; protec
 270 CHECK constraints
 ```
 
-Frozen CP6 baseline remains historical evidence:
+The Dictionary, SQLAlchemy, Alembic and real PostgreSQL acceptance agree on this contract.
 
-```text
-68 tables / 5 views / 14 routines / 75 triggers
-95 indexes / 68 FKs / 120 CHECKs
-```
+Platform Observability does **not** add a DANTE business table, view, routine, Alembic revision or SQLAlchemy business mapping. Its database contribution is a provisioning-owned operational observer identity described below.
 
-The pre-PR-#52 Recovery-only protected-main state also remains historical evidence:
+## 4. Current acceptance boundary
 
-```text
-20260830_09
-69 tables / 5 views / 15 routines / 76 triggers
-97 indexes / 69 FKs / 123 CHECKs
-```
-
-Neither historical topology overrides the current protected-main contract above.
-
-## 4. Combined acceptance proof
-
-On implementation proof HEAD `81639c61478b476c995652d0060dde8f53aef089`:
-
-```text
-Backend Quality         PASS
-Backend PostgreSQL      PASS
-Backend CI Gate         PASS
-Frontend CI             PASS
-Dependency Review       PASS
-```
-
-The 2026-09-04 CP07 whole LOCAL operator recovery rehearsal independently observed during restore acceptance:
-
-```text
-PostgreSQL              18.6
-Alembic                 20260904_17
-topology                88|5|16|76|172|89|270|0|0|0
-A present / B absent    PASS
-old X resurrection      PROVEN
-ledger reconciliation  PASS
-payload reinsertion    REJECTED
-DATABASE LOCAL REOPEN   PASS
-```
-
-Derived/object gates were `NOT_ACTIVATED / NO FALSE PASS`. Remote backup provider remained `TBD / NOT ACTIVATED`; production/cloud recovery was not claimed.
-
-PR #52 then merged the accepted final candidate into protected `main` at `5f76ec54ad78542f137e8730e904f805d9e59e56`. The merge tree is identical to the accepted final candidate tree. Push CI on the exact merge commit passed Backend Quality, real PostgreSQL acceptance, Backend CI Gate, Frontend Quality, Web E2E, Mobile Bundle and Frontend CI Gate.
-
-Durable evidence: `../workstreams/access-auth-integration-acceptance-2026-09-04.md`.
-
-## 5. Migration/integration rule
-
-Forbidden:
-
-```text
-rebase applied migration history
-renumber applied revisions
-change historical down_revision
-copy one sibling branch's DDL into old migrations
-stamp over missing history
-flatten an accepted branch away
-```
-
-Accepted proof includes:
+Accepted database evidence includes:
 
 ```text
 fresh DB → 20260904_17
@@ -144,17 +85,58 @@ Alembic check
 Dictionary ↔ SQLAlchemy ↔ live catalog
 owners / ACL
 Recovery + Auth + Email behavior together
-CP07 enriched-baseline recovery acceptance
-post-merge protected-main Backend/Frontend CI
+CP07 database-local recovery acceptance
+CP08 Email/application reopen acceptance
+Platform Observability PostgreSQL/ACL suite 155/155 PASS
 ```
 
-Future schema changes must evolve forward from the current protected-main head and rerun every affected proof layer.
+Historical CP6, Recovery and Access/Auth topology checkpoints remain evidence in Git, archived branch records and dated validation records. They do not override the current topology above.
 
-## 6. Access/Auth persistence
+## 5. Application role model
+
+Application roles remain explicitly separated:
+
+```text
+dante_owner      NOLOGIN ownership identity
+dante_migrator   LOGIN migration identity
+dante_runtime    LOGIN application runtime identity
+```
+
+Ownership, migration and runtime privileges remain independently tested. Application runtime does not inherit migration/owner authority.
+
+## 6. Platform Observability observer role
+
+<!-- DANTE-OBSERVABILITY-OBSERVER-README-ROUTING v1 -->
+
+`dante_observer` is a provisioning-owned technical role for aggregate PostgreSQL operational statistics. It is not an Account, Principal, Actor, business entity, SQLAlchemy model or Alembic-managed application object.
+
+Exact posture:
+
+```text
+LOGIN / NOINHERIT
+NOSUPERUSER / NOCREATEDB / NOCREATEROLE / NOREPLICATION / NOBYPASSRLS
+CONNECT dante
+NO database CREATE / TEMP
+search_path = pg_catalog
+pg_read_all_stats membership only (INHERIT TRUE / SET FALSE / ADMIN FALSE)
+NO dante/public schema usage
+NO DANTE business-object privileges
+NO DANTE application-role membership
+```
+
+The canonical detailed contract is in `dante-postgresql-database-part-12.md`, Section 46, marked by:
+
+```text
+<!-- DANTE-OBSERVABILITY-OBSERVER-CONTRACT v1 -->
+```
+
+Provisioning, live PostgreSQL tests and the Alloy/Postgres-exporter configuration must remain aligned with that contract. The observer credential is secret even though its authority is read-only statistics access.
+
+## 7. Access/Auth persistence
 
 Account is the durable security serialization root. Principal is runtime-derived. Provider identity authority is issuer+subject, never provider email. Password is optional; passkeys and external authenticators converge on canonical DANTE AuthSession.
 
-## 7. Shared Email Platform persistence
+## 8. Shared Email Platform persistence
 
 ```text
 dante.email_delivery_intent
@@ -179,20 +161,29 @@ provider evidence distinct from DANTE intent truth
 suppression distinct from EmailIdentity ownership/verification
 ```
 
-The shared-ownership refactor and forward shared-vocabulary migration `20260904_16` are integrated on protected `main`.
+## 9. Dictionary contract
 
-## 8. Dictionary contract
+`dictionary/scope.json` keeps the frozen CP6 baseline separate from `current_materialization`. Post-CP6 provenance lives on object entries rather than inventing fictitious CP6 stages.
 
-`dictionary/scope.json` keeps the CP6 `expected_baseline` frozen and uses `current_materialization` for the current protected-main inventory. `completed_stages` remains CP6 provenance only; post-CP6 provenance lives on each object entry.
+The Dictionary describes the current business schema contract `20260904_17 / 88|5|16|76|172|89|270`. Operational cluster roles such as `dante_observer` are deliberately not fake business objects; their security contract is carried by the technical-role/provisioning references and live ACL tests.
 
-The Dictionary describes the protected-main contract `20260904_17 / 88|5|16|76|172|89|270`. Its current object semantics/counts must remain aligned with Alembic, SQLAlchemy, the human reference and real PostgreSQL.
+## 10. Recovery boundary
 
-## 9. Blueprint lifecycle
+The accepted LOCAL recovery model keeps database-local proof distinct from application/Email reopen and from future production/cloud recovery.
 
-`dante-postgresql-database-part-*.md` retains detailed design/reference history. Historical banners such as `CP6-03 ACTIVE`, `GATE NOT EARNED` or early object counts are checkpoint evidence and do not override this System of Record or `dante-postgresql-database.md` current sections.
+```text
+CP07 database-local reopen                  PASS FOR EXECUTED SCOPE
+CP08 Email/application reopen after PITR   PASS
+remote backup provider                     TBD / NOT ACTIVATED
+production/cloud recovery                  NOT CLAIMED
+```
 
-## 10. Same-change rule
+Current operator authority is `../operations/postgres-recovery-runbook.md` and executable recovery truth lives under `../../infra/local/postgres/recovery/`.
+
+## 11. Same-change rule
 
 A structural database change is incomplete until the reviewed slice aligns semantic authority, forward Alembic, SQLAlchemy, Dictionary, current human reference, direct tests and real PostgreSQL proof.
 
-The Access/Auth + Email + Recovery integration is complete on protected `main`; future verticals consume this current contract and evolve it only through normal reviewed forward changes.
+For operational-role changes, the equivalent same-change rule applies to the database reference, provisioning, collector configuration and live privilege tests.
+
+No future vertical may bypass these contracts merely because its data is “technical” or “observability” data.

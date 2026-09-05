@@ -1,7 +1,7 @@
 # DANTE Workstream Records
 
 - **Status:** CURRENT INDEX
-- **Last reconciled:** 2026-09-04
+- **Last reconciled:** 2026-09-05
 - **Rule:** current subsystem/workstream files describe present truth; Git/PR/archive preserve chronology
 
 ## Current project state
@@ -17,33 +17,33 @@ Shared Email Platform                            CLOSED / INTEGRATED / OWNERSHIP
 Google / Windows Hello / SES real UAT            PASS
 Apple registered-domain UAT                      BOUNDED DEFERRED / NON-BLOCKING
 
-protected main
-  Access integration merge                       5f76ec54ad78542f137e8730e904f805d9e59e56
-  Recovery↔Email hardening merge                 c67a18c24a6cf22b003ffd2c14243af53fec5077
-  Alembic                                        20260904_17
-  topology                                       88/5/16/76/172/89/270
-  database-local CP07                            PASS
-  application / Email reopen CP08                PASS
-  post-merge Backend CI                          PASS
-  post-merge Frontend CI                         PASS
+Alembic                                          20260904_17
+Database topology                                88/5/16/76/172/89/270
+Database-local CP07                              PASS
+Application / Email reopen CP08                  PASS
 
-feature/platform-observability                   CLOSED / OPERATIONAL PASS / NEXT INTEGRATION
+Platform Observability source                    CLOSED / OPERATIONAL PASS
+Platform Observability current tree              INTEGRATED / ACCEPTED CANDIDATE
 M6 Native Mobile                                 FUTURE / OPTIONAL
 later M7 Access/security maturity                FUTURE
 ```
 
-The historical CP07 execution remains a valid **LOCAL PostgreSQL/database-local + MaterialState recovery proof** and is intentionally not widened beyond what it executed. PR #55 and CP08 closed the separate Email/application reopen gap forward: restored sendable Email work was physically resurrected by PITR, quarantined while workers remained stopped, sensitive material was wiped, the second reconciliation was idempotent, claimable work became `0`, and application/Email reopen passed.
-
-Remote-provider and production/cloud recovery remain unclaimed separate gates.
+Protected-main acceptance is commit-reachability scoped. The current repository tree may contain a newer accepted candidate than protected `main`; branch-local materialization must not be described as already merged until the corresponding commit is reachable from protected `main`.
 
 ## Current authority
 
-Protected-main project truth is owned by:
+Project truth is owned by:
 
 - `../PROJECT-STATUS.md`
 - `../ROADMAP.md`
+- executable repository truth
+- current subsystem references
 
-Access/Auth M1–M5 is integrated and therefore has **no active workstream authority file**. Current subsystem authority lives in:
+Access/Auth M1–M5 and Platform Observability have **no active workstream authority file** after their respective closure/integration-candidate gates.
+
+## Access/Auth closure disposition
+
+Current subsystem authority includes:
 
 - `../database/access-auth.md`
 - `../architecture/access-auth-architecture.md`
@@ -57,30 +57,41 @@ Access/Auth M1–M5 is integrated and therefore has **no active workstream autho
 - `../architecture/access-auth-email-delivery.md`
 - `../operations/postgres-recovery-runbook.md`
 
-## Access/Auth closure disposition
-
-The completed Access/Auth workstream now follows the same lifecycle shape as the integrated Recovery workstream:
-
-```text
-active branch/workstream authority       RETIRED
-obsolete execution-plan overlay          RETIRED
-old pre-integration closure duplicate     CONSOLIDATED
-live/session handoffs                     ABSENT
-one branch-history record                 ARCHIVED / NON-AUTHORITATIVE
-dated validation evidence                 RETAINED WHERE USEFUL
-current subsystem references              CURRENT / EVOLVING
-```
-
 Historical branch record:
 
 - `../archive/branches/2026-09-feature-access-auth.md` — **NON-AUTHORITATIVE**
 
 Retained dated evidence:
 
-- `access-auth-m5-review-2026-09-02.md` — historical validation/UAT evidence
-- `access-auth-integration-acceptance-2026-09-04.md` — historical integration/CP07/CI evidence
+- `access-auth-m5-review-2026-09-02.md`
+- `access-auth-integration-acceptance-2026-09-04.md`
 
-Those evidence files never override current executable or current-reference truth.
+## Platform Observability closure disposition
+
+Current/evolving authority:
+
+- `../architecture/observability-runtime-contract.md`
+- `../development/observability-runbook.md`
+- `../../infra/observability/README.md`
+- `../database/dante-postgresql-database-part-12.md` — exact `dante_observer` contract
+- executable backend/Web/Alloy/Grafana/provisioning/test assets
+
+Historical branch record:
+
+- `../archive/branches/2026-09-feature-platform-observability.md` — **NON-AUTHORITATIVE / HISTORICAL / EVIDENCE ONLY**
+
+Lifecycle disposition:
+
+```text
+active source-workstream authority         RETIRED
+temporary live/session/resume handoffs     ABSENT
+one branch-history record                  ARCHIVED / NON-AUTHORITATIVE
+current runtime/ops references             CURRENT / EVOLVING
+source and integration validation          RETAINED AS EVIDENCE
+full chronology                            GIT / PR HISTORY
+```
+
+The former `platform-observability.md` source-workstream record is intentionally removed after knowledge coverage. Its still-useful history is consolidated into the single branch record above; its current rules live in the runtime contract, runbook, infrastructure reference and executable repository.
 
 ## PostgreSQL Recovery
 
@@ -102,10 +113,10 @@ Historical branch record:
 ## Current integration order
 
 ```text
-enriched protected main
-→ feature/platform-observability
-→ observability release/integration rechecks
-→ protected-main Observability PR
+accepted Platform Observability integration candidate
+→ documentation lifecycle gate PASS
+→ v2 → protected-main PR
+→ mandatory CI / merge evidence
 → future bounded workstreams
 ```
 
@@ -121,7 +132,7 @@ Before continuing an active workstream:
 6. do not treat selected/unimplemented capability as PASS;
 7. keep current docs aligned with materialized repository truth;
 8. remove live/session/resume handoffs before integration;
-9. after merge, reconcile candidate/branch-local wording to protected-main truth and repair links to intentionally removed overlays;
+9. reconcile candidate/branch-local wording through reachability-scoped truth;
 10. keep at most one justified branch-history/closure narrative and classify retained dated audits as evidence rather than current authority.
 
 ## Permanent rules

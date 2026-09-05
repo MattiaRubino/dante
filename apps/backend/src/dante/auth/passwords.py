@@ -7,8 +7,10 @@ import hmac
 import secrets
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import suppress
 from dataclasses import dataclass
 from hashlib import sha1
+from time import perf_counter
 from typing import TypeVar
 from unicodedata import normalize
 
@@ -23,6 +25,7 @@ from argon2.exceptions import (
 from argon2.low_level import Type
 
 from dante.auth.contracts import AuthIntegrityError, KdfCapacityUnavailableError
+from dante.platform.observability.metrics import AuthTelemetry, DependencyOutcome
 
 _MIN_PASSWORD_CODEPOINTS = 15
 _MAX_PASSWORD_CODEPOINTS = 1024
@@ -111,6 +114,7 @@ class PasswordKdf:
         max_concurrency: int,
         max_queue_depth: int,
         queue_timeout_seconds: float,
+        telemetry: AuthTelemetry | None = None,
     ) -> None:
         if current_pepper_key_id not in pepper_ring:
             raise ValueError("current pepper key is absent from the pepper ring")
@@ -118,6 +122,7 @@ class PasswordKdf:
         self._pepper_ring = dict(pepper_ring)
         self._current_pepper_key_id = current_pepper_key_id
         self._queue_timeout_seconds = queue_timeout_seconds
+        self._telemetry = telemetry
         self._max_inflight = max_concurrency + max_queue_depth
         self._inflight = 0
         self._slots = asyncio.BoundedSemaphore(max_concurrency)
@@ -229,20 +234,56 @@ class PasswordKdf:
 
     def _admit(self) -> None:
         if self._inflight >= self._max_inflight:
+            if self._telemetry is not None:
+                with suppress(Exception):
+                    self._telemetry.record_kdf_rejection(queue_state="full")
             raise KdfCapacityUnavailableError()
         self._inflight += 1
+        if self._telemetry is not None:
+            with suppress(Exception):
+                self._telemetry.change_kdf_inflight(1)
 
     def _release_admission(self) -> None:
         self._inflight -= 1
+        if self._telemetry is not None:
+            with suppress(Exception):
+                self._telemetry.change_kdf_inflight(-1)
 
-    def _release_cancelled_worker(self, _future: object) -> None:
+    def _release_cancelled_worker(
+        self,
+        future: asyncio.Future[_T],
+        *,
+        worker_started: float,
+    ) -> None:
+        outcome: DependencyOutcome = "error"
+        if not future.cancelled():
+            with suppress(BaseException):
+                outcome = "success" if future.exception() is None else "error"
+        self._record_worker_finished(worker_started=worker_started, outcome=outcome)
         self._slots.release()
         self._release_admission()
+
+    def _record_worker_finished(
+        self,
+        *,
+        worker_started: float,
+        outcome: DependencyOutcome,
+    ) -> None:
+        if self._telemetry is None:
+            return
+        with suppress(Exception):
+            self._telemetry.change_kdf_active(-1)
+            self._telemetry.record_kdf(
+                duration=perf_counter() - worker_started,
+                outcome=outcome,
+            )
 
     async def _run(self, operation: Callable[[], _T]) -> _T:
         self._admit()
         slot_acquired = False
         release_here = True
+        worker_started: float | None = None
+        worker_outcome: DependencyOutcome = "error"
 
         try:
             try:
@@ -250,19 +291,38 @@ class PasswordKdf:
                     await self._slots.acquire()
                 slot_acquired = True
             except TimeoutError as exc:
+                if self._telemetry is not None:
+                    with suppress(Exception):
+                        self._telemetry.record_kdf_rejection(queue_state="timeout")
                 raise KdfCapacityUnavailableError() from exc
 
             loop = asyncio.get_running_loop()
+            worker_started = perf_counter()
+            if self._telemetry is not None:
+                with suppress(Exception):
+                    self._telemetry.change_kdf_active(1)
             worker_future = loop.run_in_executor(self._executor, operation)
             try:
-                return await asyncio.shield(worker_future)
+                result = await asyncio.shield(worker_future)
+                worker_outcome = "success"
+                return result
             except asyncio.CancelledError:
                 release_here = False
-                worker_future.add_done_callback(self._release_cancelled_worker)
+                worker_future.add_done_callback(
+                    lambda future: self._release_cancelled_worker(
+                        future,
+                        worker_started=worker_started,
+                    )
+                )
                 raise
         finally:
             if release_here:
                 if slot_acquired:
+                    if worker_started is not None:
+                        self._record_worker_finished(
+                            worker_started=worker_started,
+                            outcome=worker_outcome,
+                        )
                     self._slots.release()
                 self._release_admission()
 

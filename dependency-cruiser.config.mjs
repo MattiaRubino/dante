@@ -72,6 +72,22 @@ export default {
       },
     },
     {
+      name: 'observability-has-no-product-data-dependencies',
+      comment:
+        'Telemetry adapters remain cross-cutting and privacy-safe; they cannot import product features, Auth transport or API data contracts.',
+      severity: 'error',
+      from: {
+        path: '^apps/web/src/platform/observability/',
+      },
+      to: {
+        path: [
+          '^apps/web/src/features/',
+          '^apps/web/src/platform/auth/',
+          '^packages/api-client/',
+        ],
+      },
+    },
+    {
       name: 'web-not-to-mobile',
       comment:
         'Web and Mobile are sibling deployables, never source dependencies.',

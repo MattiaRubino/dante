@@ -9,6 +9,7 @@ from pydantic import SecretStr, ValidationError
 
 from dante.platform.config.auth import AuthSettings, SmtpSecurity
 from dante.platform.config.database import DatabaseSettings
+from dante.platform.config.observability import ObservabilitySettings
 from dante.platform.config.settings import Environment, Settings
 
 _TEST_PEPPER_KEY_ID = "test-password-v1"
@@ -84,6 +85,21 @@ _DANTE_ENVIRONMENT_VARIABLES = (
     "DANTE_AUTH__HIBP_TIMEOUT_SECONDS",
     "DANTE_AUTH__HIBP_MAX_RESPONSE_BYTES",
     "DANTE_AUTH__HIBP_MAX_CONNECTIONS",
+    "DANTE_OBSERVABILITY__ENABLED",
+    "DANTE_OBSERVABILITY__OTLP_HTTP_ENDPOINT",
+    "DANTE_OBSERVABILITY__TRACE_SAMPLE_RATIO",
+    "DANTE_OBSERVABILITY__TRACE_HEALTH_CHECKS",
+    "DANTE_OBSERVABILITY__EXPORT_TIMEOUT_SECONDS",
+    "DANTE_OBSERVABILITY__SHUTDOWN_TIMEOUT_SECONDS",
+    "DANTE_OBSERVABILITY__METRIC_EXPORT_INTERVAL_SECONDS",
+    "DANTE_OBSERVABILITY__SPAN_SCHEDULE_DELAY_MILLISECONDS",
+    "DANTE_OBSERVABILITY__SPAN_MAX_QUEUE_SIZE",
+    "DANTE_OBSERVABILITY__SPAN_MAX_EXPORT_BATCH_SIZE",
+    "DANTE_OBSERVABILITY__LOG_LEVEL",
+    "DANTE_OBSERVABILITY__LOG_FILE",
+    "DANTE_OBSERVABILITY__LOG_FILE_MAX_BYTES",
+    "DANTE_OBSERVABILITY__LOG_FILE_BACKUP_COUNT",
+    "DANTE_OBSERVABILITY__LOG_MESSAGE_MAX_CHARACTERS",
 )
 
 
@@ -357,6 +373,39 @@ def test_remote_environment_rejects_plain_smtp() -> None:
             database=_database_settings(),
             auth=_auth_settings(smtp_security=SmtpSecurity.PLAIN),
         )
+
+
+def test_remote_environment_rejects_plaintext_non_loopback_otlp() -> None:
+    with pytest.raises(ValidationError, match="observability OTLP"):
+        Settings(
+            env=Environment.PROD,
+            release_sha="abcdef123456",
+            build_id="build-42",
+            debug=False,
+            database=_database_settings(),
+            auth=_auth_settings(),
+            observability=ObservabilitySettings(
+                enabled=True,
+                otlp_http_endpoint="http://alloy.internal:4318",
+            ),
+        )
+
+
+def test_remote_environment_allows_loopback_otlp_sidecar() -> None:
+    settings = Settings(
+        env=Environment.PROD,
+        release_sha="abcdef123456",
+        build_id="build-42",
+        debug=False,
+        database=_database_settings(),
+        auth=_auth_settings(),
+        observability=ObservabilitySettings(
+            enabled=True,
+            otlp_http_endpoint="http://127.0.0.1:4318",
+        ),
+    )
+
+    assert settings.observability.enabled is True
 
 
 def test_missing_environment_is_rejected(monkeypatch: pytest.MonkeyPatch) -> None:

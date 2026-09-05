@@ -1,19 +1,23 @@
 # DANTE LOCAL infrastructure
 
-This directory owns the current developer-facing Docker Compose entry point for DANTE LOCAL PostgreSQL and the isolated PostgreSQL recovery harness.
+- **Status:** CURRENT / OPERATIONAL REFERENCE
+- **Last reconciled:** 2026-09-05
 
-Current protected-main database/recovery baseline:
+This directory owns the developer-facing Docker Compose entry point for DANTE LOCAL PostgreSQL, the optional Platform Observability profile and the isolated PostgreSQL recovery harness.
+
+Current repository baseline:
 
 ```text
 PostgreSQL       18.6
 Alembic          20260904_17
 topology         88|5|16|76|172|89|270|0|0|0
 LOCAL Recovery   CP07 DATABASE-LOCAL PASS / CP08 APPLICATION+EMAIL REOPEN PASS
+Observability    OPTIONAL COMPOSE PROFILE / ACCEPTED IN CURRENT TREE
 remote provider  TBD / NOT ACTIVATED
 cloud recovery   NOT CLAIMED
 ```
 
-Recovery was integrated through PR #47, the Access/Auth + Shared Email database history was integrated through PR #52, and the forward Recovery↔Email reopen hardening/CP08 proof was integrated through PR #55.
+Detailed historical Recovery exact-head/timing evidence is intentionally not duplicated here; it remains in `../../docs/archive/branches/2026-08-feature-postgres-recovery.md`, retained evidence and Git history. This README describes the current operational surface directly.
 
 ## 1. Normal LOCAL PostgreSQL
 
@@ -47,19 +51,14 @@ docker compose -f infra/compose/local.yaml up -d --wait
 docker compose -f infra/compose/local.yaml ps
 ```
 
-Normal endpoint:
+Normal endpoint and image:
 
 ```text
 127.0.0.1:5432
-```
-
-Current image:
-
-```text
 dante-postgres-local:18.6
 ```
 
-Current selected database capabilities:
+Selected database capabilities:
 
 ```text
 PostgreSQL           18.6
@@ -79,9 +78,9 @@ dante_migrator   LOGIN migration identity
 dante_runtime    LOGIN application runtime identity
 ```
 
-The current canonical application schema is `dante`; the current protected-main Alembic head is `20260904_17`.
+The canonical application schema is `dante`; the current Alembic head is `20260904_17`.
 
-## 2. Normal persistence/reset behavior
+## 2. Persistence/reset behavior
 
 Preserve LOCAL data:
 
@@ -95,11 +94,41 @@ Destroy LOCAL named-volume state intentionally:
 docker compose -f infra/compose/local.yaml down --volumes
 ```
 
-`down --volumes` destroys the ordinary LOCAL PostgreSQL cluster and any named volumes attached by `infra/compose/local.yaml`. The current base Compose also declares the ordinary-local `pgbackrest-repository` volume, so this command removes that volume as well. Application roles/schema must then be provisioned again before normal runtime use.
+`down --volumes` destroys the ordinary LOCAL PostgreSQL cluster and named volumes attached by `infra/compose/local.yaml`, including the ordinary-local pgBackRest repository volume. Application roles/schema must then be provisioned again before normal runtime use.
 
 Initdb scripts bootstrap extensions only; they are not a migration system.
 
-## 3. Real PostgreSQL acceptance isolation
+## 3. Platform Observability profile
+
+The normal Compose path remains usable without telemetry. Platform Observability is an explicit optional profile layered into the same current `local.yaml`.
+
+Prepare the LOCAL observer/Grafana secrets according to `../observability/README.md`, then expose only the caller's private WSL group to the non-root Alloy process:
+
+```bash
+export DANTE_OBSERVABILITY_LOG_GID="$(id -g)"
+docker compose -f infra/compose/local.yaml --profile observability up -d --wait
+```
+
+The profile starts the current PostgreSQL service plus hardened Grafana Alloy. Alloy uses the dedicated `dante_observer` DSN, not backend runtime or administrator credentials. `dante_observer` is limited to `pg_read_all_stats` and has no DANTE/public business-object access.
+
+LOCAL Alloy endpoints are loopback-only:
+
+```text
+UI / health   http://127.0.0.1:12345
+OTLP gRPC     127.0.0.1:4317
+OTLP HTTP     http://127.0.0.1:4318
+Faro          http://127.0.0.1:12347/collect
+```
+
+Canonical observability references:
+
+- `../observability/README.md` — collector, secrets, Grafana Cloud and operational assets
+- `../../docs/architecture/observability-runtime-contract.md` — privacy/cardinality/failure contract
+- `../../docs/development/observability-runbook.md` — operator verification and incident procedure
+
+The application must remain available if Alloy or Grafana Cloud is unavailable. Telemetry queues/retries are bounded; telemetry failure never changes product/database truth.
+
+## 4. Real PostgreSQL acceptance isolation
 
 Backend PostgreSQL acceptance does not use SQLite and must not mutate the ordinary LOCAL cluster.
 
@@ -111,82 +140,15 @@ uv run --frozen pytest -m postgres
 
 The test harness uses disposable PostgreSQL state, generated test credentials and the current DANTE image.
 
-## 4. Isolated recovery topology
+## 5. Isolated recovery topology
 
-### Fresh-clone recovery bootstrap
-
-Repository-level recovery prerequisites are materialized by:
+Materialize repository-level recovery prerequisites with:
 
 ```bash
 bash infra/local/postgres/recovery/bootstrap-local-recovery.sh
 ```
 
-It is idempotent, branch-agnostic and fail-closed. It requires a clean attached Git branch with a configured upstream and exact HEAD/upstream equality, creates missing LOCAL recovery secrets without overwriting existing non-empty values, validates mode/ignore policy and Compose, then builds the pinned recovery image from `infra/local/postgres/Dockerfile`.
-
-The whole CP07 rehearsal invokes this bootstrap automatically.
-
-### Reproducible LOCAL recovery exact-head proof
-
-The following block records the historical Recovery-workstream exact-head proof that established the reusable LOCAL harness before later Access/Auth + Email integration. It is evidence, not the current database-topology declaration.
-
-Implementation/runtime proof HEAD:
-
-```text
-789e946a8f096b52f2a440b967120cc3e0a340a3
-```
-
-Reusable-bootstrap / runner proof:
-
-```text
-validation clone started without recovery secrets         PASS
-first bootstrap created all three LOCAL secrets           PASS
-second bootstrap preserved exact secret contents          PASS
-secret files mode 0600 / ignored / untracked              PASS
-repository Compose validation                              PASS
-repository-built pinned recovery image                     PASS
-runner independent from feature/postgres-recovery name     PASS
-clean attached branch + configured upstream gate           PASS
-whole backend QA on exact hardened tree                    PASS
-pre-push whole CP07 rehearsal                              PASS
-exact pushed implementation HEAD whole CP07 rehearsal      PASS
-database-local reopen                                      PASS
-deterministic PITR A-present / B-absent                    PASS
-old protected X physical resurrection                      PROVEN
-ledger anti-resurrection reconciliation                    PASS
-payload reinsertion after retirement                       REJECTED
-normal LOCAL / retained recovery / CP05 non-interference   PASS
-disposable cleanup                                         PASS
-remote backup provider                                     TBD / NOT ACTIVATED
-production/cloud recovery                                  NOT CLAIMED
-```
-
-Phase-time exact-head proof relation:
-
-```text
-branch          feature/postgres-recovery
-upstream        origin/feature/postgres-recovery
-recovery image  dante-postgres-recovery:18.6-pgbackrest-2.59.1
-```
-
-That branch/upstream pair records the exact proof context only. The permanent runner is branch-agnostic; the Recovery workstream itself is now integrated into protected `main` via PR #47.
-
-Measured LOCAL observations from the exact pushed hardened runner:
-
-```text
-backup label                              20260831-120208F
-backup duration                           53.964433 s
-backup repository size                    5743173 bytes
-WAL archive freshness at disaster         0.834662 s
-restore-point age at disaster             3.629809 s
-physical restore                          7.650652 s
-PITR replay to target                     0.144582 s
-recovery to ready                         0.382306 s
-semantic reconciliation                   1.021309 s
-structural/security acceptance            0.910673 s
-PGDATA loss → database-local reopen       16.261533 s
-```
-
-These are LOCAL rehearsal observations, not production RPO/RTO targets.
+The bootstrap is idempotent, branch-agnostic and fail-closed. It requires a clean attached Git branch with configured upstream and exact HEAD/upstream equality, creates missing LOCAL recovery secrets without overwriting existing non-empty values, validates mode/ignore policy and Compose, then builds the pinned recovery image.
 
 Recovery uses:
 
@@ -218,27 +180,9 @@ repository path   /var/lib/pgbackrest
 stanza            dante
 ```
 
-The recovery PostgreSQL source enables:
+The recovery PostgreSQL source enables archive mode, pgBackRest WAL archiving, replica-level WAL and `pg_stat_statements`. LOCAL pgBackRest retention uses `repo1-retention-full=2`; this is a LOCAL harness policy, not a production-provider contract.
 
-```text
-archive_mode              = on
-archive_command           = /usr/bin/pgbackrest --stanza=dante archive-push %p
-wal_level                 = replica
-shared_preload_libraries  = pg_stat_statements
-compute_query_id          = on
-```
-
-Local pgBackRest configuration uses:
-
-```text
-repo1-retention-full=2
-```
-
-That value is **LOCAL harness policy only**. It is not a future remote-provider retention contract.
-
-## 5. Recovery safety boundary
-
-The recovery workstream intentionally separates:
+## 6. Recovery safety boundary
 
 ```text
 PGDATA volume
@@ -248,15 +192,7 @@ pgBackRest repository volume
 
 Destructive database rehearsals may delete only the explicitly named recovery PGDATA volume after the script's manual confirmation. They must not delete the pgBackRest repository or ordinary `dante-local` volumes.
 
-A restored verification target normally runs with:
-
-```text
-archive_mode=off
-```
-
-so verification does not create a new archive branch accidentally.
-
-`pg_isready` is not a recovery-acceptance gate. Traffic/readiness acceptance requires at least:
+`pg_isready` alone is not a recovery-acceptance gate. Traffic/readiness acceptance requires at least:
 
 ```text
 pg_is_in_recovery() = false
@@ -267,11 +203,11 @@ semantic recovery checks
 suppression-ledger reconciliation
 ```
 
-For application/Email reopen, CP08 adds the fail-closed Email reconciliation gate before Email workers or provider I/O may resume.
+For application/Email reopen, CP08 additionally requires fail-closed Email reconciliation before workers/provider I/O resume.
 
-## 6. Current database acceptance contract
+## 7. Current database acceptance contract
 
-Reusable current recovery harnesses expect:
+Reusable recovery harnesses expect:
 
 ```text
 Alembic          20260904_17
@@ -285,172 +221,97 @@ CHECKs           270
 other forbidden   0
 ```
 
-The current CP07 and CP08 executables encode the same Alembic/topology contract.
+They also verify the presence/security posture of `dante.material_state_retirement` and runtime SELECT-only behavior.
 
-They also verify the presence/security posture of:
+## 8. Recovery commands
 
-```text
-dante.material_state_retirement
-runtime SELECT only
-```
-
-## 7. Recovery commands
-
-### Archive failure/retry
+Archive failure/retry:
 
 ```bash
 bash infra/local/postgres/recovery/archive-failure-recovery-check.sh
 ```
 
-### Materialize current database + FULL
+Materialize current database + FULL:
 
 ```bash
 bash infra/local/postgres/recovery/cp04-materialize-backup.sh
 ```
 
-This runs the backend provisioning/Alembic boundaries, verifies the current database contract, seeds the deterministic Person fixture and creates the FULL used by later destructive tests.
-
-### Destructive isolated restore
+Destructive isolated restore:
 
 ```bash
 bash infra/local/postgres/recovery/cp04-destructive-restore-check.sh
 ```
 
-Requires explicit:
+Requires `DELETE_RECOVERY_PGDATA`.
 
-```text
-DELETE_RECOVERY_PGDATA
-```
-
-### Prepare deterministic PITR source
+Prepare deterministic PITR source:
 
 ```bash
 bash infra/local/postgres/recovery/cp05-prepare-pitr-source.sh
 ```
 
-### Destructive named-target PITR
+Destructive named-target PITR:
 
 ```bash
 bash infra/local/postgres/recovery/cp05-destructive-pitr-check.sh
 ```
 
-Requires explicit:
+Requires `DELETE_RECOVERY_PGDATA_FOR_PITR`.
 
-```text
-DELETE_RECOVERY_PGDATA_FOR_PITR
-```
-
-### CP06 failure matrix
+CP06 failure matrix:
 
 ```bash
 bash infra/local/postgres/recovery/cp06-failure-matrix-check.sh
 ```
 
-Negative corruption/missing-WAL tests mutate only disposable repository clones.
-
-### CP06 SC-011 anti-resurrection
+CP06 SC-011 anti-resurrection:
 
 ```bash
 bash infra/local/postgres/recovery/cp06-sc011-anti-resurrection-check.sh
 ```
 
-This creates an entirely disposable source/B0/ledger topology, upgrades that source to the current repository head, proves physical resurrection from B0 and reconciles it using the versioned PREPARED/COMMITTED suppression ledger.
-
-### CP07 whole local operator rehearsal
+CP07 whole LOCAL operator rehearsal:
 
 ```bash
 bash infra/local/postgres/recovery/cp07-whole-recovery-rehearsal.sh
 ```
 
-This is a single disposable end-to-end rehearsal: healthy current PostgreSQL → FULL/WAL → deterministic PITR point → later retirement → total disposable PGDATA loss → restore/PITR → anti-resurrection reconciliation → structural/security/runtime acceptance → database-local reopen decision.
-
-It writes ignored local evidence to:
+Ignored evidence output:
 
 ```text
 infra/compose/secrets/postgres_recovery_cp07_report.json.local
 ```
 
-The current script validates `20260904_17` and `88|5|16|76|172|89|270|0|0|0`. The historical evidence block below records an earlier Recovery-workstream proof and is intentionally not rewritten to pretend it ran against later Access/Auth + Email topology.
-
-### CP07 historical exact local evidence
-
-Implementation/runtime proof HEAD:
-
-```text
-8893efe629ff1dc9fc2b512779aa56457b802be6
-```
-
-Direct whole-rehearsal result:
-
-```text
-whole local operator rehearsal                  PASS
-database-local reopen                           PASS
-deterministic PITR A-present / B-absent         PASS
-old protected X physical resurrection           PROVEN
-ledger anti-resurrection reconciliation         PASS
-payload reinsertion after retirement            REJECTED
-structural/security/runtime acceptance          PASS
-ordinary local volume non-interference          PASS
-real recovery repository non-interference       PASS
-retained CP05 target non-interference            PASS
-disposable cleanup                              PASS
-remote backup provider                          TBD / NOT ACTIVATED
-production/cloud recovery                       NOT CLAIMED
-```
-
-Measured LOCAL observations:
-
-```text
-backup label                              20260831-091947F
-backup duration                           52.598280 s
-backup repository size                    5743174 bytes
-WAL archive freshness at disaster         0.904446 s
-restore-point age at disaster             3.980700 s
-physical restore                          7.947759 s
-PITR replay to target                     0.145295 s
-recovery to ready                         0.389248 s
-semantic reconciliation                   0.603417 s
-structural/security acceptance            0.928466 s
-PGDATA loss → database-local reopen       15.614213 s
-```
-
-These are LOCAL rehearsal observations only. They are not production RPO/RTO targets.
-
-### CP08 Email/application reopen rehearsal
+CP08 Email/application reopen rehearsal:
 
 ```bash
 bash infra/local/postgres/recovery/cp08-email-application-reopen-rehearsal.sh
 ```
 
-CP08 is the current forward application-reopen proof layered after database-local recovery. It restores sendable Email work through PITR while Email workers remain stopped, runs fail-closed post-restore Email reconciliation/quarantine, verifies sensitive delivery material and claim/retry state are cleared as required, proves idempotent second reconciliation and requires zero claimable Email work before application/Email reopen.
-
-It writes ignored local evidence to:
+Ignored evidence output:
 
 ```text
 infra/compose/secrets/postgres_recovery_cp08_email_report.json.local
 ```
 
-Current accepted CP08 result:
+Accepted evidence scope remains:
 
 ```text
-PITR to earlier sendable Email state                  PASS
-restored sendable Email work physically resurrected   PROVEN
-Email workers during reconciliation                   STOPPED
-provider I/O during reconciliation                    NOT EXERCISED
-sendable restored intents quarantined                 PASS
-restored in-progress attempt marked ambiguous         PASS
-claim / retry state cleared                           PASS
-sensitive delivery material wiped                     PASS
-second reconciliation                                 IDEMPOTENT
-claimable Email work before reopen                    0
-APPLICATION / EMAIL REOPEN                            PASS
+CP07 database-local reopen                           PASS
+CP08 restored sendable Email work reconciliation    PASS
+Email workers during reconciliation                 STOPPED
+sensitive delivery material wipe                    PASS
+second reconciliation                               IDEMPOTENT
+claimable Email work before reopen                  0
+application / Email reopen                          PASS
+remote backup provider                              TBD / NOT ACTIVATED
+production/cloud recovery                           NOT CLAIMED
 ```
 
-## 8. Suppression ledger contract
+## 9. Suppression-ledger contract
 
 The external recovery suppression ledger is independent from both canonical PGDATA and the database backup repository.
-
-Protocol:
 
 ```text
 PREPARED
@@ -459,13 +320,9 @@ PREPARED
 → COMMITTED bound to PREPARED SHA-256
 ```
 
-Ambiguous/tampered state blocks recovery.
+Ambiguous/tampered state blocks recovery. The ledger is technical disaster-recovery evidence only; PostgreSQL remains canonical.
 
-The ledger is technical disaster-recovery evidence only; PostgreSQL remains canonical.
-
-## 9. Future remote-provider boundary
-
-The current LOCAL recovery system is deliberately provider-neutral.
+## 10. Future remote-provider boundary
 
 ```text
 remote backup provider      TBD
@@ -473,41 +330,28 @@ remote provider activated   NO
 production/cloud recovery   NOT CLAIMED
 ```
 
-A future provider must satisfy the required capabilities when production deployment actually needs them:
+A future provider must preserve the pgBackRest-compatible recovery path, durable/appropriately immutable remote storage, finite retention, independent least-privilege credentials, required residency properties, backup/WAL readback, restore/PITR proof and suppression evidence across the full resurrection horizon.
 
-```text
-pgBackRest-compatible recovery path
-durable remote storage
-versioning / immutability appropriate to policy
-finite retention
-independent least-privilege credentials
-required region/data-residency properties
-backup + WAL readback
-restore + PITR proof
-suppression evidence retained across the full resurrection horizon
-```
+Provider selection, credentials, costs and production acceptance remain deferred.
 
-Provider selection, credentials, costs and production acceptance are deferred.
-
-## 10. Authority
-
-Current Recovery authority is deliberately durable and does not depend on the removed active-workstream overlays:
+## 11. Authority
 
 ```text
 current database contract
-→ docs/database/README.md
-→ docs/database/dante-postgresql-database-part-19.md
+→ ../../docs/database/README.md
+
+current observability contract
+→ ../observability/README.md
+→ ../../docs/architecture/observability-runtime-contract.md
 
 operator recovery procedure
-→ docs/operations/postgres-recovery-runbook.md
+→ ../../docs/operations/postgres-recovery-runbook.md
 
 executable recovery truth
-→ infra/local/postgres/recovery/
+→ ../local/postgres/recovery/
 
-historical closed-branch narrative
-→ docs/archive/branches/2026-08-feature-postgres-recovery.md  (NON-AUTHORITATIVE)
+historical Recovery branch narrative
+→ ../../docs/archive/branches/2026-08-feature-postgres-recovery.md
 ```
 
-The former `docs/workstreams/postgres-recovery.md` and `docs/workstreams/postgres-recovery-execution-plan.md` were deliberately removed during branch closure and must not be used as current links or authorities.
-
-Git/Alembic preserve chronology; this README describes the current operational contract.
+Git and archived evidence preserve chronology; this README stays focused on the current operational contract.

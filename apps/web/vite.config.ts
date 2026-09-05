@@ -47,6 +47,9 @@ function accessAuthPreview(): PreviewOptions | undefined {
 const preview = accessAuthPreview();
 
 export default defineConfig({
+  build: {
+    manifest: true,
+  },
   plugins: [
     tanstackRouter({
       target: 'react',

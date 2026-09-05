@@ -6,9 +6,14 @@ import { RouterProvider, createRouter } from '@tanstack/react-router';
 import '@dante/design-tokens/web.css';
 import './bootstrap/i18n';
 import { captureWindowRecoveryProof } from './platform/auth/recovery-proof';
+import {
+  initializeWebObservability,
+  ObservabilityErrorBoundary,
+} from './platform/observability';
 import { routeTree } from './routeTree.gen';
 import './styles.css';
 
+void initializeWebObservability();
 const recoveryProofStore = captureWindowRecoveryProof();
 
 const queryClient = new QueryClient({
@@ -42,8 +47,10 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>
+    <ObservabilityErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>
+    </ObservabilityErrorBoundary>
   </StrictMode>,
 );

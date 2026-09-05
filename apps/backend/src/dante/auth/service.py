@@ -58,6 +58,8 @@ from dante.platform.database.mappings.auth import (
     PasswordCredentialRow,
 )
 from dante.platform.database.runtime import DatabaseRuntime
+from dante.platform.observability.logging import log_event
+from dante.platform.observability.metrics import AuthTelemetry, DependencyOutcome, SigninOutcome
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -129,12 +131,14 @@ class AuthService:
         password_kdf: PasswordKdf,
         breach_checker: HibpPasswordChecker,
         signin_limiter: SigninAttemptLimiter,
+        telemetry: AuthTelemetry | None = None,
     ) -> None:
         self._session_factory = session_factory
         self._settings = settings
         self._password_kdf = password_kdf
         self._breach_checker = breach_checker
         self._signin_limiter = signin_limiter
+        self._telemetry = telemetry
         self._csrf_key = settings.csrf_key_bytes
 
     @property
@@ -143,6 +147,50 @@ class AuthService:
         return self._settings.session_max_age_seconds
 
     async def sign_in(
+        self,
+        *,
+        email: str,
+        password: str,
+        request_id: str,
+    ) -> IssuedSession:
+        """Record one identity-free outcome around the canonical signin operation."""
+        started = time.perf_counter()
+        outcome: SigninOutcome = "unexpected"
+        try:
+            issued = await self._sign_in(
+                email=email,
+                password=password,
+                request_id=request_id,
+            )
+            outcome = "success"
+            return issued
+        except AuthInputError:
+            outcome = "invalid_input"
+            raise
+        except InvalidCredentialsError:
+            outcome = "invalid_credentials"
+            raise
+        except AccountUnavailableError:
+            outcome = "account_unavailable"
+            raise
+        except PasswordCompromisedError:
+            outcome = "password_compromised"
+            raise
+        except SigninRateLimitedError:
+            outcome = "rate_limited"
+            raise
+        except AuthServiceUnavailableError:
+            outcome = "service_unavailable"
+            raise
+        finally:
+            if self._telemetry is not None:
+                with suppress(Exception):
+                    self._telemetry.record_signin(
+                        outcome,
+                        duration=time.perf_counter() - started,
+                    )
+
+    async def _sign_in(
         self,
         *,
         email: str,
@@ -171,11 +219,28 @@ class AuthService:
         if snapshot.account_status_code != "active":
             raise AccountUnavailableError()
 
+        dependency_started = time.perf_counter()
+        dependency_outcome: DependencyOutcome = "success"
         try:
             breached = await self._breach_checker.is_breached(normalized_password)
-        except BreachCheckUnavailableError:
-            _LOGGER.warning("auth.hibp_unavailable request_id=%s", request_id)
+        except BreachCheckUnavailableError as exc:
+            dependency_outcome = "error"
+            log_event(
+                _LOGGER,
+                logging.WARNING,
+                "auth.hibp_unavailable",
+                fields={"dependency": "hibp", "outcome": "error", "retryable": True},
+                exception=exc,
+            )
             breached = False
+        finally:
+            if self._telemetry is not None:
+                with suppress(Exception):
+                    self._telemetry.record_dependency(
+                        "hibp",
+                        outcome=dependency_outcome,
+                        duration=time.perf_counter() - dependency_started,
+                    )
 
         if breached:
             raise PasswordCompromisedError()
@@ -549,6 +614,7 @@ async def create_auth_runtime(
     settings: AuthSettings,
     database_runtime: DatabaseRuntime,
     release_sha: str,
+    telemetry: AuthTelemetry | None = None,
 ) -> AuthRuntime:
     """Construct and warm the process-scoped Auth runtime with rollback-safe ownership."""
     resources = AsyncExitStack()
@@ -559,6 +625,7 @@ async def create_auth_runtime(
             max_concurrency=settings.kdf_max_concurrency,
             max_queue_depth=settings.kdf_max_queue_depth,
             queue_timeout_seconds=settings.kdf_queue_timeout_seconds,
+            telemetry=telemetry,
         )
         resources.push_async_callback(password_kdf.aclose)
         await password_kdf.start()
@@ -615,6 +682,7 @@ async def create_auth_runtime(
             password_kdf=password_kdf,
             breach_checker=breach_checker,
             signin_limiter=signin_limiter,
+            telemetry=telemetry,
         )
         return AuthRuntime(
             service=service,

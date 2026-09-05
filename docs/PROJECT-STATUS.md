@@ -1,13 +1,11 @@
 # DANTE — Project Status
 
-- **Status:** CURRENT PROTECTED-MAIN TRUTH
-- **Last reconciled:** 2026-09-04
-- **Access/Auth + Email + Recovery integration merge:** `5f76ec54ad78542f137e8730e904f805d9e59e56` (PR #52)
-- **Recovery↔Email reopen hardening merge:** `c67a18c24a6cf22b003ffd2c14243af53fec5077` (PR #55)
+- **Status:** CURRENT REPOSITORY TRUTH / INTEGRATION CANDIDATE ACCEPTED
+- **Last reconciled:** 2026-09-05
+- **Access/Auth + Email + Recovery protected-main baseline:** `318ae452556e8bada3aaeee09688a89acc548a32`
+- **Platform Observability source closure:** `828cfd231debb1326933052fefd74e81c653a6c3`
+- **Platform Observability integration merge:** `14faecfb11bded15aa929b0eaac91427031072ed`
 - **Current Alembic head:** `20260904_17`
-- **Current macro state:** **ACCESS/AUTH M1–M5 + SHARED EMAIL + RECOVERY CLOSED / INTEGRATED**
-- **LOCAL Recovery gates:** **CP07 DATABASE-LOCAL PASS / CP08 APPLICATION+EMAIL REOPEN PASS**
-- **Next bounded integration:** `feature/platform-observability`
 
 ## 1. Current state
 
@@ -18,34 +16,34 @@ Engineering + Frontend + Backend CP1–CP6  CLOSED / ACCEPTED
 PostgreSQL                                 18.6
 
 Access M1–M5                               CLOSED / INTEGRATED
+Shared Email Platform                      CLOSED / INTEGRATED / OWNERSHIP VERIFIED
+PostgreSQL Recovery                        CLOSED / INTEGRATED
 local password/passkey UAT                 PASS
 real Windows Hello UAT                     PASS
 real Google UAT                            PASS
 real Apple registered-domain UAT           BOUNDED DEFERRED / NON-BLOCKING
 
-Shared Email Platform                      CLOSED / INTEGRATED / OWNERSHIP VERIFIED
-real SES signup UAT                        PASS
-real SES recovery UAT                      PASS
-real reset-notification UAT                PASS
-
-PostgreSQL Recovery                        CLOSED / INTEGRATED
 Alembic                                    20260904_17
-protected-main DB                          88/5/16/76/172/89/270
+database topology                          88/5/16/76/172/89/270
 database-local CP07                        PASS
-Email/application reopen CP08              PASS
-post-merge Backend CI                      PASS
-post-merge Frontend CI                     PASS
+application / Email reopen CP08            PASS
 
-feature/platform-observability             CLOSED / OPERATIONAL PASS / NEXT INTEGRATION
+Platform Observability source workstream   CLOSED / OPERATIONAL ACCEPTANCE PASS
+Platform Observability current tree        INTEGRATED / ACCEPTED CANDIDATE
+observability source verification          13/13 PASS
+PostgreSQL/ACL integration acceptance      155/155 PASS
+backend readiness + Alloy                  PASS
+Web/Faro integrated LOCAL production-build smoke PASS
+
 M6 Native Mobile                           FUTURE / OPTIONAL
 later Access/M7 maturity                   FUTURE
 ```
 
+Platform Observability is materially present in the current repository tree through a real two-parent Git merge. A protected-main integration claim is valid only once the corresponding integration commit is reachable from protected `main`; branch-local acceptance alone does not create that claim.
+
 Apple is not reported as PASS. Real Apple external acceptance remains a future enablement prerequisite when its external account/domain prerequisites exist.
 
-The historical CP07 run proves the LOCAL PostgreSQL/database-local and MaterialState recovery scope it actually executed. It did not directly prove Email quarantine-before-worker-resume ordering. That historical limitation remains part of the evidence record; it was closed forward by PR #55 and the real CP08 rehearsal rather than by widening or rewriting CP07.
-
-Remote backup provider activation and production/cloud recovery remain **NOT CLAIMED**.
+Remote backup-provider activation and production/cloud recovery remain **NOT CLAIMED**.
 
 ## 2. Current database truth
 
@@ -61,178 +59,82 @@ foreign keys         89
 CHECK constraints    270
 ```
 
-Migration graph:
+The current cross-representation database contract remains aligned across the Dictionary, SQLAlchemy mappings, Alembic and real PostgreSQL. Platform Observability adds no DANTE business DDL, Alembic revision or SQLAlchemy business mapping.
+
+Its PostgreSQL operational reader is the provisioning-owned `dante_observer` role: `LOGIN NOINHERIT`, with `pg_read_all_stats` membership using `INHERIT TRUE / SET FALSE / ADMIN FALSE`, no DANTE/public business-object access, no database `CREATE`/`TEMP`, and `search_path=pg_catalog`. The exact contract remains in `database/dante-postgresql-database-part-12.md` and the live provisioning/acceptance tests.
+
+## 3. Accepted foundation evidence
+
+Access/Auth + Email + Recovery remain closed at their accepted evidence levels. The historical CP07 database-local proof and the later CP08 application/Email reopen proof remain distinct; CP07 is not widened retroactively. Their durable evidence remains in `workstreams/access-auth-integration-acceptance-2026-09-04.md`, `archive/branches/2026-09-feature-access-auth.md` and the Recovery operator references.
+
+Platform Observability acceptance on the integrated tree includes:
 
 ```text
-20260826_08
-├── 20260830_09 Recovery
-└── 20260827_09
-    → 20260827_10
-    → 20260829_11
-    → 20260830_12
-    → 20260831_13
-    → 20260903_14
-    → 20260903_15
-    → 20260904_16 Access/Auth + Email
-
-20260830_09 + 20260904_16
-            ↓
-        20260904_17
+true Git three-way merge                         PASS
+frozen source history retained                   PASS
+observability source verification                13/13 PASS
+Web tests                                        23 files / 101 tests PASS
+backend non-PostgreSQL regression                286/286 PASS
+strict mypy                                      148 source files / zero issues
+backend package build                            PASS
+PostgreSQL 18.6 marked acceptance                155/155 PASS
+observer role / membership / ACL proof           PASS
+backend bootstrap with observability enabled     PASS
+backend /health/ready                            HTTP 200
+Alloy readiness                                  PASS
+Web/Faro LOCAL production-build smoke surface    PASS
+Grafana Cloud metrics/logs/traces/Faro path      PASS
+Tempo route-attribute privacy boundary           PASS
+collector-outage failure isolation               PASS
+Grafana acceptance service account remote delete PASS
 ```
 
-`20260904_17` performs no schema mutation. It joins the two accepted forward histories without rewriting either one.
+The source workstream had already proved the real Grafana Cloud path for metrics, logs, traces, PostgreSQL statistics, black-box readiness and Web Faro/Web Vitals, plus dashboard/alert materialization and collector-outage failure isolation. That evidence is retained rather than rerun merely for repetition.
 
-The current cross-representation database contract has passed real PostgreSQL reconciliation across Dictionary, SQLAlchemy mappings, Alembic and the live catalog. PR #55 changes Recovery/Email replay handling and acceptance tooling, not the database topology or Alembic head.
+Dedicated Google/Apple, passkey, Auth-lifecycle and Email-to-central-OTel domain metrics are future observability enhancements. They are not blockers for the accepted platform foundation because global HTTP, database, Web, Auth signin/KDF/dependency and collector telemetry already cover the integration boundary without changing product semantics.
 
-## 3. Integration and acceptance evidence
+## 4. Current integration gate
 
-### PR #52 / historical CP07
-
-Implementation proof HEAD:
+The implementation integration work is complete on the current tree. The remaining repository gate is bounded:
 
 ```text
-81639c61478b476c995652d0060dde8f53aef089
+documentation lifecycle reconciliation              PASS
+→ integration/platform-observability-v2 → protected-main PR
+→ mandatory PR/merge CI
+→ protected-main reachability establishes final integration state
 ```
 
-On that exact implementation state:
+Do not reopen accepted OTel/Alloy/Grafana/Faro/PostgreSQL-observer implementation merely to repeat evidence.
+
+## 5. Documentation lifecycle state
+
+Platform Observability no longer needs an active workstream authority file. Current truth is routed through:
+
+- `architecture/observability-runtime-contract.md`
+- `development/observability-runbook.md`
+- `../infra/observability/README.md`
+- `database/dante-postgresql-database-part-12.md` for the observer-role contract
+- executable code, tests and source-controlled Grafana/Alloy assets
+
+One consolidated historical record is retained at `archive/branches/2026-09-feature-platform-observability.md`. It is **NON-AUTHORITATIVE / HISTORICAL / EVIDENCE ONLY**.
+
+Temporary live/session/resume handoffs are forbidden at the integration gate. Historical source-workstream chronology that is not current authority remains recoverable from the consolidated branch record and Git/PR history.
+
+## 6. Permanent safety rules
 
 ```text
-Dependency Review   PASS
-Frontend CI         PASS
-Backend Quality     PASS
-Backend PostgreSQL  PASS
-Backend CI Gate     PASS
-CP07 database-local PASS
-```
-
-The historical CP07 rehearsal directly proved:
-
-```text
-Alembic head                                  20260904_17
-topology                                      88|5|16|76|172|89|270|0|0|0
-A before target / B after target              PASS
-old protected X physical resurrection         PROVEN
-suppression-ledger reconciliation             PASS
-payload reinsertion after retirement          REJECTED
-DATABASE LOCAL REOPEN                         PASS
-derived/object gates                          NOT_ACTIVATED / NO FALSE PASS
-remote provider                               TBD / NOT ACTIVATED
-production/cloud recovery                     NOT CLAIMED
-```
-
-CP07 did **not** directly execute Email `quarantine_after_restore()` before Email workers resume. That limitation is retained as historical evidence and must not be erased from the CP07 record.
-
-PR #52 merged the final candidate into protected `main`:
-
-```text
-old main       fe87d3c8a71f0c56d9acf5e8acbcdb274b18f282
-candidate      6cee5506d404d0684b0679aca54c03f0ca433c72
-merge commit   5f76ec54ad78542f137e8730e904f805d9e59e56
-merge tree     b610ece4fbfa0049749bb8454345a96a0385e6e5
-```
-
-The merge tree is identical to the accepted final candidate tree. Push CI on the exact merge commit passed Backend Quality, real PostgreSQL acceptance, Backend CI Gate, Frontend Quality, Web E2E, Mobile Bundle and Frontend CI Gate.
-
-### PR #55 / CP08 forward closure
-
-PR #55 hardened the recovery/reopen boundary without rewriting PR #52 or CP07. Exact proof head:
-
-```text
-1a5a7f1fbbdc1e5723d58fa90721a8693cce49e9
-```
-
-Mandatory CI on that head passed Dependency Review, Frontend CI, Backend Quality, Backend PostgreSQL (`154 passed, 250 deselected`) and Backend CI Gate.
-
-The real disposable LOCAL CP08 rehearsal then proved:
-
-```text
-PITR to earlier sendable Email state                  PASS
-restored pending / claimed / retryable_failure        PHYSICALLY RESURRECTED
-Email workers during reconciliation                   STOPPED
-provider I/O during reconciliation                    NOT EXERCISED
-sendable restored intents → recovery_quarantined      PASS
-restored in_progress attempt → ambiguous              PASS
-claim / retry state cleared                           PASS
-sensitive delivery material wiped                     PASS
-second reconciliation                                 IDEMPOTENT / 0 FURTHER QUARANTINES
-claimable Email work after reconciliation             0
-APPLICATION / EMAIL REOPEN                            PASS
-```
-
-PR #55 merged at `c67a18c24a6cf22b003ffd2c14243af53fec5077`.
-
-Durable pre-merge and CP07 evidence remains in `workstreams/access-auth-integration-acceptance-2026-09-04.md`. Consolidated Access branch chronology is archived at `archive/branches/2026-09-feature-access-auth.md` and is non-authoritative.
-
-## 4. Frozen Access/Auth constitution
-
-```text
-Person != Account != Principal != Actor
-AuthSession != DANTE Session
-EmailIdentity != Account
-PasswordCredential optional
-Principal runtime-derived
-provider identity = issuer + subject
-provider email != Account/link authority
-provider token/assertion != DANTE AuthSession
-passwordless Account valid
-PasskeyCredential != Account
-WebAuthn user_handle = opaque Account binding
-method != factor != assurance
-reauthentication != signin
-```
-
-## 5. Shared Email Platform
-
-The Email Platform is reusable DANTE infrastructure. Access/Auth owns message meaning/templates; the platform owns durable delivery lifecycle, encryption, claim/lease, retry/ambiguity policy, providers, feedback, suppression and privacy-minimized observability.
-
-The shared-ownership refactor and forward vocabulary migration are integrated on protected `main`. Accepted real SES evidence remains in `development/email-platform-acceptance-2026-09-03.md`. Production sender-domain/DNS/reputation/workload-identity deployment remains a separate gate.
-
-Post-restore quarantine is now part of the accepted fail-closed recovery/reopen path. Restored sendable work is not authority to replay; CP08 directly proved quarantine, sensitive wipe, idempotent reconciliation and zero claimable Email work before application/Email reopen.
-
-## 6. Current gate
-
-Access/Auth + Email + Recovery is **CLOSED / INTEGRATED** for the accepted LOCAL and application-reopen scope. There is no active Access integration candidate and no outstanding Recovery↔Email CP08 remediation.
-
-Current continuation:
-
-```text
-enriched protected main
-→ integrate into feature/platform-observability
-→ rerun Observability release/integration gates
-→ protected-main Observability PR
-→ future bounded workstreams from enriched main
-```
-
-## 7. Documentation/workstream closure
-
-Access/Auth M1–M5 is no longer an active workstream authority after PR #52.
-
-```text
-live/session handoffs                     ABSENT
-active Access workstream authority        RETIRED
-obsolete execution-plan overlay          RETIRED
-single consolidated branch history       archive/branches/2026-09-feature-access-auth.md
-retained dated M5/integration records     EVIDENCE / VALIDATION ONLY
-current Access/Email truth                subsystem references + executable repository
-```
-
-This follows `development/documentation-lifecycle-policy.md`: current truth stays current, at most one branch-history narrative is retained when useful, and historical evidence never overrides executable/current-reference truth.
-
-## 8. Integration safety
-
-```text
-no rebase/history rewrite
-no force push
-no direct protected-main write
-applied migrations immutable
-no blind Alembic flattening
+protected main is integration authority
+no rebase/history rewrite of accepted work
+no force push for normal integration
+applied migrations are immutable
 no schema claim without Dictionary/mapping/migration/PG/test parity
 no PASS without executed evidence
-no application reopen claim from database-only recovery evidence
-no production/cloud recovery claim from LOCAL proof
+telemetry != canonical DANTE state
+telemetry failure != permission to alter product truth
+LOCAL recovery PASS != production/cloud recovery PASS
 ```
 
-## 9. Authority
+## 7. Authority order
 
 1. executable code / migrations / tests / real PostgreSQL
 2. Product / Domain / Logical / Physical / constitutions / ADRs
