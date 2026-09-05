@@ -6,21 +6,50 @@ on:
       - integration/ai-main-sync-lab-2026-09-05-a1
 
 permissions:
-  contents: write
+  contents: read
 
 defaults:
   run:
     shell: bash
 
 jobs:
-  reconcile-and-validate:
+  full-integration-validation:
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
-      - name: Checkout lab branch
+      - name: Checkout reconciled lab branch
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Validate observability artifacts from current main
+        run: python3 tooling/observability/validate.py
+
+      - name: Validate pinned Alloy configuration from current main
+        env:
+          ALLOY_IMAGE: grafana/alloy:v1.19.2@sha256:b8ec653c44235fbe910879145dac3597d66b0aaecf60bcbbe82580767771a839
+        run: |
+          secret_dir="$(mktemp -d)"
+          trap 'rm -rf -- "$secret_dir"' EXIT
+          printf '%s' 'ci-not-a-real-token' > "$secret_dir/cloud-api-key"
+          printf '%s' 'Basic Y2k6Y2ktbm90LWEtcmVhbC10b2tlbg==' > "$secret_dir/otlp-authorization"
+          printf '%s' 'postgresql://dante_observer:ci@127.0.0.1:5432/dante?sslmode=disable' > "$secret_dir/observer-dsn"
+          docker run --rm \
+            --env DANTE_ENV=ci \
+            --env DANTE_BACKEND_HEALTH_URL=http://127.0.0.1:8000/health/ready \
+            --env DANTE_FARO_ORIGIN_PRIMARY=https://localhost:5173 \
+            --env DANTE_FARO_ORIGIN_SECONDARY=https://127.0.0.1:4173 \
+            --env GRAFANA_CLOUD_OTLP_ENDPOINT=https://otlp.example.test/otlp \
+            --env GRAFANA_CLOUD_OTLP_USERNAME=ci \
+            --env GRAFANA_CLOUD_PROMETHEUS_URL=https://prometheus.example.test/api/prom/push \
+            --env GRAFANA_CLOUD_PROMETHEUS_USERNAME=ci \
+            --env GRAFANA_CLOUD_LOKI_URL=https://loki.example.test/loki/api/v1/push \
+            --env GRAFANA_CLOUD_LOKI_USERNAME=ci \
+            --volume "$PWD/infra/observability/alloy/config.alloy:/etc/alloy/config.alloy:ro" \
+            --volume "$secret_dir/cloud-api-key:/run/secrets/grafana_cloud_api_key:ro" \
+            --volume "$secret_dir/otlp-authorization:/run/secrets/grafana_cloud_otlp_authorization:ro" \
+            --volume "$secret_dir/observer-dsn:/run/secrets/dante_observer_dsn:ro" \
+            "$ALLOY_IMAGE" validate /etc/alloy/config.alloy
 
       - name: Install canonical uv
         uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
@@ -33,132 +62,5 @@ jobs:
         working-directory: apps/backend
         run: uv python install
 
-      - name: Reconcile AI dependency and architecture allowlist
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-
-          pyproject = Path("apps/backend/pyproject.toml")
-          text = pyproject.read_text(encoding="utf-8")
-          if '"openai>=3.7.0,<3.8",' not in text:
-              needle = '    "httpx2>=2.12.0,<3",\n'
-              if needle not in text:
-                  raise SystemExit("canonical httpx2 dependency anchor not found")
-              text = text.replace(needle, needle + '    "openai>=3.7.0,<3.8",\n', 1)
-              pyproject.write_text(text, encoding="utf-8")
-
-          boundary = Path("apps/backend/tests/unit/test_architecture_boundaries.py")
-          text = boundary.read_text(encoding="utf-8")
-          start = text.index("_RUNTIME_DEPENDENCY_ALLOWLIST = frozenset(\n")
-          end = text.index("\n_DEPENDENCY_NAME =", start)
-          replacement = '''_RUNTIME_DEPENDENCY_ALLOWLIST = frozenset(
-              {
-                  "alembic",
-                  "argon2-cffi",
-                  "boto3",
-                  "botocore",
-                  "cryptography",
-                  "email-validator",
-                  "fastapi",
-                  "fido2",
-                  "httpx2",
-                  "joserfc",
-                  "openai",
-                  "opentelemetry-api",
-                  "opentelemetry-exporter-otlp-proto-http",
-                  "opentelemetry-sdk",
-                  "psycopg",
-                  "pydantic",
-                  "pydantic-settings",
-                  "sqlalchemy",
-                  "uvicorn",
-              }
-          )'''
-          updated = text[:start] + replacement + text[end:]
-          if updated != text:
-              boundary.write_text(updated, encoding="utf-8")
-          PY
-
-      - name: Regenerate canonical lock
-        working-directory: apps/backend
-        run: uv lock
-
-      - name: Commit dependency reconciliation if needed
-        run: |
-          if ! git diff --quiet -- apps/backend/pyproject.toml apps/backend/uv.lock apps/backend/tests/unit/test_architecture_boundaries.py; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add apps/backend/pyproject.toml apps/backend/uv.lock apps/backend/tests/unit/test_architecture_boundaries.py
-            git commit -m "chore(ai): reconcile main dependency graph"
-            git push origin HEAD:integration/ai-main-sync-lab-2026-09-05-a1
-          fi
-
-      - name: Verify locked dependency graph
-        working-directory: apps/backend
-        run: uv lock --check
-
-      - name: Synchronize locked environment
-        working-directory: apps/backend
-        run: uv sync --locked
-
-      - name: Reconcile AI eval tooling with current main Ruff semantics
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-
-          core = Path("tooling/ai-evals/dante_eval_core.py")
-          text = core.read_text(encoding="utf-8")
-          replacements = {
-              '    PASS = "PASS"  # noqa: S105 - verdict label, not a credential\n': '    PASS = "PASS"\n',
-              '        raise ValueError("assertion must be an object")\n': '        raise TypeError("assertion must be an object")\n',
-              '        raise ValueError("fixture must be an object")\n': '        raise TypeError("fixture must be an object")\n',
-              '        raise ValueError(f"{fixture_id}: requires_model must be boolean")\n': '        raise TypeError(f"{fixture_id}: requires_model must be boolean")\n',
-              '        raise ValueError(f"{fixture_id}: input/instructions must be strings")\n': '        raise TypeError(f"{fixture_id}: input/instructions must be strings")\n',
-              '        raise ValueError(f"{fixture_id}: assertions must be a list")\n': '        raise TypeError(f"{fixture_id}: assertions must be a list")\n',
-              '        raise ValueError("suite document must be an object")\n': '        raise TypeError("suite document must be an object")\n',
-              '            raise ValueError("fixture replacement must be an object")\n': '            raise TypeError("fixture replacement must be an object")\n',
-          }
-          for old, new in replacements.items():
-              if old in text:
-                  text = text.replace(old, new, 1)
-              elif new not in text:
-                  raise SystemExit(f"expected lint reconciliation anchor missing: {old!r}")
-          core.write_text(text, encoding="utf-8")
-
-          removals = {
-              Path("tooling/ai-evals/run_gemini_native_runtime_smoke.py"): "# ruff: noqa: E402, T201\n",
-              Path("tooling/ai-evals/tests/test_decision_extension_v4.py"): "# ruff: noqa: E402, S101\n",
-              Path("tooling/ai-evals/tests/test_eval_tooling.py"): "# ruff: noqa: E402, PT009, PT027\n",
-          }
-          for path, marker in removals.items():
-              current = path.read_text(encoding="utf-8")
-              if marker in current:
-                  path.write_text(current.replace(marker, "", 1), encoding="utf-8")
-          PY
-          uv run --project apps/backend --locked ruff format tooling/ai-evals
-
-      - name: Commit tooling reconciliation if needed
-        run: |
-          if ! git diff --quiet -- tooling/ai-evals; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add tooling/ai-evals
-            git commit -m "chore(ai): align eval tooling with main lint semantics"
-            git push origin HEAD:integration/ai-main-sync-lab-2026-09-05-a1
-          fi
-
-      - name: Ruff AI and backend quality
-        run: |
-          uv run --project apps/backend --locked ruff format --check apps/backend/src apps/backend/tests tooling/ai-evals
-          uv run --project apps/backend --locked ruff check apps/backend/src apps/backend/tests tooling/ai-evals
-
-      - name: Mypy backend
-        working-directory: apps/backend
-        run: uv run --locked mypy
-
-      - name: Backend non-PostgreSQL tests
-        working-directory: apps/backend
-        run: uv run --locked pytest -m "not postgres"
-
-      - name: AI eval deterministic tests
-        run: uv run --project apps/backend --locked pytest tooling/ai-evals/tests
+      - name: Run reconciled AI foundation closure gate with PostgreSQL
+        run: tooling/ai-evals/run_ai_foundation_closure_gate.sh --with-postgres
