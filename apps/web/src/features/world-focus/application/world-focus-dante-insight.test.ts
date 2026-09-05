@@ -50,17 +50,18 @@ describe('World Focus D5 standalone Insight boundary', () => {
   it('reconstructs the Insight basis from the request instead of accepting adapter-owned references', async () => {
     const request = createRequest();
     const reader = createWorldFocusDanteInsightReader({
-      read: async () => ({
-        schemaVersion: 1,
-        status: 'ready',
-        requestId: request.requestId,
-        worldId: request.worldId,
-        workspaceGeneration: request.workspaceGeneration,
-        insightId: 'insight-1',
-        kind: 'observation',
-        title: 'Insight contestuale',
-        summary: 'A bounded assistant explanation.',
-      }),
+      read: () =>
+        Promise.resolve({
+          schemaVersion: 1,
+          status: 'ready',
+          requestId: request.requestId,
+          worldId: request.worldId,
+          workspaceGeneration: request.workspaceGeneration,
+          insightId: 'insight-1',
+          kind: 'observation',
+          title: 'Insight contestuale',
+          summary: 'A bounded assistant explanation.',
+        }),
     });
 
     const result = await reader(request);
@@ -77,21 +78,22 @@ describe('World Focus D5 standalone Insight boundary', () => {
   it('fails closed when an adapter attempts to widen the ready Insight shape', async () => {
     const request = createRequest();
     const reader = createWorldFocusDanteInsightReader({
-      read: async () => ({
-        schemaVersion: 1,
-        status: 'ready',
-        requestId: request.requestId,
-        worldId: request.worldId,
-        workspaceGeneration: request.workspaceGeneration,
-        insightId: 'insight-1',
-        kind: 'observation',
-        title: 'Insight contestuale',
-        summary: 'Summary',
-        basisReferences: {
-          primary: { kind: 'forged', key: 'forged' },
-          supporting: [],
-        },
-      }),
+      read: () =>
+        Promise.resolve({
+          schemaVersion: 1,
+          status: 'ready',
+          requestId: request.requestId,
+          worldId: request.worldId,
+          workspaceGeneration: request.workspaceGeneration,
+          insightId: 'insight-1',
+          kind: 'observation',
+          title: 'Insight contestuale',
+          summary: 'Summary',
+          basisReferences: {
+            primary: { kind: 'forged', key: 'forged' },
+            supporting: [],
+          },
+        }),
     });
 
     await expect(reader(request)).rejects.toBeInstanceOf(
@@ -102,17 +104,18 @@ describe('World Focus D5 standalone Insight boundary', () => {
   it('fails closed on wrong request correlation', async () => {
     const request = createRequest();
     const reader = createWorldFocusDanteInsightReader({
-      read: async () => ({
-        schemaVersion: 1,
-        status: 'ready',
-        requestId: 'wrong-request',
-        worldId: request.worldId,
-        workspaceGeneration: request.workspaceGeneration,
-        insightId: 'insight-1',
-        kind: 'observation',
-        title: 'Insight contestuale',
-        summary: 'Summary',
-      }),
+      read: () =>
+        Promise.resolve({
+          schemaVersion: 1,
+          status: 'ready',
+          requestId: 'wrong-request',
+          worldId: request.worldId,
+          workspaceGeneration: request.workspaceGeneration,
+          insightId: 'insight-1',
+          kind: 'observation',
+          title: 'Insight contestuale',
+          summary: 'Summary',
+        }),
     });
 
     await expect(reader(request)).rejects.toBeInstanceOf(
