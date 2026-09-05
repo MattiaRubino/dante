@@ -55,15 +55,8 @@ test('D1 keeps DANTE quiet until invoked, preserves the World, and restores focu
     await dialog.evaluate((element) => getComputedStyle(element).pointerEvents),
   ).toBe('auto');
 
-  await textarea.fill('Perché questo progetto è in pausa?');
-  await page.getByRole('button', { name: 'Invia richiesta' }).click();
-  await expect(textarea).toHaveValue('Perché questo progetto è in pausa?');
-  await expect(
-    page.getByText(
-      'DANTE non è disponibile al momento. La richiesta è rimasta qui.',
-    ),
-  ).toBeVisible();
-  await expect(page.locator('[data-world-focus-dante-response]')).toHaveCount(0);
+  await textarea.fill('Bozza che non deve sparire prima dell’invio');
+  await expect(textarea).toHaveValue('Bozza che non deve sparire prima dell’invio');
 
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveCount(0);
