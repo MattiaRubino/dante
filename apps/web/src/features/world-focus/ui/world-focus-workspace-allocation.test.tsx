@@ -86,6 +86,35 @@ function WorkspaceControls() {
       >
         Open modal
       </button>
+      <button
+        type="button"
+        onClick={() =>
+          workspace.openSurface({
+            instanceId: 'route:details',
+            kind: 'test-surface',
+            depth: 'explore',
+            presentation: 'route',
+            origin: 'user',
+          })
+        }
+      >
+        Open route
+      </button>
+      <button
+        type="button"
+        onClick={() =>
+          workspace.openSurface({
+            instanceId: 'route:focus',
+            kind: 'test-surface',
+            depth: 'explore',
+            presentation: 'route',
+            origin: 'user',
+            blocksWorkspaceInteraction: true,
+          })
+        }
+      >
+        Open route focus
+      </button>
     </div>
   );
 }
@@ -204,6 +233,42 @@ describe('WorldFocusWorkspace allocation integration', () => {
       'interactive',
     );
     expect(surface?.hasAttribute('inert')).toBe(false);
+  });
+
+  it('keeps a generic external route non-blocking for the rectangular World workspace', () => {
+    const { container } = renderWorkspace();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open route' }));
+
+    const workspace = container.querySelector('.world-focus-workspace');
+    const mainPlane = container.querySelector('.world-focus-main-plane');
+
+    expect(workspace?.getAttribute('data-world-focus-main-interaction')).toBe(
+      'interactive',
+    );
+    expect(workspace?.getAttribute('data-world-focus-route-focus')).toBe(
+      'inactive',
+    );
+    expect(workspace?.hasAttribute('inert')).toBe(false);
+    expect(mainPlane?.hasAttribute('inert')).toBe(false);
+  });
+
+  it('inerts the rectangular World only for an explicitly blocking external route focus', () => {
+    const { container } = renderWorkspace();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open route focus' }));
+
+    const workspace = container.querySelector('.world-focus-workspace');
+    const mainPlane = container.querySelector('.world-focus-main-plane');
+
+    expect(workspace?.getAttribute('data-world-focus-main-interaction')).toBe(
+      'inert',
+    );
+    expect(workspace?.getAttribute('data-world-focus-route-focus')).toBe(
+      'active',
+    );
+    expect(workspace?.hasAttribute('inert')).toBe(true);
+    expect(mainPlane?.hasAttribute('inert')).toBe(true);
   });
 
   it('keeps a wide sidecar allocated but inert underneath a modal while the modal remains interactive', () => {
