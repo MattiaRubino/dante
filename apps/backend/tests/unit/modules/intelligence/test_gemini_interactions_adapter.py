@@ -15,8 +15,8 @@ from dante.modules.intelligence.adapters.outbound.model.gemini_interactions impo
     GEMINI_INTERACTIONS_MODEL,
     GEMINI_INTERACTIONS_ROUTE_REVISION,
     GEMINI_INTERACTIONS_SERVICE_TIER,
-    GeminiInteractionStatus,
     GeminiInteractionsAdapter,
+    GeminiInteractionStatus,
     GeminiInteractionsWireRequest,
     GeminiInteractionsWireResponse,
     GeminiTransportError,
@@ -167,9 +167,7 @@ async def test_invalid_structured_json_is_normalized_not_promoted() -> None:
 
 @pytest.mark.asyncio
 async def test_timeout_after_dispatch_is_indeterminate_not_blindly_retryable() -> None:
-    transport = _ScriptedTransport(
-        error=GeminiTransportError(GeminiTransportErrorKind.TIMEOUT)
-    )
+    transport = _ScriptedTransport(error=GeminiTransportError(GeminiTransportErrorKind.TIMEOUT))
     result = await GeminiInteractionsAdapter(transport, clock=_clock).invoke(_request())
 
     assert result.outcome is ProviderAttemptOutcome.INDETERMINATE
@@ -227,9 +225,7 @@ async def test_budget_exceeded_is_incomplete_not_generic_failure() -> None:
 
 @pytest.mark.asyncio
 async def test_queued_status_is_invalid_for_synchronous_background_off_binding() -> None:
-    transport = _ScriptedTransport(
-        response=_response(None, status=GeminiInteractionStatus.QUEUED)
-    )
+    transport = _ScriptedTransport(response=_response(None, status=GeminiInteractionStatus.QUEUED))
     result = await GeminiInteractionsAdapter(transport, clock=_clock).invoke(_request())
 
     assert result.outcome is ProviderAttemptOutcome.INVALID_RESPONSE
