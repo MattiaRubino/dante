@@ -23,6 +23,7 @@ from dante.modules.intelligence.adapters.outbound.model.gemini_http import (  # 
 )
 from dante.modules.intelligence.adapters.outbound.model.gemini_interactions import (  # noqa: E402
     GEMINI_INTERACTIONS_BINDING_REF,
+    GEMINI_INTERACTIONS_ROUTE_REVISION,
     GeminiInteractionsAdapter,
 )
 from dante.modules.intelligence.application.model_access import ModelAccessRuntime  # noqa: E402
@@ -52,7 +53,7 @@ def _api_key_from_environment() -> str | None:
 
 
 async def _run(execute: bool) -> int:
-    snapshot = load_route_config(_REVISIONS_ROOT, "gemini-flash-dev-v1")
+    snapshot = load_route_config(_REVISIONS_ROOT, GEMINI_INTERACTIONS_ROUTE_REVISION)
     if not execute:
         print(
             json.dumps(
@@ -60,6 +61,7 @@ async def _run(execute: bool) -> int:
                     "status": "READY",
                     "mode": "DRY_RUN",
                     "route_revision": snapshot.identity.revision,
+                    "route_sha256": snapshot.identity.content_sha256,
                     "target": ModelTarget.STRUCTURED_INTERPRETATION.value,
                     "binding": GEMINI_INTERACTIONS_BINDING_REF,
                     "planned_provider_calls": 1,
@@ -105,6 +107,16 @@ async def _run(execute: bool) -> int:
             ),
         ),
         security_basis_refs=("synthetic-public-only",),
+        required_route_config_identity=snapshot.identity,
+        required_capabilities=("text", "structured_output"),
+        required_feature_modes=(
+            "streaming:off",
+            "background:off",
+            "provider_continuation:off",
+            "provider_native_tools:off",
+            "provider_storage:off",
+        ),
+        max_provider_attempts=1,
     )
 
     try:
@@ -112,13 +124,16 @@ async def _run(execute: bool) -> int:
     finally:
         await transport.close()
 
+    attempt = result.attempts[0] if result.attempts else None
     print(
         json.dumps(
             {
                 "status": result.outcome.value,
                 "route_revision": result.route_config_identity.revision,
+                "route_sha256": result.route_config_identity.content_sha256,
                 "target": result.target.value,
                 "binding": result.provider_binding_ref,
+                "model": result.provider_model,
                 "harness": result.harness_profile_ref,
                 "usage": {
                     "state": result.usage.state.value,
@@ -130,11 +145,14 @@ async def _run(execute: bool) -> int:
                     "total_tokens": result.usage.total_tokens,
                 },
                 "attempt_outcomes": [attempt.outcome.value for attempt in result.attempts],
+                "provider_status": attempt.provider_status if attempt is not None else None,
+                "finish_reason": result.finish_reason,
                 "output": (
                     json.loads(result.structured_output_json)
                     if result.structured_output_json is not None
                     else None
                 ),
+                "error_class": result.error_class.value if result.error_class is not None else None,
                 "error_code": result.error_code,
             },
             ensure_ascii=False,
