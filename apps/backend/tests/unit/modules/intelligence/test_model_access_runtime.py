@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from uuid import uuid7
@@ -68,6 +69,35 @@ class _CompletedAdapter:
         )
 
 
+class _BlockingAdapter:
+    def __init__(self) -> None:
+        self.started = asyncio.Event()
+        self.requests: list[ProviderInvocationRequest] = []
+
+    async def invoke(self, request: ProviderInvocationRequest) -> ProviderAttemptResult:
+        self.requests.append(request)
+        self.started.set()
+        await asyncio.Event().wait()
+        raise AssertionError("blocking adapter should be cancelled by ModelAccess")
+
+
+class _Cancellation:
+    def __init__(self, *, cancelled: bool = False) -> None:
+        self._event = asyncio.Event()
+        if cancelled:
+            self._event.set()
+
+    @property
+    def cancelled(self) -> bool:
+        return self._event.is_set()
+
+    async def wait(self) -> None:
+        await self._event.wait()
+
+    def cancel(self) -> None:
+        self._event.set()
+
+
 def _snapshot():
     return load_route_config(_REVISIONS_ROOT, GEMINI_INTERACTIONS_ROUTE_REVISION)
 
@@ -110,7 +140,11 @@ async def test_two_active_targets_resolve_to_same_exact_configured_gemini_bindin
     snapshot = _snapshot()
     adapter = _CompletedAdapter()
     evidence = RecordingRuntimeEvidencePort()
-    runtime = ModelAccessRuntime(snapshot, {GEMINI_INTERACTIONS_BINDING_REF: adapter}, evidence=evidence)
+    runtime = ModelAccessRuntime(
+        snapshot,
+        {GEMINI_INTERACTIONS_BINDING_REF: adapter},
+        evidence=evidence,
+    )
 
     structured = await runtime.invoke(
         _request(
@@ -130,9 +164,17 @@ async def test_two_active_targets_resolve_to_same_exact_configured_gemini_bindin
     assert structured.started_at is not None
     assert structured.completed_at is not None
     assert all(request.provider_model == GEMINI_INTERACTIONS_MODEL for request in adapter.requests)
-    assert all(request.provider_endpoint == GEMINI_INTERACTIONS_ENDPOINT for request in adapter.requests)
-    assert all(request.provider_api_revision == GEMINI_INTERACTIONS_API_REVISION for request in adapter.requests)
-    assert all(request.provider_service_tier == GEMINI_INTERACTIONS_SERVICE_TIER for request in adapter.requests)
+    assert all(
+        request.provider_endpoint == GEMINI_INTERACTIONS_ENDPOINT for request in adapter.requests
+    )
+    assert all(
+        request.provider_api_revision == GEMINI_INTERACTIONS_API_REVISION
+        for request in adapter.requests
+    )
+    assert all(
+        request.provider_service_tier == GEMINI_INTERACTIONS_SERVICE_TIER
+        for request in adapter.requests
+    )
     assert all(request.reasoning_level == "low" for request in adapter.requests)
     assert all(request.max_output_tokens == 4096 for request in adapter.requests)
     assert any(event.kind.value == "provider_attempt" for event in evidence.events)
@@ -249,3 +291,35 @@ async def test_retry_budget_above_one_is_rejected_while_route_retry_is_off() -> 
     assert result.outcome is ModelInvocationOutcome.INVALID_REQUEST
     assert result.error_code == "retry_budget_not_supported_by_route"
     assert adapter.requests == []
+
+
+@pytest.mark.asyncio
+async def test_preexisting_cancellation_never_reaches_provider() -> None:
+    adapter = _CompletedAdapter()
+    runtime = ModelAccessRuntime(_snapshot(), {GEMINI_INTERACTIONS_BINDING_REF: adapter})
+
+    result = await runtime.invoke(_request(), _Cancellation(cancelled=True))
+
+    assert result.outcome is ModelInvocationOutcome.CANCELLED
+    assert result.error_class is ModelAccessErrorClass.CANCELLATION
+    assert result.attempts[0].acceptance is ProviderAcceptanceCertainty.NOT_ACCEPTED
+    assert result.error_code == "cancelled_before_model_routing"
+    assert adapter.requests == []
+
+
+@pytest.mark.asyncio
+async def test_cancellation_after_dispatch_preserves_acceptance_uncertainty() -> None:
+    adapter = _BlockingAdapter()
+    runtime = ModelAccessRuntime(_snapshot(), {GEMINI_INTERACTIONS_BINDING_REF: adapter})
+    cancellation = _Cancellation()
+
+    invocation = asyncio.create_task(runtime.invoke(_request(), cancellation))
+    await adapter.started.wait()
+    cancellation.cancel()
+    result = await invocation
+
+    assert result.outcome is ModelInvocationOutcome.CANCELLED
+    assert result.error_class is ModelAccessErrorClass.CANCELLATION
+    assert result.attempts[0].outcome is ProviderAttemptOutcome.CANCELLED
+    assert result.attempts[0].acceptance is ProviderAcceptanceCertainty.POSSIBLE
+    assert result.error_code == "local_cancellation_after_dispatch_acceptance_unknown"
