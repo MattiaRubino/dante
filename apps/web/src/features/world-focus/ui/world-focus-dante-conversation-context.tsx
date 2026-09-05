@@ -68,7 +68,6 @@ type WorldFocusDanteConversationContextValue = Readonly<{
   beginFromComposer: (
     composerInstanceId: string,
     input: string,
-    contextSeed?: WorldFocusDanteConversationContextSeed | null,
   ) => boolean;
   submitTurn: (input: string) => boolean;
   cancelPending: () => void;
@@ -82,6 +81,7 @@ type WorldFocusDanteConversationProviderProps = Readonly<{
   restoreInvokerFocus: () => void;
   children: ReactNode;
   reader?: WorldFocusDanteConversationReader;
+  composerContextSeed?: WorldFocusDanteConversationContextSeed | null;
 }>;
 
 type WorldFocusDanteConversationContextSession = Readonly<{
@@ -123,6 +123,7 @@ export function WorldFocusDanteConversationProvider({
   restoreInvokerFocus,
   children,
   reader = readWorldFocusDanteConversation,
+  composerContextSeed = null,
 }: WorldFocusDanteConversationProviderProps) {
   const { i18n } = useTranslation('common');
   const workspace = useWorldFocusWorkspace();
@@ -147,11 +148,7 @@ export function WorldFocusDanteConversationProvider({
   );
 
   const runRequest = useCallback(
-    (
-      input: string,
-      replaceInstanceId: string | null,
-      requestedContextSession: WorldFocusDanteConversationContextSession | null,
-    ): boolean => {
+    (input: string, replaceInstanceId: string | null): boolean => {
       if (requestState.status === 'pending') {
         return false;
       }
@@ -170,7 +167,7 @@ export function WorldFocusDanteConversationProvider({
       }
 
       const effectiveContextSession =
-        replaceInstanceId === null ? contextSession : requestedContextSession;
+        replaceInstanceId === null ? contextSession : composerContextSeed;
       if (
         effectiveContextSession !== null &&
         effectiveContextSession.workspaceGeneration !== workspace.state.generation
@@ -273,6 +270,7 @@ export function WorldFocusDanteConversationProvider({
       return true;
     },
     [
+      composerContextSeed,
       contextSession,
       i18n.language,
       i18n.resolvedLanguage,
@@ -287,17 +285,14 @@ export function WorldFocusDanteConversationProvider({
   );
 
   const beginFromComposer = useCallback(
-    (
-      composerInstanceId: string,
-      input: string,
-      contextSeed: WorldFocusDanteConversationContextSeed | null = null,
-    ) => runRequest(input, composerInstanceId, contextSeed),
+    (composerInstanceId: string, input: string) =>
+      runRequest(input, composerInstanceId),
     [runRequest],
   );
 
   const submitTurn = useCallback(
-    (input: string) => runRequest(input, null, contextSession),
-    [contextSession, runRequest],
+    (input: string) => runRequest(input, null),
+    [runRequest],
   );
 
   const cancelPending = useCallback(() => {

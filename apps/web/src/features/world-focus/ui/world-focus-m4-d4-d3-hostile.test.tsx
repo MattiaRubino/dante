@@ -52,13 +52,21 @@ function ConversationOwner({
   reader: WorldFocusDanteConversationReader;
   children: ReactNode;
 }>) {
-  const { restoreInvokerFocus } = useWorldFocusDanteEntry();
+  const { composerInvocation, restoreInvokerFocus } = useWorldFocusDanteEntry();
+  const composerContextSeed =
+    composerInvocation?.contextReferences == null
+      ? null
+      : Object.freeze({
+          references: composerInvocation.contextReferences,
+          workspaceGeneration: composerInvocation.workspaceGeneration,
+        });
 
   return (
     <WorldFocusDanteConversationProvider
       worldId="music"
       restoreInvokerFocus={restoreInvokerFocus}
       reader={reader}
+      composerContextSeed={composerContextSeed}
     >
       {children}
     </WorldFocusDanteConversationProvider>
@@ -77,9 +85,14 @@ function D4ToD3BindingProbe() {
       </output>
       <button
         type="button"
-        onClick={() =>
+        onClick={() => {
+          const hostileRuntimeCall = conversation.beginFromComposer as unknown as (
+            composerInstanceId: string,
+            input: string,
+            contextSeed: unknown,
+          ) => boolean;
           setAccepted(
-            conversation.beginFromComposer(
+            hostileRuntimeCall(
               WORLD_FOCUS_DANTE_COMPOSER_INSTANCE_ID,
               'Richiesta ostile con contesto sostituito',
               Object.freeze({
@@ -87,8 +100,8 @@ function D4ToD3BindingProbe() {
                 workspaceGeneration: workspace.state.generation,
               }),
             ),
-          )
-        }
+          );
+        }}
       >
         Try forged D4 context seed
       </button>
@@ -129,12 +142,12 @@ function HostileHarness({
 }
 
 describe('World Focus M4 D4 to D3 hostile binding', () => {
-  it('rejects a valid same-generation context seed that is not owned by the current D4 composer invocation', () => {
+  it('ignores a valid same-generation context seed that is not owned by the current D4 composer invocation', () => {
     const requests: WorldFocusDanteConversationRequest[] = [];
     const reader: WorldFocusDanteConversationReader = (request) => {
       requests.push(request);
       return new Promise(() => {
-        // The hostile contract expects D3 to reject before any conversation read starts.
+        // Keep the read pending; this test only proves request ownership/binding.
       });
     };
 
@@ -156,8 +169,12 @@ describe('World Focus M4 D4 to D3 hostile binding', () => {
     );
 
     expect(screen.getByTestId('forged-context-seed-accepted').textContent).toBe(
-      'false',
+      'true',
     );
-    expect(requests).toHaveLength(0);
+    expect(requests).toHaveLength(1);
+    expect(requests[0]?.contextReferences).toEqual(OWNED_D4_REFERENCES);
+    expect(requests[0]?.contextReferences).not.toEqual(
+      FORGED_SAME_GENERATION_REFERENCES,
+    );
   });
 });

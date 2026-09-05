@@ -39,7 +39,10 @@ import {
 import { WorldFocusContext } from './world-focus-context';
 import { getCoreWorldFocusSurfaceRegistry } from './world-focus-core-surfaces';
 import { WorldFocusDanteConversationPresentationController } from './world-focus-dante-conversation';
-import { WorldFocusDanteConversationProvider } from './world-focus-dante-conversation-context';
+import {
+  WorldFocusDanteConversationProvider,
+  type WorldFocusDanteConversationContextSeed,
+} from './world-focus-dante-conversation-context';
 import {
   WorldFocusDanteEntryProvider,
   WorldFocusDanteInvoke,
@@ -97,12 +100,29 @@ function WorldFocusDanteConversationOwner({
   worldId,
   children,
 }: WorldFocusDanteConversationOwnerProps) {
-  const { restoreInvokerFocus } = useWorldFocusDanteEntry();
+  const { composerInvocation, restoreInvokerFocus } = useWorldFocusDanteEntry();
+  const composerContextSeed = useMemo<
+    WorldFocusDanteConversationContextSeed | null
+  >(() => {
+    if (
+      composerInvocation === null ||
+      composerInvocation.contextReferences === null ||
+      composerInvocation.worldId !== worldId
+    ) {
+      return null;
+    }
+
+    return Object.freeze({
+      references: composerInvocation.contextReferences,
+      workspaceGeneration: composerInvocation.workspaceGeneration,
+    });
+  }, [composerInvocation, worldId]);
 
   return (
     <WorldFocusDanteConversationProvider
       worldId={worldId}
       restoreInvokerFocus={restoreInvokerFocus}
+      composerContextSeed={composerContextSeed}
     >
       {children}
     </WorldFocusDanteConversationProvider>

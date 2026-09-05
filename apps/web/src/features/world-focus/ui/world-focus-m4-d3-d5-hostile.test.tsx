@@ -63,13 +63,21 @@ const conversationReader: WorldFocusDanteConversationReader = (request) =>
   Promise.resolve(conversationResult(request));
 
 function ConversationOwner({ children }: Readonly<{ children: ReactNode }>) {
-  const { restoreInvokerFocus } = useWorldFocusDanteEntry();
+  const { composerInvocation, restoreInvokerFocus } = useWorldFocusDanteEntry();
+  const composerContextSeed =
+    composerInvocation?.contextReferences == null
+      ? null
+      : Object.freeze({
+          references: composerInvocation.contextReferences,
+          workspaceGeneration: composerInvocation.workspaceGeneration,
+        });
 
   return (
     <WorldFocusDanteConversationProvider
       worldId="music"
       restoreInvokerFocus={restoreInvokerFocus}
       reader={conversationReader}
+      composerContextSeed={composerContextSeed}
     >
       {children}
     </WorldFocusDanteConversationProvider>

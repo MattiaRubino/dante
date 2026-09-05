@@ -339,19 +339,10 @@ export function WorldFocusDanteComposer({
       return;
     }
 
-    const contextSeed =
-      contextualReferences === null || composerInvocation === null
-        ? null
-        : Object.freeze({
-            references: contextualReferences,
-            workspaceGeneration: composerInvocation.workspaceGeneration,
-          });
-
     if (
       conversation?.beginFromComposer(
         WORLD_FOCUS_DANTE_COMPOSER_INSTANCE_ID,
         request,
-        contextSeed,
       ) === true
     ) {
       handoffRef.current = true;
