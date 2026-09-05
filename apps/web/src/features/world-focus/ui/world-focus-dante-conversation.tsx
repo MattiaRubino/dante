@@ -19,7 +19,6 @@ import type {
 import type { WorldFocusSurfaceRendererProps } from './world-focus-surface-registry';
 import {
   WORLD_FOCUS_DANTE_CONVERSATION_INSTANCE_ID,
-  WORLD_FOCUS_DANTE_CONVERSATION_KIND,
   useOptionalWorldFocusDanteConversation,
 } from './world-focus-dante-conversation-context';
 import { useWorldFocusWorkspaceAllocation } from './world-focus-workspace-allocation-context';
