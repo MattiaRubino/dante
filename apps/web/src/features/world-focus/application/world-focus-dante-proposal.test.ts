@@ -42,8 +42,7 @@ describe('World Focus D6 Proposal boundary', () => {
   it('keeps the validated Insight source distinct from the Proposal artifact and requires explicit confirmation', async () => {
     const request = createRequest();
     const reader = createWorldFocusDanteProposalReader({
-      read: ({ request: current }) =>
-        Promise.resolve(readyResult(current as typeof request)),
+      read: ({ request: current }) => Promise.resolve(readyResult(current)),
     });
 
     const result = await reader(request);
