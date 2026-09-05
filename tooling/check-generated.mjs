@@ -217,16 +217,6 @@ try {
   );
 
   drifted = await findCommittedDrift();
-
-  if (drifted.includes('apps/web/src/routeTree.gen.ts')) {
-    const generatedRouteTree = await readFile(
-      join(repoRoot, 'apps/web/src/routeTree.gen.ts'),
-      'utf8',
-    );
-    process.stderr.write('\n--- GENERATED ROUTE TREE BEGIN ---\n');
-    process.stderr.write(generatedRouteTree);
-    process.stderr.write('\n--- GENERATED ROUTE TREE END ---\n');
-  }
 } catch (error) {
   failure = error;
 } finally {
