@@ -62,9 +62,7 @@ class TargetRouteDefinition:
 
     def __post_init__(self) -> None:
         _require_text(self.target_ref, name="target_ref")
-        _require_unique_texts(
-            self.challenger_binding_refs, name="challenger_binding_refs"
-        )
+        _require_unique_texts(self.challenger_binding_refs, name="challenger_binding_refs")
         _require_unique_texts(self.fallback_binding_refs, name="fallback_binding_refs")
         if self.state is RouteTargetState.ACTIVE:
             if self.champion_binding_ref is None or self.harness_profile_ref is None:
@@ -174,9 +172,7 @@ class RouteConfigDocument:
 
     def __post_init__(self) -> None:
         if self.schema_version not in _SUPPORTED_SCHEMA_VERSIONS:
-            raise ValueError(
-                f"unsupported route config schema_version: {self.schema_version}"
-            )
+            raise ValueError(f"unsupported route config schema_version: {self.schema_version}")
         _require_revision(self.revision)
 
         for name, values in (
@@ -196,19 +192,13 @@ class RouteConfigDocument:
             _require_unique_texts(values, name=name)
 
         if self.schema_version == 1:
-            if (
-                self.target_routes
-                or self.harness_definitions
-                or self.provider_binding_definitions
-            ):
+            if self.target_routes or self.harness_definitions or self.provider_binding_definitions:
                 raise ValueError("schema v1 cannot contain typed route definitions")
             return
 
         target_refs = tuple(route.target_ref for route in self.target_routes)
         harness_refs = tuple(profile.ref for profile in self.harness_definitions)
-        binding_refs = tuple(
-            binding.ref for binding in self.provider_binding_definitions
-        )
+        binding_refs = tuple(binding.ref for binding in self.provider_binding_definitions)
         for name, values in (
             ("target route refs", target_refs),
             ("harness definition refs", harness_refs),
@@ -259,9 +249,7 @@ class RouteConfigDocument:
                 raise ValueError("target route references unknown champion binding")
             if harness_profile_ref not in known_harnesses:
                 raise ValueError("target route references unknown harness profile")
-            if any(
-                ref not in known_bindings for ref in route.challenger_binding_refs
-            ):
+            if any(ref not in known_bindings for ref in route.challenger_binding_refs):
                 raise ValueError("target route references unknown challenger binding")
             if any(ref not in known_bindings for ref in route.fallback_binding_refs):
                 raise ValueError("target route references unknown fallback binding")
@@ -295,6 +283,4 @@ class RouteConfigSnapshot:
             raise ValueError("document revision must match RouteConfigIdentity revision")
         observed_digest = sha256(self.artifact_bytes).hexdigest()
         if observed_digest != self.identity.content_sha256:
-            raise ValueError(
-                "artifact_bytes do not match RouteConfigIdentity content digest"
-            )
+            raise ValueError("artifact_bytes do not match RouteConfigIdentity content digest")
