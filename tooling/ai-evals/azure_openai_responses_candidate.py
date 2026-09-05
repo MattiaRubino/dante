@@ -11,17 +11,18 @@ from typing import Any, Final
 from urllib.parse import urlparse
 
 import openai
-from openai import AsyncOpenAI
-from openai.types.responses.response import Response
 
 from azure_candidate_config import AzureCandidateConfig
 from dante_eval_core import CandidateResult, EvalFixture
+from openai import AsyncOpenAI
+from openai.types.responses.response import Response
 
 _MAX_RETRIES: Final = 0
 
 
 def _structured_text_config(fixture: EvalFixture) -> dict[str, Any]:
-    assert fixture.response_schema is not None
+    if fixture.response_schema is None:
+        raise ValueError("structured eval fixture requires response_schema")
     return {
         "format": {
             "type": "json_schema",
