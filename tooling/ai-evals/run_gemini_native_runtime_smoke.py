@@ -18,15 +18,13 @@ from uuid import uuid7
 _BACKEND_ROOT = Path(__file__).resolve().parents[2] / "apps" / "backend"
 sys.path.insert(0, str(_BACKEND_ROOT / "src"))
 
-from dante.modules.intelligence.adapters.outbound.model.gemini_http import (  # noqa: E402
-    GeminiInteractionsHttpTransport,
+from dante.bootstrap.intelligence import (  # noqa: E402
+    create_development_model_access_runtime,
 )
 from dante.modules.intelligence.adapters.outbound.model.gemini_interactions import (  # noqa: E402
     GEMINI_INTERACTIONS_BINDING_REF,
     GEMINI_INTERACTIONS_ROUTE_REVISION,
-    GeminiInteractionsAdapter,
 )
-from dante.modules.intelligence.application.model_access import ModelAccessRuntime  # noqa: E402
 from dante.modules.intelligence.contracts.model_access import (  # noqa: E402
     ModelInvocationRequest,
     ModelTarget,
@@ -85,9 +83,11 @@ async def _run(execute: bool) -> int:
         )
         return 2
 
-    transport = GeminiInteractionsHttpTransport(api_key)
-    adapter = GeminiInteractionsAdapter(transport)
-    runtime = ModelAccessRuntime(snapshot, {GEMINI_INTERACTIONS_BINDING_REF: adapter})
+    resources = create_development_model_access_runtime(
+        api_key=api_key,
+        revisions_root=_REVISIONS_ROOT,
+    )
+    runtime = resources.runtime
     request = ModelInvocationRequest(
         model_invocation_id=uuid7(),
         work_id=uuid7(),
@@ -122,7 +122,7 @@ async def _run(execute: bool) -> int:
     try:
         result = await runtime.invoke(request)
     finally:
-        await transport.close()
+        await resources.close()
 
     attempt = result.attempts[0] if result.attempts else None
     print(
