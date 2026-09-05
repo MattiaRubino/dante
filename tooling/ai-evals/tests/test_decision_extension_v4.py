@@ -1,5 +1,8 @@
 """Regression tests for the corrected decision-extension-v4 delegation oracle."""
 
+# Standalone eval-tooling tests bootstrap their local module path and use pytest assertions.
+# ruff: noqa: E402, S101
+
 from __future__ import annotations
 
 import sys
