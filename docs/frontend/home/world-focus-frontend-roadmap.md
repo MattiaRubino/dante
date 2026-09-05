@@ -3,7 +3,7 @@
 **Status:** ACTIVE WORKING ROADMAP — PRE-BACKEND  
 **Date:** 2026-08-30  
 **Branch:** `feature/home-react`  
-**Consumes:** `world-focus-handoff.md`, `world-focus-architecture.md`, Home contract, closed Domain/Logical/Physical semantics, current Database SOR and frontend production-readiness contracts  
+**Consumes:** `world-focus-wf0-scenario-oracle.md`, `world-focus-architecture.md`, `world-focus-wf1-checkpoint.md`, Home contract, closed Domain/Logical/Physical semantics, current Database SOR and frontend production-readiness contracts  
 **Scope stop:** production-grade World Focus frontend up to, but not including, real backend/API/database/provider/LLM integration
 
 ---
@@ -677,9 +677,11 @@ At each freeze point update only the authorities whose meaning actually changed.
 World Focus durable documents:
 
 ```text
-world-focus-handoff.md
 world-focus-architecture.md
 world-focus-frontend-roadmap.md
+world-focus-wf0-scenario-oracle.md
+world-focus-wf1-checkpoint.md
+world-focus-geometry-contract.md
 ```
 
 When Home entry behavior changes, update the Home contract/registry as applicable.
