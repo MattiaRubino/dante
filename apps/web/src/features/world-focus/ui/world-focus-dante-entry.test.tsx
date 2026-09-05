@@ -56,6 +56,15 @@ function DanteHarness({
         <div data-testid="world-content">
           World content remains independently usable
         </div>
+        <button
+          type="button"
+          data-testid="select-context"
+          onClick={() =>
+            workspace.selectContext({ kind: 'artifact', key: 'selected:1' })
+          }
+        >
+          Select context
+        </button>
         <output data-testid="surface-count">
           {workspace.state.surfaces.length}
         </output>
@@ -93,6 +102,7 @@ describe('World Focus D1 contextual DANTE entry', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(screen.getByTestId('surface-count').textContent).toBe('0');
 
+    fireEvent.click(screen.getByTestId('select-context'));
     fireEvent.click(invoke);
 
     const dialog = screen.getByRole('dialog', { name: 'DANTE' });

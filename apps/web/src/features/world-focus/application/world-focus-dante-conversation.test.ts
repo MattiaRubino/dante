@@ -27,7 +27,7 @@ function createRequest() {
 }
 
 describe('World Focus D3 deterministic conversation boundary', () => {
-  it('normalizes only bounded transient conversation fields and does not manufacture contextual or governed authority fields', () => {
+  it('normalizes only bounded transient conversation fields and exposes explicit null contextual coordinates by default', () => {
     const request = createRequest();
 
     expect(request).toEqual({
@@ -45,7 +45,9 @@ describe('World Focus D3 deterministic conversation boundary', () => {
         },
       ],
       locale: 'it-IT',
+      contextReferences: null,
     });
+    expect('contextReferences' in request).toBe(true);
     expect('contextReference' in request).toBe(false);
     expect('selection' in request).toBe(false);
     expect('authorization' in request).toBe(false);

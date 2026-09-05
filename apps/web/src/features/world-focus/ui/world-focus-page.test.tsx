@@ -1,4 +1,11 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import {
   afterAll,
   afterEach,
@@ -136,6 +143,46 @@ describe('WorldFocusPage', () => {
 
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(onClose).toHaveBeenCalledWith({ preferHistory: true });
+  });
+
+  it('offers an explicit Continuity deictic entry that opens the existing DANTE composer with an editable seeded prompt', async () => {
+    const { container } = render(
+      <WorldFocusPage
+        world={requireWorld('music')}
+        identity={requireIdentity('music')}
+        source="worlds"
+        onClose={vi.fn()}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(
+        container
+          .querySelector('.world-focus-composition')
+          ?.getAttribute('data-world-focus-composition-count'),
+      ).toBe('4');
+    });
+
+    const continuity = container.querySelector<HTMLElement>(
+      '[data-world-focus-composition-id="continuity"]',
+    );
+    expect(continuity).not.toBeNull();
+    const action = within(continuity!).getAllByRole('button', {
+      name: 'Chiedi a DANTE: Continua da qui',
+    })[0];
+    expect(action).toBeDefined();
+
+    fireEvent.click(action!);
+
+    const composer = screen.getByRole('dialog', { name: 'DANTE' });
+    const textarea = screen.getByRole('textbox', {
+      name: 'Scrivi una richiesta per DANTE',
+    }) as HTMLTextAreaElement;
+    expect(composer.getAttribute('data-world-focus-dante-surface')).toBe(
+      'composer',
+    );
+    expect(textarea.value).toBe('Continua da qui');
+    expect(textarea).toBe(document.activeElement);
   });
 
   it('falls back safely for a direct route load and supports Escape', () => {
