@@ -1,6 +1,6 @@
 # DANTE AI Implementation Workstream
 
-- **Status:** LOW-LEVEL FOUNDATION CLOSED / MAIN-RECONCILED INTEGRATION CANDIDATE
+- **Status:** LOW-LEVEL FOUNDATION CLOSED / MAIN-RECONCILED / PR-GREEN INTEGRATION CANDIDATE
 - **Branch:** `feature/ai-implementation`
 - **Started:** 2026-09-02
 - **Last reconciled:** 2026-09-05
@@ -9,11 +9,12 @@
 - **Development binding acceptance:** `ai-runtime-model-target-closure-acceptance-2026-09-05.md`
 - **Foundation closure checkpoint:** `ai-foundation-closure-2026-09-05.md`
 - **Main-reconciliation merge:** `4a0a69d9f331a65dcf4f72f53f33f06babddca46`
+- **Integration PR:** `#63` / REQUIRED GATES PASS / MERGE PENDING
 - **Production qualification:** NO
 - **Private-data eligibility:** NO
 - **Database/Alembic change:** NONE
 
-Repository/code/tests outrank this workstream record. The deterministic low-level foundation is closed for its bounded scope. The remaining work on this branch is repository integration only: required PR gates, protected-main merge, and post-merge acceptance. Deferred product capabilities are not reopened to enlarge the integration scope.
+Repository/code/tests outrank this workstream record. The deterministic low-level foundation is closed for its bounded scope. Required PR validation is also green. The only remaining branch lifecycle work is protected-main merge with owner authorization followed by post-merge acceptance and retirement of this active workstream record. Deferred product capabilities are not reopened to enlarge the integration scope.
 
 ## 1. Current stage disposition
 
@@ -197,7 +198,20 @@ main direct write           NO
 
 Semantic reconciliation retained current-main CI, Auth/Access, Email, Recovery, Home/Timeline and Observability truth while adding the AI delta. The dependency graph keeps current-main versions, adds `openai>=3.7.0,<3.8`, and uses the reconciled `uv.lock` generated/validated against that graph. Architecture tests were updated only for the current-main runtime dependency set and the exact approved `httpx2` import surfaces.
 
-Pre-PR reconciled validation evidence includes a clean locked dependency graph, strict mypy over 221 source files, 424/424 non-PostgreSQL backend tests, and 22/22 deterministic AI eval tests. Official PR CI remains the authoritative integration gate, including PostgreSQL and frontend/dependency checks.
+Pre-PR reconciled validation evidence includes a clean locked dependency graph, strict mypy over 221 source files, 424/424 non-PostgreSQL backend tests, and 22/22 deterministic AI eval tests.
+
+Official PR `#63` integration evidence on the then-current feature head:
+
+```text
+Backend CI Gate       PASS
+Dependency Review     PASS
+Frontend CI Gate      PASS
+Backend PostgreSQL    PASS
+Web E2E Chromium      PASS
+Timeline Firefox      PASS
+```
+
+Protected-main reachability is still not claimed because the PR has not been merged.
 
 ## 8. Explicitly deferred scope
 
@@ -233,10 +247,11 @@ These are later roadmap stages or trigger-gated capabilities. They must start fr
 ```text
 AI LOW-LEVEL FOUNDATION                    FROZEN / PASS
 MAIN -> FEATURE RECONCILIATION             COMPLETE
-CURRENT-TRUTH DOC RECONCILIATION           COMPLETE WHEN THIS CHANGESET LANDS
-REQUIRED PR GATES                          NEXT
-PROTECTED-MAIN MERGE                       ONLY AFTER GREEN GATES + OWNER AUTHORIZATION
+CURRENT-TRUTH DOC RECONCILIATION           COMPLETE ON FEATURE
+PR #63 REQUIRED GATES                      PASS
+PROTECTED-MAIN MERGE                       ONLY WITH OWNER AUTHORIZATION
 POST-MERGE ACCEPTANCE                      REQUIRED AFTER MERGE
+ACTIVE WORKSTREAM RECORD                   RETIRE AFTER MERGE ACCEPTANCE
 ```
 
-Until protected-main merge, this file describes branch-local candidate truth. After merge and post-merge acceptance, the active workstream should be retired according to the documentation lifecycle policy and future AI work should begin as a fresh bounded scope.
+Until protected-main merge, this file describes branch-local candidate truth. After merge and post-merge acceptance, the active workstream must be retired according to the documentation lifecycle policy and future AI work must begin as a fresh bounded scope.
