@@ -1,6 +1,6 @@
 # DANTE — World Focus Research / Review Evidence Index
 
-**Status:** CURRENT EVIDENCE MAP — M0 / M1 / POST-M1 SAFETY / M2 / M3 CLOSED — M4 ACTIVE / D2–D4 CLOSED / D5 NEXT  
+**Status:** CURRENT EVIDENCE MAP — M4 CLOSED / VALIDATED — MAIN RECONCILIATION NEXT  
 **Date:** 2026-09-05  
 **Branch:** `feature/home-react`
 
@@ -14,6 +14,9 @@ world-focus-frontend-roadmap.md
 world-focus-handoff.md
 world-focus-evidence-index.md
 current-checkpoint.md
+world-focus-m4-final-hostile-closure-review.md
+world-focus-d6-governed-operation-review.md
+world-focus-d5-insight-presentation-review.md
 world-focus-d4-contextual-invocation-review.md
 world-focus-d3-deterministic-conversation-adapter-review.md
 world-focus-d2-adaptive-conversation-surface-review.md
@@ -39,17 +42,23 @@ E31      M3 final cross-layer hostile closure
 E32      M4 / D2 adaptive conversation surface closure
 E33      M4 / D3 deterministic conversation adapter closure
 E34      M4 / D4 contextual/deictic invocation closure
-E35      M4 / D5 Insight presentation preflight — NEXT
+E35      M4 / D5 Insight presentation closure
+E36      M4 / D6 governed Proposal/Confirmation/Receipt closure
+E37      M4 final cross-owner hostile sequencing closure
 ```
 
 Key anchors:
 
 ```text
-Workspace Platform 6c441335a75bb913af8da1eda569d8094d38a539 / CI 33549465793 PASS
-M3 final hostile   d9c30a3c6148469b347754eab07dc2ade9be4c52 / CI 33951509083 PASS
-D2 final           7b787766be83096e82eab1ac116b2704fae5f202 / CI 33958677991 PASS
-D3 final           59c70af6005ee87918db7fe152c043699726e78c / CI 33963858340 PASS
-D4 final           e8ab022b9b00b958235ac7d09e757b45227a4356 / CI 33967719861 PASS
+Workspace Platform   6c441335a75bb913af8da1eda569d8094d38a539 / CI 33549465793 PASS
+M3 final hostile     d9c30a3c6148469b347754eab07dc2ade9be4c52 / CI 33951509083 PASS
+D2 final             7b787766be83096e82eab1ac116b2704fae5f202 / CI 33958677991 PASS
+D3 final             59c70af6005ee87918db7fe152c043699726e78c / CI 33963858340 PASS
+D4 final             e8ab022b9b00b958235ac7d09e757b45227a4356 / CI 33967719861 PASS
+D5 final             0873153d8b390b99c5b3aa024e0735c82a89660d / CI 33971615312 PASS
+D6 first green       234eb159a5993db9b909880f58231a1e27cdefef / CI 33975428193 PASS
+D6 owner-hardened    929c5ad7a056ff172a915e5070e7d72c936e692d / CI 33986493932 PASS
+M4 final hostile     1b8ae1a3d953d85dcc14d513e512428d1f268c8d / CI 33990483780 PASS
 ```
 
 ## E31 — M3 Final Cross-Layer Hostile Closure
@@ -154,38 +163,126 @@ Mobile / Chromium / frozen Timeline Firefox / Frontend CI Gate PASS
 
 Real browser coverage uses `/worlds/music` Continuity at 1600 and 390. It proves seeded contextual composer, existing D3 conversation handoff, existing D2 sidecar/route focus, >=44px contextual target, no compact overflow, exact contextual invoker focus return and automated axe checks.
 
-### E34.4 Scope compare
-
-```text
-base        c6f5b7bcf5cdd3aa927a05668e5a146ba3ab5d1a
-head        e8ab022b9b00b958235ac7d09e757b45227a4356
-status      ahead
-commits     9
-behind      0
-merge-base  == base
-net paths   19 code/test/i18n
-```
-
-No Workspace reducer/allocator, AppShell, Timeline, Access/Auth, generated route tree, backend/API/DB/Alembic/provider/LLM/persistence path changed.
-
 Detailed review: `world-focus-d4-contextual-invocation-review.md`.
 
-## E35 — M4 / D5 Insight Presentation Preflight — NEXT
+## E35 — M4 / D5 Insight Presentation — CLOSED / VALIDATED
 
-D5 has no implementation authority yet. Fresh read-only preflight must inspect the closed D4 contextual request/session boundary, closed D3 conversation/result owners, current finite World surface/rendering grammar and any existing semantic/basis/evidence owners capable of supporting an Insight without inventing truth.
-
-Required barriers:
+D5 materializes a standalone validated Insight rather than widening the D3 transcript.
 
 ```text
-conversation message != Insight
-assistant prose != validated Insight
-Insight != canonical World/Domain truth
-Insight != Proposal != Decision != effect
-context reference != authorization
-reference exists != payload available/disclosable/fresh
+conversation answer | explanation
+-> explicit Open as Insight
+-> bounded request
+-> deterministic Insight reader
+-> observation | pattern | change artifact
+-> registered dante-insight surface
 ```
 
-D5 must not pull D6 Proposal/Decision/effect semantics or real backend/provider/LLM integration forward.
+```text
+PRE-SCOPE 62b52137ab30778aae968f80fac59496c87171bf
+VALID RED c803dac135c7a35d38d8eb8335f5b52c8b430114
+RED CI    33969625586 / run #1045 EXPECTED FAILURE
+CODE/TEST 0873153d8b390b99c5b3aa024e0735c82a89660d
+CI        33971615312 / run #1050 PASS
+89 / 89 web test files
+431 / 431 web unit tests
+324 modules / 1066 dependencies / 0 architecture violations
+```
+
+Global context-free DANTE cannot promote Insight. Basis references cannot widen. Pending/late Insight work fails closed on Workspace-generation change. Raw reference keys are not presented.
+
+Detailed review: `world-focus-d5-insight-presentation-review.md`.
+
+## E36 — M4 / D6 Governed Operation — CLOSED / VALIDATED
+
+D6 materializes frontend-only governed-operation semantics:
+
+```text
+current validated D5 Insight
+-> Proposal
+-> required blocking Confirmation
+-> local confirmed | declined Decision
+-> truthful local Receipt
+```
+
+Permanent law:
+
+```text
+Insight != Proposal
+Proposal != Decision
+Decision != effect
+confirmed != executed
+Receipt != provider/runtime/canonical completion
+```
+
+RED/GREEN evidence:
+
+```text
+PRE-SCOPE        40dc630ba436317f89951e71c22172b2c3852558
+VALID RED        fb1d002712bcd9b4c8c0c5a23156a13abb71303b
+RED CI           33974791760 / run #1058 EXPECTED FAILURE
+FIRST GREEN      234eb159a5993db9b909880f58231a1e27cdefef
+GREEN CI         33975428193 / run #1061 PASS
+OWNER-HARDENED   929c5ad7a056ff172a915e5070e7d72c936e692d
+OWNER GREEN CI   33986493932 / run #1071 PASS
+```
+
+Confirmation blocks Workspace interaction and survives Escape. Receipt explicitly records no effect execution.
+
+Detailed review: `world-focus-d6-governed-operation-review.md`.
+
+## E37 — M4 Final Cross-Owner Hostile Sequencing Closure — CLOSED / PASS
+
+The M4 closure did not rely on happy-path coverage. It found three real same-generation caller-injection seams.
+
+### E37.1 D5 -> D6
+
+```text
+RED       775281b8bdca5dd5cccb63be5ecb6d9ebabd5b2d
+RED CI    33985837951 / run #1066 EXPECTED FAILURE
+GREEN     929c5ad7a056ff172a915e5070e7d72c936e692d
+GREEN CI  33986493932 / run #1071 PASS
+```
+
+Fix: D6 derives exclusively the current D5-owned Insight; caller-supplied same-generation Insight substitution is not accepted.
+
+### E37.2 D3 -> D5
+
+```text
+RED       bf6caef751505d35cbfd694ce6f1d532409517f3
+RED CI    33987041073 / run #1076 EXPECTED FAILURE
+GREEN     e8b836f49ddb85a95e0ba6b9472b56f3f45d83eb
+GREEN CI  33987633070 / run #1080 PASS
+```
+
+Fix: D5 resolves the exact source assistant message from the D3 owner rather than trusting caller-supplied message content.
+
+### E37.3 D4 -> D3
+
+```text
+RED       8dd3572652bde94778ee230cf80437fc8e22a1b8
+RED CI    33988617249 / run #1085 EXPECTED FAILURE
+GREEN     eccdc4d986a4880e9e45766900cb833b665d8cea
+GREEN CI  33989942572 / run #1086 PASS
+```
+
+Fix: D3 derives the contextual reference seed from the D4 owner rather than accepting caller-supplied semantic context.
+
+### E37.4 Final lifecycle matrix
+
+```text
+HEAD 1b8ae1a3d953d85dcc14d513e512428d1f268c8d
+CI   33990483780 / run #1087 PASS
+Quality PASS
+Mobile Bundle PASS
+Chromium Web E2E PASS
+frozen Timeline Firefox PASS
+Frontend CI Gate PASS
+```
+
+Matrix coverage includes skip prevention, stale Proposal/Confirmation/Receipt invalidation, stale Decision rejection, owner binding, basis non-widening, global/context-free exclusion, Confirmation blocking/Escape behavior and truthful no-effect Receipt semantics.
+
+Detailed review: `world-focus-m4-final-hostile-closure-review.md`.
 
 ## 3. Current layered result
 
@@ -196,17 +293,21 @@ L2 Evidence/Basis
 L3 Coordination/Disclosure
 L4 Interaction/Reference
 L5 Composition — M3 CLOSED / VALIDATED
-L6 Operation/Effect presentation
+L6 Operation/Effect presentation — D6 FRONTEND-ONLY GOVERNED PRESENTATION
 L7 Renderer/Specialist Extension
 L8 Platform/User Policy
 
 M2 presentation boundary CLOSED
 M3 Adaptive Composition CLOSED / VALIDATED
-M4 Contextual DANTE ACTIVE
+M4 Contextual DANTE CLOSED / VALIDATED
 D2 Adaptive Conversation Surface CLOSED / VALIDATED
 D3 Deterministic Conversation Adapter CLOSED / VALIDATED
 D4 Contextual/Deictic Invocation CLOSED / VALIDATED
-D5 Insight Presentation NEXT / NOT STARTED
+D5 Insight Presentation CLOSED / VALIDATED
+D6 Governed Operation CLOSED / VALIDATED
+M4 Final Hostile Closure CLOSED / PASS
+M5 NOT STARTED
+MAIN RECONCILIATION NEXT BEFORE M5
 ```
 
 ## 4. Current evidence gate
@@ -227,8 +328,14 @@ D5 Insight Presentation NEXT / NOT STARTED
 
 > **D4 — CLOSED / VALIDATED**
 
-> **M4 — ACTIVE / D5 READ-ONLY PREFLIGHT NEXT**
+> **D5 — CLOSED / VALIDATED**
 
-> **M5–M7 and backend remain blocked by sequence.**
+> **D6 — CLOSED / VALIDATED**
+
+> **M4 FINAL HOSTILE CLOSURE — CLOSED / PASS**
+
+> **M4 — CLOSED / VALIDATED**
+
+> **M5 — NOT STARTED. Main reconciliation/integration is next.**
 
 Human/manual visual acceptance remains **NOT PERFORMED**.
