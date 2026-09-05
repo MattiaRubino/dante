@@ -8,7 +8,7 @@ from enum import StrEnum
 from hashlib import sha256
 from urllib.parse import urlparse
 
-_SUPPORTED_SCHEMA_VERSIONS = frozenset({1, 2})
+_SUPPORTED_SCHEMA_VERSIONS = frozenset({1, 2, 3})
 _HEX_DIGITS = frozenset("0123456789abcdef")
 _REVISION_PATTERN = re.compile(r"^[a-z0-9][a-z0-9._-]{0,63}$")
 
@@ -113,6 +113,12 @@ class ProviderBindingDefinition:
     state: ProviderBindingState
     capabilities: tuple[str, ...]
     security_profiles: tuple[str, ...]
+    api_revision: str | None = None
+    service_tier: str | None = None
+    model_version: str | None = None
+    versioning_posture: str | None = None
+    data_zone: str | None = None
+    retention_mode: str | None = None
 
     def __post_init__(self) -> None:
         for name, value in (
@@ -130,6 +136,16 @@ class ProviderBindingDefinition:
             raise ValueError("provider binding endpoint must be an absolute HTTPS URL")
         _require_unique_texts(self.capabilities, name="binding capabilities")
         _require_unique_texts(self.security_profiles, name="binding security_profiles")
+        for name, value in (
+            ("api_revision", self.api_revision),
+            ("service_tier", self.service_tier),
+            ("model_version", self.model_version),
+            ("versioning_posture", self.versioning_posture),
+            ("data_zone", self.data_zone),
+            ("retention_mode", self.retention_mode),
+        ):
+            if value is not None:
+                _require_text(value, name=name)
 
 
 @dataclass(frozen=True, slots=True)
@@ -191,13 +207,11 @@ class RouteConfigDocument:
             _require_unique_texts(values, name=name)
 
         if set(target_refs) != set(self.model_targets):
-            raise ValueError("schema v2 target_routes must exactly cover model_targets")
+            raise ValueError("typed target_routes must exactly cover model_targets")
         if set(harness_refs) != set(self.harness_profiles):
-            raise ValueError("schema v2 harness_definitions must exactly cover harness_profiles")
+            raise ValueError("typed harness_definitions must exactly cover harness_profiles")
         if set(binding_refs) != set(self.provider_bindings):
-            raise ValueError(
-                "schema v2 provider_binding_definitions must exactly cover provider_bindings"
-            )
+            raise ValueError("typed provider_binding_definitions must exactly cover provider_bindings")
 
         known_harnesses = set(harness_refs)
         known_bindings = set(binding_refs)
@@ -209,6 +223,19 @@ class RouteConfigDocument:
         for binding in self.provider_binding_definitions:
             if not set(binding.security_profiles).issubset(global_security_profiles):
                 raise ValueError("binding security_profiles must be declared by route config")
+            if self.schema_version >= 3:
+                required_exact_identity = (
+                    binding.api_revision,
+                    binding.service_tier,
+                    binding.versioning_posture,
+                    binding.data_zone,
+                    binding.retention_mode,
+                )
+                if any(value is None for value in required_exact_identity):
+                    raise ValueError(
+                        "schema v3 provider binding requires api_revision, service_tier, "
+                        "versioning_posture, data_zone and retention_mode"
+                    )
         for route in self.target_routes:
             if route.state is not RouteTargetState.ACTIVE:
                 continue
