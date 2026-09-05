@@ -1,6 +1,6 @@
 # DANTE — Home / Frontend Current Checkpoint
 
-**Status:** CURRENT LIVE ENTRY POINT — WORLD FOCUS M3 CLOSED / VALIDATED — M4 ACTIVE / D2–D4 CLOSED / D5 NEXT  
+**Status:** CURRENT LIVE ENTRY POINT — WORLD FOCUS M4 CLOSED / VALIDATED — MAIN RECONCILIATION NEXT  
 **Date:** 2026-09-05  
 **Working branch:** `feature/home-react`  
 **Worktree:** `/home/mattia/projects/dante-frontend`
@@ -43,13 +43,15 @@ M2 FINAL CLOSURE                           CLOSED / PASS
 M3                                         CLOSED / VALIDATED
 M3-1 / M3-2 / M3-3 / M3-4                CLOSED / VALIDATED
 M3 final hostile closure                   CLOSED / PASS
-M4 Contextual DANTE / D2–D6               ACTIVE
+M4 Contextual DANTE / D2–D6               CLOSED / VALIDATED
 D2 adaptive conversation surface           CLOSED / VALIDATED
 D3 deterministic conversation adapter      CLOSED / VALIDATED
 D4 contextual/deictic invocation           CLOSED / VALIDATED
-D5 Insight presentation integration        NEXT / NOT STARTED
-D6 Proposal/confirmation/receipt           BLOCKED BY D5
-M5 complete contrasting Worlds             BLOCKED BY M4
+D5 Insight presentation integration        CLOSED / VALIDATED
+D6 Proposal/confirmation/receipt           CLOSED / VALIDATED
+M4 final hostile closure                   CLOSED / PASS
+MAIN RECONCILIATION / INTEGRATION          NEXT BEFORE M5
+M5 complete contrasting Worlds             NOT STARTED
 M6 integrated visual/a11y/performance      BLOCKED BY M5
 M7 pre-backend frontend freeze              BLOCKED BY M6
 BACKEND                                    BLOCKED UNTIL M7
@@ -62,57 +64,81 @@ human/manual visual review                  NOT PERFORMED
 M3 final hostile
 HEAD d9c30a3c6148469b347754eab07dc2ade9be4c52
 CI   33951509083 / run #944 PASS
-80 / 80 web test files; 391 / 391 web unit tests
-300 modules / 899 dependencies / 0 violations
 
 D2 adaptive conversation surface
-PRE-SCOPE 0a0a43ac06f93d986674f8521e521dcc05ea2c1e
-CODE/TEST  7b787766be83096e82eab1ac116b2704fae5f202
-CI         33958677991 / run #969 PASS
-82 / 82 web test files; 399 / 399 web unit tests
-305 modules / 929 dependencies / 0 violations
+HEAD 7b787766be83096e82eab1ac116b2704fae5f202
+CI   33958677991 / run #969 PASS
 
 D3 deterministic conversation adapter
-PRE-SCOPE 57520cf0570bc2be875e7140d066e45ddd9080d5
-CODE/TEST  59c70af6005ee87918db7fe152c043699726e78c
-CI         33963858340 / run #1009 PASS
-84 / 84 web test files; 410 / 410 web unit tests
-311 modules / 963 dependencies / 0 violations
+HEAD 59c70af6005ee87918db7fe152c043699726e78c
+CI   33963858340 / run #1009 PASS
 
 D4 contextual/deictic invocation
-PRE-SCOPE c6f5b7bcf5cdd3aa927a05668e5a146ba3ab5d1a
-VALID RED 1cbcc27bf19c91e195dd1f0f4a5c57915facb432
-RED CI    33966295853 / run #1030 EXPECTED FAILURE
-CODE/TEST e8ab022b9b00b958235ac7d09e757b45227a4356
-CI        33967719861 / run #1038 PASS
-87 / 87 web test files; 422 / 422 web unit tests
-317 modules / 1021 dependencies / 0 violations
-Contracts / lint / typecheck / generated / build / diff / mutation / Mobile / Chromium / frozen Timeline Firefox / Frontend CI Gate PASS
+HEAD e8ab022b9b00b958235ac7d09e757b45227a4356
+CI   33967719861 / run #1038 PASS
+
+D5 Insight presentation
+HEAD 0873153d8b390b99c5b3aa024e0735c82a89660d
+CI   33971615312 / run #1050 PASS
+
+D6 governed operation first hardened green
+HEAD 234eb159a5993db9b909880f58231a1e27cdefef
+CI   33975428193 / run #1061 PASS
+
+D6 owner-hardened green
+HEAD 929c5ad7a056ff172a915e5070e7d72c936e692d
+CI   33986493932 / run #1071 PASS
+
+M4 final hostile lifecycle
+HEAD 1b8ae1a3d953d85dcc14d513e512428d1f268c8d
+CI   33990483780 / run #1087 PASS
+Quality / Mobile / Chromium / frozen Timeline Firefox / Frontend CI Gate PASS
 ```
 
-Detailed D4 authority: `world-focus-d4-contextual-invocation-review.md`.
-
-## 4. Closed D4 result
-
-D4 adds explicit bounded semantic context to the existing D1/D3 path:
+Detailed closure authority:
 
 ```text
-Continuity -> continue
-Attention  -> why
-Comparison -> compare
-Evidence   -> open-source
--> finite WorldFocusContextReferenceSet
--> same D1 composer + editable seed
--> same D3 conversation
+world-focus-d6-governed-operation-review.md
+world-focus-m4-final-hostile-closure-review.md
 ```
 
-The global invoke remains explicitly `contextReferences: null`; generic Workspace selection is not inherited as DANTE context.
+## 4. Closed M4 result
 
-Context is bound to World + Workspace generation. A generation change before submit preserves the draft and fails closed; a generation change after a contextual session is established supersedes that session and rejects stale follow-up context.
+World Focus now has a bounded pre-backend DANTE path:
 
-Only actual Evidence receives `open-source`; Provenance, Integrity and History remain distinct.
+```text
+quiet/global or explicit contextual invoke
+-> D3 mounted deterministic conversation
+-> D4 bounded contextual ownership
+-> D5 standalone validated Insight
+-> D6 Proposal
+-> required blocking Confirmation
+-> local Decision
+-> truthful local Receipt
+```
 
-No new Workspace/surface engine, provider/LLM call, persistence or backend semantics entered D4.
+This path does **not** collapse frontend state into backend authority:
+
+```text
+selected/contextual World state != authorization
+conversation message != Insight
+assistant prose != validated Insight
+Insight != Proposal
+Proposal != Decision
+Decision != effect
+confirmed != executed
+Receipt != canonical/provider/runtime completion
+```
+
+The final hostile pass found and fixed three real owner-boundary leaks:
+
+```text
+D5 -> D6 arbitrary same-generation Insight injection
+D3 -> D5 arbitrary same-generation assistant-message object injection
+D4 -> D3 arbitrary same-generation context-reference substitution
+```
+
+All three were closed by deriving semantic source from the existing owner rather than trusting the caller.
 
 ## 5. Permanent non-collapses
 
@@ -123,7 +149,6 @@ projection != canonical truth
 reference exists != payload available != current != disclosable != fresh
 Evidence != Provenance != integrity attestation
 AI output != fact
-Proposal != Decision != effect
 Comparison != Decision
 client composition config != canonical Domain state
 presentation geometry != conversation identity
@@ -133,57 +158,60 @@ context reference != canonical truth
 mounted frontend transcript != durable DANTE Run
 cancelled/aborted request != semantic success
 conversation message != Insight
-Insight != Proposal != Decision != effect
-```
-
-## 6. D5 next gate
-
-D5 is next and is **NOT STARTED**.
-
-Before writes inspect live:
-
-```text
-D4 bounded contextual request/session ownership
-D3 typed conversation/result ownership
-registered World surfaces and finite renderer grammar
-existing semantic owners that could support an Insight without inventing truth
-reference/disclosure/basis qualifiers
-responsive/a11y/browser harness
-```
-
-D5 must preserve:
-
-```text
-conversation message != Insight
 assistant prose != validated Insight
-Insight != canonical truth
 Insight != Proposal != Decision != effect
-context reference != authorization
+confirmed != executed
+Receipt != canonical/provider/runtime completion
 ```
 
-Start D5 with a fresh PRE-SCOPE and explicit RED-first write gate. Do not pull D6 or backend/provider integration forward.
+## 6. Immediate next gate — integration before M5
 
-## 7. Visual sequence
+M5 is **NOT STARTED** and must not start on the long-lived divergent `feature/home-react` branch.
+
+Next sequence:
 
 ```text
-finish M4 -> structural visual check only
-finish M5 -> serious product/visual review
+freeze exact M4 documentation closure SHA
+-> fetch current protected main
+-> inspect divergence and current authorities
+-> reconcile main INTO feature/home-react
+-> resolve conflicts by semantic/ownership authority
+-> full repository QA
+-> documentation lifecycle cleanup
+-> PR to protected main
+-> merge commit only
+-> protected-main readback
+-> archive/delete feature/home-react only after verified integration
+-> fresh bounded M5 branch from integrated main
+```
+
+No main write, merge, rebase, squash or force-push is authorized by this checkpoint alone. A separate exact integration gate is required.
+
+## 7. Visual sequence and truth
+
+```text
+M4 complete -> structural visual check only
+M5 complete -> serious product/visual review
 M6 -> visual/responsive/motion/a11y/performance refinement
 M7 -> pre-backend frontend freeze
 ```
+
+Automated structural/browser/a11y validation is green.
 
 Human/manual visual acceptance remains **NOT PERFORMED**.
 
 ## 8. Operational stop lines
 
 ```text
-NO second DANTE surface/conversation state engine
-NO D6 hidden inside D5
-NO AppShell/GlobalTopbar ownership rewrite
+NO M5 implementation before main reconciliation
+NO second DANTE surface/conversation/operation state engine
+NO AppShell/GlobalTopbar ownership rewrite by convenience
 NO WF0/WF-G3 macro geometry rewrite
 NO localStorage fake persistence
 NO backend/API/DB/Alembic/AuthZ/provider/LLM before sequence permits it
 NO arbitrary DOM/component payload serialization as DANTE context
 NO Timeline/Access/Auth collateral work
+NO real effect execution
 NO claim of human visual acceptance from automated green
+NO main/rebase/force-push without a separately approved gate
 ```
