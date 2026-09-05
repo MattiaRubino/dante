@@ -1,0 +1,263 @@
+.world-focus-dante-proposal,
+.world-focus-dante-confirmation,
+.world-focus-dante-receipt {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+  color: rgba(242, 246, 255, 0.94);
+  background:
+    radial-gradient(
+      ellipse 76% 50% at 50% 0%,
+      color-mix(in srgb, var(--world-focus-accent) 13%, transparent),
+      transparent 72%
+    ),
+    linear-gradient(180deg, rgba(9, 12, 29, 0.99), rgba(3, 5, 16, 0.995));
+}
+
+.world-focus-surface[data-world-focus-surface-slot='sidecar']
+  :is(.world-focus-dante-proposal, .world-focus-dante-receipt) {
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.world-focus-route-surface-layer
+  :is(
+    .world-focus-dante-proposal,
+    .world-focus-dante-confirmation,
+    .world-focus-dante-receipt
+  ) {
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.world-focus-dante-confirmation {
+  background:
+    radial-gradient(
+      ellipse 64% 44% at 50% 18%,
+      color-mix(in srgb, var(--world-focus-hot) 10%, transparent),
+      transparent 74%
+    ),
+    linear-gradient(180deg, rgba(7, 9, 22, 0.995), rgba(2, 4, 13, 0.998));
+}
+
+.world-focus-dante-governed-header {
+  display: flex;
+  min-height: 72px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px clamp(16px, 2.5vw, 28px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(4, 7, 19, 0.72);
+  backdrop-filter: blur(18px);
+}
+
+.world-focus-dante-governed-header h2 {
+  margin: 3px 0 0;
+  color: rgba(247, 249, 255, 0.97);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.world-focus-dante-governed-kicker {
+  color: rgba(205, 215, 240, 0.68);
+  font-size: 0.68rem;
+  font-weight: 760;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.world-focus-dante-governed-close {
+  width: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  color: rgba(238, 243, 255, 0.88);
+  background: rgba(255, 255, 255, 0.045);
+  font: inherit;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.world-focus-dante-governed-body {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px clamp(16px, 2.5vw, 28px) 28px;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.world-focus-dante-confirmation .world-focus-dante-governed-body {
+  width: min(100%, 44rem);
+  box-sizing: border-box;
+  align-self: center;
+  justify-content: center;
+}
+
+.world-focus-dante-governed-target {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.world-focus-dante-governed-target span {
+  color: rgba(205, 215, 240, 0.68);
+  font-size: 0.68rem;
+  font-weight: 720;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.world-focus-dante-governed-target strong,
+.world-focus-dante-governed-change,
+.world-focus-dante-governed-meta,
+.world-focus-dante-governed-requirement,
+.world-focus-dante-governed-truth-note,
+.world-focus-dante-governed-state,
+.world-focus-dante-receipt-decision {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.world-focus-dante-governed-change {
+  font-size: 0.94rem;
+  line-height: 1.6;
+}
+
+.world-focus-dante-governed-meta,
+.world-focus-dante-governed-truth-note,
+.world-focus-dante-governed-state {
+  color: rgba(211, 220, 243, 0.72);
+  font-size: 0.76rem;
+  line-height: 1.5;
+}
+
+.world-focus-dante-governed-requirement,
+.world-focus-dante-receipt-decision {
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.035);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.world-focus-dante-governed-state {
+  padding: 16px clamp(16px, 2.5vw, 28px);
+}
+
+.world-focus-dante-governed-primary,
+.world-focus-dante-governed-secondary,
+.world-focus-dante-proposal-invoke {
+  min-height: 44px;
+  padding: 9px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: rgba(239, 244, 255, 0.92);
+  background: rgba(255, 255, 255, 0.055);
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 680;
+  cursor: pointer;
+}
+
+.world-focus-dante-governed-primary {
+  align-self: flex-start;
+  background: color-mix(
+    in srgb,
+    var(--world-focus-accent) 16%,
+    rgba(255, 255, 255, 0.055)
+  );
+}
+
+.world-focus-dante-confirmation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.world-focus-dante-confirmation-actions .world-focus-dante-governed-primary,
+.world-focus-dante-confirmation-actions .world-focus-dante-governed-secondary {
+  flex: 0 1 auto;
+}
+
+.world-focus-dante-proposal-entry {
+  display: grid;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.world-focus-dante-proposal-invoke {
+  width: fit-content;
+}
+
+.world-focus-dante-governed-close:hover,
+.world-focus-dante-governed-primary:hover,
+.world-focus-dante-governed-secondary:hover,
+.world-focus-dante-proposal-invoke:hover {
+  background: rgba(255, 255, 255, 0.085);
+}
+
+.world-focus-dante-governed-close:focus-visible,
+.world-focus-dante-governed-primary:focus-visible,
+.world-focus-dante-governed-secondary:focus-visible,
+.world-focus-dante-proposal-invoke:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--world-focus-accent) 72%, white);
+  outline-offset: 3px;
+}
+
+.world-focus-dante-proposal-invoke:disabled,
+.world-focus-dante-governed-primary:disabled,
+.world-focus-dante-governed-secondary:disabled {
+  cursor: default;
+  opacity: 0.52;
+}
+
+@media (max-width: 520px) {
+  .world-focus-dante-governed-header,
+  .world-focus-dante-governed-body {
+    padding-inline: 16px;
+  }
+
+  .world-focus-dante-confirmation-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .world-focus-dante-confirmation-actions .world-focus-dante-governed-primary,
+  .world-focus-dante-confirmation-actions .world-focus-dante-governed-secondary {
+    width: 100%;
+  }
+}
+
+@media (forced-colors: active) {
+  .world-focus-dante-proposal,
+  .world-focus-dante-confirmation,
+  .world-focus-dante-receipt,
+  .world-focus-dante-governed-header,
+  .world-focus-dante-governed-target,
+  .world-focus-dante-governed-requirement,
+  .world-focus-dante-receipt-decision,
+  .world-focus-dante-governed-close,
+  .world-focus-dante-governed-primary,
+  .world-focus-dante-governed-secondary,
+  .world-focus-dante-proposal-invoke {
+    border-color: CanvasText;
+  }
+}

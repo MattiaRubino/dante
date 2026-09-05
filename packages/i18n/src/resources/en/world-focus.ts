@@ -72,6 +72,48 @@ export const worldFocus = {
         change: 'Change',
       },
     },
+    proposal: {
+      kicker: 'DANTE · Proposal',
+      title: 'DANTE Proposal',
+      prepare: 'Prepare proposal',
+      close: 'Close DANTE proposal',
+      pending: 'Preparing the proposal locally.',
+      unavailable: 'This proposal is unavailable from the current context.',
+      error: 'Unable to prepare this local proposal.',
+      superseded: 'The World context changed. The proposal was not opened.',
+      target: 'Target',
+      basis: 'Explicit contextual references: {{count}}.',
+      decisionRequired:
+        'This proposal requires explicit confirmation before any effect.',
+      noEffect: 'No operation has been executed.',
+      truthNote:
+        'Local pre-backend artifact: Proposal, Decision and effect remain distinct states.',
+      reviewConfirmation: 'Review confirmation',
+      decisionRecorded: {
+        confirmed: 'Local decision recorded: confirmed.',
+        declined: 'Local decision recorded: declined.',
+      },
+      confirmation: {
+        kicker: 'DANTE · Confirmation',
+        title: 'Confirm proposal',
+        description:
+          'Record an explicit decision on this proposal. This confirmation does not execute or authorize an effect.',
+        decline: 'Decline',
+        confirm: 'Confirm',
+      },
+      receipt: {
+        kicker: 'DANTE · Receipt',
+        title: 'Decision receipt',
+        close: 'Close DANTE receipt',
+        unavailable: 'This receipt is unavailable.',
+        decisions: {
+          confirmed: 'Local decision: proposal confirmed.',
+          declined: 'Local decision: proposal declined.',
+        },
+        canonicalNote:
+          'This receipt is not proof of provider, runtime or canonical completion.',
+      },
+    },
   },
   customization: {
     invoke: 'Customize composition',
@@ -212,15 +254,45 @@ export const worldFocus = {
     },
   },
   worlds: {
-    body: { label: 'Body', description: 'Your foundation, energy, and physical continuity.' },
-    music: { label: 'Music', description: 'Creativity, listening, and music projects.' },
-    travel: { label: 'Travel', description: 'Experiences, places, and upcoming journeys.' },
-    study: { label: 'Study', description: 'Learning, skills, and ongoing paths.' },
-    finance: { label: 'Finance', description: 'Resources, savings, and financial goals.' },
-    relationships: { label: 'Relationships', description: 'People, bonds, and time shared.' },
-    work: { label: 'Work', description: 'Projects, outcomes, and professional growth.' },
-    growth: { label: 'Growth', description: 'Habits, awareness, and direction.' },
-    routine: { label: 'Routine', description: 'Rhythms, systems, and daily consistency.' },
-    projects: { label: 'Projects', description: 'Ideas in motion and upcoming milestones.' },
+    body: {
+      label: 'Body',
+      description: 'Your foundation, energy, and physical continuity.',
+    },
+    music: {
+      label: 'Music',
+      description: 'Creativity, listening, and music projects.',
+    },
+    travel: {
+      label: 'Travel',
+      description: 'Experiences, places, and upcoming journeys.',
+    },
+    study: {
+      label: 'Study',
+      description: 'Learning, skills, and ongoing paths.',
+    },
+    finance: {
+      label: 'Finance',
+      description: 'Resources, savings, and financial goals.',
+    },
+    relationships: {
+      label: 'Relationships',
+      description: 'People, bonds, and time shared.',
+    },
+    work: {
+      label: 'Work',
+      description: 'Projects, outcomes, and professional growth.',
+    },
+    growth: {
+      label: 'Growth',
+      description: 'Habits, awareness, and direction.',
+    },
+    routine: {
+      label: 'Routine',
+      description: 'Rhythms, systems, and daily consistency.',
+    },
+    projects: {
+      label: 'Projects',
+      description: 'Ideas in motion and upcoming milestones.',
+    },
   },
 } as const satisfies WorldFocusResource;

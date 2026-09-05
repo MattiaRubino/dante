@@ -70,6 +70,49 @@ export const worldFocus = {
         change: 'Cambiamento',
       },
     },
+    proposal: {
+      kicker: 'DANTE · Proposta',
+      title: 'Proposta DANTE',
+      prepare: 'Prepara proposta',
+      close: 'Chiudi proposta DANTE',
+      pending: 'Preparazione locale della proposta in corso.',
+      unavailable: 'Questa proposta non è disponibile dal contesto corrente.',
+      error: 'Non riesco a preparare questa proposta locale.',
+      superseded:
+        'Il contesto del Mondo è cambiato. La proposta non è stata aperta.',
+      target: 'Destinazione',
+      basis: 'Riferimenti contestuali espliciti: {{count}}.',
+      decisionRequired:
+        'Questa proposta richiede una conferma esplicita prima di qualsiasi effetto.',
+      noEffect: 'Nessuna operazione è stata eseguita.',
+      truthNote:
+        'Artefatto locale pre-backend: proposta, decisione ed effetto restano stati distinti.',
+      reviewConfirmation: 'Rivedi conferma',
+      decisionRecorded: {
+        confirmed: 'Decisione locale registrata: confermata.',
+        declined: 'Decisione locale registrata: rifiutata.',
+      },
+      confirmation: {
+        kicker: 'DANTE · Conferma',
+        title: 'Conferma proposta',
+        description:
+          'Registra una decisione esplicita su questa proposta. Questa conferma non esegue né autorizza un effetto.',
+        decline: 'Rifiuta',
+        confirm: 'Conferma',
+      },
+      receipt: {
+        kicker: 'DANTE · Ricevuta',
+        title: 'Ricevuta decisione',
+        close: 'Chiudi ricevuta DANTE',
+        unavailable: 'Questa ricevuta non è disponibile.',
+        decisions: {
+          confirmed: 'Decisione locale: proposta confermata.',
+          declined: 'Decisione locale: proposta rifiutata.',
+        },
+        canonicalNote:
+          'Questa ricevuta non prova completamento provider, runtime o canonico.',
+      },
+    },
   },
   customization: {
     invoke: 'Personalizza composizione',
@@ -219,16 +262,46 @@ export const worldFocus = {
     },
   },
   worlds: {
-    body: { label: 'Corpo', description: 'La tua base. La tua energia. Il tuo veicolo.' },
-    music: { label: 'Musica', description: 'Creatività, ascolto e progetti musicali.' },
-    travel: { label: 'Viaggi', description: 'Esperienze, luoghi e prossime partenze.' },
-    study: { label: 'Studio', description: 'Apprendimento, competenze e percorsi.' },
-    finance: { label: 'Finanza', description: 'Risorse, risparmio e obiettivi economici.' },
-    relationships: { label: 'Relazioni', description: 'Persone, legami e tempo condiviso.' },
-    work: { label: 'Lavoro', description: 'Progetti, risultati e crescita professionale.' },
-    growth: { label: 'Crescita', description: 'Abitudini, consapevolezza e direzione.' },
-    routine: { label: 'Routine', description: 'Ritmi, sistemi e consistenza quotidiana.' },
-    projects: { label: 'Progetti', description: 'Idee in movimento e prossimi traguardi.' },
+    body: {
+      label: 'Corpo',
+      description: 'La tua base. La tua energia. Il tuo veicolo.',
+    },
+    music: {
+      label: 'Musica',
+      description: 'Creatività, ascolto e progetti musicali.',
+    },
+    travel: {
+      label: 'Viaggi',
+      description: 'Esperienze, luoghi e prossime partenze.',
+    },
+    study: {
+      label: 'Studio',
+      description: 'Apprendimento, competenze e percorsi.',
+    },
+    finance: {
+      label: 'Finanza',
+      description: 'Risorse, risparmio e obiettivi economici.',
+    },
+    relationships: {
+      label: 'Relazioni',
+      description: 'Persone, legami e tempo condiviso.',
+    },
+    work: {
+      label: 'Lavoro',
+      description: 'Progetti, risultati e crescita professionale.',
+    },
+    growth: {
+      label: 'Crescita',
+      description: 'Abitudini, consapevolezza e direzione.',
+    },
+    routine: {
+      label: 'Routine',
+      description: 'Ritmi, sistemi e consistenza quotidiana.',
+    },
+    projects: {
+      label: 'Progetti',
+      description: 'Idee in movimento e prossimi traguardi.',
+    },
   },
 } as const;
 

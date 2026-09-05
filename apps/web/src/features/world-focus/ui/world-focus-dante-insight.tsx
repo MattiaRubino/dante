@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import type { WorldFocusSurfaceRendererProps } from './world-focus-surface-registry';
 import { useWorldFocusDanteInsight } from './world-focus-dante-insight-context';
+import { useOptionalWorldFocusDanteProposal } from './world-focus-dante-proposal-context';
 
 export {
   WORLD_FOCUS_DANTE_INSIGHT_INSTANCE_ID,
@@ -15,6 +16,7 @@ export function WorldFocusDanteInsight({
 }: WorldFocusSurfaceRendererProps) {
   const { t } = useTranslation('common');
   const { insight } = useWorldFocusDanteInsight();
+  const proposal = useOptionalWorldFocusDanteProposal();
   const closeRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
@@ -93,6 +95,37 @@ export function WorldFocusDanteInsight({
         <p className="world-focus-dante-insight-truth-note">
           {t(($) => $.common.worldFocus.dante.insight.truthNote)}
         </p>
+
+        {proposal === null ? null : (
+          <div className="world-focus-dante-proposal-entry">
+            {proposal.requestState.status === 'pending' ? (
+              <p className="world-focus-dante-insight-state" role="status">
+                {t(($) => $.common.worldFocus.dante.proposal.pending)}
+              </p>
+            ) : proposal.requestState.status === 'unavailable' ? (
+              <p className="world-focus-dante-insight-state" role="status">
+                {t(($) => $.common.worldFocus.dante.proposal.unavailable)}
+              </p>
+            ) : proposal.requestState.status === 'error' ? (
+              <p className="world-focus-dante-insight-state" role="alert">
+                {t(($) => $.common.worldFocus.dante.proposal.error)}
+              </p>
+            ) : proposal.requestState.status === 'superseded' ? (
+              <p className="world-focus-dante-insight-state" role="status">
+                {t(($) => $.common.worldFocus.dante.proposal.superseded)}
+              </p>
+            ) : null}
+            <button
+              className="world-focus-dante-proposal-invoke"
+              data-world-focus-dante-proposal-invoker="true"
+              type="button"
+              disabled={!proposal.canRequestProposal}
+              onClick={() => proposal.requestProposal(insight)}
+            >
+              {t(($) => $.common.worldFocus.dante.proposal.prepare)}
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );
