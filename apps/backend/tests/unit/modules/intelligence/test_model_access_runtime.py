@@ -8,8 +8,17 @@ from uuid import uuid7
 
 import pytest
 
+from dante.modules.intelligence.adapters.outbound.model.gemini_interactions import (
+    GEMINI_INTERACTIONS_API_REVISION,
+    GEMINI_INTERACTIONS_BINDING_REF,
+    GEMINI_INTERACTIONS_ENDPOINT,
+    GEMINI_INTERACTIONS_MODEL,
+    GEMINI_INTERACTIONS_ROUTE_REVISION,
+    GEMINI_INTERACTIONS_SERVICE_TIER,
+)
 from dante.modules.intelligence.application.model_access import ModelAccessRuntime
 from dante.modules.intelligence.contracts.model_access import (
+    ModelAccessErrorClass,
     ModelInvocationOutcome,
     ModelInvocationRequest,
     ModelTarget,
@@ -21,6 +30,7 @@ from dante.modules.intelligence.contracts.model_access import (
     ProviderUsageState,
     StructuredOutputContract,
 )
+from dante.modules.intelligence.contracts.route_config import RouteConfigIdentity
 from dante.modules.intelligence.route_config import load_route_config
 from tests.unit.modules.intelligence.fakes import RecordingRuntimeEvidencePort
 
@@ -53,11 +63,23 @@ class _CompletedAdapter:
             started_at=now,
             completed_at=now,
             provider_response_id="interaction-1",
+            provider_status="completed",
             structured_output_json=self.payload,
         )
 
 
-def _request(target: ModelTarget = ModelTarget.STRUCTURED_INTERPRETATION) -> ModelInvocationRequest:
+def _snapshot():
+    return load_route_config(_REVISIONS_ROOT, GEMINI_INTERACTIONS_ROUTE_REVISION)
+
+
+def _request(
+    target: ModelTarget = ModelTarget.STRUCTURED_INTERPRETATION,
+    *,
+    required_identity: RouteConfigIdentity | None = None,
+    required_capabilities: tuple[str, ...] = (),
+    required_feature_modes: tuple[str, ...] = (),
+    max_provider_attempts: int = 1,
+) -> ModelInvocationRequest:
     return ModelInvocationRequest(
         model_invocation_id=uuid7(),
         work_id=uuid7(),
@@ -76,28 +98,41 @@ def _request(target: ModelTarget = ModelTarget.STRUCTURED_INTERPRETATION) -> Mod
             ),
         ),
         security_basis_refs=("synthetic-public-only",),
+        required_route_config_identity=required_identity,
+        required_capabilities=required_capabilities,
+        required_feature_modes=required_feature_modes,
+        max_provider_attempts=max_provider_attempts,
     )
 
 
 @pytest.mark.asyncio
-async def test_two_active_targets_resolve_to_same_configured_gemini_binding() -> None:
-    snapshot = load_route_config(_REVISIONS_ROOT, "gemini-flash-dev-v1")
+async def test_two_active_targets_resolve_to_same_exact_configured_gemini_binding() -> None:
+    snapshot = _snapshot()
     adapter = _CompletedAdapter()
     evidence = RecordingRuntimeEvidencePort()
-    runtime = ModelAccessRuntime(
-        snapshot,
-        {"google-gemini-interactions-flash-v1": adapter},
-        evidence=evidence,
-    )
+    runtime = ModelAccessRuntime(snapshot, {GEMINI_INTERACTIONS_BINDING_REF: adapter}, evidence=evidence)
 
-    structured = await runtime.invoke(_request(ModelTarget.STRUCTURED_INTERPRETATION))
+    structured = await runtime.invoke(
+        _request(
+            ModelTarget.STRUCTURED_INTERPRETATION,
+            required_identity=snapshot.identity,
+            required_capabilities=("text", "structured_output"),
+            required_feature_modes=("provider_storage:off",),
+        )
+    )
     general = await runtime.invoke(_request(ModelTarget.GENERAL_REASONING))
 
     assert structured.outcome is ModelInvocationOutcome.COMPLETED
     assert general.outcome is ModelInvocationOutcome.COMPLETED
-    assert structured.provider_binding_ref == "google-gemini-interactions-flash-v1"
+    assert structured.provider_binding_ref == GEMINI_INTERACTIONS_BINDING_REF
+    assert structured.provider_model == GEMINI_INTERACTIONS_MODEL
     assert general.provider_binding_ref == structured.provider_binding_ref
-    assert all(request.provider_model == "gemini-3.8-flash" for request in adapter.requests)
+    assert structured.started_at is not None
+    assert structured.completed_at is not None
+    assert all(request.provider_model == GEMINI_INTERACTIONS_MODEL for request in adapter.requests)
+    assert all(request.provider_endpoint == GEMINI_INTERACTIONS_ENDPOINT for request in adapter.requests)
+    assert all(request.provider_api_revision == GEMINI_INTERACTIONS_API_REVISION for request in adapter.requests)
+    assert all(request.provider_service_tier == GEMINI_INTERACTIONS_SERVICE_TIER for request in adapter.requests)
     assert all(request.reasoning_level == "low" for request in adapter.requests)
     assert all(request.max_output_tokens == 4096 for request in adapter.requests)
     assert any(event.kind.value == "provider_attempt" for event in evidence.events)
@@ -106,30 +141,35 @@ async def test_two_active_targets_resolve_to_same_configured_gemini_binding() ->
         for event in evidence.events
         for metric in event.metrics
     )
+    assert any(
+        "service-tier:standard" in event.correlation_refs
+        for event in evidence.events
+        if event.kind.value == "route"
+    )
 
 
 @pytest.mark.asyncio
 async def test_deep_reasoning_is_dormant_and_dispatches_no_provider_attempt() -> None:
-    snapshot = load_route_config(_REVISIONS_ROOT, "gemini-flash-dev-v1")
     adapter = _CompletedAdapter()
-    runtime = ModelAccessRuntime(snapshot, {"google-gemini-interactions-flash-v1": adapter})
+    runtime = ModelAccessRuntime(_snapshot(), {GEMINI_INTERACTIONS_BINDING_REF: adapter})
 
     result = await runtime.invoke(_request(ModelTarget.DEEP_REASONING))
 
     assert result.outcome is ModelInvocationOutcome.UNAVAILABLE
+    assert result.error_class is ModelAccessErrorClass.CAPABILITY_UNAVAILABLE
     assert result.error_code == "model_target_not_active"
     assert adapter.requests == []
 
 
 @pytest.mark.asyncio
 async def test_provider_json_is_revalidated_independently_against_schema() -> None:
-    snapshot = load_route_config(_REVISIONS_ROOT, "gemini-flash-dev-v1")
     adapter = _CompletedAdapter(payload='{"decision":"wrong"}')
-    runtime = ModelAccessRuntime(snapshot, {"google-gemini-interactions-flash-v1": adapter})
+    runtime = ModelAccessRuntime(_snapshot(), {GEMINI_INTERACTIONS_BINDING_REF: adapter})
 
     result = await runtime.invoke(_request())
 
     assert result.outcome is ModelInvocationOutcome.INVALID_RESPONSE
+    assert result.error_class is ModelAccessErrorClass.INVALID_RESPONSE
     assert result.output_text is None
     assert result.structured_output_json is None
     assert result.attempts[0].error_code == "structured_output_schema_mismatch"
@@ -137,9 +177,8 @@ async def test_provider_json_is_revalidated_independently_against_schema() -> No
 
 @pytest.mark.asyncio
 async def test_unsupported_schema_keyword_is_rejected_before_provider_egress() -> None:
-    snapshot = load_route_config(_REVISIONS_ROOT, "gemini-flash-dev-v1")
     adapter = _CompletedAdapter()
-    runtime = ModelAccessRuntime(snapshot, {"google-gemini-interactions-flash-v1": adapter})
+    runtime = ModelAccessRuntime(_snapshot(), {GEMINI_INTERACTIONS_BINDING_REF: adapter})
     request = _request()
     invalid = ModelInvocationRequest(
         model_invocation_id=request.model_invocation_id,
@@ -161,6 +200,52 @@ async def test_unsupported_schema_keyword_is_rejected_before_provider_egress() -
     result = await runtime.invoke(invalid)
 
     assert result.outcome is ModelInvocationOutcome.INVALID_REQUEST
+    assert result.error_class is ModelAccessErrorClass.INVALID_REQUEST
     assert result.error_code is not None
     assert "unsupported_schema_keyword" in result.error_code
+    assert adapter.requests == []
+
+
+@pytest.mark.asyncio
+async def test_route_identity_mismatch_fails_before_provider_egress() -> None:
+    snapshot = _snapshot()
+    adapter = _CompletedAdapter()
+    runtime = ModelAccessRuntime(snapshot, {GEMINI_INTERACTIONS_BINDING_REF: adapter})
+    wrong_identity = RouteConfigIdentity(
+        revision=GEMINI_INTERACTIONS_ROUTE_REVISION,
+        content_sha256="1" * 64,
+    )
+
+    result = await runtime.invoke(_request(required_identity=wrong_identity))
+
+    assert result.outcome is ModelInvocationOutcome.INVALID_REQUEST
+    assert result.error_class is ModelAccessErrorClass.ROUTE_MISMATCH
+    assert result.error_code == "required_route_config_identity_mismatch"
+    assert adapter.requests == []
+
+
+@pytest.mark.asyncio
+async def test_unavailable_capability_or_feature_mode_never_dispatches() -> None:
+    adapter = _CompletedAdapter()
+    runtime = ModelAccessRuntime(_snapshot(), {GEMINI_INTERACTIONS_BINDING_REF: adapter})
+
+    capability = await runtime.invoke(_request(required_capabilities=("vision",)))
+    feature = await runtime.invoke(_request(required_feature_modes=("streaming:on",)))
+
+    assert capability.outcome is ModelInvocationOutcome.UNAVAILABLE
+    assert capability.error_code == "required_capability_not_available"
+    assert feature.outcome is ModelInvocationOutcome.UNAVAILABLE
+    assert feature.error_code == "required_feature_mode_not_available"
+    assert adapter.requests == []
+
+
+@pytest.mark.asyncio
+async def test_retry_budget_above_one_is_rejected_while_route_retry_is_off() -> None:
+    adapter = _CompletedAdapter()
+    runtime = ModelAccessRuntime(_snapshot(), {GEMINI_INTERACTIONS_BINDING_REF: adapter})
+
+    result = await runtime.invoke(_request(max_provider_attempts=2))
+
+    assert result.outcome is ModelInvocationOutcome.INVALID_REQUEST
+    assert result.error_code == "retry_budget_not_supported_by_route"
     assert adapter.requests == []
