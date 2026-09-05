@@ -23,7 +23,7 @@ from dante_eval_core import (
 )
 
 _TOOL_ROOT: Final = Path(__file__).resolve().parent
-_DEFAULT_SUITE: Final = _TOOL_ROOT / "fixtures" / "mini-baseline-v1.json"
+_DEFAULT_SUITE: Final = _TOOL_ROOT / "fixtures" / "mini-baseline-v2.json"
 _DEFAULT_TIMEOUT_SECONDS: Final = 60.0
 
 
