@@ -1,8 +1,8 @@
 """Production-shaped native Gemini candidate for DANTE direct evals.
 
 This remains evaluation tooling, but unlike the historical OpenAI-compatible Gemini candidate it
-executes fixtures through the real DANTE ModelAccessRuntime, exact route revision, native Gemini
-Interactions adapter and private HTTP transport.
+executes fixtures through the real DANTE bootstrap composition, ModelAccessRuntime, exact route
+revision, native Gemini Interactions adapter and private HTTP transport.
 """
 
 from __future__ import annotations
@@ -15,25 +15,19 @@ from pathlib import Path
 from typing import Final
 from uuid import uuid7
 
-from dante.modules.intelligence.adapters.outbound.model.gemini_http import (
-    GeminiInteractionsHttpTransport,
-)
+from dante.bootstrap.intelligence import create_development_model_access_runtime
 from dante.modules.intelligence.adapters.outbound.model.gemini_interactions import (
     GEMINI_INTERACTIONS_API_REVISION,
     GEMINI_INTERACTIONS_BINDING_REF,
     GEMINI_INTERACTIONS_MODEL,
-    GEMINI_INTERACTIONS_ROUTE_REVISION,
     GEMINI_INTERACTIONS_SERVICE_TIER,
-    GeminiInteractionsAdapter,
 )
-from dante.modules.intelligence.application.model_access import ModelAccessRuntime
 from dante.modules.intelligence.contracts.model_access import (
     ModelInvocationOutcome,
     ModelInvocationRequest,
     ModelTarget,
     StructuredOutputContract,
 )
-from dante.modules.intelligence.route_config import load_route_config
 
 from dante_eval_core import CandidateResult, EvalFixture
 
@@ -61,12 +55,12 @@ class GeminiNativeModelAccessCandidate:
     candidate_id = "google-gemini-native-modelaccess"
 
     def __init__(self) -> None:
-        snapshot = load_route_config(_REVISIONS_ROOT, GEMINI_INTERACTIONS_ROUTE_REVISION)
-        transport = GeminiInteractionsHttpTransport(_api_key_from_environment())
-        adapter = GeminiInteractionsAdapter(transport)
-        self._snapshot = snapshot
-        self._transport = transport
-        self._runtime = ModelAccessRuntime(snapshot, {GEMINI_INTERACTIONS_BINDING_REF: adapter})
+        self._resources = create_development_model_access_runtime(
+            api_key=_api_key_from_environment(),
+            revisions_root=_REVISIONS_ROOT,
+        )
+        self._runtime = self._resources.runtime
+        self._snapshot = self._runtime.route_config
 
     @property
     def identity(self) -> dict[str, str]:
@@ -158,4 +152,4 @@ class GeminiNativeModelAccessCandidate:
         )
 
     async def close(self) -> None:
-        await self._transport.close()
+        await self._resources.close()
