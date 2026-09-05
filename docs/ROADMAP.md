@@ -36,6 +36,7 @@ source verification + PostgreSQL/ACL + runtime smoke
         PASS
               ↓
 documentation lifecycle reconciliation
+        PASS
               ↓
 integration/platform-observability-v2 → protected main PR
               ↓
@@ -67,7 +68,11 @@ observer least-privilege posture             PASS
 backend observability-enabled bootstrap       PASS
 backend readiness                             HTTP 200
 Alloy readiness                               PASS
-Web/Faro production-build smoke               PASS
+Web/Faro LOCAL production-build smoke         PASS
+Grafana Cloud metrics/logs/traces/Faro path   PASS
+Tempo privacy boundary                        PASS
+collector-outage isolation                    PASS
+Grafana acceptance service-account cleanup    PASS
 ```
 
 The source workstream already carries real Grafana Cloud acceptance for metrics, logs, traces, Web Faro/Web Vitals, PostgreSQL statistics, black-box readiness, dashboards/alerts and collector-outage failure isolation. Integration does not recreate that subsystem.
@@ -77,9 +82,9 @@ The accepted architectural boundary is the platform foundation: global HTTP, bac
 ## 4. Current bounded gate
 
 ```text
-finish documentation lifecycle gate
-→ verify no temporary handoffs / stale current routing
-→ commit integration documentation
+documentation lifecycle gate PASS
+→ no temporary handoffs / stale current routing
+→ integration documentation reconciled
 → open v2 → main PR
 → run required CI on exact PR head
 → merge only if required evidence remains green
