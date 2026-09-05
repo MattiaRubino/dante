@@ -48,7 +48,7 @@ class _Client:
         *,
         headers: Mapping[str, str],
         json: object,
-        timeout: float,
+        timeout: float,  # noqa: ASYNC109
     ) -> _Response:
         self.calls.append((url, headers, json, timeout))
         return self.response
@@ -69,9 +69,7 @@ def _request(*, structured: bool = True) -> GeminiInteractionsWireRequest:
         thinking_level="low",
         timeout_seconds=30,
         structured_output_schema=(
-            {"type": "object", "properties": {"ok": {"type": "boolean"}}}
-            if structured
-            else None
+            {"type": "object", "properties": {"ok": {"type": "boolean"}}} if structured else None
         ),
     )
 
