@@ -20,6 +20,7 @@ class RuntimeEvidenceKind(StrEnum):
     POLICY = "policy"
     ROUTE = "route"
     RESOURCE = "resource"
+    MODEL_INVOCATION = "model_invocation"
     PROVIDER_ATTEMPT = "provider_attempt"
     EGRESS = "egress"
     VERIFICATION = "verification"
@@ -48,6 +49,19 @@ def _require_aware(value: datetime, *, name: str) -> None:
 
 
 @dataclass(frozen=True, slots=True)
+class RuntimeEvidenceMetric:
+    """Non-sensitive numeric operational evidence such as token counts or latency."""
+
+    name: str
+    value: int
+
+    def __post_init__(self) -> None:
+        _require_text(self.name, name="metric name")
+        if self.value < 0:
+            raise ValueError("runtime evidence metric value must not be negative")
+
+
+@dataclass(frozen=True, slots=True)
 class RuntimeEvidenceEvent:
     """Minimized coded event with no raw request/context/source/model payload field."""
 
@@ -60,6 +74,7 @@ class RuntimeEvidenceEvent:
     correlation_refs: tuple[str, ...] = ()
     basis_refs: tuple[str, ...] = ()
     limitation_codes: tuple[str, ...] = ()
+    metrics: tuple[RuntimeEvidenceMetric, ...] = ()
 
     def __post_init__(self) -> None:
         _require_uuid7(self.event_id, name="event_id")
@@ -71,3 +86,6 @@ class RuntimeEvidenceEvent:
         _require_texts(self.correlation_refs, name="correlation_refs")
         _require_texts(self.basis_refs, name="basis_refs")
         _require_texts(self.limitation_codes, name="limitation_codes")
+        metric_names = tuple(metric.name for metric in self.metrics)
+        if len(metric_names) != len(set(metric_names)):
+            raise ValueError("runtime evidence metric names must be unique")
