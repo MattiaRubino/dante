@@ -1,0 +1,106 @@
+.world-focus-dante-contextual-entry {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 7px 11px;
+  border: 1px solid var(--dante-theme-shell-border-subtle);
+  border-radius: 999px;
+  color: var(--dante-theme-shell-text-secondary);
+  background: var(--dante-theme-shell-surface-highlight);
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 650;
+  line-height: 1.2;
+  cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    color 140ms ease,
+    background 140ms ease;
+}
+
+.world-focus-dante-contextual-entry:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--world-focus-accent) 36%, transparent);
+  color: color-mix(in srgb, var(--world-focus-accent) 48%, white);
+  background: color-mix(
+    in srgb,
+    var(--world-focus-accent) 7%,
+    var(--dante-theme-shell-surface-highlight)
+  );
+}
+
+.world-focus-dante-contextual-entry:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--world-focus-accent) 72%, white);
+  outline-offset: 3px;
+}
+
+.world-focus-dante-contextual-entry:disabled {
+  opacity: 0.46;
+  cursor: default;
+}
+
+.world-focus-dante-contextual-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  border: 1px solid color-mix(in srgb, var(--world-focus-accent) 30%, transparent);
+  border-radius: 50%;
+  color: color-mix(in srgb, var(--world-focus-accent) 54%, white);
+  font-size: 0.62rem;
+  font-weight: 760;
+  line-height: 1;
+}
+
+.world-focus-dante-contextual-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.world-focus-dante-contextual-module-action {
+  margin-top: 12px;
+}
+
+.world-focus-dante-contextual-evidence-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+}
+
+.world-focus-dante-contextual-evidence-copy {
+  min-width: 0;
+}
+
+@container world-focus-main (max-width: 700px) {
+  .world-focus-dante-contextual-row-actions {
+    justify-content: flex-start;
+  }
+
+  .world-focus-dante-contextual-evidence-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .world-focus-dante-contextual-entry {
+    justify-self: start;
+  }
+}
+
+@media (forced-colors: active) {
+  .world-focus-dante-contextual-entry,
+  .world-focus-dante-contextual-mark {
+    border-color: ButtonText;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .world-focus-dante-contextual-entry {
+    transition: none;
+  }
+}

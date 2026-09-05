@@ -21,6 +21,15 @@ export const worldFocus = {
     invoke: 'Apri DANTE',
     invokeForWorld: 'Apri DANTE per il Mondo {{world}}',
     worldContext: 'Mondo · {{world}}',
+    contextualAction: 'Chiedi a DANTE: {{prompt}}',
+    contextChangedBeforeSubmit:
+      'Il contesto da cui hai aperto DANTE è cambiato. La richiesta non è stata inviata.',
+    contextual: {
+      why: 'Perché?',
+      compare: 'Confronta',
+      continue: 'Continua da qui',
+      openSource: 'Apri fonte',
+    },
     inputLabel: 'Scrivi una richiesta per DANTE',
     placeholder: 'Chiedi a DANTE…',
     send: 'Invia richiesta',

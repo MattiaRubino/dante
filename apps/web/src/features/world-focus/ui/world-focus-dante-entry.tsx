@@ -7,15 +7,22 @@ import {
   useRef,
   useState,
   type FormEvent,
+  type MouseEvent,
   type ReactNode,
   type RefObject,
 } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { WORLD_FOCUS_DANTE_CONVERSATION_MAX_INPUT_LENGTH } from '../application/world-focus-dante-conversation';
+import {
+  createWorldFocusContextReferenceSet,
+  type WorldFocusContextReferenceSet,
+} from '../model/world-focus-context-reference';
 import {
   isWorldFocusFeatureAvailable,
   type WorldFocusFeatureAvailability,
 } from '../model/world-focus-platform';
+import { getWorldFocusBlockingSurface } from '../model/world-focus-workspace';
 import {
   WORLD_FOCUS_DANTE_CONVERSATION_INSTANCE_ID,
   useOptionalWorldFocusDanteConversation,
@@ -27,11 +34,27 @@ export const WORLD_FOCUS_DANTE_COMPOSER_KIND = 'dante-composer' as const;
 export const WORLD_FOCUS_DANTE_COMPOSER_INSTANCE_ID =
   'dante:composer' as const;
 
+export type WorldFocusDanteComposerInvocation = Readonly<{
+  prompt: string;
+  contextReferences: WorldFocusContextReferenceSet | null;
+  worldId: string;
+  workspaceGeneration: number;
+}>;
+
+type WorldFocusDanteComposerRequest = Readonly<{
+  invoker: HTMLButtonElement;
+  prompt: string;
+  contextReferences: WorldFocusContextReferenceSet | null;
+}>;
+
 export type WorldFocusDanteEntryContextValue = Readonly<{
   worldId: string;
   worldLabel: string;
   availability: WorldFocusFeatureAvailability;
   invokerRef: RefObject<HTMLButtonElement | null>;
+  composerInvocation: WorldFocusDanteComposerInvocation | null;
+  canRequestComposer: boolean;
+  requestComposer: (request: WorldFocusDanteComposerRequest) => boolean;
   restoreInvokerFocus: () => void;
 }>;
 
@@ -46,7 +69,7 @@ type WorldFocusDanteEntryProviderProps = Readonly<{
 }>;
 
 /**
- * DANTE-specific focus/presentation context. DOM focus ownership deliberately
+ * DANTE-specific focus/invocation context. DOM focus ownership deliberately
  * stays outside the generic workspace cursor so no DOM node can become DANTE
  * context, authorization input or durable Run state.
  */
@@ -56,15 +79,92 @@ export function WorldFocusDanteEntryProvider({
   availability,
   children,
 }: WorldFocusDanteEntryProviderProps) {
+  const workspace = useWorldFocusWorkspace();
   const invokerRef = useRef<HTMLButtonElement | null>(null);
+  const activeInvokerRef = useRef<HTMLButtonElement | null>(null);
+  const [composerInvocation, setComposerInvocation] =
+    useState<WorldFocusDanteComposerInvocation | null>(null);
+  const danteInteractionIsOpen = workspace.state.surfaces.some(
+    (surface) =>
+      surface.instanceId === WORLD_FOCUS_DANTE_COMPOSER_INSTANCE_ID ||
+      surface.instanceId === WORLD_FOCUS_DANTE_CONVERSATION_INSTANCE_ID,
+  );
+  const canRequestComposer =
+    !danteInteractionIsOpen && getWorldFocusBlockingSurface(workspace.state) === null;
+
   const restoreInvokerFocus = useCallback(() => {
-    const invoker = invokerRef.current;
+    const preferredInvoker = activeInvokerRef.current;
+    const fallbackInvoker = invokerRef.current;
+    activeInvokerRef.current = null;
     queueMicrotask(() => {
-      if (invoker?.isConnected === true && !invoker.disabled) {
-        invoker.focus({ preventScroll: true });
-      }
+      const target =
+        preferredInvoker?.isConnected === true && !preferredInvoker.disabled
+          ? preferredInvoker
+          : fallbackInvoker?.isConnected === true && !fallbackInvoker.disabled
+            ? fallbackInvoker
+            : null;
+      target?.focus({ preventScroll: true });
     });
   }, []);
+
+  const requestComposer = useCallback(
+    (request: WorldFocusDanteComposerRequest): boolean => {
+      if (
+        workspace.state.surfaces.some(
+          (surface) =>
+            surface.instanceId === WORLD_FOCUS_DANTE_COMPOSER_INSTANCE_ID ||
+            surface.instanceId === WORLD_FOCUS_DANTE_CONVERSATION_INSTANCE_ID,
+        ) ||
+        getWorldFocusBlockingSurface(workspace.state) !== null
+      ) {
+        return false;
+      }
+
+      const prompt = request.prompt.trim();
+      if (prompt.length > WORLD_FOCUS_DANTE_CONVERSATION_MAX_INPUT_LENGTH) {
+        return false;
+      }
+
+      let contextReferences: WorldFocusContextReferenceSet | null = null;
+      try {
+        contextReferences =
+          request.contextReferences === null
+            ? null
+            : createWorldFocusContextReferenceSet({
+                primary: request.contextReferences.primary,
+                supporting: request.contextReferences.supporting,
+              });
+      } catch {
+        return false;
+      }
+      if (contextReferences !== null && prompt.length === 0) {
+        return false;
+      }
+
+      const invocation = Object.freeze({
+        prompt,
+        contextReferences,
+        worldId: workspace.state.worldId,
+        workspaceGeneration: workspace.state.generation,
+      });
+      activeInvokerRef.current = request.invoker;
+      setComposerInvocation(invocation);
+      workspace.openSurface({
+        instanceId: WORLD_FOCUS_DANTE_COMPOSER_INSTANCE_ID,
+        kind: WORLD_FOCUS_DANTE_COMPOSER_KIND,
+        depth: 'peek',
+        presentation: 'popover',
+        origin: 'user',
+        contextReference: contextReferences?.primary ?? null,
+        expectedWorkspace: {
+          worldId: workspace.state.worldId,
+          generation: workspace.state.generation,
+        },
+      });
+      return true;
+    },
+    [workspace],
+  );
 
   const value = useMemo<WorldFocusDanteEntryContextValue>(
     () => ({
@@ -72,9 +172,20 @@ export function WorldFocusDanteEntryProvider({
       worldLabel,
       availability,
       invokerRef,
+      composerInvocation,
+      canRequestComposer,
+      requestComposer,
       restoreInvokerFocus,
     }),
-    [availability, restoreInvokerFocus, worldId, worldLabel],
+    [
+      availability,
+      canRequestComposer,
+      composerInvocation,
+      requestComposer,
+      restoreInvokerFocus,
+      worldId,
+      worldLabel,
+    ],
   );
 
   return (
@@ -84,8 +195,12 @@ export function WorldFocusDanteEntryProvider({
   );
 }
 
+export function useOptionalWorldFocusDanteEntry(): WorldFocusDanteEntryContextValue | null {
+  return useContext(WorldFocusDanteEntryContext);
+}
+
 export function useWorldFocusDanteEntry(): WorldFocusDanteEntryContextValue {
-  const value = useContext(WorldFocusDanteEntryContext);
+  const value = useOptionalWorldFocusDanteEntry();
   if (value === null) {
     throw new Error(
       'useWorldFocusDanteEntry must be used inside WorldFocusDanteEntryProvider',
@@ -102,7 +217,8 @@ export function WorldFocusDanteInvoke() {
   const { t } = useTranslation('common');
   const workspace = useWorldFocusWorkspace();
   const allocation = useWorldFocusWorkspaceAllocation();
-  const { worldLabel, availability, invokerRef } = useWorldFocusDanteEntry();
+  const { worldLabel, availability, invokerRef, requestComposer } =
+    useWorldFocusDanteEntry();
   const composerIsOpen = workspace.state.surfaces.some(
     (surface) => surface.instanceId === WORLD_FOCUS_DANTE_COMPOSER_INSTANCE_ID,
   );
@@ -113,20 +229,16 @@ export function WorldFocusDanteInvoke() {
   const danteInteractionIsOpen = composerIsOpen || conversationIsOpen;
   const backgroundIsInert = allocation.mainInteraction === 'inert';
 
-  const requestOpen = useCallback(() => {
-    workspace.openSurface({
-      instanceId: WORLD_FOCUS_DANTE_COMPOSER_INSTANCE_ID,
-      kind: WORLD_FOCUS_DANTE_COMPOSER_KIND,
-      depth: 'peek',
-      presentation: 'popover',
-      origin: 'user',
-      contextReference: null,
-      expectedWorkspace: {
-        worldId: workspace.state.worldId,
-        generation: workspace.state.generation,
-      },
-    });
-  }, [workspace]);
+  const requestOpen = useCallback(
+    (event: MouseEvent<HTMLButtonElement>) => {
+      requestComposer({
+        invoker: event.currentTarget,
+        prompt: '',
+        contextReferences: null,
+      });
+    },
+    [requestComposer],
+  );
 
   return (
     <div
@@ -177,14 +289,21 @@ export function WorldFocusDanteComposer({
   onRequestClose,
 }: WorldFocusDanteComposerProps) {
   const { t } = useTranslation('common');
-  const { worldId, worldLabel, availability, restoreInvokerFocus } =
-    useWorldFocusDanteEntry();
+  const workspace = useWorldFocusWorkspace();
+  const {
+    worldId,
+    worldLabel,
+    availability,
+    composerInvocation,
+    restoreInvokerFocus,
+  } = useWorldFocusDanteEntry();
   const conversation = useOptionalWorldFocusDanteConversation();
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const closeRef = useRef<HTMLButtonElement | null>(null);
   const handoffRef = useRef(false);
-  const [draft, setDraft] = useState('');
+  const [draft, setDraft] = useState(() => composerInvocation?.prompt ?? '');
   const [submissionUnavailable, setSubmissionUnavailable] = useState(false);
+  const [contextStale, setContextStale] = useState(false);
   const entryIsAvailable = isWorldFocusFeatureAvailable(availability);
 
   useEffect(() => {
@@ -208,20 +327,48 @@ export function WorldFocusDanteComposer({
       return;
     }
 
+    const contextualReferences = composerInvocation?.contextReferences ?? null;
+    if (
+      contextualReferences !== null &&
+      (composerInvocation?.worldId !== workspace.state.worldId ||
+        composerInvocation.workspaceGeneration !== workspace.state.generation)
+    ) {
+      setContextStale(true);
+      setSubmissionUnavailable(false);
+      textareaRef.current?.focus({ preventScroll: true });
+      return;
+    }
+
+    const contextSeed =
+      contextualReferences === null || composerInvocation === null
+        ? null
+        : Object.freeze({
+            references: contextualReferences,
+            workspaceGeneration: composerInvocation.workspaceGeneration,
+          });
+
     if (
       conversation?.beginFromComposer(
         WORLD_FOCUS_DANTE_COMPOSER_INSTANCE_ID,
         request,
+        contextSeed,
       ) === true
     ) {
       handoffRef.current = true;
       setSubmissionUnavailable(false);
+      setContextStale(false);
       return;
     }
 
     setSubmissionUnavailable(true);
+    setContextStale(false);
     textareaRef.current?.focus({ preventScroll: true });
   };
+
+  const statusId =
+    submissionUnavailable || contextStale
+      ? 'world-focus-dante-submit-status'
+      : undefined;
 
   return (
     <section
@@ -230,6 +377,9 @@ export function WorldFocusDanteComposer({
       data-world-focus-dante-surface="composer"
       data-world-focus-dante-world-id={worldId}
       data-world-focus-dante-status={availability.status}
+      data-world-focus-dante-contextual={
+        composerInvocation?.contextReferences == null ? 'false' : 'true'
+      }
       role="dialog"
       aria-modal="false"
       aria-labelledby="world-focus-dante-composer-title"
@@ -278,15 +428,14 @@ export function WorldFocusDanteComposer({
               value={draft}
               rows={3}
               placeholder={t(($) => $.common.worldFocus.dante.placeholder)}
-              aria-describedby={
-                submissionUnavailable
-                  ? 'world-focus-dante-submit-status'
-                  : undefined
-              }
+              aria-describedby={statusId}
               onChange={(event) => {
                 setDraft(event.currentTarget.value);
                 if (submissionUnavailable) {
                   setSubmissionUnavailable(false);
+                }
+                if (contextStale) {
+                  setContextStale(false);
                 }
               }}
             />
@@ -299,7 +448,15 @@ export function WorldFocusDanteComposer({
               <span aria-hidden="true">↑</span>
             </button>
           </div>
-          {submissionUnavailable ? (
+          {contextStale ? (
+            <p
+              id="world-focus-dante-submit-status"
+              className="world-focus-dante-composer-status"
+              role="alert"
+            >
+              {t(($) => $.common.worldFocus.dante.contextChangedBeforeSubmit)}
+            </p>
+          ) : submissionUnavailable ? (
             <p
               id="world-focus-dante-submit-status"
               className="world-focus-dante-composer-status"

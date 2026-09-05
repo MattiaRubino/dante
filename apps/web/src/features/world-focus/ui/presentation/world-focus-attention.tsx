@@ -1,6 +1,8 @@
 import { useTranslation } from 'react-i18next';
 
+import { createWorldFocusDanteAttentionContext } from '../../application/world-focus-dante-contextual-invocation';
 import type { WorldFocusAttentionPrimitive } from '../../model/world-focus-work-primitives';
+import { WorldFocusDanteContextualEntry } from '../world-focus-dante-contextual-entry';
 import {
   assertWorldFocusDisplayBindingMatchesReference,
   type WorldFocusDisplayBinding,
@@ -58,6 +60,7 @@ export function WorldFocusAttention({
   const stateLabel = t(
     ($) => $.common.worldFocus.presentation.attention.states[primitive.state],
   );
+  const contextReferences = createWorldFocusDanteAttentionContext(primitive);
 
   return (
     <WorldFocusPresentationSection
@@ -85,9 +88,17 @@ export function WorldFocusAttention({
             </p>
           )}
         </div>
-        <WorldFocusPresentationState state={primitive.state}>
-          {stateLabel}
-        </WorldFocusPresentationState>
+        <div className="world-focus-dante-contextual-row-actions">
+          <WorldFocusPresentationState state={primitive.state}>
+            {stateLabel}
+          </WorldFocusPresentationState>
+          {contextReferences === null ? null : (
+            <WorldFocusDanteContextualEntry
+              intent="why"
+              contextReferences={contextReferences}
+            />
+          )}
+        </div>
       </div>
     </WorldFocusPresentationSection>
   );

@@ -23,6 +23,15 @@ export const worldFocus = {
     invoke: 'Open DANTE',
     invokeForWorld: 'Open DANTE for the {{world}} World',
     worldContext: 'World · {{world}}',
+    contextualAction: 'Ask DANTE: {{prompt}}',
+    contextChangedBeforeSubmit:
+      'The context that opened DANTE has changed. The request was not sent.',
+    contextual: {
+      why: 'Why?',
+      compare: 'Compare',
+      continue: 'Continue from here',
+      openSource: 'Open source',
+    },
     inputLabel: 'Write a request for DANTE',
     placeholder: 'Ask DANTE…',
     send: 'Send request',

@@ -1,6 +1,8 @@
 import { useTranslation } from 'react-i18next';
 
+import { createWorldFocusDanteComparisonContext } from '../../application/world-focus-dante-contextual-invocation';
 import type { WorldFocusComparisonPrimitive } from '../../model/world-focus-work-primitives';
+import { WorldFocusDanteContextualEntry } from '../world-focus-dante-contextual-entry';
 import {
   assertWorldFocusDisplayBindingMatchesReference,
   type WorldFocusDisplayBinding,
@@ -59,6 +61,7 @@ export function WorldFocusComparison({
   const modeLabel = t(
     ($) => $.common.worldFocus.presentation.comparison.modes[primitive.mode],
   );
+  const contextReferences = createWorldFocusDanteComparisonContext(primitive);
 
   return (
     <WorldFocusPresentationSection
@@ -90,6 +93,13 @@ export function WorldFocusComparison({
           <span>{t(($) => $.common.worldFocus.presentation.comparison.basis)}</span>{' '}
           <span>{basis.label}</span>
         </p>
+      )}
+      {contextReferences === null ? null : (
+        <WorldFocusDanteContextualEntry
+          className="world-focus-dante-contextual-module-action"
+          intent="compare"
+          contextReferences={contextReferences}
+        />
       )}
     </WorldFocusPresentationSection>
   );

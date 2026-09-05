@@ -19,6 +19,7 @@ import {
 } from '../application/world-focus-dante-conversation';
 import { readWorldFocusDanteConversation } from '../application/world-focus-dante-conversation-runtime';
 import { WorldFocusLatestReadCoordinator } from '../application/world-focus-foundation';
+import type { WorldFocusContextReferenceSet } from '../model/world-focus-context-reference';
 import type { WorldFocusId } from '../model/world-focus-identity';
 import { useWorldFocusWorkspace } from './world-focus-workspace-host';
 
@@ -55,11 +56,20 @@ export type WorldFocusDanteConversationRequestState =
   | Readonly<{ status: 'cancelled'; requestId: string }>
   | Readonly<{ status: 'superseded'; requestId: string }>;
 
+export type WorldFocusDanteConversationContextSeed = Readonly<{
+  references: WorldFocusContextReferenceSet;
+  workspaceGeneration: number;
+}>;
+
 type WorldFocusDanteConversationContextValue = Readonly<{
   messages: readonly WorldFocusDanteConversationMessage[];
   requestState: WorldFocusDanteConversationRequestState;
   isOpen: boolean;
-  beginFromComposer: (composerInstanceId: string, input: string) => boolean;
+  beginFromComposer: (
+    composerInstanceId: string,
+    input: string,
+    contextSeed?: WorldFocusDanteConversationContextSeed | null,
+  ) => boolean;
   submitTurn: (input: string) => boolean;
   cancelPending: () => void;
 }>;
@@ -72,6 +82,11 @@ type WorldFocusDanteConversationProviderProps = Readonly<{
   restoreInvokerFocus: () => void;
   children: ReactNode;
   reader?: WorldFocusDanteConversationReader;
+}>;
+
+type WorldFocusDanteConversationContextSession = Readonly<{
+  references: WorldFocusContextReferenceSet;
+  workspaceGeneration: number;
 }>;
 
 function toHistory(
@@ -116,6 +131,8 @@ export function WorldFocusDanteConversationProvider({
   >(() => Object.freeze([]));
   const [requestState, setRequestState] =
     useState<WorldFocusDanteConversationRequestState>({ status: 'idle' });
+  const [contextSession, setContextSession] =
+    useState<WorldFocusDanteConversationContextSession | null>(null);
   const [readCoordinator] = useState(() => new WorldFocusLatestReadCoordinator());
   const requestSerialRef = useRef(0);
   const conversationWasOpenRef = useRef(false);
@@ -130,7 +147,11 @@ export function WorldFocusDanteConversationProvider({
   );
 
   const runRequest = useCallback(
-    (input: string, replaceInstanceId: string | null): boolean => {
+    (
+      input: string,
+      replaceInstanceId: string | null,
+      requestedContextSession: WorldFocusDanteConversationContextSession | null,
+    ): boolean => {
       if (requestState.status === 'pending') {
         return false;
       }
@@ -148,6 +169,15 @@ export function WorldFocusDanteConversationProvider({
         return false;
       }
 
+      const effectiveContextSession =
+        replaceInstanceId === null ? contextSession : requestedContextSession;
+      if (
+        effectiveContextSession !== null &&
+        effectiveContextSession.workspaceGeneration !== workspace.state.generation
+      ) {
+        return false;
+      }
+
       const nextSerial = requestSerialRef.current + 1;
       const requestId = `${worldId}:local-dante:${nextSerial}`;
       let request: WorldFocusDanteConversationRequest;
@@ -155,10 +185,12 @@ export function WorldFocusDanteConversationProvider({
         request = createWorldFocusDanteConversationRequest({
           requestId,
           worldId,
-          workspaceGeneration: workspace.state.generation,
+          workspaceGeneration:
+            effectiveContextSession?.workspaceGeneration ?? workspace.state.generation,
           input,
           history: toHistory(messages),
           locale: i18n.resolvedLanguage ?? i18n.language ?? 'en',
+          contextReferences: effectiveContextSession?.references ?? null,
         });
       } catch {
         return false;
@@ -178,13 +210,21 @@ export function WorldFocusDanteConversationProvider({
           depth: 'explore',
           presentation: 'sidecar',
           origin: 'user',
-          contextReference: null,
+          contextReference: request.contextReferences?.primary ?? null,
           dismissible: true,
           expectedWorkspace: {
             worldId: workspace.state.worldId,
             generation: workspace.state.generation,
           },
         });
+        setContextSession(
+          request.contextReferences === null
+            ? null
+            : Object.freeze({
+                references: request.contextReferences,
+                workspaceGeneration: request.workspaceGeneration,
+              }),
+        );
       }
 
       setMessages((current) => Object.freeze([...current, userMessage]));
@@ -231,7 +271,9 @@ export function WorldFocusDanteConversationProvider({
         .finally(() => lease.release());
 
       return true;
-    }, [
+    },
+    [
+      contextSession,
       i18n.language,
       i18n.resolvedLanguage,
       isOpen,
@@ -245,14 +287,17 @@ export function WorldFocusDanteConversationProvider({
   );
 
   const beginFromComposer = useCallback(
-    (composerInstanceId: string, input: string) =>
-      runRequest(input, composerInstanceId),
+    (
+      composerInstanceId: string,
+      input: string,
+      contextSeed: WorldFocusDanteConversationContextSeed | null = null,
+    ) => runRequest(input, composerInstanceId, contextSeed),
     [runRequest],
   );
 
   const submitTurn = useCallback(
-    (input: string) => runRequest(input, null),
-    [runRequest],
+    (input: string) => runRequest(input, null, contextSession),
+    [contextSession, runRequest],
   );
 
   const cancelPending = useCallback(() => {
@@ -285,6 +330,36 @@ export function WorldFocusDanteConversationProvider({
   }, [readCoordinator, requestState, workspace.state.generation]);
 
   useEffect(() => {
+    if (
+      contextSession === null ||
+      contextSession.workspaceGeneration === workspace.state.generation ||
+      requestState.status === 'superseded' ||
+      requestState.status === 'cancelled'
+    ) {
+      return;
+    }
+
+    readCoordinator.cancelCurrent();
+    const requestId =
+      requestState.status === 'pending'
+        ? requestState.requestId
+        : `${worldId}:context-session:${contextSession.workspaceGeneration}`;
+    queueMicrotask(() => {
+      setRequestState((current) =>
+        current.status === 'superseded' || current.status === 'cancelled'
+          ? current
+          : { status: 'superseded', requestId },
+      );
+    });
+  }, [
+    contextSession,
+    readCoordinator,
+    requestState,
+    workspace.state.generation,
+    worldId,
+  ]);
+
+  useEffect(() => {
     if (isOpen) {
       conversationWasOpenRef.current = true;
       return;
@@ -298,6 +373,7 @@ export function WorldFocusDanteConversationProvider({
     readCoordinator.cancelCurrent();
     queueMicrotask(() => {
       setMessages(Object.freeze([]));
+      setContextSession(null);
       setRequestState({ status: 'idle' });
       restoreInvokerFocus();
     });

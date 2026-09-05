@@ -3,12 +3,14 @@ import { useTranslation } from 'react-i18next';
 
 import type { WorldFocusContinuityReader } from '../application/world-focus-continuity';
 import { readWorldFocusContinuity } from '../application/world-focus-continuity-runtime';
+import { createWorldFocusDanteContinuityContext } from '../application/world-focus-dante-contextual-invocation';
 import { WorldFocusLatestReadCoordinator } from '../application/world-focus-foundation';
 import type {
   WorldFocusContinuityPresentationState,
   WorldFocusContinuityReadResult,
 } from '../model/world-focus-continuity';
 import type { WorldFocusId } from '../model/world-focus-identity';
+import { WorldFocusDanteContextualEntry } from './world-focus-dante-contextual-entry';
 import {
   WorldFocusPresentationSection,
   WorldFocusPresentationState,
@@ -123,27 +125,39 @@ function WorldFocusContinuityState({
         </WorldFocusQualifierGroup>
       )}
       <ul className="world-focus-continuity-list">
-        {state.projection.orderedItems.map((item) => (
-          <li
-            className="world-focus-continuity-item world-focus-presentation-row"
-            data-world-focus-continuity-state={item.presentationState}
-            key={item.key}
-          >
-            <div className="world-focus-continuity-item-copy world-focus-presentation-row-copy">
-              <p className="world-focus-continuity-item-title world-focus-presentation-row-title">
-                {item.title}
-              </p>
-              <p className="world-focus-continuity-item-meta world-focus-presentation-row-meta">
-                <span>{item.context}</span>
-                <span aria-hidden="true">·</span>
-                <span>{item.checkpoint}</span>
-              </p>
-            </div>
-            <WorldFocusPresentationState state={item.presentationState}>
-              {stateLabels[item.presentationState]}
-            </WorldFocusPresentationState>
-          </li>
-        ))}
+        {state.projection.orderedItems.map((item) => {
+          const contextReferences = createWorldFocusDanteContinuityContext(item);
+
+          return (
+            <li
+              className="world-focus-continuity-item world-focus-presentation-row"
+              data-world-focus-continuity-state={item.presentationState}
+              key={item.key}
+            >
+              <div className="world-focus-continuity-item-copy world-focus-presentation-row-copy">
+                <p className="world-focus-continuity-item-title world-focus-presentation-row-title">
+                  {item.title}
+                </p>
+                <p className="world-focus-continuity-item-meta world-focus-presentation-row-meta">
+                  <span>{item.context}</span>
+                  <span aria-hidden="true">·</span>
+                  <span>{item.checkpoint}</span>
+                </p>
+              </div>
+              <div className="world-focus-dante-contextual-row-actions">
+                <WorldFocusPresentationState state={item.presentationState}>
+                  {stateLabels[item.presentationState]}
+                </WorldFocusPresentationState>
+                {contextReferences === null ? null : (
+                  <WorldFocusDanteContextualEntry
+                    intent="continue"
+                    contextReferences={contextReferences}
+                  />
+                )}
+              </div>
+            </li>
+          );
+        })}
       </ul>
     </WorldFocusPresentationSection>
   );
