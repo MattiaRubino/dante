@@ -10,7 +10,6 @@ import {
 } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { WorldFocusDanteInsight } from '../application/world-focus-dante-insight';
 import {
   createWorldFocusDanteProposalRequest,
   WORLD_FOCUS_DANTE_PROPOSAL_SCHEMA_VERSION,
@@ -23,6 +22,7 @@ import { WorldFocusLatestReadCoordinator } from '../application/world-focus-foun
 import type { WorldFocusId } from '../model/world-focus-identity';
 import {
   WORLD_FOCUS_DANTE_INSIGHT_INSTANCE_ID,
+  useWorldFocusDanteInsight,
 } from './world-focus-dante-insight-context';
 import { useWorldFocusWorkspace } from './world-focus-workspace-host';
 
@@ -78,7 +78,7 @@ type WorldFocusDanteProposalContextValue = Readonly<{
   receipt: WorldFocusDanteDecisionReceipt | null;
   requestState: WorldFocusDanteProposalRequestState;
   canRequestProposal: boolean;
-  requestProposal: (insight: WorldFocusDanteInsight) => boolean;
+  requestProposal: () => boolean;
   requestConfirmation: () => boolean;
   recordDecision: (decision: WorldFocusDanteDecision) => boolean;
 }>;
@@ -101,9 +101,10 @@ function hasD6Surface(instanceId: string): boolean {
 }
 
 /**
- * D6 route-scoped pre-backend owner. It materializes a Proposal only from an
- * explicit validated D5 Insight, owns the explicit confirmation decision, and
- * records a local receipt. It never executes, authorizes or infers any effect.
+ * D6 route-scoped pre-backend owner. It materializes a Proposal only from the
+ * exact validated D5 Insight currently owned by the enclosing D5 provider,
+ * owns the explicit confirmation decision, and records a local receipt. It
+ * never executes, authorizes or infers any effect.
  */
 export function WorldFocusDanteProposalProvider({
   worldId,
@@ -112,6 +113,7 @@ export function WorldFocusDanteProposalProvider({
 }: WorldFocusDanteProposalProviderProps) {
   const { i18n } = useTranslation('common');
   const workspace = useWorldFocusWorkspace();
+  const { insight } = useWorldFocusDanteInsight();
   const [proposal, setProposal] = useState<WorldFocusDanteProposal | null>(null);
   const [receipt, setReceipt] =
     useState<WorldFocusDanteDecisionReceipt | null>(null);
@@ -138,120 +140,123 @@ export function WorldFocusDanteProposalProvider({
   const canRequestProposal =
     requestState.status !== 'pending' &&
     !d6SurfaceIsOpen &&
+    insight !== null &&
+    insight.worldId === worldId &&
+    insight.workspaceGeneration === workspace.state.generation &&
     insightSurface !== undefined &&
     insightSurface.boundGeneration === workspace.state.generation;
 
-  const requestProposal = useCallback(
-    (insight: WorldFocusDanteInsight): boolean => {
-      const sourceSurface = workspace.state.surfaces.find(
-        (surface) => surface.instanceId === WORLD_FOCUS_DANTE_INSIGHT_INSTANCE_ID,
-      );
-      if (
-        requestState.status === 'pending' ||
-        d6SurfaceIsOpen ||
-        sourceSurface === undefined ||
-        sourceSurface.boundGeneration !== workspace.state.generation ||
-        insight.worldId !== worldId ||
-        insight.workspaceGeneration !== workspace.state.generation
-      ) {
-        return false;
-      }
+  const requestProposal = useCallback((): boolean => {
+    const sourceInsight = insight;
+    const sourceSurface = workspace.state.surfaces.find(
+      (surface) => surface.instanceId === WORLD_FOCUS_DANTE_INSIGHT_INSTANCE_ID,
+    );
+    if (
+      requestState.status === 'pending' ||
+      d6SurfaceIsOpen ||
+      sourceInsight === null ||
+      sourceSurface === undefined ||
+      sourceSurface.boundGeneration !== workspace.state.generation ||
+      sourceInsight.worldId !== worldId ||
+      sourceInsight.workspaceGeneration !== workspace.state.generation
+    ) {
+      return false;
+    }
 
-      const nextSerial = requestSerialRef.current + 1;
-      const requestId = `${worldId}:local-proposal:${nextSerial}`;
-      let request: WorldFocusDanteProposalRequest;
-      try {
-        request = createWorldFocusDanteProposalRequest({
-          requestId,
-          worldId,
-          workspaceGeneration: insight.workspaceGeneration,
-          sourceInsightId: insight.insightId,
-          sourceInsightKind: insight.kind,
-          sourceTitle: insight.title,
-          sourceSummary: insight.summary,
-          locale: i18n.resolvedLanguage ?? i18n.language ?? 'en',
-          contextReferences: insight.basisReferences,
-        });
-      } catch {
-        return false;
-      }
-
-      requestSerialRef.current = nextSerial;
-      setRequestState({
-        status: 'pending',
+    const nextSerial = requestSerialRef.current + 1;
+    const requestId = `${worldId}:local-proposal:${nextSerial}`;
+    let request: WorldFocusDanteProposalRequest;
+    try {
+      request = createWorldFocusDanteProposalRequest({
         requestId,
-        sourceInsightId: insight.insightId,
-        workspaceGeneration: request.workspaceGeneration,
+        worldId,
+        workspaceGeneration: sourceInsight.workspaceGeneration,
+        sourceInsightId: sourceInsight.insightId,
+        sourceInsightKind: sourceInsight.kind,
+        sourceTitle: sourceInsight.title,
+        sourceSummary: sourceInsight.summary,
+        locale: i18n.resolvedLanguage ?? i18n.language ?? 'en',
+        contextReferences: sourceInsight.basisReferences,
       });
+    } catch {
+      return false;
+    }
 
-      const lease = readCoordinator.begin();
-      void reader(request, lease.signal)
-        .then((result) => {
-          lease.commit(() => {
-            if (generationRef.current !== request.workspaceGeneration) {
-              setRequestState({
-                status: 'superseded',
-                requestId,
-                sourceInsightId: insight.insightId,
-              });
-              return;
-            }
+    requestSerialRef.current = nextSerial;
+    setRequestState({
+      status: 'pending',
+      requestId,
+      sourceInsightId: sourceInsight.insightId,
+      workspaceGeneration: request.workspaceGeneration,
+    });
 
-            if (result.status === 'unavailable') {
-              setRequestState({
-                status: 'unavailable',
-                requestId,
-                sourceInsightId: insight.insightId,
-                retryable: result.retryable,
-              });
-              return;
-            }
-
-            setProposal(result.proposal);
-            setReceipt(null);
-            workspace.openSurface({
-              instanceId: WORLD_FOCUS_DANTE_PROPOSAL_INSTANCE_ID,
-              kind: WORLD_FOCUS_DANTE_PROPOSAL_KIND,
-              depth: 'explore',
-              presentation: sourceSurface.presentation,
-              origin: 'dante',
-              contextReference: result.proposal.basisReferences.primary,
-              dismissible: true,
-              blocksWorkspaceInteraction:
-                sourceSurface.blocksWorkspaceInteraction ?? false,
-              expectedWorkspace: {
-                worldId: workspace.state.worldId,
-                generation: request.workspaceGeneration,
-              },
-            });
-            setRequestState({ status: 'idle' });
-          });
-        })
-        .catch(() => {
-          if (lease.signal.aborted) return;
-          lease.commit(() =>
+    const lease = readCoordinator.begin();
+    void reader(request, lease.signal)
+      .then((result) => {
+        lease.commit(() => {
+          if (generationRef.current !== request.workspaceGeneration) {
             setRequestState({
-              status: 'error',
+              status: 'superseded',
               requestId,
-              sourceInsightId: insight.insightId,
-            }),
-          );
-        })
-        .finally(() => lease.release());
+              sourceInsightId: sourceInsight.insightId,
+            });
+            return;
+          }
 
-      return true;
-    },
-    [
-      d6SurfaceIsOpen,
-      i18n.language,
-      i18n.resolvedLanguage,
-      readCoordinator,
-      reader,
-      requestState.status,
-      workspace,
-      worldId,
-    ],
-  );
+          if (result.status === 'unavailable') {
+            setRequestState({
+              status: 'unavailable',
+              requestId,
+              sourceInsightId: sourceInsight.insightId,
+              retryable: result.retryable,
+            });
+            return;
+          }
+
+          setProposal(result.proposal);
+          setReceipt(null);
+          workspace.openSurface({
+            instanceId: WORLD_FOCUS_DANTE_PROPOSAL_INSTANCE_ID,
+            kind: WORLD_FOCUS_DANTE_PROPOSAL_KIND,
+            depth: 'explore',
+            presentation: sourceSurface.presentation,
+            origin: 'dante',
+            contextReference: result.proposal.basisReferences.primary,
+            dismissible: true,
+            blocksWorkspaceInteraction:
+              sourceSurface.blocksWorkspaceInteraction ?? false,
+            expectedWorkspace: {
+              worldId: workspace.state.worldId,
+              generation: request.workspaceGeneration,
+            },
+          });
+          setRequestState({ status: 'idle' });
+        });
+      })
+      .catch(() => {
+        if (lease.signal.aborted) return;
+        lease.commit(() =>
+          setRequestState({
+            status: 'error',
+            requestId,
+            sourceInsightId: sourceInsight.insightId,
+          }),
+        );
+      })
+      .finally(() => lease.release());
+
+    return true;
+  }, [
+    d6SurfaceIsOpen,
+    i18n.language,
+    i18n.resolvedLanguage,
+    insight,
+    readCoordinator,
+    reader,
+    requestState.status,
+    workspace,
+    worldId,
+  ]);
 
   const requestConfirmation = useCallback((): boolean => {
     if (proposal === null || proposal.workspaceGeneration !== workspace.state.generation) {
