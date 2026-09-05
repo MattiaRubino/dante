@@ -114,7 +114,7 @@ Historical branch record:
 
 ```text
 accepted Platform Observability integration candidate
-→ documentation lifecycle gate
+→ documentation lifecycle gate PASS
 → v2 → protected-main PR
 → mandatory CI / merge evidence
 → future bounded workstreams
