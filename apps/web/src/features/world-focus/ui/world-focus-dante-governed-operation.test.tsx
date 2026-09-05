@@ -100,9 +100,10 @@ describe('World Focus D6 governed-operation presentation', () => {
     expect(confirmation.getAttribute('data-world-focus-dante-surface')).toBe(
       'confirmation',
     );
-    expect(
-      container.querySelector('[data-world-focus-region="workspace"]'),
-    ).toHaveAttribute('inert', '');
+    const workspace = container.querySelector<HTMLElement>(
+      '[data-world-focus-region="workspace"]',
+    );
+    expect(workspace?.hasAttribute('inert')).toBe(true);
 
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(
