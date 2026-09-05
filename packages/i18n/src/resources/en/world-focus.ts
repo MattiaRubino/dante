@@ -34,6 +34,17 @@ export const worldFocus = {
     unavailable: 'DANTE is unavailable right now.',
     submissionUnavailable:
       'DANTE is unavailable right now. Your request is still here.',
+    messages: 'DANTE conversation messages',
+    you: 'You',
+    localPending: 'Processing the request locally.',
+    localUnavailable: 'Local mode is unavailable right now.',
+    localError: 'Unable to complete this local request.',
+    localCancelled: 'Request cancelled. No response was added.',
+    localSuperseded:
+      'The World context changed. The previous response was not added.',
+    followUpLabel: 'Continue the conversation',
+    followUpPlaceholder: 'Write a follow-up…',
+    cancelRequest: 'Cancel request',
   },
   customization: {
     invoke: 'Customize composition',
