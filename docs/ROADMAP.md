@@ -2,8 +2,9 @@
 
 - **Status:** CURRENT REPOSITORY ROADMAP + AI INTEGRATION CANDIDATE
 - **Last reconciled:** 2026-09-05
-- **Current macro state:** **ACCESS/AUTH M1–M5 + SHARED EMAIL + RECOVERY + PLATFORM OBSERVABILITY CLOSED / INTEGRATED; AI DETERMINISTIC FOUNDATION CLOSED / MAIN-RECONCILED CANDIDATE**
+- **Current macro state:** **ACCESS/AUTH M1–M5 + SHARED EMAIL + RECOVERY + PLATFORM OBSERVABILITY CLOSED / INTEGRATED; AI DETERMINISTIC FOUNDATION CLOSED / MAIN-RECONCILED / PR-GREEN CANDIDATE**
 - **AI main-reconciliation merge:** `4a0a69d9f331a65dcf4f72f53f33f06babddca46`
+- **AI integration PR:** `#63` / REQUIRED GATES PASS / MERGE PENDING
 - **Protected-main Observability merge:** `b74a806deed68b2729dd04678c0a5674cd572e8a` via PR `#58`
 - **Alembic head:** `20260904_17`
 
@@ -37,14 +38,14 @@ AI low-level deterministic foundation
 main -> feature/ai-implementation reconciliation
         4a0a69d9 / TRUE TWO-PARENT MERGE COMPLETE
               ↓
-AI integration PR required gates
-        PENDING
+PR #63 required integration gates
+        PASS
               ↓
 protected-main AI integration
-        NOT YET CLAIMED
+        MERGE PENDING / NOT YET CLAIMED
 ```
 
-Platform Observability is protected-main truth through PR `#58`. The AI foundation is a main-reconciled integration candidate and remains unmerged truth until its pull request passes the required repository gates and is merged.
+Platform Observability is protected-main truth through PR `#58`. The AI foundation is a main-reconciled, PR-green integration candidate and remains unmerged truth until PR `#63` is merged.
 
 ## 2. Access/Auth + Email + Recovery
 
@@ -121,16 +122,16 @@ The main reconciliation is complete through merge `4a0a69d9f331a65dcf4f72f53f33f
 
 ## 5. Current bounded gate
 
-The foundation implementation gate itself is closed. The remaining gate is **repository integration**, not more AI feature expansion:
+The foundation implementation and required PR validation gates are closed. The only remaining gate is **protected-main integration**, not more AI feature expansion:
 
 ```text
 AI deterministic foundation closure         CLOSED / PASS
 current-main reconciliation                  CLOSED / PASS
-current-truth documentation reconciliation  IN PROGRESS / FEATURE
-required PR Backend CI Gate                  PENDING
-required PR Dependency Review                PENDING
-required PR Frontend CI Gate                 PENDING
-protected-main merge                         PENDING
+current-truth documentation reconciliation  PASS / FEATURE
+PR #63 Backend CI Gate                       PASS
+PR #63 Dependency Review                     PASS
+PR #63 Frontend CI Gate                      PASS
+protected-main merge                         PENDING / OWNER AUTHORIZATION REQUIRED
 post-merge acceptance                        AFTER MERGE
 ```
 
