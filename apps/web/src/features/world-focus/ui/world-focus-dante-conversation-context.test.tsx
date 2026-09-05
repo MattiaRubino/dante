@@ -117,43 +117,43 @@ function D3Harness({
         availability={{ status: 'available' }}
       >
         <D3ConversationOwner {...readerProps}>
+          <button
+            type="button"
+            onClick={() =>
+              workspace.openSurface({
+                instanceId: WORLD_FOCUS_DANTE_CONVERSATION_INSTANCE_ID,
+                kind: WORLD_FOCUS_DANTE_CONVERSATION_KIND,
+                depth: 'explore',
+                presentation: 'sidecar',
+                origin: 'user',
+                contextReference: null,
+                expectedWorkspace: {
+                  worldId: workspace.state.worldId,
+                  generation: workspace.state.generation,
+                },
+              })
+            }
+          >
+            Seed conversation
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              workspace.selectContext({ kind: 'project', key: 'generation-change' })
+            }
+          >
+            Change generation
+          </button>
+          <output data-testid="surface-count">
+            {workspace.state.surfaces.length}
+          </output>
+          <output data-testid="workspace-generation">
+            {workspace.state.generation}
+          </output>
+          <WorldFocusDanteInvoke />
+          <div ref={setRouteHost} data-testid="route-host" />
           <WorldFocusDanteConversationPresentationController>
-            <button
-              type="button"
-              onClick={() =>
-                workspace.openSurface({
-                  instanceId: WORLD_FOCUS_DANTE_CONVERSATION_INSTANCE_ID,
-                  kind: WORLD_FOCUS_DANTE_CONVERSATION_KIND,
-                  depth: 'explore',
-                  presentation: 'sidecar',
-                  origin: 'user',
-                  contextReference: null,
-                  expectedWorkspace: {
-                    worldId: workspace.state.worldId,
-                    generation: workspace.state.generation,
-                  },
-                })
-              }
-            >
-              Seed conversation
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                workspace.selectContext({ kind: 'project', key: 'generation-change' })
-              }
-            >
-              Change generation
-            </button>
-            <output data-testid="surface-count">
-              {workspace.state.surfaces.length}
-            </output>
-            <output data-testid="workspace-generation">
-              {workspace.state.generation}
-            </output>
-            <WorldFocusDanteInvoke />
             <WorldFocusSurfaceLayer registry={registry} />
-            <div ref={setRouteHost} data-testid="route-host" />
             <WorldFocusRouteSurfaceLayer registry={registry} host={routeHost} />
           </WorldFocusDanteConversationPresentationController>
         </D3ConversationOwner>
