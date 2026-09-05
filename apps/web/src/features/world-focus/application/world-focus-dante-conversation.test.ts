@@ -59,15 +59,17 @@ describe('World Focus D3 deterministic conversation boundary', () => {
   it('accepts an exactly correlated answer/explanation result and rejects extra semantic surface', async () => {
     const request = createRequest();
     const adapter: WorldFocusDanteConversationReadAdapter = {
-      read: vi.fn(async () => ({
-        schemaVersion: WORLD_FOCUS_DANTE_CONVERSATION_SCHEMA_VERSION,
-        status: 'ready',
-        requestId: request.requestId,
-        worldId: request.worldId,
-        workspaceGeneration: request.workspaceGeneration,
-        resultClass: 'answer',
-        output: 'Risposta locale',
-      })),
+      read: vi.fn(() =>
+        Promise.resolve({
+          schemaVersion: WORLD_FOCUS_DANTE_CONVERSATION_SCHEMA_VERSION,
+          status: 'ready',
+          requestId: request.requestId,
+          worldId: request.worldId,
+          workspaceGeneration: request.workspaceGeneration,
+          resultClass: 'answer',
+          output: 'Risposta locale',
+        }),
+      ),
     };
     const reader = createWorldFocusDanteConversationReader(adapter);
 
@@ -82,16 +84,17 @@ describe('World Focus D3 deterministic conversation boundary', () => {
     });
 
     const widened = createWorldFocusDanteConversationReader({
-      read: async () => ({
-        schemaVersion: WORLD_FOCUS_DANTE_CONVERSATION_SCHEMA_VERSION,
-        status: 'ready',
-        requestId: request.requestId,
-        worldId: request.worldId,
-        workspaceGeneration: request.workspaceGeneration,
-        resultClass: 'answer',
-        output: 'Risposta locale',
-        proposal: { action: 'mutate' },
-      }),
+      read: () =>
+        Promise.resolve({
+          schemaVersion: WORLD_FOCUS_DANTE_CONVERSATION_SCHEMA_VERSION,
+          status: 'ready',
+          requestId: request.requestId,
+          worldId: request.worldId,
+          workspaceGeneration: request.workspaceGeneration,
+          resultClass: 'answer',
+          output: 'Risposta locale',
+          proposal: { action: 'mutate' },
+        }),
     });
 
     await expect(widened(request)).rejects.toBeInstanceOf(
@@ -102,15 +105,16 @@ describe('World Focus D3 deterministic conversation boundary', () => {
   it('fails closed when request, World or workspace generation correlation does not match', async () => {
     const request = createRequest();
     const reader = createWorldFocusDanteConversationReader({
-      read: async () => ({
-        schemaVersion: WORLD_FOCUS_DANTE_CONVERSATION_SCHEMA_VERSION,
-        status: 'ready',
-        requestId: 'another-request',
-        worldId: request.worldId,
-        workspaceGeneration: request.workspaceGeneration,
-        resultClass: 'explanation',
-        output: 'Late answer',
-      }),
+      read: () =>
+        Promise.resolve({
+          schemaVersion: WORLD_FOCUS_DANTE_CONVERSATION_SCHEMA_VERSION,
+          status: 'ready',
+          requestId: 'another-request',
+          worldId: request.worldId,
+          workspaceGeneration: request.workspaceGeneration,
+          resultClass: 'explanation',
+          output: 'Late answer',
+        }),
     });
 
     await expect(reader(request)).rejects.toBeInstanceOf(
@@ -154,15 +158,16 @@ describe('World Focus D3 deterministic conversation boundary', () => {
   it('keeps unavailable as a technical result rather than fabricating assistant output', async () => {
     const request = createRequest();
     const reader = createWorldFocusDanteConversationReader({
-      read: async () => ({
-        schemaVersion: WORLD_FOCUS_DANTE_CONVERSATION_SCHEMA_VERSION,
-        status: 'unavailable',
-        requestId: request.requestId,
-        worldId: request.worldId,
-        workspaceGeneration: request.workspaceGeneration,
-        reasonCode: 'local_unavailable',
-        retryable: true,
-      }),
+      read: () =>
+        Promise.resolve({
+          schemaVersion: WORLD_FOCUS_DANTE_CONVERSATION_SCHEMA_VERSION,
+          status: 'unavailable',
+          requestId: request.requestId,
+          worldId: request.worldId,
+          workspaceGeneration: request.workspaceGeneration,
+          reasonCode: 'local_unavailable',
+          retryable: true,
+        }),
     });
 
     const result = await reader(request);
