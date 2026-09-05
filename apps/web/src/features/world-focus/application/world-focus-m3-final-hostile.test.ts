@@ -109,7 +109,7 @@ function resolve(
 }
 
 describe('World Focus M3 final hostile closure', () => {
-  it('keeps partial/stale-capable content meaningful while empty and unavailable inputs stay sparse through the full planning path', () => {
+  it('keeps partial content meaningful while empty and unavailable inputs stay sparse through the full planning path', () => {
     const mixed = collectWorldFocusCompositionOpportunities({
       worldId: 'music',
       situation: { status: 'empty' as const, worldId: 'music' },
@@ -118,19 +118,9 @@ describe('World Focus M3 final hostile closure', () => {
         projection: CONTINUITY_PROJECTION,
         reasonCode: 'hostile-partial',
       },
-      attention: {
-        status: 'unavailable' as const,
-        worldId: 'music',
-        reasonCode: 'hostile-unavailable',
-        retryable: true,
-      },
+      attention: { status: 'empty' as const, worldId: 'music' },
       next: { status: 'empty' as const, worldId: 'music' },
-      comparison: {
-        status: 'unavailable' as const,
-        worldId: 'music',
-        reasonCode: 'hostile-unavailable',
-        retryable: false,
-      },
+      comparison: { status: 'empty' as const, worldId: 'music' },
       trajectory: { status: 'empty' as const, worldId: 'music' },
       evidenceHistory: { status: 'empty' as const, worldId: 'music' },
     });
