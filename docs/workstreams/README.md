@@ -51,8 +51,6 @@ On `feature/ai-architecture`:
 - `../architecture/dante-ai-pre05-cross-phase-hardening.md` — PRE-AI05 closure;
 - AI-04 / AI-03 / AI-02 documents remain upstream architecture authority/evidence.
 
-The temporary `ai-architecture-live-handoff.md` has been deleted after durable knowledge coverage and must not be recreated merely for chronology.
-
 Architecture status:
 
 ```text
@@ -75,18 +73,19 @@ CURRENT IMPLEMENTATION AUTHORITY
        ../architecture/dante-ai-implementation-baseline-final.md
 ```
 
-### AI implementation — active branch-local workstream
+### AI implementation — low-level foundation closure candidate
 
 On `feature/ai-implementation`:
 
-- `ai-implementation.md` — historical/current implementation record up to the former C9 provider gate;
-- `ai-implementation-roadmap-amendment-2026-09-05.md` — **CURRENT execution overlay** after direct model evidence and owner sequencing decision;
-- `ai-runtime-model-target-closure-acceptance-2026-09-05.md` — **ACCEPTED** logical target/routing/binding decision;
+- `ai-implementation.md` — **CURRENT** concise implementation state;
+- `ai-foundation-closure-2026-09-05.md` — **CURRENT durable closure/handoff checkpoint**;
+- `ai-runtime-model-target-closure-acceptance-2026-09-05.md` — **ACCEPTED** target/routing/development-binding decision;
+- `ai-implementation-roadmap-amendment-2026-09-05.md` — execution-history amendment that superseded the old Terra blocker;
 - `ai-model-eval-gpt41-results-2026-09-04.md` — Azure GPT-4.1 baseline evidence;
-- `ai-model-eval-gemini-38-flash-results-2026-09-05.md` — Gemini 3.8 Flash direct challenger/development-binding evidence;
+- `ai-model-eval-gemini-38-flash-results-2026-09-05.md` — Gemini 3.8 Flash challenger/development-binding evidence;
 - `ai-runtime-model-target-closure-proposal-2026-09.md` — detailed decision rationale/history, accepted by the closure record above;
 - `ai-c9-pre-live-checkpoint-2026-09.md` and `ai-provider-candidate-admission-2026-09.md` — retained historical OpenAI/Terra qualification evidence, no longer the current blocker;
-- `../ROADMAP.md` and `../PROJECT-STATUS.md` — protected-main/global authority outside this branch-local delta.
+- `../ROADMAP.md` and `../PROJECT-STATUS.md` — current cross-workstream truth on this branch; protected `main` remains integrated source authority until merge.
 
 Current branch-local implementation state:
 
@@ -97,10 +96,10 @@ I2  CLOSED / PASS
 I3  DEFERRED / WAITING REAL OWNER DATA + SEAMS
 
 C6  CLOSED / PASS
-C7  CLOSED / PASS; immutable route identity now extended with typed v2 model routes
+C7  CLOSED / PASS; immutable route identity extended with typed v2 model routes
 C8  OpenAI/Terra historical candidate admission retained
 C9  former OpenAI/Terra live blocker SUPERSEDED / NOT CURRENT
-C10 direct DANTE candidate evidence COMPLETE for development-binding decision
+C10 direct development-model evidence COMPLETE
 C11 development binding decision COMPLETE
 
 ACTIVE DEVELOPMENT TARGETS
@@ -108,22 +107,30 @@ STRUCTURED_INTERPRETATION -> Gemini 3.8 Flash
 GENERAL_REASONING         -> Gemini 3.8 Flash
 DEEP_REASONING            -> dormant
 
-CURRENT FOUNDATION CLOSURE
+MODEL ACCESS FOUNDATION MATERIALIZED
 application-owned ModelAccessPort
++ ModelInvocation / ProviderAttempt contracts
 + typed route / harness / ProviderBinding revision
 + deterministic champion routing
 + native Gemini Interactions adapter
-+ usage/thought/cached/error normalization
++ private Gemini HTTP transport
++ reasoning/cached/tool-use usage evidence
 + independent structured-output validation
++ deadline/error normalization
 + minimized runtime evidence
 + deterministic tests
-+ one synthetic native live smoke before freeze
+
+FINAL CLOSURE GATE PENDING
+regenerate uv.lock for explicit httpx2 runtime dependency
++ full deterministic/backend regression
++ native smoke dry-run
++ exactly one synthetic native Gemini Interactions smoke
 
 I6 READ-ONLY ASK
-DEFERRED BY OWNER / WAITING BROADER PRODUCT INTEGRATION-READINESS
+DEFERRED / WAITING BROADER PRODUCT INTEGRATION-READINESS
 ```
 
-The unexecuted OpenAI/Terra live call is not a current blocker. It may be reopened only if a later challenger comparison becomes decision-critical. Gemini is a **development** binding, not production/private-data qualification.
+The unexecuted OpenAI/Terra live call is not a current blocker. Gemini is a **development** binding, not production/private-data qualification.
 
 Binding implementation separations remain:
 
@@ -193,13 +200,11 @@ successful LOCAL proof != remote/cloud production proof
 
 ## Current bounded unmerged workstreams
 
-Current project authority includes bounded unmerged work such as:
-
 ```text
 feature/access-auth             active product vertical
 feature/home-react              active frontend workstream
 feature/platform-observability  active platform workstream
-feature/ai-implementation       active AI foundation closure; integrated Ask deferred
+feature/ai-implementation       low-level AI foundation closure candidate; integrated Ask deferred
 feature/ai-architecture         architecture design closed / retained authority/evidence
 ```
 
