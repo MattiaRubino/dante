@@ -11,7 +11,6 @@ from typing import Any, Final
 from urllib.parse import urlparse
 
 import openai
-
 from azure_candidate_config import AzureCandidateConfig
 from dante_eval_core import CandidateResult, EvalFixture
 from openai import AsyncOpenAI

@@ -13,7 +13,6 @@ from typing import Any, Final
 from urllib.parse import urlparse
 
 import openai
-
 from dante_eval_core import CandidateResult, EvalFixture
 from gemini_candidate_config import GeminiCandidateConfig
 from openai import AsyncOpenAI
