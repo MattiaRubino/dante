@@ -15,7 +15,6 @@ from dante.modules.intelligence.adapters.outbound.model.gemini_http import (
 )
 from dante.modules.intelligence.adapters.outbound.model.gemini_interactions import (
     GEMINI_INTERACTIONS_BINDING_REF,
-    GEMINI_INTERACTIONS_ROUTE_REVISION,
     GeminiInteractionsAdapter,
 )
 from dante.modules.intelligence.application.model_access import ModelAccessRuntime
@@ -39,7 +38,7 @@ def create_development_model_access_runtime(
     *,
     api_key: str,
     revisions_root: Path,
-    route_revision: str = GEMINI_INTERACTIONS_ROUTE_REVISION,
+    route_revision: str,
     evidence: RuntimeEvidencePort | None = None,
 ) -> ModelAccessRuntimeResources:
     """Compose one explicitly selected development route without activating a product endpoint.
