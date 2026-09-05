@@ -3,38 +3,34 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 BACKEND_ROOT="$REPO_ROOT/apps/backend"
-EXECUTE_LIVE=0
 WITH_POSTGRES=0
 
 usage() {
   cat <<'EOF'
-Usage: tooling/ai-evals/run_ai_foundation_closure_gate.sh [--execute-live] [--with-postgres]
+Usage: tooling/ai-evals/run_ai_foundation_closure_gate.sh [--with-postgres]
 
-Always:
+Always (deterministic / zero provider calls):
   - requires a clean tracked working tree at start
-  - regenerates/checks apps/backend/uv.lock
-  - verifies lock regeneration changes no tracked file except apps/backend/uv.lock
-  - syncs locked environment
-  - Ruff format/lint
-  - mypy strict
-  - non-PostgreSQL pytest
+  - verifies apps/backend/uv.lock without regenerating it
+  - syncs the locked backend environment
+  - backend Ruff format/lint
+  - backend mypy strict
+  - backend non-PostgreSQL pytest
+  - AI eval tooling Ruff format/lint
+  - AI eval tooling deterministic pytest
   - backend build
-  - native Gemini runtime dry-run
+  - native Gemini runtime DRY-RUN only
 
 Optional:
-  --execute-live   exactly one synthetic native Gemini Interactions call through ModelAccessRuntime
-  --with-postgres  build canonical PostgreSQL image and run postgres-marked acceptance suite
+  --with-postgres  build the canonical PostgreSQL image and run postgres-marked acceptance tests
 
-The live smoke reads DANTE_GEMINI_API_KEY or DANTE_EVAL_GEMINI_API_KEY.
-No secret value is printed or persisted.
+This closure gate intentionally performs no paid provider calls. Native Gemini development
+qualification is recorded separately and must not be repeated merely to close the branch.
 EOF
 }
 
 while (($#)); do
   case "$1" in
-    --execute-live)
-      EXECUTE_LIVE=1
-      ;;
     --with-postgres)
       WITH_POSTGRES=1
       ;;
@@ -60,49 +56,47 @@ if [[ -n "$TRACKED_BEFORE" ]]; then
   exit 3
 fi
 
-if (( EXECUTE_LIVE )) && [[ -z "${DANTE_GEMINI_API_KEY:-}" && -z "${DANTE_EVAL_GEMINI_API_KEY:-}" ]]; then
-  echo 'Live closure requested but no Gemini API key is exported in this shell.' >&2
-  echo 'Set DANTE_GEMINI_API_KEY or DANTE_EVAL_GEMINI_API_KEY without committing it.' >&2
-  exit 4
-fi
-
 cd "$BACKEND_ROOT"
 
-echo '=== AI FOUNDATION: lock regenerate/check ==='
-uv lock
+echo '=== AI FOUNDATION: verify locked dependency graph ==='
 uv lock --check
 
+echo '=== AI FOUNDATION: sync locked environment ==='
+uv sync --locked
+
+echo '=== AI FOUNDATION: backend ruff format ==='
+uv run --locked ruff format --check .
+
+echo '=== AI FOUNDATION: backend ruff lint ==='
+uv run --locked ruff check .
+
+echo '=== AI FOUNDATION: backend mypy ==='
+uv run --locked mypy
+
+echo '=== AI FOUNDATION: backend fast tests ==='
+uv run --locked pytest -m "not postgres"
+
 cd "$REPO_ROOT"
-TRACKED_AFTER_LOCK="$(git diff --name-only)"
-if [[ -n "$TRACKED_AFTER_LOCK" && "$TRACKED_AFTER_LOCK" != "apps/backend/uv.lock" ]]; then
-  echo 'Unexpected tracked changes after uv lock:' >&2
-  printf '%s\n' "$TRACKED_AFTER_LOCK" >&2
-  exit 5
-fi
+
+echo '=== AI FOUNDATION: eval tooling ruff format ==='
+uv run --project apps/backend --locked ruff format --check \
+  --config apps/backend/pyproject.toml tooling/ai-evals
+
+echo '=== AI FOUNDATION: eval tooling ruff lint ==='
+uv run --project apps/backend --locked ruff check \
+  --config apps/backend/pyproject.toml tooling/ai-evals
+
+echo '=== AI FOUNDATION: eval tooling deterministic tests ==='
+uv run --project apps/backend --locked pytest tooling/ai-evals/tests
 
 cd "$BACKEND_ROOT"
 
-echo '=== AI FOUNDATION: sync ==='
-uv sync --locked
-
-echo '=== AI FOUNDATION: ruff format ==='
-uv run --locked ruff format --check .
-
-echo '=== AI FOUNDATION: ruff lint ==='
-uv run --locked ruff check .
-
-echo '=== AI FOUNDATION: mypy ==='
-uv run --locked mypy
-
-echo '=== AI FOUNDATION: fast tests ==='
-uv run --locked pytest -m "not postgres"
-
-echo '=== AI FOUNDATION: build ==='
+echo '=== AI FOUNDATION: backend build ==='
 uv build
 
 cd "$REPO_ROOT"
 
-echo '=== AI FOUNDATION: native Gemini dry-run ==='
+echo '=== AI FOUNDATION: native Gemini runtime dry-run (zero provider calls) ==='
 uv run --project apps/backend --locked \
   python tooling/ai-evals/run_gemini_native_runtime_smoke.py
 
@@ -116,20 +110,15 @@ if (( WITH_POSTGRES )); then
   cd "$REPO_ROOT"
 fi
 
-if (( EXECUTE_LIVE )); then
-  echo '=== AI FOUNDATION: exactly one native Gemini live smoke ==='
-  uv run --project apps/backend --locked \
-    python tooling/ai-evals/run_gemini_native_runtime_smoke.py --execute
-else
-  echo '=== AI FOUNDATION: live smoke NOT RUN (pass --execute-live to close provider-live gate) ==='
+echo
+echo '=== AI FOUNDATION DETERMINISTIC GATE COMPLETE ==='
+echo "postgres=$WITH_POSTGRES provider_calls=0"
+
+TRACKED_AFTER="$(git status --porcelain --untracked-files=no)"
+if [[ -n "$TRACKED_AFTER" ]]; then
+  echo 'Gate unexpectedly changed tracked files:' >&2
+  printf '%s\n' "$TRACKED_AFTER" >&2
+  exit 6
 fi
 
-echo
-echo '=== AI FOUNDATION GATE COMPLETE ==='
-echo "postgres=$WITH_POSTGRES live=$EXECUTE_LIVE"
-if [[ -n "$(git diff --name-only)" ]]; then
-  echo 'tracked changes produced by gate:'
-  git diff --name-only
-else
-  echo 'tracked changes produced by gate: none'
-fi
+echo 'tracked changes produced by gate: none'
