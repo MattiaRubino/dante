@@ -32,6 +32,23 @@ class ModelInvocationOutcome(StrEnum):
     UNAVAILABLE = "unavailable"
 
 
+class ModelAccessErrorClass(StrEnum):
+    """Application-facing failure class independent from provider wire taxonomy."""
+
+    INVALID_REQUEST = "invalid_request"
+    ROUTE_MISMATCH = "route_mismatch"
+    CAPABILITY_UNAVAILABLE = "capability_unavailable"
+    PROVIDER_TRANSIENT = "provider_transient"
+    PROVIDER_PERMANENT = "provider_permanent"
+    INDETERMINATE_EXTERNAL_OUTCOME = "indeterminate_external_outcome"
+    PROVIDER_INCOMPLETE = "provider_incomplete"
+    REFUSED = "refused"
+    INVALID_RESPONSE = "invalid_response"
+    CANCELLATION = "cancellation"
+    DEADLINE_EXCEEDED = "deadline_exceeded"
+    UNKNOWN = "unknown"
+
+
 class ProviderAttemptOutcome(StrEnum):
     """Normalized provider-attempt outcome independent of publication maturity."""
 
@@ -145,6 +162,7 @@ class ModelInvocationRequest:
     required_route_config_identity: RouteConfigIdentity | None = None
     required_capabilities: tuple[str, ...] = ()
     required_feature_modes: tuple[str, ...] = ()
+    max_provider_attempts: int = 1
 
     def __post_init__(self) -> None:
         _require_uuid7(self.model_invocation_id, name="model_invocation_id")
@@ -158,6 +176,8 @@ class ModelInvocationRequest:
         _require_aware(self.deadline, name="deadline")
         if self.max_output_tokens <= 0:
             raise ValueError("max_output_tokens must be positive")
+        if self.max_provider_attempts <= 0:
+            raise ValueError("max_provider_attempts must be positive")
         _require_texts(self.security_basis_refs, name="security_basis_refs")
         _require_texts(self.required_capabilities, name="required_capabilities")
         _require_texts(self.required_feature_modes, name="required_feature_modes")
@@ -357,7 +377,11 @@ class ModelInvocationResult:
     attempts: tuple[ProviderAttemptResult, ...] = ()
     output_text: str | None = None
     structured_output_json: str | None = None
+    error_class: ModelAccessErrorClass | None = None
     error_code: str | None = None
+    finish_reason: str | None = None
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
 
     def __post_init__(self) -> None:
         _require_uuid7(self.model_invocation_id, name="model_invocation_id")
@@ -368,9 +392,17 @@ class ModelInvocationResult:
             ("output_text", self.output_text),
             ("structured_output_json", self.structured_output_json),
             ("error_code", self.error_code),
+            ("finish_reason", self.finish_reason),
         ):
             if value is not None:
                 _require_text(value, name=name)
+        if (self.started_at is None) != (self.completed_at is None):
+            raise ValueError("logical invocation timestamps must be provided together")
+        if self.started_at is not None and self.completed_at is not None:
+            _require_aware(self.started_at, name="started_at")
+            _require_aware(self.completed_at, name="completed_at")
+            if self.completed_at < self.started_at:
+                raise ValueError("logical completed_at must not precede started_at")
         if any(attempt.model_invocation_id != self.model_invocation_id for attempt in self.attempts):
             raise ValueError("all provider attempts must belong to this model invocation")
 
@@ -384,6 +416,8 @@ class ModelInvocationResult:
                 or self.provider_model is None
             ):
                 raise ValueError("completed model invocation requires selected route/model identity")
+            if self.error_class is not None:
+                raise ValueError("completed model invocation cannot carry error_class")
             return
 
         if self.outcome in {
