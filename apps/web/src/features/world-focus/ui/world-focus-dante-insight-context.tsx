@@ -152,10 +152,9 @@ export function WorldFocusDanteInsightProvider({
       }
 
       const source = conversation.messages.find(
-        (message) =>
-          message.id === sourceMessageId && message.role === 'assistant',
+        (message) => message.id === sourceMessageId,
       );
-      if (source === undefined) {
+      if (source === undefined || source.role !== 'assistant') {
         return false;
       }
 
