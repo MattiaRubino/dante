@@ -4,7 +4,10 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { i18n } from '../../../bootstrap/i18n';
 import type { WorldFocusDanteInsight } from '../application/world-focus-dante-insight';
-import type { WorldFocusDanteProposalReader } from '../application/world-focus-dante-proposal';
+import type {
+  WorldFocusDanteProposalReader,
+  WorldFocusDanteProposalRequest,
+} from '../application/world-focus-dante-proposal';
 import {
   WORLD_FOCUS_DANTE_INSIGHT_INSTANCE_ID,
   WORLD_FOCUS_DANTE_INSIGHT_KIND,
@@ -17,12 +20,6 @@ import {
   WorldFocusWorkspaceHost,
   useWorldFocusWorkspace,
 } from './world-focus-workspace-host';
-
-beforeAll(async () => {
-  await i18n.changeLanguage('it');
-});
-
-afterEach(cleanup);
 
 const VALIDATED_INSIGHT: WorldFocusDanteInsight = Object.freeze({
   schemaVersion: 1,
@@ -52,6 +49,35 @@ const FORGED_SAME_GENERATION_INSIGHT: WorldFocusDanteInsight = Object.freeze({
       Object.freeze({ kind: 'project', key: 'forged-supporting' }),
     ]),
   }),
+});
+
+const d5InsightState = vi.hoisted(() => ({
+  current: null as WorldFocusDanteInsight | null,
+}));
+
+vi.mock('./world-focus-dante-insight-context', async (importOriginal) => {
+  const actual = await importOriginal<
+    typeof import('./world-focus-dante-insight-context')
+  >();
+  return {
+    ...actual,
+    useWorldFocusDanteInsight: () => ({
+      insight: d5InsightState.current,
+      requestState: { status: 'idle' as const },
+      isOpen: d5InsightState.current !== null,
+      canRequestInsight: false,
+      requestInsight: () => false,
+    }),
+  };
+});
+
+beforeAll(async () => {
+  await i18n.changeLanguage('it');
+});
+
+afterEach(() => {
+  d5InsightState.current = null;
+  cleanup();
 });
 
 function D5ToD6BindingHarness() {
@@ -85,9 +111,12 @@ function D5ToD6BindingHarness() {
       </button>
       <button
         type="button"
-        onClick={() =>
-          setAccepted(proposal.requestProposal(FORGED_SAME_GENERATION_INSIGHT))
-        }
+        onClick={() => {
+          const hostileRuntimeCall = proposal.requestProposal as unknown as (
+            insight: WorldFocusDanteInsight,
+          ) => boolean;
+          setAccepted(hostileRuntimeCall(FORGED_SAME_GENERATION_INSIGHT));
+        }}
       >
         Try forged D6 Proposal
       </button>
@@ -96,12 +125,16 @@ function D5ToD6BindingHarness() {
 }
 
 describe('World Focus M4 final hostile sequencing', () => {
-  it('rejects a same-generation fabricated Insight when D6 is not bound to the actual validated D5 artifact', () => {
+  it('binds D6 to the exact current validated D5 artifact even when runtime code supplies a forged same-generation Insight argument', () => {
+    d5InsightState.current = VALIDATED_INSIGHT;
+    let capturedRequest: WorldFocusDanteProposalRequest | undefined;
     const reader = vi.fn<WorldFocusDanteProposalReader>(
-      () =>
-        new Promise(() => {
-          // The hostile assertion expects D6 to reject before any read starts.
-        }),
+      (request) => {
+        capturedRequest = request;
+        return new Promise(() => {
+          // Keep the read pending; this test only proves request ownership/binding.
+        });
+      },
     );
 
     render(
@@ -119,7 +152,18 @@ describe('World Focus M4 final hostile sequencing', () => {
       screen.getByRole('button', { name: 'Try forged D6 Proposal' }),
     );
 
-    expect(screen.getByTestId('proposal-accepted').textContent).toBe('false');
-    expect(reader).not.toHaveBeenCalled();
+    expect(screen.getByTestId('proposal-accepted').textContent).toBe('true');
+    expect(reader).toHaveBeenCalledTimes(1);
+    expect(capturedRequest).toMatchObject({
+      sourceInsightId: VALIDATED_INSIGHT.insightId,
+      sourceInsightKind: VALIDATED_INSIGHT.kind,
+      sourceTitle: VALIDATED_INSIGHT.title,
+      sourceSummary: VALIDATED_INSIGHT.summary,
+      contextReferences: VALIDATED_INSIGHT.basisReferences,
+    });
+    expect(JSON.stringify(capturedRequest)).not.toContain(
+      FORGED_SAME_GENERATION_INSIGHT.insightId,
+    );
+    expect(JSON.stringify(capturedRequest)).not.toContain('forged-primary');
   });
 });
