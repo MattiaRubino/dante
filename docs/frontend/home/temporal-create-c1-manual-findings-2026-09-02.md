@@ -3,7 +3,7 @@
 **Status:** SUPERSEDED HISTORICAL MANUAL FINDINGS  
 **Branch:** `feature/home-timeline`  
 **Historical automated-green descendant before this review:** `9abc891f21a4166859617bb6211e0a23ca6dd36e` / Frontend CI #539 FULL PASS  
-**Superseded for current product decisions:** by the 2026-09-03 and especially 2026-09-04 findings/live status.
+**Superseded for current product decisions:** by the 2026-09-03 and especially 2026-09-04 findings/current authority.
 
 This file is preserved for archaeology. It must not override later product decisions. In particular, the old centered/maximized Full/Advanced target was later superseded by the 2026-09-04 floating/non-modal decision.
 
@@ -53,11 +53,11 @@ The user needed to move the desktop Create surface to inspect Timeline underneat
 
 Read current truth in:
 
-1. `temporal-live-status.md`;
+1. `current-checkpoint.md`;
 2. `temporal-create-c1-manual-findings-2026-09-04.md`;
-3. `temporal-create-handoff.md`;
-4. `temporal-create-c1-scope-amendment.md`;
-5. `temporal-create-c1-traceability.md`;
+3. `temporal-create-c1-scope-amendment.md`;
+4. `temporal-create-c1-traceability.md`;
+5. `temporal-create-c1-manual-acceptance.md`;
 6. `temporal-frontend-roadmap.md`.
 
 C1 remains open until explicit final manual approval.

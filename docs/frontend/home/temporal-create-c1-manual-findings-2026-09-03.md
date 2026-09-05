@@ -30,11 +30,11 @@ Do not use this historical file as current implementation/CI or UX authority.
 
 Read:
 
-1. `temporal-live-status.md`;
+1. `current-checkpoint.md`;
 2. `temporal-create-c1-manual-findings-2026-09-04.md`;
-3. `temporal-create-handoff.md`;
-4. `temporal-create-c1-scope-amendment.md`;
-5. `temporal-create-c1-traceability.md`;
+3. `temporal-create-c1-scope-amendment.md`;
+4. `temporal-create-c1-traceability.md`;
+5. `temporal-create-c1-manual-acceptance.md`;
 6. `temporal-frontend-roadmap.md`.
 
 In particular, 2026-09-04 superseded earlier details about Advanced geometry, Activity repeat exposure and recurrence customization entry.

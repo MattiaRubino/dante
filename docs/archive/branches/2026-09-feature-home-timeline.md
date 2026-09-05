@@ -6,7 +6,7 @@
 **Current `main` integrated through:** `7bc7c0136cb5579528be1e2be0e71a6399004f90`  
 **Pre-documentation-closure technical head:** `d8b1aa65d5d2651702bd790be3843234ad9f86da`
 
-This record preserves the branch/workstream history that used to be duplicated across several operational handoff documents. It is not current implementation authority.
+This record preserves the branch/workstream history that was previously duplicated across several operational handoff/live-status documents. It is not current implementation authority.
 
 ## Purpose of the branch
 
@@ -46,16 +46,34 @@ By 2026-09-05, `main` had moved far beyond the branch creation point. The integr
 
 The reconciled route set required regeneration of `apps/web/src/routeTree.gen.ts` through the real TanStack Router Vite plugin. The first post-merge CI correctly detected generated-source drift. Temporary diagnostic commits were then used to expose the exact generator output; the final tree restored the normal generated-source checker and committed the real generated route tree. Those diagnostic commits are branch-history artifacts only; no diagnostic behavior remains in the final tree.
 
-## Retired operational documents
+## Pre-PR closure cleanup
 
-The following filenames remain only as minimal tombstones so historical references keep resolving:
+The final branch-cleanup pass deliberately removed temporary operating artifacts instead of carrying them into `main`.
 
-- `docs/frontend/home/production-depth-handoff.md`
-- `docs/frontend/home/temporal-create-handoff.md`
-- `docs/frontend/home/temporal-live-status.md`
-- `docs/frontend/home/world-focus-handoff.md`
+Removed documentation paths:
 
-Their former branch/worktree/SHA/database instructions must not be used as current authority.
+- `docs/frontend/home/production-depth-handoff.md`;
+- `docs/frontend/home/temporal-create-handoff.md`;
+- `docs/frontend/home/temporal-live-status.md`;
+- `docs/frontend/home/world-focus-handoff.md`.
+
+Their durable knowledge is retained in:
+
+- `docs/frontend/README.md`;
+- `docs/frontend/home/current-checkpoint.md`;
+- `docs/frontend/home/temporal-frontend-roadmap.md`;
+- `docs/frontend/home/temporal-create-c1-scope-amendment.md`;
+- `docs/frontend/home/temporal-create-c1-traceability.md`;
+- `docs/frontend/home/temporal-create-c1-manual-acceptance.md`;
+- the frozen H0/T1/F0 contracts;
+- World Focus architecture, scenario oracle, roadmap and checkpoints;
+- this archive record for branch/workstream provenance.
+
+The ad-hoc runtime debug asset `apps/web/public/home-layout-debug.html` was also removed before PR preparation. Its geometry/debug role is superseded by production code, machine-readable Home contracts and browser regression coverage; it is not a durable product artifact.
+
+The branch-specific formatting exception in Frontend CI was removed so the normal repository-wide `pnpm format:check` is again authoritative. The Home contract-drift and frozen Firefox Timeline regression gates remain because they are product regression coverage, not branch exceptions.
+
+## Current authority after closure
 
 Current authority begins at:
 
@@ -63,7 +81,7 @@ Current authority begins at:
 - `docs/frontend/home/current-checkpoint.md`;
 - `docs/frontend/home/temporal-frontend-roadmap.md`;
 - the frozen H0/T1/F0 contracts;
-- World Focus architecture/roadmap;
+- World Focus architecture/roadmap/checkpoints;
 - current code/tests/CI.
 
 ## Important non-closure

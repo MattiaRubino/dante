@@ -5,8 +5,8 @@
 **Owner workstream:** `feature/home-timeline`
 **Base contract:** `docs/frontend/home/temporal-create-q0-contract.md`
 **Active scope amendment:** `docs/frontend/home/temporal-create-c1-scope-amendment.md`
-**Live status:** `docs/frontend/home/temporal-live-status.md`
-**Current handoff:** `docs/frontend/home/temporal-create-handoff.md`
+**Current checkpoint:** `docs/frontend/home/current-checkpoint.md`
+**Current Temporal roadmap:** `docs/frontend/home/temporal-frontend-roadmap.md`
 **Prerequisite:** F0 closed on `7034b9b0d100709785ebe96e3816aab3e7b1d1f8`
 
 The user explicitly approved Q0 on 2026-09-01 and authorized implementation of the complete C1 `+` / Create capability to production-oriented pre-backend depth.
@@ -81,6 +81,6 @@ A strong compact Quick Create foundation exists, including Activity/Event, tempo
 
 Manual review established that this is only the first presentation layer of the required Create system. It must not be treated as the final C1 deliverable.
 
-The current operational truth is recorded in `temporal-live-status.md` and the continuation procedure is recorded in `temporal-create-handoff.md`.
+Current operating truth is recorded in `current-checkpoint.md`, `temporal-frontend-roadmap.md`, `temporal-create-c1-scope-amendment.md`, `temporal-create-c1-traceability.md` and `temporal-create-c1-manual-acceptance.md`.
 
 C1 may be marked CLOSED only after the expanded scope is implemented, all final automated gates are green on one coherent implementation checkpoint, and the user explicitly approves the complete Create system.

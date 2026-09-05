@@ -17,11 +17,11 @@ The user later rejected that UX manually, so this file must never be used to cla
 
 For current state read:
 
-1. `temporal-live-status.md`;
+1. `current-checkpoint.md`;
 2. `temporal-create-c1-manual-findings-2026-09-04.md`;
-3. `temporal-create-handoff.md`;
-4. `temporal-create-c1-scope-amendment.md`;
-5. `temporal-create-c1-traceability.md`;
+3. `temporal-create-c1-scope-amendment.md`;
+4. `temporal-create-c1-traceability.md`;
+5. `temporal-create-c1-manual-acceptance.md`;
 6. `temporal-frontend-roadmap.md`.
 
-Current code/CI checkpoints intentionally live in those active files, not in this historical record.
+Current code/CI truth belongs to the current branch HEAD and its GitHub Actions evidence, not in this historical record.

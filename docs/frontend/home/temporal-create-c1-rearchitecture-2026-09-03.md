@@ -1,7 +1,7 @@
 # DANTE — Temporal Create C1 Re-architecture — 2026-09-03
 
 **Status:** SUPERSEDED HISTORICAL PRODUCT RECORD  
-**Superseded:** 2026-09-04 by `temporal-create-c1-manual-findings-2026-09-04.md` and `temporal-live-status.md`  
+**Superseded:** 2026-09-04 by `temporal-create-c1-manual-findings-2026-09-04.md` and the current C1 authority set  
 **Branch:** `feature/home-timeline`
 
 ## Purpose
@@ -64,11 +64,11 @@ Where this historical document previously described different UX, use the curren
 
 Read instead:
 
-1. `temporal-live-status.md`;
+1. `current-checkpoint.md`;
 2. `temporal-create-c1-manual-findings-2026-09-04.md`;
-3. `temporal-create-handoff.md`;
-4. `temporal-create-c1-scope-amendment.md`;
-5. `temporal-create-c1-traceability.md`;
+3. `temporal-create-c1-scope-amendment.md`;
+4. `temporal-create-c1-traceability.md`;
+5. `temporal-create-c1-manual-acceptance.md`;
 6. `temporal-frontend-roadmap.md`.
 
-Historical implementation SHAs and CI runs from 2026-09-03 remain useful for archaeology only. Current branch/checkpoint status belongs in `temporal-live-status.md`.
+Historical implementation SHAs and CI runs from 2026-09-03 remain useful for archaeology only. Current branch/checkpoint status belongs in `current-checkpoint.md` and current GitHub Actions evidence.

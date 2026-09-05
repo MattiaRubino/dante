@@ -6,7 +6,7 @@
 
 This directory contains durable product-facing frontend contracts carried into the production React workspace. Current implementation truth is the checked-out code/tests plus current CI evidence. Prototype branches and dated checkpoints remain design/history evidence only.
 
-Operational handoff documents under `docs/frontend/home/` are retired pointers, not live authority. They remain only so historical links do not break.
+Historical Home/Temporal branch context is retained in `docs/archive/branches/2026-09-feature-home-timeline.md`. The pre-PR closure deliberately removes temporary handoff/live-status files rather than carrying duplicate operating authority into `main`.
 
 ## Read order
 
@@ -115,6 +115,6 @@ Those contracts are blocking CI through `tests/prototypes/frontend-preprod-contr
 
 ## Historical prototype / branch rule
 
-Production code never imports prototype implementation. Prototype branches and retired handoffs are recoverable evidence, not runtime or operating dependencies.
+Production code never imports prototype implementation. Prototype branches and the branch closure archive are recoverable evidence, not runtime or operating dependencies.
 
 Branch/worktree/SHA labels inside dated frozen or historical records describe provenance. They do not override `home/current-checkpoint.md`, the checked-out branch, or current repository/CI truth.

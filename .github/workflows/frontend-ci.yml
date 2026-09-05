@@ -54,21 +54,7 @@ jobs:
         run: python3 tests/prototypes/frontend-preprod-contracts.py
 
       - name: Format check
-        if: ${{ github.ref != 'refs/heads/feature/home-timeline' }}
         run: pnpm format:check
-
-      - name: Format check for active Home workstream
-        if: ${{ github.ref == 'refs/heads/feature/home-timeline' }}
-        shell: bash
-        run: |
-          mapfile -d '' files < <(
-            git diff-tree --no-commit-id --name-only -z -r HEAD -- \
-              '*.ts' '*.tsx' '*.js' '*.jsx' '*.css' '*.scss' '*.json' \
-              '*.md' '*.yml' '*.yaml' '*.html'
-          )
-          if ((${#files[@]} > 0)); then
-            pnpm exec prettier --check "${files[@]}"
-          fi
 
       - name: Lint
         run: pnpm lint

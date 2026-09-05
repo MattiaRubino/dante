@@ -7,7 +7,7 @@
 **Pre-closure technical checkpoint:** `d8b1aa65d5d2651702bd790be3843234ad9f86da`  
 **PR state:** NOT OPENED
 
-This is the current navigation document for Home, AppShell, Timeline, Temporal Create and World Focus. Dated handoff files are retired pointers only. Durable contracts and current code/tests outrank historical branch instructions.
+This is the current navigation document for Home, AppShell, Timeline, Temporal Create and World Focus. Temporary branch handoff/live-status files were removed during pre-PR closure; historical workstream context is retained in `docs/archive/branches/2026-09-feature-home-timeline.md`. Durable contracts and current code/tests outrank historical branch instructions.
 
 ## 1. Integration state
 
@@ -103,7 +103,7 @@ Do not start opportunistic C2 work merely because the branch is being integrated
 
 World Focus remains a real pre-backend frontend architecture/candidate, not permission to invent canonical World persistence or backend/API semantics.
 
-Use `world-focus-architecture.md` and `world-focus-frontend-roadmap.md` for the durable pre-backend contract. Branch labels in the original 2026-08 records are provenance, not current operating instructions.
+Use `world-focus-architecture.md`, `world-focus-frontend-roadmap.md`, `world-focus-wf0-scenario-oracle.md` and the current WF1/geometry checkpoints for durable pre-backend context. Branch labels in the original 2026-08 records are provenance, not current operating instructions.
 
 ## 3. Temporal semantic stop lines
 
@@ -135,7 +135,7 @@ canonical temporal sources
 
 Live validation authority is the current GitHub Actions state for the exact candidate HEAD. Historical run IDs in dated checkpoint documents are evidence only and must not be promoted to current truth after branch reconciliation.
 
-The pre-closure technical checkpoint already demonstrated that the merged route set can pass frontend contract drift, lint, typecheck, architecture and generated-source checks after the real route-tree regeneration. Final review must still use the CI result attached to the final documentation-closure HEAD.
+The pre-closure technical checkpoint demonstrated that the merged route set passes frontend contract drift, lint, typecheck, architecture and generated-source checks after the real route-tree regeneration. Final review must use the CI result attached to the final pre-PR cleanup candidate.
 
 ## 5. Current read order
 
