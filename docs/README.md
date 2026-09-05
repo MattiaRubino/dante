@@ -2,7 +2,8 @@
 
 - **Status:** CURRENT NAVIGATION / AUTHORITY INDEX
 - **Last reconciled:** 2026-09-05
-- **Current repository tree:** Access/Auth + shared Email Platform + Recovery + Platform Observability integration candidate
+- **Current protected-main tree:** Access/Auth + shared Email Platform + Recovery + Platform Observability
+- **Protected-main Observability merge:** `b74a806deed68b2729dd04678c0a5674cd572e8a` via PR `#58`
 - **Current Alembic:** `20260904_17`
 
 ## Authority order
@@ -15,8 +16,6 @@
 5. durable evidence / Git chronology
 6. conversation memory
 ```
-
-The current repository tree contains the accepted Platform Observability integration candidate. Protected-main integration is established only when the corresponding commit is reachable from protected `main`; this index does not treat branch-local materialization as an already-merged protected-main fact.
 
 ## Current lifecycle
 
@@ -33,7 +32,7 @@ Database                                       88/5/16/76/172/89/270
 Database-local CP07                            PASS
 Application / Email reopen CP08                PASS
 Platform Observability source                  CLOSED / OPERATIONAL PASS
-Platform Observability current tree            INTEGRATED / ACCEPTED CANDIDATE
+Platform Observability protected main          CLOSED / INTEGRATED VIA PR #58
 M6 Native Mobile                               FUTURE / OPTIONAL
 later M7 Access/security maturity              FUTURE
 ```
@@ -93,7 +92,7 @@ Historical/evidence routing:
 
 - `archive/branches/2026-09-feature-platform-observability.md` — single consolidated Platform Observability branch/integration history, **NON-AUTHORITATIVE**
 
-There is no active `workstreams/platform-observability.md` authority after integration-candidate acceptance. The old source-workstream file is retired after knowledge coverage; Git and the consolidated branch record retain chronology.
+There is no active `workstreams/platform-observability.md` authority. The source workstream and integration branch are closed; Git, PR `#58` and the consolidated branch record retain chronology.
 
 ## Database / Recovery
 
@@ -119,11 +118,8 @@ current human DB reference
 ## Current integration sequence
 
 ```text
-accepted Platform Observability integration candidate
-→ documentation lifecycle gate PASS
-→ integration/platform-observability-v2 → protected-main PR
-→ mandatory CI / merge evidence
-→ future bounded workstreams from enriched main
+Platform Observability protected-main integration via PR #58    CLOSED
+→ future bounded workstreams start from current protected main
 ```
 
 Temporary handoffs do not belong on protected main; current specifications must not become append-only diaries.

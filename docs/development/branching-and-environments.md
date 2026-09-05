@@ -200,22 +200,23 @@ While one regular maintainer exists:
 
 ## 12. Current branch/workstream truth
 
-Protected `main` contains the integrated CP1–CP6 backend/database baseline, the closed LOCAL PostgreSQL Recovery evolution, Access/Auth M1–M5, the Shared Email Platform and the forward Recovery↔Email reopen hardening:
+Protected `main` contains the integrated CP1–CP6 backend/database baseline, the closed LOCAL PostgreSQL Recovery evolution, Access/Auth M1–M5, the Shared Email Platform, the forward Recovery↔Email reopen hardening and Platform Observability:
 
 ```text
 CP6                              integrated via PR #42
 PostgreSQL Recovery              CP01–CP07 LOCAL PASS / CLOSED / integrated via PR #47
 Access/Auth + Shared Email       CLOSED / integrated via PR #52
 Recovery↔Email application gate  CP08 PASS / integrated via PR #55
+Platform Observability           CLOSED / integrated via PR #58
 current Alembic                  20260904_17
 current topology                 88|5|16|76|172|89|270|0|0|0
 ```
 
-Platform Observability source work is closed. The accepted integration candidate is `integration/platform-observability-v2`, created from current protected `main` and carrying the real two-parent merge of the frozen source closure. `feature/platform-observability` is closed source history; `integration/platform-observability` is an abandoned integration attempt and must never be resumed or merged. Branch existence by itself is not evidence that a workstream is still active or should be resumed; exact workstream state must be reread from current authority and live Git before writes.
+Platform Observability source work is closed and protected-main integration completed via PR `#58`, merge commit `b74a806deed68b2729dd04678c0a5674cd572e8a`. `feature/platform-observability` is closed source history; `integration/platform-observability-v2` is the closed accepted integration line; `integration/platform-observability` is the abandoned reconstruction attempt and must never be resumed or merged.
 
 `feature/access-auth`, `feature/postgres-recovery` and `feature/access-frontend` are closed/integrated historical branch state. Their accepted results remain current protected-main/baseline evidence where applicable, but those branches are not current resume/integration lines.
 
-Closed feature branches are not reusable development lines. New work starts from current protected `main` under a fresh bounded branch unless an already-active workstream explicitly continues on its existing branch.
+Closed feature/integration branches are not reusable development lines. New work starts from current protected `main` under a fresh bounded branch unless an already-active workstream explicitly continues on its existing branch.
 
 Exact branch truth must be reread from live Git before writes.
 
@@ -300,11 +301,11 @@ continue/resume frontend work only according to its own current bounded authorit
 → Access closure does not silently mutate or redefine that separate workstream
 
 OBSERVABILITY
-integration/platform-observability-v2 is the accepted integration candidate
-→ source closure + true merge + source verification + PostgreSQL/ACL + runtime smoke PASS
-→ documentation lifecycle gate PASS
-→ open v2 → protected-main PR
-→ require exact PR-head / synthetic-merge CI before merge
+CLOSED / INTEGRATED VIA PR #58
+→ source closure + true merge + source verification + PostgreSQL/ACL + runtime/Grafana smoke PASS
+→ documentation lifecycle and protected-main CI/merge PASS
+→ do not resume feature/platform-observability or either integration branch
+→ future vertical metrics/tuning are new bounded scopes from current protected main when explicitly activated
 
 POSTGRESQL RECOVERY
 CLOSED / INTEGRATED VIA PR #47
