@@ -91,6 +91,9 @@ export function WorldFocusWorkspace({
     '--world-focus-split-gap': `${allocationPlan.splitGap}px`,
   } as CSSProperties;
   const mainIsInert = allocationPlan.mainInteraction === 'inert';
+  const routeFocusIsActive = allocationPlan.placements.some(
+    (placement) => placement.activeInSlot && placement.slot === 'external',
+  );
 
   return (
     <section
@@ -100,11 +103,13 @@ export function WorldFocusWorkspace({
       data-world-focus-main-allocation={allocationPlan.mainAllocation}
       data-world-focus-top-layer={allocationPlan.topLayer}
       data-world-focus-main-interaction={allocationPlan.mainInteraction}
+      data-world-focus-route-focus={routeFocusIsActive ? 'active' : 'inactive'}
       data-world-focus-inline-size={Math.round(allocationPlan.workspaceInlineSize)}
       aria-label={t(($) => $.common.worldFocus.canvasLabel, {
         world: worldLabel,
       })}
       aria-busy={status === 'loading' ? true : undefined}
+      inert={routeFocusIsActive ? true : undefined}
       style={allocationStyle}
     >
       <WorldFocusWorkspaceAllocationProvider plan={allocationPlan}>
