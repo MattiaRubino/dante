@@ -177,7 +177,7 @@ describe('WorldFocusPage', () => {
     const composer = screen.getByRole('dialog', { name: 'DANTE' });
     const textarea = screen.getByRole('textbox', {
       name: 'Scrivi una richiesta per DANTE',
-    }) as HTMLTextAreaElement;
+    });
     expect(composer.getAttribute('data-world-focus-dante-surface')).toBe(
       'composer',
     );
