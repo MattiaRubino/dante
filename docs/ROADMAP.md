@@ -2,7 +2,8 @@
 
 - **Status:** CURRENT REPOSITORY ROADMAP
 - **Last reconciled:** 2026-09-05
-- **Current macro state:** **ACCESS/AUTH M1–M5 + SHARED EMAIL + RECOVERY CLOSED; PLATFORM OBSERVABILITY INTEGRATION CANDIDATE ACCEPTED**
+- **Current macro state:** **ACCESS/AUTH M1–M5 + SHARED EMAIL + RECOVERY + PLATFORM OBSERVABILITY CLOSED / INTEGRATED**
+- **Protected-main Observability merge:** `b74a806deed68b2729dd04678c0a5674cd572e8a` via PR `#58`
 - **Alembic head:** `20260904_17`
 
 ## 1. Current sequence
@@ -30,7 +31,7 @@ Platform Observability source closure
         OPERATIONAL ACCEPTANCE PASS
               ↓
 true merge onto current main baseline
-        14faecfb / ACCEPTED CANDIDATE
+        14faecfb / ACCEPTED
               ↓
 source verification + PostgreSQL/ACL + runtime smoke
         PASS
@@ -38,14 +39,16 @@ source verification + PostgreSQL/ACL + runtime smoke
 documentation lifecycle reconciliation
         PASS
               ↓
-integration/platform-observability-v2 → protected main PR
+PR #58 required CI
+        PASS
               ↓
-mandatory PR / merge CI
+protected-main merge b74a806d
+        PASS / INTEGRATED
               ↓
 SHARED FOUNDATION UNBLOCKED
 ```
 
-A protected-main Observability claim is established by commit reachability on protected `main`, not by branch-local wording. The current repository tree contains the accepted integration candidate and must not be described as if the protected-main merge already happened.
+Platform Observability is now protected-main truth through PR `#58`. The former integration/source branches are historical only; future Observability work starts from then-current protected `main` under a fresh bounded scope.
 
 ## 2. Access/Auth + Email + Recovery
 
@@ -57,7 +60,7 @@ The historical CP07 run proves the LOCAL PostgreSQL/database-local and MaterialS
 
 ## 3. Platform Observability integration
 
-The source workstream is closed and frozen at `828cfd231debb1326933052fefd74e81c653a6c3`. The integration branch was created from the current protected-main baseline `318ae452556e8bada3aaeee09688a89acc548a32` and uses the real two-parent merge commit `14faecfb11bded15aa929b0eaac91427031072ed`.
+The source workstream is closed and frozen at `828cfd231debb1326933052fefd74e81c653a6c3`. The real integration branch was created from protected-main baseline `318ae452556e8bada3aaeee09688a89acc548a32`, carries the true two-parent merge `14faecfb11bded15aa929b0eaac91427031072ed`, and was integrated into protected `main` via PR `#58` at merge commit `b74a806deed68b2729dd04678c0a5674cd572e8a`.
 
 Accepted integrated gates:
 
@@ -73,24 +76,28 @@ Grafana Cloud metrics/logs/traces/Faro path   PASS
 Tempo privacy boundary                        PASS
 collector-outage isolation                    PASS
 Grafana acceptance service-account cleanup    PASS
+PR #58 Backend CI Gate                        PASS
+PR #58 Frontend CI Gate                       PASS
+PR #58 Dependency Review                      PASS
 ```
 
-The source workstream already carries real Grafana Cloud acceptance for metrics, logs, traces, Web Faro/Web Vitals, PostgreSQL statistics, black-box readiness, dashboards/alerts and collector-outage failure isolation. Integration does not recreate that subsystem.
-
-The accepted architectural boundary is the platform foundation: global HTTP, backend logs/traces, database telemetry, Web/Faro, Auth signin/KDF/dependency telemetry, PostgreSQL observer, Alloy and Grafana assets. Dedicated Google/Apple, passkey, Auth-lifecycle and Email central OTel metrics are optional future enhancements, not prerequisites for this merge.
+The accepted architectural boundary is the platform foundation: global HTTP, backend logs/traces, database telemetry, Web/Faro, Auth signin/KDF/dependency telemetry, PostgreSQL observer, Alloy and Grafana assets. Dedicated Google/Apple, passkey, Auth-lifecycle and Email central OTel metrics are optional future enhancements, not prerequisites for the completed integration.
 
 ## 4. Current bounded gate
 
+There is no remaining Platform Observability integration gate.
+
 ```text
-documentation lifecycle gate PASS
-→ no temporary handoffs / stale current routing
-→ integration documentation reconciled
-→ open v2 → main PR
-→ run required CI on exact PR head
-→ merge only if required evidence remains green
+implementation integration      CLOSED
+runtime acceptance              CLOSED
+Grafana Cloud acceptance        CLOSED
+collector isolation             CLOSED
+documentation lifecycle         CLOSED
+protected-main PR/CI            CLOSED
+protected-main reachability     CLOSED
 ```
 
-Heavy source verification and PostgreSQL acceptance are not rerun for documentation-only changes unless later code/runtime changes invalidate their evidence.
+Future work must be activated as a new bounded workstream from current protected `main` rather than reopening the closed integration branch.
 
 ## 5. Database contract
 

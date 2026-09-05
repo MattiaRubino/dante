@@ -23,12 +23,12 @@ Database-local CP07                              PASS
 Application / Email reopen CP08                  PASS
 
 Platform Observability source                    CLOSED / OPERATIONAL PASS
-Platform Observability current tree              INTEGRATED / ACCEPTED CANDIDATE
+Platform Observability protected main            CLOSED / INTEGRATED VIA PR #58
 M6 Native Mobile                                 FUTURE / OPTIONAL
 later M7 Access/security maturity                FUTURE
 ```
 
-Protected-main acceptance is commit-reachability scoped. The current repository tree may contain a newer accepted candidate than protected `main`; branch-local materialization must not be described as already merged until the corresponding commit is reachable from protected `main`.
+Protected-main acceptance is commit-reachability scoped. Platform Observability now satisfies that condition through merge commit `b74a806deed68b2729dd04678c0a5674cd572e8a` from PR `#58`.
 
 ## Current authority
 
@@ -39,7 +39,7 @@ Project truth is owned by:
 - executable repository truth
 - current subsystem references
 
-Access/Auth M1–M5 and Platform Observability have **no active workstream authority file** after their respective closure/integration-candidate gates.
+Access/Auth M1–M5 and Platform Observability have **no active workstream authority file** after closure and protected-main integration.
 
 ## Access/Auth closure disposition
 
@@ -88,6 +88,7 @@ temporary live/session/resume handoffs     ABSENT
 one branch-history record                  ARCHIVED / NON-AUTHORITATIVE
 current runtime/ops references             CURRENT / EVOLVING
 source and integration validation          RETAINED AS EVIDENCE
+protected-main integration                 PR #58 / PASS
 full chronology                            GIT / PR HISTORY
 ```
 
@@ -113,11 +114,8 @@ Historical branch record:
 ## Current integration order
 
 ```text
-accepted Platform Observability integration candidate
-→ documentation lifecycle gate PASS
-→ v2 → protected-main PR
-→ mandatory CI / merge evidence
-→ future bounded workstreams
+Platform Observability protected-main integration     CLOSED VIA PR #58
+→ future bounded workstreams start from current main
 ```
 
 ## Operational continuation rule

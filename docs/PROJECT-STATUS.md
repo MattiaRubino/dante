@@ -1,8 +1,8 @@
 # DANTE — Project Status
 
-- **Status:** CURRENT REPOSITORY TRUTH / INTEGRATION CANDIDATE ACCEPTED
+- **Status:** CURRENT REPOSITORY TRUTH / PROTECTED-MAIN INTEGRATED
 - **Last reconciled:** 2026-09-05
-- **Access/Auth + Email + Recovery protected-main baseline:** `318ae452556e8bada3aaeee09688a89acc548a32`
+- **Protected-main Observability merge:** `b74a806deed68b2729dd04678c0a5674cd572e8a` via PR `#58`
 - **Platform Observability source closure:** `828cfd231debb1326933052fefd74e81c653a6c3`
 - **Platform Observability integration merge:** `14faecfb11bded15aa929b0eaac91427031072ed`
 - **Current Alembic head:** `20260904_17`
@@ -29,17 +29,21 @@ database-local CP07                        PASS
 application / Email reopen CP08            PASS
 
 Platform Observability source workstream   CLOSED / OPERATIONAL ACCEPTANCE PASS
-Platform Observability current tree        INTEGRATED / ACCEPTED CANDIDATE
+Platform Observability protected main      CLOSED / INTEGRATED VIA PR #58
 observability source verification          13/13 PASS
 PostgreSQL/ACL integration acceptance      155/155 PASS
 backend readiness + Alloy                  PASS
 Web/Faro integrated LOCAL production-build smoke PASS
+Grafana Cloud metrics/logs/traces/Faro path PASS
+Tempo route-attribute privacy boundary     PASS
+collector-outage failure isolation         PASS
+Grafana acceptance service-account cleanup PASS
 
 M6 Native Mobile                           FUTURE / OPTIONAL
 later Access/M7 maturity                   FUTURE
 ```
 
-Platform Observability is materially present in the current repository tree through a real two-parent Git merge. A protected-main integration claim is valid only once the corresponding integration commit is reachable from protected `main`; branch-local acceptance alone does not create that claim.
+Platform Observability is now protected-main truth. PR `#58` merged `integration/platform-observability-v2` into `main` with merge commit `b74a806deed68b2729dd04678c0a5674cd572e8a`; its parents are the prior protected-main head `318ae452556e8bada3aaeee09688a89acc548a32` and accepted integration head `33228f576bfc2cdd479ea4f527164c7ba9dd8a2d`.
 
 Apple is not reported as PASS. Real Apple external acceptance remains a future enablement prerequisite when its external account/domain prerequisites exist.
 
@@ -67,10 +71,10 @@ Its PostgreSQL operational reader is the provisioning-owned `dante_observer` rol
 
 Access/Auth + Email + Recovery remain closed at their accepted evidence levels. The historical CP07 database-local proof and the later CP08 application/Email reopen proof remain distinct; CP07 is not widened retroactively. Their durable evidence remains in `workstreams/access-auth-integration-acceptance-2026-09-04.md`, `archive/branches/2026-09-feature-access-auth.md` and the Recovery operator references.
 
-Platform Observability acceptance on the integrated tree includes:
+Platform Observability acceptance includes:
 
 ```text
-true Git three-way merge                         PASS
+true Git three-way integration merge             PASS
 frozen source history retained                   PASS
 observability source verification                13/13 PASS
 Web tests                                        23 files / 101 tests PASS
@@ -87,28 +91,37 @@ Grafana Cloud metrics/logs/traces/Faro path      PASS
 Tempo route-attribute privacy boundary           PASS
 collector-outage failure isolation               PASS
 Grafana acceptance service account remote delete PASS
+PR #58 Backend CI Gate                           PASS
+PR #58 Frontend CI Gate                          PASS
+PR #58 Dependency Review                         PASS
+protected-main merge reachability                PASS
 ```
 
 The source workstream had already proved the real Grafana Cloud path for metrics, logs, traces, PostgreSQL statistics, black-box readiness and Web Faro/Web Vitals, plus dashboard/alert materialization and collector-outage failure isolation. That evidence is retained rather than rerun merely for repetition.
 
 Dedicated Google/Apple, passkey, Auth-lifecycle and Email-to-central-OTel domain metrics are future observability enhancements. They are not blockers for the accepted platform foundation because global HTTP, database, Web, Auth signin/KDF/dependency and collector telemetry already cover the integration boundary without changing product semantics.
 
-## 4. Current integration gate
+## 4. Integration state
 
-The implementation integration work is complete on the current tree. The remaining repository gate is bounded:
+Platform Observability integration is complete.
 
 ```text
-documentation lifecycle reconciliation              PASS
-→ integration/platform-observability-v2 → protected-main PR
-→ mandatory PR/merge CI
-→ protected-main reachability establishes final integration state
+source closure                              PASS
+true integration merge                      PASS
+integrated source verification              PASS
+PostgreSQL/ACL acceptance                    PASS
+runtime/Grafana Cloud smoke                  PASS
+collector-outage isolation                   PASS
+documentation lifecycle reconciliation      PASS
+PR #58 required CI                           PASS
+protected-main merge                         PASS
 ```
 
-Do not reopen accepted OTel/Alloy/Grafana/Faro/PostgreSQL-observer implementation merely to repeat evidence.
+Do not reopen accepted OTel/Alloy/Grafana/Faro/PostgreSQL-observer implementation merely to repeat evidence. Future Observability work is a new bounded scope from current protected `main`.
 
 ## 5. Documentation lifecycle state
 
-Platform Observability no longer needs an active workstream authority file. Current truth is routed through:
+Platform Observability has no active workstream authority file. Current truth is routed through:
 
 - `architecture/observability-runtime-contract.md`
 - `development/observability-runbook.md`
@@ -118,7 +131,7 @@ Platform Observability no longer needs an active workstream authority file. Curr
 
 One consolidated historical record is retained at `archive/branches/2026-09-feature-platform-observability.md`. It is **NON-AUTHORITATIVE / HISTORICAL / EVIDENCE ONLY**.
 
-Temporary live/session/resume handoffs are forbidden at the integration gate. Historical source-workstream chronology that is not current authority remains recoverable from the consolidated branch record and Git/PR history.
+Temporary live/session/resume handoffs are absent. Historical source-workstream chronology that is not current authority remains recoverable from the consolidated branch record and Git/PR history.
 
 ## 6. Permanent safety rules
 

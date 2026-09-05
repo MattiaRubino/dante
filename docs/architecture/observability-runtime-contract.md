@@ -1,6 +1,7 @@
 # DANTE Observability Runtime Contract
 
-- **Status:** CURRENT / EVOLVING REFERENCE / INTEGRATION CANDIDATE ACCEPTED
+- **Status:** CURRENT / EVOLVING REFERENCE / PROTECTED-MAIN INTEGRATED
+- **Protected-main merge:** `b74a806deed68b2729dd04678c0a5674cd572e8a` via PR `#58`
 - **Current integration merge:** `14faecfb11bded15aa929b0eaac91427031072ed`
 - **Source closure:** `828cfd231debb1326933052fefd74e81c653a6c3`
 - **Pinned source baseline:** `dc5ee595c6291d980dc15f582dd094a399631557`
@@ -8,7 +9,7 @@
 - **Scope:** backend, Web, PostgreSQL operational telemetry, collector, dashboards, alerts, privacy and failure behavior
 - **Non-scope:** canonical Domain history, security audit ledger, product analytics, Access semantics, Home/Today product UI, cloud compute/IaC
 
-This contract describes materialized current-repository behavior. Protected-main integration is a Git-reachability fact: branch-local materialization must not be represented as already merged until the corresponding commit is reachable from protected `main`.
+This contract describes materialized protected-main behavior. Platform Observability became protected-main truth through PR `#58`; future changes reopen only the smallest justified observability boundary from then-current `main`.
 
 ## 1. Decision
 
