@@ -91,19 +91,19 @@ collector outage / product isolation     PASS
 
 A real notification receipt was observed on 2026-08-31 at 17:41:00 UTC.
 
-The temporary local Grafana administration token was removed. Revocation of the remote service-account token was not independently confirmed at source closure and therefore remains an explicitly unconfirmed historical point. The Alloy ingestion token was not to be touched by that cleanup.
+At source closure the remote service-account-token revocation was still unconfirmed. During pre-PR integration closure on 2026-09-05, the temporary `dante-observability-acceptance` service account was deleted in Grafana Cloud, revoking its remaining token. The Alloy ingestion token was deliberately left untouched.
 
 ## PostgreSQL observer contract
 
 The source workstream introduced the provisioning-owned `dante_observer` technical role. Its accepted posture was:
 
 ```text
-LOGIN / INHERIT
+LOGIN / NOINHERIT
 NOSUPERUSER / NOCREATEDB / NOCREATEROLE / NOREPLICATION / NOBYPASSRLS
 CONNECT dante
 NO database CREATE / TEMP
 search_path = pg_catalog
-pg_read_all_stats membership only
+pg_read_all_stats membership with INHERIT TRUE / SET FALSE / ADMIN FALSE
 NO dante/public business-object access
 NO DANTE application-role membership
 ```
@@ -176,6 +176,9 @@ Web production build                             PASS
 Access page render                               PASS
 invalid synthetic signin handled normally        PASS
 Faro smoke surface                               READY
+Grafana Cloud metrics/logs/traces/Faro path      PASS
+Tempo route-attribute privacy boundary           PASS
+collector-outage/product-isolation proof         PASS
 ```
 
 The historical source cloud acceptance was retained as valid evidence and was not rerun merely to repeat already-earned proof.
