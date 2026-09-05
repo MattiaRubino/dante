@@ -137,6 +137,40 @@ async def test_http_transport_forces_exact_stateless_unary_native_request() -> N
 
 
 @pytest.mark.asyncio
+async def test_http_transport_allows_missing_id_for_stateless_unary_response() -> None:
+    client = _Client(
+        _Response(
+            200,
+            {
+                "status": "completed",
+                "model": GEMINI_INTERACTIONS_MODEL,
+                "service_tier": GEMINI_INTERACTIONS_SERVICE_TIER,
+                "steps": [
+                    {
+                        "type": "model_output",
+                        "content": [{"type": "text", "text": '{"ok":true}'}],
+                    }
+                ],
+                "usage": {
+                    "total_input_tokens": 10,
+                    "total_output_tokens": 5,
+                    "total_thought_tokens": 0,
+                    "total_tokens": 15,
+                },
+            },
+            {"x-goog-request-id": "request-no-interaction-id"},
+        )
+    )
+
+    result = await GeminiInteractionsHttpTransport("secret", client=client).create(_request())
+
+    assert result.status is GeminiInteractionStatus.COMPLETED
+    assert result.interaction_id is None
+    assert result.request_id == "request-no-interaction-id"
+    assert result.output_text == '{"ok":true}'
+
+
+@pytest.mark.asyncio
 async def test_http_transport_maps_rate_limit_without_exposing_provider_payload() -> None:
     client = _Client(
         _Response(
