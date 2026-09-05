@@ -11,7 +11,10 @@ import {
 import { useTranslation } from 'react-i18next';
 
 import { resolveWorldFocusWorkspaceAllocation } from '../model/world-focus-workspace-allocation';
-import type { WorldFocusWorkspaceState } from '../model/world-focus-workspace';
+import type {
+  WorldFocusSurfaceDescriptor,
+  WorldFocusWorkspaceState,
+} from '../model/world-focus-workspace';
 import type { WorldFocusSurfaceRendererProps } from './world-focus-surface-registry';
 import { useWorldFocusWorkspaceAllocation } from './world-focus-workspace-allocation-context';
 import { useWorldFocusWorkspace } from './world-focus-workspace-host';
@@ -49,6 +52,11 @@ type WorldFocusDanteConversationPresentationControllerProps = Readonly<{
   children: ReactNode;
 }>;
 
+type WorldFocusDanteConversationPresentationSessionProps = Readonly<{
+  conversation: WorldFocusSurfaceDescriptor | null;
+  children: ReactNode;
+}>;
+
 function withConversationPresentedAsSidecar(
   state: WorldFocusWorkspaceState,
 ): WorldFocusWorkspaceState {
@@ -64,20 +72,11 @@ function withConversationPresentedAsSidecar(
   });
 }
 
-/**
- * Owns only D2 presentation preference for the one contextual conversation
- * surface. It does not own messages, a conversation transcript, model output,
- * provider state, authorization, or durable DANTE Run lifetime.
- *
- * Adaptive mode asks the existing Workspace allocation resolver whether this
- * exact surface can consume a real sidecar slot. If not, the same surface is
- * promoted to the already-defined external `route` presentation. No viewport
- * breakpoint or second responsive policy is introduced here.
- */
-export function WorldFocusDanteConversationPresentationController({
+function WorldFocusDanteConversationPresentationSession({
+  conversation,
   children,
-}: WorldFocusDanteConversationPresentationControllerProps) {
-  const workspace = useWorldFocusWorkspace();
+}: WorldFocusDanteConversationPresentationSessionProps) {
+  const { state, promoteSurface } = useWorldFocusWorkspace();
   const allocation = useWorldFocusWorkspaceAllocation();
   const [preference, setPreference] =
     useState<WorldFocusDanteConversationPreference>('adaptive');
@@ -100,17 +99,8 @@ export function WorldFocusDanteConversationPresentationController({
     );
   }, []);
 
-  const topSurface = workspace.state.surfaces.at(-1) ?? null;
-  const conversation =
-    topSurface?.instanceId === WORLD_FOCUS_DANTE_CONVERSATION_INSTANCE_ID
-      ? topSurface
-      : null;
-
   useEffect(() => {
     if (conversation === null) {
-      setPreference((current) =>
-        current === 'adaptive' ? current : 'adaptive',
-      );
       return;
     }
 
@@ -120,7 +110,7 @@ export function WorldFocusDanteConversationPresentationController({
       }
 
       const sidecarPlan = resolveWorldFocusWorkspaceAllocation(
-        withConversationPresentedAsSidecar(workspace.state),
+        withConversationPresentedAsSidecar(state),
         allocation.workspaceInlineSize,
       );
       const sidecarPlacement = sidecarPlan.placements.find(
@@ -137,21 +127,21 @@ export function WorldFocusDanteConversationPresentationController({
       return;
     }
 
-    workspace.promoteSurface(
+    promoteSurface(
       conversation.instanceId,
       conversation.depth,
       desiredPresentation,
       {
-        worldId: workspace.state.worldId,
-        generation: workspace.state.generation,
+        worldId: state.worldId,
+        generation: state.generation,
       },
     );
   }, [
     allocation.workspaceInlineSize,
     conversation,
     preference,
-    workspace.promoteSurface,
-    workspace.state,
+    promoteSurface,
+    state,
   ]);
 
   const value = useMemo<WorldFocusDanteConversationPresentationContextValue>(
@@ -168,6 +158,41 @@ export function WorldFocusDanteConversationPresentationController({
     <WorldFocusDanteConversationPresentationContext.Provider value={value}>
       {children}
     </WorldFocusDanteConversationPresentationContext.Provider>
+  );
+}
+
+/**
+ * Owns only D2 presentation preference for the one contextual conversation
+ * surface. It does not own messages, a conversation transcript, model output,
+ * provider state, authorization, or durable DANTE Run lifetime.
+ *
+ * Adaptive mode asks the existing Workspace allocation resolver whether this
+ * exact surface can consume a real sidecar slot. If not, the same surface is
+ * promoted to the already-defined external `route` presentation. No viewport
+ * breakpoint or second responsive policy is introduced here.
+ *
+ * The keyed session deliberately remounts across idle -> active -> idle. That
+ * gives every newly opened conversation surface a fresh `adaptive` preference
+ * without an effect-driven state reset, while sidecar/route changes within the
+ * same open surface preserve the user's explicit maximize/restore preference.
+ */
+export function WorldFocusDanteConversationPresentationController({
+  children,
+}: WorldFocusDanteConversationPresentationControllerProps) {
+  const { state } = useWorldFocusWorkspace();
+  const topSurface = state.surfaces.at(-1) ?? null;
+  const conversation =
+    topSurface?.instanceId === WORLD_FOCUS_DANTE_CONVERSATION_INSTANCE_ID
+      ? topSurface
+      : null;
+
+  return (
+    <WorldFocusDanteConversationPresentationSession
+      key={conversation === null ? 'idle' : 'active'}
+      conversation={conversation}
+    >
+      {children}
+    </WorldFocusDanteConversationPresentationSession>
   );
 }
 
