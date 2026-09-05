@@ -236,25 +236,23 @@ export function WorldFocusDanteConversation({
   const closeRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
-    if (presentation.focusTransition.serial === 0) {
+    const transition = presentation.focusTransition;
+    if (transition.serial === 0 && surface.presentation !== 'route') {
       return;
     }
 
     queueMicrotask(() => {
-      if (
-        presentation.focusTransition.action === 'maximize' &&
-        surface.presentation === 'route'
-      ) {
-        restoreRef.current?.focus({ preventScroll: true });
-        return;
-      }
-
-      if (presentation.focusTransition.action === 'restore') {
-        if (surface.presentation === 'sidecar') {
-          maximizeRef.current?.focus({ preventScroll: true });
+      if (surface.presentation === 'route') {
+        if (transition.action === 'maximize') {
+          restoreRef.current?.focus({ preventScroll: true });
         } else {
           closeRef.current?.focus({ preventScroll: true });
         }
+        return;
+      }
+
+      if (transition.action === 'restore') {
+        maximizeRef.current?.focus({ preventScroll: true });
       }
     });
   }, [presentation.focusTransition, surface.presentation]);
