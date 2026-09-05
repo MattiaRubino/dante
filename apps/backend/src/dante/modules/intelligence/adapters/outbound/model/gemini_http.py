@@ -234,7 +234,7 @@ class GeminiInteractionsHttpTransport:
         usage = cast(dict[str, object], usage_raw) if isinstance(usage_raw, dict) else {}
         return GeminiInteractionsWireResponse(
             status=status,
-            interaction_id=_text(document.get("id"), field="missing_interaction_id"),
+            interaction_id=_optional_text(document.get("id"), field="invalid_interaction_id"),
             request_id=request_id,
             output_text=_model_output_text(document),
             input_tokens=_optional_nonnegative_int(usage.get("total_input_tokens")),
