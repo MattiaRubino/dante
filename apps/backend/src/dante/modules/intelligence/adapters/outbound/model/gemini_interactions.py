@@ -25,10 +25,7 @@ from dante.modules.intelligence.contracts.model_access import (
 
 GEMINI_INTERACTIONS_BINDING_REF = "google-gemini-interactions-flash-v1"
 GEMINI_INTERACTIONS_MODEL = "gemini-3.8-flash"
-GEMINI_INTERACTIONS_HARNESS_REF = "gemini-flash-low-v1"
-GEMINI_INTERACTIONS_ROUTE_REVISION = "gemini-flash-dev-v1"
 GEMINI_INTERACTIONS_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/interactions"
-_ALLOWED_TARGETS = frozenset({"structured_interpretation", "general_reasoning"})
 _REQUIRED_FEATURE_MODES = frozenset(
     {
         "streaming:off",
@@ -39,6 +36,7 @@ _REQUIRED_FEATURE_MODES = frozenset(
         "structured_output:on",
     }
 )
+_ALLOWED_REASONING_LEVELS = frozenset({"low", "medium", "high"})
 
 
 class GeminiInteractionStatus(StrEnum):
@@ -88,7 +86,7 @@ class GeminiInteractionsWireRequest:
             raise ValueError("system_instruction must be non-empty when present")
         if self.max_output_tokens <= 0:
             raise ValueError("max_output_tokens must be positive")
-        if self.thinking_level not in {"low", "medium", "high"}:
+        if self.thinking_level not in _ALLOWED_REASONING_LEVELS:
             raise ValueError("unsupported Gemini thinking level")
         if self.timeout_seconds <= 0:
             raise ValueError("timeout_seconds must be positive")
@@ -229,7 +227,7 @@ class GeminiInteractionsAdapter:
             structured_schema = loaded
 
         wire_request = GeminiInteractionsWireRequest(
-            model=GEMINI_INTERACTIONS_MODEL,
+            model=request.provider_model,
             input_text=request.rendered_input,
             system_instruction=request.rendered_instructions,
             max_output_tokens=request.max_output_tokens,
@@ -277,11 +275,8 @@ class GeminiInteractionsAdapter:
             )
         admitted = (
             request.provider_binding_ref == GEMINI_INTERACTIONS_BINDING_REF
-            and request.model_target_ref in _ALLOWED_TARGETS
             and request.provider_model == GEMINI_INTERACTIONS_MODEL
-            and request.harness_profile_ref == GEMINI_INTERACTIONS_HARNESS_REF
-            and request.route_config_identity.revision == GEMINI_INTERACTIONS_ROUTE_REVISION
-            and request.reasoning_level == "low"
+            and request.reasoning_level in _ALLOWED_REASONING_LEVELS
             and frozenset(request.feature_modes) == _REQUIRED_FEATURE_MODES
         )
         if admitted:
