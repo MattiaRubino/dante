@@ -5,6 +5,10 @@ import {
   WORLD_FOCUS_COMPOSITION_CUSTOMIZATION_SURFACE_KIND,
 } from './world-focus-composition-customization-context';
 import {
+  WorldFocusDanteConversation,
+  WORLD_FOCUS_DANTE_CONVERSATION_KIND,
+} from './world-focus-dante-conversation';
+import {
   WorldFocusDanteComposer,
   WORLD_FOCUS_DANTE_COMPOSER_KIND,
 } from './world-focus-dante-entry';
@@ -21,6 +25,10 @@ const CORE_WORLD_FOCUS_SURFACE_REGISTRY = new WorldFocusSurfaceRegistry<
     render: ({ onRequestClose }) => (
       <WorldFocusDanteComposer onRequestClose={onRequestClose} />
     ),
+  },
+  {
+    kind: WORLD_FOCUS_DANTE_CONVERSATION_KIND,
+    render: (props) => <WorldFocusDanteConversation {...props} />,
   },
   {
     kind: WORLD_FOCUS_COMPOSITION_CUSTOMIZATION_SURFACE_KIND,
