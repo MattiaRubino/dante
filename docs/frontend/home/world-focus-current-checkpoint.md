@@ -1,6 +1,6 @@
 # DANTE — World Focus Current Checkpoint
 
-**Status:** CURRENT LIVE WORLD FOCUS CHECKPOINT — M3 CLOSED / VALIDATED — M4 CONTEXTUAL DANTE ACTIVE / D2 CLOSED / D3 READ-ONLY PREFLIGHT NEXT  
+**Status:** CURRENT LIVE WORLD FOCUS CHECKPOINT — M3 CLOSED / VALIDATED — M4 CONTEXTUAL DANTE ACTIVE / D2–D3 CLOSED / D4 READ-ONLY PREFLIGHT NEXT  
 **Date:** 2026-09-05  
 **Branch:** `feature/home-react`  
 **Worktree:** `/home/mattia/projects/dante-frontend`
@@ -15,16 +15,17 @@ This is the first World Focus authority a new chat/agent must read. Historical `
 3. world-focus-handoff.md
 4. world-focus-evidence-index.md
 5. current-checkpoint.md
-6. world-focus-d2-adaptive-conversation-surface-review.md
-7. world-focus-m3-final-hostile-closure-review.md
-8. world-focus-m3-adaptive-composition.md
-9. world-focus-m3-4-integrated-adaptive-composition-review.md
-10. world-focus-dante-spatial-presence-review.md
-11. world-focus-d1-dante-entry-review.md
-12. world-focus-m2-shared-visual-primitives.md
-13. world-focus-m1-core-nonvisual-materialization-review.md
-14. world-focus-m0-materialization-mapping.md
-15. product/platform/structure/geometry contracts as needed
+6. world-focus-d3-deterministic-conversation-adapter-review.md
+7. world-focus-d2-adaptive-conversation-surface-review.md
+8. world-focus-m3-final-hostile-closure-review.md
+9. world-focus-m3-adaptive-composition.md
+10. world-focus-m3-4-integrated-adaptive-composition-review.md
+11. world-focus-dante-spatial-presence-review.md
+12. world-focus-d1-dante-entry-review.md
+13. world-focus-m2-shared-visual-primitives.md
+14. world-focus-m1-core-nonvisual-materialization-review.md
+15. world-focus-m0-materialization-mapping.md
+16. product/platform/structure/geometry contracts as needed
 ```
 
 # 2. Live sequence
@@ -54,10 +55,10 @@ M3-4 integrated adaptive composition     CLOSED / VALIDATED
 M3 final hostile closure                 CLOSED / PASS
 M4 Contextual DANTE / D2–D6             ACTIVE
 D2 adaptive conversation surface         CLOSED / VALIDATED
-D3 deterministic conversation adapter    READ-ONLY PREFLIGHT NEXT
-D4 contextual/deictic invocation         BLOCKED BY D3
+D3 deterministic conversation adapter    CLOSED / VALIDATED
+D4 contextual/deictic invocation         READ-ONLY PREFLIGHT NEXT
 D5 Insight presentation integration      BLOCKED BY D4
-D6 Proposal/confirmation/receipt          BLOCKED BY D5
+D6 Proposal/confirmation/receipt         BLOCKED BY D5
 M5 complete contrasting Worlds           BLOCKED BY M4
 M6 integrated product/visual/a11y/perf   BLOCKED BY M5
 M7 pre-backend frontend freeze           BLOCKED BY M6
@@ -102,6 +103,8 @@ renderer availability != mandatory mounting
 presentation geometry != conversation identity
 route presentation != automatically blocking interaction
 selected UI/context != authorization
+mounted frontend transcript != durable DANTE Run
+cancelled/aborted request != successful semantic result
 ```
 
 # 4. Closed M3 result
@@ -150,7 +153,7 @@ Detailed evidence: `world-focus-m3-final-hostile-closure-review.md`.
 
 # 5. D2 closed result
 
-D0's accepted adaptive-hybrid spatial contract is now executable:
+D0's accepted adaptive-hybrid spatial contract is executable:
 
 ```text
 wide viable workspace
@@ -175,8 +178,6 @@ presentation='route'
 
 Generic route surfaces remain external/non-blocking by default. DANTE route-focus explicitly carries `blocksWorkspaceInteraction=true`; that interaction law also acts as a barrier against weaker late surfaces. The allocator contains no DANTE-kind special case.
 
-Adaptive D2 does not introduce a second viewport breakpoint. It asks the existing allocator whether a hypothetical sidecar for the same surface can occupy a real split under the actual measured workspace geometry. If not, the same surface uses route focus.
-
 D2 final evidence:
 
 ```text
@@ -186,58 +187,107 @@ CI         33958677991 / run #969 PASS
 82 / 82 web test files
 399 / 399 web unit tests
 305 modules / 929 dependencies / 0 architecture violations
-Contracts / lint / typecheck / generated / build / diff / mutation PASS
-Mobile / Chromium / frozen Timeline Firefox / Frontend CI Gate PASS
 ```
-
-Final code/test compare from PRE-SCOPE is linear (`ahead 24`, `behind 0`, merge-base exactly PRE-SCOPE) with 15 net D2 code/test/i18n paths and no AppShell, Timeline, Access/Auth, generated-route-tree, backend/API/DB/Alembic/provider/LLM/persistence changes.
 
 Detailed evidence: `world-focus-d2-adaptive-conversation-surface-review.md`.
 
-# 6. D3 next starting point
+# 6. D3 closed result
 
-D3 now owns the deterministic **pre-backend** conversation adapter only.
+D3 fills the D2 structural conversation shell with a deterministic pre-backend conversation adapter while preserving all earlier owners.
 
-It must begin with read-only preflight and an exact bounded gate. Do not assume a message schema from a chatbot framework or future provider API.
+The live path is now:
 
-D3 must distinguish at least:
+```text
+D1 invoke/composer
+-> explicit submit
+-> atomic replacement into the existing `dante:conversation` surface
+-> D3 mounted transcript + typed request
+-> deterministic local runtime reader
+-> validated correlated answer | explanation
+   OR truthful unavailable/error/cancelled/superseded
+-> same D2 surface identity through sidecar <-> route focus
+```
+
+D3 owns only mounted frontend conversation state. It does not own canonical World truth, authorization, durable Run state, provider execution or persistence.
+
+Key executable laws:
 
 ```text
 user input != assistant output
 assistant output != canonical fact
-conversation state != World canonical state
-presentation geometry != conversation identity
-mounted frontend conversation lifetime != future durable DANTE Run lifetime
-cancelled/aborted read != successful semantic result
-late result from World/generation N != attachable to a newer World/generation
+mounted frontend transcript != future durable DANTE Run
+cancel/abort != semantic success
+old generation result != attachable to a newer generation
+one active DANTE conversation != two competing composers/surfaces
+composer -> conversation handoff != return focus to invoke
+actual conversation close -> exact original invoke focus return
 ```
 
-D3 remains pre-backend:
+The typed result validator fails closed on malformed, widened or incorrectly correlated results. Internal cancellation and generation supersession abort pending work and ignore late results.
+
+D3 reuses the existing Workspace host, D1 entry owner, D2 `dante:conversation` surface, measured allocator and finite registry. No second surface/conversation state engine exists.
+
+A hostile unit test exposed that the exact DANTE invoker could not survive D2's keyed presentation session when the invoker itself lived inside that keyed subtree. The fix moved stable invokes outside the keyed presentation session without reopening the Workspace/D2 allocator contract.
+
+Browser pressure proves wide sidecar, 390px route-owned focus, maximize/restore identity preservation, no horizontal overflow, compact close target >=44px, axe automated A/AA checks and exact invoker focus return after real close.
+
+Final D3 evidence:
+
+```text
+PRE-SCOPE 57520cf0570bc2be875e7140d066e45ddd9080d5
+CODE/TEST  59c70af6005ee87918db7fe152c043699726e78c
+CI         33963858340 / run #1009 PASS
+84 / 84 web test files
+410 / 410 web unit tests
+311 modules / 963 dependencies / 0 architecture violations
+Contracts / lint / typecheck / generated / build / diff / mutation PASS
+Mobile / Chromium / frozen Timeline Firefox / Frontend CI Gate PASS
+```
+
+Final code/test compare is linear (`ahead 23`, `behind 0`, merge-base exactly PRE-SCOPE) with 14 net D3 code/test/i18n paths and no Workspace allocator/model, AppShell, Timeline, Access/Auth, generated route-tree, backend/API/DB/Alembic/provider/LLM/persistence changes.
+
+Detailed evidence: `world-focus-d3-deterministic-conversation-adapter-review.md`.
+
+# 7. D4 next starting point
+
+D4 owns bounded **contextual/deictic invocation** only. It must start with a fresh read-only preflight and an exact RED-first gate.
+
+D4 should falsify the gap between ordinary text conversation and explicit bounded references such as:
+
+```text
+perché?
+confronta con prima
+aprimi la fonte
+continua da qui
+```
+
+The next slice must preserve:
+
+```text
+selected UI/context != authorization
+context reference != canonical truth
+reference exists != payload available != disclosable != fresh
+DOM/source payload != conversation state
+D3 typed request/result boundary remains bounded
+D2 presentation identity remains independent from geometry
+```
+
+D4 must not silently serialize arbitrary DOM/component state into DANTE requests. It must use explicit bounded reference structures and existing disclosure/reference owners where appropriate.
+
+D4 remains pre-backend:
 
 ```text
 NO provider/LLM call
 NO backend/API/DB/Alembic
 NO durable server/cross-device persistence
-NO D4 contextual/deictic reference widening
 NO D5 Insight collapse into ordinary message
 NO D6 Proposal/Decision/effect semantics
+NO frontend AuthZ invention
 ```
 
-Read/falsify before first D3 write:
+Read live D3/D2/D1 owners, existing World context/reference/disclosure seams and relevant tests before stating the write gate.
 
-```text
-D1 composer ownership and current submit behavior
-D2 conversation shell ownership and lifecycle
-Workspace world/generation guards
-existing cancellation/latest-read patterns in M1 application seams
-current finite result/truth distinctions
-current i18n/a11y/browser harness
-future seam boundaries from DANTE Intelligence architecture without importing backend DTOs early
-```
-
-Then state exact PRE-SCOPE / CREATE / UPDATE / DELETE / RED-FIRST / OUT-OF-SCOPE.
-
-# 7. Visual strategy agreed with user
+# 8. Visual strategy agreed with user
 
 ```text
 M4: implement the real DANTE interaction grammar; only structural visual check after M4
@@ -249,16 +299,16 @@ M7: pre-backend frontend freeze
 
 Do not spend M4 on cosmetic redesign unrelated to its interaction geometry.
 
-# 8. Stop lines
+# 9. Stop lines
 
 ```text
-NO D4 fake contextual widening inside D3
-NO D5/D6 early materialization
+NO D5/D6 early materialization inside D4
 NO second surface/workspace/conversation state engine
 NO AppShell/GlobalTopbar ownership rewrite
 NO WF0/WF-G3 macro geometry rewrite
 NO localStorage fake persistence
 NO backend/API/DB/Alembic/AuthZ/provider/LLM
+NO arbitrary DOM/component payload serialization as context
 NO claim of human visual acceptance from CI
 ```
 
