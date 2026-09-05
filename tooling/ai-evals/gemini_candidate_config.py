@@ -22,7 +22,7 @@ class GeminiCandidateConfig:
     reasoning_effort: str
 
     @classmethod
-    def from_environment(cls) -> "GeminiCandidateConfig":
+    def from_environment(cls) -> GeminiCandidateConfig:
         api_key = os.environ.get(_DANTE_KEY_ENV)
         if api_key is None or not api_key.strip():
             raise ValueError(
