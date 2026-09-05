@@ -1,6 +1,6 @@
 # DANTE — World Focus Current Checkpoint
 
-**Status:** CURRENT LIVE WORLD FOCUS CHECKPOINT — M4 CONTEXTUAL DANTE CLOSED / VALIDATED — MAIN RECONCILIATION NEXT  
+**Status:** CURRENT LIVE WORLD FOCUS CHECKPOINT — M4 CLOSED / VALIDATED — M5 CONTRASTING WORLDS ACTIVE  
 **Date:** 2026-09-05  
 **Branch:** `feature/home-react`  
 **Worktree:** `/home/mattia/projects/dante-frontend`
@@ -57,10 +57,11 @@ D4 contextual/deictic invocation         CLOSED / VALIDATED
 D5 Insight presentation integration      CLOSED / VALIDATED
 D6 Proposal/confirmation/receipt         CLOSED / VALIDATED
 M4 final hostile closure                 CLOSED / PASS
-M5 complete contrasting Worlds           NOT STARTED — AFTER MAIN RECONCILIATION
+M5 complete contrasting Worlds           ACTIVE — MUSIC VS TRAVEL FALSIFICATION
 M6 integrated product/visual/a11y/perf   BLOCKED BY M5
 M7 pre-backend frontend freeze           BLOCKED BY M6
 BACKEND                                  BLOCKED UNTIL M7
+main reconciliation                      DEFERRED UNTIL AFTER M5 BY USER DECISION
 human/manual visual review               NOT PERFORMED
 ```
 
@@ -198,52 +199,97 @@ OWNER-HARDENED CI  33986493932 / run #1071 PASS
 
 Detailed authority: `world-focus-d6-governed-operation-review.md`.
 
-# 7. Visual truth
+# 7. M5 active falsification
+
+M5 now proves that materially different Worlds can use the same finite production grammar and owners without page-specific forks.
+
+Current contrast:
 
 ```text
-automated structural/browser validation PASS
-wide/compact responsive pressure         PASS
-Chromium                                 PASS
-Firefox frozen Timeline                  PASS
-automated accessibility checks           PASS
-human/manual visual acceptance            NOT PERFORMED
+MUSIC
+Situation          READY
+Continuity         READY
+Attention          READY
+Next               READY
+Comparison         READY
+Trajectory         READY
+Evidence/History   READY
+
+TRAVEL target
+Situation          READY
+Continuity         READY
+Attention          EMPTY
+Next               READY
+Comparison         EMPTY
+Trajectory         EMPTY
+Evidence/History   READY
 ```
 
-Accepted sequence remains:
+The Travel absence states are deliberate semantic absence:
 
 ```text
-M4 complete -> structural visual check only
-M5 complete -> serious product/visual review
-M6 -> integrated visual/responsive/motion/a11y/performance refinement
+missing Attention != zero != failure
+missing Comparison != zero != Decision
+missing Trajectory != zero
+```
+
+M5 must retain the same:
+
+```text
+WorldFocusPage
+Workspace owner
+adaptive-composition engine
+finite renderer registry
+DANTE D2-D6 chain
+```
+
+No Travel-specific page, renderer engine, semantic owner or taxonomy fork is authorized.
+
+# 8. Visual truth and accepted scope
+
+```text
+automated structural/browser validation PASS through M4
+human/manual visual acceptance           NOT PERFORMED
+```
+
+Current user-authorized sequence:
+
+```text
+M5 -> structural/functionality validation of contrasting complete Worlds
+      no serious visual polish
+      no claim of human/manual visual acceptance
+
+M6 -> serious integrated visual/product refinement
+      responsive detail
+      motion
+      accessibility/performance refinement
+      final manual visual review recorded separately
+
 M7 -> pre-backend frontend freeze
 ```
 
-# 8. Immediate next step — integration before M5
+# 9. Immediate next step — M5
 
-Do **not** start M5 on this long-lived divergent branch.
-
-Next sequence:
+Proceed on the current `feature/home-react` branch under exact write gates.
 
 ```text
-freeze exact M4 closure SHA after documentation gate
--> fetch current protected main
--> inspect current divergence
--> reconcile main INTO feature/home-react under authority-based conflict ownership
--> full repository QA
--> documentation lifecycle cleanup
--> PR to protected main
--> merge commit only
--> protected-main readback
--> archive/delete feature/home-react only after verified merge
--> create a fresh bounded M5 branch from integrated main
+M5-A RED
+-> falsify Music vs Travel through the real adaptive-composition/runtime/page path
+-> prove Travel DANTE D4-D6 uses the same owners
+-> inspect exact failure
+-> fix only the existing fixture/display owner seam required by the evidence
+-> full frontend CI
+-> M5 hostile/final closure before declaring M5 complete
 ```
 
-The reconciliation step must follow current branch/integration authority. No rebase, squash or force-push.
+Main reconciliation is explicitly deferred until after M5 by user decision. No main write, merge, rebase, squash or force-push is authorized.
 
-# 9. Stop lines
+# 10. Stop lines
 
 ```text
-NO M5 implementation before main reconciliation
+NO serious visual polish in M5
+NO fake Travel clone of Music
+NO Travel-specific page/renderer/Workspace/composition/DANTE engine
 NO real effect execution
 NO backend/API/DB/Alembic/AuthZ/provider/LLM before sequence permits it
 NO second surface/workspace/conversation/operation engine
@@ -252,5 +298,6 @@ NO WF0/WF-G3 macro geometry rewrite
 NO localStorage fake persistence
 NO arbitrary DOM/component payload serialization as DANTE context
 NO claim of human visual acceptance from CI
-NO main/rebase/force-push without a separately approved integration gate
+NO main reconciliation/write during M5 without a separately approved gate
+NO rebase/squash/force-push
 ```
