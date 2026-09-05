@@ -65,7 +65,11 @@ function withConversationPresentedAsSidecar(
     surfaces: Object.freeze(
       state.surfaces.map((surface) =>
         surface.instanceId === WORLD_FOCUS_DANTE_CONVERSATION_INSTANCE_ID
-          ? Object.freeze({ ...surface, presentation: 'sidecar' as const })
+          ? Object.freeze({
+              ...surface,
+              presentation: 'sidecar' as const,
+              blocksWorkspaceInteraction: false,
+            })
           : surface,
       ),
     ),
@@ -122,8 +126,14 @@ function WorldFocusDanteConversationPresentationSession({
         ? ('sidecar' as const)
         : ('route' as const);
     })();
+    const desiredBlocksWorkspaceInteraction =
+      desiredPresentation === 'route';
 
-    if (conversation.presentation === desiredPresentation) {
+    if (
+      conversation.presentation === desiredPresentation &&
+      (conversation.blocksWorkspaceInteraction ?? false) ===
+        desiredBlocksWorkspaceInteraction
+    ) {
       return;
     }
 
@@ -135,6 +145,7 @@ function WorldFocusDanteConversationPresentationSession({
         worldId: state.worldId,
         generation: state.generation,
       },
+      desiredBlocksWorkspaceInteraction,
     );
   }, [
     allocation.workspaceInlineSize,
@@ -168,8 +179,10 @@ function WorldFocusDanteConversationPresentationSession({
  *
  * Adaptive mode asks the existing Workspace allocation resolver whether this
  * exact surface can consume a real sidecar slot. If not, the same surface is
- * promoted to the already-defined external `route` presentation. No viewport
- * breakpoint or second responsive policy is introduced here.
+ * promoted to the already-defined external `route` presentation. Route focus
+ * explicitly blocks the rectangular World workspace; generic route surfaces do
+ * not inherit that behavior. No viewport breakpoint or second responsive
+ * policy is introduced here.
  *
  * The keyed session deliberately remounts across idle -> active -> idle. That
  * gives every newly opened conversation surface a fresh `adaptive` preference
