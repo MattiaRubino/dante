@@ -22,7 +22,7 @@ MAX_HARD_INPUT_CHARS_PER_FIXTURE: Final = 16_000
 
 
 class TrialVerdict(StrEnum):
-    PASS = "PASS"  # noqa: S105 - verdict label, not a credential
+    PASS = "PASS"
     HARD_FAIL = "HARD_FAIL"
     QUALITY_FAIL = "QUALITY_FAIL"
     INVALID_FIXTURE = "INVALID_FIXTURE"
@@ -189,7 +189,7 @@ def _require_string(value: Any, *, field: str) -> str:
 
 def _parse_assertion(document: Any) -> AssertionSpec:
     if not isinstance(document, dict):
-        raise ValueError("assertion must be an object")
+        raise TypeError("assertion must be an object")
     kind = _require_string(document.get("kind"), field="assertion.kind")
     if kind not in {"equals", "not_equals", "set_equals", "contains", "not_contains"}:
         raise ValueError(f"unsupported assertion kind: {kind}")
@@ -210,7 +210,7 @@ def _parse_assertion(document: Any) -> AssertionSpec:
 
 def _parse_fixture(document: Any) -> EvalFixture:
     if not isinstance(document, dict):
-        raise ValueError("fixture must be an object")
+        raise TypeError("fixture must be an object")
 
     fixture_id = _require_string(document.get("id"), field="fixture.id")
     family = _require_string(document.get("family"), field=f"{fixture_id}.family")
@@ -223,12 +223,12 @@ def _parse_fixture(document: Any) -> EvalFixture:
 
     requires_model = document.get("requires_model")
     if not isinstance(requires_model, bool):
-        raise ValueError(f"{fixture_id}: requires_model must be boolean")
+        raise TypeError(f"{fixture_id}: requires_model must be boolean")
 
     input_text = document.get("input", "")
     instructions = document.get("instructions", "")
     if not isinstance(input_text, str) or not isinstance(instructions, str):
-        raise ValueError(f"{fixture_id}: input/instructions must be strings")
+        raise TypeError(f"{fixture_id}: input/instructions must be strings")
 
     max_output_tokens = document.get("max_output_tokens", 256)
     if (
@@ -246,7 +246,7 @@ def _parse_fixture(document: Any) -> EvalFixture:
 
     assertions_document = document.get("assertions", [])
     if not isinstance(assertions_document, list):
-        raise ValueError(f"{fixture_id}: assertions must be a list")
+        raise TypeError(f"{fixture_id}: assertions must be a list")
     assertions = tuple(_parse_assertion(item) for item in assertions_document)
 
     if requires_model and response_schema is None:
@@ -280,7 +280,7 @@ def _load_suite_document(path: Path, *, seen: frozenset[Path]) -> dict[str, Any]
 
     document = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(document, dict):
-        raise ValueError("suite document must be an object")
+        raise TypeError("suite document must be an object")
 
     if "base_suite" not in document:
         return document
@@ -308,7 +308,7 @@ def _load_suite_document(path: Path, *, seen: frozenset[Path]) -> dict[str, Any]
     replacements: dict[str, dict[str, Any]] = {}
     for replacement in replacements_document:
         if not isinstance(replacement, dict):
-            raise ValueError("fixture replacement must be an object")
+            raise TypeError("fixture replacement must be an object")
         fixture_id = _require_string(
             replacement.get("id"),
             field="fixture_replacement.id",
