@@ -33,7 +33,7 @@ Platform Observability current tree        INTEGRATED / ACCEPTED CANDIDATE
 observability source verification          13/13 PASS
 PostgreSQL/ACL integration acceptance      155/155 PASS
 backend readiness + Alloy                  PASS
-Web/Faro integrated production smoke       PASS
+Web/Faro integrated LOCAL production-build smoke PASS
 
 M6 Native Mobile                           FUTURE / OPTIONAL
 later Access/M7 maturity                   FUTURE
@@ -61,7 +61,7 @@ CHECK constraints    270
 
 The current cross-representation database contract remains aligned across the Dictionary, SQLAlchemy mappings, Alembic and real PostgreSQL. Platform Observability adds no DANTE business DDL, Alembic revision or SQLAlchemy business mapping.
 
-Its PostgreSQL operational reader is the provisioning-owned `dante_observer` role: `LOGIN INHERIT`, `pg_read_all_stats` only, no DANTE/public business-object access, no database `CREATE`/`TEMP`, and `search_path=pg_catalog`. The exact contract remains in `database/dante-postgresql-database-part-12.md` and the live provisioning/acceptance tests.
+Its PostgreSQL operational reader is the provisioning-owned `dante_observer` role: `LOGIN NOINHERIT`, with `pg_read_all_stats` membership using `INHERIT TRUE / SET FALSE / ADMIN FALSE`, no DANTE/public business-object access, no database `CREATE`/`TEMP`, and `search_path=pg_catalog`. The exact contract remains in `database/dante-postgresql-database-part-12.md` and the live provisioning/acceptance tests.
 
 ## 3. Accepted foundation evidence
 
@@ -82,7 +82,11 @@ observer role / membership / ACL proof           PASS
 backend bootstrap with observability enabled     PASS
 backend /health/ready                            HTTP 200
 Alloy readiness                                  PASS
-Web/Faro production-build smoke surface          PASS
+Web/Faro LOCAL production-build smoke surface    PASS
+Grafana Cloud metrics/logs/traces/Faro path      PASS
+Tempo route-attribute privacy boundary           PASS
+collector-outage failure isolation               PASS
+Grafana acceptance service account remote delete PASS
 ```
 
 The source workstream had already proved the real Grafana Cloud path for metrics, logs, traces, PostgreSQL statistics, black-box readiness and Web Faro/Web Vitals, plus dashboard/alert materialization and collector-outage failure isolation. That evidence is retained rather than rerun merely for repetition.
@@ -94,7 +98,7 @@ Dedicated Google/Apple, passkey, Auth-lifecycle and Email-to-central-OTel domain
 The implementation integration work is complete on the current tree. The remaining repository gate is bounded:
 
 ```text
-documentation lifecycle reconciliation
+documentation lifecycle reconciliation              PASS
 → integration/platform-observability-v2 → protected-main PR
 → mandatory PR/merge CI
 → protected-main reachability establishes final integration state
