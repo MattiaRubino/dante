@@ -1,13 +1,25 @@
 # DANTE — Temporal Frontend Production-Depth Roadmap
 
-**Status:** ACTIVE AUTHORITY — C1 MANUAL UX ITERATION / C2 BLOCKED  
-**Reconciled:** 2026-09-04  
-**Workstream:** `feature/home-timeline`  
-**Worktree:** `/home/mattia/projects/dante-timeline`  
-**Integration target:** `feature/home-react`  
+**Status:** ACTIVE AUTHORITY — INTEGRATION CANDIDATE / C1 OPEN / C2 BLOCKED  
+**Reconciled:** 2026-09-05  
+**Candidate branch:** `feature/home-timeline`  
+**Current `main` integrated through:** `7bc7c0136cb5579528be1e2be0e71a6399004f90`  
 **F0 closed:** `7034b9b0d100709785ebe96e3816aab3e7b1d1f8`  
-**Current code checkpoint:** `1e7b7752b69f006a4b632e2e2d3ef1522d30e95e`  
-**Checkpoint CI:** #937 / `33905239085` — FULL GREEN
+**Live validation authority:** current CI on the exact branch HEAD; historical run IDs are evidence only
+
+## 0. Integration state
+
+The Home/Timeline/Temporal frontend workstream is now reconciled onto the current `main` platform baseline on `feature/home-timeline`.
+
+This is an integration state change, not a product-semantic shortcut:
+
+```text
+branch technically integrated with current main
+!=
+C1 manually accepted
+```
+
+No PR is opened by this roadmap update. Before PR creation, the exact final branch HEAD must be reviewed and its current CI must be green or any non-green state explicitly understood and resolved.
 
 ## 1. Frozen foundations
 
@@ -25,7 +37,7 @@ Typed temporal application seam: commands/results/queries, Clock, deterministic 
 
 ## 2. C1 — Manual Temporal Create
 
-**Current state: OPEN.** Automated candidate is green, but product/manual refinement is still active.
+**Current state: OPEN.** Automated implementation candidate exists, but final product/manual acceptance has not been granted.
 
 ### Completed foundation
 
@@ -51,9 +63,9 @@ Typed temporal application seam: commands/results/queries, Clock, deterministic 
 
 ### C1-P — Manual product polish — ACTIVE
 
-From this point, work **one issue at a time**. Do not package several UX ideas together.
+When C1 work resumes, handle **one product issue at a time**. Do not package several UX ideas together.
 
-Current candidate to inspect manually:
+Current candidate behavior to judge manually:
 
 ```text
 click +
@@ -87,7 +99,7 @@ The current local UI may therefore show the authored first/master placement whil
 C1 closes only when:
 
 1. remaining user-selected UX foundation issues are resolved one-by-one;
-2. final automated gates are green;
+2. final automated gates are green for the relevant candidate;
 3. the user performs one coherent final manual pass;
 4. the user explicitly says `C1 MANUAL PASS — APPROVED`.
 
@@ -149,8 +161,17 @@ Timeline ViewModel != application model != DTO != DB row
 
 C1 remains pre-backend/manual. No fake provider, persistence, solver, recurrence materialization or notification success.
 
-## 7. Immediate next step
+## 7. Integration closure / next step
 
 Do not autonomously start a new feature.
 
-The user should first test the current floating/non-modal Create foundation. The next implementation scope is whichever **single** UX issue the user chooses after that check.
+The immediate repository sequence is:
+
+```text
+final CI on documentation-closure HEAD
+→ editor/reviewer inspection
+→ bounded fixes only if review finds concrete defects
+→ explicit authorization for PR
+```
+
+After repository integration work is complete, C1 product/manual iteration may resume from the current candidate. C2 stays blocked until explicit C1 manual approval.
