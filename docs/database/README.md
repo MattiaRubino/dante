@@ -113,12 +113,12 @@ Ownership, migration and runtime privileges remain independently tested. Applica
 Exact posture:
 
 ```text
-LOGIN / INHERIT
+LOGIN / NOINHERIT
 NOSUPERUSER / NOCREATEDB / NOCREATEROLE / NOREPLICATION / NOBYPASSRLS
 CONNECT dante
 NO database CREATE / TEMP
 search_path = pg_catalog
-pg_read_all_stats membership only
+pg_read_all_stats membership only (INHERIT TRUE / SET FALSE / ADMIN FALSE)
 NO dante/public schema usage
 NO DANTE business-object privileges
 NO DANTE application-role membership
