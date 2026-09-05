@@ -120,7 +120,7 @@ current human DB reference
 
 ```text
 accepted Platform Observability integration candidate
-→ documentation lifecycle gate
+→ documentation lifecycle gate PASS
 → integration/platform-observability-v2 → protected-main PR
 → mandatory CI / merge evidence
 → future bounded workstreams from enriched main
