@@ -1,197 +1,279 @@
-# DANTE — Access frontend contract
+# DANTE — Access Web Contract
 
-- **Status:** CURRENT / AUTHORITATIVE FOR THE MATERIALIZED PRE-BACKEND FRONTEND
-- **Scope:** Web Access frontend baseline already implemented in `apps/web`; product/backend Auth remains a later full-stack vertical
-- **Frozen design source:** `prototype/access-system` at `469b68370e80185fa8a16d5335845e402ee1de3b`
+- **Status:** CURRENT / AUTHORITATIVE ON PROTECTED MAIN
+- **Last reconciled:** 2026-09-04
+- **Protected-main integration:** PR #52 / `5f76ec54ad78542f137e8730e904f805d9e59e56`
+- **Architecture:** `../architecture/access-auth-architecture.md`
+- **Security:** `../architecture/access-auth-security-contract.md`
+- **M5:** `../architecture/access-auth-m5-contract.md`
+- **Workstream closure:** `../workstreams/access-auth.md`
+- **Email Platform:** `../architecture/email-platform.md`
+- **Real Email evidence:** `../development/email-platform-acceptance-2026-09-03.md`
 
-## Purpose
+## 1. Purpose
 
-Access gets an unauthenticated person to an authenticated DANTE session and, for a new account, through the smallest useful first-run handoff.
+Access moves an unauthenticated person through real DANTE authentication/account lifecycle into a server-authoritative AuthSession. The same product boundary supports password, Google, Apple and passkeys without creating parallel Account/session authorities.
 
-This document owns the current production-frontend contract carried forward from the frozen Access design work and the completed `feature/access-frontend` materialization. Implementation truth remains the checked-out code/tests. The frozen prototype branch is historical design evidence and must not override newer production code or this current contract.
-
-## Product invariants
+## 2. Permanent semantics
 
 ```text
 Person != Account != Principal != Actor
-sign-in != external-integration authorization
-provider state != canonical DANTE state
-provider authentication != permission to read provider data
+AuthSession != DANTE Session
+provider identity != provider email
+provider authentication != provider-data authorization
 verification != profile setup
-reauthentication != initial sign-in
-client integrity != person identity
+reauthentication != initial signin
+frontend/provider callback != backend-authoritative success
+unknown/loading != signed-out
+method != factor != assurance
 ```
 
-Google/Apple sign-in authenticates a DANTE account only. Gmail, Calendar, iCloud and other provider-data permissions are separate explicit integration flows.
+## 3. Visual baseline
 
-## Accepted visual direction
-
-Desktop/web review authority remains A3.4. Mobile design authority remains M1.2 + PRG-0.
-
-The materialized Web composition preserves:
+Preserve the accepted Access composition unless a real product defect requires change:
 
 ```text
-warm full canvas
-+ open left brand stage
-+ muted Living Orbits
-+ locked DANTE topbar
-+ compact locale control
-+ separate rounded/shadowed Access card
+warm open canvas
+Living Orbits / DANTE brand stage
+locked topbar
+compact locale control
+separate rounded Access card
+responsive mobile-Web composition
 ```
 
-Approved hero copy:
+Hero copy:
 
 ```text
 IT  Comprendi la vita. / Dai forma al prossimo passo.
 EN  Understand life. / Shape what comes next.
 ```
 
-Mobile is not a scaled desktop. Native Mobile Access is not implemented by this frontend workstream and remains a later product implementation gate.
+Provider controls use official provider interaction/branding rather than fake DANTE account-chooser UI.
 
-## Canonical Access states
+## 4. Current runtime capability
 
-```text
-SIGN_IN
-SIGN_UP_EMAIL
-SIGN_UP_PASSWORD
-VERIFY_EMAIL
-FORGOT_PASSWORD
-RECOVERY_SENT
-RESET_PASSWORD
-RESET_COMPLETE
-PROVIDER_PENDING
-PROVIDER_ERROR
-ACCOUNT_LINK
-AUTHENTICATED_RETURN
-REAUTH
-SETUP_NAME
-SETUP_LOCALE
-SETUP_START
-FIRST_ACTION
-IMPORT
-DEMO
-HOME_HANDOFF
-```
-
-Orthogonal frontend conditions are not account states:
+Materialized and proved:
 
 ```text
-idle
-backend-required
-offline
-server-unavailable
-rate-limited
+email/password signin
+critical session bootstrap
+logout
+signup initiation
+six-digit email OTP verification/resend
+neutral recovery initiation
+memory-only recovery bearer + URL scrub
+password reset + fresh signin
+password reauthentication + bearer rotation
+Google sign-in/link/reauth browser integration
+Apple begin/continuation browser integration
+provider enrollment + mailbox proof
+provider link-required + explicit confirmation
+passkey signin/register/reauth/rename/remove
+password establish/remove
+/security authenticator inventory/management
+backend anti-lockout
+IT/EN localization
 ```
 
-Permanent authority rule:
+This supersedes old statements that runtime ends at M4 or that M5 Web semantics are not materialized.
+
+## 5. Application/transport ownership
 
 ```text
-frontend-owned transition
-→ may advance locally
+TanStack Router
+→ navigation/bootstrap only
 
-backend-authoritative transition
-→ remain on the safe current state
-→ never fabricate verification/authentication/recovery/link/session success
+Access feature
+→ product/application Auth behavior
+
+TanStack Query
+→ remote lifecycle only
+
+Web Auth platform adapters
+→ same-origin transport + Google/WebAuthn browser integration
+
+@dante/api-client
+→ governed generated wire contract
+
+backend + PostgreSQL
+→ canonical Auth truth
 ```
 
-## Materialized frontend baseline
+No presentation component may decide that Google/passkey/browser completion means DANTE authentication succeeded.
 
-The completed pre-backend Web materialization includes:
+Email provider details are also not Web authority. Access UI triggers/consumes Auth lifecycle; the shared backend Email Platform owns durable delivery and provider interaction.
 
-- production SignIn shell and complete approved Access surface inventory;
-- staged signup, recovery/reset, provider pending/error, account-link, reauth and lightweight setup/first-run surfaces;
-- feature-local Access state model and reducer tests;
-- IT/EN resources and persisted locale preference with `<html lang>` synchronization;
-- local frontend validation without fake backend success;
-- password show/hide, paste and password-manager-safe behavior;
-- browser offline integration;
-- design-token and feature-boundary enforcement;
-- Testing Library coverage;
-- Playwright production-preview coverage;
-- axe accessibility automation;
-- responsive release-matrix coverage including phone, tablet/narrow, compact desktop and large desktop pressure;
-- reduced-motion and overflow checks;
-- final large-desktop auth-card width refined to a 480px maximum while preserving compact-desktop behavior.
+## 6. Session bootstrap and rotation
 
-The accepted Web frontend is intentionally backend-incomplete rather than backed by a disposable fake Auth service.
+Hard document load resolves/prefetches `/auth/session` before the first business render. Unknown/loading is never painted as signed-out.
 
-## Password policy
+When a mutation creates/rotates/revokes AuthSession authority, the application boundary cancels the exact in-flight session query before committing the authoritative result to avoid stale read overwrite.
+
+Web Auth state is process/query memory only; no session JWT/token goes to localStorage/sessionStorage/IndexedDB.
+
+## 7. Password UX
 
 ```text
-minimum                    12 characters
-support                    >=64 characters
-mandatory composition      none
-paste/password manager     allowed
-show/hide                   allowed
-common/breached blocklist  required server-side
+minimum                 15 Unicode code points
+support                 >=64 characters
+composition rules       none
+paste/password managers first-class
+show/hide               allowed
+silent truncation       forbidden
+compromised screening   server-side HIBP
+periodic forced change  no absent security reason
 ```
 
-Do not add arbitrary composition rules merely because another product uses them.
+The backend current contract additionally bounds password input at 1024 Unicode code points and 4096 normalized UTF-8 bytes; the Web must not impose a smaller silent limit. Password is optional. Provider/passkey-created Accounts may add it later; it can be removed only when backend anti-lockout says the Account remains viable.
 
-## Provider, verification, recovery and session contract
+## 8. Google Web UX
 
-Provider authentication must use the current official provider mechanism/assets where required. DANTE owns transaction binding, pending/failure feedback, backend validation handoff, collision/linking UX and authenticated return; it does not fake provider chooser/consent UI or collect provider credentials.
-
-Account collision must follow:
+Current flow:
 
 ```text
-collision
-→ prove control of existing DANTE account
-→ explicit link decision
-→ backend-authoritative link
+DANTE /google/begin
+→ DANTE transaction + nonce
+→ official Google Identity Services renderButton
+→ real Google credential evidence
+→ DANTE /google/complete
+→ authenticated | enrollment_required | link_required | safe failure
 ```
 
-Recovery start remains neutral to account existence. Verification/recovery proofs are backend-owned, short-lived and replay/single-use aware. Backend session state remains authoritative for bootstrap, expiry, revocation and reauthentication.
+Current browser adapter uses GIS `https://accounts.google.com/gsi/client`, `use_fedcm_for_button`, `auto_select=false` and `button_auto_select=false`.
 
-Never log or persist raw password, OTP, recovery proof, OAuth authorization code, PKCE verifier, provider token/assertion, access token, refresh token or session secret outside the approved security design.
+Do not regress to a DANTE-drawn fake Google chooser or provider-token-as-session model.
 
-## Accessibility and responsive quality
+The live Google UAT proved the third-party-mailbox path: Google identity proof succeeded, but DANTE still required direct mailbox proof before Account creation because Google was not authoritative for that mailbox.
 
-Release target is WCAG 2.2 AA-quality behavior. Automated axe is necessary but not sufficient; keyboard/focus behavior, text expansion, zoom, reduced motion, mobile/touch usability and product review remain part of acceptance for changed surfaces.
-
-Representative Web pressure includes at least phone widths around 390–430px, tablet/narrow around 768–820px, compact desktop around 1024–1280px, accepted desktop around 1440–1536px and large desktop where composition can become too sparse or wide.
-
-## Architecture boundary
-
-The real integration path is:
+## 9. Apple Web UX
 
 ```text
-FastAPI stable Auth OpenAPI
-→ generated typed client (`@dante/api-client` / current repository authority)
-→ remote-state/query boundary where justified
-→ existing Access state graph
-→ real provider/session/recovery flows
-→ full-stack E2E
+DANTE /apple/begin
+→ redirect only to appleid.apple.com
+→ Apple form_post/backend callback
+→ server validation/exchange
+→ fixed DANTE return target
 ```
 
-Do not introduce a fake-success Auth adapter merely to make the frontend reachable.
+No Apple transaction secret becomes JavaScript storage authority. Private Email Relay is respected; users choosing Hide My Email are not forced to disclose an unrelated “real” mailbox.
 
-## Not implemented by this closed frontend workstream
+Real Apple registered-domain UAT remains open/deferred.
 
-The following are not claimed complete:
+## 10. Passkey UX
 
 ```text
-real account creation / credential authentication
-email verification proof validation
-recovery proof validation / reset mutation
-Google / Apple backend transaction validation
-secure account linking
-session establishment/bootstrap/expiry/revocation
-reauthentication backend behavior
-server rate-limit/error mapping
-stable Auth OpenAPI
-generated real Auth client binding
-frontend/backend Auth integration
-full-stack isolated E2E
-real authenticated Home handoff
-final Terms/Privacy destinations/content
-native Mobile Access
+Use a passkey
+→ browser/platform authenticator selector
+→ navigator.credentials.get/create
+→ backend FIDO2 verification
+→ canonical DANTE AuthSession or credential mutation
 ```
 
-These belong to the next bounded full-stack Access/Auth product vertical. That vertical starts from current protected `main`; it does not reopen this completed pre-backend frontend materialization unless real integration proves a frontend defect or required contract adjustment.
+Support discoverable username-less signin and multiple passkeys. DANTE does not build a fake authenticator chooser or claim that all user verification is biometric.
 
-## Quality / change rule
+Live Windows Hello UAT proved registration, persistence, reauth and passwordless signin.
 
-Future Access UI changes remain allowed after backend integration. Pure visual polish can change layout, spacing, typography, geometry or motion under normal review without redesigning backend semantics. Changes to state meaning, provider/linking behavior, session/recovery semantics or backend-authoritative transitions require full-stack contract review.
+## 11. Security management
 
-Production code never imports prototype implementation. Frozen Access prototype material remains recoverable on `prototype/access-system`; current production truth is this document plus current code/tests and later full-stack contracts.
+Current `/security` supports:
+
+```text
+current authenticator inventory
+password present/absent
+add/remove password
+provider linked identities + link/unlink
+passkey add/rename/remove
+password/passkey/provider reauthentication where configured
+recent-auth feedback
+anti-lockout errors
+```
+
+Backend authority decides removals. Live UAT proved that removing a password is allowed when a passkey remains and removing the final remaining passkey is rejected.
+
+## 12. Recovery
+
+Public recovery remains anti-enumeration neutral.
+
+```text
+request
+→ shared Email Platform durable intent
+→ real email proof
+→ one-use recovery bearer
+→ create-or-replace PasswordCredential as applicable
+→ revoke prior sessions
+→ fresh signin required
+→ password-reset security notification
+```
+
+Final real SES UAT on 2026-09-03 directly proved:
+
+```text
+recovery email received in a real mailbox
+recovery link opened the DANTE reset surface
+password reset succeeded
+reset did not auto-login
+previous authenticated session was revoked
+password-change security notification arrived
+```
+
+The exact same consumed recovery link was not manually opened a second time in that final live run because the message had already been removed before that check. Do not label same-link replay rejection as manually observed evidence from this UAT.
+
+## 13. Signup email verification
+
+Final real SES UAT directly proved the normal password-signup browser path:
+
+```text
+Create account
+→ DANTE signup challenge + durable EmailIntent
+→ SES provider_accepted
+→ real mailbox receives six-digit verification mail
+→ user enters received code
+→ verification succeeds
+→ Account created
+```
+
+This replaces the old claim that signup/recovery Internet delivery was still open.
+
+## 14. Accessibility / responsive quality
+
+Release target remains WCAG 2.2 AA-quality behavior. Group-4 browser tests cover accessibility/keyboard/focus/responsive concerns across the canonical browser matrix. Provider/passkey native dialogs remain browser/platform-owned.
+
+## 15. Current evidence
+
+Automated product evidence:
+
+```text
+format/typecheck/lint/architecture PASS
+Web unit/component PASS
+Auth Playwright PASS across Chromium/Firefox/WebKit
+protected-main Frontend Quality PASS
+protected-main Web E2E PASS
+protected-main Mobile Bundle PASS
+protected-main Frontend CI Gate PASS
+```
+
+Manual/real-boundary evidence:
+
+```text
+password/session/security-management PASS
+Windows Hello passkey PASS
+Google real-provider PASS
+real SES signup verification PASS
+real SES password recovery PASS
+real SES reset-notification PASS
+post-reset no-auto-login PASS
+post-reset previous-session revocation PASS
+PostgreSQL direct inspection PASS
+```
+
+Exact Email Platform live evidence: `../development/email-platform-acceptance-2026-09-03.md`.
+
+Protected-main integration evidence: PR #52 merged at `5f76ec54ad78542f137e8730e904f805d9e59e56`; the merge tree matched the accepted final candidate tree and post-merge Frontend CI passed.
+
+## 16. Remaining product maturity
+
+M7 should add session/device inventory, remote revoke, new-login/security-event response and final authenticated Home handoff. The large Security page should also be componentized by bounded responsibility without changing accepted semantics.
+
+Production email sender-domain/DNS/reputation and live cloud-event routing are deployment/operations concerns, not reasons to reopen the Access Web recovery/signup implementation.
+
+Current protected-main implementation/code/tests plus current workstream/status documents beat older branch-local/pre-M5 phase labels.

@@ -4,7 +4,11 @@ Production backend application for DANTE.
 
 CP1 established the Python/process/configuration foundation. CP2 established the reproducible LOCAL PostgreSQL 18.4 image/envelope and direct phase-time evidence. CP3 activated application persistence, Alembic authority, PostgreSQL role separation and the real PostgreSQL acceptance harness. CP4 established calibrated CI and protected-main enforcement. CP5 re-proved the integrated scaffold end to end on the canonical WSL2/Linux workstation. PR #24 merged the closed scaffold into protected `main`.
 
-CP6 then consumed that foundation and is now **CLOSED / CONCRETE POSTGRESQL DATABASE PASS / INTEGRATED VIA PR #42**. The concrete DANTE PostgreSQL database was derived from the closed Domain + Logical + Physical model, materialized through the reviewed Alembic DAG plus the forward-only CP6-05 hardening revision, directly tested on PostgreSQL 18.6 and verified on the persistent LOCAL cluster at revision `20260826_08`.
+CP6 then consumed that foundation and is **CLOSED / CONCRETE POSTGRESQL DATABASE PASS / INTEGRATED VIA PR #42**. Its protected-main integration baseline was revision `20260826_08`.
+
+The PostgreSQL Recovery workstream added forward revision `20260830_09`, retirement/anti-resurrection integrity and a complete LOCAL pgBackRest restore/PITR operator rehearsal. PR #47 integrated that accepted Recovery evolution into protected `main`.
+
+Access/Auth M1–M5 and the shared Email Platform evolved forward from the same CP6 baseline through `20260904_16`. Protected-main Recovery and Access/Auth/Email histories were preserved and joined with no-DDL Alembic merge revision `20260904_17`; PR #52 then integrated the accepted combined foundation into protected `main` at `5f76ec54ad78542f137e8730e904f805d9e59e56`. Post-merge Backend and Frontend CI passed on that exact merge commit.
 
 ## Current status
 
@@ -26,33 +30,69 @@ CP6 CLOSED / CONCRETE POSTGRESQL DATABASE PASS
 PR #42 MERGED INTO PROTECTED main
 
 POSTGRESQL 18.6
-PERSISTENT LOCAL ALEMBIC 20260826_08
-FINAL TOPOLOGY 68 tables / 5 views / 14 routines / 75 triggers /
-               95 indexes / 68 FKs / 120 CHECKs
+HISTORICAL PRE-RECOVERY ALEMBIC 20260826_08
+HISTORICAL PRE-RECOVERY TOPOLOGY 68 / 5 / 14 / 75 / 95 / 68 / 120
+
+HISTORICAL RECOVERY-ONLY MAIN BEFORE PR #52
+Alembic                     20260830_09
+Topology                    69 / 5 / 15 / 76 / 97 / 69 / 123
+Recovery PR                 #47
+
+CURRENT PROTECTED MAIN
+Access integration merge    5f76ec54ad78542f137e8730e904f805d9e59e56
+Alembic                     20260904_17
+Topology                    88 / 5 / 16 / 76 / 172 / 89 / 270
+Access/Auth M1–M5           CLOSED / INTEGRATED
+Shared Email Platform       CLOSED / INTEGRATED / OWNERSHIP VERIFIED
+Recovery                    CLOSED / INTEGRATED
+CP07 LOCAL Recovery         PASS
+post-merge Backend CI       PASS
+post-merge Frontend CI      PASS
 ```
 
-Protected-main CP6 integration:
+The CP07 proof on implementation HEAD `81639c61478b476c995652d0060dde8f53aef089` earned `DATABASE LOCAL REOPEN = PASS` against `20260904_17 / 88|5|16|76|172|89|270|0|0|0`, proved old protected-payload physical resurrection followed by suppression-ledger reconciliation, and rejected protected-payload reinsertion. Remote backup provider activation and production/cloud recovery remain **NOT CLAIMED**.
+
+Protected-main integration milestones:
 
 ```text
-final feature HEAD  9297b64c7c912c2cc8e344a6617beb5c91457bbb
-PR                  #42
-merge commit        117360b9333fd1a8a62d0dfeb0398a4d5811e393
-status              MERGED
+CP6 final feature HEAD       9297b64c7c912c2cc8e344a6617beb5c91457bbb
+CP6 PR                       #42
+CP6 merge commit             117360b9333fd1a8a62d0dfeb0398a4d5811e393
+
+Recovery final head          e46ae3d9d5918b27ebf86f4e291b51312f1e7c4d
+Recovery PR                  #47
+Recovery merge commit        bdd2b2370d41423dbaecd00fde86bb2bf2466f2b
+
+Access implementation proof 81639c61478b476c995652d0060dde8f53aef089
+Access final candidate       6cee5506d404d0684b0679aca54c03f0ca433c72
+Access integration PR        #52
+Access merge commit          5f76ec54ad78542f137e8730e904f805d9e59e56
 ```
 
 Current backend transition boundary:
 
 ```text
 CP6 CLOSED + INTEGRATED
-concrete PostgreSQL database available on protected main
         ↓
-POST-CP6 PRODUCT IMPLEMENTATION
-new bounded vertical branch only when explicitly started
+RECOVERY EVOLUTION 20260830_09 + LOCAL RECOVERY SYSTEM
+CLOSED + INTEGRATED
         ↓
-normal forward schema evolution only for genuine new requirements
+ACCESS/AUTH M1–M5 + SHARED EMAIL PLATFORM
+CLOSED + INTEGRATED
+        ↓
+NO-DDL ALEMBIC CONVERGENCE 20260904_17
+        ↓
+COMBINED CI + REAL POSTGRESQL + CP07
+PASS
+        ↓
+PR #52 + POST-MERGE MAIN CI
+PASS / INTEGRATED
+        ↓
+OBSERVABILITY INTEGRATION
+NEXT
 ```
 
-There is no remaining CP6 alignment/merge step. Final CP6 closure evidence lives in `docs/development/backend-cp6-05-whole-database-qa.md`; the consolidated historical branch record lives in `docs/archive/branches/2026-08-feature-logical-postgresql.md` and is non-authoritative for current state.
+There is no remaining CP6, Recovery or Access/Auth integration step. Final CP6 closure evidence lives in `docs/development/backend-cp6-05-whole-database-qa.md`; current Recovery operation lives in `docs/operations/postgres-recovery-runbook.md`; durable combined integration evidence lives in `docs/workstreams/access-auth-integration-acceptance-2026-09-04.md`; historical branch records remain non-authoritative for current state.
 
 ## Runtime contract
 
@@ -138,7 +178,11 @@ Historical CP6 branch chronology lives in:
 
 `docs/archive/branches/2026-08-feature-logical-postgresql.md`
 
-No live/session CP6 handoff is current authority after integration.
+Historical Recovery branch chronology lives in:
+
+`docs/archive/branches/2026-08-feature-postgres-recovery.md`
+
+No live/session CP6, Recovery or Access/Auth handoff is current authority after integration.
 
 ## LOCAL database security provisioning
 
@@ -148,9 +192,12 @@ The PostgreSQL container starts with the platform/bootstrap administrator `postg
 dante_owner      NOLOGIN ownership identity
 dante_migrator   LOGIN migration identity
 dante_runtime    LOGIN application runtime identity
+dante_observer   LOGIN statistics-only collector identity
 ```
 
-Provisioning is intentionally separate from FastAPI startup and Alembic. Supply admin, migrator and runtime credentials only to the provisioning command/process.
+Provisioning is intentionally separate from FastAPI startup and Alembic. Supply
+admin, migrator, runtime and observer credentials only to the provisioning
+command/process.
 
 Conceptual invocation from `apps/backend`:
 
@@ -162,10 +209,15 @@ DANTE_ADMIN__USER=postgres \
 DANTE_ADMIN__PASSWORD='<local admin secret>' \
 DANTE_MIGRATOR__PASSWORD='<local migrator secret>' \
 DANTE_RUNTIME__PASSWORD='<local runtime secret>' \
+DANTE_OBSERVER__PASSWORD='<independent local observer secret>' \
 uv run python -m dante.platform.database.provisioning
 ```
 
 Do not commit these secrets or reuse LOCAL credentials in DEV/UAT/PROD.
+
+`dante_observer` inherits only `pg_read_all_stats`, has `search_path=pg_catalog`
+and has no DANTE business-object privileges. It exists for the external
+PostgreSQL metrics collector and is never a backend runtime fallback.
 
 ## Alembic
 
@@ -180,9 +232,17 @@ DDL owner role       dante_owner via explicit SET ROLE
 
 Migration commands must receive the dedicated migrator password separately from runtime config. Normal application startup never runs migrations.
 
-The migration history begins with the technical CP3 baseline `20260820_01`. CP6 materialized the concrete business database through the reviewed M1..M7 linear stages and the final forward-only CP6-05 hardening revision `20260826_08`. Applied migration history is immutable; later corrections use new forward revisions.
+The migration history begins with the technical CP3 baseline `20260820_01`. CP6 materialized the concrete business database through the reviewed M1..M7 linear stages and the CP6-05 hardening revision `20260826_08`. Recovery then added sibling forward revision `20260830_09` for MaterialState retirement/anti-resurrection integrity. Access/Auth and Email evolved independently from `20260826_08` through `20260904_16`. Protected `main` preserves both histories and joins them with forward no-DDL merge revision `20260904_17`.
 
-PostgreSQL server patch maintenance such as 18.4 → 18.6 is platform/image maintenance and does not rewrite Alembic business/schema history.
+```text
+20260826_08
+├── 20260830_09 Recovery
+└── 20260827_09 → ... → 20260904_16 Access/Auth + Email
+
+20260830_09 + 20260904_16 → 20260904_17
+```
+
+Applied migration history is immutable; later corrections use new forward revisions. PostgreSQL server patch maintenance such as 18.4 → 18.6 is platform/image maintenance and does not rewrite Alembic business/schema history.
 
 A later product vertical that genuinely needs a schema change must evolve the database through normal reviewed forward migration and keep SQLAlchemy, Dictionary, human-readable reference and direct tests aligned in the same change.
 
@@ -227,6 +287,8 @@ autoflush=True
 ```
 
 The outer application-operation boundary owns commit/rollback. Persistence adapters never commit implicitly. There is no generic `Repository[T]` or generic Unit of Work in the closed scaffold.
+
+Provider/network I/O remains forbidden inside authoritative PostgreSQL transactions. For Email delivery, canonical feature mutation + durable EmailIntent may share one transaction; provider I/O occurs only after commit and ambiguity is never blindly retried.
 
 ## API documentation behavior
 
@@ -323,7 +385,7 @@ Backend CI Gate               SUCCESS
 current test corpus           50 / 50 covered across the two mandatory CI lanes
 ```
 
-This remains historical **DIRECT REMOTE QA PASS for the technical PostgreSQL 18.6 foundation regression**. It predates and does not replace the final CP6-05 76-test disposable PostgreSQL acceptance and persistent LOCAL closure proof.
+This remains historical **DIRECT REMOTE QA PASS for the technical PostgreSQL 18.6 foundation regression**. It predates and does not replace the final CP6-05 disposable PostgreSQL acceptance, later Recovery proof or current integrated protected-main acceptance.
 
 ## CP6 final direct acceptance evidence
 
@@ -356,20 +418,63 @@ GET /health/ready                 200 {"status":"ready"}
 
 See `docs/development/backend-cp6-05-whole-database-qa.md` for the full closure record, including historical failures and repairs.
 
+## Access/Auth + Email + Recovery integration evidence
+
+Exact accepted implementation proof HEAD:
+
+```text
+81639c61478b476c995652d0060dde8f53aef089
+```
+
+GitHub Actions on that exact HEAD:
+
+```text
+Dependency Review              PASS
+Frontend CI                    PASS
+Backend Quality                PASS
+Backend PostgreSQL             PASS
+Backend CI Gate                PASS
+```
+
+The real PostgreSQL lane includes the current migration/catalog/constraint/ACL acceptance suite against PostgreSQL 18.6. The CP07 whole LOCAL operator rehearsal then independently re-proved the accepted head/topology after restore and semantic reconciliation.
+
+```text
+Alembic                        20260904_17
+topology                       88|5|16|76|172|89|270|0|0|0
+DATABASE LOCAL REOPEN          PASS
+old protected X resurrection  PROVEN
+ledger reconciliation         PASS
+payload reinsertion           REJECTED
+```
+
+PR #52 merged the final candidate `6cee5506d404d0684b0679aca54c03f0ca433c72` into protected main at `5f76ec54ad78542f137e8730e904f805d9e59e56`. The merge tree matches the final candidate tree exactly. Post-merge Backend Quality, real PostgreSQL acceptance, Backend CI Gate, Frontend Quality, Web E2E, Mobile Bundle and Frontend CI Gate all passed.
+
+See `docs/workstreams/access-auth-integration-acceptance-2026-09-04.md` for the durable integration record and `docs/operations/postgres-recovery-runbook.md` for the operator contract.
+
 ## Post-CP6 boundaries
 
-The concrete PostgreSQL database is closed and integrated. Post-CP6 work may consume it and may evolve it through normal reviewed forward migrations when a genuine application requirement appears.
+The concrete PostgreSQL kernel, Recovery evolution, Access/Auth M1–M5 and shared Email Platform are closed and integrated on protected `main` at `20260904_17`.
 
 Database existence alone still does **not** authorize or prove:
 
-- first-product-vertical application persistence adapters/use cases;
-- product API routes merely because database objects exist;
-- frontend behavior;
-- AuthN/AuthZ product implementation;
+- arbitrary product API routes merely because database objects exist;
+- frontend behavior outside accepted feature scope;
 - direct AI database access;
-- PowerSync, Restate, PgBouncer or pgBackRest activation merely because selected;
-- transactional outbox implementation without a real Class-A requirement;
+- PowerSync, Restate or PgBouncer activation merely because selected;
+- remote/cloud backup-provider activation merely because LOCAL pgBackRest recovery is implemented;
 - automatic deadlock/serialization retries without operation-specific safety/idempotency design;
-- production deployment or blanket Physical HG/PSV PASS.
+- production deployment or blanket Physical HG/PSV PASS;
+- Apple real registered-domain acceptance without the external prerequisites and real UAT;
+- production Email sender-domain/DNS/reputation/workload-identity acceptance from development SES UAT.
 
-The next backend product work must start as a new bounded post-CP6 vertical from current protected `main`. The active Access frontend workstream creates a concrete future need for real Auth/backend integration, but no backend product branch is considered started merely because that frontend need exists.
+Current sequence:
+
+```text
+enriched protected main
+→ feature/platform-observability
+→ observability integration/release rechecks
+→ protected-main Observability PR
+→ future bounded workstreams
+```
+
+Future new verticals start only from the then-current enriched protected `main` under an explicit bounded gate.

@@ -16,7 +16,10 @@ from dante.platform.config.database import (
 OWNER_ROLE = "dante_owner"
 MIGRATOR_ROLE = "dante_migrator"
 RUNTIME_ROLE = "dante_runtime"
-_DANTE_ROLES = frozenset((OWNER_ROLE, MIGRATOR_ROLE, RUNTIME_ROLE))
+OBSERVER_ROLE = "dante_observer"
+_POSTGRES_STATS_ROLE = "pg_read_all_stats"
+_DANTE_ROLES = frozenset((OWNER_ROLE, MIGRATOR_ROLE, RUNTIME_ROLE, OBSERVER_ROLE))
+_ALLOWED_EXTERNAL_MEMBERSHIPS = frozenset({(_POSTGRES_STATS_ROLE, OBSERVER_ROLE)})
 
 
 class ProvisioningSettings(BaseSettings):
@@ -31,6 +34,7 @@ class ProvisioningSettings(BaseSettings):
     admin_password: SecretStr = Field(validation_alias="DANTE_ADMIN__PASSWORD")
     migrator_password: SecretStr = Field(validation_alias="DANTE_MIGRATOR__PASSWORD")
     runtime_password: SecretStr = Field(validation_alias="DANTE_RUNTIME__PASSWORD")
+    observer_password: SecretStr = Field(validation_alias="DANTE_OBSERVER__PASSWORD")
     connect_timeout_seconds: ConnectTimeoutSeconds = Field(
         default=5,
         validation_alias="DANTE_DATABASE__CONNECT_TIMEOUT_SECONDS",
@@ -51,6 +55,9 @@ async def _ensure_roles_and_schema(connection: AsyncConnection[Any]) -> None:
             IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'dante_runtime') THEN
                 CREATE ROLE dante_runtime LOGIN;
             END IF;
+            IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'dante_observer') THEN
+                CREATE ROLE dante_observer LOGIN;
+            END IF;
         END
         $$
         """,
@@ -59,6 +66,8 @@ async def _ensure_roles_and_schema(connection: AsyncConnection[Any]) -> None:
         "ALTER ROLE dante_migrator LOGIN NOINHERIT NOSUPERUSER NOCREATEDB "
         "NOCREATEROLE NOREPLICATION NOBYPASSRLS",
         "ALTER ROLE dante_runtime LOGIN NOINHERIT NOSUPERUSER NOCREATEDB "
+        "NOCREATEROLE NOREPLICATION NOBYPASSRLS",
+        "ALTER ROLE dante_observer LOGIN NOINHERIT NOSUPERUSER NOCREATEDB "
         "NOCREATEROLE NOREPLICATION NOBYPASSRLS",
         "REVOKE CREATE ON SCHEMA public FROM PUBLIC",
         "CREATE SCHEMA IF NOT EXISTS dante AUTHORIZATION dante_owner",
@@ -76,8 +85,12 @@ async def _reconcile_role_memberships(connection: AsyncConnection[Any]) -> None:
         FROM pg_auth_members AS membership
         JOIN pg_roles AS granted ON granted.oid = membership.roleid
         JOIN pg_roles AS member ON member.oid = membership.member
-        WHERE granted.rolname IN ('dante_owner', 'dante_migrator', 'dante_runtime')
-           OR member.rolname IN ('dante_owner', 'dante_migrator', 'dante_runtime')
+        WHERE granted.rolname IN (
+                  'dante_owner', 'dante_migrator', 'dante_runtime', 'dante_observer'
+              )
+           OR member.rolname IN (
+                  'dante_owner', 'dante_migrator', 'dante_runtime', 'dante_observer'
+              )
         """
     )
     rows = [(str(row[0]), str(row[1])) for row in await result.fetchall()]
@@ -85,7 +98,8 @@ async def _reconcile_role_memberships(connection: AsyncConnection[Any]) -> None:
     external_edges = [
         (granted_role, member_role)
         for granted_role, member_role in rows
-        if granted_role not in _DANTE_ROLES or member_role not in _DANTE_ROLES
+        if (granted_role not in _DANTE_ROLES or member_role not in _DANTE_ROLES)
+        and (granted_role, member_role) not in _ALLOWED_EXTERNAL_MEMBERSHIPS
     ]
     if external_edges:
         raise RuntimeError(
@@ -94,6 +108,8 @@ async def _reconcile_role_memberships(connection: AsyncConnection[Any]) -> None:
         )
 
     for granted_role, member_role in rows:
+        if (granted_role, member_role) in _ALLOWED_EXTERNAL_MEMBERSHIPS:
+            continue
         await connection.execute(
             sql.SQL("REVOKE {} FROM {}").format(
                 sql.Identifier(granted_role),
@@ -103,6 +119,10 @@ async def _reconcile_role_memberships(connection: AsyncConnection[Any]) -> None:
 
     await connection.execute(
         "GRANT dante_owner TO dante_migrator WITH INHERIT FALSE, SET TRUE, ADMIN FALSE"
+    )
+    await connection.execute("REVOKE pg_read_all_stats FROM dante_observer")
+    await connection.execute(
+        "GRANT pg_read_all_stats TO dante_observer WITH INHERIT TRUE, SET FALSE, ADMIN FALSE"
     )
 
 
@@ -114,25 +134,31 @@ async def _configure_database_privileges(
     statements = (
         sql.SQL("REVOKE CONNECT, TEMPORARY, CREATE ON DATABASE {} FROM PUBLIC").format(database),
         sql.SQL(
-            "REVOKE TEMPORARY, CREATE ON DATABASE {} FROM dante_migrator, dante_runtime"
+            "REVOKE TEMPORARY, CREATE ON DATABASE {} "
+            "FROM dante_migrator, dante_runtime, dante_observer"
         ).format(database),
-        sql.SQL("GRANT CONNECT ON DATABASE {} TO dante_migrator, dante_runtime").format(database),
+        sql.SQL(
+            "GRANT CONNECT ON DATABASE {} TO dante_migrator, dante_runtime, dante_observer"
+        ).format(database),
         sql.SQL(
             "ALTER ROLE dante_runtime IN DATABASE {} SET search_path = pg_catalog, dante, pg_temp"
         ).format(database),
         sql.SQL(
             "ALTER ROLE dante_migrator IN DATABASE {} SET search_path = pg_catalog, dante, pg_temp"
         ).format(database),
+        sql.SQL("ALTER ROLE dante_observer IN DATABASE {} SET search_path = pg_catalog").format(
+            database
+        ),
     )
     for statement in statements:
         await connection.execute(statement)
 
     await connection.execute(
-        "REVOKE ALL ON SCHEMA public FROM PUBLIC, dante_migrator, dante_runtime"
+        "REVOKE ALL ON SCHEMA public FROM PUBLIC, dante_migrator, dante_runtime, dante_observer"
     )
     await connection.execute("GRANT USAGE ON SCHEMA public TO dante_owner")
     await connection.execute(
-        "REVOKE ALL ON SCHEMA dante FROM PUBLIC, dante_migrator, dante_runtime"
+        "REVOKE ALL ON SCHEMA dante FROM PUBLIC, dante_migrator, dante_runtime, dante_observer"
     )
     await connection.execute("GRANT USAGE ON SCHEMA dante TO dante_runtime")
 
@@ -151,6 +177,7 @@ async def _configure_credentials(
     credentials = (
         (MIGRATOR_ROLE, settings.migrator_password),
         (RUNTIME_ROLE, settings.runtime_password),
+        (OBSERVER_ROLE, settings.observer_password),
     )
     for role_name, password in credentials:
         connection.pgconn.change_password(
@@ -166,9 +193,13 @@ async def _configure_owner_defaults(connection: AsyncConnection[Any]) -> None:
     try:
         statements = (
             "ALTER DEFAULT PRIVILEGES IN SCHEMA dante REVOKE ALL ON TABLES FROM dante_runtime",
+            "ALTER DEFAULT PRIVILEGES IN SCHEMA dante REVOKE ALL ON TABLES FROM dante_observer",
             "ALTER DEFAULT PRIVILEGES IN SCHEMA dante REVOKE ALL ON SEQUENCES FROM dante_runtime",
+            "ALTER DEFAULT PRIVILEGES IN SCHEMA dante REVOKE ALL ON SEQUENCES FROM dante_observer",
             "ALTER DEFAULT PRIVILEGES IN SCHEMA dante REVOKE ALL ON TYPES FROM dante_runtime",
+            "ALTER DEFAULT PRIVILEGES IN SCHEMA dante REVOKE ALL ON TYPES FROM dante_observer",
             "ALTER DEFAULT PRIVILEGES IN SCHEMA dante REVOKE ALL ON ROUTINES FROM dante_runtime",
+            "ALTER DEFAULT PRIVILEGES IN SCHEMA dante REVOKE ALL ON ROUTINES FROM dante_observer",
             "ALTER DEFAULT PRIVILEGES REVOKE EXECUTE ON ROUTINES FROM PUBLIC",
             "ALTER DEFAULT PRIVILEGES REVOKE USAGE ON TYPES FROM PUBLIC",
         )
@@ -192,6 +223,13 @@ async def _reconcile_technical_runtime_privileges(
         $$
         """
     )
+    statements = (
+        "REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA dante FROM dante_observer",
+        "REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA dante FROM dante_observer",
+        "REVOKE ALL PRIVILEGES ON ALL ROUTINES IN SCHEMA dante FROM dante_observer",
+    )
+    for statement in statements:
+        await connection.execute(statement)
 
 
 async def _verify_security_posture(
@@ -203,7 +241,7 @@ async def _verify_security_posture(
         SELECT rolname, rolcanlogin, rolinherit, rolsuper, rolcreatedb,
                rolcreaterole, rolreplication, rolbypassrls
         FROM pg_roles
-        WHERE rolname IN ('dante_owner', 'dante_migrator', 'dante_runtime')
+        WHERE rolname IN ('dante_owner', 'dante_migrator', 'dante_runtime', 'dante_observer')
         """
     )
     role_rows = await role_result.fetchall()
@@ -212,6 +250,7 @@ async def _verify_security_posture(
         OWNER_ROLE: (False, True, False, False, False, False, False),
         MIGRATOR_ROLE: (True, False, False, False, False, False, False),
         RUNTIME_ROLE: (True, False, False, False, False, False, False),
+        OBSERVER_ROLE: (True, False, False, False, False, False, False),
     }
     if roles != expected_roles:
         raise RuntimeError("DANTE role attributes failed P0 reconciliation")
@@ -225,8 +264,12 @@ async def _verify_security_posture(
         FROM pg_auth_members AS membership
         JOIN pg_roles AS granted ON granted.oid = membership.roleid
         JOIN pg_roles AS member ON member.oid = membership.member
-        WHERE granted.rolname IN ('dante_owner', 'dante_migrator', 'dante_runtime')
-           OR member.rolname IN ('dante_owner', 'dante_migrator', 'dante_runtime')
+        WHERE granted.rolname IN (
+                  'dante_owner', 'dante_migrator', 'dante_runtime', 'dante_observer'
+              )
+           OR member.rolname IN (
+                  'dante_owner', 'dante_migrator', 'dante_runtime', 'dante_observer'
+              )
         """
     )
     membership_rows = await membership_result.fetchall()
@@ -236,6 +279,7 @@ async def _verify_security_posture(
     }
     expected_memberships = {
         (OWNER_ROLE, MIGRATOR_ROLE, False, False, True),
+        (_POSTGRES_STATS_ROLE, OBSERVER_ROLE, False, True, False),
     }
     if normalized_memberships != expected_memberships:
         raise RuntimeError("DANTE role membership graph failed P0 reconciliation")
@@ -248,9 +292,15 @@ async def _verify_security_posture(
             has_database_privilege('dante_runtime', %s, 'CREATE'),
             has_database_privilege('dante_migrator', %s, 'CONNECT'),
             has_database_privilege('dante_migrator', %s, 'TEMP'),
-            has_database_privilege('dante_migrator', %s, 'CREATE')
+            has_database_privilege('dante_migrator', %s, 'CREATE'),
+            has_database_privilege('dante_observer', %s, 'CONNECT'),
+            has_database_privilege('dante_observer', %s, 'TEMP'),
+            has_database_privilege('dante_observer', %s, 'CREATE')
         """,
         (
+            database_name,
+            database_name,
+            database_name,
             database_name,
             database_name,
             database_name,
@@ -260,7 +310,17 @@ async def _verify_security_posture(
         ),
     )
     database_row = await database_result.fetchone()
-    if database_row is None or tuple(database_row) != (True, False, False, True, False, False):
+    if database_row is None or tuple(database_row) != (
+        True,
+        False,
+        False,
+        True,
+        False,
+        False,
+        True,
+        False,
+        False,
+    ):
         raise RuntimeError("DANTE database privileges failed P0 reconciliation")
 
     schema_result = await connection.execute(
@@ -271,11 +331,22 @@ async def _verify_security_posture(
             has_schema_privilege('dante_runtime', 'public', 'USAGE'),
             has_schema_privilege('dante_runtime', 'public', 'CREATE'),
             has_schema_privilege('dante_migrator', 'dante', 'USAGE'),
-            has_schema_privilege('dante_migrator', 'public', 'USAGE')
+            has_schema_privilege('dante_migrator', 'public', 'USAGE'),
+            has_schema_privilege('dante_observer', 'dante', 'USAGE'),
+            has_schema_privilege('dante_observer', 'public', 'USAGE')
         """
     )
     schema_row = await schema_result.fetchone()
-    if schema_row is None or tuple(schema_row) != (True, False, False, False, False, False):
+    if schema_row is None or tuple(schema_row) != (
+        True,
+        False,
+        False,
+        False,
+        False,
+        False,
+        False,
+        False,
+    ):
         raise RuntimeError("DANTE schema privileges failed P0 reconciliation")
 
     owner_password_result = await connection.execute(

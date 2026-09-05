@@ -1,9 +1,28 @@
+import { useEffect, useRef } from 'react';
+
+import {
+  appleAuthenticationEnabledFromBuild,
+  googleAuthenticationEnabledFromBuild,
+  ProviderBrowserUnavailableError,
+  renderGoogleIdentityButton,
+} from '../application/auth-ui-boundary';
+
 type AccessProvider = 'google' | 'apple';
 
 type ProviderButtonProps = Readonly<{
   provider: AccessProvider;
   label: string;
   onClick?: () => void;
+  disabled?: boolean;
+}>;
+
+export type GoogleIdentityButtonProps = Readonly<{
+  label: string;
+  clientId: string | null;
+  nonce: string | null;
+  onCredential: (credential: string) => void;
+  onError: (error: ProviderBrowserUnavailableError) => void;
+  disabled?: boolean;
 }>;
 
 function GoogleMark() {
@@ -52,11 +71,113 @@ function AppleMark() {
   );
 }
 
+export function GoogleIdentityButton({
+  label,
+  clientId,
+  nonce,
+  onCredential,
+  onError,
+  disabled = false,
+}: GoogleIdentityButtonProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const configured = googleAuthenticationEnabledFromBuild();
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (
+      !configured ||
+      container === null ||
+      clientId === null ||
+      nonce === null
+    ) {
+      return;
+    }
+    let active = true;
+    void renderGoogleIdentityButton({
+      container,
+      clientId,
+      nonce,
+      onCredential: (credential) => {
+        if (active) {
+          onCredential(credential);
+        }
+      },
+      onError: (error) => {
+        if (active) {
+          onError(error);
+        }
+      },
+    }).catch((error: unknown) => {
+      if (!active) {
+        return;
+      }
+      onError(
+        error instanceof ProviderBrowserUnavailableError
+          ? error
+          : new ProviderBrowserUnavailableError(
+              'Google sign-in could not initialize its official button.',
+            ),
+      );
+    });
+    return () => {
+      active = false;
+      container.replaceChildren();
+    };
+  }, [clientId, configured, nonce, onCredential, onError]);
+
+  if (!configured) {
+    return null;
+  }
+
+  if (clientId === null || nonce === null) {
+    return (
+      <button
+        className="access-provider-button"
+        type="button"
+        disabled={disabled}
+        aria-label={label}
+        aria-busy={disabled || undefined}
+        onClick={() =>
+          onError(
+            new ProviderBrowserUnavailableError(
+              'Google sign-in is temporarily unavailable.',
+            ),
+          )
+        }
+      >
+        <span className="access-provider-mark" aria-hidden="true">
+          <GoogleMark />
+        </span>
+        <span>{label}</span>
+      </button>
+    );
+  }
+
+  return (
+    <div
+      className="access-google-button-shell"
+      data-disabled={disabled ? 'true' : 'false'}
+      aria-label={label}
+      aria-disabled={disabled}
+    >
+      <div ref={containerRef} className="access-google-button-host" />
+    </div>
+  );
+}
+
 export function ProviderButton({
   provider,
   label,
   onClick,
+  disabled = false,
 }: ProviderButtonProps) {
+  if (
+    (provider === 'apple' && !appleAuthenticationEnabledFromBuild()) ||
+    (provider === 'google' && !googleAuthenticationEnabledFromBuild())
+  ) {
+    return null;
+  }
+
   const iconClassName =
     provider === 'apple'
       ? 'access-provider-mark access-provider-mark-apple'
@@ -68,6 +189,7 @@ export function ProviderButton({
       type="button"
       data-provider={provider}
       onClick={onClick}
+      disabled={disabled}
     >
       <span className={iconClassName} aria-hidden="true">
         {provider === 'google' ? <GoogleMark /> : <AppleMark />}

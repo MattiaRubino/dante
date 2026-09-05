@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
@@ -10,39 +11,101 @@ beforeAll(async () => {
 
 afterEach(() => {
   cleanup();
+  vi.unstubAllEnvs();
 });
 
-function renderPanel() {
+type Availability = Readonly<{
+  google?: boolean;
+  apple?: boolean;
+  passkey?: boolean;
+}>;
+
+function renderPanel({
+  google = true,
+  apple = true,
+  passkey = true,
+}: Availability = {}) {
+  vi.stubEnv('VITE_DANTE_GOOGLE_CLIENT_ID', google ? 'google-client-id' : '');
+  vi.stubEnv('VITE_DANTE_APPLE_ENABLED', apple ? 'true' : 'false');
+  vi.stubEnv('VITE_DANTE_PASSKEY_ENABLED', passkey ? 'true' : 'false');
+
   const handlers = {
     onCreateAccount: vi.fn(),
     onForgotPassword: vi.fn(),
     onCredentialSubmit: vi.fn(),
-    onProvider: vi.fn(),
+    onApple: vi.fn(),
+    googleCredential: vi.fn(),
+    googleError: vi.fn(),
   };
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  });
 
-  render(<AccessSignInPanel condition={{ kind: 'idle' }} {...handlers} />);
+  render(
+    <QueryClientProvider client={queryClient}>
+      <AccessSignInPanel
+        condition={{ kind: 'idle' }}
+        onCreateAccount={handlers.onCreateAccount}
+        onForgotPassword={handlers.onForgotPassword}
+        onCredentialSubmit={handlers.onCredentialSubmit}
+        onApple={handlers.onApple}
+        google={{
+          clientId: null,
+          nonce: null,
+          pending: false,
+          onCredential: handlers.googleCredential,
+          onError: handlers.googleError,
+        }}
+      />
+    </QueryClientProvider>,
+  );
 
   return handlers;
 }
 
 describe('AccessSignInPanel', () => {
-  it('exposes localized sign-in controls and a working password visibility control', () => {
-    renderPanel();
+  it('keeps providers primary and reveals passkey only through the alternate-method disclosure', () => {
+    const handlers = renderPanel();
 
     expect(
       screen.getByRole('heading', { level: 1, name: 'Accedi a DANTE' })
         .textContent,
     ).toBe('Accedi a DANTE');
 
-    const googleButton = screen.getByRole('button', {
+    const googleButton = screen.getByRole<HTMLButtonElement>('button', {
       name: 'Continua con Google',
     });
     const appleButton = screen.getByRole('button', {
       name: 'Continua con Apple',
     });
+    const alternateMethods = screen.getByRole('button', {
+      name: 'Usa un altro metodo',
+    });
 
-    expect(googleButton.getAttribute('data-provider')).toBe('google');
+    expect(googleButton.disabled).toBe(false);
+    fireEvent.click(googleButton);
+    expect(handlers.googleError).toHaveBeenCalledTimes(1);
     expect(appleButton.getAttribute('data-provider')).toBe('apple');
+    expect(alternateMethods.getAttribute('aria-expanded')).toBe('false');
+    expect(
+      screen.queryByRole('button', { name: 'Accedi con passkey' }),
+    ).toBeNull();
+
+    fireEvent.click(alternateMethods);
+
+    const passkeyButton = screen.getByRole('button', {
+      name: /Accedi con passkey/,
+    });
+    expect(alternateMethods.getAttribute('aria-expanded')).toBe('true');
+    expect(passkeyButton.closest('.access-provider-stack')).toBeNull();
+    expect(
+      screen.getByText(
+        'Usa una passkey già registrata su questo dispositivo o nel tuo password manager.',
+      ),
+    ).toBeTruthy();
 
     const emailInput = screen.getByLabelText<HTMLInputElement>('Email');
     const passwordInput = screen.getByLabelText<HTMLInputElement>('Password');
@@ -72,13 +135,11 @@ describe('AccessSignInPanel', () => {
       screen.getByRole('button', { name: 'Password dimenticata?' }),
     );
     fireEvent.click(screen.getByRole('button', { name: 'Crea un account' }));
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Continua con Google' }),
-    );
+    fireEvent.click(screen.getByRole('button', { name: 'Continua con Apple' }));
 
     expect(handlers.onForgotPassword).toHaveBeenCalledTimes(1);
     expect(handlers.onCreateAccount).toHaveBeenCalledTimes(1);
-    expect(handlers.onProvider).toHaveBeenCalledWith('google');
+    expect(handlers.onApple).toHaveBeenCalledTimes(1);
 
     fireEvent.click(screen.getByRole('button', { name: 'Accedi' }));
     expect(handlers.onCredentialSubmit).not.toHaveBeenCalled();
@@ -99,5 +160,24 @@ describe('AccessSignInPanel', () => {
       'person@example.com',
       'correct horse battery staple',
     );
+  });
+
+  it('does not render dead provider or passkey controls when a build disables them', () => {
+    renderPanel({ google: false, apple: false, passkey: false });
+
+    expect(
+      screen.queryByRole('button', { name: 'Continua con Google' }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: 'Continua con Apple' }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: 'Usa un altro metodo' }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: /Accedi con passkey/ }),
+    ).toBeNull();
+    expect(screen.getByLabelText('Email')).toBeTruthy();
+    expect(screen.getByLabelText('Password')).toBeTruthy();
   });
 });

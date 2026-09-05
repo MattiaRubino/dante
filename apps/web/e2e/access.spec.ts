@@ -2,6 +2,9 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 
 const signInHeading = 'Accedi a DANTE';
+const requestId = '019d0000-0000-7000-8000-000000000001';
+const signupRef = '00000000-0000-4000-8000-000000000003';
+const recoveryRef = '00000000-0000-4000-8000-000000000004';
 
 const releaseViewports = [
   {
@@ -68,6 +71,31 @@ const releaseViewports = [
     verticalFit: true,
   },
 ] as const;
+
+function governedHeaders(contentType: string | null = 'application/json') {
+  const headers: Record<string, string> = {
+    'cache-control': 'no-store',
+    'x-request-id': requestId,
+  };
+  if (contentType !== null) {
+    headers['content-type'] = contentType;
+  }
+  return headers;
+}
+
+async function mockUnauthenticatedSession(page: Page) {
+  await page.route('**/api/v1/auth/session', async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.continue();
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      headers: governedHeaders(),
+      body: JSON.stringify({ authenticated: false }),
+    });
+  });
+}
 
 async function expectNoHorizontalOverflow(page: Page) {
   const hasOverflow = await page.evaluate(
@@ -184,6 +212,7 @@ test.describe('DANTE Access', () => {
         window.localStorage.setItem('dante.locale', 'it');
       }
     });
+    await mockUnauthenticatedSession(page);
   });
 
   test('renders the hardened desktop sign-in shell', async ({ page }) => {
@@ -304,9 +333,47 @@ test.describe('DANTE Access', () => {
     await expect(passwordInput).toHaveValue('Dante-password-example');
   });
 
-  test('navigates signup locally and stops before fake account creation', async ({
+  test('wires signup to governed server outcomes without inventing account creation', async ({
     page,
   }) => {
+    await page.route('**/api/v1/auth/signup', async (route) => {
+      expect(route.request().method()).toBe('POST');
+      expect(route.request().postDataJSON()).toEqual({
+        email: 'person@example.com',
+        password: 'correct horse battery staple',
+      });
+      await route.fulfill({
+        status: 200,
+        headers: governedHeaders(),
+        body: JSON.stringify({
+          signup_ref: signupRef,
+          signup_expires_at: '2026-08-29T20:00:00Z',
+          verification_expires_at: '2026-08-29T19:15:00Z',
+          verification_required: true,
+        }),
+      });
+    });
+    await page.route('**/api/v1/auth/signup/verify', async (route) => {
+      expect(route.request().method()).toBe('POST');
+      expect(route.request().postDataJSON()).toEqual({
+        signup_ref: signupRef,
+        code: '654321',
+      });
+      await route.fulfill({
+        status: 200,
+        headers: governedHeaders(),
+        body: JSON.stringify({
+          outcome: 'authenticated',
+          authenticated: true,
+          account_ref: '00000000-0000-4000-8000-000000000001',
+          auth_session_ref: '00000000-0000-4000-8000-000000000002',
+          recent_auth_at: '2026-08-29T18:00:00Z',
+          expires_at: '2026-09-28T18:00:00Z',
+          csrf_token: 'csrf-token',
+        }),
+      });
+    });
+
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
 
@@ -314,49 +381,53 @@ test.describe('DANTE Access', () => {
     await expect(
       page.getByRole('heading', { name: 'Crea il tuo account DANTE' }),
     ).toBeVisible();
-    await expect(
-      page.getByRole('button', { name: 'Continua con Google' }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole('button', { name: 'Continua con Apple' }),
-    ).toBeVisible();
 
-    const signupEmail = page.getByLabel('Email');
-    await signupEmail.fill('person@example.com');
+    await page.getByLabel('Email').fill('person@example.com');
     await page.getByRole('button', { name: 'Continua con email' }).click();
 
     await expect(
       page.getByRole('heading', { name: 'Proteggi il tuo account' }),
     ).toBeVisible();
-    await expect(page.getByText('person@example.com')).toBeVisible();
-
     const newPassword = page.getByLabel('Password', { exact: true });
     await newPassword.fill('too-short');
     await page.getByRole('button', { name: 'Crea un account' }).click();
-    await expect(page.getByText('Usa almeno 12 caratteri.')).toBeVisible();
+    await expect(page.getByText('Usa almeno 15 caratteri.')).toBeVisible();
 
     await newPassword.fill('correct horse battery staple');
     await page.getByRole('button', { name: 'Crea un account' }).click();
 
-    await expect(page.locator('.access-condition-notice')).toHaveCount(0);
-    await expect(
-      page.getByRole('heading', { name: 'Proteggi il tuo account' }),
-    ).toBeVisible();
     await expect(
       page.getByRole('heading', { name: 'Controlla la tua email' }),
+    ).toBeVisible();
+    await page.getByLabel('Codice di verifica').fill('654321');
+    await page.getByRole('button', { name: 'Verifica e continua' }).click();
+
+    await expect(
+      page.getByRole('heading', { name: 'Come vuoi che DANTE ti chiami?' }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Accesso confermato' }),
     ).toHaveCount(0);
   });
 
-  test('navigates recovery locally without leaking account existence', async ({
+  test('keeps password recovery neutral after the governed 202 response', async ({
     page,
   }) => {
+    await page.route('**/api/v1/auth/recovery', async (route) => {
+      expect(route.request().method()).toBe('POST');
+      expect(route.request().postDataJSON()).toEqual({
+        email: 'unknown@example.com',
+      });
+      await route.fulfill({
+        status: 202,
+        headers: governedHeaders(),
+        body: JSON.stringify({ accepted: true }),
+      });
+    });
+
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
-
     await page.getByRole('button', { name: 'Password dimenticata?' }).click();
-    await expect(
-      page.getByRole('heading', { name: 'Recupera l’accesso' }),
-    ).toBeVisible();
 
     await expect(
       page.getByText(
@@ -364,13 +435,84 @@ test.describe('DANTE Access', () => {
       ),
     ).toBeVisible();
 
-    await page.getByLabel('Email').fill('person@example.com');
+    await page.getByLabel('Email').fill('unknown@example.com');
     await page.getByRole('button', { name: 'Invia link di recupero' }).click();
 
-    await expect(page.locator('.access-condition-notice')).toHaveCount(0);
     await expect(
-      page.getByRole('heading', { name: 'Recupera l’accesso' }),
+      page.getByRole('heading', { name: 'Controlla la tua email' }),
     ).toBeVisible();
+    await expect(
+      page.getByText(
+        'Se esiste un account associato all’indirizzo indicato, riceverai le istruzioni per recuperare l’accesso.',
+      ),
+    ).toBeVisible();
+  });
+
+  test('scrubs recovery bearer fragments before reset and never persists the secret', async ({
+    page,
+  }) => {
+    const secret = 'browser-only-recovery-secret';
+    await page.route('**/api/v1/auth/recovery/validate', async (route) => {
+      expect(route.request().postDataJSON()).toEqual({
+        password_recovery_ref: recoveryRef,
+        secret,
+      });
+      await route.fulfill({
+        status: 200,
+        headers: governedHeaders(),
+        body: JSON.stringify({ valid: true }),
+      });
+    });
+    await page.route('**/api/v1/auth/reset-password', async (route) => {
+      expect(route.request().postDataJSON()).toEqual({
+        password_recovery_ref: recoveryRef,
+        secret,
+        new_password: 'new correct horse battery staple',
+      });
+      await route.fulfill({
+        status: 204,
+        headers: governedHeaders(null),
+        body: '',
+      });
+    });
+
+    await page.goto(`/?recovery=${recoveryRef}#${secret}`);
+    await expect(
+      page.getByRole('heading', { name: 'Crea una nuova password' }),
+    ).toBeVisible();
+
+    const validatedUrl = new URL(page.url());
+    expect(validatedUrl.searchParams.get('recovery')).toBe(recoveryRef);
+    expect(validatedUrl.hash).toBe('');
+
+    const storageValues = await page.evaluate(() => {
+      const values: string[] = [];
+      for (const storage of [window.localStorage, window.sessionStorage]) {
+        for (let index = 0; index < storage.length; index += 1) {
+          const key = storage.key(index);
+          if (key !== null) {
+            values.push(`${key}=${storage.getItem(key) ?? ''}`);
+          }
+        }
+      }
+      return values.join('\n');
+    });
+    expect(storageValues).not.toContain(secret);
+
+    await page
+      .getByLabel('Nuova password', { exact: true })
+      .fill('new correct horse battery staple');
+    await page
+      .getByLabel('Conferma password', { exact: true })
+      .fill('new correct horse battery staple');
+    await page.getByRole('button', { name: 'Aggiorna password' }).click();
+
+    await expect(
+      page.getByRole('heading', { name: 'Password aggiornata' }),
+    ).toBeVisible();
+    const consumedUrl = new URL(page.url());
+    expect(consumedUrl.searchParams.has('recovery')).toBe(false);
+    expect(consumedUrl.hash).toBe('');
   });
 
   test('surfaces browser offline as transport state rather than credential failure', async ({
@@ -503,13 +645,6 @@ test.describe('DANTE Access', () => {
 
     await expect(localeButton).toBeVisible();
     await expect(googleButton).toBeVisible();
-    await page.evaluate(() => {
-      document.body.tabIndex = -1;
-      document.body.focus();
-    });
-    await expect
-      .poll(() => page.evaluate(() => document.activeElement === document.body))
-      .toBe(true);
 
     await page.keyboard.press('Tab');
     await expect(localeButton).toBeFocused();

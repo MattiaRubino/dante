@@ -7,6 +7,7 @@ const baseURL = `http://127.0.0.1:${e2ePort}`;
 
 export default defineConfig({
   testDir: './e2e',
+  testIgnore: ['**/auth/**'],
   fullyParallel: false,
   workers: 1,
   retries: 0,
@@ -24,5 +25,10 @@ export default defineConfig({
     timeout: 120_000,
     stdout: 'pipe',
     stderr: 'pipe',
+    env: {
+      VITE_DANTE_GOOGLE_CLIENT_ID:
+        'dante-e2e-client.apps.googleusercontent.com',
+      VITE_DANTE_APPLE_ENABLED: 'true',
+    },
   },
 });

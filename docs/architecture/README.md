@@ -1,190 +1,135 @@
 # DANTE Architecture Index
 
 - **Status:** CURRENT / AUTHORITATIVE NAVIGATION
-- **Last reconciled:** 2026-08-26
+- **Last reconciled:** 2026-09-05
+- **Scope:** current repository architecture and long-lived subsystem contracts
 
-This file describes the current architecture state directly. Phase-time reviews, old branch overlays and pre-closure status remain evidence in their owning documents/Git history and do not override this index.
+This index describes the current repository tree directly. Protected-main integration status is determined by Git reachability and `../PROJECT-STATUS.md`; a branch-local candidate is never promoted to protected-main truth by documentation wording alone.
 
 ## 1. Current architecture state
 
 ```text
-Domain Model                         CLOSED
-Logical Model                        CLOSED / 57 OF 57 / REMOTE QA PASS
-WD-03 / WD-05                        PASS
-Pre-Physical coherence               CLOSED / FINAL QA PASS
-Physical target                      CLOSED / ACCEPTED
-Engineering Foundation               CLOSED / ACCEPTED
-Frontend Engineering Foundation      CLOSED / INTEGRATED VIA PR #22
-Frontend Materialization             CLOSED / PASS / INTEGRATED VIA PR #28
-Backend CP1–CP5 scaffold             CLOSED / DIRECT QA / INTEGRATED VIA PR #24
-Backend CP6 PostgreSQL database       CLOSED / DIRECT QA / INTEGRATED VIA PR #42
-PostgreSQL architecture              18 major family / sole canonical persistence + material-history authority
-Current PostgreSQL patch             18.6
-Current Alembic head                 20260826_08
-Current DB topology                  68 tables / 5 views / 14 routines / 75 triggers / 95 indexes / 68 FKs / 120 CHECKs
-Access Frontend                      ACTIVE / UNMERGED ON feature/access-frontend
-First post-CP6 backend vertical       NOT STARTED ON A DEDICATED BRANCH
+Product / Domain / Logical / Physical       CLOSED / CURRENT
+Engineering Foundation                      CLOSED / ACCEPTED
+Frontend Foundation                         CLOSED / ACCEPTED
+Backend CP1–CP6                              CLOSED / ACCEPTED
+PostgreSQL                                   18.6 / sole canonical persistence
+Access/Auth M1–M5                            CLOSED / INTEGRATED
+Shared Email Platform                        CLOSED / INTEGRATED
+PostgreSQL Recovery                          CLOSED / INTEGRATED
+Platform Observability                       MATERIALIZED / ACCEPTED IN CURRENT TREE
 ```
 
-Protected `main` is the integrated authority for closed shared foundations and CP6. Active unmerged product work remains branch-local until normal protected-main integration.
+Current application database contract remains `20260904_17` with topology `88/5/16/76/172/89/270`. Platform Observability adds no DANTE business DDL or application persistence model.
 
-## 2. Current architecture entry points
+## 2. System entry points
 
-Read according to the subject:
+- `system-overview.md`
+- `technical-decisions.md`
+- `../PROJECT-STATUS.md`
+- `../ROADMAP.md`
 
-- [`system-overview.md`](system-overview.md) — system/component/authority overview;
-- [`technical-decisions.md`](technical-decisions.md) — current architecture decision register;
-- [`domain-model-logical-readiness.md`](domain-model-logical-readiness.md) — satisfied Domain → Logical semantic compatibility contract;
-- [`../domain/README.md`](../domain/README.md) — current Domain entry point;
-- [`../logical-model/README.md`](../logical-model/README.md) — current Logical Model entry point and closure routing;
-- [`../physical-model/README.md`](../physical-model/README.md) — accepted Physical Model target;
-- [`../database/README.md`](../database/README.md) — current concrete PostgreSQL System of Record;
-- [`../decisions/`](../decisions/) — ADR authority;
-- [`../development/engineering-foundation-v0.md`](../development/engineering-foundation-v0.md) — backend engineering foundation;
-- [`frontend-engineering-foundation.md`](frontend-engineering-foundation.md) and its accepted companion/review records — frontend engineering foundation;
-- [`../frontend/README.md`](../frontend/README.md) — current frontend documentation entry point.
+## 3. Access/Auth
 
-Important persistence ADRs:
+- `access-auth-architecture.md`
+- `access-auth-security-contract.md`
+- `access-auth-api-contract.md`
+- `access-auth-testing-contract.md`
+- `access-auth-m4-contract.md`
+- `access-auth-m5-contract.md`
+- `access-auth-m5-persistence-api-contract.md`
+- `../frontend/access.md`
+- `../database/access-auth.md`
 
-- [`../decisions/ADR-007-domain-model-informed-persistence-boundaries.md`](../decisions/ADR-007-domain-model-informed-persistence-boundaries.md) — semantic persistence guardrails;
-- [`../decisions/ADR-010-postgresql-persistence-constitution.md`](../decisions/ADR-010-postgresql-persistence-constitution.md) — accepted reusable PostgreSQL persistence doctrine;
-- [`../decisions/ADR-003-primary-database.md`](../decisions/ADR-003-primary-database.md) — historical PostgreSQL-selection rationale where explicitly historical.
-
-Important frontend ADRs:
-
-- [`../decisions/ADR-008-frontend-engineering-stack.md`](../decisions/ADR-008-frontend-engineering-stack.md);
-- [`../decisions/ADR-009-frontend-architecture-boundaries.md`](../decisions/ADR-009-frontend-architecture-boundaries.md).
-
-## 3. Current system direction
-
-DANTE is one product monorepo with accepted ownership for backend, web, mobile, packages, infrastructure/tooling, system tests, documentation, prototypes and GitHub automation. Paths are materialized when real content exists rather than created as empty architecture theatre.
-
-The backend remains a capability-first modular monolith.
-
-Canonical persistence direction:
+Permanent identity/auth boundary:
 
 ```text
-PostgreSQL 18 major family
-= sole canonical persistence + material-history authority
-
-current repository/runtime patch
-= PostgreSQL 18.6
+Person != Account != Principal != Actor
+AuthSession != DANTE Session
+EmailIdentity != Account
+PasswordCredential optional
+Principal request-runtime only
+provider identity = issuer + subject
+provider email != identity/link authority
+provider assertion != DANTE AuthSession
+passwordless Account valid
+method != factor != assurance
 ```
 
-The accepted Domain → Logical → Physical chain has already been concretely materialized through CP6. Later backend/product work consumes that database rather than reopening the architecture merely because a new feature is implemented.
+## 4. Shared Email Platform
 
-Frontend remains platform-specific at renderer/UI/platform-adapter level with selective semantic sharing. Backend/database canonical authority and operation-specific offline governance remain preserved.
+- `email-platform.md`
+- `access-auth-email-delivery.md` — Access/Auth consumer integration
+- `../decisions/ADR-012-email-delivery-platform.md`
+- `../development/email-platform-local-uat.md`
+- `../development/email-platform-acceptance-2026-09-03.md`
 
-## 4. Domain / Logical invariants carried into implementation
+The Email Platform is shared infrastructure. DANTE owns durable delivery lifecycle and ambiguity policy; provider transport is an external effect and is never executed inside the authoritative caller transaction.
 
-Downstream implementation must continue to preserve at least:
+## 5. Platform Observability
+
+- `observability-runtime-contract.md` — current/evolving signal, privacy, ownership, cardinality and failure contract
+- `../development/observability-runbook.md` — operator setup, validation, incident, rotation and rollback procedure
+- `../../infra/observability/README.md` — Alloy/Grafana runtime and source-controlled operational assets
+- `../database/dante-postgresql-database-part-12.md` — exact PostgreSQL observer-role contract
+
+Architectural boundary:
 
 ```text
-no universal Entity / Thing ontology
-no generic Relation as semantic escape hatch
-no untyped property bag as canonical semantic truth
-provider IDs != DANTE canonical identity
-
-Person != Account != Actor
-Person != Living Referent != Asset
-Subject / Resource contextual roles != native identity
-Possibility != Goal / Proposal / Decision / Plan
-Schedule != Actual
-Actual != Observation
-Evidence != Provenance
-Authority != Visibility
-Responsibility != Participation
-Ownership != Possession
-
-shared canonical reality + actor-scoped overlays where required
-material history reconstructible where consequential
-specialist Transaction / Movement lifecycle != Observation
+backend metrics/traces ──OTLP──────┐
+backend JSON logs ───────file──────┤
+Web errors/vitals/traces ─Faro─────┼─> Grafana Alloy ─> Grafana Cloud
+PostgreSQL stats ───────observer───┤
+readiness ───────────────blackbox───┘
 ```
 
-Logical hardenings `WL-H01..WL-H12` remain implementation regression contracts unless deliberately superseded by later accepted authority.
-
-## 5. Frontend foundation direction
-
-The accepted frontend foundation fixes, among other things:
-
-- TypeScript/React/Vite/Expo/pnpm/Turbo baseline;
-- feature-first Web/Mobile architecture;
-- public-API-only and acyclic dependency direction;
-- selective shared-package policy;
-- Data Authority Matrix and feature data firewall;
-- mobile local/offline capability with backend-governed canonical effects;
-- Web online-first posture;
-- identity-scoped local data;
-- design-token/UI/i18n/time/config boundaries;
-- LOCAL/DEV/UAT/PROD environment vocabulary;
-- GitHub Actions CI/CD authority.
-
-Foundation/materialization is closed and integrated. Product vertical work such as Access remains separately scoped until its own full-stack/release gates close.
-
-## 6. Current bounded deferrals
-
-Architecture is closed where evidence was sufficient, but not every future product choice is pre-decided.
-
-Still bounded to the stage that owns them:
-
-- exact product APIs/routes/versioning for future verticals;
-- specific AuthN/AuthZ application protocol beyond already accepted persistence/security doctrine;
-- provider adapters and specialist modules activated only by real need;
-- cloud compute/IaC and remote infrastructure materialization;
-- platform release activation details;
-- dormant frontend capabilities activated only when product requirements justify them.
-
-A deferral does not authorize violating already accepted Domain/Logical/Physical/database invariants.
-
-## 7. Evidence vs current authority
-
-The following kinds of files may remain useful but are not current-status authorities merely because they were written later in a phase:
+Permanent rules:
 
 ```text
-*-final-review.md
-*-post-closure-qa.md
-*-part-N.md transition continuations
-phase audits / readiness records
-workstream closure records
+telemetry != canonical DANTE state
+telemetry != Domain history / Evidence / Provenance
+telemetry failure != permission to alter product truth
+no product/Auth/API data dependency from Web observability
+no raw URL/query/SQL/identity/session/secret telemetry dimensions
+bounded cardinality and bounded retry/buffering
 ```
 
-Use them as reference/evidence according to their explicit role.
+`dante_observer` is provisioning-owned technical infrastructure, not an Account, Principal, Actor or application model. It has `LOGIN NOINHERIT`, with `pg_read_all_stats` membership using `INHERIT TRUE / SET FALSE / ADMIN FALSE`, `search_path=pg_catalog`, no database `CREATE`/`TEMP` and no DANTE/public business-object access.
 
-For example, `domain-model-logical-readiness-part-2.md` through `part-5.md` are transition/closure evidence; the consolidated [`domain-model-logical-readiness.md`](domain-model-logical-readiness.md) now states the current satisfied contract directly.
+## 6. Database / persistence
 
-## 8. Architecture reopen discipline
+- `../database/README.md`
+- `../database/dictionary/README.md`
+- `../database/dante-postgresql-database.md`
+- `../development/backend-cp6-02-postgresql-persistence-constitution.md`
+- `../decisions/ADR-010-postgresql-persistence-constitution.md`
 
-Closed Domain, Logical, Physical, Engineering and Frontend Foundation decisions are not casually reselected.
-
-Implementation evidence first reopens the smallest affected technology/adapter/boundary. A wider architectural reopen requires a demonstrated contradiction that cannot be resolved locally.
-
-Do not reopen architecture because of:
+Permanent invariant:
 
 ```text
-ORM convenience
-table shape preference
-provider naming
-UI naming
-framework fashion
-one isolated implementation annoyance
+current DB reference
+≈ Database Dictionary
+≈ SQLAlchemy mappings
+≈ Alembic
+≈ real PostgreSQL
+≈ direct tests
 ```
 
-Reopen when accepted requirements, safety/privacy constraints, real runtime evidence or incompatibility with a current invariant proves that the existing boundary is materially wrong.
+## 7. Important ADRs
 
-## 9. Current next architecture posture
+- `../decisions/ADR-007-domain-model-informed-persistence-boundaries.md`
+- `../decisions/ADR-008-frontend-engineering-stack.md`
+- `../decisions/ADR-009-frontend-architecture-boundaries.md`
+- `../decisions/ADR-010-postgresql-persistence-constitution.md`
+- `../decisions/ADR-011-access-auth-architecture.md`
+- `../decisions/ADR-012-email-delivery-platform.md`
 
-There is no pending CP6 architecture gate.
+## 8. Historical evidence
 
-```text
-DATABASE / CP6
-CLOSED / INTEGRATED
+Branch histories, dated acceptance records and old milestone banners are evidence only. They never override the current executable repository or current/evolving references.
 
-FRONTEND ACCESS
-ACTIVE ON feature/access-frontend
-UNMERGED
+- `../archive/branches/2026-09-feature-access-auth.md`
+- `../archive/branches/2026-09-feature-platform-observability.md`
+- `../workstreams/access-auth-integration-acceptance-2026-09-04.md`
 
-NEXT BACKEND PRODUCT VERTICAL
-START ONLY UNDER A NEW EXPLICIT BOUNDED WORKSTREAM FROM CURRENT main
-```
-
-Direct implementation evidence is claimed only after the relevant real artifact/scenario executes.
+Temporary branch handoffs must be removed before protected-main integration under `../development/documentation-lifecycle-policy.md`.

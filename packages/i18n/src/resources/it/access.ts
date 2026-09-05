@@ -14,6 +14,9 @@ export const access = {
     body: 'Continua con il tuo account oppure usa email e password.',
     forgot: 'Password dimenticata?',
     new: 'Nuovo su DANTE?',
+    otherMethods: 'Usa un altro metodo',
+    passkeyHint:
+      'Usa una passkey già registrata su questo dispositivo o nel tuo password manager.',
   },
   signup: {
     title: 'Crea il tuo account DANTE',
@@ -34,21 +37,30 @@ export const access = {
   },
   password: {
     guideTitle: 'Lunghezza minima',
-    proposal: '12+ caratteri',
+    proposal: '15+ caratteri',
     manager:
       'Puoi incollare o generare la password con il tuo password manager.',
   },
   provider: {
     google: 'Continua con Google',
     apple: 'Continua con Apple',
+    passkey: 'Accedi con passkey',
     googleName: 'Google',
     appleName: 'Apple',
-    body: 'DANTE apre il flusso ufficiale del provider. La schermata di consenso appartiene al provider, non a DANTE.',
+    body: 'DANTE apre il flusso ufficiale del provider. La schermata di consenso appartiene al provider, non DANTE.',
     wait: 'Completa l’accesso',
     pendingBody:
       'Completa l’accesso nella finestra del provider. Tornerai automaticamente a DANTE.',
     scopeNote:
       'Usare Google o Apple per accedere non autorizza DANTE a leggere Calendar, Gmail o iCloud.',
+  },
+  providerEnrollment: {
+    title: 'Verifica un indirizzo email',
+    body: 'Il provider non può dimostrare a DANTE il controllo di questa casella. Verificala direttamente prima di creare l’account.',
+    sendCode: 'Invia codice di verifica',
+    verify: 'Verifica e continua',
+    privacy:
+      'La capability del flusso rimane in un cookie HttpOnly. Nel browser non viene salvato alcun token del provider.',
   },
   common: {
     or: 'oppure',
@@ -61,6 +73,7 @@ export const access = {
   },
   action: {
     signin: 'Accedi',
+    logout: 'Esci',
     createAccount: 'Crea un account',
     showPassword: 'Mostra password',
     hidePassword: 'Nascondi password',
@@ -74,7 +87,7 @@ export const access = {
   validation: {
     email: 'Inserisci un indirizzo email valido.',
     passwordRequired: 'Inserisci la password.',
-    passwordMinimum: 'Usa almeno 12 caratteri.',
+    passwordMinimum: 'Usa almeno 15 caratteri.',
     passwordMismatch: 'Le password non coincidono.',
     verificationCode: 'Inserisci il codice a 6 cifre.',
     preferredName: 'Inserisci il nome con cui vuoi essere chiamato.',
@@ -89,6 +102,32 @@ export const access = {
     serverUnavailableTitle: 'Servizio temporaneamente non disponibile.',
     serverUnavailableBody:
       'Riprova quando il servizio di accesso torna raggiungibile.',
+  },
+  failure: {
+    invalidCredentialsTitle: 'Accesso non riuscito.',
+    invalidCredentialsBody: 'Email o password non sono corretti.',
+    passkeyBody:
+      'La passkey non ha completato l’accesso. Riprova o usa un altro metodo.',
+    accountUnavailableTitle: 'Account non disponibile.',
+    accountUnavailableBody:
+      'Questo account non può aprire una nuova sessione in questo momento.',
+    passwordCompromisedTitle: 'Password da aggiornare.',
+    passwordCompromisedBody:
+      'Per proteggere l’account, questa password non può essere usata per aprire una nuova sessione.',
+    existingAccountTitle: 'Account già esistente.',
+    existingAccountBody:
+      'L’indirizzo è stato verificato. Accedi con l’account già associato a questa email.',
+    verificationInvalidTitle: 'Codice non valido o scaduto.',
+    verificationInvalidBody:
+      'Richiedi un nuovo codice oppure ricomincia la creazione dell’account.',
+    recoveryInvalidTitle: 'Link di recupero non valido o scaduto.',
+    recoveryInvalidBody:
+      'Richiedi un nuovo link per reimpostare la password in sicurezza.',
+    requestInvalidTitle: 'Controlla i dati inseriti.',
+    requestInvalidBody:
+      'La richiesta non rispetta i requisiti di accesso. Controlla i dati e riprova.',
+    unexpectedTitle: 'Non è stato possibile completare l’accesso.',
+    unexpectedBody: 'Riprova. Se il problema continua, riprova più tardi.',
   },
   locale: {
     control: 'Cambia lingua. Lingua attuale: {{language}}',
@@ -118,6 +157,9 @@ export const access = {
   recovery: {
     title: 'Controlla la tua email',
     body: 'Se esiste un account associato all’indirizzo indicato, riceverai le istruzioni per recuperare l’accesso.',
+    validatingTitle: 'Verifica del link di recupero',
+    validatingBody:
+      'Stiamo verificando il link in modo sicuro prima di mostrarti il cambio password.',
   },
   reset: {
     title: 'Crea una nuova password',
@@ -136,9 +178,16 @@ export const access = {
   },
   link: {
     title: 'Conferma il collegamento',
-    body: 'Esiste già un account DANTE associato a questa email. Accedi prima di collegare il provider.',
-    action: 'Accedi e collega',
+    body: 'Esiste già un account DANTE associato a questa identità. Autentica prima quell’account, poi conferma esplicitamente il collegamento.',
+    action: 'Autentica l’account esistente',
     other: 'Usa un altro account',
+    authenticateFirst:
+      'La prova del provider da sola non autorizza il collegamento. Serve prima una sessione DANTE dell’account esistente.',
+    authenticatedReady:
+      'L’account esistente è autenticato. Conferma ora il collegamento del provider.',
+    authenticate: 'Autentica con password',
+    authenticatePasskey: 'Autentica con passkey',
+    confirm: 'Conferma collegamento',
   },
   authenticated: {
     title: 'Accesso confermato',
@@ -146,8 +195,69 @@ export const access = {
   },
   reauth: {
     title: 'Conferma di nuovo la tua identità',
-    body: 'Per proteggere il tuo account, conferma di nuovo la tua identità per continuare.',
-    action: 'Continua',
+    body: 'Per proteggere il tuo account, inserisci di nuovo la password prima di continuare.',
+    action: 'Conferma identità',
+  },
+  security: {
+    title: 'Sicurezza account',
+    body: 'Gestisci i metodi con cui puoi autenticarti a DANTE. Le rimozioni non possono violare la protezione anti-lockout.',
+    loading: 'Caricamento delle impostazioni di sicurezza…',
+    signinRequired: 'Accedi per gestire la sicurezza dell’account.',
+    backAccess: 'Torna ad Accesso',
+    reauthTitle: 'Conferma recente',
+    reauthBody:
+      'Le modifiche sensibili richiedono una conferma recente della tua identità.',
+    reauthHint:
+      'Aggiorna la conferma della tua identità, poi ripeti l’operazione.',
+    reauthNoInlineMethod:
+      'Per aggiornare la conferma recente, torna all’accesso ed entra di nuovo con uno dei metodi disponibili.',
+    reauthPassword: 'Conferma con password',
+    reauthPasskey: 'Conferma con passkey',
+    reauthComplete: 'Identità confermata di recente.',
+    passwordTitle: 'Password',
+    newPassword: 'Nuova password',
+    addPassword: 'Aggiungi password',
+    removePassword: 'Rimuovi password',
+    passwordAdded: 'Password aggiunta.',
+    passwordRemoved: 'Password rimossa.',
+    providersTitle: 'Provider collegati',
+    providersBody:
+      'Google e Apple autenticano l’identità; non autorizzano automaticamente l’accesso ai loro dati.',
+    linkGoogle: 'Collega Google',
+    linkApple: 'Collega Apple',
+    providerLinked: 'Provider collegato.',
+    providerRemoved: 'Provider rimosso.',
+    passkeysTitle: 'Passkey',
+    passkeysBody:
+      'Le chiavi private restano nell’autenticatore. DANTE conserva solo la credenziale pubblica necessaria alla verifica.',
+    passkeyLabel: 'Nome passkey',
+    passkeyLabelPlaceholder: 'Es. Portatile personale',
+    passkeyLabelRequired: 'Inserisci un nome per la passkey.',
+    addPasskey: 'Aggiungi passkey',
+    passkeyAdded: 'Passkey aggiunta.',
+    passkeyRenamed: 'Passkey rinominata.',
+    passkeyRemoved: 'Passkey rimossa.',
+    passkeyTransportUnknown: 'Trasporto non indicato',
+    rename: 'Rinomina',
+    save: 'Salva',
+    remove: 'Rimuovi',
+    errorOperation:
+      'Non è stato possibile completare l’operazione di sicurezza.',
+    errorServiceUnreachable: 'Il servizio Access non è raggiungibile.',
+    errorReauthenticationRequired:
+      'Conferma di nuovo la tua identità prima di modificare le impostazioni di sicurezza.',
+    errorRemovalBlocked:
+      'DANTE ha bloccato la rimozione perché lascerebbe l’account senza un metodo di autenticazione sicuro.',
+    errorPasswordAlreadyEstablished: 'Questo account ha già una password.',
+    errorPasskeyAlreadyRegistered: 'Questa passkey è già registrata in DANTE.',
+    errorPasskeyNotFound: 'Questa passkey non è più attiva sull’account.',
+    errorServiceUnavailable:
+      'Il servizio di autenticazione è temporaneamente non disponibile.',
+    errorGoogleControl:
+      'Non è stato possibile inizializzare il controllo di accesso Google.',
+    errorSessionUnavailable: 'La sessione non è più disponibile.',
+    errorGoogleLinkIncomplete:
+      'Google non ha completato il collegamento richiesto all’account.',
   },
   setupName: {
     title: 'Come vuoi che DANTE ti chiami?',

@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SecurityRouteImport } from './routes/security'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppHomeRouteImport } from './routes/_app.home'
 import { Route as AppProfileRouteImport } from './routes/_app.profile'
@@ -21,6 +22,11 @@ import { Route as AppWorldsWorldIdRouteImport } from './routes/_app.worlds.$worl
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SecurityRoute = SecurityRouteImport.update({
+  id: '/security',
+  path: '/security',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppRoute = AppRouteImport.update({
@@ -60,6 +66,7 @@ const AppWorldsWorldIdRoute = AppWorldsWorldIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/security': typeof SecurityRoute
   '/home': typeof AppHomeRoute
   '/profile': typeof AppProfileRoute
   '/settings': typeof AppSettingsRoute
@@ -69,6 +76,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/security': typeof SecurityRoute
   '/home': typeof AppHomeRoute
   '/profile': typeof AppProfileRoute
   '/settings': typeof AppSettingsRoute
@@ -79,6 +87,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/security': typeof SecurityRoute
   '/_app': typeof AppRouteWithChildren
   '/_app/home': typeof AppHomeRoute
   '/_app/profile': typeof AppProfileRoute
@@ -91,6 +100,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/security'
     | '/home'
     | '/profile'
     | '/settings'
@@ -100,6 +110,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/security'
     | '/home'
     | '/profile'
     | '/settings'
@@ -109,6 +120,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/security'
     | '/_app'
     | '/_app/home'
     | '/_app/profile'
@@ -120,6 +132,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SecurityRoute: typeof SecurityRoute
   AppRoute: typeof AppRouteWithChildren
 }
 
@@ -130,6 +143,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/security': {
+      id: '/security'
+      path: '/security'
+      fullPath: '/security'
+      preLoaderRoute: typeof SecurityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app': {
@@ -216,6 +236,7 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SecurityRoute: SecurityRoute,
   AppRoute: AppRouteWithChildren,
 }
 export const routeTree = rootRouteImport

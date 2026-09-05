@@ -1,6 +1,14 @@
-import { AccessPage } from '../features/access';
 import { createFileRoute } from '@tanstack/react-router';
 
+import { AccessPage, authSessionQueryOptions } from '../features/access';
+
 export const Route = createFileRoute('/')({
-  component: AccessPage,
+  loader: ({ context }) =>
+    context.queryClient.prefetchQuery(authSessionQueryOptions()),
+  component: AccessRoute,
 });
+
+function AccessRoute() {
+  const { recoveryProofStore } = Route.useRouteContext();
+  return <AccessPage recoveryProofStore={recoveryProofStore} />;
+}

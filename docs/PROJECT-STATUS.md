@@ -1,408 +1,157 @@
 # DANTE — Project Status
 
-- **Status:** CURRENT TRUTH
-- **Last reconciled:** 2026-08-26
-- **Protected `main`:** integrated source authority; read the live Git ref for the current SHA
-- **Backend CP6 integration:** PR #42 MERGED
-- **Current product boundary:** pre-backend Access frontend materialization CLOSED / accepted; next full-stack Access/Auth vertical not yet started on a dedicated branch
+- **Status:** CURRENT REPOSITORY TRUTH / PROTECTED-MAIN INTEGRATED
+- **Last reconciled:** 2026-09-05
+- **Protected-main Observability merge:** `b74a806deed68b2729dd04678c0a5674cd572e8a` via PR `#58`
+- **Platform Observability source closure:** `828cfd231debb1326933052fefd74e81c653a6c3`
+- **Platform Observability integration merge:** `14faecfb11bded15aa929b0eaac91427031072ed`
+- **Current Alembic head:** `20260904_17`
 
-## 1. Executive state
-
-```text
-PRODUCT / NORTH STAR
-CURRENT
-
-DOMAIN MODEL
-CLOSED / SEMANTICALLY COMPLETE FOR CURRENT SCOPE
-
-LOGICAL MODEL
-CLOSED
-57 / 57 CLASSIFIED
-WL-H01..WL-H12 ACTIVE AS BINDING HARDENINGS
-
-PRE-PHYSICAL COHERENCE
-CLOSED / FINAL QA PASS
-
-PHYSICAL TARGET
-CLOSED / SELECTED / ACCEPTED
-PostgreSQL 18 major family
-sole canonical persistence / material-history authority
-Physical phase-time exact patch 18.4 / HISTORICAL
-
-ENGINEERING FOUNDATION v0
-CLOSED / ACCEPTED
-
-FRONTEND ENGINEERING FOUNDATION
-CLOSED / ACCEPTED / INTEGRATED VIA PR #22
-
-FRONTEND MATERIALIZATION
-CLOSED / PASS / INTEGRATED VIA PR #28
-
-PRODUCTION BACKEND SCAFFOLD
-CLOSED / DIRECT QA PASS / INTEGRATED VIA PR #24
-CP1 CLOSED / DIRECT QA PASS
-CP2 CLOSED / DIRECT QA PASS — PostgreSQL 18.4 historical exact evidence
-CP3 CLOSED / DIRECT QA PASS — PostgreSQL 18.4 historical exact evidence
-CP4 CLOSED / DIRECT REMOTE QA PASS
-CP5 CLOSED / DIRECT INTEGRATED QA PASS
-
-CP6 — CONCRETE POSTGRESQL DATABASE
-CLOSED / CONCRETE POSTGRESQL DATABASE PASS
-INTEGRATED IN PROTECTED main VIA PR #42
-CP6-00 COMPLETE
-CP6-01 CLOSED / GATE 01 PASS
-CP6-02 CLOSED / GATE 02 PASS
-CP6-03 CLOSED / GATE 03 PASS
-CP6-04 CLOSED / MATERIALIZATION PASS
-CP6-05 CLOSED / DIRECT QA PASS
-
-CURRENT POSTGRESQL TECHNICAL PATCH
-18.6
-
-CURRENT DANTE BUSINESS DATABASE
-MATERIALIZED / MAPPED / DICTIONARY-RECONCILED / DIRECTLY TESTED
-ALEMBIC 20260826_08
-68 tables / 5 views / 14 routines / 75 triggers /
-95 indexes / 68 FKs / 120 CHECKs
-
-ACCESS PRE-BACKEND FRONTEND
-CLOSED / ACCEPTED / RELEASE-HARDENED
-AF-01D PASS
-AF-02A PASS
-AF-02B PASS
-AF-03A PASS
-
-FULL ACCESS/AUTH PRODUCT VERTICAL
-NOT CLOSED / REAL BACKEND AUTH NOT IMPLEMENTED
-NEXT DEDICATED FULL-STACK VERTICAL NOT YET STARTED
-```
-
-Architecture/design closure is not the same as runtime/product completion. Closing the Access frontend workstream establishes the accepted frontend baseline; it does not claim real Auth/session/provider behavior.
-
-## 2. Current protected-main backend/database truth
-
-PR #42 integrated the completed CP6 branch into protected `main` through the required merge-commit path.
-
-Final accepted CP6 implementation candidate:
+## 1. Current state
 
 ```text
-22bbc078391d52c43665474bf465593d6225106e
+Product / North Star                       CURRENT
+Domain / Logical / Physical                CLOSED
+Engineering + Frontend + Backend CP1–CP6  CLOSED / ACCEPTED
+PostgreSQL                                 18.6
+
+Access M1–M5                               CLOSED / INTEGRATED
+Shared Email Platform                      CLOSED / INTEGRATED / OWNERSHIP VERIFIED
+PostgreSQL Recovery                        CLOSED / INTEGRATED
+local password/passkey UAT                 PASS
+real Windows Hello UAT                     PASS
+real Google UAT                            PASS
+real Apple registered-domain UAT           BOUNDED DEFERRED / NON-BLOCKING
+
+Alembic                                    20260904_17
+database topology                          88/5/16/76/172/89/270
+database-local CP07                        PASS
+application / Email reopen CP08            PASS
+
+Platform Observability source workstream   CLOSED / OPERATIONAL ACCEPTANCE PASS
+Platform Observability protected main      CLOSED / INTEGRATED VIA PR #58
+observability source verification          13/13 PASS
+PostgreSQL/ACL integration acceptance      155/155 PASS
+backend readiness + Alloy                  PASS
+Web/Faro integrated LOCAL production-build smoke PASS
+Grafana Cloud metrics/logs/traces/Faro path PASS
+Tempo route-attribute privacy boundary     PASS
+collector-outage failure isolation         PASS
+Grafana acceptance service-account cleanup PASS
+
+M6 Native Mobile                           FUTURE / OPTIONAL
+later Access/M7 maturity                   FUTURE
 ```
 
-Final feature head before merge:
+Platform Observability is now protected-main truth. PR `#58` merged `integration/platform-observability-v2` into `main` with merge commit `b74a806deed68b2729dd04678c0a5674cd572e8a`; its parents are the prior protected-main head `318ae452556e8bada3aaeee09688a89acc548a32` and accepted integration head `33228f576bfc2cdd479ea4f527164c7ba9dd8a2d`.
 
-```text
-9297b64c7c912c2cc8e344a6617beb5c91457bbb
-```
+Apple is not reported as PASS. Real Apple external acceptance remains a future enablement prerequisite when its external account/domain prerequisites exist.
 
-Protected-main merge commit:
+Remote backup-provider activation and production/cloud recovery remain **NOT CLAIMED**.
 
-```text
-117360b9333fd1a8a62d0dfeb0398a4d5811e393
-```
-
-Final database baseline:
+## 2. Current database truth
 
 ```text
 PostgreSQL          18.6
-Alembic head        20260826_08
-
-tables              68
+Alembic             20260904_17
+tables              88
 views                5
-routines             14
-triggers             75
-physical indexes    95
-foreign keys         68
-CHECK constraints   120
-
-custom enum/domain    0
-sequences             0
-materialized views    0
-RLS policies          0
+routines             16
+triggers             76
+physical indexes     172
+foreign keys         89
+CHECK constraints    270
 ```
 
-Final direct acceptance included:
+The current cross-representation database contract remains aligned across the Dictionary, SQLAlchemy mappings, Alembic and real PostgreSQL. Platform Observability adds no DANTE business DDL, Alembic revision or SQLAlchemy business mapping.
+
+Its PostgreSQL operational reader is the provisioning-owned `dante_observer` role: `LOGIN NOINHERIT`, with `pg_read_all_stats` membership using `INHERIT TRUE / SET FALSE / ADMIN FALSE`, no DANTE/public business-object access, no database `CREATE`/`TEMP`, and `search_path=pg_catalog`. The exact contract remains in `database/dante-postgresql-database-part-12.md` and the live provisioning/acceptance tests.
+
+## 3. Accepted foundation evidence
+
+Access/Auth + Email + Recovery remain closed at their accepted evidence levels. The historical CP07 database-local proof and the later CP08 application/Email reopen proof remain distinct; CP07 is not widened retroactively. Their durable evidence remains in `workstreams/access-auth-integration-acceptance-2026-09-04.md`, `archive/branches/2026-09-feature-access-auth.md` and the Recovery operator references.
+
+Platform Observability acceptance includes:
 
 ```text
-Ruff format/check                    PASS
-mypy strict                          PASS
-non-PostgreSQL tests                 37 / 37 PASS
-real PostgreSQL tests                76 / 76 PASS
-build                                PASS
-Dictionary JSON-Schema               PASS
-Dictionary ↔ SQLAlchemy              PASS
-Dictionary ↔ Alembic                 PASS
-Dictionary ↔ live PostgreSQL         PASS
-persistent LOCAL upgrade/restart     PASS
-security / ACL posture               PASS
-GET /health/live                     200
-GET /health/ready                    200
+true Git three-way integration merge             PASS
+frozen source history retained                   PASS
+observability source verification                13/13 PASS
+Web tests                                        23 files / 101 tests PASS
+backend non-PostgreSQL regression                286/286 PASS
+strict mypy                                      148 source files / zero issues
+backend package build                            PASS
+PostgreSQL 18.6 marked acceptance                155/155 PASS
+observer role / membership / ACL proof           PASS
+backend bootstrap with observability enabled     PASS
+backend /health/ready                            HTTP 200
+Alloy readiness                                  PASS
+Web/Faro LOCAL production-build smoke surface    PASS
+Grafana Cloud metrics/logs/traces/Faro path      PASS
+Tempo route-attribute privacy boundary           PASS
+collector-outage failure isolation               PASS
+Grafana acceptance service account remote delete PASS
+PR #58 Backend CI Gate                           PASS
+PR #58 Frontend CI Gate                          PASS
+PR #58 Dependency Review                         PASS
+protected-main merge reachability                PASS
 ```
 
-Durable evidence:
+The source workstream had already proved the real Grafana Cloud path for metrics, logs, traces, PostgreSQL statistics, black-box readiness and Web Faro/Web Vitals, plus dashboard/alert materialization and collector-outage failure isolation. That evidence is retained rather than rerun merely for repetition.
 
-- `development/backend-cp6-05-whole-database-qa.md`
-- `database/README.md`
-- `database/dictionary/`
-- `archive/branches/2026-08-feature-logical-postgresql.md` — non-authoritative branch history
+Dedicated Google/Apple, passkey, Auth-lifecycle and Email-to-central-OTel domain metrics are future observability enhancements. They are not blockers for the accepted platform foundation because global HTTP, database, Web, Auth signin/KDF/dependency and collector telemetry already cover the integration boundary without changing product semantics.
 
-## 3. Persistence authority
+## 4. Integration state
 
-Current persistence authority is layered rather than chosen ad hoc:
+Platform Observability integration is complete.
 
 ```text
-Domain / Logical / Physical
-→ semantic and architectural source
-
-CP6-02 Constitution + ADR-010
-→ durable PostgreSQL doctrine
-
-Database System of Record
-→ current human-readable database meaning + machine Dictionary
-
-Alembic
-→ deployed application-schema evolution authority
-
-SQLAlchemy metadata / mappings
-→ application representation of deployed database contract
-
-real PostgreSQL introspection
-→ observed materialized database
-
-direct tests
-→ executable proof
+source closure                              PASS
+true integration merge                      PASS
+integrated source verification              PASS
+PostgreSQL/ACL acceptance                    PASS
+runtime/Grafana Cloud smoke                  PASS
+collector-outage isolation                   PASS
+documentation lifecycle reconciliation      PASS
+PR #58 required CI                           PASS
+protected-main merge                         PASS
 ```
 
-Permanent reconciliation invariant:
+Do not reopen accepted OTel/Alloy/Grafana/Faro/PostgreSQL-observer implementation merely to repeat evidence. Future Observability work is a new bounded scope from current protected `main`.
+
+## 5. Documentation lifecycle state
+
+Platform Observability has no active workstream authority file. Current truth is routed through:
+
+- `architecture/observability-runtime-contract.md`
+- `development/observability-runbook.md`
+- `../infra/observability/README.md`
+- `database/dante-postgresql-database-part-12.md` for the observer-role contract
+- executable code, tests and source-controlled Grafana/Alloy assets
+
+One consolidated historical record is retained at `archive/branches/2026-09-feature-platform-observability.md`. It is **NON-AUTHORITATIVE / HISTORICAL / EVIDENCE ONLY**.
+
+Temporary live/session/resume handoffs are absent. Historical source-workstream chronology that is not current authority remains recoverable from the consolidated branch record and Git/PR history.
+
+## 6. Permanent safety rules
 
 ```text
-Database Architecture & Reference
-≈ Database Dictionary
-≈ SQLAlchemy metadata / mappings
-≈ Alembic head
-≈ real PostgreSQL schema
+protected main is integration authority
+no rebase/history rewrite of accepted work
+no force push for normal integration
+applied migrations are immutable
+no schema claim without Dictionary/mapping/migration/PG/test parity
+no PASS without executed evidence
+telemetry != canonical DANTE state
+telemetry failure != permission to alter product truth
+LOCAL recovery PASS != production/cloud recovery PASS
 ```
 
-A later structural DB change is incomplete if these representations are left inconsistent.
+## 7. Authority order
 
-## 4. Binding semantic invariants
-
-```text
-Person != Account != Principal != Actor
-Person != Living Referent != Asset
-Subject != Resource != native identity
-Possibility != Goal != Proposal != Decision != Plan != Activity
-Routine != Recurrence != Occurrence
-Occurrence != Schedule != Session != Actual
-Actual != Observation != Outcome
-Evidence != Provenance
-Version != Reconciliation
-Authority != Visibility
-Agreement != Consent
-Ownership != Possession
-provider state != canonical DANTE state
-derived projection != canonical truth
-absence/unknown != false
-MaterialStateRef != ETag/MVCC/provider revision
-idempotency != semantic identity
-client local state != canonical accepted effect
-```
-
-Accepted persistence thesis remains owner-specific canonical/material-history families plus specific typed relations and bounded technical addressing/control structures. Universal Entity/Thing, universal generic edges, canonical EAV/property bags and JSONB required-semantic escape hatches remain forbidden shortcuts.
-
-## 5. Reference / material-state baseline
-
-Reference families remain distinct:
-
-```text
-NativeRef
-ScopedRecordRef
-MaterialStateRef
-ExternalRef
-```
-
-Current physical direction:
-
-```text
-homogeneous NativeRef
-→ direct FK
-
-genuinely heterogeneous NativeRef
-→ bounded native-address anchor
-
-MaterialStateRef
-→ UUIDv7 stable address
-→ bounded material-state address/control
-→ exact owner + facet
-→ owner-specific material-state row
-→ explicit current accepted-state binding where required
-```
-
-No application-only `type + uuid` polymorphic integrity.
-
-## 6. Backend technical foundation
-
-Current backend baseline:
-
-```text
-Python                              3.14.x / initial exact pin 3.14.7
-uv                                  repository package authority
-schema                              dante
-SQLAlchemy                          async 2.0 stable line
-psycopg                             3
-Alembic                             one environment / one DAG / one head
-one AsyncEngine per process
-one async_sessionmaker per process
-one AsyncSession per app operation
-autobegin=False
-autoflush=True
-expire_on_commit=False
-outer application operation owns transaction
-adapter may flush / never implicit commit
-READ COMMITTED default
-
-dante_owner                         NOLOGIN ownership identity
-dante_migrator                      LOGIN migration identity
-dante_runtime                       LOGIN application runtime identity
-```
-
-No generic Repository/UoW/BaseService architecture is introduced merely for uniformity.
-
-## 7. PostgreSQL version truth
-
-```text
-POSTGRESQL ARCHITECTURE
-major 18
-
-PHYSICAL PHASE-TIME EXACT PATCH
-18.4 / historical
-
-CP2 / CP3 ORIGINAL DIRECT EVIDENCE
-18.4 / historical exact
-
-CURRENT REPOSITORY PATCH
-18.6
-
-CURRENT MATERIALIZED DANTE DATABASE
-18.6 / Alembic 20260826_08
-```
-
-Patch maintenance inside major line 18 does not reopen the accepted database architecture or rewrite historical direct evidence.
-
-## 8. Access frontend baseline
-
-The completed `feature/access-frontend` workstream materialized the approved pre-backend Web Access system and release-hardened it without inventing fake Auth success.
-
-Accepted checkpoints:
-
-```text
-AF-01D  shell completion / professional polish      PASS
-AF-02A  complete pre-backend frontend state graph   PASS
-AF-02B  downstream surface hardening                PASS
-AF-03A  release-hardening viewport matrix           PASS
-```
-
-Current durable authority:
-
-- `frontend/access.md`
-- current `apps/web` Access code/tests
-- `archive/branches/2026-08-feature-access-frontend.md` for non-authoritative branch history
-
-The accepted frontend remains intentionally backend-incomplete. Real account creation/authentication, verification/recovery mutation, provider validation/linking, sessions, reauthentication, server error/rate-limit mapping, stable Auth OpenAPI, generated Auth client integration, full-stack E2E, real Home handoff, legal destinations and native Mobile Access are not claimed complete.
-
-## 9. Next product implementation boundary
-
-There is no active CP6 continuation. CP6 is complete.
-
-The next concrete product implementation should be a **full-stack Access/Auth vertical** created from current protected `main` under a fresh bounded branch when explicitly started. Branches should follow product verticals rather than permanent backend/frontend layer lines.
-
-That vertical may modify backend and frontend together where the real contract requires it. Pure later UX polish may use a separate short-lived UI branch from then-current `main` when it is independent of the vertical.
-
-A later vertical may expose a legitimate database evolution requirement. That becomes a normal reviewed forward migration synchronized with the Database System of Record; it does not reopen CP6.
-
-## 10. Capability-triggered components
-
-Selected components remain dormant until a real consuming requirement exists:
-
-```text
-PowerSync + encrypted SQLite
-→ real offline/multi-device implementation
-
-PostgreSQL transactional outbox
-→ real Class-A async requirement
-
-R2
-→ real ContentArtifact byte flow
-
-OR-Tools
-→ solver-backed capability
-
-Restate
-→ first real Class-B durable workflow
-
-pgBackRest + AWS S3
-→ recovery/production boundary or real recovery rehearsal
-```
-
-Selected architecture does not imply activated runtime capability.
-
-## 11. Repository / documentation truth
-
-Protected `main` is integrated authority. Unmerged branch truth remains bounded to its branch until merge.
-
-Temporary live/session handoffs are branch-operational only and must not merge into `main`. Completed workstreams may retain at most one justified consolidated branch history record; Git/PR history remains the complete backup.
-
-See:
-
-- `development/documentation-lifecycle-policy.md`
-- `archive/README.md`
-- `development/repository-engineering-safety.md`
-- `development/branching-and-environments.md`
-
-## 12. Current direct-validation non-claims
-
-Do not claim work that has not actually run or been implemented:
-
-```text
-FULL-STACK ACCESS/AUTH VERTICAL                  NOT STARTED
-ACCESS REAL BACKEND/FULL-STACK CLOSURE           NOT COMPLETE
-NATIVE MOBILE ACCESS                             NOT IMPLEMENTED
-DIRECT BUSINESS HG-01..HG-12                     NOT BLANKET-PASSED
-RESTORE/PITR REHEARSAL                           NOT RUN
-REAL V1→V2 BUSINESS-SCHEMA EVOLUTION             NOT RUN
-POWERSYNC DIRECT PRODUCT TEST                    NOT RUN
-RESTATE DIRECT PRODUCT TEST                      NOT RUN
-PRODUCTION DEPLOYMENT                            NOT STARTED
-```
-
-The Access frontend branch's historical local/automated evidence must not be inflated: AF-03A full automation was proven before its final one-line width refinement; exact final delta plus visual review were accepted, while the final branch integration still requires hosted PR CI.
-
-## 13. Current navigation
-
-Start from:
-
-```text
-README.md
-docs/README.md
-docs/PROJECT-STATUS.md
-docs/ROADMAP.md
-```
-
-Backend/database:
-
-```text
-apps/backend/README.md
-docs/database/README.md
-docs/database/dictionary/README.md
-docs/development/backend-cp6-05-whole-database-qa.md
-```
-
-Frontend Access:
-
-```text
-docs/frontend/access.md
-apps/web/src/features/access/
-apps/web/e2e/access.spec.ts
-```
-
-Historical branch narratives under `docs/archive/branches/` are evidence/navigation only and never current authority.
+1. executable code / migrations / tests / real PostgreSQL
+2. Product / Domain / Logical / Physical / constitutions / ADRs
+3. current subsystem references
+4. this status + roadmap
+5. durable evidence / Git chronology
+6. conversation memory

@@ -15,6 +15,7 @@ services:
       - postgres_password
     volumes:
       - postgres-data:/var/lib/postgresql
+      - pgbackrest-repository:/var/lib/pgbackrest
     command:
       - postgres
       - -c
@@ -30,9 +31,84 @@ services:
       retries: 24
       start_period: 10s
 
+  alloy:
+    profiles:
+      - observability
+    image: grafana/alloy:v1.19.2@sha256:b8ec653c44235fbe910879145dac3597d66b0aaecf60bcbbe82580767771a839
+    restart: unless-stopped
+    init: true
+    user: "473:473"
+    group_add:
+      - "${DANTE_OBSERVABILITY_LOG_GID:-1000}"
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    env_file:
+      - path: ../observability/.env.local
+        required: false
+    secrets:
+      - grafana_cloud_api_key
+      - grafana_cloud_otlp_authorization
+      - dante_observer_dsn
+    volumes:
+      - ../observability/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - ../../.dante/observability/logs:/var/log/dante:ro
+      - alloy-data:/var/lib/alloy/data
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=32m,uid=473,gid=473,mode=0700
+    ports:
+      - "127.0.0.1:12345:12345"
+      - "127.0.0.1:4317:4317"
+      - "127.0.0.1:4318:4318"
+      - "127.0.0.1:12347:12347"
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+      - --disable-reporting
+      - /etc/alloy/config.alloy
+    cpus: 1.0
+    mem_limit: 512m
+    pids_limit: 256
+    stop_grace_period: 15s
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - /bin/bash
+        - -ec
+        - >-
+          exec 3<>/dev/tcp/127.0.0.1/12345;
+          printf 'GET /-/ready HTTP/1.0\r\nHost: localhost\r\n\r\n' >&3;
+          read -r protocol status message <&3;
+          test "$$status" = 200
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
 volumes:
   postgres-data:
+  pgbackrest-repository:
+  alloy-data:
 
 secrets:
   postgres_password:
     file: ./secrets/postgres_password.local
+  grafana_cloud_api_key:
+    file: ./secrets/grafana_cloud_api_key.local
+  grafana_cloud_otlp_authorization:
+    file: ./secrets/grafana_cloud_otlp_authorization.local
+  dante_observer_dsn:
+    file: ./secrets/dante_observer_dsn.local

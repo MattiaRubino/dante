@@ -1,37 +1,77 @@
 # DANTE — Frontend Product Contract
 
-**Status:** current product/UX authority for the materialized frontend.
+- **Status:** CURRENT FRONTEND NAVIGATION / current `main` platform + Home/Temporal workstream
+- **Last reconciled:** 2026-09-05
 
-This directory contains durable product-facing frontend contracts carried from approved exploratory work into the production-shaped React workspace. Current implementation truth remains the checked-out production code/tests; prototype branches are frozen design/history sources, not runtime dependencies.
+This directory contains durable product-facing frontend contracts carried into the production React workspace. Current implementation truth is the checked-out code/tests; prototype branches remain design/history evidence only.
 
 ## Read order
 
-1. `docs/frontend/access.md` — current materialized Access Web baseline and remaining full-stack boundary
-2. `docs/frontend/home/home-structural-contract.md` — frozen Whole-Home H0 macro structure, ownership and responsive composition
-3. `docs/frontend/home/production-depth-handoff.md` — current Home phase, working strategy and new-chat bootstrap
-4. `docs/frontend/home/current-checkpoint.md`
-5. `docs/frontend/home/contract.md`
-6. `docs/frontend/ui-registry.md`
-7. `docs/frontend/design-tokens.md`
-8. `docs/frontend/terminology.md`
-9. `docs/frontend/localization.md`
-10. `docs/frontend/production-readiness/component-architecture.md`
-11. `docs/frontend/production-readiness/backend-integration-contract.md`
-12. `docs/frontend/production-readiness/quality-gates.md`
+1. `access.md` — current Access/Auth Web contract
+2. `home/home-structural-contract.md` — frozen Whole-Home H0 macro structure and responsive composition
+3. `home/production-depth-handoff.md` — current Home workstream handoff
+4. `home/current-checkpoint.md`
+5. `home/contract.md`
+6. `ui-registry.md`
+7. `design-tokens.md`
+8. `terminology.md`
+9. `localization.md`
+10. `production-readiness/component-architecture.md`
+11. `production-readiness/backend-integration-contract.md`
+12. `production-readiness/quality-gates.md`
 
 Engineering/runtime authority remains the materialized frontend workspace, repository architecture, CI and local-development documentation. Product contracts do not replace those engineering authorities.
 
-## Access
+## Access current state
 
-`docs/frontend/access.md` is the current durable contract for the completed pre-backend Access Web materialization. The approved cross-platform design source remains frozen on `prototype/access-system`; it is historical design evidence and must not override newer production code/current documentation.
+The old pre-backend Access materialization remains historical visual/product evidence, but Access is no longer a fake/pre-backend surface. Current Web capability is integrated with the governed backend and includes:
 
-The completed frontend work deliberately does **not** claim real Auth backend behavior. Real account/session/provider/recovery integration belongs to a later full-stack Access/Auth vertical created from current protected `main`.
+```text
+email/password signin
+session bootstrap/logout
+signup/OTP/recovery/reset/reauth
+Google official GIS signin/link/reauth flow
+Apple browser begin/continuation integration
+provider enrollment/link collision flow
+passkey signin/register/reauth/rename/remove
+password establish/remove
+/security authenticator management
+backend-authoritative anti-lockout
+IT/EN copy
+```
 
-## Home React migration rule
+Current architecture:
 
-The accepted Home prototype is an executable UX/reference specification, **not** code to transliterate line-by-line into React.
+```text
+TanStack Router
+→ feature public API
+→ TanStack Query
+→ Access application boundary
+→ platform Web Auth adapters
+→ governed @dante/api-client
+→ same-origin /api/v1
+→ FastAPI/PostgreSQL canonical authority
+```
 
-The Whole-Home macro skeleton is additionally change-controlled by H0. Child feature work consumes that skeleton and may not silently change region ownership, macro hierarchy or responsive composition merely because a local implementation would be easier.
+Rules:
+
+```text
+feature-first ownership
+route adapters remain thin
+presentation does not import raw generated operations/platform adapters
+no ad-hoc Auth fetch proliferation
+no browser-persisted Auth token
+provider/browser success != DANTE authenticated success
+WebAuthn crypto remains backend-owned
+```
+
+The accepted Security UI is functionally proved but has accumulated substantial responsibility in `access-security-page.tsx`. Later hardening should split bounded password/provider/passkey/reauth sections before substantially expanding the page. This is a component-ownership cleanup, not a semantic Auth redesign.
+
+## Home / Temporal React workstream
+
+The accepted Home prototype remains an executable UX/reference specification, not code to transliterate line-by-line. The production React materialization on the Home/Temporal workstream must preserve accepted behavior while consuming the current platform, Access/Auth and shared frontend architecture from `main`.
+
+The Whole-Home macro skeleton is change-controlled by H0. Child feature work consumes that skeleton and may not silently change region ownership, macro hierarchy or responsive composition merely because a local implementation would be easier.
 
 Implementation must:
 
@@ -41,7 +81,8 @@ Implementation must:
 - componentize by ownership boundary rather than arbitrary pieces of the old monolith;
 - separate view models from backend DTOs/domain/persistence shapes;
 - preserve semantic IDs, localization keys and machine-readable Home-stage/Whole-Home contracts;
-- keep semantic World/group/event colors distinct from generic DANTE chrome.
+- keep semantic World/group/event colors distinct from generic DANTE chrome;
+- keep Timeline/Temporal application seams independent from raw persistence and provider SDKs.
 
 Machine-readable H0 authority lives in:
 
@@ -50,24 +91,6 @@ Machine-readable H0 authority lives in:
 
 Those contracts are blocking CI through `tests/prototypes/frontend-preprod-contracts.py`; runtime structure and geometry are additionally protected by React and Playwright regression tests.
 
-## Deliberately not imported from exploratory branches
+## Historical prototype rule
 
-Exploratory branches contain extensive historical material intentionally excluded from current production documentation, including intermediate patch/archive chains, reconstruction fragments, obsolete checkpoints, abandoned experiments and regression tooling tied only to superseded prototype internals.
-
-That history remains available on its source branch if archaeology is required, but it is not an implementation dependency.
-
-## Frozen Home prototype evidence
-
-Historical Home prototype authority is pinned to `prototype/frontend` commit:
-
-`2203c96c4aa1dc10258a84bcf461aa0b923e8951`
-
-The final user-reviewed local Home wrapper corresponding to the accepted B2 v27 state was:
-
-```text
-DANTE_Home_v43_VERIFIED_INJECTION_COLOR_FIX.html
-size       87386 bytes
-SHA-256    e82058e4e980208feb3f0c055dab3eec81812be1fa47e5f036e8d5d0e1fe859d
-```
-
-The wrapper itself is not copied into current production documentation; durable behavior/visual decisions and machine-readable contracts are retained instead.
+Production code never imports prototype implementation. Prototype branches are recoverable evidence, not runtime dependencies.
