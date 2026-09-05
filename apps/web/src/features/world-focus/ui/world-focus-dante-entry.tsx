@@ -16,6 +16,10 @@ import {
   isWorldFocusFeatureAvailable,
   type WorldFocusFeatureAvailability,
 } from '../model/world-focus-platform';
+import {
+  WORLD_FOCUS_DANTE_CONVERSATION_INSTANCE_ID,
+  useOptionalWorldFocusDanteConversation,
+} from './world-focus-dante-conversation-context';
 import { useWorldFocusWorkspaceAllocation } from './world-focus-workspace-allocation-context';
 import { useWorldFocusWorkspace } from './world-focus-workspace-host';
 
@@ -102,6 +106,11 @@ export function WorldFocusDanteInvoke() {
   const composerIsOpen = workspace.state.surfaces.some(
     (surface) => surface.instanceId === WORLD_FOCUS_DANTE_COMPOSER_INSTANCE_ID,
   );
+  const conversationIsOpen = workspace.state.surfaces.some(
+    (surface) =>
+      surface.instanceId === WORLD_FOCUS_DANTE_CONVERSATION_INSTANCE_ID,
+  );
+  const danteInteractionIsOpen = composerIsOpen || conversationIsOpen;
   const backgroundIsInert = allocation.mainInteraction === 'inert';
 
   const requestOpen = useCallback(() => {
@@ -123,19 +132,19 @@ export function WorldFocusDanteInvoke() {
     <div
       className="world-focus-dante-entry"
       data-world-focus-dante-availability={availability.status}
-      data-world-focus-dante-open={composerIsOpen ? 'true' : 'false'}
+      data-world-focus-dante-open={danteInteractionIsOpen ? 'true' : 'false'}
       inert={backgroundIsInert ? true : undefined}
     >
       <button
         ref={invokerRef}
         className="world-focus-dante-invoke"
         type="button"
-        aria-controls="world-focus-dante-composer"
-        aria-expanded={composerIsOpen}
+        aria-controls={composerIsOpen ? 'world-focus-dante-composer' : undefined}
+        aria-expanded={danteInteractionIsOpen}
         aria-label={t(($) => $.common.worldFocus.dante.invokeForWorld, {
           world: worldLabel,
         })}
-        disabled={composerIsOpen}
+        disabled={danteInteractionIsOpen}
         onClick={requestOpen}
       >
         <span className="world-focus-dante-invoke-mark" aria-hidden="true">
@@ -160,9 +169,9 @@ type WorldFocusDanteComposerProps = Readonly<{
 }>;
 
 /**
- * P1 pre-backend composer shell. A submit attempt intentionally yields only a
- * truthful local unavailable state. D1 does not invent a conversation, Run or
- * assistant response before the dedicated deterministic conversation vertical.
+ * P1 composer shell. Without the D3 route-scoped conversation owner it keeps
+ * the original truthful pre-backend unavailable fallback; with D3 mounted, a
+ * successful submit atomically hands this surface to the one conversation.
  */
 export function WorldFocusDanteComposer({
   onRequestClose,
@@ -170,8 +179,10 @@ export function WorldFocusDanteComposer({
   const { t } = useTranslation('common');
   const { worldId, worldLabel, availability, restoreInvokerFocus } =
     useWorldFocusDanteEntry();
+  const conversation = useOptionalWorldFocusDanteConversation();
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const closeRef = useRef<HTMLButtonElement | null>(null);
+  const handoffRef = useRef(false);
   const [draft, setDraft] = useState('');
   const [submissionUnavailable, setSubmissionUnavailable] = useState(false);
   const entryIsAvailable = isWorldFocusFeatureAvailable(availability);
@@ -183,12 +194,28 @@ export function WorldFocusDanteComposer({
       closeRef.current?.focus({ preventScroll: true });
     }
 
-    return restoreInvokerFocus;
+    return () => {
+      if (!handoffRef.current) {
+        restoreInvokerFocus();
+      }
+    };
   }, [entryIsAvailable, restoreInvokerFocus]);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (draft.trim().length === 0) {
+    const request = draft.trim();
+    if (request.length === 0) {
+      return;
+    }
+
+    if (
+      conversation?.beginFromComposer(
+        WORLD_FOCUS_DANTE_COMPOSER_INSTANCE_ID,
+        request,
+      ) === true
+    ) {
+      handoffRef.current = true;
+      setSubmissionUnavailable(false);
       return;
     }
 
