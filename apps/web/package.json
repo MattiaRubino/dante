@@ -22,7 +22,7 @@
     "@grafana/faro-web-tracing": "2.11.0",
     "@tanstack/react-query": "5.101.4",
     "@tanstack/react-router": "1.170.31",
-    "i18next": "26.3.6",
+    "i18next": "26.4.1",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "react-i18next": "17.0.11"
