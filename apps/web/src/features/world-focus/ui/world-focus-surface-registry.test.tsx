@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { getCoreWorldFocusSurfaceRegistry } from './world-focus-core-surfaces';
 import { WorldFocusSurfaceRegistry } from './world-focus-surface-registry';
 
 describe('WorldFocusSurfaceRegistry', () => {
@@ -20,6 +21,12 @@ describe('WorldFocusSurfaceRegistry', () => {
     expect(registry.resolve('insight')).toBe(insight);
     expect(registry.resolve('explore')).toBe(explore);
     expect(registry.resolve('future-specialist')).toBeNull();
+  });
+
+  it('keeps a standalone DANTE Insight as a finite shipped surface kind', () => {
+    const registry = getCoreWorldFocusSurfaceRegistry();
+
+    expect(registry.has('dante-insight')).toBe(true);
   });
 
   it('rejects duplicate and empty kinds before runtime presentation', () => {
