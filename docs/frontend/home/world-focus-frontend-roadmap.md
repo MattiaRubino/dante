@@ -1,6 +1,6 @@
 # DANTE — World Focus Frontend Roadmap
 
-**Status:** CURRENT WORKING ROADMAP — M3 CLOSED / VALIDATED — M4 CONTEXTUAL DANTE ACTIVE / D2 PREFLIGHT ACTIVE  
+**Status:** CURRENT WORKING ROADMAP — M3 CLOSED / VALIDATED — M4 CONTEXTUAL DANTE ACTIVE / D2 CLOSED / D3 PREFLIGHT NEXT  
 **Date:** 2026-09-05  
 **Branch:** `feature/home-react`
 
@@ -32,6 +32,7 @@ World Focus route/shell
 -> M3-3 Manual Customize UX + hostile accessibility/responsive closure
 -> M3-4 Integrated Adaptive Composition + planner/a11y/renderer hardening
 -> M3 final hostile closure
+-> D2 adaptive conversation surface
 ```
 
 ## 2. Key evidence
@@ -47,14 +48,15 @@ PRE-M3-3 validation  7781c6751a455767595eaf159747da833117f8b2 / CI 33862549244 P
 M3-3 hostile green   1978fe5c77c0e2661239372bf0f9bee238021faa / CI 33879774332 PASS
 M3-4 code/test green b10dc2bef8bab6ae863ce3c8331da6de96094a66 / CI 33904052325 PASS
 M3 final hostile     d9c30a3c6148469b347754eab07dc2ade9be4c52 / CI 33951509083 PASS
+D2 final             7b787766be83096e82eab1ac116b2704fae5f202 / CI 33958677991 PASS
 ```
 
-Current M3 closure baseline:
+Current D2 closure baseline:
 
 ```text
-80 / 80 web test files
-391 / 391 web unit tests
-300 modules / 899 dependencies / 0 architecture violations
+82 / 82 web test files
+399 / 399 web unit tests
+305 modules / 929 dependencies / 0 architecture violations
 Frontend pre-production contracts PASS
 World Focus pre-production contracts PASS
 Quality PASS
@@ -83,8 +85,8 @@ M3 — Adaptive World Composition                             CLOSED / VALIDATED
   M3-4 Integrated Adaptive Composition                      CLOSED / VALIDATED
   M3 final hostile closure                                  CLOSED / PASS
 M4 — Contextual DANTE / D2–D6                              ACTIVE
-  D2 adaptive conversation surface                          PREFLIGHT ACTIVE / NOT MATERIALIZED
-  D3 deterministic pre-backend conversation adapter         BLOCKED BY D2
+  D2 adaptive conversation surface                          CLOSED / VALIDATED
+  D3 deterministic pre-backend conversation adapter         READ-ONLY PREFLIGHT NEXT
   D4 contextual/deictic invocation                          BLOCKED BY D3
   D5 Insight presentation integration                       BLOCKED BY D4
   D6 Proposal / confirmation / receipt                      BLOCKED BY D5
@@ -96,7 +98,7 @@ BACKEND                                                      AFTER M7 ONLY
 
 ## 4. Closed M3 result
 
-M3 owns client adaptive composition and manual customization only. Normal World rendering now consumes validated M1 results through meaningful opportunities, accepted M3 config, M3-2 resolver, the existing Workspace planner/registry and M2 renderers.
+M3 owns client adaptive composition and manual customization only. Normal World rendering consumes validated M1 results through meaningful opportunities, accepted M3 config, M3-2 resolver, the existing Workspace planner/registry and M2 renderers.
 
 Canonical customization path remains:
 
@@ -109,8 +111,6 @@ CURRENT CONFIG
 -> Apply | Cancel
 ```
 
-M3 final hostile closure adds no feature semantics and no production code. It proves the combined path under partial/empty/unavailable inputs, conflicting config semantics, transaction conflicts and 200 deterministic hostile configuration/order/budget combinations. Scope compare from its PRE-SCOPE is `ahead 2 / behind 0` with exactly one net changed test file.
-
 Detailed closure authority:
 
 ```text
@@ -122,52 +122,78 @@ CI        33951509083 / run #944 PASS
 
 ## 5. M4 — Contextual DANTE
 
-M4 resumes the already-accepted D0/D1 direction; it must not invent a new chatbot product.
+M4 resumes the accepted D0/D1 direction; it must not invent a new chatbot product.
 
 Accepted semantic/spatial sequence:
 
 ```text
 D1 P0/P1 quiet invoke + compact composer        CLOSED
-D2 adaptive ongoing conversation surface         NEXT MATERIALIZATION
-D3 deterministic pre-backend conversation        AFTER D2
+D2 adaptive ongoing conversation surface         CLOSED / VALIDATED
+D3 deterministic pre-backend conversation        NEXT PREFLIGHT
 D4 bounded contextual/deictic invocation         AFTER D3
 D5 Insight presentation integration              AFTER D4
 D6 Proposal / confirmation / receipt             AFTER D5
 ```
 
-### D2 — Adaptive conversation surface
+### D2 — CLOSED / VALIDATED
 
-Required behavior:
+Materialized behavior:
 
 ```text
 wide allocated workspace with viable split
 -> non-modal workspace sidecar
 
 constrained/mobile workspace
--> route-owned focus overlay below Global Topbar
+-> route-owned focus surface below Global Topbar
 
 wide deep work + explicit user intent
--> maximize sidecar -> route focus overlay
--> restore same logical conversation
+-> maximize sidecar -> route focus
+-> restore same logical conversation surface
 ```
 
-D2 must preserve:
+D2 preserves:
 
 ```text
 presentation geometry != conversation identity
 actual allocated workspace geometry decides split viability
 same Workspace surface stack/state remains authority
-route-owned focus overlay does not rewrite AppShell/Topbar ownership
-focus and Escape are deterministic
-World switch/generation does not leak transient interaction into another World
-no fake messages, model output or backend adapter before D3
+route-owned focus does not rewrite AppShell/Topbar ownership
+generic route != automatically blocking interaction
+DANTE route-focus explicitly blocks World interaction
+focus transitions remain live across sidecar <-> route
+no fake messages, model output or backend adapter
 ```
 
-Live preflight has already confirmed that `presentation='route'` is represented by the Workspace allocator as `slot='external'`, while `WorldFocusSurfaceLayer` deliberately does not render external placements. D2 therefore needs the missing route-owned presenter seam, not a second surface engine and not a disconnected URL/chat route.
+The route-owned presenter consumes `slot='external'` from the same allocator and renders through the same finite registry/error-boundary path as workspace-owned surfaces. No second surface engine or disconnected chat URL exists.
+
+Detailed evidence:
+
+```text
+world-focus-d2-adaptive-conversation-surface-review.md
+PRE-SCOPE 0a0a43ac06f93d986674f8521e521dcc05ea2c1e
+CODE/TEST  7b787766be83096e82eab1ac116b2704fae5f202
+CI         33958677991 / run #969 PASS
+```
 
 ### D3 — Deterministic pre-backend conversation adapter
 
-After D2 geometry is proven, add typed local conversation/message/result distinctions, cancellation/generation handling and deterministic fixtures. Do not represent assistant output as canonical truth.
+D3 is next and must start with read-only preflight.
+
+It should add typed local conversation/message/result distinctions, cancellation/generation handling and deterministic fixtures without importing provider/backend semantics early.
+
+Required separations:
+
+```text
+user input != assistant output
+assistant output != canonical fact
+conversation state != World canonical state
+presentation geometry != conversation identity
+mounted React state != future durable DANTE Run lifetime
+cancel/abort != semantic success
+late result from World/generation N != attachable to a newer World/generation
+```
+
+D3 remains pre-backend: no provider/LLM, API, DB, Alembic, durable persistence, D4 context widening, D5 Insight collapse or D6 Proposal/Decision/effect semantics.
 
 ### D4 — Contextual/deictic invocation
 
@@ -201,7 +227,7 @@ Consequential confirmation uses governed blocking semantics; D6 still has no rea
 
 ## 6. Visual sequence agreed with user
 
-Do not redesign the product cosmetically during D2–D6 merely because M4 adds surfaces.
+Do not redesign the product cosmetically during D3–D6 merely because M4 adds interaction semantics.
 
 ```text
 M4 complete
@@ -249,9 +275,10 @@ client revision != backend persistence revision
 renderer availability != mandatory mounting
 adopt != semantic truth/AuthZ/persistence
 presentation geometry != conversation identity
+route presentation != automatically blocking interaction
 context reference != authorization
 ```
 
 ## 9. Immediate continuation
 
-> **M3 is CLOSED / VALIDATED. M4 is ACTIVE. Finish D2 read-only preflight, state an exact bounded D2 gate, then RED-first the missing sidecar/route-focus presentation continuity without pulling D3–D6 forward.**
+> **M3 is CLOSED / VALIDATED. D2 is CLOSED / VALIDATED. M4 remains ACTIVE. Start D3 with read-only inspection of D1/D2 ownership, generation/cancellation patterns and truth distinctions; then state an exact bounded RED-first D3 gate without pulling D4–D6 or backend/provider semantics forward.**
