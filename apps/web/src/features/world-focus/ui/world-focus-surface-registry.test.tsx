@@ -29,6 +29,14 @@ describe('WorldFocusSurfaceRegistry', () => {
     expect(registry.has('dante-insight')).toBe(true);
   });
 
+  it('keeps D6 Proposal, confirmation and receipt as three distinct finite shipped surface kinds', () => {
+    const registry = getCoreWorldFocusSurfaceRegistry();
+
+    expect(registry.has('dante-proposal')).toBe(true);
+    expect(registry.has('dante-confirmation')).toBe(true);
+    expect(registry.has('dante-receipt')).toBe(true);
+  });
+
   it('rejects duplicate and empty kinds before runtime presentation', () => {
     expect(
       () =>
