@@ -1,0 +1,33 @@
+.world-focus-state {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  max-width: min(520px, calc(100% - 32px));
+  margin: 0;
+  padding: 12px 18px;
+  border: 1px solid
+    color-mix(in srgb, var(--world-focus-accent) 20%, transparent);
+  border-radius: 999px;
+  color: rgba(232, 236, 247, 0.76);
+  background: rgba(8, 12, 24, 0.62);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 12px 32px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(14px) saturate(115%);
+  font-size: 0.86rem;
+  line-height: 1.4;
+  text-align: center;
+  transform: translate(-50%, -50%);
+}
+
+.world-focus-shell[data-world-focus-status='error'] .world-focus-state,
+.world-focus-shell[data-world-focus-status='unavailable'] .world-focus-state {
+  border-color: rgba(255, 255, 255, 0.1);
+  color: rgba(240, 242, 249, 0.84);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .world-focus-state {
+    transition: none;
+  }
+}

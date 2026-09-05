@@ -20,6 +20,9 @@ export const access = {
     body: 'Continue with your account or use email and password.',
     forgot: 'Forgot password?',
     new: 'New to DANTE?',
+    otherMethods: 'Use another method',
+    passkeyHint:
+      'Use a passkey already registered on this device or in your password manager.',
   },
   signup: {
     title: 'Create your DANTE account',
@@ -40,13 +43,14 @@ export const access = {
   },
   password: {
     guideTitle: 'Minimum length',
-    proposal: '12+ characters',
+    proposal: '15+ characters',
     manager:
       'You can paste or generate the password with your password manager.',
   },
   provider: {
     google: 'Continue with Google',
     apple: 'Continue with Apple',
+    passkey: 'Sign in with a passkey',
     googleName: 'Google',
     appleName: 'Apple',
     body: 'DANTE opens the provider’s official flow. The consent screen belongs to the provider, not DANTE.',
@@ -55,6 +59,14 @@ export const access = {
       'Complete sign-in in the provider window. You’ll return to DANTE automatically.',
     scopeNote:
       'Using Google or Apple to sign in does not authorize DANTE to read Calendar, Gmail, or iCloud.',
+  },
+  providerEnrollment: {
+    title: 'Verify an email address',
+    body: 'The provider cannot prove mailbox control to DANTE. Verify the address directly before the account is created.',
+    sendCode: 'Send verification code',
+    verify: 'Verify and continue',
+    privacy:
+      'The flow capability stays in an HttpOnly cookie. No provider token is stored in browser storage.',
   },
   common: {
     or: 'or',
@@ -67,6 +79,7 @@ export const access = {
   },
   action: {
     signin: 'Sign in',
+    logout: 'Sign out',
     createAccount: 'Create account',
     showPassword: 'Show password',
     hidePassword: 'Hide password',
@@ -80,7 +93,7 @@ export const access = {
   validation: {
     email: 'Enter a valid email address.',
     passwordRequired: 'Enter your password.',
-    passwordMinimum: 'Use at least 12 characters.',
+    passwordMinimum: 'Use at least 15 characters.',
     passwordMismatch: 'The passwords do not match.',
     verificationCode: 'Enter the 6-digit code.',
     preferredName: 'Enter the name you want DANTE to use.',
@@ -94,6 +107,29 @@ export const access = {
       'Wait before trying again. The effective retry time will come from the server.',
     serverUnavailableTitle: 'Service temporarily unavailable.',
     serverUnavailableBody: 'Try again when the Access service is reachable.',
+  },
+  failure: {
+    invalidCredentialsTitle: 'Sign-in failed.',
+    invalidCredentialsBody: 'The email or password is incorrect.',
+    passkeyBody:
+      'The passkey did not complete sign-in. Try again or use another method.',
+    accountUnavailableTitle: 'Account unavailable.',
+    accountUnavailableBody: 'This account cannot open a new session right now.',
+    passwordCompromisedTitle: 'Password update required.',
+    passwordCompromisedBody:
+      'To protect the account, this password cannot be used to open a new session.',
+    existingAccountTitle: 'Account already exists.',
+    existingAccountBody:
+      'The address is verified. Sign in with the account already associated with this email.',
+    verificationInvalidTitle: 'Code invalid or expired.',
+    verificationInvalidBody: 'Request a new code or restart account creation.',
+    recoveryInvalidTitle: 'Recovery link invalid or expired.',
+    recoveryInvalidBody: 'Request a new link to reset your password securely.',
+    requestInvalidTitle: 'Check the information you entered.',
+    requestInvalidBody:
+      'The request does not meet the access requirements. Check the information and try again.',
+    unexpectedTitle: 'Sign-in could not be completed.',
+    unexpectedBody: 'Try again. If the problem continues, try again later.',
   },
   locale: {
     control: 'Change language. Current language: {{language}}',
@@ -123,6 +159,9 @@ export const access = {
   recovery: {
     title: 'Check your email',
     body: 'If an account exists for the address you entered, you’ll receive instructions to recover access.',
+    validatingTitle: 'Checking recovery link',
+    validatingBody:
+      'We’re securely validating the link before showing the password reset form.',
   },
   reset: {
     title: 'Create a new password',
@@ -141,9 +180,16 @@ export const access = {
   },
   link: {
     title: 'Confirm account linking',
-    body: 'A DANTE account already exists for this email. Sign in to that account before linking the provider.',
-    action: 'Sign in and link',
+    body: 'A DANTE account already exists for this identity. Authenticate that account first, then explicitly confirm the provider link.',
+    action: 'Authenticate existing account',
     other: 'Use another account',
+    authenticateFirst:
+      'The provider proof alone cannot authorize linking. DANTE first needs a session for the existing account.',
+    authenticatedReady:
+      'The existing account is authenticated. Confirm the provider link now.',
+    authenticate: 'Authenticate with password',
+    authenticatePasskey: 'Authenticate with passkey',
+    confirm: 'Confirm link',
   },
   authenticated: {
     title: 'Access confirmed',
@@ -151,8 +197,69 @@ export const access = {
   },
   reauth: {
     title: 'Confirm your identity again',
-    body: 'To protect your account, confirm your identity again before continuing.',
-    action: 'Continue',
+    body: 'To protect your account, enter your password again before continuing.',
+    action: 'Confirm identity',
+  },
+  security: {
+    title: 'Account security',
+    body: 'Manage the methods you can use to authenticate to DANTE. Removals cannot violate the anti-lockout policy.',
+    loading: 'Loading security settings…',
+    signinRequired: 'Sign in to manage account security.',
+    backAccess: 'Back to Access',
+    reauthTitle: 'Recent confirmation',
+    reauthBody:
+      'Sensitive changes require recent proof that you still control an authenticator.',
+    reauthHint:
+      'Refresh your identity confirmation, then repeat the operation.',
+    reauthNoInlineMethod:
+      'To refresh recent confirmation, return to Access and sign in again with an available method.',
+    reauthPassword: 'Confirm with password',
+    reauthPasskey: 'Confirm with passkey',
+    reauthComplete: 'Identity confirmed recently.',
+    passwordTitle: 'Password',
+    newPassword: 'New password',
+    addPassword: 'Add password',
+    removePassword: 'Remove password',
+    passwordAdded: 'Password added.',
+    passwordRemoved: 'Password removed.',
+    providersTitle: 'Linked providers',
+    providersBody:
+      'Google and Apple authenticate identity; they do not automatically authorize access to provider data.',
+    linkGoogle: 'Link Google',
+    linkApple: 'Link Apple',
+    providerLinked: 'Provider linked.',
+    providerRemoved: 'Provider removed.',
+    passkeysTitle: 'Passkeys',
+    passkeysBody:
+      'Private keys remain inside the authenticator. DANTE stores only the public credential needed for verification.',
+    passkeyLabel: 'Passkey label',
+    passkeyLabelPlaceholder: 'e.g. Personal laptop',
+    passkeyLabelRequired: 'Enter a label for the passkey.',
+    addPasskey: 'Add passkey',
+    passkeyAdded: 'Passkey added.',
+    passkeyRenamed: 'Passkey renamed.',
+    passkeyRemoved: 'Passkey removed.',
+    passkeyTransportUnknown: 'Transport not reported',
+    rename: 'Rename',
+    save: 'Save',
+    remove: 'Remove',
+    errorOperation: 'The security operation could not be completed.',
+    errorServiceUnreachable: 'The Access service is unreachable.',
+    errorReauthenticationRequired:
+      'Confirm your identity again before changing security settings.',
+    errorRemovalBlocked:
+      'DANTE blocked this removal because it would leave the account without a safe authenticator.',
+    errorPasswordAlreadyEstablished: 'This account already has a password.',
+    errorPasskeyAlreadyRegistered:
+      'That passkey is already registered with DANTE.',
+    errorPasskeyNotFound: 'That passkey is no longer active on this account.',
+    errorServiceUnavailable:
+      'The authentication service is temporarily unavailable.',
+    errorGoogleControl:
+      'The Google authentication control could not be initialized.',
+    errorSessionUnavailable: 'Your session is no longer available.',
+    errorGoogleLinkIncomplete:
+      'Google did not complete the requested account link.',
   },
   setupName: {
     title: 'What should DANTE call you?',

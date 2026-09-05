@@ -1,7 +1,14 @@
 import { spawnSync } from 'node:child_process';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import {
+  mkdir,
+  mkdtemp,
+  readFile,
+  readdir,
+  rm,
+  writeFile,
+} from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
@@ -12,7 +19,12 @@ const generatedPaths = [
   'packages/design-tokens/generated/web.css',
   'packages/design-tokens/generated/native.ts',
   'apps/web/src/routeTree.gen.ts',
+  'packages/api-client/openapi/dante-v1.openapi.json',
 ];
+
+const generatedDirectories = ['packages/api-client/src/generated'];
+const apiGeneratedPaths = ['packages/api-client/openapi/dante-v1.openapi.json'];
+const apiGeneratedDirectories = ['packages/api-client/src/generated'];
 
 const snapshots = new Map();
 let tempRoot;
@@ -42,10 +54,76 @@ function run(command, args, label) {
   }
 }
 
-async function snapshotGeneratedFiles() {
-  for (const relativePath of generatedPaths) {
-    snapshots.set(relativePath, await readFile(join(repoRoot, relativePath)));
+async function listFiles(relativeDirectory) {
+  const absoluteDirectory = join(repoRoot, relativeDirectory);
+  const files = [];
+
+  async function visit(directory) {
+    const entries = await readdir(directory, { withFileTypes: true });
+
+    for (const entry of entries) {
+      const path = join(directory, entry.name);
+
+      if (entry.isDirectory()) {
+        await visit(path);
+      } else if (entry.isFile()) {
+        files.push(relative(repoRoot, path));
+      }
+    }
   }
+
+  try {
+    await visit(absoluteDirectory);
+  } catch (error) {
+    if (error?.code !== 'ENOENT') {
+      throw error;
+    }
+  }
+
+  return files.sort();
+}
+
+async function collectPaths(paths, directories) {
+  const collected = [...paths];
+
+  for (const directory of directories) {
+    collected.push(...(await listFiles(directory)));
+  }
+
+  return [...new Set(collected)].sort();
+}
+
+async function allGeneratedPaths() {
+  return collectPaths(generatedPaths, generatedDirectories);
+}
+
+async function allApiGeneratedPaths() {
+  return collectPaths(apiGeneratedPaths, apiGeneratedDirectories);
+}
+
+async function snapshotPaths(paths) {
+  const snapshot = new Map();
+
+  for (const relativePath of paths) {
+    snapshot.set(relativePath, await readFile(join(repoRoot, relativePath)));
+  }
+
+  return snapshot;
+}
+
+async function snapshotGeneratedFiles() {
+  const snapshot = await snapshotPaths(await allGeneratedPaths());
+  for (const [relativePath, content] of snapshot) {
+    snapshots.set(relativePath, content);
+  }
+}
+
+function regenerateApiClient() {
+  run(
+    'pnpm',
+    ['api:generate'],
+    'deterministic OpenAPI and Orval API generation',
+  );
 }
 
 async function regenerate() {
@@ -71,16 +149,31 @@ async function regenerate() {
     ],
     'TanStack Router generation through the real Vite plugin',
   );
+
+  regenerateApiClient();
 }
 
-async function findDrift() {
+async function findDifferences(snapshot, currentPaths) {
+  const paths = new Set([...snapshot.keys(), ...currentPaths]);
   const drifted = [];
 
-  for (const relativePath of generatedPaths) {
-    const regenerated = await readFile(join(repoRoot, relativePath));
-    const original = snapshots.get(relativePath);
+  for (const relativePath of [...paths].sort()) {
+    const original = snapshot.get(relativePath);
+    let regenerated;
 
-    if (!original.equals(regenerated)) {
+    try {
+      regenerated = await readFile(join(repoRoot, relativePath));
+    } catch (error) {
+      if (error?.code !== 'ENOENT') {
+        throw error;
+      }
+    }
+
+    if (
+      original === undefined ||
+      regenerated === undefined ||
+      !original.equals(regenerated)
+    ) {
       drifted.push(relativePath);
     }
   }
@@ -88,9 +181,19 @@ async function findDrift() {
   return drifted;
 }
 
+async function findCommittedDrift() {
+  return findDifferences(snapshots, await allGeneratedPaths());
+}
+
 async function restoreSnapshots() {
+  for (const directory of generatedDirectories) {
+    await rm(join(repoRoot, directory), { recursive: true, force: true });
+  }
+
   for (const [relativePath, content] of snapshots) {
-    await writeFile(join(repoRoot, relativePath), content);
+    const absolutePath = join(repoRoot, relativePath);
+    await mkdir(dirname(absolutePath), { recursive: true });
+    await writeFile(absolutePath, content);
   }
 
   if (tempRoot) {
@@ -99,12 +202,21 @@ async function restoreSnapshots() {
 }
 
 let drifted = [];
+let nondeterministicApi = [];
 let failure;
 
 try {
   await snapshotGeneratedFiles();
   await regenerate();
-  drifted = await findDrift();
+
+  const firstApiGeneration = await snapshotPaths(await allApiGeneratedPaths());
+  regenerateApiClient();
+  nondeterministicApi = await findDifferences(
+    firstApiGeneration,
+    await allApiGeneratedPaths(),
+  );
+
+  drifted = await findCommittedDrift();
 } catch (error) {
   failure = error;
 } finally {
@@ -114,6 +226,17 @@ try {
 if (failure) {
   process.stderr.write(
     `generated-source check could not complete: ${failure.message}\n`,
+  );
+  process.exitCode = 1;
+} else if (nondeterministicApi.length > 0) {
+  process.stderr.write('Nondeterministic API generation detected:\n');
+
+  for (const relativePath of nondeterministicApi) {
+    process.stderr.write(`- ${relativePath}\n`);
+  }
+
+  process.stderr.write(
+    'Two consecutive FastAPI → OpenAPI → Orval/Zod generations must be byte-identical.\n',
   );
   process.exitCode = 1;
 } else if (drifted.length > 0) {
@@ -129,6 +252,6 @@ if (failure) {
   process.exitCode = 1;
 } else {
   process.stdout.write(
-    `PASS: generated sources are deterministic and current (${generatedPaths.length} files)\n`,
+    `PASS: generated sources are deterministic and current (${snapshots.size} files)\n`,
   );
 }

@@ -1,286 +1,125 @@
 # DANTE Documentation Index
 
 - **Status:** CURRENT NAVIGATION / AUTHORITY INDEX
-- **Last reconciled:** 2026-09-04
+- **Last reconciled:** 2026-09-05
+- **Current protected-main tree:** Access/Auth + shared Email Platform + Recovery + Platform Observability
+- **Protected-main Observability merge:** `b74a806deed68b2729dd04678c0a5674cd572e8a` via PR `#58`
+- **Current Alembic:** `20260904_17`
 
-This directory is the durable documentation surface for DANTE. Current specifications describe the present directly; historical evidence, phase-time continuations and completed workstream records do not silently override current truth.
-
-## 1. Authority order
-
-When sources conflict, use this order unless a narrower accepted authority explicitly governs the subject:
-
-```text
-1. current protected-main executable truth
-   code / migrations / tests / generated governed artifacts
-
-2. accepted semantic + architectural authority
-   Product / Domain / Logical / Physical / ADRs / current architecture
-
-3. current durable subsystem reference
-   Database System of Record / frontend contracts / engineering contracts
-
-4. current project status + roadmap
-
-5. active or closed unmerged branch-local durable truth
-   only for that branch's bounded scope
-
-6. retained evidence / branch history / archive
-
-7. Git / PR chronology
-
-8. conversation memory
-```
-
-An unmerged branch may contain newer truth for its own scope, but it is not protected-main authority until integration.
-
-## 2. Current lifecycle
+## Authority order
 
 ```text
-PRODUCT / NORTH STAR                  CURRENT
-DOMAIN MODEL                          CLOSED
-LOGICAL MODEL                         CLOSED / 57 OF 57 / REMOTE QA PASS
-PRE-PHYSICAL COHERENCE                CLOSED / FINAL QA PASS
-PHYSICAL TARGET                       CLOSED / ACCEPTED
-ENGINEERING FOUNDATION                CLOSED / ACCEPTED
-FRONTEND ENGINEERING FOUNDATION       CLOSED / INTEGRATED VIA PR #22
-FRONTEND MATERIALIZATION              CLOSED / PASS / INTEGRATED VIA PR #28
-BACKEND CP1–CP5 SCAFFOLD              CLOSED / DIRECT QA / INTEGRATED VIA PR #24
-BACKEND CP6 DATABASE                  CLOSED / DIRECT QA / INTEGRATED VIA PR #42
-CURRENT POSTGRESQL                    18.6
-CURRENT PROTECTED-MAIN ALEMBIC        20260830_09
-CURRENT PROTECTED-MAIN DB TOPOLOGY    69/5/15/76/97/69/123
-POSTGRESQL LOCAL RECOVERY             CP01–CP07 LOCAL PASS / CLOSED / PR #47
-REMOTE BACKUP PROVIDER                TBD / NOT ACTIVATED
-PRODUCTION/CLOUD RECOVERY             NOT CLAIMED
-ACCESS PRE-BACKEND FRONTEND           CLOSED / ACCEPTED / RELEASE-HARDENED
-FULL ACCESS/AUTH PRODUCT VERTICAL     ACTIVE UNMERGED WORKSTREAM
-
-AI-00 FOUNDATION                      COMPLETE
-AI-01 PRODUCT/PRODUCTION RESEARCH     COMPLETE
-AI-02.1 RUNTIME ARCHITECTURE          CLOSED / STRUCTURALLY ACCEPTED
-AI-03 CONTEXT/RETRIEVAL/MEMORY        CLOSED / C01..C33 / B01..B35 / MAT-01..MAT-15
-AI-04 PRODUCTIONIZATION               CLOSED / A01..A30 / EV01..EV20 / RT-01..RT-31 / PA-01..PA-61 / WP-01..WP-22
-PRE-AI05                              CLOSED / PRE05-H01..H19
-AI-05A                                CLOSED / BD-01..BD-41
-AI-05B                                CLOSED / AI05B-H01..H15 / B05-01..B05-50 PASS
-AI-05 WHOLE-SYSTEM                    CLOSED / STRUCTURALLY ACCEPTED
-POST-AI05 HARDENING                   CLOSED / POST05-H01..H25
-POST-AI05 MEGA TEST                   PASS / MKT-001..100 / C01..20 / reverse / simulations
-AI ARCHITECTURE DESIGN                CLOSED / STRUCTURALLY ACCEPTED
-
-AI IMPLEMENTATION BRANCH              feature/ai-implementation
-I0                                    CLOSED / PASS
-I1                                    CLOSED / PASS
-I2                                    CLOSED / PASS
-I3/C3                                 DEFERRED / WAITING OWNER DATA + SEAMS
-C6 CONTROL/SAFETY/PUBLICATION         CLOSED / PASS
-C7 ROUTE-CONFIG IDENTITY/LOADER       CLOSED / PASS
-C8/P1 PROVIDER ADMISSION              CLOSED / OPENAI RESPONSES + GPT-5.6 TERRA ADMITTED FOR QUALIFICATION ONLY
-C9                                    OPEN / PRE-LIVE READY
-C9 P2/P3 + SDK + CONFORMANCE          PASS
-C9 P4 PRE-LIVE                       PASS
-C9 P4 REAL PROVIDER LIVE             NOT RUN
-AI NEXT EXECUTABLE                    C9 P4 real provider live compatibility
+1. executable/materialized repository truth
+2. accepted Product / Domain / Logical / Physical / constitutions / ADRs
+3. current subsystem references
+4. PROJECT-STATUS / ROADMAP / legitimate active workstream
+5. durable evidence / Git chronology
+6. conversation memory
 ```
 
-For exact current project state, read `PROJECT-STATUS.md`.
+## Current lifecycle
 
-## 3. Mandatory project entry points
+```text
+Product / Domain / Logical / Physical          CLOSED / CURRENT
+Engineering / Frontend / Backend CP1–CP6      CLOSED / ACCEPTED
+PostgreSQL                                     18.6
+Recovery                                       CLOSED / INTEGRATED
+Access/Auth M1–M5                              CLOSED / INTEGRATED
+Shared Email Platform                          CLOSED / INTEGRATED / OWNERSHIP VERIFIED
+Apple real external UAT                        BOUNDED DEFERRED
+Alembic                                        20260904_17
+Database                                       88/5/16/76/172/89/270
+Database-local CP07                            PASS
+Application / Email reopen CP08                PASS
+Platform Observability source                  CLOSED / OPERATIONAL PASS
+Platform Observability protected main          CLOSED / INTEGRATED VIA PR #58
+M6 Native Mobile                               FUTURE / OPTIONAL
+later M7 Access/security maturity              FUTURE
+```
 
-General continuation order:
+Remote-provider and production/cloud recovery remain separate future gates.
+
+## Mandatory continuation entry points
 
 1. `../README.md`
-2. `README.md`
-3. `PROJECT-STATUS.md`
-4. `ROADMAP.md`
-5. `development/agent-operating-manual.md`
-6. `development/operating-rules.md`
-7. `development/documentation-and-handoff.md`
-8. `development/documentation-lifecycle-policy.md`
-9. `development/branching-and-environments.md`
-10. `development/repository-engineering-safety.md`
-11. current subsystem/workstream sources relevant to the task
-12. current branch/ref and relation to protected `main`
+2. `PROJECT-STATUS.md`
+3. `ROADMAP.md`
+4. `development/agent-operating-manual.md`
+5. `development/documentation-lifecycle-policy.md`
+6. legitimate active workstream record, when one exists
+7. subsystem authority relevant to the task
+8. exact current Git refs
 
-Repository truth beats conversation memory.
+## Access/Auth
 
-## 4. Current AI continuation
+Access/Auth M1–M5 is integrated and has no active workstream authority file.
 
-For AI implementation on `feature/ai-implementation`, read in this order:
+Current subsystem authority:
 
-1. `architecture/dante-ai-implementation-baseline-final.md` — **CURRENT / ACCEPTED implementation-facing authority**;
-2. `workstreams/ai-implementation.md` — current branch-local implementation state, validated checkpoints and next executable gate;
-3. `workstreams/ai-c9-pre-live-checkpoint-2026-09.md` — current C9 pre-live deterministic/material evidence and exact remaining live gate;
-4. `workstreams/ai-provider-candidate-admission-2026-09.md` — current C8/P1 provider candidate admission evidence;
-5. `ROADMAP.md` — current execution overlay and cross-workstream convergence;
-6. `PROJECT-STATUS.md` — project-level current state;
-7. `architecture/dante-ai-post05-final-mega-acceptance.md` — final independent acceptance evidence;
-8. `workstreams/ai-architecture.md` — closed architecture workstream record and handoff evidence;
-9. upstream AI-02/03/04/PRE05/AI-05 authorities only when changing or validating those contracts.
+- `architecture/access-auth-architecture.md`
+- `architecture/access-auth-security-contract.md`
+- `architecture/access-auth-api-contract.md`
+- `architecture/access-auth-testing-contract.md`
+- `architecture/access-auth-m5-contract.md`
+- `architecture/access-auth-m5-persistence-api-contract.md`
+- `database/access-auth.md`
+- `frontend/access.md`
 
-The temporary `workstreams/ai-architecture-live-handoff.md` has been deleted after durable knowledge coverage.
+Historical/evidence routing:
 
-Current branch-local implementation state:
+- `archive/branches/2026-09-feature-access-auth.md` — consolidated branch history, **NON-AUTHORITATIVE**
+- `workstreams/access-auth-m5-review-2026-09-02.md` — historical validation/UAT evidence
+- `workstreams/access-auth-integration-acceptance-2026-09-04.md` — historical integration/CI/CP07 evidence
 
-```text
-I0 CLOSED / PASS
-I1 CLOSED / PASS
-I2 CLOSED / PASS
-I3/C3 DEFERRED / WAITING OWNER DATA + SEAMS
-C6 CLOSED / PASS
-C7 CLOSED / PASS
-C8/P1 CLOSED / OpenAI native Responses API + gpt-5.6-terra
-              ADMITTED FOR QUALIFICATION ONLY
+## Shared Email Platform
 
-C9 OPEN / PRE-LIVE READY
-P2/P3 contracts + inactive adapter               PASS
-OpenAI SDK 3.7.0 + lock                          PASS
-material SDK conformance                         PASS
-P4 pre-live                                      PASS
-final deterministic + PostgreSQL regression      PASS
-P4 real provider live compatibility              NOT RUN
-blocker: no user-owned qualification API credential provisioned
+- `architecture/email-platform.md`
+- `architecture/access-auth-email-delivery.md`
+- `decisions/ADR-012-email-delivery-platform.md`
+- `development/email-platform-local-uat.md`
+- `development/email-platform-acceptance-2026-09-03.md`
 
-NEXT EXECUTABLE
-C9 P4 real provider live compatibility
-synthetic/public/minimized data only
+## Platform Observability
 
-I3/C3 remains a parallel conditional lane and must converge before I6
-when the first vertical requires its real deterministic source/query path.
-```
+Current/evolving authority:
 
-The provider candidate remains admitted for qualification only. C9 has materially implemented the private inactive SDK/adapter and passed pre-live proof, but no real provider live call has been executed and no production/private-data qualification or activation is claimed.
+- `architecture/observability-runtime-contract.md` — signal, privacy, cardinality, failure and ownership contract
+- `development/observability-runbook.md` — setup, validation, incident, rotation and rollback procedures
+- `../infra/observability/README.md` — Alloy/Grafana/LOCAL runtime and source-controlled operational assets
+- `database/dante-postgresql-database-part-12.md` — Section 46 exact `dante_observer` database security contract
 
-## 5. Product
+Historical/evidence routing:
 
-Entry point:
+- `archive/branches/2026-09-feature-platform-observability.md` — single consolidated Platform Observability branch/integration history, **NON-AUTHORITATIVE**
 
-- `product/README.md`
+There is no active `workstreams/platform-observability.md` authority. The source workstream and integration branch are closed; Git, PR `#58` and the consolidated branch record retain chronology.
 
-Key durable sources include:
+## Database / Recovery
 
-- `product/product-identity-and-north-star.md`;
-- `product/scope.md`;
-- accepted `product/v1-*.md` specifications;
-- `product/feature-discovery-simulation-2026-08.md`;
-- `product/multi-actor-collaboration-discovery-simulation-2026-08.md`;
-- `product/multi-actor-collaboration-research-2026-08.md`.
+- `database/README.md` — current Database System of Record
+- `database/dictionary/README.md` — machine-readable current contract
+- `database/dante-postgresql-database.md` — current human-readable architecture/reference
+- `database/dante-postgresql-database-part-*.md` — detailed design/reference evidence; historical phase banners do not override current authority
+- `operations/postgres-recovery-runbook.md` — current LOCAL recovery + application/Email reopen operator contract
+- `development/backend-cp6-02-postgresql-persistence-constitution.md`
+- `decisions/ADR-010-postgresql-persistence-constitution.md`
 
-Research/simulation material is evidence and product-discovery authority where stated; it is not automatic Domain schema authority.
-
-## 6. Domain Model
-
-Entry point:
-
-- `domain/README.md`
-
-The Domain Model is **CLOSED / semantically complete for current accepted scope**. Current concept semantics live under `domain/concepts/`. Historical validation continuations remain evidence only.
-
-## 7. Logical Model
-
-Entry point:
-
-- `logical-model/README.md`
-
-The Logical Model is **CLOSED / 57 of 57 classified / REMOTE QA PASS**. Binding `WL-H01..WL-H12` remain implementation regression contracts unless deliberately superseded.
-
-## 8. Physical Model / Database
-
-Physical entry point:
-
-- `physical-model/README.md`
-
-Database entry point:
-
-- `database/README.md`
-- `database/dictionary/`
-
-Current selected target:
+Permanent invariant:
 
 ```text
-PostgreSQL 18 major family
-sole canonical persistence + material-history authority
-current patch 18.6
-current Alembic head 20260830_09
+current human DB reference
+≈ Database Dictionary
+≈ SQLAlchemy mappings
+≈ Alembic
+≈ real PostgreSQL
+≈ direct tests
 ```
 
-A structural DB change follows the permanent same-change rule: migration + mappings + Dictionary + human reference + tests + governed generated/operational artifacts.
-
-## 9. Architecture / AI
-
-Architecture entry points:
-
-- `architecture/README.md`;
-- `architecture/system-overview.md`;
-- `architecture/technical-decisions.md`;
-- `decisions/`.
-
-Current AI implementation authority:
-
-- `architecture/dante-ai-implementation-baseline-final.md`.
-
-Current AI implementation workstream:
-
-- `workstreams/ai-implementation.md`.
-
-Current C9 pre-live checkpoint:
-
-- `workstreams/ai-c9-pre-live-checkpoint-2026-09.md`.
-
-Current provider admission evidence:
-
-- `workstreams/ai-provider-candidate-admission-2026-09.md`.
-
-Final post-AI05 acceptance:
-
-- `architecture/dante-ai-post05-final-mega-acceptance.md`.
-
-Important implementation separations include:
+## Current integration sequence
 
 ```text
-GLOBAL SEARCH != INTELLIGENCE
-SEMANTIC QUERY GATEWAY != INTELLIGENCE-OWNED CROSS-CAPABILITY SQL
-SEARCH RESULT / CURSOR / TARGET REF != AUTHORIZATION
-Context != Retrieval != Memory
-RetrievalCandidate != ContextFragment
-DATA != INSTRUCTION
-MODEL OUTPUT != PUBLISHABLE OUTPUT
-PROVIDER COMPLETED != VERIFIED != PUBLISHABLE
-CANDIDATE ADMISSION != PRODUCTION QUALIFICATION
-DEFAULT NONCANONICAL PERSISTENCE = NO
-BUILD-READY != INTEGRATION-READY != ACTIVATION-READY
+Platform Observability protected-main integration via PR #58    CLOSED
+→ future bounded workstreams start from current protected main
 ```
 
-## 10. Frontend
-
-Entry point:
-
-- `frontend/README.md`
-
-Frontend Foundation and Materialization are closed/integrated. The full Access/Auth product vertical remains a separate active unmerged workstream.
-
-## 11. Workstreams
-
-Entry point:
-
-- `workstreams/README.md`
-
-Current bounded branch state includes active Access/Auth, Home React, platform observability and AI implementation work. `feature/ai-architecture` remains closed architecture authority/evidence; `feature/ai-implementation` owns newer branch-local AI implementation truth.
-
-## 12. Documentation lifecycle
-
-Current specifications contain current truth. Historical failure/pass chronology belongs in explicit evidence/archive/Git history. Temporary live/session handoffs do not merge to protected `main`.
-
-Normative lifecycle sources:
-
-- `development/documentation-and-handoff.md`;
-- `development/documentation-lifecycle-policy.md`;
-- `development/repository-engineering-safety.md`.
-
-```text
-SELECTED != IMPLEMENTED
-IMPLEMENTED != PROVEN
-ARCHITECTURE PASS != RUNTIME PASS
-UNMERGED BRANCH TRUTH != PROTECTED-main TRUTH
-TEMPORARY HANDOFF != DURABLE DOCUMENTATION
-```
+Temporary handoffs do not belong on protected main; current specifications must not become append-only diaries.

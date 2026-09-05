@@ -51,6 +51,143 @@ def validate_vm(vm: dict, schema: dict, allowed_states: set[str]) -> None:
         assert item["label"] != "+", "ghost/add slots are not data items"
 
 
+def validate_whole_home_structure() -> tuple[str, int]:
+    structure = load("home-structure.contract.json", CONTRACTS)
+    shell_matrix = load("home-shell-responsive.matrix.json", CONTRACTS)
+
+    version = structure["contractVersion"]
+    assert version == "1.0.0"
+    assert shell_matrix["contractVersion"] == version
+    assert structure["status"] == "frozen"
+
+    change_control = structure["changeControl"]
+    assert change_control["explicitUserApprovalRequiredForObservableStructuralChange"] is True
+    assert change_control["implementationRefactorAllowedWhenContractEquivalent"] is True
+    assert change_control["regressionGuardsMayBeWeakenedToAcceptAccidentalDrift"] is False
+
+    app_shell = structure["appShellBoundary"]
+    assert app_shell == {
+        "owner": "app-shell",
+        "insideHomeFeature": False,
+        "homeMayRenderOwnGlobalTopbar": False,
+    }
+
+    required_regions = {entry["id"] for entry in structure["regions"] if entry["required"]}
+    assert required_regions == {
+        "home.shell",
+        "home.dayContext",
+        "home.aiSurface",
+        "home.orientation",
+        "home.stage",
+        "home.timeline",
+        "home.contextRail",
+    }
+    unique_ids(structure["regions"], "whole-home regions")
+
+    parents = {entry["id"]: entry["parent"] for entry in structure["regions"]}
+    assert parents["home.shell"] == "app-shell.routeOutlet"
+    assert parents["home.dayContext"] == "home.hero"
+    assert parents["home.aiSurface"] == "home.heroBody"
+    assert parents["home.orientation"] == "home.upperWorkspace"
+    assert parents["home.stage"] == "home.upperWorkspace"
+    assert parents["home.timeline"] == "home.todayWorkspace"
+    assert parents["home.contextRail"] == "home.todayWorkspace"
+
+    composition = structure["composition"]
+    assert composition["home.hero"] == ["home.dayContext", "home.heroBody"]
+    assert composition["home.heroBody"] == ["home.aiSurface", "home.upperWorkspace"]
+    assert composition["home.upperWorkspace"] == ["home.orientation", "home.stage"]
+    assert composition["home.todayWorkspace"] == ["home.timeline", "home.contextRail"]
+
+    assert structure["orientationResponsibilities"] == ["now-next", "highlight", "for-you"]
+    assert structure["contextRailResponsibilities"] == {
+        "captureDirection": "user-to-dante",
+        "resolutionDirection": "dante-to-user",
+        "independentFloatingHomeRegionsAllowed": False,
+    }
+
+    state = structure["stateInvariants"]
+    assert state["aiCollapseOwner"] == "home.shell"
+    assert state["aiRoundTripMustBeGeometryReversible"] is True
+    assert state["stageModeMayChangeStageOuterGeometry"] is False
+    assert state["timelineExpansionMayConsumeContextRailWidthOnWide"] is True
+    assert state["timelineExpansionMayReauthorHeroGeometry"] is False
+    assert state["worldFocusEntryIsRouteTransitionNotHomeOverlay"] is True
+
+    geometry = structure["geometry"]
+    assert geometry["macroBreakpointsPx"] == {
+        "wideMin": 1121,
+        "compressedMin": 901,
+        "compressedMax": 1120,
+        "compactMax": 900,
+    }
+    assert geometry["acceptedMacroAnchorsPx"] == {
+        "contextRailNominalWidth": 306,
+        "todayNominalGap": 16,
+        "defaultOuterInset": 34,
+        "compressedOuterInset": 24,
+        "desktopHeroBaselineHeight": 650,
+    }
+    assert geometry["secondaryTuningBreakpointsPx"] == [1240, 1180, 1100, 980]
+    assert geometry["secondaryTuningMayCreateNewMacroComposition"] is False
+
+    responsive_modes = {entry["id"]: entry for entry in structure["responsiveModes"]}
+    assert set(responsive_modes) == {"H0-WIDE", "H0-COMPRESSED", "H0-COMPACT"}
+    assert responsive_modes["H0-WIDE"]["minWidthPx"] == 1121
+    assert responsive_modes["H0-COMPRESSED"]["minWidthPx"] == 901
+    assert responsive_modes["H0-COMPRESSED"]["maxWidthPx"] == 1120
+    assert responsive_modes["H0-COMPACT"]["maxWidthPx"] == 900
+
+    matrix_modes = shell_matrix["modes"]
+    for mode_id, mode in responsive_modes.items():
+        matrix_mode = matrix_modes[mode_id]
+        for key in ("minWidthPx", "maxWidthPx"):
+            if key in mode:
+                assert matrix_mode[key] == mode[key]
+        assert matrix_mode["contextRailVisible"] == mode["contextRailVisible"]
+
+    assert shell_matrix["pressureViewportsPx"] == [
+        1856,
+        1600,
+        1366,
+        1200,
+        1121,
+        1120,
+        1024,
+        901,
+        900,
+        760,
+        390,
+    ]
+    assert shell_matrix["representativeAiRoundTripViewportsPx"] == [1856, 1366, 1024, 901]
+    assert shell_matrix["representativeTimelineExpansionViewportsPx"] == [1856, 1366, 1121]
+    assert set(shell_matrix["requiredRegions"]) == {
+        "shell",
+        "ai-surface",
+        "orientation",
+        "central-stage",
+        "timeline",
+        "context-rail",
+    }
+
+    forbidden = set(structure["forbiddenDrift"])
+    assert {
+        "home-owned-global-topbar",
+        "required-region-removed",
+        "context-rail-reparented-under-timeline",
+        "orientation-reparented-under-stage",
+        "stage-mode-changes-stage-outer-bounds",
+        "timeline-expansion-reauthors-hero",
+        "ai-round-trip-leaves-permanent-macro-drift",
+        "undocumented-fourth-responsive-macro-mode",
+        "stage-add-control-changes-home-outer-geometry",
+        "world-focus-mounted-as-home-structural-overlay",
+        "unexpected-horizontal-page-overflow",
+    } <= forbidden
+
+    return version, len(shell_matrix["pressureViewportsPx"])
+
+
 def main() -> None:
     contract = load("home-stage.contract.json", CONTRACTS)
     schema = load("home-stage.view-model.schema.json", CONTRACTS)
@@ -103,14 +240,19 @@ def main() -> None:
     assert contract["dataBoundary"]["componentMustNotCallHttpDirectly"] is True
     assert contract["dataBoundary"]["componentMustNotConsumeOrmOrDatabaseShape"] is True
 
+    home_structure_version, home_pressure_widths = validate_whole_home_structure()
+
     print("frontend pre-production contracts: PASS")
-    print(f"contractVersion={version}")
-    print(f"responsiveCases={expected_cases}")
+    print(f"stageContractVersion={version}")
+    print(f"stageResponsiveCases={expected_cases}")
+    print(f"homeStructureContractVersion={home_structure_version}")
+    print(f"homePressureWidths={home_pressure_widths}")
     print("signalsMaxVisible=3")
     print("continuityTargetVisible=5")
     print("persistentAdd=false")
     print("partialRealItemsOnly=true")
     print("emptyManagementEntry=true")
+    print("wholeHomeStructureFrozen=true")
 
 
 if __name__ == "__main__":

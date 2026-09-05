@@ -1,19 +1,21 @@
 # DANTE PostgreSQL Database — Current Architecture & Reference
 
-- **Status:** CURRENT / MATERIALIZED
+- **Status:** CURRENT / MATERIALIZED / PROTECTED MAIN
 - **Product:** DANTE
 - **PostgreSQL:** 18.6
 - **Schema:** `dante`
-- **Alembic head:** `20260830_09`
+- **Current protected-main Alembic head:** `20260904_17`
+- **Access integration merge:** `5f76ec54ad78542f137e8730e904f805d9e59e56`
+- **Accepted implementation proof HEAD:** `81639c61478b476c995652d0060dde8f53aef089`
 - **Database SoR:** `README.md`
 - **Persistence Constitution:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 - **ADR:** `../decisions/ADR-010-postgresql-persistence-constitution.md`
 
 ## 1. Purpose
 
-This is the current human-readable architecture entry point for the DANTE PostgreSQL database.
+This is the current human-readable architecture entry point for the protected-main DANTE PostgreSQL database.
 
-It describes the database that exists **now**. Git and Alembic preserve implementation chronology.
+It describes the database contract integrated through PR #52 and currently owned by protected `main`. Git and Alembic preserve the earlier Recovery-only and Access/Auth branch chronology as historical evidence; they do not override this current contract.
 
 The complete current contract is jointly represented by:
 
@@ -24,6 +26,7 @@ this architecture/reference
 + Alembic migrations
 + SQLAlchemy mappings
 + direct PostgreSQL tests
++ LOCAL recovery acceptance
 ```
 
 A disagreement between those representations is a defect to reconcile, not a historical supersession puzzle for the reader.
@@ -56,20 +59,20 @@ metadata JSONB
 version integer
 ```
 
-## 3. Current materialized topology
+## 3. Current protected-main topology
 
 ```text
 PostgreSQL          18.6
 schema              dante
-Alembic head        20260830_09
+Alembic head        20260904_17
 
-tables              69
+tables              88
 views                 5
-routines             15
+routines             16
 triggers             76
-indexes              97
-foreign keys          69
-CHECK constraints    123
+indexes             172
+foreign keys          89
+CHECK constraints    270
 
 enum/domain            0
 sequences              0
@@ -88,9 +91,40 @@ unaccent            1.1
 pg_stat_statements  1.12
 ```
 
+Historical protected-main Recovery-only contract before PR #52:
 
+```text
+Alembic             20260830_09
+69 tables / 5 views / 15 routines / 76 triggers
+97 indexes / 69 FKs / 123 CHECKs
+```
 
-### 3.1 Recovery operational entry points
+That historical topology does not override the current protected-main contract above.
+
+### 3.1 Migration convergence
+
+Protected `main` preserves both post-CP6 histories:
+
+```text
+20260826_08
+├── 20260830_09 Recovery
+└── 20260827_09 Access/Auth
+    → 20260827_10
+    → 20260829_11
+    → 20260830_12
+    → 20260831_13
+    → 20260903_14 shared Email Platform
+    → 20260903_15 Email ACL
+    → 20260904_16 shared Email vocabulary
+
+20260830_09 + 20260904_16
+            ↓
+        20260904_17
+```
+
+`20260904_17` is a forward no-DDL merge revision. Neither accepted history was rebased, renumbered or flattened.
+
+### 3.2 Recovery operational entry points
 
 The database semantics remain independent from the operator tooling, but the current repository owns a reproducible LOCAL recovery procedure:
 
@@ -102,66 +136,61 @@ runbook    docs/operations/postgres-recovery-runbook.md
 
 The runner is branch-agnostic and fail-closed on Git/upstream alignment. The bootstrap may create missing ignored LOCAL credentials and build the pinned recovery image, but it does not make the suppression ledger or backup repository canonical application state.
 
-### Reproducible LOCAL recovery exact-head proof
+### CP07 exact-head proof retained as integration evidence
 
-Implementation/runtime proof HEAD:
+Exact accepted implementation proof:
 
 ```text
-789e946a8f096b52f2a440b967120cc3e0a340a3
+historical branch  integration/access-auth-main-20260904
+proof HEAD         81639c61478b476c995652d0060dde8f53aef089
+recovery image     dante-postgres-recovery:18.6-pgbackrest-2.59.1
 ```
 
-Reusable-bootstrap / runner proof:
+The 2026-09-04 whole LOCAL operator rehearsal proved:
 
 ```text
-validation clone started without recovery secrets         PASS
-first bootstrap created all three LOCAL secrets           PASS
-second bootstrap preserved exact secret contents          PASS
-secret files mode 0600 / ignored / untracked              PASS
-repository Compose validation                              PASS
-repository-built pinned recovery image                     PASS
-runner independent from feature/postgres-recovery name     PASS
-clean attached branch + configured upstream gate           PASS
-whole backend QA on exact hardened tree                    PASS
-pre-push whole CP07 rehearsal                              PASS
-exact pushed implementation HEAD whole CP07 rehearsal      PASS
-database-local reopen                                      PASS
-deterministic PITR A-present / B-absent                    PASS
-old protected X physical resurrection                      PROVEN
+bootstrap / Compose / pinned recovery image                 PASS
+clean branch + upstream + exact proof HEAD gate            PASS
+PostgreSQL 18.6                                             PASS
+Alembic 20260904_17                                         PASS
+current topology 88|5|16|76|172|89|270|0|0|0              PASS
+A before target / B after target                            PASS
+old protected X physical resurrection                       PROVEN
+PREPARED-only suppression ambiguity                         BLOCKED / PASS
+canonical retirement + committed suppression               PASS
+complete disposable PGDATA loss                            PROVEN
+B0 restore + PITR to deterministic R1                      PASS
 ledger anti-resurrection reconciliation                    PASS
 payload reinsertion after retirement                       REJECTED
-normal LOCAL / retained recovery / CP05 non-interference   PASS
-disposable cleanup                                         PASS
+DATABASE LOCAL REOPEN                                      PASS
+derived store gate                                         NOT_ACTIVATED / NO FALSE PASS
+object store gate                                          NOT_ACTIVATED / NO FALSE PASS
 remote backup provider                                     TBD / NOT ACTIVATED
 production/cloud recovery                                  NOT CLAIMED
+disposable cleanup                                         PASS
 ```
 
-Exact-head runtime relation:
+Measured LOCAL observations from that rehearsal:
 
 ```text
-branch          feature/postgres-recovery
-upstream        origin/feature/postgres-recovery
-recovery image  dante-postgres-recovery:18.6-pgbackrest-2.59.1
-```
-
-Measured LOCAL observations from the exact pushed hardened runner:
-
-```text
-backup label                              20260831-120208F
-backup duration                           53.964433 s
-backup repository size                    5743173 bytes
-WAL archive freshness at disaster         0.834662 s
-restore-point age at disaster             3.629809 s
-physical restore                          7.650652 s
-PITR replay to target                     0.144582 s
-recovery to ready                         0.382306 s
-semantic reconciliation                   1.021309 s
-structural/security acceptance            0.910673 s
-PGDATA loss → database-local reopen       16.261533 s
+backup label                              20260904-135821F
+backup duration                           65.226133 s
+backup repository size                    5897962 bytes
+WAL archive freshness at disaster         0.817316 s
+restore-point age at disaster             3.748588 s
+physical restore                          8.171384 s
+PITR replay to target                     0.144118 s
+recovery to ready                         0.372819 s
+semantic reconciliation                   0.584630 s
+structural/security acceptance            2.857058 s
+PGDATA loss → database-local reopen       17.679584 s
 ```
 
 These are LOCAL rehearsal observations, not production RPO/RTO targets.
 
+PR #52 later merged the final candidate into protected `main` at `5f76ec54ad78542f137e8730e904f805d9e59e56`; the merge tree is identical to the final candidate tree and post-merge Backend/Frontend CI passed. Therefore the CP07-proven schema/recovery contract is now the protected-main contract.
 
+Historical Recovery-only exact-head evidence remains valid as historical evidence in Git/archive records, but it is not current topology authority.
 
 ## 4. Semantic/non-collapse architecture
 
@@ -198,11 +227,14 @@ Actual != Observation
 Recurrence != Occurrence
 provider state != canonical state
 retirement tombstone != protected payload
+Person != Account != Principal != Actor
+AuthSession != DANTE Session
+EmailIdentity != Account
 ```
 
 ## 5. Native identity topology
 
-Exactly 15 concepts own native DANTE identity:
+Exactly 15 Domain concepts own native DANTE identity in the CP6 semantic kernel:
 
 ```text
 Person
@@ -223,6 +255,8 @@ Observation
 ```
 
 Each owns an independent canonical UUIDv7 identity shell. There is no semantic parent `entity` row.
+
+Post-CP6 Account/Auth and shared Email technical structures are forward capability-specific persistence and do not retroactively redefine the Domain native-owner census.
 
 The native identity baseline is intentionally narrow:
 
@@ -438,6 +472,8 @@ UUIDv7 semantic identities do not justify blanket sequence privilege
 
 Immutable material-state/history/control surfaces do not receive UPDATE/DELETE merely because they are tables.
 
+Account/Auth and shared Email persistence extend the exact runtime ACL matrix through forward migrations; they do not weaken the CP6 default-deny doctrine.
+
 ## 13. Schedule
 
 Schedule is accepted placement, not Actual execution and not a capacity claim.
@@ -481,6 +517,8 @@ A canonical Session is not permitted to remain an empty UUID shell with no requi
 
 There is no universal Session `running/paused/done` lifecycle enum and no global non-overlap invariant across unrelated Sessions.
 
+AuthSession is a separate Access/Auth security concept and must never be conflated with this Domain Session.
+
 ## 16. Recurrence and Occurrence
 
 Recurrence is a structured rule/specification, not a universal `Rule(type,payload)` row and not provider RRULE canonical truth.
@@ -511,7 +549,7 @@ Virtual future expectations need not be eagerly persisted. Native Occurrence UUI
 
 Quota recurrence does not fabricate first/second/third semantic slot identity before an expectation is actually differentiated.
 
-## 17. Current materialized retirement/redaction contract
+## 17. Materialized retirement/redaction contract
 
 Alembic `20260830_09` materializes WL-H10 / SC-011 through:
 
@@ -604,13 +642,13 @@ Direct negative testing established that PostgreSQL can accept read-only connect
 
 Therefore `pg_isready` alone is insufficient.
 
-At minimum traffic reopen requires:
+For the current protected-main contract, at minimum database-local reopen requires:
 
 ```text
 pg_is_in_recovery() = false
 PostgreSQL 18.6
-Alembic 20260830_09
-current topology 69|5|15|76|97|69|123|0|0|0
+Alembic 20260904_17
+current topology 88|5|16|76|172|89|270|0|0|0
 owners / roles / ACL
 required extension versions
 semantic state checks
@@ -621,17 +659,23 @@ derived/object reconciliation gate
 
 A physically bootable but structurally/semantically stale target is rejected.
 
-## 20. Provider and derived boundaries
+The 2026-09-04 exact-head CP07 rehearsal proved this enriched contract and earned `DATABASE LOCAL REOPEN = PASS`.
+
+## 20. Provider, Email and derived boundaries
 
 Provider/integration state is not canonical DANTE state.
+
+Shared Email provider effects occur after the canonical PostgreSQL transaction. A restored historical outbox state whose real external effect is uncertain must be quarantined/reconciled rather than blindly replayed.
 
 Derived/search/vector/sync state must never override restored PostgreSQL. A stale derived store remains unavailable until discarded/rebuilt from accepted PostgreSQL or independently reconciled.
 
 Object-store consistency is separate: a PostgreSQL restore does not prove referenced R2/object availability or correctness.
 
+The current CP07 correctly reports inactive derived/object gates as `NOT_ACTIVATED / NO FALSE PASS` rather than inventing recovery success for capabilities not yet activated.
+
 ## 21. Current exact proof obligations
 
-Current direct database tests must reconcile:
+Current direct database acceptance reconciles:
 
 ```text
 Database Architecture & Reference
@@ -640,20 +684,21 @@ SQLAlchemy mappings
 Alembic head
 real PostgreSQL introspection
 owners / ACL
-integration tests
+Access/Auth tests
+shared Email Platform tests
 recovery harnesses
 ```
 
-Expected topology:
+Current protected-main topology:
 
 ```text
-69|5|15|76|97|69|123|0|0|0
+88|5|16|76|172|89|270|0|0|0
 ```
 
-Expected head:
+Current protected-main head:
 
 ```text
-20260830_09
+20260904_17
 ```
 
 Recovery-specific proof additionally requires:
@@ -668,9 +713,27 @@ old B0 can physically resurrect X
 recovery reconciliation suppresses X before reopen
 ```
 
+Combined integration proof additionally requires:
+
+```text
+fresh DB → 20260904_17
+20260904_16 → 20260904_17
+20260830_09 → 20260904_17
+head → base → head
+Alembic drift check
+Dictionary ↔ SQLAlchemy ↔ live PostgreSQL
+Access/Auth regression
+Email Platform regression
+backend/frontend generated-client/build regression
+CP07 enriched-baseline recovery acceptance
+post-merge protected-main Backend/Frontend CI
+```
+
+The pre-merge implementation gates were accepted on proof HEAD `81639c61478b476c995652d0060dde8f53aef089`; PR #52 merged the final candidate without tree delta and the exact merge commit `5f76ec54ad78542f137e8730e904f805d9e59e56` passed post-merge Backend and Frontend CI.
+
 ## 22. Detailed current reference map
 
-This document deliberately does not retain the former chronological candidate/checkpoint narrative.
+This document deliberately does not retain the former chronological candidate/checkpoint narrative as current status.
 
 Current detail is distributed by responsibility:
 
@@ -679,7 +742,7 @@ Parts 2–18
 → detailed accepted object/family/reference/integrity semantics
 
 Part 19
-→ current retirement/redaction/recovery anti-resurrection contract
+→ retirement/redaction/recovery anti-resurrection evolution evidence
 
 Database Dictionary
 → exact current per-object columns/keys/checks/indexes/triggers/ACL/mappings/proof refs
@@ -687,11 +750,14 @@ Database Dictionary
 Persistence Constitution + ADR-010
 → reusable transaction/index/security/migration doctrine
 
+Access/Auth + Email references
+→ post-CP6 Account/security/delivery semantics
+
 Alembic + SQLAlchemy
 → executable materialization
 ```
 
-If a Part or Dictionary object conflicts with this current architecture or the materialized schema, it must be reconciled; historical ordering is not an override rule.
+Historical phase banners/counts inside older Parts are evidence of their checkpoint, not current topology authority. If a Part or Dictionary object conflicts with this current architecture or the materialized schema, it must be reconciled; historical ordering is not an override rule.
 
 ## 23. Same-change rule
 
@@ -707,8 +773,12 @@ executable tests
 current workstream documentation
 ```
 
+The Access/Auth + Email + Recovery protected-main integration is complete. Future database changes must repeat this same-change discipline against the then-current protected-main contract.
+
 ## 24. Acceptance bar
 
-A new engineer must be able to derive the same present database contract from repository documentation, migrations, mappings, Dictionary and live PostgreSQL without conversation memory.
+A new engineer must be able to derive the same present protected-main database contract from repository documentation, migrations, mappings, Dictionary and live PostgreSQL without conversation memory.
 
-The goal is not maximum prose. The goal is full current knowledge coverage with no stale/deprecated contract left in the working tree.
+Current protected-main documentation exposes the `20260904_17 / 88|5|16|76|172|89|270` contract without requiring knowledge of the former integration branch.
+
+The goal is not maximum prose. The goal is full current knowledge coverage with no stale/deprecated contract left masquerading as current truth.

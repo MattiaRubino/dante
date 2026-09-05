@@ -3,12 +3,14 @@
   "compilerOptions": {
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
-    "types": ["vite/client", "node"]
+    "types": ["vite/client", "node"],
+    "allowImportingTsExtensions": true
   },
   "include": [
     "src",
     "vite.config.ts",
     "playwright.config.ts",
+    "playwright.auth.config.ts",
     "e2e",
     "vitest.config.ts"
   ]

@@ -90,6 +90,118 @@
           "alpha": 1,
           "hex": "#e3e6e7"
         }
+      },
+      "home-canvas": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [0.007843, 0.027451, 0.043137],
+          "alpha": 1,
+          "hex": "#02070b"
+        }
+      },
+      "home-surface-primary": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [0.082353, 0.113725, 0.129412],
+          "alpha": 1,
+          "hex": "#151d21"
+        }
+      },
+      "home-surface-raised": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [0.105882, 0.145098, 0.164706],
+          "alpha": 1,
+          "hex": "#1b252a"
+        }
+      },
+      "home-surface-control": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [0.12549, 0.168627, 0.188235],
+          "alpha": 1,
+          "hex": "#202b30"
+        }
+      },
+      "home-text-primary": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [0.94902, 0.956863, 0.94902],
+          "alpha": 1,
+          "hex": "#f2f4f2"
+        }
+      },
+      "home-text-secondary": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [0.698039, 0.741176, 0.756863],
+          "alpha": 1,
+          "hex": "#b2bdc1"
+        }
+      },
+      "home-text-muted": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [0.490196, 0.541176, 0.564706],
+          "alpha": 1,
+          "hex": "#7d8a90"
+        }
+      },
+      "home-border-subtle": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [0.623529, 0.694118, 0.721569],
+          "alpha": 0.125,
+          "hex": "#9fb1b8"
+        }
+      },
+      "home-border-strong": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [0.694118, 0.752941, 0.776471],
+          "alpha": 0.19,
+          "hex": "#b1c0c6"
+        }
+      },
+      "home-accent-text": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [0.941176, 0.627451, 0.435294],
+          "alpha": 1,
+          "hex": "#f0a06f"
+        }
+      },
+      "home-accent-soft": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [0.917647, 0.360784, 0.070588],
+          "alpha": 0.11,
+          "hex": "#ea5c12"
+        }
+      },
+      "home-accent-border": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [0.917647, 0.360784, 0.070588],
+          "alpha": 0.38,
+          "hex": "#ea5c12"
+        }
+      },
+      "home-chrome-neutral": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [0.682353, 0.72549, 0.741176],
+          "alpha": 1,
+          "hex": "#aeb9bd"
+        }
+      },
+      "home-chrome-neutral-border": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [0.623529, 0.694118, 0.721569],
+          "alpha": 0.14,
+          "hex": "#9fb1b8"
+        }
       }
     },
     "radius": {

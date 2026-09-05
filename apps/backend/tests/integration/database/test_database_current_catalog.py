@@ -19,8 +19,8 @@ from dante.platform.database.metadata import Base
 
 pytestmark = pytest.mark.postgres
 
-_CURRENT_REVISION = "20260830_09"
-_CURRENT_TOPOLOGY = (69, 5, 15, 76, 97, 69, 123, 0, 0, 0)
+_CURRENT_REVISION = "20260904_17"
+_CURRENT_TOPOLOGY = (88, 5, 16, 76, 172, 89, 270, 0, 0, 0)
 _REPO_ROOT = Path(__file__).resolve().parents[5]
 _DICTIONARY_ROOT = _REPO_ROOT / "docs" / "database" / "dictionary"
 
@@ -153,7 +153,7 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
     assert environment == ("180006", "UTF8", "63")
     assert topology == _CURRENT_TOPOLOGY
     assert current_revision == (_CURRENT_REVISION,)
-    assert (len(tables), len(views), len(routines)) == (69, 5, 15)
+    assert (len(tables), len(views), len(routines)) == (88, 5, 16)
     assert live_tables == set(tables)
     assert live_views == set(views)
     assert live_routines == set(routines)
@@ -173,12 +173,11 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
         "CP6-M05",
         "CP6-M06",
         "CP6-M07",
-        "RECOVERY-CP06",
     ]
-    assert current["standalone_entries"] == {"tables": 69, "views": 5, "routines": 15, "total": 89}
-    assert current["embedded_objects"] == {"triggers": 76, "physical_indexes": 97}
-    assert current["constraints"] == {"foreign_keys": 69, "check_constraints": 123}
-    assert len(MAPPED_TABLES) == len(Base.registry.mappers) == len(Base.metadata.tables) == 69
+    assert current["standalone_entries"] == {"tables": 88, "views": 5, "routines": 16, "total": 109}
+    assert current["embedded_objects"] == {"triggers": 76, "physical_indexes": 172}
+    assert current["constraints"] == {"foreign_keys": 89, "check_constraints": 270}
+    assert len(MAPPED_TABLES) == len(Base.registry.mappers) == len(Base.metadata.tables) == 88
     assert all(len(mapper.relationships) == 0 for mapper in Base.registry.mappers)
     assert set(VIEW_METADATA.tables) == {f"dante.{name}" for name in views}
     assert {table.name for table in MAPPED_TABLES} == set(tables)

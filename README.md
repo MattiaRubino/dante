@@ -4,375 +4,88 @@ DANTE is a personal operating system designed to help people understand, organiz
 
 **Compass:** *Understand life. Shape what comes next.*
 
-## Current state
+## Current repository state
+
+Protected `main` is the single integrated authority. Access/Auth M1–M5, the shared Email Platform and PostgreSQL Recovery are integrated through PR #52; post-restore Email replay hardening and the whole-flow CP08 recovery gate are integrated through PR #55.
 
 ```text
-PRODUCT / NORTH STAR
-CURRENT
+PRODUCT / DOMAIN / LOGICAL / PHYSICAL      CLOSED / CURRENT
+ENGINEERING / FRONTEND / BACKEND CP1–CP6  CLOSED / ACCEPTED
+POSTGRESQL                                 18.6
 
-DOMAIN MODEL
-CLOSED / SEMANTICALLY COMPLETE FOR CURRENT SCOPE
+PROTECTED MAIN
+  Access/Auth M1–M5                        CLOSED / INTEGRATED
+  Shared Email Platform                    CLOSED / INTEGRATED
+  Recovery                                 CLOSED / INTEGRATED
+  Windows Hello / Google / SES real UAT    PASS
+  Apple registered-domain UAT              BOUNDED DEFERRED / NON-BLOCKING
+  Alembic                                  20260904_17
+  DB topology                              88 tables / 5 views / 16 routines /
+                                           76 triggers / 172 indexes / 89 FKs /
+                                           270 CHECKs
+  post-merge Backend CI                    PASS
+  post-merge Frontend CI                   PASS
+  database-local CP07                      PASS
+  Email/application reopen CP08            PASS
 
-LOGICAL MODEL
-CLOSED / 57 OF 57 CLASSIFIED
-WL-H01..WL-H12 BINDING
-
-PHYSICAL TARGET
-CLOSED / SELECTED / ACCEPTED
-PostgreSQL 18 major family = sole canonical persistence/material-history authority
-
-ENGINEERING FOUNDATION
-CLOSED / ACCEPTED
-
-FRONTEND ENGINEERING FOUNDATION
-CLOSED / INTEGRATED VIA PR #22
-
-FRONTEND MATERIALIZATION
-CLOSED / PASS / INTEGRATED VIA PR #28
-
-PRODUCTION BACKEND SCAFFOLD
-CP1–CP5 CLOSED / DIRECT QA PASS / INTEGRATED VIA PR #24
-
-CP6 — CONCRETE POSTGRESQL DATABASE
-CLOSED / DIRECT QA PASS / INTEGRATED VIA PR #42
-
-CURRENT POSTGRESQL
-18.6
-
-CURRENT PROTECTED-MAIN DATABASE / RECOVERY BASELINE
-Alembic 20260830_09
-69 tables / 5 views / 15 routines / 76 triggers /
-97 indexes / 69 FKs / 123 CHECKs
-PostgreSQL Recovery CP01–CP07 LOCAL PASS / CLOSED
-Recovery integrated via PR #47
-remote backup provider TBD / NOT ACTIVATED
-production/cloud recovery NOT CLAIMED
-
-ACCESS PRE-BACKEND FRONTEND
-CLOSED / ACCEPTED / RELEASE-HARDENED
-
-FULL ACCESS/AUTH PRODUCT VERTICAL
-ACTIVE UNMERGED WORKSTREAM
-feature/access-auth
-
-AI ARCHITECTURE DESIGN / REENGINEERING
-CLOSED / STRUCTURALLY ACCEPTED ON feature/ai-architecture
-AI-00 COMPLETE
-AI-02.1 CLOSED / STRUCTURALLY ACCEPTED
-AI-03 CLOSED / C01..C33 / B01..B35 / MAT-01..MAT-15
-AI-04 CLOSED / A01..A30 / EV01..EV20 / RT-01..RT-31 / PA-01..PA-61 / WP-01..WP-22
-PRE-AI05 CLOSED / PRE05-H01..H19
-AI-05A CLOSED / BD-01..BD-41
-AI-05B CLOSED / AI05B-H01..H15
-AI-05 WHOLE-SYSTEM CLOSED / STRUCTURALLY ACCEPTED
-POST-AI05 HARDENING CLOSED / POST05-H01..H25
-MKT-001..MKT-100 PASS
-C01..C20 COMPOUND PASS
-REVERSE AUTHORITY PASS
-PRODUCT/SIMULATION REPLAY PASS
-
-CURRENT AI IMPLEMENTATION AUTHORITY
-docs/architecture/dante-ai-implementation-baseline-final.md
-
-NEXT AI WORK
-ACTUAL AI IMPLEMENTATION WORKSTREAM
-I0 repository/application ownership + architecture-test skeleton
-
-AI BACKEND / PROVIDER / PRODUCTION ACTIVATION
-NOT IMPLEMENTED / NOT CLAIMED
+feature/platform-observability             CLOSED / OPERATIONAL PASS / NEXT INTEGRATION
+M6 Native Mobile                           FUTURE / OPTIONAL
+later Access/M7 maturity                   FUTURE
 ```
 
-For exact current truth use `docs/PROJECT-STATUS.md`. Do not reconstruct current state from old phase documents or conversation memory.
+`20260904_17` is a no-DDL forward Alembic merge revision with parents `20260830_09` and `20260904_16`. Neither accepted migration history was rewritten.
 
-## Repository
+PR #52 merged the accepted Access/Auth + shared Email Platform candidate with protected-main Recovery at merge commit `5f76ec54ad78542f137e8730e904f805d9e59e56`. The merge tree is identical to the accepted final candidate tree, and protected-main Backend/Frontend CI passed after the merge.
 
-Production development continues in the single monorepo:
+The historical CP07 rehearsal on implementation proof HEAD `81639c61478b476c995652d0060dde8f53aef089` proved the integrated `20260904_17` database contract, deterministic PITR, MaterialState anti-resurrection reconciliation, rejected protected-payload reinsertion and `DATABASE LOCAL REOPEN = PASS` for the scope it executed. It did not directly exercise Email post-restore quarantine before worker resume; that historical evidence boundary is retained rather than rewritten.
+
+PR #55 then integrated the forward Recovery↔Email hardening at merge commit `c67a18c24a6cf22b003ffd2c14243af53fec5077`. CP08 ran on proof head `1a5a7f1fbbdc1e5723d58fa90721a8693cce49e9` and directly proved PITR into resurrected sendable Email state, fail-closed quarantine of `pending` / `claimed` / `retryable_failure`, `in_progress` attempt conversion to `ambiguous`, sensitive-material wipe, idempotent second reconciliation, `0` claimable Email work after reconciliation and `APPLICATION / EMAIL REOPEN = PASS`. Remote backup-provider activation and production/cloud recovery remain **NOT CLAIMED**.
+
+Durable historical integration evidence lives in `docs/workstreams/access-auth-integration-acceptance-2026-09-04.md`. Consolidated Access branch chronology lives in `docs/archive/branches/2026-09-feature-access-auth.md` and is **NON-AUTHORITATIVE**.
+
+## Permanent architecture rules
 
 ```text
-MattiaRubino/dante
+Person != Account != Principal != Actor
+AuthSession != DANTE Session
+EmailIdentity != Account
+provider identity = issuer + subject
+provider email != Account/link authority
+passwordless Account valid
+PasskeyCredential != Account
+PostgreSQL is canonical persistence
+no provider/network I/O inside authoritative DB transactions
+no blind retry after ambiguous external effects
+restored external-effect work is not automatically safe to replay
+applied migrations are immutable
 ```
 
-Accepted root ownership:
+The Email Platform is shared DANTE infrastructure; Access/Auth is its first consumer, not its owner.
+
+## Current integration order
 
 ```text
-apps/
-├── backend/
-├── web/
-└── mobile/
-packages/
-infra/
-tooling/
-tests/system/
-docs/
-prototypes/
-.github/
+enriched protected main
+→ merge into feature/platform-observability
+→ observability integration/release rechecks
+→ PR observability to protected main
+→ future bounded workstreams from enriched main
 ```
 
-These are ownership boundaries, not an instruction to create empty ceremonial directories.
+No rebase, history rewrite, force push or direct protected-main write.
 
-- `apps/backend` owns the server application;
-- `apps/web` and `apps/mobile` are sibling client boundaries;
-- `packages/` contains only real multi-consumer packages;
-- `infra/` owns infrastructure definitions, never business logic;
-- production applications do not import from `prototypes/`;
-- normal product development remains in this monorepo.
+## Documentation entry points
 
-## Backend baseline
+- `docs/PROJECT-STATUS.md`
+- `docs/ROADMAP.md`
+- `docs/database/README.md`
+- `docs/database/dictionary/README.md`
+- `docs/architecture/access-auth-architecture.md`
+- `docs/database/access-auth.md`
+- `docs/architecture/email-platform.md`
+- `docs/operations/postgres-recovery-runbook.md`
+- `docs/workstreams/access-auth-integration-acceptance-2026-09-04.md` — historical evidence
+- `docs/archive/branches/2026-09-feature-access-auth.md` — historical branch record
+- `apps/backend/README.md`
 
-```text
-Python                   3.14.x
-initial exact pin         3.14.7
-package manager           uv
-source root               apps/backend/src/dante
-format/lint               Ruff
-type checking             mypy strict
-testing                   pytest + Hypothesis where meaningful
-server semantics          Linux
-Windows workflow          WSL2/Linux
-local stateful infra      Docker Compose
-
-canonical persistence     PostgreSQL 18 major family
-current patch             PostgreSQL 18.6
-ORM/SQL toolkit           SQLAlchemy 2.0 stable line
-driver                    psycopg 3
-migrations                Alembic
-current Alembic head      20260830_09
-```
-
-Current database roles:
-
-```text
-dante_owner      NOLOGIN ownership identity
-dante_migrator   LOGIN migration identity
-dante_runtime    LOGIN application runtime identity
-```
-
-The outer application-operation boundary owns commit/rollback. Persistence adapters may flush but never commit implicitly. No generic Repository/UoW/BaseService/service-locator architecture is introduced for uniformity.
-
-Backend entry point: `apps/backend/README.md`.
-
-## Concrete PostgreSQL database
-
-Current protected-main database:
-
-```text
-PostgreSQL          18.6
-Alembic head        20260830_09
-tables              69
-views                5
-routines             15
-triggers             76
-physical indexes     97
-foreign keys         69
-CHECK constraints    123
-custom enum/domain    0
-sequences             0
-materialized views    0
-RLS policies          0
-```
-
-Database documentation begins at:
-
-- `docs/database/README.md`;
-- `docs/database/dictionary/README.md`;
-- `docs/database/dictionary/scope.json`.
-
-Permanent consistency rule:
-
-```text
-Database Architecture & Reference
-≈ Database Dictionary
-≈ SQLAlchemy metadata/mappings
-≈ Alembic head
-≈ real PostgreSQL schema
-```
-
-A later structural change is incomplete if these representations remain inconsistent.
-
-## Frontend baseline
-
-```text
-Node 24 LTS
-TypeScript 6.0.x strict
-pnpm 11
-Turborepo 2.x
-
-Web
-React 19.2 + React DOM
-Vite 8
-TanStack Router
-
-Mobile
-React Native 0.86
-Expo SDK 57
-Expo Router
-
-Data / forms / validation
-PowerSync + encrypted SQLite when activated
-TanStack Query 5
-TanStack Form
-Zod 4
-Orval 8 when real OpenAPI exists
-```
-
-Current frontend documentation starts at `docs/frontend/README.md`.
-
-## Active bounded unmerged workstreams
-
-```text
-feature/access-auth             active full-stack product work
-feature/home-react              active frontend work
-feature/platform-observability  active platform work
-feature/ai-architecture         architecture design CLOSED / implementation handoff ready
-```
-
-Each branch owns only its bounded newer truth until protected-main integration.
-
-## AI architecture / implementation boundary
-
-Current final implementation-facing authority:
-
-```text
-docs/architecture/dante-ai-implementation-baseline-final.md
-```
-
-Final independent structural acceptance:
-
-```text
-docs/architecture/dante-ai-post05-final-mega-acceptance.md
-```
-
-The post-AI05 mega pass found no need for a new Domain root, Logical/Physical reopen, PostgreSQL/Alembic change, generic AI persistence, provider preselection or agent framework.
-
-Accepted implementation split:
-
-```text
-modules/search
-→ independent deterministic Global Search/discovery
-→ permission-safe bounded read projection
-→ no canonical mutation authority
-
-modules/intelligence
-→ Work/Context/Reference/SemanticQuery/Retrieval orchestration
-→ optional governed ModelAccess
-→ Verification / Result Maturity / explicit NO_EFFECT / Safe Publication
-→ no raw database/canonical business ownership
-
-provider SDK/protocol
-→ private admitted outbound adapter behind ModelAccessPort
-```
-
-Binding examples:
-
-```text
-GLOBAL SEARCH != INTELLIGENCE
-SEARCH RESULT / CURSOR / TARGET REF != AUTHORIZATION
-SEMANTIC QUERY GATEWAY != INTELLIGENCE-OWNED CROSS-CAPABILITY SQL
-Context != Retrieval != Memory
-RetrievalCandidate != ContextFragment
-DATA != INSTRUCTION
-MASKING / REDACTION != SEMANTIC EQUIVALENCE
-MODEL OUTPUT != PUBLISHABLE OUTPUT
-PROVIDER COMPLETED != VERIFIED != PUBLISHABLE
-PROVIDER FAILURE != DISCLOSURE DID NOT HAPPEN
-AUXILIARY MODEL CALL != FREE PROVIDER CALL
-CANDIDATE ADMISSION != PRODUCTION QUALIFICATION
-DEFAULT NONCANONICAL PERSISTENCE = NO
-BUILD-READY != INTEGRATION-READY != ACTIVATION-READY
-```
-
-First implementation target:
-
-```text
-Global Search subset
-+ read-only Ask DANTE
-
-private authenticated in-app
-single-turn
-inline/request-owned
-READ_ONLY
-public streaming OFF
-background/durable resume OFF
-consequential mutation OFF
-```
-
-No provider/model/SDK is selected yet.
-
-## Capability-triggered components
-
-Remain dormant until real consumers/proofs exist:
-
-```text
-PowerSync + encrypted SQLite
-PostgreSQL transactional outbox
-R2
-OR-Tools
-Restate
-PgBouncer
-FTS / pg_trgm
-pgvector / ANN / embeddings
-MCP / A2A
-AI Execution Environment
-cross-Run prior-disclosure accounting
-AI memory persistence
-external result streaming
-multi-provider hedging
-```
-
-Selected target != implemented/activated component.
-
-## Environment model
-
-Exactly:
-
-```text
-LOCAL
-DEV
-UAT
-PROD
-```
-
-Environment != Git branch.
-
-## Where to start
-
-General continuation order:
-
-1. `README.md`
-2. `docs/README.md`
-3. `docs/PROJECT-STATUS.md`
-4. `docs/ROADMAP.md`
-5. `docs/development/agent-operating-manual.md`
-6. `docs/development/operating-rules.md`
-7. `docs/development/documentation-and-handoff.md`
-8. `docs/development/documentation-lifecycle-policy.md`
-9. `docs/development/branching-and-environments.md`
-10. `docs/development/repository-engineering-safety.md`
-11. current subsystem/workstream authority
-12. current branch/ref relation
-
-For AI implementation, continue through:
-
-- `docs/architecture/dante-ai-implementation-baseline-final.md`;
-- `docs/architecture/dante-ai-post05-final-mega-acceptance.md`;
-- `docs/workstreams/ai-architecture.md`.
-
-Current exact AI next action:
-
-```text
-I0
-→ repository/application ownership + architecture-test skeleton
-```
-
-Persistent truth rules:
-
-```text
-SELECTED != IMPLEMENTED
-DOCUMENTATION PASS != RUNTIME PASS
-UNMERGED BRANCH TRUTH != PROTECTED-main TRUTH
-CLIENT LOCAL STATE != CANONICAL ACCEPTED EFFECT
-MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT
-HARNESSPROFILE != PROVIDERBINDING
-BUILD-READY != ACTIVATION-READY
-TEMPORARY HANDOFF != DURABLE DOCUMENTATION
-```
+Executable repository truth and accepted current documentation outrank conversation memory and historical handoffs.

@@ -1,371 +1,157 @@
 # DANTE — Project Status
 
-- **Status:** CURRENT TRUTH
+- **Status:** CURRENT REPOSITORY TRUTH / PROTECTED-MAIN INTEGRATED
 - **Last reconciled:** 2026-09-05
-- **Protected `main`:** integrated source authority; read the live Git ref for the current SHA
-- **Backend CP6 integration:** PR #42 MERGED
-- **PostgreSQL Recovery integration:** PR #47 MERGED / CP01–CP07 LOCAL PASS / CLOSED
-- **Current product boundary:** Access/Auth, Home React and platform observability remain active bounded workstreams; AI architecture is closed; `feature/ai-implementation` is finishing only the low-level ModelAccess foundation before being frozen
+- **Protected-main Observability merge:** `b74a806deed68b2729dd04678c0a5674cd572e8a` via PR `#58`
+- **Platform Observability source closure:** `828cfd231debb1326933052fefd74e81c653a6c3`
+- **Platform Observability integration merge:** `14faecfb11bded15aa929b0eaac91427031072ed`
+- **Current Alembic head:** `20260904_17`
 
-## 1. Executive state
+## 1. Current state
 
 ```text
-PRODUCT / NORTH STAR
-CURRENT
+Product / North Star                       CURRENT
+Domain / Logical / Physical                CLOSED
+Engineering + Frontend + Backend CP1–CP6  CLOSED / ACCEPTED
+PostgreSQL                                 18.6
 
-DOMAIN MODEL
-CLOSED / SEMANTICALLY COMPLETE FOR CURRENT SCOPE
+Access M1–M5                               CLOSED / INTEGRATED
+Shared Email Platform                      CLOSED / INTEGRATED / OWNERSHIP VERIFIED
+PostgreSQL Recovery                        CLOSED / INTEGRATED
+local password/passkey UAT                 PASS
+real Windows Hello UAT                     PASS
+real Google UAT                            PASS
+real Apple registered-domain UAT           BOUNDED DEFERRED / NON-BLOCKING
 
-LOGICAL MODEL
-CLOSED / 57 OF 57 CLASSIFIED
-WL-H01..WL-H12 BINDING
+Alembic                                    20260904_17
+database topology                          88/5/16/76/172/89/270
+database-local CP07                        PASS
+application / Email reopen CP08            PASS
 
-PRE-PHYSICAL COHERENCE
-CLOSED / FINAL QA PASS
+Platform Observability source workstream   CLOSED / OPERATIONAL ACCEPTANCE PASS
+Platform Observability protected main      CLOSED / INTEGRATED VIA PR #58
+observability source verification          13/13 PASS
+PostgreSQL/ACL integration acceptance      155/155 PASS
+backend readiness + Alloy                  PASS
+Web/Faro integrated LOCAL production-build smoke PASS
+Grafana Cloud metrics/logs/traces/Faro path PASS
+Tempo route-attribute privacy boundary     PASS
+collector-outage failure isolation         PASS
+Grafana acceptance service-account cleanup PASS
 
-PHYSICAL TARGET
-CLOSED / SELECTED / ACCEPTED
-PostgreSQL 18 major family
-sole canonical persistence / material-history authority
-
-ENGINEERING FOUNDATION v0
-CLOSED / ACCEPTED
-
-FRONTEND ENGINEERING FOUNDATION
-CLOSED / INTEGRATED VIA PR #22
-
-FRONTEND MATERIALIZATION
-CLOSED / PASS / INTEGRATED VIA PR #28
-
-PRODUCTION BACKEND SCAFFOLD
-CP1–CP5 CLOSED / DIRECT QA PASS / INTEGRATED VIA PR #24
-
-CP6 — CONCRETE POSTGRESQL DATABASE
-CLOSED / DIRECT QA PASS / INTEGRATED VIA PR #42
-
-POSTGRESQL LOCAL RECOVERY
-CP01–CP07 CLOSED / LOCAL PASS / INTEGRATED VIA PR #47
-
-ACCESS PRE-BACKEND FRONTEND
-CLOSED / ACCEPTED / RELEASE-HARDENED
-
-FULL ACCESS/AUTH PRODUCT VERTICAL
-ACTIVE UNMERGED WORKSTREAM
-
-AI ARCHITECTURE DESIGN / REENGINEERING
-CLOSED / STRUCTURALLY ACCEPTED
-POST-AI05 FINAL MEGA TEST PASS
-
-AI LOW-LEVEL IMPLEMENTATION
-feature/ai-implementation
-I0 CLOSED / PASS
-I1 CLOSED / PASS
-I2 CLOSED / PASS
-I3 REAL SEARCH FAMILY DEFERRED / OWNER-SEAM GATE
-C6 CLOSED / PASS
-C7 CLOSED / PASS
-DEVELOPMENT MODEL/BINDING DECISION COMPLETE
-Gemini 3.8 Flash selected for both active logical ModelTargets
-native ModelAccess foundation materialized
-FINAL LOCAL REGRESSION + ONE NATIVE SMOKE PENDING
-production qualification NO
-private-data eligibility NO
+M6 Native Mobile                           FUTURE / OPTIONAL
+later Access/M7 maturity                   FUTURE
 ```
 
-Architecture closure is not runtime/product completion. The current AI branch is deliberately stopping at the low-level model-access foundation rather than manufacturing an early Ask DANTE vertical.
+Platform Observability is now protected-main truth. PR `#58` merged `integration/platform-observability-v2` into `main` with merge commit `b74a806deed68b2729dd04678c0a5674cd572e8a`; its parents are the prior protected-main head `318ae452556e8bada3aaeee09688a89acc548a32` and accepted integration head `33228f576bfc2cdd479ea4f527164c7ba9dd8a2d`.
 
-## 2. Current protected-main backend/database truth
+Apple is not reported as PASS. Real Apple external acceptance remains a future enablement prerequisite when its external account/domain prerequisites exist.
+
+Remote backup-provider activation and production/cloud recovery remain **NOT CLAIMED**.
+
+## 2. Current database truth
 
 ```text
 PostgreSQL          18.6
-Alembic head        20260830_09
-schema              dante
-
-tables              69
+Alembic             20260904_17
+tables              88
 views                5
-routines             15
+routines             16
 triggers             76
-physical indexes     97
-foreign keys         69
-CHECK constraints    123
-custom enum/domain    0
-sequences             0
-materialized views    0
-RLS policies          0
+physical indexes     172
+foreign keys         89
+CHECK constraints    270
 ```
 
-Recovery posture:
+The current cross-representation database contract remains aligned across the Dictionary, SQLAlchemy mappings, Alembic and real PostgreSQL. Platform Observability adds no DANTE business DDL, Alembic revision or SQLAlchemy business mapping.
+
+Its PostgreSQL operational reader is the provisioning-owned `dante_observer` role: `LOGIN NOINHERIT`, with `pg_read_all_stats` membership using `INHERIT TRUE / SET FALSE / ADMIN FALSE`, no DANTE/public business-object access, no database `CREATE`/`TEMP`, and `search_path=pg_catalog`. The exact contract remains in `database/dante-postgresql-database-part-12.md` and the live provisioning/acceptance tests.
+
+## 3. Accepted foundation evidence
+
+Access/Auth + Email + Recovery remain closed at their accepted evidence levels. The historical CP07 database-local proof and the later CP08 application/Email reopen proof remain distinct; CP07 is not widened retroactively. Their durable evidence remains in `workstreams/access-auth-integration-acceptance-2026-09-04.md`, `archive/branches/2026-09-feature-access-auth.md` and the Recovery operator references.
+
+Platform Observability acceptance includes:
 
 ```text
-material_state_retirement  materialized
-suppression ledger         versioned / fail-closed
-CP01–CP07                  LOCAL PASS / CLOSED
-whole operator rehearsal   PASS
-database-local reopen      PASS
-remote backup provider     TBD / NOT ACTIVATED
-production/cloud recovery  NOT CLAIMED
+true Git three-way integration merge             PASS
+frozen source history retained                   PASS
+observability source verification                13/13 PASS
+Web tests                                        23 files / 101 tests PASS
+backend non-PostgreSQL regression                286/286 PASS
+strict mypy                                      148 source files / zero issues
+backend package build                            PASS
+PostgreSQL 18.6 marked acceptance                155/155 PASS
+observer role / membership / ACL proof           PASS
+backend bootstrap with observability enabled     PASS
+backend /health/ready                            HTTP 200
+Alloy readiness                                  PASS
+Web/Faro LOCAL production-build smoke surface    PASS
+Grafana Cloud metrics/logs/traces/Faro path      PASS
+Tempo route-attribute privacy boundary           PASS
+collector-outage failure isolation               PASS
+Grafana acceptance service account remote delete PASS
+PR #58 Backend CI Gate                           PASS
+PR #58 Frontend CI Gate                          PASS
+PR #58 Dependency Review                         PASS
+protected-main merge reachability                PASS
 ```
 
-## 3. Persistence authority
+The source workstream had already proved the real Grafana Cloud path for metrics, logs, traces, PostgreSQL statistics, black-box readiness and Web Faro/Web Vitals, plus dashboard/alert materialization and collector-outage failure isolation. That evidence is retained rather than rerun merely for repetition.
+
+Dedicated Google/Apple, passkey, Auth-lifecycle and Email-to-central-OTel domain metrics are future observability enhancements. They are not blockers for the accepted platform foundation because global HTTP, database, Web, Auth signin/KDF/dependency and collector telemetry already cover the integration boundary without changing product semantics.
+
+## 4. Integration state
+
+Platform Observability integration is complete.
 
 ```text
-Domain / Logical / Physical
-→ semantic and architectural source
-
-CP6 Constitution + ADR-010
-→ durable PostgreSQL doctrine
-
-Database System of Record
-→ current human-readable meaning + machine Dictionary
-
-Alembic
-→ deployed schema evolution authority
-
-SQLAlchemy metadata/mappings
-→ application representation
-
-real PostgreSQL introspection
-→ observed materialized schema
-
-direct tests
-→ executable proof
+source closure                              PASS
+true integration merge                      PASS
+integrated source verification              PASS
+PostgreSQL/ACL acceptance                    PASS
+runtime/Grafana Cloud smoke                  PASS
+collector-outage isolation                   PASS
+documentation lifecycle reconciliation      PASS
+PR #58 required CI                           PASS
+protected-main merge                         PASS
 ```
 
-Permanent reconciliation remains:
+Do not reopen accepted OTel/Alloy/Grafana/Faro/PostgreSQL-observer implementation merely to repeat evidence. Future Observability work is a new bounded scope from current protected `main`.
+
+## 5. Documentation lifecycle state
+
+Platform Observability has no active workstream authority file. Current truth is routed through:
+
+- `architecture/observability-runtime-contract.md`
+- `development/observability-runbook.md`
+- `../infra/observability/README.md`
+- `database/dante-postgresql-database-part-12.md` for the observer-role contract
+- executable code, tests and source-controlled Grafana/Alloy assets
+
+One consolidated historical record is retained at `archive/branches/2026-09-feature-platform-observability.md`. It is **NON-AUTHORITATIVE / HISTORICAL / EVIDENCE ONLY**.
+
+Temporary live/session/resume handoffs are absent. Historical source-workstream chronology that is not current authority remains recoverable from the consolidated branch record and Git/PR history.
+
+## 6. Permanent safety rules
 
 ```text
-Database Architecture & Reference
-≈ Database Dictionary
-≈ SQLAlchemy metadata/mappings
-≈ Alembic head
-≈ real PostgreSQL schema
+protected main is integration authority
+no rebase/history rewrite of accepted work
+no force push for normal integration
+applied migrations are immutable
+no schema claim without Dictionary/mapping/migration/PG/test parity
+no PASS without executed evidence
+telemetry != canonical DANTE state
+telemetry failure != permission to alter product truth
+LOCAL recovery PASS != production/cloud recovery PASS
 ```
 
-The AI foundation work introduces no database/Alembic change.
+## 7. Authority order
 
-## 4. Binding semantic invariants
-
-Project-wide invariants remain unchanged, including:
-
-```text
-Person != Account != Principal != Actor
-Possibility != Goal != Proposal != Decision != Plan != Activity
-Routine != Recurrence != Occurrence
-Occurrence != Schedule != Session != Actual
-Actual != Observation != Outcome
-Evidence != Provenance
-Authority != Visibility
-Agreement != Consent
-provider state != canonical DANTE state
-derived projection != canonical truth
-absence/unknown != false
-PostgreSQL = sole canonical persistence/material-history authority
-```
-
-AI-specific invariants retained:
-
-```text
-GLOBAL SEARCH != INTELLIGENCE
-ASK MAY USE SEARCH != ASK REQUIRES SEARCH GENERALLY
-SEARCH READINESS != GLOBAL INTELLIGENCE PREREQUISITE
-SEMANTIC QUERY GATEWAY != INTELLIGENCE-OWNED CROSS-CAPABILITY SQL
-MODEL OUTPUT != PUBLISHABLE OUTPUT
-PROVIDER COMPLETED != VERIFIED != PUBLISHABLE
-PROVIDER FAILURE != DISCLOSURE DID NOT HAPPEN
-Context != Retrieval != Memory
-DATA != INSTRUCTION
-MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT
-HARNESSPROFILE != PROVIDERBINDING
-PROVIDER SDK != APPLICATION CONTRACT
-CANDIDATE ADMISSION != PRODUCTION QUALIFICATION
-QUALIFIED != ELIGIBLE != AVAILABLE != ENTITLED != ROLLOUT-ACTIVE
-DEFAULT NONCANONICAL AI PERSISTENCE = NO
-BUILD-READY != INTEGRATION-READY != ACTIVATION-READY
-RUN != MODEL INVOCATION != PROVIDER ATTEMPT
-PROVIDER FAILOVER != BLIND REQUEST REPLAY
-```
-
-## 5. Backend technical foundation
-
-```text
-Python                    3.14.x
-uv                        package authority
-FastAPI                    inbound/process host
-SQLAlchemy                 async 2.0 stable line
-psycopg                    3
-Alembic                    one environment / one DAG / one head
-one AsyncEngine            per process
-one async_sessionmaker     per process
-one AsyncSession           per app operation
-autobegin                  false
-autoflush                  true
-expire_on_commit           false
-transaction owner          outer application operation
-adapter commit             forbidden / flush only
-READ COMMITTED             default
-```
-
-No generic Repository/UoW/BaseService architecture is introduced merely for uniformity.
-
-## 6. Current AI implementation authority
-
-Architecture/design authority:
-
-```text
-docs/architecture/dante-ai-implementation-baseline-final.md
-docs/architecture/dante-ai-search-intelligence-boundary-amendment-2026-09.md
-docs/architecture/dante-ai-04b-concrete-runtime-capability-architecture.md
-```
-
-Current development binding/closure authority:
-
-```text
-docs/workstreams/ai-runtime-model-target-closure-acceptance-2026-09-05.md
-docs/workstreams/ai-foundation-closure-2026-09-05.md
-docs/ROADMAP.md
-```
-
-Historical provider records retained as evidence:
-
-```text
-docs/workstreams/ai-provider-candidate-admission-2026-09.md
-docs/workstreams/ai-c9-pre-live-checkpoint-2026-09.md
-```
-
-Those historical OpenAI/Terra records no longer define the current blocker.
-
-## 7. Current AI low-level foundation
-
-Accepted reasoning peers:
-
-```text
-DETERMINISTIC COMPUTE
-SOLVER
-MODEL ACCESS
-```
-
-Accepted development routes:
-
-```text
-STRUCTURED_INTERPRETATION -> Gemini 3.8 Flash
-GENERAL_REASONING         -> Gemini 3.8 Flash
-DEEP_REASONING            -> dormant / no physical binding
-```
-
-Current provider route:
-
-```text
-provider                  Google Gemini Developer API
-protocol                  native Interactions API v1beta
-model                     gemini-3.8-flash
-binding state             development
-reasoning level            low
-streaming                  off
-background                 off
-provider continuation      off
-provider-native tools      off
-provider storage           off / store=false
-fallback                   off
-DANTE retry                off for foundation
-private data               ineligible
-production                 off
-```
-
-Materialized low-level pieces:
-
-```text
-ModelTarget / ModelInvocation contracts
-ModelAccessPort
-ModelAccessRuntime
-ProviderAttempt/error/acceptance taxonomy
-detailed usage evidence including reasoning/cached/tool-use tokens
-typed immutable route configuration v2
-deterministic champion routing
-champion/challenger/fallback config slots
-native Gemini Interactions adapter
-private HTTP transport
-provider-independent structured-output validation
-deadline/timeout bounding
-minimized runtime evidence
-unit adapter/runtime/transport/config tests
-guarded native smoke tooling
-```
-
-The OpenAI-compatible Gemini adapter remains evaluation history only and is not the canonical Google runtime protocol.
-
-## 8. AI roadmap disposition
-
-```text
-I0  CLOSED
-I1  CLOSED
-I2  CLOSED
-I3  DEFERRED / real owner-data-seam gate
-I4  CLOSED FOR DEVELOPMENT FOUNDATION
-I5  FOUNDATION CLOSURE CANDIDATE
-    remaining = lock regeneration + deterministic/full regression + one native smoke
-I6  DEFERRED / product-readiness gate
-I7  partially front-loaded only for low-level ModelAccess concerns; full stage future
-I8  FUTURE
-I9  FUTURE
-I10 FUTURE / trigger-gated
-```
-
-Old provider overlay:
-
-```text
-C6  CLOSED / retained
-C7  CLOSED / retained + typed route v2
-C8  OpenAI/Terra admission = historical evidence
-C9  old Terra live blocker = superseded as current path
-C10 development model evidence = complete
-C11 development binding decision = complete / Gemini 3.8 Flash
-production qualification/promotion = not complete
-```
-
-No stage is being falsely marked complete: integration-heavy stages remain deferred until their real owner/product seams exist.
-
-## 9. Explicit non-claims
-
-```text
-production qualification              NO
-private-data Gemini eligibility        NO
-production Search                      NO
-production Ask                         NO
-first real Intelligence vertical       NOT YET SELECTED
-AI memory integration                  NO
-consequential AI Effect vertical       NO
-proactivity/background activation      NO
-second provider/failover activation    NO
-local model activation                 NO
-deep-reasoning physical binding        NO
-FTS/vector/pgvector activation         NO
-new AI persistence                     NO
-new PostgreSQL/Alembic change          NO
-```
-
-## 10. Active/unmerged workstreams
-
-```text
-feature/access-auth             active product implementation
-feature/home-react              active frontend work
-feature/platform-observability  active platform work
-feature/ai-implementation       low-level AI foundation closure candidate
-feature/ai-architecture         architecture design CLOSED / retained authority/evidence
-```
-
-Do not infer one branch's implementation from another branch.
-
-## 11. Current exact next action
-
-```text
-feature/ai-implementation
-→ regenerate apps/backend/uv.lock after explicit httpx2 runtime dependency
-→ run full deterministic/backend regression gate
-→ run native Gemini smoke dry-run
-→ run exactly one synthetic native Gemini Interactions smoke through ModelAccessRuntime
-→ if PASS: mark docs/workstreams/ai-foundation-closure-2026-09-05.md CLOSED / PASS
-→ freeze/leave feature/ai-implementation
-→ return to broader DANTE/main-oriented work
-```
-
-No additional broad model benchmark and no artificial Ask DANTE vertical are required to close this low-level foundation.
+1. executable code / migrations / tests / real PostgreSQL
+2. Product / Domain / Logical / Physical / constitutions / ADRs
+3. current subsystem references
+4. this status + roadmap
+5. durable evidence / Git chronology
+6. conversation memory

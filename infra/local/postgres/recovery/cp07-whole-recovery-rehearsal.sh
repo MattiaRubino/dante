@@ -6,8 +6,8 @@ REPO_ROOT="$(cd -- "${SCRIPT_DIR}/../../../.." && pwd)"
 
 BOOTSTRAP="${SCRIPT_DIR}/bootstrap-local-recovery.sh"
 IMAGE="${DANTE_RECOVERY_IMAGE:-dante-postgres-recovery:18.6-pgbackrest-2.59.1}"
-EXPECTED_ALEMBIC="20260830_09"
-EXPECTED_TOPOLOGY="69|5|15|76|97|69|123|0|0|0"
+EXPECTED_ALEMBIC="20260904_17"
+EXPECTED_TOPOLOGY="88|5|16|76|172|89|270|0|0|0"
 EXPECTED_EXTENSIONS="pg_stat_statements=1.12,pg_trgm=1.6,postgis=3.6.4,unaccent=1.1,vector=0.8.6"
 
 ADMIN_SECRET="infra/compose/secrets/postgres_password.local"
@@ -877,8 +877,8 @@ report = {
     "recovery_image": os.environ["CP07_RECOVERY_IMAGE"],
     "database": {
         "postgresql_server_version_num": 180006,
-        "alembic_head": "20260830_09",
-        "topology": "69|5|15|76|97|69|123|0|0|0",
+        "alembic_head": "20260904_17",
+        "topology": "88|5|16|76|172|89|270|0|0|0",
     },
     "backup": {
         "label": os.environ["CP07_B0"],

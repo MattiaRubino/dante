@@ -1,159 +1,131 @@
 # DANTE Database Dictionary
 
-**Status:** CURRENT / MATERIALIZED  
-**Schema version:** 1  
-**Serialization:** JSON  
-**Validation:** JSON Schema Draft 2020-12 + DANTE cross-representation validation  
-**Current PostgreSQL:** 18.6  
-**Current Alembic head:** `20260830_09`  
+- **Status:** CURRENT / MATERIALIZED
+- **Schema version:** 1
+- **Serialization:** JSON
+- **PostgreSQL:** 18.6
+- **Alembic head:** `20260904_17`
+- **Frozen CP6 head:** `20260826_08`
+- **Last reconciled:** 2026-09-05
 
-## Purpose
+## 1. Purpose
 
-The Dictionary is the machine-readable companion to the current DANTE Database Architecture & Reference. It must describe the same database that Alembic, SQLAlchemy and real PostgreSQL materialize; a mismatch is a defect.
+Machine-readable companion to the current DANTE Database System of Record.
 
 ```text
-Database Architecture & Reference
+Current DB Reference
 ≈ Database Dictionary
 ≈ SQLAlchemy MetaData / mappings
-≈ Alembic head
-≈ real PostgreSQL schema
+≈ Alembic
+≈ real PostgreSQL
+≈ direct tests
 ```
 
-## Current materialized shape
+A mismatch is a defect.
+
+## 2. Current business-schema inventory
 
 ```text
-69 table entries
-5 view entries
-15 routine entries
-------------------
-89 standalone entries
-
-76 trigger attachments
-97 physical indexes
-69 foreign keys
-123 CHECK constraints
+tables       88
+views         5
+routines     16
+standalone  109
+triggers     76
+indexes      172
+FKs           89
+CHECKs       270
 ```
 
-`dante.alembic_version` remains technical foundation and is not counted as a DANTE semantic/business table. Extension-owned objects remain outside DANTE object entries.
+This is the current Recovery + Access/Auth + shared Email Platform business-schema materialization at `20260904_17`.
 
-Current materialization stages are exactly:
+Platform Observability adds no Dictionary business object, Alembic revision or SQLAlchemy business mapping.
+
+## 3. Frozen CP6 baseline vs current materialization
+
+`expected_baseline` remains exactly:
 
 ```text
-CP6-M01
-CP6-M02
-CP6-M03
-CP6-M04
-CP6-M05
-CP6-M06
-CP6-M07
-RECOVERY-CP06
+68 tables / 5 views / 14 routines / 87 standalone
+75 triggers / 95 indexes / 68 FKs / 120 CHECKs
 ```
 
-`RECOVERY-CP06` is an explicit post-CP6 database evolution stage. It is not a fictitious `CP6-M08` and does not reopen the closed CP6 materialization DAG.
-
-## Recovery lifecycle evolution
-
-The current database includes `dante.material_state_retirement` and `dante.enforce_material_state_retirement()`.
-
-The lifecycle contract for all five materialized MaterialState facets is now:
+`current_materialization` is:
 
 ```text
-live MaterialStateRef
-→ protected payload present under the facet-specific invariant
-→ accepted retirement/redaction
-→ protected payload removed
-→ material_state_retirement committed
-→ NativeRef / ScopedRecordRef ownership, MaterialStateRef address and required history remain truthful
+88 tables / 5 views / 16 routines / 109 standalone
+76 triggers / 172 indexes / 89 FKs / 270 CHECKs
 ```
 
-The five covered facets are:
+`completed_stages` remains CP6 provenance only. Recovery, Access/Auth and Email provenance is represented per object through `implementation.introducing_stage`, `alembic_revision` and `runtime_acl_stage`.
+
+## 4. Post-CP6 evolution
 
 ```text
-schedule.placement
-actual.realization
-session.timing
-routine.recurrence
-event.recurrence
+RECOVERY
+20260830_09
+
+ACCESS/AUTH
+20260827_09
+20260827_10
+20260829_11
+20260830_12
+20260831_13
+
+SHARED EMAIL PLATFORM
+20260903_14
+20260903_15
+20260904_16
+
+CONVERGENCE
+20260904_17
+  no-DDL Alembic merge revision
 ```
 
-A retired MaterialStateRef must not regain protected facet payload. The existing facet validators plus the retirement validator enforce this at the database boundary.
+Recovery does not become a fictitious CP6 stage and Email does not become CP6 provenance.
 
-`recovery_suppression_ref` is a technical UUIDv7 linking canonical PostgreSQL retirement to independently durable disaster-recovery suppression evidence. It is not a Domain identity or a fifth DANTE reference family.
+## 5. Object contract
 
-## Recovery suppression boundary
+Every standalone business-schema object records object identity, purpose, classification, semantic traceability, implementation provenance, exact structure, lifecycle/state-history semantics, security/ACL and proof obligations.
 
-PostgreSQL remains canonical. The recovery suppression ledger is a technical disaster-recovery control only.
+Embedded table objects remain PK/FK/UQ/CHECK/index/trigger attachments. Routines remain standalone because signature/security/search-path/ACL are independently governed.
 
-The accepted protocol is:
+## 6. Shared Email classification
+
+Email delivery objects are `family=email_platform` shared technical infrastructure. Access/Auth is a consumer, not platform owner. They are not MaterialState and are not a generic event-bus/outbox root.
+
+## 7. Operational observer scope
+
+`dante_observer` is deliberately **outside the business-object inventory above**. It is a provisioning-owned PostgreSQL operational role, not a table/view/routine/model and therefore must not be represented as fake Dictionary business materialization.
+
+Its exact security contract is current authority in:
+
+- `../dante-postgresql-database-part-12.md` — Section 46 / `DANTE-OBSERVABILITY-OBSERVER-CONTRACT v1`
+- `../README.md` — observer-role routing
+- `../../../infra/observability/README.md` — collector usage
+- provisioning and live PostgreSQL ACL tests
+
+Required posture remains `LOGIN NOINHERIT`, `pg_read_all_stats` membership with `INHERIT TRUE / SET FALSE / ADMIN FALSE`, `search_path=pg_catalog`, no database `CREATE`/`TEMP`, no DANTE/public business-object access and no DANTE application-role membership.
+
+## 8. Validation
+
+Required:
 
 ```text
-write immutable PREPARED
-→ commit canonical PostgreSQL retirement/redaction
-→ read back canonical retirement
-→ write immutable COMMITTED referencing SHA-256(PREPARED)
+JSON Schema consistency
+filename/object-key agreement
+FK/trigger target resolution
+scope counts ↔ object tree
+Dictionary ↔ SQLAlchemy ↔ Alembic ↔ PostgreSQL
+owner/ACL parity
+routine search_path/security parity
+extension-owned objects excluded correctly
+observer technical-role/provisioning/live-ACL parity
 ```
 
-Recovery handling is fail-closed:
+`test_current_catalog.py` and `test_database_current_catalog.py` are current live cross-representation gates. Historical CP6 tests independently prove the frozen CP6 baseline. Platform Observability PostgreSQL acceptance additionally proves the exact observer-role boundary.
 
-```text
-valid PREPARED + COMMITTED
-→ eligible for deterministic suppression reconciliation
+## 9. Same-change rule
 
-PREPARED without COMMITTED
-COMMITTED without PREPARED
-hash mismatch / malformed record
-→ recovery BLOCKED
-```
+No real business object → no ceremonial Dictionary entry. Every real current DANTE business object requires a matching Dictionary entry and same-change reconciliation.
 
-The independently durable suppression evidence may not expire while any retained database backup/WAL/object version can still resurrect the protected payload.
-
-## Object schema
-
-Every standalone entry keeps the strict blocks:
-
-```text
-object
-purpose
-classification
-semantic_traceability
-implementation
-structure
-state_history
-lifecycle
-security
-proof
-```
-
-`additionalProperties: false` remains the default throughout governed shapes. `implementation.introducing_stage` is a closed vocabulary and currently allows only CP6-M01..M07 plus `RECOVERY-CP06`.
-
-## Structural truth vs semantic truth
-
-Mechanically reconciled facts include columns/types/nullability/defaults, PK/FK/UQ/CHECK, indexes, triggers, views, routines, owner/ACL, Alembic revision, SQLAlchemy mapping and exact PostgreSQL object properties.
-
-Human-authored facts include purpose, semantic owner/facet, lifecycle meaning, canonicality, invariants and proof rationale. Generated DDL must not silently overwrite those semantic fields.
-
-## Security
-
-DANTE-owned objects remain owned by `dante_owner` and default-deny non-owner access. The recovery retirement table grants `dante_runtime` SELECT only; runtime receives no INSERT/UPDATE/DELETE and no direct EXECUTE on the retirement validator.
-
-## Same-change rule
-
-A structural database change is incomplete unless Alembic, SQLAlchemy, Dictionary, current human-readable database reference and direct database tests are reconciled in the same reviewed change.
-
-Current validation must prove at least:
-
-```text
-69 tables / 5 views / 15 routines
-76 triggers / 97 physical indexes
-69 FKs / 123 CHECKs
-Dictionary JSON-Schema validity
-Dictionary internal/cross-file integrity
-Dictionary ↔ SQLAlchemy
-Dictionary ↔ Alembic head 20260830_09
-Dictionary ↔ live PostgreSQL 18.6
-owner / ACL / extension posture
-retirement/redaction lifecycle invariants
-SC-011 anti-resurrection recovery behavior
-```
-
-Git retains superseded database/document history. This README and the Dictionary describe current truth.
+Operational-role contracts remain same-change governed through their dedicated technical-role reference, provisioning and live privilege tests rather than by inventing business Dictionary objects.

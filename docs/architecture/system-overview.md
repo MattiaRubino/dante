@@ -1,63 +1,51 @@
 # DANTE System Overview
 
 - **Status:** CURRENT ARCHITECTURE / IMPLEMENTATION-BOUNDARY OVERVIEW
-- **Last reconciled:** 2026-09-02
-- **Backend foundation:** CP1–CP6 CLOSED / integrated / directly validated
-- **Current PostgreSQL:** 18.6
-- **Current Alembic head:** `20260830_09`
-- **Current AI state:** architecture design/reengineering CLOSED / post-AI05 mega PASS / implementation entry authorized at I0
+- **Last reconciled:** 2026-09-03
+- **PostgreSQL:** 18.6
+- **Protected-main Alembic:** `20260830_09` / Recovery
+- **Feature/access-auth Alembic:** `20260903_15` / Access/Auth + Email Platform
+- **Current branch work:** PRE-INTEGRATION AUDIT
 
 ## 1. Product and authority
 
 DANTE is a personal operating system whose canonical truth represents real life over time while preserving authority, provenance, uncertainty and distinctions between intention, execution and outcome.
 
-Compass: **Understand life. Shape what comes next.**
-
-Framework, model, provider or storage convenience does not redefine accepted Product/Domain/Logical/Physical semantics.
-
-Core invariants include:
+North Star execution loop:
 
 ```text
-Person != Account != Principal != Actor
-Authority != AuthZ
-Consent != Authority
-Visibility != Authority
-provider state != canonical DANTE state
-derived projection != canonical truth
-absence/unknown != false
-MaterialStateRef != ETag/MVCC/provider revision
-AI/solver output != accepted canonical effect
-client local state != canonical accepted effect
-Occurrence != Schedule != Session != Actual
-MODEL OUTPUT != PUBLISHABLE OUTPUT
-INTERACTION SESSION != RUN != WORKER
-SUPERSEDE != CANCEL != ROLLBACK != RECONCILE
-RUN-START AUTHORIZATION != PERPETUAL AUTHORIZATION
-RUN-START AUTONOMY != PERPETUAL AUTONOMY
-Context != Retrieval != Memory
-ConsumerContext != ContextManifest != BasisManifest
-RetrievalCandidate != ContextFragment
-DATA != INSTRUCTION
-MASKING / REDACTION != SEMANTIC EQUIVALENCE
-APPROXIMATE != COMPLETE
-MODEL TARGET != PROVIDER != MODEL != DEPLOYMENT
-HARNESSPROFILE != PROVIDERBINDING
-GLOBAL SEARCH != INTELLIGENCE
-SEARCH RESULT / CURSOR / TARGET REF != AUTHORIZATION
-SEMANTIC QUERY GATEWAY != INTELLIGENCE-OWNED CROSS-CAPABILITY SQL
-PROVIDER COMPLETED != VERIFIED != PUBLISHABLE
-PROVIDER FAILURE != DISCLOSURE DID NOT HAPPEN
-AUXILIARY MODEL INFERENCE != FREE PROVIDER CALL
-DEFAULT NONCANONICAL PERSISTENCE = NO
-BUILD-READY != INTEGRATION-READY != ACTIVATION-READY
+Understand
+→ Discover
+→ Orchestrate
+→ Decide
+→ Plan & Coordinate
+→ Act
+→ Observe
+→ Learn & Adapt
 ```
 
-## 2. Repository / application topology
-
-One product monorepo:
+Permanent semantic constraints include:
 
 ```text
-DANTE repository
+reality != plan
+inference != fact
+Effort != Execution != Outcome != Goal progress
+unknown != false
+Person != Account != Principal != Actor
+provider state != canonical DANTE state
+derived projection != canonical truth
+MaterialStateRef != ETag/MVCC/provider revision
+idempotency != semantic identity
+AI/solver output != accepted canonical effect
+client local state != canonical accepted effect
+```
+
+Implementation consumes Product/Domain/Logical/Physical authority. Framework/storage convenience does not redefine accepted semantics.
+
+## 2. Repository topology
+
+```text
+DANTE monorepo
 ├── apps/backend
 ├── apps/web
 ├── apps/mobile
@@ -70,276 +58,235 @@ DANTE repository
 └── .github
 ```
 
-Backend posture remains a capability-first modular monolith.
+Backend posture is a capability-first modular monolith with explicit application transaction ownership and provider/ORM/HTTP details outside semantic authority.
+
+## 3. Foundation state
 
 ```text
-apps/backend/src/dante
-├── bootstrap
-├── kernel only for proven stable cross-capability primitives
-├── platform for shared technical mechanics
-└── modules/<capability>
+Engineering Foundation                  CLOSED / ACCEPTED
+Frontend Foundation                     CLOSED / ACCEPTED
+Backend CP1–CP6                         CLOSED / ACCEPTED
+PostgreSQL 18.6                         CURRENT
+schema dante                            CURRENT
+owner/migrator/runtime privilege split  CURRENT
+real PostgreSQL acceptance testing      CURRENT
 ```
 
-Responsibility boundary != module != table != deployable service.
+Historical PostgreSQL 18.4 CP2/CP3 runs remain historical exact evidence; current repository patch is 18.6.
 
-FastAPI is an inbound/process host. SQLAlchemy/provider runtime objects do not own Domain identity. Bootstrap wires; it does not become the service layer.
-
-## 3. Current backend / PostgreSQL foundation
+## 4. Canonical persistence
 
 ```text
-Python                3.14.x / initial exact pin 3.14.7
-uv                    package authority
-FastAPI               inbound/process host
-SQLAlchemy            async 2.0 stable line
-psycopg               3
-Alembic               one environment / one DAG / one head
-PostgreSQL            18.6
-schema                dante
-Alembic head          20260830_09
-transaction owner     outer application operation
-adapter commit        forbidden / flush only
-READ COMMITTED        default
+PostgreSQL 18 major family
+SOLE CANONICAL PERSISTENCE / MATERIAL-HISTORY AUTHORITY
 ```
 
-Current concrete topology:
+Current `feature/access-auth` catalog before main convergence:
 
 ```text
-69 tables
+Alembic             20260903_15
+87 tables
 5 views
 15 routines
-76 triggers
-97 indexes
-69 foreign keys
-123 CHECK constraints
-0 custom enum/domain
-0 sequences
-0 materialized views
-0 RLS policies
+75 triggers
+170 physical indexes
+88 foreign keys
+267 CHECK constraints
 ```
 
-PostgreSQL 18 major family is the sole canonical persistence/material-history authority.
+Protected main independently contains Recovery at `20260830_09` and is not yet combined with this branch.
 
-Rejected globally remain universal Entity/Thing roots, generic relationship graph, canonical EAV/property bag, universal Fact/Version payload and generic JSONB semantic escape hatches.
-
-## 4. AI architecture closure
-
-Completed architecture chain:
+The accepted relational thesis remains:
 
 ```text
-AI-00  COMPLETE
-AI-01  COMPLETE
-AI-02.1 CLOSED / STRUCTURALLY ACCEPTED
-AI-03  CLOSED / C01..C33 / B01..B35 / MAT-01..MAT-15
-AI-04  CLOSED / A01..A30 / EV01..EV20 / RT-01..RT-31 / PA-01..PA-61 / WP-01..WP-22
-PRE05  CLOSED / PRE05-H01..H19
-AI-05A CLOSED / BD-01..BD-41
-AI-05B CLOSED / AI05B-H01..H15
-AI-05 whole-system CLOSED / STRUCTURALLY ACCEPTED
-POST05 hardening CLOSED / POST05-H01..H25
-MKT-001..MKT-100 PASS
-C01..C20 compound PASS
-reverse authority PASS
-Product/simulation replay PASS
+owner-specific canonical families
++ owner-specific material-state/history families
++ specific typed relation families
++ bounded technical address/control structures where required
++ separate provider / derived / runtime concerns
 ```
 
-Current implementation-facing authority:
+Rejected globally:
 
 ```text
-docs/architecture/dante-ai-implementation-baseline-final.md
+universal Entity / Thing
+universal Relationship / generic edge
+canonical EAV/property bag
+universal event ontology
+universal Fact/Version semantic root
+JSONB required-semantic escape hatch
 ```
 
-Final independent acceptance evidence:
+## 5. Reference / material-state architecture
+
+Reference families remain distinct:
 
 ```text
-docs/architecture/dante-ai-post05-final-mega-acceptance.md
+NativeRef
+ScopedRecordRef
+MaterialStateRef
+ExternalRef
 ```
 
-Architecture design/reengineering is closed. Runtime/provider/product activation is not claimed.
+Provider revisions, MVCC tokens, timestamps and ETags do not become MaterialStateRef.
 
-## 5. Final Search / Intelligence split
+Shared Email Platform persistence is technical delivery-control state and is **not MaterialState**.
+
+## 6. CP6 and Recovery
+
+CP6 is closed. Later database work evolves the schema through forward Alembic revisions under ADR-010; applied CP6 history is never rewritten.
+
+Protected main additionally owns the closed Recovery material-state retirement evolution at `20260830_09`.
+
+This feature branch does not claim Recovery as materialized until protected main is merged into it and combined PostgreSQL proof passes.
+
+## 7. Access/Auth architecture
+
+Access/Auth is a real full-stack capability.
 
 ```text
-modules/search
-→ independent Global Search/discovery capability
-→ deterministic/no-model capable
-→ permission-safe bounded cross-capability read projection for Search
-→ no canonical mutation authority
-
-modules/intelligence
-→ Work / Context / Reference Resolution / Semantic Query / Retrieval orchestration
-→ optional governed ModelAccess
-→ Verification / Result Maturity / Effect / Safe Publication
-→ no raw database or canonical business ownership
+Account
+├── EmailIdentity 1..N
+├── PasswordCredential 0..1
+├── AuthSession 0..N
+├── ExternalIdentity 0..N
+└── WebAuthnAccount 0..1 → PasskeyCredential 0..N
 ```
 
-Search's cross-capability read projection is Search-specific. It is not an excuse for Intelligence to perform arbitrary cross-capability SQL.
-
-Structured DANTE-native questions use owning capability typed query seams. If no such seam exists, the capability is not integration-ready; the model does not receive SQL authority.
-
-## 6. Context / retrieval / reference model
-
-Accepted runtime chain as applicable:
+Permanent rules:
 
 ```text
-WorkContract
-→ ContextPlan
-→ InformationNeed
-→ ContextStrategy
-→ ReferenceResolution where required
-→ SemanticQuery and/or RetrievalPlan
-→ RetrievalCandidate
-→ validation
-→ ContextFragment
-→ ContextReadiness
-→ ConsumerContext
-→ ContextManifest exposure evidence
-→ BasisManifest currentness/coherence
+Person != Account
+EmailIdentity != Account
+PasswordCredential optional
+passwordless Account valid
+provider identity = issuer + subject
+provider email != linking authority
+provider token/assertion != DANTE AuthSession
+opaque server-authoritative AuthSession
+recent-auth required for sensitive mutation
+passkeys use WebAuthn/FIDO2
 ```
 
-Reality Scope and Runtime Interpretation Frame remain explicit. Relative dates/times, timezone/DST, current/history/scenario/open-world distinctions are not inferred from server-local accidents.
+M1–M5 engineering is closed/accepted. Real Windows Hello and Google UAT passed. Real Apple registered-domain UAT is bounded-deferred until external prerequisites exist and is not reported as PASS.
 
-Search/reference resolution operate over the eligible universe before observable rank/count/facet/ambiguity behavior.
+## 8. Shared Email Platform
 
-## 7. Model/provider boundary
+The Email Platform is shared DANTE infrastructure. Access/Auth is its first consumer.
 
 ```text
-Intelligence application
-→ DANTE-owned ModelAccessPort
-→ ModelAccessRuntime
-→ private ProviderAdapter
-→ provider SDK/protocol
+feature/application transaction
+        │
+        ├── canonical mutation
+        └── durable EmailIntent
+                 ▼
+          PostgreSQL COMMIT
+                 ▼
+         claim / lease / worker
+                 ▼
+         protected payload + template
+                 ▼
+        provider-neutral adapter
+          ├── SES API v2
+          └── SMTP local/CI
+                 ▼
+          provider evidence
+                 ▼
+       suppression / operations state
 ```
 
-Provider/model/SDK remains OPEN / evidence-driven.
-
-Correct lifecycle:
+Current persistence:
 
 ```text
-candidate shortlist
-→ candidate admission
-→ inactive adapter/binding
-→ conformance
-→ live compatibility with eligible/minimized data
-→ direct DANTE eval using production-owned composition
-→ applicable privacy/security/capacity/economics evidence
-→ qualification
-→ promotion
+dante.email_delivery_intent
+dante.email_delivery_attempt
+dante.email_provider_event
+dante.email_recipient_suppression
 ```
 
-Candidate admission != production qualification.
-
-Every auxiliary inference—router, query rewrite, resolver helper, summarizer, verifier/judge—uses the same governed ModelAccess/data-egress/resource/eval boundary.
-
-## 8. Provider attempts / disclosure / retry
-
-DANTE allocates `ProviderAttemptId` before dispatch and owns the effective retry budget.
+Permanent rules:
 
 ```text
-provider outcome unknown
-→ no blind replay
-
-provider failed/timed out
-!= data disclosure did not happen
+DANTE owns lifecycle/state
+provider owns last-mile transport
+provider accepted != delivered
+provider I/O after caller COMMIT
+no blind retry after ambiguous send
+operation-scoped idempotency + fingerprint
+short-lived AES-GCM protected sensitive payload
+terminal/unsafe-state wipe
+Auth/security tracking/link rewriting OFF
 ```
 
-Request-local `EgressAttempt` distinguishes `NOT_SENT | POSSIBLE | ESTABLISHED` exposure from provider completion.
+Final real SES UAT proved signup verification, password recovery, reset notification, no auto-login and revocation of the previous AuthSession. Direct PostgreSQL inspection proved provider MessageId + sensitive-payload wipe for the three accepted intents.
 
-Fallback rebuilds/minimizes ConsumerContext and reevaluates current provider eligibility, cumulative disclosure and resources. Server-side multi-provider hedging is OFF until explicitly qualified.
-
-SDK/gateway hidden retries are disabled or every material attempt is accounted under DANTE attempt/resource/disclosure evidence.
-
-## 9. Verification / Effect / publication
+## 9. Client data authority
 
 ```text
-provider completed
-!= verified
-!= publishable
+canonical accepted state/effect   backend + PostgreSQL
+synced local projection           PowerSync/SQLite noncanonical
+offline pending mutation          local staging only
+remote request state              TanStack Query + typed API
+form/component transient state    frontend only
 ```
 
-`VerificationResult`, `ResultMaturity` and `PublicationDecision` remain distinct.
+Provider/browser ceremony completion is evidence only; backend response is the authoritative Auth result.
 
-First vertical:
+## 10. Integration state
+
+The project currently has two accepted but uncombined database lines after `20260826_08`:
 
 ```text
-ConsequenceProfile = READ_ONLY
-proposed effects = []
-→ EffectOutcome.NO_EFFECT
+protected main → 20260830_09 Recovery
+Access branch  → 20260903_15 Access/Auth + Email
 ```
 
-Any mutation intent under that envelope is rejected before mutation dispatch.
-
-Publication revalidates current Work, Auth/AuthZ/Consent/Visibility, recipient/surface, disclosure, Basis/currentness and transformed final representation.
-
-First public Ask is non-streaming. External streaming is a later proof-gated capability.
-
-## 10. Evidence / observability
+Correct convergence:
 
 ```text
-CANONICAL DATA
-!= AUDIT/EXECUTION EVIDENCE
-!= OPERATIONAL TELEMETRY
-!= EVAL/QUALIFICATION EVIDENCE
+pre-integration audit
+→ merge main into feature/access-auth
+→ preserve both Alembic histories
+→ add forward Alembic merge revision
+→ reconcile Dictionary/reference/mappings
+→ real combined PostgreSQL + backend + Web proof
+→ PR to protected main
 ```
 
-Operational telemetry is minimized and excludes raw private context/search candidates/model output/secrets by default.
+After Access/Auth + Email land, the enriched main is merged into the already-closed `feature/platform-observability` branch for its integration/release rechecks, then Observability returns to main.
 
-Telemetry exporter failure is operational degradation, not permission to weaken safety/privacy or fabricate canonical state.
+## 11. Future work boundary
 
-Sensitive cases requiring durable audit remain activation-gated until a real audit owner/integrity/retention/access contract exists.
+Do not expand this feature branch with later maturity work before integration.
 
-## 11. Persistence posture
-
-Request-local/no-store by default includes Work/Run state, Context contracts, Search results, RetrievalCandidate, ContextManifest, BasisManifest, ProviderAttempt, EgressAttempt, Verification/Publication and NO_EFFECT state.
-
-Independent triggers are required for:
+Future fresh branches may own:
 
 ```text
-conversation/session persistence
-durable Run/resume
-AI memory
-Context cache
-cross-Run prior-disclosure accounting
-commercial/shared usage ledger
-idempotency/saga/reconciliation state
-background durable Work
-vector/embedding representations
+M6 Native Mobile when re-gated
+session/device management
+remote session revoke
+security event center / "this wasn't me"
+future Access UX/polish
+authenticated Home handoff
+other product verticals
 ```
 
-No generic AI persistence is justified by the first vertical.
+Those branches should start from the enriched protected main containing common Auth/Email/Observability foundations.
 
-## 12. Capability-triggered components
+## 12. Current authority
 
-Remain dormant until real triggers/proofs:
+Use:
 
 ```text
-FTS / pg_trgm
-pgvector / ANN / embeddings
-Restate
-R2
-MCP / A2A
-Execution Environment
-external result streaming
-multi-provider hedging
-commercial/shared accounting
-cross-Run disclosure accounting
+../PROJECT-STATUS.md
+../ROADMAP.md
+../workstreams/access-auth.md
+../database/README.md
+../database/access-auth.md
+../database/dictionary/
+access-auth-*.md
+email-platform.md
+../development/documentation-lifecycle-policy.md
 ```
 
-## 13. Current implementation sequence
-
-```text
-I0  repository/application ownership + architecture-test skeleton
-I1  Search contracts/registry/application shell
-I2  Intelligence pure contracts + deterministic fakes
-I3  first real deterministic Search/structured query families when integration-ready
-I4  provider candidate admission + inactive adapter candidate
-I5  conformance/live compatibility/direct qualification
-I6  read-only Ask DANTE
-I7  production hardening / observability / privacy / audit / resource / rollout
-I8  scenario/planning proposal
-I9  first bounded consequential Effect
-I10 proactive/background/durable/external-agent work only on trigger
-```
-
-Current exact next action is **I0**.
-
-I0 is build-authorized. It does not activate production Search, Ask, provider routes, new persistence or database changes.
+Historical phase banners and handoffs are evidence only.

@@ -1,144 +1,173 @@
-# DANTE — Home Current Checkpoint
+# DANTE — Home / Temporal Current Checkpoint
 
-**Status:** **USER-REVIEWED / APPROVED REACT MIGRATION BASELINE**  
-**Date:** 2026-08-24  
-**Mainline purpose:** product/UX oracle for implementation in the React/TypeScript frontend already materialized on `main`.
+**Status:** **PRE-PR INTEGRATION CANDIDATE / H0-T1-F0 FROZEN / C1 OPEN / C2 BLOCKED**  
+**Reconciled:** 2026-09-05  
+**Candidate branch:** `feature/home-timeline`  
+**Current `main` integrated through:** `7bc7c0136cb5579528be1e2be0e71a6399004f90`  
+**Pre-closure technical checkpoint:** `d8b1aa65d5d2651702bd790be3843234ad9f86da`  
+**PR state:** NOT OPENED
 
-This file supersedes the historical baseline metadata at the top of `docs/frontend/home/contract.md`. The behavior sections in that contract remain authoritative unless explicitly overridden here.
+This is the current navigation document for Home, AppShell, Timeline, Temporal Create and World Focus. Temporary branch handoff/live-status files were removed during pre-PR closure; historical workstream context is retained in `docs/archive/branches/2026-09-feature-home-timeline.md`. Durable contracts and current code/tests outrank historical branch instructions.
 
-## Current accepted Home baseline
+## 1. Integration state
 
-```text
-B2 Home Infrastructure Color v27
-  over B2 Home Edge Attachment v26
-  over B2 Home Shell + Timeline Quick Add v25
-  over B2 Home Visual Skin v24
-  over B2 Home Branding v23
-  over B2 Central Stage v22
-```
+`feature/home-timeline` has been reconciled with the current `main` baseline rather than rebased or rewritten.
 
-The exploratory prototype branch is frozen as historical evidence; React implementation now proceeds from `main`.
-
-## Accepted shell and topbar
+The candidate contains current platform work from `main`, including the current PostgreSQL/backend/Auth/Recovery/Email/Observability/OpenAPI baseline, plus the Home/Temporal frontend workstream:
 
 ```text
-LEFT                         CENTER                    RIGHT
-DANTE + Cerca                Home / Mondi / Oggi       Crea / Review / launcher / account
+current main platform
++
+AppShell / Home
++
+Timeline T1
++
+Temporal F0
++
+Temporal Create C1 candidate
++
+World Focus pre-backend frontend
+=
+feature/home-timeline integration candidate
 ```
 
-- application bar is sticky and shell-level edge-to-edge;
-- DANTE official symbol/wordmark treatment is retained;
-- Search follows DANTE;
-- primary navigation remains centered;
-- `Crea` is the first right-side utility action;
-- Review/launcher remain legacy/prototype controls until a bounded cleanup decides their production fate.
+The generated TanStack route tree has been regenerated through the real Vite/TanStack generator after route reconciliation. Temporary diagnostic instrumentation used to recover that generated output is not present in the final tree.
 
-## Accepted Home surface geometry
+No PR is created by this checkpoint. The next repository action is external/editor review of the candidate; PR creation remains a separate explicit action.
 
-- application shell is fluid rather than capped to the old prototype width;
-- expanded AI surface is attached to the left application edge with square attached-side corners and preserved right-side geometry;
-- collapsed AI rail is also attached to the left edge with square-left / rounded-right treatment;
-- timeline attaches to the left edge while preserving its right-side relationship with the Context Rail;
-- timeline attached-side corners are square; free-side rounding remains;
-- Context Rail remains subordinate to and paired with the timeline.
+## 2. Authority / status matrix
 
-These are visual/layout requirements, not permission for projection-specific geometry hacks.
+### H0 — Whole Home structure
 
-## Accepted visual language
+**FROZEN.**
 
-Generic interface chrome uses:
+Macro composition, ownership and responsive structural modes remain change-controlled by `home-structural-contract.md`.
+
+### P1 — Global AppShell / Topbar
+
+**FROZEN for accepted implementation scope.**
+
+Shared AppShell ownership, route outlet, inline Search grammar, launcher/create/account shells and accepted visual baseline remain intact. Access `/` and `/security` continue to coexist with application routes without moving Auth semantics into Home.
+
+The current AppShell account presentation is still intentionally neutral and is not yet bound to the full current Access/Auth session capability. Do not fake identity/logout just because the backend capability now exists.
+
+### T1 — Timeline
+
+**FROZEN.**
+
+Preserve the accepted continuous temporal viewport, semantic anchoring, Now, zoom/density, custom focus/drag, first-gesture correctness, precise time edit, move + Undo, all-day geometry, expanded Context behavior and Firefox regression contract.
+
+Timeline remains a consumer of normalized projections, not raw DB rows or provider SDK objects.
+
+### F0 — Temporal application foundation
+
+**CLOSED / FROZEN.**
+
+Preserve typed temporal identities, placement forms, Clock, operation IDs/idempotency, revisions, stale-write rejection, guarded Undo, subscriptions and deterministic local adapter semantics.
+
+F0 is not a fake backend. The future real adapter must replace the local adapter through the existing application seam.
+
+### C1 — Manual Temporal Create
+
+**OPEN.**
+
+The implementation candidate includes the substantial C1 frontend foundation, including:
+
+- title-first Activity/Event creation;
+- timed/all-day/unplaced Activity placement;
+- timed/all-day Event placement;
+- Routine-backed user-facing Activity repeat;
+- Event-owned recurrence;
+- all four CP6 recurrence families in custom authoring;
+- Planning Tray behavior for unplaced Activity;
+- real per-day all-day lane behavior;
+- Event Agenda/internal parts;
+- simple floating/draggable desktop Create;
+- larger floating Advanced surface;
+- dirty-draft close/discard protection;
+- Home/Timeline coexistence while Create is open.
+
+C1 is **not frozen** and has **not** received the explicit final manual approval token:
+
+`C1 MANUAL PASS — APPROVED`
+
+Branch integration, automated green checks or a later PR merge do not manufacture that product approval.
+
+### C2 — Card → Structured Detail
+
+**BLOCKED until C1 closes.**
+
+Do not start opportunistic C2 work merely because the branch is being integrated.
+
+### World Focus
+
+World Focus remains a real pre-backend frontend architecture/candidate, not permission to invent canonical World persistence or backend/API semantics.
+
+Use `world-focus-architecture.md`, `world-focus-frontend-roadmap.md`, `world-focus-wf0-scenario-oracle.md` and the current WF1/geometry checkpoints for durable pre-backend context. Branch labels in the original 2026-08 records are provenance, not current operating instructions.
+
+## 3. Temporal semantic stop lines
+
+Permanent distinctions remain:
 
 ```text
-primary / active / selected interaction = DANTE orange
-inactive generic controls               = neutral blue-grey / charcoal
+Activity != Event != Routine
+Schedule != Occurrence != Session != Actual
+planned/intended != happened
+recurrence specification != generated Occurrence
+Context != appearance
+manual Create != AI/NL/voice
+Timeline ViewModel != application model != DTO != DB row
+provider state != canonical DANTE state
 ```
 
-Semantic color is preserved where it identifies content or state:
+Current C1 authors recurrence intent only. It must not synthesize canonical future Occurrences in browser state.
 
-- Mondi/world identities;
-- timeline group identities such as Focus, Riunioni, Salute and Creatività;
-- event/category borders;
-- semantic success/warning/error states.
-
-Legacy generic purple chrome is not part of the accepted DANTE direction. The reviewed v27 pass covers temporal controls and Context Rail infrastructure such as `Ora`, selected day, Capture controls/status markers and Resolution confirmation chrome.
-
-## Central stage boundary
-
-The retained v22 rule is unchanged:
+The future end-to-end bridge remains:
 
 ```text
-Home stage = READ / NAVIGATE / OPEN
-NO persistent +
-NO ghost add slots
-NO placeholder World/Signal entities
-NO direct configuration CRUD in Home stage
+canonical temporal sources
+→ backend/application temporal range query
+→ normalized Timeline projection
+→ existing Timeline engine
 ```
 
-Mondi and Segnali are projections inside one stable Home stage. Configuration/creation belongs to their dedicated management surfaces.
+## 4. Validation rule
 
-## Timeline
+Live validation authority is the current GitHub Actions state for the exact candidate HEAD. Historical run IDs in dated checkpoint documents are evidence only and must not be promoted to current truth after branch reconciliation.
 
-Accepted temporal header:
+The pre-closure technical checkpoint demonstrated that the merged route set passes frontend contract drift, lint, typecheck, architecture and generated-source checks after the real route-tree regeneration. Final review must use the CI result attached to the final pre-PR cleanup candidate.
+
+## 5. Current read order
+
+For current work/review read:
+
+1. `docs/frontend/README.md`
+2. `docs/frontend/home/current-checkpoint.md`
+3. `docs/frontend/home/home-structural-contract.md`
+4. `docs/frontend/home/temporal-frontend-roadmap.md`
+5. `docs/frontend/home/temporal-f0-contract.md`
+6. `docs/frontend/home/timeline-t1-frozen-contract.md`
+7. `docs/frontend/home/temporal-create-c1-manual-acceptance.md`
+8. `docs/frontend/home/world-focus-architecture.md`
+9. `docs/frontend/home/world-focus-frontend-roadmap.md`
+10. `docs/frontend/open-decisions.md`
+11. `docs/frontend/ui-registry.md`
+12. current implementation/tests under `apps/web/` and shared packages.
+
+For historical workstream context use `docs/archive/branches/2026-09-feature-home-timeline.md` and dated evidence documents only.
+
+## 6. Immediate next action
+
+Do not start a new feature from this checkpoint.
+
+Sequence:
 
 ```text
-add / month / now / week / actions
+final branch CI
+→ editor/reviewer inspection
+→ fix only concrete review findings if any
+→ explicit user authorization for PR
+→ PR to main
 ```
 
-`home.timeline.quickAdd` is a real contextual Home control, but its current bridge to global `Crea` is still **prototype-only**. React migration must preserve the affordance without inventing backend write semantics. Final create type, date/time prefill, destination and persistence contract remain separate decisions.
-
-The mature timeline behavior contract remains intact: calendar/date navigation, return-to-now, continuous day, overlap lanes, zoom, grouping, event focus/time editing and drag/move semantics are not reopened by the migration.
-
-## Context Rail
-
-`home.contextRail` keeps two simultaneously visible responsibilities:
-
-```text
-USER -> DANTE     Capture
-DANTE -> USER     Resolution
-```
-
-- Capture is low-friction input without forced classification first;
-- Resolution surfaces matters that genuinely require a user decision/confirmation/correction;
-- Resolution is not a notifications center;
-- complex resolution escalates to a deeper controlled surface rather than being crammed into the rail.
-
-## React migration contract
-
-Do **not** port the prototype monolith line-by-line.
-
-Use the existing React/TypeScript materialization on `main` and reconstruct the accepted Home by ownership boundary. Expected component ownership includes, at minimum, application shell/topbar, Home orientation, AI surface, central stage/Mondi/Segnali projection, Today timeline and Context Rail.
-
-Migration sequence:
-
-1. preserve visual/behavioral parity;
-2. consume semantic tokens/localization/contracts rather than historical raw prototype values;
-3. use explicit frontend view models/adapters;
-4. keep backend DTO/domain/persistence shapes out of components;
-5. add responsive/accessibility/visual/component evidence in the real React stack;
-6. only then address remaining small visual refinements or new product behavior.
-
-## Machine-readable Home authorities
-
-- `prototypes/frontend/shared/contracts/home-stage.contract.json`
-- `prototypes/frontend/shared/contracts/home-stage.view-model.schema.json`
-- `prototypes/frontend/shared/contracts/home-responsive.matrix.json`
-- `prototypes/frontend/shared/fixtures/home-stage.v0.json`
-- `tests/prototypes/frontend-preprod-contracts.py`
-
-These are frontend view contracts, not backend/domain/database contracts.
-
-## Frozen historical evidence
-
-Historical prototype branch commit:
-
-`2203c96c4aa1dc10258a84bcf461aa0b923e8951`
-
-Final user-reviewed local wrapper:
-
-```text
-DANTE_Home_v43_VERIFIED_INJECTION_COLOR_FIX.html
-size       87386 bytes
-SHA-256    e82058e4e980208feb3f0c055dab3eec81812be1fa47e5f036e8d5d0e1fe859d
-```
-
-Exploratory archives/work files remain on `prototype/frontend` and are intentionally excluded from `main`.
+Stop before PR creation unless the user explicitly authorizes it.

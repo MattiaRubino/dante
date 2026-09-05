@@ -1,5 +1,8 @@
 import type { CommonResource } from '../it/common';
 import { access } from './access';
+import { home } from './home';
+import { shell } from './shell';
+import { worldFocus } from './world-focus';
 
 export const common = {
   runtime: {
@@ -26,5 +29,18 @@ export const common = {
     title: 'Gesture probe',
     description: 'Tap this surface to exercise Gesture Handler + Reanimated.',
   },
+  observability: {
+    failure: {
+      eyebrow: 'DANTE',
+      title: 'Something went wrong',
+      description:
+        'The interface encountered an unexpected error. You can retry without giving up control of the session, or reload the page.',
+      retry: 'Try again',
+      reload: 'Reload page',
+    },
+  },
   access,
+  shell,
+  home,
+  worldFocus,
 } as const satisfies CommonResource;

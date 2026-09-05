@@ -35,8 +35,22 @@ jobs:
           cache: true
           install: false
 
+      - name: Install canonical uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          working-directory: apps/backend
+          checksum: 68a509da24b06b4223a1c0175fb5eb5bc79342b76cbeff0cfe51ac3f5b17b6b2
+          enable-cache: false
+
+      - name: Install project Python
+        working-directory: apps/backend
+        run: uv python install
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Frontend contract drift check
+        run: python3 tests/prototypes/frontend-preprod-contracts.py
 
       - name: Format check
         run: pnpm format:check
@@ -96,6 +110,12 @@ jobs:
 
       - name: Run Web E2E
         run: pnpm test:e2e:web
+
+      - name: Install Firefox and Linux dependencies
+        run: pnpm --filter @dante/web exec playwright install --with-deps firefox
+
+      - name: Run frozen Timeline interaction contract in Firefox
+        run: pnpm --filter @dante/web exec playwright test e2e/timeline-interactions.spec.ts --browser=firefox
 
       - name: Upload Playwright failure evidence
         if: failure()

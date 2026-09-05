@@ -1,0 +1,65 @@
+{
+  "format": "dante-home-shell-responsive-matrix-v1",
+  "contractVersion": "1.0.0",
+  "scope": "whole-home structural responsive guardrail",
+  "pressureViewportsPx": [1856, 1600, 1366, 1200, 1121, 1120, 1024, 901, 900, 760, 390],
+  "representativeAiRoundTripViewportsPx": [1856, 1366, 1024, 901],
+  "representativeTimelineExpansionViewportsPx": [1856, 1366, 1121],
+  "modes": {
+    "H0-WIDE": {
+      "minWidthPx": 1121,
+      "heroRelation": "ai-beside-upper-workspace",
+      "todayRelation": "timeline-beside-context-rail",
+      "contextRailVisible": true
+    },
+    "H0-COMPRESSED": {
+      "minWidthPx": 901,
+      "maxWidthPx": 1120,
+      "heroRelation": "ai-beside-upper-workspace",
+      "todayRelation": "timeline-full-width",
+      "contextRailVisible": false
+    },
+    "H0-COMPACT": {
+      "maxWidthPx": 900,
+      "heroRelation": "ai-above-upper-workspace",
+      "orientationRelation": "stacked-before-stage",
+      "todayRelation": "timeline-full-width",
+      "contextRailVisible": false
+    }
+  },
+  "requiredRegions": [
+    "shell",
+    "ai-surface",
+    "orientation",
+    "central-stage",
+    "timeline",
+    "context-rail"
+  ],
+  "globalInvariants": [
+    "shared app topbar exists outside Home ownership",
+    "required Home regions remain present in the runtime tree",
+    "no unexpected horizontal page overflow",
+    "AI collapse-expand round trip restores macro geometry",
+    "Stage mode changes do not reauthor Home macro geometry",
+    "Timeline and Context Rail remain siblings in Today workspace",
+    "Timeline expansion does not reauthor Hero geometry",
+    "compact hidden Context Rail does not delete the product capability"
+  ],
+  "wideInvariants": [
+    "Timeline and Context Rail are both visible",
+    "Timeline is left of Context Rail",
+    "AI Surface is left of Upper Workspace",
+    "Timeline expansion may consume released rail width"
+  ],
+  "compressedInvariants": [
+    "Context Rail is not visible",
+    "Timeline consumes the available Today width",
+    "AI Surface remains beside Upper Workspace"
+  ],
+  "compactInvariants": [
+    "Context Rail is not visible",
+    "Timeline consumes the available Today width",
+    "AI Surface is above Upper Workspace",
+    "Orientation is above Central Stage"
+  ]
+}

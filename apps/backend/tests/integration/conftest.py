@@ -1,4 +1,4 @@
-"""Real PostgreSQL 18.6 acceptance harness for the CP3 persistence boundary."""
+"""Real PostgreSQL 18.6 acceptance harness shared by backend integration suites."""
 
 from __future__ import annotations
 
@@ -25,12 +25,12 @@ from dante.platform.config.database import DatabaseSettings
 from dante.platform.database.provisioning import ProvisioningSettings, provision_database
 
 _POSTGRES_IMAGE = "dante-postgres-local:18.6"
-_BACKEND_ROOT = Path(__file__).resolve().parents[3]
+_BACKEND_ROOT = Path(__file__).resolve().parents[2]
 
 
 @dataclass(frozen=True, slots=True)
 class PostgresCluster:
-    """One isolated PostgreSQL cluster created from the CP2-certified DANTE image."""
+    """One isolated PostgreSQL cluster created from the certified DANTE image."""
 
     host: str
     port: int
@@ -38,6 +38,7 @@ class PostgresCluster:
     admin_password: str
     migrator_password: str
     runtime_password: str
+    observer_password: str
     container_name: str
 
     def stop(self) -> None:
@@ -45,14 +46,14 @@ class PostgresCluster:
         _docker("stop", "--signal", "SIGINT", "--timeout", "5", self.container_name)
 
     def start(self) -> None:
-        """Restart PostgreSQL and wait for the exact CP3 acceptance version."""
+        """Restart PostgreSQL and wait for the exact acceptance version."""
         _docker("start", self.container_name)
         _wait_for_postgres(self)
 
 
 @dataclass(frozen=True, slots=True)
 class ProvisionedDatabase:
-    """One fresh database inside the isolated CP3 acceptance cluster."""
+    """One fresh database inside the isolated acceptance cluster."""
 
     cluster: PostgresCluster
     name: str
@@ -139,7 +140,7 @@ def _wait_for_postgres(cluster: PostgresCluster) -> None:
 
     logs = _docker("logs", cluster.container_name, check=False).stdout
     pytest.fail(
-        "CP3 PostgreSQL acceptance cluster did not become ready as PostgreSQL 18.6. "
+        "PostgreSQL acceptance cluster did not become ready as PostgreSQL 18.6. "
         f"Last connection error: {last_error!r}\nContainer logs:\n{logs}"
     )
 
@@ -197,6 +198,7 @@ def _provision(cluster: PostgresCluster, database_name: str) -> None:
         admin_password=SecretStr(cluster.admin_password),
         migrator_password=SecretStr(cluster.migrator_password),
         runtime_password=SecretStr(cluster.runtime_password),
+        observer_password=SecretStr(cluster.observer_password),
         connect_timeout_seconds=2,
     )
     asyncio.run(provision_database(settings))
@@ -217,7 +219,7 @@ def postgres_cluster() -> Generator[PostgresCluster]:
     image_check = _docker("image", "inspect", _POSTGRES_IMAGE, check=False)
     if image_check.returncode != 0:
         pytest.fail(
-            "Required CP2 image dante-postgres-local:18.6 is not available. "
+            "Required image dante-postgres-local:18.6 is not available. "
             "Build it with `docker compose -f infra/compose/local.yaml build postgres`."
         )
 
@@ -228,7 +230,8 @@ def postgres_cluster() -> Generator[PostgresCluster]:
         admin_password=secrets.token_urlsafe(32),
         migrator_password=secrets.token_urlsafe(32),
         runtime_password=secrets.token_urlsafe(32),
-        container_name=f"dante-cp3-pytest-{uuid.uuid4().hex[:12]}",
+        observer_password=secrets.token_urlsafe(32),
+        container_name=f"dante-pytest-{uuid.uuid4().hex[:12]}",
     )
 
     _docker(
@@ -260,11 +263,13 @@ def postgres_cluster() -> Generator[PostgresCluster]:
 
 
 @pytest.fixture
-def provisioned_database(postgres_cluster: PostgresCluster) -> Generator[ProvisionedDatabase]:
-    """Create a fresh extension-complete database and apply CP3 security provisioning."""
+def provisioned_database(
+    postgres_cluster: PostgresCluster,
+) -> Generator[ProvisionedDatabase]:
+    """Create a fresh extension-complete database and apply DANTE provisioning."""
     database = ProvisionedDatabase(
         cluster=postgres_cluster,
-        name=f"dante_cp3_{uuid.uuid4().hex[:16]}",
+        name=f"dante_test_{uuid.uuid4().hex[:16]}",
     )
     _create_database(postgres_cluster, database.name)
     _provision(postgres_cluster, database.name)
