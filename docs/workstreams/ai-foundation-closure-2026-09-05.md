@@ -267,3 +267,42 @@ next work = broader DANTE roadmap, not forced AI integration
 This documentation-only closure update may move the branch head beyond the validated implementation commit above; it does not alter runtime code, configuration, tests, provider qualification, or database behavior.
 
 When AI work resumes, begin from this checkpoint plus the accepted architecture and the immutable qualified route. Do not infer that a working model call makes Search, Ask, memory, effects, proactivity or production/private-data activation ready.
+
+## 11. Current-main reconciliation and PR candidate
+
+The closed foundation has now been reconciled onto the current protected-main baseline without rewriting either accepted history.
+
+```text
+prior feature head                     68f38e153ab97df2bd2a86a84d31f62b3bdd0bf4
+current main parent                    9dae13163549ca6d342978876be9582d7ec08610
+true two-parent reconciliation merge   4a0a69d9f331a65dcf4f72f53f33f06babddca46
+force push                             NO
+direct write to main                   NO
+database / Alembic change              NONE
+pull request                            #63 / OPEN
+```
+
+The merge uses current `main` as global truth. Current Auth/Access, Email, Recovery, Home/Timeline and Observability implementation remains intact. The semantic shared-file reconciliation is limited to the current-main CI plus deterministic AI gate, current-main dependency graph plus the bounded OpenAI SDK adapter dependency, the regenerated/validated lock, and exact architecture/transport-boundary updates required by the newer runtime graph.
+
+Pre-PR validation of the reconciled composition established:
+
+```text
+uv lock --check                         PASS
+uv sync --locked                        PASS
+backend Ruff                            PASS
+strict mypy                             PASS (221 source files)
+backend non-PostgreSQL pytest           PASS (424/424; 155 PG tests deselected)
+AI deterministic eval pytest            PASS (22/22)
+```
+
+The first official PR Frontend Quality run then identified only repository-wide Prettier drift in nine imported AI eval JSON fixtures. Those fixtures were canonicalized with the repository-pinned `prettier 3.9.0`; the one-shot formatting workflow removed itself in the same commit and is absent from the candidate tree.
+
+The authoritative final integration acceptance is now PR `#63` with the protected-main required checks:
+
+```text
+Backend CI Gate       PENDING ON FINAL HEAD
+Dependency Review     REQUIRED
+Frontend CI Gate      PENDING ON FINAL HEAD
+```
+
+Do not merge merely from the branch-local evidence above. Protected-main integration is accepted only after the required checks are green, the branch is still up to date with `main`, the owner explicitly authorizes the merge, and post-merge acceptance is executed on the resulting `main`.
