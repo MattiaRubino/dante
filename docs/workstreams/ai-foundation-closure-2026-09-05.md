@@ -7,8 +7,7 @@
 - **Private-data eligibility:** NOT CLAIMED
 - **Database/Alembic change:** NONE
 
-This checkpoint is the durable handoff for the low-level AI foundation. It exists so the work can be
-left safely after closure and resumed later without depending on conversation history.
+This checkpoint is the durable handoff for the low-level AI foundation. It exists so the work can be left safely after closure and resumed later without depending on conversation history.
 
 ## 1. What this branch has actually closed or materialized
 
@@ -74,6 +73,7 @@ no fallback activation
 minimized route/provider runtime evidence
 unit tests for runtime, adapter, transport and route config
 one guarded native-runtime smoke tool
+one-command closure gate
 ```
 
 The application caller does not need to know that Google is the development champion.
@@ -109,8 +109,7 @@ private data               ineligible
 production                 off
 ```
 
-The native REST shape was rechecked against current Google Interactions API documentation before
-this checkpoint. Exact provider mechanics remain private to the adapter/transport.
+The native REST shape was rechecked against current Google Interactions API documentation before this checkpoint. Exact provider mechanics remain private to the adapter/transport.
 
 ## 4. What the old branch roadmap becomes
 
@@ -145,9 +144,7 @@ C11 development binding decision COMPLETE: Gemini 3.8 Flash
 production qualification/promotion NOT COMPLETE / NOT CLAIMED
 ```
 
-Therefore nothing is being falsely skipped. Integration-heavy stages are deliberately deferred
-because their real owner/product seams do not exist yet; provider-selection work that already has
-direct evidence is not repeated merely to preserve an obsolete execution sequence.
+Therefore nothing is being falsely skipped. Integration-heavy stages are deliberately deferred because their real owner/product seams do not exist yet; provider-selection work that already has direct evidence is not repeated merely to preserve an obsolete execution sequence.
 
 ## 5. What is explicitly NOT part of this closure
 
@@ -187,6 +184,20 @@ Only the following remains before this low-level foundation can be frozen:
 4. run exactly one synthetic native Gemini Interactions smoke through `ModelAccessRuntime`;
 5. if all pass, record the exact validated commit and mark this checkpoint CLOSED / PASS.
 
+The repository now contains the single closure runner:
+
+```text
+tooling/ai-evals/run_ai_foundation_closure_gate.sh
+```
+
+Full local closure invocation:
+
+```bash
+tooling/ai-evals/run_ai_foundation_closure_gate.sh --with-postgres --execute-live
+```
+
+The script regenerates/checks `uv.lock`, syncs the locked environment, runs Ruff, mypy, non-PostgreSQL tests, build, native dry-run, optional canonical PostgreSQL acceptance and exactly one native live smoke when requested.
+
 No broad model benchmark is required again.
 
 The native smoke accepts either local environment variable:
@@ -208,6 +219,4 @@ feature/ai-implementation = safe to leave
 next work = broader DANTE roadmap, not forced AI integration
 ```
 
-When AI work resumes later, start from this checkpoint and the accepted architecture. Do not infer
-that a model call working makes Search, Ask, memory, effects, proactivity or production/private-data
-activation ready.
+When AI work resumes later, start from this checkpoint and the accepted architecture. Do not infer that a model call working makes Search, Ask, memory, effects, proactivity or production/private-data activation ready.
