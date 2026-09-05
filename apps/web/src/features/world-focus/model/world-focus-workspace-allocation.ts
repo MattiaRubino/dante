@@ -250,6 +250,10 @@ export function resolveWorldFocusWorkspaceAllocation(
   const activeSidecar = findLatestSurfaceByPresentation(baseSurfaces, 'sidecar');
   const rawTopSurface = getTopSurface(state.surfaces);
   const effectiveTopSurface = blockingSurface ?? rawTopSurface;
+  const activeExternalRouteSurface =
+    blockingSurface === null && effectiveTopSurface?.presentation === 'route'
+      ? effectiveTopSurface
+      : null;
   const topWorkspaceLayerSurface =
     blockingSurface ?? findTopWorkspaceLayerSurface(baseSurfaces);
 
@@ -287,6 +291,7 @@ export function resolveWorldFocusWorkspaceAllocation(
   const mainInteraction: WorldFocusMainInteraction =
     blockingSurface !== null ||
     activeFocusSurface !== null ||
+    activeExternalRouteSurface !== null ||
     activeOverlaySurface?.presentation === 'modal'
       ? 'inert'
       : 'interactive';
