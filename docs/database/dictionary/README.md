@@ -104,7 +104,7 @@ Its exact security contract is current authority in:
 - `../../../infra/observability/README.md` — collector usage
 - provisioning and live PostgreSQL ACL tests
 
-Required posture remains `LOGIN INHERIT`, `pg_read_all_stats` membership only, `search_path=pg_catalog`, no database `CREATE`/`TEMP`, no DANTE/public business-object access and no DANTE application-role membership.
+Required posture remains `LOGIN NOINHERIT`, `pg_read_all_stats` membership with `INHERIT TRUE / SET FALSE / ADMIN FALSE`, `search_path=pg_catalog`, no database `CREATE`/`TEMP`, no DANTE/public business-object access and no DANTE application-role membership.
 
 ## 8. Validation
 
