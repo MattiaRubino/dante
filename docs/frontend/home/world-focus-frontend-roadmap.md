@@ -1,6 +1,6 @@
 # DANTE — World Focus Frontend Roadmap
 
-**Status:** CURRENT WORKING ROADMAP — M3 CLOSED / VALIDATED — M4 CONTEXTUAL DANTE ACTIVE / D2 CLOSED / D3 PREFLIGHT NEXT  
+**Status:** CURRENT WORKING ROADMAP — M3 CLOSED / VALIDATED — M4 CONTEXTUAL DANTE ACTIVE / D2–D3 CLOSED / D4 PREFLIGHT NEXT  
 **Date:** 2026-09-05  
 **Branch:** `feature/home-react`
 
@@ -33,6 +33,7 @@ World Focus route/shell
 -> M3-4 Integrated Adaptive Composition + planner/a11y/renderer hardening
 -> M3 final hostile closure
 -> D2 adaptive conversation surface
+-> D3 deterministic pre-backend conversation adapter
 ```
 
 ## 2. Key evidence
@@ -49,14 +50,15 @@ M3-3 hostile green   1978fe5c77c0e2661239372bf0f9bee238021faa / CI 33879774332 P
 M3-4 code/test green b10dc2bef8bab6ae863ce3c8331da6de96094a66 / CI 33904052325 PASS
 M3 final hostile     d9c30a3c6148469b347754eab07dc2ade9be4c52 / CI 33951509083 PASS
 D2 final             7b787766be83096e82eab1ac116b2704fae5f202 / CI 33958677991 PASS
+D3 final             59c70af6005ee87918db7fe152c043699726e78c / CI 33963858340 PASS
 ```
 
-Current D2 closure baseline:
+Current D3 closure baseline:
 
 ```text
-82 / 82 web test files
-399 / 399 web unit tests
-305 modules / 929 dependencies / 0 architecture violations
+84 / 84 web test files
+410 / 410 web unit tests
+311 modules / 963 dependencies / 0 architecture violations
 Frontend pre-production contracts PASS
 World Focus pre-production contracts PASS
 Quality PASS
@@ -86,8 +88,8 @@ M3 — Adaptive World Composition                             CLOSED / VALIDATED
   M3 final hostile closure                                  CLOSED / PASS
 M4 — Contextual DANTE / D2–D6                              ACTIVE
   D2 adaptive conversation surface                          CLOSED / VALIDATED
-  D3 deterministic pre-backend conversation adapter         READ-ONLY PREFLIGHT NEXT
-  D4 contextual/deictic invocation                          BLOCKED BY D3
+  D3 deterministic pre-backend conversation adapter         CLOSED / VALIDATED
+  D4 contextual/deictic invocation                          READ-ONLY PREFLIGHT NEXT
   D5 Insight presentation integration                       BLOCKED BY D4
   D6 Proposal / confirmation / receipt                      BLOCKED BY D5
 M5 — Contrasting Complete Worlds                            BLOCKED BY M4
@@ -129,8 +131,8 @@ Accepted semantic/spatial sequence:
 ```text
 D1 P0/P1 quiet invoke + compact composer        CLOSED
 D2 adaptive ongoing conversation surface         CLOSED / VALIDATED
-D3 deterministic pre-backend conversation        NEXT PREFLIGHT
-D4 bounded contextual/deictic invocation         AFTER D3
+D3 deterministic pre-backend conversation        CLOSED / VALIDATED
+D4 bounded contextual/deictic invocation         NEXT PREFLIGHT
 D5 Insight presentation integration              AFTER D4
 D6 Proposal / confirmation / receipt             AFTER D5
 ```
@@ -161,27 +163,27 @@ route-owned focus does not rewrite AppShell/Topbar ownership
 generic route != automatically blocking interaction
 DANTE route-focus explicitly blocks World interaction
 focus transitions remain live across sidecar <-> route
-no fake messages, model output or backend adapter
 ```
 
-The route-owned presenter consumes `slot='external'` from the same allocator and renders through the same finite registry/error-boundary path as workspace-owned surfaces. No second surface engine or disconnected chat URL exists.
+Detailed evidence: `world-focus-d2-adaptive-conversation-surface-review.md`.
 
-Detailed evidence:
+### D3 — CLOSED / VALIDATED
+
+D3 materializes the deterministic mounted conversation bridge without pulling backend/provider semantics forward.
+
+Closed path:
 
 ```text
-world-focus-d2-adaptive-conversation-surface-review.md
-PRE-SCOPE 0a0a43ac06f93d986674f8521e521dcc05ea2c1e
-CODE/TEST  7b787766be83096e82eab1ac116b2704fae5f202
-CI         33958677991 / run #969 PASS
+D1 composer submit
+-> atomic handoff to existing `dante:conversation`
+-> mounted D3 transcript
+-> typed request bound to worldId + workspace generation + requestId
+-> deterministic local reader
+-> validated finite answer | explanation
+   OR truthful unavailable/error/cancelled/superseded
 ```
 
-### D3 — Deterministic pre-backend conversation adapter
-
-D3 is next and must start with read-only preflight.
-
-It should add typed local conversation/message/result distinctions, cancellation/generation handling and deterministic fixtures without importing provider/backend semantics early.
-
-Required separations:
+D3 preserves:
 
 ```text
 user input != assistant output
@@ -193,9 +195,26 @@ cancel/abort != semantic success
 late result from World/generation N != attachable to a newer World/generation
 ```
 
-D3 remains pre-backend: no provider/LLM, API, DB, Alembic, durable persistence, D4 context widening, D5 Insight collapse or D6 Proposal/Decision/effect semantics.
+The result boundary fails closed on semantic widening and correlation mismatches. Pending work is abortable and latest-only. Generation changes supersede old requests. Follow-up turns remain on the same `dante:conversation` surface.
+
+D3 closes the exact focus lifecycle: composer→conversation handoff does not restore the invoke; actual conversation close/Escape restores the exact original DANTE invoker. The fix required keeping stable invokes outside D2's keyed presentation session, without changing Workspace allocator ownership.
+
+Responsive/browser closure proves wide sidecar, 390px route focus, same identity through maximize/restore, no horizontal overflow, compact target size and automated axe checks.
+
+Detailed evidence:
+
+```text
+world-focus-d3-deterministic-conversation-adapter-review.md
+PRE-SCOPE 57520cf0570bc2be875e7140d066e45ddd9080d5
+CODE/TEST  59c70af6005ee87918db7fe152c043699726e78c
+CI         33963858340 / run #1009 PASS
+```
+
+D3 remains pre-backend: no provider/LLM, API, DB, Alembic, durable persistence, D4 context widening, D5 Insight collapse or D6 Proposal/Decision/effect semantics entered the slice.
 
 ### D4 — Contextual/deictic invocation
+
+D4 is next and must start read-only.
 
 Explicit bounded references only:
 
@@ -206,7 +225,19 @@ aprimi la fonte
 continua da qui
 ```
 
-Selection/context is not authorization; DOM/source payload is not serialized into chat state.
+Required laws:
+
+```text
+selection/context != authorization
+context reference != canonical truth
+reference exists != payload available != current != disclosable != fresh
+DOM/source payload != conversation state
+D3 typed boundary remains bounded
+```
+
+D4 must inspect and reuse existing World context/reference/disclosure seams rather than serialize arbitrary component or DOM state into a chat payload.
+
+D4 remains pre-backend and must not pull D5 Insight or D6 Proposal/Decision/effect semantics forward.
 
 ### D5 — Insight integration
 
@@ -227,7 +258,7 @@ Consequential confirmation uses governed blocking semantics; D6 still has no rea
 
 ## 6. Visual sequence agreed with user
 
-Do not redesign the product cosmetically during D3–D6 merely because M4 adds interaction semantics.
+Do not redesign the product cosmetically during D4–D6 merely because M4 adds interaction semantics.
 
 ```text
 M4 complete
@@ -277,8 +308,10 @@ adopt != semantic truth/AuthZ/persistence
 presentation geometry != conversation identity
 route presentation != automatically blocking interaction
 context reference != authorization
+mounted frontend transcript != durable DANTE Run
+cancelled/aborted request != successful semantic result
 ```
 
 ## 9. Immediate continuation
 
-> **M3 is CLOSED / VALIDATED. D2 is CLOSED / VALIDATED. M4 remains ACTIVE. Start D3 with read-only inspection of D1/D2 ownership, generation/cancellation patterns and truth distinctions; then state an exact bounded RED-first D3 gate without pulling D4–D6 or backend/provider semantics forward.**
+> **M3 is CLOSED / VALIDATED. D2 and D3 are CLOSED / VALIDATED. M4 remains ACTIVE. Start D4 with read-only inspection of the closed D3 request/result boundary, D1/D2 ownership, existing World context/reference/disclosure seams and authorization/truth distinctions; then state an exact bounded RED-first D4 gate without pulling D5–D6 or backend/provider semantics forward.**
