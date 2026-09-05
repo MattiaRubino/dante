@@ -33,7 +33,7 @@ class _AsyncHttpClient(Protocol):
         *,
         headers: Mapping[str, str],
         json: object,
-        timeout: float,
+        timeout: float,  # noqa: ASYNC109
     ) -> _HttpResponse: ...
 
     async def aclose(self) -> None: ...
@@ -244,9 +244,7 @@ class GeminiInteractionsHttpTransport:
             tool_use_tokens=_optional_nonnegative_int(usage.get("total_tool_use_tokens")),
             total_tokens=_optional_nonnegative_int(usage.get("total_tokens")),
             model=_optional_text(document.get("model"), field="invalid_model"),
-            service_tier=_optional_text(
-                document.get("service_tier"), field="invalid_service_tier"
-            ),
+            service_tier=_optional_text(document.get("service_tier"), field="invalid_service_tier"),
             error_code=_provider_error_code(document),
         )
 
