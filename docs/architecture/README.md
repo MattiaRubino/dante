@@ -94,7 +94,7 @@ no raw URL/query/SQL/identity/session/secret telemetry dimensions
 bounded cardinality and bounded retry/buffering
 ```
 
-`dante_observer` is provisioning-owned technical infrastructure, not an Account, Principal, Actor or application model. It has `LOGIN INHERIT`, `pg_read_all_stats` only, `search_path=pg_catalog`, no database `CREATE`/`TEMP` and no DANTE/public business-object access.
+`dante_observer` is provisioning-owned technical infrastructure, not an Account, Principal, Actor or application model. It has `LOGIN NOINHERIT`, with `pg_read_all_stats` membership using `INHERIT TRUE / SET FALSE / ADMIN FALSE`, `search_path=pg_catalog`, no database `CREATE`/`TEMP` and no DANTE/public business-object access.
 
 ## 6. Database / persistence
 
