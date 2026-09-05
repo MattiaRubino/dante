@@ -36,7 +36,9 @@ async def test_development_composition_uses_explicit_current_route_and_closes() 
         route_revision=GEMINI_INTERACTIONS_ROUTE_REVISION,
     )
     try:
-        assert resources.runtime.route_config.identity.revision == GEMINI_INTERACTIONS_ROUTE_REVISION
+        assert (
+            resources.runtime.route_config.identity.revision == GEMINI_INTERACTIONS_ROUTE_REVISION
+        )
         active_bindings = {
             route.champion_binding_ref
             for route in resources.runtime.route_config.document.target_routes
@@ -48,7 +50,7 @@ async def test_development_composition_uses_explicit_current_route_and_closes() 
 
 
 def test_development_composition_rejects_historical_route_binding() -> None:
-    with pytest.raises(ValueError, match="schema v3|not supported"):
+    with pytest.raises(ValueError, match=r"schema v3|not supported"):
         create_development_model_access_runtime(
             api_key="synthetic-not-used",
             revisions_root=_REVISIONS_ROOT,
