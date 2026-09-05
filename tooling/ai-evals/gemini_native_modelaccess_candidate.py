@@ -24,6 +24,7 @@ from dante.modules.intelligence.adapters.outbound.model.gemini_interactions impo
     GEMINI_INTERACTIONS_SERVICE_TIER,
 )
 from dante.modules.intelligence.contracts.model_access import (
+    ModelAccessErrorClass,
     ModelInvocationOutcome,
     ModelInvocationRequest,
     ModelTarget,
@@ -136,6 +137,14 @@ class GeminiNativeModelAccessCandidate:
                 reasoning_tokens or 0
             )
 
+        eval_error_class = (
+            None
+            if result.error_class is ModelAccessErrorClass.PROVIDER_INCOMPLETE
+            else result.error_class.value
+            if result.error_class is not None
+            else None
+        )
+
         return CandidateResult(
             output_text=(
                 result.structured_output_json
@@ -161,9 +170,7 @@ class GeminiNativeModelAccessCandidate:
                 if attempt is not None and attempt.provider_status is not None
                 else result.outcome.value
             ),
-            error_class=result.error_class.value
-            if result.error_class is not None
-            else None,
+            error_class=eval_error_class,
             error_code=result.error_code,
             finish_reason=result.finish_reason,
         )
