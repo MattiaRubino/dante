@@ -40,7 +40,7 @@ _COMMON_FIELDS = frozenset(
         "rollout_profiles",
     }
 )
-_V2_FIELDS = _COMMON_FIELDS | frozenset(
+_TYPED_FIELDS = _COMMON_FIELDS | frozenset(
     {"target_routes", "harness_definitions", "provider_binding_definitions"}
 )
 _TARGET_ROUTE_FIELDS = frozenset(
@@ -56,7 +56,7 @@ _TARGET_ROUTE_FIELDS = frozenset(
 _HARNESS_FIELDS = frozenset(
     {"ref", "reasoning_level", "max_output_tokens", "timeout_seconds", "feature_modes"}
 )
-_BINDING_FIELDS = frozenset(
+_BINDING_FIELDS_V2 = frozenset(
     {
         "ref",
         "provider",
@@ -68,6 +68,16 @@ _BINDING_FIELDS = frozenset(
         "state",
         "capabilities",
         "security_profiles",
+    }
+)
+_BINDING_FIELDS_V3 = _BINDING_FIELDS_V2 | frozenset(
+    {
+        "api_revision",
+        "service_tier",
+        "model_version",
+        "versioning_posture",
+        "data_zone",
+        "retention_mode",
     }
 )
 
@@ -191,17 +201,22 @@ def _parse_harness_definitions(value: object) -> tuple[HarnessProfileDefinition,
     return tuple(profiles)
 
 
-def _parse_binding_definitions(value: object) -> tuple[ProviderBindingDefinition, ...]:
+def _parse_binding_definitions(
+    value: object,
+    *,
+    schema_version: int,
+) -> tuple[ProviderBindingDefinition, ...]:
     if not isinstance(value, list):
         raise RouteConfigLoadError("provider_binding_definitions must be a JSON array")
     bindings: list[ProviderBindingDefinition] = []
+    expected_fields = _BINDING_FIELDS_V3 if schema_version >= 3 else _BINDING_FIELDS_V2
     for index, item in enumerate(value):
         if not isinstance(item, dict):
             raise RouteConfigLoadError("provider_binding_definitions entries must be JSON objects")
         document = cast(dict[str, object], item)
         _require_exact_fields(
             document,
-            _BINDING_FIELDS,
+            expected_fields,
             name=f"provider_binding_definitions[{index}]",
         )
         try:
@@ -226,6 +241,36 @@ def _parse_binding_definitions(value: object) -> tuple[ProviderBindingDefinition
                     ),
                     security_profiles=_parse_text_list_value(
                         document["security_profiles"], field="binding security_profiles"
+                    ),
+                    api_revision=(
+                        _parse_text(document["api_revision"], field="api_revision")
+                        if schema_version >= 3
+                        else None
+                    ),
+                    service_tier=(
+                        _parse_text(document["service_tier"], field="service_tier")
+                        if schema_version >= 3
+                        else None
+                    ),
+                    model_version=(
+                        _parse_optional_text(document["model_version"], field="model_version")
+                        if schema_version >= 3
+                        else None
+                    ),
+                    versioning_posture=(
+                        _parse_text(document["versioning_posture"], field="versioning_posture")
+                        if schema_version >= 3
+                        else None
+                    ),
+                    data_zone=(
+                        _parse_text(document["data_zone"], field="data_zone")
+                        if schema_version >= 3
+                        else None
+                    ),
+                    retention_mode=(
+                        _parse_text(document["retention_mode"], field="retention_mode")
+                        if schema_version >= 3
+                        else None
                     ),
                 )
             )
@@ -258,8 +303,8 @@ def _parse_document(artifact_bytes: bytes) -> RouteConfigDocument:
         raise RouteConfigLoadError("schema_version must be an integer")
     if schema_version == 1:
         expected_fields = _COMMON_FIELDS
-    elif schema_version == 2:
-        expected_fields = _V2_FIELDS
+    elif schema_version in {2, 3}:
+        expected_fields = _TYPED_FIELDS
     else:
         raise RouteConfigLoadError(f"unsupported route config schema_version: {schema_version}")
     _require_exact_fields(document, expected_fields, name="route config")
@@ -284,16 +329,19 @@ def _parse_document(artifact_bytes: bytes) -> RouteConfigDocument:
             security_profiles=_parse_text_list(document, field="security_profiles"),
             rollout_profiles=_parse_text_list(document, field="rollout_profiles"),
             target_routes=(
-                _parse_target_routes(document["target_routes"]) if schema_version == 2 else ()
+                _parse_target_routes(document["target_routes"]) if schema_version >= 2 else ()
             ),
             harness_definitions=(
                 _parse_harness_definitions(document["harness_definitions"])
-                if schema_version == 2
+                if schema_version >= 2
                 else ()
             ),
             provider_binding_definitions=(
-                _parse_binding_definitions(document["provider_binding_definitions"])
-                if schema_version == 2
+                _parse_binding_definitions(
+                    document["provider_binding_definitions"],
+                    schema_version=schema_version,
+                )
+                if schema_version >= 2
                 else ()
             ),
         )
