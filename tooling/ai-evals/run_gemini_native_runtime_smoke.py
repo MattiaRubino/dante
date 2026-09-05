@@ -34,12 +34,21 @@ from dante.modules.intelligence.contracts.model_access import (  # noqa: E402
 from dante.modules.intelligence.route_config import load_route_config  # noqa: E402
 
 _REVISIONS_ROOT = _BACKEND_ROOT / "config" / "intelligence" / "revisions"
+_KEY_ENV_NAMES = ("DANTE_GEMINI_API_KEY", "DANTE_EVAL_GEMINI_API_KEY")
 
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Synthetic native Gemini ModelAccess smoke")
     parser.add_argument("--execute", action="store_true")
     return parser
+
+
+def _api_key_from_environment() -> str | None:
+    for name in _KEY_ENV_NAMES:
+        value = os.environ.get(name)
+        if value is not None and value.strip():
+            return value
+    return None
 
 
 async def _run(execute: bool) -> int:
@@ -60,9 +69,18 @@ async def _run(execute: bool) -> int:
         )
         return 0
 
-    api_key = os.environ.get("DANTE_GEMINI_API_KEY")
-    if api_key is None or not api_key.strip():
-        print(json.dumps({"status": "BLOCKED", "reason": "DANTE_GEMINI_API_KEY is not set"}))
+    api_key = _api_key_from_environment()
+    if api_key is None:
+        print(
+            json.dumps(
+                {
+                    "status": "BLOCKED",
+                    "reason": (
+                        "DANTE_GEMINI_API_KEY or DANTE_EVAL_GEMINI_API_KEY is not set"
+                    ),
+                }
+            )
+        )
         return 2
 
     transport = GeminiInteractionsHttpTransport(api_key)
