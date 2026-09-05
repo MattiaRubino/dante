@@ -1,4 +1,8 @@
 import {
+  createWorldFocusContextReferenceSet,
+  type WorldFocusContextReferenceSet,
+} from '../model/world-focus-context-reference';
+import {
   normalizeWorldFocusId,
   type WorldFocusId,
 } from '../model/world-focus-identity';
@@ -8,7 +12,7 @@ import {
   type WorldFocusValidationResult,
 } from './world-focus-foundation';
 
-export const WORLD_FOCUS_DANTE_CONVERSATION_SCHEMA_VERSION = 1 as const;
+export const WORLD_FOCUS_DANTE_CONVERSATION_SCHEMA_VERSION = 2 as const;
 export const WORLD_FOCUS_DANTE_CONVERSATION_MAX_HISTORY = 12;
 export const WORLD_FOCUS_DANTE_CONVERSATION_MAX_INPUT_LENGTH = 4_000;
 export const WORLD_FOCUS_DANTE_CONVERSATION_MAX_OUTPUT_LENGTH = 8_000;
@@ -40,7 +44,16 @@ export type WorldFocusDanteConversationRequest = Readonly<{
   input: string;
   history: readonly WorldFocusDanteConversationHistoryEntry[];
   locale: string;
+  contextReferences: WorldFocusContextReferenceSet | null;
 }>;
+
+export type WorldFocusDanteConversationRequestInput = Omit<
+  WorldFocusDanteConversationRequest,
+  'schemaVersion' | 'contextReferences'
+> &
+  Readonly<{
+    contextReferences?: WorldFocusContextReferenceSet | null;
+  }>;
 
 export type WorldFocusDanteConversationReadResult =
   | Readonly<{
@@ -93,10 +106,7 @@ function hasExactKeys(
   );
 }
 
-function readBoundedString(
-  value: unknown,
-  maxLength: number,
-): string | null {
+function readBoundedString(value: unknown, maxLength: number): string | null {
   if (typeof value !== 'string') return null;
   const trimmed = value.trim();
   return trimmed.length > 0 && trimmed.length <= maxLength ? trimmed : null;
@@ -146,7 +156,7 @@ function normalizeHistoryEntry(
 }
 
 export function createWorldFocusDanteConversationRequest(
-  input: Omit<WorldFocusDanteConversationRequest, 'schemaVersion'>,
+  input: WorldFocusDanteConversationRequestInput,
 ): WorldFocusDanteConversationRequest {
   const worldId = normalizeWorldFocusId(input.worldId);
   const requestId = readBoundedString(input.requestId, 128);
@@ -167,6 +177,14 @@ export function createWorldFocusDanteConversationRequest(
     throw new Error('World Focus DANTE conversation request is invalid');
   }
 
+  const contextReferences =
+    input.contextReferences == null
+      ? null
+      : createWorldFocusContextReferenceSet({
+          primary: input.contextReferences.primary,
+          supporting: input.contextReferences.supporting,
+        });
+
   return Object.freeze({
     schemaVersion: WORLD_FOCUS_DANTE_CONVERSATION_SCHEMA_VERSION,
     requestId,
@@ -175,6 +193,7 @@ export function createWorldFocusDanteConversationRequest(
     input: requestText,
     history: Object.freeze(input.history.map(normalizeHistoryEntry)),
     locale,
+    contextReferences,
   });
 }
 
@@ -280,9 +299,9 @@ function assertActive(signal: AbortSignal): void {
 }
 
 /**
- * Provider-neutral pre-backend conversation boundary. It validates only local
- * conversational correlation and the bounded answer/explanation result class.
- * Context references, authorization, Insight, Proposal, tool/effect state and
+ * Provider-neutral pre-backend conversation boundary. It validates local
+ * conversational correlation plus one explicit bounded contextual reference
+ * set. Authorization, payloads, Insight, Proposal, tool/effect state and
  * provider/model transport deliberately do not exist in this contract.
  */
 export function createWorldFocusDanteConversationReader(
