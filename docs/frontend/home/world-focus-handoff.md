@@ -1,6 +1,6 @@
 # DANTE — World Focus Handoff
 
-**Status:** CURRENT DURABLE HANDOFF — M0 / M1 / POST-M1 SAFETY / M2 / M3 CLOSED — M4 ACTIVE / D2 PREFLIGHT ACTIVE  
+**Status:** CURRENT DURABLE HANDOFF — M0 / M1 / POST-M1 SAFETY / M2 / M3 CLOSED — M4 ACTIVE / D2 CLOSED / D3 PREFLIGHT NEXT  
 **Date:** 2026-09-05  
 **Repository:** `MattiaRubino/dante`  
 **Branch:** `feature/home-react`  
@@ -16,12 +16,11 @@ Read first:
 3. world-focus-handoff.md
 4. world-focus-evidence-index.md
 5. current-checkpoint.md
-6. world-focus-m3-final-hostile-closure-review.md
-7. world-focus-m3-adaptive-composition.md
-8. world-focus-m3-4-integrated-adaptive-composition-review.md
-9. world-focus-dante-spatial-presence-review.md
-10. world-focus-d1-dante-entry-review.md
-11. product/platform/structure/geometry contracts as needed
+6. world-focus-d2-adaptive-conversation-surface-review.md
+7. world-focus-m3-final-hostile-closure-review.md
+8. world-focus-dante-spatial-presence-review.md
+9. world-focus-d1-dante-entry-review.md
+10. product/platform/structure/geometry contracts as needed
 ```
 
 Older phase-time `NEXT` prose is evidence only unless adopted by current checkpoint authority.
@@ -47,8 +46,9 @@ M3-3                                       CLOSED / VALIDATED
 M3-4                                       CLOSED / VALIDATED
 M3 final hostile closure                   CLOSED / PASS
 M4 D2–D6                                   ACTIVE
-D2 adaptive conversation surface           READ-ONLY PREFLIGHT ACTIVE
-D3–D6                                      BLOCKED BY D2 SEQUENCE
+D2 adaptive conversation surface           CLOSED / VALIDATED
+D3 deterministic conversation adapter      READ-ONLY PREFLIGHT NEXT
+D4–D6                                      BLOCKED BY D3 SEQUENCE
 M5–M7                                      BLOCKED BY SEQUENCE
 BACKEND                                    BLOCKED UNTIL M7
 human/manual visual acceptance             NOT PERFORMED
@@ -91,6 +91,7 @@ client revision != backend persistence revision
 renderer availability != mandatory mounting
 adopt != semantic truth/AuthZ/persistence
 presentation geometry != conversation identity
+route presentation != automatically blocking interaction
 context/selection != authorization
 ```
 
@@ -123,22 +124,7 @@ DANTE proposal [M4] --/
 
 No hidden DANTE mutation route. `adopt` materializes composition metadata only. `restore` is base-relative. Apply requires World match, revision match and exact base snapshot. No implicit merge/rebase.
 
-Normal live composition:
-
-```text
-seven existing M1 readers
--> one bounded adaptive snapshot
--> meaningful opportunities
-+ exact accepted config owner
-+ no invented M4/DANTE signals
--> M3-2 resolver
--> existing Workspace planner
--> finite registry
--> CompositionHost
--> M2 display-safe renderers
-```
-
-## 5. M3 final closure evidence
+## 5. M3 closure anchor
 
 ```text
 PRE-SCOPE 2e69b1dd0bda25beaecbc5e5baa26f8720a76ff1
@@ -147,10 +133,7 @@ CI        33951509083 / run #944 PASS
 80 / 80 web test files
 391 / 391 web unit tests
 300 modules / 899 dependencies / 0 architecture violations
-Quality / build / diff / mutation / Mobile / Chromium / frozen Firefox / Gate PASS
 ```
-
-The final hostile phase added exactly one test file and **no production change**. Scope compare is linear (`ahead 2`, `behind 0`). It combines projection truthfulness, guarded customization transaction, resolver precedence, planner budgets/order and 200 seeded hostile configurations. Existing 500-composition and 500-workspace-allocation random pressure remains green.
 
 Detailed evidence:
 
@@ -159,102 +142,114 @@ world-focus-m3-final-hostile-closure-review.md
 world-focus-m3-4-integrated-adaptive-composition-review.md
 ```
 
-## 6. M4 accepted direction
+## 6. D2 closed result
 
-D0 spatial contract remains authoritative:
-
-```text
-P0 quiet invoke                        D1 CLOSED
-P1 compact composer                    D1 CLOSED
-ongoing wide conversation              D2 -> workspace sidecar
-ongoing constrained/mobile             D2 -> route-owned focus overlay
-wide explicit deep-work maximize       D2 -> sidecar -> route focus overlay
-restore                                D2 -> same conversation identity
-```
-
-Important:
+D2 materializes the accepted D0 adaptive spatial contract without creating a chatbot product or second surface engine.
 
 ```text
-AI availability is persistent; AI footprint is not
-sidecar is non-modal
-actual allocated workspace geometry decides split viability
-route focus overlay sits below Global Topbar and does not re-own AppShell
-presentation geometry != conversation identity
-D2 must not fake D3 messages/model/backend
+wide viable workspace
+-> non-modal DANTE conversation sidecar
+
+constrained/mobile workspace
+-> route-owned focus surface below Global Topbar
+
+wide explicit maximize
+-> same surface identity sidecar -> route focus
+-> restore returns same identity to adaptive presentation
 ```
 
-## 7. D2 read-only preflight findings already established
-
-Live code confirms:
+Ownership:
 
 ```text
 WorldFocusWorkspaceHost
--> one reducer-owned transient workspace state/surface stack
--> open / replace / promote / close / Escape APIs
--> keyed by worldId so another World cannot inherit transient state
+-> still owns the one transient surface stack
 
-Workspace allocation
--> sidecar splits only when actual workspace >= viable threshold
--> sidecar otherwise becomes workspace-local overlay
--> presentation='route' is represented as slot='external'
+existing Workspace allocator
+-> still owns split viability and placement from actual measured workspace geometry
 
-WorldFocusSurfaceLayer
--> renders workspace-local sidecar/overlay/focus only
--> deliberately skips external placements
+D2 presentation controller
+-> owns only adaptive | focus presentation preference
 
-AppShell
--> owns GlobalTopbar
--> then #app-route-content / Outlet
-
-World route
--> renders WorldFocusPage under AppShell route content
+route-owned surface layer
+-> renders existing external placement through the same finite registry/error-boundary path
 ```
 
-Therefore D2 cannot simply rely on sidecar's compact workspace-overlay fallback for long conversation: D0 already proved the World workspace can be ~238 px at 390 viewport width. D2 needs a **route-owned presenter for the existing external surface state** below GlobalTopbar.
-
-It must not create:
+Important correction discovered by hostile regression:
 
 ```text
-second surface state engine
-second Workspace host
-independent chat route/product
-new URL solely to represent presentation geometry
-AppShell/Topbar ownership rewrite
+route presentation != interaction blocker
 ```
 
-## 8. D2 next exact methodological step
+Generic route remains non-blocking. DANTE route-focus explicitly carries `blocksWorkspaceInteraction=true`; that law also prevents weaker late surfaces from taking authority over the route-focus interaction.
 
-Before writes:
+D2 adds no fake transcript/message/model output. Its structural conversation body remains intentionally empty until D3.
+
+Final D2 evidence:
 
 ```text
-fresh branch/HEAD
-inspect AppShell route geometry CSS
-inspect D1 tests/focus lifecycle
-inspect Workspace surface reducer promote/replace/escape laws
-inspect finite surface registry and external placement semantics
-inspect responsive browser pressure tests
-choose exact owner for route-owned external presenter
-state PRE-SCOPE / CREATE / UPDATE / DELETE / RED-FIRST / OUT-OF-SCOPE
+PRE-SCOPE 0a0a43ac06f93d986674f8521e521dcc05ea2c1e
+CODE/TEST  7b787766be83096e82eab1ac116b2704fae5f202
+CI         33958677991 / run #969 PASS
+82 / 82 web test files
+399 / 399 web unit tests
+305 modules / 929 dependencies / 0 architecture violations
+Contracts / lint / typecheck / generated / build / diff / mutation PASS
+Mobile / Chromium / frozen Timeline Firefox / Frontend CI Gate PASS
 ```
 
-RED-first must prove at least:
+Final code/test compare is linear (`ahead 24`, `behind 0`) from the exact PRE-SCOPE. Net code/test/i18n scope is 15 paths, with no AppShell, Timeline, Access/Auth, generated route tree, backend/API/DB/Alembic/provider/LLM/persistence changes.
+
+Detailed evidence:
 
 ```text
-wide conversation -> sidecar
-constrained conversation -> route-owned focus overlay, not ~238px workspace overlay
-explicit maximize/restore preserves same logical conversation identity
-presentation switch does not create a second conversation state
-sidecar remains non-modal
-route focus owns appropriate interaction/focus/Escape without re-owning Topbar
-World switch/generation cannot attach stale transient DANTE surface to the next World
-D2 contains no fake assistant message/backend behavior
+world-focus-d2-adaptive-conversation-surface-review.md
 ```
 
-## 9. M4 remaining sequence
+## 7. D3 next read-only preflight
+
+D3 owns the deterministic pre-backend conversation adapter.
+
+Before writes inspect:
 
 ```text
-D2 adaptive conversation surface
--> D3 deterministic pre-backend conversation adapter
+D1 compact composer current submit/lifecycle behavior
+D2 conversation surface lifecycle and focus ownership
+Workspace world/generation guards
+existing abort/latest-read patterns in M1 application seams
+current result/truth algebras
+current i18n/a11y/browser harness
+DANTE Intelligence seam expectations without importing backend DTOs early
+```
+
+D3 must preserve:
+
+```text
+user input != assistant output
+assistant output != canonical fact
+conversation state != World canonical state
+presentation geometry != conversation identity
+mounted frontend state != future durable DANTE Run lifetime
+abort/cancel != successful result
+late result from old World/generation != attachable to new World/generation
+```
+
+Then state exact:
+
+```text
+PRE-SCOPE
+CREATE
+UPDATE
+DELETE
+RED-FIRST
+OUT-OF-SCOPE
+```
+
+Do not pull D4–D6 or backend/provider semantics forward.
+
+## 8. Remaining M4 sequence
+
+```text
+D3 deterministic pre-backend conversation adapter
 -> D4 contextual/deictic invocation with bounded references
 -> D5 Insight presentation integration
 -> D6 Proposal / confirmation / receipt presentation
@@ -262,7 +257,7 @@ D2 adaptive conversation surface
 
 DANTE proposals later reuse canonical app paths; they do not bypass manual capability or mutation governance.
 
-## 10. Visual strategy agreed with user
+## 9. Visual strategy agreed with user
 
 ```text
 After M4: structural visual check only
@@ -272,9 +267,9 @@ M6: visual polish + responsive + motion + a11y + performance
 M7: frontend/backend seam freeze
 ```
 
-Do not spend D2–D6 on unrelated cosmetic redesign.
+Do not spend D3–D6 on unrelated cosmetic redesign.
 
-## 11. Explicit out-of-scope
+## 10. Explicit out-of-scope
 
 ```text
 NO backend/API/DB/Alembic/AuthZ/provider/LLM
@@ -283,11 +278,11 @@ NO durable server/cross-device persistence
 NO Timeline/Access/Auth collateral work
 NO GlobalTopbar ownership rewrite
 NO WF0/WF-G3 macro geometry rewrite
-NO D3–D6 hidden inside D2
+NO D4–D6 hidden inside D3
 NO generated route-tree edits unless a later explicitly-authorized route design proves unavoidable
 NO history rewrite / force push
 ```
 
-## 12. Human visual status
+## 11. Human visual status
 
 Automated browser coverage is green. Human/manual visual acceptance remains **NOT PERFORMED** and must not be inferred from CI.
