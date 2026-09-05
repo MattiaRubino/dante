@@ -7,7 +7,7 @@ async function openConversation(page: import('@playwright/test').Page, input: st
   await page
     .getByRole('button', { name: 'Apri DANTE per il Mondo Musica' })
     .click();
-  const composer = page.getByRole('dialog', { name: 'DANTE' });
+  const composer = page.getByRole('dialog', { name: 'DANTE', exact: true });
   const textarea = page.getByRole('textbox', {
     name: 'Scrivi una richiesta per DANTE',
   });
@@ -17,6 +17,7 @@ async function openConversation(page: import('@playwright/test').Page, input: st
 
   const conversation = page.getByRole('dialog', {
     name: 'Conversazione con DANTE',
+    exact: true,
   });
   await expect(conversation).toBeVisible();
   await expect(page.getByText(input)).toBeVisible();
