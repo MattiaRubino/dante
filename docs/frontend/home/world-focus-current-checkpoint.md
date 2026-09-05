@@ -1,6 +1,6 @@
 # DANTE — World Focus Current Checkpoint
 
-**Status:** CURRENT LIVE WORLD FOCUS CHECKPOINT — M3 CLOSED / VALIDATED — M4 CONTEXTUAL DANTE ACTIVE / D2 READ-ONLY PREFLIGHT ACTIVE  
+**Status:** CURRENT LIVE WORLD FOCUS CHECKPOINT — M3 CLOSED / VALIDATED — M4 CONTEXTUAL DANTE ACTIVE / D2 CLOSED / D3 READ-ONLY PREFLIGHT NEXT  
 **Date:** 2026-09-05  
 **Branch:** `feature/home-react`  
 **Worktree:** `/home/mattia/projects/dante-frontend`
@@ -15,15 +15,16 @@ This is the first World Focus authority a new chat/agent must read. Historical `
 3. world-focus-handoff.md
 4. world-focus-evidence-index.md
 5. current-checkpoint.md
-6. world-focus-m3-final-hostile-closure-review.md
-7. world-focus-m3-adaptive-composition.md
-8. world-focus-m3-4-integrated-adaptive-composition-review.md
-9. world-focus-dante-spatial-presence-review.md
-10. world-focus-d1-dante-entry-review.md
-11. world-focus-m2-shared-visual-primitives.md
-12. world-focus-m1-core-nonvisual-materialization-review.md
-13. world-focus-m0-materialization-mapping.md
-14. product/platform/structure/geometry contracts as needed
+6. world-focus-d2-adaptive-conversation-surface-review.md
+7. world-focus-m3-final-hostile-closure-review.md
+8. world-focus-m3-adaptive-composition.md
+9. world-focus-m3-4-integrated-adaptive-composition-review.md
+10. world-focus-dante-spatial-presence-review.md
+11. world-focus-d1-dante-entry-review.md
+12. world-focus-m2-shared-visual-primitives.md
+13. world-focus-m1-core-nonvisual-materialization-review.md
+14. world-focus-m0-materialization-mapping.md
+15. product/platform/structure/geometry contracts as needed
 ```
 
 # 2. Live sequence
@@ -52,8 +53,8 @@ M3-3 Manual Customize UX                 CLOSED / VALIDATED
 M3-4 integrated adaptive composition     CLOSED / VALIDATED
 M3 final hostile closure                 CLOSED / PASS
 M4 Contextual DANTE / D2–D6             ACTIVE
-D2 adaptive conversation surface         READ-ONLY PREFLIGHT ACTIVE / NOT MATERIALIZED
-D3 deterministic conversation adapter    BLOCKED BY D2
+D2 adaptive conversation surface         CLOSED / VALIDATED
+D3 deterministic conversation adapter    READ-ONLY PREFLIGHT NEXT
 D4 contextual/deictic invocation         BLOCKED BY D3
 D5 Insight presentation integration      BLOCKED BY D4
 D6 Proposal/confirmation/receipt          BLOCKED BY D5
@@ -99,12 +100,13 @@ client revision != backend persistence revision
 adopt != semantic truth != authorization != persistence
 renderer availability != mandatory mounting
 presentation geometry != conversation identity
+route presentation != automatically blocking interaction
 selected UI/context != authorization
 ```
 
 # 4. Closed M3 result
 
-M3 now closes the full adaptive composition path:
+M3 closes the full adaptive composition path:
 
 ```text
 seven existing M1 runtime readers
@@ -144,68 +146,93 @@ CI         33951509083 / run #944 PASS
 Quality / build / diff / mutation / Mobile / Chromium / Firefox / Gate PASS
 ```
 
-Scope compare is linear (`ahead 2`, `behind 0`) and the only net changed path is `world-focus-m3-final-hostile.test.ts`. No production code changed.
-
 Detailed evidence: `world-focus-m3-final-hostile-closure-review.md`.
 
-# 5. M4 / D2 accepted starting point
+# 5. D2 closed result
 
-D0 already fixes the spatial direction:
+D0's accepted adaptive-hybrid spatial contract is now executable:
 
 ```text
-P0 quiet DANTE invoke
-P1 compact transient composer
-ongoing conversation + wide viable workspace
--> workspace sidecar
+wide viable workspace
+-> non-modal DANTE conversation sidecar
 
-ongoing conversation + constrained/mobile workspace
--> route-owned focus overlay below Global Topbar
+constrained/mobile workspace
+-> route-owned DANTE focus surface below Global Topbar
 
-wide deep work
--> explicit maximize sidecar -> focus overlay
--> restore same conversation
+explicit wide maximize
+-> same dante:conversation surface sidecar -> route focus
+-> restore preserves same surface identity
 ```
 
-Important D2 laws:
+D2 keeps `WorldFocusWorkspaceHost` as the single transient surface-stack owner. The existing measured Workspace allocator remains the single physical split policy. A route-owned presenter renders `slot='external'` through the same finite registry and renderer/error-boundary path rather than creating a second conversation engine.
+
+Critical falsification result:
 
 ```text
-AI availability is persistent; AI footprint is not
-sidecar is non-modal
-route focus overlay does not re-own Global Topbar
-actual allocated workspace geometry decides split viability
+presentation='route'
+!= automatically blocks World interaction
+```
+
+Generic route surfaces remain external/non-blocking by default. DANTE route-focus explicitly carries `blocksWorkspaceInteraction=true`; that interaction law also acts as a barrier against weaker late surfaces. The allocator contains no DANTE-kind special case.
+
+Adaptive D2 does not introduce a second viewport breakpoint. It asks the existing allocator whether a hypothetical sidecar for the same surface can occupy a real split under the actual measured workspace geometry. If not, the same surface uses route focus.
+
+D2 final evidence:
+
+```text
+PRE-SCOPE 0a0a43ac06f93d986674f8521e521dcc05ea2c1e
+CODE/TEST  7b787766be83096e82eab1ac116b2704fae5f202
+CI         33958677991 / run #969 PASS
+82 / 82 web test files
+399 / 399 web unit tests
+305 modules / 929 dependencies / 0 architecture violations
+Contracts / lint / typecheck / generated / build / diff / mutation PASS
+Mobile / Chromium / frozen Timeline Firefox / Frontend CI Gate PASS
+```
+
+Final code/test compare from PRE-SCOPE is linear (`ahead 24`, `behind 0`, merge-base exactly PRE-SCOPE) with 15 net D2 code/test/i18n paths and no AppShell, Timeline, Access/Auth, generated-route-tree, backend/API/DB/Alembic/provider/LLM/persistence changes.
+
+Detailed evidence: `world-focus-d2-adaptive-conversation-surface-review.md`.
+
+# 6. D3 next starting point
+
+D3 now owns the deterministic **pre-backend** conversation adapter only.
+
+It must begin with read-only preflight and an exact bounded gate. Do not assume a message schema from a chatbot framework or future provider API.
+
+D3 must distinguish at least:
+
+```text
+user input != assistant output
+assistant output != canonical fact
+conversation state != World canonical state
 presentation geometry != conversation identity
-World switch/generation guards prevent late result attachment to another World
-no fake D3 messages/backend in D2
+mounted frontend conversation lifetime != future durable DANTE Run lifetime
+cancelled/aborted read != successful semantic result
+late result from World/generation N != attachable to a newer World/generation
 ```
 
-Live architecture facts already confirmed in D2 preflight:
+D3 remains pre-backend:
 
 ```text
-Workspace allocator classifies presentation='route' as slot='external'
-WorldFocusSurfaceLayer deliberately does not render external placements
-workspace-local sidecar fallback becomes overlay when split is impossible
-that workspace overlay is NOT sufficient for long conversation at ~238 px mobile workspace
-WorldFocusWorkspaceHost already owns the one transient surface stack/state
-AppShell owns GlobalTopbar then #app-route-content / Outlet
-WorldFocus route renders WorldFocusPage inside that route content
+NO provider/LLM call
+NO backend/API/DB/Alembic
+NO durable server/cross-device persistence
+NO D4 contextual/deictic reference widening
+NO D5 Insight collapse into ordinary message
+NO D6 Proposal/Decision/effect semantics
 ```
 
-Therefore D2 needs a route-owned presenter for the existing external surface state; it must not invent a second surface/conversation state engine or a disconnected chatbot route.
-
-# 6. D2 preflight still required before writes
-
-Before D2 write scope is fixed, inspect/falsify at least:
+Read/falsify before first D3 write:
 
 ```text
-WorldFocusWorkspaceHost state and promote/replace/escape semantics
-route-owned placement/external activation semantics
-WorldFocusPage ownership below AppShell Topbar
-AppShell route geometry/CSS
-D1 invoke/composer focus lifecycle
-surface registry and finite-kind ownership
-existing browser tests and pressure widths
-sidecar -> route focus maximize/restore continuity
-compact/mobile automatic presentation policy without duplicating viewport JS state
+D1 composer ownership and current submit behavior
+D2 conversation shell ownership and lifecycle
+Workspace world/generation guards
+existing cancellation/latest-read patterns in M1 application seams
+current finite result/truth distinctions
+current i18n/a11y/browser harness
+future seam boundaries from DANTE Intelligence architecture without importing backend DTOs early
 ```
 
 Then state exact PRE-SCOPE / CREATE / UPDATE / DELETE / RED-FIRST / OUT-OF-SCOPE.
@@ -225,8 +252,7 @@ Do not spend M4 on cosmetic redesign unrelated to its interaction geometry.
 # 8. Stop lines
 
 ```text
-NO D3 fake conversation adapter inside D2
-NO D4 contextual reference widening inside D2
+NO D4 fake contextual widening inside D3
 NO D5/D6 early materialization
 NO second surface/workspace/conversation state engine
 NO AppShell/GlobalTopbar ownership rewrite
