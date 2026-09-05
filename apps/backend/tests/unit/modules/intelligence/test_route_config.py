@@ -111,9 +111,7 @@ def test_gemini_schema_v3_materializes_exact_development_binding() -> None:
 
 
 def test_schema_v3_rejects_missing_exact_binding_identity(tmp_path: Path) -> None:
-    source = json.loads(
-        (_REVISIONS_ROOT / "gemini-flash-dev-v2.json").read_text(encoding="utf-8")
-    )
+    source = json.loads((_REVISIONS_ROOT / "gemini-flash-dev-v2.json").read_text(encoding="utf-8"))
     assert isinstance(source, dict)
     source["revision"] = "broken-v3"
     bindings = source["provider_binding_definitions"]
