@@ -7,8 +7,11 @@ from pathlib import Path
 import pytest
 
 from dante.modules.intelligence.contracts.route_config import (
+    ProviderBindingState,
+    ReasoningLevel,
     RouteConfigIdentity,
     RouteConfigSnapshot,
+    RouteTargetState,
 )
 from dante.modules.intelligence.route_config import RouteConfigLoadError, load_route_config
 
@@ -67,6 +70,29 @@ def test_openai_candidate_revision_is_inactive_and_qualification_only() -> None:
     assert "store:false" in snapshot.document.security_profiles
     assert "provider-sdk:auto-retry-off" in snapshot.document.retry_profiles
     assert "provider-fallback:off" in snapshot.document.fallback_profiles
+
+
+def test_gemini_development_revision_materializes_two_active_targets_and_deep_dormant() -> None:
+    snapshot = load_route_config(_REVISIONS_ROOT, "gemini-flash-dev-v1")
+
+    assert snapshot.document.schema_version == 2
+    routes = {route.target_ref: route for route in snapshot.document.target_routes}
+    assert routes["structured_interpretation"].state is RouteTargetState.ACTIVE
+    assert routes["general_reasoning"].state is RouteTargetState.ACTIVE
+    assert routes["deep_reasoning"].state is RouteTargetState.DORMANT
+    assert routes["deep_reasoning"].champion_binding_ref is None
+
+    harness = snapshot.document.harness_definitions[0]
+    assert harness.reasoning_level is ReasoningLevel.LOW
+    assert harness.timeout_seconds == 30
+
+    binding = snapshot.document.provider_binding_definitions[0]
+    assert binding.ref == "google-gemini-interactions-flash-v1"
+    assert binding.model == "gemini-3.8-flash"
+    assert binding.protocol_family == "gemini-interactions-v1beta"
+    assert binding.state is ProviderBindingState.DEVELOPMENT
+    assert "private-data:ineligible" in binding.security_profiles
+    assert "production:off" in snapshot.document.rollout_profiles
 
 
 def test_equal_json_with_different_bytes_has_different_identity(tmp_path: Path) -> None:
