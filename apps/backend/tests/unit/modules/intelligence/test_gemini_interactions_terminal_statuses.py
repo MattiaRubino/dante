@@ -108,9 +108,7 @@ def _response(
 
 @pytest.mark.asyncio
 async def test_incomplete_status_wins_over_partial_structured_json() -> None:
-    transport = _Transport(
-        _response(status=GeminiInteractionStatus.INCOMPLETE, output_text="{")
-    )
+    transport = _Transport(_response(status=GeminiInteractionStatus.INCOMPLETE, output_text="{"))
 
     result = await GeminiInteractionsAdapter(transport, clock=_clock).invoke(_request())
 
@@ -124,9 +122,7 @@ async def test_incomplete_status_wins_over_partial_structured_json() -> None:
 
 @pytest.mark.asyncio
 async def test_generic_failed_status_is_transient_not_permanent() -> None:
-    transport = _Transport(
-        _response(status=GeminiInteractionStatus.FAILED, output_text=None)
-    )
+    transport = _Transport(_response(status=GeminiInteractionStatus.FAILED, output_text=None))
 
     result = await GeminiInteractionsAdapter(transport, clock=_clock).invoke(_request())
 
@@ -138,9 +134,7 @@ async def test_generic_failed_status_is_transient_not_permanent() -> None:
 
 @pytest.mark.asyncio
 async def test_adapter_accepts_non_object_structured_json_root() -> None:
-    transport = _Transport(
-        _response(status=GeminiInteractionStatus.COMPLETED, output_text='["A"]')
-    )
+    transport = _Transport(_response(status=GeminiInteractionStatus.COMPLETED, output_text='["A"]'))
 
     result = await GeminiInteractionsAdapter(transport, clock=_clock).invoke(
         _request(schema_json='{"type":"array","items":{"type":"string"}}')
