@@ -1,6 +1,6 @@
 # DANTE — World Focus Research / Review Evidence Index
 
-**Status:** CURRENT EVIDENCE MAP — M0 / M1 / POST-M1 SAFETY / M2 / M3 CLOSED — M4 ACTIVE / D2 CLOSED / D3 PREFLIGHT NEXT  
+**Status:** CURRENT EVIDENCE MAP — M0 / M1 / POST-M1 SAFETY / M2 / M3 CLOSED — M4 ACTIVE / D2–D3 CLOSED / D4 PREFLIGHT NEXT  
 **Date:** 2026-09-05  
 **Branch:** `feature/home-react`
 
@@ -14,6 +14,7 @@ world-focus-frontend-roadmap.md
 world-focus-handoff.md
 world-focus-evidence-index.md
 current-checkpoint.md
+world-focus-d3-deterministic-conversation-adapter-review.md
 world-focus-d2-adaptive-conversation-surface-review.md
 world-focus-m3-final-hostile-closure-review.md
 world-focus-m3-adaptive-composition.md
@@ -58,7 +59,8 @@ E29 M3-3 Manual Customize UX + hostile closure
 E30 M3-4 Integrated Adaptive Composition + integration falsification
 E31 M3 final cross-layer hostile closure
 E32 M4 / D2 adaptive conversation surface closure
-E33 M4 / D3 deterministic conversation adapter preflight — NEXT
+E33 M4 / D3 deterministic conversation adapter closure
+E34 M4 / D4 contextual/deictic invocation preflight — NEXT
 ```
 
 Key anchors:
@@ -77,6 +79,7 @@ M3-3 hostile      1978fe5c77c0e2661239372bf0f9bee238021faa / CI 33879774332 PASS
 M3-4 final        b10dc2bef8bab6ae863ce3c8331da6de96094a66 / CI 33904052325 PASS
 M3 final hostile  d9c30a3c6148469b347754eab07dc2ade9be4c52 / CI 33951509083 PASS
 D2 final          7b787766be83096e82eab1ac116b2704fae5f202 / CI 33958677991 PASS
+D3 final          59c70af6005ee87918db7fe152c043699726e78c / CI 33963858340 PASS
 ```
 
 ## E26 — M3-1 Composition Configuration Foundation
@@ -223,20 +226,7 @@ DANTE route-focus
 
 The explicit interaction law also prevents weaker late surfaces from becoming authoritative above route focus. No DANTE-kind branch exists in the allocator.
 
-A lifecycle lint failure also removed an effect-driven preference reset in favor of a keyed idle/active presentation session.
-
-### E32.3 CI #968 useful failure
-
-```text
-CI 33954166534 / run #968
-Mobile PASS
-Web E2E PASS
-Quality FAIL at Typecheck only
-```
-
-`exactOptionalPropertyTypes` correctly rejected `blocksWorkspaceInteraction: undefined`. The fix omits the optional field rather than weakening compiler safety.
-
-### E32.4 Final green
+### E32.3 Final green
 
 ```text
 PRE-SCOPE 0a0a43ac06f93d986674f8521e521dcc05ea2c1e
@@ -255,24 +245,128 @@ frozen Timeline Firefox PASS
 Frontend CI Gate PASS
 ```
 
-Final compare from PRE-SCOPE:
-
-```text
-status    ahead
-ahead_by  24
-behind_by 0
-merge-base == PRE-SCOPE
-```
-
-Net D2 code/test/i18n scope is 15 paths. No AppShell, Timeline, Access/Auth, generated route-tree, backend/API/DB/Alembic/provider/LLM/persistence path changed.
-
 Detailed review: `world-focus-d2-adaptive-conversation-surface-review.md`.
 
-## E33 — M4 / D3 Deterministic Conversation Adapter Preflight — NEXT
+## E33 — M4 / D3 Deterministic Conversation Adapter — CLOSED / VALIDATED
 
-D3 has no implementation authority yet. Read-only preflight must inspect D1/D2 lifecycle, Workspace World/generation guards, existing cancellation/latest-read patterns and current truth/result distinctions before an exact RED-first gate is authorized.
+### E33.1 Accepted executable behavior
 
-D3 must not pull in D4 contextual/deictic reference widening, D5 Insight semantics, D6 Proposal/Decision/effect semantics or real backend/provider/LLM integration.
+```text
+D1 composer submit
+-> atomic handoff to existing `dante:conversation`
+-> mounted D3 transcript + typed request
+-> deterministic local reader
+-> finite correlated answer | explanation
+   OR truthful unavailable/error/cancelled/superseded
+```
+
+The same `dante:conversation` identity survives D2 sidecar/route presentation changes and explicit maximize/restore.
+
+### E33.2 Typed truth boundary
+
+D3 makes the following distinctions executable:
+
+```text
+user input != assistant output
+assistant output != canonical fact
+conversation state != World canonical state
+mounted transcript != durable DANTE Run
+cancel/abort != semantic success
+old generation result != attachable to a newer generation
+```
+
+Requests are bounded to explicit World/generation/request correlation, transient input/history and locale. The reader receives an AbortSignal. Ready results use only finite `answer | explanation` classes. `unavailable` is a truthful no-output result.
+
+Validation fails closed on unexpected fields and correlation mismatches rather than importing free-form provider/chat semantics.
+
+### E33.3 Lifecycle and race falsification
+
+D3 proves:
+
+```text
+Cancel -> abort + preserve user turn + ignore late result
+Generation change -> supersede/abort + old result cannot attach
+Follow-up -> same conversation surface
+Active conversation -> cannot open a second composer
+```
+
+### E33.4 Focus falsification correction
+
+A unit test caught that the exact DANTE invoker was remounted because it lived inside D2's keyed idle/active presentation session. The repair moved stable invokes outside the keyed session while leaving the surface layers/presentation session and Workspace allocator ownership intact.
+
+Final law:
+
+```text
+composer -> conversation handoff
+-> no premature invoker focus restore
+
+real conversation close / Escape
+-> exact original DANTE invoker focus return
+```
+
+### E33.5 Browser pressure
+
+Proved:
+
+```text
+wide viable workspace -> sidecar
+390px -> route-owned focus
+same surface through maximize/restore
+no horizontal overflow
+compact close target >= 44px
+automated axe at wide + compact
+World route remains open after conversation Escape
+```
+
+A failed E2E iteration was traced to Playwright partial accessible-name matching: `dialog name="DANTE"` also matched `Conversazione con DANTE`. Exact matching fixed the test; product behavior was already correct.
+
+### E33.6 Final green
+
+```text
+PRE-SCOPE 57520cf0570bc2be875e7140d066e45ddd9080d5
+CODE/TEST  59c70af6005ee87918db7fe152c043699726e78c
+CI         33963858340 / run #1009 PASS
+84 / 84 web test files
+410 / 410 web unit tests
+311 modules / 963 dependencies / 0 architecture violations
+Frontend + World Focus contracts PASS
+Lint / Typecheck / Architecture / Generated PASS
+Production build PASS
+Diff / mutation PASS
+Mobile PASS
+Chromium PASS
+frozen Timeline Firefox PASS
+Frontend CI Gate PASS
+```
+
+Final code/test compare:
+
+```text
+status      ahead
+ahead_by    23
+behind_by   0
+merge-base  == PRE-SCOPE
+net paths   14 code/test/i18n
+```
+
+No Workspace allocator/model, AppShell, Timeline, Access/Auth, generated route tree, backend/API/DB/Alembic/provider/LLM/persistence path changed.
+
+Detailed review: `world-focus-d3-deterministic-conversation-adapter-review.md`.
+
+## E34 — M4 / D4 Contextual/Deictic Invocation Preflight — NEXT
+
+D4 has no implementation authority yet. Read-only preflight must inspect the closed D3 typed conversation boundary, D1/D2 lifecycle, existing World context-reference/resolution/disclosure owners and current selection/authorization/truth distinctions before an exact RED-first gate is authorized.
+
+D4 must preserve:
+
+```text
+selection/context != authorization
+context reference != canonical truth
+reference exists != payload available != current != disclosable != fresh
+DOM/component state != conversation payload
+```
+
+It must not pull in D5 Insight semantics, D6 Proposal/Decision/effect semantics or real backend/provider/LLM integration.
 
 ## 3. Current layered result
 
@@ -291,7 +385,8 @@ M2 presentation boundary CLOSED
 M3 Adaptive Composition CLOSED / VALIDATED
 M4 Contextual DANTE ACTIVE
 D2 Adaptive Conversation Surface CLOSED / VALIDATED
-D3 deterministic pre-backend adapter PREFLIGHT NEXT
+D3 deterministic pre-backend adapter CLOSED / VALIDATED
+D4 contextual/deictic invocation PREFLIGHT NEXT
 ```
 
 ## 4. Current evidence gate
@@ -308,12 +403,14 @@ D3 deterministic pre-backend adapter PREFLIGHT NEXT
 
 > **D2 — CLOSED / VALIDATED**
 
-> **M4 — ACTIVE / D3 READ-ONLY PREFLIGHT NEXT**
+> **D3 — CLOSED / VALIDATED**
+
+> **M4 — ACTIVE / D4 READ-ONLY PREFLIGHT NEXT**
 
 > **M5–M7 and backend remain blocked by sequence.**
 
 ## 5. Reopen rule
 
-Do not reopen WS0–WS8, M1, M2, M3 or D2 merely because a later M4 slice would be easier with broader semantics. Reopen an earlier owner only when executable evidence proves a contradiction in that owner.
+Do not reopen WS0–WS8, M1, M2, M3, D2 or D3 merely because a later M4 slice would be easier with broader semantics. Reopen an earlier owner only when executable evidence proves a contradiction in that owner.
 
 Human visual acceptance remains **NOT PERFORMED**; automated green does not establish it.
