@@ -83,12 +83,13 @@ function D3ConversationOwner({
   children: ReactNode;
 }>) {
   const { restoreInvokerFocus } = useWorldFocusDanteEntry();
+  const readerProps = reader === undefined ? {} : { reader };
 
   return (
     <WorldFocusDanteConversationProvider
       worldId="music"
       restoreInvokerFocus={restoreInvokerFocus}
-      reader={reader}
+      {...readerProps}
     >
       {children}
     </WorldFocusDanteConversationProvider>
@@ -106,6 +107,7 @@ function D3Harness({
   const allocation = resolveWorldFocusWorkspaceAllocation(workspace.state, width);
   const [routeHost, setRouteHost] = useState<HTMLDivElement | null>(null);
   const registry = getCoreWorldFocusSurfaceRegistry();
+  const readerProps = reader === undefined ? {} : { reader };
 
   return (
     <WorldFocusWorkspaceAllocationProvider plan={allocation}>
@@ -114,7 +116,7 @@ function D3Harness({
         worldLabel="Musica"
         availability={{ status: 'available' }}
       >
-        <D3ConversationOwner reader={reader}>
+        <D3ConversationOwner {...readerProps}>
           <WorldFocusDanteConversationPresentationController>
             <button
               type="button"
@@ -164,9 +166,10 @@ function renderD3(
   reader?: WorldFocusDanteConversationReader,
   width = 1280,
 ) {
+  const readerProps = reader === undefined ? {} : { reader };
   return render(
     <WorldFocusWorkspaceHost worldId="music">
-      <D3Harness reader={reader} width={width} />
+      <D3Harness width={width} {...readerProps} />
     </WorldFocusWorkspaceHost>,
   );
 }
@@ -262,11 +265,13 @@ describe('World Focus D3 deterministic conversation bridge', () => {
 
   it('cancels a pending local request, preserves the user turn and ignores a late result', async () => {
     const pending = deferred<WorldFocusDanteConversationReadResult>();
-    let capturedRequest: WorldFocusDanteConversationRequest | null = null;
-    let capturedSignal: AbortSignal | null = null;
+    const observed: {
+      request?: WorldFocusDanteConversationRequest;
+      signal?: AbortSignal;
+    } = {};
     const reader: WorldFocusDanteConversationReader = (request, signal) => {
-      capturedRequest = request;
-      capturedSignal = signal ?? null;
+      observed.request = request;
+      if (signal !== undefined) observed.signal = signal;
       return pending.promise;
     };
     renderD3(reader);
@@ -284,13 +289,13 @@ describe('World Focus D3 deterministic conversation bridge', () => {
         ),
       ).toBeTruthy();
     });
-    expect(capturedSignal?.aborted).toBe(true);
+    expect(observed.signal?.aborted).toBe(true);
     expect(screen.getByText('Non perdere questa richiesta')).toBeTruthy();
 
-    if (capturedRequest === null) {
+    if (observed.request === undefined) {
       throw new Error('Expected captured D3 request');
     }
-    pending.resolve(readyResult(capturedRequest, 'Risposta troppo tardi'));
+    pending.resolve(readyResult(observed.request, 'Risposta troppo tardi'));
     await Promise.resolve();
     await Promise.resolve();
 
@@ -302,11 +307,13 @@ describe('World Focus D3 deterministic conversation bridge', () => {
 
   it('supersedes a pending request when workspace generation changes and never attaches the old result', async () => {
     const pending = deferred<WorldFocusDanteConversationReadResult>();
-    let capturedRequest: WorldFocusDanteConversationRequest | null = null;
-    let capturedSignal: AbortSignal | null = null;
+    const observed: {
+      request?: WorldFocusDanteConversationRequest;
+      signal?: AbortSignal;
+    } = {};
     const reader: WorldFocusDanteConversationReader = (request, signal) => {
-      capturedRequest = request;
-      capturedSignal = signal ?? null;
+      observed.request = request;
+      if (signal !== undefined) observed.signal = signal;
       return pending.promise;
     };
     renderD3(reader);
@@ -323,12 +330,12 @@ describe('World Focus D3 deterministic conversation bridge', () => {
         ),
       ).toBeTruthy();
     });
-    expect(capturedSignal?.aborted).toBe(true);
+    expect(observed.signal?.aborted).toBe(true);
 
-    if (capturedRequest === null) {
+    if (observed.request === undefined) {
       throw new Error('Expected captured D3 request');
     }
-    pending.resolve(readyResult(capturedRequest, 'Risposta della vecchia generazione'));
+    pending.resolve(readyResult(observed.request, 'Risposta della vecchia generazione'));
     await Promise.resolve();
     await Promise.resolve();
     expect(screen.queryByText('Risposta della vecchia generazione')).toBeNull();
