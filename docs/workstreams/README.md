@@ -27,7 +27,7 @@ Platform Observability protected main            CLOSED / INTEGRATED VIA PR #58
 
 AI deterministic low-level foundation            CLOSED / PASS / BRANCH-LOCAL
 AI main reconciliation                           COMPLETE / 4a0a69d9
-AI protected-main integration                    PR / REQUIRED GATES PENDING
+AI protected-main integration                    PR #63 / REQUIRED GATES PASS / MERGE PENDING
 AI production/private-data qualification         NOT CLAIMED
 AI real owner/product seams                      DEFERRED / TRIGGER-GATED
 
@@ -35,7 +35,7 @@ M6 Native Mobile                                 FUTURE / OPTIONAL
 later M7 Access/security maturity                FUTURE
 ```
 
-Protected-main acceptance is commit-reachability scoped. Platform Observability satisfies that condition through merge commit `b74a806deed68b2729dd04678c0a5674cd572e8a` from PR `#58`. AI does not yet: `feature/ai-implementation` is a main-reconciled candidate until its required PR gates and protected-main merge complete.
+Protected-main acceptance is commit-reachability scoped. Platform Observability satisfies that condition through merge commit `b74a806deed68b2729dd04678c0a5674cd572e8a` from PR `#58`. AI does not yet: `feature/ai-implementation` is a main-reconciled, PR-green candidate until protected-main merge completes.
 
 ## Current authority
 
@@ -56,7 +56,7 @@ AI currently retains active branch-local integration authority at:
 - `../architecture/dante-ai-implementation-baseline-final.md`
 - `../architecture/dante-ai-search-intelligence-boundary-amendment-2026-09.md`
 
-The deterministic AI foundation is closed; the active responsibility of the branch is integration, not expansion into deferred product work.
+The deterministic AI foundation is closed; the active responsibility of the branch is protected-main integration and post-merge acceptance, not expansion into deferred product work. The active workstream record must be retired after merge acceptance under the documentation lifecycle policy.
 
 ## AI closure / integration disposition
 
@@ -68,7 +68,9 @@ production/private-data qualification         NOT CLAIMED
 real Search owner/data seam                    DEFERRED
 real Ask DANTE product integration             DEFERRED
 main -> feature true merge                     4a0a69d9 / COMPLETE
-required protected-main PR gates              PENDING
+PR #63 Backend CI Gate                         PASS
+PR #63 Dependency Review                       PASS
+PR #63 Frontend CI Gate                        PASS
 protected-main reachability                   NOT YET CLAIMED
 ```
 
@@ -152,9 +154,10 @@ Historical branch record:
 Platform Observability protected-main integration     CLOSED VIA PR #58
 → AI deterministic foundation                        CLOSED / BRANCH-LOCAL PASS
 → main -> feature/ai-implementation                  COMPLETE / 4a0a69d9
-→ AI required PR gates                               NEXT
-→ protected-main AI merge                            ONLY AFTER GREEN GATES + OWNER AUTHORIZATION
+→ PR #63 required integration gates                 PASS
+→ protected-main AI merge                            ONLY WITH OWNER AUTHORIZATION
 → post-merge acceptance                              REQUIRED
+→ active AI workstream record                        RETIRE AFTER ACCEPTANCE
 ```
 
 ## Operational continuation rule
