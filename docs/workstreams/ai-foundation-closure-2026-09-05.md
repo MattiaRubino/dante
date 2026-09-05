@@ -2,12 +2,12 @@
 
 - **Date:** 2026-09-05
 - **Branch:** `feature/ai-implementation`
-- **Status:** DEVELOPMENT QUALIFICATION CLOSED / FINAL DETERMINISTIC FOUNDATION GATE PENDING
+- **Status:** DEVELOPMENT QUALIFICATION CLOSED / DETERMINISTIC FOUNDATION CLOSURE PASS
 - **Production qualification:** NOT CLAIMED
 - **Private-data eligibility:** NOT CLAIMED
 - **Database/Alembic change:** NONE
 
-This checkpoint is the durable handoff for the low-level AI foundation. It exists so the branch can be left safely after the final deterministic gate and later resumed without depending on conversation history.
+This checkpoint is the durable handoff for the low-level AI foundation. The branch can now be left safely and later resumed without depending on conversation history.
 
 ## 1. Architecture-stage disposition
 
@@ -19,7 +19,7 @@ I3  first real Search/structured owner family                              DEFER
 I4  provider candidate admission + inactive/native binding foundation      CLOSED FOR DEVELOPMENT
 I5  native ModelAccess direct development qualification                    CLOSED / PASS
 I6  read-only Ask DANTE integration                                        DEFERRED / REAL PRODUCT-SEAM GATE
-I7  build-ready low-level hardening                                         MATERIALIZED; FINAL DETERMINISTIC GATE PENDING
+I7  build-ready low-level hardening                                         CLOSED / PASS
 I8  scenario/planning vertical                                             FUTURE / REAL TRIGGER
 I9  consequential Effect vertical                                          FUTURE / REAL TRIGGER
 I10 proactive/background/durable/external-agent capabilities               FUTURE / TRIGGER-GATED
@@ -150,9 +150,9 @@ unit/regression tests for runtime, adapter, transport, route config and eval too
 
 Provider SDK/protocol mechanics do not leak into application/public contracts.
 
-## 6. I7 build-ready hardening already front-loaded
+## 6. I7 build-ready hardening closed
 
-The part of I7 that can be made real without inventing production seams is materialized now:
+The part of I7 that can be made real without inventing production seams is materialized and validated:
 
 ```text
 fail-closed immutable route selection
@@ -225,44 +225,34 @@ new DB/Alembic change
 
 These remain roadmap items with explicit real-world triggers.
 
-## 9. Final deterministic closure gate
+## 9. Final deterministic closure evidence
 
-Paid provider qualification is complete. **Do not repeat it merely to close the branch.**
+Paid provider qualification is complete and must not be repeated merely to close the branch.
 
-The remaining branch gate is deterministic and zero-provider-call:
-
-```bash
-bash tooling/ai-evals/run_ai_foundation_closure_gate.sh
-```
-
-For the strongest local regression, include canonical PostgreSQL acceptance:
-
-```bash
-bash tooling/ai-evals/run_ai_foundation_closure_gate.sh --with-postgres
-```
-
-The runner now:
+Observed deterministic closure evidence on 2026-09-05:
 
 ```text
-requires a clean tracked worktree
-checks uv.lock without regenerating it
-syncs the locked backend environment
-runs backend Ruff format/lint
-runs backend mypy
-runs non-PostgreSQL tests
-runs AI eval tooling Ruff format/lint
-runs AI eval deterministic tests
-builds the backend package
-runs native Gemini smoke in DRY-RUN mode only
-optionally runs canonical PostgreSQL acceptance
-verifies it changed no tracked file
+uv.lock check                              PASS
+locked environment sync                    PASS
+backend Ruff format                        PASS
+backend Ruff lint                          PASS
+backend mypy                               PASS (118 source files)
+backend non-PostgreSQL pytest              PASS (186 tests)
+AI eval tooling Ruff format                PASS (12 files)
+AI eval tooling deterministic pytest       PASS (22 tests)
+backend package build                      PASS
+native Gemini runtime smoke                DRY_RUN / READY / 0 provider calls
+canonical PostgreSQL image build           PASS
+PostgreSQL acceptance pytest               PASS (80 tests)
+final AI eval tooling Ruff lint             PASS
+tracked worktree after validation          CLEAN
 ```
 
-Provider calls performed by this closure gate: **0**.
+The substantive runtime/build/PostgreSQL tail was observed green at commit `abc6587accc83e767e779672f212e217f25a8bd1`. The only subsequent implementation change before final closure was the targeted Ruff false-positive annotation on `TrialVerdict.PASS`; commit `aadaf3b8a4e575c2108ef801dba5554277b9f033` was then verified with the final tooling Ruff lint and a clean worktree. No runtime behavior or test semantics changed in that final diff.
 
-## 10. Branch exit condition
+Provider calls performed by deterministic closure validation: **0**.
 
-After the deterministic gate above is observed green, record the exact validated commit in this checkpoint and then the branch is safe to leave:
+## 10. Branch exit condition — SATISFIED
 
 ```text
 AI LOW-LEVEL FOUNDATION = DEVELOPMENT-CLOSED / BUILD-READY
@@ -270,7 +260,10 @@ I4 = CLOSED FOR DEVELOPMENT
 I5 = CLOSED / PASS
 I7 build-ready portion = CLOSED / PASS
 production/private-data promotion = NOT CLAIMED
+validated implementation closure commit = aadaf3b8a4e575c2108ef801dba5554277b9f033
 next work = broader DANTE roadmap, not forced AI integration
 ```
+
+This documentation-only closure update may move the branch head beyond the validated implementation commit above; it does not alter runtime code, configuration, tests, provider qualification, or database behavior.
 
 When AI work resumes, begin from this checkpoint plus the accepted architecture and the immutable qualified route. Do not infer that a working model call makes Search, Ask, memory, effects, proactivity or production/private-data activation ready.
