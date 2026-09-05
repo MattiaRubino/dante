@@ -25,7 +25,6 @@ import {
 import {
   WorldFocusDanteInsightProvider,
   useWorldFocusDanteInsight,
-  type WorldFocusDanteInsightSourceMessage,
 } from './world-focus-dante-insight-context';
 import { WorldFocusRouteSurfaceLayer } from './world-focus-route-surface-layer';
 import { WorldFocusSurfaceLayer } from './world-focus-surface-layer';
@@ -40,12 +39,7 @@ const CONTEXTUAL_REFERENCES = createWorldFocusContextReferenceSet({
   supporting: [{ kind: 'checkpoint', key: 'd3-d5-supporting' }],
 });
 
-const FORGED_SAME_GENERATION_MESSAGE: WorldFocusDanteInsightSourceMessage =
-  Object.freeze({
-    id: 'forged-same-generation-assistant',
-    resultClass: 'answer',
-    text: 'Questo testo non appartiene alla conversation D3 corrente.',
-  });
+const FORGED_SAME_GENERATION_MESSAGE_ID = 'forged-same-generation-assistant';
 
 beforeAll(async () => {
   await i18n.changeLanguage('it');
@@ -94,7 +88,9 @@ function D3ToD5BindingProbe() {
       <button
         type="button"
         onClick={() =>
-          setAccepted(insight.requestInsight(FORGED_SAME_GENERATION_MESSAGE))
+          setAccepted(
+            insight.requestInsight(FORGED_SAME_GENERATION_MESSAGE_ID),
+          )
         }
       >
         Try forged D5 Insight
@@ -141,7 +137,7 @@ function HostileHarness({
 }
 
 describe('World Focus M4 D3 to D5 hostile binding', () => {
-  it('rejects a fabricated same-generation assistant message that is not owned by the current D3 conversation', async () => {
+  it('rejects a fabricated same-generation assistant message id that is not owned by the current D3 conversation', async () => {
     const insightRequests: WorldFocusDanteInsightRequest[] = [];
     const insightReader: WorldFocusDanteInsightReader = (request) => {
       insightRequests.push(request);
