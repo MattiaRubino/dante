@@ -1,4 +1,4 @@
-"""Provider-neutral model-access and ProviderAttempt contracts for DANTE Intelligence."""
+"""Provider-neutral ModelAccess, ModelInvocation and ProviderAttempt contracts."""
 
 from __future__ import annotations
 
@@ -9,6 +9,27 @@ from enum import StrEnum
 from uuid import UUID
 
 from dante.modules.intelligence.contracts.route_config import RouteConfigIdentity
+
+
+class ModelTarget(StrEnum):
+    """Logical cognition targets owned by DANTE rather than any provider."""
+
+    STRUCTURED_INTERPRETATION = "structured_interpretation"
+    GENERAL_REASONING = "general_reasoning"
+    DEEP_REASONING = "deep_reasoning"
+
+
+class ModelInvocationOutcome(StrEnum):
+    """Logical model-invocation outcome after DANTE routing and validation."""
+
+    COMPLETED = "completed"
+    INCOMPLETE = "incomplete"
+    REFUSED = "refused"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+    INVALID_REQUEST = "invalid_request"
+    INVALID_RESPONSE = "invalid_response"
+    UNAVAILABLE = "unavailable"
 
 
 class ProviderAttemptOutcome(StrEnum):
@@ -86,7 +107,7 @@ def _require_aware(value: datetime, *, name: str) -> None:
 
 @dataclass(frozen=True, slots=True)
 class StructuredOutputContract:
-    """Provider-neutral strict JSON-schema transport contract, not Domain meaning."""
+    """Provider-neutral JSON-schema transport contract, not Domain meaning."""
 
     name: str
     schema_json: str
@@ -101,6 +122,37 @@ class StructuredOutputContract:
             raise ValueError("schema_json must contain valid JSON") from exc
         if not isinstance(document, dict):
             raise ValueError("schema_json must contain a JSON object schema")
+
+
+@dataclass(frozen=True, slots=True)
+class ModelInvocationRequest:
+    """Provider-neutral logical cognition request supplied to ModelAccess."""
+
+    model_invocation_id: UUID
+    work_id: UUID
+    work_revision: int
+    target: ModelTarget
+    purpose: str
+    input_text: str
+    deadline: datetime
+    max_output_tokens: int
+    instructions: str | None = None
+    structured_output: StructuredOutputContract | None = None
+    security_basis_refs: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        _require_uuid7(self.model_invocation_id, name="model_invocation_id")
+        _require_uuid7(self.work_id, name="work_id")
+        if self.work_revision <= 0:
+            raise ValueError("work_revision must be positive")
+        _require_text(self.purpose, name="purpose")
+        _require_text(self.input_text, name="input_text")
+        if self.instructions is not None:
+            _require_text(self.instructions, name="instructions")
+        _require_aware(self.deadline, name="deadline")
+        if self.max_output_tokens <= 0:
+            raise ValueError("max_output_tokens must be positive")
+        _require_texts(self.security_basis_refs, name="security_basis_refs")
 
 
 @dataclass(frozen=True, slots=True)
@@ -122,6 +174,7 @@ class ProviderInvocationRequest:
     route_config_identity: RouteConfigIdentity
     rendered_instructions: str | None = None
     structured_output: StructuredOutputContract | None = None
+    reasoning_level: str | None = None
     feature_modes: tuple[str, ...] = ()
     security_basis_refs: tuple[str, ...] = ()
 
@@ -145,6 +198,8 @@ class ProviderInvocationRequest:
             _require_text(text_value, name=name)
         if self.rendered_instructions is not None:
             _require_text(self.rendered_instructions, name="rendered_instructions")
+        if self.reasoning_level is not None:
+            _require_text(self.reasoning_level, name="reasoning_level")
         _require_aware(self.deadline, name="deadline")
         if self.max_output_tokens <= 0:
             raise ValueError("max_output_tokens must be positive")
@@ -154,20 +209,33 @@ class ProviderInvocationRequest:
 
 @dataclass(frozen=True, slots=True)
 class ProviderUsageEvidence:
-    """Provider usage evidence with explicit unknown/estimated/late semantics."""
+    """Provider usage evidence with explicit detailed-token and unknown semantics."""
 
     state: ProviderUsageState
     input_tokens: int | None = None
     output_tokens: int | None = None
     total_tokens: int | None = None
+    reasoning_tokens: int | None = None
+    cached_input_tokens: int | None = None
+    tool_use_tokens: int | None = None
 
     def __post_init__(self) -> None:
-        values = (self.input_tokens, self.output_tokens, self.total_tokens)
+        values = (
+            self.input_tokens,
+            self.output_tokens,
+            self.total_tokens,
+            self.reasoning_tokens,
+            self.cached_input_tokens,
+            self.tool_use_tokens,
+        )
         if any(value is not None and value < 0 for value in values):
             raise ValueError("provider usage token counts must not be negative")
         if self.state in {ProviderUsageState.KNOWN, ProviderUsageState.ESTIMATED}:
-            if any(value is None for value in values):
-                raise ValueError("known/estimated provider usage requires all token counts")
+            if any(
+                value is None
+                for value in (self.input_tokens, self.output_tokens, self.total_tokens)
+            ):
+                raise ValueError("known/estimated provider usage requires core token counts")
             return
         if any(value is not None for value in values):
             raise ValueError("unknown/late provider usage must not fabricate token counts")
@@ -252,3 +320,53 @@ class ProviderAttemptResult:
             raise ValueError("failure provider outcome requires error_class")
         if has_output or self.refusal_reason is not None:
             raise ValueError("failure provider outcome cannot carry output/refusal state")
+
+
+@dataclass(frozen=True, slots=True)
+class ModelInvocationResult:
+    """Logical invocation result after deterministic routing and DANTE validation."""
+
+    model_invocation_id: UUID
+    target: ModelTarget
+    outcome: ModelInvocationOutcome
+    route_config_identity: RouteConfigIdentity
+    usage: ProviderUsageEvidence
+    provider_binding_ref: str | None = None
+    harness_profile_ref: str | None = None
+    attempts: tuple[ProviderAttemptResult, ...] = ()
+    output_text: str | None = None
+    structured_output_json: str | None = None
+    error_code: str | None = None
+
+    def __post_init__(self) -> None:
+        _require_uuid7(self.model_invocation_id, name="model_invocation_id")
+        for name, value in (
+            ("provider_binding_ref", self.provider_binding_ref),
+            ("harness_profile_ref", self.harness_profile_ref),
+            ("output_text", self.output_text),
+            ("structured_output_json", self.structured_output_json),
+            ("error_code", self.error_code),
+        ):
+            if value is not None:
+                _require_text(value, name=name)
+        if any(attempt.model_invocation_id != self.model_invocation_id for attempt in self.attempts):
+            raise ValueError("all provider attempts must belong to this model invocation")
+
+        has_output = self.output_text is not None or self.structured_output_json is not None
+        if self.outcome is ModelInvocationOutcome.COMPLETED:
+            if not self.attempts or not has_output:
+                raise ValueError("completed model invocation requires attempt and output")
+            if self.provider_binding_ref is None or self.harness_profile_ref is None:
+                raise ValueError("completed model invocation requires selected route identity")
+            return
+
+        if self.outcome in {
+            ModelInvocationOutcome.INVALID_REQUEST,
+            ModelInvocationOutcome.UNAVAILABLE,
+        }:
+            if self.attempts or has_output:
+                raise ValueError("pre-dispatch model outcome cannot carry attempt/output")
+            return
+
+        if not self.attempts:
+            raise ValueError("post-dispatch model outcome requires provider attempt evidence")
