@@ -20,7 +20,7 @@ MAX_HARD_INPUT_CHARS_PER_FIXTURE: Final = 16_000
 
 
 class TrialVerdict(StrEnum):
-    PASS = "PASS"
+    PASS = "PASS"  # noqa: S105 - verdict label, not a credential
     HARD_FAIL = "HARD_FAIL"
     QUALITY_FAIL = "QUALITY_FAIL"
     INVALID_FIXTURE = "INVALID_FIXTURE"
