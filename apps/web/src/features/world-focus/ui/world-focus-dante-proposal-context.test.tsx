@@ -21,11 +21,34 @@ import {
   useWorldFocusWorkspace,
 } from './world-focus-workspace-host';
 
+const d5InsightState = vi.hoisted(() => ({
+  current: null as WorldFocusDanteInsight | null,
+}));
+
+vi.mock('./world-focus-dante-insight-context', async (importOriginal) => {
+  const actual = await importOriginal<
+    typeof import('./world-focus-dante-insight-context')
+  >();
+  return {
+    ...actual,
+    useWorldFocusDanteInsight: () => ({
+      insight: d5InsightState.current,
+      requestState: { status: 'idle' as const },
+      isOpen: d5InsightState.current !== null,
+      canRequestInsight: false,
+      requestInsight: () => false,
+    }),
+  };
+});
+
 beforeAll(async () => {
   await i18n.changeLanguage('it');
 });
 
-afterEach(cleanup);
+afterEach(() => {
+  d5InsightState.current = null;
+  cleanup();
+});
 
 function createInsight(generation: number): WorldFocusDanteInsight {
   return Object.freeze({
@@ -105,10 +128,7 @@ function ProposalHarness() {
       >
         Open Insight
       </button>
-      <button
-        type="button"
-        onClick={() => proposal.requestProposal(createInsight(workspace.state.generation))}
-      >
+      <button type="button" onClick={proposal.requestProposal}>
         Request Proposal
       </button>
       <button
@@ -133,6 +153,7 @@ function ProposalHarness() {
 }
 
 function renderHarness(reader: WorldFocusDanteProposalReader) {
+  d5InsightState.current = createInsight(0);
   return render(
     <WorldFocusWorkspaceHost worldId="music">
       <WorldFocusDanteProposalProvider worldId="music" reader={reader}>
