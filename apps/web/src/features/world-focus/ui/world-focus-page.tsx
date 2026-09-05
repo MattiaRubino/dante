@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type ReactNode,
 } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -37,10 +38,16 @@ import {
 } from './world-focus-composition-customization-context';
 import { WorldFocusContext } from './world-focus-context';
 import { getCoreWorldFocusSurfaceRegistry } from './world-focus-core-surfaces';
-import { WorldFocusDanteConversationPresentationController } from './world-focus-dante-conversation';
+import {
+  WorldFocusDanteConversationPresentationController,
+} from './world-focus-dante-conversation';
+import {
+  WorldFocusDanteConversationProvider,
+} from './world-focus-dante-conversation-context';
 import {
   WorldFocusDanteEntryProvider,
   WorldFocusDanteInvoke,
+  useWorldFocusDanteEntry,
 } from './world-focus-dante-entry';
 import { WorldFocusRouteSurfaceLayer } from './world-focus-route-surface-layer';
 import { WorldFocusSurfaceLayer } from './world-focus-surface-layer';
@@ -81,6 +88,27 @@ type WorldFocusWorkspaceExperienceProps = Readonly<{
   onRequestWorldClose: () => void;
 }>;
 
+type WorldFocusDanteConversationOwnerProps = Readonly<{
+  worldId: WorldFocusIdentityDescriptor['id'];
+  children: ReactNode;
+}>;
+
+function WorldFocusDanteConversationOwner({
+  worldId,
+  children,
+}: WorldFocusDanteConversationOwnerProps) {
+  const { restoreInvokerFocus } = useWorldFocusDanteEntry();
+
+  return (
+    <WorldFocusDanteConversationProvider
+      worldId={worldId}
+      restoreInvokerFocus={restoreInvokerFocus}
+    >
+      {children}
+    </WorldFocusDanteConversationProvider>
+  );
+}
+
 function WorldFocusWorkspaceExperience({
   identity,
   status,
@@ -118,24 +146,26 @@ function WorldFocusWorkspaceExperience({
         worldLabel={identity.label}
         availability={PRE_BACKEND_DANTE_ENTRY_AVAILABILITY}
       >
-        <WorldFocusWorkspace
-          worldLabel={identity.label}
-          status={status}
-          context={<WorldFocusContext identity={identity} />}
-          surfaces={
-            <WorldFocusDanteConversationPresentationController>
-              <WorldFocusCompositionCustomizeInvoke />
-              <WorldFocusDanteInvoke />
-              <WorldFocusSurfaceLayer registry={registry} />
-              <WorldFocusRouteSurfaceLayer
-                registry={registry}
-                host={routeSurfaceHost}
-              />
-            </WorldFocusDanteConversationPresentationController>
-          }
-        >
-          <WorldFocusAdaptiveComposition worldId={identity.id} />
-        </WorldFocusWorkspace>
+        <WorldFocusDanteConversationOwner worldId={identity.id}>
+          <WorldFocusWorkspace
+            worldLabel={identity.label}
+            status={status}
+            context={<WorldFocusContext identity={identity} />}
+            surfaces={
+              <WorldFocusDanteConversationPresentationController>
+                <WorldFocusCompositionCustomizeInvoke />
+                <WorldFocusDanteInvoke />
+                <WorldFocusSurfaceLayer registry={registry} />
+                <WorldFocusRouteSurfaceLayer
+                  registry={registry}
+                  host={routeSurfaceHost}
+                />
+              </WorldFocusDanteConversationPresentationController>
+            }
+          >
+            <WorldFocusAdaptiveComposition worldId={identity.id} />
+          </WorldFocusWorkspace>
+        </WorldFocusDanteConversationOwner>
       </WorldFocusDanteEntryProvider>
     </WorldFocusCompositionCustomizationProvider>
   );
