@@ -31,7 +31,10 @@ from dante.modules.intelligence.contracts.model_access import (
     ProviderUsageState,
     StructuredOutputContract,
 )
-from dante.modules.intelligence.contracts.route_config import RouteConfigIdentity
+from dante.modules.intelligence.contracts.route_config import (
+    RouteConfigIdentity,
+    RouteConfigSnapshot,
+)
 from dante.modules.intelligence.route_config import load_route_config
 from tests.unit.modules.intelligence.fakes import RecordingRuntimeEvidencePort
 
@@ -98,7 +101,7 @@ class _Cancellation:
         self._event.set()
 
 
-def _snapshot():
+def _snapshot() -> RouteConfigSnapshot:
     return load_route_config(_REVISIONS_ROOT, GEMINI_INTERACTIONS_ROUTE_REVISION)
 
 
