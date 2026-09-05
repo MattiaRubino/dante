@@ -99,7 +99,9 @@ def _reject_duplicate_object_keys(pairs: list[tuple[str, object]]) -> dict[str, 
     return result
 
 
-def _require_exact_fields(document: dict[str, object], expected: frozenset[str], *, name: str) -> None:
+def _require_exact_fields(
+    document: dict[str, object], expected: frozenset[str], *, name: str
+) -> None:
     actual = frozenset(document)
     missing = expected - actual
     unknown = actual - expected
