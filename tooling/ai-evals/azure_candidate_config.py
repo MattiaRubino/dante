@@ -71,8 +71,6 @@ def normalize_azure_responses_base_url(endpoint: str) -> str:
     if clean_path in {"", "/openai", "/openai/v1"}:
         path = "/openai/v1/"
     else:
-        raise ValueError(
-            "Azure endpoint must be the resource root or the /openai/v1 endpoint"
-        )
+        raise ValueError("Azure endpoint must be the resource root or the /openai/v1 endpoint")
 
     return urlunparse(("https", parsed.netloc, path, "", "", ""))

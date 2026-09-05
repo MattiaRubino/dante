@@ -94,19 +94,13 @@ class SuiteLoadingTests(unittest.TestCase):
     def test_v2_preserves_unmodified_fixture(self) -> None:
         v1 = load_suite(TOOL_ROOT / "fixtures" / "mini-baseline-v1.json")
         v2 = load_suite(TOOL_ROOT / "fixtures" / "mini-baseline-v2.json")
-        v1_fixture = next(
-            f for f in v1.fixtures if f.fixture_id == "e02-resolved-reference"
-        )
-        v2_fixture = next(
-            f for f in v2.fixtures if f.fixture_id == "e02-resolved-reference"
-        )
+        v1_fixture = next(f for f in v1.fixtures if f.fixture_id == "e02-resolved-reference")
+        v2_fixture = next(f for f in v2.fixtures if f.fixture_id == "e02-resolved-reference")
         self.assertEqual(v1_fixture, v2_fixture)
 
     def test_v2_e11_accepts_keep_declared_without_replacement(self) -> None:
         suite = load_suite(TOOL_ROOT / "fixtures" / "mini-baseline-v2.json")
-        fixture = next(
-            f for f in suite.fixtures if f.fixture_id == "e11-declared-vs-observed"
-        )
+        fixture = next(f for f in suite.fixtures if f.fixture_id == "e11-declared-vs-observed")
         grade = grade_output(
             fixture,
             '{"update_memory":false,"action":"keep_declared"}',
@@ -115,9 +109,7 @@ class SuiteLoadingTests(unittest.TestCase):
 
     def test_v2_e11_rejects_unconfirmed_replacement(self) -> None:
         suite = load_suite(TOOL_ROOT / "fixtures" / "mini-baseline-v2.json")
-        fixture = next(
-            f for f in suite.fixtures if f.fixture_id == "e11-declared-vs-observed"
-        )
+        fixture = next(f for f in suite.fixtures if f.fixture_id == "e11-declared-vs-observed")
         grade = grade_output(
             fixture,
             '{"update_memory":false,"action":"replace_declared"}',
@@ -334,14 +326,17 @@ class GeminiCandidateConfigTests(unittest.TestCase):
         self.assertEqual(config.reasoning_effort, "low")
 
     def test_rejects_unsupported_reasoning_effort(self) -> None:
-        with patch.dict(
-            "os.environ",
-            {
-                "DANTE_EVAL_GEMINI_API_KEY": "secret",
-                "DANTE_EVAL_GEMINI_REASONING_EFFORT": "minimal",
-            },
-            clear=True,
-        ), self.assertRaisesRegex(ValueError, "REASONING_EFFORT"):
+        with (
+            patch.dict(
+                "os.environ",
+                {
+                    "DANTE_EVAL_GEMINI_API_KEY": "secret",
+                    "DANTE_EVAL_GEMINI_REASONING_EFFORT": "minimal",
+                },
+                clear=True,
+            ),
+            self.assertRaisesRegex(ValueError, "REASONING_EFFORT"),
+        ):
             GeminiCandidateConfig.from_environment()
 
 

@@ -12,9 +12,7 @@ from enum import StrEnum
 from pathlib import Path
 from typing import Any, Final
 
-DANTE_WORKLOAD_FAMILIES: Final[frozenset[str]] = frozenset(
-    f"DANTE-E{i:02d}" for i in range(1, 15)
-)
+DANTE_WORKLOAD_FAMILIES: Final[frozenset[str]] = frozenset(f"DANTE-E{i:02d}" for i in range(1, 15))
 
 MAX_HARD_CALLS: Final = 30
 MAX_HARD_OUTPUT_TOKENS_PER_CALL: Final = 512
@@ -143,9 +141,7 @@ class BudgetGuard:
             # overestimates many ordinary English/Italian prompts. Reasoning
             # cost cannot be known before dispatch, so max_output_tokens is the
             # bounded generation proxy. This is a guardrail, not billing authority.
-            estimated_input_tokens = (
-                len(fixture.input_text) + len(fixture.instructions) + 2
-            ) // 3
+            estimated_input_tokens = (len(fixture.input_text) + len(fixture.instructions) + 2) // 3
             estimated_next = (
                 estimated_input_tokens * self.pricing.input_eur_per_million
                 + fixture.max_output_tokens * self.pricing.output_eur_per_million
