@@ -16,47 +16,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  format-fix:
-    name: One-shot Prettier normalization
-    if: ${{ github.ref == 'refs/heads/feature/home-timeline' && contains(github.event.head_commit.message, '[run-prettier-fix]') }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: true
-
-      - name: Setup pnpm and Node
-        uses: pnpm/setup@c9883cc79df532ad1a7b81bf9ab944ceb090d65c # v2.0.0
-        with:
-          version: 11.22.0
-          runtime: node@24.19.0
-          cache: true
-          install: false
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Normalize tracked repository formatting
-        run: pnpm exec prettier --write .
-
-      - name: Commit formatter output
-        shell: bash
-        run: |
-          git add -u
-          git diff --cached --check
-          if git diff --cached --quiet; then
-            echo "No formatting changes required."
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "style(frontend): normalize repository formatting"
-          git push origin HEAD:feature/home-timeline
-
   quality:
     name: Quality
     runs-on: ubuntu-24.04
