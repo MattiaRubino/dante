@@ -152,15 +152,17 @@ function WorldFocusWorkspaceExperience({
             status={status}
             context={<WorldFocusContext identity={identity} />}
             surfaces={
-              <WorldFocusDanteConversationPresentationController>
+              <>
                 <WorldFocusCompositionCustomizeInvoke />
                 <WorldFocusDanteInvoke />
-                <WorldFocusSurfaceLayer registry={registry} />
-                <WorldFocusRouteSurfaceLayer
-                  registry={registry}
-                  host={routeSurfaceHost}
-                />
-              </WorldFocusDanteConversationPresentationController>
+                <WorldFocusDanteConversationPresentationController>
+                  <WorldFocusSurfaceLayer registry={registry} />
+                  <WorldFocusRouteSurfaceLayer
+                    registry={registry}
+                    host={routeSurfaceHost}
+                  />
+                </WorldFocusDanteConversationPresentationController>
+              </>
             }
           >
             <WorldFocusAdaptiveComposition worldId={identity.id} />
