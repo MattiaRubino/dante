@@ -1,7 +1,7 @@
 # DANTE Workstream Records
 
 - **Status:** CURRENT INDEX
-- **Last reconciled:** 2026-09-04
+- **Last reconciled:** 2026-09-05
 - **Rule:** current subsystem/workstream files describe present truth; Git/PR/archive preserve chronology.
 
 ## Current authority
@@ -79,58 +79,60 @@ CURRENT IMPLEMENTATION AUTHORITY
 
 On `feature/ai-implementation`:
 
-- `ai-implementation.md` — current implementation state, validation evidence and executable gate;
-- `ai-c9-pre-live-checkpoint-2026-09.md` — current C9 pre-live deterministic/material checkpoint and remaining live gate;
-- `ai-provider-candidate-admission-2026-09.md` — current C8/P1 provider admission decision and public evidence snapshot;
-- `../ROADMAP.md` — current cross-workstream execution overlay;
-- `../PROJECT-STATUS.md` — project-level current state.
+- `ai-implementation.md` — historical/current implementation record up to the former C9 provider gate;
+- `ai-implementation-roadmap-amendment-2026-09-05.md` — **CURRENT execution overlay** after direct model evidence and owner sequencing decision;
+- `ai-runtime-model-target-closure-acceptance-2026-09-05.md` — **ACCEPTED** logical target/routing/binding decision;
+- `ai-model-eval-gpt41-results-2026-09-04.md` — Azure GPT-4.1 baseline evidence;
+- `ai-model-eval-gemini-38-flash-results-2026-09-05.md` — Gemini 3.8 Flash direct challenger/development-binding evidence;
+- `ai-runtime-model-target-closure-proposal-2026-09.md` — detailed decision rationale/history, accepted by the closure record above;
+- `ai-c9-pre-live-checkpoint-2026-09.md` and `ai-provider-candidate-admission-2026-09.md` — retained historical OpenAI/Terra qualification evidence, no longer the current blocker;
+- `../ROADMAP.md` and `../PROJECT-STATUS.md` — protected-main/global authority outside this branch-local delta.
 
-Current implementation state:
+Current branch-local implementation state:
 
 ```text
 I0  CLOSED / PASS
 I1  CLOSED / PASS
 I2  CLOSED / PASS
-I3/C3 real deterministic Search/structured family
-    DEFERRED / WAITING OWNER DATA + SEAMS
+I3  DEFERRED / WAITING REAL OWNER DATA + SEAMS
+
 C6  CLOSED / PASS
-C7  CLOSED / PASS
-C8/P1
-    OpenAI native Responses API + gpt-5.6-terra
-    ADMITTED FOR QUALIFICATION ONLY
+C7  CLOSED / PASS; immutable route identity now extended with typed v2 model routes
+C8  OpenAI/Terra historical candidate admission retained
+C9  former OpenAI/Terra live blocker SUPERSEDED / NOT CURRENT
+C10 direct DANTE candidate evidence COMPLETE for development-binding decision
+C11 development binding decision COMPLETE
 
-C9  OPEN / PRE-LIVE READY
-    P2/P3 contracts + inactive adapter               PASS
-    OpenAI SDK 3.7.0 + locked dependency             PASS
-    material SDK conformance                         PASS
-    P4 pre-live                                      PASS
-    final deterministic + PostgreSQL regression      PASS
-    P4 real provider live compatibility              NOT RUN
-    blocker: no user-owned qualification API credential provisioned
+ACTIVE DEVELOPMENT TARGETS
+STRUCTURED_INTERPRETATION -> Gemini 3.8 Flash
+GENERAL_REASONING         -> Gemini 3.8 Flash
+DEEP_REASONING            -> dormant
 
-CURRENT EXECUTABLE
-C9 P4 real provider live compatibility
-→ synthetic/public/minimized data only
-→ C10 direct DANTE qualification only after C9 closure
-→ C11 qualification/promotion decision
+CURRENT FOUNDATION CLOSURE
+application-owned ModelAccessPort
++ typed route / harness / ProviderBinding revision
++ deterministic champion routing
++ native Gemini Interactions adapter
++ usage/thought/cached/error normalization
++ independent structured-output validation
++ minimized runtime evidence
++ deterministic tests
++ one synthetic native live smoke before freeze
 
-MANDATORY CONVERGENCE
-I3/C3 must re-enter when owner seams are ready and converge
-before I6 whenever the accepted first vertical requires the real
-Search/structured source path.
+I6 READ-ONLY ASK
+DEFERRED BY OWNER / WAITING BROADER PRODUCT INTEGRATION-READINESS
 ```
 
-The baseline I0-I10 identifiers remain architectural stage labels. The execution overlay may defer trigger-gated I3 without renumbering or falsely closing it.
+The unexecuted OpenAI/Terra live call is not a current blocker. It may be reopened only if a later challenger comparison becomes decision-critical. Gemini is a **development** binding, not production/private-data qualification.
 
-The provider candidate is admitted only for qualification work. C9 now materially includes the private inactive SDK/adapter and directly validated pre-live conformance, but no real provider live call, production qualification, private-data eligibility or production activation is implied. Claude Sonnet 5 and Gemini 3.8 Flash remain non-admitted shortlist challengers.
-
-Binding implementation separations include:
+Binding implementation separations remain:
 
 ```text
 GLOBAL SEARCH != INTELLIGENCE
 SEMANTIC QUERY != INTELLIGENCE-OWNED CROSS-CAPABILITY SQL
 PROVIDER SDK != APPLICATION CONTRACT
 MODEL OUTPUT != PUBLISHABLE OUTPUT
+MODEL TARGET != PROVIDER BINDING != MODEL != DEPLOYMENT
 Context != Retrieval != Memory
 DEFAULT NONCANONICAL AI PERSISTENCE = NO
 CANDIDATE ADMISSION != PRODUCTION QUALIFICATION
@@ -197,7 +199,7 @@ Current project authority includes bounded unmerged work such as:
 feature/access-auth             active product vertical
 feature/home-react              active frontend workstream
 feature/platform-observability  active platform workstream
-feature/ai-implementation       active AI implementation / C9 OPEN-PRE-LIVE-READY
+feature/ai-implementation       active AI foundation closure; integrated Ask deferred
 feature/ai-architecture         architecture design closed / retained authority/evidence
 ```
 
