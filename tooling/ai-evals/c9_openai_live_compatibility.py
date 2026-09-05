@@ -29,7 +29,10 @@ from dante.modules.intelligence.contracts.model_access import (
     StructuredOutputContract,
 )
 from dante.modules.intelligence.contracts.route_config import RouteConfigSnapshot
-from dante.modules.intelligence.route_config import RouteConfigLoadError, load_route_config
+from dante.modules.intelligence.route_config import (
+    RouteConfigLoadError,
+    load_route_config,
+)
 
 _PHASE = "C9_P4_LIVE_COMPATIBILITY"
 _API_KEY_ENV = "DANTE_OPENAI_QUALIFICATION_API_KEY"
@@ -191,7 +194,9 @@ def _failure_evidence(
 
 async def _run() -> int:
     try:
-        snapshot = load_route_config(_REVISIONS_ROOT, OPENAI_TERRA_ROUTE_CONFIG_REVISION)
+        snapshot = load_route_config(
+            _REVISIONS_ROOT, OPENAI_TERRA_ROUTE_CONFIG_REVISION
+        )
         _validate_snapshot(snapshot)
     except RouteConfigLoadError, QualificationPostureError:
         _emit(

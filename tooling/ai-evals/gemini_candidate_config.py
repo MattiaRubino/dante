@@ -43,7 +43,9 @@ class GeminiCandidateConfig:
         )
         if reasoning_effort not in _ALLOWED_REASONING_EFFORTS:
             allowed = ", ".join(sorted(_ALLOWED_REASONING_EFFORTS))
-            raise ValueError("DANTE_EVAL_GEMINI_REASONING_EFFORT must be one of: " + allowed)
+            raise ValueError(
+                "DANTE_EVAL_GEMINI_REASONING_EFFORT must be one of: " + allowed
+            )
 
         return cls(
             api_key=api_key.strip(),

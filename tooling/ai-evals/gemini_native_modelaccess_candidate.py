@@ -33,9 +33,13 @@ from dante.modules.intelligence.contracts.model_access import (
 from dante_eval_core import CandidateResult, EvalFixture
 
 _REPO_ROOT: Final = Path(__file__).resolve().parents[2]
-_REVISIONS_ROOT: Final = _REPO_ROOT / "apps" / "backend" / "config" / "intelligence" / "revisions"
+_REVISIONS_ROOT: Final = (
+    _REPO_ROOT / "apps" / "backend" / "config" / "intelligence" / "revisions"
+)
 _KEY_ENV_NAMES: Final = ("DANTE_GEMINI_API_KEY", "DANTE_EVAL_GEMINI_API_KEY")
-_STRUCTURED_FAMILIES: Final = frozenset({"DANTE-E02", "DANTE-E03", "DANTE-E11", "DANTE-E12"})
+_STRUCTURED_FAMILIES: Final = frozenset(
+    {"DANTE-E02", "DANTE-E03", "DANTE-E11", "DANTE-E12"}
+)
 
 
 def _api_key_from_environment() -> str:
@@ -82,9 +86,13 @@ class GeminiNativeModelAccessCandidate:
             "provider_native_tools": "off",
         }
 
-    async def invoke(self, fixture: EvalFixture, *, timeout_seconds: float) -> CandidateResult:
+    async def invoke(
+        self, fixture: EvalFixture, *, timeout_seconds: float
+    ) -> CandidateResult:
         if not fixture.requires_model:
-            raise ValueError("candidate must not be invoked for model-avoidance fixture")
+            raise ValueError(
+                "candidate must not be invoked for model-avoidance fixture"
+            )
         if fixture.response_schema is None:
             raise ValueError("native candidate requires a response schema")
 
@@ -125,7 +133,9 @@ class GeminiNativeModelAccessCandidate:
         reasoning_tokens = result.usage.reasoning_tokens
         billable_output_tokens = None
         if result.usage.output_tokens is not None:
-            billable_output_tokens = result.usage.output_tokens + (reasoning_tokens or 0)
+            billable_output_tokens = result.usage.output_tokens + (
+                reasoning_tokens or 0
+            )
 
         eval_error_class = (
             None
@@ -148,8 +158,12 @@ class GeminiNativeModelAccessCandidate:
             cached_input_tokens=result.usage.cached_input_tokens,
             tool_use_tokens=result.usage.tool_use_tokens,
             billable_output_tokens=billable_output_tokens,
-            provider_request_id=attempt.provider_request_id if attempt is not None else None,
-            provider_response_id=attempt.provider_response_id if attempt is not None else None,
+            provider_request_id=attempt.provider_request_id
+            if attempt is not None
+            else None,
+            provider_response_id=attempt.provider_response_id
+            if attempt is not None
+            else None,
             latency_ms=latency_ms,
             provider_status=(
                 attempt.provider_status
