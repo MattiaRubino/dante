@@ -167,7 +167,7 @@ describe('WorldFocusPage', () => {
       '[data-world-focus-composition-id="continuity"]',
     );
     expect(continuity).not.toBeNull();
-    const action = within(continuity!).getAllByRole('button', {
+    const action = within(continuity).getAllByRole('button', {
       name: 'Chiedi a DANTE: Continua da qui',
     })[0];
     expect(action).toBeDefined();
