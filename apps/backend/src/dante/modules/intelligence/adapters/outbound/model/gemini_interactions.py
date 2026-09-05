@@ -400,7 +400,7 @@ class GeminiInteractionsAdapter:
             return ProviderAttemptResult(
                 provider_attempt_id=request.provider_attempt_id,
                 model_invocation_id=request.model_invocation_id,
-                outcome=ProviderAttemptOutcome.PERMANENT_FAILURE,
+                outcome=ProviderAttemptOutcome.TRANSIENT_FAILURE,
                 acceptance=ProviderAcceptanceCertainty.ESTABLISHED,
                 usage=usage,
                 started_at=started_at,
@@ -425,7 +425,15 @@ class GeminiInteractionsAdapter:
                 completed_at,
                 code="unexpected_nonterminal_or_action_status",
             )
-        if response.status is GeminiInteractionStatus.BUDGET_EXCEEDED:
+        if response.status in {
+            GeminiInteractionStatus.INCOMPLETE,
+            GeminiInteractionStatus.BUDGET_EXCEEDED,
+        }:
+            finish_reason = (
+                "budget_exceeded"
+                if response.status is GeminiInteractionStatus.BUDGET_EXCEEDED
+                else "provider_incomplete"
+            )
             return ProviderAttemptResult(
                 provider_attempt_id=request.provider_attempt_id,
                 model_invocation_id=request.model_invocation_id,
@@ -437,7 +445,8 @@ class GeminiInteractionsAdapter:
                 provider_request_id=response.request_id,
                 provider_response_id=response.interaction_id,
                 provider_status=provider_status,
-                finish_reason="budget_exceeded",
+                finish_reason=finish_reason,
+                error_code=response.error_code,
             )
         if response.output_text is None:
             return self._invalid_response(
@@ -451,7 +460,7 @@ class GeminiInteractionsAdapter:
 
         if request.structured_output is not None:
             try:
-                parsed = json.loads(response.output_text)
+                json.loads(response.output_text)
             except json.JSONDecodeError:
                 return self._invalid_response(
                     request,
@@ -461,30 +470,16 @@ class GeminiInteractionsAdapter:
                     completed_at,
                     code="invalid_structured_json",
                 )
-            if not isinstance(parsed, dict):
-                return self._invalid_response(
-                    request,
-                    response,
-                    usage,
-                    started_at,
-                    completed_at,
-                    code="structured_output_not_object",
-                )
             output_text = None
             structured_output_json = response.output_text
         else:
             output_text = response.output_text
             structured_output_json = None
 
-        outcome = (
-            ProviderAttemptOutcome.COMPLETED
-            if response.status is GeminiInteractionStatus.COMPLETED
-            else ProviderAttemptOutcome.INCOMPLETE
-        )
         return ProviderAttemptResult(
             provider_attempt_id=request.provider_attempt_id,
             model_invocation_id=request.model_invocation_id,
-            outcome=outcome,
+            outcome=ProviderAttemptOutcome.COMPLETED,
             acceptance=ProviderAcceptanceCertainty.ESTABLISHED,
             usage=usage,
             started_at=started_at,
@@ -492,11 +487,7 @@ class GeminiInteractionsAdapter:
             provider_request_id=response.request_id,
             provider_response_id=response.interaction_id,
             provider_status=provider_status,
-            finish_reason=(
-                None
-                if response.status is GeminiInteractionStatus.COMPLETED
-                else "provider_incomplete"
-            ),
+            finish_reason=None,
             output_text=output_text,
             structured_output_json=structured_output_json,
         )
