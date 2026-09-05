@@ -2,43 +2,40 @@
 
 - **Date:** 2026-09-05
 - **Branch:** `feature/ai-implementation`
-- **Status:** CLOSURE CANDIDATE / FINAL LOCAL GATE + ONE NATIVE SMOKE PENDING
+- **Status:** DEVELOPMENT QUALIFICATION CLOSED / FINAL DETERMINISTIC FOUNDATION GATE PENDING
 - **Production qualification:** NOT CLAIMED
 - **Private-data eligibility:** NOT CLAIMED
 - **Database/Alembic change:** NONE
 
-This checkpoint is the durable handoff for the low-level AI foundation. It exists so the work can be left safely after closure and resumed later without depending on conversation history.
+This checkpoint is the durable handoff for the low-level AI foundation. It exists so the branch can be left safely after the final deterministic gate and later resumed without depending on conversation history.
 
-## 1. What this branch has actually closed or materialized
-
-Historical architecture stages retained:
+## 1. Architecture-stage disposition
 
 ```text
 I0  repository/application ownership + architecture boundary skeleton     CLOSED / PASS
 I1  deterministic Global Search public shell/contracts                    CLOSED / PASS
 I2  provider/DB-agnostic Intelligence request-local contracts/fakes       CLOSED / PASS
 I3  first real Search/structured owner family                              DEFERRED / REAL OWNER-SEAM GATE
-C6  policy/resource/verification/publication/effect/egress/evidence        CLOSED / PASS
-C7  immutable route-config identity/loader                                 CLOSED / PASS
+I4  provider candidate admission + inactive/native binding foundation      CLOSED FOR DEVELOPMENT
+I5  native ModelAccess direct development qualification                    CLOSED / PASS
+I6  read-only Ask DANTE integration                                        DEFERRED / REAL PRODUCT-SEAM GATE
+I7  build-ready low-level hardening                                         MATERIALIZED; FINAL DETERMINISTIC GATE PENDING
+I8  scenario/planning vertical                                             FUTURE / REAL TRIGGER
+I9  consequential Effect vertical                                          FUTURE / REAL TRIGGER
+I10 proactive/background/durable/external-agent capabilities               FUTURE / TRIGGER-GATED
 ```
 
-Provider/model work completed after C7:
+Nothing integration-heavy is being skipped. Stages that require real DANTE owner/product/deployment seams remain deferred instead of being faked with prompt-only scaffolding.
 
-```text
-Azure GPT-4.1 bounded baseline                     COMPLETE EVIDENCE
-Gemini 3.8 Flash challenger evaluation             COMPLETE EVIDENCE
-known eval oracle defects                           CORRECTED WITHOUT REWRITING V1 HISTORY
-target/binding decision                             ACCEPTED FOR DEVELOPMENT FOUNDATION
-OpenAI/Terra old live-compatibility blocker         SUPERSEDED AS CURRENT PATH
-```
-
-Accepted logical reasoning surface:
+## 2. Accepted reasoning surface
 
 ```text
 DETERMINISTIC COMPUTE
 SOLVER
 MODEL ACCESS
 ```
+
+A DANTE Run may contain zero model invocations.
 
 Accepted development model routes:
 
@@ -48,9 +45,80 @@ GENERAL_REASONING         -> Gemini 3.8 Flash
 DEEP_REASONING            -> DORMANT / NO BINDING
 ```
 
-## 2. Low-level Model Access foundation now materialized
+The provider/model choice is replaceable route configuration, not product identity.
 
-The branch now contains the production-shaped but development-only foundation:
+## 3. Exact development binding
+
+Qualified route artifact:
+
+```text
+apps/backend/config/intelligence/revisions/gemini-flash-dev-v2.json
+```
+
+Qualified runtime identity:
+
+```text
+route revision              gemini-flash-dev-v2
+route content sha256        1aec33c71d9223ada5b436e05a51ac927a41405b6a60bcc0db552d999d7dcba6
+provider                    Google Gemini Developer API
+protocol                    native Gemini Interactions API v1beta
+model                       gemini-3.8-flash
+binding                     google-gemini-interactions-flash-v2
+harness                     gemini-flash-low-v1
+binding state               development
+reasoning                   low
+service tier                standard
+streaming                   off
+background                  off
+provider continuation       off
+provider-native tools       off
+provider storage            off / store=false
+thinking summaries          none
+DANTE retry                 off
+fallback                    off
+private data                ineligible
+production                  off
+```
+
+The `2026-05-20` API-revision value is retained as the admitted schema/evidence marker. It is not claimed as an effective current provider snapshot/version pin.
+
+The immutable v2 route is deliberately **not rewritten after qualification**. Its requirement `native-modelaccess-eval:required-before-freeze` is satisfied by external versioned qualification evidence rather than by changing the already-qualified route bytes and invalidating its identity.
+
+## 4. Development qualification result
+
+Historical Azure GPT-4.1 and Gemini OpenAI-compat results remain baseline/challenger evidence only.
+
+The current native production-shaped path has now been exercised through:
+
+```text
+DANTE ModelInvocationRequest
+  -> ModelAccessRuntime
+  -> exact immutable route
+  -> native Gemini Interactions adapter/transport
+  -> DANTE response normalization
+  -> DANTE structured-output validation
+  -> usage/runtime evidence
+```
+
+Native qualification conclusion:
+
+```text
+native runtime smoke                         PASS
+mini model fixtures                          13 / 13 semantic PASS (composite versioned evidence)
+decision extension model fixtures            15 / 15 semantic PASS (composite versioned evidence)
+```
+
+The durable evidence review is:
+
+```text
+docs/workstreams/ai-model-eval-gemini-native-modelaccess-results-2026-09-05.md
+```
+
+The qualification process preserved historical failures/inconclusive results and corrected defects through explicit overlays/delta reruns rather than rewriting old evidence.
+
+## 5. Low-level ModelAccess foundation materialized
+
+The branch contains:
 
 ```text
 ModelTarget
@@ -60,106 +128,88 @@ ProviderUsageEvidence with input/output/reasoning/cached/tool-use/total tokens
 provider-neutral error / acceptance / outcome taxonomy
 ModelAccessPort
 ModelAccessRuntime
-typed route-config schema v2
+application-owned CancellationSignal
+runtime deadline/cancellation supervision
+immutable typed route-config schema v3
 TargetRoute / HarnessProfile / ProviderBinding definitions
 deterministic champion routing
 champion/challenger/fallback configuration slots
 Gemini 3.8 Flash native Interactions adapter
 private Gemini HTTP transport
 provider-independent structured-output validation
-request/harness deadline bounding
+terminal provider status normalization
+conservative external-acceptance semantics after dispatch uncertainty
 no blind retry
 no fallback activation
 minimized route/provider runtime evidence
-unit tests for runtime, adapter, transport and route config
-one guarded native-runtime smoke tool
-one-command closure gate
+production-shaped development bootstrap composition
+native direct-eval candidate through real ModelAccess
+versioned eval overlays and deterministic graders
+unit/regression tests for runtime, adapter, transport, route config and eval tooling
 ```
 
-The application caller does not need to know that Google is the development champion.
+Provider SDK/protocol mechanics do not leak into application/public contracts.
 
-## 3. Development binding profile
+## 6. I7 build-ready hardening already front-loaded
 
-Current route artifact:
+The part of I7 that can be made real without inventing production seams is materialized now:
 
 ```text
-apps/backend/config/intelligence/revisions/gemini-flash-dev-v1.json
+fail-closed immutable route selection
+explicit development-only binding state
+private-data ineligible / production off
+store=false / provider memory off
+retry/fallback disabled until independently qualified
+explicit request deadlines and application cancellation
+post-dispatch acceptance uncertainty preserved
+structured-output schema validation at application boundary
+provider terminal-state/error normalization
+usage + reasoning-token evidence
+route/binding/harness/model/service/data-zone/retention evidence
+secret-free repository configuration
+ignored local eval reports and .env files
+backend CI quality gate
+AI eval tooling Ruff + deterministic tests in backend CI
+deterministic zero-provider-call branch closure runner
 ```
 
-Current profile:
+A concrete production observability/audit sink is **not invented here**. `RuntimeEvidencePort` is the real integration seam; the authoritative production sink belongs to the later deployment/runtime owner.
+
+Likewise, Policy/Resource/Egress contracts exist but ModelAccess is not given fabricated Auth/AuthZ or resource-admission authority merely to make a diagram look complete. Their governed orchestration belongs to the future execution/application seam that has real authority context.
+
+## 7. Defects found and closed by native qualification
+
+The qualification work materially improved the foundation. It found and closed:
 
 ```text
-provider                  Google Gemini Developer API
-protocol                  native Interactions API v1beta
-model                     gemini-3.8-flash
-binding state             development
-structured interpretation active
-general reasoning         active
-deep reasoning            dormant
-reasoning level            low
-streaming                  off
-background                 off
-provider continuation      off
-provider-native tools      off
-provider storage           off / store=false
-thinking summaries         none
-DANTE retry                off for foundation
-fallback                   off
-private data               ineligible
-production                 off
+stale bootstrap callers missing explicit route_revision
+stateless Gemini response incorrectly requiring interaction id
+provider incomplete parsed as truncated JSON before terminal normalization
+generic provider FAILED treated as permanent without evidence
+adapter object-only structured-output root restriction
+eval incomplete classified as infrastructure failure
+native low-thinking output headroom underestimated by historical fixtures
+ambiguous E10 delegation oracle
+AI eval tooling absent from backend CI
+closure runner mutating uv.lock / encouraging redundant live smoke
 ```
 
-The native REST shape was rechecked against current Google Interactions API documentation before this checkpoint. Exact provider mechanics remain private to the adapter/transport.
+These are retained as tests/history rather than hidden.
 
-## 4. What the old branch roadmap becomes
+## 8. What is explicitly NOT part of this foundation closure
 
-The original I0-I10 stage names remain architecture labels. Their current disposition is:
-
-```text
-I0   CLOSED
-I1   CLOSED
-I2   CLOSED
-I3   DEFERRED until a real owning Search/data seam exists
-I4   CLOSED FOR DEVELOPMENT FOUNDATION
-I5   DEVELOPMENT FOUNDATION ALMOST CLOSED
-     remaining now = deterministic final gate + one native Gemini smoke
-     production qualification remains future and is NOT part of this closure
-I6   DEFERRED until DANTE has a real product/application seam worth integrating
-I7   PARTIALLY FRONT-LOADED ONLY for ModelAccess-local routing/usage/errors/evidence/privacy posture
-     full production hardening/rollout/capacity/audit remains future
-I8   FUTURE / real scenario-planning trigger
-I9   FUTURE / real consequential-effect trigger
-I10  FUTURE / trigger-gated proactive/background/durable/external-agent work
-```
-
-The old C6-C11 provider overlay is reconciled as:
-
-```text
-C6  retained CLOSED
-C7  retained CLOSED, route config extended to typed schema v2
-C8  historical OpenAI/Terra admission retained as evidence
-C9  old OpenAI/Terra live blocker SUPERSEDED
-C10 development model evidence COMPLETE
-C11 development binding decision COMPLETE: Gemini 3.8 Flash
-production qualification/promotion NOT COMPLETE / NOT CLAIMED
-```
-
-Therefore nothing is being falsely skipped. Integration-heavy stages are deliberately deferred because their real owner/product seams do not exist yet; provider-selection work that already has direct evidence is not repeated merely to preserve an obsolete execution sequence.
-
-## 5. What is explicitly NOT part of this closure
-
-Do not implement merely to finish this branch:
+Do not implement merely to make this branch look more complete:
 
 ```text
 Ask DANTE endpoint/chat UI
-Timeline or any other product-specific AI integration
-product context assembly
-native history/absence E04 against owners that do not exist yet
-E08 tool/capability integration without a governed real capability
-memory integration
-solver integration
-FTS/pg_trgm activation
-embeddings / pgvector / ANN
+Timeline or another forced product-specific AI integration
+product context assembly without real owners
+native E04 history/absence against owners that do not exist yet
+real E08 tool/capability execution without governed capability runtime
+memory-owner integration
+solver integration until a real planning owner needs it
+FTS/pg_trgm activation without owning data/query seam
+embeddings / pgvector / ANN without retrieval trigger
 voice / realtime
 browser / computer / code execution
 second provider activation
@@ -167,56 +217,60 @@ multi-provider failover
 local model
 deep-reasoning physical binding
 private-data activation
-production rollout
+production rollout/canary/SLOs
+production audit/telemetry sink without deployment owner
 new AI persistence
 new DB/Alembic change
 ```
 
-Those are later roadmap work, not unfinished low-level foundation work.
+These remain roadmap items with explicit real-world triggers.
 
-## 6. Exact remaining closure gate
+## 9. Final deterministic closure gate
 
-Only the following remains before this low-level foundation can be frozen:
+Paid provider qualification is complete. **Do not repeat it merely to close the branch.**
 
-1. regenerate the backend lock after promoting `httpx2` to an explicit runtime dependency;
-2. run the full deterministic/backend regression gate;
-3. run the guarded native Gemini dry-run;
-4. run exactly one synthetic native Gemini Interactions smoke through `ModelAccessRuntime`;
-5. if all pass, record the exact validated commit and mark this checkpoint CLOSED / PASS.
-
-The repository now contains the single closure runner:
-
-```text
-tooling/ai-evals/run_ai_foundation_closure_gate.sh
-```
-
-Full local closure invocation:
+The remaining branch gate is deterministic and zero-provider-call:
 
 ```bash
-bash tooling/ai-evals/run_ai_foundation_closure_gate.sh --with-postgres --execute-live
+bash tooling/ai-evals/run_ai_foundation_closure_gate.sh
 ```
 
-The script regenerates/checks `uv.lock`, syncs the locked environment, runs Ruff, mypy, non-PostgreSQL tests, build, native dry-run, optional canonical PostgreSQL acceptance and exactly one native live smoke when requested.
+For the strongest local regression, include canonical PostgreSQL acceptance:
 
-No broad model benchmark is required again.
-
-The native smoke accepts either local environment variable:
-
-```text
-DANTE_GEMINI_API_KEY
-DANTE_EVAL_GEMINI_API_KEY
+```bash
+bash tooling/ai-evals/run_ai_foundation_closure_gate.sh --with-postgres
 ```
 
-The key is never committed or printed.
-
-## 7. Branch exit condition
-
-After the gate above passes:
+The runner now:
 
 ```text
-AI LOW-LEVEL FOUNDATION = FROZEN
-feature/ai-implementation = safe to leave
+requires a clean tracked worktree
+checks uv.lock without regenerating it
+syncs the locked backend environment
+runs backend Ruff format/lint
+runs backend mypy
+runs non-PostgreSQL tests
+runs AI eval tooling Ruff format/lint
+runs AI eval deterministic tests
+builds the backend package
+runs native Gemini smoke in DRY-RUN mode only
+optionally runs canonical PostgreSQL acceptance
+verifies it changed no tracked file
+```
+
+Provider calls performed by this closure gate: **0**.
+
+## 10. Branch exit condition
+
+After the deterministic gate above is observed green, record the exact validated commit in this checkpoint and then the branch is safe to leave:
+
+```text
+AI LOW-LEVEL FOUNDATION = DEVELOPMENT-CLOSED / BUILD-READY
+I4 = CLOSED FOR DEVELOPMENT
+I5 = CLOSED / PASS
+I7 build-ready portion = CLOSED / PASS
+production/private-data promotion = NOT CLAIMED
 next work = broader DANTE roadmap, not forced AI integration
 ```
 
-When AI work resumes later, start from this checkpoint and the accepted architecture. Do not infer that a model call working makes Search, Ask, memory, effects, proactivity or production/private-data activation ready.
+When AI work resumes, begin from this checkpoint plus the accepted architecture and the immutable qualified route. Do not infer that a working model call makes Search, Ask, memory, effects, proactivity or production/private-data activation ready.
