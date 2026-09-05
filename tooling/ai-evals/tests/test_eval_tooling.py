@@ -1,5 +1,9 @@
 """Deterministic tests for the isolated DANTE eval tooling."""
 
+# This isolated historical harness intentionally retains unittest-style assertions and local
+# sys.path bootstrapping while remaining executable under pytest.
+# ruff: noqa: E402, PT009, PT027
+
 from __future__ import annotations
 
 import json
