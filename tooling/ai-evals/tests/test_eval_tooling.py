@@ -7,6 +7,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 TOOL_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOL_ROOT))
@@ -22,6 +23,7 @@ from dante_eval_core import (
     grade_output,
     load_suite,
 )
+from gemini_candidate_config import GeminiCandidateConfig
 
 
 class SuiteLoadingTests(unittest.TestCase):
@@ -151,6 +153,32 @@ class AzureEndpointTests(unittest.TestCase):
     def test_non_azure_host_is_rejected(self) -> None:
         with self.assertRaisesRegex(ValueError, "Azure OpenAI"):
             normalize_azure_responses_base_url("https://example.com/")
+
+
+class GeminiCandidateConfigTests(unittest.TestCase):
+    def test_defaults_to_gemini_38_flash_low(self) -> None:
+        with patch.dict(
+            "os.environ",
+            {"DANTE_EVAL_GEMINI_API_KEY": "secret"},
+            clear=True,
+        ):
+            config = GeminiCandidateConfig.from_environment()
+
+        self.assertEqual(config.api_key, "secret")
+        self.assertEqual(config.model, "gemini-3.8-flash")
+        self.assertEqual(config.reasoning_effort, "low")
+
+    def test_rejects_unsupported_reasoning_effort(self) -> None:
+        with patch.dict(
+            "os.environ",
+            {
+                "DANTE_EVAL_GEMINI_API_KEY": "secret",
+                "DANTE_EVAL_GEMINI_REASONING_EFFORT": "minimal",
+            },
+            clear=True,
+        ):
+            with self.assertRaisesRegex(ValueError, "REASONING_EFFORT"):
+                GeminiCandidateConfig.from_environment()
 
 
 if __name__ == "__main__":
