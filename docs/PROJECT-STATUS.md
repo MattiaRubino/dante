@@ -4,12 +4,13 @@
 - **Last reconciled:** 2026-09-05
 - **AI main-reconciliation merge:** `4a0a69d9f331a65dcf4f72f53f33f06babddca46`
 - **AI merge parents:** `feature/ai-implementation@68f38e153ab97df2bd2a86a84d31f62b3bdd0bf4` + `main@9dae13163549ca6d342978876be9582d7ec08610`
+- **AI integration PR:** `#63` / REQUIRED GATES PASS / MERGE PENDING
 - **Protected-main Observability merge:** `b74a806deed68b2729dd04678c0a5674cd572e8a` via PR `#58`
 - **Platform Observability source closure:** `828cfd231debb1326933052fefd74e81c653a6c3`
 - **Platform Observability integration merge:** `14faecfb11bded15aa929b0eaac91427031072ed`
 - **Current Alembic head:** `20260904_17`
 
-The AI status below is branch-local integration-candidate truth. It does **not** become protected-main truth until the pull request is accepted by the required repository gates and merged.
+The AI status below is branch-local integration-candidate truth. Required PR gates have passed on PR `#63`; it does **not** become protected-main truth until the PR is merged.
 
 ## 1. Current state
 
@@ -45,7 +46,7 @@ Grafana acceptance service-account cleanup PASS
 
 AI deterministic low-level foundation      CLOSED / PASS / BRANCH-LOCAL
 AI main reconciliation                     TRUE TWO-PARENT MERGE COMPLETE
-AI protected-main integration              PR / REQUIRED GATES PENDING
+AI protected-main integration              PR #63 / REQUIRED GATES PASS / MERGE PENDING
 AI production/private-data qualification   NOT CLAIMED
 AI real product/owner-seam integrations     DEFERRED / TRIGGER-GATED
 
@@ -130,7 +131,8 @@ private-data eligibility                         NO
 real Search owner/data seam                       DEFERRED
 real Ask DANTE product integration                DEFERRED
 main -> feature reconciliation                    PASS / TRUE TWO-PARENT MERGE
-protected-main PR gates                           PENDING
+protected-main PR #63 gates                       PASS
+protected-main merge                              NOT YET CLAIMED
 ```
 
 The reconciled dependency graph preserves current-main runtime dependencies and adds the OpenAI SDK only for its bounded private outbound adapter. The lock was regenerated/validated against the reconciled graph before the merge candidate was built. Search remains a first-class deterministic capability boundary and has no dependency on Intelligence/model/provider runtime.
@@ -158,8 +160,10 @@ AI integration is deliberately reported separately:
 ```text
 foundation closure                           PASS / BRANCH-LOCAL
 main reconciliation                          PASS / 4a0a69d9
-current-truth documentation reconciliation   IN PROGRESS ON FEATURE
-required PR CI                               PENDING
+current-truth documentation reconciliation   PASS ON FEATURE
+PR #63 Backend CI Gate                       PASS
+PR #63 Dependency Review                     PASS
+PR #63 Frontend CI Gate                      PASS
 protected-main merge                         NOT YET CLAIMED
 post-merge main acceptance                   NOT YET APPLICABLE
 ```
@@ -176,11 +180,11 @@ Platform Observability has no active workstream authority file. Current truth is
 - `database/dante-postgresql-database-part-12.md` for the observer-role contract
 - executable code, tests and source-controlled Grafana/Alloy assets
 
-AI currently retains an active integration-candidate workstream authority at `workstreams/ai-implementation.md` plus dated closure/evaluation evidence. Those files remain branch-local until protected-main integration.
+AI currently retains an active integration-candidate workstream authority at `workstreams/ai-implementation.md` plus dated closure/evaluation evidence. The active workstream is retained only until protected-main merge and post-merge acceptance, when it must be retired under the documentation lifecycle policy.
 
 One consolidated historical Observability record is retained at `archive/branches/2026-09-feature-platform-observability.md`. It is **NON-AUTHORITATIVE / HISTORICAL / EVIDENCE ONLY**.
 
-Temporary live/session/resume handoffs are absent. Historical source-workstream chronology that is not current authority remains recoverable from the consolidated branch record and Git/PR history.
+Temporary live/session/resume handoffs are absent. Historical AI chronology that does not justify a separate branch-history document remains recoverable from the retained evidence plus Git/PR history; the lifecycle policy does not require an additional archive record.
 
 ## 7. Permanent safety rules
 
