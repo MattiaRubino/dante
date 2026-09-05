@@ -117,21 +117,20 @@ function WorldFocusWorkspaceHostInstance({
         presentation,
       };
 
-      if (
-        expectedWorkspace === undefined &&
-        blocksWorkspaceInteraction === undefined
-      ) {
-        dispatch(baseIntent);
-        return;
-      }
       if (expectedWorkspace === undefined) {
+        if (blocksWorkspaceInteraction === undefined) {
+          dispatch(baseIntent);
+          return;
+        }
         dispatch({ ...baseIntent, blocksWorkspaceInteraction });
         return;
       }
+
       if (blocksWorkspaceInteraction === undefined) {
         dispatch({ ...baseIntent, expectedWorkspace });
         return;
       }
+
       dispatch({
         ...baseIntent,
         expectedWorkspace,
