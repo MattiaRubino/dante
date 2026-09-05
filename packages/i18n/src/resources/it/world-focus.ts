@@ -25,6 +25,10 @@ export const worldFocus = {
     placeholder: 'Chiedi a DANTE…',
     send: 'Invia richiesta',
     close: 'Chiudi DANTE',
+    conversationTitle: 'Conversazione con DANTE',
+    maximizeConversation: 'Massimizza',
+    restoreConversation: 'Ripristina',
+    closeConversation: 'Chiudi conversazione DANTE',
     unavailable: 'DANTE non è disponibile al momento.',
     submissionUnavailable:
       'DANTE non è disponibile al momento. La richiesta è rimasta qui.',
