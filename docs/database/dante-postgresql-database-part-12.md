@@ -860,7 +860,7 @@ The collector identity is exact:
 ```text
 dante_observer
   LOGIN
-  INHERIT
+  NOINHERIT
   NOSUPERUSER
   NOCREATEDB
   NOCREATEROLE
