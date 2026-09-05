@@ -32,6 +32,17 @@ export const worldFocus = {
     unavailable: 'DANTE non è disponibile al momento.',
     submissionUnavailable:
       'DANTE non è disponibile al momento. La richiesta è rimasta qui.',
+    messages: 'Messaggi della conversazione con DANTE',
+    you: 'Tu',
+    localPending: 'Elaborazione locale della richiesta in corso.',
+    localUnavailable: 'La modalità locale non è disponibile al momento.',
+    localError: 'Non riesco a completare questa richiesta locale.',
+    localCancelled: 'Richiesta annullata. Nessuna risposta è stata aggiunta.',
+    localSuperseded:
+      'Il contesto del Mondo è cambiato. La risposta precedente non è stata aggiunta.',
+    followUpLabel: 'Continua la conversazione',
+    followUpPlaceholder: 'Scrivi un seguito…',
+    cancelRequest: 'Annulla richiesta',
   },
   customization: {
     invoke: 'Personalizza composizione',
