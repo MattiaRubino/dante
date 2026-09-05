@@ -3,6 +3,7 @@ import {
   useEffect,
   useMemo,
   useRef,
+  useState,
   type CSSProperties,
 } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -36,10 +37,12 @@ import {
 } from './world-focus-composition-customization-context';
 import { WorldFocusContext } from './world-focus-context';
 import { getCoreWorldFocusSurfaceRegistry } from './world-focus-core-surfaces';
+import { WorldFocusDanteConversationPresentationController } from './world-focus-dante-conversation';
 import {
   WorldFocusDanteEntryProvider,
   WorldFocusDanteInvoke,
 } from './world-focus-dante-entry';
+import { WorldFocusRouteSurfaceLayer } from './world-focus-route-surface-layer';
 import { WorldFocusSurfaceLayer } from './world-focus-surface-layer';
 import { WorldFocusVisualFrame } from './world-focus-visual-frame';
 import { WorldFocusWorkspace } from './world-focus-workspace';
@@ -49,6 +52,7 @@ import {
 } from './world-focus-workspace-host';
 import './world-focus.css';
 import './world-focus-composition-customization.css';
+import './world-focus-dante-conversation.css';
 import './world-focus-dante-entry.css';
 import './world-focus-visual-frame-v4.css';
 import './world-focus-states.css';
@@ -73,15 +77,18 @@ type WorldFocusPageProps = Readonly<{
 type WorldFocusWorkspaceExperienceProps = Readonly<{
   identity: WorldFocusIdentityDescriptor;
   status: WorldFocusShellStatus;
+  routeSurfaceHost: HTMLElement | null;
   onRequestWorldClose: () => void;
 }>;
 
 function WorldFocusWorkspaceExperience({
   identity,
   status,
+  routeSurfaceHost,
   onRequestWorldClose,
 }: WorldFocusWorkspaceExperienceProps) {
   const { requestEscape } = useWorldFocusWorkspace();
+  const registry = getCoreWorldFocusSurfaceRegistry();
 
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
@@ -116,13 +123,15 @@ function WorldFocusWorkspaceExperience({
           status={status}
           context={<WorldFocusContext identity={identity} />}
           surfaces={
-            <>
+            <WorldFocusDanteConversationPresentationController>
               <WorldFocusCompositionCustomizeInvoke />
               <WorldFocusDanteInvoke />
-              <WorldFocusSurfaceLayer
-                registry={getCoreWorldFocusSurfaceRegistry()}
+              <WorldFocusSurfaceLayer registry={registry} />
+              <WorldFocusRouteSurfaceLayer
+                registry={registry}
+                host={routeSurfaceHost}
               />
-            </>
+            </WorldFocusDanteConversationPresentationController>
           }
         >
           <WorldFocusAdaptiveComposition worldId={identity.id} />
@@ -143,6 +152,8 @@ export function WorldFocusPage({
   const mainRef = useRef<HTMLElement | null>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
   const performanceSpanRef = useRef<WorldFocusPerformanceSpan | null>(null);
+  const [routeSurfaceHost, setRouteSurfaceHost] =
+    useState<HTMLDivElement | null>(null);
   const entry = useMemo(
     () => readWorldFocusEntry(identity.id, source),
     [identity.id, source],
@@ -245,10 +256,17 @@ export function WorldFocusPage({
         aria-hidden="true"
       />
 
+      <div
+        ref={setRouteSurfaceHost}
+        className="world-focus-route-surface-host"
+        data-world-focus-route-surface-host="true"
+      />
+
       <WorldFocusWorkspaceHost key={identity.id} worldId={identity.id}>
         <WorldFocusWorkspaceExperience
           identity={identity}
           status={status}
+          routeSurfaceHost={routeSurfaceHost}
           onRequestWorldClose={requestWorldClose}
         />
       </WorldFocusWorkspaceHost>
