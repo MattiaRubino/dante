@@ -38,9 +38,7 @@ _KEY_ENV_NAMES = ("DANTE_GEMINI_API_KEY", "DANTE_EVAL_GEMINI_API_KEY")
 
 
 def _parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description="Synthetic native Gemini ModelAccess smoke"
-    )
+    parser = argparse.ArgumentParser(description="Synthetic native Gemini ModelAccess smoke")
     parser.add_argument("--execute", action="store_true")
     return parser
 
@@ -78,9 +76,7 @@ async def _run(execute: bool) -> int:
             json.dumps(
                 {
                     "status": "BLOCKED",
-                    "reason": (
-                        "DANTE_GEMINI_API_KEY or DANTE_EVAL_GEMINI_API_KEY is not set"
-                    ),
+                    "reason": ("DANTE_GEMINI_API_KEY or DANTE_EVAL_GEMINI_API_KEY is not set"),
                 }
             )
         )
@@ -148,21 +144,15 @@ async def _run(execute: bool) -> int:
                     "tool_use_tokens": result.usage.tool_use_tokens,
                     "total_tokens": result.usage.total_tokens,
                 },
-                "attempt_outcomes": [
-                    attempt.outcome.value for attempt in result.attempts
-                ],
-                "provider_status": attempt.provider_status
-                if attempt is not None
-                else None,
+                "attempt_outcomes": [attempt.outcome.value for attempt in result.attempts],
+                "provider_status": attempt.provider_status if attempt is not None else None,
                 "finish_reason": result.finish_reason,
                 "output": (
                     json.loads(result.structured_output_json)
                     if result.structured_output_json is not None
                     else None
                 ),
-                "error_class": result.error_class.value
-                if result.error_class is not None
-                else None,
+                "error_class": result.error_class.value if result.error_class is not None else None,
                 "error_code": result.error_code,
             },
             ensure_ascii=False,

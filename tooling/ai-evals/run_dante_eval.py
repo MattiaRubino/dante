@@ -54,9 +54,7 @@ def _parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--execute", action="store_true")
     parser.add_argument("--max-calls", type=int, default=13)
-    parser.add_argument(
-        "--timeout-seconds", type=float, default=_DEFAULT_TIMEOUT_SECONDS
-    )
+    parser.add_argument("--timeout-seconds", type=float, default=_DEFAULT_TIMEOUT_SECONDS)
     parser.add_argument("--max-cost-eur", type=float)
     parser.add_argument("--input-eur-per-million", type=float)
     parser.add_argument("--output-eur-per-million", type=float)
@@ -83,9 +81,7 @@ def _pricing(args: argparse.Namespace) -> Pricing | None:
         args.output_eur_per_million is not None,
     )
     if any(supplied) and not all(supplied):
-        raise ValueError(
-            "input and output EUR-per-million prices must be supplied together"
-        )
+        raise ValueError("input and output EUR-per-million prices must be supplied together")
     if not any(supplied):
         return None
     if args.input_eur_per_million < 0 or args.output_eur_per_million < 0:
@@ -314,9 +310,7 @@ async def _execute(args: argparse.Namespace) -> int:
                 "provider_status": result.provider_status,
                 "finish_reason": result.finish_reason,
                 **_usage_document(result),
-                "assertion_failures": [
-                    _failure_document(failure) for failure in grade.failures
-                ],
+                "assertion_failures": [_failure_document(failure) for failure in grade.failures],
             }
             if args.include_output:
                 trial["output"] = grade.parsed_output
@@ -375,9 +369,7 @@ async def _execute(args: argparse.Namespace) -> int:
             "counts": counts,
             "model_calls_completed": budget.calls_used,
             "model_avoidance_fixtures_skipped": sum(
-                1
-                for trial in trials
-                if trial.get("execution_state") == "SKIPPED_MODEL_AVOIDANCE"
+                1 for trial in trials if trial.get("execution_state") == "SKIPPED_MODEL_AVOIDANCE"
             ),
             "overall": "FAIL" if failed else "PASS_OR_INCONCLUSIVE",
         },

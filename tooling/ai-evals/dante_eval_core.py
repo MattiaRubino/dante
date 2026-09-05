@@ -12,9 +12,7 @@ from enum import StrEnum
 from pathlib import Path
 from typing import Any, Final
 
-DANTE_WORKLOAD_FAMILIES: Final[frozenset[str]] = frozenset(
-    f"DANTE-E{i:02d}" for i in range(1, 15)
-)
+DANTE_WORKLOAD_FAMILIES: Final[frozenset[str]] = frozenset(f"DANTE-E{i:02d}" for i in range(1, 15))
 
 MAX_HARD_CALLS: Final = 30
 MAX_HARD_OUTPUT_TOKENS_PER_CALL: Final = 512
@@ -135,10 +133,7 @@ class BudgetGuard:
             raise RuntimeError("call_budget_exhausted")
         if fixture.max_output_tokens > MAX_HARD_OUTPUT_TOKENS_PER_CALL:
             raise RuntimeError("fixture_output_cap_exceeds_hard_limit")
-        if (
-            len(fixture.input_text) + len(fixture.instructions)
-            > MAX_HARD_INPUT_CHARS_PER_FIXTURE
-        ):
+        if len(fixture.input_text) + len(fixture.instructions) > MAX_HARD_INPUT_CHARS_PER_FIXTURE:
             raise RuntimeError("fixture_input_chars_exceed_hard_limit")
 
         if self.max_cost_eur is not None and self.pricing is not None:
@@ -146,9 +141,7 @@ class BudgetGuard:
             # overestimates many ordinary English/Italian prompts. Reasoning
             # cost cannot be known before dispatch, so max_output_tokens is the
             # bounded generation proxy. This is a guardrail, not billing authority.
-            estimated_input_tokens = (
-                len(fixture.input_text) + len(fixture.instructions) + 2
-            ) // 3
+            estimated_input_tokens = (len(fixture.input_text) + len(fixture.instructions) + 2) // 3
             estimated_next = (
                 estimated_input_tokens * self.pricing.input_eur_per_million
                 + fixture.max_output_tokens * self.pricing.output_eur_per_million
@@ -261,9 +254,7 @@ def _parse_fixture(document: Any) -> EvalFixture:
         fixture_id=fixture_id,
         family=family,
         locale=locale,
-        description=_require_string(
-            document.get("description"), field=f"{fixture_id}.description"
-        ),
+        description=_require_string(document.get("description"), field=f"{fixture_id}.description"),
         requires_model=requires_model,
         input_text=input_text,
         instructions=instructions,
@@ -334,9 +325,7 @@ def _load_suite_document(path: Path, *, seen: frozenset[Path]) -> dict[str, Any]
     materialized["version"] = document.get("version")
     materialized["description"] = document.get("description")
     materialized["fixtures"] = [
-        replacements.get(
-            _require_string(fixture.get("id"), field="base fixture.id"), fixture
-        )
+        replacements.get(_require_string(fixture.get("id"), field="base fixture.id"), fixture)
         for fixture in base_fixtures
     ]
     return materialized
@@ -371,9 +360,7 @@ def _resolve_path(document: Any, path: str) -> Any:
     return current
 
 
-def _evaluate_assertion(
-    document: Any, assertion: AssertionSpec
-) -> AssertionFailure | None:
+def _evaluate_assertion(document: Any, assertion: AssertionSpec) -> AssertionFailure | None:
     try:
         observed = _resolve_path(document, assertion.path)
     except KeyError:

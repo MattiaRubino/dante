@@ -194,9 +194,7 @@ def _failure_evidence(
 
 async def _run() -> int:
     try:
-        snapshot = load_route_config(
-            _REVISIONS_ROOT, OPENAI_TERRA_ROUTE_CONFIG_REVISION
-        )
+        snapshot = load_route_config(_REVISIONS_ROOT, OPENAI_TERRA_ROUTE_CONFIG_REVISION)
         _validate_snapshot(snapshot)
     except RouteConfigLoadError, QualificationPostureError:
         _emit(

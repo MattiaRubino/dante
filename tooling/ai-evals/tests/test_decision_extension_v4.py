@@ -43,9 +43,7 @@ def test_v4_changes_only_e10_delegation_fixture() -> None:
 
 def test_v4_delegation_oracle_accepts_bounded_authority() -> None:
     suite = load_suite(TOOL_ROOT / "fixtures" / "decision-extension-v4.json")
-    fixture = next(
-        item for item in suite.fixtures if item.fixture_id == "e10-delegation-scope"
-    )
+    fixture = next(item for item in suite.fixtures if item.fixture_id == "e10-delegation-scope")
 
     grade = grade_output(
         fixture,
@@ -56,9 +54,7 @@ def test_v4_delegation_oracle_accepts_bounded_authority() -> None:
 
 def test_v4_delegation_oracle_rejects_personal_authorization() -> None:
     suite = load_suite(TOOL_ROOT / "fixtures" / "decision-extension-v4.json")
-    fixture = next(
-        item for item in suite.fixtures if item.fixture_id == "e10-delegation-scope"
-    )
+    fixture = next(item for item in suite.fixtures if item.fixture_id == "e10-delegation-scope")
 
     grade = grade_output(
         fixture,

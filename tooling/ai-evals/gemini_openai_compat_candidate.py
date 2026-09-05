@@ -57,13 +57,9 @@ class GeminiOpenAICompatCandidate:
             "endpoint_host": parsed.netloc,
         }
 
-    async def invoke(
-        self, fixture: EvalFixture, *, timeout_seconds: float
-    ) -> CandidateResult:
+    async def invoke(self, fixture: EvalFixture, *, timeout_seconds: float) -> CandidateResult:
         if not fixture.requires_model:
-            raise ValueError(
-                "candidate must not be invoked for model-avoidance fixture"
-            )
+            raise ValueError("candidate must not be invoked for model-avoidance fixture")
 
         started = time.perf_counter()
         try:
