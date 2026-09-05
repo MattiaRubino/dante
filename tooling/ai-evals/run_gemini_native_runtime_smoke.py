@@ -4,6 +4,10 @@ No provider call occurs unless --execute is supplied. The API key is read only f
 environment and is never printed or persisted.
 """
 
+# Ruff exceptions are intentional for this standalone CLI: it bootstraps the backend import path
+# before importing DANTE modules and writes its machine-readable result directly to stdout.
+# ruff: noqa: E402, T201
+
 from __future__ import annotations
 
 import argparse
