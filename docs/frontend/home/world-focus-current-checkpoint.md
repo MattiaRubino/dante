@@ -1,6 +1,6 @@
 # DANTE — World Focus Current Checkpoint
 
-**Status:** CURRENT LIVE WORLD FOCUS CHECKPOINT — M3 CLOSED / VALIDATED — M4 CONTEXTUAL DANTE ACTIVE / D2–D4 CLOSED / D5 NEXT  
+**Status:** CURRENT LIVE WORLD FOCUS CHECKPOINT — M3 CLOSED / VALIDATED — M4 CONTEXTUAL DANTE ACTIVE / D2–D5 CLOSED / D6 NEXT  
 **Date:** 2026-09-05  
 **Branch:** `feature/home-react`  
 **Worktree:** `/home/mattia/projects/dante-frontend`
@@ -15,15 +15,16 @@ This is the first World Focus authority a new chat/agent must read. Historical `
 3. world-focus-handoff.md
 4. world-focus-evidence-index.md
 5. current-checkpoint.md
-6. world-focus-d4-contextual-invocation-review.md
-7. world-focus-d3-deterministic-conversation-adapter-review.md
-8. world-focus-d2-adaptive-conversation-surface-review.md
-9. world-focus-m3-final-hostile-closure-review.md
-10. world-focus-m3-adaptive-composition.md
-11. world-focus-m3-4-integrated-adaptive-composition-review.md
-12. world-focus-dante-spatial-presence-review.md
-13. world-focus-d1-dante-entry-review.md
-14. product/platform/structure/geometry contracts as needed
+6. world-focus-d5-insight-presentation-review.md
+7. world-focus-d4-contextual-invocation-review.md
+8. world-focus-d3-deterministic-conversation-adapter-review.md
+9. world-focus-d2-adaptive-conversation-surface-review.md
+10. world-focus-m3-final-hostile-closure-review.md
+11. world-focus-m3-adaptive-composition.md
+12. world-focus-m3-4-integrated-adaptive-composition-review.md
+13. world-focus-dante-spatial-presence-review.md
+14. world-focus-d1-dante-entry-review.md
+15. product/platform/structure/geometry contracts as needed
 ```
 
 # 2. Live sequence
@@ -55,8 +56,8 @@ M4 Contextual DANTE / D2–D6             ACTIVE
 D2 adaptive conversation surface         CLOSED / VALIDATED
 D3 deterministic conversation adapter    CLOSED / VALIDATED
 D4 contextual/deictic invocation         CLOSED / VALIDATED
-D5 Insight presentation integration      NEXT / NOT STARTED
-D6 Proposal/confirmation/receipt         BLOCKED BY D5
+D5 Insight presentation integration      CLOSED / VALIDATED
+D6 Proposal/confirmation/receipt         NEXT / NOT STARTED
 M5 complete contrasting Worlds           BLOCKED BY M4
 M6 integrated product/visual/a11y/perf   BLOCKED BY M5
 M7 pre-backend frontend freeze           BLOCKED BY M6
@@ -104,9 +105,13 @@ selected UI/context != authorization
 context reference != canonical truth
 mounted frontend transcript != durable DANTE Run
 cancelled/aborted request != successful semantic result
+conversation message != Insight
+assistant prose != validated Insight
+Insight != canonical truth
+Insight != Proposal != Decision != effect
 ```
 
-# 4. Closed D2–D4 result
+# 4. Closed D2–D5 result
 
 D2 remains the one adaptive spatial conversation presentation over the existing Workspace stack:
 
@@ -147,79 +152,94 @@ explicit semantic affordance
 
 Global DANTE invocation remains explicitly context-free (`contextReferences: null`) even when Workspace selection exists. Selection/focus is never silently promoted to DANTE context.
 
-Contextual generation changes fail closed:
+D5 adds a separate validated Insight artifact and finite registered `dante-insight` surface. It does not widen D3 conversation output into an Insight class.
+
+Live D5 path:
 
 ```text
-before composer submit
--> request not sent
--> draft preserved
--> truthful stale-context message
-
-settled contextual conversation + generation change
--> contextual session superseded
--> stale follow-up rejected
+explicit D4 contextual conversation
+-> validated assistant answer | explanation remains a conversation message
+-> explicit Open as Insight
+-> D5 World/generation/source-message-correlated request
+-> deterministic pre-backend Insight reader
+-> finite observation | pattern | change artifact
+-> standalone registered dante-insight surface
 ```
 
-Evidence is not collapsed into Provenance/Integrity/History: only true Evidence receives the D4 `open-source` affordance.
+D5 basis references are reconstructed from the exact explicit D4 context; the adapter cannot widen them. The surface exposes bounded basis count rather than raw reference keys.
 
-# 5. D4 closure evidence
+Presentation reuses the existing Workspace law:
 
 ```text
-PRE-SCOPE  c6f5b7bcf5cdd3aa927a05668e5a146ba3ab5d1a
-VALID RED  1cbcc27bf19c91e195dd1f0f4a5c57915facb432
-RED CI     33966295853 / run #1030 EXPECTED FAILURE
-CODE/TEST  e8ab022b9b00b958235ac7d09e757b45227a4356
-CI         33967719861 / run #1038 PASS
-87 / 87 web test files
-422 / 422 web unit tests
-317 modules / 1021 dependencies / 0 architecture violations
+wide -> standalone Insight sidecar
+constrained/mobile -> route-owned blocking Insight
+```
+
+Pending/late Insight work fails closed on Workspace-generation change. Global context-free DANTE does not expose Insight promotion.
+
+# 5. D5 closure evidence
+
+```text
+PRE-SCOPE  62b52137ab30778aae968f80fac59496c87171bf
+VALID RED  c803dac135c7a35d38d8eb8335f5b52c8b430114
+RED CI     33969625586 / run #1045 EXPECTED FAILURE
+CODE/TEST  0873153d8b390b99c5b3aa024e0735c82a89660d
+CI         33971615312 / run #1050 PASS
+89 / 89 web test files
+431 / 431 web unit tests
+324 modules / 1066 dependencies / 0 architecture violations
 Contracts / lint / typecheck / generated / build / diff / mutation PASS
 Mobile / Chromium / frozen Timeline Firefox / Frontend CI Gate PASS
 ```
 
-Valid RED reached unit execution with all static gates green and exactly two intended failures: missing explicit `contextReferences: null` in the D3 request and missing live Continuity contextual entry. The D1 no-implicit-selection guard remained green.
+Valid RED reached unit execution with all static gates green and exactly the intended missing finite `dante-insight` registry failure.
+
+Hostile closure proved wide and 390px presentation, route blocking, no compact horizontal overflow, automated axe checks, no raw reference-key disclosure, stale-generation suppression, no global context-free Insight promotion, and logical source-message focus restoration.
 
 Final code/test compare from exact PRE-SCOPE is linear:
 
 ```text
 status      ahead
-ahead_by    9
+ahead_by    7
 behind_by   0
 merge-base  == PRE-SCOPE
-net paths   19 D4 code/test/i18n paths
 ```
 
-No Workspace reducer/allocator, AppShell, Timeline, Access/Auth, generated route tree, backend/API/DB/Alembic/provider/LLM/persistence path changed.
+The i18n diff was manually inspected because line-level stats looked large: all prior D1–D4 keys remain; the extra line churn is formatting compaction plus the D5 `dante.insight` resource block.
 
-Detailed evidence: `world-focus-d4-contextual-invocation-review.md`.
+No Workspace reducer/allocator, AppShell, Timeline, Access/Auth, generated route tree, backend/API/DB/Alembic/AuthZ/provider/LLM/persistence path changed.
 
-# 6. D5 next starting point
+Detailed evidence: `world-focus-d5-insight-presentation-review.md`.
 
-D5 owns **Insight presentation integration**, not contextual invocation and not Proposal/Decision/effect semantics.
+# 6. D6 next starting point
+
+D6 owns **Proposal / confirmation / receipt presentation**, not backend effect execution and not generic assistant prose.
 
 Before writes, perform a fresh read-only preflight of:
 
 ```text
-closed D4 contextual request/session boundary
-closed D3 conversation transcript/result classes
-existing World registered surface/rendering grammar
-existing insight-like semantic/projection owners, if any
-truth/disclosure/reference boundaries
+closed D5 Insight artifact/surface boundary
+closed D3 conversation result classes
+existing World effect/sync/disclosure presentation primitives
+existing blocking-surface / Escape / inert interaction laws
+existing receipt/result language or operation-state owners, if any
 responsive/a11y/browser harness
 ```
 
-D5 must preserve:
+D6 must preserve:
 
 ```text
-conversation message != Insight
-assistant prose != validated Insight
-Insight != canonical World/Domain truth
-Insight != Proposal != Decision != effect
-context reference != authorization
-reference exists != payload available/disclosable/fresh
+assistant prose != Proposal
+Insight != Proposal
+Proposal != Decision
+decision/confirmation != effect
+provider/runtime completion != canonical completion
+required consequential confirmation owns its blocking interaction
+receipt/result != Proposal
+receipt/result != proof of canonical completion
 ```
 
-D5 remains pre-backend unless a later explicit authority changes sequencing.
+D6 remains pre-backend. It may prove governed-operation presentation and interaction boundaries only; it must not execute a real effect or invent provider/backend completion.
 
 # 7. Visual strategy agreed with user
 
@@ -230,12 +250,14 @@ M6 -> integrated visual/responsive/motion/a11y/performance refinement
 M7 -> pre-backend frontend freeze
 ```
 
-Do not spend D5–D6 on unrelated cosmetic redesign.
+Do not spend D6 on unrelated cosmetic redesign.
 
 # 8. Stop lines
 
 ```text
-NO D6 early materialization inside D5
+NO real effect execution in D6
+NO Proposal collapsed into assistant prose or Insight
+NO confirmation result collapsed into canonical effect state
 NO second surface/workspace/conversation state engine
 NO AppShell/GlobalTopbar ownership rewrite
 NO WF0/WF-G3 macro geometry rewrite

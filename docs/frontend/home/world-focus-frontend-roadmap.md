@@ -1,6 +1,6 @@
 # DANTE — World Focus Frontend Roadmap
 
-**Status:** CURRENT WORKING ROADMAP — M3 CLOSED / VALIDATED — M4 CONTEXTUAL DANTE ACTIVE / D2–D4 CLOSED / D5 NEXT  
+**Status:** CURRENT WORKING ROADMAP — M3 CLOSED / VALIDATED — M4 CONTEXTUAL DANTE ACTIVE / D2–D5 CLOSED / D6 NEXT  
 **Date:** 2026-09-05  
 **Branch:** `feature/home-react`
 
@@ -24,6 +24,7 @@ World Focus route/shell
 -> D2 adaptive conversation surface
 -> D3 deterministic pre-backend conversation adapter
 -> D4 bounded contextual/deictic invocation
+-> D5 standalone Insight presentation integration
 ```
 
 ## 2. Key evidence
@@ -33,16 +34,17 @@ M3 final  d9c30a3c6148469b347754eab07dc2ade9be4c52 / CI 33951509083 PASS
 D2 final  7b787766be83096e82eab1ac116b2704fae5f202 / CI 33958677991 PASS
 D3 final  59c70af6005ee87918db7fe152c043699726e78c / CI 33963858340 PASS
 D4 final  e8ab022b9b00b958235ac7d09e757b45227a4356 / CI 33967719861 PASS
+D5 final  0873153d8b390b99c5b3aa024e0735c82a89660d / CI 33971615312 PASS
 ```
 
-D4 baseline:
+D5 baseline:
 
 ```text
-PRE-SCOPE c6f5b7bcf5cdd3aa927a05668e5a146ba3ab5d1a
-VALID RED 1cbcc27bf19c91e195dd1f0f4a5c57915facb432
-87 / 87 web test files
-422 / 422 web unit tests
-317 modules / 1021 dependencies / 0 architecture violations
+PRE-SCOPE 62b52137ab30778aae968f80fac59496c87171bf
+VALID RED c803dac135c7a35d38d8eb8335f5b52c8b430114
+89 / 89 web test files
+431 / 431 web unit tests
+324 modules / 1066 dependencies / 0 architecture violations
 Quality / build / diff / mutation / Mobile / Chromium / Firefox / Gate PASS
 ```
 
@@ -60,8 +62,8 @@ M4 — Contextual DANTE / D2–D6                              ACTIVE
   D2 adaptive conversation surface                          CLOSED / VALIDATED
   D3 deterministic pre-backend conversation adapter         CLOSED / VALIDATED
   D4 contextual/deictic invocation                          CLOSED / VALIDATED
-  D5 Insight presentation integration                       NEXT / NOT STARTED
-  D6 Proposal / confirmation / receipt                      BLOCKED BY D5
+  D5 Insight presentation integration                       CLOSED / VALIDATED
+  D6 Proposal / confirmation / receipt                      NEXT / NOT STARTED
 M5 — Contrasting Complete Worlds                            BLOCKED BY M4
 M6 — Integrated Product / Visual / A11y / Perf              BLOCKED BY M5
 M7 — Pre-Backend Frontend Freeze                            BLOCKED BY M6
@@ -111,7 +113,7 @@ Evidence   -> open-source
 -> same D3 conversation
 ```
 
-Required laws now executable:
+Required laws remain executable:
 
 ```text
 global invoke -> contextReferences: null
@@ -124,28 +126,46 @@ valid follow-up -> same explicit bounded context set
 Evidence source action != Provenance/Integrity/History
 ```
 
-Browser closure proves real Continuity contextual invocation at 1600 and 390, existing sidecar/route-focus handoff, target >=44px, no compact horizontal overflow, exact invoker focus return and automated axe checks.
+### D5 — CLOSED / VALIDATED
 
-Detailed evidence: `world-focus-d4-contextual-invocation-review.md`.
+D5 materializes a standalone validated Insight artifact without collapsing it into the D3 transcript:
 
-### D5 — Insight presentation integration — NEXT
+```text
+conversation answer | explanation
+-> explicit Open as Insight
+-> D5 bounded request from exact D4 context
+-> deterministic pre-backend Insight reader
+-> finite observation | pattern | change artifact
+-> registered dante-insight surface
+```
 
-D5 must start read-only. Core law:
+Executable laws:
 
 ```text
 conversation message != Insight
 assistant prose != validated Insight
 Insight != canonical truth
 Insight != Proposal != Decision != effect
+adapter cannot widen basisReferences
+global context-free DANTE -> no Insight promotion
+Workspace-generation change -> pending/late Insight fails closed
+raw context-reference keys -> not presented
 ```
 
-D5 should reuse finite registered World presentation/surface owners rather than inventing an untyped “AI card” layer. Any Insight must retain explicit basis/reference/truth qualifiers appropriate to the existing platform.
+Presentation reuses existing geometry rather than creating a D5 layout engine:
 
-D5 remains pre-backend and must not pull D6 or provider/LLM semantics forward.
+```text
+wide -> sidecar
+constrained/mobile -> route-owned blocking surface
+```
 
-### D6 — Proposal / confirmation / receipt
+Browser closure proves wide and 390px Insight presentation, no compact horizontal overflow, route inertness, logical invoker focus return, global-DANTE exclusion and automated axe checks.
 
-Preserve:
+Detailed evidence: `world-focus-d5-insight-presentation-review.md`.
+
+### D6 — Proposal / confirmation / receipt — NEXT
+
+D6 is the last remaining M4 materialization block. It must start read-only and preserve:
 
 ```text
 assistant prose != Proposal
@@ -153,9 +173,13 @@ Insight != Proposal
 Proposal != Decision
 decision/confirmation != effect
 provider/runtime completion != canonical completion
+receipt/result != Proposal
+receipt/result != proof of canonical completion
 ```
 
-D6 remains blocked until D5 is closed.
+Required consequential confirmation must use the existing controlled blocking-surface law rather than a chat bubble. Confirmation must own its Escape/interaction boundary while active. D6 remains pre-backend: it proves presentation and governed-operation boundaries only and must not execute a real effect.
+
+After D6 implementation/validation, perform the required M4 final sequencing/hostile closure before declaring M4 closed and unblocking M5.
 
 ## 6. Visual sequence agreed with user
 
@@ -202,9 +226,12 @@ context reference != authorization
 context reference != canonical truth
 mounted frontend transcript != durable DANTE Run
 conversation message != Insight
+assistant prose != validated Insight
 Insight != Proposal != Decision != effect
+Proposal != Decision != effect
+provider/runtime completion != canonical completion
 ```
 
 ## 9. Immediate continuation
 
-> **M3 is CLOSED / VALIDATED. D2, D3 and D4 are CLOSED / VALIDATED. M4 remains ACTIVE. Start D5 with a fresh read-only inspection of the closed D4 contextual request/session boundary, D3 conversation/result owners, finite World surface/rendering grammar and existing truth/reference/basis qualifiers; then state a new exact bounded RED-first D5 gate without pulling D6 or backend/provider semantics forward.**
+> **M3 is CLOSED / VALIDATED. D2, D3, D4 and D5 are CLOSED / VALIDATED. M4 remains ACTIVE. Start D6 with a fresh read-only inspection of the closed D5 Insight boundary, D3 conversation owners, existing effect/sync/disclosure presentation primitives, Workspace blocking/Escape laws and any existing governed-operation vocabulary; then state an exact bounded RED-first D6 gate without real backend/provider/effect execution.**
