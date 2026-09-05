@@ -75,6 +75,9 @@ function D2Controls() {
       <output data-testid="conversation-id">
         {conversation?.instanceId ?? 'none'}
       </output>
+      <output data-testid="conversation-blocks-workspace">
+        {conversation?.blocksWorkspaceInteraction === true ? 'true' : 'false'}
+      </output>
       <output data-testid="surface-count">
         {workspace.state.surfaces.length}
       </output>
@@ -126,6 +129,9 @@ describe('World Focus D2 adaptive conversation presentation', () => {
         'sidecar',
       );
       expect(screen.getByTestId('workspace-slot').textContent).toBe('sidecar');
+      expect(
+        screen.getByTestId('conversation-blocks-workspace').textContent,
+      ).toBe('false');
     });
     expect(screen.getByTestId('conversation-id').textContent).toBe(
       WORLD_FOCUS_DANTE_CONVERSATION_INSTANCE_ID,
@@ -138,7 +144,7 @@ describe('World Focus D2 adaptive conversation presentation', () => {
     expect(screen.queryByText(/risposta di DANTE/i)).toBeNull();
   });
 
-  it('does not leave ongoing conversation trapped in the workspace-local overlay when split is impossible', async () => {
+  it('moves constrained conversation to route focus, blocks the World and focuses a live route control', async () => {
     renderD2(238);
 
     fireEvent.click(screen.getByRole('button', { name: 'Open conversation' }));
@@ -148,6 +154,9 @@ describe('World Focus D2 adaptive conversation presentation', () => {
         'route',
       );
       expect(screen.getByTestId('workspace-slot').textContent).toBe('external');
+      expect(
+        screen.getByTestId('conversation-blocks-workspace').textContent,
+      ).toBe('true');
     });
 
     const conversation = screen.getByRole('dialog', {
@@ -157,6 +166,11 @@ describe('World Focus D2 adaptive conversation presentation', () => {
     expect(
       screen.getByTestId('route-surface-host').contains(conversation),
     ).toBe(true);
+    await waitFor(() => {
+      expect(
+        screen.getByRole('button', { name: 'Chiudi conversazione DANTE' }),
+      ).toBe(document.activeElement);
+    });
   });
 
   it('maximizes and restores the same surface identity instead of creating a second conversation surface', async () => {
@@ -175,6 +189,9 @@ describe('World Focus D2 adaptive conversation presentation', () => {
         'route',
       );
       expect(screen.getByTestId('workspace-slot').textContent).toBe('external');
+      expect(
+        screen.getByTestId('conversation-blocks-workspace').textContent,
+      ).toBe('true');
     });
     expect(screen.getByTestId('conversation-id').textContent).toBe(
       WORLD_FOCUS_DANTE_CONVERSATION_INSTANCE_ID,
@@ -192,6 +209,9 @@ describe('World Focus D2 adaptive conversation presentation', () => {
         'sidecar',
       );
       expect(screen.getByTestId('workspace-slot').textContent).toBe('sidecar');
+      expect(
+        screen.getByTestId('conversation-blocks-workspace').textContent,
+      ).toBe('false');
     });
     expect(screen.getByTestId('conversation-id').textContent).toBe(
       WORLD_FOCUS_DANTE_CONVERSATION_INSTANCE_ID,
