@@ -21,6 +21,7 @@ from dante.modules.intelligence.contracts.evidence import (
     RuntimeEvidenceMetric,
 )
 from dante.modules.intelligence.contracts.model_access import (
+    ModelAccessErrorClass,
     ModelInvocationOutcome,
     ModelInvocationRequest,
     ModelInvocationResult,
@@ -64,6 +65,32 @@ def _model_outcome(attempt: ProviderAttemptResult) -> ModelInvocationOutcome:
     if attempt.outcome is ProviderAttemptOutcome.INVALID_RESPONSE:
         return ModelInvocationOutcome.INVALID_RESPONSE
     return ModelInvocationOutcome.FAILED
+
+
+def _model_error_class(attempt: ProviderAttemptResult) -> ModelAccessErrorClass | None:
+    if attempt.outcome is ProviderAttemptOutcome.COMPLETED:
+        return None
+    if attempt.outcome is ProviderAttemptOutcome.INCOMPLETE:
+        return ModelAccessErrorClass.PROVIDER_INCOMPLETE
+    if attempt.outcome is ProviderAttemptOutcome.REFUSED:
+        return ModelAccessErrorClass.REFUSED
+    if attempt.outcome is ProviderAttemptOutcome.CANCELLED:
+        return ModelAccessErrorClass.CANCELLATION
+    if attempt.outcome is ProviderAttemptOutcome.INVALID_RESPONSE:
+        return ModelAccessErrorClass.INVALID_RESPONSE
+    if attempt.outcome is ProviderAttemptOutcome.INDETERMINATE:
+        return ModelAccessErrorClass.INDETERMINATE_EXTERNAL_OUTCOME
+    if attempt.outcome is ProviderAttemptOutcome.TRANSIENT_FAILURE:
+        return ModelAccessErrorClass.PROVIDER_TRANSIENT
+    if attempt.outcome is ProviderAttemptOutcome.PERMANENT_FAILURE:
+        return ModelAccessErrorClass.PROVIDER_PERMANENT
+    if attempt.error_class is ProviderErrorClass.DEADLINE:
+        return ModelAccessErrorClass.DEADLINE_EXCEEDED
+    if attempt.error_class is ProviderErrorClass.UNSUPPORTED_FEATURE:
+        return ModelAccessErrorClass.CAPABILITY_UNAVAILABLE
+    if attempt.error_class is ProviderErrorClass.INVALID_REQUEST:
+        return ModelAccessErrorClass.INVALID_REQUEST
+    return ModelAccessErrorClass.UNKNOWN
 
 
 def _usage_metrics(usage: ProviderUsageEvidence) -> tuple[RuntimeEvidenceMetric, ...]:
@@ -137,16 +164,52 @@ class ModelAccessRuntime:
             return "required_route_config_identity_mismatch"
         return None
 
+    def _pre_dispatch_result(
+        self,
+        request: ModelInvocationRequest,
+        *,
+        started_at: datetime,
+        outcome: ModelInvocationOutcome,
+        error_class: ModelAccessErrorClass,
+        error_code: str,
+        binding: ProviderBindingDefinition | None = None,
+        harness: HarnessProfileDefinition | None = None,
+    ) -> ModelInvocationResult:
+        return ModelInvocationResult(
+            model_invocation_id=request.model_invocation_id,
+            target=request.target,
+            outcome=outcome,
+            route_config_identity=self._route_config.identity,
+            usage=_unknown_usage(),
+            provider_binding_ref=binding.ref if binding is not None else None,
+            harness_profile_ref=harness.ref if harness is not None else None,
+            provider_model=binding.model if binding is not None else None,
+            error_class=error_class,
+            error_code=error_code,
+            started_at=started_at,
+            completed_at=_utc_now(),
+        )
+
     async def invoke(self, request: ModelInvocationRequest) -> ModelInvocationResult:
         """Execute one champion attempt; fallback/retry remain intentionally disabled."""
+        invocation_started_at = _utc_now()
+
+        if request.max_provider_attempts != 1:
+            return self._pre_dispatch_result(
+                request,
+                started_at=invocation_started_at,
+                outcome=ModelInvocationOutcome.INVALID_REQUEST,
+                error_class=ModelAccessErrorClass.INVALID_REQUEST,
+                error_code="retry_budget_not_supported_by_route",
+            )
+
         route_requirement_error = self._preflight_route_requirement_error(request)
         if route_requirement_error is not None:
-            return ModelInvocationResult(
-                model_invocation_id=request.model_invocation_id,
-                target=request.target,
+            return self._pre_dispatch_result(
+                request,
+                started_at=invocation_started_at,
                 outcome=ModelInvocationOutcome.INVALID_REQUEST,
-                route_config_identity=self._route_config.identity,
-                usage=_unknown_usage(),
+                error_class=ModelAccessErrorClass.ROUTE_MISMATCH,
                 error_code=route_requirement_error,
             )
 
@@ -154,23 +217,21 @@ class ModelAccessRuntime:
             try:
                 validate_contract_schema(request.structured_output)
             except StructuredOutputValidationError as exc:
-                return ModelInvocationResult(
-                    model_invocation_id=request.model_invocation_id,
-                    target=request.target,
+                return self._pre_dispatch_result(
+                    request,
+                    started_at=invocation_started_at,
                     outcome=ModelInvocationOutcome.INVALID_REQUEST,
-                    route_config_identity=self._route_config.identity,
-                    usage=_unknown_usage(),
+                    error_class=ModelAccessErrorClass.INVALID_REQUEST,
                     error_code=str(exc),
                 )
 
         route = self._route(request.target.value)
         if route is None or route.state is not RouteTargetState.ACTIVE:
-            return ModelInvocationResult(
-                model_invocation_id=request.model_invocation_id,
-                target=request.target,
+            return self._pre_dispatch_result(
+                request,
+                started_at=invocation_started_at,
                 outcome=ModelInvocationOutcome.UNAVAILABLE,
-                route_config_identity=self._route_config.identity,
-                usage=_unknown_usage(),
+                error_class=ModelAccessErrorClass.CAPABILITY_UNAVAILABLE,
                 error_code="model_target_not_active",
             )
 
@@ -183,42 +244,36 @@ class ModelAccessRuntime:
         if request.structured_output is not None:
             required_capabilities.add("structured_output")
         if not required_capabilities.issubset(binding.capabilities):
-            return ModelInvocationResult(
-                model_invocation_id=request.model_invocation_id,
-                target=request.target,
+            return self._pre_dispatch_result(
+                request,
+                started_at=invocation_started_at,
                 outcome=ModelInvocationOutcome.UNAVAILABLE,
-                route_config_identity=self._route_config.identity,
-                usage=_unknown_usage(),
-                provider_binding_ref=binding.ref,
-                harness_profile_ref=harness.ref,
-                provider_model=binding.model,
+                error_class=ModelAccessErrorClass.CAPABILITY_UNAVAILABLE,
                 error_code="required_capability_not_available",
+                binding=binding,
+                harness=harness,
             )
         if not set(request.required_feature_modes).issubset(harness.feature_modes):
-            return ModelInvocationResult(
-                model_invocation_id=request.model_invocation_id,
-                target=request.target,
+            return self._pre_dispatch_result(
+                request,
+                started_at=invocation_started_at,
                 outcome=ModelInvocationOutcome.UNAVAILABLE,
-                route_config_identity=self._route_config.identity,
-                usage=_unknown_usage(),
-                provider_binding_ref=binding.ref,
-                harness_profile_ref=harness.ref,
-                provider_model=binding.model,
+                error_class=ModelAccessErrorClass.CAPABILITY_UNAVAILABLE,
                 error_code="required_feature_mode_not_available",
+                binding=binding,
+                harness=harness,
             )
 
         adapter = self._adapters.get(binding.ref)
         if binding.state is ProviderBindingState.INACTIVE or adapter is None:
-            return ModelInvocationResult(
-                model_invocation_id=request.model_invocation_id,
-                target=request.target,
+            return self._pre_dispatch_result(
+                request,
+                started_at=invocation_started_at,
                 outcome=ModelInvocationOutcome.UNAVAILABLE,
-                route_config_identity=self._route_config.identity,
-                usage=_unknown_usage(),
-                provider_binding_ref=binding.ref,
-                harness_profile_ref=harness.ref,
-                provider_model=binding.model,
+                error_class=ModelAccessErrorClass.CAPABILITY_UNAVAILABLE,
                 error_code="champion_binding_not_available",
+                binding=binding,
+                harness=harness,
             )
 
         now = _utc_now()
@@ -371,5 +426,9 @@ class ModelAccessRuntime:
                 if outcome is ModelInvocationOutcome.COMPLETED
                 else None
             ),
+            error_class=_model_error_class(attempt),
             error_code=attempt.error_code,
+            finish_reason=attempt.finish_reason,
+            started_at=invocation_started_at,
+            completed_at=attempt.completed_at,
         )
