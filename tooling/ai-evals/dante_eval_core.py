@@ -79,6 +79,11 @@ class CandidateResult:
     provider_status: str | None = None
     error_class: str | None = None
     error_code: str | None = None
+    reasoning_tokens: int | None = None
+    cached_input_tokens: int | None = None
+    tool_use_tokens: int | None = None
+    billable_output_tokens: int | None = None
+    finish_reason: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -111,6 +116,10 @@ class BudgetGuard:
     calls_used: int = 0
     input_tokens_used: int = 0
     output_tokens_used: int = 0
+    reasoning_tokens_used: int = 0
+    cached_input_tokens_used: int = 0
+    tool_use_tokens_used: int = 0
+    billable_output_tokens_used: int = 0
     estimated_cost_eur: float = 0.0
 
     def __post_init__(self) -> None:
@@ -131,9 +140,9 @@ class BudgetGuard:
 
         if self.max_cost_eur is not None and self.pricing is not None:
             # Conservative pre-dispatch estimate. Character/3 deliberately
-            # overestimates many ordinary English/Italian prompts; actual
-            # provider usage replaces it after the call. This is a guardrail,
-            # not billing authority.
+            # overestimates many ordinary English/Italian prompts. Reasoning
+            # cost cannot be known before dispatch, so max_output_tokens is the
+            # bounded generation proxy. This is a guardrail, not billing authority.
             estimated_input_tokens = (
                 len(fixture.input_text) + len(fixture.instructions) + 2
             ) // 3
@@ -150,11 +159,22 @@ class BudgetGuard:
             self.input_tokens_used += result.input_tokens
         if result.output_tokens is not None:
             self.output_tokens_used += result.output_tokens
+        if result.reasoning_tokens is not None:
+            self.reasoning_tokens_used += result.reasoning_tokens
+        if result.cached_input_tokens is not None:
+            self.cached_input_tokens_used += result.cached_input_tokens
+        if result.tool_use_tokens is not None:
+            self.tool_use_tokens_used += result.tool_use_tokens
+
+        if result.billable_output_tokens is not None:
+            self.billable_output_tokens_used += result.billable_output_tokens
+        elif result.output_tokens is not None:
+            self.billable_output_tokens_used += result.output_tokens
 
         if self.pricing is not None:
             self.estimated_cost_eur = (
                 self.input_tokens_used * self.pricing.input_eur_per_million
-                + self.output_tokens_used * self.pricing.output_eur_per_million
+                + self.billable_output_tokens_used * self.pricing.output_eur_per_million
             ) / 1_000_000
 
 
