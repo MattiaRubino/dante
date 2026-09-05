@@ -47,7 +47,7 @@ _SYNTHETIC_GROUP = "DANTE acceptance temporary"
 _SYNTHETIC_UID = "dante-acceptance-synthetic"
 _SYNTHETIC_TITLE = "DANTE acceptance · synthetic notification"
 _RUNBOOK_URL = (
-    "https://github.com/MattiaRubino/dante/blob/feature/platform-observability/"
+    "https://github.com/MattiaRubino/dante/blob/main/"
     "docs/development/observability-runbook.md"
 )
 _MAX_RESPONSE_BYTES = 8 * 1024 * 1024
@@ -65,7 +65,7 @@ class AcceptanceFailure(RuntimeError):
 
 @dataclass(frozen=True, slots=True)
 class Settings:
-    """Validated operator inputs for one bounded Grafana operation."""
+    """Validated operator inputs used by one bounded Grafana operation."""
 
     grafana_url: str
     token_file: Path
