@@ -125,7 +125,7 @@ export function WorldFocusDanteEntryProvider({
         return false;
       }
 
-      let contextReferences: WorldFocusContextReferenceSet | null = null;
+      let contextReferences: WorldFocusContextReferenceSet | null;
       try {
         contextReferences =
           request.contextReferences === null
