@@ -1,7 +1,7 @@
 import type { WorldFocusPresentationSurface } from './world-focus-platform';
 import {
+  doesWorldFocusSurfaceBlockWorkspaceInteraction,
   getWorldFocusBlockingSurface,
-  isWorldFocusBlockingPresentation,
   type WorldFocusSurfaceDescriptor,
   type WorldFocusWorkspaceState,
 } from './world-focus-workspace';
@@ -164,7 +164,7 @@ function findFirstBlockingSurfaceIndex(
   surfaces: readonly WorldFocusSurfaceDescriptor[],
 ): number {
   return surfaces.findIndex((surface) =>
-    isWorldFocusBlockingPresentation(surface.presentation),
+    doesWorldFocusSurfaceBlockWorkspaceInteraction(surface),
   );
 }
 
@@ -217,18 +217,10 @@ function createDormantPlacement(
  * World workspace. It never ranks World content, knows World identity, or owns
  * canonical truth.
  *
- * The plan deliberately separates three independent concerns:
- * - mainAllocation: whether a sidecar consumes real canvas width;
- * - topLayer: whether an overlay/focus surface sits above that canvas;
- * - mainInteraction: whether the main plane remains operable underneath it.
- *
- * Active placements also carry interaction state so an allocated sidecar can
- * remain visually stable underneath a blocking modal/focus surface without
- * remaining clickable through that blocking layer.
- *
- * The resolver also defends against legacy/malformed stacks. If a blocking
- * surface exists, later non-blocking entries are never allowed to become the
- * effective top layer even if they somehow bypassed reducer admission.
+ * Presentation geometry and background interaction remain orthogonal. Generic
+ * external `route` placement does not block the World; a route-owned focus
+ * surface can explicitly carry `blocksWorkspaceInteraction` and then becomes
+ * a real interaction barrier without becoming modal or full-screen geometry.
  */
 export function resolveWorldFocusWorkspaceAllocation(
   state: WorldFocusWorkspaceState,
@@ -250,10 +242,6 @@ export function resolveWorldFocusWorkspaceAllocation(
   const activeSidecar = findLatestSurfaceByPresentation(baseSurfaces, 'sidecar');
   const rawTopSurface = getTopSurface(state.surfaces);
   const effectiveTopSurface = blockingSurface ?? rawTopSurface;
-  const activeExternalRouteSurface =
-    blockingSurface === null && effectiveTopSurface?.presentation === 'route'
-      ? effectiveTopSurface
-      : null;
   const topWorkspaceLayerSurface =
     blockingSurface ?? findTopWorkspaceLayerSurface(baseSurfaces);
 
@@ -291,7 +279,6 @@ export function resolveWorldFocusWorkspaceAllocation(
   const mainInteraction: WorldFocusMainInteraction =
     blockingSurface !== null ||
     activeFocusSurface !== null ||
-    activeExternalRouteSurface !== null ||
     activeOverlaySurface?.presentation === 'modal'
       ? 'inert'
       : 'interactive';
@@ -301,14 +288,13 @@ export function resolveWorldFocusWorkspaceAllocation(
       const isNonBlockingAfterBarrier =
         firstBlockingIndex >= 0 &&
         index > firstBlockingIndex &&
-        !isWorldFocusBlockingPresentation(surface.presentation);
+        !doesWorldFocusSurfaceBlockWorkspaceInteraction(surface);
       if (isNonBlockingAfterBarrier) {
         return createDormantPlacement(surface);
       }
 
       if (surface.presentation === 'route') {
-        const isActiveExternal =
-          blockingSurface === null && surface === effectiveTopSurface;
+        const isActiveExternal = surface === effectiveTopSurface;
         return Object.freeze({
           instanceId: surface.instanceId,
           requestedPresentation: surface.presentation,
