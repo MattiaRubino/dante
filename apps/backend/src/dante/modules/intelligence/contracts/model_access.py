@@ -403,7 +403,9 @@ class ModelInvocationResult:
             _require_aware(self.completed_at, name="completed_at")
             if self.completed_at < self.started_at:
                 raise ValueError("logical completed_at must not precede started_at")
-        if any(attempt.model_invocation_id != self.model_invocation_id for attempt in self.attempts):
+        if any(
+            attempt.model_invocation_id != self.model_invocation_id for attempt in self.attempts
+        ):
             raise ValueError("all provider attempts must belong to this model invocation")
 
         has_output = self.output_text is not None or self.structured_output_json is not None
@@ -415,7 +417,9 @@ class ModelInvocationResult:
                 or self.harness_profile_ref is None
                 or self.provider_model is None
             ):
-                raise ValueError("completed model invocation requires selected route/model identity")
+                raise ValueError(
+                    "completed model invocation requires selected route/model identity"
+                )
             if self.error_class is not None:
                 raise ValueError("completed model invocation cannot carry error_class")
             return
