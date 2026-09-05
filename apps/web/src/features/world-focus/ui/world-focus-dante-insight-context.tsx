@@ -18,20 +18,16 @@ import {
 } from '../application/world-focus-dante-insight';
 import { readWorldFocusDanteInsight } from '../application/world-focus-dante-insight-runtime';
 import { WorldFocusLatestReadCoordinator } from '../application/world-focus-foundation';
-import type { WorldFocusDanteConversationResultClass } from '../application/world-focus-dante-conversation';
 import type { WorldFocusId } from '../model/world-focus-identity';
-import { WORLD_FOCUS_DANTE_CONVERSATION_INSTANCE_ID } from './world-focus-dante-conversation-context';
+import {
+  WORLD_FOCUS_DANTE_CONVERSATION_INSTANCE_ID,
+  useWorldFocusDanteConversation,
+} from './world-focus-dante-conversation-context';
 import { useWorldFocusDanteEntry } from './world-focus-dante-entry';
 import { useWorldFocusWorkspace } from './world-focus-workspace-host';
 
 export const WORLD_FOCUS_DANTE_INSIGHT_KIND = 'dante-insight' as const;
 export const WORLD_FOCUS_DANTE_INSIGHT_INSTANCE_ID = 'dante:insight' as const;
-
-export type WorldFocusDanteInsightSourceMessage = Readonly<{
-  id: string;
-  resultClass: WorldFocusDanteConversationResultClass;
-  text: string;
-}>;
 
 export type WorldFocusDanteInsightRequestState =
   | Readonly<{ status: 'idle' }>
@@ -63,7 +59,7 @@ type WorldFocusDanteInsightContextValue = Readonly<{
   requestState: WorldFocusDanteInsightRequestState;
   isOpen: boolean;
   canRequestInsight: boolean;
-  requestInsight: (source: WorldFocusDanteInsightSourceMessage) => boolean;
+  requestInsight: (sourceMessageId: string) => boolean;
 }>;
 
 const WorldFocusDanteInsightContext =
@@ -94,7 +90,8 @@ function restoreLogicalInsightInvoker(sourceMessageId: string): void {
  * D5 route-scoped owner for one validated standalone Insight artifact. It
  * stores presentation state only and reuses the existing Workspace surface
  * stack. The exact D4 composer invocation remains the bounded contextual basis;
- * D3 conversation state is not widened or re-owned here.
+ * D3 conversation state is read only to resolve the exact owned assistant
+ * message selected for promotion and is not widened or re-owned here.
  */
 export function WorldFocusDanteInsightProvider({
   worldId,
@@ -104,6 +101,7 @@ export function WorldFocusDanteInsightProvider({
   const { i18n } = useTranslation('common');
   const workspace = useWorldFocusWorkspace();
   const danteEntry = useWorldFocusDanteEntry();
+  const conversation = useWorldFocusDanteConversation();
   const [insight, setInsight] = useState<WorldFocusDanteInsight | null>(null);
   const [requestState, setRequestState] =
     useState<WorldFocusDanteInsightRequestState>({ status: 'idle' });
@@ -133,7 +131,7 @@ export function WorldFocusDanteInsightProvider({
     !isOpen;
 
   const requestInsight = useCallback(
-    (source: WorldFocusDanteInsightSourceMessage): boolean => {
+    (sourceMessageId: string): boolean => {
       const invocation = danteEntry.composerInvocation;
       if (
         requestState.status === 'pending' ||
@@ -150,6 +148,14 @@ export function WorldFocusDanteInsightProvider({
           surface.instanceId === WORLD_FOCUS_DANTE_CONVERSATION_INSTANCE_ID,
       );
       if (conversationSurface === undefined) {
+        return false;
+      }
+
+      const source = conversation.messages.find(
+        (message) =>
+          message.id === sourceMessageId && message.role === 'assistant',
+      );
+      if (source === undefined) {
         return false;
       }
 
@@ -237,6 +243,7 @@ export function WorldFocusDanteInsightProvider({
       return true;
     },
     [
+      conversation.messages,
       danteEntry.composerInvocation,
       i18n.language,
       i18n.resolvedLanguage,
