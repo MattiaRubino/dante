@@ -13,6 +13,10 @@ import {
   WORLD_FOCUS_DANTE_COMPOSER_KIND,
 } from './world-focus-dante-entry';
 import {
+  WorldFocusDanteInsight,
+  WORLD_FOCUS_DANTE_INSIGHT_KIND,
+} from './world-focus-dante-insight';
+import {
   WorldFocusSurfaceRegistry,
   type WorldFocusSurfaceRegistration,
 } from './world-focus-surface-registry';
@@ -29,6 +33,10 @@ const CORE_WORLD_FOCUS_SURFACE_REGISTRY = new WorldFocusSurfaceRegistry<
   {
     kind: WORLD_FOCUS_DANTE_CONVERSATION_KIND,
     render: (props) => <WorldFocusDanteConversation {...props} />,
+  },
+  {
+    kind: WORLD_FOCUS_DANTE_INSIGHT_KIND,
+    render: (props) => <WorldFocusDanteInsight {...props} />,
   },
   {
     kind: WORLD_FOCUS_COMPOSITION_CUSTOMIZATION_SURFACE_KIND,

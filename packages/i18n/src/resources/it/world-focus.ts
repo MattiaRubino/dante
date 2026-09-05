@@ -52,6 +52,24 @@ export const worldFocus = {
     followUpLabel: 'Continua la conversazione',
     followUpPlaceholder: 'Scrivi un seguito…',
     cancelRequest: 'Annulla richiesta',
+    insight: {
+      kicker: 'DANTE · Insight',
+      title: 'Insight DANTE',
+      open: 'Apri come Insight',
+      close: 'Chiudi Insight DANTE',
+      pending: 'Preparazione locale dell’Insight in corso.',
+      unavailable: 'Questo Insight non è disponibile dal contesto corrente.',
+      error: 'Non riesco a preparare questo Insight locale.',
+      superseded: 'Il contesto del Mondo è cambiato. L’Insight non è stato aperto.',
+      basis: 'Riferimenti contestuali espliciti: {{count}}.',
+      truthNote:
+        'Artefatto locale pre-backend: non è un fatto accettato e non implica autorizzazione. Nessun modello o fonte esterna è stato interrogato.',
+      kinds: {
+        observation: 'Osservazione',
+        pattern: 'Pattern',
+        change: 'Cambiamento',
+      },
+    },
   },
   customization: {
     invoke: 'Personalizza composizione',
@@ -166,12 +184,8 @@ export const worldFocus = {
       timedOut: 'Richiesta scaduta',
       timingUnknown: 'Tempi della richiesta sconosciuti',
     },
-    situation: {
-      title: 'Situazione',
-    },
-    next: {
-      title: 'Prossimo',
-    },
+    situation: { title: 'Situazione' },
+    next: { title: 'Prossimo' },
     evidenceHistory: {
       title: 'Evidenze e cronologia',
       evidence: 'Evidenze',
@@ -201,53 +215,20 @@ export const worldFocus = {
     trajectory: {
       title: 'Andamento',
       missing: 'Dati mancanti',
-      axes: {
-        time: 'Nel tempo',
-        sequence: 'In sequenza',
-      },
+      axes: { time: 'Nel tempo', sequence: 'In sequenza' },
     },
   },
   worlds: {
-    body: {
-      label: 'Corpo',
-      description: 'La tua base. La tua energia. Il tuo veicolo.',
-    },
-    music: {
-      label: 'Musica',
-      description: 'Creatività, ascolto e progetti musicali.',
-    },
-    travel: {
-      label: 'Viaggi',
-      description: 'Esperienze, luoghi e prossime partenze.',
-    },
-    study: {
-      label: 'Studio',
-      description: 'Apprendimento, competenze e percorsi.',
-    },
-    finance: {
-      label: 'Finanza',
-      description: 'Risorse, risparmio e obiettivi economici.',
-    },
-    relationships: {
-      label: 'Relazioni',
-      description: 'Persone, legami e tempo condiviso.',
-    },
-    work: {
-      label: 'Lavoro',
-      description: 'Progetti, risultati e crescita professionale.',
-    },
-    growth: {
-      label: 'Crescita',
-      description: 'Abitudini, consapevolezza e direzione.',
-    },
-    routine: {
-      label: 'Routine',
-      description: 'Ritmi, sistemi e consistenza quotidiana.',
-    },
-    projects: {
-      label: 'Progetti',
-      description: 'Idee in movimento e prossimi traguardi.',
-    },
+    body: { label: 'Corpo', description: 'La tua base. La tua energia. Il tuo veicolo.' },
+    music: { label: 'Musica', description: 'Creatività, ascolto e progetti musicali.' },
+    travel: { label: 'Viaggi', description: 'Esperienze, luoghi e prossime partenze.' },
+    study: { label: 'Studio', description: 'Apprendimento, competenze e percorsi.' },
+    finance: { label: 'Finanza', description: 'Risorse, risparmio e obiettivi economici.' },
+    relationships: { label: 'Relazioni', description: 'Persone, legami e tempo condiviso.' },
+    work: { label: 'Lavoro', description: 'Progetti, risultati e crescita professionale.' },
+    growth: { label: 'Crescita', description: 'Abitudini, consapevolezza e direzione.' },
+    routine: { label: 'Routine', description: 'Ritmi, sistemi e consistenza quotidiana.' },
+    projects: { label: 'Progetti', description: 'Idee in movimento e prossimi traguardi.' },
   },
 } as const;
 

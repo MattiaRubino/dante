@@ -49,6 +49,7 @@ import {
   WorldFocusDanteInvoke,
   useWorldFocusDanteEntry,
 } from './world-focus-dante-entry';
+import { WorldFocusDanteInsightProvider } from './world-focus-dante-insight-context';
 import { WorldFocusRouteSurfaceLayer } from './world-focus-route-surface-layer';
 import { WorldFocusSurfaceLayer } from './world-focus-surface-layer';
 import { WorldFocusVisualFrame } from './world-focus-visual-frame';
@@ -61,6 +62,7 @@ import './world-focus.css';
 import './world-focus-composition-customization.css';
 import './world-focus-dante-conversation.css';
 import './world-focus-dante-entry.css';
+import './world-focus-dante-insight.css';
 import './world-focus-visual-frame-v4.css';
 import './world-focus-states.css';
 
@@ -147,26 +149,28 @@ function WorldFocusWorkspaceExperience({
         availability={PRE_BACKEND_DANTE_ENTRY_AVAILABILITY}
       >
         <WorldFocusDanteConversationOwner worldId={identity.id}>
-          <WorldFocusWorkspace
-            worldLabel={identity.label}
-            status={status}
-            context={<WorldFocusContext identity={identity} />}
-            surfaces={
-              <>
-                <WorldFocusCompositionCustomizeInvoke />
-                <WorldFocusDanteInvoke />
-                <WorldFocusDanteConversationPresentationController>
-                  <WorldFocusSurfaceLayer registry={registry} />
-                  <WorldFocusRouteSurfaceLayer
-                    registry={registry}
-                    host={routeSurfaceHost}
-                  />
-                </WorldFocusDanteConversationPresentationController>
-              </>
-            }
-          >
-            <WorldFocusAdaptiveComposition worldId={identity.id} />
-          </WorldFocusWorkspace>
+          <WorldFocusDanteInsightProvider worldId={identity.id}>
+            <WorldFocusWorkspace
+              worldLabel={identity.label}
+              status={status}
+              context={<WorldFocusContext identity={identity} />}
+              surfaces={
+                <>
+                  <WorldFocusCompositionCustomizeInvoke />
+                  <WorldFocusDanteInvoke />
+                  <WorldFocusDanteConversationPresentationController>
+                    <WorldFocusSurfaceLayer registry={registry} />
+                    <WorldFocusRouteSurfaceLayer
+                      registry={registry}
+                      host={routeSurfaceHost}
+                    />
+                  </WorldFocusDanteConversationPresentationController>
+                </>
+              }
+            >
+              <WorldFocusAdaptiveComposition worldId={identity.id} />
+            </WorldFocusWorkspace>
+          </WorldFocusDanteInsightProvider>
         </WorldFocusDanteConversationOwner>
       </WorldFocusDanteEntryProvider>
     </WorldFocusCompositionCustomizationProvider>

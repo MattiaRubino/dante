@@ -54,6 +54,24 @@ export const worldFocus = {
     followUpLabel: 'Continue the conversation',
     followUpPlaceholder: 'Write a follow-up…',
     cancelRequest: 'Cancel request',
+    insight: {
+      kicker: 'DANTE · Insight',
+      title: 'DANTE Insight',
+      open: 'Open as Insight',
+      close: 'Close DANTE Insight',
+      pending: 'Preparing the Insight locally.',
+      unavailable: 'This Insight is unavailable from the current context.',
+      error: 'Unable to prepare this local Insight.',
+      superseded: 'The World context changed. The Insight was not opened.',
+      basis: 'Explicit contextual references: {{count}}.',
+      truthNote:
+        'Local pre-backend artifact: this is not an accepted fact and does not imply authorization. No model or external source was queried.',
+      kinds: {
+        observation: 'Observation',
+        pattern: 'Pattern',
+        change: 'Change',
+      },
+    },
   },
   customization: {
     invoke: 'Customize composition',
@@ -124,10 +142,7 @@ export const worldFocus = {
       sync: 'Synchronization conditions',
     },
     basis: {
-      freshness: {
-        stale: 'Out of date',
-        unknown: 'Freshness unknown',
-      },
+      freshness: { stale: 'Out of date', unknown: 'Freshness unknown' },
       validity: {
         superseded: 'Superseded',
         retracted: 'Retracted',
@@ -138,15 +153,10 @@ export const worldFocus = {
         conflicted: 'Conflicted',
         unknown: 'Coverage unknown',
       },
-      material: {
-        retired: 'Content retired',
-      },
+      material: { retired: 'Content retired' },
     },
     disclosure: {
-      states: {
-        restricted: 'Restricted access',
-        unavailable: 'Unavailable',
-      },
+      states: { restricted: 'Restricted access', unavailable: 'Unavailable' },
     },
     effect: {
       states: {
@@ -167,12 +177,8 @@ export const worldFocus = {
       timedOut: 'Request timed out',
       timingUnknown: 'Request timing unknown',
     },
-    situation: {
-      title: 'Situation',
-    },
-    next: {
-      title: 'Next',
-    },
+    situation: { title: 'Situation' },
+    next: { title: 'Next' },
     evidenceHistory: {
       title: 'Evidence and history',
       evidence: 'Evidence',
@@ -202,52 +208,19 @@ export const worldFocus = {
     trajectory: {
       title: 'Trajectory',
       missing: 'Missing data',
-      axes: {
-        time: 'Over time',
-        sequence: 'In sequence',
-      },
+      axes: { time: 'Over time', sequence: 'In sequence' },
     },
   },
   worlds: {
-    body: {
-      label: 'Body',
-      description: 'Your foundation, energy, and physical continuity.',
-    },
-    music: {
-      label: 'Music',
-      description: 'Creativity, listening, and music projects.',
-    },
-    travel: {
-      label: 'Travel',
-      description: 'Experiences, places, and upcoming journeys.',
-    },
-    study: {
-      label: 'Study',
-      description: 'Learning, skills, and ongoing paths.',
-    },
-    finance: {
-      label: 'Finance',
-      description: 'Resources, savings, and financial goals.',
-    },
-    relationships: {
-      label: 'Relationships',
-      description: 'People, bonds, and time shared.',
-    },
-    work: {
-      label: 'Work',
-      description: 'Projects, outcomes, and professional growth.',
-    },
-    growth: {
-      label: 'Growth',
-      description: 'Habits, awareness, and direction.',
-    },
-    routine: {
-      label: 'Routine',
-      description: 'Rhythms, systems, and daily consistency.',
-    },
-    projects: {
-      label: 'Projects',
-      description: 'Ideas in motion and upcoming milestones.',
-    },
+    body: { label: 'Body', description: 'Your foundation, energy, and physical continuity.' },
+    music: { label: 'Music', description: 'Creativity, listening, and music projects.' },
+    travel: { label: 'Travel', description: 'Experiences, places, and upcoming journeys.' },
+    study: { label: 'Study', description: 'Learning, skills, and ongoing paths.' },
+    finance: { label: 'Finance', description: 'Resources, savings, and financial goals.' },
+    relationships: { label: 'Relationships', description: 'People, bonds, and time shared.' },
+    work: { label: 'Work', description: 'Projects, outcomes, and professional growth.' },
+    growth: { label: 'Growth', description: 'Habits, awareness, and direction.' },
+    routine: { label: 'Routine', description: 'Rhythms, systems, and daily consistency.' },
+    projects: { label: 'Projects', description: 'Ideas in motion and upcoming milestones.' },
   },
 } as const satisfies WorldFocusResource;

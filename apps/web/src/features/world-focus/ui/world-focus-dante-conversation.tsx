@@ -21,6 +21,7 @@ import {
   WORLD_FOCUS_DANTE_CONVERSATION_INSTANCE_ID,
   useOptionalWorldFocusDanteConversation,
 } from './world-focus-dante-conversation-context';
+import { useOptionalWorldFocusDanteInsight } from './world-focus-dante-insight-context';
 import { useWorldFocusWorkspaceAllocation } from './world-focus-workspace-allocation-context';
 import { useWorldFocusWorkspace } from './world-focus-workspace-host';
 
@@ -214,9 +215,9 @@ export function useWorldFocusDanteConversationPresentation(): WorldFocusDanteCon
 }
 
 /**
- * D2 remains the geometry owner. When D3's route-scoped conversation provider
- * is present this surface renders its mounted transcript/request state; without
- * D3 it remains the original empty structural D2 shell used by D2 tests.
+ * D2 remains the geometry owner. D5 may expose an explicit promotion affordance
+ * on a contextual assistant response, but the response remains a conversation
+ * message until the separate Insight reader validates a standalone artifact.
  */
 export function WorldFocusDanteConversation({
   surface,
@@ -225,6 +226,7 @@ export function WorldFocusDanteConversation({
   const { t } = useTranslation('common');
   const presentation = useWorldFocusDanteConversationPresentation();
   const conversation = useOptionalWorldFocusDanteConversation();
+  const insight = useOptionalWorldFocusDanteInsight();
   const maximizeRef = useRef<HTMLButtonElement | null>(null);
   const restoreRef = useRef<HTMLButtonElement | null>(null);
   const closeRef = useRef<HTMLButtonElement | null>(null);
@@ -274,6 +276,7 @@ export function WorldFocusDanteConversation({
   const canRestore =
     surface.presentation === 'route' && presentation.preference === 'focus';
   const pending = conversation?.requestState.status === 'pending';
+  const insightPending = insight?.requestState.status === 'pending';
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -366,6 +369,24 @@ export function WorldFocusDanteConversation({
                       : 'DANTE'}
                   </span>
                   <p>{message.text}</p>
+                  {message.role === 'assistant' &&
+                  insight?.canRequestInsight === true ? (
+                    <button
+                      className="world-focus-dante-insight-open"
+                      type="button"
+                      data-world-focus-dante-insight-invoker={message.id}
+                      disabled={insightPending}
+                      onClick={() =>
+                        insight.requestInsight({
+                          id: message.id,
+                          resultClass: message.resultClass,
+                          text: message.text,
+                        })
+                      }
+                    >
+                      {t(($) => $.common.worldFocus.dante.insight.open)}
+                    </button>
+                  ) : null}
                 </li>
               ))}
             </ol>
@@ -389,6 +410,24 @@ export function WorldFocusDanteConversation({
             ) : conversation.requestState.status === 'superseded' ? (
               <p className="world-focus-dante-conversation-status" role="status">
                 {t(($) => $.common.worldFocus.dante.localSuperseded)}
+              </p>
+            ) : null}
+
+            {insight?.requestState.status === 'pending' ? (
+              <p className="world-focus-dante-conversation-status" role="status">
+                {t(($) => $.common.worldFocus.dante.insight.pending)}
+              </p>
+            ) : insight?.requestState.status === 'unavailable' ? (
+              <p className="world-focus-dante-conversation-status" role="status">
+                {t(($) => $.common.worldFocus.dante.insight.unavailable)}
+              </p>
+            ) : insight?.requestState.status === 'error' ? (
+              <p className="world-focus-dante-conversation-status" role="alert">
+                {t(($) => $.common.worldFocus.dante.insight.error)}
+              </p>
+            ) : insight?.requestState.status === 'superseded' ? (
+              <p className="world-focus-dante-conversation-status" role="status">
+                {t(($) => $.common.worldFocus.dante.insight.superseded)}
               </p>
             ) : null}
 
