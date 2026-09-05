@@ -1,7 +1,7 @@
 # DANTE Roadmap
 
 - **Status:** CURRENT
-- **Last reconciled:** 2026-09-04
+- **Last reconciled:** 2026-09-05
 - **Protected `main`:** integrated source authority; read the live Git ref for the current SHA
 - **Branch-local AI implementation overlay:** `feature/ai-implementation`
 
@@ -80,10 +80,13 @@ Current authority begins at `database/README.md`, the Dictionary, PostgreSQL Rec
 feature/access-auth             active full-stack product work
 feature/home-react              active frontend work
 feature/platform-observability  active platform work
-feature/ai-implementation       active AI implementation; I0-I2 CLOSED/PASS
-                                I3/C3 Search deferred pending owner data/seams
-                                C6+C7+C8 CLOSED
-                                C9 OPEN / PRE-LIVE READY
+feature/ai-implementation       AI low-level foundation closure candidate
+                                I0-I2 CLOSED/PASS
+                                I3 Search deferred pending real owner data/seams
+                                C6+C7 CLOSED/PASS
+                                development binding decision = Gemini 3.8 Flash
+                                native ModelAccess foundation materialized
+                                final deterministic gate + 1 native smoke pending
 feature/ai-architecture         AI architecture design CLOSED / retained authority/evidence
 ```
 
@@ -104,7 +107,7 @@ real structural database change
 → affected recovery/operational assertions updated
 ```
 
-Applied migrations are immutable. AI architecture and I0-I2/C6/C7/C8/C9 pre-live produced no DB/Alembic change.
+Applied migrations are immutable. The AI architecture/implementation work described here introduces no DB/Alembic change.
 
 ## 5. Capability-triggered implementation
 
@@ -186,13 +189,8 @@ AI-05 WHOLE-SYSTEM ACCEPTANCE
 CLOSED / STRUCTURALLY ACCEPTED
         ↓
 POST-AI05 INDEPENDENT PRE-IMPLEMENTATION MEGA TEST
-FIRST PASS FAIL BOUNDED
-→ POST05-H01..H13
-SECOND PASS FAIL BOUNDED
-→ POST05-H14..H18
-THIRD PASS FAIL BOUNDED
-→ POST05-H19..H25
 FINAL FRESH PASS
+→ POST05-H01..H25 historical hardening retained
 → MKT-001..MKT-100 PASS
 → C01..C20 PASS
 → reverse authority PASS
@@ -202,326 +200,216 @@ AI ARCHITECTURE DESIGN / REENGINEERING
 CLOSED / STRUCTURALLY ACCEPTED
 ```
 
-Current implementation authority:
+Current implementation-facing architecture authority:
 
 ```text
 docs/architecture/dante-ai-implementation-baseline-final.md
-```
-
-Current implementation sequencing amendment:
-
-```text
 docs/architecture/dante-ai-search-intelligence-boundary-amendment-2026-09.md
 ```
 
-The amendment is binding for current Search/Intelligence sequencing and supersedes the earlier composite `Global Search subset + read-only Ask DANTE` first-vertical wording. It does not reopen Product, Domain, Logical, Physical, database or the accepted ownership invariants.
-
-Current C8 provider admission evidence:
+Current low-level foundation decision/closure records:
 
 ```text
-docs/workstreams/ai-provider-candidate-admission-2026-09.md
+docs/workstreams/ai-runtime-model-target-closure-acceptance-2026-09-05.md
+docs/workstreams/ai-foundation-closure-2026-09-05.md
 ```
 
-Current C9 pre-live evidence:
+Historical OpenAI/Terra admission and C9 pre-live records remain evidence, not the current provider blocker.
+
+## 7. AI implementation roadmap — current disposition
+
+The I0-I10 names remain architecture-stage labels. They are not forced into a fake linear implementation order when a real owner/product seam does not yet exist.
 
 ```text
-docs/workstreams/ai-c9-pre-live-checkpoint-2026-09.md
-```
-
-Final mega acceptance:
-
-```text
-docs/architecture/dante-ai-post05-final-mega-acceptance.md
-```
-
-## 7. AI implementation roadmap — architectural stages and execution overlay
-
-The baseline stage identifiers remain authoritative architectural labels; they are **not** redefined merely because one conditional integration lane is not ready yet.
-
-Accepted stage map:
-
-```text
-I0  repository/application ownership + architecture-test skeleton
+I0  repository/application ownership + architecture boundary skeleton
     CLOSED / PASS
 
 I1  Search public contracts / eligibility / family registry / deterministic shell
     CLOSED / PASS
 
 I2  Intelligence pure request-local contracts + deterministic fakes
-    Work / Execution / Context / Reference Resolution /
-    Semantic Query / Retrieval
     CLOSED / PASS
 
-I3  real deterministic Search / structured families
-    only when owning product data/seams are integration-ready
-    DEFERRED / WAITING OWNER DATA + SEAMS
+I3  first real deterministic Search / structured owner family
+    DEFERRED / REAL OWNER-DATA-SEAM GATE
 
-I4  provider candidate admission + inactive adapter candidate
+I4  provider candidate / binding foundation
+    CLOSED FOR DEVELOPMENT FOUNDATION
 
-I5  adapter conformance + live compatibility + direct DANTE qualification
+I5  adapter conformance / direct provider evidence
+    DEVELOPMENT FOUNDATION CLOSURE CANDIDATE
+    remaining now:
+      - regenerate lock after explicit Gemini HTTP runtime dependency
+      - deterministic/full backend gate
+      - one guarded native Gemini Interactions smoke through ModelAccessRuntime
+    production qualification remains FUTURE
 
-I6  first real read-only Ask DANTE product integration
-    selected from an actual application capability/owner seam;
-    Search is required only if that selected Ask information need requires discovery
+I6  first real read-only Ask DANTE integration
+    DEFERRED / PRODUCT-READINESS GATE
+    do not manufacture an Ask vertical merely to prove an AI call
 
-I7  production hardening / observability / privacy / audit /
-    resource / rollout / capacity
+I7  production hardening / observability / privacy / audit / resource / rollout / capacity
+    PARTIALLY FRONT-LOADED ONLY FOR MODELACCESS-LOCAL FOUNDATION
+    full production stage FUTURE
 
 I8  scenario/planning proposal vertical
+    FUTURE / REAL PRODUCT-SEAM TRIGGER
 
 I9  first bounded consequential Effect vertical
+    FUTURE / REAL CAPABILITY-EFFECT TRIGGER
 
 I10 proactive/background/durable/external-agent capabilities
-    only on their real triggers
+    FUTURE / TRIGGER-GATED
 ```
 
-### 7.1 Current executable Intelligence/provider lane
+### 7.1 Development model/binding decision
 
-Search and Intelligence are separate capabilities. Because I3 is conditional on a real Search owner/data seam, the Intelligence/provider lane continues without fabricating a Search family:
+Direct evidence now supports the development foundation decision:
 
 ```text
-C6  Policy / Resource / Verification / Publication /
-    Effect / Egress / Evidence contracts
-    CLOSED / PASS
-    ↓
-C7  route-config identity / loader / content digest snapshot
-    CLOSED / PASS
-    ↓
-C8 / P0-P1
-    provider shortlist + candidate-admission decision
-    CLOSED
-    OpenAI native Responses API + gpt-5.6-terra
-    ADMITTED FOR QUALIFICATION ONLY
-    ↓
-CURRENT
-C9  OPEN / PRE-LIVE READY
-    inactive provider adapter/binding           MATERIALIZED
-    OpenAI SDK 3.7.0                            LOCKED
-    deterministic + material SDK conformance    PASS
-    P4 pre-live                                 PASS
-    final deterministic + PostgreSQL regression PASS
-    P4 real provider compatibility              NOT RUN
-    blocker: no user-owned qualification API credential provisioned
-    ↓
-C10
-    direct DANTE qualification
-    ↓
-C11
-    qualification/promotion decision
+STRUCTURED_INTERPRETATION -> Gemini 3.8 Flash
+GENERAL_REASONING         -> Gemini 3.8 Flash
+DEEP_REASONING            -> dormant / no binding
 ```
 
-C8 admits a qualification candidate only. C9 now materializes the SDK/private inactive adapter and deterministic proof surface, but no real provider live call, production qualification or private-data eligibility is claimed.
-
-### 7.2 Deferred deterministic/Search lane
+Accepted runtime protocol direction:
 
 ```text
-I3 / C3
-bounded PostgreSQL Search adapter + first real family proof
+Google Gemini Developer API
+native Interactions API v1beta
+OpenAI-compatible Gemini surface = evaluation history only
 ```
 
-remains open and must resume only when a real Search owner/data seam can truthfully supply a family. Current CP6 PostgreSQL materialization is a strong persistence substrate, but persistence rows alone do not create a complete product/application query seam.
-
-I3 readiness requires, as applicable:
+Initial development harness:
 
 ```text
-real owner/product data semantics
-safe display/projection fields
-current/history behavior
-owner/source scope
-permission/disclosure basis
-bounded query semantics
-truthful guarantee/currentness/basis mapping
-family tests
-PSV-06 / SC-017 protected non-interference proof when applicable
+reasoning level            low
+streaming                  off
+background                 off
+provider continuation      off
+provider-native tools      off
+provider storage           off / store=false
+fallback                   off
+DANTE retry                off for foundation
+private-data eligibility   no
+production activation      off
 ```
 
-No fake title from UUIDs, Intelligence-owned cross-capability SQL, generic Repository/UoW, model-to-SQL or premature FTS/vector activation is allowed to manufacture readiness.
-
-I3 is a Search capability checkpoint. It is **not** a global prerequisite for Ask DANTE.
-
-### 7.3 Intelligence integration gate before I6
-
-Provider qualification and Search may progress independently. I6 requires the real source/query path needed by the **selected Intelligence product vertical**.
-
-Correct convergence is conditional:
+### 7.2 Old C6-C11 overlay reconciliation
 
 ```text
-C9 → C10 → C11 ───────────────┐
-                               │
-real Intelligence owner seam ──┼→ I6 READ-ONLY ASK DANTE
-                               │
-Auth/AuthZ/disclosure/etc. ─────┤
-                               │
-I3/Search family ───────────────┘  ONLY WHEN THAT ASK VERTICAL NEEDS SEARCH DISCOVERY
+C6  governance/resource/evidence contracts              CLOSED / retained
+C7  immutable route-config identity                      CLOSED / extended to typed v2
+C8  OpenAI/Terra admission                               HISTORICAL PASS / retained evidence
+C9  OpenAI/Terra live-compatibility blocker              SUPERSEDED AS CURRENT PATH
+C10 development model evidence                           COMPLETE
+C11 development binding decision                         COMPLETE / Gemini 3.8 Flash
+production qualification/promotion                       NOT COMPLETE / NOT CLAIMED
 ```
 
-The integration gate requires, as applicable:
+This does not claim OpenAI/Terra failed. It means the old unexecuted Terra live call no longer blocks the accepted development route after direct GPT-4.1/Gemini evidence and the owner decision.
+
+### 7.3 Low-level ModelAccess foundation materialized
+
+Current branch now contains:
 
 ```text
-real product/application owner
-real source data semantics
-owning public typed query/read seam or accepted projection
-safe display/result semantics
-current/history semantics
-Auth/AuthZ/Visibility/Consent/disclosure
-source/provenance/basis/currentness
-verification + publication behavior
-qualified model route when a model is used
-applicable direct proofs
+application-owned ModelAccessPort
+ModelTarget / ModelInvocation contracts
+ProviderAttempt / acceptance / error taxonomy
+detailed usage evidence including reasoning/cached/tool-use tokens
+typed immutable route config v2
+deterministic champion routing
+champion/challenger/fallback configuration slots
+Gemini native Interactions adapter
+private HTTP transport
+provider-independent structured-output validation
+deadline/timeout bounding
+no blind retry/fallback
+minimized route/provider runtime evidence
+unit tests + guarded native smoke tooling
 ```
 
-A typed owning-capability query seam may satisfy an Ask information need without Global Search. Search becomes mandatory only for Ask workloads that genuinely require Search discovery.
+The caller does not need to know that Google is the development champion.
 
-### 7.4 Current exact next provider action
+## 8. Search and real Intelligence integration boundary
 
-```text
-C9 P4 — REAL PROVIDER LIVE COMPATIBILITY
-
-admitted candidate:
-provider          OpenAI native API
-API               Responses API
-model             gpt-5.6-terra
-SDK               openai 3.7.0
-status            ADMITTED FOR QUALIFICATION ONLY
-binding           INACTIVE / PRODUCTION OFF
-
-already proven:
-P2/P3 contracts + inactive adapter       PASS
-SDK materialization + lock               PASS
-material SDK conformance                 PASS
-P4 pre-live                              PASS
-final deterministic + PostgreSQL gate    PASS
-
-remaining:
-P4 live compatibility                    NOT RUN
-credential                               user-owned qualification API key required
-traffic                                  synthetic/public/minimized only
-
-mandatory initial feature profile:
-public streaming          OFF
-background mode           OFF
-provider conversation     OFF
-previous_response_id      OFF
-provider built-in tools   OFF
-web/file search           OFF
-code/shell/computer use   OFF
-MCP/external tools        OFF
-provider memory           OFF
-store                     false
-SDK automatic retries     OFF / max_retries=0
-reasoning effort          medium
-reasoning context         current_turn
-service tier              default
-truncation                disabled
-production activation     OFF
-
-C9 MUST NOT claim direct DANTE qualification or production eligibility
-NO database/Alembic change
-```
-
-## 8. Search and first Intelligence vertical boundaries
-
-### 8.1 Global Search
-
-Global Search remains an independent cross-cutting product capability:
+Global Search remains independent:
 
 ```text
 Search contracts / eligibility / registry
-→ real Search families when owner seams exist
+→ real Search families only when owner seams exist
 → deterministic discovery/navigation
-→ protected Search proofs when applicable
 ```
 
-It is deterministic/no-model capable and is not Ask DANTE, not the Intelligence UI and not a mandatory LLM workload.
+I3 remains open but deliberately deferred. Persistence rows alone do not manufacture a useful Search family.
 
-### 8.2 First real Intelligence vertical
-
-No concrete first Intelligence product vertical is selected by this roadmap after the Search/Intelligence boundary correction.
-
-It must be selected from a real application capability with:
+The first real Intelligence integration is also deliberately deferred until DANTE has a real owning application capability with:
 
 ```text
-real owner
-real data/query seam
-real projection/display semantics
-permission/currentness/provenance behavior
-bounded read-only question/answer contract for the initial integration
+real source/query seam
+safe projection/display semantics
+current/history semantics
+Auth/AuthZ/Visibility/Consent/disclosure
+source/provenance/basis/currentness
+verification/publication behavior
 ```
 
-The initial Intelligence envelope remains deliberately bounded unless a later accepted decision changes it:
+A typed owning-capability query may satisfy an Intelligence need directly. Search is required only when the selected workload genuinely requires discovery.
+
+## 9. Provider / activation gates after foundation freeze
+
+Development foundation closure is not production qualification.
+
+Future production/private-data activation still requires applicable evidence for:
 
 ```text
-private authenticated in-app
-single-turn / request-owned initially
-READ_ONLY initially
-public streaming OFF initially
-background/durable resume OFF initially
-consequential mutation OFF initially
+privacy / retention / regional posture
+security
+reliability
+capacity
+latency
+cost per successful DANTE task
+rollout / rollback
+operational observability/audit
+real product source/query semantics
+publication/disclosure/currentness
 ```
 
-This bounded envelope limits activation risk; it does not make Search part of Intelligence.
+A second provider, failover, local model or deep-reasoning physical binding activates only from evidence of a material need.
 
-## 9. Provider / activation gates
-
-Current admission state:
+## 10. Current exact next action
 
 ```text
-OpenAI native Responses API + gpt-5.6-terra
-ADMITTED FOR QUALIFICATION ONLY
-C9 PRE-LIVE READY
+feature/ai-implementation
+→ finish low-level foundation closure only
+→ regenerate uv.lock for explicit httpx2 runtime dependency
+→ full deterministic/backend regression
+→ native Gemini smoke dry-run
+→ exactly one synthetic native Gemini Interactions smoke through ModelAccessRuntime
+→ if PASS: mark ai-foundation-closure checkpoint CLOSED / PASS and freeze branch
 ```
 
-Correct progression:
+After that:
 
 ```text
-candidate shortlist                         COMPLETE
-→ candidate admission                       C8 / COMPLETE
-→ inactive adapter + SDK                    C9 / MATERIALIZED
-→ deterministic/material conformance        C9 / PASS
-→ P4 pre-live                               C9 / PASS
-→ final deterministic + PostgreSQL gate     C9 / PASS
-→ live compatibility on synthetic/public/minimized data C9 / NOT RUN
-→ direct DANTE eval                         C10
-→ security/privacy/capacity/economics evidence
-→ qualification
-→ promotion decision                        C11
+leave feature/ai-implementation
+return to the broader DANTE roadmap / main-oriented work
+no forced Ask DANTE vertical
+no additional broad model benchmarking
 ```
 
-Candidate admission and pre-live PASS are not production eligibility. Build-ready is not activation-ready. Private-data Search and private-data Ask each require their own real source/query semantics, authoritative Auth/AuthZ, applicable SC/PSV proofs, safe publication, evidence/privacy/audit and provider qualification when a model route is used.
-
-## 10. Current implementation state / non-claims
+Current non-claims:
 
 ```text
-AI architecture design closed          YES
-post-AI05 structural mega pass         YES
-implementation baseline accepted       YES
-Search/Intelligence boundary amendment CURRENT / BINDING
-AI implementation started              YES
-I0 closed / pass                       YES
-I1 closed / pass                       YES
-I2 closed / pass                       YES
-Search shell/contracts implemented     YES
-Intelligence C5 contracts/fakes        YES
-I3 real Search family / PG adapter     NO / DEFERRED
-C6 control contracts                   YES / CLOSED-PASS
-C7 route-config loader                 YES / CLOSED-PASS
-C8/P1 provider candidate admission     YES / CLOSED
-admitted qualification candidate       OpenAI Responses / gpt-5.6-terra
-provider SDK installed                 YES / openai 3.7.0 / locked
-provider adapter                       YES / INACTIVE / QUALIFICATION-ONLY
-C9 deterministic/material conformance  PASS
-C9 P4 pre-live                         PASS
-C9 final deterministic + PG regression PASS
-live provider call                     NO / NOT RUN
-C9 overall                             OPEN / PRE-LIVE READY
 production qualification              NO
-private-data eligibility               NO
-first real Intelligence product vertical NOT YET SELECTED
-production Search active               NO
-production Ask active                  NO
+private-data Gemini eligibility        NO
+production Search                      NO
+production Ask                         NO
+first real Intelligence vertical       NOT YET SELECTED
 new PostgreSQL/Alembic change          NO
 new generic AI persistence             NO
-FTS/vector activated                   NO
-Restate/R2/MCP/A2A activated           NO
-Execution Environment selected         NO
+FTS/vector activation                  NO
+Restate/R2/MCP/A2A activation          NO
+Execution Environment activation       NO
 ```
