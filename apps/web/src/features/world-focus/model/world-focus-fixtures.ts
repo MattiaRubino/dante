@@ -13,11 +13,7 @@ export const WORLD_FOCUS_IDS = [
 
 export type WorldFocusId = (typeof WORLD_FOCUS_IDS)[number];
 
-export type WorldFocusMotionCharacter =
-  | 'pulse'
-  | 'orbit'
-  | 'drift'
-  | 'steady';
+export type WorldFocusMotionCharacter = 'pulse' | 'orbit' | 'drift' | 'steady';
 
 export type WorldFocusTexture = 'soft' | 'wave' | 'stellar' | 'grid';
 
@@ -182,7 +178,9 @@ const WORLD_ID_BY_LABEL = new Map<string, WorldFocusId>([
   ['projects', 'projects'],
 ]);
 
-export function normalizeWorldFocusId(value: unknown): WorldFocusId | undefined {
+export function normalizeWorldFocusId(
+  value: unknown,
+): WorldFocusId | undefined {
   if (typeof value !== 'string') {
     return undefined;
   }

@@ -67,7 +67,13 @@ describe('temporal create session', () => {
       ...baseline,
       event: {
         ...baseline.event,
-        agendaParts: Object.freeze([' Listening ', '', 'Orale', '  ', 'Scritto ']),
+        agendaParts: Object.freeze([
+          ' Listening ',
+          '',
+          'Orale',
+          '  ',
+          'Scritto ',
+        ]),
       },
     });
 
@@ -144,7 +150,9 @@ describe('temporal create session', () => {
     expect(reopened.draft.current.eventRecurrence.patternKind).toBe(
       'quota-per-period',
     );
-    expect(reopened.draft.current.eventRecurrence.quotaFrame).toBe('named-zone');
+    expect(reopened.draft.current.eventRecurrence.quotaFrame).toBe(
+      'named-zone',
+    );
     expect(reopened.draft.current.eventRecurrence.quotaWeekStart).toBe('MO');
     expect(reopened.draft.current.eventRecurrence.quotaTimeZoneId).toBe(
       'Europe/Rome',
@@ -362,9 +370,9 @@ describe('temporal create session', () => {
       },
     });
 
-    expect(validateTemporalCreateFields(invalid).map((issue) => issue.code)).toContain(
-      'temporal.create.minimum_session.invalid',
-    );
+    expect(
+      validateTemporalCreateFields(invalid).map((issue) => issue.code),
+    ).toContain('temporal.create.minimum_session.invalid');
     expect(validateTemporalCreateFields(valid)).toEqual([]);
   });
 
@@ -513,12 +521,12 @@ describe('temporal create session', () => {
       },
     });
 
-    expect(validateTemporalCreateFields(duplicate).map((issue) => issue.code)).toContain(
-      'temporal.create.recurrence.cycle_invalid',
-    );
-    expect(validateTemporalCreateFields(outside).map((issue) => issue.code)).toContain(
-      'temporal.create.recurrence.cycle_invalid',
-    );
+    expect(
+      validateTemporalCreateFields(duplicate).map((issue) => issue.code),
+    ).toContain('temporal.create.recurrence.cycle_invalid');
+    expect(
+      validateTemporalCreateFields(outside).map((issue) => issue.code),
+    ).toContain('temporal.create.recurrence.cycle_invalid');
   });
 
   it('supports infer-provisional without claiming an authoritative Actual', () => {

@@ -25,10 +25,7 @@
   margin: 0 -24px;
   padding: 22px 24px 16px;
   border-bottom: 1px solid
-    var(
-      --dante-semantic-color-home-border-subtle,
-      rgba(255, 255, 255, 0.08)
-    );
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08));
   background: color-mix(
     in srgb,
     var(--dante-semantic-color-home-surface-primary, #0d1522) 98%,
@@ -55,10 +52,7 @@
   min-height: 34px;
   padding: 0 11px;
   border: 1px solid
-    var(
-      --dante-semantic-color-home-border-subtle,
-      rgba(255, 255, 255, 0.08)
-    );
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08));
   border-radius: 10px;
   color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
   background: rgba(255, 255, 255, 0.025);
@@ -97,10 +91,7 @@
   min-width: 0;
   padding: 4px 4px 4px 10px;
   border: 1px solid
-    var(
-      --dante-semantic-color-home-border-subtle,
-      rgba(255, 255, 255, 0.08)
-    );
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08));
   border-radius: 11px;
   background: rgba(255, 255, 255, 0.018);
 }
@@ -143,10 +134,7 @@
   min-height: 32px;
   padding: 0 11px;
   border: 1px solid
-    var(
-      --dante-semantic-color-home-border-subtle,
-      rgba(255, 255, 255, 0.08)
-    );
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08));
   border-radius: 999px;
   color: var(--dante-semantic-color-home-text-muted, #8f9bad);
   background: rgba(255, 255, 255, 0.018);
@@ -194,7 +182,11 @@
   color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
   background: color-mix(
     in srgb,
-    var(--dante-semantic-color-home-chrome-active-soft, rgba(234, 92, 18, 0.095)) 42%,
+    var(
+        --dante-semantic-color-home-chrome-active-soft,
+        rgba(234, 92, 18, 0.095)
+      )
+      42%,
     transparent
   );
   font: inherit;
@@ -214,10 +206,7 @@
   gap: 12px;
   padding: 14px;
   border: 1px solid
-    var(
-      --dante-semantic-color-home-border-subtle,
-      rgba(255, 255, 255, 0.08)
-    );
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08));
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.014);
 }
@@ -291,10 +280,7 @@
   min-height: 38px;
   padding: 9px;
   border: 1px solid
-    var(
-      --dante-semantic-color-home-border-subtle,
-      rgba(255, 255, 255, 0.08)
-    );
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08));
   border-radius: 10px;
   color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
   background: rgba(255, 255, 255, 0.012);
@@ -321,10 +307,7 @@
   min-height: 32px;
   padding: 0 8px;
   border: 1px solid
-    var(
-      --dante-semantic-color-home-border-subtle,
-      rgba(255, 255, 255, 0.08)
-    );
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08));
   border-radius: 9px;
   color: var(--dante-semantic-color-home-text-muted, #8f9bad);
   background: transparent;
@@ -349,8 +332,7 @@
 .temporal-create-truth-note {
   margin: 0;
   padding: 9px 10px;
-  border-left: 2px solid
-    var(--dante-semantic-color-home-chrome-active, #ea5c12);
+  border-left: 2px solid var(--dante-semantic-color-home-chrome-active, #ea5c12);
   color: var(--dante-semantic-color-home-text-muted, #8f9bad);
   background: rgba(255, 255, 255, 0.012);
   font-size: 9px;
@@ -375,7 +357,8 @@
   border: 1px dashed
     color-mix(
       in srgb,
-      var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08)) 78%,
+      var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08))
+        78%,
       var(--dante-semantic-color-home-chrome-active, #ea5c12)
     );
   border-radius: 11px;
@@ -417,10 +400,7 @@
   min-height: 54px;
   padding: 10px;
   border: 1px solid
-    var(
-      --dante-semantic-color-home-border-subtle,
-      rgba(255, 255, 255, 0.08)
-    );
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08));
   border-radius: 11px;
   text-align: left;
   color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);

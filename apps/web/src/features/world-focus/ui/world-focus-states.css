@@ -5,7 +5,8 @@
   max-width: min(520px, calc(100% - 32px));
   margin: 0;
   padding: 12px 18px;
-  border: 1px solid color-mix(in srgb, var(--world-focus-accent) 20%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--world-focus-accent) 20%, transparent);
   border-radius: 999px;
   color: rgba(232, 236, 247, 0.76);
   background: rgba(8, 12, 24, 0.62);

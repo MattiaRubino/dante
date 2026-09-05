@@ -135,13 +135,12 @@ function recurrenceOwnerForFields(
 function capabilitiesForFields(
   fields: TemporalCreateFields,
 ): TemporalCreatePreparedOperation['command']['payload']['capabilities'] {
-  const capabilities: TemporalCreatePreparedOperation['command']['payload']['capabilities'][number][] = [
-    'placement',
-    'confirmation',
-    'history',
-    'notes',
-  ];
-  if (fields.kind === 'event' && fields.eventRecurrence.patternKind !== 'none') {
+  const capabilities: TemporalCreatePreparedOperation['command']['payload']['capabilities'][number][] =
+    ['placement', 'confirmation', 'history', 'notes'];
+  if (
+    fields.kind === 'event' &&
+    fields.eventRecurrence.patternKind !== 'none'
+  ) {
     capabilities.push('recurrence');
   }
   if (fields.kind === 'activity') {
@@ -181,7 +180,9 @@ function operationIdReuseResult(
   });
 }
 
-function notFoundResult(operationId: TemporalOperationId): TemporalOperationResult {
+function notFoundResult(
+  operationId: TemporalOperationId,
+): TemporalOperationResult {
   return Object.freeze({
     operationId,
     status: 'rejected' as const,

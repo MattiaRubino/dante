@@ -128,7 +128,8 @@ describe('Temporal Create enterprise authoring semantics', () => {
     }
     await runtime.execute(preparation.prepared);
 
-    const event = (await runtime.listRecords())[0]?.metadata.specification.event;
+    const event = (await runtime.listRecords())[0]?.metadata.specification
+      .event;
     expect(event?.agendaParts).toEqual([
       'Rischi',
       'Decisioni',
@@ -177,10 +178,13 @@ describe('Temporal Create enterprise authoring semantics', () => {
     }
     const execution = await runtime.execute(preparation.prepared);
     expect(execution.effect?.projection.placement).toBeNull();
-    expect(execution.effect?.projection.capabilities).not.toContain('recurrence');
+    expect(execution.effect?.projection.capabilities).not.toContain(
+      'recurrence',
+    );
     expect(execution.effect?.projection.capabilities).toContain('execution');
 
-    const specification = (await runtime.listRecords())[0]?.metadata.specification;
+    const specification = (await runtime.listRecords())[0]?.metadata
+      .specification;
     expect(specification?.scheduling.fallbackPolicy).toBe('shorten-or-split');
     expect(specification?.execution.maxSessions).toBe(4);
     expect(specification?.eventRecurrence.patternKind).toBe('none');
@@ -213,7 +217,7 @@ describe('Temporal Create enterprise authoring semantics', () => {
     const execution = await runtime.execute(preparation.prepared);
 
     expect(execution.effect?.projection.capabilities).toContain('recurrence');
-    expect((await runtime.list())).toHaveLength(1);
+    expect(await runtime.list()).toHaveLength(1);
     expect(
       (await runtime.listRecords())[0]?.metadata.specification.eventRecurrence
         .patternKind,

@@ -58,7 +58,10 @@ function AgendaPartEditor({
       data-temporal-create-agenda-part
       role="listitem"
     >
-      <span className="temporal-create-event-agenda__position" aria-hidden="true">
+      <span
+        className="temporal-create-event-agenda__position"
+        aria-hidden="true"
+      >
         {index + 1}
       </span>
       <input
@@ -155,7 +158,9 @@ export function TemporalCreateEventAgenda({
   const commitPart = (index: number, value: string) => {
     const normalized = value.trim();
     if (normalized.length === 0) {
-      const next = parts.filter((_, candidateIndex) => candidateIndex !== index);
+      const next = parts.filter(
+        (_, candidateIndex) => candidateIndex !== index,
+      );
       if (next.length !== parts.length) {
         publish(next);
         focusAfterRemoval(index, next.length);
@@ -177,7 +182,9 @@ export function TemporalCreateEventAgenda({
     }
     const normalized = value.trim();
     if (normalized.length === 0) {
-      const next = parts.filter((_, candidateIndex) => candidateIndex !== index);
+      const next = parts.filter(
+        (_, candidateIndex) => candidateIndex !== index,
+      );
       publish(next);
       focusAfterRemoval(index, next.length);
       return;
@@ -211,7 +218,9 @@ export function TemporalCreateEventAgenda({
       className="temporal-create-event-agenda"
       data-temporal-create-agenda
     >
-      <legend>{t(($) => $.common.home.timeline.create.eventDetails.agenda)}</legend>
+      <legend>
+        {t(($) => $.common.home.timeline.create.eventDetails.agenda)}
+      </legend>
       <p className="temporal-create-event-agenda__description">
         {t(($) => $.common.home.timeline.create.eventDetails.agendaDescription)}
       </p>
@@ -259,7 +268,9 @@ export function TemporalCreateEventAgenda({
               }
             }}
             placeholder={t(
-              ($) => $.common.home.timeline.create.eventDetails.agendaNewItemPlaceholder,
+              ($) =>
+                $.common.home.timeline.create.eventDetails
+                  .agendaNewItemPlaceholder,
             )}
             autoComplete="off"
           />
@@ -275,7 +286,9 @@ export function TemporalCreateEventAgenda({
       </div>
 
       <p className="temporal-create-event-agenda__hint">
-        {t(($) => $.common.home.timeline.create.eventDetails.agendaKeyboardHint)}
+        {t(
+          ($) => $.common.home.timeline.create.eventDetails.agendaKeyboardHint,
+        )}
       </p>
     </fieldset>
   );

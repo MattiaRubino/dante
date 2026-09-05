@@ -4,15 +4,25 @@
 }
 
 .temporal-create-projection-card[data-timeline-tone='focus'],
-.temporal-create-all-day[data-timeline-tone='focus'] { --timeline-group-color: var(--dante-timeline-tone-focus); }
+.temporal-create-all-day[data-timeline-tone='focus'] {
+  --timeline-group-color: var(--dante-timeline-tone-focus);
+}
 .temporal-create-projection-card[data-timeline-tone='meeting'],
-.temporal-create-all-day[data-timeline-tone='meeting'] { --timeline-group-color: var(--dante-timeline-tone-meeting); }
+.temporal-create-all-day[data-timeline-tone='meeting'] {
+  --timeline-group-color: var(--dante-timeline-tone-meeting);
+}
 .temporal-create-projection-card[data-timeline-tone='health'],
-.temporal-create-all-day[data-timeline-tone='health'] { --timeline-group-color: var(--dante-timeline-tone-health); }
+.temporal-create-all-day[data-timeline-tone='health'] {
+  --timeline-group-color: var(--dante-timeline-tone-health);
+}
 .temporal-create-projection-card[data-timeline-tone='creative'],
-.temporal-create-all-day[data-timeline-tone='creative'] { --timeline-group-color: var(--dante-timeline-tone-creative); }
+.temporal-create-all-day[data-timeline-tone='creative'] {
+  --timeline-group-color: var(--dante-timeline-tone-creative);
+}
 .temporal-create-projection-card[data-timeline-tone='urgent'],
-.temporal-create-all-day[data-timeline-tone='urgent'] { --timeline-group-color: var(--dante-timeline-tone-urgent); }
+.temporal-create-all-day[data-timeline-tone='urgent'] {
+  --timeline-group-color: var(--dante-timeline-tone-urgent);
+}
 
 .temporal-create-projection-card {
   position: absolute;
@@ -23,12 +33,25 @@
   gap: 4px;
   overflow: hidden;
   padding: 8px 10px 8px 13px;
-  border: 1px solid color-mix(in srgb, var(--timeline-group-color) 34%, var(--dante-semantic-color-home-border-subtle));
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--timeline-group-color) 34%,
+      var(--dante-semantic-color-home-border-subtle)
+    );
   border-radius: 10px;
   color: var(--dante-semantic-color-home-text-primary);
-  background: color-mix(in srgb, var(--timeline-group-color) 5%, var(--dante-semantic-color-home-surface-primary));
-  box-shadow: inset 3px 0 0 var(--timeline-group-color), 0 10px 24px rgba(0, 0, 0, 0.16);
-  transition: opacity 140ms ease, box-shadow 140ms ease;
+  background: color-mix(
+    in srgb,
+    var(--timeline-group-color) 5%,
+    var(--dante-semantic-color-home-surface-primary)
+  );
+  box-shadow:
+    inset 3px 0 0 var(--timeline-group-color),
+    0 10px 24px rgba(0, 0, 0, 0.16);
+  transition:
+    opacity 140ms ease,
+    box-shadow 140ms ease;
 }
 
 .temporal-create-projection-card strong {
@@ -57,7 +80,8 @@
   border-style: dashed;
   opacity: 0.62;
   pointer-events: none;
-  box-shadow: inset 3px 0 0 color-mix(in srgb, var(--timeline-group-color) 60%, transparent);
+  box-shadow: inset 3px 0 0
+    color-mix(in srgb, var(--timeline-group-color) 60%, transparent);
 }
 
 .temporal-create-all-day {
@@ -68,10 +92,15 @@
   align-items: center;
   gap: 7px;
   padding: 5px 9px;
-  border: 1px solid color-mix(in srgb, var(--timeline-group-color) 30%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--timeline-group-color) 30%, transparent);
   border-radius: 999px;
   color: var(--dante-semantic-color-home-text-primary);
-  background: color-mix(in srgb, var(--timeline-group-color) 8%, var(--dante-semantic-color-home-surface-primary));
+  background: color-mix(
+    in srgb,
+    var(--timeline-group-color) 8%,
+    var(--dante-semantic-color-home-surface-primary)
+  );
 }
 
 .temporal-create-all-day span {
@@ -126,5 +155,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .temporal-create-projection-card,
-  .temporal-create-toast { transition: none; }
+  .temporal-create-toast {
+    transition: none;
+  }
 }

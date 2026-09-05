@@ -30,9 +30,8 @@ export function TemporalCreateActivityFields({
   const patchScheduling = (
     patch: Partial<TemporalCreateFields['scheduling']>,
   ) => onPatch({ scheduling: { ...scheduling, ...patch } });
-  const patchExecution = (
-    patch: Partial<TemporalCreateFields['execution']>,
-  ) => onPatch({ execution: { ...execution, ...patch } });
+  const patchExecution = (patch: Partial<TemporalCreateFields['execution']>) =>
+    onPatch({ execution: { ...execution, ...patch } });
 
   return (
     <>
@@ -45,14 +44,18 @@ export function TemporalCreateActivityFields({
             <h3 id="temporal-create-activity-planning-heading">
               {t(($) => $.common.home.timeline.create.timeSemantics.label)}
             </h3>
-            <p>{t(($) => $.common.home.timeline.create.planning.description)}</p>
+            <p>
+              {t(($) => $.common.home.timeline.create.planning.description)}
+            </p>
           </div>
         </div>
 
         <div className={`temporal-create-grid ${unplaced ? 'two' : 'one'}`}>
           {unplaced ? (
             <label className="temporal-create-control">
-              <span>{t(($) => $.common.home.timeline.create.planning.constraint)}</span>
+              <span>
+                {t(($) => $.common.home.timeline.create.planning.constraint)}
+              </span>
               <select
                 value={scheduling.constraintKind}
                 onChange={(event) =>
@@ -63,26 +66,44 @@ export function TemporalCreateActivityFields({
                 }
               >
                 <option value="none">
-                  {t(($) => $.common.home.timeline.create.planning.constraintNone)}
+                  {t(
+                    ($) =>
+                      $.common.home.timeline.create.planning.constraintNone,
+                  )}
                 </option>
                 <option value="open">
-                  {t(($) => $.common.home.timeline.create.planning.constraintOpen)}
+                  {t(
+                    ($) =>
+                      $.common.home.timeline.create.planning.constraintOpen,
+                  )}
                 </option>
                 <option value="bounded-window">
-                  {t(($) => $.common.home.timeline.create.planning.constraintWindow)}
+                  {t(
+                    ($) =>
+                      $.common.home.timeline.create.planning.constraintWindow,
+                  )}
                 </option>
                 <option value="deadline">
-                  {t(($) => $.common.home.timeline.create.planning.constraintDeadline)}
+                  {t(
+                    ($) =>
+                      $.common.home.timeline.create.planning.constraintDeadline,
+                  )}
                 </option>
                 <option value="preferred-window">
-                  {t(($) => $.common.home.timeline.create.planning.constraintPreferred)}
+                  {t(
+                    ($) =>
+                      $.common.home.timeline.create.planning
+                        .constraintPreferred,
+                  )}
                 </option>
               </select>
             </label>
           ) : null}
 
           <label className="temporal-create-control">
-            <span>{t(($) => $.common.home.timeline.create.planning.movement)}</span>
+            <span>
+              {t(($) => $.common.home.timeline.create.planning.movement)}
+            </span>
             <select
               value={scheduling.movementPolicy}
               onChange={(event) =>
@@ -93,13 +114,19 @@ export function TemporalCreateActivityFields({
               }
             >
               <option value="locked">
-                {t(($) => $.common.home.timeline.create.planning.movementLocked)}
+                {t(
+                  ($) => $.common.home.timeline.create.planning.movementLocked,
+                )}
               </option>
               <option value="window">
-                {t(($) => $.common.home.timeline.create.planning.movementWindow)}
+                {t(
+                  ($) => $.common.home.timeline.create.planning.movementWindow,
+                )}
               </option>
               <option value="confirm">
-                {t(($) => $.common.home.timeline.create.planning.movementConfirm)}
+                {t(
+                  ($) => $.common.home.timeline.create.planning.movementConfirm,
+                )}
               </option>
               <option value="free">
                 {t(($) => $.common.home.timeline.create.planning.movementFree)}
@@ -114,27 +141,41 @@ export function TemporalCreateActivityFields({
             data-create-path="scheduling.window"
           >
             <label className="temporal-create-control">
-              <span>{t(($) => $.common.home.timeline.create.planning.windowStartDate)}</span>
+              <span>
+                {t(
+                  ($) => $.common.home.timeline.create.planning.windowStartDate,
+                )}
+              </span>
               <input
                 type="date"
                 value={scheduling.windowStartDate}
                 onChange={(event) =>
-                  patchScheduling({ windowStartDate: event.currentTarget.value })
+                  patchScheduling({
+                    windowStartDate: event.currentTarget.value,
+                  })
                 }
               />
             </label>
             <label className="temporal-create-control">
-              <span>{t(($) => $.common.home.timeline.create.planning.windowStartTime)}</span>
+              <span>
+                {t(
+                  ($) => $.common.home.timeline.create.planning.windowStartTime,
+                )}
+              </span>
               <input
                 type="time"
                 value={scheduling.windowStartTime}
                 onChange={(event) =>
-                  patchScheduling({ windowStartTime: event.currentTarget.value })
+                  patchScheduling({
+                    windowStartTime: event.currentTarget.value,
+                  })
                 }
               />
             </label>
             <label className="temporal-create-control">
-              <span>{t(($) => $.common.home.timeline.create.planning.windowEndDate)}</span>
+              <span>
+                {t(($) => $.common.home.timeline.create.planning.windowEndDate)}
+              </span>
               <input
                 type="date"
                 value={scheduling.windowEndDate}
@@ -144,7 +185,9 @@ export function TemporalCreateActivityFields({
               />
             </label>
             <label className="temporal-create-control">
-              <span>{t(($) => $.common.home.timeline.create.planning.windowEndTime)}</span>
+              <span>
+                {t(($) => $.common.home.timeline.create.planning.windowEndTime)}
+              </span>
               <input
                 type="time"
                 value={scheduling.windowEndTime}
@@ -163,27 +206,37 @@ export function TemporalCreateActivityFields({
             data-create-path="scheduling.deadline"
           >
             <label className="temporal-create-control">
-              <span>{t(($) => $.common.home.timeline.create.planning.earliestDate)}</span>
+              <span>
+                {t(($) => $.common.home.timeline.create.planning.earliestDate)}
+              </span>
               <input
                 type="date"
                 value={scheduling.earliestStartDate}
                 onChange={(event) =>
-                  patchScheduling({ earliestStartDate: event.currentTarget.value })
+                  patchScheduling({
+                    earliestStartDate: event.currentTarget.value,
+                  })
                 }
               />
             </label>
             <label className="temporal-create-control">
-              <span>{t(($) => $.common.home.timeline.create.planning.earliestTime)}</span>
+              <span>
+                {t(($) => $.common.home.timeline.create.planning.earliestTime)}
+              </span>
               <input
                 type="time"
                 value={scheduling.earliestStartTime}
                 onChange={(event) =>
-                  patchScheduling({ earliestStartTime: event.currentTarget.value })
+                  patchScheduling({
+                    earliestStartTime: event.currentTarget.value,
+                  })
                 }
               />
             </label>
             <label className="temporal-create-control">
-              <span>{t(($) => $.common.home.timeline.create.planning.deadlineDate)}</span>
+              <span>
+                {t(($) => $.common.home.timeline.create.planning.deadlineDate)}
+              </span>
               <input
                 type="date"
                 value={scheduling.deadlineDate}
@@ -193,7 +246,9 @@ export function TemporalCreateActivityFields({
               />
             </label>
             <label className="temporal-create-control">
-              <span>{t(($) => $.common.home.timeline.create.planning.deadlineTime)}</span>
+              <span>
+                {t(($) => $.common.home.timeline.create.planning.deadlineTime)}
+              </span>
               <input
                 type="time"
                 value={scheduling.deadlineTime}
@@ -212,22 +267,32 @@ export function TemporalCreateActivityFields({
             data-create-path="scheduling.preferredWindow"
           >
             <label className="temporal-create-control">
-              <span>{t(($) => $.common.home.timeline.create.planning.preferredStart)}</span>
+              <span>
+                {t(
+                  ($) => $.common.home.timeline.create.planning.preferredStart,
+                )}
+              </span>
               <input
                 type="time"
                 value={scheduling.preferredStartTime}
                 onChange={(event) =>
-                  patchScheduling({ preferredStartTime: event.currentTarget.value })
+                  patchScheduling({
+                    preferredStartTime: event.currentTarget.value,
+                  })
                 }
               />
             </label>
             <label className="temporal-create-control">
-              <span>{t(($) => $.common.home.timeline.create.planning.preferredEnd)}</span>
+              <span>
+                {t(($) => $.common.home.timeline.create.planning.preferredEnd)}
+              </span>
               <input
                 type="time"
                 value={scheduling.preferredEndTime}
                 onChange={(event) =>
-                  patchScheduling({ preferredEndTime: event.currentTarget.value })
+                  patchScheduling({
+                    preferredEndTime: event.currentTarget.value,
+                  })
                 }
               />
             </label>
@@ -237,7 +302,9 @@ export function TemporalCreateActivityFields({
 
         {unplaced && scheduling.constraintKind !== 'none' ? (
           <label className="temporal-create-control">
-            <span>{t(($) => $.common.home.timeline.create.planning.fallback)}</span>
+            <span>
+              {t(($) => $.common.home.timeline.create.planning.fallback)}
+            </span>
             <select
               value={scheduling.fallbackPolicy}
               onChange={(event) =>
@@ -248,13 +315,17 @@ export function TemporalCreateActivityFields({
               }
             >
               <option value="inherit">
-                {t(($) => $.common.home.timeline.create.planning.fallbackInherit)}
+                {t(
+                  ($) => $.common.home.timeline.create.planning.fallbackInherit,
+                )}
               </option>
               <option value="skip">
                 {t(($) => $.common.home.timeline.create.planning.fallbackSkip)}
               </option>
               <option value="same-window">
-                {t(($) => $.common.home.timeline.create.planning.fallbackWindow)}
+                {t(
+                  ($) => $.common.home.timeline.create.planning.fallbackWindow,
+                )}
               </option>
               <option value="next-valid-date">
                 {t(($) => $.common.home.timeline.create.planning.fallbackNext)}
@@ -263,7 +334,9 @@ export function TemporalCreateActivityFields({
                 {t(($) => $.common.home.timeline.create.planning.fallbackSplit)}
               </option>
               <option value="replan-dependencies">
-                {t(($) => $.common.home.timeline.create.planning.fallbackReplan)}
+                {t(
+                  ($) => $.common.home.timeline.create.planning.fallbackReplan,
+                )}
               </option>
             </select>
           </label>
@@ -284,7 +357,9 @@ export function TemporalCreateActivityFields({
 
         <div className="temporal-create-grid two">
           <label className="temporal-create-control">
-            <span>{t(($) => $.common.home.timeline.create.execution.structure)}</span>
+            <span>
+              {t(($) => $.common.home.timeline.create.execution.structure)}
+            </span>
             <select
               value={execution.sessionMode}
               onChange={(event) =>
@@ -305,7 +380,11 @@ export function TemporalCreateActivityFields({
 
           {execution.sessionMode === 'splittable' ? (
             <label className="temporal-create-control">
-              <span>{t(($) => $.common.home.timeline.create.execution.minimumSession)}</span>
+              <span>
+                {t(
+                  ($) => $.common.home.timeline.create.execution.minimumSession,
+                )}
+              </span>
               <input
                 data-create-path="execution.minSessionMinutes"
                 type="number"
@@ -313,7 +392,9 @@ export function TemporalCreateActivityFields({
                 step="5"
                 value={execution.minSessionMinutes}
                 onChange={(event) =>
-                  patchExecution({ minSessionMinutes: Number(event.currentTarget.value) })
+                  patchExecution({
+                    minSessionMinutes: Number(event.currentTarget.value),
+                  })
                 }
               />
               {renderError('execution.minSessionMinutes')}
@@ -324,14 +405,21 @@ export function TemporalCreateActivityFields({
         {execution.sessionMode === 'splittable' ? (
           <div className="temporal-create-grid two">
             <label className="temporal-create-control">
-              <span>{t(($) => $.common.home.timeline.create.execution.maximumSessions)}</span>
+              <span>
+                {t(
+                  ($) =>
+                    $.common.home.timeline.create.execution.maximumSessions,
+                )}
+              </span>
               <input
                 data-create-path="execution.maxSessions"
                 type="number"
                 min="2"
                 max="99"
                 value={execution.maxSessions ?? ''}
-                placeholder={t(($) => $.common.home.timeline.create.execution.noMaximum)}
+                placeholder={t(
+                  ($) => $.common.home.timeline.create.execution.noMaximum,
+                )}
                 onChange={(event) =>
                   patchExecution({
                     maxSessions:
@@ -344,11 +432,15 @@ export function TemporalCreateActivityFields({
               {renderError('execution.maxSessions')}
             </label>
             <label className="temporal-create-control">
-              <span>{t(($) => $.common.home.timeline.create.execution.spacing)}</span>
+              <span>
+                {t(($) => $.common.home.timeline.create.execution.spacing)}
+              </span>
               <select
                 value={execution.spacingMinutes}
                 onChange={(event) =>
-                  patchExecution({ spacingMinutes: Number(event.currentTarget.value) })
+                  patchExecution({
+                    spacingMinutes: Number(event.currentTarget.value),
+                  })
                 }
               >
                 {TEMPORAL_CREATE_BUFFER_OPTIONS.map((value) => (
@@ -361,13 +453,20 @@ export function TemporalCreateActivityFields({
           </div>
         ) : null}
 
-        <div className="temporal-create-grid two" data-create-path="execution.buffers">
+        <div
+          className="temporal-create-grid two"
+          data-create-path="execution.buffers"
+        >
           <label className="temporal-create-control">
-            <span>{t(($) => $.common.home.timeline.create.execution.preparation)}</span>
+            <span>
+              {t(($) => $.common.home.timeline.create.execution.preparation)}
+            </span>
             <select
               value={execution.preparationMinutes}
               onChange={(event) =>
-                patchExecution({ preparationMinutes: Number(event.currentTarget.value) })
+                patchExecution({
+                  preparationMinutes: Number(event.currentTarget.value),
+                })
               }
             >
               {TEMPORAL_CREATE_BUFFER_OPTIONS.map((value) => (
@@ -378,11 +477,15 @@ export function TemporalCreateActivityFields({
             </select>
           </label>
           <label className="temporal-create-control">
-            <span>{t(($) => $.common.home.timeline.create.execution.recovery)}</span>
+            <span>
+              {t(($) => $.common.home.timeline.create.execution.recovery)}
+            </span>
             <select
               value={execution.recoveryMinutes}
               onChange={(event) =>
-                patchExecution({ recoveryMinutes: Number(event.currentTarget.value) })
+                patchExecution({
+                  recoveryMinutes: Number(event.currentTarget.value),
+                })
               }
             >
               {TEMPORAL_CREATE_BUFFER_OPTIONS.map((value) => (
@@ -402,10 +505,14 @@ export function TemporalCreateActivityFields({
                 type="checkbox"
                 checked={execution.partialAllowed}
                 onChange={(event) =>
-                  patchExecution({ partialAllowed: event.currentTarget.checked })
+                  patchExecution({
+                    partialAllowed: event.currentTarget.checked,
+                  })
                 }
               />
-              <span>{t(($) => $.common.home.timeline.create.execution.partial)}</span>
+              <span>
+                {t(($) => $.common.home.timeline.create.execution.partial)}
+              </span>
             </label>
           ) : null}
           <label>
@@ -413,10 +520,14 @@ export function TemporalCreateActivityFields({
               type="checkbox"
               checked={execution.finishEarlyAllowed}
               onChange={(event) =>
-                patchExecution({ finishEarlyAllowed: event.currentTarget.checked })
+                patchExecution({
+                  finishEarlyAllowed: event.currentTarget.checked,
+                })
               }
             />
-            <span>{t(($) => $.common.home.timeline.create.execution.finishEarly)}</span>
+            <span>
+              {t(($) => $.common.home.timeline.create.execution.finishEarly)}
+            </span>
           </label>
           {execution.sessionMode === 'splittable' ? (
             <label>
@@ -424,10 +535,17 @@ export function TemporalCreateActivityFields({
                 type="checkbox"
                 checked={execution.mergeCompatible}
                 onChange={(event) =>
-                  patchExecution({ mergeCompatible: event.currentTarget.checked })
+                  patchExecution({
+                    mergeCompatible: event.currentTarget.checked,
+                  })
                 }
               />
-              <span>{t(($) => $.common.home.timeline.create.execution.mergeCompatible)}</span>
+              <span>
+                {t(
+                  ($) =>
+                    $.common.home.timeline.create.execution.mergeCompatible,
+                )}
+              </span>
             </label>
           ) : null}
         </div>

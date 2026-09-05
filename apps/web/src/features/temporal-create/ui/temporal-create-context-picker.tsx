@@ -30,8 +30,7 @@ type TemporalCreateContextPickerProps = Readonly<{
   contexts: readonly TemporalCreateContextOption[];
   onChange: (contextId: string) => void;
   onCreateContext:
-    | ((input: TemporalCreateContextInput) => TemporalCreateContextOption)
-    | null;
+    ((input: TemporalCreateContextInput) => TemporalCreateContextOption) | null;
 }>;
 
 function normalizedQuery(value: string): string {
@@ -53,8 +52,7 @@ export function TemporalCreateContextPicker({
   const [query, setQuery] = useState('');
   const [creating, setCreating] = useState(false);
   const [newLabel, setNewLabel] = useState('');
-  const [newTone, setNewTone] =
-    useState<TemporalCreateContextTone>('focus');
+  const [newTone, setNewTone] = useState<TemporalCreateContextTone>('focus');
 
   const selected =
     contexts.find((context) => context.id === value) ?? contexts[0] ?? null;
@@ -193,7 +191,10 @@ export function TemporalCreateContextPicker({
         <span className="temporal-create-context-trigger__label">
           {selected?.label ?? t(($) => $.common.home.timeline.create.context)}
         </span>
-        <span className="temporal-create-context-trigger__chevron" aria-hidden="true">
+        <span
+          className="temporal-create-context-trigger__chevron"
+          aria-hidden="true"
+        >
           ▾
         </span>
       </button>
@@ -242,7 +243,9 @@ export function TemporalCreateContextPicker({
                     />
                     <span>{context.label}</span>
                     {context.local ? (
-                      <small>{t(($) => $.common.home.timeline.create.draft)}</small>
+                      <small>
+                        {t(($) => $.common.home.timeline.create.draft)}
+                      </small>
                     ) : null}
                     <i aria-hidden="true">✓</i>
                   </button>

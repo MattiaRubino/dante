@@ -5,10 +5,7 @@
   margin: 0;
   padding: 12px;
   border: 1px solid
-    var(
-      --dante-semantic-color-home-border-subtle,
-      rgba(255, 255, 255, 0.08)
-    );
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08));
   border-radius: 12px;
   background: color-mix(
     in srgb,
@@ -46,10 +43,7 @@
   min-width: 0;
   padding: 5px;
   border: 1px solid
-    var(
-      --dante-semantic-color-home-border-subtle,
-      rgba(255, 255, 255, 0.08)
-    );
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08));
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.012);
 }
@@ -97,10 +91,7 @@
   place-items: center;
   padding: 0;
   border: 1px solid
-    var(
-      --dante-semantic-color-home-border-subtle,
-      rgba(255, 255, 255, 0.08)
-    );
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08));
   border-radius: 8px;
   color: var(--dante-semantic-color-home-text-muted, #8f9bad);
   background: rgba(255, 255, 255, 0.018);

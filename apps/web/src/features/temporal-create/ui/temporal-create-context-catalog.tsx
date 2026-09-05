@@ -1,8 +1,4 @@
-import {
-  createContext,
-  useContext,
-  type ReactNode,
-} from 'react';
+import { createContext, useContext, type ReactNode } from 'react';
 
 import type {
   TemporalCreateContextInput,
@@ -13,9 +9,8 @@ export type TemporalCreateContextCreator = (
   input: TemporalCreateContextInput,
 ) => TemporalCreateContextOption;
 
-const TemporalCreateContextCatalog = createContext<TemporalCreateContextCreator | null>(
-  null,
-);
+const TemporalCreateContextCatalog =
+  createContext<TemporalCreateContextCreator | null>(null);
 
 export function TemporalCreateContextCatalogProvider({
   onCreateContext,

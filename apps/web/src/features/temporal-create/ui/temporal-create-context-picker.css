@@ -36,7 +36,8 @@
 .temporal-create-context-trigger[aria-expanded='true'] {
   border-color: color-mix(
     in srgb,
-    var(--temporal-context-current-color, var(--dante-timeline-accent, #ea5c12)) 44%,
+    var(--temporal-context-current-color, var(--dante-timeline-accent, #ea5c12))
+      44%,
     rgba(255, 255, 255, 0.1)
   );
   background: color-mix(
@@ -90,7 +91,8 @@
   border: 1px solid
     color-mix(
       in srgb,
-      var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08)) 78%,
+      var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08))
+        78%,
       var(--dante-semantic-color-home-chrome-active, #ea5c12)
     );
   border-radius: 14px;
@@ -200,7 +202,11 @@
   color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
   background: color-mix(
     in srgb,
-    var(--dante-semantic-color-home-chrome-active-soft, rgba(234, 92, 18, 0.095)) 28%,
+    var(
+        --dante-semantic-color-home-chrome-active-soft,
+        rgba(234, 92, 18, 0.095)
+      )
+      28%,
     transparent
   );
   font: inherit;
@@ -257,7 +263,11 @@
     var(--temporal-context-color) 68%,
     white 10%
   );
-  background: color-mix(in srgb, var(--temporal-context-color) 12%, transparent);
+  background: color-mix(
+    in srgb,
+    var(--temporal-context-color) 12%,
+    transparent
+  );
   box-shadow: inset 0 0 0 1px
     color-mix(in srgb, var(--temporal-context-color) 24%, transparent);
 }

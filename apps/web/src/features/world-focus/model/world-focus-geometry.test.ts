@@ -22,9 +22,15 @@ describe('World Focus WF-G3 candidate geometry contract', () => {
     });
     expect(Object.isFrozen(WORLD_FOCUS_GEOMETRY)).toBe(true);
     expect(Object.isFrozen(WORLD_FOCUS_GEOMETRY.guideEllipses)).toBe(true);
-    expect(Object.isFrozen(WORLD_FOCUS_GEOMETRY.guideEllipses.outer)).toBe(true);
-    expect(Object.isFrozen(WORLD_FOCUS_GEOMETRY.guideEllipses.origin)).toBe(true);
-    expect(Object.isFrozen(WORLD_FOCUS_GEOMETRY.guideEllipses.inner)).toBe(true);
+    expect(Object.isFrozen(WORLD_FOCUS_GEOMETRY.guideEllipses.outer)).toBe(
+      true,
+    );
+    expect(Object.isFrozen(WORLD_FOCUS_GEOMETRY.guideEllipses.origin)).toBe(
+      true,
+    );
+    expect(Object.isFrozen(WORLD_FOCUS_GEOMETRY.guideEllipses.inner)).toBe(
+      true,
+    );
     expect(Object.isFrozen(WORLD_FOCUS_GEOMETRY.layout)).toBe(true);
   });
 });

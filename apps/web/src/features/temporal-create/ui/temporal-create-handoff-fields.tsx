@@ -42,7 +42,9 @@ export function TemporalCreateHandoffFields() {
           <h3 id="temporal-create-handoff-heading">
             {t(($) => $.common.home.timeline.create.handoffs.otherTitle)}
           </h3>
-          <p>{t(($) => $.common.home.timeline.create.handoffs.otherDescription)}</p>
+          <p>
+            {t(($) => $.common.home.timeline.create.handoffs.otherDescription)}
+          </p>
         </div>
       </div>
 
@@ -56,7 +58,9 @@ export function TemporalCreateHandoffFields() {
             data-temporal-create-handoff-availability={handoff.availability}
           >
             <strong>{label(handoff.target)}</strong>
-            <small>{t(($) => $.common.home.timeline.create.handoffs.ownerRequired)}</small>
+            <small>
+              {t(($) => $.common.home.timeline.create.handoffs.ownerRequired)}
+            </small>
           </button>
         ))}
       </div>

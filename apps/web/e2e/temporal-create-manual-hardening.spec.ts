@@ -17,10 +17,12 @@ test('Quick is draggable and Advanced stays floating while the Timeline remains 
 
   const dialog = await openCreate(page);
   await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'base');
-  await expect(dialog.locator('.temporal-create-composer__close')).toHaveText('×');
-  await expect(dialog.locator('.temporal-create-composer__header button')).toHaveCount(
-    1,
+  await expect(dialog.locator('.temporal-create-composer__close')).toHaveText(
+    '×',
   );
+  await expect(
+    dialog.locator('.temporal-create-composer__header button'),
+  ).toHaveCount(1);
 
   const backdrop = page.locator('[data-temporal-create="backdrop"]');
   const backdropStyle = await backdrop.evaluate((element) => {
@@ -101,14 +103,21 @@ test('Quick is draggable and Advanced stays floating while the Timeline remains 
   expect(advancedBox?.height ?? 999).toBeLessThanOrEqual(36);
 
   await advanced.click();
-  await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'advanced');
+  await expect(dialog).toHaveAttribute(
+    'data-temporal-create-surface',
+    'advanced',
+  );
   await expect(dialog).toHaveClass(/is-full/);
 
-  const back = dialog.getByRole('button', { name: 'Nascondi opzioni avanzate' });
+  const back = dialog.getByRole('button', {
+    name: 'Nascondi opzioni avanzate',
+  });
   await expect(back).toBeVisible();
   await expect(back).toContainText('Torna alla creazione rapida');
   await expect(back).toHaveAttribute('aria-expanded', 'true');
-  await expect(dialog.locator('[data-create-advanced="activity"]')).toBeVisible();
+  await expect(
+    dialog.locator('[data-create-advanced="activity"]'),
+  ).toBeVisible();
 
   const expanded = await dialog.boundingBox();
   if (!expanded) {
@@ -138,7 +147,9 @@ test('Quick is draggable and Advanced stays floating while the Timeline remains 
   await body.evaluate((element) => {
     element.scrollTop = element.scrollHeight;
   });
-  await expect(dialog.locator('.temporal-create-composer__close')).toBeInViewport();
+  await expect(
+    dialog.locator('.temporal-create-composer__close'),
+  ).toBeInViewport();
   await expect(dialog.locator('.temporal-create-actions')).toBeInViewport();
   await expect(back).toBeInViewport();
 
@@ -151,8 +162,13 @@ test('Quick is draggable and Advanced stays floating while the Timeline remains 
   ).toBeVisible();
 
   await repeat.selectOption('custom');
-  await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'advanced');
-  await expect(dialog.locator('[data-create-recurrence-owner="routine"]')).toBeInViewport();
+  await expect(dialog).toHaveAttribute(
+    'data-temporal-create-surface',
+    'advanced',
+  );
+  await expect(
+    dialog.locator('[data-create-recurrence-owner="routine"]'),
+  ).toBeInViewport();
   await expect(
     dialog.getByRole('button', { name: 'Nascondi opzioni avanzate' }),
   ).toBeVisible();

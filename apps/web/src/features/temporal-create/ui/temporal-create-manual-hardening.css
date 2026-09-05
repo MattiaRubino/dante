@@ -59,10 +59,7 @@
     margin: 0;
     padding-bottom: 14px;
     border-bottom: 1px solid
-      var(
-        --dante-semantic-color-home-border-subtle,
-        rgba(255, 255, 255, 0.08)
-      );
+      var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08));
     background: color-mix(
       in srgb,
       var(--dante-semantic-color-home-surface-primary, #0d1522) 98%,
@@ -139,7 +136,8 @@
     border: 0;
     border-radius: 0;
     transform: none;
-    animation: temporal-create-sheet-enter 160ms cubic-bezier(0.2, 0.75, 0.25, 1);
+    animation: temporal-create-sheet-enter 160ms
+      cubic-bezier(0.2, 0.75, 0.25, 1);
   }
 
   .temporal-create-composer.is-full .temporal-create-composer__header {
@@ -148,10 +146,7 @@
     margin: 0 -16px;
     padding: max(12px, env(safe-area-inset-top)) 16px 14px;
     border-bottom: 1px solid
-      var(
-        --dante-semantic-color-home-border-subtle,
-        rgba(255, 255, 255, 0.08)
-      );
+      var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08));
     background: color-mix(
       in srgb,
       var(--dante-semantic-color-home-surface-primary, #0d1522) 98%,

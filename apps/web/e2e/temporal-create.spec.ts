@@ -40,7 +40,10 @@ async function visibleTimelineDay(page: Page): Promise<VisibleTimelineDay> {
         const viewportBottom = Math.min(window.innerHeight, gridRect.bottom);
         const center = (viewportTop + viewportBottom) / 2;
         const candidates = sections.flatMap((section) => {
-          if (!(section instanceof HTMLElement) || !section.dataset.timelineDate) {
+          if (
+            !(section instanceof HTMLElement) ||
+            !section.dataset.timelineDate
+          ) {
             return [];
           }
 
@@ -89,14 +92,10 @@ async function visibleTimelineDay(page: Page): Promise<VisibleTimelineDay> {
     const line = element.querySelector<HTMLElement>('.timeline-hour-line');
     return line ? Number.parseFloat(line.style.top) : 0;
   });
-  const visibleTop =
-    Math.max(box.y + minuteZeroOffset, gridBox.y, 0) - box.y;
+  const visibleTop = Math.max(box.y + minuteZeroOffset, gridBox.y, 0) - box.y;
   const visibleBottom =
-    Math.min(
-      box.y + box.height,
-      gridBox.y + gridBox.height,
-      viewportHeight,
-    ) - box.y;
+    Math.min(box.y + box.height, gridBox.y + gridBox.height, viewportHeight) -
+    box.y;
 
   return { section, box, visibleTop, visibleBottom };
 }
@@ -121,7 +120,9 @@ test('Create base is title-first, exposes actionable types, protects drafts, and
     'true',
   );
   await expect(dialog.getByRole('radio', { name: 'Evento' })).toBeVisible();
-  await expect(dialog.getByRole('radio', { name: 'Da collocare' })).toBeVisible();
+  await expect(
+    dialog.getByRole('radio', { name: 'Da collocare' }),
+  ).toBeVisible();
   await expect(
     dialog.getByRole('button', { name: 'Opzioni avanzate' }),
   ).toHaveAttribute('aria-expanded', 'false');
@@ -152,11 +153,16 @@ test('Activity Orario plus Divisibile remains placed and Undo removes the same c
   await page.goto('/home');
 
   const dialog = await openCreate(page);
-  await dialog.getByRole('textbox', { name: 'Titolo' }).fill('Montare il video');
+  await dialog
+    .getByRole('textbox', { name: 'Titolo' })
+    .fill('Montare il video');
   await dialog.getByLabel('Ora').fill('14:30');
   await dialog.getByLabel('Durata prevista').selectOption('180');
   await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
-  await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'advanced');
+  await expect(dialog).toHaveAttribute(
+    'data-temporal-create-surface',
+    'advanced',
+  );
 
   await dialog
     .getByRole('combobox', { name: /Struttura di esecuzione/ })
@@ -181,7 +187,9 @@ test('Activity Orario plus Divisibile remains placed and Undo removes the same c
     dialog.getByRole('combobox', { name: /Struttura di esecuzione/ }),
   ).toHaveValue('splittable');
   await expect(dialog.getByLabel('Sessione minima (min)')).toHaveValue('45');
-  await expect(dialog.getByLabel('Numero massimo di sessioni')).toHaveValue('4');
+  await expect(dialog.getByLabel('Numero massimo di sessioni')).toHaveValue(
+    '4',
+  );
 
   await dialog.getByRole('button', { name: 'Aggiungi' }).click();
   await expect(dialog).toHaveCount(0);
@@ -218,21 +226,31 @@ test('Event Advanced preserves structured agenda, deep intent and provider reque
   await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
 
   await dialog.getByLabel('Scopo').fill('Definire il rilascio');
-  await dialog.getByLabel('Risultato atteso').fill('Decisione sul piano finale');
+  await dialog
+    .getByLabel('Risultato atteso')
+    .fill('Decisione sul piano finale');
 
   const agendaInput = dialog.getByLabel('Nuova voce agenda');
   for (const part of ['Rischi', 'Decisioni', 'Prossimi passi']) {
     await agendaInput.fill(part);
     await agendaInput.press('Enter');
   }
-  await expect(dialog.locator('[data-temporal-create-agenda-part]')).toHaveCount(3);
+  await expect(
+    dialog.locator('[data-temporal-create-agenda-part]'),
+  ).toHaveCount(3);
   await dialog.getByLabel('Voce agenda 3').press('Alt+ArrowUp');
-  await expect(dialog.getByLabel('Voce agenda 2')).toHaveValue('Prossimi passi');
+  await expect(dialog.getByLabel('Voce agenda 2')).toHaveValue(
+    'Prossimi passi',
+  );
   await dialog.getByRole('button', { name: 'Sposta voce 2 giù' }).click();
-  await expect(dialog.getByLabel('Voce agenda 3')).toHaveValue('Prossimi passi');
+  await expect(dialog.getByLabel('Voce agenda 3')).toHaveValue(
+    'Prossimi passi',
+  );
   await agendaInput.fill('   ');
   await agendaInput.press('Enter');
-  await expect(dialog.locator('[data-temporal-create-agenda-part]')).toHaveCount(3);
+  await expect(
+    dialog.locator('[data-temporal-create-agenda-part]'),
+  ).toHaveCount(3);
   await agendaInput.fill('');
 
   await dialog
@@ -240,7 +258,9 @@ test('Event Advanced preserves structured agenda, deep intent and provider reque
     .check();
   await dialog.getByLabel('Partecipanti richiesti').fill('Cliente principale');
   await dialog.getByLabel('Sale e risorse').fill('Sala Atlas');
-  await dialog.getByLabel('Pre-read / materiale da preparare').fill('Specifica v3');
+  await dialog
+    .getByLabel('Pre-read / materiale da preparare')
+    .fill('Specifica v3');
   await dialog.getByLabel('Buffer di preparazione').selectOption('15');
   await dialog.getByLabel('Buffer di recupero').selectOption('10');
   await dialog.getByLabel('Videochiamata').selectOption('provider-default');
@@ -278,12 +298,17 @@ test('Event quick recurrence enters truthful CP6 authoring and survives base Adv
   await dialog.getByRole('radio', { name: 'Evento' }).click();
   await dialog.getByLabel('Ripeti').selectOption('weekly');
   await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
-  await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'advanced');
+  await expect(dialog).toHaveAttribute(
+    'data-temporal-create-surface',
+    'advanced',
+  );
 
   const pattern = dialog.getByLabel('Modello di ricorrenza');
   await expect(pattern.locator('option')).toHaveCount(5);
   await expect(pattern).toHaveValue('calendar-wall-clock');
-  await expect(dialog.getByLabel('Frequenza di calendario')).toHaveValue('weekly');
+  await expect(dialog.getByLabel('Frequenza di calendario')).toHaveValue(
+    'weekly',
+  );
 
   await pattern.selectOption('elapsed-interval');
   await dialog.getByLabel('Intervallo trascorso (minuti)').fill('720');
@@ -367,7 +392,9 @@ test('all-day date spans live inside each day before minute zero for Event and A
   expect(
     await startDay.evaluate((section) => {
       const lane = section.querySelector<HTMLElement>('.timeline-all-day-lane');
-      const minuteZero = section.querySelector<HTMLElement>('.timeline-hour-line');
+      const minuteZero = section.querySelector<HTMLElement>(
+        '.timeline-hour-line',
+      );
       if (!lane || !minuteZero) {
         return false;
       }
@@ -381,7 +408,9 @@ test('all-day date spans live inside each day before minute zero for Event and A
   ).toBe(true);
 
   await startDay.locator('.timeline-all-day-lane__label').dblclick();
-  await expect(page.locator('[data-temporal-create="composer"]')).toHaveCount(0);
+  await expect(page.locator('[data-temporal-create="composer"]')).toHaveCount(
+    0,
+  );
   await page
     .locator('.temporal-create-toast.is-on')
     .getByRole('button', { name: 'Annulla' })
@@ -423,12 +452,17 @@ test('Advanced validation focuses the invalid execution control without losing t
   await dialog.getByLabel('Sessione minima (min)').fill('120');
   await dialog.getByRole('button', { name: 'Aggiungi' }).click();
 
-  await expect(dialog.locator('.temporal-create-field-error').first()).toBeVisible();
+  await expect(
+    dialog.locator('.temporal-create-field-error').first(),
+  ).toBeVisible();
   await expect(dialog.getByLabel('Sessione minima (min)')).toBeFocused();
   await expect(dialog.getByRole('textbox', { name: 'Titolo' })).toHaveValue(
     'Studio',
   );
-  await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'advanced');
+  await expect(dialog).toHaveAttribute(
+    'data-temporal-create-surface',
+    'advanced',
+  );
 });
 
 test('double-click and Shift-drag only use the timed canvas for contextual Create', async ({
@@ -468,7 +502,9 @@ test('double-click and Shift-drag only use the timed canvas for contextual Creat
 
   dialog = page.locator('[data-temporal-create="composer"]');
   await expect(dialog).toBeVisible();
-  const duration = Number(await dialog.getByLabel('Durata prevista').inputValue());
+  const duration = Number(
+    await dialog.getByLabel('Durata prevista').inputValue(),
+  );
   expect(duration).toBeGreaterThanOrEqual(30);
 });
 
@@ -480,7 +516,10 @@ test('Advanced Create remains bounded on mobile without horizontal overflow', as
 
   const dialog = await openCreate(page);
   await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
-  await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'advanced');
+  await expect(dialog).toHaveAttribute(
+    'data-temporal-create-surface',
+    'advanced',
+  );
 
   const box = await dialog.boundingBox();
   expect(box).not.toBeNull();

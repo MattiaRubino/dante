@@ -299,8 +299,8 @@ test('keyboard next-day move preserves identity and Undo restores the original d
 
   const originalDay = await card.evaluate(
     (element) =>
-      element.closest<HTMLElement>('[data-timeline-date]')?.dataset.timelineDate ??
-      null,
+      element.closest<HTMLElement>('[data-timeline-date]')?.dataset
+        .timelineDate ?? null,
   );
   expect(originalDay).toBe('2026-08-04');
 

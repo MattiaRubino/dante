@@ -41,15 +41,16 @@ const HANDOFF_TARGETS: readonly TemporalCreateHandoffTarget[] = Object.freeze([
   'asset',
 ]);
 
-const HANDOFF_REGISTRY: readonly TemporalCreateHandoffDescriptor[] = Object.freeze(
-  HANDOFF_TARGETS.map((target) =>
-    Object.freeze({
-      target,
-      availability: 'deferred' as const,
-      preservesDraft: true as const,
-    }),
-  ),
-);
+const HANDOFF_REGISTRY: readonly TemporalCreateHandoffDescriptor[] =
+  Object.freeze(
+    HANDOFF_TARGETS.map((target) =>
+      Object.freeze({
+        target,
+        availability: 'deferred' as const,
+        preservesDraft: true as const,
+      }),
+    ),
+  );
 
 /**
  * Authoritative Create-side registry for objects owned by another vertical.
@@ -73,7 +74,9 @@ export function prepareTemporalCreateHandoff(
   target: TemporalCreateHandoffTarget,
   fields: TemporalCreateFields,
 ): TemporalCreateHandoffIntent {
-  const descriptor = HANDOFF_REGISTRY.find((candidate) => candidate.target === target);
+  const descriptor = HANDOFF_REGISTRY.find(
+    (candidate) => candidate.target === target,
+  );
   if (!descriptor) {
     throw new Error(`Unknown Temporal Create handoff target: ${target}`);
   }

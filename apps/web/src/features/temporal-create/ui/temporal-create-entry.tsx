@@ -234,9 +234,7 @@ export function TemporalCreateEntry({
       onPreview(null);
       return;
     }
-    onPreview(
-      temporalCreateTimelinePreviewFromFields(session.draft.current),
-    );
+    onPreview(temporalCreateTimelinePreviewFromFields(session.draft.current));
     return () => onPreview(null);
   }, [onPreview, open, session.closeDecision, session.draft]);
 
@@ -362,7 +360,8 @@ export function TemporalCreateEntry({
     };
 
     const onPointerUp = (event: PointerEvent) => finishDrag(event.pointerId);
-    const onPointerCancel = (event: PointerEvent) => finishDrag(event.pointerId);
+    const onPointerCancel = (event: PointerEvent) =>
+      finishDrag(event.pointerId);
 
     handle.addEventListener('pointerdown', onPointerDown);
     handle.addEventListener('pointermove', onPointerMove);
@@ -389,9 +388,7 @@ export function TemporalCreateEntry({
     setSession(requestResult.session);
   };
 
-  const patch = (
-    next: Partial<TemporalCreateSession['draft']['current']>,
-  ) => {
+  const patch = (next: Partial<TemporalCreateSession['draft']['current']>) => {
     preparedRef.current = null;
     setIssues([]);
     setFailureMessage('');

@@ -33,13 +33,17 @@ export function TemporalCreateConfirmationFields({
           <h3 id="temporal-create-confirmation-only-heading">
             {t(($) => $.common.home.timeline.create.confirmation.title)}
           </h3>
-          <p>{t(($) => $.common.home.timeline.create.confirmation.description)}</p>
+          <p>
+            {t(($) => $.common.home.timeline.create.confirmation.description)}
+          </p>
         </div>
       </div>
 
       <div className="temporal-create-grid two">
         <label className="temporal-create-control">
-          <span>{t(($) => $.common.home.timeline.create.confirmation.outcome)}</span>
+          <span>
+            {t(($) => $.common.home.timeline.create.confirmation.outcome)}
+          </span>
           <select
             value={confirmation.outcomePolicy}
             onChange={(event) =>
@@ -53,7 +57,10 @@ export function TemporalCreateConfirmationFields({
               {t(($) => $.common.home.timeline.create.confirmation.inherit)}
             </option>
             <option value="ask-immediately">
-              {t(($) => $.common.home.timeline.create.confirmation.askImmediately)}
+              {t(
+                ($) =>
+                  $.common.home.timeline.create.confirmation.askImmediately,
+              )}
             </option>
             <option value="ask-later">
               {t(($) => $.common.home.timeline.create.confirmation.askLater)}
@@ -62,27 +69,41 @@ export function TemporalCreateConfirmationFields({
               {t(($) => $.common.home.timeline.create.confirmation.dailyReview)}
             </option>
             <option value="weekly-review">
-              {t(($) => $.common.home.timeline.create.confirmation.weeklyReview)}
+              {t(
+                ($) => $.common.home.timeline.create.confirmation.weeklyReview,
+              )}
             </option>
             <option value="silent">
               {t(($) => $.common.home.timeline.create.confirmation.silent)}
             </option>
             <option value="auto-complete">
-              {t(($) => $.common.home.timeline.create.confirmation.autoComplete)}
+              {t(
+                ($) => $.common.home.timeline.create.confirmation.autoComplete,
+              )}
             </option>
             <option value="auto-not-completed">
-              {t(($) => $.common.home.timeline.create.confirmation.autoNotCompleted)}
+              {t(
+                ($) =>
+                  $.common.home.timeline.create.confirmation.autoNotCompleted,
+              )}
             </option>
             <option value="infer-provisional">
-              {t(($) => $.common.home.timeline.create.confirmation.inferProvisional)}
+              {t(
+                ($) =>
+                  $.common.home.timeline.create.confirmation.inferProvisional,
+              )}
             </option>
           </select>
         </label>
 
         <label className="temporal-create-control">
-          <span>{t(($) => $.common.home.timeline.create.confirmation.reminder)}</span>
+          <span>
+            {t(($) => $.common.home.timeline.create.confirmation.reminder)}
+          </span>
           <select
-            aria-label={t(($) => $.common.home.timeline.create.confirmation.reminder)}
+            aria-label={t(
+              ($) => $.common.home.timeline.create.confirmation.reminder,
+            )}
             data-create-path="confirmation.reminderLeadMinutes"
             value={
               confirmation.reminderLeadMinutes === null
@@ -104,12 +125,22 @@ export function TemporalCreateConfirmationFields({
                 value={minutes === null ? 'none' : minutes}
               >
                 {minutes === null
-                  ? t(($) => $.common.home.timeline.create.confirmation.noReminder)
+                  ? t(
+                      ($) =>
+                        $.common.home.timeline.create.confirmation.noReminder,
+                    )
                   : minutes === 0
-                    ? t(($) => $.common.home.timeline.create.confirmation.atStart)
-                    : t(($) => $.common.home.timeline.create.confirmation.before, {
-                        value: temporalCreateDurationLabel(minutes),
-                      })}
+                    ? t(
+                        ($) =>
+                          $.common.home.timeline.create.confirmation.atStart,
+                      )
+                    : t(
+                        ($) =>
+                          $.common.home.timeline.create.confirmation.before,
+                        {
+                          value: temporalCreateDurationLabel(minutes),
+                        },
+                      )}
               </option>
             ))}
           </select>

@@ -22,10 +22,7 @@ export type WorldFocusCloseRequest = Readonly<{
 }>;
 
 export type WorldFocusShellStatus =
-  | 'loading'
-  | 'ready'
-  | 'error'
-  | 'unavailable';
+  'loading' | 'ready' | 'error' | 'unavailable';
 
 type WorldFocusPageProps = Readonly<{
   world: WorldFocusWorld;

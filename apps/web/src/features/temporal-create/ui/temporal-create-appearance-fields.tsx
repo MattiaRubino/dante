@@ -8,14 +8,9 @@ import type { TemporalCreateContextOption } from './temporal-create-ui-types';
 
 import './temporal-create-appearance-fields.css';
 
-const APPEARANCE_TONES: readonly TemporalCreateAppearanceTone[] = Object.freeze([
-  'focus',
-  'meeting',
-  'health',
-  'creative',
-  'personal',
-  'urgent',
-]);
+const APPEARANCE_TONES: readonly TemporalCreateAppearanceTone[] = Object.freeze(
+  ['focus', 'meeting', 'health', 'creative', 'personal', 'urgent'],
+);
 
 type TemporalCreateAppearanceFieldsProps = Readonly<{
   fields: TemporalCreateFields;
@@ -80,7 +75,10 @@ export function TemporalCreateAppearanceFields({
             checked={fields.appearanceTone === null}
             onChange={() => onPatch({ appearanceTone: null })}
           />
-          <span className="temporal-create-appearance__swatch" aria-hidden="true" />
+          <span
+            className="temporal-create-appearance__swatch"
+            aria-hidden="true"
+          />
           <span>
             <strong>
               {t(($) => $.common.home.timeline.create.appearance.inherit)}

@@ -43,7 +43,8 @@
 .temporal-create-type-grid > button:hover {
   border-color: color-mix(
     in srgb,
-    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09)) 64%,
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09))
+      64%,
     white
   );
   color: var(--dante-semantic-color-home-text-primary, #edf2f8);
@@ -57,7 +58,11 @@
   color: #fff2e9;
   background: color-mix(
     in srgb,
-    var(--dante-semantic-color-home-chrome-active-soft, rgba(234, 92, 18, 0.095)) 86%,
+    var(
+        --dante-semantic-color-home-chrome-active-soft,
+        rgba(234, 92, 18, 0.095)
+      )
+      86%,
     transparent
   );
 }
@@ -177,7 +182,11 @@
   color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
   background: color-mix(
     in srgb,
-    var(--dante-semantic-color-home-chrome-active-soft, rgba(234, 92, 18, 0.095)) 34%,
+    var(
+        --dante-semantic-color-home-chrome-active-soft,
+        rgba(234, 92, 18, 0.095)
+      )
+      34%,
     transparent
   );
 }

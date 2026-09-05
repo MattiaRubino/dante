@@ -60,18 +60,18 @@ describe('WorldFocusPage', () => {
       'wf-g3-candidate',
     );
     expect(shell.getAttribute('data-entry-origin')).toBe('live');
-    expect(container.querySelectorAll('.world-focus-ellipse-guides')).toHaveLength(
-      1,
-    );
-    expect(container.querySelectorAll('[data-guide-line="outer"]')).toHaveLength(
-      1,
-    );
-    expect(container.querySelectorAll('[data-guide-line="origin"]')).toHaveLength(
-      1,
-    );
-    expect(container.querySelectorAll('[data-guide-line="inner"]')).toHaveLength(
-      1,
-    );
+    expect(
+      container.querySelectorAll('.world-focus-ellipse-guides'),
+    ).toHaveLength(1);
+    expect(
+      container.querySelectorAll('[data-guide-line="outer"]'),
+    ).toHaveLength(1);
+    expect(
+      container.querySelectorAll('[data-guide-line="origin"]'),
+    ).toHaveLength(1);
+    expect(
+      container.querySelectorAll('[data-guide-line="inner"]'),
+    ).toHaveLength(1);
     expect(
       container.querySelectorAll('.world-focus-ellipse-guides ellipse'),
     ).toHaveLength(3);

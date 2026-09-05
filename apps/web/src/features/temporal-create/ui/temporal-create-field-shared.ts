@@ -84,7 +84,9 @@ export function temporalCreateEndDateTime(
   try {
     if (timeMode === 'zoned') {
       const zonedStart = start.toZonedDateTime(timeZoneId);
-      const zonedEnd = zonedStart.add({ minutes: Math.max(0, durationMinutes) });
+      const zonedEnd = zonedStart.add({
+        minutes: Math.max(0, durationMinutes),
+      });
       return formatPlainDateTime(
         startDate,
         zonedStart.toPlainDateTime(),

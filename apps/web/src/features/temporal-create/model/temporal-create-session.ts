@@ -14,16 +14,9 @@ export type TemporalCreateTimeSemantics = 'timed' | 'all-day' | 'unscheduled';
 export type TemporalCreateTimeMode = 'floating' | 'zoned';
 export type TemporalCreateSurface = 'quick' | 'expanded' | 'full';
 export type TemporalCreateConstraintKind =
-  | 'none'
-  | 'open'
-  | 'bounded-window'
-  | 'deadline'
-  | 'preferred-window';
+  'none' | 'open' | 'bounded-window' | 'deadline' | 'preferred-window';
 export type TemporalCreateMovementPolicy =
-  | 'locked'
-  | 'window'
-  | 'confirm'
-  | 'free';
+  'locked' | 'window' | 'confirm' | 'free';
 export type TemporalCreateFallbackPolicy =
   | 'inherit'
   | 'skip'
@@ -33,13 +26,7 @@ export type TemporalCreateFallbackPolicy =
   | 'replan-dependencies';
 export type TemporalCreateSessionMode = 'indivisible' | 'splittable';
 export type TemporalCreateWeekday =
-  | 'MO'
-  | 'TU'
-  | 'WE'
-  | 'TH'
-  | 'FR'
-  | 'SA'
-  | 'SU';
+  'MO' | 'TU' | 'WE' | 'TH' | 'FR' | 'SA' | 'SU';
 export type TemporalCreateOutcomePolicy =
   | 'inherit'
   | 'ask-immediately'
@@ -61,12 +48,7 @@ export type TemporalCreateRecurrenceOwner = 'event' | 'routine' | null;
  * classification. `null` means the item inherits its Context tone.
  */
 export type TemporalCreateAppearanceTone =
-  | 'focus'
-  | 'meeting'
-  | 'health'
-  | 'creative'
-  | 'personal'
-  | 'urgent';
+  'focus' | 'meeting' | 'health' | 'creative' | 'personal' | 'urgent';
 
 /**
  * Owner-bound recurrence authoring grammar shared by the Create surface.
@@ -85,20 +67,12 @@ export type TemporalCreateEventRecurrencePatternKind =
   | 'quota-per-period'
   | 'cyclic-positional';
 export type TemporalCreateEventCalendarFrequency =
-  | 'daily'
-  | 'weekly'
-  | 'monthly'
-  | 'monthly-ordinal'
-  | 'yearly';
-export type TemporalCreateEventRecurrenceEnd =
-  | 'none'
-  | 'until-date'
-  | 'count';
-export type TemporalCreateEventQuotaPeriodKind = 'day' | 'week' | 'month' | 'year';
+  'daily' | 'weekly' | 'monthly' | 'monthly-ordinal' | 'yearly';
+export type TemporalCreateEventRecurrenceEnd = 'none' | 'until-date' | 'count';
+export type TemporalCreateEventQuotaPeriodKind =
+  'day' | 'week' | 'month' | 'year';
 export type TemporalCreateEventQuotaFrame =
-  | 'floating-local'
-  | 'named-zone'
-  | 'absolute-utc';
+  'floating-local' | 'named-zone' | 'absolute-utc';
 export type TemporalCreateEventCycleUnit = 'day' | 'week';
 
 export type TemporalCreateSchedulingIntent = Readonly<{
@@ -258,7 +232,9 @@ function freezeAgendaParts(value: readonly string[]): readonly string[] {
   );
 }
 
-function freezeEvent(value: TemporalCreateEventIntent): TemporalCreateEventIntent {
+function freezeEvent(
+  value: TemporalCreateEventIntent,
+): TemporalCreateEventIntent {
   return Object.freeze({
     ...value,
     agendaParts: freezeAgendaParts(value.agendaParts ?? []),
@@ -436,14 +412,20 @@ function sameWeekdays(
   );
 }
 
-function sameNumbers(left: readonly number[], right: readonly number[]): boolean {
+function sameNumbers(
+  left: readonly number[],
+  right: readonly number[],
+): boolean {
   return (
     left.length === right.length &&
     left.every((value, index) => value === right[index])
   );
 }
 
-function sameStrings(left: readonly string[], right: readonly string[]): boolean {
+function sameStrings(
+  left: readonly string[],
+  right: readonly string[],
+): boolean {
   return (
     left.length === right.length &&
     left.every((value, index) => value === right[index])
@@ -475,7 +457,8 @@ function temporalCreateFieldsEqual(
     left.scheduling.earliestStartTime === right.scheduling.earliestStartTime &&
     left.scheduling.deadlineDate === right.scheduling.deadlineDate &&
     left.scheduling.deadlineTime === right.scheduling.deadlineTime &&
-    left.scheduling.preferredStartTime === right.scheduling.preferredStartTime &&
+    left.scheduling.preferredStartTime ===
+      right.scheduling.preferredStartTime &&
     left.scheduling.preferredEndTime === right.scheduling.preferredEndTime &&
     left.scheduling.movementPolicy === right.scheduling.movementPolicy &&
     left.scheduling.fallbackPolicy === right.scheduling.fallbackPolicy &&
@@ -491,27 +474,42 @@ function temporalCreateFieldsEqual(
     (left.eventRecurrence.owner ?? null) ===
       (right.eventRecurrence.owner ?? null) &&
     left.eventRecurrence.patternKind === right.eventRecurrence.patternKind &&
-    left.eventRecurrence.calendarFrequency === right.eventRecurrence.calendarFrequency &&
-    left.eventRecurrence.calendarInterval === right.eventRecurrence.calendarInterval &&
-    left.eventRecurrence.calendarOrdinal === right.eventRecurrence.calendarOrdinal &&
+    left.eventRecurrence.calendarFrequency ===
+      right.eventRecurrence.calendarFrequency &&
+    left.eventRecurrence.calendarInterval ===
+      right.eventRecurrence.calendarInterval &&
+    left.eventRecurrence.calendarOrdinal ===
+      right.eventRecurrence.calendarOrdinal &&
     left.eventRecurrence.calendarOrdinalWeekday ===
       right.eventRecurrence.calendarOrdinalWeekday &&
-    sameWeekdays(left.eventRecurrence.weekdays, right.eventRecurrence.weekdays) &&
-    left.eventRecurrence.elapsedIntervalMinutes === right.eventRecurrence.elapsedIntervalMinutes &&
+    sameWeekdays(
+      left.eventRecurrence.weekdays,
+      right.eventRecurrence.weekdays,
+    ) &&
+    left.eventRecurrence.elapsedIntervalMinutes ===
+      right.eventRecurrence.elapsedIntervalMinutes &&
     left.eventRecurrence.quotaCount === right.eventRecurrence.quotaCount &&
-    left.eventRecurrence.quotaPeriodKind === right.eventRecurrence.quotaPeriodKind &&
-    left.eventRecurrence.quotaPeriodInterval === right.eventRecurrence.quotaPeriodInterval &&
+    left.eventRecurrence.quotaPeriodKind ===
+      right.eventRecurrence.quotaPeriodKind &&
+    left.eventRecurrence.quotaPeriodInterval ===
+      right.eventRecurrence.quotaPeriodInterval &&
     left.eventRecurrence.quotaFrame === right.eventRecurrence.quotaFrame &&
-    left.eventRecurrence.quotaWeekStart === right.eventRecurrence.quotaWeekStart &&
-    left.eventRecurrence.quotaTimeZoneId === right.eventRecurrence.quotaTimeZoneId &&
+    left.eventRecurrence.quotaWeekStart ===
+      right.eventRecurrence.quotaWeekStart &&
+    left.eventRecurrence.quotaTimeZoneId ===
+      right.eventRecurrence.quotaTimeZoneId &&
     left.eventRecurrence.cycleLength === right.eventRecurrence.cycleLength &&
-    sameNumbers(left.eventRecurrence.cyclePositions, right.eventRecurrence.cyclePositions) &&
+    sameNumbers(
+      left.eventRecurrence.cyclePositions,
+      right.eventRecurrence.cyclePositions,
+    ) &&
     left.eventRecurrence.cycleUnit === right.eventRecurrence.cycleUnit &&
     left.eventRecurrence.endMode === right.eventRecurrence.endMode &&
     left.eventRecurrence.untilDate === right.eventRecurrence.untilDate &&
     left.eventRecurrence.count === right.eventRecurrence.count &&
     left.confirmation.outcomePolicy === right.confirmation.outcomePolicy &&
-    left.confirmation.reminderLeadMinutes === right.confirmation.reminderLeadMinutes &&
+    left.confirmation.reminderLeadMinutes ===
+      right.confirmation.reminderLeadMinutes &&
     left.event.allDayEndDate === right.event.allDayEndDate &&
     left.event.location === right.event.location &&
     left.event.availability === right.event.availability &&
@@ -684,7 +682,9 @@ function validTimeZoneId(value: string): boolean {
 export function temporalCreateHasFlexibleIntent(
   fields: TemporalCreateFields,
 ): boolean {
-  return fields.kind === 'activity' && fields.scheduling.constraintKind !== 'none';
+  return (
+    fields.kind === 'activity' && fields.scheduling.constraintKind !== 'none'
+  );
 }
 
 function validateRecurrence(
@@ -709,9 +709,10 @@ function validateRecurrence(
       recurrence.weekdays.length === 0
     ) {
       issues.push(
-        temporalValidationIssue('temporal.create.recurrence.weekdays_required', [
-          'eventRecurrence.weekdays',
-        ]),
+        temporalValidationIssue(
+          'temporal.create.recurrence.weekdays_required',
+          ['eventRecurrence.weekdays'],
+        ),
       );
     }
     if (
@@ -761,9 +762,10 @@ function validateRecurrence(
       !validTimeZoneId(recurrence.quotaTimeZoneId)
     ) {
       issues.push(
-        temporalValidationIssue('temporal.create.recurrence.quota_timezone_invalid', [
-          'eventRecurrence.quotaTimeZoneId',
-        ]),
+        temporalValidationIssue(
+          'temporal.create.recurrence.quota_timezone_invalid',
+          ['eventRecurrence.quotaTimeZoneId'],
+        ),
       );
     }
   }
@@ -790,7 +792,10 @@ function validateRecurrence(
       );
     }
   }
-  if (recurrence.patternKind !== 'none' && recurrence.endMode === 'until-date') {
+  if (
+    recurrence.patternKind !== 'none' &&
+    recurrence.endMode === 'until-date'
+  ) {
     const until = parseDate(recurrence.untilDate);
     if (!date || !until || Temporal.PlainDate.compare(until, date) < 0) {
       issues.push(
@@ -803,7 +808,9 @@ function validateRecurrence(
   if (
     recurrence.patternKind !== 'none' &&
     recurrence.endMode === 'count' &&
-    (!Number.isInteger(recurrence.count) || recurrence.count < 1 || recurrence.count > 999)
+    (!Number.isInteger(recurrence.count) ||
+      recurrence.count < 1 ||
+      recurrence.count > 999)
   ) {
     issues.push(
       temporalValidationIssue('temporal.create.recurrence.count_invalid', [
@@ -820,14 +827,20 @@ export function validateTemporalCreateFields(
   const date = parseDate(fields.date);
 
   if (fields.title.trim().length === 0) {
-    issues.push(temporalValidationIssue('temporal.projection.title.required', ['title']));
+    issues.push(
+      temporalValidationIssue('temporal.projection.title.required', ['title']),
+    );
   }
   if (!date) {
-    issues.push(temporalValidationIssue('temporal.create.date.invalid', ['date']));
+    issues.push(
+      temporalValidationIssue('temporal.create.date.invalid', ['date']),
+    );
   }
   if (fields.kind === 'event' && fields.timeSemantics === 'unscheduled') {
     issues.push(
-      temporalValidationIssue('temporal.create.event.requires_placement', ['timeSemantics']),
+      temporalValidationIssue('temporal.create.event.requires_placement', [
+        'timeSemantics',
+      ]),
     );
   }
 
@@ -846,7 +859,9 @@ export function validateTemporalCreateFields(
     const time = parseTime(fields.startTime);
     if (!time) {
       issues.push(
-        temporalValidationIssue('temporal.create.start_time.invalid', ['startTime']),
+        temporalValidationIssue('temporal.create.start_time.invalid', [
+          'startTime',
+        ]),
       );
     }
     if (
@@ -855,31 +870,47 @@ export function validateTemporalCreateFields(
       fields.durationMinutes > 10080
     ) {
       issues.push(
-        temporalValidationIssue('temporal.create.duration.invalid', ['durationMinutes']),
+        temporalValidationIssue('temporal.create.duration.invalid', [
+          'durationMinutes',
+        ]),
       );
     }
 
-    if (date && time && fields.timeMode === 'zoned' && !validTimeZoneId(fields.timeZoneId)) {
+    if (
+      date &&
+      time &&
+      fields.timeMode === 'zoned' &&
+      !validTimeZoneId(fields.timeZoneId)
+    ) {
       issues.push(
-        temporalValidationIssue('temporal.create.timezone.invalid', ['timeZoneId']),
+        temporalValidationIssue('temporal.create.timezone.invalid', [
+          'timeZoneId',
+        ]),
       );
     }
   }
 
   if (fields.contextId.trim().length === 0) {
     issues.push(
-      temporalValidationIssue('temporal.create.context.required', ['contextId']),
+      temporalValidationIssue('temporal.create.context.required', [
+        'contextId',
+      ]),
     );
   }
 
   if (fields.kind === 'activity') {
     const scheduling = fields.scheduling;
     if (scheduling.constraintKind === 'bounded-window') {
-      const start = dateTime(scheduling.windowStartDate, scheduling.windowStartTime);
+      const start = dateTime(
+        scheduling.windowStartDate,
+        scheduling.windowStartTime,
+      );
       const end = dateTime(scheduling.windowEndDate, scheduling.windowEndTime);
       if (!start || !end || Temporal.PlainDateTime.compare(start, end) >= 0) {
         issues.push(
-          temporalValidationIssue('temporal.create.window.invalid', ['scheduling.window']),
+          temporalValidationIssue('temporal.create.window.invalid', [
+            'scheduling.window',
+          ]),
         );
       }
     }
@@ -889,7 +920,10 @@ export function validateTemporalCreateFields(
         scheduling.earliestStartDate,
         scheduling.earliestStartTime,
       );
-      const deadline = dateTime(scheduling.deadlineDate, scheduling.deadlineTime);
+      const deadline = dateTime(
+        scheduling.deadlineDate,
+        scheduling.deadlineTime,
+      );
       if (
         !earliest ||
         !deadline ||
@@ -952,7 +986,9 @@ export function validateTemporalCreateFields(
       !validNonNegativeMinutes(fields.execution.spacingMinutes)
     ) {
       issues.push(
-        temporalValidationIssue('temporal.create.buffer.invalid', ['execution.buffers']),
+        temporalValidationIssue('temporal.create.buffer.invalid', [
+          'execution.buffers',
+        ]),
       );
     }
   }

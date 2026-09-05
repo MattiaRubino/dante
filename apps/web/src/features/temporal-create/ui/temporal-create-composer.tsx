@@ -49,13 +49,15 @@ const FOCUSABLE_SELECTOR =
   'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 function focusableElements(root: HTMLElement): HTMLElement[] {
-  return Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
-    (element) => !element.hasAttribute('hidden'),
-  );
+  return Array.from(
+    root.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
+  ).filter((element) => !element.hasAttribute('hidden'));
 }
 
 function focusValidationPath(root: HTMLElement, path: string): void {
-  const region = root.querySelector<HTMLElement>(`[data-create-path="${path}"]`);
+  const region = root.querySelector<HTMLElement>(
+    `[data-create-path="${path}"]`,
+  );
   if (!region) {
     return;
   }
@@ -88,7 +90,9 @@ export function TemporalCreateComposer({
   onSubmit,
 }: TemporalCreateComposerProps) {
   const { t, i18n } = useTranslation('common');
-  const copy = temporalCreateProductCopy(i18n.resolvedLanguage ?? i18n.language);
+  const copy = temporalCreateProductCopy(
+    i18n.resolvedLanguage ?? i18n.language,
+  );
   const titleId = useId();
   const dialogTitleId = useId();
   const discardTitleId = useId();
@@ -218,7 +222,9 @@ export function TemporalCreateComposer({
       case 'temporal.create.timezone.invalid':
         return t(($) => $.common.home.timeline.create.validation.timeZone);
       case 'temporal.create.event.requires_placement':
-        return t(($) => $.common.home.timeline.create.validation.eventPlacement);
+        return t(
+          ($) => $.common.home.timeline.create.validation.eventPlacement,
+        );
       case 'temporal.create.all_day_range.invalid':
         return t(($) => $.common.home.timeline.create.validation.allDayRange);
       case 'temporal.create.window.invalid':
@@ -226,9 +232,13 @@ export function TemporalCreateComposer({
       case 'temporal.create.deadline.invalid':
         return t(($) => $.common.home.timeline.create.validation.deadline);
       case 'temporal.create.preferred_window.invalid':
-        return t(($) => $.common.home.timeline.create.validation.preferredWindow);
+        return t(
+          ($) => $.common.home.timeline.create.validation.preferredWindow,
+        );
       case 'temporal.create.minimum_session.invalid':
-        return t(($) => $.common.home.timeline.create.validation.minimumSession);
+        return t(
+          ($) => $.common.home.timeline.create.validation.minimumSession,
+        );
       case 'temporal.create.session_count.invalid':
         return t(($) => $.common.home.timeline.create.validation.sessionCount);
       case 'temporal.create.buffer.invalid':
@@ -236,25 +246,42 @@ export function TemporalCreateComposer({
       case 'temporal.create.event_buffer.invalid':
         return t(($) => $.common.home.timeline.create.validation.eventBuffer);
       case 'temporal.create.recurrence.interval_invalid':
-        return t(($) => $.common.home.timeline.create.validation.recurrenceInterval);
+        return t(
+          ($) => $.common.home.timeline.create.validation.recurrenceInterval,
+        );
       case 'temporal.create.recurrence.weekdays_required':
-        return t(($) => $.common.home.timeline.create.validation.recurrenceWeekdays);
+        return t(
+          ($) => $.common.home.timeline.create.validation.recurrenceWeekdays,
+        );
       case 'temporal.create.recurrence.ordinal_invalid':
-        return t(($) => $.common.home.timeline.create.validation.recurrenceOrdinal);
+        return t(
+          ($) => $.common.home.timeline.create.validation.recurrenceOrdinal,
+        );
       case 'temporal.create.recurrence.elapsed_invalid':
-        return t(($) => $.common.home.timeline.create.validation.recurrenceElapsed);
+        return t(
+          ($) => $.common.home.timeline.create.validation.recurrenceElapsed,
+        );
       case 'temporal.create.recurrence.quota_invalid':
-        return t(($) => $.common.home.timeline.create.validation.recurrenceQuota);
+        return t(
+          ($) => $.common.home.timeline.create.validation.recurrenceQuota,
+        );
       case 'temporal.create.recurrence.quota_timezone_invalid':
         return t(
-          ($) => $.common.home.timeline.create.validation.recurrenceQuotaTimeZone,
+          ($) =>
+            $.common.home.timeline.create.validation.recurrenceQuotaTimeZone,
         );
       case 'temporal.create.recurrence.cycle_invalid':
-        return t(($) => $.common.home.timeline.create.validation.recurrenceCycle);
+        return t(
+          ($) => $.common.home.timeline.create.validation.recurrenceCycle,
+        );
       case 'temporal.create.recurrence.until_invalid':
-        return t(($) => $.common.home.timeline.create.validation.recurrenceUntil);
+        return t(
+          ($) => $.common.home.timeline.create.validation.recurrenceUntil,
+        );
       case 'temporal.create.recurrence.count_invalid':
-        return t(($) => $.common.home.timeline.create.validation.recurrenceCount);
+        return t(
+          ($) => $.common.home.timeline.create.validation.recurrenceCount,
+        );
       case 'temporal.create.reminder.invalid':
         return t(($) => $.common.home.timeline.create.validation.reminder);
       default:
@@ -284,7 +311,10 @@ export function TemporalCreateComposer({
         : fields.scheduling.constraintKind === 'deadline'
           ? t(($) => $.common.home.timeline.create.planning.constraintDeadline)
           : fields.scheduling.constraintKind === 'preferred-window'
-            ? t(($) => $.common.home.timeline.create.planning.constraintPreferred)
+            ? t(
+                ($) =>
+                  $.common.home.timeline.create.planning.constraintPreferred,
+              )
             : fields.timeSemantics === 'unscheduled'
               ? copy.activity.toPlace
               : null;
@@ -373,7 +403,9 @@ export function TemporalCreateComposer({
             type="text"
             value={fields.title}
             onChange={(event) => onPatch({ title: event.currentTarget.value })}
-            placeholder={t(($) => $.common.home.timeline.create.titlePlaceholder)}
+            placeholder={t(
+              ($) => $.common.home.timeline.create.titlePlaceholder,
+            )}
             autoComplete="off"
             spellCheck="true"
           />
@@ -417,7 +449,8 @@ export function TemporalCreateComposer({
             {fields.eventRecurrence.patternKind !== 'none' ? (
               <span>
                 {t(
-                  ($) => $.common.home.timeline.create.recurrence.recurringBadge,
+                  ($) =>
+                    $.common.home.timeline.create.recurrence.recurringBadge,
                 )}
               </span>
             ) : null}

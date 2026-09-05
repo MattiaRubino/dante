@@ -61,7 +61,9 @@ describe('Temporal Create rich application runtime', () => {
 
     expect(execution.result.status).toBe('applied');
     expect(execution.effect?.projection.placement).toBeNull();
-    expect(execution.effect?.projection.capabilities).not.toContain('recurrence');
+    expect(execution.effect?.projection.capabilities).not.toContain(
+      'recurrence',
+    );
     expect(execution.effect?.projection.capabilities).toContain('execution');
     expect(records).toHaveLength(1);
     expect(records[0]?.metadata.recurrenceOwner).toBeNull();
@@ -140,7 +142,9 @@ describe('Temporal Create rich application runtime', () => {
     const records = await createRuntime.listRecords();
 
     expect(execution.result.status).toBe('applied');
-    expect(execution.effect?.projection.capabilities).not.toContain('recurrence');
+    expect(execution.effect?.projection.capabilities).not.toContain(
+      'recurrence',
+    );
     expect(records).toHaveLength(1);
     expect(records[0]?.metadata.recurrenceOwner).toBe('routine');
     expect(records[0]?.metadata.specification.eventRecurrence.owner).toBe(
@@ -149,7 +153,9 @@ describe('Temporal Create rich application runtime', () => {
     expect(records[0]?.metadata.specification.eventRecurrence.patternKind).toBe(
       'quota-per-period',
     );
-    expect(records[0]?.metadata.specification.eventRecurrence.quotaCount).toBe(3);
+    expect(records[0]?.metadata.specification.eventRecurrence.quotaCount).toBe(
+      3,
+    );
   });
 
   it('keeps exact prepared-command replay idempotent without duplicating rich records', async () => {

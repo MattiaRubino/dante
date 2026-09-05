@@ -379,17 +379,24 @@ export const home = {
         minimumSession:
           'La sessione minima deve essere almeno 5 minuti e non superare la durata prevista.',
         sessionCount: 'Il numero massimo di sessioni non è valido.',
-        buffer: 'Preparazione, recupero e spaziatura devono essere valori validi.',
-        eventBuffer: 'Preparazione e recupero dell’Evento devono usare valori validi.',
-        recurrenceInterval: 'L’intervallo della ricorrenza di calendario non è valido.',
+        buffer:
+          'Preparazione, recupero e spaziatura devono essere valori validi.',
+        eventBuffer:
+          'Preparazione e recupero dell’Evento devono usare valori validi.',
+        recurrenceInterval:
+          'L’intervallo della ricorrenza di calendario non è valido.',
         recurrenceWeekdays:
           'Scegli almeno un giorno per una ricorrenza settimanale.',
         recurrenceOrdinal:
           'La posizione mensile e il giorno della settimana non sono validi.',
-        recurrenceElapsed: 'L’intervallo trascorso della ricorrenza non è valido.',
-        recurrenceQuota: 'La quota o il periodo della ricorrenza non sono validi.',
-        recurrenceQuotaTimeZone: 'Inserisci un fuso IANA valido per il periodo.',
-        recurrenceCycle: 'Il ciclo o le posizioni della ricorrenza non sono validi.',
+        recurrenceElapsed:
+          'L’intervallo trascorso della ricorrenza non è valido.',
+        recurrenceQuota:
+          'La quota o il periodo della ricorrenza non sono validi.',
+        recurrenceQuotaTimeZone:
+          'Inserisci un fuso IANA valido per il periodo.',
+        recurrenceCycle:
+          'Il ciclo o le posizioni della ricorrenza non sono validi.',
         recurrenceUntil:
           'La data finale della ricorrenza non può precedere l’inizio.',
         recurrenceCount: 'Il numero di occorrenze non è valido.',

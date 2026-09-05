@@ -41,7 +41,10 @@ export function TemporalCreateAdvancedFields({
     fields.kind === 'activity' && fields.eventRecurrence.patternKind !== 'none';
 
   return (
-    <div className="temporal-create-advanced" data-create-advanced={fields.kind}>
+    <div
+      className="temporal-create-advanced"
+      data-create-advanced={fields.kind}
+    >
       {fields.timeSemantics === 'timed' ? (
         <section
           className="temporal-create-section is-compact"
@@ -61,7 +64,9 @@ export function TemporalCreateAdvancedFields({
           </div>
           <div className="temporal-create-grid two">
             <label className="temporal-create-control">
-              <span>{t(($) => $.common.home.timeline.create.timeMode.label)}</span>
+              <span>
+                {t(($) => $.common.home.timeline.create.timeMode.label)}
+              </span>
               <select
                 value={fields.timeMode}
                 onChange={(event) =>

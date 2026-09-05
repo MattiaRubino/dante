@@ -55,7 +55,9 @@ describe('Temporal Create governed projection mutations', () => {
     expect(placed.effect?.projection?.id).toBe(projectionId);
     expect(placed.effect?.projection?.revision).toBe(2);
     expect(placed.effect?.projection?.placement?.kind).toBe('floating-local');
-    expect((await runtime.list()).map((item) => item.id)).toEqual([projectionId]);
+    expect((await runtime.list()).map((item) => item.id)).toEqual([
+      projectionId,
+    ]);
     expect((await runtime.listRecords())[0]?.metadata.specification.title).toBe(
       'Montare il video',
     );

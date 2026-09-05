@@ -51,7 +51,9 @@ describe('@dante/i18n', () => {
     const runtime = await createRuntime();
 
     expect(runtime.language).toBe('it');
-    expect(runtime.t(($) => $.common.runtime.web.title)).toBe('Frontend pronto');
+    expect(runtime.t(($) => $.common.runtime.web.title)).toBe(
+      'Frontend pronto',
+    );
     expect(runtime.t(($) => $.common.gesture.title)).toBe('Test gesto');
   });
 
@@ -92,28 +94,42 @@ describe('@dante/i18n', () => {
       runtime.t(($) => $.common.home.timeline.create.recurrence.activityTitle),
     ).toBe('Routine e ripetizione');
     expect(
-      runtime.t(($) => $.common.home.timeline.create.recurrence.calendarWallClock),
+      runtime.t(
+        ($) => $.common.home.timeline.create.recurrence.calendarWallClock,
+      ),
     ).toBe('Calendario / ora civile');
     expect(
-      runtime.t(($) => $.common.home.timeline.create.recurrence.elapsedInterval),
+      runtime.t(
+        ($) => $.common.home.timeline.create.recurrence.elapsedInterval,
+      ),
     ).toBe('Intervallo trascorso');
     expect(
       runtime.t(($) => $.common.home.timeline.create.recurrence.quotaPerPeriod),
     ).toBe('Quota per periodo');
     expect(
-      runtime.t(($) => $.common.home.timeline.create.recurrence.cyclicPositional),
+      runtime.t(
+        ($) => $.common.home.timeline.create.recurrence.cyclicPositional,
+      ),
     ).toBe('Posizione ciclica');
     expect(
-      runtime.t(($) => $.common.home.timeline.create.confirmation.inferProvisional),
+      runtime.t(
+        ($) => $.common.home.timeline.create.confirmation.inferProvisional,
+      ),
     ).toBe('Inferisci un risultato provvisorio');
     expect(
-      runtime.t(($) => $.common.home.timeline.create.eventDetails.expectedOutcome),
+      runtime.t(
+        ($) => $.common.home.timeline.create.eventDetails.expectedOutcome,
+      ),
     ).toBe('Risultato atteso');
     expect(
-      runtime.t(($) => $.common.home.timeline.create.integrations.requiredParticipants),
+      runtime.t(
+        ($) => $.common.home.timeline.create.integrations.requiredParticipants,
+      ),
     ).toBe('Partecipanti richiesti');
     expect(
-      runtime.t(($) => $.common.home.timeline.create.integrations.providerRequired),
+      runtime.t(
+        ($) => $.common.home.timeline.create.integrations.providerRequired,
+      ),
     ).toContain('provider/backend');
     expect(runtime.t(($) => $.common.home.timeline.create.cancel)).toBe(
       'Annulla',
@@ -141,7 +157,9 @@ describe('@dante/i18n', () => {
       runtime.t(($) => $.common.home.timeline.create.recurrence.activityTitle),
     ).toBe('Routine and repetition');
     expect(
-      runtime.t(($) => $.common.home.timeline.create.confirmation.inferProvisional),
+      runtime.t(
+        ($) => $.common.home.timeline.create.confirmation.inferProvisional,
+      ),
     ).toBe('Infer a provisional result');
   });
 
@@ -150,7 +168,9 @@ describe('@dante/i18n', () => {
 
     await runtime.changeLanguage('fr-FR');
 
-    expect(runtime.t(($) => $.common.runtime.web.title)).toBe('Frontend pronto');
+    expect(runtime.t(($) => $.common.runtime.web.title)).toBe(
+      'Frontend pronto',
+    );
     expect(runtime.t(($) => $.common.gesture.title)).toBe('Test gesto');
   });
 

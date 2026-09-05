@@ -35,7 +35,9 @@ function minuteOfDay(hour: number, minute: number): number {
   return hour * 60 + minute;
 }
 
-function recurrenceOwner(fields: TemporalCreateFields): TemporalCreateRecurrenceOwner {
+function recurrenceOwner(
+  fields: TemporalCreateFields,
+): TemporalCreateRecurrenceOwner {
   if (fields.eventRecurrence.patternKind === 'none') {
     return null;
   }

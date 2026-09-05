@@ -30,9 +30,9 @@ describe('World Focus motion preference', () => {
     expect(readWorldFocusMotionPreference(undefined)).toBe(
       DEFAULT_WORLD_FOCUS_MOTION_PREFERENCE,
     );
-    expect(readWorldFocusMotionPreference(createStorage('unknown').storage)).toBe(
-      DEFAULT_WORLD_FOCUS_MOTION_PREFERENCE,
-    );
+    expect(
+      readWorldFocusMotionPreference(createStorage('unknown').storage),
+    ).toBe(DEFAULT_WORLD_FOCUS_MOTION_PREFERENCE);
   });
 
   it('persists and reads the explicit instant preference', () => {

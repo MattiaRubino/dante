@@ -41,15 +41,22 @@
   min-height: 54px;
   padding: 9px 11px;
   border: 1px solid
-    color-mix(in srgb, var(--timeline-group-color) 52%, rgba(255, 255, 255, 0.12));
+    color-mix(
+      in srgb,
+      var(--timeline-group-color) 52%,
+      rgba(255, 255, 255, 0.12)
+    );
   border-radius: 13px;
   color: #eef3f9;
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--timeline-group-color) 12%, rgba(15, 25, 37, 0.985)),
-      rgba(8, 16, 27, 0.99)
-    );
+  background: linear-gradient(
+    180deg,
+    color-mix(
+      in srgb,
+      var(--timeline-group-color) 12%,
+      rgba(15, 25, 37, 0.985)
+    ),
+    rgba(8, 16, 27, 0.99)
+  );
   box-shadow:
     inset 3px 0 0 var(--timeline-group-color),
     0 18px 44px rgba(0, 0, 0, 0.44),
@@ -91,7 +98,8 @@
   color: color-mix(in srgb, var(--timeline-group-color) 72%, white);
   background: color-mix(in srgb, var(--timeline-group-color) 6%, transparent);
   box-shadow:
-    inset 3px 0 0 color-mix(in srgb, var(--timeline-group-color) 74%, transparent),
+    inset 3px 0 0
+      color-mix(in srgb, var(--timeline-group-color) 74%, transparent),
     0 0 0 1px color-mix(in srgb, var(--timeline-group-color) 9%, transparent);
   opacity: 0.92;
 }

@@ -43,7 +43,10 @@ test('item appearance inherits Context by default and an override remains presen
   });
   await expect(advancedToggle).toHaveAttribute('aria-expanded', 'false');
   await advancedToggle.click();
-  await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'advanced');
+  await expect(dialog).toHaveAttribute(
+    'data-temporal-create-surface',
+    'advanced',
+  );
   await expect(dialog.getByText('Aspetto', { exact: true })).toBeVisible();
 
   const inherit = dialog.getByRole('radio', {

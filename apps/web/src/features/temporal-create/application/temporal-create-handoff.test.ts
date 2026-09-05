@@ -23,12 +23,16 @@ describe('Temporal Create owner handoff boundary', () => {
       'asset',
     ]);
     expect(new Set(targets).size).toBe(targets.length);
-    expect(registry.every((descriptor) => descriptor.availability === 'deferred')).toBe(
+    expect(
+      registry.every((descriptor) => descriptor.availability === 'deferred'),
+    ).toBe(true);
+    expect(registry.every((descriptor) => descriptor.preservesDraft)).toBe(
       true,
     );
-    expect(registry.every((descriptor) => descriptor.preservesDraft)).toBe(true);
     expect(Object.isFrozen(registry)).toBe(true);
-    expect(registry.every((descriptor) => Object.isFrozen(descriptor))).toBe(true);
+    expect(registry.every((descriptor) => Object.isFrozen(descriptor))).toBe(
+      true,
+    );
     expect(registry.some((descriptor) => 'route' in descriptor)).toBe(false);
   });
 
@@ -74,14 +78,16 @@ describe('Temporal Create owner handoff boundary', () => {
     expect(handoff.draftSnapshot.event.requiredParticipants).toContain(
       'cliente@example.com',
     );
-    expect(handoff.draftSnapshot.eventRecurrence.cyclePositions).toEqual([1, 3]);
+    expect(handoff.draftSnapshot.eventRecurrence.cyclePositions).toEqual([
+      1, 3,
+    ]);
     expect(Object.isFrozen(handoff)).toBe(true);
     expect(Object.isFrozen(handoff.draftSnapshot)).toBe(true);
     expect(Object.isFrozen(handoff.draftSnapshot.event)).toBe(true);
     expect(Object.isFrozen(handoff.draftSnapshot.eventRecurrence)).toBe(true);
-    expect(Object.isFrozen(handoff.draftSnapshot.eventRecurrence.cyclePositions)).toBe(
-      true,
-    );
+    expect(
+      Object.isFrozen(handoff.draftSnapshot.eventRecurrence.cyclePositions),
+    ).toBe(true);
     expect('route' in handoff).toBe(false);
     expect('href' in handoff).toBe(false);
   });

@@ -13,7 +13,9 @@ async function createUnplacedActivity(
   await expect(dialog).toBeVisible();
   await dialog.getByRole('textbox', { name: 'Titolo' }).fill(title);
   await dialog.getByRole('radio', { name: 'Da collocare' }).click();
-  await dialog.getByLabel('Durata prevista').selectOption(String(durationMinutes));
+  await dialog
+    .getByLabel('Durata prevista')
+    .selectOption(String(durationMinutes));
   await dialog.getByRole('button', { name: 'Aggiungi' }).click();
   await expect(dialog).toHaveCount(0);
 }
@@ -55,7 +57,10 @@ async function visibleTimedDropPoint(page: Page) {
       const viewportBottom = Math.min(window.innerHeight, gridRect.bottom);
       const center = (viewportTop + viewportBottom) / 2;
       const visible = sections.flatMap((section) => {
-        if (!(section instanceof HTMLElement) || !section.dataset.timelineDate) {
+        if (
+          !(section instanceof HTMLElement) ||
+          !section.dataset.timelineDate
+        ) {
           return [];
         }
 
@@ -104,7 +109,9 @@ test('an unplaced Activity lives in the tray, quick placement keeps one identity
 
   await createUnplacedActivity(page, 'Preparare portfolio', 60);
   await expect(
-    page.locator('.timeline-event-card').filter({ hasText: 'Preparare portfolio' }),
+    page
+      .locator('.timeline-event-card')
+      .filter({ hasText: 'Preparare portfolio' }),
   ).toHaveCount(0);
 
   const { trigger, tray } = await openPlanningTray(page);
@@ -137,7 +144,9 @@ test('an unplaced Activity lives in the tray, quick placement keeps one identity
   await undoPlanningMutation(page);
   await expect(card).toHaveCount(0);
   const restored = await openPlanningTray(page);
-  await expect(planningItem(restored.tray, 'Preparare portfolio')).toBeVisible();
+  await expect(
+    planningItem(restored.tray, 'Preparare portfolio'),
+  ).toBeVisible();
   await expect(restored.trigger).toContainText('1');
 });
 
@@ -172,9 +181,9 @@ test('dragging carries one card over the foreground Timeline, commits once, and 
   const carried = page.locator('[data-timeline-planning-drag-card="true"]');
   await expect(carried).toBeVisible();
   await expect(carried).toContainText('Scrivere proposta');
-  await expect(carried.locator('[data-timeline-planning-snap="true"]')).toContainText(
-    /\d{2}:\d{2}–\d{2}:\d{2}/,
-  );
+  await expect(
+    carried.locator('[data-timeline-planning-snap="true"]'),
+  ).toContainText(/\d{2}:\d{2}–\d{2}:\d{2}/);
   await expect(page.locator('.timeline-planning-scrim')).toHaveCount(0);
   await expect(
     page.locator('[data-timeline-planning-drop-preview="true"]'),
@@ -188,7 +197,9 @@ test('dragging carries one card over the foreground Timeline, commits once, and 
   await expect(carried).toHaveCount(0);
   await expect(planningItem(tray, 'Scrivere proposta')).toHaveCount(0);
   await expect(
-    page.locator('.timeline-event-card').filter({ hasText: 'Scrivere proposta' }),
+    page
+      .locator('.timeline-event-card')
+      .filter({ hasText: 'Scrivere proposta' }),
   ).toBeVisible();
 
   await undoPlanningMutation(page);
@@ -210,7 +221,9 @@ test('dragging carries one card over the foreground Timeline, commits once, and 
     'data-timeline-planning-mode',
     'true',
   );
-  await expect(page.locator('[data-timeline-planning-drag-card="true"]')).toBeVisible();
+  await expect(
+    page.locator('[data-timeline-planning-drag-card="true"]'),
+  ).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(page.locator('html')).not.toHaveAttribute(
     'data-timeline-planning-mode',
@@ -244,7 +257,9 @@ test('tray delete is explicit and Undo restores the unplaced Activity', async ({
   await expect(planningItem(restored.tray, 'Pulire archivio')).toBeVisible();
 });
 
-test('Planning Tray becomes a bounded bottom sheet on mobile', async ({ page }) => {
+test('Planning Tray becomes a bounded bottom sheet on mobile', async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/home');
   await createUnplacedActivity(page, 'Telefonare assicurazione', 30);

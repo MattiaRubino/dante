@@ -1,7 +1,4 @@
-import type {
-  TimelineGroup,
-  TimelineSemanticTone,
-} from './timeline-types';
+import type { TimelineGroup, TimelineSemanticTone } from './timeline-types';
 
 export type TimelineLocalContextResult = Readonly<{
   group: TimelineGroup;

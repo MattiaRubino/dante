@@ -18,11 +18,7 @@ import { timelinePlanningCopy } from './timeline-planning-copy';
 import './timeline-planning-tray.css';
 
 export type TimelinePlanningConstraintKind =
-  | 'none'
-  | 'open'
-  | 'bounded-window'
-  | 'deadline'
-  | 'preferred-window';
+  'none' | 'open' | 'bounded-window' | 'deadline' | 'preferred-window';
 
 export type TimelinePlanningTrayItem = Readonly<{
   id: string;
@@ -112,10 +108,7 @@ function minuteAtClientY(section: HTMLElement, clientY: number): number {
         next <= current ? 0 : (localY - current) / (next - current);
       return Math.max(
         0,
-        Math.min(
-          1439,
-          (index + Math.max(0, Math.min(1, progress))) * interval,
-        ),
+        Math.min(1439, (index + Math.max(0, Math.min(1, progress))) * interval),
       );
     }
   }
@@ -180,10 +173,7 @@ function suggestedStartMinute(dateKey: string): number {
     return 9 * 60;
   }
   return snapMinute(
-    minuteAtClientY(
-      section,
-      visibleTop + (visibleBottom - visibleTop) * 0.38,
-    ),
+    minuteAtClientY(section, visibleTop + (visibleBottom - visibleTop) * 0.38),
   );
 }
 
@@ -192,7 +182,10 @@ function setTimelinePlanningMode(active: boolean): void {
     '.home-timeline--production',
   );
   if (active) {
-    document.documentElement.setAttribute('data-timeline-planning-mode', 'true');
+    document.documentElement.setAttribute(
+      'data-timeline-planning-mode',
+      'true',
+    );
     root?.setAttribute('data-timeline-planning-mode', 'true');
     return;
   }
@@ -264,10 +257,7 @@ export function TimelinePlanningTray({
       PANEL_VIEWPORT_PADDING_PX,
       window.innerWidth - width - PANEL_VIEWPORT_PADDING_PX,
     );
-    const top = Math.max(
-      PANEL_VIEWPORT_PADDING_PX,
-      rect.bottom + PANEL_GAP_PX,
-    );
+    const top = Math.max(PANEL_VIEWPORT_PADDING_PX, rect.bottom + PANEL_GAP_PX);
     setPanelStyle({
       top,
       left,
@@ -316,7 +306,8 @@ export function TimelinePlanningTray({
       setErrorItemId(null);
     };
     document.addEventListener('pointerdown', closeOutside, true);
-    return () => document.removeEventListener('pointerdown', closeOutside, true);
+    return () =>
+      document.removeEventListener('pointerdown', closeOutside, true);
   }, [dragActive, open]);
 
   const clearDrag = useCallback(() => {
@@ -417,7 +408,9 @@ export function TimelinePlanningTray({
     const card = event.currentTarget.closest<HTMLElement>(
       '[data-timeline-planning-item]',
     );
-    const rect = card?.getBoundingClientRect() ?? event.currentTarget.getBoundingClientRect();
+    const rect =
+      card?.getBoundingClientRect() ??
+      event.currentTarget.getBoundingClientRect();
     dragRef.current = {
       pointerId: event.pointerId,
       itemId: item.id,
@@ -436,7 +429,11 @@ export function TimelinePlanningTray({
     item: TimelinePlanningTrayItem,
   ) => {
     const drag = dragRef.current;
-    if (!drag || drag.pointerId !== event.pointerId || drag.itemId !== item.id) {
+    if (
+      !drag ||
+      drag.pointerId !== event.pointerId ||
+      drag.itemId !== item.id
+    ) {
       return;
     }
     const distance = Math.hypot(
@@ -473,7 +470,11 @@ export function TimelinePlanningTray({
     item: TimelinePlanningTrayItem,
   ) => {
     const drag = dragRef.current;
-    if (!drag || drag.pointerId !== event.pointerId || drag.itemId !== item.id) {
+    if (
+      !drag ||
+      drag.pointerId !== event.pointerId ||
+      drag.itemId !== item.id
+    ) {
       return;
     }
     const target = candidate?.itemId === item.id ? candidate : null;
@@ -581,7 +582,9 @@ export function TimelinePlanningTray({
     >
       <header className="timeline-planning-tray__header">
         <div>
-          <span className="timeline-planning-tray__kicker">DANTE · Timeline</span>
+          <span className="timeline-planning-tray__kicker">
+            DANTE · Timeline
+          </span>
           <h2>{copy.title}</h2>
           <p>{copy.description}</p>
         </div>
@@ -661,7 +664,10 @@ export function TimelinePlanningTray({
                     }
                   }}
                 >
-                  <span className="timeline-planning-card__grip" aria-hidden="true">
+                  <span
+                    className="timeline-planning-card__grip"
+                    aria-hidden="true"
+                  >
                     ⠿
                   </span>
                   <span className="timeline-planning-card__copy">
@@ -733,7 +739,10 @@ export function TimelinePlanningTray({
                       />
                     </label>
                     <div className="timeline-planning-quick-place__actions">
-                      <button type="button" onClick={() => setQuickItemId(null)}>
+                      <button
+                        type="button"
+                        onClick={() => setQuickItemId(null)}
+                      >
                         {copy.cancel}
                       </button>
                       <button type="submit" disabled={busy}>
@@ -748,7 +757,10 @@ export function TimelinePlanningTray({
                     <strong>{copy.removeTitle}</strong>
                     <p>{copy.removeBody}</p>
                     <div>
-                      <button type="button" onClick={() => setDeleteItemId(null)}>
+                      <button
+                        type="button"
+                        onClick={() => setDeleteItemId(null)}
+                      >
                         {copy.cancel}
                       </button>
                       <button

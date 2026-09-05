@@ -89,12 +89,12 @@ describe('timeline layout engine', () => {
     const isolated = layouts.filter((layout) => layout.compactLaneCount === 1);
 
     expect(isolated.length).toBeGreaterThan(2);
-    expect(new Set(isolated.map((layout) => layout.compactLeftPercent)).size).toBe(
-      1,
-    );
     expect(
-      isolated.every((layout) => layout.compactWidthPercent === 0),
-    ).toBe(true);
+      new Set(isolated.map((layout) => layout.compactLeftPercent)).size,
+    ).toBe(1);
+    expect(isolated.every((layout) => layout.compactWidthPercent === 0)).toBe(
+      true,
+    );
   });
 
   it('packs small overlap clusters instead of spreading them across the whole timeline', () => {
@@ -137,9 +137,9 @@ describe('timeline layout engine', () => {
     const overlapping = layouts.filter((layout) => layout.compactLaneCount > 1);
 
     expect(overlapping.length).toBeGreaterThan(0);
-    expect(
-      overlapping.every((layout) => layout.compactWidthPercent > 0),
-    ).toBe(true);
+    expect(overlapping.every((layout) => layout.compactWidthPercent > 0)).toBe(
+      true,
+    );
   });
 
   it('creates deterministic compact and grouped geometry from the semantic model', () => {

@@ -33,7 +33,9 @@ test('page-local contexts carry their tone into native Timeline cards and dedupl
   await createPane
     .locator('.temporal-create-context-tone-grid [data-context-tone="health"]')
     .click();
-  await createPane.locator('.temporal-create-context-create__actions .is-primary').click();
+  await createPane
+    .locator('.temporal-create-context-create__actions .is-primary')
+    .click();
 
   await expect(contextTrigger).toContainText('Studio');
   await expect(
@@ -69,7 +71,9 @@ test('page-local contexts carry their tone into native Timeline cards and dedupl
   await secondPicker.getByRole('searchbox').fill('studio');
   await secondPicker.locator('.temporal-create-context-new').click();
 
-  const secondCreatePane = secondPicker.locator('.temporal-create-context-create');
+  const secondCreatePane = secondPicker.locator(
+    '.temporal-create-context-create',
+  );
   await secondCreatePane.getByRole('textbox').fill('  studio  ');
   await secondCreatePane
     .locator('.temporal-create-context-tone-grid [data-context-tone="urgent"]')
@@ -79,7 +83,9 @@ test('page-local contexts carry their tone into native Timeline cards and dedupl
     .click();
 
   await expect(
-    page.locator('.dante-timeline-group-chip[data-group-id="local-context:studio"]'),
+    page.locator(
+      '.dante-timeline-group-chip[data-group-id="local-context:studio"]',
+    ),
   ).toHaveCount(1);
   await expect(secondTrigger).toContainText('Studio');
   await expect(

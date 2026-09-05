@@ -31,12 +31,7 @@ type TemporalCreateCoreFieldsProps = Readonly<{
 }>;
 
 type QuickRecurrence =
-  | 'none'
-  | 'daily'
-  | 'weekly'
-  | 'monthly'
-  | 'yearly'
-  | 'custom';
+  'none' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom';
 
 const WEEKDAYS: readonly TemporalCreateWeekday[] = Object.freeze([
   'MO',
@@ -90,7 +85,9 @@ export function TemporalCreateCoreFields({
   renderError,
 }: TemporalCreateCoreFieldsProps) {
   const { t, i18n } = useTranslation('common');
-  const copy = temporalCreateProductCopy(i18n.resolvedLanguage ?? i18n.language);
+  const copy = temporalCreateProductCopy(
+    i18n.resolvedLanguage ?? i18n.language,
+  );
   const onCreateContext = useTemporalCreateContextCreator();
   const typeRegistry = temporalCreateTypeRegistry();
   const recurrenceOwner: Exclude<TemporalCreateRecurrenceOwner, null> =
@@ -134,14 +131,15 @@ export function TemporalCreateCoreFields({
     const targetOwner = kind === 'event' ? 'event' : 'routine';
     const eventRecurrence = {
       ...fields.eventRecurrence,
-      owner:
-        fields.eventRecurrence.patternKind === 'none' ? null : targetOwner,
+      owner: fields.eventRecurrence.patternKind === 'none' ? null : targetOwner,
     } as const;
     if (kind === 'event') {
       onPatch({
         kind,
         timeSemantics:
-          fields.timeSemantics === 'unscheduled' ? 'timed' : fields.timeSemantics,
+          fields.timeSemantics === 'unscheduled'
+            ? 'timed'
+            : fields.timeSemantics,
         scheduling: {
           ...fields.scheduling,
           constraintKind: 'none',
@@ -266,7 +264,9 @@ export function TemporalCreateCoreFields({
         data-create-path="timeSemantics"
       >
         <legend>
-          {fields.kind === 'activity' ? copy.activity.placement : copy.event.when}
+          {fields.kind === 'activity'
+            ? copy.activity.placement
+            : copy.event.when}
         </legend>
         <div className="temporal-create-choice-row">
           <button
@@ -276,7 +276,9 @@ export function TemporalCreateCoreFields({
             className={fields.timeSemantics === 'timed' ? 'is-active' : ''}
             onClick={() => changeTimeSemantics('timed')}
           >
-            {fields.kind === 'activity' ? copy.activity.timed : copy.event.timed}
+            {fields.kind === 'activity'
+              ? copy.activity.timed
+              : copy.event.timed}
           </button>
           <button
             type="button"
@@ -285,14 +287,18 @@ export function TemporalCreateCoreFields({
             className={fields.timeSemantics === 'all-day' ? 'is-active' : ''}
             onClick={() => changeTimeSemantics('all-day')}
           >
-            {fields.kind === 'activity' ? copy.activity.allDay : copy.event.allDay}
+            {fields.kind === 'activity'
+              ? copy.activity.allDay
+              : copy.event.allDay}
           </button>
           {fields.kind === 'activity' ? (
             <button
               type="button"
               role="radio"
               aria-checked={fields.timeSemantics === 'unscheduled'}
-              className={fields.timeSemantics === 'unscheduled' ? 'is-active' : ''}
+              className={
+                fields.timeSemantics === 'unscheduled' ? 'is-active' : ''
+              }
               onClick={() => changeTimeSemantics('unscheduled')}
             >
               {copy.activity.toPlace}
@@ -321,7 +327,9 @@ export function TemporalCreateCoreFields({
               type="time"
               step="300"
               value={fields.startTime}
-              onChange={(event) => onPatch({ startTime: event.currentTarget.value })}
+              onChange={(event) =>
+                onPatch({ startTime: event.currentTarget.value })
+              }
             />
             {renderError('startTime')}
           </label>
@@ -367,7 +375,9 @@ export function TemporalCreateCoreFields({
               type="time"
               step="300"
               value={fields.startTime}
-              onChange={(event) => onPatch({ startTime: event.currentTarget.value })}
+              onChange={(event) =>
+                onPatch({ startTime: event.currentTarget.value })
+              }
             />
             {renderError('startTime')}
           </label>
@@ -377,7 +387,9 @@ export function TemporalCreateCoreFields({
               type="time"
               step="300"
               value={end.time}
-              onChange={(event) => patchEventEnd(end.date, event.currentTarget.value)}
+              onChange={(event) =>
+                patchEventEnd(end.date, event.currentTarget.value)
+              }
             />
             {end.dayOffset > 0 ? <small>+{end.dayOffset}d</small> : null}
           </label>
@@ -387,7 +399,9 @@ export function TemporalCreateCoreFields({
       {fields.kind === 'event' && fields.timeSemantics === 'all-day' ? (
         <div className="temporal-create-grid two">
           <label className="temporal-create-control">
-            <span>{t(($) => $.common.home.timeline.create.eventDetails.startDate)}</span>
+            <span>
+              {t(($) => $.common.home.timeline.create.eventDetails.startDate)}
+            </span>
             <input
               data-create-path="date"
               type="date"
@@ -409,12 +423,16 @@ export function TemporalCreateCoreFields({
             {renderError('date')}
           </label>
           <label className="temporal-create-control">
-            <span>{t(($) => $.common.home.timeline.create.eventDetails.endDate)}</span>
+            <span>
+              {t(($) => $.common.home.timeline.create.eventDetails.endDate)}
+            </span>
             <input
               data-create-path="event.allDayEndDate"
               type="date"
               value={fields.event.allDayEndDate}
-              onChange={(event) => patchEvent({ allDayEndDate: event.currentTarget.value })}
+              onChange={(event) =>
+                patchEvent({ allDayEndDate: event.currentTarget.value })
+              }
             />
             {renderError('event.allDayEndDate')}
           </label>
@@ -427,7 +445,9 @@ export function TemporalCreateCoreFields({
           <select
             value={quickRecurrence(fields)}
             onChange={(event) =>
-              changeQuickRecurrence(event.currentTarget.value as QuickRecurrence)
+              changeQuickRecurrence(
+                event.currentTarget.value as QuickRecurrence,
+              )
             }
           >
             <option value="none">{copy.event.repeatNever}</option>
@@ -451,13 +471,18 @@ export function TemporalCreateCoreFields({
 
       {fields.kind === 'event' ? (
         <label className="temporal-create-control temporal-create-location-control">
-          <span>{t(($) => $.common.home.timeline.create.eventDetails.location)}</span>
+          <span>
+            {t(($) => $.common.home.timeline.create.eventDetails.location)}
+          </span>
           <input
             type="text"
             value={fields.event.location}
-            onChange={(event) => patchEvent({ location: event.currentTarget.value })}
+            onChange={(event) =>
+              patchEvent({ location: event.currentTarget.value })
+            }
             placeholder={t(
-              ($) => $.common.home.timeline.create.eventDetails.locationPlaceholder,
+              ($) =>
+                $.common.home.timeline.create.eventDetails.locationPlaceholder,
             )}
           />
         </label>

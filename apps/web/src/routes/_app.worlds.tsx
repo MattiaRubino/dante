@@ -1,4 +1,8 @@
-import { Outlet, createFileRoute, useRouterState } from '@tanstack/react-router';
+import {
+  Outlet,
+  createFileRoute,
+  useRouterState,
+} from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
 import { AppPlaceholderPage } from '../app-shell';
@@ -11,9 +15,7 @@ function WorldsRoute() {
   const { t } = useTranslation('common');
   const hasWorldFocusChild = useRouterState({
     select: (state) =>
-      state.matches.some(
-        (match) => match.routeId === '/_app/worlds/$worldId',
-      ),
+      state.matches.some((match) => match.routeId === '/_app/worlds/$worldId'),
   });
 
   if (hasWorldFocusChild) {

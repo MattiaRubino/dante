@@ -51,7 +51,8 @@ const IT: TemporalCreateProductCopy = Object.freeze({
     repeatYearly: 'Ogni anno',
     repeatCustom: 'Personalizzata…',
   }),
-  futureTypesHint: 'Altri tipi potranno essere aggiunti qui senza cambiare il flusso.',
+  futureTypesHint:
+    'Altri tipi potranno essere aggiunti qui senza cambiare il flusso.',
 });
 
 const EN: TemporalCreateProductCopy = Object.freeze({
@@ -81,6 +82,8 @@ const EN: TemporalCreateProductCopy = Object.freeze({
   futureTypesHint: 'More types can be added here without changing the flow.',
 });
 
-export function temporalCreateProductCopy(language: string): TemporalCreateProductCopy {
+export function temporalCreateProductCopy(
+  language: string,
+): TemporalCreateProductCopy {
   return language.toLowerCase().startsWith('en') ? EN : IT;
 }

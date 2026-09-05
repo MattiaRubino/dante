@@ -21,8 +21,12 @@ test('Home opens a centered World on the dedicated World Focus route', async ({
   );
   await expect(page.locator('[data-app-region="topbar"]')).toBeVisible();
   await expect(page.locator('.world-focus-ellipse-guides')).toHaveCount(1);
-  await expect(page.locator('.world-focus-ellipse-guides ellipse')).toHaveCount(3);
-  await expect(page.locator('[data-world-focus-region="workspace"]')).toBeVisible();
+  await expect(page.locator('.world-focus-ellipse-guides ellipse')).toHaveCount(
+    3,
+  );
+  await expect(
+    page.locator('[data-world-focus-region="workspace"]'),
+  ).toBeVisible();
 
   const background = await focus.evaluate(
     (element) => getComputedStyle(element).backgroundColor,
@@ -48,7 +52,9 @@ test('the initially centered World still requires two activations', async ({
   await expect(page).toHaveURL(/\/worlds\/body$/);
 });
 
-test('dragging the active World does not enter World Focus', async ({ page }) => {
+test('dragging the active World does not enter World Focus', async ({
+  page,
+}) => {
   await page.goto('/home');
 
   const body = page.locator('.home-world[aria-label="Corpo"]');
@@ -110,7 +116,9 @@ test('WF-G3 candidate keeps the workspace bounded independently of the visual el
     const workspace = await page
       .locator('[data-world-focus-region="workspace"]')
       .boundingBox();
-    const guides = await page.locator('.world-focus-ellipse-guides').boundingBox();
+    const guides = await page
+      .locator('.world-focus-ellipse-guides')
+      .boundingBox();
 
     expect(shell).not.toBeNull();
     expect(workspace).not.toBeNull();
@@ -121,9 +129,7 @@ test('WF-G3 candidate keeps the workspace bounded independently of the visual el
 
     expect(workspace.width).toBeGreaterThan(320);
     expect(workspace.x).toBeGreaterThan(shell.x);
-    expect(workspace.x + workspace.width).toBeLessThan(
-      shell.x + shell.width,
-    );
+    expect(workspace.x + workspace.width).toBeLessThan(shell.x + shell.width);
     expect(guides.x).toBe(shell.x);
     expect(guides.width).toBe(shell.width);
   }

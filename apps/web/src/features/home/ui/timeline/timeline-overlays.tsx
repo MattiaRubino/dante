@@ -710,10 +710,7 @@ export function TimeEditorPopover({
       setError(true);
       return;
     }
-    if (
-      startMinute === event.startMinute &&
-      endMinute === event.endMinute
-    ) {
+    if (startMinute === event.startMinute && endMinute === event.endMinute) {
       onClose(true);
       return;
     }

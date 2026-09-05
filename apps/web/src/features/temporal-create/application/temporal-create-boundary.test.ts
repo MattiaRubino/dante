@@ -51,26 +51,36 @@ describe('Temporal Create application boundary snapshot', () => {
     input.eventRecurrence.cyclePositions.push(4);
 
     expect(preparation.prepared.command.payload.title).toBe('Review cliente');
-    expect(preparation.prepared.metadata.specification.title).toBe('Review cliente');
+    expect(preparation.prepared.metadata.specification.title).toBe(
+      'Review cliente',
+    );
     expect(preparation.prepared.metadata.specification.event.purpose).toBe(
       'Intent originale',
     );
     expect(
-      preparation.prepared.metadata.specification.eventRecurrence.cyclePositions,
+      preparation.prepared.metadata.specification.eventRecurrence
+        .cyclePositions,
     ).toEqual([1, 3]);
-    expect(Object.isFrozen(preparation.prepared.metadata.specification)).toBe(true);
+    expect(Object.isFrozen(preparation.prepared.metadata.specification)).toBe(
+      true,
+    );
     expect(
-      Object.isFrozen(preparation.prepared.metadata.specification.eventRecurrence),
+      Object.isFrozen(
+        preparation.prepared.metadata.specification.eventRecurrence,
+      ),
     ).toBe(true);
     expect(
       Object.isFrozen(
-        preparation.prepared.metadata.specification.eventRecurrence.cyclePositions,
+        preparation.prepared.metadata.specification.eventRecurrence
+          .cyclePositions,
       ),
     ).toBe(true);
 
     const execution = await runtime.execute(preparation.prepared);
     expect(execution.result.status).toBe('applied');
-    expect(execution.effect?.metadata.specification.title).toBe('Review cliente');
+    expect(execution.effect?.metadata.specification.title).toBe(
+      'Review cliente',
+    );
   });
 
   it('re-normalizes ownership before validation and capability projection', () => {
@@ -94,9 +104,9 @@ describe('Temporal Create application boundary snapshot', () => {
       throw new Error('Expected normalized Activity Create operation');
     }
 
-    expect(preparation.prepared.metadata.specification.eventRecurrence.patternKind).toBe(
-      'none',
-    );
+    expect(
+      preparation.prepared.metadata.specification.eventRecurrence.patternKind,
+    ).toBe('none');
     expect(preparation.prepared.command.payload.capabilities).not.toContain(
       'recurrence',
     );

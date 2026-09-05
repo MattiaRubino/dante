@@ -40,9 +40,7 @@ export function TemporalCreateOrganizationFields({
           value={fields.notes}
           rows={depth === 'full' ? 5 : 3}
           onChange={(event) => onPatch({ notes: event.currentTarget.value })}
-          placeholder={t(
-            ($) => $.common.home.timeline.create.notesPlaceholder,
-          )}
+          placeholder={t(($) => $.common.home.timeline.create.notesPlaceholder)}
         />
       </label>
     </section>

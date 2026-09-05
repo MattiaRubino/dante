@@ -12,11 +12,7 @@ import {
 export const TIMELINE_ALL_DAY_LANE_HEADER_HEIGHT_PX = 34;
 export const TIMELINE_ALL_DAY_ITEM_ROW_HEIGHT_PX = 30;
 
-export type TimelineAllDayRangePosition =
-  | 'single'
-  | 'start'
-  | 'middle'
-  | 'end';
+export type TimelineAllDayRangePosition = 'single' | 'start' | 'middle' | 'end';
 
 export function timelineAllDayItemsForVisibleDate(
   items: readonly TimelineAllDayItem[],

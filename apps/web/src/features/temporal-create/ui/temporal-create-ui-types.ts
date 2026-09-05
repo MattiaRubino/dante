@@ -8,12 +8,7 @@ export type TemporalCreateComposerPosition = Readonly<{
  * Domain classification and must not be promoted into canonical ontology.
  */
 export type TemporalCreateContextTone =
-  | 'focus'
-  | 'meeting'
-  | 'health'
-  | 'creative'
-  | 'personal'
-  | 'urgent';
+  'focus' | 'meeting' | 'health' | 'creative' | 'personal' | 'urgent';
 
 export type TemporalCreateContextOption = Readonly<{
   id: string;

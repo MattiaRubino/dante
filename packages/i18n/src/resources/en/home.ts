@@ -381,12 +381,14 @@ export const home = {
         buffer: 'Preparation, recovery and spacing must use valid values.',
         eventBuffer: 'Event preparation and recovery must use valid values.',
         recurrenceInterval: 'The calendar recurrence interval is invalid.',
-        recurrenceWeekdays: 'Choose at least one weekday for weekly recurrence.',
+        recurrenceWeekdays:
+          'Choose at least one weekday for weekly recurrence.',
         recurrenceOrdinal: 'The monthly position and weekday are invalid.',
         recurrenceElapsed: 'The elapsed recurrence interval is invalid.',
         recurrenceQuota: 'The recurrence quota or period is invalid.',
         recurrenceQuotaTimeZone: 'Enter a valid IANA zone for this period.',
-        recurrenceCycle: 'The recurrence cycle or active positions are invalid.',
+        recurrenceCycle:
+          'The recurrence cycle or active positions are invalid.',
         recurrenceUntil: 'The recurrence end date cannot be before its start.',
         recurrenceCount: 'The recurrence occurrence count is invalid.',
         reminder: 'The configured reminder is invalid.',

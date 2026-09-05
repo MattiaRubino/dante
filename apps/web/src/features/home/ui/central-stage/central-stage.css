@@ -249,9 +249,7 @@
     transparent calc(100% - 2px),
     #000 calc(100% - 1px)
   );
-  filter: drop-shadow(
-    0 0 7px color-mix(in srgb, var(--col) 32%, transparent)
-  );
+  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--col) 32%, transparent));
 }
 
 .node-progress {
@@ -274,9 +272,7 @@
     transparent calc(100% - 2px),
     #000 calc(100% - 1px)
   );
-  filter: drop-shadow(
-    0 0 8px color-mix(in srgb, var(--col) 68%, transparent)
-  );
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--col) 68%, transparent));
 }
 
 .measurable .node-progress {
@@ -299,9 +295,7 @@
   width: 39px;
   height: 39px;
   color: color-mix(in srgb, var(--col) 76%, white);
-  filter: drop-shadow(
-    0 0 8px color-mix(in srgb, var(--col) 48%, transparent)
-  );
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--col) 48%, transparent));
   transform: none;
 }
 
@@ -328,13 +322,8 @@
 }
 
 .home-world.active .node-halo {
-  filter:
-    drop-shadow(
-      0 0 10px color-mix(in srgb, var(--col) 46%, transparent)
-    )
-    drop-shadow(
-      0 0 20px color-mix(in srgb, var(--col) 18%, transparent)
-    );
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--col) 46%, transparent))
+    drop-shadow(0 0 20px color-mix(in srgb, var(--col) 18%, transparent));
 }
 
 .home-world.active .node-back {

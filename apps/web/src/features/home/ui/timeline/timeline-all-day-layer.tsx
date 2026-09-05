@@ -49,7 +49,9 @@ export function TimelineAllDayLane({
       style={{ height: timelineAllDayLaneHeightPx(visibleItems.length) }}
     >
       <div className="timeline-all-day-lane__label">
-        <span>{t(($) => $.common.home.timeline.create.timeSemantics.allDay)}</span>
+        <span>
+          {t(($) => $.common.home.timeline.create.timeSemantics.allDay)}
+        </span>
       </div>
 
       <div className="timeline-all-day-lane__items">

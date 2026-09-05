@@ -183,7 +183,11 @@
   margin-bottom: 8px;
   padding: 7px;
   border: 1px solid
-    color-mix(in srgb, var(--timeline-group-color) 25%, rgba(255, 255, 255, 0.06));
+    color-mix(
+      in srgb,
+      var(--timeline-group-color) 25%,
+      rgba(255, 255, 255, 0.06)
+    );
   border-radius: 13px;
   background: linear-gradient(
     180deg,
@@ -278,7 +282,8 @@
   flex: 0 0 auto;
   border-radius: 50%;
   background: var(--timeline-group-color);
-  box-shadow: 0 0 9px color-mix(in srgb, var(--timeline-group-color) 38%, transparent);
+  box-shadow: 0 0 9px
+    color-mix(in srgb, var(--timeline-group-color) 38%, transparent);
 }
 
 .timeline-planning-card__meta b {
@@ -481,12 +486,20 @@
   min-width: 190px;
   padding: 12px 12px 12px 11px;
   border: 1px solid
-    color-mix(in srgb, var(--timeline-group-color) 58%, rgba(255, 255, 255, 0.1));
+    color-mix(
+      in srgb,
+      var(--timeline-group-color) 58%,
+      rgba(255, 255, 255, 0.1)
+    );
   border-radius: 13px;
   color: #eaf0f8;
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--timeline-group-color) 12%, rgba(15, 25, 37, 0.985)),
+    color-mix(
+      in srgb,
+      var(--timeline-group-color) 12%,
+      rgba(15, 25, 37, 0.985)
+    ),
     rgba(8, 16, 27, 0.99)
   );
   box-shadow:
@@ -500,7 +513,8 @@
   width: max-content;
   margin-top: 2px;
   padding: 3px 6px;
-  border: 1px solid color-mix(in srgb, var(--timeline-group-color) 42%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--timeline-group-color) 42%, transparent);
   border-radius: 999px;
   color: color-mix(in srgb, var(--timeline-group-color) 58%, white);
   background: color-mix(in srgb, var(--timeline-group-color) 9%, transparent);

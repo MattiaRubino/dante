@@ -110,10 +110,7 @@ function minuteAtClientY(section: HTMLElement, clientY: number): number {
         next <= current ? 0 : (localY - current) / (next - current);
       return Math.max(
         0,
-        Math.min(
-          1439,
-          (index + Math.max(0, Math.min(1, progress))) * interval,
-        ),
+        Math.min(1439, (index + Math.max(0, Math.min(1, progress))) * interval),
       );
     }
   }
@@ -316,9 +313,9 @@ export function TimelineCreateBridge({
   onBeforeOpen,
 }: TimelineCreateBridgeProps) {
   const { t } = useTranslation('common');
-  const [effects, setEffects] = useState<readonly TemporalCreateAppliedEffect[]>(
-    [],
-  );
+  const [effects, setEffects] = useState<
+    readonly TemporalCreateAppliedEffect[]
+  >([]);
   const [preview, setPreview] =
     useState<TemporalCreateTimelineProjection | null>(null);
   const [request, setRequest] = useState<TemporalCreateInvocation | null>(null);
@@ -345,7 +342,9 @@ export function TimelineCreateBridge({
   );
 
   const planningItems = useMemo<readonly TimelinePlanningTrayItem[]>(() => {
-    const groupMap = new Map(groups.map((group, index) => [group.id, { group, index }]));
+    const groupMap = new Map(
+      groups.map((group, index) => [group.id, { group, index }]),
+    );
     return effects.flatMap((effect) => {
       if (
         effect.metadata.kind !== 'activity' ||
@@ -585,10 +584,7 @@ export function TimelineCreateBridge({
             const cardContentTop =
               grid.scrollTop + (cardRect.top - gridRect.top);
             grid.scrollTo({
-              top: Math.max(
-                0,
-                cardContentTop - grid.clientHeight * 0.28,
-              ),
+              top: Math.max(0, cardContentTop - grid.clientHeight * 0.28),
               behavior: window.matchMedia('(prefers-reduced-motion: reduce)')
                 .matches
                 ? 'auto'
@@ -644,10 +640,7 @@ export function TimelineCreateBridge({
         planningPlacement(effect, dateKey, startMinute),
       );
       const mutation = execution.effect;
-      if (
-        execution.result.status !== 'applied' ||
-        !mutation?.projection
-      ) {
+      if (execution.result.status !== 'applied' || !mutation?.projection) {
         return false;
       }
 
@@ -678,13 +671,7 @@ export function TimelineCreateBridge({
       );
       return true;
     },
-    [
-      effects,
-      onMaterializeCreatedEvent,
-      reveal,
-      showPlanningFeedback,
-      t,
-    ],
+    [effects, onMaterializeCreatedEvent, reveal, showPlanningFeedback, t],
   );
 
   const deletePlanningItem = useCallback(
@@ -827,8 +814,7 @@ export function TimelineCreateBridge({
         tone,
         style: {
           top: top + precedingSameSlot * 4,
-          left:
-            compactLeft + (expandedLeft - compactLeft) * expansionProgress,
+          left: compactLeft + (expandedLeft - compactLeft) * expansionProgress,
           width:
             compactWidth + (expandedWidth - compactWidth) * expansionProgress,
           height: Math.max(38, bottom - top),
@@ -987,9 +973,7 @@ export function TimelineCreateBridge({
       {typeof document !== 'undefined'
         ? createPortal(
             <div
-              className={`temporal-create-toast${
-                toastVisible ? ' is-on' : ''
-              }`}
+              className={`temporal-create-toast${toastVisible ? ' is-on' : ''}`}
               role="status"
               aria-live="polite"
             >
@@ -1006,9 +990,7 @@ export function TimelineCreateBridge({
                 <button
                   type="button"
                   onClick={() =>
-                    void (planningUndo
-                      ? undoPlanningMutation()
-                      : undoCreate())
+                    void (planningUndo ? undoPlanningMutation() : undoCreate())
                   }
                 >
                   {t(($) => $.common.home.timeline.undo)}
