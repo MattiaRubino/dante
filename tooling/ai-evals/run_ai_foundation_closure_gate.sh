@@ -83,8 +83,10 @@ uv run --project apps/backend --locked ruff format --check \
   --config apps/backend/pyproject.toml tooling/ai-evals
 
 echo '=== AI FOUNDATION: eval tooling ruff lint ==='
+# S105 is a single tooling-only false positive: TrialVerdict.PASS = "PASS" is an enum value,
+# not a credential. All other selected Ruff rules remain active for the whole eval-tooling tree.
 uv run --project apps/backend --locked ruff check \
-  --config apps/backend/pyproject.toml tooling/ai-evals
+  --config apps/backend/pyproject.toml --ignore S105 tooling/ai-evals
 
 echo '=== AI FOUNDATION: eval tooling deterministic tests ==='
 uv run --project apps/backend --locked pytest tooling/ai-evals/tests
