@@ -120,7 +120,7 @@ export function WorldFocusDanteInsight({
               data-world-focus-dante-proposal-invoker="true"
               type="button"
               disabled={!proposal.canRequestProposal}
-              onClick={() => proposal.requestProposal(insight)}
+              onClick={proposal.requestProposal}
             >
               {t(($) => $.common.worldFocus.dante.proposal.prepare)}
             </button>
