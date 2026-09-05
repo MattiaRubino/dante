@@ -38,6 +38,7 @@ class PostgresCluster:
     admin_password: str
     migrator_password: str
     runtime_password: str
+    observer_password: str
     container_name: str
 
     def stop(self) -> None:
@@ -197,6 +198,7 @@ def _provision(cluster: PostgresCluster, database_name: str) -> None:
         admin_password=SecretStr(cluster.admin_password),
         migrator_password=SecretStr(cluster.migrator_password),
         runtime_password=SecretStr(cluster.runtime_password),
+        observer_password=SecretStr(cluster.observer_password),
         connect_timeout_seconds=2,
     )
     asyncio.run(provision_database(settings))
@@ -228,6 +230,7 @@ def postgres_cluster() -> Generator[PostgresCluster]:
         admin_password=secrets.token_urlsafe(32),
         migrator_password=secrets.token_urlsafe(32),
         runtime_password=secrets.token_urlsafe(32),
+        observer_password=secrets.token_urlsafe(32),
         container_name=f"dante-pytest-{uuid.uuid4().hex[:12]}",
     )
 

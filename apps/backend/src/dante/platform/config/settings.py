@@ -1,6 +1,7 @@
 """Typed, immutable bootstrap configuration for the DANTE backend."""
 
 from enum import StrEnum
+from ipaddress import ip_address
 from typing import Annotated, Self
 from urllib.parse import urlsplit
 
@@ -18,8 +19,21 @@ from dante.platform.config.auth_provider import (
     GOOGLE_JWKS_URL,
 )
 from dante.platform.config.database import DatabaseSettings
+from dante.platform.config.observability import ObservabilitySettings
 
 IdentityValue = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
+
+
+def _is_loopback(hostname: str | None) -> bool:
+    """Return whether an OTLP collector hostname is strictly loopback."""
+    if hostname is None:
+        return False
+    if hostname.casefold() == "localhost":
+        return True
+    try:
+        return ip_address(hostname).is_loopback
+    except ValueError:
+        return False
 
 
 class Environment(StrEnum):
@@ -43,6 +57,7 @@ class Settings(BaseSettings):
     debug: bool = False
     database: DatabaseSettings
     auth: AuthSettings
+    observability: ObservabilitySettings = ObservabilitySettings()
 
     @model_validator(mode="after")
     def validate_environment_safety(self) -> Self:
@@ -88,4 +103,14 @@ class Settings(BaseSettings):
                     raise ValueError("canonical Web origin must be an allowed WebAuthn origin")
                 if any(urlsplit(origin).scheme != "https" for origin in webauthn.expected_origins):
                     raise ValueError("non-local WebAuthn origins must use HTTPS")
+
+            otlp_endpoint = urlsplit(self.observability.otlp_http_endpoint)
+            if (
+                self.observability.enabled
+                and otlp_endpoint.scheme != "https"
+                and not _is_loopback(otlp_endpoint.hostname)
+            ):
+                raise ValueError(
+                    "non-local observability OTLP must use HTTPS unless the collector is loopback"
+                )
         return self
