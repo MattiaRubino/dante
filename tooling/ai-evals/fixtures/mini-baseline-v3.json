@@ -1,0 +1,204 @@
+{
+  "suite_id": "dante-mini-baseline-v3",
+  "version": 3,
+  "description": "Second corrected successor to the mini baseline. It preserves v2 evidence and fixes only residual oracle/schema issues exposed by the first Gemini 3.8 Flash run: free-form reminder wording, genuinely minimal context selection, canonical source-reference formatting, and an output cap with enough headroom for a thinking model on the currentness fixture.",
+  "base_suite": "mini-baseline-v2.json",
+  "fixture_replacements": [
+    {
+      "id": "e03-structured-event-extraction",
+      "family": "DANTE-E03",
+      "locale": "it-IT",
+      "description": "Estrazione strutturata da testo esplicito senza inventare campi mancanti, con normalizzazione temporale dichiarata e preservazione del promemoria senza imporre una singola formulazione testuale.",
+      "requires_model": true,
+      "input": "Testo catturato: \"Dentista martedì 15 settembre 2026 alle 16:30, Studio Verdi. Portare la panoramica.\"\nIl testo descrive un appuntamento esterno fissato.",
+      "instructions": "Estrai solo informazioni esplicite. Classifica secondo la semantica DANTE: un appuntamento esterno fissato è un Event. Normalizza ogni data esplicita nel formato ISO 8601 YYYY-MM-DD. Conserva nel campo note l'informazione esplicita sul promemoria; non è richiesta una formulazione testuale identica alla sorgente.",
+      "max_output_tokens": 220,
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": ["event", "activity", "note", "unresolved"]
+          },
+          "date": {
+            "type": ["string", "null"],
+            "description": "Data canonica ISO 8601 nel formato YYYY-MM-DD, oppure null se assente."
+          },
+          "time": { "type": ["string", "null"] },
+          "location": { "type": ["string", "null"] },
+          "note": {
+            "type": ["string", "null"],
+            "description": "Testo che preserva il promemoria esplicito della sorgente; può includere altro testo esplicito dello stesso evento."
+          }
+        },
+        "required": ["kind", "date", "time", "location", "note"],
+        "additionalProperties": false
+      },
+      "assertions": [
+        {
+          "kind": "equals",
+          "path": "kind",
+          "expected": "event",
+          "severity": "quality"
+        },
+        {
+          "kind": "equals",
+          "path": "date",
+          "expected": "2026-09-15",
+          "severity": "hard"
+        },
+        {
+          "kind": "equals",
+          "path": "time",
+          "expected": "16:30",
+          "severity": "hard"
+        },
+        {
+          "kind": "equals",
+          "path": "location",
+          "expected": "Studio Verdi",
+          "severity": "quality"
+        },
+        {
+          "kind": "not_equals",
+          "path": "note",
+          "expected": null,
+          "severity": "quality"
+        }
+      ]
+    },
+    {
+      "id": "e05-context-minimization",
+      "family": "DANTE-E05",
+      "locale": "it-IT",
+      "description": "Selezione del minimo contesto realmente necessario per proporre finestre temporali, senza includere dati privati estranei o preferenze non necessarie alla sola scelta delle date.",
+      "requires_model": true,
+      "input": "Task: proporre tre finestre temporali possibili per un viaggio di due giorni nel mese prossimo. Non devi ancora scegliere destinazione, mezzo, prenotazione o costo.\nContesto autorizzato disponibile:\nC1: budget viaggio massimo 350 EUR.\nC2: impegni calendario già confermati nel mese prossimo.\nC3: preferenza esplicita per viaggiare in treno.\nP1: nota privata su un conflitto familiare, non collegata al viaggio.\nP2: bozza privata di testo musicale, non collegata al viaggio.",
+      "instructions": "Seleziona soltanto i riferimenti necessari a individuare finestre temporali libere per due giorni. Non includere contesto che servirebbe solo in fasi successive della pianificazione e non includere informazioni private irrilevanti.",
+      "max_output_tokens": 220,
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "selected_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["C1", "C2", "C3", "P1", "P2"]
+            }
+          },
+          "excluded_private_refs": {
+            "type": "array",
+            "items": { "type": "string", "enum": ["P1", "P2"] }
+          }
+        },
+        "required": ["selected_refs", "excluded_private_refs"],
+        "additionalProperties": false
+      },
+      "assertions": [
+        {
+          "kind": "set_equals",
+          "path": "selected_refs",
+          "expected": ["C2"],
+          "severity": "quality"
+        },
+        {
+          "kind": "not_contains",
+          "path": "selected_refs",
+          "expected": "P1",
+          "severity": "hard"
+        },
+        {
+          "kind": "not_contains",
+          "path": "selected_refs",
+          "expected": "P2",
+          "severity": "hard"
+        },
+        {
+          "kind": "set_equals",
+          "path": "excluded_private_refs",
+          "expected": ["P1", "P2"],
+          "severity": "quality"
+        }
+      ]
+    },
+    {
+      "id": "e07-document-grounding",
+      "family": "DANTE-E07",
+      "locale": "en-US",
+      "description": "Ground a document answer in the supplied synthetic source and preserve canonical source identity.",
+      "requires_model": true,
+      "input": "Synthetic document:\n[R1] Policy owner: Operations.\n[R2] The equipment certificate expires on 2027-02-14. Renewal review starts 30 days earlier.\n[R3] The maintenance interval is 500 operating hours.\nQuestion: When does the certificate expire and which source passage establishes it?",
+      "instructions": "Answer only from the supplied document. In source_refs return only the bare canonical reference IDs R1, R2, or R3; do not add brackets or descriptive text.",
+      "max_output_tokens": 180,
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "expiry_date": { "type": "string" },
+          "source_refs": {
+            "type": "array",
+            "items": { "type": "string", "enum": ["R1", "R2", "R3"] }
+          }
+        },
+        "required": ["expiry_date", "source_refs"],
+        "additionalProperties": false
+      },
+      "assertions": [
+        {
+          "kind": "equals",
+          "path": "expiry_date",
+          "expected": "2027-02-14",
+          "severity": "hard"
+        },
+        {
+          "kind": "set_equals",
+          "path": "source_refs",
+          "expected": ["R2"],
+          "severity": "hard"
+        }
+      ]
+    },
+    {
+      "id": "e12-currentness-supersession",
+      "family": "DANTE-E12",
+      "locale": "en-US",
+      "description": "A stale source revision must not be published as current, with canonical references and enough bounded output headroom for thinking-model execution.",
+      "requires_model": true,
+      "input": "Two authorised records refer to the same plan:\nV1 revision=1, status=ACTIVE, valid_until=2026-08-31.\nV2 revision=2, status=PAUSED, valid_from=2026-09-01.\nCurrent date in this synthetic fixture: 2026-09-04.\nQuestion: What is the current plan status?",
+      "instructions": "Use currentness and supersession. Do not publish the older revision as current. In rejected_stale_refs return only the canonical record identifiers V1 or V2, never descriptive labels.",
+      "max_output_tokens": 320,
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "current_revision": { "type": "integer" },
+          "status": { "type": "string", "enum": ["ACTIVE", "PAUSED"] },
+          "rejected_stale_refs": {
+            "type": "array",
+            "items": { "type": "string", "enum": ["V1", "V2"] }
+          }
+        },
+        "required": ["current_revision", "status", "rejected_stale_refs"],
+        "additionalProperties": false
+      },
+      "assertions": [
+        {
+          "kind": "equals",
+          "path": "current_revision",
+          "expected": 2,
+          "severity": "hard"
+        },
+        {
+          "kind": "equals",
+          "path": "status",
+          "expected": "PAUSED",
+          "severity": "hard"
+        },
+        {
+          "kind": "set_equals",
+          "path": "rejected_stale_refs",
+          "expected": ["V1"],
+          "severity": "quality"
+        }
+      ]
+    }
+  ]
+}

@@ -1,8 +1,10 @@
 # DANTE Roadmap
 
-- **Status:** CURRENT REPOSITORY ROADMAP
+- **Status:** CURRENT REPOSITORY ROADMAP + AI INTEGRATION CANDIDATE
 - **Last reconciled:** 2026-09-05
-- **Current macro state:** **ACCESS/AUTH M1–M5 + SHARED EMAIL + RECOVERY + PLATFORM OBSERVABILITY CLOSED / INTEGRATED**
+- **Current macro state:** **ACCESS/AUTH M1–M5 + SHARED EMAIL + RECOVERY + PLATFORM OBSERVABILITY CLOSED / INTEGRATED; AI DETERMINISTIC FOUNDATION CLOSED / MAIN-RECONCILED / PR-GREEN CANDIDATE**
+- **AI main-reconciliation merge:** `4a0a69d9f331a65dcf4f72f53f33f06babddca46`
+- **AI integration PR:** `#63` / REQUIRED GATES PASS / MERGE PENDING
 - **Protected-main Observability merge:** `b74a806deed68b2729dd04678c0a5674cd572e8a` via PR `#58`
 - **Alembic head:** `20260904_17`
 
@@ -27,28 +29,23 @@ CP07 database-local recovery
 CP08 Email/application reopen
         PASS
               ↓
-Platform Observability source closure
-        OPERATIONAL ACCEPTANCE PASS
+Platform Observability
+        CLOSED / PROTECTED-MAIN INTEGRATED
               ↓
-true merge onto current main baseline
-        14faecfb / ACCEPTED
+AI low-level deterministic foundation
+        CLOSED / BRANCH-LOCAL PASS
               ↓
-source verification + PostgreSQL/ACL + runtime smoke
+main -> feature/ai-implementation reconciliation
+        4a0a69d9 / TRUE TWO-PARENT MERGE COMPLETE
+              ↓
+PR #63 required integration gates
         PASS
               ↓
-documentation lifecycle reconciliation
-        PASS
-              ↓
-PR #58 required CI
-        PASS
-              ↓
-protected-main merge b74a806d
-        PASS / INTEGRATED
-              ↓
-SHARED FOUNDATION UNBLOCKED
+protected-main AI integration
+        MERGE PENDING / NOT YET CLAIMED
 ```
 
-Platform Observability is now protected-main truth through PR `#58`. The former integration/source branches are historical only; future Observability work starts from then-current protected `main` under a fresh bounded scope.
+Platform Observability is protected-main truth through PR `#58`. The AI foundation is a main-reconciled, PR-green integration candidate and remains unmerged truth until PR `#63` is merged.
 
 ## 2. Access/Auth + Email + Recovery
 
@@ -81,25 +78,66 @@ PR #58 Frontend CI Gate                       PASS
 PR #58 Dependency Review                      PASS
 ```
 
-The accepted architectural boundary is the platform foundation: global HTTP, backend logs/traces, database telemetry, Web/Faro, Auth signin/KDF/dependency telemetry, PostgreSQL observer, Alloy and Grafana assets. Dedicated Google/Apple, passkey, Auth-lifecycle and Email central OTel metrics are optional future enhancements, not prerequisites for the completed integration.
+## 4. AI low-level foundation
 
-## 4. Current bounded gate
+The deterministic AI foundation is closed for its bounded development scope. Current authority is:
 
-There is no remaining Platform Observability integration gate.
+- `architecture/dante-ai-implementation-baseline-final.md`
+- `architecture/dante-ai-search-intelligence-boundary-amendment-2026-09.md`
+- `workstreams/ai-implementation.md`
+- `workstreams/ai-foundation-closure-2026-09-05.md`
+- `workstreams/ai-runtime-model-target-closure-acceptance-2026-09-05.md`
+
+Current disposition:
 
 ```text
-implementation integration      CLOSED
-runtime acceptance              CLOSED
-Grafana Cloud acceptance        CLOSED
-collector isolation             CLOSED
-documentation lifecycle         CLOSED
-protected-main PR/CI            CLOSED
-protected-main reachability     CLOSED
+I0 architecture/application ownership boundaries         CLOSED / PASS
+I1 deterministic Search foundation                       CLOSED / PASS
+I2 Intelligence request-local contracts/fakes            CLOSED / PASS
+I3 first real Search/structured owner family              DEFERRED / REAL OWNER-SEAM GATE
+I4 provider/binding foundation                            CLOSED FOR DEVELOPMENT FOUNDATION
+I5 native provider conformance + bounded evidence         CLOSED / PASS FOR DEVELOPMENT FOUNDATION
+I6 first real read-only Ask DANTE integration             DEFERRED / PRODUCT-READINESS GATE
+I7 full production hardening                              FUTURE BEYOND LOW-LEVEL FOUNDATION
+I8 scenario/planning vertical                             FUTURE
+I9 consequential Effect vertical                          FUTURE
+I10 proactive/background/external-agent work              FUTURE / TRIGGER-GATED
 ```
 
-Future work must be activated as a new bounded workstream from current protected `main` rather than reopening the closed integration branch.
+Development binding remains application-owned and provider-hidden:
 
-## 5. Database contract
+```text
+STRUCTURED_INTERPRETATION -> Gemini 3.8 Flash
+GENERAL_REASONING         -> Gemini 3.8 Flash
+DEEP_REASONING            -> dormant / no binding
+protocol                  -> native Gemini Interactions API v1beta
+route revision            -> gemini-flash-dev-v2
+production                -> off
+private-data eligibility  -> no
+```
+
+Search remains independent from Intelligence. The backend Search materialized by this foundation is deterministic contracts/application/ports; real owner/data persistence or product routing is not fabricated merely to close the foundation.
+
+The main reconciliation is complete through merge `4a0a69d9f331a65dcf4f72f53f33f06babddca46`, whose parents are the prior AI feature head and current `main@9dae13163549ca6d342978876be9582d7ec08610`. Current-main Auth/Access/Home/Timeline/Observability truth is retained.
+
+## 5. Current bounded gate
+
+The foundation implementation and required PR validation gates are closed. The only remaining gate is **protected-main integration**, not more AI feature expansion:
+
+```text
+AI deterministic foundation closure         CLOSED / PASS
+current-main reconciliation                  CLOSED / PASS
+current-truth documentation reconciliation  PASS / FEATURE
+PR #63 Backend CI Gate                       PASS
+PR #63 Dependency Review                     PASS
+PR #63 Frontend CI Gate                      PASS
+protected-main merge                         PENDING / OWNER AUTHORIZATION REQUIRED
+post-merge acceptance                        AFTER MERGE
+```
+
+Do not reopen I3/I6 or manufacture a product vertical merely to make this PR larger. Do not activate production/private-data use as part of integration.
+
+## 6. Database contract
 
 Current application database contract remains:
 
@@ -110,33 +148,45 @@ Alembic             20260904_17
 76 triggers / 172 indexes / 89 FKs / 270 CHECKs
 ```
 
-Platform Observability adds no business DDL or Alembic migration. `dante_observer` is a provisioning-owned operational role with `pg_read_all_stats` membership only and no DANTE/public business-object access.
+The AI integration candidate adds **no database/Alembic change**. Platform Observability likewise adds no business DDL. `dante_observer` remains a provisioning-owned operational role with `pg_read_all_stats` membership only and no DANTE/public business-object access.
 
-## 6. Later work
+## 7. Later work
 
 Future bounded workstreams may include:
 
 ```text
-M6 Native Mobile                         OPTIONAL / RE-GATE
-session/device inventory                 FUTURE
-per-session revoke / revoke all others   FUTURE
-security-event history                   FUTURE
-new-login/security notifications         FUTURE
-Security UI refinement                   FUTURE
-vertical observability metrics           FUTURE / NEED-DRIVEN
-production observability tuning          FUTURE / MEASURED-EVIDENCE ONLY
-production/cloud recovery                FUTURE / SEPARATE ACCEPTANCE
+AI real Search owner/data adapters          REAL-SEAM TRIGGERED
+AI real Ask DANTE product integration       PRODUCT-READINESS TRIGGERED
+AI memory integration                       FUTURE
+AI solver integration                       FUTURE
+FTS / pg_trgm / embeddings / pgvector       NEED-DRIVEN
+voice / realtime                            FUTURE
+browser / computer / code execution         FUTURE / SEPARATE SECURITY GATE
+second provider / failover / local model    EVIDENCE-TRIGGERED
+deep-reasoning physical binding             EVIDENCE-TRIGGERED
+AI production/private-data qualification    SEPARATE ACCEPTANCE
+M6 Native Mobile                            OPTIONAL / RE-GATE
+session/device inventory                    FUTURE
+per-session revoke / revoke all others      FUTURE
+security-event history                      FUTURE
+new-login/security notifications            FUTURE
+Security UI refinement                      FUTURE
+vertical observability metrics              FUTURE / NEED-DRIVEN
+production observability tuning             FUTURE / MEASURED-EVIDENCE ONLY
+production/cloud recovery                   FUTURE / SEPARATE ACCEPTANCE
 ```
 
-Start future work from then-current protected main on fresh bounded branches.
+Start each future scope from then-current protected `main`; do not continue from an obsolete pre-integration AI branch snapshot.
 
-## 7. Permanent rules
+## 8. Permanent rules
 
 ```text
 protected main is integration authority
 UNMERGED CANDIDATE TRUTH != PROTECTED-MAIN TRUTH
 applied Alembic revisions are immutable
 Dictionary ≈ SQLAlchemy ≈ Alembic ≈ PostgreSQL ≈ current DB reference
+Search != Intelligence and must remain independently usable
+provider output != canonical DANTE truth
 no blind retry after ambiguous external effects
 restored external-effect work != permission to replay
 telemetry != canonical DANTE state

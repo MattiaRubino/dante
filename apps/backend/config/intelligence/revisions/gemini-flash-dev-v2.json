@@ -1,0 +1,131 @@
+{
+  "schema_version": 3,
+  "revision": "gemini-flash-dev-v2",
+  "model_targets": [
+    "structured_interpretation",
+    "general_reasoning",
+    "deep_reasoning"
+  ],
+  "harness_profiles": [
+    "gemini-flash-low-v1"
+  ],
+  "provider_bindings": [
+    "google-gemini-interactions-flash-v2"
+  ],
+  "route_policies": [
+    "routing:deterministic",
+    "champion:config-owned",
+    "content-minimization:required"
+  ],
+  "feature_modes": [
+    "streaming:off",
+    "background:off",
+    "provider_continuation:off",
+    "provider_native_tools:off",
+    "provider_storage:off",
+    "structured_output:on"
+  ],
+  "qualification_requirements": [
+    "direct-dante-eval:gemini-38-flash-2026-09-05",
+    "native-modelaccess-eval:required-before-freeze",
+    "privacy-security:before-private-data",
+    "production-qualification:before-promotion"
+  ],
+  "control_profiles": [
+    "reasoning-effort:low",
+    "thinking-summaries:none",
+    "tool-choice:none",
+    "store:false",
+    "service-tier:standard",
+    "api-revision:2026-05-20"
+  ],
+  "retry_profiles": [
+    "provider-sdk:auto-retry-off",
+    "dante-retry:off-development"
+  ],
+  "fallback_profiles": [
+    "provider-fallback:off"
+  ],
+  "resource_profiles": [
+    "attempt-resource-admission:required-before-product-activation"
+  ],
+  "security_profiles": [
+    "private-data:ineligible",
+    "store:false",
+    "provider-memory:off"
+  ],
+  "rollout_profiles": [
+    "binding:development",
+    "production:off"
+  ],
+  "target_routes": [
+    {
+      "target_ref": "structured_interpretation",
+      "state": "active",
+      "champion_binding_ref": "google-gemini-interactions-flash-v2",
+      "harness_profile_ref": "gemini-flash-low-v1",
+      "challenger_binding_refs": [],
+      "fallback_binding_refs": []
+    },
+    {
+      "target_ref": "general_reasoning",
+      "state": "active",
+      "champion_binding_ref": "google-gemini-interactions-flash-v2",
+      "harness_profile_ref": "gemini-flash-low-v1",
+      "challenger_binding_refs": [],
+      "fallback_binding_refs": []
+    },
+    {
+      "target_ref": "deep_reasoning",
+      "state": "dormant",
+      "champion_binding_ref": null,
+      "harness_profile_ref": null,
+      "challenger_binding_refs": [],
+      "fallback_binding_refs": []
+    }
+  ],
+  "harness_definitions": [
+    {
+      "ref": "gemini-flash-low-v1",
+      "reasoning_level": "low",
+      "max_output_tokens": 4096,
+      "timeout_seconds": 30,
+      "feature_modes": [
+        "streaming:off",
+        "background:off",
+        "provider_continuation:off",
+        "provider_native_tools:off",
+        "provider_storage:off",
+        "structured_output:on"
+      ]
+    }
+  ],
+  "provider_binding_definitions": [
+    {
+      "ref": "google-gemini-interactions-flash-v2",
+      "provider": "google",
+      "serving_platform": "gemini-developer-api",
+      "protocol_family": "gemini-interactions-v1beta",
+      "endpoint": "https://generativelanguage.googleapis.com/v1beta/interactions",
+      "model": "gemini-3.8-flash",
+      "region": "global",
+      "state": "development",
+      "capabilities": [
+        "text",
+        "structured_output",
+        "thinking"
+      ],
+      "security_profiles": [
+        "private-data:ineligible",
+        "store:false",
+        "provider-memory:off"
+      ],
+      "api_revision": "2026-05-20",
+      "service_tier": "standard",
+      "model_version": null,
+      "versioning_posture": "stable-model-id-no-snapshot",
+      "data_zone": "global",
+      "retention_mode": "store-false"
+    }
+  ]
+}
