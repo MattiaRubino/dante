@@ -1,0 +1,128 @@
+name: AI Main Sync Lab
+
+on:
+  push:
+    branches:
+      - integration/ai-main-sync-lab-2026-09-05-a1
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  reconcile-and-validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout lab branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Install canonical uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          working-directory: apps/backend
+          checksum: 68a509da24b06b4223a1c0175fb5eb5bc79342b76cbeff0cfe51ac3f5b17b6b2
+          enable-cache: false
+
+      - name: Install project Python
+        working-directory: apps/backend
+        run: uv python install
+
+      - name: Reconcile AI dependency and architecture allowlist
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          pyproject = Path("apps/backend/pyproject.toml")
+          text = pyproject.read_text(encoding="utf-8")
+          if '"openai>=3.7.0,<3.8",' not in text:
+              needle = '    "httpx2>=2.12.0,<3",\n'
+              if needle not in text:
+                  raise SystemExit("canonical httpx2 dependency anchor not found")
+              text = text.replace(needle, needle + '    "openai>=3.7.0,<3.8",\n', 1)
+              pyproject.write_text(text, encoding="utf-8")
+
+          boundary = Path("apps/backend/tests/unit/test_architecture_boundaries.py")
+          text = boundary.read_text(encoding="utf-8")
+          start = text.index("_RUNTIME_DEPENDENCY_ALLOWLIST = frozenset(\n")
+          end = text.index("\n_DEPENDENCY_NAME =", start)
+          replacement = '''_RUNTIME_DEPENDENCY_ALLOWLIST = frozenset(
+              {
+                  "alembic",
+                  "argon2-cffi",
+                  "boto3",
+                  "botocore",
+                  "cryptography",
+                  "email-validator",
+                  "fastapi",
+                  "fido2",
+                  "httpx2",
+                  "joserfc",
+                  "openai",
+                  "opentelemetry-api",
+                  "opentelemetry-exporter-otlp-proto-http",
+                  "opentelemetry-sdk",
+                  "psycopg",
+                  "pydantic",
+                  "pydantic-settings",
+                  "sqlalchemy",
+                  "uvicorn",
+              }
+          )'''
+          updated = text[:start] + replacement + text[end:]
+          if updated != text:
+              boundary.write_text(updated, encoding="utf-8")
+          PY
+
+      - name: Regenerate canonical lock
+        working-directory: apps/backend
+        run: uv lock
+
+      - name: Commit deterministic reconciliation if needed
+        id: reconcile
+        run: |
+          if git diff --quiet -- apps/backend/pyproject.toml apps/backend/uv.lock apps/backend/tests/unit/test_architecture_boundaries.py; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add apps/backend/pyproject.toml apps/backend/uv.lock apps/backend/tests/unit/test_architecture_boundaries.py
+            git commit -m "chore(ai): reconcile main dependency graph"
+            git push origin HEAD:integration/ai-main-sync-lab-2026-09-05-a1
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Verify locked dependency graph
+        if: steps.reconcile.outputs.changed == 'false'
+        working-directory: apps/backend
+        run: uv lock --check
+
+      - name: Synchronize locked environment
+        if: steps.reconcile.outputs.changed == 'false'
+        working-directory: apps/backend
+        run: uv sync --locked
+
+      - name: Ruff AI and backend quality
+        if: steps.reconcile.outputs.changed == 'false'
+        run: |
+          uv run --project apps/backend --locked ruff format --check apps/backend/src apps/backend/tests tooling/ai-evals
+          uv run --project apps/backend --locked ruff check apps/backend/src apps/backend/tests tooling/ai-evals
+
+      - name: Mypy backend
+        if: steps.reconcile.outputs.changed == 'false'
+        working-directory: apps/backend
+        run: uv run --locked mypy
+
+      - name: Backend non-PostgreSQL tests
+        if: steps.reconcile.outputs.changed == 'false'
+        working-directory: apps/backend
+        run: uv run --locked pytest -m "not postgres"
+
+      - name: AI eval deterministic tests
+        if: steps.reconcile.outputs.changed == 'false'
+        run: uv run --project apps/backend --locked pytest tooling/ai-evals/tests

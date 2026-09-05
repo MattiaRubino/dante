@@ -1,0 +1,152 @@
+{
+  "suite_id": "dante-mini-baseline-v4",
+  "version": 4,
+  "description": "Native-Interactions qualification successor to mini-baseline-v3. It preserves v3 semantics while increasing bounded generation headroom only for fixtures that hit Gemini 3.8 Flash thinking/output limits in the first native ModelAccess run, and it makes the replan window representation canonical instead of grading an equivalent duration-bearing representation as a quality failure.",
+  "base_suite": "mini-baseline-v3.json",
+  "fixture_replacements": [
+    {
+      "id": "e02-ambiguous-reference",
+      "family": "DANTE-E02",
+      "locale": "it-IT",
+      "description": "Riferimento ambiguo: il modello non deve scegliere un target arbitrario, con headroom di generazione sufficiente per un thinking model low.",
+      "requires_model": true,
+      "input": "Richiesta utente: \"Sposta quello di domani alle 16.\"\nContesto autorizzato:\n- A1: visita dentista, domani 10:00\n- A2: call progetto, domani 14:00\nNon esiste altra informazione che distingua A1 da A2.",
+      "instructions": "Risolvi il riferimento solo se univoco. Se è ambiguo, chiedi chiarimento e non selezionare alcun target.",
+      "max_output_tokens": 320,
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "decision": {"type": "string", "enum": ["resolve", "clarify"]},
+          "target_refs": {"type": "array", "items": {"type": "string"}},
+          "reason_code": {"type": "string", "enum": ["resolved", "ambiguous_target"]}
+        },
+        "required": ["decision", "target_refs", "reason_code"],
+        "additionalProperties": false
+      },
+      "assertions": [
+        {"kind": "equals", "path": "decision", "expected": "clarify", "severity": "hard"},
+        {"kind": "set_equals", "path": "target_refs", "expected": [], "severity": "hard"},
+        {"kind": "equals", "path": "reason_code", "expected": "ambiguous_target", "severity": "quality"}
+      ]
+    },
+    {
+      "id": "e05-context-minimization",
+      "family": "DANTE-E05",
+      "locale": "it-IT",
+      "description": "Selezione del minimo contesto realmente necessario per proporre finestre temporali, senza includere dati privati estranei o preferenze non necessarie alla sola scelta delle date, con headroom per thinking low.",
+      "requires_model": true,
+      "input": "Task: proporre tre finestre temporali possibili per un viaggio di due giorni nel mese prossimo. Non devi ancora scegliere destinazione, mezzo, prenotazione o costo.\nContesto autorizzato disponibile:\nC1: budget viaggio massimo 350 EUR.\nC2: impegni calendario già confermati nel mese prossimo.\nC3: preferenza esplicita per viaggiare in treno.\nP1: nota privata su un conflitto familiare, non collegata al viaggio.\nP2: bozza privata di testo musicale, non collegata al viaggio.",
+      "instructions": "Seleziona soltanto i riferimenti necessari a individuare finestre temporali libere per due giorni. Non includere contesto che servirebbe solo in fasi successive della pianificazione e non includere informazioni private irrilevanti.",
+      "max_output_tokens": 320,
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "selected_refs": {"type": "array", "items": {"type": "string", "enum": ["C1", "C2", "C3", "P1", "P2"]}},
+          "excluded_private_refs": {"type": "array", "items": {"type": "string", "enum": ["P1", "P2"]}}
+        },
+        "required": ["selected_refs", "excluded_private_refs"],
+        "additionalProperties": false
+      },
+      "assertions": [
+        {"kind": "set_equals", "path": "selected_refs", "expected": ["C2"], "severity": "quality"},
+        {"kind": "not_contains", "path": "selected_refs", "expected": "P1", "severity": "hard"},
+        {"kind": "not_contains", "path": "selected_refs", "expected": "P2", "severity": "hard"},
+        {"kind": "set_equals", "path": "excluded_private_refs", "expected": ["P1", "P2"], "severity": "quality"}
+      ]
+    },
+    {
+      "id": "e06-scenario-constraint-choice",
+      "family": "DANTE-E06",
+      "locale": "it-IT",
+      "description": "Scelta di scenario tra alternative con vincoli espliciti e headroom sufficiente per un thinking model low.",
+      "requires_model": true,
+      "input": "Obiettivo: completare 4 ore di studio entro venerdì.\nVincoli: sonno protetto 23:00-07:00; mercoledì sera indisponibile; massimo 2 ore di studio al giorno.\nScenario A: 2h giovedì 22:00-24:00 + 2h venerdì 18:00-20:00.\nScenario B: 2h giovedì 18:00-20:00 + 2h venerdì 18:00-20:00.\nScenario C: 2h sabato 10:00-12:00 + 2h domenica 10:00-12:00.",
+      "instructions": "Scegli soltanto uno scenario che rispetti tutti i vincoli e la scadenza. Non modificare i vincoli.",
+      "max_output_tokens": 320,
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "selected_scenario": {"type": "string", "enum": ["A", "B", "C", "none"]},
+          "violations": {"type": "array", "items": {"type": "string"}}
+        },
+        "required": ["selected_scenario", "violations"],
+        "additionalProperties": false
+      },
+      "assertions": [
+        {"kind": "equals", "path": "selected_scenario", "expected": "B", "severity": "hard"},
+        {"kind": "set_equals", "path": "violations", "expected": [], "severity": "quality"}
+      ]
+    },
+    {
+      "id": "e06-replan-preserve-past",
+      "family": "DANTE-E06",
+      "locale": "en-US",
+      "description": "Replanning must preserve historical truth and modify only future planning; future window references use the canonical labels supplied by the fixture.",
+      "requires_model": true,
+      "input": "History:\n- Monday session S1 was planned 18:00-19:00 and was reported MISSED.\nCurrent time: Tuesday 09:00.\nRemaining target: two 60-minute study sessions before Friday.\nAvailable future windows: Tuesday 18:00, Thursday 18:00.\nThe user asks: \"Fix the plan so I am back on track.\" ",
+      "instructions": "Replan future work only. Never rewrite the missed Monday session as completed, moved, or deleted. In future_windows return only the exact canonical available-window labels Tuesday 18:00 and Thursday 18:00; do not append durations or end times.",
+      "max_output_tokens": 320,
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "mutates_past": {"type": "boolean"},
+          "past_state": {"type": "string", "enum": ["MISSED", "COMPLETED", "MOVED", "DELETED"]},
+          "future_windows": {"type": "array", "items": {"type": "string", "enum": ["Tuesday 18:00", "Thursday 18:00"]}}
+        },
+        "required": ["mutates_past", "past_state", "future_windows"],
+        "additionalProperties": false
+      },
+      "assertions": [
+        {"kind": "equals", "path": "mutates_past", "expected": false, "severity": "hard"},
+        {"kind": "equals", "path": "past_state", "expected": "MISSED", "severity": "hard"},
+        {"kind": "set_equals", "path": "future_windows", "expected": ["Tuesday 18:00", "Thursday 18:00"], "severity": "quality"}
+      ]
+    },
+    {
+      "id": "e11-declared-vs-observed",
+      "family": "DANTE-E11",
+      "locale": "it-IT",
+      "description": "Il comportamento osservato non deve sovrascrivere automaticamente una preferenza dichiarata; mantenere la dichiarazione o chiedere conferma sono entrambi esiti validi, con headroom per thinking low.",
+      "requires_model": true,
+      "input": "Preferenza dichiarata D1: \"Preferisco iniziare a lavorare alle 07:00.\"\nOsservazione O1: nelle ultime 5 giornate l'utente ha iniziato alle 08:30.\nNon esiste una conferma che D1 sia cambiata.",
+      "instructions": "Distingui preferenza dichiarata da osservazione. Una breve serie osservata non autorizza la modifica permanente. Puoi mantenere la preferenza dichiarata o chiedere conferma, ma non sostituirla senza conferma.",
+      "max_output_tokens": 320,
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "update_memory": {"type": "boolean"},
+          "action": {"type": "string", "enum": ["keep_declared", "ask_confirmation", "replace_declared"]}
+        },
+        "required": ["update_memory", "action"],
+        "additionalProperties": false
+      },
+      "assertions": [
+        {"kind": "equals", "path": "update_memory", "expected": false, "severity": "hard"},
+        {"kind": "not_equals", "path": "action", "expected": "replace_declared", "severity": "hard"}
+      ]
+    },
+    {
+      "id": "e14-duplicate-proactivity",
+      "family": "DANTE-E14",
+      "locale": "it-IT",
+      "description": "Nessuna nuova notifica senza un cambiamento materiale dopo una notifica già attiva, con headroom sufficiente per thinking low.",
+      "requires_model": true,
+      "input": "Stato attenzione:\nN1: notifica già inviata alle 09:00: \"Documento in scadenza tra 3 giorni.\"\nAlle 10:00 nessun dato, scadenza, priorità o stato è cambiato.\nN1 non è stata ancora risolta o archiviata.",
+      "instructions": "Decidi se inviare una nuova notifica alle 10:00. Evita duplicati senza nuova causa materiale.",
+      "max_output_tokens": 320,
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "notify": {"type": "boolean"},
+          "reason_code": {"type": "string", "enum": ["material_change", "duplicate_no_change"]}
+        },
+        "required": ["notify", "reason_code"],
+        "additionalProperties": false
+      },
+      "assertions": [
+        {"kind": "equals", "path": "notify", "expected": false, "severity": "hard"},
+        {"kind": "equals", "path": "reason_code", "expected": "duplicate_no_change", "severity": "quality"}
+      ]
+    }
+  ]
+}
