@@ -1,6 +1,6 @@
 # DANTE — World Focus Frontend Roadmap
 
-**Status:** CURRENT WORKING ROADMAP — M3 CLOSED / VALIDATED — M4 CONTEXTUAL DANTE ACTIVE / D2–D5 CLOSED / D6 NEXT  
+**Status:** CURRENT WORKING ROADMAP — M4 CLOSED / VALIDATED — MAIN RECONCILIATION BEFORE M5  
 **Date:** 2026-09-05  
 **Branch:** `feature/home-react`
 
@@ -25,27 +25,21 @@ World Focus route/shell
 -> D3 deterministic pre-backend conversation adapter
 -> D4 bounded contextual/deictic invocation
 -> D5 standalone Insight presentation integration
+-> D6 governed Proposal / Confirmation / Decision / Receipt
+-> M4 final hostile sequencing closure
 ```
 
 ## 2. Key evidence
 
 ```text
-M3 final  d9c30a3c6148469b347754eab07dc2ade9be4c52 / CI 33951509083 PASS
-D2 final  7b787766be83096e82eab1ac116b2704fae5f202 / CI 33958677991 PASS
-D3 final  59c70af6005ee87918db7fe152c043699726e78c / CI 33963858340 PASS
-D4 final  e8ab022b9b00b958235ac7d09e757b45227a4356 / CI 33967719861 PASS
-D5 final  0873153d8b390b99c5b3aa024e0735c82a89660d / CI 33971615312 PASS
-```
-
-D5 baseline:
-
-```text
-PRE-SCOPE 62b52137ab30778aae968f80fac59496c87171bf
-VALID RED c803dac135c7a35d38d8eb8335f5b52c8b430114
-89 / 89 web test files
-431 / 431 web unit tests
-324 modules / 1066 dependencies / 0 architecture violations
-Quality / build / diff / mutation / Mobile / Chromium / Firefox / Gate PASS
+M3 final hostile   d9c30a3c6148469b347754eab07dc2ade9be4c52 / CI 33951509083 PASS
+D2 final           7b787766be83096e82eab1ac116b2704fae5f202 / CI 33958677991 PASS
+D3 final           59c70af6005ee87918db7fe152c043699726e78c / CI 33963858340 PASS
+D4 final           e8ab022b9b00b958235ac7d09e757b45227a4356 / CI 33967719861 PASS
+D5 final           0873153d8b390b99c5b3aa024e0735c82a89660d / CI 33971615312 PASS
+D6 first green     234eb159a5993db9b909880f58231a1e27cdefef / CI 33975428193 PASS
+D6 owner-hardened  929c5ad7a056ff172a915e5070e7d72c936e692d / CI 33986493932 PASS
+M4 hostile final   1b8ae1a3d953d85dcc14d513e512428d1f268c8d / CI 33990483780 PASS
 ```
 
 Human visual acceptance remains **NOT PERFORMED**.
@@ -58,128 +52,96 @@ M1 — Core Non-Visual Production Materialization            CLOSED / VALIDATED
 POST-M1 Safety Falsification                                CLOSED / PASS
 M2 — Shared Visual Primitive Layer                          CLOSED / VALIDATED
 M3 — Adaptive World Composition                             CLOSED / VALIDATED
-M4 — Contextual DANTE / D2–D6                              ACTIVE
+M4 — Contextual DANTE / D2–D6                              CLOSED / VALIDATED
   D2 adaptive conversation surface                          CLOSED / VALIDATED
   D3 deterministic pre-backend conversation adapter         CLOSED / VALIDATED
   D4 contextual/deictic invocation                          CLOSED / VALIDATED
   D5 Insight presentation integration                       CLOSED / VALIDATED
-  D6 Proposal / confirmation / receipt                      NEXT / NOT STARTED
-M5 — Contrasting Complete Worlds                            BLOCKED BY M4
+  D6 Proposal / confirmation / receipt                      CLOSED / VALIDATED
+  final hostile sequencing closure                          CLOSED / PASS
+MAIN RECONCILIATION / INTEGRATION                           NEXT BEFORE M5
+M5 — Contrasting Complete Worlds                            NOT STARTED
 M6 — Integrated Product / Visual / A11y / Perf              BLOCKED BY M5
 M7 — Pre-Backend Frontend Freeze                            BLOCKED BY M6
 BACKEND                                                      AFTER M7 ONLY
 ```
 
-## 4. Closed M3 platform result
-
-M3 owns revisioned client composition metadata, canonical customization transaction, meaningful opportunity extraction, candidate resolution and live adaptive composition. It does not own Domain truth, authorization or persistence.
-
-Detailed closure authority remains in the M3 review family.
-
-## 5. M4 — Contextual DANTE
+## 4. Closed M4 result
 
 M4 continues the accepted D0/D1 direction; it is not a new chatbot product.
 
-### D2 — CLOSED / VALIDATED
-
 ```text
-wide viable workspace -> non-modal conversation sidecar
-constrained/mobile -> route-owned focus below Global Topbar
-explicit maximize/restore -> same conversation surface identity
+D2
+adaptive conversation presentation over the existing Workspace stack
+
+D3
+typed deterministic mounted pre-backend conversation
+
+D4
+explicit finite contextual/deictic reference set
+
+D5
+standalone validated Insight artifact
+
+D6
+Proposal -> required Confirmation -> local Decision -> truthful local Receipt
 ```
 
-### D3 — CLOSED / VALIDATED
+Permanent executable laws include:
 
 ```text
-D1 composer submit
--> same dante:conversation
--> mounted transcript
--> typed World/generation/request-correlated request
--> deterministic local reader
--> validated answer | explanation or truthful technical state
-```
-
-### D4 — CLOSED / VALIDATED
-
-D4 adds explicit bounded contextual entry without widening ownership:
-
-```text
-Continuity -> continue
-Attention  -> why
-Comparison -> compare
-Evidence   -> open-source
--> finite WorldFocusContextReferenceSet
--> same D1 composer
--> same D3 conversation
-```
-
-Required laws remain executable:
-
-```text
-global invoke -> contextReferences: null
-selected Workspace context != implicit DANTE context
-context reference != canonical truth
-reference exists != payload available/disclosable/fresh
-context bound to World + Workspace generation
-stale contextual generation -> fail closed
-valid follow-up -> same explicit bounded context set
-Evidence source action != Provenance/Integrity/History
-```
-
-### D5 — CLOSED / VALIDATED
-
-D5 materializes a standalone validated Insight artifact without collapsing it into the D3 transcript:
-
-```text
-conversation answer | explanation
--> explicit Open as Insight
--> D5 bounded request from exact D4 context
--> deterministic pre-backend Insight reader
--> finite observation | pattern | change artifact
--> registered dante-insight surface
-```
-
-Executable laws:
-
-```text
+global invoke remains context-free
+selected Workspace state != implicit DANTE context
+context reference != authorization
 conversation message != Insight
 assistant prose != validated Insight
-Insight != canonical truth
-Insight != Proposal != Decision != effect
-adapter cannot widen basisReferences
-global context-free DANTE -> no Insight promotion
-Workspace-generation change -> pending/late Insight fails closed
-raw context-reference keys -> not presented
-```
-
-Presentation reuses existing geometry rather than creating a D5 layout engine:
-
-```text
-wide -> sidecar
-constrained/mobile -> route-owned blocking surface
-```
-
-Browser closure proves wide and 390px Insight presentation, no compact horizontal overflow, route inertness, logical invoker focus return, global-DANTE exclusion and automated axe checks.
-
-Detailed evidence: `world-focus-d5-insight-presentation-review.md`.
-
-### D6 — Proposal / confirmation / receipt — NEXT
-
-D6 is the last remaining M4 materialization block. It must start read-only and preserve:
-
-```text
-assistant prose != Proposal
 Insight != Proposal
 Proposal != Decision
-decision/confirmation != effect
-provider/runtime completion != canonical completion
-receipt/result != Proposal
-receipt/result != proof of canonical completion
+Decision/confirmation != effect
+confirmed != executed
+Receipt != provider/runtime/canonical completion
 ```
 
-Required consequential confirmation must use the existing controlled blocking-surface law rather than a chat bubble. Confirmation must own its Escape/interaction boundary while active. D6 remains pre-backend: it proves presentation and governed-operation boundaries only and must not execute a real effect.
+D6 Confirmation reuses the controlled blocking-surface law: it blocks Workspace interaction and cannot be dismissed with Escape while consequential confirmation is active.
 
-After D6 implementation/validation, perform the required M4 final sequencing/hostile closure before declaring M4 closed and unblocking M5.
+D6 remains pre-backend and executes no real effect.
+
+## 5. M4 final hostile sequencing closure
+
+The final falsification found three real trust leaks and closed them at the existing owner seams:
+
+```text
+D5 -> D6
+arbitrary same-generation Insight injection
+-> D6 derives only current D5-owned Insight
+RED #1066 -> GREEN #1071
+
+D3 -> D5
+arbitrary same-generation assistant-message object injection
+-> D5 resolves exact source from D3 owner
+RED #1076 -> GREEN #1080
+
+D4 -> D3
+arbitrary same-generation context-reference substitution
+-> D3 derives context from D4 owner
+RED #1085 -> GREEN #1086
+```
+
+Final lifecycle matrix:
+
+```text
+HEAD 1b8ae1a3d953d85dcc14d513e512428d1f268c8d
+CI   33990483780 / run #1087 PASS
+```
+
+It covers owner binding, skip prevention, stale Proposal/Confirmation/Receipt invalidation, stale decision rejection, reference-basis non-widening, global/context-free exclusion, blocking/Escape behavior and truthful no-effect receipt semantics.
+
+Detailed reviews:
+
+```text
+world-focus-d6-governed-operation-review.md
+world-focus-m4-final-hostile-closure-review.md
+```
 
 ## 6. Visual sequence agreed with user
 
@@ -194,7 +156,30 @@ M6
 -> implement/refine visual system, responsive detail, motion, a11y, performance and final manual validation
 ```
 
-## 7. M5–M7
+Automated structural/browser/a11y coverage is green. Human/manual visual acceptance remains **NOT PERFORMED**.
+
+## 7. Integration before M5
+
+Do not continue M5 on the long-lived `feature/home-react` branch before reconciliation.
+
+```text
+freeze exact M4 closure SHA
+-> fetch current protected main
+-> inspect divergence
+-> reconcile main INTO feature/home-react
+-> resolve conflicts by semantic/ownership authority
+-> full repository QA
+-> documentation lifecycle cleanup
+-> PR to protected main
+-> merge commit only
+-> protected-main readback
+-> archive/delete old branch after verified merge
+-> fresh bounded M5 branch from integrated main
+```
+
+No rebase, squash or force-push.
+
+## 8. M5–M7
 
 M5 proves contrasting complete Worlds over the same engine rather than page-specific forks.
 
@@ -210,7 +195,7 @@ UI -> application -> Access/Auth/AuthZ -> API -> Domain -> PostgreSQL
 
 under backend authority.
 
-## 8. Permanent barriers
+## 9. Permanent barriers
 
 ```text
 World != Domain owner
@@ -228,10 +213,10 @@ mounted frontend transcript != durable DANTE Run
 conversation message != Insight
 assistant prose != validated Insight
 Insight != Proposal != Decision != effect
-Proposal != Decision != effect
-provider/runtime completion != canonical completion
+confirmed != executed
+Receipt != canonical/provider/runtime completion
 ```
 
-## 9. Immediate continuation
+## 10. Immediate continuation
 
-> **M3 is CLOSED / VALIDATED. D2, D3, D4 and D5 are CLOSED / VALIDATED. M4 remains ACTIVE. Start D6 with a fresh read-only inspection of the closed D5 Insight boundary, D3 conversation owners, existing effect/sync/disclosure presentation primitives, Workspace blocking/Escape laws and any existing governed-operation vocabulary; then state an exact bounded RED-first D6 gate without real backend/provider/effect execution.**
+> **M4 is CLOSED / VALIDATED. M5 is NOT STARTED. Freeze the exact M4 closure SHA, then reconcile the current protected `main` into `feature/home-react` under the repository branch/integration authority, run full repository QA and complete documentation lifecycle cleanup before opening the PR to protected `main`. Only after verified integration should a fresh bounded M5 branch begin.**
