@@ -116,7 +116,7 @@ class GeminiInteractionsWireRequest:
 @dataclass(frozen=True, slots=True)
 class GeminiInteractionsWireResponse:
     status: GeminiInteractionStatus
-    interaction_id: str
+    interaction_id: str | None
     request_id: str | None
     output_text: str | None
     input_tokens: int | None
