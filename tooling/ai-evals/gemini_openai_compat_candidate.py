@@ -13,17 +13,18 @@ from typing import Any, Final
 from urllib.parse import urlparse
 
 import openai
-from openai import AsyncOpenAI
 
 from dante_eval_core import CandidateResult, EvalFixture
 from gemini_candidate_config import GeminiCandidateConfig
+from openai import AsyncOpenAI
 
 _BASE_URL: Final = "https://generativelanguage.googleapis.com/v1beta/openai/"
 _MAX_RETRIES: Final = 0
 
 
 def _structured_response_format(fixture: EvalFixture) -> dict[str, Any]:
-    assert fixture.response_schema is not None
+    if fixture.response_schema is None:
+        raise ValueError("structured eval fixture requires response_schema")
     return {
         "type": "json_schema",
         "json_schema": {
