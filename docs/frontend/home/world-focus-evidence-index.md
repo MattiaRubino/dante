@@ -1,6 +1,6 @@
 # DANTE — World Focus Research / Review Evidence Index
 
-**Status:** CURRENT EVIDENCE MAP — M0 / M1 / POST-M1 SAFETY / M2 / M3 CLOSED — M4 ACTIVE / D2 PREFLIGHT ACTIVE  
+**Status:** CURRENT EVIDENCE MAP — M0 / M1 / POST-M1 SAFETY / M2 / M3 CLOSED — M4 ACTIVE / D2 CLOSED / D3 PREFLIGHT NEXT  
 **Date:** 2026-09-05  
 **Branch:** `feature/home-react`
 
@@ -14,6 +14,7 @@ world-focus-frontend-roadmap.md
 world-focus-handoff.md
 world-focus-evidence-index.md
 current-checkpoint.md
+world-focus-d2-adaptive-conversation-surface-review.md
 world-focus-m3-final-hostile-closure-review.md
 world-focus-m3-adaptive-composition.md
 world-focus-m3-4-integrated-adaptive-composition-review.md
@@ -56,7 +57,8 @@ E28 PRE-M3-3 customization reachability safety
 E29 M3-3 Manual Customize UX + hostile closure
 E30 M3-4 Integrated Adaptive Composition + integration falsification
 E31 M3 final cross-layer hostile closure
-E32 M4 / D2 preflight evidence — ACTIVE
+E32 M4 / D2 adaptive conversation surface closure
+E33 M4 / D3 deterministic conversation adapter preflight — NEXT
 ```
 
 Key anchors:
@@ -74,6 +76,7 @@ PRE-M3-3 safety   7781c6751a455767595eaf159747da833117f8b2 / CI 33862549244 PASS
 M3-3 hostile      1978fe5c77c0e2661239372bf0f9bee238021faa / CI 33879774332 PASS
 M3-4 final        b10dc2bef8bab6ae863ce3c8331da6de96094a66 / CI 33904052325 PASS
 M3 final hostile  d9c30a3c6148469b347754eab07dc2ade9be4c52 / CI 33951509083 PASS
+D2 final          7b787766be83096e82eab1ac116b2704fae5f202 / CI 33958677991 PASS
 ```
 
 ## E26 — M3-1 Composition Configuration Foundation
@@ -152,15 +155,6 @@ seven M1 runtime readers
 -> M2 display-safe renderers
 ```
 
-Integration exposed and corrected:
-
-```text
-configured user order vs planner prominence ordering
-first repair vs mixed stable/non-user lead laws
-scrollable multi-module main plane vs keyboard accessibility
-renderer invocation before error boundary
-```
-
 Final evidence:
 
 ```text
@@ -176,70 +170,81 @@ Detailed review: `world-focus-m3-4-integrated-adaptive-composition-review.md`.
 
 ## E31 — M3 Final Cross-Layer Hostile Closure
 
-### E31.1 Gate
+Gate:
 
 ```text
 PRE-SCOPE 2e69b1dd0bda25beaecbc5e5baa26f8720a76ff1
-INITIAL   d99ad88d082e266fa0927ad2c594b8b435efa9b7
 HOSTILE   d9c30a3c6148469b347754eab07dc2ade9be4c52
 CI        33951509083 / run #944 PASS
-```
-
-The initial test harness incorrectly modeled Attention/Comparison as having an `unavailable` result state. TypeScript rejected this before functional execution. The harness was corrected to the real M1 result algebra; unavailable pressure remains valid through Continuity. No production semantic changed.
-
-### E31.2 Cross-layer pressure
-
-The final test combines:
-
-```text
-projection truthfulness
--> meaningful opportunities
--> accepted/configured metadata
--> canonical customization transaction
--> M3-2 resolver
--> Workspace planner
-```
-
-and proves:
-
-```text
-partial real content remains meaningful
-empty/unavailable remains sparse
-hide/pin/promote/move/adopt remain distinct semantics
-arbitrary adopt payload/disclosure/aiRelevance cannot survive into config
-Apply increments exactly once
-stale revision -> conflict
-same revision + different base -> fail closed
-200 seeded hostile config/order/budget combinations are deterministic
-hidden never leaks
-visible pinned meaningful intent survives budget
-selected user order remains configured order
-adaptive count remains bounded
-plan has no duplicate identity
-```
-
-### E31.3 Retained hostile pressure
-
-The full final CI also keeps green:
-
-```text
-500 deterministic random composition plans
-500 synthetic workspace width/surface stacks
-unknown future-kind local degradation
-unresolved pin without fake content
-registered renderer failure isolation
-healthy sibling survival
-M3-3 responsive/a11y/focus/reorder pressure
-12 World Focus pressure widths
-Chromium + frozen Timeline Firefox
-```
-
-### E31.4 Final green
-
-```text
 80 / 80 web test files
 391 / 391 web unit tests
 300 modules / 899 dependencies / 0 architecture violations
+```
+
+The final test combines projection truthfulness, meaningful opportunities, accepted/configured metadata, canonical customization transaction, M3-2 resolver and Workspace planner. It retains 200 seeded hostile config/order/budget combinations, 500 deterministic random composition plans and 500 synthetic workspace width/surface stacks.
+
+Detailed review: `world-focus-m3-final-hostile-closure-review.md`.
+
+## E32 — M4 / D2 Adaptive Conversation Surface — CLOSED / VALIDATED
+
+### E32.1 Accepted executable behavior
+
+```text
+wide viable workspace
+-> non-modal DANTE conversation sidecar
+
+constrained/mobile workspace
+-> route-owned focus surface below Global Topbar
+
+explicit maximize
+-> same surface identity sidecar -> route focus
+-> restore preserves same identity
+```
+
+D2 reuses the one `WorldFocusWorkspaceHost` transient surface state. The existing allocator remains the single physical split policy. `WorldFocusRouteSurfaceLayer` renders active external placement through the same finite surface registry/error-boundary path.
+
+### E32.2 Falsification correction
+
+Existing Workspace tests rejected the incorrect collapse:
+
+```text
+route presentation => World inert
+```
+
+Final law:
+
+```text
+generic route
+-> external + non-blocking by default
+
+DANTE route-focus
+-> external + explicit blocksWorkspaceInteraction=true
+```
+
+The explicit interaction law also prevents weaker late surfaces from becoming authoritative above route focus. No DANTE-kind branch exists in the allocator.
+
+A lifecycle lint failure also removed an effect-driven preference reset in favor of a keyed idle/active presentation session.
+
+### E32.3 CI #968 useful failure
+
+```text
+CI 33954166534 / run #968
+Mobile PASS
+Web E2E PASS
+Quality FAIL at Typecheck only
+```
+
+`exactOptionalPropertyTypes` correctly rejected `blocksWorkspaceInteraction: undefined`. The fix omits the optional field rather than weakening compiler safety.
+
+### E32.4 Final green
+
+```text
+PRE-SCOPE 0a0a43ac06f93d986674f8521e521dcc05ea2c1e
+CODE/TEST  7b787766be83096e82eab1ac116b2704fae5f202
+CI         33958677991 / run #969 PASS
+82 / 82 web test files
+399 / 399 web unit tests
+305 modules / 929 dependencies / 0 architecture violations
 Frontend + World Focus contracts PASS
 Lint / Typecheck / Generated PASS
 Production build PASS
@@ -250,42 +255,24 @@ frozen Timeline Firefox PASS
 Frontend CI Gate PASS
 ```
 
-### E31.5 Scope audit
-
-Compare `2e69b1d... -> d9c30a3...`:
+Final compare from PRE-SCOPE:
 
 ```text
 status    ahead
-ahead_by  2
+ahead_by  24
 behind_by 0
+merge-base == PRE-SCOPE
 ```
 
-Net changed path:
+Net D2 code/test/i18n scope is 15 paths. No AppShell, Timeline, Access/Auth, generated route-tree, backend/API/DB/Alembic/provider/LLM/persistence path changed.
 
-```text
-apps/web/src/features/world-focus/application/world-focus-m3-final-hostile.test.ts
-```
+Detailed review: `world-focus-d2-adaptive-conversation-surface-review.md`.
 
-No production path changed.
+## E33 — M4 / D3 Deterministic Conversation Adapter Preflight — NEXT
 
-Detailed review: `world-focus-m3-final-hostile-closure-review.md`.
+D3 has no implementation authority yet. Read-only preflight must inspect D1/D2 lifecycle, Workspace World/generation guards, existing cancellation/latest-read patterns and current truth/result distinctions before an exact RED-first gate is authorized.
 
-## E32 — M4 / D2 Read-Only Preflight — ACTIVE
-
-Current evidence already confirms:
-
-```text
-D0 accepted: wide conversation -> sidecar; constrained/mobile -> route-owned focus overlay
-D1 closed: quiet invoke + compact composer, no fake conversation
-WorldFocusWorkspaceHost owns one transient surface stack/reducer
-sidecar split eligibility derives from measured workspace geometry
-presentation='route' -> allocator slot='external'
-WorldFocusSurfaceLayer deliberately skips external placements
-AppShell owns GlobalTopbar then route Outlet
-World route renders WorldFocusPage below that Topbar
-```
-
-Therefore D2 needs the missing route-owned external presenter seam while preserving the same Workspace state. It must not create a second surface engine, disconnected chat route, AppShell ownership rewrite or D3 message/backend behavior.
+D3 must not pull in D4 contextual/deictic reference widening, D5 Insight semantics, D6 Proposal/Decision/effect semantics or real backend/provider/LLM integration.
 
 ## 3. Current layered result
 
@@ -302,7 +289,9 @@ L8 Platform/User Policy
 
 M2 presentation boundary CLOSED
 M3 Adaptive Composition CLOSED / VALIDATED
-M4 Contextual DANTE ACTIVE / D2 PREFLIGHT ACTIVE
+M4 Contextual DANTE ACTIVE
+D2 Adaptive Conversation Surface CLOSED / VALIDATED
+D3 deterministic pre-backend adapter PREFLIGHT NEXT
 ```
 
 ## 4. Current evidence gate
@@ -317,12 +306,14 @@ M4 Contextual DANTE ACTIVE / D2 PREFLIGHT ACTIVE
 
 > **M3 FINAL HOSTILE CLOSURE — CLOSED / PASS**
 
-> **M4 — ACTIVE / D2 READ-ONLY PREFLIGHT ACTIVE**
+> **D2 — CLOSED / VALIDATED**
+
+> **M4 — ACTIVE / D3 READ-ONLY PREFLIGHT NEXT**
 
 > **M5–M7 and backend remain blocked by sequence.**
 
 ## 5. Reopen rule
 
-Do not reopen WS0–WS8, M1, M2 or M3 just because M4 would be easier with broader semantics. Reopen an earlier owner only when executable evidence proves a contradiction in that owner.
+Do not reopen WS0–WS8, M1, M2, M3 or D2 merely because a later M4 slice would be easier with broader semantics. Reopen an earlier owner only when executable evidence proves a contradiction in that owner.
 
 Human visual acceptance remains **NOT PERFORMED**; automated green does not establish it.
