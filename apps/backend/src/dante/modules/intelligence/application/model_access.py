@@ -1,7 +1,7 @@
 """Deterministic application-owned ModelAccess runtime.
 
-This foundation resolves one logical ModelTarget to one configured champion binding and executes a
-single provider attempt. Retry/fallback remain deliberately off until independently qualified.
+The runtime resolves one logical ModelTarget to one immutable route snapshot and executes one
+provider attempt. Retry/fallback remain deliberately off until independently qualified.
 """
 
 from __future__ import annotations
@@ -93,10 +93,15 @@ class ModelAccessRuntime:
         evidence: RuntimeEvidencePort | None = None,
     ) -> None:
         if route_config.document.schema_version < 2:
-            raise ValueError("ModelAccessRuntime requires typed route config schema v2")
+            raise ValueError("ModelAccessRuntime requires a typed route config")
         self._route_config = route_config
         self._adapters = dict(adapters)
         self._evidence = evidence
+
+    @property
+    def route_config(self) -> RouteConfigSnapshot:
+        """Expose the immutable route snapshot identity, never mutable provider policy."""
+        return self._route_config
 
     def _route(self, target_ref: str) -> TargetRouteDefinition | None:
         return next(
@@ -126,8 +131,25 @@ class ModelAccessRuntime:
         if self._evidence is not None:
             await self._evidence.emit(event)
 
+    def _preflight_route_requirement_error(self, request: ModelInvocationRequest) -> str | None:
+        required_identity = request.required_route_config_identity
+        if required_identity is not None and required_identity != self._route_config.identity:
+            return "required_route_config_identity_mismatch"
+        return None
+
     async def invoke(self, request: ModelInvocationRequest) -> ModelInvocationResult:
         """Execute one champion attempt; fallback/retry remain intentionally disabled."""
+        route_requirement_error = self._preflight_route_requirement_error(request)
+        if route_requirement_error is not None:
+            return ModelInvocationResult(
+                model_invocation_id=request.model_invocation_id,
+                target=request.target,
+                outcome=ModelInvocationOutcome.INVALID_REQUEST,
+                route_config_identity=self._route_config.identity,
+                usage=_unknown_usage(),
+                error_code=route_requirement_error,
+            )
+
         if request.structured_output is not None:
             try:
                 validate_contract_schema(request.structured_output)
@@ -156,6 +178,35 @@ class ModelAccessRuntime:
         assert route.harness_profile_ref is not None
         binding = self._binding(route.champion_binding_ref)
         harness = self._harness(route.harness_profile_ref)
+
+        required_capabilities = set(request.required_capabilities)
+        if request.structured_output is not None:
+            required_capabilities.add("structured_output")
+        if not required_capabilities.issubset(binding.capabilities):
+            return ModelInvocationResult(
+                model_invocation_id=request.model_invocation_id,
+                target=request.target,
+                outcome=ModelInvocationOutcome.UNAVAILABLE,
+                route_config_identity=self._route_config.identity,
+                usage=_unknown_usage(),
+                provider_binding_ref=binding.ref,
+                harness_profile_ref=harness.ref,
+                provider_model=binding.model,
+                error_code="required_capability_not_available",
+            )
+        if not set(request.required_feature_modes).issubset(harness.feature_modes):
+            return ModelInvocationResult(
+                model_invocation_id=request.model_invocation_id,
+                target=request.target,
+                outcome=ModelInvocationOutcome.UNAVAILABLE,
+                route_config_identity=self._route_config.identity,
+                usage=_unknown_usage(),
+                provider_binding_ref=binding.ref,
+                harness_profile_ref=harness.ref,
+                provider_model=binding.model,
+                error_code="required_feature_mode_not_available",
+            )
+
         adapter = self._adapters.get(binding.ref)
         if binding.state is ProviderBindingState.INACTIVE or adapter is None:
             return ModelInvocationResult(
@@ -166,6 +217,7 @@ class ModelAccessRuntime:
                 usage=_unknown_usage(),
                 provider_binding_ref=binding.ref,
                 harness_profile_ref=harness.ref,
+                provider_model=binding.model,
                 error_code="champion_binding_not_available",
             )
 
@@ -193,7 +245,29 @@ class ModelAccessRuntime:
             reasoning_level=harness.reasoning_level.value,
             feature_modes=harness.feature_modes,
             security_basis_refs=request.security_basis_refs,
+            provider_endpoint=binding.endpoint,
+            provider_api_revision=binding.api_revision,
+            provider_service_tier=binding.service_tier,
         )
+
+        route_refs = [
+            f"model-invocation:{request.model_invocation_id}",
+            f"target:{request.target.value}",
+            f"route:{self._route_config.identity.revision}",
+            f"route-sha256:{self._route_config.identity.content_sha256}",
+            f"binding:{binding.ref}",
+            f"harness:{harness.ref}",
+            f"provider-model:{binding.model}",
+        ]
+        for name, value in (
+            ("api-revision", binding.api_revision),
+            ("service-tier", binding.service_tier),
+            ("versioning", binding.versioning_posture),
+            ("data-zone", binding.data_zone),
+            ("retention-mode", binding.retention_mode),
+        ):
+            if value is not None:
+                route_refs.append(f"{name}:{value}")
 
         await self._emit(
             RuntimeEvidenceEvent(
@@ -203,15 +277,7 @@ class ModelAccessRuntime:
                 kind=RuntimeEvidenceKind.ROUTE,
                 outcome_code="champion_selected",
                 occurred_at=now,
-                correlation_refs=(
-                    f"model-invocation:{request.model_invocation_id}",
-                    f"target:{request.target.value}",
-                    f"route:{self._route_config.identity.revision}",
-                    f"route-sha256:{self._route_config.identity.content_sha256}",
-                    f"binding:{binding.ref}",
-                    f"harness:{harness.ref}",
-                    f"provider-model:{binding.model}",
-                ),
+                correlation_refs=tuple(route_refs),
             )
         )
 
@@ -237,6 +303,8 @@ class ModelAccessRuntime:
                     completed_at=attempt.completed_at,
                     provider_request_id=attempt.provider_request_id,
                     provider_response_id=attempt.provider_response_id,
+                    provider_status=attempt.provider_status,
+                    finish_reason=attempt.finish_reason,
                     error_class=ProviderErrorClass.INVALID_RESPONSE,
                     error_code="structured_output_schema_mismatch",
                 )
@@ -245,6 +313,12 @@ class ModelAccessRuntime:
             0,
             int((attempt.completed_at - attempt.started_at).total_seconds() * 1000),
         )
+        limitation_codes: list[str] = []
+        if attempt.usage.state is ProviderUsageState.UNKNOWN:
+            limitation_codes.append("usage:unknown")
+        if attempt.finish_reason is not None:
+            limitation_codes.append(f"finish:{attempt.finish_reason}")
+
         await self._emit(
             RuntimeEvidenceEvent(
                 event_id=uuid7(),
@@ -266,14 +340,13 @@ class ModelAccessRuntime:
                         f"provider-response:{attempt.provider_response_id}"
                         if attempt.provider_response_id is not None
                         else None,
+                        f"provider-status:{attempt.provider_status}"
+                        if attempt.provider_status is not None
+                        else None,
                     )
                     if ref is not None
                 ),
-                limitation_codes=(
-                    ("usage:unknown",)
-                    if attempt.usage.state is ProviderUsageState.UNKNOWN
-                    else ()
-                ),
+                limitation_codes=tuple(limitation_codes),
                 metrics=(
                     RuntimeEvidenceMetric(name="latency_ms", value=latency_ms),
                     *_usage_metrics(attempt.usage),
@@ -290,6 +363,7 @@ class ModelAccessRuntime:
             usage=attempt.usage,
             provider_binding_ref=binding.ref,
             harness_profile_ref=harness.ref,
+            provider_model=binding.model,
             attempts=(attempt,),
             output_text=attempt.output_text if outcome is ModelInvocationOutcome.COMPLETED else None,
             structured_output_json=(
