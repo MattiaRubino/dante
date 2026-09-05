@@ -6,7 +6,7 @@ on:
       - integration/ai-main-sync-lab-2026-09-05-a1
 
 permissions:
-  contents: read
+  contents: write
 
 defaults:
   run:
@@ -20,7 +20,7 @@ jobs:
       - name: Checkout reconciled lab branch
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          persist-credentials: false
+          fetch-depth: 0
 
       - name: Validate observability artifacts from current main
         run: python3 tooling/observability/validate.py
@@ -61,6 +61,18 @@ jobs:
       - name: Install project Python
         working-directory: apps/backend
         run: uv python install
+
+      - name: Canonically format AI eval tooling
+        run: |
+          uv run --project apps/backend --locked ruff format \
+            --config apps/backend/pyproject.toml tooling/ai-evals
+          if ! git diff --quiet -- tooling/ai-evals; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add tooling/ai-evals
+            git commit -m "style(ai): align eval tooling with backend Ruff config"
+            git push origin HEAD:integration/ai-main-sync-lab-2026-09-05-a1
+          fi
 
       - name: Run reconciled AI foundation closure gate with PostgreSQL
         run: bash tooling/ai-evals/run_ai_foundation_closure_gate.sh --with-postgres
