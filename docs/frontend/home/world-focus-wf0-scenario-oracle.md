@@ -4,7 +4,7 @@
 **Date:** 2026-08-30  
 **Branch:** `feature/home-react`  
 **Scope:** pre-backend World Focus product/architecture stress test  
-**Consumes:** `world-focus-handoff.md`, `world-focus-architecture.md`, `world-focus-frontend-roadmap.md`, Home contract, Product North Star, current Domain/Logical/Physical/Database authority, discovery simulations and current frontend production-readiness contracts
+**Consumes:** `world-focus-architecture.md`, `world-focus-frontend-roadmap.md`, Home contract, Product North Star, current Domain/Logical/Physical/Database authority, discovery simulations and current frontend production-readiness contracts
 
 ---
 
