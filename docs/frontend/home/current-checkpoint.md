@@ -1,6 +1,6 @@
 # DANTE — Home / Frontend Current Checkpoint
 
-**Status:** CURRENT LIVE ENTRY POINT — WORLD FOCUS M3 CLOSED / VALIDATED — M4 ACTIVE / D2 CLOSED / D3 PREFLIGHT NEXT  
+**Status:** CURRENT LIVE ENTRY POINT — WORLD FOCUS M3 CLOSED / VALIDATED — M4 ACTIVE / D2–D3 CLOSED / D4 PREFLIGHT NEXT  
 **Date:** 2026-09-05  
 **Working branch:** `feature/home-react`  
 **Worktree:** `/home/mattia/projects/dante-frontend`
@@ -54,8 +54,9 @@ M3-4 integrated adaptive composition        CLOSED / VALIDATED
 M3 final hostile closure                    CLOSED / PASS
 M4 Contextual DANTE / D2–D6                 ACTIVE
 D2 adaptive conversation surface            CLOSED / VALIDATED
-D3 deterministic conversation adapter       READ-ONLY PREFLIGHT NEXT
-D4–D6                                       BLOCKED BY D3 SEQUENCE
+D3 deterministic conversation adapter       CLOSED / VALIDATED
+D4 contextual/deictic invocation            READ-ONLY PREFLIGHT NEXT
+D5–D6                                       BLOCKED BY D4 SEQUENCE
 M5 complete contrasting Worlds              BLOCKED BY M4
 M6 integrated visual/a11y/performance review BLOCKED BY M5
 M7 pre-backend frontend freeze              BLOCKED BY M6
@@ -120,6 +121,13 @@ CODE/TEST  7b787766be83096e82eab1ac116b2704fae5f202
 CI         33958677991 / run #969 PASS
 82 / 82 web test files; 399 / 399 web unit tests
 305 modules / 929 dependencies / 0 architecture violations
+
+D3 deterministic conversation adapter
+PRE-SCOPE 57520cf0570bc2be875e7140d066e45ddd9080d5
+CODE/TEST  59c70af6005ee87918db7fe152c043699726e78c
+CI         33963858340 / run #1009 PASS
+84 / 84 web test files; 410 / 410 web unit tests
+311 modules / 963 dependencies / 0 architecture violations
 Contracts / lint / typecheck / generated / build / diff / mutation / Mobile / Chromium / frozen Timeline Firefox / Frontend CI Gate PASS
 ```
 
@@ -153,15 +161,11 @@ View
 -> Apply | Cancel
 ```
 
-Detailed authority:
-
-```text
-world-focus-m3-final-hostile-closure-review.md
-```
+Detailed authority: `world-focus-m3-final-hostile-closure-review.md`.
 
 ## 5. Closed D2 result
 
-D2 now consumes D0/D1 and the existing Workspace Platform as one adaptive conversation presentation system:
+D2 consumes D0/D1 and the existing Workspace Platform as one adaptive conversation presentation system:
 
 ```text
 wide ongoing conversation
@@ -183,17 +187,47 @@ Important executable law:
 route presentation != automatically blocking interaction
 ```
 
-Generic route remains non-blocking. DANTE route-focus explicitly carries `blocksWorkspaceInteraction=true`. This property also prevents weaker late surfaces from becoming authoritative above an active route-focus interaction.
+Generic route remains non-blocking. DANTE route-focus explicitly carries `blocksWorkspaceInteraction=true`.
 
-D2 contains no fake assistant message, model output, provider state or backend adapter. The conversation body remains structural until D3.
+Detailed authority: `world-focus-d2-adaptive-conversation-surface-review.md`.
 
-Detailed authority:
+## 6. Closed D3 result
+
+D3 turns the D2 shell into a real deterministic pre-backend conversation interaction without pretending that a backend/provider exists.
 
 ```text
-world-focus-d2-adaptive-conversation-surface-review.md
+D1 composer submit
+-> atomic handoff to existing `dante:conversation`
+-> D3 mounted transcript
+-> typed World/generation/request-correlated request
+-> deterministic local runtime reader
+-> validated answer | explanation
+   OR truthful unavailable/error/cancelled/superseded
 ```
 
-## 6. Permanent non-collapses
+D3 proves:
+
+```text
+user input != assistant output
+assistant output != canonical fact
+mounted transcript != durable DANTE Run
+cancel/abort != semantic success
+late old-generation result != attachable
+active conversation != second composer
+presentation geometry != conversation identity
+```
+
+Pending work is abortable/latest-only. Cancel preserves the user turn but appends no response; late completions are ignored. A World/workspace generation change supersedes pending work and prevents the old result attaching.
+
+The same conversation surface survives D2 sidecar↔route maximize/restore. At 390px D2 route-owned focus is used instead of trapping DANTE inside the narrow World workspace.
+
+Exact focus law is now executable: composer→conversation does not prematurely return focus to the invoke; actual conversation close/Escape restores the exact original DANTE invoker. A hostile test exposed a real keyed-subtree remount, fixed by moving stable invokes outside the D2 keyed presentation session without changing Workspace allocator ownership.
+
+D3 contains no provider/LLM call, backend adapter, persistence, D4 contextual widening, D5 Insight semantics or D6 Proposal/Decision/effect semantics.
+
+Detailed authority: `world-focus-d3-deterministic-conversation-adapter-review.md`.
+
+## 7. Permanent non-collapses
 
 ```text
 World != Domain owner
@@ -214,41 +248,43 @@ adopt != semantic truth != authorization != persistence
 presentation geometry != conversation identity
 route presentation != automatically blocking interaction
 context/selection != authorization
+mounted frontend transcript != durable DANTE Run
+cancelled/aborted request != successful semantic result
 ```
 
-## 7. Current M4 / D3 gate
+## 8. Current M4 / D4 gate
 
-D3 is the next sequential owner and must begin read-only.
+D4 is the next sequential owner and must begin read-only.
 
 Inspect before any production write:
 
 ```text
-D1 compact composer submit/lifecycle ownership
-D2 conversation surface/controller lifecycle
-Workspace world/generation expectation guards
-existing application AbortSignal/latest-read patterns
-current result/truth distinctions
+D3 typed request/result boundary and conversation lifecycle
+D1/D2 composer/surface/presentation ownership
+World context-reference model and reference-resolution seams
+current disclosure/truth distinctions
+selection/focus owners that can yield an explicit bounded reference
 current i18n/a11y/unit/browser harness
 DANTE Intelligence seam direction without importing backend/provider DTOs early
 ```
 
-D3 must preserve:
+D4 must preserve:
 
 ```text
-user input != assistant output
-assistant output != canonical fact
-conversation state != World canonical state
-presentation geometry != conversation identity
-mounted frontend state != future durable DANTE Run lifetime
-abort/cancel != semantic success
-late result from old World/generation != attachable to new World/generation
+selection/context != authorization
+context reference != canonical truth
+reference exists != payload available != current != disclosable != fresh
+DOM/component state != conversation payload
+D3 world/generation/request correlation remains authoritative
 ```
 
-D3 remains pre-backend. It must not create provider/LLM calls, backend/API/DB/Alembic, durable persistence, D4 contextual/deictic widening, D5 Insight collapse or D6 Proposal/Decision/effect semantics.
+D4 should pressure explicit bounded references such as `perché?`, `confronta con prima`, `aprimi la fonte`, `continua da qui` without turning arbitrary UI state into an untyped chat payload.
+
+D4 remains pre-backend. It must not create provider/LLM calls, backend/API/DB/Alembic, durable persistence, D5 Insight collapse or D6 Proposal/Decision/effect semantics.
 
 After inspection state an exact bounded PRE-SCOPE / CREATE / UPDATE / DELETE / RED-FIRST / OUT-OF-SCOPE gate.
 
-## 8. Visual sequence agreed with user
+## 9. Visual sequence agreed with user
 
 ```text
 Finish M4
@@ -264,25 +300,26 @@ M7
 -> pre-backend frontend freeze
 ```
 
-Do not spend D3–D6 on unrelated visual redesign.
+Do not spend D4–D6 on unrelated visual redesign.
 
-## 9. Stop lines
+## 10. Stop lines
 
 ```text
 NO second DANTE surface/conversation state engine
-NO D4–D6 hidden inside D3
+NO D5–D6 hidden inside D4
 NO AppShell/GlobalTopbar ownership rewrite
 NO WF0/WF-G3 macro geometry rewrite
 NO localStorage fake persistence
 NO durable server/cross-device persistence yet
 NO backend/API/DB/Alembic/AuthZ/provider/LLM
+NO arbitrary DOM/component payload serialization as DANTE context
 NO Timeline/Access/Auth collateral work
 NO claim of human visual acceptance from automated green
 ```
 
 Backend remains after M7 only.
 
-## 10. Operational rules
+## 11. Operational rules
 
 - stay on `feature/home-react` unless explicitly authorized otherwise;
 - fresh live HEAD before every new write scope;
