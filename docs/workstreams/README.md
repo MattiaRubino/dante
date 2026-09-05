@@ -24,11 +24,18 @@ Application / Email reopen CP08                  PASS
 
 Platform Observability source                    CLOSED / OPERATIONAL PASS
 Platform Observability protected main            CLOSED / INTEGRATED VIA PR #58
+
+AI deterministic low-level foundation            CLOSED / PASS / BRANCH-LOCAL
+AI main reconciliation                           COMPLETE / 4a0a69d9
+AI protected-main integration                    PR / REQUIRED GATES PENDING
+AI production/private-data qualification         NOT CLAIMED
+AI real owner/product seams                      DEFERRED / TRIGGER-GATED
+
 M6 Native Mobile                                 FUTURE / OPTIONAL
 later M7 Access/security maturity                FUTURE
 ```
 
-Protected-main acceptance is commit-reachability scoped. Platform Observability now satisfies that condition through merge commit `b74a806deed68b2729dd04678c0a5674cd572e8a` from PR `#58`.
+Protected-main acceptance is commit-reachability scoped. Platform Observability satisfies that condition through merge commit `b74a806deed68b2729dd04678c0a5674cd572e8a` from PR `#58`. AI does not yet: `feature/ai-implementation` is a main-reconciled candidate until its required PR gates and protected-main merge complete.
 
 ## Current authority
 
@@ -40,6 +47,34 @@ Project truth is owned by:
 - current subsystem references
 
 Access/Auth M1–M5 and Platform Observability have **no active workstream authority file** after closure and protected-main integration.
+
+AI currently retains active branch-local integration authority at:
+
+- `ai-implementation.md`
+- `ai-foundation-closure-2026-09-05.md`
+- `ai-runtime-model-target-closure-acceptance-2026-09-05.md`
+- `../architecture/dante-ai-implementation-baseline-final.md`
+- `../architecture/dante-ai-search-intelligence-boundary-amendment-2026-09.md`
+
+The deterministic AI foundation is closed; the active responsibility of the branch is integration, not expansion into deferred product work.
+
+## AI closure / integration disposition
+
+```text
+low-level deterministic foundation            CLOSED / PASS
+Search deterministic foundation               CLOSED / PASS / INDEPENDENT FROM INTELLIGENCE
+Gemini 3.8 Flash development binding          ACCEPTED FOR DEVELOPMENT FOUNDATION
+production/private-data qualification         NOT CLAIMED
+real Search owner/data seam                    DEFERRED
+real Ask DANTE product integration             DEFERRED
+main -> feature true merge                     4a0a69d9 / COMPLETE
+required protected-main PR gates              PENDING
+protected-main reachability                   NOT YET CLAIMED
+```
+
+The current development route keeps `STRUCTURED_INTERPRETATION` and `GENERAL_REASONING` on Gemini 3.8 Flash through DANTE's `ModelAccess` boundary; `DEEP_REASONING` remains dormant with no physical binding. Search remains deterministic and independently usable without Intelligence/model/provider runtime.
+
+The main reconciliation preserves the current Auth/Access, Email, Recovery, Home/Timeline and Observability baseline and adds no database/Alembic revision.
 
 ## Access/Auth closure disposition
 
@@ -115,7 +150,11 @@ Historical branch record:
 
 ```text
 Platform Observability protected-main integration     CLOSED VIA PR #58
-→ future bounded workstreams start from current main
+→ AI deterministic foundation                        CLOSED / BRANCH-LOCAL PASS
+→ main -> feature/ai-implementation                  COMPLETE / 4a0a69d9
+→ AI required PR gates                               NEXT
+→ protected-main AI merge                            ONLY AFTER GREEN GATES + OWNER AUTHORIZATION
+→ post-merge acceptance                              REQUIRED
 ```
 
 ## Operational continuation rule
@@ -142,6 +181,7 @@ CURRENT SPECIFICATION != APPEND-ONLY DIARY
 TEMPORARY HANDOFF != DURABLE DOCUMENTATION
 APPLIED MIGRATION HISTORY IS IMMUTABLE
 NO PASS WITHOUT EXECUTED EVIDENCE
+SEARCH != INTELLIGENCE
 LOCAL DATABASE RECOVERY PASS != APPLICATION TRAFFIC REOPEN PASS
 LOCAL RECOVERY PASS != PRODUCTION/CLOUD RECOVERY PASS
 ```
