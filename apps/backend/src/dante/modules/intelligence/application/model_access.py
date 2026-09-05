@@ -6,7 +6,9 @@ provider attempt. Retry/fallback remain deliberately off until independently qua
 
 from __future__ import annotations
 
+import asyncio
 from collections.abc import Mapping
+from contextlib import suppress
 from datetime import UTC, datetime, timedelta
 from uuid import uuid7
 
@@ -41,6 +43,7 @@ from dante.modules.intelligence.contracts.route_config import (
     RouteTargetState,
     TargetRouteDefinition,
 )
+from dante.modules.intelligence.ports.model_access import CancellationSignal
 from dante.modules.intelligence.ports.provider_adapter import ProviderAdapter
 from dante.modules.intelligence.ports.runtime_evidence import RuntimeEvidencePort
 
@@ -62,6 +65,8 @@ def _model_outcome(attempt: ProviderAttemptResult) -> ModelInvocationOutcome:
         return ModelInvocationOutcome.REFUSED
     if attempt.outcome is ProviderAttemptOutcome.CANCELLED:
         return ModelInvocationOutcome.CANCELLED
+    if attempt.error_class is ProviderErrorClass.CANCELLATION:
+        return ModelInvocationOutcome.CANCELLED
     if attempt.outcome is ProviderAttemptOutcome.INVALID_RESPONSE:
         return ModelInvocationOutcome.INVALID_RESPONSE
     return ModelInvocationOutcome.FAILED
@@ -74,6 +79,8 @@ def _model_error_class(attempt: ProviderAttemptResult) -> ModelAccessErrorClass 
         return ModelAccessErrorClass.PROVIDER_INCOMPLETE
     if attempt.outcome is ProviderAttemptOutcome.REFUSED:
         return ModelAccessErrorClass.REFUSED
+    if attempt.error_class is ProviderErrorClass.CANCELLATION:
+        return ModelAccessErrorClass.CANCELLATION
     if attempt.outcome is ProviderAttemptOutcome.CANCELLED:
         return ModelAccessErrorClass.CANCELLATION
     if attempt.outcome is ProviderAttemptOutcome.INVALID_RESPONSE:
@@ -106,6 +113,28 @@ def _usage_metrics(usage: ProviderUsageEvidence) -> tuple[RuntimeEvidenceMetric,
         RuntimeEvidenceMetric(name=name, value=value)
         for name, value in values
         if value is not None
+    )
+
+
+def _synthetic_attempt(
+    request: ModelInvocationRequest,
+    *,
+    started_at: datetime,
+    outcome: ProviderAttemptOutcome,
+    acceptance: ProviderAcceptanceCertainty,
+    error_class: ProviderErrorClass,
+    error_code: str,
+) -> ProviderAttemptResult:
+    return ProviderAttemptResult(
+        provider_attempt_id=uuid7(),
+        model_invocation_id=request.model_invocation_id,
+        outcome=outcome,
+        acceptance=acceptance,
+        usage=_unknown_usage(),
+        started_at=started_at,
+        completed_at=_utc_now(),
+        error_class=error_class,
+        error_code=error_code,
     )
 
 
@@ -174,25 +203,127 @@ class ModelAccessRuntime:
         error_code: str,
         binding: ProviderBindingDefinition | None = None,
         harness: HarnessProfileDefinition | None = None,
+        attempt: ProviderAttemptResult | None = None,
     ) -> ModelInvocationResult:
         return ModelInvocationResult(
             model_invocation_id=request.model_invocation_id,
             target=request.target,
             outcome=outcome,
             route_config_identity=self._route_config.identity,
-            usage=_unknown_usage(),
+            usage=attempt.usage if attempt is not None else _unknown_usage(),
             provider_binding_ref=binding.ref if binding is not None else None,
             harness_profile_ref=harness.ref if harness is not None else None,
             provider_model=binding.model if binding is not None else None,
+            attempts=(attempt,) if attempt is not None else (),
             error_class=error_class,
             error_code=error_code,
             started_at=started_at,
-            completed_at=_utc_now(),
+            completed_at=attempt.completed_at if attempt is not None else _utc_now(),
         )
 
-    async def invoke(self, request: ModelInvocationRequest) -> ModelInvocationResult:
+    async def _execute_attempt(
+        self,
+        *,
+        request: ModelInvocationRequest,
+        provider_request: ProviderInvocationRequest,
+        adapter: ProviderAdapter,
+        cancellation: CancellationSignal | None,
+    ) -> ProviderAttemptResult:
+        dispatched_at = _utc_now()
+        remaining_seconds = (provider_request.deadline - dispatched_at).total_seconds()
+        if remaining_seconds <= 0:
+            return _synthetic_attempt(
+                request,
+                started_at=dispatched_at,
+                outcome=ProviderAttemptOutcome.PRE_ACCEPTANCE_FAILURE,
+                acceptance=ProviderAcceptanceCertainty.NOT_ACCEPTED,
+                error_class=ProviderErrorClass.DEADLINE,
+                error_code="deadline_before_provider_dispatch",
+            )
+        if cancellation is not None and cancellation.cancelled:
+            return _synthetic_attempt(
+                request,
+                started_at=dispatched_at,
+                outcome=ProviderAttemptOutcome.PRE_ACCEPTANCE_FAILURE,
+                acceptance=ProviderAcceptanceCertainty.NOT_ACCEPTED,
+                error_class=ProviderErrorClass.CANCELLATION,
+                error_code="cancelled_before_provider_dispatch",
+            )
+
+        provider_task = asyncio.create_task(adapter.invoke(provider_request))
+        cancellation_task: asyncio.Task[None] | None = None
+        if cancellation is not None:
+            cancellation_task = asyncio.create_task(cancellation.wait())
+
+        wait_set: set[asyncio.Task[object]] = {provider_task}
+        if cancellation_task is not None:
+            wait_set.add(cancellation_task)
+        done, pending = await asyncio.wait(
+            wait_set,
+            timeout=remaining_seconds,
+            return_when=asyncio.FIRST_COMPLETED,
+        )
+
+        if provider_task in done:
+            if cancellation_task is not None:
+                cancellation_task.cancel()
+                with suppress(asyncio.CancelledError):
+                    await cancellation_task
+            return provider_task.result()
+
+        provider_task.cancel()
+        with suppress(asyncio.CancelledError):
+            await provider_task
+        for task in pending:
+            task.cancel()
+        for task in pending:
+            with suppress(asyncio.CancelledError):
+                await task
+
+        if cancellation_task is not None and cancellation_task in done:
+            return _synthetic_attempt(
+                request,
+                started_at=dispatched_at,
+                outcome=ProviderAttemptOutcome.CANCELLED,
+                acceptance=ProviderAcceptanceCertainty.POSSIBLE,
+                error_class=ProviderErrorClass.CANCELLATION,
+                error_code="local_cancellation_after_dispatch_acceptance_unknown",
+            )
+
+        return _synthetic_attempt(
+            request,
+            started_at=dispatched_at,
+            outcome=ProviderAttemptOutcome.INDETERMINATE,
+            acceptance=ProviderAcceptanceCertainty.POSSIBLE,
+            error_class=ProviderErrorClass.TIMEOUT,
+            error_code="modelaccess_deadline_after_dispatch_acceptance_unknown",
+        )
+
+    async def invoke(
+        self,
+        request: ModelInvocationRequest,
+        cancellation: CancellationSignal | None = None,
+    ) -> ModelInvocationResult:
         """Execute one champion attempt; fallback/retry remain intentionally disabled."""
         invocation_started_at = _utc_now()
+
+        if cancellation is not None and cancellation.cancelled:
+            attempt = _synthetic_attempt(
+                request,
+                started_at=invocation_started_at,
+                outcome=ProviderAttemptOutcome.PRE_ACCEPTANCE_FAILURE,
+                acceptance=ProviderAcceptanceCertainty.NOT_ACCEPTED,
+                error_class=ProviderErrorClass.CANCELLATION,
+                error_code="cancelled_before_model_routing",
+            )
+            return self._pre_dispatch_result(
+                request,
+                started_at=invocation_started_at,
+                outcome=ModelInvocationOutcome.CANCELLED,
+                error_class=ModelAccessErrorClass.CANCELLATION,
+                error_code="cancelled_before_model_routing",
+                attempt=attempt,
+            )
 
         if request.max_provider_attempts != 1:
             return self._pre_dispatch_result(
@@ -336,7 +467,12 @@ class ModelAccessRuntime:
             )
         )
 
-        attempt = await adapter.invoke(provider_request)
+        attempt = await self._execute_attempt(
+            request=request,
+            provider_request=provider_request,
+            adapter=adapter,
+            cancellation=cancellation,
+        )
         if (
             attempt.outcome is ProviderAttemptOutcome.COMPLETED
             and request.structured_output is not None
@@ -373,6 +509,8 @@ class ModelAccessRuntime:
             limitation_codes.append("usage:unknown")
         if attempt.finish_reason is not None:
             limitation_codes.append(f"finish:{attempt.finish_reason}")
+        if attempt.acceptance is ProviderAcceptanceCertainty.POSSIBLE:
+            limitation_codes.append("provider-acceptance:possible")
 
         await self._emit(
             RuntimeEvidenceEvent(
