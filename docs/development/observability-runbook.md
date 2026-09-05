@@ -395,8 +395,8 @@ Read `DANTE · Telemetry pipeline & budget` separately from product health:
 
 Visual acceptance requires both dashboards to load without datasource errors,
 the environment selector to filter live data, and the applicable live signals
-to match Explore. Capture that evidence before marking dashboard acceptance
-complete in the workstream record.
+to match Explore. Capture that evidence in the current PR/acceptance record; a
+closed workstream file is not current authority.
 
 The alert source contract is:
 
@@ -607,7 +607,7 @@ shorten unnecessary retention/provider use where configurable
 
 Never drop availability/error/budget self-signals first.
 
-## 15. Closure evidence checklist
+## 15. Reusable release / acceptance checklist
 
 ```text
 [ ] exact Alloy native validation PASS
@@ -624,4 +624,7 @@ Never drop availability/error/budget self-signals first.
 [ ] Free-plan usage measured and within budget
 ```
 
-Unchecked items remain explicit missing evidence, not assumed completion.
+This is a reusable operator template for a future activation/release check.
+Unchecked boxes do **not** retroactively erase acceptance already recorded in
+current project status, archived evidence or CI. For any new execution, an
+unchecked item remains missing evidence for that execution.
