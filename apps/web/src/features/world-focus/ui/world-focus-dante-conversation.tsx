@@ -376,13 +376,7 @@ export function WorldFocusDanteConversation({
                       type="button"
                       data-world-focus-dante-insight-invoker={message.id}
                       disabled={insightPending}
-                      onClick={() =>
-                        insight.requestInsight({
-                          id: message.id,
-                          resultClass: message.resultClass,
-                          text: message.text,
-                        })
-                      }
+                      onClick={() => insight.requestInsight(message.id)}
                     >
                       {t(($) => $.common.worldFocus.dante.insight.open)}
                     </button>
