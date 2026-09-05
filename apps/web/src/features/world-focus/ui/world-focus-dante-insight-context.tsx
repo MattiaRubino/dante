@@ -20,9 +20,7 @@ import { readWorldFocusDanteInsight } from '../application/world-focus-dante-ins
 import { WorldFocusLatestReadCoordinator } from '../application/world-focus-foundation';
 import type { WorldFocusDanteConversationResultClass } from '../application/world-focus-dante-conversation';
 import type { WorldFocusId } from '../model/world-focus-identity';
-import {
-  WORLD_FOCUS_DANTE_CONVERSATION_INSTANCE_ID,
-} from './world-focus-dante-conversation-context';
+import { WORLD_FOCUS_DANTE_CONVERSATION_INSTANCE_ID } from './world-focus-dante-conversation-context';
 import { useWorldFocusDanteEntry } from './world-focus-dante-entry';
 import { useWorldFocusWorkspace } from './world-focus-workspace-host';
 
@@ -115,7 +113,9 @@ export function WorldFocusDanteInsightProvider({
   const insightWasOpenRef = useRef(false);
   const invokerMessageIdRef = useRef<string | null>(null);
 
-  generationRef.current = workspace.state.generation;
+  useEffect(() => {
+    generationRef.current = workspace.state.generation;
+  }, [workspace.state.generation]);
 
   if (workspace.state.worldId !== worldId) {
     throw new Error('World Focus DANTE Insight owner belongs to another World');
@@ -275,7 +275,6 @@ export function WorldFocusDanteInsightProvider({
 
     readCoordinator.cancelCurrent();
     workspace.closeSurface(WORLD_FOCUS_DANTE_INSIGHT_INSTANCE_ID);
-    setInsight(null);
   }, [insight, readCoordinator, workspace]);
 
   useEffect(() => {
