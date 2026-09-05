@@ -47,6 +47,50 @@ class SuiteLoadingTests(unittest.TestCase):
         self.assertEqual(len(suite.fixtures), 15)
         self.assertEqual(sum(f.requires_model for f in suite.fixtures), 15)
 
+    def test_decision_extension_v3_changes_only_native_headroom_cases(self) -> None:
+        v2 = load_suite(TOOL_ROOT / "fixtures" / "decision-extension-v2.json")
+        v3 = load_suite(TOOL_ROOT / "fixtures" / "decision-extension-v3.json")
+        self.assertEqual(v3.suite_id, "dante-decision-extension-v3")
+        self.assertEqual(v3.version, 3)
+        self.assertEqual(len(v3.fixtures), 15)
+        self.assertEqual(sum(f.requires_model for f in v3.fixtures), 15)
+
+        raised = {
+            "e03-uncertain-week-extraction",
+            "e05-provenance-conflict",
+            "e05-selective-disclosure-surface",
+            "e06-capacity-deadline-pack",
+            "e06-scenario-tradeoff",
+            "e10-delegation-scope",
+            "e11-strong-observation-ask-before-change",
+            "e12-cache-vs-authority",
+        }
+        v2_by_id = {fixture.fixture_id: fixture for fixture in v2.fixtures}
+        v3_by_id = {fixture.fixture_id: fixture for fixture in v3.fixtures}
+        for fixture_id in raised:
+            before = v2_by_id[fixture_id]
+            after = v3_by_id[fixture_id]
+            self.assertEqual(after.max_output_tokens, 512)
+            self.assertEqual(
+                after,
+                EvalFixture(
+                    fixture_id=before.fixture_id,
+                    family=before.family,
+                    locale=before.locale,
+                    description=before.description,
+                    requires_model=before.requires_model,
+                    input_text=before.input_text,
+                    instructions=before.instructions,
+                    max_output_tokens=512,
+                    response_schema=before.response_schema,
+                    assertions=before.assertions,
+                ),
+            )
+
+        untouched = set(v2_by_id) - raised
+        for fixture_id in untouched:
+            self.assertEqual(v3_by_id[fixture_id], v2_by_id[fixture_id])
+
     def test_v2_preserves_unmodified_fixture(self) -> None:
         v1 = load_suite(TOOL_ROOT / "fixtures" / "mini-baseline-v1.json")
         v2 = load_suite(TOOL_ROOT / "fixtures" / "mini-baseline-v2.json")
