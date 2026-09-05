@@ -68,8 +68,11 @@ class ProviderErrorClass(StrEnum):
     """Provider-neutral classified failure surface for routing/runtime policy."""
 
     RATE_LIMIT = "rate_limit"
+    OVERLOADED = "overloaded"
+    PROVIDER_UNAVAILABLE = "provider_unavailable"
     CONNECTION = "connection"
     TIMEOUT = "timeout"
+    BUDGET_EXCEEDED = "budget_exceeded"
     INVALID_REQUEST = "invalid_request"
     AUTHENTICATION = "authentication"
     PERMISSION = "permission"
@@ -139,6 +142,9 @@ class ModelInvocationRequest:
     instructions: str | None = None
     structured_output: StructuredOutputContract | None = None
     security_basis_refs: tuple[str, ...] = ()
+    required_route_config_identity: RouteConfigIdentity | None = None
+    required_capabilities: tuple[str, ...] = ()
+    required_feature_modes: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         _require_uuid7(self.model_invocation_id, name="model_invocation_id")
@@ -153,6 +159,8 @@ class ModelInvocationRequest:
         if self.max_output_tokens <= 0:
             raise ValueError("max_output_tokens must be positive")
         _require_texts(self.security_basis_refs, name="security_basis_refs")
+        _require_texts(self.required_capabilities, name="required_capabilities")
+        _require_texts(self.required_feature_modes, name="required_feature_modes")
 
 
 @dataclass(frozen=True, slots=True)
@@ -177,6 +185,9 @@ class ProviderInvocationRequest:
     reasoning_level: str | None = None
     feature_modes: tuple[str, ...] = ()
     security_basis_refs: tuple[str, ...] = ()
+    provider_endpoint: str | None = None
+    provider_api_revision: str | None = None
+    provider_service_tier: str | None = None
 
     def __post_init__(self) -> None:
         for name, uuid_value in (
@@ -196,10 +207,15 @@ class ProviderInvocationRequest:
             ("rendered_input", self.rendered_input),
         ):
             _require_text(text_value, name=name)
-        if self.rendered_instructions is not None:
-            _require_text(self.rendered_instructions, name="rendered_instructions")
-        if self.reasoning_level is not None:
-            _require_text(self.reasoning_level, name="reasoning_level")
+        for name, value in (
+            ("rendered_instructions", self.rendered_instructions),
+            ("reasoning_level", self.reasoning_level),
+            ("provider_endpoint", self.provider_endpoint),
+            ("provider_api_revision", self.provider_api_revision),
+            ("provider_service_tier", self.provider_service_tier),
+        ):
+            if value is not None:
+                _require_text(value, name=name)
         _require_aware(self.deadline, name="deadline")
         if self.max_output_tokens <= 0:
             raise ValueError("max_output_tokens must be positive")
@@ -254,6 +270,8 @@ class ProviderAttemptResult:
     completed_at: datetime
     provider_request_id: str | None = None
     provider_response_id: str | None = None
+    provider_status: str | None = None
+    finish_reason: str | None = None
     output_text: str | None = None
     structured_output_json: str | None = None
     refusal_reason: str | None = None
@@ -270,6 +288,8 @@ class ProviderAttemptResult:
         for name, value in (
             ("provider_request_id", self.provider_request_id),
             ("provider_response_id", self.provider_response_id),
+            ("provider_status", self.provider_status),
+            ("finish_reason", self.finish_reason),
             ("output_text", self.output_text),
             ("structured_output_json", self.structured_output_json),
             ("refusal_reason", self.refusal_reason),
@@ -333,6 +353,7 @@ class ModelInvocationResult:
     usage: ProviderUsageEvidence
     provider_binding_ref: str | None = None
     harness_profile_ref: str | None = None
+    provider_model: str | None = None
     attempts: tuple[ProviderAttemptResult, ...] = ()
     output_text: str | None = None
     structured_output_json: str | None = None
@@ -343,6 +364,7 @@ class ModelInvocationResult:
         for name, value in (
             ("provider_binding_ref", self.provider_binding_ref),
             ("harness_profile_ref", self.harness_profile_ref),
+            ("provider_model", self.provider_model),
             ("output_text", self.output_text),
             ("structured_output_json", self.structured_output_json),
             ("error_code", self.error_code),
@@ -356,8 +378,12 @@ class ModelInvocationResult:
         if self.outcome is ModelInvocationOutcome.COMPLETED:
             if not self.attempts or not has_output:
                 raise ValueError("completed model invocation requires attempt and output")
-            if self.provider_binding_ref is None or self.harness_profile_ref is None:
-                raise ValueError("completed model invocation requires selected route identity")
+            if (
+                self.provider_binding_ref is None
+                or self.harness_profile_ref is None
+                or self.provider_model is None
+            ):
+                raise ValueError("completed model invocation requires selected route/model identity")
             return
 
         if self.outcome in {
