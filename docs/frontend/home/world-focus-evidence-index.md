@@ -1,7 +1,7 @@
 # DANTE — World Focus Research / Review Evidence Index
 
-**Status:** CURRENT EVIDENCE MAP — M0 / M1 / POST-M1 SAFETY / M2 CLOSED — M3 ACTIVE / M3-1 + M3-2 + M3-3 + M3-4 VALIDATED / PRE-M3-3 SAFETY CLOSED / PASS / M3 FINAL HOSTILE CLOSURE NEXT  
-**Date:** 2026-09-04  
+**Status:** CURRENT EVIDENCE MAP — M0 / M1 / POST-M1 SAFETY / M2 / M3 CLOSED — M4 ACTIVE / D2 PREFLIGHT ACTIVE  
+**Date:** 2026-09-05  
 **Branch:** `feature/home-react`
 
 This index separates live sequencing authority, closure authority, falsification and supporting evidence. Older phase-time status prose is historical unless adopted by current checkpoint authority.
@@ -10,14 +10,16 @@ This index separates live sequencing authority, closure authority, falsification
 
 ```text
 world-focus-current-checkpoint.md
-world-focus-m3-adaptive-composition.md
 world-focus-frontend-roadmap.md
 world-focus-handoff.md
 world-focus-evidence-index.md
 current-checkpoint.md
+world-focus-m3-final-hostile-closure-review.md
+world-focus-m3-adaptive-composition.md
 world-focus-m3-4-integrated-adaptive-composition-review.md
+world-focus-dante-spatial-presence-review.md
+world-focus-d1-dante-entry-review.md
 world-focus-m2-shared-visual-primitives.md
-world-focus-post-m1-safety-falsification-review.md
 world-focus-m1-core-nonvisual-materialization-review.md
 world-focus-m0-materialization-mapping.md
 ```
@@ -53,6 +55,8 @@ E27 M3-2 adaptive candidate resolver
 E28 PRE-M3-3 customization reachability safety
 E29 M3-3 Manual Customize UX + hostile closure
 E30 M3-4 Integrated Adaptive Composition + integration falsification
+E31 M3 final cross-layer hostile closure
+E32 M4 / D2 preflight evidence — ACTIVE
 ```
 
 Key anchors:
@@ -69,24 +73,12 @@ M3-2              b7892642dd66104ec04ea4b08ca11aa123789fa4 / CI 33854543037 PASS
 PRE-M3-3 safety   7781c6751a455767595eaf159747da833117f8b2 / CI 33862549244 PASS
 M3-3 hostile      1978fe5c77c0e2661239372bf0f9bee238021faa / CI 33879774332 PASS
 M3-4 final        b10dc2bef8bab6ae863ce3c8331da6de96094a66 / CI 33904052325 PASS
+M3 final hostile  d9c30a3c6148469b347754eab07dc2ade9be4c52 / CI 33951509083 PASS
 ```
 
 ## E26 — M3-1 Composition Configuration Foundation
 
-Materialized:
-
-```text
-revisioned WorldFocusCompositionConfig
-schema disposition current / migration-required / unsupported
-ordered visibility/pin/prominence metadata
-isolated customization draft
-finite commands
-manual + dante-proposed command sources
-Cancel without committed effect
-Apply as revision-producing transition
-revision-conflict result
-cross-World Apply rejection
-```
+Materialized revisioned `WorldFocusCompositionConfig`, schema disposition, ordered visibility/pin/prominence metadata, isolated customization draft, finite command language, manual + `dante-proposed` command sources, exact Cancel, revision-producing Apply, revision conflict and cross-World rejection.
 
 Evidence:
 
@@ -97,22 +89,9 @@ PASS 49304c9231375a22ef74a81b4fffa920d5a1e849 / CI 33850441232 PASS
 
 ## E27 — M3-2 Adaptive Candidate Resolver
 
-Materialized:
+Materialized meaningful bounded opportunities, finite value signals, foreground/active/ordinary bands, hidden precedence, pinned stable user intent, configured relative-order precedence, unresolved pin without fabricated content, unknown future compatibility and fail-closed World/kind/signal mismatch handling.
 
-```text
-validated result -> meaningful bounded opportunity
-opportunity metadata: instanceId/kind/defaultProminence/footprint only
-finite value signals
-foreground / active / ordinary deterministic bands
-hidden precedence
-pinned stable user intent
-configured relative-order precedence
-unresolved pinned intent without fabricated content
-unknown future World/module compatibility
-fail-closed World/kind/signal mismatches
-```
-
-No confidence, `aiRelevance` or weighted score authority.
+No confidence, `aiRelevance` or weighted score authority exists.
 
 Evidence:
 
@@ -123,15 +102,13 @@ PASS b7892642dd66104ec04ea4b08ca11aa123789fa4 / CI 33854543037 PASS
 
 ## E28 — PRE-M3-3 Customization Reachability Safety
 
-Findings:
+Closed:
 
 ```text
-A. unconfigured meaningful opportunity was unreachable
-B. configured supporting content could be forced to primary by config presence
-C. same-revision different-base draft could Apply
+unconfigured meaningful opportunity reachability -> bounded adopt
+configured supporting content must not become primary merely by config presence
+same revision + different base snapshot must fail closed
 ```
-
-Closure added bounded `adopt`, corrected configured prominence and exact Apply base-snapshot checking.
 
 Evidence:
 
@@ -143,37 +120,16 @@ PASS      7781c6751a455767595eaf159747da833117f8b2 / CI 33862549244 PASS
 
 ## E29 — M3-3 Manual Customize UX + Hostile Closure
 
-Authorized PRE-SCOPE:
+Materialized explicit View->Customize, route-scoped accepted config + isolated draft, lazy seven-reader read, bounded opportunity reduction, adopt/pin/unpin/hide/show/move/promote/restore, keyboard reorder, focus/SR feedback, Apply/Cancel, conflict/invalid-base fail closed, exact invoker focus return and finite sidecar/compact overlay through the existing Workspace allocator.
 
-```text
-7b50a5f96739f500bd52ab5f4e35d8f05ce02e3b
-```
-
-Materialized:
-
-```text
-View != Customize
-explicit invocation
-one route-scoped accepted-config + isolated draft owner
-lazy seven-reader M1 aggregate customization read
-bounded opportunity reduction before UI state
-explicit adopt
-pin/unpin/hide/show/move/promote/restore
-keyboard reorder independent of drag
-moved-row focus + SR announcement
-Apply / Cancel
-revision-conflict and invalid-base fail closed
-exact invoker focus return
-finite sidecar surface / compact overlay via existing Workspace allocator
-```
-
-No localStorage, backend, fake durable persistence, direct Domain payload, reference/reasonCode/AuthZ leakage or hidden DANTE mutation path exists.
+No localStorage, backend, fake persistence or semantic payload leakage entered config state.
 
 Evidence:
 
 ```text
-RED  f1b08fc1766f801d4573f81194a6e66a147c9433 / CI 33875210161 EXPECTED FAILURE
-PASS 1978fe5c77c0e2661239372bf0f9bee238021faa / CI 33879774332 PASS
+PRE-SCOPE 7b50a5f96739f500bd52ab5f4e35d8f05ce02e3b
+RED       f1b08fc1766f801d4573f81194a6e66a147c9433 / CI 33875210161 EXPECTED FAILURE
+PASS      1978fe5c77c0e2661239372bf0f9bee238021faa / CI 33879774332 PASS
 77 / 77 web test files
 376 / 376 web unit tests
 294 modules / 851 dependencies / 0 violations
@@ -181,104 +137,155 @@ PASS 1978fe5c77c0e2661239372bf0f9bee238021faa / CI 33879774332 PASS
 
 ## E30 — M3-4 Integrated Adaptive Composition + Integration Falsification
 
-### E30.1 Authorization / scope
+Live path:
 
 ```text
-PRE-SCOPE
-688e1ab0c7a42f8d83274dedf5a2988a9388bda4
-```
-
-M3-4 was authorized to connect validated M1/M3-2/M3-3 owners to the existing planner/registry/CompositionHost and normal World rendering. M4/DANTE ranking, persistence, backend, Domain/AuthZ authority, AppShell, Timeline and Access/Auth were excluded.
-
-### E30.2 Materialized live path
-
-```text
-seven existing M1 runtime readers
+seven M1 runtime readers
 -> one bounded adaptive snapshot
--> M3-2 meaningful opportunity extraction
-+ exact accepted M3-3 config owner
-+ no invented M4/DANTE value signals
--> M3-2 candidate resolver
+-> meaningful opportunity extraction
++ exact accepted M3-3 config
++ no invented M4/DANTE signals
+-> M3-2 resolver
 -> existing Workspace planner
 -> finite registry
 -> CompositionHost
 -> M2 display-safe renderers
 ```
 
-New production owners:
+Integration exposed and corrected:
 
 ```text
-application/world-focus-adaptive-composition.ts
-ui/presentation/world-focus-pre-backend-display-bindings.ts
-ui/world-focus-adaptive-composition.tsx
+configured user order vs planner prominence ordering
+first repair vs mixed stable/non-user lead laws
+scrollable multi-module main plane vs keyboard accessibility
+renderer invocation before error boundary
 ```
 
-### E30.3 Integration findings
-
-M3-4 falsification exposed four real defects/contradictions:
+Final evidence:
 
 ```text
-1. configured order survived M3-2 but could be overwritten by planner prominence ordering
-2. the first user-slot repair could disturb mixed stable/non-user lead laws
-3. multi-module live composition made main plane scrollable but not keyboard focusable
-4. registry renderer executed before the error boundary, so synchronous renderer failure escaped
+PRE-SCOPE 688e1ab0c7a42f8d83274dedf5a2988a9388bda4
+RED       d2af7a47df8562439487fb4ab4298bff4653f098 / CI 33903884239 EXPECTED FAILURE
+PASS      b10dc2bef8bab6ae863ce3c8331da6de96094a66 / CI 33904052325 PASS
+79 / 79 web test files
+387 / 387 web unit tests
+299 modules / 891 dependencies / 0 violations
 ```
 
-All were fixed at their actual owners. No test was weakened.
+Detailed review: `world-focus-m3-4-integrated-adaptive-composition-review.md`.
 
-The final planner keeps selection, budgets and grid packing unchanged while satisfying a deterministic partial order across:
+## E31 — M3 Final Cross-Layer Hostile Closure
+
+### E31.1 Gate
 
 ```text
-user move order
-stable relative order
-non-user dynamic lead policy
-stable-before-non-user-dynamic-nonlead
-existing policy order as tie-break
+PRE-SCOPE 2e69b1dd0bda25beaecbc5e5baa26f8720a76ff1
+INITIAL   d99ad88d082e266fa0927ad2c594b8b435efa9b7
+HOSTILE   d9c30a3c6148469b347754eab07dc2ade9be4c52
+CI        33951509083 / run #944 PASS
 ```
 
-### E30.4 Final renderer-isolation RED
+The initial test harness incorrectly modeled Attention/Comparison as having an `unavailable` result state. TypeScript rejected this before functional execution. The harness was corrected to the real M1 result algebra; unavailable pressure remains valid through Continuity. No production semantic changed.
+
+### E31.2 Cross-layer pressure
+
+The final test combines:
 
 ```text
-HEAD d2af7a47df8562439487fb4ab4298bff4653f098
-CI   33903884239 / run #933 EXPECTED FAILURE
-386 pre-existing web tests PASS
-1 new renderer-isolation test FAIL
+projection truthfulness
+-> meaningful opportunities
+-> accepted/configured metadata
+-> canonical customization transaction
+-> M3-2 resolver
+-> Workspace planner
 ```
 
-The new test proved a registered renderer throw escaped before `WorldFocusRenderBoundary`. Production correction moved renderer execution into a child inside the existing boundary.
-
-### E30.5 Final green
+and proves:
 
 ```text
-CODE/TEST HEAD                       b10dc2bef8bab6ae863ce3c8331da6de96094a66
-Frontend CI                          33904052325 / run #934 PASS
-Web test files                       79 / 79 PASS
-Web unit tests                       387 / 387 PASS
-Architecture                         299 modules / 891 dependencies / 0 violations
-Frontend pre-production contracts    PASS
-World Focus pre-production contracts PASS
-Lint / Typecheck / Generated         PASS
-Production build                     PASS
-Diff / repository mutation           PASS
-Mobile Bundle                        PASS
-Chromium                             PASS
-frozen Timeline Firefox              PASS
-Frontend CI Gate                     PASS
+partial real content remains meaningful
+empty/unavailable remains sparse
+hide/pin/promote/move/adopt remain distinct semantics
+arbitrary adopt payload/disclosure/aiRelevance cannot survive into config
+Apply increments exactly once
+stale revision -> conflict
+same revision + different base -> fail closed
+200 seeded hostile config/order/budget combinations are deterministic
+hidden never leaks
+visible pinned meaningful intent survives budget
+selected user order remains configured order
+adaptive count remains bounded
+plan has no duplicate identity
 ```
 
-### E30.6 Scope audit
+### E31.3 Retained hostile pressure
 
-Compare `688e1ab... -> b10dc2b...`:
+The full final CI also keeps green:
+
+```text
+500 deterministic random composition plans
+500 synthetic workspace width/surface stacks
+unknown future-kind local degradation
+unresolved pin without fake content
+registered renderer failure isolation
+healthy sibling survival
+M3-3 responsive/a11y/focus/reorder pressure
+12 World Focus pressure widths
+Chromium + frozen Timeline Firefox
+```
+
+### E31.4 Final green
+
+```text
+80 / 80 web test files
+391 / 391 web unit tests
+300 modules / 899 dependencies / 0 architecture violations
+Frontend + World Focus contracts PASS
+Lint / Typecheck / Generated PASS
+Production build PASS
+Diff / mutation PASS
+Mobile PASS
+Chromium PASS
+frozen Timeline Firefox PASS
+Frontend CI Gate PASS
+```
+
+### E31.5 Scope audit
+
+Compare `2e69b1d... -> d9c30a3...`:
 
 ```text
 status    ahead
-ahead_by  8
+ahead_by  2
 behind_by 0
 ```
 
-Changed non-doc paths are confined to World Focus M3-4 application/UI/test/E2E and the planner/workspace corrections directly justified by falsification. No Timeline implementation, AppShell, Access/Auth, route tree, backend/API/DB/Alembic/AuthZ/provider/LLM or persistence path changed.
+Net changed path:
 
-Detailed review: `world-focus-m3-4-integrated-adaptive-composition-review.md`.
+```text
+apps/web/src/features/world-focus/application/world-focus-m3-final-hostile.test.ts
+```
+
+No production path changed.
+
+Detailed review: `world-focus-m3-final-hostile-closure-review.md`.
+
+## E32 — M4 / D2 Read-Only Preflight — ACTIVE
+
+Current evidence already confirms:
+
+```text
+D0 accepted: wide conversation -> sidecar; constrained/mobile -> route-owned focus overlay
+D1 closed: quiet invoke + compact composer, no fake conversation
+WorldFocusWorkspaceHost owns one transient surface stack/reducer
+sidecar split eligibility derives from measured workspace geometry
+presentation='route' -> allocator slot='external'
+WorldFocusSurfaceLayer deliberately skips external placements
+AppShell owns GlobalTopbar then route Outlet
+World route renders WorldFocusPage below that Topbar
+```
+
+Therefore D2 needs the missing route-owned external presenter seam while preserving the same Workspace state. It must not create a second surface engine, disconnected chat route, AppShell ownership rewrite or D3 message/backend behavior.
 
 ## 3. Current layered result
 
@@ -288,20 +295,14 @@ L1 Work-Semantic Projections — M1
 L2 Evidence/Basis
 L3 Coordination/Disclosure
 L4 Interaction/Reference
-L5 Composition
-  Workspace planner/registry
-  M3-1 revisioned config + draft
-  M3-2 meaningful opportunities + candidate resolver
-  PRE-M3-3 adopt reachability + exact Apply base guard
-  M3-3 manual Customize transaction/surface
-  M3-4 live adaptive composition integration
+L5 Composition — M3 CLOSED / VALIDATED
 L6 Operation/Effect presentation
 L7 Renderer/Specialist Extension
 L8 Platform/User Policy
 
 M2 presentation boundary CLOSED
-M3 Adaptive Composition ACTIVE
-M3 final hostile closure NEXT
+M3 Adaptive Composition CLOSED / VALIDATED
+M4 Contextual DANTE ACTIVE / D2 PREFLIGHT ACTIVE
 ```
 
 ## 4. Current evidence gate
@@ -312,24 +313,16 @@ M3 final hostile closure NEXT
 
 > **M2 — CLOSED / VALIDATED**
 
-> **M3 — ACTIVE**
+> **M3 — CLOSED / VALIDATED**
 
-> **M3-1 — CLOSED / VALIDATED**
+> **M3 FINAL HOSTILE CLOSURE — CLOSED / PASS**
 
-> **M3-2 — CLOSED / VALIDATED**
+> **M4 — ACTIVE / D2 READ-ONLY PREFLIGHT ACTIVE**
 
-> **PRE-M3-3 CUSTOMIZATION SAFETY — CLOSED / PASS**
-
-> **M3-3 MANUAL CUSTOMIZE UX — CLOSED / VALIDATED**
-
-> **M3-4 INTEGRATED ADAPTIVE COMPOSITION — CLOSED / VALIDATED**
-
-> **M3 FINAL HOSTILE CLOSURE — NEXT / NOT STARTED**
-
-> **M4–M7 and backend remain blocked by sequence. D2–D6 remain deferred to M4.**
+> **M5–M7 and backend remain blocked by sequence.**
 
 ## 5. Reopen rule
 
-Do not reopen WS0–WS8, M1, M2, M3-1, M3-2, M3-3 or M3-4 just because a later phase would be easier with broader semantics. Reopen an earlier owner only when executable evidence proves a contradiction in that owner.
+Do not reopen WS0–WS8, M1, M2 or M3 just because M4 would be easier with broader semantics. Reopen an earlier owner only when executable evidence proves a contradiction in that owner.
 
 Human visual acceptance remains **NOT PERFORMED**; automated green does not establish it.
