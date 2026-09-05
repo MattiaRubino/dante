@@ -166,18 +166,22 @@ describe('WorldFocusPage', () => {
     const continuity = container.querySelector<HTMLElement>(
       '[data-world-focus-composition-id="continuity"]',
     );
-    expect(continuity).not.toBeNull();
+    if (continuity === null) {
+      throw new Error('Expected Continuity composition item');
+    }
     const action = within(continuity).getAllByRole('button', {
       name: 'Chiedi a DANTE: Continua da qui',
     })[0];
-    expect(action).toBeDefined();
+    if (action === undefined) {
+      throw new Error('Expected Continuity DANTE contextual action');
+    }
 
     fireEvent.click(action);
 
     const composer = screen.getByRole('dialog', { name: 'DANTE' });
-    const textarea = screen.getByRole('textbox', {
-      name: 'Scrivi una richiesta per DANTE',
-    });
+    const textarea = screen.getByLabelText<HTMLTextAreaElement>(
+      'Scrivi una richiesta per DANTE',
+    );
     expect(composer.getAttribute('data-world-focus-dante-surface')).toBe(
       'composer',
     );
