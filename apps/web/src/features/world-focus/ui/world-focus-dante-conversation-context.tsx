@@ -271,8 +271,17 @@ export function WorldFocusDanteConversationProvider({
     }
 
     const requestId = requestState.requestId;
+    const requestGeneration = requestState.workspaceGeneration;
     readCoordinator.cancelCurrent();
-    setRequestState({ status: 'superseded', requestId });
+    queueMicrotask(() => {
+      setRequestState((current) =>
+        current.status === 'pending' &&
+        current.requestId === requestId &&
+        current.workspaceGeneration === requestGeneration
+          ? { status: 'superseded', requestId }
+          : current,
+      );
+    });
   }, [readCoordinator, requestState, workspace.state.generation]);
 
   useEffect(() => {
@@ -287,9 +296,11 @@ export function WorldFocusDanteConversationProvider({
 
     conversationWasOpenRef.current = false;
     readCoordinator.cancelCurrent();
-    setMessages(Object.freeze([]));
-    setRequestState({ status: 'idle' });
-    restoreInvokerFocus();
+    queueMicrotask(() => {
+      setMessages(Object.freeze([]));
+      setRequestState({ status: 'idle' });
+      restoreInvokerFocus();
+    });
   }, [isOpen, readCoordinator, restoreInvokerFocus]);
 
   useEffect(
