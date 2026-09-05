@@ -243,9 +243,17 @@ class GeminiInteractionsAdapter:
                 )
             structured_schema = loaded
 
-        assert request.provider_endpoint is not None
-        assert request.provider_api_revision is not None
-        assert request.provider_service_tier is not None
+        if (
+            request.provider_endpoint is None
+            or request.provider_api_revision is None
+            or request.provider_service_tier is None
+        ):
+            return self._preflight_invalid_request(
+                request,
+                started_at,
+                code="missing_provider_binding_transport_identity",
+            )
+
         wire_request = GeminiInteractionsWireRequest(
             model=request.provider_model,
             endpoint=request.provider_endpoint,
