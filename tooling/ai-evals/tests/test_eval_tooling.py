@@ -27,11 +27,50 @@ from gemini_candidate_config import GeminiCandidateConfig
 
 
 class SuiteLoadingTests(unittest.TestCase):
-    def test_current_mini_suite_loads_and_is_bounded(self) -> None:
-        suite = load_suite(TOOL_ROOT / "fixtures" / "mini-baseline-v1.json")
-        self.assertEqual(suite.suite_id, "dante-mini-baseline-v1")
+    def test_current_mini_suite_v2_loads_and_is_bounded(self) -> None:
+        suite = load_suite(TOOL_ROOT / "fixtures" / "mini-baseline-v2.json")
+        self.assertEqual(suite.suite_id, "dante-mini-baseline-v2")
+        self.assertEqual(suite.version, 2)
         self.assertEqual(len(suite.fixtures), 14)
         self.assertEqual(sum(f.requires_model for f in suite.fixtures), 13)
+
+    def test_historical_mini_v1_remains_loadable(self) -> None:
+        suite = load_suite(TOOL_ROOT / "fixtures" / "mini-baseline-v1.json")
+        self.assertEqual(suite.suite_id, "dante-mini-baseline-v1")
+        self.assertEqual(suite.version, 1)
+        self.assertEqual(len(suite.fixtures), 14)
+
+    def test_decision_extension_v2_loads_and_keeps_15_calls(self) -> None:
+        suite = load_suite(TOOL_ROOT / "fixtures" / "decision-extension-v2.json")
+        self.assertEqual(suite.suite_id, "dante-decision-extension-v2")
+        self.assertEqual(suite.version, 2)
+        self.assertEqual(len(suite.fixtures), 15)
+        self.assertEqual(sum(f.requires_model for f in suite.fixtures), 15)
+
+    def test_v2_preserves_unmodified_fixture(self) -> None:
+        v1 = load_suite(TOOL_ROOT / "fixtures" / "mini-baseline-v1.json")
+        v2 = load_suite(TOOL_ROOT / "fixtures" / "mini-baseline-v2.json")
+        v1_fixture = next(f for f in v1.fixtures if f.fixture_id == "e02-resolved-reference")
+        v2_fixture = next(f for f in v2.fixtures if f.fixture_id == "e02-resolved-reference")
+        self.assertEqual(v1_fixture, v2_fixture)
+
+    def test_v2_e11_accepts_keep_declared_without_replacement(self) -> None:
+        suite = load_suite(TOOL_ROOT / "fixtures" / "mini-baseline-v2.json")
+        fixture = next(f for f in suite.fixtures if f.fixture_id == "e11-declared-vs-observed")
+        grade = grade_output(
+            fixture,
+            '{"update_memory":false,"action":"keep_declared"}',
+        )
+        self.assertEqual(grade.verdict, TrialVerdict.PASS)
+
+    def test_v2_e11_rejects_unconfirmed_replacement(self) -> None:
+        suite = load_suite(TOOL_ROOT / "fixtures" / "mini-baseline-v2.json")
+        fixture = next(f for f in suite.fixtures if f.fixture_id == "e11-declared-vs-observed")
+        grade = grade_output(
+            fixture,
+            '{"update_memory":false,"action":"replace_declared"}',
+        )
+        self.assertEqual(grade.verdict, TrialVerdict.HARD_FAIL)
 
     def test_unknown_family_is_rejected(self) -> None:
         document = {
@@ -58,6 +97,54 @@ class SuiteLoadingTests(unittest.TestCase):
             path.write_text(json.dumps(document), encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "unknown workload family"):
                 load_suite(path)
+
+    def test_overlay_rejects_unknown_fixture_replacement(self) -> None:
+        base_document = {
+            "suite_id": "base",
+            "version": 1,
+            "description": "base",
+            "fixtures": [
+                {
+                    "id": "x",
+                    "family": "DANTE-E01",
+                    "locale": "it-IT",
+                    "description": "base fixture",
+                    "requires_model": False,
+                    "input": "",
+                    "instructions": "",
+                    "max_output_tokens": 1,
+                    "response_schema": None,
+                    "assertions": [],
+                }
+            ],
+        }
+        overlay_document = {
+            "suite_id": "overlay",
+            "version": 2,
+            "description": "overlay",
+            "base_suite": "base.json",
+            "fixture_replacements": [
+                {
+                    "id": "missing",
+                    "family": "DANTE-E01",
+                    "locale": "it-IT",
+                    "description": "replacement",
+                    "requires_model": False,
+                    "input": "",
+                    "instructions": "",
+                    "max_output_tokens": 1,
+                    "response_schema": None,
+                    "assertions": [],
+                }
+            ],
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "base.json").write_text(json.dumps(base_document), encoding="utf-8")
+            overlay_path = root / "overlay.json"
+            overlay_path.write_text(json.dumps(overlay_document), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "unknown fixture"):
+                load_suite(overlay_path)
 
 
 class GradingTests(unittest.TestCase):
@@ -98,6 +185,34 @@ class GradingTests(unittest.TestCase):
         )
         grade = grade_output(fixture, '{"refs":["B","A"]}')
         self.assertEqual(grade.verdict, TrialVerdict.PASS)
+
+    def test_not_equals_accepts_alternative(self) -> None:
+        fixture = self._fixture(
+            (
+                AssertionSpec(
+                    "not_equals",
+                    "action",
+                    "replace_declared",
+                    AssertionSeverity.HARD,
+                ),
+            )
+        )
+        grade = grade_output(fixture, '{"action":"keep_declared"}')
+        self.assertEqual(grade.verdict, TrialVerdict.PASS)
+
+    def test_not_equals_rejects_forbidden_value(self) -> None:
+        fixture = self._fixture(
+            (
+                AssertionSpec(
+                    "not_equals",
+                    "action",
+                    "replace_declared",
+                    AssertionSeverity.HARD,
+                ),
+            )
+        )
+        grade = grade_output(fixture, '{"action":"replace_declared"}')
+        self.assertEqual(grade.verdict, TrialVerdict.HARD_FAIL)
 
 
 class BudgetTests(unittest.TestCase):
