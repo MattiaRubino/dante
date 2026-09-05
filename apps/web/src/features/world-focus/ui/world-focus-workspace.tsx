@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next';
 import type { WorldFocusShellStatus } from '../model/world-focus-platform';
 import { WORLD_FOCUS_REGION } from '../model/world-focus-structure';
 import { resolveWorldFocusWorkspaceAllocation } from '../model/world-focus-workspace-allocation';
+import { doesWorldFocusSurfaceBlockWorkspaceInteraction } from '../model/world-focus-workspace';
 import { WorldFocusWorkspaceAllocationProvider } from './world-focus-workspace-allocation-context';
 import { useWorldFocusWorkspace } from './world-focus-workspace-host';
 
@@ -91,9 +92,18 @@ export function WorldFocusWorkspace({
     '--world-focus-split-gap': `${allocationPlan.splitGap}px`,
   } as CSSProperties;
   const mainIsInert = allocationPlan.mainInteraction === 'inert';
-  const routeFocusIsActive = allocationPlan.placements.some(
+  const activeExternalPlacement = allocationPlan.placements.find(
     (placement) => placement.activeInSlot && placement.slot === 'external',
   );
+  const activeExternalSurface =
+    activeExternalPlacement === undefined
+      ? undefined
+      : workspace.state.surfaces.find(
+          (surface) => surface.instanceId === activeExternalPlacement.instanceId,
+        );
+  const routeFocusIsActive =
+    activeExternalSurface !== undefined &&
+    doesWorldFocusSurfaceBlockWorkspaceInteraction(activeExternalSurface);
 
   return (
     <section
