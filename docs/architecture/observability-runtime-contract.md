@@ -1,11 +1,14 @@
 # DANTE Observability Runtime Contract
 
-- **Status:** BRANCH-LOCAL CURRENT / SOURCE CLOSURE COMPLETE / OPERATIONAL ACCEPTANCE PASS / NOT YET INTEGRATED
-- **Branch:** `feature/platform-observability`
+- **Status:** CURRENT / EVOLVING REFERENCE / INTEGRATION CANDIDATE ACCEPTED
+- **Current integration merge:** `14faecfb11bded15aa929b0eaac91427031072ed`
+- **Source closure:** `828cfd231debb1326933052fefd74e81c653a6c3`
 - **Pinned source baseline:** `dc5ee595c6291d980dc15f582dd094a399631557`
 - **Target:** OpenTelemetry + Grafana Alloy + Grafana Cloud Free EU
 - **Scope:** backend, Web, PostgreSQL operational telemetry, collector, dashboards, alerts, privacy and failure behavior
 - **Non-scope:** canonical Domain history, security audit ledger, product analytics, Access semantics, Home/Today product UI, cloud compute/IaC
+
+This contract describes materialized current-repository behavior. Protected-main integration is a Git-reachability fact: branch-local materialization must not be represented as already merged until the corresponding commit is reachable from protected `main`.
 
 ## 1. Decision
 

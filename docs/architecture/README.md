@@ -1,8 +1,10 @@
 # DANTE Architecture Index
 
-- **Status:** CURRENT / AUTHORITATIVE NAVIGATION FOR `feature/access-auth`
-- **Last reconciled:** 2026-09-03
-- **Current work:** PRE-INTEGRATION AUDIT
+- **Status:** CURRENT / AUTHORITATIVE NAVIGATION
+- **Last reconciled:** 2026-09-05
+- **Scope:** current repository architecture and long-lived subsystem contracts
+
+This index describes the current repository tree directly. Protected-main integration status is determined by Git reachability and `../PROJECT-STATUS.md`; a branch-local candidate is never promoted to protected-main truth by documentation wording alone.
 
 ## 1. Current architecture state
 
@@ -12,36 +14,22 @@ Engineering Foundation                      CLOSED / ACCEPTED
 Frontend Foundation                         CLOSED / ACCEPTED
 Backend CP1–CP6                              CLOSED / ACCEPTED
 PostgreSQL                                   18.6 / sole canonical persistence
-
-Access/Auth M1–M5                            CLOSED / ACCEPTED
-local password/passkey UAT                   PASS
-real Windows Hello UAT                       PASS
-real Google UAT                              PASS
-real Apple registered-domain UAT             BOUNDED DEFERRED / NON-BLOCKING
-
-Email Platform architecture                  ACCEPTED / SHARED DANTE SUBSYSTEM
-Email Platform implementation                ACCEPTED
-Email Platform automated/PostgreSQL proof    PASS
-real DANTE → SES signup/recovery/notification PASS
-Email Platform engineering                   CLOSED
-
-Protected-main Alembic                       20260830_09 / Recovery
-Feature/access-auth Alembic                  20260903_15 / Auth + Email
-Feature/access-auth topology                 87/5/15/75/170/88/267
+Access/Auth M1–M5                            CLOSED / INTEGRATED
+Shared Email Platform                        CLOSED / INTEGRATED
+PostgreSQL Recovery                          CLOSED / INTEGRATED
+Platform Observability                       MATERIALIZED / ACCEPTED IN CURRENT TREE
 ```
 
-Protected `main` remains integrated authority. Access/Auth + Email are branch-local until explicit convergence and PR integration.
+Current application database contract remains `20260904_17` with topology `88/5/16/76/172/89/270`. Platform Observability adds no DANTE business DDL or application persistence model.
 
-## 2. Entry points
-
-System/current routing:
+## 2. System entry points
 
 - `system-overview.md`
 - `technical-decisions.md`
 - `../PROJECT-STATUS.md`
 - `../ROADMAP.md`
 
-Access/Auth:
+## 3. Access/Auth
 
 - `access-auth-architecture.md`
 - `access-auth-security-contract.md`
@@ -53,21 +41,81 @@ Access/Auth:
 - `../frontend/access.md`
 - `../database/access-auth.md`
 
-Email Platform:
+Permanent identity/auth boundary:
+
+```text
+Person != Account != Principal != Actor
+AuthSession != DANTE Session
+EmailIdentity != Account
+PasswordCredential optional
+Principal request-runtime only
+provider identity = issuer + subject
+provider email != identity/link authority
+provider assertion != DANTE AuthSession
+passwordless Account valid
+method != factor != assurance
+```
+
+## 4. Shared Email Platform
 
 - `email-platform.md`
-- `access-auth-email-delivery.md` — Access/Auth consumer integration only
+- `access-auth-email-delivery.md` — Access/Auth consumer integration
 - `../decisions/ADR-012-email-delivery-platform.md`
 - `../development/email-platform-local-uat.md`
 - `../development/email-platform-acceptance-2026-09-03.md`
 
-Database:
+The Email Platform is shared infrastructure. DANTE owns durable delivery lifecycle and ambiguity policy; provider transport is an external effect and is never executed inside the authoritative caller transaction.
+
+## 5. Platform Observability
+
+- `observability-runtime-contract.md` — current/evolving signal, privacy, ownership, cardinality and failure contract
+- `../development/observability-runbook.md` — operator setup, validation, incident, rotation and rollback procedure
+- `../../infra/observability/README.md` — Alloy/Grafana runtime and source-controlled operational assets
+- `../database/dante-postgresql-database-part-12.md` — exact PostgreSQL observer-role contract
+
+Architectural boundary:
+
+```text
+backend metrics/traces ──OTLP──────┐
+backend JSON logs ───────file──────┤
+Web errors/vitals/traces ─Faro─────┼─> Grafana Alloy ─> Grafana Cloud
+PostgreSQL stats ───────observer───┤
+readiness ───────────────blackbox───┘
+```
+
+Permanent rules:
+
+```text
+telemetry != canonical DANTE state
+telemetry != Domain history / Evidence / Provenance
+telemetry failure != permission to alter product truth
+no product/Auth/API data dependency from Web observability
+no raw URL/query/SQL/identity/session/secret telemetry dimensions
+bounded cardinality and bounded retry/buffering
+```
+
+`dante_observer` is provisioning-owned technical infrastructure, not an Account, Principal, Actor or application model. It has `LOGIN INHERIT`, `pg_read_all_stats` only, `search_path=pg_catalog`, no database `CREATE`/`TEMP` and no DANTE/public business-object access.
+
+## 6. Database / persistence
 
 - `../database/README.md`
 - `../database/dictionary/README.md`
+- `../database/dante-postgresql-database.md`
 - `../development/backend-cp6-02-postgresql-persistence-constitution.md`
+- `../decisions/ADR-010-postgresql-persistence-constitution.md`
 
-Important ADRs:
+Permanent invariant:
+
+```text
+current DB reference
+≈ Database Dictionary
+≈ SQLAlchemy mappings
+≈ Alembic
+≈ real PostgreSQL
+≈ direct tests
+```
+
+## 7. Important ADRs
 
 - `../decisions/ADR-007-domain-model-informed-persistence-boundaries.md`
 - `../decisions/ADR-008-frontend-engineering-stack.md`
@@ -76,148 +124,12 @@ Important ADRs:
 - `../decisions/ADR-011-access-auth-architecture.md`
 - `../decisions/ADR-012-email-delivery-platform.md`
 
-## 3. Permanent Auth architecture
+## 8. Historical evidence
 
-```text
-Person != Account != Principal != Actor
-AuthSession != DANTE Session
-EmailIdentity != Account
-PasswordCredential optional
-Principal request-runtime only
-Account → 0..N AuthSessions
-Account → 0..N ExternalIdentities
-Account → 0..N PasskeyCredentials
-provider identity = issuer + subject
-provider email != identity/link authority
-provider assertion != DANTE AuthSession
-passwordless Account valid
-method != factor != assurance
-```
+Branch histories, dated acceptance records and old milestone banners are evidence only. They never override the current executable repository or current/evolving references.
 
-Authenticator-specific code verifies evidence. Canonical Account/session policy remains shared DANTE application/security authority.
+- `../archive/branches/2026-09-feature-access-auth.md`
+- `../archive/branches/2026-09-feature-platform-observability.md`
+- `../workstreams/access-auth-integration-acceptance-2026-09-04.md`
 
-## 4. Browser security posture
-
-```text
-opaque high-entropy server-authoritative AuthSession
-Secure + HttpOnly + host-only cookie
-no JWT/localStorage/sessionStorage Auth authority
-session-bound synchronizer CSRF
-exact same-origin posture
-Origin + Fetch Metadata
-recent reauthentication for sensitive mutations
-same-session bearer rotation after reauth/security-context change
-```
-
-## 5. Provider architecture
-
-Google:
-
-```text
-DANTE transaction + nonce first
-official Google Identity Services interaction
-Google ID token = evidence only
-backend signature/JWK/issuer/audience/nonce verification
-issuer + subject = canonical provider identity
-third-party mailbox → direct DANTE mailbox proof where current control matters
-```
-
-Apple:
-
-```text
-DANTE begin → Apple authorization → form_post/code exchange
-issuer + subject authority
-encrypted server grant lifecycle
-verified server notifications
-Private Email Relay semantics
-```
-
-Apple real registered-domain external acceptance remains deferred until prerequisites exist. This does not reopen M5 engineering.
-
-## 6. Passkey architecture
-
-```text
-WebAuthn / FIDO2
-resident/discoverable credential required
-user verification required
-attestation none
-exact RP/origin policy
-opaque random user_handle
-multiple passkeys
-DANTE stores public credential material only
-```
-
-Backend `python-fido2` owns cryptographic/RP verification; frontend owns browser ceremony interaction/conversion only.
-
-## 7. Shared Email Platform
-
-The Email Platform is shared infrastructure, not an Access/Auth-owned implementation detail.
-
-```text
-DANTE feature/application mutation
-        │
-        ├── canonical state
-        └── durable EmailIntent
-                 ▼
-PostgreSQL COMMIT
-                 ▼
-claim / lease / worker
-                 ▼
-versioned template + protected payload
-                 ▼
-provider-neutral adapter
-        ├── Amazon SES API v2
-        └── SMTP local/CI compatibility
-                 ▼
-provider evidence
-                 ▼
-DANTE delivery/suppression state
-```
-
-Permanent rules:
-
-```text
-DANTE owns lifecycle/state
-provider owns last-mile transport
-provider accepted != delivered
-network timeout != definitely unsent
-no blind retry after ambiguous outcome
-no provider I/O in caller DB transaction
-short-lived encrypted sensitive payload + wipe
-OTP/recovery proof excluded from logs/metrics/traces
-Auth/security tracking/link rewriting OFF
-```
-
-## 8. Database integration boundary
-
-Current branch and protected main deliberately diverge after `20260826_08`:
-
-```text
-main   → 20260830_09 Recovery
-Access → 20260903_15 Auth + Email
-```
-
-Architecture requires a forward merge of both histories. No semantic model or applied migration is rewritten merely to produce a linear-looking graph.
-
-Combined topology becomes authoritative only after real PostgreSQL proof on the merged branch.
-
-## 9. Current integration sequence
-
-```text
-pre-integration audit
-→ merge main into feature/access-auth
-→ forward Alembic merge revision
-→ combined Recovery/Auth/Email QA
-→ PR to protected main
-→ merge enriched main into feature/platform-observability
-→ observability integration checks
-→ PR observability to protected main
-```
-
-Later M6/M7 work starts from the enriched protected main on fresh bounded branches.
-
-## 10. Historical progress metadata
-
-Some large M4/M5 contracts preserve implementation-stage text such as `NEXT`, old Alembic heads or routes not yet materialized. Those statements are historical checkpoint metadata inside durable design contracts; they do not override current status/routing above.
-
-Temporary handoffs must be removed before protected-main integration under `../development/documentation-lifecycle-policy.md`.
+Temporary branch handoffs must be removed before protected-main integration under `../development/documentation-lifecycle-policy.md`.

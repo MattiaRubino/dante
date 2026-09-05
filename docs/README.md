@@ -1,10 +1,9 @@
 # DANTE Documentation Index
 
 - **Status:** CURRENT NAVIGATION / AUTHORITY INDEX
-- **Last reconciled:** 2026-09-04
-- **Protected main:** Access/Auth + shared Email Platform + Recovery integrated; Recovery↔Email CP08 hardening integrated
+- **Last reconciled:** 2026-09-05
+- **Current repository tree:** Access/Auth + shared Email Platform + Recovery + Platform Observability integration candidate
 - **Current Alembic:** `20260904_17`
-- **Current work:** `feature/platform-observability` integration
 
 ## Authority order
 
@@ -17,7 +16,7 @@
 6. conversation memory
 ```
 
-Protected `main` owns the combined Access/Auth + shared Email Platform + Recovery truth at Alembic `20260904_17`. PR #52 integrated the accepted candidate at merge commit `5f76ec54ad78542f137e8730e904f805d9e59e56`; PR #55 later integrated the forward Recovery↔Email reopen hardening at `c67a18c24a6cf22b003ffd2c14243af53fec5077` after mandatory CI and real LOCAL CP08 acceptance.
+The current repository tree contains the accepted Platform Observability integration candidate. Protected-main integration is established only when the corresponding commit is reachable from protected `main`; this index does not treat branch-local materialization as an already-merged protected-main fact.
 
 ## Current lifecycle
 
@@ -29,18 +28,17 @@ Recovery                                       CLOSED / INTEGRATED
 Access/Auth M1–M5                              CLOSED / INTEGRATED
 Shared Email Platform                          CLOSED / INTEGRATED / OWNERSHIP VERIFIED
 Apple real external UAT                        BOUNDED DEFERRED
-Protected-main Alembic                         20260904_17
-Protected-main DB                              88/5/16/76/172/89/270
-database-local CP07                            PASS
-application / Email reopen CP08                PASS
-post-merge Backend CI                          PASS
-post-merge Frontend CI                         PASS
-feature/platform-observability                 CLOSED / OPERATIONAL PASS / NEXT INTEGRATION
+Alembic                                        20260904_17
+Database                                       88/5/16/76/172/89/270
+Database-local CP07                            PASS
+Application / Email reopen CP08                PASS
+Platform Observability source                  CLOSED / OPERATIONAL PASS
+Platform Observability current tree            INTEGRATED / ACCEPTED CANDIDATE
 M6 Native Mobile                               FUTURE / OPTIONAL
 later M7 Access/security maturity              FUTURE
 ```
 
-The historical CP07 run directly proves its executed LOCAL PostgreSQL/database-local and MaterialState recovery scope; it did not directly prove Email quarantine ordering. CP08 closed that distinct evidence gap forward by proving PITR → worker isolation → Email quarantine/sensitive wipe → zero claimable work → application/Email reopen. Remote-provider and production/cloud recovery remain separate future gates.
+Remote-provider and production/cloud recovery remain separate future gates.
 
 ## Mandatory continuation entry points
 
@@ -82,6 +80,21 @@ Historical/evidence routing:
 - `development/email-platform-local-uat.md`
 - `development/email-platform-acceptance-2026-09-03.md`
 
+## Platform Observability
+
+Current/evolving authority:
+
+- `architecture/observability-runtime-contract.md` — signal, privacy, cardinality, failure and ownership contract
+- `development/observability-runbook.md` — setup, validation, incident, rotation and rollback procedures
+- `../infra/observability/README.md` — Alloy/Grafana/LOCAL runtime and source-controlled operational assets
+- `database/dante-postgresql-database-part-12.md` — Section 46 exact `dante_observer` database security contract
+
+Historical/evidence routing:
+
+- `archive/branches/2026-09-feature-platform-observability.md` — single consolidated Platform Observability branch/integration history, **NON-AUTHORITATIVE**
+
+There is no active `workstreams/platform-observability.md` authority after integration-candidate acceptance. The old source-workstream file is retired after knowledge coverage; Git and the consolidated branch record retain chronology.
+
 ## Database / Recovery
 
 - `database/README.md` — current Database System of Record
@@ -106,11 +119,11 @@ current human DB reference
 ## Current integration sequence
 
 ```text
-enriched protected main
-→ feature/platform-observability
-→ observability release/integration rechecks
-→ protected-main Observability PR
-→ future bounded workstreams
+accepted Platform Observability integration candidate
+→ documentation lifecycle gate
+→ integration/platform-observability-v2 → protected-main PR
+→ mandatory CI / merge evidence
+→ future bounded workstreams from enriched main
 ```
 
-Temporary handoffs do not belong on protected main; current specs must not become append-only diaries.
+Temporary handoffs do not belong on protected main; current specifications must not become append-only diaries.

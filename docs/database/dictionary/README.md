@@ -1,11 +1,12 @@
 # DANTE Database Dictionary
 
-- **Status:** CURRENT / MATERIALIZED / INTEGRATION CANDIDATE
+- **Status:** CURRENT / MATERIALIZED
 - **Schema version:** 1
 - **Serialization:** JSON
 - **PostgreSQL:** 18.6
-- **Candidate Alembic head:** `20260904_17`
+- **Alembic head:** `20260904_17`
 - **Frozen CP6 head:** `20260826_08`
+- **Last reconciled:** 2026-09-05
 
 ## 1. Purpose
 
@@ -22,7 +23,7 @@ Current DB Reference
 
 A mismatch is a defect.
 
-## 2. Current inventory
+## 2. Current business-schema inventory
 
 ```text
 tables       88
@@ -35,7 +36,9 @@ FKs           89
 CHECKs       270
 ```
 
-This includes protected-main Recovery plus Access/Auth and the shared Email Platform under the candidate merge head.
+This is the current Recovery + Access/Auth + shared Email Platform business-schema materialization at `20260904_17`.
+
+Platform Observability adds no Dictionary business object, Alembic revision or SQLAlchemy business mapping.
 
 ## 3. Frozen CP6 baseline vs current materialization
 
@@ -53,15 +56,13 @@ This includes protected-main Recovery plus Access/Auth and the shared Email Plat
 76 triggers / 172 indexes / 89 FKs / 270 CHECKs
 ```
 
-`completed_stages` is intentionally only `CP6-M01..CP6-M07`. Recovery, Access/Auth and Email provenance is represented per object through `implementation.introducing_stage`, `alembic_revision` and `runtime_acl_stage`.
+`completed_stages` remains CP6 provenance only. Recovery, Access/Auth and Email provenance is represented per object through `implementation.introducing_stage`, `alembic_revision` and `runtime_acl_stage`.
 
 ## 4. Post-CP6 evolution
 
 ```text
 RECOVERY
 20260830_09
-  material_state_retirement
-  enforce_material_state_retirement
 
 ACCESS/AUTH
 20260827_09
@@ -80,19 +81,32 @@ CONVERGENCE
   no-DDL Alembic merge revision
 ```
 
-Recovery does not become a fictitious CP6-M08 and Email does not become CP6 provenance.
+Recovery does not become a fictitious CP6 stage and Email does not become CP6 provenance.
 
 ## 5. Object contract
 
-Every standalone object records object identity, purpose, classification, semantic traceability, implementation provenance, exact structure, lifecycle/state-history semantics, security/ACL and proof obligations.
+Every standalone business-schema object records object identity, purpose, classification, semantic traceability, implementation provenance, exact structure, lifecycle/state-history semantics, security/ACL and proof obligations.
 
 Embedded table objects remain PK/FK/UQ/CHECK/index/trigger attachments. Routines remain standalone because signature/security/search-path/ACL are independently governed.
 
 ## 6. Shared Email classification
 
-Email delivery objects are `family=email_platform` shared technical infrastructure. Access/Auth is a consumer, not platform owner. They are not MaterialState and are not a generic event bus/outbox root.
+Email delivery objects are `family=email_platform` shared technical infrastructure. Access/Auth is a consumer, not platform owner. They are not MaterialState and are not a generic event-bus/outbox root.
 
-## 7. Validation
+## 7. Operational observer scope
+
+`dante_observer` is deliberately **outside the business-object inventory above**. It is a provisioning-owned PostgreSQL operational role, not a table/view/routine/model and therefore must not be represented as fake Dictionary business materialization.
+
+Its exact security contract is current authority in:
+
+- `../dante-postgresql-database-part-12.md` — Section 46 / `DANTE-OBSERVABILITY-OBSERVER-CONTRACT v1`
+- `../README.md` — observer-role routing
+- `../../../infra/observability/README.md` — collector usage
+- provisioning and live PostgreSQL ACL tests
+
+Required posture remains `LOGIN INHERIT`, `pg_read_all_stats` membership only, `search_path=pg_catalog`, no database `CREATE`/`TEMP`, no DANTE/public business-object access and no DANTE application-role membership.
+
+## 8. Validation
 
 Required:
 
@@ -105,10 +119,13 @@ Dictionary ↔ SQLAlchemy ↔ Alembic ↔ PostgreSQL
 owner/ACL parity
 routine search_path/security parity
 extension-owned objects excluded correctly
+observer technical-role/provisioning/live-ACL parity
 ```
 
-`test_current_catalog.py` and `test_database_current_catalog.py` are current live cross-representation gates. Historical CP6 tests independently prove the frozen CP6 baseline.
+`test_current_catalog.py` and `test_database_current_catalog.py` are current live cross-representation gates. Historical CP6 tests independently prove the frozen CP6 baseline. Platform Observability PostgreSQL acceptance additionally proves the exact observer-role boundary.
 
-## 8. Same-change rule
+## 9. Same-change rule
 
-No real object → no ceremonial Dictionary entry. Every real current DANTE object requires a matching Dictionary entry and same-change reconciliation.
+No real business object → no ceremonial Dictionary entry. Every real current DANTE business object requires a matching Dictionary entry and same-change reconciliation.
+
+Operational-role contracts remain same-change governed through their dedicated technical-role reference, provisioning and live privilege tests rather than by inventing business Dictionary objects.
