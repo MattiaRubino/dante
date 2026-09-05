@@ -63,4 +63,4 @@ jobs:
         run: uv python install
 
       - name: Run reconciled AI foundation closure gate with PostgreSQL
-        run: tooling/ai-evals/run_ai_foundation_closure_gate.sh --with-postgres
+        run: bash tooling/ai-evals/run_ai_foundation_closure_gate.sh --with-postgres
