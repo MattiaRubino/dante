@@ -72,10 +72,20 @@ def test_openai_candidate_revision_is_inactive_and_qualification_only() -> None:
     assert "provider-fallback:off" in snapshot.document.fallback_profiles
 
 
-def test_gemini_development_revision_materializes_two_active_targets_and_deep_dormant() -> None:
+def test_historical_gemini_schema_v2_remains_loadable() -> None:
     snapshot = load_route_config(_REVISIONS_ROOT, "gemini-flash-dev-v1")
 
     assert snapshot.document.schema_version == 2
+    binding = snapshot.document.provider_binding_definitions[0]
+    assert binding.ref == "google-gemini-interactions-flash-v1"
+    assert binding.api_revision is None
+    assert binding.service_tier is None
+
+
+def test_gemini_schema_v3_materializes_exact_development_binding() -> None:
+    snapshot = load_route_config(_REVISIONS_ROOT, "gemini-flash-dev-v2")
+
+    assert snapshot.document.schema_version == 3
     routes = {route.target_ref: route for route in snapshot.document.target_routes}
     assert routes["structured_interpretation"].state is RouteTargetState.ACTIVE
     assert routes["general_reasoning"].state is RouteTargetState.ACTIVE
@@ -87,12 +97,35 @@ def test_gemini_development_revision_materializes_two_active_targets_and_deep_do
     assert harness.timeout_seconds == 30
 
     binding = snapshot.document.provider_binding_definitions[0]
-    assert binding.ref == "google-gemini-interactions-flash-v1"
+    assert binding.ref == "google-gemini-interactions-flash-v2"
     assert binding.model == "gemini-3.8-flash"
     assert binding.protocol_family == "gemini-interactions-v1beta"
+    assert binding.api_revision == "2026-05-20"
+    assert binding.service_tier == "standard"
+    assert binding.versioning_posture == "stable-model-id-no-snapshot"
+    assert binding.data_zone == "global"
+    assert binding.retention_mode == "store-false"
     assert binding.state is ProviderBindingState.DEVELOPMENT
     assert "private-data:ineligible" in binding.security_profiles
     assert "production:off" in snapshot.document.rollout_profiles
+
+
+def test_schema_v3_rejects_missing_exact_binding_identity(tmp_path: Path) -> None:
+    source = json.loads(
+        (_REVISIONS_ROOT / "gemini-flash-dev-v2.json").read_text(encoding="utf-8")
+    )
+    assert isinstance(source, dict)
+    source["revision"] = "broken-v3"
+    bindings = source["provider_binding_definitions"]
+    assert isinstance(bindings, list)
+    binding = bindings[0]
+    assert isinstance(binding, dict)
+    del binding["service_tier"]
+    root = tmp_path / "revisions"
+    _write_artifact(root, "broken-v3", source)
+
+    with pytest.raises(RouteConfigLoadError, match="missing required fields"):
+        load_route_config(root, "broken-v3")
 
 
 def test_equal_json_with_different_bytes_has_different_identity(tmp_path: Path) -> None:
