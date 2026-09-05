@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import dataclass
-from typing import cast
+from typing import cast, override
 
 from dante.modules.intelligence.contracts.model_access import StructuredOutputContract
 
@@ -42,6 +42,7 @@ class StructuredOutputValidationError(ValueError):
     code: str
     path: str
 
+    @override
     def __str__(self) -> str:
         return f"{self.code} at {self.path}"
 
