@@ -11,7 +11,9 @@ usage() {
 Usage: tooling/ai-evals/run_ai_foundation_closure_gate.sh [--execute-live] [--with-postgres]
 
 Always:
+  - requires a clean tracked working tree at start
   - regenerates/checks apps/backend/uv.lock
+  - verifies lock regeneration changes no tracked file except apps/backend/uv.lock
   - syncs locked environment
   - Ruff format/lint
   - mypy strict
@@ -49,11 +51,36 @@ while (($#)); do
   shift
 done
 
+cd "$REPO_ROOT"
+
+TRACKED_BEFORE="$(git status --porcelain --untracked-files=no)"
+if [[ -n "$TRACKED_BEFORE" ]]; then
+  echo 'Tracked working tree must be clean before the closure gate:' >&2
+  printf '%s\n' "$TRACKED_BEFORE" >&2
+  exit 3
+fi
+
+if (( EXECUTE_LIVE )) && [[ -z "${DANTE_GEMINI_API_KEY:-}" && -z "${DANTE_EVAL_GEMINI_API_KEY:-}" ]]; then
+  echo 'Live closure requested but no Gemini API key is exported in this shell.' >&2
+  echo 'Set DANTE_GEMINI_API_KEY or DANTE_EVAL_GEMINI_API_KEY without committing it.' >&2
+  exit 4
+fi
+
 cd "$BACKEND_ROOT"
 
 echo '=== AI FOUNDATION: lock regenerate/check ==='
 uv lock
 uv lock --check
+
+cd "$REPO_ROOT"
+TRACKED_AFTER_LOCK="$(git diff --name-only)"
+if [[ -n "$TRACKED_AFTER_LOCK" && "$TRACKED_AFTER_LOCK" != "apps/backend/uv.lock" ]]; then
+  echo 'Unexpected tracked changes after uv lock:' >&2
+  printf '%s\n' "$TRACKED_AFTER_LOCK" >&2
+  exit 5
+fi
+
+cd "$BACKEND_ROOT"
 
 echo '=== AI FOUNDATION: sync ==='
 uv sync --locked
@@ -100,4 +127,9 @@ fi
 echo
 echo '=== AI FOUNDATION GATE COMPLETE ==='
 echo "postgres=$WITH_POSTGRES live=$EXECUTE_LIVE"
-echo 'Inspect git status: uv.lock is expected to change if dependency metadata was stale.'
+if [[ -n "$(git diff --name-only)" ]]; then
+  echo 'tracked changes produced by gate:'
+  git diff --name-only
+else
+  echo 'tracked changes produced by gate: none'
+fi
