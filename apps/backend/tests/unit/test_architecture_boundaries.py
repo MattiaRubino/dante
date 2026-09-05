@@ -32,6 +32,7 @@ _RUNTIME_DEPENDENCY_ALLOWLIST = frozenset(
     {
         "alembic",
         "fastapi",
+        "httpx2",
         "openai",
         "psycopg",
         "pydantic",
