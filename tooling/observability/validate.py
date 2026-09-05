@@ -461,10 +461,14 @@ def _validate_grafana_acceptance_contract() -> None:
         "refusing to delete a rule that is not the exact DANTE synthetic probe",
         "grafana_service_account_token.local",
         "chmod 600",
+        "https://github.com/MattiaRubino/dante/blob/main/",
+        "docs/development/observability-runbook.md",
     )
     for fragment in required_fragments:
         if fragment not in runner:
             _fail(f"Grafana acceptance runner is missing: {fragment}")
+    if "/blob/feature/" in runner or "/blob/integration/" in runner:
+        _fail("Grafana acceptance runbook URL must target protected main")
     if "shell=True" in runner:
         _fail("Grafana acceptance runner must never execute through a shell")
     if _GRAFANA_ACCEPTANCE.stat().st_mode & 0o111 == 0:
