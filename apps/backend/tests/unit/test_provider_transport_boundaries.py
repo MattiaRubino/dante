@@ -25,10 +25,6 @@ def test_httpx2_import_is_confined_to_private_gemini_transport() -> None:
                 any(name == "httpx2" or name.startswith("httpx2.") for name in imported)
                 and path != _ALLOWED_HTTPX2_PATH
             ):
-                line_number = (
-                    node.lineno if isinstance(node, (ast.Import, ast.ImportFrom)) else 0
-                )
-                violations.append(
-                    f"{path.relative_to(_BACKEND_ROOT)}:{line_number}: {imported}"
-                )
+                line_number = node.lineno if isinstance(node, (ast.Import, ast.ImportFrom)) else 0
+                violations.append(f"{path.relative_to(_BACKEND_ROOT)}:{line_number}: {imported}")
     assert not violations, "\n".join(violations)
