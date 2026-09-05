@@ -168,7 +168,7 @@ def _parse_assertion(document: Any) -> AssertionSpec:
     if not isinstance(document, dict):
         raise ValueError("assertion must be an object")
     kind = _require_string(document.get("kind"), field="assertion.kind")
-    if kind not in {"equals", "set_equals", "contains", "not_contains"}:
+    if kind not in {"equals", "not_equals", "set_equals", "contains", "not_contains"}:
         raise ValueError(f"unsupported assertion kind: {kind}")
     path = _require_string(document.get("path"), field="assertion.path")
     try:
@@ -248,10 +248,75 @@ def _parse_fixture(document: Any) -> EvalFixture:
     )
 
 
-def load_suite(path: Path) -> EvalSuite:
+def _load_suite_document(path: Path, *, seen: frozenset[Path]) -> dict[str, Any]:
+    resolved = path.resolve()
+    if resolved in seen:
+        raise ValueError("suite inheritance cycle detected")
+
     document = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(document, dict):
         raise ValueError("suite document must be an object")
+
+    if "base_suite" not in document:
+        return document
+
+    if "fixtures" in document:
+        raise ValueError("overlay suite cannot define both base_suite and fixtures")
+
+    base_suite = _require_string(document.get("base_suite"), field="base_suite")
+    base_relative = Path(base_suite)
+    if base_relative.is_absolute() or ".." in base_relative.parts:
+        raise ValueError("base_suite must be a sibling fixture filename")
+
+    base_document = _load_suite_document(
+        path.parent / base_relative,
+        seen=seen | {resolved},
+    )
+    base_fixtures = base_document.get("fixtures")
+    if not isinstance(base_fixtures, list) or not base_fixtures:
+        raise ValueError("base suite fixtures must be a non-empty list")
+
+    replacements_document = document.get("fixture_replacements", [])
+    if not isinstance(replacements_document, list) or not replacements_document:
+        raise ValueError("overlay suite fixture_replacements must be a non-empty list")
+
+    replacements: dict[str, dict[str, Any]] = {}
+    for replacement in replacements_document:
+        if not isinstance(replacement, dict):
+            raise ValueError("fixture replacement must be an object")
+        fixture_id = _require_string(
+            replacement.get("id"),
+            field="fixture_replacement.id",
+        )
+        if fixture_id in replacements:
+            raise ValueError(f"duplicate fixture replacement: {fixture_id}")
+        replacements[fixture_id] = replacement
+
+    base_ids = {
+        _require_string(fixture.get("id"), field="base fixture.id")
+        for fixture in base_fixtures
+        if isinstance(fixture, dict)
+    }
+    if len(base_ids) != len(base_fixtures):
+        raise ValueError("base suite contains invalid or duplicate fixture ids")
+
+    unknown = sorted(set(replacements) - base_ids)
+    if unknown:
+        raise ValueError(f"overlay replaces unknown fixture(s): {', '.join(unknown)}")
+
+    materialized = dict(base_document)
+    materialized["suite_id"] = document.get("suite_id")
+    materialized["version"] = document.get("version")
+    materialized["description"] = document.get("description")
+    materialized["fixtures"] = [
+        replacements.get(_require_string(fixture.get("id"), field="base fixture.id"), fixture)
+        for fixture in base_fixtures
+    ]
+    return materialized
+
+
+def load_suite(path: Path) -> EvalSuite:
+    document = _load_suite_document(path, seen=frozenset())
     fixtures_document = document.get("fixtures")
     if not isinstance(fixtures_document, list) or not fixtures_document:
         raise ValueError("suite.fixtures must be a non-empty list")
@@ -294,6 +359,8 @@ def _evaluate_assertion(document: Any, assertion: AssertionSpec) -> AssertionFai
     passed = False
     if assertion.kind == "equals":
         passed = observed == assertion.expected
+    elif assertion.kind == "not_equals":
+        passed = observed != assertion.expected
     elif assertion.kind == "set_equals":
         passed = (
             isinstance(observed, list)
