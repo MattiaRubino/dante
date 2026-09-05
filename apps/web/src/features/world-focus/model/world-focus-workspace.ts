@@ -29,6 +29,11 @@ export type WorldFocusWorkspaceExpectation = Readonly<{
   generation: number;
 }>;
 
+type WorldFocusWorkspaceInteractionBlockingDescriptor = Readonly<{
+  presentation: WorldFocusPresentationSurface;
+  blocksWorkspaceInteraction?: boolean;
+}>;
+
 export type WorldFocusSurfaceDescriptor<Kind extends string = string> = Readonly<{
   instanceId: string;
   kind: Kind;
@@ -38,6 +43,12 @@ export type WorldFocusSurfaceDescriptor<Kind extends string = string> = Readonly
   boundGeneration: number;
   contextReference: WorldFocusContextReference | null;
   dismissible: boolean;
+  /**
+   * Orthogonal interaction law for externally presented focus surfaces.
+   * Modal/full-screen presentations remain blocking regardless of this flag.
+   * Generic `route` presentation stays non-blocking unless explicitly marked.
+   */
+  blocksWorkspaceInteraction?: boolean;
 }>;
 
 export type WorldFocusSurfaceRequest<Kind extends string = string> = Readonly<{
@@ -48,6 +59,7 @@ export type WorldFocusSurfaceRequest<Kind extends string = string> = Readonly<{
   origin: WorldFocusSurfaceOrigin;
   contextReference?: WorldFocusContextReference | null;
   dismissible?: boolean;
+  blocksWorkspaceInteraction?: boolean;
   expectedWorkspace?: WorldFocusWorkspaceExpectation;
 }>;
 
@@ -99,6 +111,7 @@ export type WorldFocusWorkspaceIntent<Kind extends string = string> =
       instanceId: string;
       depth: WorldFocusInteractionDepth;
       presentation: WorldFocusPresentationSurface;
+      blocksWorkspaceInteraction?: boolean;
       expectedWorkspace?: WorldFocusWorkspaceExpectation;
     }>
   | Readonly<{
@@ -156,6 +169,15 @@ export function isWorldFocusBlockingPresentation(
   return presentation === 'modal' || presentation === 'full-screen';
 }
 
+export function doesWorldFocusSurfaceBlockWorkspaceInteraction(
+  surface: WorldFocusWorkspaceInteractionBlockingDescriptor,
+): boolean {
+  return (
+    isWorldFocusBlockingPresentation(surface.presentation) ||
+    surface.blocksWorkspaceInteraction === true
+  );
+}
+
 export function getWorldFocusBlockingSurface<Kind extends string = string>(
   state: WorldFocusWorkspaceState<Kind>,
 ): WorldFocusSurfaceDescriptor<Kind> | null {
@@ -163,7 +185,7 @@ export function getWorldFocusBlockingSurface<Kind extends string = string>(
     const surface = state.surfaces[index];
     if (
       surface !== undefined &&
-      isWorldFocusBlockingPresentation(surface.presentation)
+      doesWorldFocusSurfaceBlockWorkspaceInteraction(surface)
     ) {
       return surface;
     }
@@ -177,7 +199,7 @@ function isSurfaceBarrierSafe<Kind extends string>(
   let blockingTailStarted = false;
 
   for (const surface of surfaces) {
-    if (isWorldFocusBlockingPresentation(surface.presentation)) {
+    if (doesWorldFocusSurfaceBlockWorkspaceInteraction(surface)) {
       blockingTailStarted = true;
       continue;
     }
@@ -221,6 +243,7 @@ function buildSurfaceDescriptor<Kind extends string>(
               'World Focus surface context reference',
             ),
     dismissible: request.dismissible ?? true,
+    blocksWorkspaceInteraction: request.blocksWorkspaceInteraction ?? false,
   });
 }
 
@@ -347,7 +370,7 @@ export function reduceWorldFocusWorkspaceState<Kind extends string = string>(
       }
       if (
         getWorldFocusBlockingSurface(state) !== null &&
-        !isWorldFocusBlockingPresentation(intent.surface.presentation)
+        !doesWorldFocusSurfaceBlockWorkspaceInteraction(intent.surface)
       ) {
         return state;
       }
@@ -406,9 +429,15 @@ export function reduceWorldFocusWorkspaceState<Kind extends string = string>(
       if (current === undefined) {
         return state;
       }
+      const nextBlocksWorkspaceInteraction =
+        intent.blocksWorkspaceInteraction ??
+        current.blocksWorkspaceInteraction ??
+        false;
       if (
         current.depth === intent.depth &&
-        current.presentation === intent.presentation
+        current.presentation === intent.presentation &&
+        (current.blocksWorkspaceInteraction ?? false) ===
+          nextBlocksWorkspaceInteraction
       ) {
         return state;
       }
@@ -418,6 +447,7 @@ export function reduceWorldFocusWorkspaceState<Kind extends string = string>(
         ...current,
         depth: intent.depth,
         presentation: intent.presentation,
+        blocksWorkspaceInteraction: nextBlocksWorkspaceInteraction,
       });
       return isSurfaceBarrierSafe(surfaces) ? withSurfaces(state, surfaces) : state;
     }
