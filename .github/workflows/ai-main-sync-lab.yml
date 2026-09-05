@@ -67,32 +67,26 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
 
-          insertions = {
+          changes = {
               Path("tooling/ai-evals/run_gemini_native_runtime_smoke.py"): (
-                  '"""\n\nfrom __future__ import annotations\n',
-                  '"""\n\n# Ruff exceptions are intentional for this standalone CLI: it bootstraps the backend import path\n'
-                  '# before importing DANTE modules and writes its machine-readable result directly to stdout.\n'
-                  '# ruff: noqa: E402, T201\n\nfrom __future__ import annotations\n',
+                  "# before importing DANTE modules and writes its machine-readable result directly to stdout.\n\n",
+                  "# before importing DANTE modules and writes its machine-readable result directly to stdout.\n# ruff: noqa: E402, T201\n\n",
               ),
               Path("tooling/ai-evals/tests/test_decision_extension_v4.py"): (
-                  '"""\n\nfrom __future__ import annotations\n',
-                  '"""\n\n# Standalone eval-tooling tests bootstrap their local module path and use pytest assertions.\n'
-                  '# ruff: noqa: E402, S101\n\nfrom __future__ import annotations\n',
+                  "# Standalone eval-tooling tests bootstrap their local module path and use pytest assertions.\n\n",
+                  "# Standalone eval-tooling tests bootstrap their local module path and use pytest assertions.\n# ruff: noqa: E402, S101\n\n",
               ),
               Path("tooling/ai-evals/tests/test_eval_tooling.py"): (
-                  '"""\n\nfrom __future__ import annotations\n',
-                  '"""\n\n# This isolated historical harness intentionally retains unittest-style assertions and local\n'
-                  '# sys.path bootstrapping while remaining executable under pytest.\n'
-                  '# ruff: noqa: E402, PT009, PT027\n\nfrom __future__ import annotations\n',
+                  "# sys.path bootstrapping while remaining executable under pytest.\n\n",
+                  "# sys.path bootstrapping while remaining executable under pytest.\n# ruff: noqa: E402, PT009, PT027\n\n",
               ),
           }
-          for path, (anchor, replacement) in insertions.items():
+          for path, (old, new) in changes.items():
               text = path.read_text(encoding="utf-8")
               if "# ruff: noqa:" not in text:
-                  if anchor not in text:
-                      raise SystemExit(f"missing Ruff exception anchor: {path}")
-                  text = text.replace(anchor, replacement, 1)
-                  path.write_text(text, encoding="utf-8")
+                  if old not in text:
+                      raise SystemExit(f"missing exact Ruff exception anchor: {path}")
+                  path.write_text(text.replace(old, new, 1), encoding="utf-8")
 
           core = Path("tooling/ai-evals/dante_eval_core.py")
           text = core.read_text(encoding="utf-8")
@@ -105,12 +99,20 @@ jobs:
 
           runner = Path("tooling/ai-evals/run_ai_foundation_closure_gate.sh")
           text = runner.read_text(encoding="utf-8")
-          old = '''echo '=== AI FOUNDATION: eval tooling ruff lint ==='\n# S105 is a single tooling-only false positive: TrialVerdict.PASS = "PASS" is an enum value,\n# not a credential. All other selected Ruff rules remain active for the whole eval-tooling tree.\nuv run --project apps/backend --locked ruff check \\\n  --config apps/backend/pyproject.toml --ignore S105 tooling/ai-evals\n'''
-          new = '''echo '=== AI FOUNDATION: eval tooling ruff lint ==='\nuv run --project apps/backend --locked ruff check \\\n  --config apps/backend/pyproject.toml tooling/ai-evals\n'''
-          if old in text:
-              runner.write_text(text.replace(old, new, 1), encoding="utf-8")
-          elif new not in text:
-              raise SystemExit("closure-runner lint anchor missing")
+          text = text.replace(
+              "# S105 is a single tooling-only false positive: TrialVerdict.PASS = \"PASS\" is an enum value,\n"
+              "# not a credential. All other selected Ruff rules remain active for the whole eval-tooling tree.\n",
+              "",
+              1,
+          )
+          text = text.replace(
+              "  --config apps/backend/pyproject.toml --ignore S105 tooling/ai-evals\n",
+              "  --config apps/backend/pyproject.toml tooling/ai-evals\n",
+              1,
+          )
+          if "--ignore S105" in text:
+              raise SystemExit("global S105 ignore still present")
+          runner.write_text(text, encoding="utf-8")
           PY
 
           uv run --project apps/backend --locked ruff format \
