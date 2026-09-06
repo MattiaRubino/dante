@@ -2,34 +2,39 @@
 
 Production backend application for DANTE.
 
-The backend runs on the accepted CP1–CP6 PostgreSQL foundation and the integrated Access/Auth, Shared Email, Recovery, Observability and AI low-level platform layers. Historical phase-by-phase evidence lives in dedicated development/workstream/archive records and Git/PR history; this README describes current runtime/engineering truth.
+The backend runs on the accepted CP1–CP6 PostgreSQL foundation and the integrated Access/Auth, Shared Email, Recovery, Observability, AI low-level platform and pre-vertical foundation layers. Historical phase-by-phase evidence lives in dedicated development/workstream/archive records and Git/PR history; this README describes current runtime/engineering truth.
 
 ## Current status
 
 ```text
-Protected-main HEAD                       5258452d7bd4e7a2797922b00035a9068ba41167
 PostgreSQL                                18.6
-Protected-main Alembic                    20260904_17
-Protected-main topology                   88|5|16|76|172|89|270|0|0|0
+Protected-main Alembic                    20260906_18
+Protected-main topology                   89|5|18|77|173|91|272|0|0|0
 
 Access/Auth M1–M5                         CLOSED / INTEGRATED
 Shared Email Platform                     CLOSED / INTEGRATED
 PostgreSQL Recovery                       CLOSED / INTEGRATED
-Platform Observability                    CLOSED / INTEGRATED
+Platform Observability                    CLOSED / INTEGRATED VIA PR #58
 AI deterministic low-level foundation     CLOSED / INTEGRATED VIA PR #63
 Home / World Focus reconciliation         CLOSED / INTEGRATED VIA PR #65
+Pre-vertical foundation                   CLOSED / INTEGRATED VIA PR #66
 
-PRE-VERTICAL FINAL CANDIDATE
-Alembic                                   20260906_18
-Topology                                  89|5|18|77|173|91|272|0|0|0
 PV-01 Identity / Clock / Time             CLOSED / PASS
 PV-02 User Context / Dogfood / Personas   CLOSED / PASS
 PV-03 A Scale Harness                     CLOSED / PASS
-PV-03 B Whole-Branch QA                   CLOSED / LOCAL PASS
-PV-03 C protected-main integration        IN PROGRESS
+PV-03 B Whole-Branch QA                   CLOSED / PASS
+PV-03 C protected-main integration        CLOSED / PASS
 ```
 
-There is no PV-04. The pre-vertical candidate becomes protected-main truth only through exact-head Recovery acceptance, required PR gates and merge/readback.
+Pre-vertical integration anchor:
+
+```text
+final candidate   21353469464f1371f9913dc78933f4ee42698f33
+PR                #66
+merge commit      1ecd58145860aebfaaa3dc1bd356b90f7a8eb19b
+```
+
+There is no PV-04.
 
 Current closure record:
 
@@ -45,7 +50,7 @@ Current Recovery operator authority:
 
 ## Pre-vertical backend foundation
 
-The candidate adds only bounded cross-cutting foundation needed before a real product vertical:
+The integrated foundation adds only bounded cross-cutting seams needed before a real product vertical:
 
 ```text
 AuthSession
@@ -181,7 +186,7 @@ DDL owner role       dante_owner via explicit SET ROLE
 
 Normal application startup never runs migrations.
 
-Current graph relevant to protected main and the pre-vertical candidate:
+Current graph:
 
 ```text
 20260826_08
@@ -190,9 +195,9 @@ Current graph relevant to protected main and the pre-vertical candidate:
 
 20260830_09 + 20260904_16
             ↓
-        20260904_17            protected-main baseline
+        20260904_17
             ↓
-        20260906_18            pre-vertical candidate
+        20260906_18            current protected-main head
 ```
 
 Applied migration history is immutable. Later corrections use new forward revisions. A future product vertical that genuinely needs a schema change must evolve the database through a reviewed forward migration and keep SQLAlchemy, Dictionary, human reference and direct tests aligned in the same change.
@@ -278,9 +283,9 @@ uv build
 
 PostgreSQL-marked tests require the canonical `dante-postgres-local:18.6` image. They use a disposable acceptance cluster and fresh databases rather than destructive mutation of the ordinary LOCAL `dante` database.
 
-## Current candidate acceptance
+## Accepted pre-vertical evidence
 
-The pre-vertical implementation candidate has direct local evidence for:
+The final pre-vertical implementation had direct evidence for:
 
 ```text
 Ruff format/lint                              PASS
@@ -289,9 +294,14 @@ non-PostgreSQL pytest                         457 PASS
 AI eval deterministic pytest                  22 PASS
 backend build                                 PASS
 real PostgreSQL 18.6 acceptance               165 PASS
+exact-head LOCAL Recovery                     PASS
+Backend CI Gate                               PASS
+Dependency Review                             PASS
+Frontend CI Gate                              PASS
+protected-main merge/readback                 PASS
 ```
 
-The remaining integration-only Recovery proof is intentionally separate and must run on the exact final pushed documentation-closure HEAD before the PR is accepted.
+The final exact-head Recovery proof is bound to candidate `21353469464f1371f9913dc78933f4ee42698f33`. It proves the current database-local Recovery contract; it does not relabel historical CP08 application/Email reopen evidence as newly executed.
 
 ## Durable engineering references
 
@@ -302,7 +312,7 @@ Current references:
 - `docs/development/pre-vertical-dogfood-personas.md` — LOCAL/DEV seed/persona tooling
 - `docs/development/pre-vertical-scale-harness.md` — deterministic scale fixtures
 - `docs/operations/postgres-recovery-runbook.md` — Recovery/reopen operator contract
-- `docs/workstreams/pre-vertical-foundation-closure-2026-09-06.md` — final branch closure/integration record
+- `docs/workstreams/pre-vertical-foundation-closure-2026-09-06.md` — final pre-vertical closure record
 
 Historical CP1–CP6, Recovery, Access/Auth and integration measurements remain in dedicated development/workstream/archive records and Git/PR history rather than being duplicated here as an append-only diary.
 
@@ -320,4 +330,4 @@ Database/schema existence alone does **not** authorize or prove:
 - Apple registered-domain acceptance without real external prerequisites/UAT;
 - production Email sender-domain/DNS/reputation/workload-identity acceptance from development UAT.
 
-After pre-vertical protected-main integration, future product work starts from then-current `main` under a new explicit bounded scope. Do not continue development on the retired feature branch.
+Future product work starts from then-current protected `main` under a new explicit bounded scope. Do not continue development on the retired `feature/pre-vertical-foundation` branch.
