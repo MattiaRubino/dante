@@ -8,11 +8,25 @@ export const ACCEPT_HEADER_VALUE =
 
 export type DeviceTimeZoneResolver = () => string;
 
+function mergedRequestHeaders(
+  input: RequestInfo | URL,
+  init: RequestInit | undefined,
+): Headers {
+  const headers = new Headers(input instanceof Request ? input.headers : undefined);
+  if (init?.headers !== undefined) {
+    new Headers(init.headers).forEach((value, name) => {
+      headers.set(name, value);
+    });
+  }
+  return headers;
+}
+
 function governedHeaders(
-  headersInit: HeadersInit | undefined,
+  input: RequestInfo | URL,
+  init: RequestInit | undefined,
   resolveDeviceTimeZone: DeviceTimeZoneResolver,
 ): Headers {
-  const headers = new Headers(headersInit);
+  const headers = mergedRequestHeaders(input, init);
   headers.set('Accept', ACCEPT_HEADER_VALUE);
   headers.set(WEB_CLIENT_HEADER_NAME, WEB_CLIENT_HEADER_VALUE);
   headers.set(DANTE_TIME_ZONE_HEADER_NAME, resolveDeviceTimeZone());
@@ -27,6 +41,6 @@ export function createWebFetch(
     fetchFn(input, {
       ...init,
       credentials: 'same-origin',
-      headers: governedHeaders(init?.headers, resolveDeviceTimeZone),
+      headers: governedHeaders(input, init, resolveDeviceTimeZone),
     });
 }
