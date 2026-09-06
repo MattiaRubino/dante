@@ -6,6 +6,7 @@ from uuid import UUID
 import pytest
 
 from dante.auth.contracts import Principal
+from dante.context.contracts import DanteContextIntegrityError
 from dante.context.service import _context_from_persisted
 from dante.platform.time import InvalidTimeZoneError, MissingDeviceTimeZoneError, TimeZoneMode
 
@@ -88,8 +89,36 @@ def test_follow_device_rejects_fixed_offset_identifier() -> None:
         )
 
 
+def test_invalid_persisted_fixed_timezone_is_internal_integrity_failure() -> None:
+    with pytest.raises(DanteContextIntegrityError):
+        _context_from_persisted(
+            principal=_principal(),
+            row={
+                "account_ref": _ACCOUNT_REF,
+                "self_person_ref": _PERSON_REF,
+                "timezone_mode": "fixed",
+                "fixed_zone_id": "Not/AZone",
+            },
+            device_zone_id="Europe/Rome",
+        )
+
+
+def test_invalid_persisted_timezone_mode_is_internal_integrity_failure() -> None:
+    with pytest.raises(DanteContextIntegrityError):
+        _context_from_persisted(
+            principal=_principal(),
+            row={
+                "account_ref": _ACCOUNT_REF,
+                "self_person_ref": _PERSON_REF,
+                "timezone_mode": "broken",
+                "fixed_zone_id": None,
+            },
+            device_zone_id="Europe/Rome",
+        )
+
+
 def test_persisted_context_must_match_authenticated_account() -> None:
-    with pytest.raises(RuntimeError, match="does not belong"):
+    with pytest.raises(DanteContextIntegrityError, match="does not belong"):
         _context_from_persisted(
             principal=_principal(),
             row={
