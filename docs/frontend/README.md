@@ -1,20 +1,19 @@
 # DANTE — Frontend Documentation Entry Map
 
-**Status:** CURRENT FRONTEND DOCUMENTATION ENTRY POINT — MAIN PLATFORM RECONCILED — WORLD FOCUS M4 CLOSED / R3 QA PENDING  
-**Date:** 2026-09-06  
-**Working branch:** `feature/home-react`
+**Status:** CURRENT FRONTEND DOCUMENTATION ENTRY POINT  
+**Date:** 2026-09-06
 
-This directory contains the durable product, architecture, handoff and production-readiness documentation for the materialized frontend. Current code, tests and CI evidence outrank historical branch notes.
+This directory contains the durable product, architecture, contract and production-readiness documentation for the materialized frontend. Current code, tests and current CI evidence outrank historical branch notes and dated evidence.
 
 ## 1. First read
 
 For current frontend work read:
 
-1. `docs/frontend/home/current-checkpoint.md` — live integrated frontend state;
-2. `docs/frontend/home/production-depth-handoff.md` when present — shared engineering/operational handoff;
-3. the workstream-specific current contract/roadmap below.
+1. `docs/frontend/home/current-checkpoint.md` — current integrated frontend state;
+2. the workstream-specific current contract/roadmap below;
+3. deeper dated evidence only when rationale or historical proof is needed.
 
-Do not reconstruct current sequencing from archived or dated evidence documents.
+Do not reconstruct current sequencing from archived handoffs or obsolete `NEXT` prose.
 
 ## 2. AppShell / Home / Temporal
 
@@ -42,7 +41,7 @@ C1 MANUAL PASS                 NOT GRANTED
 C2 Structured Detail           BLOCKED until C1 closes
 ```
 
-Merging or reconciling branches does not manufacture C1 manual product approval.
+Branch reconciliation, CI or merge does not manufacture C1 manual product approval.
 
 ## 3. World Focus
 
@@ -57,26 +56,28 @@ Read in this order:
 7. `docs/frontend/home/world-focus-frontend-roadmap.md`;
 8. `docs/frontend/home/world-focus-evidence-index.md` only for deeper archaeology.
 
-The old live handoff and WF0 scenario-oracle files are not current operating authorities. Their useful reasoning is retained in current contracts/evidence and Git history.
-
-Current status:
+Current engineering status:
 
 ```text
 WF0 / WF-G3                       FROZEN / LOCKED
 M0-M3                             CLOSED / VALIDATED
 M4 Contextual DANTE / D2-D6       CLOSED / VALIDATED
 M4 hostile closure                CLOSED / PASS
-main -> feature/home-react merge  COMPLETE @ 2547d4a08b5f289ba53676aea194348bb22bd6ce
-R3 semantic reconciliation        CANDIDATE / QA PENDING
+protected-main ancestry merge     COMPLETE
+R3 semantic reconciliation        CLOSED / AUTOMATED QA PASS
 M5 contrasting Worlds             NOT STARTED
 M6 visual/a11y/perf               BLOCKED BY M5
 M7 pre-backend freeze             BLOCKED BY M6
 human/manual visual acceptance    NOT PERFORMED
 ```
 
+R3 exact-code candidate `e28e29a7ab3a8cd71b0c386ced824385c8c2d9e6` passed Backend CI, Dependency Review and Frontend CI on PR #65. Required protected-main checks on the final merge head remain the merge authority; historical run IDs prove only their exact SHA.
+
+The branch candidate becomes protected-main truth only through PR #65 and the repository ruleset. Git/PR state is authoritative for whether that integration has occurred.
+
 ## 4. Current platform truth inherited from main
 
-The branch consumes current protected-main platform truth rather than an old frontend-only snapshot. That includes the current PostgreSQL/Alembic baseline, Access/Auth implementation, Recovery, Email, Observability, OpenAPI/API-client boundaries and Intelligence foundation.
+The reconciled frontend consumes protected-main platform truth rather than an old frontend-only snapshot. That includes the current PostgreSQL/Alembic baseline, Access/Auth implementation, Recovery, Email, Observability, OpenAPI/API-client boundaries and Intelligence foundation.
 
 Frontend work must not overwrite those owners for convenience.
 
@@ -100,7 +101,7 @@ absence != false
 UI hiding != authorization
 ```
 
-World Focus remains pre-backend for its own canonical World/DANTE persistence/effect semantics even though the repository now contains real backend platform capability elsewhere.
+World Focus remains pre-backend for its own canonical World/DANTE persistence/effect semantics even though the repository contains real backend platform capability elsewhere.
 
 ## 6. Engineering authorities
 
@@ -117,8 +118,6 @@ For non-trivial frontend work also inspect:
 
 Machine-readable Home and World Focus structural contracts under `prototypes/frontend/shared/contracts/` are blocking CI contracts, not decoration.
 
-## 7. Reconciliation rule
+## 7. Lifecycle rule
 
-R3 preserves current `main` as authority for platform/Access/Temporal integration while restoring the frozen M4 World Focus owners and architectural guards. R3 is not validated until CI is green on the exact candidate HEAD.
-
-No PR merge, protected-main write, rebase, squash or force-push is implied by this document.
+Temporary chat/session/live handoffs are not current repository authorities and must not survive into protected `main`. Historical proof belongs in dated evidence, the consolidated branch closure record or Git/PR history. Current product and architecture truth belongs in the current contracts/checkpoints above.

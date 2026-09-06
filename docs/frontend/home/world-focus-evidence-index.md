@@ -1,17 +1,15 @@
 # DANTE — World Focus Research / Review Evidence Index
 
-**Status:** CURRENT EVIDENCE MAP — M4 CLOSED / VALIDATED — MAIN RECONCILIATION NEXT  
-**Date:** 2026-09-05  
-**Branch:** `feature/home-react`
+**Status:** CURRENT EVIDENCE MAP — M4 CLOSED / VALIDATED — R3 RECONCILIATION CLOSED / AUTOMATED QA PASS  
+**Date:** 2026-09-06
 
-This index separates live sequencing authority, closure authority, falsification and supporting evidence. Older phase-time status prose is historical unless adopted by current checkpoint authority.
+This index separates current sequencing authority, closure authority, falsification and supporting evidence. Older phase-time status prose is historical unless adopted by the current checkpoint.
 
 ## 1. Read first
 
 ```text
 world-focus-current-checkpoint.md
 world-focus-frontend-roadmap.md
-world-focus-handoff.md
 world-focus-evidence-index.md
 current-checkpoint.md
 world-focus-m4-final-hostile-closure-review.md
@@ -27,7 +25,7 @@ world-focus-dante-spatial-presence-review.md
 world-focus-d1-dante-entry-review.md
 ```
 
-Protected-main Domain/Logical/Physical authority outranks frontend convenience whenever semantic boundaries are questioned.
+Protected-main Domain/Logical/Physical authority outranks frontend convenience whenever semantic boundaries are questioned. Temporary operational handoffs are not current authority.
 
 ## 2. Evidence families
 
@@ -45,6 +43,7 @@ E34      M4 / D4 contextual/deictic invocation closure
 E35      M4 / D5 Insight presentation closure
 E36      M4 / D6 governed Proposal/Confirmation/Receipt closure
 E37      M4 final cross-owner hostile sequencing closure
+E38      R3 protected-main semantic reconciliation closure
 ```
 
 Key anchors:
@@ -59,6 +58,7 @@ D5 final             0873153d8b390b99c5b3aa024e0735c82a89660d / CI 33971615312 P
 D6 first green       234eb159a5993db9b909880f58231a1e27cdefef / CI 33975428193 PASS
 D6 owner-hardened    929c5ad7a056ff172a915e5070e7d72c936e692d / CI 33986493932 PASS
 M4 final hostile     1b8ae1a3d953d85dcc14d513e512428d1f268c8d / CI 33990483780 PASS
+R3 code candidate    e28e29a7ab3a8cd71b0c386ced824385c8c2d9e6 / required PR workflows PASS
 ```
 
 ## E31 — M3 Final Cross-Layer Hostile Closure
@@ -284,6 +284,23 @@ Matrix coverage includes skip prevention, stale Proposal/Confirmation/Receipt in
 
 Detailed review: `world-focus-m4-final-hostile-closure-review.md`.
 
+## E38 — R3 Protected-Main Semantic Reconciliation — CLOSED / AUTOMATED QA PASS
+
+R3 preserved protected-main platform owners while restoring frozen M4 World Focus owners and composing shared frontend guards/i18n/docs. Protected-main ancestry was merged without rebase, squash or history rewrite.
+
+```text
+protected-main baseline  431fb34029baeacc9ef9f721e9626b39ca10dd39
+ancestry merge           2547d4a08b5f289ba53676aea194348bb22bd6ce
+exact code candidate     e28e29a7ab3a8cd71b0c386ced824385c8c2d9e6
+Backend CI               34023569263 PASS
+Dependency Review        34023569294 PASS
+Frontend CI              34023569317 PASS
+```
+
+The exact candidate passed Backend Quality, PostgreSQL acceptance, deterministic AI eval, Frontend Quality, unit/build/architecture/generated drift, Chromium Web E2E, frozen Timeline Firefox and Mobile Bundle. No review threads/comments were pending at closure review.
+
+The final documentation lifecycle consolidation removes temporary Timeline and M1 operational handoffs. Their continuing product/engineering truth is owned by durable contracts, current checkpoints and the consolidated branch closure record. Required checks on the final PR head remain authoritative for protected-main integration.
+
 ## 3. Current layered result
 
 ```text
@@ -306,8 +323,8 @@ D4 Contextual/Deictic Invocation CLOSED / VALIDATED
 D5 Insight Presentation CLOSED / VALIDATED
 D6 Governed Operation CLOSED / VALIDATED
 M4 Final Hostile Closure CLOSED / PASS
+R3 Semantic Reconciliation CLOSED / AUTOMATED QA PASS
 M5 NOT STARTED
-MAIN RECONCILIATION NEXT BEFORE M5
 ```
 
 ## 4. Current evidence gate
@@ -336,6 +353,8 @@ MAIN RECONCILIATION NEXT BEFORE M5
 
 > **M4 — CLOSED / VALIDATED**
 
-> **M5 — NOT STARTED. Main reconciliation/integration is next.**
+> **R3 — CLOSED / AUTOMATED QA PASS. Protected-main integration is governed by PR #65 and the required checks on its final head.**
+
+> **M5 — NOT STARTED.**
 
 Human/manual visual acceptance remains **NOT PERFORMED**.

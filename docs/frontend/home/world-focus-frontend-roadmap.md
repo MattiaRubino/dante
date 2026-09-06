@@ -1,8 +1,7 @@
 # DANTE — World Focus Frontend Roadmap
 
-**Status:** CURRENT WORKING ROADMAP — M4 CLOSED / VALIDATED — R3 RECONCILIATION QA PENDING  
-**Date:** 2026-09-06  
-**Branch:** `feature/home-react`
+**Status:** CURRENT WORKING ROADMAP — M4 CLOSED / VALIDATED — R3 CLOSED / AUTOMATED QA PASS  
+**Date:** 2026-09-06
 
 Scope stop: production-grade World Focus frontend before real World backend/API/database/provider/LLM/effect integration.
 
@@ -28,7 +27,8 @@ World Focus route/shell
 -> D6 governed Proposal / Confirmation / Decision / Receipt
 -> M4 final hostile sequencing closure
 -> protected-main ancestry merge
--> R3 semantic ownership reconciliation [CURRENT]
+-> R3 semantic ownership reconciliation
+-> R3 exact-code automated QA PASS
 ```
 
 ## 2. Evidence anchors
@@ -43,11 +43,14 @@ D6 owner-hardened  929c5ad7a056ff172a915e5070e7d72c936e692d / CI 33986493932 PAS
 M4 hostile final   1b8ae1a3d953d85dcc14d513e512428d1f268c8d / CI 33990483780 PASS
 M4 docs closure    969e0f0058c5ca573282cbfc5aebc6c3715d1141
 main baseline      431fb34029baeacc9ef9f721e9626b39ca10dd39
-main merge         2547d4a08b5f289ba53676aea194348bb22bd6ce
-R3 QA              PENDING exact candidate HEAD
+main ancestry merge 2547d4a08b5f289ba53676aea194348bb22bd6ce
+R3 code candidate  e28e29a7ab3a8cd71b0c386ced824385c8c2d9e6
+R3 Backend CI      34023569263 PASS
+R3 Dependency      34023569294 PASS
+R3 Frontend CI     34023569317 PASS
 ```
 
-Historical evidence remains evidence for the exact SHA it ran against. Human/manual visual acceptance remains **NOT PERFORMED**.
+Historical evidence remains evidence for the exact SHA it ran against. Human/manual visual acceptance remains **NOT PERFORMED**. Required PR checks on the final merge head remain the protected-main merge authority.
 
 ## 3. Materialization / reconciliation sequence
 
@@ -65,7 +68,7 @@ M4 — Contextual DANTE / D2-D6                              CLOSED / VALIDATED
   D6 Proposal / confirmation / receipt                      CLOSED / VALIDATED
   final hostile sequencing closure                          CLOSED / PASS
 MAIN ANCESTRY MERGE                                         COMPLETE
-R3 SEMANTIC RECONCILIATION                                  QA PENDING
+R3 SEMANTIC RECONCILIATION                                  CLOSED / AUTOMATED QA PASS
 M5 — Contrasting Complete Worlds                            NOT STARTED
 M6 — Integrated Product / Visual / A11y / Perf              BLOCKED BY M5
 M7 — Pre-Backend Frontend Freeze                            BLOCKED BY M6
@@ -76,7 +79,7 @@ WORLD BACKEND / REAL EFFECTS                                AFTER M7 ONLY
 
 R3 is a semantic ownership reconciliation, not a branch-side rollback of `main`.
 
-The target is:
+The result is:
 
 ```text
 current main platform truth
@@ -107,10 +110,10 @@ World Focus fixture/geometry semantics
 M4 D2-D6 contextual DANTE chain
 World structural contract guard
 World Focus dependency boundaries
-Signal Stage markup/style/i18n contract used by the current Home branch
+Signal Stage markup/style/i18n contract used by the current Home frontend
 ```
 
-No rebase, squash or force-push.
+No rebase, squash or force-push is part of the accepted reconciliation.
 
 ## 5. Closed M4 result
 
@@ -156,15 +159,14 @@ D3 -> D5 arbitrary same-generation assistant-message injection
 D4 -> D3 arbitrary same-generation context-reference substitution
 ```
 
-R3 may not weaken or bypass these owner laws.
+Future work may not weaken or bypass these owner laws.
 
-## 7. R3 exit gate
+## 7. R3 exit gate — CLOSED
 
-R3 closes only if the exact candidate proves all of the following:
+The exact code candidate proved:
 
 ```text
-main remains ancestor / feature branch behind_by=0
-only approved reconciliation paths changed from PRE-SCOPE
+main remained ancestor / feature branch behind_by=0
 Home + World Focus contract drift PASS
 format PASS
 lint PASS
@@ -183,17 +185,19 @@ Dependency Review PASS
 Frontend CI Gate PASS
 ```
 
-A draft PR exists only to exercise the protected-main PR checks. It does not authorize merge.
+PR #65 carries the final protected-main integration gate. The repository ruleset, not this document, decides whether the final head is mergeable.
 
 ## 8. M5-M7
 
-After R3 is formally green and documented, M5 proves materially contrasting complete Worlds over the same engine rather than page-specific forks.
+M5 proves materially contrasting complete Worlds over the same engine rather than page-specific forks.
 
 M5 must preserve truthful absence: a World does not need fake Attention, Comparison or Trajectory data just to look complete.
 
 M6 performs integrated product/visual/responsive/motion/accessibility/performance refinement. Serious manual product/visual acceptance is recorded separately from automation.
 
 M7 freezes the frontend/backend seams before any real World vertical integration.
+
+M5 is **not automatically active** after R3 or after merge. It requires a separately authorized work scope from the then-current protected `main`.
 
 ## 9. Permanent barriers
 
@@ -218,4 +222,4 @@ Receipt != canonical/provider/runtime completion
 
 ## 10. Immediate continuation
 
-> **Finish R3 semantic reconciliation, prove the exact candidate through the real protected-main draft-PR checks, record exact-head evidence, then require a separate explicit user authorization before any merge to protected `main`. M5 remains unopened until that reconciliation is formally closed.**
+> **R3 is closed. Do not start M5 from the old feature branch. After protected-main integration, any future World Focus work starts from the then-current `main` under a new explicit scope. Human/manual visual acceptance remains not performed.**

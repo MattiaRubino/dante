@@ -1,12 +1,11 @@
 # DANTE — World Focus Current Checkpoint
 
-**Status:** CURRENT LIVE WORLD FOCUS CHECKPOINT — M4 CLOSED / VALIDATED — R3 RECONCILIATION QA PENDING  
+**Status:** CURRENT WORLD FOCUS CHECKPOINT — M4 CLOSED / VALIDATED — R3 CLOSED / AUTOMATED QA PASS  
 **Date:** 2026-09-06  
-**Branch:** `feature/home-react`  
-**Protected-main baseline merged:** `431fb34029baeacc9ef9f721e9626b39ca10dd39`  
-**Merge commit:** `2547d4a08b5f289ba53676aea194348bb22bd6ce`
+**Protected-main baseline consumed:** `431fb34029baeacc9ef9f721e9626b39ca10dd39`  
+**Main ancestry merge into feature:** `2547d4a08b5f289ba53676aea194348bb22bd6ce`
 
-This is the first World Focus authority a new chat/agent must read. Historical `NEXT`/`ACTIVE` prose is evidence only unless adopted here. Current code/tests and exact-head CI remain implementation truth.
+This is the first World Focus authority to read. Historical `NEXT`/`ACTIVE` prose is evidence only unless adopted here. Current code/tests and current CI remain implementation truth.
 
 ## 1. Read order
 
@@ -23,9 +22,9 @@ This is the first World Focus authority a new chat/agent must read. Historical `
 10. M4/D6/D5/D4/D3/D2 review evidence as needed
 ```
 
-The old live handoff and WF0 scenario-oracle files are no longer operating authorities.
+Temporary operational handoffs are retired and are not operating authorities.
 
-## 2. Live sequence
+## 2. Current sequence
 
 ```text
 WF0                                      FROZEN / USER AUTHORIZED
@@ -52,8 +51,8 @@ D4 contextual/deictic invocation         CLOSED / VALIDATED
 D5 Insight presentation integration      CLOSED / VALIDATED
 D6 Proposal/confirmation/receipt         CLOSED / VALIDATED
 M4 final hostile closure                 CLOSED / PASS
-main ancestry reconciliation             COMPLETE @ 2547d4a08b5f289ba53676aea194348bb22bd6ce
-R3 semantic reconciliation               CANDIDATE / QA PENDING
+main ancestry reconciliation             COMPLETE
+R3 semantic reconciliation               CLOSED / AUTOMATED QA PASS
 M5 complete contrasting Worlds           NOT STARTED
 M6 integrated product/visual/a11y/perf   BLOCKED BY M5
 M7 pre-backend frontend freeze           BLOCKED BY M6
@@ -155,26 +154,22 @@ D3 -> D5 arbitrary same-generation assistant-message injection
 D4 -> D3 arbitrary same-generation context-reference substitution
 ```
 
-Final engineering closure:
+Historical final M4 engineering closure:
 
 ```text
 HEAD 1b8ae1a3d953d85dcc14d513e512428d1f268c8d
 CI   33990483780 / run #1087 PASS
 ```
 
-Documentation closure:
+Documentation closure: `969e0f0058c5ca573282cbfc5aebc6c3715d1141`.
 
-```text
-969e0f0058c5ca573282cbfc5aebc6c3715d1141
-```
+Those runs validate those historical SHAs only.
 
-Those runs validate those historical SHAs only. R3 requires new exact-head evidence.
+## 6. R3 reconciliation closure
 
-## 6. Reconciliation truth
+Protected-main ancestry was merged into the feature with ancestry preserved. R3 then restored only M4-owned World Focus/Home seams and composed shared files with current-main platform truth.
 
-Protected `main` has been merged into the branch with ancestry preserved. R3 then restores only M4-owned World Focus/Home seams and composes shared files with current-main platform truth.
-
-R3 must preserve:
+R3 preserves:
 
 ```text
 current main Access/Auth/DB/Alembic/Recovery/Email/Observability/OpenAPI/Intelligence truth
@@ -184,7 +179,21 @@ M4 World Focus page/workspace/composition/DANTE owners
 M4 architectural guards and World structural drift checks
 ```
 
-It must not resurrect deleted lifecycle files merely because they existed on `main` during conflict neutralization.
+Exact-code candidate validation:
+
+```text
+HEAD                 e28e29a7ab3a8cd71b0c386ced824385c8c2d9e6
+Backend CI           34023569263 PASS
+Dependency Review    34023569294 PASS
+Frontend CI          34023569317 PASS
+Backend PostgreSQL   PASS
+Frontend Quality     PASS
+Chromium Web E2E     PASS
+frozen Timeline FF   PASS
+Mobile Bundle        PASS
+```
+
+Required checks on the final PR head remain authoritative for protected-main merge.
 
 ## 7. Visual truth
 
@@ -194,20 +203,10 @@ historical wide/compact pressure             PASS
 historical Chromium                           PASS
 historical Firefox frozen Timeline            PASS
 historical automated accessibility            PASS
+R3 automated exact-code QA                    PASS
 human/manual visual acceptance                NOT PERFORMED
-R3 exact-head QA                              PENDING
 ```
 
-## 8. Immediate next gate
+## 8. Next gate
 
-```text
-finish R3
--> exact scope compare
--> verify main remains ancestor / behind_by=0
--> draft PR to protected main for real required checks
--> fix only concrete failures without weakening contracts
--> R4 exact-head evidence closure
--> separate explicit authorization before merge
-```
-
-M5 remains unopened until R3 is green and reconciliation is formally closed. No backend World implementation, real provider/LLM execution or canonical World persistence is authorized here.
+R3 is closed. M5 remains **NOT STARTED** until separately authorized. No backend World implementation, real provider/LLM execution or canonical World persistence is authorized here.

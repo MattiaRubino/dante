@@ -1,18 +1,15 @@
 # DANTE — Home / Frontend Current Checkpoint
 
-**Status:** CURRENT LIVE ENTRY POINT — MAIN PLATFORM RECONCILED — WORLD FOCUS M4 CLOSED / R3 QA PENDING  
+**Status:** CURRENT FRONTEND CHECKPOINT — MAIN PLATFORM RECONCILED — WORLD FOCUS R3 CLOSED / AUTOMATED QA PASS  
 **Date:** 2026-09-06  
-**Working branch:** `feature/home-react`  
-**Protected-main baseline merged:** `431fb34029baeacc9ef9f721e9626b39ca10dd39`  
-**Merge commit:** `2547d4a08b5f289ba53676aea194348bb22bd6ce`
+**Protected-main baseline consumed:** `431fb34029baeacc9ef9f721e9626b39ca10dd39`  
+**Main ancestry merge into feature:** `2547d4a08b5f289ba53676aea194348bb22bd6ce`
 
-This is the live frontend navigation checkpoint after protected-main ancestry was merged into `feature/home-react`. R3 is reconciling semantic ownership after the mechanical merge. Current code/tests/CI outrank historical branch labels.
+This is the current navigation checkpoint for Home, AppShell, Timeline, Temporal Create and World Focus. Current code/tests and current CI outrank historical branch labels.
 
 ## 1. Integrated platform state
 
-The branch now contains current `main` platform truth, including the current PostgreSQL/Alembic baseline and the current backend/platform capabilities for Access/Auth, Recovery, Email, Observability, OpenAPI/API-client boundaries and Intelligence foundation.
-
-Those owners are not frontend reconciliation targets. R3 must preserve them.
+The reconciled frontend contains the protected-main PostgreSQL/Alembic baseline and current backend/platform capabilities for Access/Auth, Recovery, Email, Observability, OpenAPI/API-client boundaries and Intelligence foundation. Those owners are not frontend reconciliation targets.
 
 ## 2. Home / Temporal state
 
@@ -26,7 +23,7 @@ C1 MANUAL PASS — APPROVED      NOT GRANTED
 C2 Structured Detail           BLOCKED until C1 closes
 ```
 
-Current Temporal Create capability from `main` remains present. Branch integration and automated CI do not count as manual C1 acceptance.
+Current Temporal Create capability remains present. Branch integration, automated CI and protected-main merge do not count as manual C1 acceptance.
 
 Permanent Temporal distinctions remain:
 
@@ -40,6 +37,8 @@ manual Create != AI/NL/voice
 Timeline ViewModel != application model != DTO != DB row
 provider state != canonical DANTE state
 ```
+
+T1 current/future authority lives in `timeline-t1-frozen-contract.md`, `temporal-experience-architecture.md` and `temporal-frontend-roadmap.md`; temporary Timeline chat handoffs are retired.
 
 ## 3. World Focus state
 
@@ -61,28 +60,31 @@ M3 Adaptive World Composition            CLOSED / VALIDATED
 M3 final hostile closure                 CLOSED / PASS
 M4 Contextual DANTE / D2-D6              CLOSED / VALIDATED
 M4 final hostile closure                 CLOSED / PASS
-main -> feature/home-react merge          COMPLETE @ 2547d4a08b5f289ba53676aea194348bb22bd6ce
-R3 semantic reconciliation               CANDIDATE / QA PENDING
+main ancestry reconciliation             COMPLETE
+R3 semantic reconciliation               CLOSED / AUTOMATED QA PASS
 M5 complete contrasting Worlds           NOT STARTED
 M6 integrated product/visual/a11y/perf   BLOCKED BY M5
 M7 pre-backend frontend freeze           BLOCKED BY M6
 human/manual visual review               NOT PERFORMED
 ```
 
-The M4 closure source remains:
+R3 exact-code candidate:
 
 ```text
-M4 documentation closure
-969e0f0058c5ca573282cbfc5aebc6c3715d1141
-
-M4 engineering hostile closure
-1b8ae1a3d953d85dcc14d513e512428d1f268c8d
-CI 33990483780 / run #1087 PASS
+HEAD                 e28e29a7ab3a8cd71b0c386ced824385c8c2d9e6
+Backend CI           34023569263 PASS
+Dependency Review    34023569294 PASS
+Frontend CI          34023569317 PASS
+Backend PostgreSQL   PASS
+Frontend Quality     PASS
+Chromium Web E2E     PASS
+frozen Timeline FF   PASS
+Mobile Bundle        PASS
 ```
 
-Historical green evidence remains evidence for those exact SHAs only; it is not current R3 validation.
+These runs prove that exact SHA. The required checks attached to the final PR head are the protected-main merge authority.
 
-## 4. M4 semantic result that R3 must preserve
+## 4. M4 semantic result preserved by R3
 
 World Focus has one bounded pre-backend DANTE path:
 
@@ -120,56 +122,21 @@ Comparison != Decision
 missing trajectory position != zero
 ```
 
-## 5. R3 ownership result
+## 5. Reconciliation result
 
-R3 is intentionally not `ours` or `theirs` wholesale.
+R3 deliberately composed rather than choosing `ours` or `theirs` wholesale:
 
 ```text
-main authority
+protected-main authority
 + frozen M4 World Focus owners
 + composed shared guards/i18n/docs
-= reconciliation candidate
+= validated integration candidate
 ```
 
-R3 restores the M4 World Focus page/fixture/geometry/E2E ownership and the M4 Signal Stage class contract, removes temporary files resurrected only to make the ancestry merge possible, and composes shared CI/architecture/localization/documentation without discarding current-main platform work.
+It preserves current-main platform owners while restoring World Focus page/fixture/geometry/E2E ownership, the Signal Stage contract, World structural drift checks and World Focus dependency boundaries.
 
-## 6. QA gate
+## 6. Next product gate
 
-R3 is **not validated yet**.
+R3 is closed. M5 is **not automatically active**. Future World Focus work starts from the then-current protected `main` only after explicit scope authorization.
 
-Required exact-candidate validation:
-
-```text
-Frontend contract drift: Home + World Focus
-format
-lint
-typecheck
-architecture
-generated-source drift
-unit tests
-production build
-Chromium Web E2E
-frozen Timeline Firefox
-Mobile compatibility/bundle
-current Access tests
-current Temporal tests
-M4 hostile World Focus suite
-backend required checks through the PR gate
-Dependency Review
-```
-
-A draft PR may be opened only to obtain the real protected-main PR checks. Draft PR creation is not permission to merge.
-
-## 7. Immediate sequence
-
-```text
-complete R3 semantic reconciliation
--> exact PRE-SCOPE compare
--> verify behind_by=0 from current main
--> open draft PR to main for real required checks
--> fix only concrete failures by ownership
--> R4 evidence closure after exact-head green
--> separate explicit authorization before any merge to protected main
-```
-
-No rebase, squash, force-push or protected-main write is authorized by this checkpoint.
+Human/manual visual acceptance remains **NOT PERFORMED**. C1 remains **OPEN**. No merge or CI result may manufacture either approval.
