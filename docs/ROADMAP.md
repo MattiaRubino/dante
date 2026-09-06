@@ -1,10 +1,10 @@
 # DANTE Roadmap
 
-- **Status:** CURRENT REPOSITORY ROADMAP + PRE-VERTICAL FINAL INTEGRATION CANDIDATE
+- **Status:** CURRENT REPOSITORY ROADMAP
 - **Last reconciled:** 2026-09-06
-- **Protected-main HEAD:** `5258452d7bd4e7a2797922b00035a9068ba41167`
-- **Protected-main Alembic:** `20260904_17`
-- **Pre-vertical candidate Alembic:** `20260906_18`
+- **Pre-vertical integration merge:** `1ecd58145860aebfaaa3dc1bd356b90f7a8eb19b` via PR #66
+- **Protected-main Alembic:** `20260906_18`
+- **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Pre-vertical closure:** `workstreams/pre-vertical-foundation-closure-2026-09-06.md`
 
 ## 1. Current sequence
@@ -32,14 +32,9 @@ PRE-VERTICAL FOUNDATION
         PV-01 CLOSED / PASS
         PV-02 CLOSED / PASS
         PV-03 A CLOSED / PASS
-        PV-03 B CLOSED / LOCAL PASS
-        PV-03 C INTEGRATION IN PROGRESS
-              ↓
-exact-head Recovery rehearsal
-              ↓
-PR required gates
-              ↓
-protected-main merge commit + readback
+        PV-03 B CLOSED / PASS
+        PV-03 C CLOSED / PASS
+        INTEGRATED VIA PR #66
               ↓
 FIRST REAL BOUNDED PRODUCT VERTICAL
 ```
@@ -54,9 +49,9 @@ PV-03 — Scale Harness / QA / Closure
 
 There is no PV-04.
 
-## 2. What the pre-vertical foundation closes
+## 2. What the pre-vertical foundation closed
 
-The branch supplies only the small cross-cutting seams required before a real vertical owns operations:
+The integrated foundation supplies only the small cross-cutting seams required before a real vertical owns operations:
 
 - canonical application-issued UUIDv7 reuse;
 - backend Clock abstraction and deterministic time testing;
@@ -78,40 +73,30 @@ Protected-main database truth:
 
 ```text
 PostgreSQL          18.6
-Alembic             20260904_17
-Topology            88|5|16|76|172|89|270|0|0|0
-```
-
-Pre-vertical integration candidate:
-
-```text
-PostgreSQL          18.6
 Alembic             20260906_18
 Topology            89|5|18|77|173|91|272|0|0|0
 ```
 
-The candidate is locally accepted by the real PostgreSQL suite but does not become protected-main truth until integration completes.
+The former protected-main baseline `20260904_17 / 88|5|16|76|172|89|270|0|0|0` is historical integration context only.
 
-## 4. Final pre-vertical gate
+## 4. Pre-vertical closure result
 
-No additional foundation feature work is planned. The only remaining branch work is closure/integration:
+The final candidate `21353469464f1371f9913dc78933f4ee42698f33` completed:
 
 ```text
-current-truth docs cleanup                COMPLETE IN FINAL DOC CANDIDATE
-clean pushed exact branch HEAD            REQUIRED
-LOCAL whole Recovery rehearsal            REQUIRED ON EXACT HEAD
-re-read/fetch current protected main      REQUIRED
-main reconciliation                       ONLY IF MAIN MOVED
-bounded PR                                REQUIRED
-Backend CI Gate                           REQUIRED
-Dependency Review                         REQUIRED
-Frontend CI Gate                          REQUIRED
-merge method                              MERGE COMMIT ONLY
-post-merge parentage/tree/readback         REQUIRED
-branch retirement                         AFTER ACCEPTANCE
+LOCAL whole-branch QA                       PASS
+real PostgreSQL 18.6 acceptance             PASS
+exact-head LOCAL Recovery rehearsal         PASS
+Backend CI Gate                             PASS
+Dependency Review                           PASS
+Frontend CI Gate                            PASS
+PR #66                                      MERGED
+merge method                                MERGE COMMIT
+parentage/tree readback                     PASS
+feature/pre-vertical-foundation              RETIRED
 ```
 
-If QA or CI finds a concrete defect, fix only that defect inside PV-03 under a new exact scope. Do not create another milestone.
+The protected-main integration merge is `1ecd58145860aebfaaa3dc1bd356b90f7a8eb19b`.
 
 ## 5. Stable semantic boundaries carried into future work
 
@@ -130,9 +115,9 @@ UUID ordering is never semantic chronology/currentness authority.
 
 PostgreSQL remains canonical persistence authority. Provider/network I/O remains outside authoritative PostgreSQL transactions. No generic repository/UoW/EAV/Fact/Version/relationship framework is pre-authorized by this roadmap.
 
-## 6. First work after merge
+## 6. First work after pre-vertical closure
 
-After the pre-vertical branch is merged and retired, start the next branch from then-current protected `main` and choose **one real bounded product vertical** with concrete owners and operations.
+Start the next branch from then-current protected `main` and choose **one real bounded product vertical** with concrete owners and operations.
 
 Only then define operation-specific:
 
@@ -144,7 +129,7 @@ Only then define operation-specific:
 - AI/Search integration when a real owner/data/product seam exists;
 - new Alembic revision if the vertical genuinely needs persistence evolution.
 
-Do not continue from `feature/pre-vertical-foundation` after closure.
+Do not continue from the retired `feature/pre-vertical-foundation` branch.
 
 ## 7. Existing integrated foundations
 
@@ -156,6 +141,7 @@ PostgreSQL Recovery CP07/CP08             INTEGRATED
 Platform Observability                    INTEGRATED VIA PR #58
 AI deterministic low-level foundation     INTEGRATED VIA PR #63
 Home / World Focus reconciliation          INTEGRATED VIA PR #65
+Pre-vertical foundation                    INTEGRATED VIA PR #66
 ```
 
 AI production/private-data activation remains a separate future qualification. Real Search owner/data integration and Ask DANTE remain trigger-gated product work. Remote backup-provider and production/cloud recovery remain unclaimed.
@@ -165,7 +151,7 @@ AI production/private-data activation remains a separate future qualification. R
 Future scopes may include, only when their real trigger exists:
 
 ```text
-first real product vertical                NEXT AFTER PRE-VERTICAL MERGE
+first real product vertical                NEXT
 AI real Search owner/data adapter          REAL OWNER/DATA TRIGGER
 AI real Ask DANTE integration              PRODUCT-READINESS TRIGGER
 AI memory / solver integration             FUTURE / OWNER-DRIVEN
