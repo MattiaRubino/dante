@@ -1,6 +1,6 @@
 """FastAPI dependency for authenticated DANTE application context."""
 
-from typing import cast
+from typing import Annotated, cast
 
 from fastapi import Depends, Request
 
@@ -16,6 +16,12 @@ from dante.platform.time import InvalidTimeZoneError, MissingDeviceTimeZoneError
 
 DANTE_TIME_ZONE_HEADER_NAME = "X-Dante-Time-Zone"
 
+AuthServiceDependency = Annotated[AuthService, Depends(get_auth_service)]
+DanteContextServiceDependency = Annotated[
+    DanteContextService,
+    Depends(get_dante_context_service),
+]
+
 
 def get_dante_context_service(request: Request) -> DanteContextService:
     """Resolve the application-context service from the process-scoped database runtime."""
@@ -25,8 +31,8 @@ def get_dante_context_service(request: Request) -> DanteContextService:
 
 async def require_dante_context(
     request: Request,
-    auth_service: AuthService = Depends(get_auth_service),
-    context_service: DanteContextService = Depends(get_dante_context_service),
+    auth_service: AuthServiceDependency,
+    context_service: DanteContextServiceDependency,
 ) -> DanteContext:
     """Require an admitted AuthSession and resolve its DANTE-facing application context."""
     try:
@@ -61,7 +67,9 @@ async def require_dante_context(
             code="context.device_timezone_required",
             category="validation",
             title="Device timezone required",
-            detail="This DANTE context follows the device timezone and requires a named IANA timezone.",
+            detail=(
+                "This DANTE context follows the device timezone and requires a named IANA timezone."
+            ),
         ) from exc
     except InvalidTimeZoneError as exc:
         raise ProblemError(
