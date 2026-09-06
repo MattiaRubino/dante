@@ -1,13 +1,13 @@
 # Authenticated DANTE Application Context
 
-- **Status:** CURRENT / BRANCH-LOCAL PV-02 IMPLEMENTED
-- **Branch:** `feature/pre-vertical-foundation`
+- **Status:** CURRENT / PRE-VERTICAL FOUNDATION CANDIDATE / PV-02 CLOSED
 - **Introduced by:** `20260906_18`
 - **Scope:** authenticated Account → DANTE-facing self context and user/default timezone policy
+- **Closure record:** `../workstreams/pre-vertical-foundation-closure-2026-09-06.md`
 
 ## 1. Purpose
 
-PV-02 closes one deliberately narrow seam between Access/Auth and future product operations. An admitted `Principal` identifies an authenticated `Account`, but neither object is a DANTE Domain `Person` and neither is a persisted Domain `Actor`.
+The pre-vertical foundation closes one deliberately narrow seam between Access/Auth and future product operations. An admitted `Principal` identifies an authenticated `Account`, but neither object is a DANTE Domain `Person` and neither is a persisted Domain `Actor`.
 
 The permanent boundary remains:
 
@@ -47,7 +47,7 @@ timezone_mode     -> follow_device | fixed
 fixed_zone_id     -> named IANA timezone only when mode=fixed
 ```
 
-The table has one row per Account because `account_ref` is its primary key. `self_person_ref` is intentionally not globally unique: PV-02 does not freeze a universal Account↔Person cardinality rule beyond the one self reference owned by this application-context row.
+The table has one row per Account because `account_ref` is its primary key. `self_person_ref` is intentionally not globally unique: the foundation does not freeze a universal Account↔Person cardinality rule beyond the one self reference owned by this application-context row.
 
 The mapping does not make Account a 16th native Domain owner. `Person` remains one of the existing 15 NativeRef owners.
 
@@ -55,7 +55,7 @@ The mapping does not make Account a 16th native Domain owner. `Person` remains o
 
 ## 4. Bounded Person bootstrap capability
 
-Ordinary runtime `INSERT` on `dante.person` remains denied. PV-02 does not reopen generic Person creation.
+Ordinary runtime `INSERT` on `dante.person` remains denied. The foundation does not reopen generic Person creation.
 
 The only new bootstrap path is:
 
@@ -73,7 +73,7 @@ The capability:
 4. otherwise requires an application-issued UUIDv7 candidate;
 5. creates exactly one `Person` plus its `native_address(owner_family='person')`;
 6. creates the Account application context with `follow_device` timezone policy;
-7. returns the committed context.
+7. returns the context.
 
 This is a concrete creation profile for one self Person. It is not permission for arbitrary runtime Person shells.
 
@@ -97,7 +97,7 @@ The Account row is therefore the deterministic concurrency arbiter for this one 
 
 ## 6. Timezone policy
 
-PV-02 reuses the PV-01 time contract. It does not introduce a second timezone framework.
+The foundation reuses the PV-01 time contract. It does not introduce a second timezone framework.
 
 Two user/default modes exist:
 
@@ -139,11 +139,11 @@ Backend product operations should depend on the typed request-scoped `DanteConte
 
 They should not repeatedly rediscover Account→Person linkage or parse transport headers independently.
 
-This dependency is foundation only. PV-02 does not add product endpoints.
+This dependency is foundation only. It does not add product endpoints.
 
 ## 8. Persistence delta
 
-Branch-local topology after `20260906_18`:
+Pre-vertical candidate topology after `20260906_18`:
 
 ```text
 PostgreSQL          18.6
@@ -164,7 +164,7 @@ partitioned tables      0
 RLS policies            0
 ```
 
-The protected-main `20260904_17` contract remains protected-main truth until normal branch integration completes.
+Protected-main `20260904_17 / 88|5|16|76|172|89|270|0|0|0` remains protected-main truth until the normal branch integration completes.
 
 ### 8.1 Truthful downgrade behavior
 
@@ -174,7 +174,7 @@ Therefore `20260906_18` follows the persistence constitution's truthful-reversib
 
 ```text
 empty account_application_context
-→ downgrade may remove PV-02 schema
+→ downgrade may remove pre-vertical schema
 
 non-empty account_application_context
 → downgrade REFUSED
@@ -186,26 +186,35 @@ The ordinary fresh-schema `head → base → head` proof remains valid because n
 
 ## 9. Acceptance boundary
 
-PV-02 implementation is complete on `feature/pre-vertical-foundation`. Its branch-local contract, changed-path scope and semantic boundaries have been reconciled.
-
-This status does **not** claim protected-main acceptance. Whole-branch executable acceptance is deliberately centralized in PV-04, including:
+PV-02 implementation is closed. Whole-branch local acceptance under PV-03 has also completed successfully for the current implementation candidate:
 
 ```text
-backend quality / unit-integration validation
-real PostgreSQL acceptance
-frontend quality / typecheck / tests / build
-recovery rehearsal where required by the final database head
-final exact changed-path QA
-reconciliation with then-current protected main
-required PR checks
-post-merge readback
+backend quality / strict typing                    PASS
+backend unit/integration regression                PASS
+real PostgreSQL 18.6 acceptance                    PASS
+frontend format/lint/typecheck/architecture        PASS
+frontend generated/unit/build/E2E/mobile           PASS
+exact changed-path QA                              PASS
 ```
 
-Until PV-04 completes, `20260906_18` remains branch-local implementation truth rather than protected-main truth.
+This still does **not** claim protected-main acceptance. The remaining PV-03 C integration obligations are:
+
+```text
+final current-truth documentation cleanup
+exact-head Recovery rehearsal against 20260906_18
+re-read/fetch then-current protected main
+reconcile only if main moved
+required PR checks
+merge commit only
+protected-main parentage/tree/readback
+branch retirement after acceptance
+```
+
+Until those complete, `20260906_18` is accepted local candidate truth rather than protected-main truth. There is no PV-04.
 
 ## 10. Explicit non-goals
 
-PV-02 does not introduce:
+The authenticated-context foundation does not introduce:
 
 - a generic `user_id` ownership model;
 - a universal User/Profile/preferences JSON document;

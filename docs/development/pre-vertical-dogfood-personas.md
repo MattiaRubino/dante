@@ -1,12 +1,12 @@
 # Pre-Vertical Dogfood and Personas
 
-- **Status:** CURRENT / BRANCH-LOCAL PV-02
-- **Branch:** `feature/pre-vertical-foundation`
+- **Status:** CURRENT / PRE-VERTICAL FOUNDATION / PV-02 CLOSED / PASS
 - **Scope:** persistent LOCAL/DEV dogfood plus deterministic product-independent personas
+- **Closure record:** `../workstreams/pre-vertical-foundation-closure-2026-09-06.md`
 
 ## Purpose
 
-PV-02 needs data that survives ordinary application restarts so DANTE can be exercised repeatedly before the first product vertical exists. This is deliberately different from the existing PostgreSQL pytest harness, whose databases are disposable by design.
+The pre-vertical foundation needs data that survives ordinary application restarts so DANTE can be exercised repeatedly before the first product vertical exists. This is deliberately different from the PostgreSQL pytest harness, whose databases are disposable by design.
 
 The boundary is:
 
@@ -17,7 +17,7 @@ persistent LOCAL/DEV dogfood
 != product vertical fixtures
 ```
 
-No new database schema is introduced. Dogfood and personas consume the existing Access/Auth and authenticated DANTE-context contracts.
+Dogfood and personas consume the existing Access/Auth and authenticated DANTE-context contracts. They do not create a second auth model or a product-domain fixture framework.
 
 ## Persistent dogfood account
 
@@ -59,34 +59,34 @@ A concurrent product/signup creation that wins the unique email race is re-read 
 
 The tooling never embeds or logs passwords, database credentials or pepper values.
 
-Normal runtime database/password-pepper configuration is loaded from the same environment used by the backend, normally by launching through the ignored `apps/backend/.env.local` file:
+Normal runtime database/password-pepper configuration is loaded from the same environment used by the backend, normally through the ignored `apps/backend/.env.local` file:
 
 ```bash
 uv run --env-file .env.local ...
 ```
 
-The dogfood/persona password and the `dante_migrator` password are supplied through separate `*.local` files. The repository already ignores `infra/compose/secrets/*.local` and `.env.*` except `.env.example`.
+The dogfood/persona password and the `dante_migrator` password are supplied through separate `*.local` files. The repository ignores `infra/compose/secrets/*.local` and `.env.*` except `.env.example`.
 
 Recommended LOCAL files:
 
 ```text
 infra/compose/secrets/pre_vertical_dogfood_password.local
 infra/compose/secrets/pre_vertical_persona_password.local
-infra/compose/secrets/postgres_migrator_password.local
+infra/compose/secrets/dante_migrator_password.local
 ```
 
-These names are conventions only; the tooling accepts any existing single-line `*.local` file.
+These names are conventions only; the tooling accepts any existing single-line `*.local` file passed explicitly by the operator.
 
 ## Dogfood command
 
-From `apps/backend`, with the normal persistent PostgreSQL database already provisioned and migrated to the branch head:
+From `apps/backend`, with the normal persistent PostgreSQL database already provisioned and migrated to the current candidate/protected-main head:
 
 ```bash
 uv run --env-file .env.local \
   python -m tooling.pre_vertical_foundation.dogfood \
   --email dante.dogfood@example.com \
   --password-file ../../infra/compose/secrets/pre_vertical_dogfood_password.local \
-  --migrator-password-file ../../infra/compose/secrets/postgres_migrator_password.local
+  --migrator-password-file ../../infra/compose/secrets/dante_migrator_password.local
 ```
 
 The command prints only non-secret identity/result information: email, Account ref, self Person ref, whether the Account was newly created or already verified, and timezone mode.
@@ -95,7 +95,7 @@ The command refuses to run unless `DANTE_ENV` is exactly `local` or `dev`, and t
 
 ## Deterministic personas
 
-PV-02 defines exactly three initial foundation personas:
+The foundation defines exactly three initial product-independent personas:
 
 | Persona | Purpose | Timezone policy | Device context | Temporal anchors |
 |---|---|---|---|---|
@@ -119,7 +119,7 @@ All personas can be materialized into the ordinary LOCAL/DEV database with one s
 uv run --env-file .env.local \
   python -m tooling.pre_vertical_foundation.seed_personas \
   --password-file ../../infra/compose/secrets/pre_vertical_persona_password.local \
-  --migrator-password-file ../../infra/compose/secrets/postgres_migrator_password.local
+  --migrator-password-file ../../infra/compose/secrets/dante_migrator_password.local
 ```
 
 A subset can be selected by repeating `--persona`:
@@ -131,30 +131,40 @@ A subset can be selected by repeating `--persona`:
 Materialization:
 
 1. creates/verifies the deterministic Account using canonical Auth normalization/KDF;
-2. initializes the deterministic self Person through the PV-02 runtime capability;
+2. initializes the deterministic self Person through the bounded runtime capability;
 3. specializes the pristine `follow_device` context to a persona's fixed timezone policy when required;
 4. refuses to overwrite an incompatible existing deterministic Account, self Person or timezone policy.
 
-No Timeline, Activity, Event, Routine, Session, Actual or other vertical-specific records are created.
+No Timeline, Activity, Event, Routine, Occurrence, Session, Actual, Outcome, Observation or other vertical-specific records are created.
 
-## Relationship to PV-03
+## Relationship to Scale Harness
 
-PV-03 consumes these persona definitions and the existing disposable PostgreSQL 18.6 acceptance harness to build deterministic scale profiles and whole-branch acceptance.
+`../development/pre-vertical-scale-harness.md` reuses these three personas to build deterministic product-independent scale plans. The persistent dogfood database remains distinct from the disposable PostgreSQL acceptance harness.
 
-PV-03 must not replace the persistent dogfood database with the disposable pytest database, and it must not turn these three personas into a generic product data model.
+The scale harness and whole-branch local QA are closed. This tooling remains useful after merge as LOCAL/DEV operator/test support; it is not an active workstream roadmap.
 
-## Proof obligations
+## Acceptance evidence
 
-PV-02 dogfood/persona implementation is accepted when bounded tests prove:
+PV-02 bounded tests and operational smoke have established:
 
-- LOCAL/DEV-only environment guard;
-- canonical runtime identity requirement;
-- canonical Base64URL pepper configuration parsing;
-- `*.local` secret-file discipline;
-- deterministic unique UUIDv7 persona refs;
-- real Rome/New York local-time classification for ordinary/gap/overlap anchors;
-- fixed timezone independence from current device zone;
-- real PostgreSQL account/context first-run materialization;
-- rerun returns the same Account and self Person;
-- wrong password fails without credential rewrite;
-- persona timezone persistence matches the deterministic specification.
+```text
+LOCAL/DEV-only environment guard                        PASS
+canonical dante_runtime identity requirement             PASS
+canonical Base64URL pepper configuration parsing         PASS
+*.local secret-file discipline                           PASS
+deterministic unique UUIDv7 persona refs                 PASS
+Rome/New York ordinary/gap/overlap classification        PASS
+fixed timezone independence from device zone             PASS
+real PostgreSQL account/context first materialization    PASS
+rerun returns same Account and self Person               PASS
+wrong password fails without credential rewrite          PASS
+persona timezone persistence                             PASS
+persistent dogfood seed/rerun                            PASS
+real browser email/password login                        PASS
+```
+
+The real PostgreSQL tests use the existing disposable PostgreSQL 18.6 acceptance harness; this tooling does not introduce a second database-test framework.
+
+## Permanent boundary
+
+Dogfood/personas are development support. They must never be widened into a generic user/profile model, production data bootstrap, fake product history model or justification for product-domain rows that do not yet have a real owning vertical.

@@ -1,12 +1,12 @@
 # Pre-Vertical Scale Harness
 
-- **Status:** CURRENT / BRANCH-LOCAL PV-03
-- **Branch:** `feature/pre-vertical-foundation`
+- **Status:** CURRENT / PRE-VERTICAL FOUNDATION / PV-03 A CLOSED / PASS
 - **Scope:** deterministic product-independent scale/readiness fixtures plus bounded PostgreSQL convergence proof
+- **Closure record:** `../workstreams/pre-vertical-foundation-closure-2026-09-06.md`
 
 ## Purpose
 
-PV-03 needs repeatable scale inputs before the first product vertical exists, but it must not invent the vertical's domain rows, workload model or performance budget.
+The pre-vertical foundation needs repeatable scale inputs before the first product vertical exists, but it must not invent the vertical's domain rows, workload model or performance budget.
 
 The boundary is:
 
@@ -69,7 +69,7 @@ The four labels are test-input shapes, not DANTE semantic/domain types:
 
 Their `source_instants` are explicit timezone-aware UTC timestamps and are stored in ascending chronological order inside the fixture plan.
 
-They do **not** introduce a generic Fact, Version, Event, Observation, MaterialState, relationship edge or database history schema. A future vertical must map only the fixture aspects that are relevant to its real operations and canonical owners.
+They do **not** introduce a generic Fact, Version, Event, Observation, MaterialState, relationship edge or database history schema. A future vertical must map only the fixture aspects relevant to its real operations and canonical owners.
 
 ## PostgreSQL acceptance boundary
 
@@ -88,9 +88,16 @@ Candidate self-Person refs that lose the first-use race must not become extra Pe
 
 This is a correctness/concurrency invariant check. Twelve contenders are derived from the `small` fixture size; they are not a declared production concurrency budget or performance target.
 
+Observed acceptance:
+
+```text
+targeted real PostgreSQL scale/convergence test    PASS — 1 passed
+full PostgreSQL 18.6 marked suite                  PASS — 165 passed
+```
+
 ## Explicit exclusions
 
-PV-03 Scale Harness does not create or redefine:
+The Scale Harness does not create or redefine:
 
 - Activity;
 - Event;
@@ -107,8 +114,22 @@ PV-03 Scale Harness does not create or redefine:
 - latency/throughput/capacity budgets;
 - a long-lived synthetic canary at this stage.
 
-No Alembic/schema, Access/Auth source, CP1-CP6, frontend, Recovery, Email, Observability, Intelligence/Search or GitHub workflow change is required for this harness.
+No new Alembic/schema, Access/Auth, CP1–CP6, frontend, Recovery, Email, Observability, Intelligence/Search or GitHub workflow change is owned by this harness.
 
 ## Relationship to whole-branch QA
 
-Scale Harness implementation is only part A of PV-03. Whole-branch acceptance remains a separate PV-03 obligation and must still exercise the repository's canonical backend/frontend/PostgreSQL/Alembic/recovery/integration gates before protected-main closure.
+PV-03 A Scale Harness implementation and targeted executable proof are closed. PV-03 B whole-branch local QA is also closed and green across backend/frontend/PostgreSQL acceptance.
+
+The only remaining pre-vertical lifecycle is PV-03 C:
+
+```text
+final documentation cleanup
+→ exact-head Recovery rehearsal
+→ protected-main PR gates
+→ merge commit + readback
+→ branch retirement
+```
+
+There is no PV-04.
+
+This file remains a durable development/testing reference after integration; it is not an active roadmap.
