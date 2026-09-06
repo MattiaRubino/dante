@@ -4,7 +4,6 @@ from base64 import urlsafe_b64encode
 from pathlib import Path
 
 import pytest
-
 from tooling.pre_vertical_foundation.account_seed import (
     SeedConfigurationError,
     database_target_from_environment,
@@ -54,9 +53,7 @@ def test_password_pepper_configuration_requires_canonical_32_byte_base64url() ->
     encoded = _canonical_secret(b"p" * 32)
     environ = {
         "DANTE_AUTH__PASSWORD_CURRENT_PEPPER_KEY_ID": "local-password-v1",
-        "DANTE_AUTH__PASSWORD_PEPPERS": (
-            '{"local-password-v1":"' + encoded + '"}'
-        ),
+        "DANTE_AUTH__PASSWORD_PEPPERS": ('{"local-password-v1":"' + encoded + '"}'),
     }
 
     current, ring = password_pepper_configuration_from_environment(environ)
@@ -64,9 +61,7 @@ def test_password_pepper_configuration_requires_canonical_32_byte_base64url() ->
     assert ring == {"local-password-v1": b"p" * 32}
 
     malformed = dict(environ)
-    malformed["DANTE_AUTH__PASSWORD_PEPPERS"] = (
-        '{"local-password-v1":"not-canonical"}'
-    )
+    malformed["DANTE_AUTH__PASSWORD_PEPPERS"] = '{"local-password-v1":"not-canonical"}'  # noqa: S105 - deliberately malformed synthetic fixture
     with pytest.raises(SeedConfigurationError):
         password_pepper_configuration_from_environment(malformed)
 
@@ -78,7 +73,7 @@ def test_local_secret_requires_ignored_style_single_line_file(tmp_path: Path) ->
 
     wrong_suffix = tmp_path / "dogfood_password.txt"
     wrong_suffix.write_text("secret", encoding="utf-8")
-    with pytest.raises(SeedConfigurationError, match=".local"):
+    with pytest.raises(SeedConfigurationError, match=r"\.local"):
         read_local_secret(wrong_suffix)
 
     multiline = tmp_path / "multiline.local"

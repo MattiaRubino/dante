@@ -1,6 +1,5 @@
 """Unit proof for deterministic product-independent pre-vertical personas."""
 
-from dante.platform.time import classify_local_time
 from tooling.pre_vertical_foundation.personas import (
     HISTORICAL,
     NORMAL,
@@ -9,6 +8,8 @@ from tooling.pre_vertical_foundation.personas import (
     TemporalExpectation,
     deterministic_uuid7,
 )
+
+from dante.platform.time import classify_local_time
 
 
 def test_persona_uuidv7_refs_are_stable_valid_and_unique() -> None:

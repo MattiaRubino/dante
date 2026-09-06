@@ -160,7 +160,9 @@ def password_pepper_configuration_from_environment(
         )
 
     if current_key_id not in ring:
-        raise SeedConfigurationError("current password pepper key is absent from the configured ring")
+        raise SeedConfigurationError(
+            "current password pepper key is absent from the configured ring"
+        )
     return current_key_id, ring
 
 
@@ -243,7 +245,7 @@ def seed_password_account(
 
     try:
         with connection.transaction():
-            connection.execute(f"SET LOCAL ROLE {_OWNER_ROLE}")  # noqa: S608 - frozen role name
+            connection.execute(f"SET LOCAL ROLE {_OWNER_ROLE}")
             connection.execute(
                 """
                 INSERT INTO dante.account(account_ref,status_code,created_at,disabled_at)
@@ -342,7 +344,10 @@ def ensure_account_application_context(
     returned_self_person_ref = UUID(str(row[1]))
     if returned_account_ref != account_ref:
         raise SeedContextConflictError("PV-02 context resolved a different Account")
-    if expected_self_person_ref is not None and returned_self_person_ref != expected_self_person_ref:
+    if (
+        expected_self_person_ref is not None
+        and returned_self_person_ref != expected_self_person_ref
+    ):
         raise SeedContextConflictError(
             "existing PV-02 context uses a different deterministic self Person"
         )
@@ -364,7 +369,7 @@ def set_seed_timezone_policy(
 ) -> None:
     """Set deterministic persona policy once; never rewrite an incompatible existing seed policy."""
     with connection.transaction():
-        connection.execute(f"SET LOCAL ROLE {_OWNER_ROLE}")  # noqa: S608 - frozen role name
+        connection.execute(f"SET LOCAL ROLE {_OWNER_ROLE}")
         row = connection.execute(
             """
             SELECT timezone_mode,fixed_zone_id
@@ -406,7 +411,7 @@ def _read_account_snapshot(
     comparison_key: str,
 ) -> _AccountSnapshot | None:
     with connection.transaction():
-        connection.execute(f"SET LOCAL ROLE {_OWNER_ROLE}")  # noqa: S608 - frozen role name
+        connection.execute(f"SET LOCAL ROLE {_OWNER_ROLE}")
         row = connection.execute(
             """
             SELECT

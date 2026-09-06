@@ -4,7 +4,6 @@ from typing import Any
 
 import psycopg
 import pytest
-
 from tooling.pre_vertical_foundation.account_seed import (
     SeedPasswordMismatchError,
     ensure_account_application_context,

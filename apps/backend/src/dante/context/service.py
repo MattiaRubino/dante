@@ -7,6 +7,7 @@ from typing import Any
 from uuid import UUID
 
 from sqlalchemy import text
+from sqlalchemy.engine import RowMapping
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from dante.auth.contracts import Principal
@@ -42,22 +43,26 @@ class DanteContextService:
         device_zone_id: str | None,
     ) -> DanteContext:
         """Resolve or lazily establish the Account context in one application transaction."""
-        async with self._session_factory() as session:
-            async with session.begin():
-                row = (
+        async with self._session_factory() as session, session.begin():
+            row = (
+                (
                     await session.execute(
                         _CONTEXT_SELECT,
                         {"account_ref": principal.account_ref},
                     )
-                ).mappings().one_or_none()
+                )
+                .mappings()
+                .one_or_none()
+            )
 
-                if row is None:
-                    # A newly established context defaults to follow-device. Validate that request
-                    # input before durable creation so malformed bootstrap traffic creates nothing.
-                    TimeZonePolicy(mode=TimeZoneMode.FOLLOW_DEVICE).resolve(
-                        device_zone_id=device_zone_id
-                    )
-                    row = (
+            if row is None:
+                # A newly established context defaults to follow-device. Validate that request
+                # input before durable creation so malformed bootstrap traffic creates nothing.
+                TimeZonePolicy(mode=TimeZoneMode.FOLLOW_DEVICE).resolve(
+                    device_zone_id=device_zone_id
+                )
+                row = (
+                    (
                         await session.execute(
                             _CONTEXT_ENSURE,
                             {
@@ -65,7 +70,10 @@ class DanteContextService:
                                 "self_person_ref": new_native_ref(),
                             },
                         )
-                    ).mappings().one()
+                    )
+                    .mappings()
+                    .one()
+                )
 
         return _context_from_persisted(
             principal=principal,
@@ -77,7 +85,7 @@ class DanteContextService:
 def _context_from_persisted(
     *,
     principal: Principal,
-    row: Mapping[str, Any],
+    row: Mapping[str, Any] | RowMapping,
     device_zone_id: str | None,
 ) -> DanteContext:
     """Build the typed request context from one persistence row and current device context."""

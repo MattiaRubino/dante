@@ -70,11 +70,7 @@ def deterministic_uuid7(label: str) -> UUID:
     rand_b = random_bits & ((1 << 62) - 1)
 
     value = (
-        (_SYNTHETIC_UUID_TIMESTAMP_MS << 80)
-        | (0x7 << 76)
-        | (rand_a << 64)
-        | (0b10 << 62)
-        | rand_b
+        (_SYNTHETIC_UUID_TIMESTAMP_MS << 80) | (0x7 << 76) | (rand_a << 64) | (0b10 << 62) | rand_b
     )
     return UUID(int=value)
 
@@ -95,7 +91,7 @@ NORMAL = PersonaSpec(
             label="ordinary-summer-local",
             zone_id="Europe/Rome",
             expectation=TemporalExpectation.ORDINARY_LOCAL,
-            local_datetime=datetime(2026, 6, 15, 12, 0),
+            local_datetime=datetime(2026, 6, 15, 12, 0),  # noqa: DTZ001 - intentional naive local wall-clock
         ),
     ),
 )
@@ -117,13 +113,13 @@ TEMPORAL_EDGE = PersonaSpec(
             label="new-york-spring-gap",
             zone_id="America/New_York",
             expectation=TemporalExpectation.NONEXISTENT_LOCAL,
-            local_datetime=datetime(2026, 3, 8, 2, 30),
+            local_datetime=datetime(2026, 3, 8, 2, 30),  # noqa: DTZ001 - intentional naive local wall-clock
         ),
         TemporalAnchor(
             label="new-york-fall-overlap",
             zone_id="America/New_York",
             expectation=TemporalExpectation.AMBIGUOUS_LOCAL,
-            local_datetime=datetime(2026, 11, 1, 1, 30),
+            local_datetime=datetime(2026, 11, 1, 1, 30),  # noqa: DTZ001 - intentional naive local wall-clock
         ),
     ),
 )

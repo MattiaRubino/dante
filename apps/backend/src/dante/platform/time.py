@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import UTC, date, datetime, time as datetime_time, timedelta
+from datetime import UTC, date, datetime, timedelta
+from datetime import time as datetime_time
 from enum import StrEnum
 from typing import Literal, Protocol
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
@@ -113,7 +114,9 @@ class TimeZonePolicy:
             return self.fixed_zone_id
 
         if device_zone_id is None:
-            raise MissingDeviceTimeZoneError("follow-device timezone policy requires device_zone_id")
+            raise MissingDeviceTimeZoneError(
+                "follow-device timezone policy requires device_zone_id"
+            )
         validate_iana_timezone(device_zone_id)
         return device_zone_id
 

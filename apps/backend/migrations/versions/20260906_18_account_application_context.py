@@ -91,7 +91,9 @@ def upgrade() -> None:
             """
         )
     )
-    op.execute(sa.text(f"ALTER FUNCTION dante.validate_account_application_timezone() OWNER TO {_OWNER}"))
+    op.execute(
+        sa.text(f"ALTER FUNCTION dante.validate_account_application_timezone() OWNER TO {_OWNER}")
+    )
     op.execute(
         sa.text(
             "REVOKE ALL PRIVILEGES ON FUNCTION dante.validate_account_application_timezone() "
@@ -199,9 +201,7 @@ def upgrade() -> None:
             f"FROM PUBLIC, {_RUNTIME}, {_MIGRATOR}"
         )
     )
-    op.execute(
-        sa.text(f"GRANT SELECT ON TABLE dante.account_application_context TO {_RUNTIME}")
-    )
+    op.execute(sa.text(f"GRANT SELECT ON TABLE dante.account_application_context TO {_RUNTIME}"))
     op.execute(
         sa.text(
             "REVOKE ALL PRIVILEGES ON FUNCTION dante.ensure_account_application_context(uuid,uuid) "
@@ -241,7 +241,11 @@ def downgrade() -> None:
         )
     )
     op.execute(sa.text("DROP FUNCTION dante.ensure_account_application_context(uuid,uuid)"))
-    op.execute(sa.text("DROP TRIGGER trg_account_application_context_timezone ON dante.account_application_context"))
+    op.execute(
+        sa.text(
+            "DROP TRIGGER trg_account_application_context_timezone ON dante.account_application_context"
+        )
+    )
     op.execute(
         sa.text(
             "REVOKE ALL PRIVILEGES ON FUNCTION dante.validate_account_application_timezone() "
