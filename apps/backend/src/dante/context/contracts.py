@@ -7,6 +7,10 @@ from dante.platform.database.references import NativeRef
 from dante.platform.time import TimeZonePolicy
 
 
+class DanteContextIntegrityError(RuntimeError):
+    """Persisted authenticated DANTE context violates an internal invariant."""
+
+
 @dataclass(frozen=True, slots=True)
 class DanteContext:
     """Request-scoped DANTE context derived from an authenticated Principal."""
