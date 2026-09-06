@@ -1,0 +1,54 @@
+import { describe, expect, it } from 'vitest';
+
+import { getCoreWorldFocusSurfaceRegistry } from './world-focus-core-surfaces';
+import { WorldFocusSurfaceRegistry } from './world-focus-surface-registry';
+
+describe('WorldFocusSurfaceRegistry', () => {
+  it('preserves deterministic order and resolves only shipped surface kinds', () => {
+    const insight = {
+      kind: 'insight',
+      marker: 1,
+      render: () => null,
+    } as const;
+    const explore = {
+      kind: 'explore',
+      marker: 2,
+      render: () => null,
+    } as const;
+    const registry = new WorldFocusSurfaceRegistry([insight, explore]);
+
+    expect(registry.kinds).toEqual(['insight', 'explore']);
+    expect(registry.resolve('insight')).toBe(insight);
+    expect(registry.resolve('explore')).toBe(explore);
+    expect(registry.resolve('future-specialist')).toBeNull();
+  });
+
+  it('keeps a standalone DANTE Insight as a finite shipped surface kind', () => {
+    const registry = getCoreWorldFocusSurfaceRegistry();
+
+    expect(registry.has('dante-insight')).toBe(true);
+  });
+
+  it('keeps D6 Proposal, confirmation and receipt as three distinct finite shipped surface kinds', () => {
+    const registry = getCoreWorldFocusSurfaceRegistry();
+
+    expect(registry.has('dante-proposal')).toBe(true);
+    expect(registry.has('dante-confirmation')).toBe(true);
+    expect(registry.has('dante-receipt')).toBe(true);
+  });
+
+  it('rejects duplicate and empty kinds before runtime presentation', () => {
+    expect(
+      () =>
+        new WorldFocusSurfaceRegistry([
+          { kind: 'insight', render: () => null },
+          { kind: 'insight', render: () => null },
+        ]),
+    ).toThrowError('Duplicate World Focus surface kind: insight');
+
+    expect(
+      () =>
+        new WorldFocusSurfaceRegistry([{ kind: '   ', render: () => null }]),
+    ).toThrowError('World Focus surface kind must not be empty');
+  });
+});

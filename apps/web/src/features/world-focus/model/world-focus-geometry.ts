@@ -1,4 +1,4 @@
-export const WORLD_FOCUS_GEOMETRY_VERSION = 'wf-g3-candidate' as const;
+export const WORLD_FOCUS_GEOMETRY_VERSION = 'wf-g3' as const;
 
 const guideEllipses = Object.freeze({
   outer: Object.freeze({ rx: '52.25%', ry: '90%' }),
@@ -11,24 +11,30 @@ const layout = Object.freeze({
   compactWorkspaceInlineInset: 'clamp(76px, 18vw, 112px)',
   workspaceBlockInset: 'clamp(32px, 5vh, 64px)',
   compactWorkspaceBlockInset: '20px',
+  compactTuningMaxPx: 720,
 });
 
 /**
- * WF-G3 candidate geometry authority.
+ * WF-G3 is the frozen World Focus geometry authority.
  *
- * The World frame is three true concentric ellipses centered on the World Focus
- * surface. The canonical origin ellipse uses rx=50%, so it is mathematically
- * tangent to the left and right route edges at mid-height instead of
- * disappearing outside the viewport. Its taller ry produces the long corner
- * arcs approved during visual QA instead of a rigid circular silhouette.
+ * The World frame is three true concentric ellipses centered on the World
+ * Focus route surface. The canonical origin ellipse uses rx=50%, so at
+ * route mid-height it is mathematically tangent to the left and right route
+ * edges. The larger outer ellipse extends beyond those edges; the smaller
+ * inner ellipse remains inside them. Their taller ry values produce the
+ * approved elongated corner-arc silhouette instead of a rigid circle.
  *
  * Ellipse semantics:
- * - outer: slightly larger than the route width, so the band extends outside;
- * - origin: canonical reference, tangent to both lateral route edges;
- * - inner: slightly smaller, so the inside edge remains visible.
+ * - outer: external boundary of the reserved visual-frame band;
+ * - origin: canonical reference for future transitions/assets;
+ * - inner: internal boundary of the reserved visual-frame band.
  *
- * This remains a candidate until visual QA approves it. Once approved, bump to
- * a locked version and do not alter these values as visual polish.
+ * Change control:
+ * - these values are structural geometry, not visual-polish knobs;
+ * - child modules, World skins and overlays must not duplicate or redefine
+ *   them;
+ * - changing them requires explicit product approval and a deliberate geometry
+ *   version bump plus contract/test/documentation updates.
  */
 export const WORLD_FOCUS_GEOMETRY = Object.freeze({
   version: WORLD_FOCUS_GEOMETRY_VERSION,

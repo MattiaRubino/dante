@@ -1,120 +1,123 @@
-# DANTE — Frontend Product Contract
+# DANTE — Frontend Documentation Entry Map
 
-- **Status:** CURRENT FRONTEND NAVIGATION — integrated Home/Temporal candidate over current `main`
-- **Last reconciled:** 2026-09-05
-- **Integration state:** `feature/home-timeline` contains `main` through `7bc7c0136cb5579528be1e2be0e71a6399004f90`; no PR is opened by this checkpoint.
+**Status:** CURRENT FRONTEND DOCUMENTATION ENTRY POINT  
+**Date:** 2026-09-06
 
-This directory contains durable product-facing frontend contracts carried into the production React workspace. Current implementation truth is the checked-out code/tests plus current CI evidence. Prototype branches and dated checkpoints remain design/history evidence only.
+This directory contains the durable product, architecture, contract and production-readiness documentation for the materialized frontend. Current code, tests and current CI evidence outrank historical branch notes and dated evidence.
 
-Historical Home/Temporal branch context is retained in `docs/archive/branches/2026-09-feature-home-timeline.md`. The pre-PR closure deliberately removes temporary handoff/live-status files rather than carrying duplicate operating authority into `main`.
+## 1. First read
 
-## Read order
+For current frontend work read:
 
-1. `access.md` — current Access/Auth Web contract
-2. `home/home-structural-contract.md` — frozen Whole-Home H0 macro structure and responsive composition
-3. `home/current-checkpoint.md` — current Home/Temporal integration state
-4. `home/temporal-frontend-roadmap.md` — current Temporal frontend authority
-5. `home/temporal-f0-contract.md` — frozen temporal application foundation
-6. `home/timeline-t1-frozen-contract.md` — frozen Timeline behavior
-7. `home/temporal-create-c1-manual-acceptance.md` — C1 manual product gate
-8. `home/world-focus-architecture.md` — World Focus frontend architecture
-9. `home/world-focus-frontend-roadmap.md` — World Focus pre-backend roadmap
-10. `home/contract.md` — durable Home product/behavior intent
-11. `ui-registry.md`
-12. `design-tokens.md`
-13. `terminology.md`
-14. `localization.md`
-15. `production-readiness/component-architecture.md`
-16. `production-readiness/backend-integration-contract.md`
-17. `production-readiness/quality-gates.md`
+1. `docs/frontend/home/current-checkpoint.md` — current integrated frontend state;
+2. the workstream-specific current contract/roadmap below;
+3. deeper dated evidence only when rationale or historical proof is needed.
 
-Engineering/runtime authority remains the materialized frontend workspace, repository architecture, CI and local-development documentation. Product contracts do not replace those engineering authorities.
+Do not reconstruct current sequencing from archived handoffs or obsolete `NEXT` prose.
 
-## Access current state
+## 2. AppShell / Home / Temporal
 
-The old pre-backend Access materialization remains historical visual/product evidence, but Access is no longer a fake/pre-backend surface. Current Web capability is integrated with the governed backend and includes:
+Read:
 
-```text
-email/password signin
-session bootstrap/logout
-signup/OTP/recovery/reset/reauth
-Google official GIS signin/link/reauth flow
-Apple browser begin/continuation integration
-provider enrollment/link collision flow
-passkey signin/register/reauth/rename/remove
-password establish/remove
-/security authenticator management
-backend-authoritative anti-lockout
-IT/EN copy
-```
+1. `docs/frontend/home/home-structural-contract.md`;
+2. `docs/frontend/app-shell/p1-global-app-shell.md`;
+3. `docs/frontend/home/temporal-frontend-roadmap.md`;
+4. `docs/frontend/home/temporal-f0-contract.md`;
+5. `docs/frontend/home/timeline-t1-frozen-contract.md`;
+6. `docs/frontend/home/temporal-create-c1-manual-acceptance.md`;
+7. `docs/frontend/home/contract.md`;
+8. `docs/frontend/open-decisions.md`;
+9. `docs/frontend/ui-registry.md`.
 
-Current architecture:
-
-```text
-TanStack Router
-→ feature public API
-→ TanStack Query
-→ Access application boundary
-→ platform Web Auth adapters
-→ governed @dante/api-client
-→ same-origin /api/v1
-→ FastAPI/PostgreSQL canonical authority
-```
-
-Rules:
-
-```text
-feature-first ownership
-route adapters remain thin
-presentation does not import raw generated operations/platform adapters
-no ad-hoc Auth fetch proliferation
-no browser-persisted Auth token
-provider/browser success != DANTE authenticated success
-WebAuthn crypto remains backend-owned
-```
-
-The accepted Security UI is functionally proved but has accumulated substantial responsibility in `access-security-page.tsx`. Later hardening should split bounded password/provider/passkey/reauth sections before substantially expanding the page. This is a component-ownership cleanup, not a semantic Auth redesign.
-
-## Home / Temporal integrated candidate
-
-The accepted Home prototype remains an executable UX/reference specification, not code to transliterate line-by-line. The production React Home/AppShell/Timeline/Temporal materialization now lives together on the integration candidate and consumes the current platform, Access/Auth, Recovery, Email, Observability, OpenAPI and shared frontend baseline from `main`.
-
-The Whole-Home macro skeleton is change-controlled by H0. Child feature work consumes that skeleton and may not silently change region ownership, macro hierarchy or responsive composition merely because a local implementation would be easier.
-
-Frozen foundations remain distinct from open product acceptance:
+Current status:
 
 ```text
 H0 Whole Home structure        FROZEN
 P1 AppShell / Topbar           FROZEN
-T1 Timeline behavior           FROZEN
+T1 Timeline                    FROZEN
 F0 Temporal application seam   CLOSED / FROZEN
-C1 Manual Temporal Create      OPEN — manual product acceptance not granted
+C1 Manual Temporal Create      OPEN
+C1 MANUAL PASS                 NOT GRANTED
 C2 Structured Detail           BLOCKED until C1 closes
 ```
 
-Merging the integration branch must never be interpreted as `C1 MANUAL PASS — APPROVED`.
+Branch reconciliation, CI or merge does not manufacture C1 manual product approval.
 
-Implementation must:
+## 3. World Focus
 
-- preserve accepted visual and behavioral contracts before introducing redesigns;
-- preserve H0 unless an explicit user-approved change reopens it;
-- use the React/TypeScript architecture materialized in the repository;
-- componentize by ownership boundary rather than arbitrary pieces of the old monolith;
-- separate view models from backend DTOs/domain/persistence shapes;
-- preserve semantic IDs, localization keys and machine-readable Home-stage/Whole-Home contracts;
-- keep semantic World/group/event colors distinct from generic DANTE chrome;
-- keep Timeline/Temporal application seams independent from raw persistence and provider SDKs;
-- keep pre-backend C1 behavior truthful: no fake PostgreSQL/provider/recurrence-materialization success.
+Read in this order:
 
-Machine-readable H0 authority lives in:
+1. `docs/frontend/home/world-focus-current-checkpoint.md`;
+2. `docs/frontend/home/world-focus-product-contract.md`;
+3. `docs/frontend/home/world-focus-platform-contract.md`;
+4. `docs/frontend/home/world-focus-structural-contract.md`;
+5. `docs/frontend/home/world-focus-geometry-contract.md`;
+6. `docs/frontend/home/world-focus-delivery-methodology.md`;
+7. `docs/frontend/home/world-focus-frontend-roadmap.md`;
+8. `docs/frontend/home/world-focus-evidence-index.md` only for deeper archaeology.
 
-- `prototypes/frontend/shared/contracts/home-structure.contract.json`;
-- `prototypes/frontend/shared/contracts/home-shell-responsive.matrix.json`.
+Current engineering status:
 
-Those contracts are blocking CI through `tests/prototypes/frontend-preprod-contracts.py`; runtime structure and geometry are additionally protected by React and Playwright regression tests.
+```text
+WF0 / WF-G3                       FROZEN / LOCKED
+M0-M3                             CLOSED / VALIDATED
+M4 Contextual DANTE / D2-D6       CLOSED / VALIDATED
+M4 hostile closure                CLOSED / PASS
+protected-main ancestry merge     COMPLETE
+R3 semantic reconciliation        CLOSED / AUTOMATED QA PASS
+M5 contrasting Worlds             NOT STARTED
+M6 visual/a11y/perf               BLOCKED BY M5
+M7 pre-backend freeze             BLOCKED BY M6
+human/manual visual acceptance    NOT PERFORMED
+```
 
-## Historical prototype / branch rule
+R3 exact-code candidate `e28e29a7ab3a8cd71b0c386ced824385c8c2d9e6` passed Backend CI, Dependency Review and Frontend CI on PR #65. Required protected-main checks on the final merge head remain the merge authority; historical run IDs prove only their exact SHA.
 
-Production code never imports prototype implementation. Prototype branches and the branch closure archive are recoverable evidence, not runtime or operating dependencies.
+The branch candidate becomes protected-main truth only through PR #65 and the repository ruleset. Git/PR state is authoritative for whether that integration has occurred.
 
-Branch/worktree/SHA labels inside dated frozen or historical records describe provenance. They do not override `home/current-checkpoint.md`, the checked-out branch, or current repository/CI truth.
+## 4. Current platform truth inherited from main
+
+The reconciled frontend consumes protected-main platform truth rather than an old frontend-only snapshot. That includes the current PostgreSQL/Alembic baseline, Access/Auth implementation, Recovery, Email, Observability, OpenAPI/API-client boundaries and Intelligence foundation.
+
+Frontend work must not overwrite those owners for convenience.
+
+Current Access Web capability includes the governed backend integration for email/password, session lifecycle, recovery/reset/reauth, Google and Apple provider flows, passkeys, authenticator management and `/security`. Access UI/model remains behind its application boundary and the governed API client.
+
+## 5. Permanent semantic boundaries
+
+```text
+frontend view model != backend DTO != Domain != persistence row
+World != Domain owner
+World relevance != authorization
+projection != canonical truth
+AI output != accepted fact
+assistant prose != Insight
+Insight != Proposal != Decision != effect
+confirmed != executed
+Receipt != provider/runtime/canonical completion
+planned/intended != Actual
+Comparison != Decision
+absence != false
+UI hiding != authorization
+```
+
+World Focus remains pre-backend for its own canonical World/DANTE persistence/effect semantics even though the repository contains real backend platform capability elsewhere.
+
+## 6. Engineering authorities
+
+For non-trivial frontend work also inspect:
+
+- `docs/frontend/production-readiness/component-architecture.md`;
+- `docs/frontend/production-readiness/backend-integration-contract.md`;
+- `docs/frontend/production-readiness/quality-gates.md`;
+- `docs/frontend/terminology.md`;
+- `docs/frontend/localization.md`;
+- `docs/frontend/design-tokens.md`;
+- current `dependency-cruiser.config.mjs`;
+- current GitHub Actions workflows.
+
+Machine-readable Home and World Focus structural contracts under `prototypes/frontend/shared/contracts/` are blocking CI contracts, not decoration.
+
+## 7. Lifecycle rule
+
+Temporary chat/session/live handoffs are not current repository authorities and must not survive into protected `main`. Historical proof belongs in dated evidence, the consolidated branch closure record or Git/PR history. Current product and architecture truth belongs in the current contracts/checkpoints above.

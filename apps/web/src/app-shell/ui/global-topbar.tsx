@@ -7,14 +7,7 @@ import danteWordmarkRaw from '../../../../../assets/brand/wordmark/master/dante-
 import { PRIMARY_DESTINATIONS } from '../model/navigation';
 import { AccountMenuContent } from './account-menu';
 import { CreateMenuContent } from './create-menu';
-import {
-  HomeIcon,
-  ReviewIcon,
-  SearchIcon,
-  TodayIcon,
-  UserIcon,
-  WorldsIcon,
-} from './icons';
+import { HomeIcon, SearchIcon, TodayIcon, UserIcon, WorldsIcon } from './icons';
 import { LauncherMenuContent } from './launcher-menu';
 import { MenuPopover } from './primitives/menu-popover';
 import { TopbarSearchSurface } from './topbar-search-surface';
@@ -199,22 +192,6 @@ export function GlobalTopbar() {
             <CreateMenuContent />
           </MenuPopover>
         </div>
-
-        <button
-          className="app-topbar-review"
-          type="button"
-          disabled
-          title={t(($) => $.common.shell.review.legacyHint)}
-          aria-label={t(($) => $.common.shell.topbar.review)}
-        >
-          <ReviewIcon />
-          <span className="app-topbar-review-label">
-            {t(($) => $.common.shell.topbar.review)}
-          </span>
-          <span className="app-topbar-review-badge" aria-hidden="true">
-            3
-          </span>
-        </button>
 
         <div className="app-popover-anchor">
           <button

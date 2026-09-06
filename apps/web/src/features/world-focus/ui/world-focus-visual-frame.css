@@ -1,0 +1,13 @@
+.world-focus-visual-frame {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  contain: paint;
+}
+
+.world-focus-ambient-field {
+  position: absolute;
+  inset: 0;
+}

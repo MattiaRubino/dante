@@ -1,9 +1,9 @@
 # DANTE — Home Contract
 
-**Status:** current pre-production behavior contract  
+**Status:** current pre-production behavior contract — legacy Global Topbar Review cleanup aligned 2026-09-02  
 **Current working B2 baseline:** B2 Home Shell + Timeline Quick Add v25 over B2 Home Visual Skin v24 over B2 Home Branding v23 over B2 Central Stage v22  
 **Last formally closed Home milestone:** B1 Context Rail v1  
-**Branch:** `prototype/frontend`
+**Branch:** `feature/home-react`
 
 This file tells a new chat/agent what the current Home is expected to contain and do. It is authoritative for Home behavior/intent at the prototype level; it does not create backend semantics.
 
@@ -43,7 +43,7 @@ Current accepted arrangement:
 
 ```text
 LEFT                         CENTER                    RIGHT
-DANTE + Cerca                Home / Mondi / Oggi       Crea / Review / launcher / account
+DANTE + Cerca                Home / Mondi / Oggi       Crea / launcher / account
 ```
 
 Shell rules:
@@ -53,7 +53,7 @@ Shell rules:
 - Search lives immediately after DANTE on the left;
 - primary Home / Mondi / Oggi navigation remains centered;
 - `Crea` is the first control in the right utility group;
-- Review, launcher and account follow it;
+- launcher and account follow it;
 - existing Search/Create controls are moved/reused rather than duplicated;
 - the working reviewed shell suppresses the outer Home-stage vertical side frame that previously strengthened a nested-panel reading.
 
@@ -62,13 +62,12 @@ Current prototype controls remain:
 - Crea;
 - Home / Mondi / Oggi nav controls;
 - Search;
-- legacy Review Queue;
 - secondary launcher;
 - profile/settings menu.
 
 Important: several topbar controls are mock/prototype interactions. Their presence does not imply production routing, persistence or backend services.
 
-The legacy topbar Review Queue is **deprecated** because B1 establishes Resolution as the preferred unresolved-matter concept. It remains visible only until a separate cleanup scope decides the final global access pattern.
+The former legacy topbar Review Queue was already deprecated because B1 establishes Resolution as the preferred unresolved-matter concept. A bounded AppShell/Home cleanup on 2026-09-02 removed the disabled global Review button, hard-coded badge, dedicated icon/CSS and localization. No replacement global Review workflow was invented, and Context Rail Resolution remains separately owned inside Home.
 
 The DANTE identity-anchor treatment is governed by B2 branding v23. Historical `LifeOS` strings may still exist inside untouched prototype-only/deprecated controls; v23-v25 do not authorize a blind global rename.
 
@@ -385,6 +384,8 @@ Must **not** become:
 
 Resolution state and attention delivery remain separate.
 
+The removal of the deprecated Global Topbar Review placeholder does not change this ownership. Resolution is not implicitly globalized by that cleanup.
+
 ### 8.5 Deep escalation
 
 If resolution needs history, provenance, many fields, complex scope, comparison or significant consequences, the rail must not cram the workflow into ~306px. It escalates to the future controlled overlay/sheet/contextual-surface grammar.
@@ -451,15 +452,16 @@ For touched durable Home behavior, apply the applicable quality layers from `doc
 
 ## 12. Current B2 open decisions
 
-The central-stage add/configuration model is decided by v22. DANTE identity is aligned by v23. Working palette/background are accepted by v24. The global shell placement and contextual timeline `+` placement are accepted by v25.
+The central-stage add/configuration model is decided by v22. DANTE identity is aligned by v23. Working palette/background are accepted by v24. The global shell placement and contextual timeline `+` placement are accepted by v25. The deprecated global Review placeholder is removed and is no longer an open decision.
 
 Before B2 closure:
 
 1. define the final production semantics/destination/context prefill for timeline quick-add;
-2. reconcile legacy Review and historical launcher only in an explicit bounded scope;
-3. productionize the accepted visual token layer when implementation reaches shared theme code;
-4. finish remaining small shell/detail refinements;
-5. rerun applicable responsive / visual / accessibility QA.
+2. productionize the accepted visual token layer when implementation reaches shared theme code;
+3. finish remaining small shell/detail refinements;
+4. rerun applicable responsive / visual / accessibility QA.
+
+Any future global unresolved-matter entry must earn a new explicit contract; do not resurrect `Review` as a disabled placeholder or fake count.
 
 ## 13. Documentation rule
 
