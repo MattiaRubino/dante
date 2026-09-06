@@ -36,9 +36,11 @@ This milestone reuses the existing DANTE temporal/database semantics rather than
 
 ## PV-02 — User Context / Dogfood / Personas
 
-- **Branch-local status:** IN PROGRESS
+- **Branch-local status:** DONE / IMPLEMENTATION COMPLETE
 
 PV-02 closes the authenticated DANTE user-context seam and adds the minimum durable LOCAL/DEV data needed to exercise that seam repeatedly before a product vertical exists.
+
+Executable whole-branch acceptance is deliberately centralized in PV-03; PV-02 completion here means the bounded implementation, documentation and exact-scope QA are complete, not that final branch CI/recovery/main integration has already run.
 
 ### A. User Context
 
@@ -70,47 +72,68 @@ Detailed branch-local authority: `../architecture/authenticated-dante-context.md
 
 ### B. Dogfood
 
-- **Status:** IN PROGRESS
+- **Status:** DONE
 
-Provide one persistent LOCAL/DEV account that survives ordinary application restarts and can be used repeatedly through the real Access/Auth and DANTE-context paths.
+The branch now provides a persistent LOCAL/DEV dogfood bootstrap under `apps/backend/tooling/pre_vertical_foundation/`.
 
-The dogfood bootstrap must:
+It:
 
-- target the ordinary persistent LOCAL/DEV DANTE database, never the disposable pytest database;
-- reuse canonical Access/Auth email normalization and PasswordKdf policy;
-- create canonical Account + verified EmailIdentity + PasswordCredential state only when absent;
-- be idempotent by canonical email identity;
-- preserve the same Account and self Person on rerun;
-- reject an existing incompatible/disabled/non-password account instead of silently rewriting it;
-- reject a different supplied password instead of silently resetting credentials;
-- initialize self Person/application context through the existing PV-02 capability;
-- keep all passwords, pepper material and database credentials outside Git;
-- fail closed outside LOCAL/DEV;
-- never log or print secret material.
+- targets the ordinary persistent LOCAL/DEV DANTE database, never the disposable pytest database;
+- reuses canonical Access/Auth `normalize_email` and `PasswordKdf` behavior;
+- creates canonical Account + verified EmailIdentity + PasswordCredential state only when absent;
+- is idempotent by canonical email identity;
+- preserves the same Account and self Person on rerun;
+- rejects incompatible/disabled/non-password existing state instead of silently rewriting it;
+- rejects a different supplied password instead of silently resetting credentials;
+- initializes self Person/application context through the existing PV-02 runtime capability;
+- requires normal runtime database/password-pepper configuration plus separate `*.local` password/migrator secret files;
+- fails closed unless `DANTE_ENV` is exactly `local` or `dev`;
+- never prints password, pepper or database credential material.
 
-No Access/Auth API, schema or login/signup semantics are changed for dogfood support.
+No Access/Auth API, schema or login/signup semantics were changed for dogfood support.
+
+Detailed operational contract: `../development/pre-vertical-dogfood-personas.md`.
 
 ### C. Personas
 
-- **Status:** IN PROGRESS
+- **Status:** DONE
 
-Provide deterministic synthetic personas/scenarios that future verticals and PV-03 can reuse without inventing product-specific data in advance.
-
-The initial foundation personas are:
+The branch defines exactly three deterministic, product-independent foundation personas:
 
 - `normal` — ordinary current-use timezone/context behavior;
-- `temporal_edge` — DST gap/overlap and named-zone edge semantics;
-- `historical` — deterministic long-history temporal anchors independent of UUID ordering.
+- `temporal_edge` — New York DST gap/overlap plus fixed-zone/device-zone independence;
+- `historical` — explicit 2016→2026 history anchors independent of UUID ordering.
 
-Persona identity references are deterministic valid UUIDv7 values for repeatable fixtures only. UUID ordering is never semantic chronology/currentness authority.
+Persona Account/self-Person references are stable synthetically generated UUIDv7 values for repeatable fixtures only. UUID ordering is never semantic chronology/currentness authority.
 
-Persona materialization is optional and LOCAL/DEV only. The definitions own reusable identity/time anchors, not Timeline/Activity/Event/Routine product records.
+Persona materialization is optional and LOCAL/DEV only. It reuses the same canonical Auth seed primitive and PV-02 context capability, specializes only the pristine `follow_device` timezone default when a fixed synthetic policy is required, and refuses to overwrite incompatible existing deterministic state.
 
-PV-02 is complete only when User Context, Dogfood and Personas are all implemented and their bounded scope QA passes.
+No Timeline, Activity, Event, Routine, Session, Actual or other vertical-specific records are created.
+
+Bounded tests were added for:
+
+- LOCAL/DEV-only environment guards and canonical runtime identity;
+- canonical password-pepper configuration and `*.local` secret discipline;
+- deterministic UUIDv7 persona identity;
+- real Rome/New York ordinary/gap/overlap timezone classification;
+- fixed timezone independence from current device zone;
+- real PostgreSQL account/context materialization and rerun idempotence;
+- wrong-password fail-closed behavior without credential rewrite;
+- deterministic persona timezone persistence.
+
+The real PostgreSQL test reuses the existing DANTE PostgreSQL 18.6 disposable acceptance harness; PV-02 does not introduce a second database-test framework.
+
+### PV-02 exact-scope result
+
+PV-02 Dogfood/Personas was implemented from approved pre-scope:
+
+`464b198751e4637ebd2e6e32dbd75c2d7d275cc1`
+
+The post-implementation compare is linear and contains only approved Dogfood/Personas tooling, tests, quality configuration and documentation paths. No Alembic, CP6, Access/Auth source, Recovery or product-vertical path was changed by this PV-02 sub-scope.
 
 ## PV-03 — Scale Harness / QA / Closure
 
-- **Branch-local status:** NOT STARTED
+- **Branch-local status:** NEXT / NOT STARTED
 
 ### A. Scale Harness
 
