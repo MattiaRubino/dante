@@ -1,10 +1,11 @@
 import type { WorldFocusCompositionOwnership } from './world-focus-platform';
 
-export type WorldFocusCompositionEntry<Kind extends string = string> = Readonly<{
-  instanceId: string;
-  kind: Kind;
-  ownership: WorldFocusCompositionOwnership;
-}>;
+export type WorldFocusCompositionEntry<Kind extends string = string> =
+  Readonly<{
+    instanceId: string;
+    kind: Kind;
+    ownership: WorldFocusCompositionOwnership;
+  }>;
 
 function assertNonEmptyToken(value: string, label: string): string {
   const token = value.trim();
@@ -35,7 +36,9 @@ export function defineWorldFocusComposition<Kind extends string = string>(
     ) as Kind;
 
     if (instanceIds.has(instanceId)) {
-      throw new Error(`Duplicate World Focus composition instance: ${instanceId}`);
+      throw new Error(
+        `Duplicate World Focus composition instance: ${instanceId}`,
+      );
     }
     instanceIds.add(instanceId);
 

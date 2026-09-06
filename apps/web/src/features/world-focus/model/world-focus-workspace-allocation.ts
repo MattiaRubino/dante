@@ -28,8 +28,7 @@ export const WORLD_FOCUS_SURFACE_SLOTS = [
   'external',
 ] as const;
 
-export type WorldFocusSurfaceSlot =
-  (typeof WORLD_FOCUS_SURFACE_SLOTS)[number];
+export type WorldFocusSurfaceSlot = (typeof WORLD_FOCUS_SURFACE_SLOTS)[number];
 
 export type WorldFocusWorkspaceAllocationPolicy = Readonly<{
   minSplitInlineSize: number;
@@ -225,8 +224,7 @@ function createDormantPlacement(
 export function resolveWorldFocusWorkspaceAllocation(
   state: WorldFocusWorkspaceState,
   workspaceInlineSize: number,
-  policy: WorldFocusWorkspaceAllocationPolicy =
-    DEFAULT_WORLD_FOCUS_WORKSPACE_ALLOCATION_POLICY,
+  policy: WorldFocusWorkspaceAllocationPolicy = DEFAULT_WORLD_FOCUS_WORKSPACE_ALLOCATION_POLICY,
 ): WorldFocusWorkspaceAllocationPlan {
   const inlineSize = assertFiniteNonNegative(
     workspaceInlineSize,
@@ -239,7 +237,10 @@ export function resolveWorldFocusWorkspaceAllocation(
       ? state.surfaces
       : state.surfaces.slice(0, firstBlockingIndex);
   const blockingSurface = getWorldFocusBlockingSurface(state);
-  const activeSidecar = findLatestSurfaceByPresentation(baseSurfaces, 'sidecar');
+  const activeSidecar = findLatestSurfaceByPresentation(
+    baseSurfaces,
+    'sidecar',
+  );
   const rawTopSurface = getTopSurface(state.surfaces);
   const effectiveTopSurface = blockingSurface ?? rawTopSurface;
   const topWorkspaceLayerSurface =
@@ -376,7 +377,9 @@ export function resolveWorldFocusWorkspaceAllocation(
     mainInlineSize,
     sidecarInlineSize,
     splitGap: canSplit ? resolvedPolicy.splitGap : 0,
-    activeSidecarInstanceId: canSplit ? activeSidecar?.instanceId ?? null : null,
+    activeSidecarInstanceId: canSplit
+      ? (activeSidecar?.instanceId ?? null)
+      : null,
     activeOverlayInstanceId: activeOverlaySurface?.instanceId ?? null,
     activeFocusInstanceId: activeFocusSurface?.instanceId ?? null,
     topSurfaceInstanceId: effectiveTopSurface?.instanceId ?? null,

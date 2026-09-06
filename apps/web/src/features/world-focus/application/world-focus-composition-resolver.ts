@@ -57,7 +57,9 @@ type WorldFocusCompositionValueSignalAssignmentInput = Readonly<{
 
 type WorldFocusCompositionValueBand = 'foreground' | 'active' | 'ordinary';
 
-const PROMINENCE_RANK: Readonly<Record<WorldFocusCompositionProminence, number>> = {
+const PROMINENCE_RANK: Readonly<
+  Record<WorldFocusCompositionProminence, number>
+> = {
   supporting: 0,
   primary: 1,
   lead: 2,
@@ -80,7 +82,9 @@ function normalizeNonEmptyToken(value: string, label: string): string {
 function normalizeWorldId(value: WorldFocusId): WorldFocusId {
   const worldId = normalizeWorldFocusId(value);
   if (worldId === undefined) {
-    throw new Error('World Focus composition signal World id must not be empty');
+    throw new Error(
+      'World Focus composition signal World id must not be empty',
+    );
   }
   return worldId;
 }
@@ -93,10 +97,14 @@ function normalizeSignals(
 
   for (const signal of signals) {
     if (!WORLD_FOCUS_COMPOSITION_VALUE_SIGNALS.includes(signal)) {
-      throw new Error(`Unsupported World Focus composition value signal: ${signal}`);
+      throw new Error(
+        `Unsupported World Focus composition value signal: ${signal}`,
+      );
     }
     if (seen.has(signal)) {
-      throw new Error(`Duplicate World Focus composition value signal: ${signal}`);
+      throw new Error(
+        `Duplicate World Focus composition value signal: ${signal}`,
+      );
     }
     seen.add(signal);
     normalized.push(signal);
@@ -144,7 +152,11 @@ function elevatedProminence(
   band: WorldFocusCompositionValueBand,
 ): WorldFocusCompositionProminence {
   const minimum: WorldFocusCompositionProminence =
-    band === 'foreground' ? 'lead' : band === 'active' ? 'primary' : 'supporting';
+    band === 'foreground'
+      ? 'lead'
+      : band === 'active'
+        ? 'primary'
+        : 'supporting';
   return PROMINENCE_RANK[defaultProminence] >= PROMINENCE_RANK[minimum]
     ? defaultProminence
     : minimum;
@@ -176,11 +188,13 @@ function makeCandidate(
  * Resolves only composition metadata. It does not authorize, inspect Domain
  * payload, retain references, select renderers, or mount UI.
  */
-export function resolveWorldFocusCompositionCandidates(input: Readonly<{
-  opportunitySet: WorldFocusCompositionOpportunitySet;
-  config: WorldFocusCompositionConfig;
-  valueSignals: readonly WorldFocusCompositionValueSignalAssignment[];
-}>): WorldFocusCompositionCandidateResolution {
+export function resolveWorldFocusCompositionCandidates(
+  input: Readonly<{
+    opportunitySet: WorldFocusCompositionOpportunitySet;
+    config: WorldFocusCompositionConfig;
+    valueSignals: readonly WorldFocusCompositionValueSignalAssignment[];
+  }>,
+): WorldFocusCompositionCandidateResolution {
   const worldId = normalizeWorldId(input.opportunitySet.worldId);
   if (input.config.worldId !== worldId) {
     throw new Error('World Focus composition config belongs to another World');
@@ -196,11 +210,17 @@ export function resolveWorldFocusCompositionCandidates(input: Readonly<{
     opportunitiesById.set(opportunity.instanceId, opportunity);
   });
 
-  const signalsById = new Map<string, WorldFocusCompositionValueSignalAssignment>();
+  const signalsById = new Map<
+    string,
+    WorldFocusCompositionValueSignalAssignment
+  >();
   input.valueSignals.forEach((rawAssignment) => {
-    const assignment = createWorldFocusCompositionValueSignalAssignment(rawAssignment);
+    const assignment =
+      createWorldFocusCompositionValueSignalAssignment(rawAssignment);
     if (assignment.worldId !== worldId) {
-      throw new Error('World Focus composition signal belongs to another World');
+      throw new Error(
+        'World Focus composition signal belongs to another World',
+      );
     }
     const opportunity = opportunitiesById.get(assignment.instanceId);
     if (opportunity === undefined) {
@@ -222,7 +242,9 @@ export function resolveWorldFocusCompositionCandidates(input: Readonly<{
   });
 
   const configById = new Map(
-    input.config.entries.map((entry, index) => [entry.instanceId, { entry, index }] as const),
+    input.config.entries.map(
+      (entry, index) => [entry.instanceId, { entry, index }] as const,
+    ),
   );
   const candidates: WorldFocusCompositionCandidate[] = [];
   const omitted: WorldFocusCompositionCandidateOmission[] = [];
@@ -277,7 +299,9 @@ export function resolveWorldFocusCompositionCandidates(input: Readonly<{
     .map((opportunity, sourceIndex) => ({
       opportunity,
       sourceIndex,
-      band: classifyValueBand(signalsById.get(opportunity.instanceId)?.signals ?? []),
+      band: classifyValueBand(
+        signalsById.get(opportunity.instanceId)?.signals ?? [],
+      ),
     }))
     .filter(({ opportunity }) => !configById.has(opportunity.instanceId))
     .sort((left, right) => {

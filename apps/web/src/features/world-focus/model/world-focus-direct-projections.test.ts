@@ -104,7 +104,9 @@ describe('World Focus M1-2 direct Output Grammar projections', () => {
     });
     expect(Object.isFrozen(projection.evidence)).toBe(true);
     expect(Object.isFrozen(projection.evidence.evidenceReferences)).toBe(true);
-    expect(Object.isFrozen(projection.evidence.provenanceReferences)).toBe(true);
+    expect(Object.isFrozen(projection.evidence.provenanceReferences)).toBe(
+      true,
+    );
     expect(
       Object.isFrozen(projection.evidence.integrityAttestationReferences),
     ).toBe(true);

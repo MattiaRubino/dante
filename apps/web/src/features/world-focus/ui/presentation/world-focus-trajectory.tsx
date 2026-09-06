@@ -124,7 +124,9 @@ export function WorldFocusTrajectory({
             key={`${point.reference.kind}:${point.reference.key}`}
           >
             <div className="world-focus-presentation-row-copy">
-              <p className="world-focus-presentation-row-title">{point.label}</p>
+              <p className="world-focus-presentation-row-title">
+                {point.label}
+              </p>
               {point.supportingText === undefined ? null : (
                 <p className="world-focus-presentation-row-meta">
                   {point.supportingText}

@@ -23,19 +23,21 @@ export type WorldFocusCompositionRegistration<
   ) => ReactNode;
 }>;
 
-type WorldFocusCompositionHostProps<WorldId extends string = string> = Readonly<{
-  worldId: WorldId;
-  entries: readonly WorldFocusCompositionPlanEntry[];
-  registry: WorldFocusModuleRegistry<
-    WorldFocusCompositionRegistration<string, WorldId>
-  >;
-}>;
+type WorldFocusCompositionHostProps<WorldId extends string = string> =
+  Readonly<{
+    worldId: WorldId;
+    entries: readonly WorldFocusCompositionPlanEntry[];
+    registry: WorldFocusModuleRegistry<
+      WorldFocusCompositionRegistration<string, WorldId>
+    >;
+  }>;
 
-type WorldFocusRegisteredModuleProps<WorldId extends string = string> = Readonly<{
-  registration: WorldFocusCompositionRegistration<string, WorldId>;
-  worldId: WorldId;
-  entry: WorldFocusCompositionPlanEntry;
-}>;
+type WorldFocusRegisteredModuleProps<WorldId extends string = string> =
+  Readonly<{
+    registration: WorldFocusCompositionRegistration<string, WorldId>;
+    worldId: WorldId;
+    entry: WorldFocusCompositionPlanEntry;
+  }>;
 
 function WorldFocusRegisteredModule<WorldId extends string = string>({
   registration,

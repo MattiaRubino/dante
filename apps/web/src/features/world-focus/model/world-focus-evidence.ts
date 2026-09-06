@@ -83,7 +83,9 @@ export function createWorldFocusEvidenceReferenceFacet(
     provenanceReferences.length === 0 &&
     integrityAttestationReferences.length === 0
   ) {
-    throw new Error('World Focus evidence facet must contain at least one reference');
+    throw new Error(
+      'World Focus evidence facet must contain at least one reference',
+    );
   }
 
   return Object.freeze({

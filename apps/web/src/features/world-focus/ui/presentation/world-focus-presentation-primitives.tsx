@@ -1,8 +1,4 @@
-import {
-  useId,
-  type ComponentPropsWithoutRef,
-  type ReactNode,
-} from 'react';
+import { useId, type ComponentPropsWithoutRef, type ReactNode } from 'react';
 
 import './world-focus-presentation.css';
 
@@ -24,10 +20,7 @@ export function WorldFocusPresentationSection({
   ...sectionProps
 }: WorldFocusPresentationSectionProps) {
   const headingId = useId();
-  const sectionClassName = [
-    'world-focus-presentation-section',
-    className,
-  ]
+  const sectionClassName = ['world-focus-presentation-section', className]
     .filter(Boolean)
     .join(' ');
 

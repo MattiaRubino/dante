@@ -39,7 +39,9 @@ describe('World Focus M2 disclosure presentation', () => {
 
     rerender(
       <WorldFocusDisclosurePresentation
-        disclosure={createWorldFocusDisclosureOutcome({ status: 'unavailable' })}
+        disclosure={createWorldFocusDisclosureOutcome({
+          status: 'unavailable',
+        })}
       />,
     );
     expect(screen.getByText('Non disponibile')).toBeTruthy();

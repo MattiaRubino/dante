@@ -30,7 +30,8 @@ export const worldFocusDirectProjectionFixtureAdapter: WorldFocusDirectProjectio
   Object.freeze({
     readSituation: async ({ worldId, signal }) => {
       await settle(signal);
-      if (normalizeWorldFocusFixtureId(worldId) !== 'music') return empty(worldId);
+      if (normalizeWorldFocusFixtureId(worldId) !== 'music')
+        return empty(worldId);
       return Object.freeze({
         status: 'ready' as const,
         projection: createWorldFocusSituationProjection({
@@ -44,7 +45,8 @@ export const worldFocusDirectProjectionFixtureAdapter: WorldFocusDirectProjectio
     },
     readNext: async ({ worldId, signal }) => {
       await settle(signal);
-      if (normalizeWorldFocusFixtureId(worldId) !== 'music') return empty(worldId);
+      if (normalizeWorldFocusFixtureId(worldId) !== 'music')
+        return empty(worldId);
       return Object.freeze({
         status: 'ready' as const,
         projection: createWorldFocusNextProjection({
@@ -58,11 +60,14 @@ export const worldFocusDirectProjectionFixtureAdapter: WorldFocusDirectProjectio
     },
     readEvidenceHistory: async ({ worldId, signal }) => {
       await settle(signal);
-      if (normalizeWorldFocusFixtureId(worldId) !== 'music') return empty(worldId);
+      if (normalizeWorldFocusFixtureId(worldId) !== 'music')
+        return empty(worldId);
       const evidence = createWorldFocusEvidenceReferenceFacet(
         {
           evidenceReferences: [ref('observation', 'neon-static-mix-review')],
-          provenanceReferences: [ref('provenance', 'neon-static-studio-import')],
+          provenanceReferences: [
+            ref('provenance', 'neon-static-studio-import'),
+          ],
           integrityAttestationReferences: [],
         },
         {

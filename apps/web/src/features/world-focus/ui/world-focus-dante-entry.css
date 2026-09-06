@@ -14,11 +14,15 @@
   min-width: 82px;
   min-height: 44px;
   padding: 0 13px 0 9px;
-  border: 1px solid color-mix(in srgb, var(--world-focus-accent) 28%, rgba(255, 255, 255, 0.08));
+  border: 1px solid
+    color-mix(in srgb, var(--world-focus-accent) 28%, rgba(255, 255, 255, 0.08));
   border-radius: 999px;
   color: rgba(244, 247, 255, 0.9);
-  background:
-    linear-gradient(180deg, rgba(18, 22, 42, 0.9), rgba(7, 10, 24, 0.94));
+  background: linear-gradient(
+    180deg,
+    rgba(18, 22, 42, 0.9),
+    rgba(7, 10, 24, 0.94)
+  );
   box-shadow:
     0 12px 34px rgba(0, 0, 0, 0.28),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
@@ -33,9 +37,16 @@
 }
 
 .world-focus-dante-invoke:hover {
-  border-color: color-mix(in srgb, var(--world-focus-accent) 48%, rgba(255, 255, 255, 0.1));
-  background:
-    linear-gradient(180deg, rgba(22, 27, 50, 0.94), rgba(9, 12, 28, 0.97));
+  border-color: color-mix(
+    in srgb,
+    var(--world-focus-accent) 48%,
+    rgba(255, 255, 255, 0.1)
+  );
+  background: linear-gradient(
+    180deg,
+    rgba(22, 27, 50, 0.94),
+    rgba(9, 12, 28, 0.97)
+  );
   transform: translateY(-1px);
 }
 
@@ -60,10 +71,15 @@
   justify-content: center;
   width: 28px;
   height: 28px;
-  border: 1px solid color-mix(in srgb, var(--world-focus-accent) 34%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--world-focus-accent) 34%, transparent);
   border-radius: 50%;
   color: color-mix(in srgb, var(--world-focus-accent) 58%, white);
-  background: color-mix(in srgb, var(--world-focus-accent) 9%, rgba(255, 255, 255, 0.018));
+  background: color-mix(
+    in srgb,
+    var(--world-focus-accent) 9%,
+    rgba(255, 255, 255, 0.018)
+  );
   font-size: 0.72rem;
   font-weight: 760;
   line-height: 1;
@@ -91,7 +107,8 @@
   max-height: min(420px, calc(100% - 24px));
   overflow: auto;
   pointer-events: auto;
-  border: 1px solid color-mix(in srgb, var(--world-focus-accent) 24%, rgba(255, 255, 255, 0.08));
+  border: 1px solid
+    color-mix(in srgb, var(--world-focus-accent) 24%, rgba(255, 255, 255, 0.08));
   border-radius: 20px;
   color: rgba(242, 246, 255, 0.92);
   background:
@@ -216,7 +233,11 @@
   bottom: 7px;
   border-radius: 12px;
   color: color-mix(in srgb, var(--world-focus-accent) 58%, white);
-  background: color-mix(in srgb, var(--world-focus-accent) 10%, rgba(255, 255, 255, 0.025));
+  background: color-mix(
+    in srgb,
+    var(--world-focus-accent) 10%,
+    rgba(255, 255, 255, 0.025)
+  );
   font-size: 1rem;
 }
 

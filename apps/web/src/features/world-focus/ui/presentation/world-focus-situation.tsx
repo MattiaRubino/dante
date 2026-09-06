@@ -22,8 +22,8 @@ export function WorldFocusSituation({
   bindings,
 }: WorldFocusSituationProps) {
   const { t } = useTranslation('common');
-  const orderedBindings = projection.orderedSituationReferences.map((reference) =>
-    requireWorldFocusDisplayBinding(bindings, reference),
+  const orderedBindings = projection.orderedSituationReferences.map(
+    (reference) => requireWorldFocusDisplayBinding(bindings, reference),
   );
 
   return (
@@ -35,7 +35,9 @@ export function WorldFocusSituation({
       <ul className="world-focus-direct-list">
         {orderedBindings.map((binding) => (
           <li className="world-focus-direct-row" key={bindingKey(binding)}>
-            <p className="world-focus-presentation-row-title">{binding.label}</p>
+            <p className="world-focus-presentation-row-title">
+              {binding.label}
+            </p>
             {binding.supportingText === undefined ? null : (
               <p className="world-focus-presentation-row-supporting">
                 {binding.supportingText}

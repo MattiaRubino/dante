@@ -16,7 +16,10 @@ import { createCoreWorldFocusModuleRegistry } from './world-focus-core-compositi
 type WorldFocusAdaptiveCompositionState =
   | Readonly<{ status: 'loading' }>
   | Readonly<{ status: 'error' }>
-  | Readonly<{ status: 'ready'; snapshot: WorldFocusAdaptiveCompositionSnapshot }>;
+  | Readonly<{
+      status: 'ready';
+      snapshot: WorldFocusAdaptiveCompositionSnapshot;
+    }>;
 
 type WorldFocusAdaptiveCompositionProps = Readonly<{
   worldId: WorldFocusId;
@@ -113,7 +116,9 @@ export function WorldFocusAdaptiveComposition({
   }
 
   if (resolution === null || registry === null) {
-    throw new Error('World Focus adaptive composition ready state is incomplete');
+    throw new Error(
+      'World Focus adaptive composition ready state is incomplete',
+    );
   }
 
   return (

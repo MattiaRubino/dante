@@ -38,10 +38,9 @@ describe('World Focus M2 Next renderer', () => {
       />,
     );
 
-    expect(screen.getAllByRole('listitem').map((item) => item.textContent)).toEqual([
-      'Programma uscita',
-      'Approvazione copertina',
-    ]);
+    expect(
+      screen.getAllByRole('listitem').map((item) => item.textContent),
+    ).toEqual(['Programma uscita', 'Approvazione copertina']);
     expect(screen.queryByText('internal-release-schedule')).toBeNull();
   });
 });

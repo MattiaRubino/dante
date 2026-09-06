@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { i18n } from '../../../bootstrap/i18n';
@@ -26,9 +32,10 @@ const d5InsightState = vi.hoisted(() => ({
 }));
 
 vi.mock('./world-focus-dante-insight-context', async (importOriginal) => {
-  const actual = await importOriginal<
-    typeof import('./world-focus-dante-insight-context')
-  >();
+  const actual =
+    await importOriginal<
+      typeof import('./world-focus-dante-insight-context')
+    >();
   return {
     ...actual,
     useWorldFocusDanteInsight: () => ({
@@ -99,7 +106,9 @@ function ProposalHarness() {
   return (
     <div>
       <output data-testid="generation">{workspace.state.generation}</output>
-      <output data-testid="request-status">{proposal.requestState.status}</output>
+      <output data-testid="request-status">
+        {proposal.requestState.status}
+      </output>
       <output data-testid="proposal-id">
         {proposal.proposal?.proposalId ?? 'none'}
       </output>
@@ -107,7 +116,9 @@ function ProposalHarness() {
         {proposal.receipt?.decision ?? 'none'}
       </output>
       <output data-testid="surfaces">
-        {workspace.state.surfaces.map((surface) => surface.instanceId).join('|')}
+        {workspace.state.surfaces
+          .map((surface) => surface.instanceId)
+          .join('|')}
       </output>
       <button
         type="button"
@@ -134,7 +145,10 @@ function ProposalHarness() {
       <button
         type="button"
         onClick={() =>
-          workspace.selectContext({ kind: 'continuity', key: 'changed-context' })
+          workspace.selectContext({
+            kind: 'continuity',
+            key: 'changed-context',
+          })
         }
       >
         Change Context
@@ -142,7 +156,10 @@ function ProposalHarness() {
       <button type="button" onClick={proposal.requestConfirmation}>
         Request Confirmation
       </button>
-      <button type="button" onClick={() => proposal.recordDecision('confirmed')}>
+      <button
+        type="button"
+        onClick={() => proposal.recordDecision('confirmed')}
+      >
         Confirm Decision
       </button>
       <button type="button" onClick={() => proposal.recordDecision('declined')}>
@@ -166,8 +183,7 @@ function renderHarness(reader: WorldFocusDanteProposalReader) {
 describe('World Focus D6 Proposal owner hostile lifecycle', () => {
   it('supersedes a late Proposal result after the World workspace generation changes', async () => {
     let resolveRead:
-      | ((result: WorldFocusDanteProposalReadResult) => void)
-      | undefined;
+      ((result: WorldFocusDanteProposalReadResult) => void) | undefined;
     let capturedRequest: WorldFocusDanteProposalRequest | undefined;
     const reader = vi.fn<WorldFocusDanteProposalReader>(
       (request) =>
@@ -184,7 +200,9 @@ describe('World Focus D6 Proposal owner hostile lifecycle', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Change Context' }));
     await waitFor(() =>
-      expect(screen.getByTestId('request-status').textContent).toBe('superseded'),
+      expect(screen.getByTestId('request-status').textContent).toBe(
+        'superseded',
+      ),
     );
     expect(screen.getByTestId('generation').textContent).toBe('1');
 
@@ -222,11 +240,14 @@ describe('World Focus D6 Proposal owner hostile lifecycle', () => {
 
       fireEvent.click(
         screen.getByRole('button', {
-          name: decision === 'confirmed' ? 'Confirm Decision' : 'Decline Decision',
+          name:
+            decision === 'confirmed' ? 'Confirm Decision' : 'Decline Decision',
         }),
       );
       expect(screen.getByTestId('receipt-decision').textContent).toBe(decision);
-      expect(screen.getByTestId('surfaces').textContent).toContain('dante:receipt');
+      expect(screen.getByTestId('surfaces').textContent).toContain(
+        'dante:receipt',
+      );
       expect(screen.getByTestId('surfaces').textContent).not.toContain(
         'dante:confirmation',
       );

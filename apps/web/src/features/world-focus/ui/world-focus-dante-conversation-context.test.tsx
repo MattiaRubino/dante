@@ -22,9 +22,7 @@ import {
   WORLD_FOCUS_DANTE_CONVERSATION_INSTANCE_ID,
   WORLD_FOCUS_DANTE_CONVERSATION_KIND,
 } from './world-focus-dante-conversation';
-import {
-  WorldFocusDanteConversationProvider,
-} from './world-focus-dante-conversation-context';
+import { WorldFocusDanteConversationProvider } from './world-focus-dante-conversation-context';
 import {
   WorldFocusDanteEntryProvider,
   WorldFocusDanteInvoke,
@@ -104,7 +102,10 @@ function D3Harness({
   width?: number;
 }>) {
   const workspace = useWorldFocusWorkspace();
-  const allocation = resolveWorldFocusWorkspaceAllocation(workspace.state, width);
+  const allocation = resolveWorldFocusWorkspaceAllocation(
+    workspace.state,
+    width,
+  );
   const [routeHost, setRouteHost] = useState<HTMLDivElement | null>(null);
   const registry = getCoreWorldFocusSurfaceRegistry();
   const readerProps = reader === undefined ? {} : { reader };
@@ -139,7 +140,10 @@ function D3Harness({
           <button
             type="button"
             onClick={() =>
-              workspace.selectContext({ kind: 'project', key: 'generation-change' })
+              workspace.selectContext({
+                kind: 'project',
+                key: 'generation-change',
+              })
             }
           >
             Change generation
@@ -162,10 +166,7 @@ function D3Harness({
   );
 }
 
-function renderD3(
-  reader?: WorldFocusDanteConversationReader,
-  width = 1280,
-) {
+function renderD3(reader?: WorldFocusDanteConversationReader, width = 1280) {
   const readerProps = reader === undefined ? {} : { reader };
   return render(
     <WorldFocusWorkspaceHost worldId="music">
@@ -214,7 +215,9 @@ describe('World Focus D3 deterministic conversation bridge', () => {
         ),
       ).toBeTruthy();
     });
-    const response = document.querySelector('[data-world-focus-dante-response="true"]');
+    const response = document.querySelector(
+      '[data-world-focus-dante-response="true"]',
+    );
     expect(response?.getAttribute('data-world-focus-dante-result-class')).toBe(
       'explanation',
     );
@@ -335,7 +338,9 @@ describe('World Focus D3 deterministic conversation bridge', () => {
     if (observed.request === undefined) {
       throw new Error('Expected captured D3 request');
     }
-    pending.resolve(readyResult(observed.request, 'Risposta della vecchia generazione'));
+    pending.resolve(
+      readyResult(observed.request, 'Risposta della vecchia generazione'),
+    );
     await Promise.resolve();
     await Promise.resolve();
     expect(screen.queryByText('Risposta della vecchia generazione')).toBeNull();

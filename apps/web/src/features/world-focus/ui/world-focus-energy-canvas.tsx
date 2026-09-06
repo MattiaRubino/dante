@@ -564,9 +564,13 @@ function measureWorkspace(canvas: HTMLCanvasElement): WorkspaceRect {
 
   const workspaceRect = workspace.getBoundingClientRect();
   const x0 = clamp01((workspaceRect.left - canvasRect.left) / canvasRect.width);
-  const x1 = clamp01((workspaceRect.right - canvasRect.left) / canvasRect.width);
+  const x1 = clamp01(
+    (workspaceRect.right - canvasRect.left) / canvasRect.width,
+  );
   const top = clamp01((workspaceRect.top - canvasRect.top) / canvasRect.height);
-  const bottom = clamp01((workspaceRect.bottom - canvasRect.top) / canvasRect.height);
+  const bottom = clamp01(
+    (workspaceRect.bottom - canvasRect.top) / canvasRect.height,
+  );
 
   return [x0, 1 - bottom, x1, 1 - top];
 }
@@ -780,11 +784,7 @@ export function WorldFocusEnergyCanvas({
         gl.uniform1f(fieldUniforms.reveal, reveal);
       }
       if (fieldUniforms.originRadius !== null) {
-        gl.uniform2f(
-          fieldUniforms.originRadius,
-          originRadiusX,
-          originRadiusY,
-        );
+        gl.uniform2f(fieldUniforms.originRadius, originRadiusX, originRadiusY);
       }
       if (fieldUniforms.workspaceRect !== null) {
         gl.uniform4f(fieldUniforms.workspaceRect, ...workspaceRect);
@@ -881,7 +881,11 @@ export function WorldFocusEnergyCanvas({
       const reduced = motionQuery?.matches === true;
       animationEnabled = animated && !reduced;
       setMotionMode(
-        animationEnabled ? 'animated' : animated && reduced ? 'reduced' : 'static',
+        animationEnabled
+          ? 'animated'
+          : animated && reduced
+            ? 'reduced'
+            : 'static',
       );
 
       if (animationEnabled && document.visibilityState !== 'hidden') {

@@ -10,9 +10,7 @@ import type { ComponentProps } from 'react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { i18n } from '../../../bootstrap/i18n';
-import {
-  applyWorldFocusCompositionDraft,
-} from '../application/world-focus-composition-customization';
+import { applyWorldFocusCompositionDraft } from '../application/world-focus-composition-customization';
 import type { WorldFocusCompositionCustomizationReader } from '../application/world-focus-composition-customization-read';
 import {
   createWorldFocusCompositionOpportunity,
@@ -116,7 +114,9 @@ function renderCustomizationHarness(overrides: CustomizationOverrides = {}) {
           surfaces={
             <>
               <WorldFocusCompositionCustomizeInvoke />
-              <WorldFocusSurfaceLayer registry={getCoreWorldFocusSurfaceRegistry()} />
+              <WorldFocusSurfaceLayer
+                registry={getCoreWorldFocusSurfaceRegistry()}
+              />
             </>
           }
         />
@@ -143,9 +143,9 @@ describe('World Focus M3-3 manual composition customization', () => {
     ).toBeNull();
     await waitFor(() => {
       expect(
-        container.querySelector('[data-world-focus-composition-count]')?.getAttribute(
-          'data-world-focus-composition-count',
-        ),
+        container
+          .querySelector('[data-world-focus-composition-count]')
+          ?.getAttribute('data-world-focus-composition-count'),
       ).toBe('4');
     });
   });
@@ -155,9 +155,9 @@ describe('World Focus M3-3 manual composition customization', () => {
 
     await waitFor(() => {
       expect(
-        container.querySelector('[data-world-focus-composition-count]')?.getAttribute(
-          'data-world-focus-composition-count',
-        ),
+        container
+          .querySelector('[data-world-focus-composition-count]')
+          ?.getAttribute('data-world-focus-composition-count'),
       ).toBe('4');
     });
     openCustomization();
@@ -166,9 +166,9 @@ describe('World Focus M3-3 manual composition customization', () => {
     expect(dialog).toBeTruthy();
     expect(dialog.getAttribute('aria-modal')).toBe('false');
     expect(
-      container.querySelector('[data-world-focus-composition-count]')?.getAttribute(
-        'data-world-focus-composition-count',
-      ),
+      container
+        .querySelector('[data-world-focus-composition-count]')
+        ?.getAttribute('data-world-focus-composition-count'),
     ).toBe('4');
   });
 
@@ -237,9 +237,11 @@ describe('World Focus M3-3 manual composition customization', () => {
       throw new Error('Expected adopted Situation customization entry');
     }
 
-    expect(screen.getByRole('dialog', { name: 'Personalizza Musica' }).getAttribute(
-      'data-world-focus-customization-dirty',
-    )).toBe('true');
+    expect(
+      screen
+        .getByRole('dialog', { name: 'Personalizza Musica' })
+        .getAttribute('data-world-focus-customization-dirty'),
+    ).toBe('true');
     expect(within(entry).queryByText('Fissato')).toBeNull();
     expect(within(entry).queryByText('Nascosto')).toBeNull();
     expect(within(entry).queryByText('In evidenza')).toBeNull();
@@ -284,17 +286,23 @@ describe('World Focus M3-3 manual composition customization', () => {
       throw new Error('Expected Situation customization entry');
     }
 
-    fireEvent.click(within(situation).getByRole('button', { name: 'Sposta giù' }));
+    fireEvent.click(
+      within(situation).getByRole('button', { name: 'Sposta giù' }),
+    );
 
     const entries = Array.from(
       container.querySelectorAll('[data-world-focus-customization-entry]'),
     );
     expect(
-      entries.map((entry) => entry.getAttribute('data-world-focus-customization-entry')),
+      entries.map((entry) =>
+        entry.getAttribute('data-world-focus-customization-entry'),
+      ),
     ).toEqual(['comparison:manual', 'situation']);
 
     await waitFor(() => {
-      expect(document.activeElement).toBe(container.querySelector(situationSelector));
+      expect(document.activeElement).toBe(
+        container.querySelector(situationSelector),
+      );
     });
     expect(screen.getByText('Situazione, posizione 2 di 2')).toBeTruthy();
   });
@@ -315,8 +323,12 @@ describe('World Focus M3-3 manual composition customization', () => {
     ).toBeNull();
 
     openCustomization();
-    const reopened = screen.getByRole('dialog', { name: 'Personalizza Musica' });
-    expect(reopened.getAttribute('data-world-focus-customization-revision')).toBe('1');
+    const reopened = screen.getByRole('dialog', {
+      name: 'Personalizza Musica',
+    });
+    expect(
+      reopened.getAttribute('data-world-focus-customization-revision'),
+    ).toBe('1');
     expect(
       reopened.querySelectorAll('[data-world-focus-customization-entry]'),
     ).toHaveLength(1);
@@ -340,7 +352,9 @@ describe('World Focus M3-3 manual composition customization', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Applica' }));
 
     const dialog = screen.getByRole('dialog', { name: 'Personalizza Musica' });
-    expect(dialog.getAttribute('data-world-focus-customization-revision')).toBe('0');
+    expect(dialog.getAttribute('data-world-focus-customization-revision')).toBe(
+      '0',
+    );
     expect(
       screen.getByText(
         'La composizione è cambiata da quando hai iniziato. Le modifiche non sono state applicate.',
@@ -357,7 +371,9 @@ describe('World Focus M3-3 manual composition customization', () => {
   });
 
   it('fails closed on an invalid apply state and preserves the review surface', async () => {
-    const invalidApply: NonNullable<CustomizationOverrides['applyDraft']> = () => {
+    const invalidApply: NonNullable<
+      CustomizationOverrides['applyDraft']
+    > = () => {
       throw new Error('invalid base snapshot');
     };
     renderCustomizationHarness({ applyDraft: invalidApply });
@@ -369,7 +385,9 @@ describe('World Focus M3-3 manual composition customization', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Applica' }));
 
     const dialog = screen.getByRole('dialog', { name: 'Personalizza Musica' });
-    expect(dialog.getAttribute('data-world-focus-customization-revision')).toBe('0');
+    expect(dialog.getAttribute('data-world-focus-customization-revision')).toBe(
+      '0',
+    );
     expect(
       screen.getByText(
         'Questa bozza non è più valida. Nessuna modifica è stata applicata.',

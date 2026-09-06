@@ -101,22 +101,21 @@ function WorldFocusDanteConversationOwner({
   children,
 }: WorldFocusDanteConversationOwnerProps) {
   const { composerInvocation, restoreInvokerFocus } = useWorldFocusDanteEntry();
-  const composerContextSeed = useMemo<
-    WorldFocusDanteConversationContextSeed | null
-  >(() => {
-    if (
-      composerInvocation === null ||
-      composerInvocation.contextReferences === null ||
-      composerInvocation.worldId !== worldId
-    ) {
-      return null;
-    }
+  const composerContextSeed =
+    useMemo<WorldFocusDanteConversationContextSeed | null>(() => {
+      if (
+        composerInvocation === null ||
+        composerInvocation.contextReferences === null ||
+        composerInvocation.worldId !== worldId
+      ) {
+        return null;
+      }
 
-    return Object.freeze({
-      references: composerInvocation.contextReferences,
-      workspaceGeneration: composerInvocation.workspaceGeneration,
-    });
-  }, [composerInvocation, worldId]);
+      return Object.freeze({
+        references: composerInvocation.contextReferences,
+        workspaceGeneration: composerInvocation.workspaceGeneration,
+      });
+    }, [composerInvocation, worldId]);
 
   return (
     <WorldFocusDanteConversationProvider

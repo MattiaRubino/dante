@@ -3,9 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import type { WorldFocusCompositionOpportunity } from '../application/world-focus-composition-opportunities';
 import type { WorldFocusCompositionConfigEntry } from '../model/world-focus-composition-config';
-import {
-  useWorldFocusCompositionCustomization,
-} from './world-focus-composition-customization-context';
+import { useWorldFocusCompositionCustomization } from './world-focus-composition-customization-context';
 
 function opportunityLabel(
   kind: string,
@@ -31,8 +29,11 @@ function opportunityLabel(
   }
 }
 
-function instanceQualifier(entry: Readonly<{ instanceId: string; kind: string }>): string | null {
-  if (!['attention', 'comparison', 'trajectory'].includes(entry.kind)) return null;
+function instanceQualifier(
+  entry: Readonly<{ instanceId: string; kind: string }>,
+): string | null {
+  if (!['attention', 'comparison', 'trajectory'].includes(entry.kind))
+    return null;
   const separator = entry.instanceId.indexOf(':');
   if (separator < 0 || separator === entry.instanceId.length - 1) return null;
   return entry.instanceId.slice(separator + 1);
@@ -77,8 +78,8 @@ export function WorldFocusCompositionCustomizationSurface() {
   ) => {
     const beforeInstanceId =
       direction === 'up'
-        ? entries[index - 1]?.instanceId ?? null
-        : entries[index + 2]?.instanceId ?? null;
+        ? (entries[index - 1]?.instanceId ?? null)
+        : (entries[index + 2]?.instanceId ?? null);
     const nextPosition = direction === 'up' ? index : index + 2;
 
     if (
@@ -120,14 +121,19 @@ export function WorldFocusCompositionCustomizationSurface() {
       aria-labelledby={headingId}
       tabIndex={-1}
       data-world-focus-customization-dirty={customization.isDirty}
-      data-world-focus-customization-revision={customization.acceptedConfig.revision}
+      data-world-focus-customization-revision={
+        customization.acceptedConfig.revision
+      }
     >
       <header className="world-focus-composition-customization-header">
         <div>
           <p className="world-focus-composition-customization-kicker">
             {t(($) => $.common.worldFocus.customization.kicker)}
           </p>
-          <h2 id={headingId} className="world-focus-composition-customization-title">
+          <h2
+            id={headingId}
+            className="world-focus-composition-customization-title"
+          >
             {t(($) => $.common.worldFocus.customization.title, {
               world: customization.worldLabel,
             })}
@@ -146,7 +152,10 @@ export function WorldFocusCompositionCustomizationSurface() {
 
       <div className="world-focus-composition-customization-body">
         {customization.issue === null ? null : (
-          <p className="world-focus-composition-customization-alert" role="alert">
+          <p
+            className="world-focus-composition-customization-alert"
+            role="alert"
+          >
             {customization.issue.status === 'revision-conflict'
               ? t(($) => $.common.worldFocus.customization.conflict)
               : t(($) => $.common.worldFocus.customization.invalid)}
@@ -154,7 +163,10 @@ export function WorldFocusCompositionCustomizationSurface() {
         )}
 
         <section aria-labelledby={`${headingId}-configured`}>
-          <h3 id={`${headingId}-configured`} className="world-focus-composition-customization-section-title">
+          <h3
+            id={`${headingId}-configured`}
+            className="world-focus-composition-customization-section-title"
+          >
             {t(($) => $.common.worldFocus.customization.configuredTitle)}
           </h3>
           {entries.length === 0 ? (
@@ -167,21 +179,26 @@ export function WorldFocusCompositionCustomizationSurface() {
                 const label = opportunityLabel(entry.kind, t);
                 const qualifier = instanceQualifier(entry);
                 const unavailable =
-                  opportunitySet !== null && !opportunityById.has(entry.instanceId);
+                  opportunitySet !== null &&
+                  !opportunityById.has(entry.instanceId);
                 return (
                   <li
                     key={entry.instanceId}
                     ref={(node) => {
-                      if (node === null) rowRefs.current.delete(entry.instanceId);
+                      if (node === null)
+                        rowRefs.current.delete(entry.instanceId);
                       else rowRefs.current.set(entry.instanceId, node);
                     }}
                     className="world-focus-composition-customization-entry"
                     tabIndex={-1}
-                    aria-label={t(($) => $.common.worldFocus.customization.position, {
-                      item: label,
-                      position: index + 1,
-                      total: entries.length,
-                    })}
+                    aria-label={t(
+                      ($) => $.common.worldFocus.customization.position,
+                      {
+                        item: label,
+                        position: index + 1,
+                        total: entries.length,
+                      },
+                    )}
                     data-world-focus-customization-entry={entry.instanceId}
                   >
                     <div className="world-focus-composition-customization-entry-copy">
@@ -195,16 +212,37 @@ export function WorldFocusCompositionCustomizationSurface() {
                       )}
                       <div className="world-focus-composition-customization-tags">
                         {entry.pinned ? (
-                          <span>{t(($) => $.common.worldFocus.customization.states.pinned)}</span>
+                          <span>
+                            {t(
+                              ($) =>
+                                $.common.worldFocus.customization.states.pinned,
+                            )}
+                          </span>
                         ) : null}
                         {entry.visibility === 'hidden' ? (
-                          <span>{t(($) => $.common.worldFocus.customization.states.hidden)}</span>
+                          <span>
+                            {t(
+                              ($) =>
+                                $.common.worldFocus.customization.states.hidden,
+                            )}
+                          </span>
                         ) : null}
                         {entry.prominenceOverride === 'lead' ? (
-                          <span>{t(($) => $.common.worldFocus.customization.states.lead)}</span>
+                          <span>
+                            {t(
+                              ($) =>
+                                $.common.worldFocus.customization.states.lead,
+                            )}
+                          </span>
                         ) : null}
                         {unavailable ? (
-                          <span>{t(($) => $.common.worldFocus.customization.states.unavailable)}</span>
+                          <span>
+                            {t(
+                              ($) =>
+                                $.common.worldFocus.customization.states
+                                  .unavailable,
+                            )}
+                          </span>
                         ) : null}
                       </div>
                     </div>
@@ -229,7 +267,8 @@ export function WorldFocusCompositionCustomizationSurface() {
                         onClick={() =>
                           customization.execute({
                             source: 'manual',
-                            type: entry.visibility === 'hidden' ? 'show' : 'hide',
+                            type:
+                              entry.visibility === 'hidden' ? 'show' : 'hide',
                             instanceId: entry.instanceId,
                           })
                         }
@@ -286,11 +325,17 @@ export function WorldFocusCompositionCustomizationSurface() {
         </section>
 
         <section aria-labelledby={`${headingId}-available`}>
-          <h3 id={`${headingId}-available`} className="world-focus-composition-customization-section-title">
+          <h3
+            id={`${headingId}-available`}
+            className="world-focus-composition-customization-section-title"
+          >
             {t(($) => $.common.worldFocus.customization.opportunitiesTitle)}
           </h3>
           {customization.opportunities.status === 'loading' ? (
-            <p className="world-focus-composition-customization-empty" role="status">
+            <p
+              className="world-focus-composition-customization-empty"
+              role="status"
+            >
               {t(($) => $.common.worldFocus.customization.opportunitiesLoading)}
             </p>
           ) : customization.opportunities.status === 'error' ? (
@@ -315,7 +360,9 @@ export function WorldFocusCompositionCustomizationSurface() {
                       {qualifier === null ? null : <span>{qualifier}</span>}
                     </div>
                     <button type="button" onClick={() => adopt(opportunity)}>
-                      {t(($) => $.common.worldFocus.customization.add, { item: label })}
+                      {t(($) => $.common.worldFocus.customization.add, {
+                        item: label,
+                      })}
                     </button>
                   </li>
                 );
@@ -329,7 +376,11 @@ export function WorldFocusCompositionCustomizationSurface() {
         </section>
       </div>
 
-      <p className="world-focus-composition-customization-live" aria-live="polite" aria-atomic="true">
+      <p
+        className="world-focus-composition-customization-live"
+        aria-live="polite"
+        aria-atomic="true"
+      >
         {announcement}
       </p>
 
@@ -337,7 +388,11 @@ export function WorldFocusCompositionCustomizationSurface() {
         <button type="button" onClick={customization.cancel}>
           {t(($) => $.common.worldFocus.customization.cancel)}
         </button>
-        <button type="button" disabled={!customization.isDirty} onClick={customization.apply}>
+        <button
+          type="button"
+          disabled={!customization.isDirty}
+          onClick={customization.apply}
+        >
           {t(($) => $.common.worldFocus.customization.apply)}
         </button>
       </footer>

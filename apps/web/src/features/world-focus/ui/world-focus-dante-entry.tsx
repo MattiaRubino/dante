@@ -31,8 +31,7 @@ import { useWorldFocusWorkspaceAllocation } from './world-focus-workspace-alloca
 import { useWorldFocusWorkspace } from './world-focus-workspace-host';
 
 export const WORLD_FOCUS_DANTE_COMPOSER_KIND = 'dante-composer' as const;
-export const WORLD_FOCUS_DANTE_COMPOSER_INSTANCE_ID =
-  'dante:composer' as const;
+export const WORLD_FOCUS_DANTE_COMPOSER_INSTANCE_ID = 'dante:composer' as const;
 
 export type WorldFocusDanteComposerInvocation = Readonly<{
   prompt: string;
@@ -90,7 +89,8 @@ export function WorldFocusDanteEntryProvider({
       surface.instanceId === WORLD_FOCUS_DANTE_CONVERSATION_INSTANCE_ID,
   );
   const canRequestComposer =
-    !danteInteractionIsOpen && getWorldFocusBlockingSurface(workspace.state) === null;
+    !danteInteractionIsOpen &&
+    getWorldFocusBlockingSurface(workspace.state) === null;
 
   const restoreInvokerFocus = useCallback(() => {
     const preferredInvoker = activeInvokerRef.current;
@@ -251,7 +251,9 @@ export function WorldFocusDanteInvoke() {
         ref={invokerRef}
         className="world-focus-dante-invoke"
         type="button"
-        aria-controls={composerIsOpen ? 'world-focus-dante-composer' : undefined}
+        aria-controls={
+          composerIsOpen ? 'world-focus-dante-composer' : undefined
+        }
         aria-expanded={danteInteractionIsOpen}
         aria-label={t(($) => $.common.worldFocus.dante.invokeForWorld, {
           world: worldLabel,

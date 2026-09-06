@@ -87,7 +87,10 @@ function D2Controls() {
 
 function D2Harness({ width }: Readonly<{ width: number }>) {
   const workspace = useWorldFocusWorkspace();
-  const allocation = resolveWorldFocusWorkspaceAllocation(workspace.state, width);
+  const allocation = resolveWorldFocusWorkspaceAllocation(
+    workspace.state,
+    width,
+  );
   const [routeHost, setRouteHost] = useState<HTMLDivElement | null>(null);
   const registry = getCoreWorldFocusSurfaceRegistry();
 
@@ -228,16 +231,16 @@ describe('World Focus D2 adaptive conversation presentation', () => {
     fireEvent.click(maximize);
 
     await waitFor(() => {
-      expect(
-        screen.getByRole('button', { name: 'Ripristina' }),
-      ).toBe(document.activeElement);
+      expect(screen.getByRole('button', { name: 'Ripristina' })).toBe(
+        document.activeElement,
+      );
     });
 
     fireEvent.click(screen.getByRole('button', { name: 'Ripristina' }));
     await waitFor(() => {
-      expect(
-        screen.getByRole('button', { name: 'Massimizza' }),
-      ).toBe(document.activeElement);
+      expect(screen.getByRole('button', { name: 'Massimizza' })).toBe(
+        document.activeElement,
+      );
     });
   });
 });

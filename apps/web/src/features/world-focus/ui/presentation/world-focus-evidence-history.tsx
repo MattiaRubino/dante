@@ -61,7 +61,9 @@ function EvidenceRole({
               key={bindingKey(binding)}
             >
               <div className="world-focus-dante-contextual-evidence-copy">
-                <p className="world-focus-presentation-row-title">{binding.label}</p>
+                <p className="world-focus-presentation-row-title">
+                  {binding.label}
+                </p>
                 {binding.supportingText === undefined ? null : (
                   <p className="world-focus-presentation-row-supporting">
                     {binding.supportingText}
@@ -116,20 +118,28 @@ export function WorldFocusEvidenceHistory({
       data-world-focus-direct-output="evidence-history"
     >
       <EvidenceRole
-        title={t(($) => $.common.worldFocus.presentation.evidenceHistory.evidence)}
+        title={t(
+          ($) => $.common.worldFocus.presentation.evidenceHistory.evidence,
+        )}
         bindings={evidenceBindings}
         contextualIntent="open-source"
       />
       <EvidenceRole
-        title={t(($) => $.common.worldFocus.presentation.evidenceHistory.provenance)}
+        title={t(
+          ($) => $.common.worldFocus.presentation.evidenceHistory.provenance,
+        )}
         bindings={provenanceBindings}
       />
       <EvidenceRole
-        title={t(($) => $.common.worldFocus.presentation.evidenceHistory.integrity)}
+        title={t(
+          ($) => $.common.worldFocus.presentation.evidenceHistory.integrity,
+        )}
         bindings={integrityBindings}
       />
       <EvidenceRole
-        title={t(($) => $.common.worldFocus.presentation.evidenceHistory.history)}
+        title={t(
+          ($) => $.common.worldFocus.presentation.evidenceHistory.history,
+        )}
         bindings={historyBindings}
       />
     </WorldFocusPresentationSection>

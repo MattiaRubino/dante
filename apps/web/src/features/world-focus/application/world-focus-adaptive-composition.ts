@@ -173,7 +173,9 @@ export function resolveWorldFocusAdaptiveComposition(
   config: WorldFocusCompositionConfig,
 ): WorldFocusAdaptiveCompositionResolution {
   if (snapshot.worldId !== config.worldId) {
-    throw new Error('World Focus adaptive composition config belongs to another World');
+    throw new Error(
+      'World Focus adaptive composition config belongs to another World',
+    );
   }
 
   const candidateResolution = resolveWorldFocusCompositionCandidates({

@@ -1,7 +1,4 @@
-import type {
-  ComponentPropsWithoutRef,
-  ReactNode,
-} from 'react';
+import type { ComponentPropsWithoutRef, ReactNode } from 'react';
 
 type WorldFocusQualifierGroupProps = ComponentPropsWithoutRef<'div'> &
   Readonly<{

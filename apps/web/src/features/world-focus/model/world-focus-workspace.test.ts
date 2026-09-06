@@ -194,7 +194,9 @@ describe('World Focus workspace orchestration model', () => {
   });
 
   it('opens, replaces, promotes and closes finite presentation surfaces without rebinding existing surface context', () => {
-    let state = createWorldFocusWorkspaceState<'insight' | 'explore'>('finance');
+    let state = createWorldFocusWorkspaceState<'insight' | 'explore'>(
+      'finance',
+    );
     state = reduceWorldFocusWorkspaceState(state, {
       type: 'open-surface',
       surface: {
@@ -321,12 +323,16 @@ describe('World Focus workspace orchestration model', () => {
       'confirmation:nested',
     );
 
-    state = reduceWorldFocusWorkspaceState(state, { type: 'close-top-surface' });
+    state = reduceWorldFocusWorkspaceState(state, {
+      type: 'close-top-surface',
+    });
     expect(getWorldFocusBlockingSurface(state)?.instanceId).toBe(
       'confirmation:publish',
     );
 
-    state = reduceWorldFocusWorkspaceState(state, { type: 'close-top-surface' });
+    state = reduceWorldFocusWorkspaceState(state, {
+      type: 'close-top-surface',
+    });
     const afterBarrier = reduceWorldFocusWorkspaceState(state, {
       type: 'open-surface',
       surface: {
@@ -389,7 +395,9 @@ describe('World Focus workspace orchestration model', () => {
     expect(hiddenPromotion).toBe(state);
     expect(hiddenReplacement).toBe(state);
 
-    state = reduceWorldFocusWorkspaceState(state, { type: 'close-top-surface' });
+    state = reduceWorldFocusWorkspaceState(state, {
+      type: 'close-top-surface',
+    });
     state = reduceWorldFocusWorkspaceState(state, {
       type: 'promote-surface',
       instanceId: 'insight:mix',

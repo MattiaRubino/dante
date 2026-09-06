@@ -71,7 +71,9 @@ type WorldFocusCompositionCustomizationContextValue = Readonly<{
 const WorldFocusCompositionCustomizationContext =
   createContext<WorldFocusCompositionCustomizationContextValue | null>(null);
 
-function createInitialConfig(worldId: WorldFocusId): WorldFocusCompositionConfig {
+function createInitialConfig(
+  worldId: WorldFocusId,
+): WorldFocusCompositionConfig {
   return createWorldFocusCompositionConfig({
     schemaVersion: WORLD_FOCUS_COMPOSITION_CONFIG_SCHEMA_VERSION,
     revision: 0,
@@ -133,7 +135,9 @@ export function WorldFocusCompositionCustomizationProvider({
     });
   const [issue, setIssue] =
     useState<WorldFocusCompositionCustomizationIssue | null>(null);
-  const [readCoordinator] = useState(() => new WorldFocusLatestReadCoordinator());
+  const [readCoordinator] = useState(
+    () => new WorldFocusLatestReadCoordinator(),
+  );
   const invokerRef = useRef<HTMLElement | null>(null);
   const surfaceWasOpenRef = useRef(false);
   const applyingRef = useRef(false);
@@ -215,7 +219,9 @@ export function WorldFocusCompositionCustomizationProvider({
           generation: workspace.state.generation,
         },
       });
-    }, [acceptedConfig, draft, isOpen, readOpportunities, workspace]);
+    },
+    [acceptedConfig, draft, isOpen, readOpportunities, workspace],
+  );
 
   const execute = useCallback(
     (command: WorldFocusCompositionCustomizationCommand): boolean => {
@@ -259,7 +265,14 @@ export function WorldFocusCompositionCustomizationProvider({
     } finally {
       applyingRef.current = false;
     }
-  }, [acceptedConfig, applyDraft, draft, resetDraftState, restoreFocus, workspace]);
+  }, [
+    acceptedConfig,
+    applyDraft,
+    draft,
+    resetDraftState,
+    restoreFocus,
+    workspace,
+  ]);
 
   useEffect(() => {
     if (isOpen) {
@@ -288,7 +301,10 @@ export function WorldFocusCompositionCustomizationProvider({
       draft,
       opportunities,
       issue,
-      isDirty: draft === null ? false : !sameConfig(draft.baseConfig, draft.workingConfig),
+      isDirty:
+        draft === null
+          ? false
+          : !sameConfig(draft.baseConfig, draft.workingConfig),
       isOpen,
       begin,
       retryOpportunities: readOpportunities,

@@ -128,7 +128,10 @@ function InsightHarness({
   mode: InsightHarnessMode;
 }>) {
   const workspace = useWorldFocusWorkspace();
-  const allocation = resolveWorldFocusWorkspaceAllocation(workspace.state, 1280);
+  const allocation = resolveWorldFocusWorkspaceAllocation(
+    workspace.state,
+    1280,
+  );
   const [routeHost, setRouteHost] = useState<HTMLDivElement | null>(null);
   const registry = getCoreWorldFocusSurfaceRegistry();
 
@@ -169,7 +172,10 @@ function InsightHarness({
             <div ref={setRouteHost} />
             <WorldFocusDanteConversationPresentationController>
               <WorldFocusSurfaceLayer registry={registry} />
-              <WorldFocusRouteSurfaceLayer registry={registry} host={routeHost} />
+              <WorldFocusRouteSurfaceLayer
+                registry={registry}
+                host={routeHost}
+              />
             </WorldFocusDanteConversationPresentationController>
           </WorldFocusDanteInsightProvider>
         </ConversationOwner>
@@ -230,8 +236,12 @@ describe('World Focus D5 standalone Insight ownership', () => {
       name: 'Insight contestuale',
     });
     expect(insightRequests).toHaveLength(1);
-    expect(insightRequests[0]?.contextReferences).toEqual(CONTEXTUAL_REFERENCES);
-    expect(dialog.textContent).toContain('Riferimenti contestuali espliciti: 2.');
+    expect(insightRequests[0]?.contextReferences).toEqual(
+      CONTEXTUAL_REFERENCES,
+    );
+    expect(dialog.textContent).toContain(
+      'Riferimenti contestuali espliciti: 2.',
+    );
     expect(dialog.textContent).not.toContain('secret-primary-key');
     expect(dialog.textContent).not.toContain('secret-supporting-key');
     expect(
@@ -257,8 +267,7 @@ describe('World Focus D5 standalone Insight ownership', () => {
 
   it('does not let a late Insight result attach after the workspace generation changes', async () => {
     let resolveInsight:
-      | ((result: WorldFocusDanteInsightReadResult) => void)
-      | undefined;
+      ((result: WorldFocusDanteInsightReadResult) => void) | undefined;
     let capturedRequest: WorldFocusDanteInsightRequest | undefined;
     const insightReader: WorldFocusDanteInsightReader = (request) => {
       capturedRequest = request;

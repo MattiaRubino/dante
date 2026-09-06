@@ -61,19 +61,22 @@ describe('World Focus B0 application foundation', () => {
       observed.signal = signal;
       return Promise.resolve({ worldId, value: 'bounded' });
     };
-    const reader = createWorldFocusScopedReader(adapter, (input, expectedWorldId) => {
-      if (
-        typeof input === 'object' &&
-        input !== null &&
-        'worldId' in input &&
-        input.worldId === expectedWorldId &&
-        'value' in input &&
-        input.value === 'bounded'
-      ) {
-        return { ok: true, value: input.value };
-      }
-      return { ok: false, issues: [{ code: 'invalid', path: [] }] };
-    });
+    const reader = createWorldFocusScopedReader(
+      adapter,
+      (input, expectedWorldId) => {
+        if (
+          typeof input === 'object' &&
+          input !== null &&
+          'worldId' in input &&
+          input.worldId === expectedWorldId &&
+          'value' in input &&
+          input.value === 'bounded'
+        ) {
+          return { ok: true, value: input.value };
+        }
+        return { ok: false, issues: [{ code: 'invalid', path: [] }] };
+      },
+    );
     const upstream = new AbortController();
 
     await expect(reader('apiary', upstream.signal)).resolves.toBe('bounded');
@@ -102,7 +105,10 @@ describe('World Focus B0 application foundation', () => {
       new Promise((resolve) => {
         resolveLate = resolve;
       });
-    const validator = vi.fn(() => ({ ok: true as const, value: 'late-result' }));
+    const validator = vi.fn(() => ({
+      ok: true as const,
+      value: 'late-result',
+    }));
     const reader = createWorldFocusScopedReader(adapter, validator);
     const upstream = new AbortController();
 

@@ -92,7 +92,10 @@ describe('World Focus M2 Trajectory renderer', () => {
   it('fails closed if a point binding order no longer matches the semantic trajectory order', () => {
     const firstPointReference = primitive.orderedPointReferences[0];
     const secondPointReference = primitive.orderedPointReferences[1];
-    if (firstPointReference === undefined || secondPointReference === undefined) {
+    if (
+      firstPointReference === undefined ||
+      secondPointReference === undefined
+    ) {
       throw new Error('Expected bounded Trajectory fixture references');
     }
 

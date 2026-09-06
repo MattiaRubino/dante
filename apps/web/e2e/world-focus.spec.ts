@@ -16,21 +16,35 @@ test('Home opens the centered World on the dedicated World Focus route', async (
   await expect(page).toHaveURL(/\/worlds\/music$/);
   const focus = page.locator('.world-focus-shell');
   await expect(page.getByRole('main', { name: 'Mondo Musica' })).toBeVisible();
-  await expect(focus).toHaveAttribute('data-world-focus-structure-version', '1.0.0');
-  await expect(focus).toHaveAttribute('data-world-focus-geometry-version', 'wf-g3');
+  await expect(focus).toHaveAttribute(
+    'data-world-focus-structure-version',
+    '1.0.0',
+  );
+  await expect(focus).toHaveAttribute(
+    'data-world-focus-geometry-version',
+    'wf-g3',
+  );
   await expect(focus).toHaveAttribute(
     'data-world-focus-visual-version',
     'wf-v4-candidate',
   );
   await expect(page.locator('[data-app-region="topbar"]')).toBeVisible();
-  await expect(page.locator('[data-world-focus-region="visual-frame"]')).toHaveCount(1);
-  await expect(page.locator('[data-world-focus-region="workspace"]')).toHaveCount(1);
-  await expect(page.locator('[data-world-focus-region="shell-controls"]')).toHaveCount(1);
+  await expect(
+    page.locator('[data-world-focus-region="visual-frame"]'),
+  ).toHaveCount(1);
+  await expect(
+    page.locator('[data-world-focus-region="workspace"]'),
+  ).toHaveCount(1);
+  await expect(
+    page.locator('[data-world-focus-region="shell-controls"]'),
+  ).toHaveCount(1);
   await expect(page.locator('.world-focus-energy-canvas')).toHaveCount(1);
   await expect(page.locator('.world-focus-corona-reference')).toHaveCount(3);
   await expect(page.locator('.world-focus-corona-fallback-svg')).toHaveCount(0);
   await expect(
-    page.locator('[data-world-focus-vfx-coverage="peripheral-outside-workspace"]'),
+    page.locator(
+      '[data-world-focus-vfx-coverage="peripheral-outside-workspace"]',
+    ),
   ).toHaveCount(1);
   await expect(
     page.locator('[data-world-focus-vfx-boundary="workspace-protected"]'),
@@ -41,13 +55,17 @@ test('Home opens the centered World on the dedicated World Focus route', async (
     'data-world-focus-energy-renderer',
     /webgl2|fallback/,
   );
-  const renderer = await energy.getAttribute('data-world-focus-energy-renderer');
+  const renderer = await energy.getAttribute(
+    'data-world-focus-energy-renderer',
+  );
   await expect(energy).toHaveAttribute(
     'data-world-focus-energy-motion',
     renderer === 'fallback' ? 'static' : /animated|reduced/,
   );
 
-  await expect(page.getByRole('button', { name: 'Torna indietro' })).toHaveCount(0);
+  await expect(
+    page.getByRole('button', { name: 'Torna indietro' }),
+  ).toHaveCount(0);
   await expect(page.locator('[data-home-region="shell"]')).toHaveCount(0);
 
   const background = await focus.evaluate(
@@ -59,7 +77,9 @@ test('Home opens the centered World on the dedicated World Focus route', async (
   await expect(page).toHaveURL(/\/home$/);
 });
 
-test('the initially centered World still requires two activations', async ({ page }) => {
+test('the initially centered World still requires two activations', async ({
+  page,
+}) => {
   await page.goto('/home');
 
   const body = page.locator('.home-world[aria-label="Corpo"]');
@@ -72,7 +92,9 @@ test('the initially centered World still requires two activations', async ({ pag
   await expect(page).toHaveURL(/\/worlds\/body$/);
 });
 
-test('dragging the active World does not enter World Focus', async ({ page }) => {
+test('dragging the active World does not enter World Focus', async ({
+  page,
+}) => {
   await page.goto('/home');
 
   const body = page.locator('.home-world[aria-label="Corpo"]');
@@ -113,8 +135,14 @@ test('direct World Focus URL opens the same frozen structure and Escape closes s
   const focus = page.locator('.world-focus-shell');
   await expect(focus).toBeVisible();
   await expect(focus).toHaveAttribute('data-entry-origin', 'fallback');
-  await expect(focus).toHaveAttribute('data-world-focus-structure-version', '1.0.0');
-  await expect(focus).toHaveAttribute('data-world-focus-geometry-version', 'wf-g3');
+  await expect(focus).toHaveAttribute(
+    'data-world-focus-structure-version',
+    '1.0.0',
+  );
+  await expect(focus).toHaveAttribute(
+    'data-world-focus-geometry-version',
+    'wf-g3',
+  );
   await expect(focus).toHaveAttribute(
     'data-world-focus-visual-version',
     'wf-v4-candidate',
@@ -133,7 +161,9 @@ test('B0 workspace is container-query ready and records open-to-usable timing', 
   const workspace = page.locator('[data-world-focus-region="workspace"]');
   await expect(workspace).toBeVisible();
   expect(
-    await workspace.evaluate((element) => getComputedStyle(element).containerType),
+    await workspace.evaluate(
+      (element) => getComputedStyle(element).containerType,
+    ),
   ).toBe('inline-size');
 
   await expect
@@ -180,7 +210,9 @@ test('World Focus foundation has no detectable axe violations at wide and compac
 test('WF0 remains bounded without horizontal overflow across contracted widths', async ({
   page,
 }) => {
-  for (const width of [1856, 1600, 1366, 1200, 1024, 901, 900, 760, 721, 720, 719, 390]) {
+  for (const width of [
+    1856, 1600, 1366, 1200, 1024, 901, 900, 760, 721, 720, 719, 390,
+  ]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/worlds/music');
 
@@ -200,16 +232,22 @@ test('WF0 remains bounded without horizontal overflow across contracted widths',
     }
 
     expect(workspace.x).toBeGreaterThanOrEqual(shell.x);
-    expect(workspace.x + workspace.width).toBeLessThanOrEqual(shell.x + shell.width);
+    expect(workspace.x + workspace.width).toBeLessThanOrEqual(
+      shell.x + shell.width,
+    );
     expect(workspace.y).toBeGreaterThanOrEqual(shell.y);
-    expect(workspace.y + workspace.height).toBeLessThanOrEqual(shell.y + shell.height);
+    expect(workspace.y + workspace.height).toBeLessThanOrEqual(
+      shell.y + shell.height,
+    );
     expect(visualFrame.x).toBe(shell.x);
     expect(visualFrame.y).toBe(shell.y);
     expect(visualFrame.width).toBe(shell.width);
     expect(visualFrame.height).toBe(shell.height);
 
     const hasHorizontalOverflow = await page.evaluate(
-      () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+      () =>
+        document.documentElement.scrollWidth >
+        document.documentElement.clientWidth + 1,
     );
     expect(hasHorizontalOverflow).toBe(false);
   }

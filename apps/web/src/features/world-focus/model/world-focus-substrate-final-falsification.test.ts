@@ -89,13 +89,19 @@ describe('World Focus WS8 final falsification — stateful and metamorphic press
     expect(revoked.danteDisposition).toBe('rebuild-or-reject-context');
 
     const ambiguous = resolveWorldFocusSubstrateOracle(
-      scenario({ identity: 'ambiguous-candidate', dante: 'contextual-analysis' }),
+      scenario({
+        identity: 'ambiguous-candidate',
+        dante: 'contextual-analysis',
+      }),
     );
     expect(ambiguous.canAttachDerivedResult).toBe(false);
     expect(ambiguous.referenceDisposition).toBe('unresolved');
 
     const retired = resolveWorldFocusSubstrateOracle(
-      scenario({ identity: 'retired-merge-split', dante: 'contextual-analysis' }),
+      scenario({
+        identity: 'retired-merge-split',
+        dante: 'contextual-analysis',
+      }),
     );
     expect(retired.canAttachDerivedResult).toBe(false);
     expect(retired.referenceDisposition).toBe('retired');
@@ -187,7 +193,9 @@ describe('World Focus WS8 final falsification — stateful and metamorphic press
 
     expect(plan.entries).toHaveLength(8);
     expect(plan.omitted).toHaveLength(4_992);
-    expect(plan.entries.every((entry) => entry.kind !== 'world-item')).toBe(true);
+    expect(plan.entries.every((entry) => entry.kind !== 'world-item')).toBe(
+      true,
+    );
   });
 
   it('changes workspace allocation under narrow pressure without changing the underlying surface semantic identity', () => {

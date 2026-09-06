@@ -26,7 +26,8 @@ describe('World Focus M1-2 direct projection application seams', () => {
           },
         }),
       readNext: () => Promise.resolve({ status: 'empty', worldId: 'music' }),
-      readEvidenceHistory: () => Promise.resolve({ status: 'empty', worldId: 'music' }),
+      readEvidenceHistory: () =>
+        Promise.resolve({ status: 'empty', worldId: 'music' }),
     };
     const readers = createWorldFocusDirectProjectionReaders(adapter);
 
@@ -36,9 +37,18 @@ describe('World Focus M1-2 direct projection application seams', () => {
   });
 
   it('keeps an unknown future World valid and truthfully empty without fixture-catalog expansion', async () => {
-    await expect(readWorldFocusSituation('apiary')).resolves.toEqual({ status: 'empty', worldId: 'apiary' });
-    await expect(readWorldFocusNext('apiary')).resolves.toEqual({ status: 'empty', worldId: 'apiary' });
-    await expect(readWorldFocusEvidenceHistory('apiary')).resolves.toEqual({ status: 'empty', worldId: 'apiary' });
+    await expect(readWorldFocusSituation('apiary')).resolves.toEqual({
+      status: 'empty',
+      worldId: 'apiary',
+    });
+    await expect(readWorldFocusNext('apiary')).resolves.toEqual({
+      status: 'empty',
+      worldId: 'apiary',
+    });
+    await expect(readWorldFocusEvidenceHistory('apiary')).resolves.toEqual({
+      status: 'empty',
+      worldId: 'apiary',
+    });
   });
 
   it('provides a useful deterministic basic path without DANTE', async () => {
@@ -61,7 +71,8 @@ describe('World Focus M1-2 direct projection application seams', () => {
         return new Promise(() => undefined);
       },
       readNext: () => Promise.resolve({ status: 'empty', worldId: 'music' }),
-      readEvidenceHistory: () => Promise.resolve({ status: 'empty', worldId: 'music' }),
+      readEvidenceHistory: () =>
+        Promise.resolve({ status: 'empty', worldId: 'music' }),
     };
     const readers = createWorldFocusDirectProjectionReaders(adapter);
     const upstream = new AbortController();

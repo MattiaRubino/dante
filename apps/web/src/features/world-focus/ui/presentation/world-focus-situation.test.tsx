@@ -35,10 +35,9 @@ describe('World Focus M2 Situation renderer', () => {
 
     render(<WorldFocusSituation projection={projection} bindings={bindings} />);
 
-    expect(screen.getAllByRole('listitem').map((item) => item.textContent)).toEqual([
-      'Uscita Neon Static',
-      'Master approvato',
-    ]);
+    expect(
+      screen.getAllByRole('listitem').map((item) => item.textContent),
+    ).toEqual(['Uscita Neon Static', 'Master approvato']);
     expect(screen.queryByText('internal-release')).toBeNull();
   });
 

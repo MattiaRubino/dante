@@ -38,12 +38,13 @@ describe('WorldFocusCompositionHost', () => {
       ],
       TEST_POLICY,
     );
-    const registry = new WorldFocusModuleRegistry<WorldFocusCompositionRegistration>([
-      {
-        kind: 'continuity',
-        render: ({ worldId }) => <p>Continuity for {worldId}</p>,
-      },
-    ]);
+    const registry =
+      new WorldFocusModuleRegistry<WorldFocusCompositionRegistration>([
+        {
+          kind: 'continuity',
+          render: ({ worldId }) => <p>Continuity for {worldId}</p>,
+        },
+      ]);
 
     const { container } = render(
       <WorldFocusCompositionHost
@@ -81,9 +82,8 @@ describe('WorldFocusCompositionHost', () => {
       ],
       TEST_POLICY,
     );
-    const registry = new WorldFocusModuleRegistry<WorldFocusCompositionRegistration>(
-      [],
-    );
+    const registry =
+      new WorldFocusModuleRegistry<WorldFocusCompositionRegistration>([]);
 
     const { container } = render(
       <WorldFocusCompositionHost
@@ -93,7 +93,9 @@ describe('WorldFocusCompositionHost', () => {
       />,
     );
 
-    expect(screen.getByText('Questo contenuto non è disponibile.')).toBeTruthy();
+    expect(
+      screen.getByText('Questo contenuto non è disponibile.'),
+    ).toBeTruthy();
     expect(
       container
         .querySelector('[data-world-focus-composition-id="future"]')
@@ -123,18 +125,19 @@ describe('WorldFocusCompositionHost', () => {
       ],
       TEST_POLICY,
     );
-    const registry = new WorldFocusModuleRegistry<WorldFocusCompositionRegistration>([
-      {
-        kind: 'broken',
-        render: () => {
-          throw new Error('renderer failed');
+    const registry =
+      new WorldFocusModuleRegistry<WorldFocusCompositionRegistration>([
+        {
+          kind: 'broken',
+          render: () => {
+            throw new Error('renderer failed');
+          },
         },
-      },
-      {
-        kind: 'healthy',
-        render: () => <p>Healthy sibling</p>,
-      },
-    ]);
+        {
+          kind: 'healthy',
+          render: () => <p>Healthy sibling</p>,
+        },
+      ]);
 
     const { container } = render(
       <WorldFocusCompositionHost
@@ -145,7 +148,9 @@ describe('WorldFocusCompositionHost', () => {
     );
 
     expect(screen.getByText('Healthy sibling')).toBeTruthy();
-    expect(screen.getByText('Non riesco a mostrare questo contenuto.')).toBeTruthy();
+    expect(
+      screen.getByText('Non riesco a mostrare questo contenuto.'),
+    ).toBeTruthy();
     expect(
       container
         .querySelector('[data-world-focus-composition-id="broken"]')

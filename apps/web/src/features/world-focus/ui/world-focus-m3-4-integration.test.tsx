@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { i18n } from '../../../bootstrap/i18n';
@@ -49,7 +55,9 @@ describe('World Focus M3-4 integrated adaptive composition', () => {
 
     await waitFor(() => {
       expect(
-        container.querySelector('[data-world-focus-composition-id="situation"]'),
+        container.querySelector(
+          '[data-world-focus-composition-id="situation"]',
+        ),
       ).not.toBeNull();
       expect(
         container.querySelector(
@@ -61,7 +69,9 @@ describe('World Focus M3-4 integrated adaptive composition', () => {
     const composition = container.querySelector<HTMLElement>(
       '.world-focus-composition',
     );
-    expect(Number(composition?.dataset.worldFocusCompositionCount ?? '0')).toBeGreaterThan(1);
+    expect(
+      Number(composition?.dataset.worldFocusCompositionCount ?? '0'),
+    ).toBeGreaterThan(1);
   });
 
   it('keeps a truly sparse Finance World sparse instead of mounting the legacy synthetic Continuity candidate', async () => {
@@ -82,7 +92,9 @@ describe('World Focus M3-4 integrated adaptive composition', () => {
       expect(container.querySelector(situationSelector)).not.toBeNull();
     });
     expect(
-      container.querySelector(situationSelector)?.getAttribute('data-world-focus-origin'),
+      container
+        .querySelector(situationSelector)
+        ?.getAttribute('data-world-focus-origin'),
     ).toBe('application-derived');
 
     fireEvent.click(
@@ -95,7 +107,9 @@ describe('World Focus M3-4 integrated adaptive composition', () => {
 
     await waitFor(() => {
       expect(
-        container.querySelector(situationSelector)?.getAttribute('data-world-focus-origin'),
+        container
+          .querySelector(situationSelector)
+          ?.getAttribute('data-world-focus-origin'),
       ).toBe('user');
     });
   });

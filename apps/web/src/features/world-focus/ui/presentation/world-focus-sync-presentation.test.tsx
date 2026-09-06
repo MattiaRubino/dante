@@ -24,7 +24,9 @@ describe('World Focus M2 sync presentation', () => {
       />,
     );
 
-    expect(container.querySelector('[data-world-focus-sync-presentation]')).toBeNull();
+    expect(
+      container.querySelector('[data-world-focus-sync-presentation]'),
+    ).toBeNull();
   });
 
   it('renders degraded platform axes independently without turning them into content truth', () => {

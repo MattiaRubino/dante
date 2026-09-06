@@ -32,10 +32,7 @@ describe('World Focus M1-2 basis facets', () => {
       'conflicted',
       'unknown',
     ]);
-    expect(WORLD_FOCUS_MATERIAL_PAYLOAD_STATES).toEqual([
-      'present',
-      'retired',
-    ]);
+    expect(WORLD_FOCUS_MATERIAL_PAYLOAD_STATES).toEqual(['present', 'retired']);
   });
 
   it('distinguishes stale freshness from superseded and retracted validity', () => {

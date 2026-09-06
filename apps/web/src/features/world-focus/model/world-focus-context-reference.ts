@@ -39,13 +39,16 @@ export function sameWorldFocusContextReference(
   return left?.kind === right?.kind && left?.key === right?.key;
 }
 
-export function createWorldFocusContextReferenceSet(input: Readonly<{
-  primary: WorldFocusContextReference;
-  supporting?: readonly WorldFocusContextReference[] | undefined;
-  maxSupportingReferences?: number;
-}>): WorldFocusContextReferenceSet {
+export function createWorldFocusContextReferenceSet(
+  input: Readonly<{
+    primary: WorldFocusContextReference;
+    supporting?: readonly WorldFocusContextReference[] | undefined;
+    maxSupportingReferences?: number;
+  }>,
+): WorldFocusContextReferenceSet {
   const maximum =
-    input.maxSupportingReferences ?? WORLD_FOCUS_DEFAULT_MAX_SUPPORTING_REFERENCES;
+    input.maxSupportingReferences ??
+    WORLD_FOCUS_DEFAULT_MAX_SUPPORTING_REFERENCES;
   if (!Number.isInteger(maximum) || maximum < 0) {
     throw new Error(
       'World Focus maximum supporting references must be a non-negative integer',

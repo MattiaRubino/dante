@@ -43,7 +43,9 @@ test('Workspace platform wrappers do not change compact containment', async ({
   const workspace = await page
     .locator('[data-world-focus-region="workspace"]')
     .boundingBox();
-  const composition = await page.locator('.world-focus-composition').boundingBox();
+  const composition = await page
+    .locator('.world-focus-composition')
+    .boundingBox();
 
   expect(workspace).not.toBeNull();
   expect(composition).not.toBeNull();
@@ -57,7 +59,9 @@ test('Workspace platform wrappers do not change compact containment', async ({
   );
 
   const hasHorizontalOverflow = await page.evaluate(
-    () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+    () =>
+      document.documentElement.scrollWidth >
+      document.documentElement.clientWidth + 1,
   );
   expect(hasHorizontalOverflow).toBe(false);
 });

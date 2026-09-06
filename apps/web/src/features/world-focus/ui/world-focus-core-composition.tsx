@@ -58,7 +58,12 @@ export function createCoreWorldFocusModuleRegistry(
       kind: 'situation',
       render: () => {
         const result = requireReady(snapshot.situation, 'Situation');
-        return <WorldFocusSituation projection={result.projection} bindings={bindings} />;
+        return (
+          <WorldFocusSituation
+            projection={result.projection}
+            bindings={bindings}
+          />
+        );
       },
     },
     {
@@ -77,7 +82,10 @@ export function createCoreWorldFocusModuleRegistry(
         return (
           <WorldFocusAttention
             primitive={primitive}
-            matter={requireWorldFocusDisplayBinding(bindings, primitive.matterReference)}
+            matter={requireWorldFocusDisplayBinding(
+              bindings,
+              primitive.matterReference,
+            )}
             resolution={
               primitive.resolutionReference === null
                 ? null
@@ -98,7 +106,9 @@ export function createCoreWorldFocusModuleRegistry(
       kind: 'next',
       render: () => {
         const result = requireReady(snapshot.next, 'Next');
-        return <WorldFocusNext projection={result.projection} bindings={bindings} />;
+        return (
+          <WorldFocusNext projection={result.projection} bindings={bindings} />
+        );
       },
     },
     {
@@ -119,7 +129,10 @@ export function createCoreWorldFocusModuleRegistry(
             basis={
               primitive.basisReference === null
                 ? null
-                : requireWorldFocusDisplayBinding(bindings, primitive.basisReference)
+                : requireWorldFocusDisplayBinding(
+                    bindings,
+                    primitive.basisReference,
+                  )
             }
           />
         );
@@ -137,12 +150,16 @@ export function createCoreWorldFocusModuleRegistry(
         return (
           <WorldFocusTrajectory
             primitive={primitive}
-            subject={requireWorldFocusDisplayBinding(bindings, primitive.subjectReference)}
+            subject={requireWorldFocusDisplayBinding(
+              bindings,
+              primitive.subjectReference,
+            )}
             points={primitive.orderedPointReferences.map((reference) =>
               requireWorldFocusDisplayBinding(bindings, reference),
             )}
-            missingPositions={primitive.missingPositionReferences.map((reference) =>
-              requireWorldFocusDisplayBinding(bindings, reference),
+            missingPositions={primitive.missingPositionReferences.map(
+              (reference) =>
+                requireWorldFocusDisplayBinding(bindings, reference),
             )}
             orderingBasis={
               primitive.orderingBasisReference === null
@@ -167,9 +184,15 @@ export function createCoreWorldFocusModuleRegistry(
     {
       kind: 'evidence-history',
       render: () => {
-        const result = requireReady(snapshot.evidenceHistory, 'Evidence/History');
+        const result = requireReady(
+          snapshot.evidenceHistory,
+          'Evidence/History',
+        );
         return (
-          <WorldFocusEvidenceHistory projection={result.projection} bindings={bindings} />
+          <WorldFocusEvidenceHistory
+            projection={result.projection}
+            bindings={bindings}
+          />
         );
       },
     },

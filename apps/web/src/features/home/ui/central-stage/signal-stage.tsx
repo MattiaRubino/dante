@@ -58,9 +58,7 @@ export function SignalStage() {
   );
 
   const step = (direction: -1 | 1) => {
-    setOffset((current) =>
-      modulo(current + direction, SIGNAL_METRICS.length),
-    );
+    setOffset((current) => modulo(current + direction, SIGNAL_METRICS.length));
   };
 
   const metricCopy = {

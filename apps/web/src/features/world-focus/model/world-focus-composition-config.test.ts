@@ -123,7 +123,10 @@ describe('World Focus composition config', () => {
       ],
     };
 
-    const first = createWorldFocusCompositionConfig({ ...base, worldId: 'music' });
+    const first = createWorldFocusCompositionConfig({
+      ...base,
+      worldId: 'music',
+    });
     const second = createWorldFocusCompositionConfig({
       ...base,
       worldId: 'future-world-2040',

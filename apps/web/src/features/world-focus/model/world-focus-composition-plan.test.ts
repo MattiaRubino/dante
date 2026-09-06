@@ -196,7 +196,9 @@ describe('World Focus dynamic composition planner', () => {
       ],
       DEFAULT_POLICY,
     );
-    expect(threeCompact.entries.map((entry) => entry.gridSpan)).toEqual([4, 4, 4]);
+    expect(threeCompact.entries.map((entry) => entry.gridSpan)).toEqual([
+      4, 4, 4,
+    ]);
   });
 
   it('uses the same composition grammar across realistic contrasting Worlds', () => {
@@ -322,7 +324,10 @@ describe('World Focus dynamic composition planner', () => {
 
       const rowTotals = new Map<number, number>();
       for (const entry of plan.entries) {
-        rowTotals.set(entry.row, (rowTotals.get(entry.row) ?? 0) + entry.gridSpan);
+        rowTotals.set(
+          entry.row,
+          (rowTotals.get(entry.row) ?? 0) + entry.gridSpan,
+        );
       }
       expect(
         [...rowTotals.values()].every((total) => total <= 12),
@@ -337,7 +342,9 @@ describe('World Focus dynamic composition planner', () => {
         maxAdaptiveEntries: -1,
         maxEphemeralEntries: 2,
       }),
-    ).toThrowError('World Focus max adaptive entries must be a non-negative integer');
+    ).toThrowError(
+      'World Focus max adaptive entries must be a non-negative integer',
+    );
 
     expect(() =>
       resolveWorldFocusCompositionPlan(
@@ -375,7 +382,10 @@ describe('World Focus dynamic composition planner', () => {
       }
 
       const plan = resolveWorldFocusCompositionPlan(candidates, DEFAULT_POLICY);
-      const repeated = resolveWorldFocusCompositionPlan(candidates, DEFAULT_POLICY);
+      const repeated = resolveWorldFocusCompositionPlan(
+        candidates,
+        DEFAULT_POLICY,
+      );
 
       expect(repeated).toEqual(plan);
       expect(plan.entries.length + plan.omitted.length).toBe(candidates.length);
@@ -392,9 +402,8 @@ describe('World Focus dynamic composition planner', () => {
       expect(plannedStableIds).toEqual(stableIds);
 
       expect(
-        plan.entries.filter(
-          (entry) => entry.ownership.stability === 'adaptive',
-        ).length,
+        plan.entries.filter((entry) => entry.ownership.stability === 'adaptive')
+          .length,
       ).toBeLessThanOrEqual(DEFAULT_POLICY.maxAdaptiveEntries);
       expect(
         plan.entries.filter(
@@ -408,7 +417,10 @@ describe('World Focus dynamic composition planner', () => {
         if (entry.prominence === 'lead') {
           expect(entry.gridSpan).toBe(12);
         }
-        rowTotals.set(entry.row, (rowTotals.get(entry.row) ?? 0) + entry.gridSpan);
+        rowTotals.set(
+          entry.row,
+          (rowTotals.get(entry.row) ?? 0) + entry.gridSpan,
+        );
       }
 
       for (const total of rowTotals.values()) {

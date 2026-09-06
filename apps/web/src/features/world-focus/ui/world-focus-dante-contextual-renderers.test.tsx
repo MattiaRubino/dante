@@ -106,7 +106,9 @@ describe('World Focus D4 contextual renderer entries', () => {
     const evidence = createWorldFocusEvidenceReferenceFacet(
       {
         evidenceReferences: [{ kind: 'observation', key: 'internal-evidence' }],
-        provenanceReferences: [{ kind: 'provenance', key: 'internal-provenance' }],
+        provenanceReferences: [
+          { kind: 'provenance', key: 'internal-provenance' },
+        ],
         integrityAttestationReferences: [
           { kind: 'attestation', key: 'internal-attestation' },
         ],
@@ -139,7 +141,10 @@ describe('World Focus D4 contextual renderer entries', () => {
 
     render(
       <D4RendererHarness>
-        <WorldFocusEvidenceHistory projection={projection} bindings={bindings} />
+        <WorldFocusEvidenceHistory
+          projection={projection}
+          bindings={bindings}
+        />
       </D4RendererHarness>,
     );
 

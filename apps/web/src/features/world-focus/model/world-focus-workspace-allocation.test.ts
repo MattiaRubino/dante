@@ -398,12 +398,10 @@ describe('World Focus workspace surface allocation', () => {
       expect(first.mainInlineSize).toBeLessThanOrEqual(width);
 
       const activeSidecars = first.placements.filter(
-        (placement) =>
-          placement.slot === 'sidecar' && placement.activeInSlot,
+        (placement) => placement.slot === 'sidecar' && placement.activeInSlot,
       );
       const activeOverlays = first.placements.filter(
-        (placement) =>
-          placement.slot === 'overlay' && placement.activeInSlot,
+        (placement) => placement.slot === 'overlay' && placement.activeInSlot,
       );
       const activeFocus = first.placements.filter(
         (placement) => placement.slot === 'focus' && placement.activeInSlot,
@@ -457,7 +455,8 @@ describe('World Focus workspace surface allocation', () => {
       expect(first.mainInteraction).toBe(expectedBackgroundInteraction);
       expect(
         activeSidecars.every(
-          (placement) => placement.interaction === expectedBackgroundInteraction,
+          (placement) =>
+            placement.interaction === expectedBackgroundInteraction,
         ),
       ).toBe(true);
       expect(

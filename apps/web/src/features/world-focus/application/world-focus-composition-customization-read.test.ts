@@ -18,7 +18,9 @@ function emptyResult(worldId: WorldFocusId): EmptyResult {
 
 describe('World Focus composition customization read', () => {
   it('aggregates the seven existing M1 readers through one bounded opportunity seam', async () => {
-    const calls: Array<Readonly<{ worldId: WorldFocusId; signal: AbortSignal }>> = [];
+    const calls: Array<
+      Readonly<{ worldId: WorldFocusId; signal: AbortSignal }>
+    > = [];
     const readEmpty: WorldFocusScopedReader<EmptyResult> = (
       worldId,
       signal,
@@ -48,7 +50,8 @@ describe('World Focus composition customization read', () => {
   });
 
   it('returns only bounded composition metadata from the real pre-backend readers', async () => {
-    const result = await readWorldFocusCompositionCustomizationOpportunities('music');
+    const result =
+      await readWorldFocusCompositionCustomizationOpportunities('music');
 
     expect(result.worldId).toBe('music');
     expect(result.opportunities.length).toBeGreaterThan(0);

@@ -49,14 +49,18 @@ test('D1 keeps DANTE quiet until invoked, preserves the World, and restores focu
     'interactive',
   );
   expect(
-    await surface.evaluate((element) => getComputedStyle(element).pointerEvents),
+    await surface.evaluate(
+      (element) => getComputedStyle(element).pointerEvents,
+    ),
   ).toBe('none');
   expect(
     await dialog.evaluate((element) => getComputedStyle(element).pointerEvents),
   ).toBe('auto');
 
   await textarea.fill('Bozza che non deve sparire prima dell’invio');
-  await expect(textarea).toHaveValue('Bozza che non deve sparire prima dell’invio');
+  await expect(textarea).toHaveValue(
+    'Bozza che non deve sparire prima dell’invio',
+  );
 
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveCount(0);
@@ -114,7 +118,9 @@ test('D1 remains contained and touch-usable in the contracted 390px World worksp
   expect(closeBox.height).toBeGreaterThanOrEqual(44);
 
   const hasHorizontalOverflow = await page.evaluate(
-    () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+    () =>
+      document.documentElement.scrollWidth >
+      document.documentElement.clientWidth + 1,
   );
   expect(hasHorizontalOverflow).toBe(false);
 });

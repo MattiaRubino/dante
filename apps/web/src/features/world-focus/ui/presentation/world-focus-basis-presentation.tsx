@@ -51,7 +51,9 @@ export function WorldFocusBasisPresentation({
     qualifiers.push({
       axis: 'validity',
       state: validity.status,
-      label: t(($) => $.common.worldFocus.presentation.basis.validity[validity.status]),
+      label: t(
+        ($) => $.common.worldFocus.presentation.basis.validity[validity.status],
+      ),
     });
   }
 
@@ -59,7 +61,9 @@ export function WorldFocusBasisPresentation({
     qualifiers.push({
       axis: 'coverage',
       state: coverage.status,
-      label: t(($) => $.common.worldFocus.presentation.basis.coverage[coverage.status]),
+      label: t(
+        ($) => $.common.worldFocus.presentation.basis.coverage[coverage.status],
+      ),
     });
   }
 

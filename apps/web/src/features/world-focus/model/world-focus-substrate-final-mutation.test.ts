@@ -203,7 +203,9 @@ describe('World Focus WS8 final falsification — mutation kill and transition s
     });
     expect(state.generation).toBe(1);
 
-    state = reduceWorldFocusWorkspaceState(state, { type: 'close-top-surface' });
+    state = reduceWorldFocusWorkspaceState(state, {
+      type: 'close-top-surface',
+    });
     expect(state.generation).toBe(1);
 
     state = reduceWorldFocusWorkspaceState(state, { type: 'clear-context' });

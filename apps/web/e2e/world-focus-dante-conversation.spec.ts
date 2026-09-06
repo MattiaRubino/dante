@@ -3,7 +3,10 @@ import { expect, test } from '@playwright/test';
 
 test.use({ locale: 'it-IT' });
 
-async function openConversation(page: import('@playwright/test').Page, input: string) {
+async function openConversation(
+  page: import('@playwright/test').Page,
+  input: string,
+) {
   await page
     .getByRole('button', { name: 'Apri DANTE per il Mondo Musica' })
     .click();
@@ -64,7 +67,9 @@ test('D3 hands the composer into one deterministic sidecar conversation and pres
   await expect(
     page.locator('[data-world-focus-region="workspace"]'),
   ).toHaveAttribute('data-world-focus-route-focus', 'active');
-  await expect(page.getByText('Perché questo progetto è in pausa?')).toBeVisible();
+  await expect(
+    page.getByText('Perché questo progetto è in pausa?'),
+  ).toBeVisible();
   await expect(conversation).toBeVisible();
 
   await page.getByRole('button', { name: 'Ripristina' }).click();
@@ -73,7 +78,9 @@ test('D3 hands the composer into one deterministic sidecar conversation and pres
     'sidecar',
   );
   await expect(surface).toHaveCount(1);
-  await expect(page.getByText('Perché questo progetto è in pausa?')).toBeVisible();
+  await expect(
+    page.getByText('Perché questo progetto è in pausa?'),
+  ).toBeVisible();
 
   const followUp = page.getByRole('textbox', {
     name: 'Continua la conversazione',
@@ -98,7 +105,10 @@ test('D3 uses route-owned focus at 390px instead of trapping the ongoing convers
   await page.goto('/worlds/music');
 
   const workspace = page.locator('[data-world-focus-region="workspace"]');
-  const conversation = await openConversation(page, 'Apri una conversazione mobile');
+  const conversation = await openConversation(
+    page,
+    'Apri una conversazione mobile',
+  );
   const surface = page.locator(
     '[data-world-focus-surface-id="dante:conversation"]',
   );
@@ -107,11 +117,13 @@ test('D3 uses route-owned focus at 390px instead of trapping the ongoing convers
     'data-world-focus-surface-presentation',
     'route',
   );
-  await expect(page.locator('.world-focus-route-surface-layer')).toHaveAttribute(
-    'data-world-focus-route-surface-count',
-    '1',
+  await expect(
+    page.locator('.world-focus-route-surface-layer'),
+  ).toHaveAttribute('data-world-focus-route-surface-count', '1');
+  await expect(workspace).toHaveAttribute(
+    'data-world-focus-route-focus',
+    'active',
   );
-  await expect(workspace).toHaveAttribute('data-world-focus-route-focus', 'active');
   await expect(workspace).toHaveAttribute('inert', '');
 
   const workspaceBox = await workspace.boundingBox();
@@ -134,7 +146,9 @@ test('D3 uses route-owned focus at 390px instead of trapping the ongoing convers
   expect(closeBox.height).toBeGreaterThanOrEqual(44);
 
   const hasHorizontalOverflow = await page.evaluate(
-    () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+    () =>
+      document.documentElement.scrollWidth >
+      document.documentElement.clientWidth + 1,
   );
   expect(hasHorizontalOverflow).toBe(false);
 });

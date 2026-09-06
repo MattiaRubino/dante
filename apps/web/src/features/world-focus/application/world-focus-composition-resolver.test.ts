@@ -143,7 +143,9 @@ describe('World Focus M3-2 adaptive candidate resolver', () => {
       maxAdaptiveEntries: 0,
       maxEphemeralEntries: 0,
     });
-    expect(plan.entries.map((entry) => entry.instanceId)).toEqual(['continuity']);
+    expect(plan.entries.map((entry) => entry.instanceId)).toEqual([
+      'continuity',
+    ]);
   });
 
   it('preserves pinned intent without fabricating a candidate when meaningful projection is unavailable', () => {
@@ -201,7 +203,10 @@ describe('World Focus M3-2 adaptive candidate resolver', () => {
     });
 
     const byId = new Map(
-      resolution.candidates.map((candidate) => [candidate.instanceId, candidate]),
+      resolution.candidates.map((candidate) => [
+        candidate.instanceId,
+        candidate,
+      ]),
     );
     expect(byId.get('continuity')).toMatchObject({
       ownership: { stability: 'adaptive', origin: 'user' },

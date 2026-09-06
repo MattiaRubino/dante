@@ -65,7 +65,9 @@ describe('World Focus B0 platform primitives', () => {
   });
 
   it('accepts only credential-free absolute HTTPS links', () => {
-    expect(parseWorldFocusSafeExternalUrl(' https://example.com/path?q=1 ')).toEqual({
+    expect(
+      parseWorldFocusSafeExternalUrl(' https://example.com/path?q=1 '),
+    ).toEqual({
       href: 'https://example.com/path?q=1',
       protocol: 'https:',
       hostname: 'example.com',
@@ -75,7 +77,9 @@ describe('World Focus B0 platform primitives', () => {
     expect(parseWorldFocusSafeExternalUrl('javascript:alert(1)')).toBeNull();
     expect(parseWorldFocusSafeExternalUrl('data:text/html,hello')).toBeNull();
     expect(parseWorldFocusSafeExternalUrl('/worlds/music')).toBeNull();
-    expect(parseWorldFocusSafeExternalUrl('https://user:secret@example.com')).toBeNull();
+    expect(
+      parseWorldFocusSafeExternalUrl('https://user:secret@example.com'),
+    ).toBeNull();
     expect(parseWorldFocusSafeExternalUrl('not a url')).toBeNull();
   });
 });

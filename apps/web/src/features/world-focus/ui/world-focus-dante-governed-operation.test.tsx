@@ -91,7 +91,9 @@ describe('World Focus D6 governed-operation presentation', () => {
     expect(proposal.getAttribute('data-world-focus-dante-surface')).toBe(
       'proposal',
     );
-    expect(proposal.textContent).toContain('Nessuna operazione è stata eseguita');
+    expect(proposal.textContent).toContain(
+      'Nessuna operazione è stata eseguita',
+    );
 
     fireEvent.click(screen.getByRole('button', { name: 'Rivedi conferma' }));
     const confirmation = await screen.findByRole('alertdialog', {
@@ -115,11 +117,15 @@ describe('World Focus D6 governed-operation presentation', () => {
     const receipt = await screen.findByRole('dialog', {
       name: 'Ricevuta decisione',
     });
-    expect(receipt.getAttribute('data-world-focus-dante-surface')).toBe('receipt');
+    expect(receipt.getAttribute('data-world-focus-dante-surface')).toBe(
+      'receipt',
+    );
     expect(receipt.getAttribute('data-world-focus-dante-decision')).toBe(
       'confirmed',
     );
-    expect(receipt.textContent).toContain('Nessuna operazione è stata eseguita');
+    expect(receipt.textContent).toContain(
+      'Nessuna operazione è stata eseguita',
+    );
     expect(receipt.textContent).not.toContain('Operazione completata');
   });
 });

@@ -31,21 +31,20 @@ class TestResizeObserver implements ResizeObserver {
   unobserve() {}
 }
 
-const TEST_SURFACE_REGISTRY = new WorldFocusSurfaceRegistry<
-  WorldFocusSurfaceRegistration
->([
-  {
-    kind: 'test-surface',
-    render: ({ surface, onRequestClose }) => (
-      <section data-testid={`surface-${surface.instanceId}`}>
-        <span>{surface.presentation}</span>
-        <button type="button" onClick={onRequestClose}>
-          Close {surface.instanceId}
-        </button>
-      </section>
-    ),
-  },
-]);
+const TEST_SURFACE_REGISTRY =
+  new WorldFocusSurfaceRegistry<WorldFocusSurfaceRegistration>([
+    {
+      kind: 'test-surface',
+      render: ({ surface, onRequestClose }) => (
+        <section data-testid={`surface-${surface.instanceId}`}>
+          <span>{surface.presentation}</span>
+          <button type="button" onClick={onRequestClose}>
+            Close {surface.instanceId}
+          </button>
+        </section>
+      ),
+    },
+  ]);
 
 const TEST_RESIZE_OBSERVER: ResizeObserver = {
   disconnect() {},
@@ -299,7 +298,9 @@ describe('WorldFocusWorkspace allocation integration', () => {
       'inert',
     );
     expect(sidecar?.hasAttribute('inert')).toBe(true);
-    expect(modal?.getAttribute('data-world-focus-surface-slot')).toBe('overlay');
+    expect(modal?.getAttribute('data-world-focus-surface-slot')).toBe(
+      'overlay',
+    );
     expect(modal?.getAttribute('data-world-focus-surface-interaction')).toBe(
       'interactive',
     );
@@ -346,7 +347,9 @@ describe('WorldFocusWorkspace allocation integration', () => {
     );
     expect(mainPlane?.hasAttribute('inert')).toBe(true);
     expect(screen.queryByTestId('surface-dante:sidecar')).toBeNull();
-    expect(modal?.getAttribute('data-world-focus-surface-slot')).toBe('overlay');
+    expect(modal?.getAttribute('data-world-focus-surface-slot')).toBe(
+      'overlay',
+    );
     expect(modal?.getAttribute('data-world-focus-surface-interaction')).toBe(
       'interactive',
     );

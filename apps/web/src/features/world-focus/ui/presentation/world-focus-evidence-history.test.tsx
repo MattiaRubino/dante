@@ -17,7 +17,9 @@ describe('World Focus M2 Evidence/History renderer', () => {
   const evidence = createWorldFocusEvidenceReferenceFacet(
     {
       evidenceReferences: [{ kind: 'observation', key: 'internal-evidence' }],
-      provenanceReferences: [{ kind: 'provenance', key: 'internal-provenance' }],
+      provenanceReferences: [
+        { kind: 'provenance', key: 'internal-provenance' },
+      ],
       integrityAttestationReferences: [
         { kind: 'attestation', key: 'internal-attestation' },
       ],
@@ -59,9 +61,21 @@ describe('World Focus M2 Evidence/History renderer', () => {
       <WorldFocusEvidenceHistory projection={projection} bindings={bindings} />,
     );
 
-    expect(within(screen.getByRole('group', { name: 'Evidenze' })).getByText('Revisione mix')).toBeTruthy();
-    expect(within(screen.getByRole('group', { name: 'Provenienza' })).getByText('Import studio')).toBeTruthy();
-    expect(within(screen.getByRole('group', { name: 'Integrità' })).getByText('Verifica integrità')).toBeTruthy();
+    expect(
+      within(screen.getByRole('group', { name: 'Evidenze' })).getByText(
+        'Revisione mix',
+      ),
+    ).toBeTruthy();
+    expect(
+      within(screen.getByRole('group', { name: 'Provenienza' })).getByText(
+        'Import studio',
+      ),
+    ).toBeTruthy();
+    expect(
+      within(screen.getByRole('group', { name: 'Integrità' })).getByText(
+        'Verifica integrità',
+      ),
+    ).toBeTruthy();
     expect(
       within(screen.getByRole('group', { name: 'Cronologia' }))
         .getAllByRole('listitem')

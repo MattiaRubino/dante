@@ -20,8 +20,14 @@ const READY_MUSIC_RESULT = {
         context: 'Release',
         checkpoint: 'Master v1',
         threadReference: { kind: 'release', key: 'music-one' },
-        checkpointReference: { kind: 'material-state', key: 'music-one-master-v1' },
-        continuationReference: { kind: 'continuation-intent', key: 'music-one-next' },
+        checkpointReference: {
+          kind: 'material-state',
+          key: 'music-one-master-v1',
+        },
+        continuationReference: {
+          kind: 'continuation-intent',
+          key: 'music-one-next',
+        },
         presentationState: 'active',
       },
     ],
@@ -30,7 +36,10 @@ const READY_MUSIC_RESULT = {
 
 describe('World Focus B2 continuity application boundary', () => {
   it('accepts a bounded, ordered continuity projection for the requested World', () => {
-    const result = validateWorldFocusContinuityReadResult(READY_MUSIC_RESULT, 'music');
+    const result = validateWorldFocusContinuityReadResult(
+      READY_MUSIC_RESULT,
+      'music',
+    );
 
     expect(result.ok).toBe(true);
     if (result.ok && result.value.status === 'ready') {
@@ -39,7 +48,9 @@ describe('World Focus B2 continuity application boundary', () => {
         kind: 'release',
         key: 'music-one',
       });
-      expect(result.value.projection.orderedItems[0]?.checkpointReference).toEqual({
+      expect(
+        result.value.projection.orderedItems[0]?.checkpointReference,
+      ).toEqual({
         kind: 'material-state',
         key: 'music-one-master-v1',
       });
@@ -47,7 +58,9 @@ describe('World Focus B2 continuity application boundary', () => {
   });
 
   it('rejects projection data from another World instead of attaching it locally', () => {
-    expect(validateWorldFocusContinuityReadResult(READY_MUSIC_RESULT, 'travel').ok).toBe(false);
+    expect(
+      validateWorldFocusContinuityReadResult(READY_MUSIC_RESULT, 'travel').ok,
+    ).toBe(false);
   });
 
   it('rejects duplicate keys, missing WP-01 references and unbounded first-open results', () => {
@@ -55,14 +68,22 @@ describe('World Focus B2 continuity application boundary', () => {
       ...READY_MUSIC_RESULT,
       projection: {
         ...READY_MUSIC_RESULT.projection,
-        orderedItems: [READY_MUSIC_RESULT.projection.orderedItems[0], READY_MUSIC_RESULT.projection.orderedItems[0]],
+        orderedItems: [
+          READY_MUSIC_RESULT.projection.orderedItems[0],
+          READY_MUSIC_RESULT.projection.orderedItems[0],
+        ],
       },
     };
     const missingReference = {
       ...READY_MUSIC_RESULT,
       projection: {
         ...READY_MUSIC_RESULT.projection,
-        orderedItems: [{ ...READY_MUSIC_RESULT.projection.orderedItems[0], threadReference: undefined }],
+        orderedItems: [
+          {
+            ...READY_MUSIC_RESULT.projection.orderedItems[0],
+            threadReference: undefined,
+          },
+        ],
       },
     };
     const unbounded = {
@@ -75,16 +96,25 @@ describe('World Focus B2 continuity application boundary', () => {
           context: 'Project',
           checkpoint: `Checkpoint ${index}`,
           threadReference: { kind: 'project', key: `thread-${index}` },
-          checkpointReference: { kind: 'checkpoint', key: `checkpoint-${index}` },
+          checkpointReference: {
+            kind: 'checkpoint',
+            key: `checkpoint-${index}`,
+          },
           continuationReference: null,
           presentationState: 'active' as const,
         })),
       },
     };
 
-    expect(validateWorldFocusContinuityReadResult(duplicate, 'music').ok).toBe(false);
-    expect(validateWorldFocusContinuityReadResult(missingReference, 'music').ok).toBe(false);
-    expect(validateWorldFocusContinuityReadResult(unbounded, 'music').ok).toBe(false);
+    expect(validateWorldFocusContinuityReadResult(duplicate, 'music').ok).toBe(
+      false,
+    );
+    expect(
+      validateWorldFocusContinuityReadResult(missingReference, 'music').ok,
+    ).toBe(false);
+    expect(validateWorldFocusContinuityReadResult(unbounded, 'music').ok).toBe(
+      false,
+    );
   });
 
   it('turns invalid adapter payloads into the safe boundary validation error', async () => {
@@ -93,7 +123,9 @@ describe('World Focus B2 continuity application boundary', () => {
     };
     const reader = createWorldFocusContinuityReader(adapter);
 
-    await expect(reader('music')).rejects.toBeInstanceOf(WorldFocusBoundaryValidationError);
+    await expect(reader('music')).rejects.toBeInstanceOf(
+      WorldFocusBoundaryValidationError,
+    );
   });
 
   it('keeps intentionally sparse Worlds and unknown future Worlds empty', async () => {
@@ -111,7 +143,9 @@ describe('World Focus B2 continuity application boundary', () => {
 
     expect(music.status).toBe('ready');
     expect(travel.status).toBe('ready');
-    if (music.status === 'ready') expect(music.projection.orderedItems).toHaveLength(2);
-    if (travel.status === 'ready') expect(travel.projection.orderedItems).toHaveLength(1);
+    if (music.status === 'ready')
+      expect(music.projection.orderedItems).toHaveLength(2);
+    if (travel.status === 'ready')
+      expect(travel.projection.orderedItems).toHaveLength(1);
   });
 });

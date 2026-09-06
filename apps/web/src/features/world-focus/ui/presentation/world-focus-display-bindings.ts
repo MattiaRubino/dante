@@ -103,7 +103,9 @@ export function assertWorldFocusDisplayBindingMatchesReference(
   label: string,
 ): void {
   if (!worldFocusDisplayBindingMatchesReference(binding, reference)) {
-    throw new Error(`${label} display binding does not match semantic reference`);
+    throw new Error(
+      `${label} display binding does not match semantic reference`,
+    );
   }
 }
 

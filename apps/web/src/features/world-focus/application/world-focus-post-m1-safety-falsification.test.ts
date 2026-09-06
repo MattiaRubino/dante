@@ -82,7 +82,11 @@ describe('World Focus post-M1 safety falsification', () => {
         reasonCode: 'sources-disagree',
       }),
     ] as const;
-    const disclosureStatuses = ['available', 'restricted', 'unavailable'] as const;
+    const disclosureStatuses = [
+      'available',
+      'restricted',
+      'unavailable',
+    ] as const;
     const syncCases = [
       createWorldFocusSyncPresentation({
         connectivity: 'online',
@@ -384,7 +388,9 @@ describe('World Focus post-M1 safety falsification', () => {
     expect(situation.worldId).toBe('future-apiary');
     expect(next.worldId).toBe('future-apiary');
     expect(history.worldId).toBe('future-apiary');
-    expect(evidence.evidenceReferences).not.toEqual(evidence.provenanceReferences);
+    expect(evidence.evidenceReferences).not.toEqual(
+      evidence.provenanceReferences,
+    );
     expect(evidence.provenanceReferences).not.toEqual(
       evidence.integrityAttestationReferences,
     );
@@ -448,7 +454,10 @@ describe('World Focus post-M1 safety falsification', () => {
         resolverInstalled = true;
         resolveLate = resolve;
       });
-    const validator = vi.fn(() => ({ ok: true as const, value: 'late-result' }));
+    const validator = vi.fn(() => ({
+      ok: true as const,
+      value: 'late-result',
+    }));
     const reader = createWorldFocusScopedReader(adapter, validator);
     const upstream = new AbortController();
 

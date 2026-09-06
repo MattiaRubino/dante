@@ -71,7 +71,9 @@ export function createWorldFocusDanteContinuityContext(
 ): WorldFocusContextReferenceSet | null {
   return tryCreateReferenceSet(item.threadReference, [
     item.checkpointReference,
-    ...(item.continuationReference === null ? [] : [item.continuationReference]),
+    ...(item.continuationReference === null
+      ? []
+      : [item.continuationReference]),
   ]);
 }
 

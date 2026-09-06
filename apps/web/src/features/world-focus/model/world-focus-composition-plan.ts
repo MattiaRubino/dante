@@ -53,7 +53,9 @@ export type WorldFocusCompositionPlan<Kind extends string = string> = Readonly<{
   rowCount: number;
 }>;
 
-const PROMINENCE_RANK: Readonly<Record<WorldFocusCompositionProminence, number>> = {
+const PROMINENCE_RANK: Readonly<
+  Record<WorldFocusCompositionProminence, number>
+> = {
   lead: 0,
   primary: 1,
   supporting: 2,
@@ -92,7 +94,9 @@ function assertCandidate(candidate: WorldFocusCompositionCandidate): void {
     throw new Error('World Focus composition kind must not be empty');
   }
   if (!Number.isInteger(candidate.order) || candidate.order < 0) {
-    throw new Error('World Focus composition order must be a non-negative integer');
+    throw new Error(
+      'World Focus composition order must be a non-negative integer',
+    );
   }
 }
 
@@ -411,7 +415,9 @@ function planGrid<Kind extends string>(
 
   for (const candidate of selected) {
     const preferred =
-      candidate.prominence === 'lead' ? 12 : PREFERRED_SPAN[candidate.footprint];
+      candidate.prominence === 'lead'
+        ? 12
+        : PREFERRED_SPAN[candidate.footprint];
 
     if (preferred === 12) {
       flush();

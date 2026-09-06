@@ -15,8 +15,14 @@ const CONTINUITY_FIXTURES: Partial<
       context: 'Release',
       checkpoint: 'Master v3',
       threadReference: { kind: 'release', key: 'neon-static' },
-      checkpointReference: { kind: 'material-state', key: 'neon-static-master-v3' },
-      continuationReference: { kind: 'continuation-intent', key: 'neon-static-release' },
+      checkpointReference: {
+        kind: 'material-state',
+        key: 'neon-static-master-v3',
+      },
+      continuationReference: {
+        kind: 'continuation-intent',
+        key: 'neon-static-release',
+      },
       presentationState: 'active',
     },
     {
@@ -25,7 +31,10 @@ const CONTINUITY_FIXTURES: Partial<
       context: 'Song',
       checkpoint: 'Arrangement draft',
       threadReference: { kind: 'song', key: 'glass-signal' },
-      checkpointReference: { kind: 'material-state', key: 'glass-signal-arrangement-draft' },
+      checkpointReference: {
+        kind: 'material-state',
+        key: 'glass-signal-arrangement-draft',
+      },
       continuationReference: null,
       presentationState: 'paused',
     },
@@ -37,8 +46,14 @@ const CONTINUITY_FIXTURES: Partial<
       context: 'Planning',
       checkpoint: 'Flight shortlist',
       threadReference: { kind: 'plan', key: 'japan-2027' },
-      checkpointReference: { kind: 'checkpoint', key: 'japan-flight-shortlist' },
-      continuationReference: { kind: 'continuation-intent', key: 'japan-flight-review' },
+      checkpointReference: {
+        kind: 'checkpoint',
+        key: 'japan-flight-shortlist',
+      },
+      continuationReference: {
+        kind: 'continuation-intent',
+        key: 'japan-flight-review',
+      },
       presentationState: 'active',
     },
   ],
@@ -50,7 +65,10 @@ const CONTINUITY_FIXTURES: Partial<
       checkpoint: 'Unit 4',
       threadReference: { kind: 'course', key: 'english-b2' },
       checkpointReference: { kind: 'checkpoint', key: 'english-b2-unit-4' },
-      continuationReference: { kind: 'continuation-intent', key: 'english-b2-next-unit' },
+      continuationReference: {
+        kind: 'continuation-intent',
+        key: 'english-b2-next-unit',
+      },
       presentationState: 'active',
     },
   ],
@@ -61,7 +79,10 @@ const CONTINUITY_FIXTURES: Partial<
       context: 'Workstream',
       checkpoint: 'Review notes',
       threadReference: { kind: 'workstream', key: 'launch-brief' },
-      checkpointReference: { kind: 'checkpoint', key: 'launch-brief-review-notes' },
+      checkpointReference: {
+        kind: 'checkpoint',
+        key: 'launch-brief-review-notes',
+      },
       continuationReference: null,
       presentationState: 'active',
     },
@@ -73,8 +94,14 @@ const CONTINUITY_FIXTURES: Partial<
       context: 'Project',
       checkpoint: 'Wireframe pass',
       threadReference: { kind: 'project', key: 'portfolio-redesign' },
-      checkpointReference: { kind: 'checkpoint', key: 'portfolio-wireframe-pass' },
-      continuationReference: { kind: 'continuation-intent', key: 'portfolio-next-pass' },
+      checkpointReference: {
+        kind: 'checkpoint',
+        key: 'portfolio-wireframe-pass',
+      },
+      continuationReference: {
+        kind: 'continuation-intent',
+        key: 'portfolio-next-pass',
+      },
       presentationState: 'active',
     },
     {
@@ -83,7 +110,10 @@ const CONTINUITY_FIXTURES: Partial<
       context: 'Project',
       checkpoint: 'Source cleanup',
       threadReference: { kind: 'project', key: 'home-archive' },
-      checkpointReference: { kind: 'checkpoint', key: 'home-archive-source-cleanup' },
+      checkpointReference: {
+        kind: 'checkpoint',
+        key: 'home-archive-source-cleanup',
+      },
       continuationReference: null,
       presentationState: 'blocked',
     },
@@ -104,7 +134,8 @@ export const worldFocusContinuityFixtureAdapter: WorldFocusContinuityReadAdapter
       if (signal.aborted) throw createAbortError();
 
       const fixtureId = normalizeWorldFocusFixtureId(worldId);
-      const orderedItems = fixtureId === undefined ? undefined : CONTINUITY_FIXTURES[fixtureId];
+      const orderedItems =
+        fixtureId === undefined ? undefined : CONTINUITY_FIXTURES[fixtureId];
       if (orderedItems === undefined || orderedItems.length === 0) {
         return Object.freeze({ status: 'empty' as const, worldId });
       }

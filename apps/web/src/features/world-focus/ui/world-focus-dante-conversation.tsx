@@ -133,8 +133,7 @@ function WorldFocusDanteConversationPresentationSession({
         ? ('sidecar' as const)
         : ('route' as const);
     })();
-    const desiredBlocksWorkspaceInteraction =
-      desiredPresentation === 'route';
+    const desiredBlocksWorkspaceInteraction = desiredPresentation === 'route';
 
     if (
       conversation.presentation === desiredPresentation &&
@@ -386,11 +385,17 @@ export function WorldFocusDanteConversation({
             </ol>
 
             {conversation.requestState.status === 'pending' ? (
-              <p className="world-focus-dante-conversation-status" role="status">
+              <p
+                className="world-focus-dante-conversation-status"
+                role="status"
+              >
                 {t(($) => $.common.worldFocus.dante.localPending)}
               </p>
             ) : conversation.requestState.status === 'unavailable' ? (
-              <p className="world-focus-dante-conversation-status" role="status">
+              <p
+                className="world-focus-dante-conversation-status"
+                role="status"
+              >
                 {t(($) => $.common.worldFocus.dante.localUnavailable)}
               </p>
             ) : conversation.requestState.status === 'error' ? (
@@ -398,21 +403,33 @@ export function WorldFocusDanteConversation({
                 {t(($) => $.common.worldFocus.dante.localError)}
               </p>
             ) : conversation.requestState.status === 'cancelled' ? (
-              <p className="world-focus-dante-conversation-status" role="status">
+              <p
+                className="world-focus-dante-conversation-status"
+                role="status"
+              >
                 {t(($) => $.common.worldFocus.dante.localCancelled)}
               </p>
             ) : conversation.requestState.status === 'superseded' ? (
-              <p className="world-focus-dante-conversation-status" role="status">
+              <p
+                className="world-focus-dante-conversation-status"
+                role="status"
+              >
                 {t(($) => $.common.worldFocus.dante.localSuperseded)}
               </p>
             ) : null}
 
             {insight?.requestState.status === 'pending' ? (
-              <p className="world-focus-dante-conversation-status" role="status">
+              <p
+                className="world-focus-dante-conversation-status"
+                role="status"
+              >
                 {t(($) => $.common.worldFocus.dante.insight.pending)}
               </p>
             ) : insight?.requestState.status === 'unavailable' ? (
-              <p className="world-focus-dante-conversation-status" role="status">
+              <p
+                className="world-focus-dante-conversation-status"
+                role="status"
+              >
                 {t(($) => $.common.worldFocus.dante.insight.unavailable)}
               </p>
             ) : insight?.requestState.status === 'error' ? (
@@ -420,7 +437,10 @@ export function WorldFocusDanteConversation({
                 {t(($) => $.common.worldFocus.dante.insight.error)}
               </p>
             ) : insight?.requestState.status === 'superseded' ? (
-              <p className="world-focus-dante-conversation-status" role="status">
+              <p
+                className="world-focus-dante-conversation-status"
+                role="status"
+              >
                 {t(($) => $.common.worldFocus.dante.insight.superseded)}
               </p>
             ) : null}
@@ -441,7 +461,9 @@ export function WorldFocusDanteConversation({
                 className="world-focus-dante-conversation-input"
                 rows={2}
                 value={draft}
-                placeholder={t(($) => $.common.worldFocus.dante.followUpPlaceholder)}
+                placeholder={t(
+                  ($) => $.common.worldFocus.dante.followUpPlaceholder,
+                )}
                 disabled={pending}
                 onChange={(event) => setDraft(event.currentTarget.value)}
               />

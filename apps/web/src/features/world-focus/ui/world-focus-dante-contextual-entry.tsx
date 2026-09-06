@@ -1,9 +1,7 @@
 import { type MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type {
-  WorldFocusDanteContextualIntent,
-} from '../application/world-focus-dante-contextual-invocation';
+import type { WorldFocusDanteContextualIntent } from '../application/world-focus-dante-contextual-invocation';
 import type { WorldFocusContextReferenceSet } from '../model/world-focus-context-reference';
 import { isWorldFocusFeatureAvailable } from '../model/world-focus-platform';
 import { useOptionalWorldFocusDanteEntry } from './world-focus-dante-entry';

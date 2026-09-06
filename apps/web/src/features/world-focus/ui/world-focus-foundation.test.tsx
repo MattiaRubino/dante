@@ -16,7 +16,9 @@ afterEach(() => {
 
 describe('World Focus B0 UI foundation', () => {
   it('isolates a render failure without exposing raw error text in fallback UI', () => {
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const consoleError = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined);
     const onError = vi.fn();
     let shouldThrow = true;
 

@@ -73,8 +73,12 @@ describe('WorldFocusPage', () => {
     );
 
     const shell = screen.getByRole('main', { name: 'Mondo Musica' });
-    expect(shell.getAttribute('data-world-focus-structure-version')).toBe('1.0.0');
-    expect(shell.getAttribute('data-world-focus-geometry-version')).toBe('wf-g3');
+    expect(shell.getAttribute('data-world-focus-structure-version')).toBe(
+      '1.0.0',
+    );
+    expect(shell.getAttribute('data-world-focus-geometry-version')).toBe(
+      'wf-g3',
+    );
     expect(shell.getAttribute('data-world-focus-visual-version')).toBe(
       'wf-v4-candidate',
     );
@@ -90,11 +94,15 @@ describe('WorldFocusPage', () => {
     expect(
       container.querySelectorAll('[data-world-focus-region="shell-controls"]'),
     ).toHaveLength(1);
-    expect(container.querySelectorAll('.world-focus-energy-canvas')).toHaveLength(1);
+    expect(
+      container.querySelectorAll('.world-focus-energy-canvas'),
+    ).toHaveLength(1);
     expect(
       container.querySelectorAll('.world-focus-corona-reference'),
     ).toHaveLength(3);
-    expect(container.querySelector('.world-focus-corona-fallback-svg')).toBeNull();
+    expect(
+      container.querySelector('.world-focus-corona-fallback-svg'),
+    ).toBeNull();
 
     await waitFor(() => {
       expect(
@@ -110,8 +118,12 @@ describe('WorldFocusPage', () => {
     expect(continuity?.getAttribute('data-world-focus-origin')).toBe(
       'application-derived',
     );
-    expect(continuity?.getAttribute('data-world-focus-prominence')).toBe('primary');
-    expect(continuity?.getAttribute('data-world-focus-footprint')).toBe('standard');
+    expect(continuity?.getAttribute('data-world-focus-prominence')).toBe(
+      'primary',
+    );
+    expect(continuity?.getAttribute('data-world-focus-footprint')).toBe(
+      'standard',
+    );
     expect(continuity?.getAttribute('data-world-focus-grid-span')).toBe('6');
     expect(continuity?.getAttribute('data-world-focus-grid-row')).toBe('0');
 
@@ -125,8 +137,12 @@ describe('WorldFocusPage', () => {
     expect(['animated', 'reduced', 'static']).toContain(
       energy?.getAttribute('data-world-focus-energy-motion'),
     );
-    if (energy?.getAttribute('data-world-focus-energy-renderer') === 'fallback') {
-      expect(energy.getAttribute('data-world-focus-energy-motion')).toBe('static');
+    if (
+      energy?.getAttribute('data-world-focus-energy-renderer') === 'fallback'
+    ) {
+      expect(energy.getAttribute('data-world-focus-energy-motion')).toBe(
+        'static',
+      );
     }
 
     expect(
@@ -135,7 +151,9 @@ describe('WorldFocusPage', () => {
       ),
     ).toBeTruthy();
     expect(
-      container.querySelector('[data-world-focus-vfx-boundary="workspace-protected"]'),
+      container.querySelector(
+        '[data-world-focus-vfx-boundary="workspace-protected"]',
+      ),
     ).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Torna indietro' })).toBeNull();
     expect(container.querySelector('.world-focus-portal')).toBeNull();
@@ -203,8 +221,12 @@ describe('WorldFocusPage', () => {
 
     const shell = container.querySelector('.world-focus-shell');
     expect(shell?.getAttribute('data-entry-origin')).toBe('fallback');
-    expect(shell?.getAttribute('data-world-focus-structure-version')).toBe('1.0.0');
-    expect(shell?.getAttribute('data-world-focus-geometry-version')).toBe('wf-g3');
+    expect(shell?.getAttribute('data-world-focus-structure-version')).toBe(
+      '1.0.0',
+    );
+    expect(shell?.getAttribute('data-world-focus-geometry-version')).toBe(
+      'wf-g3',
+    );
     expect(shell?.getAttribute('data-world-focus-visual-version')).toBe(
       'wf-v4-candidate',
     );
@@ -271,7 +293,9 @@ describe('WorldFocusPage', () => {
 
     const shell = container.querySelector('.world-focus-shell');
     expect(shell?.getAttribute('data-world-focus-status')).toBe('loading');
-    expect(screen.getByRole('status').textContent).toBe('Caricamento del Mondo Musica');
+    expect(screen.getByRole('status').textContent).toBe(
+      'Caricamento del Mondo Musica',
+    );
 
     rerender(
       <WorldFocusPage
@@ -283,7 +307,9 @@ describe('WorldFocusPage', () => {
       />,
     );
     expect(shell?.getAttribute('data-world-focus-status')).toBe('error');
-    expect(screen.getByRole('alert').textContent).toBe('Impossibile aprire il Mondo Musica');
+    expect(screen.getByRole('alert').textContent).toBe(
+      'Impossibile aprire il Mondo Musica',
+    );
 
     rerender(
       <WorldFocusPage
@@ -295,7 +321,9 @@ describe('WorldFocusPage', () => {
       />,
     );
     expect(shell?.getAttribute('data-world-focus-status')).toBe('unavailable');
-    expect(screen.getByRole('alert').textContent).toBe('Mondo Musica non disponibile');
+    expect(screen.getByRole('alert').textContent).toBe(
+      'Mondo Musica non disponibile',
+    );
   });
 
   it('restores focus to a still-mounted opener when the focus surface unmounts', async () => {

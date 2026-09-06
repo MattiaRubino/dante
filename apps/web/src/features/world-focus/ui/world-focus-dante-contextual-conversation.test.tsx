@@ -43,7 +43,10 @@ beforeAll(async () => {
 
 afterEach(cleanup);
 
-function readyResult(request: WorldFocusDanteConversationRequest, output: string) {
+function readyResult(
+  request: WorldFocusDanteConversationRequest,
+  output: string,
+) {
   return Object.freeze({
     schemaVersion: WORLD_FOCUS_DANTE_CONVERSATION_SCHEMA_VERSION,
     status: 'ready' as const,
@@ -87,7 +90,10 @@ function ContextualConversationHarness({
   reader,
 }: Readonly<{ reader: WorldFocusDanteConversationReader }>) {
   const workspace = useWorldFocusWorkspace();
-  const allocation = resolveWorldFocusWorkspaceAllocation(workspace.state, 1280);
+  const allocation = resolveWorldFocusWorkspaceAllocation(
+    workspace.state,
+    1280,
+  );
   const [routeHost, setRouteHost] = useState<HTMLDivElement | null>(null);
   const registry = getCoreWorldFocusSurfaceRegistry();
 
@@ -150,7 +156,9 @@ describe('World Focus D4 contextual conversation session', () => {
     const requests: WorldFocusDanteConversationRequest[] = [];
     const reader: WorldFocusDanteConversationReader = (request) => {
       requests.push(request);
-      return Promise.resolve(readyResult(request, `Contestuale ${requests.length}`));
+      return Promise.resolve(
+        readyResult(request, `Contestuale ${requests.length}`),
+      );
     };
     renderHarness(reader);
 

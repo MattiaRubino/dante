@@ -42,7 +42,10 @@ export const worldFocusDerivedWorkFixtureAdapter: WorldFocusDerivedWorkReadAdapt
           orderedItems: Object.freeze([
             createWorldFocusAttentionPrimitive({
               instanceId: 'music-artwork-attention',
-              matterReference: ref('dependency', 'neon-static-artwork-approval'),
+              matterReference: ref(
+                'dependency',
+                'neon-static-artwork-approval',
+              ),
               reasonCode: 'release-blocked',
               resolutionReference: ref('request', 'artwork-review-request'),
               state: 'awaiting-response',

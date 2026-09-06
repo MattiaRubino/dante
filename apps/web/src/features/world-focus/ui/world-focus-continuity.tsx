@@ -116,7 +116,9 @@ function WorldFocusContinuityState({
     >
       {qualifier === null ? null : (
         <WorldFocusQualifierGroup
-          aria-label={t(($) => $.common.worldFocus.presentation.qualifiers.basis)}
+          aria-label={t(
+            ($) => $.common.worldFocus.presentation.qualifiers.basis,
+          )}
           role="status"
         >
           <WorldFocusQualifier axis={qualifier.axis} state={qualifier.state}>
@@ -126,7 +128,8 @@ function WorldFocusContinuityState({
       )}
       <ul className="world-focus-continuity-list">
         {state.projection.orderedItems.map((item) => {
-          const contextReferences = createWorldFocusDanteContinuityContext(item);
+          const contextReferences =
+            createWorldFocusDanteContinuityContext(item);
 
           return (
             <li
@@ -206,7 +209,9 @@ export function WorldFocusContinuity({
       })
       .catch(() => {
         if (lease.signal.aborted) return;
-        lease.commit(() => setSettled({ requestKey, state: { status: 'error' } }));
+        lease.commit(() =>
+          setSettled({ requestKey, state: { status: 'error' } }),
+        );
       })
       .finally(() => lease.release());
     return () => coordinator.cancelCurrent();

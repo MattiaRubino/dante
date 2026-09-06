@@ -22,7 +22,9 @@ describe('WorldFocusContext', () => {
     });
     const { container } = render(<WorldFocusContext identity={identity} />);
 
-    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Musica');
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(
+      'Musica',
+    );
     expect(container.textContent).toContain(
       'Creatività, ascolto e progetti musicali.',
     );

@@ -22,8 +22,12 @@ function percentToViewBox(value: string): number {
 export function WorldFocusVisualFrame({ world }: WorldFocusVisualFrameProps) {
   const outerRx = percentToViewBox(WORLD_FOCUS_GEOMETRY.guideEllipses.outer.rx);
   const outerRy = percentToViewBox(WORLD_FOCUS_GEOMETRY.guideEllipses.outer.ry);
-  const originRx = percentToViewBox(WORLD_FOCUS_GEOMETRY.guideEllipses.origin.rx);
-  const originRy = percentToViewBox(WORLD_FOCUS_GEOMETRY.guideEllipses.origin.ry);
+  const originRx = percentToViewBox(
+    WORLD_FOCUS_GEOMETRY.guideEllipses.origin.rx,
+  );
+  const originRy = percentToViewBox(
+    WORLD_FOCUS_GEOMETRY.guideEllipses.origin.ry,
+  );
   const innerRx = percentToViewBox(WORLD_FOCUS_GEOMETRY.guideEllipses.inner.rx);
   const innerRy = percentToViewBox(WORLD_FOCUS_GEOMETRY.guideEllipses.inner.ry);
 

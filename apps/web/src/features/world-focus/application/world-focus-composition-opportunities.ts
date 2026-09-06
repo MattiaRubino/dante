@@ -63,7 +63,9 @@ function normalizeNonEmptyToken(value: string, label: string): string {
 function normalizeWorldId(value: WorldFocusId): WorldFocusId {
   const worldId = normalizeWorldFocusId(value);
   if (worldId === undefined) {
-    throw new Error('World Focus composition opportunity World id must not be empty');
+    throw new Error(
+      'World Focus composition opportunity World id must not be empty',
+    );
   }
   return worldId;
 }
@@ -103,10 +105,12 @@ export function createWorldFocusCompositionOpportunity(
   });
 }
 
-export function createWorldFocusCompositionOpportunitySet(input: Readonly<{
-  worldId: WorldFocusId;
-  opportunities: readonly WorldFocusCompositionOpportunity[];
-}>): WorldFocusCompositionOpportunitySet {
+export function createWorldFocusCompositionOpportunitySet(
+  input: Readonly<{
+    worldId: WorldFocusId;
+    opportunities: readonly WorldFocusCompositionOpportunity[];
+  }>,
+): WorldFocusCompositionOpportunitySet {
   const worldId = normalizeWorldId(input.worldId);
   if (input.opportunities.length > WORLD_FOCUS_COMPOSITION_OPPORTUNITY_LIMIT) {
     throw new Error(
@@ -144,8 +148,12 @@ function resultWorldId(
   return result.status === 'ready' ? result.projection.worldId : result.worldId;
 }
 
-function continuityWorldId(result: WorldFocusContinuityReadResult): WorldFocusId {
-  return result.status === 'ready' || result.status === 'partial' || result.status === 'stale'
+function continuityWorldId(
+  result: WorldFocusContinuityReadResult,
+): WorldFocusId {
+  return result.status === 'ready' ||
+    result.status === 'partial' ||
+    result.status === 'stale'
     ? result.projection.worldId
     : result.worldId;
 }
@@ -197,12 +205,36 @@ export function collectWorldFocusCompositionOpportunities(
 ): WorldFocusCompositionOpportunitySet {
   const worldId = normalizeWorldId(input.worldId);
 
-  assertWorldMatch(worldId, resultWorldId(input.situation), 'World Focus Situation result');
-  assertWorldMatch(worldId, continuityWorldId(input.continuity), 'World Focus Continuity result');
-  assertWorldMatch(worldId, resultWorldId(input.attention), 'World Focus Attention result');
-  assertWorldMatch(worldId, resultWorldId(input.next), 'World Focus Next result');
-  assertWorldMatch(worldId, resultWorldId(input.comparison), 'World Focus Comparison result');
-  assertWorldMatch(worldId, resultWorldId(input.trajectory), 'World Focus Trajectory result');
+  assertWorldMatch(
+    worldId,
+    resultWorldId(input.situation),
+    'World Focus Situation result',
+  );
+  assertWorldMatch(
+    worldId,
+    continuityWorldId(input.continuity),
+    'World Focus Continuity result',
+  );
+  assertWorldMatch(
+    worldId,
+    resultWorldId(input.attention),
+    'World Focus Attention result',
+  );
+  assertWorldMatch(
+    worldId,
+    resultWorldId(input.next),
+    'World Focus Next result',
+  );
+  assertWorldMatch(
+    worldId,
+    resultWorldId(input.comparison),
+    'World Focus Comparison result',
+  );
+  assertWorldMatch(
+    worldId,
+    resultWorldId(input.trajectory),
+    'World Focus Trajectory result',
+  );
   assertWorldMatch(
     worldId,
     resultWorldId(input.evidenceHistory),
@@ -252,7 +284,8 @@ export function collectWorldFocusCompositionOpportunities(
 
   addSingleton(
     opportunities,
-    input.next.status === 'ready' && input.next.projection.orderedNextReferences.length > 0,
+    input.next.status === 'ready' &&
+      input.next.projection.orderedNextReferences.length > 0,
     {
       instanceId: 'next',
       kind: 'next',
@@ -287,12 +320,16 @@ export function collectWorldFocusCompositionOpportunities(
     });
   }
 
-  addSingleton(opportunities, hasMeaningfulEvidenceHistory(input.evidenceHistory), {
-    instanceId: 'evidence-history',
-    kind: 'evidence-history',
-    defaultProminence: 'supporting',
-    footprint: 'standard',
-  });
+  addSingleton(
+    opportunities,
+    hasMeaningfulEvidenceHistory(input.evidenceHistory),
+    {
+      instanceId: 'evidence-history',
+      kind: 'evidence-history',
+      defaultProminence: 'supporting',
+      footprint: 'standard',
+    },
+  );
 
   return createWorldFocusCompositionOpportunitySet({ worldId, opportunities });
 }

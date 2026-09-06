@@ -124,13 +124,8 @@ export type WorldFocusOracleOutcome = Readonly<{
     | 'reject-late-result'
     | 'revalidate-consequential-action';
   presentationDisposition:
-    | 'normal'
-    | 'semantic-invariant'
-    | 'safe-fallback-or-local-failure';
-  timeDisposition:
-    | 'simple'
-    | 'domain-time-semantics'
-    | 'reconcile-ordering';
+    'normal' | 'semantic-invariant' | 'safe-fallback-or-local-failure';
+  timeDisposition: 'simple' | 'domain-time-semantics' | 'reconcile-ordering';
   requiresExecutionRevalidation: boolean;
   requiresRecipientPurposeRecheck: boolean;
   canAttachDerivedResult: boolean;
@@ -144,11 +139,13 @@ export type WorldFocusOracleReferenceSet = WorldFocusContextReferenceSet;
  * ordering, bounds and duplicate rejection are owned by the production-neutral
  * reference model rather than reimplemented by the oracle.
  */
-export function createWorldFocusOracleReferenceSet(input: Readonly<{
-  primary: WorldFocusContextReference;
-  supporting?: readonly WorldFocusContextReference[];
-  maxSupportingReferences: number;
-}>): WorldFocusOracleReferenceSet {
+export function createWorldFocusOracleReferenceSet(
+  input: Readonly<{
+    primary: WorldFocusContextReference;
+    supporting?: readonly WorldFocusContextReference[];
+    maxSupportingReferences: number;
+  }>,
+): WorldFocusOracleReferenceSet {
   return createWorldFocusContextReferenceSet({
     primary: input.primary,
     supporting: input.supporting,
@@ -360,10 +357,7 @@ export function auditWorldFocusSubstrateOracle(
   ) {
     violations.push('ambiguous identity must remain unresolved');
   }
-  if (
-    scenario.identity !== 'stable' &&
-    outcome.canAttachDerivedResult
-  ) {
+  if (scenario.identity !== 'stable' && outcome.canAttachDerivedResult) {
     violations.push(
       'derived result cannot attach to unresolved or retired identity',
     );
@@ -414,10 +408,7 @@ export function auditWorldFocusSubstrateOracle(
       'attachable DANTE consequential proposal must retain revalidation state',
     );
   }
-  if (
-    scenario.disclosure !== 'allowed' &&
-    outcome.canAttachDerivedResult
-  ) {
+  if (scenario.disclosure !== 'allowed' && outcome.canAttachDerivedResult) {
     violations.push(
       'derived result cannot attach after disclosure invalidation',
     );

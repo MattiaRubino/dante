@@ -49,7 +49,10 @@ function DanteHarness({
   availability?: WorldFocusFeatureAvailability;
 }>) {
   const workspace = useWorldFocusWorkspace();
-  const allocation = resolveWorldFocusWorkspaceAllocation(workspace.state, 1280);
+  const allocation = resolveWorldFocusWorkspaceAllocation(
+    workspace.state,
+    1280,
+  );
   const activeSurface = workspace.state.surfaces.at(-1) ?? null;
 
   return (
@@ -154,7 +157,9 @@ describe('World Focus D1 contextual DANTE entry', () => {
     const textarea = screen.getByRole<HTMLTextAreaElement>('textbox', {
       name: 'Scrivi una richiesta per DANTE',
     });
-    expect(dialog.getAttribute('data-world-focus-dante-contextual')).toBe('true');
+    expect(dialog.getAttribute('data-world-focus-dante-contextual')).toBe(
+      'true',
+    );
     expect(textarea.value).toBe('Continua da qui');
     expect(textarea).toBe(document.activeElement);
     expect(screen.getByTestId('context-reference').textContent).toBe('bound');
@@ -224,7 +229,9 @@ describe('World Focus D1 contextual DANTE entry', () => {
     );
 
     const close = screen.getByRole('button', { name: 'Chiudi DANTE' });
-    expect(screen.getByText('DANTE non è disponibile al momento.')).toBeTruthy();
+    expect(
+      screen.getByText('DANTE non è disponibile al momento.'),
+    ).toBeTruthy();
     expect(
       screen.queryByRole('textbox', { name: 'Scrivi una richiesta per DANTE' }),
     ).toBeNull();

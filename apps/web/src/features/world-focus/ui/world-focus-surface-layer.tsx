@@ -9,9 +9,8 @@ import {
 import { useWorldFocusWorkspaceAllocation } from './world-focus-workspace-allocation-context';
 import { useWorldFocusWorkspace } from './world-focus-workspace-host';
 
-export type WorldFocusSurfaceLayerRegistry = WorldFocusSurfaceRegistry<
-  WorldFocusSurfaceRegistration
->;
+export type WorldFocusSurfaceLayerRegistry =
+  WorldFocusSurfaceRegistry<WorldFocusSurfaceRegistration>;
 
 type WorldFocusSurfaceLayerProps = Readonly<{
   registry: WorldFocusSurfaceLayerRegistry;
@@ -71,7 +70,9 @@ export function WorldFocusAllocatedSurface({
             type="button"
             onClick={requestClose}
             style={
-              wrapperIsPointerTransparent ? { pointerEvents: 'auto' } : undefined
+              wrapperIsPointerTransparent
+                ? { pointerEvents: 'auto' }
+                : undefined
             }
           >
             {t(($) => $.common.worldFocus.surfaces.close)}
@@ -92,9 +93,7 @@ export function WorldFocusAllocatedSurface({
       data-world-focus-surface-interaction={placement.interaction}
       data-world-focus-surface-origin={surface.origin}
       data-world-focus-surface-generation={surface.boundGeneration}
-      data-world-focus-surface-current={
-        isCurrentGeneration ? 'true' : 'false'
-      }
+      data-world-focus-surface-current={isCurrentGeneration ? 'true' : 'false'}
       inert={surfaceIsInert ? true : undefined}
       style={
         wrapperIsPointerTransparent ? { pointerEvents: 'none' } : undefined

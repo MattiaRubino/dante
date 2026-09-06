@@ -158,11 +158,13 @@ export function WorldFocusDanteProposal({
             {receipt.decision === 'confirmed'
               ? t(
                   ($) =>
-                    $.common.worldFocus.dante.proposal.decisionRecorded.confirmed,
+                    $.common.worldFocus.dante.proposal.decisionRecorded
+                      .confirmed,
                 )
               : t(
                   ($) =>
-                    $.common.worldFocus.dante.proposal.decisionRecorded.declined,
+                    $.common.worldFocus.dante.proposal.decisionRecorded
+                      .declined,
                 )}
           </p>
         )}
@@ -219,7 +221,9 @@ export function WorldFocusDanteConfirmation({
           id="world-focus-dante-confirmation-description"
           className="world-focus-dante-governed-requirement"
         >
-          {t(($) => $.common.worldFocus.dante.proposal.confirmation.description)}
+          {t(
+            ($) => $.common.worldFocus.dante.proposal.confirmation.description,
+          )}
         </p>
         <p className="world-focus-dante-governed-truth-note">
           {t(($) => $.common.worldFocus.dante.proposal.noEffect)}
@@ -281,7 +285,9 @@ export function WorldFocusDanteReceipt({
             ref={closeRef}
             className="world-focus-dante-governed-close"
             type="button"
-            aria-label={t(($) => $.common.worldFocus.dante.proposal.receipt.close)}
+            aria-label={t(
+              ($) => $.common.worldFocus.dante.proposal.receipt.close,
+            )}
             onClick={handleClose}
           >
             <span aria-hidden="true">×</span>
@@ -317,7 +323,9 @@ export function WorldFocusDanteReceipt({
           ref={closeRef}
           className="world-focus-dante-governed-close"
           type="button"
-          aria-label={t(($) => $.common.worldFocus.dante.proposal.receipt.close)}
+          aria-label={t(
+            ($) => $.common.worldFocus.dante.proposal.receipt.close,
+          )}
           onClick={handleClose}
         >
           <span aria-hidden="true">×</span>
@@ -329,7 +337,8 @@ export function WorldFocusDanteReceipt({
           {receipt.decision === 'confirmed'
             ? t(
                 ($) =>
-                  $.common.worldFocus.dante.proposal.receipt.decisions.confirmed,
+                  $.common.worldFocus.dante.proposal.receipt.decisions
+                    .confirmed,
               )
             : t(
                 ($) =>

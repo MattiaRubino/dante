@@ -49,7 +49,9 @@ export function WorldFocusComparison({
     }
   } else {
     if (basis === null) {
-      throw new Error('World Focus Comparison basis display binding is required');
+      throw new Error(
+        'World Focus Comparison basis display binding is required',
+      );
     }
     assertWorldFocusDisplayBindingMatchesReference(
       basis,
@@ -78,7 +80,9 @@ export function WorldFocusComparison({
             key={`${subject.reference.kind}:${subject.reference.key}`}
           >
             <div className="world-focus-presentation-row-copy">
-              <p className="world-focus-presentation-row-title">{subject.label}</p>
+              <p className="world-focus-presentation-row-title">
+                {subject.label}
+              </p>
               {subject.supportingText === undefined ? null : (
                 <p className="world-focus-presentation-row-meta">
                   {subject.supportingText}
@@ -90,7 +94,9 @@ export function WorldFocusComparison({
       </ol>
       {basis === null ? null : (
         <p className="world-focus-presentation-footnote">
-          <span>{t(($) => $.common.worldFocus.presentation.comparison.basis)}</span>{' '}
+          <span>
+            {t(($) => $.common.worldFocus.presentation.comparison.basis)}
+          </span>{' '}
           <span>{basis.label}</span>
         </p>
       )}

@@ -10,7 +10,9 @@ type WorldFocusEffectStatusProps = Readonly<{
   effect: WorldFocusEffectPresentation;
 }>;
 
-export function WorldFocusEffectStatus({ effect }: WorldFocusEffectStatusProps) {
+export function WorldFocusEffectStatus({
+  effect,
+}: WorldFocusEffectStatusProps) {
   const { t } = useTranslation('common');
 
   return (
@@ -26,7 +28,9 @@ export function WorldFocusEffectStatus({ effect }: WorldFocusEffectStatusProps) 
           axis="execution-revalidation"
           state={effect.executionRevalidation}
         >
-          {t(($) => $.common.worldFocus.presentation.effect.revalidationRequired)}
+          {t(
+            ($) => $.common.worldFocus.presentation.effect.revalidationRequired,
+          )}
         </WorldFocusQualifier>
       ) : null}
     </WorldFocusQualifierGroup>

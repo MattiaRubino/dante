@@ -26,9 +26,7 @@ test('World first-open presents orientation without a universal time Lens', asyn
   for (const world of WORLD_ORIENTATION_CASES) {
     await page.goto(`/worlds/${world.id}`);
 
-    const context = page.locator(
-      `[data-world-focus-context-id="${world.id}"]`,
-    );
+    const context = page.locator(`[data-world-focus-context-id="${world.id}"]`);
     await expect(context).toBeVisible();
     await expect(context.getByRole('heading', { level: 1 })).toHaveText(
       world.title,
@@ -64,7 +62,9 @@ test('World orientation remains bounded inside the compact workspace', async ({
   );
 
   const hasHorizontalOverflow = await page.evaluate(
-    () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+    () =>
+      document.documentElement.scrollWidth >
+      document.documentElement.clientWidth + 1,
   );
   expect(hasHorizontalOverflow).toBe(false);
 });

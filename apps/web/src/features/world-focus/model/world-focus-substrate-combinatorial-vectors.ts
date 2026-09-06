@@ -287,11 +287,7 @@ export function countWorldFocusCoveredInteractions(
   if (!Number.isInteger(axisCount) || axisCount <= 0) {
     throw new Error('World Focus combinatorial axis count must be positive');
   }
-  if (
-    !Number.isInteger(strength) ||
-    strength <= 0 ||
-    strength > axisCount
-  ) {
+  if (!Number.isInteger(strength) || strength <= 0 || strength > axisCount) {
     throw new Error('World Focus combinatorial strength is invalid');
   }
 

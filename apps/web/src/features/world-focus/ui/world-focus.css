@@ -71,11 +71,31 @@
 
 .world-focus-workspace::before {
   background-image:
-    radial-gradient(circle at 16% 21%, rgba(255, 255, 255, 0.6) 0 0.55px, transparent 0.9px),
-    radial-gradient(circle at 37% 67%, color-mix(in srgb, var(--world-focus-accent) 58%, white) 0 0.65px, transparent 1px),
-    radial-gradient(circle at 69% 29%, rgba(255, 255, 255, 0.54) 0 0.55px, transparent 0.9px),
-    radial-gradient(circle at 86% 75%, color-mix(in srgb, var(--world-focus-hot) 50%, white) 0 0.65px, transparent 1px);
-  background-size: 179px 163px, 229px 197px, 211px 233px, 257px 219px;
+    radial-gradient(
+      circle at 16% 21%,
+      rgba(255, 255, 255, 0.6) 0 0.55px,
+      transparent 0.9px
+    ),
+    radial-gradient(
+      circle at 37% 67%,
+      color-mix(in srgb, var(--world-focus-accent) 58%, white) 0 0.65px,
+      transparent 1px
+    ),
+    radial-gradient(
+      circle at 69% 29%,
+      rgba(255, 255, 255, 0.54) 0 0.55px,
+      transparent 0.9px
+    ),
+    radial-gradient(
+      circle at 86% 75%,
+      color-mix(in srgb, var(--world-focus-hot) 50%, white) 0 0.65px,
+      transparent 1px
+    );
+  background-size:
+    179px 163px,
+    229px 197px,
+    211px 233px,
+    257px 219px;
   opacity: 0.22;
 }
 

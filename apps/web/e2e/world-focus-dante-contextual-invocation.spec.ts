@@ -19,7 +19,10 @@ async function openContextualComposer(page: import('@playwright/test').Page) {
     name: 'Scrivi una richiesta per DANTE',
   });
   await expect(composer).toBeVisible();
-  await expect(composer).toHaveAttribute('data-world-focus-dante-contextual', 'true');
+  await expect(composer).toHaveAttribute(
+    'data-world-focus-dante-contextual',
+    'true',
+  );
   await expect(textarea).toHaveValue('Continua da qui');
   await expect(textarea).toBeFocused();
   return { action, composer, textarea };
@@ -110,11 +113,16 @@ test('D4 remains reachable at 390px and hands the same conversation to route-own
     'data-world-focus-surface-presentation',
     'route',
   );
-  await expect(workspace).toHaveAttribute('data-world-focus-route-focus', 'active');
+  await expect(workspace).toHaveAttribute(
+    'data-world-focus-route-focus',
+    'active',
+  );
   await expect(workspace).toHaveAttribute('inert', '');
 
   const hasHorizontalOverflow = await page.evaluate(
-    () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+    () =>
+      document.documentElement.scrollWidth >
+      document.documentElement.clientWidth + 1,
   );
   expect(hasHorizontalOverflow).toBe(false);
 

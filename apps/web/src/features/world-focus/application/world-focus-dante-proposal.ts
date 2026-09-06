@@ -71,10 +71,12 @@ export type WorldFocusDanteProposalReadResult =
     }>;
 
 export type WorldFocusDanteProposalReadAdapter = Readonly<{
-  read: (input: Readonly<{
-    request: WorldFocusDanteProposalRequest;
-    signal: AbortSignal;
-  }>) => Promise<unknown>;
+  read: (
+    input: Readonly<{
+      request: WorldFocusDanteProposalRequest;
+      signal: AbortSignal;
+    }>,
+  ) => Promise<unknown>;
 }>;
 
 export type WorldFocusDanteProposalReader = (
@@ -95,7 +97,10 @@ function hasExactKeys(
   expected: readonly string[],
 ): boolean {
   const keys = Object.keys(value);
-  return keys.length === expected.length && keys.every((key) => expected.includes(key));
+  return (
+    keys.length === expected.length &&
+    keys.every((key) => expected.includes(key))
+  );
 }
 
 function readBoundedString(value: unknown, maxLength: number): string | null {

@@ -28,7 +28,8 @@ import { useWorldFocusWorkspace } from './world-focus-workspace-host';
 
 export const WORLD_FOCUS_DANTE_PROPOSAL_KIND = 'dante-proposal' as const;
 export const WORLD_FOCUS_DANTE_PROPOSAL_INSTANCE_ID = 'dante:proposal' as const;
-export const WORLD_FOCUS_DANTE_CONFIRMATION_KIND = 'dante-confirmation' as const;
+export const WORLD_FOCUS_DANTE_CONFIRMATION_KIND =
+  'dante-confirmation' as const;
 export const WORLD_FOCUS_DANTE_CONFIRMATION_INSTANCE_ID =
   'dante:confirmation' as const;
 export const WORLD_FOCUS_DANTE_RECEIPT_KIND = 'dante-receipt' as const;
@@ -114,12 +115,17 @@ export function WorldFocusDanteProposalProvider({
   const { i18n } = useTranslation('common');
   const workspace = useWorldFocusWorkspace();
   const { insight } = useWorldFocusDanteInsight();
-  const [proposal, setProposal] = useState<WorldFocusDanteProposal | null>(null);
-  const [receipt, setReceipt] =
-    useState<WorldFocusDanteDecisionReceipt | null>(null);
+  const [proposal, setProposal] = useState<WorldFocusDanteProposal | null>(
+    null,
+  );
+  const [receipt, setReceipt] = useState<WorldFocusDanteDecisionReceipt | null>(
+    null,
+  );
   const [requestState, setRequestState] =
     useState<WorldFocusDanteProposalRequestState>({ status: 'idle' });
-  const [readCoordinator] = useState(() => new WorldFocusLatestReadCoordinator());
+  const [readCoordinator] = useState(
+    () => new WorldFocusLatestReadCoordinator(),
+  );
   const requestSerialRef = useRef(0);
   const generationRef = useRef(workspace.state.generation);
 
@@ -128,7 +134,9 @@ export function WorldFocusDanteProposalProvider({
   }, [workspace.state.generation]);
 
   if (workspace.state.worldId !== worldId) {
-    throw new Error('World Focus DANTE Proposal owner belongs to another World');
+    throw new Error(
+      'World Focus DANTE Proposal owner belongs to another World',
+    );
   }
 
   const d6SurfaceIsOpen = workspace.state.surfaces.some((surface) =>
@@ -259,11 +267,15 @@ export function WorldFocusDanteProposalProvider({
   ]);
 
   const requestConfirmation = useCallback((): boolean => {
-    if (proposal === null || proposal.workspaceGeneration !== workspace.state.generation) {
+    if (
+      proposal === null ||
+      proposal.workspaceGeneration !== workspace.state.generation
+    ) {
       return false;
     }
     const proposalSurface = workspace.state.surfaces.find(
-      (surface) => surface.instanceId === WORLD_FOCUS_DANTE_PROPOSAL_INSTANCE_ID,
+      (surface) =>
+        surface.instanceId === WORLD_FOCUS_DANTE_PROPOSAL_INSTANCE_ID,
     );
     if (
       proposalSurface === undefined ||
@@ -303,10 +315,12 @@ export function WorldFocusDanteProposalProvider({
         return false;
       }
       const confirmationSurface = workspace.state.surfaces.find(
-        (surface) => surface.instanceId === WORLD_FOCUS_DANTE_CONFIRMATION_INSTANCE_ID,
+        (surface) =>
+          surface.instanceId === WORLD_FOCUS_DANTE_CONFIRMATION_INSTANCE_ID,
       );
       const proposalSurface = workspace.state.surfaces.find(
-        (surface) => surface.instanceId === WORLD_FOCUS_DANTE_PROPOSAL_INSTANCE_ID,
+        (surface) =>
+          surface.instanceId === WORLD_FOCUS_DANTE_PROPOSAL_INSTANCE_ID,
       );
       if (confirmationSurface === undefined || proposalSurface === undefined) {
         return false;

@@ -2,16 +2,18 @@ import type { ReactNode } from 'react';
 
 import type { WorldFocusSurfaceDescriptor } from '../model/world-focus-workspace';
 
-export type WorldFocusSurfaceRendererProps<Kind extends string = string> = Readonly<{
-  surface: WorldFocusSurfaceDescriptor<Kind>;
-  isCurrentGeneration: boolean;
-  onRequestClose: () => void;
-}>;
+export type WorldFocusSurfaceRendererProps<Kind extends string = string> =
+  Readonly<{
+    surface: WorldFocusSurfaceDescriptor<Kind>;
+    isCurrentGeneration: boolean;
+    onRequestClose: () => void;
+  }>;
 
-export type WorldFocusSurfaceRegistration<Kind extends string = string> = Readonly<{
-  kind: Kind;
-  render: (props: WorldFocusSurfaceRendererProps<Kind>) => ReactNode;
-}>;
+export type WorldFocusSurfaceRegistration<Kind extends string = string> =
+  Readonly<{
+    kind: Kind;
+    render: (props: WorldFocusSurfaceRendererProps<Kind>) => ReactNode;
+  }>;
 
 /**
  * Finite presentation registry for transient/deeper World workspace surfaces.

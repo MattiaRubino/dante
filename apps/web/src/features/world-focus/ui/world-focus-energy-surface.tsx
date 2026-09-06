@@ -110,9 +110,7 @@ function WorldFocusStaticEnergyFallback() {
 export function WorldFocusEnergySurface({
   world,
 }: WorldFocusEnergySurfaceProps) {
-  const [continuousEnergy] = useState(() =>
-    canUseContinuousWorldFocusEnergy(),
-  );
+  const [continuousEnergy] = useState(() => canUseContinuousWorldFocusEnergy());
 
   return continuousEnergy ? (
     <WorldFocusEnergyCanvas world={world} animated />

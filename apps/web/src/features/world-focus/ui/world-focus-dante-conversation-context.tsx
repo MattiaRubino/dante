@@ -23,7 +23,8 @@ import type { WorldFocusContextReferenceSet } from '../model/world-focus-context
 import type { WorldFocusId } from '../model/world-focus-identity';
 import { useWorldFocusWorkspace } from './world-focus-workspace-host';
 
-export const WORLD_FOCUS_DANTE_CONVERSATION_KIND = 'dante-conversation' as const;
+export const WORLD_FOCUS_DANTE_CONVERSATION_KIND =
+  'dante-conversation' as const;
 export const WORLD_FOCUS_DANTE_CONVERSATION_INSTANCE_ID =
   'dante:conversation' as const;
 
@@ -65,10 +66,7 @@ type WorldFocusDanteConversationContextValue = Readonly<{
   messages: readonly WorldFocusDanteConversationMessage[];
   requestState: WorldFocusDanteConversationRequestState;
   isOpen: boolean;
-  beginFromComposer: (
-    composerInstanceId: string,
-    input: string,
-  ) => boolean;
+  beginFromComposer: (composerInstanceId: string, input: string) => boolean;
   submitTurn: (input: string) => boolean;
   cancelPending: () => void;
 }>;
@@ -134,12 +132,16 @@ export function WorldFocusDanteConversationProvider({
     useState<WorldFocusDanteConversationRequestState>({ status: 'idle' });
   const [contextSession, setContextSession] =
     useState<WorldFocusDanteConversationContextSession | null>(null);
-  const [readCoordinator] = useState(() => new WorldFocusLatestReadCoordinator());
+  const [readCoordinator] = useState(
+    () => new WorldFocusLatestReadCoordinator(),
+  );
   const requestSerialRef = useRef(0);
   const conversationWasOpenRef = useRef(false);
 
   if (workspace.state.worldId !== worldId) {
-    throw new Error('World Focus DANTE conversation owner belongs to another World');
+    throw new Error(
+      'World Focus DANTE conversation owner belongs to another World',
+    );
   }
 
   const isOpen = workspace.state.surfaces.some(
@@ -170,7 +172,8 @@ export function WorldFocusDanteConversationProvider({
         replaceInstanceId === null ? contextSession : composerContextSeed;
       if (
         effectiveContextSession !== null &&
-        effectiveContextSession.workspaceGeneration !== workspace.state.generation
+        effectiveContextSession.workspaceGeneration !==
+          workspace.state.generation
       ) {
         return false;
       }
@@ -183,7 +186,8 @@ export function WorldFocusDanteConversationProvider({
           requestId,
           worldId,
           workspaceGeneration:
-            effectiveContextSession?.workspaceGeneration ?? workspace.state.generation,
+            effectiveContextSession?.workspaceGeneration ??
+            workspace.state.generation,
           input,
           history: toHistory(messages),
           locale: i18n.resolvedLanguage ?? i18n.language ?? 'en',

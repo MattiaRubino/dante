@@ -87,9 +87,13 @@ describe('HomePage M1 visual materialization', () => {
     const upperWorkspace = container.querySelector(
       '[data-home-layout="upper-workspace"]',
     );
-    const todayWorkspace = container.querySelector('[data-home-layout="today"]');
+    const todayWorkspace = container.querySelector(
+      '[data-home-layout="today"]',
+    );
     const dayContext = container.querySelector('.home-day-strip');
-    const aiSurface = container.querySelector('[data-home-region="ai-surface"]');
+    const aiSurface = container.querySelector(
+      '[data-home-region="ai-surface"]',
+    );
     const orientation = container.querySelector(
       '[data-home-region="orientation"]',
     );

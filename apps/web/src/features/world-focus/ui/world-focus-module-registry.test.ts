@@ -30,8 +30,8 @@ describe('WorldFocusModuleRegistry', () => {
         ]),
     ).toThrowError('Duplicate World Focus module kind: metric');
 
-    expect(
-      () => new WorldFocusModuleRegistry([{ kind: '   ' }]),
-    ).toThrowError('World Focus module kind must not be empty');
+    expect(() => new WorldFocusModuleRegistry([{ kind: '   ' }])).toThrowError(
+      'World Focus module kind must not be empty',
+    );
   });
 });

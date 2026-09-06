@@ -20,15 +20,19 @@ function normalizeNonEmptyString(value: unknown): string | undefined {
  * whether a World exists, is authorized, or is routable. Those decisions stay
  * with the application/route resolver that owns the concrete descriptor.
  */
-export function normalizeWorldFocusId(value: unknown): WorldFocusId | undefined {
+export function normalizeWorldFocusId(
+  value: unknown,
+): WorldFocusId | undefined {
   return normalizeNonEmptyString(value);
 }
 
-export function createWorldFocusIdentityDescriptor(input: Readonly<{
-  id: unknown;
-  label: unknown;
-  description: unknown;
-}>): WorldFocusIdentityDescriptor {
+export function createWorldFocusIdentityDescriptor(
+  input: Readonly<{
+    id: unknown;
+    label: unknown;
+    description: unknown;
+  }>,
+): WorldFocusIdentityDescriptor {
   const id = normalizeWorldFocusId(input.id);
   const label = normalizeNonEmptyString(input.label);
   const description = normalizeNonEmptyString(input.description);

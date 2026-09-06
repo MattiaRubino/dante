@@ -30,7 +30,9 @@ async function openContextualInsight(page: Page) {
 
 async function openProposal(page: Page) {
   const insight = await openContextualInsight(page);
-  const proposalInvoker = page.getByRole('button', { name: 'Prepara proposta' });
+  const proposalInvoker = page.getByRole('button', {
+    name: 'Prepara proposta',
+  });
   await expect(proposalInvoker).toBeVisible();
   const invokerBox = await proposalInvoker.boundingBox();
   expect(invokerBox).not.toBeNull();
@@ -60,7 +62,9 @@ async function openProposal(page: Page) {
 
 async function expectNoHorizontalOverflow(page: Page) {
   const hasHorizontalOverflow = await page.evaluate(
-    () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+    () =>
+      document.documentElement.scrollWidth >
+      document.documentElement.clientWidth + 1,
   );
   expect(hasHorizontalOverflow).toBe(false);
 }
@@ -78,7 +82,8 @@ test('D6 keeps wide Proposal, blocking Confirmation and confirmed Receipt distin
   await page.setViewportSize({ width: 1600, height: 900 });
   await page.goto('/worlds/music');
 
-  const { proposal, proposalInvoker, proposalSurface } = await openProposal(page);
+  const { proposal, proposalInvoker, proposalSurface } =
+    await openProposal(page);
   await expect(proposalSurface).toHaveAttribute(
     'data-world-focus-surface-presentation',
     'sidecar',
@@ -89,7 +94,9 @@ test('D6 keeps wide Proposal, blocking Confirmation and confirmed Receipt distin
   await expectAxeClean(page);
 
   await page.getByRole('button', { name: 'Rivedi conferma' }).click();
-  const confirmation = page.getByRole('alertdialog', { name: 'Conferma proposta' });
+  const confirmation = page.getByRole('alertdialog', {
+    name: 'Conferma proposta',
+  });
   const confirmationSurface = page.locator(
     '[data-world-focus-surface-id="dante:confirmation"]',
   );
@@ -148,7 +155,9 @@ test('D6 keeps wide Proposal, blocking Confirmation and confirmed Receipt distin
 
   await page.getByRole('button', { name: 'Chiudi proposta DANTE' }).click();
   await expect(proposal).toHaveCount(0);
-  await expect(page.getByRole('dialog', { name: 'Insight contestuale' })).toBeVisible();
+  await expect(
+    page.getByRole('dialog', { name: 'Insight contestuale' }),
+  ).toBeVisible();
   await expect(proposalInvoker).toBeFocused();
 });
 
@@ -164,13 +173,18 @@ test('D6 inherits compact route blocking geometry, records decline locally and n
     'data-world-focus-surface-presentation',
     'route',
   );
-  await expect(workspace).toHaveAttribute('data-world-focus-route-focus', 'active');
+  await expect(workspace).toHaveAttribute(
+    'data-world-focus-route-focus',
+    'active',
+  );
   await expect(workspace).toHaveAttribute('inert', '');
   await expectNoHorizontalOverflow(page);
   await expectAxeClean(page);
 
   await page.getByRole('button', { name: 'Rivedi conferma' }).click();
-  const confirmation = page.getByRole('alertdialog', { name: 'Conferma proposta' });
+  const confirmation = page.getByRole('alertdialog', {
+    name: 'Conferma proposta',
+  });
   await expect(confirmation).toBeVisible();
   await expect(workspace).toHaveAttribute('inert', '');
   await expectNoHorizontalOverflow(page);
@@ -207,7 +221,9 @@ test('D6 remains unreachable from context-free global DANTE because no validated
   await page.setViewportSize({ width: 1600, height: 900 });
   await page.goto('/worlds/music');
 
-  await page.getByRole('button', { name: 'Apri DANTE per il Mondo Musica' }).click();
+  await page
+    .getByRole('button', { name: 'Apri DANTE per il Mondo Musica' })
+    .click();
   const composer = page.getByRole('textbox', {
     name: 'Scrivi una richiesta per DANTE',
   });
@@ -219,6 +235,10 @@ test('D6 remains unreachable from context-free global DANTE because no validated
     ),
   ).toBeVisible();
 
-  await expect(page.getByRole('button', { name: 'Apri come Insight' })).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Prepara proposta' })).toHaveCount(0);
+  await expect(
+    page.getByRole('button', { name: 'Apri come Insight' }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole('button', { name: 'Prepara proposta' }),
+  ).toHaveCount(0);
 });

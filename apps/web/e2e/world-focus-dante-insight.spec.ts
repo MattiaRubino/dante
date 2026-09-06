@@ -32,7 +32,9 @@ async function openContextualInsight(page: Page) {
     ),
   ).toBeVisible();
 
-  const insightInvoker = page.getByRole('button', { name: 'Apri come Insight' });
+  const insightInvoker = page.getByRole('button', {
+    name: 'Apri come Insight',
+  });
   await expect(insightInvoker).toBeVisible();
   await insightInvoker.focus();
   await insightInvoker.click();
@@ -40,9 +42,18 @@ async function openContextualInsight(page: Page) {
   const insight = page.getByRole('dialog', { name: 'Insight contestuale' });
   await expect(insight).toBeVisible();
   const surface = page.locator('[data-world-focus-surface-id="dante:insight"]');
-  await expect(surface).toHaveAttribute('data-world-focus-surface-kind', 'dante-insight');
-  await expect(surface).toHaveAttribute('data-world-focus-surface-depth', 'insight');
-  await expect(surface).toHaveAttribute('data-world-focus-surface-origin', 'dante');
+  await expect(surface).toHaveAttribute(
+    'data-world-focus-surface-kind',
+    'dante-insight',
+  );
+  await expect(surface).toHaveAttribute(
+    'data-world-focus-surface-depth',
+    'insight',
+  );
+  await expect(surface).toHaveAttribute(
+    'data-world-focus-surface-origin',
+    'dante',
+  );
   await expect(insight).toContainText('Riferimenti contestuali espliciti:');
   await expect(insight).toContainText('Artefatto locale pre-backend');
 
@@ -55,9 +66,15 @@ test('D5 materializes a standalone wide Insight sidecar and restores the exact l
   await page.setViewportSize({ width: 1600, height: 900 });
   await page.goto('/worlds/music');
 
-  const { insightInvoker, insight, surface } = await openContextualInsight(page);
-  await expect(surface).toHaveAttribute('data-world-focus-surface-presentation', 'sidecar');
-  await expect(page.getByRole('button', { name: 'Chiudi Insight DANTE' })).toBeFocused();
+  const { insightInvoker, insight, surface } =
+    await openContextualInsight(page);
+  await expect(surface).toHaveAttribute(
+    'data-world-focus-surface-presentation',
+    'sidecar',
+  );
+  await expect(
+    page.getByRole('button', { name: 'Chiudi Insight DANTE' }),
+  ).toBeFocused();
 
   await page.getByRole('button', { name: 'Chiudi Insight DANTE' }).click();
   await expect(insight).toHaveCount(0);
@@ -75,12 +92,20 @@ test('D5 inherits route-owned blocking geometry at 390px without horizontal over
 
   const { insight, surface } = await openContextualInsight(page);
   const workspace = page.locator('[data-world-focus-region="workspace"]');
-  await expect(surface).toHaveAttribute('data-world-focus-surface-presentation', 'route');
-  await expect(workspace).toHaveAttribute('data-world-focus-route-focus', 'active');
+  await expect(surface).toHaveAttribute(
+    'data-world-focus-surface-presentation',
+    'route',
+  );
+  await expect(workspace).toHaveAttribute(
+    'data-world-focus-route-focus',
+    'active',
+  );
   await expect(workspace).toHaveAttribute('inert', '');
 
   const hasHorizontalOverflow = await page.evaluate(
-    () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+    () =>
+      document.documentElement.scrollWidth >
+      document.documentElement.clientWidth + 1,
   );
   expect(hasHorizontalOverflow).toBe(false);
 
@@ -112,7 +137,9 @@ test('D5 is not offered from global DANTE without explicit contextual references
   await page.setViewportSize({ width: 1600, height: 900 });
   await page.goto('/worlds/music');
 
-  await page.getByRole('button', { name: 'Apri DANTE per il Mondo Musica' }).click();
+  await page
+    .getByRole('button', { name: 'Apri DANTE per il Mondo Musica' })
+    .click();
   const composer = page.getByRole('textbox', {
     name: 'Scrivi una richiesta per DANTE',
   });

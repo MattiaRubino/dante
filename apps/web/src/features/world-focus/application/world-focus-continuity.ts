@@ -22,10 +22,13 @@ import {
 import { createWorldFocusContinuityPrimitive } from '../model/world-focus-work-primitives';
 
 export type WorldFocusContinuityReadAdapter = Readonly<{
-  read: (request: Readonly<{ worldId: WorldFocusId; signal: AbortSignal }>) => Promise<unknown>;
+  read: (
+    request: Readonly<{ worldId: WorldFocusId; signal: AbortSignal }>,
+  ) => Promise<unknown>;
 }>;
 
-export type WorldFocusContinuityReader = WorldFocusScopedReader<WorldFocusContinuityReadResult>;
+export type WorldFocusContinuityReader =
+  WorldFocusScopedReader<WorldFocusContinuityReadResult>;
 
 function issue(
   code: string,
@@ -45,11 +48,18 @@ function readNonEmptyString(value: unknown): string | null {
 }
 
 function readReference(value: unknown): WorldFocusContextReference | null {
-  if (!isRecord(value) || typeof value.kind !== 'string' || typeof value.key !== 'string') {
+  if (
+    !isRecord(value) ||
+    typeof value.kind !== 'string' ||
+    typeof value.key !== 'string'
+  ) {
     return null;
   }
   try {
-    return normalizeWorldFocusContextReference({ kind: value.kind, key: value.key });
+    return normalizeWorldFocusContextReference({
+      kind: value.kind,
+      key: value.key,
+    });
   } catch {
     return null;
   }
@@ -60,7 +70,10 @@ function validateContinuityItem(
   index: number,
 ): WorldFocusValidationResult<WorldFocusContinuityItem> {
   if (!isRecord(input)) {
-    return { ok: false, issues: [issue('item.record', ['orderedItems', index])] };
+    return {
+      ok: false,
+      issues: [issue('item.record', ['orderedItems', index])],
+    };
   }
 
   const key = readNonEmptyString(input.key);
@@ -76,17 +89,45 @@ function validateContinuityItem(
   const presentationState = input.presentationState;
   const issues: WorldFocusValidationIssue[] = [];
 
-  if (key === null) issues.push(issue('item.key', ['orderedItems', index, 'key']));
-  if (title === null) issues.push(issue('item.title', ['orderedItems', index, 'title']));
-  if (context === null) issues.push(issue('item.context', ['orderedItems', index, 'context']));
-  if (checkpoint === null) issues.push(issue('item.checkpoint', ['orderedItems', index, 'checkpoint']));
-  if (threadReference === null) issues.push(issue('item.threadReference', ['orderedItems', index, 'threadReference']));
-  if (checkpointReference === null) issues.push(issue('item.checkpointReference', ['orderedItems', index, 'checkpointReference']));
+  if (key === null)
+    issues.push(issue('item.key', ['orderedItems', index, 'key']));
+  if (title === null)
+    issues.push(issue('item.title', ['orderedItems', index, 'title']));
+  if (context === null)
+    issues.push(issue('item.context', ['orderedItems', index, 'context']));
+  if (checkpoint === null)
+    issues.push(
+      issue('item.checkpoint', ['orderedItems', index, 'checkpoint']),
+    );
+  if (threadReference === null)
+    issues.push(
+      issue('item.threadReference', ['orderedItems', index, 'threadReference']),
+    );
+  if (checkpointReference === null)
+    issues.push(
+      issue('item.checkpointReference', [
+        'orderedItems',
+        index,
+        'checkpointReference',
+      ]),
+    );
   if (input.continuationReference !== null && continuationReference === null) {
-    issues.push(issue('item.continuationReference', ['orderedItems', index, 'continuationReference']));
+    issues.push(
+      issue('item.continuationReference', [
+        'orderedItems',
+        index,
+        'continuationReference',
+      ]),
+    );
   }
   if (!isWorldFocusContinuityPresentationState(presentationState)) {
-    issues.push(issue('item.presentationState', ['orderedItems', index, 'presentationState']));
+    issues.push(
+      issue('item.presentationState', [
+        'orderedItems',
+        index,
+        'presentationState',
+      ]),
+    );
   }
 
   if (
@@ -137,18 +178,30 @@ function validateProjection(
   const orderedItems = input.orderedItems;
   const issues: WorldFocusValidationIssue[] = [];
 
-  if (input.schemaVersion !== 1) issues.push(issue('projection.schemaVersion', ['projection', 'schemaVersion']));
-  if (worldId !== expectedWorldId) issues.push(issue('projection.worldId', ['projection', 'worldId']));
+  if (input.schemaVersion !== 1)
+    issues.push(
+      issue('projection.schemaVersion', ['projection', 'schemaVersion']),
+    );
+  if (worldId !== expectedWorldId)
+    issues.push(issue('projection.worldId', ['projection', 'worldId']));
   if (!Array.isArray(orderedItems)) {
-    issues.push(issue('projection.orderedItems', ['projection', 'orderedItems']));
+    issues.push(
+      issue('projection.orderedItems', ['projection', 'orderedItems']),
+    );
   } else if (
     orderedItems.length === 0 ||
     orderedItems.length > WORLD_FOCUS_CONTINUITY_FIRST_OPEN_LIMIT
   ) {
-    issues.push(issue('projection.orderedItems.bounds', ['projection', 'orderedItems']));
+    issues.push(
+      issue('projection.orderedItems.bounds', ['projection', 'orderedItems']),
+    );
   }
 
-  if (issues.length > 0 || worldId === undefined || !Array.isArray(orderedItems)) {
+  if (
+    issues.length > 0 ||
+    worldId === undefined ||
+    !Array.isArray(orderedItems)
+  ) {
     return { ok: false, issues };
   }
 
@@ -163,7 +216,9 @@ function validateProjection(
       continue;
     }
     if (keys.has(result.value.key)) {
-      itemIssues.push(issue('item.key.duplicate', ['orderedItems', index, 'key']));
+      itemIssues.push(
+        issue('item.key.duplicate', ['orderedItems', index, 'key']),
+      );
       continue;
     }
     keys.add(result.value.key);
@@ -201,12 +256,21 @@ export function validateWorldFocusContinuityReadResult(
   if (status === 'unavailable') {
     const worldId = normalizeWorldFocusId(input.worldId);
     const reasonCode = readNonEmptyString(input.reasonCode);
-    if (worldId !== expectedWorldId || reasonCode === null || typeof input.retryable !== 'boolean') {
+    if (
+      worldId !== expectedWorldId ||
+      reasonCode === null ||
+      typeof input.retryable !== 'boolean'
+    ) {
       return { ok: false, issues: [issue('result.unavailable')] };
     }
     return {
       ok: true,
-      value: Object.freeze({ status, worldId, reasonCode, retryable: input.retryable }),
+      value: Object.freeze({
+        status,
+        worldId,
+        reasonCode,
+        retryable: input.retryable,
+      }),
     };
   }
 
@@ -214,11 +278,17 @@ export function validateWorldFocusContinuityReadResult(
     return { ok: false, issues: [issue('result.status', ['status'])] };
   }
 
-  const projectionResult = validateProjection(input.projection, expectedWorldId);
+  const projectionResult = validateProjection(
+    input.projection,
+    expectedWorldId,
+  );
   if (!projectionResult.ok) return projectionResult;
 
   if (status === 'ready') {
-    return { ok: true, value: Object.freeze({ status, projection: projectionResult.value }) };
+    return {
+      ok: true,
+      value: Object.freeze({ status, projection: projectionResult.value }),
+    };
   }
 
   if (status === 'partial') {
@@ -227,7 +297,11 @@ export function validateWorldFocusContinuityReadResult(
       ? { ok: false, issues: [issue('result.reasonCode', ['reasonCode'])] }
       : {
           ok: true,
-          value: Object.freeze({ status, projection: projectionResult.value, reasonCode }),
+          value: Object.freeze({
+            status,
+            projection: projectionResult.value,
+            reasonCode,
+          }),
         };
   }
 

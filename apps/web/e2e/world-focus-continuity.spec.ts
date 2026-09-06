@@ -23,7 +23,9 @@ test('Continuity surfaces meaningful in-motion threads without a fake Resume act
   await expect(page.getByRole('button', { name: /riprendi/i })).toHaveCount(0);
 });
 
-test('Continuity remains sparse where no justified thread exists', async ({ page }) => {
+test('Continuity remains sparse where no justified thread exists', async ({
+  page,
+}) => {
   for (const worldId of ['finance', 'relationships', 'routine'] as const) {
     await page.goto(`/worlds/${worldId}`);
     await expect(page.locator('.world-focus-continuity')).toHaveCount(0);

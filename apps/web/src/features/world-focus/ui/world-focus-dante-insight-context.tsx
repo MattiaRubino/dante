@@ -105,7 +105,9 @@ export function WorldFocusDanteInsightProvider({
   const [insight, setInsight] = useState<WorldFocusDanteInsight | null>(null);
   const [requestState, setRequestState] =
     useState<WorldFocusDanteInsightRequestState>({ status: 'idle' });
-  const [readCoordinator] = useState(() => new WorldFocusLatestReadCoordinator());
+  const [readCoordinator] = useState(
+    () => new WorldFocusLatestReadCoordinator(),
+  );
   const requestSerialRef = useRef(0);
   const generationRef = useRef(workspace.state.generation);
   const insightWasOpenRef = useRef(false);
@@ -208,7 +210,8 @@ export function WorldFocusDanteInsightProvider({
               return;
             }
 
-            const routePresentation = conversationSurface.presentation === 'route';
+            const routePresentation =
+              conversationSurface.presentation === 'route';
             setInsight(result.insight);
             workspace.openSurface({
               instanceId: WORLD_FOCUS_DANTE_INSIGHT_INSTANCE_ID,

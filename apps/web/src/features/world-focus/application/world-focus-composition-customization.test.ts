@@ -83,26 +83,26 @@ describe('World Focus composition customization draft', () => {
       'next',
       'trajectory',
     ]);
-    expect(current.entries.find((entry) => entry.instanceId === 'next')?.pinned).toBe(
-      false,
-    );
-
-    expect(draft.workingConfig.entries.map((entry) => entry.instanceId)).toEqual([
-      'situation',
-      'continuity',
-      'next',
-      'trajectory',
-    ]);
     expect(
-      draft.workingConfig.entries.find((entry) => entry.instanceId === 'next')?.pinned,
+      current.entries.find((entry) => entry.instanceId === 'next')?.pinned,
+    ).toBe(false);
+
+    expect(
+      draft.workingConfig.entries.map((entry) => entry.instanceId),
+    ).toEqual(['situation', 'continuity', 'next', 'trajectory']);
+    expect(
+      draft.workingConfig.entries.find((entry) => entry.instanceId === 'next')
+        ?.pinned,
     ).toBe(true);
     expect(
-      draft.workingConfig.entries.find((entry) => entry.instanceId === 'trajectory')
-        ?.visibility,
+      draft.workingConfig.entries.find(
+        (entry) => entry.instanceId === 'trajectory',
+      )?.visibility,
     ).toBe('hidden');
     expect(
-      draft.workingConfig.entries.find((entry) => entry.instanceId === 'continuity')
-        ?.prominenceOverride,
+      draft.workingConfig.entries.find(
+        (entry) => entry.instanceId === 'continuity',
+      )?.prominenceOverride,
     ).toBe('lead');
   });
 
@@ -117,9 +117,9 @@ describe('World Focus composition customization draft', () => {
 
     expect(cancelled).toEqual(current);
     expect(cancelled.revision).toBe(4);
-    expect(current.entries.find((entry) => entry.instanceId === 'next')?.visibility).toBe(
-      'visible',
-    );
+    expect(
+      current.entries.find((entry) => entry.instanceId === 'next')?.visibility,
+    ).toBe('visible');
   });
 
   it('applies once against the matching revision and fails closed on stale revision', () => {
@@ -134,9 +134,10 @@ describe('World Focus composition customization draft', () => {
       throw new Error('Expected applied composition draft');
     }
     expect(applied.config.revision).toBe(5);
-    expect(applied.config.entries.find((entry) => entry.instanceId === 'next')?.pinned).toBe(
-      true,
-    );
+    expect(
+      applied.config.entries.find((entry) => entry.instanceId === 'next')
+        ?.pinned,
+    ).toBe(true);
 
     const concurrentCurrent = makeConfig(5);
     const conflict = applyWorldFocusCompositionDraft(concurrentCurrent, draft);
@@ -162,15 +163,18 @@ describe('World Focus composition customization draft', () => {
     ]);
 
     expect(draft.workingConfig.entries).toHaveLength(4);
-    expect(draft.workingConfig.entries.map((entry) => entry.instanceId)).toEqual([
-      'continuity',
-      'situation',
-      'next',
-      'trajectory',
-    ]);
     expect(
-      draft.workingConfig.entries.find((entry) => entry.instanceId === 'situation'),
-    ).toMatchObject({ visibility: 'visible', pinned: false, prominenceOverride: null });
+      draft.workingConfig.entries.map((entry) => entry.instanceId),
+    ).toEqual(['continuity', 'situation', 'next', 'trajectory']);
+    expect(
+      draft.workingConfig.entries.find(
+        (entry) => entry.instanceId === 'situation',
+      ),
+    ).toMatchObject({
+      visibility: 'visible',
+      pinned: false,
+      prominenceOverride: null,
+    });
   });
 
   it('adopts only opportunity metadata and restore removes an entry that was absent from the base snapshot', () => {
@@ -217,7 +221,11 @@ describe('World Focus composition customization draft', () => {
     });
     const draft = runCommands(current, [
       { source: 'dante-proposed', type: 'adopt', opportunity: comparison },
-      { source: 'dante-proposed', type: 'pin', instanceId: 'comparison:release' },
+      {
+        source: 'dante-proposed',
+        type: 'pin',
+        instanceId: 'comparison:release',
+      },
       {
         source: 'dante-proposed',
         type: 'move',
@@ -228,7 +236,9 @@ describe('World Focus composition customization draft', () => {
 
     expect(current.revision).toBe(4);
     expect(
-      current.entries.some((entry) => entry.instanceId === 'comparison:release'),
+      current.entries.some(
+        (entry) => entry.instanceId === 'comparison:release',
+      ),
     ).toBe(false);
     expect(draft.baseRevision).toBe(4);
     expect(draft.operations.map((operation) => operation.source)).toEqual([
@@ -236,7 +246,9 @@ describe('World Focus composition customization draft', () => {
       'dante-proposed',
       'dante-proposed',
     ]);
-    expect(draft.workingConfig.entries[0]?.instanceId).toBe('comparison:release');
+    expect(draft.workingConfig.entries[0]?.instanceId).toBe(
+      'comparison:release',
+    );
     expect(
       draft.workingConfig.entries.find(
         (entry) => entry.instanceId === 'comparison:release',
@@ -258,14 +270,19 @@ describe('World Focus composition customization draft', () => {
       },
     ];
 
-    expect(runCommands(current, commands)).toEqual(runCommands(current, commands));
+    expect(runCommands(current, commands)).toEqual(
+      runCommands(current, commands),
+    );
 
     expect(() =>
-      updateWorldFocusCompositionDraft(beginWorldFocusCompositionCustomization(current), {
-        source: 'manual',
-        type: 'pin',
-        instanceId: 'missing',
-      }),
+      updateWorldFocusCompositionDraft(
+        beginWorldFocusCompositionCustomization(current),
+        {
+          source: 'manual',
+          type: 'pin',
+          instanceId: 'missing',
+        },
+      ),
     ).toThrow(/missing/i);
 
     expect(() =>
@@ -307,6 +324,8 @@ describe('World Focus composition customization draft', () => {
       entries: current.entries,
     });
 
-    expect(() => applyWorldFocusCompositionDraft(otherWorld, draft)).toThrow(/world/i);
+    expect(() => applyWorldFocusCompositionDraft(otherWorld, draft)).toThrow(
+      /world/i,
+    );
   });
 });

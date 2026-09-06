@@ -166,7 +166,9 @@ describe('World Focus M2 final hostile falsification', () => {
     const evidence = createWorldFocusEvidenceReferenceFacet(
       {
         evidenceReferences: [{ kind: 'observation', key: 'private-evidence' }],
-        provenanceReferences: [{ kind: 'provenance', key: 'private-provenance' }],
+        provenanceReferences: [
+          { kind: 'provenance', key: 'private-provenance' },
+        ],
         integrityAttestationReferences: [
           { kind: 'attestation', key: 'private-integrity' },
         ],
@@ -337,7 +339,9 @@ describe('World Focus M2 final hostile falsification', () => {
           })}
         />
         <WorldFocusDisclosurePresentation
-          disclosure={createWorldFocusDisclosureOutcome({ status: 'available' })}
+          disclosure={createWorldFocusDisclosureOutcome({
+            status: 'available',
+          })}
         />
         <WorldFocusSyncStatus
           sync={createWorldFocusSyncPresentation({

@@ -48,7 +48,9 @@ export function WorldFocusAttention({
     }
   } else {
     if (resolution === null) {
-      throw new Error('World Focus Attention resolution display binding is required');
+      throw new Error(
+        'World Focus Attention resolution display binding is required',
+      );
     }
     assertWorldFocusDisplayBindingMatchesReference(
       resolution,
@@ -82,7 +84,9 @@ export function WorldFocusAttention({
           {resolution === null ? null : (
             <p className="world-focus-presentation-row-meta">
               <span>
-                {t(($) => $.common.worldFocus.presentation.attention.resolution)}
+                {t(
+                  ($) => $.common.worldFocus.presentation.attention.resolution,
+                )}
               </span>{' '}
               <span>{resolution.label}</span>
             </p>

@@ -68,17 +68,26 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function readReference(value: unknown): WorldFocusContextReference | null {
-  if (!isRecord(value) || typeof value.kind !== 'string' || typeof value.key !== 'string') {
+  if (
+    !isRecord(value) ||
+    typeof value.kind !== 'string' ||
+    typeof value.key !== 'string'
+  ) {
     return null;
   }
   try {
-    return normalizeWorldFocusContextReference({ kind: value.kind, key: value.key });
+    return normalizeWorldFocusContextReference({
+      kind: value.kind,
+      key: value.key,
+    });
   } catch {
     return null;
   }
 }
 
-function readReferenceArray(value: unknown): readonly WorldFocusContextReference[] | null {
+function readReferenceArray(
+  value: unknown,
+): readonly WorldFocusContextReference[] | null {
   if (!Array.isArray(value)) {
     return null;
   }
@@ -96,7 +105,9 @@ function readReferenceArray(value: unknown): readonly WorldFocusContextReference
 function validateEmpty(
   input: Record<string, unknown>,
   expectedWorldId: WorldFocusId,
-): WorldFocusValidationResult<Readonly<{ status: 'empty'; worldId: WorldFocusId }>> | null {
+): WorldFocusValidationResult<
+  Readonly<{ status: 'empty'; worldId: WorldFocusId }>
+> | null {
   if (input.status !== 'empty') {
     return null;
   }
@@ -119,7 +130,11 @@ function validateSituationResult(
   const projection = input.projection;
   const worldId = normalizeWorldFocusId(projection.worldId);
   const references = readReferenceArray(projection.orderedSituationReferences);
-  if (projection.schemaVersion !== 1 || worldId !== expectedWorldId || references === null) {
+  if (
+    projection.schemaVersion !== 1 ||
+    worldId !== expectedWorldId ||
+    references === null
+  ) {
     return { ok: false, issues: [issue('projection.invalid')] };
   }
   try {
@@ -151,7 +166,11 @@ function validateNextResult(
   const projection = input.projection;
   const worldId = normalizeWorldFocusId(projection.worldId);
   const references = readReferenceArray(projection.orderedNextReferences);
-  if (projection.schemaVersion !== 1 || worldId !== expectedWorldId || references === null) {
+  if (
+    projection.schemaVersion !== 1 ||
+    worldId !== expectedWorldId ||
+    references === null
+  ) {
     return { ok: false, issues: [issue('projection.invalid')] };
   }
   try {
@@ -170,7 +189,9 @@ function validateNextResult(
   }
 }
 
-function readEvidenceFacet(value: unknown): WorldFocusEvidenceReferenceFacet | null {
+function readEvidenceFacet(
+  value: unknown,
+): WorldFocusEvidenceReferenceFacet | null {
   if (!isRecord(value)) return null;
   const evidenceReferences = readReferenceArray(value.evidenceReferences);
   const provenanceReferences = readReferenceArray(value.provenanceReferences);
@@ -211,7 +232,9 @@ function validateEvidenceHistoryResult(
   const projection = input.projection;
   const worldId = normalizeWorldFocusId(projection.worldId);
   const evidence = readEvidenceFacet(projection.evidence);
-  const historyReferences = readReferenceArray(projection.orderedHistoryReferences);
+  const historyReferences = readReferenceArray(
+    projection.orderedHistoryReferences,
+  );
   if (
     projection.schemaVersion !== 1 ||
     worldId !== expectedWorldId ||
@@ -245,7 +268,10 @@ export function createWorldFocusDirectProjectionReaders(
       adapter.readSituation,
       validateSituationResult,
     ),
-    readNext: createWorldFocusScopedReader(adapter.readNext, validateNextResult),
+    readNext: createWorldFocusScopedReader(
+      adapter.readNext,
+      validateNextResult,
+    ),
     readEvidenceHistory: createWorldFocusScopedReader(
       adapter.readEvidenceHistory,
       validateEvidenceHistoryResult,

@@ -6,9 +6,7 @@ import {
   WORLD_FOCUS_COMPOSITION_CONFIG_SCHEMA_VERSION,
 } from '../model/world-focus-composition-config';
 import { resolveWorldFocusCompositionPlan } from '../model/world-focus-composition-plan';
-import {
-  WORLD_FOCUS_ADAPTIVE_COMPOSITION_POLICY,
-} from './world-focus-adaptive-composition';
+import { WORLD_FOCUS_ADAPTIVE_COMPOSITION_POLICY } from './world-focus-adaptive-composition';
 import {
   applyWorldFocusCompositionDraft,
   beginWorldFocusCompositionCustomization,
@@ -128,9 +126,9 @@ describe('World Focus M3 final hostile closure', () => {
     expect(mixed.opportunities.map((item) => item.instanceId)).toEqual([
       'continuity',
     ]);
-    expect(resolve(mixed, config([])).plan.entries.map((entry) => entry.instanceId)).toEqual([
-      'continuity',
-    ]);
+    expect(
+      resolve(mixed, config([])).plan.entries.map((entry) => entry.instanceId),
+    ).toEqual(['continuity']);
 
     const sparse = collectWorldFocusCompositionOpportunities({
       worldId: 'music',
@@ -157,22 +155,25 @@ describe('World Focus M3 final hostile closure', () => {
       worldId: 'music',
       opportunities: [opportunity(0), opportunity(1), opportunity(2)],
     });
-    const base = config([
-      {
-        instanceId: 'hostile:0',
-        kind: 'hostile-kind-0',
-        visibility: 'visible',
-        pinned: false,
-        prominenceOverride: null,
-      },
-      {
-        instanceId: 'hostile:1',
-        kind: 'hostile-kind-1',
-        visibility: 'visible',
-        pinned: false,
-        prominenceOverride: null,
-      },
-    ], 7);
+    const base = config(
+      [
+        {
+          instanceId: 'hostile:0',
+          kind: 'hostile-kind-0',
+          visibility: 'visible',
+          pinned: false,
+          prominenceOverride: null,
+        },
+        {
+          instanceId: 'hostile:1',
+          kind: 'hostile-kind-1',
+          visibility: 'visible',
+          pinned: false,
+          prominenceOverride: null,
+        },
+      ],
+      7,
+    );
     const adopted = createWorldFocusCompositionOpportunity({
       ...opportunity(2),
       canonicalPayload: { mustNotSurvive: true },
@@ -238,22 +239,25 @@ describe('World Focus M3 final hostile closure', () => {
   });
 
   it('fails closed on stale or same-revision structurally different accepted config instead of merging a hostile draft', () => {
-    const base = config([
-      {
-        instanceId: 'hostile:0',
-        kind: 'hostile-kind-0',
-        visibility: 'visible',
-        pinned: false,
-        prominenceOverride: null,
-      },
-      {
-        instanceId: 'hostile:1',
-        kind: 'hostile-kind-1',
-        visibility: 'visible',
-        pinned: false,
-        prominenceOverride: null,
-      },
-    ], 3);
+    const base = config(
+      [
+        {
+          instanceId: 'hostile:0',
+          kind: 'hostile-kind-0',
+          visibility: 'visible',
+          pinned: false,
+          prominenceOverride: null,
+        },
+        {
+          instanceId: 'hostile:1',
+          kind: 'hostile-kind-1',
+          visibility: 'visible',
+          pinned: false,
+          prominenceOverride: null,
+        },
+      ],
+      3,
+    );
     const draft = updateWorldFocusCompositionDraft(
       beginWorldFocusCompositionCustomization(base),
       { source: 'manual', type: 'pin', instanceId: 'hostile:1' },
@@ -266,7 +270,10 @@ describe('World Focus M3 final hostile closure', () => {
       currentRevision: 4,
     });
 
-    const sameRevisionDifferentSnapshot = config([...base.entries].reverse(), 3);
+    const sameRevisionDifferentSnapshot = config(
+      [...base.entries].reverse(),
+      3,
+    );
     expect(() =>
       applyWorldFocusCompositionDraft(sameRevisionDifferentSnapshot, draft),
     ).toThrow(/base snapshot/i);
@@ -275,7 +282,9 @@ describe('World Focus M3 final hostile closure', () => {
   it('survives 200 deterministic hostile config/order/budget combinations without losing pinned intent, exposing hidden entries, or becoming nondeterministic', () => {
     const opportunities = createWorldFocusCompositionOpportunitySet({
       worldId: 'music',
-      opportunities: Array.from({ length: 10 }, (_, index) => opportunity(index)),
+      opportunities: Array.from({ length: 10 }, (_, index) =>
+        opportunity(index),
+      ),
     });
 
     for (let seed = 1; seed <= 200; seed += 1) {
@@ -285,9 +294,10 @@ describe('World Focus M3 final hostile closure', () => {
         ordered.map((item) => ({
           instanceId: item.instanceId,
           kind: item.kind,
-          visibility: random() < 0.25 ? 'hidden' as const : 'visible' as const,
+          visibility:
+            random() < 0.25 ? ('hidden' as const) : ('visible' as const),
           pinned: random() < 0.35,
-          prominenceOverride: random() < 0.2 ? 'lead' as const : null,
+          prominenceOverride: random() < 0.2 ? ('lead' as const) : null,
         })),
         seed,
       );
@@ -306,12 +316,15 @@ describe('World Focus M3 final hostile closure', () => {
         `seed ${seed}: hidden entry leaked into plan`,
       ).toBe(false);
 
-      const plannedIds = new Set(first.plan.entries.map((entry) => entry.instanceId));
+      const plannedIds = new Set(
+        first.plan.entries.map((entry) => entry.instanceId),
+      );
       for (const entry of current.entries) {
         if (entry.visibility === 'visible' && entry.pinned) {
-          expect(plannedIds.has(entry.instanceId), `seed ${seed}: pinned intent lost`).toBe(
-            true,
-          );
+          expect(
+            plannedIds.has(entry.instanceId),
+            `seed ${seed}: pinned intent lost`,
+          ).toBe(true);
         }
       }
 
@@ -324,9 +337,10 @@ describe('World Focus M3 final hostile closure', () => {
       let previousIndex = -1;
       for (const instanceId of plannedUserOrder) {
         const index = configuredVisibleOrder.indexOf(instanceId);
-        expect(index, `seed ${seed}: planned user entry must come from config`).toBeGreaterThan(
-          previousIndex,
-        );
+        expect(
+          index,
+          `seed ${seed}: planned user entry must come from config`,
+        ).toBeGreaterThan(previousIndex);
         previousIndex = index;
       }
 
@@ -334,10 +348,12 @@ describe('World Focus M3 final hostile closure', () => {
         first.plan.entries.filter(
           (entry) => entry.ownership.stability === 'adaptive',
         ).length,
-      ).toBeLessThanOrEqual(WORLD_FOCUS_ADAPTIVE_COMPOSITION_POLICY.maxAdaptiveEntries);
-      expect(new Set(first.plan.entries.map((entry) => entry.instanceId)).size).toBe(
-        first.plan.entries.length,
+      ).toBeLessThanOrEqual(
+        WORLD_FOCUS_ADAPTIVE_COMPOSITION_POLICY.maxAdaptiveEntries,
       );
+      expect(
+        new Set(first.plan.entries.map((entry) => entry.instanceId)).size,
+      ).toBe(first.plan.entries.length);
     }
   });
 });

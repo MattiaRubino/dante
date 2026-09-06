@@ -1,6 +1,7 @@
-export type WorldFocusModuleRegistration<Kind extends string = string> = Readonly<{
-  kind: Kind;
-}>;
+export type WorldFocusModuleRegistration<Kind extends string = string> =
+  Readonly<{
+    kind: Kind;
+  }>;
 
 /**
  * Finite, deterministic presentation registry foundation. Real module

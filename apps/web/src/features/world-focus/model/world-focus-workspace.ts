@@ -34,22 +34,23 @@ type WorldFocusWorkspaceInteractionBlockingDescriptor = Readonly<{
   blocksWorkspaceInteraction?: boolean;
 }>;
 
-export type WorldFocusSurfaceDescriptor<Kind extends string = string> = Readonly<{
-  instanceId: string;
-  kind: Kind;
-  depth: WorldFocusInteractionDepth;
-  presentation: WorldFocusPresentationSurface;
-  origin: WorldFocusSurfaceOrigin;
-  boundGeneration: number;
-  contextReference: WorldFocusContextReference | null;
-  dismissible: boolean;
-  /**
-   * Orthogonal interaction law for externally presented focus surfaces.
-   * Modal/full-screen presentations remain blocking regardless of this flag.
-   * Generic `route` presentation stays non-blocking unless explicitly marked.
-   */
-  blocksWorkspaceInteraction?: boolean;
-}>;
+export type WorldFocusSurfaceDescriptor<Kind extends string = string> =
+  Readonly<{
+    instanceId: string;
+    kind: Kind;
+    depth: WorldFocusInteractionDepth;
+    presentation: WorldFocusPresentationSurface;
+    origin: WorldFocusSurfaceOrigin;
+    boundGeneration: number;
+    contextReference: WorldFocusContextReference | null;
+    dismissible: boolean;
+    /**
+     * Orthogonal interaction law for externally presented focus surfaces.
+     * Modal/full-screen presentations remain blocking regardless of this flag.
+     * Generic `route` presentation stays non-blocking unless explicitly marked.
+     */
+    blocksWorkspaceInteraction?: boolean;
+  }>;
 
 export type WorldFocusSurfaceRequest<Kind extends string = string> = Readonly<{
   instanceId: string;
@@ -121,9 +122,7 @@ export type WorldFocusWorkspaceIntent<Kind extends string = string> =
   | Readonly<{ type: 'close-top-surface' }>;
 
 export type WorldFocusEscapeDisposition =
-  | 'no-surface'
-  | 'surface-dismissible'
-  | 'surface-blocked';
+  'no-surface' | 'surface-dismissible' | 'surface-blocked';
 
 function assertNonEmptyToken(value: string, label: string): string {
   const token = value.trim();
@@ -158,8 +157,7 @@ function canApplyWorkspaceExpectation(
   );
 
   return (
-    expectedWorldId === state.worldId &&
-    expectedGeneration === state.generation
+    expectedWorldId === state.worldId && expectedGeneration === state.generation
   );
 }
 
@@ -235,7 +233,7 @@ function buildSurfaceDescriptor<Kind extends string>(
     boundGeneration: state.generation,
     contextReference:
       request.contextReference === undefined
-        ? state.contextReferences?.primary ?? null
+        ? (state.contextReferences?.primary ?? null)
         : request.contextReference === null
           ? null
           : normalizeWorldFocusContextReference(
@@ -261,7 +259,12 @@ function withContextReferences<Kind extends string>(
   state: WorldFocusWorkspaceState<Kind>,
   contextReferences: WorldFocusContextReferenceSet | null,
 ): WorldFocusWorkspaceState<Kind> {
-  if (sameWorldFocusContextReferenceSet(state.contextReferences, contextReferences)) {
+  if (
+    sameWorldFocusContextReferenceSet(
+      state.contextReferences,
+      contextReferences,
+    )
+  ) {
     return state;
   }
 
@@ -354,10 +357,7 @@ export function reduceWorldFocusWorkspaceState<Kind extends string = string>(
 
     case 'open-surface': {
       if (
-        !canApplyWorkspaceExpectation(
-          state,
-          intent.surface.expectedWorkspace,
-        )
+        !canApplyWorkspaceExpectation(state, intent.surface.expectedWorkspace)
       ) {
         return state;
       }
@@ -383,10 +383,7 @@ export function reduceWorldFocusWorkspaceState<Kind extends string = string>(
 
     case 'replace-surface': {
       if (
-        !canApplyWorkspaceExpectation(
-          state,
-          intent.surface.expectedWorkspace,
-        )
+        !canApplyWorkspaceExpectation(state, intent.surface.expectedWorkspace)
       ) {
         return state;
       }
@@ -410,7 +407,9 @@ export function reduceWorldFocusWorkspaceState<Kind extends string = string>(
 
       const surfaces = state.surfaces.slice();
       surfaces[index] = replacement;
-      return isSurfaceBarrierSafe(surfaces) ? withSurfaces(state, surfaces) : state;
+      return isSurfaceBarrierSafe(surfaces)
+        ? withSurfaces(state, surfaces)
+        : state;
     }
 
     case 'promote-surface': {
@@ -449,7 +448,9 @@ export function reduceWorldFocusWorkspaceState<Kind extends string = string>(
         presentation: intent.presentation,
         blocksWorkspaceInteraction: nextBlocksWorkspaceInteraction,
       });
-      return isSurfaceBarrierSafe(surfaces) ? withSurfaces(state, surfaces) : state;
+      return isSurfaceBarrierSafe(surfaces)
+        ? withSurfaces(state, surfaces)
+        : state;
     }
 
     case 'close-surface': {

@@ -175,7 +175,8 @@
 
   .home-m1[data-home-ai-state='collapsed']
     .home-central-stage
-    .home-synthesis-bars i {
+    .home-synthesis-bars
+    i {
     width: 23px;
     max-height: 102px;
   }
@@ -189,7 +190,8 @@
 
   .home-m1[data-home-ai-state='collapsed']
     .home-central-stage
-    .home-synthesis-bars-spend i {
+    .home-synthesis-bars-spend
+    i {
     width: 24px;
   }
 

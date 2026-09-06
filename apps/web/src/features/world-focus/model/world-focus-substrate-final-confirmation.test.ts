@@ -36,7 +36,10 @@ function withoutDante(
 function constrainedPresentation(
   scenario: WorldFocusOracleScenario,
 ): WorldFocusOracleScenario {
-  return Object.freeze({ ...scenario, presentation: 'constrained-a11y' as const });
+  return Object.freeze({
+    ...scenario,
+    presentation: 'constrained-a11y' as const,
+  });
 }
 
 describe('World Focus WS8 final falsification — post-hardening confirmation', () => {
@@ -79,7 +82,9 @@ describe('World Focus WS8 final falsification — post-hardening confirmation', 
       const quiet = resolveWorldFocusSubstrateOracle(quietScenario);
 
       expect(quiet.danteDisposition).toBe('quiet');
-      expect(semanticTruth(quiet)).toEqual(semanticTruth(withCurrentDanteState));
+      expect(semanticTruth(quiet)).toEqual(
+        semanticTruth(withCurrentDanteState),
+      );
       expect(auditWorldFocusSubstrateOracle(quietScenario, quiet)).toEqual([]);
     }
   });

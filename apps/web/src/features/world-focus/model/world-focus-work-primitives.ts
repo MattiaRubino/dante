@@ -117,7 +117,9 @@ function assertReferenceMaximum(
   label: string,
 ): number {
   if (!Number.isInteger(value) || value < minimum) {
-    throw new Error(`${label} must be an integer greater than or equal to ${minimum}`);
+    throw new Error(
+      `${label} must be an integer greater than or equal to ${minimum}`,
+    );
   }
   return value;
 }
@@ -341,7 +343,9 @@ export function getWorldFocusWorkPrimitiveReferences(
     case 'comparison':
       return Object.freeze([
         ...primitive.subjectReferences,
-        ...(primitive.basisReference === null ? [] : [primitive.basisReference]),
+        ...(primitive.basisReference === null
+          ? []
+          : [primitive.basisReference]),
       ]);
     case 'trajectory':
       return Object.freeze([

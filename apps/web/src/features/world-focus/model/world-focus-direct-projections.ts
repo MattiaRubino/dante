@@ -53,7 +53,9 @@ function normalizeDistinctReferences(
   minimum = 1,
 ): readonly WorldFocusContextReference[] {
   if (references.length < minimum) {
-    throw new Error(`${label} must contain at least ${minimum} reference${minimum === 1 ? '' : 's'}`);
+    throw new Error(
+      `${label} must contain at least ${minimum} reference${minimum === 1 ? '' : 's'}`,
+    );
   }
   if (references.length > maximum) {
     throw new Error(`${label} exceed first-open limit ${maximum}`);
@@ -88,10 +90,12 @@ function snapshotEvidenceReferenceFacet(
 }
 
 /** O2 — direct typed/application Situation references only. */
-export function createWorldFocusSituationProjection(input: Readonly<{
-  worldId: WorldFocusId;
-  orderedSituationReferences: readonly WorldFocusContextReference[];
-}>): WorldFocusSituationProjection {
+export function createWorldFocusSituationProjection(
+  input: Readonly<{
+    worldId: WorldFocusId;
+    orderedSituationReferences: readonly WorldFocusContextReference[];
+  }>,
+): WorldFocusSituationProjection {
   return Object.freeze({
     schemaVersion: 1 as const,
     worldId: normalizeWorldId(input.worldId),
@@ -104,10 +108,12 @@ export function createWorldFocusSituationProjection(input: Readonly<{
 }
 
 /** O5 — direct Plan/Schedule/Dependency/Request/etc. references only. */
-export function createWorldFocusNextProjection(input: Readonly<{
-  worldId: WorldFocusId;
-  orderedNextReferences: readonly WorldFocusContextReference[];
-}>): WorldFocusNextProjection {
+export function createWorldFocusNextProjection(
+  input: Readonly<{
+    worldId: WorldFocusId;
+    orderedNextReferences: readonly WorldFocusContextReference[];
+  }>,
+): WorldFocusNextProjection {
   return Object.freeze({
     schemaVersion: 1 as const,
     worldId: normalizeWorldId(input.worldId),
@@ -120,11 +126,13 @@ export function createWorldFocusNextProjection(input: Readonly<{
 }
 
 /** O8 — reference-only Evidence/History seam; source payload stays upstream. */
-export function createWorldFocusEvidenceHistoryProjection(input: Readonly<{
-  worldId: WorldFocusId;
-  evidence: WorldFocusEvidenceReferenceFacet;
-  orderedHistoryReferences: readonly WorldFocusContextReference[];
-}>): WorldFocusEvidenceHistoryProjection {
+export function createWorldFocusEvidenceHistoryProjection(
+  input: Readonly<{
+    worldId: WorldFocusId;
+    evidence: WorldFocusEvidenceReferenceFacet;
+    orderedHistoryReferences: readonly WorldFocusContextReference[];
+  }>,
+): WorldFocusEvidenceHistoryProjection {
   return Object.freeze({
     schemaVersion: 1 as const,
     worldId: normalizeWorldId(input.worldId),

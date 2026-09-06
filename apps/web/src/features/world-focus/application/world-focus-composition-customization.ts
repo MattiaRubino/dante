@@ -53,7 +53,10 @@ export type WorldFocusCompositionCustomizationOperation =
       instanceId: string;
       kind: string;
     }>
-  | Exclude<WorldFocusCompositionCustomizationCommand, WorldFocusCompositionAdoptCommand>;
+  | Exclude<
+      WorldFocusCompositionCustomizationCommand,
+      WorldFocusCompositionAdoptCommand
+    >;
 
 export type WorldFocusCompositionCustomizationDraft = Readonly<{
   worldId: string;
@@ -183,8 +186,14 @@ function applyCommandToEntries(
   const workingEntries = draft.workingConfig.entries;
 
   if (command.type === 'adopt') {
-    const opportunity = createWorldFocusCompositionOpportunity(command.opportunity);
-    if (workingEntries.some((entry) => entry.instanceId === opportunity.instanceId)) {
+    const opportunity = createWorldFocusCompositionOpportunity(
+      command.opportunity,
+    );
+    if (
+      workingEntries.some(
+        (entry) => entry.instanceId === opportunity.instanceId,
+      )
+    ) {
       throw new Error(
         `Duplicate World Focus composition instance: ${opportunity.instanceId}`,
       );
@@ -265,7 +274,10 @@ function applyCommandToEntries(
         entries: replaceEntry(
           workingEntries,
           index,
-          Object.freeze({ ...currentEntry, prominenceOverride: 'lead' as const }),
+          Object.freeze({
+            ...currentEntry,
+            prominenceOverride: 'lead' as const,
+          }),
         ),
         operation: freezeInstanceCommand(source, 'promote', instanceId),
       });
@@ -331,7 +343,9 @@ function applyCommandToEntries(
 
       const baseEntry = draft.baseConfig.entries[baseIndex];
       if (baseEntry === undefined) {
-        throw new Error(`Missing World Focus base composition instance: ${instanceId}`);
+        throw new Error(
+          `Missing World Focus base composition instance: ${instanceId}`,
+        );
       }
 
       const entries = workingEntries.filter(
@@ -345,7 +359,9 @@ function applyCommandToEntries(
       });
     }
     default:
-      throw new Error('Unsupported World Focus composition customization command');
+      throw new Error(
+        'Unsupported World Focus composition customization command',
+      );
   }
 }
 
@@ -407,7 +423,9 @@ export function applyWorldFocusCompositionDraft(
     base.worldId !== draft.worldId ||
     working.worldId !== draft.worldId
   ) {
-    throw new Error('World Focus composition draft belongs to a different World');
+    throw new Error(
+      'World Focus composition draft belongs to a different World',
+    );
   }
 
   if (current.revision !== draft.baseRevision) {

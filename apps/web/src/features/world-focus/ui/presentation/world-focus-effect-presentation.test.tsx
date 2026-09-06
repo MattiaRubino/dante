@@ -25,7 +25,9 @@ describe('World Focus M2 effect presentation', () => {
     );
 
     expect(screen.getByText('Effetto parzialmente reale')).toBeTruthy();
-    expect(screen.getByText('Ricontrollo richiesto prima di eseguire')).toBeTruthy();
+    expect(
+      screen.getByText('Ricontrollo richiesto prima di eseguire'),
+    ).toBeTruthy();
     expect(screen.queryByText('must-not-leak')).toBeNull();
   });
 

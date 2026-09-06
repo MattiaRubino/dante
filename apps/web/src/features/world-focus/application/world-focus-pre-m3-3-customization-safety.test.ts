@@ -57,7 +57,11 @@ function opportunity(
 describe('World Focus PRE-M3-3 customization reachability safety', () => {
   it('lets a meaningful unconfigured opportunity enter the same finite draft path before pin/hide/move/promote', () => {
     const current = config([{ instanceId: 'continuity', kind: 'continuity' }]);
-    const comparison = opportunity('comparison:release', 'comparison', 'supporting');
+    const comparison = opportunity(
+      'comparison:release',
+      'comparison',
+      'supporting',
+    );
 
     const adopted = updateWorldFocusCompositionDraft(
       beginWorldFocusCompositionCustomization(current),
@@ -98,7 +102,11 @@ describe('World Focus PRE-M3-3 customization reachability safety', () => {
   });
 
   it('preserves opportunity default prominence when configuration exists without explicit promote', () => {
-    const comparison = opportunity('comparison:release', 'comparison', 'supporting');
+    const comparison = opportunity(
+      'comparison:release',
+      'comparison',
+      'supporting',
+    );
     const resolution = resolveWorldFocusCompositionCandidates({
       opportunitySet: createWorldFocusCompositionOpportunitySet({
         worldId: 'music',
@@ -129,7 +137,9 @@ describe('World Focus PRE-M3-3 customization reachability safety', () => {
     const differentSameRevision = config([
       { instanceId: 'continuity', kind: 'continuity', pinned: true },
     ]);
-    const draft = beginWorldFocusCompositionCustomization(differentSameRevision);
+    const draft = beginWorldFocusCompositionCustomization(
+      differentSameRevision,
+    );
 
     expect(() => applyWorldFocusCompositionDraft(current, draft)).toThrow(
       /base|snapshot|invalid/i,

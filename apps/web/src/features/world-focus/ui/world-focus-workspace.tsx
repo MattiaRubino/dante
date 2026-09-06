@@ -99,7 +99,8 @@ export function WorldFocusWorkspace({
     activeExternalPlacement === undefined
       ? undefined
       : workspace.state.surfaces.find(
-          (surface) => surface.instanceId === activeExternalPlacement.instanceId,
+          (surface) =>
+            surface.instanceId === activeExternalPlacement.instanceId,
         );
   const routeFocusIsActive =
     activeExternalSurface !== undefined &&
@@ -114,7 +115,9 @@ export function WorldFocusWorkspace({
       data-world-focus-top-layer={allocationPlan.topLayer}
       data-world-focus-main-interaction={allocationPlan.mainInteraction}
       data-world-focus-route-focus={routeFocusIsActive ? 'active' : 'inactive'}
-      data-world-focus-inline-size={Math.round(allocationPlan.workspaceInlineSize)}
+      data-world-focus-inline-size={Math.round(
+        allocationPlan.workspaceInlineSize,
+      )}
       aria-label={t(($) => $.common.worldFocus.canvasLabel, {
         world: worldLabel,
       })}

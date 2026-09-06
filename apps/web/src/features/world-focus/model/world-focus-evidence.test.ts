@@ -51,7 +51,10 @@ describe('World Focus M1-2 evidence/reference facet', () => {
     expect(() =>
       createWorldFocusEvidenceReferenceFacet(
         {
-          evidenceReferences: [ref('observation', 'obs-1'), ref('observation', 'obs-1')],
+          evidenceReferences: [
+            ref('observation', 'obs-1'),
+            ref('observation', 'obs-1'),
+          ],
           provenanceReferences: [],
           integrityAttestationReferences: [],
         },

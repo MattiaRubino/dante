@@ -86,11 +86,12 @@ function D4ToD3BindingProbe() {
       <button
         type="button"
         onClick={() => {
-          const hostileRuntimeCall = conversation.beginFromComposer as unknown as (
-            composerInstanceId: string,
-            input: string,
-            contextSeed: unknown,
-          ) => boolean;
+          const hostileRuntimeCall =
+            conversation.beginFromComposer as unknown as (
+              composerInstanceId: string,
+              input: string,
+              contextSeed: unknown,
+            ) => boolean;
           setAccepted(
             hostileRuntimeCall(
               WORLD_FOCUS_DANTE_COMPOSER_INSTANCE_ID,
@@ -113,7 +114,10 @@ function HostileHarness({
   reader,
 }: Readonly<{ reader: WorldFocusDanteConversationReader }>) {
   const workspace = useWorldFocusWorkspace();
-  const allocation = resolveWorldFocusWorkspaceAllocation(workspace.state, 1280);
+  const allocation = resolveWorldFocusWorkspaceAllocation(
+    workspace.state,
+    1280,
+  );
   const [routeHost, setRouteHost] = useState<HTMLDivElement | null>(null);
   const registry = getCoreWorldFocusSurfaceRegistry();
 

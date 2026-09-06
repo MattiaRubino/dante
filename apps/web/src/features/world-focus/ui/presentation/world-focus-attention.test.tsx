@@ -38,7 +38,9 @@ describe('World Focus M2 Attention renderer', () => {
     );
 
     expect(screen.getByText('Pagamento fornitore')).toBeTruthy();
-    expect(screen.getByText('Serve una risposta prima della scadenza.')).toBeTruthy();
+    expect(
+      screen.getByText('Serve una risposta prima della scadenza.'),
+    ).toBeTruthy();
     expect(screen.getByText('Bloccato')).toBeTruthy();
     expect(screen.queryByText('invoice-internal-42')).toBeNull();
     expect(screen.queryByText('deadline-risk-internal')).toBeNull();

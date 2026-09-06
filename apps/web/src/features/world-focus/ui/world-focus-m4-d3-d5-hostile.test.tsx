@@ -96,9 +96,7 @@ function D3ToD5BindingProbe() {
       <button
         type="button"
         onClick={() =>
-          setAccepted(
-            insight.requestInsight(FORGED_SAME_GENERATION_MESSAGE_ID),
-          )
+          setAccepted(insight.requestInsight(FORGED_SAME_GENERATION_MESSAGE_ID))
         }
       >
         Try forged D5 Insight
@@ -111,7 +109,10 @@ function HostileHarness({
   insightReader,
 }: Readonly<{ insightReader: WorldFocusDanteInsightReader }>) {
   const workspace = useWorldFocusWorkspace();
-  const allocation = resolveWorldFocusWorkspaceAllocation(workspace.state, 1280);
+  const allocation = resolveWorldFocusWorkspaceAllocation(
+    workspace.state,
+    1280,
+  );
   const [routeHost, setRouteHost] = useState<HTMLDivElement | null>(null);
   const registry = getCoreWorldFocusSurfaceRegistry();
 
@@ -135,7 +136,10 @@ function HostileHarness({
             <div ref={setRouteHost} />
             <WorldFocusDanteConversationPresentationController>
               <WorldFocusSurfaceLayer registry={registry} />
-              <WorldFocusRouteSurfaceLayer registry={registry} host={routeHost} />
+              <WorldFocusRouteSurfaceLayer
+                registry={registry}
+                host={routeHost}
+              />
             </WorldFocusDanteConversationPresentationController>
           </WorldFocusDanteInsightProvider>
         </ConversationOwner>

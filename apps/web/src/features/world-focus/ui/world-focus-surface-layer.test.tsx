@@ -26,7 +26,10 @@ function AllocatedSurfaceLayer({
   registry: WorldFocusSurfaceRegistry<WorldFocusSurfaceRegistration>;
 }>) {
   const workspace = useWorldFocusWorkspace();
-  const allocation = resolveWorldFocusWorkspaceAllocation(workspace.state, 1280);
+  const allocation = resolveWorldFocusWorkspaceAllocation(
+    workspace.state,
+    1280,
+  );
 
   return (
     <WorldFocusWorkspaceAllocationProvider plan={allocation}>
@@ -107,19 +110,20 @@ function UnknownHarness({
 
 describe('WorldFocusSurfaceLayer', () => {
   it('renders only registered shipped surface kinds and keeps the initiating generation visible after context changes', () => {
-    const registry = new WorldFocusSurfaceRegistry<WorldFocusSurfaceRegistration>([
-      {
-        kind: 'insight',
-        render: ({ isCurrentGeneration, onRequestClose }) => (
-          <section>
-            <p>{isCurrentGeneration ? 'Current insight' : 'Bound insight'}</p>
-            <button type="button" onClick={onRequestClose}>
-              Close insight
-            </button>
-          </section>
-        ),
-      },
-    ]);
+    const registry =
+      new WorldFocusSurfaceRegistry<WorldFocusSurfaceRegistration>([
+        {
+          kind: 'insight',
+          render: ({ isCurrentGeneration, onRequestClose }) => (
+            <section>
+              <p>{isCurrentGeneration ? 'Current insight' : 'Bound insight'}</p>
+              <button type="button" onClick={onRequestClose}>
+                Close insight
+              </button>
+            </section>
+          ),
+        },
+      ]);
 
     const { container } = render(
       <WorldFocusWorkspaceHost worldId="music">
@@ -148,9 +152,8 @@ describe('WorldFocusSurfaceLayer', () => {
   });
 
   it('degrades an unregistered sidecar locally and lets a dismissible surface close', () => {
-    const registry = new WorldFocusSurfaceRegistry<WorldFocusSurfaceRegistration>(
-      [],
-    );
+    const registry =
+      new WorldFocusSurfaceRegistry<WorldFocusSurfaceRegistration>([]);
 
     render(
       <WorldFocusWorkspaceHost worldId="travel">
@@ -159,16 +162,19 @@ describe('WorldFocusSurfaceLayer', () => {
     );
 
     fireEvent.click(screen.getByRole('button', { name: 'Open future' }));
-    expect(screen.getByText('Questo contenuto non è disponibile.')).toBeTruthy();
+    expect(
+      screen.getByText('Questo contenuto non è disponibile.'),
+    ).toBeTruthy();
 
     fireEvent.click(screen.getByRole('button', { name: 'Chiudi' }));
-    expect(screen.queryByText('Questo contenuto non è disponibile.')).toBeNull();
+    expect(
+      screen.queryByText('Questo contenuto non è disponibile.'),
+    ).toBeNull();
   });
 
   it('keeps an unregistered popover pointer-transparent outside its close control', () => {
-    const registry = new WorldFocusSurfaceRegistry<WorldFocusSurfaceRegistration>(
-      [],
-    );
+    const registry =
+      new WorldFocusSurfaceRegistry<WorldFocusSurfaceRegistration>([]);
 
     const { container } = render(
       <WorldFocusWorkspaceHost worldId="finance">
@@ -188,6 +194,8 @@ describe('WorldFocusSurfaceLayer', () => {
     expect(close.style.pointerEvents).toBe('auto');
 
     fireEvent.click(close);
-    expect(screen.queryByText('Questo contenuto non è disponibile.')).toBeNull();
+    expect(
+      screen.queryByText('Questo contenuto non è disponibile.'),
+    ).toBeNull();
   });
 });

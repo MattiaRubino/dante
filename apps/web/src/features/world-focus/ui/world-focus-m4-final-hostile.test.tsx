@@ -48,7 +48,8 @@ const FORGED_SAME_GENERATION_INSIGHT: WorldFocusDanteInsight = Object.freeze({
   workspaceGeneration: 0,
   kind: 'change',
   title: 'Insight non validato',
-  summary: 'Questo oggetto non è il D5 Insight associato alla surface corrente.',
+  summary:
+    'Questo oggetto non è il D5 Insight associato alla surface corrente.',
   basisReferences: Object.freeze({
     primary: Object.freeze({ kind: 'continuity', key: 'forged-primary' }),
     supporting: Object.freeze([
@@ -62,9 +63,10 @@ const d5InsightState = vi.hoisted(() => ({
 }));
 
 vi.mock('./world-focus-dante-insight-context', async (importOriginal) => {
-  const actual = await importOriginal<
-    typeof import('./world-focus-dante-insight-context')
-  >();
+  const actual =
+    await importOriginal<
+      typeof import('./world-focus-dante-insight-context')
+    >();
   return {
     ...actual,
     useWorldFocusDanteInsight: () => ({
@@ -111,11 +113,15 @@ function readyProposalResult(request: WorldFocusDanteProposalRequest) {
 function D5ToD6BindingHarness() {
   const workspace = useWorldFocusWorkspace();
   const proposal = useWorldFocusDanteProposal();
-  const [proposalAccepted, setProposalAccepted] = useState<boolean | null>(null);
-  const [confirmationAccepted, setConfirmationAccepted] = useState<boolean | null>(
+  const [proposalAccepted, setProposalAccepted] = useState<boolean | null>(
     null,
   );
-  const [decisionAccepted, setDecisionAccepted] = useState<boolean | null>(null);
+  const [confirmationAccepted, setConfirmationAccepted] = useState<
+    boolean | null
+  >(null);
+  const [decisionAccepted, setDecisionAccepted] = useState<boolean | null>(
+    null,
+  );
 
   return (
     <div>
@@ -129,7 +135,9 @@ function D5ToD6BindingHarness() {
         {proposal.receipt === null ? 'none' : JSON.stringify(proposal.receipt)}
       </output>
       <output data-testid="d6-surfaces">
-        {workspace.state.surfaces.map((surface) => surface.instanceId).join('|')}
+        {workspace.state.surfaces
+          .map((surface) => surface.instanceId)
+          .join('|')}
       </output>
       <output data-testid="proposal-accepted">
         {proposalAccepted === null ? 'unattempted' : String(proposalAccepted)}
@@ -173,7 +181,9 @@ function D5ToD6BindingHarness() {
           const hostileRuntimeCall = proposal.requestProposal as unknown as (
             insight: WorldFocusDanteInsight,
           ) => boolean;
-          setProposalAccepted(hostileRuntimeCall(FORGED_SAME_GENERATION_INSIGHT));
+          setProposalAccepted(
+            hostileRuntimeCall(FORGED_SAME_GENERATION_INSIGHT),
+          );
         }}
       >
         Try forged D6 Proposal
@@ -186,7 +196,9 @@ function D5ToD6BindingHarness() {
       </button>
       <button
         type="button"
-        onClick={() => setDecisionAccepted(proposal.recordDecision('confirmed'))}
+        onClick={() =>
+          setDecisionAccepted(proposal.recordDecision('confirmed'))
+        }
       >
         Confirm D6 Decision
       </button>
@@ -248,7 +260,9 @@ describe('World Focus M4 final hostile sequencing', () => {
 
     renderHarness(reader);
     openValidatedInsightSurface();
-    fireEvent.click(screen.getByRole('button', { name: 'Request D6 Proposal' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Request D6 Proposal' }),
+    );
 
     expect(screen.getByTestId('proposal-accepted').textContent).toBe('false');
     expect(reader).toHaveBeenCalledTimes(0);
@@ -265,15 +279,23 @@ describe('World Focus M4 final hostile sequencing', () => {
     fireEvent.click(
       screen.getByRole('button', { name: 'Request D6 Confirmation' }),
     );
-    expect(screen.getByTestId('confirmation-accepted').textContent).toBe('false');
+    expect(screen.getByTestId('confirmation-accepted').textContent).toBe(
+      'false',
+    );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Confirm D6 Decision' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Confirm D6 Decision' }),
+    );
     expect(screen.getByTestId('decision-accepted').textContent).toBe('false');
-    fireEvent.click(screen.getByRole('button', { name: 'Decline D6 Decision' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Decline D6 Decision' }),
+    );
     expect(screen.getByTestId('decision-accepted').textContent).toBe('false');
 
     await materializeProposal();
-    fireEvent.click(screen.getByRole('button', { name: 'Confirm D6 Decision' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Confirm D6 Decision' }),
+    );
 
     expect(screen.getByTestId('decision-accepted').textContent).toBe('false');
     expect(screen.getByTestId('receipt-json').textContent).toBe('none');
@@ -295,7 +317,9 @@ describe('World Focus M4 final hostile sequencing', () => {
     fireEvent.click(
       screen.getByRole('button', { name: 'Request D6 Confirmation' }),
     );
-    expect(screen.getByTestId('confirmation-accepted').textContent).toBe('true');
+    expect(screen.getByTestId('confirmation-accepted').textContent).toBe(
+      'true',
+    );
     expect(screen.getByTestId('d6-surfaces').textContent).toContain(
       'dante:confirmation',
     );
@@ -319,7 +343,9 @@ describe('World Focus M4 final hostile sequencing', () => {
       );
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Confirm D6 Decision' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Confirm D6 Decision' }),
+    );
     expect(screen.getByTestId('decision-accepted').textContent).toBe('false');
   });
 
@@ -333,10 +359,14 @@ describe('World Focus M4 final hostile sequencing', () => {
     fireEvent.click(
       screen.getByRole('button', { name: 'Request D6 Confirmation' }),
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Confirm D6 Decision' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Confirm D6 Decision' }),
+    );
     expect(screen.getByTestId('decision-accepted').textContent).toBe('true');
     expect(screen.getByTestId('receipt-json').textContent).not.toBe('none');
-    expect(screen.getByTestId('d6-surfaces').textContent).toContain('dante:receipt');
+    expect(screen.getByTestId('d6-surfaces').textContent).toContain(
+      'dante:receipt',
+    );
 
     fireEvent.click(
       screen.getByRole('button', { name: 'Change workspace generation' }),
@@ -368,7 +398,9 @@ describe('World Focus M4 final hostile sequencing', () => {
     fireEvent.click(
       screen.getByRole('button', { name: 'Request D6 Confirmation' }),
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Confirm D6 Decision' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Confirm D6 Decision' }),
+    );
 
     expect(screen.getByTestId('decision-accepted').textContent).toBe('true');
     const receiptText = screen.getByTestId('receipt-json').textContent;

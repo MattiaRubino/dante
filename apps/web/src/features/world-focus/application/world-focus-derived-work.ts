@@ -88,22 +88,33 @@ function readToken(value: unknown): string | null {
 }
 
 function readReference(value: unknown): WorldFocusContextReference | null {
-  if (!isRecord(value) || typeof value.kind !== 'string' || typeof value.key !== 'string') {
+  if (
+    !isRecord(value) ||
+    typeof value.kind !== 'string' ||
+    typeof value.key !== 'string'
+  ) {
     return null;
   }
   try {
-    return normalizeWorldFocusContextReference({ kind: value.kind, key: value.key });
+    return normalizeWorldFocusContextReference({
+      kind: value.kind,
+      key: value.key,
+    });
   } catch {
     return null;
   }
 }
 
-function readOptionalReference(value: unknown): WorldFocusContextReference | null | undefined {
+function readOptionalReference(
+  value: unknown,
+): WorldFocusContextReference | null | undefined {
   if (value === null || value === undefined) return null;
   return readReference(value) ?? undefined;
 }
 
-function readReferenceArray(value: unknown): readonly WorldFocusContextReference[] | null {
+function readReferenceArray(
+  value: unknown,
+): readonly WorldFocusContextReference[] | null {
   if (!Array.isArray(value)) return null;
   const references: WorldFocusContextReference[] = [];
   for (const item of value) {
@@ -120,7 +131,8 @@ function validateProjectionShell(
 ): Record<string, unknown> | null {
   if (!isRecord(input) || input.schemaVersion !== 1) return null;
   const worldId = normalizeWorldFocusId(input.worldId);
-  if (worldId !== expectedWorldId || !Array.isArray(input.orderedItems)) return null;
+  if (worldId !== expectedWorldId || !Array.isArray(input.orderedItems))
+    return null;
   if (
     input.orderedItems.length === 0 ||
     input.orderedItems.length > WORLD_FOCUS_DERIVED_WORK_FIRST_OPEN_LIMIT
@@ -141,7 +153,9 @@ function validateEmpty(
     : null;
 }
 
-function readAttentionPrimitive(input: unknown): WorldFocusAttentionPrimitive | null {
+function readAttentionPrimitive(
+  input: unknown,
+): WorldFocusAttentionPrimitive | null {
   if (!isRecord(input) || input.kind !== 'attention') return null;
   const instanceId = readToken(input.instanceId);
   const matterReference = readReference(input.matterReference);
@@ -171,7 +185,9 @@ function readAttentionPrimitive(input: unknown): WorldFocusAttentionPrimitive | 
   }
 }
 
-function readComparisonPrimitive(input: unknown): WorldFocusComparisonPrimitive | null {
+function readComparisonPrimitive(
+  input: unknown,
+): WorldFocusComparisonPrimitive | null {
   if (!isRecord(input) || input.kind !== 'comparison') return null;
   const instanceId = readToken(input.instanceId);
   const subjectReferences = readReferenceArray(input.subjectReferences);
@@ -192,7 +208,8 @@ function readComparisonPrimitive(input: unknown): WorldFocusComparisonPrimitive 
       {
         instanceId,
         mode: mode as WorldFocusComparisonMode,
-        subjectReferences: subjectReferences as WorldFocusComparisonPrimitive['subjectReferences'],
+        subjectReferences:
+          subjectReferences as WorldFocusComparisonPrimitive['subjectReferences'],
         basisReference,
       },
       COMPARISON_POLICY,
@@ -202,14 +219,24 @@ function readComparisonPrimitive(input: unknown): WorldFocusComparisonPrimitive 
   }
 }
 
-function readTrajectoryPrimitive(input: unknown): WorldFocusTrajectoryPrimitive | null {
+function readTrajectoryPrimitive(
+  input: unknown,
+): WorldFocusTrajectoryPrimitive | null {
   if (!isRecord(input) || input.kind !== 'trajectory') return null;
   const instanceId = readToken(input.instanceId);
   const subjectReference = readReference(input.subjectReference);
-  const orderedPointReferences = readReferenceArray(input.orderedPointReferences);
-  const missingPositionReferences = readReferenceArray(input.missingPositionReferences);
-  const orderingBasisReference = readOptionalReference(input.orderingBasisReference);
-  const aggregationBasisReference = readOptionalReference(input.aggregationBasisReference);
+  const orderedPointReferences = readReferenceArray(
+    input.orderedPointReferences,
+  );
+  const missingPositionReferences = readReferenceArray(
+    input.missingPositionReferences,
+  );
+  const orderingBasisReference = readOptionalReference(
+    input.orderingBasisReference,
+  );
+  const aggregationBasisReference = readOptionalReference(
+    input.aggregationBasisReference,
+  );
   const axis = input.axis;
   if (
     instanceId === null ||
@@ -230,7 +257,8 @@ function readTrajectoryPrimitive(input: unknown): WorldFocusTrajectoryPrimitive 
         instanceId,
         subjectReference,
         axis: axis as WorldFocusTrajectoryAxis,
-        orderedPointReferences: orderedPointReferences as WorldFocusTrajectoryPrimitive['orderedPointReferences'],
+        orderedPointReferences:
+          orderedPointReferences as WorldFocusTrajectoryPrimitive['orderedPointReferences'],
         missingPositionReferences,
         orderingBasisReference,
         aggregationBasisReference,
@@ -249,7 +277,8 @@ function validateReadyItems<Item>(
 ): readonly Item[] | null {
   if (input.status !== 'ready') return null;
   const projection = validateProjectionShell(input.projection, expectedWorldId);
-  if (projection === null || !Array.isArray(projection.orderedItems)) return null;
+  if (projection === null || !Array.isArray(projection.orderedItems))
+    return null;
   const items: Item[] = [];
   const instanceIds = new Set<string>();
   for (const rawItem of projection.orderedItems) {
@@ -274,7 +303,11 @@ function validateAttentionResult(
       ? { ok: false, issues: [issue('result.worldId')] }
       : { ok: true, value: empty };
   }
-  const items = validateReadyItems(input, expectedWorldId, readAttentionPrimitive);
+  const items = validateReadyItems(
+    input,
+    expectedWorldId,
+    readAttentionPrimitive,
+  );
   return items === null
     ? { ok: false, issues: [issue('attention.invalid')] }
     : {
@@ -301,7 +334,11 @@ function validateComparisonResult(
       ? { ok: false, issues: [issue('result.worldId')] }
       : { ok: true, value: empty };
   }
-  const items = validateReadyItems(input, expectedWorldId, readComparisonPrimitive);
+  const items = validateReadyItems(
+    input,
+    expectedWorldId,
+    readComparisonPrimitive,
+  );
   return items === null
     ? { ok: false, issues: [issue('comparison.invalid')] }
     : {
@@ -328,7 +365,11 @@ function validateTrajectoryResult(
       ? { ok: false, issues: [issue('result.worldId')] }
       : { ok: true, value: empty };
   }
-  const items = validateReadyItems(input, expectedWorldId, readTrajectoryPrimitive);
+  const items = validateReadyItems(
+    input,
+    expectedWorldId,
+    readTrajectoryPrimitive,
+  );
   return items === null
     ? { ok: false, issues: [issue('trajectory.invalid')] }
     : {

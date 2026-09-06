@@ -42,7 +42,9 @@ export type WorldFocusReferenceResolutionInput =
 function assertNonEmptyReasonCode(value: string): string {
   const reasonCode = value.trim();
   if (reasonCode.length === 0) {
-    throw new Error('World Focus reference resolution reason code must not be empty');
+    throw new Error(
+      'World Focus reference resolution reason code must not be empty',
+    );
   }
   return reasonCode;
 }

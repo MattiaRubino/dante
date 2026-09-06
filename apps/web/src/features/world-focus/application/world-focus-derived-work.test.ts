@@ -59,8 +59,10 @@ describe('World Focus M1-2 WP application seams', () => {
             ],
           },
         }),
-      readComparison: () => Promise.resolve({ status: 'empty', worldId: 'music' }),
-      readTrajectory: () => Promise.resolve({ status: 'empty', worldId: 'music' }),
+      readComparison: () =>
+        Promise.resolve({ status: 'empty', worldId: 'music' }),
+      readTrajectory: () =>
+        Promise.resolve({ status: 'empty', worldId: 'music' }),
     };
     const readers = createWorldFocusDerivedWorkReaders(adapter);
 
@@ -71,7 +73,8 @@ describe('World Focus M1-2 WP application seams', () => {
 
   it('rejects one-member Comparison and present-as-missing Trajectory mutations', async () => {
     const adapter: WorldFocusDerivedWorkReadAdapter = {
-      readAttention: () => Promise.resolve({ status: 'empty', worldId: 'music' }),
+      readAttention: () =>
+        Promise.resolve({ status: 'empty', worldId: 'music' }),
       readComparison: () =>
         Promise.resolve({
           status: 'ready',

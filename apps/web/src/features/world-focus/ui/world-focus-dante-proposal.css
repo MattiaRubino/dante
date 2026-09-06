@@ -241,7 +241,8 @@
   }
 
   .world-focus-dante-confirmation-actions .world-focus-dante-governed-primary,
-  .world-focus-dante-confirmation-actions .world-focus-dante-governed-secondary {
+  .world-focus-dante-confirmation-actions
+    .world-focus-dante-governed-secondary {
     width: 100%;
   }
 }

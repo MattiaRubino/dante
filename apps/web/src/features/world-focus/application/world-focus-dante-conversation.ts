@@ -76,10 +76,12 @@ export type WorldFocusDanteConversationReadResult =
     }>;
 
 export type WorldFocusDanteConversationReadAdapter = Readonly<{
-  read: (request: Readonly<{
-    request: WorldFocusDanteConversationRequest;
-    signal: AbortSignal;
-  }>) => Promise<unknown>;
+  read: (
+    request: Readonly<{
+      request: WorldFocusDanteConversationRequest;
+      signal: AbortSignal;
+    }>,
+  ) => Promise<unknown>;
 }>;
 
 export type WorldFocusDanteConversationReader = (
@@ -145,7 +147,9 @@ function normalizeHistoryEntry(
   }
 
   if (!isWorldFocusDanteConversationResultClass(entry.resultClass)) {
-    throw new Error('World Focus DANTE conversation history result class is invalid');
+    throw new Error(
+      'World Focus DANTE conversation history result class is invalid',
+    );
   }
 
   return Object.freeze({

@@ -17,13 +17,20 @@ test('M3-4 keeps customization explicit while accepted metadata governs the norm
   const situation = page.locator(
     '[data-world-focus-composition-id="situation"]',
   );
-  const invoke = page.getByRole('button', { name: 'Personalizza composizione' });
-  await expect(composition).toHaveAttribute('data-world-focus-composition-count', '4');
+  const invoke = page.getByRole('button', {
+    name: 'Personalizza composizione',
+  });
+  await expect(composition).toHaveAttribute(
+    'data-world-focus-composition-count',
+    '4',
+  );
   await expect(situation).toHaveAttribute(
     'data-world-focus-origin',
     'application-derived',
   );
-  await expect(page.getByRole('dialog', { name: 'Personalizza Musica' })).toHaveCount(0);
+  await expect(
+    page.getByRole('dialog', { name: 'Personalizza Musica' }),
+  ).toHaveCount(0);
 
   await invoke.focus();
   await invoke.click();
@@ -41,31 +48,52 @@ test('M3-4 keeps customization explicit while accepted metadata governs the norm
     'data-world-focus-surface-presentation',
     'sidecar',
   );
-  await expect(surface).toHaveAttribute('data-world-focus-surface-slot', 'sidecar');
-  await expect(workspace).toHaveAttribute('data-world-focus-main-allocation', 'split');
+  await expect(surface).toHaveAttribute(
+    'data-world-focus-surface-slot',
+    'sidecar',
+  );
+  await expect(workspace).toHaveAttribute(
+    'data-world-focus-main-allocation',
+    'split',
+  );
   await expect(workspace).toHaveAttribute(
     'data-world-focus-main-interaction',
     'interactive',
   );
-  await expect(dialog).toHaveAttribute('data-world-focus-customization-revision', '0');
-  await expect(composition).toHaveAttribute('data-world-focus-composition-count', '4');
+  await expect(dialog).toHaveAttribute(
+    'data-world-focus-customization-revision',
+    '0',
+  );
+  await expect(composition).toHaveAttribute(
+    'data-world-focus-composition-count',
+    '4',
+  );
 
   const add = page.getByRole('button', { name: /^Aggiungi / }).first();
   await expect(add).toBeVisible();
   await add.click();
 
-  await expect(dialog).toHaveAttribute('data-world-focus-customization-dirty', 'true');
+  await expect(dialog).toHaveAttribute(
+    'data-world-focus-customization-dirty',
+    'true',
+  );
   await expect(page.getByRole('button', { name: 'Applica' })).toBeEnabled();
   await page.getByRole('button', { name: 'Applica' }).click();
 
   await expect(dialog).toHaveCount(0);
   await expect(invoke).toBeFocused();
-  await expect(composition).toHaveAttribute('data-world-focus-composition-count', '4');
+  await expect(composition).toHaveAttribute(
+    'data-world-focus-composition-count',
+    '4',
+  );
   await expect(situation).toHaveAttribute('data-world-focus-origin', 'user');
 
   await invoke.click();
   const reopened = page.getByRole('dialog', { name: 'Personalizza Musica' });
-  await expect(reopened).toHaveAttribute('data-world-focus-customization-revision', '1');
+  await expect(reopened).toHaveAttribute(
+    'data-world-focus-customization-revision',
+    '1',
+  );
   await expect(
     reopened.locator('[data-world-focus-customization-entry]'),
   ).toHaveCount(1);
@@ -77,7 +105,9 @@ test('M3-3 Cancel and Escape discard only the draft and keep the World route ope
   page,
 }) => {
   await page.goto('/worlds/music');
-  const invoke = page.getByRole('button', { name: 'Personalizza composizione' });
+  const invoke = page.getByRole('button', {
+    name: 'Personalizza composizione',
+  });
 
   await invoke.click();
   const add = page.getByRole('button', { name: /^Aggiungi / }).first();
@@ -94,7 +124,9 @@ test('M3-3 Cancel and Escape discard only the draft and keep the World route ope
   ).toHaveCount(0);
   await page.keyboard.press('Escape');
 
-  await expect(page.getByRole('dialog', { name: 'Personalizza Musica' })).toHaveCount(0);
+  await expect(
+    page.getByRole('dialog', { name: 'Personalizza Musica' }),
+  ).toHaveCount(0);
   await expect(page).toHaveURL(/\/worlds\/music$/);
   await expect(invoke).toBeFocused();
 });
@@ -105,7 +137,9 @@ test('M3-3 keeps its existing sidecar-to-overlay fallback usable across all cont
   for (const width of PRESSURE_WIDTHS) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/worlds/music');
-    await page.getByRole('button', { name: 'Personalizza composizione' }).click();
+    await page
+      .getByRole('button', { name: 'Personalizza composizione' })
+      .click();
 
     const workspace = page.locator('[data-world-focus-region="workspace"]');
     const dialog = page.getByRole('dialog', { name: 'Personalizza Musica' });
@@ -136,9 +170,16 @@ test('M3-3 keeps its existing sidecar-to-overlay fallback usable across all cont
     );
 
     if (width === 390) {
-      await expect(surface).toHaveAttribute('data-world-focus-surface-slot', 'overlay');
-      const applyBox = await page.getByRole('button', { name: 'Applica' }).boundingBox();
-      const cancelBox = await page.getByRole('button', { name: 'Annulla' }).boundingBox();
+      await expect(surface).toHaveAttribute(
+        'data-world-focus-surface-slot',
+        'overlay',
+      );
+      const applyBox = await page
+        .getByRole('button', { name: 'Applica' })
+        .boundingBox();
+      const cancelBox = await page
+        .getByRole('button', { name: 'Annulla' })
+        .boundingBox();
       expect(applyBox).not.toBeNull();
       expect(cancelBox).not.toBeNull();
       if (applyBox === null || cancelBox === null) {
@@ -149,7 +190,9 @@ test('M3-3 keeps its existing sidecar-to-overlay fallback usable across all cont
     }
 
     const hasHorizontalOverflow = await page.evaluate(
-      () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+      () =>
+        document.documentElement.scrollWidth >
+        document.documentElement.clientWidth + 1,
     );
     expect(hasHorizontalOverflow).toBe(false);
   }
@@ -164,8 +207,12 @@ test('M3-3 has no detectable axe violations at wide and compact allocations', as
   ]) {
     await page.setViewportSize(viewport);
     await page.goto('/worlds/music');
-    await page.getByRole('button', { name: 'Personalizza composizione' }).click();
-    await expect(page.getByRole('dialog', { name: 'Personalizza Musica' })).toBeVisible();
+    await page
+      .getByRole('button', { name: 'Personalizza composizione' })
+      .click();
+    await expect(
+      page.getByRole('dialog', { name: 'Personalizza Musica' }),
+    ).toBeVisible();
 
     const results = await new AxeBuilder({ page })
       .include('.world-focus-shell')

@@ -79,10 +79,12 @@ export type WorldFocusDanteInsightReadResult =
     }>;
 
 export type WorldFocusDanteInsightReadAdapter = Readonly<{
-  read: (request: Readonly<{
-    request: WorldFocusDanteInsightRequest;
-    signal: AbortSignal;
-  }>) => Promise<unknown>;
+  read: (
+    request: Readonly<{
+      request: WorldFocusDanteInsightRequest;
+      signal: AbortSignal;
+    }>,
+  ) => Promise<unknown>;
 }>;
 
 export type WorldFocusDanteInsightReader = (
@@ -103,7 +105,10 @@ function hasExactKeys(
   expected: readonly string[],
 ): boolean {
   const keys = Object.keys(value);
-  return keys.length === expected.length && keys.every((key) => expected.includes(key));
+  return (
+    keys.length === expected.length &&
+    keys.every((key) => expected.includes(key))
+  );
 }
 
 function readBoundedString(value: unknown, maxLength: number): string | null {
@@ -215,7 +220,12 @@ function validateReadyResult(
     }),
   });
 
-  if (!sameWorldFocusContextReferenceSet(insight.basisReferences, expectedRequest.contextReferences)) {
+  if (
+    !sameWorldFocusContextReferenceSet(
+      insight.basisReferences,
+      expectedRequest.contextReferences,
+    )
+  ) {
     return { ok: false, issues: [issue('insight.ready.basis')] };
   }
 

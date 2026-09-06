@@ -60,7 +60,8 @@ export const worldFocus = {
       pending: 'Preparazione locale dell’Insight in corso.',
       unavailable: 'Questo Insight non è disponibile dal contesto corrente.',
       error: 'Non riesco a preparare questo Insight locale.',
-      superseded: 'Il contesto del Mondo è cambiato. L’Insight non è stato aperto.',
+      superseded:
+        'Il contesto del Mondo è cambiato. L’Insight non è stato aperto.',
       basis: 'Riferimenti contestuali espliciti: {{count}}.',
       truthNote:
         'Artefatto locale pre-backend: non è un fatto accettato e non implica autorizzazione. Nessun modello o fonte esterna è stato interrogato.',
@@ -125,8 +126,10 @@ export const worldFocus = {
     configuredEmpty: 'Nessun elemento è stato ancora personalizzato.',
     opportunitiesTitle: 'Disponibile in questo Mondo',
     opportunitiesLoading: 'Recupero delle possibilità di composizione',
-    opportunitiesError: 'Non riesco a recuperare le possibilità di composizione.',
-    opportunitiesEmpty: 'Nessun altro elemento significativo è disponibile adesso.',
+    opportunitiesError:
+      'Non riesco a recuperare le possibilità di composizione.',
+    opportunitiesEmpty:
+      'Nessun altro elemento significativo è disponibile adesso.',
     retry: 'Riprova',
     add: 'Aggiungi {{item}}',
     pin: 'Fissa',

@@ -61,7 +61,9 @@ function isProviderDeliveryState(
 function isRequestTimingState(
   value: unknown,
 ): value is WorldFocusRequestTimingState {
-  return value === 'within-window' || value === 'timed-out' || value === 'unknown';
+  return (
+    value === 'within-window' || value === 'timed-out' || value === 'unknown'
+  );
 }
 
 /**

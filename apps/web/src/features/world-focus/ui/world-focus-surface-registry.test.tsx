@@ -48,9 +48,7 @@ describe('WorldFocusSurfaceRegistry', () => {
 
     expect(
       () =>
-        new WorldFocusSurfaceRegistry([
-          { kind: '   ', render: () => null },
-        ]),
+        new WorldFocusSurfaceRegistry([{ kind: '   ', render: () => null }]),
     ).toThrowError('World Focus surface kind must not be empty');
   });
 });

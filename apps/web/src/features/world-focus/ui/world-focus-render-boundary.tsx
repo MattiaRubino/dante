@@ -31,10 +31,7 @@ export class WorldFocusRenderBoundary extends Component<
   }
 
   override componentDidUpdate(previousProps: WorldFocusRenderBoundaryProps) {
-    if (
-      this.state.hasError &&
-      previousProps.resetKey !== this.props.resetKey
-    ) {
+    if (this.state.hasError && previousProps.resetKey !== this.props.resetKey) {
       this.setState({ hasError: false });
     }
   }

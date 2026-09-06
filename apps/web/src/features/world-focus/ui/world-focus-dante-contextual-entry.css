@@ -47,7 +47,8 @@
   width: 20px;
   height: 20px;
   flex: 0 0 auto;
-  border: 1px solid color-mix(in srgb, var(--world-focus-accent) 30%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--world-focus-accent) 30%, transparent);
   border-radius: 50%;
   color: color-mix(in srgb, var(--world-focus-accent) 54%, white);
   font-size: 0.62rem;

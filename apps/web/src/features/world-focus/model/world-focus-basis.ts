@@ -141,7 +141,10 @@ export function createWorldFocusValidityFacet(
 
   return Object.freeze({
     status: input.status,
-    reasonCode: assertNonEmptyReasonCode(input.reasonCode, 'World Focus validity'),
+    reasonCode: assertNonEmptyReasonCode(
+      input.reasonCode,
+      'World Focus validity',
+    ),
   });
 }
 
@@ -168,7 +171,10 @@ export function createWorldFocusCoverageFacet(
 
   return Object.freeze({
     status: input.status,
-    reasonCode: assertNonEmptyReasonCode(input.reasonCode, 'World Focus coverage'),
+    reasonCode: assertNonEmptyReasonCode(
+      input.reasonCode,
+      'World Focus coverage',
+    ),
   });
 }
 
