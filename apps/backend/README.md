@@ -52,6 +52,26 @@ post-merge Frontend CI      PASS
 
 The CP07 proof on implementation HEAD `81639c61478b476c995652d0060dde8f53aef089` earned `DATABASE LOCAL REOPEN = PASS` against `20260904_17 / 88|5|16|76|172|89|270|0|0|0`, proved old protected-payload physical resurrection followed by suppression-ledger reconciliation, and rejected protected-payload reinsertion. Remote backup provider activation and production/cloud recovery remain **NOT CLAIMED**.
 
+### Branch-local pre-vertical candidate
+
+`feature/pre-vertical-foundation` is a bounded candidate layered on the protected-main baseline above. Its authoritative live roadmap is `docs/workstreams/pre-vertical-foundation.md`.
+
+Current branch-local state:
+
+```text
+PV-01  Identity / Clock / Time              DONE
+PV-02  User Context / Dogfood / Personas    DONE / IMPLEMENTATION COMPLETE
+PV-03  Scale Harness / QA / Closure         NEXT
+
+PostgreSQL                                 18.6
+branch-local Alembic                       20260906_18
+branch-local topology                      89 / 5 / 18 / 77 / 173 / 91 / 272
+```
+
+PV-02 adds LOCAL/DEV-only tooling under `apps/backend/tooling/pre_vertical_foundation/` for one persistent dogfood Account and three deterministic product-independent personas (`normal`, `temporal_edge`, `historical`). The tooling reuses canonical Access/Auth email normalization and PasswordKdf behavior, keeps secrets outside Git, and initializes self Person context through the bounded PV-02 runtime capability. It is development/operator tooling and is not part of the `dante` runtime package.
+
+Operational commands and invariants live in `docs/development/pre-vertical-dogfood-personas.md`. Whole-branch format/lint/mypy/tests, real PostgreSQL acceptance, recovery reconciliation, PR gates and protected-main integration remain PV-03; no such final acceptance is claimed by this branch-local status block.
+
 Protected-main integration milestones:
 
 ```text
