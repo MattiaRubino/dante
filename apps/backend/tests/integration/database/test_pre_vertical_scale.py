@@ -55,7 +55,12 @@ def _ensure_candidate(
             (account_ref, candidate_self_person_ref),
         ).fetchone()
     assert row is not None
-    return UUID(str(row[0])), UUID(str(row[1])), str(row[2]), None if row[3] is None else str(row[3])
+    return (
+        UUID(str(row[0])),
+        UUID(str(row[1])),
+        str(row[2]),
+        None if row[3] is None else str(row[3]),
+    )
 
 
 def test_small_profile_concurrent_first_use_converges_to_one_self_person(
