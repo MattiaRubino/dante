@@ -13,6 +13,7 @@ EXPECTED_EXTENSIONS="pg_stat_statements=1.12,pg_trgm=1.6,postgis=3.6.4,unaccent=
 ADMIN_SECRET="infra/compose/secrets/postgres_password.local"
 MIGRATOR_SECRET="infra/compose/secrets/postgres_recovery_migrator_password.local"
 RUNTIME_SECRET="infra/compose/secrets/postgres_recovery_runtime_password.local"
+OBSERVER_SECRET="infra/compose/secrets/postgres_recovery_observer_password.local"
 REPORT_REL="infra/compose/secrets/postgres_recovery_cp07_report.json.local"
 REPORT_PATH="${REPO_ROOT}/${REPORT_REL}"
 
@@ -239,8 +240,17 @@ SELECT
   test "$owners" = "dante_owner" || die "owners=$owners"
 
   roles="$(docker exec --user postgres "$container" psql -X -d dante -Atqc \
-    "SELECT string_agg(rolname, ',' ORDER BY rolname) FROM pg_roles WHERE rolname IN ('dante_owner','dante_migrator','dante_runtime');")"
-  test "$roles" = "dante_migrator,dante_owner,dante_runtime" || die "roles=$roles"
+    "SELECT string_agg(rolname, ',' ORDER BY rolname) FROM pg_roles WHERE rolname IN ('dante_owner','dante_migrator','dante_runtime','dante_observer');")"
+  test "$roles" = "dante_migrator,dante_observer,dante_owner,dante_runtime" || die "roles=$roles"
+
+  observer_posture="$(docker exec --user postgres "$container" psql -X -d dante -Atqc \
+    "SELECT
+       pg_has_role('dante_observer','pg_read_all_stats','MEMBER')::text || '|' ||
+       has_database_privilege('dante_observer','dante','CONNECT')::text || '|' ||
+       has_database_privilege('dante_observer','dante','CREATE')::text || '|' ||
+       has_database_privilege('dante_observer','dante','TEMP')::text || '|' ||
+       has_schema_privilege('dante_observer','dante','USAGE')::text;")"
+  test "$observer_posture" = "true|true|false|false|false" || die "observer posture=$observer_posture"
 
   runtime_alembic="$(docker exec --user postgres "$container" psql -X -d dante -Atqc \
     "SELECT has_table_privilege('dante_runtime','dante.alembic_version','SELECT');")"
@@ -274,7 +284,7 @@ UPSTREAM_HEAD="$(git rev-parse "$GIT_UPSTREAM")"
 test "$PROOF_HEAD" = "$UPSTREAM_HEAD" || die "local HEAD differs from upstream $GIT_UPSTREAM"
 
 docker image inspect "$IMAGE" >/dev/null 2>&1 || die "recovery bootstrap did not materialize image $IMAGE"
-for secret in "$ADMIN_SECRET" "$MIGRATOR_SECRET" "$RUNTIME_SECRET"; do
+for secret in "$ADMIN_SECRET" "$MIGRATOR_SECRET" "$RUNTIME_SECRET" "$OBSERVER_SECRET"; do
   test -s "$secret" || die "missing $secret"
   git check-ignore -q "$secret" || die "$secret is not ignored"
 done
@@ -335,6 +345,7 @@ export DANTE_ADMIN__USER="postgres"
 export DANTE_ADMIN__PASSWORD="$(cat "$ADMIN_SECRET")"
 export DANTE_MIGRATOR__PASSWORD="$(cat "$MIGRATOR_SECRET")"
 export DANTE_RUNTIME__PASSWORD="$(cat "$RUNTIME_SECRET")"
+export DANTE_OBSERVER__PASSWORD="$(cat "$OBSERVER_SECRET")"
 
 cd "$REPO_ROOT/apps/backend"
 uv run --frozen python -m dante.platform.database.provisioning

@@ -154,8 +154,9 @@ PostgreSQL       18.6
 Alembic          20260904_17
 topology         88|5|16|76|172|89|270|0|0|0
 owners           dante_owner
-roles            dante_owner / dante_migrator / dante_runtime
+roles            dante_owner / dante_migrator / dante_runtime / dante_observer
 runtime Alembic  denied
+observer         pg_read_all_stats only / no DANTE schema access
 retirement ACL   SELECT only
 extensions       postgis 3.6.4
                  vector 0.8.6
@@ -171,8 +172,9 @@ PostgreSQL       18.6
 Alembic          20260906_18
 topology         89|5|18|77|173|91|272|0|0|0
 owners           dante_owner
-roles            dante_owner / dante_migrator / dante_runtime
+roles            dante_owner / dante_migrator / dante_runtime / dante_observer
 runtime Alembic  denied
+observer         pg_read_all_stats only / no DANTE schema access
 retirement ACL   SELECT only
 extensions       postgis 3.6.4
                  vector 0.8.6
