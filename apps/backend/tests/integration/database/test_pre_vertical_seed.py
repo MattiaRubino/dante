@@ -17,7 +17,8 @@ pytestmark = pytest.mark.postgres
 
 _PEPPER_KEY_ID = "test-password-v1"
 _PEPPER_RING = {_PEPPER_KEY_ID: b"p" * 32}
-_PASSWORD = "correct horse battery staple"
+_PASSWORD = "correct horse battery staple"  # noqa: S105 - deterministic synthetic test fixture
+_DIFFERENT_PASSWORD = "different password that must not reset"  # noqa: S105
 
 
 def test_persona_seed_is_idempotent_and_preserves_account_and_self_person(
@@ -141,7 +142,7 @@ def test_existing_seed_password_mismatch_is_fail_closed_without_credential_rewri
             seed_password_account(
                 migrator,
                 email=TEMPORAL_EDGE.email,
-                password="different password that must not reset",
+                password=_DIFFERENT_PASSWORD,
                 current_pepper_key_id=_PEPPER_KEY_ID,
                 pepper_ring=_PEPPER_RING,
                 expected_account_ref=TEMPORAL_EDGE.account_ref,
