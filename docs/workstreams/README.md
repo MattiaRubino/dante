@@ -16,18 +16,16 @@ PostgreSQL Recovery                              CLOSED / INTEGRATED
 Platform Observability                           CLOSED / INTEGRATED VIA PR #58
 AI deterministic low-level foundation            CLOSED / INTEGRATED VIA PR #63
 Home / World Focus reconciliation                CLOSED / INTEGRATED VIA PR #65
+Pre-vertical foundation                          CLOSED / INTEGRATED VIA PR #66
 
-Protected-main HEAD                              5258452d7bd4e7a2797922b00035a9068ba41167
-Protected-main Alembic                           20260904_17
-Protected-main topology                          88|5|16|76|172|89|270|0|0|0
-
-Pre-vertical candidate Alembic                   20260906_18
-Pre-vertical candidate topology                  89|5|18|77|173|91|272|0|0|0
+Protected-main Alembic                           20260906_18
+Protected-main topology                          89|5|18|77|173|91|272|0|0|0
+Pre-vertical integration merge                   1ecd58145860aebfaaa3dc1bd356b90f7a8eb19b
 PV-01                                            CLOSED / PASS
 PV-02                                            CLOSED / PASS
 PV-03 A Scale Harness                            CLOSED / PASS
-PV-03 B Whole-Branch QA                          CLOSED / LOCAL PASS
-PV-03 C protected-main integration               IN PROGRESS
+PV-03 B Whole-Branch QA                          CLOSED / PASS
+PV-03 C protected-main integration               CLOSED / PASS
 ```
 
 There is no PV-04.
@@ -43,9 +41,9 @@ Global current truth is owned by:
 - executable repository truth
 - current subsystem references
 
-### Pre-vertical candidate
+### Pre-vertical foundation
 
-The active append-only roadmap `pre-vertical-foundation.md` is retired at closure. The single retained branch closure/integration record is:
+The active append-only roadmap `pre-vertical-foundation.md` is retired. The single retained closure/evidence record is:
 
 - `pre-vertical-foundation-closure-2026-09-06.md`
 
@@ -58,17 +56,17 @@ Durable pre-vertical foundation references are:
 - `../operations/postgres-recovery-runbook.md`
 - executable source/migrations/tests/tooling
 
-The closure record remains integration-candidate evidence until protected-main merge/readback. After merge it becomes historical closure evidence; it does not remain an active development roadmap.
+The final candidate `21353469464f1371f9913dc78933f4ee42698f33` passed exact-head Recovery and required CI, then merged through PR #66 at `1ecd58145860aebfaaa3dc1bd356b90f7a8eb19b`. `feature/pre-vertical-foundation` is retired and is not a continuing development base.
 
 ### AI
 
-The deterministic AI foundation is already protected-main truth through PR #63 / merge `431fb34029baeacc9ef9f721e9626b39ca10dd39`.
+The deterministic AI foundation is protected-main truth through PR #63 / merge `431fb34029baeacc9ef9f721e9626b39ca10dd39`.
 
 AI implementation/qualification records may remain as retained design/evidence references, but they are no longer an active protected-main integration workstream. Future real Search/Ask/memory/solver/provider-production work requires a new explicit scope from then-current `main`.
 
 ### Home / World Focus
 
-The Home/World Focus reconciliation is already protected-main truth through PR #65 / merge `5258452d7bd4e7a2797922b00035a9068ba41167`. Its closed branch history must not be treated as an active continuing workstream.
+The Home/World Focus reconciliation is protected-main truth through PR #65 / merge `5258452d7bd4e7a2797922b00035a9068ba41167`. Its closed branch history must not be treated as an active continuing workstream.
 
 ## 3. Access/Auth and Email disposition
 
@@ -128,27 +126,24 @@ Historical branch record:
 
 - `../archive/branches/2026-08-feature-postgres-recovery.md` — **NON-AUTHORITATIVE**
 
-Historical CP07/CP08 proof remains exact-head scoped. The pre-vertical `20260906_18` candidate requires its own final exact-head rehearsal before merge.
+Historical CP07/CP08 proof remains exact-head scoped. The pre-vertical `20260906_18` database-local Recovery contract also has direct exact-head PASS evidence at `21353469464f1371f9913dc78933f4ee42698f33`.
 
-## 6. Pre-vertical integration order
+## 6. Pre-vertical closure result
 
 ```text
 PV-01 / PV-02 / PV-03 A implementation          CLOSED / PASS
-→ PV-03 B local whole-branch QA                 CLOSED / PASS
-→ documentation lifecycle cleanup               FINAL CANDIDATE
-→ exact-head Recovery rehearsal                 REQUIRED
-→ fetch/re-read protected main                  REQUIRED
-→ reconcile only if main moved                  CONDITIONAL
-→ bounded PR                                    REQUIRED
-→ Backend CI Gate                               REQUIRED
-→ Dependency Review                             REQUIRED
-→ Frontend CI Gate                              REQUIRED
-→ merge commit only                             OWNER-AUTHORIZED
-→ protected-main readback                       REQUIRED
-→ retire feature/pre-vertical-foundation        AFTER ACCEPTANCE
+PV-03 B local whole-branch QA                   CLOSED / PASS
+exact-head Recovery rehearsal                   PASS
+Backend CI Gate                                 PASS
+Dependency Review                               PASS
+Frontend CI Gate                                PASS
+PR #66                                          MERGED
+merge method                                    MERGE COMMIT
+protected-main parentage/tree readback           PASS
+feature/pre-vertical-foundation                  RETIRED
 ```
 
-No further foundation expansion is implied by this sequence.
+No further foundation expansion is implied by this closure. The next workstream must start from then-current protected `main` under a new bounded real product vertical.
 
 ## 7. Documentation lifecycle rule
 
@@ -178,7 +173,3 @@ SEARCH != INTELLIGENCE
 LOCAL DATABASE RECOVERY PASS != APPLICATION TRAFFIC REOPEN PASS
 LOCAL RECOVERY PASS != PRODUCTION/CLOUD RECOVERY PASS
 ```
-
-## 9. Next-work rule
-
-After pre-vertical protected-main acceptance, the next workstream must start from then-current protected `main` under a new bounded real product-vertical scope. Do not continue development on a retired feature branch.
