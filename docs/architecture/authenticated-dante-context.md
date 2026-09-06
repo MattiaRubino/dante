@@ -114,6 +114,8 @@ The Web transport obtains that value from the existing `@dante/time` device-time
 
 `follow_device` resolves the effective request timezone from the current device header. `fixed` resolves from the stored named IANA zone and does not change merely because the device moved.
 
+A malformed/missing device timezone under `follow_device` is a request validation error. An impossible persisted mode/fixed-zone policy is instead an internal context-integrity failure: the server must not blame the client for corrupted or no-longer-valid stored state.
+
 This policy is a user/application default only. It never overrides the temporal semantics owned by a concrete DANTE object. In particular:
 
 ```text
@@ -161,6 +163,24 @@ RLS policies            0
 ```
 
 The protected-main `20260904_17` contract remains protected-main truth until normal branch integration completes.
+
+### 8.1 Truthful downgrade behavior
+
+`account_ref → self_person_ref` is semantic linkage, not disposable migration scaffolding. A downgrade that dropped `account_application_context` after real rows existed would sever that linkage while leaving the minted Person identities behind; a later upgrade could then create a different self Person for the same Account.
+
+Therefore `20260906_18` follows the persistence constitution's truthful-reversibility rule:
+
+```text
+empty account_application_context
+→ downgrade may remove PV-02 schema
+
+non-empty account_application_context
+→ downgrade REFUSED
+→ bindings and Person identities remain intact
+→ use a separately reviewed forward migration for any real semantic transition
+```
+
+The ordinary fresh-schema `head → base → head` proof remains valid because no semantic rows exist in that test. A populated database is fail-closed rather than silently orphaned.
 
 ## 9. Explicit non-goals
 
