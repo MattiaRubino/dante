@@ -8,7 +8,7 @@ from dante.auth.contracts import AuthServiceUnavailableError
 from dante.auth.dependencies import get_auth_service, single_header_value
 from dante.auth.service import AuthService
 from dante.auth.sessions import AmbiguousSessionCookieError, session_cookie_value
-from dante.context.contracts import DanteContext
+from dante.context.contracts import DanteContext, DanteContextIntegrityError
 from dante.context.service import DanteContextService
 from dante.platform.database.runtime import DatabaseRuntime
 from dante.platform.http.problem import ProblemError
@@ -80,6 +80,15 @@ async def require_dante_context(
             category="validation",
             title="Invalid timezone",
             detail="The supplied timezone is not an accepted named IANA timezone.",
+        ) from exc
+    except DanteContextIntegrityError as exc:
+        raise ProblemError(
+            status=500,
+            code="context.integrity_error",
+            category="internal",
+            title="DANTE context unavailable",
+            detail="The authenticated DANTE context could not be resolved safely.",
+            retryable=False,
         ) from exc
 
 
