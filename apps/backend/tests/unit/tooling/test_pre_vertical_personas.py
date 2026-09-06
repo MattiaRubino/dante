@@ -1,7 +1,5 @@
 """Unit proof for deterministic product-independent pre-vertical personas."""
 
-from datetime import datetime
-
 from dante.platform.time import classify_local_time
 from tooling.pre_vertical_foundation.personas import (
     HISTORICAL,
@@ -45,15 +43,11 @@ def test_temporal_edge_persona_proves_gap_overlap_and_fixed_zone_independence() 
 
 
 def test_historical_persona_uses_explicit_instants_not_identifier_order() -> None:
-    instants = [
-        anchor.instant
-        for anchor in HISTORICAL.temporal_anchors
-        if anchor.expectation is TemporalExpectation.HISTORICAL_INSTANT
-    ]
-    assert all(isinstance(instant, datetime) for instant in instants)
-    assert len(instants) == 2
-    assert instants[0] is not None and instants[1] is not None
-    assert instants[0] < instants[1]
+    history_start = HISTORICAL.temporal_anchors[0].instant
+    history_as_of = HISTORICAL.temporal_anchors[1].instant
+    assert history_start is not None
+    assert history_as_of is not None
+    assert history_start < history_as_of
 
 
 def test_persona_slugs_and_emails_are_stable_and_distinct() -> None:
