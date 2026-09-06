@@ -13,6 +13,8 @@ The work is intentionally compact and grouped into four milestones.
 
 ## PV-01 — Identity, Clock and Time
 
+- **Branch-local status:** IMPLEMENTED / MILESTONE COMPLETE
+
 Establish the canonical backend primitives that future verticals must reuse:
 
 - application-issued UUIDv7 generation with typed references where justified;
@@ -22,41 +24,51 @@ Establish the canonical backend primitives that future verticals must reuse:
 - deterministic handling/tests for local-day windows, DST gaps/overlaps and ambiguous/nonexistent local times;
 - no semantic chronology/currentness derived from UUID ordering.
 
-This milestone must reuse the existing DANTE temporal/database semantics rather than introduce a parallel generic time framework.
+This milestone reuses the existing DANTE temporal/database semantics rather than introducing a parallel generic time framework.
+
+Whole-branch executable acceptance and protected-main closure remain owned by PV-04.
 
 ## PV-02 — Authenticated DANTE User Context
 
-Close the seam from an authenticated Access/Auth account to the DANTE context required by product operations.
+- **Branch-local status:** IMPLEMENTED / MILESTONE COMPLETE
 
-The contract must preserve the existing separations:
+Close the seam from an authenticated Access/Auth account to the DANTE context required by product operations while preserving:
 
 `Person != Account != Principal != Actor`
 
-It must determine, without semantic collapse:
+The implemented contract provides:
 
-- how an authenticated request resolves its DANTE-facing context;
-- how the relevant domain/person/world scope is represented;
-- where the user's default timezone belongs;
-- how future application/API code consumes that context consistently.
+- authenticated request → DANTE-facing application context;
+- explicit Account → self Person linkage without collapsing Account into Person;
+- user/default timezone policy separate from object-owned temporal semantics;
+- one stable backend context contract for future product/API operations.
 
-A database/Alembic change is allowed only if this seam proves that one is semantically required. No generic `user_id` ownership model may be added merely for convenience.
+No generic `user_id` ownership model was introduced.
 
-### PV-02 branch-local candidate
+### PV-02 implemented branch contract
 
-The current branch materializes the minimum concrete seam through:
+The branch materializes the minimum concrete seam through:
 
 - `20260906_18` and `dante.account_application_context`;
-- a bounded `ensure_account_application_context(uuid,uuid)` capability that preserves the existing runtime denial of generic `Person` creation;
+- a bounded `ensure_account_application_context(uuid,uuid)` `SECURITY DEFINER` capability that preserves the runtime denial of generic `Person` creation;
+- first-use serialization on the owning Account so concurrent initialization returns one self Person/context;
+- application-issued UUIDv7 for the initial self Person;
 - typed backend `DanteContext` resolution from an admitted `Principal`;
-- reuse of the PV-01 `TimeZonePolicy` primitives for `follow_device` and fixed named-IANA policy;
+- reuse of PV-01 `TimeZonePolicy` for `follow_device` and fixed named-IANA policy;
 - governed Web transport of the current device timezone through `X-Dante-Time-Zone`;
-- real PostgreSQL tests for ACL, first-use idempotence/concurrency and timezone persistence integrity.
+- fail-closed distinction between malformed device timezone input and corrupted persisted timezone/context state;
+- fail-closed Alembic downgrade when a live Account↔Person semantic binding exists;
+- PostgreSQL acceptance tests covering ACL, first-use idempotence/concurrency, timezone integrity and downgrade safety.
 
 Detailed branch-local authority: `../architecture/authenticated-dante-context.md`.
 
-This is implementation candidate state, not protected-main closure evidence. PV-02 acceptance remains subject to the branch test/QA and PV-04 closure gates.
+`self_person_ref` is a homogeneous reference to `Person`, so its canonical DB integrity is the direct FK to `dante.person`. `native_address` remains the bounded address/control projection used by genuinely heterogeneous NativeRef consumers; the bootstrap capability also creates the Person address atomically, but the application-context FK does not need to reinterpret `native_address` as a mandatory semantic parent for every Person.
+
+PV-02 implementation is complete on this branch. This is **not** a claim that the branch has passed protected-main integration, final CI or recovery acceptance: those proofs are deliberately centralized in PV-04.
 
 ## PV-03 — Dogfood, Personas and Scale Readiness
+
+- **Branch-local status:** NEXT / NOT STARTED
 
 Create the minimum reusable development/test capability needed to exercise DANTE as it grows:
 
@@ -70,6 +82,8 @@ Create the minimum reusable development/test capability needed to exercise DANTE
 This milestone provides generation/readiness infrastructure only. Product-specific load workloads, concurrency profiles and performance budgets are added by the vertical that owns them.
 
 ## PV-04 — Whole-Branch Acceptance and Closure
+
+- **Branch-local status:** NOT STARTED
 
 Before integration, prove that the branch is a safe foundation rather than a hidden product expansion:
 
