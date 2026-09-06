@@ -50,20 +50,26 @@ export function zonedDateTimeToInstant(zonedDateTime: ZonedDateTime): Instant {
 
 export function validateNamedTimeZone(timeZone: string): string {
   if (timeZone.length === 0 || timeZone.trim() !== timeZone) {
-    throw new RangeError('Timezone must be a non-empty unpadded IANA identifier.');
+    throw new RangeError(
+      'Timezone must be a non-empty unpadded IANA identifier.',
+    );
   }
 
   // ECMA-402 also admits numeric offset identifiers in some runtimes. DANTE deliberately
   // requires a named timezone so future DST/rule changes remain representable.
   if (/^[+-]\d{2}(?::?\d{2})?$/.test(timeZone)) {
-    throw new RangeError('DANTE requires a named IANA timezone, not a fixed UTC offset.');
+    throw new RangeError(
+      'DANTE requires a named IANA timezone, not a fixed UTC offset.',
+    );
   }
 
   try {
     new Intl.DateTimeFormat('en-US', { timeZone }).format(0);
   } catch (error) {
     if (error instanceof RangeError) {
-      throw new RangeError(`Unknown IANA timezone: ${timeZone}`, { cause: error });
+      throw new RangeError(`Unknown IANA timezone: ${timeZone}`, {
+        cause: error,
+      });
     }
     throw error;
   }
@@ -72,7 +78,8 @@ export function validateNamedTimeZone(timeZone: string): string {
 }
 
 export function detectDeviceTimeZone(
-  resolver: () => string = () => Intl.DateTimeFormat().resolvedOptions().timeZone,
+  resolver: () => string = () =>
+    Intl.DateTimeFormat().resolvedOptions().timeZone,
 ): string {
   return validateNamedTimeZone(resolver());
 }
@@ -86,7 +93,9 @@ export function resolveEffectiveTimeZone(
   }
 
   if (deviceTimeZone === undefined) {
-    throw new RangeError('follow_device timezone policy requires a detected device timezone.');
+    throw new RangeError(
+      'follow_device timezone policy requires a detected device timezone.',
+    );
   }
   return validateNamedTimeZone(deviceTimeZone);
 }

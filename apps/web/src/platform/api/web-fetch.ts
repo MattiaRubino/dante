@@ -3,8 +3,7 @@ import { detectDeviceTimeZone } from '@dante/time';
 export const WEB_CLIENT_HEADER_NAME = 'X-Dante-Client';
 export const WEB_CLIENT_HEADER_VALUE = 'web';
 export const DANTE_TIME_ZONE_HEADER_NAME = 'X-Dante-Time-Zone';
-export const ACCEPT_HEADER_VALUE =
-  'application/json, application/problem+json';
+export const ACCEPT_HEADER_VALUE = 'application/json, application/problem+json';
 
 export type DeviceTimeZoneResolver = () => string;
 
@@ -12,7 +11,9 @@ function mergedRequestHeaders(
   input: RequestInfo | URL,
   init: RequestInit | undefined,
 ): Headers {
-  const headers = new Headers(input instanceof Request ? input.headers : undefined);
+  const headers = new Headers(
+    input instanceof Request ? input.headers : undefined,
+  );
   if (init?.headers !== undefined) {
     new Headers(init.headers).forEach((value, name) => {
       headers.set(name, value);
