@@ -7,7 +7,11 @@ from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 from uuid import UUID
 
-from tooling.pre_vertical_foundation.personas import PERSONAS, PersonaSpec, deterministic_uuid7
+from tooling.pre_vertical_foundation.personas import (
+    PERSONAS,
+    PersonaSpec,
+    deterministic_uuid7,
+)
 
 
 class ScaleProfile(StrEnum):
