@@ -1,262 +1,177 @@
-# DANTE — Temporal Frontend Roadmap
+# DANTE — Temporal Frontend Production-Depth Roadmap
 
-**Status:** CURRENT WORKING ROADMAP — T1 FROZEN / T2 NEXT WHEN TEMPORAL WORKSTREAM RESUMES  
-**Date:** 2026-09-01  
-**Branch:** `feature/home-react`  
-**Consumes:** `temporal-experience-architecture.md`, `timeline-t1-frozen-contract.md`, current Home/product contracts, closed Domain/Logical/Physical/Database semantics and frontend production standards.  
-**Scope stop:** production-grade frontend temporal capability before real backend/API/provider/solver integration.
+**Status:** ACTIVE AUTHORITY — INTEGRATION CANDIDATE / C1 OPEN / C2 BLOCKED  
+**Reconciled:** 2026-09-05  
+**Candidate branch:** `feature/home-timeline`  
+**Current `main` integrated through:** `7bc7c0136cb5579528be1e2be0e71a6399004f90`  
+**F0 closed:** `7034b9b0d100709785ebe96e3816aab3e7b1d1f8`  
+**Live validation authority:** current CI on the exact branch HEAD; historical run IDs are evidence only
 
-This roadmap is planning authority for the temporal workstream. It does **not** authorize temporal implementation while another workstream is active. Current active frontend product work is World Focus.
+## 0. Integration state
 
-## 1. Delivery model
+The Home/Timeline/Temporal frontend workstream is now reconciled onto the current `main` platform baseline on `feature/home-timeline`.
 
-Temporal work follows production-depth mini-verticals:
-
-```text
-one bounded capability
--> semantics/scenario pressure
--> implementation to production depth
--> automated gates
--> real-browser/manual review
--> user visual/functional validation
--> fixes
--> explicit acceptance
--> freeze
--> next capability
-```
-
-A slice is not complete because it renders or because CI is green.
-
-## 2. Permanent boundaries
-
-### Product surfaces
-
-One temporal capability serves multiple purpose-built projections:
+This is an integration state change, not a product-semantic shortcut:
 
 ```text
-Home Timeline
-Home expanded Timeline
-Dedicated full-page temporal workspace
-Shared contextual item Detail
-Resolution handoff
-Global/contextual DANTE and future voice entry
+branch technically integrated with current main
+!=
+C1 manually accepted
 ```
 
-They may use different renderers/layouts but must not create independent temporal semantics/stores.
+No PR is opened by this roadmap update. Before PR creation, the exact final branch HEAD must be reviewed and its current CI must be green or any non-green state explicitly understood and resolved.
 
-### Semantic non-collapse
+## 1. Frozen foundations
+
+### H0 — FROZEN
+
+Whole Home macro structure/breakpoints.
+
+### T1 — FROZEN
+
+Timeline engine behavior: continuous temporal window, semantic anchor, Now, zoom, density/overlap, custom drag/focus, time edit, move/Undo, expanded group geometry and Firefox regression contract.
+
+### F0 — CLOSED/FROZEN
+
+Typed temporal application seam: commands/results/queries, Clock, deterministic local adapter, placement semantics, operation IDs/idempotency, revisions, guarded Undo, subscriptions, no fake network/storage.
+
+## 2. C1 — Manual Temporal Create
+
+**Current state: OPEN.** Automated implementation candidate exists, but final product/manual acceptance has not been granted.
+
+### Completed foundation
+
+- title-first Create;
+- Activity/Event actionable type registry;
+- timed/all-day/unplaced Activity semantics;
+- timed/all-day Event semantics;
+- Context and appearance remain distinct;
+- base + Advanced disclosure;
+- conditional execution/session controls;
+- Event Agenda/internal parts;
+- Planning Tray v2;
+- per-day all-day v2;
+- Event recurrence;
+- user-facing Activity repeat represented as Routine-backed recurrence intent;
+- recurrence ownership explicit;
+- no browser canonical Occurrence generation;
+- `Personalizzata…` recurrence entry integrated into `Ripeti`;
+- simple Create floating/draggable on desktop;
+- Advanced larger floating surface;
+- Home/Timeline remains interactive while Create is open;
+- explicit dirty-draft close/discard behavior.
+
+### C1-P — Manual product polish — ACTIVE
+
+When C1 work resumes, handle **one product issue at a time**. Do not package several UX ideas together.
+
+Current candidate behavior to judge manually:
 
 ```text
-Goal != Activity/Event/Session
-Schedule != Session != Actual
-Occurrence != recurrence source
-planned/intended != actual
-Proposal != Decision != accepted effect
-provider acknowledgement != canonical completion
+click +
+→ simple floating Create at stable position
+→ Timeline remains usable/scrollable
+→ simple panel can be moved
+→ Advanced opens as larger floating depth
+→ no modal-style Home freeze
 ```
 
-### Backend stop line
+A simple-only left pin/dock mode has been discussed as a possible later improvement. It is not implemented and must not be assumed as decided.
 
-No component direct HTTP, invented endpoint contract, ORM/DB row leakage or fake durable/provider success during the frontend phase.
+### Recurrence stop line during C1
 
-## 3. T0 — temporal contract / scenario oracle — ESTABLISHED
+Do not “fix” repeated Activity/Event by synthesizing canonical future cards in the browser.
 
-The temporal architecture and canonical scenarios established the interaction/product grammar used to harden T1.
+Current C1 authors the recurrence rule. Future vertical/backend work owns:
 
-Representative pressure includes:
+```text
+Routine/Event recurrence
+→ recurrence evaluator/checkpoint
+→ canonical Occurrences
+→ temporal range query
+→ Timeline projections
+```
 
-- simple appointment;
-- structured learning session;
-- diet/workout/session realities;
-- early/overrunning call;
-- flexible/movable activity;
-- recurrence occurrence scope;
-- unresolved confirmation;
-- conflict/replan;
-- equivalent manual/contextual-DANTE requests.
+The current local UI may therefore show the authored first/master placement while the real recurring series remains a future integration concern.
 
-Generic `Peek` between card and Detail was rejected as a mandatory layer.
+### C1 closure
 
-## 4. T1 — Timeline parity / interaction hardening — USER ACCEPTED / FROZEN
+C1 closes only when:
 
-T1 is closed for observable behavior.
+1. remaining user-selected UX foundation issues are resolved one-by-one;
+2. final automated gates are green for the relevant candidate;
+3. the user performs one coherent final manual pass;
+4. the user explicitly says `C1 MANUAL PASS — APPROVED`.
 
-The authoritative change-control contract is:
+Until then C1 is not frozen.
 
-`docs/frontend/home/timeline-t1-frozen-contract.md`
+## 3. C2 — Card → Structured Detail
 
-Frozen areas include:
+**BLOCKED until C1 closes.**
 
-- viewed-date/now behavior already accepted;
-- focus/deselect-first grammar;
-- title/time/subitem explicit action regions;
-- first-gesture custom drag;
-- no native drag ghost/text selection;
-- same-day/cross-day movement behavior covered by accepted tests;
-- anchored time edit separate from drag;
-- undo/recovery on supported operations;
-- deterministic compact overlap lanes;
-- expanded group/header/event alignment and horizontal sync;
-- Chromium + Firefox critical pointer/focus/drag coverage.
+Once unblocked, C2 should connect Timeline cards to structured detail/edit while consuming F0/C1/T1 contracts rather than reinterpret them.
 
-Do not reopen T1 for cleanup/modernization. Any deliberate observable change requires explicit user approval before production writes.
+No opportunistic C2 work while C1 remains manually open.
 
-## 5. T2 — Temporal application core / truthful local adapter — NEXT ONLY WHEN RESUMED
+## 4. Timeline read-model/backend bridge — later vertical work
 
-Goal:
+The existing Timeline engine should remain a consumer.
 
-Establish shared application boundaries for new Phase-2 interactions without rewriting frozen T1 behavior.
+Target architecture:
 
-Likely scope, only when explicitly resumed:
+```text
+canonical temporal sources
+Activity / Event / Routine / Occurrence / provider data
+                    ↓
+        backend/application range query
+                    ↓
+         normalized Timeline read-model
+                    ↓
+             Timeline engine
+```
 
-- temporal projection identity;
-- query/read ports;
-- typed semantic intents;
-- operation request/result model;
-- deterministic local adapter;
-- draft vs accepted state;
-- expected-state/conflict representation;
-- undo/recovery contract;
-- clock abstraction where justified;
-- projection model separate from Domain/backend DTO/persistence.
+This future bridge should provide date/window queries, pagination/horizon semantics, provenance/source identity, reconciliation and authoritative recurrence outputs without coupling rendering to DB rows or source-specific SDKs.
 
-The adapter should be able to simulate truthful outcomes such as applied, validation rejection, confirmation required, expected-state conflict, pending, known failure and reconciliation-required/unknown where future external effects warrant it.
+## 5. Later temporal verticals
 
-Do not add generic repository/UoW/state-machine libraries merely for architectural appearance.
+After C1/C2, sequence should be driven by owning vertical needs rather than frontend mimicry. Expected work includes:
 
-## 6. T3 — Create / edit / move vertical
+1. real temporal API/adapter and range/window query;
+2. Routine vertical + recurrence evaluator/materialization;
+3. Event backend/provider integration where authorized;
+4. Reminder/notification intent and real delivery boundary;
+5. Session runtime;
+6. Actual/outcome runtime;
+7. multi-device reconciliation;
+8. DANTE intelligence/AI/voice inputs through governed downstream operations.
 
-Goal:
+Order may be refined when those verticals begin, but permanent semantic distinctions cannot be collapsed.
 
-Move new creation/edit/move workflows onto the shared application intent boundary while preserving simple interaction.
+## 6. Permanent boundaries
 
-Candidate behavior:
+```text
+Activity != Event != Routine
+Schedule != Occurrence != Session != Actual
+planned != happened
+recurrence rule != generated Occurrence
+Context != appearance
+manual Create != AI/NL/voice
+Timeline ViewModel != application model != DTO != DB row
+```
 
-- Timeline quick create;
-- coordinate/viewed-date create where approved;
-- quick vs expanded create;
-- edit time;
-- drag/move/cross-day move;
-- cancel/validation/undo;
-- recurrence scope only when recurrence is actually involved.
+C1 remains pre-backend/manual. No fake provider, persistence, solver, recurrence materialization or notification success.
 
-Manual UI and future AI/voice should converge on the same semantic application intents.
+## 7. Integration closure / next step
 
-## 7. T4 — Structured Detail profiles + contextual DANTE
+Do not autonomously start a new feature.
 
-Goal:
+The immediate repository sequence is:
 
-Represent richer DANTE temporal realities without overloading Timeline cards.
+```text
+final CI on documentation-closure HEAD
+→ editor/reviewer inspection
+→ bounded fixes only if review finds concrete defects
+→ explicit authorization for PR
+```
 
-Potential profiles:
-
-- simple appointment;
-- activity/task-like item;
-- structured learning session;
-- meal/diet step;
-- workout/session;
-- meeting/work item where current semantics support it.
-
-Use a shared Detail shell plus capability-specific modules, not a universal optional-field monster.
-
-Pre-backend contextual DANTE must produce the same typed candidate/operation contracts expected later; model-like output is never canonical truth.
-
-## 8. T5 — Execution truth / Actual / Resolution
-
-Goal:
-
-Represent what actually happened separately from what was planned.
-
-Candidate states/workflows include in-progress, ended-unconfirmed, completed, partial, skipped, postponed/replaced/cancelled where semantically valid, and planned-vs-actual timing/value.
-
-Resolution should handle bounded confirmation/correction and escalate complex cases rather than becoming a generic notification center.
-
-## 9. T6 — Flexible scheduling / recurrence / conflict / replan
-
-Goal:
-
-Represent fixed, movable, window-constrained, unscheduled, recurring and conflicting temporal realities without flattening them into ordinary events.
-
-Candidate replan remains visually/semantically distinct from accepted plan until applied.
-
-Prefer the smallest valid affected scope; hard constraints must never be silently violated just to make a clean calendar.
-
-## 10. T7 — Full-page temporal workspace architecture proof
-
-Goal:
-
-Validate that shared temporal application semantics are not accidentally Home-specific.
-
-First proof may include:
-
-- full day;
-- useful week/planning projection;
-- shared selection/Detail;
-- shared create/edit/move operations;
-- unscheduled/flexible planning area if ready.
-
-Do not stretch the Home Timeline to 100vw and call it a new workspace.
-
-## 11. T8 — Full temporal workspace depth
-
-Only after T7 succeeds, expand with justified views/capabilities such as richer Day, Week, Month, Agenda, grouped/focus views, multi-select, timezone controls, flexible tray, broader planning horizon, conflict/load inspection and candidate-plan mode.
-
-Long horizons must change abstraction level; a year is not 365 miniature rich day timelines.
-
-## 12. T9 — Global DANTE / future voice convergence
-
-Demonstrate that natural-language and future voice are alternative entry paths to the same temporal application operations.
-
-Representative requests may include create/move/replace-occurrence/replan/confirmation queries.
-
-Broad/material changes require preview/confirmation according to product/governance policy; no production AI provider is required to close the frontend phase.
-
-## 13. T10 — Production hardening / pre-backend freeze
-
-Required before backend integration:
-
-### Architecture
-
-- no direct component HTTP;
-- no backend DTO/DB leakage;
-- no universal Thing/Event collapse;
-- no duplicate Home/full-page store;
-- architecture/generated checks green.
-
-### Behavior
-
-- scenario oracle coverage;
-- create/edit/move/undo;
-- Detail profiles;
-- Actual/confirmation;
-- recurrence scope;
-- flexible/unscheduled;
-- conflict/proposal/replan;
-- manual/DANTE command equivalence for covered flows.
-
-### Accessibility
-
-WCAG 2.2 AA target, keyboard/focus, screen-reader semantics, reduced motion, non-color-only state, touch/mobile alternatives.
-
-### Performance
-
-Dense-day/multi-day/week pressure, fluid scroll/zoom/drag, bounded rendering/windowing when needed, no layout thrash, cleanup/memory checks, bundle review.
-
-### Tests
-
-Unit/model/component/integration/E2E/a11y/responsive/visual/performance as applicable.
-
-## 14. Final backend vertical
-
-After frontend freeze, real application/API/provider/solver integration should replace local adapters without changing the accepted temporal product semantics or forcing a renderer rewrite.
-
-## 15. Resume rule
-
-When temporal work is explicitly resumed:
-
-1. read `timeline-current-checkpoint.md`;
-2. read `timeline-handoff.md`;
-3. re-read the frozen T1 contract;
-4. re-read the exact Domain/Logical/Physical/DB/Intelligence authorities touched by T2;
-5. define one bounded T2 slice;
-6. get the normal implementation gate before production writes.
+After repository integration work is complete, C1 product/manual iteration may resume from the current candidate. C2 stays blocked until explicit C1 manual approval.

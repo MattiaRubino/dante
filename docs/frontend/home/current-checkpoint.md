@@ -1,217 +1,173 @@
-# DANTE — Home / Frontend Current Checkpoint
+# DANTE — Home / Temporal Current Checkpoint
 
-**Status:** CURRENT LIVE ENTRY POINT — WORLD FOCUS M4 CLOSED / VALIDATED — MAIN RECONCILIATION NEXT  
-**Date:** 2026-09-05  
-**Working branch:** `feature/home-react`  
-**Worktree:** `/home/mattia/projects/dante-frontend`
+**Status:** **PRE-PR INTEGRATION CANDIDATE / H0-T1-F0 FROZEN / C1 OPEN / C2 BLOCKED**  
+**Reconciled:** 2026-09-05  
+**Candidate branch:** `feature/home-timeline`  
+**Current `main` integrated through:** `7bc7c0136cb5579528be1e2be0e71a6399004f90`  
+**Pre-closure technical checkpoint:** `d8b1aa65d5d2651702bd790be3843234ad9f86da`  
+**PR state:** NOT OPENED
 
-This is the branch-level live entry point. Current sequencing authority lives here and in `world-focus-current-checkpoint.md`; older `NEXT` prose is historical unless explicitly adopted again.
+This is the current navigation document for Home, AppShell, Timeline, Temporal Create and World Focus. Temporary branch handoff/live-status files were removed during pre-PR closure; historical workstream context is retained in `docs/archive/branches/2026-09-feature-home-timeline.md`. Durable contracts and current code/tests outrank historical branch instructions.
 
-## 1. Branch workstreams
+## 1. Integration state
 
-```text
-APP SHELL / HOME
-TEMPORAL / TIMELINE
-WORLD FOCUS
-```
+`feature/home-timeline` has been reconciled with the current `main` baseline rather than rebased or rewritten.
 
-Permanent distinctions:
+The candidate contains current platform work from `main`, including the current PostgreSQL/backend/Auth/Recovery/Email/Observability/OpenAPI baseline, plus the Home/Temporal frontend workstream:
 
 ```text
-Home AI != World contextual DANTE
-Home Timeline != full temporal workspace
-World Focus != Home overlay
-Mondi Overview != World Focus
+current main platform
++
+AppShell / Home
++
+Timeline T1
++
+Temporal F0
++
+Temporal Create C1 candidate
++
+World Focus pre-backend frontend
+=
+feature/home-timeline integration candidate
 ```
 
-## 2. Live World Focus sequence
+The generated TanStack route tree has been regenerated through the real Vite/TanStack generator after route reconciliation. Temporary diagnostic instrumentation used to recover that generated output is not present in the final tree.
+
+No PR is created by this checkpoint. The next repository action is external/editor review of the candidate; PR creation remains a separate explicit action.
+
+## 2. Authority / status matrix
+
+### H0 — Whole Home structure
+
+**FROZEN.**
+
+Macro composition, ownership and responsive structural modes remain change-controlled by `home-structural-contract.md`.
+
+### P1 — Global AppShell / Topbar
+
+**FROZEN for accepted implementation scope.**
+
+Shared AppShell ownership, route outlet, inline Search grammar, launcher/create/account shells and accepted visual baseline remain intact. Access `/` and `/security` continue to coexist with application routes without moving Auth semantics into Home.
+
+The current AppShell account presentation is still intentionally neutral and is not yet bound to the full current Access/Auth session capability. Do not fake identity/logout just because the backend capability now exists.
+
+### T1 — Timeline
+
+**FROZEN.**
+
+Preserve the accepted continuous temporal viewport, semantic anchoring, Now, zoom/density, custom focus/drag, first-gesture correctness, precise time edit, move + Undo, all-day geometry, expanded Context behavior and Firefox regression contract.
+
+Timeline remains a consumer of normalized projections, not raw DB rows or provider SDK objects.
+
+### F0 — Temporal application foundation
+
+**CLOSED / FROZEN.**
+
+Preserve typed temporal identities, placement forms, Clock, operation IDs/idempotency, revisions, stale-write rejection, guarded Undo, subscriptions and deterministic local adapter semantics.
+
+F0 is not a fake backend. The future real adapter must replace the local adapter through the existing application seam.
+
+### C1 — Manual Temporal Create
+
+**OPEN.**
+
+The implementation candidate includes the substantial C1 frontend foundation, including:
+
+- title-first Activity/Event creation;
+- timed/all-day/unplaced Activity placement;
+- timed/all-day Event placement;
+- Routine-backed user-facing Activity repeat;
+- Event-owned recurrence;
+- all four CP6 recurrence families in custom authoring;
+- Planning Tray behavior for unplaced Activity;
+- real per-day all-day lane behavior;
+- Event Agenda/internal parts;
+- simple floating/draggable desktop Create;
+- larger floating Advanced surface;
+- dirty-draft close/discard protection;
+- Home/Timeline coexistence while Create is open.
+
+C1 is **not frozen** and has **not** received the explicit final manual approval token:
+
+`C1 MANUAL PASS — APPROVED`
+
+Branch integration, automated green checks or a later PR merge do not manufacture that product approval.
+
+### C2 — Card → Structured Detail
+
+**BLOCKED until C1 closes.**
+
+Do not start opportunistic C2 work merely because the branch is being integrated.
+
+### World Focus
+
+World Focus remains a real pre-backend frontend architecture/candidate, not permission to invent canonical World persistence or backend/API semantics.
+
+Use `world-focus-architecture.md`, `world-focus-frontend-roadmap.md`, `world-focus-wf0-scenario-oracle.md` and the current WF1/geometry checkpoints for durable pre-backend context. Branch labels in the original 2026-08 records are provenance, not current operating instructions.
+
+## 3. Temporal semantic stop lines
+
+Permanent distinctions remain:
 
 ```text
-WF0 / WF-G3                                FROZEN / LOCKED
-B0 / WR0–WR2 / B1 / B2                    CLOSED AS RECORDED
-Workspace Platform                         ENGINEERING CLOSED
-D0                                         ACCEPTED
-D1                                         CLOSED FOR SEQUENCING
-WS0–WS8                                    CLOSED
-POST-WS8 HYGIENE                           CLOSED / APPLIED
-PRE-M0 FALSIFICATION                       CLOSED / PASS
-M0                                         CLOSED
-M1                                         CLOSED / VALIDATED
-POST-M1 SAFETY                             CLOSED / PASS
-M2                                         CLOSED / VALIDATED
-M2 FINAL CLOSURE                           CLOSED / PASS
-M3                                         CLOSED / VALIDATED
-M3-1 / M3-2 / M3-3 / M3-4                CLOSED / VALIDATED
-M3 final hostile closure                   CLOSED / PASS
-M4 Contextual DANTE / D2–D6               CLOSED / VALIDATED
-D2 adaptive conversation surface           CLOSED / VALIDATED
-D3 deterministic conversation adapter      CLOSED / VALIDATED
-D4 contextual/deictic invocation           CLOSED / VALIDATED
-D5 Insight presentation integration        CLOSED / VALIDATED
-D6 Proposal/confirmation/receipt           CLOSED / VALIDATED
-M4 final hostile closure                   CLOSED / PASS
-MAIN RECONCILIATION / INTEGRATION          NEXT BEFORE M5
-M5 complete contrasting Worlds             NOT STARTED
-M6 integrated visual/a11y/performance      BLOCKED BY M5
-M7 pre-backend frontend freeze              BLOCKED BY M6
-BACKEND                                    BLOCKED UNTIL M7
-human/manual visual review                  NOT PERFORMED
+Activity != Event != Routine
+Schedule != Occurrence != Session != Actual
+planned/intended != happened
+recurrence specification != generated Occurrence
+Context != appearance
+manual Create != AI/NL/voice
+Timeline ViewModel != application model != DTO != DB row
+provider state != canonical DANTE state
 ```
 
-## 3. Current evidence anchors
+Current C1 authors recurrence intent only. It must not synthesize canonical future Occurrences in browser state.
+
+The future end-to-end bridge remains:
 
 ```text
-M3 final hostile
-HEAD d9c30a3c6148469b347754eab07dc2ade9be4c52
-CI   33951509083 / run #944 PASS
-
-D2 adaptive conversation surface
-HEAD 7b787766be83096e82eab1ac116b2704fae5f202
-CI   33958677991 / run #969 PASS
-
-D3 deterministic conversation adapter
-HEAD 59c70af6005ee87918db7fe152c043699726e78c
-CI   33963858340 / run #1009 PASS
-
-D4 contextual/deictic invocation
-HEAD e8ab022b9b00b958235ac7d09e757b45227a4356
-CI   33967719861 / run #1038 PASS
-
-D5 Insight presentation
-HEAD 0873153d8b390b99c5b3aa024e0735c82a89660d
-CI   33971615312 / run #1050 PASS
-
-D6 governed operation first hardened green
-HEAD 234eb159a5993db9b909880f58231a1e27cdefef
-CI   33975428193 / run #1061 PASS
-
-D6 owner-hardened green
-HEAD 929c5ad7a056ff172a915e5070e7d72c936e692d
-CI   33986493932 / run #1071 PASS
-
-M4 final hostile lifecycle
-HEAD 1b8ae1a3d953d85dcc14d513e512428d1f268c8d
-CI   33990483780 / run #1087 PASS
-Quality / Mobile / Chromium / frozen Timeline Firefox / Frontend CI Gate PASS
+canonical temporal sources
+→ backend/application temporal range query
+→ normalized Timeline projection
+→ existing Timeline engine
 ```
 
-Detailed closure authority:
+## 4. Validation rule
+
+Live validation authority is the current GitHub Actions state for the exact candidate HEAD. Historical run IDs in dated checkpoint documents are evidence only and must not be promoted to current truth after branch reconciliation.
+
+The pre-closure technical checkpoint demonstrated that the merged route set passes frontend contract drift, lint, typecheck, architecture and generated-source checks after the real route-tree regeneration. Final review must use the CI result attached to the final pre-PR cleanup candidate.
+
+## 5. Current read order
+
+For current work/review read:
+
+1. `docs/frontend/README.md`
+2. `docs/frontend/home/current-checkpoint.md`
+3. `docs/frontend/home/home-structural-contract.md`
+4. `docs/frontend/home/temporal-frontend-roadmap.md`
+5. `docs/frontend/home/temporal-f0-contract.md`
+6. `docs/frontend/home/timeline-t1-frozen-contract.md`
+7. `docs/frontend/home/temporal-create-c1-manual-acceptance.md`
+8. `docs/frontend/home/world-focus-architecture.md`
+9. `docs/frontend/home/world-focus-frontend-roadmap.md`
+10. `docs/frontend/open-decisions.md`
+11. `docs/frontend/ui-registry.md`
+12. current implementation/tests under `apps/web/` and shared packages.
+
+For historical workstream context use `docs/archive/branches/2026-09-feature-home-timeline.md` and dated evidence documents only.
+
+## 6. Immediate next action
+
+Do not start a new feature from this checkpoint.
+
+Sequence:
 
 ```text
-world-focus-d6-governed-operation-review.md
-world-focus-m4-final-hostile-closure-review.md
+final branch CI
+→ editor/reviewer inspection
+→ fix only concrete review findings if any
+→ explicit user authorization for PR
+→ PR to main
 ```
 
-## 4. Closed M4 result
-
-World Focus now has a bounded pre-backend DANTE path:
-
-```text
-quiet/global or explicit contextual invoke
--> D3 mounted deterministic conversation
--> D4 bounded contextual ownership
--> D5 standalone validated Insight
--> D6 Proposal
--> required blocking Confirmation
--> local Decision
--> truthful local Receipt
-```
-
-This path does **not** collapse frontend state into backend authority:
-
-```text
-selected/contextual World state != authorization
-conversation message != Insight
-assistant prose != validated Insight
-Insight != Proposal
-Proposal != Decision
-Decision != effect
-confirmed != executed
-Receipt != canonical/provider/runtime completion
-```
-
-The final hostile pass found and fixed three real owner-boundary leaks:
-
-```text
-D5 -> D6 arbitrary same-generation Insight injection
-D3 -> D5 arbitrary same-generation assistant-message object injection
-D4 -> D3 arbitrary same-generation context-reference substitution
-```
-
-All three were closed by deriving semantic source from the existing owner rather than trusting the caller.
-
-## 5. Permanent non-collapses
-
-```text
-World != Domain owner
-World relevance != authorization
-projection != canonical truth
-reference exists != payload available != current != disclosable != fresh
-Evidence != Provenance != integrity attestation
-AI output != fact
-Comparison != Decision
-client composition config != canonical Domain state
-presentation geometry != conversation identity
-route presentation != automatically blocking interaction
-context/selection != authorization
-context reference != canonical truth
-mounted frontend transcript != durable DANTE Run
-cancelled/aborted request != semantic success
-conversation message != Insight
-assistant prose != validated Insight
-Insight != Proposal != Decision != effect
-confirmed != executed
-Receipt != canonical/provider/runtime completion
-```
-
-## 6. Immediate next gate — integration before M5
-
-M5 is **NOT STARTED** and must not start on the long-lived divergent `feature/home-react` branch.
-
-Next sequence:
-
-```text
-freeze exact M4 documentation closure SHA
--> fetch current protected main
--> inspect divergence and current authorities
--> reconcile main INTO feature/home-react
--> resolve conflicts by semantic/ownership authority
--> full repository QA
--> documentation lifecycle cleanup
--> PR to protected main
--> merge commit only
--> protected-main readback
--> archive/delete feature/home-react only after verified integration
--> fresh bounded M5 branch from integrated main
-```
-
-No main write, merge, rebase, squash or force-push is authorized by this checkpoint alone. A separate exact integration gate is required.
-
-## 7. Visual sequence and truth
-
-```text
-M4 complete -> structural visual check only
-M5 complete -> serious product/visual review
-M6 -> visual/responsive/motion/a11y/performance refinement
-M7 -> pre-backend frontend freeze
-```
-
-Automated structural/browser/a11y validation is green.
-
-Human/manual visual acceptance remains **NOT PERFORMED**.
-
-## 8. Operational stop lines
-
-```text
-NO M5 implementation before main reconciliation
-NO second DANTE surface/conversation/operation state engine
-NO AppShell/GlobalTopbar ownership rewrite by convenience
-NO WF0/WF-G3 macro geometry rewrite
-NO localStorage fake persistence
-NO backend/API/DB/Alembic/AuthZ/provider/LLM before sequence permits it
-NO arbitrary DOM/component payload serialization as DANTE context
-NO Timeline/Access/Auth collateral work
-NO real effect execution
-NO claim of human visual acceptance from automated green
-NO main/rebase/force-push without a separately approved gate
-```
+Stop before PR creation unless the user explicitly authorizes it.

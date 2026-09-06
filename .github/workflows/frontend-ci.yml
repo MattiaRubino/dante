@@ -7,8 +7,6 @@ on:
   push:
     branches:
       - main
-      - feature/home-react
-      - feature/home-timeline
 
 permissions: {}
 
@@ -37,31 +35,25 @@ jobs:
           cache: true
           install: false
 
+      - name: Install canonical uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          working-directory: apps/backend
+          checksum: 68a509da24b06b4223a1c0175fb5eb5bc79342b76cbeff0cfe51ac3f5b17b6b2
+          enable-cache: false
+
+      - name: Install project Python
+        working-directory: apps/backend
+        run: uv python install
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Frontend contract drift check
-        shell: bash
-        run: |
-          python3 tests/prototypes/frontend-preprod-contracts.py
-          python3 tests/prototypes/world-focus-preprod-contracts.py
+        run: python3 tests/prototypes/frontend-preprod-contracts.py
 
       - name: Format check
-        if: ${{ github.ref != 'refs/heads/feature/home-react' && github.ref != 'refs/heads/feature/home-timeline' }}
         run: pnpm format:check
-
-      - name: Format check for active Home workstreams
-        if: ${{ github.ref == 'refs/heads/feature/home-react' || github.ref == 'refs/heads/feature/home-timeline' }}
-        shell: bash
-        run: |
-          mapfile -d '' files < <(
-            git diff-tree --no-commit-id --name-only -z -r HEAD -- \
-              '*.ts' '*.tsx' '*.js' '*.jsx' '*.css' '*.scss' '*.json' \
-              '*.md' '*.yml' '*.yaml' '*.html'
-          )
-          if ((${#files[@]} > 0)); then
-            pnpm exec prettier --check "${files[@]}"
-          fi
 
       - name: Lint
         run: pnpm lint

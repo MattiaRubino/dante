@@ -87,9 +87,13 @@ describe('HomePage M1 visual materialization', () => {
     const upperWorkspace = container.querySelector(
       '[data-home-layout="upper-workspace"]',
     );
-    const todayWorkspace = container.querySelector('[data-home-layout="today"]');
+    const todayWorkspace = container.querySelector(
+      '[data-home-layout="today"]',
+    );
     const dayContext = container.querySelector('.home-day-strip');
-    const aiSurface = container.querySelector('[data-home-region="ai-surface"]');
+    const aiSurface = container.querySelector(
+      '[data-home-region="ai-surface"]',
+    );
     const orientation = container.querySelector(
       '[data-home-region="orientation"]',
     );
@@ -241,7 +245,7 @@ describe('HomePage M1 visual materialization', () => {
       stageScope.getByRole('button', { name: 'Proiezione successiva' }),
     );
     expect(stage?.getAttribute('data-home-stage-mode')).toBe('signals');
-    expect(stageScope.getByRole('region', { name: 'Segnali' })).toBeTruthy();
+    expect(stageScope.getByRole('region', { name: 'Sintesi' })).toBeTruthy();
     expect(stageScope.getByText('FOCUS')).toBeTruthy();
     expect(stageScope.getByText('SONNO')).toBeTruthy();
     expect(stageScope.getByText('SPESA')).toBeTruthy();

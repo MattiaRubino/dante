@@ -157,6 +157,7 @@ test('split and merge remain reversible without mutating group order', async ({
     chips.evaluateAll((elements) =>
       elements.map((element) => element.getAttribute('data-group-id')),
     );
+
   await expect(chips).toHaveCount(6);
   const initialOrder = await readOrder();
 

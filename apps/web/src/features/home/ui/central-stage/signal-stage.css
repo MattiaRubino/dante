@@ -1,4 +1,4 @@
-.home-signal-stage {
+.home-stats-stage {
   position: absolute;
   z-index: 24;
   inset: 0;
@@ -9,7 +9,7 @@
   pointer-events: none;
 }
 
-.home-signal-track {
+.home-stats-track {
   display: grid;
   width: 100%;
   height: 100%;
@@ -133,14 +133,14 @@
   white-space: nowrap;
 }
 
-.home-signal-stage:hover .home-world-arrow {
+.home-stats-stage:hover .home-world-arrow {
   opacity: 0.62;
 }
 
 @media (min-width: 901px) {
   .home-m1[data-home-ai-state='collapsed']
     .home-central-stage
-    .home-signal-track {
+    .home-stats-track {
     gap: clamp(54px, 5.5vw, 104px);
     padding: 2px clamp(26px, 3.1vw, 54px) 0;
   }
@@ -175,7 +175,8 @@
 
   .home-m1[data-home-ai-state='collapsed']
     .home-central-stage
-    .home-synthesis-bars i {
+    .home-synthesis-bars
+    i {
     width: 23px;
     max-height: 102px;
   }
@@ -189,7 +190,8 @@
 
   .home-m1[data-home-ai-state='collapsed']
     .home-central-stage
-    .home-synthesis-bars-spend i {
+    .home-synthesis-bars-spend
+    i {
     width: 24px;
   }
 
@@ -210,7 +212,7 @@
 }
 
 @media (max-width: 1240px) {
-  .home-signal-track {
+  .home-stats-track {
     gap: clamp(20px, 2.8vw, 38px);
     padding-inline: clamp(18px, 2.4vw, 34px);
   }
@@ -243,12 +245,12 @@
 }
 
 @media (max-width: 900px) {
-  .home-signal-stage {
+  .home-stats-stage {
     overflow-x: auto;
     pointer-events: auto;
   }
 
-  .home-signal-track {
+  .home-stats-track {
     width: max(620px, 100%);
     gap: 26px;
     padding-inline: 16px;
