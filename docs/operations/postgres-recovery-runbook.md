@@ -1,18 +1,19 @@
 # DANTE — PostgreSQL Local Recovery Operator Runbook
 
-- **Status:** CURRENT / DATABASE-LOCAL CP07 PASS / APPLICATION+EMAIL REOPEN CP08 PASS
+- **Status:** CURRENT / DATABASE-LOCAL CP07 PASS / APPLICATION+EMAIL REOPEN CP08 PASS / PV-02 CANDIDATE PENDING
 - **Scope:** whole local PostgreSQL disaster recovery and semantic acceptance
 - **Remote backup provider:** TBD / NOT ACTIVATED
 - **Production/cloud recovery:** NOT CLAIMED
 - **Canonical database:** PostgreSQL 18.6
 - **Current protected-main Alembic head:** `20260904_17`
+- **Current branch PV-02 candidate head:** `20260906_18`
 - **Access integration merge:** `5f76ec54ad78542f137e8730e904f805d9e59e56`
 - **Recovery↔Email hardening merge:** `c67a18c24a6cf22b003ffd2c14243af53fec5077`
 - **Historical accepted CP07 implementation proof HEAD:** `81639c61478b476c995652d0060dde8f53aef089`
 - **Accepted CP08 proof HEAD:** `1a5a7f1fbbdc1e5723d58fa90721a8693cce49e9`
 - **Whole-rehearsal harness:** `infra/local/postgres/recovery/cp07-whole-recovery-rehearsal.sh`
 
-> This runbook is deliberately provider-neutral. It describes the DANTE LOCAL recovery contract owned by protected `main`. The 2026-09-04 CP07 run remains valid for the PostgreSQL/database-local and MaterialState scope it directly executed. CP08 later closed the separate Email/application reopen evidence gap forward through PR #55; the CP07 record itself is not rewritten.
+> This runbook is deliberately provider-neutral. The 2026-09-04 CP07 and CP08 evidence remains accepted for the protected-main contract it actually executed and is not rewritten. On `feature/pre-vertical-foundation`, the versioned whole-rehearsal harness has been advanced to the PV-02 candidate contract `20260906_18 / 89|5|18|77|173|91|272|0|0|0`; that candidate recovery path is **not** considered PASS until the harness is executed successfully on the final branch proof head.
 
 ## 1. Operator objective
 
@@ -109,6 +110,8 @@ The CP07 destructive topology is non-interactive because every mutation target i
 
 The versioned recovery/reopen implementation on protected `main` must also perform the Email reconciliation described in sections 7–8 before outbound workers resume. CP08 directly exercised that stronger path on proof head `1a5a7f1fbbdc1e5723d58fa90721a8693cce49e9`.
 
+On the active PV-02 branch the same executable runner must additionally accept the branch's current Alembic/topology contract. A successful historical CP07 run on `20260904_17` does not by itself prove the new `20260906_18` schema.
+
 ## 4. Restore versus PITR decision
 
 Use exact backup restore only when the accepted recovery point is the backup endpoint.
@@ -169,6 +172,25 @@ extensions       postgis 3.6.4
                  pg_stat_statements 1.12
 ```
 
+PV-02 branch-local candidate expected by the current versioned runner:
+
+```text
+PostgreSQL       18.6
+Alembic          20260906_18
+topology         89|5|18|77|173|91|272|0|0|0
+owners           dante_owner
+roles            dante_owner / dante_migrator / dante_runtime
+runtime Alembic  denied
+retirement ACL   SELECT only
+extensions       postgis 3.6.4
+                 vector 0.8.6
+                 pg_trgm 1.6
+                 unaccent 1.1
+                 pg_stat_statements 1.12
+```
+
+The candidate numbers are executable expectations, **not acceptance evidence**. Until a successful exact-head rehearsal/readback exists, PV-02 recovery acceptance remains pending.
+
 Any mismatch blocks reopen.
 
 Historical protected-main Recovery-only contract before PR #52:
@@ -178,7 +200,7 @@ Alembic          20260830_09
 topology         69|5|15|76|97|69|123|0|0|0
 ```
 
-That historical contract must not be used to accept a restore of the current enriched protected-main database.
+That historical contract must not be used to accept a restore of either the current protected-main enriched database or the newer branch candidate.
 
 ## 7. Semantic and external-effect reconciliation
 
@@ -259,6 +281,13 @@ APPLICATION / EMAIL REOPEN = PASS
 
 by proving that sendable Email state physically resurrected at the PITR target, workers remained stopped, reconciliation quarantined the restored work, sensitive material was wiped, a second reconciliation was idempotent and claimable Email work after reconciliation was `0`.
 
+The PV-02 branch candidate has **not** inherited those PASS labels merely by updating the expected head/topology. Its current disposition is:
+
+```text
+PV-02 DATABASE LOCAL REOPEN = PENDING
+PV-02 APPLICATION / EMAIL REOPEN = PENDING WHEN/IF REQUIRED BY PV-04
+```
+
 The current project still does **not** claim:
 
 ```text
@@ -332,7 +361,7 @@ non-interference result
 remote-provider status
 ```
 
-The CP07 JSON is evidence for what CP07 executed; it is not retroactively treated as CP08 evidence. CP08 acceptance is bound to its own exact proof head and recorded real rehearsal result.
+A new run on the PV-02 candidate must produce a new local evidence report bound to its exact final proof head. The historical CP07 JSON remains evidence for what the historical CP07 executed; it is not rewritten into PV-02 evidence. CP08 acceptance is similarly bound to its own exact proof head and recorded real rehearsal result.
 
 These are local observations, never invented production RPO/RTO targets.
 
@@ -473,7 +502,7 @@ Provider-specific implementation, costs, credentials, production RPO/RTO and pro
 
 The Recovery workstream previously proved the branch-agnostic/idempotent bootstrap and runner on its own exact pushed Recovery-only implementation heads, including fresh-clone secret bootstrap, image build, exact branch/upstream gating, PITR, anti-resurrection and cleanup.
 
-Those older measurements remain historical evidence in Git/archive records. They must not override the current protected-main contract or the later CP08 application/Email reopen evidence.
+Those older measurements remain historical evidence in Git/archive records. They must not override the current protected-main contract, the later CP08 application/Email reopen evidence, or the explicitly unaccepted PV-02 candidate expectations.
 
 The permanent conclusion carried forward is:
 
