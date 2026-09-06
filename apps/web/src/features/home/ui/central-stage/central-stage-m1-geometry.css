@@ -85,7 +85,10 @@
   pointer-events: auto;
 }
 
-.home-m1 .home-upper-workspace .home-central-stage .home-stage-mode-arrow {
+.home-m1
+  .home-upper-workspace
+  .home-central-stage
+  .home-stage-mode-arrow {
   display: grid;
   width: 30px;
   height: 30px;
@@ -114,7 +117,10 @@
   transform: translateY(-1px);
 }
 
-.home-m1 .home-upper-workspace .home-central-stage .home-stage-surface-label {
+.home-m1
+  .home-upper-workspace
+  .home-central-stage
+  .home-stage-surface-label {
   display: grid;
   width: auto;
   min-width: 92px;
@@ -139,7 +145,7 @@
  * No mode is allowed to position itself against upper-workspace coordinates.
  */
 .home-m1 .home-upper-workspace .home-central-stage .home-world-scene,
-.home-m1 .home-upper-workspace .home-central-stage .home-stats-stage {
+.home-m1 .home-upper-workspace .home-central-stage .home-signal-stage {
   position: absolute;
   top: var(--home-stage-projection-top);
   right: var(--home-stage-projection-right);
@@ -153,7 +159,11 @@
 }
 
 /* Worlds keep the accepted prototype skin, only inside the safe viewport. */
-.home-m1 .home-upper-workspace .home-central-stage .home-world .stellar-node {
+.home-m1
+  .home-upper-workspace
+  .home-central-stage
+  .home-world
+  .stellar-node {
   transform: translate(-50%, -50%) scale(1.18);
 }
 
@@ -163,11 +173,17 @@
   transform: translateY(-50%);
 }
 
-.home-m1 .home-upper-workspace .home-central-stage .home-world-arrow-prev {
+.home-m1
+  .home-upper-workspace
+  .home-central-stage
+  .home-world-arrow-prev {
   left: 1.5%;
 }
 
-.home-m1 .home-upper-workspace .home-central-stage .home-world-arrow-next {
+.home-m1
+  .home-upper-workspace
+  .home-central-stage
+  .home-world-arrow-next {
   right: 1.5%;
 }
 
@@ -218,13 +234,20 @@
     --home-stage-projection-left: 1.5%;
   }
 
-  .home-m1 .home-upper-workspace .home-central-stage .home-world .stellar-node {
+  .home-m1
+    .home-upper-workspace
+    .home-central-stage
+    .home-world
+    .stellar-node {
     transform: translate(-50%, -50%) scale(1.1);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .home-m1 .home-upper-workspace .home-central-stage .home-stage-mode-arrow {
+  .home-m1
+    .home-upper-workspace
+    .home-central-stage
+    .home-stage-mode-arrow {
     transition: none;
   }
 }
