@@ -10,7 +10,6 @@ from uuid import UUID
 
 import psycopg
 import pytest
-
 from tooling.pre_vertical_foundation.scale import ScaleProfile, build_scale_plan
 
 pytestmark = pytest.mark.postgres
