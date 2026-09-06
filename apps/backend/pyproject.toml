@@ -174,6 +174,7 @@ warn_required_dynamic_aliases = true
 [tool.pytest]
 minversion = "9.1"
 testpaths = ["tests"]
+pythonpath = ["."]
 addopts = [
     "-ra",
     "--import-mode=importlib",
