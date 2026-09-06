@@ -87,6 +87,7 @@ describe('Web Auth remote transport', () => {
         'application/json, application/problem+json',
       );
       expect(headers.get('X-Dante-Client')).toBe('web');
+      expect(headers.get('X-Dante-Time-Zone')).toBeTruthy();
       expect(headers.get('Content-Type')).toBe('application/json');
       expect(headers.has('X-Dante-CSRF')).toBe(false);
     }
