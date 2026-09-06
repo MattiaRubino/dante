@@ -47,7 +47,9 @@ def test_scale_profiles_are_stable_prefixes_with_unique_uuidv7_identity() -> Non
 
     assert len(set(account_refs)) == len(account_refs)
     assert len(set(self_person_refs)) == len(self_person_refs)
-    assert len(set(account_refs + self_person_refs)) == len(account_refs) + len(self_person_refs)
+    assert len(set(account_refs + self_person_refs)) == (
+        len(account_refs) + len(self_person_refs)
+    )
     assert len(set(emails)) == len(emails)
     assert all(ref.version == 7 for ref in account_refs + self_person_refs)
 
