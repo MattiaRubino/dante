@@ -1,7 +1,8 @@
 # Authenticated DANTE Application Context
 
-- **Status:** CURRENT / PRE-VERTICAL FOUNDATION CANDIDATE / PV-02 CLOSED
+- **Status:** CURRENT / PROTECTED-MAIN INTEGRATED / PV-02 CLOSED
 - **Introduced by:** `20260906_18`
+- **Integrated by:** PR #66 / merge `1ecd58145860aebfaaa3dc1bd356b90f7a8eb19b`
 - **Scope:** authenticated Account → DANTE-facing self context and user/default timezone policy
 - **Closure record:** `../workstreams/pre-vertical-foundation-closure-2026-09-06.md`
 
@@ -143,7 +144,7 @@ This dependency is foundation only. It does not add product endpoints.
 
 ## 8. Persistence delta
 
-Pre-vertical candidate topology after `20260906_18`:
+Current protected-main topology after `20260906_18`:
 
 ```text
 PostgreSQL          18.6
@@ -164,7 +165,7 @@ partitioned tables      0
 RLS policies            0
 ```
 
-Protected-main `20260904_17 / 88|5|16|76|172|89|270|0|0|0` remains protected-main truth until the normal branch integration completes.
+The former protected-main baseline `20260904_17 / 88|5|16|76|172|89|270|0|0|0` is historical integration context. `20260906_18` is now protected-main truth through PR #66.
 
 ### 8.1 Truthful downgrade behavior
 
@@ -186,7 +187,7 @@ The ordinary fresh-schema `head → base → head` proof remains valid because n
 
 ## 9. Acceptance boundary
 
-PV-02 implementation is closed. Whole-branch local acceptance under PV-03 has also completed successfully for the current implementation candidate:
+PV-02 and the enclosing pre-vertical closure are complete:
 
 ```text
 backend quality / strict typing                    PASS
@@ -195,22 +196,16 @@ real PostgreSQL 18.6 acceptance                    PASS
 frontend format/lint/typecheck/architecture        PASS
 frontend generated/unit/build/E2E/mobile           PASS
 exact changed-path QA                              PASS
+exact-head LOCAL Recovery rehearsal                PASS
+Backend CI Gate                                    PASS
+Dependency Review                                  PASS
+Frontend CI Gate                                   PASS
+protected-main merge/readback                      PASS
 ```
 
-This still does **not** claim protected-main acceptance. The remaining PV-03 C integration obligations are:
+The final candidate was `21353469464f1371f9913dc78933f4ee42698f33`; PR #66 merged it with a true merge commit at `1ecd58145860aebfaaa3dc1bd356b90f7a8eb19b`. The retired feature branch is no longer an active development base. There is no PV-04.
 
-```text
-final current-truth documentation cleanup
-exact-head Recovery rehearsal against 20260906_18
-re-read/fetch then-current protected main
-reconcile only if main moved
-required PR checks
-merge commit only
-protected-main parentage/tree/readback
-branch retirement after acceptance
-```
-
-Until those complete, `20260906_18` is accepted local candidate truth rather than protected-main truth. There is no PV-04.
+The final Recovery rehearsal established database-local reopen on the exact candidate head. Historical CP08 application/Email reopen evidence remains scoped to the historical CP08 execution and was not falsely relabeled as a new run.
 
 ## 10. Explicit non-goals
 

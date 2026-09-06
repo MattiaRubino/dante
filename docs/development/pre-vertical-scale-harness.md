@@ -1,8 +1,9 @@
 # Pre-Vertical Scale Harness
 
-- **Status:** CURRENT / PRE-VERTICAL FOUNDATION / PV-03 A CLOSED / PASS
+- **Status:** CURRENT / PRE-VERTICAL FOUNDATION / PV-03 A CLOSED / INTEGRATED
 - **Scope:** deterministic product-independent scale/readiness fixtures plus bounded PostgreSQL convergence proof
 - **Closure record:** `../workstreams/pre-vertical-foundation-closure-2026-09-06.md`
+- **Protected-main integration:** PR #66 / merge `1ecd58145860aebfaaa3dc1bd356b90f7a8eb19b`
 
 ## Purpose
 
@@ -93,6 +94,10 @@ Observed acceptance:
 ```text
 targeted real PostgreSQL scale/convergence test    PASS — 1 passed
 full PostgreSQL 18.6 marked suite                  PASS — 165 passed
+whole-branch local QA                              PASS
+exact-head LOCAL Recovery rehearsal                PASS
+PR #66 required CI gates                           PASS
+protected-main integration                         PASS
 ```
 
 ## Explicit exclusions
@@ -118,18 +123,14 @@ No new Alembic/schema, Access/Auth, CP1–CP6, frontend, Recovery, Email, Observ
 
 ## Relationship to whole-branch QA
 
-PV-03 A Scale Harness implementation and targeted executable proof are closed. PV-03 B whole-branch local QA is also closed and green across backend/frontend/PostgreSQL acceptance.
-
-The only remaining pre-vertical lifecycle is PV-03 C:
+PV-03 A Scale Harness implementation and targeted executable proof are closed. PV-03 B whole-branch QA and PV-03 C protected-main integration are also closed.
 
 ```text
-final documentation cleanup
-→ exact-head Recovery rehearsal
-→ protected-main PR gates
-→ merge commit + readback
-→ branch retirement
+PV-03 A Scale Harness                    CLOSED / PASS
+PV-03 B Whole-Branch QA                  CLOSED / PASS
+PV-03 C Recovery + PR + merge/readback   CLOSED / PASS
 ```
 
 There is no PV-04.
 
-This file remains a durable development/testing reference after integration; it is not an active roadmap.
+The final pre-vertical candidate was `21353469464f1371f9913dc78933f4ee42698f33`; it was integrated through PR #66. This file remains a durable development/testing reference, not an active roadmap. New product work starts from then-current protected `main` under a new bounded vertical scope.

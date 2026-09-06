@@ -1,15 +1,17 @@
 # DANTE Pre-Vertical Foundation — Closure Checkpoint
 
 - **Date:** 2026-09-06
-- **Branch:** `feature/pre-vertical-foundation`
-- **Status:** IMPLEMENTATION + LOCAL WHOLE-BRANCH QA CLOSED / PROTECTED-MAIN INTEGRATION PENDING
-- **Protected-main baseline:** `5258452d7bd4e7a2797922b00035a9068ba41167`
-- **Validated implementation/QA head:** `5a820b47f3c1ad59307ee16797e19655f96b1894`
+- **Branch:** `feature/pre-vertical-foundation` — RETIRED
+- **Status:** CLOSED / PROTECTED-MAIN INTEGRATED
+- **Protected-main baseline before integration:** `5258452d7bd4e7a2797922b00035a9068ba41167`
+- **Final exact-head candidate:** `21353469464f1371f9913dc78933f4ee42698f33`
+- **Integration PR:** #66
+- **Integration merge:** `1ecd58145860aebfaaa3dc1bd356b90f7a8eb19b`
 - **PostgreSQL:** 18.6
-- **Candidate Alembic:** `20260906_18`
-- **Candidate topology:** `89|5|18|77|173|91|272|0|0|0`
+- **Current Alembic:** `20260906_18`
+- **Current topology:** `89|5|18|77|173|91|272|0|0|0`
 
-This is the durable closure/integration record for the pre-vertical foundation. The former active roadmap is retired when this record lands. The branch has exactly three milestones; QA findings were fixed inside those milestones and did not create a fourth milestone.
+This is the durable closure record for the pre-vertical foundation. The former active roadmap is retired. The work had exactly three milestones; QA findings were fixed inside those milestones and did not create a fourth milestone.
 
 ```text
 PV-01 — Identity / Clock / Time
@@ -17,11 +19,11 @@ PV-02 — User Context / Dogfood / Personas
 PV-03 — Scale Harness / QA / Closure
 ```
 
-The commit containing this document is the documentation-cleanup candidate. The final Recovery rehearsal must bind its evidence to the exact pushed branch HEAD after this cleanup. Until that rehearsal, required PR gates and protected-main merge are complete, the candidate remains unmerged branch truth.
+There is no PV-04.
 
 ## 1. Baseline and integration context
 
-The branch was created from protected `main@5258452d7bd4e7a2797922b00035a9068ba41167`. That baseline already contains the accepted platform history relevant to this work, including:
+The branch was created from protected `main@5258452d7bd4e7a2797922b00035a9068ba41167`. That baseline already contained the accepted platform history relevant to this work, including:
 
 - Access/Auth M1–M5 and Shared Email Platform integration;
 - PostgreSQL Recovery and CP07/CP08 recovery/reopen implementation;
@@ -29,7 +31,7 @@ The branch was created from protected `main@5258452d7bd4e7a2797922b00035a9068ba4
 - deterministic AI foundation integrated through PR #63, merge `431fb34029baeacc9ef9f721e9626b39ca10dd39`;
 - Home/World Focus reconciliation integrated through PR #65, merge `5258452d7bd4e7a2797922b00035a9068ba41167`.
 
-The pre-vertical branch is additive over that baseline. It does not reopen CP1–CP6, Access/Auth, Recovery, Email, Observability, Intelligence/Search or the accepted frontend foundations.
+The pre-vertical branch was additive over that baseline. It did not reopen CP1–CP6, Access/Auth, Recovery, Email, Observability, Intelligence/Search or the accepted frontend foundations.
 
 ## 2. PV-01 — Identity / Clock / Time
 
@@ -138,11 +140,11 @@ The cardinalities are fixture sizes, not throughput, concurrency, latency, capac
 
 ## 5. PV-03 B — Whole-Branch QA
 
-**Disposition: CLOSED / LOCAL PASS**
+**Disposition: CLOSED / PASS**
 
 ### Backend
 
-Canonical local whole-branch validation on the candidate produced:
+Canonical local whole-branch validation on the final implementation candidate produced:
 
 ```text
 uv lock / locked environment                  PASS
@@ -156,7 +158,7 @@ canonical PostgreSQL 18.6 image               PASS
 real PostgreSQL acceptance                    PASS — 165 passed
 ```
 
-The PostgreSQL lane covers the repository's real database acceptance harness, including migrations/current catalog/Dictionary and the branch's new account-context/scale acceptance. CP1–CP6 migration history was not rewritten.
+The PostgreSQL lane covered migrations/current catalog/Dictionary and the branch's account-context/scale acceptance. CP1–CP6 migration history was not rewritten.
 
 ### Frontend
 
@@ -179,70 +181,75 @@ Expo mobile compatibility                      PASS
 Android Hermes bundle smoke                    PASS
 ```
 
-The final QA also exposed two repository-wide Prettier drifts and a real normal-Vite LOCAL development topology gap. Those findings were fixed inside PV-03: normal `@dante/web dev` now owns `localhost:5173` and proxies `/api/v1` to the canonical local backend, with LOCAL Auth origin examples aligned to the same origin. The final format/lint/typecheck/build check passed on that fix.
+QA also exposed two repository-wide Prettier drifts and a normal-Vite LOCAL development topology gap. Those findings were fixed inside PV-03: normal `@dante/web dev` owns `localhost:5173` and proxies `/api/v1` to the canonical local backend, with LOCAL Auth origin examples aligned to the same origin.
 
-### Exact scope
+## 6. Database result
 
-The QA-fix commits were checked against explicit pre-scopes before remote writes. No force push or direct protected-main write was used. The last implementation fix at `5a820b47f3c1ad59307ee16797e19655f96b1894` changed exactly its four approved paths.
-
-## 6. Database candidate
-
-Protected-main baseline remains:
-
-```text
-Alembic       20260904_17
-topology      88|5|16|76|172|89|270|0|0|0
-```
-
-Pre-vertical candidate is:
+Current protected-main truth after PR #66:
 
 ```text
 Alembic       20260906_18
 topology      89|5|18|77|173|91|272|0|0|0
 ```
 
-The delta is one Account application-context table, two routines, one trigger, one PK-backed index, two foreign keys and two CHECK constraints. There are no new enums/domains, sequences, materialized views, partitioned tables or RLS policies.
-
-Real PostgreSQL acceptance is locally green. Protected-main database truth does not advance to `20260906_18` until the branch is merged.
+The delta over the former `20260904_17 / 88|5|16|76|172|89|270|0|0|0` baseline is one Account application-context table, two routines, one trigger, one PK-backed index, two foreign keys and two CHECK constraints. There are no new enums/domains, sequences, materialized views, partitioned tables or RLS policies.
 
 ## 7. Recovery disposition
 
-Historical CP07 and CP08 evidence remains accepted for the exact heads/contracts it executed. It is not silently widened to this newer schema.
+Historical CP07 and CP08 evidence remains accepted for the exact heads/contracts it executed. It is not silently widened.
 
-For this candidate:
+The final pre-vertical candidate was separately exercised on exact clean/pushed HEAD `21353469464f1371f9913dc78933f4ee42698f33`:
 
 ```text
-pre-vertical exact-head Recovery rehearsal     PENDING
+PostgreSQL 18.6                                 PASS
+Alembic 20260906_18                             PASS
+topology 89|5|18|77|173|91|272|0|0|0           PASS
+observer provisioning / least privilege         PASS
+deterministic PITR A-present / B-absent         PASS
+old protected payload physical resurrection     PROVEN
+anti-resurrection reconciliation                PASS
+payload reinsertion after retirement            REJECTED
+database-local reopen                           PASS
+ordinary LOCAL resource non-interference        PASS
+disposable cleanup                              PASS
 remote backup provider                          NOT ACTIVATED
 production/cloud recovery                       NOT CLAIMED
 ```
 
-The versioned runner has been updated for `20260906_18 / 89|5|18|77|173|91|272|0|0|0`. The next mandatory closure action is to execute it on the exact clean/pushed documentation-closure HEAD and retain the ignored local report bound to that SHA.
+This final rehearsal proved database-local reopen. Historical CP08 application/Email reopen evidence remains historical direct evidence and was not falsely relabeled as newly executed by the final CP07-style rehearsal.
 
 ## 8. PV-03 C — Protected-main closure
 
-**Disposition: IN PROGRESS / ONLY INTEGRATION LIFECYCLE REMAINS**
+**Disposition: CLOSED / PASS**
 
-Required order:
+Executed order:
 
 ```text
-final current-truth documentation cleanup
-→ clean worktree + pushed exact candidate HEAD
-→ exact-head Recovery rehearsal
-→ reread/fetch protected main
-→ reconcile only if main moved
-→ bounded PR to main
-→ Backend CI Gate PASS
-→ Dependency Review PASS
-→ Frontend CI Gate PASS
-→ branch remains up to date
-→ owner-authorized merge commit only
-→ protected-main parentage/tree/readback verification
-→ post-merge current-truth reconciliation if required
-→ retire feature/pre-vertical-foundation
+final current-truth documentation cleanup       PASS
+clean worktree + pushed exact candidate HEAD    PASS
+exact-head Recovery rehearsal                   PASS
+re-read/fetch protected main                    PASS
+main reconciliation                             NOT REQUIRED — main unchanged
+bounded PR #66                                  PASS
+Backend CI Gate                                 PASS
+Dependency Review                               PASS
+Frontend CI Gate                                PASS
+merge method                                    MERGE COMMIT
+protected-main merge                            1ecd58145860aebfaaa3dc1bd356b90f7a8eb19b
+parentage/tree/readback                         PASS
+feature/pre-vertical-foundation                 RETIRED
 ```
 
-No squash, rebase, force push or direct write to protected `main` is part of this integration path.
+Merge commit `1ecd58145860aebfaaa3dc1bd356b90f7a8eb19b` has the expected parents:
+
+```text
+5258452d7bd4e7a2797922b00035a9068ba41167
+21353469464f1371f9913dc78933f4ee42698f33
+```
+
+and the merged tree matches the final candidate tree.
+
+No squash, rebase, force push or direct rewrite of protected `main` was used.
 
 ## 9. Explicit non-goals retained
 
@@ -273,4 +280,4 @@ The live foundation contracts remain in:
 
 This file is the single retained pre-vertical closure record. Full chronology remains in Git/PR history rather than an active append-only workstream diary.
 
-After protected-main acceptance, new feature work must start from then-current `main` under a new bounded product-vertical scope. Do not continue development on this retired branch.
+New feature work must start from then-current protected `main` under a new bounded product-vertical scope. Do not continue development on the retired branch.

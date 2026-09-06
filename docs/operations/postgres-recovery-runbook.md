@@ -1,19 +1,19 @@
 # DANTE — PostgreSQL Local Recovery Operator Runbook
 
-- **Status:** CURRENT / HISTORICAL CP07 + CP08 PASS / PRE-VERTICAL EXACT-HEAD REHEARSAL PENDING
+- **Status:** CURRENT / HISTORICAL CP07 + CP08 PASS / PRE-VERTICAL EXACT-HEAD PASS
 - **Scope:** whole local PostgreSQL disaster recovery and semantic/application reopen acceptance
 - **Remote backup provider:** TBD / NOT ACTIVATED
 - **Production/cloud recovery:** NOT CLAIMED
 - **Canonical database:** PostgreSQL 18.6
-- **Protected-main Alembic head:** `20260904_17`
-- **Pre-vertical candidate head:** `20260906_18`
-- **Protected-main topology:** `88|5|16|76|172|89|270|0|0|0`
-- **Pre-vertical candidate topology:** `89|5|18|77|173|91|272|0|0|0`
+- **Protected-main Alembic head:** `20260906_18`
+- **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
+- **Pre-vertical exact-head Recovery proof:** `21353469464f1371f9913dc78933f4ee42698f33`
+- **Pre-vertical integration merge:** `1ecd58145860aebfaaa3dc1bd356b90f7a8eb19b` via PR #66
 - **Historical accepted CP07 proof HEAD:** `81639c61478b476c995652d0060dde8f53aef089`
 - **Historical accepted CP08 proof HEAD:** `1a5a7f1fbbdc1e5723d58fa90721a8693cce49e9`
 - **Whole-rehearsal harness:** `infra/local/postgres/recovery/cp07-whole-recovery-rehearsal.sh`
 
-The historical 2026-09-04 CP07 and CP08 results remain accepted for the exact contracts they executed. They are not widened automatically to `20260906_18`. The versioned whole-rehearsal runner is prepared for the pre-vertical candidate, but that candidate is not a Recovery PASS until the runner succeeds on the exact clean/pushed final candidate HEAD.
+The historical 2026-09-04 CP07 and CP08 results remain accepted for the exact contracts they executed. The pre-vertical database-local Recovery contract was separately re-executed and passed on exact candidate HEAD `21353469464f1371f9913dc78933f4ee42698f33` at `20260906_18 / 89|5|18|77|173|91|272|0|0|0`, then integrated through PR #66. That final rehearsal does not relabel historical CP08 application/Email reopen evidence as newly executed.
 
 ## 1. Operator objective
 
@@ -104,7 +104,7 @@ bash infra/local/postgres/recovery/cp07-whole-recovery-rehearsal.sh
 
 The whole runner invokes bootstrap automatically. It is branch-name agnostic, but fails closed unless the attached branch is clean and exactly aligned with its upstream.
 
-For the pre-vertical candidate, the runner must observe the exact final branch proof HEAD and `20260906_18 / 89|5|18|77|173|91|272|0|0|0`. Historical CP07 on `20260904_17` cannot substitute for that run.
+The current versioned runner expects `20260906_18 / 89|5|18|77|173|91|272|0|0|0`. Historical proof remains exact-head scoped; do not substitute an older run for a changed current contract.
 
 ## 4. Restore versus PITR decision
 
@@ -147,25 +147,7 @@ The isolated verification target uses `archive_mode=off` so a rehearsal cannot a
 
 ## 6. Structural and security acceptance
 
-Protected-main contract before pre-vertical integration:
-
-```text
-PostgreSQL       18.6
-Alembic          20260904_17
-topology         88|5|16|76|172|89|270|0|0|0
-owners           dante_owner
-roles            dante_owner / dante_migrator / dante_runtime / dante_observer
-runtime Alembic  denied
-observer         pg_read_all_stats only / no DANTE schema access
-retirement ACL   SELECT only
-extensions       postgis 3.6.4
-                 vector 0.8.6
-                 pg_trgm 1.6
-                 unaccent 1.1
-                 pg_stat_statements 1.12
-```
-
-Pre-vertical candidate expected by the versioned runner:
+Current protected-main contract:
 
 ```text
 PostgreSQL       18.6
@@ -183,7 +165,15 @@ extensions       postgis 3.6.4
                  pg_stat_statements 1.12
 ```
 
-The candidate numbers are executable expectations, not Recovery acceptance evidence. Any mismatch blocks reopen.
+Former protected-main contract before pre-vertical integration, retained as historical context only:
+
+```text
+PostgreSQL       18.6
+Alembic          20260904_17
+topology         88|5|16|76|172|89|270|0|0|0
+```
+
+Any mismatch against the current contract blocks reopen.
 
 Historical Recovery-only topology `20260830_09 / 69|5|15|76|97|69|123|0|0|0` is evidence only and must never be used to accept a restore of the current enriched database.
 
@@ -255,14 +245,26 @@ CP07 DATABASE LOCAL REOPEN        PASS for its exact historical contract
 CP08 APPLICATION / EMAIL REOPEN   PASS for its exact historical contract
 ```
 
-Pre-vertical candidate disposition before the final exact-head rehearsal:
+Final pre-vertical direct evidence:
 
 ```text
-PRE-VERTICAL DATABASE LOCAL REOPEN        PENDING EXACT-HEAD REHEARSAL
-PRE-VERTICAL APPLICATION / EMAIL REOPEN   PENDING EXACT-HEAD REHEARSAL
+proof HEAD                                    21353469464f1371f9913dc78933f4ee42698f33
+PostgreSQL                                    18.6
+Alembic                                       20260906_18
+topology                                      89|5|18|77|173|91|272|0|0|0
+PRE-VERTICAL DATABASE LOCAL REOPEN            PASS
+observer provisioning / least privilege       PASS
+deterministic PITR A-present / B-absent       PASS
+MaterialState anti-resurrection               PASS
+payload reinsertion after retirement          REJECTED
+ordinary LOCAL resource non-interference      PASS
+disposable cleanup                            PASS
+PRE-VERTICAL APPLICATION / EMAIL REOPEN       NOT RE-EXECUTED BY THIS RUN
 ```
 
-There is no PV-04. The applicable pre-vertical Recovery proof belongs to PV-03 C closure.
+The final run proved database-local reopen for the current contract. Application/Email reopen remains governed by the CP08 procedure and historical direct evidence until re-executed for a future scope that requires it.
+
+There is no PV-04. The applicable pre-vertical Recovery proof belonged to PV-03 C closure and is now complete.
 
 The project still does **not** claim:
 
@@ -324,7 +326,7 @@ non-interference result
 remote-provider status
 ```
 
-The pre-vertical closure run must create a new report bound to the exact final branch proof HEAD. Historical reports are never relabeled as new evidence.
+Historical reports are never relabeled as new evidence. The pre-vertical closure report is bound to exact candidate HEAD `21353469464f1371f9913dc78933f4ee42698f33`.
 
 These are local observations, not invented production RPO/RTO targets.
 
@@ -370,7 +372,7 @@ APPLICATION / EMAIL REOPEN                      PASS
 
 PR #55 merged the accepted CP08 implementation at `c67a18c24a6cf22b003ffd2c14243af53fec5077`.
 
-These historical results prove what their exact heads executed. They do not remove the need for the final pre-vertical exact-head rehearsal.
+These historical results prove what their exact heads executed. They are not silently widened to later contracts.
 
 ## 12. Cleanup
 
