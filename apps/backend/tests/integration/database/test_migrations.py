@@ -12,7 +12,8 @@ from alembic.script import ScriptDirectory
 
 pytestmark = pytest.mark.postgres
 
-_EXPECTED_HEAD = "20260904_17"
+_EXPECTED_HEAD = "20260906_18"
+_PRE_VERTICAL_BASE_HEAD = "20260904_17"
 _CP6_HEAD = "20260826_08"
 _RECOVERY_HEAD = "20260830_09"
 _ACCESS_HEAD = "20260904_16"
@@ -149,7 +150,7 @@ def test_recovery_history_remains_independently_reachable(
     assert _current_revisions(provisioned_database) == {_RECOVERY_HEAD}
 
 
-def test_existing_access_head_converges_forward_to_merge_head(
+def test_existing_access_head_converges_forward_to_current_head(
     provisioned_database: Any,
     alembic_config: Config,
 ) -> None:
@@ -160,7 +161,7 @@ def test_existing_access_head_converges_forward_to_merge_head(
     assert _current_revisions(provisioned_database) == {_EXPECTED_HEAD}
 
 
-def test_existing_recovery_head_converges_forward_to_merge_head(
+def test_existing_recovery_head_converges_forward_to_current_head(
     provisioned_database: Any,
     alembic_config: Config,
 ) -> None:
@@ -171,11 +172,22 @@ def test_existing_recovery_head_converges_forward_to_merge_head(
     assert _current_revisions(provisioned_database) == {_EXPECTED_HEAD}
 
 
-def test_existing_recovery_rows_survive_forward_convergence_to_merge_head(
+def test_existing_pre_vertical_base_converges_forward_to_current_head(
     provisioned_database: Any,
     alembic_config: Config,
 ) -> None:
-    """Prove Access/Email additions do not overwrite accepted Recovery-era rows."""
+    command.upgrade(alembic_config, _PRE_VERTICAL_BASE_HEAD)
+    assert _current_revisions(provisioned_database) == {_PRE_VERTICAL_BASE_HEAD}
+
+    command.upgrade(alembic_config, "head")
+    assert _current_revisions(provisioned_database) == {_EXPECTED_HEAD}
+
+
+def test_existing_recovery_rows_survive_forward_convergence_to_current_head(
+    provisioned_database: Any,
+    alembic_config: Config,
+) -> None:
+    """Prove later additions do not overwrite accepted Recovery-era rows."""
 
     command.upgrade(alembic_config, _RECOVERY_HEAD)
     assert _current_revisions(provisioned_database) == {_RECOVERY_HEAD}
