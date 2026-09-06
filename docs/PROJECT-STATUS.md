@@ -1,15 +1,15 @@
 # DANTE — Project Status
 
-- **Status:** CURRENT PROTECTED-MAIN TRUTH + PRE-VERTICAL FINAL INTEGRATION CANDIDATE
+- **Status:** CURRENT PROTECTED-MAIN TRUTH
 - **Last reconciled:** 2026-09-06
-- **Protected-main HEAD:** `5258452d7bd4e7a2797922b00035a9068ba41167`
+- **Pre-vertical integration merge:** `1ecd58145860aebfaaa3dc1bd356b90f7a8eb19b` via PR #66
 - **AI protected-main merge:** `431fb34029baeacc9ef9f721e9626b39ca10dd39` via PR #63
 - **Home/World Focus protected-main merge:** `5258452d7bd4e7a2797922b00035a9068ba41167` via PR #65
-- **Protected-main Alembic:** `20260904_17`
-- **Pre-vertical candidate Alembic:** `20260906_18`
+- **Protected-main Alembic:** `20260906_18`
+- **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Pre-vertical closure record:** `workstreams/pre-vertical-foundation-closure-2026-09-06.md`
 
-Protected `main` is the integration authority. The pre-vertical status below is final-candidate truth only until the required exact-head Recovery rehearsal, PR gates and protected-main merge complete.
+Protected `main` is the integration authority. The pre-vertical foundation is now protected-main truth through PR #66; the former feature branch is retired.
 
 ## 1. Current state
 
@@ -25,6 +25,7 @@ PostgreSQL Recovery                          CLOSED / INTEGRATED
 Platform Observability                       CLOSED / INTEGRATED
 AI deterministic low-level foundation        CLOSED / INTEGRATED VIA PR #63
 Home / World Focus reconciliation            CLOSED / INTEGRATED VIA PR #65
+Pre-vertical foundation                      CLOSED / INTEGRATED VIA PR #66
 
 AI production/private-data qualification     NOT CLAIMED
 Apple registered-domain real UAT             BOUNDED DEFERRED / NON-BLOCKING
@@ -34,28 +35,15 @@ production/cloud recovery                    NOT CLAIMED
 Pre-vertical PV-01                           CLOSED / PASS
 Pre-vertical PV-02                           CLOSED / PASS
 Pre-vertical PV-03 A Scale Harness           CLOSED / PASS
-Pre-vertical PV-03 B Whole-Branch QA         CLOSED / LOCAL PASS
-Pre-vertical PV-03 C Integration             IN PROGRESS
+Pre-vertical PV-03 B Whole-Branch QA         CLOSED / PASS
+Pre-vertical PV-03 C Integration             CLOSED / PASS
 ```
 
-There is no PV-04. QA findings are fixed inside PV-03 and do not create additional milestones.
+There is no PV-04. QA findings were resolved inside PV-03 and did not create additional milestones.
 
 ## 2. Database truth
 
-Protected-main truth remains:
-
-```text
-Alembic             20260904_17
-tables              88
-views                5
-routines             16
-triggers             76
-physical indexes     172
-foreign keys         89
-CHECK constraints    270
-```
-
-The pre-vertical candidate is:
+Current protected-main database truth:
 
 ```text
 Alembic             20260906_18
@@ -68,11 +56,11 @@ foreign keys         91
 CHECK constraints    272
 ```
 
-The candidate has passed the real PostgreSQL 18.6 acceptance suite locally. That does not make it protected-main truth before merge. Exact database/recovery authority remains `database/README.md` plus the executable migration/catalog/Dictionary/tests.
+The pre-vertical delta over the former `20260904_17` baseline is one `account_application_context` table, two routines, one trigger, one PK-backed index, two foreign keys and two CHECK constraints. Exact database/recovery authority remains `database/README.md` plus the executable migration/catalog/Dictionary/tests.
 
 ## 3. Pre-vertical foundation result
 
-The foundation closes the cross-cutting seams required before the first real product vertical:
+The integrated foundation closes the cross-cutting seams required before the first real product vertical:
 
 ```text
 authenticated Account
@@ -105,9 +93,9 @@ Occurrence != Schedule != Session != Actual != Outcome != Observation
 
 UUID ordering is never semantic chronology/currentness authority.
 
-## 4. Local acceptance evidence
+## 4. Acceptance evidence
 
-The final implementation candidate has direct local evidence for:
+The final implementation candidate had direct local evidence for:
 
 ```text
 Backend Ruff format/lint                     PASS
@@ -130,45 +118,52 @@ Mobile compatibility + Hermes bundle         PASS
 
 Persistent dogfood seed/rerun and real browser email/password login were also exercised successfully during PV-02.
 
+PR #66 required checks all passed before merge:
+
+```text
+Backend CI Gate                              PASS
+Dependency Review                            PASS
+Frontend CI Gate                             PASS
+```
+
 Detailed evidence and exact branch disposition live in `workstreams/pre-vertical-foundation-closure-2026-09-06.md`.
 
 ## 5. Recovery disposition
 
 Historical CP07 database-local and CP08 application/Email reopen evidence remains valid only for the exact historical contracts it executed.
 
-For `20260906_18 / 89|5|18|77|173|91|272|0|0|0`:
+For the final pre-vertical candidate `21353469464f1371f9913dc78933f4ee42698f33` at `20260906_18 / 89|5|18|77|173|91|272|0|0|0`:
 
 ```text
-exact-head LOCAL Recovery rehearsal            PENDING
+exact-head LOCAL Recovery rehearsal            PASS
+database-local reopen                           PASS
 remote-provider recovery                       NOT ACTIVATED
 production/cloud recovery                      NOT CLAIMED
 ```
 
-The final Recovery rehearsal must run on the clean pushed documentation-closure HEAD before the integration PR is accepted.
+The final exact-head rehearsal did not relabel historical CP08 evidence as newly executed application/Email reopen proof. Current Recovery authority is `operations/postgres-recovery-runbook.md`.
 
 ## 6. Integration state
 
-Current required sequence:
+Pre-vertical integration is complete:
 
 ```text
-pre-vertical current-truth documentation       THIS CANDIDATE
-exact-head Recovery rehearsal                  NEXT
-fetch/re-read protected main                    REQUIRED
-reconcile only if main moved                   CONDITIONAL
-bounded PR                                     REQUIRED
-Backend CI Gate                                REQUIRED
-Dependency Review                              REQUIRED
-Frontend CI Gate                               REQUIRED
-merge method                                   MERGE COMMIT ONLY
-post-merge main readback                       REQUIRED
-feature branch retirement                      AFTER ACCEPTANCE
+exact-head Recovery rehearsal                  PASS
+bounded PR #66                                 MERGED
+Backend CI Gate                                PASS
+Dependency Review                              PASS
+Frontend CI Gate                               PASS
+merge method                                   MERGE COMMIT
+integration merge                              1ecd58145860aebfaaa3dc1bd356b90f7a8eb19b
+parentage/tree readback                        PASS
+feature/pre-vertical-foundation                RETIRED
 ```
 
-No force push, squash, rebase or direct protected-main write is part of the normal closure path.
+No force push, squash, rebase or direct protected-main rewrite was used.
 
 ## 7. Documentation lifecycle
 
-The former active `workstreams/pre-vertical-foundation.md` roadmap is retired at closure. Durable current references are:
+Durable current references are:
 
 - `architecture/authenticated-dante-context.md`
 - `database/README.md`
@@ -178,13 +173,13 @@ The former active `workstreams/pre-vertical-foundation.md` roadmap is retired at
 - `workstreams/pre-vertical-foundation-closure-2026-09-06.md`
 - executable source, migrations, tests and tooling
 
-AI PR #63 and Home/World Focus PR #65 are already protected-main history; they are not active integration candidates anymore. Their detailed chronology belongs to retained closure/evidence records and Git/PR history rather than this current-status file.
+AI PR #63, Home/World Focus PR #65 and pre-vertical PR #66 are protected-main history, not active integration candidates.
 
 ## 8. Next development boundary
 
-After the pre-vertical branch is merged and retired, the next implementation work starts from then-current protected `main` as a **new deliberately bounded real product vertical**.
+The next implementation work starts from then-current protected `main` as a **new deliberately bounded real product vertical**.
 
-Do not fabricate generic Timeline/Activity/Event/Routine CRUD, generic Fact/Version/relationship models, product-specific performance budgets or forced AI integration merely to keep the foundation branch alive.
+Do not fabricate generic Timeline/Activity/Event/Routine CRUD, generic Fact/Version/relationship models, product-specific performance budgets or forced AI integration merely to extend the closed foundation.
 
 ## 9. Permanent safety rules
 
