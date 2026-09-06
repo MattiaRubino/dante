@@ -1,9 +1,11 @@
 # DANTE Database System of Record
 
-- **Status:** CURRENT / AUTHORITATIVE DATABASE REFERENCE
-- **Last reconciled:** 2026-09-05
+- **Status:** CURRENT / AUTHORITATIVE DATABASE REFERENCE / BRANCH-LOCAL PV-02 CANDIDATE
+- **Last reconciled:** 2026-09-06
 - **PostgreSQL:** 18.6
-- **Alembic head:** `20260904_17`
+- **Protected-main Alembic head:** `20260904_17`
+- **Current branch candidate head:** `20260906_18`
+- **Authenticated DANTE context authority:** `../architecture/authenticated-dante-context.md`
 - **Access/Auth reference:** `access-auth.md`
 - **Shared Email Platform authority:** `../architecture/email-platform.md`
 - **Recovery operator authority:** `../operations/postgres-recovery-runbook.md`
@@ -33,9 +35,11 @@ CURRENT DB REFERENCE
 ≈ DIRECT TESTS
 ```
 
+On a feature branch, the first four representations may contain a clearly bounded candidate newer than protected `main`; that candidate does not become accepted protected-main truth until real PostgreSQL proof, repository gates and protected-main integration complete.
+
 ## 2. Current migration graph
 
-Recovery and Access/Auth originated as sibling children of `20260826_08`; both accepted histories are preserved:
+Recovery and Access/Auth originated as sibling children of `20260826_08`; both accepted histories are preserved. PV-02 evolves forward from their protected-main merge head without rewriting either history:
 
 ```text
 20260826_08
@@ -52,11 +56,15 @@ Recovery and Access/Auth originated as sibling children of `20260826_08`; both a
 20260830_09 + 20260904_16
             ↓
         20260904_17
+            ↓
+        20260906_18 account_application_context   [branch-local PV-02 candidate]
 ```
 
-`20260904_17` is forward-only and performs no DDL. No accepted migration was rebased, renumbered or flattened.
+`20260904_17` is the protected-main no-DDL merge revision. `20260906_18` is the branch-local forward DDL candidate for authenticated DANTE application context. No accepted migration is rebased, renumbered or flattened.
 
 ## 3. Current topology
+
+Protected-main baseline:
 
 ```text
 88 tables
@@ -68,13 +76,27 @@ Recovery and Access/Auth originated as sibling children of `20260826_08`; both a
 270 CHECK constraints
 ```
 
-The Dictionary, SQLAlchemy, Alembic and real PostgreSQL acceptance agree on this contract.
+PV-02 branch-local candidate target:
+
+```text
+89 tables
+5 views
+18 routines
+77 triggers
+173 physical indexes
+91 foreign keys
+272 CHECK constraints
+```
+
+The candidate delta is exactly one `account_application_context` table, two routines, one trigger, one PK-backed index, two foreign keys and two CHECK constraints. It does not add enums/domains, sequences, materialized views, partitioning or RLS.
+
+Dictionary, SQLAlchemy and Alembic on this branch are authored against the candidate target. Real PostgreSQL acceptance of the candidate remains a required QA/PV-04 gate and must not be inferred from documentation alone.
 
 Platform Observability does **not** add a DANTE business table, view, routine, Alembic revision or SQLAlchemy business mapping. Its database contribution is a provisioning-owned operational observer identity described below.
 
 ## 4. Current acceptance boundary
 
-Accepted database evidence includes:
+Protected-main accepted database evidence remains:
 
 ```text
 fresh DB → 20260904_17
@@ -90,7 +112,23 @@ CP08 Email/application reopen acceptance
 Platform Observability PostgreSQL/ACL suite 155/155 PASS
 ```
 
-Historical CP6, Recovery and Access/Auth topology checkpoints remain evidence in Git, archived branch records and dated validation records. They do not override the current topology above.
+PV-02 branch candidate additionally requires, before it may be described as accepted:
+
+```text
+fresh DB → 20260906_18
+20260904_17 → 20260906_18
+existing Access/Recovery histories → 20260906_18
+head → base → head
+Alembic check
+Dictionary ↔ SQLAlchemy ↔ live catalog at 89|5|18|77|173|91|272
+runtime ACL proof: Person remains SELECT-only
+bounded ensure_account_application_context capability proof
+concurrent first-use/idempotence proof
+timezone policy integrity proof
+recovery harness acceptance against the candidate head when PV-04 requires it
+```
+
+Historical CP6, Recovery and Access/Auth topology checkpoints remain evidence in Git, archived branch records and dated validation records. They do not override either the protected-main baseline or the explicitly marked branch candidate above.
 
 ## 5. Application role model
 
@@ -103,6 +141,8 @@ dante_runtime    LOGIN application runtime identity
 ```
 
 Ownership, migration and runtime privileges remain independently tested. Application runtime does not inherit migration/owner authority.
+
+PV-02 does not grant generic runtime `INSERT` on `Person`. `dante_runtime` receives only the bounded capability needed to establish an absent authenticated Account application context; direct Person DML remains governed by the existing CP6 posture.
 
 ## 6. Platform Observability observer role
 
@@ -132,9 +172,19 @@ The canonical detailed contract is in `dante-postgresql-database-part-12.md`, Se
 
 Provisioning, live PostgreSQL tests and the Alloy/Postgres-exporter configuration must remain aligned with that contract. The observer credential is secret even though its authority is read-only statistics access.
 
-## 7. Access/Auth persistence
+## 7. Access/Auth and authenticated DANTE context persistence
 
 Account is the durable security serialization root. Principal is runtime-derived. Provider identity authority is issuer+subject, never provider email. Password is optional; passkeys and external authenticators converge on canonical DANTE AuthSession.
+
+PV-02 preserves the permanent distinction:
+
+```text
+Person != Account != Principal != Actor
+```
+
+The branch candidate adds `dante.account_application_context` as the explicit application-facing bridge from one authenticated Account to its `self_person_ref` plus user/default timezone policy. It is not a generic user/profile/preferences framework and does not make Account a Domain native owner.
+
+Detailed authority: `../architecture/authenticated-dante-context.md`.
 
 ## 8. Shared Email Platform persistence
 
@@ -165,15 +215,18 @@ suppression distinct from EmailIdentity ownership/verification
 
 `dictionary/scope.json` keeps the frozen CP6 baseline separate from `current_materialization`. Post-CP6 provenance lives on object entries rather than inventing fictitious CP6 stages.
 
-The Dictionary describes the current business schema contract `20260904_17 / 88|5|16|76|172|89|270`. Operational cluster roles such as `dante_observer` are deliberately not fake business objects; their security contract is carried by the technical-role/provisioning references and live ACL tests.
+On this branch the Dictionary describes the PV-02 candidate schema contract `20260906_18 / 89|5|18|77|173|91|272`; the protected-main accepted contract remains `20260904_17 / 88|5|16|76|172|89|270` until integration completes.
+
+Operational cluster roles such as `dante_observer` are deliberately not fake business objects; their security contract is carried by the technical-role/provisioning references and live ACL tests.
 
 ## 10. Recovery boundary
 
 The accepted LOCAL recovery model keeps database-local proof distinct from application/Email reopen and from future production/cloud recovery.
 
 ```text
-CP07 database-local reopen                  PASS FOR EXECUTED SCOPE
+CP07 database-local reopen                  PASS FOR HISTORICALLY EXECUTED SCOPE
 CP08 Email/application reopen after PITR   PASS
+PV-02 candidate recovery acceptance         PENDING / NOT YET CLAIMED
 remote backup provider                     TBD / NOT ACTIVATED
 production/cloud recovery                  NOT CLAIMED
 ```
