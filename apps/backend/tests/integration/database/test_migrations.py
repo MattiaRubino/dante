@@ -9,6 +9,7 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from alembic.script import ScriptDirectory
+from sqlalchemy.exc import DBAPIError
 
 pytestmark = pytest.mark.postgres
 
@@ -134,6 +135,57 @@ def test_repository_head_round_trips_head_base_head(
 
     command.upgrade(alembic_config, "head")
     assert _current_revisions(provisioned_database) == {_EXPECTED_HEAD}
+
+
+def test_context_downgrade_refuses_to_orphan_live_account_person_binding(
+    provisioned_database: Any,
+    alembic_config: Config,
+) -> None:
+    command.upgrade(alembic_config, "head")
+    account_ref = uuid7()
+    person_ref = uuid7()
+    created_at = datetime(2026, 9, 6, 12, 0, tzinfo=UTC)
+    connection_kwargs = provisioned_database.connection_kwargs(
+        "dante_migrator",
+        provisioned_database.cluster.migrator_password,
+    )
+
+    with psycopg.connect(**connection_kwargs, autocommit=True) as connection:
+        connection.execute("SET ROLE dante_owner")
+        connection.execute(
+            """
+            INSERT INTO dante.account(account_ref,status_code,created_at,disabled_at)
+            VALUES (%s,'active',%s,NULL)
+            """,
+            (account_ref, created_at),
+        )
+        context = connection.execute(
+            """
+            SELECT account_ref,self_person_ref,timezone_mode,fixed_zone_id
+            FROM dante.ensure_account_application_context(%s,%s)
+            """,
+            (account_ref, person_ref),
+        ).fetchone()
+        assert context == (account_ref, person_ref, "follow_device", None)
+
+    with pytest.raises(DBAPIError, match="PV-02 downgrade refused"):
+        command.downgrade(alembic_config, _PRE_VERTICAL_BASE_HEAD)
+
+    assert _current_revisions(provisioned_database) == {_EXPECTED_HEAD}
+    with psycopg.connect(**connection_kwargs, autocommit=True) as connection:
+        connection.execute("SET ROLE dante_owner")
+        preserved = connection.execute(
+            """
+            SELECT
+              (SELECT count(*) FROM dante.account_application_context
+                 WHERE account_ref=%s AND self_person_ref=%s),
+              (SELECT count(*) FROM dante.person WHERE person_ref=%s),
+              (SELECT count(*) FROM dante.native_address
+                 WHERE native_ref=%s AND owner_family='person')
+            """,
+            (account_ref, person_ref, person_ref, person_ref),
+        ).fetchone()
+    assert preserved == (1, 1, 1)
 
 
 def test_recovery_history_remains_independently_reachable(
