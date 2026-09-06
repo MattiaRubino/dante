@@ -6,6 +6,9 @@ import argparse
 import logging
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
+
+from psycopg import Connection
 
 from tooling.pre_vertical_foundation.account_seed import (
     SeedContextConflictError,
@@ -66,13 +69,12 @@ def _materialize_persona(
     persona: PersonaSpec,
     *,
     password: str,
-    migrator: object,
-    runtime: object,
+    migrator: Connection[Any],
+    runtime: Connection[Any],
     current_pepper_key_id: str,
     pepper_ring: dict[str, bytes],
 ) -> tuple[bool, str]:
-    # Runtime typing is narrowed at call sites by the concrete psycopg connection factories.
-    account = seed_password_account(  # type: ignore[arg-type]
+    account = seed_password_account(
         migrator,
         email=persona.email,
         password=password,
@@ -80,17 +82,17 @@ def _materialize_persona(
         pepper_ring=pepper_ring,
         expected_account_ref=persona.account_ref,
     )
-    ensure_account_application_context(  # type: ignore[arg-type]
+    ensure_account_application_context(
         runtime,
         account_ref=persona.account_ref,
         expected_self_person_ref=persona.self_person_ref,
     )
-    set_seed_timezone_policy(  # type: ignore[arg-type]
+    set_seed_timezone_policy(
         migrator,
         account_ref=persona.account_ref,
         desired=persona.timezone_policy,
     )
-    confirmed = ensure_account_application_context(  # type: ignore[arg-type]
+    confirmed = ensure_account_application_context(
         runtime,
         account_ref=persona.account_ref,
         expected_self_person_ref=persona.self_person_ref,
