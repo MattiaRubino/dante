@@ -41,6 +41,21 @@ It must determine, without semantic collapse:
 
 A database/Alembic change is allowed only if this seam proves that one is semantically required. No generic `user_id` ownership model may be added merely for convenience.
 
+### PV-02 branch-local candidate
+
+The current branch materializes the minimum concrete seam through:
+
+- `20260906_18` and `dante.account_application_context`;
+- a bounded `ensure_account_application_context(uuid,uuid)` capability that preserves the existing runtime denial of generic `Person` creation;
+- typed backend `DanteContext` resolution from an admitted `Principal`;
+- reuse of the PV-01 `TimeZonePolicy` primitives for `follow_device` and fixed named-IANA policy;
+- governed Web transport of the current device timezone through `X-Dante-Time-Zone`;
+- real PostgreSQL tests for ACL, first-use idempotence/concurrency and timezone persistence integrity.
+
+Detailed branch-local authority: `../architecture/authenticated-dante-context.md`.
+
+This is implementation candidate state, not protected-main closure evidence. PV-02 acceptance remains subject to the branch test/QA and PV-04 closure gates.
+
 ## PV-03 — Dogfood, Personas and Scale Readiness
 
 Create the minimum reusable development/test capability needed to exercise DANTE as it grows:
