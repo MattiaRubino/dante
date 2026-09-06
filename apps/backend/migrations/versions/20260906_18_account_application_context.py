@@ -68,8 +68,8 @@ def upgrade() -> None:
             RETURNS trigger
             LANGUAGE plpgsql
             SECURITY INVOKER
-            STABLE
-            PARALLEL SAFE
+            VOLATILE
+            PARALLEL UNSAFE
             SET search_path = pg_catalog, dante, pg_temp
             AS $function$
             BEGIN
