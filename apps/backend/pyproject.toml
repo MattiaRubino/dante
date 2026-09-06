@@ -68,7 +68,7 @@ output_encoding = "utf-8"
 [tool.ruff]
 target-version = "py314"
 line-length = 100
-src = ["src"]
+src = ["src", "tooling"]
 
 [tool.ruff.format]
 # Applied migrations listed below remain byte-stable under MIG-02. Formatter exclusion
@@ -132,7 +132,7 @@ warn_unreachable = true
 show_error_codes = true
 show_column_numbers = true
 pretty = true
-files = ["src", "tests"]
+files = ["src", "tests", "tooling"]
 enable_error_code = ["explicit-override", "exhaustive-match"]
 
 # Tests are discovered by mypy as top-level or namespace-package modules depending on
