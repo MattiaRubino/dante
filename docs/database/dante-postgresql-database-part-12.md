@@ -844,3 +844,90 @@ NOT STARTED / NOT AUTHORIZED
 Part 12 supersedes older CURRENT/resume statements only where those statements still say DB-U21 is open/next, blanket owner-row locking is required despite runtime ACL conflict, or CP3 blanket business grants may survive business materialization.
 
 Historical evidence remains preserved.
+
+---
+
+<!-- DANTE-OBSERVABILITY-OBSERVER-CONTRACT v1 -->
+
+## 46. Post-CP6 technical observer privilege overlay — CURRENT
+
+This section is an additive current-reference overlay. It does not rewrite the
+historical CP6 DB-U21 application-runtime matrix and does not create a semantic,
+business, AuthZ or SQLAlchemy-mapped object.
+
+The collector identity is exact:
+
+```text
+dante_observer
+  LOGIN
+  NOINHERIT
+  NOSUPERUSER
+  NOCREATEDB
+  NOCREATEROLE
+  NOREPLICATION
+  NOBYPASSRLS
+
+membership
+  pg_read_all_stats → dante_observer
+  ADMIN FALSE
+  INHERIT TRUE
+  SET FALSE
+
+database dante
+  CONNECT YES
+  TEMPORARY NO
+  CREATE NO
+
+schema dante
+  USAGE NO
+  CREATE NO
+
+schema public
+  USAGE NO
+  CREATE NO
+
+database-scoped search_path
+  pg_catalog
+```
+
+The role receives no membership in `dante_owner`, `dante_migrator` or
+`dante_runtime`, no DANTE table/view/routine/sequence/type grant, and no DANTE
+default privilege. Provisioning reruns actively revoke all privileges on all
+objects in schema `dante` from `dante_observer`.
+
+`pg_read_all_stats` is deliberately narrower than an application or owner
+credential but is still a sensitive PostgreSQL operational capability. The
+Alloy PostgreSQL exporter therefore uses the upstream safe default collectors
+plus a bounded optional collector set and sets:
+
+```text
+stat_statements collector = NOT ENABLED
+database_wraparound + long_running_transactions = ENABLED
+stat_checkpointer = ENABLED
+disable_settings_metrics = true
+remote-write metric-family allowlist = REQUIRED
+```
+
+No SQL text, query ID, bind value or DANTE business row is selected into the
+telemetry pipeline. Per-table, role, replication-slot, vacuum-relation and
+future unreviewed exporter families are dropped inside Alloy before
+remote-write. Compromise of the observer credential can still expose the
+cluster-level statistics made available by PostgreSQL's predefined role, so
+the credential is unique per environment, stored as a secret and rotated like
+other production credentials.
+
+### 46.1 Same-change reconciliation
+
+```text
+Blueprint (this section)
+≈ Dictionary scope.json + scope-v1.schema.json
+≈ provisioning.py exact role/membership/ACL reconciliation
+≈ test_privileges.py against disposable PostgreSQL 18.6
+≈ Alloy exporter collector/statement-exclusion policy
+```
+
+SQLAlchemy mapping and Alembic migration are explicitly **not applicable**:
+PostgreSQL cluster roles are provisioning-owned technical foundation, and this
+overlay changes no database relation, routine, type, schema object or
+application mapping. Creating a fake mapped object or migration solely to make
+the chain visually symmetric would violate the Database System of Record.

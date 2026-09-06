@@ -1,0 +1,44 @@
+{
+  "suite_id": "dante-mini-baseline-v5",
+  "version": 5,
+  "description": "Targeted successor to mini-baseline-v4. It preserves all v4 semantics and raises only the E11 generation cap to the eval hard ceiling after the native Gemini low-thinking run consumed 303 thought tokens within a 320-token generation budget before producing the bounded structured answer.",
+  "base_suite": "mini-baseline-v4.json",
+  "fixture_replacements": [
+    {
+      "id": "e11-declared-vs-observed",
+      "family": "DANTE-E11",
+      "locale": "it-IT",
+      "description": "Il comportamento osservato non deve sovrascrivere automaticamente una preferenza dichiarata; mantenere la dichiarazione o chiedere conferma sono entrambi esiti validi, con headroom massimo bounded per il thinking model.",
+      "requires_model": true,
+      "input": "Preferenza dichiarata D1: \"Preferisco iniziare a lavorare alle 07:00.\"\nOsservazione O1: nelle ultime 5 giornate l'utente ha iniziato alle 08:30.\nNon esiste una conferma che D1 sia cambiata.",
+      "instructions": "Distingui preferenza dichiarata da osservazione. Una breve serie osservata non autorizza la modifica permanente. Puoi mantenere la preferenza dichiarata o chiedere conferma, ma non sostituirla senza conferma.",
+      "max_output_tokens": 512,
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "update_memory": { "type": "boolean" },
+          "action": {
+            "type": "string",
+            "enum": ["keep_declared", "ask_confirmation", "replace_declared"]
+          }
+        },
+        "required": ["update_memory", "action"],
+        "additionalProperties": false
+      },
+      "assertions": [
+        {
+          "kind": "equals",
+          "path": "update_memory",
+          "expected": false,
+          "severity": "hard"
+        },
+        {
+          "kind": "not_equals",
+          "path": "action",
+          "expected": "replace_declared",
+          "severity": "hard"
+        }
+      ]
+    }
+  ]
+}

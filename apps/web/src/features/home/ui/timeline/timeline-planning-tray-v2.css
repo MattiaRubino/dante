@@ -1,0 +1,127 @@
+.timeline-planning-tray {
+  transform-origin: top right;
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease;
+}
+
+.timeline-planning-tray.is-dragging {
+  opacity: 0;
+  transform: translateY(-2px) scale(0.985);
+}
+
+.timeline-planning-card.is-drag-source {
+  opacity: 0;
+}
+
+.timeline-planning-card__remove {
+  width: 28px;
+  min-width: 28px !important;
+  padding: 0 !important;
+  color: #7f8da1 !important;
+  font-size: 15px !important;
+  line-height: 1 !important;
+}
+
+.timeline-planning-card__remove:hover {
+  border-color: rgba(255, 91, 100, 0.26) !important;
+  color: #ff9ba0 !important;
+  background: rgba(255, 91, 100, 0.07) !important;
+}
+
+.timeline-planning-drag-card {
+  --timeline-group-color: var(--dante-timeline-tone-personal);
+  position: fixed;
+  z-index: 1210;
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: center;
+  min-width: 190px;
+  max-width: min(360px, calc(100vw - 24px));
+  min-height: 54px;
+  padding: 9px 11px;
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--timeline-group-color) 52%,
+      rgba(255, 255, 255, 0.12)
+    );
+  border-radius: 13px;
+  color: #eef3f9;
+  background: linear-gradient(
+    180deg,
+    color-mix(
+      in srgb,
+      var(--timeline-group-color) 12%,
+      rgba(15, 25, 37, 0.985)
+    ),
+    rgba(8, 16, 27, 0.99)
+  );
+  box-shadow:
+    inset 3px 0 0 var(--timeline-group-color),
+    0 18px 44px rgba(0, 0, 0, 0.44),
+    0 0 0 1px color-mix(in srgb, var(--timeline-group-color) 16%, transparent);
+  pointer-events: none;
+  transform: scale(1.015);
+}
+
+.timeline-planning-drag-card[data-timeline-tone='focus'] {
+  --timeline-group-color: var(--dante-timeline-tone-focus);
+}
+.timeline-planning-drag-card[data-timeline-tone='meeting'] {
+  --timeline-group-color: var(--dante-timeline-tone-meeting);
+}
+.timeline-planning-drag-card[data-timeline-tone='health'] {
+  --timeline-group-color: var(--dante-timeline-tone-health);
+}
+.timeline-planning-drag-card[data-timeline-tone='creative'] {
+  --timeline-group-color: var(--dante-timeline-tone-creative);
+}
+.timeline-planning-drag-card[data-timeline-tone='personal'] {
+  --timeline-group-color: var(--dante-timeline-tone-personal);
+}
+.timeline-planning-drag-card[data-timeline-tone='urgent'] {
+  --timeline-group-color: var(--dante-timeline-tone-urgent);
+}
+
+.timeline-planning-drag-card .timeline-planning-card__grip {
+  color: color-mix(in srgb, var(--timeline-group-color) 60%, #758296);
+}
+
+.timeline-planning-drag-card .timeline-planning-card__meta i {
+  background: var(--timeline-group-color);
+}
+
+.timeline-planning-drop-preview {
+  border-style: dashed;
+  border-width: 1px;
+  color: color-mix(in srgb, var(--timeline-group-color) 72%, white);
+  background: color-mix(in srgb, var(--timeline-group-color) 6%, transparent);
+  box-shadow:
+    inset 3px 0 0
+      color-mix(in srgb, var(--timeline-group-color) 74%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--timeline-group-color) 9%, transparent);
+  opacity: 0.92;
+}
+
+.timeline-planning-drop-preview strong {
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .timeline-planning-tray {
+    transform-origin: bottom center;
+  }
+
+  .timeline-planning-drag-card {
+    max-width: calc(100vw - 20px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .timeline-planning-tray,
+  .timeline-planning-drag-card {
+    transition: none;
+    transform: none;
+  }
+}

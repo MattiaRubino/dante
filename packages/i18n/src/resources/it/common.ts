@@ -29,6 +29,16 @@ export const common = {
     description:
       'Tocca questa superficie per verificare Gesture Handler + Reanimated.',
   },
+  observability: {
+    failure: {
+      eyebrow: 'DANTE',
+      title: 'Qualcosa non ha funzionato',
+      description:
+        "L'interfaccia ha incontrato un errore inatteso. Puoi riprovare senza perdere il controllo della sessione oppure ricaricare la pagina.",
+      retry: 'Riprova',
+      reload: 'Ricarica pagina',
+    },
+  },
   access,
   shell,
   home,

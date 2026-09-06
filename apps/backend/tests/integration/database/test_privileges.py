@@ -42,6 +42,7 @@ def _provisioning_settings(database: Any) -> ProvisioningSettings:
         admin_password=SecretStr(database.cluster.admin_password),
         migrator_password=SecretStr(database.cluster.migrator_password),
         runtime_password=SecretStr(database.cluster.runtime_password),
+        observer_password=SecretStr(database.cluster.observer_password),
         connect_timeout_seconds=2,
     )
 
@@ -91,14 +92,18 @@ def _dante_memberships(connection: psycopg.Connection[Any]) -> set[tuple[Any, ..
             FROM pg_auth_members AS membership
             JOIN pg_roles AS granted ON granted.oid = membership.roleid
             JOIN pg_roles AS member ON member.oid = membership.member
-            WHERE granted.rolname IN ('dante_owner', 'dante_migrator', 'dante_runtime')
-               OR member.rolname IN ('dante_owner', 'dante_migrator', 'dante_runtime')
+            WHERE granted.rolname IN (
+                      'dante_owner', 'dante_migrator', 'dante_runtime', 'dante_observer'
+                  )
+               OR member.rolname IN (
+                      'dante_owner', 'dante_migrator', 'dante_runtime', 'dante_observer'
+                  )
             """
         )
     }
 
 
-def test_owner_migrator_and_runtime_roles_have_exact_security_posture(
+def test_owner_migrator_runtime_and_observer_roles_have_exact_security_posture(
     migrated_database: Any,
 ) -> None:
     with _admin_connection(migrated_database) as connection:
@@ -106,25 +111,32 @@ def test_owner_migrator_and_runtime_roles_have_exact_security_posture(
             "SELECT rolname, rolcanlogin, rolinherit, rolsuper, rolcreatedb, "
             "rolcreaterole, rolreplication, rolbypassrls "
             "FROM pg_roles "
-            "WHERE rolname IN ('dante_owner', 'dante_migrator', 'dante_runtime')"
+            "WHERE rolname IN ("
+            "'dante_owner', 'dante_migrator', 'dante_runtime', 'dante_observer'"
+            ")"
         ).fetchall()
         roles = {str(row[0]): row[1:] for row in rows}
         memberships = _dante_memberships(connection)
         password_rows = connection.execute(
             "SELECT rolname, rolpassword FROM pg_authid "
-            "WHERE rolname IN ('dante_owner', 'dante_migrator', 'dante_runtime')"
+            "WHERE rolname IN ("
+            "'dante_owner', 'dante_migrator', 'dante_runtime', 'dante_observer'"
+            ")"
         ).fetchall()
         passwords = {str(row[0]): row[1] for row in password_rows}
 
     assert roles["dante_owner"] == (False, True, False, False, False, False, False)
     assert roles["dante_migrator"] == (True, False, False, False, False, False, False)
     assert roles["dante_runtime"] == (True, False, False, False, False, False, False)
+    assert roles["dante_observer"] == (True, False, False, False, False, False, False)
     assert memberships == {
         ("dante_owner", "dante_migrator", False, False, True),
+        ("pg_read_all_stats", "dante_observer", False, True, False),
     }
     assert passwords["dante_owner"] is None
     assert str(passwords["dante_migrator"]).startswith("SCRAM-SHA-256$")
     assert str(passwords["dante_runtime"]).startswith("SCRAM-SHA-256$")
+    assert str(passwords["dante_observer"]).startswith("SCRAM-SHA-256$")
 
 
 def test_migrator_requires_exact_identity_and_explicit_set_role(
@@ -223,8 +235,14 @@ def test_database_schema_and_search_path_are_explicitly_hardened(
             "has_database_privilege('dante_runtime', %s, 'CREATE'), "
             "has_database_privilege('dante_migrator', %s, 'CONNECT'), "
             "has_database_privilege('dante_migrator', %s, 'TEMP'), "
-            "has_database_privilege('dante_migrator', %s, 'CREATE')",
+            "has_database_privilege('dante_migrator', %s, 'CREATE'), "
+            "has_database_privilege('dante_observer', %s, 'CONNECT'), "
+            "has_database_privilege('dante_observer', %s, 'TEMP'), "
+            "has_database_privilege('dante_observer', %s, 'CREATE')",
             (
+                migrated_database.name,
+                migrated_database.name,
+                migrated_database.name,
                 migrated_database.name,
                 migrated_database.name,
                 migrated_database.name,
@@ -240,7 +258,9 @@ def test_database_schema_and_search_path_are_explicitly_hardened(
             "has_schema_privilege('dante_runtime', 'public', 'USAGE'), "
             "has_schema_privilege('dante_runtime', 'public', 'CREATE'), "
             "has_schema_privilege('dante_migrator', 'dante', 'USAGE'), "
-            "has_schema_privilege('dante_migrator', 'public', 'USAGE')"
+            "has_schema_privilege('dante_migrator', 'public', 'USAGE'), "
+            "has_schema_privilege('dante_observer', 'dante', 'USAGE'), "
+            "has_schema_privilege('dante_observer', 'public', 'USAGE')"
         ).fetchone()
         public_database_privileges = {
             str(row[0])
@@ -252,11 +272,52 @@ def test_database_schema_and_search_path_are_explicitly_hardened(
             )
         }
 
-    assert database_privileges == (True, False, False, True, False, False)
-    assert schema_privileges == (True, False, False, False, False, False)
+    assert database_privileges == (
+        True,
+        False,
+        False,
+        True,
+        False,
+        False,
+        True,
+        False,
+        False,
+    )
+    assert schema_privileges == (True, False, False, False, False, False, False, False)
     assert "CONNECT" not in public_database_privileges
     assert "TEMPORARY" not in public_database_privileges
     assert "CREATE" not in public_database_privileges
+
+
+def test_observer_can_read_statistics_but_not_dante_business_state(
+    migrated_database: Any,
+) -> None:
+    """Prove the collector credential is useful and still outside product data."""
+    with _role_connection(
+        migrated_database,
+        "dante_observer",
+        migrated_database.cluster.observer_password,
+    ) as connection:
+        identity = connection.execute(
+            "SELECT session_user, current_user, current_setting('search_path')"
+        ).fetchone()
+        database_stat_count = connection.execute(
+            "SELECT count(*) FROM pg_catalog.pg_stat_database"
+        ).fetchone()
+        with pytest.raises(errors.InsufficientPrivilege):
+            connection.execute("SELECT * FROM dante.account")
+
+    assert identity == ("dante_observer", "dante_observer", "pg_catalog")
+    assert database_stat_count is not None
+    assert int(database_stat_count[0]) >= 1
+
+    with _admin_connection(migrated_database) as connection:
+        direct_grants = connection.execute(
+            "SELECT count(*) FROM information_schema.role_table_grants "
+            "WHERE grantee = 'dante_observer' AND table_schema = 'dante'"
+        ).fetchone()
+
+    assert direct_grants == (0,)
 
 
 def test_provisioning_reconciles_unexpected_dante_membership_edges(
@@ -266,13 +327,14 @@ def test_provisioning_reconciles_unexpected_dante_membership_edges(
         connection.execute(
             "GRANT dante_migrator TO dante_runtime WITH INHERIT FALSE, SET TRUE, ADMIN FALSE"
         )
-        assert len(_dante_memberships(connection)) == 2
+        assert len(_dante_memberships(connection)) == 3
 
     asyncio.run(provision_database(_provisioning_settings(migrated_database)))
 
     with _admin_connection(migrated_database) as connection:
         assert _dante_memberships(connection) == {
             ("dante_owner", "dante_migrator", False, False, True),
+            ("pg_read_all_stats", "dante_observer", False, True, False),
         }
 
 

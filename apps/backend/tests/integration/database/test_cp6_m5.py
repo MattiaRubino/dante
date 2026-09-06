@@ -215,14 +215,22 @@ def test_m5_views_are_ordinary_updatable_local_check_option(
 def test_m5_sqlalchemy_view_metadata_is_core_only() -> None:
     assert set(VIEW_METADATA.tables) == {f"dante.{name}" for name in _VIEWS}
     assert all(name not in Base.metadata.tables for name in VIEW_METADATA.tables)
-    m5_tables = tuple(table for table in MAPPED_TABLES if table.name not in _M6_TABLES)
+    m5_stages = {"CP6-M01", "CP6-M02", "CP6-M03", "CP6-M04"}
+    m5_table_names = {
+        path.stem
+        for path in (_DICTIONARY_ROOT / "tables").glob("*.json")
+        if json.loads(path.read_text(encoding="utf-8"))["implementation"]["introducing_stage"]
+        in m5_stages
+    }
+    m5_tables = tuple(table for table in MAPPED_TABLES if table.name in m5_table_names)
     m5_mappers = tuple(
         mapper
         for mapper in Base.registry.mappers
-        if cast(Table, mapper.local_table).name not in _M6_TABLES
+        if cast(Table, mapper.local_table).name in m5_table_names
     )
-    assert len(m5_tables) == 63
-    assert len(m5_mappers) == 63
+    assert len(m5_table_names) == 63
+    assert {table.name for table in m5_tables} == m5_table_names
+    assert {cast(Table, mapper.local_table).name for mapper in m5_mappers} == m5_table_names
     assert all(len(mapper.relationships) == 0 for mapper in m5_mappers)
 
 
@@ -385,7 +393,7 @@ def test_m5_dictionary_reconciles_stage_objects_and_part17_repairs() -> None:
 
     trigger_entries = [
         trigger
-        for entry in table_entries.values()
+        for entry in m5_table_entries.values()
         for trigger in entry["structure"]["triggers"]
         if trigger["name"] != "ctrg_occurrence_owner_complete"
         and not trigger["name"].startswith("trg_occurrence_generation_")

@@ -18,7 +18,14 @@ import {
   isSameTimelineDate,
   timelineDateKey,
 } from './model/timeline-temporal';
-import type { TimelineGroup, TimelineGroupId } from './model/timeline-types';
+import type {
+  TimelineAllDayItem,
+  TimelineEvent,
+  TimelineGroup,
+  TimelineGroupId,
+  TimelineSemanticTone,
+} from './model/timeline-types';
+import { TimelineCreateBridge } from './timeline-create-bridge';
 
 function displayDate(date: PlainDate): Date {
   return new Date(Date.UTC(date.year, date.month - 1, date.day, 12));
@@ -90,6 +97,11 @@ type TimelineHeaderProps = Readonly<{
   onToggleFilter: (groupId: TimelineGroupId) => void;
   onReorderGroup: (groupId: TimelineGroupId, targetIndex: number) => void;
   onGroupScroll: (scrollLeft: number) => void;
+  onCreateContext: (label: string, tone: TimelineSemanticTone) => TimelineGroup;
+  onMaterializeCreatedEvent: (dateKey: string, event: TimelineEvent) => void;
+  onMaterializeCreatedAllDay: (item: TimelineAllDayItem) => void;
+  onRemoveCreatedEvent: (eventId: TimelineEvent['id']) => void;
+  onRemoveCreatedAllDay: (itemId: string) => void;
 }>;
 
 export function TimelineHeader({
@@ -114,6 +126,11 @@ export function TimelineHeader({
   onToggleFilter,
   onReorderGroup,
   onGroupScroll,
+  onCreateContext,
+  onMaterializeCreatedEvent,
+  onMaterializeCreatedAllDay,
+  onRemoveCreatedEvent,
+  onRemoveCreatedAllDay,
 }: TimelineHeaderProps) {
   const { t } = useTranslation('common');
   const week = buildIsoWeek(viewDate);
@@ -174,15 +191,25 @@ export function TimelineHeader({
   return (
     <header className="dante-timeline-header">
       <div className="dante-timeline-header-row">
-        <button
-          className="dante-timeline-quick-add"
-          type="button"
-          disabled
-          aria-label={t(($) => $.common.home.timeline.quickAdd)}
-          title={t(($) => $.common.home.timeline.quickAddDeferred)}
-        >
-          +
-        </button>
+        <TimelineCreateBridge
+          defaultDate={viewDate}
+          groups={groups}
+          filters={filters}
+          onRevealDate={onDateSelect}
+          onCreateContext={onCreateContext}
+          onMaterializeCreatedEvent={onMaterializeCreatedEvent}
+          onMaterializeCreatedAllDay={onMaterializeCreatedAllDay}
+          onRemoveCreatedEvent={onRemoveCreatedEvent}
+          onRemoveCreatedAllDay={onRemoveCreatedAllDay}
+          onBeforeOpen={() => {
+            if (calendarOpen) {
+              onCalendarToggle();
+            }
+            if (viewOptionsOpen) {
+              onViewOptionsToggle();
+            }
+          }}
+        />
 
         <button
           ref={calendarTriggerRef}

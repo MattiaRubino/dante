@@ -4,7 +4,18 @@ from typing import cast
 
 from sqlalchemy import Table
 
-from . import actual, addressing, identity, occurrence_generation, recurrence, schedule, session
+from . import (
+    actual,
+    addressing,
+    auth,
+    email_delivery,
+    identity,
+    lifecycle,
+    occurrence_generation,
+    recurrence,
+    schedule,
+    session,
+)
 
 MAPPED_TABLES: tuple[Table, ...] = cast(
     tuple[Table, ...],
@@ -27,6 +38,7 @@ MAPPED_TABLES: tuple[Table, ...] = cast(
         addressing.NativeAddressRow.__table__,
         addressing.ScopedAddressRow.__table__,
         addressing.MaterialStateAddressRow.__table__,
+        lifecycle.MaterialStateRetirementRow.__table__,
         addressing.NativeCurrentMaterialStateRow.__table__,
         addressing.ScopedCurrentMaterialStateRow.__table__,
         schedule.ScheduleRow.__table__,
@@ -77,6 +89,25 @@ MAPPED_TABLES: tuple[Table, ...] = cast(
         occurrence_generation.OccurrenceGenerationElapsedRow.__table__,
         occurrence_generation.OccurrenceGenerationQuotaRow.__table__,
         occurrence_generation.OccurrenceGenerationCyclicRow.__table__,
+        auth.AccountRow.__table__,
+        auth.EmailIdentityRow.__table__,
+        auth.PasswordCredentialRow.__table__,
+        auth.AuthSessionRow.__table__,
+        auth.PasswordSignupChallengeRow.__table__,
+        auth.PasswordRecoveryChallengeRow.__table__,
+        auth.ExternalIdentityRow.__table__,
+        auth.ExternalAuthTransactionRow.__table__,
+        auth.AppleAuthGrantRow.__table__,
+        auth.ExternalLinkChallengeRow.__table__,
+        auth.ExternalSignupChallengeRow.__table__,
+        auth.AccountProfileBootstrapRow.__table__,
+        auth.WebAuthnAccountRow.__table__,
+        auth.PasskeyCredentialRow.__table__,
+        auth.WebAuthnChallengeRow.__table__,
+        email_delivery.EmailDeliveryIntentRow.__table__,
+        email_delivery.EmailDeliveryAttemptRow.__table__,
+        email_delivery.EmailProviderEventRow.__table__,
+        email_delivery.EmailRecipientSuppressionRow.__table__,
     ),
 )
 

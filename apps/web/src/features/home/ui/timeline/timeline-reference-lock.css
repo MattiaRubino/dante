@@ -135,7 +135,8 @@
   .timeline-grid,
 .home-m1
   .home-timeline--production:has(.timeline-event-card.is-drag-source)
-  .timeline-grid * {
+  .timeline-grid
+  * {
   cursor: grabbing !important;
 }
 

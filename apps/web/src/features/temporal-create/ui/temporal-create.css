@@ -1,0 +1,522 @@
+.dante-timeline-quick-add:not(:disabled) {
+  cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    background 140ms ease,
+    transform 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.dante-timeline-quick-add:not(:disabled):hover,
+.dante-timeline-quick-add[aria-expanded='true'] {
+  border-color: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-chrome-active, #ea5c12) 72%,
+    white
+  );
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-chrome-active-soft, rgba(234, 92, 18, 0.12))
+      78%,
+    rgba(255, 255, 255, 0.035)
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.055),
+    0 12px 28px rgba(0, 0, 0, 0.22);
+}
+
+.dante-timeline-quick-add:not(:disabled):active {
+  transform: translateY(1px);
+}
+
+.temporal-create-backdrop {
+  position: fixed;
+  z-index: 1600;
+  inset: 0;
+  background: rgba(2, 6, 12, 0.42);
+  overscroll-behavior: contain;
+}
+
+.temporal-create-composer {
+  position: absolute;
+  box-sizing: border-box;
+  width: min(560px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  padding: 18px;
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08))
+        82%,
+      var(--dante-semantic-color-home-chrome-active, #ea5c12)
+    );
+  border-radius: 18px;
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent 28%),
+    color-mix(
+      in srgb,
+      var(--dante-semantic-color-home-surface-primary, #0d1522) 97%,
+      black
+    );
+  box-shadow:
+    0 26px 76px rgba(0, 0, 0, 0.48),
+    inset 0 1px 0 rgba(255, 255, 255, 0.045);
+  isolation: isolate;
+  animation: temporal-create-enter 150ms cubic-bezier(0.2, 0.75, 0.25, 1);
+}
+
+.temporal-create-composer__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.temporal-create-composer__eyebrow {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--dante-semantic-color-home-chrome-active, #ea5c12);
+  font-size: 10px;
+  font-weight: 720;
+  letter-spacing: 0.11em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.temporal-create-composer h2 {
+  margin: 0;
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  font-size: 19px;
+  font-weight: 680;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.temporal-create-composer__close {
+  display: grid;
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08));
+  border-radius: 10px;
+  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-surface-control, #151f2e) 72%,
+    transparent
+  );
+  font-size: 19px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.temporal-create-composer__close:hover:not(:disabled) {
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-surface-control, #151f2e) 90%,
+    white 3%
+  );
+}
+
+.temporal-create-composer__body {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.temporal-create-composer__body > label:first-child,
+.temporal-create-control > span {
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.temporal-create-composer input,
+.temporal-create-composer select,
+.temporal-create-composer textarea {
+  box-sizing: border-box;
+  width: 100%;
+  border: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
+  border-radius: 11px;
+  outline: 0;
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-surface-control, #151f2e) 76%,
+    black
+  );
+  font: inherit;
+  font-size: 13px;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    background 120ms ease;
+}
+
+.temporal-create-composer input,
+.temporal-create-composer select {
+  min-height: 42px;
+  padding: 0 11px;
+}
+
+.temporal-create-composer textarea {
+  min-height: 74px;
+  padding: 10px 11px;
+  resize: vertical;
+}
+
+.temporal-create-composer__body > input {
+  min-height: 50px;
+  padding: 0 14px;
+  border-radius: 13px;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+}
+
+.temporal-create-composer input::placeholder,
+.temporal-create-composer textarea::placeholder {
+  color: var(--dante-semantic-color-home-text-muted, #7f8b9d);
+  opacity: 0.86;
+}
+
+.temporal-create-composer input:focus-visible,
+.temporal-create-composer select:focus-visible,
+.temporal-create-composer textarea:focus-visible,
+.temporal-create-composer button:focus-visible {
+  outline: 2px solid var(--dante-semantic-color-home-chrome-active, #ea5c12);
+  outline-offset: 2px;
+}
+
+.temporal-create-segmented {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08));
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.temporal-create-segmented.is-secondary {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.temporal-create-segmented button {
+  min-height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 9px;
+  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
+  background: transparent;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 640;
+  cursor: pointer;
+}
+
+.temporal-create-segmented button:hover:not(:disabled) {
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.temporal-create-segmented button.is-active {
+  color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
+  background: var(
+    --dante-semantic-color-home-chrome-active-soft,
+    rgba(234, 92, 18, 0.095)
+  );
+  box-shadow: inset 0 0 0 1px
+    var(
+      --dante-semantic-color-home-chrome-active-border,
+      rgba(234, 92, 18, 0.255)
+    );
+}
+
+.temporal-create-segmented button:disabled {
+  cursor: not-allowed;
+  opacity: 0.34;
+}
+
+.temporal-create-temporal-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.9fr) minmax(0, 0.85fr);
+  gap: 8px;
+}
+
+.temporal-create-control {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.temporal-create-field-error {
+  display: block;
+  color: var(--dante-timeline-tone-urgent, #ff5b64);
+  font-size: 9px;
+  line-height: 1.35;
+}
+
+.temporal-create-details-toggle {
+  justify-self: start;
+  padding: 5px 0;
+  border: 0;
+  color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
+  background: transparent;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 640;
+  cursor: pointer;
+}
+
+.temporal-create-details {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08));
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.temporal-create-preview-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 7px 9px;
+  border-radius: 9px;
+  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
+  background: rgba(255, 255, 255, 0.018);
+  font-size: 9.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.temporal-create-preview-summary > span:first-child {
+  color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
+  font-weight: 680;
+}
+
+.temporal-create-operation-error {
+  padding: 9px 10px;
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--dante-timeline-tone-urgent, #ff5b64) 28%,
+      transparent
+    );
+  border-radius: 10px;
+  color: color-mix(
+    in srgb,
+    var(--dante-timeline-tone-urgent, #ff5b64) 68%,
+    white
+  );
+  background: color-mix(
+    in srgb,
+    var(--dante-timeline-tone-urgent, #ff5b64) 7%,
+    transparent
+  );
+  font-size: 9.5px;
+  line-height: 1.4;
+}
+
+.temporal-create-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 2px;
+}
+
+.temporal-create-actions button,
+.temporal-create-discard__actions button {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
+  border-radius: 10px;
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  background: var(--dante-semantic-color-home-surface-control, #151f2e);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.temporal-create-actions button.is-primary {
+  border-color: var(
+    --dante-semantic-color-home-chrome-active-border,
+    rgba(234, 92, 18, 0.255)
+  );
+  color: #fff2e9;
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-chrome-active, #ea5c12) 19%,
+    rgba(9, 17, 29, 0.94)
+  );
+}
+
+.temporal-create-actions button:disabled,
+.temporal-create-composer__close:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.temporal-create-discard {
+  display: grid;
+  gap: 14px;
+  margin-top: 16px;
+  padding: 13px;
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--dante-timeline-tone-urgent, #ff5b64) 28%,
+      transparent
+    );
+  border-radius: 12px;
+  background: color-mix(
+    in srgb,
+    var(--dante-timeline-tone-urgent, #ff5b64) 7%,
+    transparent
+  );
+}
+
+.temporal-create-discard strong {
+  display: block;
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  font-size: 12px;
+  font-weight: 680;
+}
+
+.temporal-create-discard p {
+  margin: 4px 0 0;
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.temporal-create-discard__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.temporal-create-discard__actions .temporal-create-discard__destructive {
+  border-color: color-mix(
+    in srgb,
+    var(--dante-timeline-tone-urgent, #ff5b64) 44%,
+    transparent
+  );
+  color: color-mix(
+    in srgb,
+    var(--dante-timeline-tone-urgent, #ff5b64) 68%,
+    white
+  );
+  background: color-mix(
+    in srgb,
+    var(--dante-timeline-tone-urgent, #ff5b64) 10%,
+    transparent
+  );
+}
+
+@keyframes temporal-create-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 900px) {
+  .temporal-create-backdrop {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 12px 12px max(12px, env(safe-area-inset-bottom));
+    background: rgba(2, 6, 12, 0.54);
+  }
+
+  .temporal-create-composer {
+    position: relative;
+    top: auto !important;
+    left: auto !important;
+    width: min(100%, 620px);
+    max-height: min(84dvh, 720px);
+    border-radius: 22px;
+    animation-name: temporal-create-sheet-enter;
+  }
+}
+
+@media (max-width: 560px) {
+  .temporal-create-backdrop {
+    padding: 0;
+  }
+
+  .temporal-create-composer {
+    width: 100%;
+    max-height: 88dvh;
+    padding: 16px;
+    border-right: 0;
+    border-bottom: 0;
+    border-left: 0;
+    border-radius: 22px 22px 0 0;
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+
+  .temporal-create-temporal-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .temporal-create-temporal-row > :first-child {
+    grid-column: 1 / -1;
+  }
+
+  .temporal-create-segmented.is-secondary {
+    grid-template-columns: 1fr;
+  }
+
+  .temporal-create-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .temporal-create-actions button {
+    min-height: 44px;
+  }
+
+  .temporal-create-actions button.is-primary {
+    grid-row: 1;
+  }
+}
+
+@keyframes temporal-create-sheet-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dante-timeline-quick-add:not(:disabled),
+  .temporal-create-composer,
+  .temporal-create-composer input,
+  .temporal-create-composer select,
+  .temporal-create-composer textarea {
+    animation: none;
+    transition: none;
+  }
+}

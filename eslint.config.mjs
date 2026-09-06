@@ -13,6 +13,7 @@ export default defineConfig(
       '**/build/**',
       '**/.expo/**',
       '**/routeTree.gen.ts',
+      'packages/api-client/src/generated/**',
       'docs/**',
       'prototypes/**',
       'apps/backend/**',

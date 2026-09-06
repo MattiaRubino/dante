@@ -2,19 +2,33 @@ import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
-  isValidAccessEmail,
-  type AccessCondition,
-  type AccessProvider,
-} from '../model/access-flow';
+  appleAuthenticationEnabledFromBuild,
+  googleAuthenticationEnabledFromBuild,
+  passkeyAuthenticationEnabledFromBuild,
+  type ProviderBrowserUnavailableError,
+} from '../application/auth-ui-boundary';
+import { usePasskeySignInMutation } from '../application/auth-passkey';
+import { isValidAccessEmail, type AccessCondition } from '../model/access-flow';
 import { AccessConditionNotice } from './access-condition-notice';
-import { ProviderButton } from './provider-button';
+import { GoogleIdentityButton, ProviderButton } from './provider-button';
+
+export type GoogleButtonState = Readonly<{
+  clientId: string | null;
+  nonce: string | null;
+  pending: boolean;
+  errorMessage?: string | null;
+  onCredential: (credential: string) => void;
+  onError: (error: ProviderBrowserUnavailableError) => void;
+}>;
 
 type AccessSignInPanelProps = Readonly<{
   condition: AccessCondition;
   onCreateAccount: () => void;
   onForgotPassword: () => void;
   onCredentialSubmit: (email: string, password: string) => void;
-  onProvider: (provider: AccessProvider) => void;
+  google: GoogleButtonState;
+  onApple: () => void;
+  pending?: boolean;
 }>;
 
 type SignInErrors = {
@@ -43,19 +57,35 @@ export function AccessSignInPanel({
   onCreateAccount,
   onForgotPassword,
   onCredentialSubmit,
-  onProvider,
+  google,
+  onApple,
+  pending = false,
 }: AccessSignInPanelProps) {
   const { t } = useTranslation('common');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<SignInErrors>({});
   const [showPassword, setShowPassword] = useState(false);
+  const [showAlternateMethods, setShowAlternateMethods] = useState(false);
+  const [passkeyError, setPasskeyError] = useState<string | null>(null);
+  const passkeyMutation = usePasskeySignInMutation();
+  const googleEnabled = googleAuthenticationEnabledFromBuild();
+  const appleEnabled = appleAuthenticationEnabledFromBuild();
+  const passkeyEnabled = passkeyAuthenticationEnabledFromBuild();
+  const providerEnabled = googleEnabled || appleEnabled;
+  const interactionPending =
+    pending ||
+    (googleEnabled && google.pending) ||
+    (passkeyEnabled && passkeyMutation.isPending);
   const passwordControlLabel = showPassword
     ? t(($) => $.common.access.action.hidePassword)
     : t(($) => $.common.access.action.showPassword);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (interactionPending) {
+      return;
+    }
 
     const nextErrors: SignInErrors = {};
     const trimmedEmail = email.trim();
@@ -77,6 +107,17 @@ export function AccessSignInPanel({
     onCredentialSubmit(trimmedEmail, password);
   }
 
+  function signInWithPasskey() {
+    if (!passkeyEnabled || interactionPending) {
+      return;
+    }
+    setPasskeyError(null);
+    passkeyMutation.mutate(undefined, {
+      onError: () =>
+        setPasskeyError(t(($) => $.common.access.failure.passkeyBody)),
+    });
+  }
+
   return (
     <section className="access-panel" aria-labelledby="access-signin-title">
       <form className="access-panel-inner" onSubmit={handleSubmit} noValidate>
@@ -91,24 +132,38 @@ export function AccessSignInPanel({
           {t(($) => $.common.access.signin.body)}
         </p>
 
-        <div className="access-provider-stack">
-          <ProviderButton
-            provider="google"
-            label={t(($) => $.common.access.provider.google)}
-            onClick={() => onProvider('google')}
-          />
-          <ProviderButton
-            provider="apple"
-            label={t(($) => $.common.access.provider.apple)}
-            onClick={() => onProvider('apple')}
-          />
-        </div>
+        {providerEnabled ? (
+          <>
+            <div className="access-provider-stack">
+              <GoogleIdentityButton
+                label={t(($) => $.common.access.provider.google)}
+                clientId={google.clientId}
+                nonce={google.nonce}
+                onCredential={google.onCredential}
+                onError={google.onError}
+                disabled={interactionPending}
+              />
+              <ProviderButton
+                provider="apple"
+                label={t(($) => $.common.access.provider.apple)}
+                onClick={onApple}
+                disabled={interactionPending}
+              />
+            </div>
 
-        <div className="access-divider" aria-hidden="true">
-          <span />
-          <p>{t(($) => $.common.access.common.or)}</p>
-          <span />
-        </div>
+            {google.errorMessage ? (
+              <p className="access-field-error" role="alert">
+                {google.errorMessage}
+              </p>
+            ) : null}
+
+            <div className="access-divider" aria-hidden="true">
+              <span />
+              <p>{t(($) => $.common.access.common.or)}</p>
+              <span />
+            </div>
+          </>
+        ) : null}
 
         <div className="access-field-stack">
           <div className="access-field">
@@ -123,6 +178,7 @@ export function AccessSignInPanel({
               inputMode="email"
               placeholder={t(($) => $.common.access.field.emailPlaceholder)}
               value={email}
+              disabled={interactionPending}
               aria-invalid={Boolean(errors.email)}
               aria-describedby={errors.email ? 'access-email-error' : undefined}
               onChange={(event) => {
@@ -148,6 +204,7 @@ export function AccessSignInPanel({
                 className="access-inline-action"
                 type="button"
                 onClick={onForgotPassword}
+                disabled={interactionPending}
               >
                 {t(($) => $.common.access.signin.forgot)}
               </button>
@@ -159,6 +216,7 @@ export function AccessSignInPanel({
                 type={showPassword ? 'text' : 'password'}
                 autoComplete="current-password"
                 value={password}
+                disabled={interactionPending}
                 aria-invalid={Boolean(errors.password)}
                 aria-describedby={
                   errors.password ? 'access-password-error' : undefined
@@ -175,6 +233,7 @@ export function AccessSignInPanel({
                 type="button"
                 aria-label={passwordControlLabel}
                 aria-pressed={showPassword}
+                disabled={interactionPending}
                 onClick={() => setShowPassword((value) => !value)}
               >
                 <svg
@@ -199,9 +258,88 @@ export function AccessSignInPanel({
           </div>
         </div>
 
-        <button className="access-primary-button" type="submit">
+        <button
+          className="access-primary-button"
+          type="submit"
+          disabled={interactionPending}
+          aria-busy={pending}
+        >
           {t(($) => $.common.access.action.signin)}
         </button>
+
+        {passkeyEnabled ? (
+          <div className="access-alternate-methods">
+            <button
+              className="access-inline-action access-alternate-methods-trigger"
+              type="button"
+              aria-expanded={showAlternateMethods}
+              aria-controls="access-alternate-methods"
+              disabled={interactionPending}
+              onClick={() => {
+                setShowAlternateMethods((value) => !value);
+                setPasskeyError(null);
+              }}
+            >
+              <span>{t(($) => $.common.access.signin.otherMethods)}</span>
+              <svg
+                className="access-alternate-methods-chevron"
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                focusable="false"
+                aria-hidden="true"
+              >
+                <path d="m6 8 4 4 4-4" />
+              </svg>
+            </button>
+
+            {showAlternateMethods ? (
+              <div
+                id="access-alternate-methods"
+                className="access-alternate-methods-menu"
+              >
+                <button
+                  className="access-alternate-method"
+                  type="button"
+                  disabled={interactionPending}
+                  aria-busy={passkeyMutation.isPending}
+                  onClick={signInWithPasskey}
+                >
+                  <svg
+                    className="access-authenticator-icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    focusable="false"
+                    aria-hidden="true"
+                  >
+                    <circle cx="8" cy="12" r="3" />
+                    <path d="M11 12h9m-3 0v3m-3-3v2" />
+                  </svg>
+                  <span className="access-alternate-method-copy">
+                    <strong>
+                      {t(($) => $.common.access.provider.passkey)}
+                    </strong>
+                    <small>
+                      {t(($) => $.common.access.signin.passkeyHint)}
+                    </small>
+                  </span>
+                </button>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+
+        {passkeyError ? (
+          <p
+            className="access-field-error access-authenticator-error"
+            role="alert"
+          >
+            {passkeyError}
+          </p>
+        ) : null}
 
         <AccessConditionNotice condition={condition} />
 
@@ -211,21 +349,11 @@ export function AccessSignInPanel({
             className="access-inline-action access-create-account"
             type="button"
             onClick={onCreateAccount}
+            disabled={interactionPending}
           >
             {t(($) => $.common.access.action.createAccount)}
           </button>
         </div>
-
-        <p className="access-legal">
-          {t(($) => $.common.access.legal.prefix)}{' '}
-          <span className="access-legal-placeholder">
-            {t(($) => $.common.access.legal.terms)}
-          </span>
-          {' · '}
-          <span className="access-legal-placeholder">
-            {t(($) => $.common.access.legal.privacy)}
-          </span>
-        </p>
       </form>
     </section>
   );

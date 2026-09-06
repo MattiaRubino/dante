@@ -216,7 +216,9 @@ describe('TimelineSurface production parity', () => {
 
     for (let cycle = 0; cycle < 8; cycle += 1) {
       moveReminder('ArrowDown');
-      expect(getReminder()?.getAttribute('aria-label')).toContain('15:15–15:30');
+      expect(getReminder()?.getAttribute('aria-label')).toContain(
+        '15:15–15:30',
+      );
 
       const isolatedReminder = getReminder();
       fireEvent.click(isolatedReminder as HTMLElement);
@@ -225,7 +227,9 @@ describe('TimelineSurface production parity', () => {
       expect(isolatedReminder?.classList.contains('is-focused')).toBe(false);
 
       moveReminder('ArrowUp');
-      expect(getReminder()?.getAttribute('aria-label')).toContain('15:10–15:25');
+      expect(getReminder()?.getAttribute('aria-label')).toContain(
+        '15:10–15:25',
+      );
     }
 
     for (let step = 0; step < 5; step += 1) {

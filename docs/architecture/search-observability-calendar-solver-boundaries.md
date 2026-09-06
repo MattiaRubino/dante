@@ -4,7 +4,7 @@
 - Stage: Pre-Physical Repository & Architecture Coherence / Phase-9 pressure input
 - Phase-9 selection state recorded below: **specialized infrastructure not selected at that phase**
 - Current Physical resolution: **PostgreSQL FTS + pgvector, OpenTelemetry + Grafana Alloy/Grafana Cloud EU target, OR-Tools 9.15 CP-SAT selected where applicable by PM-11/12**
-- Backend implementation: **NOT STARTED / DEFERRED**
+- Observability implementation: **MATERIALIZED ON `feature/platform-observability`; final remote/stack proof pending**
 
 > **Current-truth qualification:** the semantic pressure/boundary rules in this document remain current. Statements below such as `NOT SELECTED`, `NO VENDOR SELECTED`, `PREFERRED ... CANDIDATE` or `PHYSICAL MODEL SELECTED 0` are the truthful state **at Phase 9** and do not override later PM-11/12 selected truth.
 >
@@ -36,7 +36,7 @@ DEDICATED SEARCH / VECTOR SERVER
 NONE IN ACCEPTED TARGET
 
 OBSERVABILITY TARGET
-OpenTelemetry + Grafana Alloy 1.18.0 + Grafana Cloud EU — SELECTED TARGET
+OpenTelemetry + Grafana Alloy 1.19.2 + Grafana Cloud Free EU — SELECTED / MATERIALIZED TARGET
 
 CALENDAR
 standards/providers remain adapter pressure; no provider ontology adopted
@@ -45,7 +45,7 @@ SOLVER
 OR-Tools 9.15 CP-SAT — SELECTED
 
 DIRECT IMPLEMENTATION VALIDATION
-NOT STARTED
+APPLICATION/STATIC PROOF IN PROGRESS; ALLOY/POSTGRES/TARGET-STACK GATES REMAIN
 ```
 
 # Cross-cutting invariant
@@ -360,7 +360,11 @@ Aggregation may group them at higher levels only if the underlying distinction r
 
 ## Observability vendor posture
 
-At Phase 9, no vendor was selected. PM-11/12 later selected the **target** `OpenTelemetry + Grafana Alloy 1.18.0 + Grafana Cloud EU`, while Development Profile v0 still decides activation/deployment details.
+At Phase 9, no vendor was selected. PM-11/12 later selected the target
+`OpenTelemetry + Grafana Alloy + Grafana Cloud EU`. The current bounded
+materialization uses Alloy 1.19.2 pinned by image digest and Grafana Cloud Free
+EU; exact runtime, privacy, failure and budget behavior is owned by
+`observability-runtime-contract.md`.
 
 Specialized observability infrastructure remains bounded by operational requirements rather than assumed as semantic authority.
 

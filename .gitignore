@@ -3,6 +3,7 @@
 .env.*
 !.env.example
 infra/compose/secrets/*.local
+.dante/observability/
 *.pem
 *.key
 *.p12

@@ -78,7 +78,7 @@ describe('AccessDownstreamPanel', () => {
       screen.getByLabelText<HTMLInputElement>('Conferma password');
 
     fireEvent.click(screen.getByRole('button', { name: 'Aggiorna password' }));
-    expect(screen.getByText('Usa almeno 12 caratteri.')).toBeTruthy();
+    expect(screen.getByText('Usa almeno 15 caratteri.')).toBeTruthy();
     expect(password.getAttribute('aria-invalid')).toBe('true');
     expect(dispatch).not.toHaveBeenCalled();
 
@@ -160,7 +160,9 @@ describe('AccessDownstreamPanel', () => {
 
     expect(screen.getByText('Google')).toBeTruthy();
     expect(screen.getByText('person@example.com')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Accedi e collega' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Autentica l’account esistente' }),
+    );
     expect(linkDispatch).toHaveBeenCalledWith({ type: 'REQUEST_ACCOUNT_LINK' });
 
     cleanup();
@@ -171,7 +173,7 @@ describe('AccessDownstreamPanel', () => {
         name: 'Conferma di nuovo la tua identità',
       }),
     ).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Continua' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Conferma identità' }));
     expect(reauthDispatch).toHaveBeenCalledWith({ type: 'REQUEST_REAUTH' });
     fireEvent.click(screen.getByRole('button', { name: 'Annulla' }));
     expect(reauthDispatch).toHaveBeenCalledWith({ type: 'REAUTH_CANCEL' });

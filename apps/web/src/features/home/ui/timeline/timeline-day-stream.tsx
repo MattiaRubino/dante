@@ -4,6 +4,7 @@ import {
   type KeyboardEvent,
   type PointerEvent as ReactPointerEvent,
   type RefObject,
+  useCallback,
   useEffect,
   useLayoutEffect,
   useRef,
@@ -29,6 +30,7 @@ import type {
   TimelineGroup,
   TimelineTimeMapper,
 } from './model/timeline-types';
+import { TimelineAllDayLane } from './timeline-all-day-layer';
 
 export type TimelineRenderedDay = Readonly<{
   date: PlainDate;
@@ -45,6 +47,7 @@ type TimelineEventMove = Readonly<{
   toDateKey: string;
   eventId: string;
   startMinute: number;
+  undoGroup?: 'keyboard-nudge';
 }>;
 
 type TimelineDayStreamProps = Readonly<{
@@ -87,6 +90,13 @@ type DragRuntime = {
   overlay: HTMLElement | null;
   dragging: boolean;
   lastAutoFrame: number;
+};
+
+type TemporalScrubberRuntime = {
+  pointerId: number;
+  offsetPx: number;
+  travelPx: number;
+  lastFrame: number;
 };
 
 function clamp(value: number, min: number, max: number): number {
@@ -150,6 +160,7 @@ function TimelineEventCard({
   const { t } = useTranslation('common');
   const event = layout.event;
   const group = groupForEvent(event, groups);
+  const tone = event.appearanceTone ?? group?.tone ?? 'personal';
   const isFocused = focusedEvent?.id === event.id;
   const isGroupmate =
     focusedEvent !== null &&
@@ -201,7 +212,7 @@ function TimelineEventCard({
     <article
       className={`timeline-event-card${expandedSubitems ? ' is-expanded' : ''}${isFocused ? ' is-focused' : ''}${isGroupmate ? ' is-groupmate' : ''}${isDim ? ' is-dim' : ''}`}
       data-timeline-event={event.id}
-      data-timeline-tone={group?.tone ?? 'personal'}
+      data-timeline-tone={tone}
       data-compact-left={layout.compactLeftPercent}
       data-compact-width={layout.compactWidthPercent}
       data-group-index={layout.groupIndex}
@@ -394,6 +405,13 @@ function TimelineDay({
     >
       <div className="timeline-day-section__label">{fullLabel}</div>
 
+      <TimelineAllDayLane
+        dateKey={day.dateKey}
+        items={state.allDayItems}
+        groups={state.groups}
+        filters={state.filters}
+      />
+
       {Array.from(
         {
           length:
@@ -501,16 +519,78 @@ export function TimelineDayStream({
   const { t } = useTranslation('common');
   const rulerStreamRef = useRef<HTMLDivElement | null>(null);
   const runtimeRef = useRef<DragRuntime | null>(null);
+  const scrubberRef = useRef<HTMLDivElement | null>(null);
+  const scrubberThumbRef = useRef<HTMLSpanElement | null>(null);
+  const scrubberRuntimeRef = useRef<TemporalScrubberRuntime | null>(null);
+  const scrubberFrameRef = useRef<number | null>(null);
   const daysRef = useRef(days);
   const stateRef = useRef(state);
   const autoScrollFrameRef = useRef<number | null>(null);
+  const revealFrameRef = useRef<number | null>(null);
   const dragCleanupRef = useRef<(() => void) | null>(null);
   const suppressClickRef = useRef<string | null>(null);
+  const previousUndoEventIdRef = useRef(state.undo?.eventId ?? null);
+
+  const scheduleEventReveal = useCallback(
+    (eventId: string, restoreFocus = false) => {
+      if (revealFrameRef.current !== null) {
+        cancelAnimationFrame(revealFrameRef.current);
+      }
+      revealFrameRef.current = requestAnimationFrame(() => {
+        revealFrameRef.current = null;
+        const grid = gridRef.current;
+        if (!grid) {
+          return;
+        }
+        const card = Array.from(
+          grid.querySelectorAll<HTMLElement>('[data-timeline-event]'),
+        ).find((candidate) => candidate.dataset.timelineEvent === eventId);
+        if (!card) {
+          return;
+        }
+
+        if (restoreFocus) {
+          card.focus({ preventScroll: true, focusVisible: true });
+        }
+
+        const gridRect = grid.getBoundingClientRect();
+        const cardRect = card.getBoundingClientRect();
+        const inset = TIMELINE_POLICY.viewport.eventRevealInsetPx;
+        const visibleTop = gridRect.top + inset;
+        const visibleBottom = gridRect.bottom - inset;
+        const maxScrollTop = Math.max(0, grid.scrollHeight - grid.clientHeight);
+
+        if (cardRect.top < visibleTop) {
+          grid.scrollTop = clamp(
+            grid.scrollTop - (visibleTop - cardRect.top),
+            0,
+            maxScrollTop,
+          );
+        } else if (cardRect.bottom > visibleBottom) {
+          grid.scrollTop = clamp(
+            grid.scrollTop + (cardRect.bottom - visibleBottom),
+            0,
+            maxScrollTop,
+          );
+        }
+      });
+    },
+    [gridRef],
+  );
 
   useLayoutEffect(() => {
     daysRef.current = days;
     stateRef.current = state;
   }, [days, state]);
+
+  useLayoutEffect(() => {
+    const previousUndoEventId = previousUndoEventIdRef.current;
+    const currentUndoEventId = state.undo?.eventId ?? null;
+    if (previousUndoEventId !== null && currentUndoEventId === null) {
+      scheduleEventReveal(previousUndoEventId);
+    }
+    previousUndoEventIdRef.current = currentUndoEventId;
+  }, [scheduleEventReveal, state.undo]);
 
   const focusedEvent = state.focusedEventId
     ? (findTimelineEvent(state, state.focusedEventId)?.event ?? null)
@@ -647,28 +727,43 @@ export function TimelineDayStream({
       return;
     }
 
+    const rawLocalY = contentTop - targetDay.offsetTop;
+    const timedCanvasTop = targetDay.mapper.map(0);
+    if (rawLocalY < timedCanvasTop) {
+      finishDragVisual();
+      return;
+    }
+
     const localY = clamp(
-      contentTop - targetDay.offsetTop,
-      0,
-      Math.max(0, targetDay.height - overlayHeight),
+      rawLocalY,
+      timedCanvasTop,
+      Math.max(timedCanvasTop, targetDay.height - overlayHeight),
     );
     const minute = targetDay.mapper.inv(localY);
     const snap = timelineDragSnapMinutes(stateRef.current.zoom);
     const snappedMinute = Math.round(minute / snap) * snap;
-
-    onMoveEvent({
-      fromDateKey: runtime.fromDateKey,
-      toDateKey: targetDay.dateKey,
-      eventId: runtime.event.id,
-      startMinute: snappedMinute,
-    });
-    suppressClickRef.current = runtime.event.id;
     const duration = runtime.event.endMinute - runtime.event.startMinute;
     const bounded = clamp(
       snappedMinute,
       0,
       TIMELINE_MINUTES_PER_DAY - duration,
     );
+
+    suppressClickRef.current = runtime.event.id;
+    if (
+      targetDay.dateKey === runtime.fromDateKey &&
+      bounded === runtime.event.startMinute
+    ) {
+      finishDragVisual();
+      return;
+    }
+
+    onMoveEvent({
+      fromDateKey: runtime.fromDateKey,
+      toDateKey: targetDay.dateKey,
+      eventId: runtime.event.id,
+      startMinute: bounded,
+    });
     onMoveFeedback(
       `${t(($) => $.common.home.timeline.feedback.moved)} ${formatTimelineMinute(bounded)}–${formatTimelineMinute(bounded + duration)}`,
     );
@@ -796,30 +891,63 @@ export function TimelineDayStream({
     dateKey: string,
     direction: 'earlier' | 'later' | 'previous-day' | 'next-day',
   ) => {
+    const commitKeyboardMove = (
+      toDateKey: string,
+      startMinute: number,
+      feedback: string,
+    ) => {
+      onMoveEvent({
+        fromDateKey: dateKey,
+        toDateKey,
+        eventId: event.id,
+        startMinute,
+        undoGroup: 'keyboard-nudge',
+      });
+      onMoveFeedback(feedback);
+      scheduleEventReveal(event.id, true);
+    };
+
     const snap = timelineDragSnapMinutes(state.zoom);
     if (direction === 'previous-day' || direction === 'next-day') {
       const delta = direction === 'next-day' ? 1 : -1;
       const toDateKey = timelineDateKey(
         addTimelineDays(parseTimelineDate(dateKey), delta),
       );
-      onMoveEvent({
-        fromDateKey: dateKey,
-        toDateKey: toDateKey,
-        eventId: event.id,
-        startMinute: event.startMinute,
-      });
-      onMoveFeedback(t(($) => $.common.home.timeline.feedback.movedDay));
+      commitKeyboardMove(
+        toDateKey,
+        event.startMinute,
+        t(($) => $.common.home.timeline.feedback.movedDay),
+      );
       return;
     }
 
+    const duration = event.endMinute - event.startMinute;
     const delta = direction === 'later' ? snap : -snap;
-    onMoveEvent({
-      fromDateKey: dateKey,
-      toDateKey: dateKey,
-      eventId: event.id,
-      startMinute: event.startMinute + delta,
-    });
-    onMoveFeedback(t(($) => $.common.home.timeline.feedback.movedTime));
+    const candidateStart = event.startMinute + delta;
+
+    if (candidateStart < 0) {
+      commitKeyboardMove(
+        timelineDateKey(addTimelineDays(parseTimelineDate(dateKey), -1)),
+        Math.max(0, TIMELINE_MINUTES_PER_DAY - duration),
+        t(($) => $.common.home.timeline.feedback.movedDay),
+      );
+      return;
+    }
+
+    if (candidateStart + duration > TIMELINE_MINUTES_PER_DAY) {
+      commitKeyboardMove(
+        timelineDateKey(addTimelineDays(parseTimelineDate(dateKey), 1)),
+        0,
+        t(($) => $.common.home.timeline.feedback.movedDay),
+      );
+      return;
+    }
+
+    commitKeyboardMove(
+      dateKey,
+      candidateStart,
+      t(($) => $.common.home.timeline.feedback.movedTime),
+    );
   };
 
   useEffect(() => {
@@ -828,10 +956,186 @@ export function TimelineDayStream({
       if (autoScrollFrameRef.current !== null) {
         cancelAnimationFrame(autoScrollFrameRef.current);
       }
+      if (revealFrameRef.current !== null) {
+        cancelAnimationFrame(revealFrameRef.current);
+      }
+      if (scrubberFrameRef.current !== null) {
+        cancelAnimationFrame(scrubberFrameRef.current);
+      }
       runtimeRef.current?.overlay?.remove();
       runtimeRef.current?.card.classList.remove('is-drag-source');
     };
   }, []);
+
+  const updateTemporalScrubberOffset = (clientY: number) => {
+    const scrubber = scrubberRef.current;
+    const thumb = scrubberThumbRef.current;
+    const runtime = scrubberRuntimeRef.current;
+    if (!scrubber || !thumb || !runtime) {
+      return;
+    }
+
+    const rect = scrubber.getBoundingClientRect();
+    const neutralY =
+      rect.top + rect.height * TIMELINE_POLICY.viewport.contextProbeRatio;
+    const edgeInset = TIMELINE_POLICY.scrubber.edgeInsetPx;
+    const maximumUp = Math.max(1, neutralY - rect.top - edgeInset);
+    const maximumDown = Math.max(1, rect.bottom - neutralY - edgeInset);
+    const rawOffset = clientY - neutralY;
+    const offset = clamp(rawOffset, -maximumUp, maximumDown);
+
+    runtime.offsetPx = offset;
+    runtime.travelPx = offset < 0 ? maximumUp : maximumDown;
+    thumb.style.transform = `translate(-50%, -50%) translateY(${offset}px)`;
+  };
+
+  const temporalScrubberTick = (time: number) => {
+    const runtime = scrubberRuntimeRef.current;
+    const grid = gridRef.current;
+    if (!runtime || !grid) {
+      scrubberFrameRef.current = null;
+      return;
+    }
+
+    const elapsedSeconds = Math.min(
+      TIMELINE_POLICY.scrubber.maxFrameSeconds,
+      Math.max(0, time - runtime.lastFrame) / 1000,
+    );
+    runtime.lastFrame = time;
+
+    const normalized = clamp(
+      Math.abs(runtime.offsetPx) / Math.max(1, runtime.travelPx),
+      0,
+      1,
+    );
+    const deadZone = TIMELINE_POLICY.scrubber.deadZoneRatio;
+    const intensity = clamp(
+      (normalized - deadZone) / Math.max(0.001, 1 - deadZone),
+      0,
+      1,
+    );
+
+    if (intensity > 0) {
+      const easedIntensity = Math.pow(
+        intensity,
+        TIMELINE_POLICY.scrubber.velocityExponent,
+      );
+      const speed =
+        TIMELINE_POLICY.scrubber.minPxPerSecond +
+        easedIntensity *
+          (TIMELINE_POLICY.scrubber.maxPxPerSecond -
+            TIMELINE_POLICY.scrubber.minPxPerSecond);
+      const direction = runtime.offsetPx < 0 ? -1 : 1;
+      const maximumScrollTop = Math.max(
+        0,
+        grid.scrollHeight - grid.clientHeight,
+      );
+      grid.scrollTop = clamp(
+        grid.scrollTop + direction * speed * elapsedSeconds,
+        0,
+        maximumScrollTop,
+      );
+    }
+
+    scrubberFrameRef.current = requestAnimationFrame(temporalScrubberTick);
+  };
+
+  const finishTemporalScrub = (pointerId?: number) => {
+    const runtime = scrubberRuntimeRef.current;
+    if (runtime && pointerId !== undefined && runtime.pointerId !== pointerId) {
+      return;
+    }
+
+    if (scrubberFrameRef.current !== null) {
+      cancelAnimationFrame(scrubberFrameRef.current);
+      scrubberFrameRef.current = null;
+    }
+    scrubberRuntimeRef.current = null;
+    scrubberRef.current?.removeAttribute('data-active');
+    scrubberThumbRef.current?.style.removeProperty('transform');
+  };
+
+  const beginTemporalScrub = (
+    pointerEvent: ReactPointerEvent<HTMLDivElement>,
+  ) => {
+    if (
+      pointerEvent.button !== 0 ||
+      (pointerEvent.pointerType !== 'mouse' && !pointerEvent.isPrimary)
+    ) {
+      return;
+    }
+
+    pointerEvent.preventDefault();
+    finishTemporalScrub();
+    scrubberRuntimeRef.current = {
+      pointerId: pointerEvent.pointerId,
+      offsetPx: 0,
+      travelPx: 1,
+      lastFrame: performance.now(),
+    };
+    pointerEvent.currentTarget.setPointerCapture(pointerEvent.pointerId);
+    pointerEvent.currentTarget.setAttribute('data-active', 'true');
+    updateTemporalScrubberOffset(pointerEvent.clientY);
+    scrubberFrameRef.current = requestAnimationFrame(temporalScrubberTick);
+  };
+
+  const moveTemporalScrub = (
+    pointerEvent: ReactPointerEvent<HTMLDivElement>,
+  ) => {
+    if (scrubberRuntimeRef.current?.pointerId !== pointerEvent.pointerId) {
+      return;
+    }
+    pointerEvent.preventDefault();
+    updateTemporalScrubberOffset(pointerEvent.clientY);
+  };
+
+  const endTemporalScrub = (
+    pointerEvent: ReactPointerEvent<HTMLDivElement>,
+  ) => {
+    if (scrubberRuntimeRef.current?.pointerId !== pointerEvent.pointerId) {
+      return;
+    }
+    finishTemporalScrub(pointerEvent.pointerId);
+    if (pointerEvent.currentTarget.hasPointerCapture(pointerEvent.pointerId)) {
+      pointerEvent.currentTarget.releasePointerCapture(pointerEvent.pointerId);
+    }
+  };
+
+  const keyboardScrollTimeline = (
+    keyboardEvent: KeyboardEvent<HTMLDivElement>,
+  ) => {
+    if (
+      keyboardEvent.currentTarget !== keyboardEvent.target ||
+      keyboardEvent.altKey ||
+      keyboardEvent.ctrlKey ||
+      keyboardEvent.metaKey
+    ) {
+      return;
+    }
+
+    const grid = keyboardEvent.currentTarget;
+    let delta: number | null = null;
+    if (keyboardEvent.key === 'ArrowUp') {
+      delta = -TIMELINE_POLICY.scrubber.keyboardStepPx;
+    } else if (keyboardEvent.key === 'ArrowDown') {
+      delta = TIMELINE_POLICY.scrubber.keyboardStepPx;
+    } else if (keyboardEvent.key === 'PageUp') {
+      delta = -grid.clientHeight * TIMELINE_POLICY.scrubber.keyboardPageRatio;
+    } else if (keyboardEvent.key === 'PageDown') {
+      delta = grid.clientHeight * TIMELINE_POLICY.scrubber.keyboardPageRatio;
+    }
+
+    if (delta === null) {
+      return;
+    }
+
+    keyboardEvent.preventDefault();
+    grid.scrollTop = clamp(
+      grid.scrollTop + delta,
+      0,
+      Math.max(0, grid.scrollHeight - grid.clientHeight),
+    );
+  };
 
   const handleGridScroll = () => {
     const grid = gridRef.current;
@@ -848,8 +1152,16 @@ export function TimelineDayStream({
     target instanceof Element &&
     target.closest('.timeline-event-card.is-focused') !== null;
 
+  const frameStyle = {
+    '--timeline-context-probe-ratio':
+      TIMELINE_POLICY.viewport.contextProbeRatio,
+  } as CSSProperties;
+
   return (
-    <div className="timeline-frame timeline-frame--production">
+    <div
+      className="timeline-frame timeline-frame--production"
+      style={frameStyle}
+    >
       <div className="timeline-ruler" aria-hidden="true">
         <div ref={rulerStreamRef} className="timeline-ruler-stream">
           {days.map((day) => (
@@ -884,13 +1196,20 @@ export function TimelineDayStream({
       <div
         ref={gridRef}
         className={`timeline-grid${expanded ? ' is-expanded' : ''}`}
+        data-temporal-scroll="relative"
+        tabIndex={0}
+        role="region"
+        aria-label={t(($) => $.common.home.timeline.label)}
+        onKeyDown={keyboardScrollTimeline}
         onPointerDownCapture={(pointerEvent) => {
           const target = pointerEvent.target;
           const card =
             target instanceof Element
               ? target.closest<HTMLElement>('[data-timeline-event]')
               : null;
-          const dateSection = card?.closest<HTMLElement>('[data-timeline-date]');
+          const dateSection = card?.closest<HTMLElement>(
+            '[data-timeline-date]',
+          );
           const eventId = card?.dataset.timelineEvent ?? null;
           const dateKey = dateSection?.dataset.timelineDate ?? null;
           if (!eventId || !dateKey) {
@@ -976,6 +1295,45 @@ export function TimelineDayStream({
             {t(($) => $.common.home.timeline.streamHint)}
           </div>
         </div>
+      </div>
+
+      <div
+        ref={scrubberRef}
+        className="timeline-temporal-scrubber"
+        data-temporal-scrubber="relative"
+        aria-hidden="true"
+        onPointerDown={beginTemporalScrub}
+        onPointerMove={moveTemporalScrub}
+        onPointerUp={endTemporalScrub}
+        onPointerCancel={endTemporalScrub}
+        onLostPointerCapture={(pointerEvent) =>
+          finishTemporalScrub(pointerEvent.pointerId)
+        }
+        onWheel={(wheelEvent) => {
+          const grid = gridRef.current;
+          if (!grid) {
+            return;
+          }
+          wheelEvent.preventDefault();
+          if (wheelEvent.ctrlKey) {
+            const factor = TIMELINE_POLICY.zoom.wheelStepFactor;
+            onZoomAt(
+              wheelEvent.clientY,
+              wheelEvent.deltaY < 0 ? factor : 1 / factor,
+            );
+            return;
+          }
+          grid.scrollTop = clamp(
+            grid.scrollTop + wheelEvent.deltaY,
+            0,
+            Math.max(0, grid.scrollHeight - grid.clientHeight),
+          );
+        }}
+      >
+        <span
+          ref={scrubberThumbRef}
+          className="timeline-temporal-scrubber__thumb"
+        />
       </div>
 
       <div

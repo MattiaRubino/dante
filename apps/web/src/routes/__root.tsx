@@ -1,9 +1,31 @@
-import { Outlet, createRootRoute } from '@tanstack/react-router';
+import type { QueryClient } from '@tanstack/react-query';
+import {
+  Outlet,
+  createRootRouteWithContext,
+  useMatches,
+} from '@tanstack/react-router';
 
-export const Route = createRootRoute({
+import { RouteObserver } from '../platform/observability';
+
+import type { RecoveryProofStore } from '../platform/auth/recovery-proof';
+
+type WebRouterContext = Readonly<{
+  queryClient: QueryClient;
+  recoveryProofStore: RecoveryProofStore;
+}>;
+
+export const Route = createRootRouteWithContext<WebRouterContext>()({
   component: RootLayout,
 });
 
 function RootLayout() {
-  return <Outlet />;
+  const matches = useMatches();
+  const routeId = matches.at(-1)?.routeId ?? 'unknown';
+
+  return (
+    <>
+      <RouteObserver routeId={routeId} />
+      <Outlet />
+    </>
+  );
 }

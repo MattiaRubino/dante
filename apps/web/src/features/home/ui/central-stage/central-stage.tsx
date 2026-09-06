@@ -197,14 +197,11 @@ function projectVisibleWorlds(position: number, width: number) {
     const x = baseX + sign * (7 * adjacentWeight);
     const magnet = Math.max(0, 1 - distance / 1.06);
     const baseScale =
-      (0.62 +
-        magnet * 0.52 +
-        Math.max(0, 1 - distance / 2.45) * 0.1) *
+      (0.62 + magnet * 0.52 + Math.max(0, 1 - distance / 2.45) * 0.1) *
       metrics.scale;
     const scale = clamp(baseScale + 0.03 * adjacentWeight, 0.58, 1.18);
     const opacity = clamp(1 - distance * 0.17, 0.5, 1);
-    const y =
-      9 - Math.max(0, 1 - distance / 1.56) * 18 - 1.5 * adjacentWeight;
+    const y = 9 - Math.max(0, 1 - distance / 1.56) * 18 - 1.5 * adjacentWeight;
 
     visible.push({
       logical,
@@ -261,14 +258,7 @@ function drawWorldEffects(
     context.save();
     context.globalCompositeOperation = 'screen';
 
-    const glow = context.createRadialGradient(
-      x,
-      y,
-      0,
-      x,
-      y,
-      radius + 92,
-    );
+    const glow = context.createRadialGradient(x, y, 0, x, y, radius + 92);
     glow.addColorStop(0, rgba(rgb, item.active ? 0.11 : 0.07));
     glow.addColorStop(0.48, rgba(rgb, item.active ? 0.045 : 0.028));
     glow.addColorStop(1, 'rgba(0,0,0,0)');
@@ -281,10 +271,7 @@ function drawWorldEffects(
       const ringRadius = radius + 8 + arc * 6;
       context.beginPath();
       context.arc(x, y, ringRadius, -2.38 + arc * 0.2, -1.54 + arc * 0.2);
-      context.strokeStyle = rgba(
-        rgb,
-        (item.active ? 0.21 : 0.17) - arc * 0.03,
-      );
+      context.strokeStyle = rgba(rgb, (item.active ? 0.21 : 0.17) - arc * 0.03);
       context.lineWidth = 1;
       context.stroke();
 
@@ -512,9 +499,7 @@ export function CentralStage() {
     [position, sceneSize.width],
   );
 
-  const activeWorld = getWorld(
-    modulo(Math.round(position), WORLDS.length),
-  );
+  const activeWorld = getWorld(modulo(Math.round(position), WORLDS.length));
 
   useEffect(() => {
     const canvas = fxCanvasRef.current;

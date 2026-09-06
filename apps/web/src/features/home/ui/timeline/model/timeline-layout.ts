@@ -22,7 +22,9 @@ function timelineEventsOverlap(
   left: TimelineEvent,
   right: TimelineEvent,
 ): boolean {
-  return left.startMinute < right.endMinute && right.startMinute < left.endMinute;
+  return (
+    left.startMinute < right.endMinute && right.startMinute < left.endMinute
+  );
 }
 
 export function computeTimelineOverlapLayout(

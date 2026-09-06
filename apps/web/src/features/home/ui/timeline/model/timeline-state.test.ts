@@ -98,6 +98,76 @@ describe('timeline state', () => {
     });
   });
 
+  it('coalesces consecutive keyboard nudges into one undo origin across days', () => {
+    const initial = createInitialTimelineState();
+    const original = eventById(initial, '2026-08-04', '8');
+    expect(original).toBeTruthy();
+
+    let state = timelineReducer(initial, {
+      type: 'move-event',
+      fromDateKey: '2026-08-04',
+      toDateKey: '2026-08-04',
+      eventId: '8',
+      startMinute: 23 * 60 + 15,
+      undoGroup: 'keyboard-nudge',
+    });
+    state = timelineReducer(state, {
+      type: 'move-event',
+      fromDateKey: '2026-08-04',
+      toDateKey: '2026-08-05',
+      eventId: '8',
+      startMinute: 0,
+      undoGroup: 'keyboard-nudge',
+    });
+    state = timelineReducer(state, {
+      type: 'move-event',
+      fromDateKey: '2026-08-05',
+      toDateKey: '2026-08-05',
+      eventId: '8',
+      startMinute: 5,
+      undoGroup: 'keyboard-nudge',
+    });
+
+    expect(eventById(state, '2026-08-04', '8')).toBeUndefined();
+    expect(eventById(state, '2026-08-05', '8')).toMatchObject({
+      startMinute: 5,
+      endMinute: 50,
+    });
+
+    const restored = timelineReducer(state, {
+      type: 'undo-last-event-change',
+    });
+    expect(eventById(restored, '2026-08-05', '8')).toBeUndefined();
+    expect(eventById(restored, '2026-08-04', '8')).toEqual(original);
+  });
+
+  it('starts a fresh undo snapshot after a non-keyboard move', () => {
+    const initial = createInitialTimelineState();
+    let state = timelineReducer(initial, {
+      type: 'move-event',
+      fromDateKey: '2026-08-04',
+      toDateKey: '2026-08-04',
+      eventId: '12',
+      startMinute: 15 * 60,
+      undoGroup: 'keyboard-nudge',
+    });
+    state = timelineReducer(state, {
+      type: 'move-event',
+      fromDateKey: '2026-08-04',
+      toDateKey: '2026-08-04',
+      eventId: '12',
+      startMinute: 16 * 60,
+    });
+
+    const restored = timelineReducer(state, {
+      type: 'undo-last-event-change',
+    });
+    expect(eventById(restored, '2026-08-04', '12')).toMatchObject({
+      startMinute: 15 * 60,
+      endMinute: 15 * 60 + 15,
+    });
+  });
+
   it('rejects invalid time-editor commits', () => {
     const initial = createInitialTimelineState();
     const invalid = timelineReducer(initial, {

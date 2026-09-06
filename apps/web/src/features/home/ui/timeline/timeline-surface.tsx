@@ -13,10 +13,15 @@ import { useTranslation } from 'react-i18next';
 
 import './timeline.css';
 
+import { createTimelineLocalContext } from './model/timeline-context-catalog';
 import {
   TIMELINE_PROTOTYPE_NOW_MINUTE,
   TIMELINE_PROTOTYPE_TODAY,
 } from './model/timeline-fixtures';
+import {
+  timelineEffectiveScrollBehavior,
+  timelinePrefersReducedMotion,
+} from './model/timeline-motion';
 import {
   TIMELINE_POLICY,
   timelineSupportsExpandedLayout,
@@ -26,10 +31,18 @@ import {
   timelineReducer,
 } from './model/timeline-state';
 import {
+  addTimelineDays,
   formatTimelineMinute,
+  parseTimelineDate,
   timelineDateKey,
 } from './model/timeline-temporal';
-import type { TimelineEvent, TimelineGroupId } from './model/timeline-types';
+import type {
+  TimelineEvent,
+  TimelineGroup,
+  TimelineGroupId,
+  TimelineSemanticTone,
+} from './model/timeline-types';
+import { applyTimelineAllDayGeometry } from './timeline-all-day-runtime';
 import { TimelineDayStream } from './timeline-day-stream';
 import { TimelineHeader } from './timeline-header';
 import {
@@ -45,6 +58,7 @@ import {
 import {
   applyTimelineExpansion,
   buildTimelineRenderedDays,
+  captureTimelineViewportAnchor,
   clampTimelineRuntime,
   findTimelineDayAtOffset,
   parseTimelineViewedDate,
@@ -104,12 +118,6 @@ export function TimelineSurface({
   );
   const [anchor, setAnchor] = useState<PlainDate>(() => initialDate);
   const [viewDate, setViewDate] = useState<PlainDate>(() => initialDate);
-  const [pastDays, setPastDays] = useState<number>(
-    TIMELINE_POLICY.window.initialPastDays,
-  );
-  const [futureDays, setFutureDays] = useState<number>(
-    TIMELINE_POLICY.window.initialFutureDays,
-  );
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [viewOptionsOpen, setViewOptionsOpen] = useState(false);
   const [timeEditor, setTimeEditor] = useState<TimeEditorState | null>(null);
@@ -138,12 +146,8 @@ export function TimelineSurface({
   const initialScrollDoneRef = useRef(false);
   const initialViewPublishedRef = useRef(false);
   const rawScrollRestoreRef = useRef<number | null>(null);
-  const pastExtensionRestoreRef = useRef<{
-    scrollTop: number;
-    scrollHeight: number;
-  } | null>(null);
-  const extendingPastRef = useRef(false);
-  const extendingFutureRef = useRef(false);
+  const windowTransitionRef = useRef(false);
+  const lastScrollTopRef = useRef<number | null>(null);
   const scrollFrameRef = useRef<number | null>(null);
   const toastTimerRef = useRef<number | null>(null);
 
@@ -156,15 +160,24 @@ export function TimelineSurface({
     }),
     [state.eventsByDate, state.expandedEventIds, state.groups, state.zoom],
   );
-  const renderedDays = useMemo(
+  const baseRenderedDays = useMemo(
     () =>
       buildTimelineRenderedDays(
         anchor,
-        pastDays,
-        futureDays,
+        TIMELINE_POLICY.window.pastBufferDays,
+        TIMELINE_POLICY.window.futureBufferDays,
         renderedDayInputs,
       ),
-    [anchor, futureDays, pastDays, renderedDayInputs],
+    [anchor, renderedDayInputs],
+  );
+  const renderedDays = useMemo(
+    () =>
+      applyTimelineAllDayGeometry(
+        baseRenderedDays,
+        state.allDayItems,
+        state.filters,
+      ),
+    [baseRenderedDays, state.allDayItems, state.filters],
   );
 
   useLayoutEffect(() => {
@@ -252,10 +265,14 @@ export function TimelineSurface({
         target.minute === null ? 0 : day.mapper.map(target.minute);
       const viewportOffset = target.viewportOffset ?? 0;
       const top = Math.max(0, day.offsetTop + minuteOffset - viewportOffset);
-      if (target.behavior === 'auto' || typeof grid.scrollTo !== 'function') {
+      const behavior = timelineEffectiveScrollBehavior(
+        target.behavior,
+        timelinePrefersReducedMotion(),
+      );
+      if (behavior === 'auto' || typeof grid.scrollTo !== 'function') {
         grid.scrollTop = top;
       } else {
-        grid.scrollTo({ top, behavior: target.behavior });
+        grid.scrollTo({ top, behavior });
       }
       return true;
     },
@@ -289,9 +306,8 @@ export function TimelineSurface({
         return;
       }
       pendingScrollTargetRef.current = target;
+      windowTransitionRef.current = true;
       setAnchor(date);
-      setPastDays(TIMELINE_POLICY.window.initialPastDays);
-      setFutureDays(TIMELINE_POLICY.window.initialFutureDays);
     },
     [onDateNavigation, publishViewportDate, scrollToRenderedDay, timelineToday],
   );
@@ -359,40 +375,41 @@ export function TimelineSurface({
         });
       }
 
+      const previousScrollTop = lastScrollTopRef.current ?? scrollTop;
+      const verticalDelta = scrollTop - previousScrollTop;
+      lastScrollTopRef.current = scrollTop;
+
+      let shiftDays = 0;
       if (
-        scrollTop < TIMELINE_POLICY.window.extendPastTriggerPx &&
-        pastDays < TIMELINE_POLICY.window.maxPastDays &&
-        !extendingPastRef.current
+        verticalDelta < 0 &&
+        scrollTop < TIMELINE_POLICY.window.recyclePastTriggerPx
       ) {
-        extendingPastRef.current = true;
-        pastExtensionRestoreRef.current = {
-          scrollTop,
-          scrollHeight: grid.scrollHeight,
-        };
-        setPastDays((value) =>
-          Math.min(
-            TIMELINE_POLICY.window.maxPastDays,
-            value + TIMELINE_POLICY.window.extendByDays,
-          ),
-        );
+        shiftDays = -TIMELINE_POLICY.window.shiftByDays;
+      } else if (
+        verticalDelta > 0 &&
+        scrollTop + grid.clientHeight >
+          grid.scrollHeight - TIMELINE_POLICY.window.recycleFutureTriggerPx
+      ) {
+        shiftDays = TIMELINE_POLICY.window.shiftByDays;
       }
 
-      if (
-        scrollTop + grid.clientHeight >
-          grid.scrollHeight - TIMELINE_POLICY.window.extendFutureTriggerPx &&
-        futureDays < TIMELINE_POLICY.window.maxFutureDays &&
-        !extendingFutureRef.current
-      ) {
-        extendingFutureRef.current = true;
-        setFutureDays((value) =>
-          Math.min(
-            TIMELINE_POLICY.window.maxFutureDays,
-            value + TIMELINE_POLICY.window.extendByDays,
-          ),
+      if (shiftDays !== 0 && !windowTransitionRef.current) {
+        const viewportAnchor = captureTimelineViewportAnchor(
+          renderedDaysRef.current,
+          scrollTop,
+          TIMELINE_POLICY.window.recycleAnchorViewportOffsetPx,
         );
+        if (viewportAnchor) {
+          pendingScrollTargetRef.current = {
+            ...viewportAnchor,
+            behavior: 'auto',
+          };
+          windowTransitionRef.current = true;
+          setAnchor((current) => addTimelineDays(current, shiftDays));
+        }
       }
     },
-    [expanded, futureDays, pastDays, synchronizeViewportContext],
+    [expanded, synchronizeViewportContext],
   );
 
   const zoomAt = useCallback(
@@ -417,6 +434,17 @@ export function TimelineSurface({
       dispatch({ type: 'set-zoom', zoom: state.zoom * factor });
     },
     [state.zoom],
+  );
+
+  const createContext = useCallback(
+    (label: string, tone: TimelineSemanticTone): TimelineGroup => {
+      const result = createTimelineLocalContext(state.groups, label, tone);
+      if (result.created) {
+        dispatch({ type: 'create-group', group: result.group });
+      }
+      return result.group;
+    },
+    [state.groups],
   );
 
   const preserveRawScroll = useCallback(() => {
@@ -488,15 +516,6 @@ export function TimelineSurface({
       }
     }
 
-    const pastRestore = pastExtensionRestoreRef.current;
-    if (pastRestore) {
-      const delta = grid.scrollHeight - pastRestore.scrollHeight;
-      grid.scrollTop = pastRestore.scrollTop + Math.max(0, delta);
-      pastExtensionRestoreRef.current = null;
-    }
-    extendingPastRef.current = false;
-    extendingFutureRef.current = false;
-
     const rawScroll = rawScrollRestoreRef.current;
     if (rawScroll !== null) {
       grid.scrollTop = rawScroll;
@@ -506,7 +525,9 @@ export function TimelineSurface({
     const target = pendingScrollTargetRef.current;
     if (target && scrollToRenderedDay(target, renderedDays)) {
       pendingScrollTargetRef.current = null;
+      windowTransitionRef.current = false;
     }
+    lastScrollTopRef.current = grid.scrollTop;
 
     synchronizeViewportContext(grid.scrollTop);
     applyTimelineExpansion(
@@ -718,6 +739,19 @@ export function TimelineSurface({
             grid.scrollLeft = scrollLeft;
           }
         }}
+        onCreateContext={createContext}
+        onMaterializeCreatedEvent={(dateKey, event) =>
+          dispatch({ type: 'materialize-event', dateKey, event })
+        }
+        onMaterializeCreatedAllDay={(item) =>
+          dispatch({ type: 'materialize-all-day', item })
+        }
+        onRemoveCreatedEvent={(eventId) =>
+          dispatch({ type: 'remove-event', eventId })
+        }
+        onRemoveCreatedAllDay={(itemId) =>
+          dispatch({ type: 'remove-all-day', itemId })
+        }
       />
 
       <TimelineDayStream
@@ -755,7 +789,22 @@ export function TimelineSurface({
           setTimeEditor({ dateKey, event, anchor: editorAnchor })
         }
         onMoveEvent={(move) => {
-          preserveRawScroll();
+          const targetIsRendered = renderedDaysRef.current.some(
+            (day) => day.dateKey === move.toDateKey,
+          );
+          if (targetIsRendered) {
+            preserveRawScroll();
+          } else {
+            rawScrollRestoreRef.current = null;
+            pendingScrollTargetRef.current = {
+              dateKey: move.toDateKey,
+              minute: move.startMinute,
+              viewportOffset: TIMELINE_POLICY.viewport.eventRevealInsetPx,
+              behavior: 'auto',
+            };
+            windowTransitionRef.current = true;
+            setAnchor(parseTimelineDate(move.toDateKey));
+          }
           dispatch({ type: 'move-event', ...move });
         }}
         onMoveFeedback={showFeedback}

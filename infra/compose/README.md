@@ -1,153 +1,64 @@
 # DANTE LOCAL infrastructure
 
-This directory owns the developer-facing Docker Compose entry point for DANTE LOCAL stateful infrastructure.
+- **Status:** CURRENT / OPERATIONAL REFERENCE
+- **Last reconciled:** 2026-09-05
 
-The Compose topology still contains only PostgreSQL. The backend process continues to run directly in WSL during the normal developer inner loop. CP3 consumes this PostgreSQL boundary without adding a backend container, PgBouncer or additional LOCAL services.
+This directory owns the developer-facing Docker Compose entry point for DANTE LOCAL PostgreSQL, the optional Platform Observability profile and the isolated PostgreSQL recovery harness.
 
-## Prerequisites
+Current repository baseline:
 
-- Docker Desktop running with the WSL2 backend;
-- Ubuntu-24.04 WSL integration enabled;
-- Docker CLI and Compose available from WSL without `sudo`;
-- repository checked out on the Linux filesystem.
+```text
+PostgreSQL       18.6
+Alembic          20260904_17
+topology         88|5|16|76|172|89|270|0|0|0
+LOCAL Recovery   CP07 DATABASE-LOCAL PASS / CP08 APPLICATION+EMAIL REOPEN PASS
+Observability    OPTIONAL COMPOSE PROFILE / ACCEPTED IN CURRENT TREE
+remote provider  TBD / NOT ACTIVATED
+cloud recovery   NOT CLAIMED
+```
 
-Run commands below from the repository root.
+Detailed historical Recovery exact-head/timing evidence is intentionally not duplicated here; it remains in `../../docs/archive/branches/2026-08-feature-postgres-recovery.md`, retained evidence and Git history. This README describes the current operational surface directly.
 
-## Create the LOCAL PostgreSQL admin secret
+## 1. Normal LOCAL PostgreSQL
 
-The real password file is workstation-local and ignored by Git.
+Prerequisites:
+
+```text
+Docker Desktop + WSL2 backend
+Ubuntu WSL integration
+Docker CLI / Compose available without sudo
+Docker Compose >= 2.24.4 for the recovery overlay `!override` tag
+repository on Linux filesystem
+```
+
+Create the ignored LOCAL bootstrap secret once:
 
 ```bash
 mkdir -p infra/compose/secrets
 umask 077
 python3 - <<'PY' > infra/compose/secrets/postgres_password.local
 import secrets
-
 print(secrets.token_urlsafe(32))
 PY
 ```
 
-Do not commit, paste into documentation, or reuse this LOCAL credential in DEV/UAT/PROD.
-
-This credential belongs to the LOCAL platform/bootstrap administrator `postgres`. It is not the normal backend runtime credential.
-
-## Validate Compose configuration
+Normal LOCAL commands:
 
 ```bash
 docker compose -f infra/compose/local.yaml config --quiet
-```
-
-## Build PostgreSQL
-
-Normal rebuild:
-
-```bash
 docker compose -f infra/compose/local.yaml build postgres
-```
-
-CP2 first-build acceptance also proved a clean build on the then-current PostgreSQL 18.4 image:
-
-```bash
-docker compose -f infra/compose/local.yaml build --no-cache postgres
-```
-
-The DANTE image is based on the immutable OCI index digest recorded in `infra/local/postgres/Dockerfile` and installs exact PostGIS/pgvector PGDG package versions.
-
-The current LOCAL image name is:
-
-```text
-dante-postgres-local:18.6
-```
-
-CP2/CP3 original direct evidence remains historically tied to PostgreSQL 18.4. CP6 refreshed the current PostgreSQL 18 maintenance patch to 18.6 and directly re-proved the technical foundation remotely in Backend CI run `32568664940` at HEAD `ec3dc795b5e044daa3a77723c94a1b4b5b92865c`.
-
-The real-PostgreSQL tests deliberately reuse the current exact image in one disposable acceptance container per pytest PostgreSQL session. They do not mutate the ordinary Compose cluster.
-
-## Start and inspect
-
-```bash
 docker compose -f infra/compose/local.yaml up -d --wait
 docker compose -f infra/compose/local.yaml ps
-docker compose -f infra/compose/local.yaml logs postgres
 ```
 
-The normal LOCAL service is published only on:
+Normal endpoint and image:
 
 ```text
 127.0.0.1:5432
+dante-postgres-local:18.6
 ```
 
-Container-to-container DNS, when a future Compose service needs it, uses:
-
-```text
-postgres:5432
-```
-
-## Connect with psql inside the container
-
-```bash
-docker compose -f infra/compose/local.yaml exec postgres \
-  psql -U postgres -d dante
-```
-
-The `postgres` identity remains the LOCAL platform/bootstrap administrator. CP3 does **not** run FastAPI or Alembic as this superuser.
-
-## CP3 application database roles
-
-CP3 provisions the application security boundary separately from Compose/initdb:
-
-```text
-dante_owner      NOLOGIN ownership identity
-dante_migrator   LOGIN migration identity
-dante_runtime    LOGIN normal backend runtime identity
-```
-
-The explicit provisioning command owns creation/reconciliation of these roles, their memberships, the `dante` schema, database/schema hardening and default privileges.
-
-Conceptual LOCAL invocation from `apps/backend`:
-
-```bash
-DANTE_DATABASE__HOST=127.0.0.1 \
-DANTE_DATABASE__PORT=5432 \
-DANTE_DATABASE__NAME=dante \
-DANTE_ADMIN__USER=postgres \
-DANTE_ADMIN__PASSWORD="$(cat ../../infra/compose/secrets/postgres_password.local)" \
-DANTE_MIGRATOR__PASSWORD='<generated LOCAL migrator secret>' \
-DANTE_RUNTIME__PASSWORD='<generated LOCAL runtime secret>' \
-uv run python -m dante.platform.database.provisioning
-```
-
-The migrator/runtime values must be generated independently, kept outside Git and supplied only to the process that needs them. The backend runtime receives only the runtime credential. Alembic receives only the migrator credential.
-
-`dante_owner` has `NOLOGIN` and therefore no password.
-
-Detailed persistence/security authority is recorded in:
-
-`docs/development/backend-cp3-persistence-contract.md`
-
-## Stop while preserving data
-
-```bash
-docker compose -f infra/compose/local.yaml down
-```
-
-The named volume remains. A later `up -d --wait` recreates the container against the same PostgreSQL cluster, including previously provisioned application roles/schema and data.
-
-## Destructive LOCAL reset
-
-```bash
-docker compose -f infra/compose/local.yaml down --volumes
-```
-
-**This destroys the LOCAL PostgreSQL cluster and all data/application roles stored in it.**
-
-The next `up -d --wait` performs a fresh `initdb` and reruns `/docker-entrypoint-initdb.d/010-extensions.sql`. CP3 application roles/schema must then be provisioned again before the normal backend can connect as `dante_runtime`.
-
-Init scripts are bootstrap scripts, not a migration system, and they do not rerun against an already initialized volume.
-
-## Selected database capabilities
-
-A fresh current Compose `dante` database contains:
+Selected database capabilities:
 
 ```text
 PostgreSQL           18.6
@@ -159,76 +70,288 @@ pg_stat_statements   enabled + preloaded
 native FTS           available
 ```
 
-CP3 adds the dedicated application schema `dante`; extension/provider objects remain outside DANTE schema authority.
+Application database roles are provisioned explicitly by the backend:
 
-Detailed CP2 SQL/image/lifecycle evidence remains in:
+```text
+dante_owner      NOLOGIN ownership identity
+dante_migrator   LOGIN migration identity
+dante_runtime    LOGIN application runtime identity
+```
 
-`docs/development/backend-cp2-postgres-contract.md`
+The canonical application schema is `dante`; the current Alembic head is `20260904_17`.
 
-That CP2 document intentionally preserves the exact PostgreSQL 18.4 phase-time image and direct evidence; it is historical evidence, not the current image tag.
+## 2. Persistence/reset behavior
 
-## PostgreSQL acceptance isolation
+Preserve LOCAL data:
 
-The real database test suite does not use SQLite and does not point destructive provisioning tests at the ordinary LOCAL Compose cluster.
+```bash
+docker compose -f infra/compose/local.yaml down
+```
+
+Destroy LOCAL named-volume state intentionally:
+
+```bash
+docker compose -f infra/compose/local.yaml down --volumes
+```
+
+`down --volumes` destroys the ordinary LOCAL PostgreSQL cluster and named volumes attached by `infra/compose/local.yaml`, including the ordinary-local pgBackRest repository volume. Application roles/schema must then be provisioned again before normal runtime use.
+
+Initdb scripts bootstrap extensions only; they are not a migration system.
+
+## 3. Platform Observability profile
+
+The normal Compose path remains usable without telemetry. Platform Observability is an explicit optional profile layered into the same current `local.yaml`.
+
+Prepare the LOCAL observer/Grafana secrets according to `../observability/README.md`, then expose only the caller's private WSL group to the non-root Alloy process:
+
+```bash
+export DANTE_OBSERVABILITY_LOG_GID="$(id -g)"
+docker compose -f infra/compose/local.yaml --profile observability up -d --wait
+```
+
+The profile starts the current PostgreSQL service plus hardened Grafana Alloy. Alloy uses the dedicated `dante_observer` DSN, not backend runtime or administrator credentials. `dante_observer` is limited to `pg_read_all_stats` and has no DANTE/public business-object access.
+
+LOCAL Alloy endpoints are loopback-only:
+
+```text
+UI / health   http://127.0.0.1:12345
+OTLP gRPC     127.0.0.1:4317
+OTLP HTTP     http://127.0.0.1:4318
+Faro          http://127.0.0.1:12347/collect
+```
+
+Canonical observability references:
+
+- `../observability/README.md` — collector, secrets, Grafana Cloud and operational assets
+- `../../docs/architecture/observability-runtime-contract.md` — privacy/cardinality/failure contract
+- `../../docs/development/observability-runbook.md` — operator verification and incident procedure
+
+The application must remain available if Alloy or Grafana Cloud is unavailable. Telemetry queues/retries are bounded; telemetry failure never changes product/database truth.
+
+## 4. Real PostgreSQL acceptance isolation
+
+Backend PostgreSQL acceptance does not use SQLite and must not mutate the ordinary LOCAL cluster.
 
 From `apps/backend`:
 
 ```bash
-uv run pytest -m postgres
+uv run --frozen pytest -m postgres
 ```
 
-The current test harness:
+The test harness uses disposable PostgreSQL state, generated test credentials and the current DANTE image.
+
+## 5. Isolated recovery topology
+
+Materialize repository-level recovery prerequisites with:
+
+```bash
+bash infra/local/postgres/recovery/bootstrap-local-recovery.sh
+```
+
+The bootstrap is idempotent, branch-agnostic and fail-closed. It requires a clean attached Git branch with configured upstream and exact HEAD/upstream equality, creates missing LOCAL recovery secrets without overwriting existing non-empty values, validates mode/ignore policy and Compose, then builds the pinned recovery image.
+
+Recovery uses:
 
 ```text
-requires dante-postgres-local:18.6
-creates one loopback-only disposable PostgreSQL container
-uses generated test-only admin/migrator/runtime secrets
-creates fresh databases inside that isolated cluster
-installs the exact selected extension envelope
-runs provisioning + Alembic + runtime/transaction/privilege tests
-destroys the acceptance container after the pytest session
+base     infra/compose/local.yaml
+overlay  infra/compose/postgres-recovery.override.yaml
+project  dante-postgres-recovery
 ```
 
-The isolation is necessary because PostgreSQL roles are cluster-global; using the normal LOCAL cluster would allow acceptance provisioning to change the real LOCAL `dante_runtime` / `dante_migrator` credentials.
+Resolve it with:
 
-If the required image is absent, PostgreSQL-marked tests fail explicitly instead of skipping.
+```bash
+docker compose \
+  -p dante-postgres-recovery \
+  -f infra/compose/local.yaml \
+  -f infra/compose/postgres-recovery.override.yaml \
+  config
+```
 
-Current PostgreSQL 18.6 remote regression evidence:
+Current isolated topology:
 
 ```text
-Backend CI run        32568664940
-HEAD                  ec3dc795b5e044daa3a77723c94a1b4b5b92865c
-Backend PostgreSQL    SUCCESS
-PostgreSQL suite      18 / 18 PASS
-Backend Quality       SUCCESS
-Backend CI Gate       SUCCESS
+image             dante-postgres-recovery:18.6-pgbackrest-2.59.1
+host endpoint     127.0.0.1:55432
+PostgreSQL volume dante-postgres-recovery_postgres-data
+pgBackRest volume dante-postgres-recovery_pgbackrest-repository
+PGDATA            /var/lib/postgresql/18/docker
+repository path   /var/lib/pgbackrest
+stanza            dante
 ```
 
-## Windows database GUI
+The recovery PostgreSQL source enables archive mode, pgBackRest WAL archiving, replica-level WAL and `pg_stat_statements`. LOCAL pgBackRest retention uses `repo1-retention-full=2`; this is a LOCAL harness policy, not a production-provider contract.
 
-DBeaver or PyCharm Database Tools on Windows can connect to the normal LOCAL Compose database through:
+## 6. Recovery safety boundary
 
 ```text
-Host      127.0.0.1
-Port      5432
-Database  dante
+PGDATA volume
+!=
+pgBackRest repository volume
 ```
 
-For platform/bootstrap inspection use `postgres` with the contents of `infra/compose/secrets/postgres_password.local`.
+Destructive database rehearsals may delete only the explicitly named recovery PGDATA volume after the script's manual confirmation. They must not delete the pgBackRest repository or ordinary `dante-local` volumes.
 
-After CP3 provisioning, application-level inspection can also use `dante_runtime` with the separately generated LOCAL runtime credential, subject to its intentionally restricted privileges.
+`pg_isready` alone is not a recovery-acceptance gate. Traffic/readiness acceptance requires at least:
 
-The CP2 Windows GUI acceptance remains historical direct evidence and is not re-opened by the later PostgreSQL 18.6 patch refresh.
+```text
+pg_is_in_recovery() = false
+PostgreSQL 18.6
+current Alembic head
+current topology/security checks
+semantic recovery checks
+suppression-ledger reconciliation
+```
 
-## Boundaries
+For application/Email reopen, CP08 additionally requires fail-closed Email reconciliation before workers/provider I/O resume.
 
-This Compose configuration still does not provide:
+## 7. Current database acceptance contract
 
-- a backend application container;
-- PgBouncer;
-- business/domain tables;
-- PowerSync or Restate;
-- backup/recovery services;
-- cloud or production infrastructure.
+Reusable recovery harnesses expect:
 
-SQLAlchemy/psycopg/Alembic and application database roles belong to CP3 backend/tooling, not to the Compose service definition itself.
+```text
+Alembic          20260904_17
+tables           88
+views             5
+routines         16
+triggers         76
+indexes          172
+foreign keys      89
+CHECKs           270
+other forbidden   0
+```
+
+They also verify the presence/security posture of `dante.material_state_retirement` and runtime SELECT-only behavior.
+
+## 8. Recovery commands
+
+Archive failure/retry:
+
+```bash
+bash infra/local/postgres/recovery/archive-failure-recovery-check.sh
+```
+
+Materialize current database + FULL:
+
+```bash
+bash infra/local/postgres/recovery/cp04-materialize-backup.sh
+```
+
+Destructive isolated restore:
+
+```bash
+bash infra/local/postgres/recovery/cp04-destructive-restore-check.sh
+```
+
+Requires `DELETE_RECOVERY_PGDATA`.
+
+Prepare deterministic PITR source:
+
+```bash
+bash infra/local/postgres/recovery/cp05-prepare-pitr-source.sh
+```
+
+Destructive named-target PITR:
+
+```bash
+bash infra/local/postgres/recovery/cp05-destructive-pitr-check.sh
+```
+
+Requires `DELETE_RECOVERY_PGDATA_FOR_PITR`.
+
+CP06 failure matrix:
+
+```bash
+bash infra/local/postgres/recovery/cp06-failure-matrix-check.sh
+```
+
+CP06 SC-011 anti-resurrection:
+
+```bash
+bash infra/local/postgres/recovery/cp06-sc011-anti-resurrection-check.sh
+```
+
+CP07 whole LOCAL operator rehearsal:
+
+```bash
+bash infra/local/postgres/recovery/cp07-whole-recovery-rehearsal.sh
+```
+
+Ignored evidence output:
+
+```text
+infra/compose/secrets/postgres_recovery_cp07_report.json.local
+```
+
+CP08 Email/application reopen rehearsal:
+
+```bash
+bash infra/local/postgres/recovery/cp08-email-application-reopen-rehearsal.sh
+```
+
+Ignored evidence output:
+
+```text
+infra/compose/secrets/postgres_recovery_cp08_email_report.json.local
+```
+
+Accepted evidence scope remains:
+
+```text
+CP07 database-local reopen                           PASS
+CP08 restored sendable Email work reconciliation    PASS
+Email workers during reconciliation                 STOPPED
+sensitive delivery material wipe                    PASS
+second reconciliation                               IDEMPOTENT
+claimable Email work before reopen                  0
+application / Email reopen                          PASS
+remote backup provider                              TBD / NOT ACTIVATED
+production/cloud recovery                           NOT CLAIMED
+```
+
+## 9. Suppression-ledger contract
+
+The external recovery suppression ledger is independent from both canonical PGDATA and the database backup repository.
+
+```text
+PREPARED
+→ canonical PostgreSQL retirement/redaction commit
+→ canonical read-back verification
+→ COMMITTED bound to PREPARED SHA-256
+```
+
+Ambiguous/tampered state blocks recovery. The ledger is technical disaster-recovery evidence only; PostgreSQL remains canonical.
+
+## 10. Future remote-provider boundary
+
+```text
+remote backup provider      TBD
+remote provider activated   NO
+production/cloud recovery   NOT CLAIMED
+```
+
+A future provider must preserve the pgBackRest-compatible recovery path, durable/appropriately immutable remote storage, finite retention, independent least-privilege credentials, required residency properties, backup/WAL readback, restore/PITR proof and suppression evidence across the full resurrection horizon.
+
+Provider selection, credentials, costs and production acceptance remain deferred.
+
+## 11. Authority
+
+```text
+current database contract
+→ ../../docs/database/README.md
+
+current observability contract
+→ ../observability/README.md
+→ ../../docs/architecture/observability-runtime-contract.md
+
+operator recovery procedure
+→ ../../docs/operations/postgres-recovery-runbook.md
+
+executable recovery truth
+→ ../local/postgres/recovery/
+
+historical Recovery branch narrative
+→ ../../docs/archive/branches/2026-08-feature-postgres-recovery.md
+```
+
+Git and archived evidence preserve chronology; this README stays focused on the current operational contract.

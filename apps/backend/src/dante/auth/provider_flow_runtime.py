@@ -1,0 +1,186 @@
+"""Process-scoped M5 provider/authenticator lifecycle runtime reusing accepted Auth resources."""
+
+from dataclasses import dataclass
+
+from dante.auth.apple import (
+    AppleClientSecretSigner,
+    AppleNotificationVerifier,
+    AppleProtocolClient,
+    AppleTokenVerifier,
+)
+from dante.auth.apple_flow import AppleFlowService
+from dante.auth.authenticator_lifecycle import AuthenticatorLifecycleService
+from dante.auth.email_delivery import UnavailableEmailDelivery
+from dante.auth.google import GoogleTokenVerifier
+from dante.auth.lifecycle import KeyedRateLimiter
+from dante.auth.lifecycle_runtime import AuthLifecycleRuntime
+from dante.auth.passkey_flow import PasskeyFlowLimiters, PasskeyFlowService
+from dante.auth.proofs import ProviderEnrollmentOtpCodec
+from dante.auth.provider_continuation import ProviderContinuationService
+from dante.auth.provider_flow import ProviderFlowLimiters, ProviderFlowService
+from dante.auth.service import AuthRuntime
+from dante.platform.config.auth import AuthSettings
+from dante.platform.database.runtime import DatabaseRuntime
+
+
+@dataclass(frozen=True, slots=True)
+class ProviderFlowRuntime:
+    """M5 provider flows plus Account-wide authenticator/passkey lifecycle authority."""
+
+    service: ProviderFlowService | None
+    apple_service: AppleFlowService | None
+    authenticator_service: AuthenticatorLifecycleService
+    passkey_service: PasskeyFlowService | None
+    continuation_service: ProviderContinuationService
+
+
+def create_provider_flow_runtime(
+    *,
+    settings: AuthSettings,
+    database_runtime: DatabaseRuntime,
+    auth_runtime: AuthRuntime,
+    lifecycle_runtime: AuthLifecycleRuntime,
+) -> ProviderFlowRuntime:
+    """Build provider/passkey flows without duplicate process-resource ownership."""
+    max_keys = settings.provider_rate_max_keys
+    limiters = ProviderFlowLimiters(
+        begin=KeyedRateLimiter(
+            capacity=settings.provider_begin_rate_capacity,
+            window_seconds=settings.provider_begin_rate_window_seconds,
+            max_keys=max_keys,
+        ),
+        complete=KeyedRateLimiter(
+            capacity=settings.provider_complete_rate_capacity,
+            window_seconds=settings.provider_complete_rate_window_seconds,
+            max_keys=max_keys,
+        ),
+        enrollment=KeyedRateLimiter(
+            capacity=settings.provider_enrollment_rate_capacity,
+            window_seconds=settings.provider_enrollment_rate_window_seconds,
+            max_keys=max_keys,
+        ),
+    )
+    otp_codec = ProviderEnrollmentOtpCodec(
+        key_ring=settings.signup_otp_key_bytes,
+        current_key_id=settings.signup_otp_current_key_id,
+    )
+    unavailable_email = UnavailableEmailDelivery()
+
+    google_service = (
+        ProviderFlowService(
+            session_factory=database_runtime.session_factory,
+            settings=settings,
+            google_verifier=GoogleTokenVerifier(
+                settings=settings.provider,
+                provider_runtime=auth_runtime.provider_runtime,
+            ),
+            otp_codec=otp_codec,
+            email_delivery=unavailable_email,
+            limiters=limiters,
+            email_outbox=(
+                lifecycle_runtime.email_platform.outbox
+                if lifecycle_runtime.email_platform is not None
+                else None
+            ),
+            email_wake=(
+                lifecycle_runtime.email_platform.wake
+                if lifecycle_runtime.email_platform is not None
+                else None
+            ),
+        )
+        if settings.provider.google.enabled
+        else None
+    )
+
+    apple_service: AppleFlowService | None = None
+    apple = settings.provider.apple
+    if apple.enabled:
+        if (
+            apple.client_id is None
+            or apple.team_id is None
+            or apple.key_id is None
+            or apple.client_private_key_pem is None
+            or auth_runtime.apple_grant_cipher is None
+        ):
+            raise RuntimeError("enabled Apple authentication lost validated runtime configuration")
+        signer = AppleClientSecretSigner(
+            team_id=apple.team_id,
+            key_id=apple.key_id,
+            client_id=apple.client_id,
+            private_key_pem=apple.client_private_key_pem,
+        )
+        protocol_client = AppleProtocolClient(
+            settings=settings.provider,
+            provider_runtime=auth_runtime.provider_runtime,
+            signer=signer,
+        )
+        token_verifier = AppleTokenVerifier(
+            settings=settings.provider,
+            provider_runtime=auth_runtime.provider_runtime,
+        )
+        apple_service = AppleFlowService(
+            session_factory=database_runtime.session_factory,
+            settings=settings,
+            token_verifier=token_verifier,
+            notification_verifier=AppleNotificationVerifier(
+                settings=settings.provider,
+                provider_runtime=auth_runtime.provider_runtime,
+            ),
+            protocol_client=protocol_client,
+            grant_cipher=auth_runtime.apple_grant_cipher,
+            otp_codec=otp_codec,
+            email_delivery=unavailable_email,
+            limiters=limiters,
+            email_outbox=(
+                lifecycle_runtime.email_platform.outbox
+                if lifecycle_runtime.email_platform is not None
+                else None
+            ),
+            email_wake=(
+                lifecycle_runtime.email_platform.wake
+                if lifecycle_runtime.email_platform is not None
+                else None
+            ),
+        )
+
+    authenticator_service = AuthenticatorLifecycleService(
+        session_factory=database_runtime.session_factory,
+        settings=settings,
+        apple_reconciler=(
+            apple_service.reconcile_expired_pending_grants if apple_service is not None else None
+        ),
+    )
+
+    passkey_service: PasskeyFlowService | None = None
+    if settings.provider.webauthn.enabled:
+        webauthn_policy = auth_runtime.webauthn_policy
+        if webauthn_policy is None:
+            raise RuntimeError("enabled WebAuthn lost validated process-scoped policy")
+        webauthn = settings.provider.webauthn
+        passkey_service = PasskeyFlowService(
+            session_factory=database_runtime.session_factory,
+            settings=settings,
+            policy=webauthn_policy,
+            limiters=PasskeyFlowLimiters(
+                begin=KeyedRateLimiter(
+                    capacity=webauthn.begin_rate_capacity,
+                    window_seconds=webauthn.begin_rate_window_seconds,
+                    max_keys=webauthn.rate_max_keys,
+                ),
+                complete=KeyedRateLimiter(
+                    capacity=webauthn.complete_rate_capacity,
+                    window_seconds=webauthn.complete_rate_window_seconds,
+                    max_keys=webauthn.rate_max_keys,
+                ),
+            ),
+        )
+
+    return ProviderFlowRuntime(
+        service=google_service,
+        apple_service=apple_service,
+        authenticator_service=authenticator_service,
+        passkey_service=passkey_service,
+        continuation_service=ProviderContinuationService(
+            session_factory=database_runtime.session_factory,
+        ),
+    )

@@ -29,6 +29,16 @@ export const common = {
     title: 'Gesture probe',
     description: 'Tap this surface to exercise Gesture Handler + Reanimated.',
   },
+  observability: {
+    failure: {
+      eyebrow: 'DANTE',
+      title: 'Something went wrong',
+      description:
+        'The interface encountered an unexpected error. You can retry without giving up control of the session, or reload the page.',
+      retry: 'Try again',
+      reload: 'Reload page',
+    },
+  },
   access,
   shell,
   home,

@@ -1,0 +1,163 @@
+{
+  "suite_id": "dante-mini-baseline-v2",
+  "version": 2,
+  "description": "Corrected successor to mini-baseline-v1. It preserves the historical v1 fixture set and replaces only fixtures whose oracle or normalization contract was found ambiguous during the GPT-4.1 baseline review.",
+  "base_suite": "mini-baseline-v1.json",
+  "fixture_replacements": [
+    {
+      "id": "e03-structured-event-extraction",
+      "family": "DANTE-E03",
+      "locale": "it-IT",
+      "description": "Estrazione strutturata da testo esplicito senza inventare campi mancanti, con normalizzazione temporale dichiarata.",
+      "requires_model": true,
+      "input": "Testo catturato: \"Dentista martedì 15 settembre 2026 alle 16:30, Studio Verdi. Portare la panoramica.\"\nIl testo descrive un appuntamento esterno fissato.",
+      "instructions": "Estrai solo informazioni esplicite. Classifica secondo la semantica DANTE: un appuntamento esterno fissato è un Event. Normalizza ogni data esplicita nel formato ISO 8601 YYYY-MM-DD.",
+      "max_output_tokens": 220,
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": ["event", "activity", "note", "unresolved"]
+          },
+          "date": {
+            "type": ["string", "null"],
+            "description": "Data canonica ISO 8601 nel formato YYYY-MM-DD, oppure null se assente."
+          },
+          "time": {
+            "type": ["string", "null"]
+          },
+          "location": {
+            "type": ["string", "null"]
+          },
+          "note": {
+            "type": ["string", "null"]
+          }
+        },
+        "required": ["kind", "date", "time", "location", "note"],
+        "additionalProperties": false
+      },
+      "assertions": [
+        {
+          "kind": "equals",
+          "path": "kind",
+          "expected": "event",
+          "severity": "quality"
+        },
+        {
+          "kind": "equals",
+          "path": "date",
+          "expected": "2026-09-15",
+          "severity": "hard"
+        },
+        {
+          "kind": "equals",
+          "path": "time",
+          "expected": "16:30",
+          "severity": "hard"
+        },
+        {
+          "kind": "equals",
+          "path": "location",
+          "expected": "Studio Verdi",
+          "severity": "quality"
+        },
+        {
+          "kind": "equals",
+          "path": "note",
+          "expected": "Portare la panoramica.",
+          "severity": "quality"
+        }
+      ]
+    },
+    {
+      "id": "e11-declared-vs-observed",
+      "family": "DANTE-E11",
+      "locale": "it-IT",
+      "description": "Il comportamento osservato non deve sovrascrivere automaticamente una preferenza dichiarata; mantenere la dichiarazione o chiedere conferma sono entrambi esiti validi.",
+      "requires_model": true,
+      "input": "Preferenza dichiarata D1: \"Preferisco iniziare a lavorare alle 07:00.\"\nOsservazione O1: nelle ultime 5 giornate l'utente ha iniziato alle 08:30.\nNon esiste una conferma che D1 sia cambiata.",
+      "instructions": "Distingui preferenza dichiarata da osservazione. Una breve serie osservata non autorizza la modifica permanente. Puoi mantenere la preferenza dichiarata o chiedere conferma, ma non sostituirla senza conferma.",
+      "max_output_tokens": 180,
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "update_memory": {
+            "type": "boolean"
+          },
+          "action": {
+            "type": "string",
+            "enum": ["keep_declared", "ask_confirmation", "replace_declared"]
+          }
+        },
+        "required": ["update_memory", "action"],
+        "additionalProperties": false
+      },
+      "assertions": [
+        {
+          "kind": "equals",
+          "path": "update_memory",
+          "expected": false,
+          "severity": "hard"
+        },
+        {
+          "kind": "not_equals",
+          "path": "action",
+          "expected": "replace_declared",
+          "severity": "hard"
+        }
+      ]
+    },
+    {
+      "id": "e12-currentness-supersession",
+      "family": "DANTE-E12",
+      "locale": "en-US",
+      "description": "A stale source revision must not be published as current, and stale references use canonical record identifiers.",
+      "requires_model": true,
+      "input": "Two authorised records refer to the same plan:\nV1 revision=1, status=ACTIVE, valid_until=2026-08-31.\nV2 revision=2, status=PAUSED, valid_from=2026-09-01.\nCurrent date in this synthetic fixture: 2026-09-04.\nQuestion: What is the current plan status?",
+      "instructions": "Use currentness and supersession. Do not publish the older revision as current. In rejected_stale_refs return only the canonical record identifiers V1 or V2, never descriptive labels.",
+      "max_output_tokens": 180,
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "current_revision": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["ACTIVE", "PAUSED"]
+          },
+          "rejected_stale_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["V1", "V2"]
+            }
+          }
+        },
+        "required": ["current_revision", "status", "rejected_stale_refs"],
+        "additionalProperties": false
+      },
+      "assertions": [
+        {
+          "kind": "equals",
+          "path": "current_revision",
+          "expected": 2,
+          "severity": "hard"
+        },
+        {
+          "kind": "equals",
+          "path": "status",
+          "expected": "PAUSED",
+          "severity": "hard"
+        },
+        {
+          "kind": "set_equals",
+          "path": "rejected_stale_refs",
+          "expected": ["V1"],
+          "severity": "quality"
+        }
+      ]
+    }
+  ]
+}

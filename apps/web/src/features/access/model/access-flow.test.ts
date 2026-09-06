@@ -80,6 +80,35 @@ describe('accessFlowReducer', () => {
     expect(sentState.screen.id).toBe('RECOVERY_SENT');
   });
 
+  it('materializes authoritative M4 exception outcomes without inventing success', () => {
+    const existing = accessFlowReducer(initialAccessFlowState, {
+      type: 'SERVER_SIGN_UP_EXISTING_ACCOUNT',
+    });
+    expect(existing).toEqual({
+      screen: { id: 'SIGN_IN' },
+      condition: { kind: 'existing-account' },
+    });
+
+    const verifyState = {
+      screen: { id: 'VERIFY_EMAIL', email: 'person@example.com' } as const,
+      condition: { kind: 'idle' } as const,
+    };
+    expect(
+      accessFlowReducer(verifyState, {
+        type: 'SERVER_VERIFICATION_INVALID_OR_EXPIRED',
+      }).condition,
+    ).toEqual({ kind: 'verification-invalid-or-expired' });
+
+    expect(
+      accessFlowReducer(initialAccessFlowState, {
+        type: 'SERVER_RECOVERY_INVALID_OR_EXPIRED',
+      }),
+    ).toEqual({
+      screen: { id: 'FORGOT_PASSWORD', email: '' },
+      condition: { kind: 'recovery-invalid-or-expired' },
+    });
+  });
+
   it('preserves offline authority when a transport-dependent action is requested', () => {
     const offlineState = accessFlowReducer(initialAccessFlowState, {
       type: 'NETWORK_OFFLINE',
@@ -165,9 +194,12 @@ describe('Access local validation', () => {
     expect(isValidAccessEmail('not-an-email')).toBe(false);
   });
 
-  it('enforces only the approved signup minimum length locally', () => {
+  it('enforces the approved 15 Unicode-code-point minimum locally', () => {
     expect(isValidNewPassword('short')).toBe(false);
-    expect(isValidNewPassword('twelve-chars')).toBe(true);
+    expect(isValidNewPassword('a'.repeat(14))).toBe(false);
+    expect(isValidNewPassword('a'.repeat(15))).toBe(true);
+    expect(isValidNewPassword('😀'.repeat(14))).toBe(false);
+    expect(isValidNewPassword('😀'.repeat(15))).toBe(true);
     expect(isValidNewPassword('a'.repeat(80))).toBe(true);
   });
 });

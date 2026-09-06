@@ -8,6 +8,7 @@ import {
 } from './timeline-fixtures';
 import { clampTimelineZoom } from './timeline-policy';
 import type {
+  TimelineAllDayItem,
   TimelineEvent,
   TimelineEventId,
   TimelineGroup,
@@ -20,15 +21,19 @@ export type TimelineViewOptions = Readonly<{
   showMilestones: boolean;
 }>;
 
+type TimelineUndoGroup = 'single' | 'keyboard-nudge';
+
 type TimelineUndoSnapshot = Readonly<{
   eventId: TimelineEventId;
   beforeDateKey: string;
   beforeEvent: TimelineEvent;
   afterDateKey: string;
+  group: TimelineUndoGroup;
 }>;
 
 export type TimelineState = Readonly<{
   eventsByDate: Readonly<Record<string, readonly TimelineEvent[]>>;
+  allDayItems: readonly TimelineAllDayItem[];
   groups: readonly TimelineGroup[];
   filters: ReadonlySet<TimelineGroupId>;
   focusedEventId: TimelineEventId | null;
@@ -41,6 +46,7 @@ export type TimelineState = Readonly<{
 export type TimelineAction =
   | Readonly<{ type: 'toggle-filter'; groupId: TimelineGroupId }>
   | Readonly<{ type: 'reset-groups-focus' }>
+  | Readonly<{ type: 'create-group'; group: TimelineGroup }>
   | Readonly<{
       type: 'reorder-group';
       groupId: TimelineGroupId;
@@ -62,6 +68,17 @@ export type TimelineAction =
     }>
   | Readonly<{ type: 'reset-view-options' }>
   | Readonly<{
+      type: 'materialize-event';
+      dateKey: string;
+      event: TimelineEvent;
+    }>
+  | Readonly<{
+      type: 'materialize-all-day';
+      item: TimelineAllDayItem;
+    }>
+  | Readonly<{ type: 'remove-event'; eventId: TimelineEventId }>
+  | Readonly<{ type: 'remove-all-day'; itemId: string }>
+  | Readonly<{
       type: 'update-event-time';
       dateKey: string;
       eventId: TimelineEventId;
@@ -74,6 +91,7 @@ export type TimelineAction =
       toDateKey: string;
       eventId: TimelineEventId;
       startMinute: number;
+      undoGroup?: 'keyboard-nudge';
     }>
   | Readonly<{ type: 'undo-last-event-change' }>;
 
@@ -94,11 +112,23 @@ function sortEvents(
   );
 }
 
+function sortAllDayItems(
+  items: readonly TimelineAllDayItem[],
+): readonly TimelineAllDayItem[] {
+  return [...items].sort(
+    (left, right) =>
+      left.startDateKey.localeCompare(right.startDateKey) ||
+      left.endDateExclusiveKey.localeCompare(right.endDateExclusiveKey) ||
+      left.id.localeCompare(right.id),
+  );
+}
+
 export function createInitialTimelineState(
   fixtureAnchor: PlainDate = TIMELINE_PROTOTYPE_TODAY,
 ): TimelineState {
   return {
     eventsByDate: createTimelinePrototypeStore(fixtureAnchor),
+    allDayItems: [],
     groups: [...TIMELINE_GROUPS],
     filters: new Set<TimelineGroupId>(),
     focusedEventId: null,
@@ -118,6 +148,16 @@ export function timelineEventsForDate(
   );
 }
 
+export function timelineAllDayItemsForDate(
+  state: TimelineState,
+  dateKey: string,
+): readonly TimelineAllDayItem[] {
+  return state.allDayItems.filter(
+    (item) =>
+      item.startDateKey <= dateKey && dateKey < item.endDateExclusiveKey,
+  );
+}
+
 export function findTimelineEvent(
   state: TimelineState,
   eventId: TimelineEventId,
@@ -132,6 +172,13 @@ export function findTimelineEvent(
   return null;
 }
 
+export function findTimelineAllDayItem(
+  state: TimelineState,
+  itemId: string,
+): TimelineAllDayItem | null {
+  return state.allDayItems.find((item) => item.id === itemId) ?? null;
+}
+
 function replaceDateEvents(
   state: TimelineState,
   dateKey: string,
@@ -141,6 +188,84 @@ function replaceDateEvents(
     ...state.eventsByDate,
     [dateKey]: sortEvents(events),
   };
+}
+
+function materializeEvent(
+  state: TimelineState,
+  action: Extract<TimelineAction, { type: 'materialize-event' }>,
+): TimelineState {
+  if (findTimelineEvent(state, action.event.id)) {
+    return state;
+  }
+
+  const events = timelineEventsForDate(state, action.dateKey);
+  return {
+    ...state,
+    eventsByDate: replaceDateEvents(state, action.dateKey, [
+      ...events,
+      action.event,
+    ]),
+  };
+}
+
+function materializeAllDay(
+  state: TimelineState,
+  action: Extract<TimelineAction, { type: 'materialize-all-day' }>,
+): TimelineState {
+  const item = action.item;
+  if (
+    findTimelineAllDayItem(state, item.id) ||
+    item.id.trim().length === 0 ||
+    item.title.trim().length === 0 ||
+    item.groupId.trim().length === 0 ||
+    item.startDateKey >= item.endDateExclusiveKey
+  ) {
+    return state;
+  }
+
+  return {
+    ...state,
+    allDayItems: sortAllDayItems([...state.allDayItems, item]),
+  };
+}
+
+function removeEvent(
+  state: TimelineState,
+  eventId: TimelineEventId,
+): TimelineState {
+  let removed = false;
+  const eventsByDate = Object.fromEntries(
+    Object.entries(state.eventsByDate).map(([dateKey, events]) => {
+      const next = events.filter((event) => event.id !== eventId);
+      if (next.length !== events.length) {
+        removed = true;
+      }
+      return [dateKey, next];
+    }),
+  );
+
+  if (!removed) {
+    return state;
+  }
+
+  const expandedEventIds = new Set(state.expandedEventIds);
+  expandedEventIds.delete(eventId);
+
+  return {
+    ...state,
+    eventsByDate,
+    focusedEventId:
+      state.focusedEventId === eventId ? null : state.focusedEventId,
+    expandedEventIds,
+    undo: state.undo?.eventId === eventId ? null : state.undo,
+  };
+}
+
+function removeAllDay(state: TimelineState, itemId: string): TimelineState {
+  const allDayItems = state.allDayItems.filter((item) => item.id !== itemId);
+  return allDayItems.length === state.allDayItems.length
+    ? state
+    : { ...state, allDayItems };
 }
 
 function updateEventTime(
@@ -165,6 +290,13 @@ function updateEventTime(
     return state;
   }
 
+  if (
+    current.startMinute === action.startMinute &&
+    current.endMinute === action.endMinute
+  ) {
+    return state;
+  }
+
   const nextEvent: TimelineEvent = {
     ...current,
     startMinute: action.startMinute,
@@ -182,7 +314,34 @@ function updateEventTime(
       beforeDateKey: action.dateKey,
       beforeEvent: current,
       afterDateKey: action.dateKey,
+      group: 'single',
     },
+  };
+}
+
+function moveUndoSnapshot(
+  state: TimelineState,
+  current: TimelineEvent,
+  action: Extract<TimelineAction, { type: 'move-event' }>,
+): TimelineUndoSnapshot {
+  if (
+    action.undoGroup === 'keyboard-nudge' &&
+    state.undo?.group === 'keyboard-nudge' &&
+    state.undo.eventId === current.id &&
+    state.undo.afterDateKey === action.fromDateKey
+  ) {
+    return {
+      ...state.undo,
+      afterDateKey: action.toDateKey,
+    };
+  }
+
+  return {
+    eventId: current.id,
+    beforeDateKey: action.fromDateKey,
+    beforeEvent: current,
+    afterDateKey: action.toDateKey,
+    group: action.undoGroup ?? 'single',
   };
 }
 
@@ -207,6 +366,16 @@ function moveEvent(
     endMinute: startMinute + duration,
   };
 
+  if (
+    action.fromDateKey === action.toDateKey &&
+    movedEvent.startMinute === current.startMinute &&
+    movedEvent.endMinute === current.endMinute
+  ) {
+    return state;
+  }
+
+  const undo = moveUndoSnapshot(state, current, action);
+
   if (action.fromDateKey === action.toDateKey) {
     const nextEvents = sourceEvents.map((event) =>
       event.id === action.eventId ? movedEvent : event,
@@ -214,12 +383,7 @@ function moveEvent(
     return {
       ...state,
       eventsByDate: replaceDateEvents(state, action.fromDateKey, nextEvents),
-      undo: {
-        eventId: current.id,
-        beforeDateKey: action.fromDateKey,
-        beforeEvent: current,
-        afterDateKey: action.toDateKey,
-      },
+      undo,
     };
   }
 
@@ -241,12 +405,7 @@ function moveEvent(
       ...withSourceUpdated,
       [action.toDateKey]: sortEvents([...targetEvents, movedEvent]),
     },
-    undo: {
-      eventId: current.id,
-      beforeDateKey: action.fromDateKey,
-      beforeEvent: current,
-      afterDateKey: action.toDateKey,
-    },
+    undo,
   };
 }
 
@@ -308,6 +467,19 @@ export function timelineReducer(
         focusedEventId: null,
       };
 
+    case 'create-group': {
+      const duplicate = state.groups.some(
+        (group) =>
+          group.id === action.group.id ||
+          group.label.localeCompare(action.group.label, undefined, {
+            sensitivity: 'accent',
+          }) === 0,
+      );
+      return duplicate
+        ? state
+        : { ...state, groups: [...state.groups, action.group] };
+    }
+
     case 'reorder-group': {
       const fromIndex = state.groups.findIndex(
         (group) => group.id === action.groupId,
@@ -362,6 +534,18 @@ export function timelineReducer(
 
     case 'reset-view-options':
       return { ...state, viewOptions: DEFAULT_VIEW_OPTIONS };
+
+    case 'materialize-event':
+      return materializeEvent(state, action);
+
+    case 'materialize-all-day':
+      return materializeAllDay(state, action);
+
+    case 'remove-event':
+      return removeEvent(state, action.eventId);
+
+    case 'remove-all-day':
+      return removeAllDay(state, action.itemId);
 
     case 'update-event-time':
       return updateEventTime(state, action);

@@ -6,10 +6,10 @@
 - First verified workstation checkpoint date: **2026-08-20**
 - First-workstation CP1/CP2 evidence below: **HISTORICAL / DIRECT QA PASS**
 - Production backend scaffold CP1–CP5: **CLOSED / INTEGRATED / DIRECT QA PASS**
-- Current backend workstream: `feature/logical-postgresql` — **CP6 ACTIVE / DESIGN-FIRST**
+- Current workstream: **DO NOT HARD-CODE A PERMANENT BRANCH HERE — read live project/branch authority before writes**
 - Current PostgreSQL technical image: **`dante-postgres-local:18.6`**
 - PostgreSQL 18.6 technical regression: **DIRECT REMOTE QA PASS — run `32568664940` / HEAD `ec3dc795b5e044daa3a77723c94a1b4b5b92865c`**
-- Current CP6 checkpoint: **CP6-02 CLOSED / GATE 02 PASS; CP6-03 NEXT / NOT STARTED**
+- Current database/recovery tree contract: **PostgreSQL 18.6 / Alembic 20260830_09 / CP01–CP07 LOCAL recovery CLOSED**
 
 ## 1. Purpose and evidence split
 
@@ -271,23 +271,23 @@ Current repository remote:
 https://github.com/MattiaRubino/dante.git
 ```
 
-The original backend-scaffold implementation used `feature/backend-scaffold`; that branch is now historical and its work is integrated through PR #24.
+The original backend scaffold and CP6 implementation branches are historical. A workstation bootstrap must never encode one feature branch as the permanent onboarding target.
 
-Current CP6 backend work uses:
-
-```text
-feature/logical-postgresql
-```
-
-When resuming CP6:
+After cloning:
 
 ```bash
 git fetch origin
-git switch feature/logical-postgresql
+git branch -a
+```
+
+Then read `docs/PROJECT-STATUS.md`, `docs/ROADMAP.md` and the bounded workstream authority before switching to the explicitly authorized branch:
+
+```bash
+git switch <authorized-branch>
 git pull --ff-only
 ```
 
-Never treat a workstream branch name as a permanent onboarding branch. Always consume `docs/PROJECT-STATUS.md` and the active durable workstream before writes.
+For recovery specifically, the permanent runner is branch-agnostic: it requires an attached clean branch with a configured upstream and exact `HEAD == upstream`, rather than requiring `feature/postgres-recovery` by name.
 
 ## 9. Install `uv`
 
@@ -858,19 +858,21 @@ Current repository truth:
 
 ```text
 Repository                         MattiaRubino/dante
-Current backend branch             feature/logical-postgresql
-Protected main                     contains CP1–CP5 via merged PR #24
+Active bounded backend branch      resolve from live Git refs + current workstream docs
+Protected main                     contains CP1–CP6; CP6 integrated via PR #42
 CP1–CP5                            CLOSED / INTEGRATED / DIRECT QA PASS
 CP6-00                             COMPLETE
 CP6-01                             CLOSED / GATE 01 PASS
 CP6-02                             CLOSED / GATE 02 PASS
-CP6-03                             NEXT / NOT STARTED
+CP6-03                             CLOSED / GATE 03 PASS
+Protected-main DB baseline          Alembic 20260826_08 / 68|5|14|75|95|68|120
+Recovery-tree DB evolution          Alembic 20260830_09 / 69|5|15|76|97|69|123
 PostgreSQL architecture            major 18
 Physical/CP2/CP3 exact patch       18.4 historical
 current PostgreSQL patch           18.6
 18.6 technical regression          DIRECT REMOTE QA PASS
-business persistence schema        NOT IMPLEMENTED
-Vertical #1 implementation         POST-CP6 / NOT STARTED
+business persistence schema        MATERIALIZED / CP6 CLOSED
+Vertical implementation status     resolve from live project/workstream docs
 ```
 
 ## 21. Resume rule
@@ -884,8 +886,40 @@ When continuing on a new machine or after interruption:
 5. treat the current repository-owned PostgreSQL image as `dante-postgres-local:18.6` unless newer gated repository truth supersedes it;
 6. use `uv run pytest -m postgres` for the current real PostgreSQL acceptance boundary;
 7. never infer business schema, HG/PSV, recovery or production PASS from technical infrastructure evidence;
-8. for CP6, current durable authority is `docs/workstreams/logical-postgresql.md`;
-9. treat CP6-02 as CLOSED / GATE 02 PASS and consume its closure record plus closed Constitution;
-10. current CP6 resume point is CP6-03 read/research/design-first;
-11. Vertical #1 implementation begins only after whole CP6 closure;
+8. treat CP6 durable records as historical closure evidence; resolve current work from live project/workstream authority;
+9. treat whole CP6 as CLOSED / accepted; individual CP6 gate records remain historical evidence;
+10. do not resume CP6 from historical checkpoint prose; CP6 is CLOSED;
+11. resolve current vertical implementation status from live project/workstream docs, not this workstation guide;
 12. before any repository write, follow the exact Git write gate for the active branch/workstream.
+
+
+## Reusable LOCAL PostgreSQL recovery after workstation prerequisites
+
+Once WSL/Linux, `uv`, Docker and Docker Compose are installed, repository-level recovery prerequisites are automated.
+
+From a clean clone/branch whose HEAD exactly matches its configured upstream:
+
+```bash
+bash infra/local/postgres/recovery/bootstrap-local-recovery.sh
+```
+
+The bootstrap is idempotent and fail-closed:
+
+```text
+validate Git clean/upstream state
+validate Linux Docker + Compose + uv + python3
+create the three ignored LOCAL recovery secrets only when absent
+never overwrite an existing non-empty secret
+force mode 0600
+validate Compose
+build the pinned PostgreSQL 18.6 / pgBackRest 2.59.1 recovery image
+create no PostgreSQL data volume
+```
+
+The complete LOCAL disaster-recovery rehearsal is then a single command:
+
+```bash
+bash infra/local/postgres/recovery/cp07-whole-recovery-rehearsal.sh
+```
+
+CP07 invokes the bootstrap itself, so on a fresh repository the separate bootstrap command is optional when the operator wants the full rehearsal immediately. Machine-level installation of WSL/Docker/uv remains a one-time workstation prerequisite.

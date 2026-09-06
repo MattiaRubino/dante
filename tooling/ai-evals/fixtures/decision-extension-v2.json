@@ -1,0 +1,74 @@
+{
+  "suite_id": "dante-decision-extension-v2",
+  "version": 2,
+  "description": "Corrected successor to decision-extension-v1. It preserves the historical v1 suite and replaces only the invoice-grounding fixture whose ISO date normalization requirement was previously implicit.",
+  "base_suite": "decision-extension-v1.json",
+  "fixture_replacements": [
+    {
+      "id": "e07-invoice-document-grounding",
+      "family": "DANTE-E07",
+      "locale": "it-IT",
+      "description": "Ground extraction in the correct current document section despite distractors, with an explicit canonical date-normalization contract.",
+      "requires_model": true,
+      "input": "Documento sintetico:\n[Pagina 1 - intestazione]\nFattura n. INV-204. Cliente: Aurora SRL.\n[Pagina 2 - riepilogo precedente, NON corrente]\nVecchio totale bozza: EUR 1.240,00. Scadenza bozza: 10/09/2026.\n[Pagina 3 - DATI FINALI APPROVATI]\nImponibile EUR 1.000,00. IVA EUR 220,00. TOTALE DOVUTO EUR 1.220,00.\nSCADENZA PAGAMENTO: 18/09/2026.\nLa pagina 3 sostituisce qualsiasi valore di bozza precedente.",
+      "instructions": "Usa solo i dati finali approvati e restituisci le pagine fonte. Normalizza due_date nel formato ISO 8601 YYYY-MM-DD.",
+      "max_output_tokens": 220,
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "invoice_ref": {
+            "type": "string"
+          },
+          "total_eur": {
+            "type": "number"
+          },
+          "due_date": {
+            "type": "string",
+            "description": "Data di scadenza canonica ISO 8601 nel formato YYYY-MM-DD."
+          },
+          "source_pages": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "enum": [1, 2, 3]
+            }
+          }
+        },
+        "required": ["invoice_ref", "total_eur", "due_date", "source_pages"],
+        "additionalProperties": false
+      },
+      "assertions": [
+        {
+          "kind": "equals",
+          "path": "invoice_ref",
+          "expected": "INV-204",
+          "severity": "hard"
+        },
+        {
+          "kind": "equals",
+          "path": "total_eur",
+          "expected": 1220.0,
+          "severity": "hard"
+        },
+        {
+          "kind": "equals",
+          "path": "due_date",
+          "expected": "2026-09-18",
+          "severity": "hard"
+        },
+        {
+          "kind": "contains",
+          "path": "source_pages",
+          "expected": 3,
+          "severity": "hard"
+        },
+        {
+          "kind": "not_contains",
+          "path": "source_pages",
+          "expected": 2,
+          "severity": "quality"
+        }
+      ]
+    }
+  ]
+}

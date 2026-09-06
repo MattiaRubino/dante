@@ -18,8 +18,23 @@ export type TimelineEvent = Readonly<{
   endMinute: number;
   title: string;
   groupId: TimelineGroupId;
+  /** Presentation-only override; grouping and filters continue to use groupId. */
+  appearanceTone?: TimelineSemanticTone;
+  origin?: 'create';
   meta?: string;
   subitems?: readonly string[];
+}>;
+
+export type TimelineAllDayItem = Readonly<{
+  id: string;
+  startDateKey: string;
+  endDateExclusiveKey: string;
+  title: string;
+  groupId: TimelineGroupId;
+  /** Presentation-only override; grouping and filters continue to use groupId. */
+  appearanceTone?: TimelineSemanticTone;
+  origin?: 'create';
+  meta?: string;
 }>;
 
 export type TimelineDay = Readonly<{
