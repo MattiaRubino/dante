@@ -13,6 +13,9 @@ from tooling.pre_vertical_foundation.account_seed import (
     require_seed_environment,
 )
 
+_RUNTIME_PASSWORD = "runtime-secret"  # noqa: S105 - synthetic configuration fixture
+_ACCOUNT_PASSWORD = "correct horse battery staple"  # noqa: S105 - synthetic fixture
+
 
 def _canonical_secret(raw: bytes) -> str:
     return urlsafe_b64encode(raw).rstrip(b"=").decode("ascii")
@@ -33,7 +36,7 @@ def test_database_target_requires_canonical_runtime_identity() -> None:
         "DANTE_DATABASE__HOST": "127.0.0.1",
         "DANTE_DATABASE__NAME": "dante",
         "DANTE_DATABASE__USER": "dante_runtime",
-        "DANTE_DATABASE__PASSWORD": "runtime-secret",
+        "DANTE_DATABASE__PASSWORD": _RUNTIME_PASSWORD,
     }
 
     target = database_target_from_environment(environ)
@@ -70,8 +73,8 @@ def test_password_pepper_configuration_requires_canonical_32_byte_base64url() ->
 
 def test_local_secret_requires_ignored_style_single_line_file(tmp_path: Path) -> None:
     secret_file = tmp_path / "dogfood_password.local"
-    secret_file.write_text("correct horse battery staple\n", encoding="utf-8")
-    assert read_local_secret(secret_file) == "correct horse battery staple"
+    secret_file.write_text(f"{_ACCOUNT_PASSWORD}\n", encoding="utf-8")
+    assert read_local_secret(secret_file) == _ACCOUNT_PASSWORD
 
     wrong_suffix = tmp_path / "dogfood_password.txt"
     wrong_suffix.write_text("secret", encoding="utf-8")
