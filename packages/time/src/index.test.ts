@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  detectDeviceTimeZone,
   instantToZonedDateTime,
   parseDuration,
   parseInstant,
@@ -8,6 +9,8 @@ import {
   parsePlainDateTime,
   parsePlainTime,
   parseZonedDateTime,
+  resolveEffectiveTimeZone,
+  validateNamedTimeZone,
   zonedDateTimeToInstant,
 } from './index';
 
@@ -43,6 +46,26 @@ describe('@dante/time', () => {
     expect(after.offset).toBe('+02:00');
   });
 
+  it('preserves both instants of the America/New_York autumn overlap', () => {
+    const earlier = instantToZonedDateTime(
+      parseInstant('2026-11-01T05:30:00Z'),
+      'America/New_York',
+    );
+    const later = instantToZonedDateTime(
+      parseInstant('2026-11-01T06:30:00Z'),
+      'America/New_York',
+    );
+
+    expect(earlier.hour).toBe(1);
+    expect(earlier.minute).toBe(30);
+    expect(earlier.offset).toBe('-04:00');
+
+    expect(later.hour).toBe(1);
+    expect(later.minute).toBe(30);
+    expect(later.offset).toBe('-05:00');
+    expect(earlier.toInstant().equals(later.toInstant())).toBe(false);
+  });
+
   it('round-trips an Instant through an IANA ZonedDateTime', () => {
     const original = parseInstant('2026-08-22T18:00:00Z');
     const zoned = instantToZonedDateTime(original, 'Europe/Rome');
@@ -72,5 +95,41 @@ describe('@dante/time', () => {
     expect(zonedDateTimeToInstant(zoned).toString()).toBe(
       '2026-08-22T18:00:00Z',
     );
+  });
+
+  it('detects the current device timezone through an injectable resolver', () => {
+    expect(detectDeviceTimeZone(() => 'Europe/Rome')).toBe('Europe/Rome');
+    expect(detectDeviceTimeZone(() => 'America/New_York')).toBe(
+      'America/New_York',
+    );
+  });
+
+  it('resolves follow-device policy from the currently detected device timezone', () => {
+    expect(
+      resolveEffectiveTimeZone({ mode: 'follow_device' }, 'Europe/Rome'),
+    ).toBe('Europe/Rome');
+    expect(
+      resolveEffectiveTimeZone({ mode: 'follow_device' }, 'America/New_York'),
+    ).toBe('America/New_York');
+  });
+
+  it('keeps fixed policy independent from a changed device timezone', () => {
+    expect(
+      resolveEffectiveTimeZone(
+        { mode: 'fixed', timeZone: 'Europe/Rome' },
+        'America/New_York',
+      ),
+    ).toBe('Europe/Rome');
+  });
+
+  it('rejects fixed UTC offsets where a named IANA timezone is required', () => {
+    expect(() => validateNamedTimeZone('+02:00')).toThrow(RangeError);
+    expect(() => validateNamedTimeZone('-0500')).toThrow(RangeError);
+  });
+
+  it('rejects missing device timezone for follow-device policy', () => {
+    expect(() =>
+      resolveEffectiveTimeZone({ mode: 'follow_device' }, undefined),
+    ).toThrow(RangeError);
   });
 });
