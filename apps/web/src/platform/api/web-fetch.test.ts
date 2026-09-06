@@ -30,7 +30,7 @@ describe('governed Web transport', () => {
     expect(headers.get('X-Existing')).toBe('value');
   });
 
-  it('fails before transport when device timezone detection fails', async () => {
+  it('fails before transport when device timezone detection fails', () => {
     let called = false;
     const fetchFn: typeof globalThis.fetch = () => {
       called = true;
@@ -40,9 +40,7 @@ describe('governed Web transport', () => {
       throw new RangeError('invalid timezone');
     });
 
-    await expect(webFetch('/api/v1/example')).rejects.toThrow(
-      'invalid timezone',
-    );
+    expect(() => webFetch('/api/v1/example')).toThrow('invalid timezone');
     expect(called).toBe(false);
   });
 });
