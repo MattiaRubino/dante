@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from dante.auth.contracts import Principal
 from dante.context.contracts import DanteContext, DanteContextIntegrityError
 from dante.platform.database.references import NativeRef, new_native_ref
-from dante.platform.time import InvalidTimeZoneError, TimeZoneMode, TimeZonePolicy
+from dante.platform.time import TimeZoneMode, TimeZonePolicy
 
 _CONTEXT_SELECT = text(
     """
@@ -88,7 +88,7 @@ def _context_from_persisted(
         fixed_zone_raw = row["fixed_zone_id"]
         fixed_zone_id = None if fixed_zone_raw is None else str(fixed_zone_raw)
         policy = TimeZonePolicy(mode=mode, fixed_zone_id=fixed_zone_id)
-    except (InvalidTimeZoneError, TypeError, ValueError) as exc:
+    except (TypeError, ValueError) as exc:
         raise DanteContextIntegrityError(
             "persisted authenticated DANTE context violates its storage contract"
         ) from exc
