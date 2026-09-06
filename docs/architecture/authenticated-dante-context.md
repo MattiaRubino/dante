@@ -1,6 +1,6 @@
 # Authenticated DANTE Application Context
 
-- **Status:** CURRENT / BRANCH-LOCAL PV-02 CANDIDATE
+- **Status:** CURRENT / BRANCH-LOCAL PV-02 IMPLEMENTED
 - **Branch:** `feature/pre-vertical-foundation`
 - **Introduced by:** `20260906_18`
 - **Scope:** authenticated Account → DANTE-facing self context and user/default timezone policy
@@ -50,6 +50,8 @@ fixed_zone_id     -> named IANA timezone only when mode=fixed
 The table has one row per Account because `account_ref` is its primary key. `self_person_ref` is intentionally not globally unique: PV-02 does not freeze a universal Account↔Person cardinality rule beyond the one self reference owned by this application-context row.
 
 The mapping does not make Account a 16th native Domain owner. `Person` remains one of the existing 15 NativeRef owners.
+
+`self_person_ref` is a homogeneous reference whose semantic target is specifically `Person`, so the canonical integrity mechanism is a direct FK to `dante.person`. `dante.native_address` remains the bounded address/control projection used when a consumer accepts genuinely heterogeneous NativeRef families. The bootstrap capability also creates the Person's `native_address(owner_family='person')` atomically, but the application-context FK does not reinterpret that projection as a semantic parent required by every homogeneous Person reference.
 
 ## 4. Bounded Person bootstrap capability
 
@@ -141,7 +143,7 @@ This dependency is foundation only. PV-02 does not add product endpoints.
 
 ## 8. Persistence delta
 
-Branch-local candidate topology after `20260906_18`:
+Branch-local topology after `20260906_18`:
 
 ```text
 PostgreSQL          18.6
@@ -182,7 +184,26 @@ non-empty account_application_context
 
 The ordinary fresh-schema `head → base → head` proof remains valid because no semantic rows exist in that test. A populated database is fail-closed rather than silently orphaned.
 
-## 9. Explicit non-goals
+## 9. Acceptance boundary
+
+PV-02 implementation is complete on `feature/pre-vertical-foundation`. Its branch-local contract, changed-path scope and semantic boundaries have been reconciled.
+
+This status does **not** claim protected-main acceptance. Whole-branch executable acceptance is deliberately centralized in PV-04, including:
+
+```text
+backend quality / unit-integration validation
+real PostgreSQL acceptance
+frontend quality / typecheck / tests / build
+recovery rehearsal where required by the final database head
+final exact changed-path QA
+reconciliation with then-current protected main
+required PR checks
+post-merge readback
+```
+
+Until PV-04 completes, `20260906_18` remains branch-local implementation truth rather than protected-main truth.
+
+## 10. Explicit non-goals
 
 PV-02 does not introduce:
 
