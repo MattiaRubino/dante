@@ -114,9 +114,7 @@ def _build_identity_plan(slot: int) -> ScaleIdentityPlan:
         slot=slot,
         persona=persona,
         history=_history_input(history_shape, cycle=cycle),
-        email=(
-            f"synthetic.scale.{slot:04d}.{persona.slug}.{history_shape.value}@example.com"
-        ),
+        email=(f"synthetic.scale.{slot:04d}.{persona.slug}.{history_shape.value}@example.com"),
         account_ref=deterministic_uuid7(f"scale:{slot}:account"),
         self_person_ref=deterministic_uuid7(f"scale:{slot}:self-person"),
     )
