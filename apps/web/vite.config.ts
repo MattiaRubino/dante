@@ -49,6 +49,17 @@ function accessAuthPreview(): PreviewOptions | undefined {
 const preview = accessAuthPreview();
 
 export default defineConfig({
+  server: {
+    host: 'localhost',
+    port: 5173,
+    strictPort: true,
+    proxy: {
+      '/api/v1': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: false,
+      },
+    },
+  },
   build: {
     manifest: true,
   },

@@ -39,10 +39,11 @@ import {
   type SignupVerificationResult,
 } from '@dante/api-client';
 
-const WEB_CLIENT_HEADER_NAME = 'X-Dante-Client';
-const WEB_CLIENT_HEADER_VALUE = 'web';
+import { createWebFetch } from '../api/web-fetch';
+
+export { createWebFetch } from '../api/web-fetch';
+
 const CSRF_HEADER_NAME = 'X-Dante-CSRF';
-const ACCEPT_HEADER_VALUE = 'application/json, application/problem+json';
 
 export type WebAuthSession = AuthSession;
 export type WebAuthenticatedSession = AuthenticatedSession;
@@ -93,24 +94,6 @@ export class WebAuthRemoteError extends Error {
     super(`DANTE Auth remote failure: ${failure.kind}`);
     this.name = 'WebAuthRemoteError';
   }
-}
-
-function governedHeaders(headersInit?: HeadersInit): Headers {
-  const headers = new Headers(headersInit);
-  headers.set('Accept', ACCEPT_HEADER_VALUE);
-  headers.set(WEB_CLIENT_HEADER_NAME, WEB_CLIENT_HEADER_VALUE);
-  return headers;
-}
-
-export function createWebFetch(
-  fetchFn: typeof globalThis.fetch,
-): typeof globalThis.fetch {
-  return (input, init) =>
-    fetchFn(input, {
-      ...init,
-      credentials: 'same-origin',
-      headers: governedHeaders(init?.headers),
-    });
 }
 
 function requestOptions(

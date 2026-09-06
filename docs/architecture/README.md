@@ -1,7 +1,7 @@
 # DANTE Architecture Index
 
 - **Status:** CURRENT / AUTHORITATIVE NAVIGATION
-- **Last reconciled:** 2026-09-05
+- **Last reconciled:** 2026-09-06
 - **Scope:** current repository architecture and long-lived subsystem contracts
 
 This index describes the current repository tree directly. Protected-main integration status is determined by Git reachability and `../PROJECT-STATUS.md`; a branch-local candidate is never promoted to protected-main truth by documentation wording alone.
@@ -15,6 +15,7 @@ Frontend Foundation                         CLOSED / ACCEPTED
 Backend CP1–CP6                              CLOSED / ACCEPTED
 PostgreSQL                                   18.6 / sole canonical persistence
 Access/Auth M1–M5                            CLOSED / INTEGRATED
+Authenticated DANTE Context                  PV-02 / BRANCH-LOCAL CANDIDATE
 Shared Email Platform                        CLOSED / INTEGRATED
 PostgreSQL Recovery                          CLOSED / INTEGRATED
 Platform Observability                       MATERIALIZED / ACCEPTED IN CURRENT TREE
@@ -22,7 +23,7 @@ AI deterministic low-level foundation        CLOSED / PASS / BRANCH-LOCAL CANDID
 AI production/private-data qualification     NOT CLAIMED
 ```
 
-Current application database contract remains `20260904_17` with topology `88/5/16/76/172/89/270`. Platform Observability and the AI integration candidate add no DANTE business DDL or application persistence model.
+Protected-main application database truth remains `20260904_17` with topology `88/5/16/76/172/89/270`. This branch additionally carries the bounded PV-02 candidate `20260906_18` with target topology `89/5/18/77/173/91/272`; that candidate is not protected-main truth and is not accepted until its real PostgreSQL/branch gates complete.
 
 ## 2. System entry points
 
@@ -58,7 +59,9 @@ The current development binding uses Gemini 3.8 Flash through DANTE's applicatio
 
 The AI candidate incorporates current `main` through true two-parent merge `4a0a69d9f331a65dcf4f72f53f33f06babddca46`; until the required PR gates and protected-main merge complete, the AI status remains branch-local candidate truth.
 
-## 4. Access/Auth
+## 4. Access/Auth and authenticated DANTE context
+
+Access/Auth authority:
 
 - `access-auth-architecture.md`
 - `access-auth-security-contract.md`
@@ -69,6 +72,11 @@ The AI candidate incorporates current `main` through true two-parent merge `4a0a
 - `access-auth-m5-persistence-api-contract.md`
 - `../frontend/access.md`
 - `../database/access-auth.md`
+
+PV-02 application-context authority:
+
+- `authenticated-dante-context.md` — explicit Account → self Person application-context bridge, timezone policy and request-level resolution contract
+- `../workstreams/pre-vertical-foundation.md` — active branch milestone/scope
 
 Permanent identity/auth boundary:
 
@@ -84,6 +92,8 @@ provider assertion != DANTE AuthSession
 passwordless Account valid
 method != factor != assurance
 ```
+
+PV-02 does not modify those Access/Auth semantics. It consumes an admitted `Principal`, resolves the associated `Account`, and exposes a separate typed `DanteContext` containing the explicit self `Person` NativeRef plus user/default timezone policy. It does not add a universal `user_id`, workspace/world/tenant identity or generic profile/preferences model.
 
 ## 5. Shared Email Platform
 
@@ -143,6 +153,8 @@ current DB reference
 ≈ real PostgreSQL
 ≈ direct tests
 ```
+
+For this branch, `../database/README.md` explicitly distinguishes protected-main `20260904_17` from the PV-02 candidate `20260906_18`. The protected-main-specific database architecture file remains historical/current protected-main authority until integration.
 
 ## 8. Important ADRs
 

@@ -7,6 +7,7 @@ from sqlalchemy import Table
 from . import (
     actual,
     addressing,
+    application_context,
     auth,
     email_delivery,
     identity,
@@ -90,6 +91,7 @@ MAPPED_TABLES: tuple[Table, ...] = cast(
         occurrence_generation.OccurrenceGenerationQuotaRow.__table__,
         occurrence_generation.OccurrenceGenerationCyclicRow.__table__,
         auth.AccountRow.__table__,
+        application_context.AccountApplicationContextRow.__table__,
         auth.EmailIdentityRow.__table__,
         auth.PasswordCredentialRow.__table__,
         auth.AuthSessionRow.__table__,

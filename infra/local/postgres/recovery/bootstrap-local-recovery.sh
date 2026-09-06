@@ -12,6 +12,7 @@ OVERLAY="infra/compose/postgres-recovery.override.yaml"
 ADMIN_SECRET="infra/compose/secrets/postgres_password.local"
 MIGRATOR_SECRET="infra/compose/secrets/postgres_recovery_migrator_password.local"
 RUNTIME_SECRET="infra/compose/secrets/postgres_recovery_runtime_password.local"
+OBSERVER_SECRET="infra/compose/secrets/postgres_recovery_observer_password.local"
 
 die() {
   echo "FAIL: $*" >&2
@@ -120,6 +121,7 @@ test "$(stat -c '%a' infra/compose/secrets)" = "700" || die "infra/compose/secre
 create_secret_if_missing "$ADMIN_SECRET"
 create_secret_if_missing "$MIGRATOR_SECRET"
 create_secret_if_missing "$RUNTIME_SECRET"
+create_secret_if_missing "$OBSERVER_SECRET"
 
 docker compose \
   -p dante-postgres-recovery \
