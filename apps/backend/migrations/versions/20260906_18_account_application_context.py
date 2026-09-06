@@ -217,7 +217,23 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    """Remove the application-context capability without deleting minted Person identities."""
+    """Remove PV-02 only while no persisted Account↔Person context would be orphaned."""
+    op.execute(
+        sa.text(
+            r"""
+            DO $block$
+            BEGIN
+                IF EXISTS (SELECT 1 FROM dante.account_application_context) THEN
+                    RAISE EXCEPTION USING
+                        ERRCODE='55000',
+                        MESSAGE='PV-02 downgrade refused',
+                        DETAIL='account_application_context contains semantic Account-to-Person bindings; use a separately reviewed forward migration instead of discarding them';
+                END IF;
+            END;
+            $block$
+            """
+        )
+    )
     op.execute(
         sa.text(
             "REVOKE ALL PRIVILEGES ON FUNCTION dante.ensure_account_application_context(uuid,uuid) "
