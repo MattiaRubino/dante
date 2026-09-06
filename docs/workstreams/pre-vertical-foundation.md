@@ -133,18 +133,32 @@ The post-implementation compare is linear and contains only approved Dogfood/Per
 
 ## PV-03 — Scale Harness / QA / Closure
 
-- **Branch-local status:** NEXT / NOT STARTED
+- **Branch-local status:** ACTIVE / SCALE HARNESS IMPLEMENTED; WHOLE-BRANCH QA / CLOSURE PENDING
 
 ### A. Scale Harness
 
-Create deterministic scale/readiness support that reuses PV-02 personas and the existing disposable PostgreSQL acceptance harness:
+- **Status:** IMPLEMENTED / TARGETED EXECUTABLE QA PENDING
 
-- deterministic small/medium/large scale profiles;
-- controlled growth in synthetic Accounts, native identities and history-oriented foundation data;
-- optional long-lived synthetic canary/history where useful;
-- no product-specific workload, concurrency model or performance budget before the owning vertical exists.
+The branch now contains deterministic, product-independent scale/readiness planning that reuses the three PV-02 personas and the existing disposable PostgreSQL acceptance harness:
+
+- exact `small=12`, `medium=120`, `large=1200` fixture profiles;
+- each block of 12 is the complete `3 personas × 4 synthetic history input shapes` matrix;
+- stable deterministic Account/self-Person UUIDv7 fixture plans and synthetic `example.com` emails;
+- prefix stability (`small` is a prefix of `medium`, `medium` of `large`);
+- fixture-only `metadata_free`, `incomplete`, `corrected` and `mixed` history input shapes with explicit UTC source timestamps where metadata exists;
+- chronology represented only by explicit timestamps, never UUID ordering;
+- large-profile generation remains in-memory and does not mass-materialize Argon2/password credentials or product rows;
+- bounded real-PostgreSQL first-use contention uses the `small` profile cardinality to prove one Account converges to one application context/self Person/native address.
+
+The profile sizes are fixture cardinalities, not workload distributions, concurrency budgets, capacity claims, latency targets or performance SLAs.
+
+Detailed branch-local contract: `../development/pre-vertical-scale-harness.md`.
+
+No Timeline, Activity, Event, Routine, Occurrence, Session, Actual, Outcome, Observation or generic Fact/Version/relationship model is created by the harness. A long-lived synthetic canary remains optional future work only if a concrete need appears.
 
 ### B. Whole-Branch QA
+
+- **Status:** PENDING
 
 Prove that the branch remains a safe foundation:
 
@@ -158,6 +172,8 @@ Prove that the branch remains a safe foundation:
 - exact changed-path/scope QA.
 
 ### C. Closure
+
+- **Status:** PENDING
 
 Only after the whole branch is accepted:
 
