@@ -17,16 +17,18 @@ from dante.platform.time import InvalidTimeZoneError, MissingDeviceTimeZoneError
 DANTE_TIME_ZONE_HEADER_NAME = "X-Dante-Time-Zone"
 
 AuthServiceDependency = Annotated[AuthService, Depends(get_auth_service)]
-DanteContextServiceDependency = Annotated[
-    DanteContextService,
-    Depends(get_dante_context_service),
-]
 
 
 def get_dante_context_service(request: Request) -> DanteContextService:
     """Resolve the application-context service from the process-scoped database runtime."""
     database_runtime = cast(DatabaseRuntime, request.app.state.database_runtime)
     return DanteContextService(database_runtime.session_factory)
+
+
+DanteContextServiceDependency = Annotated[
+    DanteContextService,
+    Depends(get_dante_context_service),
+]
 
 
 async def require_dante_context(
