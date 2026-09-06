@@ -4,7 +4,7 @@
 - **Last reconciled:** 2026-09-06
 - **Scope:** current repository architecture and long-lived subsystem contracts
 
-This index describes the current repository tree directly. Protected-main integration status is determined by Git reachability and `../PROJECT-STATUS.md`; a branch-local candidate is never promoted to protected-main truth by documentation wording alone.
+This index describes the current repository tree directly. Protected-main integration status is determined by Git reachability and `../PROJECT-STATUS.md`; historical branch wording never overrides protected-main truth.
 
 ## 1. Current architecture state
 
@@ -15,15 +15,17 @@ Frontend Foundation                         CLOSED / ACCEPTED
 Backend CP1–CP6                              CLOSED / ACCEPTED
 PostgreSQL                                   18.6 / sole canonical persistence
 Access/Auth M1–M5                            CLOSED / INTEGRATED
-Authenticated DANTE Context                  PV-02 / BRANCH-LOCAL CANDIDATE
+Authenticated DANTE Context                  CLOSED / INTEGRATED VIA PR #66
 Shared Email Platform                        CLOSED / INTEGRATED
 PostgreSQL Recovery                          CLOSED / INTEGRATED
-Platform Observability                       MATERIALIZED / ACCEPTED IN CURRENT TREE
-AI deterministic low-level foundation        CLOSED / PASS / BRANCH-LOCAL CANDIDATE
+Platform Observability                       CLOSED / INTEGRATED VIA PR #58
+AI deterministic low-level foundation        CLOSED / INTEGRATED VIA PR #63
+Home / World Focus reconciliation            CLOSED / INTEGRATED VIA PR #65
+Pre-vertical foundation                      CLOSED / INTEGRATED VIA PR #66
 AI production/private-data qualification     NOT CLAIMED
 ```
 
-Protected-main application database truth remains `20260904_17` with topology `88/5/16/76/172/89/270`. This branch additionally carries the bounded PV-02 candidate `20260906_18` with target topology `89/5/18/77/173/91/272`; that candidate is not protected-main truth and is not accepted until its real PostgreSQL/branch gates complete.
+Current protected-main application database truth is `20260906_18` with topology `89/5/18/77/173/91/272`. The pre-vertical integration merge is `1ecd58145860aebfaaa3dc1bd356b90f7a8eb19b`.
 
 ## 2. System entry points
 
@@ -38,7 +40,6 @@ Current AI architecture authority and durable evidence:
 
 - `dante-ai-implementation-baseline-final.md` — final implementation architecture baseline
 - `dante-ai-search-intelligence-boundary-amendment-2026-09.md` — independent Search / Intelligence boundary
-- `../workstreams/ai-implementation.md` — current branch-local implementation/integration disposition
 - `../workstreams/ai-foundation-closure-2026-09-05.md` — deterministic foundation closure evidence
 - `../workstreams/ai-runtime-model-target-closure-acceptance-2026-09-05.md` — accepted development model-target/binding decision
 
@@ -57,7 +58,7 @@ production/private-data activation requires separate qualification
 
 The current development binding uses Gemini 3.8 Flash through DANTE's application-owned `ModelAccess` boundary and native Gemini Interactions protocol. This is a development-foundation decision, not production/private-data qualification or permanent provider preference.
 
-The AI candidate incorporates current `main` through true two-parent merge `4a0a69d9f331a65dcf4f72f53f33f06babddca46`; until the required PR gates and protected-main merge complete, the AI status remains branch-local candidate truth.
+The deterministic AI foundation is protected-main truth through PR #63 / merge `431fb34029baeacc9ef9f721e9626b39ca10dd39`.
 
 ## 4. Access/Auth and authenticated DANTE context
 
@@ -73,10 +74,10 @@ Access/Auth authority:
 - `../frontend/access.md`
 - `../database/access-auth.md`
 
-PV-02 application-context authority:
+Authenticated DANTE context authority:
 
 - `authenticated-dante-context.md` — explicit Account → self Person application-context bridge, timezone policy and request-level resolution contract
-- `../workstreams/pre-vertical-foundation.md` — active branch milestone/scope
+- `../workstreams/pre-vertical-foundation-closure-2026-09-06.md` — durable closure evidence
 
 Permanent identity/auth boundary:
 
@@ -93,7 +94,7 @@ passwordless Account valid
 method != factor != assurance
 ```
 
-PV-02 does not modify those Access/Auth semantics. It consumes an admitted `Principal`, resolves the associated `Account`, and exposes a separate typed `DanteContext` containing the explicit self `Person` NativeRef plus user/default timezone policy. It does not add a universal `user_id`, workspace/world/tenant identity or generic profile/preferences model.
+The authenticated context does not modify those Access/Auth semantics. It consumes an admitted `Principal`, resolves the associated `Account`, and exposes a separate typed `DanteContext` containing the explicit self `Person` NativeRef plus user/default timezone policy. It does not add a universal `user_id`, workspace/world/tenant identity or generic profile/preferences model.
 
 ## 5. Shared Email Platform
 
@@ -154,7 +155,7 @@ current DB reference
 ≈ direct tests
 ```
 
-For this branch, `../database/README.md` explicitly distinguishes protected-main `20260904_17` from the PV-02 candidate `20260906_18`. The protected-main-specific database architecture file remains historical/current protected-main authority until integration.
+Current protected-main database truth is `20260906_18 / 89|5|18|77|173|91|272|0|0|0`. The former `20260904_17` topology is historical integration context only.
 
 ## 8. Important ADRs
 
@@ -172,6 +173,7 @@ Branch histories, dated acceptance records and old milestone banners are evidenc
 - `../archive/branches/2026-09-feature-access-auth.md`
 - `../archive/branches/2026-09-feature-platform-observability.md`
 - `../workstreams/access-auth-integration-acceptance-2026-09-04.md`
+- `../workstreams/pre-vertical-foundation-closure-2026-09-06.md`
 - dated AI architecture hardening/evaluation records retained by the AI workstream
 
 Temporary branch handoffs must be removed before protected-main integration under `../development/documentation-lifecycle-policy.md`.
