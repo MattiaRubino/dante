@@ -41,7 +41,7 @@ authenticated request
 → strict frontend temporal Timeline data source
 ```
 
-B00 deliberately returns a truthful empty projection until a later block activates a semantically justified real temporal projection family.
+B00 deliberately returns a truthful empty projection until a later block activates a semantically justified real temporal product projection family.
 
 This is not authorization for:
 
@@ -51,9 +51,11 @@ This is not authorization for:
 - frontend inference of canonical semantics;
 - fake success after transport/backend failure.
 
+The B00 exit condition is **not** that Activity/Event product rows already exist. B00 closes when the shared real-data spine is proven ready for B01. The first real temporal product read is intentionally activated by B01 together with the first legitimate persistent Activity projection.
+
 ## 3. B00 runtime fixture-isolation checkpoint
 
-The accepted T1 prototype dataset is retained only as regression-test material. Its runtime exports are now guarded by one explicit mode predicate:
+The accepted T1 prototype dataset is retained only as regression-test material. Its runtime exports are guarded by one explicit mode predicate:
 
 ```text
 mode == test
@@ -119,9 +121,9 @@ pending / unavailable
 
 ## 5. B00 real PostgreSQL runtime-spine proof checkpoint
 
-The existing backend integration harness already provides disposable PostgreSQL 18.6 clusters, fresh provisioned databases and Alembic-to-head migration. B00 now reuses that accepted harness rather than creating a second testing architecture.
+The existing backend integration harness already provides disposable PostgreSQL 18.6 clusters, fresh provisioned databases and Alembic-to-head migration. B00 reuses that accepted harness rather than creating a second testing architecture.
 
-A temporal integration suite has been added under `apps/backend/tests/integration/temporal/` to exercise the complete request spine against a real migrated PostgreSQL database:
+A temporal integration suite exists under `apps/backend/tests/integration/temporal/` to exercise the complete request spine against a real migrated PostgreSQL database:
 
 ```text
 synthetic isolated account
@@ -150,9 +152,9 @@ This integration suite is committed but has not yet been executed in this connec
 
 ## 6. B00 browser → web → API → PostgreSQL E2E checkpoint
 
-B00 also reuses the already accepted Access/Auth full-stack Playwright harness instead of introducing a second browser stack.
+B00 reuses the already accepted Access/Auth full-stack Playwright harness instead of introducing a second browser stack.
 
-The existing harness already owns:
+The existing harness owns:
 
 - a disposable `dante-postgres-local:18.6` container;
 - fresh database provisioning and Alembic upgrade to head;
@@ -162,9 +164,9 @@ The existing harness already owns:
 - browser execution across Chromium, Firefox and WebKit;
 - teardown of the disposable stack after the run.
 
-`apps/web/e2e/auth/temporal-b00-runtime-spine.spec.ts` now adds two vertical proofs to that harness.
+`apps/web/e2e/auth/temporal-b00-runtime-spine.spec.ts` now carries three vertical proofs.
 
-The first proves the normal production read path:
+### Proof A — real empty Timeline read
 
 ```text
 browser in Europe/Rome
@@ -180,7 +182,7 @@ browser in Europe/Rome
 → zero prototype cards
 ```
 
-The second proves the write stop-line that must hold until B01 activates authoritative Activity persistence:
+### Proof B — Create write stop-line before B01
 
 ```text
 production Home
@@ -192,15 +194,54 @@ production Home
 → zero Timeline cards materialized
 ```
 
-The browser tests use dedicated synthetic account slots per browser and per proof so the bounded sign-in rate controls cannot create cross-test coupling.
+### Proof C — database outage is an error, not empty success
 
-These tests are committed but have not yet been executed in this connector-only session. They therefore establish the missing real browser/full-stack harness coverage structurally, but do not yet make `B00-T04` or any other execution gate green.
+```text
+healthy Timeline read
+→ controlled disposable PostgreSQL stop
+→ force fresh temporal window request
+→ backend failure visible in UI
+→ zero fake Timeline cards
+→ controlled PostgreSQL restart
+→ explicit Riprova
+→ fresh successful temporal request
+→ ready/empty truthful state
+```
 
-## 7. Current B00 checkpoint semantics
+The outage proof uses the already accepted scoped `access-auth-e2e-control.py` harness control and always attempts to restart the disposable database in test cleanup if the proof aborts while it is stopped.
 
-B00 remains **IN PROGRESS**. No green-check claim is made merely because code or tests exist; automated suites and manual acceptance still have to run under the workstream Definition of Done.
+The browser tests use dedicated synthetic account slots per browser and per proof so bounded sign-in rate controls cannot create cross-test coupling.
 
-Implemented boundaries now include:
+These tests are committed but have not yet been executed in this connector-only session. They establish the real browser/full-stack harness coverage structurally, but do not yet make `B00-T04` or any execution gate green.
+
+## 7. B00 isolated manual `userTest` checkpoint
+
+The manual setup/cleanup flow is now defined in:
+
+`docs/workstreams/timeline-temporal-operational-b00-usertest.md`
+
+It deliberately reuses the same disposable full-stack harness rather than a developer's normal account/database.
+
+The manual protocol covers:
+
+1. real authenticated empty Timeline behavior with no prototype cards;
+2. Create fail-closed behavior before B01;
+3. real PostgreSQL outage → visible error → database restart → explicit Retry recovery;
+4. deterministic scoped cleanup of the exact disposable container/control id.
+
+The protocol is **READY TO RUN — NOT YET APPROVED**.
+
+Manual approval remains distinct from automated proof and requires the explicit approval token recorded after inspection of the current candidate:
+
+```text
+B00 userTest — APPROVED
+```
+
+## 8. Current B00 checkpoint semantics
+
+B00 remains **IN PROGRESS**. No green-check claim is made merely because code/tests/protocols exist; applicable automated suites and manual acceptance still have to run under the workstream Definition of Done.
+
+Implemented/defined boundaries now include:
 
 - authenticated backend temporal read/API boundary;
 - strict frontend remote temporal read adapter;
@@ -208,17 +249,20 @@ Implemented boundaries now include:
 - truthful loading/error/retry behavior;
 - normal-runtime prototype card/clock isolation;
 - normal-runtime Create fake-success retirement;
-- real PostgreSQL integration proof for AuthSession → DanteContext → self Person → timezone → temporal endpoint;
-- real browser → production web → API → PostgreSQL E2E coverage using the existing full-stack harness.
+- PostgreSQL integration proof for AuthSession → DanteContext → self Person → timezone → temporal endpoint;
+- browser → production web → API → PostgreSQL E2E coverage;
+- controlled PostgreSQL outage/recovery browser proof;
+- isolated manual `userTest` setup/cleanup protocol.
 
-Still required before B00 can become `✅` include at minimum:
+Still required before B00 can become `✅`:
 
 - execute the full frontend/backend automated quality suites;
 - execute the real PostgreSQL integration suite against the certified image;
 - execute the full-stack browser proofs across the configured browser projects;
-- define/confirm the isolated manual `userTest` setup and deterministic cleanup flow without conflating it with automated synthetic fixtures;
-- manual empty/error/real-path acceptance through the actual product surface;
-- full F0/T1 regression proof under the executed test suite;
-- activate a real PostgreSQL-backed temporal product read when B01 introduces the first semantically legitimate persistent temporal product family.
+- run and approve the isolated manual `userTest` protocol;
+- confirm the complete F0/T1 regression suite remains green after the real-data cutover;
+- update the primary live ledger with executed evidence before declaring B00 closed.
+
+The first real PostgreSQL-backed **temporal product** projection is a B01 responsibility, not a circular B00 prerequisite. B00's job is to prove that B01 can activate that read/write capability without inventing a second application/data-source architecture.
 
 No checklist item may be marked green until its applicable Definition-of-Done gates have actually passed.
