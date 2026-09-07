@@ -18,7 +18,11 @@ from pydantic import SecretStr
 
 from dante.auth.email import normalize_email
 from dante.auth.passwords import PasswordKdf
-from dante.auth.sessions import SESSION_COOKIE_NAME, WEB_CLIENT_HEADER_NAME, WEB_CLIENT_HEADER_VALUE
+from dante.auth.sessions import (
+    SESSION_COOKIE_NAME,
+    WEB_CLIENT_HEADER_NAME,
+    WEB_CLIENT_HEADER_VALUE,
+)
 from dante.bootstrap.app import create_app
 from dante.context.dependencies import DANTE_TIME_ZONE_HEADER_NAME
 from dante.platform.config.auth import AuthSettings, SmtpSecurity
@@ -197,7 +201,10 @@ def _web_headers() -> dict[str, str]:
     }
 
 
-def _context_row(database: Any, account_ref: UUID) -> tuple[UUID, str, str | None] | None:
+def _context_row(
+    database: Any,
+    account_ref: UUID,
+) -> tuple[UUID, str, str | None] | None:
     with psycopg.connect(
         **database.connection_kwargs(
             "dante_migrator",
