@@ -1,14 +1,22 @@
+import { execFileSync } from 'node:child_process';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { expect, test, type Page, type TestInfo } from '@playwright/test';
 
 const password = 'correct horse battery staple';
+const repoRoot = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  '../../../..',
+);
 
 const projectEmailBase: Readonly<Record<string, number>> = {
-  chromium: 40,
-  firefox: 50,
-  webkit: 60,
+  chromium: 35,
+  firefox: 45,
+  webkit: 55,
 };
 
-function emailFor(testInfo: TestInfo, slot: 1 | 2): string {
+function emailFor(testInfo: TestInfo, slot: 1 | 2 | 3): string {
   const base = projectEmailBase[testInfo.project.name];
   if (base === undefined) {
     throw new Error(
@@ -16,6 +24,26 @@ function emailFor(testInfo: TestInfo, slot: 1 | 2): string {
     );
   }
   return `synthetic.user+e2e-${base + slot}@example.com`;
+}
+
+function runHarnessControl(action: 'database-stop' | 'database-start'): void {
+  execFileSync(
+    'uv',
+    [
+      'run',
+      '--project',
+      'apps/backend',
+      'python',
+      'tooling/access-auth-e2e-control.py',
+      action,
+    ],
+    {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      stdio: 'pipe',
+      timeout: 30_000,
+    },
+  );
 }
 
 async function useItalianLocale(page: Page): Promise<void> {
@@ -46,6 +74,19 @@ async function signIn(page: Page, email: string): Promise<void> {
   ).toBeVisible();
 }
 
+async function openHomeAndWaitForTemporalRead(
+  page: Page,
+  target = '/home',
+) {
+  const temporalResponsePromise = page.waitForResponse(
+    (response) =>
+      response.url().includes('/api/v1/temporal/timeline/window') &&
+      response.request().method() === 'GET',
+  );
+  await page.goto(target);
+  return temporalResponsePromise;
+}
+
 test.describe('Timeline B00 real full-stack spine', () => {
   test('reads the production Home Timeline through auth, DanteContext, timezone and PostgreSQL without prototype cards', async ({
     browser,
@@ -60,13 +101,7 @@ test.describe('Timeline B00 real full-stack spine', () => {
       await useItalianLocale(page);
       await signIn(page, emailFor(testInfo, 1));
 
-      const temporalResponsePromise = page.waitForResponse(
-        (response) =>
-          response.url().includes('/api/v1/temporal/timeline/window') &&
-          response.request().method() === 'GET',
-      );
-      await page.goto('/home');
-      const temporalResponse = await temporalResponsePromise;
+      const temporalResponse = await openHomeAndWaitForTemporalRead(page);
 
       expect(temporalResponse.status()).toBe(200);
       expect(await temporalResponse.headerValue('cache-control')).toBe(
@@ -108,13 +143,7 @@ test.describe('Timeline B00 real full-stack spine', () => {
       await useItalianLocale(page);
       await signIn(page, emailFor(testInfo, 2));
 
-      const temporalResponsePromise = page.waitForResponse(
-        (response) =>
-          response.url().includes('/api/v1/temporal/timeline/window') &&
-          response.request().method() === 'GET',
-      );
-      await page.goto('/home');
-      expect((await temporalResponsePromise).status()).toBe(200);
+      expect((await openHomeAndWaitForTemporalRead(page)).status()).toBe(200);
       await expect(
         page.locator('[data-temporal-read-state="ready"]'),
       ).toBeVisible();
@@ -135,6 +164,64 @@ test.describe('Timeline B00 real full-stack spine', () => {
       );
       await expect(page.locator('[data-timeline-event]')).toHaveCount(0);
     } finally {
+      await context.close();
+    }
+  });
+
+  test('shows a truthful temporal read failure during PostgreSQL outage and recovers only after explicit retry', async ({
+    browser,
+  }, testInfo) => {
+    const context = await browser.newContext({
+      ignoreHTTPSErrors: true,
+      timezoneId: 'Europe/Rome',
+    });
+    let databaseStopped = false;
+
+    try {
+      const page = await context.newPage();
+      await useItalianLocale(page);
+      await signIn(page, emailFor(testInfo, 3));
+
+      expect((await openHomeAndWaitForTemporalRead(page)).status()).toBe(200);
+      await expect(
+        page.locator('[data-temporal-read-state="ready"]'),
+      ).toBeVisible();
+
+      runHarnessControl('database-stop');
+      databaseStopped = true;
+
+      const failedRead = await openHomeAndWaitForTemporalRead(
+        page,
+        '/home?date=2034-02-17',
+      );
+      expect(failedRead.status()).toBeGreaterThanOrEqual(500);
+
+      const errorStatus = page.locator(
+        '.temporal-timeline-runtime-status--error',
+      );
+      await expect(errorStatus).toContainText('Timeline non disponibile');
+      await expect(page.locator('[data-timeline-event]')).toHaveCount(0);
+
+      runHarnessControl('database-start');
+      databaseStopped = false;
+
+      const recoveryResponsePromise = page.waitForResponse(
+        (response) =>
+          response.url().includes('/api/v1/temporal/timeline/window') &&
+          response.request().method() === 'GET',
+      );
+      await errorStatus.getByRole('button', { name: 'Riprova' }).click();
+      expect((await recoveryResponsePromise).status()).toBe(200);
+
+      await expect(
+        page.locator('[data-temporal-read-state="ready"]'),
+      ).toBeVisible();
+      await expect(errorStatus).toHaveCount(0);
+      await expect(page.locator('[data-timeline-event]')).toHaveCount(0);
+    } finally {
+      if (databaseStopped) {
+        runHarnessControl('database-start');
+      }
       await context.close();
     }
   });
