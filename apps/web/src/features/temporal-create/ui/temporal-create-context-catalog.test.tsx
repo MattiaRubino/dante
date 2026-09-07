@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { cleanup, render } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   TemporalCreateContextCatalogProvider,
@@ -11,6 +11,10 @@ function Probe() {
   const creator = useTemporalCreateContextCreator();
   return <output data-testid="creator-state">{creator ? 'available' : 'absent'}</output>;
 }
+
+afterEach(() => {
+  cleanup();
+});
 
 describe('Temporal Create context catalog runtime boundary', () => {
   it('allows local context authoring only in explicit test mode', () => {
@@ -29,7 +33,7 @@ describe('Temporal Create context catalog runtime boundary', () => {
       local: true,
     }));
 
-    render(
+    const { container } = render(
       <TemporalCreateContextCatalogProvider
         mode="production"
         onCreateContext={creator}
@@ -38,7 +42,9 @@ describe('Temporal Create context catalog runtime boundary', () => {
       </TemporalCreateContextCatalogProvider>,
     );
 
-    expect(screen.getByTestId('creator-state')).toHaveTextContent('absent');
+    expect(
+      container.querySelector('[data-testid="creator-state"]')?.textContent,
+    ).toBe('absent');
     expect(creator).not.toHaveBeenCalled();
   });
 
@@ -50,12 +56,14 @@ describe('Temporal Create context catalog runtime boundary', () => {
       local: true,
     }));
 
-    render(
+    const { container } = render(
       <TemporalCreateContextCatalogProvider mode="test" onCreateContext={creator}>
         <Probe />
       </TemporalCreateContextCatalogProvider>,
     );
 
-    expect(screen.getByTestId('creator-state')).toHaveTextContent('available');
+    expect(
+      container.querySelector('[data-testid="creator-state"]')?.textContent,
+    ).toBe('available');
   });
 });
