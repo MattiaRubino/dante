@@ -3,6 +3,7 @@ import './home-m1.css';
 import './home-skin.css';
 import './central-stage/central-stage-m1-geometry.css';
 
+import { TemporalTimelineRuntimeBoundary } from '../../temporal/timeline-runtime-boundary';
 import type { HomeWorldOpenIntent } from '../model/home-world-focus';
 import { HomeShell } from './home-shell';
 
@@ -14,5 +15,9 @@ type HomePageProps = Readonly<{
 }>;
 
 export function HomePage(props: HomePageProps) {
-  return <HomeShell {...props} />;
+  return (
+    <TemporalTimelineRuntimeBoundary viewedDateIso={props.viewedDateIso}>
+      <HomeShell {...props} />
+    </TemporalTimelineRuntimeBoundary>
+  );
 }
