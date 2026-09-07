@@ -38,7 +38,7 @@ function preparedCreate(
 }
 
 describe('Temporal Create normal-runtime boundary', () => {
-  it.each(['production', 'development']) (
+  it.each(['production', 'development'])(
     'never reports local applied success in %s without an explicit authoritative workspace',
     async (mode) => {
       const runtime = createLocalTemporalCreateRuntime({
