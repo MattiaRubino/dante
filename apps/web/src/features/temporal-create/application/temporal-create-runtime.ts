@@ -467,34 +467,40 @@ class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
 }
 
 function createUnavailableTemporalWorkspace(): TemporalWorkspacePort {
-  const query = async (request: TemporalQuery): Promise<TemporalQueryResult> => {
+  const query = (request: TemporalQuery): Promise<TemporalQueryResult> => {
     if (request.type === 'temporal.projection.get') {
-      return Object.freeze({
-        type: 'temporal.projection.get' as const,
-        status: 'not-found' as const,
-      });
+      return Promise.resolve(
+        Object.freeze({
+          type: 'temporal.projection.get' as const,
+          status: 'not-found' as const,
+        }),
+      );
     }
-    return Object.freeze({
-      type: 'temporal.projection.list' as const,
-      status: 'ok' as const,
-      snapshot: Object.freeze({
-        revision: 0,
-        items: Object.freeze([]),
+    return Promise.resolve(
+      Object.freeze({
+        type: 'temporal.projection.list' as const,
+        status: 'ok' as const,
+        snapshot: Object.freeze({
+          revision: 0,
+          items: Object.freeze([]),
+        }),
       }),
-    });
+    );
   };
 
   const workspace: TemporalWorkspacePort = {
-    execute: async (command) =>
-      Object.freeze({
-        operationId: command.operationId,
-        status: 'failed' as const,
-        failure: Object.freeze({
-          kind: 'unavailable' as const,
-          code: 'temporal.create.backend_unavailable',
-          retryable: false,
+    execute: (command) =>
+      Promise.resolve(
+        Object.freeze({
+          operationId: command.operationId,
+          status: 'failed' as const,
+          failure: Object.freeze({
+            kind: 'unavailable' as const,
+            code: 'temporal.create.backend_unavailable',
+            retryable: false,
+          }),
         }),
-      }),
+      ),
     query: query as TemporalWorkspacePort['query'],
     subscribe: () => () => undefined,
   };
