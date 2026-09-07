@@ -1,4 +1,8 @@
-import { Temporal, detectDeviceTimeZone } from '@dante/time';
+import {
+  Temporal,
+  detectDeviceTimeZone,
+  type PlainDate,
+} from '@dante/time';
 import {
   useCallback,
   useEffect,
@@ -31,7 +35,7 @@ type TemporalTimelineRuntimeBoundaryProps = Readonly<{
   mode?: string | undefined;
 }>;
 
-function resolveAnchorDate(viewedDateIso: string | undefined): Temporal.PlainDate {
+function resolveAnchorDate(viewedDateIso: string | undefined): PlainDate {
   if (viewedDateIso !== undefined) {
     try {
       return Temporal.PlainDate.from(viewedDateIso);
@@ -100,7 +104,7 @@ export function TemporalTimelineRuntimeBoundary({
           effectiveZoneId: window.effectiveZoneId,
         });
       })
-      .catch((error: unknown) => {
+      .catch(() => {
         if (!active || controller.signal.aborted) {
           return;
         }
