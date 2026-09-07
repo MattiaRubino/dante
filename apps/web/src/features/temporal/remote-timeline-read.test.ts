@@ -14,8 +14,8 @@ function jsonResponse(body: unknown, status = 200): Response {
 
 describe('remote temporal Timeline data source', () => {
   it('uses the governed same-origin fetch path and preserves the server effective timezone', async () => {
-    const fetchFn = vi.fn<typeof globalThis.fetch>(async (input, init) => {
-      expect(String(input)).toBe(
+    const fetchFn = vi.fn<typeof globalThis.fetch>((input, init) => {
+      expect(input).toBe(
         '/api/v1/temporal/timeline/window?start_date=2026-09-07&end_date_exclusive=2026-09-14',
       );
       expect(init?.credentials).toBe('same-origin');
@@ -27,12 +27,14 @@ describe('remote temporal Timeline data source', () => {
       expect(headers.get('X-Dante-Client')).toBe('web');
       expect(headers.get('X-Dante-Time-Zone')).toBe('Europe/Rome');
 
-      return jsonResponse({
-        kind: 'empty',
-        start_date: '2026-09-07',
-        end_date_exclusive: '2026-09-14',
-        effective_zone_id: 'Europe/Rome',
-      });
+      return Promise.resolve(
+        jsonResponse({
+          kind: 'empty',
+          start_date: '2026-09-07',
+          end_date_exclusive: '2026-09-14',
+          effective_zone_id: 'Europe/Rome',
+        }),
+      );
     });
     const source = createRemoteTemporalTimelineDataSource(
       fetchFn,
@@ -55,7 +57,9 @@ describe('remote temporal Timeline data source', () => {
 
   it('does not replace backend failure with an empty success', async () => {
     const source = createRemoteTemporalTimelineDataSource(
-      vi.fn<typeof globalThis.fetch>(async () => jsonResponse({}, 503)),
+      vi.fn<typeof globalThis.fetch>(() =>
+        Promise.resolve(jsonResponse({}, 503)),
+      ),
       () => 'Europe/Rome',
     );
 
@@ -73,14 +77,16 @@ describe('remote temporal Timeline data source', () => {
 
   it('rejects a premature non-empty or widened response instead of inferring semantics', async () => {
     const source = createRemoteTemporalTimelineDataSource(
-      vi.fn<typeof globalThis.fetch>(async () =>
-        jsonResponse({
-          kind: 'items',
-          start_date: '2026-09-07',
-          end_date_exclusive: '2026-09-14',
-          effective_zone_id: 'Europe/Rome',
-          items: [{ id: 'fake' }],
-        }),
+      vi.fn<typeof globalThis.fetch>(() =>
+        Promise.resolve(
+          jsonResponse({
+            kind: 'items',
+            start_date: '2026-09-07',
+            end_date_exclusive: '2026-09-14',
+            effective_zone_id: 'Europe/Rome',
+            items: [{ id: 'fake' }],
+          }),
+        ),
       ),
       () => 'Europe/Rome',
     );
