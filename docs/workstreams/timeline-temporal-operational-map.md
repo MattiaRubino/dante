@@ -3257,10 +3257,10 @@ NEW DOMAIN OWNER REQUIRED                      0
 EXTERNAL BENCHMARK-REQUIRED OWNER              0
 OPEN-BY-DESIGN QUESTIONS                       EXPLICITLY REGISTERED
 ROADMAP                                        FROZEN
-IMPLEMENTATION                                 NOT YET STARTED AT LEDGER FREEZE
+IMPLEMENTATION                                 ACTIVE — B00 IN PROGRESS
 ```
 
-The roadmap is now authoritative for sequencing, while this map is authoritative for semantic coverage and live completion tracking.
+The roadmap is authoritative for sequencing, while this map is authoritative for semantic coverage and live completion tracking.
 
 ---
 
@@ -3298,23 +3298,23 @@ Rules:
 
 ## 34.2 B00 — Real Data Spine / no runtime mocks
 
-- ⬜ **[SPINE-001]** Inventory every normal-runtime Timeline/Create mock/fake source.
-- ⬜ **[SPINE-002]** Remove/isolate fake Timeline cards from normal runtime.
-- ⬜ **[SPINE-003]** Move reusable fake datasets behind explicit test/dev-test-only boundaries.
-- ⬜ **[SPINE-004]** Establish one real temporal frontend feature/application data-source path.
-- ⬜ **[SPINE-005]** Establish real backend temporal operation/query boundary.
-- ⬜ **[SPINE-006]** Reverify authenticated `DanteContext` Account→self Person path.
-- ⬜ **[SPINE-007]** Reverify effective request timezone handling for temporal operations/queries.
-- ⬜ **[SPINE-008]** Ensure normal runtime truthful empty state when no temporal product data exists.
-- ⬜ **[SPINE-009]** Ensure backend/network failure is never replaced by fake success.
-- ⬜ **[SPINE-010]** Define isolated `userTest`/test-data setup and cleanup flow.
-- ⬜ **[SPINE-011]** Establish real-backend + real-test-PostgreSQL E2E harness for vertical slices.
-- ⬜ **[SPINE-012]** Preserve F0/T1 behavior through real-data cutover.
-- ⬜ **[B00-T01]** Automated frontend no-runtime-mock regression test.
-- ⬜ **[B00-T02]** Backend real-query smoke/integration test.
-- ⬜ **[B00-T03]** Auth/DanteContext/timezone integration test.
-- ⬜ **[B00-T04]** Real PostgreSQL E2E harness smoke test.
-- ⬜ **[B00-T05]** Manual `userTest` empty/error/real-data-path acceptance.
+- ✅ **[SPINE-001]** Inventory every normal-runtime Timeline/Create mock/fake source. — Inventory covers prototype clock/groups/cards, distant-date generated fallback cards, Create in-memory fake-success, session-only local context creation and normal-runtime transport-failure fallback risks; evidence is frozen in the B00 execution amendment.
+- 🟨 **[SPINE-002]** Remove/isolate fake Timeline cards from normal runtime. — Implementation complete; automated/runtime acceptance still unexecuted.
+- 🟨 **[SPINE-003]** Move reusable fake datasets behind explicit test/dev-test-only boundaries. — T1 fixture dataset and local Create context authoring are test-only; regression execution still pending.
+- 🟨 **[SPINE-004]** Establish one real temporal frontend feature/application data-source path. — Strict remote temporal Timeline data-source and Home runtime boundary implemented; execution gates pending.
+- 🟨 **[SPINE-005]** Establish real backend temporal operation/query boundary. — Authenticated bounded temporal Timeline endpoint/application boundary implemented; execution gates pending.
+- 🟨 **[SPINE-006]** Reverify authenticated `DanteContext` Account→self Person path. — Real PostgreSQL integration proof written; not yet executed.
+- 🟨 **[SPINE-007]** Reverify effective request timezone handling for temporal operations/queries. — `X-Dante-Time-Zone` path and effective zone response covered by unit/integration/E2E proofs; not yet executed.
+- 🟨 **[SPINE-008]** Ensure normal runtime truthful empty state when no temporal product data exists. — Empty authenticated response + zero runtime prototype cards implemented; automated/manual execution pending.
+- 🟨 **[SPINE-009]** Ensure backend/network failure is never replaced by fake success. — Remote adapter fails explicitly; production Create fails closed; PostgreSQL-outage browser proof written; not yet executed.
+- ✅ **[SPINE-010]** Define isolated `userTest`/test-data setup and cleanup flow. — `timeline-temporal-operational-b00-usertest.md` defines disposable stack, synthetic account, three manual proofs and scoped cleanup. Manual approval itself remains B00-T05.
+- 🟨 **[SPINE-011]** Establish real-backend + real-test-PostgreSQL E2E harness for vertical slices. — Existing production-grade Access/Auth disposable PostgreSQL/FastAPI/HTTPS Playwright harness reused and B00 proofs added; smoke execution pending.
+- 🟨 **[SPINE-012]** Preserve F0/T1 behavior through real-data cutover. — Test fixtures remain available only in test mode and no semantic F0/T1 rewrite was authorized; full regression execution pending.
+- 🟨 **[B00-T01]** Automated frontend no-runtime-mock regression test. — Fixture boundary, Create runtime boundary, local-context boundary and runtime read-boundary tests written; not yet executed.
+- 🟨 **[B00-T02]** Backend real-query smoke/integration test. — Temporal application/API tests plus real PostgreSQL integration proof written; not yet executed.
+- 🟨 **[B00-T03]** Auth/DanteContext/timezone integration test. — Real sign-in → AuthSession → lazy AccountApplicationContext/self Person → timezone proof written, including missing-timezone no-partial-bootstrap case; not yet executed.
+- 🟨 **[B00-T04]** Real PostgreSQL E2E harness smoke test. — Chromium/Firefox/WebKit browser proofs written for healthy empty read, Create fail-closed and controlled DB outage/retry; not yet executed.
+- 🟨 **[B00-T05]** Manual `userTest` empty/error/real-data-path acceptance. — Protocol ready; manual run/approval not yet performed.
 
 ## 34.3 B01 — Activity Core
 
@@ -3871,12 +3871,17 @@ These items span blocks and turn green only when their required implementing sli
 
 # 35. Current execution state
 
-At roadmap freeze:
+Current workstream state:
 
 ```text
 SEMANTIC MAP / AUDITS / ROADMAP          ✅ COMPLETE
-REAL PRODUCT IMPLEMENTATION              ⬜ NOT STARTED
-NEXT BLOCK                               B00 — Real Data Spine
+REAL PRODUCT IMPLEMENTATION              🟨 B00 IN PROGRESS
+B00 STRUCTURAL REAL-DATA CUTOVER         🟨 IMPLEMENTED / EXECUTION PROOFS PENDING
+B00 AUTOMATED TEST EXECUTION              🟨 NOT YET RUN IN AVAILABLE CONNECTOR SESSION
+B00 MANUAL userTest                       🟨 READY TO RUN / NOT YET APPROVED
+NEXT IMPLEMENTATION BLOCK                 B01 — ONLY AFTER B00 CLOSES
 ```
+
+The first legitimate PostgreSQL-backed temporal **product** read/write is intentionally a B01 responsibility. B00 is not blocked by the absence of an Activity product row; it is blocked only by its still-unexecuted automated/manual acceptance gates.
 
 This ledger is intentionally verbose. Its purpose is to make omission visible: if a capability or required proof is not green, it is not done.
