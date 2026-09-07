@@ -15,6 +15,17 @@ export type {
 } from './application';
 export { InMemoryTemporalWorkspace } from './in-memory-temporal-workspace';
 export {
+  TemporalTimelineRemoteError,
+  createRemoteTemporalTimelineDataSource,
+  type TemporalTimelineRemoteFailureKind,
+} from './remote-timeline-read';
+export type {
+  TemporalTimelineDataSource,
+  TemporalTimelineEmptyWindow,
+  TemporalTimelineWindow,
+  TemporalTimelineWindowRequest,
+} from './timeline-read';
+export {
   commitTemporalDraft,
   createDeterministicTemporalIdFactory,
   createFixedTemporalClock,
