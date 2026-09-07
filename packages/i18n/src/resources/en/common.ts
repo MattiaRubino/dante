@@ -2,6 +2,7 @@ import type { CommonResource } from '../it/common';
 import { access } from './access';
 import { home } from './home';
 import { shell } from './shell';
+import { temporalRuntime } from './temporal-runtime';
 import { worldFocus } from './world-focus';
 
 export const common = {
@@ -42,5 +43,6 @@ export const common = {
   access,
   shell,
   home,
+  temporalRuntime,
   worldFocus,
 } as const satisfies CommonResource;
