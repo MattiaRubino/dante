@@ -11,6 +11,8 @@ import {
   type TemporalOperationResult,
   type TemporalPlacement,
   type TemporalProjectionItem,
+  type TemporalQuery,
+  type TemporalQueryResult,
   type TemporalUndoToken,
   type TemporalValidationIssue,
   type TemporalWorkspacePort,
@@ -464,17 +466,57 @@ class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
   }
 }
 
+function createUnavailableTemporalWorkspace(): TemporalWorkspacePort {
+  const query = async (request: TemporalQuery): Promise<TemporalQueryResult> => {
+    if (request.type === 'temporal.projection.get') {
+      return Object.freeze({
+        type: 'temporal.projection.get' as const,
+        status: 'not-found' as const,
+      });
+    }
+    return Object.freeze({
+      type: 'temporal.projection.list' as const,
+      status: 'ok' as const,
+      snapshot: Object.freeze({
+        revision: 0,
+        items: Object.freeze([]),
+      }),
+    });
+  };
+
+  return Object.freeze({
+    execute: async (command) =>
+      Object.freeze({
+        operationId: command.operationId,
+        status: 'failed' as const,
+        failure: Object.freeze({
+          kind: 'unavailable' as const,
+          code: 'temporal.create.backend_unavailable',
+          retryable: false,
+        }),
+      }),
+    query: query as TemporalWorkspacePort['query'],
+    subscribe: () => () => undefined,
+  });
+}
+
 export type TemporalCreateRuntimeOptions = Readonly<{
   clock?: TemporalClock;
   ids?: TemporalIdFactory;
   workspace?: TemporalWorkspacePort;
+  mode?: string;
 }>;
 
 export function createLocalTemporalCreateRuntime(
   options: TemporalCreateRuntimeOptions = {},
 ): TemporalCreateRuntime {
   const ids = options.ids ?? systemTemporalIdFactory;
-  const workspace = options.workspace ?? new InMemoryTemporalWorkspace(ids);
+  const mode = options.mode ?? import.meta.env.MODE;
+  const workspace =
+    options.workspace ??
+    (mode === 'test'
+      ? new InMemoryTemporalWorkspace(ids)
+      : createUnavailableTemporalWorkspace());
   return new LocalTemporalCreateRuntime(
     workspace,
     ids,
