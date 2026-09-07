@@ -1,11 +1,16 @@
 # Timeline / Temporal-Operational Vertical — Semantic Work Map
 
-- **Status:** DRAFT / SEMANTIC BOUNDARY MAP — GAP-AUDITED 2026-09-07
+- **Status:** FROZEN SEMANTIC MAP / LIVE IMPLEMENTATION LEDGER — 2026-09-07
 - **Branch:** `feature/timeline-temporal-operational`
-- **Protected-main anchor:** `981f6cf9ad985d0b811bc4172c12a7529fbc9b15`
-- **Purpose:** freeze the complete semantic/product/runtime work map before roadmap and implementation ordering.
-- **Important:** this document is not a roadmap, not an implementation plan, not API/DDL authority, and does not reopen accepted Domain / Logical / Physical / CP1–CP6 decisions.
-- **Change-control rule:** implementation convenience, UI convenience, provider shape, ORM convenience, or benchmark precedent cannot create a new semantic root or collapse an accepted distinction.
+- **Protected-main anchor at semantic freeze:** `981f6cf9ad985d0b811bc4172c12a7529fbc9b15`
+- **Roadmap:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
+- **Required companion audits:**
+  - `docs/workstreams/timeline-temporal-operational-second-audit-2026-09-07.md`
+  - `docs/workstreams/timeline-temporal-operational-final-pre-roadmap-audit-2026-09-07.md`
+- **Purpose:** freeze the complete semantic/product/runtime work map and act as the live green-check implementation ledger until the whole vertical closes.
+- **Important:** semantic sections are architecture/work-map authority, not API/DDL authority, and do not reopen accepted Domain / Logical / Physical / CP1–CP6 decisions.
+- **Change-control rule:** implementation convenience, UI convenience, provider shape, ORM convenience, benchmark precedent, or roadmap pressure cannot create a new semantic root or collapse an accepted distinction.
+- **Execution rule:** every implemented capability must update the live ledger in this document in the same reviewed slice. `✅` is forbidden until all applicable semantic, persistence, backend, frontend, automated-test, manual-`userTest`, and same-change documentation gates pass.
 
 ---
 
@@ -20,8 +25,9 @@ Authority order for this vertical is:
 3. closed Whole Logical Model and decision/assumption registers;
 4. accepted Physical/PostgreSQL selection and CP6 concrete PostgreSQL baseline;
 5. current frontend Home/Timeline/F0/C1 contracts and frozen behavior;
-6. this work-map document;
-7. external benchmarks only as design pressure/evidence, never as ontology authority.
+6. this work-map document plus its two required audit companions;
+7. the frozen implementation roadmap;
+8. external benchmarks only as design pressure/evidence, never as ontology authority.
 
 Permanent inherited rules include, among others:
 
@@ -37,9 +43,9 @@ source/provenance != truth
 absence/unknown != false
 ```
 
-The current CP6 concrete PostgreSQL database is closed. The existing CP6 baseline is not reopened merely because this vertical identifies product/runtime capability that has not yet received a dedicated persistence shape.
+The CP6 concrete PostgreSQL baseline is closed. Later forward migrations exist on current protected `main`; they do not reopen CP6 historical decisions.
 
-The current frontend baseline is also inherited rather than reinterpreted:
+The current frontend baseline is inherited rather than reinterpreted:
 
 ```text
 H0 Home structure              FROZEN
@@ -49,7 +55,7 @@ C1 manual temporal Create      ENGINEERING GREEN / MANUAL OPEN
 C2 structured detail           BLOCKED until C1 closes
 ```
 
-A future vertical implementation may consume and extend these owners through explicit boundaries. It must not silently rewrite them.
+A vertical implementation may consume and extend these owners through explicit boundaries. It must not silently rewrite them.
 
 ---
 
@@ -103,6 +109,7 @@ Technical/application semantics required by this vertical:
 
 - explicit Clock;
 - date-only / floating-local / named-zone / absolute temporal forms;
+- coarse accepted placement precision where real intent is coarser than an exact block;
 - DST/user-local range semantics;
 - idempotent mutation operations;
 - expected-state concurrency;
@@ -281,7 +288,7 @@ TIMELINE / TEMPORAL-OPERATIONAL
 │   ├── Temporal Constraint                   CONTEXTUAL
 │   ├── movement/replanning policy            CONTEXTUAL
 │   ├── Recurrence                            CONTEXTUAL
-│   └── Occurrence                            CONTEXTUAL generated identity
+│   └── Occurrence                            CONTEXTUAL generated/extra identity
 │
 ├── EXECUTION / REALITY
 │   ├── Session                               TOP-LEVEL or CONTEXTUAL
@@ -765,6 +772,8 @@ Routine
 │   ├── cyclic positional
 │   ├── completion-relative — semantically accepted
 │   └── anchor-stream-relative — semantically accepted
+├── pattern anchor/phase where required
+├── effective range
 ├── effective material state/version
 ├── future policy revisions
 ├── temporary pause/override
@@ -879,7 +888,29 @@ Current CP6 concrete materialized authoring/runtime family set is exactly:
 
 Completion-relative and anchor-stream-relative remain semantically accepted but must **not** be faked through generic JSON/RRULE or mislabeled as one of the CP6 four without a dedicated later physical/runtime decision.
 
-## 8.2 Ownership
+## 8.2 Pattern anchor versus effective range
+
+Where recurrence phase matters:
+
+```text
+pattern anchor / phase
+!= effective range
+```
+
+`every 2 weeks` must not silently use `created_at` as its semantic anchor.
+
+Effective range may be conceptually:
+
+- open-ended;
+- until a temporal boundary;
+- for N expected Occurrences.
+
+```text
+N expected Occurrences
+!= N successful completions
+```
+
+## 8.3 Ownership
 
 ```text
 repeated Event
@@ -891,7 +922,7 @@ repeated Activity user experience
 
 Recurrence is reused capability; it does not determine the parent's semantic type.
 
-## 8.3 Repeated applicability versus instance generation
+## 8.4 Repeated applicability versus instance generation
 
 A Recurrence pattern may also define repeated applicability of a Temporal Constraint.
 
@@ -908,7 +939,7 @@ may reuse recurrence pattern machinery but does not automatically generate expec
 repeated applicability != Occurrence generation universally
 ```
 
-## 8.4 Calendar time versus elapsed time
+## 8.5 Calendar time versus elapsed time
 
 ```text
 every day at 08:00 Europe/Rome
@@ -919,7 +950,7 @@ Wall-clock recurrence must preserve calendar/civil semantics across DST.
 
 Elapsed recurrence preserves elapsed interval from its qualifying anchor.
 
-## 8.5 Time-zone modes
+## 8.6 Time-zone modes
 
 Recurrence semantics may distinguish:
 
@@ -929,13 +960,17 @@ Recurrence semantics may distinguish:
 
 Travel must not silently convert one mode into another.
 
-## 8.6 Quota recurrence
+## 8.7 Quota recurrence
 
 `3 times/week` may establish distinct expected Occurrence identities before any exact dates are selected.
 
 Therefore Recurrence is not merely a timestamp expansion function.
 
-## 8.7 Virtual/materialized series stop line
+Quota-period membership must preserve an explicit period frame where timezone/calendar boundaries materially change membership.
+
+Stable quota Occurrence identity does not automatically imply arbitrary first/second/third ordinal semantics.
+
+## 8.8 Virtual/materialized series stop line
 
 Do not eagerly create infinite future Occurrence rows.
 
@@ -955,13 +990,22 @@ Canonical future series path:
 ```text
 Routine/Event Recurrence
 → backend recurrence evaluator/checkpoint
-→ canonical Occurrences
+→ canonical Occurrences when materialization is justified
 → temporal range/window query
 → normalized Timeline read model
 → Timeline
 ```
 
-## 8.8 Recurrence non-collapse register
+## 8.9 Skip versus structural exclusion
+
+```text
+not generated by governing rule
+!= generated expected Occurrence later skipped/cancelled
+```
+
+The distinction is required for history, adherence and explanation.
+
+## 8.10 Recurrence non-collapse register
 
 ```text
 Recurrence != Routine
@@ -976,6 +1020,8 @@ Recurrence != Conditional Policy
 Recurrence != Trigger
 Recurrence != generic IF/THEN automation
 Recurrence != provider RRULE ontology
+pattern anchor != effective range
+expected count != successful completion count
 ```
 
 Lossless external-provider mapping is not a kernel invariant.
@@ -984,24 +1030,27 @@ Lossless external-provider mapping is not a kernel invariant.
 
 # 9. Occurrence — full vertical surface
 
-Occurrence is the stable logical identity of one distinguished expected instance produced by a recurring/generative source.
+Occurrence is the stable logical identity of one distinguished expected instance produced by a recurring/generative source or explicitly added as an extra instance related to that source.
 
-## 9.1 Semantic tree
+## 9.1 Semantic tree and origin-specific invariant
 
 ```text
 Occurrence
 ├── stable DANTE identity
-├── source Routine / recurring Event / approved generator
+├── source Routine / recurring Event
 ├── origin
 │   ├── recurrence_generated
+│   │   ├── exact governing Recurrence MaterialState REQUIRED
+│   │   └── compatible generation coordinate REQUIRED
+│   │       ├── calendar
+│   │       ├── elapsed
+│   │       ├── quota
+│   │       └── cyclic
 │   └── explicit_extra
-├── exact governing source/Recurrence MaterialState
-├── generation coordinate where materialized
-│   ├── calendar
-│   ├── elapsed
-│   ├── quota
-│   └── cyclic
-├── original semantic expectation/anchor
+│       ├── source relation REQUIRED
+│       ├── governing Recurrence MaterialState MUST BE ABSENT
+│       └── generation coordinate MUST NOT pretend recurrence generation
+├── original semantic expectation/anchor where applicable
 ├── current Schedule optional
 ├── occurrence-specific exception/material state
 ├── responsibility/participation context as applicable
@@ -1013,6 +1062,15 @@ Occurrence
 ├── correction/reconciliation
 └── history/provenance
 ```
+
+Binding CP6 rule:
+
+```text
+recurrence_generated
+!= explicit_extra
+```
+
+An `explicit_extra` belongs to the source context but must not falsely claim a Recurrence MaterialState generated it.
 
 ## 9.2 Identity survives movement
 
@@ -1092,6 +1150,9 @@ Occurrence != Outcome
 Occurrence identity != current timestamp
 Occurrence identity != original datetime universally
 Occurrence identity != provider instance id
+recurrence_generated != explicit_extra
+not-generated-by-rule != generated-and-skipped
+virtual future instance != material history-bearing instance
 ```
 
 ---
@@ -1108,9 +1169,9 @@ Schedule is the current accepted temporal assignment of a schedulable subject.
 
 A subject may have multiple planned placements where semantics require split planned execution. Do not force one universal one-to-one subject/Schedule cardinality before the owning logical/physical contract says so.
 
-## 10.2 Temporal forms
+## 10.2 Temporal forms and precision
 
-Conceptually/current F0-compatible forms:
+Conceptually/current F0-compatible forms include:
 
 - date span/date-only placement;
 - floating local wall-clock;
@@ -1118,7 +1179,27 @@ Conceptually/current F0-compatible forms:
 - absolute instant placement;
 - no current accepted placement.
 
-Frontend F0 vocabulary and domain/physical vocabulary may differ in technical naming, but semantic distinctions must be preserved through adapters.
+Accepted temporal precision may also be coarser than an exact block where product semantics require it, for example:
+
+```text
+Tuesday
+Tuesday afternoon
+Tuesday at 18:00
+Tuesday 18:00-20:00
+start Tuesday 18:00 / end unresolved
+```
+
+Canonical boundaries:
+
+```text
+coarse accepted placement
+!= exact timed block
+!= all-day/date span automatically
+!= unplaced
+!= postponed/TBD
+```
+
+Frontend vocabulary and domain/physical vocabulary may differ in technical naming, but semantic distinctions must be preserved through adapters.
 
 ## 10.3 Accepted versus proposed
 
@@ -1162,8 +1243,6 @@ Explicit new expectation during execution can revise Schedule.
 
 Actual deviation alone does not.
 
-This distinction is required for the user's `fix sui tempi` requirement:
-
 ```text
 planned 18:00-21:00
 starts 17:40 and ends 20:15
@@ -1198,6 +1277,8 @@ Schedule != Session
 Schedule != Actual
 Schedule != proposal
 scheduled != happened
+coarse Schedule != exact block
+all-day/date span != fake 24h timed occupancy
 ```
 
 ---
@@ -1722,8 +1803,6 @@ no Outcome != failed
 
 # 15. Confirmation — required resolution capability
 
-Confirmation was missing from the first map and is now explicitly included.
-
 Confirmation is a contextual actor-scoped attestation that a specific confirmer affirms a specific material version of a target for a defined purpose/context.
 
 ## 15.1 Target/version semantics
@@ -1972,7 +2051,19 @@ AND realization still unresolved
 → include in end-of-day review
 ```
 
-## 18.2 Reminder semantics
+## 18.2 Activation semantics
+
+The runtime must keep distinct:
+
+```text
+when state crosses a threshold
+!= while state remains qualifying
+!= on every new qualifying observation/import
+```
+
+Duplicate provider/import facts must not automatically create duplicate semantic effects.
+
+## 18.3 Reminder semantics
 
 A Reminder/notification is a possible **response**, not the Conditional Policy itself and not Trigger identity.
 
@@ -1983,7 +2074,7 @@ Reminder delivery != Outcome
 policy activated != response succeeded
 ```
 
-## 18.3 User notification controls
+## 18.4 User notification controls
 
 Product policy may include:
 
@@ -1996,11 +2087,11 @@ Product policy may include:
 
 A one-time response must not silently become a permanent preference.
 
-## 18.4 Delivery boundary
+## 18.5 Delivery boundary
 
 This vertical may own reminder intent/policy relation. Real push/email/provider delivery belongs to notification infrastructure and must expose truthful pending/sent/failed/delivered states where implemented.
 
-## 18.5 Conditional Policy non-collapse register
+## 18.6 Conditional Policy non-collapse register
 
 ```text
 Conditional Policy != Dependency
@@ -2192,13 +2283,28 @@ Life Area != Place
 Life Area != external provider calendar source
 ```
 
-## 20.3 Sharing is separate
+## 20.3 Organization lifecycle
+
+The product capability may require:
+
+- create;
+- rename;
+- reorder;
+- archive;
+- hide/show;
+- icon/color appearance;
+- external-calendar mapping;
+- actor-local organization of a shared item.
+
+Grouping/filtering is projection choice, not scheduling-truth boundary. A hidden relevant commitment must not disappear from authorized conflict reasoning.
+
+## 20.4 Sharing is separate
 
 Personal/Work/etc. are organization. Shared/private is a separate participant/visibility property.
 
 The same shared Event may be organized into different local Life Areas by different participants without duplicating shared canonical Event reality.
 
-## 20.4 External calendar mapping
+## 20.5 External calendar mapping
 
 External calendars may map to a local Life Area or remain separate sources.
 
@@ -2206,11 +2312,11 @@ External calendars may map to a local Life Area or remain separate sources.
 external source identity != local organizational context
 ```
 
-## 20.5 Tags
+## 20.6 Tags
 
 Tags are secondary many-valued organization/filter semantics and must not be used to fake primary ownership, Goal links, Participation, Place or provider source.
 
-## 20.6 Context versus appearance
+## 20.7 Context versus appearance
 
 Current frontend contract already requires:
 
@@ -2218,19 +2324,19 @@ Current frontend contract already requires:
 Context/grouping membership != appearance
 ```
 
-Color/icon/presentation override does not establish semantic organization/ownership.
+Color/icon/presentation override does not establish semantic organization/ownership. Color must not be the sole carrier of semantic state.
 
-## 20.7 Existing Timeline prototype groups
+## 20.8 Existing Timeline prototype groups
 
 Current Timeline group labels such as Focus/Riunioni/Salute/Creatività/Personale/Urgenze are historical frontend prototype vocabulary, not Domain taxonomy.
 
 Future integration must map/reconcile product organization explicitly rather than promoting those hard-coded strings into canonical ontology.
 
-## 20.8 Exact persistence caution
+## 20.9 Exact persistence caution
 
 This semantic map requires the product organizational capability to be represented in the vertical integration, but does **not** invent a new PostgreSQL table/entity if the current Logical/Physical model uses another accepted mapping or has intentionally deferred this owner.
 
-The roadmap must verify exact current Logical/Physical coverage before any DDL/API write.
+The implementation slice must verify exact current Logical/Physical coverage before any DDL/API write.
 
 ---
 
@@ -2257,6 +2363,7 @@ date-only / date span
 floating local wall-clock
 named-zone/zoned local time
 absolute instant
+coarse accepted temporal precision where applicable
 ```
 
 No form is silently converted to another.
@@ -2401,7 +2508,7 @@ Imported Session-like records preserve:
 - import/update time;
 - deletion/tombstone where exposed.
 
-LifeOS Session identity remains separate.
+DANTE Session identity remains separate.
 
 ## 23.3 User correction after import
 
@@ -2586,6 +2693,7 @@ Range query must eventually define:
 - recurrence materialization output;
 - current/history selection;
 - all-day/date-span handling;
+- coarse placement handling;
 - postponed/unplaced classification;
 - cancellation/visibility filtering;
 - partial/next-page determinism.
@@ -2664,6 +2772,10 @@ unless a later product/criterion design defines exact semantics.
 
 Analytics may compare factual patterns without turning them into moral/evaluative labels.
 
+## 26.7 Product analytics != observability
+
+User-facing behavioral/time statistics are distinct from OTel/Grafana operational telemetry. An observability failure cannot change canonical temporal semantics.
+
 ---
 
 # 27. Undo / correction / reopen / delete / archive are different
@@ -2697,13 +2809,12 @@ Retention/privacy requirements may separately allow deletion/export/aggregation 
 
 # 28. Persistence/runtime integrity inherited from Logical/Physical/CP6
 
-## 28.1 Closed baseline is not speculative
+## 28.1 Historical CP6 baseline versus current protected-main truth
 
-Current CP6 concrete database is closed and materialized. This vertical starts **after** that baseline and must consume it before proposing any schema change.
-
-Current accepted database closure reported by the CP6 workstream:
+Historical CP6 concrete closure remains valid historical evidence:
 
 ```text
+Alembic 20260826_08
 68 tables
 5 views
 14 routines
@@ -2711,10 +2822,30 @@ Current accepted database closure reported by the CP6 workstream:
 95 indexes
 68 FKs
 120 CHECKs
-Alembic head 20260826_08
 ```
 
-These counts are current inherited baseline evidence, not targets to modify from this semantic map.
+It is **not** the current protected-main topology.
+
+Current authoritative pre-vertical database truth at the freeze anchor is:
+
+```text
+PostgreSQL 18.6
+Alembic 20260906_18
+89 tables
+5 views
+18 routines
+77 triggers
+173 physical indexes
+91 foreign keys
+272 CHECK constraints
+0 enums/domains
+0 sequences
+0 materialized views
+0 partitioned tables
+0 RLS policies
+```
+
+Every implementation slice must reverify current protected `main` and Alembic head immediately before work, because the roadmap freeze snapshot is not permission to assume the repository never changes.
 
 ## 28.2 Existing material-state facets relevant here
 
@@ -2726,22 +2857,38 @@ CP6 inventory already includes material-state semantics for at least:
 - `routine.recurrence`;
 - `event.recurrence`.
 
-Exact tables/columns/routines must be read from the current Database Architecture & Dictionary before vertical implementation.
+Exact current tables/columns/routines must be read from current Database Architecture & Dictionary and Alembic before vertical implementation.
 
-## 28.3 Newly explicit semantic capability does not imply new DDL
+## 28.3 Existing baseline does not equal product completeness
 
-Adding Confirmation/Acknowledgement/Resolution/Life Area/reminder policy to this **work map** does not authorize:
+CP6 intentionally established semantic identity/material-history foundations without speculatively materializing every product payload/relation.
+
+Examples requiring explicit per-slice physical proof include:
+
+- Activity/Event/Routine descriptive product state;
+- Temporal Constraint persistence;
+- Outcome persistence;
+- Confirmation/Acknowledgement persistence;
+- Session execution-context relations;
+- Life Area/product organization;
+- advanced recurrence families;
+- provider/offline mappings beyond current baseline;
+- analytics materialization if ever justified.
+
+## 28.4 Newly explicit semantic capability does not imply new DDL
+
+Adding a requirement to this map does not authorize:
 
 - generic `confirmations` table;
 - generic `status` column;
 - generic `timeline_entries` table;
 - generic relationship table;
 - generic JSON escape hatch;
-- new Alembic revision.
+- new Alembic revision by default.
 
-The roadmap must first map each requirement to existing Logical/Physical ownership and prove a real gap before any DDL proposal.
+The implementation slice must first map each requirement to existing Logical/Physical ownership and prove a real gap before DDL.
 
-## 28.4 Idempotency/concurrency
+## 28.5 Idempotency/concurrency
 
 Real mutations must classify:
 
@@ -2753,11 +2900,15 @@ Real mutations must classify:
 - reconciliation/failure recovery;
 - Undo/reversal eligibility.
 
-## 28.5 Canonical truth and local sync
+## 28.6 Canonical truth and local sync
 
 Local/mobile/synced copies remain noncanonical.
 
 Consequential offline mutations must reconcile/revalidate through the accepted backend path before being represented as authoritative canonical truth.
+
+## 28.7 Recovery and anti-resurrection
+
+Backup/PITR restores bytes, not semantic acceptance automatically. New temporal current-state/history/outbox data must be compatible with existing recovery/anti-resurrection doctrine before closure.
 
 ---
 
@@ -2788,6 +2939,8 @@ Deadline != Schedule
 Target date != Deadline by default
 Review date != Temporal Constraint by default
 wall-clock recurrence != elapsed recurrence
+coarse Schedule != exact time block
+all-day/date span != fake 24h timed occupancy
 ```
 
 ## 29.3 Reality/result boundaries
@@ -2824,12 +2977,14 @@ silence != acknowledgement/confirmation/non-realization
 
 ```text
 Life Area != Goal
+Life Area != Plan
 Life Area != Tag
 Life Area != Place
 Life Area != external calendar source
 Context != appearance
 shared != Calendar/Life Area
 frontend prototype group != Domain taxonomy
+hidden in projection != nonexistent
 ```
 
 ## 29.6 Recurrence/generation boundaries
@@ -2842,6 +2997,10 @@ Recurrence != Conditional Policy
 recurrence rule != browser-generated future cards
 this occurrence change != future source-policy revision
 observed repeated Sessions != Routine intent
+recurrence_generated != explicit_extra
+not-generated-by-rule != generated-and-skipped
+pattern anchor != effective range
+expected occurrence count != successful completion count
 ```
 
 ## 29.7 Session/runtime boundaries
@@ -2854,9 +3013,26 @@ Session identity != provider id
 manual/timer/import != Session semantic type
 one Activity/Occurrence may have 0..N Sessions
 Schedule placement and Session do not require 1:1 cardinality
+Session overlap != universal conflict
+AuthSession != DANTE Session
 ```
 
-## 29.8 Provider/application boundaries
+## 29.8 Actor boundaries
+
+```text
+Person != Account != Principal != Actor
+Responsibility != requester
+Responsibility != expected performer
+Responsibility != actual performer
+Responsibility != Authority/Visibility/Ownership
+Participation response != Actual Participation
+accepted != attended
+declined != established absence
+Participation != Session
+Participation != Responsibility
+```
+
+## 29.9 Provider/application boundaries
 
 ```text
 provider identity != DANTE identity
@@ -2865,8 +3041,11 @@ frontend ViewModel != backend DTO != persistence row
 local sync copy != canonical truth
 pending != success
 retry != duplicate effect
+idempotency key != Domain identity
 Undo != blind overwrite
 AI output != accepted fact
+proposal != accepted effect
+product analytics != observability telemetry
 ```
 
 ---
@@ -2890,7 +3069,7 @@ Do not introduce for convenience:
 - Activity `repeat` boolean;
 - one-table-fits-all temporal object;
 - universal SessionSegment primitive without specialist proof;
-- universal EventSeries primitive without materially distinct identity proof;
+- universal EventSeries/MeetingSeries primitive without materially distinct identity proof;
 - provider RRULE as DANTE recurrence ontology;
 - browser recurrence engine producing canonical future Occurrences;
 - `SUM(session.duration)` as universal total-time metric;
@@ -2902,15 +3081,16 @@ Do not introduce for convenience:
 - fake human Confirmation from automation/AI;
 - JSON payloads used to bypass required typed semantics;
 - direct component provider/backend SDK calls as feature architecture;
-- fake backend/provider/notification success in frontend.
+- fake backend/provider/notification success in frontend;
+- normal-runtime fake Timeline cards or mock repositories after real-data cutover.
 
 ---
 
 # 31. Detailed coverage audit — previously missing/under-specified items
 
-This table is a blocking checklist showing where every gap identified during the 2026-09-07 review now lives.
+This table records whether each reviewed requirement has a semantic/process home. `COVERED` means represented in the architecture map; it does **not** mean implemented. Implementation completion is tracked only in §34.
 
-| Requirement/gap | Classification | Explicit home in this map | Current result |
+| Requirement/gap | Classification | Explicit home in this map | Architecture result |
 | --- | --- | --- | --- |
 | Confirmation of Activity/Event/Actual/Outcome | contextual | §15 + §17 | COVERED |
 | specific target MaterialState for Confirmation | internal/contextual | §15 + §22 | COVERED |
@@ -2920,13 +3100,13 @@ This table is a blocking checklist showing where every gap identified during the
 | automatic outcomes | conditional bounded effect | §17.5 | COVERED |
 | daily/weekly grouped review | derived workflow | §17 | COVERED |
 | reminder intent | conditional response | §18 | COVERED |
-| notification channels/quiet hours/repetition | external/product policy | §18.3-18.4 | COVERED |
+| notification channels/quiet hours/repetition | external/product policy | §18 | COVERED |
 | unplaced Activity/Planning Tray | derived projection | §5.4 + §25.3 | COVERED |
 | `Palestra`/`Inglese` grouping | product organization | §20 | COVERED |
 | primary Life Area versus tags | product organization | §20 | COVERED |
 | Life Area versus Goal | non-collapse | §20.2 | COVERED |
-| Context versus appearance | product/view | §20.6 | COVERED |
-| current prototype groups not taxonomy | frontend boundary | §20.7 | COVERED |
+| Context versus appearance | product/view | §20.7 | COVERED |
+| current prototype groups not taxonomy | frontend boundary | §20.8 | COVERED |
 | Activity sub-work decomposition | owner semantic | §5.2 | COVERED |
 | Activity divisibility/partial/effort semantics | contextual policy | §5 + §19.5 | COVERED |
 | Event Agenda/internal parts | Event internal | §6.6 | COVERED |
@@ -2940,10 +3120,13 @@ This table is a blocking checklist showing where every gap identified during the
 | this occurrence vs future policy | lifecycle/version | §7.4 + §9.7 + §19.8 | COVERED |
 | six semantic recurrence families | contextual | §8.1 | COVERED |
 | four current CP6 materialized recurrence families | physical boundary | §8.1 | COVERED |
-| no browser canonical recurrence | application boundary | §8.7 + §25.6 | COVERED |
-| virtual versus materialized Occurrence horizon | contextual/runtime | §8.7 + §9.6 | COVERED |
-| explicit-extra Occurrence | contextual | §9.1 | COVERED |
+| recurrence pattern anchor vs effective range | contextual | §8.2 | COVERED |
+| quota period frame and no fake ordinal | contextual | §8.7 | COVERED |
+| no browser canonical recurrence | application boundary | §8.8 + §25.6 | COVERED |
+| virtual versus materialized Occurrence horizon | contextual/runtime | §8.8 + §9.6 | COVERED |
+| explicit-extra Occurrence exact CP6 semantics | contextual | §9.1 | COVERED |
 | provider Occurrence identity mapping | integration | §9.8 + §23 | COVERED |
+| coarse Schedule precision | contextual | §10.2 | COVERED |
 | manual Session recording | top-level capture | §12 | COVERED |
 | timer/stopwatch Session capture | runtime | §12.8 | COVERED |
 | imported/automatic Session capture | runtime/provenance | §12.1 + §12.8 | COVERED |
@@ -2984,15 +3167,14 @@ This table is a blocking checklist showing where every gap identified during the
 | F0 idempotency/revision/Undo semantics | internal/application | §24.1 | COVERED |
 | Timeline T1 frozen behavior | frontend change-control | §25.2 | COVERED |
 | range query horizon/pagination/zone/provenance | query boundary | §25.6 | COVERED |
-| CP6 baseline not silently reopened | persistence guard | §28 | COVERED |
-
-Within the explicitly reviewed temporal-operational source set, all gaps identified in this audit now have an explicit classification/home. `COVERED` means represented in the work map; it does **not** mean implementation already exists.
+| CP6/current-main baseline distinction | persistence guard | §28 | COVERED |
+| recovery anti-resurrection boundary | recovery | §28.7 | COVERED |
 
 ---
 
 # 32. Source coverage ledger used for this map
 
-This map was checked against the current accepted material relevant to this vertical, including at minimum:
+This map and its required audits were checked against current accepted material relevant to this vertical, including at minimum:
 
 ## Domain concepts
 
@@ -3040,48 +3222,661 @@ This map was checked against the current accepted material relevant to this vert
 
 ## Logical/Physical/PostgreSQL baseline
 
-- closed Whole Logical classification/invariants;
+- closed Whole Logical classification/invariants and WL-H01..WL-H12;
 - accepted Physical/PostgreSQL selection;
 - CP1–CP5 backend foundation;
 - CP6-01 coverage;
 - CP6-02 PostgreSQL Persistence Constitution;
-- CP6-03/04/05 concrete database closure;
-- `docs/workstreams/logical-postgresql.md` current closure overlay;
-- current database architecture/dictionary/migration baseline as inherited authority.
+- CP6 M1–M6/M7+ accepted forward history;
+- current `docs/database/README.md` and Alembic `20260906_18` baseline;
+- current Dictionary/SQLAlchemy/live PostgreSQL as implementation authority.
 
-External products/standards may be used later as benchmark evidence, but no external feature is considered a DANTE requirement unless it maps to an accepted DANTE need.
+## Final precision pressure
+
+- second completeness audit;
+- final relation/cardinality/operation/physical/frontend audit;
+- external-product benchmark used only as pressure test;
+- 38 adversarial scenarios from final pre-roadmap audit.
+
+External products/standards are never DANTE ontology authority.
 
 ---
 
-# 33. Pre-roadmap gate
+# 33. Pre-roadmap gate — CLOSED
 
-No implementation roadmap should be considered trustworthy until this semantic map survives one final classification review.
+The primary map survived the second completeness audit and final precision/benchmark/adversarial audit.
 
-The roadmap phase may begin only with these conditions:
-
-1. every requested product behavior has an owner or explicit external boundary;
-2. every visible UX action maps to semantic operations without overloaded generic status fields;
-3. TOP-LEVEL / CONTEXTUAL / PRODUCT-ORGANIZATIONAL / DERIVED / INTERNAL / EXTERNAL classification is explicit;
-4. all blocking `!=` boundaries remain preserved;
-5. Observation/Goal/Plan/Availability/etc. are connected without being accidentally pulled into this vertical as new owners;
-6. C1/T1/F0 frozen/current frontend contracts are treated as inherited constraints;
-7. current Logical/Physical/CP6 reality is read before any persistence proposal;
-8. no new DDL/API is inferred merely from this map;
-9. recurrence ownership/materialization stop lines are preserved;
-10. Session multi-device/offline/reconciliation requirements are not deferred out of existence;
-11. Confirmation/review/automatic-outcome/reminder semantics are not collapsed;
-12. Calendar/Life Area organization and analytics are not forgotten merely because they are projections/product context rather than top-level temporal owners;
-13. range/query/timezone/DST/history/provenance requirements remain present;
-14. no known reviewed item remains unclassified.
-
-Current semantic-audit result:
+Current gate result:
 
 ```text
-IDENTIFIED REVIEW GAPS WITH NO HOME      0
-IDENTIFIED REVIEW ITEMS UNCLASSIFIED     0
-KNOWN SEMANTIC COLLAPSES AUTHORIZED      0
-ROADMAP ORDER                            NOT YET FIXED
-IMPLEMENTATION                           NOT STARTED BY THIS DOCUMENT
+KNOWN REVIEWED SEMANTIC NODE WITHOUT HOME     0
+KNOWN REVIEWED RELATION UNCLASSIFIED           0
+KNOWN REVIEWED OPERATION WITHOUT EFFECT HOME   0
+KNOWN REVIEWED != COLLAPSE UNRESOLVED          0
+NEW DOMAIN OWNER REQUIRED                      0
+EXTERNAL BENCHMARK-REQUIRED OWNER              0
+OPEN-BY-DESIGN QUESTIONS                       EXPLICITLY REGISTERED
+ROADMAP                                        FROZEN
+IMPLEMENTATION                                 NOT YET STARTED AT LEDGER FREEZE
 ```
 
-This is not a claim that future implementation evidence can never expose a new requirement. It means the complete set of requirements and gaps explicitly reviewed up to this checkpoint is now represented before sequencing begins.
+The roadmap is now authoritative for sequencing, while this map is authoritative for semantic coverage and live completion tracking.
+
+---
+
+# 34. Live implementation progress ledger
+
+This is the **blocking green-check ledger** requested for the entire vertical.
+
+## 34.0 Status semantics
+
+```text
+⬜ NOT STARTED
+🟨 IN PROGRESS
+✅ DONE
+⛔ BLOCKED
+```
+
+Rules:
+
+1. `✅` means all applicable Definition-of-Done gates in `timeline-temporal-operational-roadmap.md §0.3` have passed.
+2. Code existing in an old prototype/mock does not earn `✅` unless it satisfies the real vertical contract and has been revalidated.
+3. A roadmap block may be complete only when every checklist item assigned to it is `✅` or has an explicitly approved scope amendment.
+4. Any newly discovered requirement must receive a new stable ID before implementation continues.
+5. Every implementation PR/slice that changes one of these items must update its status/evidence in the same change.
+6. No final branch/workstream closure with `⬜`, `🟨` or unreviewed `⛔` remaining.
+
+## 34.1 Documentation / architecture gates
+
+- ✅ **[DOC-001]** Primary semantic map established and deep-gap-audited.
+- ✅ **[DOC-002]** Second completeness audit completed; current DB `_18 / 89|5|18|77|173|91|272|0|0|0` truth reconciled.
+- ✅ **[DOC-003]** Final pre-roadmap precision audit completed; relations/operations/benchmark/adversarial sweep passed.
+- ✅ **[DOC-004]** `explicit_extra` Occurrence governing-state correction bound into primary map.
+- ✅ **[DOC-005]** Schedule coarse-precision and Recurrence anchor/effective-range hardenings bound into primary map.
+- ✅ **[DOC-006]** Detailed end-to-end implementation roadmap frozen.
+- ✅ **[DOC-007]** Live green-check rule made a fixed branch/workstream contract.
+
+## 34.2 B00 — Real Data Spine / no runtime mocks
+
+- ⬜ **[SPINE-001]** Inventory every normal-runtime Timeline/Create mock/fake source.
+- ⬜ **[SPINE-002]** Remove/isolate fake Timeline cards from normal runtime.
+- ⬜ **[SPINE-003]** Move reusable fake datasets behind explicit test/dev-test-only boundaries.
+- ⬜ **[SPINE-004]** Establish one real temporal frontend feature/application data-source path.
+- ⬜ **[SPINE-005]** Establish real backend temporal operation/query boundary.
+- ⬜ **[SPINE-006]** Reverify authenticated `DanteContext` Account→self Person path.
+- ⬜ **[SPINE-007]** Reverify effective request timezone handling for temporal operations/queries.
+- ⬜ **[SPINE-008]** Ensure normal runtime truthful empty state when no temporal product data exists.
+- ⬜ **[SPINE-009]** Ensure backend/network failure is never replaced by fake success.
+- ⬜ **[SPINE-010]** Define isolated `userTest`/test-data setup and cleanup flow.
+- ⬜ **[SPINE-011]** Establish real-backend + real-test-PostgreSQL E2E harness for vertical slices.
+- ⬜ **[SPINE-012]** Preserve F0/T1 behavior through real-data cutover.
+- ⬜ **[B00-T01]** Automated frontend no-runtime-mock regression test.
+- ⬜ **[B00-T02]** Backend real-query smoke/integration test.
+- ⬜ **[B00-T03]** Auth/DanteContext/timezone integration test.
+- ⬜ **[B00-T04]** Real PostgreSQL E2E harness smoke test.
+- ⬜ **[B00-T05]** Manual `userTest` empty/error/real-data-path acceptance.
+
+## 34.3 B01 — Activity Core
+
+- ⬜ **[ACT-001]** Re-open Activity Domain/Logical/Physical authority before implementation.
+- ⬜ **[ACT-002]** Resolve minimum meaningful Activity descriptive/actionable persistence.
+- ⬜ **[ACT-003]** Prove whether forward DDL is required; no speculative generic Task/status schema.
+- ⬜ **[ACT-004]** Implement stable Activity creation identity.
+- ⬜ **[ACT-005]** Implement idempotent `CreateActivity` application operation.
+- ⬜ **[ACT-006]** Implement unplaced Activity as valid canonical state.
+- ⬜ **[ACT-007]** Implement real Planning Tray query for unplaced Activity.
+- ⬜ **[ACT-008]** Make `Activity` default selected macro-class in `+` Create.
+- ⬜ **[ACT-009]** Make Activity Create submit use real backend result.
+- ⬜ **[ACT-010]** Preserve `draft != canonical Activity` behavior.
+- ⬜ **[ACT-011]** Preserve Activity identity across reload/refetch.
+- ⬜ **[ACT-012]** Ensure duplicate projection/refetch cannot duplicate Activity identity.
+- ⬜ **[ACT-013]** Preserve Activity `!= Event/Routine/Schedule/Session/Actual/Outcome/Goal/Plan` boundaries in implementation.
+- ⬜ **[ACT-014]** Preserve repeated Activity UX as future Routine-backed semantics, not Activity-owned recurrence.
+- ⬜ **[ACT-015]** Design/implement estimated effort when first required without equating it to scheduled/actual duration.
+- ⬜ **[ACT-016]** Design/implement semantic sub-Activity structure when first required, separate from Session splitting.
+- ⬜ **[ACT-017]** Resolve completion profile semantics before any user-visible generic `done` behavior is accepted.
+- ⬜ **[B01-T01]** Activity domain/application validation tests.
+- ⬜ **[B01-T02]** Activity idempotency retry/collision tests.
+- ⬜ **[B01-T03]** Activity PostgreSQL persistence/integrity tests.
+- ⬜ **[B01-T04]** Activity API/integration tests.
+- ⬜ **[B01-T05]** Activity frontend Create/Planning Tray component tests.
+- ⬜ **[B01-T06]** E2E `+ → Activity → Planning Tray → reload` test.
+- ⬜ **[B01-T07]** Dirty-draft discard `!= delete/cancel Activity` regression test.
+- ⬜ **[B01-T08]** Manual `userTest` Activity creation/reload/error acceptance.
+
+## 34.4 B02 — Schedule Core
+
+- ⬜ **[SCH-001]** Re-open Schedule authority/current CP6 placement tables/views/validators before implementation.
+- ⬜ **[SCH-002]** Preserve subject eligibility Activity/Event/Occurrence; first activate Activity path.
+- ⬜ **[SCH-003]** Implement/consume date-span placement correctly.
+- ⬜ **[SCH-004]** Implement/consume floating-local placement correctly.
+- ⬜ **[SCH-005]** Implement/consume named-zone placement correctly.
+- ⬜ **[SCH-006]** Implement/consume absolute placement correctly.
+- ⬜ **[SCH-007]** Preserve coarse accepted placement precision without manufactured timestamps.
+- ⬜ **[SCH-008]** Preserve Schedule absence as valid state.
+- ⬜ **[SCH-009]** Preserve possible 0..N planned placements; do not hard-code universal 1:1.
+- ⬜ **[SCH-010]** Implement accepted Schedule creation for Activity.
+- ⬜ **[SCH-011]** Implement Schedule MaterialState revision.
+- ⬜ **[SCH-012]** Implement explicit current accepted Schedule binding.
+- ⬜ **[SCH-013]** Preserve Schedule history/original expectation.
+- ⬜ **[SCH-014]** Implement expected-state concurrency check.
+- ⬜ **[SCH-015]** Implement Schedule mutation idempotency.
+- ⬜ **[SCH-016]** Implement real Planning Tray→Timeline placement.
+- ⬜ **[SCH-017]** Implement real Timeline drag earlier/later.
+- ⬜ **[SCH-018]** Implement supported duration/start/end adjustment without conflating Actual.
+- ⬜ **[SCH-019]** Implement anchored time editor against real Schedule mutation.
+- ⬜ **[SCH-020]** Implement Activity unschedule back to Planning Tray where valid.
+- ⬜ **[SCH-021]** Implement guarded Undo through a new monotonic state/revision.
+- ⬜ **[SCH-022]** Preserve explicit in-progress expectation change as Schedule revision.
+- ⬜ **[SCH-023]** Preserve early/late/overrun reality as Session/Actual, not automatic Schedule rewrite.
+- ⬜ **[SCH-024]** Implement initial temporal range/local-day query for scheduled Activity.
+- ⬜ **[B02-T01]** Schedule form/validator tests.
+- ⬜ **[B02-T02]** Schedule current/history direct PostgreSQL tests.
+- ⬜ **[B02-T03]** Reschedule/unschedule/Undo application tests.
+- ⬜ **[B02-T04]** Stale revision/idempotency conflict tests.
+- ⬜ **[B02-T05]** DST/local-day tests applicable to exposed Schedule forms.
+- ⬜ **[B02-T06]** Timeline drag/time-editor/Planning Tray frontend regressions.
+- ⬜ **[B02-T07]** Firefox T1 critical interaction regressions.
+- ⬜ **[B02-T08]** E2E create→place→move→unschedule/reload/history test.
+- ⬜ **[B02-T09]** Manual `userTest` Schedule/Undo/conflict acceptance.
+
+## 34.5 B03 — Event Core
+
+- ⬜ **[EVT-001]** Re-open Event Domain/Logical/Physical authority before implementation.
+- ⬜ **[EVT-002]** Resolve minimum meaningful Event descriptive persistence.
+- ⬜ **[EVT-003]** Implement idempotent `CreateEvent`.
+- ⬜ **[EVT-004]** Activate Event macro-class in `+` Create.
+- ⬜ **[EVT-005]** Implement timed Event using shared Schedule.
+- ⬜ **[EVT-006]** Implement all-day/date-span Event in real per-day all-day lane.
+- ⬜ **[EVT-007]** Implement multi-day Event semantics/query/rendering.
+- ⬜ **[EVT-008]** Implement postponed/TBD Event with identity/history and no fake placeholder Schedule.
+- ⬜ **[EVT-009]** Preserve original expectation/current Schedule/Actual separation.
+- ⬜ **[EVT-010]** Implement Event Agenda/internal parts at accepted product level.
+- ⬜ **[EVT-011]** Preserve Agenda part `!= Activity/Event/Occurrence/Session/Actual` by default.
+- ⬜ **[EVT-012]** Implement preparation/follow-up Activity relation when activated.
+- ⬜ **[EVT-013]** Implement Place/conference intent only through justified relation/profile semantics.
+- ⬜ **[EVT-014]** Preserve ordinary Event attendance `!= Session`.
+- ⬜ **[EVT-015]** Preserve Event `!= Availability/Capacity Claim`.
+- ⬜ **[B03-T01]** Event create/application tests.
+- ⬜ **[B03-T02]** Timed/all-day/multi-day PostgreSQL/API tests.
+- ⬜ **[B03-T03]** Postponed/TBD history/query tests.
+- ⬜ **[B03-T04]** Event Agenda semantic/frontend tests.
+- ⬜ **[B03-T05]** Shared Schedule regression suite rerun for Activity + Event.
+- ⬜ **[B03-T06]** E2E Event create/reschedule/all-day/reload test.
+- ⬜ **[B03-T07]** Manual `userTest` Event acceptance.
+
+## 34.6 B04 — Temporal Constraints / movement policy
+
+- ⬜ **[TC-001]** Re-open Temporal Constraint authority before persistence design.
+- ⬜ **[TC-002]** Resolve first typed persistence/runtime representation; no generic `due_at`/JSON escape.
+- ⬜ **[TC-003]** Implement earliest-start constraint where required.
+- ⬜ **[TC-004]** Implement latest-start constraint where required.
+- ⬜ **[TC-005]** Implement latest-completion/delivery Deadline semantics with explicit facet.
+- ⬜ **[TC-006]** Implement hard validity window.
+- ⬜ **[TC-007]** Implement preferred/soft window.
+- ⬜ **[TC-008]** Implement minimum/maximum duration where required.
+- ⬜ **[TC-009]** Implement minimum contiguous Session duration where required.
+- ⬜ **[TC-010]** Implement spacing/recovery constraint where required.
+- ⬜ **[TC-011]** Implement relative-before/after constraint where required.
+- ⬜ **[TC-012]** Implement movement policy separately from Temporal Constraint.
+- ⬜ **[TC-013]** Ensure hard planning violation does not block recording contradictory Actual reality.
+- ⬜ **[TC-014]** Implement hard/soft conflict explanation.
+- ⬜ **[B04-T01]** Constraint typed-validation tests.
+- ⬜ **[B04-T02]** Constraint persistence/direct PostgreSQL tests if DDL added.
+- ⬜ **[B04-T03]** Hard vs soft placement behavior tests.
+- ⬜ **[B04-T04]** Deadline-passage `!= Outcome` test.
+- ⬜ **[B04-T05]** Manual `userTest` constraint/explanation acceptance.
+
+## 34.7 B05 — Life Area / Calendar / Tags
+
+- ⬜ **[ORG-001]** Re-open product/Logical LR-12 organization authority before persistence design.
+- ⬜ **[ORG-002]** Prove exact durable Life Area representation; no new LR-01 owner by convenience.
+- ⬜ **[ORG-003]** Implement Life Area create.
+- ⬜ **[ORG-004]** Implement rename.
+- ⬜ **[ORG-005]** Implement reorder.
+- ⬜ **[ORG-006]** Implement archive.
+- ⬜ **[ORG-007]** Implement hide/show.
+- ⬜ **[ORG-008]** Implement icon/color appearance metadata without making color semantic truth.
+- ⬜ **[ORG-009]** Implement one primary Life Area relation for applicable planning item.
+- ⬜ **[ORG-010]** Implement secondary Tags separately.
+- ⬜ **[ORG-011]** Preserve Life Area `!= Goal/Plan/Tag/Place/provider calendar`.
+- ⬜ **[ORG-012]** Replace/reconcile prototype Timeline groups with real product organization.
+- ⬜ **[ORG-013]** Preserve hidden item relevance to authorized conflict/scheduling reasoning.
+- ⬜ **[ORG-014]** Preserve future actor-local organization for shared canonical item.
+- ⬜ **[ORG-015]** Ensure accessibility does not rely on color alone.
+- ⬜ **[B05-T01]** Organization lifecycle tests.
+- ⬜ **[B05-T02]** Item assignment/filter/grouping tests.
+- ⬜ **[B05-T03]** Tags-vs-primary-area tests.
+- ⬜ **[B05-T04]** Hidden-group conflict-awareness test.
+- ⬜ **[B05-T05]** Accessibility/frontend grouping tests.
+- ⬜ **[B05-T06]** Manual `userTest` Palestra/Inglese organization acceptance.
+
+## 34.8 B06 — Routine / Recurrence / Occurrence baseline
+
+### Routine
+
+- ⬜ **[ROU-001]** Re-open Routine authority/current identity shell before implementation.
+- ⬜ **[ROU-002]** Resolve minimum meaningful Routine product persistence.
+- ⬜ **[ROU-003]** Implement Routine create and activate `Routine` macro-class.
+- ⬜ **[ROU-004]** Implement Routine recurrence material-state authoring.
+- ⬜ **[ROU-005]** Implement Routine pause.
+- ⬜ **[ROU-006]** Implement Routine resume.
+- ⬜ **[ROU-007]** Implement Routine end.
+- ⬜ **[ROU-008]** Preserve skip Occurrence `!= pause != end`.
+- ⬜ **[ROU-009]** Implement composite Routine structure when required without creating one Routine per internal step.
+- ⬜ **[ROU-010]** Preserve observed pattern `!= canonical Routine intent`.
+
+### Recurrence baseline
+
+- ⬜ **[REC-001]** Implement calendar-wall-clock runtime authoring/evaluation.
+- ⬜ **[REC-002]** Implement elapsed-interval runtime authoring/evaluation.
+- ⬜ **[REC-003]** Implement quota-per-period runtime authoring/evaluation.
+- ⬜ **[REC-004]** Implement cyclic-positional runtime authoring/evaluation.
+- ⬜ **[REC-005]** Implement explicit pattern anchor/phase semantics.
+- ⬜ **[REC-006]** Implement effective range: open/until/count.
+- ⬜ **[REC-007]** Preserve expected-count `!= successful-completion-count`.
+- ⬜ **[REC-008]** Implement named-zone/floating/absolute recurrence timezone modes as applicable.
+- ⬜ **[REC-009]** Implement quota period frame where membership can differ.
+- ⬜ **[REC-010]** Preserve stable quota identities without invented ordinal meaning.
+- ⬜ **[REC-011]** Implement structural exclusion `!= generated then skipped`.
+- ⬜ **[REC-012]** Define/implement virtual future/materialization horizon.
+- ⬜ **[REC-013]** Ensure frontend authors specification only; backend owns canonical generation.
+- ⬜ **[REC-014]** Reuse recurrence capability for Event recurrence; no duplicated engine.
+
+### Occurrence
+
+- ⬜ **[OCC-001]** Implement backend recurrence evaluator/checkpoint consumption.
+- ⬜ **[OCC-002]** Materialize stable Occurrence identity when justified.
+- ⬜ **[OCC-003]** For `recurrence_generated`, bind exact governing Recurrence MaterialState.
+- ⬜ **[OCC-004]** For `recurrence_generated`, persist exactly one compatible generation coordinate.
+- ⬜ **[OCC-005]** Implement `explicit_extra` with source relation and NULL governing recurrence state.
+- ⬜ **[OCC-006]** Preserve Occurrence Schedule optionality.
+- ⬜ **[OCC-007]** Implement one-off occurrence-specific Schedule exception.
+- ⬜ **[OCC-008]** Implement this-occurrence-only change scope.
+- ⬜ **[OCC-009]** Implement this-and-future source recurrence revision scope.
+- ⬜ **[OCC-010]** Preserve historical Occurrence generating state after source revision.
+- ⬜ **[OCC-011]** Preserve materialized future instance history when new recurrence no longer derives it.
+- ⬜ **[OCC-012]** Preserve Occurrence identity through reschedule.
+
+### Tests
+
+- ⬜ **[B06-T01]** Four CP6 recurrence family unit/application tests.
+- ⬜ **[B06-T02]** Recurrence direct PostgreSQL/current-state tests.
+- ⬜ **[B06-T03]** DST wall-clock recurrence tests.
+- ⬜ **[B06-T04]** Quota frame/no-exact-time tests.
+- ⬜ **[B06-T05]** Pattern anchor/effective-range tests.
+- ⬜ **[B06-T06]** Structural exclusion vs skip test.
+- ⬜ **[B06-T07]** `explicit_extra` invariant tests.
+- ⬜ **[B06-T08]** This-occurrence vs this-and-future tests.
+- ⬜ **[B06-T09]** Historical generating-state preservation tests.
+- ⬜ **[B06-T10]** Virtual vs materialized future reconciliation tests.
+- ⬜ **[B06-T11]** Event + Routine shared recurrence regression suite.
+- ⬜ **[B06-T12]** Frontend no-canonical-browser-expansion test.
+- ⬜ **[B06-T13]** E2E Routine recurring items → Timeline test.
+- ⬜ **[B06-T14]** Manual `userTest` Routine/Event recurrence acceptance.
+
+## 34.9 B07 — Session Runtime
+
+- ⬜ **[SES-001]** Re-open Session Domain/CP6 timing authority before implementation.
+- ⬜ **[SES-002]** Resolve typed Session execution-context relation persistence; no arbitrary nullable FK shortcut.
+- ⬜ **[SES-003]** Implement direct manual retrospective Session recording.
+- ⬜ **[SES-004]** Implement spontaneous Session without fake Activity/Schedule.
+- ⬜ **[SES-005]** Implement timer start.
+- ⬜ **[SES-006]** Implement pause as same Session.
+- ⬜ **[SES-007]** Implement resume.
+- ⬜ **[SES-008]** Implement end/close.
+- ⬜ **[SES-009]** Implement Activity contextual start.
+- ⬜ **[SES-010]** Implement Occurrence contextual start.
+- ⬜ **[SES-011]** Preserve ordinary Event attendance `!= Session`.
+- ⬜ **[SES-012]** Implement absolute timing.
+- ⬜ **[SES-013]** Implement elapsed-only/uncertain-boundary timing where product requires it.
+- ⬜ **[SES-014]** Preserve timing precision/provenance.
+- ⬜ **[SES-015]** Derive elapsed/paused/active durations.
+- ⬜ **[SES-016]** Implement timing correction preserving Session identity.
+- ⬜ **[SES-017]** Implement context correction preserving lineage.
+- ⬜ **[SES-018]** Implement Session split with lineage.
+- ⬜ **[SES-019]** Implement Session merge with lineage.
+- ⬜ **[SES-020]** Implement false-data deletion/invalidation boundary.
+- ⬜ **[SES-021]** Allow semantically compatible overlapping Sessions.
+- ⬜ **[SES-022]** Support one Session related to multiple intentions without duplicate time capture.
+- ⬜ **[SES-023]** Implement stale-running detection/review without fabricated end time.
+- ⬜ **[SES-024]** Implement idempotent Session control operations.
+- ⬜ **[SES-025]** Implement expected-state conflict on concurrent pause/resume/end.
+- ⬜ **[SES-026]** Preserve `Session end != Activity/Occurrence completion`.
+- ⬜ **[B07-T01]** Manual/spontaneous Session tests.
+- ⬜ **[B07-T02]** Start/pause/resume/end state tests.
+- ⬜ **[B07-T03]** Session timing/current-state direct PostgreSQL tests.
+- ⬜ **[B07-T04]** Timing precision/correction tests.
+- ⬜ **[B07-T05]** Split/merge/lineage tests.
+- ⬜ **[B07-T06]** Overlap/multi-intention tests.
+- ⬜ **[B07-T07]** Stale-running tests.
+- ⬜ **[B07-T08]** Concurrent/idempotent control tests.
+- ⬜ **[B07-T09]** E2E Activity/Occurrence→Session timer test.
+- ⬜ **[B07-T10]** Manual Web `userTest` Session lifecycle acceptance.
+
+## 34.10 B08 — Responsibility / Participation / actor relations
+
+- ⬜ **[REL-001]** Re-open Responsibility/Participation/Actor authority before relation persistence.
+- ⬜ **[REL-002]** Preserve Person/Account/Principal/Actor separation.
+- ⬜ **[REL-003]** Implement bounded requester relation where required.
+- ⬜ **[REL-004]** Implement bounded responsible/accountable Actor relation where required.
+- ⬜ **[REL-005]** Preserve expected performer separately where required.
+- ⬜ **[REL-006]** Preserve actual performer separately where required.
+- ⬜ **[REL-007]** No ambiguous generic `assigned_to` persistence.
+- ⬜ **[PAR-001]** Implement Event intended/invited Participation.
+- ⬜ **[PAR-002]** Implement accepted response.
+- ⬜ **[PAR-003]** Implement tentative response.
+- ⬜ **[PAR-004]** Implement declined response.
+- ⬜ **[PAR-005]** Preserve no-response as unknown, not declined.
+- ⬜ **[PAR-006]** Implement Actual attendance separately.
+- ⬜ **[PAR-007]** Support actual attendance without prior invitation where valid.
+- ⬜ **[PAR-008]** Preserve accepted `!= attended` and declined `!= proven absence`.
+- ⬜ **[ACK-001]** Preserve Acknowledgement as separate future/common-ground act for material shared changes.
+- ⬜ **[B08-T01]** Responsibility role-separation tests.
+- ⬜ **[B08-T02]** Participation response/history tests.
+- ⬜ **[B08-T03]** Actual attendance independence tests.
+- ⬜ **[B08-T04]** Unexpected participant test.
+- ⬜ **[B08-T05]** No ambiguous generic-role persistence schema test/review.
+- ⬜ **[B08-T06]** Manual `userTest` actor/participant acceptance when UI activated.
+
+## 34.11 B09 — Actual / Outcome / Confirmation / Resolution
+
+### Actual
+
+- ⬜ **[ACTUAL-001]** Re-open Actual Domain/CP6 realization authority.
+- ⬜ **[ACTUAL-002]** Implement Activity Actual subject path.
+- ⬜ **[ACTUAL-003]** Implement Event Actual subject path.
+- ⬜ **[ACTUAL-004]** Implement Occurrence Actual subject path.
+- ⬜ **[ACTUAL-005]** Preserve no Actual as unknown.
+- ⬜ **[ACTUAL-006]** Implement known non-realization distinctly.
+- ⬜ **[ACTUAL-007]** Implement partial realization where product requires it.
+- ⬜ **[ACTUAL-008]** Implement differently-realized/replacement context where required.
+- ⬜ **[ACTUAL-009]** Support 0..N Session basis where applicable.
+- ⬜ **[ACTUAL-010]** Support Event Actual without Session.
+- ⬜ **[ACTUAL-011]** Preserve Observation/Measurement as external fact semantics.
+- ⬜ **[ACTUAL-012]** Preserve current accepted realization/history/correction.
+- ⬜ **[ACTUAL-013]** Preserve competing assertion/reconciliation boundary.
+
+### Outcome
+
+- ⬜ **[OUT-001]** Re-open Outcome authority and prove exact first persistence shape.
+- ⬜ **[OUT-002]** Implement context-specific Activity result vocabulary required by product.
+- ⬜ **[OUT-003]** Implement context-specific Event result vocabulary required by product.
+- ⬜ **[OUT-004]** Implement context-specific Occurrence result vocabulary required by product.
+- ⬜ **[OUT-005]** Preserve no Outcome `!= negative`.
+- ⬜ **[OUT-006]** Preserve Outcome `!= lifecycle status/Observation/Artifact/Milestone`.
+- ⬜ **[OUT-007]** Implement Outcome correction/history where consequential.
+
+### Confirmation / Acknowledgement
+
+- ⬜ **[CNF-001]** Re-open Confirmation authority and prove exact LR-03 persistence shape.
+- ⬜ **[CNF-002]** Implement confirmer Actor.
+- ⬜ **[CNF-003]** Implement exact target/material-state binding.
+- ⬜ **[CNF-004]** Implement purpose/context where required.
+- ⬜ **[CNF-005]** Preserve Confirmation S1 after target corrected to S2.
+- ⬜ **[CNF-006]** Support conflicting actor Confirmations where required.
+- ⬜ **[CNF-007]** Implement retraction/supersession where required by first workflows.
+- ⬜ **[CNF-008]** Preserve no Confirmation `!= false/rejected/not-performed`.
+- ⬜ **[ACK-002]** Implement Acknowledgement only when a real material common-ground workflow requires it.
+- ⬜ **[ACK-003]** Preserve sent/delivered/read `!= acknowledged`.
+
+### Resolution Queue
+
+- ⬜ **[RES-001]** Implement derived resolution reason: Actual unknown.
+- ⬜ **[RES-002]** Implement derived resolution reason: Outcome required/absent.
+- ⬜ **[RES-003]** Implement derived resolution reason: Confirmation required/absent.
+- ⬜ **[RES-004]** Implement derived resolution reason: Session anomaly.
+- ⬜ **[RES-005]** Implement real `Fatto` operation mapping.
+- ⬜ **[RES-006]** Implement real `Parziale` mapping.
+- ⬜ **[RES-007]** Implement real `Saltato` mapping.
+- ⬜ **[RES-008]** Implement real `Posticipato` mapping.
+- ⬜ **[RES-009]** Implement real `Sostituito` mapping.
+- ⬜ **[RES-010]** Implement `Conferma` mapping.
+- ⬜ **[RES-011]** Implement `Correggi` entry path.
+- ⬜ **[RES-012]** Implement batch/review workflow when activated.
+- ⬜ **[RES-013]** Preserve Resolution Queue `!= Notification feed/status table`.
+- ⬜ **[RES-014]** Implement atomic multi-effect operation where one UX action requires Actual+Outcome+Confirmation together.
+
+### Tests
+
+- ⬜ **[B09-T01]** Unknown vs known non-realization tests.
+- ⬜ **[B09-T02]** Multiple Sessions→one Actual tests.
+- ⬜ **[B09-T03]** Event Actual without Session test.
+- ⬜ **[B09-T04]** Partial/different realization tests.
+- ⬜ **[B09-T05]** Context-specific Outcome tests.
+- ⬜ **[B09-T06]** Confirmation exact-state/correction tests.
+- ⬜ **[B09-T07]** No-response/unresolved tests.
+- ⬜ **[B09-T08]** Multi-effect transaction atomicity tests.
+- ⬜ **[B09-T09]** Resolution Queue projection tests.
+- ⬜ **[B09-T10]** E2E expected item→resolve→history test.
+- ⬜ **[B09-T11]** Manual `userTest` Fatto/Parziale/Saltato/Conferma acceptance.
+
+## 34.12 B10 — Advanced Recurrence / Conditional Policy / reminders
+
+### Advanced recurrence
+
+- ⬜ **[REC-ADV-001]** Prove dedicated persistence/runtime need for completion-relative recurrence.
+- ⬜ **[REC-ADV-002]** Implement completion-relative qualifying Actual anchor.
+- ⬜ **[REC-ADV-003]** Implement sequential chain/no-future-anchor behavior.
+- ⬜ **[REC-ADV-004]** Prove dedicated persistence/runtime need for anchor-stream-relative recurrence.
+- ⬜ **[REC-ADV-005]** Implement qualifying Session/anchor-stream mapping.
+- ⬜ **[REC-ADV-006]** Preserve advanced recurrence `!= generic Trigger/workflow`.
+
+### Conditional Policy
+
+- ⬜ **[POL-001]** Re-open Conditional Policy authority before runtime representation.
+- ⬜ **[POL-002]** Implement transition-based activation semantics.
+- ⬜ **[POL-003]** Implement persistent-state activation semantics where required.
+- ⬜ **[POL-004]** Implement per-new-qualifying-fact activation semantics where required.
+- ⬜ **[POL-005]** Implement semantic dedup/idempotency for duplicate source/import facts.
+- ⬜ **[POL-006]** Detect/handle competing policies without universal newest-wins rule.
+- ⬜ **[POL-007]** Implement loop/cycle runtime safeguards where activated.
+- ⬜ **[POL-008]** Preserve activation `!= response success`.
+
+### Review/reminder/automatic effects
+
+- ⬜ **[REM-001]** Implement immediate review/confirmation policy.
+- ⬜ **[REM-002]** Implement later/end-of-day review policy.
+- ⬜ **[REM-003]** Implement weekly review policy.
+- ⬜ **[REM-004]** Implement silent-unresolved policy.
+- ⬜ **[REM-005]** Implement explicitly authorized bounded automatic Outcome.
+- ⬜ **[REM-006]** Preserve automatic effect provenance and no fake human Confirmation.
+- ⬜ **[REM-007]** Implement Reminder intent separate from delivery.
+- ⬜ **[REM-008]** Reuse Shared Email Platform for email delivery where configured.
+- ⬜ **[REM-009]** Ensure durable intent/commit-before-provider-I/O semantics.
+- ⬜ **[REM-010]** Handle ambiguous provider result without blind resend.
+- ⬜ **[REM-011]** Implement user notification controls/quiet-hours/repetition when delivery channels support them.
+- ⬜ **[B10-T01]** Completion-relative anchor tests.
+- ⬜ **[B10-T02]** Anchor-stream duplicate/qualification tests.
+- ⬜ **[B10-T03]** Conditional activation-mode tests.
+- ⬜ **[B10-T04]** Policy conflict/loop safeguard tests.
+- ⬜ **[B10-T05]** Automatic Outcome provenance tests.
+- ⬜ **[B10-T06]** Reminder intent/email outbox/provider ambiguity tests.
+- ⬜ **[B10-T07]** Daily/weekly review aggregation tests.
+- ⬜ **[B10-T08]** Manual `userTest` review/reminder acceptance.
+
+## 34.13 B11 — Replanning / conflict / solver
+
+- ⬜ **[RPL-001]** Re-open movement/replanning/solver Physical authority before implementation.
+- ⬜ **[RPL-002]** Build candidate input from current accepted Schedule/constraints, not stale ViewModel.
+- ⬜ **[RPL-003]** Include hard constraints.
+- ⬜ **[RPL-004]** Include soft constraints/preferences.
+- ⬜ **[RPL-005]** Include movement policy.
+- ⬜ **[RPL-006]** Include relevant hidden Life Area commitments under visibility rules.
+- ⬜ **[RPL-007]** Preserve candidate `!= accepted Schedule`.
+- ⬜ **[RPL-008]** Explain affected items/trade-offs without hidden-data leakage.
+- ⬜ **[RPL-009]** Implement smallest useful replan scope.
+- ⬜ **[RPL-010]** Implement move fallback.
+- ⬜ **[RPL-011]** Implement postpone fallback.
+- ⬜ **[RPL-012]** Implement skip fallback.
+- ⬜ **[RPL-013]** Implement shorten fallback where semantics permit.
+- ⬜ **[RPL-014]** Implement split fallback where semantics permit.
+- ⬜ **[RPL-015]** Implement replacement fallback preserving original intention/history.
+- ⬜ **[RPL-016]** Implement dependency/day/week scope expansion only when required.
+- ⬜ **[RPL-017]** Preserve this-occurrence vs future-source scope.
+- ⬜ **[RPL-018]** Revalidate expected state before applying candidate.
+- ⬜ **[RPL-019]** Ensure solver unavailable/fails → canonical state unchanged.
+- ⬜ **[B11-T01]** Hard/soft constraint solver tests.
+- ⬜ **[B11-T02]** Candidate-vs-accepted test.
+- ⬜ **[B11-T03]** Stale candidate conflict test.
+- ⬜ **[B11-T04]** Minimal scope/fallback tests.
+- ⬜ **[B11-T05]** Hidden-conflict privacy/non-interference tests.
+- ⬜ **[B11-T06]** Manual `userTest` proposal/explanation/apply acceptance.
+
+## 34.14 B12 — Provider / offline / multi-device
+
+### Provider
+
+- ⬜ **[EXT-001]** Re-open ExternalRef/provider integration authority.
+- ⬜ **[EXT-002]** Implement provider Event identity mapping separate from DANTE Event.
+- ⬜ **[EXT-003]** Implement provider recurring-series/instance mapping separate from DANTE Occurrence.
+- ⬜ **[EXT-004]** Implement import/update assertion path.
+- ⬜ **[EXT-005]** Implement provider deletion/tombstone handling.
+- ⬜ **[EXT-006]** Preserve provider Schedule `!= accepted DANTE Schedule`.
+- ⬜ **[EXT-007]** Implement detached recurring-instance mapping/reconciliation.
+- ⬜ **[EXT-008]** Handle unsupported/lossy recurrence mappings explicitly.
+- ⬜ **[EXT-009]** Preserve user correction against blind provider overwrite.
+- ⬜ **[EXT-010]** Expose truthful external apply pending/success/failure/ambiguous state.
+- ⬜ **[EXT-011]** Implement imported Session provider/source/device provenance.
+- ⬜ **[EXT-012]** Implement duplicate imported Session detection/reconciliation.
+
+### Offline / multi-device
+
+- ⬜ **[SYNC-001]** Confirm/activate selected local-sync technology only through Physical gate.
+- ⬜ **[SYNC-002]** Preserve local/synced copy as noncanonical.
+- ⬜ **[SYNC-003]** Expose pending/offline mutation state truthfully.
+- ⬜ **[SYNC-004]** Implement reconnect/replay idempotency.
+- ⬜ **[SYNC-005]** Implement expected-state reconciliation after offline period.
+- ⬜ **[SYNC-006]** Implement Web/Mobile concurrent Session control reconciliation.
+- ⬜ **[SYNC-007]** Implement device clock drift handling.
+- ⬜ **[SYNC-008]** No silent last-write-wins.
+- ⬜ **[B12-T01]** Provider Event/Occurrence identity tests.
+- ⬜ **[B12-T02]** Provider tombstone tests.
+- ⬜ **[B12-T03]** Unsupported recurrence mapping tests.
+- ⬜ **[B12-T04]** User-correction vs provider-update tests.
+- ⬜ **[B12-T05]** Imported Session duplicate/reconciliation tests.
+- ⬜ **[B12-T06]** Offline replay/idempotency tests.
+- ⬜ **[B12-T07]** Concurrent Web/Mobile Session race tests.
+- ⬜ **[B12-T08]** Device clock drift tests.
+- ⬜ **[B12-T09]** Provider ambiguous-result tests.
+- ⬜ **[B12-T10]** Manual `userTest` provider/offline acceptance on supported surfaces.
+
+## 34.15 B13 — Analytics / Statistics / Signals
+
+- ⬜ **[ANA-001]** Implement scheduled-duration metric.
+- ⬜ **[ANA-002]** Implement Session elapsed-duration metric.
+- ⬜ **[ANA-003]** Implement Session active-duration metric.
+- ⬜ **[ANA-004]** Implement paused-duration metric.
+- ⬜ **[ANA-005]** Implement early/late start metric against correct Schedule state.
+- ⬜ **[ANA-006]** Implement early/late finish metric.
+- ⬜ **[ANA-007]** Implement overrun/underrun metric.
+- ⬜ **[ANA-008]** Implement Schedule revision/reschedule statistics.
+- ⬜ **[ANA-009]** Implement postpone/cancel/skip patterns without generic status ontology.
+- ⬜ **[ANA-010]** Implement expected Occurrence counts.
+- ⬜ **[ANA-011]** Implement Actual coverage.
+- ⬜ **[ANA-012]** Implement context-specific Outcome distributions.
+- ⬜ **[ANA-013]** Implement Confirmation coverage where policy requires it.
+- ⬜ **[ANA-014]** Implement time allocation by Life Area.
+- ⬜ **[ANA-015]** Implement tag/context aggregation.
+- ⬜ **[ANA-016]** Implement day/week/month/year range trends with correct timezone boundaries.
+- ⬜ **[ANA-017]** Implement Routine adherence from Occurrence+Actual+Outcome+Confirmation basis.
+- ⬜ **[ANA-018]** Implement streak only as derived evaluated metric where defined.
+- ⬜ **[ANA-019]** Distinguish raw Session sum vs unique wall-clock coverage.
+- ⬜ **[ANA-020]** Support intentional overlapping multi-domain contribution.
+- ⬜ **[ANA-021]** Use corrected current accepted truth for ordinary analytics while preserving audit history.
+- ⬜ **[ANA-022]** Ensure deleted/redacted source does not survive as hidden undeletable derived copy.
+- ⬜ **[ANA-023]** Preserve product analytics `!= OTel/Grafana observability`.
+- ⬜ **[ANA-024]** Do not introduce universal productivity/success/performance score without future Criterion semantics.
+- ⬜ **[B13-T01]** Planned-vs-actual calculation tests.
+- ⬜ **[B13-T02]** Overlap/unique-wall-clock tests.
+- ⬜ **[B13-T03]** Routine adherence tests.
+- ⬜ **[B13-T04]** Corrected-history analytics tests.
+- ⬜ **[B13-T05]** Timezone/DST period-boundary tests.
+- ⬜ **[B13-T06]** Life Area/tag aggregation tests.
+- ⬜ **[B13-T07]** Privacy/deletion/non-interference analytics tests.
+- ⬜ **[B13-T08]** Manual `userTest` statistics acceptance.
+
+## 34.16 Cross-cutting history / provenance / security / privacy / recovery
+
+These items span blocks and turn green only when their required implementing slices exist and have been proven.
+
+- ⬜ **[HIST-001]** Owner identity remains separate from material state in every implemented mutable facet.
+- ⬜ **[HIST-002]** Explicit current accepted state used; no latest-row/UUID inference.
+- ⬜ **[HIST-003]** Correction preserves historical lineage.
+- ⬜ **[HIST-004]** Material change invalidates old Confirmation/Acknowledgement applicability where required.
+- ⬜ **[PROV-001]** Consequential source/actor/device/provider provenance preserved.
+- ⬜ **[PROV-002]** Provenance never treated as truth by itself.
+- ⬜ **[RECON-001]** Competing assertions can remain unresolved; no universal newest/provider/user winner.
+- ⬜ **[AUTH-001]** DanteContext/Account/self-Person boundary respected by all temporal operations.
+- ⬜ **[AUTH-002]** Person != Account != Principal != Actor preserved in APIs/persistence.
+- ⬜ **[AUTH-003]** Consequential Authority/Visibility/Consent basis retained where applicable.
+- ⬜ **[PRIV-001]** Sensitive temporal details can be projected as safe busy/free without leaking hidden title/context.
+- ⬜ **[PRIV-002]** Counts/explanations/analytics respect non-interference/visibility.
+- ⬜ **[PRIV-003]** Retention/deletion/redaction path distinct from semantic correction.
+- ⬜ **[PRIV-004]** Derived user-linked data honors deletion/retention policy.
+- ⬜ **[RECOV-001]** New canonical temporal state included in backup/restore considerations.
+- ⬜ **[RECOV-002]** PITR/restore cannot silently resurrect retired accepted MaterialState.
+- ⬜ **[RECOV-003]** New outbox/provider state has explicit recovery/reconciliation behavior.
+- ⬜ **[OBS-001]** Temporal operations instrumented for operational observability without changing semantic outcomes.
+- ⬜ **[OBS-002]** Observability outage cannot change canonical operation truth.
+
+## 34.17 Read models / Timeline / Detail / range-query completeness
+
+- ⬜ **[READ-001]** Timeline sourced only from real normalized backend/application read model in normal runtime.
+- ⬜ **[READ-002]** Timeline projection preserves stable owner/Occurrence identity.
+- ⬜ **[READ-003]** Timeline card `!= DB row/backend DTO` boundary maintained.
+- ⬜ **[READ-004]** Planning Tray read model distinguishes unplaced Activity reason.
+- ⬜ **[READ-005]** Future unified no-placement UI distinguishes postponed Event/flexible Occurrence from unplaced Activity.
+- ⬜ **[READ-006]** Resolution Queue derived from exact unresolved reason.
+- ⬜ **[READ-007]** Detail/History consumes canonical semantics without inventing new owner model.
+- ⬜ **[READ-008]** Range query supports user-local day semantics.
+- ⬜ **[READ-009]** Range query supports all-day/date spans.
+- ⬜ **[READ-010]** Range query supports coarse placement semantics.
+- ⬜ **[READ-011]** Range query defines paging/cursor/horizon deterministically.
+- ⬜ **[READ-012]** Range query applies current/history/visibility/cancellation filters correctly.
+- ⬜ **[READ-013]** Recurrence materialization output integrates without browser canonical synthesis.
+- ⬜ **[READ-014]** 23h/25h local days handled correctly.
+- ⬜ **[READ-015]** Frozen T1 interaction behavior preserved throughout all integrations.
+
+## 34.18 B14 — Whole-vertical closure tests and proof
+
+- ⬜ **[CLOSE-001]** Re-run full master `!=` closure sweep against implementation.
+- ⬜ **[CLOSE-002]** Verify no generic Task/Status/done/repeat/due_at/assigned_to shortcuts entered implementation.
+- ⬜ **[CLOSE-003]** Verify no runtime fake Timeline cards/mock repositories remain.
+- ⬜ **[CLOSE-004]** Verify every ledger item is `✅` or covered by explicit approved scope amendment.
+- ⬜ **[CLOSE-005]** Re-run all 38 final pre-roadmap adversarial scenarios.
+- ⬜ **[CLOSE-006]** Full backend unit/application suite green.
+- ⬜ **[CLOSE-007]** Full direct PostgreSQL acceptance suite green.
+- ⬜ **[CLOSE-008]** Full API/integration suite green.
+- ⬜ **[CLOSE-009]** Full frontend unit/component suite green.
+- ⬜ **[CLOSE-010]** Full T1/F0/C1 regression suite green.
+- ⬜ **[CLOSE-011]** Full real-backend E2E suite green.
+- ⬜ **[CLOSE-012]** Full timezone/DST suite green.
+- ⬜ **[CLOSE-013]** Full idempotency/concurrency suite green.
+- ⬜ **[CLOSE-014]** Full recurrence/Occurrence history suite green.
+- ⬜ **[CLOSE-015]** Full Session multi-device/offline suite green for activated surfaces.
+- ⬜ **[CLOSE-016]** Full privacy/visibility/non-interference suite green.
+- ⬜ **[CLOSE-017]** Full provider/reconciliation suite green for activated providers.
+- ⬜ **[CLOSE-018]** Recovery/PITR anti-resurrection proof green.
+- ⬜ **[CLOSE-019]** Timeline/range/review/analytics performance and query-plan review green.
+- ⬜ **[CLOSE-020]** Alembic/SQLAlchemy/Dictionary/database docs/live PostgreSQL alignment green.
+- ⬜ **[CLOSE-021]** Runtime ACL/owner/migrator/observer proof green for all new DB objects.
+- ⬜ **[CLOSE-022]** Manual desktop `userTest` whole-vertical walkthrough green.
+- ⬜ **[CLOSE-023]** Manual mobile/responsive `userTest` whole-vertical walkthrough green for supported surfaces.
+- ⬜ **[CLOSE-024]** Accessibility acceptance green.
+- ⬜ **[CLOSE-025]** Documentation drift audit green.
+- ⬜ **[CLOSE-026]** Branch closure rules re-read and satisfied before protected-main integration.
+
+---
+
+# 35. Current execution state
+
+At roadmap freeze:
+
+```text
+SEMANTIC MAP / AUDITS / ROADMAP          ✅ COMPLETE
+REAL PRODUCT IMPLEMENTATION              ⬜ NOT STARTED
+NEXT BLOCK                               B00 — Real Data Spine
+```
+
+This ledger is intentionally verbose. Its purpose is to make omission visible: if a capability or required proof is not green, it is not done.
