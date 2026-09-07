@@ -119,6 +119,32 @@ pending / unavailable
 != applied
 ```
 
+### 4.1 Local Create context authoring is also test-only before B05
+
+The C1 prototype also allowed a user-created Timeline context/group to be inserted into local reducer state while no durable Life Area/Calendar organization capability existed. That is useful for C1 regression tests but is not authoritative product persistence.
+
+The `TemporalCreateContextCatalogProvider` now exposes its local context creator only in explicit `test` mode:
+
+```text
+mode == test
+→ local context creator may be available for frozen C1 regressions
+
+mode != test
+→ local context creator absent
+→ Create UI cannot manufacture a session-only Life Area/context
+```
+
+This does **not** implement B05 organization. It closes another B00 fake-persistence path until the real Life Area/Calendar capability is activated.
+
+Canonical distinction:
+
+```text
+local draft context/group
+!= durable Life Area / Calendar
+```
+
+A dedicated component-boundary test verifies production/development disablement and test-mode availability.
+
 ## 5. B00 real PostgreSQL runtime-spine proof checkpoint
 
 The existing backend integration harness already provides disposable PostgreSQL 18.6 clusters, fresh provisioned databases and Alembic-to-head migration. B00 reuses that accepted harness rather than creating a second testing architecture.
@@ -237,7 +263,23 @@ Manual approval remains distinct from automated proof and requires the explicit 
 B00 userTest — APPROVED
 ```
 
-## 8. Current B00 checkpoint semantics
+## 8. Private temporal response cache policy
+
+Temporal data is personal authenticated data. B00 therefore extends the existing request-context private no-store policy to `/api/v1/temporal/` in addition to `/api/v1/auth/`.
+
+The policy is applied by outer request middleware rather than only inside the successful temporal route, so it covers successful responses **and** expected/unexpected error responses that pass through the application stack:
+
+```text
+/api/v1/auth/*
+/api/v1/temporal/*
+→ Cache-Control: no-store
+```
+
+A focused middleware regression test proves both private prefixes receive `no-store` and an unrelated public liveness route is not globally forced into that policy.
+
+This is a privacy/cache correctness hardening, not a semantic Timeline state.
+
+## 9. Current B00 checkpoint semantics
 
 B00 remains **IN PROGRESS**. No green-check claim is made merely because code/tests/protocols exist; applicable automated suites and manual acceptance still have to run under the workstream Definition of Done.
 
@@ -249,6 +291,8 @@ Implemented/defined boundaries now include:
 - truthful loading/error/retry behavior;
 - normal-runtime prototype card/clock isolation;
 - normal-runtime Create fake-success retirement;
+- normal-runtime local context fake-persistence retirement;
+- private temporal `Cache-Control: no-store` policy;
 - PostgreSQL integration proof for AuthSession → DanteContext → self Person → timezone → temporal endpoint;
 - browser → production web → API → PostgreSQL E2E coverage;
 - controlled PostgreSQL outage/recovery browser proof;
