@@ -1,4 +1,4 @@
-"""RFC 9457 Problem Details, request correlation and Auth cache policy."""
+"""RFC 9457 Problem Details, request correlation and private API cache policy."""
 
 from __future__ import annotations
 
@@ -19,6 +19,7 @@ from dante.platform.observability.logging import log_event
 from dante.platform.observability.runtime import mark_current_span_error
 
 _LOGGER = logging.getLogger(__name__)
+_PRIVATE_NO_STORE_PREFIXES = ("/api/v1/auth/", "/api/v1/temporal/")
 
 
 class ProblemFieldError(BaseModel):
@@ -143,7 +144,7 @@ def problem_response_for_scope(scope: Scope, problem: ProblemError) -> JSONRespo
 
 
 class RequestContextMiddleware:
-    """Pure-ASGI request ID and Auth no-store policy."""
+    """Pure-ASGI request ID and private first-party API no-store policy."""
 
     def __init__(self, app: ASGIApp) -> None:
         self._app = app
@@ -160,7 +161,7 @@ class RequestContextMiddleware:
             if message["type"] == "http.response.start":
                 headers = MutableHeaders(scope=message)
                 headers["X-Request-ID"] = request_id
-                if path.startswith("/api/v1/auth/"):
+                if path.startswith(_PRIVATE_NO_STORE_PREFIXES):
                     headers["Cache-Control"] = "no-store"
             await send(message)
 
