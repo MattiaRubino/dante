@@ -77,18 +77,98 @@ A dedicated regression test proves that `production` and `development` modes ret
 
 This checkpoint is deliberately narrower than full B00 completion. In particular, it does **not** make the existing Create in-memory workspace canonical and does not authorize local materialization as successful persistence.
 
-## 4. Current B00 checkpoint semantics
+## 4. B00 Create fake-success retirement checkpoint
 
-B00 remains **IN PROGRESS**. No green-check claim is made merely because code exists; automated suites and manual acceptance still have to run under the workstream Definition of Done.
+The C1-era Create runtime previously defaulted to an `InMemoryTemporalWorkspace`. In normal runtime this allowed a prepared Create command to receive `applied`, materialize a local Timeline card and close the draft even though no backend persistence had occurred.
+
+That behavior is now forbidden at the runtime factory boundary:
+
+```text
+explicit authoritative workspace injected
+→ use that workspace
+
+mode == test and no workspace injected
+→ InMemoryTemporalWorkspace allowed
+
+mode != test and no workspace injected
+→ fail closed with temporal.create.backend_unavailable
+→ no applied effect
+→ no local Timeline materialization
+→ draft remains available to the user through the existing failure lifecycle
+```
+
+The unavailable workspace is not a persistence substitute. It exists only to make unsupported normal-runtime writes fail truthfully until B01 activates the first real `CreateActivity` backend operation.
+
+A dedicated boundary test covers production/development fail-closed behavior, test-mode in-memory behavior and explicit workspace injection.
+
+This preserves the required distinction:
+
+```text
+Create draft / preview
+!= canonical Activity/Event
+
+frontend prepared command
+!= accepted backend effect
+
+local in-memory projection
+!= persistence
+
+pending / unavailable
+!= applied
+```
+
+## 5. B00 real PostgreSQL runtime-spine proof checkpoint
+
+The existing backend integration harness already provides disposable PostgreSQL 18.6 clusters, fresh provisioned databases and Alembic-to-head migration. B00 now reuses that accepted harness rather than creating a second testing architecture.
+
+A temporal integration suite has been added under `apps/backend/tests/integration/temporal/` to exercise the complete request spine against a real migrated PostgreSQL database:
+
+```text
+synthetic isolated account
+→ real password sign-in
+→ real AuthSession cookie
+→ GET /api/v1/temporal/timeline/window
+→ require_dante_context()
+→ lazy AccountApplicationContext establishment
+→ self Person creation
+→ X-Dante-Time-Zone resolution
+→ truthful empty temporal response
+```
+
+The proof also verifies the negative bootstrap rule:
+
+```text
+follow-device account + missing device timezone
+→ 400 context.device_timezone_required
+→ no AccountApplicationContext row created
+→ no malformed bootstrap side effect
+```
+
+The public Timeline response continues not to expose `self_person_ref`; that reference remains an internal application-context concern.
+
+This integration suite is committed but has not yet been executed in this connector-only session. Therefore it is evidence of implemented test coverage, not evidence that the PostgreSQL gate has passed.
+
+## 6. Current B00 checkpoint semantics
+
+B00 remains **IN PROGRESS**. No green-check claim is made merely because code or tests exist; automated suites and manual acceptance still have to run under the workstream Definition of Done.
+
+Implemented boundaries now include:
+
+- authenticated backend temporal read/API boundary;
+- strict frontend remote temporal read adapter;
+- Home/Timeline consumption of that real read boundary;
+- truthful loading/error/retry behavior;
+- normal-runtime prototype card/clock isolation;
+- normal-runtime Create fake-success retirement;
+- real PostgreSQL integration proof for AuthSession → DanteContext → self Person → timezone → temporal endpoint.
 
 Still required before B00 can become `✅` include at minimum:
 
-- consume the real temporal data source from the normal Timeline surface rather than merely exposing the adapter;
-- retire/contain the Create in-memory workspace so normal runtime cannot present ephemeral local materialization as canonical backend success;
-- establish the real PostgreSQL-backed temporal query seam at the first semantically legitimate readable family;
-- define isolated `userTest`/test-data setup and cleanup;
-- establish real backend + real PostgreSQL E2E harness;
-- manual empty/error/real-path acceptance;
-- full F0/T1 regression proof.
+- execute the full frontend/backend automated quality suites;
+- execute the real PostgreSQL integration suite against the certified image;
+- define/confirm the isolated manual `userTest` setup and deterministic cleanup flow without conflating it with automated synthetic fixtures;
+- manual empty/error/real-path acceptance through the actual product surface;
+- full F0/T1 regression proof under the executed test suite;
+- activate a real PostgreSQL-backed temporal product read when B01 introduces the first semantically legitimate persistent temporal product family.
 
 No checklist item may be marked green until its applicable Definition-of-Done gates have actually passed.
