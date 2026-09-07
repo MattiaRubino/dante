@@ -1,0 +1,54 @@
+.temporal-timeline-runtime-boundary {
+  display: contents;
+}
+
+.temporal-timeline-runtime-status {
+  position: fixed;
+  inset-inline-start: 50%;
+  inset-block-end: max(16px, env(safe-area-inset-bottom));
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(680px, calc(100vw - 32px));
+  padding: 10px 14px;
+  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, Canvas 94%, transparent);
+  box-shadow: 0 12px 36px rgb(0 0 0 / 18%);
+  color: CanvasText;
+  font-size: 0.875rem;
+  line-height: 1.35;
+  transform: translateX(-50%);
+  backdrop-filter: blur(16px);
+}
+
+.temporal-timeline-runtime-status--error {
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.temporal-timeline-runtime-status--error strong {
+  flex: 0 0 100%;
+}
+
+.temporal-timeline-runtime-status--error span {
+  flex: 1 1 360px;
+}
+
+.temporal-timeline-runtime-status--error button {
+  flex: 0 0 auto;
+  min-height: 32px;
+  padding: 5px 10px;
+  border: 1px solid currentColor;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.temporal-timeline-runtime-status--error button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
