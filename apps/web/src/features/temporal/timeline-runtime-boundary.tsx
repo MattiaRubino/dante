@@ -28,6 +28,23 @@ type TemporalTimelineRuntimeState =
   | Readonly<{ status: 'ready'; effectiveZoneId: string }>
   | Readonly<{ status: 'error' }>;
 
+type TemporalTimelineReadAttempt = Readonly<{
+  request: TemporalTimelineWindowRequest;
+  source: TemporalTimelineDataSource;
+  retryRevision: number;
+}>;
+
+type TemporalTimelineSettledState =
+  | Readonly<{
+      attempt: TemporalTimelineReadAttempt;
+      status: 'ready';
+      effectiveZoneId: string;
+    }>
+  | Readonly<{
+      attempt: TemporalTimelineReadAttempt;
+      status: 'error';
+    }>;
+
 type TemporalTimelineRuntimeBoundaryProps = Readonly<{
   children: ReactNode;
   viewedDateIso?: string | undefined;
@@ -78,28 +95,36 @@ export function TemporalTimelineRuntimeBoundary({
     [testMode, viewedDateIso],
   );
   const [retryRevision, setRetryRevision] = useState(0);
-  const [state, setState] = useState<TemporalTimelineRuntimeState>(() =>
-    testMode
-      ? { status: 'ready', effectiveZoneId: 'Etc/UTC' }
-      : { status: 'loading' },
+  const attempt = useMemo<TemporalTimelineReadAttempt | null>(
+    () =>
+      testMode || request === null
+        ? null
+        : Object.freeze({
+            request,
+            source,
+            retryRevision,
+          }),
+    [request, retryRevision, source, testMode],
   );
+  const [settledState, setSettledState] =
+    useState<TemporalTimelineSettledState | null>(null);
 
   useEffect(() => {
-    if (testMode || request === null) {
+    if (attempt === null) {
       return;
     }
 
     const controller = new AbortController();
     let active = true;
-    setState({ status: 'loading' });
 
-    void source
-      .loadWindow(request, controller.signal)
+    void attempt.source
+      .loadWindow(attempt.request, controller.signal)
       .then((window) => {
         if (!active) {
           return;
         }
-        setState({
+        setSettledState({
+          attempt,
           status: 'ready',
           effectiveZoneId: window.effectiveZoneId,
         });
@@ -108,14 +133,25 @@ export function TemporalTimelineRuntimeBoundary({
         if (!active || controller.signal.aborted) {
           return;
         }
-        setState({ status: 'error' });
+        setSettledState({ attempt, status: 'error' });
       });
 
     return () => {
       active = false;
       controller.abort();
     };
-  }, [request, retryRevision, source, testMode]);
+  }, [attempt]);
+
+  const state: TemporalTimelineRuntimeState = testMode
+    ? { status: 'ready', effectiveZoneId: 'Etc/UTC' }
+    : settledState?.attempt === attempt
+      ? settledState.status === 'ready'
+        ? {
+            status: 'ready',
+            effectiveZoneId: settledState.effectiveZoneId,
+          }
+        : { status: 'error' }
+      : { status: 'loading' };
 
   const retry = useCallback(() => {
     setRetryRevision((revision) => revision + 1);
