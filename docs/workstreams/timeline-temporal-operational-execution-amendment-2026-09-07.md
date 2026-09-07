@@ -51,18 +51,44 @@ This is not authorization for:
 - frontend inference of canonical semantics;
 - fake success after transport/backend failure.
 
-## 3. Current B00 checkpoint semantics
+## 3. B00 runtime fixture-isolation checkpoint
 
-The first code slice may prove only the capabilities it actually implements. It does **not** close B00 by itself.
+The accepted T1 prototype dataset is retained only as regression-test material. Its runtime exports are now guarded by one explicit mode predicate:
+
+```text
+mode == test
+→ frozen prototype clock/groups/cards available
+
+mode != test
+→ real device-zone wall clock
+→ zero prototype groups
+→ zero prototype store rows
+→ zero generated fallback cards
+```
+
+This closes the previously separate fake-card entry paths at their common source:
+
+- `createInitialTimelineState()` can no longer seed prototype store/groups in normal runtime;
+- `timelineEventsForDate()` can no longer manufacture distant-date fallback cards in normal runtime;
+- `buildTimelineRenderedDays()` may still call the legacy fixture helper, but that helper is incapable of returning prototype cards outside explicit test mode;
+- the Timeline surface legacy clock exports resolve to the real device-zone wall clock outside explicit test mode.
+
+A dedicated regression test proves that `production` and `development` modes return no prototype groups/cards/store while `test` retains the frozen T1 dataset.
+
+This checkpoint is deliberately narrower than full B00 completion. In particular, it does **not** make the existing Create in-memory workspace canonical and does not authorize local materialization as successful persistence.
+
+## 4. Current B00 checkpoint semantics
+
+B00 remains **IN PROGRESS**. No green-check claim is made merely because code exists; automated suites and manual acceptance still have to run under the workstream Definition of Done.
 
 Still required before B00 can become `✅` include at minimum:
 
-- normal Timeline runtime cutover away from prototype cards/clock;
-- explicit fixture/test-only isolation;
-- real PostgreSQL-backed temporal query activation when a legitimate readable family exists;
-- isolated `userTest`/test-data setup and cleanup;
-- real backend + real PostgreSQL E2E harness;
+- consume the real temporal data source from the normal Timeline surface rather than merely exposing the adapter;
+- retire/contain the Create in-memory workspace so normal runtime cannot present ephemeral local materialization as canonical backend success;
+- establish the real PostgreSQL-backed temporal query seam at the first semantically legitimate readable family;
+- define isolated `userTest`/test-data setup and cleanup;
+- establish real backend + real PostgreSQL E2E harness;
 - manual empty/error/real-path acceptance;
 - full F0/T1 regression proof.
 
-No checklist item may be marked green merely because this boundary exists.
+No checklist item may be marked green until its applicable Definition-of-Done gates have actually passed.
