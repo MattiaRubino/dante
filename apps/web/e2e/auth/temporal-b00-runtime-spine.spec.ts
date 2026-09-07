@@ -2,20 +2,20 @@ import { expect, test, type Page, type TestInfo } from '@playwright/test';
 
 const password = 'correct horse battery staple';
 
-const projectEmailNumber: Readonly<Record<string, number>> = {
-  chromium: 41,
-  firefox: 51,
-  webkit: 61,
+const projectEmailBase: Readonly<Record<string, number>> = {
+  chromium: 40,
+  firefox: 50,
+  webkit: 60,
 };
 
-function emailFor(testInfo: TestInfo): string {
-  const number = projectEmailNumber[testInfo.project.name];
-  if (number === undefined) {
+function emailFor(testInfo: TestInfo, slot: 1 | 2): string {
+  const base = projectEmailBase[testInfo.project.name];
+  if (base === undefined) {
     throw new Error(
       `Unsupported temporal B00 browser project: ${testInfo.project.name}`,
     );
   }
-  return `synthetic.user+e2e-${number}@example.com`;
+  return `synthetic.user+e2e-${base + slot}@example.com`;
 }
 
 async function useItalianLocale(page: Page): Promise<void> {
@@ -58,7 +58,7 @@ test.describe('Timeline B00 real full-stack spine', () => {
     try {
       const page = await context.newPage();
       await useItalianLocale(page);
-      await signIn(page, emailFor(testInfo));
+      await signIn(page, emailFor(testInfo, 1));
 
       const temporalResponsePromise = page.waitForResponse(
         (response) =>
@@ -106,7 +106,7 @@ test.describe('Timeline B00 real full-stack spine', () => {
     try {
       const page = await context.newPage();
       await useItalianLocale(page);
-      await signIn(page, emailFor(testInfo));
+      await signIn(page, emailFor(testInfo, 2));
 
       const temporalResponsePromise = page.waitForResponse(
         (response) =>
