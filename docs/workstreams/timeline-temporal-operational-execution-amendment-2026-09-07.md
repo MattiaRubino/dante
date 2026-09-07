@@ -148,7 +148,55 @@ The public Timeline response continues not to expose `self_person_ref`; that ref
 
 This integration suite is committed but has not yet been executed in this connector-only session. Therefore it is evidence of implemented test coverage, not evidence that the PostgreSQL gate has passed.
 
-## 6. Current B00 checkpoint semantics
+## 6. B00 browser → web → API → PostgreSQL E2E checkpoint
+
+B00 also reuses the already accepted Access/Auth full-stack Playwright harness instead of introducing a second browser stack.
+
+The existing harness already owns:
+
+- a disposable `dante-postgres-local:18.6` container;
+- fresh database provisioning and Alembic upgrade to head;
+- real `dante_runtime` FastAPI;
+- same-origin HTTPS Vite production preview;
+- synthetic isolated accounts;
+- browser execution across Chromium, Firefox and WebKit;
+- teardown of the disposable stack after the run.
+
+`apps/web/e2e/auth/temporal-b00-runtime-spine.spec.ts` now adds two vertical proofs to that harness.
+
+The first proves the normal production read path:
+
+```text
+browser in Europe/Rome
+→ real UI sign-in
+→ real AuthSession cookie
+→ /home
+→ createWebFetch()
+→ X-Dante-Time-Zone: Europe/Rome
+→ GET /api/v1/temporal/timeline/window
+→ FastAPI / DanteContext / PostgreSQL
+→ truthful empty response
+→ Timeline ready
+→ zero prototype cards
+```
+
+The second proves the write stop-line that must hold until B01 activates authoritative Activity persistence:
+
+```text
+production Home
+→ Timeline +
+→ author valid Activity draft
+→ submit
+→ temporal.create.backend_unavailable
+→ draft remains visible
+→ zero Timeline cards materialized
+```
+
+The browser tests use dedicated synthetic account slots per browser and per proof so the bounded sign-in rate controls cannot create cross-test coupling.
+
+These tests are committed but have not yet been executed in this connector-only session. They therefore establish the missing real browser/full-stack harness coverage structurally, but do not yet make `B00-T04` or any other execution gate green.
+
+## 7. Current B00 checkpoint semantics
 
 B00 remains **IN PROGRESS**. No green-check claim is made merely because code or tests exist; automated suites and manual acceptance still have to run under the workstream Definition of Done.
 
@@ -160,12 +208,14 @@ Implemented boundaries now include:
 - truthful loading/error/retry behavior;
 - normal-runtime prototype card/clock isolation;
 - normal-runtime Create fake-success retirement;
-- real PostgreSQL integration proof for AuthSession → DanteContext → self Person → timezone → temporal endpoint.
+- real PostgreSQL integration proof for AuthSession → DanteContext → self Person → timezone → temporal endpoint;
+- real browser → production web → API → PostgreSQL E2E coverage using the existing full-stack harness.
 
 Still required before B00 can become `✅` include at minimum:
 
 - execute the full frontend/backend automated quality suites;
 - execute the real PostgreSQL integration suite against the certified image;
+- execute the full-stack browser proofs across the configured browser projects;
 - define/confirm the isolated manual `userTest` setup and deterministic cleanup flow without conflating it with automated synthetic fixtures;
 - manual empty/error/real-path acceptance through the actual product surface;
 - full F0/T1 regression proof under the executed test suite;
