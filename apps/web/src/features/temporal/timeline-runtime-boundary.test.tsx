@@ -1,4 +1,11 @@
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { i18n } from '../../bootstrap/i18n';
@@ -38,9 +45,10 @@ function emptyWindow(): TemporalTimelineWindow {
 describe('TemporalTimelineRuntimeBoundary', () => {
   it('keeps the product visible while truthfully exposing an in-flight real read', async () => {
     const pending = deferred<TemporalTimelineWindow>();
-    const source: TemporalTimelineDataSource = {
-      loadWindow: vi.fn(() => pending.promise),
-    };
+    const loadWindow = vi.fn<TemporalTimelineDataSource['loadWindow']>(
+      () => pending.promise,
+    );
+    const source: TemporalTimelineDataSource = { loadWindow };
     const { container } = render(
       <TemporalTimelineRuntimeBoundary
         viewedDateIso="2026-09-04"
@@ -55,9 +63,12 @@ describe('TemporalTimelineRuntimeBoundary', () => {
     expect(screen.getByRole('status').textContent).toContain(
       'Caricamento timeline',
     );
-    expect(source.loadWindow).toHaveBeenCalledTimes(1);
+    expect(loadWindow).toHaveBeenCalledTimes(1);
 
-    await act(async () => pending.resolve(emptyWindow()));
+    await act(async () => {
+      pending.resolve(emptyWindow());
+      await pending.promise;
+    });
 
     await waitFor(() => {
       expect(screen.queryByRole('status')).toBeNull();
@@ -73,9 +84,10 @@ describe('TemporalTimelineRuntimeBoundary', () => {
   });
 
   it('surfaces backend failure instead of replacing it with fake Timeline success', async () => {
-    const source: TemporalTimelineDataSource = {
-      loadWindow: vi.fn(() => Promise.reject(new Error('offline'))),
-    };
+    const loadWindow = vi.fn<TemporalTimelineDataSource['loadWindow']>(() =>
+      Promise.reject(new Error('offline')),
+    );
+    const source: TemporalTimelineDataSource = { loadWindow };
 
     render(
       <TemporalTimelineRuntimeBoundary
@@ -95,12 +107,11 @@ describe('TemporalTimelineRuntimeBoundary', () => {
 
   it('retries the same governed read only after an explicit user retry', async () => {
     const first = deferred<TemporalTimelineWindow>();
-    const source: TemporalTimelineDataSource = {
-      loadWindow: vi
-        .fn()
-        .mockImplementationOnce(() => first.promise)
-        .mockImplementationOnce(() => Promise.resolve(emptyWindow())),
-    };
+    const loadWindow = vi
+      .fn<TemporalTimelineDataSource['loadWindow']>()
+      .mockImplementationOnce(() => first.promise)
+      .mockImplementationOnce(() => Promise.resolve(emptyWindow()));
+    const source: TemporalTimelineDataSource = { loadWindow };
 
     render(
       <TemporalTimelineRuntimeBoundary
@@ -112,22 +123,26 @@ describe('TemporalTimelineRuntimeBoundary', () => {
       </TemporalTimelineRuntimeBoundary>,
     );
 
-    await act(async () => first.reject(new Error('offline')));
+    await act(async () => {
+      first.reject(new Error('offline'));
+      await first.promise.catch(() => undefined);
+    });
     expect(await screen.findByRole('alert')).toBeTruthy();
-    expect(source.loadWindow).toHaveBeenCalledTimes(1);
+    expect(loadWindow).toHaveBeenCalledTimes(1);
 
     fireEvent.click(screen.getByRole('button', { name: 'Riprova' }));
 
     await waitFor(() => {
-      expect(source.loadWindow).toHaveBeenCalledTimes(2);
+      expect(loadWindow).toHaveBeenCalledTimes(2);
       expect(screen.queryByRole('alert')).toBeNull();
     });
   });
 
   it('keeps frozen UI regression tests explicitly outside the real transport path', () => {
-    const source: TemporalTimelineDataSource = {
-      loadWindow: vi.fn(() => Promise.resolve(emptyWindow())),
-    };
+    const loadWindow = vi.fn<TemporalTimelineDataSource['loadWindow']>(() =>
+      Promise.resolve(emptyWindow()),
+    );
+    const source: TemporalTimelineDataSource = { loadWindow };
 
     render(
       <TemporalTimelineRuntimeBoundary dataSource={source} mode="test">
@@ -138,6 +153,6 @@ describe('TemporalTimelineRuntimeBoundary', () => {
     expect(screen.getByText('fixture-product-shell')).toBeTruthy();
     expect(screen.queryByRole('status')).toBeNull();
     expect(screen.queryByRole('alert')).toBeNull();
-    expect(source.loadWindow).not.toHaveBeenCalled();
+    expect(loadWindow).not.toHaveBeenCalled();
   });
 });
