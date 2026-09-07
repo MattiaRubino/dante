@@ -484,7 +484,7 @@ function createUnavailableTemporalWorkspace(): TemporalWorkspacePort {
     });
   };
 
-  return Object.freeze({
+  const workspace: TemporalWorkspacePort = {
     execute: async (command) =>
       Object.freeze({
         operationId: command.operationId,
@@ -497,7 +497,9 @@ function createUnavailableTemporalWorkspace(): TemporalWorkspacePort {
       }),
     query: query as TemporalWorkspacePort['query'],
     subscribe: () => () => undefined,
-  });
+  };
+
+  return Object.freeze(workspace);
 }
 
 export type TemporalCreateRuntimeOptions = Readonly<{
