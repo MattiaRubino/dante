@@ -1,15 +1,25 @@
 import {
+  Temporal,
+  detectDeviceTimeZone,
+  type PlainDate,
+} from '@dante/time';
+
+import {
   addTimelineDays,
   parseTimelineDate,
   timelineDateKey,
 } from './timeline-temporal';
 import type { TimelineEvent, TimelineGroup } from './timeline-types';
-import type { PlainDate } from '@dante/time';
 
-export const TIMELINE_PROTOTYPE_TODAY = parseTimelineDate('2026-08-04');
-export const TIMELINE_PROTOTYPE_NOW_MINUTE = 14 * 60 + 20;
+const TIMELINE_TEST_MODE = 'test';
+const TIMELINE_PROTOTYPE_ANCHOR = parseTimelineDate('2026-08-04');
+const TIMELINE_PROTOTYPE_NOW_MINUTE_VALUE = 14 * 60 + 20;
 
-export const TIMELINE_GROUPS: readonly TimelineGroup[] = [
+export function timelinePrototypeFixturesEnabled(mode: string): boolean {
+  return mode === TIMELINE_TEST_MODE;
+}
+
+const PROTOTYPE_GROUPS: readonly TimelineGroup[] = [
   { id: 'focus', label: 'Focus / lavoro profondo', tone: 'focus' },
   { id: 'riunioni', label: 'Riunioni', tone: 'meeting' },
   { id: 'salute', label: 'Salute', tone: 'health' },
@@ -17,6 +27,17 @@ export const TIMELINE_GROUPS: readonly TimelineGroup[] = [
   { id: 'personale', label: 'Personale', tone: 'personal' },
   { id: 'urgenze', label: 'Urgenze', tone: 'urgent' },
 ];
+
+export function timelinePrototypeGroupsForMode(
+  mode: string = import.meta.env.MODE,
+): readonly TimelineGroup[] {
+  return timelinePrototypeFixturesEnabled(mode)
+    ? PROTOTYPE_GROUPS.map((group) => ({ ...group }))
+    : [];
+}
+
+export const TIMELINE_GROUPS: readonly TimelineGroup[] =
+  timelinePrototypeGroupsForMode();
 
 export const TIMELINE_PROTOTYPE_EVENTS: Readonly<
   Record<string, readonly TimelineEvent[]>
@@ -230,7 +251,12 @@ function cloneTimelineEvent(event: TimelineEvent): TimelineEvent {
 
 export function createTimelinePrototypeEventsForDate(
   dateKey: string,
+  mode: string = import.meta.env.MODE,
 ): readonly TimelineEvent[] {
+  if (!timelinePrototypeFixturesEnabled(mode)) {
+    return [];
+  }
+
   const configured = TIMELINE_PROTOTYPE_EVENTS[dateKey];
   if (configured) {
     return configured.map(cloneTimelineEvent);
@@ -258,13 +284,46 @@ export function createTimelinePrototypeEventsForDate(
 
 export function createTimelinePrototypeStore(
   anchorDate: PlainDate = TIMELINE_PROTOTYPE_TODAY,
+  mode: string = import.meta.env.MODE,
 ): Readonly<Record<string, readonly TimelineEvent[]>> {
+  if (!timelinePrototypeFixturesEnabled(mode)) {
+    return {};
+  }
+
   return Object.fromEntries(
     Object.entries(TIMELINE_PROTOTYPE_EVENTS).map(([sourceKey, events]) => {
       const sourceDate = parseTimelineDate(sourceKey);
-      const dayOffset = TIMELINE_PROTOTYPE_TODAY.until(sourceDate).days;
+      const dayOffset = TIMELINE_PROTOTYPE_ANCHOR.until(sourceDate).days;
       const targetKey = timelineDateKey(addTimelineDays(anchorDate, dayOffset));
       return [targetKey, events.map(cloneTimelineEvent)];
     }),
   );
 }
+
+function currentTimelineClock(): Readonly<{
+  today: PlainDate;
+  nowMinute: number;
+}> {
+  if (timelinePrototypeFixturesEnabled(import.meta.env.MODE)) {
+    return {
+      today: TIMELINE_PROTOTYPE_ANCHOR,
+      nowMinute: TIMELINE_PROTOTYPE_NOW_MINUTE_VALUE,
+    };
+  }
+
+  const now = Temporal.Now.zonedDateTimeISO(detectDeviceTimeZone());
+  return {
+    today: now.toPlainDate(),
+    nowMinute: now.hour * 60 + now.minute,
+  };
+}
+
+const TIMELINE_CLOCK = currentTimelineClock();
+
+/**
+ * Legacy T1 export names are retained to avoid coupling accepted interaction
+ * tests to the production clock. Outside explicit test mode these values come
+ * from the real device-zone wall clock and never from the frozen prototype.
+ */
+export const TIMELINE_PROTOTYPE_TODAY = TIMELINE_CLOCK.today;
+export const TIMELINE_PROTOTYPE_NOW_MINUTE = TIMELINE_CLOCK.nowMinute;
