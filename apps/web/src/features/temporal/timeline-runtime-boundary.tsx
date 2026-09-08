@@ -66,6 +66,26 @@ function resolveAnchorDate(viewedDateIso: string | undefined): PlainDate {
   return Temporal.Now.zonedDateTimeISO(zoneId).toPlainDate();
 }
 
+function resolveRuntimeState(
+  testMode: boolean,
+  attempt: TemporalTimelineReadAttempt | null,
+  settledState: TemporalTimelineSettledState | null,
+): TemporalTimelineRuntimeState {
+  if (testMode) {
+    return { status: 'ready', effectiveZoneId: 'Etc/UTC' };
+  }
+  if (settledState?.attempt !== attempt) {
+    return { status: 'loading' };
+  }
+  if (settledState.status === 'ready') {
+    return {
+      status: 'ready',
+      effectiveZoneId: settledState.effectiveZoneId,
+    };
+  }
+  return { status: 'error' };
+}
+
 export function temporalTimelineInitialWindow(
   viewedDateIso: string | undefined,
 ): TemporalTimelineWindowRequest {
@@ -142,16 +162,7 @@ export function TemporalTimelineRuntimeBoundary({
     };
   }, [attempt]);
 
-  const state: TemporalTimelineRuntimeState = testMode
-    ? { status: 'ready', effectiveZoneId: 'Etc/UTC' }
-    : settledState?.attempt === attempt
-      ? settledState.status === 'ready'
-        ? {
-            status: 'ready',
-            effectiveZoneId: settledState.effectiveZoneId,
-          }
-        : { status: 'error' }
-      : { status: 'loading' };
+  const state = resolveRuntimeState(testMode, attempt, settledState);
 
   const retry = useCallback(() => {
     setRetryRevision((revision) => revision + 1);
