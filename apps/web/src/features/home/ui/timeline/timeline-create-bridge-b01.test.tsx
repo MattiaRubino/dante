@@ -69,57 +69,54 @@ function installTimelineHosts(): void {
 }
 
 describe('Timeline B01 canonical Planning Tray bridge', () => {
-  it(
-    'deduplicates canonical identity and refetches after remount',
-    async () => {
-      installTimelineHosts();
-      const canonical = Object.freeze({
-        activityRef: ACTIVITY_REF,
-        title: 'Activity persistita nel Planning Tray',
-        createdAt: Temporal.Instant.from('2026-09-08T08:00:00Z'),
-      });
-      const source = runtimeWithUnplaced(Object.freeze([canonical, canonical]));
+  it('deduplicates canonical identity and refetches after remount', async () => {
+    installTimelineHosts();
+    const canonical = Object.freeze({
+      activityRef: ACTIVITY_REF,
+      title: 'Activity persistita nel Planning Tray',
+      createdAt: Temporal.Instant.from('2026-09-08T08:00:00Z'),
+    });
+    const source = runtimeWithUnplaced(Object.freeze([canonical, canonical]));
 
-      const first = renderPlanningTray(source.runtime);
-      await waitFor(() => expect(source.loadUnplaced).toHaveBeenCalledTimes(1));
-      fireEvent.click(
-        await screen.findByRole('button', {
-          name: 'Apri attività da collocare',
-        }),
-      );
-      await waitFor(() => expect(source.loadUnplaced).toHaveBeenCalledTimes(2));
+    const first = renderPlanningTray(source.runtime);
+    await waitFor(() => expect(source.loadUnplaced).toHaveBeenCalledTimes(1));
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: 'Apri attività da collocare',
+      }),
+    );
+    await waitFor(() => expect(source.loadUnplaced).toHaveBeenCalledTimes(2));
 
-      expect(
-        document.querySelectorAll(
-          `[data-temporal-activity-ref="${ACTIVITY_REF}"]`,
-        ),
-      ).toHaveLength(1);
-      expect(
-        screen.getByText('Activity persistita nel Planning Tray'),
-      ).toBeTruthy();
-      expect(screen.queryByRole('button', { name: 'Colloca' })).toBeNull();
+    expect(
+      document.querySelectorAll(
+        `[data-temporal-activity-ref="${ACTIVITY_REF}"]`,
+      ),
+    ).toHaveLength(1);
+    expect(
+      screen.getByText('Activity persistita nel Planning Tray'),
+    ).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Colloca' })).toBeNull();
 
-      first.unmount();
-      const second = renderPlanningTray(source.runtime);
-      await waitFor(() => expect(source.loadUnplaced).toHaveBeenCalledTimes(3));
-      fireEvent.click(
-        await screen.findByRole('button', {
-          name: 'Apri attività da collocare',
-        }),
-      );
-      await waitFor(() => expect(source.loadUnplaced).toHaveBeenCalledTimes(4));
+    first.unmount();
+    const second = renderPlanningTray(source.runtime);
+    await waitFor(() => expect(source.loadUnplaced).toHaveBeenCalledTimes(3));
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: 'Apri attività da collocare',
+      }),
+    );
+    await waitFor(() => expect(source.loadUnplaced).toHaveBeenCalledTimes(4));
 
-      expect(
-        document.querySelectorAll(
-          `[data-temporal-activity-ref="${ACTIVITY_REF}"]`,
-        ),
-      ).toHaveLength(1);
-      expect(
-        screen.getByText('Activity persistita nel Planning Tray'),
-      ).toBeTruthy();
-      second.unmount();
-    },
-  );
+    expect(
+      document.querySelectorAll(
+        `[data-temporal-activity-ref="${ACTIVITY_REF}"]`,
+      ),
+    ).toHaveLength(1);
+    expect(
+      screen.getByText('Activity persistita nel Planning Tray'),
+    ).toBeTruthy();
+    second.unmount();
+  });
 
   it('shows read failure instead of a fake empty state', async () => {
     installTimelineHosts();
