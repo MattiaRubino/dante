@@ -1,5 +1,5 @@
 name: Temporal B01 Reconciliation One-Shot
-# proof-revision: harness-isolation-1
+# proof-revision: b01-truthfulness-1
 
 on:
   push:

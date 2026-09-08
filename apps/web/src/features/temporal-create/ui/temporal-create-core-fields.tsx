@@ -352,10 +352,6 @@ export function TemporalCreateCoreFields({
         </div>
       ) : null}
 
-      {fields.kind === 'activity' && fields.timeSemantics === 'unscheduled' ? (
-        <div className="temporal-create-grid one">{durationControl}</div>
-      ) : null}
-
       {fields.kind === 'event' && fields.timeSemantics === 'timed' ? (
         <div className="temporal-create-event-time-grid">
           <label className="temporal-create-control">

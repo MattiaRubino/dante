@@ -90,6 +90,9 @@ test.describe('Timeline B01 canonical Activity vertical', () => {
       await expect(
         page.getByRole('radio', { name: 'Attività' }),
       ).toHaveAttribute('aria-checked', 'true');
+      await expect(
+        page.locator('[data-create-path="durationMinutes"]'),
+      ).toHaveCount(0);
       await page.getByLabel('Titolo').fill(title);
 
       const createResponsePromise = page.waitForResponse(

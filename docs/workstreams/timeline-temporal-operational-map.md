@@ -3332,7 +3332,7 @@ Rules:
 - ⬜ **[ACT-012]** Ensure duplicate projection/refetch cannot duplicate Activity identity.
 - ⬜ **[ACT-013]** Preserve Activity `!= Event/Routine/Schedule/Session/Actual/Outcome/Goal/Plan` boundaries in implementation.
 - ⬜ **[ACT-014]** Preserve repeated Activity UX as future Routine-backed semantics, not Activity-owned recurrence.
-- ⬜ **[ACT-015]** Design/implement estimated effort when first required without equating it to scheduled/actual duration.
+- ⬜ **[ACT-015]** Design/implement estimated effort when first required without equating it to scheduled/actual duration. — Not activated in B01: the canonical unplaced Activity path does not expose estimated effort, and normal runtime fails closed if non-baseline duration/effort intent is injected. Remains deferred until a dedicated Activity effort contract is required.
 - ⬜ **[ACT-016]** Design/implement semantic sub-Activity structure when first required, separate from Session splitting.
 - ⬜ **[ACT-017]** Resolve completion profile semantics before any user-visible generic `done` behavior is accepted.
 - ⬜ **[B01-T01]** Activity domain/application validation tests.

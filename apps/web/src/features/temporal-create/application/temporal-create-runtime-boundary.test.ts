@@ -184,6 +184,42 @@ describe('Temporal Create normal-runtime boundary', () => {
     }
   });
 
+  it('fails closed instead of dropping unpersisted estimated-effort intent in B01', async () => {
+    const activity = activitySource();
+    const runtime = createLocalTemporalCreateRuntime({
+      ...runtimeOptions('runtime-boundary-estimated-effort'),
+      mode: 'production',
+      activityDataSource: activity.source,
+    });
+    const preparation = runtime.prepare(
+      createTemporalCreateFields({
+        title: 'Activity con effort non ancora supportato',
+        kind: 'activity',
+        date: '2026-09-07',
+        timeSemantics: 'unscheduled',
+        durationMinutes: 60,
+        timeZoneId: 'Europe/Rome',
+        contextId: 'personale',
+      }),
+    );
+    if (preparation.status !== 'ready') {
+      throw new Error('Expected a valid Create preparation');
+    }
+
+    const execution = await runtime.execute(preparation.prepared);
+
+    expect(activity.createActivity).not.toHaveBeenCalled();
+    expect(execution.effect).toBeNull();
+    expect(execution.result.status).toBe('failed');
+    if (execution.result.status === 'failed') {
+      expect(execution.result.failure).toEqual({
+        kind: 'unavailable',
+        code: 'temporal.create.capability_not_available',
+        retryable: false,
+      });
+    }
+  });
+
   it('keeps the in-memory workspace as the explicit test-mode default only', async () => {
     const runtime = createLocalTemporalCreateRuntime({
       ...runtimeOptions('runtime-boundary-test'),

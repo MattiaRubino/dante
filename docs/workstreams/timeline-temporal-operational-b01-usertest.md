@@ -63,15 +63,16 @@ password: correct horse battery staple
 ## 4. Manual proof A — canonical Activity create and reload
 
 1. Sign in with the synthetic account and open `/home`.
-2. Press Timeline `+`.
+2. Press the **Timeline `+`** (`Aggiungi alla timeline`), not any unrelated add control elsewhere in Home.
 3. Verify `Attività` is selected by default.
-4. Enter a unique title, for example `B01 manual canonical activity`.
-5. Press `Aggiungi` once.
-6. Open `Attività da collocare` / Planning Tray.
-7. Verify exactly one card with that title exists and that it is not rendered as a Timeline Event.
-8. Reload the browser.
-9. Open Planning Tray again.
-10. Verify the same Activity is still present exactly once.
+4. Verify the Activity is on the `Da collocare` path and that no editable `Durata prevista` / `durationMinutes` control is exposed for this B01 canonical path.
+5. Enter a unique title, for example `B01 manual canonical activity`.
+6. Press `Aggiungi` once.
+7. Open `Attività da collocare` / Planning Tray.
+8. Verify exactly one card with that title exists and that it is not rendered as a Timeline Event.
+9. Reload the browser.
+10. Open Planning Tray again.
+11. Verify the same Activity is still present exactly once.
 
 Expected semantic result:
 
@@ -83,11 +84,13 @@ one accepted CreateActivity
 → no duplicate projection
 ```
 
+B01 intentionally does **not** author canonical estimated effort. A visible duration on an unplaced Activity would imply persistence that B01 does not yet provide. Estimated effort remains a future Activity capability and must stay distinct from future Schedule duration and from Session/Actual duration.
+
 Do not place the Activity on the Timeline in B01; real Schedule mutation belongs to B02.
 
 ## 5. Manual proof B — dirty draft discard is not Activity deletion
 
-1. With proof A's canonical Activity still present, open `+` again.
+1. With proof A's canonical Activity still present, open the Timeline `+` again.
 2. Type a different title, for example `B01 draft da scartare`.
 3. Close/discard the Create surface without submitting.
 4. Reopen Planning Tray.
@@ -117,8 +120,8 @@ uv run --project apps/backend python tooling/access-auth-e2e-control.py database
 
 Back in the product UI:
 
-1. open `+`;
-2. keep `Attività` selected;
+1. open the Timeline `+`;
+2. keep `Attività` selected on the `Da collocare` path;
 3. enter a valid unique title, for example `B01 errore reale`;
 4. press `Aggiungi` once.
 

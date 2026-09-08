@@ -242,6 +242,7 @@ function b01ActivityIntentSupported(
     prepared.metadata.timeSemantics === 'unscheduled' &&
     prepared.metadata.contextId === 'personale' &&
     prepared.metadata.notes.length === 0 &&
+    specification.durationMinutes === baseline.durationMinutes &&
     specification.appearanceTone === null &&
     specification.eventRecurrence.patternKind === 'none' &&
     specification.scheduling.constraintKind === 'none' &&
