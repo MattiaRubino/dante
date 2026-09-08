@@ -9,7 +9,11 @@ import {
 
 function Probe() {
   const creator = useTemporalCreateContextCreator();
-  return <output data-testid="creator-state">{creator ? 'available' : 'absent'}</output>;
+  return (
+    <output data-testid="creator-state">
+      {creator ? 'available' : 'absent'}
+    </output>
+  );
 }
 
 afterEach(() => {
@@ -57,7 +61,10 @@ describe('Temporal Create context catalog runtime boundary', () => {
     }));
 
     const { container } = render(
-      <TemporalCreateContextCatalogProvider mode="test" onCreateContext={creator}>
+      <TemporalCreateContextCatalogProvider
+        mode="test"
+        onCreateContext={creator}
+      >
         <Probe />
       </TemporalCreateContextCatalogProvider>,
     );
