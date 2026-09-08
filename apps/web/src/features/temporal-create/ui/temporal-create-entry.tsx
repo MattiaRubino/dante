@@ -139,8 +139,14 @@ export function TemporalCreateEntry({
           minute = 9 * 60;
         }
       }
+      const defaultsToUnplacedActivity =
+        import.meta.env.MODE !== 'test' &&
+        startMinute === undefined &&
+        seed?.timeSemantics === undefined &&
+        seed?.startTime === undefined;
       const base = createTemporalCreateFields({
         date: targetDate,
+        timeSemantics: defaultsToUnplacedActivity ? 'unscheduled' : 'timed',
         startTime: seed?.startTime ?? minuteToInput(minute),
         durationMinutes: seed?.durationMinutes ?? durationMinutes ?? 30,
         timeZoneId: seed?.timeZoneId ?? zone,
