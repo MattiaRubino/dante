@@ -21,5 +21,7 @@ export interface TemporalActivityDataSource {
     request: TemporalActivityCreateRequest,
     signal?: AbortSignal,
   ): Promise<TemporalActivityCreateResult>;
-  loadUnplaced(signal?: AbortSignal): Promise<readonly TemporalActivityRecord[]>;
+  loadUnplaced(
+    signal?: AbortSignal,
+  ): Promise<readonly TemporalActivityRecord[]>;
 }
