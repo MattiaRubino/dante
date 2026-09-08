@@ -432,7 +432,9 @@ export function TemporalCreateEntry({
     try {
       const execution = await runtime.execute(preparation.prepared);
       if (execution.result.status === 'applied' && execution.effect) {
-        const focusHandled = onApplied(execution.effect);
+        const focusHandled = execution.effect.undoAvailable
+          ? onApplied(execution.effect)
+          : false;
         setSession(discardTemporalCreateSession(freshFields(defaultDate)));
         closeComposer(!focusHandled);
         return;
