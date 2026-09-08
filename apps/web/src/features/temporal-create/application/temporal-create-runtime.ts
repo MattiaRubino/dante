@@ -277,7 +277,9 @@ function activityProjection(
 class RemoteActivityTemporalWorkspace implements TemporalWorkspacePort {
   public constructor(private readonly source: TemporalActivityDataSource) {}
 
-  public async execute(command: TemporalCommand): Promise<TemporalOperationResult> {
+  public async execute(
+    command: TemporalCommand,
+  ): Promise<TemporalOperationResult> {
     if (
       command.type !== 'temporal.projection.create' ||
       command.payload.subject.kind !== 'activity' ||
@@ -309,7 +311,10 @@ class RemoteActivityTemporalWorkspace implements TemporalWorkspacePort {
       ) {
         return operationIdReuseResult(command.operationId);
       }
-      if (error instanceof TemporalActivityRemoteError && error.status === 422) {
+      if (
+        error instanceof TemporalActivityRemoteError &&
+        error.status === 422
+      ) {
         return Object.freeze({
           operationId: command.operationId,
           status: 'rejected' as const,
@@ -595,7 +600,10 @@ class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
       });
     }
     if (previousFingerprint === undefined) {
-      this.richOperationFingerprints.set(prepared.operationId, richFingerprint);
+      this.richOperationFingerprints.set(
+        prepared.operationId,
+        richFingerprint,
+      );
     }
 
     const result = await this.workspace.execute(prepared.command);
