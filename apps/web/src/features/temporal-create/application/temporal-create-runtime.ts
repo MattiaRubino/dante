@@ -2,9 +2,15 @@ import type { PlainDate } from '@dante/time';
 
 import {
   InMemoryTemporalWorkspace,
+  TemporalActivityRemoteError,
+  createRemoteTemporalActivityDataSource,
   systemTemporalClock,
   systemTemporalIdFactory,
+  temporalOperationId,
+  temporalProjectionId,
   temporalValidationIssue,
+  type TemporalActivityDataSource,
+  type TemporalActivityRecord,
   type TemporalClock,
   type TemporalIdFactory,
   type TemporalOperationId,
@@ -99,7 +105,8 @@ export type TemporalCreateMutationExecution = Readonly<{
 export type TemporalCreateAppliedEffect = Readonly<{
   projection: TemporalProjectionItem;
   metadata: TemporalCreateMetadata;
-  undoToken: TemporalUndoToken;
+  undoToken: TemporalUndoToken | null;
+  undoAvailable: boolean;
   undo: () => Promise<TemporalOperationResult>;
   replacePlacement: (
     placement: TemporalPlacement | null,
@@ -198,6 +205,169 @@ function notFoundResult(
   });
 }
 
+function unavailableResult(
+  operationId: TemporalOperationId,
+  code: string,
+): TemporalOperationResult {
+  return Object.freeze({
+    operationId,
+    status: 'failed' as const,
+    failure: Object.freeze({
+      kind: 'unavailable' as const,
+      code,
+      retryable: false,
+    }),
+  });
+}
+
+function b01ActivityIntentSupported(prepared: TemporalCreatePreparedOperation): boolean {
+  const specification = prepared.metadata.specification;
+  const baseline = createTemporalCreateFields({
+    date: specification.date,
+    timeZoneId: specification.timeZoneId,
+    contextId: 'personale',
+    timeSemantics: 'unscheduled',
+  });
+
+  return (
+    prepared.metadata.kind === 'activity' &&
+    prepared.command.payload.placement === null &&
+    prepared.metadata.timeSemantics === 'unscheduled' &&
+    prepared.metadata.contextId === 'personale' &&
+    prepared.metadata.notes.length === 0 &&
+    specification.appearanceTone === null &&
+    specification.eventRecurrence.patternKind === 'none' &&
+    specification.scheduling.constraintKind === 'none' &&
+    JSON.stringify(specification.execution) === JSON.stringify(baseline.execution) &&
+    JSON.stringify(specification.confirmation) === JSON.stringify(baseline.confirmation)
+  );
+}
+
+function activityProjection(
+  activity: TemporalActivityRecord,
+  operationId: TemporalOperationId,
+): TemporalProjectionItem {
+  const id = temporalProjectionId(activity.activityRef);
+  return Object.freeze({
+    id,
+    subject: Object.freeze({
+      source: 'native' as const,
+      kind: 'activity',
+      id: activity.activityRef,
+    }),
+    title: activity.title,
+    placement: null,
+    capabilities: Object.freeze([]),
+    revision: 0,
+    createdAt: activity.createdAt,
+    updatedAt: activity.createdAt,
+    lastOperationId: operationId,
+  });
+}
+
+class RemoteActivityTemporalWorkspace implements TemporalWorkspacePort {
+  public constructor(private readonly source: TemporalActivityDataSource) {}
+
+  public async execute(command: Parameters<TemporalWorkspacePort['execute']>[0]): Promise<TemporalOperationResult> {
+    if (
+      command.type !== 'temporal.projection.create' ||
+      command.payload.subject.kind !== 'activity' ||
+      command.payload.placement !== null
+    ) {
+      return unavailableResult(
+        command.operationId,
+        'temporal.create.capability_not_available',
+      );
+    }
+
+    try {
+      const result = await this.source.createActivity({
+        operationId: command.operationId,
+        title: command.payload.title,
+      });
+      return Object.freeze({
+        operationId: command.operationId,
+        status: 'applied' as const,
+        item: activityProjection(result.activity, command.operationId),
+        snapshotRevision: 0,
+        reconciliation: Object.freeze({ status: 'confirmed' as const }),
+      });
+    } catch (error) {
+      if (
+        error instanceof TemporalActivityRemoteError &&
+        error.status === 409 &&
+        error.code === 'temporal.activity.operation_id_reused'
+      ) {
+        return operationIdReuseResult(command.operationId);
+      }
+      if (error instanceof TemporalActivityRemoteError && error.status === 422) {
+        return Object.freeze({
+          operationId: command.operationId,
+          status: 'rejected' as const,
+          code: 'validation' as const,
+          issues: Object.freeze([
+            temporalValidationIssue('temporal.activity.invalid_create', [
+              'payload',
+            ]),
+          ]),
+        });
+      }
+      return Object.freeze({
+        operationId: command.operationId,
+        status: 'failed' as const,
+        failure: Object.freeze({
+          kind:
+            error instanceof TemporalActivityRemoteError &&
+            error.kind === 'transport'
+              ? ('transport' as const)
+              : ('unavailable' as const),
+          code: 'temporal.activity.remote_unavailable',
+          retryable:
+            error instanceof TemporalActivityRemoteError
+              ? error.kind === 'transport' || (error.status ?? 0) >= 500
+              : false,
+        }),
+      });
+    }
+  }
+
+  public async query(
+    request: TemporalQuery,
+  ): Promise<TemporalQueryResult> {
+    const records = await this.source.loadUnplaced();
+    const projections = Object.freeze(
+      records.map((activity) =>
+        activityProjection(
+          activity,
+          temporalOperationId(`activity-read:${activity.activityRef}`),
+        ),
+      ),
+    );
+    if (request.type === 'temporal.projection.get') {
+      const item = projections.find((candidate) => candidate.id === request.id);
+      return item
+        ? Object.freeze({
+            type: 'temporal.projection.get' as const,
+            status: 'ok' as const,
+            item,
+          })
+        : Object.freeze({
+            type: 'temporal.projection.get' as const,
+            status: 'not-found' as const,
+          });
+    }
+    return Object.freeze({
+      type: 'temporal.projection.list' as const,
+      status: 'ok' as const,
+      snapshot: Object.freeze({ revision: 0, items: projections }),
+    });
+  }
+
+  public subscribe(): () => void {
+    return () => undefined;
+  }
+}
+
 class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
   public readonly clock: TemporalClock;
   private readonly records = new Map<
@@ -213,6 +383,7 @@ class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
     private readonly workspace: TemporalWorkspacePort,
     private readonly ids: TemporalIdFactory,
     clock: TemporalClock,
+    private readonly canonicalActivityOnly = false,
   ) {
     this.clock = clock;
   }
@@ -221,10 +392,6 @@ class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
     fields: TemporalCreateFields,
     operationId = this.ids.operationId(),
   ): TemporalCreatePreparation {
-    // Own the application-boundary snapshot. UI sessions are immutable already,
-    // but adapters/importers are not allowed to rely on that implementation
-    // detail: normalization here prevents mutable aliases or unnormalized seeds
-    // from changing rich intent after command preparation.
     const specification = createTemporalCreateFields(fields);
     const issues = validateTemporalCreateFields(specification);
     if (issues.length > 0) {
@@ -252,9 +419,6 @@ class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
         subject: Object.freeze({
           source: 'native' as const,
           kind: specification.kind,
-          // Frontend-only provisional subject identity. A future backend adapter
-          // owns canonical identity and can reconcile it without changing the
-          // Create UI/application contract.
           id: `create-subject:${projectionId}`,
         }),
         title: specification.title.trim(),
@@ -394,6 +558,16 @@ class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
   public async execute(
     prepared: TemporalCreatePreparedOperation,
   ): Promise<TemporalCreateExecution> {
+    if (this.canonicalActivityOnly && !b01ActivityIntentSupported(prepared)) {
+      return Object.freeze({
+        result: unavailableResult(
+          prepared.operationId,
+          'temporal.create.capability_not_available',
+        ),
+        effect: null,
+      });
+    }
+
     const richFingerprint = richIntentFingerprint(prepared.metadata);
     const previousFingerprint = this.richOperationFingerprints.get(
       prepared.operationId,
@@ -412,12 +586,12 @@ class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
     }
 
     const result = await this.workspace.execute(prepared.command);
-    if (result.status !== 'applied' || !result.item || !result.undoToken) {
+    if (result.status !== 'applied' || !result.item) {
       return Object.freeze({ result, effect: null });
     }
 
     const projection = result.item;
-    const undoToken = result.undoToken;
+    const undoToken = result.undoToken ?? null;
     this.records.set(
       projection.id,
       Object.freeze({ projection, metadata: prepared.metadata }),
@@ -427,7 +601,14 @@ class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
       projection,
       metadata: prepared.metadata,
       undoToken,
+      undoAvailable: undoToken !== null,
       undo: async () => {
+        if (undoToken === null) {
+          return unavailableResult(
+            this.ids.operationId(),
+            'temporal.create.undo_unavailable',
+          );
+        }
         const undoResult = await this.workspace.execute({
           type: 'temporal.operation.undo',
           operationId: this.ids.operationId(),
@@ -491,15 +672,10 @@ function createUnavailableTemporalWorkspace(): TemporalWorkspacePort {
   const workspace: TemporalWorkspacePort = {
     execute: (command) =>
       Promise.resolve(
-        Object.freeze({
-          operationId: command.operationId,
-          status: 'failed' as const,
-          failure: Object.freeze({
-            kind: 'unavailable' as const,
-            code: 'temporal.create.backend_unavailable',
-            retryable: false,
-          }),
-        }),
+        unavailableResult(
+          command.operationId,
+          'temporal.create.backend_unavailable',
+        ),
       ),
     query: query as TemporalWorkspacePort['query'],
     subscribe: () => () => undefined,
@@ -512,6 +688,7 @@ export type TemporalCreateRuntimeOptions = Readonly<{
   clock?: TemporalClock;
   ids?: TemporalIdFactory;
   workspace?: TemporalWorkspacePort;
+  activityDataSource?: TemporalActivityDataSource;
   mode?: string;
 }>;
 
@@ -520,15 +697,28 @@ export function createLocalTemporalCreateRuntime(
 ): TemporalCreateRuntime {
   const ids = options.ids ?? systemTemporalIdFactory;
   const mode = options.mode ?? import.meta.env.MODE;
-  const workspace =
-    options.workspace ??
-    (mode === 'test'
-      ? new InMemoryTemporalWorkspace(ids)
-      : createUnavailableTemporalWorkspace());
+  if (options.workspace) {
+    return new LocalTemporalCreateRuntime(
+      options.workspace,
+      ids,
+      options.clock ?? systemTemporalClock,
+    );
+  }
+  if (mode === 'test') {
+    return new LocalTemporalCreateRuntime(
+      new InMemoryTemporalWorkspace(ids),
+      ids,
+      options.clock ?? systemTemporalClock,
+    );
+  }
+
+  const activitySource =
+    options.activityDataSource ?? createRemoteTemporalActivityDataSource();
   return new LocalTemporalCreateRuntime(
-    workspace,
+    new RemoteActivityTemporalWorkspace(activitySource),
     ids,
     options.clock ?? systemTemporalClock,
+    true,
   );
 }
 
