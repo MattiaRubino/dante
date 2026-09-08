@@ -13,7 +13,18 @@ export type {
   TemporalWorkspaceListener,
   TemporalWorkspacePort,
 } from './application';
+export type {
+  TemporalActivityCreateRequest,
+  TemporalActivityCreateResult,
+  TemporalActivityDataSource,
+  TemporalActivityRecord,
+} from './activity-data-source';
 export { InMemoryTemporalWorkspace } from './in-memory-temporal-workspace';
+export {
+  TemporalActivityRemoteError,
+  createRemoteTemporalActivityDataSource,
+  type TemporalActivityRemoteFailureKind,
+} from './remote-activity-data-source';
 export {
   TemporalTimelineRemoteError,
   createRemoteTemporalTimelineDataSource,
