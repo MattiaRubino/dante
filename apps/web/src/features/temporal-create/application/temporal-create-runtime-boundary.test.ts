@@ -6,6 +6,7 @@ import {
   createFixedTemporalClock,
   InMemoryTemporalWorkspace,
   type TemporalActivityDataSource,
+  type TemporalActivityRecord,
 } from '../../temporal';
 import { createTemporalCreateFields } from '../model/temporal-create-session';
 import { createLocalTemporalCreateRuntime } from './temporal-create-runtime';
@@ -41,10 +42,15 @@ function preparedActivity(
   return preparation.prepared;
 }
 
-function activitySource(): Readonly<{
+function activitySource(
+  unplaced: readonly TemporalActivityRecord[] = Object.freeze([]),
+): Readonly<{
   source: TemporalActivityDataSource;
   createActivity: ReturnType<
     typeof vi.fn<TemporalActivityDataSource['createActivity']>
+  >;
+  loadUnplaced: ReturnType<
+    typeof vi.fn<TemporalActivityDataSource['loadUnplaced']>
   >;
 }> {
   const createActivity = vi.fn<TemporalActivityDataSource['createActivity']>(
@@ -61,12 +67,13 @@ function activitySource(): Readonly<{
       ),
   );
   const loadUnplaced = vi.fn<TemporalActivityDataSource['loadUnplaced']>(() =>
-    Promise.resolve(Object.freeze([])),
+    Promise.resolve(Object.freeze([...unplaced])),
   );
 
   return Object.freeze({
     source: Object.freeze({ createActivity, loadUnplaced }),
     createActivity,
+    loadUnplaced,
   });
 }
 
@@ -108,6 +115,38 @@ describe('Temporal Create normal-runtime boundary', () => {
       }
     },
   );
+
+  it('refetches canonical unplaced Activities with the backend identity unchanged', async () => {
+    const canonical = Object.freeze({
+      activityRef: CANONICAL_ACTIVITY_REF,
+      title: 'Persistita nel Planning Tray',
+      createdAt: Temporal.Instant.from('2026-09-07T12:00:00Z'),
+    });
+    const activity = activitySource(Object.freeze([canonical]));
+    const runtime = createLocalTemporalCreateRuntime({
+      ...runtimeOptions('runtime-boundary-unplaced-refetch'),
+      mode: 'production',
+      activityDataSource: activity.source,
+    });
+
+    const first = await runtime.list();
+    const second = await runtime.list();
+
+    expect(activity.loadUnplaced).toHaveBeenCalledTimes(2);
+    expect(first).toHaveLength(1);
+    expect(second).toHaveLength(1);
+    expect(first[0]).toMatchObject({
+      id: CANONICAL_ACTIVITY_REF,
+      subject: {
+        source: 'native',
+        kind: 'activity',
+        id: CANONICAL_ACTIVITY_REF,
+      },
+      title: 'Persistita nel Planning Tray',
+      placement: null,
+    });
+    expect(second[0]?.id).toBe(first[0]?.id);
+  });
 
   it('fails closed for B02/B03 intent instead of dropping unsupported temporal meaning', async () => {
     const activity = activitySource();
