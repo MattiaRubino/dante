@@ -74,10 +74,7 @@ async function signIn(page: Page, email: string): Promise<void> {
   ).toBeVisible();
 }
 
-async function openHomeAndWaitForTemporalRead(
-  page: Page,
-  target = '/home',
-) {
+async function openHomeAndWaitForTemporalRead(page: Page, target = '/home') {
   const temporalResponsePromise = page.waitForResponse(
     (response) =>
       response.url().includes('/api/v1/temporal/timeline/window') &&
@@ -130,47 +127,44 @@ test.describe('Timeline B00 real full-stack spine', () => {
     }
   });
 
-  test(
-    'fails closed for unsupported Event Create',
-    async ({ browser }, testInfo) => {
-      const context = await browser.newContext({
-        ignoreHTTPSErrors: true,
-        timezoneId: 'Europe/Rome',
-      });
+  test('fails closed for unsupported Event Create', async ({
+    browser,
+  }, testInfo) => {
+    const context = await browser.newContext({
+      ignoreHTTPSErrors: true,
+      timezoneId: 'Europe/Rome',
+    });
 
-      try {
-        const page = await context.newPage();
-        await useItalianLocale(page);
-        await signIn(page, emailFor(testInfo, 2));
+    try {
+      const page = await context.newPage();
+      await useItalianLocale(page);
+      await signIn(page, emailFor(testInfo, 2));
 
-        expect((await openHomeAndWaitForTemporalRead(page)).status()).toBe(200);
-        await expect(
-          page.locator('[data-temporal-read-state="ready"]'),
-        ).toBeVisible();
+      expect((await openHomeAndWaitForTemporalRead(page)).status()).toBe(200);
+      await expect(
+        page.locator('[data-temporal-read-state="ready"]'),
+      ).toBeVisible();
 
-        await page
-          .getByRole('button', { name: 'Aggiungi alla timeline' })
-          .click();
-        await page.getByRole('radio', { name: 'Evento' }).click();
-        await page.getByLabel('Titolo').fill('B00 non deve fingere un Evento');
-        await page
-          .getByRole('button', { name: 'Aggiungi', exact: true })
-          .click();
+      await page
+        .getByRole('button', { name: 'Aggiungi alla timeline' })
+        .click();
+      await page.getByRole('radio', { name: 'Evento' }).click();
+      await page.getByLabel('Titolo').fill('B00 non deve fingere un Evento');
+      await page.getByRole('button', { name: 'Aggiungi', exact: true }).click();
 
-        await expect(
-          page.getByText(
-            'Non è stato possibile applicare la creazione. La bozza è ancora qui.',
-          ),
-        ).toBeVisible();
-        await expect(page.getByLabel('Titolo')).toHaveValue(
-          'B00 non deve fingere un Evento',
-        );
-        await expect(page.locator('[data-timeline-event]')).toHaveCount(0);
-      } finally {
-        await context.close();
-      }
-    },
-  );
+      await expect(
+        page.getByText(
+          'Non è stato possibile applicare la creazione. La bozza è ancora qui.',
+        ),
+      ).toBeVisible();
+      await expect(page.getByLabel('Titolo')).toHaveValue(
+        'B00 non deve fingere un Evento',
+      );
+      await expect(page.locator('[data-timeline-event]')).toHaveCount(0);
+    } finally {
+      await context.close();
+    }
+  });
 
   test('shows a truthful temporal read failure during PostgreSQL outage and recovers only after explicit retry', async ({
     browser,
