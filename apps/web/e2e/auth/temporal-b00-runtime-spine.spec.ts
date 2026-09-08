@@ -130,7 +130,7 @@ test.describe('Timeline B00 real full-stack spine', () => {
     }
   });
 
-  test('keeps Create truthful in production when the authoritative write operation is not activated yet', async ({
+  test('keeps unsupported post-B01 Create intent truthful instead of fabricating success', async ({
     browser,
   }, testInfo) => {
     const context = await browser.newContext({
@@ -151,7 +151,8 @@ test.describe('Timeline B00 real full-stack spine', () => {
       await page
         .getByRole('button', { name: 'Aggiungi alla timeline' })
         .click();
-      await page.getByLabel('Titolo').fill('B00 non deve fingere successo');
+      await page.getByRole('radio', { name: 'Evento' }).click();
+      await page.getByLabel('Titolo').fill('B00 non deve fingere un Evento');
       await page.getByRole('button', { name: 'Aggiungi', exact: true }).click();
 
       await expect(
@@ -160,7 +161,7 @@ test.describe('Timeline B00 real full-stack spine', () => {
         ),
       ).toBeVisible();
       await expect(page.getByLabel('Titolo')).toHaveValue(
-        'B00 non deve fingere successo',
+        'B00 non deve fingere un Evento',
       );
       await expect(page.locator('[data-timeline-event]')).toHaveCount(0);
     } finally {
