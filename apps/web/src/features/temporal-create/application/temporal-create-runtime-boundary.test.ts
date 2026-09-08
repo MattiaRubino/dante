@@ -41,9 +41,14 @@ function preparedActivity(
   return preparation.prepared;
 }
 
-function activitySource(): TemporalActivityDataSource {
-  return Object.freeze({
-    createActivity: vi.fn((request) =>
+function activitySource(): Readonly<{
+  source: TemporalActivityDataSource;
+  createActivity: ReturnType<
+    typeof vi.fn<TemporalActivityDataSource['createActivity']>
+  >;
+}> {
+  const createActivity = vi.fn<TemporalActivityDataSource['createActivity']>(
+    (request) =>
       Promise.resolve(
         Object.freeze({
           activity: Object.freeze({
@@ -54,8 +59,14 @@ function activitySource(): TemporalActivityDataSource {
           replayed: false,
         }),
       ),
-    ),
-    loadUnplaced: vi.fn(() => Promise.resolve(Object.freeze([]))),
+  );
+  const loadUnplaced = vi.fn<TemporalActivityDataSource['loadUnplaced']>(() =>
+    Promise.resolve(Object.freeze([])),
+  );
+
+  return Object.freeze({
+    source: Object.freeze({ createActivity, loadUnplaced }),
+    createActivity,
   });
 }
 
@@ -63,16 +74,16 @@ describe('Temporal Create normal-runtime boundary', () => {
   it.each(['production', 'development'])(
     'creates only the canonical B01 unplaced Activity through the remote source in %s',
     async (mode) => {
-      const source = activitySource();
+      const activity = activitySource();
       const runtime = createLocalTemporalCreateRuntime({
         ...runtimeOptions(`runtime-boundary-${mode}`),
         mode,
-        activityDataSource: source,
+        activityDataSource: activity.source,
       });
 
       const execution = await runtime.execute(preparedActivity(runtime));
 
-      expect(source.createActivity).toHaveBeenCalledTimes(1);
+      expect(activity.createActivity).toHaveBeenCalledTimes(1);
       expect(execution.result.status).toBe('applied');
       expect(execution.effect).not.toBeNull();
       expect(execution.effect?.projection).toMatchObject({
@@ -91,17 +102,19 @@ describe('Temporal Create normal-runtime boundary', () => {
       const undoResult = await execution.effect?.undo();
       expect(undoResult?.status).toBe('failed');
       if (undoResult?.status === 'failed') {
-        expect(undoResult.failure.code).toBe('temporal.create.undo_unavailable');
+        expect(undoResult.failure.code).toBe(
+          'temporal.create.undo_unavailable',
+        );
       }
     },
   );
 
   it('fails closed for B02/B03 intent instead of dropping unsupported temporal meaning', async () => {
-    const source = activitySource();
+    const activity = activitySource();
     const runtime = createLocalTemporalCreateRuntime({
       ...runtimeOptions('runtime-boundary-unsupported'),
       mode: 'production',
-      activityDataSource: source,
+      activityDataSource: activity.source,
     });
     const preparation = runtime.prepare(
       createTemporalCreateFields({
@@ -120,7 +133,7 @@ describe('Temporal Create normal-runtime boundary', () => {
 
     const execution = await runtime.execute(preparation.prepared);
 
-    expect(source.createActivity).not.toHaveBeenCalled();
+    expect(activity.createActivity).not.toHaveBeenCalled();
     expect(execution.effect).toBeNull();
     expect(execution.result.status).toBe('failed');
     if (execution.result.status === 'failed') {
