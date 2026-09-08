@@ -354,13 +354,11 @@ export function TimelinePlanningTrayB01({
               {b01Copy.retry}
             </button>
           </div>
-        ) : null}
-
-        {readState === 'loading' && mergedItems.length === 0 ? (
+        ) : readState === 'loading' && mergedItems.length === 0 ? (
           <div className="timeline-planning-empty">
             <strong>{b01Copy.loading}</strong>
           </div>
-        ) : readState !== 'error' && mergedItems.length === 0 ? (
+        ) : mergedItems.length === 0 ? (
           <div className="timeline-planning-empty">
             <span aria-hidden="true">✓</span>
             <strong>{copy.emptyTitle}</strong>
