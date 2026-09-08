@@ -58,7 +58,9 @@ describe('remote temporal Activity data source', () => {
 
     expect(result.activity.activityRef).toBe(ACTIVITY.activity_ref);
     expect(result.activity.title).toBe('Prima Activity');
-    expect(result.activity.createdAt.toString()).toBe('2026-09-08T07:40:00Z');
+    expect(result.activity.createdAt.toString()).toBe(
+      '2026-09-08T07:40:00Z',
+    );
     expect(result.replayed).toBe(false);
     expect(fetchFn).toHaveBeenCalledTimes(2);
   });
@@ -96,10 +98,7 @@ describe('remote temporal Activity data source', () => {
         );
       }
       return Promise.resolve(
-        jsonResponse(
-          { code: 'temporal.activity.operation_id_reused' },
-          409,
-        ),
+        jsonResponse({ code: 'temporal.activity.operation_id_reused' }, 409),
       );
     });
     const source = createRemoteTemporalActivityDataSource(
