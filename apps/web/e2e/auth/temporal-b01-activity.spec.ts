@@ -169,7 +169,10 @@ test.describe('Timeline B01 canonical Activity vertical', () => {
         .getByRole('button', { name: 'Aggiungi alla timeline' })
         .click();
       await page.getByLabel('Titolo').fill(discardedDraftTitle);
-      await page.getByRole('button', { name: 'Annulla', exact: true }).click();
+      await page
+        .getByRole('dialog', { name: 'Aggiungi', exact: true })
+        .getByRole('button', { name: 'Annulla', exact: true })
+        .click();
       await expect(
         page.getByRole('alertdialog', { name: 'Scartare questa bozza?' }),
       ).toBeVisible();
