@@ -75,31 +75,40 @@ Expected semantic result:
 ```text
 real authenticated read succeeds
 AND
-no legitimate temporal product rows exist yet
+no legitimate scheduled temporal product rows exist yet
 → truthful empty Timeline
 ```
 
 An empty Timeline is correct B00 behavior. Adding demo cards to make the screen look populated is a failure.
 
-## 5. Manual proof B — Create must fail closed before B01
+B01 may now create a real **unplaced Activity** in Planning Tray; that does not invalidate the B00 Timeline-empty proof because unplaced Activity `!=` scheduled Timeline projection.
+
+## 5. Manual proof B — unsupported Create must still fail closed after B01
+
+B01 has activated authoritative Activity creation. Therefore the old pre-B01 proof “valid Activity Create must fail” is historical and must **not** be used on the current candidate.
+
+Current B00 regression instead proves that a macro class whose authoritative write operation has not yet been activated cannot manufacture local success.
 
 1. On `/home`, press Timeline `+`.
-2. Enter a valid Activity title, for example `B00 manual truth check`.
-3. Press `Aggiungi`.
+2. Select `Evento`.
+3. Enter a valid title, for example `B00 non deve fingere un Evento`.
+4. Press `Aggiungi`.
 
 Expected result:
 
 - the draft stays open;
 - the UI reports that creation could not be applied;
-- no new Timeline card appears;
-- retrying the same unsupported write does not manufacture local persistence.
+- no new Timeline Event appears;
+- retrying the same unsupported Event write does not manufacture local persistence.
 
-This is deliberately the correct behavior until B01 activates the first authoritative Activity write operation.
+Canonical boundary:
 
 ```text
-valid draft
+valid Event draft
 != accepted backend effect
 ```
+
+Activity is intentionally **not** the negative proof anymore: a valid supported Activity now belongs to the canonical B01 path.
 
 ## 6. Manual proof C — real backend/database outage and Retry
 
@@ -162,7 +171,7 @@ Never use an unscoped `docker rm`/prune command as part of this protocol.
 
 Running the environment is not approval. Automated green is not manual approval. A PR merge is not manual approval.
 
-Record the manual result only after all three proofs have been inspected on the current workstream candidate.
+Record the manual result only after all three current proofs have been inspected on the current workstream candidate.
 
 Approval token:
 

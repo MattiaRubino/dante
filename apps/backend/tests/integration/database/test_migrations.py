@@ -13,7 +13,8 @@ from sqlalchemy.exc import DBAPIError
 
 pytestmark = pytest.mark.postgres
 
-_EXPECTED_HEAD = "20260906_18"
+_EXPECTED_HEAD = "20260908_19"
+_PRE_B01_HEAD = "20260906_18"
 _PRE_VERTICAL_BASE_HEAD = "20260904_17"
 _CP6_HEAD = "20260826_08"
 _RECOVERY_HEAD = "20260830_09"
@@ -137,11 +138,83 @@ def test_repository_head_round_trips_head_base_head(
     assert _current_revisions(provisioned_database) == {_EXPECTED_HEAD}
 
 
+def test_activity_downgrade_refuses_to_discard_canonical_intention(
+    provisioned_database: Any,
+    alembic_config: Config,
+) -> None:
+    command.upgrade(alembic_config, "head")
+    person_ref = uuid7()
+    activity_ref = uuid7()
+    connection_kwargs = provisioned_database.connection_kwargs(
+        "dante_migrator",
+        provisioned_database.cluster.migrator_password,
+    )
+
+    with psycopg.connect(**connection_kwargs, autocommit=True) as connection:
+        connection.execute("SET ROLE dante_owner")
+        connection.execute(
+            "INSERT INTO dante.person(person_ref) VALUES (%s)",
+            (person_ref,),
+        )
+        connection.execute(
+            "INSERT INTO dante.native_address(native_ref,owner_family) VALUES (%s,'person')",
+            (person_ref,),
+        )
+        created = connection.execute(
+            """
+            SELECT activity_ref,title,replayed
+            FROM dante.create_self_activity(%s,%s,%s,%s,%s)
+            """,
+            (
+                person_ref,
+                "migration-proof:b01",
+                "a" * 64,
+                activity_ref,
+                "Canonical downgrade guard",
+            ),
+        ).fetchone()
+        assert created == (activity_ref, "Canonical downgrade guard", False)
+
+    with pytest.raises(DBAPIError, match="B01 downgrade refused"):
+        command.downgrade(alembic_config, _PRE_B01_HEAD)
+
+    assert _current_revisions(provisioned_database) == {_EXPECTED_HEAD}
+    with psycopg.connect(**connection_kwargs, autocommit=True) as connection:
+        connection.execute("SET ROLE dante_owner")
+        preserved = connection.execute(
+            """
+            SELECT
+              (SELECT count(*) FROM dante.activity WHERE activity_ref=%s),
+              (SELECT count(*) FROM dante.native_address
+                 WHERE native_ref=%s AND owner_family='activity'),
+              (SELECT count(*) FROM dante.activity_intention
+                 WHERE activity_ref=%s AND self_person_ref=%s),
+              (SELECT count(*) FROM dante.activity_create_operation
+                 WHERE activity_ref=%s AND self_person_ref=%s
+                   AND operation_id='migration-proof:b01')
+            """,
+            (
+                activity_ref,
+                activity_ref,
+                activity_ref,
+                person_ref,
+                activity_ref,
+                person_ref,
+            ),
+        ).fetchone()
+    assert preserved == (1, 1, 1, 1)
+
+
 def test_context_downgrade_refuses_to_orphan_live_account_person_binding(
     provisioned_database: Any,
     alembic_config: Config,
 ) -> None:
     command.upgrade(alembic_config, "head")
+    assert _current_revisions(provisioned_database) == {_EXPECTED_HEAD}
+
+    command.downgrade(alembic_config, _PRE_B01_HEAD)
+    assert _current_revisions(provisioned_database) == {_PRE_B01_HEAD}
+
     account_ref = uuid7()
     person_ref = uuid7()
     created_at = datetime(2026, 9, 6, 12, 0, tzinfo=UTC)
@@ -171,7 +244,7 @@ def test_context_downgrade_refuses_to_orphan_live_account_person_binding(
     with pytest.raises(DBAPIError, match="PV-02 downgrade refused"):
         command.downgrade(alembic_config, _PRE_VERTICAL_BASE_HEAD)
 
-    assert _current_revisions(provisioned_database) == {_EXPECTED_HEAD}
+    assert _current_revisions(provisioned_database) == {_PRE_B01_HEAD}
     with psycopg.connect(**connection_kwargs, autocommit=True) as connection:
         connection.execute("SET ROLE dante_owner")
         preserved = connection.execute(

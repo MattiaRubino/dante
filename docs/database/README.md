@@ -1,10 +1,13 @@
 # DANTE Database System of Record
 
 - **Status:** CURRENT / AUTHORITATIVE DATABASE REFERENCE
-- **Last reconciled:** 2026-09-06
+- **Last reconciled:** 2026-09-08
 - **PostgreSQL:** 18.6
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
+- **Timeline candidate branch:** `feature/timeline-temporal-operational`
+- **Timeline candidate Alembic head:** `20260908_19`
+- **Timeline candidate topology:** `91|5|19|77|177|95|275|0|0|0`
 - **Pre-vertical integration:** PR #66 / merge `1ecd58145860aebfaaa3dc1bd356b90f7a8eb19b`
 - **Authenticated DANTE context authority:** `../architecture/authenticated-dante-context.md`
 - **Access/Auth reference:** `access-auth.md`
@@ -13,6 +16,7 @@
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 - **Persistence ADR:** `../decisions/ADR-010-postgresql-persistence-constitution.md`
 - **Pre-vertical closure:** `../workstreams/pre-vertical-foundation-closure-2026-09-06.md`
+- **Timeline workstream authority:** `../workstreams/timeline-temporal-operational-map.md`
 
 ## 1. Authority model
 
@@ -37,7 +41,17 @@ CURRENT DB REFERENCE
 ≈ DIRECT TESTS
 ```
 
-Protected `main` is the integration authority. Candidate truth becomes protected-main truth only after its applicable exact-head recovery/integration gates and protected-main merge/readback.
+Protected `main` is the integration authority. Candidate truth becomes protected-main truth only after its applicable exact-head workstream/recovery/integration gates and protected-main merge/readback.
+
+Therefore this document intentionally carries both:
+
+```text
+protected-main truth
+!=
+current unmerged Timeline candidate truth
+```
+
+The candidate overlay is recorded so the checked-out feature branch can remain internally coherent without falsely rewriting protected-main status.
 
 ## 2. Current migration graph
 
@@ -60,13 +74,17 @@ Recovery and Access/Auth originated as sibling children of `20260826_08`; both a
         20260904_17
             ↓
         20260906_18 account_application_context   [current protected-main head]
+            ↓
+        20260908_19 activity_core                 [Timeline candidate only]
 ```
 
-`20260904_17` is the accepted no-DDL merge revision. `20260906_18` is the current protected-main DDL head for authenticated DANTE application context. No accepted migration was rebased, renumbered or flattened.
+`20260904_17` is the accepted no-DDL merge revision. `20260906_18` is the current protected-main DDL head for authenticated DANTE application context. `20260908_19` is a forward-only candidate child on `feature/timeline-temporal-operational`; it has not become protected-main authority.
+
+No accepted migration was rebased, renumbered or flattened.
 
 ## 3. Current topology
 
-Current protected-main topology:
+### 3.1 Protected-main truth
 
 ```text
 89 tables
@@ -85,11 +103,53 @@ Current protected-main topology:
 
 The pre-vertical delta over the former `20260904_17 / 88|5|16|76|172|89|270|0|0|0` baseline is exactly one `account_application_context` table, two routines, one trigger, one PK-backed index, two foreign keys and two CHECK constraints.
 
-Dictionary, SQLAlchemy and Alembic are aligned against `20260906_18 / 89|5|18|77|173|91|272|0|0|0`.
+Protected-main Dictionary, SQLAlchemy and Alembic remain aligned against `20260906_18 / 89|5|18|77|173|91|272|0|0|0`.
+
+### 3.2 Timeline B01 candidate truth
+
+The checked-out workstream candidate adds exactly:
+
+```text
+dante.activity_intention
+dante.activity_create_operation
+dante.create_self_activity(uuid,text,text,uuid,text)
+```
+
+Candidate topology:
+
+```text
+91 tables
+5 views
+19 routines
+77 triggers
+177 physical indexes
+95 foreign keys
+275 CHECK constraints
+0 enums/domains
+0 sequences
+0 materialized views
+0 partitioned tables
+0 RLS policies
+```
+
+Exact `_18 → _19` delta:
+
+```text
++2 tables
++1 routine
++0 triggers
++4 indexes
++4 foreign keys
++3 CHECK constraints
+```
+
+`dante.activity` remains the single CP6 Activity NativeRef owner. `activity_intention` is the smallest typed B01 dependent canonical descriptor required by the product slice; `activity_create_operation` is immutable operation-control state; `create_self_activity` is a bounded capability surface. None authorizes a generic Task/status model or a second Activity identity.
 
 Platform Observability does **not** add a DANTE business table, view, routine, Alembic revision or SQLAlchemy business mapping. Its database contribution is a provisioning-owned operational observer identity described below.
 
 ## 4. Acceptance boundary
+
+### 4.1 Protected-main accepted boundary
 
 Current protected-main database acceptance includes:
 
@@ -116,6 +176,28 @@ The exact recovery candidate was `21353469464f1371f9913dc78933f4ee42698f33`; PR 
 
 Historical CP6, Recovery and Access/Auth checkpoints remain evidence in Git, archived branch records and dated validation records. They do not override current protected-main truth.
 
+### 4.2 Timeline B01 candidate boundary
+
+At this reconciliation slice the `_19` candidate must prove, before formal B01 green:
+
+```text
+single repository Alembic head = 20260908_19
+Dictionary object tree/counts = live PostgreSQL catalog
+SQLAlchemy mappings = all 91 DANTE tables
+candidate topology = 91|5|19|77|177|95|275|0|0|0
+runtime table ACL = Dictionary
+create_self_activity owner/security/search_path/EXECUTE = exact
+fresh DB → head = PASS
+head → base → head = PASS when no canonical B01 data exists
+canonical Activity intention → downgrade to _18 = REJECTED
+B00/B01 real PostgreSQL integration = PASS
+full backend PostgreSQL marked suite = PASS
+```
+
+The one-shot candidate workflow created in this workstream is temporary QA infrastructure only. Until that exact-head run succeeds, the statements above are obligations, not claimed evidence.
+
+Automated candidate green also does not replace B00/B01 manual `userTest` approval.
+
 ## 5. Application role model
 
 Application roles remain explicitly separated:
@@ -130,6 +212,15 @@ dante_observer   LOGIN statistics-only collector identity
 Ownership, migration and runtime privileges remain independently tested. Application runtime does not inherit migration/owner authority.
 
 `20260906_18` does not grant generic runtime `INSERT` on `Person`. `dante_runtime` receives only the bounded capability needed to establish an absent authenticated Account application context; direct Person DML remains governed by the existing CP6 posture.
+
+The B01 `_19` candidate likewise grants no generic runtime INSERT/UPDATE/DELETE on Activity persistence. Runtime receives:
+
+```text
+SELECT  dante.activity_intention
+EXECUTE dante.create_self_activity(uuid,text,text,uuid,text)
+```
+
+and no direct table privilege on `activity_create_operation`. The SECURITY DEFINER function is owned by `dante_owner`, uses trusted `search_path = pg_catalog, dante, pg_temp`, and is the only B01 Activity creation write surface granted to runtime.
 
 ## 6. Platform Observability observer role
 
@@ -203,7 +294,9 @@ suppression distinct from EmailIdentity ownership/verification
 
 `dictionary/scope.json` keeps the frozen CP6 baseline separate from `current_materialization`. Post-CP6 provenance lives on object entries rather than inventing fictitious CP6 stages.
 
-Current materialization is `20260906_18 / 89|5|18|77|173|91|272`. The former protected-main `20260904_17 / 88|5|16|76|172|89|270` is retained only as historical integration context.
+On protected `main`, materialization remains `20260906_18 / 89|5|18|77|173|91|272`.
+
+On the current Timeline candidate branch, checked-out Dictionary materialization is `20260908_19 / 91|5|19|77|177|95|275`. The candidate entries for `activity_intention`, `activity_create_operation` and `create_self_activity` must match SQLAlchemy/Alembic/live PostgreSQL exactly before this slice can close.
 
 Operational cluster roles such as `dante_observer` are deliberately not fake business objects; their security contract is carried by technical-role/provisioning references and live ACL tests.
 
@@ -215,11 +308,14 @@ The accepted LOCAL recovery model keeps database-local proof distinct from appli
 historical CP07 database-local reopen              PASS FOR EXECUTED HISTORICAL SCOPE
 historical CP08 Email/application reopen            PASS FOR EXECUTED HISTORICAL SCOPE
 pre-vertical exact-head database-local recovery     PASS @ 21353469464f1371f9913dc78933f4ee42698f33
+Timeline B01 _19 recovery-specific rerun             NOT CLAIMED BY THIS SLICE
 remote backup provider                              TBD / NOT ACTIVATED
 production/cloud recovery                           NOT CLAIMED
 ```
 
-The final pre-vertical rehearsal proved the current `20260906_18` database-local Recovery contract, including observer provisioning, structural/security acceptance, deterministic PITR, MaterialState anti-resurrection reconciliation and database-local reopen. It did **not** silently relabel historical CP08 application/Email reopen evidence as newly executed.
+The final pre-vertical rehearsal proved the protected-main `20260906_18` database-local Recovery contract, including observer provisioning, structural/security acceptance, deterministic PITR, MaterialState anti-resurrection reconciliation and database-local reopen. It did **not** silently relabel historical CP08 application/Email reopen evidence as newly executed.
+
+B01 adds two canonical/control tables and one bounded routine but no new MaterialState retirement facet, outbox family or provider/object-store state. Whole-vertical recovery closure remains B14; no new recovery proof is fabricated here.
 
 Current operator authority is `../operations/postgres-recovery-runbook.md`; executable recovery truth lives under `../../infra/local/postgres/recovery/`.
 
@@ -233,4 +329,6 @@ No future vertical may bypass these contracts merely because its data is “tech
 
 ## 12. Reachability rule
 
-`20260906_18` is reachable from protected `main` through PR #66 and is current protected-main truth. Future candidate schema changes remain candidates until their own reviewed integration/recovery obligations are complete.
+`20260906_18` is reachable from protected `main` through PR #66 and remains current protected-main truth.
+
+`20260908_19` is reachable only on the unmerged Timeline workstream branch at this point. It is candidate truth, not protected-main truth, until workstream validation and normal repository integration complete.

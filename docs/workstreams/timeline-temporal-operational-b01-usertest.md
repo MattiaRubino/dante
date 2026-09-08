@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — B01 isolated `userTest`
 
-- **Status:** READY TO RUN — NOT YET APPROVED
+- **Status:** READY FOR MANUAL EXECUTION — NOT YET APPROVED
 - **Workstream branch:** `feature/timeline-temporal-operational`
 - **Purpose:** manual B01 Activity acceptance only
 - **Data class:** disposable synthetic test data; never personal/production data
@@ -25,6 +25,8 @@ The database/container is disposable and exists only for the run.
 ## 2. Preconditions
 
 Run from the repository root with `feature/timeline-temporal-operational` checked out and clean.
+
+The candidate must include the B01 `_19` Activity schema and its reconciled Database Dictionary/current-catalog gates. Automated proof is evidence for readiness; it does **not** replace this manual protocol.
 
 The canonical PostgreSQL image must already exist. If it does not, build it once with:
 
@@ -160,7 +162,7 @@ Do not use an unscoped prune/remove command.
 
 ## 9. Approval semantics
 
-Automated E2E green is evidence, but it is not manual approval.
+Automated E2E green is evidence, but it is not manual approval. Database/Dictionary reconciliation green is also automated engineering evidence, not user approval.
 
 Approve B01 manual acceptance only after proofs A, B, C and the staged macro-class check have been visually inspected on the current candidate.
 
@@ -170,4 +172,4 @@ Approval token:
 B01 userTest — APPROVED
 ```
 
-Until that explicit result is recorded, `[B01-T08]` remains open and B01 is engineering-complete but not formally green under the roadmap Definition of Done.
+Until that explicit result is recorded, `[B01-T08]` remains open. Until both current-candidate engineering reconciliation and `[B01-T08]` are complete, B01 remains formally **IN PROGRESS** under the roadmap Definition of Done; do not label it green merely because an earlier targeted E2E passed.
