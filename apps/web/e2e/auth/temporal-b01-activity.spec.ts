@@ -163,6 +163,50 @@ test.describe('Timeline B01 canonical Activity vertical', () => {
       await expect(reloadedCard).toHaveCount(1);
       await expect(reloadedCard).toContainText(title);
       await expect(page.locator('[data-timeline-event]')).toHaveCount(0);
+
+      const discardedDraftTitle = `B01 bozza scartata ${testInfo.project.name}`;
+      await page
+        .getByRole('button', { name: 'Aggiungi alla timeline' })
+        .click();
+      await page.getByLabel('Titolo').fill(discardedDraftTitle);
+      await page.getByRole('button', { name: 'Annulla', exact: true }).click();
+      await expect(
+        page.getByRole('alertdialog', { name: 'Scartare questa bozza?' }),
+      ).toBeVisible();
+      await page.getByRole('button', { name: 'Scarta', exact: true }).click();
+
+      const discardReloadTimeline = waitForTimelineRead(page);
+      const discardReloadUnplaced = waitForUnplacedRead(page);
+      await page.reload();
+      expect((await discardReloadTimeline).status()).toBe(200);
+      const discardReloadRead = await discardReloadUnplaced;
+      expect(discardReloadRead.status()).toBe(200);
+      const discardReloadPayload = (await discardReloadRead.json()) as {
+        kind: string;
+        items: { activity_ref: string; title: string }[];
+      };
+      expect(
+        discardReloadPayload.items.filter(
+          (item) => item.activity_ref === created.activity_ref,
+        ),
+      ).toHaveLength(1);
+      expect(
+        discardReloadPayload.items.filter(
+          (item) => item.title === discardedDraftTitle,
+        ),
+      ).toHaveLength(0);
+
+      const afterDiscardPlanningReadPromise = waitForUnplacedRead(page);
+      await page
+        .getByRole('button', { name: 'Apri attività da collocare' })
+        .click();
+      expect((await afterDiscardPlanningReadPromise).status()).toBe(200);
+      const afterDiscardCard = page.locator(
+        `[data-temporal-activity-ref="${created.activity_ref}"]`,
+      );
+      await expect(afterDiscardCard).toHaveCount(1);
+      await expect(afterDiscardCard).toContainText(title);
+      await expect(page.getByText(discardedDraftTitle)).toHaveCount(0);
     } finally {
       await context.close();
     }
