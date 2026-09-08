@@ -14,6 +14,7 @@ import {
   createLocalTemporalCreateRuntime,
   type TemporalCreateAppliedEffect,
   type TemporalCreatePreparedOperation,
+  type TemporalCreateRuntime,
 } from '../application/temporal-create-runtime';
 import {
   applyTemporalCreateFieldSeed,
@@ -75,6 +76,7 @@ export type TemporalCreateEntryProps = Readonly<{
   defaultDate: PlainDate;
   contexts: readonly TemporalCreateContextOption[];
   request?: TemporalCreateInvocation | null;
+  runtime?: TemporalCreateRuntime;
   onPreview: (projection: TemporalCreateTimelineProjection | null) => void;
   onApplied: (effect: TemporalCreateAppliedEffect) => boolean;
   onBeforeOpen?: (() => void) | undefined;
@@ -95,6 +97,7 @@ export function TemporalCreateEntry({
   defaultDate,
   contexts,
   request,
+  runtime: runtimeOverride,
   onPreview,
   onApplied,
   onBeforeOpen,
@@ -103,7 +106,9 @@ export function TemporalCreateEntry({
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const focusReturnRef = useRef<HTMLElement | null>(null);
   const composerDragRef = useRef<ComposerDrag | null>(null);
-  const [runtime] = useState(() => createLocalTemporalCreateRuntime());
+  const [runtime] = useState(
+    () => runtimeOverride ?? createLocalTemporalCreateRuntime(),
+  );
   const requestSeenRef = useRef<number | null>(null);
   const preparedRef = useRef<TemporalCreatePreparedOperation | null>(null);
   const commitInFlightRef = useRef(false);
