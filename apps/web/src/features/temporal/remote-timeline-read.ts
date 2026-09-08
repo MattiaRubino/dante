@@ -14,9 +14,7 @@ const TEMPORAL_TIMELINE_WINDOW_ENDPOINT = '/api/v1/temporal/timeline/window';
 const MAX_TIMELINE_WINDOW_DAYS = 62;
 
 export type TemporalTimelineRemoteFailureKind =
-  | 'transport'
-  | 'http'
-  | 'protocol';
+  'transport' | 'http' | 'protocol';
 
 export class TemporalTimelineRemoteError extends Error {
   constructor(

@@ -12,4 +12,6 @@ type DeepStringResource<T> = T extends string
   ? string
   : { readonly [K in keyof T]: DeepStringResource<T[K]> };
 
-export type TemporalRuntimeResource = DeepStringResource<typeof temporalRuntime>;
+export type TemporalRuntimeResource = DeepStringResource<
+  typeof temporalRuntime
+>;

@@ -1,8 +1,4 @@
-import {
-  Temporal,
-  detectDeviceTimeZone,
-  type PlainDate,
-} from '@dante/time';
+import { Temporal, detectDeviceTimeZone, type PlainDate } from '@dante/time';
 
 import {
   addTimelineDays,

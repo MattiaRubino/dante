@@ -261,9 +261,7 @@ def test_create_activity_is_canonical_idempotent_and_visible_as_unplaced(
         )
         assert unplaced.status_code == 200
         assert unplaced.json()["kind"] == "unplaced"
-        assert [item["activity_ref"] for item in unplaced.json()["items"]] == [
-            str(activity_ref)
-        ]
+        assert [item["activity_ref"] for item in unplaced.json()["items"]] == [str(activity_ref)]
 
         detail = client.get(
             f"/api/v1/temporal/activities/{activity_ref}",

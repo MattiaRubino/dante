@@ -249,16 +249,14 @@ def upgrade() -> None:
     )
     op.execute(
         sa.text(
-            "ALTER FUNCTION dante.create_self_activity(uuid,text,text,uuid,text) "
-            f"OWNER TO {_OWNER}"
+            f"ALTER FUNCTION dante.create_self_activity(uuid,text,text,uuid,text) OWNER TO {_OWNER}"
         )
     )
 
     for table in ("activity_intention", "activity_create_operation"):
         op.execute(
             sa.text(
-                f"REVOKE ALL PRIVILEGES ON TABLE dante.{table} "
-                f"FROM PUBLIC, {_RUNTIME}, {_MIGRATOR}"
+                f"REVOKE ALL PRIVILEGES ON TABLE dante.{table} FROM PUBLIC, {_RUNTIME}, {_MIGRATOR}"
             )
         )
     op.execute(sa.text(f"GRANT SELECT ON TABLE dante.activity_intention TO {_RUNTIME}"))

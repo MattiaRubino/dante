@@ -12,7 +12,9 @@ export type TemporalCreateContextCreator = (
 const TemporalCreateContextCatalog =
   createContext<TemporalCreateContextCreator | null>(null);
 
-export function temporalCreateLocalContextAuthoringEnabled(mode: string): boolean {
+export function temporalCreateLocalContextAuthoringEnabled(
+  mode: string,
+): boolean {
   return mode === 'test';
 }
 
