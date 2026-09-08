@@ -43,6 +43,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build canonical PostgreSQL image
+        run: docker compose -f infra/compose/local.yaml build postgres
+
       - name: Install Chromium headless shell and Linux dependencies
         run: pnpm --filter @dante/web exec playwright install --with-deps --only-shell chromium
 
