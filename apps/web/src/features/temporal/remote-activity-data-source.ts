@@ -17,10 +17,7 @@ const UNPLACED_ACTIVITY_ENDPOINT = '/api/v1/temporal/activities/unplaced';
 const CSRF_HEADER_NAME = 'X-Dante-CSRF';
 
 export type TemporalActivityRemoteFailureKind =
-  | 'transport'
-  | 'http'
-  | 'protocol'
-  | 'authentication';
+  'transport' | 'http' | 'protocol' | 'authentication';
 
 export class TemporalActivityRemoteError extends Error {
   constructor(
