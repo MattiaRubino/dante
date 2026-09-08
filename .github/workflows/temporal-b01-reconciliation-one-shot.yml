@@ -1,4 +1,5 @@
 name: Temporal B01 Reconciliation One-Shot
+# proof-revision: lint-fix-1
 
 on:
   push:

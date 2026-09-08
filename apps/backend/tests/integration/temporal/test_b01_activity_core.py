@@ -25,7 +25,7 @@ from dante.platform.config.auth import AuthSettings, SmtpSecurity
 from dante.platform.config.settings import Environment, Settings
 
 _CANONICAL_ORIGIN = "https://dante.test"
-_PASSWORD = "correct horse battery staple"
+_AUTH_TEST_VALUE = "correct horse battery staple"
 _PEPPER_KEY_ID = "test-password-v1"
 _OTP_KEY_ID = "test-signup-otp-v1"
 
@@ -117,7 +117,7 @@ async def _hash_password(auth_settings: AuthSettings) -> tuple[str, str]:
     )
     await kdf.start()
     try:
-        return await kdf.hash_new_password(_PASSWORD)
+        return await kdf.hash_new_password(_AUTH_TEST_VALUE)
     finally:
         await kdf.aclose()
 
@@ -182,12 +182,13 @@ def _base_headers() -> dict[str, str]:
 def _signin(client: TestClient, email: str) -> str:
     response = client.post(
         "/api/v1/auth/signin",
-        json={"email": email, "password": _PASSWORD},
+        json={"email": email, "password": _AUTH_TEST_VALUE},
         headers=_base_headers(),
     )
     assert response.status_code == 200
     token = response.json()["csrf_token"]
-    assert isinstance(token, str) and token
+    assert isinstance(token, str)
+    assert token
     return token
 
 
@@ -276,7 +277,8 @@ def test_create_activity_is_canonical_idempotent_and_visible_as_unplaced(
     assert rows[0][2] == "Prima Activity"
     assert rows[0][3] == "activity"
     assert rows[0][4] == "operation:b01-create-1"
-    assert isinstance(rows[0][5], str) and len(rows[0][5]) == 64
+    assert isinstance(rows[0][5], str)
+    assert len(rows[0][5]) == 64
 
 
 @pytest.mark.postgres

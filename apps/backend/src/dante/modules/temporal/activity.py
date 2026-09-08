@@ -109,24 +109,26 @@ class TemporalActivityApplication:
         )
 
         try:
-            async with self._session_factory() as database_session:
-                async with database_session.begin():
-                    row = (
-                        (
-                            await database_session.execute(
-                                statement,
-                                {
-                                    "self_person_ref": self_person_ref,
-                                    "operation_id": normalized_operation_id,
-                                    "intent_fingerprint": fingerprint,
-                                    "activity_ref": activity_ref,
-                                    "title": normalized_title,
-                                },
-                            )
+            async with (
+                self._session_factory() as database_session,
+                database_session.begin(),
+            ):
+                row = (
+                    (
+                        await database_session.execute(
+                            statement,
+                            {
+                                "self_person_ref": self_person_ref,
+                                "operation_id": normalized_operation_id,
+                                "intent_fingerprint": fingerprint,
+                                "activity_ref": activity_ref,
+                                "title": normalized_title,
+                            },
                         )
-                        .mappings()
-                        .one()
                     )
+                    .mappings()
+                    .one()
+                )
         except IntegrityError as exc:
             if _constraint_name(exc) == "pk_activity_create_operation":
                 raise ActivityOperationIdReuseError() from exc
