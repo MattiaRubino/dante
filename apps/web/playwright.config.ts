@@ -19,7 +19,10 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   webServer: {
-    command: `pnpm build && pnpm exec vite preview --host 127.0.0.1 --port ${e2ePort} --strictPort`,
+    // Non-auth E2E exercises the frozen interaction contract through the
+    // explicit test-only Timeline fixture boundary. Auth/full-stack proofs use
+    // playwright.auth.config.ts and therefore keep the real production path.
+    command: `pnpm exec vite build --mode test && node ../../tooling/observability/check-web-bundle.mjs && pnpm exec vite preview --host 127.0.0.1 --port ${e2ePort} --strictPort`,
     url: baseURL,
     reuseExistingServer: false,
     timeout: 120_000,
