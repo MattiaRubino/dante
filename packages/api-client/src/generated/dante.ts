@@ -5,14 +5,18 @@
  * OpenAPI spec version: 0.1.0
  */
 import type {
+  ActivityResponse,
   AppleAuthenticationBegunResponse,
   AppleNotificationRequest,
   AuthHandleAppleCallbackBody,
   AuthenticatedSessionResponse,
   AuthenticationMethodsResponse,
+  CreateActivityRequest,
   ExistingAccountSignupResponse,
+  GetTimelineWindowApiV1TemporalTimelineWindowGetParams,
   GoogleAuthenticationBegunResponse,
   GoogleAuthenticationCompleteRequest,
+  HTTPValidationError,
   PasskeyAuthenticationCompleteRequest,
   PasskeyBeginRequest,
   PasskeyCeremonyResponse,
@@ -42,7 +46,9 @@ import type {
   SignupRequest,
   SignupResendRequest,
   SignupVerificationRequest,
+  TimelineWindowResponse,
   UnauthenticatedSessionResponse,
+  UnplacedActivitiesResponse,
 } from './model';
 
 export type authBeginAppleAuthenticationResponse200 = {
@@ -3533,4 +3539,244 @@ export const authVerifySignup = async (
     status: res.status,
     headers: res.headers,
   } as authVerifySignupResponse;
+};
+
+export type createActivityApiV1TemporalActivitiesPostResponse201 = {
+  data: ActivityResponse;
+  status: 201;
+};
+
+export type createActivityApiV1TemporalActivitiesPostResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type createActivityApiV1TemporalActivitiesPostResponseSuccess =
+  createActivityApiV1TemporalActivitiesPostResponse201 & {
+    headers: Headers;
+  };
+export type createActivityApiV1TemporalActivitiesPostResponseError =
+  createActivityApiV1TemporalActivitiesPostResponse422 & {
+    headers: Headers;
+  };
+
+export type createActivityApiV1TemporalActivitiesPostResponse =
+  | createActivityApiV1TemporalActivitiesPostResponseSuccess
+  | createActivityApiV1TemporalActivitiesPostResponseError;
+
+export const getCreateActivityApiV1TemporalActivitiesPostUrl = () => {
+  return `/api/v1/temporal/activities`;
+};
+
+/**
+ * Create one canonical unscheduled Activity for the authenticated self Person.
+ * @summary Create Activity
+ */
+export const createActivityApiV1TemporalActivitiesPost = async (
+  createActivityRequest: CreateActivityRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<createActivityApiV1TemporalActivitiesPostResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getCreateActivityApiV1TemporalActivitiesPostUrl(),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(createActivityRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: createActivityApiV1TemporalActivitiesPostResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as createActivityApiV1TemporalActivitiesPostResponse;
+};
+
+export type listUnplacedActivitiesApiV1TemporalActivitiesUnplacedGetResponse200 =
+  {
+    data: UnplacedActivitiesResponse;
+    status: 200;
+  };
+
+export type listUnplacedActivitiesApiV1TemporalActivitiesUnplacedGetResponseSuccess =
+  listUnplacedActivitiesApiV1TemporalActivitiesUnplacedGetResponse200 & {
+    headers: Headers;
+  };
+export type listUnplacedActivitiesApiV1TemporalActivitiesUnplacedGetResponse =
+  listUnplacedActivitiesApiV1TemporalActivitiesUnplacedGetResponseSuccess;
+
+export const getListUnplacedActivitiesApiV1TemporalActivitiesUnplacedGetUrl =
+  () => {
+    return `/api/v1/temporal/activities/unplaced`;
+  };
+
+/**
+ * List canonical Activities for this self Person that have no Schedule yet.
+ * @summary List Unplaced Activities
+ */
+export const listUnplacedActivitiesApiV1TemporalActivitiesUnplacedGet = async (
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<listUnplacedActivitiesApiV1TemporalActivitiesUnplacedGetResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getListUnplacedActivitiesApiV1TemporalActivitiesUnplacedGetUrl(),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: listUnplacedActivitiesApiV1TemporalActivitiesUnplacedGetResponse['data'] =
+    body ? JSON.parse(body) : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as listUnplacedActivitiesApiV1TemporalActivitiesUnplacedGetResponse;
+};
+
+export type getActivityApiV1TemporalActivitiesActivityRefGetResponse200 = {
+  data: ActivityResponse;
+  status: 200;
+};
+
+export type getActivityApiV1TemporalActivitiesActivityRefGetResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type getActivityApiV1TemporalActivitiesActivityRefGetResponseSuccess =
+  getActivityApiV1TemporalActivitiesActivityRefGetResponse200 & {
+    headers: Headers;
+  };
+export type getActivityApiV1TemporalActivitiesActivityRefGetResponseError =
+  getActivityApiV1TemporalActivitiesActivityRefGetResponse422 & {
+    headers: Headers;
+  };
+
+export type getActivityApiV1TemporalActivitiesActivityRefGetResponse =
+  | getActivityApiV1TemporalActivitiesActivityRefGetResponseSuccess
+  | getActivityApiV1TemporalActivitiesActivityRefGetResponseError;
+
+export const getGetActivityApiV1TemporalActivitiesActivityRefGetUrl = (
+  activityRef: string,
+) => {
+  return `/api/v1/temporal/activities/${activityRef}`;
+};
+
+/**
+ * Read one canonical Activity only inside the authenticated self scope.
+ * @summary Get Activity
+ */
+export const getActivityApiV1TemporalActivitiesActivityRefGet = async (
+  activityRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<getActivityApiV1TemporalActivitiesActivityRefGetResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getGetActivityApiV1TemporalActivitiesActivityRefGetUrl(activityRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: getActivityApiV1TemporalActivitiesActivityRefGetResponse['data'] =
+    body ? JSON.parse(body) : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as getActivityApiV1TemporalActivitiesActivityRefGetResponse;
+};
+
+export type getTimelineWindowApiV1TemporalTimelineWindowGetResponse200 = {
+  data: TimelineWindowResponse;
+  status: 200;
+};
+
+export type getTimelineWindowApiV1TemporalTimelineWindowGetResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type getTimelineWindowApiV1TemporalTimelineWindowGetResponseSuccess =
+  getTimelineWindowApiV1TemporalTimelineWindowGetResponse200 & {
+    headers: Headers;
+  };
+export type getTimelineWindowApiV1TemporalTimelineWindowGetResponseError =
+  getTimelineWindowApiV1TemporalTimelineWindowGetResponse422 & {
+    headers: Headers;
+  };
+
+export type getTimelineWindowApiV1TemporalTimelineWindowGetResponse =
+  | getTimelineWindowApiV1TemporalTimelineWindowGetResponseSuccess
+  | getTimelineWindowApiV1TemporalTimelineWindowGetResponseError;
+
+export const getGetTimelineWindowApiV1TemporalTimelineWindowGetUrl = (
+  params: GetTimelineWindowApiV1TemporalTimelineWindowGetParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value));
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/v1/temporal/timeline/window?${stringifiedParams}`
+    : `/api/v1/temporal/timeline/window`;
+};
+
+/**
+ * Read one bounded half-open local-date Timeline window for the authenticated self.
+ * @summary Get Timeline Window
+ */
+export const getTimelineWindowApiV1TemporalTimelineWindowGet = async (
+  params: GetTimelineWindowApiV1TemporalTimelineWindowGetParams,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<getTimelineWindowApiV1TemporalTimelineWindowGetResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getGetTimelineWindowApiV1TemporalTimelineWindowGetUrl(params),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: getTimelineWindowApiV1TemporalTimelineWindowGetResponse['data'] =
+    body ? JSON.parse(body) : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as getTimelineWindowApiV1TemporalTimelineWindowGetResponse;
 };
