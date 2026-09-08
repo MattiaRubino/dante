@@ -1,5 +1,5 @@
 name: Temporal B01 Reconciliation One-Shot
-# proof-revision: lint-fix-1
+# proof-revision: harness-isolation-1
 
 on:
   push:
@@ -178,11 +178,18 @@ jobs:
           pnpm --filter @dante/web exec playwright install --with-deps --only-shell chromium
           pnpm --filter @dante/web exec playwright install --with-deps firefox
 
-      - name: Run B00 and B01 real full-stack Chromium proofs
+      - name: Run B00 real full-stack Chromium proof
         run: |
           pnpm --filter @dante/web exec playwright test \
             --config playwright.auth.config.ts \
             e2e/auth/temporal-b00-runtime-spine.spec.ts \
+            --project=chromium \
+            --workers=1
+
+      - name: Run B01 real full-stack Chromium proof
+        run: |
+          pnpm --filter @dante/web exec playwright test \
+            --config playwright.auth.config.ts \
             e2e/auth/temporal-b01-activity.spec.ts \
             --project=chromium \
             --workers=1
