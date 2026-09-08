@@ -3257,7 +3257,7 @@ NEW DOMAIN OWNER REQUIRED                      0
 EXTERNAL BENCHMARK-REQUIRED OWNER              0
 OPEN-BY-DESIGN QUESTIONS                       EXPLICITLY REGISTERED
 ROADMAP                                        FROZEN
-IMPLEMENTATION                                 ACTIVE — B00 IN PROGRESS
+IMPLEMENTATION                                 ACTIVE — B00/B01 CLOSED; B02 NEXT
 ```
 
 The roadmap is authoritative for sequencing, while this map is authoritative for semantic coverage and live completion tracking.
@@ -3295,54 +3295,57 @@ Rules:
 - ✅ **[DOC-005]** Schedule coarse-precision and Recurrence anchor/effective-range hardenings bound into primary map.
 - ✅ **[DOC-006]** Detailed end-to-end implementation roadmap frozen.
 - ✅ **[DOC-007]** Live green-check rule made a fixed branch/workstream contract.
+- ✅ **[DOC-008]** B01 candidate PostgreSQL/SQLAlchemy/Dictionary/current-catalog truth reconciled at Alembic `_19` with topology `91|5|19|77|177|95|275|0|0|0`; protected-main `_18` freeze truth remains historical/main authority and is not silently rewritten.
 
 ## 34.2 B00 — Real Data Spine / no runtime mocks
 
 - ✅ **[SPINE-001]** Inventory every normal-runtime Timeline/Create mock/fake source. — Inventory covers prototype clock/groups/cards, distant-date generated fallback cards, Create in-memory fake-success, session-only local context creation and normal-runtime transport-failure fallback risks; evidence is frozen in the B00 execution amendment.
-- 🟨 **[SPINE-002]** Remove/isolate fake Timeline cards from normal runtime. — Implementation complete; automated/runtime acceptance still unexecuted.
-- 🟨 **[SPINE-003]** Move reusable fake datasets behind explicit test/dev-test-only boundaries. — T1 fixture dataset and local Create context authoring are test-only; regression execution still pending.
-- 🟨 **[SPINE-004]** Establish one real temporal frontend feature/application data-source path. — Strict remote temporal Timeline data-source and Home runtime boundary implemented; execution gates pending.
-- 🟨 **[SPINE-005]** Establish real backend temporal operation/query boundary. — Authenticated bounded temporal Timeline endpoint/application boundary implemented; execution gates pending.
-- 🟨 **[SPINE-006]** Reverify authenticated `DanteContext` Account→self Person path. — Real PostgreSQL integration proof written; not yet executed.
-- 🟨 **[SPINE-007]** Reverify effective request timezone handling for temporal operations/queries. — `X-Dante-Time-Zone` path and effective zone response covered by unit/integration/E2E proofs; not yet executed.
-- 🟨 **[SPINE-008]** Ensure normal runtime truthful empty state when no temporal product data exists. — Empty authenticated response + zero runtime prototype cards implemented; automated/manual execution pending.
-- 🟨 **[SPINE-009]** Ensure backend/network failure is never replaced by fake success. — Remote adapter fails explicitly; production Create fails closed; PostgreSQL-outage browser proof written; not yet executed.
-- ✅ **[SPINE-010]** Define isolated `userTest`/test-data setup and cleanup flow. — `timeline-temporal-operational-b00-usertest.md` defines disposable stack, synthetic account, three manual proofs and scoped cleanup. Manual approval itself remains B00-T05.
-- 🟨 **[SPINE-011]** Establish real-backend + real-test-PostgreSQL E2E harness for vertical slices. — Existing production-grade Access/Auth disposable PostgreSQL/FastAPI/HTTPS Playwright harness reused and B00 proofs added; smoke execution pending.
-- 🟨 **[SPINE-012]** Preserve F0/T1 behavior through real-data cutover. — Test fixtures remain available only in test mode and no semantic F0/T1 rewrite was authorized; full regression execution pending.
-- 🟨 **[B00-T01]** Automated frontend no-runtime-mock regression test. — Fixture boundary, Create runtime boundary, local-context boundary and runtime read-boundary tests written; not yet executed.
-- 🟨 **[B00-T02]** Backend real-query smoke/integration test. — Temporal application/API tests plus real PostgreSQL integration proof written; not yet executed.
-- 🟨 **[B00-T03]** Auth/DanteContext/timezone integration test. — Real sign-in → AuthSession → lazy AccountApplicationContext/self Person → timezone proof written, including missing-timezone no-partial-bootstrap case; not yet executed.
-- 🟨 **[B00-T04]** Real PostgreSQL E2E harness smoke test. — Chromium/Firefox/WebKit browser proofs written for healthy empty read, Create fail-closed and controlled DB outage/retry; not yet executed.
-- 🟨 **[B00-T05]** Manual `userTest` empty/error/real-data-path acceptance. — Protocol ready; manual run/approval not yet performed.
+- ✅ **[SPINE-002]** Remove/isolate fake Timeline cards from normal runtime. — Normal runtime uses the real temporal read path; final exact-head frontend/full-stack reconciliation and manual empty-state proof passed.
+- ✅ **[SPINE-003]** Move reusable fake datasets behind explicit test/dev-test-only boundaries. — T1 fixtures remain test-mode-only; production build/runtime cutover and frozen T1 regression passed on the closure candidate.
+- ✅ **[SPINE-004]** Establish one real temporal frontend feature/application data-source path. — Strict remote temporal Timeline data-source/Home runtime boundary is active and exercised by real full-stack B00 proof.
+- ✅ **[SPINE-005]** Establish real backend temporal operation/query boundary. — Authenticated bounded temporal Timeline endpoint/application path is active and passed backend/PostgreSQL/full-stack reconciliation.
+- ✅ **[SPINE-006]** Reverify authenticated `DanteContext` Account→self Person path. — Real PostgreSQL/auth integration evidence passed in the final reconciliation suite.
+- ✅ **[SPINE-007]** Reverify effective request timezone handling for temporal operations/queries. — `X-Dante-Time-Zone` and effective-zone behavior passed automated integration coverage on the closure candidate.
+- ✅ **[SPINE-008]** Ensure normal runtime truthful empty state when no temporal product data exists. — Manual proof A and exact-head B00 full-stack proof both showed a real empty Timeline with no prototype cards.
+- ✅ **[SPINE-009]** Ensure backend/network failure is never replaced by fake success. — Manual PostgreSQL-outage proof showed `Timeline non disponibile`, no fake cards and successful real Retry after restart; exact-head B00 E2E also passed.
+- ✅ **[SPINE-010]** Define isolated `userTest`/test-data setup and cleanup flow. — Disposable stack, synthetic account, three manual proofs and scoped cleanup are documented and executed.
+- ✅ **[SPINE-011]** Establish real-backend + real-test-PostgreSQL E2E harness for vertical slices. — Production web/FastAPI/disposable PostgreSQL 18.6 harness executed successfully for B00 and B01.
+- ✅ **[SPINE-012]** Preserve F0/T1 behavior through real-data cutover. — Production/test fixture boundary remained explicit; frontend suite and frozen T1 Firefox interaction contract passed on exact closure candidate.
+- ✅ **[B00-T01]** Automated frontend no-runtime-mock regression test. — Frontend contract/quality/unit/build gates passed in reconciliation run `34261607749`.
+- ✅ **[B00-T02]** Backend real-query smoke/integration test. — Backend quality and full PostgreSQL acceptance passed on exact closure candidate.
+- ✅ **[B00-T03]** Auth/DanteContext/timezone integration test. — Real auth/context/timezone coverage passed in the reconciled backend/PostgreSQL/full-stack suite.
+- ✅ **[B00-T04]** Real PostgreSQL E2E harness smoke test. — B00 real full-stack Chromium proof passed on exact closure candidate; frozen Firefox interaction regression also passed.
+- ✅ **[B00-T05]** Manual `userTest` empty/error/real-data-path acceptance. — `B00 userTest — APPROVED` recorded 2026-09-08 after proofs A/B/C passed on the disposable real stack; exact-head B00 E2E subsequently remained green.
 
 ## 34.3 B01 — Activity Core
 
-- ⬜ **[ACT-001]** Re-open Activity Domain/Logical/Physical authority before implementation.
-- ⬜ **[ACT-002]** Resolve minimum meaningful Activity descriptive/actionable persistence.
-- ⬜ **[ACT-003]** Prove whether forward DDL is required; no speculative generic Task/status schema.
-- ⬜ **[ACT-004]** Implement stable Activity creation identity.
-- ⬜ **[ACT-005]** Implement idempotent `CreateActivity` application operation.
-- ⬜ **[ACT-006]** Implement unplaced Activity as valid canonical state.
-- ⬜ **[ACT-007]** Implement real Planning Tray query for unplaced Activity.
-- ⬜ **[ACT-008]** Make `Activity` default selected macro-class in `+` Create.
-- ⬜ **[ACT-009]** Make Activity Create submit use real backend result.
-- ⬜ **[ACT-010]** Preserve `draft != canonical Activity` behavior.
-- ⬜ **[ACT-011]** Preserve Activity identity across reload/refetch.
-- ⬜ **[ACT-012]** Ensure duplicate projection/refetch cannot duplicate Activity identity.
-- ⬜ **[ACT-013]** Preserve Activity `!= Event/Routine/Schedule/Session/Actual/Outcome/Goal/Plan` boundaries in implementation.
-- ⬜ **[ACT-014]** Preserve repeated Activity UX as future Routine-backed semantics, not Activity-owned recurrence.
-- ⬜ **[ACT-015]** Design/implement estimated effort when first required without equating it to scheduled/actual duration. — Not activated in B01: the canonical unplaced Activity path does not expose estimated effort, and normal runtime fails closed if non-baseline duration/effort intent is injected. Remains deferred until a dedicated Activity effort contract is required.
-- ⬜ **[ACT-016]** Design/implement semantic sub-Activity structure when first required, separate from Session splitting.
-- ⬜ **[ACT-017]** Resolve completion profile semantics before any user-visible generic `done` behavior is accepted.
-- ⬜ **[B01-T01]** Activity domain/application validation tests.
-- ⬜ **[B01-T02]** Activity idempotency retry/collision tests.
-- ⬜ **[B01-T03]** Activity PostgreSQL persistence/integrity tests.
-- ⬜ **[B01-T04]** Activity API/integration tests.
-- ⬜ **[B01-T05]** Activity frontend Create/Planning Tray component tests.
-- ⬜ **[B01-T06]** E2E `+ → Activity → Planning Tray → reload` test.
-- ⬜ **[B01-T07]** Dirty-draft discard `!= delete/cancel Activity` regression test.
-- ⬜ **[B01-T08]** Manual `userTest` Activity creation/reload/error acceptance.
+- ✅ **[ACT-001]** Re-open Activity Domain/Logical/Physical authority before implementation. — Authority was re-read before B01 and the implementation stayed within Activity ownership boundaries.
+- ✅ **[ACT-002]** Resolve minimum meaningful Activity descriptive/actionable persistence. — B01 persists stable Activity intention identity plus bounded title/actionable descriptive state; no generic Task/status payload was introduced.
+- ✅ **[ACT-003]** Prove whether forward DDL is required; no speculative generic Task/status schema. — Real persistence gap was proven and forward Alembic `_19` added only `activity_intention`, `activity_create_operation` and governed create routine support.
+- ✅ **[ACT-004]** Implement stable Activity creation identity. — Canonical UUIDv7 Activity identity persists across reload/refetch.
+- ✅ **[ACT-005]** Implement idempotent `CreateActivity` application operation. — Operation identity/fingerprint/idempotent retry and collision behavior are covered by backend/PostgreSQL tests.
+- ✅ **[ACT-006]** Implement unplaced Activity as valid canonical state. — Activity can exist with no accepted Schedule and is not converted into a fake all-day/timed item.
+- ✅ **[ACT-007]** Implement real Planning Tray query for unplaced Activity. — Production Planning Tray consumes the real backend unplaced query and persisted Activity identity.
+- ✅ **[ACT-008]** Make `Activity` default selected macro-class in `+` Create. — Canonical Timeline `+` path defaults to Activity and manual/automated proof exercised it.
+- ✅ **[ACT-009]** Make Activity Create submit use real backend result. — Production create waits for the real governed backend effect; no local fake-success path remains.
+- ✅ **[ACT-010]** Preserve `draft != canonical Activity` behavior. — Manual dirty-draft discard and automated regression prove discarded draft state does not create/delete canonical Activity.
+- ✅ **[ACT-011]** Preserve Activity identity across reload/refetch. — Manual proof A and exact-head E2E retain the same canonical Activity once after reload.
+- ✅ **[ACT-012]** Ensure duplicate projection/refetch cannot duplicate Activity identity. — Planning Tray projection/refetch remained one card for one canonical Activity; automated regression passed.
+- ✅ **[ACT-013]** Preserve Activity `!= Event/Routine/Schedule/Session/Actual/Outcome/Goal/Plan` boundaries in implementation. — B01 activates only Activity intention; unsupported Event remains fail-closed and Schedule/Routine/Session/Actual/Outcome are not manufactured.
+- ✅ **[ACT-014]** Preserve repeated Activity UX as future Routine-backed semantics, not Activity-owned recurrence. — B01 introduces no Activity-owned recurrence or `repeat` persistence; future repeated-intent activation remains Routine-backed by binding semantic authority.
+- ✅ **[ACT-015]** Design/implement estimated effort when first required without equating it to scheduled/actual duration. — B01 applicability gate satisfied by explicit non-activation: the canonical unplaced path no longer exposes unsupported estimated effort, and normal runtime fails closed if non-baseline effort/duration intent is injected. Dedicated Activity effort semantics remain a future gate when first required.
+- ✅ **[ACT-016]** Design/implement semantic sub-Activity structure when first required, separate from Session splitting. — B01 applicability gate satisfied by non-activation: no sub-Activity schema/UI shortcut was introduced; future activation must reopen this semantic gate.
+- ✅ **[ACT-017]** Resolve completion profile semantics before any user-visible generic `done` behavior is accepted. — B01 accepts no generic `done`/completion behavior; completion-profile resolution remains a blocking future gate before such UI/persistence can be activated.
+- ✅ **[B01-T01]** Activity domain/application validation tests. — Final backend quality suite passed.
+- ✅ **[B01-T02]** Activity idempotency retry/collision tests. — Final backend/PostgreSQL suite passed.
+- ✅ **[B01-T03]** Activity PostgreSQL persistence/integrity tests. — Full PostgreSQL 18.6 acceptance passed with `_19` topology/Dictionary alignment.
+- ✅ **[B01-T04]** Activity API/integration tests. — Final API/application/backend suite passed.
+- ✅ **[B01-T05]** Activity frontend Create/Planning Tray component tests. — Frontend unit/contract/architecture/type/build gates passed on exact closure candidate.
+- ✅ **[B01-T06]** E2E `+ → Activity → Planning Tray → reload` test. — Real full-stack Chromium proof passed on exact closure candidate.
+- ✅ **[B01-T07]** Dirty-draft discard `!= delete/cancel Activity` regression test. — Manual proof B and automated regression passed.
+- ✅ **[B01-T08]** Manual `userTest` Activity creation/reload/error acceptance. — Real disposable-stack proofs A/B/C plus staged Event fail-closed check were reviewed; the user explicitly instructed B01 closure after the truthfulness repair. `B01 userTest — APPROVED` is recorded in the B01 userTest document.
+
+B00/B01 closure evidence is anchored by exact-head reconciliation run `34261607749` on `303e75c56716008bfc352e92411884760727e043`, which completed successfully across backend quality, full PostgreSQL 18.6 acceptance, frontend quality/build/mobile checks, B00 real full-stack Chromium, B01 real full-stack Chromium, frozen T1 Firefox and the aggregate reconciliation gate.
 
 ## 34.4 B02 — Schedule Core
 
@@ -3874,14 +3877,21 @@ These items span blocks and turn green only when their required implementing sli
 Current workstream state:
 
 ```text
-SEMANTIC MAP / AUDITS / ROADMAP          ✅ COMPLETE
-REAL PRODUCT IMPLEMENTATION              🟨 B00 IN PROGRESS
-B00 STRUCTURAL REAL-DATA CUTOVER         🟨 IMPLEMENTED / EXECUTION PROOFS PENDING
-B00 AUTOMATED TEST EXECUTION              🟨 NOT YET RUN IN AVAILABLE CONNECTOR SESSION
-B00 MANUAL userTest                       🟨 READY TO RUN / NOT YET APPROVED
-NEXT IMPLEMENTATION BLOCK                 B01 — ONLY AFTER B00 CLOSES
+SEMANTIC MAP / AUDITS / ROADMAP              ✅ COMPLETE
+B00 REAL DATA SPINE                          ✅ CLOSED
+B01 ACTIVITY CORE                            ✅ CLOSED
+CANDIDATE DATABASE                           ✅ PostgreSQL 18.6 / Alembic _19 / 91|5|19|77|177|95|275|0|0|0
+B00 MANUAL userTest                          ✅ APPROVED — 2026-09-08
+B01 MANUAL userTest                          ✅ APPROVED — 2026-09-08
+EXACT-HEAD RECONCILIATION                     ✅ run 34261607749 on 303e75c56716008bfc352e92411884760727e043
+EPHEMERAL B01 RECONCILIATION WORKFLOW         ✅ REMOVED IN B00/B01 CLOSURE
+NEXT IMPLEMENTATION BLOCK                     B02 — SCHEDULE CORE
 ```
 
-The first legitimate PostgreSQL-backed temporal **product** read/write is intentionally a B01 responsibility. B00 is not blocked by the absence of an Activity product row; it is blocked only by its still-unexecuted automated/manual acceptance gates.
+B00 established the truthful real-data spine: normal runtime no longer substitutes prototype Timeline data or fake persistence for backend truth. B01 established the first PostgreSQL-backed temporal product write/read path: one canonical unplaced Activity identity created through governed idempotent backend semantics and projected through the real Planning Tray.
+
+B01 deliberately did **not** implement Schedule, estimated effort, Event, Routine, Session, Actual, Outcome or generic completion. Those capabilities remain governed by their later roadmap gates. In particular, Planning Tray `list_unplaced()` is valid for B01 because no Schedule history exists yet; B02 must redefine “unplaced” as absence of a **current accepted placement**, not absence of any historical Schedule row.
+
+Before any B02 implementation write, re-open current Schedule Domain/Logical/Physical/CP6 authority and inspect the exact `_19` candidate plus current protected-main truth. The requested B02 briefing/gate occurs before code or schema changes.
 
 This ledger is intentionally verbose. Its purpose is to make omission visible: if a capability or required proof is not green, it is not done.

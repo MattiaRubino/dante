@@ -1,9 +1,12 @@
 # Timeline / Temporal-Operational — B00 isolated `userTest`
 
-- **Status:** READY TO RUN — NOT YET APPROVED
+- **Status:** APPROVED — 2026-09-08
 - **Workstream branch:** `feature/timeline-temporal-operational`
 - **Purpose:** manual B00 acceptance only
 - **Data class:** disposable synthetic test data; never personal/production data
+- **Manual evidence candidate:** `d421290491d3cd1b56f566f2915b61c8cd11f37a`
+- **Closure candidate:** `303e75c56716008bfc352e92411884760727e043`
+- **Exact-head automated reconciliation:** GitHub Actions run `34261607749` — SUCCESS on the closure candidate
 
 ## 1. Why this exists
 
@@ -167,16 +170,24 @@ docker ps -aq \
 
 Never use an unscoped `docker rm`/prune command as part of this protocol.
 
-## 8. Approval semantics
+## 8. Approval record
 
-Running the environment is not approval. Automated green is not manual approval. A PR merge is not manual approval.
+Manual acceptance was executed on the real disposable full-stack product surface on 2026-09-08.
 
-Record the manual result only after all three current proofs have been inspected on the current workstream candidate.
+Observed result:
 
-Approval token:
+```text
+Proof A — real authenticated empty Timeline                     PASS
+Proof B — unsupported Event Create remains fail-closed          PASS
+Proof C — PostgreSQL outage is truthful and Retry recovers      PASS
+```
+
+During the prolonged investigation of proof C, the synthetic harness session crossed its deliberately short idle-timeout window and produced an authentication `401`. Cookie/session/verifier integrity was checked, the temporal database was healthy after restart, and proof C was repeated within a fresh authenticated window; Retry then recovered correctly. That intermediate authentication expiry is not recorded as a temporal recovery failure. Any broader Access/Auth activity-refresh question remains a separate workstream concern and is not silently repaired by B00.
+
+The final closure candidate `303e75c56716008bfc352e92411884760727e043` subsequently passed the exact-head B00 real full-stack Chromium proof inside reconciliation run `34261607749`.
+
+Canonical approval result:
 
 ```text
 B00 userTest — APPROVED
 ```
-
-Until that explicit result is recorded, B00 manual acceptance remains open.

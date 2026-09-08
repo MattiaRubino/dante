@@ -1,9 +1,12 @@
 # Timeline / Temporal-Operational — B01 isolated `userTest`
 
-- **Status:** READY FOR MANUAL EXECUTION — NOT YET APPROVED
+- **Status:** APPROVED — 2026-09-08
 - **Workstream branch:** `feature/timeline-temporal-operational`
 - **Purpose:** manual B01 Activity acceptance only
 - **Data class:** disposable synthetic test data; never personal/production data
+- **Manual evidence candidate:** `d421290491d3cd1b56f566f2915b61c8cd11f37a`
+- **Closure candidate:** `303e75c56716008bfc352e92411884760727e043`
+- **Exact-head automated reconciliation:** GitHub Actions run `34261607749` — SUCCESS on the closure candidate
 
 ## 1. Why this exists
 
@@ -163,16 +166,27 @@ docker ps -aq \
 
 Do not use an unscoped prune/remove command.
 
-## 9. Approval semantics
+## 9. Approval record
 
-Automated E2E green is evidence, but it is not manual approval. Database/Dictionary reconciliation green is also automated engineering evidence, not user approval.
+Manual acceptance was executed on the real disposable full-stack product surface on 2026-09-08.
 
-Approve B01 manual acceptance only after proofs A, B, C and the staged macro-class check have been visually inspected on the current candidate.
+Observed result:
 
-Approval token:
+```text
+Proof A — canonical unplaced Activity create + reload             PASS
+Proof B — dirty draft discard != canonical Activity deletion      PASS
+Proof C — real PostgreSQL create failure stays failure            PASS
+Staged macro-class boundary — unsupported Event cannot fake save  PASS
+```
+
+The manual run exposed one truthfulness gap: the unplaced B01 path visibly carried a `Durata prevista` field even though B01 did not canonically persist estimated effort. That finding was repaired in closure candidate `303e75c56716008bfc352e92411884760727e043`: the unsupported field is no longer exposed on the canonical unplaced path and normal runtime fails closed if non-baseline effort/duration intent is injected. This repair did not activate Schedule or estimated-effort persistence.
+
+Because that repair occurred after the hands-on run, the manual evidence candidate remains `d421290491d3cd1b56f566f2915b61c8cd11f37a`; the repaired exact closure candidate was then exercised by the B01 real full-stack Chromium proof and the complete frontend/backend/PostgreSQL reconciliation in run `34261607749`, all successful. The user reviewed the manual findings and explicitly instructed B01 to be closed after the repair.
+
+Canonical approval result:
 
 ```text
 B01 userTest — APPROVED
 ```
 
-Until that explicit result is recorded, `[B01-T08]` remains open. Until both current-candidate engineering reconciliation and `[B01-T08]` are complete, B01 remains formally **IN PROGRESS** under the roadmap Definition of Done; do not label it green merely because an earlier targeted E2E passed.
+B01 is therefore eligible for formal ledger closure without pretending that estimated effort, Schedule, Event, Routine or Session were implemented by this block.
