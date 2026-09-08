@@ -42,7 +42,8 @@ function readCopy(language: string) {
   const english = language.toLowerCase().startsWith('en');
   return english
     ? Object.freeze({
-        description: 'Activities that exist but do not have an accepted Schedule.',
+        description:
+          'Activities that exist but do not have an accepted Schedule.',
         loading: 'Loading activities…',
         failed: 'Activities to place are unavailable.',
         retry: 'Retry',
