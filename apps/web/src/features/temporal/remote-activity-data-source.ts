@@ -1,0 +1,274 @@
+import { Temporal } from '@dante/time';
+
+import {
+  createWebFetch,
+  type DeviceTimeZoneResolver,
+} from '../../platform/api/web-fetch';
+import type {
+  TemporalActivityCreateRequest,
+  TemporalActivityCreateResult,
+  TemporalActivityDataSource,
+  TemporalActivityRecord,
+} from './activity-data-source';
+
+const SESSION_ENDPOINT = '/api/v1/auth/session';
+const ACTIVITY_ENDPOINT = '/api/v1/temporal/activities';
+const UNPLACED_ACTIVITY_ENDPOINT = '/api/v1/temporal/activities/unplaced';
+const CSRF_HEADER_NAME = 'X-Dante-CSRF';
+
+export type TemporalActivityRemoteFailureKind =
+  | 'transport'
+  | 'http'
+  | 'protocol'
+  | 'authentication';
+
+export class TemporalActivityRemoteError extends Error {
+  constructor(
+    readonly kind: TemporalActivityRemoteFailureKind,
+    message: string,
+    readonly status: number | null = null,
+    readonly code: string | null = null,
+  ) {
+    super(message);
+    this.name = 'TemporalActivityRemoteError';
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isAbortError(error: unknown): boolean {
+  return error instanceof DOMException && error.name === 'AbortError';
+}
+
+function requireExactKeys(
+  payload: Record<string, unknown>,
+  allowed: readonly string[],
+  label: string,
+): void {
+  const allowedKeys = new Set(allowed);
+  for (const key of Object.keys(payload)) {
+    if (!allowedKeys.has(key)) {
+      throw new TemporalActivityRemoteError(
+        'protocol',
+        `${label} contains unexpected field ${key}.`,
+      );
+    }
+  }
+}
+
+function parseUuidV7(value: unknown, field: string): string {
+  if (
+    typeof value !== 'string' ||
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      value,
+    )
+  ) {
+    throw new TemporalActivityRemoteError(
+      'protocol',
+      `${field} must be a canonical UUIDv7 string.`,
+    );
+  }
+  return value.toLowerCase();
+}
+
+function parseCreatedAt(value: unknown): ReturnType<typeof Temporal.Instant.from> {
+  if (typeof value !== 'string') {
+    throw new TemporalActivityRemoteError(
+      'protocol',
+      'created_at must be an absolute timestamp.',
+    );
+  }
+  try {
+    return Temporal.Instant.from(value);
+  } catch {
+    throw new TemporalActivityRemoteError(
+      'protocol',
+      'created_at must be an absolute timestamp.',
+    );
+  }
+}
+
+function parseActivity(
+  payload: unknown,
+  { allowReplay }: Readonly<{ allowReplay: boolean }>,
+): Readonly<{ activity: TemporalActivityRecord; replayed: boolean }> {
+  if (!isRecord(payload)) {
+    throw new TemporalActivityRemoteError(
+      'protocol',
+      'Activity response must be an object.',
+    );
+  }
+  requireExactKeys(
+    payload,
+    ['activity_ref', 'title', 'created_at', 'replayed'],
+    'Activity response',
+  );
+  if (typeof payload.title !== 'string' || payload.title.trim().length === 0) {
+    throw new TemporalActivityRemoteError(
+      'protocol',
+      'Activity title must be a non-empty string.',
+    );
+  }
+  if (typeof payload.replayed !== 'boolean') {
+    throw new TemporalActivityRemoteError(
+      'protocol',
+      'Activity replayed must be boolean.',
+    );
+  }
+  if (!allowReplay && payload.replayed) {
+    throw new TemporalActivityRemoteError(
+      'protocol',
+      'Read-only Activity projection cannot report a replay.',
+    );
+  }
+
+  return Object.freeze({
+    activity: Object.freeze({
+      activityRef: parseUuidV7(payload.activity_ref, 'activity_ref'),
+      title: payload.title,
+      createdAt: parseCreatedAt(payload.created_at),
+    }),
+    replayed: payload.replayed,
+  });
+}
+
+async function readJson(response: Response, label: string): Promise<unknown> {
+  try {
+    return await response.json();
+  } catch {
+    throw new TemporalActivityRemoteError(
+      'protocol',
+      `${label} is not valid JSON.`,
+      response.status,
+    );
+  }
+}
+
+function problemCode(payload: unknown): string | null {
+  return isRecord(payload) && typeof payload.code === 'string'
+    ? payload.code
+    : null;
+}
+
+async function requireOk(response: Response, label: string): Promise<unknown> {
+  const payload = await readJson(response, label);
+  if (!response.ok) {
+    throw new TemporalActivityRemoteError(
+      'http',
+      `${label} failed with HTTP ${response.status}.`,
+      response.status,
+      problemCode(payload),
+    );
+  }
+  return payload;
+}
+
+async function fetchResponse(
+  webFetch: typeof globalThis.fetch,
+  input: RequestInfo | URL,
+  init: RequestInit | undefined,
+): Promise<Response> {
+  try {
+    return await webFetch(input, init);
+  } catch (error) {
+    if (isAbortError(error)) {
+      throw error;
+    }
+    throw new TemporalActivityRemoteError(
+      'transport',
+      'Activity request could not reach DANTE.',
+    );
+  }
+}
+
+async function csrfToken(
+  webFetch: typeof globalThis.fetch,
+  signal?: AbortSignal,
+): Promise<string> {
+  const response = await fetchResponse(
+    webFetch,
+    SESSION_ENDPOINT,
+    signal === undefined ? undefined : { signal },
+  );
+  const payload = await requireOk(response, 'Auth session response');
+  if (
+    !isRecord(payload) ||
+    payload.authenticated !== true ||
+    typeof payload.csrf_token !== 'string' ||
+    payload.csrf_token.length === 0
+  ) {
+    throw new TemporalActivityRemoteError(
+      'authentication',
+      'Activity mutation requires an authenticated browser session.',
+      response.status,
+    );
+  }
+  return payload.csrf_token;
+}
+
+function validateCreateRequest(request: TemporalActivityCreateRequest): void {
+  const operationId = request.operationId.trim();
+  const title = request.title.trim();
+  if (!operationId || operationId.length > 200) {
+    throw new RangeError('Activity operation id must contain 1 to 200 characters.');
+  }
+  if (!title || title.length > 300) {
+    throw new RangeError('Activity title must contain 1 to 300 characters.');
+  }
+}
+
+export function createRemoteTemporalActivityDataSource(
+  fetchFn: typeof globalThis.fetch = globalThis.fetch,
+  resolveDeviceTimeZone?: DeviceTimeZoneResolver,
+): TemporalActivityDataSource {
+  const webFetch = createWebFetch(fetchFn, resolveDeviceTimeZone);
+
+  return Object.freeze({
+    async createActivity(
+      request: TemporalActivityCreateRequest,
+      signal?: AbortSignal,
+    ): Promise<TemporalActivityCreateResult> {
+      validateCreateRequest(request);
+      const csrf = await csrfToken(webFetch, signal);
+      const headers = new Headers({
+        'Content-Type': 'application/json',
+        [CSRF_HEADER_NAME]: csrf,
+      });
+      const response = await fetchResponse(webFetch, ACTIVITY_ENDPOINT, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          operation_id: request.operationId.trim(),
+          title: request.title.trim(),
+        }),
+        ...(signal === undefined ? {} : { signal }),
+      });
+      const payload = await requireOk(response, 'Create Activity response');
+      return parseActivity(payload, { allowReplay: true });
+    },
+
+    async loadUnplaced(signal?: AbortSignal): Promise<readonly TemporalActivityRecord[]> {
+      const response = await fetchResponse(
+        webFetch,
+        UNPLACED_ACTIVITY_ENDPOINT,
+        signal === undefined ? undefined : { signal },
+      );
+      const payload = await requireOk(response, 'Unplaced Activities response');
+      if (!isRecord(payload) || payload.kind !== 'unplaced' || !Array.isArray(payload.items)) {
+        throw new TemporalActivityRemoteError(
+          'protocol',
+          'Unplaced Activities response has an unsupported representation.',
+          response.status,
+        );
+      }
+      requireExactKeys(payload, ['kind', 'items'], 'Unplaced Activities response');
+      return Object.freeze(
+        payload.items.map(
+          (item) => parseActivity(item, { allowReplay: false }).activity,
+        ),
+      );
+    },
+  });
+}
