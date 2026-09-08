@@ -600,10 +600,7 @@ class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
       });
     }
     if (previousFingerprint === undefined) {
-      this.richOperationFingerprints.set(
-        prepared.operationId,
-        richFingerprint,
-      );
+      this.richOperationFingerprints.set(prepared.operationId, richFingerprint);
     }
 
     const result = await this.workspace.execute(prepared.command);
