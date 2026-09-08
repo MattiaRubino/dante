@@ -59,8 +59,7 @@ def test_timeline_query_is_half_open_and_bounded() -> None:
     with pytest.raises(TimelineWindowValidationError):
         TimelineWindowQuery(
             start_date=date(2026, 9, 1),
-            end_date_exclusive=date(2026, 9, 1)
-            + timedelta(days=MAX_TIMELINE_WINDOW_DAYS + 1),
+            end_date_exclusive=date(2026, 9, 1) + timedelta(days=MAX_TIMELINE_WINDOW_DAYS + 1),
         )
 
 
