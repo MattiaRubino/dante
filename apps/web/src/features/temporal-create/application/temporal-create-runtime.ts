@@ -9,9 +9,14 @@ import {
   temporalOperationId,
   temporalProjectionId,
   temporalValidationIssue,
+  type GetTemporalProjectionQuery,
+  type GetTemporalProjectionResult,
+  type ListTemporalProjectionsQuery,
+  type ListTemporalProjectionsResult,
   type TemporalActivityDataSource,
   type TemporalActivityRecord,
   type TemporalClock,
+  type TemporalCommand,
   type TemporalIdFactory,
   type TemporalOperationId,
   type TemporalOperationResult,
@@ -220,7 +225,9 @@ function unavailableResult(
   });
 }
 
-function b01ActivityIntentSupported(prepared: TemporalCreatePreparedOperation): boolean {
+function b01ActivityIntentSupported(
+  prepared: TemporalCreatePreparedOperation,
+): boolean {
   const specification = prepared.metadata.specification;
   const baseline = createTemporalCreateFields({
     date: specification.date,
@@ -238,8 +245,10 @@ function b01ActivityIntentSupported(prepared: TemporalCreatePreparedOperation): 
     specification.appearanceTone === null &&
     specification.eventRecurrence.patternKind === 'none' &&
     specification.scheduling.constraintKind === 'none' &&
-    JSON.stringify(specification.execution) === JSON.stringify(baseline.execution) &&
-    JSON.stringify(specification.confirmation) === JSON.stringify(baseline.confirmation)
+    JSON.stringify(specification.execution) ===
+      JSON.stringify(baseline.execution) &&
+    JSON.stringify(specification.confirmation) ===
+      JSON.stringify(baseline.confirmation)
   );
 }
 
@@ -268,7 +277,7 @@ function activityProjection(
 class RemoteActivityTemporalWorkspace implements TemporalWorkspacePort {
   public constructor(private readonly source: TemporalActivityDataSource) {}
 
-  public async execute(command: Parameters<TemporalWorkspacePort['execute']>[0]): Promise<TemporalOperationResult> {
+  public async execute(command: TemporalCommand): Promise<TemporalOperationResult> {
     if (
       command.type !== 'temporal.projection.create' ||
       command.payload.subject.kind !== 'activity' ||
@@ -331,9 +340,13 @@ class RemoteActivityTemporalWorkspace implements TemporalWorkspacePort {
     }
   }
 
-  public async query(
-    request: TemporalQuery,
-  ): Promise<TemporalQueryResult> {
+  public query(
+    request: GetTemporalProjectionQuery,
+  ): Promise<GetTemporalProjectionResult>;
+  public query(
+    request: ListTemporalProjectionsQuery,
+  ): Promise<ListTemporalProjectionsResult>;
+  public async query(request: TemporalQuery): Promise<TemporalQueryResult> {
     const records = await this.source.loadUnplaced();
     const projections = Object.freeze(
       records.map((activity) =>
@@ -645,43 +658,6 @@ class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
       }),
     );
   }
-}
-
-function createUnavailableTemporalWorkspace(): TemporalWorkspacePort {
-  const query = (request: TemporalQuery): Promise<TemporalQueryResult> => {
-    if (request.type === 'temporal.projection.get') {
-      return Promise.resolve(
-        Object.freeze({
-          type: 'temporal.projection.get' as const,
-          status: 'not-found' as const,
-        }),
-      );
-    }
-    return Promise.resolve(
-      Object.freeze({
-        type: 'temporal.projection.list' as const,
-        status: 'ok' as const,
-        snapshot: Object.freeze({
-          revision: 0,
-          items: Object.freeze([]),
-        }),
-      }),
-    );
-  };
-
-  const workspace: TemporalWorkspacePort = {
-    execute: (command) =>
-      Promise.resolve(
-        unavailableResult(
-          command.operationId,
-          'temporal.create.backend_unavailable',
-        ),
-      ),
-    query: query as TemporalWorkspacePort['query'],
-    subscribe: () => () => undefined,
-  };
-
-  return Object.freeze(workspace);
 }
 
 export type TemporalCreateRuntimeOptions = Readonly<{
