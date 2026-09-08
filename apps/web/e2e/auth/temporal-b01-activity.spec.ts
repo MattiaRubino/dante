@@ -37,7 +37,7 @@ async function signIn(page: Page, email: string): Promise<void> {
       response.url().endsWith('/api/v1/auth/signin') &&
       response.request().method() === 'POST',
   );
-  await page.getByRole('button', { name: 'Continua', exact: true }).click();
+  await page.getByRole('button', { name: 'Accedi', exact: true }).click();
   expect((await responsePromise).status()).toBe(200);
   await expect(
     page.getByRole('heading', { level: 1, name: 'Accesso confermato' }),
