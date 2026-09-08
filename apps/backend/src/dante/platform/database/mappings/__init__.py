@@ -5,6 +5,7 @@ from typing import cast
 from sqlalchemy import Table
 
 from . import (
+    activity,
     actual,
     addressing,
     application_context,
@@ -42,6 +43,8 @@ MAPPED_TABLES: tuple[Table, ...] = cast(
         lifecycle.MaterialStateRetirementRow.__table__,
         addressing.NativeCurrentMaterialStateRow.__table__,
         addressing.ScopedCurrentMaterialStateRow.__table__,
+        activity.ActivityIntentionRow.__table__,
+        activity.ActivityCreateOperationRow.__table__,
         schedule.ScheduleRow.__table__,
         actual.ActualRow.__table__,
         schedule.SchedulePlacementStateRow.__table__,
