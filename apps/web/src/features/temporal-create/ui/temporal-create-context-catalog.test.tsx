@@ -26,7 +26,9 @@ describe('Temporal Create context catalog runtime boundary', () => {
     expect(temporalCreateLocalContextAuthoringEnabled('development')).toBe(
       false,
     );
-    expect(temporalCreateLocalContextAuthoringEnabled('production')).toBe(false);
+    expect(temporalCreateLocalContextAuthoringEnabled('production')).toBe(
+      false,
+    );
   });
 
   it('does not expose the local context creator in production runtime', () => {
