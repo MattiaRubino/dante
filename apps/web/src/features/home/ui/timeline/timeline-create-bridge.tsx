@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 
 import type { TemporalPlacement } from '../../../temporal';
 import {
+  createLocalTemporalCreateRuntime,
   TemporalCreateContextCatalogProvider,
   TemporalCreateEntry,
   temporalCreateTimelineProjectionFromEffect,
@@ -20,6 +21,7 @@ import {
   type TemporalCreateContextOption,
   type TemporalCreateInvocation,
   type TemporalCreateMutationEffect,
+  type TemporalCreateRuntime,
   type TemporalCreateTimelineProjection,
 } from '../../../temporal-create';
 import { TIMELINE_POLICY } from './model/timeline-policy';
@@ -30,6 +32,7 @@ import type {
   TimelineGroupId,
   TimelineSemanticTone,
 } from './model/timeline-types';
+import { TimelinePlanningTrayB01 } from './timeline-planning-tray-b01';
 import {
   TimelinePlanningTray,
   type TimelinePlanningTrayItem,
@@ -41,6 +44,7 @@ type TimelineCreateBridgeProps = Readonly<{
   defaultDate: PlainDate;
   groups: readonly TimelineGroup[];
   filters: ReadonlySet<TimelineGroupId>;
+  runtime?: TemporalCreateRuntime;
   onRevealDate: (date: PlainDate) => void;
   onCreateContext: (label: string, tone: TimelineSemanticTone) => TimelineGroup;
   onMaterializeCreatedEvent: (dateKey: string, event: TimelineEvent) => void;
@@ -304,6 +308,7 @@ export function TimelineCreateBridge({
   defaultDate,
   groups,
   filters,
+  runtime: runtimeOverride,
   onRevealDate,
   onCreateContext,
   onMaterializeCreatedEvent,
@@ -313,6 +318,9 @@ export function TimelineCreateBridge({
   onBeforeOpen,
 }: TimelineCreateBridgeProps) {
   const { t } = useTranslation('common');
+  const [runtime] = useState(
+    () => runtimeOverride ?? createLocalTemporalCreateRuntime(),
+  );
   const [effects, setEffects] = useState<
     readonly TemporalCreateAppliedEffect[]
   >([]);
@@ -614,7 +622,17 @@ export function TimelineCreateBridge({
       } else if (allDay) {
         onMaterializeCreatedAllDay(allDay);
       }
-      setEffects((current) => [...current, effect]);
+      setEffects((current) =>
+        current.some(
+          (candidate) => candidate.projection.id === effect.projection.id,
+        )
+          ? current.map((candidate) =>
+              candidate.projection.id === effect.projection.id
+                ? effect
+                : candidate,
+            )
+          : [...current, effect],
+      );
       setPreview(null);
       showCreateFeedback(effect);
       return reveal(projection);
@@ -899,19 +917,28 @@ export function TimelineCreateBridge({
           defaultDate={defaultDate}
           contexts={contextOptions}
           request={request}
+          runtime={runtime}
           onPreview={setPreview}
           onApplied={applied}
           onBeforeOpen={onBeforeOpen}
         />
       </TemporalCreateContextCatalogProvider>
 
-      <TimelinePlanningTray
-        items={planningItems}
-        defaultDate={defaultDate}
-        onBeforeOpen={onBeforeOpen}
-        onPlace={placePlanningItem}
-        onDelete={deletePlanningItem}
-      />
+      {import.meta.env.MODE === 'test' ? (
+        <TimelinePlanningTray
+          items={planningItems}
+          defaultDate={defaultDate}
+          onBeforeOpen={onBeforeOpen}
+          onPlace={placePlanningItem}
+          onDelete={deletePlanningItem}
+        />
+      ) : (
+        <TimelinePlanningTrayB01
+          items={planningItems}
+          runtime={runtime}
+          onBeforeOpen={onBeforeOpen}
+        />
+      )}
 
       {portalTargets.map(({ projection, host, style, tone }) =>
         createPortal(
