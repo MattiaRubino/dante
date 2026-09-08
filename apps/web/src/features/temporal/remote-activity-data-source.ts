@@ -73,7 +73,9 @@ function parseUuidV7(value: unknown, field: string): string {
   return value.toLowerCase();
 }
 
-function parseCreatedAt(value: unknown): ReturnType<typeof Temporal.Instant.from> {
+function parseCreatedAt(
+  value: unknown,
+): ReturnType<typeof Temporal.Instant.from> {
   if (typeof value !== 'string') {
     throw new TemporalActivityRemoteError(
       'protocol',
@@ -212,7 +214,9 @@ function validateCreateRequest(request: TemporalActivityCreateRequest): void {
   const operationId = request.operationId.trim();
   const title = request.title.trim();
   if (!operationId || operationId.length > 200) {
-    throw new RangeError('Activity operation id must contain 1 to 200 characters.');
+    throw new RangeError(
+      'Activity operation id must contain 1 to 200 characters.',
+    );
   }
   if (!title || title.length > 300) {
     throw new RangeError('Activity title must contain 1 to 300 characters.');
@@ -249,21 +253,31 @@ export function createRemoteTemporalActivityDataSource(
       return parseActivity(payload, { allowReplay: true });
     },
 
-    async loadUnplaced(signal?: AbortSignal): Promise<readonly TemporalActivityRecord[]> {
+    async loadUnplaced(
+      signal?: AbortSignal,
+    ): Promise<readonly TemporalActivityRecord[]> {
       const response = await fetchResponse(
         webFetch,
         UNPLACED_ACTIVITY_ENDPOINT,
         signal === undefined ? undefined : { signal },
       );
       const payload = await requireOk(response, 'Unplaced Activities response');
-      if (!isRecord(payload) || payload.kind !== 'unplaced' || !Array.isArray(payload.items)) {
+      if (
+        !isRecord(payload) ||
+        payload.kind !== 'unplaced' ||
+        !Array.isArray(payload.items)
+      ) {
         throw new TemporalActivityRemoteError(
           'protocol',
           'Unplaced Activities response has an unsupported representation.',
           response.status,
         );
       }
-      requireExactKeys(payload, ['kind', 'items'], 'Unplaced Activities response');
+      requireExactKeys(
+        payload,
+        ['kind', 'items'],
+        'Unplaced Activities response',
+      );
       return Object.freeze(
         payload.items.map(
           (item) => parseActivity(item, { allowReplay: false }).activity,
