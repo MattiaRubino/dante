@@ -1,13 +1,18 @@
-"""FastAPI dependency for authenticated DANTE application context."""
+"""FastAPI dependencies for authenticated DANTE application context."""
 
 from typing import Annotated, cast
 
 from fastapi import Depends, Request
 
-from dante.auth.contracts import AuthServiceUnavailableError
+from dante.auth.contracts import AdmittedSession, AuthServiceUnavailableError
 from dante.auth.dependencies import get_auth_service, single_header_value
 from dante.auth.service import AuthService
-from dante.auth.sessions import AmbiguousSessionCookieError, session_cookie_value
+from dante.auth.sessions import (
+    CSRF_HEADER_NAME,
+    AmbiguousSessionCookieError,
+    csrf_token_matches,
+    session_cookie_value,
+)
 from dante.context.contracts import DanteContext, DanteContextIntegrityError
 from dante.context.service import DanteContextService
 from dante.platform.database.runtime import DatabaseRuntime
@@ -31,12 +36,10 @@ DanteContextServiceDependency = Annotated[
 ]
 
 
-async def require_dante_context(
+async def _require_admitted_session(
     request: Request,
-    auth_service: AuthServiceDependency,
-    context_service: DanteContextServiceDependency,
-) -> DanteContext:
-    """Require an admitted AuthSession and resolve its DANTE-facing application context."""
+    auth_service: AuthService,
+) -> AdmittedSession:
     try:
         cookie_value = session_cookie_value(list(request.scope.get("headers", [])))
     except AmbiguousSessionCookieError as exc:
@@ -56,7 +59,15 @@ async def require_dante_context(
 
     if admitted is None:
         raise _authentication_required()
+    return admitted
 
+
+async def _resolve_dante_context(
+    *,
+    request: Request,
+    admitted: AdmittedSession,
+    context_service: DanteContextService,
+) -> DanteContext:
     device_zone_id = single_header_value(request.scope, DANTE_TIME_ZONE_HEADER_NAME)
     try:
         return await context_service.resolve(
@@ -90,6 +101,47 @@ async def require_dante_context(
             detail="The authenticated DANTE context could not be resolved safely.",
             retryable=False,
         ) from exc
+
+
+async def require_dante_context(
+    request: Request,
+    auth_service: AuthServiceDependency,
+    context_service: DanteContextServiceDependency,
+) -> DanteContext:
+    """Require an admitted AuthSession and resolve its DANTE-facing application context."""
+    admitted = await _require_admitted_session(request, auth_service)
+    return await _resolve_dante_context(
+        request=request,
+        admitted=admitted,
+        context_service=context_service,
+    )
+
+
+async def require_mutating_dante_context(
+    request: Request,
+    auth_service: AuthServiceDependency,
+    context_service: DanteContextServiceDependency,
+) -> DanteContext:
+    """Require AuthSession + CSRF evidence before resolving a mutating DANTE context."""
+    admitted = await _require_admitted_session(request, auth_service)
+    if not csrf_token_matches(
+        admitted.csrf_token,
+        single_header_value(request.scope, CSRF_HEADER_NAME),
+    ):
+        raise ProblemError(
+            status=403,
+            code="security.csrf_failed",
+            category="security",
+            title="Request rejected",
+            detail="The request could not satisfy the browser security policy.",
+            retryable=False,
+        )
+
+    return await _resolve_dante_context(
+        request=request,
+        admitted=admitted,
+        context_service=context_service,
+    )
 
 
 def _authentication_required() -> ProblemError:
