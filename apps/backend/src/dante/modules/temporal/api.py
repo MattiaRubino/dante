@@ -18,8 +18,12 @@ from dante.modules.temporal.activity import (
     ActivityView,
     TemporalActivityApplication,
 )
-from dante.modules.temporal.application import TemporalTimelineApplication
+from dante.modules.temporal.application import (
+    TemporalTimelineApplication,
+    TimelinePersistenceError,
+)
 from dante.modules.temporal.contracts import TimelineWindowQuery, TimelineWindowValidationError
+from dante.modules.temporal.schedule import FloatingLocalIntervalPlacement, ScheduleInputError
 from dante.platform.database.references import NativeRef
 from dante.platform.database.runtime import DatabaseRuntime
 from dante.platform.http.problem import ProblemError
@@ -30,11 +34,10 @@ MutatingDanteContextDependency = Annotated[
     DanteContext,
     Depends(require_mutating_dante_context),
 ]
-_TIMELINE_APPLICATION = TemporalTimelineApplication()
 
 
-class TimelineWindowResponse(BaseModel):
-    """B00 transport contract for a truthful empty authenticated Timeline window."""
+class TimelineWindowEmptyResponse(BaseModel):
+    """Truthful authenticated Timeline window with no activated current items."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -44,13 +47,63 @@ class TimelineWindowResponse(BaseModel):
     effective_zone_id: str
 
 
+class TimelineScheduledActivityResponse(BaseModel):
+    """Current accepted B02-A Schedule projection for one Activity."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["scheduled_activity"] = "scheduled_activity"
+    activity_ref: UUID
+    schedule_ref: UUID
+    placement_material_state_ref: UUID
+    title: str
+    temporal_form: Literal["floating_local"] = "floating_local"
+    starts_local_at: datetime
+    ends_local_at: datetime
+
+
+class TimelineWindowItemsResponse(BaseModel):
+    """Populated authenticated Timeline window."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["window"] = "window"
+    start_date: date
+    end_date_exclusive: date
+    effective_zone_id: str
+    items: list[TimelineScheduledActivityResponse]
+
+
+TimelineWindowResponse = TimelineWindowEmptyResponse | TimelineWindowItemsResponse
+
+
 class CreateActivityRequest(BaseModel):
-    """Minimum B01 CreateActivity command; placement and lifecycle state are not Activity fields."""
+    """Minimum B01 CreateActivity command; placement is not an Activity field."""
 
     model_config = ConfigDict(extra="forbid")
 
     operation_id: str = Field(min_length=1, max_length=200)
     title: str = Field(min_length=1, max_length=300)
+
+
+class FloatingLocalIntervalPlacementRequest(BaseModel):
+    """First lossless accepted Schedule transport form activated by B02-A."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["floating_local_interval"] = "floating_local_interval"
+    starts_local_at: datetime
+    ends_local_at: datetime
+
+
+class CreateScheduledActivityRequest(BaseModel):
+    """Atomic Activity + accepted Schedule authoring command for B02-A."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    operation_id: str = Field(min_length=1, max_length=200)
+    title: str = Field(min_length=1, max_length=300)
+    placement: FloatingLocalIntervalPlacementRequest
 
 
 class ActivityResponse(BaseModel):
@@ -61,6 +114,22 @@ class ActivityResponse(BaseModel):
     activity_ref: UUID
     title: str
     created_at: datetime
+    replayed: bool = False
+
+
+class ScheduledActivityResponse(BaseModel):
+    """Canonical Activity plus the first accepted Schedule/current placement."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    activity_ref: UUID
+    title: str
+    created_at: datetime
+    schedule_ref: UUID
+    placement_material_state_ref: UUID
+    temporal_form: Literal["floating_local"] = "floating_local"
+    starts_local_at: datetime
+    ends_local_at: datetime
     replayed: bool = False
 
 
@@ -79,9 +148,19 @@ def get_temporal_activity_application(request: Request) -> TemporalActivityAppli
     return TemporalActivityApplication(database_runtime.session_factory)
 
 
+def get_temporal_timeline_application(request: Request) -> TemporalTimelineApplication:
+    """Resolve the Timeline application boundary from the process-scoped DB runtime."""
+    database_runtime = cast(DatabaseRuntime, request.app.state.database_runtime)
+    return TemporalTimelineApplication(database_runtime.session_factory)
+
+
 TemporalActivityApplicationDependency = Annotated[
     TemporalActivityApplication,
     Depends(get_temporal_activity_application),
+]
+TemporalTimelineApplicationDependency = Annotated[
+    TemporalTimelineApplication,
+    Depends(get_temporal_timeline_application),
 ]
 
 
@@ -97,6 +176,7 @@ def _activity_response(activity: ActivityView, *, replayed: bool = False) -> Act
 @router.get("/timeline/window", response_model=TimelineWindowResponse)
 async def get_timeline_window(
     context: DanteContextDependency,
+    application: TemporalTimelineApplicationDependency,
     response: Response,
     start_date: date,
     end_date_exclusive: date,
@@ -119,11 +199,40 @@ async def get_timeline_window(
             retryable=False,
         ) from exc
 
-    result = _TIMELINE_APPLICATION.read_window(query=query, context=context)
-    return TimelineWindowResponse(
+    try:
+        result = await application.read_window(query=query, context=context)
+    except TimelinePersistenceError as exc:
+        raise ProblemError(
+            status=503,
+            code="temporal.timeline.read_unavailable",
+            category="service",
+            title="Timeline unavailable",
+            detail="The Timeline could not be read safely.",
+            retryable=True,
+        ) from exc
+
+    if not result.items:
+        return TimelineWindowEmptyResponse(
+            start_date=result.start_date,
+            end_date_exclusive=result.end_date_exclusive,
+            effective_zone_id=result.effective_zone_id,
+        )
+
+    return TimelineWindowItemsResponse(
         start_date=result.start_date,
         end_date_exclusive=result.end_date_exclusive,
         effective_zone_id=result.effective_zone_id,
+        items=[
+            TimelineScheduledActivityResponse(
+                activity_ref=item.activity_ref,
+                schedule_ref=item.schedule_ref,
+                placement_material_state_ref=item.placement_material_state_ref,
+                title=item.title,
+                starts_local_at=item.starts_local_at,
+                ends_local_at=item.ends_local_at,
+            )
+            for item in result.items
+        ],
     )
 
 
@@ -177,6 +286,72 @@ async def create_activity(
     if result.replayed:
         response.status_code = 200
     return _activity_response(result.activity, replayed=result.replayed)
+
+
+@router.post(
+    "/activities/scheduled",
+    response_model=ScheduledActivityResponse,
+    status_code=201,
+)
+async def create_scheduled_activity(
+    payload: CreateScheduledActivityRequest,
+    context: MutatingDanteContextDependency,
+    application: TemporalActivityApplicationDependency,
+    response: Response,
+) -> ScheduledActivityResponse:
+    """Create Activity + first accepted Schedule atomically for the B02-A subset."""
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        placement = FloatingLocalIntervalPlacement(
+            starts_local_at=payload.placement.starts_local_at,
+            ends_local_at=payload.placement.ends_local_at,
+        )
+        result = await application.create_activity_with_floating_schedule(
+            self_person_ref=context.self_person_ref,
+            operation_id=payload.operation_id,
+            title=payload.title,
+            placement=placement,
+        )
+    except (ActivityInputError, ScheduleInputError) as exc:
+        raise ProblemError(
+            status=422,
+            code="temporal.schedule.invalid_establish",
+            category="validation",
+            title="Invalid Schedule",
+            detail=str(exc),
+            retryable=False,
+        ) from exc
+    except ActivityOperationIdReuseError as exc:
+        raise ProblemError(
+            status=409,
+            code="temporal.schedule.operation_id_reused",
+            category="conflict",
+            title="Schedule operation conflict",
+            detail="The operation id was already used for a different temporal intent.",
+            retryable=False,
+        ) from exc
+    except ActivityPersistenceError as exc:
+        raise ProblemError(
+            status=503,
+            code="temporal.schedule.persistence_unavailable",
+            category="service",
+            title="Schedule unavailable",
+            detail="The Activity and Schedule could not be persisted atomically.",
+            retryable=True,
+        ) from exc
+
+    if result.replayed:
+        response.status_code = 200
+    return ScheduledActivityResponse(
+        activity_ref=result.activity.activity_ref,
+        title=result.activity.title,
+        created_at=result.activity.created_at,
+        schedule_ref=result.schedule.schedule_ref,
+        placement_material_state_ref=result.schedule.material_state_ref,
+        starts_local_at=result.schedule.placement.starts_local_at,
+        ends_local_at=result.schedule.placement.ends_local_at,
+        replayed=result.replayed,
+    )
 
 
 @router.get("/activities/unplaced", response_model=UnplacedActivitiesResponse)

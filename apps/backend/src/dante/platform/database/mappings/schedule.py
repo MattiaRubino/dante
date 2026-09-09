@@ -2,7 +2,15 @@
 
 from datetime import date, datetime
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKeyConstraint, Index, Text, text
+from sqlalchemy import (
+    CheckConstraint,
+    DateTime,
+    ForeignKeyConstraint,
+    Index,
+    Text,
+    UniqueConstraint,
+    text,
+)
 from sqlalchemy.dialects.postgresql import DATERANGE, Range
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -33,6 +41,79 @@ class ScheduleRow(Base):
 
     schedule_ref: Mapped[ScopedRecordRef] = mapped_column(primary_key=True)
     subject_native_ref: Mapped[NativeRef] = mapped_column(nullable=False)
+
+
+class ScheduleEstablishOperationRow(Base):
+    """Idempotency receipt for one self-scoped accepted Schedule establishment."""
+
+    __tablename__ = "schedule_establish_operation"
+    __table_args__ = (
+        CheckConstraint(
+            "operation_id=btrim(operation_id) AND operation_id<>'' "
+            "AND char_length(operation_id)<=200",
+            name="operation_id",
+        ),
+        CheckConstraint(
+            "intent_fingerprint ~ '^[0-9a-f]{64}$'",
+            name="fingerprint",
+        ),
+        ForeignKeyConstraint(
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
+            name="fk_schedule_establish_operation_self_person_ref_person",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
+        ),
+        ForeignKeyConstraint(
+            ["subject_native_ref"],
+            ["dante.native_address.native_ref"],
+            name="fk_schedule_establish_operation_subject_native_ref_native_address",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
+        ),
+        ForeignKeyConstraint(
+            ["schedule_ref"],
+            ["dante.schedule.schedule_ref"],
+            name="fk_schedule_establish_operation_schedule_ref_schedule",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
+        ),
+        ForeignKeyConstraint(
+            ["material_state_ref"],
+            ["dante.schedule_placement_state.material_state_ref"],
+            name="fk_schedule_establish_operation_material_state_ref_placement_state",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
+        ),
+        UniqueConstraint(
+            "schedule_ref",
+            name="uq_schedule_establish_operation_schedule_ref",
+        ),
+        UniqueConstraint(
+            "material_state_ref",
+            name="uq_schedule_establish_operation_material_state_ref",
+        ),
+        Index(
+            "ix_schedule_establish_operation_subject_native_ref",
+            "subject_native_ref",
+        ),
+    )
+
+    self_person_ref: Mapped[NativeRef] = mapped_column(primary_key=True)
+    operation_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    intent_fingerprint: Mapped[str] = mapped_column(Text, nullable=False)
+    subject_native_ref: Mapped[NativeRef] = mapped_column(nullable=False)
+    schedule_ref: Mapped[ScopedRecordRef] = mapped_column(nullable=False)
+    material_state_ref: Mapped[MaterialStateRef] = mapped_column(nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
 
 class SchedulePlacementStateRow(Base):

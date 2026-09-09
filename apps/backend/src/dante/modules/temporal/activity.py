@@ -1,4 +1,4 @@
-"""B01 Activity application operations over canonical PostgreSQL state."""
+"""B01/B02 Activity application operations over canonical PostgreSQL state."""
 
 from __future__ import annotations
 
@@ -9,16 +9,27 @@ from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy import select, text
+from sqlalchemy.engine import RowMapping
 from sqlalchemy.exc import DBAPIError, IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from dante.modules.temporal.schedule import (
+    EstablishedScheduleView,
+    FloatingLocalIntervalPlacement,
+    ScheduleInputError,
+    ScheduleOperationIdReuseError,
+    establish_floating_schedule_in_session,
+)
 from dante.platform.database.mappings.activity import ActivityIntentionRow
-from dante.platform.database.mappings.schedule import ScheduleRow
+from dante.platform.database.mappings.schedule import (
+    ScheduleEstablishOperationRow,
+    ScheduleRow,
+)
 from dante.platform.database.references import NativeRef, new_native_ref
 
 
 class ActivityInputError(ValueError):
-    """The requested Activity cannot be admitted by the B01 contract."""
+    """The requested Activity cannot be admitted by the activated contract."""
 
 
 class ActivityOperationIdReuseError(RuntimeError):
@@ -31,7 +42,7 @@ class ActivityPersistenceError(RuntimeError):
 
 @dataclass(frozen=True, slots=True)
 class ActivityView:
-    """Application projection of the minimum B01 Activity state."""
+    """Application projection of the minimum Activity state."""
 
     activity_ref: NativeRef
     title: str
@@ -43,6 +54,15 @@ class CreateActivityResult:
     """Canonical create result, including truthful idempotent replay state."""
 
     activity: ActivityView
+    replayed: bool
+
+
+@dataclass(frozen=True, slots=True)
+class CreateScheduledActivityResult:
+    """Atomic Activity + accepted Schedule authoring result for B02-A."""
+
+    activity: ActivityView
+    schedule: EstablishedScheduleView
     replayed: bool
 
 
@@ -77,24 +97,30 @@ def _constraint_name(exc: IntegrityError) -> str | None:
     return value if isinstance(value, str) else None
 
 
+def _activity_from_row(row: RowMapping) -> ActivityView:
+    return ActivityView(
+        activity_ref=NativeRef(UUID(str(row["activity_ref"]))),
+        title=str(row["title"]),
+        created_at=row["created_at"],
+    )
+
+
 class TemporalActivityApplication:
     """Transaction-owning Activity operations; adapters never commit independently."""
 
     def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
         self._session_factory = session_factory
 
-    async def create_activity(
+    async def _execute_create_activity(
         self,
+        database_session: AsyncSession,
         *,
         self_person_ref: NativeRef,
         operation_id: str,
         title: str,
+        requested_activity_ref: NativeRef,
     ) -> CreateActivityResult:
-        normalized_title = _normalize_title(title)
-        normalized_operation_id = _normalize_operation_id(operation_id)
-        fingerprint = _intent_fingerprint(title=normalized_title)
-        activity_ref = new_native_ref()
-
+        fingerprint = _intent_fingerprint(title=title)
         statement = text(
             """
             SELECT activity_ref, title, created_at, replayed
@@ -107,27 +133,49 @@ class TemporalActivityApplication:
             )
             """
         )
+        row = (
+            (
+                await database_session.execute(
+                    statement,
+                    {
+                        "self_person_ref": self_person_ref,
+                        "operation_id": operation_id,
+                        "intent_fingerprint": fingerprint,
+                        "activity_ref": requested_activity_ref,
+                        "title": title,
+                    },
+                )
+            )
+            .mappings()
+            .one()
+        )
+        return CreateActivityResult(
+            activity=_activity_from_row(row),
+            replayed=bool(row["replayed"]),
+        )
+
+    async def create_activity(
+        self,
+        *,
+        self_person_ref: NativeRef,
+        operation_id: str,
+        title: str,
+    ) -> CreateActivityResult:
+        normalized_title = _normalize_title(title)
+        normalized_operation_id = _normalize_operation_id(operation_id)
+        activity_ref = new_native_ref()
 
         try:
             async with (
                 self._session_factory() as database_session,
                 database_session.begin(),
             ):
-                row = (
-                    (
-                        await database_session.execute(
-                            statement,
-                            {
-                                "self_person_ref": self_person_ref,
-                                "operation_id": normalized_operation_id,
-                                "intent_fingerprint": fingerprint,
-                                "activity_ref": activity_ref,
-                                "title": normalized_title,
-                            },
-                        )
-                    )
-                    .mappings()
-                    .one()
+                return await self._execute_create_activity(
+                    database_session,
+                    self_person_ref=self_person_ref,
+                    operation_id=normalized_operation_id,
+                    title=normalized_title,
+                    requested_activity_ref=activity_ref,
                 )
         except IntegrityError as exc:
             if _constraint_name(exc) == "pk_activity_create_operation":
@@ -138,14 +186,81 @@ class TemporalActivityApplication:
         except SQLAlchemyError as exc:
             raise ActivityPersistenceError() from exc
 
-        return CreateActivityResult(
-            activity=ActivityView(
-                activity_ref=NativeRef(UUID(str(row["activity_ref"]))),
-                title=str(row["title"]),
-                created_at=row["created_at"],
-            ),
-            replayed=bool(row["replayed"]),
-        )
+    async def create_activity_with_floating_schedule(
+        self,
+        *,
+        self_person_ref: NativeRef,
+        operation_id: str,
+        title: str,
+        placement: FloatingLocalIntervalPlacement,
+    ) -> CreateScheduledActivityResult:
+        """Create Activity and first accepted Schedule atomically for the B02-A form subset."""
+        normalized_title = _normalize_title(title)
+        normalized_operation_id = _normalize_operation_id(operation_id)
+        if placement.starts_local_at.date() != placement.ends_local_at.date():
+            raise ActivityInputError(
+                "B02-A currently activates only same-local-day floating Schedule intervals."
+            )
+        activity_ref = new_native_ref()
+
+        try:
+            async with (
+                self._session_factory() as database_session,
+                database_session.begin(),
+            ):
+                activity_result = await self._execute_create_activity(
+                    database_session,
+                    self_person_ref=self_person_ref,
+                    operation_id=normalized_operation_id,
+                    title=normalized_title,
+                    requested_activity_ref=activity_ref,
+                )
+
+                if activity_result.replayed:
+                    existing_schedule_receipt = await database_session.scalar(
+                        select(ScheduleEstablishOperationRow.schedule_ref).where(
+                            ScheduleEstablishOperationRow.self_person_ref == self_person_ref,
+                            ScheduleEstablishOperationRow.operation_id
+                            == normalized_operation_id,
+                        )
+                    )
+                    if existing_schedule_receipt is None:
+                        raise ActivityOperationIdReuseError()
+
+                schedule_result = await establish_floating_schedule_in_session(
+                    database_session,
+                    self_person_ref=self_person_ref,
+                    operation_id=normalized_operation_id,
+                    subject_native_ref=activity_result.activity.activity_ref,
+                    placement=placement,
+                )
+                if activity_result.replayed is not schedule_result.replayed:
+                    raise ActivityPersistenceError(
+                        "Activity and Schedule operation receipts diverged."
+                    )
+
+                return CreateScheduledActivityResult(
+                    activity=activity_result.activity,
+                    schedule=schedule_result,
+                    replayed=activity_result.replayed,
+                )
+        except ActivityOperationIdReuseError:
+            raise
+        except ScheduleOperationIdReuseError as exc:
+            raise ActivityOperationIdReuseError() from exc
+        except ScheduleInputError as exc:
+            raise ActivityInputError(str(exc)) from exc
+        except IntegrityError as exc:
+            if _constraint_name(exc) in {
+                "pk_activity_create_operation",
+                "pk_schedule_establish_operation",
+            }:
+                raise ActivityOperationIdReuseError() from exc
+            raise ActivityPersistenceError() from exc
+        except DBAPIError as exc:
+            raise ActivityPersistenceError() from exc
+        except SQLAlchemyError as exc:
+            raise ActivityPersistenceError() from exc
 
     async def list_unplaced(
         self,
