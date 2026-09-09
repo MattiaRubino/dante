@@ -12,6 +12,7 @@ import type {
   TemporalScheduledActivityCreateRequest,
   TemporalScheduledActivityCreateResult,
 } from './activity-data-source';
+import { invalidateTemporalTimelineRead } from './timeline-invalidation';
 
 const SESSION_ENDPOINT = '/api/v1/auth/session';
 const ACTIVITY_ENDPOINT = '/api/v1/temporal/activities';
@@ -404,7 +405,9 @@ export function createRemoteTemporalActivityDataSource(
         response,
         'Create Scheduled Activity response',
       );
-      return parseScheduledActivity(payload);
+      const result = parseScheduledActivity(payload);
+      invalidateTemporalTimelineRead();
+      return result;
     },
 
     async loadUnplaced(
