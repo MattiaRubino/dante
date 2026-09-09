@@ -21,10 +21,7 @@ from dante.modules.temporal.schedule import (
     establish_floating_schedule_in_session,
 )
 from dante.platform.database.mappings.activity import ActivityIntentionRow
-from dante.platform.database.mappings.schedule import (
-    ScheduleEstablishOperationRow,
-    ScheduleRow,
-)
+from dante.platform.database.mappings.schedule import ScheduleRow
 from dante.platform.database.references import NativeRef, new_native_ref
 
 
@@ -215,16 +212,6 @@ class TemporalActivityApplication:
                     title=normalized_title,
                     requested_activity_ref=activity_ref,
                 )
-
-                if activity_result.replayed:
-                    existing_schedule_receipt = await database_session.scalar(
-                        select(ScheduleEstablishOperationRow.schedule_ref).where(
-                            ScheduleEstablishOperationRow.self_person_ref == self_person_ref,
-                            ScheduleEstablishOperationRow.operation_id == normalized_operation_id,
-                        )
-                    )
-                    if existing_schedule_receipt is None:
-                        raise ActivityOperationIdReuseError()
 
                 schedule_result = await establish_floating_schedule_in_session(
                     database_session,

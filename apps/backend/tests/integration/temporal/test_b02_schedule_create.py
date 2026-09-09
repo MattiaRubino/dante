@@ -25,6 +25,11 @@ from dante.platform.database.runtime import create_database_runtime
 from dante.platform.time import TimeZoneMode, TimeZonePolicy
 
 
+def _floating_local(year: int, month: int, day: int, hour: int, minute: int) -> datetime:
+    # A floating-local Schedule value intentionally has no timezone/offset.
+    return datetime(year, month, day, hour, minute)  # noqa: DTZ001
+
+
 def _seed_self_person(database: Any) -> NativeRef:
     person_ref = uuid7()
     with psycopg.connect(
@@ -112,8 +117,8 @@ async def test_scheduled_activity_create_is_atomic_idempotent_and_timeline_visib
     activity_application = TemporalActivityApplication(runtime.session_factory)
     timeline_application = TemporalTimelineApplication(runtime.session_factory)
     placement = FloatingLocalIntervalPlacement(
-        starts_local_at=datetime(2026, 9, 9, 9, 15),
-        ends_local_at=datetime(2026, 9, 9, 10, 45),
+        starts_local_at=_floating_local(2026, 9, 9, 9, 15),
+        ends_local_at=_floating_local(2026, 9, 9, 10, 45),
     )
 
     try:
@@ -147,8 +152,8 @@ async def test_scheduled_activity_create_is_atomic_idempotent_and_timeline_visib
                 operation_id="operation:b02-a:create-1",
                 title="Deep work reale",
                 placement=FloatingLocalIntervalPlacement(
-                    starts_local_at=datetime(2026, 9, 9, 9, 30),
-                    ends_local_at=datetime(2026, 9, 9, 11, 0),
+                    starts_local_at=_floating_local(2026, 9, 9, 9, 30),
+                    ends_local_at=_floating_local(2026, 9, 9, 11, 0),
                 ),
             )
 
@@ -196,8 +201,8 @@ async def test_concurrent_same_scheduled_create_serializes_to_one_canonical_iden
     runtime = create_database_runtime(migrated_database.runtime_settings())
     application = TemporalActivityApplication(runtime.session_factory)
     placement = FloatingLocalIntervalPlacement(
-        starts_local_at=datetime(2026, 9, 9, 14, 0),
-        ends_local_at=datetime(2026, 9, 9, 14, 45),
+        starts_local_at=_floating_local(2026, 9, 9, 14, 0),
+        ends_local_at=_floating_local(2026, 9, 9, 14, 45),
     )
 
     async def create_once() -> CreateScheduledActivityResult:
@@ -243,8 +248,8 @@ async def test_prior_unplaced_command_id_cannot_be_reinterpreted_as_scheduled_cr
                 operation_id="operation:b02-a:historical-unplaced",
                 title="Intento già fissato",
                 placement=FloatingLocalIntervalPlacement(
-                    starts_local_at=datetime(2026, 9, 9, 16, 0),
-                    ends_local_at=datetime(2026, 9, 9, 17, 0),
+                    starts_local_at=_floating_local(2026, 9, 9, 16, 0),
+                    ends_local_at=_floating_local(2026, 9, 9, 17, 0),
                 ),
             )
     finally:

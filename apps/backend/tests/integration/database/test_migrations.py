@@ -24,6 +24,11 @@ _ACCESS_HEAD = "20260904_16"
 _TRUSTED_SEARCH_PATH = "pg_catalog,dante,pg_temp"
 
 
+def _floating_local(year: int, month: int, day: int, hour: int, minute: int) -> datetime:
+    # A floating-local Schedule value intentionally has no timezone/offset.
+    return datetime(year, month, day, hour, minute)  # noqa: DTZ001
+
+
 def _current_revisions(database: Any) -> set[str]:
     with psycopg.connect(
         **database.connection_kwargs(
@@ -149,8 +154,8 @@ def test_schedule_downgrade_refuses_to_discard_canonical_history(
     activity_ref = uuid7()
     schedule_ref = uuid7()
     material_state_ref = uuid7()
-    starts_local_at = datetime(2026, 9, 9, 18, 0)
-    ends_local_at = datetime(2026, 9, 9, 19, 0)
+    starts_local_at = _floating_local(2026, 9, 9, 18, 0)
+    ends_local_at = _floating_local(2026, 9, 9, 19, 0)
     connection_kwargs = provisioned_database.connection_kwargs(
         "dante_migrator",
         provisioned_database.cluster.migrator_password,

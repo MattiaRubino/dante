@@ -14,16 +14,14 @@ down_revision: str | None = "20260909_20"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
-_RUNTIME = "dante_runtime"
-
 
 def upgrade() -> None:
     """Keep the immutable operation receipt behind the bounded DB capability."""
     op.execute(
-        sa.text(f"REVOKE SELECT ON TABLE dante.schedule_establish_operation FROM {_RUNTIME}")
+        sa.text("REVOKE SELECT ON TABLE dante.schedule_establish_operation FROM dante_runtime")
     )
 
 
 def downgrade() -> None:
     """Restore the superseded B02-A receipt-read posture."""
-    op.execute(sa.text(f"GRANT SELECT ON TABLE dante.schedule_establish_operation TO {_RUNTIME}"))
+    op.execute(sa.text("GRANT SELECT ON TABLE dante.schedule_establish_operation TO dante_runtime"))

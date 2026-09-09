@@ -176,15 +176,20 @@ describe('Temporal Create normal-runtime boundary', () => {
 
     expect(activity.createActivity).not.toHaveBeenCalled();
     expect(activity.createScheduledActivity).toHaveBeenCalledTimes(1);
-    expect(activity.createScheduledActivity).toHaveBeenCalledWith({
-      operationId: preparation.prepared.operationId,
-      title: 'Activity già collocata',
-      placement: {
-        kind: 'floating-local-interval',
-        startsLocalAt: expect.anything(),
-        endsLocalAt: expect.anything(),
-      },
-    });
+    const scheduledRequest =
+      activity.createScheduledActivity.mock.calls[0]?.[0];
+    expect(scheduledRequest).toBeDefined();
+    expect(scheduledRequest?.operationId).toBe(
+      preparation.prepared.operationId,
+    );
+    expect(scheduledRequest?.title).toBe('Activity già collocata');
+    expect(scheduledRequest?.placement.kind).toBe('floating-local-interval');
+    expect(scheduledRequest?.placement.startsLocalAt.toString()).toBe(
+      '2026-09-07T15:00:00',
+    );
+    expect(scheduledRequest?.placement.endsLocalAt.toString()).toBe(
+      '2026-09-07T15:30:00',
+    );
     expect(execution.result.status).toBe('applied');
     expect(execution.effect?.projection).toMatchObject({
       id: CANONICAL_SCHEDULE_REF,
