@@ -1,0 +1,237 @@
+name: Temporal B02 Reconciliation One-Shot
+
+on:
+  push:
+    branches:
+      - feature/timeline-temporal-operational
+
+permissions: {}
+
+concurrency:
+  group: temporal-b02-reconciliation-one-shot
+  cancel-in-progress: true
+
+jobs:
+  backend-quality:
+    name: Backend Quality
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install canonical uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          working-directory: apps/backend
+          checksum: 68a509da24b06b4223a1c0175fb5eb5bc79342b76cbeff0cfe51ac3f5b17b6b2
+          enable-cache: false
+      - name: Install project Python
+        working-directory: apps/backend
+        run: uv python install
+      - name: Verify locked dependency graph
+        working-directory: apps/backend
+        run: uv lock --check
+      - name: Synchronize locked environment
+        working-directory: apps/backend
+        run: uv sync --locked
+      - name: Ruff format check
+        working-directory: apps/backend
+        run: uv run --locked ruff format --check .
+      - name: Ruff lint
+        working-directory: apps/backend
+        run: uv run --locked ruff check .
+      - name: mypy strict
+        working-directory: apps/backend
+        run: uv run --locked mypy
+      - name: Fast test suite
+        working-directory: apps/backend
+        run: uv run --locked pytest -m "not postgres"
+      - name: Build backend package
+        working-directory: apps/backend
+        run: uv build
+
+  postgres:
+    name: Backend PostgreSQL
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install canonical uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          working-directory: apps/backend
+          checksum: 68a509da24b06b4223a1c0175fb5eb5bc79342b76cbeff0cfe51ac3f5b17b6b2
+          enable-cache: false
+      - name: Install project Python
+        working-directory: apps/backend
+        run: uv python install
+      - name: Verify locked dependency graph
+        working-directory: apps/backend
+        run: uv lock --check
+      - name: Synchronize locked environment
+        working-directory: apps/backend
+        run: uv sync --locked
+      - name: Build canonical PostgreSQL image
+        run: docker build --pull --tag dante-postgres-local:18.6 infra/local/postgres
+      - name: PostgreSQL acceptance suite
+        working-directory: apps/backend
+        run: uv run --locked pytest -m postgres -vv
+
+  frontend-quality:
+    name: Frontend Quality
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Setup pnpm and Node
+        uses: pnpm/setup@c9883cc79df532ad1a7b81bf9ab944ceb090d65c # v2.0.0
+        with:
+          version: 11.22.0
+          runtime: node@24.19.0
+          cache: true
+          install: false
+      - name: Install canonical uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          working-directory: apps/backend
+          checksum: 68a509da24b06b4223a1c0175fb5eb5bc79342b76cbeff0cfe51ac3f5b17b6b2
+          enable-cache: false
+      - name: Install project Python
+        working-directory: apps/backend
+        run: uv python install
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Frontend contract drift check
+        run: |
+          python3 tests/prototypes/frontend-preprod-contracts.py
+          python3 tests/prototypes/world-focus-preprod-contracts.py
+      - name: Format check
+        run: pnpm format:check
+      - name: Lint
+        run: pnpm lint
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Architecture check
+        run: pnpm architecture:check
+      - name: Generated-source drift check
+        run: pnpm generated:check
+      - name: Unit tests
+        run: pnpm test
+      - name: Production build
+        run: pnpm build
+      - name: Diff check
+        run: git diff --check
+      - name: Repository mutation check
+        run: |
+          git diff --exit-code
+          test -z "$(git status --porcelain --untracked-files=all)"
+
+  web-e2e:
+    name: Web E2E
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Setup pnpm and Node
+        uses: pnpm/setup@c9883cc79df532ad1a7b81bf9ab944ceb090d65c # v2.0.0
+        with:
+          version: 11.22.0
+          runtime: node@24.19.0
+          cache: true
+          install: false
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Install Chromium headless shell and Linux dependencies
+        run: pnpm --filter @dante/web exec playwright install --with-deps --only-shell chromium
+      - name: Run Web E2E
+        run: pnpm test:e2e:web
+      - name: Install Firefox and Linux dependencies
+        run: pnpm --filter @dante/web exec playwright install --with-deps firefox
+      - name: Run frozen Timeline interaction contract in Firefox
+        run: pnpm --filter @dante/web exec playwright test e2e/timeline-interactions.spec.ts --browser=firefox
+      - name: Upload Playwright failure evidence
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: temporal-b02-playwright-test-results
+          path: apps/web/test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  mobile-bundle:
+    name: Mobile Bundle
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Setup pnpm and Node
+        uses: pnpm/setup@c9883cc79df532ad1a7b81bf9ab944ceb090d65c # v2.0.0
+        with:
+          version: 11.22.0
+          runtime: node@24.19.0
+          cache: true
+          install: false
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Expo dependency compatibility
+        env:
+          EXPO_OFFLINE: "1"
+        run: pnpm mobile:compat:check
+      - name: Android Hermes bundle smoke
+        run: pnpm mobile:bundle:check
+
+  gate:
+    name: Temporal B02 Reconciliation Gate
+    if: ${{ always() }}
+    needs:
+      - backend-quality
+      - postgres
+      - frontend-quality
+      - web-e2e
+      - mobile-bundle
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Require all validation jobs
+        env:
+          BACKEND_QUALITY: ${{ needs.backend-quality.result }}
+          POSTGRES: ${{ needs.postgres.result }}
+          FRONTEND_QUALITY: ${{ needs.frontend-quality.result }}
+          WEB_E2E: ${{ needs.web-e2e.result }}
+          MOBILE_BUNDLE: ${{ needs.mobile-bundle.result }}
+        run: |
+          printf 'Backend Quality: %s\n' "$BACKEND_QUALITY"
+          printf 'Backend PostgreSQL: %s\n' "$POSTGRES"
+          printf 'Frontend Quality: %s\n' "$FRONTEND_QUALITY"
+          printf 'Web E2E: %s\n' "$WEB_E2E"
+          printf 'Mobile Bundle: %s\n' "$MOBILE_BUNDLE"
+          test "$BACKEND_QUALITY" = "success"
+          test "$POSTGRES" = "success"
+          test "$FRONTEND_QUALITY" = "success"
+          test "$WEB_E2E" = "success"
+          test "$MOBILE_BUNDLE" = "success"
