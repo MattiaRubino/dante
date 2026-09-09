@@ -1,0 +1,104 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "routine:dante.establish_self_floating_schedule",
+    "type": "routine",
+    "schema": "dante",
+    "name": "establish_self_floating_schedule",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Bounded SECURITY DEFINER capability that atomically establishes or idempotently replays the first accepted floating-local Schedule placement for one self-owned Activity using the existing CP6 Schedule, MaterialState, explicit-current and current-history structures without granting generic runtime Schedule DML.",
+  "classification": {
+    "persistence_role": "schedule_establish_capability",
+    "canonicality": "capability_surface",
+    "family": "temporal_schedule"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/workstreams/timeline-temporal-operational-b02-execution-plan.md#4-b02-operation-semantics",
+      "docs/workstreams/timeline-temporal-operational-b02-execution-plan.md#5-idempotency-and-concurrency-contract",
+      "docs/workstreams/timeline-temporal-operational-b02-execution-plan.md#6-persistence-strategy",
+      "docs/workstreams/timeline-temporal-operational-map.md#10-schedule--full-vertical-surface",
+      "docs/development/backend-cp6-02-postgresql-persistence-constitution.md"
+    ],
+    "domain_concepts": ["Activity", "Schedule"],
+    "logical_families": ["bounded application operation capability"],
+    "reference_families": ["NativeRef", "ScopedRecordRef", "MaterialStateRef"],
+    "material_facets": ["schedule.placement"]
+  },
+  "implementation": {
+    "introducing_stage": "B02-A-SCHEDULE",
+    "alembic_revision": "20260909_20",
+    "sqlalchemy": {"mode": "none", "module": null, "symbol": null},
+    "runtime_acl_stage": "B02-A-SCHEDULE-ACL"
+  },
+  "structure": {
+    "columns": [],
+    "primary_key": null,
+    "foreign_keys": [],
+    "unique_constraints": [],
+    "check_constraints": [],
+    "indexes": [],
+    "triggers": [],
+    "table": null,
+    "view": null,
+    "routine": {
+      "routine_kind": "function",
+      "language": "plpgsql",
+      "argument_types": [
+        "uuid",
+        "text",
+        "text",
+        "uuid",
+        "uuid",
+        "uuid",
+        "timestamp without time zone",
+        "timestamp without time zone"
+      ],
+      "return_type": "TABLE(subject_native_ref uuid, schedule_ref uuid, material_state_ref uuid, starts_local_at timestamp without time zone, ends_local_at timestamp without time zone, created_at timestamp with time zone, replayed boolean)",
+      "security": "DEFINER",
+      "volatility": "VOLATILE",
+      "parallel_safety": "UNSAFE",
+      "leakproof": false,
+      "function_search_path": ["pg_catalog", "dante", "pg_temp"],
+      "direct_runtime_execute": true
+    }
+  },
+  "state_history": {
+    "material_state_behavior": "Creates one immutable floating-local schedule.placement MaterialState and reuses that exact MaterialStateRef on idempotent replay.",
+    "current_binding": "The same transaction creates the explicit scoped current binding to the accepted placement.",
+    "chronology": "The same authoritative statement timestamp records the initial current-history episode and immutable operation receipt.",
+    "immutability_policy": "The initial accepted placement is inserted once; replay cannot overwrite it, and materially different reuse of an operation id is rejected."
+  },
+  "lifecycle": {
+    "retention": null,
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "The routine is removable only through migration downgrade, which fails closed after establishment receipts reference canonical Schedule history."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": [
+      {"grantee":"dante_runtime","privilege":"EXECUTE","columns":[],"grant_option":false}
+    ]
+  },
+  "proof": {
+    "obligations": [
+      "function owner is dante_owner and SECURITY DEFINER is enabled",
+      "trusted search_path is exactly pg_catalog,dante,pg_temp",
+      "runtime EXECUTE is granted while PUBLIC and dante_migrator EXECUTE are denied",
+      "runtime has no direct read/write privilege on schedule_establish_operation after 20260909_21",
+      "the capability admits only a self-owned Activity subject in B02-A",
+      "Schedule owner, typed floating-local placement, explicit current binding, current-history episode and receipt commit atomically",
+      "same operation id/same material intent replays and different material intent conflicts"
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b02_schedule_create.py",
+      "apps/backend/tests/integration/database/test_current_catalog.py",
+      "apps/backend/tests/integration/database/test_migrations.py"
+    ],
+    "staged_evidence": []
+  }
+}
