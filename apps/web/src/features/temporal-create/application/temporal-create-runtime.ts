@@ -1,4 +1,4 @@
-import type { PlainDate } from '@dante/time';
+import { Temporal, type PlainDate } from '@dante/time';
 
 import {
   InMemoryTemporalWorkspace,
@@ -17,6 +17,7 @@ import {
   type TemporalActivityRecord,
   type TemporalClock,
   type TemporalCommand,
+  type TemporalFloatingLocalScheduleRecord,
   type TemporalIdFactory,
   type TemporalOperationId,
   type TemporalOperationResult,
@@ -181,6 +182,13 @@ function richIntentFingerprint(metadata: TemporalCreateMetadata): string {
   return JSON.stringify(canonicalJsonValue(metadata));
 }
 
+function sameStructuredIntent(left: unknown, right: unknown): boolean {
+  return (
+    JSON.stringify(canonicalJsonValue(left)) ===
+    JSON.stringify(canonicalJsonValue(right))
+  );
+}
+
 function operationIdReuseResult(
   operationId: TemporalOperationId,
 ): TemporalOperationResult {
@@ -253,6 +261,59 @@ function b01ActivityIntentSupported(
   );
 }
 
+function b02aScheduledActivityIntentSupported(
+  prepared: TemporalCreatePreparedOperation,
+): boolean {
+  const specification = prepared.metadata.specification;
+  const placement = prepared.command.payload.placement;
+  if (
+    prepared.metadata.kind !== 'activity' ||
+    prepared.metadata.timeSemantics !== 'timed' ||
+    prepared.metadata.contextId !== 'personale' ||
+    prepared.metadata.notes.length !== 0 ||
+    placement?.kind !== 'floating-local' ||
+    specification.timeMode !== 'floating' ||
+    specification.appearanceTone !== null ||
+    !placement.start.toPlainDate().equals(placement.end.toPlainDate()) ||
+    Temporal.PlainDateTime.compare(placement.start, placement.end) >= 0
+  ) {
+    return false;
+  }
+
+  const baseline = createTemporalCreateFields({
+    title: specification.title,
+    kind: 'activity',
+    date: specification.date,
+    timeSemantics: 'timed',
+    startTime: specification.startTime,
+    durationMinutes: specification.durationMinutes,
+    timeMode: 'floating',
+    timeZoneId: specification.timeZoneId,
+    contextId: 'personale',
+  });
+
+  return (
+    specification.eventRecurrence.patternKind === 'none' &&
+    sameStructuredIntent(specification.scheduling, baseline.scheduling) &&
+    sameStructuredIntent(specification.execution, baseline.execution) &&
+    sameStructuredIntent(
+      specification.eventRecurrence,
+      baseline.eventRecurrence,
+    ) &&
+    sameStructuredIntent(specification.confirmation, baseline.confirmation) &&
+    sameStructuredIntent(specification.event, baseline.event)
+  );
+}
+
+function canonicalActivityIntentSupported(
+  prepared: TemporalCreatePreparedOperation,
+): boolean {
+  return (
+    b01ActivityIntentSupported(prepared) ||
+    b02aScheduledActivityIntentSupported(prepared)
+  );
+}
+
 function activityProjection(
   activity: TemporalActivityRecord,
   operationId: TemporalOperationId,
@@ -275,6 +336,34 @@ function activityProjection(
   });
 }
 
+function scheduledActivityProjection(
+  activity: TemporalActivityRecord,
+  schedule: TemporalFloatingLocalScheduleRecord,
+  operationId: TemporalOperationId,
+): TemporalProjectionItem {
+  return Object.freeze({
+    id: temporalProjectionId(schedule.scheduleRef),
+    subject: Object.freeze({
+      source: 'native' as const,
+      kind: 'activity',
+      id: activity.activityRef,
+    }),
+    title: activity.title,
+    placement: Object.freeze({
+      kind: 'floating-local' as const,
+      start: schedule.startsLocalAt,
+      end: schedule.endsLocalAt,
+    }),
+    // B02-A renders the accepted placement but does not yet activate B02-B
+    // reschedule/drag behavior through this generic projection capability set.
+    capabilities: Object.freeze([]),
+    revision: 0,
+    createdAt: activity.createdAt,
+    updatedAt: activity.createdAt,
+    lastOperationId: operationId,
+  });
+}
+
 class RemoteActivityTemporalWorkspace implements TemporalWorkspacePort {
   public constructor(private readonly source: TemporalActivityDataSource) {}
 
@@ -283,8 +372,7 @@ class RemoteActivityTemporalWorkspace implements TemporalWorkspacePort {
   ): Promise<TemporalOperationResult> {
     if (
       command.type !== 'temporal.projection.create' ||
-      command.payload.subject.kind !== 'activity' ||
-      command.payload.placement !== null
+      command.payload.subject.kind !== 'activity'
     ) {
       return unavailableResult(
         command.operationId,
@@ -292,15 +380,51 @@ class RemoteActivityTemporalWorkspace implements TemporalWorkspacePort {
       );
     }
 
+    const placement = command.payload.placement;
+    const supportsUnscheduled = placement === null;
+    const supportsB02A =
+      placement?.kind === 'floating-local' &&
+      placement.start.toPlainDate().equals(placement.end.toPlainDate()) &&
+      Temporal.PlainDateTime.compare(placement.start, placement.end) < 0;
+    if (!supportsUnscheduled && !supportsB02A) {
+      return unavailableResult(
+        command.operationId,
+        'temporal.create.capability_not_available',
+      );
+    }
+
     try {
-      const result = await this.source.createActivity({
+      if (placement === null) {
+        const result = await this.source.createActivity({
+          operationId: command.operationId,
+          title: command.payload.title,
+        });
+        return Object.freeze({
+          operationId: command.operationId,
+          status: 'applied' as const,
+          item: activityProjection(result.activity, command.operationId),
+          snapshotRevision: 0,
+          reconciliation: Object.freeze({ status: 'confirmed' as const }),
+        });
+      }
+
+      const result = await this.source.createScheduledActivity({
         operationId: command.operationId,
         title: command.payload.title,
+        placement: Object.freeze({
+          kind: 'floating-local-interval' as const,
+          startsLocalAt: placement.start,
+          endsLocalAt: placement.end,
+        }),
       });
       return Object.freeze({
         operationId: command.operationId,
         status: 'applied' as const,
-        item: activityProjection(result.activity, command.operationId),
+        item: scheduledActivityProjection(
+          result.activity,
+          result.schedule,
+          command.operationId,
+        ),
         snapshotRevision: 0,
         reconciliation: Object.freeze({ status: 'confirmed' as const }),
       });
@@ -308,7 +432,8 @@ class RemoteActivityTemporalWorkspace implements TemporalWorkspacePort {
       if (
         error instanceof TemporalActivityRemoteError &&
         error.status === 409 &&
-        error.code === 'temporal.activity.operation_id_reused'
+        (error.code === 'temporal.activity.operation_id_reused' ||
+          error.code === 'temporal.schedule.operation_id_reused')
       ) {
         return operationIdReuseResult(command.operationId);
       }
@@ -321,9 +446,12 @@ class RemoteActivityTemporalWorkspace implements TemporalWorkspacePort {
           status: 'rejected' as const,
           code: 'validation' as const,
           issues: Object.freeze([
-            temporalValidationIssue('temporal.activity.invalid_create', [
-              'payload',
-            ]),
+            temporalValidationIssue(
+              placement === null
+                ? 'temporal.activity.invalid_create'
+                : 'temporal.schedule.invalid_establish',
+              ['payload'],
+            ),
           ]),
         });
       }
@@ -336,7 +464,10 @@ class RemoteActivityTemporalWorkspace implements TemporalWorkspacePort {
             error.kind === 'transport'
               ? ('transport' as const)
               : ('unavailable' as const),
-          code: 'temporal.activity.remote_unavailable',
+          code:
+            placement === null
+              ? 'temporal.activity.remote_unavailable'
+              : 'temporal.schedule.remote_unavailable',
           retryable:
             error instanceof TemporalActivityRemoteError
               ? error.kind === 'transport' || (error.status ?? 0) >= 500
@@ -577,7 +708,10 @@ class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
   public async execute(
     prepared: TemporalCreatePreparedOperation,
   ): Promise<TemporalCreateExecution> {
-    if (this.canonicalActivityOnly && !b01ActivityIntentSupported(prepared)) {
+    if (
+      this.canonicalActivityOnly &&
+      !canonicalActivityIntentSupported(prepared)
+    ) {
       return Object.freeze({
         result: unavailableResult(
           prepared.operationId,
