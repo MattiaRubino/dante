@@ -330,7 +330,9 @@ function validateScheduledCreateRequest(
 ): void {
   validateCreateRequest(request);
   if (request.placement.kind !== 'floating-local-interval') {
-    throw new RangeError('B02-A supports only floating-local interval placement.');
+    throw new RangeError(
+      'B02-A supports only floating-local interval placement.',
+    );
   }
   if (
     Temporal.PlainDateTime.compare(
@@ -387,20 +389,24 @@ export function createRemoteTemporalActivityDataSource(
         'Content-Type': 'application/json',
         [CSRF_HEADER_NAME]: csrf,
       });
-      const response = await fetchResponse(webFetch, SCHEDULED_ACTIVITY_ENDPOINT, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          operation_id: request.operationId.trim(),
-          title: request.title.trim(),
-          placement: {
-            kind: 'floating_local_interval',
-            starts_local_at: request.placement.startsLocalAt.toString(),
-            ends_local_at: request.placement.endsLocalAt.toString(),
-          },
-        }),
-        ...(signal === undefined ? {} : { signal }),
-      });
+      const response = await fetchResponse(
+        webFetch,
+        SCHEDULED_ACTIVITY_ENDPOINT,
+        {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            operation_id: request.operationId.trim(),
+            title: request.title.trim(),
+            placement: {
+              kind: 'floating_local_interval',
+              starts_local_at: request.placement.startsLocalAt.toString(),
+              ends_local_at: request.placement.endsLocalAt.toString(),
+            },
+          }),
+          ...(signal === undefined ? {} : { signal }),
+        },
+      );
       const payload = await requireOk(
         response,
         'Create Scheduled Activity response',

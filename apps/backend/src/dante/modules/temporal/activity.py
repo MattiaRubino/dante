@@ -220,8 +220,7 @@ class TemporalActivityApplication:
                     existing_schedule_receipt = await database_session.scalar(
                         select(ScheduleEstablishOperationRow.schedule_ref).where(
                             ScheduleEstablishOperationRow.self_person_ref == self_person_ref,
-                            ScheduleEstablishOperationRow.operation_id
-                            == normalized_operation_id,
+                            ScheduleEstablishOperationRow.operation_id == normalized_operation_id,
                         )
                     )
                     if existing_schedule_receipt is None:

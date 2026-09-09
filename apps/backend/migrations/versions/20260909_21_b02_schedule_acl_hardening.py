@@ -20,18 +20,10 @@ _RUNTIME = "dante_runtime"
 def upgrade() -> None:
     """Keep the immutable operation receipt behind the bounded DB capability."""
     op.execute(
-        sa.text(
-            "REVOKE SELECT ON TABLE dante.schedule_establish_operation "
-            f"FROM {_RUNTIME}"
-        )
+        sa.text(f"REVOKE SELECT ON TABLE dante.schedule_establish_operation FROM {_RUNTIME}")
     )
 
 
 def downgrade() -> None:
     """Restore the superseded B02-A receipt-read posture."""
-    op.execute(
-        sa.text(
-            "GRANT SELECT ON TABLE dante.schedule_establish_operation "
-            f"TO {_RUNTIME}"
-        )
-    )
+    op.execute(sa.text(f"GRANT SELECT ON TABLE dante.schedule_establish_operation TO {_RUNTIME}"))

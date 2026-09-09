@@ -23,9 +23,8 @@ function scheduledActivity(): TemporalTimelineScheduledActivityItem {
 
 describe('authoritative Timeline hydration', () => {
   it('keys the visible projection on Schedule identity and retains its exact canonical basis', () => {
-    const projection = canonicalScheduledActivityTimelineEvent(
-      scheduledActivity(),
-    );
+    const projection =
+      canonicalScheduledActivityTimelineEvent(scheduledActivity());
 
     expect(projection.dateKey).toBe('2026-09-09');
     expect(projection.event).toMatchObject({
@@ -49,8 +48,7 @@ describe('authoritative Timeline hydration', () => {
     const second = Object.freeze({
       ...first,
       scheduleRef: '0199a8c0-5e74-7bc0-8ad0-a2f403f5617d',
-      placementMaterialStateRef:
-        '0199a8c0-5e75-7bc0-8ad0-a2f403f5617d',
+      placementMaterialStateRef: '0199a8c0-5e75-7bc0-8ad0-a2f403f5617d',
       startsLocalAt: Temporal.PlainDateTime.from('2026-09-09T17:00'),
       endsLocalAt: Temporal.PlainDateTime.from('2026-09-09T18:00'),
     }) satisfies TemporalTimelineScheduledActivityItem;

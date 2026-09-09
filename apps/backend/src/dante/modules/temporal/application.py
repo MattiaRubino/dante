@@ -107,15 +107,19 @@ class TemporalTimelineApplication:
                 database_session.begin(),
             ):
                 rows = (
-                    await database_session.execute(
-                        statement,
-                        {
-                            "self_person_ref": context.self_person_ref,
-                            "start_local_at": start_local_at,
-                            "end_local_at": end_local_at,
-                        },
+                    (
+                        await database_session.execute(
+                            statement,
+                            {
+                                "self_person_ref": context.self_person_ref,
+                                "start_local_at": start_local_at,
+                                "end_local_at": end_local_at,
+                            },
+                        )
                     )
-                ).mappings().all()
+                    .mappings()
+                    .all()
+                )
         except SQLAlchemyError as exc:
             raise TimelinePersistenceError() from exc
 
