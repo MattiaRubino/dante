@@ -9,10 +9,13 @@ import type {
   TemporalActivityCreateResult,
   TemporalActivityDataSource,
   TemporalActivityRecord,
+  TemporalScheduledActivityCreateRequest,
+  TemporalScheduledActivityCreateResult,
 } from './activity-data-source';
 
 const SESSION_ENDPOINT = '/api/v1/auth/session';
 const ACTIVITY_ENDPOINT = '/api/v1/temporal/activities';
+const SCHEDULED_ACTIVITY_ENDPOINT = '/api/v1/temporal/activities/scheduled';
 const UNPLACED_ACTIVITY_ENDPOINT = '/api/v1/temporal/activities/unplaced';
 const CSRF_HEADER_NAME = 'X-Dante-CSRF';
 
@@ -89,6 +92,26 @@ function parseCreatedAt(
   }
 }
 
+function parseFloatingLocalDateTime(value: unknown, field: string) {
+  if (
+    typeof value !== 'string' ||
+    /(?:Z|[+-]\d{2}:\d{2}|\[[^\]]+\])$/i.test(value)
+  ) {
+    throw new TemporalActivityRemoteError(
+      'protocol',
+      `${field} must be a floating local date-time without zone or offset.`,
+    );
+  }
+  try {
+    return Temporal.PlainDateTime.from(value);
+  } catch {
+    throw new TemporalActivityRemoteError(
+      'protocol',
+      `${field} must be a floating local date-time without zone or offset.`,
+    );
+  }
+}
+
 function parseActivity(
   payload: unknown,
   { allowReplay }: Readonly<{ allowReplay: boolean }>,
@@ -128,6 +151,87 @@ function parseActivity(
       activityRef: parseUuidV7(payload.activity_ref, 'activity_ref'),
       title: payload.title,
       createdAt: parseCreatedAt(payload.created_at),
+    }),
+    replayed: payload.replayed,
+  });
+}
+
+function parseScheduledActivity(
+  payload: unknown,
+): TemporalScheduledActivityCreateResult {
+  if (!isRecord(payload)) {
+    throw new TemporalActivityRemoteError(
+      'protocol',
+      'Scheduled Activity response must be an object.',
+    );
+  }
+  requireExactKeys(
+    payload,
+    [
+      'activity_ref',
+      'title',
+      'created_at',
+      'schedule_ref',
+      'placement_material_state_ref',
+      'temporal_form',
+      'starts_local_at',
+      'ends_local_at',
+      'replayed',
+    ],
+    'Scheduled Activity response',
+  );
+  if (typeof payload.title !== 'string' || payload.title.trim().length === 0) {
+    throw new TemporalActivityRemoteError(
+      'protocol',
+      'Scheduled Activity title must be a non-empty string.',
+    );
+  }
+  if (typeof payload.replayed !== 'boolean') {
+    throw new TemporalActivityRemoteError(
+      'protocol',
+      'Scheduled Activity replayed must be boolean.',
+    );
+  }
+  if (payload.temporal_form !== 'floating_local') {
+    throw new TemporalActivityRemoteError(
+      'protocol',
+      'B02-A Scheduled Activity must preserve floating-local placement semantics.',
+    );
+  }
+
+  const startsLocalAt = parseFloatingLocalDateTime(
+    payload.starts_local_at,
+    'starts_local_at',
+  );
+  const endsLocalAt = parseFloatingLocalDateTime(
+    payload.ends_local_at,
+    'ends_local_at',
+  );
+  if (
+    Temporal.PlainDateTime.compare(startsLocalAt, endsLocalAt) >= 0 ||
+    !startsLocalAt.toPlainDate().equals(endsLocalAt.toPlainDate())
+  ) {
+    throw new TemporalActivityRemoteError(
+      'protocol',
+      'B02-A Scheduled Activity must be a positive same-local-day interval.',
+    );
+  }
+
+  return Object.freeze({
+    activity: Object.freeze({
+      activityRef: parseUuidV7(payload.activity_ref, 'activity_ref'),
+      title: payload.title,
+      createdAt: parseCreatedAt(payload.created_at),
+    }),
+    schedule: Object.freeze({
+      scheduleRef: parseUuidV7(payload.schedule_ref, 'schedule_ref'),
+      placementMaterialStateRef: parseUuidV7(
+        payload.placement_material_state_ref,
+        'placement_material_state_ref',
+      ),
+      temporalForm: 'floating-local',
+      startsLocalAt,
+      endsLocalAt,
     }),
     replayed: payload.replayed,
   });
@@ -220,6 +324,28 @@ function validateCreateRequest(request: TemporalActivityCreateRequest): void {
   }
 }
 
+function validateScheduledCreateRequest(
+  request: TemporalScheduledActivityCreateRequest,
+): void {
+  validateCreateRequest(request);
+  if (request.placement.kind !== 'floating-local-interval') {
+    throw new RangeError('B02-A supports only floating-local interval placement.');
+  }
+  if (
+    Temporal.PlainDateTime.compare(
+      request.placement.startsLocalAt,
+      request.placement.endsLocalAt,
+    ) >= 0 ||
+    !request.placement.startsLocalAt
+      .toPlainDate()
+      .equals(request.placement.endsLocalAt.toPlainDate())
+  ) {
+    throw new RangeError(
+      'B02-A placement must be a positive same-local-day interval.',
+    );
+  }
+}
+
 export function createRemoteTemporalActivityDataSource(
   fetchFn: typeof globalThis.fetch = globalThis.fetch,
   resolveDeviceTimeZone?: DeviceTimeZoneResolver,
@@ -248,6 +374,37 @@ export function createRemoteTemporalActivityDataSource(
       });
       const payload = await requireOk(response, 'Create Activity response');
       return parseActivity(payload, { allowReplay: true });
+    },
+
+    async createScheduledActivity(
+      request: TemporalScheduledActivityCreateRequest,
+      signal?: AbortSignal,
+    ): Promise<TemporalScheduledActivityCreateResult> {
+      validateScheduledCreateRequest(request);
+      const csrf = await csrfToken(webFetch, signal);
+      const headers = new Headers({
+        'Content-Type': 'application/json',
+        [CSRF_HEADER_NAME]: csrf,
+      });
+      const response = await fetchResponse(webFetch, SCHEDULED_ACTIVITY_ENDPOINT, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          operation_id: request.operationId.trim(),
+          title: request.title.trim(),
+          placement: {
+            kind: 'floating_local_interval',
+            starts_local_at: request.placement.startsLocalAt.toString(),
+            ends_local_at: request.placement.endsLocalAt.toString(),
+          },
+        }),
+        ...(signal === undefined ? {} : { signal }),
+      });
+      const payload = await requireOk(
+        response,
+        'Create Scheduled Activity response',
+      );
+      return parseScheduledActivity(payload);
     },
 
     async loadUnplaced(
