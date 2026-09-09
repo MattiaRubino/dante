@@ -1,5 +1,5 @@
 import type { PlainDateTime } from '@dante/time';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { useTemporalTimelineRuntime } from '../../../temporal/timeline-runtime-boundary';
 import type { TemporalTimelineScheduledActivityItem } from '../../../temporal/timeline-read';
@@ -52,6 +52,11 @@ export function useAuthoritativeTimelineHydration(
   onMaterialize: (dateKey: string, event: TimelineEvent) => void,
 ): void {
   const { state } = useTemporalTimelineRuntime();
+  const materializeRef = useRef(onMaterialize);
+
+  useEffect(() => {
+    materializeRef.current = onMaterialize;
+  }, [onMaterialize]);
 
   useEffect(() => {
     if (
@@ -64,7 +69,7 @@ export function useAuthoritativeTimelineHydration(
 
     for (const item of state.window.items) {
       const projection = canonicalScheduledActivityTimelineEvent(item);
-      onMaterialize(projection.dateKey, projection.event);
+      materializeRef.current(projection.dateKey, projection.event);
     }
-  }, [onMaterialize, state]);
+  }, [state]);
 }
