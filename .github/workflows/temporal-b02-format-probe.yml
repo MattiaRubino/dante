@@ -1,0 +1,98 @@
+name: Temporal B02 Format Probe
+
+on:
+  push:
+    branches:
+      - tmp/b02-format-probe
+    paths:
+      - .github/workflows/temporal-b02-format-probe.yml
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  format:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: true
+
+      - name: Setup pnpm and Node
+        uses: pnpm/setup@c9883cc79df532ad1a7b81bf9ab944ceb090d65c # v2.0.0
+        with:
+          version: 11.22.0
+          runtime: node@24.19.0
+          cache: true
+          install: false
+
+      - name: Install canonical uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          working-directory: apps/backend
+          checksum: 68a509da24b06b4223a1c0175fb5eb5bc79342b76cbeff0cfe51ac3f5b17b6b2
+          enable-cache: false
+
+      - name: Install project toolchains
+        run: |
+          uv python install
+          uv sync --project apps/backend --locked
+          pnpm install --frozen-lockfile
+
+      - name: Preserve B02 migration history from style-only rewrite
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('apps/backend/pyproject.toml')
+          text = path.read_text()
+          marker = '    "migrations/versions/20260826_07_cp6_runtime_acl_activation.py",\n'
+          addition = marker + '    "migrations/versions/20260909_20_b02_schedule_establish.py",\n'
+          if '20260909_20_b02_schedule_establish.py' not in text:
+              text = text.replace(marker, addition)
+          path.write_text(text)
+          PY
+
+      - name: Format exact B02 backend files
+        working-directory: apps/backend
+        run: |
+          uv run --locked ruff format \
+            migrations/versions/20260909_21_b02_schedule_acl_hardening.py \
+            src/dante/modules/temporal/activity.py \
+            src/dante/modules/temporal/application.py
+
+      - name: Format exact B02 frontend files
+        run: |
+          pnpm exec prettier --write \
+            apps/web/src/features/home/ui/timeline/timeline-authoritative-hydration.test.ts \
+            apps/web/src/features/temporal-create/application/temporal-create-runtime-boundary.test.ts \
+            apps/web/src/features/temporal/remote-activity-data-source.test.ts \
+            apps/web/src/features/temporal/remote-activity-data-source.ts \
+            apps/web/src/features/temporal/remote-timeline-read.test.ts \
+            apps/web/src/features/temporal/timeline-read.ts
+
+      - name: Verify bounded diff and commit
+        run: |
+          git diff --check
+          git status --short
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            apps/backend/pyproject.toml \
+            apps/backend/migrations/versions/20260909_21_b02_schedule_acl_hardening.py \
+            apps/backend/src/dante/modules/temporal/activity.py \
+            apps/backend/src/dante/modules/temporal/application.py \
+            apps/web/src/features/home/ui/timeline/timeline-authoritative-hydration.test.ts \
+            apps/web/src/features/temporal-create/application/temporal-create-runtime-boundary.test.ts \
+            apps/web/src/features/temporal/remote-activity-data-source.test.ts \
+            apps/web/src/features/temporal/remote-activity-data-source.ts \
+            apps/web/src/features/temporal/remote-timeline-read.test.ts \
+            apps/web/src/features/temporal/timeline-read.ts
+          git diff --cached --quiet && exit 0
+          git commit -m 'style(temporal): format B02 candidate'
+          git push origin HEAD:tmp/b02-format-probe
