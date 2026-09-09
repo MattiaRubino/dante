@@ -1,0 +1,106 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "table:dante.schedule_establish_operation",
+    "type": "table",
+    "schema": "dante",
+    "name": "schedule_establish_operation",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Immutable self-scoped idempotency receipt for the first B02 accepted floating-local Activity Schedule establishment operation; operation identity remains separate from Activity, Schedule and MaterialState identity.",
+  "classification": {
+    "persistence_role": "operation_idempotency_control",
+    "canonicality": "control",
+    "family": "temporal_schedule"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/workstreams/timeline-temporal-operational-b02-execution-plan.md#4-b02-operation-semantics",
+      "docs/workstreams/timeline-temporal-operational-b02-execution-plan.md#5-idempotency-and-concurrency-contract",
+      "docs/workstreams/timeline-temporal-operational-b02-execution-plan.md#6-persistence-strategy",
+      "docs/development/backend-cp6-02-postgresql-persistence-constitution.md"
+    ],
+    "domain_concepts": ["Activity", "Schedule"],
+    "logical_families": ["application operation idempotency control"],
+    "reference_families": ["NativeRef", "ScopedRecordRef", "MaterialStateRef"],
+    "material_facets": ["schedule.placement"]
+  },
+  "implementation": {
+    "introducing_stage": "B02-A-SCHEDULE",
+    "alembic_revision": "20260909_20",
+    "sqlalchemy": {
+      "mode": "orm_row",
+      "module": "dante.platform.database.mappings.schedule",
+      "symbol": "ScheduleEstablishOperationRow"
+    },
+    "runtime_acl_stage": "B02-A-SCHEDULE-ACL"
+  },
+  "structure": {
+    "columns": [
+      {"name":"self_person_ref","postgres_type":"uuid","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Authenticated self Person scope owning the operation receipt.","semantic_type":"NativeRef","value_contract":"Must reference dante.person."},
+      {"name":"operation_id","postgres_type":"text","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Client/application operation identity used only for idempotent mutation replay.","semantic_type":"OperationId","value_contract":"Trimmed non-empty text, maximum 200 characters."},
+      {"name":"intent_fingerprint","postgres_type":"text","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Deterministic fingerprint of the materially relevant establishment command intent.","semantic_type":"IntentFingerprint","value_contract":"Exactly 64 lowercase hexadecimal characters."},
+      {"name":"subject_native_ref","postgres_type":"uuid","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Activity NativeRef targeted by the first B02 Schedule establishment capability.","semantic_type":"NativeRef","value_contract":"B02-A routine accepts only an Activity owned by self_person_ref."},
+      {"name":"schedule_ref","postgres_type":"uuid","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Stable Schedule ScopedRecordRef created by the accepted operation.","semantic_type":"ScopedRecordRef","value_contract":"Application-issued UUIDv7 and unique per receipt."},
+      {"name":"material_state_ref","postgres_type":"uuid","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Exact accepted schedule.placement MaterialStateRef created by the operation.","semantic_type":"MaterialStateRef","value_contract":"Application-issued UUIDv7 and unique per receipt."},
+      {"name":"created_at","postgres_type":"timestamp with time zone","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Authoritative transaction timestamp recorded with the accepted operation.","semantic_type":"AbsoluteInstant","value_contract":"statement_timestamp() captured by the bounded database capability."}
+    ],
+    "primary_key": {"name":"pk_schedule_establish_operation","columns":["self_person_ref","operation_id"],"reason":"One immutable receipt per self-scoped operation identity.","deferrable":false,"initially":"NOT DEFERRABLE","enforced":true},
+    "foreign_keys": [
+      {"name":"fk_schedule_establish_operation_self_person_ref_person","columns":["self_person_ref"],"target":{"schema":"dante","table":"person","columns":["person_ref"]},"on_delete":"NO ACTION","on_update":"NO ACTION","match_type":"SIMPLE","deferrable":false,"initially":"NOT DEFERRABLE","enforced":true,"validated":true,"reference_family":"NativeRef","cardinality":"many_to_one","semantic_reason":"Bind operation scope to the native self Person."},
+      {"name":"fk_schedule_establish_operation_subject_native_ref_native_address","columns":["subject_native_ref"],"target":{"schema":"dante","table":"native_address","columns":["native_ref"]},"on_delete":"NO ACTION","on_update":"NO ACTION","match_type":"SIMPLE","deferrable":false,"initially":"NOT DEFERRABLE","enforced":true,"validated":true,"reference_family":"NativeRef","cardinality":"many_to_one","semantic_reason":"Bind the command subject to the bounded native-address space; the capability further restricts it to Activity."},
+      {"name":"fk_schedule_establish_operation_schedule_ref_schedule","columns":["schedule_ref"],"target":{"schema":"dante","table":"schedule","columns":["schedule_ref"]},"on_delete":"NO ACTION","on_update":"NO ACTION","match_type":"SIMPLE","deferrable":false,"initially":"NOT DEFERRABLE","enforced":true,"validated":true,"reference_family":"ScopedRecordRef","cardinality":"one_to_one","semantic_reason":"Bind the receipt to the exact Schedule owner created by the operation."},
+      {"name":"fk_schedule_establish_operation_material_state_ref_placement_state","columns":["material_state_ref"],"target":{"schema":"dante","table":"schedule_placement_state","columns":["material_state_ref"]},"on_delete":"NO ACTION","on_update":"NO ACTION","match_type":"SIMPLE","deferrable":false,"initially":"NOT DEFERRABLE","enforced":true,"validated":true,"reference_family":"MaterialStateRef","cardinality":"one_to_one","semantic_reason":"Bind replay to the exact accepted schedule.placement MaterialState."}
+    ],
+    "unique_constraints": [
+      {"name":"uq_schedule_establish_operation_schedule_ref","columns":["schedule_ref"],"reason":"A created Schedule belongs to one establishment receipt.","deferrable":false,"initially":"NOT DEFERRABLE","enforced":true},
+      {"name":"uq_schedule_establish_operation_material_state_ref","columns":["material_state_ref"],"reason":"A created placement MaterialState belongs to one establishment receipt.","deferrable":false,"initially":"NOT DEFERRABLE","enforced":true}
+    ],
+    "check_constraints": [
+      {"name":"ck_schedule_establish_operation_operation_id","expression_contract":"operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200","reason":"Keep the bounded operation identity canonical and non-empty.","enforced":true,"validated":true,"no_inherit":false},
+      {"name":"ck_schedule_establish_operation_fingerprint","expression_contract":"intent_fingerprint ~ '^[0-9a-f]{64}$'","reason":"Require the exact deterministic SHA-256 hex fingerprint representation.","enforced":true,"validated":true,"no_inherit":false}
+    ],
+    "indexes": [
+      {"name":"pk_schedule_establish_operation","method":"btree","unique":true,"keys":["self_person_ref","operation_id"],"predicate":null,"include":[],"source":"primary_key","reason":"Idempotent replay lookup by self scope and operation id.","valid":true,"ready":true,"live":true},
+      {"name":"uq_schedule_establish_operation_schedule_ref","method":"btree","unique":true,"keys":["schedule_ref"],"predicate":null,"include":[],"source":"unique_constraint","reason":"Enforce one receipt per created Schedule.","valid":true,"ready":true,"live":true},
+      {"name":"uq_schedule_establish_operation_material_state_ref","method":"btree","unique":true,"keys":["material_state_ref"],"predicate":null,"include":[],"source":"unique_constraint","reason":"Enforce one receipt per created placement MaterialState.","valid":true,"ready":true,"live":true},
+      {"name":"ix_schedule_establish_operation_subject_native_ref","method":"btree","unique":false,"keys":["subject_native_ref"],"predicate":null,"include":[],"source":"explicit_index","reason":"Support subject-bound receipt integrity and operational inspection without defining Schedule identity.","valid":true,"ready":true,"live":true}
+    ],
+    "triggers": [],
+    "table": {"persistence":"permanent","access_method":"heap","partitioned":false,"row_security":false,"force_row_security":false,"replica_identity":"default","reloptions":[]},
+    "view": null,
+    "routine": null
+  },
+  "state_history": {
+    "material_state_behavior": "The receipt references, but is not itself, the accepted schedule.placement MaterialState.",
+    "current_binding": "Replay verifies that the receipt still resolves through the exact current Schedule placement created by the establishment operation.",
+    "chronology": "Receipt creation uses the same transaction timestamp as the initial Schedule current-history episode.",
+    "immutability_policy": "Existing receipts are replay-only; operation-id reuse with materially different intent is rejected."
+  },
+  "lifecycle": {
+    "retention": null,
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No direct runtime delete or read capability; downgrade refuses removal after canonical Schedule establishment receipts exist."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": []
+  },
+  "proof": {
+    "obligations": [
+      "runtime has no direct table read/write privilege on operation receipts",
+      "each accepted receipt binds one self Person, Activity, Schedule and exact placement MaterialState",
+      "same operation id and same material intent replays while different intent conflicts",
+      "receipt existence never becomes Schedule or MaterialState identity"
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b02_schedule_create.py",
+      "apps/backend/tests/integration/database/test_current_catalog.py",
+      "apps/backend/tests/integration/database/test_migrations.py"
+    ],
+    "staged_evidence": []
+  }
+}
