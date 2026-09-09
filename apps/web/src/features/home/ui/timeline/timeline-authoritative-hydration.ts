@@ -1,9 +1,8 @@
 import type { PlainDateTime } from '@dante/time';
-import { useEffect, type Dispatch } from 'react';
+import { useEffect } from 'react';
 
 import { useTemporalTimelineRuntime } from '../../../temporal/timeline-runtime-boundary';
 import type { TemporalTimelineScheduledActivityItem } from '../../../temporal/timeline-read';
-import type { TimelineAction } from './model/timeline-state';
 import type { TimelineEvent } from './model/timeline-types';
 
 function minuteOfLocalDay(value: PlainDateTime): number {
@@ -47,9 +46,10 @@ export function canonicalScheduledActivityTimelineEvent(
  * B02-A is append-only from the Timeline UI perspective: establish + read.
  * Replacing/removing already materialized cards belongs to later Schedule
  * mutation slices, so this hook only materializes authoritative current items.
+ * The Timeline reducer remains the sole owner of UI state.
  */
 export function useAuthoritativeTimelineHydration(
-  dispatch: Dispatch<TimelineAction>,
+  onMaterialize: (dateKey: string, event: TimelineEvent) => void,
 ): void {
   const { state } = useTemporalTimelineRuntime();
 
@@ -64,11 +64,7 @@ export function useAuthoritativeTimelineHydration(
 
     for (const item of state.window.items) {
       const projection = canonicalScheduledActivityTimelineEvent(item);
-      dispatch({
-        type: 'materialize-event',
-        dateKey: projection.dateKey,
-        event: projection.event,
-      });
+      onMaterialize(projection.dateKey, projection.event);
     }
-  }, [dispatch, state]);
+  }, [onMaterialize, state]);
 }
