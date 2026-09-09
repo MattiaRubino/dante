@@ -20,7 +20,7 @@ from dante.platform.database.metadata import Base
 
 pytestmark = pytest.mark.postgres
 
-_CURRENT_REVISION = "20260908_19"
+_CURRENT_REVISION = "20260909_21"
 _REPO_ROOT = Path(__file__).resolve().parents[5]
 _DICTIONARY_ROOT = _REPO_ROOT / "docs" / "database" / "dictionary"
 _RUNTIME_ROLE = "dante_runtime"
@@ -368,6 +368,55 @@ def test_create_self_activity_capability_is_exact(migrated_database: Any) -> Non
     assert function_acl[7] == (
         "TABLE(activity_ref uuid, title text, created_at timestamp with time zone, "
         "replayed boolean)"
+    )
+    assert function_acl[8:11] == (True, False, False)
+
+
+def test_establish_self_floating_schedule_capability_is_exact(
+    migrated_database: Any,
+) -> None:
+    signature = (
+        "dante.establish_self_floating_schedule("
+        "uuid,text,text,uuid,uuid,uuid,timestamp without time zone,timestamp without time zone)"
+    )
+    with _admin(migrated_database) as connection:
+        function_acl = connection.execute(
+            """
+            SELECT
+              pg_get_userbyid(p.proowner),
+              p.prosecdef,
+              p.provolatile,
+              p.proparallel,
+              p.proleakproof,
+              p.proconfig,
+              oidvectortypes(p.proargtypes),
+              pg_get_function_result(p.oid),
+              has_function_privilege('dante_runtime', %s, 'EXECUTE'),
+              has_function_privilege('dante_migrator', %s, 'EXECUTE'),
+              EXISTS (
+                SELECT 1
+                FROM aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) AS acl
+                WHERE acl.grantee = 0 AND acl.privilege_type = 'EXECUTE'
+              )
+            FROM pg_proc p
+            JOIN pg_namespace n ON n.oid = p.pronamespace
+            WHERE n.nspname = 'dante'
+              AND p.oid = to_regprocedure(%s)
+            """,
+            (signature, signature, signature),
+        ).fetchone()
+
+    assert function_acl is not None
+    assert function_acl[0:5] == ("dante_owner", True, "v", "u", False)
+    assert function_acl[5] == ["search_path=pg_catalog, dante, pg_temp"]
+    assert function_acl[6] == (
+        "uuid, text, text, uuid, uuid, uuid, timestamp without time zone, "
+        "timestamp without time zone"
+    )
+    assert function_acl[7] == (
+        "TABLE(subject_native_ref uuid, schedule_ref uuid, material_state_ref uuid, "
+        "starts_local_at timestamp without time zone, ends_local_at timestamp without time zone, "
+        "created_at timestamp with time zone, replayed boolean)"
     )
     assert function_acl[8:11] == (True, False, False)
 
