@@ -18,6 +18,9 @@ export type {
   TemporalActivityCreateResult,
   TemporalActivityDataSource,
   TemporalActivityRecord,
+  TemporalFloatingLocalScheduleRecord,
+  TemporalScheduledActivityCreateRequest,
+  TemporalScheduledActivityCreateResult,
 } from './activity-data-source';
 export { InMemoryTemporalWorkspace } from './in-memory-temporal-workspace';
 export {
@@ -33,6 +36,8 @@ export {
 export type {
   TemporalTimelineDataSource,
   TemporalTimelineEmptyWindow,
+  TemporalTimelineItemsWindow,
+  TemporalTimelineScheduledActivityItem,
   TemporalTimelineWindow,
   TemporalTimelineWindowRequest,
 } from './timeline-read';
