@@ -12,6 +12,13 @@ export type TimelineGroup = Readonly<{
   tone: TimelineSemanticTone;
 }>;
 
+export type TimelineCanonicalScheduledActivityBasis = Readonly<{
+  kind: 'scheduled-activity';
+  activityRef: string;
+  scheduleRef: string;
+  placementMaterialStateRef: string;
+}>;
+
 export type TimelineEvent = Readonly<{
   id: TimelineEventId;
   startMinute: number;
@@ -20,6 +27,11 @@ export type TimelineEvent = Readonly<{
   groupId: TimelineGroupId;
   /** Presentation-only override; grouping and filters continue to use groupId. */
   appearanceTone?: TimelineSemanticTone;
+  /**
+   * Exact canonical basis retained by a real Timeline projection. It is not a
+   * second owner and does not turn this ViewModel into canonical truth.
+   */
+  canonicalBasis?: TimelineCanonicalScheduledActivityBasis;
   origin?: 'create';
   meta?: string;
   subitems?: readonly string[];
