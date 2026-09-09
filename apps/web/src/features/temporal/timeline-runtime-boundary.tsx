@@ -1,6 +1,8 @@
 import { Temporal, detectDeviceTimeZone, type PlainDate } from '@dante/time';
 import {
+  createContext,
   useCallback,
+  useContext,
   useEffect,
   useMemo,
   useState,
@@ -11,18 +13,29 @@ import { useTranslation } from 'react-i18next';
 import './timeline-runtime-boundary.css';
 
 import { createRemoteTemporalTimelineDataSource } from './remote-timeline-read';
+import { subscribeTemporalTimelineInvalidation } from './timeline-invalidation';
 import type {
   TemporalTimelineDataSource,
+  TemporalTimelineWindow,
   TemporalTimelineWindowRequest,
 } from './timeline-read';
 
 const INITIAL_WINDOW_PAST_DAYS = 7;
 const INITIAL_WINDOW_FUTURE_DAYS = 35;
 
-type TemporalTimelineRuntimeState =
+export type TemporalTimelineRuntimeState =
   | Readonly<{ status: 'loading' }>
-  | Readonly<{ status: 'ready'; effectiveZoneId: string }>
+  | Readonly<{
+      status: 'ready';
+      effectiveZoneId: string;
+      window: TemporalTimelineWindow | null;
+    }>
   | Readonly<{ status: 'error' }>;
+
+export type TemporalTimelineRuntimeContextValue = Readonly<{
+  state: TemporalTimelineRuntimeState;
+  refresh: () => void;
+}>;
 
 type TemporalTimelineReadAttempt = Readonly<{
   request: TemporalTimelineWindowRequest;
@@ -34,7 +47,7 @@ type TemporalTimelineSettledState =
   | Readonly<{
       attempt: TemporalTimelineReadAttempt;
       status: 'ready';
-      effectiveZoneId: string;
+      window: TemporalTimelineWindow;
     }>
   | Readonly<{
       attempt: TemporalTimelineReadAttempt;
@@ -47,6 +60,19 @@ type TemporalTimelineRuntimeBoundaryProps = Readonly<{
   dataSource?: TemporalTimelineDataSource | undefined;
   mode?: string | undefined;
 }>;
+
+const TemporalTimelineRuntimeContext =
+  createContext<TemporalTimelineRuntimeContextValue | null>(null);
+
+export function useTemporalTimelineRuntime(): TemporalTimelineRuntimeContextValue {
+  const value = useContext(TemporalTimelineRuntimeContext);
+  if (value === null) {
+    throw new Error(
+      'useTemporalTimelineRuntime must be used inside TemporalTimelineRuntimeBoundary.',
+    );
+  }
+  return value;
+}
 
 function resolveAnchorDate(viewedDateIso: string | undefined): PlainDate {
   if (viewedDateIso !== undefined) {
@@ -68,7 +94,7 @@ function resolveRuntimeState(
   settledState: TemporalTimelineSettledState | null,
 ): TemporalTimelineRuntimeState {
   if (testMode) {
-    return { status: 'ready', effectiveZoneId: 'Etc/UTC' };
+    return { status: 'ready', effectiveZoneId: 'Etc/UTC', window: null };
   }
   if (settledState?.attempt !== attempt) {
     return { status: 'loading' };
@@ -76,7 +102,8 @@ function resolveRuntimeState(
   if (settledState.status === 'ready') {
     return {
       status: 'ready',
-      effectiveZoneId: settledState.effectiveZoneId,
+      effectiveZoneId: settledState.window.effectiveZoneId,
+      window: settledState.window,
     };
   }
   return { status: 'error' };
@@ -142,7 +169,7 @@ export function TemporalTimelineRuntimeBoundary({
         setSettledState({
           attempt,
           status: 'ready',
-          effectiveZoneId: window.effectiveZoneId,
+          window,
         });
       })
       .catch(() => {
@@ -158,48 +185,63 @@ export function TemporalTimelineRuntimeBoundary({
     };
   }, [attempt]);
 
-  const state = resolveRuntimeState(testMode, attempt, settledState);
+  const refresh = useCallback(() => {
+    if (!testMode) {
+      setRetryRevision((revision) => revision + 1);
+    }
+  }, [testMode]);
 
-  const retry = useCallback(() => {
-    setRetryRevision((revision) => revision + 1);
-  }, []);
+  useEffect(() => {
+    if (testMode) {
+      return;
+    }
+    return subscribeTemporalTimelineInvalidation(refresh);
+  }, [refresh, testMode]);
+
+  const state = resolveRuntimeState(testMode, attempt, settledState);
+  const contextValue = useMemo<TemporalTimelineRuntimeContextValue>(
+    () => Object.freeze({ state, refresh }),
+    [refresh, state],
+  );
 
   return (
-    <div
-      className="temporal-timeline-runtime-boundary"
-      data-temporal-read-state={state.status}
-      data-temporal-effective-zone={
-        state.status === 'ready' ? state.effectiveZoneId : undefined
-      }
-    >
-      {children}
+    <TemporalTimelineRuntimeContext.Provider value={contextValue}>
+      <div
+        className="temporal-timeline-runtime-boundary"
+        data-temporal-read-state={state.status}
+        data-temporal-effective-zone={
+          state.status === 'ready' ? state.effectiveZoneId : undefined
+        }
+      >
+        {children}
 
-      {state.status === 'loading' ? (
-        <div
-          className="temporal-timeline-runtime-status"
-          role="status"
-          aria-live="polite"
-        >
-          {t(($) => $.common.temporalRuntime.timeline.loading)}
-        </div>
-      ) : null}
+        {state.status === 'loading' ? (
+          <div
+            className="temporal-timeline-runtime-status"
+            role="status"
+            aria-live="polite"
+          >
+            {t(($) => $.common.temporalRuntime.timeline.loading)}
+          </div>
+        ) : null}
 
-      {state.status === 'error' ? (
-        <div
-          className="temporal-timeline-runtime-status temporal-timeline-runtime-status--error"
-          role="alert"
-        >
-          <strong>
-            {t(($) => $.common.temporalRuntime.timeline.errorTitle)}
-          </strong>
-          <span>
-            {t(($) => $.common.temporalRuntime.timeline.errorDescription)}
-          </span>
-          <button type="button" onClick={retry}>
-            {t(($) => $.common.temporalRuntime.timeline.retry)}
-          </button>
-        </div>
-      ) : null}
-    </div>
+        {state.status === 'error' ? (
+          <div
+            className="temporal-timeline-runtime-status temporal-timeline-runtime-status--error"
+            role="alert"
+          >
+            <strong>
+              {t(($) => $.common.temporalRuntime.timeline.errorTitle)}
+            </strong>
+            <span>
+              {t(($) => $.common.temporalRuntime.timeline.errorDescription)}
+            </span>
+            <button type="button" onClick={refresh}>
+              {t(($) => $.common.temporalRuntime.timeline.retry)}
+            </button>
+          </div>
+        ) : null}
+      </div>
+    </TemporalTimelineRuntimeContext.Provider>
   );
 }
