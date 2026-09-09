@@ -13,8 +13,7 @@ import { createLocalTemporalCreateRuntime } from './temporal-create-runtime';
 
 const CANONICAL_ACTIVITY_REF = '0199a8c0-5e71-7bc0-8ad0-a2f403f5617d';
 const CANONICAL_SCHEDULE_REF = '0199a8c0-6e72-7cd1-9be1-b3f51406728e';
-const CANONICAL_PLACEMENT_STATE_REF =
-  '0199a8c0-7e73-7de2-8cf2-c4062517839f';
+const CANONICAL_PLACEMENT_STATE_REF = '0199a8c0-7e73-7de2-8cf2-c4062517839f';
 
 function runtimeOptions(seed: string) {
   return {

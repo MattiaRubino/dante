@@ -32,8 +32,7 @@ export type TemporalTimelineItemsWindow = Readonly<{
 }>;
 
 export type TemporalTimelineWindow =
-  | TemporalTimelineEmptyWindow
-  | TemporalTimelineItemsWindow;
+  TemporalTimelineEmptyWindow | TemporalTimelineItemsWindow;
 
 export interface TemporalTimelineDataSource {
   loadWindow(

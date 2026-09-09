@@ -105,9 +105,7 @@ describe('remote temporal Timeline data source', () => {
     expect(window.items[0]?.startsLocalAt.toString()).toBe(
       '2026-09-09T14:15:00',
     );
-    expect(window.items[0]?.endsLocalAt.toString()).toBe(
-      '2026-09-09T15:00:00',
-    );
+    expect(window.items[0]?.endsLocalAt.toString()).toBe('2026-09-09T15:00:00');
   });
 
   it('does not replace backend failure with an empty success', async () => {

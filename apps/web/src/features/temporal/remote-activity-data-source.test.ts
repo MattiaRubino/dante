@@ -127,9 +127,7 @@ describe('remote temporal Activity data source', () => {
     expect(result.schedule.startsLocalAt.toString()).toBe(
       '2026-09-09T14:15:00',
     );
-    expect(result.schedule.endsLocalAt.toString()).toBe(
-      '2026-09-09T15:00:00',
-    );
+    expect(result.schedule.endsLocalAt.toString()).toBe('2026-09-09T15:00:00');
     expect(result.replayed).toBe(false);
     expect(fetchFn).toHaveBeenCalledTimes(2);
   });
