@@ -7,6 +7,7 @@
 - **Required companion audits:**
   - `docs/workstreams/timeline-temporal-operational-second-audit-2026-09-07.md`
   - `docs/workstreams/timeline-temporal-operational-final-pre-roadmap-audit-2026-09-07.md`
+- **B02 execution plan:** `docs/workstreams/timeline-temporal-operational-b02-execution-plan.md`
 - **Purpose:** freeze the complete semantic/product/runtime work map and act as the live green-check implementation ledger until the whole vertical closes.
 - **Important:** semantic sections are architecture/work-map authority, not API/DDL authority, and do not reopen accepted Domain / Logical / Physical / CP1–CP6 decisions.
 - **Change-control rule:** implementation convenience, UI convenience, provider shape, ORM convenience, benchmark precedent, or roadmap pressure cannot create a new semantic root or collapse an accepted distinction.
@@ -3257,7 +3258,7 @@ NEW DOMAIN OWNER REQUIRED                      0
 EXTERNAL BENCHMARK-REQUIRED OWNER              0
 OPEN-BY-DESIGN QUESTIONS                       EXPLICITLY REGISTERED
 ROADMAP                                        FROZEN
-IMPLEMENTATION                                 ACTIVE — B00/B01 CLOSED; B02 NEXT
+IMPLEMENTATION                                 ACTIVE — B00/B01 CLOSED; B02 IN PROGRESS
 ```
 
 The roadmap is authoritative for sequencing, while this map is authoritative for semantic coverage and live completion tracking.
@@ -3349,7 +3350,7 @@ B00/B01 closure evidence is anchored by exact-head reconciliation run `342616077
 
 ## 34.4 B02 — Schedule Core
 
-- ⬜ **[SCH-001]** Re-open Schedule authority/current CP6 placement tables/views/validators before implementation.
+- ✅ **[SCH-001]** Re-open Schedule authority/current CP6 placement tables/views/validators before implementation. — Deep-read completed and frozen in `timeline-temporal-operational-b02-execution-plan.md`; B02 reuses the existing CP6 Schedule owner/placement/current/history machinery rather than creating a competing model.
 - ⬜ **[SCH-002]** Preserve subject eligibility Activity/Event/Occurrence; first activate Activity path.
 - ⬜ **[SCH-003]** Implement/consume date-span placement correctly.
 - ⬜ **[SCH-004]** Implement/consume floating-local placement correctly.
@@ -3880,18 +3881,19 @@ Current workstream state:
 SEMANTIC MAP / AUDITS / ROADMAP              ✅ COMPLETE
 B00 REAL DATA SPINE                          ✅ CLOSED
 B01 ACTIVITY CORE                            ✅ CLOSED
+B02 SCHEDULE CORE                            🟨 IN PROGRESS — authority reopen/plan only
 CANDIDATE DATABASE                           ✅ PostgreSQL 18.6 / Alembic _19 / 91|5|19|77|177|95|275|0|0|0
 B00 MANUAL userTest                          ✅ APPROVED — 2026-09-08
 B01 MANUAL userTest                          ✅ APPROVED — 2026-09-08
 EXACT-HEAD RECONCILIATION                     ✅ run 34261607749 on 303e75c56716008bfc352e92411884760727e043
 EPHEMERAL B01 RECONCILIATION WORKFLOW         ✅ REMOVED IN B00/B01 CLOSURE
-NEXT IMPLEMENTATION BLOCK                     B02 — SCHEDULE CORE
+NEXT IMPLEMENTATION SLICE                     B02-A — FIRST CANONICAL SCHEDULED ACTIVITY LOOP
 ```
 
 B00 established the truthful real-data spine: normal runtime no longer substitutes prototype Timeline data or fake persistence for backend truth. B01 established the first PostgreSQL-backed temporal product write/read path: one canonical unplaced Activity identity created through governed idempotent backend semantics and projected through the real Planning Tray.
 
 B01 deliberately did **not** implement Schedule, estimated effort, Event, Routine, Session, Actual, Outcome or generic completion. Those capabilities remain governed by their later roadmap gates. In particular, Planning Tray `list_unplaced()` is valid for B01 because no Schedule history exists yet; B02 must redefine “unplaced” as absence of a **current accepted placement**, not absence of any historical Schedule row.
 
-Before any B02 implementation write, re-open current Schedule Domain/Logical/Physical/CP6 authority and inspect the exact `_19` candidate plus current protected-main truth. The requested B02 briefing/gate occurs before code or schema changes.
+B02 Schedule authority/current CP6 placement truth has now been re-opened and frozen in the B02 execution plan. No Schedule product behavior is implemented by that documentation slice; the next product/schema/frontend write requires the separately reviewed B02-A exact PRE-SCOPE gate.
 
 This ledger is intentionally verbose. Its purpose is to make omission visible: if a capability or required proof is not green, it is not done.
