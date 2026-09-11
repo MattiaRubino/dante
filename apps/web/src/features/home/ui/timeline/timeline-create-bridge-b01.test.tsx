@@ -45,7 +45,7 @@ function runtimeWithUnplaced(
     createScheduledActivity: vi.fn<
       TemporalActivityDataSource['createScheduledActivity']
     >(() =>
-      Promise.reject(new Error('scheduled create is not part of this B01 read proof')),
+      Promise.reject(new Error('scheduled create outside B01 read proof')),
     ),
     loadUnplaced,
   }) satisfies TemporalActivityDataSource;
