@@ -69,7 +69,7 @@ class ScheduleEstablishOperationRow(Base):
         ForeignKeyConstraint(
             ["subject_native_ref"],
             ["dante.native_address.native_ref"],
-            name="fk_schedule_establish_operation_subject_native_ref_native_address",
+            name="fk_schedule_establish_op_subject_native_ref_native_address",
             match="SIMPLE",
             onupdate="NO ACTION",
             ondelete="NO ACTION",
@@ -87,7 +87,7 @@ class ScheduleEstablishOperationRow(Base):
         ForeignKeyConstraint(
             ["material_state_ref"],
             ["dante.schedule_placement_state.material_state_ref"],
-            name="fk_schedule_establish_operation_material_state_ref_placement_state",
+            name="fk_schedule_establish_op_material_state_ref_placement_state",
             match="SIMPLE",
             onupdate="NO ACTION",
             ondelete="NO ACTION",

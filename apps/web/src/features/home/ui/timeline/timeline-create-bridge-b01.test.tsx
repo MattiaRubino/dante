@@ -42,6 +42,11 @@ function runtimeWithUnplaced(
     createActivity: vi.fn<TemporalActivityDataSource['createActivity']>(() =>
       Promise.reject(new Error('create is not part of this read proof')),
     ),
+    createScheduledActivity: vi.fn<
+      TemporalActivityDataSource['createScheduledActivity']
+    >(() =>
+      Promise.reject(new Error('scheduled create is not part of this B01 read proof')),
+    ),
     loadUnplaced,
   }) satisfies TemporalActivityDataSource;
   const runtime = createLocalTemporalCreateRuntime({

@@ -56,7 +56,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["subject_native_ref"],
             [f"{_SCHEMA}.native_address.native_ref"],
-            name="fk_schedule_establish_operation_subject_native_ref_native_address",
+            name="fk_schedule_establish_op_subject_native_ref_native_address",
             onupdate="NO ACTION",
             ondelete="NO ACTION",
             deferrable=False,
@@ -72,7 +72,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["material_state_ref"],
             [f"{_SCHEMA}.schedule_placement_state.material_state_ref"],
-            name="fk_schedule_establish_operation_material_state_ref_placement_state",
+            name="fk_schedule_establish_op_material_state_ref_placement_state",
             onupdate="NO ACTION",
             ondelete="NO ACTION",
             deferrable=False,
@@ -357,7 +357,7 @@ def upgrade() -> None:
     )
     op.execute(
         sa.text(
-            "ALTER FUNCTION dante.establish_self_floating_schedule(" 
+            "ALTER FUNCTION dante.establish_self_floating_schedule("
             "uuid,text,text,uuid,uuid,uuid,timestamp without time zone,timestamp without time zone) "
             f"OWNER TO {_OWNER}"
         )
@@ -372,14 +372,14 @@ def upgrade() -> None:
     op.execute(sa.text(f"GRANT SELECT ON TABLE dante.schedule_establish_operation TO {_RUNTIME}"))
     op.execute(
         sa.text(
-            "REVOKE ALL PRIVILEGES ON FUNCTION dante.establish_self_floating_schedule(" 
+            "REVOKE ALL PRIVILEGES ON FUNCTION dante.establish_self_floating_schedule("
             "uuid,text,text,uuid,uuid,uuid,timestamp without time zone,timestamp without time zone) "
             f"FROM PUBLIC, {_RUNTIME}, {_MIGRATOR}"
         )
     )
     op.execute(
         sa.text(
-            "GRANT EXECUTE ON FUNCTION dante.establish_self_floating_schedule(" 
+            "GRANT EXECUTE ON FUNCTION dante.establish_self_floating_schedule("
             "uuid,text,text,uuid,uuid,uuid,timestamp without time zone,timestamp without time zone) "
             f"TO {_RUNTIME}"
         )
@@ -406,14 +406,14 @@ def downgrade() -> None:
     )
     op.execute(
         sa.text(
-            "REVOKE ALL PRIVILEGES ON FUNCTION dante.establish_self_floating_schedule(" 
+            "REVOKE ALL PRIVILEGES ON FUNCTION dante.establish_self_floating_schedule("
             "uuid,text,text,uuid,uuid,uuid,timestamp without time zone,timestamp without time zone) "
             f"FROM PUBLIC, {_RUNTIME}, {_MIGRATOR}"
         )
     )
     op.execute(
         sa.text(
-            "DROP FUNCTION dante.establish_self_floating_schedule(" 
+            "DROP FUNCTION dante.establish_self_floating_schedule("
             "uuid,text,text,uuid,uuid,uuid,timestamp without time zone,timestamp without time zone)"
         )
     )
