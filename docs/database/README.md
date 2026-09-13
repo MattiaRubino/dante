@@ -1,13 +1,13 @@
 # DANTE Database System of Record
 
 - **Status:** CURRENT / AUTHORITATIVE DATABASE REFERENCE
-- **Last reconciled:** 2026-09-09
+- **Last reconciled:** 2026-09-13
 - **PostgreSQL:** 18.6
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
-- **Timeline candidate Alembic head:** `20260909_21`
-- **Timeline candidate topology:** `92|5|20|77|181|99|277|0|0|0`
+- **Timeline candidate Alembic head:** `20260913_22`
+- **Timeline candidate topology:** `93|5|21|77|184|103|279|0|0|0`
 - **Pre-vertical integration:** PR #66 / merge `1ecd58145860aebfaaa3dc1bd356b90f7a8eb19b`
 - **Authenticated DANTE context authority:** `../architecture/authenticated-dante-context.md`
 - **Access/Auth reference:** `access-auth.md`
@@ -80,12 +80,14 @@ Recovery and Access/Auth originated as sibling children of `20260826_08`; both a
             ↓
         20260909_20 b02_schedule_establish        [Timeline B02-A candidate]
             ↓
-        20260909_21 b02_schedule_acl_hardening    [current Timeline candidate head]
+        20260909_21 b02_schedule_acl_hardening
+            ↓
+        20260913_22 b02_schedule_revision          [current Timeline candidate head]
 ```
 
-`20260904_17` is the accepted no-DDL merge revision. `20260906_18` is current protected-main authority. `_19`, `_20` and `_21` are forward-only candidate descendants on `feature/timeline-temporal-operational`; they do not become protected-main authority merely by existing on this branch.
+`20260904_17` is the accepted no-DDL merge revision. `20260906_18` is current protected-main authority. `_19`, `_20`, `_21` and `_22` are forward-only candidate descendants on `feature/timeline-temporal-operational`; they do not become protected-main authority merely by existing on this branch.
 
-No accepted migration was rebased, renumbered or flattened. `_21` corrects the B02 runtime ACL forward rather than editing `_20`.
+No accepted migration was rebased, renumbered or flattened. `_21` corrects the B02 runtime ACL forward rather than editing `_20`; `_22` adds the separately gated B02-C revision capability.
 
 ## 3. Current topology
 
@@ -159,16 +161,20 @@ Exact `_19 → _20` structural delta:
 
 `20260909_21` changes ACL only and therefore adds no table/view/routine/index/FK/CHECK.
 
+### 3.4 Timeline B02-C candidate delta
+
+`20260913_22` adds `dante.schedule_revision_operation` and `dante.revise_self_floating_schedule(...)`. Exact `_21 → _22` delta: one table, one routine, three indexes, four foreign keys and two CHECK constraints. It retains the existing Schedule owner and immutable placement history while moving explicit currentness from the exact expected MaterialStateRef to one new state.
+
 Current candidate topology is therefore:
 
 ```text
-92 tables
+93 tables
 5 views
-20 routines
+21 routines
 77 triggers
-181 physical indexes
-99 foreign keys
-277 CHECK constraints
+184 physical indexes
+103 foreign keys
+279 CHECK constraints
 0 enums/domains
 0 sequences
 0 materialized views
@@ -219,19 +225,21 @@ The exact recovery candidate was `21353469464f1371f9913dc78933f4ee42698f33`; PR 
 
 Historical CP6, Recovery and Access/Auth checkpoints remain evidence in Git, archived branch records and dated validation records. They do not override current protected-main truth.
 
-### 4.2 Timeline B01/B02-A candidate boundary
+### 4.2 Timeline B01/B02-A/B02-C candidate boundary
 
-At this reconciliation slice the current `_21` candidate must prove before B02-A can be called green:
+At this reconciliation slice the current `_22` candidate carries the following obligations; B02-C evidence is pending because its test gate is deliberately deferred:
 
 ```text
-single repository Alembic head = 20260909_21
+single repository Alembic head = 20260913_22
 Dictionary object tree/counts = live PostgreSQL catalog
-SQLAlchemy mappings = all 92 DANTE tables
-candidate topology = 92|5|20|77|181|99|277|0|0|0
+SQLAlchemy mappings = all 93 DANTE tables
+candidate topology = 93|5|21|77|184|103|279|0|0|0
 runtime table ACL = Dictionary
 create_self_activity owner/security/search_path/EXECUTE = exact
 establish_self_floating_schedule owner/security/search_path/EXECUTE = exact
 schedule_establish_operation direct runtime table privileges = none
+revise_self_floating_schedule exact expected-state/history/replay proof = PENDING
+schedule_revision_operation direct runtime table privileges = none
 fresh DB → head = PASS
 head → base → head = PASS when no canonical B01/B02-A data exists
 canonical B01 Activity intention → _19→_18 downgrade = REJECTED
@@ -349,7 +357,7 @@ suppression distinct from EmailIdentity ownership/verification
 
 On protected `main`, materialization remains `20260906_18 / 89|5|18|77|173|91|272`.
 
-On the current Timeline candidate branch, checked-out Dictionary materialization is `20260909_21 / 92|5|20|77|181|99|277`. Candidate entries include B01 `activity_intention`, `activity_create_operation`, `create_self_activity` and B02-A `schedule_establish_operation`, `establish_self_floating_schedule`. They must match SQLAlchemy/Alembic/live PostgreSQL exactly before this slice can close.
+On the current Timeline candidate branch, checked-out Dictionary materialization is `20260913_22 / 93|5|21|77|184|103|279`. Candidate entries include B01 Activity objects, B02-A Schedule establishment objects and B02-C `schedule_revision_operation` plus `revise_self_floating_schedule`. They must match SQLAlchemy/Alembic/live PostgreSQL exactly before this slice can close.
 
 Operational cluster roles such as `dante_observer` are deliberately not fake business objects; their security contract is carried by technical-role/provisioning references and live ACL tests.
 
@@ -361,14 +369,14 @@ The accepted LOCAL recovery model keeps database-local proof distinct from appli
 historical CP07 database-local reopen              PASS FOR EXECUTED HISTORICAL SCOPE
 historical CP08 Email/application reopen            PASS FOR EXECUTED HISTORICAL SCOPE
 pre-vertical exact-head database-local recovery     PASS @ 21353469464f1371f9913dc78933f4ee42698f33
-Timeline B01/B02-A _21 recovery-specific rerun       NOT CLAIMED BY THIS SLICE
+Timeline B01/B02-A/B02-C _22 recovery-specific rerun       NOT CLAIMED BY THIS SLICE
 remote backup provider                              TBD / NOT ACTIVATED
 production/cloud recovery                           NOT CLAIMED
 ```
 
 The final pre-vertical rehearsal proved the protected-main `20260906_18` database-local Recovery contract, including observer provisioning, structural/security acceptance, deterministic PITR, MaterialState anti-resurrection reconciliation and database-local reopen. It did not silently relabel historical CP08 application/Email reopen evidence as newly executed.
 
-B01 adds dependent canonical/control persistence. B02-A adds one operation-control table and creates ordinary CP6 Schedule/material-history rows through a bounded capability, but introduces no new MaterialState retirement facet, outbox family or provider/object-store state. Whole-vertical recovery closure remains B14; no new recovery proof is fabricated here.
+B01 adds dependent canonical/control persistence. B02-A and B02-C each add one operation-control table and create ordinary CP6 Schedule/material-history rows through a bounded capability, but introduces no new MaterialState retirement facet, outbox family or provider/object-store state. Whole-vertical recovery closure remains B14; no new recovery proof is fabricated here.
 
 Current operator authority is `../operations/postgres-recovery-runbook.md`; executable recovery truth lives under `../../infra/local/postgres/recovery/`.
 
@@ -384,4 +392,4 @@ No future vertical may bypass these contracts merely because its data is “tech
 
 `20260906_18` is reachable from protected `main` through PR #66 and remains current protected-main truth.
 
-`20260909_21` is reachable only on the unmerged Timeline workstream branch at this point. It is candidate truth, not protected-main truth, until workstream validation and normal repository integration complete.
+`20260913_22` is reachable only on the unmerged Timeline workstream branch at this point. It is candidate truth, not protected-main truth, until workstream validation and normal repository integration complete.

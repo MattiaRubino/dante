@@ -1,7 +1,7 @@
 # Timeline / Temporal-Operational — B02 Schedule Core Execution Plan
 
 - **Status:** ACTIVE EXECUTION CONTRACT / B02 IN PROGRESS
-- **Date:** 2026-09-09
+- **Date:** 2026-09-13
 - **Branch:** `feature/timeline-temporal-operational`
 - **Pre-scope branch head:** `4240a1789e8bf9dd0ca637715c7a8809677714a8`
 - **Roadmap block:** B02 — Schedule Core
@@ -788,19 +788,22 @@ B02 block                  🟨 IN PROGRESS
 SCH-001 authority reopen   ✅ DONE
 B02-A candidate            🟨 IMPLEMENTED — automated/manual proof pending
 B02-B candidate            🟨 IMPLEMENTED — automated/manual proof pending
+B02-C candidate            🟨 IMPLEMENTED — automated/manual proof pending
 ```
 
 B02-B adds the governed path from an existing canonical unplaced Activity to an accepted floating-local same-day Schedule. It reuses the Activity reference, creates no Activity clone, keeps scheduled duration on Schedule, removes the Activity from Planning Tray only after canonical commit/refetch, and invalidates the authoritative Timeline read so the accepted item is fetched exactly once.
 
 The B02-B read rule is now explicit: “unplaced” means no current accepted Schedule placement. Historical Schedule ownership alone must never permanently exclude an Activity after a future valid unschedule.
 
+B02-C adds governed revision of that accepted floating-local same-day placement. Timeline movement and the anchored time editor submit the stable ScheduleRef plus the exact current placement MaterialStateRef; PostgreSQL creates one new immutable placement state, closes/opens current-history episodes and moves the explicit current binding atomically. The UI performs no optimistic canonical move and reloads authoritative current truth exactly once after success. Stale expected state and operation-id reuse cannot overwrite newer truth.
+
 No `SCH-*` or `B02-T*` checkbox is promoted by this candidate update. CI execution, targeted automated evidence and the user’s manual acceptance remain deliberately deferred.
 
 Next required execution gate:
 
 ```text
-B02-B targeted automated proof (without premature broad CI)
-→ user manual acceptance checkpoint
+B02-C targeted automated proof (CI still deferred)
+→ user manual B02-C acceptance checkpoint
 → evidence-only ledger reconciliation
-→ separately reviewed B02-C exact PRE-SCOPE
+→ separately reviewed B02-D exact PRE-SCOPE
 ```

@@ -20,11 +20,19 @@ from dante.platform.database.metadata import Base
 
 pytestmark = pytest.mark.postgres
 
-_CURRENT_REVISION = "20260909_21"
+_CURRENT_REVISION = "20260913_22"
 _REPO_ROOT = Path(__file__).resolve().parents[5]
 _DICTIONARY_ROOT = _REPO_ROOT / "docs" / "database" / "dictionary"
 _RUNTIME_ROLE = "dante_runtime"
-_TABLE_PRIVILEGES = ("SELECT", "INSERT", "UPDATE", "DELETE", "TRUNCATE", "REFERENCES", "TRIGGER")
+_TABLE_PRIVILEGES = (
+    "SELECT",
+    "INSERT",
+    "UPDATE",
+    "DELETE",
+    "TRUNCATE",
+    "REFERENCES",
+    "TRIGGER",
+)
 _COLUMN_PRIVILEGES = ("SELECT", "INSERT", "UPDATE", "REFERENCES")
 
 
@@ -146,7 +154,9 @@ def test_current_catalog_matches_dictionary_sqlalchemy_and_alembic(
         }
         live_views = {
             str(row[0])
-            for row in connection.execute("SELECT viewname FROM pg_views WHERE schemaname='dante'")
+            for row in connection.execute(
+                "SELECT viewname FROM pg_views WHERE schemaname='dante'"
+            )
         }
         live_routines = {
             str(row[0])
@@ -233,7 +243,9 @@ def test_current_catalog_matches_dictionary_sqlalchemy_and_alembic(
     assert scripts.get_heads() == [_CURRENT_REVISION]
 
 
-def _expected_runtime_acl(entry: dict[str, Any]) -> tuple[set[str], dict[str, set[str]]]:
+def _expected_runtime_acl(
+    entry: dict[str, Any],
+) -> tuple[set[str], dict[str, set[str]]]:
     table_privileges: set[str] = set()
     column_privileges: dict[str, set[str]] = {}
     for grant in entry["security"]["expected_grants"]:
@@ -248,7 +260,9 @@ def _expected_runtime_acl(entry: dict[str, Any]) -> tuple[set[str], dict[str, se
     return table_privileges, column_privileges
 
 
-def test_runtime_table_and_column_acl_matches_dictionary(migrated_database: Any) -> None:
+def test_runtime_table_and_column_acl_matches_dictionary(
+    migrated_database: Any,
+) -> None:
     tables = _entries("tables")
 
     with _admin(migrated_database) as connection:
@@ -264,7 +278,8 @@ def test_runtime_table_and_column_acl_matches_dictionary(migrated_database: Any)
             relation = f"dante.{table_name}"
 
             actual_table = connection.execute(
-                "SELECT " + ", ".join("has_table_privilege(%s,%s,%s)" for _ in _TABLE_PRIVILEGES),
+                "SELECT "
+                + ", ".join("has_table_privilege(%s,%s,%s)" for _ in _TABLE_PRIVILEGES),
                 tuple(
                     value
                     for privilege in _TABLE_PRIVILEGES
@@ -275,10 +290,14 @@ def test_runtime_table_and_column_acl_matches_dictionary(migrated_database: Any)
                 privilege in table_privileges for privilege in _TABLE_PRIVILEGES
             ), table_name
 
-            for column in map(str, (item["name"] for item in entry["structure"]["columns"])):
+            for column in map(
+                str, (item["name"] for item in entry["structure"]["columns"])
+            ):
                 actual_column = connection.execute(
                     "SELECT "
-                    + ", ".join("has_column_privilege(%s,%s,%s,%s)" for _ in _COLUMN_PRIVILEGES),
+                    + ", ".join(
+                        "has_column_privilege(%s,%s,%s,%s)" for _ in _COLUMN_PRIVILEGES
+                    ),
                     tuple(
                         value
                         for privilege in _COLUMN_PRIVILEGES

@@ -43,10 +43,9 @@ export function canonicalScheduledActivityTimelineEvent(
 }
 
 /**
- * B02-A is append-only from the Timeline UI perspective: establish + read.
- * Replacing/removing already materialized cards belongs to later Schedule
- * mutation slices, so this hook only materializes authoritative current items.
- * The Timeline reducer remains the sole owner of UI state.
+ * Materialize each authoritative current projection into the UI reducer.
+ * The reducer reconciles by ScheduleRef, so a B02-C refetch replaces the prior
+ * placement basis without treating the optimistic client as canonical truth.
  */
 export function useAuthoritativeTimelineHydration(
   onMaterialize: (dateKey: string, event: TimelineEvent) => void,

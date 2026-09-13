@@ -43,6 +43,23 @@ describe('authoritative Timeline hydration', () => {
     expect(projection.event.endMinute).toBeCloseTo(885.508333, 5);
   });
 
+  it('carries the new exact MaterialState basis for the same revised Schedule identity', () => {
+    const revised = Object.freeze({
+      ...scheduledActivity(),
+      placementMaterialStateRef: '0199a8c0-5e76-7bc0-8ad0-a2f403f5617d',
+      startsLocalAt: Temporal.PlainDateTime.from('2026-09-10T09:00'),
+      endsLocalAt: Temporal.PlainDateTime.from('2026-09-10T10:00'),
+    }) satisfies TemporalTimelineScheduledActivityItem;
+
+    const projection = canonicalScheduledActivityTimelineEvent(revised);
+
+    expect(projection.dateKey).toBe('2026-09-10');
+    expect(projection.event.id).toBe(SCHEDULE_REF);
+    expect(projection.event.canonicalBasis?.placementMaterialStateRef).toBe(
+      '0199a8c0-5e76-7bc0-8ad0-a2f403f5617d',
+    );
+  });
+
   it('does not collapse two Schedule identities for the same Activity', () => {
     const first = scheduledActivity();
     const second = Object.freeze({

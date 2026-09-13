@@ -764,9 +764,11 @@ export function TimelineDayStream({
       eventId: runtime.event.id,
       startMinute: bounded,
     });
-    onMoveFeedback(
-      `${t(($) => $.common.home.timeline.feedback.moved)} ${formatTimelineMinute(bounded)}–${formatTimelineMinute(bounded + duration)}`,
-    );
+    if (runtime.event.canonicalBasis === undefined) {
+      onMoveFeedback(
+        `${t(($) => $.common.home.timeline.feedback.moved)} ${formatTimelineMinute(bounded)}–${formatTimelineMinute(bounded + duration)}`,
+      );
+    }
     finishDragVisual();
   };
 
@@ -903,8 +905,10 @@ export function TimelineDayStream({
         startMinute,
         undoGroup: 'keyboard-nudge',
       });
-      onMoveFeedback(feedback);
-      scheduleEventReveal(event.id, true);
+      if (event.canonicalBasis === undefined) {
+        onMoveFeedback(feedback);
+        scheduleEventReveal(event.id, true);
+      }
     };
 
     const snap = timelineDragSnapMinutes(state.zoom);

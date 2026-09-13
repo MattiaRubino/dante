@@ -1,4 +1,4 @@
-import type { PlainDate } from '@dante/time';
+import { Temporal, type PlainDate } from '@dante/time';
 import {
   type KeyboardEvent,
   type PointerEvent as ReactPointerEvent,
@@ -13,6 +13,9 @@ import { useTranslation } from 'react-i18next';
 
 import './timeline.css';
 
+import { TemporalScheduleRemoteError } from '../../../temporal/remote-schedule-data-source';
+import { useTemporalTimelineRuntime } from '../../../temporal/timeline-runtime-boundary';
+import { useAuthoritativeTimelineHydration } from './timeline-authoritative-hydration';
 import { createTimelineLocalContext } from './model/timeline-context-catalog';
 import {
   TIMELINE_PROTOTYPE_NOW_MINUTE,
@@ -28,6 +31,7 @@ import {
 } from './model/timeline-policy';
 import {
   createInitialTimelineState,
+  findTimelineEvent,
   timelineReducer,
 } from './model/timeline-state';
 import {
@@ -93,6 +97,22 @@ type DetailState = Readonly<{
   opener: HTMLElement;
 }>;
 
+type ScheduleNotice = Readonly<{
+  kind: 'status' | 'error';
+  message: string;
+}>;
+
+function localDateTimeAtMinute(dateKey: string, minute: number) {
+  if (!Number.isFinite(minute) || minute < 0 || minute >= 1440) {
+    throw new RangeError(
+      'Canonical Schedule time must remain inside one local day.',
+    );
+  }
+  return Temporal.PlainDate.from(dateKey)
+    .toPlainDateTime()
+    .add({ nanoseconds: Math.round(minute * 60_000_000_000) });
+}
+
 export function TimelineSurface({
   expanded,
   onExpandedChange,
@@ -102,6 +122,7 @@ export function TimelineSurface({
   onDateNavigation,
 }: TimelineSurfaceProps) {
   const { t, i18n } = useTranslation('common');
+  const { reviseSchedule } = useTemporalTimelineRuntime();
   const locale = i18n.resolvedLanguage ?? i18n.language;
   // Phase 1 parity deliberately uses the accepted prototype clock. The mock
   // dataset is built around this instant; using wall-clock time makes the
@@ -125,6 +146,9 @@ export function TimelineSurface({
   const [nowNeeded, setNowNeeded] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastVisible, setToastVisible] = useState(false);
+  const [scheduleNotice, setScheduleNotice] = useState<ScheduleNotice | null>(
+    null,
+  );
 
   const rootRef = useRef<HTMLElement | null>(null);
   const gridRef = useRef<HTMLDivElement | null>(null);
@@ -150,6 +174,16 @@ export function TimelineSurface({
   const lastScrollTopRef = useRef<number | null>(null);
   const scrollFrameRef = useRef<number | null>(null);
   const toastTimerRef = useRef<number | null>(null);
+  const scheduleNoticeTimerRef = useRef<number | null>(null);
+  const pendingScheduleRefsRef = useRef(new Set<string>());
+
+  const materializeAuthoritativeEvent = useCallback(
+    (dateKey: string, event: TimelineEvent) => {
+      dispatch({ type: 'materialize-event', dateKey, event });
+    },
+    [],
+  );
+  useAuthoritativeTimelineHydration(materializeAuthoritativeEvent);
 
   const renderedDayInputs = useMemo(
     () => ({
@@ -195,6 +229,90 @@ export function TimelineSurface({
       toastTimerRef.current = null;
     }, TIMELINE_POLICY.feedback.toastDurationMs);
   }, []);
+
+  const showScheduleNotice = useCallback((notice: ScheduleNotice) => {
+    setScheduleNotice(notice);
+    if (scheduleNoticeTimerRef.current !== null) {
+      window.clearTimeout(scheduleNoticeTimerRef.current);
+    }
+    scheduleNoticeTimerRef.current = window.setTimeout(() => {
+      setScheduleNotice(null);
+      scheduleNoticeTimerRef.current = null;
+    }, TIMELINE_POLICY.feedback.toastDurationMs);
+  }, []);
+
+  const reviseCanonicalEvent = useCallback(
+    (
+      event: TimelineEvent,
+      dateKey: string,
+      startMinute: number,
+      endMinute: number,
+    ) => {
+      const basis = event.canonicalBasis;
+      if (
+        basis === undefined ||
+        pendingScheduleRefsRef.current.has(basis.scheduleRef)
+      ) {
+        return;
+      }
+
+      let startsLocalAt: ReturnType<typeof localDateTimeAtMinute>;
+      let endsLocalAt: ReturnType<typeof localDateTimeAtMinute>;
+      try {
+        startsLocalAt = localDateTimeAtMinute(dateKey, startMinute);
+        endsLocalAt = localDateTimeAtMinute(dateKey, endMinute);
+      } catch {
+        showScheduleNotice({
+          kind: 'error',
+          message: t(
+            ($) => $.common.home.timeline.feedback.scheduleRevisionUnavailable,
+          ),
+        });
+        return;
+      }
+
+      pendingScheduleRefsRef.current.add(basis.scheduleRef);
+      void reviseSchedule({
+        scheduleRef: basis.scheduleRef,
+        expectedPlacementMaterialStateRef: basis.placementMaterialStateRef,
+        placement: {
+          kind: 'floating-local-interval',
+          startsLocalAt,
+          endsLocalAt,
+        },
+      })
+        .then(() => {
+          showScheduleNotice({
+            kind: 'status',
+            message: t(
+              ($) => $.common.home.timeline.feedback.scheduleRevisionUpdated,
+            ),
+          });
+        })
+        .catch((error: unknown) => {
+          const conflict =
+            error instanceof TemporalScheduleRemoteError &&
+            error.status === 409 &&
+            error.code === 'temporal.schedule.revision_conflict';
+          showScheduleNotice({
+            kind: 'error',
+            message: conflict
+              ? t(
+                  ($) =>
+                    $.common.home.timeline.feedback.scheduleRevisionConflict,
+                )
+              : t(
+                  ($) =>
+                    $.common.home.timeline.feedback.scheduleRevisionUnavailable,
+                ),
+          });
+        })
+        .finally(() => {
+          pendingScheduleRefsRef.current.delete(basis.scheduleRef);
+        });
+    },
+    [reviseSchedule, showScheduleNotice, t],
+  );
 
   const publishViewportDate = useCallback(
     (date: PlainDate) => {
@@ -584,6 +702,9 @@ export function TimelineSurface({
       if (toastTimerRef.current !== null) {
         window.clearTimeout(toastTimerRef.current);
       }
+      if (scheduleNoticeTimerRef.current !== null) {
+        window.clearTimeout(scheduleNoticeTimerRef.current);
+      }
     };
   }, []);
 
@@ -789,6 +910,18 @@ export function TimelineSurface({
           setTimeEditor({ dateKey, event, anchor: editorAnchor })
         }
         onMoveEvent={(move) => {
+          const current = findTimelineEvent(state, move.eventId)?.event;
+          if (current?.canonicalBasis !== undefined) {
+            const duration = current.endMinute - current.startMinute;
+            reviseCanonicalEvent(
+              current,
+              move.toDateKey,
+              move.startMinute,
+              move.startMinute + duration,
+            );
+            return;
+          }
+
           const targetIsRendered = renderedDaysRef.current.some(
             (day) => day.dateKey === move.toDateKey,
           );
@@ -869,6 +1002,16 @@ export function TimelineSurface({
           anchor={timeEditor.anchor}
           gridRef={gridRef}
           onSave={(dateKey, eventId, startMinute, endMinute) => {
+            if (timeEditor.event.canonicalBasis !== undefined) {
+              reviseCanonicalEvent(
+                timeEditor.event,
+                dateKey,
+                startMinute,
+                endMinute,
+              );
+              return;
+            }
+
             preserveRawScroll();
             dispatch({
               type: 'update-event-time',
@@ -896,6 +1039,16 @@ export function TimelineSurface({
         opener={detailState?.opener ?? null}
         onClose={() => setDetailState(null)}
       />
+
+      {scheduleNotice ? (
+        <div
+          className={`temporal-timeline-runtime-status${scheduleNotice.kind === 'error' ? ' temporal-timeline-runtime-status--error' : ''}`}
+          role={scheduleNotice.kind === 'error' ? 'alert' : 'status'}
+          aria-live={scheduleNotice.kind === 'error' ? undefined : 'polite'}
+        >
+          {scheduleNotice.message}
+        </div>
+      ) : null}
 
       <UndoToast
         visible={toastVisible && state.undo !== null}

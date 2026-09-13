@@ -1,3 +1,4 @@
+import { Temporal } from '@dante/time';
 import {
   act,
   cleanup,
@@ -9,11 +10,19 @@ import {
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { i18n } from '../../bootstrap/i18n';
+import { createDeterministicTemporalIdFactory } from './model';
+import type {
+  TemporalScheduleDataSource,
+  TemporalScheduleRevisionRequest,
+} from './schedule-data-source';
 import type {
   TemporalTimelineDataSource,
   TemporalTimelineWindow,
 } from './timeline-read';
-import { TemporalTimelineRuntimeBoundary } from './timeline-runtime-boundary';
+import {
+  TemporalTimelineRuntimeBoundary,
+  useTemporalTimelineRuntime,
+} from './timeline-runtime-boundary';
 
 beforeAll(async () => {
   await i18n.changeLanguage('it');
@@ -40,6 +49,28 @@ function emptyWindow(): TemporalTimelineWindow {
     endDateExclusive: '2026-10-10',
     effectiveZoneId: 'Europe/Rome',
   };
+}
+
+const SCHEDULE_REF = '0199a8c0-5e72-7bc0-8ad0-a2f403f5617d';
+const MATERIAL_STATE_REF = '0199a8c0-5e73-7bc0-8ad0-a2f403f5617d';
+const NEXT_MATERIAL_STATE_REF = '0199a8c0-5e74-7bc0-8ad0-a2f403f5617d';
+
+function RevisionProbe() {
+  const { reviseSchedule } = useTemporalTimelineRuntime();
+  const request: Omit<TemporalScheduleRevisionRequest, 'operationId'> = {
+    scheduleRef: SCHEDULE_REF,
+    expectedPlacementMaterialStateRef: MATERIAL_STATE_REF,
+    placement: {
+      kind: 'floating-local-interval',
+      startsLocalAt: Temporal.PlainDateTime.from('2026-09-09T14:00'),
+      endsLocalAt: Temporal.PlainDateTime.from('2026-09-09T15:00'),
+    },
+  };
+  return (
+    <button type="button" onClick={() => void reviseSchedule(request)}>
+      revise
+    </button>
+  );
 }
 
 describe('TemporalTimelineRuntimeBoundary', () => {
@@ -135,6 +166,54 @@ describe('TemporalTimelineRuntimeBoundary', () => {
     await waitFor(() => {
       expect(loadWindow).toHaveBeenCalledTimes(2);
       expect(screen.queryByRole('alert')).toBeNull();
+    });
+  });
+
+  it('generates one operation id and reloads authoritative truth once after revision', async () => {
+    const loadWindow = vi.fn<TemporalTimelineDataSource['loadWindow']>(() =>
+      Promise.resolve(emptyWindow()),
+    );
+    const dataSource: TemporalTimelineDataSource = { loadWindow };
+    const reviseSchedule = vi.fn<TemporalScheduleDataSource['reviseSchedule']>(
+      (request) =>
+        Promise.resolve({
+          scheduleRef: request.scheduleRef,
+          previousPlacementMaterialStateRef:
+            request.expectedPlacementMaterialStateRef,
+          placementMaterialStateRef: NEXT_MATERIAL_STATE_REF,
+          placement: request.placement,
+          replayed: false,
+        }),
+    );
+    const scheduleDataSource: TemporalScheduleDataSource = { reviseSchedule };
+
+    render(
+      <TemporalTimelineRuntimeBoundary
+        viewedDateIso="2026-09-09"
+        dataSource={dataSource}
+        scheduleDataSource={scheduleDataSource}
+        ids={createDeterministicTemporalIdFactory('b02-c')}
+        mode="production"
+      >
+        <RevisionProbe />
+      </TemporalTimelineRuntimeBoundary>,
+    );
+
+    await waitFor(() => expect(loadWindow).toHaveBeenCalledTimes(1));
+    fireEvent.click(screen.getByRole('button', { name: 'revise' }));
+
+    await waitFor(() => {
+      expect(reviseSchedule).toHaveBeenCalledWith({
+        operationId: 'b02-c:operation:1',
+        scheduleRef: SCHEDULE_REF,
+        expectedPlacementMaterialStateRef: MATERIAL_STATE_REF,
+        placement: {
+          kind: 'floating-local-interval',
+          startsLocalAt: Temporal.PlainDateTime.from('2026-09-09T14:00'),
+          endsLocalAt: Temporal.PlainDateTime.from('2026-09-09T15:00'),
+        },
+      });
+      expect(loadWindow).toHaveBeenCalledTimes(2);
     });
   });
 

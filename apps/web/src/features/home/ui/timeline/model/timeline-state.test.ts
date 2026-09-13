@@ -56,6 +56,57 @@ function expectTimelineStateIntegrity(
 }
 
 describe('timeline state', () => {
+  it('reconciles an authoritative Schedule revision by identity without duplicating it', () => {
+    const initial = createInitialTimelineState();
+    const first = timelineReducer(initial, {
+      type: 'materialize-event',
+      dateKey: '2026-09-09',
+      event: {
+        id: 'schedule-1',
+        title: 'Canonical',
+        groupId: 'personale',
+        startMinute: 600,
+        endMinute: 660,
+        canonicalBasis: {
+          kind: 'scheduled-activity',
+          activityRef: 'activity-1',
+          scheduleRef: 'schedule-1',
+          placementMaterialStateRef: 'state-1',
+        },
+      },
+    });
+    const revised = timelineReducer(first, {
+      type: 'materialize-event',
+      dateKey: '2026-09-10',
+      event: {
+        id: 'schedule-1',
+        title: 'Canonical',
+        groupId: 'personale',
+        startMinute: 720,
+        endMinute: 780,
+        canonicalBasis: {
+          kind: 'scheduled-activity',
+          activityRef: 'activity-1',
+          scheduleRef: 'schedule-1',
+          placementMaterialStateRef: 'state-2',
+        },
+      },
+    });
+
+    expect(eventById(revised, '2026-09-09', 'schedule-1')).toBeUndefined();
+    expect(eventById(revised, '2026-09-10', 'schedule-1')).toMatchObject({
+      startMinute: 720,
+      endMinute: 780,
+      canonicalBasis: { placementMaterialStateRef: 'state-2' },
+    });
+    expect(
+      Object.values(revised.eventsByDate)
+        .flat()
+        .filter((event) => event.id === 'schedule-1'),
+    ).toHaveLength(1);
+    expect(revised.undo).toBeNull();
+  });
+
   it('moves an event across days without changing its duration and can undo it', () => {
     const initial = createInitialTimelineState();
     const before = eventById(initial, '2026-08-04', '1');

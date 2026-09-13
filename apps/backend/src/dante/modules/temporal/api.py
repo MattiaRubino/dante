@@ -6,11 +6,11 @@ from datetime import date, datetime
 from typing import Annotated, Literal, cast
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Request, Response
-from pydantic import BaseModel, ConfigDict, Field
-
 from dante.context.contracts import DanteContext
-from dante.context.dependencies import require_dante_context, require_mutating_dante_context
+from dante.context.dependencies import (
+    require_dante_context,
+    require_mutating_dante_context,
+)
 from dante.modules.temporal.activity import (
     ActivityInputError,
     ActivityNotFoundError,
@@ -23,9 +23,28 @@ from dante.modules.temporal.application import (
     TemporalTimelineApplication,
     TimelinePersistenceError,
 )
-from dante.modules.temporal.contracts import TimelineWindowQuery, TimelineWindowValidationError
-from dante.modules.temporal.schedule import FloatingLocalIntervalPlacement, ScheduleInputError
-from dante.platform.database.references import NativeRef
+from dante.modules.temporal.contracts import (
+    TimelineWindowQuery,
+    TimelineWindowValidationError,
+)
+from dante.modules.temporal.schedule import (
+    FloatingLocalIntervalPlacement,
+    RevisedScheduleView,
+    ScheduleInputError,
+    ScheduleNotFoundError,
+    ScheduleOperationIdReuseError,
+    SchedulePersistenceError,
+    ScheduleRevisionConflictError,
+    TemporalScheduleApplication,
+)
+from fastapi import APIRouter, Depends, Request, Response
+from pydantic import BaseModel, ConfigDict, Field
+
+from dante.platform.database.references import (
+    MaterialStateRef,
+    NativeRef,
+    ScopedRecordRef,
+)
 from dante.platform.database.runtime import DatabaseRuntime
 from dante.platform.http.problem import ProblemError
 
@@ -116,6 +135,16 @@ class EstablishActivityScheduleRequest(BaseModel):
     placement: FloatingLocalIntervalPlacementRequest
 
 
+class ReviseFloatingScheduleRequest(BaseModel):
+    """Revise one current Schedule from an exact accepted placement basis."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    operation_id: str = Field(min_length=1, max_length=200)
+    expected_placement_material_state_ref: UUID
+    placement: FloatingLocalIntervalPlacementRequest
+
+
 class ActivityResponse(BaseModel):
     """Minimum canonical Activity representation exposed by B01."""
 
@@ -136,6 +165,20 @@ class ScheduledActivityResponse(BaseModel):
     title: str
     created_at: datetime
     schedule_ref: UUID
+    placement_material_state_ref: UUID
+    temporal_form: Literal["floating_local"] = "floating_local"
+    starts_local_at: datetime
+    ends_local_at: datetime
+    replayed: bool = False
+
+
+class RevisedScheduleResponse(BaseModel):
+    """Accepted current Schedule placement after one governed revision."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    schedule_ref: UUID
+    previous_placement_material_state_ref: UUID
     placement_material_state_ref: UUID
     temporal_form: Literal["floating_local"] = "floating_local"
     starts_local_at: datetime
@@ -164,6 +207,12 @@ def get_temporal_timeline_application(request: Request) -> TemporalTimelineAppli
     return TemporalTimelineApplication(database_runtime.session_factory)
 
 
+def get_temporal_schedule_application(request: Request) -> TemporalScheduleApplication:
+    """Resolve the Schedule mutation boundary from the process-scoped DB runtime."""
+    database_runtime = cast(DatabaseRuntime, request.app.state.database_runtime)
+    return TemporalScheduleApplication(database_runtime.session_factory)
+
+
 TemporalActivityApplicationDependency = Annotated[
     TemporalActivityApplication,
     Depends(get_temporal_activity_application),
@@ -172,9 +221,15 @@ TemporalTimelineApplicationDependency = Annotated[
     TemporalTimelineApplication,
     Depends(get_temporal_timeline_application),
 ]
+TemporalScheduleApplicationDependency = Annotated[
+    TemporalScheduleApplication,
+    Depends(get_temporal_schedule_application),
+]
 
 
-def _activity_response(activity: ActivityView, *, replayed: bool = False) -> ActivityResponse:
+def _activity_response(
+    activity: ActivityView, *, replayed: bool = False
+) -> ActivityResponse:
     return ActivityResponse(
         activity_ref=activity.activity_ref,
         title=activity.title,
@@ -436,6 +491,88 @@ async def establish_activity_schedule(
         placement_material_state_ref=result.schedule.material_state_ref,
         starts_local_at=result.schedule.placement.starts_local_at,
         ends_local_at=result.schedule.placement.ends_local_at,
+        replayed=result.replayed,
+    )
+
+
+@router.patch(
+    "/schedules/{schedule_ref}/placement",
+    response_model=RevisedScheduleResponse,
+)
+async def revise_schedule_placement(
+    schedule_ref: UUID,
+    payload: ReviseFloatingScheduleRequest,
+    context: MutatingDanteContextDependency,
+    application: TemporalScheduleApplicationDependency,
+    response: Response,
+) -> RevisedScheduleResponse:
+    """Create a new accepted placement state without changing Schedule identity."""
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        result: RevisedScheduleView = await application.revise_floating_schedule(
+            self_person_ref=context.self_person_ref,
+            operation_id=payload.operation_id,
+            schedule_ref=ScopedRecordRef(schedule_ref),
+            expected_material_state_ref=MaterialStateRef(
+                payload.expected_placement_material_state_ref
+            ),
+            placement=FloatingLocalIntervalPlacement(
+                starts_local_at=payload.placement.starts_local_at,
+                ends_local_at=payload.placement.ends_local_at,
+            ),
+        )
+    except ScheduleInputError as exc:
+        raise ProblemError(
+            status=422,
+            code="temporal.schedule.invalid_revision",
+            category="validation",
+            title="Invalid Schedule revision",
+            detail=str(exc),
+            retryable=False,
+        ) from exc
+    except ScheduleNotFoundError as exc:
+        raise ProblemError(
+            status=404,
+            code="temporal.schedule.not_found",
+            category="not_found",
+            title="Schedule not found",
+            detail="No current Schedule is available at that reference in the current self scope.",
+            retryable=False,
+        ) from exc
+    except ScheduleOperationIdReuseError as exc:
+        raise ProblemError(
+            status=409,
+            code="temporal.schedule.operation_id_reused",
+            category="conflict",
+            title="Schedule operation conflict",
+            detail="The operation id was already used for a different Schedule revision.",
+            retryable=False,
+        ) from exc
+    except ScheduleRevisionConflictError as exc:
+        raise ProblemError(
+            status=409,
+            code="temporal.schedule.revision_conflict",
+            category="conflict",
+            title="Schedule revision conflict",
+            detail="The Schedule placement changed after the submitted revision basis.",
+            retryable=False,
+        ) from exc
+    except SchedulePersistenceError as exc:
+        raise ProblemError(
+            status=503,
+            code="temporal.schedule.persistence_unavailable",
+            category="service",
+            title="Schedule unavailable",
+            detail="The Schedule revision could not be persisted safely.",
+            retryable=True,
+        ) from exc
+
+    return RevisedScheduleResponse(
+        schedule_ref=result.schedule_ref,
+        previous_placement_material_state_ref=result.previous_material_state_ref,
+        placement_material_state_ref=result.material_state_ref,
+        starts_local_at=result.placement.starts_local_at,
+        ends_local_at=result.placement.ends_local_at,
         replayed=result.replayed,
     )
 

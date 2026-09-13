@@ -30,6 +30,16 @@ export {
   type TemporalActivityRemoteFailureKind,
 } from './remote-activity-data-source';
 export {
+  TemporalScheduleRemoteError,
+  createRemoteTemporalScheduleDataSource,
+  type TemporalScheduleRemoteFailureKind,
+} from './remote-schedule-data-source';
+export type {
+  TemporalScheduleDataSource,
+  TemporalScheduleRevisionRequest,
+  TemporalScheduleRevisionResult,
+} from './schedule-data-source';
+export {
   TemporalTimelineRemoteError,
   createRemoteTemporalTimelineDataSource,
   type TemporalTimelineRemoteFailureKind,

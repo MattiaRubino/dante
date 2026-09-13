@@ -2,6 +2,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { i18n } from '../../../../bootstrap/i18n';
+import { TemporalTimelineRuntimeBoundary } from '../../../temporal/timeline-runtime-boundary';
 import { TIMELINE_PROTOTYPE_TODAY } from './model/timeline-fixtures';
 import { TimelineSurface } from './timeline-surface';
 
@@ -31,14 +32,16 @@ function renderTimeline(options: RenderTimelineOptions = {}) {
   const onViewedDateChange = options.onViewedDateChange ?? vi.fn();
   const onDateNavigation = options.onDateNavigation ?? vi.fn();
   const view = render(
-    <TimelineSurface
-      expanded={false}
-      onExpandedChange={onExpandedChange}
-      onExpansionProgress={onExpansionProgress}
-      viewedDateIso={options.viewedDateIso}
-      onViewedDateChange={onViewedDateChange}
-      onDateNavigation={onDateNavigation}
-    />,
+    <TemporalTimelineRuntimeBoundary mode="test">
+      <TimelineSurface
+        expanded={false}
+        onExpandedChange={onExpandedChange}
+        onExpansionProgress={onExpansionProgress}
+        viewedDateIso={options.viewedDateIso}
+        onViewedDateChange={onViewedDateChange}
+        onDateNavigation={onDateNavigation}
+      />
+    </TemporalTimelineRuntimeBoundary>,
   );
   return {
     ...view,

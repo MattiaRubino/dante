@@ -15,7 +15,11 @@ from sqlalchemy.dialects.postgresql import DATERANGE, Range
 from sqlalchemy.orm import Mapped, mapped_column
 
 from dante.platform.database.metadata import Base
-from dante.platform.database.references import MaterialStateRef, NativeRef, ScopedRecordRef
+from dante.platform.database.references import (
+    MaterialStateRef,
+    NativeRef,
+    ScopedRecordRef,
+)
 
 
 class ScheduleRow(Base):
@@ -113,7 +117,79 @@ class ScheduleEstablishOperationRow(Base):
     subject_native_ref: Mapped[NativeRef] = mapped_column(nullable=False)
     schedule_ref: Mapped[ScopedRecordRef] = mapped_column(nullable=False)
     material_state_ref: Mapped[MaterialStateRef] = mapped_column(nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
+
+
+class ScheduleRevisionOperationRow(Base):
+    """Idempotency receipt for one governed self-scoped Schedule revision."""
+
+    __tablename__ = "schedule_revision_operation"
+    __table_args__ = (
+        CheckConstraint(
+            "operation_id=btrim(operation_id) AND operation_id<>'' "
+            "AND char_length(operation_id)<=200",
+            name="operation_id",
+        ),
+        CheckConstraint(
+            "intent_fingerprint ~ '^[0-9a-f]{64}$'",
+            name="fingerprint",
+        ),
+        ForeignKeyConstraint(
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
+            name="fk_schedule_revision_operation_self_person_ref_person",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
+        ),
+        ForeignKeyConstraint(
+            ["schedule_ref"],
+            ["dante.schedule.schedule_ref"],
+            name="fk_schedule_revision_operation_schedule_ref_schedule",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
+        ),
+        ForeignKeyConstraint(
+            ["expected_material_state_ref"],
+            ["dante.schedule_placement_state.material_state_ref"],
+            name="fk_schedule_revision_op_expected_state_placement_state",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
+        ),
+        ForeignKeyConstraint(
+            ["material_state_ref"],
+            ["dante.schedule_placement_state.material_state_ref"],
+            name="fk_schedule_revision_op_material_state_placement_state",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
+        ),
+        UniqueConstraint(
+            "material_state_ref",
+            name="uq_schedule_revision_operation_material_state_ref",
+        ),
+        Index("ix_schedule_revision_operation_schedule_ref", "schedule_ref"),
+    )
+
+    self_person_ref: Mapped[NativeRef] = mapped_column(primary_key=True)
+    operation_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    intent_fingerprint: Mapped[str] = mapped_column(Text, nullable=False)
+    schedule_ref: Mapped[ScopedRecordRef] = mapped_column(nullable=False)
+    expected_material_state_ref: Mapped[MaterialStateRef] = mapped_column(
+        nullable=False
+    )
+    material_state_ref: Mapped[MaterialStateRef] = mapped_column(nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
 
 
 class SchedulePlacementStateRow(Base):
@@ -210,7 +286,9 @@ class SchedulePlacementFloatingLocalStateRow(Base):
 
     material_state_ref: Mapped[MaterialStateRef] = mapped_column(primary_key=True)
     extent_code: Mapped[str] = mapped_column(Text, nullable=False)
-    starts_local_at: Mapped[datetime] = mapped_column(DateTime(timezone=False), nullable=False)
+    starts_local_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=False), nullable=False
+    )
     ends_local_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=False))
 
 
@@ -251,7 +329,9 @@ class SchedulePlacementNamedZoneStateRow(Base):
 
     material_state_ref: Mapped[MaterialStateRef] = mapped_column(primary_key=True)
     extent_code: Mapped[str] = mapped_column(Text, nullable=False)
-    starts_local_at: Mapped[datetime] = mapped_column(DateTime(timezone=False), nullable=False)
+    starts_local_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=False), nullable=False
+    )
     ends_local_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=False))
     zone_id: Mapped[str] = mapped_column(Text, nullable=False)
     resolved_start_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
@@ -333,5 +413,7 @@ class SchedulePlacementCurrentHistoryRow(Base):
 
     schedule_ref: Mapped[ScopedRecordRef] = mapped_column(primary_key=True)
     material_state_ref: Mapped[MaterialStateRef] = mapped_column(nullable=False)
-    current_from_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), primary_key=True)
+    current_from_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), primary_key=True
+    )
     current_until_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

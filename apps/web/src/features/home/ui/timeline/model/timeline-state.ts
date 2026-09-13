@@ -190,21 +190,58 @@ function replaceDateEvents(
   };
 }
 
+function sameEvent(left: TimelineEvent, right: TimelineEvent): boolean {
+  return (
+    left.id === right.id &&
+    left.startMinute === right.startMinute &&
+    left.endMinute === right.endMinute &&
+    left.title === right.title &&
+    left.groupId === right.groupId &&
+    left.appearanceTone === right.appearanceTone &&
+    left.origin === right.origin &&
+    left.meta === right.meta &&
+    left.canonicalBasis?.kind === right.canonicalBasis?.kind &&
+    left.canonicalBasis?.activityRef === right.canonicalBasis?.activityRef &&
+    left.canonicalBasis?.scheduleRef === right.canonicalBasis?.scheduleRef &&
+    left.canonicalBasis?.placementMaterialStateRef ===
+      right.canonicalBasis?.placementMaterialStateRef &&
+    (left.subitems ?? []).length === (right.subitems ?? []).length &&
+    (left.subitems ?? []).every(
+      (subitem, index) => subitem === right.subitems?.[index],
+    )
+  );
+}
+
 function materializeEvent(
   state: TimelineState,
   action: Extract<TimelineAction, { type: 'materialize-event' }>,
 ): TimelineState {
-  if (findTimelineEvent(state, action.event.id)) {
+  const current = findTimelineEvent(state, action.event.id);
+  if (
+    current?.dateKey === action.dateKey &&
+    sameEvent(current.event, action.event)
+  ) {
     return state;
   }
 
-  const events = timelineEventsForDate(state, action.dateKey);
+  const eventsByDate = Object.fromEntries(
+    Object.entries(state.eventsByDate).map(([dateKey, events]) => [
+      dateKey,
+      events.filter((event) => event.id !== action.event.id),
+    ]),
+  );
+  const targetEvents =
+    eventsByDate[action.dateKey] ??
+    createTimelinePrototypeEventsForDate(action.dateKey);
+  eventsByDate[action.dateKey] = sortEvents([
+    ...targetEvents.filter((event) => event.id !== action.event.id),
+    action.event,
+  ]);
+
   return {
     ...state,
-    eventsByDate: replaceDateEvents(state, action.dateKey, [
-      ...events,
-      action.event,
-    ]),
+    eventsByDate,
+    undo: state.undo?.eventId === action.event.id ? null : state.undo,
   };
 }
 

@@ -5,6 +5,21 @@ import { shell } from './shell';
 import { temporalRuntime } from './temporal-runtime';
 import { worldFocus } from './world-focus';
 
+const homeWithB02C = {
+  ...home,
+  timeline: {
+    ...home.timeline,
+    feedback: {
+      ...home.timeline.feedback,
+      scheduleRevisionUpdated:
+        'Schedule updated. Timeline is reloading the current state.',
+      scheduleRevisionConflict:
+        'The Schedule changed elsewhere. No change was overwritten.',
+      scheduleRevisionUnavailable: 'This Schedule could not be updated safely.',
+    },
+  },
+} as const;
+
 export const common = {
   runtime: {
     labels: {
@@ -42,7 +57,7 @@ export const common = {
   },
   access,
   shell,
-  home,
+  home: homeWithB02C,
   temporalRuntime,
   worldFocus,
 } as const satisfies CommonResource;

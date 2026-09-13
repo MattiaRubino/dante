@@ -12,7 +12,14 @@ import { useTranslation } from 'react-i18next';
 
 import './timeline-runtime-boundary.css';
 
+import { systemTemporalIdFactory, type TemporalIdFactory } from './model';
+import { createRemoteTemporalScheduleDataSource } from './remote-schedule-data-source';
 import { createRemoteTemporalTimelineDataSource } from './remote-timeline-read';
+import type {
+  TemporalScheduleDataSource,
+  TemporalScheduleRevisionRequest,
+  TemporalScheduleRevisionResult,
+} from './schedule-data-source';
 import { subscribeTemporalTimelineInvalidation } from './timeline-invalidation';
 import type {
   TemporalTimelineDataSource,
@@ -35,6 +42,9 @@ export type TemporalTimelineRuntimeState =
 export type TemporalTimelineRuntimeContextValue = Readonly<{
   state: TemporalTimelineRuntimeState;
   refresh: () => void;
+  reviseSchedule: (
+    request: Omit<TemporalScheduleRevisionRequest, 'operationId'>,
+  ) => Promise<TemporalScheduleRevisionResult>;
 }>;
 
 type TemporalTimelineReadAttempt = Readonly<{
@@ -58,6 +68,8 @@ type TemporalTimelineRuntimeBoundaryProps = Readonly<{
   children: ReactNode;
   viewedDateIso?: string | undefined;
   dataSource?: TemporalTimelineDataSource | undefined;
+  scheduleDataSource?: TemporalScheduleDataSource | undefined;
+  ids?: TemporalIdFactory | undefined;
   mode?: string | undefined;
 }>;
 
@@ -125,6 +137,8 @@ export function TemporalTimelineRuntimeBoundary({
   children,
   viewedDateIso,
   dataSource,
+  scheduleDataSource,
+  ids = systemTemporalIdFactory,
   mode = import.meta.env.MODE,
 }: TemporalTimelineRuntimeBoundaryProps) {
   const { t } = useTranslation('common');
@@ -132,6 +146,10 @@ export function TemporalTimelineRuntimeBoundary({
   const source = useMemo(
     () => dataSource ?? createRemoteTemporalTimelineDataSource(),
     [dataSource],
+  );
+  const mutationSource = useMemo(
+    () => scheduleDataSource ?? createRemoteTemporalScheduleDataSource(),
+    [scheduleDataSource],
   );
   const request = useMemo(
     () => (testMode ? null : temporalTimelineInitialWindow(viewedDateIso)),
@@ -198,10 +216,24 @@ export function TemporalTimelineRuntimeBoundary({
     return subscribeTemporalTimelineInvalidation(refresh);
   }, [refresh, testMode]);
 
+  const reviseSchedule = useCallback(
+    async (
+      revision: Omit<TemporalScheduleRevisionRequest, 'operationId'>,
+    ): Promise<TemporalScheduleRevisionResult> => {
+      const result = await mutationSource.reviseSchedule({
+        ...revision,
+        operationId: ids.operationId(),
+      });
+      refresh();
+      return result;
+    },
+    [ids, mutationSource, refresh],
+  );
+
   const state = resolveRuntimeState(testMode, attempt, settledState);
   const contextValue = useMemo<TemporalTimelineRuntimeContextValue>(
-    () => Object.freeze({ state, refresh }),
-    [refresh, state],
+    () => Object.freeze({ state, refresh, reviseSchedule }),
+    [refresh, reviseSchedule, state],
   );
 
   return (

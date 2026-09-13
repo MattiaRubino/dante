@@ -47,6 +47,7 @@ MAPPED_TABLES: tuple[Table, ...] = cast(
         activity.ActivityCreateOperationRow.__table__,
         schedule.ScheduleRow.__table__,
         schedule.ScheduleEstablishOperationRow.__table__,
+        schedule.ScheduleRevisionOperationRow.__table__,
         actual.ActualRow.__table__,
         schedule.SchedulePlacementStateRow.__table__,
         schedule.SchedulePlacementDateStateRow.__table__,

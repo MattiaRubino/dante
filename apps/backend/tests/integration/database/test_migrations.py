@@ -13,7 +13,8 @@ from sqlalchemy.exc import DBAPIError
 
 pytestmark = pytest.mark.postgres
 
-_EXPECTED_HEAD = "20260909_21"
+_EXPECTED_HEAD = "20260913_22"
+_B02_REVISION_PARENT = "20260909_21"
 _B02_SCHEMA_HEAD = "20260909_20"
 _PRE_B02_HEAD = "20260908_19"
 _PRE_B01_HEAD = "20260906_18"
@@ -24,7 +25,9 @@ _ACCESS_HEAD = "20260904_16"
 _TRUSTED_SEARCH_PATH = "pg_catalog,dante,pg_temp"
 
 
-def _floating_local(year: int, month: int, day: int, hour: int, minute: int) -> datetime:
+def _floating_local(
+    year: int, month: int, day: int, hour: int, minute: int
+) -> datetime:
     # A floating-local Schedule value intentionally has no timezone/offset.
     return datetime(year, month, day, hour, minute)  # noqa: DTZ001
 
@@ -121,7 +124,9 @@ def test_fresh_database_reaches_the_single_repository_head(
         user=provisioned_database.cluster.admin_user,
         password=provisioned_database.cluster.admin_password,
     ) as connection:
-        before = connection.execute("SELECT to_regclass('dante.alembic_version')").fetchone()
+        before = connection.execute(
+            "SELECT to_regclass('dante.alembic_version')"
+        ).fetchone()
         assert before == (None,)
 
     script = ScriptDirectory.from_config(alembic_config)
@@ -145,6 +150,101 @@ def test_repository_head_round_trips_head_base_head(
     assert _current_revisions(provisioned_database) == {_EXPECTED_HEAD}
 
 
+def test_schedule_revision_downgrade_refuses_to_discard_revision_receipts(
+    provisioned_database: Any,
+    alembic_config: Config,
+) -> None:
+    command.upgrade(alembic_config, "head")
+    person_ref = uuid7()
+    activity_ref = uuid7()
+    schedule_ref = uuid7()
+    first_state_ref = uuid7()
+    revised_state_ref = uuid7()
+    connection_kwargs = provisioned_database.connection_kwargs(
+        "dante_migrator",
+        provisioned_database.cluster.migrator_password,
+    )
+
+    with psycopg.connect(**connection_kwargs, autocommit=True) as connection:
+        connection.execute("SET ROLE dante_owner")
+        connection.execute(
+            "INSERT INTO dante.person(person_ref) VALUES (%s)",
+            (person_ref,),
+        )
+        connection.execute(
+            "INSERT INTO dante.native_address(native_ref,owner_family) "
+            "VALUES (%s,'person')",
+            (person_ref,),
+        )
+        connection.execute(
+            "SELECT activity_ref FROM dante.create_self_activity(%s,%s,%s,%s,%s)",
+            (
+                person_ref,
+                "migration-proof:b02-c-activity",
+                "a" * 64,
+                activity_ref,
+                "B02-C guard",
+            ),
+        )
+        connection.execute(
+            "SELECT schedule_ref FROM dante.establish_self_floating_schedule"
+            "(%s,%s,%s,%s,%s,%s,%s,%s)",
+            (
+                person_ref,
+                "migration-proof:b02-c-establish",
+                "b" * 64,
+                activity_ref,
+                schedule_ref,
+                first_state_ref,
+                _floating_local(2026, 9, 9, 10, 0),
+                _floating_local(2026, 9, 9, 11, 0),
+            ),
+        )
+        revised = connection.execute(
+            "SELECT schedule_ref,previous_material_state_ref,material_state_ref "
+            "FROM dante.revise_self_floating_schedule"
+            "(%s,%s,%s,%s,%s,%s,%s,%s)",
+            (
+                person_ref,
+                "migration-proof:b02-c-revise",
+                "c" * 64,
+                schedule_ref,
+                first_state_ref,
+                revised_state_ref,
+                _floating_local(2026, 9, 9, 12, 0),
+                _floating_local(2026, 9, 9, 13, 30),
+            ),
+        ).fetchone()
+        assert revised == (schedule_ref, first_state_ref, revised_state_ref)
+
+    with pytest.raises(DBAPIError, match="B02-C downgrade refused"):
+        command.downgrade(alembic_config, _B02_REVISION_PARENT)
+
+    assert _current_revisions(provisioned_database) == {_EXPECTED_HEAD}
+    with psycopg.connect(**connection_kwargs, autocommit=True) as connection:
+        connection.execute("SET ROLE dante_owner")
+        preserved = connection.execute(
+            """
+            SELECT
+              (SELECT count(*) FROM dante.schedule_revision_operation
+                WHERE schedule_ref=%s AND material_state_ref=%s),
+              (SELECT count(*) FROM dante.scoped_current_material_state
+                WHERE scoped_owner_ref=%s AND facet_code='schedule.placement'
+                  AND material_state_ref=%s),
+              (SELECT count(*) FROM dante.schedule_placement_current_history
+                WHERE schedule_ref=%s)
+            """,
+            (
+                schedule_ref,
+                revised_state_ref,
+                schedule_ref,
+                revised_state_ref,
+                schedule_ref,
+            ),
+        ).fetchone()
+    assert preserved == (1, 1, 2)
+
+
 def test_schedule_downgrade_refuses_to_discard_canonical_history(
     provisioned_database: Any,
     alembic_config: Config,
@@ -163,14 +263,22 @@ def test_schedule_downgrade_refuses_to_discard_canonical_history(
 
     with psycopg.connect(**connection_kwargs, autocommit=True) as connection:
         connection.execute("SET ROLE dante_owner")
-        connection.execute("INSERT INTO dante.person(person_ref) VALUES (%s)", (person_ref,))
+        connection.execute(
+            "INSERT INTO dante.person(person_ref) VALUES (%s)", (person_ref,)
+        )
         connection.execute(
             "INSERT INTO dante.native_address(native_ref,owner_family) VALUES (%s,'person')",
             (person_ref,),
         )
         created = connection.execute(
             "SELECT activity_ref FROM dante.create_self_activity(%s,%s,%s,%s,%s)",
-            (person_ref, "migration-proof:b02-activity", "a" * 64, activity_ref, "B02 guard"),
+            (
+                person_ref,
+                "migration-proof:b02-activity",
+                "a" * 64,
+                activity_ref,
+                "B02 guard",
+            ),
         ).fetchone()
         assert created == (activity_ref,)
         scheduled = connection.execute(

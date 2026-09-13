@@ -4,6 +4,22 @@ import { shell } from './shell';
 import { temporalRuntime } from './temporal-runtime';
 import { worldFocus } from './world-focus';
 
+const homeWithB02C = {
+  ...home,
+  timeline: {
+    ...home.timeline,
+    feedback: {
+      ...home.timeline.feedback,
+      scheduleRevisionUpdated:
+        'Pianificazione aggiornata. La Timeline sta rileggendo lo stato corrente.',
+      scheduleRevisionConflict:
+        'La pianificazione è cambiata altrove. Nessuna modifica è stata sovrascritta.',
+      scheduleRevisionUnavailable:
+        'Impossibile aggiornare questa pianificazione in sicurezza.',
+    },
+  },
+} as const;
+
 export const common = {
   runtime: {
     labels: {
@@ -42,7 +58,7 @@ export const common = {
   },
   access,
   shell,
-  home,
+  home: homeWithB02C,
   temporalRuntime,
   worldFocus,
 } as const;

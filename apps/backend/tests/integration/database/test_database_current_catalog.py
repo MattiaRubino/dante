@@ -19,8 +19,8 @@ from dante.platform.database.metadata import Base
 
 pytestmark = pytest.mark.postgres
 
-_CURRENT_REVISION = "20260909_21"
-_CURRENT_TOPOLOGY = (92, 5, 20, 77, 181, 99, 277, 0, 0, 0)
+_CURRENT_REVISION = "20260913_22"
+_CURRENT_TOPOLOGY = (93, 5, 21, 77, 184, 103, 279, 0, 0, 0)
 _REPO_ROOT = Path(__file__).resolve().parents[5]
 _DICTIONARY_ROOT = _REPO_ROOT / "docs" / "database" / "dictionary"
 
@@ -110,7 +110,9 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
         }
         live_views = {
             str(r[0])
-            for r in connection.execute("SELECT viewname FROM pg_views WHERE schemaname='dante'")
+            for r in connection.execute(
+                "SELECT viewname FROM pg_views WHERE schemaname='dante'"
+            )
         }
         live_routines = {
             str(r[0])
@@ -163,7 +165,13 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
     assert owners == {"dante_owner"}
     assert extensions["postgis"] == "3.6.4"
     assert extensions["vector"] == "0.8.6"
-    assert set(extensions) == {"postgis", "vector", "pg_trgm", "unaccent", "pg_stat_statements"}
+    assert set(extensions) == {
+        "postgis",
+        "vector",
+        "pg_trgm",
+        "unaccent",
+        "pg_stat_statements",
+    }
     current = scope["current_materialization"]
     assert current["completed_stages"] == [
         "CP6-M01",
@@ -174,16 +182,28 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
         "CP6-M06",
         "CP6-M07",
     ]
-    assert current["standalone_entries"] == {"tables": 92, "views": 5, "routines": 20, "total": 117}
+    assert current["standalone_entries"] == {
+        "tables": 92,
+        "views": 5,
+        "routines": 20,
+        "total": 117,
+    }
     assert current["embedded_objects"] == {"triggers": 77, "physical_indexes": 181}
     assert current["constraints"] == {"foreign_keys": 99, "check_constraints": 277}
-    assert len(MAPPED_TABLES) == len(Base.registry.mappers) == len(Base.metadata.tables) == 92
+    assert (
+        len(MAPPED_TABLES)
+        == len(Base.registry.mappers)
+        == len(Base.metadata.tables)
+        == 92
+    )
     assert all(len(mapper.relationships) == 0 for mapper in Base.registry.mappers)
     assert set(VIEW_METADATA.tables) == {f"dante.{name}" for name in views}
     assert {table.name for table in MAPPED_TABLES} == set(tables)
     for name, entry in tables.items():
         mapping = entry["implementation"]["sqlalchemy"]
-        row = getattr(importlib.import_module(str(mapping["module"])), str(mapping["symbol"]))
+        row = getattr(
+            importlib.import_module(str(mapping["module"])), str(mapping["symbol"])
+        )
         assert isinstance(row.__table__, Table)
         assert row.__table__.name == name
         assert row.__table__.schema == "dante"
