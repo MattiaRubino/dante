@@ -134,6 +134,10 @@ export interface TemporalCreateRuntime {
   execute(
     prepared: TemporalCreatePreparedOperation,
   ): Promise<TemporalCreateExecution>;
+  placeExistingActivity(
+    activityRef: string,
+    placement: TemporalPlacement,
+  ): Promise<TemporalOperationResult>;
   list(): Promise<readonly TemporalProjectionItem[]>;
   listRecords(): Promise<readonly TemporalCreateRecord[]>;
 }
@@ -354,8 +358,7 @@ function scheduledActivityProjection(
       start: schedule.startsLocalAt,
       end: schedule.endsLocalAt,
     }),
-    // B02-A renders the accepted placement but does not yet activate B02-B
-    // reschedule/drag behavior through this generic projection capability set.
+    // B02-A/B render accepted placement; B02-C will activate revision/drag.
     capabilities: Object.freeze([]),
     revision: 0,
     createdAt: activity.createdAt,
@@ -370,6 +373,90 @@ class RemoteActivityTemporalWorkspace implements TemporalWorkspacePort {
   public async execute(
     command: TemporalCommand,
   ): Promise<TemporalOperationResult> {
+    if (command.type === 'temporal.placement.replace') {
+      const placement = command.payload.placement;
+      const supportsB02B =
+        command.payload.expectedRevision === 0 &&
+        placement?.kind === 'floating-local' &&
+        placement.start.toPlainDate().equals(placement.end.toPlainDate()) &&
+        Temporal.PlainDateTime.compare(placement.start, placement.end) < 0;
+      if (!supportsB02B) {
+        return unavailableResult(
+          command.operationId,
+          'temporal.schedule.capability_not_available',
+        );
+      }
+
+      try {
+        const result = await this.source.establishActivitySchedule({
+          activityRef: command.payload.id,
+          operationId: command.operationId,
+          placement: Object.freeze({
+            kind: 'floating-local-interval' as const,
+            startsLocalAt: placement.start,
+            endsLocalAt: placement.end,
+          }),
+        });
+        return Object.freeze({
+          operationId: command.operationId,
+          status: 'applied' as const,
+          item: scheduledActivityProjection(
+            result.activity,
+            result.schedule,
+            command.operationId,
+          ),
+          snapshotRevision: 0,
+          reconciliation: Object.freeze({ status: 'confirmed' as const }),
+        });
+      } catch (error) {
+        if (
+          error instanceof TemporalActivityRemoteError &&
+          error.status === 404
+        ) {
+          return notFoundResult(command.operationId);
+        }
+        if (
+          error instanceof TemporalActivityRemoteError &&
+          error.status === 409 &&
+          error.code === 'temporal.schedule.operation_id_reused'
+        ) {
+          return operationIdReuseResult(command.operationId);
+        }
+        if (
+          error instanceof TemporalActivityRemoteError &&
+          error.status === 422
+        ) {
+          return Object.freeze({
+            operationId: command.operationId,
+            status: 'rejected' as const,
+            code: 'validation' as const,
+            issues: Object.freeze([
+              temporalValidationIssue(
+                'temporal.schedule.invalid_establish',
+                ['payload', 'placement'],
+              ),
+            ]),
+          });
+        }
+        return Object.freeze({
+          operationId: command.operationId,
+          status: 'failed' as const,
+          failure: Object.freeze({
+            kind:
+              error instanceof TemporalActivityRemoteError &&
+              error.kind === 'transport'
+                ? ('transport' as const)
+                : ('unavailable' as const),
+            code: 'temporal.schedule.remote_unavailable',
+            retryable:
+              error instanceof TemporalActivityRemoteError
+                ? error.kind === 'transport' || (error.status ?? 0) >= 500
+                : false,
+          }),
+        });
+      }
+    }
+
     if (
       command.type !== 'temporal.projection.create' ||
       command.payload.subject.kind !== 'activity'
@@ -780,6 +867,23 @@ class LocalTemporalCreateRuntime implements TemporalCreateRuntime {
     }) satisfies TemporalCreateAppliedEffect;
 
     return Object.freeze({ result, effect });
+  }
+
+  public async placeExistingActivity(
+    activityRef: string,
+    placement: TemporalPlacement,
+  ): Promise<TemporalOperationResult> {
+    return await this.workspace.execute({
+      type: 'temporal.placement.replace',
+      operationId: this.ids.operationId(),
+      source: 'manual',
+      issuedAt: this.clock.now(),
+      payload: Object.freeze({
+        id: temporalProjectionId(activityRef),
+        expectedRevision: 0,
+        placement,
+      }),
+    });
   }
 
   public async list(): Promise<readonly TemporalProjectionItem[]> {

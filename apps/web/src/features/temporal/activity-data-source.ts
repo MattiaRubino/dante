@@ -34,6 +34,16 @@ export type TemporalScheduledActivityCreateRequest = Readonly<{
   }>;
 }>;
 
+export type TemporalActivityScheduleEstablishRequest = Readonly<{
+  activityRef: string;
+  operationId: string;
+  placement: Readonly<{
+    kind: 'floating-local-interval';
+    startsLocalAt: PlainDateTime;
+    endsLocalAt: PlainDateTime;
+  }>;
+}>;
+
 export type TemporalScheduledActivityCreateResult = Readonly<{
   activity: TemporalActivityRecord;
   schedule: TemporalFloatingLocalScheduleRecord;
@@ -47,6 +57,10 @@ export interface TemporalActivityDataSource {
   ): Promise<TemporalActivityCreateResult>;
   createScheduledActivity(
     request: TemporalScheduledActivityCreateRequest,
+    signal?: AbortSignal,
+  ): Promise<TemporalScheduledActivityCreateResult>;
+  establishActivitySchedule(
+    request: TemporalActivityScheduleEstablishRequest,
     signal?: AbortSignal,
   ): Promise<TemporalScheduledActivityCreateResult>;
   loadUnplaced(

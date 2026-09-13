@@ -781,24 +781,26 @@ Stop and re-gate rather than improvise if implementation inspection reveals any 
 
 # 15. Ledger activation result
 
-This execution-plan slice establishes only the implementation-readiness evidence for B02.
-
-It is sufficient to mark:
+Current candidate implementation state:
 
 ```text
 B02 block                  🟨 IN PROGRESS
 SCH-001 authority reopen   ✅ DONE
+B02-A candidate            🟨 IMPLEMENTED — automated/manual proof pending
+B02-B candidate            🟨 IMPLEMENTED — automated/manual proof pending
 ```
 
-It is **not** evidence that Schedule product behavior has been implemented.
+B02-B adds the governed path from an existing canonical unplaced Activity to an accepted floating-local same-day Schedule. It reuses the Activity reference, creates no Activity clone, keeps scheduled duration on Schedule, removes the Activity from Planning Tray only after canonical commit/refetch, and invalidates the authoritative Timeline read so the accepted item is fetched exactly once.
 
-All remaining `SCH-*` and `B02-T*` entries stay open until their actual implementation/proof gates pass.
+The B02-B read rule is now explicit: “unplaced” means no current accepted Schedule placement. Historical Schedule ownership alone must never permanently exclude an Activity after a future valid unschedule.
 
-Next required action after this documentation slice:
+No `SCH-*` or `B02-T*` checkbox is promoted by this candidate update. CI execution, targeted automated evidence and the user’s manual acceptance remain deliberately deferred.
+
+Next required execution gate:
 
 ```text
-B02-A exact code/schema/frontend PRE-SCOPE gate
-→ implementation
-→ automated evidence
-→ ledger update only for evidence actually earned
+B02-B targeted automated proof (without premature broad CI)
+→ user manual acceptance checkpoint
+→ evidence-only ledger reconciliation
+→ separately reviewed B02-C exact PRE-SCOPE
 ```

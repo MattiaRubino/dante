@@ -9,6 +9,7 @@ import type {
   TemporalActivityCreateResult,
   TemporalActivityDataSource,
   TemporalActivityRecord,
+  TemporalActivityScheduleEstablishRequest,
   TemporalScheduledActivityCreateRequest,
   TemporalScheduledActivityCreateResult,
 } from './activity-data-source';
@@ -17,6 +18,8 @@ import { invalidateTemporalTimelineRead } from './timeline-invalidation';
 const SESSION_ENDPOINT = '/api/v1/auth/session';
 const ACTIVITY_ENDPOINT = '/api/v1/temporal/activities';
 const SCHEDULED_ACTIVITY_ENDPOINT = '/api/v1/temporal/activities/scheduled';
+const activityScheduleEndpoint = (activityRef: string) =>
+  `${ACTIVITY_ENDPOINT}/${encodeURIComponent(activityRef)}/schedule`;
 const UNPLACED_ACTIVITY_ENDPOINT = '/api/v1/temporal/activities/unplaced';
 const CSRF_HEADER_NAME = 'X-Dante-CSRF';
 
@@ -325,28 +328,55 @@ function validateCreateRequest(request: TemporalActivityCreateRequest): void {
   }
 }
 
-function validateScheduledCreateRequest(
-  request: TemporalScheduledActivityCreateRequest,
+function validateFloatingLocalPlacement(
+  placement: TemporalScheduledActivityCreateRequest['placement'],
+  slice: 'B02-A' | 'B02-B',
 ): void {
-  validateCreateRequest(request);
-  if (request.placement.kind !== 'floating-local-interval') {
+  if (placement.kind !== 'floating-local-interval') {
     throw new RangeError(
-      'B02-A supports only floating-local interval placement.',
+      `${slice} supports only floating-local interval placement.`,
     );
   }
   if (
     Temporal.PlainDateTime.compare(
-      request.placement.startsLocalAt,
-      request.placement.endsLocalAt,
+      placement.startsLocalAt,
+      placement.endsLocalAt,
     ) >= 0 ||
-    !request.placement.startsLocalAt
+    !placement.startsLocalAt
       .toPlainDate()
-      .equals(request.placement.endsLocalAt.toPlainDate())
+      .equals(placement.endsLocalAt.toPlainDate())
   ) {
     throw new RangeError(
-      'B02-A placement must be a positive same-local-day interval.',
+      `${slice} placement must be a positive same-local-day interval.`,
     );
   }
+}
+
+function validateScheduledCreateRequest(
+  request: TemporalScheduledActivityCreateRequest,
+): void {
+  validateCreateRequest(request);
+  validateFloatingLocalPlacement(request.placement, 'B02-A');
+}
+
+function validateActivityScheduleEstablishRequest(
+  request: TemporalActivityScheduleEstablishRequest,
+): void {
+  const activityRef = request.activityRef.trim();
+  const operationId = request.operationId.trim();
+  if (
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      activityRef,
+    )
+  ) {
+    throw new RangeError('Activity reference must be a canonical UUIDv7 string.');
+  }
+  if (!operationId || operationId.length > 200) {
+    throw new RangeError(
+      'Schedule operation id must contain 1 to 200 characters.',
+    );
+  }
+  validateFloatingLocalPlacement(request.placement, 'B02-B');
 }
 
 export function createRemoteTemporalActivityDataSource(
@@ -412,6 +442,52 @@ export function createRemoteTemporalActivityDataSource(
         'Create Scheduled Activity response',
       );
       const result = parseScheduledActivity(payload);
+      invalidateTemporalTimelineRead();
+      return result;
+    },
+
+    async establishActivitySchedule(
+      request: TemporalActivityScheduleEstablishRequest,
+      signal?: AbortSignal,
+    ): Promise<TemporalScheduledActivityCreateResult> {
+      validateActivityScheduleEstablishRequest(request);
+      const csrf = await csrfToken(webFetch, signal);
+      const headers = new Headers({
+        'Content-Type': 'application/json',
+        [CSRF_HEADER_NAME]: csrf,
+      });
+      const response = await fetchResponse(
+        webFetch,
+        activityScheduleEndpoint(request.activityRef.trim().toLowerCase()),
+        {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            operation_id: request.operationId.trim(),
+            placement: {
+              kind: 'floating_local_interval',
+              starts_local_at: request.placement.startsLocalAt.toString(),
+              ends_local_at: request.placement.endsLocalAt.toString(),
+            },
+          }),
+          ...(signal === undefined ? {} : { signal }),
+        },
+      );
+      const payload = await requireOk(
+        response,
+        'Establish Activity Schedule response',
+      );
+      const result = parseScheduledActivity(payload);
+      if (
+        result.activity.activityRef !==
+        request.activityRef.trim().toLowerCase()
+      ) {
+        throw new TemporalActivityRemoteError(
+          'protocol',
+          'Established Schedule response changed the Activity identity.',
+          response.status,
+        );
+      }
       invalidateTemporalTimelineRead();
       return result;
     },

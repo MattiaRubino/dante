@@ -17,6 +17,7 @@ export type {
   TemporalActivityCreateRequest,
   TemporalActivityCreateResult,
   TemporalActivityDataSource,
+  TemporalActivityScheduleEstablishRequest,
   TemporalActivityRecord,
   TemporalFloatingLocalScheduleRecord,
   TemporalScheduledActivityCreateRequest,

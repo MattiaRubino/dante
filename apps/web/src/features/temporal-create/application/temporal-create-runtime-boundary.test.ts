@@ -54,6 +54,9 @@ function activitySource(
   createScheduledActivity: ReturnType<
     typeof vi.fn<TemporalActivityDataSource['createScheduledActivity']>
   >;
+  establishActivitySchedule: ReturnType<
+    typeof vi.fn<TemporalActivityDataSource['establishActivitySchedule']>
+  >;
   loadUnplaced: ReturnType<
     typeof vi.fn<TemporalActivityDataSource['loadUnplaced']>
   >;
@@ -92,6 +95,27 @@ function activitySource(
       }),
     ),
   );
+  const establishActivitySchedule = vi.fn<
+    TemporalActivityDataSource['establishActivitySchedule']
+  >((request) =>
+    Promise.resolve(
+      Object.freeze({
+        activity: Object.freeze({
+          activityRef: request.activityRef,
+          title: 'Persistita nel Planning Tray',
+          createdAt: Temporal.Instant.from('2026-09-07T12:00:00Z'),
+        }),
+        schedule: Object.freeze({
+          scheduleRef: CANONICAL_SCHEDULE_REF,
+          placementMaterialStateRef: CANONICAL_PLACEMENT_STATE_REF,
+          temporalForm: 'floating-local' as const,
+          startsLocalAt: request.placement.startsLocalAt,
+          endsLocalAt: request.placement.endsLocalAt,
+        }),
+        replayed: false,
+      }),
+    ),
+  );
   const loadUnplaced = vi.fn<TemporalActivityDataSource['loadUnplaced']>(() =>
     Promise.resolve(Object.freeze([...unplaced])),
   );
@@ -100,10 +124,12 @@ function activitySource(
     source: Object.freeze({
       createActivity,
       createScheduledActivity,
+      establishActivitySchedule,
       loadUnplaced,
     }),
     createActivity,
     createScheduledActivity,
+    establishActivitySchedule,
     loadUnplaced,
   });
 }
@@ -247,6 +273,53 @@ describe('Temporal Create normal-runtime boundary', () => {
       placement: null,
     });
     expect(second[0]?.id).toBe(first[0]?.id);
+  });
+
+  it('places an existing B02-B Activity without creating or changing its identity', async () => {
+    const canonical = Object.freeze({
+      activityRef: CANONICAL_ACTIVITY_REF,
+      title: 'Persistita nel Planning Tray',
+      createdAt: Temporal.Instant.from('2026-09-07T12:00:00Z'),
+    });
+    const activity = activitySource(Object.freeze([canonical]));
+    const runtime = createLocalTemporalCreateRuntime({
+      ...runtimeOptions('runtime-boundary-b02b-place'),
+      mode: 'production',
+      activityDataSource: activity.source,
+    });
+    const start = Temporal.PlainDateTime.from('2026-09-07T16:00:00');
+    const end = Temporal.PlainDateTime.from('2026-09-07T16:45:00');
+
+    const result = await runtime.placeExistingActivity(
+      CANONICAL_ACTIVITY_REF,
+      Object.freeze({ kind: 'floating-local', start, end }),
+    );
+
+    expect(activity.createActivity).not.toHaveBeenCalled();
+    expect(activity.createScheduledActivity).not.toHaveBeenCalled();
+    expect(activity.establishActivitySchedule).toHaveBeenCalledTimes(1);
+    expect(activity.establishActivitySchedule).toHaveBeenCalledWith({
+      activityRef: CANONICAL_ACTIVITY_REF,
+      operationId: expect.any(String),
+      placement: {
+        kind: 'floating-local-interval',
+        startsLocalAt: start,
+        endsLocalAt: end,
+      },
+    });
+    expect(result.status).toBe('applied');
+    if (result.status === 'applied') {
+      expect(result.item).toMatchObject({
+        id: CANONICAL_SCHEDULE_REF,
+        subject: {
+          source: 'native',
+          kind: 'activity',
+          id: CANONICAL_ACTIVITY_REF,
+        },
+        placement: { kind: 'floating-local', start, end },
+      });
+      expect(result.reconciliation).toEqual({ status: 'confirmed' });
+    }
   });
 
   it('still fails closed for placement forms and owner semantics outside B02-A', async () => {

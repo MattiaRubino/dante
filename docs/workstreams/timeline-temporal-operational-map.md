@@ -3881,19 +3881,19 @@ Current workstream state:
 SEMANTIC MAP / AUDITS / ROADMAP              ✅ COMPLETE
 B00 REAL DATA SPINE                          ✅ CLOSED
 B01 ACTIVITY CORE                            ✅ CLOSED
-B02 SCHEDULE CORE                            🟨 IN PROGRESS — authority reopen/plan only
-CANDIDATE DATABASE                           ✅ PostgreSQL 18.6 / Alembic _19 / 91|5|19|77|177|95|275|0|0|0
+B02 SCHEDULE CORE                            🟨 IN PROGRESS — B02-A/B candidate implemented; proof pending
+CANDIDATE DATABASE                           🟨 Alembic _21 candidate; reconciliation pending
 B00 MANUAL userTest                          ✅ APPROVED — 2026-09-08
 B01 MANUAL userTest                          ✅ APPROVED — 2026-09-08
 EXACT-HEAD RECONCILIATION                     ✅ run 34261607749 on 303e75c56716008bfc352e92411884760727e043
 EPHEMERAL B01 RECONCILIATION WORKFLOW         ✅ REMOVED IN B00/B01 CLOSURE
-NEXT IMPLEMENTATION SLICE                     B02-A — FIRST CANONICAL SCHEDULED ACTIVITY LOOP
+NEXT EXECUTION GATE                           B02-B targeted proof + manual acceptance, then B02-C PRE-SCOPE
 ```
 
 B00 established the truthful real-data spine: normal runtime no longer substitutes prototype Timeline data or fake persistence for backend truth. B01 established the first PostgreSQL-backed temporal product write/read path: one canonical unplaced Activity identity created through governed idempotent backend semantics and projected through the real Planning Tray.
 
 B01 deliberately did **not** implement Schedule, estimated effort, Event, Routine, Session, Actual, Outcome or generic completion. Those capabilities remain governed by their later roadmap gates. In particular, Planning Tray `list_unplaced()` is valid for B01 because no Schedule history exists yet; B02 must redefine “unplaced” as absence of a **current accepted placement**, not absence of any historical Schedule row.
 
-B02 Schedule authority/current CP6 placement truth has now been re-opened and frozen in the B02 execution plan. No Schedule product behavior is implemented by that documentation slice; the next product/schema/frontend write requires the separately reviewed B02-A exact PRE-SCOPE gate.
+B02 Schedule authority/current CP6 placement truth is frozen in the B02 execution plan. The branch now contains candidate B02-A atomic scheduled creation and candidate B02-B placement of an existing unplaced Activity onto a new accepted Schedule/current placement. B02-B preserves the Activity identity, invalidates/refetches the authoritative Timeline, and defines Planning Tray membership as absence of a current accepted placement. These are implementation candidates only: the SCH/B02-T ledger remains open until the deferred automated and manual evidence gates pass.
 
 This ledger is intentionally verbose. Its purpose is to make omission visible: if a capability or required proof is not green, it is not done.

@@ -13,6 +13,7 @@ from dante.context.contracts import DanteContext
 from dante.context.dependencies import require_dante_context, require_mutating_dante_context
 from dante.modules.temporal.activity import (
     ActivityInputError,
+    ActivityNotFoundError,
     ActivityOperationIdReuseError,
     ActivityPersistenceError,
     ActivityView,
@@ -106,6 +107,15 @@ class CreateScheduledActivityRequest(BaseModel):
     placement: FloatingLocalIntervalPlacementRequest
 
 
+class EstablishActivityScheduleRequest(BaseModel):
+    """Attach an accepted Schedule to one existing canonical Activity."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    operation_id: str = Field(min_length=1, max_length=200)
+    placement: FloatingLocalIntervalPlacementRequest
+
+
 class ActivityResponse(BaseModel):
     """Minimum canonical Activity representation exposed by B01."""
 
@@ -134,7 +144,7 @@ class ScheduledActivityResponse(BaseModel):
 
 
 class UnplacedActivitiesResponse(BaseModel):
-    """Planning-Tray read surface for Activities without a Schedule in B01."""
+    """Planning-Tray Activities without a current accepted Schedule placement."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -354,13 +364,89 @@ async def create_scheduled_activity(
     )
 
 
+@router.post(
+    "/activities/{activity_ref}/schedule",
+    response_model=ScheduledActivityResponse,
+    status_code=201,
+)
+async def establish_activity_schedule(
+    activity_ref: UUID,
+    payload: EstablishActivityScheduleRequest,
+    context: MutatingDanteContextDependency,
+    application: TemporalActivityApplicationDependency,
+    response: Response,
+) -> ScheduledActivityResponse:
+    """Attach a first accepted Schedule to an existing Activity without cloning it."""
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        placement = FloatingLocalIntervalPlacement(
+            starts_local_at=payload.placement.starts_local_at,
+            ends_local_at=payload.placement.ends_local_at,
+        )
+        result = await application.schedule_existing_activity(
+            self_person_ref=context.self_person_ref,
+            activity_ref=NativeRef(activity_ref),
+            operation_id=payload.operation_id,
+            placement=placement,
+        )
+    except (ActivityInputError, ScheduleInputError) as exc:
+        raise ProblemError(
+            status=422,
+            code="temporal.schedule.invalid_establish",
+            category="validation",
+            title="Invalid Schedule",
+            detail=str(exc),
+            retryable=False,
+        ) from exc
+    except ActivityNotFoundError as exc:
+        raise ProblemError(
+            status=404,
+            code="temporal.activity.not_found",
+            category="not_found",
+            title="Activity not found",
+            detail="No Activity is available at that reference in the current self scope.",
+            retryable=False,
+        ) from exc
+    except ActivityOperationIdReuseError as exc:
+        raise ProblemError(
+            status=409,
+            code="temporal.schedule.operation_id_reused",
+            category="conflict",
+            title="Schedule operation conflict",
+            detail="The operation id was already used for a different temporal intent.",
+            retryable=False,
+        ) from exc
+    except ActivityPersistenceError as exc:
+        raise ProblemError(
+            status=503,
+            code="temporal.schedule.persistence_unavailable",
+            category="service",
+            title="Schedule unavailable",
+            detail="The Schedule could not be persisted atomically.",
+            retryable=True,
+        ) from exc
+
+    if result.replayed:
+        response.status_code = 200
+    return ScheduledActivityResponse(
+        activity_ref=result.activity.activity_ref,
+        title=result.activity.title,
+        created_at=result.activity.created_at,
+        schedule_ref=result.schedule.schedule_ref,
+        placement_material_state_ref=result.schedule.material_state_ref,
+        starts_local_at=result.schedule.placement.starts_local_at,
+        ends_local_at=result.schedule.placement.ends_local_at,
+        replayed=result.replayed,
+    )
+
+
 @router.get("/activities/unplaced", response_model=UnplacedActivitiesResponse)
 async def list_unplaced_activities(
     context: DanteContextDependency,
     application: TemporalActivityApplicationDependency,
     response: Response,
 ) -> UnplacedActivitiesResponse:
-    """List canonical Activities for this self Person that have no Schedule yet."""
+    """List canonical Activities that have no current accepted Schedule placement."""
     response.headers["Cache-Control"] = "no-store"
     try:
         activities = await application.list_unplaced(

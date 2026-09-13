@@ -5,6 +5,7 @@ import {
   TemporalActivityRemoteError,
   createRemoteTemporalActivityDataSource,
 } from './remote-activity-data-source';
+import { subscribeTemporalTimelineInvalidation } from './timeline-invalidation';
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -257,5 +258,128 @@ describe('remote temporal Activity data source', () => {
     await expect(source.loadUnplaced()).rejects.toBeInstanceOf(
       TemporalActivityRemoteError,
     );
+  });
+
+  it('attaches a B02-B Schedule to the exact existing Activity and invalidates Timeline', async () => {
+    const invalidated = vi.fn();
+    const unsubscribe = subscribeTemporalTimelineInvalidation(invalidated);
+    const fetchFn = vi.fn<typeof globalThis.fetch>((input, init) => {
+      if (input === '/api/v1/auth/session') {
+        return Promise.resolve(
+          jsonResponse({ authenticated: true, csrf_token: 'csrf-b02-b' }),
+        );
+      }
+      expect(input).toBe(
+        `/api/v1/temporal/activities/${ACTIVITY.activity_ref}/schedule`,
+      );
+      expect(init?.method).toBe('POST');
+      expect(init?.body).toBe(
+        JSON.stringify({
+          operation_id: 'operation:b02-b:place-1',
+          placement: {
+            kind: 'floating_local_interval',
+            starts_local_at: '2026-09-09T14:15:00',
+            ends_local_at: '2026-09-09T15:00:00',
+          },
+        }),
+      );
+      return Promise.resolve(jsonResponse(SCHEDULED_ACTIVITY, 201));
+    });
+    const source = createRemoteTemporalActivityDataSource(
+      fetchFn,
+      () => 'Europe/Rome',
+    );
+
+    try {
+      const result = await source.establishActivitySchedule({
+        activityRef: ACTIVITY.activity_ref,
+        operationId: ' operation:b02-b:place-1 ',
+        placement: {
+          kind: 'floating-local-interval',
+          startsLocalAt: Temporal.PlainDateTime.from(
+            '2026-09-09T14:15:00',
+          ),
+          endsLocalAt: Temporal.PlainDateTime.from('2026-09-09T15:00:00'),
+        },
+      });
+
+      expect(result.activity.activityRef).toBe(ACTIVITY.activity_ref);
+      expect(result.schedule.scheduleRef).toBe(
+        SCHEDULED_ACTIVITY.schedule_ref,
+      );
+      expect(invalidated).toHaveBeenCalledTimes(1);
+      expect(fetchFn).toHaveBeenCalledTimes(2);
+    } finally {
+      unsubscribe();
+    }
+  });
+
+  it('rejects B02-B response identity drift instead of moving a different Activity', async () => {
+    const otherActivityRef = '0199a8c0-8e74-7ef3-9df3-d517362894a0';
+    const fetchFn = vi.fn<typeof globalThis.fetch>((input) => {
+      if (input === '/api/v1/auth/session') {
+        return Promise.resolve(
+          jsonResponse({ authenticated: true, csrf_token: 'csrf-b02-b' }),
+        );
+      }
+      return Promise.resolve(
+        jsonResponse({
+          ...SCHEDULED_ACTIVITY,
+          activity_ref: otherActivityRef,
+        }),
+      );
+    });
+    const source = createRemoteTemporalActivityDataSource(fetchFn);
+
+    await expect(
+      source.establishActivitySchedule({
+        activityRef: ACTIVITY.activity_ref,
+        operationId: 'operation:b02-b:identity-drift',
+        placement: {
+          kind: 'floating-local-interval',
+          startsLocalAt: Temporal.PlainDateTime.from(
+            '2026-09-09T14:15:00',
+          ),
+          endsLocalAt: Temporal.PlainDateTime.from('2026-09-09T15:00:00'),
+        },
+      }),
+    ).rejects.toMatchObject({
+      name: 'TemporalActivityRemoteError',
+      kind: 'protocol',
+    });
+  });
+
+  it('rejects invalid B02-B identity and cross-day placement before network I/O', async () => {
+    const fetchFn = vi.fn<typeof globalThis.fetch>();
+    const source = createRemoteTemporalActivityDataSource(fetchFn);
+
+    await expect(
+      source.establishActivitySchedule({
+        activityRef: 'not-a-native-ref',
+        operationId: 'operation:b02-b:invalid',
+        placement: {
+          kind: 'floating-local-interval',
+          startsLocalAt: Temporal.PlainDateTime.from(
+            '2026-09-09T23:30:00',
+          ),
+          endsLocalAt: Temporal.PlainDateTime.from('2026-09-10T00:15:00'),
+        },
+      }),
+    ).rejects.toBeInstanceOf(RangeError);
+
+    await expect(
+      source.establishActivitySchedule({
+        activityRef: ACTIVITY.activity_ref,
+        operationId: 'operation:b02-b:cross-day',
+        placement: {
+          kind: 'floating-local-interval',
+          startsLocalAt: Temporal.PlainDateTime.from(
+            '2026-09-09T23:30:00',
+          ),
+          endsLocalAt: Temporal.PlainDateTime.from('2026-09-10T00:15:00'),
+        },
+      }),
+    ).rejects.toBeInstanceOf(RangeError);
+    expect(fetchFn).not.toHaveBeenCalled();
   });
 });

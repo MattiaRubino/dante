@@ -1,3 +1,4 @@
+import { Temporal, type PlainDate, type PlainDateTime } from '@dante/time';
 import {
   useCallback,
   useEffect,
@@ -18,6 +19,7 @@ import './timeline-planning-tray.css';
 type TimelineB01PlanningTrayProps = Readonly<{
   items: readonly TimelinePlanningTrayItem[];
   runtime: TemporalCreateRuntime;
+  defaultDate: PlainDate;
   onBeforeOpen?: (() => void) | undefined;
 }>;
 
@@ -48,6 +50,16 @@ function readCopy(language: string) {
         failed: 'Activities to place are unavailable.',
         retry: 'Retry',
         activity: 'Activity',
+        place: 'Place',
+        placementTitle: 'Accepted Schedule',
+        date: 'Date',
+        time: 'Start',
+        duration: 'Duration (minutes)',
+        cancel: 'Cancel',
+        confirm: 'Place in Timeline',
+        placing: 'Placing…',
+        invalidPlacement: 'Choose a valid same-day interval.',
+        placementFailed: 'The Schedule was not accepted. The Activity is still here.',
       })
     : Object.freeze({
         description: 'Attività già esistenti, ma senza uno Schedule accettato.',
@@ -55,6 +67,17 @@ function readCopy(language: string) {
         failed: 'Le attività da collocare non sono disponibili.',
         retry: 'Riprova',
         activity: 'Activity',
+        place: 'Colloca',
+        placementTitle: 'Schedule accettato',
+        date: 'Data',
+        time: 'Inizio',
+        duration: 'Durata (minuti)',
+        cancel: 'Annulla',
+        confirm: 'Colloca in Timeline',
+        placing: 'Collocazione…',
+        invalidPlacement: 'Scegli un intervallo valido nella stessa giornata.',
+        placementFailed:
+          'Lo Schedule non è stato accettato. L’Activity resta qui.',
       });
 }
 
@@ -85,6 +108,7 @@ function canonicalActivities(
 export function TimelinePlanningTrayB01({
   items,
   runtime,
+  defaultDate,
   onBeforeOpen,
 }: TimelineB01PlanningTrayProps) {
   const { i18n } = useTranslation('common');
@@ -99,6 +123,14 @@ export function TimelinePlanningTrayB01({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [readState, setReadState] = useState<ReadState>('loading');
+  const [placingActivityRef, setPlacingActivityRef] = useState<string | null>(
+    null,
+  );
+  const [placementDate, setPlacementDate] = useState(defaultDate.toString());
+  const [placementTime, setPlacementTime] = useState('09:00');
+  const [durationMinutes, setDurationMinutes] = useState(30);
+  const [placementPending, setPlacementPending] = useState(false);
+  const [placementError, setPlacementError] = useState<string | null>(null);
   const [remoteItems, setRemoteItems] = useState<
     readonly CanonicalPlanningActivity[]
   >([]);
@@ -264,6 +296,60 @@ export function TimelinePlanningTrayB01({
     };
   }, [open]);
 
+  const submitPlacement = useCallback(
+    async (activityRef: string) => {
+      setPlacementError(null);
+      let start: PlainDateTime;
+      let end: PlainDateTime;
+      try {
+        start = Temporal.PlainDateTime.from(
+          `${placementDate}T${placementTime}`,
+        );
+        end = start.add({ minutes: durationMinutes });
+        if (
+          durationMinutes <= 0 ||
+          !start.toPlainDate().equals(end.toPlainDate())
+        ) {
+          throw new RangeError('cross-day-or-empty');
+        }
+      } catch {
+        setPlacementError(b01Copy.invalidPlacement);
+        return;
+      }
+
+      setPlacementPending(true);
+      try {
+        const result = await runtime.placeExistingActivity(
+          activityRef,
+          Object.freeze({
+            kind: 'floating-local' as const,
+            start,
+            end,
+          }),
+        );
+        if (result.status !== 'applied') {
+          setPlacementError(b01Copy.placementFailed);
+          return;
+        }
+        await refresh();
+        setPlacingActivityRef(null);
+      } catch {
+        setPlacementError(b01Copy.placementFailed);
+      } finally {
+        setPlacementPending(false);
+      }
+    },
+    [
+      b01Copy.invalidPlacement,
+      b01Copy.placementFailed,
+      durationMinutes,
+      placementDate,
+      placementTime,
+      refresh,
+      runtime,
+    ],
+  );
+
   const trigger = (
     <button
       ref={triggerRef}
@@ -370,24 +456,111 @@ export function TimelinePlanningTrayB01({
             <strong>{copy.emptyTitle}</strong>
           </div>
         ) : (
-          filteredItems.map((item) => (
-            <article
-              key={item.projectionId}
-              className="timeline-planning-card"
-              data-timeline-planning-item={item.projectionId}
-              data-temporal-activity-ref={item.activityRef}
-              data-timeline-tone="personal"
-            >
-              <div className="timeline-planning-card__main">
-                <span className="timeline-planning-card__copy">
-                  <strong>{item.title}</strong>
-                  <span className="timeline-planning-card__policy">
-                    {b01Copy.activity}
+          filteredItems.map((item) => {
+            const placing = placingActivityRef === item.activityRef;
+            return (
+              <article
+                key={item.projectionId}
+                className="timeline-planning-card"
+                data-timeline-planning-item={item.projectionId}
+                data-temporal-activity-ref={item.activityRef}
+                data-timeline-tone="personal"
+              >
+                <div className="timeline-planning-card__main">
+                  <span className="timeline-planning-card__copy">
+                    <strong>{item.title}</strong>
+                    <span className="timeline-planning-card__policy">
+                      {b01Copy.activity}
+                    </span>
                   </span>
-                </span>
-              </div>
-            </article>
-          ))
+                  <span className="timeline-planning-card__actions">
+                    <button
+                      type="button"
+                      aria-label={`${b01Copy.place}: ${item.title}`}
+                      aria-expanded={placing}
+                      onClick={() => {
+                        setPlacingActivityRef(placing ? null : item.activityRef);
+                        setPlacementError(null);
+                      }}
+                    >
+                      {b01Copy.place}
+                    </button>
+                  </span>
+                </div>
+
+                {placing ? (
+                  <form
+                    className="timeline-planning-quick-place"
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      void submitPlacement(item.activityRef);
+                    }}
+                  >
+                    <div className="timeline-planning-quick-place__heading">
+                      <strong>{b01Copy.placementTitle}</strong>
+                      <span>{b01Copy.activity}</span>
+                    </div>
+                    <label>
+                      <span>{b01Copy.date}</span>
+                      <input
+                        type="date"
+                        value={placementDate}
+                        disabled={placementPending}
+                        onChange={(event) =>
+                          setPlacementDate(event.target.value)
+                        }
+                      />
+                    </label>
+                    <label>
+                      <span>{b01Copy.time}</span>
+                      <input
+                        type="time"
+                        value={placementTime}
+                        disabled={placementPending}
+                        onChange={(event) =>
+                          setPlacementTime(event.target.value)
+                        }
+                      />
+                    </label>
+                    <label>
+                      <span>{b01Copy.duration}</span>
+                      <input
+                        type="number"
+                        min={1}
+                        max={1440}
+                        step={5}
+                        value={durationMinutes}
+                        disabled={placementPending}
+                        onChange={(event) =>
+                          setDurationMinutes(Number(event.target.value))
+                        }
+                      />
+                    </label>
+                    {placementError ? (
+                      <p role="alert">{placementError}</p>
+                    ) : null}
+                    <div className="timeline-planning-quick-place__actions">
+                      <button
+                        type="button"
+                        disabled={placementPending}
+                        onClick={() => {
+                          setPlacingActivityRef(null);
+                          setPlacementError(null);
+                        }}
+                      >
+                        {b01Copy.cancel}
+                      </button>
+                      <button type="submit" disabled={placementPending}>
+                        {placementPending
+                          ? b01Copy.placing
+                          : b01Copy.confirm}
+                      </button>
+                    </div>
+                  </form>
+                ) : null}
+              </article>
+            );
+          })
         )}
       </div>
     </aside>

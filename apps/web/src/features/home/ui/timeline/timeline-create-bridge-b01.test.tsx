@@ -47,6 +47,11 @@ function runtimeWithUnplaced(
     >(() =>
       Promise.reject(new Error('scheduled create outside B01 read proof')),
     ),
+    establishActivitySchedule: vi.fn<
+      TemporalActivityDataSource['establishActivitySchedule']
+    >(() =>
+      Promise.reject(new Error('placement outside B01 read proof')),
+    ),
     loadUnplaced,
   }) satisfies TemporalActivityDataSource;
   const runtime = createLocalTemporalCreateRuntime({
@@ -65,7 +70,11 @@ function renderPlanningTray(
   runtime: ReturnType<typeof runtimeWithUnplaced>['runtime'],
 ) {
   return render(
-    <TimelinePlanningTrayB01 items={Object.freeze([])} runtime={runtime} />,
+    <TimelinePlanningTrayB01
+      items={Object.freeze([])}
+      runtime={runtime}
+      defaultDate={Temporal.PlainDate.from('2026-09-08')}
+    />,
   );
 }
 
@@ -100,7 +109,11 @@ describe('Timeline B01 canonical Planning Tray bridge', () => {
     expect(
       screen.getByText('Activity persistita nel Planning Tray'),
     ).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Colloca' })).toBeNull();
+    expect(
+      screen.getByRole('button', {
+        name: 'Colloca: Activity persistita nel Planning Tray',
+      }),
+    ).toBeTruthy();
 
     first.unmount();
     const second = renderPlanningTray(source.runtime);

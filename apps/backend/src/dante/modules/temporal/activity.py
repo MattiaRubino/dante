@@ -21,7 +21,6 @@ from dante.modules.temporal.schedule import (
     establish_floating_schedule_in_session,
 )
 from dante.platform.database.mappings.activity import ActivityIntentionRow
-from dante.platform.database.mappings.schedule import ScheduleRow
 from dante.platform.database.references import NativeRef, new_native_ref
 
 
@@ -31,6 +30,10 @@ class ActivityInputError(ValueError):
 
 class ActivityOperationIdReuseError(RuntimeError):
     """One operation id was reused for a different canonical Activity intent."""
+
+
+class ActivityNotFoundError(LookupError):
+    """The requested Activity is not visible inside the authenticated self scope."""
 
 
 class ActivityPersistenceError(RuntimeError):
@@ -248,25 +251,90 @@ class TemporalActivityApplication:
         except SQLAlchemyError as exc:
             raise ActivityPersistenceError() from exc
 
+    async def schedule_existing_activity(
+        self,
+        *,
+        self_person_ref: NativeRef,
+        activity_ref: NativeRef,
+        operation_id: str,
+        placement: FloatingLocalIntervalPlacement,
+    ) -> CreateScheduledActivityResult:
+        """Attach one accepted Schedule to an existing Activity without cloning it."""
+        normalized_operation_id = _normalize_operation_id(operation_id)
+        if placement.starts_local_at.date() != placement.ends_local_at.date():
+            raise ActivityInputError(
+                "B02-B currently activates only same-local-day floating Schedule intervals."
+            )
+
+        try:
+            async with (
+                self._session_factory() as database_session,
+                database_session.begin(),
+            ):
+                activity_row = await database_session.scalar(
+                    select(ActivityIntentionRow)
+                    .where(
+                        ActivityIntentionRow.activity_ref == activity_ref,
+                        ActivityIntentionRow.self_person_ref == self_person_ref,
+                    )
+                    .with_for_update()
+                )
+                if activity_row is None:
+                    raise ActivityNotFoundError()
+
+                activity = ActivityView(
+                    activity_ref=activity_row.activity_ref,
+                    title=activity_row.title,
+                    created_at=activity_row.created_at,
+                )
+                schedule = await establish_floating_schedule_in_session(
+                    database_session,
+                    self_person_ref=self_person_ref,
+                    operation_id=normalized_operation_id,
+                    subject_native_ref=activity.activity_ref,
+                    placement=placement,
+                )
+                return CreateScheduledActivityResult(
+                    activity=activity,
+                    schedule=schedule,
+                    replayed=schedule.replayed,
+                )
+        except ActivityNotFoundError:
+            raise
+        except ScheduleOperationIdReuseError as exc:
+            raise ActivityOperationIdReuseError() from exc
+        except ScheduleInputError as exc:
+            raise ActivityInputError(str(exc)) from exc
+        except IntegrityError as exc:
+            if _constraint_name(exc) == "pk_schedule_establish_operation":
+                raise ActivityOperationIdReuseError() from exc
+            raise ActivityPersistenceError() from exc
+        except DBAPIError as exc:
+            raise ActivityPersistenceError() from exc
+        except SQLAlchemyError as exc:
+            raise ActivityPersistenceError() from exc
+
     async def list_unplaced(
         self,
         *,
         self_person_ref: NativeRef,
     ) -> tuple[ActivityView, ...]:
-        statement = (
-            select(ActivityIntentionRow)
-            .outerjoin(
-                ScheduleRow,
-                ScheduleRow.subject_native_ref == ActivityIntentionRow.activity_ref,
-            )
-            .where(
-                ActivityIntentionRow.self_person_ref == self_person_ref,
-                ScheduleRow.schedule_ref.is_(None),
-            )
-            .order_by(
-                ActivityIntentionRow.created_at,
-                ActivityIntentionRow.activity_ref,
-            )
+        statement = text(
+            """
+            SELECT intention.activity_ref,
+                   intention.title,
+                   intention.created_at
+            FROM dante.activity_intention AS intention
+            WHERE intention.self_person_ref = :self_person_ref
+              AND NOT EXISTS (
+                  SELECT 1
+                  FROM dante.schedule AS schedule
+                  JOIN dante.schedule_current_placement AS current
+                    ON current.scoped_owner_ref = schedule.schedule_ref
+                  WHERE schedule.subject_native_ref = intention.activity_ref
+              )
+            ORDER BY intention.created_at, intention.activity_ref
+            """
         )
 
         try:
@@ -274,18 +342,16 @@ class TemporalActivityApplication:
                 self._session_factory() as database_session,
                 database_session.begin(),
             ):
-                rows = (await database_session.scalars(statement)).all()
+                rows = (
+                    await database_session.execute(
+                        statement,
+                        {"self_person_ref": self_person_ref},
+                    )
+                ).mappings().all()
         except SQLAlchemyError as exc:
             raise ActivityPersistenceError() from exc
 
-        return tuple(
-            ActivityView(
-                activity_ref=row.activity_ref,
-                title=row.title,
-                created_at=row.created_at,
-            )
-            for row in rows
-        )
+        return tuple(_activity_from_row(row) for row in rows)
 
     async def get_activity(
         self,
