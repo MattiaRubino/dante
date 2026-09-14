@@ -120,7 +120,7 @@ async def test_unschedule_returns_activity_to_tray_and_undo_is_monotonic(
         )
         unplaced = await activities.list_unplaced(self_person_ref=self_person_ref)
         assert [item.activity_ref for item in unplaced] == [created.activity.activity_ref]
-        absent_window = await timeline.get_window(
+        absent_window = await timeline.read_window(
             context=_context(self_person_ref),
             query=TimelineWindowQuery(
                 start_date=date(2026, 9, 9),
@@ -148,7 +148,7 @@ async def test_unschedule_returns_activity_to_tray_and_undo_is_monotonic(
         assert replayed_restore.replayed is True
         assert await activities.list_unplaced(self_person_ref=self_person_ref) == ()
 
-        restored_window = await timeline.get_window(
+        restored_window = await timeline.read_window(
             context=_context(self_person_ref),
             query=TimelineWindowQuery(
                 start_date=date(2026, 9, 9),
