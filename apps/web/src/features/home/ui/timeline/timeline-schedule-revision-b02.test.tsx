@@ -99,9 +99,7 @@ function renderGovernedTimeline(
   );
   const scheduleDataSource: TemporalScheduleDataSource = {
     reviseSchedule,
-    unscheduleSchedule: vi.fn(() =>
-      Promise.reject(new Error('not expected')),
-    ),
+    unscheduleSchedule: vi.fn(() => Promise.reject(new Error('not expected'))),
     undoScheduleUnschedule: vi.fn(() =>
       Promise.reject(new Error('not expected')),
     ),
@@ -154,7 +152,7 @@ describe('B02-C governed Schedule revision from Timeline', () => {
       '2026-09-09T11:05:00',
     );
     expect(card.getAttribute('aria-label')).toContain('10:00–11:00');
-    expect(loadWindow).toHaveBeenCalledTimes(2);
+    await waitFor(() => expect(loadWindow).toHaveBeenCalledTimes(2));
 
     revisedWindow.resolve(
       windowAt('2026-09-09T10:05', '2026-09-09T11:05', NEXT_STATE_REF),
@@ -241,7 +239,7 @@ describe('B02-C governed Schedule revision from Timeline', () => {
     fireEvent.change(screen.getByLabelText('Inizio minuti'), {
       target: { value: '30' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Salva' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Conferma' }));
 
     await waitFor(() => expect(reviseSchedule).toHaveBeenCalledTimes(1));
     const request = reviseSchedule.mock.calls[0]?.[0];
@@ -283,20 +281,19 @@ describe('B02-C governed Schedule revision from Timeline', () => {
       .mockResolvedValueOnce(
         windowAt('2026-09-09T10:00', '2026-09-09T11:00', restoredStateRef),
       );
-    const reviseSchedule = vi.fn<
-      TemporalScheduleDataSource['reviseSchedule']
-    >((request) =>
-      Promise.resolve({
-        scheduleRef: request.scheduleRef,
-        previousPlacementMaterialStateRef:
-          request.expectedPlacementMaterialStateRef,
-        placementMaterialStateRef:
-          request.expectedPlacementMaterialStateRef === CURRENT_STATE_REF
-            ? NEXT_STATE_REF
-            : restoredStateRef,
-        placement: request.placement,
-        replayed: false,
-      }),
+    const reviseSchedule = vi.fn<TemporalScheduleDataSource['reviseSchedule']>(
+      (request) =>
+        Promise.resolve({
+          scheduleRef: request.scheduleRef,
+          previousPlacementMaterialStateRef:
+            request.expectedPlacementMaterialStateRef,
+          placementMaterialStateRef:
+            request.expectedPlacementMaterialStateRef === CURRENT_STATE_REF
+              ? NEXT_STATE_REF
+              : restoredStateRef,
+          placement: request.placement,
+          replayed: false,
+        }),
     );
 
     const { container } = render(
@@ -350,5 +347,4 @@ describe('B02-C governed Schedule revision from Timeline', () => {
     );
     await waitFor(() => expect(loadWindow).toHaveBeenCalledTimes(3));
   });
-
 });

@@ -20,26 +20,34 @@ from dante.platform.database.references import (
     new_scoped_record_ref,
 )
 
+
 class ScheduleInputError(ValueError):
     """The requested Schedule placement is outside the activated B02 contract."""
+
 
 class ScheduleOperationIdReuseError(RuntimeError):
     """One Schedule operation id was reused for materially different intent."""
 
+
 class ScheduleNotFoundError(LookupError):
     """The Schedule is absent or outside the authenticated self scope."""
+
 
 class ScheduleRevisionConflictError(RuntimeError):
     """The expected placement state is no longer the Schedule current state."""
 
+
 class ScheduleUnscheduleConflictError(RuntimeError):
     """The expected placement is no longer current for unschedule."""
+
 
 class ScheduleUndoConflictError(RuntimeError):
     """The exact Schedule effect targeted by Undo is no longer current."""
 
+
 class SchedulePersistenceError(RuntimeError):
     """Canonical Schedule persistence could not complete safely."""
+
 
 @dataclass(frozen=True, slots=True)
 class FloatingLocalIntervalPlacement:
@@ -49,15 +57,13 @@ class FloatingLocalIntervalPlacement:
     ends_local_at: datetime
 
     def __post_init__(self) -> None:
-        if (
-            self.starts_local_at.tzinfo is not None
-            or self.ends_local_at.tzinfo is not None
-        ):
+        if self.starts_local_at.tzinfo is not None or self.ends_local_at.tzinfo is not None:
             raise ScheduleInputError(
                 "Floating-local Schedule timestamps must not contain a timezone offset."
             )
         if self.ends_local_at <= self.starts_local_at:
             raise ScheduleInputError("Schedule end must be after Schedule start.")
+
 
 @dataclass(frozen=True, slots=True)
 class EstablishedScheduleView:
@@ -70,6 +76,7 @@ class EstablishedScheduleView:
     created_at: datetime
     replayed: bool
 
+
 @dataclass(frozen=True, slots=True)
 class RevisedScheduleView:
     """One immutable placement revision and its previous accepted basis."""
@@ -81,6 +88,7 @@ class RevisedScheduleView:
     created_at: datetime
     replayed: bool
 
+
 @dataclass(frozen=True, slots=True)
 class UnscheduledScheduleView:
     """Accepted withdrawal of one exact current Schedule placement."""
@@ -90,6 +98,7 @@ class UnscheduledScheduleView:
     unschedule_operation_id: str
     created_at: datetime
     replayed: bool
+
 
 @dataclass(frozen=True, slots=True)
 class RestoredScheduleView:
@@ -102,13 +111,13 @@ class RestoredScheduleView:
     created_at: datetime
     replayed: bool
 
+
 def _normalize_operation_id(value: str) -> str:
     normalized = value.strip()
     if not normalized or len(normalized) > 200:
-        raise ScheduleInputError(
-            "Schedule operation id must contain 1 to 200 characters."
-        )
+        raise ScheduleInputError("Schedule operation id must contain 1 to 200 characters.")
     return normalized
+
 
 def _placement_fingerprint(
     *,
@@ -120,9 +129,7 @@ def _placement_fingerprint(
             "extent": "interval",
             "form": "floating_local",
             "subject_native_ref": str(subject_native_ref),
-            "starts_local_at": placement.starts_local_at.isoformat(
-                timespec="microseconds"
-            ),
+            "starts_local_at": placement.starts_local_at.isoformat(timespec="microseconds"),
             "ends_local_at": placement.ends_local_at.isoformat(timespec="microseconds"),
         },
         ensure_ascii=False,
@@ -130,6 +137,7 @@ def _placement_fingerprint(
         sort_keys=True,
     ).encode("utf-8")
     return hashlib.sha256(payload).hexdigest()
+
 
 def _revision_fingerprint(
     *,
@@ -143,9 +151,7 @@ def _revision_fingerprint(
             "expected_material_state_ref": str(expected_material_state_ref),
             "extent": "interval",
             "form": "floating_local",
-            "starts_local_at": placement.starts_local_at.isoformat(
-                timespec="microseconds"
-            ),
+            "starts_local_at": placement.starts_local_at.isoformat(timespec="microseconds"),
             "ends_local_at": placement.ends_local_at.isoformat(timespec="microseconds"),
         },
         ensure_ascii=False,
@@ -153,6 +159,7 @@ def _revision_fingerprint(
         sort_keys=True,
     ).encode("utf-8")
     return hashlib.sha256(payload).hexdigest()
+
 
 def _unschedule_fingerprint(
     *,
@@ -171,6 +178,7 @@ def _unschedule_fingerprint(
     ).encode("utf-8")
     return hashlib.sha256(payload).hexdigest()
 
+
 def _unschedule_undo_fingerprint(
     *,
     schedule_ref: ScopedRecordRef,
@@ -188,10 +196,12 @@ def _unschedule_undo_fingerprint(
     ).encode("utf-8")
     return hashlib.sha256(payload).hexdigest()
 
+
 def _constraint_name(exc: IntegrityError) -> str | None:
     diagnostic = getattr(exc.orig, "diag", None)
     value = getattr(diagnostic, "constraint_name", None)
     return value if isinstance(value, str) else None
+
 
 async def establish_floating_schedule_in_session(
     database_session: AsyncSession,
@@ -269,6 +279,7 @@ async def establish_floating_schedule_in_session(
         replayed=bool(row["replayed"]),
     )
 
+
 async def revise_floating_schedule_in_session(
     database_session: AsyncSession,
     *,
@@ -328,9 +339,7 @@ async def revise_floating_schedule_in_session(
     )
     return RevisedScheduleView(
         schedule_ref=ScopedRecordRef(UUID(str(row["schedule_ref"]))),
-        previous_material_state_ref=MaterialStateRef(
-            UUID(str(row["previous_material_state_ref"]))
-        ),
+        previous_material_state_ref=MaterialStateRef(UUID(str(row["previous_material_state_ref"]))),
         material_state_ref=MaterialStateRef(UUID(str(row["material_state_ref"]))),
         placement=FloatingLocalIntervalPlacement(
             starts_local_at=row["starts_local_at"],
@@ -339,6 +348,7 @@ async def revise_floating_schedule_in_session(
         created_at=row["created_at"],
         replayed=bool(row["replayed"]),
     )
+
 
 async def unschedule_schedule_in_session(
     database_session: AsyncSession,
@@ -387,13 +397,12 @@ async def unschedule_schedule_in_session(
     )
     return UnscheduledScheduleView(
         schedule_ref=ScopedRecordRef(UUID(str(row["schedule_ref"]))),
-        previous_material_state_ref=MaterialStateRef(
-            UUID(str(row["previous_material_state_ref"]))
-        ),
+        previous_material_state_ref=MaterialStateRef(UUID(str(row["previous_material_state_ref"]))),
         unschedule_operation_id=str(row["unschedule_operation_id"]),
         created_at=row["created_at"],
         replayed=bool(row["replayed"]),
     )
+
 
 async def undo_schedule_unschedule_in_session(
     database_session: AsyncSession,
@@ -405,9 +414,7 @@ async def undo_schedule_unschedule_in_session(
 ) -> RestoredScheduleView:
     """Restore prior semantics as a new placement inside the caller transaction."""
     normalized_operation_id = _normalize_operation_id(operation_id)
-    normalized_unschedule_operation_id = _normalize_operation_id(
-        unschedule_operation_id
-    )
+    normalized_unschedule_operation_id = _normalize_operation_id(unschedule_operation_id)
     material_state_ref = new_material_state_ref()
     statement = text(
         """
@@ -461,6 +468,7 @@ async def undo_schedule_unschedule_in_session(
         created_at=row["created_at"],
         replayed=bool(row["replayed"]),
     )
+
 
 class TemporalScheduleApplication:
     """Transaction-owning Schedule revision operations."""
@@ -560,9 +568,7 @@ class TemporalScheduleApplication:
         unschedule_operation_id: str,
     ) -> RestoredScheduleView:
         if schedule_ref.version != 7:
-            raise ScheduleInputError(
-                "Schedule reference must be a canonical UUIDv7 value."
-            )
+            raise ScheduleInputError("Schedule reference must be a canonical UUIDv7 value.")
         try:
             async with (
                 self._session_factory() as database_session,

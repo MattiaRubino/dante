@@ -42,10 +42,7 @@ function installTimelineHosts(): void {
   document.body.innerHTML = '<div class="dante-timeline-actions"></div>';
 }
 
-function createHarness(
-  rejectPlacement = false,
-  initiallyUnplaced = true,
-) {
+function createHarness(rejectPlacement = false, initiallyUnplaced = true) {
   let unplaced: readonly TemporalActivityRecord[] = Object.freeze(
     initiallyUnplaced ? [ACTIVITY] : [],
   );
@@ -141,8 +138,10 @@ describe('Timeline B02 canonical Planning Tray placement and invalidation', () =
     fireEvent.change(screen.getByLabelText('Durata (minuti)'), {
       target: { value: '45' },
     });
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Colloca in Timeline' }),
+    fireEvent.submit(
+      screen
+        .getByRole('button', { name: 'Colloca in Timeline' })
+        .closest('form') as HTMLFormElement,
     );
 
     await waitFor(() =>
@@ -174,8 +173,10 @@ describe('Timeline B02 canonical Planning Tray placement and invalidation', () =
         name: `Colloca: ${ACTIVITY.title}`,
       }),
     );
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Colloca in Timeline' }),
+    fireEvent.submit(
+      screen
+        .getByRole('button', { name: 'Colloca in Timeline' })
+        .closest('form') as HTMLFormElement,
     );
 
     expect(

@@ -231,12 +231,13 @@ function materializeEvent(
     return state;
   }
 
-  const eventsByDate = Object.fromEntries(
-    Object.entries(state.eventsByDate).map(([dateKey, events]) => [
-      dateKey,
-      events.filter((event) => event.id !== action.event.id),
-    ]),
-  );
+  const eventsByDate: Record<string, readonly TimelineEvent[]> =
+    Object.fromEntries(
+      Object.entries(state.eventsByDate).map(([dateKey, events]) => [
+        dateKey,
+        events.filter((event) => event.id !== action.event.id),
+      ]),
+    );
   const targetEvents =
     eventsByDate[action.dateKey] ??
     createTimelinePrototypeEventsForDate(action.dateKey);
@@ -263,17 +264,18 @@ function reconcileAuthoritativeEvents(
     projections.map((projection) => projection.event.id),
   );
   let changed = false;
-  const eventsByDate = Object.fromEntries(
-    Object.entries(state.eventsByDate).map(([dateKey, events]) => {
-      const retained = events.filter(
-        (event) => event.canonicalBasis === undefined,
-      );
-      if (retained.length !== events.length) {
-        changed = true;
-      }
-      return [dateKey, retained];
-    }),
-  );
+  const eventsByDate: Record<string, readonly TimelineEvent[]> =
+    Object.fromEntries(
+      Object.entries(state.eventsByDate).map(([dateKey, events]) => {
+        const retained = events.filter(
+          (event) => event.canonicalBasis === undefined,
+        );
+        if (retained.length !== events.length) {
+          changed = true;
+        }
+        return [dateKey, retained];
+      }),
+    );
 
   for (const projection of projections) {
     const currentEvents =

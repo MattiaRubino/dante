@@ -12,6 +12,8 @@ import type {
   AuthenticatedSessionResponse,
   AuthenticationMethodsResponse,
   CreateActivityRequest,
+  CreateScheduledActivityRequest,
+  EstablishActivityScheduleRequest,
   ExistingAccountSignupResponse,
   GetTimelineWindowApiV1TemporalTimelineWindowGetParams,
   GoogleAuthenticationBegunResponse,
@@ -40,15 +42,23 @@ import type {
   ReauthenticateRequest,
   RecoveryAcceptedResponse,
   RecoveryValidationResponse,
+  RestoredScheduleResponse,
+  ReviseFloatingScheduleRequest,
+  RevisedScheduleResponse,
+  ScheduledActivityResponse,
   SignInRequest,
   SignupAuthenticatedResponse,
   SignupCreatedResponse,
   SignupRequest,
   SignupResendRequest,
   SignupVerificationRequest,
-  TimelineWindowResponse,
+  TimelineWindowEmptyResponse,
+  TimelineWindowItemsResponse,
   UnauthenticatedSessionResponse,
+  UndoScheduleUnscheduleRequest,
   UnplacedActivitiesResponse,
+  UnscheduleScheduleRequest,
+  UnscheduledScheduleResponse,
 } from './model';
 
 export type authBeginAppleAuthenticationResponse200 = {
@@ -3610,6 +3620,78 @@ export const createActivityApiV1TemporalActivitiesPost = async (
   } as createActivityApiV1TemporalActivitiesPostResponse;
 };
 
+export type createScheduledActivityApiV1TemporalActivitiesScheduledPostResponse201 =
+  {
+    data: ScheduledActivityResponse;
+    status: 201;
+  };
+
+export type createScheduledActivityApiV1TemporalActivitiesScheduledPostResponse422 =
+  {
+    data: HTTPValidationError;
+    status: 422;
+  };
+
+export type createScheduledActivityApiV1TemporalActivitiesScheduledPostResponseSuccess =
+  createScheduledActivityApiV1TemporalActivitiesScheduledPostResponse201 & {
+    headers: Headers;
+  };
+export type createScheduledActivityApiV1TemporalActivitiesScheduledPostResponseError =
+  createScheduledActivityApiV1TemporalActivitiesScheduledPostResponse422 & {
+    headers: Headers;
+  };
+
+export type createScheduledActivityApiV1TemporalActivitiesScheduledPostResponse =
+  | createScheduledActivityApiV1TemporalActivitiesScheduledPostResponseSuccess
+  | createScheduledActivityApiV1TemporalActivitiesScheduledPostResponseError;
+
+export const getCreateScheduledActivityApiV1TemporalActivitiesScheduledPostUrl =
+  () => {
+    return `/api/v1/temporal/activities/scheduled`;
+  };
+
+/**
+ * Create Activity + first accepted Schedule atomically for the B02-A subset.
+ * @summary Create Scheduled Activity
+ */
+export const createScheduledActivityApiV1TemporalActivitiesScheduledPost =
+  async (
+    createScheduledActivityRequest: CreateScheduledActivityRequest,
+    options?: RequestInit,
+    fetchFn?: typeof globalThis.fetch,
+  ): Promise<createScheduledActivityApiV1TemporalActivitiesScheduledPostResponse> => {
+    const getHeaders = (
+      h?: NonNullable<RequestInit['headers']>,
+    ): Record<string, string | readonly string[]> => {
+      if (!h) return {};
+      if (h instanceof Headers) return Object.fromEntries(h.entries());
+      if (Array.isArray(h)) return Object.fromEntries(h);
+      return h;
+    };
+    const res = await (fetchFn ?? fetch)(
+      getCreateScheduledActivityApiV1TemporalActivitiesScheduledPostUrl(),
+      {
+        ...options,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getHeaders(options?.headers),
+        },
+        body: JSON.stringify(createScheduledActivityRequest),
+      },
+    );
+
+    const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+    const data: createScheduledActivityApiV1TemporalActivitiesScheduledPostResponse['data'] =
+      body ? JSON.parse(body) : {};
+    return {
+      data,
+      status: res.status,
+      headers: res.headers,
+    } as createScheduledActivityApiV1TemporalActivitiesScheduledPostResponse;
+  };
+
 export type listUnplacedActivitiesApiV1TemporalActivitiesUnplacedGetResponse200 =
   {
     data: UnplacedActivitiesResponse;
@@ -3629,7 +3711,7 @@ export const getListUnplacedActivitiesApiV1TemporalActivitiesUnplacedGetUrl =
   };
 
 /**
- * List canonical Activities for this self Person that have no Schedule yet.
+ * List canonical Activities that have no current accepted Schedule placement.
  * @summary List Unplaced Activities
  */
 export const listUnplacedActivitiesApiV1TemporalActivitiesUnplacedGet = async (
@@ -3712,8 +3794,308 @@ export const getActivityApiV1TemporalActivitiesActivityRefGet = async (
   } as getActivityApiV1TemporalActivitiesActivityRefGetResponse;
 };
 
+export type establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostResponse201 =
+  {
+    data: ScheduledActivityResponse;
+    status: 201;
+  };
+
+export type establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostResponse422 =
+  {
+    data: HTTPValidationError;
+    status: 422;
+  };
+
+export type establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostResponseSuccess =
+  establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostResponse201 & {
+    headers: Headers;
+  };
+export type establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostResponseError =
+  establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostResponse422 & {
+    headers: Headers;
+  };
+
+export type establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostResponse =
+  | establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostResponseSuccess
+  | establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostResponseError;
+
+export const getEstablishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostUrl =
+  (activityRef: string) => {
+    return `/api/v1/temporal/activities/${activityRef}/schedule`;
+  };
+
+/**
+ * Attach a first accepted Schedule to an existing Activity without cloning it.
+ * @summary Establish Activity Schedule
+ */
+export const establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePost =
+  async (
+    activityRef: string,
+    establishActivityScheduleRequest: EstablishActivityScheduleRequest,
+    options?: RequestInit,
+    fetchFn?: typeof globalThis.fetch,
+  ): Promise<establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostResponse> => {
+    const getHeaders = (
+      h?: NonNullable<RequestInit['headers']>,
+    ): Record<string, string | readonly string[]> => {
+      if (!h) return {};
+      if (h instanceof Headers) return Object.fromEntries(h.entries());
+      if (Array.isArray(h)) return Object.fromEntries(h);
+      return h;
+    };
+    const res = await (fetchFn ?? fetch)(
+      getEstablishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostUrl(
+        activityRef,
+      ),
+      {
+        ...options,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getHeaders(options?.headers),
+        },
+        body: JSON.stringify(establishActivityScheduleRequest),
+      },
+    );
+
+    const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+    const data: establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostResponse['data'] =
+      body ? JSON.parse(body) : {};
+    return {
+      data,
+      status: res.status,
+      headers: res.headers,
+    } as establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostResponse;
+  };
+
+export type reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchResponse200 =
+  {
+    data: RevisedScheduleResponse;
+    status: 200;
+  };
+
+export type reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchResponse422 =
+  {
+    data: HTTPValidationError;
+    status: 422;
+  };
+
+export type reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchResponseSuccess =
+  reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchResponse200 & {
+    headers: Headers;
+  };
+export type reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchResponseError =
+  reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchResponse422 & {
+    headers: Headers;
+  };
+
+export type reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchResponse =
+  | reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchResponseSuccess
+  | reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchResponseError;
+
+export const getReviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchUrl =
+  (scheduleRef: string) => {
+    return `/api/v1/temporal/schedules/${scheduleRef}/placement`;
+  };
+
+/**
+ * Create a new accepted placement state without changing Schedule identity.
+ * @summary Revise Schedule Placement
+ */
+export const reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatch =
+  async (
+    scheduleRef: string,
+    reviseFloatingScheduleRequest: ReviseFloatingScheduleRequest,
+    options?: RequestInit,
+    fetchFn?: typeof globalThis.fetch,
+  ): Promise<reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchResponse> => {
+    const getHeaders = (
+      h?: NonNullable<RequestInit['headers']>,
+    ): Record<string, string | readonly string[]> => {
+      if (!h) return {};
+      if (h instanceof Headers) return Object.fromEntries(h.entries());
+      if (Array.isArray(h)) return Object.fromEntries(h);
+      return h;
+    };
+    const res = await (fetchFn ?? fetch)(
+      getReviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchUrl(
+        scheduleRef,
+      ),
+      {
+        ...options,
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getHeaders(options?.headers),
+        },
+        body: JSON.stringify(reviseFloatingScheduleRequest),
+      },
+    );
+
+    const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+    const data: reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchResponse['data'] =
+      body ? JSON.parse(body) : {};
+    return {
+      data,
+      status: res.status,
+      headers: res.headers,
+    } as reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchResponse;
+  };
+
+export type unscheduleScheduleApiV1TemporalSchedulesScheduleRefUnschedulePostResponse200 =
+  {
+    data: UnscheduledScheduleResponse;
+    status: 200;
+  };
+
+export type unscheduleScheduleApiV1TemporalSchedulesScheduleRefUnschedulePostResponse422 =
+  {
+    data: HTTPValidationError;
+    status: 422;
+  };
+
+export type unscheduleScheduleApiV1TemporalSchedulesScheduleRefUnschedulePostResponseSuccess =
+  unscheduleScheduleApiV1TemporalSchedulesScheduleRefUnschedulePostResponse200 & {
+    headers: Headers;
+  };
+export type unscheduleScheduleApiV1TemporalSchedulesScheduleRefUnschedulePostResponseError =
+  unscheduleScheduleApiV1TemporalSchedulesScheduleRefUnschedulePostResponse422 & {
+    headers: Headers;
+  };
+
+export type unscheduleScheduleApiV1TemporalSchedulesScheduleRefUnschedulePostResponse =
+  | unscheduleScheduleApiV1TemporalSchedulesScheduleRefUnschedulePostResponseSuccess
+  | unscheduleScheduleApiV1TemporalSchedulesScheduleRefUnschedulePostResponseError;
+
+export const getUnscheduleScheduleApiV1TemporalSchedulesScheduleRefUnschedulePostUrl =
+  (scheduleRef: string) => {
+    return `/api/v1/temporal/schedules/${scheduleRef}/unschedule`;
+  };
+
+/**
+ * Withdraw one exact current placement without deleting Schedule history.
+ * @summary Unschedule Schedule
+ */
+export const unscheduleScheduleApiV1TemporalSchedulesScheduleRefUnschedulePost =
+  async (
+    scheduleRef: string,
+    unscheduleScheduleRequest: UnscheduleScheduleRequest,
+    options?: RequestInit,
+    fetchFn?: typeof globalThis.fetch,
+  ): Promise<unscheduleScheduleApiV1TemporalSchedulesScheduleRefUnschedulePostResponse> => {
+    const getHeaders = (
+      h?: NonNullable<RequestInit['headers']>,
+    ): Record<string, string | readonly string[]> => {
+      if (!h) return {};
+      if (h instanceof Headers) return Object.fromEntries(h.entries());
+      if (Array.isArray(h)) return Object.fromEntries(h);
+      return h;
+    };
+    const res = await (fetchFn ?? fetch)(
+      getUnscheduleScheduleApiV1TemporalSchedulesScheduleRefUnschedulePostUrl(
+        scheduleRef,
+      ),
+      {
+        ...options,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getHeaders(options?.headers),
+        },
+        body: JSON.stringify(unscheduleScheduleRequest),
+      },
+    );
+
+    const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+    const data: unscheduleScheduleApiV1TemporalSchedulesScheduleRefUnschedulePostResponse['data'] =
+      body ? JSON.parse(body) : {};
+    return {
+      data,
+      status: res.status,
+      headers: res.headers,
+    } as unscheduleScheduleApiV1TemporalSchedulesScheduleRefUnschedulePostResponse;
+  };
+
+export type undoScheduleUnscheduleApiV1TemporalSchedulesScheduleRefUnscheduleUndoPostResponse200 =
+  {
+    data: RestoredScheduleResponse;
+    status: 200;
+  };
+
+export type undoScheduleUnscheduleApiV1TemporalSchedulesScheduleRefUnscheduleUndoPostResponse422 =
+  {
+    data: HTTPValidationError;
+    status: 422;
+  };
+
+export type undoScheduleUnscheduleApiV1TemporalSchedulesScheduleRefUnscheduleUndoPostResponseSuccess =
+  undoScheduleUnscheduleApiV1TemporalSchedulesScheduleRefUnscheduleUndoPostResponse200 & {
+    headers: Headers;
+  };
+export type undoScheduleUnscheduleApiV1TemporalSchedulesScheduleRefUnscheduleUndoPostResponseError =
+  undoScheduleUnscheduleApiV1TemporalSchedulesScheduleRefUnscheduleUndoPostResponse422 & {
+    headers: Headers;
+  };
+
+export type undoScheduleUnscheduleApiV1TemporalSchedulesScheduleRefUnscheduleUndoPostResponse =
+  | undoScheduleUnscheduleApiV1TemporalSchedulesScheduleRefUnscheduleUndoPostResponseSuccess
+  | undoScheduleUnscheduleApiV1TemporalSchedulesScheduleRefUnscheduleUndoPostResponseError;
+
+export const getUndoScheduleUnscheduleApiV1TemporalSchedulesScheduleRefUnscheduleUndoPostUrl =
+  (scheduleRef: string) => {
+    return `/api/v1/temporal/schedules/${scheduleRef}/unschedule/undo`;
+  };
+
+/**
+ * Restore withdrawn placement semantics through one new MaterialState.
+ * @summary Undo Schedule Unschedule
+ */
+export const undoScheduleUnscheduleApiV1TemporalSchedulesScheduleRefUnscheduleUndoPost =
+  async (
+    scheduleRef: string,
+    undoScheduleUnscheduleRequest: UndoScheduleUnscheduleRequest,
+    options?: RequestInit,
+    fetchFn?: typeof globalThis.fetch,
+  ): Promise<undoScheduleUnscheduleApiV1TemporalSchedulesScheduleRefUnscheduleUndoPostResponse> => {
+    const getHeaders = (
+      h?: NonNullable<RequestInit['headers']>,
+    ): Record<string, string | readonly string[]> => {
+      if (!h) return {};
+      if (h instanceof Headers) return Object.fromEntries(h.entries());
+      if (Array.isArray(h)) return Object.fromEntries(h);
+      return h;
+    };
+    const res = await (fetchFn ?? fetch)(
+      getUndoScheduleUnscheduleApiV1TemporalSchedulesScheduleRefUnscheduleUndoPostUrl(
+        scheduleRef,
+      ),
+      {
+        ...options,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getHeaders(options?.headers),
+        },
+        body: JSON.stringify(undoScheduleUnscheduleRequest),
+      },
+    );
+
+    const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+    const data: undoScheduleUnscheduleApiV1TemporalSchedulesScheduleRefUnscheduleUndoPostResponse['data'] =
+      body ? JSON.parse(body) : {};
+    return {
+      data,
+      status: res.status,
+      headers: res.headers,
+    } as undoScheduleUnscheduleApiV1TemporalSchedulesScheduleRefUnscheduleUndoPostResponse;
+  };
+
 export type getTimelineWindowApiV1TemporalTimelineWindowGetResponse200 = {
-  data: TimelineWindowResponse;
+  data: TimelineWindowEmptyResponse | TimelineWindowItemsResponse;
   status: 200;
 };
 

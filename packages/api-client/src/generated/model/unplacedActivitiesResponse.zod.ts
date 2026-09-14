@@ -36,7 +36,7 @@ export const UnplacedActivitiesResponse = /*#__PURE__*/ zod
   })
   .check(
     /*#__PURE__*/ zod.describe(
-      'Planning-Tray read surface for Activities without a Schedule in B01.',
+      'Planning-Tray Activities without a current accepted Schedule placement.',
     ),
   );
 

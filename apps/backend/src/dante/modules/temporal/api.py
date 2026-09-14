@@ -6,6 +6,9 @@ from datetime import date, datetime
 from typing import Annotated, Literal, cast
 from uuid import UUID
 
+from fastapi import APIRouter, Depends, Request, Response
+from pydantic import BaseModel, ConfigDict, Field
+
 from dante.context.contracts import DanteContext
 from dante.context.dependencies import (
     require_dante_context,
@@ -41,9 +44,6 @@ from dante.modules.temporal.schedule import (
     TemporalScheduleApplication,
     UnscheduledScheduleView,
 )
-from fastapi import APIRouter, Depends, Request, Response
-from pydantic import BaseModel, ConfigDict, Field
-
 from dante.platform.database.references import (
     MaterialStateRef,
     NativeRef,
@@ -59,6 +59,7 @@ MutatingDanteContextDependency = Annotated[
     Depends(require_mutating_dante_context),
 ]
 
+
 class TimelineWindowEmptyResponse(BaseModel):
     """Truthful authenticated Timeline window with no activated current items."""
 
@@ -68,6 +69,7 @@ class TimelineWindowEmptyResponse(BaseModel):
     start_date: date
     end_date_exclusive: date
     effective_zone_id: str
+
 
 class TimelineScheduledActivityResponse(BaseModel):
     """Current accepted B02-A Schedule projection for one Activity."""
@@ -83,6 +85,7 @@ class TimelineScheduledActivityResponse(BaseModel):
     starts_local_at: datetime
     ends_local_at: datetime
 
+
 class TimelineWindowItemsResponse(BaseModel):
     """Populated authenticated Timeline window."""
 
@@ -94,7 +97,9 @@ class TimelineWindowItemsResponse(BaseModel):
     effective_zone_id: str
     items: list[TimelineScheduledActivityResponse]
 
+
 TimelineWindowResponse = TimelineWindowEmptyResponse | TimelineWindowItemsResponse
+
 
 class CreateActivityRequest(BaseModel):
     """Minimum B01 CreateActivity command; placement is not an Activity field."""
@@ -103,6 +108,7 @@ class CreateActivityRequest(BaseModel):
 
     operation_id: str = Field(min_length=1, max_length=200)
     title: str = Field(min_length=1, max_length=300)
+
 
 class FloatingLocalIntervalPlacementRequest(BaseModel):
     """First lossless accepted Schedule transport form activated by B02-A."""
@@ -113,6 +119,7 @@ class FloatingLocalIntervalPlacementRequest(BaseModel):
     starts_local_at: datetime
     ends_local_at: datetime
 
+
 class CreateScheduledActivityRequest(BaseModel):
     """Atomic Activity + accepted Schedule authoring command for B02-A."""
 
@@ -122,6 +129,7 @@ class CreateScheduledActivityRequest(BaseModel):
     title: str = Field(min_length=1, max_length=300)
     placement: FloatingLocalIntervalPlacementRequest
 
+
 class EstablishActivityScheduleRequest(BaseModel):
     """Attach an accepted Schedule to one existing canonical Activity."""
 
@@ -129,6 +137,7 @@ class EstablishActivityScheduleRequest(BaseModel):
 
     operation_id: str = Field(min_length=1, max_length=200)
     placement: FloatingLocalIntervalPlacementRequest
+
 
 class ReviseFloatingScheduleRequest(BaseModel):
     """Revise one current Schedule from an exact accepted placement basis."""
@@ -139,6 +148,7 @@ class ReviseFloatingScheduleRequest(BaseModel):
     expected_placement_material_state_ref: UUID
     placement: FloatingLocalIntervalPlacementRequest
 
+
 class UnscheduleScheduleRequest(BaseModel):
     """Withdraw one exact current accepted Schedule placement."""
 
@@ -147,6 +157,7 @@ class UnscheduleScheduleRequest(BaseModel):
     operation_id: str = Field(min_length=1, max_length=200)
     expected_placement_material_state_ref: UUID
 
+
 class UndoScheduleUnscheduleRequest(BaseModel):
     """Restore the placement withdrawn by one exact unschedule operation."""
 
@@ -154,6 +165,7 @@ class UndoScheduleUnscheduleRequest(BaseModel):
 
     operation_id: str = Field(min_length=1, max_length=200)
     unschedule_operation_id: str = Field(min_length=1, max_length=200)
+
 
 class ActivityResponse(BaseModel):
     """Minimum canonical Activity representation exposed by B01."""
@@ -164,6 +176,7 @@ class ActivityResponse(BaseModel):
     title: str
     created_at: datetime
     replayed: bool = False
+
 
 class ScheduledActivityResponse(BaseModel):
     """Canonical Activity plus the first accepted Schedule/current placement."""
@@ -180,6 +193,7 @@ class ScheduledActivityResponse(BaseModel):
     ends_local_at: datetime
     replayed: bool = False
 
+
 class RevisedScheduleResponse(BaseModel):
     """Accepted current Schedule placement after one governed revision."""
 
@@ -193,6 +207,7 @@ class RevisedScheduleResponse(BaseModel):
     ends_local_at: datetime
     replayed: bool = False
 
+
 class UnscheduledScheduleResponse(BaseModel):
     """Accepted withdrawal of the current Schedule placement."""
 
@@ -202,6 +217,7 @@ class UnscheduledScheduleResponse(BaseModel):
     previous_placement_material_state_ref: UUID
     unschedule_operation_id: str
     replayed: bool = False
+
 
 class RestoredScheduleResponse(BaseModel):
     """New current placement produced by guarded Undo of unschedule."""
@@ -216,6 +232,7 @@ class RestoredScheduleResponse(BaseModel):
     ends_local_at: datetime
     replayed: bool = False
 
+
 class UnplacedActivitiesResponse(BaseModel):
     """Planning-Tray Activities without a current accepted Schedule placement."""
 
@@ -224,20 +241,24 @@ class UnplacedActivitiesResponse(BaseModel):
     kind: Literal["unplaced"] = "unplaced"
     items: list[ActivityResponse]
 
+
 def get_temporal_activity_application(request: Request) -> TemporalActivityApplication:
     """Resolve the Activity application boundary from the process-scoped DB runtime."""
     database_runtime = cast(DatabaseRuntime, request.app.state.database_runtime)
     return TemporalActivityApplication(database_runtime.session_factory)
+
 
 def get_temporal_timeline_application(request: Request) -> TemporalTimelineApplication:
     """Resolve the Timeline application boundary from the process-scoped DB runtime."""
     database_runtime = cast(DatabaseRuntime, request.app.state.database_runtime)
     return TemporalTimelineApplication(database_runtime.session_factory)
 
+
 def get_temporal_schedule_application(request: Request) -> TemporalScheduleApplication:
     """Resolve the Schedule mutation boundary from the process-scoped DB runtime."""
     database_runtime = cast(DatabaseRuntime, request.app.state.database_runtime)
     return TemporalScheduleApplication(database_runtime.session_factory)
+
 
 TemporalActivityApplicationDependency = Annotated[
     TemporalActivityApplication,
@@ -252,15 +273,15 @@ TemporalScheduleApplicationDependency = Annotated[
     Depends(get_temporal_schedule_application),
 ]
 
-def _activity_response(
-    activity: ActivityView, *, replayed: bool = False
-) -> ActivityResponse:
+
+def _activity_response(activity: ActivityView, *, replayed: bool = False) -> ActivityResponse:
     return ActivityResponse(
         activity_ref=activity.activity_ref,
         title=activity.title,
         created_at=activity.created_at,
         replayed=replayed,
     )
+
 
 @router.get("/timeline/window", response_model=TimelineWindowResponse)
 async def get_timeline_window(
@@ -324,6 +345,7 @@ async def get_timeline_window(
         ],
     )
 
+
 @router.post(
     "/activities",
     response_model=ActivityResponse,
@@ -374,6 +396,7 @@ async def create_activity(
     if result.replayed:
         response.status_code = 200
     return _activity_response(result.activity, replayed=result.replayed)
+
 
 @router.post(
     "/activities/scheduled",
@@ -439,6 +462,7 @@ async def create_scheduled_activity(
         ends_local_at=result.schedule.placement.ends_local_at,
         replayed=result.replayed,
     )
+
 
 @router.post(
     "/activities/{activity_ref}/schedule",
@@ -514,6 +538,7 @@ async def establish_activity_schedule(
         ends_local_at=result.schedule.placement.ends_local_at,
         replayed=result.replayed,
     )
+
 
 @router.patch(
     "/schedules/{schedule_ref}/placement",
@@ -596,6 +621,7 @@ async def revise_schedule_placement(
         replayed=result.replayed,
     )
 
+
 @router.post(
     "/schedules/{schedule_ref}/unschedule",
     response_model=UnscheduledScheduleResponse,
@@ -671,6 +697,7 @@ async def unschedule_schedule(
         replayed=result.replayed,
     )
 
+
 @router.post(
     "/schedules/{schedule_ref}/unschedule/undo",
     response_model=RestoredScheduleResponse,
@@ -739,14 +766,13 @@ async def undo_schedule_unschedule(
 
     return RestoredScheduleResponse(
         schedule_ref=result.schedule_ref,
-        restored_from_placement_material_state_ref=(
-            result.restored_from_material_state_ref
-        ),
+        restored_from_placement_material_state_ref=(result.restored_from_material_state_ref),
         placement_material_state_ref=result.material_state_ref,
         starts_local_at=result.placement.starts_local_at,
         ends_local_at=result.placement.ends_local_at,
         replayed=result.replayed,
     )
+
 
 @router.get("/activities/unplaced", response_model=UnplacedActivitiesResponse)
 async def list_unplaced_activities(
@@ -773,6 +799,7 @@ async def list_unplaced_activities(
     return UnplacedActivitiesResponse(
         items=[_activity_response(activity) for activity in activities]
     )
+
 
 @router.get("/activities/{activity_ref}", response_model=ActivityResponse)
 async def get_activity(

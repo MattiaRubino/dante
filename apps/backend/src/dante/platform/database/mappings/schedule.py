@@ -21,6 +21,7 @@ from dante.platform.database.references import (
     ScopedRecordRef,
 )
 
+
 class ScheduleRow(Base):
     """Persistence row for dante.schedule; not a Domain model class."""
 
@@ -44,6 +45,7 @@ class ScheduleRow(Base):
 
     schedule_ref: Mapped[ScopedRecordRef] = mapped_column(primary_key=True)
     subject_native_ref: Mapped[NativeRef] = mapped_column(nullable=False)
+
 
 class ScheduleEstablishOperationRow(Base):
     """Idempotency receipt for one self-scoped accepted Schedule establishment."""
@@ -115,9 +117,8 @@ class ScheduleEstablishOperationRow(Base):
     subject_native_ref: Mapped[NativeRef] = mapped_column(nullable=False)
     schedule_ref: Mapped[ScopedRecordRef] = mapped_column(nullable=False)
     material_state_ref: Mapped[MaterialStateRef] = mapped_column(nullable=False)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
 
 class ScheduleRevisionOperationRow(Base):
     """Idempotency receipt for one governed self-scoped Schedule revision."""
@@ -180,13 +181,10 @@ class ScheduleRevisionOperationRow(Base):
     operation_id: Mapped[str] = mapped_column(Text, primary_key=True)
     intent_fingerprint: Mapped[str] = mapped_column(Text, nullable=False)
     schedule_ref: Mapped[ScopedRecordRef] = mapped_column(nullable=False)
-    expected_material_state_ref: Mapped[MaterialStateRef] = mapped_column(
-        nullable=False
-    )
+    expected_material_state_ref: Mapped[MaterialStateRef] = mapped_column(nullable=False)
     material_state_ref: Mapped[MaterialStateRef] = mapped_column(nullable=False)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
 
 class ScheduleUnscheduleOperationRow(Base):
     """Idempotency receipt for one governed current-placement withdrawal."""
@@ -236,12 +234,9 @@ class ScheduleUnscheduleOperationRow(Base):
     operation_id: Mapped[str] = mapped_column(Text, primary_key=True)
     intent_fingerprint: Mapped[str] = mapped_column(Text, nullable=False)
     schedule_ref: Mapped[ScopedRecordRef] = mapped_column(nullable=False)
-    expected_material_state_ref: Mapped[MaterialStateRef] = mapped_column(
-        nullable=False
-    )
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False
-    )
+    expected_material_state_ref: Mapped[MaterialStateRef] = mapped_column(nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
 
 class ScheduleUnscheduleUndoOperationRow(Base):
     """Idempotency receipt for one guarded monotonic unschedule Undo."""
@@ -322,13 +317,10 @@ class ScheduleUnscheduleUndoOperationRow(Base):
     intent_fingerprint: Mapped[str] = mapped_column(Text, nullable=False)
     schedule_ref: Mapped[ScopedRecordRef] = mapped_column(nullable=False)
     unschedule_operation_id: Mapped[str] = mapped_column(Text, nullable=False)
-    restored_from_material_state_ref: Mapped[MaterialStateRef] = mapped_column(
-        nullable=False
-    )
+    restored_from_material_state_ref: Mapped[MaterialStateRef] = mapped_column(nullable=False)
     material_state_ref: Mapped[MaterialStateRef] = mapped_column(nullable=False)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
 
 class SchedulePlacementStateRow(Base):
     """Schedule placement MaterialState envelope."""
@@ -364,6 +356,7 @@ class SchedulePlacementStateRow(Base):
     schedule_ref: Mapped[ScopedRecordRef] = mapped_column(nullable=False)
     temporal_form_code: Mapped[str] = mapped_column(Text, nullable=False)
 
+
 class SchedulePlacementDateStateRow(Base):
     """Date-span placement payload."""
 
@@ -392,6 +385,7 @@ class SchedulePlacementDateStateRow(Base):
 
     material_state_ref: Mapped[MaterialStateRef] = mapped_column(primary_key=True)
     date_span: Mapped[Range[date]] = mapped_column(DATERANGE, nullable=False)
+
 
 class SchedulePlacementFloatingLocalStateRow(Base):
     """Floating-local placement payload."""
@@ -422,10 +416,9 @@ class SchedulePlacementFloatingLocalStateRow(Base):
 
     material_state_ref: Mapped[MaterialStateRef] = mapped_column(primary_key=True)
     extent_code: Mapped[str] = mapped_column(Text, nullable=False)
-    starts_local_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=False), nullable=False
-    )
+    starts_local_at: Mapped[datetime] = mapped_column(DateTime(timezone=False), nullable=False)
     ends_local_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=False))
+
 
 class SchedulePlacementNamedZoneStateRow(Base):
     """Named-zone local placement payload."""
@@ -464,13 +457,12 @@ class SchedulePlacementNamedZoneStateRow(Base):
 
     material_state_ref: Mapped[MaterialStateRef] = mapped_column(primary_key=True)
     extent_code: Mapped[str] = mapped_column(Text, nullable=False)
-    starts_local_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=False), nullable=False
-    )
+    starts_local_at: Mapped[datetime] = mapped_column(DateTime(timezone=False), nullable=False)
     ends_local_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=False))
     zone_id: Mapped[str] = mapped_column(Text, nullable=False)
     resolved_start_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     resolved_end_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
 
 class SchedulePlacementAbsoluteStateRow(Base):
     """Absolute placement payload."""
@@ -503,6 +495,7 @@ class SchedulePlacementAbsoluteStateRow(Base):
     extent_code: Mapped[str] = mapped_column(Text, nullable=False)
     starts_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     ends_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
 
 class SchedulePlacementCurrentHistoryRow(Base):
     """Schedule placement currentness history."""
@@ -546,7 +539,5 @@ class SchedulePlacementCurrentHistoryRow(Base):
 
     schedule_ref: Mapped[ScopedRecordRef] = mapped_column(primary_key=True)
     material_state_ref: Mapped[MaterialStateRef] = mapped_column(nullable=False)
-    current_from_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), primary_key=True
-    )
+    current_from_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), primary_key=True)
     current_until_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

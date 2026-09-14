@@ -8,6 +8,8 @@ from uuid import uuid7
 
 import psycopg
 import pytest
+
+from dante.auth.contracts import Principal
 from dante.context.contracts import DanteContext
 from dante.modules.temporal.activity import TemporalActivityApplication
 from dante.modules.temporal.application import TemporalTimelineApplication
@@ -21,11 +23,10 @@ from dante.modules.temporal.schedule import (
     TemporalScheduleApplication,
     UnscheduledScheduleView,
 )
-from dante.platform.time import TimeZoneMode, TimeZonePolicy
-
-from dante.auth.contracts import Principal
 from dante.platform.database.references import NativeRef
 from dante.platform.database.runtime import create_database_runtime
+from dante.platform.time import TimeZoneMode, TimeZonePolicy
+
 
 def _floating_local(
     year: int,
@@ -35,6 +36,7 @@ def _floating_local(
     minute: int,
 ) -> datetime:
     return datetime(year, month, day, hour, minute)  # noqa: DTZ001
+
 
 def _seed_self_person(database: Any) -> NativeRef:
     person_ref = uuid7()
@@ -51,12 +53,12 @@ def _seed_self_person(database: Any) -> NativeRef:
             (person_ref,),
         )
         connection.execute(
-            "INSERT INTO dante.native_address(native_ref,owner_family) "
-            "VALUES (%s,'person')",
+            "INSERT INTO dante.native_address(native_ref,owner_family) VALUES (%s,'person')",
             (person_ref,),
         )
         connection.commit()
     return NativeRef(person_ref)
+
 
 def _context(self_person_ref: NativeRef) -> DanteContext:
     now = datetime.now(UTC)
@@ -71,6 +73,7 @@ def _context(self_person_ref: NativeRef) -> DanteContext:
         timezone_policy=TimeZonePolicy(mode=TimeZoneMode.FOLLOW_DEVICE),
         effective_zone_id="Europe/Rome",
     )
+
 
 @pytest.mark.postgres
 @pytest.mark.asyncio
@@ -115,12 +118,8 @@ async def test_unschedule_returns_activity_to_tray_and_undo_is_monotonic(
             created_at=unscheduled.created_at,
             replayed=True,
         )
-        unplaced = await activities.list_unplaced(
-            self_person_ref=self_person_ref
-        )
-        assert [item.activity_ref for item in unplaced] == [
-            created.activity.activity_ref
-        ]
+        unplaced = await activities.list_unplaced(self_person_ref=self_person_ref)
+        assert [item.activity_ref for item in unplaced] == [created.activity.activity_ref]
         absent_window = await timeline.get_window(
             context=_context(self_person_ref),
             query=TimelineWindowQuery(
@@ -143,9 +142,7 @@ async def test_unschedule_returns_activity_to_tray_and_undo_is_monotonic(
             unschedule_operation_id=unscheduled.unschedule_operation_id,
         )
         assert restored.material_state_ref != created.schedule.material_state_ref
-        assert restored.restored_from_material_state_ref == (
-            created.schedule.material_state_ref
-        )
+        assert restored.restored_from_material_state_ref == (created.schedule.material_state_ref)
         assert restored.placement == placement
         assert replayed_restore.material_state_ref == restored.material_state_ref
         assert replayed_restore.replayed is True
@@ -159,10 +156,7 @@ async def test_unschedule_returns_activity_to_tray_and_undo_is_monotonic(
             ),
         )
         assert len(restored_window.items) == 1
-        assert (
-            restored_window.items[0].placement_material_state_ref
-            == restored.material_state_ref
-        )
+        assert restored_window.items[0].placement_material_state_ref == restored.material_state_ref
     finally:
         await runtime.dispose()
 
@@ -207,6 +201,7 @@ async def test_unschedule_returns_activity_to_tray_and_undo_is_monotonic(
             ),
         ).fetchone()
     assert facts == (1, 1, 2, 2, 1, 1, 1, 1)
+
 
 @pytest.mark.postgres
 @pytest.mark.asyncio
@@ -290,9 +285,7 @@ async def test_unschedule_and_undo_reject_stale_or_reused_intent(
             schedule_ref=created.schedule.schedule_ref,
             expected_material_state_ref=restored.material_state_ref,
         )
-        assert second_unschedule.previous_material_state_ref == (
-            restored.material_state_ref
-        )
+        assert second_unschedule.previous_material_state_ref == (restored.material_state_ref)
 
         with pytest.raises(ScheduleUndoConflictError):
             await schedules.undo_unschedule(

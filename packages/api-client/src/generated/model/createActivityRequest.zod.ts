@@ -23,7 +23,7 @@ export const CreateActivityRequest = /*#__PURE__*/ zod
   })
   .check(
     /*#__PURE__*/ zod.describe(
-      'Minimum B01 CreateActivity command; placement and lifecycle state are not Activity fields.',
+      'Minimum B01 CreateActivity command; placement is not an Activity field.',
     ),
   );
 

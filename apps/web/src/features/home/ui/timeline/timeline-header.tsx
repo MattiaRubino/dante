@@ -25,7 +25,6 @@ import type {
   TimelineGroupId,
   TimelineSemanticTone,
 } from './model/timeline-types';
-import { useAuthoritativeTimelineHydration } from './timeline-authoritative-hydration';
 import { TimelineCreateBridge } from './timeline-create-bridge';
 
 function displayDate(date: PlainDate): Date {
@@ -134,7 +133,6 @@ export function TimelineHeader({
   onRemoveCreatedAllDay,
 }: TimelineHeaderProps) {
   const { t } = useTranslation('common');
-  useAuthoritativeTimelineHydration(onMaterializeCreatedEvent);
   const week = buildIsoWeek(viewDate);
   const [draggingGroupId, setDraggingGroupId] =
     useState<TimelineGroupId | null>(null);

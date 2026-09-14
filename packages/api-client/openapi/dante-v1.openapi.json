@@ -291,7 +291,7 @@
       },
       "CreateActivityRequest": {
         "additionalProperties": false,
-        "description": "Minimum B01 CreateActivity command; placement and lifecycle state are not Activity fields.",
+        "description": "Minimum B01 CreateActivity command; placement is not an Activity field.",
         "properties": {
           "operation_id": {
             "maxLength": 200,
@@ -310,6 +310,48 @@
         "title": "CreateActivityRequest",
         "type": "object"
       },
+      "CreateScheduledActivityRequest": {
+        "additionalProperties": false,
+        "description": "Atomic Activity + accepted Schedule authoring command for B02-A.",
+        "properties": {
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "placement": {
+            "$ref": "#/components/schemas/FloatingLocalIntervalPlacementRequest"
+          },
+          "title": {
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "title", "placement"],
+        "title": "CreateScheduledActivityRequest",
+        "type": "object"
+      },
+      "EstablishActivityScheduleRequest": {
+        "additionalProperties": false,
+        "description": "Attach an accepted Schedule to one existing canonical Activity.",
+        "properties": {
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "placement": {
+            "$ref": "#/components/schemas/FloatingLocalIntervalPlacementRequest"
+          }
+        },
+        "required": ["operation_id", "placement"],
+        "title": "EstablishActivityScheduleRequest",
+        "type": "object"
+      },
       "ExistingAccountSignupResponse": {
         "additionalProperties": false,
         "description": "Mailbox proof succeeded but that canonical email already belongs to an Account.",
@@ -322,6 +364,31 @@
         },
         "required": ["outcome"],
         "title": "ExistingAccountSignupResponse",
+        "type": "object"
+      },
+      "FloatingLocalIntervalPlacementRequest": {
+        "additionalProperties": false,
+        "description": "First lossless accepted Schedule transport form activated by B02-A.",
+        "properties": {
+          "ends_local_at": {
+            "format": "date-time",
+            "title": "Ends Local At",
+            "type": "string"
+          },
+          "kind": {
+            "const": "floating_local_interval",
+            "default": "floating_local_interval",
+            "title": "Kind",
+            "type": "string"
+          },
+          "starts_local_at": {
+            "format": "date-time",
+            "title": "Starts Local At",
+            "type": "string"
+          }
+        },
+        "required": ["starts_local_at", "ends_local_at"],
+        "title": "FloatingLocalIntervalPlacementRequest",
         "type": "object"
       },
       "GoogleAuthenticationBegunResponse": {
@@ -1085,6 +1152,197 @@
         "title": "RegistrationCredential",
         "type": "object"
       },
+      "RestoredScheduleResponse": {
+        "additionalProperties": false,
+        "description": "New current placement produced by guarded Undo of unschedule.",
+        "properties": {
+          "ends_local_at": {
+            "format": "date-time",
+            "title": "Ends Local At",
+            "type": "string"
+          },
+          "placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Placement Material State Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "restored_from_placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Restored From Placement Material State Ref",
+            "type": "string"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "starts_local_at": {
+            "format": "date-time",
+            "title": "Starts Local At",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "floating_local",
+            "default": "floating_local",
+            "title": "Temporal Form",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schedule_ref",
+          "restored_from_placement_material_state_ref",
+          "placement_material_state_ref",
+          "starts_local_at",
+          "ends_local_at"
+        ],
+        "title": "RestoredScheduleResponse",
+        "type": "object"
+      },
+      "ReviseFloatingScheduleRequest": {
+        "additionalProperties": false,
+        "description": "Revise one current Schedule from an exact accepted placement basis.",
+        "properties": {
+          "expected_placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Expected Placement Material State Ref",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "placement": {
+            "$ref": "#/components/schemas/FloatingLocalIntervalPlacementRequest"
+          }
+        },
+        "required": [
+          "operation_id",
+          "expected_placement_material_state_ref",
+          "placement"
+        ],
+        "title": "ReviseFloatingScheduleRequest",
+        "type": "object"
+      },
+      "RevisedScheduleResponse": {
+        "additionalProperties": false,
+        "description": "Accepted current Schedule placement after one governed revision.",
+        "properties": {
+          "ends_local_at": {
+            "format": "date-time",
+            "title": "Ends Local At",
+            "type": "string"
+          },
+          "placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Placement Material State Ref",
+            "type": "string"
+          },
+          "previous_placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Previous Placement Material State Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "starts_local_at": {
+            "format": "date-time",
+            "title": "Starts Local At",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "floating_local",
+            "default": "floating_local",
+            "title": "Temporal Form",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schedule_ref",
+          "previous_placement_material_state_ref",
+          "placement_material_state_ref",
+          "starts_local_at",
+          "ends_local_at"
+        ],
+        "title": "RevisedScheduleResponse",
+        "type": "object"
+      },
+      "ScheduledActivityResponse": {
+        "additionalProperties": false,
+        "description": "Canonical Activity plus the first accepted Schedule/current placement.",
+        "properties": {
+          "activity_ref": {
+            "format": "uuid",
+            "title": "Activity Ref",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "ends_local_at": {
+            "format": "date-time",
+            "title": "Ends Local At",
+            "type": "string"
+          },
+          "placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Placement Material State Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "starts_local_at": {
+            "format": "date-time",
+            "title": "Starts Local At",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "floating_local",
+            "default": "floating_local",
+            "title": "Temporal Form",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "activity_ref",
+          "title",
+          "created_at",
+          "schedule_ref",
+          "placement_material_state_ref",
+          "starts_local_at",
+          "ends_local_at"
+        ],
+        "title": "ScheduledActivityResponse",
+        "type": "object"
+      },
       "SignInRequest": {
         "additionalProperties": false,
         "description": "Bounded first-party email/password signin request.",
@@ -1245,9 +1503,66 @@
         "title": "SignupVerificationRequest",
         "type": "object"
       },
-      "TimelineWindowResponse": {
+      "TimelineScheduledActivityResponse": {
         "additionalProperties": false,
-        "description": "B00 transport contract for a truthful empty authenticated Timeline window.",
+        "description": "Current accepted B02-A Schedule projection for one Activity.",
+        "properties": {
+          "activity_ref": {
+            "format": "uuid",
+            "title": "Activity Ref",
+            "type": "string"
+          },
+          "ends_local_at": {
+            "format": "date-time",
+            "title": "Ends Local At",
+            "type": "string"
+          },
+          "kind": {
+            "const": "scheduled_activity",
+            "default": "scheduled_activity",
+            "title": "Kind",
+            "type": "string"
+          },
+          "placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Placement Material State Ref",
+            "type": "string"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "starts_local_at": {
+            "format": "date-time",
+            "title": "Starts Local At",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "floating_local",
+            "default": "floating_local",
+            "title": "Temporal Form",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "activity_ref",
+          "schedule_ref",
+          "placement_material_state_ref",
+          "title",
+          "starts_local_at",
+          "ends_local_at"
+        ],
+        "title": "TimelineScheduledActivityResponse",
+        "type": "object"
+      },
+      "TimelineWindowEmptyResponse": {
+        "additionalProperties": false,
+        "description": "Truthful authenticated Timeline window with no activated current items.",
         "properties": {
           "effective_zone_id": {
             "title": "Effective Zone Id",
@@ -1271,7 +1586,48 @@
           }
         },
         "required": ["start_date", "end_date_exclusive", "effective_zone_id"],
-        "title": "TimelineWindowResponse",
+        "title": "TimelineWindowEmptyResponse",
+        "type": "object"
+      },
+      "TimelineWindowItemsResponse": {
+        "additionalProperties": false,
+        "description": "Populated authenticated Timeline window.",
+        "properties": {
+          "effective_zone_id": {
+            "title": "Effective Zone Id",
+            "type": "string"
+          },
+          "end_date_exclusive": {
+            "format": "date",
+            "title": "End Date Exclusive",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TimelineScheduledActivityResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "kind": {
+            "const": "window",
+            "default": "window",
+            "title": "Kind",
+            "type": "string"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "start_date",
+          "end_date_exclusive",
+          "effective_zone_id",
+          "items"
+        ],
+        "title": "TimelineWindowItemsResponse",
         "type": "object"
       },
       "UnauthenticatedSessionResponse": {
@@ -1288,9 +1644,30 @@
         "title": "UnauthenticatedSessionResponse",
         "type": "object"
       },
+      "UndoScheduleUnscheduleRequest": {
+        "additionalProperties": false,
+        "description": "Restore the placement withdrawn by one exact unschedule operation.",
+        "properties": {
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "unschedule_operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Unschedule Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "unschedule_operation_id"],
+        "title": "UndoScheduleUnscheduleRequest",
+        "type": "object"
+      },
       "UnplacedActivitiesResponse": {
         "additionalProperties": false,
-        "description": "Planning-Tray read surface for Activities without a Schedule in B01.",
+        "description": "Planning-Tray Activities without a current accepted Schedule placement.",
         "properties": {
           "items": {
             "items": {
@@ -1308,6 +1685,58 @@
         },
         "required": ["items"],
         "title": "UnplacedActivitiesResponse",
+        "type": "object"
+      },
+      "UnscheduleScheduleRequest": {
+        "additionalProperties": false,
+        "description": "Withdraw one exact current accepted Schedule placement.",
+        "properties": {
+          "expected_placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Expected Placement Material State Ref",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "expected_placement_material_state_ref"],
+        "title": "UnscheduleScheduleRequest",
+        "type": "object"
+      },
+      "UnscheduledScheduleResponse": {
+        "additionalProperties": false,
+        "description": "Accepted withdrawal of the current Schedule placement.",
+        "properties": {
+          "previous_placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Previous Placement Material State Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "unschedule_operation_id": {
+            "title": "Unschedule Operation Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schedule_ref",
+          "previous_placement_material_state_ref",
+          "unschedule_operation_id"
+        ],
+        "title": "UnscheduledScheduleResponse",
         "type": "object"
       },
       "ValidationError": {
@@ -10555,9 +10984,49 @@
         "tags": ["temporal"]
       }
     },
+    "/api/v1/temporal/activities/scheduled": {
+      "post": {
+        "description": "Create Activity + first accepted Schedule atomically for the B02-A subset.",
+        "operationId": "create_scheduled_activity_api_v1_temporal_activities_scheduled_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateScheduledActivityRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduledActivityResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Scheduled Activity",
+        "tags": ["temporal"]
+      }
+    },
     "/api/v1/temporal/activities/unplaced": {
       "get": {
-        "description": "List canonical Activities for this self Person that have no Schedule yet.",
+        "description": "List canonical Activities that have no current accepted Schedule placement.",
         "operationId": "list_unplaced_activities_api_v1_temporal_activities_unplaced_get",
         "responses": {
           "200": {
@@ -10617,6 +11086,214 @@
         "tags": ["temporal"]
       }
     },
+    "/api/v1/temporal/activities/{activity_ref}/schedule": {
+      "post": {
+        "description": "Attach a first accepted Schedule to an existing Activity without cloning it.",
+        "operationId": "establish_activity_schedule_api_v1_temporal_activities__activity_ref__schedule_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EstablishActivityScheduleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduledActivityResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Establish Activity Schedule",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/schedules/{schedule_ref}/placement": {
+      "patch": {
+        "description": "Create a new accepted placement state without changing Schedule identity.",
+        "operationId": "revise_schedule_placement_api_v1_temporal_schedules__schedule_ref__placement_patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "schedule_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Schedule Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviseFloatingScheduleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevisedScheduleResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Revise Schedule Placement",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/schedules/{schedule_ref}/unschedule": {
+      "post": {
+        "description": "Withdraw one exact current placement without deleting Schedule history.",
+        "operationId": "unschedule_schedule_api_v1_temporal_schedules__schedule_ref__unschedule_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "schedule_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Schedule Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnscheduleScheduleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnscheduledScheduleResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Unschedule Schedule",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/schedules/{schedule_ref}/unschedule/undo": {
+      "post": {
+        "description": "Restore withdrawn placement semantics through one new MaterialState.",
+        "operationId": "undo_schedule_unschedule_api_v1_temporal_schedules__schedule_ref__unschedule_undo_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "schedule_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Schedule Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UndoScheduleUnscheduleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestoredScheduleResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Undo Schedule Unschedule",
+        "tags": ["temporal"]
+      }
+    },
     "/api/v1/temporal/timeline/window": {
       "get": {
         "description": "Read one bounded half-open local-date Timeline window for the authenticated self.",
@@ -10648,7 +11325,15 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TimelineWindowResponse"
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/TimelineWindowEmptyResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/TimelineWindowItemsResponse"
+                    }
+                  ],
+                  "title": "Response Get Timeline Window Api V1 Temporal Timeline Window Get"
                 }
               }
             },

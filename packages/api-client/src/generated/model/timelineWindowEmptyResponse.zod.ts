@@ -6,26 +6,28 @@
  */
 import * as zod from 'zod/mini';
 
-export const timelineWindowResponseKindDefault = `empty`;
-export const TimelineWindowResponse = /*#__PURE__*/ zod
+export const timelineWindowEmptyResponseKindDefault = `empty`;
+export const TimelineWindowEmptyResponse = /*#__PURE__*/ zod
   .object({
     effective_zone_id: /*#__PURE__*/ zod.string(),
     end_date_exclusive: /*#__PURE__*/ zod.iso.date(),
     kind: /*#__PURE__*/ zod
       ._default(
         /*#__PURE__*/ zod.literal('empty'),
-        timelineWindowResponseKindDefault,
+        timelineWindowEmptyResponseKindDefault,
       )
       .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
     start_date: /*#__PURE__*/ zod.iso.date(),
   })
   .check(
     /*#__PURE__*/ zod.describe(
-      'B00 transport contract for a truthful empty authenticated Timeline window.',
+      'Truthful authenticated Timeline window with no activated current items.',
     ),
   );
 
-export type TimelineWindowResponse = zod.input<typeof TimelineWindowResponse>;
-export type TimelineWindowResponseOutput = zod.output<
-  typeof TimelineWindowResponse
+export type TimelineWindowEmptyResponse = zod.input<
+  typeof TimelineWindowEmptyResponse
+>;
+export type TimelineWindowEmptyResponseOutput = zod.output<
+  typeof TimelineWindowEmptyResponse
 >;

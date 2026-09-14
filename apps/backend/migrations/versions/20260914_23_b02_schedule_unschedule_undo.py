@@ -20,9 +20,8 @@ _OWNER = "dante_owner"
 _MIGRATOR = "dante_migrator"
 _RUNTIME = "dante_runtime"
 _UNSCHEDULE_SIGNATURE = "dante.unschedule_self_schedule(uuid,text,text,uuid,uuid)"
-_UNDO_SIGNATURE = (
-    "dante.undo_self_schedule_unschedule(uuid,text,text,uuid,text,uuid)"
-)
+_UNDO_SIGNATURE = "dante.undo_self_schedule_unschedule(uuid,text,text,uuid,text,uuid)"
+
 
 def upgrade() -> None:
     """Install bounded current-withdrawal and exact-absence undo capabilities."""
@@ -678,6 +677,7 @@ def upgrade() -> None:
             )
         )
         op.execute(sa.text(f"GRANT EXECUTE ON FUNCTION {signature} TO {_RUNTIME}"))
+
 
 def downgrade() -> None:
     """Remove only unused B02-D capabilities; canonical effects fail closed."""

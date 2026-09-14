@@ -161,7 +161,7 @@ describe('B02-D governed Schedule unschedule and Undo', () => {
     expect(
       container.querySelector(`[data-timeline-event="${SCHEDULE_REF}"]`),
     ).toBeTruthy();
-    expect(loadWindow).toHaveBeenCalledTimes(2);
+    await waitFor(() => expect(loadWindow).toHaveBeenCalledTimes(2));
 
     unscheduledWindow.resolve(emptyWindow());
     await waitFor(() => {
