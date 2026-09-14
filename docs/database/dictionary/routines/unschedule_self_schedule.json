@@ -1,0 +1,123 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "routine:dante.unschedule_self_schedule",
+    "type": "routine",
+    "schema": "dante",
+    "name": "unschedule_self_schedule",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Bounded SECURITY DEFINER capability that atomically withdraws the exact current placement of one self-owned Activity Schedule, closes its open history episode, records real current absence, and retains Activity, Schedule, MaterialState, and history.",
+  "classification": {
+    "persistence_role": "schedule_unschedule_capability",
+    "canonicality": "capability_surface",
+    "family": "temporal_schedule"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/workstreams/timeline-temporal-operational-b02-execution-plan.md#4-b02-operation-semantics",
+      "docs/workstreams/timeline-temporal-operational-b02-execution-plan.md#5-idempotency-and-concurrency-contract",
+      "docs/workstreams/timeline-temporal-operational-b02-execution-plan.md#6-persistence-strategy",
+      "docs/workstreams/timeline-temporal-operational-map.md#10-schedule--full-vertical-surface",
+      "docs/development/backend-cp6-02-postgresql-persistence-constitution.md"
+    ],
+    "domain_concepts": [
+      "Activity",
+      "Schedule"
+    ],
+    "logical_families": [
+      "bounded application operation capability"
+    ],
+    "reference_families": [
+      "NativeRef",
+      "ScopedRecordRef",
+      "MaterialStateRef"
+    ],
+    "material_facets": [
+      "schedule.placement"
+    ]
+  },
+  "implementation": {
+    "introducing_stage": "B02-D-UNSCHEDULE-UNDO",
+    "alembic_revision": "20260914_23",
+    "sqlalchemy": {
+      "mode": "none",
+      "module": null,
+      "symbol": null
+    },
+    "runtime_acl_stage": "B02-D-UNSCHEDULE-UNDO"
+  },
+  "structure": {
+    "columns": [],
+    "primary_key": null,
+    "foreign_keys": [],
+    "unique_constraints": [],
+    "check_constraints": [],
+    "indexes": [],
+    "triggers": [],
+    "table": null,
+    "view": null,
+    "routine": {
+      "routine_kind": "function",
+      "language": "plpgsql",
+      "argument_types": [
+        "uuid",
+        "text",
+        "text",
+        "uuid",
+        "uuid"
+      ],
+      "return_type": "TABLE(schedule_ref uuid, previous_material_state_ref uuid, unschedule_operation_id text, created_at timestamp with time zone, replayed boolean)",
+      "security": "DEFINER",
+      "volatility": "VOLATILE",
+      "parallel_safety": "UNSAFE",
+      "leakproof": false,
+      "function_search_path": [
+        "pg_catalog",
+        "dante",
+        "pg_temp"
+      ],
+      "direct_runtime_execute": true
+    }
+  },
+  "state_history": {
+    "material_state_behavior": "Creates no MaterialState and preserves the withdrawn placement state unchanged.",
+    "current_binding": "Locks the Schedule, requires the exact expected current placement, closes its open history and deletes only explicit currentness.",
+    "chronology": "The prior history episode closes at one authoritative created_at instant; no replacement episode is opened.",
+    "immutability_policy": "Same operation and exact intent replay the receipt; different intent or stale expected state conflicts."
+  },
+  "lifecycle": {
+    "retention": null,
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "Routine removal is migration-only and downgrade fails closed after B02-D operation receipts exist."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": [
+      {
+        "grantee": "dante_runtime",
+        "privilege": "EXECUTE",
+        "columns": [],
+        "grant_option": false
+      }
+    ]
+  },
+  "proof": {
+    "obligations": [
+      "function is dante_owner SECURITY DEFINER with trusted search_path",
+      "runtime has EXECUTE only and no direct receipt/current/history DML",
+      "only an Activity Schedule belonging to the authenticated self scope is admitted",
+      "stale exact expected state conflicts before currentness is withdrawn",
+      "accepted unschedule closes history and removes current binding atomically without deleting semantic records"
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b02_schedule_unschedule_undo.py",
+      "apps/backend/tests/integration/database/test_current_catalog.py",
+      "apps/backend/tests/integration/database/test_migrations.py"
+    ],
+    "staged_evidence": []
+  }
+}

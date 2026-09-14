@@ -20,26 +20,26 @@ from dante.platform.database.references import (
     new_scoped_record_ref,
 )
 
-
 class ScheduleInputError(ValueError):
     """The requested Schedule placement is outside the activated B02 contract."""
-
 
 class ScheduleOperationIdReuseError(RuntimeError):
     """One Schedule operation id was reused for materially different intent."""
 
-
 class ScheduleNotFoundError(LookupError):
     """The Schedule is absent or outside the authenticated self scope."""
-
 
 class ScheduleRevisionConflictError(RuntimeError):
     """The expected placement state is no longer the Schedule current state."""
 
+class ScheduleUnscheduleConflictError(RuntimeError):
+    """The expected placement is no longer current for unschedule."""
+
+class ScheduleUndoConflictError(RuntimeError):
+    """The exact Schedule effect targeted by Undo is no longer current."""
 
 class SchedulePersistenceError(RuntimeError):
     """Canonical Schedule persistence could not complete safely."""
-
 
 @dataclass(frozen=True, slots=True)
 class FloatingLocalIntervalPlacement:
@@ -59,7 +59,6 @@ class FloatingLocalIntervalPlacement:
         if self.ends_local_at <= self.starts_local_at:
             raise ScheduleInputError("Schedule end must be after Schedule start.")
 
-
 @dataclass(frozen=True, slots=True)
 class EstablishedScheduleView:
     """Canonical accepted Schedule identity plus its current placement state."""
@@ -70,7 +69,6 @@ class EstablishedScheduleView:
     placement: FloatingLocalIntervalPlacement
     created_at: datetime
     replayed: bool
-
 
 @dataclass(frozen=True, slots=True)
 class RevisedScheduleView:
@@ -83,6 +81,26 @@ class RevisedScheduleView:
     created_at: datetime
     replayed: bool
 
+@dataclass(frozen=True, slots=True)
+class UnscheduledScheduleView:
+    """Accepted withdrawal of one exact current Schedule placement."""
+
+    schedule_ref: ScopedRecordRef
+    previous_material_state_ref: MaterialStateRef
+    unschedule_operation_id: str
+    created_at: datetime
+    replayed: bool
+
+@dataclass(frozen=True, slots=True)
+class RestoredScheduleView:
+    """New monotonic placement created by guarded Undo of unschedule."""
+
+    schedule_ref: ScopedRecordRef
+    restored_from_material_state_ref: MaterialStateRef
+    material_state_ref: MaterialStateRef
+    placement: FloatingLocalIntervalPlacement
+    created_at: datetime
+    replayed: bool
 
 def _normalize_operation_id(value: str) -> str:
     normalized = value.strip()
@@ -91,7 +109,6 @@ def _normalize_operation_id(value: str) -> str:
             "Schedule operation id must contain 1 to 200 characters."
         )
     return normalized
-
 
 def _placement_fingerprint(
     *,
@@ -113,7 +130,6 @@ def _placement_fingerprint(
         sort_keys=True,
     ).encode("utf-8")
     return hashlib.sha256(payload).hexdigest()
-
 
 def _revision_fingerprint(
     *,
@@ -138,12 +154,44 @@ def _revision_fingerprint(
     ).encode("utf-8")
     return hashlib.sha256(payload).hexdigest()
 
+def _unschedule_fingerprint(
+    *,
+    schedule_ref: ScopedRecordRef,
+    expected_material_state_ref: MaterialStateRef,
+) -> str:
+    payload = json.dumps(
+        {
+            "schedule_ref": str(schedule_ref),
+            "expected_material_state_ref": str(expected_material_state_ref),
+            "effect": "no-current-placement",
+        },
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+def _unschedule_undo_fingerprint(
+    *,
+    schedule_ref: ScopedRecordRef,
+    unschedule_operation_id: str,
+) -> str:
+    payload = json.dumps(
+        {
+            "schedule_ref": str(schedule_ref),
+            "unschedule_operation_id": unschedule_operation_id,
+            "effect": "restore-prior-placement",
+        },
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
 
 def _constraint_name(exc: IntegrityError) -> str | None:
     diagnostic = getattr(exc.orig, "diag", None)
     value = getattr(diagnostic, "constraint_name", None)
     return value if isinstance(value, str) else None
-
 
 async def establish_floating_schedule_in_session(
     database_session: AsyncSession,
@@ -221,7 +269,6 @@ async def establish_floating_schedule_in_session(
         replayed=bool(row["replayed"]),
     )
 
-
 async def revise_floating_schedule_in_session(
     database_session: AsyncSession,
     *,
@@ -293,6 +340,127 @@ async def revise_floating_schedule_in_session(
         replayed=bool(row["replayed"]),
     )
 
+async def unschedule_schedule_in_session(
+    database_session: AsyncSession,
+    *,
+    self_person_ref: NativeRef,
+    operation_id: str,
+    schedule_ref: ScopedRecordRef,
+    expected_material_state_ref: MaterialStateRef,
+) -> UnscheduledScheduleView:
+    """Withdraw one exact current placement inside the caller transaction."""
+    normalized_operation_id = _normalize_operation_id(operation_id)
+    statement = text(
+        """
+        SELECT schedule_ref,
+               previous_material_state_ref,
+               unschedule_operation_id,
+               created_at,
+               replayed
+          FROM dante.unschedule_self_schedule(
+               :self_person_ref,
+               :operation_id,
+               :intent_fingerprint,
+               :schedule_ref,
+               :expected_material_state_ref
+          )
+        """
+    )
+    row = (
+        (
+            await database_session.execute(
+                statement,
+                {
+                    "self_person_ref": self_person_ref,
+                    "operation_id": normalized_operation_id,
+                    "intent_fingerprint": _unschedule_fingerprint(
+                        schedule_ref=schedule_ref,
+                        expected_material_state_ref=expected_material_state_ref,
+                    ),
+                    "schedule_ref": schedule_ref,
+                    "expected_material_state_ref": expected_material_state_ref,
+                },
+            )
+        )
+        .mappings()
+        .one()
+    )
+    return UnscheduledScheduleView(
+        schedule_ref=ScopedRecordRef(UUID(str(row["schedule_ref"]))),
+        previous_material_state_ref=MaterialStateRef(
+            UUID(str(row["previous_material_state_ref"]))
+        ),
+        unschedule_operation_id=str(row["unschedule_operation_id"]),
+        created_at=row["created_at"],
+        replayed=bool(row["replayed"]),
+    )
+
+async def undo_schedule_unschedule_in_session(
+    database_session: AsyncSession,
+    *,
+    self_person_ref: NativeRef,
+    operation_id: str,
+    schedule_ref: ScopedRecordRef,
+    unschedule_operation_id: str,
+) -> RestoredScheduleView:
+    """Restore prior semantics as a new placement inside the caller transaction."""
+    normalized_operation_id = _normalize_operation_id(operation_id)
+    normalized_unschedule_operation_id = _normalize_operation_id(
+        unschedule_operation_id
+    )
+    material_state_ref = new_material_state_ref()
+    statement = text(
+        """
+        SELECT schedule_ref,
+               restored_from_material_state_ref,
+               material_state_ref,
+               starts_local_at,
+               ends_local_at,
+               created_at,
+               replayed
+          FROM dante.undo_self_schedule_unschedule(
+               :self_person_ref,
+               :operation_id,
+               :intent_fingerprint,
+               :schedule_ref,
+               :unschedule_operation_id,
+               :material_state_ref
+          )
+        """
+    )
+    row = (
+        (
+            await database_session.execute(
+                statement,
+                {
+                    "self_person_ref": self_person_ref,
+                    "operation_id": normalized_operation_id,
+                    "intent_fingerprint": _unschedule_undo_fingerprint(
+                        schedule_ref=schedule_ref,
+                        unschedule_operation_id=normalized_unschedule_operation_id,
+                    ),
+                    "schedule_ref": schedule_ref,
+                    "unschedule_operation_id": normalized_unschedule_operation_id,
+                    "material_state_ref": material_state_ref,
+                },
+            )
+        )
+        .mappings()
+        .one()
+    )
+    return RestoredScheduleView(
+        schedule_ref=ScopedRecordRef(UUID(str(row["schedule_ref"]))),
+        restored_from_material_state_ref=MaterialStateRef(
+            UUID(str(row["restored_from_material_state_ref"]))
+        ),
+        material_state_ref=MaterialStateRef(UUID(str(row["material_state_ref"]))),
+        placement=FloatingLocalIntervalPlacement(
+            starts_local_at=row["starts_local_at"],
+            ends_local_at=row["ends_local_at"],
+        ),
+        created_at=row["created_at"],
+        replayed=bool(row["replayed"]),
+    )
 
 class TemporalScheduleApplication:
     """Transaction-owning Schedule revision operations."""
@@ -339,6 +507,86 @@ class TemporalScheduleApplication:
                 raise ScheduleRevisionConflictError() from exc
             if constraint == "schedule_revision_schedule_not_found":
                 raise ScheduleNotFoundError() from exc
+            raise SchedulePersistenceError() from exc
+        except DBAPIError as exc:
+            raise SchedulePersistenceError() from exc
+        except SQLAlchemyError as exc:
+            raise SchedulePersistenceError() from exc
+
+    async def unschedule(
+        self,
+        *,
+        self_person_ref: NativeRef,
+        operation_id: str,
+        schedule_ref: ScopedRecordRef,
+        expected_material_state_ref: MaterialStateRef,
+    ) -> UnscheduledScheduleView:
+        if schedule_ref.version != 7 or expected_material_state_ref.version != 7:
+            raise ScheduleInputError(
+                "Schedule and expected placement references must be canonical UUIDv7 values."
+            )
+        try:
+            async with (
+                self._session_factory() as database_session,
+                database_session.begin(),
+            ):
+                return await unschedule_schedule_in_session(
+                    database_session,
+                    self_person_ref=self_person_ref,
+                    operation_id=operation_id,
+                    schedule_ref=schedule_ref,
+                    expected_material_state_ref=expected_material_state_ref,
+                )
+        except IntegrityError as exc:
+            constraint = _constraint_name(exc)
+            if constraint == "pk_schedule_unschedule_operation":
+                raise ScheduleOperationIdReuseError() from exc
+            if constraint == "schedule_unschedule_expected_state":
+                raise ScheduleUnscheduleConflictError() from exc
+            if constraint == "schedule_unschedule_schedule_not_found":
+                raise ScheduleNotFoundError() from exc
+            raise SchedulePersistenceError() from exc
+        except DBAPIError as exc:
+            raise SchedulePersistenceError() from exc
+        except SQLAlchemyError as exc:
+            raise SchedulePersistenceError() from exc
+
+    async def undo_unschedule(
+        self,
+        *,
+        self_person_ref: NativeRef,
+        operation_id: str,
+        schedule_ref: ScopedRecordRef,
+        unschedule_operation_id: str,
+    ) -> RestoredScheduleView:
+        if schedule_ref.version != 7:
+            raise ScheduleInputError(
+                "Schedule reference must be a canonical UUIDv7 value."
+            )
+        try:
+            async with (
+                self._session_factory() as database_session,
+                database_session.begin(),
+            ):
+                return await undo_schedule_unschedule_in_session(
+                    database_session,
+                    self_person_ref=self_person_ref,
+                    operation_id=operation_id,
+                    schedule_ref=schedule_ref,
+                    unschedule_operation_id=unschedule_operation_id,
+                )
+        except IntegrityError as exc:
+            constraint = _constraint_name(exc)
+            if constraint == "pk_schedule_unschedule_undo_operation":
+                raise ScheduleOperationIdReuseError() from exc
+            if constraint == "schedule_unschedule_undo_expected_state":
+                raise ScheduleUndoConflictError() from exc
+            if constraint == "schedule_unschedule_undo_not_found":
+                raise ScheduleNotFoundError() from exc
+            if constraint == "schedule_unschedule_undo_unsupported_form":
+                raise ScheduleInputError(
+                    "The prior Schedule placement form is not activated for Undo."
+                ) from exc
             raise SchedulePersistenceError() from exc
         except DBAPIError as exc:
             raise SchedulePersistenceError() from exc

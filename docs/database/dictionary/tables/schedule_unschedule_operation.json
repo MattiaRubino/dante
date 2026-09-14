@@ -1,0 +1,305 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "table:dante.schedule_unschedule_operation",
+    "type": "table",
+    "schema": "dante",
+    "name": "schedule_unschedule_operation",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Immutable self-scoped idempotency receipt for one governed B02-D withdrawal of a current Schedule placement; it retains the exact prior MaterialStateRef and records real current absence without deleting Activity, Schedule, MaterialState, or history.",
+  "classification": {
+    "persistence_role": "operation_idempotency_control",
+    "canonicality": "control",
+    "family": "temporal_schedule"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/workstreams/timeline-temporal-operational-b02-execution-plan.md#4-b02-operation-semantics",
+      "docs/workstreams/timeline-temporal-operational-b02-execution-plan.md#5-idempotency-and-concurrency-contract",
+      "docs/workstreams/timeline-temporal-operational-b02-execution-plan.md#6-persistence-strategy",
+      "docs/workstreams/timeline-temporal-operational-map.md#10-schedule--full-vertical-surface",
+      "docs/development/backend-cp6-02-postgresql-persistence-constitution.md"
+    ],
+    "domain_concepts": [
+      "Activity",
+      "Schedule"
+    ],
+    "logical_families": [
+      "application operation idempotency control"
+    ],
+    "reference_families": [
+      "NativeRef",
+      "ScopedRecordRef",
+      "MaterialStateRef"
+    ],
+    "material_facets": [
+      "schedule.placement"
+    ]
+  },
+  "implementation": {
+    "introducing_stage": "B02-D-UNSCHEDULE-UNDO",
+    "alembic_revision": "20260914_23",
+    "sqlalchemy": {
+      "mode": "orm_row",
+      "module": "dante.platform.database.mappings.schedule",
+      "symbol": "ScheduleUnscheduleOperationRow"
+    },
+    "runtime_acl_stage": "B02-D-UNSCHEDULE-UNDO"
+  },
+  "structure": {
+    "columns": [
+      {
+        "name": "self_person_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Authenticated self Person scope owning the unschedule receipt.",
+        "semantic_type": "NativeRef",
+        "value_contract": "Must reference dante.person."
+      },
+      {
+        "name": "operation_id",
+        "postgres_type": "text",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Client/application identity for idempotent unschedule replay.",
+        "semantic_type": "OperationId",
+        "value_contract": "Trimmed non-empty text, maximum 200 characters."
+      },
+      {
+        "name": "intent_fingerprint",
+        "postgres_type": "text",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Deterministic fingerprint of ScheduleRef and exact expected current state.",
+        "semantic_type": "IntentFingerprint",
+        "value_contract": "Exactly 64 lowercase hexadecimal characters."
+      },
+      {
+        "name": "schedule_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Stable Schedule whose current placement was withdrawn.",
+        "semantic_type": "ScopedRecordRef",
+        "value_contract": "References the retained Schedule; unschedule never deletes it."
+      },
+      {
+        "name": "expected_material_state_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Exact placement MaterialStateRef that was current when absence was accepted.",
+        "semantic_type": "MaterialStateRef",
+        "value_contract": "References the retained schedule_placement_state and the closed history episode."
+      },
+      {
+        "name": "created_at",
+        "postgres_type": "timestamp with time zone",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Authoritative instant at which the open history episode was closed and currentness removed.",
+        "semantic_type": "AbsoluteInstant",
+        "value_contract": "Recorded inside the bounded database capability."
+      }
+    ],
+    "primary_key": {
+      "name": "pk_schedule_unschedule_operation",
+      "columns": [
+        "self_person_ref",
+        "operation_id"
+      ],
+      "reason": "One immutable receipt per self-scoped operation identity.",
+      "deferrable": false,
+      "initially": "NOT DEFERRABLE",
+      "enforced": true
+    },
+    "foreign_keys": [
+      {
+        "name": "fk_schedule_unschedule_operation_self_person_ref_person",
+        "columns": [
+          "self_person_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "person",
+          "columns": [
+            "person_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "NativeRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Bind operation scope to the self Person."
+      },
+      {
+        "name": "fk_schedule_unschedule_operation_schedule_ref_schedule",
+        "columns": [
+          "schedule_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "schedule",
+          "columns": [
+            "schedule_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "ScopedRecordRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Many chronological withdrawals may target the same retained Schedule."
+      },
+      {
+        "name": "fk_schedule_unschedule_op_expected_state_placement_state",
+        "columns": [
+          "expected_material_state_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "schedule_placement_state",
+          "columns": [
+            "material_state_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "MaterialStateRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Retain the exact placement state withdrawn by this operation."
+      }
+    ],
+    "unique_constraints": [],
+    "check_constraints": [
+      {
+        "name": "ck_schedule_unschedule_operation_operation_id",
+        "expression_contract": "operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200",
+        "reason": "Keep operation identity canonical and bounded.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_schedule_unschedule_operation_fingerprint",
+        "expression_contract": "intent_fingerprint ~ '^[0-9a-f]{64}$'",
+        "reason": "Require the deterministic SHA-256 representation.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "pk_schedule_unschedule_operation",
+        "method": "btree",
+        "unique": true,
+        "keys": [
+          "self_person_ref",
+          "operation_id"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "primary_key",
+        "reason": "Idempotent replay lookup.",
+        "valid": true,
+        "ready": true,
+        "live": true
+      },
+      {
+        "name": "ix_schedule_unschedule_operation_schedule_ref",
+        "method": "btree",
+        "unique": false,
+        "keys": [
+          "schedule_ref"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "explicit_index",
+        "reason": "Operational inspection of unschedule receipts per retained Schedule.",
+        "valid": true,
+        "ready": true,
+        "live": true
+      }
+    ],
+    "triggers": [],
+    "table": {
+      "persistence": "permanent",
+      "access_method": "heap",
+      "partitioned": false,
+      "row_security": false,
+      "force_row_security": false,
+      "replica_identity": "default",
+      "reloptions": []
+    },
+    "view": null,
+    "routine": null
+  },
+  "state_history": {
+    "material_state_behavior": "Creates no MaterialState; the prior placement state remains immutable and retained.",
+    "current_binding": "Acceptance requires the exact expected MaterialStateRef, then deletes only the schedule.placement current binding.",
+    "chronology": "created_at equals the current_until_at that closes the prior open placement-history episode.",
+    "immutability_policy": "Receipt replay is immutable; the same operation with different intent conflicts."
+  },
+  "lifecycle": {
+    "retention": null,
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No direct runtime table privileges; downgrade fails closed while unschedule receipts exist."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": []
+  },
+  "proof": {
+    "obligations": [
+      "runtime has no direct table read/write privilege",
+      "same operation id and exact intent replay the immutable withdrawal",
+      "same operation id with different intent conflicts",
+      "stale expected MaterialStateRef cannot withdraw newer current truth",
+      "Activity, Schedule, prior MaterialState and closed history survive while explicit currentness is absent"
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b02_schedule_unschedule_undo.py",
+      "apps/backend/tests/integration/database/test_current_catalog.py",
+      "apps/backend/tests/integration/database/test_migrations.py"
+    ],
+    "staged_evidence": []
+  }
+}

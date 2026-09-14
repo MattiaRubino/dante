@@ -1527,14 +1527,36 @@
   font-size: 9px;
 }
 
-.timeline-event-modal > button {
+.timeline-event-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
   margin-top: 14px;
+}
+
+.timeline-event-modal__actions button {
   padding: 8px 11px;
   border: 0;
   border-radius: 8px;
   color: var(--dante-semantic-color-home-text-primary, #f2f4f2);
   background: var(--dante-semantic-color-home-surface-control, #202b30);
   cursor: pointer;
+}
+
+.timeline-event-modal__actions button.is-unschedule {
+  margin-right: auto;
+  border: 1px solid
+    color-mix(in srgb, var(--dante-timeline-tone-focus) 28%, transparent);
+  background: color-mix(
+    in srgb,
+    var(--dante-timeline-tone-focus) 9%,
+    var(--dante-semantic-color-home-surface-control, #202b30)
+  );
+}
+
+.timeline-event-modal__actions button:disabled {
+  cursor: wait;
+  opacity: 0.58;
 }
 
 .timeline-move-toast {

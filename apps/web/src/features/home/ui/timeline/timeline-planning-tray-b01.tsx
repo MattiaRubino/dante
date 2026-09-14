@@ -10,6 +10,7 @@ import {
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
+import { subscribeTemporalPlanningInvalidation } from '../../../temporal/timeline-invalidation';
 import type { TemporalCreateRuntime } from '../../../temporal-create';
 import { timelinePlanningCopy } from './timeline-planning-copy';
 import type { TimelinePlanningTrayItem } from './timeline-planning-tray';
@@ -208,6 +209,14 @@ export function TimelinePlanningTrayB01({
       }
     };
   }, [commitRead, failRead, runtime]);
+
+  useEffect(
+    () =>
+      subscribeTemporalPlanningInvalidation(() => {
+        void refresh();
+      }),
+    [refresh],
+  );
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => {

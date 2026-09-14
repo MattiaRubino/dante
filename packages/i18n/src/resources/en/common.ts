@@ -5,10 +5,15 @@ import { shell } from './shell';
 import { temporalRuntime } from './temporal-runtime';
 import { worldFocus } from './world-focus';
 
-const homeWithB02C = {
+const homeWithB02D = {
   ...home,
   timeline: {
     ...home.timeline,
+    detail: {
+      ...home.timeline.detail,
+      unschedule: 'Return to Planning Tray',
+      unscheduling: 'Returning…',
+    },
     feedback: {
       ...home.timeline.feedback,
       scheduleRevisionUpdated:
@@ -16,6 +21,17 @@ const homeWithB02C = {
       scheduleRevisionConflict:
         'The Schedule changed elsewhere. No change was overwritten.',
       scheduleRevisionUnavailable: 'This Schedule could not be updated safely.',
+      scheduleUndoAvailable: 'Change saved.',
+      scheduleUnscheduled:
+        'Activity returned to Planning Tray. Timeline is reloading.',
+      scheduleUnscheduleConflict:
+        'The Schedule changed elsewhere. It was not removed.',
+      scheduleUnscheduleUnavailable:
+        'This Schedule could not be returned safely.',
+      scheduleUndoUpdated: 'Previous Schedule change restored.',
+      scheduleUndoConflict:
+        'A later Schedule change prevents this undo. Nothing was overwritten.',
+      scheduleUndoUnavailable: 'This Schedule change could not be undone.',
     },
   },
 } as const;
@@ -57,7 +73,7 @@ export const common = {
   },
   access,
   shell,
-  home: homeWithB02C,
+  home: homeWithB02D,
   temporalRuntime,
   worldFocus,
 } as const satisfies CommonResource;

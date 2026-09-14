@@ -19,11 +19,10 @@ from dante.platform.database.metadata import Base
 
 pytestmark = pytest.mark.postgres
 
-_CURRENT_REVISION = "20260913_22"
-_CURRENT_TOPOLOGY = (93, 5, 21, 77, 184, 103, 279, 0, 0, 0)
+_CURRENT_REVISION = "20260914_23"
+_CURRENT_TOPOLOGY = (95, 5, 23, 77, 190, 110, 284, 0, 0, 0)
 _REPO_ROOT = Path(__file__).resolve().parents[5]
 _DICTIONARY_ROOT = _REPO_ROOT / "docs" / "database" / "dictionary"
-
 
 def _admin(database: Any) -> psycopg.Connection[Any]:
     return psycopg.connect(
@@ -35,13 +34,11 @@ def _admin(database: Any) -> psycopg.Connection[Any]:
         autocommit=True,
     )
 
-
 def _entries(kind: str) -> dict[str, dict[str, Any]]:
     return {
         path.stem: json.loads(path.read_text(encoding="utf-8"))
         for path in sorted((_DICTIONARY_ROOT / kind).glob("*.json"))
     }
-
 
 def _dictionary_identifiers(
     tables: dict[str, dict[str, Any]], routines: dict[str, dict[str, Any]]
@@ -75,7 +72,6 @@ def _dictionary_identifiers(
             triggers.add(identifier)
             assert str(trigger["routine"]).removeprefix("dante.") in routines
     return indexes, constraints, triggers
-
 
 def test_current_database_cross_representation_is_exact(migrated_database: Any) -> None:
     tables = _entries("tables")
@@ -155,7 +151,7 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
     assert environment == ("180006", "UTF8", "63")
     assert topology == _CURRENT_TOPOLOGY
     assert current_revision == (_CURRENT_REVISION,)
-    assert (len(tables), len(views), len(routines)) == (92, 5, 20)
+    assert (len(tables), len(views), len(routines)) == (95, 5, 23)
     assert live_tables == set(tables)
     assert live_views == set(views)
     assert live_routines == set(routines)
@@ -183,18 +179,21 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
         "CP6-M07",
     ]
     assert current["standalone_entries"] == {
-        "tables": 92,
+        "tables": 95,
         "views": 5,
-        "routines": 20,
-        "total": 117,
+        "routines": 23,
+        "total": 123,
     }
-    assert current["embedded_objects"] == {"triggers": 77, "physical_indexes": 181}
-    assert current["constraints"] == {"foreign_keys": 99, "check_constraints": 277}
+    assert current["embedded_objects"] == {"triggers": 77, "physical_indexes": 190}
+    assert current["constraints"] == {
+        "foreign_keys": 110,
+        "check_constraints": 284,
+    }
     assert (
         len(MAPPED_TABLES)
         == len(Base.registry.mappers)
         == len(Base.metadata.tables)
-        == 92
+        == 95
     )
     assert all(len(mapper.relationships) == 0 for mapper in Base.registry.mappers)
     assert set(VIEW_METADATA.tables) == {f"dante.{name}" for name in views}

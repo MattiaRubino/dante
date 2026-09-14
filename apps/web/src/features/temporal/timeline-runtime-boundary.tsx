@@ -19,8 +19,15 @@ import type {
   TemporalScheduleDataSource,
   TemporalScheduleRevisionRequest,
   TemporalScheduleRevisionResult,
+  TemporalScheduleUnscheduleRequest,
+  TemporalScheduleUnscheduleResult,
+  TemporalScheduleUnscheduleUndoRequest,
+  TemporalScheduleUnscheduleUndoResult,
 } from './schedule-data-source';
-import { subscribeTemporalTimelineInvalidation } from './timeline-invalidation';
+import {
+  invalidateTemporalPlanningRead,
+  subscribeTemporalTimelineInvalidation,
+} from './timeline-invalidation';
 import type {
   TemporalTimelineDataSource,
   TemporalTimelineWindow,
@@ -45,6 +52,12 @@ export type TemporalTimelineRuntimeContextValue = Readonly<{
   reviseSchedule: (
     request: Omit<TemporalScheduleRevisionRequest, 'operationId'>,
   ) => Promise<TemporalScheduleRevisionResult>;
+  unscheduleSchedule: (
+    request: Omit<TemporalScheduleUnscheduleRequest, 'operationId'>,
+  ) => Promise<TemporalScheduleUnscheduleResult>;
+  undoScheduleUnschedule: (
+    request: Omit<TemporalScheduleUnscheduleUndoRequest, 'operationId'>,
+  ) => Promise<TemporalScheduleUnscheduleUndoResult>;
 }>;
 
 type TemporalTimelineReadAttempt = Readonly<{
@@ -230,10 +243,53 @@ export function TemporalTimelineRuntimeBoundary({
     [ids, mutationSource, refresh],
   );
 
+  const unscheduleSchedule = useCallback(
+    async (
+      command: Omit<TemporalScheduleUnscheduleRequest, 'operationId'>,
+    ): Promise<TemporalScheduleUnscheduleResult> => {
+      const result = await mutationSource.unscheduleSchedule({
+        ...command,
+        operationId: ids.operationId(),
+      });
+      invalidateTemporalPlanningRead();
+      refresh();
+      return result;
+    },
+    [ids, mutationSource, refresh],
+  );
+
+  const undoScheduleUnschedule = useCallback(
+    async (
+      command: Omit<TemporalScheduleUnscheduleUndoRequest, 'operationId'>,
+    ): Promise<TemporalScheduleUnscheduleUndoResult> => {
+      const result = await mutationSource.undoScheduleUnschedule({
+        ...command,
+        operationId: ids.operationId(),
+      });
+      invalidateTemporalPlanningRead();
+      refresh();
+      return result;
+    },
+    [ids, mutationSource, refresh],
+  );
+
   const state = resolveRuntimeState(testMode, attempt, settledState);
   const contextValue = useMemo<TemporalTimelineRuntimeContextValue>(
-    () => Object.freeze({ state, refresh, reviseSchedule }),
-    [refresh, reviseSchedule, state],
+    () =>
+      Object.freeze({
+        state,
+        refresh,
+        reviseSchedule,
+        unscheduleSchedule,
+        undoScheduleUnschedule,
+      }),
+    [
+      refresh,
+      reviseSchedule,
+      state,
+      undoScheduleUnschedule,
+      unscheduleSchedule,
+    ],
   );
 
   return (

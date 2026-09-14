@@ -43,7 +43,7 @@ describe('authoritative Timeline hydration', () => {
     expect(projection.event.endMinute).toBeCloseTo(885.508333, 5);
   });
 
-  it('carries the new exact MaterialState basis for the same revised Schedule identity', () => {
+  it('carries a new exact MaterialState basis for revision or restored Undo', () => {
     const revised = Object.freeze({
       ...scheduledActivity(),
       placementMaterialStateRef: '0199a8c0-5e76-7bc0-8ad0-a2f403f5617d',
@@ -57,6 +57,9 @@ describe('authoritative Timeline hydration', () => {
     expect(projection.event.id).toBe(SCHEDULE_REF);
     expect(projection.event.canonicalBasis?.placementMaterialStateRef).toBe(
       '0199a8c0-5e76-7bc0-8ad0-a2f403f5617d',
+    );
+    expect(projection.event.canonicalBasis?.placementMaterialStateRef).not.toBe(
+      MATERIAL_STATE_REF,
     );
   });
 

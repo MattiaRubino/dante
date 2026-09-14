@@ -8,6 +8,10 @@ import type {
   TemporalScheduleDataSource,
   TemporalScheduleRevisionRequest,
   TemporalScheduleRevisionResult,
+  TemporalScheduleUnscheduleRequest,
+  TemporalScheduleUnscheduleResult,
+  TemporalScheduleUnscheduleUndoRequest,
+  TemporalScheduleUnscheduleUndoResult,
 } from './schedule-data-source';
 
 const SESSION_ENDPOINT = '/api/v1/auth/session';
@@ -17,6 +21,10 @@ const UUID_V7 =
 
 const schedulePlacementEndpoint = (scheduleRef: string) =>
   `/api/v1/temporal/schedules/${encodeURIComponent(scheduleRef)}/placement`;
+const scheduleUnscheduleEndpoint = (scheduleRef: string) =>
+  `/api/v1/temporal/schedules/${encodeURIComponent(scheduleRef)}/unschedule`;
+const scheduleUnscheduleUndoEndpoint = (scheduleRef: string) =>
+  `${scheduleUnscheduleEndpoint(scheduleRef)}/undo`;
 
 export type TemporalScheduleRemoteFailureKind =
   'transport' | 'http' | 'protocol' | 'authentication';
@@ -113,6 +121,46 @@ function validateRequest(request: TemporalScheduleRevisionRequest): void {
     throw new RangeError(
       'B02-C supports only positive same-local-day floating-local intervals.',
     );
+  }
+}
+
+function validateUnscheduleRequest(
+  request: TemporalScheduleUnscheduleRequest,
+): void {
+  if (!UUID_V7.test(request.scheduleRef.trim())) {
+    throw new RangeError(
+      'Schedule reference must be a canonical UUIDv7 string.',
+    );
+  }
+  if (!UUID_V7.test(request.expectedPlacementMaterialStateRef.trim())) {
+    throw new RangeError(
+      'Expected placement MaterialState reference must be a canonical UUIDv7 string.',
+    );
+  }
+  const operationId = request.operationId.trim();
+  if (!operationId || operationId.length > 200) {
+    throw new RangeError(
+      'Schedule operation id must contain 1 to 200 characters.',
+    );
+  }
+}
+
+function validateUnscheduleUndoRequest(
+  request: TemporalScheduleUnscheduleUndoRequest,
+): void {
+  if (!UUID_V7.test(request.scheduleRef.trim())) {
+    throw new RangeError(
+      'Schedule reference must be a canonical UUIDv7 string.',
+    );
+  }
+  for (const [label, value] of [
+    ['Schedule operation id', request.operationId],
+    ['Unschedule operation id', request.unscheduleOperationId],
+  ] as const) {
+    const normalized = value.trim();
+    if (!normalized || normalized.length > 200) {
+      throw new RangeError(`${label} must contain 1 to 200 characters.`);
+    }
   }
 }
 
@@ -281,6 +329,138 @@ function parseRevision(
   });
 }
 
+function parseUnschedule(
+  payload: unknown,
+  request: TemporalScheduleUnscheduleRequest,
+  status: number,
+): TemporalScheduleUnscheduleResult {
+  if (!isRecord(payload)) {
+    throw new TemporalScheduleRemoteError(
+      'protocol',
+      'Schedule unschedule response must be an object.',
+      status,
+    );
+  }
+  exactKeys(
+    payload,
+    [
+      'schedule_ref',
+      'previous_placement_material_state_ref',
+      'unschedule_operation_id',
+      'replayed',
+    ],
+    'Schedule unschedule response',
+  );
+  if (
+    typeof payload.unschedule_operation_id !== 'string' ||
+    typeof payload.replayed !== 'boolean'
+  ) {
+    throw new TemporalScheduleRemoteError(
+      'protocol',
+      'Schedule unschedule response changed its operation receipt.',
+      status,
+    );
+  }
+  const scheduleRef = uuidV7(payload.schedule_ref, 'schedule_ref');
+  const previousPlacementMaterialStateRef = uuidV7(
+    payload.previous_placement_material_state_ref,
+    'previous_placement_material_state_ref',
+  );
+  const unscheduleOperationId = payload.unschedule_operation_id.trim();
+  if (
+    scheduleRef !== request.scheduleRef.trim().toLowerCase() ||
+    previousPlacementMaterialStateRef !==
+      request.expectedPlacementMaterialStateRef.trim().toLowerCase() ||
+    unscheduleOperationId !== request.operationId.trim()
+  ) {
+    throw new TemporalScheduleRemoteError(
+      'protocol',
+      'Schedule unschedule response changed its identity, basis, or receipt.',
+      status,
+    );
+  }
+  return Object.freeze({
+    scheduleRef,
+    previousPlacementMaterialStateRef,
+    unscheduleOperationId,
+    replayed: payload.replayed,
+  });
+}
+
+function parseUnscheduleUndo(
+  payload: unknown,
+  request: TemporalScheduleUnscheduleUndoRequest,
+  status: number,
+): TemporalScheduleUnscheduleUndoResult {
+  if (!isRecord(payload)) {
+    throw new TemporalScheduleRemoteError(
+      'protocol',
+      'Schedule Undo response must be an object.',
+      status,
+    );
+  }
+  exactKeys(
+    payload,
+    [
+      'schedule_ref',
+      'restored_from_placement_material_state_ref',
+      'placement_material_state_ref',
+      'temporal_form',
+      'starts_local_at',
+      'ends_local_at',
+      'replayed',
+    ],
+    'Schedule Undo response',
+  );
+  if (
+    payload.temporal_form !== 'floating_local' ||
+    typeof payload.replayed !== 'boolean'
+  ) {
+    throw new TemporalScheduleRemoteError(
+      'protocol',
+      'Schedule Undo response changed the accepted temporal form.',
+      status,
+    );
+  }
+  const scheduleRef = uuidV7(payload.schedule_ref, 'schedule_ref');
+  const restoredFromPlacementMaterialStateRef = uuidV7(
+    payload.restored_from_placement_material_state_ref,
+    'restored_from_placement_material_state_ref',
+  );
+  const placementMaterialStateRef = uuidV7(
+    payload.placement_material_state_ref,
+    'placement_material_state_ref',
+  );
+  const startsLocalAt = localDateTime(
+    payload.starts_local_at,
+    'starts_local_at',
+  );
+  const endsLocalAt = localDateTime(payload.ends_local_at, 'ends_local_at');
+  if (
+    scheduleRef !== request.scheduleRef.trim().toLowerCase() ||
+    placementMaterialStateRef === restoredFromPlacementMaterialStateRef ||
+    Temporal.PlainDateTime.compare(startsLocalAt, endsLocalAt) >= 0 ||
+    !startsLocalAt.toPlainDate().equals(endsLocalAt.toPlainDate())
+  ) {
+    throw new TemporalScheduleRemoteError(
+      'protocol',
+      'Schedule Undo response changed its identity or restored placement.',
+      status,
+    );
+  }
+  return Object.freeze({
+    scheduleRef,
+    restoredFromPlacementMaterialStateRef,
+    placementMaterialStateRef,
+    placement: Object.freeze({
+      kind: 'floating-local-interval' as const,
+      startsLocalAt,
+      endsLocalAt,
+    }),
+    replayed: payload.replayed,
+  });
+}
+
 export function createRemoteTemporalScheduleDataSource(
   fetchFn: typeof globalThis.fetch = globalThis.fetch,
   resolveDeviceTimeZone?: DeviceTimeZoneResolver,
@@ -317,6 +497,61 @@ export function createRemoteTemporalScheduleDataSource(
       );
       const payload = await okJson(response, 'Revise Schedule response');
       return parseRevision(payload, request, response.status);
+    },
+
+    async unscheduleSchedule(
+      request: TemporalScheduleUnscheduleRequest,
+      signal?: AbortSignal,
+    ): Promise<TemporalScheduleUnscheduleResult> {
+      validateUnscheduleRequest(request);
+      const csrf = await csrfToken(webFetch, signal);
+      const response = await fetchResponse(
+        webFetch,
+        scheduleUnscheduleEndpoint(request.scheduleRef.trim().toLowerCase()),
+        {
+          method: 'POST',
+          headers: new Headers({
+            'Content-Type': 'application/json',
+            [CSRF_HEADER_NAME]: csrf,
+          }),
+          body: JSON.stringify({
+            operation_id: request.operationId.trim(),
+            expected_placement_material_state_ref:
+              request.expectedPlacementMaterialStateRef.trim().toLowerCase(),
+          }),
+          ...(signal === undefined ? {} : { signal }),
+        },
+      );
+      const payload = await okJson(response, 'Unschedule response');
+      return parseUnschedule(payload, request, response.status);
+    },
+
+    async undoScheduleUnschedule(
+      request: TemporalScheduleUnscheduleUndoRequest,
+      signal?: AbortSignal,
+    ): Promise<TemporalScheduleUnscheduleUndoResult> {
+      validateUnscheduleUndoRequest(request);
+      const csrf = await csrfToken(webFetch, signal);
+      const response = await fetchResponse(
+        webFetch,
+        scheduleUnscheduleUndoEndpoint(
+          request.scheduleRef.trim().toLowerCase(),
+        ),
+        {
+          method: 'POST',
+          headers: new Headers({
+            'Content-Type': 'application/json',
+            [CSRF_HEADER_NAME]: csrf,
+          }),
+          body: JSON.stringify({
+            operation_id: request.operationId.trim(),
+            unschedule_operation_id: request.unscheduleOperationId.trim(),
+          }),
+          ...(signal === undefined ? {} : { signal }),
+        },
+      );
+      const payload = await okJson(response, 'Undo Schedule response');
+      return parseUnscheduleUndo(payload, request, response.status);
     },
   });
 }

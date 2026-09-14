@@ -1,0 +1,415 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "table:dante.schedule_unschedule_undo_operation",
+    "type": "table",
+    "schema": "dante",
+    "name": "schedule_unschedule_undo_operation",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Immutable self-scoped idempotency receipt for one guarded B02-D Undo of an exact Schedule unschedule receipt; it binds the retained prior placement to one newly created monotonic MaterialStateRef.",
+  "classification": {
+    "persistence_role": "operation_idempotency_control",
+    "canonicality": "control",
+    "family": "temporal_schedule"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/workstreams/timeline-temporal-operational-b02-execution-plan.md#4-b02-operation-semantics",
+      "docs/workstreams/timeline-temporal-operational-b02-execution-plan.md#5-idempotency-and-concurrency-contract",
+      "docs/workstreams/timeline-temporal-operational-b02-execution-plan.md#6-persistence-strategy",
+      "docs/workstreams/timeline-temporal-operational-map.md#10-schedule--full-vertical-surface",
+      "docs/development/backend-cp6-02-postgresql-persistence-constitution.md"
+    ],
+    "domain_concepts": [
+      "Activity",
+      "Schedule"
+    ],
+    "logical_families": [
+      "application operation idempotency control"
+    ],
+    "reference_families": [
+      "NativeRef",
+      "ScopedRecordRef",
+      "MaterialStateRef"
+    ],
+    "material_facets": [
+      "schedule.placement"
+    ]
+  },
+  "implementation": {
+    "introducing_stage": "B02-D-UNSCHEDULE-UNDO",
+    "alembic_revision": "20260914_23",
+    "sqlalchemy": {
+      "mode": "orm_row",
+      "module": "dante.platform.database.mappings.schedule",
+      "symbol": "ScheduleUnscheduleUndoOperationRow"
+    },
+    "runtime_acl_stage": "B02-D-UNSCHEDULE-UNDO"
+  },
+  "structure": {
+    "columns": [
+      {
+        "name": "self_person_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Authenticated self Person scope owning the Undo receipt.",
+        "semantic_type": "NativeRef",
+        "value_contract": "Must match the self scope of the referenced unschedule receipt."
+      },
+      {
+        "name": "operation_id",
+        "postgres_type": "text",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Client/application identity for idempotent Undo replay.",
+        "semantic_type": "OperationId",
+        "value_contract": "Trimmed non-empty text, maximum 200 characters."
+      },
+      {
+        "name": "intent_fingerprint",
+        "postgres_type": "text",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Deterministic fingerprint of ScheduleRef and exact unschedule operation identity.",
+        "semantic_type": "IntentFingerprint",
+        "value_contract": "Exactly 64 lowercase hexadecimal characters."
+      },
+      {
+        "name": "schedule_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Stable retained Schedule restored to current placement.",
+        "semantic_type": "ScopedRecordRef",
+        "value_contract": "Must equal the Schedule recorded by the unschedule receipt."
+      },
+      {
+        "name": "unschedule_operation_id",
+        "postgres_type": "text",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Exact prior unschedule receipt authorized for one Undo.",
+        "semantic_type": "OperationId",
+        "value_contract": "Trimmed non-empty text, maximum 200 characters."
+      },
+      {
+        "name": "restored_from_material_state_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Retained prior placement state whose floating-local semantics are copied.",
+        "semantic_type": "MaterialStateRef",
+        "value_contract": "References the state closed by the exact unschedule operation."
+      },
+      {
+        "name": "material_state_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "New immutable placement MaterialStateRef produced by accepted Undo.",
+        "semantic_type": "MaterialStateRef",
+        "value_contract": "Application-issued UUIDv7; never reuses or reopens the old state."
+      },
+      {
+        "name": "created_at",
+        "postgres_type": "timestamp with time zone",
+        "nullable": false,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Authoritative instant shared by the new current binding and history episode.",
+        "semantic_type": "AbsoluteInstant",
+        "value_contract": "Recorded inside the bounded database capability."
+      }
+    ],
+    "primary_key": {
+      "name": "pk_schedule_unschedule_undo_operation",
+      "columns": [
+        "self_person_ref",
+        "operation_id"
+      ],
+      "reason": "One immutable Undo receipt per self-scoped operation identity.",
+      "deferrable": false,
+      "initially": "NOT DEFERRABLE",
+      "enforced": true
+    },
+    "foreign_keys": [
+      {
+        "name": "fk_schedule_unschedule_undo_op_unschedule_operation",
+        "columns": [
+          "self_person_ref",
+          "unschedule_operation_id"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "schedule_unschedule_operation",
+          "columns": [
+            "self_person_ref",
+            "operation_id"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "OperationId",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Bind Undo to the exact self-scoped unschedule receipt."
+      },
+      {
+        "name": "fk_schedule_unschedule_undo_operation_schedule_ref_schedule",
+        "columns": [
+          "schedule_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "schedule",
+          "columns": [
+            "schedule_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "ScopedRecordRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Retain one stable Schedule identity across withdrawal and restoration."
+      },
+      {
+        "name": "fk_schedule_unschedule_undo_op_restored_state_placement_state",
+        "columns": [
+          "restored_from_material_state_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "schedule_placement_state",
+          "columns": [
+            "material_state_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "MaterialStateRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "Retain the exact closed state whose semantic interval is copied."
+      },
+      {
+        "name": "fk_schedule_unschedule_undo_op_material_state_placement_state",
+        "columns": [
+          "material_state_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "schedule_placement_state",
+          "columns": [
+            "material_state_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "MaterialStateRef",
+        "cardinality": "one_to_one",
+        "semantic_reason": "Bind replay to the new immutable placement state created by Undo."
+      }
+    ],
+    "unique_constraints": [
+      {
+        "name": "uq_schedule_unschedule_undo_operation_material_state_ref",
+        "columns": [
+          "material_state_ref"
+        ],
+        "reason": "A restored placement MaterialState belongs to one Undo receipt.",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true
+      },
+      {
+        "name": "uq_schedule_unschedule_undo_operation_unschedule",
+        "columns": [
+          "self_person_ref",
+          "unschedule_operation_id"
+        ],
+        "reason": "One exact self-scoped unschedule receipt may be undone at most once.",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true
+      }
+    ],
+    "check_constraints": [
+      {
+        "name": "ck_schedule_unschedule_undo_operation_operation_id",
+        "expression_contract": "operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200",
+        "reason": "Keep Undo operation identity canonical and bounded.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_schedule_unschedule_undo_operation_unschedule_operation_id",
+        "expression_contract": "unschedule_operation_id=btrim(unschedule_operation_id) AND unschedule_operation_id<>'' AND char_length(unschedule_operation_id)<=200",
+        "reason": "Keep the referenced unschedule operation identity canonical and bounded.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_schedule_unschedule_undo_operation_fingerprint",
+        "expression_contract": "intent_fingerprint ~ '^[0-9a-f]{64}$'",
+        "reason": "Require the deterministic SHA-256 representation.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "pk_schedule_unschedule_undo_operation",
+        "method": "btree",
+        "unique": true,
+        "keys": [
+          "self_person_ref",
+          "operation_id"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "primary_key",
+        "reason": "Idempotent Undo replay lookup.",
+        "valid": true,
+        "ready": true,
+        "live": true
+      },
+      {
+        "name": "uq_schedule_unschedule_undo_operation_material_state_ref",
+        "method": "btree",
+        "unique": true,
+        "keys": [
+          "material_state_ref"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "unique_constraint",
+        "reason": "One receipt per produced restored state.",
+        "valid": true,
+        "ready": true,
+        "live": true
+      },
+      {
+        "name": "uq_schedule_unschedule_undo_operation_unschedule",
+        "method": "btree",
+        "unique": true,
+        "keys": [
+          "self_person_ref",
+          "unschedule_operation_id"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "unique_constraint",
+        "reason": "Enforce at most one Undo for the exact unschedule receipt.",
+        "valid": true,
+        "ready": true,
+        "live": true
+      },
+      {
+        "name": "ix_schedule_unschedule_undo_operation_schedule_ref",
+        "method": "btree",
+        "unique": false,
+        "keys": [
+          "schedule_ref"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "explicit_index",
+        "reason": "Operational inspection of Undo receipts per retained Schedule.",
+        "valid": true,
+        "ready": true,
+        "live": true
+      }
+    ],
+    "triggers": [],
+    "table": {
+      "persistence": "permanent",
+      "access_method": "heap",
+      "partitioned": false,
+      "row_security": false,
+      "force_row_security": false,
+      "replica_identity": "default",
+      "reloptions": []
+    },
+    "view": null,
+    "routine": null
+  },
+  "state_history": {
+    "material_state_behavior": "Creates one new immutable schedule.placement MaterialState by copying the retained prior floating-local interval semantics.",
+    "current_binding": "Requires continued real absence and no later history episode, then creates one new current binding and open history episode.",
+    "chronology": "created_at is strictly later than the closed unschedule boundary and starts the new history episode.",
+    "immutability_policy": "Never reopens the old history row or reuses the old MaterialStateRef; replay returns the recorded new state."
+  },
+  "lifecycle": {
+    "retention": null,
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No direct runtime table privileges; downgrade fails closed while Undo receipts exist."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": []
+  },
+  "proof": {
+    "obligations": [
+      "runtime has no direct table read/write privilege",
+      "Undo requires the exact self-scoped unschedule receipt",
+      "Undo conflicts when currentness exists or any later placement history episode exists",
+      "accepted Undo creates a new MaterialStateRef and a new open history episode",
+      "same operation and intent replay without reopening or rewriting prior history"
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b02_schedule_unschedule_undo.py",
+      "apps/backend/tests/integration/database/test_current_catalog.py",
+      "apps/backend/tests/integration/database/test_migrations.py"
+    ],
+    "staged_evidence": []
+  }
+}

@@ -16,6 +16,7 @@ import {
   type TemporalActivityRecord,
 } from '../../../temporal';
 import { createLocalTemporalCreateRuntime } from '../../../temporal-create';
+import { invalidateTemporalPlanningRead } from '../../../temporal/timeline-invalidation';
 import { TimelinePlanningTrayB01 } from './timeline-planning-tray-b01';
 
 const ACTIVITY_REF = '0199a8c0-5e71-7bc0-8ad0-a2f403f5617d';
@@ -41,8 +42,13 @@ function installTimelineHosts(): void {
   document.body.innerHTML = '<div class="dante-timeline-actions"></div>';
 }
 
-function createHarness(rejectPlacement = false) {
-  let unplaced: readonly TemporalActivityRecord[] = Object.freeze([ACTIVITY]);
+function createHarness(
+  rejectPlacement = false,
+  initiallyUnplaced = true,
+) {
+  let unplaced: readonly TemporalActivityRecord[] = Object.freeze(
+    initiallyUnplaced ? [ACTIVITY] : [],
+  );
   const createActivity = vi.fn<TemporalActivityDataSource['createActivity']>(
     () => Promise.reject(new Error('B02-B must not create Activity')),
   );
@@ -94,6 +100,9 @@ function createHarness(rejectPlacement = false) {
     createScheduledActivity,
     establishActivitySchedule,
     loadUnplaced,
+    restoreUnplaced: () => {
+      unplaced = Object.freeze([ACTIVITY]);
+    },
   });
 }
 
@@ -116,7 +125,7 @@ async function openTray(
   await screen.findByText(ACTIVITY.title);
 }
 
-describe('Timeline B02-B canonical Planning Tray placement', () => {
+describe('Timeline B02 canonical Planning Tray placement and invalidation', () => {
   it('places the same Activity, then removes it only after canonical refetch', async () => {
     const harness = createHarness();
     await openTray(harness.runtime);
@@ -176,5 +185,32 @@ describe('Timeline B02-B canonical Planning Tray placement', () => {
     ).toBeTruthy();
     expect(screen.getByText(ACTIVITY.title)).toBeTruthy();
     expect(harness.loadUnplaced).toHaveBeenCalledTimes(2);
+  });
+
+  it('reloads Planning Tray after unschedule invalidation and returns the same Activity', async () => {
+    const harness = createHarness(false, false);
+    installTimelineHosts();
+    render(
+      <TimelinePlanningTrayB01
+        items={Object.freeze([])}
+        runtime={harness.runtime}
+        defaultDate={Temporal.PlainDate.from('2026-09-09')}
+      />,
+    );
+    await waitFor(() => expect(harness.loadUnplaced).toHaveBeenCalledTimes(1));
+
+    harness.restoreUnplaced();
+    invalidateTemporalPlanningRead();
+
+    await waitFor(() => expect(harness.loadUnplaced).toHaveBeenCalledTimes(2));
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: 'Apri attività da collocare',
+      }),
+    );
+    expect(await screen.findByText(ACTIVITY.title)).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: `Colloca: ${ACTIVITY.title}` }),
+    ).toBeTruthy();
   });
 });

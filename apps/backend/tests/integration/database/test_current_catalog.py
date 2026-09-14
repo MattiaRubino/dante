@@ -20,7 +20,7 @@ from dante.platform.database.metadata import Base
 
 pytestmark = pytest.mark.postgres
 
-_CURRENT_REVISION = "20260913_22"
+_CURRENT_REVISION = "20260914_23"
 _REPO_ROOT = Path(__file__).resolve().parents[5]
 _DICTIONARY_ROOT = _REPO_ROOT / "docs" / "database" / "dictionary"
 _RUNTIME_ROLE = "dante_runtime"
@@ -35,13 +35,11 @@ _TABLE_PRIVILEGES = (
 )
 _COLUMN_PRIVILEGES = ("SELECT", "INSERT", "UPDATE", "REFERENCES")
 
-
 def _entries(kind: str) -> dict[str, dict[str, Any]]:
     return {
         path.stem: json.loads(path.read_text(encoding="utf-8"))
         for path in sorted((_DICTIONARY_ROOT / kind).glob("*.json"))
     }
-
 
 def _admin(database: Any) -> psycopg.Connection[Any]:
     return psycopg.connect(
@@ -52,7 +50,6 @@ def _admin(database: Any) -> psycopg.Connection[Any]:
         password=database.cluster.admin_password,
         autocommit=True,
     )
-
 
 def _dictionary_sets(
     tables: dict[str, dict[str, Any]],
@@ -103,7 +100,6 @@ def _dictionary_sets(
                 assert str(trigger["routine"]).removeprefix("dante.") in routines
 
     return indexes, constraints, triggers
-
 
 def test_current_catalog_matches_dictionary_sqlalchemy_and_alembic(
     migrated_database: Any,
@@ -242,7 +238,6 @@ def test_current_catalog_matches_dictionary_sqlalchemy_and_alembic(
     scripts = ScriptDirectory.from_config(config)
     assert scripts.get_heads() == [_CURRENT_REVISION]
 
-
 def _expected_runtime_acl(
     entry: dict[str, Any],
 ) -> tuple[set[str], dict[str, set[str]]]:
@@ -258,7 +253,6 @@ def _expected_runtime_acl(
         else:
             table_privileges.add(privilege)
     return table_privileges, column_privileges
-
 
 def test_runtime_table_and_column_acl_matches_dictionary(
     migrated_database: Any,
@@ -311,7 +305,6 @@ def test_runtime_table_and_column_acl_matches_dictionary(
                 )
                 assert actual_column == expected_column, f"{table_name}.{column}"
 
-
 def test_account_security_lock_capability_is_exact(migrated_database: Any) -> None:
     with _admin(migrated_database) as connection:
         function_acl = connection.execute(
@@ -341,7 +334,6 @@ def test_account_security_lock_capability_is_exact(migrated_database: Any) -> No
     assert function_acl[0:5] == ("dante_owner", True, "v", "u", False)
     assert function_acl[5] == ["search_path=pg_catalog, dante, pg_temp"]
     assert function_acl[6:9] == (True, False, False)
-
 
 def test_create_self_activity_capability_is_exact(migrated_database: Any) -> None:
     with _admin(migrated_database) as connection:
@@ -390,7 +382,6 @@ def test_create_self_activity_capability_is_exact(migrated_database: Any) -> Non
     )
     assert function_acl[8:11] == (True, False, False)
 
-
 def test_establish_self_floating_schedule_capability_is_exact(
     migrated_database: Any,
 ) -> None:
@@ -438,7 +429,6 @@ def test_establish_self_floating_schedule_capability_is_exact(
         "created_at timestamp with time zone, replayed boolean)"
     )
     assert function_acl[8:11] == (True, False, False)
-
 
 def test_m3_account_security_lock_is_narrow_and_transaction_scoped(
     migrated_database: Any,

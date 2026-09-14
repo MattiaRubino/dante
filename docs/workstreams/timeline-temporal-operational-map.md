@@ -1224,6 +1224,20 @@ Preserve:
 
 `current` must be explicit. It is not `latest UUID`, `highest row id`, or provider-most-recent value by assumption.
 
+### 10.4.1 Activated B02-D absence and Undo rule
+
+For the activated self-owned Activity/floating-local path, unschedule means real absence of the `schedule.placement` current binding. It closes the exact open history episode but retains Activity, Schedule, MaterialState payload and history.
+
+```text
+unschedule
+!= delete Activity
+!= delete Schedule
+!= delete MaterialState/history
+!= create placeholder MaterialState for absence
+```
+
+Guarded Undo is authorized by the exact unschedule receipt only while currentness is still absent and no later placement-history episode exists. Successful Undo creates a new immutable MaterialStateRef and a new history episode carrying the prior interval semantics; it never reopens an old history row. Newer truth conflicts instead of being overwritten.
+
 ## 10.5 Reschedule in either direction
 
 Schedule changes may move:
@@ -3881,13 +3895,13 @@ Current workstream state:
 SEMANTIC MAP / AUDITS / ROADMAP              ✅ COMPLETE
 B00 REAL DATA SPINE                          ✅ CLOSED
 B01 ACTIVITY CORE                            ✅ CLOSED
-B02 SCHEDULE CORE                            🟨 IN PROGRESS — B02-A/B/C candidates implemented; proof pending
-CANDIDATE DATABASE                           🟨 Alembic _22 candidate; reconciliation/test proof pending
+B02 SCHEDULE CORE                            🟨 IN PROGRESS — B02-A/B/C/D candidates implemented; proof pending
+CANDIDATE DATABASE                           🟨 Alembic _23 candidate; reconciliation/test proof pending
 B00 MANUAL userTest                          ✅ APPROVED — 2026-09-08
 B01 MANUAL userTest                          ✅ APPROVED — 2026-09-08
 EXACT-HEAD RECONCILIATION                     ✅ run 34261607749 on 303e75c56716008bfc352e92411884760727e043
 EPHEMERAL B01 RECONCILIATION WORKFLOW         ✅ REMOVED IN B00/B01 CLOSURE
-NEXT EXECUTION GATE                           B02-C targeted proof + manual acceptance, then B02-D PRE-SCOPE
+NEXT EXECUTION GATE                           B02-D targeted proof + manual acceptance, then B02-E PRE-SCOPE
 ```
 
 B00 established the truthful real-data spine: normal runtime no longer substitutes prototype Timeline data or fake persistence for backend truth. B01 established the first PostgreSQL-backed temporal product write/read path: one canonical unplaced Activity identity created through governed idempotent backend semantics and projected through the real Planning Tray.
@@ -3897,5 +3911,7 @@ B01 deliberately did **not** implement Schedule, estimated effort, Event, Routin
 B02 Schedule authority/current CP6 placement truth is frozen in the B02 execution plan. The branch now contains candidate B02-A atomic scheduled creation and candidate B02-B placement of an existing unplaced Activity onto a new accepted Schedule/current placement. B02-B preserves the Activity identity, invalidates/refetches the authoritative Timeline, and defines Planning Tray membership as absence of a current accepted placement. These are implementation candidates only: the SCH/B02-T ledger remains open until the deferred automated and manual evidence gates pass.
 
 Candidate B02-C now routes Timeline movement and anchored time editing through one bounded Schedule revision operation. The exact current placement MaterialStateRef is the concurrency basis; the same ScheduleRef survives, prior placement history remains, stale state conflicts, and the frontend waits for authoritative reload instead of presenting an optimistic canonical move. This remains candidate implementation, not executed evidence.
+
+Candidate B02-D now routes Timeline unschedule and Undo through bounded self-scoped capabilities. Unschedule closes the exact current history episode and removes only explicit currentness; guarded Undo requires the exact receipt plus continued absence/no later history and creates a new monotonic placement state. Timeline and Planning Tray wait for authoritative refresh, so failures never manufacture canonical absence or restoration. Tests are authored but deliberately not executed in this slice.
 
 This ledger is intentionally verbose. Its purpose is to make omission visible: if a capability or required proof is not green, it is not done.

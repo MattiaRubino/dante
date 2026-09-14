@@ -1,4 +1,8 @@
-import { Temporal, type PlainDate } from '@dante/time';
+import {
+  Temporal,
+  type PlainDate,
+  type PlainDateTime,
+} from '@dante/time';
 import {
   type KeyboardEvent,
   type PointerEvent as ReactPointerEvent,
@@ -94,6 +98,8 @@ type TimeEditorState = Readonly<{
 
 type DetailState = Readonly<{
   detail: TimelineDetail;
+  event: TimelineEvent;
+  allowUnschedule: boolean;
   opener: HTMLElement;
 }>;
 
@@ -101,6 +107,23 @@ type ScheduleNotice = Readonly<{
   kind: 'status' | 'error';
   message: string;
 }>;
+
+type CanonicalScheduleUndo =
+  | Readonly<{
+      kind: 'revision';
+      scheduleRef: string;
+      expectedPlacementMaterialStateRef: string;
+      placement: Readonly<{
+        kind: 'floating-local-interval';
+        startsLocalAt: PlainDateTime;
+        endsLocalAt: PlainDateTime;
+      }>;
+    }>
+  | Readonly<{
+      kind: 'unschedule';
+      scheduleRef: string;
+      unscheduleOperationId: string;
+    }>;
 
 function localDateTimeAtMinute(dateKey: string, minute: number) {
   if (!Number.isFinite(minute) || minute < 0 || minute >= 1440) {
@@ -122,7 +145,11 @@ export function TimelineSurface({
   onDateNavigation,
 }: TimelineSurfaceProps) {
   const { t, i18n } = useTranslation('common');
-  const { reviseSchedule } = useTemporalTimelineRuntime();
+  const {
+    reviseSchedule,
+    undoScheduleUnschedule,
+    unscheduleSchedule,
+  } = useTemporalTimelineRuntime();
   const locale = i18n.resolvedLanguage ?? i18n.language;
   // Phase 1 parity deliberately uses the accepted prototype clock. The mock
   // dataset is built around this instant; using wall-clock time makes the
@@ -147,6 +174,11 @@ export function TimelineSurface({
   const [toastMessage, setToastMessage] = useState('');
   const [toastVisible, setToastVisible] = useState(false);
   const [scheduleNotice, setScheduleNotice] = useState<ScheduleNotice | null>(
+    null,
+  );
+  const [canonicalUndo, setCanonicalUndo] =
+    useState<CanonicalScheduleUndo | null>(null);
+  const [pendingScheduleRef, setPendingScheduleRef] = useState<string | null>(
     null,
   );
 
@@ -177,13 +209,18 @@ export function TimelineSurface({
   const scheduleNoticeTimerRef = useRef<number | null>(null);
   const pendingScheduleRefsRef = useRef(new Set<string>());
 
-  const materializeAuthoritativeEvent = useCallback(
-    (dateKey: string, event: TimelineEvent) => {
-      dispatch({ type: 'materialize-event', dateKey, event });
+  const reconcileAuthoritativeEvents = useCallback(
+    (
+      projections: readonly Readonly<{
+        dateKey: string;
+        event: TimelineEvent;
+      }>[],
+    ) => {
+      dispatch({ type: 'reconcile-authoritative-events', projections });
     },
     [],
   );
-  useAuthoritativeTimelineHydration(materializeAuthoritativeEvent);
+  useAuthoritativeTimelineHydration(reconcileAuthoritativeEvents);
 
   const renderedDayInputs = useMemo(
     () => ({
@@ -219,6 +256,7 @@ export function TimelineSurface({
   }, [renderedDays]);
 
   const showFeedback = useCallback((message: string) => {
+    setCanonicalUndo(null);
     setToastMessage(message);
     setToastVisible(true);
     if (toastTimerRef.current !== null) {
@@ -241,10 +279,23 @@ export function TimelineSurface({
     }, TIMELINE_POLICY.feedback.toastDurationMs);
   }, []);
 
+  const showCanonicalUndo = useCallback((message: string) => {
+    setToastMessage(message);
+    setToastVisible(true);
+    if (toastTimerRef.current !== null) {
+      window.clearTimeout(toastTimerRef.current);
+    }
+    toastTimerRef.current = window.setTimeout(() => {
+      setToastVisible(false);
+      toastTimerRef.current = null;
+    }, TIMELINE_POLICY.feedback.toastDurationMs);
+  }, []);
+
   const reviseCanonicalEvent = useCallback(
     (
       event: TimelineEvent,
-      dateKey: string,
+      fromDateKey: string,
+      toDateKey: string,
       startMinute: number,
       endMinute: number,
     ) => {
@@ -258,9 +309,19 @@ export function TimelineSurface({
 
       let startsLocalAt: ReturnType<typeof localDateTimeAtMinute>;
       let endsLocalAt: ReturnType<typeof localDateTimeAtMinute>;
+      let previousStartsLocalAt: ReturnType<typeof localDateTimeAtMinute>;
+      let previousEndsLocalAt: ReturnType<typeof localDateTimeAtMinute>;
       try {
-        startsLocalAt = localDateTimeAtMinute(dateKey, startMinute);
-        endsLocalAt = localDateTimeAtMinute(dateKey, endMinute);
+        startsLocalAt = localDateTimeAtMinute(toDateKey, startMinute);
+        endsLocalAt = localDateTimeAtMinute(toDateKey, endMinute);
+        previousStartsLocalAt = localDateTimeAtMinute(
+          fromDateKey,
+          event.startMinute,
+        );
+        previousEndsLocalAt = localDateTimeAtMinute(
+          fromDateKey,
+          event.endMinute,
+        );
       } catch {
         showScheduleNotice({
           kind: 'error',
@@ -272,6 +333,7 @@ export function TimelineSurface({
       }
 
       pendingScheduleRefsRef.current.add(basis.scheduleRef);
+      setPendingScheduleRef(basis.scheduleRef);
       void reviseSchedule({
         scheduleRef: basis.scheduleRef,
         expectedPlacementMaterialStateRef: basis.placementMaterialStateRef,
@@ -281,7 +343,21 @@ export function TimelineSurface({
           endsLocalAt,
         },
       })
-        .then(() => {
+        .then((result) => {
+          setCanonicalUndo({
+            kind: 'revision',
+            scheduleRef: result.scheduleRef,
+            expectedPlacementMaterialStateRef:
+              result.placementMaterialStateRef,
+            placement: {
+              kind: 'floating-local-interval',
+              startsLocalAt: previousStartsLocalAt,
+              endsLocalAt: previousEndsLocalAt,
+            },
+          });
+          showCanonicalUndo(
+            t(($) => $.common.home.timeline.feedback.scheduleUndoAvailable),
+          );
           showScheduleNotice({
             kind: 'status',
             message: t(
@@ -309,10 +385,136 @@ export function TimelineSurface({
         })
         .finally(() => {
           pendingScheduleRefsRef.current.delete(basis.scheduleRef);
+          setPendingScheduleRef((current) =>
+            current === basis.scheduleRef ? null : current,
+          );
         });
     },
-    [reviseSchedule, showScheduleNotice, t],
+    [reviseSchedule, showCanonicalUndo, showScheduleNotice, t],
   );
+
+  const unscheduleCanonicalEvent = useCallback(
+    (event: TimelineEvent) => {
+      const basis = event.canonicalBasis;
+      if (
+        basis === undefined ||
+        pendingScheduleRefsRef.current.has(basis.scheduleRef)
+      ) {
+        return;
+      }
+
+      pendingScheduleRefsRef.current.add(basis.scheduleRef);
+      setPendingScheduleRef(basis.scheduleRef);
+      void unscheduleSchedule({
+        scheduleRef: basis.scheduleRef,
+        expectedPlacementMaterialStateRef: basis.placementMaterialStateRef,
+      })
+        .then((result) => {
+          setDetailState(null);
+          setCanonicalUndo({
+            kind: 'unschedule',
+            scheduleRef: result.scheduleRef,
+            unscheduleOperationId: result.unscheduleOperationId,
+          });
+          showCanonicalUndo(
+            t(($) => $.common.home.timeline.feedback.scheduleUndoAvailable),
+          );
+          showScheduleNotice({
+            kind: 'status',
+            message: t(
+              ($) => $.common.home.timeline.feedback.scheduleUnscheduled,
+            ),
+          });
+        })
+        .catch((error: unknown) => {
+          const conflict =
+            error instanceof TemporalScheduleRemoteError &&
+            error.status === 409 &&
+            error.code === 'temporal.schedule.unschedule_conflict';
+          showScheduleNotice({
+            kind: 'error',
+            message: conflict
+              ? t(
+                  ($) =>
+                    $.common.home.timeline.feedback.scheduleUnscheduleConflict,
+                )
+              : t(
+                  ($) =>
+                    $.common.home.timeline.feedback.scheduleUnscheduleUnavailable,
+                ),
+          });
+        })
+        .finally(() => {
+          pendingScheduleRefsRef.current.delete(basis.scheduleRef);
+          setPendingScheduleRef((current) =>
+            current === basis.scheduleRef ? null : current,
+          );
+        });
+    },
+    [showCanonicalUndo, showScheduleNotice, t, unscheduleSchedule],
+  );
+
+  const undoCanonicalSchedule = useCallback(() => {
+    const undo = canonicalUndo;
+    if (
+      undo === null ||
+      pendingScheduleRefsRef.current.has(undo.scheduleRef)
+    ) {
+      return;
+    }
+
+    pendingScheduleRefsRef.current.add(undo.scheduleRef);
+    setPendingScheduleRef(undo.scheduleRef);
+    const command =
+      undo.kind === 'revision'
+        ? reviseSchedule({
+            scheduleRef: undo.scheduleRef,
+            expectedPlacementMaterialStateRef:
+              undo.expectedPlacementMaterialStateRef,
+            placement: undo.placement,
+          })
+        : undoScheduleUnschedule({
+            scheduleRef: undo.scheduleRef,
+            unscheduleOperationId: undo.unscheduleOperationId,
+          });
+
+    void command
+      .then(() => {
+        setCanonicalUndo(null);
+        setToastVisible(false);
+        showScheduleNotice({
+          kind: 'status',
+          message: t(
+            ($) => $.common.home.timeline.feedback.scheduleUndoUpdated,
+          ),
+        });
+      })
+      .catch((error: unknown) => {
+        const conflict =
+          error instanceof TemporalScheduleRemoteError &&
+          error.status === 409 &&
+          (error.code === 'temporal.schedule.revision_conflict' ||
+            error.code === 'temporal.schedule.undo_conflict');
+        showScheduleNotice({
+          kind: 'error',
+          message: conflict
+            ? t(($) => $.common.home.timeline.feedback.scheduleUndoConflict)
+            : t(($) => $.common.home.timeline.feedback.scheduleUndoUnavailable),
+        });
+      })
+      .finally(() => {
+        pendingScheduleRefsRef.current.delete(undo.scheduleRef);
+        setPendingScheduleRef((current) =>
+          current === undo.scheduleRef ? null : current,
+        );
+      });
+  }, [
+    canonicalUndo,
+    reviseSchedule,
+    showScheduleNotice,
+    t,
+    undoScheduleUnschedule,
+  ]);
 
   const publishViewportDate = useCallback(
     (date: PlainDate) => {
@@ -892,6 +1094,8 @@ export function TimelineSurface({
         onOpenEventDetail={(event, opener) =>
           setDetailState({
             detail: detailFromEvent(event, state.groups),
+            event,
+            allowUnschedule: true,
             opener,
           })
         }
@@ -903,6 +1107,8 @@ export function TimelineSurface({
               state.groups,
               t(($) => $.common.home.timeline.detail.subitemParent),
             ),
+            event,
+            allowUnschedule: false,
             opener,
           })
         }
@@ -915,6 +1121,7 @@ export function TimelineSurface({
             const duration = current.endMinute - current.startMinute;
             reviseCanonicalEvent(
               current,
+              move.fromDateKey,
               move.toDateKey,
               move.startMinute,
               move.startMinute + duration,
@@ -1005,6 +1212,7 @@ export function TimelineSurface({
             if (timeEditor.event.canonicalBasis !== undefined) {
               reviseCanonicalEvent(
                 timeEditor.event,
+                timeEditor.dateKey,
                 dateKey,
                 startMinute,
                 endMinute,
@@ -1037,6 +1245,21 @@ export function TimelineSurface({
       <EventDetailDialog
         detail={detailState?.detail ?? null}
         opener={detailState?.opener ?? null}
+        canUnschedule={
+          detailState?.allowUnschedule === true &&
+          detailState.event.canonicalBasis !== undefined
+        }
+        pending={
+          detailState?.allowUnschedule === true &&
+          detailState.event.canonicalBasis !== undefined &&
+          pendingScheduleRef ===
+            detailState.event.canonicalBasis.scheduleRef
+        }
+        onUnschedule={() => {
+          if (detailState !== null) {
+            unscheduleCanonicalEvent(detailState.event);
+          }
+        }}
         onClose={() => setDetailState(null)}
       />
 
@@ -1051,9 +1274,15 @@ export function TimelineSurface({
       ) : null}
 
       <UndoToast
-        visible={toastVisible && state.undo !== null}
+        visible={
+          toastVisible && (state.undo !== null || canonicalUndo !== null)
+        }
         message={toastMessage}
         onUndo={() => {
+          if (canonicalUndo !== null) {
+            undoCanonicalSchedule();
+            return;
+          }
           preserveRawScroll();
           dispatch({ type: 'undo-last-event-change' });
           setToastVisible(false);

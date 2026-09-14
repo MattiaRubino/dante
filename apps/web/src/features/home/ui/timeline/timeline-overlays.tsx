@@ -800,15 +800,22 @@ export type TimelineDetail = Readonly<{
 type EventDetailDialogProps = Readonly<{
   detail: TimelineDetail | null;
   opener: HTMLElement | null;
+  canUnschedule: boolean;
+  pending: boolean;
+  onUnschedule: () => void;
   onClose: () => void;
 }>;
 
 export function EventDetailDialog({
   detail,
   opener,
+  canUnschedule,
+  pending,
+  onUnschedule,
   onClose,
 }: EventDetailDialogProps) {
   const { t } = useTranslation('common');
+  const unscheduleButtonRef = useRef<HTMLButtonElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
@@ -821,8 +828,21 @@ export function EventDetailDialog({
         event.preventDefault();
         onClose();
       } else if (event.key === 'Tab') {
+        const buttons = [
+          unscheduleButtonRef.current,
+          closeButtonRef.current,
+        ].filter((button): button is HTMLButtonElement => Boolean(button));
+        if (buttons.length === 0) {
+          return;
+        }
         event.preventDefault();
-        closeButtonRef.current?.focus();
+        const activeIndex = buttons.indexOf(
+          document.activeElement as HTMLButtonElement,
+        );
+        const offset = event.shiftKey ? -1 : 1;
+        const nextIndex =
+          (activeIndex + offset + buttons.length) % buttons.length;
+        buttons[nextIndex]?.focus();
       }
     };
     document.addEventListener('keydown', keydown, true);
@@ -868,9 +888,29 @@ export function EventDetailDialog({
         <div className="timeline-event-ai-note">
           {t(($) => $.common.home.timeline.detail.aiNote)}
         </div>
-        <button ref={closeButtonRef} type="button" onClick={onClose}>
-          {t(($) => $.common.home.timeline.detail.close)}
-        </button>
+        <div className="timeline-event-modal__actions">
+          {canUnschedule ? (
+            <button
+              ref={unscheduleButtonRef}
+              className="is-unschedule"
+              type="button"
+              disabled={pending}
+              onClick={onUnschedule}
+            >
+              {pending
+                ? t(($) => $.common.home.timeline.detail.unscheduling)
+                : t(($) => $.common.home.timeline.detail.unschedule)}
+            </button>
+          ) : null}
+          <button
+            ref={closeButtonRef}
+            type="button"
+            disabled={pending}
+            onClick={onClose}
+          >
+            {t(($) => $.common.home.timeline.detail.close)}
+          </button>
+        </div>
       </div>
     </div>,
     document.body,

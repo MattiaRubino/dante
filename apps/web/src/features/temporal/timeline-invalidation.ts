@@ -20,3 +20,22 @@ export function subscribeTemporalTimelineInvalidation(
     listeners.delete(listener);
   };
 }
+
+export type TemporalPlanningInvalidationListener = () => void;
+
+const planningListeners = new Set<TemporalPlanningInvalidationListener>();
+
+export function invalidateTemporalPlanningRead(): void {
+  for (const listener of [...planningListeners]) {
+    listener();
+  }
+}
+
+export function subscribeTemporalPlanningInvalidation(
+  listener: TemporalPlanningInvalidationListener,
+): () => void {
+  planningListeners.add(listener);
+  return () => {
+    planningListeners.delete(listener);
+  };
+}

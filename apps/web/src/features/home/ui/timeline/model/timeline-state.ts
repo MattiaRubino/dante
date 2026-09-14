@@ -73,6 +73,13 @@ export type TimelineAction =
       event: TimelineEvent;
     }>
   | Readonly<{
+      type: 'reconcile-authoritative-events';
+      projections: readonly Readonly<{
+        dateKey: string;
+        event: TimelineEvent;
+      }>[];
+    }>
+  | Readonly<{
       type: 'materialize-all-day';
       item: TimelineAllDayItem;
     }>
@@ -242,6 +249,77 @@ function materializeEvent(
     ...state,
     eventsByDate,
     undo: state.undo?.eventId === action.event.id ? null : state.undo,
+  };
+}
+
+function reconcileAuthoritativeEvents(
+  state: TimelineState,
+  projections: readonly Readonly<{
+    dateKey: string;
+    event: TimelineEvent;
+  }>[],
+): TimelineState {
+  const canonicalIds = new Set(
+    projections.map((projection) => projection.event.id),
+  );
+  let changed = false;
+  const eventsByDate = Object.fromEntries(
+    Object.entries(state.eventsByDate).map(([dateKey, events]) => {
+      const retained = events.filter(
+        (event) => event.canonicalBasis === undefined,
+      );
+      if (retained.length !== events.length) {
+        changed = true;
+      }
+      return [dateKey, retained];
+    }),
+  );
+
+  for (const projection of projections) {
+    const currentEvents =
+      eventsByDate[projection.dateKey] ??
+      createTimelinePrototypeEventsForDate(projection.dateKey);
+    eventsByDate[projection.dateKey] = sortEvents([
+      ...currentEvents.filter((event) => event.id !== projection.event.id),
+      projection.event,
+    ]);
+    const current = findTimelineEvent(state, projection.event.id);
+    if (
+      current?.dateKey !== projection.dateKey ||
+      !sameEvent(current.event, projection.event)
+    ) {
+      changed = true;
+    }
+  }
+
+  if (!changed) {
+    return state;
+  }
+
+  const focusedCanonicalRemoved =
+    state.focusedEventId !== null &&
+    !canonicalIds.has(state.focusedEventId) &&
+    findTimelineEvent(state, state.focusedEventId)?.event.canonicalBasis !==
+      undefined;
+  const expandedEventIds = new Set(
+    [...state.expandedEventIds].filter(
+      (eventId) =>
+        canonicalIds.has(eventId) ||
+        findTimelineEvent(state, eventId)?.event.canonicalBasis === undefined,
+    ),
+  );
+
+  return {
+    ...state,
+    eventsByDate,
+    focusedEventId: focusedCanonicalRemoved ? null : state.focusedEventId,
+    expandedEventIds,
+    undo:
+      state.undo !== null &&
+      findTimelineEvent(state, state.undo.eventId)?.event.canonicalBasis !==
+        undefined
+        ? null
+        : state.undo,
   };
 }
 
@@ -574,6 +652,9 @@ export function timelineReducer(
 
     case 'materialize-event':
       return materializeEvent(state, action);
+
+    case 'reconcile-authoritative-events':
+      return reconcileAuthoritativeEvents(state, action.projections);
 
     case 'materialize-all-day':
       return materializeAllDay(state, action);

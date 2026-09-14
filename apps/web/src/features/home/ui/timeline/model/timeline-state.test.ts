@@ -318,6 +318,39 @@ describe('timeline state', () => {
     expect(eventById(state, '2026-08-05', '1')).toBeUndefined();
   });
 
+  it('reconciles authoritative absence without deleting local fixture events', () => {
+    const initial = createInitialTimelineState();
+    const withCanonical = timelineReducer(initial, {
+      type: 'materialize-event',
+      dateKey: '2026-09-09',
+      event: {
+        id: 'schedule-absence',
+        title: 'Canonical to unschedule',
+        groupId: 'personale',
+        startMinute: 600,
+        endMinute: 660,
+        canonicalBasis: {
+          kind: 'scheduled-activity',
+          activityRef: 'activity-absence',
+          scheduleRef: 'schedule-absence',
+          placementMaterialStateRef: 'state-before-unschedule',
+        },
+      },
+    });
+    expect(eventById(withCanonical, '2026-09-09', 'schedule-absence')).toBeTruthy();
+    expect(eventById(withCanonical, '2026-08-04', '1')).toBeTruthy();
+
+    const withoutCanonical = timelineReducer(withCanonical, {
+      type: 'reconcile-authoritative-events',
+      projections: [],
+    });
+
+    expect(
+      eventById(withoutCanonical, '2026-09-09', 'schedule-absence'),
+    ).toBeUndefined();
+    expect(eventById(withoutCanonical, '2026-08-04', '1')).toBeTruthy();
+  });
+
   it('moves a group exactly one adjacent slot in either direction', () => {
     const initial = createInitialTimelineState();
     const movedRight = timelineReducer(initial, {

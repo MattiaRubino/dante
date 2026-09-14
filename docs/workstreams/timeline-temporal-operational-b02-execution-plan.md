@@ -1,9 +1,9 @@
 # Timeline / Temporal-Operational — B02 Schedule Core Execution Plan
 
 - **Status:** ACTIVE EXECUTION CONTRACT / B02 IN PROGRESS
-- **Date:** 2026-09-13
+- **Date:** 2026-09-14
 - **Branch:** `feature/timeline-temporal-operational`
-- **Pre-scope branch head:** `4240a1789e8bf9dd0ca637715c7a8809677714a8`
+- **B02-D pre-scope branch head:** `0fa9f0a6c04ba86a466dc113f76aea0d438f8c06`
 - **Roadmap block:** B02 — Schedule Core
 - **Primary semantic authority:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **Roadmap:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -672,6 +672,17 @@ scheduled Activity
 
 Newer truth must cause Undo conflict instead of overwrite.
 
+Implemented candidate contract:
+
+- unschedule accepts the stable ScheduleRef plus exact current placement MaterialStateRef;
+- the database closes the open placement-history episode and deletes only the explicit current binding;
+- Activity, Schedule, placement state, payload and history are retained; absence is represented by no current binding, never by a fake MaterialState;
+- Undo accepts the exact unschedule receipt, requires continued absence and rejects any later placement-history episode;
+- successful Undo copies the retained floating-local interval into a newly issued MaterialStateRef and opens a new current-history episode;
+- operation identity is idempotent only for the same normalized material intent;
+- Timeline removal/restoration occurs only after one authoritative reload; stale/conflict failures leave the displayed canonical state unchanged;
+- unschedule/Undo invalidates the Planning Tray read so the same Activity identity returns or leaves after canonical refresh.
+
 ## B02-E — form completeness / precision / DST / closure
 
 Goal:
@@ -789,6 +800,7 @@ SCH-001 authority reopen   ✅ DONE
 B02-A candidate            🟨 IMPLEMENTED — automated/manual proof pending
 B02-B candidate            🟨 IMPLEMENTED — automated/manual proof pending
 B02-C candidate            🟨 IMPLEMENTED — automated/manual proof pending
+B02-D candidate            🟨 IMPLEMENTED — automated/manual proof pending
 ```
 
 B02-B adds the governed path from an existing canonical unplaced Activity to an accepted floating-local same-day Schedule. It reuses the Activity reference, creates no Activity clone, keeps scheduled duration on Schedule, removes the Activity from Planning Tray only after canonical commit/refetch, and invalidates the authoritative Timeline read so the accepted item is fetched exactly once.
@@ -797,13 +809,15 @@ The B02-B read rule is now explicit: “unplaced” means no current accepted Sc
 
 B02-C adds governed revision of that accepted floating-local same-day placement. Timeline movement and the anchored time editor submit the stable ScheduleRef plus the exact current placement MaterialStateRef; PostgreSQL creates one new immutable placement state, closes/opens current-history episodes and moves the explicit current binding atomically. The UI performs no optimistic canonical move and reloads authoritative current truth exactly once after success. Stale expected state and operation-id reuse cannot overwrite newer truth.
 
+B02-D adds governed unschedule and guarded Undo. Unschedule records real absence by closing the exact open history episode and removing only currentness. Undo is bound to the exact unschedule receipt, requires that absence still be current and creates a new immutable state/history episode rather than reopening old truth. Timeline and Planning Tray reconcile only after authoritative reloads.
+
 No `SCH-*` or `B02-T*` checkbox is promoted by this candidate update. CI execution, targeted automated evidence and the user’s manual acceptance remain deliberately deferred.
 
 Next required execution gate:
 
 ```text
-B02-C targeted automated proof (CI still deferred)
-→ user manual B02-C acceptance checkpoint
+B02-D targeted automated proof (CI still deferred)
+→ user manual B02-D acceptance checkpoint
 → evidence-only ledger reconciliation
-→ separately reviewed B02-D exact PRE-SCOPE
+→ separately reviewed B02-E exact PRE-SCOPE
 ```

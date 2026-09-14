@@ -14,6 +14,7 @@ import { createDeterministicTemporalIdFactory } from './model';
 import type {
   TemporalScheduleDataSource,
   TemporalScheduleRevisionRequest,
+  TemporalScheduleUnscheduleRequest,
 } from './schedule-data-source';
 import type {
   TemporalTimelineDataSource,
@@ -70,6 +71,36 @@ function RevisionProbe() {
     <button type="button" onClick={() => void reviseSchedule(request)}>
       revise
     </button>
+  );
+}
+
+function UnscheduleProbe() {
+  const { unscheduleSchedule, undoScheduleUnschedule } =
+    useTemporalTimelineRuntime();
+  const request: Omit<TemporalScheduleUnscheduleRequest, 'operationId'> = {
+    scheduleRef: SCHEDULE_REF,
+    expectedPlacementMaterialStateRef: MATERIAL_STATE_REF,
+  };
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => void unscheduleSchedule(request)}
+      >
+        unschedule
+      </button>
+      <button
+        type="button"
+        onClick={() =>
+          void undoScheduleUnschedule({
+            scheduleRef: SCHEDULE_REF,
+            unscheduleOperationId: 'b02-d:operation:1',
+          })
+        }
+      >
+        undo-unschedule
+      </button>
+    </>
   );
 }
 
@@ -185,7 +216,15 @@ describe('TemporalTimelineRuntimeBoundary', () => {
           replayed: false,
         }),
     );
-    const scheduleDataSource: TemporalScheduleDataSource = { reviseSchedule };
+    const scheduleDataSource: TemporalScheduleDataSource = {
+      reviseSchedule,
+      unscheduleSchedule: vi.fn(() =>
+        Promise.reject(new Error('not expected')),
+      ),
+      undoScheduleUnschedule: vi.fn(() =>
+        Promise.reject(new Error('not expected')),
+      ),
+    };
 
     render(
       <TemporalTimelineRuntimeBoundary
@@ -233,5 +272,75 @@ describe('TemporalTimelineRuntimeBoundary', () => {
     expect(screen.queryByRole('status')).toBeNull();
     expect(screen.queryByRole('alert')).toBeNull();
     expect(loadWindow).not.toHaveBeenCalled();
+  });
+
+  it('uses fresh operation ids and reloads Timeline once for unschedule and Undo', async () => {
+    const loadWindow = vi.fn<TemporalTimelineDataSource['loadWindow']>(() =>
+      Promise.resolve(emptyWindow()),
+    );
+    const unscheduleSchedule = vi.fn<
+      TemporalScheduleDataSource['unscheduleSchedule']
+    >((request) =>
+      Promise.resolve({
+        scheduleRef: request.scheduleRef,
+        previousPlacementMaterialStateRef:
+          request.expectedPlacementMaterialStateRef,
+        unscheduleOperationId: request.operationId,
+        replayed: false,
+      }),
+    );
+    const undoScheduleUnschedule = vi.fn<
+      TemporalScheduleDataSource['undoScheduleUnschedule']
+    >((request) =>
+      Promise.resolve({
+        scheduleRef: request.scheduleRef,
+        restoredFromPlacementMaterialStateRef: MATERIAL_STATE_REF,
+        placementMaterialStateRef: NEXT_MATERIAL_STATE_REF,
+        placement: {
+          kind: 'floating-local-interval',
+          startsLocalAt: Temporal.PlainDateTime.from('2026-09-09T10:00'),
+          endsLocalAt: Temporal.PlainDateTime.from('2026-09-09T11:00'),
+        },
+        replayed: false,
+      }),
+    );
+    const scheduleDataSource: TemporalScheduleDataSource = {
+      reviseSchedule: vi.fn(() => Promise.reject(new Error('not expected'))),
+      unscheduleSchedule,
+      undoScheduleUnschedule,
+    };
+
+    render(
+      <TemporalTimelineRuntimeBoundary
+        viewedDateIso="2026-09-09"
+        dataSource={{ loadWindow }}
+        scheduleDataSource={scheduleDataSource}
+        ids={createDeterministicTemporalIdFactory('b02-d')}
+        mode="production"
+      >
+        <UnscheduleProbe />
+      </TemporalTimelineRuntimeBoundary>,
+    );
+
+    await waitFor(() => expect(loadWindow).toHaveBeenCalledTimes(1));
+    fireEvent.click(screen.getByRole('button', { name: 'unschedule' }));
+    await waitFor(() => {
+      expect(unscheduleSchedule).toHaveBeenCalledWith({
+        operationId: 'b02-d:operation:1',
+        scheduleRef: SCHEDULE_REF,
+        expectedPlacementMaterialStateRef: MATERIAL_STATE_REF,
+      });
+      expect(loadWindow).toHaveBeenCalledTimes(2);
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'undo-unschedule' }));
+    await waitFor(() => {
+      expect(undoScheduleUnschedule).toHaveBeenCalledWith({
+        operationId: 'b02-d:operation:2',
+        scheduleRef: SCHEDULE_REF,
+        unscheduleOperationId: 'b02-d:operation:1',
+      });
+      expect(loadWindow).toHaveBeenCalledTimes(3);
+    });
   });
 });

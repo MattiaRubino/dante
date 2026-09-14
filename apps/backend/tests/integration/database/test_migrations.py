@@ -13,7 +13,7 @@ from sqlalchemy.exc import DBAPIError
 
 pytestmark = pytest.mark.postgres
 
-_EXPECTED_HEAD = "20260913_22"
+_EXPECTED_HEAD = "20260914_23"
 _B02_REVISION_PARENT = "20260909_21"
 _B02_SCHEMA_HEAD = "20260909_20"
 _PRE_B02_HEAD = "20260908_19"
@@ -24,13 +24,11 @@ _RECOVERY_HEAD = "20260830_09"
 _ACCESS_HEAD = "20260904_16"
 _TRUSTED_SEARCH_PATH = "pg_catalog,dante,pg_temp"
 
-
 def _floating_local(
     year: int, month: int, day: int, hour: int, minute: int
 ) -> datetime:
     # A floating-local Schedule value intentionally has no timezone/offset.
     return datetime(year, month, day, hour, minute)  # noqa: DTZ001
-
 
 def _current_revisions(database: Any) -> set[str]:
     with psycopg.connect(
@@ -58,7 +56,6 @@ def _current_revisions(database: Any) -> set[str]:
             "SELECT version_num FROM dante.alembic_version ORDER BY version_num"
         ).fetchall()
         return {str(row[0]) for row in rows}
-
 
 def _recovery_row_snapshot(
     connection: psycopg.Connection[Any],
@@ -112,7 +109,6 @@ def _recovery_row_snapshot(
     assert row is not None
     return tuple(row)
 
-
 def test_fresh_database_reaches_the_single_repository_head(
     provisioned_database: Any,
     alembic_config: Config,
@@ -135,7 +131,6 @@ def test_fresh_database_reaches_the_single_repository_head(
     command.upgrade(alembic_config, "head")
     assert _current_revisions(provisioned_database) == {_EXPECTED_HEAD}
 
-
 def test_repository_head_round_trips_head_base_head(
     provisioned_database: Any,
     alembic_config: Config,
@@ -149,6 +144,110 @@ def test_repository_head_round_trips_head_base_head(
     command.upgrade(alembic_config, "head")
     assert _current_revisions(provisioned_database) == {_EXPECTED_HEAD}
 
+def test_schedule_unschedule_downgrade_refuses_to_discard_receipts(
+    provisioned_database: Any,
+    alembic_config: Config,
+) -> None:
+    command.upgrade(alembic_config, "head")
+    person_ref = uuid7()
+    activity_ref = uuid7()
+    schedule_ref = uuid7()
+    first_state_ref = uuid7()
+    restored_state_ref = uuid7()
+    connection_kwargs = provisioned_database.connection_kwargs(
+        "dante_migrator",
+        provisioned_database.cluster.migrator_password,
+    )
+
+    with psycopg.connect(**connection_kwargs) as connection:
+        connection.execute("SET ROLE dante_owner")
+        connection.execute(
+            "INSERT INTO dante.person(person_ref) VALUES (%s)",
+            (person_ref,),
+        )
+        connection.execute(
+            "INSERT INTO dante.native_address(native_ref,owner_family) "
+            "VALUES (%s,'person')",
+            (person_ref,),
+        )
+        connection.execute(
+            "SELECT activity_ref FROM dante.create_self_activity(%s,%s,%s,%s,%s)",
+            (
+                person_ref,
+                "migration-proof:b02-d-activity",
+                "a" * 64,
+                activity_ref,
+                "B02-D guard",
+            ),
+        )
+        connection.execute(
+            "SELECT schedule_ref FROM dante.establish_self_floating_schedule"
+            "(%s,%s,%s,%s,%s,%s,%s,%s)",
+            (
+                person_ref,
+                "migration-proof:b02-d-establish",
+                "b" * 64,
+                activity_ref,
+                schedule_ref,
+                first_state_ref,
+                _floating_local(2026, 9, 9, 10, 0),
+                _floating_local(2026, 9, 9, 11, 0),
+            ),
+        )
+        connection.execute(
+            "SELECT schedule_ref FROM dante.unschedule_self_schedule"
+            "(%s,%s,%s,%s,%s)",
+            (
+                person_ref,
+                "migration-proof:b02-d-unschedule",
+                "c" * 64,
+                schedule_ref,
+                first_state_ref,
+            ),
+        )
+        connection.execute(
+            "SELECT schedule_ref FROM dante.undo_self_schedule_unschedule"
+            "(%s,%s,%s,%s,%s,%s)",
+            (
+                person_ref,
+                "migration-proof:b02-d-undo",
+                "d" * 64,
+                schedule_ref,
+                "migration-proof:b02-d-unschedule",
+                restored_state_ref,
+            ),
+        )
+
+    with pytest.raises(DBAPIError, match="B02-D downgrade refused"):
+        command.downgrade(alembic_config, "20260913_22")
+
+    assert _current_revisions(provisioned_database) == {_EXPECTED_HEAD}
+    with psycopg.connect(**connection_kwargs, autocommit=True) as connection:
+        connection.execute("SET ROLE dante_owner")
+        preserved = connection.execute(
+            """
+            SELECT
+              (SELECT count(*) FROM dante.schedule_unschedule_operation
+                WHERE schedule_ref=%s),
+              (SELECT count(*) FROM dante.schedule_unschedule_undo_operation
+                WHERE schedule_ref=%s AND material_state_ref=%s),
+              (SELECT count(*) FROM dante.schedule_placement_current_history
+                WHERE schedule_ref=%s),
+              (SELECT count(*) FROM dante.scoped_current_material_state
+                WHERE scoped_owner_ref=%s
+                  AND facet_code='schedule.placement'
+                  AND material_state_ref=%s)
+            """,
+            (
+                schedule_ref,
+                schedule_ref,
+                restored_state_ref,
+                schedule_ref,
+                schedule_ref,
+                restored_state_ref,
+            ),
+        ).fetchone()
+    assert preserved == (1, 1, 2, 1)
 
 def test_schedule_revision_downgrade_refuses_to_discard_revision_receipts(
     provisioned_database: Any,
@@ -244,7 +343,6 @@ def test_schedule_revision_downgrade_refuses_to_discard_revision_receipts(
         ).fetchone()
     assert preserved == (1, 1, 2)
 
-
 def test_schedule_downgrade_refuses_to_discard_canonical_history(
     provisioned_database: Any,
     alembic_config: Config,
@@ -338,7 +436,6 @@ def test_schedule_downgrade_refuses_to_discard_canonical_history(
         ).fetchone()
     assert preserved == (1, 1, 1)
 
-
 def test_activity_downgrade_refuses_to_discard_canonical_intention(
     provisioned_database: Any,
     alembic_config: Config,
@@ -408,7 +505,6 @@ def test_activity_downgrade_refuses_to_discard_canonical_intention(
         ).fetchone()
     assert preserved == (1, 1, 1, 1)
 
-
 def test_context_downgrade_refuses_to_orphan_live_account_person_binding(
     provisioned_database: Any,
     alembic_config: Config,
@@ -464,7 +560,6 @@ def test_context_downgrade_refuses_to_orphan_live_account_person_binding(
         ).fetchone()
     assert preserved == (1, 1, 1)
 
-
 def test_recovery_history_remains_independently_reachable(
     provisioned_database: Any,
     alembic_config: Config,
@@ -478,7 +573,6 @@ def test_recovery_history_remains_independently_reachable(
     command.upgrade(alembic_config, _RECOVERY_HEAD)
     assert _current_revisions(provisioned_database) == {_RECOVERY_HEAD}
 
-
 def test_existing_access_head_converges_forward_to_current_head(
     provisioned_database: Any,
     alembic_config: Config,
@@ -488,7 +582,6 @@ def test_existing_access_head_converges_forward_to_current_head(
 
     command.upgrade(alembic_config, "head")
     assert _current_revisions(provisioned_database) == {_EXPECTED_HEAD}
-
 
 def test_existing_recovery_head_converges_forward_to_current_head(
     provisioned_database: Any,
@@ -500,7 +593,6 @@ def test_existing_recovery_head_converges_forward_to_current_head(
     command.upgrade(alembic_config, "head")
     assert _current_revisions(provisioned_database) == {_EXPECTED_HEAD}
 
-
 def test_existing_pre_vertical_base_converges_forward_to_current_head(
     provisioned_database: Any,
     alembic_config: Config,
@@ -510,7 +602,6 @@ def test_existing_pre_vertical_base_converges_forward_to_current_head(
 
     command.upgrade(alembic_config, "head")
     assert _current_revisions(provisioned_database) == {_EXPECTED_HEAD}
-
 
 def test_existing_recovery_rows_survive_forward_convergence_to_current_head(
     provisioned_database: Any,
@@ -638,7 +729,6 @@ def test_existing_recovery_rows_survive_forward_convergence_to_current_head(
 
     assert after == before
 
-
 def test_alembic_check_reports_no_dante_schema_drift_with_extensions_present(
     provisioned_database: Any,
     alembic_config: Config,
@@ -669,7 +759,6 @@ def test_alembic_check_reports_no_dante_schema_drift_with_extensions_present(
         "unaccent",
         "pg_stat_statements",
     }
-
 
 def test_alembic_rejects_injected_non_migrator_identity(
     provisioned_database: Any,

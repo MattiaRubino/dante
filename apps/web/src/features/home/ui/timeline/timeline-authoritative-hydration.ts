@@ -43,32 +43,36 @@ export function canonicalScheduledActivityTimelineEvent(
 }
 
 /**
- * Materialize each authoritative current projection into the UI reducer.
- * The reducer reconciles by ScheduleRef, so a B02-C refetch replaces the prior
- * placement basis without treating the optimistic client as canonical truth.
+ * Reconcile the complete authoritative window into the UI reducer.
+ * A current empty window is meaningful: it removes stale canonical cards while
+ * leaving local fixture-only events untouched.
  */
 export function useAuthoritativeTimelineHydration(
-  onMaterialize: (dateKey: string, event: TimelineEvent) => void,
+  onReconcile: (
+    projections: readonly Readonly<{
+      dateKey: string;
+      event: TimelineEvent;
+    }>[],
+  ) => void,
 ): void {
   const { state } = useTemporalTimelineRuntime();
-  const materializeRef = useRef(onMaterialize);
+  const reconcileRef = useRef(onReconcile);
 
   useEffect(() => {
-    materializeRef.current = onMaterialize;
-  }, [onMaterialize]);
+    reconcileRef.current = onReconcile;
+  }, [onReconcile]);
 
   useEffect(() => {
-    if (
-      state.status !== 'ready' ||
-      state.window === null ||
-      state.window.kind !== 'window'
-    ) {
+    if (state.status !== 'ready' || state.window === null) {
       return;
     }
 
-    for (const item of state.window.items) {
-      const projection = canonicalScheduledActivityTimelineEvent(item);
-      materializeRef.current(projection.dateKey, projection.event);
-    }
+    reconcileRef.current(
+      state.window.kind === 'window'
+        ? Object.freeze(
+            state.window.items.map(canonicalScheduledActivityTimelineEvent),
+          )
+        : Object.freeze([]),
+    );
   }, [state]);
 }

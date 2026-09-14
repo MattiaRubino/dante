@@ -4,10 +4,15 @@ import { shell } from './shell';
 import { temporalRuntime } from './temporal-runtime';
 import { worldFocus } from './world-focus';
 
-const homeWithB02C = {
+const homeWithB02D = {
   ...home,
   timeline: {
     ...home.timeline,
+    detail: {
+      ...home.timeline.detail,
+      unschedule: 'Riporta nel Planning Tray',
+      unscheduling: 'Ritorno in corso…',
+    },
     feedback: {
       ...home.timeline.feedback,
       scheduleRevisionUpdated:
@@ -16,6 +21,18 @@ const homeWithB02C = {
         'La pianificazione è cambiata altrove. Nessuna modifica è stata sovrascritta.',
       scheduleRevisionUnavailable:
         'Impossibile aggiornare questa pianificazione in sicurezza.',
+      scheduleUndoAvailable: 'Modifica salvata.',
+      scheduleUnscheduled:
+        'Attività riportata nel Planning Tray. La Timeline si sta aggiornando.',
+      scheduleUnscheduleConflict:
+        'La pianificazione è cambiata altrove. Non è stata rimossa.',
+      scheduleUnscheduleUnavailable:
+        'Impossibile riportare questa pianificazione in sicurezza.',
+      scheduleUndoUpdated: 'Modifica precedente della pianificazione ripristinata.',
+      scheduleUndoConflict:
+        'Una modifica successiva impedisce l’annullamento. Nulla è stato sovrascritto.',
+      scheduleUndoUnavailable:
+        'Impossibile annullare questa modifica della pianificazione.',
     },
   },
 } as const;
@@ -58,7 +75,7 @@ export const common = {
   },
   access,
   shell,
-  home: homeWithB02C,
+  home: homeWithB02D,
   temporalRuntime,
   worldFocus,
 } as const;

@@ -6,10 +6,10 @@
 - **PostgreSQL:** 18.6
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
-- **Current candidate Alembic head on `feature/timeline-temporal-operational`:** `20260913_22`
-- **Current candidate topology:** `93|5|21|77|184|103|279|0|0|0`
+- **Current candidate Alembic head on `feature/timeline-temporal-operational`:** `20260914_23`
+- **Current candidate topology:** `95|5|23|77|190|110|284|0|0|0`
 - **Frozen CP6 head:** `20260826_08`
-- **Last reconciled:** 2026-09-13
+- **Last reconciled:** 2026-09-14
 
 ## 1. Purpose
 
@@ -26,21 +26,21 @@ Current checked-out DB Reference
 
 A mismatch is a defect.
 
-Protected `main` remains integration authority. The `_22` materialization documented here is candidate truth only on `feature/timeline-temporal-operational` until the applicable workstream gates complete and protected-main merge/readback occurs.
+Protected `main` remains integration authority. The `_23` materialization documented here is candidate truth only on `feature/timeline-temporal-operational` until the applicable workstream gates complete and protected-main merge/readback occurs.
 
 ## 2. Current checked-out business-schema inventory
 
 Candidate workstream materialization:
 
 ```text
-tables       93
+tables       95
 views         5
-routines     21
-standalone  119
+routines     23
+standalone  123
 triggers     77
-indexes      184
-FKs          103
-CHECKs       279
+indexes      190
+FKs          110
+CHECKs       284
 ```
 
 The cumulative delta over protected-main `_18 / 89|5|18|77|173|91|272` is exactly:
@@ -71,9 +71,18 @@ B02-C / 20260913_22
 + 3 physical indexes
 + 4 foreign keys
 + 2 CHECK constraints
+
+B02-D / 20260914_23
++ dante.schedule_unschedule_operation              table
++ dante.schedule_unschedule_undo_operation         table
++ dante.unschedule_self_schedule(...)              routine
++ dante.undo_self_schedule_unschedule(...)         routine
++ 6 physical indexes
++ 7 foreign keys
++ 5 CHECK constraints
 ```
 
-No enum/domain, sequence, materialized view, partitioned table or RLS policy is introduced by B01, B02-A or B02-C. Platform Observability adds no Dictionary business object, Alembic revision or SQLAlchemy business mapping.
+No enum/domain, sequence, materialized view, partitioned table or RLS policy is introduced by B01, B02-A, B02-C or B02-D. Platform Observability adds no Dictionary business object, Alembic revision or SQLAlchemy business mapping.
 
 ## 3. Frozen CP6 baseline vs current materialization
 
@@ -87,8 +96,8 @@ No enum/domain, sequence, materialized view, partitioned table or RLS policy is 
 Current candidate `current_materialization` is:
 
 ```text
-93 tables / 5 views / 21 routines / 119 standalone
-77 triggers / 184 indexes / 103 FKs / 279 CHECKs
+95 tables / 5 views / 23 routines / 123 standalone
+77 triggers / 190 indexes / 110 FKs / 284 CHECKs
 ```
 
 `completed_stages` remains CP6 provenance only. Recovery, Access/Auth, Email, pre-vertical context and Timeline vertical provenance are represented per object through `implementation.introducing_stage`, `alembic_revision` and `runtime_acl_stage`; no fictitious CP6 stage is invented.
@@ -137,6 +146,13 @@ TIMELINE / TEMPORAL-OPERATIONAL B02-C CANDIDATE
 20260913_22
   schedule_revision_operation
   revise_self_floating_schedule(...)
+
+TIMELINE / TEMPORAL-OPERATIONAL B02-D CANDIDATE
+20260914_23
+  schedule_unschedule_operation
+  schedule_unschedule_undo_operation
+  unschedule_self_schedule(...)
+  undo_self_schedule_unschedule(...)
 ```
 
 Candidate workstream evolution does not become protected-main truth merely because it exists in this Dictionary branch.
@@ -215,6 +231,12 @@ runtime capability != generic Schedule DML
 
 The exact expected-state basis is the currently accepted placement MaterialStateRef. Same operation plus same intent replays the recorded effect; different reuse conflicts; a stale expected state is rejected before any replacement state is committed. Runtime receives EXECUTE on the capability and no direct receipt/current/history DML.
 
+### 5.4 B02-D Schedule unschedule and guarded Undo
+
+Unschedule records true absence: it closes the exact current placement-history episode and removes only the explicit current binding. Activity, Schedule, placement MaterialState and history remain retained; no placeholder or fake MaterialState represents absence.
+
+Undo is authorized by the exact self-scoped unschedule receipt and only while the Schedule remains absent with no later placement-history episode. Acceptance copies the prior floating-local interval into a new immutable MaterialStateRef and opens a new current-history episode. It never reopens the old row. Both capabilities are idempotent by operation plus intent, and runtime has EXECUTE only.
+
 ## 6. Object contract
 
 Every standalone business-schema object records object identity, purpose, classification, semantic traceability, implementation provenance, exact structure, lifecycle/state-history semantics, security/ACL and proof obligations.
@@ -254,11 +276,11 @@ extension-owned objects excluded correctly
 observer technical-role/provisioning/live-ACL parity
 ```
 
-`test_current_catalog.py` and `test_database_current_catalog.py` are current live cross-representation gates. `test_migrations.py` proves current Alembic authority plus independent B01, B02-A and B02-C fail-closed downgrade protection. Historical CP6 tests independently prove the frozen CP6 baseline. Platform Observability PostgreSQL acceptance additionally proves the exact observer-role boundary.
+`test_current_catalog.py` and `test_database_current_catalog.py` are current live cross-representation gates. `test_migrations.py` proves current Alembic authority plus independent B01, B02-A, B02-C and B02-D fail-closed downgrade protection. Historical CP6 tests independently prove the frozen CP6 baseline. Platform Observability PostgreSQL acceptance additionally proves the exact observer-role boundary.
 
 For B01, `create_self_activity` receives dedicated exact runtime proof of owner, SECURITY DEFINER posture, volatility/parallel safety, trusted search path and EXECUTE boundary; generic table ACL reconciliation proves runtime can read `activity_intention` but cannot directly mutate B01 persistence or inspect `activity_create_operation`.
 
-For B02-A, `establish_self_floating_schedule` receives the same exact capability proof. Generic table ACL reconciliation proves `schedule_establish_operation` has no runtime table privilege after `_21`, while the application exercises the capability and Timeline read path through real PostgreSQL. B02-C adds equivalent candidate obligations for `revise_self_floating_schedule`, exact expected-state conflict, immutable replay and retained current-history; those obligations remain pending until the deferred test gate runs.
+For B02-A, `establish_self_floating_schedule` receives the same exact capability proof. Generic table ACL reconciliation proves `schedule_establish_operation` has no runtime table privilege after `_21`, while the application exercises the capability and Timeline read path through real PostgreSQL. B02-C adds equivalent obligations for governed revision. B02-D adds candidate obligations for exact-current withdrawal, retained absence, exact-receipt guarded Undo, monotonic new-state restoration and immutable replay; B02-D evidence remains pending until the deliberately deferred test gate runs.
 
 ## 10. Same-change rule
 

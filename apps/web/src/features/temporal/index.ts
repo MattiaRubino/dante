@@ -38,6 +38,10 @@ export type {
   TemporalScheduleDataSource,
   TemporalScheduleRevisionRequest,
   TemporalScheduleRevisionResult,
+  TemporalScheduleUnscheduleRequest,
+  TemporalScheduleUnscheduleResult,
+  TemporalScheduleUnscheduleUndoRequest,
+  TemporalScheduleUnscheduleUndoResult,
 } from './schedule-data-source';
 export {
   TemporalTimelineRemoteError,

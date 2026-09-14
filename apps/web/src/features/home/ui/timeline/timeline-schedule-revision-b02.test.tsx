@@ -97,7 +97,15 @@ function renderGovernedTimeline(
         replayed: false,
       }),
   );
-  const scheduleDataSource: TemporalScheduleDataSource = { reviseSchedule };
+  const scheduleDataSource: TemporalScheduleDataSource = {
+    reviseSchedule,
+    unscheduleSchedule: vi.fn(() =>
+      Promise.reject(new Error('not expected')),
+    ),
+    undoScheduleUnschedule: vi.fn(() =>
+      Promise.reject(new Error('not expected')),
+    ),
+  };
   const view = render(
     <TemporalTimelineRuntimeBoundary
       viewedDateIso="2026-09-09"
@@ -181,7 +189,15 @@ describe('B02-C governed Schedule revision from Timeline', () => {
       <TemporalTimelineRuntimeBoundary
         viewedDateIso="2026-09-09"
         dataSource={{ loadWindow }}
-        scheduleDataSource={{ reviseSchedule }}
+        scheduleDataSource={{
+          reviseSchedule,
+          unscheduleSchedule: vi.fn(() =>
+            Promise.reject(new Error('not expected')),
+          ),
+          undoScheduleUnschedule: vi.fn(() =>
+            Promise.reject(new Error('not expected')),
+          ),
+        }}
         ids={createDeterministicTemporalIdFactory('b02-c-stale')}
         mode="production"
       >
@@ -253,4 +269,86 @@ describe('B02-C governed Schedule revision from Timeline', () => {
       ).toContain('10:30–11:30');
     });
   });
+
+  it('Undo revision writes a new monotonic state from the exact produced basis', async () => {
+    const restoredStateRef = '0199a8c0-5e75-7bc0-8ad0-a2f403f5617d';
+    const loadWindow = vi
+      .fn<TemporalTimelineDataSource['loadWindow']>()
+      .mockResolvedValueOnce(
+        windowAt('2026-09-09T10:00', '2026-09-09T11:00', CURRENT_STATE_REF),
+      )
+      .mockResolvedValueOnce(
+        windowAt('2026-09-09T10:05', '2026-09-09T11:05', NEXT_STATE_REF),
+      )
+      .mockResolvedValueOnce(
+        windowAt('2026-09-09T10:00', '2026-09-09T11:00', restoredStateRef),
+      );
+    const reviseSchedule = vi.fn<
+      TemporalScheduleDataSource['reviseSchedule']
+    >((request) =>
+      Promise.resolve({
+        scheduleRef: request.scheduleRef,
+        previousPlacementMaterialStateRef:
+          request.expectedPlacementMaterialStateRef,
+        placementMaterialStateRef:
+          request.expectedPlacementMaterialStateRef === CURRENT_STATE_REF
+            ? NEXT_STATE_REF
+            : restoredStateRef,
+        placement: request.placement,
+        replayed: false,
+      }),
+    );
+
+    const { container } = render(
+      <TemporalTimelineRuntimeBoundary
+        viewedDateIso="2026-09-09"
+        dataSource={{ loadWindow }}
+        scheduleDataSource={{
+          reviseSchedule,
+          unscheduleSchedule: vi.fn(() =>
+            Promise.reject(new Error('not expected')),
+          ),
+          undoScheduleUnschedule: vi.fn(() =>
+            Promise.reject(new Error('not expected')),
+          ),
+        }}
+        ids={createDeterministicTemporalIdFactory('b02-c-undo')}
+        mode="production"
+      >
+        <TimelineSurface
+          expanded={false}
+          viewedDateIso="2026-09-09"
+          onExpandedChange={vi.fn()}
+          onExpansionProgress={vi.fn()}
+        />
+      </TemporalTimelineRuntimeBoundary>,
+    );
+    const card = await waitFor(() => {
+      const match = container.querySelector<HTMLElement>(
+        `[data-timeline-event="${SCHEDULE_REF}"]`,
+      );
+      expect(match).toBeTruthy();
+      return match as HTMLElement;
+    });
+
+    fireEvent.keyDown(card, { key: 'ArrowDown', altKey: true });
+    await waitFor(() => expect(reviseSchedule).toHaveBeenCalledTimes(1));
+    fireEvent.click(screen.getByRole('button', { name: 'Annulla' }));
+
+    await waitFor(() => expect(reviseSchedule).toHaveBeenCalledTimes(2));
+    const undoRequest = reviseSchedule.mock.calls[1]?.[0];
+    expect(undoRequest).toMatchObject({
+      operationId: 'b02-c-undo:operation:2',
+      scheduleRef: SCHEDULE_REF,
+      expectedPlacementMaterialStateRef: NEXT_STATE_REF,
+    });
+    expect(undoRequest?.placement.startsLocalAt.toString()).toBe(
+      '2026-09-09T10:00:00',
+    );
+    expect(undoRequest?.placement.endsLocalAt.toString()).toBe(
+      '2026-09-09T11:00:00',
+    );
+    await waitFor(() => expect(loadWindow).toHaveBeenCalledTimes(3));
+  });
+
 });
