@@ -794,16 +794,16 @@ B02-A candidate            ✅ PROVEN — automated + manual evidence
 B02-B candidate            ✅ PROVEN — automated + manual evidence
 B02-C candidate            ✅ PROVEN — automated + manual evidence
 B02-D candidate            ✅ PROVEN — automated + manual evidence
-B02-E exact PRE-SCOPE      ⬜ NOT STARTED
+B02-E exact PRE-SCOPE      🟨 PROPOSED — awaiting explicit user approval
 ~~~
 
 B02-A through B02-D are proven only for the supported same-day floating-local Activity path. Evidence includes targeted PostgreSQL proof (2 passed), application/frontend regressions, the isolated real browser A-F acceptance and the fixed viewport Undo toast behavior.
 
-B02-E remains a separately reviewed PRE-SCOPE. No unsupported Schedule placement form, coarse precision, DST, Event/Occurrence or broader B02 closure item is promoted here. CI remains deferred by the user’s instruction.
+B02-E is now specified in `timeline-temporal-operational-b02-e-pre-scope.md` and remains awaiting explicit user approval. No unsupported Schedule placement form, coarse precision, DST, Event/Occurrence or broader B02 closure item is promoted here. CI remains deferred by the user’s instruction.
 
 Next required execution gate:
 
 ~~~text
-B02-E exact PRE-SCOPE review
-→ decide the next bounded form/precision slice
+explicit user approval of B02-E PRE-SCOPE
+→ B02-E1 canonical placement union and forward DDL
 ~~~
