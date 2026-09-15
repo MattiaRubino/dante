@@ -1326,3 +1326,21 @@ NEXT IMPLEMENTATION BLOCK              B00 — REAL DATA SPINE
 ```
 
 Changing the block order or skipping a ledger item requires an explicit roadmap amendment with reason and dependency analysis; it must not happen implicitly during coding.
+
+---
+
+## 19. Live progress addendum — 2026-09-15
+
+The frozen block order is unchanged. Current execution has reached B02 Schedule Core:
+
+```text
+B00                         ✅ CLOSED
+B01                         ✅ CLOSED
+B02-A/B/C/D                 ✅ PROVEN
+B02-E PRE-SCOPE             ✅ APPROVED
+B02-E1                      ✅ PROVEN — 29 local tests; 4 PostgreSQL tests
+NEXT                        B02-E2 — Timeline read projection and DST
+CI                          DEFERRED BY USER INSTRUCTION
+```
+
+This addendum reports execution progress only; it does not amend the frozen roadmap structure or promote B02-E2/E3/E4.

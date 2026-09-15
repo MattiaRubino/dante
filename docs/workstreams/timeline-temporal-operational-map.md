@@ -3372,7 +3372,7 @@ B00/B01 closure evidence is anchored by exact-head reconciliation run `342616077
 - ⬜ **[SCH-006]** Implement/consume absolute placement correctly.
 - ⬜ **[SCH-007]** Preserve coarse accepted placement precision without manufactured timestamps.
 - ✅ **[SCH-008]** Preserve Schedule absence as valid state. — Unschedule leaves the Activity identity/history intact with no current placement; Planning Tray and reload proved this.
-- ⬜ **[SCH-009]** Preserve possible 0..N planned placements; do not hard-code universal 1:1.
+- ✅ **[SCH-009]** Preserve possible 0..N planned placements; do not hard-code universal 1:1. — B02-E1 real PostgreSQL proof established two independent current Schedule records for one Activity without a subject-level uniqueness constraint.
 - ✅ **[SCH-010]** Implement accepted Schedule creation for Activity. — Activity Schedule creation is proven by the real create/place flow and PostgreSQL-backed targeted tests.
 - ✅ **[SCH-011]** Implement Schedule MaterialState revision. — Governed floating-local revision creates a new current placement state; B02-B/C automated proof and manual revision passed.
 - ✅ **[SCH-012]** Implement explicit current accepted Schedule binding. — Current binding is explicit and Timeline renders one canonical current item after authoritative reload.
@@ -3388,10 +3388,10 @@ B00/B01 closure evidence is anchored by exact-head reconciliation run `342616077
 - ⬜ **[SCH-022]** Preserve explicit in-progress expectation change as Schedule revision.
 - ⬜ **[SCH-023]** Preserve early/late/overrun reality as Session/Actual, not automatic Schedule rewrite.
 - ✅ **[SCH-024]** Implement initial temporal range/local-day query for scheduled Activity. — The authenticated local-date Timeline window for the exposed floating-local Activity path is proven by backend/frontend integration tests and manual reload.
-- ✅ **[B02-T01]** Schedule form/validator tests. — Targeted Schedule validation/application tests passed.
-- ✅ **[B02-T02]** Schedule current/history direct PostgreSQL tests. — Targeted real PostgreSQL current/history/unschedule/Undo proof passed: 2 tests.
-- ✅ **[B02-T03]** Reschedule/unschedule/Undo application tests. — Schedule revision, unschedule and guarded Undo application tests passed.
-- ✅ **[B02-T04]** Stale revision/idempotency conflict tests. — Stale basis, idempotency and cross-self conflict tests passed.
+- ✅ **[B02-T01]** Schedule form/validator tests. — B02-E1 value tests cover date-span, cross-midnight floating-local, named-zone explicit DST policy, aware absolute and coarse local-period without fabricated boundaries.
+- ✅ **[B02-T02]** Schedule current/history direct PostgreSQL tests. — B02-E1 real PostgreSQL matrix passed for all five forms, exact one-payload totality, three monotonic history episodes and one current state per Schedule.
+- ✅ **[B02-T03]** Reschedule/unschedule/Undo application tests. — Cross-form revision, form-independent unschedule and generic guarded Undo passed on real PostgreSQL for the activated union.
+- ✅ **[B02-T04]** Stale revision/idempotency conflict tests. — B02-E1 proves same-intent replay, changed-intent rejection, stale expected-state rejection and cross-self rejection for generic mutation.
 - ⬜ **[B02-T05]** DST/local-day tests applicable to exposed Schedule forms.
 - ✅ **[B02-T06]** Timeline drag/time-editor/Planning Tray frontend regressions. — Frontend Timeline/Planning Tray/time-editor/Undo regressions and the real browser flow passed.
 - ⬜ **[B02-T07]** Firefox T1 critical interaction regressions.
@@ -3404,7 +3404,7 @@ B00/B01 closure evidence is anchored by exact-head reconciliation run `342616077
 
 The exact supported B02 slice is now evidence-backed: same-day floating-local Activity Schedule creation, Planning Tray placement, governed revision, unschedule, guarded Undo, authoritative reload, stale two-tab conflict rejection and PostgreSQL-outage truthfulness. Automated targeted PostgreSQL proof passed (2 passed), and the isolated browser userTest A-F was approved.
 
-The B02 block remains 🟨 IN PROGRESS. Date-span, named-zone, absolute, coarse-precision, DST, Event/Occurrence, drag-specific and B02-E form-completeness items remain open and are not promoted by this reconciliation. CI remains deferred by instruction.
+The B02 block remains 🟨 IN PROGRESS. B02-E1 proves canonical persistence/mutation for date-span, floating-local interval, named-zone interval, absolute interval and coarse local-period, including 0..N Schedule cardinality. Timeline read/DST consumption, web authoring/rendering, drag-specific behavior, Event/Occurrence and B02-E closure remain open. CI remains deferred by instruction.
 
 ## 34.5 B03 — Event Core
 
@@ -3903,13 +3903,13 @@ Current workstream state:
 SEMANTIC MAP / AUDITS / ROADMAP              ✅ COMPLETE
 B00 REAL DATA SPINE                          ✅ CLOSED
 B01 ACTIVITY CORE                            ✅ CLOSED
-B02 SCHEDULE CORE                            🟨 IN PROGRESS — B02-A/B/C/D candidates implemented; proof pending
-CANDIDATE DATABASE                           🟨 Alembic _23 candidate; reconciliation/test proof pending
+B02 SCHEDULE CORE                            🟨 IN PROGRESS — B02-A/B/C/D + B02-E1 proven; E2 next
+CANDIDATE DATABASE                           🟨 Alembic _25 E1 proven on real PostgreSQL; Dictionary/final reconciliation pending
 B00 MANUAL userTest                          ✅ APPROVED — 2026-09-08
 B01 MANUAL userTest                          ✅ APPROVED — 2026-09-08
 EXACT-HEAD RECONCILIATION                     ✅ run 34261607749 on 303e75c56716008bfc352e92411884760727e043
 EPHEMERAL B01 RECONCILIATION WORKFLOW         ✅ REMOVED IN B00/B01 CLOSURE
-NEXT EXECUTION GATE                           B02-D targeted proof + manual acceptance, then B02-E PRE-SCOPE
+NEXT EXECUTION GATE                           B02-E2 Timeline read projection and DST
 ```
 
 B00 established the truthful real-data spine: normal runtime no longer substitutes prototype Timeline data or fake persistence for backend truth. B01 established the first PostgreSQL-backed temporal product write/read path: one canonical unplaced Activity identity created through governed idempotent backend semantics and projected through the real Planning Tray.
@@ -3923,3 +3923,10 @@ Candidate B02-C now routes Timeline movement and anchored time editing through o
 Candidate B02-D now routes Timeline unschedule and Undo through bounded self-scoped capabilities. Unschedule closes the exact current history episode and removes only explicit currentness; guarded Undo requires the exact receipt plus continued absence/no later history and creates a new monotonic placement state. Timeline and Planning Tray wait for authoritative refresh, so failures never manufacture canonical absence or restoration. Tests are authored but deliberately not executed in this slice.
 
 This ledger is intentionally verbose. Its purpose is to make omission visible: if a capability or required proof is not green, it is not done.
+
+
+### B02-E1 evidence reconciliation — 2026-09-15
+
+The approved B02-E1 backend slice is proven at commits `db057a422361122f7eed506239b6489c35d7d520` and `dca566180ac96f4072820de60946a72d9ab99ba3`. Local unit/value proof passed (`29 passed, 2 deselected`), followed by real PostgreSQL proof supplied by the user (`4 passed, 2 deselected in 9.66s`). No CI was run.
+
+This promotes only the canonical placement union, coarse local-period DDL/ACL, generic establish/revise/unschedule/Undo behavior, typed payload totality, history/current invariants and 0..N Schedule ownership. B02-T05 and all E2/E3/E4 obligations remain open.

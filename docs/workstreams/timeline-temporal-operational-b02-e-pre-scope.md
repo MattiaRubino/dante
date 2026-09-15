@@ -1,13 +1,13 @@
 # Timeline / Temporal-Operational — B02-E Exact PRE-SCOPE
 
-- **Status:** PROPOSED / AWAITING EXPLICIT USER APPROVAL
+- **Status:** APPROVED / B02-E1 PROVEN / B02-E2 NEXT
 - **Date:** 2026-09-15
 - **Branch:** `feature/timeline-temporal-operational`
 - **Reviewed branch anchor:** `b2daafaec3f56737f0783318d62be96e4b0c74e0`
 - **Parent plan:** `docs/workstreams/timeline-temporal-operational-b02-execution-plan.md`
 - **Live ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
-- **Authorization carried by this document:** documentation and scope definition only.
-- **Product implementation authorized now:** none.
+- **Authorization carried by this document:** bounded B02-E1 → E4 implementation after explicit user approval.
+- **Product implementation authorized now:** B02-E approved; execute one slice at a time and stop at its evidence gate.
 - **CI authorized now:** none; CI remains deferred by explicit user instruction.
 
 ---
@@ -440,6 +440,7 @@ apps/backend/src/dante/modules/temporal/activity.py
 apps/backend/src/dante/modules/temporal/application.py
 apps/backend/src/dante/modules/temporal/api.py
 apps/backend/src/dante/platform/database/mappings/schedule.py
+apps/backend/src/dante/platform/database/mappings/__init__.py
 apps/backend/tests/test_temporal_schedule.py
 apps/backend/tests/test_temporal_timeline.py
 apps/backend/tests/unit/platform/test_time.py
@@ -639,3 +640,21 @@ APPROVE B02-E PRE-SCOPE
 or
 REQUEST CHANGES
 ```
+
+
+---
+
+## 14. B02-E1 executed evidence — 2026-09-15
+
+The user explicitly approved this PRE-SCOPE with `APPROVE B02-E PRE-SCOPE`.
+
+B02-E1 is **PROVEN** on branch `feature/timeline-temporal-operational`:
+
+- implementation commit: `db057a422361122f7eed506239b6489c35d7d520`;
+- semantic/ACL correction: `dca566180ac96f4072820de60946a72d9ab99ba3`;
+- local unit/value evidence: `29 passed, 2 deselected`;
+- real PostgreSQL evidence supplied by the user: `4 passed, 2 deselected in 9.66s`;
+- covered: five activated placement forms, exact typed-payload totality, cross-form revision, replay/reuse rejection, stale-state and cross-self rejection, generic monotonic Undo, history chronology, and 0..N Schedule records for one Activity;
+- CI was not run, per explicit instruction.
+
+B02-E2 is the next bounded slice. E1 evidence does not promote Timeline read/DST, web authoring/rendering, drag, Firefox, E2E, Dictionary closure, or final B02 acceptance.

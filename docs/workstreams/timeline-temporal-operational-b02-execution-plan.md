@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — B02 Schedule Core Execution Plan
 
-- **Status:** ACTIVE EXECUTION CONTRACT / B02-A through B02-D reconciled; B02-E pending
+- **Status:** ACTIVE EXECUTION CONTRACT / B02-A through B02-E1 proven; B02-E2 next
 - **Date:** 2026-09-14
 - **Branch:** `feature/timeline-temporal-operational`
 - **B02-D pre-scope branch head:** `0fa9f0a6c04ba86a466dc113f76aea0d438f8c06`
@@ -794,16 +794,17 @@ B02-A candidate            ✅ PROVEN — automated + manual evidence
 B02-B candidate            ✅ PROVEN — automated + manual evidence
 B02-C candidate            ✅ PROVEN — automated + manual evidence
 B02-D candidate            ✅ PROVEN — automated + manual evidence
-B02-E exact PRE-SCOPE      🟨 PROPOSED — awaiting explicit user approval
+B02-E exact PRE-SCOPE      ✅ APPROVED — 2026-09-15
+B02-E1 placement union     ✅ PROVEN — unit/value + real PostgreSQL evidence
 ~~~
 
 B02-A through B02-D are proven only for the supported same-day floating-local Activity path. Evidence includes targeted PostgreSQL proof (2 passed), application/frontend regressions, the isolated real browser A-F acceptance and the fixed viewport Undo toast behavior.
 
-B02-E is now specified in `timeline-temporal-operational-b02-e-pre-scope.md` and remains awaiting explicit user approval. No unsupported Schedule placement form, coarse precision, DST, Event/Occurrence or broader B02 closure item is promoted here. CI remains deferred by the user’s instruction.
+B02-E PRE-SCOPE was explicitly approved. B02-E1 activates the five-form backend placement union, lossless coarse local-period payload, form-generic establish/revise/Undo, and preserved 0..N Schedule cardinality. Evidence passed locally (`29 passed`) and on real PostgreSQL (`4 passed, 2 deselected in 9.66s`). Timeline consumption/DST, web behavior and final closure remain open. CI remains deferred by the user’s instruction.
 
 Next required execution gate:
 
 ~~~text
-explicit user approval of B02-E PRE-SCOPE
-→ B02-E1 canonical placement union and forward DDL
+B02-E2 Timeline read projection and DST
+→ discriminated current placements + form-specific half-open window evidence
 ~~~
