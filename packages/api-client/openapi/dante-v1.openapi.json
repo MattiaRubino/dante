@@ -1503,9 +1503,284 @@
         "title": "SignupVerificationRequest",
         "type": "object"
       },
+      "TimelineAbsoluteActivityResponse": {
+        "additionalProperties": false,
+        "description": "Current absolute Schedule plus request-effective-zone projection.",
+        "properties": {
+          "activity_ref": {
+            "format": "uuid",
+            "title": "Activity Ref",
+            "type": "string"
+          },
+          "display_ends_local_at": {
+            "examples": ["2026-03-29T01:50:00"],
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
+            "title": "Display Ends Local At",
+            "type": "string"
+          },
+          "display_starts_local_at": {
+            "examples": ["2026-03-29T01:50:00"],
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
+            "title": "Display Starts Local At",
+            "type": "string"
+          },
+          "ends_at": {
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "kind": {
+            "const": "scheduled_activity",
+            "default": "scheduled_activity",
+            "title": "Kind",
+            "type": "string"
+          },
+          "placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Placement Material State Ref",
+            "type": "string"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "absolute",
+            "default": "absolute",
+            "title": "Temporal Form",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "activity_ref",
+          "schedule_ref",
+          "placement_material_state_ref",
+          "title",
+          "starts_at",
+          "ends_at",
+          "display_starts_local_at",
+          "display_ends_local_at"
+        ],
+        "title": "TimelineAbsoluteActivityResponse",
+        "type": "object"
+      },
+      "TimelineCoarseLocalPeriodActivityResponse": {
+        "additionalProperties": false,
+        "description": "Current coarse placement with no manufactured clock boundaries.",
+        "properties": {
+          "activity_ref": {
+            "format": "uuid",
+            "title": "Activity Ref",
+            "type": "string"
+          },
+          "kind": {
+            "const": "scheduled_activity",
+            "default": "scheduled_activity",
+            "title": "Kind",
+            "type": "string"
+          },
+          "local_date": {
+            "format": "date",
+            "title": "Local Date",
+            "type": "string"
+          },
+          "period": {
+            "enum": ["morning", "afternoon", "evening"],
+            "title": "Period",
+            "type": "string"
+          },
+          "placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Placement Material State Ref",
+            "type": "string"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "coarse_local_period",
+            "default": "coarse_local_period",
+            "title": "Temporal Form",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "activity_ref",
+          "schedule_ref",
+          "placement_material_state_ref",
+          "title",
+          "local_date",
+          "period"
+        ],
+        "title": "TimelineCoarseLocalPeriodActivityResponse",
+        "type": "object"
+      },
+      "TimelineDateSpanActivityResponse": {
+        "additionalProperties": false,
+        "description": "Current accepted half-open civil-date Schedule projection.",
+        "properties": {
+          "activity_ref": {
+            "format": "uuid",
+            "title": "Activity Ref",
+            "type": "string"
+          },
+          "end_date_exclusive": {
+            "format": "date",
+            "title": "End Date Exclusive",
+            "type": "string"
+          },
+          "kind": {
+            "const": "scheduled_activity",
+            "default": "scheduled_activity",
+            "title": "Kind",
+            "type": "string"
+          },
+          "placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Placement Material State Ref",
+            "type": "string"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "date_span",
+            "default": "date_span",
+            "title": "Temporal Form",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "activity_ref",
+          "schedule_ref",
+          "placement_material_state_ref",
+          "title",
+          "start_date",
+          "end_date_exclusive"
+        ],
+        "title": "TimelineDateSpanActivityResponse",
+        "type": "object"
+      },
+      "TimelineNamedZoneLocalActivityResponse": {
+        "additionalProperties": false,
+        "description": "Current named-zone intent, retained resolution, and viewing projection.",
+        "properties": {
+          "activity_ref": {
+            "format": "uuid",
+            "title": "Activity Ref",
+            "type": "string"
+          },
+          "display_ends_local_at": {
+            "examples": ["2026-03-29T01:50:00"],
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
+            "title": "Display Ends Local At",
+            "type": "string"
+          },
+          "display_starts_local_at": {
+            "examples": ["2026-03-29T01:50:00"],
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
+            "title": "Display Starts Local At",
+            "type": "string"
+          },
+          "ends_local_at": {
+            "examples": ["2026-03-29T01:50:00"],
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
+            "title": "Ends Local At",
+            "type": "string"
+          },
+          "kind": {
+            "const": "scheduled_activity",
+            "default": "scheduled_activity",
+            "title": "Kind",
+            "type": "string"
+          },
+          "placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Placement Material State Ref",
+            "type": "string"
+          },
+          "resolved_end_at": {
+            "format": "date-time",
+            "title": "Resolved End At",
+            "type": "string"
+          },
+          "resolved_start_at": {
+            "format": "date-time",
+            "title": "Resolved Start At",
+            "type": "string"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "starts_local_at": {
+            "examples": ["2026-03-29T01:50:00"],
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
+            "title": "Starts Local At",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "named_zone_local",
+            "default": "named_zone_local",
+            "title": "Temporal Form",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "zone_id": {
+            "title": "Zone Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "activity_ref",
+          "schedule_ref",
+          "placement_material_state_ref",
+          "title",
+          "starts_local_at",
+          "ends_local_at",
+          "zone_id",
+          "resolved_start_at",
+          "resolved_end_at",
+          "display_starts_local_at",
+          "display_ends_local_at"
+        ],
+        "title": "TimelineNamedZoneLocalActivityResponse",
+        "type": "object"
+      },
       "TimelineScheduledActivityResponse": {
         "additionalProperties": false,
-        "description": "Current accepted B02-A Schedule projection for one Activity.",
+        "description": "Current accepted floating-local Schedule projection for one Activity.",
         "properties": {
           "activity_ref": {
             "format": "uuid",
@@ -1513,7 +1788,8 @@
             "type": "string"
           },
           "ends_local_at": {
-            "format": "date-time",
+            "examples": ["2026-03-29T01:50:00"],
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
             "title": "Ends Local At",
             "type": "string"
           },
@@ -1534,7 +1810,8 @@
             "type": "string"
           },
           "starts_local_at": {
-            "format": "date-time",
+            "examples": ["2026-03-29T01:50:00"],
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
             "title": "Starts Local At",
             "type": "string"
           },
@@ -1604,7 +1881,33 @@
           },
           "items": {
             "items": {
-              "$ref": "#/components/schemas/TimelineScheduledActivityResponse"
+              "discriminator": {
+                "mapping": {
+                  "absolute": "#/components/schemas/TimelineAbsoluteActivityResponse",
+                  "coarse_local_period": "#/components/schemas/TimelineCoarseLocalPeriodActivityResponse",
+                  "date_span": "#/components/schemas/TimelineDateSpanActivityResponse",
+                  "floating_local": "#/components/schemas/TimelineScheduledActivityResponse",
+                  "named_zone_local": "#/components/schemas/TimelineNamedZoneLocalActivityResponse"
+                },
+                "propertyName": "temporal_form"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/TimelineScheduledActivityResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/TimelineDateSpanActivityResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/TimelineNamedZoneLocalActivityResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/TimelineAbsoluteActivityResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/TimelineCoarseLocalPeriodActivityResponse"
+                }
+              ]
             },
             "title": "Items",
             "type": "array"

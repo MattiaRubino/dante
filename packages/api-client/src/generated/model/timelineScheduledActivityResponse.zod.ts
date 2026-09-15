@@ -6,12 +6,24 @@
  */
 import * as zod from 'zod/mini';
 
+export const timelineScheduledActivityResponseEndsLocalAtRegExp = new RegExp(
+  '^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$',
+);
 export const timelineScheduledActivityResponseKindDefault = `scheduled_activity`;
+export const timelineScheduledActivityResponseStartsLocalAtRegExp = new RegExp(
+  '^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$',
+);
 export const timelineScheduledActivityResponseTemporalFormDefault = `floating_local`;
 export const TimelineScheduledActivityResponse = /*#__PURE__*/ zod
   .object({
     activity_ref: /*#__PURE__*/ zod.uuid(),
-    ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+    ends_local_at: /*#__PURE__*/ zod
+      .string()
+      .check(
+        /*#__PURE__*/ zod.regex(
+          timelineScheduledActivityResponseEndsLocalAtRegExp,
+        ),
+      ),
     kind: /*#__PURE__*/ zod
       ._default(
         /*#__PURE__*/ zod.literal('scheduled_activity'),
@@ -20,7 +32,13 @@ export const TimelineScheduledActivityResponse = /*#__PURE__*/ zod
       .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
     placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
     schedule_ref: /*#__PURE__*/ zod.uuid(),
-    starts_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+    starts_local_at: /*#__PURE__*/ zod
+      .string()
+      .check(
+        /*#__PURE__*/ zod.regex(
+          timelineScheduledActivityResponseStartsLocalAtRegExp,
+        ),
+      ),
     temporal_form: /*#__PURE__*/ zod
       ._default(
         /*#__PURE__*/ zod.literal('floating_local'),
@@ -31,7 +49,7 @@ export const TimelineScheduledActivityResponse = /*#__PURE__*/ zod
   })
   .check(
     /*#__PURE__*/ zod.describe(
-      'Current accepted B02-A Schedule projection for one Activity.',
+      'Current accepted floating-local Schedule projection for one Activity.',
     ),
   );
 

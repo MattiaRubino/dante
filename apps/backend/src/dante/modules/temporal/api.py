@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Annotated, Literal, cast
+from typing import Annotated, Any, Literal, cast
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request, Response
@@ -24,7 +24,12 @@ from dante.modules.temporal.activity import (
 )
 from dante.modules.temporal.application import (
     TemporalTimelineApplication,
+    TimelineAbsoluteActivityItem,
+    TimelineDateSpanActivityItem,
+    TimelineFloatingLocalActivityItem,
+    TimelineNamedZoneLocalActivityItem,
     TimelinePersistenceError,
+    TimelineScheduledActivityItem,
 )
 from dante.modules.temporal.contracts import (
     TimelineWindowQuery,
@@ -58,6 +63,13 @@ MutatingDanteContextDependency = Annotated[
     DanteContext,
     Depends(require_mutating_dante_context),
 ]
+LocalDateTimeText = Annotated[
+    str,
+    Field(
+        pattern=r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?$",
+        examples=["2026-03-29T01:50:00"],
+    ),
+]
 
 
 class TimelineWindowEmptyResponse(BaseModel):
@@ -72,7 +84,7 @@ class TimelineWindowEmptyResponse(BaseModel):
 
 
 class TimelineScheduledActivityResponse(BaseModel):
-    """Current accepted B02-A Schedule projection for one Activity."""
+    """Current accepted floating-local Schedule projection for one Activity."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -82,8 +94,85 @@ class TimelineScheduledActivityResponse(BaseModel):
     placement_material_state_ref: UUID
     title: str
     temporal_form: Literal["floating_local"] = "floating_local"
-    starts_local_at: datetime
-    ends_local_at: datetime
+    starts_local_at: LocalDateTimeText
+    ends_local_at: LocalDateTimeText
+
+
+class TimelineDateSpanActivityResponse(BaseModel):
+    """Current accepted half-open civil-date Schedule projection."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["scheduled_activity"] = "scheduled_activity"
+    activity_ref: UUID
+    schedule_ref: UUID
+    placement_material_state_ref: UUID
+    title: str
+    temporal_form: Literal["date_span"] = "date_span"
+    start_date: date
+    end_date_exclusive: date
+
+
+class TimelineNamedZoneLocalActivityResponse(BaseModel):
+    """Current named-zone intent, retained resolution, and viewing projection."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["scheduled_activity"] = "scheduled_activity"
+    activity_ref: UUID
+    schedule_ref: UUID
+    placement_material_state_ref: UUID
+    title: str
+    temporal_form: Literal["named_zone_local"] = "named_zone_local"
+    starts_local_at: LocalDateTimeText
+    ends_local_at: LocalDateTimeText
+    zone_id: str
+    resolved_start_at: datetime
+    resolved_end_at: datetime
+    display_starts_local_at: LocalDateTimeText
+    display_ends_local_at: LocalDateTimeText
+
+
+class TimelineAbsoluteActivityResponse(BaseModel):
+    """Current absolute Schedule plus request-effective-zone projection."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["scheduled_activity"] = "scheduled_activity"
+    activity_ref: UUID
+    schedule_ref: UUID
+    placement_material_state_ref: UUID
+    title: str
+    temporal_form: Literal["absolute"] = "absolute"
+    starts_at: datetime
+    ends_at: datetime
+    display_starts_local_at: LocalDateTimeText
+    display_ends_local_at: LocalDateTimeText
+
+
+class TimelineCoarseLocalPeriodActivityResponse(BaseModel):
+    """Current coarse placement with no manufactured clock boundaries."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["scheduled_activity"] = "scheduled_activity"
+    activity_ref: UUID
+    schedule_ref: UUID
+    placement_material_state_ref: UUID
+    title: str
+    temporal_form: Literal["coarse_local_period"] = "coarse_local_period"
+    local_date: date
+    period: Literal["morning", "afternoon", "evening"]
+
+
+TimelineScheduledActivityItemResponse = Annotated[
+    TimelineScheduledActivityResponse
+    | TimelineDateSpanActivityResponse
+    | TimelineNamedZoneLocalActivityResponse
+    | TimelineAbsoluteActivityResponse
+    | TimelineCoarseLocalPeriodActivityResponse,
+    Field(discriminator="temporal_form"),
+]
 
 
 class TimelineWindowItemsResponse(BaseModel):
@@ -95,7 +184,7 @@ class TimelineWindowItemsResponse(BaseModel):
     start_date: date
     end_date_exclusive: date
     effective_zone_id: str
-    items: list[TimelineScheduledActivityResponse]
+    items: list[TimelineScheduledActivityItemResponse]
 
 
 TimelineWindowResponse = TimelineWindowEmptyResponse | TimelineWindowItemsResponse
@@ -283,6 +372,61 @@ def _activity_response(activity: ActivityView, *, replayed: bool = False) -> Act
     )
 
 
+def _local_datetime_text(value: datetime) -> str:
+    return value.isoformat()
+
+
+def _timeline_item_response(
+    item: TimelineScheduledActivityItem,
+) -> TimelineScheduledActivityItemResponse:
+    common: dict[str, Any] = {
+        "activity_ref": item.activity_ref,
+        "schedule_ref": item.schedule_ref,
+        "placement_material_state_ref": item.placement_material_state_ref,
+        "title": item.title,
+    }
+    if isinstance(item, TimelineFloatingLocalActivityItem):
+        return TimelineScheduledActivityResponse(
+            **common,
+            starts_local_at=_local_datetime_text(item.starts_local_at),
+            ends_local_at=_local_datetime_text(item.ends_local_at),
+        )
+    if isinstance(item, TimelineDateSpanActivityItem):
+        return TimelineDateSpanActivityResponse(
+            **common,
+            start_date=item.start_date,
+            end_date_exclusive=item.end_date_exclusive,
+        )
+    if isinstance(item, TimelineNamedZoneLocalActivityItem):
+        return TimelineNamedZoneLocalActivityResponse(
+            **common,
+            starts_local_at=_local_datetime_text(item.starts_local_at),
+            ends_local_at=_local_datetime_text(item.ends_local_at),
+            zone_id=item.zone_id,
+            resolved_start_at=item.resolved_start_at,
+            resolved_end_at=item.resolved_end_at,
+            display_starts_local_at=_local_datetime_text(
+                item.display_starts_local_at
+            ),
+            display_ends_local_at=_local_datetime_text(item.display_ends_local_at),
+        )
+    if isinstance(item, TimelineAbsoluteActivityItem):
+        return TimelineAbsoluteActivityResponse(
+            **common,
+            starts_at=item.starts_at,
+            ends_at=item.ends_at,
+            display_starts_local_at=_local_datetime_text(
+                item.display_starts_local_at
+            ),
+            display_ends_local_at=_local_datetime_text(item.display_ends_local_at),
+        )
+    return TimelineCoarseLocalPeriodActivityResponse(
+        **common,
+        local_date=item.local_date,
+        period=item.period,
+    )
+
+
 @router.get("/timeline/window", response_model=TimelineWindowResponse)
 async def get_timeline_window(
     context: DanteContextDependency,
@@ -332,17 +476,7 @@ async def get_timeline_window(
         start_date=result.start_date,
         end_date_exclusive=result.end_date_exclusive,
         effective_zone_id=result.effective_zone_id,
-        items=[
-            TimelineScheduledActivityResponse(
-                activity_ref=item.activity_ref,
-                schedule_ref=item.schedule_ref,
-                placement_material_state_ref=item.placement_material_state_ref,
-                title=item.title,
-                starts_local_at=item.starts_local_at,
-                ends_local_at=item.ends_local_at,
-            )
-            for item in result.items
-        ],
+        items=[_timeline_item_response(item) for item in result.items],
     )
 
 
@@ -452,14 +586,15 @@ async def create_scheduled_activity(
 
     if result.replayed:
         response.status_code = 200
+    result_placement = cast(FloatingLocalIntervalPlacement, result.schedule.placement)
     return ScheduledActivityResponse(
         activity_ref=result.activity.activity_ref,
         title=result.activity.title,
         created_at=result.activity.created_at,
         schedule_ref=result.schedule.schedule_ref,
         placement_material_state_ref=result.schedule.material_state_ref,
-        starts_local_at=result.schedule.placement.starts_local_at,
-        ends_local_at=result.schedule.placement.ends_local_at,
+        starts_local_at=result_placement.starts_local_at,
+        ends_local_at=result_placement.ends_local_at,
         replayed=result.replayed,
     )
 
@@ -528,14 +663,15 @@ async def establish_activity_schedule(
 
     if result.replayed:
         response.status_code = 200
+    result_placement = cast(FloatingLocalIntervalPlacement, result.schedule.placement)
     return ScheduledActivityResponse(
         activity_ref=result.activity.activity_ref,
         title=result.activity.title,
         created_at=result.activity.created_at,
         schedule_ref=result.schedule.schedule_ref,
         placement_material_state_ref=result.schedule.material_state_ref,
-        starts_local_at=result.schedule.placement.starts_local_at,
-        ends_local_at=result.schedule.placement.ends_local_at,
+        starts_local_at=result_placement.starts_local_at,
+        ends_local_at=result_placement.ends_local_at,
         replayed=result.replayed,
     )
 
@@ -612,12 +748,13 @@ async def revise_schedule_placement(
             retryable=True,
         ) from exc
 
+    result_placement = cast(FloatingLocalIntervalPlacement, result.placement)
     return RevisedScheduleResponse(
         schedule_ref=result.schedule_ref,
         previous_placement_material_state_ref=result.previous_material_state_ref,
         placement_material_state_ref=result.material_state_ref,
-        starts_local_at=result.placement.starts_local_at,
-        ends_local_at=result.placement.ends_local_at,
+        starts_local_at=result_placement.starts_local_at,
+        ends_local_at=result_placement.ends_local_at,
         replayed=result.replayed,
     )
 
@@ -764,12 +901,13 @@ async def undo_schedule_unschedule(
             retryable=True,
         ) from exc
 
+    result_placement = cast(FloatingLocalIntervalPlacement, result.placement)
     return RestoredScheduleResponse(
         schedule_ref=result.schedule_ref,
         restored_from_placement_material_state_ref=(result.restored_from_material_state_ref),
         placement_material_state_ref=result.material_state_ref,
-        starts_local_at=result.placement.starts_local_at,
-        ends_local_at=result.placement.ends_local_at,
+        starts_local_at=result_placement.starts_local_at,
+        ends_local_at=result_placement.ends_local_at,
         replayed=result.replayed,
     )
 

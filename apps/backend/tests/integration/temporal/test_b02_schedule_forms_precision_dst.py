@@ -1,4 +1,4 @@
-"""B02-E1 proof for typed Schedule forms, precision, DST, and generic mutation."""
+"""B02-E1/E2 proof for typed Schedule mutation and truthful Timeline projection."""
 
 from __future__ import annotations
 
@@ -9,7 +9,18 @@ from uuid import UUID, uuid7
 import psycopg
 import pytest
 
+from dante.auth.contracts import Principal
+from dante.context.contracts import DanteContext
 from dante.modules.temporal.activity import TemporalActivityApplication
+from dante.modules.temporal.application import (
+    TemporalTimelineApplication,
+    TimelineAbsoluteActivityItem,
+    TimelineCoarseLocalPeriodActivityItem,
+    TimelineDateSpanActivityItem,
+    TimelineFloatingLocalActivityItem,
+    TimelineNamedZoneLocalActivityItem,
+)
+from dante.modules.temporal.contracts import TimelineWindowQuery
 from dante.modules.temporal.schedule import (
     AbsoluteIntervalPlacement,
     CoarseLocalPeriodPlacement,
@@ -25,7 +36,13 @@ from dante.modules.temporal.schedule import (
 )
 from dante.platform.database.references import NativeRef
 from dante.platform.database.runtime import create_database_runtime
-from dante.platform.time import AmbiguousLocalTimeError, NonexistentLocalTimeError
+from dante.platform.time import (
+    AmbiguousLocalTimeError,
+    NonexistentLocalTimeError,
+    TimeZoneMode,
+    TimeZonePolicy,
+    local_day_utc_bounds,
+)
 
 
 def _local(year: int, month: int, day: int, hour: int, minute: int) -> datetime:
@@ -52,6 +69,25 @@ def _seed_self_person(database: Any) -> NativeRef:
         )
         connection.commit()
     return NativeRef(person_ref)
+
+
+def _context(
+    self_person_ref: NativeRef,
+    *,
+    effective_zone_id: str = "Europe/Rome",
+) -> DanteContext:
+    now = datetime.now(UTC)
+    return DanteContext(
+        principal=Principal(
+            account_ref=uuid7(),
+            auth_session_ref=uuid7(),
+            authenticated_at=now,
+            recent_auth_at=now,
+        ),
+        self_person_ref=self_person_ref,
+        timezone_policy=TimeZonePolicy(mode=TimeZoneMode.FOLLOW_DEVICE),
+        effective_zone_id=effective_zone_id,
+    )
 
 
 def _placements() -> tuple[SchedulePlacement, ...]:
@@ -373,3 +409,248 @@ async def test_one_activity_can_own_multiple_independent_schedules(
 
     assert count_row is not None
     assert count_row[0] == 2
+
+
+@pytest.mark.postgres
+@pytest.mark.asyncio
+async def test_timeline_projects_each_current_form_with_half_open_inclusion(
+    migrated_database: Any,
+) -> None:
+    self_person_ref = _seed_self_person(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    activities = TemporalActivityApplication(runtime.session_factory)
+    schedules = TemporalScheduleApplication(runtime.session_factory)
+    timeline = TemporalTimelineApplication(runtime.session_factory)
+    included: dict[str, SchedulePlacement] = {
+        "E2 date span": DateSpanPlacement(
+            start_date=date(2026, 3, 28),
+            end_date_exclusive=date(2026, 3, 30),
+        ),
+        "E2 floating cross midnight": FloatingLocalIntervalPlacement(
+            starts_local_at=_local(2026, 3, 28, 23, 30),
+            ends_local_at=_local(2026, 3, 29, 0, 30),
+        ),
+        "E2 named gap": NamedZoneLocalIntervalPlacement(
+            starts_local_at=_local(2026, 3, 29, 1, 50),
+            ends_local_at=_local(2026, 3, 29, 2, 10),
+            zone_id="Europe/Rome",
+            disambiguation="later",
+        ),
+        "E2 absolute": AbsoluteIntervalPlacement(
+            starts_at=datetime(2026, 3, 28, 23, 30, tzinfo=UTC),
+            ends_at=datetime(2026, 3, 29, 0, 30, tzinfo=UTC),
+        ),
+        "E2 coarse": CoarseLocalPeriodPlacement(
+            local_date=date(2026, 3, 29),
+            period="morning",
+        ),
+    }
+    excluded: dict[str, SchedulePlacement] = {
+        "E2 date before": DateSpanPlacement(
+            start_date=date(2026, 3, 28),
+            end_date_exclusive=date(2026, 3, 29),
+        ),
+        "E2 date after": DateSpanPlacement(
+            start_date=date(2026, 3, 30),
+            end_date_exclusive=date(2026, 3, 31),
+        ),
+        "E2 floating before": FloatingLocalIntervalPlacement(
+            starts_local_at=_local(2026, 3, 28, 23, 0),
+            ends_local_at=_local(2026, 3, 29, 0, 0),
+        ),
+        "E2 floating after": FloatingLocalIntervalPlacement(
+            starts_local_at=_local(2026, 3, 30, 0, 0),
+            ends_local_at=_local(2026, 3, 30, 1, 0),
+        ),
+        "E2 named after": NamedZoneLocalIntervalPlacement(
+            starts_local_at=_local(2026, 3, 30, 0, 0),
+            ends_local_at=_local(2026, 3, 30, 1, 0),
+            zone_id="Europe/Rome",
+        ),
+        "E2 absolute before": AbsoluteIntervalPlacement(
+            starts_at=datetime(2026, 3, 28, 22, 0, tzinfo=UTC),
+            ends_at=datetime(2026, 3, 28, 23, 0, tzinfo=UTC),
+        ),
+        "E2 absolute after": AbsoluteIntervalPlacement(
+            starts_at=datetime(2026, 3, 29, 22, 0, tzinfo=UTC),
+            ends_at=datetime(2026, 3, 29, 23, 0, tzinfo=UTC),
+        ),
+        "E2 coarse after": CoarseLocalPeriodPlacement(
+            local_date=date(2026, 3, 30),
+            period="afternoon",
+        ),
+    }
+
+    try:
+        for index, (title, placement) in enumerate((included | excluded).items()):
+            await activities.create_activity_with_schedule(
+                self_person_ref=self_person_ref,
+                operation_id=f"operation:b02-e2:projection:{index}",
+                title=title,
+                placement=placement,
+            )
+
+        historical = await activities.create_activity_with_schedule(
+            self_person_ref=self_person_ref,
+            operation_id="operation:b02-e2:current-only:create",
+            title="E2 current only",
+            placement=DateSpanPlacement(
+                start_date=date(2026, 3, 29),
+                end_date_exclusive=date(2026, 3, 30),
+            ),
+        )
+        revised = await schedules.revise_schedule(
+            self_person_ref=self_person_ref,
+            operation_id="operation:b02-e2:current-only:revise",
+            schedule_ref=historical.schedule.schedule_ref,
+            expected_material_state_ref=historical.schedule.material_state_ref,
+            placement=FloatingLocalIntervalPlacement(
+                starts_local_at=_local(2026, 3, 29, 12, 0),
+                ends_local_at=_local(2026, 3, 29, 13, 0),
+            ),
+        )
+
+        window = await timeline.read_window(
+            query=TimelineWindowQuery(
+                start_date=date(2026, 3, 29),
+                end_date_exclusive=date(2026, 3, 30),
+            ),
+            context=_context(self_person_ref),
+        )
+    finally:
+        await runtime.dispose()
+
+    by_title = {item.title: item for item in window.items}
+    assert set(by_title) == {*included, "E2 current only"}
+    assert len(window.items) == len(by_title)
+
+    date_item = by_title["E2 date span"]
+    assert isinstance(date_item, TimelineDateSpanActivityItem)
+    assert date_item.start_date == date(2026, 3, 28)
+    assert date_item.end_date_exclusive == date(2026, 3, 30)
+    assert not hasattr(date_item, "starts_local_at")
+
+    floating_item = by_title["E2 floating cross midnight"]
+    assert isinstance(floating_item, TimelineFloatingLocalActivityItem)
+    assert floating_item.starts_local_at == _local(2026, 3, 28, 23, 30)
+    assert floating_item.ends_local_at == _local(2026, 3, 29, 0, 30)
+
+    named_item = by_title["E2 named gap"]
+    assert isinstance(named_item, TimelineNamedZoneLocalActivityItem)
+    assert named_item.starts_local_at == _local(2026, 3, 29, 1, 50)
+    assert named_item.ends_local_at == _local(2026, 3, 29, 2, 10)
+    assert named_item.resolved_start_at == datetime(2026, 3, 29, 0, 50, tzinfo=UTC)
+    assert named_item.resolved_end_at == datetime(2026, 3, 29, 1, 10, tzinfo=UTC)
+    assert named_item.display_ends_local_at == _local(2026, 3, 29, 3, 10)
+
+    absolute_item = by_title["E2 absolute"]
+    assert isinstance(absolute_item, TimelineAbsoluteActivityItem)
+    assert absolute_item.display_starts_local_at == _local(2026, 3, 29, 0, 30)
+    assert absolute_item.display_ends_local_at == _local(2026, 3, 29, 1, 30)
+
+    coarse_item = by_title["E2 coarse"]
+    assert isinstance(coarse_item, TimelineCoarseLocalPeriodActivityItem)
+    assert coarse_item.local_date == date(2026, 3, 29)
+    assert coarse_item.period == "morning"
+    assert not hasattr(coarse_item, "starts_local_at")
+
+    current_item = by_title["E2 current only"]
+    assert isinstance(current_item, TimelineFloatingLocalActivityItem)
+    assert current_item.placement_material_state_ref == revised.material_state_ref
+
+
+@pytest.mark.postgres
+@pytest.mark.asyncio
+async def test_timeline_uses_real_dst_day_bounds_and_effective_display_zone(
+    migrated_database: Any,
+) -> None:
+    spring_start, spring_end = local_day_utc_bounds(
+        date(2026, 3, 29),
+        "Europe/Rome",
+    )
+    autumn_start, autumn_end = local_day_utc_bounds(
+        date(2026, 10, 25),
+        "Europe/Rome",
+    )
+    assert (spring_end - spring_start).total_seconds() == 23 * 60 * 60
+    assert (autumn_end - autumn_start).total_seconds() == 25 * 60 * 60
+
+    self_person_ref = _seed_self_person(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    activities = TemporalActivityApplication(runtime.session_factory)
+    timeline = TemporalTimelineApplication(runtime.session_factory)
+    dst_placements: dict[str, SchedulePlacement] = {
+        "E2 autumn final hour": AbsoluteIntervalPlacement(
+            starts_at=datetime(2026, 10, 25, 22, 30, tzinfo=UTC),
+            ends_at=datetime(2026, 10, 25, 23, 0, tzinfo=UTC),
+        ),
+        "E2 autumn boundary after": AbsoluteIntervalPlacement(
+            starts_at=datetime(2026, 10, 25, 23, 0, tzinfo=UTC),
+            ends_at=datetime(2026, 10, 25, 23, 30, tzinfo=UTC),
+        ),
+        "E2 overlap named": NamedZoneLocalIntervalPlacement(
+            starts_local_at=_local(2026, 10, 25, 2, 10),
+            ends_local_at=_local(2026, 10, 25, 2, 40),
+            zone_id="Europe/Rome",
+            disambiguation="later",
+        ),
+        "E2 zone-sensitive absolute": AbsoluteIntervalPlacement(
+            starts_at=datetime(2026, 10, 25, 1, 10, tzinfo=UTC),
+            ends_at=datetime(2026, 10, 25, 1, 40, tzinfo=UTC),
+        ),
+    }
+
+    try:
+        for index, (title, placement) in enumerate(dst_placements.items()):
+            await activities.create_activity_with_schedule(
+                self_person_ref=self_person_ref,
+                operation_id=f"operation:b02-e2:dst:{index}",
+                title=title,
+                placement=placement,
+            )
+
+        rome_window = await timeline.read_window(
+            query=TimelineWindowQuery(
+                start_date=date(2026, 10, 25),
+                end_date_exclusive=date(2026, 10, 26),
+            ),
+            context=_context(self_person_ref, effective_zone_id="Europe/Rome"),
+        )
+        new_york_window = await timeline.read_window(
+            query=TimelineWindowQuery(
+                start_date=date(2026, 10, 24),
+                end_date_exclusive=date(2026, 10, 25),
+            ),
+            context=_context(self_person_ref, effective_zone_id="America/New_York"),
+        )
+    finally:
+        await runtime.dispose()
+
+    rome_by_title = {item.title: item for item in rome_window.items}
+    assert set(rome_by_title) == {
+        "E2 autumn final hour",
+        "E2 overlap named",
+        "E2 zone-sensitive absolute",
+    }
+    final_hour = rome_by_title["E2 autumn final hour"]
+    assert isinstance(final_hour, TimelineAbsoluteActivityItem)
+    assert final_hour.display_starts_local_at == _local(2026, 10, 25, 23, 30)
+    assert final_hour.display_ends_local_at == _local(2026, 10, 26, 0, 0)
+
+    overlap = rome_by_title["E2 overlap named"]
+    assert isinstance(overlap, TimelineNamedZoneLocalActivityItem)
+    assert overlap.resolved_start_at == datetime(2026, 10, 25, 1, 10, tzinfo=UTC)
+    assert overlap.display_starts_local_at == _local(2026, 10, 25, 2, 10)
+
+    new_york_by_title = {item.title: item for item in new_york_window.items}
+    assert set(new_york_by_title) == {
+        "E2 overlap named",
+        "E2 zone-sensitive absolute",
+    }
+    for item in new_york_by_title.values():
+        assert isinstance(
+            item,
+            TimelineAbsoluteActivityItem | TimelineNamedZoneLocalActivityItem,
+        )
+        assert item.display_starts_local_at == _local(2026, 10, 24, 21, 10)
+        assert item.display_ends_local_at == _local(2026, 10, 24, 21, 40)

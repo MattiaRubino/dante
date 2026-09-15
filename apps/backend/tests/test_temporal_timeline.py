@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import UTC, date, datetime, timedelta
-from typing import cast
+from typing import Any, cast
 from uuid import UUID
 
 import pytest
@@ -11,9 +11,18 @@ from fastapi import Response
 
 from dante.auth.contracts import Principal
 from dante.context.contracts import DanteContext
-from dante.modules.temporal.api import get_timeline_window
+from dante.modules.temporal.api import (
+    TimelineNamedZoneLocalActivityResponse,
+    TimelineScheduledActivityResponse,
+    get_timeline_window,
+)
 from dante.modules.temporal.application import (
     TemporalTimelineApplication,
+    TimelineAbsoluteActivityItem,
+    TimelineCoarseLocalPeriodActivityItem,
+    TimelineDateSpanActivityItem,
+    TimelineFloatingLocalActivityItem,
+    TimelineNamedZoneLocalActivityItem,
     TimelineWindowResult,
     empty_timeline_window_result,
 )
@@ -22,13 +31,16 @@ from dante.modules.temporal.contracts import (
     TimelineWindowQuery,
     TimelineWindowValidationError,
 )
-from dante.platform.database.references import NativeRef
+from dante.platform.database.references import MaterialStateRef, NativeRef, ScopedRecordRef
 from dante.platform.http.problem import ProblemError
 from dante.platform.time import TimeZoneMode, TimeZonePolicy
 
 _ACCOUNT_REF = UUID("00000000-0000-4000-8000-000000000001")
 _SESSION_REF = UUID("00000000-0000-4000-8000-000000000002")
 _SELF_PERSON_REF = NativeRef(UUID("0194f7c2-7b6a-7abc-8def-0123456789ab"))
+_ACTIVITY_REF = NativeRef(UUID("0199a8c0-5e71-7bc0-8ad0-a2f403f5617d"))
+_SCHEDULE_REF = ScopedRecordRef(UUID("0199a8c0-6e72-7cd1-9be1-b3f51406728e"))
+_STATE_REF = MaterialStateRef(UUID("0199a8c0-7e73-7de2-8cf2-c4062517839f"))
 
 
 def _context(*, effective_zone_id: str = "Europe/Rome") -> DanteContext:
@@ -104,6 +116,30 @@ def test_empty_projection_binds_authenticated_self_and_effective_zone() -> None:
     assert result.items == ()
 
 
+def test_local_wall_clock_transport_forbids_fabricated_offsets() -> None:
+    floating_schema = TimelineScheduledActivityResponse.model_json_schema()
+    named_schema = TimelineNamedZoneLocalActivityResponse.model_json_schema()
+
+    for schema, field_names in (
+        (floating_schema, ("starts_local_at", "ends_local_at")),
+        (
+            named_schema,
+            (
+                "starts_local_at",
+                "ends_local_at",
+                "display_starts_local_at",
+                "display_ends_local_at",
+            ),
+        ),
+    ):
+        properties = schema["properties"]
+        for field_name in field_names:
+            field_schema = properties[field_name]
+            assert field_schema["type"] == "string"
+            assert "pattern" in field_schema
+            assert "format" not in field_schema
+
+
 @pytest.mark.asyncio
 async def test_api_returns_truthful_empty_window_without_exposing_internal_owner_ref() -> None:
     context = _context()
@@ -129,6 +165,89 @@ async def test_api_returns_truthful_empty_window_without_exposing_internal_owner
         "effective_zone_id": "Europe/Rome",
     }
     assert response.headers["Cache-Control"] == "no-store"
+
+
+@pytest.mark.asyncio
+async def test_api_emits_each_timeline_form_without_flattening_coarse_or_dates() -> None:
+    context = _context()
+    query = TimelineWindowQuery(
+        start_date=date(2026, 10, 25),
+        end_date_exclusive=date(2026, 10, 26),
+    )
+    common: dict[str, Any] = {
+        "activity_ref": _ACTIVITY_REF,
+        "schedule_ref": _SCHEDULE_REF,
+        "placement_material_state_ref": _STATE_REF,
+        "title": "Forma temporale",
+    }
+    result = TimelineWindowResult(
+        start_date=query.start_date,
+        end_date_exclusive=query.end_date_exclusive,
+        effective_zone_id="Europe/Rome",
+        self_person_ref=context.self_person_ref,
+        items=(
+            TimelineDateSpanActivityItem(
+                **common,
+                start_date=date(2026, 10, 25),
+                end_date_exclusive=date(2026, 10, 27),
+            ),
+            TimelineFloatingLocalActivityItem(
+                **common,
+                starts_local_at=datetime(2026, 10, 25, 9, 0),  # noqa: DTZ001
+                ends_local_at=datetime(2026, 10, 25, 10, 0),  # noqa: DTZ001
+            ),
+            TimelineNamedZoneLocalActivityItem(
+                **common,
+                starts_local_at=datetime(2026, 10, 25, 2, 10),  # noqa: DTZ001
+                ends_local_at=datetime(2026, 10, 25, 2, 40),  # noqa: DTZ001
+                zone_id="Europe/Rome",
+                resolved_start_at=datetime(2026, 10, 25, 1, 10, tzinfo=UTC),
+                resolved_end_at=datetime(2026, 10, 25, 1, 40, tzinfo=UTC),
+                display_starts_local_at=datetime(2026, 10, 25, 2, 10),  # noqa: DTZ001
+                display_ends_local_at=datetime(2026, 10, 25, 2, 40),  # noqa: DTZ001
+            ),
+            TimelineAbsoluteActivityItem(
+                **common,
+                starts_at=datetime(2026, 10, 24, 22, 30, tzinfo=UTC),
+                ends_at=datetime(2026, 10, 24, 23, 30, tzinfo=UTC),
+                display_starts_local_at=datetime(2026, 10, 25, 0, 30),  # noqa: DTZ001
+                display_ends_local_at=datetime(2026, 10, 25, 1, 30),  # noqa: DTZ001
+            ),
+            TimelineCoarseLocalPeriodActivityItem(
+                **common,
+                local_date=date(2026, 10, 25),
+                period="afternoon",
+            ),
+        ),
+    )
+
+    api_result = await get_timeline_window(
+        context=context,
+        application=_application(result),
+        response=Response(),
+        start_date=query.start_date,
+        end_date_exclusive=query.end_date_exclusive,
+    )
+    payload = api_result.model_dump(mode="json")
+
+    assert payload["kind"] == "window"
+    items = payload["items"]
+    assert [item["temporal_form"] for item in items] == [
+        "date_span",
+        "floating_local",
+        "named_zone_local",
+        "absolute",
+        "coarse_local_period",
+    ]
+    assert items[0]["start_date"] == "2026-10-25"
+    assert "starts_local_at" not in items[0]
+    assert items[1]["starts_local_at"] == "2026-10-25T09:00:00"
+    assert items[2]["resolved_start_at"] == "2026-10-25T01:10:00Z"
+    assert items[2]["display_starts_local_at"] == "2026-10-25T02:10:00"
+    assert items[3]["starts_at"] == "2026-10-24T22:30:00Z"
+    assert items[3]["display_starts_local_at"] == "2026-10-25T00:30:00"
+    assert items[4]["period"] == "afternoon"
+    assert "starts_local_at" not in items[4]
 
 
 @pytest.mark.asyncio
