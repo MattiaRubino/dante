@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational Vertical — Semantic Work Map
 
-- **Status:** FROZEN SEMANTIC MAP / LIVE IMPLEMENTATION LEDGER — 2026-09-07
+- **Status:** FROZEN SEMANTIC MAP / LIVE IMPLEMENTATION LEDGER — reconciled 2026-09-15
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main anchor at semantic freeze:** `981f6cf9ad985d0b811bc4172c12a7529fbc9b15`
 - **Roadmap:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
@@ -3367,36 +3367,44 @@ B00/B01 closure evidence is anchored by exact-head reconciliation run `342616077
 - ✅ **[SCH-001]** Re-open Schedule authority/current CP6 placement tables/views/validators before implementation. — Deep-read completed and frozen in `timeline-temporal-operational-b02-execution-plan.md`; B02 reuses the existing CP6 Schedule owner/placement/current/history machinery rather than creating a competing model.
 - ⬜ **[SCH-002]** Preserve subject eligibility Activity/Event/Occurrence; first activate Activity path.
 - ⬜ **[SCH-003]** Implement/consume date-span placement correctly.
-- ⬜ **[SCH-004]** Implement/consume floating-local placement correctly.
+- ✅ **[SCH-004]** Implement/consume floating-local placement correctly. — Floating-local same-day placement is implemented and proven by B02-A/B manual flow plus targeted backend/frontend tests.
 - ⬜ **[SCH-005]** Implement/consume named-zone placement correctly.
 - ⬜ **[SCH-006]** Implement/consume absolute placement correctly.
 - ⬜ **[SCH-007]** Preserve coarse accepted placement precision without manufactured timestamps.
-- ⬜ **[SCH-008]** Preserve Schedule absence as valid state.
+- ✅ **[SCH-008]** Preserve Schedule absence as valid state. — Unschedule leaves the Activity identity/history intact with no current placement; Planning Tray and reload proved this.
 - ⬜ **[SCH-009]** Preserve possible 0..N planned placements; do not hard-code universal 1:1.
-- ⬜ **[SCH-010]** Implement accepted Schedule creation for Activity.
-- ⬜ **[SCH-011]** Implement Schedule MaterialState revision.
-- ⬜ **[SCH-012]** Implement explicit current accepted Schedule binding.
-- ⬜ **[SCH-013]** Preserve Schedule history/original expectation.
-- ⬜ **[SCH-014]** Implement expected-state concurrency check.
-- ⬜ **[SCH-015]** Implement Schedule mutation idempotency.
-- ⬜ **[SCH-016]** Implement real Planning Tray→Timeline placement.
+- ✅ **[SCH-010]** Implement accepted Schedule creation for Activity. — Activity Schedule creation is proven by the real create/place flow and PostgreSQL-backed targeted tests.
+- ✅ **[SCH-011]** Implement Schedule MaterialState revision. — Governed floating-local revision creates a new current placement state; B02-B/C automated proof and manual revision passed.
+- ✅ **[SCH-012]** Implement explicit current accepted Schedule binding. — Current binding is explicit and Timeline renders one canonical current item after authoritative reload.
+- ✅ **[SCH-013]** Preserve Schedule history/original expectation. — Schedule history/original placement survives revision, unschedule and guarded Undo; direct PostgreSQL proof passed.
+- ✅ **[SCH-014]** Implement expected-state concurrency check. — Expected-state conflicts are proven by stale revision/unschedule and stale two-tab manual conflict.
+- ✅ **[SCH-015]** Implement Schedule mutation idempotency. — Operation replay/idempotency and reuse conflicts are covered by targeted PostgreSQL/application tests.
+- ✅ **[SCH-016]** Implement real Planning Tray→Timeline placement. — Existing unplaced Activity placement preserves the same identity and removes it from Planning Tray after canonical refresh.
 - ⬜ **[SCH-017]** Implement real Timeline drag earlier/later.
-- ⬜ **[SCH-018]** Implement supported duration/start/end adjustment without conflating Actual.
-- ⬜ **[SCH-019]** Implement anchored time editor against real Schedule mutation.
-- ⬜ **[SCH-020]** Implement Activity unschedule back to Planning Tray where valid.
-- ⬜ **[SCH-021]** Implement guarded Undo through a new monotonic state/revision.
+- ✅ **[SCH-018]** Implement supported duration/start/end adjustment without conflating Actual. — Supported same-day floating-local start/end and duration adjustment passed manual and frontend/backend tests; broader forms remain separate.
+- ✅ **[SCH-019]** Implement anchored time editor against real Schedule mutation. — Anchored time editor revision passed manual B02-B and frontend contract tests.
+- ✅ **[SCH-020]** Implement Activity unschedule back to Planning Tray where valid. — Unschedule to Planning Tray passed with reload, conflict protection and database-outage truthfulness.
+- ✅ **[SCH-021]** Implement guarded Undo through a new monotonic state/revision. — Guarded Undo restored a new accepted current state and survived reload; targeted PostgreSQL and manual proof passed.
 - ⬜ **[SCH-022]** Preserve explicit in-progress expectation change as Schedule revision.
 - ⬜ **[SCH-023]** Preserve early/late/overrun reality as Session/Actual, not automatic Schedule rewrite.
-- ⬜ **[SCH-024]** Implement initial temporal range/local-day query for scheduled Activity.
-- ⬜ **[B02-T01]** Schedule form/validator tests.
-- ⬜ **[B02-T02]** Schedule current/history direct PostgreSQL tests.
-- ⬜ **[B02-T03]** Reschedule/unschedule/Undo application tests.
-- ⬜ **[B02-T04]** Stale revision/idempotency conflict tests.
+- ✅ **[SCH-024]** Implement initial temporal range/local-day query for scheduled Activity. — The authenticated local-date Timeline window for the exposed floating-local Activity path is proven by backend/frontend integration tests and manual reload.
+- ✅ **[B02-T01]** Schedule form/validator tests. — Targeted Schedule validation/application tests passed.
+- ✅ **[B02-T02]** Schedule current/history direct PostgreSQL tests. — Targeted real PostgreSQL current/history/unschedule/Undo proof passed: 2 tests.
+- ✅ **[B02-T03]** Reschedule/unschedule/Undo application tests. — Schedule revision, unschedule and guarded Undo application tests passed.
+- ✅ **[B02-T04]** Stale revision/idempotency conflict tests. — Stale basis, idempotency and cross-self conflict tests passed.
 - ⬜ **[B02-T05]** DST/local-day tests applicable to exposed Schedule forms.
-- ⬜ **[B02-T06]** Timeline drag/time-editor/Planning Tray frontend regressions.
+- ✅ **[B02-T06]** Timeline drag/time-editor/Planning Tray frontend regressions. — Frontend Timeline/Planning Tray/time-editor/Undo regressions and the real browser flow passed.
 - ⬜ **[B02-T07]** Firefox T1 critical interaction regressions.
 - ⬜ **[B02-T08]** E2E create→place→move→unschedule/reload/history test.
-- ⬜ **[B02-T09]** Manual `userTest` Schedule/Undo/conflict acceptance.
+- ✅ **[B02-T09]** Manual `userTest` Schedule/Undo/conflict acceptance. — Manual isolated full-stack B02 userTest A-F was approved on 2026-09-15.
+
+
+
+### B02-A through B02-D evidence reconciliation — 2026-09-15
+
+The exact supported B02 slice is now evidence-backed: same-day floating-local Activity Schedule creation, Planning Tray placement, governed revision, unschedule, guarded Undo, authoritative reload, stale two-tab conflict rejection and PostgreSQL-outage truthfulness. Automated targeted PostgreSQL proof passed (2 passed), and the isolated browser userTest A-F was approved.
+
+The B02 block remains 🟨 IN PROGRESS. Date-span, named-zone, absolute, coarse-precision, DST, Event/Occurrence, drag-specific and B02-E form-completeness items remain open and are not promoted by this reconciliation. CI remains deferred by instruction.
 
 ## 34.5 B03 — Event Core
 
