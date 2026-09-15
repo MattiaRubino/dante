@@ -297,12 +297,10 @@ class TemporalActivityApplication:
                 database_session.begin(),
             ):
                 activity_row = await database_session.scalar(
-                    select(ActivityIntentionRow)
-                    .where(
+                    select(ActivityIntentionRow).where(
                         ActivityIntentionRow.activity_ref == activity_ref,
                         ActivityIntentionRow.self_person_ref == self_person_ref,
                     )
-                    .with_for_update()
                 )
                 if activity_row is None:
                     raise ActivityNotFoundError()

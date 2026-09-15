@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Literal, cast
 from uuid import UUID
@@ -91,7 +91,9 @@ class NamedZoneLocalIntervalPlacement:
     starts_local_at: datetime
     ends_local_at: datetime
     zone_id: str
-    disambiguation: LocalTimeDisambiguation = "reject"
+    # Acceptance policy participates in operation fingerprints, while canonical
+    # material equality is carried by local values, zone, and resolved instants.
+    disambiguation: LocalTimeDisambiguation = field(default="reject", compare=False)
     resolved_start_at: datetime | None = None
     resolved_end_at: datetime | None = None
 
