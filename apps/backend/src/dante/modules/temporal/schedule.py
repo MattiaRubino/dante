@@ -107,7 +107,7 @@ class NamedZoneLocalIntervalPlacement:
         if self.disambiguation not in {"reject", "earlier", "later"}:
             raise ScheduleInputError("Named-zone disambiguation policy is not supported.")
         try:
-            zone = validate_iana_timezone(self.zone_id)
+            validate_iana_timezone(self.zone_id)
         except ValueError as exc:
             raise ScheduleInputError(str(exc)) from exc
         resolved_start = self.resolved_start_at
@@ -133,12 +133,16 @@ class NamedZoneLocalIntervalPlacement:
         else:
             resolved_start = normalize_utc_instant(resolved_start)
             resolved_end = normalize_utc_instant(cast(datetime, resolved_end))
-            if (
-                resolved_start.astimezone(zone).replace(tzinfo=None) != self.starts_local_at
-                or resolved_end.astimezone(zone).replace(tzinfo=None) != self.ends_local_at
+            if resolved_start not in _accepted_named_zone_resolutions(
+                self.starts_local_at,
+                self.zone_id,
+            ) or resolved_end not in _accepted_named_zone_resolutions(
+                self.ends_local_at,
+                self.zone_id,
             ):
                 raise ScheduleInputError(
-                    "Named-zone resolved instants must round-trip to the stored local values."
+                    "Named-zone resolved instants must match an accepted explicit "
+                    "resolution of the stored local values."
                 )
         if resolved_end <= resolved_start:
             raise ScheduleInputError(
@@ -146,6 +150,16 @@ class NamedZoneLocalIntervalPlacement:
             )
         object.__setattr__(self, "resolved_start_at", resolved_start)
         object.__setattr__(self, "resolved_end_at", resolved_end)
+
+
+def _accepted_named_zone_resolutions(local: datetime, zone_id: str) -> frozenset[datetime]:
+    """Return the exact earlier/later candidates, including both sides of a DST gap."""
+    return frozenset(
+        {
+            resolve_local_time(local, zone_id, disambiguation="earlier"),
+            resolve_local_time(local, zone_id, disambiguation="later"),
+        }
+    )
 
 
 @dataclass(frozen=True, slots=True)

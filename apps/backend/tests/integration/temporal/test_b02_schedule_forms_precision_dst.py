@@ -159,6 +159,24 @@ def test_named_zone_dst_requires_explicit_disambiguation_and_retains_resolution(
     assert explicit_gap.resolved_start_at == datetime(2026, 3, 29, 0, 50, tzinfo=UTC)
     assert explicit_gap.resolved_end_at == datetime(2026, 3, 29, 1, 10, tzinfo=UTC)
 
+    retained_gap = NamedZoneLocalIntervalPlacement(
+        starts_local_at=explicit_gap.starts_local_at,
+        ends_local_at=explicit_gap.ends_local_at,
+        zone_id=explicit_gap.zone_id,
+        resolved_start_at=explicit_gap.resolved_start_at,
+        resolved_end_at=explicit_gap.resolved_end_at,
+    )
+    assert retained_gap == explicit_gap
+
+    with pytest.raises(ScheduleInputError, match="accepted explicit resolution"):
+        NamedZoneLocalIntervalPlacement(
+            starts_local_at=explicit_gap.starts_local_at,
+            ends_local_at=explicit_gap.ends_local_at,
+            zone_id=explicit_gap.zone_id,
+            resolved_start_at=explicit_gap.resolved_start_at,
+            resolved_end_at=datetime(2026, 3, 29, 1, 11, tzinfo=UTC),
+        )
+
     earlier = NamedZoneLocalIntervalPlacement(
         starts_local_at=_local(2026, 10, 25, 2, 10),
         ends_local_at=_local(2026, 10, 25, 2, 40),
