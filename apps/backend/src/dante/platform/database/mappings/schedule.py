@@ -4,6 +4,7 @@ from datetime import date, datetime
 
 from sqlalchemy import (
     CheckConstraint,
+    Date,
     DateTime,
     ForeignKeyConstraint,
     Index,
@@ -328,7 +329,9 @@ class SchedulePlacementStateRow(Base):
     __tablename__ = "schedule_placement_state"
     __table_args__ = (
         CheckConstraint(
-            "temporal_form_code IN ('date_span','floating_local','named_zone_local','absolute')",
+            "temporal_form_code IN "
+            "('date_span','floating_local','named_zone_local','absolute',"
+            "'coarse_local_period')",
             name="temporal_form",
         ),
         ForeignKeyConstraint(
@@ -495,6 +498,31 @@ class SchedulePlacementAbsoluteStateRow(Base):
     extent_code: Mapped[str] = mapped_column(Text, nullable=False)
     starts_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     ends_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class SchedulePlacementCoarseLocalPeriodStateRow(Base):
+    """Lossless coarse civil-date period without invented clock boundaries."""
+
+    __tablename__ = "schedule_placement_coarse_local_period_state"
+    __table_args__ = (
+        CheckConstraint(
+            "period_code IN ('morning','afternoon','evening')",
+            name="period",
+        ),
+        ForeignKeyConstraint(
+            ["material_state_ref"],
+            ["dante.schedule_placement_state.material_state_ref"],
+            name="fk_schedule_placement_coarse_local_period_state_placement_state",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
+        ),
+    )
+
+    material_state_ref: Mapped[MaterialStateRef] = mapped_column(primary_key=True)
+    local_date: Mapped[date] = mapped_column(Date, nullable=False)
+    period_code: Mapped[str] = mapped_column(Text, nullable=False)
 
 
 class SchedulePlacementCurrentHistoryRow(Base):

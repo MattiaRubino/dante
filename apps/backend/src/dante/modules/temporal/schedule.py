@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
+from typing import Literal, cast
 from uuid import UUID
 
 from sqlalchemy import text
@@ -19,6 +21,7 @@ from dante.platform.database.references import (
     new_material_state_ref,
     new_scoped_record_ref,
 )
+from dante.platform.time import normalize_utc_instant, resolve_local_time, validate_iana_timezone
 
 
 class ScheduleInputError(ValueError):
@@ -49,9 +52,25 @@ class SchedulePersistenceError(RuntimeError):
     """Canonical Schedule persistence could not complete safely."""
 
 
+CoarseLocalPeriod = Literal["morning", "afternoon", "evening"]
+LocalTimeDisambiguation = Literal["reject", "earlier", "later"]
+
+
+@dataclass(frozen=True, slots=True)
+class DateSpanPlacement:
+    """Finite half-open civil-date placement; never an inferred 24-hour interval."""
+
+    start_date: date
+    end_date_exclusive: date
+
+    def __post_init__(self) -> None:
+        if self.end_date_exclusive <= self.start_date:
+            raise ScheduleInputError("Schedule date-span end must be after its start.")
+
+
 @dataclass(frozen=True, slots=True)
 class FloatingLocalIntervalPlacement:
-    """Lossless floating-local interval accepted by the first B02 slice."""
+    """Offset-free local wall-clock interval with no canonical timezone."""
 
     starts_local_at: datetime
     ends_local_at: datetime
@@ -66,13 +85,115 @@ class FloatingLocalIntervalPlacement:
 
 
 @dataclass(frozen=True, slots=True)
+class NamedZoneLocalIntervalPlacement:
+    """Local wall-clock intent plus IANA frame and retained resolved instants."""
+
+    starts_local_at: datetime
+    ends_local_at: datetime
+    zone_id: str
+    disambiguation: LocalTimeDisambiguation = "reject"
+    resolved_start_at: datetime | None = None
+    resolved_end_at: datetime | None = None
+
+    def __post_init__(self) -> None:
+        if self.starts_local_at.tzinfo is not None or self.ends_local_at.tzinfo is not None:
+            raise ScheduleInputError(
+                "Named-zone Schedule local timestamps must not contain an offset."
+            )
+        if self.ends_local_at <= self.starts_local_at:
+            raise ScheduleInputError("Schedule end must be after Schedule start.")
+        if self.disambiguation not in {"reject", "earlier", "later"}:
+            raise ScheduleInputError("Named-zone disambiguation policy is not supported.")
+        try:
+            zone = validate_iana_timezone(self.zone_id)
+        except ValueError as exc:
+            raise ScheduleInputError(str(exc)) from exc
+        resolved_start = self.resolved_start_at
+        resolved_end = self.resolved_end_at
+        if (resolved_start is None) is not (resolved_end is None):
+            raise ScheduleInputError(
+                "Named-zone Schedule resolution must contain both interval boundaries."
+            )
+        if resolved_start is None:
+            try:
+                resolved_start = resolve_local_time(
+                    self.starts_local_at,
+                    self.zone_id,
+                    disambiguation=self.disambiguation,
+                )
+                resolved_end = resolve_local_time(
+                    self.ends_local_at,
+                    self.zone_id,
+                    disambiguation=self.disambiguation,
+                )
+            except ValueError as exc:
+                raise ScheduleInputError(str(exc)) from exc
+        else:
+            resolved_start = normalize_utc_instant(resolved_start)
+            resolved_end = normalize_utc_instant(cast(datetime, resolved_end))
+            if (
+                resolved_start.astimezone(zone).replace(tzinfo=None) != self.starts_local_at
+                or resolved_end.astimezone(zone).replace(tzinfo=None) != self.ends_local_at
+            ):
+                raise ScheduleInputError(
+                    "Named-zone resolved instants must round-trip to the stored local values."
+                )
+        if resolved_end <= resolved_start:
+            raise ScheduleInputError(
+                "Named-zone resolved Schedule end must be after its resolved start."
+            )
+        object.__setattr__(self, "resolved_start_at", resolved_start)
+        object.__setattr__(self, "resolved_end_at", resolved_end)
+
+
+@dataclass(frozen=True, slots=True)
+class AbsoluteIntervalPlacement:
+    """Globally fixed instant interval normalized to UTC."""
+
+    starts_at: datetime
+    ends_at: datetime
+
+    def __post_init__(self) -> None:
+        try:
+            starts_at = normalize_utc_instant(self.starts_at)
+            ends_at = normalize_utc_instant(self.ends_at)
+        except ValueError as exc:
+            raise ScheduleInputError(str(exc)) from exc
+        if ends_at <= starts_at:
+            raise ScheduleInputError("Absolute Schedule end must be after Schedule start.")
+        object.__setattr__(self, "starts_at", starts_at)
+        object.__setattr__(self, "ends_at", ends_at)
+
+
+@dataclass(frozen=True, slots=True)
+class CoarseLocalPeriodPlacement:
+    """Civil date plus named coarse period without invented clock boundaries."""
+
+    local_date: date
+    period: CoarseLocalPeriod
+
+    def __post_init__(self) -> None:
+        if self.period not in {"morning", "afternoon", "evening"}:
+            raise ScheduleInputError("Coarse local Schedule period is not supported.")
+
+
+type SchedulePlacement = (
+    DateSpanPlacement
+    | FloatingLocalIntervalPlacement
+    | NamedZoneLocalIntervalPlacement
+    | AbsoluteIntervalPlacement
+    | CoarseLocalPeriodPlacement
+)
+
+
+@dataclass(frozen=True, slots=True)
 class EstablishedScheduleView:
     """Canonical accepted Schedule identity plus its current placement state."""
 
     subject_native_ref: NativeRef
     schedule_ref: ScopedRecordRef
     material_state_ref: MaterialStateRef
-    placement: FloatingLocalIntervalPlacement
+    placement: SchedulePlacement
     created_at: datetime
     replayed: bool
 
@@ -84,7 +205,7 @@ class RevisedScheduleView:
     schedule_ref: ScopedRecordRef
     previous_material_state_ref: MaterialStateRef
     material_state_ref: MaterialStateRef
-    placement: FloatingLocalIntervalPlacement
+    placement: SchedulePlacement
     created_at: datetime
     replayed: bool
 
@@ -107,7 +228,7 @@ class RestoredScheduleView:
     schedule_ref: ScopedRecordRef
     restored_from_material_state_ref: MaterialStateRef
     material_state_ref: MaterialStateRef
-    placement: FloatingLocalIntervalPlacement
+    placement: SchedulePlacement
     created_at: datetime
     replayed: bool
 
@@ -119,46 +240,94 @@ def _normalize_operation_id(value: str) -> str:
     return normalized
 
 
+def _placement_payload(placement: SchedulePlacement) -> dict[str, str]:
+    if isinstance(placement, DateSpanPlacement):
+        return {
+            "kind": "date_span",
+            "start_date": placement.start_date.isoformat(),
+            "end_date_exclusive": placement.end_date_exclusive.isoformat(),
+        }
+    if isinstance(placement, FloatingLocalIntervalPlacement):
+        return {
+            "kind": "floating_local_interval",
+            "starts_local_at": placement.starts_local_at.isoformat(timespec="microseconds"),
+            "ends_local_at": placement.ends_local_at.isoformat(timespec="microseconds"),
+        }
+    if isinstance(placement, NamedZoneLocalIntervalPlacement):
+        resolved_start_at = cast(datetime, placement.resolved_start_at)
+        resolved_end_at = cast(datetime, placement.resolved_end_at)
+        return {
+            "kind": "named_zone_local_interval",
+            "starts_local_at": placement.starts_local_at.isoformat(timespec="microseconds"),
+            "ends_local_at": placement.ends_local_at.isoformat(timespec="microseconds"),
+            "zone_id": placement.zone_id,
+            "resolved_start_at": resolved_start_at.isoformat(timespec="microseconds"),
+            "resolved_end_at": resolved_end_at.isoformat(timespec="microseconds"),
+        }
+    if isinstance(placement, AbsoluteIntervalPlacement):
+        return {
+            "kind": "absolute_interval",
+            "starts_at": placement.starts_at.isoformat(timespec="microseconds"),
+            "ends_at": placement.ends_at.isoformat(timespec="microseconds"),
+        }
+    return {
+        "kind": "coarse_local_period",
+        "local_date": placement.local_date.isoformat(),
+        "period": placement.period,
+    }
+
+
+def _fingerprint_payload(placement: SchedulePlacement) -> dict[str, str]:
+    if isinstance(placement, FloatingLocalIntervalPlacement):
+        return {
+            "extent": "interval",
+            "form": "floating_local",
+            "starts_local_at": placement.starts_local_at.isoformat(timespec="microseconds"),
+            "ends_local_at": placement.ends_local_at.isoformat(timespec="microseconds"),
+        }
+    payload = _placement_payload(placement)
+    if isinstance(placement, NamedZoneLocalIntervalPlacement):
+        payload["disambiguation"] = placement.disambiguation
+    return payload
+
+
+def _hash(payload: Mapping[str, str]) -> str:
+    return hashlib.sha256(
+        json.dumps(
+            payload,
+            ensure_ascii=False,
+            separators=(",", ":"),
+            sort_keys=True,
+        ).encode("utf-8")
+    ).hexdigest()
+
+
 def _placement_fingerprint(
     *,
     subject_native_ref: NativeRef,
-    placement: FloatingLocalIntervalPlacement,
+    placement: SchedulePlacement,
 ) -> str:
-    payload = json.dumps(
+    return _hash(
         {
-            "extent": "interval",
-            "form": "floating_local",
             "subject_native_ref": str(subject_native_ref),
-            "starts_local_at": placement.starts_local_at.isoformat(timespec="microseconds"),
-            "ends_local_at": placement.ends_local_at.isoformat(timespec="microseconds"),
-        },
-        ensure_ascii=False,
-        separators=(",", ":"),
-        sort_keys=True,
-    ).encode("utf-8")
-    return hashlib.sha256(payload).hexdigest()
+            **_fingerprint_payload(placement),
+        }
+    )
 
 
 def _revision_fingerprint(
     *,
     schedule_ref: ScopedRecordRef,
     expected_material_state_ref: MaterialStateRef,
-    placement: FloatingLocalIntervalPlacement,
+    placement: SchedulePlacement,
 ) -> str:
-    payload = json.dumps(
+    return _hash(
         {
             "schedule_ref": str(schedule_ref),
             "expected_material_state_ref": str(expected_material_state_ref),
-            "extent": "interval",
-            "form": "floating_local",
-            "starts_local_at": placement.starts_local_at.isoformat(timespec="microseconds"),
-            "ends_local_at": placement.ends_local_at.isoformat(timespec="microseconds"),
-        },
-        ensure_ascii=False,
-        separators=(",", ":"),
-        sort_keys=True,
-    ).encode("utf-8")
-    return hashlib.sha256(payload).hexdigest()
+            **_fingerprint_payload(placement),
+        }
+    )
 
 
 def _unschedule_fingerprint(
@@ -166,17 +335,13 @@ def _unschedule_fingerprint(
     schedule_ref: ScopedRecordRef,
     expected_material_state_ref: MaterialStateRef,
 ) -> str:
-    payload = json.dumps(
+    return _hash(
         {
             "schedule_ref": str(schedule_ref),
             "expected_material_state_ref": str(expected_material_state_ref),
             "effect": "no-current-placement",
-        },
-        ensure_ascii=False,
-        separators=(",", ":"),
-        sort_keys=True,
-    ).encode("utf-8")
-    return hashlib.sha256(payload).hexdigest()
+        }
+    )
 
 
 def _unschedule_undo_fingerprint(
@@ -184,23 +349,116 @@ def _unschedule_undo_fingerprint(
     schedule_ref: ScopedRecordRef,
     unschedule_operation_id: str,
 ) -> str:
-    payload = json.dumps(
+    return _hash(
         {
             "schedule_ref": str(schedule_ref),
             "unschedule_operation_id": unschedule_operation_id,
             "effect": "restore-prior-placement",
-        },
-        ensure_ascii=False,
-        separators=(",", ":"),
-        sort_keys=True,
-    ).encode("utf-8")
-    return hashlib.sha256(payload).hexdigest()
+        }
+    )
+
+
+def _placement_from_payload(payload: Mapping[str, object]) -> SchedulePlacement:
+    kind = payload.get("kind")
+    if kind == "date_span":
+        return DateSpanPlacement(
+            start_date=date.fromisoformat(str(payload["start_date"])),
+            end_date_exclusive=date.fromisoformat(str(payload["end_date_exclusive"])),
+        )
+    if kind == "floating_local_interval":
+        return FloatingLocalIntervalPlacement(
+            starts_local_at=datetime.fromisoformat(str(payload["starts_local_at"])),
+            ends_local_at=datetime.fromisoformat(str(payload["ends_local_at"])),
+        )
+    if kind == "named_zone_local_interval":
+        return NamedZoneLocalIntervalPlacement(
+            starts_local_at=datetime.fromisoformat(str(payload["starts_local_at"])),
+            ends_local_at=datetime.fromisoformat(str(payload["ends_local_at"])),
+            zone_id=str(payload["zone_id"]),
+            resolved_start_at=datetime.fromisoformat(str(payload["resolved_start_at"])),
+            resolved_end_at=datetime.fromisoformat(str(payload["resolved_end_at"])),
+        )
+    if kind == "absolute_interval":
+        return AbsoluteIntervalPlacement(
+            starts_at=datetime.fromisoformat(str(payload["starts_at"])),
+            ends_at=datetime.fromisoformat(str(payload["ends_at"])),
+        )
+    if kind == "coarse_local_period":
+        period = str(payload["period"])
+        if period not in {"morning", "afternoon", "evening"}:
+            raise ScheduleInputError("Stored coarse Schedule period is unsupported.")
+        return CoarseLocalPeriodPlacement(
+            local_date=date.fromisoformat(str(payload["local_date"])),
+            period=cast(CoarseLocalPeriod, period),
+        )
+    raise ScheduleInputError("Stored Schedule placement form is unsupported.")
 
 
 def _constraint_name(exc: IntegrityError) -> str | None:
     diagnostic = getattr(exc.orig, "diag", None)
     value = getattr(diagnostic, "constraint_name", None)
     return value if isinstance(value, str) else None
+
+
+async def establish_schedule_in_session(
+    database_session: AsyncSession,
+    *,
+    self_person_ref: NativeRef,
+    operation_id: str,
+    subject_native_ref: NativeRef,
+    placement: SchedulePlacement,
+) -> EstablishedScheduleView:
+    """Establish one accepted typed Schedule inside the caller-owned transaction."""
+    normalized_operation_id = _normalize_operation_id(operation_id)
+    schedule_ref = new_scoped_record_ref()
+    material_state_ref = new_material_state_ref()
+    payload = _placement_payload(placement)
+    row = (
+        (
+            await database_session.execute(
+                text(
+                    """
+                SELECT subject_native_ref,
+                       schedule_ref,
+                       material_state_ref,
+                       created_at,
+                       replayed
+                  FROM dante.establish_self_schedule_placement(
+                       :self_person_ref,
+                       :operation_id,
+                       :intent_fingerprint,
+                       :subject_native_ref,
+                       :schedule_ref,
+                       :material_state_ref,
+                       CAST(:placement_payload AS jsonb)
+                  )
+                """
+                ),
+                {
+                    "self_person_ref": self_person_ref,
+                    "operation_id": normalized_operation_id,
+                    "intent_fingerprint": _placement_fingerprint(
+                        subject_native_ref=subject_native_ref,
+                        placement=placement,
+                    ),
+                    "subject_native_ref": subject_native_ref,
+                    "schedule_ref": schedule_ref,
+                    "material_state_ref": material_state_ref,
+                    "placement_payload": json.dumps(payload, separators=(",", ":"), sort_keys=True),
+                },
+            )
+        )
+        .mappings()
+        .one()
+    )
+    return EstablishedScheduleView(
+        subject_native_ref=NativeRef(UUID(str(row["subject_native_ref"]))),
+        schedule_ref=ScopedRecordRef(UUID(str(row["schedule_ref"]))),
+        material_state_ref=MaterialStateRef(UUID(str(row["material_state_ref"]))),
+        placement=placement,
+        created_at=row["created_at"],
+        replayed=bool(row["replayed"]),
+    )
 
 
 async def establish_floating_schedule_in_session(
@@ -211,70 +469,73 @@ async def establish_floating_schedule_in_session(
     subject_native_ref: NativeRef,
     placement: FloatingLocalIntervalPlacement,
 ) -> EstablishedScheduleView:
-    """Establish one accepted Schedule inside the caller-owned transaction."""
-    normalized_operation_id = _normalize_operation_id(operation_id)
-    schedule_ref = new_scoped_record_ref()
-    material_state_ref = new_material_state_ref()
-    fingerprint = _placement_fingerprint(
+    """Compatibility wrapper for the proven B02-A/B floating-local path."""
+    return await establish_schedule_in_session(
+        database_session,
+        self_person_ref=self_person_ref,
+        operation_id=operation_id,
         subject_native_ref=subject_native_ref,
         placement=placement,
     )
 
-    statement = text(
-        """
-        SELECT subject_native_ref,
-               schedule_ref,
-               material_state_ref,
-               starts_local_at,
-               ends_local_at,
-               created_at,
-               replayed
-        FROM dante.establish_self_floating_schedule(
-            :self_person_ref,
-            :operation_id,
-            :intent_fingerprint,
-            :subject_native_ref,
-            :schedule_ref,
-            :material_state_ref,
-            :starts_local_at,
-            :ends_local_at
-        )
-        """
-    )
 
-    try:
-        row = (
-            (
-                await database_session.execute(
-                    statement,
-                    {
-                        "self_person_ref": self_person_ref,
-                        "operation_id": normalized_operation_id,
-                        "intent_fingerprint": fingerprint,
-                        "subject_native_ref": subject_native_ref,
-                        "schedule_ref": schedule_ref,
-                        "material_state_ref": material_state_ref,
-                        "starts_local_at": placement.starts_local_at,
-                        "ends_local_at": placement.ends_local_at,
-                    },
-                )
+async def revise_schedule_in_session(
+    database_session: AsyncSession,
+    *,
+    self_person_ref: NativeRef,
+    operation_id: str,
+    schedule_ref: ScopedRecordRef,
+    expected_material_state_ref: MaterialStateRef,
+    placement: SchedulePlacement,
+) -> RevisedScheduleView:
+    """Create one new typed placement MaterialState in the caller transaction."""
+    normalized_operation_id = _normalize_operation_id(operation_id)
+    material_state_ref = new_material_state_ref()
+    payload = _placement_payload(placement)
+    row = (
+        (
+            await database_session.execute(
+                text(
+                    """
+                SELECT schedule_ref,
+                       previous_material_state_ref,
+                       material_state_ref,
+                       created_at,
+                       replayed
+                  FROM dante.revise_self_schedule_placement(
+                       :self_person_ref,
+                       :operation_id,
+                       :intent_fingerprint,
+                       :schedule_ref,
+                       :expected_material_state_ref,
+                       :material_state_ref,
+                       CAST(:placement_payload AS jsonb)
+                  )
+                """
+                ),
+                {
+                    "self_person_ref": self_person_ref,
+                    "operation_id": normalized_operation_id,
+                    "intent_fingerprint": _revision_fingerprint(
+                        schedule_ref=schedule_ref,
+                        expected_material_state_ref=expected_material_state_ref,
+                        placement=placement,
+                    ),
+                    "schedule_ref": schedule_ref,
+                    "expected_material_state_ref": expected_material_state_ref,
+                    "material_state_ref": material_state_ref,
+                    "placement_payload": json.dumps(payload, separators=(",", ":"), sort_keys=True),
+                },
             )
-            .mappings()
-            .one()
         )
-    except IntegrityError as exc:
-        if _constraint_name(exc) == "pk_schedule_establish_operation":
-            raise ScheduleOperationIdReuseError() from exc
-        raise
-
-    return EstablishedScheduleView(
-        subject_native_ref=NativeRef(UUID(str(row["subject_native_ref"]))),
+        .mappings()
+        .one()
+    )
+    return RevisedScheduleView(
         schedule_ref=ScopedRecordRef(UUID(str(row["schedule_ref"]))),
+        previous_material_state_ref=MaterialStateRef(UUID(str(row["previous_material_state_ref"]))),
         material_state_ref=MaterialStateRef(UUID(str(row["material_state_ref"]))),
-        placement=FloatingLocalIntervalPlacement(
-            starts_local_at=row["starts_local_at"],
-            ends_local_at=row["ends_local_at"],
-        ),
+        placement=placement,
         created_at=row["created_at"],
         replayed=bool(row["replayed"]),
     )
@@ -289,64 +550,14 @@ async def revise_floating_schedule_in_session(
     expected_material_state_ref: MaterialStateRef,
     placement: FloatingLocalIntervalPlacement,
 ) -> RevisedScheduleView:
-    """Create one new placement MaterialState inside the caller-owned transaction."""
-    normalized_operation_id = _normalize_operation_id(operation_id)
-    material_state_ref = new_material_state_ref()
-    fingerprint = _revision_fingerprint(
+    """Compatibility wrapper for the proven B02-C floating-local path."""
+    return await revise_schedule_in_session(
+        database_session,
+        self_person_ref=self_person_ref,
+        operation_id=operation_id,
         schedule_ref=schedule_ref,
         expected_material_state_ref=expected_material_state_ref,
         placement=placement,
-    )
-    statement = text(
-        """
-        SELECT schedule_ref,
-               previous_material_state_ref,
-               material_state_ref,
-               starts_local_at,
-               ends_local_at,
-               created_at,
-               replayed
-        FROM dante.revise_self_floating_schedule(
-            :self_person_ref,
-            :operation_id,
-            :intent_fingerprint,
-            :schedule_ref,
-            :expected_material_state_ref,
-            :material_state_ref,
-            :starts_local_at,
-            :ends_local_at
-        )
-        """
-    )
-    row = (
-        (
-            await database_session.execute(
-                statement,
-                {
-                    "self_person_ref": self_person_ref,
-                    "operation_id": normalized_operation_id,
-                    "intent_fingerprint": fingerprint,
-                    "schedule_ref": schedule_ref,
-                    "expected_material_state_ref": expected_material_state_ref,
-                    "material_state_ref": material_state_ref,
-                    "starts_local_at": placement.starts_local_at,
-                    "ends_local_at": placement.ends_local_at,
-                },
-            )
-        )
-        .mappings()
-        .one()
-    )
-    return RevisedScheduleView(
-        schedule_ref=ScopedRecordRef(UUID(str(row["schedule_ref"]))),
-        previous_material_state_ref=MaterialStateRef(UUID(str(row["previous_material_state_ref"]))),
-        material_state_ref=MaterialStateRef(UUID(str(row["material_state_ref"]))),
-        placement=FloatingLocalIntervalPlacement(
-            starts_local_at=row["starts_local_at"],
-            ends_local_at=row["ends_local_at"],
-        ),
-        created_at=row["created_at"],
-        replayed=bool(row["replayed"]),
     )
 
 
@@ -360,26 +571,25 @@ async def unschedule_schedule_in_session(
 ) -> UnscheduledScheduleView:
     """Withdraw one exact current placement inside the caller transaction."""
     normalized_operation_id = _normalize_operation_id(operation_id)
-    statement = text(
-        """
-        SELECT schedule_ref,
-               previous_material_state_ref,
-               unschedule_operation_id,
-               created_at,
-               replayed
-          FROM dante.unschedule_self_schedule(
-               :self_person_ref,
-               :operation_id,
-               :intent_fingerprint,
-               :schedule_ref,
-               :expected_material_state_ref
-          )
-        """
-    )
     row = (
         (
             await database_session.execute(
-                statement,
+                text(
+                    """
+                SELECT schedule_ref,
+                       previous_material_state_ref,
+                       unschedule_operation_id,
+                       created_at,
+                       replayed
+                  FROM dante.unschedule_self_schedule(
+                       :self_person_ref,
+                       :operation_id,
+                       :intent_fingerprint,
+                       :schedule_ref,
+                       :expected_material_state_ref
+                  )
+                """
+                ),
                 {
                     "self_person_ref": self_person_ref,
                     "operation_id": normalized_operation_id,
@@ -412,33 +622,31 @@ async def undo_schedule_unschedule_in_session(
     schedule_ref: ScopedRecordRef,
     unschedule_operation_id: str,
 ) -> RestoredScheduleView:
-    """Restore prior semantics as a new placement inside the caller transaction."""
+    """Restore any activated prior placement as a new monotonic state."""
     normalized_operation_id = _normalize_operation_id(operation_id)
     normalized_unschedule_operation_id = _normalize_operation_id(unschedule_operation_id)
     material_state_ref = new_material_state_ref()
-    statement = text(
-        """
-        SELECT schedule_ref,
-               restored_from_material_state_ref,
-               material_state_ref,
-               starts_local_at,
-               ends_local_at,
-               created_at,
-               replayed
-          FROM dante.undo_self_schedule_unschedule(
-               :self_person_ref,
-               :operation_id,
-               :intent_fingerprint,
-               :schedule_ref,
-               :unschedule_operation_id,
-               :material_state_ref
-          )
-        """
-    )
     row = (
         (
             await database_session.execute(
-                statement,
+                text(
+                    """
+                SELECT schedule_ref,
+                       restored_from_material_state_ref,
+                       material_state_ref,
+                       placement_payload,
+                       created_at,
+                       replayed
+                  FROM dante.undo_self_schedule_unschedule_any(
+                       :self_person_ref,
+                       :operation_id,
+                       :intent_fingerprint,
+                       :schedule_ref,
+                       :unschedule_operation_id,
+                       :material_state_ref
+                  )
+                """
+                ),
                 {
                     "self_person_ref": self_person_ref,
                     "operation_id": normalized_operation_id,
@@ -455,51 +663,43 @@ async def undo_schedule_unschedule_in_session(
         .mappings()
         .one()
     )
+    placement_payload = row["placement_payload"]
+    if not isinstance(placement_payload, Mapping):
+        raise SchedulePersistenceError("Schedule Undo returned an invalid placement payload.")
     return RestoredScheduleView(
         schedule_ref=ScopedRecordRef(UUID(str(row["schedule_ref"]))),
         restored_from_material_state_ref=MaterialStateRef(
             UUID(str(row["restored_from_material_state_ref"]))
         ),
         material_state_ref=MaterialStateRef(UUID(str(row["material_state_ref"]))),
-        placement=FloatingLocalIntervalPlacement(
-            starts_local_at=row["starts_local_at"],
-            ends_local_at=row["ends_local_at"],
-        ),
+        placement=_placement_from_payload(placement_payload),
         created_at=row["created_at"],
         replayed=bool(row["replayed"]),
     )
 
 
 class TemporalScheduleApplication:
-    """Transaction-owning Schedule revision operations."""
+    """Transaction-owning Schedule mutation operations."""
 
     def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
         self._session_factory = session_factory
 
-    async def revise_floating_schedule(
+    async def revise_schedule(
         self,
         *,
         self_person_ref: NativeRef,
         operation_id: str,
         schedule_ref: ScopedRecordRef,
         expected_material_state_ref: MaterialStateRef,
-        placement: FloatingLocalIntervalPlacement,
+        placement: SchedulePlacement,
     ) -> RevisedScheduleView:
         if schedule_ref.version != 7 or expected_material_state_ref.version != 7:
             raise ScheduleInputError(
                 "Schedule and expected placement references must be canonical UUIDv7 values."
             )
-        if placement.starts_local_at.date() != placement.ends_local_at.date():
-            raise ScheduleInputError(
-                "B02-C currently activates only same-local-day floating Schedule intervals."
-            )
-
         try:
-            async with (
-                self._session_factory() as database_session,
-                database_session.begin(),
-            ):
-                return await revise_floating_schedule_in_session(
+            async with self._session_factory() as database_session, database_session.begin():
+                return await revise_schedule_in_session(
                     database_session,
                     self_person_ref=self_person_ref,
                     operation_id=operation_id,
@@ -521,6 +721,23 @@ class TemporalScheduleApplication:
         except SQLAlchemyError as exc:
             raise SchedulePersistenceError() from exc
 
+    async def revise_floating_schedule(
+        self,
+        *,
+        self_person_ref: NativeRef,
+        operation_id: str,
+        schedule_ref: ScopedRecordRef,
+        expected_material_state_ref: MaterialStateRef,
+        placement: FloatingLocalIntervalPlacement,
+    ) -> RevisedScheduleView:
+        return await self.revise_schedule(
+            self_person_ref=self_person_ref,
+            operation_id=operation_id,
+            schedule_ref=schedule_ref,
+            expected_material_state_ref=expected_material_state_ref,
+            placement=placement,
+        )
+
     async def unschedule(
         self,
         *,
@@ -534,10 +751,7 @@ class TemporalScheduleApplication:
                 "Schedule and expected placement references must be canonical UUIDv7 values."
             )
         try:
-            async with (
-                self._session_factory() as database_session,
-                database_session.begin(),
-            ):
+            async with self._session_factory() as database_session, database_session.begin():
                 return await unschedule_schedule_in_session(
                     database_session,
                     self_person_ref=self_person_ref,
@@ -570,10 +784,7 @@ class TemporalScheduleApplication:
         if schedule_ref.version != 7:
             raise ScheduleInputError("Schedule reference must be a canonical UUIDv7 value.")
         try:
-            async with (
-                self._session_factory() as database_session,
-                database_session.begin(),
-            ):
+            async with self._session_factory() as database_session, database_session.begin():
                 return await undo_schedule_unschedule_in_session(
                     database_session,
                     self_person_ref=self_person_ref,

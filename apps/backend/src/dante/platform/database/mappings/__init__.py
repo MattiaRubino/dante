@@ -56,6 +56,7 @@ MAPPED_TABLES: tuple[Table, ...] = cast(
         schedule.SchedulePlacementFloatingLocalStateRow.__table__,
         schedule.SchedulePlacementNamedZoneStateRow.__table__,
         schedule.SchedulePlacementAbsoluteStateRow.__table__,
+        schedule.SchedulePlacementCoarseLocalPeriodStateRow.__table__,
         schedule.SchedulePlacementCurrentHistoryRow.__table__,
         actual.ActualRealizationStateRow.__table__,
         actual.ActualRealizationTimingRow.__table__,

@@ -18,7 +18,8 @@ from dante.modules.temporal.schedule import (
     FloatingLocalIntervalPlacement,
     ScheduleInputError,
     ScheduleOperationIdReuseError,
-    establish_floating_schedule_in_session,
+    SchedulePlacement,
+    establish_schedule_in_session,
 )
 from dante.platform.database.mappings.activity import ActivityIntentionRow
 from dante.platform.database.references import NativeRef, new_native_ref
@@ -194,13 +195,25 @@ class TemporalActivityApplication:
         title: str,
         placement: FloatingLocalIntervalPlacement,
     ) -> CreateScheduledActivityResult:
-        """Create Activity and first accepted Schedule atomically for the B02-A form subset."""
+        """Compatibility wrapper for the proven B02-A floating-local path."""
+        return await self.create_activity_with_schedule(
+            self_person_ref=self_person_ref,
+            operation_id=operation_id,
+            title=title,
+            placement=placement,
+        )
+
+    async def create_activity_with_schedule(
+        self,
+        *,
+        self_person_ref: NativeRef,
+        operation_id: str,
+        title: str,
+        placement: SchedulePlacement,
+    ) -> CreateScheduledActivityResult:
+        """Create Activity and one typed accepted Schedule atomically."""
         normalized_title = _normalize_title(title)
         normalized_operation_id = _normalize_operation_id(operation_id)
-        if placement.starts_local_at.date() != placement.ends_local_at.date():
-            raise ActivityInputError(
-                "B02-A currently activates only same-local-day floating Schedule intervals."
-            )
         activity_ref = new_native_ref()
 
         try:
@@ -216,7 +229,7 @@ class TemporalActivityApplication:
                     requested_activity_ref=activity_ref,
                 )
 
-                schedule_result = await establish_floating_schedule_in_session(
+                schedule_result = await establish_schedule_in_session(
                     database_session,
                     self_person_ref=self_person_ref,
                     operation_id=normalized_operation_id,
@@ -259,12 +272,24 @@ class TemporalActivityApplication:
         operation_id: str,
         placement: FloatingLocalIntervalPlacement,
     ) -> CreateScheduledActivityResult:
-        """Attach one accepted Schedule to an existing Activity without cloning it."""
+        """Compatibility wrapper for the proven B02-B floating-local path."""
+        return await self.schedule_existing_activity_with_placement(
+            self_person_ref=self_person_ref,
+            activity_ref=activity_ref,
+            operation_id=operation_id,
+            placement=placement,
+        )
+
+    async def schedule_existing_activity_with_placement(
+        self,
+        *,
+        self_person_ref: NativeRef,
+        activity_ref: NativeRef,
+        operation_id: str,
+        placement: SchedulePlacement,
+    ) -> CreateScheduledActivityResult:
+        """Attach one typed accepted Schedule without cloning the Activity."""
         normalized_operation_id = _normalize_operation_id(operation_id)
-        if placement.starts_local_at.date() != placement.ends_local_at.date():
-            raise ActivityInputError(
-                "B02-B currently activates only same-local-day floating Schedule intervals."
-            )
 
         try:
             async with (
@@ -287,7 +312,7 @@ class TemporalActivityApplication:
                     title=activity_row.title,
                     created_at=activity_row.created_at,
                 )
-                schedule = await establish_floating_schedule_in_session(
+                schedule = await establish_schedule_in_session(
                     database_session,
                     self_person_ref=self_person_ref,
                     operation_id=normalized_operation_id,
@@ -343,11 +368,15 @@ class TemporalActivityApplication:
                 database_session.begin(),
             ):
                 rows = (
-                    await database_session.execute(
-                        statement,
-                        {"self_person_ref": self_person_ref},
+                    (
+                        await database_session.execute(
+                            statement,
+                            {"self_person_ref": self_person_ref},
+                        )
                     )
-                ).mappings().all()
+                    .mappings()
+                    .all()
+                )
         except SQLAlchemyError as exc:
             raise ActivityPersistenceError() from exc
 
