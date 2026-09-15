@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — B02 Schedule Core Execution Plan
 
-- **Status:** ACTIVE EXECUTION CONTRACT / B02 IN PROGRESS
+- **Status:** ACTIVE EXECUTION CONTRACT / B02-A through B02-D reconciled; B02-E pending
 - **Date:** 2026-09-14
 - **Branch:** `feature/timeline-temporal-operational`
 - **B02-D pre-scope branch head:** `0fa9f0a6c04ba86a466dc113f76aea0d438f8c06`
@@ -730,24 +730,17 @@ Additional required proof discovered by the deep read:
 
 ---
 
-# 12. Manual `userTest` target
+# 12. Manual `userTest` result
 
-The exact manual protocol will be written only after the implemented behavior exists and automated reconciliation is green.
+The manual protocol was executed on 2026-09-15 against the isolated synthetic full stack. The user explicitly approved the result:
 
-It must prove at least:
+~~~text
+B02 userTest — APPROVED
+A/B/C/D/E/F — PASS
+~~~
 
-1. create/place a real Activity and see exactly one Timeline item after reload;
-2. place an existing Planning Tray Activity without identity duplication;
-3. move/change a supported Schedule and preserve truthful current display;
-4. unschedule and see the same Activity return to Planning Tray;
-5. guarded Undo succeeds only against the exact expected current state;
-6. a stale/conflicting operation does not overwrite newer truth;
-7. a real backend/DB failure never becomes fake success;
-8. exposed temporal precision/timezone behavior is truthful.
+The evidence covers only the supported same-day `floating_local` Activity Schedule slice. It does not activate date-span, named-zone, absolute, coarse-precision, DST, Event/Occurrence or B02-E form-completeness behavior.
 
-B02 is not approved until the user explicitly approves the final B02 manual acceptance after reviewing its evidence.
-
----
 
 # 13. Explicitly out of scope for B02
 
@@ -792,32 +785,25 @@ Stop and re-gate rather than improvise if implementation inspection reveals any 
 
 # 15. Ledger activation result
 
-Current candidate implementation state:
+Current reconciled implementation state:
 
-```text
+~~~text
 B02 block                  🟨 IN PROGRESS
 SCH-001 authority reopen   ✅ DONE
-B02-A candidate            🟨 IMPLEMENTED — automated/manual proof pending
-B02-B candidate            🟨 IMPLEMENTED — automated/manual proof pending
-B02-C candidate            🟨 IMPLEMENTED — automated/manual proof pending
-B02-D candidate            🟨 IMPLEMENTED — automated/manual proof pending
-```
+B02-A candidate            ✅ PROVEN — automated + manual evidence
+B02-B candidate            ✅ PROVEN — automated + manual evidence
+B02-C candidate            ✅ PROVEN — automated + manual evidence
+B02-D candidate            ✅ PROVEN — automated + manual evidence
+B02-E exact PRE-SCOPE      ⬜ NOT STARTED
+~~~
 
-B02-B adds the governed path from an existing canonical unplaced Activity to an accepted floating-local same-day Schedule. It reuses the Activity reference, creates no Activity clone, keeps scheduled duration on Schedule, removes the Activity from Planning Tray only after canonical commit/refetch, and invalidates the authoritative Timeline read so the accepted item is fetched exactly once.
+B02-A through B02-D are proven only for the supported same-day floating-local Activity path. Evidence includes targeted PostgreSQL proof (2 passed), application/frontend regressions, the isolated real browser A-F acceptance and the fixed viewport Undo toast behavior.
 
-The B02-B read rule is now explicit: “unplaced” means no current accepted Schedule placement. Historical Schedule ownership alone must never permanently exclude an Activity after a future valid unschedule.
-
-B02-C adds governed revision of that accepted floating-local same-day placement. Timeline movement and the anchored time editor submit the stable ScheduleRef plus the exact current placement MaterialStateRef; PostgreSQL creates one new immutable placement state, closes/opens current-history episodes and moves the explicit current binding atomically. The UI performs no optimistic canonical move and reloads authoritative current truth exactly once after success. Stale expected state and operation-id reuse cannot overwrite newer truth.
-
-B02-D adds governed unschedule and guarded Undo. Unschedule records real absence by closing the exact open history episode and removing only currentness. Undo is bound to the exact unschedule receipt, requires that absence still be current and creates a new immutable state/history episode rather than reopening old truth. Timeline and Planning Tray reconcile only after authoritative reloads.
-
-No `SCH-*` or `B02-T*` checkbox is promoted by this candidate update. CI execution, targeted automated evidence and the user’s manual acceptance remain deliberately deferred.
+B02-E remains a separately reviewed PRE-SCOPE. No unsupported Schedule placement form, coarse precision, DST, Event/Occurrence or broader B02 closure item is promoted here. CI remains deferred by the user’s instruction.
 
 Next required execution gate:
 
-```text
-B02-D targeted automated proof (CI still deferred)
-→ user manual B02-D acceptance checkpoint
-→ evidence-only ledger reconciliation
-→ separately reviewed B02-E exact PRE-SCOPE
-```
+~~~text
+B02-E exact PRE-SCOPE review
+→ decide the next bounded form/precision slice
+~~~
