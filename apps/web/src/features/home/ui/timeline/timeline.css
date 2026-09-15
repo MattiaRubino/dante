@@ -1560,8 +1560,8 @@
 }
 
 .timeline-move-toast {
-  position: absolute;
-  z-index: 90;
+  position: fixed;
+  z-index: 120;
   bottom: 14px;
   left: 50%;
   display: flex;
