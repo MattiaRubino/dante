@@ -219,19 +219,24 @@ Never use an unscoped Docker prune/remove command.
 
 ## 11. Approval record
 
-Fill this only after the manual run:
+Manual run completed on 2026-09-15 against the isolated synthetic full stack:
 
 ~~~
-Proof A — create/place same Activity identity + reload          PASS / FAIL
-Proof B — governed revision + reload                           PASS / FAIL
-Proof C — unschedule → Planning Tray + reload                  PASS / FAIL
-Proof D — guarded Undo creates restored current state           PASS / FAIL
-Proof E — stale mutation is rejected without overwrite         PASS / FAIL
-Proof F — real database failure never fakes success             PASS / FAIL
+Proof A — create/place same Activity identity + reload          PASS
+Proof B — governed revision + reload                           PASS
+Proof C — unschedule → Planning Tray + reload                  PASS
+Proof D — guarded Undo creates restored current state           PASS
+Proof E — stale mutation is rejected without overwrite         PASS
+Proof F — real database failure never fakes success             PASS
 
-B02 userTest — APPROVED / NOT APPROVED
+B02 userTest — APPROVED
+~~~
+
 Observed findings:
-- ...
-~~~
 
-B02 ledger reconciliation remains forbidden until this record has been reviewed and explicitly approved. B02-E remains a separate exact PRE-SCOPE after that reconciliation.
+- Email/password authentication was used; provider-button visibility was not part of B02.
+- The initial Undo toast was not visible in the viewport because it was positioned relative to the long Timeline section. The toast was changed to fixed viewport positioning and rechecked manually; Undo then remained canonical after reload.
+- Unschedule did not require a confirmation dialog; the successful flow used the visible Undo affordance.
+- B02-E was not executed and remains a separate exact PRE-SCOPE.
+
+The evidence-only ledger reconciliation is now authorized for the proven B02-A through B02-D exact floating-local Activity slice. It must not promote unsupported placement forms, coarse precision, DST, Event/Occurrence, or B02-E items.
