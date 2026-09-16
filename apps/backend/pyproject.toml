@@ -83,6 +83,7 @@ exclude = [
     "migrations/versions/20260826_06_cp6_occurrence_generation.py",
     "migrations/versions/20260826_07_cp6_runtime_acl_activation.py",
     "migrations/versions/20260909_20_b02_schedule_establish.py",
+    "migrations/versions/20260913_22_b02_schedule_revision.py",
 ]
 
 [tool.ruff.lint]
