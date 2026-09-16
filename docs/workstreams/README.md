@@ -20,18 +20,19 @@ Pre-vertical foundation                          CLOSED / INTEGRATED VIA PR #66
 
 Protected-main baseline at temporal selection    Alembic 20260906_18
 Active candidate workstream                      feature/timeline-temporal-operational
-Candidate temporal DB authority                  Alembic 20260915_26
+Candidate temporal DB authority                  Alembic 20260916_27
+Candidate temporal topology                      98|5|29|78|195|115|288|0|0|0
 
 Timeline / Temporal-Operational:
 B00 Real Data Spine                              ✅ CLOSED / PROVEN
 B01 Activity Core                                ✅ CLOSED / PROVEN
 B02 Schedule Core                                ✅ CLOSED / PROVEN
-B03 Event Core                                   ⬜ NEXT
+B03 Event Core                                   🟨 B03-A CLOSED / B03-B NEXT
 B07 UI/UX Consolidation v1                       ⬜ planned after B06
 B15 Whole Vertical Closure                       ⬜ future
 ```
 
-Candidate branch truth is not protected-main truth until integration. The branch-local roadmap/map are the current authority for temporal sequencing and progress.
+Candidate branch truth is not protected-main truth until integration. The branch-local roadmap/map/handoff are the current authority for temporal sequencing and progress.
 
 ## 2. Current Timeline / Temporal-Operational authority
 
@@ -41,15 +42,18 @@ Use these files for the active vertical:
 - `timeline-temporal-operational-map.md` — current semantic map + live green-check ledger;
 - `timeline-temporal-operational-handoff.md` — current handoff/boundary;
 - `timeline-temporal-operational-b02-closure-2026-09-16.md` — B02 closure evidence;
-- `timeline-temporal-operational-b02-execution-plan.md` — closed B02 plan pointer, no longer active execution authority;
-- `timeline-temporal-operational-b02-e-usertest.md` — explicit record that the redundant B02-E manual protocol was not executed and is not an open gate.
+- `timeline-temporal-operational-b03-execution-plan.md` — current B03 slice plan;
+- `timeline-temporal-operational-b03-a-closure-2026-09-16.md` — B03-A Event canonical-core closure evidence.
 
-Historical snapshots moved under `archive/` preserve the old wording/numbering without competing with current authority:
+Historical snapshots under `archive/` preserve old wording/numbering without competing with current authority, including the **full initial temporal semantic/functionality map**:
 
 - `archive/timeline-temporal-operational-roadmap-freeze-2026-09-07.md`;
 - `archive/timeline-temporal-operational-map-ledger-snapshot-2026-09-15.md`;
+- `archive/timeline-temporal-operational-live-ledger-snapshot-2026-09-16-pre-b03.md`;
 - `archive/timeline-temporal-operational-b02-execution-plan-pre-closure.md`;
 - `archive/timeline-temporal-operational-b02-e-usertest-protocol-unexecuted.md`.
+
+The archived full map remains binding semantic evidence for capability inventory, `!=` disambiguations, ownership/lifecycle/projection rules and later-block obligations. The live map tracks what is implemented/proven.
 
 ### Current temporal numbering
 
@@ -74,91 +78,70 @@ B15 Whole Vertical Closure
 
 The 2026-09-16 B07 insertion shifted the former B07–B14 blocks by +1. Current canonical docs use only the new numbering; old numbering exists only in explicit historical snapshots.
 
-## 3. Global authority
+## 3. Current temporal gate
+
+```text
+B03-A Event canonical core                  ✅ CLOSED / PROVEN
+B03-B Shared Schedule + Event Timeline      ⬜ requires explicit approval
+```
+
+B03-A current persistence authority:
+
+```text
+Alembic  20260916_27
+Topology 98|5|29|78|195|115|288|0|0|0
+```
+
+B03-B must prove Activity and Event use the same Schedule identity/current/history machinery. It must not create `event_schedule` or activate recurrence/constraints/participants/Session/Actual/provider semantics early.
+
+CI remains separately authorized.
+
+## 4. Global authority
 
 Global current truth is owned by:
 
-- `../PROJECT-STATUS.md`;
-- `../ROADMAP.md`;
+- `../PROJECT-STATUS.md` for protected-main truth;
+- `../ROADMAP.md` for global sequencing plus branch-candidate frontier;
 - executable repository truth;
 - current subsystem references;
 - the active bounded workstream authority above while the branch remains unmerged.
 
 Protected-main integration records remain distinct from branch candidate truth.
 
-## 4. Pre-vertical foundation disposition
+## 5. Pre-vertical foundation disposition
 
-The pre-vertical foundation is closed and integrated. Its retained closure/evidence record is:
+The pre-vertical foundation is closed and integrated. Its retained closure/evidence record is `pre-vertical-foundation-closure-2026-09-06.md`.
 
-- `pre-vertical-foundation-closure-2026-09-06.md`.
+Durable references include authenticated DanteContext, Database README, dogfood personas/scale harness and PostgreSQL recovery runbook. There is no PV-04.
 
-Durable references include authenticated DanteContext, Database README, dogfood personas/scale harness and PostgreSQL recovery runbook.
-
-There is no PV-04.
-
-## 5. Access/Auth and Email disposition
-
-Current subsystem authority includes:
-
-- `../database/access-auth.md`;
-- `../architecture/access-auth-architecture.md`;
-- `../architecture/access-auth-security-contract.md`;
-- `../architecture/access-auth-api-contract.md`;
-- `../architecture/access-auth-testing-contract.md`;
-- `../frontend/access.md`;
-- `../architecture/email-platform.md`;
-- `../architecture/access-auth-email-delivery.md`;
-- `../operations/postgres-recovery-runbook.md`.
-
-Retained evidence:
-
-- `access-auth-m5-review-2026-09-02.md`;
-- `access-auth-integration-acceptance-2026-09-04.md`.
-
-## 6. Platform / Recovery / AI disposition
-
-Platform Observability is integrated via PR #58. PostgreSQL Recovery is integrated. The deterministic AI foundation is integrated through PR #63.
-
-AI production/private-data qualification, remote backup-provider recovery and production/cloud recovery remain explicitly unclaimed.
-
-Future real Search/Ask/memory/solver/provider-production work requires a new explicit scope from then-current authority and must not be inferred from the low-level AI foundation.
-
-## 7. Documentation lifecycle rule
+## 6. Documentation lifecycle rule
 
 Before continuing any active workstream:
 
 1. verify exact branch/worktree/remote relation;
 2. read current global/subsystem authority;
-3. read the active workstream roadmap/map/handoff;
-4. prefer repository/code/tests over conversation memory;
-5. keep protected-main and unmerged candidate truth distinct;
-6. do not mark selected/unimplemented capability as PASS;
-7. update the live ledger in the same closure/reconciliation slice;
-8. move superseded detailed planning snapshots to explicit archive paths rather than leaving them as competing current authority;
-9. do not falsify unexecuted manual/CI evidence;
-10. retain only justified closure/evidence records as current references.
+3. read active roadmap/map/handoff;
+4. use the archived full semantic map as binding functionality/non-collapse authority;
+5. prefer repository/code/tests over conversation memory;
+6. keep protected-main and unmerged candidate truth distinct;
+7. do not mark selected/unimplemented capability as PASS;
+8. update the live ledger in the same closure/reconciliation slice;
+9. archive superseded planning snapshots rather than leave competing live authorities;
+10. do not falsify unexecuted manual/CI evidence.
 
-## 8. Permanent rules
+## 7. Permanent rules
 
 ```text
 SELECTED != IMPLEMENTED != PASS != REAL UAT != PRODUCTION DEPLOYED
 UNMERGED CANDIDATE TRUTH != PROTECTED-MAIN TRUTH
 CURRENT SPECIFICATION != APPEND-ONLY DIARY
-TEMPORARY HANDOFF != DURABLE DOCUMENTATION
 APPLIED MIGRATION HISTORY IS IMMUTABLE
 NO PASS WITHOUT EXECUTED EVIDENCE
-SEARCH != INTELLIGENCE
-LOCAL DATABASE RECOVERY PASS != APPLICATION TRAFFIC REOPEN PASS
-LOCAL RECOVERY PASS != PRODUCTION/CLOUD RECOVERY PASS
-```
-
-For the active temporal vertical specifically:
-
-```text
 planned != happened
 Schedule != Session != Actual
 Routine != Recurrence != Occurrence
+Activity != Event != Routine
 projection != canonical truth
-current != latest row
+current accepted state != latest row
 Undo != history rewind
 ```
