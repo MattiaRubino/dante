@@ -67,6 +67,10 @@ describe('remote Schedule data source', () => {
       placementMaterialStateRef: NEXT_STATE_REF,
       replayed: false,
     });
+    expect(result.placement.kind).toBe('floating-local-interval');
+    if (result.placement.kind !== 'floating-local-interval') {
+      throw new Error('Expected floating-local placement.');
+    }
     expect(result.placement.startsLocalAt.toString()).toBe(
       '2026-09-09T14:00:00',
     );
@@ -133,21 +137,142 @@ describe('remote Schedule data source', () => {
     });
   });
 
-  it('fails locally for cross-day/coarse input before requesting a session', async () => {
-    const fetchFn = vi.fn<typeof globalThis.fetch>();
+  it('accepts a cross-midnight floating-local revision without attaching a timezone', async () => {
+    const request: TemporalScheduleRevisionRequest = {
+      ...revisionRequest(),
+      operationId: 'b02-e:revision:cross-midnight',
+      placement: {
+        kind: 'floating-local-interval',
+        startsLocalAt: Temporal.PlainDateTime.from('2026-09-09T23:30'),
+        endsLocalAt: Temporal.PlainDateTime.from('2026-09-10T01:15'),
+      },
+    };
+    const fetchFn = vi
+      .fn<typeof globalThis.fetch>()
+      .mockResolvedValueOnce(
+        jsonResponse({ authenticated: true, csrf_token: 'csrf-token' }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({
+          schedule_ref: SCHEDULE_REF,
+          previous_placement_material_state_ref: CURRENT_STATE_REF,
+          placement_material_state_ref: NEXT_STATE_REF,
+          temporal_form: 'floating_local',
+          starts_local_at: '2026-09-09T23:30:00',
+          ends_local_at: '2026-09-10T01:15:00',
+          replayed: false,
+        }),
+      );
     const source = createRemoteTemporalScheduleDataSource(fetchFn);
-    const request = revisionRequest();
 
-    await expect(
-      source.reviseSchedule({
-        ...request,
-        placement: {
-          ...request.placement,
-          endsLocalAt: Temporal.PlainDateTime.from('2026-09-10T00:30'),
-        },
-      }),
-    ).rejects.toThrow(RangeError);
-    expect(fetchFn).not.toHaveBeenCalled();
+    await expect(source.reviseSchedule(request)).resolves.toMatchObject({
+      placement: {
+        kind: 'floating-local-interval',
+      },
+    });
+    const [, init] = fetchFn.mock.calls[1] ?? [];
+    expect(JSON.parse(String(init?.body)).placement).toEqual({
+      kind: 'floating_local_interval',
+      starts_local_at: '2026-09-09T23:30:00',
+      ends_local_at: '2026-09-10T01:15:00',
+    });
+  });
+
+  it('round-trips coarse precision without manufacturing clock boundaries', async () => {
+    const request: TemporalScheduleRevisionRequest = {
+      ...revisionRequest(),
+      operationId: 'b02-e:revision:coarse',
+      placement: {
+        kind: 'coarse-local-period',
+        localDate: Temporal.PlainDate.from('2026-09-16'),
+        period: 'afternoon',
+      },
+    };
+    const fetchFn = vi
+      .fn<typeof globalThis.fetch>()
+      .mockResolvedValueOnce(
+        jsonResponse({ authenticated: true, csrf_token: 'csrf-token' }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({
+          schedule_ref: SCHEDULE_REF,
+          previous_placement_material_state_ref: CURRENT_STATE_REF,
+          placement_material_state_ref: NEXT_STATE_REF,
+          temporal_form: 'coarse_local_period',
+          local_date: '2026-09-16',
+          period: 'afternoon',
+          replayed: false,
+        }),
+      );
+    const source = createRemoteTemporalScheduleDataSource(fetchFn);
+
+    const result = await source.reviseSchedule(request);
+
+    expect(result.placement).toMatchObject({
+      kind: 'coarse-local-period',
+      period: 'afternoon',
+    });
+    const [, init] = fetchFn.mock.calls[1] ?? [];
+    expect(JSON.parse(String(init?.body)).placement).toEqual({
+      kind: 'coarse_local_period',
+      local_date: '2026-09-16',
+      period: 'afternoon',
+    });
+  });
+
+  it('retains named-zone local intent and the server-resolved overlap instants', async () => {
+    const request: TemporalScheduleRevisionRequest = {
+      ...revisionRequest(),
+      operationId: 'b02-e:revision:named-zone',
+      placement: {
+        kind: 'named-zone-local-interval',
+        startsLocalAt: Temporal.PlainDateTime.from('2026-10-25T02:10'),
+        endsLocalAt: Temporal.PlainDateTime.from('2026-10-25T02:40'),
+        zoneId: 'Europe/Rome',
+        disambiguation: 'later',
+      },
+    };
+    const fetchFn = vi
+      .fn<typeof globalThis.fetch>()
+      .mockResolvedValueOnce(
+        jsonResponse({ authenticated: true, csrf_token: 'csrf-token' }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({
+          schedule_ref: SCHEDULE_REF,
+          previous_placement_material_state_ref: CURRENT_STATE_REF,
+          placement_material_state_ref: NEXT_STATE_REF,
+          temporal_form: 'named_zone_local',
+          starts_local_at: '2026-10-25T02:10:00',
+          ends_local_at: '2026-10-25T02:40:00',
+          zone_id: 'Europe/Rome',
+          resolved_start_at: '2026-10-25T01:10:00Z',
+          resolved_end_at: '2026-10-25T01:40:00Z',
+          replayed: false,
+        }),
+      );
+    const source = createRemoteTemporalScheduleDataSource(fetchFn);
+
+    const result = await source.reviseSchedule(request);
+
+    expect(result.placement).toMatchObject({
+      kind: 'named-zone-local-interval',
+      zoneId: 'Europe/Rome',
+    });
+    if (result.placement.kind !== 'named-zone-local-interval') {
+      throw new Error('Expected named-zone placement.');
+    }
+    expect(result.placement.resolvedStartAt.toString()).toBe(
+      '2026-10-25T01:10:00Z',
+    );
+    const [, init] = fetchFn.mock.calls[1] ?? [];
+    expect(JSON.parse(String(init?.body)).placement).toEqual({
+      kind: 'named_zone_local_interval',
+      starts_local_at: '2026-10-25T02:10:00',
+      ends_local_at: '2026-10-25T02:40:00',
+      zone_id: 'Europe/Rome',
+      disambiguation: 'later',
+    });
   });
 
   it('posts an exact unschedule command and preserves its operation receipt', async () => {
@@ -253,5 +378,4 @@ describe('remote Schedule data source', () => {
       code: 'temporal.schedule.undo_conflict',
     } satisfies Partial<TemporalScheduleRemoteError>);
   });
-
 });
