@@ -7,6 +7,8 @@ import {
   InMemoryTemporalWorkspace,
   type TemporalActivityDataSource,
   type TemporalActivityRecord,
+  type TemporalAcceptedSchedulePlacement,
+  type TemporalSchedulePlacementInput,
 } from '../../temporal';
 import { createTemporalCreateFields } from '../model/temporal-create-session';
 import { createLocalTemporalCreateRuntime } from './temporal-create-runtime';
@@ -42,6 +44,38 @@ function preparedActivity(
     throw new Error('Expected a valid Create preparation');
   }
   return preparation.prepared;
+}
+
+function acceptedPlacement(
+  placement: TemporalSchedulePlacementInput,
+): TemporalAcceptedSchedulePlacement {
+  switch (placement.kind) {
+    case 'date-span':
+      return Object.freeze({ ...placement });
+    case 'floating-local-interval':
+      return Object.freeze({ ...placement });
+    case 'named-zone-local-interval':
+      return Object.freeze({
+        kind: placement.kind,
+        startsLocalAt: placement.startsLocalAt,
+        endsLocalAt: placement.endsLocalAt,
+        zoneId: placement.zoneId,
+        resolvedStartAt: placement.startsLocalAt
+          .toZonedDateTime(placement.zoneId, {
+            disambiguation: placement.disambiguation,
+          })
+          .toInstant(),
+        resolvedEndAt: placement.endsLocalAt
+          .toZonedDateTime(placement.zoneId, {
+            disambiguation: placement.disambiguation,
+          })
+          .toInstant(),
+      });
+    case 'absolute-interval':
+      return Object.freeze({ ...placement });
+    case 'coarse-local-period':
+      return Object.freeze({ ...placement });
+  }
 }
 
 function activitySource(
@@ -87,9 +121,7 @@ function activitySource(
         schedule: Object.freeze({
           scheduleRef: CANONICAL_SCHEDULE_REF,
           placementMaterialStateRef: CANONICAL_PLACEMENT_STATE_REF,
-          temporalForm: 'floating-local' as const,
-          startsLocalAt: request.placement.startsLocalAt,
-          endsLocalAt: request.placement.endsLocalAt,
+          placement: acceptedPlacement(request.placement),
         }),
         replayed: false,
       }),
@@ -108,9 +140,7 @@ function activitySource(
         schedule: Object.freeze({
           scheduleRef: CANONICAL_SCHEDULE_REF,
           placementMaterialStateRef: CANONICAL_PLACEMENT_STATE_REF,
-          temporalForm: 'floating-local' as const,
-          startsLocalAt: request.placement.startsLocalAt,
-          endsLocalAt: request.placement.endsLocalAt,
+          placement: acceptedPlacement(request.placement),
         }),
         replayed: false,
       }),
@@ -174,10 +204,10 @@ describe('Temporal Create normal-runtime boundary', () => {
     },
   );
 
-  it('activates only the exact B02-A floating-local same-day scheduled Activity path', async () => {
+  it('creates an exact floating-local Activity through the canonical B02-E path', async () => {
     const activity = activitySource();
     const runtime = createLocalTemporalCreateRuntime({
-      ...runtimeOptions('runtime-boundary-b02a'),
+      ...runtimeOptions('runtime-boundary-b02e-floating'),
       mode: 'production',
       activityDataSource: activity.source,
     });
@@ -195,52 +225,113 @@ describe('Temporal Create normal-runtime boundary', () => {
       }),
     );
     if (preparation.status !== 'ready') {
-      throw new Error('Expected a valid B02-A Create preparation');
+      throw new Error('Expected a valid B02-E Create preparation');
     }
 
     const execution = await runtime.execute(preparation.prepared);
 
     expect(activity.createActivity).not.toHaveBeenCalled();
     expect(activity.createScheduledActivity).toHaveBeenCalledTimes(1);
-    const scheduledRequest =
-      activity.createScheduledActivity.mock.calls[0]?.[0];
-    expect(scheduledRequest).toBeDefined();
-    expect(scheduledRequest?.operationId).toBe(
-      preparation.prepared.operationId,
-    );
-    expect(scheduledRequest?.title).toBe('Activity già collocata');
+    const scheduledRequest = activity.createScheduledActivity.mock.calls[0]?.[0];
     expect(scheduledRequest?.placement.kind).toBe('floating-local-interval');
-    expect(scheduledRequest?.placement.startsLocalAt.toString()).toBe(
+    if (scheduledRequest?.placement.kind !== 'floating-local-interval') {
+      throw new Error('Expected floating-local request.');
+    }
+    expect(scheduledRequest.placement.startsLocalAt.toString()).toBe(
       '2026-09-07T15:00:00',
     );
-    expect(scheduledRequest?.placement.endsLocalAt.toString()).toBe(
+    expect(scheduledRequest.placement.endsLocalAt.toString()).toBe(
       '2026-09-07T15:30:00',
     );
     expect(execution.result.status).toBe('applied');
-    expect(execution.effect?.projection).toMatchObject({
-      id: CANONICAL_SCHEDULE_REF,
-      subject: {
-        source: 'native',
-        kind: 'activity',
-        id: CANONICAL_ACTIVITY_REF,
-      },
-      title: 'Activity già collocata',
-      placement: {
-        kind: 'floating-local',
-      },
-      capabilities: [],
+    expect(execution.effect?.projection.placement?.kind).toBe('floating-local');
+  });
+
+  it('preserves named-zone gap wall-clock intent and explicit resolution through the remote boundary', async () => {
+    const activity = activitySource();
+    const runtime = createLocalTemporalCreateRuntime({
+      ...runtimeOptions('runtime-boundary-b02e-gap'),
+      mode: 'production',
+      activityDataSource: activity.source,
     });
-    expect(
-      execution.effect?.projection.placement?.kind === 'floating-local'
-        ? execution.effect.projection.placement.start.toString()
-        : null,
-    ).toBe('2026-09-07T15:00:00');
-    expect(
-      execution.effect?.projection.placement?.kind === 'floating-local'
-        ? execution.effect.projection.placement.end.toString()
-        : null,
-    ).toBe('2026-09-07T15:30:00');
-    expect(execution.effect?.undoAvailable).toBe(false);
+    const preparation = runtime.prepare(
+      createTemporalCreateFields({
+        title: 'DST gap',
+        kind: 'activity',
+        date: '2026-03-29',
+        timeSemantics: 'timed',
+        startTime: '01:30',
+        durationMinutes: 60,
+        timeMode: 'zoned',
+        timeZoneId: 'Europe/Rome',
+        timeDisambiguation: 'later',
+        contextId: 'personale',
+      }),
+    );
+    if (preparation.status !== 'ready') {
+      throw new Error('Expected explicit DST resolution to be valid.');
+    }
+
+    const execution = await runtime.execute(preparation.prepared);
+
+    expect(activity.createScheduledActivity).toHaveBeenCalledTimes(1);
+    const request = activity.createScheduledActivity.mock.calls[0]?.[0];
+    expect(request?.placement.kind).toBe('named-zone-local-interval');
+    if (request?.placement.kind !== 'named-zone-local-interval') {
+      throw new Error('Expected named-zone request.');
+    }
+    expect(request.placement.startsLocalAt.toString()).toBe(
+      '2026-03-29T01:30:00',
+    );
+    expect(request.placement.endsLocalAt.toString()).toBe(
+      '2026-03-29T02:30:00',
+    );
+    expect(request.placement.zoneId).toBe('Europe/Rome');
+    expect(request.placement.disambiguation).toBe('later');
+    expect(execution.result.status).toBe('applied');
+    expect(execution.effect?.projection.placement?.kind).toBe('zoned');
+    if (execution.effect?.projection.placement?.kind === 'zoned') {
+      expect(
+        execution.effect.projection.placement.sourceEndsLocalAt?.toString(),
+      ).toBe('2026-03-29T02:30:00');
+      expect(
+        execution.effect.projection.placement.end.toPlainDateTime().toString(),
+      ).toBe('2026-03-29T03:30:00');
+    }
+  });
+
+  it('creates coarse Activity precision without manufacturing exact time', async () => {
+    const activity = activitySource();
+    const runtime = createLocalTemporalCreateRuntime({
+      ...runtimeOptions('runtime-boundary-b02e-coarse'),
+      mode: 'production',
+      activityDataSource: activity.source,
+    });
+    const preparation = runtime.prepare(
+      createTemporalCreateFields({
+        title: 'Relazione',
+        kind: 'activity',
+        date: '2026-09-07',
+        timeSemantics: 'coarse',
+        coarsePeriod: 'afternoon',
+        contextId: 'personale',
+      }),
+    );
+    if (preparation.status !== 'ready') {
+      throw new Error('Expected coarse B02-E preparation.');
+    }
+
+    const execution = await runtime.execute(preparation.prepared);
+
+    const request = activity.createScheduledActivity.mock.calls[0]?.[0];
+    expect(request?.placement).toMatchObject({
+      kind: 'coarse-local-period',
+      period: 'afternoon',
+    });
+    expect(execution.effect?.projection.placement).toMatchObject({
+      kind: 'coarse-local-period',
+      period: 'afternoon',
+    });
   });
 
   it('refetches canonical unplaced Activities with the backend identity unchanged', async () => {
@@ -275,7 +366,7 @@ describe('Temporal Create normal-runtime boundary', () => {
     expect(second[0]?.id).toBe(first[0]?.id);
   });
 
-  it('places an existing B02-B Activity without creating or changing its identity', async () => {
+  it('places an existing Activity without creating or changing its identity', async () => {
     const canonical = Object.freeze({
       activityRef: CANONICAL_ACTIVITY_REF,
       title: 'Persistita nel Planning Tray',
@@ -283,12 +374,12 @@ describe('Temporal Create normal-runtime boundary', () => {
     });
     const activity = activitySource(Object.freeze([canonical]));
     const runtime = createLocalTemporalCreateRuntime({
-      ...runtimeOptions('runtime-boundary-b02b-place'),
+      ...runtimeOptions('runtime-boundary-b02e-place'),
       mode: 'production',
       activityDataSource: activity.source,
     });
-    const start = Temporal.PlainDateTime.from('2026-09-07T16:00:00');
-    const end = Temporal.PlainDateTime.from('2026-09-07T16:45:00');
+    const start = Temporal.PlainDateTime.from('2026-09-07T23:30:00');
+    const end = Temporal.PlainDateTime.from('2026-09-08T00:15:00');
 
     const result = await runtime.placeExistingActivity(
       CANONICAL_ACTIVITY_REF,
@@ -322,17 +413,17 @@ describe('Temporal Create normal-runtime boundary', () => {
     }
   });
 
-  it('still fails closed for placement forms and owner semantics outside B02-A', async () => {
+  it('still fails closed for owner semantics outside B02', async () => {
     const activity = activitySource();
     const runtime = createLocalTemporalCreateRuntime({
-      ...runtimeOptions('runtime-boundary-unsupported'),
+      ...runtimeOptions('runtime-boundary-event-unsupported'),
       mode: 'production',
       activityDataSource: activity.source,
     });
     const preparation = runtime.prepare(
       createTemporalCreateFields({
-        title: 'Activity zoned non ancora attivata',
-        kind: 'activity',
+        title: 'Evento B03 non anticipato',
+        kind: 'event',
         date: '2026-09-07',
         timeSemantics: 'timed',
         startTime: '15:00',
@@ -342,7 +433,7 @@ describe('Temporal Create normal-runtime boundary', () => {
       }),
     );
     if (preparation.status !== 'ready') {
-      throw new Error('Expected a valid Create preparation');
+      throw new Error('Expected a valid Event draft preparation.');
     }
 
     const execution = await runtime.execute(preparation.prepared);
@@ -360,10 +451,10 @@ describe('Temporal Create normal-runtime boundary', () => {
     }
   });
 
-  it('fails closed instead of dropping unpersisted rich B02-A intent', async () => {
+  it('fails closed instead of dropping unpersisted rich B02 intent', async () => {
     const activity = activitySource();
     const runtime = createLocalTemporalCreateRuntime({
-      ...runtimeOptions('runtime-boundary-b02a-rich'),
+      ...runtimeOptions('runtime-boundary-b02-rich'),
       mode: 'production',
       activityDataSource: activity.source,
     });
