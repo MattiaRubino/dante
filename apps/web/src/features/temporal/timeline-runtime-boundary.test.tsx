@@ -206,15 +206,19 @@ describe('TemporalTimelineRuntimeBoundary', () => {
     );
     const dataSource: TemporalTimelineDataSource = { loadWindow };
     const reviseSchedule = vi.fn<TemporalScheduleDataSource['reviseSchedule']>(
-      (request) =>
-        Promise.resolve({
+      (request) => {
+        if (request.placement.kind !== 'floating-local-interval') {
+          return Promise.reject(new Error('Expected floating-local placement.'));
+        }
+        return Promise.resolve({
           scheduleRef: request.scheduleRef,
           previousPlacementMaterialStateRef:
             request.expectedPlacementMaterialStateRef,
           placementMaterialStateRef: NEXT_MATERIAL_STATE_REF,
           placement: request.placement,
           replayed: false,
-        }),
+        });
+      },
     );
     const scheduleDataSource: TemporalScheduleDataSource = {
       reviseSchedule,
