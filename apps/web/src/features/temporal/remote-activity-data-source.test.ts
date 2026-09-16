@@ -14,6 +14,19 @@ function jsonResponse(body: unknown, status = 200): Response {
   });
 }
 
+function requestJsonBody(
+  init: RequestInit | undefined,
+): Readonly<Record<string, unknown>> {
+  if (typeof init?.body !== 'string') {
+    throw new Error('Expected JSON string request body.');
+  }
+  const parsed = JSON.parse(init.body) as unknown;
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    throw new Error('Expected JSON object request body.');
+  }
+  return parsed as Readonly<Record<string, unknown>>;
+}
+
 const ACTIVITY = Object.freeze({
   activity_ref: '0199a8c0-5e71-7bc0-8ad0-a2f403f5617d',
   title: 'Prima Activity',
@@ -151,7 +164,7 @@ describe('remote temporal Activity data source', () => {
         );
       }
       expect(input).toBe('/api/v1/temporal/activities/scheduled');
-      expect(JSON.parse(String(init?.body)).placement).toEqual({
+      expect(requestJsonBody(init).placement).toEqual({
         kind: 'floating_local_interval',
         starts_local_at: '2026-09-09T23:30:00',
         ends_local_at: '2026-09-10T00:15:00',
@@ -196,7 +209,7 @@ describe('remote temporal Activity data source', () => {
           jsonResponse({ authenticated: true, csrf_token: 'csrf-b02-e' }),
         );
       }
-      expect(JSON.parse(String(init?.body)).placement).toEqual({
+      expect(requestJsonBody(init).placement).toEqual({
         kind: 'coarse_local_period',
         local_date: '2026-09-16',
         period: 'afternoon',
@@ -397,7 +410,7 @@ describe('remote temporal Activity data source', () => {
       expect(input).toBe(
         `/api/v1/temporal/activities/${ACTIVITY.activity_ref}/schedule`,
       );
-      expect(JSON.parse(String(init?.body)).placement).toEqual({
+      expect(requestJsonBody(init).placement).toEqual({
         kind: 'floating_local_interval',
         starts_local_at: '2026-09-09T23:30:00',
         ends_local_at: '2026-09-10T00:15:00',
