@@ -119,9 +119,7 @@ def _identity(row: RowMapping) -> dict[str, Any]:
     return {
         "activity_ref": NativeRef(UUID(str(row["activity_ref"]))),
         "schedule_ref": ScopedRecordRef(UUID(str(row["schedule_ref"]))),
-        "placement_material_state_ref": MaterialStateRef(
-            UUID(str(row["material_state_ref"]))
-        ),
+        "placement_material_state_ref": MaterialStateRef(UUID(str(row["material_state_ref"]))),
         "title": str(row["title"]),
     }
 
@@ -331,8 +329,7 @@ class TemporalTimelineApplication:
                     .all()
                 )
             items = tuple(
-                _item_from_row(row, effective_zone_id=context.effective_zone_id)
-                for row in rows
+                _item_from_row(row, effective_zone_id=context.effective_zone_id) for row in rows
             )
         except (SQLAlchemyError, KeyError, TypeError, ValueError) as exc:
             raise TimelinePersistenceError() from exc
