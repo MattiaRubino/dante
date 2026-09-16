@@ -28,7 +28,7 @@ describe('Temporal Create Event end semantics', () => {
     ).toEqual({ date: '2026-03-29', time: '03:30', dayOffset: 0 });
   });
 
-  it('uses exact elapsed time across the Europe/Rome spring-forward transition', () => {
+  it('keeps named-zone authoring wall-clock based across the Europe/Rome spring-forward transition', () => {
     expect(
       temporalCreateDurationFromEndDateTime(
         '2026-03-29',
@@ -38,19 +38,19 @@ describe('Temporal Create Event end semantics', () => {
         'zoned',
         'Europe/Rome',
       ),
-    ).toBe(60);
+    ).toBe(120);
     expect(
       temporalCreateEndDateTime(
         '2026-03-29',
         '01:30',
-        60,
+        120,
         'zoned',
         'Europe/Rome',
       ),
     ).toEqual({ date: '2026-03-29', time: '03:30', dayOffset: 0 });
   });
 
-  it('uses exact elapsed time across the Europe/Rome fall-back transition', () => {
+  it('keeps named-zone authoring wall-clock based across the Europe/Rome fall-back transition', () => {
     expect(
       temporalCreateDurationFromEndDateTime(
         '2026-10-25',
@@ -60,12 +60,12 @@ describe('Temporal Create Event end semantics', () => {
         'zoned',
         'Europe/Rome',
       ),
-    ).toBe(180);
+    ).toBe(120);
     expect(
       temporalCreateEndDateTime(
         '2026-10-25',
         '01:30',
-        180,
+        120,
         'zoned',
         'Europe/Rome',
       ),
@@ -94,7 +94,7 @@ describe('Temporal Create Event end semantics', () => {
     ).toBe(1080);
   });
 
-  it('rejects invalid or non-forward zoned end values', () => {
+  it('rejects non-forward wall-clock values without performing zone validation', () => {
     expect(
       temporalCreateDurationFromEndDateTime(
         '2026-08-04',
@@ -114,6 +114,6 @@ describe('Temporal Create Event end semantics', () => {
         'zoned',
         'Not/AZone',
       ),
-    ).toBeNull();
+    ).toBe(60);
   });
 });
