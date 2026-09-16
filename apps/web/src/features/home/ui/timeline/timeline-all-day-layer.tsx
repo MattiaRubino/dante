@@ -12,6 +12,7 @@ import type {
   TimelineGroup,
   TimelineGroupId,
 } from './model/timeline-types';
+import { useTimelineCanonicalActions } from './timeline-canonical-actions';
 
 import './timeline-all-day-layer.css';
 
@@ -48,6 +49,7 @@ export function TimelineAllDayLane({
   filters,
 }: TimelineAllDayLaneProps) {
   const { t, i18n } = useTranslation('common');
+  const canonicalActions = useTimelineCanonicalActions();
   const visibleItems = useMemo(
     () => timelineAllDayItemsForVisibleDate(items, filters, dateKey),
     [dateKey, filters, items],
@@ -100,42 +102,65 @@ export function TimelineAllDayLane({
             laneKind === 'coarse' && item.coarsePeriod !== undefined
               ? coarsePeriodLabel(item.coarsePeriod, language)
               : t(($) => $.common.home.timeline.create.timeSemantics.allDay);
+          const basis = item.canonicalBasis;
+          const canUnschedule = basis !== undefined && canonicalActions !== null;
+          const pending =
+            basis !== undefined &&
+            canonicalActions?.pendingScheduleRef === basis.scheduleRef;
 
           return (
-            <button
-              className="timeline-all-day-item"
-              type="button"
-              key={item.id}
-              data-timeline-all-day-item={item.id}
-              data-timeline-date-lane-kind={laneKind}
-              data-temporal-create-projection={
-                item.origin === 'create' ? item.id : undefined
-              }
-              data-timeline-tone={tone}
-              data-range-position={position}
-              data-range-start={startsHere || undefined}
-              data-range-end={endsHere || undefined}
-              aria-label={`${item.title} · ${precisionLabel} · ${group?.label ?? item.groupId}`}
-              onClick={(event) => event.currentTarget.focus()}
-            >
-              <span
-                className="timeline-all-day-item__continuation"
-                aria-hidden="true"
+            <div className="timeline-all-day-item-row" key={item.id}>
+              <button
+                className="timeline-all-day-item"
+                type="button"
+                data-timeline-all-day-item={item.id}
+                data-timeline-date-lane-kind={laneKind}
+                data-temporal-create-projection={
+                  item.origin === 'create' ? item.id : undefined
+                }
+                data-timeline-tone={tone}
+                data-range-position={position}
+                data-range-start={startsHere || undefined}
+                data-range-end={endsHere || undefined}
+                aria-label={`${item.title} · ${precisionLabel} · ${group?.label ?? item.groupId}`}
+                onClick={(event) => event.currentTarget.focus()}
               >
-                {startsHere ? '' : '‹'}
-              </span>
-              <strong>{item.title}</strong>
-              <span className="timeline-all-day-item__meta">
-                {precisionLabel} · {group?.label ?? item.groupId}
-                {item.meta ? ` · ${item.meta}` : ''}
-              </span>
-              <span
-                className="timeline-all-day-item__continuation"
-                aria-hidden="true"
-              >
-                {endsHere ? '' : '›'}
-              </span>
-            </button>
+                <span
+                  className="timeline-all-day-item__continuation"
+                  aria-hidden="true"
+                >
+                  {startsHere ? '' : '‹'}
+                </span>
+                <strong>{item.title}</strong>
+                <span className="timeline-all-day-item__meta">
+                  {precisionLabel} · {group?.label ?? item.groupId}
+                  {item.meta ? ` · ${item.meta}` : ''}
+                </span>
+                <span
+                  className="timeline-all-day-item__continuation"
+                  aria-hidden="true"
+                >
+                  {endsHere ? '' : '›'}
+                </span>
+              </button>
+              {canUnschedule ? (
+                <button
+                  className="timeline-all-day-item__unschedule"
+                  type="button"
+                  disabled={pending}
+                  aria-label={`${t(($) => $.common.home.timeline.detail.unschedule)} · ${item.title}`}
+                  onClick={() => {
+                    if (basis !== undefined) {
+                      canonicalActions.unschedule(basis);
+                    }
+                  }}
+                >
+                  {pending
+                    ? t(($) => $.common.home.timeline.detail.unscheduling)
+                    : t(($) => $.common.home.timeline.detail.unschedule)}
+                </button>
+              ) : null}
+            </div>
           );
         })}
       </div>
