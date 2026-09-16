@@ -507,31 +507,30 @@ async def test_schedule_unschedule_and_undo_map_public_failures(
     code: str,
 ) -> None:
     application = _schedule_application(_StaticScheduleApplication(failure))
-    if endpoint == "unschedule":
-        request = unschedule_schedule(
-            schedule_ref=UUID(str(_SCHEDULE_REF)),
-            payload=UnscheduleScheduleRequest(
-                operation_id="operation:b02-d:unschedule",
-                expected_placement_material_state_ref=UUID(str(_STATE_REF)),
-            ),
-            context=_context(),
-            application=application,
-            response=Response(),
-        )
-    else:
-        request = undo_schedule_unschedule(
-            schedule_ref=UUID(str(_SCHEDULE_REF)),
-            payload=UndoScheduleUnscheduleRequest(
-                operation_id="operation:b02-d:undo",
-                unschedule_operation_id="operation:b02-d:unschedule",
-            ),
-            context=_context(),
-            application=application,
-            response=Response(),
-        )
 
     with pytest.raises(ProblemError) as error:
-        await request
+        if endpoint == "unschedule":
+            await unschedule_schedule(
+                schedule_ref=UUID(str(_SCHEDULE_REF)),
+                payload=UnscheduleScheduleRequest(
+                    operation_id="operation:b02-d:unschedule",
+                    expected_placement_material_state_ref=UUID(str(_STATE_REF)),
+                ),
+                context=_context(),
+                application=application,
+                response=Response(),
+            )
+        else:
+            await undo_schedule_unschedule(
+                schedule_ref=UUID(str(_SCHEDULE_REF)),
+                payload=UndoScheduleUnscheduleRequest(
+                    operation_id="operation:b02-d:undo",
+                    unschedule_operation_id="operation:b02-d:unschedule",
+                ),
+                context=_context(),
+                application=application,
+                response=Response(),
+            )
 
     assert error.value.status == status
     assert error.value.code == code
