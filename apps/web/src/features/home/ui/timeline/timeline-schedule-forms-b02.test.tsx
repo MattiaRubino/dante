@@ -92,11 +92,12 @@ describe('B02-E3 Schedule form rendering', () => {
     expect(screen.getByText('Fascia')).toBeTruthy();
     expect(screen.getByText('Scrivere relazione')).toBeTruthy();
     expect(screen.getByText(/Pomeriggio · Personale/)).toBeTruthy();
-    expect(
-      screen.getByRole('button', {
-        name: 'Scrivere relazione · Pomeriggio · Personale',
-      }),
-    ).toHaveAttribute('data-timeline-date-lane-kind', 'coarse');
+    const coarseButton = screen.getByRole('button', {
+      name: 'Scrivere relazione · Pomeriggio · Personale',
+    });
+    expect(coarseButton.getAttribute('data-timeline-date-lane-kind')).toBe(
+      'coarse',
+    );
     expect(laneItem.canonicalBasis.placement).toMatchObject({
       kind: 'coarse-local-period',
       period: 'afternoon',
