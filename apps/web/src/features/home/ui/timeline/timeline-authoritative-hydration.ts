@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react';
 
 import { useTemporalTimelineRuntime } from '../../../temporal/timeline-runtime-boundary';
 import type { TemporalTimelineScheduledActivityItem } from '../../../temporal/timeline-read';
-import type { TimelineEvent } from './model/timeline-types';
+import type { TimelineAllDayItem, TimelineEvent } from './model/timeline-types';
 
 function minuteOfLocalDay(value: PlainDateTime): number {
   return (
@@ -42,6 +42,46 @@ function eventMeta(item: TemporalTimelineScheduledActivityItem): string | undefi
     return 'absolute';
   }
   return undefined;
+}
+
+function canonicalBasis(item: TemporalTimelineScheduledActivityItem) {
+  return Object.freeze({
+    kind: 'scheduled-activity' as const,
+    activityRef: item.activityRef,
+    scheduleRef: item.scheduleRef,
+    placementMaterialStateRef: item.placementMaterialStateRef,
+  });
+}
+
+export function canonicalScheduledActivityDateLaneItem(
+  item: TemporalTimelineScheduledActivityItem,
+): TimelineAllDayItem | null {
+  if (item.temporalForm === 'date-span') {
+    return Object.freeze({
+      id: item.scheduleRef,
+      startDateKey: item.startDate.toString(),
+      endDateExclusiveKey: item.endDateExclusive.toString(),
+      title: item.title,
+      groupId: 'personale',
+      appearanceTone: 'personal',
+      canonicalBasis: canonicalBasis(item),
+      laneKind: 'all-day' as const,
+    });
+  }
+  if (item.temporalForm === 'coarse-local-period') {
+    return Object.freeze({
+      id: item.scheduleRef,
+      startDateKey: item.localDate.toString(),
+      endDateExclusiveKey: item.localDate.add({ days: 1 }).toString(),
+      title: item.title,
+      groupId: 'personale',
+      appearanceTone: 'personal',
+      canonicalBasis: canonicalBasis(item),
+      laneKind: 'coarse' as const,
+      coarsePeriod: item.period,
+    });
+  }
+  return null;
 }
 
 export function canonicalScheduledActivityTimelineEvents(
@@ -83,12 +123,7 @@ export function canonicalScheduledActivityTimelineEvents(
           title: item.title,
           groupId: 'personale',
           appearanceTone: 'personal',
-          canonicalBasis: Object.freeze({
-            kind: 'scheduled-activity' as const,
-            activityRef: item.activityRef,
-            scheduleRef: item.scheduleRef,
-            placementMaterialStateRef: item.placementMaterialStateRef,
-          }),
+          canonicalBasis: canonicalBasis(item),
           ...(eventMeta(item) === undefined ? {} : { meta: eventMeta(item) }),
         }),
       }),
