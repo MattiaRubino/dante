@@ -74,7 +74,7 @@ describe('remote temporal Activity data source', () => {
     expect(fetchFn).toHaveBeenCalledTimes(2);
   });
 
-  it('creates Activity plus accepted B02-A Schedule atomically through the scheduled endpoint', async () => {
+  it('creates Activity plus accepted Schedule atomically through the generalized B02-E endpoint', async () => {
     const fetchFn = vi.fn<typeof globalThis.fetch>((input, init) => {
       const headers = new Headers(init?.headers);
       expect(init?.credentials).toBe('same-origin');
@@ -123,35 +123,103 @@ describe('remote temporal Activity data source', () => {
       scheduleRef: SCHEDULED_ACTIVITY.schedule_ref,
       placementMaterialStateRef:
         SCHEDULED_ACTIVITY.placement_material_state_ref,
-      temporalForm: 'floating-local',
     });
-    expect(result.schedule.startsLocalAt.toString()).toBe(
+    expect(result.schedule.placement.kind).toBe('floating-local-interval');
+    if (result.schedule.placement.kind !== 'floating-local-interval') {
+      throw new Error('Expected floating-local placement.');
+    }
+    expect(result.schedule.placement.startsLocalAt.toString()).toBe(
       '2026-09-09T14:15:00',
     );
-    expect(result.schedule.endsLocalAt.toString()).toBe('2026-09-09T15:00:00');
+    expect(result.schedule.placement.endsLocalAt.toString()).toBe(
+      '2026-09-09T15:00:00',
+    );
     expect(result.replayed).toBe(false);
     expect(fetchFn).toHaveBeenCalledTimes(2);
   });
 
-  it('rejects a cross-day B02-A create before authentication or network I/O', async () => {
-    const fetchFn = vi.fn<typeof globalThis.fetch>();
+  it('creates a cross-midnight floating-local Activity Schedule without attaching a timezone', async () => {
+    const response = Object.freeze({
+      ...SCHEDULED_ACTIVITY,
+      starts_local_at: '2026-09-09T23:30:00',
+      ends_local_at: '2026-09-10T00:15:00',
+    });
+    const fetchFn = vi.fn<typeof globalThis.fetch>((input, init) => {
+      if (input === '/api/v1/auth/session') {
+        return Promise.resolve(
+          jsonResponse({ authenticated: true, csrf_token: 'csrf-b02-e' }),
+        );
+      }
+      expect(input).toBe('/api/v1/temporal/activities/scheduled');
+      expect(JSON.parse(String(init?.body)).placement).toEqual({
+        kind: 'floating_local_interval',
+        starts_local_at: '2026-09-09T23:30:00',
+        ends_local_at: '2026-09-10T00:15:00',
+      });
+      return Promise.resolve(jsonResponse(response, 201));
+    });
     const source = createRemoteTemporalActivityDataSource(
       fetchFn,
       () => 'Europe/Rome',
     );
 
-    await expect(
-      source.createScheduledActivity({
-        operationId: 'operation:b02-cross-day',
-        title: 'Non supportata',
-        placement: {
-          kind: 'floating-local-interval',
-          startsLocalAt: Temporal.PlainDateTime.from('2026-09-09T23:30:00'),
-          endsLocalAt: Temporal.PlainDateTime.from('2026-09-10T00:15:00'),
-        },
-      }),
-    ).rejects.toBeInstanceOf(RangeError);
-    expect(fetchFn).not.toHaveBeenCalled();
+    const result = await source.createScheduledActivity({
+      operationId: 'operation:b02-e:cross-day',
+      title: 'Cross midnight',
+      placement: {
+        kind: 'floating-local-interval',
+        startsLocalAt: Temporal.PlainDateTime.from('2026-09-09T23:30:00'),
+        endsLocalAt: Temporal.PlainDateTime.from('2026-09-10T00:15:00'),
+      },
+    });
+
+    expect(result.schedule.placement.kind).toBe('floating-local-interval');
+    expect(fetchFn).toHaveBeenCalledTimes(2);
+  });
+
+  it('creates coarse Activity placement without manufacturing clock boundaries', async () => {
+    const response = Object.freeze({
+      activity_ref: ACTIVITY.activity_ref,
+      title: 'Pomeriggio',
+      created_at: ACTIVITY.created_at,
+      replayed: false,
+      schedule_ref: SCHEDULED_ACTIVITY.schedule_ref,
+      placement_material_state_ref:
+        SCHEDULED_ACTIVITY.placement_material_state_ref,
+      temporal_form: 'coarse_local_period',
+      local_date: '2026-09-16',
+      period: 'afternoon',
+    });
+    const fetchFn = vi.fn<typeof globalThis.fetch>((input, init) => {
+      if (input === '/api/v1/auth/session') {
+        return Promise.resolve(
+          jsonResponse({ authenticated: true, csrf_token: 'csrf-b02-e' }),
+        );
+      }
+      expect(JSON.parse(String(init?.body)).placement).toEqual({
+        kind: 'coarse_local_period',
+        local_date: '2026-09-16',
+        period: 'afternoon',
+      });
+      return Promise.resolve(jsonResponse(response, 201));
+    });
+    const source = createRemoteTemporalActivityDataSource(fetchFn);
+
+    const result = await source.createScheduledActivity({
+      operationId: 'operation:b02-e:coarse',
+      title: 'Pomeriggio',
+      placement: {
+        kind: 'coarse-local-period',
+        localDate: Temporal.PlainDate.from('2026-09-16'),
+        period: 'afternoon',
+      },
+    });
+
+    expect(result.schedule.placement).toMatchObject({
+      kind: 'coarse-local-period',
+      period: 'afternoon',
+    });
+    expect(fetchFn).toHaveBeenCalledTimes(2);
   });
 
   it('reads canonical unplaced Activities without inventing temporal fields', async () => {
@@ -208,7 +276,7 @@ describe('remote temporal Activity data source', () => {
     });
   });
 
-  it('preserves B02-A operation-id conflict instead of reporting fake Schedule success', async () => {
+  it('preserves Schedule operation-id conflict instead of reporting fake success', async () => {
     const fetchFn = vi.fn<typeof globalThis.fetch>((input) => {
       if (input === '/api/v1/auth/session') {
         return Promise.resolve(
@@ -260,7 +328,7 @@ describe('remote temporal Activity data source', () => {
     );
   });
 
-  it('attaches a B02-B Schedule to the exact existing Activity and invalidates Timeline', async () => {
+  it('attaches a Schedule to the exact existing Activity and invalidates Timeline', async () => {
     const invalidated = vi.fn();
     const unsubscribe = subscribeTemporalTimelineInvalidation(invalidated);
     const fetchFn = vi.fn<typeof globalThis.fetch>((input, init) => {
@@ -314,7 +382,44 @@ describe('remote temporal Activity data source', () => {
     }
   });
 
-  it('rejects B02-B response identity drift instead of moving a different Activity', async () => {
+  it('attaches a cross-midnight placement to an existing Activity', async () => {
+    const response = Object.freeze({
+      ...SCHEDULED_ACTIVITY,
+      starts_local_at: '2026-09-09T23:30:00',
+      ends_local_at: '2026-09-10T00:15:00',
+    });
+    const fetchFn = vi.fn<typeof globalThis.fetch>((input, init) => {
+      if (input === '/api/v1/auth/session') {
+        return Promise.resolve(
+          jsonResponse({ authenticated: true, csrf_token: 'csrf-b02-e' }),
+        );
+      }
+      expect(input).toBe(
+        `/api/v1/temporal/activities/${ACTIVITY.activity_ref}/schedule`,
+      );
+      expect(JSON.parse(String(init?.body)).placement).toEqual({
+        kind: 'floating_local_interval',
+        starts_local_at: '2026-09-09T23:30:00',
+        ends_local_at: '2026-09-10T00:15:00',
+      });
+      return Promise.resolve(jsonResponse(response, 201));
+    });
+    const source = createRemoteTemporalActivityDataSource(fetchFn);
+
+    const result = await source.establishActivitySchedule({
+      activityRef: ACTIVITY.activity_ref,
+      operationId: 'operation:b02-e:place-cross-day',
+      placement: {
+        kind: 'floating-local-interval',
+        startsLocalAt: Temporal.PlainDateTime.from('2026-09-09T23:30:00'),
+        endsLocalAt: Temporal.PlainDateTime.from('2026-09-10T00:15:00'),
+      },
+    });
+
+    expect(result.schedule.placement.kind).toBe('floating-local-interval');
+  });
+
+  it('rejects B02-E response identity drift instead of moving a different Activity', async () => {
     const otherActivityRef = '0199a8c0-8e74-7ef3-9df3-d517362894a0';
     const fetchFn = vi.fn<typeof globalThis.fetch>((input) => {
       if (input === '/api/v1/auth/session') {
@@ -349,7 +454,7 @@ describe('remote temporal Activity data source', () => {
     });
   });
 
-  it('rejects invalid B02-B identity and cross-day placement before network I/O', async () => {
+  it('rejects invalid Activity identity before network I/O', async () => {
     const fetchFn = vi.fn<typeof globalThis.fetch>();
     const source = createRemoteTemporalActivityDataSource(fetchFn);
 
@@ -357,20 +462,6 @@ describe('remote temporal Activity data source', () => {
       source.establishActivitySchedule({
         activityRef: 'not-a-native-ref',
         operationId: 'operation:b02-b:invalid',
-        placement: {
-          kind: 'floating-local-interval',
-          startsLocalAt: Temporal.PlainDateTime.from(
-            '2026-09-09T23:30:00',
-          ),
-          endsLocalAt: Temporal.PlainDateTime.from('2026-09-10T00:15:00'),
-        },
-      }),
-    ).rejects.toBeInstanceOf(RangeError);
-
-    await expect(
-      source.establishActivitySchedule({
-        activityRef: ACTIVITY.activity_ref,
-        operationId: 'operation:b02-b:cross-day',
         placement: {
           kind: 'floating-local-interval',
           startsLocalAt: Temporal.PlainDateTime.from(
