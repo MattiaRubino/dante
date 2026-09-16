@@ -1,4 +1,4 @@
-import { Temporal } from '@dante/time';
+import { Temporal, validateNamedTimeZone } from '@dante/time';
 
 import {
   createWebFetch,
@@ -13,6 +13,10 @@ import type {
   TemporalScheduledActivityCreateRequest,
   TemporalScheduledActivityCreateResult,
 } from './activity-data-source';
+import type {
+  TemporalAcceptedSchedulePlacement,
+  TemporalSchedulePlacementInput,
+} from './schedule-data-source';
 import { invalidateTemporalTimelineRead } from './timeline-invalidation';
 
 const SESSION_ENDPOINT = '/api/v1/auth/session';
@@ -22,9 +26,14 @@ const activityScheduleEndpoint = (activityRef: string) =>
   `${ACTIVITY_ENDPOINT}/${encodeURIComponent(activityRef)}/schedule`;
 const UNPLACED_ACTIVITY_ENDPOINT = '/api/v1/temporal/activities/unplaced';
 const CSRF_HEADER_NAME = 'X-Dante-CSRF';
+const UUID_V7 =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export type TemporalActivityRemoteFailureKind =
-  'transport' | 'http' | 'protocol' | 'authentication';
+  | 'transport'
+  | 'http'
+  | 'protocol'
+  | 'authentication';
 
 export class TemporalActivityRemoteError extends Error {
   constructor(
@@ -60,15 +69,18 @@ function requireExactKeys(
       );
     }
   }
+  for (const key of allowed) {
+    if (!(key in payload)) {
+      throw new TemporalActivityRemoteError(
+        'protocol',
+        `${label} is missing required field ${key}.`,
+      );
+    }
+  }
 }
 
 function parseUuidV7(value: unknown, field: string): string {
-  if (
-    typeof value !== 'string' ||
-    !/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-      value,
-    )
-  ) {
+  if (typeof value !== 'string' || !UUID_V7.test(value)) {
     throw new TemporalActivityRemoteError(
       'protocol',
       `${field} must be a canonical UUIDv7 string.`,
@@ -77,13 +89,11 @@ function parseUuidV7(value: unknown, field: string): string {
   return value.toLowerCase();
 }
 
-function parseCreatedAt(
-  value: unknown,
-): ReturnType<typeof Temporal.Instant.from> {
+function parseInstant(value: unknown, field: string) {
   if (typeof value !== 'string') {
     throw new TemporalActivityRemoteError(
       'protocol',
-      'created_at must be an absolute timestamp.',
+      `${field} must be an absolute timestamp.`,
     );
   }
   try {
@@ -91,19 +101,40 @@ function parseCreatedAt(
   } catch {
     throw new TemporalActivityRemoteError(
       'protocol',
-      'created_at must be an absolute timestamp.',
+      `${field} must be an absolute timestamp.`,
     );
   }
 }
 
-function parseFloatingLocalDateTime(value: unknown, field: string) {
+function parsePlainDate(value: unknown, field: string) {
+  if (typeof value !== 'string') {
+    throw new TemporalActivityRemoteError(
+      'protocol',
+      `${field} must be a canonical PlainDate string.`,
+    );
+  }
+  try {
+    const parsed = Temporal.PlainDate.from(value);
+    if (parsed.toString() !== value) {
+      throw new RangeError('non-canonical PlainDate');
+    }
+    return parsed;
+  } catch {
+    throw new TemporalActivityRemoteError(
+      'protocol',
+      `${field} must be a canonical PlainDate string.`,
+    );
+  }
+}
+
+function parseLocalDateTime(value: unknown, field: string) {
   if (
     typeof value !== 'string' ||
     /(?:Z|[+-]\d{2}:\d{2}|\[[^\]]+\])$/i.test(value)
   ) {
     throw new TemporalActivityRemoteError(
       'protocol',
-      `${field} must be a floating local date-time without zone or offset.`,
+      `${field} must be a local date-time without zone or offset.`,
     );
   }
   try {
@@ -111,7 +142,24 @@ function parseFloatingLocalDateTime(value: unknown, field: string) {
   } catch {
     throw new TemporalActivityRemoteError(
       'protocol',
-      `${field} must be a floating local date-time without zone or offset.`,
+      `${field} must be a local date-time without zone or offset.`,
+    );
+  }
+}
+
+function parseZoneId(value: unknown, field: string): string {
+  if (typeof value !== 'string') {
+    throw new TemporalActivityRemoteError(
+      'protocol',
+      `${field} must be a named IANA timezone.`,
+    );
+  }
+  try {
+    return validateNamedTimeZone(value);
+  } catch {
+    throw new TemporalActivityRemoteError(
+      'protocol',
+      `${field} must be a named IANA timezone.`,
     );
   }
 }
@@ -149,15 +197,165 @@ function parseActivity(
       'Read-only Activity projection cannot report a replay.',
     );
   }
-
   return Object.freeze({
     activity: Object.freeze({
       activityRef: parseUuidV7(payload.activity_ref, 'activity_ref'),
       title: payload.title,
-      createdAt: parseCreatedAt(payload.created_at),
+      createdAt: parseInstant(payload.created_at, 'created_at'),
     }),
     replayed: payload.replayed,
   });
+}
+
+function parseAcceptedPlacement(
+  payload: Record<string, unknown>,
+): TemporalAcceptedSchedulePlacement {
+  switch (payload.temporal_form) {
+    case 'date_span': {
+      const startDate = parsePlainDate(payload.start_date, 'start_date');
+      const endDateExclusive = parsePlainDate(
+        payload.end_date_exclusive,
+        'end_date_exclusive',
+      );
+      if (Temporal.PlainDate.compare(startDate, endDateExclusive) >= 0) {
+        throw new TemporalActivityRemoteError(
+          'protocol',
+          'Scheduled Activity date span must be positive.',
+        );
+      }
+      return Object.freeze({
+        kind: 'date-span' as const,
+        startDate,
+        endDateExclusive,
+      });
+    }
+    case 'floating_local': {
+      const startsLocalAt = parseLocalDateTime(
+        payload.starts_local_at,
+        'starts_local_at',
+      );
+      const endsLocalAt = parseLocalDateTime(
+        payload.ends_local_at,
+        'ends_local_at',
+      );
+      if (Temporal.PlainDateTime.compare(startsLocalAt, endsLocalAt) >= 0) {
+        throw new TemporalActivityRemoteError(
+          'protocol',
+          'Scheduled Activity floating-local interval must be positive.',
+        );
+      }
+      return Object.freeze({
+        kind: 'floating-local-interval' as const,
+        startsLocalAt,
+        endsLocalAt,
+      });
+    }
+    case 'named_zone_local': {
+      const startsLocalAt = parseLocalDateTime(
+        payload.starts_local_at,
+        'starts_local_at',
+      );
+      const endsLocalAt = parseLocalDateTime(
+        payload.ends_local_at,
+        'ends_local_at',
+      );
+      const resolvedStartAt = parseInstant(
+        payload.resolved_start_at,
+        'resolved_start_at',
+      );
+      const resolvedEndAt = parseInstant(
+        payload.resolved_end_at,
+        'resolved_end_at',
+      );
+      if (
+        Temporal.PlainDateTime.compare(startsLocalAt, endsLocalAt) >= 0 ||
+        Temporal.Instant.compare(resolvedStartAt, resolvedEndAt) >= 0
+      ) {
+        throw new TemporalActivityRemoteError(
+          'protocol',
+          'Scheduled Activity named-zone interval must be positive.',
+        );
+      }
+      return Object.freeze({
+        kind: 'named-zone-local-interval' as const,
+        startsLocalAt,
+        endsLocalAt,
+        zoneId: parseZoneId(payload.zone_id, 'zone_id'),
+        resolvedStartAt,
+        resolvedEndAt,
+      });
+    }
+    case 'absolute': {
+      const startsAt = parseInstant(payload.starts_at, 'starts_at');
+      const endsAt = parseInstant(payload.ends_at, 'ends_at');
+      if (Temporal.Instant.compare(startsAt, endsAt) >= 0) {
+        throw new TemporalActivityRemoteError(
+          'protocol',
+          'Scheduled Activity absolute interval must be positive.',
+        );
+      }
+      return Object.freeze({
+        kind: 'absolute-interval' as const,
+        startsAt,
+        endsAt,
+      });
+    }
+    case 'coarse_local_period': {
+      if (
+        payload.period !== 'morning' &&
+        payload.period !== 'afternoon' &&
+        payload.period !== 'evening'
+      ) {
+        throw new TemporalActivityRemoteError(
+          'protocol',
+          'Scheduled Activity coarse period is unsupported.',
+        );
+      }
+      return Object.freeze({
+        kind: 'coarse-local-period' as const,
+        localDate: parsePlainDate(payload.local_date, 'local_date'),
+        period: payload.period,
+      });
+    }
+    default:
+      throw new TemporalActivityRemoteError(
+        'protocol',
+        'Scheduled Activity temporal form is unsupported.',
+      );
+  }
+}
+
+function scheduledResponseKeys(temporalForm: unknown): readonly string[] {
+  const common = [
+    'activity_ref',
+    'title',
+    'created_at',
+    'schedule_ref',
+    'placement_material_state_ref',
+    'temporal_form',
+    'replayed',
+  ] as const;
+  switch (temporalForm) {
+    case 'date_span':
+      return [...common, 'start_date', 'end_date_exclusive'];
+    case 'floating_local':
+      return [...common, 'starts_local_at', 'ends_local_at'];
+    case 'named_zone_local':
+      return [
+        ...common,
+        'starts_local_at',
+        'ends_local_at',
+        'zone_id',
+        'resolved_start_at',
+        'resolved_end_at',
+      ];
+    case 'absolute':
+      return [...common, 'starts_at', 'ends_at'];
+    case 'coarse_local_period':
+      return [...common, 'local_date', 'period'];
+    default:
+      return common;
+  }
 }
 
 function parseScheduledActivity(
@@ -171,17 +369,7 @@ function parseScheduledActivity(
   }
   requireExactKeys(
     payload,
-    [
-      'activity_ref',
-      'title',
-      'created_at',
-      'schedule_ref',
-      'placement_material_state_ref',
-      'temporal_form',
-      'starts_local_at',
-      'ends_local_at',
-      'replayed',
-    ],
+    scheduledResponseKeys(payload.temporal_form),
     'Scheduled Activity response',
   );
   if (typeof payload.title !== 'string' || payload.title.trim().length === 0) {
@@ -196,36 +384,11 @@ function parseScheduledActivity(
       'Scheduled Activity replayed must be boolean.',
     );
   }
-  if (payload.temporal_form !== 'floating_local') {
-    throw new TemporalActivityRemoteError(
-      'protocol',
-      'B02-A Scheduled Activity must preserve floating-local placement semantics.',
-    );
-  }
-
-  const startsLocalAt = parseFloatingLocalDateTime(
-    payload.starts_local_at,
-    'starts_local_at',
-  );
-  const endsLocalAt = parseFloatingLocalDateTime(
-    payload.ends_local_at,
-    'ends_local_at',
-  );
-  if (
-    Temporal.PlainDateTime.compare(startsLocalAt, endsLocalAt) >= 0 ||
-    !startsLocalAt.toPlainDate().equals(endsLocalAt.toPlainDate())
-  ) {
-    throw new TemporalActivityRemoteError(
-      'protocol',
-      'B02-A Scheduled Activity must be a positive same-local-day interval.',
-    );
-  }
-
   return Object.freeze({
     activity: Object.freeze({
       activityRef: parseUuidV7(payload.activity_ref, 'activity_ref'),
       title: payload.title,
-      createdAt: parseCreatedAt(payload.created_at),
+      createdAt: parseInstant(payload.created_at, 'created_at'),
     }),
     schedule: Object.freeze({
       scheduleRef: parseUuidV7(payload.schedule_ref, 'schedule_ref'),
@@ -233,12 +396,90 @@ function parseScheduledActivity(
         payload.placement_material_state_ref,
         'placement_material_state_ref',
       ),
-      temporalForm: 'floating-local',
-      startsLocalAt,
-      endsLocalAt,
+      placement: parseAcceptedPlacement(payload),
     }),
     replayed: payload.replayed,
   });
+}
+
+function validatePlacement(placement: TemporalSchedulePlacementInput): void {
+  switch (placement.kind) {
+    case 'date-span':
+      if (
+        Temporal.PlainDate.compare(
+          placement.startDate,
+          placement.endDateExclusive,
+        ) >= 0
+      ) {
+        throw new RangeError('Schedule date span must be positive.');
+      }
+      return;
+    case 'floating-local-interval':
+      if (
+        Temporal.PlainDateTime.compare(
+          placement.startsLocalAt,
+          placement.endsLocalAt,
+        ) >= 0
+      ) {
+        throw new RangeError('Floating-local Schedule interval must be positive.');
+      }
+      return;
+    case 'named-zone-local-interval':
+      if (
+        Temporal.PlainDateTime.compare(
+          placement.startsLocalAt,
+          placement.endsLocalAt,
+        ) >= 0
+      ) {
+        throw new RangeError('Named-zone Schedule interval must be positive.');
+      }
+      validateNamedTimeZone(placement.zoneId);
+      return;
+    case 'absolute-interval':
+      if (Temporal.Instant.compare(placement.startsAt, placement.endsAt) >= 0) {
+        throw new RangeError('Absolute Schedule interval must be positive.');
+      }
+      return;
+    case 'coarse-local-period':
+      return;
+  }
+}
+
+function serializePlacement(placement: TemporalSchedulePlacementInput) {
+  switch (placement.kind) {
+    case 'date-span':
+      return {
+        kind: 'date_span',
+        start_date: placement.startDate.toString(),
+        end_date_exclusive: placement.endDateExclusive.toString(),
+      } as const;
+    case 'floating-local-interval':
+      return {
+        kind: 'floating_local_interval',
+        starts_local_at: placement.startsLocalAt.toString(),
+        ends_local_at: placement.endsLocalAt.toString(),
+      } as const;
+    case 'named-zone-local-interval':
+      return {
+        kind: 'named_zone_local_interval',
+        starts_local_at: placement.startsLocalAt.toString(),
+        ends_local_at: placement.endsLocalAt.toString(),
+        zone_id: placement.zoneId,
+        disambiguation: placement.disambiguation,
+      } as const;
+    case 'absolute-interval':
+      return {
+        kind: 'absolute_interval',
+        starts_at: placement.startsAt.toString(),
+        ends_at: placement.endsAt.toString(),
+      } as const;
+    case 'coarse-local-period':
+      return {
+        kind: 'coarse_local_period',
+        local_date: placement.localDate.toString(),
+        period: placement.period,
+      } as const;
+  }
 }
 
 async function readJson(response: Response, label: string): Promise<unknown> {
@@ -328,55 +569,26 @@ function validateCreateRequest(request: TemporalActivityCreateRequest): void {
   }
 }
 
-function validateFloatingLocalPlacement(
-  placement: TemporalScheduledActivityCreateRequest['placement'],
-  slice: 'B02-A' | 'B02-B',
-): void {
-  if (placement.kind !== 'floating-local-interval') {
-    throw new RangeError(
-      `${slice} supports only floating-local interval placement.`,
-    );
-  }
-  if (
-    Temporal.PlainDateTime.compare(
-      placement.startsLocalAt,
-      placement.endsLocalAt,
-    ) >= 0 ||
-    !placement.startsLocalAt
-      .toPlainDate()
-      .equals(placement.endsLocalAt.toPlainDate())
-  ) {
-    throw new RangeError(
-      `${slice} placement must be a positive same-local-day interval.`,
-    );
-  }
-}
-
 function validateScheduledCreateRequest(
   request: TemporalScheduledActivityCreateRequest,
 ): void {
   validateCreateRequest(request);
-  validateFloatingLocalPlacement(request.placement, 'B02-A');
+  validatePlacement(request.placement);
 }
 
 function validateActivityScheduleEstablishRequest(
   request: TemporalActivityScheduleEstablishRequest,
 ): void {
-  const activityRef = request.activityRef.trim();
-  const operationId = request.operationId.trim();
-  if (
-    !/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-      activityRef,
-    )
-  ) {
+  if (!UUID_V7.test(request.activityRef.trim())) {
     throw new RangeError('Activity reference must be a canonical UUIDv7 string.');
   }
+  const operationId = request.operationId.trim();
   if (!operationId || operationId.length > 200) {
     throw new RangeError(
       'Schedule operation id must contain 1 to 200 characters.',
     );
   }
-  validateFloatingLocalPlacement(request.placement, 'B02-B');
+  validatePlacement(request.placement);
 }
 
 export function createRemoteTemporalActivityDataSource(
@@ -392,13 +604,12 @@ export function createRemoteTemporalActivityDataSource(
     ): Promise<TemporalActivityCreateResult> {
       validateCreateRequest(request);
       const csrf = await csrfToken(webFetch, signal);
-      const headers = new Headers({
-        'Content-Type': 'application/json',
-        [CSRF_HEADER_NAME]: csrf,
-      });
       const response = await fetchResponse(webFetch, ACTIVITY_ENDPOINT, {
         method: 'POST',
-        headers,
+        headers: new Headers({
+          'Content-Type': 'application/json',
+          [CSRF_HEADER_NAME]: csrf,
+        }),
         body: JSON.stringify({
           operation_id: request.operationId.trim(),
           title: request.title.trim(),
@@ -415,24 +626,19 @@ export function createRemoteTemporalActivityDataSource(
     ): Promise<TemporalScheduledActivityCreateResult> {
       validateScheduledCreateRequest(request);
       const csrf = await csrfToken(webFetch, signal);
-      const headers = new Headers({
-        'Content-Type': 'application/json',
-        [CSRF_HEADER_NAME]: csrf,
-      });
       const response = await fetchResponse(
         webFetch,
         SCHEDULED_ACTIVITY_ENDPOINT,
         {
           method: 'POST',
-          headers,
+          headers: new Headers({
+            'Content-Type': 'application/json',
+            [CSRF_HEADER_NAME]: csrf,
+          }),
           body: JSON.stringify({
             operation_id: request.operationId.trim(),
             title: request.title.trim(),
-            placement: {
-              kind: 'floating_local_interval',
-              starts_local_at: request.placement.startsLocalAt.toString(),
-              ends_local_at: request.placement.endsLocalAt.toString(),
-            },
+            placement: serializePlacement(request.placement),
           }),
           ...(signal === undefined ? {} : { signal }),
         },
@@ -452,23 +658,18 @@ export function createRemoteTemporalActivityDataSource(
     ): Promise<TemporalScheduledActivityCreateResult> {
       validateActivityScheduleEstablishRequest(request);
       const csrf = await csrfToken(webFetch, signal);
-      const headers = new Headers({
-        'Content-Type': 'application/json',
-        [CSRF_HEADER_NAME]: csrf,
-      });
       const response = await fetchResponse(
         webFetch,
         activityScheduleEndpoint(request.activityRef.trim().toLowerCase()),
         {
           method: 'POST',
-          headers,
+          headers: new Headers({
+            'Content-Type': 'application/json',
+            [CSRF_HEADER_NAME]: csrf,
+          }),
           body: JSON.stringify({
             operation_id: request.operationId.trim(),
-            placement: {
-              kind: 'floating_local_interval',
-              starts_local_at: request.placement.startsLocalAt.toString(),
-              ends_local_at: request.placement.endsLocalAt.toString(),
-            },
+            placement: serializePlacement(request.placement),
           }),
           ...(signal === undefined ? {} : { signal }),
         },
@@ -479,8 +680,7 @@ export function createRemoteTemporalActivityDataSource(
       );
       const result = parseScheduledActivity(payload);
       if (
-        result.activity.activityRef !==
-        request.activityRef.trim().toLowerCase()
+        result.activity.activityRef !== request.activityRef.trim().toLowerCase()
       ) {
         throw new TemporalActivityRemoteError(
           'protocol',
