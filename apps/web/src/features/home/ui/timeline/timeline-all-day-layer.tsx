@@ -8,6 +8,7 @@ import {
 } from './model/timeline-all-day-layout';
 import type {
   TimelineAllDayItem,
+  TimelineCoarsePeriod,
   TimelineGroup,
   TimelineGroupId,
 } from './model/timeline-types';
@@ -21,13 +22,32 @@ type TimelineAllDayLaneProps = Readonly<{
   filters: ReadonlySet<TimelineGroupId>;
 }>;
 
+function coarsePeriodLabel(
+  period: TimelineCoarsePeriod,
+  language: string,
+): string {
+  const english = language.toLowerCase().startsWith('en');
+  if (english) {
+    return {
+      morning: 'Morning',
+      afternoon: 'Afternoon',
+      evening: 'Evening',
+    }[period];
+  }
+  return {
+    morning: 'Mattina',
+    afternoon: 'Pomeriggio',
+    evening: 'Sera',
+  }[period];
+}
+
 export function TimelineAllDayLane({
   dateKey,
   items,
   groups,
   filters,
 }: TimelineAllDayLaneProps) {
-  const { t } = useTranslation('common');
+  const { t, i18n } = useTranslation('common');
   const visibleItems = useMemo(
     () => timelineAllDayItemsForVisibleDate(items, filters, dateKey),
     [dateKey, filters, items],
@@ -41,17 +61,31 @@ export function TimelineAllDayLane({
     return null;
   }
 
+  const language = i18n.resolvedLanguage ?? i18n.language;
+  const hasAllDay = visibleItems.some(
+    (item) => (item.laneKind ?? 'all-day') === 'all-day',
+  );
+  const hasCoarse = visibleItems.some((item) => item.laneKind === 'coarse');
+  const laneLabel =
+    hasAllDay && hasCoarse
+      ? language.toLowerCase().startsWith('en')
+        ? 'All day · Period'
+        : 'Tutto il giorno · Fascia'
+      : hasCoarse
+        ? language.toLowerCase().startsWith('en')
+          ? 'Period'
+          : 'Fascia'
+        : t(($) => $.common.home.timeline.create.timeSemantics.allDay);
+
   return (
     <section
       className="timeline-all-day-lane"
       data-timeline-all-day-lane={dateKey}
-      aria-label={t(($) => $.common.home.timeline.create.timeSemantics.allDay)}
+      aria-label={laneLabel}
       style={{ height: timelineAllDayLaneHeightPx(visibleItems.length) }}
     >
       <div className="timeline-all-day-lane__label">
-        <span>
-          {t(($) => $.common.home.timeline.create.timeSemantics.allDay)}
-        </span>
+        <span>{laneLabel}</span>
       </div>
 
       <div className="timeline-all-day-lane__items">
@@ -61,6 +95,11 @@ export function TimelineAllDayLane({
           const position = timelineAllDayRangePosition(item, dateKey);
           const startsHere = position === 'single' || position === 'start';
           const endsHere = position === 'single' || position === 'end';
+          const laneKind = item.laneKind ?? 'all-day';
+          const precisionLabel =
+            laneKind === 'coarse' && item.coarsePeriod !== undefined
+              ? coarsePeriodLabel(item.coarsePeriod, language)
+              : t(($) => $.common.home.timeline.create.timeSemantics.allDay);
 
           return (
             <button
@@ -68,6 +107,7 @@ export function TimelineAllDayLane({
               type="button"
               key={item.id}
               data-timeline-all-day-item={item.id}
+              data-timeline-date-lane-kind={laneKind}
               data-temporal-create-projection={
                 item.origin === 'create' ? item.id : undefined
               }
@@ -75,9 +115,7 @@ export function TimelineAllDayLane({
               data-range-position={position}
               data-range-start={startsHere || undefined}
               data-range-end={endsHere || undefined}
-              aria-label={`${item.title} · ${t(
-                ($) => $.common.home.timeline.create.timeSemantics.allDay,
-              )} · ${group?.label ?? item.groupId}`}
+              aria-label={`${item.title} · ${precisionLabel} · ${group?.label ?? item.groupId}`}
               onClick={(event) => event.currentTarget.focus()}
             >
               <span
@@ -88,7 +126,7 @@ export function TimelineAllDayLane({
               </span>
               <strong>{item.title}</strong>
               <span className="timeline-all-day-item__meta">
-                {group?.label ?? item.groupId}
+                {precisionLabel} · {group?.label ?? item.groupId}
                 {item.meta ? ` · ${item.meta}` : ''}
               </span>
               <span
