@@ -20,6 +20,7 @@ export type {
   TemporalActivityScheduleEstablishRequest,
   TemporalActivityRecord,
   TemporalFloatingLocalScheduleRecord,
+  TemporalScheduleRecord,
   TemporalScheduledActivityCreateRequest,
   TemporalScheduledActivityCreateResult,
 } from './activity-data-source';
@@ -35,7 +36,11 @@ export {
   type TemporalScheduleRemoteFailureKind,
 } from './remote-schedule-data-source';
 export type {
+  TemporalAcceptedSchedulePlacement,
+  TemporalScheduleCoarsePeriod,
   TemporalScheduleDataSource,
+  TemporalScheduleDisambiguation,
+  TemporalSchedulePlacementInput,
   TemporalScheduleRevisionRequest,
   TemporalScheduleRevisionResult,
   TemporalScheduleUnscheduleRequest,
@@ -49,9 +54,15 @@ export {
   type TemporalTimelineRemoteFailureKind,
 } from './remote-timeline-read';
 export type {
+  TemporalTimelineAbsoluteActivityItem,
+  TemporalTimelineCoarseLocalPeriod,
+  TemporalTimelineCoarseLocalPeriodActivityItem,
   TemporalTimelineDataSource,
+  TemporalTimelineDateSpanActivityItem,
   TemporalTimelineEmptyWindow,
+  TemporalTimelineFloatingLocalActivityItem,
   TemporalTimelineItemsWindow,
+  TemporalTimelineNamedZoneLocalActivityItem,
   TemporalTimelineScheduledActivityItem,
   TemporalTimelineWindow,
   TemporalTimelineWindowRequest,
@@ -81,6 +92,7 @@ export {
   type SerializedTemporalPlacement,
   type TemporalCapability,
   type TemporalClock,
+  type TemporalCoarsePeriod,
   type TemporalDraft,
   type TemporalIdFactory,
   type TemporalOperationId,
