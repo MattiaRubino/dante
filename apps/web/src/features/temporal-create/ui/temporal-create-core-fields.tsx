@@ -559,7 +559,7 @@ export function TemporalCreateCoreFields({
         <TemporalCreateContextPicker
           value={fields.contextId}
           contexts={contexts}
-          onChange={(contextId) => onPatch({ contextId })
+          onChange={(contextId) => onPatch({ contextId })}
           onCreateContext={onCreateContext}
         />
       </div>
