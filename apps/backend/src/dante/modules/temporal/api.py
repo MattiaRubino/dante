@@ -634,9 +634,7 @@ def _timeline_item_response(
             zone_id=item.zone_id,
             resolved_start_at=item.resolved_start_at,
             resolved_end_at=item.resolved_end_at,
-            display_starts_local_at=_local_datetime_text(
-                item.display_starts_local_at
-            ),
+            display_starts_local_at=_local_datetime_text(item.display_starts_local_at),
             display_ends_local_at=_local_datetime_text(item.display_ends_local_at),
         )
     if isinstance(item, TimelineAbsoluteActivityItem):
@@ -644,9 +642,7 @@ def _timeline_item_response(
             **common,
             starts_at=item.starts_at,
             ends_at=item.ends_at,
-            display_starts_local_at=_local_datetime_text(
-                item.display_starts_local_at
-            ),
+            display_starts_local_at=_local_datetime_text(item.display_starts_local_at),
             display_ends_local_at=_local_datetime_text(item.display_ends_local_at),
         )
     return TimelineCoarseLocalPeriodActivityResponse(
@@ -719,8 +715,8 @@ def _scheduled_activity_response(
             starts_local_at=placement.starts_local_at,
             ends_local_at=placement.ends_local_at,
             zone_id=placement.zone_id,
-            resolved_start_at=placement.resolved_start_at,
-            resolved_end_at=placement.resolved_end_at,
+            resolved_start_at=cast(datetime, placement.resolved_start_at),
+            resolved_end_at=cast(datetime, placement.resolved_end_at),
         )
     if isinstance(placement, AbsoluteIntervalPlacement):
         return ScheduledActivityAbsoluteResponse(
@@ -761,8 +757,8 @@ def _revised_schedule_response(result: RevisedScheduleView) -> RevisedScheduleMu
             starts_local_at=placement.starts_local_at,
             ends_local_at=placement.ends_local_at,
             zone_id=placement.zone_id,
-            resolved_start_at=placement.resolved_start_at,
-            resolved_end_at=placement.resolved_end_at,
+            resolved_start_at=cast(datetime, placement.resolved_start_at),
+            resolved_end_at=cast(datetime, placement.resolved_end_at),
         )
     if isinstance(placement, AbsoluteIntervalPlacement):
         return RevisedScheduleAbsoluteResponse(
@@ -805,8 +801,8 @@ def _restored_schedule_response(
             starts_local_at=placement.starts_local_at,
             ends_local_at=placement.ends_local_at,
             zone_id=placement.zone_id,
-            resolved_start_at=placement.resolved_start_at,
-            resolved_end_at=placement.resolved_end_at,
+            resolved_start_at=cast(datetime, placement.resolved_start_at),
+            resolved_end_at=cast(datetime, placement.resolved_end_at),
         )
     if isinstance(placement, AbsoluteIntervalPlacement):
         return RestoredScheduleAbsoluteResponse(
