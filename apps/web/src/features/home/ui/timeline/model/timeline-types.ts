@@ -1,4 +1,4 @@
-import type { PlainDate } from '@dante/time';
+import type { Instant, PlainDate, PlainDateTime } from '@dante/time';
 
 export type TimelineEventId = string;
 export type TimelineGroupId = string;
@@ -17,11 +17,42 @@ export type TimelineGroup = Readonly<{
   tone: TimelineSemanticTone;
 }>;
 
+export type TimelineCanonicalSchedulePlacement =
+  | Readonly<{
+      kind: 'date-span';
+      startDate: PlainDate;
+      endDateExclusive: PlainDate;
+    }>
+  | Readonly<{
+      kind: 'floating-local';
+      startsLocalAt: PlainDateTime;
+      endsLocalAt: PlainDateTime;
+    }>
+  | Readonly<{
+      kind: 'named-zone-local';
+      startsLocalAt: PlainDateTime;
+      endsLocalAt: PlainDateTime;
+      zoneId: string;
+      resolvedStartAt: Instant;
+      resolvedEndAt: Instant;
+    }>
+  | Readonly<{
+      kind: 'absolute';
+      startsAt: Instant;
+      endsAt: Instant;
+    }>
+  | Readonly<{
+      kind: 'coarse-local-period';
+      localDate: PlainDate;
+      period: 'morning' | 'afternoon' | 'evening';
+    }>;
+
 export type TimelineCanonicalScheduledActivityBasis = Readonly<{
   kind: 'scheduled-activity';
   activityRef: string;
   scheduleRef: string;
   placementMaterialStateRef: string;
+  placement: TimelineCanonicalSchedulePlacement;
 }>;
 
 export type TimelineEvent = Readonly<{
