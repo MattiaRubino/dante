@@ -58,6 +58,11 @@ function createHarness(rejectPlacement = false, initiallyUnplaced = true) {
     if (rejectPlacement) {
       return Promise.reject(new Error('schedule unavailable'));
     }
+    if (request.placement.kind !== 'floating-local-interval') {
+      return Promise.reject(
+        new Error('Planning Tray expected floating-local placement'),
+      );
+    }
     unplaced = Object.freeze([]);
     return Promise.resolve(
       Object.freeze({
@@ -65,9 +70,7 @@ function createHarness(rejectPlacement = false, initiallyUnplaced = true) {
         schedule: Object.freeze({
           scheduleRef: SCHEDULE_REF,
           placementMaterialStateRef: MATERIAL_STATE_REF,
-          temporalForm: 'floating-local' as const,
-          startsLocalAt: request.placement.startsLocalAt,
-          endsLocalAt: request.placement.endsLocalAt,
+          placement: request.placement,
         }),
         replayed: false,
       }),
@@ -152,10 +155,13 @@ describe('Timeline B02 canonical Planning Tray placement and invalidation', () =
       activityRef: ACTIVITY_REF,
       placement: { kind: 'floating-local-interval' },
     });
-    expect(request?.placement.startsLocalAt.toString()).toBe(
+    if (!request || request.placement.kind !== 'floating-local-interval') {
+      throw new Error('Expected floating-local placement.');
+    }
+    expect(request.placement.startsLocalAt.toString()).toBe(
       '2026-09-09T14:15:00',
     );
-    expect(request?.placement.endsLocalAt.toString()).toBe(
+    expect(request.placement.endsLocalAt.toString()).toBe(
       '2026-09-09T15:00:00',
     );
     expect(harness.createActivity).not.toHaveBeenCalled();
