@@ -3,14 +3,19 @@
 from __future__ import annotations
 
 from datetime import UTC, date, datetime
-from typing import Any
+from typing import Any, cast
 from uuid import uuid7
 
 import psycopg
 import pytest
+
+from dante.auth.contracts import Principal
 from dante.context.contracts import DanteContext
 from dante.modules.temporal.activity import TemporalActivityApplication
-from dante.modules.temporal.application import TemporalTimelineApplication
+from dante.modules.temporal.application import (
+    TemporalTimelineApplication,
+    TimelineFloatingLocalActivityItem,
+)
 from dante.modules.temporal.contracts import TimelineWindowQuery
 from dante.modules.temporal.schedule import (
     FloatingLocalIntervalPlacement,
@@ -19,15 +24,13 @@ from dante.modules.temporal.schedule import (
     ScheduleRevisionConflictError,
     TemporalScheduleApplication,
 )
-from dante.platform.time import TimeZoneMode, TimeZonePolicy
-
-from dante.auth.contracts import Principal
 from dante.platform.database.references import (
     MaterialStateRef,
     NativeRef,
     ScopedRecordRef,
 )
 from dante.platform.database.runtime import create_database_runtime
+from dante.platform.time import TimeZoneMode, TimeZonePolicy
 
 
 def _floating_local(
@@ -55,8 +58,7 @@ def _seed_self_person(database: Any) -> NativeRef:
             (person_ref,),
         )
         connection.execute(
-            "INSERT INTO dante.native_address(native_ref,owner_family) "
-            "VALUES (%s,'person')",
+            "INSERT INTO dante.native_address(native_ref,owner_family) VALUES (%s,'person')",
             (person_ref,),
         )
         connection.commit()
@@ -93,7 +95,7 @@ def _revision_facts(
         )
     ) as connection:
         connection.execute("SET ROLE dante_owner")
-        return connection.execute(
+        row = connection.execute(
             """
             SELECT
               (SELECT count(*) FROM dante.activity_intention
@@ -129,6 +131,8 @@ def _revision_facts(
                 new_state_ref,
             ),
         ).fetchone()
+        assert row is not None
+        return cast(tuple[int, int, int, int, int, int, int], row)
 
 
 @pytest.mark.postgres
@@ -166,9 +170,7 @@ async def test_revision_retains_history_moves_current_and_replays_exact_intent(
         )
         assert result.replayed is False
         assert result.schedule_ref == created.schedule.schedule_ref
-        assert result.previous_material_state_ref == (
-            created.schedule.material_state_ref
-        )
+        assert result.previous_material_state_ref == created.schedule.material_state_ref
         assert result.material_state_ref.version == 7
         assert result.material_state_ref != created.schedule.material_state_ref
 
@@ -218,6 +220,7 @@ async def test_revision_retains_history_moves_current_and_replays_exact_intent(
         )
         assert len(window.items) == 1
         item = window.items[0]
+        assert isinstance(item, TimelineFloatingLocalActivityItem)
         assert item.activity_ref == created.activity.activity_ref
         assert item.schedule_ref == created.schedule.schedule_ref
         assert item.placement_material_state_ref == result.material_state_ref
