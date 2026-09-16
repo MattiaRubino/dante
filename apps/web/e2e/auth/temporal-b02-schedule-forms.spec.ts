@@ -54,12 +54,21 @@ async function signIn(page: Page, email: string): Promise<void> {
 }
 
 function waitForTimelineRead(page: Page) {
-  return page.waitForResponse(
-    (response) =>
-      response.url().includes('/api/v1/temporal/timeline/window') &&
-      response.request().method() === 'GET',
-    { timeout: E2E_RESPONSE_TIMEOUT_MS },
-  );
+  return page
+    .waitForResponse(
+      (response) =>
+        response.url().includes('/api/v1/temporal/timeline/window') &&
+        response.request().method() === 'GET',
+      { timeout: E2E_RESPONSE_TIMEOUT_MS },
+    )
+    .then(async (response) => {
+      const status = response.status();
+      const payload = (await response.json()) as unknown;
+      return {
+        status: () => status,
+        json: async () => payload,
+      };
+    });
 }
 
 function waitForUnplacedRead(page: Page) {
