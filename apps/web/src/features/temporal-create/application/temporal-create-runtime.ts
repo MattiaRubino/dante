@@ -17,7 +17,6 @@ import {
   type TemporalActivityRecord,
   type TemporalClock,
   type TemporalCommand,
-  type TemporalFloatingLocalScheduleRecord,
   type TemporalIdFactory,
   type TemporalOperationId,
   type TemporalOperationResult,
@@ -25,6 +24,8 @@ import {
   type TemporalProjectionItem,
   type TemporalQuery,
   type TemporalQueryResult,
+  type TemporalSchedulePlacementInput,
+  type TemporalScheduleRecord,
   type TemporalUndoToken,
   type TemporalValidationIssue,
   type TemporalWorkspacePort,
@@ -265,21 +266,19 @@ function b01ActivityIntentSupported(
   );
 }
 
-function b02aScheduledActivityIntentSupported(
+function b02eScheduledActivityIntentSupported(
   prepared: TemporalCreatePreparedOperation,
 ): boolean {
   const specification = prepared.metadata.specification;
   const placement = prepared.command.payload.placement;
   if (
     prepared.metadata.kind !== 'activity' ||
-    prepared.metadata.timeSemantics !== 'timed' ||
+    placement === null ||
     prepared.metadata.contextId !== 'personale' ||
     prepared.metadata.notes.length !== 0 ||
-    placement?.kind !== 'floating-local' ||
-    specification.timeMode !== 'floating' ||
     specification.appearanceTone !== null ||
-    !placement.start.toPlainDate().equals(placement.end.toPlainDate()) ||
-    Temporal.PlainDateTime.compare(placement.start, placement.end) >= 0
+    specification.eventRecurrence.patternKind !== 'none' ||
+    specification.scheduling.constraintKind !== 'none'
   ) {
     return false;
   }
@@ -288,16 +287,17 @@ function b02aScheduledActivityIntentSupported(
     title: specification.title,
     kind: 'activity',
     date: specification.date,
-    timeSemantics: 'timed',
+    timeSemantics: specification.timeSemantics,
     startTime: specification.startTime,
     durationMinutes: specification.durationMinutes,
-    timeMode: 'floating',
+    timeMode: specification.timeMode,
     timeZoneId: specification.timeZoneId,
+    timeDisambiguation: specification.timeDisambiguation,
+    coarsePeriod: specification.coarsePeriod,
     contextId: 'personale',
   });
 
   return (
-    specification.eventRecurrence.patternKind === 'none' &&
     sameStructuredIntent(specification.scheduling, baseline.scheduling) &&
     sameStructuredIntent(specification.execution, baseline.execution) &&
     sameStructuredIntent(
@@ -314,7 +314,7 @@ function canonicalActivityIntentSupported(
 ): boolean {
   return (
     b01ActivityIntentSupported(prepared) ||
-    b02aScheduledActivityIntentSupported(prepared)
+    b02eScheduledActivityIntentSupported(prepared)
   );
 }
 
@@ -340,9 +340,47 @@ function activityProjection(
   });
 }
 
+function acceptedPlacementProjection(
+  schedule: TemporalScheduleRecord,
+): TemporalPlacement {
+  const placement = schedule.placement;
+  switch (placement.kind) {
+    case 'date-span':
+      return Object.freeze({
+        kind: 'date-span' as const,
+        startDate: placement.startDate,
+        endDateExclusive: placement.endDateExclusive,
+      });
+    case 'floating-local-interval':
+      return Object.freeze({
+        kind: 'floating-local' as const,
+        start: placement.startsLocalAt,
+        end: placement.endsLocalAt,
+      });
+    case 'named-zone-local-interval':
+      return Object.freeze({
+        kind: 'zoned' as const,
+        start: placement.resolvedStartAt.toZonedDateTimeISO(placement.zoneId),
+        end: placement.resolvedEndAt.toZonedDateTimeISO(placement.zoneId),
+      });
+    case 'absolute-interval':
+      return Object.freeze({
+        kind: 'absolute' as const,
+        start: placement.startsAt,
+        end: placement.endsAt,
+      });
+    case 'coarse-local-period':
+      return Object.freeze({
+        kind: 'coarse-local-period' as const,
+        localDate: placement.localDate,
+        period: placement.period,
+      });
+  }
+}
+
 function scheduledActivityProjection(
   activity: TemporalActivityRecord,
-  schedule: TemporalFloatingLocalScheduleRecord,
+  schedule: TemporalScheduleRecord,
   operationId: TemporalOperationId,
 ): TemporalProjectionItem {
   return Object.freeze({
@@ -353,18 +391,85 @@ function scheduledActivityProjection(
       id: activity.activityRef,
     }),
     title: activity.title,
-    placement: Object.freeze({
-      kind: 'floating-local' as const,
-      start: schedule.startsLocalAt,
-      end: schedule.endsLocalAt,
-    }),
-    // B02-A/B render accepted placement; B02-C will activate revision/drag.
+    placement: acceptedPlacementProjection(schedule),
     capabilities: Object.freeze([]),
     revision: 0,
     createdAt: activity.createdAt,
     updatedAt: activity.createdAt,
     lastOperationId: operationId,
   });
+}
+
+function zonedDisambiguation(
+  placement: Extract<TemporalPlacement, Readonly<{ kind: 'zoned' }>>,
+): 'reject' | 'earlier' | 'later' | null {
+  const zoneId = placement.start.timeZoneId;
+  if (placement.end.timeZoneId !== zoneId) {
+    return null;
+  }
+  const localStart = placement.start.toPlainDateTime();
+  const localEnd = placement.end.toPlainDateTime();
+  for (const disambiguation of ['reject', 'earlier', 'later'] as const) {
+    try {
+      const resolvedStart = localStart.toZonedDateTime(zoneId, {
+        disambiguation,
+      });
+      const resolvedEnd = localEnd.toZonedDateTime(zoneId, { disambiguation });
+      if (
+        resolvedStart.toInstant().equals(placement.start.toInstant()) &&
+        resolvedEnd.toInstant().equals(placement.end.toInstant())
+      ) {
+        return disambiguation;
+      }
+    } catch {
+      // Try the next explicit policy.
+    }
+  }
+  return null;
+}
+
+function schedulePlacementInput(
+  placement: TemporalPlacement,
+): TemporalSchedulePlacementInput | null {
+  switch (placement.kind) {
+    case 'date-span':
+      return Object.freeze({
+        kind: 'date-span' as const,
+        startDate: placement.startDate,
+        endDateExclusive: placement.endDateExclusive,
+      });
+    case 'floating-local':
+      return Object.freeze({
+        kind: 'floating-local-interval' as const,
+        startsLocalAt: placement.start,
+        endsLocalAt: placement.end,
+      });
+    case 'zoned': {
+      const disambiguation = zonedDisambiguation(placement);
+      if (disambiguation === null) {
+        return null;
+      }
+      return Object.freeze({
+        kind: 'named-zone-local-interval' as const,
+        startsLocalAt: placement.start.toPlainDateTime(),
+        endsLocalAt: placement.end.toPlainDateTime(),
+        zoneId: placement.start.timeZoneId,
+        disambiguation,
+      });
+    }
+    case 'absolute':
+      return Object.freeze({
+        kind: 'absolute-interval' as const,
+        startsAt: placement.start,
+        endsAt: placement.end,
+      });
+    case 'coarse-local-period':
+      return Object.freeze({
+        kind: 'coarse-local-period' as const,
+        localDate: placement.localDate,
+        period: placement.period,
+      });
+  }
 }
 
 class RemoteActivityTemporalWorkspace implements TemporalWorkspacePort {
@@ -375,12 +480,13 @@ class RemoteActivityTemporalWorkspace implements TemporalWorkspacePort {
   ): Promise<TemporalOperationResult> {
     if (command.type === 'temporal.placement.replace') {
       const placement = command.payload.placement;
-      const supportsB02B =
-        command.payload.expectedRevision === 0 &&
-        placement?.kind === 'floating-local' &&
-        placement.start.toPlainDate().equals(placement.end.toPlainDate()) &&
-        Temporal.PlainDateTime.compare(placement.start, placement.end) < 0;
-      if (!supportsB02B) {
+      const schedulePlacement =
+        placement === null ? null : schedulePlacementInput(placement);
+      if (
+        command.payload.expectedRevision !== 0 ||
+        placement === null ||
+        schedulePlacement === null
+      ) {
         return unavailableResult(
           command.operationId,
           'temporal.schedule.capability_not_available',
@@ -391,11 +497,7 @@ class RemoteActivityTemporalWorkspace implements TemporalWorkspacePort {
         const result = await this.source.establishActivitySchedule({
           activityRef: command.payload.id,
           operationId: command.operationId,
-          placement: Object.freeze({
-            kind: 'floating-local-interval' as const,
-            startsLocalAt: placement.start,
-            endsLocalAt: placement.end,
-          }),
+          placement: schedulePlacement,
         });
         return Object.freeze({
           operationId: command.operationId,
@@ -468,12 +570,9 @@ class RemoteActivityTemporalWorkspace implements TemporalWorkspacePort {
     }
 
     const placement = command.payload.placement;
-    const supportsUnscheduled = placement === null;
-    const supportsB02A =
-      placement?.kind === 'floating-local' &&
-      placement.start.toPlainDate().equals(placement.end.toPlainDate()) &&
-      Temporal.PlainDateTime.compare(placement.start, placement.end) < 0;
-    if (!supportsUnscheduled && !supportsB02A) {
+    const schedulePlacement =
+      placement === null ? null : schedulePlacementInput(placement);
+    if (placement !== null && schedulePlacement === null) {
       return unavailableResult(
         command.operationId,
         'temporal.create.capability_not_available',
@@ -498,11 +597,7 @@ class RemoteActivityTemporalWorkspace implements TemporalWorkspacePort {
       const result = await this.source.createScheduledActivity({
         operationId: command.operationId,
         title: command.payload.title,
-        placement: Object.freeze({
-          kind: 'floating-local-interval' as const,
-          startsLocalAt: placement.start,
-          endsLocalAt: placement.end,
-        }),
+        placement: schedulePlacement as TemporalSchedulePlacementInput,
       });
       return Object.freeze({
         operationId: command.operationId,
@@ -960,5 +1055,7 @@ export function temporalCreateRevealDate(
       return placement.start
         .toZonedDateTimeISO(effect.metadata.timeZoneId)
         .toPlainDate();
+    case 'coarse-local-period':
+      return placement.localDate;
   }
 }
