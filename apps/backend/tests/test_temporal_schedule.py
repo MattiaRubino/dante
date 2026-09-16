@@ -508,8 +508,8 @@ async def test_schedule_unschedule_and_undo_map_public_failures(
 ) -> None:
     application = _schedule_application(_StaticScheduleApplication(failure))
 
-    with pytest.raises(ProblemError) as error:
-        if endpoint == "unschedule":
+    if endpoint == "unschedule":
+        with pytest.raises(ProblemError) as error:
             await unschedule_schedule(
                 schedule_ref=UUID(str(_SCHEDULE_REF)),
                 payload=UnscheduleScheduleRequest(
@@ -520,7 +520,8 @@ async def test_schedule_unschedule_and_undo_map_public_failures(
                 application=application,
                 response=Response(),
             )
-        else:
+    else:
+        with pytest.raises(ProblemError) as error:
             await undo_schedule_unschedule(
                 schedule_ref=UUID(str(_SCHEDULE_REF)),
                 payload=UndoScheduleUnscheduleRequest(
