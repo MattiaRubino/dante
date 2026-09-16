@@ -13,7 +13,6 @@ import type {
 import { useTemporalCreateContextCreator } from './temporal-create-context-catalog';
 import { TemporalCreateContextPicker } from './temporal-create-context-picker';
 import {
-  TEMPORAL_CREATE_DURATION_OPTIONS,
   temporalCreateDurationFromEndDateTime,
   temporalCreateDurationLabel,
   temporalCreateEndDateTime,
@@ -31,7 +30,12 @@ type TemporalCreateCoreFieldsProps = Readonly<{
 }>;
 
 type QuickRecurrence =
-  'none' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom';
+  | 'none'
+  | 'daily'
+  | 'weekly'
+  | 'monthly'
+  | 'yearly'
+  | 'custom';
 
 const WEEKDAYS: readonly TemporalCreateWeekday[] = Object.freeze([
   'MO',
@@ -94,35 +98,6 @@ export function TemporalCreateCoreFields({
     fields.kind === 'event' ? 'event' : 'routine';
   const patchEvent = (patch: Partial<TemporalCreateFields['event']>) =>
     onPatch({ event: { ...fields.event, ...patch } });
-  const durationOptions = TEMPORAL_CREATE_DURATION_OPTIONS.includes(
-    fields.durationMinutes,
-  )
-    ? TEMPORAL_CREATE_DURATION_OPTIONS
-    : Object.freeze(
-        [...TEMPORAL_CREATE_DURATION_OPTIONS, fields.durationMinutes].sort(
-          (left, right) => left - right,
-        ),
-      );
-
-  const durationControl = (
-    <label className="temporal-create-control">
-      <span>{t(($) => $.common.home.timeline.create.duration)}</span>
-      <select
-        data-create-path="durationMinutes"
-        value={fields.durationMinutes}
-        onChange={(event) =>
-          onPatch({ durationMinutes: Number(event.currentTarget.value) })
-        }
-      >
-        {durationOptions.map((minutes) => (
-          <option key={minutes} value={minutes}>
-            {temporalCreateDurationLabel(minutes)}
-          </option>
-        ))}
-      </select>
-      {renderError('durationMinutes')}
-    </label>
-  );
 
   const changeKind = (kind: TemporalCreateKind) => {
     if (kind === fields.kind) {
@@ -137,7 +112,8 @@ export function TemporalCreateCoreFields({
       onPatch({
         kind,
         timeSemantics:
-          fields.timeSemantics === 'unscheduled'
+          fields.timeSemantics === 'unscheduled' ||
+          fields.timeSemantics === 'coarse'
             ? 'timed'
             : fields.timeSemantics,
         scheduling: {
@@ -174,7 +150,7 @@ export function TemporalCreateCoreFields({
     fields.timeZoneId,
   );
 
-  const patchEventEnd = (endDate: string, endTime: string) => {
+  const patchEnd = (endDate: string, endTime: string) => {
     const duration = temporalCreateDurationFromEndDateTime(
       fields.date,
       fields.startTime,
@@ -292,49 +268,138 @@ export function TemporalCreateCoreFields({
               : copy.event.allDay}
           </button>
           {fields.kind === 'activity' ? (
-            <button
-              type="button"
-              role="radio"
-              aria-checked={fields.timeSemantics === 'unscheduled'}
-              className={
-                fields.timeSemantics === 'unscheduled' ? 'is-active' : ''
-              }
-              onClick={() => changeTimeSemantics('unscheduled')}
-            >
-              {copy.activity.toPlace}
-            </button>
+            <>
+              <button
+                type="button"
+                role="radio"
+                aria-checked={fields.timeSemantics === 'coarse'}
+                className={fields.timeSemantics === 'coarse' ? 'is-active' : ''}
+                onClick={() => changeTimeSemantics('coarse')}
+              >
+                {copy.activity.coarse}
+              </button>
+              <button
+                type="button"
+                role="radio"
+                aria-checked={fields.timeSemantics === 'unscheduled'}
+                className={
+                  fields.timeSemantics === 'unscheduled' ? 'is-active' : ''
+                }
+                onClick={() => changeTimeSemantics('unscheduled')}
+              >
+                {copy.activity.toPlace}
+              </button>
+            </>
           ) : null}
         </div>
       </fieldset>
       {renderError('timeSemantics')}
 
       {fields.kind === 'activity' && fields.timeSemantics === 'timed' ? (
-        <div className="temporal-create-temporal-row">
-          <label className="temporal-create-control">
-            <span>{t(($) => $.common.home.timeline.create.date)}</span>
-            <input
-              data-create-path="date"
-              type="date"
-              value={fields.date}
-              onChange={(event) => onPatch({ date: event.currentTarget.value })}
-            />
-            {renderError('date')}
-          </label>
-          <label className="temporal-create-control">
-            <span>{t(($) => $.common.home.timeline.create.start)}</span>
-            <input
-              data-create-path="startTime"
-              type="time"
-              step="300"
-              value={fields.startTime}
-              onChange={(event) =>
-                onPatch({ startTime: event.currentTarget.value })
-              }
-            />
-            {renderError('startTime')}
-          </label>
-          {durationControl}
-        </div>
+        <>
+          <div className="temporal-create-temporal-row">
+            <label className="temporal-create-control">
+              <span>{t(($) => $.common.home.timeline.create.date)}</span>
+              <input
+                data-create-path="date"
+                type="date"
+                value={fields.date}
+                onChange={(event) =>
+                  onPatch({ date: event.currentTarget.value })
+                }
+              />
+              {renderError('date')}
+            </label>
+            <label className="temporal-create-control">
+              <span>{t(($) => $.common.home.timeline.create.start)}</span>
+              <input
+                data-create-path="startTime"
+                type="time"
+                step="300"
+                value={fields.startTime}
+                onChange={(event) =>
+                  onPatch({ startTime: event.currentTarget.value })
+                }
+              />
+              {renderError('startTime')}
+            </label>
+            <label className="temporal-create-control">
+              <span>{copy.event.end}</span>
+              <input
+                data-create-path="endTime"
+                type="time"
+                step="300"
+                value={end.time}
+                onChange={(event) =>
+                  patchEnd(end.date, event.currentTarget.value)
+                }
+              />
+              <small>
+                {end.dayOffset > 0 ? `+${end.dayOffset}d · ` : ''}(
+                {temporalCreateDurationLabel(fields.durationMinutes)})
+              </small>
+              {renderError('durationMinutes')}
+            </label>
+          </div>
+
+          <div className="temporal-create-grid two">
+            <label className="temporal-create-control">
+              <span>{copy.activity.timeMode}</span>
+              <select
+                data-create-path="timeMode"
+                value={fields.timeMode}
+                onChange={(event) =>
+                  onPatch({
+                    timeMode: event.currentTarget.value as
+                      | 'floating'
+                      | 'zoned',
+                  })
+                }
+              >
+                <option value="floating">{copy.activity.floatingTime}</option>
+                <option value="zoned">{copy.activity.namedZoneTime}</option>
+              </select>
+            </label>
+            {fields.timeMode === 'zoned' ? (
+              <label className="temporal-create-control">
+                <span>{copy.activity.timeZone}</span>
+                <input
+                  data-create-path="timeZoneId"
+                  type="text"
+                  value={fields.timeZoneId}
+                  onChange={(event) =>
+                    onPatch({ timeZoneId: event.currentTarget.value })
+                  }
+                  placeholder="Europe/Rome"
+                />
+                {renderError('timeZoneId')}
+              </label>
+            ) : null}
+          </div>
+
+          {fields.timeMode === 'zoned' ? (
+            <label className="temporal-create-control">
+              <span>{copy.activity.dstResolution}</span>
+              <select
+                data-create-path="timeDisambiguation"
+                value={fields.timeDisambiguation}
+                onChange={(event) =>
+                  onPatch({
+                    timeDisambiguation: event.currentTarget.value as
+                      | 'reject'
+                      | 'earlier'
+                      | 'later',
+                  })
+                }
+              >
+                <option value="reject">{copy.activity.dstReject}</option>
+                <option value="earlier">{copy.activity.dstEarlier}</option>
+                <option value="later">{copy.activity.dstLater}</option>
+              </select>
+              {renderError('timeDisambiguation')}
+            </label>
+          ) : null}
+        </>
       ) : null}
 
       {fields.kind === 'activity' && fields.timeSemantics === 'all-day' ? (
@@ -348,6 +413,40 @@ export function TemporalCreateCoreFields({
               onChange={(event) => onPatch({ date: event.currentTarget.value })}
             />
             {renderError('date')}
+          </label>
+        </div>
+      ) : null}
+
+      {fields.kind === 'activity' && fields.timeSemantics === 'coarse' ? (
+        <div className="temporal-create-grid two">
+          <label className="temporal-create-control">
+            <span>{t(($) => $.common.home.timeline.create.date)}</span>
+            <input
+              data-create-path="date"
+              type="date"
+              value={fields.date}
+              onChange={(event) => onPatch({ date: event.currentTarget.value })}
+            />
+            {renderError('date')}
+          </label>
+          <label className="temporal-create-control">
+            <span>{copy.activity.coarsePeriod}</span>
+            <select
+              data-create-path="coarsePeriod"
+              value={fields.coarsePeriod}
+              onChange={(event) =>
+                onPatch({
+                  coarsePeriod: event.currentTarget.value as
+                    | 'morning'
+                    | 'afternoon'
+                    | 'evening',
+                })
+              }
+            >
+              <option value="morning">{copy.activity.morning}</option>
+              <option value="afternoon">{copy.activity.afternoon}</option>
+              <option value="evening">{copy.activity.evening}</option>
+            </select>
           </label>
         </div>
       ) : null}
@@ -384,7 +483,7 @@ export function TemporalCreateCoreFields({
               step="300"
               value={end.time}
               onChange={(event) =>
-                patchEventEnd(end.date, event.currentTarget.value)
+                patchEnd(end.date, event.currentTarget.value)
               }
             />
             {end.dayOffset > 0 ? <small>+{end.dayOffset}d</small> : null}
@@ -460,7 +559,7 @@ export function TemporalCreateCoreFields({
         <TemporalCreateContextPicker
           value={fields.contextId}
           contexts={contexts}
-          onChange={(contextId) => onPatch({ contextId })}
+          onChange={(contextId) => onPatch({ contextId })
           onCreateContext={onCreateContext}
         />
       </div>
