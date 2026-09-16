@@ -270,6 +270,28 @@ describe('temporal create session', () => {
     }
   });
 
+  it('builds coarse Activity precision without manufacturing a clock interval', () => {
+    const fields = createTemporalCreateFields({
+      title: 'Scrivere relazione',
+      kind: 'activity',
+      date: '2026-09-05',
+      timeSemantics: 'coarse',
+      coarsePeriod: 'evening',
+    });
+    const placement = buildTemporalCreatePlacement(fields);
+
+    expect(validateTemporalCreateFields(fields)).toEqual([]);
+    expect(placement).toMatchObject({
+      kind: 'coarse-local-period',
+      period: 'evening',
+    });
+    if (placement?.kind === 'coarse-local-period') {
+      expect(placement.localDate.toString()).toBe('2026-09-05');
+      expect('start' in placement).toBe(false);
+      expect('end' in placement).toBe(false);
+    }
+  });
+
   it('preserves floating-local semantics without inventing a timezone', () => {
     const fields = createTemporalCreateFields({
       title: 'Focus',
@@ -287,21 +309,39 @@ describe('temporal create session', () => {
     }
   });
 
-  it('builds DST-safe zoned placement through the named timezone', () => {
-    const fields = createTemporalCreateFields({
-      title: 'DST test',
+  it('requires explicit DST resolution and retains the original named-zone wall-clock gap intent', () => {
+    const rejected = createTemporalCreateFields({
+      title: 'DST gap',
       date: '2026-03-29',
       startTime: '01:30',
       durationMinutes: 60,
       timeMode: 'zoned',
       timeZoneId: 'Europe/Rome',
+      timeDisambiguation: 'reject',
     });
-    const placement = buildTemporalCreatePlacement(fields);
+    expect(
+      validateTemporalCreateFields(rejected).map((issue) => issue.code),
+    ).toContain('temporal.create.dst_resolution.required');
 
+    const explicit = createTemporalCreateFields({
+      ...rejected,
+      timeDisambiguation: 'later',
+    });
+    expect(validateTemporalCreateFields(explicit)).toEqual([]);
+
+    const placement = buildTemporalCreatePlacement(explicit);
     expect(placement?.kind).toBe('zoned');
     if (placement?.kind === 'zoned') {
-      expect(placement.start.hour).toBe(1);
-      expect(placement.end.hour).toBe(3);
+      expect(placement.sourceStartsLocalAt?.toString()).toBe(
+        '2026-03-29T01:30:00',
+      );
+      expect(placement.sourceEndsLocalAt?.toString()).toBe(
+        '2026-03-29T02:30:00',
+      );
+      expect(placement.disambiguation).toBe('later');
+      expect(placement.end.toPlainDateTime().toString()).toBe(
+        '2026-03-29T03:30:00',
+      );
       expect(
         Temporal.Instant.compare(
           placement.end.toInstant(),
