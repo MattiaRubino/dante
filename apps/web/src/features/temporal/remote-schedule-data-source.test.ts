@@ -23,6 +23,19 @@ function jsonResponse(body: unknown, status = 200): Response {
   });
 }
 
+function requestJsonBody(
+  init: RequestInit | undefined,
+): Readonly<Record<string, unknown>> {
+  if (typeof init?.body !== 'string') {
+    throw new Error('Expected JSON string request body.');
+  }
+  const parsed = JSON.parse(init.body) as unknown;
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    throw new Error('Expected JSON object request body.');
+  }
+  return parsed as Readonly<Record<string, unknown>>;
+}
+
 function revisionRequest(): TemporalScheduleRevisionRequest {
   return {
     operationId: 'b02-c:revision:1',
@@ -79,7 +92,7 @@ describe('remote Schedule data source', () => {
     expect(url).toBe(`/api/v1/temporal/schedules/${SCHEDULE_REF}/placement`);
     expect(init?.method).toBe('PATCH');
     expect(new Headers(init?.headers).get('X-Dante-CSRF')).toBe('csrf-token');
-    expect(JSON.parse(String(init?.body))).toEqual({
+    expect(requestJsonBody(init)).toEqual({
       operation_id: 'b02-c:revision:1',
       expected_placement_material_state_ref: CURRENT_STATE_REF,
       placement: {
@@ -171,7 +184,7 @@ describe('remote Schedule data source', () => {
       },
     });
     const [, init] = fetchFn.mock.calls[1] ?? [];
-    expect(JSON.parse(String(init?.body)).placement).toEqual({
+    expect(requestJsonBody(init).placement).toEqual({
       kind: 'floating_local_interval',
       starts_local_at: '2026-09-09T23:30:00',
       ends_local_at: '2026-09-10T01:15:00',
@@ -213,7 +226,7 @@ describe('remote Schedule data source', () => {
       period: 'afternoon',
     });
     const [, init] = fetchFn.mock.calls[1] ?? [];
-    expect(JSON.parse(String(init?.body)).placement).toEqual({
+    expect(requestJsonBody(init).placement).toEqual({
       kind: 'coarse_local_period',
       local_date: '2026-09-16',
       period: 'afternoon',
@@ -266,7 +279,7 @@ describe('remote Schedule data source', () => {
       '2026-10-25T01:10:00Z',
     );
     const [, init] = fetchFn.mock.calls[1] ?? [];
-    expect(JSON.parse(String(init?.body)).placement).toEqual({
+    expect(requestJsonBody(init).placement).toEqual({
       kind: 'named_zone_local_interval',
       starts_local_at: '2026-10-25T02:10:00',
       ends_local_at: '2026-10-25T02:40:00',
@@ -305,7 +318,7 @@ describe('remote Schedule data source', () => {
     const [url, init] = fetchFn.mock.calls[1] ?? [];
     expect(url).toBe(`/api/v1/temporal/schedules/${SCHEDULE_REF}/unschedule`);
     expect(init?.method).toBe('POST');
-    expect(JSON.parse(String(init?.body))).toEqual({
+    expect(requestJsonBody(init)).toEqual({
       operation_id: request.operationId,
       expected_placement_material_state_ref: CURRENT_STATE_REF,
     });
@@ -348,7 +361,7 @@ describe('remote Schedule data source', () => {
       `/api/v1/temporal/schedules/${SCHEDULE_REF}/unschedule/undo`,
     );
     expect(init?.method).toBe('POST');
-    expect(JSON.parse(String(init?.body))).toEqual({
+    expect(requestJsonBody(init)).toEqual({
       operation_id: request.operationId,
       unschedule_operation_id: request.unscheduleOperationId,
     });
