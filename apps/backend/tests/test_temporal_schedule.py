@@ -1,4 +1,4 @@
-"""B02-B/B02-C/B02-D Schedule mutation API proofs."""
+"""B02-E Schedule mutation API proofs."""
 
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ from dante.modules.temporal.activity import (
 from dante.modules.temporal.api import (
     EstablishActivityScheduleRequest,
     FloatingLocalIntervalPlacementRequest,
-    ReviseFloatingScheduleRequest,
+    ReviseScheduleRequest,
     UndoScheduleUnscheduleRequest,
     UnscheduleScheduleRequest,
     establish_activity_schedule,
@@ -109,7 +109,9 @@ class _StaticActivityApplication:
         self.outcome = outcome
         self.calls: list[dict[str, object]] = []
 
-    async def schedule_existing_activity(self, **kwargs: object) -> CreateScheduledActivityResult:
+    async def schedule_existing_activity_with_placement(
+        self, **kwargs: object
+    ) -> CreateScheduledActivityResult:
         self.calls.append(kwargs)
         if isinstance(self.outcome, Exception):
             raise self.outcome
@@ -231,7 +233,7 @@ class _StaticScheduleApplication:
         assert isinstance(self.outcome, expected)
         return self.outcome
 
-    async def revise_floating_schedule(self, **kwargs: object) -> RevisedScheduleView:
+    async def revise_schedule(self, **kwargs: object) -> RevisedScheduleView:
         self.calls.append(kwargs)
         return cast(RevisedScheduleView, self._result(RevisedScheduleView))
 
@@ -250,8 +252,8 @@ def _schedule_application(
     return cast(TemporalScheduleApplication, value)
 
 
-def _revision_payload() -> ReviseFloatingScheduleRequest:
-    return ReviseFloatingScheduleRequest(
+def _revision_payload() -> ReviseScheduleRequest:
+    return ReviseScheduleRequest(
         operation_id="operation:b02-c:revise",
         expected_placement_material_state_ref=UUID(str(_STATE_REF)),
         placement=FloatingLocalIntervalPlacementRequest(
