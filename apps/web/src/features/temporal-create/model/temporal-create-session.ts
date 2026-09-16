@@ -4,19 +4,32 @@ import {
   createTemporalDraft,
   temporalValidationIssue,
   updateTemporalDraft,
+  type TemporalCoarsePeriod,
   type TemporalDraft,
   type TemporalPlacement,
   type TemporalValidationIssue,
 } from '../../temporal';
 
 export type TemporalCreateKind = 'activity' | 'event';
-export type TemporalCreateTimeSemantics = 'timed' | 'all-day' | 'unscheduled';
+export type TemporalCreateTimeSemantics =
+  | 'timed'
+  | 'all-day'
+  | 'coarse'
+  | 'unscheduled';
 export type TemporalCreateTimeMode = 'floating' | 'zoned';
+export type TemporalCreateTimeDisambiguation = 'reject' | 'earlier' | 'later';
 export type TemporalCreateSurface = 'quick' | 'expanded' | 'full';
 export type TemporalCreateConstraintKind =
-  'none' | 'open' | 'bounded-window' | 'deadline' | 'preferred-window';
+  | 'none'
+  | 'open'
+  | 'bounded-window'
+  | 'deadline'
+  | 'preferred-window';
 export type TemporalCreateMovementPolicy =
-  'locked' | 'window' | 'confirm' | 'free';
+  | 'locked'
+  | 'window'
+  | 'confirm'
+  | 'free';
 export type TemporalCreateFallbackPolicy =
   | 'inherit'
   | 'skip'
@@ -26,7 +39,13 @@ export type TemporalCreateFallbackPolicy =
   | 'replan-dependencies';
 export type TemporalCreateSessionMode = 'indivisible' | 'splittable';
 export type TemporalCreateWeekday =
-  'MO' | 'TU' | 'WE' | 'TH' | 'FR' | 'SA' | 'SU';
+  | 'MO'
+  | 'TU'
+  | 'WE'
+  | 'TH'
+  | 'FR'
+  | 'SA'
+  | 'SU';
 export type TemporalCreateOutcomePolicy =
   | 'inherit'
   | 'ask-immediately'
@@ -42,24 +61,14 @@ export type TemporalCreateVisibility = 'default' | 'private' | 'public';
 export type TemporalCreateConferenceMode = 'none' | 'provider-default';
 export type TemporalCreateRecurrenceOwner = 'event' | 'routine' | null;
 
-/**
- * Presentation-only override for the Timeline visual grammar. It never changes
- * Context ownership, filtering, scheduling semantics or canonical Domain
- * classification. `null` means the item inherits its Context tone.
- */
 export type TemporalCreateAppearanceTone =
-  'focus' | 'meeting' | 'health' | 'creative' | 'personal' | 'urgent';
+  | 'focus'
+  | 'meeting'
+  | 'health'
+  | 'creative'
+  | 'personal'
+  | 'urgent';
 
-/**
- * Owner-bound recurrence authoring grammar shared by the Create surface.
- * Event uses it as Event-owned recurrence. When the selected kind is Activity,
- * the same authored rule is explicitly Routine-backed: Activity never becomes
- * the canonical recurrence owner and the browser never fabricates Occurrences.
- *
- * The historical Event-prefixed type/property names are retained inside C1 to
- * avoid a gratuitous data-shape migration while preserving the CP6 owner rule.
- * `owner` makes that semantic boundary explicit at the draft boundary.
- */
 export type TemporalCreateEventRecurrencePatternKind =
   | 'none'
   | 'calendar-wall-clock'
@@ -67,12 +76,21 @@ export type TemporalCreateEventRecurrencePatternKind =
   | 'quota-per-period'
   | 'cyclic-positional';
 export type TemporalCreateEventCalendarFrequency =
-  'daily' | 'weekly' | 'monthly' | 'monthly-ordinal' | 'yearly';
+  | 'daily'
+  | 'weekly'
+  | 'monthly'
+  | 'monthly-ordinal'
+  | 'yearly';
 export type TemporalCreateEventRecurrenceEnd = 'none' | 'until-date' | 'count';
 export type TemporalCreateEventQuotaPeriodKind =
-  'day' | 'week' | 'month' | 'year';
+  | 'day'
+  | 'week'
+  | 'month'
+  | 'year';
 export type TemporalCreateEventQuotaFrame =
-  'floating-local' | 'named-zone' | 'absolute-utc';
+  | 'floating-local'
+  | 'named-zone'
+  | 'absolute-utc';
 export type TemporalCreateEventCycleUnit = 'day' | 'week';
 
 export type TemporalCreateSchedulingIntent = Readonly<{
@@ -138,7 +156,6 @@ export type TemporalCreateEventIntent = Readonly<{
   visibility: TemporalCreateVisibility;
   purpose: string;
   expectedOutcome: string;
-  /** Ordered parts remain internal to the Event unless another owner is explicit. */
   agendaParts: readonly string[];
   decisionRequired: boolean;
   requiredParticipants: string;
@@ -159,6 +176,8 @@ export type TemporalCreateFields = Readonly<{
   durationMinutes: number;
   timeMode: TemporalCreateTimeMode;
   timeZoneId: string;
+  timeDisambiguation: TemporalCreateTimeDisambiguation;
+  coarsePeriod: TemporalCoarsePeriod;
   contextId: string;
   appearanceTone: TemporalCreateAppearanceTone | null;
   notes: string;
@@ -194,8 +213,9 @@ const WEEKDAYS: readonly TemporalCreateWeekday[] = Object.freeze([
   'SA',
   'SU',
 ]);
-
-const RECURRENCE_ORDINALS = Object.freeze([-5, -4, -3, -2, -1, 1, 2, 3, 4, 5]);
+const RECURRENCE_ORDINALS = Object.freeze([
+  -5, -4, -3, -2, -1, 1, 2, 3, 4, 5,
+]);
 
 function freezeScheduling(
   value: TemporalCreateSchedulingIntent,
@@ -247,7 +267,7 @@ function normalizeFields(fields: TemporalCreateFields): TemporalCreateFields {
   let eventRecurrence = fields.eventRecurrence;
 
   if (fields.kind === 'event') {
-    if (timeSemantics === 'unscheduled') {
+    if (timeSemantics === 'unscheduled' || timeSemantics === 'coarse') {
       timeSemantics = 'timed';
     }
     if (
@@ -390,6 +410,8 @@ export function createTemporalCreateFields(
       durationMinutes: options.durationMinutes ?? 30,
       timeMode: options.timeMode ?? 'floating',
       timeZoneId,
+      timeDisambiguation: options.timeDisambiguation ?? 'reject',
+      coarsePeriod: options.coarsePeriod ?? 'afternoon',
       contextId: options.contextId ?? 'personale',
       appearanceTone: options.appearanceTone ?? null,
       notes: options.notes ?? '',
@@ -445,6 +467,8 @@ function temporalCreateFieldsEqual(
     left.durationMinutes === right.durationMinutes &&
     left.timeMode === right.timeMode &&
     left.timeZoneId === right.timeZoneId &&
+    left.timeDisambiguation === right.timeDisambiguation &&
+    left.coarsePeriod === right.coarsePeriod &&
     left.contextId === right.contextId &&
     left.appearanceTone === right.appearanceTone &&
     left.notes === right.notes &&
@@ -586,7 +610,6 @@ export function updateTemporalCreateTitle(
   return updateTemporalCreateFields(session, { title });
 }
 
-/** Presentation depth never destroys authored draft values. */
 export function setTemporalCreateSurface(
   session: TemporalCreateSession,
   surface: TemporalCreateSurface,
@@ -836,7 +859,11 @@ export function validateTemporalCreateFields(
       temporalValidationIssue('temporal.create.date.invalid', ['date']),
     );
   }
-  if (fields.kind === 'event' && fields.timeSemantics === 'unscheduled') {
+  if (
+    fields.kind === 'event' &&
+    (fields.timeSemantics === 'unscheduled' ||
+      fields.timeSemantics === 'coarse')
+  ) {
     issues.push(
       temporalValidationIssue('temporal.create.event.requires_placement', [
         'timeSemantics',
@@ -876,17 +903,31 @@ export function validateTemporalCreateFields(
       );
     }
 
-    if (
-      date &&
-      time &&
-      fields.timeMode === 'zoned' &&
-      !validTimeZoneId(fields.timeZoneId)
-    ) {
-      issues.push(
-        temporalValidationIssue('temporal.create.timezone.invalid', [
-          'timeZoneId',
-        ]),
-      );
+    if (date && time && fields.timeMode === 'zoned') {
+      if (!validTimeZoneId(fields.timeZoneId)) {
+        issues.push(
+          temporalValidationIssue('temporal.create.timezone.invalid', [
+            'timeZoneId',
+          ]),
+        );
+      } else {
+        const start = dateTime(fields.date, fields.startTime);
+        const end = start?.add({ minutes: fields.durationMinutes });
+        try {
+          start?.toZonedDateTime(fields.timeZoneId, {
+            disambiguation: fields.timeDisambiguation,
+          });
+          end?.toZonedDateTime(fields.timeZoneId, {
+            disambiguation: fields.timeDisambiguation,
+          });
+        } catch {
+          issues.push(
+            temporalValidationIssue('temporal.create.dst_resolution.required', [
+              'timeDisambiguation',
+            ]),
+          );
+        }
+      }
     }
   }
 
@@ -1045,6 +1086,13 @@ export function buildTemporalCreatePlacement(
       endDateExclusive: inclusiveEnd.add({ days: 1 }),
     });
   }
+  if (fields.timeSemantics === 'coarse') {
+    return Object.freeze({
+      kind: 'coarse-local-period' as const,
+      localDate: date,
+      period: fields.coarsePeriod,
+    });
+  }
 
   const time = parseTime(fields.startTime);
   if (!time) {
@@ -1057,20 +1105,26 @@ export function buildTemporalCreatePlacement(
     hour: time.hour,
     minute: time.minute,
   });
+  const end = start.add({ minutes: fields.durationMinutes });
 
   if (fields.timeMode === 'zoned') {
-    const zonedStart = start.toZonedDateTime(fields.timeZoneId);
+    const zonedStart = start.toZonedDateTime(fields.timeZoneId, {
+      disambiguation: fields.timeDisambiguation,
+    });
+    const zonedEnd = end.toZonedDateTime(fields.timeZoneId, {
+      disambiguation: fields.timeDisambiguation,
+    });
     return Object.freeze({
       kind: 'zoned' as const,
       start: zonedStart,
-      end: zonedStart.add({ minutes: fields.durationMinutes }),
+      end: zonedEnd,
     });
   }
 
   return Object.freeze({
     kind: 'floating-local' as const,
     start,
-    end: start.add({ minutes: fields.durationMinutes }),
+    end,
   });
 }
 
