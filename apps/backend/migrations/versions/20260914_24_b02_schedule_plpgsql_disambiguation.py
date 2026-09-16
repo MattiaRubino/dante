@@ -123,23 +123,11 @@ _UNDO_LATER_UNQUALIFIED_SQL = """FROM dante.schedule_placement_current_history
                              WHERE schedule_ref = requested_schedule_ref
                                AND current_from_at >= unscheduled_at"""
 
-_SCHEDULE_BASE_RE = re.compile(
-    r"""
-    ^[ \t]*IF\s+date_n\s*\+\s*floating_n\s*\+\s*named_n\s*\+\s*absolute_n\s*<>\s*1\s+
-    OR\s*\(\s*form\s*=\s*'date_span'\s+AND\s+date_n\s*<>\s*1\s*\)\s+
-    OR\s*\(\s*form\s*=\s*'floating_local'\s+AND\s+floating_n\s*<>\s*1\s*\)\s+
-    OR\s*\(\s*form\s*=\s*'named_zone_local'\s+AND\s+named_n\s*<>\s*1\s*\)\s+
-    OR\s*\(\s*form\s*=\s*'absolute'\s+AND\s+absolute_n\s*<>\s*1\s*\)\s+THEN\s+
-    RAISE\s+EXCEPTION\s+USING\s+
-    ERRCODE\s*=\s*'23514'\s*,\s*
-    CONSTRAINT\s*=\s*TG_NAME\s*,\s*
-    TABLE\s*=\s*TG_TABLE_NAME\s*,\s*
-    SCHEMA\s*=\s*TG_TABLE_SCHEMA\s*,\s*
-    MESSAGE\s*=\s*'Schedule placement payload rejected'\s*,\s*
-    DETAIL\s*=\s*'exactly one typed payload must match temporal_form_code'\s*;\s*
-    END\s+IF\s*;
-    """,
-    re.IGNORECASE | re.MULTILINE | re.VERBOSE,
+_SCHEDULE_PAYLOAD_BLOCK_RE = re.compile(
+    r"^[ \t]*IF\b(?:(?!END\s+IF\s*;).)*?"
+    r"MESSAGE\s*=\s*'Schedule placement payload rejected'"
+    r"(?:(?!END\s+IF\s*;).)*?END\s+IF\s*;",
+    re.IGNORECASE | re.MULTILINE | re.DOTALL,
 )
 
 _SCHEDULE_RETIREMENT = r"""    IF EXISTS (SELECT 1 FROM dante.material_state_retirement WHERE material_state_ref=state_ref) THEN
@@ -242,17 +230,16 @@ def _without_strict_disambiguation(signature: str, definition: str) -> str:
 def _restore_schedule_retirement_guard() -> None:
     signature = "dante.enforce_schedule_placement_totality()"
     definition = _function_definition(signature)
-    if definition.count(_SCHEDULE_RETIREMENT) == 1:
+    if "retired Schedule placement payload rejected" in definition:
         return
-    definition, replacements = _SCHEDULE_BASE_RE.subn(
-        _SCHEDULE_RETIREMENT,
-        definition,
-        count=1,
-    )
-    if replacements != 1:
+
+    matches = list(_SCHEDULE_PAYLOAD_BLOCK_RE.finditer(definition))
+    if len(matches) != 1:
         raise RuntimeError(
-            "B02 downgrade could not restore the pre-E1 Schedule retirement guard"
+            "B02 downgrade could not identify exactly one Schedule payload validator block"
         )
+    match = matches[0]
+    definition = definition[: match.start()] + _SCHEDULE_RETIREMENT + definition[match.end() :]
     _install(definition)
 
 
