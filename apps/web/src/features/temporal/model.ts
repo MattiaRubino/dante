@@ -159,6 +159,8 @@ function validationResult<T>(
 
 /* Placement --------------------------------------------------------------- */
 
+export type TemporalCoarsePeriod = 'morning' | 'afternoon' | 'evening';
+
 export type TemporalPlacement =
   | Readonly<{
       kind: 'date-span';
@@ -179,6 +181,11 @@ export type TemporalPlacement =
       kind: 'absolute';
       start: Instant;
       end: Instant;
+    }>
+  | Readonly<{
+      kind: 'coarse-local-period';
+      localDate: PlainDate;
+      period: TemporalCoarsePeriod;
     }>;
 
 export type SerializedTemporalPlacement =
@@ -191,6 +198,11 @@ export type SerializedTemporalPlacement =
       kind: 'floating-local' | 'zoned' | 'absolute';
       start: string;
       end: string;
+    }>
+  | Readonly<{
+      kind: 'coarse-local-period';
+      localDate: string;
+      period: TemporalCoarsePeriod;
     }>;
 
 export function serializeTemporalPlacement(
@@ -201,6 +213,13 @@ export function serializeTemporalPlacement(
       kind: placement.kind,
       startDate: placement.startDate.toString(),
       endDateExclusive: placement.endDateExclusive.toString(),
+    });
+  }
+  if (placement.kind === 'coarse-local-period') {
+    return Object.freeze({
+      kind: placement.kind,
+      localDate: placement.localDate.toString(),
+      period: placement.period,
     });
   }
   return Object.freeze({
@@ -237,6 +256,12 @@ export function deserializeTemporalPlacement(
         kind: value.kind,
         start: Temporal.Instant.from(value.start),
         end: Temporal.Instant.from(value.end),
+      });
+    case 'coarse-local-period':
+      return Object.freeze({
+        kind: value.kind,
+        localDate: Temporal.PlainDate.from(value.localDate),
+        period: value.period,
       });
   }
 }
@@ -277,6 +302,9 @@ export function validateTemporalPlacement(
       break;
     case 'absolute':
       invalid = Temporal.Instant.compare(placement.start, placement.end) >= 0;
+      break;
+    case 'coarse-local-period':
+      invalid = false;
       break;
   }
 
