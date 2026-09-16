@@ -1,6 +1,6 @@
 import { Temporal } from '@dante/time';
-import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { i18n } from '../../../../bootstrap/i18n';
 import type { TemporalTimelineScheduledActivityItem } from '../../../temporal/timeline-read';
@@ -9,6 +9,7 @@ import {
   canonicalScheduledActivityTimelineEvent,
 } from './timeline-authoritative-hydration';
 import { TimelineAllDayLane } from './timeline-all-day-layer';
+import { TimelineCanonicalActionsProvider } from './timeline-canonical-actions';
 
 const ACTIVITY_REF = '0199a8c0-5e71-7bc0-8ad0-a2f403f5617d';
 const SCHEDULE_REF = '0199a8c0-5e72-7bc0-8ad0-a2f403f5617d';
@@ -59,7 +60,7 @@ describe('B02-E3 Schedule form rendering', () => {
     expect(laneItem?.canonicalBasis?.placement.kind).toBe('date-span');
   });
 
-  it('renders coarse precision as Pomeriggio without inventing a clock interval', () => {
+  it('renders coarse precision without fake clock geometry and routes unschedule through the canonical basis', () => {
     const item = Object.freeze({
       ...common(),
       title: 'Scrivere relazione',
@@ -68,19 +69,24 @@ describe('B02-E3 Schedule form rendering', () => {
       period: 'afternoon' as const,
     }) satisfies TemporalTimelineScheduledActivityItem;
     const laneItem = canonicalScheduledActivityDateLaneItem(item);
-    if (laneItem === null) {
-      throw new Error('Expected a coarse date-lane projection.');
+    if (laneItem === null || laneItem.canonicalBasis === undefined) {
+      throw new Error('Expected a canonical coarse date-lane projection.');
     }
+    const unschedule = vi.fn();
 
-    render(
-      <TimelineAllDayLane
-        dateKey="2026-09-16"
-        items={[laneItem]}
-        groups={[
-          Object.freeze({ id: 'personale', label: 'Personale', tone: 'personal' }),
-        ]}
-        filters={new Set()}
-      />,
+    const { container } = render(
+      <TimelineCanonicalActionsProvider
+        actions={{ pendingScheduleRef: null, unschedule }}
+      >
+        <TimelineAllDayLane
+          dateKey="2026-09-16"
+          items={[laneItem]}
+          groups={[
+            Object.freeze({ id: 'personale', label: 'Personale', tone: 'personal' }),
+          ]}
+          filters={new Set()}
+        />
+      </TimelineCanonicalActionsProvider>,
     );
 
     expect(screen.getByText('Fascia')).toBeTruthy();
@@ -91,10 +97,21 @@ describe('B02-E3 Schedule form rendering', () => {
         name: 'Scrivere relazione · Pomeriggio · Personale',
       }),
     ).toHaveAttribute('data-timeline-date-lane-kind', 'coarse');
-    expect(laneItem.canonicalBasis?.placement).toMatchObject({
+    expect(laneItem.canonicalBasis.placement).toMatchObject({
       kind: 'coarse-local-period',
       period: 'afternoon',
     });
+
+    const unscheduleButton = container.querySelector<HTMLButtonElement>(
+      `[data-timeline-unschedule-schedule="${SCHEDULE_REF}"]`,
+    );
+    expect(unscheduleButton).not.toBeNull();
+    if (unscheduleButton === null) {
+      throw new Error('Expected the governed unschedule action.');
+    }
+    fireEvent.click(unscheduleButton);
+    expect(unschedule).toHaveBeenCalledTimes(1);
+    expect(unschedule).toHaveBeenCalledWith(laneItem.canonicalBasis);
   });
 
   it('retains named-zone source intent while rendering effective-zone coordinates', () => {
