@@ -36,13 +36,18 @@ from dante.modules.temporal.contracts import (
     TimelineWindowValidationError,
 )
 from dante.modules.temporal.schedule import (
+    AbsoluteIntervalPlacement,
+    CoarseLocalPeriodPlacement,
+    DateSpanPlacement,
     FloatingLocalIntervalPlacement,
+    NamedZoneLocalIntervalPlacement,
     RestoredScheduleView,
     RevisedScheduleView,
     ScheduleInputError,
     ScheduleNotFoundError,
     ScheduleOperationIdReuseError,
     SchedulePersistenceError,
+    SchedulePlacement,
     ScheduleRevisionConflictError,
     ScheduleUndoConflictError,
     ScheduleUnscheduleConflictError,
@@ -199,9 +204,15 @@ class CreateActivityRequest(BaseModel):
     title: str = Field(min_length=1, max_length=300)
 
 
-class FloatingLocalIntervalPlacementRequest(BaseModel):
-    """First lossless accepted Schedule transport form activated by B02-A."""
+class DateSpanPlacementRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
 
+    kind: Literal["date_span"] = "date_span"
+    start_date: date
+    end_date_exclusive: date
+
+
+class FloatingLocalIntervalPlacementRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     kind: Literal["floating_local_interval"] = "floating_local_interval"
@@ -209,33 +220,69 @@ class FloatingLocalIntervalPlacementRequest(BaseModel):
     ends_local_at: datetime
 
 
+class NamedZoneLocalIntervalPlacementRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["named_zone_local_interval"] = "named_zone_local_interval"
+    starts_local_at: datetime
+    ends_local_at: datetime
+    zone_id: str = Field(min_length=1, max_length=200)
+    disambiguation: Literal["reject", "earlier", "later"] = "reject"
+
+
+class AbsoluteIntervalPlacementRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["absolute_interval"] = "absolute_interval"
+    starts_at: datetime
+    ends_at: datetime
+
+
+class CoarseLocalPeriodPlacementRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["coarse_local_period"] = "coarse_local_period"
+    local_date: date
+    period: Literal["morning", "afternoon", "evening"]
+
+
+SchedulePlacementRequest = Annotated[
+    DateSpanPlacementRequest
+    | FloatingLocalIntervalPlacementRequest
+    | NamedZoneLocalIntervalPlacementRequest
+    | AbsoluteIntervalPlacementRequest
+    | CoarseLocalPeriodPlacementRequest,
+    Field(discriminator="kind"),
+]
+
+
 class CreateScheduledActivityRequest(BaseModel):
-    """Atomic Activity + accepted Schedule authoring command for B02-A."""
+    """Atomic Activity + accepted Schedule authoring command."""
 
     model_config = ConfigDict(extra="forbid")
 
     operation_id: str = Field(min_length=1, max_length=200)
     title: str = Field(min_length=1, max_length=300)
-    placement: FloatingLocalIntervalPlacementRequest
+    placement: SchedulePlacementRequest
 
 
 class EstablishActivityScheduleRequest(BaseModel):
-    """Attach an accepted Schedule to one existing canonical Activity."""
+    """Attach one accepted Schedule to an existing canonical Activity."""
 
     model_config = ConfigDict(extra="forbid")
 
     operation_id: str = Field(min_length=1, max_length=200)
-    placement: FloatingLocalIntervalPlacementRequest
+    placement: SchedulePlacementRequest
 
 
-class ReviseFloatingScheduleRequest(BaseModel):
+class ReviseScheduleRequest(BaseModel):
     """Revise one current Schedule from an exact accepted placement basis."""
 
     model_config = ConfigDict(extra="forbid")
 
     operation_id: str = Field(min_length=1, max_length=200)
     expected_placement_material_state_ref: UUID
-    placement: FloatingLocalIntervalPlacementRequest
+    placement: SchedulePlacementRequest
 
 
 class UnscheduleScheduleRequest(BaseModel):
@@ -268,8 +315,6 @@ class ActivityResponse(BaseModel):
 
 
 class ScheduledActivityResponse(BaseModel):
-    """Canonical Activity plus the first accepted Schedule/current placement."""
-
     model_config = ConfigDict(extra="forbid")
 
     activity_ref: UUID
@@ -283,9 +328,76 @@ class ScheduledActivityResponse(BaseModel):
     replayed: bool = False
 
 
-class RevisedScheduleResponse(BaseModel):
-    """Accepted current Schedule placement after one governed revision."""
+class ScheduledActivityDateSpanResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
 
+    activity_ref: UUID
+    title: str
+    created_at: datetime
+    schedule_ref: UUID
+    placement_material_state_ref: UUID
+    temporal_form: Literal["date_span"] = "date_span"
+    start_date: date
+    end_date_exclusive: date
+    replayed: bool = False
+
+
+class ScheduledActivityNamedZoneResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    activity_ref: UUID
+    title: str
+    created_at: datetime
+    schedule_ref: UUID
+    placement_material_state_ref: UUID
+    temporal_form: Literal["named_zone_local"] = "named_zone_local"
+    starts_local_at: datetime
+    ends_local_at: datetime
+    zone_id: str
+    resolved_start_at: datetime
+    resolved_end_at: datetime
+    replayed: bool = False
+
+
+class ScheduledActivityAbsoluteResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    activity_ref: UUID
+    title: str
+    created_at: datetime
+    schedule_ref: UUID
+    placement_material_state_ref: UUID
+    temporal_form: Literal["absolute"] = "absolute"
+    starts_at: datetime
+    ends_at: datetime
+    replayed: bool = False
+
+
+class ScheduledActivityCoarseResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    activity_ref: UUID
+    title: str
+    created_at: datetime
+    schedule_ref: UUID
+    placement_material_state_ref: UUID
+    temporal_form: Literal["coarse_local_period"] = "coarse_local_period"
+    local_date: date
+    period: Literal["morning", "afternoon", "evening"]
+    replayed: bool = False
+
+
+ScheduledActivityMutationResponse = Annotated[
+    ScheduledActivityResponse
+    | ScheduledActivityDateSpanResponse
+    | ScheduledActivityNamedZoneResponse
+    | ScheduledActivityAbsoluteResponse
+    | ScheduledActivityCoarseResponse,
+    Field(discriminator="temporal_form"),
+]
+
+
+class RevisedScheduleResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     schedule_ref: UUID
@@ -295,6 +407,67 @@ class RevisedScheduleResponse(BaseModel):
     starts_local_at: datetime
     ends_local_at: datetime
     replayed: bool = False
+
+
+class RevisedScheduleDateSpanResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    schedule_ref: UUID
+    previous_placement_material_state_ref: UUID
+    placement_material_state_ref: UUID
+    temporal_form: Literal["date_span"] = "date_span"
+    start_date: date
+    end_date_exclusive: date
+    replayed: bool = False
+
+
+class RevisedScheduleNamedZoneResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    schedule_ref: UUID
+    previous_placement_material_state_ref: UUID
+    placement_material_state_ref: UUID
+    temporal_form: Literal["named_zone_local"] = "named_zone_local"
+    starts_local_at: datetime
+    ends_local_at: datetime
+    zone_id: str
+    resolved_start_at: datetime
+    resolved_end_at: datetime
+    replayed: bool = False
+
+
+class RevisedScheduleAbsoluteResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    schedule_ref: UUID
+    previous_placement_material_state_ref: UUID
+    placement_material_state_ref: UUID
+    temporal_form: Literal["absolute"] = "absolute"
+    starts_at: datetime
+    ends_at: datetime
+    replayed: bool = False
+
+
+class RevisedScheduleCoarseResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    schedule_ref: UUID
+    previous_placement_material_state_ref: UUID
+    placement_material_state_ref: UUID
+    temporal_form: Literal["coarse_local_period"] = "coarse_local_period"
+    local_date: date
+    period: Literal["morning", "afternoon", "evening"]
+    replayed: bool = False
+
+
+RevisedScheduleMutationResponse = Annotated[
+    RevisedScheduleResponse
+    | RevisedScheduleDateSpanResponse
+    | RevisedScheduleNamedZoneResponse
+    | RevisedScheduleAbsoluteResponse
+    | RevisedScheduleCoarseResponse,
+    Field(discriminator="temporal_form"),
+]
 
 
 class UnscheduledScheduleResponse(BaseModel):
@@ -309,8 +482,6 @@ class UnscheduledScheduleResponse(BaseModel):
 
 
 class RestoredScheduleResponse(BaseModel):
-    """New current placement produced by guarded Undo of unschedule."""
-
     model_config = ConfigDict(extra="forbid")
 
     schedule_ref: UUID
@@ -320,6 +491,67 @@ class RestoredScheduleResponse(BaseModel):
     starts_local_at: datetime
     ends_local_at: datetime
     replayed: bool = False
+
+
+class RestoredScheduleDateSpanResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    schedule_ref: UUID
+    restored_from_placement_material_state_ref: UUID
+    placement_material_state_ref: UUID
+    temporal_form: Literal["date_span"] = "date_span"
+    start_date: date
+    end_date_exclusive: date
+    replayed: bool = False
+
+
+class RestoredScheduleNamedZoneResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    schedule_ref: UUID
+    restored_from_placement_material_state_ref: UUID
+    placement_material_state_ref: UUID
+    temporal_form: Literal["named_zone_local"] = "named_zone_local"
+    starts_local_at: datetime
+    ends_local_at: datetime
+    zone_id: str
+    resolved_start_at: datetime
+    resolved_end_at: datetime
+    replayed: bool = False
+
+
+class RestoredScheduleAbsoluteResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    schedule_ref: UUID
+    restored_from_placement_material_state_ref: UUID
+    placement_material_state_ref: UUID
+    temporal_form: Literal["absolute"] = "absolute"
+    starts_at: datetime
+    ends_at: datetime
+    replayed: bool = False
+
+
+class RestoredScheduleCoarseResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    schedule_ref: UUID
+    restored_from_placement_material_state_ref: UUID
+    placement_material_state_ref: UUID
+    temporal_form: Literal["coarse_local_period"] = "coarse_local_period"
+    local_date: date
+    period: Literal["morning", "afternoon", "evening"]
+    replayed: bool = False
+
+
+RestoredScheduleMutationResponse = Annotated[
+    RestoredScheduleResponse
+    | RestoredScheduleDateSpanResponse
+    | RestoredScheduleNamedZoneResponse
+    | RestoredScheduleAbsoluteResponse
+    | RestoredScheduleCoarseResponse,
+    Field(discriminator="temporal_form"),
+]
 
 
 class UnplacedActivitiesResponse(BaseModel):
@@ -332,19 +564,16 @@ class UnplacedActivitiesResponse(BaseModel):
 
 
 def get_temporal_activity_application(request: Request) -> TemporalActivityApplication:
-    """Resolve the Activity application boundary from the process-scoped DB runtime."""
     database_runtime = cast(DatabaseRuntime, request.app.state.database_runtime)
     return TemporalActivityApplication(database_runtime.session_factory)
 
 
 def get_temporal_timeline_application(request: Request) -> TemporalTimelineApplication:
-    """Resolve the Timeline application boundary from the process-scoped DB runtime."""
     database_runtime = cast(DatabaseRuntime, request.app.state.database_runtime)
     return TemporalTimelineApplication(database_runtime.session_factory)
 
 
 def get_temporal_schedule_application(request: Request) -> TemporalScheduleApplication:
-    """Resolve the Schedule mutation boundary from the process-scoped DB runtime."""
     database_runtime = cast(DatabaseRuntime, request.app.state.database_runtime)
     return TemporalScheduleApplication(database_runtime.session_factory)
 
@@ -427,6 +656,171 @@ def _timeline_item_response(
     )
 
 
+def _placement_from_request(payload: SchedulePlacementRequest) -> SchedulePlacement:
+    if isinstance(payload, DateSpanPlacementRequest):
+        return DateSpanPlacement(
+            start_date=payload.start_date,
+            end_date_exclusive=payload.end_date_exclusive,
+        )
+    if isinstance(payload, FloatingLocalIntervalPlacementRequest):
+        return FloatingLocalIntervalPlacement(
+            starts_local_at=payload.starts_local_at,
+            ends_local_at=payload.ends_local_at,
+        )
+    if isinstance(payload, NamedZoneLocalIntervalPlacementRequest):
+        return NamedZoneLocalIntervalPlacement(
+            starts_local_at=payload.starts_local_at,
+            ends_local_at=payload.ends_local_at,
+            zone_id=payload.zone_id,
+            disambiguation=payload.disambiguation,
+        )
+    if isinstance(payload, AbsoluteIntervalPlacementRequest):
+        return AbsoluteIntervalPlacement(
+            starts_at=payload.starts_at,
+            ends_at=payload.ends_at,
+        )
+    return CoarseLocalPeriodPlacement(
+        local_date=payload.local_date,
+        period=payload.period,
+    )
+
+
+def _scheduled_activity_response(
+    *,
+    activity: ActivityView,
+    schedule_ref: UUID,
+    material_state_ref: UUID,
+    placement: SchedulePlacement,
+    replayed: bool,
+) -> ScheduledActivityMutationResponse:
+    common: dict[str, Any] = {
+        "activity_ref": activity.activity_ref,
+        "title": activity.title,
+        "created_at": activity.created_at,
+        "schedule_ref": schedule_ref,
+        "placement_material_state_ref": material_state_ref,
+        "replayed": replayed,
+    }
+    if isinstance(placement, FloatingLocalIntervalPlacement):
+        return ScheduledActivityResponse(
+            **common,
+            starts_local_at=placement.starts_local_at,
+            ends_local_at=placement.ends_local_at,
+        )
+    if isinstance(placement, DateSpanPlacement):
+        return ScheduledActivityDateSpanResponse(
+            **common,
+            start_date=placement.start_date,
+            end_date_exclusive=placement.end_date_exclusive,
+        )
+    if isinstance(placement, NamedZoneLocalIntervalPlacement):
+        return ScheduledActivityNamedZoneResponse(
+            **common,
+            starts_local_at=placement.starts_local_at,
+            ends_local_at=placement.ends_local_at,
+            zone_id=placement.zone_id,
+            resolved_start_at=placement.resolved_start_at,
+            resolved_end_at=placement.resolved_end_at,
+        )
+    if isinstance(placement, AbsoluteIntervalPlacement):
+        return ScheduledActivityAbsoluteResponse(
+            **common,
+            starts_at=placement.starts_at,
+            ends_at=placement.ends_at,
+        )
+    return ScheduledActivityCoarseResponse(
+        **common,
+        local_date=placement.local_date,
+        period=placement.period,
+    )
+
+
+def _revised_schedule_response(result: RevisedScheduleView) -> RevisedScheduleMutationResponse:
+    common: dict[str, Any] = {
+        "schedule_ref": result.schedule_ref,
+        "previous_placement_material_state_ref": result.previous_material_state_ref,
+        "placement_material_state_ref": result.material_state_ref,
+        "replayed": result.replayed,
+    }
+    placement = result.placement
+    if isinstance(placement, FloatingLocalIntervalPlacement):
+        return RevisedScheduleResponse(
+            **common,
+            starts_local_at=placement.starts_local_at,
+            ends_local_at=placement.ends_local_at,
+        )
+    if isinstance(placement, DateSpanPlacement):
+        return RevisedScheduleDateSpanResponse(
+            **common,
+            start_date=placement.start_date,
+            end_date_exclusive=placement.end_date_exclusive,
+        )
+    if isinstance(placement, NamedZoneLocalIntervalPlacement):
+        return RevisedScheduleNamedZoneResponse(
+            **common,
+            starts_local_at=placement.starts_local_at,
+            ends_local_at=placement.ends_local_at,
+            zone_id=placement.zone_id,
+            resolved_start_at=placement.resolved_start_at,
+            resolved_end_at=placement.resolved_end_at,
+        )
+    if isinstance(placement, AbsoluteIntervalPlacement):
+        return RevisedScheduleAbsoluteResponse(
+            **common,
+            starts_at=placement.starts_at,
+            ends_at=placement.ends_at,
+        )
+    return RevisedScheduleCoarseResponse(
+        **common,
+        local_date=placement.local_date,
+        period=placement.period,
+    )
+
+
+def _restored_schedule_response(
+    result: RestoredScheduleView,
+) -> RestoredScheduleMutationResponse:
+    common: dict[str, Any] = {
+        "schedule_ref": result.schedule_ref,
+        "restored_from_placement_material_state_ref": result.restored_from_material_state_ref,
+        "placement_material_state_ref": result.material_state_ref,
+        "replayed": result.replayed,
+    }
+    placement = result.placement
+    if isinstance(placement, FloatingLocalIntervalPlacement):
+        return RestoredScheduleResponse(
+            **common,
+            starts_local_at=placement.starts_local_at,
+            ends_local_at=placement.ends_local_at,
+        )
+    if isinstance(placement, DateSpanPlacement):
+        return RestoredScheduleDateSpanResponse(
+            **common,
+            start_date=placement.start_date,
+            end_date_exclusive=placement.end_date_exclusive,
+        )
+    if isinstance(placement, NamedZoneLocalIntervalPlacement):
+        return RestoredScheduleNamedZoneResponse(
+            **common,
+            starts_local_at=placement.starts_local_at,
+            ends_local_at=placement.ends_local_at,
+            zone_id=placement.zone_id,
+            resolved_start_at=placement.resolved_start_at,
+            resolved_end_at=placement.resolved_end_at,
+        )
+    if isinstance(placement, AbsoluteIntervalPlacement):
+        return RestoredScheduleAbsoluteResponse(
+            **common,
+            starts_at=placement.starts_at,
+            ends_at=placement.ends_at,
+        )
+    return RestoredScheduleCoarseResponse(
+        **common,
+        local_date=placement.local_date,
+        period=placement.period,
+    )
+
+
 @router.get("/timeline/window", response_model=TimelineWindowResponse)
 async def get_timeline_window(
     context: DanteContextDependency,
@@ -435,9 +829,7 @@ async def get_timeline_window(
     start_date: date,
     end_date_exclusive: date,
 ) -> TimelineWindowResponse:
-    """Read one bounded half-open local-date Timeline window for the authenticated self."""
     response.headers["Cache-Control"] = "no-store"
-
     try:
         query = TimelineWindowQuery(
             start_date=start_date,
@@ -452,7 +844,6 @@ async def get_timeline_window(
             detail=str(exc),
             retryable=False,
         ) from exc
-
     try:
         result = await application.read_window(query=query, context=context)
     except TimelinePersistenceError as exc:
@@ -464,14 +855,12 @@ async def get_timeline_window(
             detail="The Timeline could not be read safely.",
             retryable=True,
         ) from exc
-
     if not result.items:
         return TimelineWindowEmptyResponse(
             start_date=result.start_date,
             end_date_exclusive=result.end_date_exclusive,
             effective_zone_id=result.effective_zone_id,
         )
-
     return TimelineWindowItemsResponse(
         start_date=result.start_date,
         end_date_exclusive=result.end_date_exclusive,
@@ -480,18 +869,13 @@ async def get_timeline_window(
     )
 
 
-@router.post(
-    "/activities",
-    response_model=ActivityResponse,
-    status_code=201,
-)
+@router.post("/activities", response_model=ActivityResponse, status_code=201)
 async def create_activity(
     payload: CreateActivityRequest,
     context: MutatingDanteContextDependency,
     application: TemporalActivityApplicationDependency,
     response: Response,
 ) -> ActivityResponse:
-    """Create one canonical unscheduled Activity for the authenticated self Person."""
     response.headers["Cache-Control"] = "no-store"
     try:
         result = await application.create_activity(
@@ -526,7 +910,6 @@ async def create_activity(
             detail="The Activity could not be persisted safely.",
             retryable=True,
         ) from exc
-
     if result.replayed:
         response.status_code = 200
     return _activity_response(result.activity, replayed=result.replayed)
@@ -534,7 +917,7 @@ async def create_activity(
 
 @router.post(
     "/activities/scheduled",
-    response_model=ScheduledActivityResponse,
+    response_model=ScheduledActivityMutationResponse,
     status_code=201,
 )
 async def create_scheduled_activity(
@@ -542,15 +925,11 @@ async def create_scheduled_activity(
     context: MutatingDanteContextDependency,
     application: TemporalActivityApplicationDependency,
     response: Response,
-) -> ScheduledActivityResponse:
-    """Create Activity + first accepted Schedule atomically for the B02-A subset."""
+) -> ScheduledActivityMutationResponse:
     response.headers["Cache-Control"] = "no-store"
     try:
-        placement = FloatingLocalIntervalPlacement(
-            starts_local_at=payload.placement.starts_local_at,
-            ends_local_at=payload.placement.ends_local_at,
-        )
-        result = await application.create_activity_with_floating_schedule(
+        placement = _placement_from_request(payload.placement)
+        result = await application.create_activity_with_schedule(
             self_person_ref=context.self_person_ref,
             operation_id=payload.operation_id,
             title=payload.title,
@@ -583,25 +962,20 @@ async def create_scheduled_activity(
             detail="The Activity and Schedule could not be persisted atomically.",
             retryable=True,
         ) from exc
-
     if result.replayed:
         response.status_code = 200
-    result_placement = cast(FloatingLocalIntervalPlacement, result.schedule.placement)
-    return ScheduledActivityResponse(
-        activity_ref=result.activity.activity_ref,
-        title=result.activity.title,
-        created_at=result.activity.created_at,
+    return _scheduled_activity_response(
+        activity=result.activity,
         schedule_ref=result.schedule.schedule_ref,
-        placement_material_state_ref=result.schedule.material_state_ref,
-        starts_local_at=result_placement.starts_local_at,
-        ends_local_at=result_placement.ends_local_at,
+        material_state_ref=result.schedule.material_state_ref,
+        placement=result.schedule.placement,
         replayed=result.replayed,
     )
 
 
 @router.post(
     "/activities/{activity_ref}/schedule",
-    response_model=ScheduledActivityResponse,
+    response_model=ScheduledActivityMutationResponse,
     status_code=201,
 )
 async def establish_activity_schedule(
@@ -610,15 +984,11 @@ async def establish_activity_schedule(
     context: MutatingDanteContextDependency,
     application: TemporalActivityApplicationDependency,
     response: Response,
-) -> ScheduledActivityResponse:
-    """Attach a first accepted Schedule to an existing Activity without cloning it."""
+) -> ScheduledActivityMutationResponse:
     response.headers["Cache-Control"] = "no-store"
     try:
-        placement = FloatingLocalIntervalPlacement(
-            starts_local_at=payload.placement.starts_local_at,
-            ends_local_at=payload.placement.ends_local_at,
-        )
-        result = await application.schedule_existing_activity(
+        placement = _placement_from_request(payload.placement)
+        result = await application.schedule_existing_activity_with_placement(
             self_person_ref=context.self_person_ref,
             activity_ref=NativeRef(activity_ref),
             operation_id=payload.operation_id,
@@ -660,47 +1030,38 @@ async def establish_activity_schedule(
             detail="The Schedule could not be persisted atomically.",
             retryable=True,
         ) from exc
-
     if result.replayed:
         response.status_code = 200
-    result_placement = cast(FloatingLocalIntervalPlacement, result.schedule.placement)
-    return ScheduledActivityResponse(
-        activity_ref=result.activity.activity_ref,
-        title=result.activity.title,
-        created_at=result.activity.created_at,
+    return _scheduled_activity_response(
+        activity=result.activity,
         schedule_ref=result.schedule.schedule_ref,
-        placement_material_state_ref=result.schedule.material_state_ref,
-        starts_local_at=result_placement.starts_local_at,
-        ends_local_at=result_placement.ends_local_at,
+        material_state_ref=result.schedule.material_state_ref,
+        placement=result.schedule.placement,
         replayed=result.replayed,
     )
 
 
 @router.patch(
     "/schedules/{schedule_ref}/placement",
-    response_model=RevisedScheduleResponse,
+    response_model=RevisedScheduleMutationResponse,
 )
 async def revise_schedule_placement(
     schedule_ref: UUID,
-    payload: ReviseFloatingScheduleRequest,
+    payload: ReviseScheduleRequest,
     context: MutatingDanteContextDependency,
     application: TemporalScheduleApplicationDependency,
     response: Response,
-) -> RevisedScheduleResponse:
-    """Create a new accepted placement state without changing Schedule identity."""
+) -> RevisedScheduleMutationResponse:
     response.headers["Cache-Control"] = "no-store"
     try:
-        result: RevisedScheduleView = await application.revise_floating_schedule(
+        result = await application.revise_schedule(
             self_person_ref=context.self_person_ref,
             operation_id=payload.operation_id,
             schedule_ref=ScopedRecordRef(schedule_ref),
             expected_material_state_ref=MaterialStateRef(
                 payload.expected_placement_material_state_ref
             ),
-            placement=FloatingLocalIntervalPlacement(
-                starts_local_at=payload.placement.starts_local_at,
-                ends_local_at=payload.placement.ends_local_at,
-            ),
+            placement=_placement_from_request(payload.placement),
         )
     except ScheduleInputError as exc:
         raise ProblemError(
@@ -747,16 +1108,7 @@ async def revise_schedule_placement(
             detail="The Schedule revision could not be persisted safely.",
             retryable=True,
         ) from exc
-
-    result_placement = cast(FloatingLocalIntervalPlacement, result.placement)
-    return RevisedScheduleResponse(
-        schedule_ref=result.schedule_ref,
-        previous_placement_material_state_ref=result.previous_material_state_ref,
-        placement_material_state_ref=result.material_state_ref,
-        starts_local_at=result_placement.starts_local_at,
-        ends_local_at=result_placement.ends_local_at,
-        replayed=result.replayed,
-    )
+    return _revised_schedule_response(result)
 
 
 @router.post(
@@ -770,7 +1122,6 @@ async def unschedule_schedule(
     application: TemporalScheduleApplicationDependency,
     response: Response,
 ) -> UnscheduledScheduleResponse:
-    """Withdraw one exact current placement without deleting Schedule history."""
     response.headers["Cache-Control"] = "no-store"
     try:
         result: UnscheduledScheduleView = await application.unschedule(
@@ -826,7 +1177,6 @@ async def unschedule_schedule(
             detail="The Schedule could not be unscheduled safely.",
             retryable=True,
         ) from exc
-
     return UnscheduledScheduleResponse(
         schedule_ref=result.schedule_ref,
         previous_placement_material_state_ref=result.previous_material_state_ref,
@@ -837,7 +1187,7 @@ async def unschedule_schedule(
 
 @router.post(
     "/schedules/{schedule_ref}/unschedule/undo",
-    response_model=RestoredScheduleResponse,
+    response_model=RestoredScheduleMutationResponse,
 )
 async def undo_schedule_unschedule(
     schedule_ref: UUID,
@@ -845,11 +1195,10 @@ async def undo_schedule_unschedule(
     context: MutatingDanteContextDependency,
     application: TemporalScheduleApplicationDependency,
     response: Response,
-) -> RestoredScheduleResponse:
-    """Restore withdrawn placement semantics through one new MaterialState."""
+) -> RestoredScheduleMutationResponse:
     response.headers["Cache-Control"] = "no-store"
     try:
-        result: RestoredScheduleView = await application.undo_unschedule(
+        result = await application.undo_unschedule(
             self_person_ref=context.self_person_ref,
             operation_id=payload.operation_id,
             schedule_ref=ScopedRecordRef(schedule_ref),
@@ -900,16 +1249,7 @@ async def undo_schedule_unschedule(
             detail="The Schedule Undo could not be persisted safely.",
             retryable=True,
         ) from exc
-
-    result_placement = cast(FloatingLocalIntervalPlacement, result.placement)
-    return RestoredScheduleResponse(
-        schedule_ref=result.schedule_ref,
-        restored_from_placement_material_state_ref=(result.restored_from_material_state_ref),
-        placement_material_state_ref=result.material_state_ref,
-        starts_local_at=result_placement.starts_local_at,
-        ends_local_at=result_placement.ends_local_at,
-        replayed=result.replayed,
-    )
+    return _restored_schedule_response(result)
 
 
 @router.get("/activities/unplaced", response_model=UnplacedActivitiesResponse)
@@ -918,7 +1258,6 @@ async def list_unplaced_activities(
     application: TemporalActivityApplicationDependency,
     response: Response,
 ) -> UnplacedActivitiesResponse:
-    """List canonical Activities that have no current accepted Schedule placement."""
     response.headers["Cache-Control"] = "no-store"
     try:
         activities = await application.list_unplaced(
@@ -933,7 +1272,6 @@ async def list_unplaced_activities(
             detail="Unplaced Activities could not be read safely.",
             retryable=True,
         ) from exc
-
     return UnplacedActivitiesResponse(
         items=[_activity_response(activity) for activity in activities]
     )
@@ -946,7 +1284,6 @@ async def get_activity(
     application: TemporalActivityApplicationDependency,
     response: Response,
 ) -> ActivityResponse:
-    """Read one canonical Activity only inside the authenticated self scope."""
     response.headers["Cache-Control"] = "no-store"
     try:
         activity = await application.get_activity(
@@ -962,7 +1299,6 @@ async def get_activity(
             detail="The Activity could not be read safely.",
             retryable=True,
         ) from exc
-
     if activity is None:
         raise ProblemError(
             status=404,
