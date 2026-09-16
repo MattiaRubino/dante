@@ -17,7 +17,10 @@ from dante.modules.temporal.activity import (
     CreateScheduledActivityResult,
     TemporalActivityApplication,
 )
-from dante.modules.temporal.application import TemporalTimelineApplication
+from dante.modules.temporal.application import (
+    TemporalTimelineApplication,
+    TimelineFloatingLocalActivityItem,
+)
 from dante.modules.temporal.contracts import TimelineWindowQuery
 from dante.modules.temporal.schedule import FloatingLocalIntervalPlacement
 from dante.platform.database.references import NativeRef
@@ -171,6 +174,7 @@ async def test_scheduled_activity_create_is_atomic_idempotent_and_timeline_visib
         )
         assert len(window.items) == 1
         item = window.items[0]
+        assert isinstance(item, TimelineFloatingLocalActivityItem)
         assert item.activity_ref == created.activity.activity_ref
         assert item.schedule_ref == created.schedule.schedule_ref
         assert item.placement_material_state_ref == created.schedule.material_state_ref
