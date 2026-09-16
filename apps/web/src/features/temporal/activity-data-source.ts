@@ -1,4 +1,9 @@
-import type { Instant, PlainDateTime } from '@dante/time';
+import type { Instant } from '@dante/time';
+
+import type {
+  TemporalAcceptedSchedulePlacement,
+  TemporalSchedulePlacementInput,
+} from './schedule-data-source';
 
 export type TemporalActivityRecord = Readonly<{
   activityRef: string;
@@ -16,37 +21,36 @@ export type TemporalActivityCreateResult = Readonly<{
   replayed: boolean;
 }>;
 
-export type TemporalFloatingLocalScheduleRecord = Readonly<{
+export type TemporalScheduleRecord = Readonly<{
   scheduleRef: string;
   placementMaterialStateRef: string;
-  temporalForm: 'floating-local';
-  startsLocalAt: PlainDateTime;
-  endsLocalAt: PlainDateTime;
+  placement: TemporalAcceptedSchedulePlacement;
 }>;
+
+/** Compatibility alias retained for callers that narrow the accepted placement. */
+export type TemporalFloatingLocalScheduleRecord = TemporalScheduleRecord &
+  Readonly<{
+    placement: Extract<
+      TemporalAcceptedSchedulePlacement,
+      Readonly<{ kind: 'floating-local-interval' }>
+    >;
+  }>;
 
 export type TemporalScheduledActivityCreateRequest = Readonly<{
   operationId: string;
   title: string;
-  placement: Readonly<{
-    kind: 'floating-local-interval';
-    startsLocalAt: PlainDateTime;
-    endsLocalAt: PlainDateTime;
-  }>;
+  placement: TemporalSchedulePlacementInput;
 }>;
 
 export type TemporalActivityScheduleEstablishRequest = Readonly<{
   activityRef: string;
   operationId: string;
-  placement: Readonly<{
-    kind: 'floating-local-interval';
-    startsLocalAt: PlainDateTime;
-    endsLocalAt: PlainDateTime;
-  }>;
+  placement: TemporalSchedulePlacementInput;
 }>;
 
 export type TemporalScheduledActivityCreateResult = Readonly<{
   activity: TemporalActivityRecord;
-  schedule: TemporalFloatingLocalScheduleRecord;
+  schedule: TemporalScheduleRecord;
   replayed: boolean;
 }>;
 
