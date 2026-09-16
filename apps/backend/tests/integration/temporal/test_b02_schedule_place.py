@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from datetime import UTC, date, datetime
-from typing import Any
-from uuid import UUID, uuid7
+from typing import Any, cast
+from uuid import uuid7
 
 import psycopg
 import pytest
@@ -73,7 +73,7 @@ def _counts(database: Any, activity_ref: NativeRef) -> tuple[int, int, int, int]
         )
     ) as connection:
         connection.execute("SET ROLE dante_owner")
-        return connection.execute(
+        row = connection.execute(
             """
             SELECT
               (SELECT count(*) FROM dante.activity_intention
@@ -93,6 +93,8 @@ def _counts(database: Any, activity_ref: NativeRef) -> tuple[int, int, int, int]
             """,
             (activity_ref, activity_ref, activity_ref, activity_ref),
         ).fetchone()
+        assert row is not None
+        return cast(tuple[int, int, int, int], row)
 
 
 @pytest.mark.postgres
@@ -115,9 +117,12 @@ async def test_existing_unplaced_activity_is_scheduled_idempotently_and_visible_
             operation_id="operation:b02-b:create-unplaced",
             title="Activity da collocare",
         )
-        assert await activity_application.list_unplaced(
-            self_person_ref=self_person_ref,
-        ) == (created.activity,)
+        assert (
+            await activity_application.list_unplaced(
+                self_person_ref=self_person_ref,
+            )
+            == (created.activity,)
+        )
 
         placed = await activity_application.schedule_existing_activity(
             self_person_ref=self_person_ref,
@@ -153,9 +158,12 @@ async def test_existing_unplaced_activity_is_scheduled_idempotently_and_visible_
                 ),
             )
 
-        assert await activity_application.list_unplaced(
-            self_person_ref=self_person_ref,
-        ) == ()
+        assert (
+            await activity_application.list_unplaced(
+                self_person_ref=self_person_ref,
+            )
+            == ()
+        )
 
         window = await timeline_application.read_window(
             query=TimelineWindowQuery(
