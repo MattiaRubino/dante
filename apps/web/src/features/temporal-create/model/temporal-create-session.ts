@@ -1118,6 +1118,9 @@ export function buildTemporalCreatePlacement(
       kind: 'zoned' as const,
       start: zonedStart,
       end: zonedEnd,
+      sourceStartsLocalAt: start,
+      sourceEndsLocalAt: end,
+      disambiguation: fields.timeDisambiguation,
     });
   }
 
