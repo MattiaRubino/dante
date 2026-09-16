@@ -1,35 +1,43 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B02 Schedule Core ✅ CLOSED / PROVEN
+- **Status:** B02 ✅ CLOSED / PROVEN → B03 PRE-SCOPE AUTHORIZED
 - **Reconciled:** 2026-09-16
 - **Branch:** `feature/timeline-temporal-operational`
-- **Closure record:** `docs/workstreams/timeline-temporal-operational-b02-closure-2026-09-16.md`
-- **Next roadmap block:** B03 Event Core
-- **B03 authorization:** NOT AUTHORIZED by this handoff
-- **CI:** not claimed as B02 closure evidence; no manual CI launch was authorized
+- **Current roadmap:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
+- **Current live map/ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
+- **B02 closure:** `docs/workstreams/timeline-temporal-operational-b02-closure-2026-09-16.md`
+- **Next block:** B03 Event Core
+- **Authorization boundary:** user authorized moving forward to B03 on 2026-09-16; this authorizes B03 authority/deep-read/PRE-SCOPE work, not implementation before PRE-SCOPE approval
+- **CI:** no CI launch is implied or authorized by this handoff
 
 ## 1. Current workstream position
 
 ```text
-B00 Real Data Spine                    ✅ PROVEN
-B01 Activity Core                      ✅ PROVEN
-B02-A first scheduled Activity loop    ✅ PROVEN
-B02-B Planning Tray → Timeline         ✅ PROVEN
-B02-C governed revision                ✅ PROVEN
-B02-D unschedule + guarded Undo        ✅ PROVEN
-B02-E1 placement union / coarse DDL    ✅ PROVEN
-B02-E2 Timeline forms / DST projection ✅ PROVEN
-B02-E3 web authoring / rendering       ✅ PROVEN
-B02-E4 closure evidence                ✅ PROVEN
-B02 Schedule Core                      ✅ CLOSED / PROVEN
-B03 Event Core                         ⬜ DO NOT START WITHOUT NEW AUTHORIZATION
+B00 Real Data Spine                              ✅ CLOSED / PROVEN
+B01 Activity Core                                ✅ CLOSED / PROVEN
+B02 Schedule Core                                ✅ CLOSED / PROVEN
+B03 Event Core                                   🟨 PRE-SCOPE AUTHORIZED
+B04 Temporal Constraints + Movement Policy       ⬜
+B05 Product Organization                         ⬜
+B06 Routine / Recurrence / Occurrence Baseline   ⬜
+B07 UI/UX Consolidation v1                       ⬜ planned after B06
+B08 Session Runtime                              ⬜
+B09 Responsibility / Participation               ⬜
+B10 Actual / Outcome / Confirmation / Resolution ⬜
+B11 Advanced Recurrence / Conditional / Reminder ⬜
+B12 Replanning / Conflict / Solver               ⬜
+B13 Provider / Offline / Multi-device             ⬜
+B14 Analytics / Statistics / Signals             ⬜
+B15 Whole Vertical Closure                       ⬜
 ```
 
-B02-E PRE-SCOPE is complete. No Event behavior was used to make B02 pass.
+The B07 insertion is current numbering authority. Historical old B07–B14 numbering exists only in archived snapshots.
 
-## 2. Closed Schedule capability
+## 2. B02 handoff contract
 
-The accepted B02 placement union preserves:
+B03 inherits one proven shared Schedule capability. It must reuse, not clone, the B02 machinery.
+
+Accepted placement union:
 
 ```text
 date_span
@@ -39,128 +47,115 @@ absolute
 coarse_local_period
 ```
 
-Permanent rules carried forward:
+Permanent inherited rules:
 
 ```text
+Activity != Event
 Activity != Schedule
+Event != Schedule
+Schedule != Session
 Schedule != Actual
 planned != happened
 current placement != latest row
 unscheduled != deleted
-Undo != DB rewind
-estimated effort != scheduled duration
+Undo != history rewind
 floating local != named-zone local != absolute instant
 date span != coarse local period
-coarse precision != fabricated exact interval
-named-zone source wall-clock intent != resolved instant
+coarse precision != fabricated exact clock time
+source wall-clock intent != resolved instant
 operation/idempotency identity != canonical entity/state identity
 ```
 
-B02 activates the Activity subject path while preserving the shared Schedule capability for later Event/Occurrence use.
+B02 proved Schedule current/history, CAS/idempotency, Timeline projection, Planning Tray placement, drag/editor revision, unschedule/Undo and temporal-form correctness on Activity. B03 must exercise that same capability with Event.
 
-## 3. Final persistence authority
-
-B02 closes on PostgreSQL 18.6 / Alembic head:
+## 3. Final B02 evidence frozen
 
 ```text
-20260915_26
-```
-
-Final reconciled topology:
-
-```text
-96 tables
-5 views
-28 routines
-78 triggers
-191 indexes
-111 foreign keys
-285 checks
-0 types/domains/enums
-0 sequences/materialized/partitioned
-0 policies
-```
-
-Dictionary / SQLAlchemy / Alembic current-catalog parity is proven. The repository migration chain also passed fresh `HEAD → base → HEAD` round-trip. There is no migration 27 in the final B02 chain.
-
-## 4. Final automated evidence
-
-Executed evidence frozen for B02 closure:
-
-```text
+Alembic candidate head                         20260915_26
+Dictionary / SQLAlchemy / Alembic parity        PASS
 Database current-catalog + migrations        20 / 20 PASS
-Migration HEAD → base → HEAD                  1 / 1 PASS
-B02 PostgreSQL proof group                   11 PASS / 2 deselected
-Backend temporal/API targeted                41 / 41 PASS
-Backend full non-PostgreSQL                 495 PASS / 188 deselected
-Backend Ruff                                 PASS
-Backend Mypy                                 PASS
-Web B02-E3 targeted                         104 / 104 PASS
-Web helper                                    5 / 5 PASS
-Web full regression                         717 / 717 PASS
-TypeScript typecheck                         PASS
-ESLint                                       PASS
-generated:check                              PASS
-B02-E real full-stack Chromium                2 / 2 PASS
-B02-E real full-stack Firefox                 2 / 2 PASS
+Migration HEAD → base → HEAD                   1 / 1 PASS
+B02 PostgreSQL proof group                    11 PASS / 2 deselected
+Backend temporal/API targeted                 41 / 41 PASS
+Backend full non-PostgreSQL                  495 PASS / 188 deselected
+Web B02-E3 targeted                          104 / 104 PASS
+Web full regression                          717 / 717 PASS
+TypeScript / ESLint / generated:check         PASS
+B02 manual userTest A–F                       APPROVED
+B02-E Chromium full-stack                     2 / 2 PASS
+B02-E Firefox full-stack                      2 / 2 PASS
 ```
 
-The final full-stack governed loop covers unplaced Activity → establish Schedule → revision → cross-form revision → unschedule → guarded Undo → canonical reload while preserving Schedule identity and monotonic MaterialState currentness.
+The redundant B02-E manual extension was not executed and is not claimed as PASS; that protocol is retired as an open gate and preserved in archive.
 
-The form-completeness full-stack scenario covers product-exposed date-span, coarse local period and named-zone authoring/reload. Absolute placement remains proven through API/runtime/read-model tests rather than being exposed as a fabricated primary Create mode.
+## 4. B03 PRE-SCOPE objective
 
-## 5. Manual acceptance reconciliation
+Before any B03 product/schema write, re-open current Event authority across:
 
-The real isolated full-stack manual B02 `userTest` A–F was completed and approved on 2026-09-15. It proves the shared user-visible lifecycle:
+1. accepted Domain Event semantics and non-collapse boundaries;
+2. closed Logical model ownership/cardinality;
+3. accepted Physical/PostgreSQL representation and CP6 Event/Schedule/recurrence shells;
+4. current Alembic `_26`, SQLAlchemy and Database Dictionary truth;
+5. current backend temporal application/API seams created by B01/B02;
+6. current frontend Create/Timeline/read-model contracts;
+7. B03 checklist in the live map;
+8. current tests and real-stack harness that B03 must extend without weakening B02.
+
+The PRE-SCOPE must identify exact reuse versus genuine gaps before proposing DDL or code.
+
+## 5. B03 expected semantic surface to prove/reject during deep read
+
+The roadmap currently expects B03 to cover, subject to authority verification:
 
 ```text
-create/place + reload                     PASS
-governed revision + reload                PASS
-unschedule → Planning Tray + reload       PASS
-guarded Undo + reload                     PASS
-stale two-tab mutation rejected           PASS
-real database failure never fakes success PASS
+Event identity / expectation
+timed Event
+all-day / date-span Event
+multi-day Event
+postponed/TBD Event without fake placeholder Schedule
+original expectation / current Schedule separation
+Agenda/internal Event parts
+preparation/follow-up Activity relation only where justified
+Place/conference intent only through accepted relations
+ordinary Event attendance != Session
+Event != Availability/Capacity Claim
 ```
 
-The later B02-E manual protocol was not executed and is **not** being mislabeled as PASS. On 2026-09-16 the user explicitly declined a redundant second manual replay. B02-E-specific semantics are accepted from the executed PostgreSQL/backend/frontend and real-stack Chromium/Firefox evidence recorded in the closure document.
-
-Canonical closure record:
+Event Schedule must use B02:
 
 ```text
-docs/workstreams/timeline-temporal-operational-b02-closure-2026-09-16.md
+Activity ─┐
+          ├→ shared Schedule capability
+Event ────┘
 ```
 
-## 6. Product behavior frozen by B02
+A separate `event_schedule` engine/table/API family is forbidden unless accepted authority proves a genuinely different concept, which current authority does not anticipate.
 
-B02 now proves that:
+## 6. UI checkpoint boundary
 
-- Activity Create can produce accepted exact, date-span, coarse and named-zone Schedule intent while preserving distinct temporal forms;
-- unplaced Activity remains a valid state and Planning Tray membership depends on absence of current accepted placement, not absence of Schedule history;
-- revisions preserve one Schedule identity while creating new accepted current MaterialStates;
-- named-zone source intent is retained separately from resolved instant;
-- explicit DST `reject / earlier / later` semantics are fail-closed and deterministic;
-- coarse precision never manufactures exact clock boundaries;
-- cross-midnight exact placement remains one canonical Schedule interval even if view rendering splits across days;
-- direct planning changes remain Schedule mutations and do not create Session/Actual truth;
-- unschedule is not delete;
-- Undo is monotonic restoration, not history rewind;
-- stale expected state and operation-id reuse do not become last-write-wins;
-- browser/frontend success is reconciled from authoritative backend truth.
+The current Create/Timeline visuals are not final. B07 is now the explicit 60–70% UI/UX consolidation checkpoint after B06.
 
-## 7. UI qualification
+Until B07:
 
-B02 closure does not freeze the current visual quality of the Create modal or Timeline presentation as final product design.
+- fix real usability blockers when encountered;
+- do not spend entire blocks polishing temporary layouts;
+- do not allow temporary UI shape to dictate Domain/API/persistence semantics.
 
-UI/visual cleanup may be performed later without reopening B02 provided it preserves the accepted semantic and interaction contracts above. Styling/layout dissatisfaction is not a reason to reopen Schedule persistence/domain semantics.
+B03 still needs truthful usable Event UI sufficient for acceptance, but not the final visual redesign.
 
-## 8. Next-step boundary
+## 7. Next action
 
-The next roadmap block is B03 Event Core, whose purpose is to exercise the shared Schedule capability with a second semantic owner.
+B03 is now authorized **for PRE-SCOPE only**.
 
-However:
+Canonical next sequence:
 
 ```text
-B02 closure != B03 authorization
+deep authority read
+→ current repo/persistence inspection
+→ exact B03 reuse/gap matrix
+→ proposed B03 slices + tests + stop conditions
+→ PRE-SCOPE review/approval
+→ only then implementation
 ```
 
-Do not begin B03 code, DDL, API or product implementation until the user gives a new explicit authorization/pre-scope approval.
+Do not launch CI and do not implement B03 code/DDL before the PRE-SCOPE is reviewed and approved.
