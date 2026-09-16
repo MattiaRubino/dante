@@ -4,11 +4,13 @@
 - **Pre-vertical integration merge:** `1ecd58145860aebfaaa3dc78933f4ee42698f33` via PR #66
 - **Protected-main baseline at vertical selection:** PostgreSQL 18.6 / Alembic `20260906_18` / topology `89|5|18|77|173|91|272|0|0|0`
 - **Active candidate workstream:** `feature/timeline-temporal-operational`
-- **Candidate temporal DB authority:** PostgreSQL 18.6 / Alembic `20260915_26`
+- **Candidate temporal DB authority:** PostgreSQL 18.6 / Alembic `20260916_27`
+- **Candidate temporal topology:** `98|5|29|78|195|115|288|0|0|0`
 - **Temporal roadmap:** `workstreams/timeline-temporal-operational-roadmap.md`
 - **Temporal live map/ledger:** `workstreams/timeline-temporal-operational-map.md`
+- **B03-A closure:** `workstreams/timeline-temporal-operational-b03-a-closure-2026-09-16.md`
 
-`protected-main baseline` and `candidate branch truth` are deliberately shown separately. The candidate branch must not be described as protected-main integration until the repository integration gate is actually completed.
+`protected-main baseline` and `candidate branch truth` are deliberately separate. The candidate branch must not be described as protected-main integration until the repository integration gate is actually completed.
 
 ## 1. Current sequence
 
@@ -29,7 +31,7 @@ TIMELINE / TEMPORAL-OPERATIONAL VERTICAL
         B00 Real Data Spine                         ✅ CLOSED / PROVEN
         B01 Activity Core                           ✅ CLOSED / PROVEN
         B02 Schedule Core                           ✅ CLOSED / PROVEN
-        B03 Event Core                              ⬜ NEXT
+        B03 Event Core                              🟨 B03-A CLOSED / B03-B NEXT
         B04 Temporal Constraints                    ⬜
         B05 Product Organization                    ⬜
         B06 Routine / Recurrence / Occurrence       ⬜
@@ -44,73 +46,73 @@ TIMELINE / TEMPORAL-OPERATIONAL VERTICAL
         B15 Whole Vertical Closure                  ⬜
 ```
 
-The detailed execution order and exact checklists live only in the temporal roadmap/map; this global roadmap does not duplicate their full ledger.
+The exact temporal capability ledger lives in the temporal roadmap/map. The initial full functionality/logic inventory remains preserved and binding in `workstreams/archive/timeline-temporal-operational-map-ledger-snapshot-2026-09-15.md`.
 
-## 2. Pre-vertical foundation — closed
+## 2. Protected-main foundation
 
-The integrated foundation supplied the small cross-cutting seams required before a real vertical could own operations:
+Protected-main currently includes the accepted pre-vertical foundation:
 
-- canonical application-issued UUIDv7 reuse;
+```text
+Access/Auth + Shared Email
+PostgreSQL Recovery
+Platform Observability
+AI deterministic low-level foundation
+Home / World Focus reconciliation
+Pre-vertical identity/context/time/scale foundation
+```
+
+The pre-vertical foundation supplied:
+
+- application-issued UUIDv7 reuse;
 - backend Clock abstraction and deterministic time testing;
 - named IANA timezone policy and DST edge handling;
 - authenticated Account → DanteContext → self Person mapping;
 - user/default timezone policy distinct from object-owned temporal semantics;
 - governed Web device-timezone transport;
 - persistent LOCAL/DEV dogfood;
-- deterministic product-independent personas;
-- deterministic scale/readiness profiles;
+- deterministic personas and scale/readiness profiles;
 - bounded real-PostgreSQL first-use convergence proof;
 - normal LOCAL Vite `/api/v1` proxy topology.
 
-There are exactly three pre-vertical milestones:
-
-```text
-PV-01 — Identity / Clock / Time
-PV-02 — User Context / Dogfood / Personas
-PV-03 — Scale Harness / QA / Closure
-```
-
 There is no PV-04.
 
-## 3. Protected-main versus current candidate database boundary
+## 3. Candidate database boundary
 
-Protected-main baseline at the point the temporal vertical was selected:
+Protected-main baseline at temporal selection:
 
 ```text
-PostgreSQL          18.6
 Alembic             20260906_18
 Topology            89|5|18|77|173|91|272|0|0|0
 ```
 
-Current candidate truth on `feature/timeline-temporal-operational` after B02 closure:
+Current candidate truth after B03-A:
 
 ```text
-PostgreSQL          18.6
-Alembic             20260915_26
-Tables              96
+Alembic             20260916_27
+Tables              98
 Views                5
-Routines             28
+Routines             29
 Triggers             78
-Indexes              191
-Foreign keys         111
-Checks               285
+Indexes              195
+Foreign keys         115
+Checks               288
 ```
 
-Candidate Dictionary / SQLAlchemy / Alembic parity and HEAD→base→HEAD migration round-trip are proven for B02. This remains candidate-branch truth until integration.
+This is candidate-branch truth, not protected-main truth.
 
 ## 4. Temporal vertical completed foundation
 
 ### B00 — Real Data Spine ✅
 
-Normal runtime no longer substitutes fake temporal cards/persistence for backend truth. The real product path is authenticated Web → FastAPI/application → PostgreSQL with truthful empty/error behavior and disposable full-stack E2E.
+Normal runtime uses authenticated Web → FastAPI/application → PostgreSQL truth with real empty/error behavior and disposable full-stack proof.
 
 ### B01 — Activity Core ✅
 
-Canonical Activity creation, identity, unplaced state, Planning Tray projection, idempotency, reload/refetch and failure truthfulness are real.
+Canonical Activity identity, actionable-intention descriptor, idempotent create, unplaced state, Planning Tray projection and reload/refetch identity are real.
 
 ### B02 — Schedule Core ✅
 
-Schedule is now a shared canonical capability activated for Activity with:
+Schedule is a shared canonical capability activated for Activity across:
 
 ```text
 date_span
@@ -120,41 +122,76 @@ absolute
 coarse_local_period
 ```
 
-B02 proves governed placement/revision, explicit current binding/history, Planning Tray placement, drag/editor mutation, unschedule, guarded Undo, CAS/idempotency, DST/source-intent handling and Chromium/Firefox full-stack behavior. Closure authority:
+B02 proves governed establish/revision, explicit current binding/history, Planning Tray placement, drag/editor mutation, unschedule, guarded Undo, CAS/idempotency, DST/source-intent handling and Chromium/Firefox full-stack behavior.
+
+### B03-A — Event canonical core ✅
+
+B03-A established Event as a real distinct originating owner without yet scheduling it:
 
 ```text
-workstreams/timeline-temporal-operational-b02-closure-2026-09-16.md
+event_expectation
+event_create_operation
+create_self_event(...)
+TemporalEventApplication
+POST /api/v1/temporal/events
+GET  /api/v1/temporal/events/{event_ref}
 ```
 
-## 5. Next bounded work
+Proven boundaries include:
 
-The next candidate block is **B03 Event Core**.
+```text
+Activity != Event
+Event != Schedule
+operation id != Event identity
+self Person != Account/Principal/Actor
+```
 
-B03 exists to prove that Schedule is shared rather than Activity-specific:
+Dictionary / SQLAlchemy / Alembic / PostgreSQL current-catalog reconciliation is green at `_27`.
+
+## 5. Next bounded work — B03-B
+
+B03-B must prove that Schedule is genuinely shared rather than Activity-specific:
 
 ```text
 Activity ─┐
-          ├→ Schedule
+          ├→ one Schedule identity/current/history capability
 Event ────┘
 ```
 
-It must add real Event identity/expectation, timed/all-day/multi-day/TBD behavior and Event Agenda boundaries without inventing a separate Event scheduling engine.
+Required scope:
 
-B03 implementation still requires its own explicit pre-scope/authorization.
+```text
+typed Activity-or-Event self-subject authorization
+atomic Event + initial Schedule commit
+timed floating-local Event
+timed named-zone Event
+all-day/date-span Event
+multi-day Event
+Timeline backend/API Activity+Event union
+strict TypeScript union/parser/rendering
+minimal truthful Event Create activation
+Activity Schedule regression proof
+```
+
+B03-B must not create `event_schedule` and must not activate recurrence, constraints, participants, Session, Actual, Outcome, reminders, provider sync or Agenda persistence early.
+
+The next explicit gate is:
+
+```text
+APPROVE B03-B
+```
 
 ## 6. UI/UX checkpoint
 
-A dedicated **B07 UI/UX Consolidation v1** now exists after B06.
+A dedicated **B07 UI/UX Consolidation v1** remains after B06.
 
-Reason: after Activity + Event + Routine + Schedule + Constraints + Life Areas/Tags + Recurrence/Occurrence are real, the temporal product vocabulary is stable enough for a serious redesign without rebuilding the same forms repeatedly.
+Reason: after Activity + Event + Routine + Schedule + Constraints + Life Areas/Tags + Recurrence/Occurrence are real, the product vocabulary is stable enough for a serious redesign without repeatedly rebuilding the same forms.
 
-B07 target is approximately 60–70% mature product quality across Create, Timeline, Planning Tray, temporal editors, responsive/mobile, design-system consistency and accessibility while preserving all governed backend semantics.
+Target: roughly 60–70% product-quality Create/Timeline/Planning Tray/editor experience with responsive/mobile, component hierarchy, keyboard/focus and truthful error/empty/loading states while preserving governed backend semantics.
 
-Later execution/resolution UI is consolidated again after B10; final visual polish remains part of B15.
+Later execution/resolution UI is consolidated after B10; final polish remains B15.
 
 ## 7. Stable semantic boundaries
-
-Future blocks must preserve:
 
 ```text
 Person != Account != Principal != Actor
@@ -164,6 +201,7 @@ Routine != Recurrence != Occurrence
 Occurrence != Schedule
 Schedule != Session != Actual
 Actual != Outcome
+Event != Availability / Capacity Claim
 identity != MaterialState != chronology
 planned != happened
 provider identity != DANTE identity
@@ -174,48 +212,11 @@ UUID ordering is never chronology/currentness authority.
 
 PostgreSQL remains canonical persistence authority. Provider/network I/O remains outside authoritative PostgreSQL transactions. No generic repository/UoW/EAV/Fact/Version/relationship framework is pre-authorized.
 
-## 8. Existing integrated foundations
+## 8. Current gate summary
 
 ```text
-Access/Auth + Shared Email                 INTEGRATED
-PostgreSQL Recovery                        INTEGRATED
-Platform Observability                     INTEGRATED VIA PR #58
-AI deterministic low-level foundation      INTEGRATED VIA PR #63
-Home / World Focus reconciliation          INTEGRATED VIA PR #65
-Pre-vertical foundation                    INTEGRATED VIA PR #66
+Protected-main integration frontier       PR #66 / Alembic 20260906_18
+Temporal candidate frontier               B03-A ✅ / Alembic 20260916_27
+Next temporal implementation              B03-B ⬜ requires approval
+CI                                        not implicitly authorized
 ```
-
-AI production/private-data activation remains a separate qualification. Remote backup-provider and production/cloud recovery remain separately gated.
-
-## 9. Later bounded work outside / after the current temporal sequence
-
-Only when their real trigger exists:
-
-```text
-AI real Search owner/data adapter          REAL OWNER/DATA TRIGGER
-AI real Ask DANTE integration              PRODUCT-READINESS TRIGGER
-AI memory / solver integration             OWNER-DRIVEN / B12-compatible
-FTS / pg_trgm / embeddings / pgvector      NEED-DRIVEN
-voice / realtime                           FUTURE
-browser / computer / code execution        SEPARATE SECURITY GATE
-second provider / failover / local model   EVIDENCE-TRIGGERED
-deep-reasoning physical binding            EVIDENCE-TRIGGERED
-AI production/private-data qualification   SEPARATE ACCEPTANCE
-Native Mobile                              OPTIONAL / RE-GATE
-later Access/security maturity             FUTURE
-production observability tuning            MEASURED-EVIDENCE ONLY
-production/cloud recovery                  SEPARATE ACCEPTANCE
-```
-
-## 10. Integration rule
-
-The temporal branch is a candidate workstream until its integration process is explicitly completed.
-
-```text
-SELECTED != IMPLEMENTED != PASS != REAL UAT != PRODUCTION DEPLOYED
-UNMERGED CANDIDATE TRUTH != PROTECTED-MAIN TRUTH
-CURRENT SPECIFICATION != APPEND-ONLY DIARY
-NO PASS WITHOUT EXECUTED EVIDENCE
-```
-
-Closed historical snapshots belong under archive paths or Git history; current canonical documents must describe current truth.
