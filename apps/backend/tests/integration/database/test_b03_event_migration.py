@@ -13,15 +13,25 @@ pytestmark = pytest.mark.postgres
 
 _HEAD = "20260916_27"
 _PARENT = "20260915_26"
+_TRUSTED_SEARCH_PATH = "pg_catalog,dante,pg_temp"
 
 
 def _current_revision(database: Any) -> str:
+    """Read Alembic authority through the same migrator→owner path migrations use."""
     with psycopg.connect(
         **database.connection_kwargs(
             "dante_migrator",
             database.cluster.migrator_password,
         )
     ) as connection:
+        identity = connection.execute(
+            "SELECT session_user, current_user, current_setting('search_path')"
+        ).fetchone()
+        assert identity is not None
+        assert identity[0:2] == ("dante_migrator", "dante_migrator")
+        assert str(identity[2]).replace(" ", "") == _TRUSTED_SEARCH_PATH
+
+        connection.execute("SET ROLE dante_owner")
         row = connection.execute(
             "SELECT version_num FROM dante.alembic_version"
         ).fetchone()
