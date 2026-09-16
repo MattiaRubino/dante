@@ -1,11 +1,13 @@
-import { Temporal } from '@dante/time';
+import { Temporal, validateNamedTimeZone } from '@dante/time';
 
 import {
   createWebFetch,
   type DeviceTimeZoneResolver,
 } from '../../platform/api/web-fetch';
 import type {
+  TemporalAcceptedSchedulePlacement,
   TemporalScheduleDataSource,
+  TemporalSchedulePlacementInput,
   TemporalScheduleRevisionRequest,
   TemporalScheduleRevisionResult,
   TemporalScheduleUnscheduleRequest,
@@ -27,7 +29,10 @@ const scheduleUnscheduleUndoEndpoint = (scheduleRef: string) =>
   `${scheduleUnscheduleEndpoint(scheduleRef)}/undo`;
 
 export type TemporalScheduleRemoteFailureKind =
-  'transport' | 'http' | 'protocol' | 'authentication';
+  | 'transport'
+  | 'http'
+  | 'protocol'
+  | 'authentication';
 
 export class TemporalScheduleRemoteError extends Error {
   constructor(
@@ -59,6 +64,14 @@ function exactKeys(
       );
     }
   }
+  for (const key of allowed) {
+    if (!(key in payload)) {
+      throw new TemporalScheduleRemoteError(
+        'protocol',
+        `${label} is missing required field ${key}.`,
+      );
+    }
+  }
 }
 
 function uuidV7(value: unknown, field: string): string {
@@ -71,6 +84,27 @@ function uuidV7(value: unknown, field: string): string {
   return value.toLowerCase();
 }
 
+function plainDate(value: unknown, field: string) {
+  if (typeof value !== 'string') {
+    throw new TemporalScheduleRemoteError(
+      'protocol',
+      `${field} must be a canonical PlainDate string.`,
+    );
+  }
+  try {
+    const parsed = Temporal.PlainDate.from(value);
+    if (parsed.toString() !== value) {
+      throw new RangeError('non-canonical PlainDate');
+    }
+    return parsed;
+  } catch {
+    throw new TemporalScheduleRemoteError(
+      'protocol',
+      `${field} must be a canonical PlainDate string.`,
+    );
+  }
+}
+
 function localDateTime(value: unknown, field: string) {
   if (
     typeof value !== 'string' ||
@@ -78,7 +112,7 @@ function localDateTime(value: unknown, field: string) {
   ) {
     throw new TemporalScheduleRemoteError(
       'protocol',
-      `${field} must be a floating local date-time without zone or offset.`,
+      `${field} must be a local date-time without zone or offset.`,
     );
   }
   try {
@@ -86,8 +120,301 @@ function localDateTime(value: unknown, field: string) {
   } catch {
     throw new TemporalScheduleRemoteError(
       'protocol',
-      `${field} must be a floating local date-time without zone or offset.`,
+      `${field} must be a local date-time without zone or offset.`,
     );
+  }
+}
+
+function instant(value: unknown, field: string) {
+  if (typeof value !== 'string') {
+    throw new TemporalScheduleRemoteError(
+      'protocol',
+      `${field} must be an absolute instant.`,
+    );
+  }
+  try {
+    return Temporal.Instant.from(value);
+  } catch {
+    throw new TemporalScheduleRemoteError(
+      'protocol',
+      `${field} must be an absolute instant.`,
+    );
+  }
+}
+
+function zoneId(value: unknown, field: string): string {
+  if (typeof value !== 'string') {
+    throw new TemporalScheduleRemoteError(
+      'protocol',
+      `${field} must be a named IANA timezone.`,
+    );
+  }
+  try {
+    return validateNamedTimeZone(value);
+  } catch {
+    throw new TemporalScheduleRemoteError(
+      'protocol',
+      `${field} must be a named IANA timezone.`,
+    );
+  }
+}
+
+function validatePlacement(placement: TemporalSchedulePlacementInput): void {
+  switch (placement.kind) {
+    case 'date-span':
+      if (
+        Temporal.PlainDate.compare(
+          placement.startDate,
+          placement.endDateExclusive,
+        ) >= 0
+      ) {
+        throw new RangeError('Schedule date span must be positive.');
+      }
+      return;
+    case 'floating-local-interval':
+      if (
+        Temporal.PlainDateTime.compare(
+          placement.startsLocalAt,
+          placement.endsLocalAt,
+        ) >= 0
+      ) {
+        throw new RangeError('Floating-local Schedule interval must be positive.');
+      }
+      return;
+    case 'named-zone-local-interval':
+      if (
+        Temporal.PlainDateTime.compare(
+          placement.startsLocalAt,
+          placement.endsLocalAt,
+        ) >= 0
+      ) {
+        throw new RangeError('Named-zone Schedule interval must be positive.');
+      }
+      validateNamedTimeZone(placement.zoneId);
+      return;
+    case 'absolute-interval':
+      if (Temporal.Instant.compare(placement.startsAt, placement.endsAt) >= 0) {
+        throw new RangeError('Absolute Schedule interval must be positive.');
+      }
+      return;
+    case 'coarse-local-period':
+      return;
+  }
+}
+
+function serializePlacement(placement: TemporalSchedulePlacementInput) {
+  switch (placement.kind) {
+    case 'date-span':
+      return {
+        kind: 'date_span',
+        start_date: placement.startDate.toString(),
+        end_date_exclusive: placement.endDateExclusive.toString(),
+      } as const;
+    case 'floating-local-interval':
+      return {
+        kind: 'floating_local_interval',
+        starts_local_at: placement.startsLocalAt.toString(),
+        ends_local_at: placement.endsLocalAt.toString(),
+      } as const;
+    case 'named-zone-local-interval':
+      return {
+        kind: 'named_zone_local_interval',
+        starts_local_at: placement.startsLocalAt.toString(),
+        ends_local_at: placement.endsLocalAt.toString(),
+        zone_id: placement.zoneId,
+        disambiguation: placement.disambiguation,
+      } as const;
+    case 'absolute-interval':
+      return {
+        kind: 'absolute_interval',
+        starts_at: placement.startsAt.toString(),
+        ends_at: placement.endsAt.toString(),
+      } as const;
+    case 'coarse-local-period':
+      return {
+        kind: 'coarse_local_period',
+        local_date: placement.localDate.toString(),
+        period: placement.period,
+      } as const;
+  }
+}
+
+function responsePlacementKeys(temporalForm: unknown): readonly string[] {
+  switch (temporalForm) {
+    case 'date_span':
+      return ['start_date', 'end_date_exclusive'];
+    case 'floating_local':
+      return ['starts_local_at', 'ends_local_at'];
+    case 'named_zone_local':
+      return [
+        'starts_local_at',
+        'ends_local_at',
+        'zone_id',
+        'resolved_start_at',
+        'resolved_end_at',
+      ];
+    case 'absolute':
+      return ['starts_at', 'ends_at'];
+    case 'coarse_local_period':
+      return ['local_date', 'period'];
+    default:
+      return [];
+  }
+}
+
+function parseAcceptedPlacement(
+  payload: Record<string, unknown>,
+): TemporalAcceptedSchedulePlacement {
+  switch (payload.temporal_form) {
+    case 'date_span': {
+      const startDate = plainDate(payload.start_date, 'start_date');
+      const endDateExclusive = plainDate(
+        payload.end_date_exclusive,
+        'end_date_exclusive',
+      );
+      if (Temporal.PlainDate.compare(startDate, endDateExclusive) >= 0) {
+        throw new TemporalScheduleRemoteError(
+          'protocol',
+          'Schedule date-span response must be positive.',
+        );
+      }
+      return Object.freeze({
+        kind: 'date-span' as const,
+        startDate,
+        endDateExclusive,
+      });
+    }
+    case 'floating_local': {
+      const startsLocalAt = localDateTime(
+        payload.starts_local_at,
+        'starts_local_at',
+      );
+      const endsLocalAt = localDateTime(
+        payload.ends_local_at,
+        'ends_local_at',
+      );
+      if (Temporal.PlainDateTime.compare(startsLocalAt, endsLocalAt) >= 0) {
+        throw new TemporalScheduleRemoteError(
+          'protocol',
+          'Schedule floating-local response must be positive.',
+        );
+      }
+      return Object.freeze({
+        kind: 'floating-local-interval' as const,
+        startsLocalAt,
+        endsLocalAt,
+      });
+    }
+    case 'named_zone_local': {
+      const startsLocalAt = localDateTime(
+        payload.starts_local_at,
+        'starts_local_at',
+      );
+      const endsLocalAt = localDateTime(
+        payload.ends_local_at,
+        'ends_local_at',
+      );
+      const resolvedStartAt = instant(
+        payload.resolved_start_at,
+        'resolved_start_at',
+      );
+      const resolvedEndAt = instant(payload.resolved_end_at, 'resolved_end_at');
+      if (
+        Temporal.PlainDateTime.compare(startsLocalAt, endsLocalAt) >= 0 ||
+        Temporal.Instant.compare(resolvedStartAt, resolvedEndAt) >= 0
+      ) {
+        throw new TemporalScheduleRemoteError(
+          'protocol',
+          'Schedule named-zone response must retain a positive interval.',
+        );
+      }
+      return Object.freeze({
+        kind: 'named-zone-local-interval' as const,
+        startsLocalAt,
+        endsLocalAt,
+        zoneId: zoneId(payload.zone_id, 'zone_id'),
+        resolvedStartAt,
+        resolvedEndAt,
+      });
+    }
+    case 'absolute': {
+      const startsAt = instant(payload.starts_at, 'starts_at');
+      const endsAt = instant(payload.ends_at, 'ends_at');
+      if (Temporal.Instant.compare(startsAt, endsAt) >= 0) {
+        throw new TemporalScheduleRemoteError(
+          'protocol',
+          'Schedule absolute response must be positive.',
+        );
+      }
+      return Object.freeze({
+        kind: 'absolute-interval' as const,
+        startsAt,
+        endsAt,
+      });
+    }
+    case 'coarse_local_period':
+      if (
+        payload.period !== 'morning' &&
+        payload.period !== 'afternoon' &&
+        payload.period !== 'evening'
+      ) {
+        throw new TemporalScheduleRemoteError(
+          'protocol',
+          'Schedule coarse response is outside the activated vocabulary.',
+        );
+      }
+      return Object.freeze({
+        kind: 'coarse-local-period' as const,
+        localDate: plainDate(payload.local_date, 'local_date'),
+        period: payload.period,
+      });
+    default:
+      throw new TemporalScheduleRemoteError(
+        'protocol',
+        'Schedule response temporal form is unsupported.',
+      );
+  }
+}
+
+function acceptedMatchesInput(
+  accepted: TemporalAcceptedSchedulePlacement,
+  requested: TemporalSchedulePlacementInput,
+): boolean {
+  if (accepted.kind !== requested.kind) {
+    return false;
+  }
+  switch (requested.kind) {
+    case 'date-span':
+      return (
+        accepted.kind === 'date-span' &&
+        accepted.startDate.equals(requested.startDate) &&
+        accepted.endDateExclusive.equals(requested.endDateExclusive)
+      );
+    case 'floating-local-interval':
+      return (
+        accepted.kind === 'floating-local-interval' &&
+        accepted.startsLocalAt.equals(requested.startsLocalAt) &&
+        accepted.endsLocalAt.equals(requested.endsLocalAt)
+      );
+    case 'named-zone-local-interval':
+      return (
+        accepted.kind === 'named-zone-local-interval' &&
+        accepted.startsLocalAt.equals(requested.startsLocalAt) &&
+        accepted.endsLocalAt.equals(requested.endsLocalAt) &&
+        accepted.zoneId === requested.zoneId
+      );
+    case 'absolute-interval':
+      return (
+        accepted.kind === 'absolute-interval' &&
+        accepted.startsAt.equals(requested.startsAt) &&
+        accepted.endsAt.equals(requested.endsAt)
+      );
+    case 'coarse-local-period':
+      return (
+        accepted.kind === 'coarse-local-period' &&
+        accepted.localDate.equals(requested.localDate) &&
+        accepted.period === requested.period
+      );
   }
 }
 
@@ -108,20 +435,7 @@ function validateRequest(request: TemporalScheduleRevisionRequest): void {
       'Schedule operation id must contain 1 to 200 characters.',
     );
   }
-  if (
-    request.placement.kind !== 'floating-local-interval' ||
-    Temporal.PlainDateTime.compare(
-      request.placement.startsLocalAt,
-      request.placement.endsLocalAt,
-    ) >= 0 ||
-    !request.placement.startsLocalAt
-      .toPlainDate()
-      .equals(request.placement.endsLocalAt.toPlainDate())
-  ) {
-    throw new RangeError(
-      'B02-C supports only positive same-local-day floating-local intervals.',
-    );
-  }
+  validatePlacement(request.placement);
 }
 
 function validateUnscheduleRequest(
@@ -211,7 +525,7 @@ async function fetchResponse(
     }
     throw new TemporalScheduleRemoteError(
       'transport',
-      'Schedule revision could not reach DANTE.',
+      'Schedule mutation could not reach DANTE.',
     );
   }
 }
@@ -234,7 +548,7 @@ async function csrfToken(
   ) {
     throw new TemporalScheduleRemoteError(
       'authentication',
-      'Schedule revision requires an authenticated browser session.',
+      'Schedule mutation requires an authenticated browser session.',
       response.status,
     );
   }
@@ -260,54 +574,34 @@ function parseRevision(
       'previous_placement_material_state_ref',
       'placement_material_state_ref',
       'temporal_form',
-      'starts_local_at',
-      'ends_local_at',
+      ...responsePlacementKeys(payload.temporal_form),
       'replayed',
     ],
     'Schedule revision response',
   );
-  if (
-    payload.temporal_form !== 'floating_local' ||
-    typeof payload.replayed !== 'boolean'
-  ) {
+  if (typeof payload.replayed !== 'boolean') {
     throw new TemporalScheduleRemoteError(
       'protocol',
-      'Schedule revision response changed the accepted temporal form.',
+      'Schedule revision replayed must be boolean.',
       status,
     );
   }
-
   const scheduleRef = uuidV7(payload.schedule_ref, 'schedule_ref');
   const previousPlacementMaterialStateRef = uuidV7(
     payload.previous_placement_material_state_ref,
     'previous_placement_material_state_ref',
   );
-  const startsLocalAt = localDateTime(
-    payload.starts_local_at,
-    'starts_local_at',
-  );
-  const endsLocalAt = localDateTime(payload.ends_local_at, 'ends_local_at');
-  if (
-    Temporal.PlainDateTime.compare(startsLocalAt, endsLocalAt) >= 0 ||
-    !startsLocalAt.toPlainDate().equals(endsLocalAt.toPlainDate())
-  ) {
-    throw new TemporalScheduleRemoteError(
-      'protocol',
-      'Schedule revision response must be a positive same-local-day interval.',
-      status,
-    );
-  }
   const placementMaterialStateRef = uuidV7(
     payload.placement_material_state_ref,
     'placement_material_state_ref',
   );
+  const placement = parseAcceptedPlacement(payload);
   if (
     scheduleRef !== request.scheduleRef.trim().toLowerCase() ||
     previousPlacementMaterialStateRef !==
       request.expectedPlacementMaterialStateRef.trim().toLowerCase() ||
     placementMaterialStateRef === previousPlacementMaterialStateRef ||
-    !startsLocalAt.equals(request.placement.startsLocalAt) ||
-    !endsLocalAt.equals(request.placement.endsLocalAt)
+    !acceptedMatchesInput(placement, request.placement)
   ) {
     throw new TemporalScheduleRemoteError(
       'protocol',
@@ -315,16 +609,11 @@ function parseRevision(
       status,
     );
   }
-
   return Object.freeze({
     scheduleRef,
     previousPlacementMaterialStateRef,
     placementMaterialStateRef,
-    placement: Object.freeze({
-      kind: 'floating-local-interval' as const,
-      startsLocalAt,
-      endsLocalAt,
-    }),
+    placement,
     replayed: payload.replayed,
   });
 }
@@ -406,19 +695,15 @@ function parseUnscheduleUndo(
       'restored_from_placement_material_state_ref',
       'placement_material_state_ref',
       'temporal_form',
-      'starts_local_at',
-      'ends_local_at',
+      ...responsePlacementKeys(payload.temporal_form),
       'replayed',
     ],
     'Schedule Undo response',
   );
-  if (
-    payload.temporal_form !== 'floating_local' ||
-    typeof payload.replayed !== 'boolean'
-  ) {
+  if (typeof payload.replayed !== 'boolean') {
     throw new TemporalScheduleRemoteError(
       'protocol',
-      'Schedule Undo response changed the accepted temporal form.',
+      'Schedule Undo replayed must be boolean.',
       status,
     );
   }
@@ -431,20 +716,14 @@ function parseUnscheduleUndo(
     payload.placement_material_state_ref,
     'placement_material_state_ref',
   );
-  const startsLocalAt = localDateTime(
-    payload.starts_local_at,
-    'starts_local_at',
-  );
-  const endsLocalAt = localDateTime(payload.ends_local_at, 'ends_local_at');
+  const placement = parseAcceptedPlacement(payload);
   if (
     scheduleRef !== request.scheduleRef.trim().toLowerCase() ||
-    placementMaterialStateRef === restoredFromPlacementMaterialStateRef ||
-    Temporal.PlainDateTime.compare(startsLocalAt, endsLocalAt) >= 0 ||
-    !startsLocalAt.toPlainDate().equals(endsLocalAt.toPlainDate())
+    placementMaterialStateRef === restoredFromPlacementMaterialStateRef
   ) {
     throw new TemporalScheduleRemoteError(
       'protocol',
-      'Schedule Undo response changed its identity or restored placement.',
+      'Schedule Undo response changed its identity or restored state.',
       status,
     );
   }
@@ -452,11 +731,7 @@ function parseUnscheduleUndo(
     scheduleRef,
     restoredFromPlacementMaterialStateRef,
     placementMaterialStateRef,
-    placement: Object.freeze({
-      kind: 'floating-local-interval' as const,
-      startsLocalAt,
-      endsLocalAt,
-    }),
+    placement,
     replayed: payload.replayed,
   });
 }
@@ -486,11 +761,7 @@ export function createRemoteTemporalScheduleDataSource(
             operation_id: request.operationId.trim(),
             expected_placement_material_state_ref:
               request.expectedPlacementMaterialStateRef.trim().toLowerCase(),
-            placement: {
-              kind: 'floating_local_interval',
-              starts_local_at: request.placement.startsLocalAt.toString(),
-              ends_local_at: request.placement.endsLocalAt.toString(),
-            },
+            placement: serializePlacement(request.placement),
           }),
           ...(signal === undefined ? {} : { signal }),
         },
