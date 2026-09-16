@@ -61,11 +61,23 @@ describe('temporal F0 model contract', () => {
         end: Temporal.ZonedDateTime.from(
           '2026-03-29T03:30:00+02:00[Europe/Rome]',
         ),
+        sourceStartsLocalAt: Temporal.PlainDateTime.from(
+          '2026-03-29T01:30:00',
+        ),
+        sourceEndsLocalAt: Temporal.PlainDateTime.from(
+          '2026-03-29T02:30:00',
+        ),
+        disambiguation: 'later',
       },
       {
         kind: 'absolute',
         start: Temporal.Instant.from('2026-08-04T07:00:00Z'),
         end: Temporal.Instant.from('2026-08-04T08:00:00Z'),
+      },
+      {
+        kind: 'coarse-local-period',
+        localDate: Temporal.PlainDate.from('2026-08-04'),
+        period: 'afternoon',
       },
     ];
 
@@ -77,6 +89,42 @@ describe('temporal F0 model contract', () => {
       expect(temporalPlacementEquals(restored, placement)).toBe(true);
       expect(validateTemporalPlacement(restored).valid).toBe(true);
     }
+  });
+
+  it('keeps named-zone wall-clock gap intent distinct from its resolved instant projection', () => {
+    const placement: TemporalPlacement = {
+      kind: 'zoned',
+      start: Temporal.ZonedDateTime.from(
+        '2026-03-29T01:30:00+01:00[Europe/Rome]',
+      ),
+      end: Temporal.ZonedDateTime.from(
+        '2026-03-29T03:30:00+02:00[Europe/Rome]',
+      ),
+      sourceStartsLocalAt: Temporal.PlainDateTime.from(
+        '2026-03-29T01:30:00',
+      ),
+      sourceEndsLocalAt: Temporal.PlainDateTime.from('2026-03-29T02:30:00'),
+      disambiguation: 'later',
+    };
+
+    const serialized = serializeTemporalPlacement(placement);
+    expect(serialized).toMatchObject({
+      kind: 'zoned',
+      sourceStartsLocalAt: '2026-03-29T01:30:00',
+      sourceEndsLocalAt: '2026-03-29T02:30:00',
+      disambiguation: 'later',
+    });
+    const restored = deserializeTemporalPlacement(serialized);
+    expect(restored.kind).toBe('zoned');
+    if (restored.kind !== 'zoned') {
+      throw new Error('Expected zoned placement.');
+    }
+    expect(restored.end.toPlainDateTime().toString()).toBe(
+      '2026-03-29T03:30:00',
+    );
+    expect(restored.sourceEndsLocalAt?.toString()).toBe(
+      '2026-03-29T02:30:00',
+    );
   });
 
   it('keeps DST-aware exact ordering for zoned placements', () => {
@@ -98,7 +146,7 @@ describe('temporal F0 model contract', () => {
     expect(validateTemporalPlacement(placement).valid).toBe(true);
   });
 
-  it('rejects zero or reversed ranges instead of normalizing them silently', () => {
+  it('rejects zero, reversed, or incomplete ranges instead of normalizing them silently', () => {
     const invalid: readonly TemporalPlacement[] = [
       {
         kind: 'date-span',
@@ -114,6 +162,18 @@ describe('temporal F0 model contract', () => {
         kind: 'absolute',
         start: Temporal.Instant.from('2026-08-04T10:00:00Z'),
         end: Temporal.Instant.from('2026-08-04T10:00:00Z'),
+      },
+      {
+        kind: 'zoned',
+        start: Temporal.ZonedDateTime.from(
+          '2026-03-29T01:30:00+01:00[Europe/Rome]',
+        ),
+        end: Temporal.ZonedDateTime.from(
+          '2026-03-29T03:30:00+02:00[Europe/Rome]',
+        ),
+        sourceStartsLocalAt: Temporal.PlainDateTime.from(
+          '2026-03-29T01:30:00',
+        ),
       },
     ];
 
