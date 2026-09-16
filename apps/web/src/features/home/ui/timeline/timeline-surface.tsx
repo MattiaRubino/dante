@@ -17,6 +17,7 @@ import { TemporalScheduleRemoteError } from '../../../temporal/remote-schedule-d
 import type { TemporalSchedulePlacementInput } from '../../../temporal/schedule-data-source';
 import { useTemporalTimelineRuntime } from '../../../temporal/timeline-runtime-boundary';
 import { useAuthoritativeTimelineHydration } from './timeline-authoritative-hydration';
+import { TimelineCanonicalActionsProvider } from './timeline-canonical-actions';
 import { createTimelineLocalContext } from './model/timeline-context-catalog';
 import {
   TIMELINE_PROTOTYPE_NOW_MINUTE,
@@ -44,6 +45,7 @@ import {
 } from './model/timeline-temporal';
 import type {
   TimelineAllDayItem,
+  TimelineCanonicalScheduledActivityBasis,
   TimelineEvent,
   TimelineGroup,
   TimelineGroupId,
@@ -396,13 +398,9 @@ export function TimelineSurface({
     ],
   );
 
-  const unscheduleCanonicalEvent = useCallback(
-    (event: TimelineEvent) => {
-      const basis = event.canonicalBasis;
-      if (
-        basis === undefined ||
-        pendingScheduleRefsRef.current.has(basis.scheduleRef)
-      ) {
+  const unscheduleCanonicalBasis = useCallback(
+    (basis: TimelineCanonicalScheduledActivityBasis) => {
+      if (pendingScheduleRefsRef.current.has(basis.scheduleRef)) {
         return;
       }
 
@@ -1080,78 +1078,85 @@ export function TimelineSurface({
         }
       />
 
-      <TimelineDayStream
-        days={renderedDays}
-        today={timelineToday}
-        nowMinute={timelineNowMinute}
-        state={state}
-        expanded={expanded}
-        gridRef={gridRef}
-        onScroll={handleScroll}
-        onZoomAt={zoomAt}
-        onFocusEvent={(eventId) => dispatch({ type: 'focus-event', eventId })}
-        onToggleSubitems={(eventId) => {
-          preserveRawScroll();
-          dispatch({ type: 'toggle-event-subitems', eventId });
+      <TimelineCanonicalActionsProvider
+        actions={{
+          pendingScheduleRef,
+          unschedule: unscheduleCanonicalBasis,
         }}
-        onOpenEventDetail={(event, opener) =>
-          setDetailState({
-            detail: detailFromEvent(event, state.groups),
-            event,
-            allowUnschedule: true,
-            opener,
-          })
-        }
-        onOpenSubitemDetail={(event, subitem, opener) =>
-          setDetailState({
-            detail: detailFromSubitem(
-              event,
-              subitem,
-              state.groups,
-              t(($) => $.common.home.timeline.detail.subitemParent),
-            ),
-            event,
-            allowUnschedule: false,
-            opener,
-          })
-        }
-        onOpenTimeEditor={(dateKey, event, editorAnchor) =>
-          setTimeEditor({ dateKey, event, anchor: editorAnchor })
-        }
-        onMoveEvent={(move) => {
-          const current = findTimelineEvent(state, move.eventId)?.event;
-          if (current?.canonicalBasis !== undefined) {
-            const duration = current.endMinute - current.startMinute;
-            reviseCanonicalEvent(
-              current,
-              move.fromDateKey,
-              move.toDateKey,
-              move.startMinute,
-              move.startMinute + duration,
-            );
-            return;
-          }
-
-          const targetIsRendered = renderedDaysRef.current.some(
-            (day) => day.dateKey === move.toDateKey,
-          );
-          if (targetIsRendered) {
+      >
+        <TimelineDayStream
+          days={renderedDays}
+          today={timelineToday}
+          nowMinute={timelineNowMinute}
+          state={state}
+          expanded={expanded}
+          gridRef={gridRef}
+          onScroll={handleScroll}
+          onZoomAt={zoomAt}
+          onFocusEvent={(eventId) => dispatch({ type: 'focus-event', eventId })}
+          onToggleSubitems={(eventId) => {
             preserveRawScroll();
-          } else {
-            rawScrollRestoreRef.current = null;
-            pendingScrollTargetRef.current = {
-              dateKey: move.toDateKey,
-              minute: move.startMinute,
-              viewportOffset: TIMELINE_POLICY.viewport.eventRevealInsetPx,
-              behavior: 'auto',
-            };
-            windowTransitionRef.current = true;
-            setAnchor(parseTimelineDate(move.toDateKey));
+            dispatch({ type: 'toggle-event-subitems', eventId });
+          }}
+          onOpenEventDetail={(event, opener) =>
+            setDetailState({
+              detail: detailFromEvent(event, state.groups),
+              event,
+              allowUnschedule: true,
+              opener,
+            })
           }
-          dispatch({ type: 'move-event', ...move });
-        }}
-        onMoveFeedback={showFeedback}
-      />
+          onOpenSubitemDetail={(event, subitem, opener) =>
+            setDetailState({
+              detail: detailFromSubitem(
+                event,
+                subitem,
+                state.groups,
+                t(($) => $.common.home.timeline.detail.subitemParent),
+              ),
+              event,
+              allowUnschedule: false,
+              opener,
+            })
+          }
+          onOpenTimeEditor={(dateKey, event, editorAnchor) =>
+            setTimeEditor({ dateKey, event, anchor: editorAnchor })
+          }
+          onMoveEvent={(move) => {
+            const current = findTimelineEvent(state, move.eventId)?.event;
+            if (current?.canonicalBasis !== undefined) {
+              const duration = current.endMinute - current.startMinute;
+              reviseCanonicalEvent(
+                current,
+                move.fromDateKey,
+                move.toDateKey,
+                move.startMinute,
+                move.startMinute + duration,
+              );
+              return;
+            }
+
+            const targetIsRendered = renderedDaysRef.current.some(
+              (day) => day.dateKey === move.toDateKey,
+            );
+            if (targetIsRendered) {
+              preserveRawScroll();
+            } else {
+              rawScrollRestoreRef.current = null;
+              pendingScrollTargetRef.current = {
+                dateKey: move.toDateKey,
+                minute: move.startMinute,
+                viewportOffset: TIMELINE_POLICY.viewport.eventRevealInsetPx,
+                behavior: 'auto',
+              };
+              windowTransitionRef.current = true;
+              setAnchor(parseTimelineDate(move.toDateKey));
+            }
+            dispatch({ type: 'move-event', ...move });
+          }}
+          onMoveFeedback={showFeedback}
+        />
+      </TimelineCanonicalActionsProvider>
 
       <button
         className="timeline-expansion-handle"
@@ -1259,8 +1264,9 @@ export function TimelineSurface({
             detailState.event.canonicalBasis.scheduleRef
         }
         onUnschedule={() => {
-          if (detailState !== null) {
-            unscheduleCanonicalEvent(detailState.event);
+          const basis = detailState?.event.canonicalBasis;
+          if (basis !== undefined) {
+            unscheduleCanonicalBasis(basis);
           }
         }}
         onClose={() => setDetailState(null)}
