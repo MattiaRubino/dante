@@ -160,6 +160,7 @@ function validationResult<T>(
 /* Placement --------------------------------------------------------------- */
 
 export type TemporalCoarsePeriod = 'morning' | 'afternoon' | 'evening';
+export type TemporalZonedDisambiguation = 'reject' | 'earlier' | 'later';
 
 export type TemporalPlacement =
   | Readonly<{
@@ -176,6 +177,14 @@ export type TemporalPlacement =
       kind: 'zoned';
       start: ZonedDateTime;
       end: ZonedDateTime;
+      /**
+       * Original named-zone wall-clock intent. These are distinct from the
+       * resolved ZonedDateTime values for DST gaps, where Temporal must project
+       * the nonexistent local value to an actual instant.
+       */
+      sourceStartsLocalAt?: PlainDateTime;
+      sourceEndsLocalAt?: PlainDateTime;
+      disambiguation?: TemporalZonedDisambiguation;
     }>
   | Readonly<{
       kind: 'absolute';
@@ -195,9 +204,17 @@ export type SerializedTemporalPlacement =
       endDateExclusive: string;
     }>
   | Readonly<{
-      kind: 'floating-local' | 'zoned' | 'absolute';
+      kind: 'floating-local' | 'absolute';
       start: string;
       end: string;
+    }>
+  | Readonly<{
+      kind: 'zoned';
+      start: string;
+      end: string;
+      sourceStartsLocalAt?: string;
+      sourceEndsLocalAt?: string;
+      disambiguation?: TemporalZonedDisambiguation;
     }>
   | Readonly<{
       kind: 'coarse-local-period';
@@ -220,6 +237,22 @@ export function serializeTemporalPlacement(
       kind: placement.kind,
       localDate: placement.localDate.toString(),
       period: placement.period,
+    });
+  }
+  if (placement.kind === 'zoned') {
+    return Object.freeze({
+      kind: placement.kind,
+      start: placement.start.toString(),
+      end: placement.end.toString(),
+      ...(placement.sourceStartsLocalAt === undefined
+        ? {}
+        : { sourceStartsLocalAt: placement.sourceStartsLocalAt.toString() }),
+      ...(placement.sourceEndsLocalAt === undefined
+        ? {}
+        : { sourceEndsLocalAt: placement.sourceEndsLocalAt.toString() }),
+      ...(placement.disambiguation === undefined
+        ? {}
+        : { disambiguation: placement.disambiguation }),
     });
   }
   return Object.freeze({
@@ -250,6 +283,23 @@ export function deserializeTemporalPlacement(
         kind: value.kind,
         start: Temporal.ZonedDateTime.from(value.start),
         end: Temporal.ZonedDateTime.from(value.end),
+        ...(value.sourceStartsLocalAt === undefined
+          ? {}
+          : {
+              sourceStartsLocalAt: Temporal.PlainDateTime.from(
+                value.sourceStartsLocalAt,
+              ),
+            }),
+        ...(value.sourceEndsLocalAt === undefined
+          ? {}
+          : {
+              sourceEndsLocalAt: Temporal.PlainDateTime.from(
+                value.sourceEndsLocalAt,
+              ),
+            }),
+        ...(value.disambiguation === undefined
+          ? {}
+          : { disambiguation: value.disambiguation }),
       });
     case 'absolute':
       return Object.freeze({
@@ -293,13 +343,26 @@ export function validateTemporalPlacement(
       invalid =
         Temporal.PlainDateTime.compare(placement.start, placement.end) >= 0;
       break;
-    case 'zoned':
+    case 'zoned': {
+      const sourceCompleteness = [
+        placement.sourceStartsLocalAt,
+        placement.sourceEndsLocalAt,
+        placement.disambiguation,
+      ].filter((value) => value !== undefined).length;
       invalid =
         Temporal.Instant.compare(
           placement.start.toInstant(),
           placement.end.toInstant(),
-        ) >= 0;
+        ) >= 0 ||
+        (sourceCompleteness !== 0 && sourceCompleteness !== 3) ||
+        (placement.sourceStartsLocalAt !== undefined &&
+          placement.sourceEndsLocalAt !== undefined &&
+          Temporal.PlainDateTime.compare(
+            placement.sourceStartsLocalAt,
+            placement.sourceEndsLocalAt,
+          ) >= 0);
       break;
+    }
     case 'absolute':
       invalid = Temporal.Instant.compare(placement.start, placement.end) >= 0;
       break;
