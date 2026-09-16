@@ -4,7 +4,12 @@ export type TimelineEventId = string;
 export type TimelineGroupId = string;
 
 export type TimelineSemanticTone =
-  'focus' | 'meeting' | 'health' | 'creative' | 'personal' | 'urgent';
+  | 'focus'
+  | 'meeting'
+  | 'health'
+  | 'creative'
+  | 'personal'
+  | 'urgent';
 
 export type TimelineGroup = Readonly<{
   id: TimelineGroupId;
@@ -37,6 +42,9 @@ export type TimelineEvent = Readonly<{
   subitems?: readonly string[];
 }>;
 
+export type TimelineDateLaneKind = 'all-day' | 'coarse';
+export type TimelineCoarsePeriod = 'morning' | 'afternoon' | 'evening';
+
 export type TimelineAllDayItem = Readonly<{
   id: string;
   startDateKey: string;
@@ -45,6 +53,12 @@ export type TimelineAllDayItem = Readonly<{
   groupId: TimelineGroupId;
   /** Presentation-only override; grouping and filters continue to use groupId. */
   appearanceTone?: TimelineSemanticTone;
+  /** Canonical Schedule identity retained without inventing a clock interval. */
+  canonicalBasis?: TimelineCanonicalScheduledActivityBasis;
+  /** Defaults to all-day for legacy/local materialized items. */
+  laneKind?: TimelineDateLaneKind;
+  /** Present only for accepted coarse-local-period placement. */
+  coarsePeriod?: TimelineCoarsePeriod;
   origin?: 'create';
   meta?: string;
 }>;
