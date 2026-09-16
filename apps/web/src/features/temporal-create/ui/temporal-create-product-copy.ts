@@ -9,7 +9,17 @@ export type TemporalCreateProductCopy = Readonly<{
     placement: string;
     timed: string;
     allDay: string;
+    coarse: string;
     toPlace: string;
+    coarsePeriod: string;
+    morning: string;
+    afternoon: string;
+    evening: string;
+    timeZone: string;
+    dstResolution: string;
+    dstReject: string;
+    dstEarlier: string;
+    dstLater: string;
   }>;
   event: Readonly<{
     when: string;
@@ -36,7 +46,17 @@ const IT: TemporalCreateProductCopy = Object.freeze({
     placement: 'Collocazione',
     timed: 'Orario',
     allDay: 'Tutto il giorno',
+    coarse: 'Fascia',
     toPlace: 'Da collocare',
+    coarsePeriod: 'Fascia',
+    morning: 'Mattina',
+    afternoon: 'Pomeriggio',
+    evening: 'Sera',
+    timeZone: 'Fuso orario',
+    dstResolution: 'Ora ambigua/non esistente',
+    dstReject: 'Chiedi correzione',
+    dstEarlier: 'Usa la soluzione precedente',
+    dstLater: 'Usa la soluzione successiva',
   }),
   event: Object.freeze({
     when: 'Quando',
@@ -64,7 +84,17 @@ const EN: TemporalCreateProductCopy = Object.freeze({
     placement: 'Placement',
     timed: 'Timed',
     allDay: 'All day',
+    coarse: 'Period',
     toPlace: 'To place',
+    coarsePeriod: 'Period',
+    morning: 'Morning',
+    afternoon: 'Afternoon',
+    evening: 'Evening',
+    timeZone: 'Time zone',
+    dstResolution: 'Ambiguous/nonexistent time',
+    dstReject: 'Require correction',
+    dstEarlier: 'Use earlier resolution',
+    dstLater: 'Use later resolution',
   }),
   event: Object.freeze({
     when: 'When',
