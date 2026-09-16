@@ -148,13 +148,16 @@ async function placeFromPlanningTray(
   const form = item.locator('.timeline-planning-quick-place');
   await expect(form).toBeVisible();
   await form.getByLabel('Inizio').fill('10:00');
+  await form.getByLabel('Durata (minuti)').fill('45');
 
   const responsePromise = page.waitForResponse(
     (response) =>
       response.url().endsWith(`/api/v1/temporal/activities/${activityRef}/schedule`) &&
       response.request().method() === 'POST',
   );
-  await form.getByRole('button', { name: 'Colloca nella Timeline' }).click();
+  await form
+    .getByRole('button', { name: 'Colloca in Timeline', exact: true })
+    .click();
   const response = await responsePromise;
   expect(response.status()).toBe(201);
   return (await response.json()) as Record<string, unknown>;
