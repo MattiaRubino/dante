@@ -4,6 +4,7 @@ import { Temporal } from '@dante/time';
 import { expect, test, type Page, type TestInfo } from '@playwright/test';
 
 const password = 'correct horse battery staple';
+const E2E_RESPONSE_TIMEOUT_MS = 10_000;
 
 const projectEmail: Readonly<Record<string, string>> = {
   chromium: 'synthetic.user+e2e-58@example.com',
@@ -37,6 +38,7 @@ async function signIn(page: Page, email: string): Promise<void> {
     (response) =>
       response.url().endsWith('/api/v1/auth/signin') &&
       response.request().method() === 'POST',
+    { timeout: E2E_RESPONSE_TIMEOUT_MS },
   );
   await page.getByRole('button', { name: 'Accedi', exact: true }).click();
   expect((await responsePromise).status()).toBe(200);
@@ -50,6 +52,7 @@ function waitForTimelineRead(page: Page) {
     (response) =>
       response.url().includes('/api/v1/temporal/timeline/window') &&
       response.request().method() === 'GET',
+    { timeout: E2E_RESPONSE_TIMEOUT_MS },
   );
 }
 
@@ -58,6 +61,7 @@ function waitForUnplacedRead(page: Page) {
     (response) =>
       response.url().endsWith('/api/v1/temporal/activities/unplaced') &&
       response.request().method() === 'GET',
+    { timeout: E2E_RESPONSE_TIMEOUT_MS },
   );
 }
 
@@ -74,34 +78,51 @@ async function authenticatedMutation(
     body: Record<string, unknown>;
   }>,
 ): Promise<MutationResult> {
-  return page.evaluate(async ({ method, path, body }) => {
-    const sessionResponse = await fetch('/api/v1/auth/session');
-    const session = (await sessionResponse.json()) as {
-      authenticated?: boolean;
-      csrf_token?: string;
-    };
-    if (
-      !sessionResponse.ok ||
-      session.authenticated !== true ||
-      typeof session.csrf_token !== 'string' ||
-      session.csrf_token.length === 0
-    ) {
-      throw new Error('Expected an authenticated session with a CSRF token.');
-    }
+  return page.evaluate(
+    async ({ method, path, body, timeoutMs }) => {
+      const controller = new AbortController();
+      const timer = window.setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const sessionResponse = await fetch('/api/v1/auth/session', {
+          signal: controller.signal,
+        });
+        const session = (await sessionResponse.json()) as {
+          authenticated?: boolean;
+          csrf_token?: string;
+        };
+        if (
+          !sessionResponse.ok ||
+          session.authenticated !== true ||
+          typeof session.csrf_token !== 'string' ||
+          session.csrf_token.length === 0
+        ) {
+          throw new Error('Expected an authenticated session with a CSRF token.');
+        }
 
-    const response = await fetch(path, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Dante-CSRF': session.csrf_token,
-      },
-      body: JSON.stringify(body),
-    });
-    return {
-      status: response.status,
-      payload: (await response.json()) as Record<string, unknown>,
-    };
-  }, request);
+        const response = await fetch(path, {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Dante-CSRF': session.csrf_token,
+          },
+          body: JSON.stringify(body),
+          signal: controller.signal,
+        });
+        return {
+          status: response.status,
+          payload: (await response.json()) as Record<string, unknown>,
+        };
+      } catch (error) {
+        if (controller.signal.aborted) {
+          throw new Error(`Timed out ${method} ${path} after ${timeoutMs}ms`);
+        }
+        throw error;
+      } finally {
+        window.clearTimeout(timer);
+      }
+    },
+    { ...request, timeoutMs: E2E_RESPONSE_TIMEOUT_MS },
+  );
 }
 
 async function openHome(page: Page): Promise<void> {
@@ -127,6 +148,7 @@ async function createUnplacedActivity(
     (response) =>
       response.url().endsWith('/api/v1/temporal/activities') &&
       response.request().method() === 'POST',
+    { timeout: E2E_RESPONSE_TIMEOUT_MS },
   );
   await dialog.getByRole('button', { name: 'Aggiungi', exact: true }).click();
   const response = await responsePromise;
@@ -154,6 +176,7 @@ async function placeFromPlanningTray(
     (response) =>
       response.url().endsWith(`/api/v1/temporal/activities/${activityRef}/schedule`) &&
       response.request().method() === 'POST',
+    { timeout: E2E_RESPONSE_TIMEOUT_MS },
   );
   await form
     .getByRole('button', { name: 'Colloca in Timeline', exact: true })
@@ -287,7 +310,10 @@ test.describe('Timeline B02-E full-stack Schedule forms', () => {
 
       const reloadTimeline = waitForTimelineRead(page);
       const reloadUnplaced = waitForUnplacedRead(page);
-      await page.reload();
+      await page.reload({
+        waitUntil: 'domcontentloaded',
+        timeout: E2E_RESPONSE_TIMEOUT_MS,
+      });
       const timelineResponse = await reloadTimeline;
       expect(timelineResponse.status()).toBe(200);
       expect((await reloadUnplaced).status()).toBe(200);
@@ -335,6 +361,7 @@ test.describe('Timeline B02-E full-stack Schedule forms', () => {
           (response) =>
             response.url().endsWith('/api/v1/temporal/activities/scheduled') &&
             response.request().method() === 'POST',
+          { timeout: E2E_RESPONSE_TIMEOUT_MS },
         );
         await dialog.getByRole('button', { name: 'Aggiungi', exact: true }).click();
         const response = await responsePromise;
@@ -390,7 +417,10 @@ test.describe('Timeline B02-E full-stack Schedule forms', () => {
 
       const reloadTimeline = waitForTimelineRead(page);
       const reloadUnplaced = waitForUnplacedRead(page);
-      await page.reload();
+      await page.reload({
+        waitUntil: 'domcontentloaded',
+        timeout: E2E_RESPONSE_TIMEOUT_MS,
+      });
       const timelineResponse = await reloadTimeline;
       expect(timelineResponse.status()).toBe(200);
       expect((await reloadUnplaced).status()).toBe(200);
