@@ -1,11 +1,12 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B02-E3 PROVEN / B02-E4 CLOSURE IN PROGRESS
+- **Status:** B02 Schedule Core ✅ CLOSED / PROVEN
 - **Reconciled:** 2026-09-16
 - **Branch:** `feature/timeline-temporal-operational`
-- **E3 proven code head:** `e7086ec04276ae48a6c573c8d6eb34fa63387656`
-- **Next block:** B03 Event Core — **NOT AUTHORIZED TO START UNTIL B02 CLOSES**
-- **CI:** not executed; requires separate user authorization
+- **Closure record:** `docs/workstreams/timeline-temporal-operational-b02-closure-2026-09-16.md`
+- **Next roadmap block:** B03 Event Core
+- **B03 authorization:** NOT AUTHORIZED by this handoff
+- **CI:** not claimed as B02 closure evidence; no manual CI launch was authorized
 
 ## 1. Current workstream position
 
@@ -19,36 +20,16 @@ B02-D unschedule + guarded Undo        ✅ PROVEN
 B02-E1 placement union / coarse DDL    ✅ PROVEN
 B02-E2 Timeline forms / DST projection ✅ PROVEN
 B02-E3 web authoring / rendering       ✅ PROVEN
-B02-E4 closure evidence                🟨 IN PROGRESS
-B02 overall                            🟨 NOT CLOSED
-B03 Event Core                         ⬜ DO NOT START
+B02-E4 closure evidence                ✅ PROVEN
+B02 Schedule Core                      ✅ CLOSED / PROVEN
+B03 Event Core                         ⬜ DO NOT START WITHOUT NEW AUTHORIZATION
 ```
 
-B02-E PRE-SCOPE is the active implementation authority for E1–E4. No B03 behavior is implied by the B02 Schedule capability.
+B02-E PRE-SCOPE is complete. No Event behavior was used to make B02 pass.
 
-## 2. B02-E3 evidence frozen at handoff
+## 2. Closed Schedule capability
 
-Executed evidence on the final E3 implementation lineage:
-
-```text
-Web targeted B02-E3                 104 / 104 PASS
-Web full regression                 717 / 717 PASS
-TypeScript typecheck                PASS
-ESLint                              PASS
-generated:check                     PASS
-Generated OpenAPI/API client        committed
-Backend Ruff                        PASS
-Backend Mypy                        259 source files / no issues
-Backend temporal/API targeted        41 / 41 PASS
-Backend full non-PostgreSQL         495 PASS / 188 deselected
-B02 PostgreSQL proof group           11 PASS / 2 deselected
-```
-
-The final PostgreSQL fix classifies reuse of one Activity operation id across incompatible unplaced-create versus scheduled-create commands as `ActivityOperationIdReuseError`; it does not reinterpret operation identity as Activity or Schedule identity.
-
-## 3. Activated Schedule forms
-
-B02 Schedule placement now preserves these distinct accepted forms:
+The accepted B02 placement union preserves:
 
 ```text
 date_span
@@ -58,86 +39,128 @@ absolute
 coarse_local_period
 ```
 
-Permanent rules:
+Permanent rules carried forward:
 
 ```text
-floating-local wall clock != named-zone wall clock
-named-zone source intent != resolved instant
-absolute instant != local wall-clock intent
+Activity != Schedule
+Schedule != Actual
+planned != happened
+current placement != latest row
+unscheduled != deleted
+Undo != DB rewind
+estimated effort != scheduled duration
+floating local != named-zone local != absolute instant
 date span != coarse local period
 coarse precision != fabricated exact interval
-Schedule != Actual
+named-zone source wall-clock intent != resolved instant
+operation/idempotency identity != canonical entity/state identity
 ```
 
-Named-zone source wall-clock coordinates are retained independently from resolved instants. Explicit `reject / earlier / later` disambiguation is part of the acceptance boundary. Browser rendering must not re-resolve an already accepted decision.
+B02 activates the Activity subject path while preserving the shared Schedule capability for later Event/Occurrence use.
 
-## 4. E3 product behavior now proven automatically
+## 3. Final persistence authority
 
-- Activity Create supports `Orario`, `Tutto il giorno`, `Fascia`, `Da collocare`.
-- Exact Activity authoring uses explicit `Data / Da / A`; duration is derived.
-- Named-zone authoring accepts an IANA zone and explicit DST disambiguation.
-- Coarse local-period authoring does not invent clock boundaries.
-- Timeline hydration consumes all five canonical forms.
-- date-span and coarse placements render outside the exact time grid.
-- exact named-zone/absolute coordinates render in the effective viewing zone while retaining canonical source/instant semantics.
-- cross-midnight exact intervals may split only at the view layer while preserving one Schedule identity.
-- direct exact drag revises Schedule and preserves form; it does not create Session/Actual.
-- `Riporta nel Planning Tray` remains immediate and non-destructive.
-- guarded `Annulla` creates a new accepted monotonic state rather than rewinding history.
-- stale expected state and operation-id reuse fail closed.
-- generated OpenAPI/client expose the five-form discriminated contract.
-
-## 5. B02-E4 open closure work
-
-B02 is deliberately **not** marked closed yet. E4 still requires:
-
-1. Database Dictionary/current-catalog/topology reconciliation through Alembic `20260915_26`.
-2. Real full-stack B02-E local E2E proof.
-3. Firefox critical T1 interaction proof on the B02-E implementation.
-4. Manual `docs/workstreams/timeline-temporal-operational-b02-e-usertest.md` approval.
-5. Final live map/roadmap/execution-plan reconciliation only after those proofs exist.
-
-CI is not part of the above local closure unless separately authorized.
-
-## 6. Known Dictionary drift entering E4
-
-The checked-out Dictionary currently predates B02-E:
-
-- Dictionary README/current-catalog constants still describe candidate head `20260914_23`.
-- `schedule_placement_coarse_local_period_state` exists in migration `20260915_25` but has no Dictionary table entry yet.
-- named-zone Dictionary text still describes strict round-trip resolution, while migration `20260915_26` permits only the two explicit supported DST-gap resolutions in addition to exact round-trip coordinates.
-
-Do not mark Database Dictionary reconciliation complete until live PostgreSQL/current-catalog tests prove exact object counts and parity.
-
-## 7. E4 manual acceptance authority
-
-Use:
+B02 closes on PostgreSQL 18.6 / Alembic head:
 
 ```text
-docs/workstreams/timeline-temporal-operational-b02-e-usertest.md
+20260915_26
 ```
 
-The older `timeline-temporal-operational-b02-usertest.md` remains valid evidence for B02-A/B/C/D floating-local behavior only. It must not be cited as manual proof of date-span, named-zone, absolute, coarse precision or B02-E form completeness.
-
-## 8. Stop conditions
-
-Stop rather than improvise if any closure proof reveals:
-
-- Dictionary/live PostgreSQL drift that cannot be explained by migrations 24–26;
-- one Schedule form being flattened into another;
-- named-zone source intent lost after acceptance/reload;
-- coarse precision gaining invented exact times;
-- drag/unschedule/Undo producing Activity identity replacement or Actual truth;
-- stale conflict becoming last-write-wins;
-- Event behavior being required to make B02 pass.
-
-## 9. Closure transition
-
-Only after all E4 gates pass may the handoff become:
+Final reconciled topology:
 
 ```text
-B02 Schedule Core ✅ CLOSED / PROVEN
-next authorized planning target: B03 Event Core
+96 tables
+5 views
+28 routines
+78 triggers
+191 indexes
+111 foreign keys
+285 checks
+0 types/domains/enums
+0 sequences/materialized/partitioned
+0 policies
 ```
 
-Until then, B03 remains untouched.
+Dictionary / SQLAlchemy / Alembic current-catalog parity is proven. The repository migration chain also passed fresh `HEAD → base → HEAD` round-trip. There is no migration 27 in the final B02 chain.
+
+## 4. Final automated evidence
+
+Executed evidence frozen for B02 closure:
+
+```text
+Database current-catalog + migrations        20 / 20 PASS
+Migration HEAD → base → HEAD                  1 / 1 PASS
+B02 PostgreSQL proof group                   11 PASS / 2 deselected
+Backend temporal/API targeted                41 / 41 PASS
+Backend full non-PostgreSQL                 495 PASS / 188 deselected
+Backend Ruff                                 PASS
+Backend Mypy                                 PASS
+Web B02-E3 targeted                         104 / 104 PASS
+Web helper                                    5 / 5 PASS
+Web full regression                         717 / 717 PASS
+TypeScript typecheck                         PASS
+ESLint                                       PASS
+generated:check                              PASS
+B02-E real full-stack Chromium                2 / 2 PASS
+B02-E real full-stack Firefox                 2 / 2 PASS
+```
+
+The final full-stack governed loop covers unplaced Activity → establish Schedule → revision → cross-form revision → unschedule → guarded Undo → canonical reload while preserving Schedule identity and monotonic MaterialState currentness.
+
+The form-completeness full-stack scenario covers product-exposed date-span, coarse local period and named-zone authoring/reload. Absolute placement remains proven through API/runtime/read-model tests rather than being exposed as a fabricated primary Create mode.
+
+## 5. Manual acceptance reconciliation
+
+The real isolated full-stack manual B02 `userTest` A–F was completed and approved on 2026-09-15. It proves the shared user-visible lifecycle:
+
+```text
+create/place + reload                     PASS
+governed revision + reload                PASS
+unschedule → Planning Tray + reload       PASS
+guarded Undo + reload                     PASS
+stale two-tab mutation rejected           PASS
+real database failure never fakes success PASS
+```
+
+The later B02-E manual protocol was not executed and is **not** being mislabeled as PASS. On 2026-09-16 the user explicitly declined a redundant second manual replay. B02-E-specific semantics are accepted from the executed PostgreSQL/backend/frontend and real-stack Chromium/Firefox evidence recorded in the closure document.
+
+Canonical closure record:
+
+```text
+docs/workstreams/timeline-temporal-operational-b02-closure-2026-09-16.md
+```
+
+## 6. Product behavior frozen by B02
+
+B02 now proves that:
+
+- Activity Create can produce accepted exact, date-span, coarse and named-zone Schedule intent while preserving distinct temporal forms;
+- unplaced Activity remains a valid state and Planning Tray membership depends on absence of current accepted placement, not absence of Schedule history;
+- revisions preserve one Schedule identity while creating new accepted current MaterialStates;
+- named-zone source intent is retained separately from resolved instant;
+- explicit DST `reject / earlier / later` semantics are fail-closed and deterministic;
+- coarse precision never manufactures exact clock boundaries;
+- cross-midnight exact placement remains one canonical Schedule interval even if view rendering splits across days;
+- direct planning changes remain Schedule mutations and do not create Session/Actual truth;
+- unschedule is not delete;
+- Undo is monotonic restoration, not history rewind;
+- stale expected state and operation-id reuse do not become last-write-wins;
+- browser/frontend success is reconciled from authoritative backend truth.
+
+## 7. UI qualification
+
+B02 closure does not freeze the current visual quality of the Create modal or Timeline presentation as final product design.
+
+UI/visual cleanup may be performed later without reopening B02 provided it preserves the accepted semantic and interaction contracts above. Styling/layout dissatisfaction is not a reason to reopen Schedule persistence/domain semantics.
+
+## 8. Next-step boundary
+
+The next roadmap block is B03 Event Core, whose purpose is to exercise the shared Schedule capability with a second semantic owner.
+
+However:
+
+```text
+B02 closure != B03 authorization
+```
+
+Do not begin B03 code, DDL, API or product implementation until the user gives a new explicit authorization/pre-scope approval.
