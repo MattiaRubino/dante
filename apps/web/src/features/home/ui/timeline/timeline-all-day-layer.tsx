@@ -148,12 +148,9 @@ export function TimelineAllDayLane({
                   className="timeline-all-day-item__unschedule"
                   type="button"
                   disabled={pending}
+                  data-timeline-unschedule-schedule={basis.scheduleRef}
                   aria-label={`${t(($) => $.common.home.timeline.detail.unschedule)} · ${item.title}`}
-                  onClick={() => {
-                    if (basis !== undefined) {
-                      canonicalActions.unschedule(basis);
-                    }
-                  }}
+                  onClick={() => canonicalActions.unschedule(basis)}
                 >
                   {pending
                     ? t(($) => $.common.home.timeline.detail.unscheduling)
