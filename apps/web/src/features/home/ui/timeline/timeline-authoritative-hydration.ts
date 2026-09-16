@@ -3,7 +3,11 @@ import { useEffect, useRef } from 'react';
 
 import { useTemporalTimelineRuntime } from '../../../temporal/timeline-runtime-boundary';
 import type { TemporalTimelineScheduledActivityItem } from '../../../temporal/timeline-read';
-import type { TimelineAllDayItem, TimelineEvent } from './model/timeline-types';
+import type {
+  TimelineAllDayItem,
+  TimelineCanonicalSchedulePlacement,
+  TimelineEvent,
+} from './model/timeline-types';
 
 function minuteOfLocalDay(value: PlainDateTime): number {
   return (
@@ -44,12 +48,53 @@ function eventMeta(item: TemporalTimelineScheduledActivityItem): string | undefi
   return undefined;
 }
 
+function canonicalPlacement(
+  item: TemporalTimelineScheduledActivityItem,
+): TimelineCanonicalSchedulePlacement {
+  switch (item.temporalForm) {
+    case 'date-span':
+      return Object.freeze({
+        kind: 'date-span' as const,
+        startDate: item.startDate,
+        endDateExclusive: item.endDateExclusive,
+      });
+    case 'floating-local':
+      return Object.freeze({
+        kind: 'floating-local' as const,
+        startsLocalAt: item.startsLocalAt,
+        endsLocalAt: item.endsLocalAt,
+      });
+    case 'named-zone-local':
+      return Object.freeze({
+        kind: 'named-zone-local' as const,
+        startsLocalAt: item.startsLocalAt,
+        endsLocalAt: item.endsLocalAt,
+        zoneId: item.zoneId,
+        resolvedStartAt: item.resolvedStartAt,
+        resolvedEndAt: item.resolvedEndAt,
+      });
+    case 'absolute':
+      return Object.freeze({
+        kind: 'absolute' as const,
+        startsAt: item.startsAt,
+        endsAt: item.endsAt,
+      });
+    case 'coarse-local-period':
+      return Object.freeze({
+        kind: 'coarse-local-period' as const,
+        localDate: item.localDate,
+        period: item.period,
+      });
+  }
+}
+
 function canonicalBasis(item: TemporalTimelineScheduledActivityItem) {
   return Object.freeze({
     kind: 'scheduled-activity' as const,
     activityRef: item.activityRef,
     scheduleRef: item.scheduleRef,
     placementMaterialStateRef: item.placementMaterialStateRef,
+    placement: canonicalPlacement(item),
   });
 }
 
@@ -145,36 +190,47 @@ export function canonicalScheduledActivityTimelineEvent(
 }
 
 /**
- * Reconcile the complete authoritative exact-time window into the UI reducer.
- * Date-span and coarse placements are deliberately excluded here: they belong
- * to the date/coarse lane and must never receive manufactured clock geometry.
+ * Reconcile the complete authoritative Schedule window into presentation-only
+ * Timeline projections. Exact forms enter the time grid; date-span and coarse
+ * forms enter the date lane and never receive manufactured clock geometry.
  */
 export function useAuthoritativeTimelineHydration(
-  onReconcile: (
+  onReconcileEvents: (
     projections: readonly Readonly<{
       dateKey: string;
       event: TimelineEvent;
     }>[],
   ) => void,
+  onReconcileDateLane: (items: readonly TimelineAllDayItem[]) => void,
 ): void {
   const { state } = useTemporalTimelineRuntime();
-  const reconcileRef = useRef(onReconcile);
+  const reconcileEventsRef = useRef(onReconcileEvents);
+  const reconcileDateLaneRef = useRef(onReconcileDateLane);
 
   useEffect(() => {
-    reconcileRef.current = onReconcile;
-  }, [onReconcile]);
+    reconcileEventsRef.current = onReconcileEvents;
+  }, [onReconcileEvents]);
+
+  useEffect(() => {
+    reconcileDateLaneRef.current = onReconcileDateLane;
+  }, [onReconcileDateLane]);
 
   useEffect(() => {
     if (state.status !== 'ready' || state.window === null) {
       return;
     }
 
-    reconcileRef.current(
-      state.window.kind === 'window'
-        ? Object.freeze(
-            state.window.items.flatMap(canonicalScheduledActivityTimelineEvents),
-          )
-        : Object.freeze([]),
+    const items = state.window.kind === 'window' ? state.window.items : [];
+    reconcileEventsRef.current(
+      Object.freeze(items.flatMap(canonicalScheduledActivityTimelineEvents)),
+    );
+    reconcileDateLaneRef.current(
+      Object.freeze(
+        items.flatMap((item) => {
+          const projected = canonicalScheduledActivityDateLaneItem(item);
+          return projected === null ? [] : [projected];
+        }),
+      ),
     );
   }, [state]);
 }
