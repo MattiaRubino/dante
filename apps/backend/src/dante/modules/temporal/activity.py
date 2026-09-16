@@ -237,8 +237,8 @@ class TemporalActivityApplication:
                     placement=placement,
                 )
                 if activity_result.replayed is not schedule_result.replayed:
-                    raise ActivityPersistenceError(
-                        "Activity and Schedule operation receipts diverged."
+                    raise ActivityOperationIdReuseError(
+                        "Activity operation id was reused across incompatible create commands."
                     )
 
                 return CreateScheduledActivityResult(
