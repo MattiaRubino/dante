@@ -3,14 +3,16 @@
 - **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-16
 - **Branch/workstream:** `feature/timeline-temporal-operational`
 - **Current completed frontier:** B02 Schedule Core ✅ CLOSED / PROVEN
-- **Next implementation block:** B03 Event Core — not started
+- **Current active block:** B03 Event Core — PRE-SCOPE ✅ COMPLETE / implementation pending
+- **Next implementation gate:** `APPROVE B03-A`
 - **Current candidate DB authority:** PostgreSQL 18.6 / Alembic `20260915_26`
 - **Live progress ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **B02 closure evidence:** `docs/workstreams/timeline-temporal-operational-b02-closure-2026-09-16.md`
+- **B03 execution plan:** `docs/workstreams/timeline-temporal-operational-b03-execution-plan.md`
 - **Historical frozen roadmap:** `docs/workstreams/archive/timeline-temporal-operational-roadmap-freeze-2026-09-07.md`
-- **Historical map/ledger snapshot:** `docs/workstreams/archive/timeline-temporal-operational-map-ledger-snapshot-2026-09-15.md`
+- **Historical map/ledger snapshots:** `docs/workstreams/archive/`
 
-The archived files preserve the pre-reconciliation wording and numbering for historical traceability only. This file is the current sequencing authority.
+Archived files preserve historical wording/numbering only. This file is the current sequencing authority.
 
 ---
 
@@ -51,9 +53,7 @@ current != latest row
 Undo != history rewind
 ```
 
-A block is `✅ CLOSED / PROVEN` only after its applicable semantic, persistence, backend, frontend, test, manual and documentation gates are reconciled.
-
-No runtime mock may replace backend truth after B00.
+A block is `✅ CLOSED / PROVEN` only after its applicable semantic, persistence, backend, frontend, test, manual and documentation gates are reconciled. No runtime mock may replace backend truth after B00.
 
 ---
 
@@ -63,11 +63,11 @@ No runtime mock may replace backend truth after B00.
 B00 Real Data Spine                              ✅ CLOSED / PROVEN
 B01 Activity Core                                ✅ CLOSED / PROVEN
 B02 Schedule Core                                ✅ CLOSED / PROVEN
-B03 Event Core                                   ⬜ NEXT
+B03 Event Core                                   🟨 PRE-SCOPE COMPLETE / B03-A NEXT
 B04 Temporal Constraints + Movement Policy       ⬜
 B05 Product Organization                         ⬜
 B06 Routine / Recurrence / Occurrence Baseline   ⬜
-B07 UI/UX Consolidation v1                       ⬜ NEW CHECKPOINT
+B07 UI/UX Consolidation v1                       ⬜
 B08 Session Runtime                              ⬜
 B09 Responsibility / Participation               ⬜
 B10 Actual / Outcome / Confirmation / Resolution ⬜
@@ -134,15 +134,7 @@ Normal runtime no longer relies on fake Timeline cards or fake persistence. Real
 
 ## B01 — Activity Core ✅
 
-Activated one canonical Activity owner with:
-
-- stable identity;
-- bounded descriptive/actionable state;
-- governed idempotent create;
-- real Planning Tray projection;
-- valid unplaced state;
-- reload/refetch identity stability;
-- no generic `done`, `status`, `repeat`, `due_at` shortcuts.
+Activated one canonical Activity owner with stable identity, bounded descriptive/actionable state, governed idempotent create, real Planning Tray projection, valid unplaced state and reload/refetch identity stability. No generic `done`, `status`, `repeat` or `due_at` shortcut was introduced.
 
 Activity remains separate from Schedule, Session, Actual and Outcome.
 
@@ -160,37 +152,41 @@ absolute
 coarse_local_period
 ```
 
-Proven behavior includes:
+Proven behavior includes Planning Tray placement, accepted Schedule creation, revision/move, cross-form revision, explicit current MaterialState binding, monotonic history, stable Schedule identity, unschedule, guarded Undo, idempotency, CAS conflicts, DST/local-day semantics, named-zone source-intent retention, coarse precision, cross-midnight identity, Chromium/Firefox full-stack proof and Database Dictionary / SQLAlchemy / Alembic `_26` reconciliation.
 
-- Planning Tray → Timeline placement;
-- accepted Schedule creation;
-- exact revision/move;
-- cross-form revision;
-- explicit current MaterialState binding;
-- monotonic history;
-- stable Schedule identity;
-- unschedule without deletion;
-- guarded Undo without DB rewind;
-- idempotency and reuse conflict;
-- expected-state/CAS conflict;
-- DST/local-day semantics;
-- named-zone source intent retention;
-- coarse precision without fabricated exact clock time;
-- cross-midnight one-Schedule identity;
-- real Chromium and Firefox full-stack proof;
-- Database Dictionary / SQLAlchemy / Alembic `_26` reconciliation.
-
-B02 does not create Session/Actual truth and does not authorize Event behavior.
+B02 does not create Session/Actual truth.
 
 ---
 
-# 3. B03 — Event Core using shared Schedule
+# 3. B03 — Event Core using shared Schedule 🟨
 
 ## Objective
 
 Implement Event as a distinct originating owner and prove B02 Schedule is genuinely shared rather than Activity-specific.
 
-## Required product/semantic scope
+PRE-SCOPE is complete in `timeline-temporal-operational-b03-execution-plan.md`.
+
+### Verified reuse
+
+```text
+Event NativeRef / EventRow                        EXISTS
+Schedule Event physical eligibility              EXISTS
+shared Schedule MaterialState/current/history    EXISTS / B02 PROVEN
+frontend Event authoring prototype               EXISTS
+```
+
+### Verified gaps
+
+```text
+Event typed expectation descriptor               MISSING
+Event idempotent create capability               MISSING
+B02 Schedule runtime self-scope                  ACTIVITY-DESCRIPTOR BOUND
+Timeline backend/API Event projection            MISSING
+frontend Timeline Event protocol                 MISSING
+Event Agenda canonical persistence               MISSING
+```
+
+## Required semantic scope
 
 - Event identity/expectation;
 - timed Event;
@@ -199,8 +195,7 @@ Implement Event as a distinct originating owner and prove B02 Schedule is genuin
 - current Schedule + historical expectation;
 - postponed/TBD with no fake placeholder Schedule;
 - Agenda/internal Event parts at their accepted level;
-- preparation/follow-up relations only where semantically justified;
-- Place/conference intent only through accepted relation/profile ownership;
+- preparation/follow-up only where exact relation semantics are activated;
 - ordinary attendance `!= Session`;
 - Event `!= Availability/Capacity Claim`.
 
@@ -214,6 +209,35 @@ Event ────┘
 
 No `event_schedule` duplicate engine.
 
+## B03 implementation slices
+
+```text
+B03-A  Event canonical core
+       typed Event expectation + create operation/capability + self ownership
+
+B03-B  Shared Schedule + Event Timeline
+       Activity/Event typed self-scope + atomic scheduled Event + timed/all-day/multi-day
+
+B03-C  Event placement lifecycle
+       reschedule + postponed/TBD + Event read/detail + guarded Undo
+
+B03-D  Agenda/internal parts
+       bounded ordered Event-internal persistence + real frontend integration
+
+B03-E  closure
+       PostgreSQL/API/frontend/E2E/manual + DB/Dictionary/docs reconciliation
+```
+
+Rich prototype concepts owned by later blocks remain fail-closed: recurrence B06, constraints B04, organization B05, Session B08, Participation B09, Actual/Outcome/Confirmation B10, reminders/policy B11 and providers B13.
+
+## Current gate
+
+```text
+APPROVE B03-A
+```
+
+PRE-SCOPE completion itself does not authorize DDL/product implementation.
+
 ## Exit condition
 
 Activity and Event are both real originating owners and Schedule survives two semantic owners without ontology or persistence duplication.
@@ -222,58 +246,19 @@ Activity and Event are both real originating owners and Schedule survives two se
 
 # 4. B04 — Temporal Constraints + Movement Policy
 
-## Objective
-
-Represent the difference between:
-
-```text
-Schedule            = accepted temporal assignment
-Temporal Constraint = valid/preferred temporal space
-Movement Policy     = governance for changing accepted placement
-```
-
-Initial scope includes earliest/latest bounds, deadlines with explicit constrained facet, hard/soft windows, duration/spacing constraints where required, and truthful conflict explanation.
-
-Reality may violate a planning constraint; recording Actual must not be rejected merely to protect planner assumptions.
-
-## Exit condition
-
-Planning has typed admissibility/preference and movement governance suitable for later recurrence/replanning.
+Represent the difference between accepted Schedule, valid/preferred temporal space and governance for changing placement. Initial scope covers typed earliest/latest bounds, deadlines with explicit facet, hard/soft windows, duration/spacing constraints where required and truthful conflict explanation. Reality may violate planning rules; Actual must remain recordable.
 
 ---
 
 # 5. B05 — Product Organization: Calendar / Life Area + Tags
 
-## Objective
-
-Replace prototype grouping assumptions with real user-controlled product organization while preserving Domain separation.
-
-Required boundaries:
-
-```text
-Life Area != Goal
-Life Area != Plan
-Life Area != Tag
-Life Area != Place
-Life Area != provider calendar
-Context/grouping != appearance
-```
-
-Scope includes lifecycle of Life Areas, primary organization relation, secondary Tags, grouping/filtering, and accessible appearance metadata.
-
-## Exit condition
-
-Real temporal owners can be organized into user-defined areas such as Work, Health, Study or Photography without ontology shortcuts.
+Replace prototype grouping assumptions with user-controlled product organization while preserving `Life Area != Goal/Plan/Tag/Place/provider calendar` and `Context/grouping != appearance`.
 
 ---
 
 # 6. B06 — Routine + Recurrence + Occurrence baseline
 
-## Objective
-
-Activate Routine and the four CP6-materialized recurrence families end-to-end, with backend-governed Occurrence identity/materialization.
-
-Baseline recurrence families:
+Activate Routine and the four CP6-materialized recurrence families:
 
 ```text
 calendar_wall_clock
@@ -282,128 +267,21 @@ quota_per_period
 cyclic_positional
 ```
 
-Required distinctions include:
-
-```text
-Routine != Recurrence != Occurrence
-this occurrence != this-and-future
-skip occurrence != pause routine != end routine
-structural exclusion != generated-and-skipped
-browser recurrence preview != canonical generation
-```
-
-Occurrence identity must survive reschedule and retain its governing recurrence MaterialState where applicable.
-
-## Exit condition
-
-Routine and recurring Event generate/query/render real backend-governed Occurrences with correct series-edit boundaries.
+Backend owns canonical Occurrence generation/materialization; `Routine != Recurrence != Occurrence`, `this occurrence != this-and-future`, and browser preview never becomes canonical generation.
 
 ---
 
 # 7. B07 — UI/UX Consolidation v1
 
-## Why this checkpoint exists
+Explicit 60–70% product-quality checkpoint after B06. It consolidates Create, Timeline, Planning Tray, cards/editors, responsive/mobile behavior, typography/spacing/components and progressive disclosure while preserving the governed backend/application contracts.
 
-This is an explicit product-quality checkpoint inserted after B06. It does **not** reopen Domain/Logical/Physical semantics and does not permit replacing governed operations with frontend-only state.
-
-By this point the primary creation/planning vocabulary is available:
-
-```text
-Activity
-Event
-Routine
-Schedule
-Temporal Constraints
-Life Area / Calendar
-Tags
-Recurrence
-Occurrence
-Planning Tray
-Timeline
-```
-
-That is the first stable point where a serious product UI can be designed without immediately being invalidated by missing macro concepts.
-
-## Target
-
-Bring the temporal product surface to roughly **60–70% mature product quality**, not final visual polish.
-
-## Scope
-
-### Information architecture
-
-- simplify the Create hierarchy;
-- progressive disclosure instead of showing every temporal control at once;
-- clear separation of primary fields, planning, organization and advanced options;
-- distinct Activity/Event/Routine authoring while reusing shared components where semantics match.
-
-### Timeline / Planning Tray
-
-- visual hierarchy and density;
-- coherent cards and detail affordances;
-- all-day/date-span/coarse/exact visual treatment;
-- Planning Tray usability;
-- overlap/readability;
-- consistent loading/empty/error/conflict states.
-
-### Design system consolidation
-
-- typography hierarchy;
-- spacing/layout tokens;
-- inputs/selectors/buttons;
-- modal/drawer/editor patterns;
-- icons and state affordances;
-- responsive breakpoints;
-- mobile behavior;
-- no semantic dependence on color alone.
-
-### Interaction/accessibility
-
-- preserve frozen T1/F0 behavior;
-- keyboard/focus grammar;
-- pointer behavior in Chromium/Firefox;
-- accessible labels/states;
-- responsive/mobile acceptance.
-
-## Hard boundary
-
-```text
-new UI
-→ existing governed application operations
-→ existing API contracts
-→ canonical backend/database truth
-```
-
-The redesign must not invent new canonical meaning in ViewModel-only fields.
-
-## Exit condition
-
-Activity/Event/Routine creation, planning, recurrence, organization, Timeline and Planning Tray feel like one coherent product and provide a stable UI system for Session/Actual work.
-
-This is **not** the final UI pass. A second consolidation naturally follows B10 when execution/resolution surfaces exist; final polish remains part of B15.
+This is not final polish; a later consolidation follows execution/resolution surfaces and final polish belongs to B15.
 
 ---
 
 # 8. B08 — Session Runtime
 
-## Objective
-
-Make actual execution episodes real without conflating execution with plan or completion.
-
-Scope includes:
-
-- manual retrospective Session;
-- spontaneous Session;
-- start/pause/resume/end;
-- Activity/Occurrence execution context;
-- correction;
-- split/merge with lineage;
-- timing precision/provenance;
-- overlap where semantically valid;
-- stale-running handling;
-- idempotent and expected-state-safe controls.
-
-Permanent rule:
+Make actual execution episodes real: manual/spontaneous Session, start/pause/resume/end, Activity/Occurrence context, correction, split/merge, timing precision, overlap, stale-running handling, idempotency and expected-state-safe controls.
 
 ```text
 Schedule = planned
@@ -415,144 +293,49 @@ Session end != Activity/Occurrence completed
 
 # 9. B09 — Responsibility / Participation / actor relations
 
-## Objective
-
-Introduce exact actor relations without ambiguous `assigned_to`/generic participant blobs.
-
-Keep distinct:
-
-```text
-requester
-responsible/accountable actor
-expected performer
-actual performer
-Event participation response
-Actual attendance
-Acknowledgement
-```
-
-Also preserve `Person != Account != Principal != Actor`.
+Introduce exact requester/responsible/expected performer/actual performer/Event participation/attendance relations without ambiguous `assigned_to` or participant blobs. Preserve `Person != Account != Principal != Actor`.
 
 ---
 
 # 10. B10 — Actual + Outcome + Confirmation + Resolution Queue
 
-## Objective
-
-Close the expectation → reality → result → attestation loop.
-
-```text
-Schedule / expectation
-        ↓
-Session(s)
-        ↓
-Actual
-        ↓
-Outcome
-        ↓
-Confirmation where required
-```
-
-This is the block that gives user controls such as `Fatto`, `Parziale`, `Saltato`, `Posticipato`, `Sostituito`, `Conferma`, `Correggi` their real canonical meaning rather than mapping them to one generic status boolean.
-
-`Da risolvere` becomes a derived Resolution Queue, not a notification feed or status table.
+Close expectation → reality → result → attestation. This is where user controls such as `Fatto`, `Parziale`, `Saltato`, `Posticipato`, `Sostituito`, `Conferma` and `Correggi` receive real canonical meaning instead of one generic status boolean. `Da risolvere` is derived, not a status table.
 
 ---
 
 # 11. B11 — Advanced Recurrence + Conditional Policy + reminders
 
-## Objective
-
-Add recurrence forms that depend on real execution/reality facts and bounded conditional response behavior.
-
-Includes completion-relative and anchor-stream-relative recurrence where physically justified, conditional activation semantics, review cadence, reminder intent and explicitly authorized automatic effects.
-
-Reminder intent remains separate from external delivery success.
+Add recurrence forms dependent on real execution/reality facts, bounded conditional activation, review cadence, reminder intent and explicitly authorized automatic effects. Reminder intent remains distinct from delivery success.
 
 ---
 
 # 12. B12 — Replanning / Conflict / Solver
 
-## Objective
-
-Implement explainable, constraint-aware replanning after real Schedule, Constraints, policies and history exist.
-
-The solver works on canonical current truth and emits candidates:
-
-```text
-candidate proposal != accepted Schedule
-```
-
-Apply requires authorization and expected-state revalidation. Hidden data must not leak through explanations.
+Implement explainable constraint-aware replanning on canonical current truth. Solver output is a candidate, never accepted Schedule until authorized and expected-state revalidated.
 
 ---
 
 # 13. B13 — Provider integration + Offline / Multi-device
 
-## Objective
-
-Synchronize external systems and disconnected clients with established DANTE semantics rather than designing DANTE around provider schemas.
-
-Includes provider Event/Occurrence mapping, tombstones, reconciliation, unsupported recurrence handling, imported Session provenance, offline replay, multi-device expected-state conflicts and device clock drift.
-
-No silent last-write-wins.
+Synchronize external systems and disconnected clients with established DANTE semantics. Includes provider Event/Occurrence mapping, tombstones, reconciliation, imported Session provenance, offline replay, multi-device conflicts and device-clock drift. No silent last-write-wins.
 
 ---
 
 # 14. B14 — Analytics / Statistics / Signals
 
-## Objective
-
-Expose reproducible user-facing statistics derived from mature canonical temporal history.
-
-Examples:
-
-- scheduled vs actual duration;
-- active/paused time;
-- early/late/overrun/underrun;
-- Schedule revision patterns;
-- Occurrence/Actual coverage;
-- Routine adherence;
-- Life Area/tag time allocation;
-- overlap-aware wall-clock statistics;
-- day/week/month/year trends with correct timezone boundaries.
-
-No universal productivity/success score without future explicit semantics.
+Expose reproducible statistics from mature canonical history: scheduled vs actual duration, active/paused time, deviations, Schedule revisions, Occurrence/Actual coverage, Routine adherence, Life Area/tag allocation, overlap-aware time and timezone-correct trends. No universal productivity score without explicit semantics.
 
 ---
 
 # 15. B15 — Whole Vertical Closure
 
-## Objective
-
-Prove the entire temporal-operational vertical as one coherent production-quality capability.
-
-Closure includes:
-
-- master `!=` sweep;
-- no generic ontology shortcuts;
-- backend/PostgreSQL/API/frontend/full-stack regression;
-- timezone/DST;
-- idempotency/concurrency;
-- recurrence/Occurrence history;
-- Session multi-device/offline for activated surfaces;
-- privacy/visibility/non-interference;
-- provider/reconciliation;
-- recovery/anti-resurrection;
-- query/performance review;
-- Alembic/SQLAlchemy/Dictionary parity;
-- ACL proof;
-- desktop/mobile/accessibility acceptance;
-- documentation drift audit;
-- final UI polish.
+Prove the entire temporal-operational vertical coherently: master `!=` sweep, no generic shortcuts, full backend/PostgreSQL/API/frontend/E2E regression, timezone/DST, idempotency/concurrency, recurrence history, Session multi-device/offline, privacy, providers, recovery, performance/query plans, DB parity/ACL, desktop/mobile/accessibility, documentation drift and final UI polish.
 
 ---
 
 # 16. Numbering reconciliation
 
-The UI/UX checkpoint was inserted on 2026-09-16 after B06. Historical dated documents created before this decision may contain the old numbering; their labels describe historical planning state only.
-
-Current crosswalk:
+The UI/UX checkpoint was inserted on 2026-09-16 after B06. Current crosswalk:
 
 ```text
 OLD B07 Session Runtime                     → CURRENT B08
@@ -565,7 +348,7 @@ OLD B13 Analytics / Signals                 → CURRENT B14
 OLD B14 Whole Vertical Closure              → CURRENT B15
 ```
 
-Current canonical documentation must use the new numbering. Historical snapshots are explicitly under `docs/workstreams/archive/` and are not current execution authority.
+Current canonical documentation uses the new numbering. Historical snapshots under `docs/workstreams/archive/` are evidence only.
 
 ---
 
@@ -576,11 +359,10 @@ B00 REAL DATA SPINE                           ✅ CLOSED / PROVEN
 B01 ACTIVITY CORE                             ✅ CLOSED / PROVEN
 B02 SCHEDULE CORE                             ✅ CLOSED / PROVEN
 DATABASE / DICTIONARY                         ✅ reconciled through Alembic _26 for B02
-B02 MANUAL userTest                           ✅ APPROVED — 2026-09-15
-B02-E FULL-STACK CHROMIUM                     ✅ 2 / 2 PASS — 2026-09-16
-B02-E FULL-STACK FIREFOX                      ✅ 2 / 2 PASS — 2026-09-16
-B03 EVENT CORE                                ⬜ NOT STARTED
-NEXT EXECUTION GATE                           B03 PRE-SCOPE / authority re-open
+B03 PRE-SCOPE                                 ✅ COMPLETE — 2026-09-16
+B03 EVT-001 authority re-open                 ✅ DONE
+B03 IMPLEMENTATION                            ⬜ PENDING APPROVAL
+NEXT EXECUTION GATE                           APPROVE B03-A
 ```
 
-B03 is the next roadmap target, but this roadmap update itself does not authorize B03 implementation.
+No B03 code/DDL or CI launch is authorized merely by this roadmap reconciliation.
