@@ -90,6 +90,7 @@ async function authenticatedMutation(
       const timer = window.setTimeout(() => controller.abort(), timeoutMs);
       try {
         const sessionResponse = await fetch('/api/v1/auth/session', {
+          credentials: 'same-origin',
           signal: controller.signal,
         });
         const session = (await sessionResponse.json()) as {
@@ -107,8 +108,12 @@ async function authenticatedMutation(
 
         const response = await fetch(path, {
           method,
+          credentials: 'same-origin',
           headers: {
+            Accept: 'application/json, application/problem+json',
             'Content-Type': 'application/json',
+            'X-Dante-Client': 'web',
+            'X-Dante-Time-Zone': 'Europe/Rome',
             'X-Dante-CSRF': session.csrf_token,
           },
           body: JSON.stringify(body),
