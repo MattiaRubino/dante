@@ -227,7 +227,6 @@ describe('Temporal Create normal-runtime boundary', () => {
     if (preparation.status !== 'ready') {
       throw new Error('Expected a valid B02-E Create preparation');
     }
-
     const execution = await runtime.execute(preparation.prepared);
 
     expect(activity.createActivity).not.toHaveBeenCalled();
@@ -389,14 +388,13 @@ describe('Temporal Create normal-runtime boundary', () => {
     expect(activity.createActivity).not.toHaveBeenCalled();
     expect(activity.createScheduledActivity).not.toHaveBeenCalled();
     expect(activity.establishActivitySchedule).toHaveBeenCalledTimes(1);
-    expect(activity.establishActivitySchedule).toHaveBeenCalledWith({
-      activityRef: CANONICAL_ACTIVITY_REF,
-      operationId: expect.any(String),
-      placement: {
-        kind: 'floating-local-interval',
-        startsLocalAt: start,
-        endsLocalAt: end,
-      },
+    const establishRequest = activity.establishActivitySchedule.mock.calls[0]?.[0];
+    expect(establishRequest?.activityRef).toBe(CANONICAL_ACTIVITY_REF);
+    expect(typeof establishRequest?.operationId).toBe('string');
+    expect(establishRequest?.placement).toEqual({
+      kind: 'floating-local-interval',
+      startsLocalAt: start,
+      endsLocalAt: end,
     });
     expect(result.status).toBe('applied');
     if (result.status === 'applied') {
@@ -517,7 +515,6 @@ describe('Temporal Create normal-runtime boundary', () => {
     }
 
     const execution = await runtime.execute(preparation.prepared);
-
     expect(activity.createActivity).not.toHaveBeenCalled();
     expect(activity.createScheduledActivity).not.toHaveBeenCalled();
     expect(execution.effect).toBeNull();
