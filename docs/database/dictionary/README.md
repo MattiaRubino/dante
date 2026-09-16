@@ -6,8 +6,8 @@
 - **PostgreSQL:** 18.6
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
-- **Current candidate Alembic head on `feature/timeline-temporal-operational`:** `20260915_26`
-- **Current candidate topology:** `96|5|28|78|191|111|285|0|0|0`
+- **Current candidate Alembic head on `feature/timeline-temporal-operational`:** `20260916_27`
+- **Current candidate topology:** `98|5|29|78|195|115|288|0|0|0`
 - **Frozen CP6 head:** `20260826_08`
 - **Last reconciled:** 2026-09-16
 
@@ -24,23 +24,21 @@ Current checked-out DB Reference
 ≈ direct tests
 ```
 
-A mismatch is a defect.
-
-Protected `main` remains integration authority. `_26` is the reconciled candidate truth on `feature/timeline-temporal-operational`; it is not silently relabeled as protected-main truth.
+A mismatch is a defect. Protected `main` remains integration authority; `_27` is candidate truth on the Timeline branch.
 
 ## 2. Current checked-out business-schema inventory
 
 The authoritative machine-readable counts are in `scope.json` and currently equal:
 
 ```text
-tables       96
+tables       98
 views         5
-routines     28
-standalone  129
+routines     29
+standalone  132
 triggers     78
-indexes      191
-FKs          111
-CHECKs       285
+indexes      195
+FKs          115
+CHECKs       288
 ```
 
 No enum/domain, sequence, materialized view, partitioned table or RLS policy exists in the DANTE business-schema inventory.
@@ -57,11 +55,11 @@ Frozen CP6 baseline remains historical evidence:
 Current candidate materialization is:
 
 ```text
-96 tables / 5 views / 28 routines / 129 standalone
-78 triggers / 191 indexes / 111 FKs / 285 CHECKs
+98 tables / 5 views / 29 routines / 132 standalone
+78 triggers / 195 indexes / 115 FKs / 288 CHECKs
 ```
 
-`completed_stages` in `scope.json` remains CP6 provenance only. Post-CP6 provenance belongs on the actual object entries; no fictitious CP6 stage is invented.
+`completed_stages` in `scope.json` remains CP6 provenance only. Post-CP6 provenance belongs on the actual object entries.
 
 ## 4. Post-CP6 Timeline evolution
 
@@ -71,34 +69,15 @@ B01 / 20260908_19
   activity_create_operation
   create_self_activity(...)
 
-B02-A / 20260909_20
-  schedule_establish_operation
-  establish_self_floating_schedule(...)
+B02 / 20260909_20 → 20260915_26
+  shared Schedule establishment/revision/unschedule/Undo
+  complete accepted placement union
+  DST/source-intent hardening
 
-20260909_21
-  forward ACL hardening
-
-B02-C / 20260913_22
-  schedule_revision_operation
-  revise_self_floating_schedule(...)
-
-B02-D / 20260914_23
-  schedule_unschedule_operation
-  schedule_unschedule_undo_operation
-  unschedule_self_schedule(...)
-  undo_self_schedule_unschedule(...)
-
-B02 hardening / 20260914_24
-  PL/pgSQL disambiguation/hardening without reopening historical migrations
-
-B02-E / 20260915_25
-  complete Schedule placement union
-  coarse-local-period state/payload
-  generic establish/revise/unschedule/Undo capability surfaces
-
-B02-E / 20260915_26
-  named-zone DST-gap resolution hardening
-  final B02 current-catalog reconciliation
+B03-A / 20260916_27
+  event_expectation
+  event_create_operation
+  create_self_event(...)
 ```
 
 The final object tree and `scope.json` counts, not this prose summary, are the structural source of truth.
@@ -111,70 +90,51 @@ The final object tree and `scope.json` counts, not this prose summary, are the s
 
 ### 5.2 Schedule
 
-`dante.schedule` remains the single shared CP6 Schedule owner. B02 reuses the CP6 placement MaterialState/current/history machinery and activates the accepted placement union:
-
-```text
-date_span
-floating_local
-named_zone_local
-absolute
-coarse_local_period
-```
-
-Permanent boundaries:
-
-```text
-Activity != Schedule
-Event != Schedule
-Schedule != Session != Actual
-Schedule identity != placement MaterialState
-current accepted placement != latest row
-operation receipt != canonical Schedule truth
-unscheduled != deleted
-Undo != DB/history rewind
-```
-
-Schedule physical subject eligibility remains:
+`dante.schedule` remains the single shared CP6 Schedule owner. B02 reuses the CP6 placement MaterialState/current/history machinery. Physical subject eligibility remains:
 
 ```text
 activity | event | occurrence
 ```
 
-B02 product-activated Activity. B03 must activate Event by reusing this shared Schedule capability, not by creating `event_schedule`.
+### 5.3 Event
 
-## 6. B02 closure evidence
-
-Executed `_26` reconciliation:
+`dante.event` remains the CP6 Event NativeRef owner. B03-A adds:
 
 ```text
-scope/object tree ↔ SQLAlchemy ↔ Alembic ↔ PostgreSQL    PASS
-current-catalog + migration PostgreSQL gate              20 / 20 PASS
-HEAD → base → HEAD round-trip                              1 / 1 PASS
-B02 PostgreSQL proof group                                11 PASS / 2 deselected
+event_expectation
+event_create_operation
+create_self_event(...)
 ```
 
-`scope.json` already carries the final `_26` object counts.
+This is intentionally not an Event mega-profile. Temporal placement remains Schedule; recurrence remains Recurrence; participation, execution and realized truth remain their own later owners.
 
-## 7. B03 starting point
-
-B03 pre-scope verified:
+Permanent boundaries:
 
 ```text
-Event NativeRef owner / EventRow              EXISTS
-Event typed product descriptor                MISSING
-Event idempotent create receipt/capability    MISSING
-Schedule Event physical eligibility           EXISTS
-B02 Schedule runtime self-scope                ACTIVITY-DESCRIPTOR BOUND
-Timeline Event projection                     MISSING
+Activity != Event
+Event != Schedule
+Event != Recurrence != Occurrence
+Event != Session != Actual != Outcome
+Event identity != operation/idempotency identity
+provider identity != DANTE Event identity
 ```
 
-Expected B03 DDL, if exact-head implementation re-read confirms the same gap, is narrowly Event-owned descriptor/control persistence plus bounded capability changes. No generic Event metadata JSON, generic status, generic temporal object or Event-specific Schedule owner is authorized.
+## 6. Current B03-A proof state
 
-## 8. Object contract
+Executed application/PostgreSQL proof:
+
+```text
+apps/backend/tests/integration/temporal/test_b03_event_core.py
+2 / 2 PASS
+```
+
+Current-catalog/Dictionary/Alembic/migration gates must also pass before B03-A is promoted to CLOSED/PROVEN.
+
+## 7. Object contract
 
 Every standalone business-schema object records semantic traceability, implementation provenance, exact structure, lifecycle/currentness semantics, ACL and proof obligations. Embedded indexes/FKs/CHECKs/triggers remain attached to their owning tables; routines remain standalone because signature/security/search-path/ACL are independently governed.
 
-## 9. Validation
+## 8. Validation
 
 Required current validation remains:
 
@@ -190,8 +150,6 @@ extension-owned objects excluded correctly
 observer technical-role/provisioning/live-ACL parity
 ```
 
-B03 must extend these same gates for every real new Event object/routine.
-
-## 10. Same-change rule
+## 9. Same-change rule
 
 No real object → no ceremonial Dictionary entry. Every real current DANTE business object requires matching Dictionary/Alembic/SQLAlchemy/current-human-reference/direct-PostgreSQL proof in the same reviewed slice.
