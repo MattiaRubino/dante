@@ -20,7 +20,7 @@ from dante.platform.database.metadata import Base
 
 pytestmark = pytest.mark.postgres
 
-_CURRENT_REVISION = "20260915_26"
+_CURRENT_REVISION = "20260916_27"
 _REPO_ROOT = Path(__file__).resolve().parents[5]
 _DICTIONARY_ROOT = _REPO_ROOT / "docs" / "database" / "dictionary"
 _RUNTIME_ROLE = "dante_runtime"
@@ -378,6 +378,53 @@ def test_create_self_activity_capability_is_exact(migrated_database: Any) -> Non
     assert function_acl[6] == "uuid, text, text, uuid, text"
     assert function_acl[7] == (
         "TABLE(activity_ref uuid, title text, created_at timestamp with time zone, "
+        "replayed boolean)"
+    )
+    assert function_acl[8:11] == (True, False, False)
+
+def test_create_self_event_capability_is_exact(migrated_database: Any) -> None:
+    with _admin(migrated_database) as connection:
+        function_acl = connection.execute(
+            """
+            SELECT
+              pg_get_userbyid(p.proowner),
+              p.prosecdef,
+              p.provolatile,
+              p.proparallel,
+              p.proleakproof,
+              p.proconfig,
+              oidvectortypes(p.proargtypes),
+              pg_get_function_result(p.oid),
+              has_function_privilege(
+                'dante_runtime',
+                'dante.create_self_event(uuid,text,text,uuid,text)',
+                'EXECUTE'
+              ),
+              has_function_privilege(
+                'dante_migrator',
+                'dante.create_self_event(uuid,text,text,uuid,text)',
+                'EXECUTE'
+              ),
+              EXISTS (
+                SELECT 1
+                FROM aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) AS acl
+                WHERE acl.grantee = 0 AND acl.privilege_type = 'EXECUTE'
+              )
+            FROM pg_proc p
+            JOIN pg_namespace n ON n.oid = p.pronamespace
+            WHERE n.nspname = 'dante'
+              AND p.oid = to_regprocedure(
+                'dante.create_self_event(uuid,text,text,uuid,text)'
+              )
+            """
+        ).fetchone()
+
+    assert function_acl is not None
+    assert function_acl[0:5] == ("dante_owner", True, "v", "u", False)
+    assert function_acl[5] == ["search_path=pg_catalog, dante, pg_temp"]
+    assert function_acl[6] == "uuid, text, text, uuid, text"
+    assert function_acl[7] == (
+        "TABLE(event_ref uuid, title text, created_at timestamp with time zone, "
         "replayed boolean)"
     )
     assert function_acl[8:11] == (True, False, False)
