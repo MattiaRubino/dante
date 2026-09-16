@@ -123,6 +123,25 @@ _UNDO_LATER_UNQUALIFIED_SQL = """FROM dante.schedule_placement_current_history
                              WHERE schedule_ref = requested_schedule_ref
                                AND current_from_at >= unscheduled_at"""
 
+_SCHEDULE_BASE = r"""    IF date_n+floating_n+named_n+absolute_n<>1 OR
+       (form='date_span' AND date_n<>1) OR (form='floating_local' AND floating_n<>1) OR
+       (form='named_zone_local' AND named_n<>1) OR (form='absolute' AND absolute_n<>1) THEN
+        RAISE EXCEPTION USING ERRCODE='23514', CONSTRAINT=TG_NAME, TABLE=TG_TABLE_NAME, SCHEMA=TG_TABLE_SCHEMA,
+            MESSAGE='Schedule placement payload rejected', DETAIL='exactly one typed payload must match temporal_form_code';
+    END IF;"""
+
+_SCHEDULE_RETIREMENT = r"""    IF EXISTS (SELECT 1 FROM dante.material_state_retirement WHERE material_state_ref=state_ref) THEN
+        IF date_n+floating_n+named_n+absolute_n<>0 THEN
+            RAISE EXCEPTION USING ERRCODE='23514', CONSTRAINT=TG_NAME, TABLE=TG_TABLE_NAME, SCHEMA=TG_TABLE_SCHEMA,
+                MESSAGE='retired Schedule placement payload rejected', DETAIL='retired MaterialState keeps its envelope/reference continuity but no placement payload';
+        END IF;
+    ELSIF date_n+floating_n+named_n+absolute_n<>1 OR
+       (form='date_span' AND date_n<>1) OR (form='floating_local' AND floating_n<>1) OR
+       (form='named_zone_local' AND named_n<>1) OR (form='absolute' AND absolute_n<>1) THEN
+        RAISE EXCEPTION USING ERRCODE='23514', CONSTRAINT=TG_NAME, TABLE=TG_TABLE_NAME, SCHEMA=TG_TABLE_SCHEMA,
+            MESSAGE='Schedule placement payload rejected', DETAIL='exactly one typed payload must match temporal_form_code';
+    END IF;"""
+
 
 def _function_definition(signature: str) -> str:
     definition = op.get_bind().execute(
@@ -208,6 +227,18 @@ def _without_strict_disambiguation(signature: str, definition: str) -> str:
     return definition
 
 
+def _restore_schedule_retirement_guard() -> None:
+    signature = "dante.enforce_schedule_placement_totality()"
+    definition = _function_definition(signature)
+    if definition.count(_SCHEDULE_RETIREMENT) == 1:
+        return
+    if definition.count(_SCHEDULE_BASE) != 1:
+        raise RuntimeError(
+            "B02 downgrade could not restore the pre-E1 Schedule retirement guard"
+        )
+    _install(definition.replace(_SCHEDULE_BASE, _SCHEDULE_RETIREMENT))
+
+
 def upgrade() -> None:
     """Qualify ambiguous history columns under strict PL/pgSQL handling."""
     for signature in _EXPECTED_REWRITES:
@@ -215,8 +246,9 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    """Restore the immediately preceding function definitions."""
+    """Restore the immediately preceding function definitions and Schedule invariants."""
     for signature in _EXPECTED_REWRITES:
         _install(
             _without_strict_disambiguation(signature, _function_definition(signature))
         )
+    _restore_schedule_retirement_guard()
