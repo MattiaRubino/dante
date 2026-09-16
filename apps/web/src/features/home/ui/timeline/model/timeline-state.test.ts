@@ -1,3 +1,4 @@
+import { Temporal } from '@dante/time';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -72,6 +73,11 @@ describe('timeline state', () => {
           activityRef: 'activity-1',
           scheduleRef: 'schedule-1',
           placementMaterialStateRef: 'state-1',
+          placement: {
+            kind: 'floating-local',
+            startsLocalAt: Temporal.PlainDateTime.from('2026-09-09T10:00'),
+            endsLocalAt: Temporal.PlainDateTime.from('2026-09-09T11:00'),
+          },
         },
       },
     });
@@ -89,6 +95,11 @@ describe('timeline state', () => {
           activityRef: 'activity-1',
           scheduleRef: 'schedule-1',
           placementMaterialStateRef: 'state-2',
+          placement: {
+            kind: 'floating-local',
+            startsLocalAt: Temporal.PlainDateTime.from('2026-09-10T12:00'),
+            endsLocalAt: Temporal.PlainDateTime.from('2026-09-10T13:00'),
+          },
         },
       },
     });
@@ -334,6 +345,11 @@ describe('timeline state', () => {
           activityRef: 'activity-absence',
           scheduleRef: 'schedule-absence',
           placementMaterialStateRef: 'state-before-unschedule',
+          placement: {
+            kind: 'floating-local',
+            startsLocalAt: Temporal.PlainDateTime.from('2026-09-09T10:00'),
+            endsLocalAt: Temporal.PlainDateTime.from('2026-09-09T11:00'),
+          },
         },
       },
     });
