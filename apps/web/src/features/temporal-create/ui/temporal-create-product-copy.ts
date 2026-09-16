@@ -15,6 +15,9 @@ export type TemporalCreateProductCopy = Readonly<{
     morning: string;
     afternoon: string;
     evening: string;
+    timeMode: string;
+    floatingTime: string;
+    namedZoneTime: string;
     timeZone: string;
     dstResolution: string;
     dstReject: string;
@@ -52,6 +55,9 @@ const IT: TemporalCreateProductCopy = Object.freeze({
     morning: 'Mattina',
     afternoon: 'Pomeriggio',
     evening: 'Sera',
+    timeMode: 'Riferimento orario',
+    floatingTime: 'Ora locale',
+    namedZoneTime: 'Fuso specifico',
     timeZone: 'Fuso orario',
     dstResolution: 'Ora ambigua/non esistente',
     dstReject: 'Chiedi correzione',
@@ -90,6 +96,9 @@ const EN: TemporalCreateProductCopy = Object.freeze({
     morning: 'Morning',
     afternoon: 'Afternoon',
     evening: 'Evening',
+    timeMode: 'Time reference',
+    floatingTime: 'Local time',
+    namedZoneTime: 'Specific zone',
     timeZone: 'Time zone',
     dstResolution: 'Ambiguous/nonexistent time',
     dstReject: 'Require correction',
