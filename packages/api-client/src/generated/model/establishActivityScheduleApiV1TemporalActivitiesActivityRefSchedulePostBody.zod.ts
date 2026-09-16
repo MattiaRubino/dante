@@ -8,7 +8,14 @@ import * as zod from 'zod/mini';
 
 export const establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostBodyOperationIdMax = 200;
 
-export const establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostBodyPlacementKindDefault = `floating_local_interval`;
+export const establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostBodyPlacementOneKindDefault = `date_span`;
+export const establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostBodyPlacementTwoKindDefault = `floating_local_interval`;
+export const establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostBodyPlacementThreeDisambiguationDefault = `reject`;
+export const establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostBodyPlacementThreeKindDefault = `named_zone_local_interval`;
+export const establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostBodyPlacementThreeZoneIdMax = 200;
+
+export const establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostBodyPlacementFourKindDefault = `absolute_interval`;
+export const establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostBodyPlacementFiveKindDefault = `coarse_local_period`;
 export const EstablishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostBody =
   /*#__PURE__*/ zod
     .object({
@@ -20,26 +27,74 @@ export const EstablishActivityScheduleApiV1TemporalActivitiesActivityRefSchedule
             establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostBodyOperationIdMax,
           ),
         ),
-      placement: /*#__PURE__*/ zod
-        .object({
+      placement: /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod.object({
+          end_date_exclusive: /*#__PURE__*/ zod.iso.date(),
+          kind: /*#__PURE__*/ zod
+            ._default(
+              /*#__PURE__*/ zod.literal('date_span'),
+              establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostBodyPlacementOneKindDefault,
+            )
+            .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+          start_date: /*#__PURE__*/ zod.iso.date(),
+        }),
+        /*#__PURE__*/ zod.object({
           ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
           kind: /*#__PURE__*/ zod
             ._default(
               /*#__PURE__*/ zod.literal('floating_local_interval'),
-              establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostBodyPlacementKindDefault,
+              establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostBodyPlacementTwoKindDefault,
             )
             .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
           starts_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-        })
-        .check(
-          /*#__PURE__*/ zod.describe(
-            'First lossless accepted Schedule transport form activated by B02-A.',
+        }),
+        /*#__PURE__*/ zod.object({
+          disambiguation: /*#__PURE__*/ zod._default(
+            /*#__PURE__*/ zod.enum(['reject', 'earlier', 'later']),
+            establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostBodyPlacementThreeDisambiguationDefault,
           ),
-        ),
+          ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+          kind: /*#__PURE__*/ zod
+            ._default(
+              /*#__PURE__*/ zod.literal('named_zone_local_interval'),
+              establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostBodyPlacementThreeKindDefault,
+            )
+            .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+          starts_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+          zone_id: /*#__PURE__*/ zod
+            .string()
+            .check(/*#__PURE__*/ zod.minLength(1))
+            .check(
+              /*#__PURE__*/ zod.maxLength(
+                establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostBodyPlacementThreeZoneIdMax,
+              ),
+            ),
+        }),
+        /*#__PURE__*/ zod.object({
+          ends_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+          kind: /*#__PURE__*/ zod
+            ._default(
+              /*#__PURE__*/ zod.literal('absolute_interval'),
+              establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostBodyPlacementFourKindDefault,
+            )
+            .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+          starts_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+        }),
+        /*#__PURE__*/ zod.object({
+          kind: /*#__PURE__*/ zod
+            ._default(
+              /*#__PURE__*/ zod.literal('coarse_local_period'),
+              establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostBodyPlacementFiveKindDefault,
+            )
+            .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+          local_date: /*#__PURE__*/ zod.iso.date(),
+          period: /*#__PURE__*/ zod.enum(['morning', 'afternoon', 'evening']),
+        }),
+      ]),
     })
     .check(
       /*#__PURE__*/ zod.describe(
-        'Attach an accepted Schedule to one existing canonical Activity.',
+        'Attach one accepted Schedule to an existing canonical Activity.',
       ),
     );
 

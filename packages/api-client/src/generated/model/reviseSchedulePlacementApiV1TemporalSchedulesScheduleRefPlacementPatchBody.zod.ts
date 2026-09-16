@@ -8,7 +8,14 @@ import * as zod from 'zod/mini';
 
 export const reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchBodyOperationIdMax = 200;
 
-export const reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchBodyPlacementKindDefault = `floating_local_interval`;
+export const reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchBodyPlacementOneKindDefault = `date_span`;
+export const reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchBodyPlacementTwoKindDefault = `floating_local_interval`;
+export const reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchBodyPlacementThreeDisambiguationDefault = `reject`;
+export const reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchBodyPlacementThreeKindDefault = `named_zone_local_interval`;
+export const reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchBodyPlacementThreeZoneIdMax = 200;
+
+export const reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchBodyPlacementFourKindDefault = `absolute_interval`;
+export const reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchBodyPlacementFiveKindDefault = `coarse_local_period`;
 export const ReviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchBody =
   /*#__PURE__*/ zod
     .object({
@@ -21,22 +28,70 @@ export const ReviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPa
             reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchBodyOperationIdMax,
           ),
         ),
-      placement: /*#__PURE__*/ zod
-        .object({
+      placement: /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod.object({
+          end_date_exclusive: /*#__PURE__*/ zod.iso.date(),
+          kind: /*#__PURE__*/ zod
+            ._default(
+              /*#__PURE__*/ zod.literal('date_span'),
+              reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchBodyPlacementOneKindDefault,
+            )
+            .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+          start_date: /*#__PURE__*/ zod.iso.date(),
+        }),
+        /*#__PURE__*/ zod.object({
           ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
           kind: /*#__PURE__*/ zod
             ._default(
               /*#__PURE__*/ zod.literal('floating_local_interval'),
-              reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchBodyPlacementKindDefault,
+              reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchBodyPlacementTwoKindDefault,
             )
             .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
           starts_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-        })
-        .check(
-          /*#__PURE__*/ zod.describe(
-            'First lossless accepted Schedule transport form activated by B02-A.',
+        }),
+        /*#__PURE__*/ zod.object({
+          disambiguation: /*#__PURE__*/ zod._default(
+            /*#__PURE__*/ zod.enum(['reject', 'earlier', 'later']),
+            reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchBodyPlacementThreeDisambiguationDefault,
           ),
-        ),
+          ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+          kind: /*#__PURE__*/ zod
+            ._default(
+              /*#__PURE__*/ zod.literal('named_zone_local_interval'),
+              reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchBodyPlacementThreeKindDefault,
+            )
+            .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+          starts_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+          zone_id: /*#__PURE__*/ zod
+            .string()
+            .check(/*#__PURE__*/ zod.minLength(1))
+            .check(
+              /*#__PURE__*/ zod.maxLength(
+                reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchBodyPlacementThreeZoneIdMax,
+              ),
+            ),
+        }),
+        /*#__PURE__*/ zod.object({
+          ends_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+          kind: /*#__PURE__*/ zod
+            ._default(
+              /*#__PURE__*/ zod.literal('absolute_interval'),
+              reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchBodyPlacementFourKindDefault,
+            )
+            .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+          starts_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+        }),
+        /*#__PURE__*/ zod.object({
+          kind: /*#__PURE__*/ zod
+            ._default(
+              /*#__PURE__*/ zod.literal('coarse_local_period'),
+              reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchBodyPlacementFiveKindDefault,
+            )
+            .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+          local_date: /*#__PURE__*/ zod.iso.date(),
+          period: /*#__PURE__*/ zod.enum(['morning', 'afternoon', 'evening']),
+        }),
+      ]),
     })
     .check(
       /*#__PURE__*/ zod.describe(

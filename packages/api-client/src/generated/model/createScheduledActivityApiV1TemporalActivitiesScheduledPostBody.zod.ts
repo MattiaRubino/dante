@@ -8,7 +8,14 @@ import * as zod from 'zod/mini';
 
 export const createScheduledActivityApiV1TemporalActivitiesScheduledPostBodyOperationIdMax = 200;
 
-export const createScheduledActivityApiV1TemporalActivitiesScheduledPostBodyPlacementKindDefault = `floating_local_interval`;
+export const createScheduledActivityApiV1TemporalActivitiesScheduledPostBodyPlacementOneKindDefault = `date_span`;
+export const createScheduledActivityApiV1TemporalActivitiesScheduledPostBodyPlacementTwoKindDefault = `floating_local_interval`;
+export const createScheduledActivityApiV1TemporalActivitiesScheduledPostBodyPlacementThreeDisambiguationDefault = `reject`;
+export const createScheduledActivityApiV1TemporalActivitiesScheduledPostBodyPlacementThreeKindDefault = `named_zone_local_interval`;
+export const createScheduledActivityApiV1TemporalActivitiesScheduledPostBodyPlacementThreeZoneIdMax = 200;
+
+export const createScheduledActivityApiV1TemporalActivitiesScheduledPostBodyPlacementFourKindDefault = `absolute_interval`;
+export const createScheduledActivityApiV1TemporalActivitiesScheduledPostBodyPlacementFiveKindDefault = `coarse_local_period`;
 export const createScheduledActivityApiV1TemporalActivitiesScheduledPostBodyTitleMax = 300;
 
 export const CreateScheduledActivityApiV1TemporalActivitiesScheduledPostBody =
@@ -22,22 +29,70 @@ export const CreateScheduledActivityApiV1TemporalActivitiesScheduledPostBody =
             createScheduledActivityApiV1TemporalActivitiesScheduledPostBodyOperationIdMax,
           ),
         ),
-      placement: /*#__PURE__*/ zod
-        .object({
+      placement: /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod.object({
+          end_date_exclusive: /*#__PURE__*/ zod.iso.date(),
+          kind: /*#__PURE__*/ zod
+            ._default(
+              /*#__PURE__*/ zod.literal('date_span'),
+              createScheduledActivityApiV1TemporalActivitiesScheduledPostBodyPlacementOneKindDefault,
+            )
+            .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+          start_date: /*#__PURE__*/ zod.iso.date(),
+        }),
+        /*#__PURE__*/ zod.object({
           ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
           kind: /*#__PURE__*/ zod
             ._default(
               /*#__PURE__*/ zod.literal('floating_local_interval'),
-              createScheduledActivityApiV1TemporalActivitiesScheduledPostBodyPlacementKindDefault,
+              createScheduledActivityApiV1TemporalActivitiesScheduledPostBodyPlacementTwoKindDefault,
             )
             .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
           starts_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-        })
-        .check(
-          /*#__PURE__*/ zod.describe(
-            'First lossless accepted Schedule transport form activated by B02-A.',
+        }),
+        /*#__PURE__*/ zod.object({
+          disambiguation: /*#__PURE__*/ zod._default(
+            /*#__PURE__*/ zod.enum(['reject', 'earlier', 'later']),
+            createScheduledActivityApiV1TemporalActivitiesScheduledPostBodyPlacementThreeDisambiguationDefault,
           ),
-        ),
+          ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+          kind: /*#__PURE__*/ zod
+            ._default(
+              /*#__PURE__*/ zod.literal('named_zone_local_interval'),
+              createScheduledActivityApiV1TemporalActivitiesScheduledPostBodyPlacementThreeKindDefault,
+            )
+            .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+          starts_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+          zone_id: /*#__PURE__*/ zod
+            .string()
+            .check(/*#__PURE__*/ zod.minLength(1))
+            .check(
+              /*#__PURE__*/ zod.maxLength(
+                createScheduledActivityApiV1TemporalActivitiesScheduledPostBodyPlacementThreeZoneIdMax,
+              ),
+            ),
+        }),
+        /*#__PURE__*/ zod.object({
+          ends_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+          kind: /*#__PURE__*/ zod
+            ._default(
+              /*#__PURE__*/ zod.literal('absolute_interval'),
+              createScheduledActivityApiV1TemporalActivitiesScheduledPostBodyPlacementFourKindDefault,
+            )
+            .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+          starts_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+        }),
+        /*#__PURE__*/ zod.object({
+          kind: /*#__PURE__*/ zod
+            ._default(
+              /*#__PURE__*/ zod.literal('coarse_local_period'),
+              createScheduledActivityApiV1TemporalActivitiesScheduledPostBodyPlacementFiveKindDefault,
+            )
+            .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+          local_date: /*#__PURE__*/ zod.iso.date(),
+          period: /*#__PURE__*/ zod.enum(['morning', 'afternoon', 'evening']),
+        }),
+      ]),
       title: /*#__PURE__*/ zod
         .string()
         .check(/*#__PURE__*/ zod.minLength(1))
@@ -49,7 +104,7 @@ export const CreateScheduledActivityApiV1TemporalActivitiesScheduledPostBody =
     })
     .check(
       /*#__PURE__*/ zod.describe(
-        'Atomic Activity + accepted Schedule authoring command for B02-A.',
+        'Atomic Activity + accepted Schedule authoring command.',
       ),
     );
 

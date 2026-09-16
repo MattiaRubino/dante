@@ -8,29 +8,23 @@ import * as zod from 'zod/mini';
 
 export const revisedScheduleResponseReplayedDefault = false;
 export const revisedScheduleResponseTemporalFormDefault = `floating_local`;
-export const RevisedScheduleResponse = /*#__PURE__*/ zod
-  .object({
-    ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-    placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
-    previous_placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
-    replayed: /*#__PURE__*/ zod._default(
-      /*#__PURE__*/ zod.boolean(),
-      revisedScheduleResponseReplayedDefault,
-    ),
-    schedule_ref: /*#__PURE__*/ zod.uuid(),
-    starts_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-    temporal_form: /*#__PURE__*/ zod
-      ._default(
-        /*#__PURE__*/ zod.literal('floating_local'),
-        revisedScheduleResponseTemporalFormDefault,
-      )
-      .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
-  })
-  .check(
-    /*#__PURE__*/ zod.describe(
-      'Accepted current Schedule placement after one governed revision.',
-    ),
-  );
+export const RevisedScheduleResponse = /*#__PURE__*/ zod.object({
+  ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+  placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
+  previous_placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
+  replayed: /*#__PURE__*/ zod._default(
+    /*#__PURE__*/ zod.boolean(),
+    revisedScheduleResponseReplayedDefault,
+  ),
+  schedule_ref: /*#__PURE__*/ zod.uuid(),
+  starts_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+  temporal_form: /*#__PURE__*/ zod
+    ._default(
+      /*#__PURE__*/ zod.literal('floating_local'),
+      revisedScheduleResponseTemporalFormDefault,
+    )
+    .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
+});
 
 export type RevisedScheduleResponse = zod.input<typeof RevisedScheduleResponse>;
 export type RevisedScheduleResponseOutput = zod.output<

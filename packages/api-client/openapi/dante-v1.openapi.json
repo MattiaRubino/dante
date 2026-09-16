@@ -1,6 +1,30 @@
 {
   "components": {
     "schemas": {
+      "AbsoluteIntervalPlacementRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "ends_at": {
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "kind": {
+            "const": "absolute_interval",
+            "default": "absolute_interval",
+            "title": "Kind",
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          }
+        },
+        "required": ["starts_at", "ends_at"],
+        "title": "AbsoluteIntervalPlacementRequest",
+        "type": "object"
+      },
       "ActivityResponse": {
         "additionalProperties": false,
         "description": "Minimum canonical Activity representation exposed by B01.",
@@ -289,6 +313,30 @@
         "title": "AuthenticationProviderMethodResponse",
         "type": "object"
       },
+      "CoarseLocalPeriodPlacementRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "coarse_local_period",
+            "default": "coarse_local_period",
+            "title": "Kind",
+            "type": "string"
+          },
+          "local_date": {
+            "format": "date",
+            "title": "Local Date",
+            "type": "string"
+          },
+          "period": {
+            "enum": ["morning", "afternoon", "evening"],
+            "title": "Period",
+            "type": "string"
+          }
+        },
+        "required": ["local_date", "period"],
+        "title": "CoarseLocalPeriodPlacementRequest",
+        "type": "object"
+      },
       "CreateActivityRequest": {
         "additionalProperties": false,
         "description": "Minimum B01 CreateActivity command; placement is not an Activity field.",
@@ -312,7 +360,7 @@
       },
       "CreateScheduledActivityRequest": {
         "additionalProperties": false,
-        "description": "Atomic Activity + accepted Schedule authoring command for B02-A.",
+        "description": "Atomic Activity + accepted Schedule authoring command.",
         "properties": {
           "operation_id": {
             "maxLength": 200,
@@ -321,7 +369,34 @@
             "type": "string"
           },
           "placement": {
-            "$ref": "#/components/schemas/FloatingLocalIntervalPlacementRequest"
+            "discriminator": {
+              "mapping": {
+                "absolute_interval": "#/components/schemas/AbsoluteIntervalPlacementRequest",
+                "coarse_local_period": "#/components/schemas/CoarseLocalPeriodPlacementRequest",
+                "date_span": "#/components/schemas/DateSpanPlacementRequest",
+                "floating_local_interval": "#/components/schemas/FloatingLocalIntervalPlacementRequest",
+                "named_zone_local_interval": "#/components/schemas/NamedZoneLocalIntervalPlacementRequest"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/DateSpanPlacementRequest"
+              },
+              {
+                "$ref": "#/components/schemas/FloatingLocalIntervalPlacementRequest"
+              },
+              {
+                "$ref": "#/components/schemas/NamedZoneLocalIntervalPlacementRequest"
+              },
+              {
+                "$ref": "#/components/schemas/AbsoluteIntervalPlacementRequest"
+              },
+              {
+                "$ref": "#/components/schemas/CoarseLocalPeriodPlacementRequest"
+              }
+            ],
+            "title": "Placement"
           },
           "title": {
             "maxLength": 300,
@@ -334,9 +409,33 @@
         "title": "CreateScheduledActivityRequest",
         "type": "object"
       },
+      "DateSpanPlacementRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "end_date_exclusive": {
+            "format": "date",
+            "title": "End Date Exclusive",
+            "type": "string"
+          },
+          "kind": {
+            "const": "date_span",
+            "default": "date_span",
+            "title": "Kind",
+            "type": "string"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          }
+        },
+        "required": ["start_date", "end_date_exclusive"],
+        "title": "DateSpanPlacementRequest",
+        "type": "object"
+      },
       "EstablishActivityScheduleRequest": {
         "additionalProperties": false,
-        "description": "Attach an accepted Schedule to one existing canonical Activity.",
+        "description": "Attach one accepted Schedule to an existing canonical Activity.",
         "properties": {
           "operation_id": {
             "maxLength": 200,
@@ -345,7 +444,34 @@
             "type": "string"
           },
           "placement": {
-            "$ref": "#/components/schemas/FloatingLocalIntervalPlacementRequest"
+            "discriminator": {
+              "mapping": {
+                "absolute_interval": "#/components/schemas/AbsoluteIntervalPlacementRequest",
+                "coarse_local_period": "#/components/schemas/CoarseLocalPeriodPlacementRequest",
+                "date_span": "#/components/schemas/DateSpanPlacementRequest",
+                "floating_local_interval": "#/components/schemas/FloatingLocalIntervalPlacementRequest",
+                "named_zone_local_interval": "#/components/schemas/NamedZoneLocalIntervalPlacementRequest"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/DateSpanPlacementRequest"
+              },
+              {
+                "$ref": "#/components/schemas/FloatingLocalIntervalPlacementRequest"
+              },
+              {
+                "$ref": "#/components/schemas/NamedZoneLocalIntervalPlacementRequest"
+              },
+              {
+                "$ref": "#/components/schemas/AbsoluteIntervalPlacementRequest"
+              },
+              {
+                "$ref": "#/components/schemas/CoarseLocalPeriodPlacementRequest"
+              }
+            ],
+            "title": "Placement"
           }
         },
         "required": ["operation_id", "placement"],
@@ -368,7 +494,6 @@
       },
       "FloatingLocalIntervalPlacementRequest": {
         "additionalProperties": false,
-        "description": "First lossless accepted Schedule transport form activated by B02-A.",
         "properties": {
           "ends_local_at": {
             "format": "date-time",
@@ -463,6 +588,42 @@
         "type": "object"
       },
       "JsonValue": {},
+      "NamedZoneLocalIntervalPlacementRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "disambiguation": {
+            "default": "reject",
+            "enum": ["reject", "earlier", "later"],
+            "title": "Disambiguation",
+            "type": "string"
+          },
+          "ends_local_at": {
+            "format": "date-time",
+            "title": "Ends Local At",
+            "type": "string"
+          },
+          "kind": {
+            "const": "named_zone_local_interval",
+            "default": "named_zone_local_interval",
+            "title": "Kind",
+            "type": "string"
+          },
+          "starts_local_at": {
+            "format": "date-time",
+            "title": "Starts Local At",
+            "type": "string"
+          },
+          "zone_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Zone Id",
+            "type": "string"
+          }
+        },
+        "required": ["starts_local_at", "ends_local_at", "zone_id"],
+        "title": "NamedZoneLocalIntervalPlacementRequest",
+        "type": "object"
+      },
       "PasskeyAuthenticationCompleteRequest": {
         "additionalProperties": false,
         "description": "Complete username-less passkey authentication.",
@@ -1152,9 +1313,225 @@
         "title": "RegistrationCredential",
         "type": "object"
       },
+      "RestoredScheduleAbsoluteResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "ends_at": {
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Placement Material State Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "restored_from_placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Restored From Placement Material State Ref",
+            "type": "string"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "absolute",
+            "default": "absolute",
+            "title": "Temporal Form",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schedule_ref",
+          "restored_from_placement_material_state_ref",
+          "placement_material_state_ref",
+          "starts_at",
+          "ends_at"
+        ],
+        "title": "RestoredScheduleAbsoluteResponse",
+        "type": "object"
+      },
+      "RestoredScheduleCoarseResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "local_date": {
+            "format": "date",
+            "title": "Local Date",
+            "type": "string"
+          },
+          "period": {
+            "enum": ["morning", "afternoon", "evening"],
+            "title": "Period",
+            "type": "string"
+          },
+          "placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Placement Material State Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "restored_from_placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Restored From Placement Material State Ref",
+            "type": "string"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "coarse_local_period",
+            "default": "coarse_local_period",
+            "title": "Temporal Form",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schedule_ref",
+          "restored_from_placement_material_state_ref",
+          "placement_material_state_ref",
+          "local_date",
+          "period"
+        ],
+        "title": "RestoredScheduleCoarseResponse",
+        "type": "object"
+      },
+      "RestoredScheduleDateSpanResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "end_date_exclusive": {
+            "format": "date",
+            "title": "End Date Exclusive",
+            "type": "string"
+          },
+          "placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Placement Material State Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "restored_from_placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Restored From Placement Material State Ref",
+            "type": "string"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "date_span",
+            "default": "date_span",
+            "title": "Temporal Form",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schedule_ref",
+          "restored_from_placement_material_state_ref",
+          "placement_material_state_ref",
+          "start_date",
+          "end_date_exclusive"
+        ],
+        "title": "RestoredScheduleDateSpanResponse",
+        "type": "object"
+      },
+      "RestoredScheduleNamedZoneResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "ends_local_at": {
+            "format": "date-time",
+            "title": "Ends Local At",
+            "type": "string"
+          },
+          "placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Placement Material State Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "resolved_end_at": {
+            "format": "date-time",
+            "title": "Resolved End At",
+            "type": "string"
+          },
+          "resolved_start_at": {
+            "format": "date-time",
+            "title": "Resolved Start At",
+            "type": "string"
+          },
+          "restored_from_placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Restored From Placement Material State Ref",
+            "type": "string"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "starts_local_at": {
+            "format": "date-time",
+            "title": "Starts Local At",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "named_zone_local",
+            "default": "named_zone_local",
+            "title": "Temporal Form",
+            "type": "string"
+          },
+          "zone_id": {
+            "title": "Zone Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schedule_ref",
+          "restored_from_placement_material_state_ref",
+          "placement_material_state_ref",
+          "starts_local_at",
+          "ends_local_at",
+          "zone_id",
+          "resolved_start_at",
+          "resolved_end_at"
+        ],
+        "title": "RestoredScheduleNamedZoneResponse",
+        "type": "object"
+      },
       "RestoredScheduleResponse": {
         "additionalProperties": false,
-        "description": "New current placement produced by guarded Undo of unschedule.",
         "properties": {
           "ends_local_at": {
             "format": "date-time",
@@ -1203,7 +1580,7 @@
         "title": "RestoredScheduleResponse",
         "type": "object"
       },
-      "ReviseFloatingScheduleRequest": {
+      "ReviseScheduleRequest": {
         "additionalProperties": false,
         "description": "Revise one current Schedule from an exact accepted placement basis.",
         "properties": {
@@ -1219,7 +1596,34 @@
             "type": "string"
           },
           "placement": {
-            "$ref": "#/components/schemas/FloatingLocalIntervalPlacementRequest"
+            "discriminator": {
+              "mapping": {
+                "absolute_interval": "#/components/schemas/AbsoluteIntervalPlacementRequest",
+                "coarse_local_period": "#/components/schemas/CoarseLocalPeriodPlacementRequest",
+                "date_span": "#/components/schemas/DateSpanPlacementRequest",
+                "floating_local_interval": "#/components/schemas/FloatingLocalIntervalPlacementRequest",
+                "named_zone_local_interval": "#/components/schemas/NamedZoneLocalIntervalPlacementRequest"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/DateSpanPlacementRequest"
+              },
+              {
+                "$ref": "#/components/schemas/FloatingLocalIntervalPlacementRequest"
+              },
+              {
+                "$ref": "#/components/schemas/NamedZoneLocalIntervalPlacementRequest"
+              },
+              {
+                "$ref": "#/components/schemas/AbsoluteIntervalPlacementRequest"
+              },
+              {
+                "$ref": "#/components/schemas/CoarseLocalPeriodPlacementRequest"
+              }
+            ],
+            "title": "Placement"
           }
         },
         "required": [
@@ -1227,12 +1631,228 @@
           "expected_placement_material_state_ref",
           "placement"
         ],
-        "title": "ReviseFloatingScheduleRequest",
+        "title": "ReviseScheduleRequest",
+        "type": "object"
+      },
+      "RevisedScheduleAbsoluteResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "ends_at": {
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Placement Material State Ref",
+            "type": "string"
+          },
+          "previous_placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Previous Placement Material State Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "absolute",
+            "default": "absolute",
+            "title": "Temporal Form",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schedule_ref",
+          "previous_placement_material_state_ref",
+          "placement_material_state_ref",
+          "starts_at",
+          "ends_at"
+        ],
+        "title": "RevisedScheduleAbsoluteResponse",
+        "type": "object"
+      },
+      "RevisedScheduleCoarseResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "local_date": {
+            "format": "date",
+            "title": "Local Date",
+            "type": "string"
+          },
+          "period": {
+            "enum": ["morning", "afternoon", "evening"],
+            "title": "Period",
+            "type": "string"
+          },
+          "placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Placement Material State Ref",
+            "type": "string"
+          },
+          "previous_placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Previous Placement Material State Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "coarse_local_period",
+            "default": "coarse_local_period",
+            "title": "Temporal Form",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schedule_ref",
+          "previous_placement_material_state_ref",
+          "placement_material_state_ref",
+          "local_date",
+          "period"
+        ],
+        "title": "RevisedScheduleCoarseResponse",
+        "type": "object"
+      },
+      "RevisedScheduleDateSpanResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "end_date_exclusive": {
+            "format": "date",
+            "title": "End Date Exclusive",
+            "type": "string"
+          },
+          "placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Placement Material State Ref",
+            "type": "string"
+          },
+          "previous_placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Previous Placement Material State Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "date_span",
+            "default": "date_span",
+            "title": "Temporal Form",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schedule_ref",
+          "previous_placement_material_state_ref",
+          "placement_material_state_ref",
+          "start_date",
+          "end_date_exclusive"
+        ],
+        "title": "RevisedScheduleDateSpanResponse",
+        "type": "object"
+      },
+      "RevisedScheduleNamedZoneResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "ends_local_at": {
+            "format": "date-time",
+            "title": "Ends Local At",
+            "type": "string"
+          },
+          "placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Placement Material State Ref",
+            "type": "string"
+          },
+          "previous_placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Previous Placement Material State Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "resolved_end_at": {
+            "format": "date-time",
+            "title": "Resolved End At",
+            "type": "string"
+          },
+          "resolved_start_at": {
+            "format": "date-time",
+            "title": "Resolved Start At",
+            "type": "string"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "starts_local_at": {
+            "format": "date-time",
+            "title": "Starts Local At",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "named_zone_local",
+            "default": "named_zone_local",
+            "title": "Temporal Form",
+            "type": "string"
+          },
+          "zone_id": {
+            "title": "Zone Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schedule_ref",
+          "previous_placement_material_state_ref",
+          "placement_material_state_ref",
+          "starts_local_at",
+          "ends_local_at",
+          "zone_id",
+          "resolved_start_at",
+          "resolved_end_at"
+        ],
+        "title": "RevisedScheduleNamedZoneResponse",
         "type": "object"
       },
       "RevisedScheduleResponse": {
         "additionalProperties": false,
-        "description": "Accepted current Schedule placement after one governed revision.",
         "properties": {
           "ends_local_at": {
             "format": "date-time",
@@ -1281,9 +1901,269 @@
         "title": "RevisedScheduleResponse",
         "type": "object"
       },
+      "ScheduledActivityAbsoluteResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "activity_ref": {
+            "format": "uuid",
+            "title": "Activity Ref",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "ends_at": {
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Placement Material State Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "absolute",
+            "default": "absolute",
+            "title": "Temporal Form",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "activity_ref",
+          "title",
+          "created_at",
+          "schedule_ref",
+          "placement_material_state_ref",
+          "starts_at",
+          "ends_at"
+        ],
+        "title": "ScheduledActivityAbsoluteResponse",
+        "type": "object"
+      },
+      "ScheduledActivityCoarseResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "activity_ref": {
+            "format": "uuid",
+            "title": "Activity Ref",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "local_date": {
+            "format": "date",
+            "title": "Local Date",
+            "type": "string"
+          },
+          "period": {
+            "enum": ["morning", "afternoon", "evening"],
+            "title": "Period",
+            "type": "string"
+          },
+          "placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Placement Material State Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "coarse_local_period",
+            "default": "coarse_local_period",
+            "title": "Temporal Form",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "activity_ref",
+          "title",
+          "created_at",
+          "schedule_ref",
+          "placement_material_state_ref",
+          "local_date",
+          "period"
+        ],
+        "title": "ScheduledActivityCoarseResponse",
+        "type": "object"
+      },
+      "ScheduledActivityDateSpanResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "activity_ref": {
+            "format": "uuid",
+            "title": "Activity Ref",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "end_date_exclusive": {
+            "format": "date",
+            "title": "End Date Exclusive",
+            "type": "string"
+          },
+          "placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Placement Material State Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "date_span",
+            "default": "date_span",
+            "title": "Temporal Form",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "activity_ref",
+          "title",
+          "created_at",
+          "schedule_ref",
+          "placement_material_state_ref",
+          "start_date",
+          "end_date_exclusive"
+        ],
+        "title": "ScheduledActivityDateSpanResponse",
+        "type": "object"
+      },
+      "ScheduledActivityNamedZoneResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "activity_ref": {
+            "format": "uuid",
+            "title": "Activity Ref",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "ends_local_at": {
+            "format": "date-time",
+            "title": "Ends Local At",
+            "type": "string"
+          },
+          "placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Placement Material State Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "resolved_end_at": {
+            "format": "date-time",
+            "title": "Resolved End At",
+            "type": "string"
+          },
+          "resolved_start_at": {
+            "format": "date-time",
+            "title": "Resolved Start At",
+            "type": "string"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "starts_local_at": {
+            "format": "date-time",
+            "title": "Starts Local At",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "named_zone_local",
+            "default": "named_zone_local",
+            "title": "Temporal Form",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "zone_id": {
+            "title": "Zone Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "activity_ref",
+          "title",
+          "created_at",
+          "schedule_ref",
+          "placement_material_state_ref",
+          "starts_local_at",
+          "ends_local_at",
+          "zone_id",
+          "resolved_start_at",
+          "resolved_end_at"
+        ],
+        "title": "ScheduledActivityNamedZoneResponse",
+        "type": "object"
+      },
       "ScheduledActivityResponse": {
         "additionalProperties": false,
-        "description": "Canonical Activity plus the first accepted Schedule/current placement.",
         "properties": {
           "activity_ref": {
             "format": "uuid",
@@ -11249,7 +12129,6 @@
     },
     "/api/v1/temporal/activities": {
       "post": {
-        "description": "Create one canonical unscheduled Activity for the authenticated self Person.",
         "operationId": "create_activity_api_v1_temporal_activities_post",
         "requestBody": {
           "content": {
@@ -11289,7 +12168,6 @@
     },
     "/api/v1/temporal/activities/scheduled": {
       "post": {
-        "description": "Create Activity + first accepted Schedule atomically for the B02-A subset.",
         "operationId": "create_scheduled_activity_api_v1_temporal_activities_scheduled_post",
         "requestBody": {
           "content": {
@@ -11306,7 +12184,34 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ScheduledActivityResponse"
+                  "discriminator": {
+                    "mapping": {
+                      "absolute": "#/components/schemas/ScheduledActivityAbsoluteResponse",
+                      "coarse_local_period": "#/components/schemas/ScheduledActivityCoarseResponse",
+                      "date_span": "#/components/schemas/ScheduledActivityDateSpanResponse",
+                      "floating_local": "#/components/schemas/ScheduledActivityResponse",
+                      "named_zone_local": "#/components/schemas/ScheduledActivityNamedZoneResponse"
+                    },
+                    "propertyName": "temporal_form"
+                  },
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ScheduledActivityResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ScheduledActivityDateSpanResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ScheduledActivityNamedZoneResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ScheduledActivityAbsoluteResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ScheduledActivityCoarseResponse"
+                    }
+                  ],
+                  "title": "Response Create Scheduled Activity Api V1 Temporal Activities Scheduled Post"
                 }
               }
             },
@@ -11329,7 +12234,6 @@
     },
     "/api/v1/temporal/activities/unplaced": {
       "get": {
-        "description": "List canonical Activities that have no current accepted Schedule placement.",
         "operationId": "list_unplaced_activities_api_v1_temporal_activities_unplaced_get",
         "responses": {
           "200": {
@@ -11349,7 +12253,6 @@
     },
     "/api/v1/temporal/activities/{activity_ref}": {
       "get": {
-        "description": "Read one canonical Activity only inside the authenticated self scope.",
         "operationId": "get_activity_api_v1_temporal_activities__activity_ref__get",
         "parameters": [
           {
@@ -11391,7 +12294,6 @@
     },
     "/api/v1/temporal/activities/{activity_ref}/schedule": {
       "post": {
-        "description": "Attach a first accepted Schedule to an existing Activity without cloning it.",
         "operationId": "establish_activity_schedule_api_v1_temporal_activities__activity_ref__schedule_post",
         "parameters": [
           {
@@ -11420,7 +12322,34 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ScheduledActivityResponse"
+                  "discriminator": {
+                    "mapping": {
+                      "absolute": "#/components/schemas/ScheduledActivityAbsoluteResponse",
+                      "coarse_local_period": "#/components/schemas/ScheduledActivityCoarseResponse",
+                      "date_span": "#/components/schemas/ScheduledActivityDateSpanResponse",
+                      "floating_local": "#/components/schemas/ScheduledActivityResponse",
+                      "named_zone_local": "#/components/schemas/ScheduledActivityNamedZoneResponse"
+                    },
+                    "propertyName": "temporal_form"
+                  },
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ScheduledActivityResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ScheduledActivityDateSpanResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ScheduledActivityNamedZoneResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ScheduledActivityAbsoluteResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ScheduledActivityCoarseResponse"
+                    }
+                  ],
+                  "title": "Response Establish Activity Schedule Api V1 Temporal Activities  Activity Ref  Schedule Post"
                 }
               }
             },
@@ -11443,7 +12372,6 @@
     },
     "/api/v1/temporal/schedules/{schedule_ref}/placement": {
       "patch": {
-        "description": "Create a new accepted placement state without changing Schedule identity.",
         "operationId": "revise_schedule_placement_api_v1_temporal_schedules__schedule_ref__placement_patch",
         "parameters": [
           {
@@ -11461,7 +12389,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ReviseFloatingScheduleRequest"
+                "$ref": "#/components/schemas/ReviseScheduleRequest"
               }
             }
           },
@@ -11472,7 +12400,34 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RevisedScheduleResponse"
+                  "discriminator": {
+                    "mapping": {
+                      "absolute": "#/components/schemas/RevisedScheduleAbsoluteResponse",
+                      "coarse_local_period": "#/components/schemas/RevisedScheduleCoarseResponse",
+                      "date_span": "#/components/schemas/RevisedScheduleDateSpanResponse",
+                      "floating_local": "#/components/schemas/RevisedScheduleResponse",
+                      "named_zone_local": "#/components/schemas/RevisedScheduleNamedZoneResponse"
+                    },
+                    "propertyName": "temporal_form"
+                  },
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/RevisedScheduleResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/RevisedScheduleDateSpanResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/RevisedScheduleNamedZoneResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/RevisedScheduleAbsoluteResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/RevisedScheduleCoarseResponse"
+                    }
+                  ],
+                  "title": "Response Revise Schedule Placement Api V1 Temporal Schedules  Schedule Ref  Placement Patch"
                 }
               }
             },
@@ -11495,7 +12450,6 @@
     },
     "/api/v1/temporal/schedules/{schedule_ref}/unschedule": {
       "post": {
-        "description": "Withdraw one exact current placement without deleting Schedule history.",
         "operationId": "unschedule_schedule_api_v1_temporal_schedules__schedule_ref__unschedule_post",
         "parameters": [
           {
@@ -11547,7 +12501,6 @@
     },
     "/api/v1/temporal/schedules/{schedule_ref}/unschedule/undo": {
       "post": {
-        "description": "Restore withdrawn placement semantics through one new MaterialState.",
         "operationId": "undo_schedule_unschedule_api_v1_temporal_schedules__schedule_ref__unschedule_undo_post",
         "parameters": [
           {
@@ -11576,7 +12529,34 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RestoredScheduleResponse"
+                  "discriminator": {
+                    "mapping": {
+                      "absolute": "#/components/schemas/RestoredScheduleAbsoluteResponse",
+                      "coarse_local_period": "#/components/schemas/RestoredScheduleCoarseResponse",
+                      "date_span": "#/components/schemas/RestoredScheduleDateSpanResponse",
+                      "floating_local": "#/components/schemas/RestoredScheduleResponse",
+                      "named_zone_local": "#/components/schemas/RestoredScheduleNamedZoneResponse"
+                    },
+                    "propertyName": "temporal_form"
+                  },
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/RestoredScheduleResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/RestoredScheduleDateSpanResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/RestoredScheduleNamedZoneResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/RestoredScheduleAbsoluteResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/RestoredScheduleCoarseResponse"
+                    }
+                  ],
+                  "title": "Response Undo Schedule Unschedule Api V1 Temporal Schedules  Schedule Ref  Unschedule Undo Post"
                 }
               }
             },
@@ -11599,7 +12579,6 @@
     },
     "/api/v1/temporal/timeline/window": {
       "get": {
-        "description": "Read one bounded half-open local-date Timeline window for the authenticated self.",
         "operationId": "get_timeline_window_api_v1_temporal_timeline_window_get",
         "parameters": [
           {

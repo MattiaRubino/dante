@@ -6,33 +6,30 @@
  */
 import * as zod from 'zod/mini';
 
-export const establishActivityScheduleRequestOperationIdMax = 200;
+export const reviseScheduleRequestOperationIdMax = 200;
 
-export const establishActivityScheduleRequestPlacementOneKindDefault = `date_span`;
-export const establishActivityScheduleRequestPlacementTwoKindDefault = `floating_local_interval`;
-export const establishActivityScheduleRequestPlacementThreeDisambiguationDefault = `reject`;
-export const establishActivityScheduleRequestPlacementThreeKindDefault = `named_zone_local_interval`;
-export const establishActivityScheduleRequestPlacementThreeZoneIdMax = 200;
+export const reviseScheduleRequestPlacementOneKindDefault = `date_span`;
+export const reviseScheduleRequestPlacementTwoKindDefault = `floating_local_interval`;
+export const reviseScheduleRequestPlacementThreeDisambiguationDefault = `reject`;
+export const reviseScheduleRequestPlacementThreeKindDefault = `named_zone_local_interval`;
+export const reviseScheduleRequestPlacementThreeZoneIdMax = 200;
 
-export const establishActivityScheduleRequestPlacementFourKindDefault = `absolute_interval`;
-export const establishActivityScheduleRequestPlacementFiveKindDefault = `coarse_local_period`;
-export const EstablishActivityScheduleRequest = /*#__PURE__*/ zod
+export const reviseScheduleRequestPlacementFourKindDefault = `absolute_interval`;
+export const reviseScheduleRequestPlacementFiveKindDefault = `coarse_local_period`;
+export const ReviseScheduleRequest = /*#__PURE__*/ zod
   .object({
+    expected_placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
     operation_id: /*#__PURE__*/ zod
       .string()
       .check(/*#__PURE__*/ zod.minLength(1))
-      .check(
-        /*#__PURE__*/ zod.maxLength(
-          establishActivityScheduleRequestOperationIdMax,
-        ),
-      ),
+      .check(/*#__PURE__*/ zod.maxLength(reviseScheduleRequestOperationIdMax)),
     placement: /*#__PURE__*/ zod.union([
       /*#__PURE__*/ zod.object({
         end_date_exclusive: /*#__PURE__*/ zod.iso.date(),
         kind: /*#__PURE__*/ zod
           ._default(
             /*#__PURE__*/ zod.literal('date_span'),
-            establishActivityScheduleRequestPlacementOneKindDefault,
+            reviseScheduleRequestPlacementOneKindDefault,
           )
           .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
         start_date: /*#__PURE__*/ zod.iso.date(),
@@ -42,7 +39,7 @@ export const EstablishActivityScheduleRequest = /*#__PURE__*/ zod
         kind: /*#__PURE__*/ zod
           ._default(
             /*#__PURE__*/ zod.literal('floating_local_interval'),
-            establishActivityScheduleRequestPlacementTwoKindDefault,
+            reviseScheduleRequestPlacementTwoKindDefault,
           )
           .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
         starts_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
@@ -50,13 +47,13 @@ export const EstablishActivityScheduleRequest = /*#__PURE__*/ zod
       /*#__PURE__*/ zod.object({
         disambiguation: /*#__PURE__*/ zod._default(
           /*#__PURE__*/ zod.enum(['reject', 'earlier', 'later']),
-          establishActivityScheduleRequestPlacementThreeDisambiguationDefault,
+          reviseScheduleRequestPlacementThreeDisambiguationDefault,
         ),
         ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
         kind: /*#__PURE__*/ zod
           ._default(
             /*#__PURE__*/ zod.literal('named_zone_local_interval'),
-            establishActivityScheduleRequestPlacementThreeKindDefault,
+            reviseScheduleRequestPlacementThreeKindDefault,
           )
           .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
         starts_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
@@ -65,7 +62,7 @@ export const EstablishActivityScheduleRequest = /*#__PURE__*/ zod
           .check(/*#__PURE__*/ zod.minLength(1))
           .check(
             /*#__PURE__*/ zod.maxLength(
-              establishActivityScheduleRequestPlacementThreeZoneIdMax,
+              reviseScheduleRequestPlacementThreeZoneIdMax,
             ),
           ),
       }),
@@ -74,7 +71,7 @@ export const EstablishActivityScheduleRequest = /*#__PURE__*/ zod
         kind: /*#__PURE__*/ zod
           ._default(
             /*#__PURE__*/ zod.literal('absolute_interval'),
-            establishActivityScheduleRequestPlacementFourKindDefault,
+            reviseScheduleRequestPlacementFourKindDefault,
           )
           .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
         starts_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
@@ -83,7 +80,7 @@ export const EstablishActivityScheduleRequest = /*#__PURE__*/ zod
         kind: /*#__PURE__*/ zod
           ._default(
             /*#__PURE__*/ zod.literal('coarse_local_period'),
-            establishActivityScheduleRequestPlacementFiveKindDefault,
+            reviseScheduleRequestPlacementFiveKindDefault,
           )
           .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
         local_date: /*#__PURE__*/ zod.iso.date(),
@@ -93,13 +90,11 @@ export const EstablishActivityScheduleRequest = /*#__PURE__*/ zod
   })
   .check(
     /*#__PURE__*/ zod.describe(
-      'Attach one accepted Schedule to an existing canonical Activity.',
+      'Revise one current Schedule from an exact accepted placement basis.',
     ),
   );
 
-export type EstablishActivityScheduleRequest = zod.input<
-  typeof EstablishActivityScheduleRequest
->;
-export type EstablishActivityScheduleRequestOutput = zod.output<
-  typeof EstablishActivityScheduleRequest
+export type ReviseScheduleRequest = zod.input<typeof ReviseScheduleRequest>;
+export type ReviseScheduleRequestOutput = zod.output<
+  typeof ReviseScheduleRequest
 >;

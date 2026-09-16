@@ -42,9 +42,21 @@ import type {
   ReauthenticateRequest,
   RecoveryAcceptedResponse,
   RecoveryValidationResponse,
+  RestoredScheduleAbsoluteResponse,
+  RestoredScheduleCoarseResponse,
+  RestoredScheduleDateSpanResponse,
+  RestoredScheduleNamedZoneResponse,
   RestoredScheduleResponse,
-  ReviseFloatingScheduleRequest,
+  ReviseScheduleRequest,
+  RevisedScheduleAbsoluteResponse,
+  RevisedScheduleCoarseResponse,
+  RevisedScheduleDateSpanResponse,
+  RevisedScheduleNamedZoneResponse,
   RevisedScheduleResponse,
+  ScheduledActivityAbsoluteResponse,
+  ScheduledActivityCoarseResponse,
+  ScheduledActivityDateSpanResponse,
+  ScheduledActivityNamedZoneResponse,
   ScheduledActivityResponse,
   SignInRequest,
   SignupAuthenticatedResponse,
@@ -3579,7 +3591,6 @@ export const getCreateActivityApiV1TemporalActivitiesPostUrl = () => {
 };
 
 /**
- * Create one canonical unscheduled Activity for the authenticated self Person.
  * @summary Create Activity
  */
 export const createActivityApiV1TemporalActivitiesPost = async (
@@ -3622,7 +3633,12 @@ export const createActivityApiV1TemporalActivitiesPost = async (
 
 export type createScheduledActivityApiV1TemporalActivitiesScheduledPostResponse201 =
   {
-    data: ScheduledActivityResponse;
+    data:
+      | ScheduledActivityResponse
+      | ScheduledActivityDateSpanResponse
+      | ScheduledActivityNamedZoneResponse
+      | ScheduledActivityAbsoluteResponse
+      | ScheduledActivityCoarseResponse;
     status: 201;
   };
 
@@ -3651,7 +3667,6 @@ export const getCreateScheduledActivityApiV1TemporalActivitiesScheduledPostUrl =
   };
 
 /**
- * Create Activity + first accepted Schedule atomically for the B02-A subset.
  * @summary Create Scheduled Activity
  */
 export const createScheduledActivityApiV1TemporalActivitiesScheduledPost =
@@ -3711,7 +3726,6 @@ export const getListUnplacedActivitiesApiV1TemporalActivitiesUnplacedGetUrl =
   };
 
 /**
- * List canonical Activities that have no current accepted Schedule placement.
  * @summary List Unplaced Activities
  */
 export const listUnplacedActivitiesApiV1TemporalActivitiesUnplacedGet = async (
@@ -3767,7 +3781,6 @@ export const getGetActivityApiV1TemporalActivitiesActivityRefGetUrl = (
 };
 
 /**
- * Read one canonical Activity only inside the authenticated self scope.
  * @summary Get Activity
  */
 export const getActivityApiV1TemporalActivitiesActivityRefGet = async (
@@ -3796,7 +3809,12 @@ export const getActivityApiV1TemporalActivitiesActivityRefGet = async (
 
 export type establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostResponse201 =
   {
-    data: ScheduledActivityResponse;
+    data:
+      | ScheduledActivityResponse
+      | ScheduledActivityDateSpanResponse
+      | ScheduledActivityNamedZoneResponse
+      | ScheduledActivityAbsoluteResponse
+      | ScheduledActivityCoarseResponse;
     status: 201;
   };
 
@@ -3825,7 +3843,6 @@ export const getEstablishActivityScheduleApiV1TemporalActivitiesActivityRefSched
   };
 
 /**
- * Attach a first accepted Schedule to an existing Activity without cloning it.
  * @summary Establish Activity Schedule
  */
 export const establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePost =
@@ -3871,7 +3888,12 @@ export const establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedule
 
 export type reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchResponse200 =
   {
-    data: RevisedScheduleResponse;
+    data:
+      | RevisedScheduleResponse
+      | RevisedScheduleDateSpanResponse
+      | RevisedScheduleNamedZoneResponse
+      | RevisedScheduleAbsoluteResponse
+      | RevisedScheduleCoarseResponse;
     status: 200;
   };
 
@@ -3900,13 +3922,12 @@ export const getReviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacemen
   };
 
 /**
- * Create a new accepted placement state without changing Schedule identity.
  * @summary Revise Schedule Placement
  */
 export const reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatch =
   async (
     scheduleRef: string,
-    reviseFloatingScheduleRequest: ReviseFloatingScheduleRequest,
+    reviseScheduleRequest: ReviseScheduleRequest,
     options?: RequestInit,
     fetchFn?: typeof globalThis.fetch,
   ): Promise<reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchResponse> => {
@@ -3929,7 +3950,7 @@ export const reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPa
           'Content-Type': 'application/json',
           ...getHeaders(options?.headers),
         },
-        body: JSON.stringify(reviseFloatingScheduleRequest),
+        body: JSON.stringify(reviseScheduleRequest),
       },
     );
 
@@ -3975,7 +3996,6 @@ export const getUnscheduleScheduleApiV1TemporalSchedulesScheduleRefUnschedulePos
   };
 
 /**
- * Withdraw one exact current placement without deleting Schedule history.
  * @summary Unschedule Schedule
  */
 export const unscheduleScheduleApiV1TemporalSchedulesScheduleRefUnschedulePost =
@@ -4021,7 +4041,12 @@ export const unscheduleScheduleApiV1TemporalSchedulesScheduleRefUnschedulePost =
 
 export type undoScheduleUnscheduleApiV1TemporalSchedulesScheduleRefUnscheduleUndoPostResponse200 =
   {
-    data: RestoredScheduleResponse;
+    data:
+      | RestoredScheduleResponse
+      | RestoredScheduleDateSpanResponse
+      | RestoredScheduleNamedZoneResponse
+      | RestoredScheduleAbsoluteResponse
+      | RestoredScheduleCoarseResponse;
     status: 200;
   };
 
@@ -4050,7 +4075,6 @@ export const getUndoScheduleUnscheduleApiV1TemporalSchedulesScheduleRefUnschedul
   };
 
 /**
- * Restore withdrawn placement semantics through one new MaterialState.
  * @summary Undo Schedule Unschedule
  */
 export const undoScheduleUnscheduleApiV1TemporalSchedulesScheduleRefUnscheduleUndoPost =
@@ -4136,7 +4160,6 @@ export const getGetTimelineWindowApiV1TemporalTimelineWindowGetUrl = (
 };
 
 /**
- * Read one bounded half-open local-date Timeline window for the authenticated self.
  * @summary Get Timeline Window
  */
 export const getTimelineWindowApiV1TemporalTimelineWindowGet = async (

@@ -8,7 +8,14 @@ import * as zod from 'zod/mini';
 
 export const createScheduledActivityRequestOperationIdMax = 200;
 
-export const createScheduledActivityRequestPlacementKindDefault = `floating_local_interval`;
+export const createScheduledActivityRequestPlacementOneKindDefault = `date_span`;
+export const createScheduledActivityRequestPlacementTwoKindDefault = `floating_local_interval`;
+export const createScheduledActivityRequestPlacementThreeDisambiguationDefault = `reject`;
+export const createScheduledActivityRequestPlacementThreeKindDefault = `named_zone_local_interval`;
+export const createScheduledActivityRequestPlacementThreeZoneIdMax = 200;
+
+export const createScheduledActivityRequestPlacementFourKindDefault = `absolute_interval`;
+export const createScheduledActivityRequestPlacementFiveKindDefault = `coarse_local_period`;
 export const createScheduledActivityRequestTitleMax = 300;
 
 export const CreateScheduledActivityRequest = /*#__PURE__*/ zod
@@ -21,22 +28,70 @@ export const CreateScheduledActivityRequest = /*#__PURE__*/ zod
           createScheduledActivityRequestOperationIdMax,
         ),
       ),
-    placement: /*#__PURE__*/ zod
-      .object({
+    placement: /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.object({
+        end_date_exclusive: /*#__PURE__*/ zod.iso.date(),
+        kind: /*#__PURE__*/ zod
+          ._default(
+            /*#__PURE__*/ zod.literal('date_span'),
+            createScheduledActivityRequestPlacementOneKindDefault,
+          )
+          .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+        start_date: /*#__PURE__*/ zod.iso.date(),
+      }),
+      /*#__PURE__*/ zod.object({
         ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
         kind: /*#__PURE__*/ zod
           ._default(
             /*#__PURE__*/ zod.literal('floating_local_interval'),
-            createScheduledActivityRequestPlacementKindDefault,
+            createScheduledActivityRequestPlacementTwoKindDefault,
           )
           .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
         starts_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-      })
-      .check(
-        /*#__PURE__*/ zod.describe(
-          'First lossless accepted Schedule transport form activated by B02-A.',
+      }),
+      /*#__PURE__*/ zod.object({
+        disambiguation: /*#__PURE__*/ zod._default(
+          /*#__PURE__*/ zod.enum(['reject', 'earlier', 'later']),
+          createScheduledActivityRequestPlacementThreeDisambiguationDefault,
         ),
-      ),
+        ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+        kind: /*#__PURE__*/ zod
+          ._default(
+            /*#__PURE__*/ zod.literal('named_zone_local_interval'),
+            createScheduledActivityRequestPlacementThreeKindDefault,
+          )
+          .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+        starts_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+        zone_id: /*#__PURE__*/ zod
+          .string()
+          .check(/*#__PURE__*/ zod.minLength(1))
+          .check(
+            /*#__PURE__*/ zod.maxLength(
+              createScheduledActivityRequestPlacementThreeZoneIdMax,
+            ),
+          ),
+      }),
+      /*#__PURE__*/ zod.object({
+        ends_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+        kind: /*#__PURE__*/ zod
+          ._default(
+            /*#__PURE__*/ zod.literal('absolute_interval'),
+            createScheduledActivityRequestPlacementFourKindDefault,
+          )
+          .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+        starts_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+      }),
+      /*#__PURE__*/ zod.object({
+        kind: /*#__PURE__*/ zod
+          ._default(
+            /*#__PURE__*/ zod.literal('coarse_local_period'),
+            createScheduledActivityRequestPlacementFiveKindDefault,
+          )
+          .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+        local_date: /*#__PURE__*/ zod.iso.date(),
+        period: /*#__PURE__*/ zod.enum(['morning', 'afternoon', 'evening']),
+      }),
+    ]),
     title: /*#__PURE__*/ zod
       .string()
       .check(/*#__PURE__*/ zod.minLength(1))
@@ -46,7 +101,7 @@ export const CreateScheduledActivityRequest = /*#__PURE__*/ zod
   })
   .check(
     /*#__PURE__*/ zod.describe(
-      'Atomic Activity + accepted Schedule authoring command for B02-A.',
+      'Atomic Activity + accepted Schedule authoring command.',
     ),
   );
 
