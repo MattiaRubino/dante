@@ -2,7 +2,10 @@ import { Temporal } from '@dante/time';
 import { describe, expect, it } from 'vitest';
 
 import type { TemporalTimelineScheduledActivityItem } from '../../../temporal/timeline-read';
-import { canonicalScheduledActivityTimelineEvent } from './timeline-authoritative-hydration';
+import {
+  canonicalScheduledActivityTimelineEvent,
+  canonicalScheduledActivityTimelineEvents,
+} from './timeline-authoritative-hydration';
 
 const ACTIVITY_REF = '0199a8c0-5e71-7bc0-8ad0-a2f403f5617d';
 const SCHEDULE_REF = '0199a8c0-5e72-7bc0-8ad0-a2f403f5617d';
@@ -80,5 +83,101 @@ describe('authoritative Timeline hydration', () => {
     expect(firstProjection.event.canonicalBasis?.activityRef).toBe(
       secondProjection.event.canonicalBasis?.activityRef,
     );
+  });
+
+  it('splits a cross-midnight exact placement only in the view while retaining one Schedule identity', () => {
+    const item = Object.freeze({
+      ...scheduledActivity(),
+      startsLocalAt: Temporal.PlainDateTime.from('2026-09-09T23:30'),
+      endsLocalAt: Temporal.PlainDateTime.from('2026-09-10T01:15'),
+    }) satisfies TemporalTimelineScheduledActivityItem;
+
+    const projections = canonicalScheduledActivityTimelineEvents(item);
+
+    expect(projections).toHaveLength(2);
+    expect(projections[0]).toMatchObject({
+      dateKey: '2026-09-09',
+      event: {
+        id: `${SCHEDULE_REF}@2026-09-09`,
+        startMinute: 1410,
+        endMinute: 1440,
+        canonicalBasis: { scheduleRef: SCHEDULE_REF },
+      },
+    });
+    expect(projections[1]).toMatchObject({
+      dateKey: '2026-09-10',
+      event: {
+        id: `${SCHEDULE_REF}@2026-09-10`,
+        startMinute: 0,
+        endMinute: 75,
+        canonicalBasis: { scheduleRef: SCHEDULE_REF },
+      },
+    });
+  });
+
+  it('uses the effective-zone display coordinates for named-zone and absolute placements', () => {
+    const named = Object.freeze({
+      kind: 'scheduled_activity' as const,
+      activityRef: ACTIVITY_REF,
+      scheduleRef: SCHEDULE_REF,
+      placementMaterialStateRef: MATERIAL_STATE_REF,
+      title: 'Named zone',
+      temporalForm: 'named-zone-local' as const,
+      startsLocalAt: Temporal.PlainDateTime.from('2026-10-25T02:10'),
+      endsLocalAt: Temporal.PlainDateTime.from('2026-10-25T02:40'),
+      zoneId: 'Europe/Rome',
+      resolvedStartAt: Temporal.Instant.from('2026-10-25T01:10:00Z'),
+      resolvedEndAt: Temporal.Instant.from('2026-10-25T01:40:00Z'),
+      displayStartsLocalAt: Temporal.PlainDateTime.from('2026-10-25T09:10'),
+      displayEndsLocalAt: Temporal.PlainDateTime.from('2026-10-25T09:40'),
+    }) satisfies TemporalTimelineScheduledActivityItem;
+    const absolute = Object.freeze({
+      kind: 'scheduled_activity' as const,
+      activityRef: ACTIVITY_REF,
+      scheduleRef: '0199a8c0-5e74-7bc0-8ad0-a2f403f5617d',
+      placementMaterialStateRef: '0199a8c0-5e75-7bc0-8ad0-a2f403f5617d',
+      title: 'Absolute',
+      temporalForm: 'absolute' as const,
+      startsAt: Temporal.Instant.from('2026-09-09T07:00:00Z'),
+      endsAt: Temporal.Instant.from('2026-09-09T08:00:00Z'),
+      displayStartsLocalAt: Temporal.PlainDateTime.from('2026-09-09T09:00'),
+      displayEndsLocalAt: Temporal.PlainDateTime.from('2026-09-09T10:00'),
+    }) satisfies TemporalTimelineScheduledActivityItem;
+
+    const namedProjection = canonicalScheduledActivityTimelineEvent(named);
+    const absoluteProjection = canonicalScheduledActivityTimelineEvent(absolute);
+
+    expect(namedProjection.event.startMinute).toBe(550);
+    expect(namedProjection.event.endMinute).toBe(580);
+    expect(namedProjection.event.meta).toBe('Europe/Rome');
+    expect(absoluteProjection.event.startMinute).toBe(540);
+    expect(absoluteProjection.event.endMinute).toBe(600);
+    expect(absoluteProjection.event.meta).toBe('absolute');
+  });
+
+  it('does not manufacture time-grid geometry for date-span or coarse placements', () => {
+    const dateSpan = Object.freeze({
+      kind: 'scheduled_activity' as const,
+      activityRef: ACTIVITY_REF,
+      scheduleRef: SCHEDULE_REF,
+      placementMaterialStateRef: MATERIAL_STATE_REF,
+      title: 'All day',
+      temporalForm: 'date-span' as const,
+      startDate: Temporal.PlainDate.from('2026-09-09'),
+      endDateExclusive: Temporal.PlainDate.from('2026-09-10'),
+    }) satisfies TemporalTimelineScheduledActivityItem;
+    const coarse = Object.freeze({
+      kind: 'scheduled_activity' as const,
+      activityRef: ACTIVITY_REF,
+      scheduleRef: '0199a8c0-5e74-7bc0-8ad0-a2f403f5617d',
+      placementMaterialStateRef: '0199a8c0-5e75-7bc0-8ad0-a2f403f5617d',
+      title: 'Pomeriggio',
+      temporalForm: 'coarse-local-period' as const,
+      localDate: Temporal.PlainDate.from('2026-09-09'),
+      period: 'afternoon' as const,
+    }) satisfies TemporalTimelineScheduledActivityItem;
+
+    expect(canonicalScheduledActivityTimelineEvents(dateSpan)).toEqual([]);
+    expect(canonicalScheduledActivityTimelineEvents(coarse)).toEqual([]);
   });
 });
