@@ -141,6 +141,7 @@ export function canonicalScheduledActivityTimelineEvents(
   const endDate = interval.end.toPlainDate();
   const multiDay = !startDate.equals(endDate);
   const projections: Readonly<{ dateKey: string; event: TimelineEvent }>[] = [];
+  const meta = eventMeta(item);
 
   for (
     let date = startDate;
@@ -169,7 +170,7 @@ export function canonicalScheduledActivityTimelineEvents(
           groupId: 'personale',
           appearanceTone: 'personal',
           canonicalBasis: canonicalBasis(item),
-          ...(eventMeta(item) === undefined ? {} : { meta: eventMeta(item) }),
+          ...(meta === undefined ? {} : { meta }),
         }),
       }),
     );
