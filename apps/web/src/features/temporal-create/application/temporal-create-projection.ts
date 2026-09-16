@@ -98,6 +98,25 @@ function projectPlacement(
     });
   }
 
+  if (placement.kind === 'coarse-local-period') {
+    return Object.freeze({
+      id,
+      title,
+      kind: metadata.kind,
+      contextId: metadata.contextId,
+      appearanceTone,
+      dateKey: placement.localDate.toString(),
+      endDateExclusiveKey: null,
+      startMinute: null,
+      endMinute: null,
+      allDay: false,
+      flexible,
+      recurring,
+      agendaParts,
+      preview,
+    });
+  }
+
   const start =
     placement.kind === 'absolute'
       ? placement.start.toZonedDateTimeISO(metadata.timeZoneId)
