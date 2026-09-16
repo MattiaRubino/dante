@@ -4,6 +4,7 @@
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **B02 closure:** `docs/workstreams/timeline-temporal-operational-b02-closure-2026-09-16.md`
+- **B03 execution plan:** `docs/workstreams/timeline-temporal-operational-b03-execution-plan.md`
 - **Detailed semantic freeze:** `docs/workstreams/archive/timeline-temporal-operational-map-ledger-snapshot-2026-09-15.md`
 - **Historical roadmap freeze:** `docs/workstreams/archive/timeline-temporal-operational-roadmap-freeze-2026-09-07.md`
 
@@ -125,7 +126,7 @@ Rules:
 B00 Real Data Spine                              ✅ CLOSED / PROVEN
 B01 Activity Core                                ✅ CLOSED / PROVEN
 B02 Schedule Core                                ✅ CLOSED / PROVEN
-B03 Event Core                                   ⬜ NEXT
+B03 Event Core                                   🟨 PRE-SCOPE COMPLETE / IMPLEMENTATION PENDING
 B04 Temporal Constraints + Movement Policy       ⬜
 B05 Product Organization                         ⬜
 B06 Routine / Recurrence / Occurrence Baseline   ⬜
@@ -236,10 +237,10 @@ No B02 checklist item remains accidentally open.
 
 ---
 
-# 7. B03 — Event Core ⬜ NEXT
+# 7. B03 — Event Core 🟨 PRE-SCOPE COMPLETE / IMPLEMENTATION PENDING
 
-- ⬜ **[EVT-001]** Re-open Event Domain/Logical/Physical authority before implementation.
-- ⬜ **[EVT-002]** Resolve minimum meaningful Event descriptive persistence.
+- ✅ **[EVT-001]** Re-open Event Domain/Logical/Physical authority before implementation. — Deep-read completed 2026-09-16 across Event Domain, Whole Logical, CP6/Alembic `_26`, SQLAlchemy, Dictionary, backend B01/B02 seams, frontend Create/Timeline and test harness. Frozen in `timeline-temporal-operational-b03-execution-plan.md`.
+- ⬜ **[EVT-002]** Resolve minimum meaningful Event descriptive persistence. — PRE-SCOPE identifies a real gap and recommends typed `event_expectation`; implementation proof/DDL still pending.
 - ⬜ **[EVT-003]** Implement idempotent `CreateEvent`.
 - ⬜ **[EVT-004]** Activate Event macro-class in `+` Create.
 - ⬜ **[EVT-005]** Implement timed Event using shared B02 Schedule.
@@ -261,437 +262,114 @@ No B02 checklist item remains accidentally open.
 - ⬜ **[B03-T06]** E2E Event create/reschedule/all-day/reload test.
 - ⬜ **[B03-T07]** Manual `userTest` Event acceptance.
 
+## 7.1 PRE-SCOPE findings
+
+```text
+Event NativeRef / EventRow                          EXISTS
+Schedule physical Event eligibility                EXISTS
+shared Schedule MaterialState/current/history      EXISTS / B02 PROVEN
+Event typed expectation descriptor                 MISSING
+Event idempotent create receipt/capability         MISSING
+B02 Schedule runtime self-scope                    ACTIVITY-DESCRIPTOR BOUND
+Timeline backend/API                               ACTIVITY-ONLY
+frontend Timeline protocol                         ACTIVITY-ONLY
+frontend Event authoring prototype                 EXISTS
+normal-runtime Event create                        FAIL-CLOSED BY DESIGN
+Event Agenda canonical persistence                 MISSING
+```
+
+No `event_schedule` table/engine is authorized. B03 must boundedly generalize the one Schedule capability to typed Activity/Event ownership.
+
+Rich prototype fields remain fail-closed when owned by later blocks: recurrence B06, constraints B04, product organization B05, Session B08, Participation B09, Actual/Outcome/Confirmation B10, reminder policy B11, provider/conference integration B13.
+
+## 7.2 Planned implementation slices
+
+```text
+B03-A  Event canonical core
+       typed Event expectation + create operation/capability + ownership
+
+B03-B  Shared Schedule + Event Timeline
+       typed Activity/Event self-scope + atomic scheduled Event + timed/all-day/multi-day
+
+B03-C  Event placement lifecycle
+       reschedule + postponed/TBD + Event read/detail + guarded Undo
+
+B03-D  Agenda/internal parts
+       bounded ordered Event-internal persistence + real frontend integration
+
+B03-E  closure
+       PG/API/frontend/E2E/manual + DB/Dictionary/docs reconciliation
+```
+
+Next gate is explicit `APPROVE B03-A`. PRE-SCOPE completion does not authorize implementation by itself.
+
 ---
 
 # 8. B04 — Temporal Constraints / movement policy ⬜
 
-- ⬜ **[TC-001]** Re-open Temporal Constraint authority before persistence design.
-- ⬜ **[TC-002]** Resolve first typed persistence/runtime representation; no generic `due_at`/JSON escape.
-- ⬜ **[TC-003]** Implement earliest-start constraint where required.
-- ⬜ **[TC-004]** Implement latest-start constraint where required.
-- ⬜ **[TC-005]** Implement latest-completion/delivery Deadline semantics with explicit facet.
-- ⬜ **[TC-006]** Implement hard validity window.
-- ⬜ **[TC-007]** Implement preferred/soft window.
-- ⬜ **[TC-008]** Implement minimum/maximum duration where required.
-- ⬜ **[TC-009]** Implement minimum contiguous Session duration where required.
-- ⬜ **[TC-010]** Implement spacing/recovery constraint where required.
-- ⬜ **[TC-011]** Implement relative-before/after constraint where required.
-- ⬜ **[TC-012]** Implement movement policy separately from Temporal Constraint.
-- ⬜ **[TC-013]** Ensure hard planning violation does not block recording contradictory Actual reality.
-- ⬜ **[TC-014]** Implement hard/soft conflict explanation.
-- ⬜ **[B04-T01]** Constraint typed-validation tests.
-- ⬜ **[B04-T02]** Constraint persistence/direct PostgreSQL tests if DDL added.
-- ⬜ **[B04-T03]** Hard vs soft placement behavior tests.
-- ⬜ **[B04-T04]** Deadline passage `!= Outcome` test.
-- ⬜ **[B04-T05]** Manual `userTest` constraint/explanation acceptance.
+The detailed B04 checklist remains unchanged and binding in the previous live-map revision and archived semantic map. No B04 capability is activated by B03 PRE-SCOPE.
 
 ---
 
 # 9. B05 — Life Area / Calendar / Tags ⬜
 
-- ⬜ **[ORG-001]** Re-open product/Logical organization authority before persistence design.
-- ⬜ **[ORG-002]** Prove exact durable Life Area representation; no new owner by convenience.
-- ⬜ **[ORG-003]** Implement Life Area create.
-- ⬜ **[ORG-004]** Implement rename.
-- ⬜ **[ORG-005]** Implement reorder.
-- ⬜ **[ORG-006]** Implement archive.
-- ⬜ **[ORG-007]** Implement hide/show.
-- ⬜ **[ORG-008]** Implement icon/color appearance metadata without making color semantic truth.
-- ⬜ **[ORG-009]** Implement one primary Life Area relation for applicable planning item.
-- ⬜ **[ORG-010]** Implement secondary Tags separately.
-- ⬜ **[ORG-011]** Preserve Life Area `!= Goal/Plan/Tag/Place/provider calendar`.
-- ⬜ **[ORG-012]** Replace/reconcile prototype Timeline groups with real product organization.
-- ⬜ **[ORG-013]** Preserve hidden-item relevance to authorized conflict/scheduling reasoning.
-- ⬜ **[ORG-014]** Preserve future actor-local organization for shared canonical item.
-- ⬜ **[ORG-015]** Ensure accessibility does not rely on color alone.
-- ⬜ **[B05-T01]** Organization lifecycle tests.
-- ⬜ **[B05-T02]** Item assignment/filter/grouping tests.
-- ⬜ **[B05-T03]** Tags-vs-primary-area tests.
-- ⬜ **[B05-T04]** Hidden-group conflict-awareness test.
-- ⬜ **[B05-T05]** Accessibility/frontend grouping tests.
-- ⬜ **[B05-T06]** Manual `userTest` Life Area organization acceptance.
+The detailed B05 checklist remains unchanged and binding in the previous live-map revision and archived semantic map. No B05 capability is activated by B03 PRE-SCOPE.
 
 ---
 
 # 10. B06 — Routine / Recurrence / Occurrence baseline ⬜
 
-## Routine
-
-- ⬜ **[ROU-001]** Re-open Routine authority/current identity shell.
-- ⬜ **[ROU-002]** Resolve minimum meaningful Routine product persistence.
-- ⬜ **[ROU-003]** Implement Routine create and activate Routine macro-class.
-- ⬜ **[ROU-004]** Implement Routine recurrence MaterialState authoring.
-- ⬜ **[ROU-005]** Implement Routine pause.
-- ⬜ **[ROU-006]** Implement Routine resume.
-- ⬜ **[ROU-007]** Implement Routine end.
-- ⬜ **[ROU-008]** Preserve skip Occurrence `!= pause != end`.
-- ⬜ **[ROU-009]** Implement composite Routine structure when required.
-- ⬜ **[ROU-010]** Preserve observed pattern `!= canonical Routine intent`.
-
-## Recurrence baseline
-
-- ⬜ **[REC-001]** Calendar-wall-clock authoring/evaluation.
-- ⬜ **[REC-002]** Elapsed-interval authoring/evaluation.
-- ⬜ **[REC-003]** Quota-per-period authoring/evaluation.
-- ⬜ **[REC-004]** Cyclic-positional authoring/evaluation.
-- ⬜ **[REC-005]** Explicit pattern anchor/phase semantics.
-- ⬜ **[REC-006]** Effective range: open/until/count.
-- ⬜ **[REC-007]** Expected-count `!= successful-completion-count`.
-- ⬜ **[REC-008]** Named-zone/floating/absolute recurrence timezone modes as applicable.
-- ⬜ **[REC-009]** Quota period frame.
-- ⬜ **[REC-010]** Stable quota identities without invented ordinal meaning.
-- ⬜ **[REC-011]** Structural exclusion `!= generated then skipped`.
-- ⬜ **[REC-012]** Virtual future/materialization horizon.
-- ⬜ **[REC-013]** Frontend authors specification only; backend owns canonical generation.
-- ⬜ **[REC-014]** Reuse recurrence capability for Event recurrence.
-
-## Occurrence
-
-- ⬜ **[OCC-001]** Backend recurrence evaluator/checkpoint consumption.
-- ⬜ **[OCC-002]** Materialize stable Occurrence identity when justified.
-- ⬜ **[OCC-003]** Bind exact governing Recurrence MaterialState for generated Occurrence.
-- ⬜ **[OCC-004]** Persist compatible generation coordinate.
-- ⬜ **[OCC-005]** Implement `explicit_extra` without fake governing recurrence state.
-- ⬜ **[OCC-006]** Preserve Occurrence Schedule optionality.
-- ⬜ **[OCC-007]** One-off occurrence-specific Schedule exception.
-- ⬜ **[OCC-008]** This-occurrence-only change scope.
-- ⬜ **[OCC-009]** This-and-future source recurrence revision scope.
-- ⬜ **[OCC-010]** Preserve historical generating state after source revision.
-- ⬜ **[OCC-011]** Preserve materialized future history when new rule no longer derives it.
-- ⬜ **[OCC-012]** Preserve Occurrence identity through reschedule.
-
-## Tests
-
-- ⬜ **[B06-T01]** Four CP6 recurrence-family tests.
-- ⬜ **[B06-T02]** Recurrence direct PostgreSQL/current-state tests.
-- ⬜ **[B06-T03]** DST wall-clock recurrence tests.
-- ⬜ **[B06-T04]** Quota frame/no-exact-time tests.
-- ⬜ **[B06-T05]** Pattern anchor/effective-range tests.
-- ⬜ **[B06-T06]** Structural exclusion vs skip.
-- ⬜ **[B06-T07]** `explicit_extra` invariant tests.
-- ⬜ **[B06-T08]** This-occurrence vs this-and-future.
-- ⬜ **[B06-T09]** Historical generating-state preservation.
-- ⬜ **[B06-T10]** Virtual vs materialized future reconciliation.
-- ⬜ **[B06-T11]** Event + Routine shared recurrence regression.
-- ⬜ **[B06-T12]** Frontend no-canonical-browser-expansion test.
-- ⬜ **[B06-T13]** E2E recurring items → Timeline.
-- ⬜ **[B06-T14]** Manual recurrence acceptance.
+The detailed B06 checklist remains unchanged and binding in the previous live-map revision and archived semantic map. In particular Event recurrence remains B06-owned; B03 must not materialize canonical recurring Event Occurrences.
 
 ---
 
 # 11. B07 — UI/UX Consolidation v1 ⬜
 
-This is the new explicit 60–70% product-quality checkpoint. It changes presentation/information architecture, not canonical semantics.
+The explicit 60–70% product-quality checkpoint remains scheduled after B06. B03 may fix usability blockers but must not allow temporary UI shape to dictate persistence/domain semantics.
 
-- ⬜ **[UIX-001]** Inventory current temporal UI surfaces/components and identify duplication/inconsistent hierarchy.
-- ⬜ **[UIX-002]** Define coherent temporal information architecture for Create, Timeline, Planning Tray and detail affordances.
-- ⬜ **[UIX-003]** Implement progressive disclosure so common Create paths do not expose all advanced controls at once.
-- ⬜ **[UIX-004]** Preserve distinct Activity/Event/Routine authoring while reusing only semantically shared components.
-- ⬜ **[UIX-005]** Consolidate exact/date-span/coarse/named-zone temporal editors into a coherent interaction family without flattening forms.
-- ⬜ **[UIX-006]** Redesign Timeline visual hierarchy/density while preserving canonical projection semantics.
-- ⬜ **[UIX-007]** Redesign Planning Tray usability while preserving unplaced-reason semantics and identity.
-- ⬜ **[UIX-008]** Consolidate card/detail/editor affordances and interaction hierarchy.
-- ⬜ **[UIX-009]** Establish/clean typography, spacing, layout and reusable component tokens.
-- ⬜ **[UIX-010]** Consolidate button/input/select/modal/drawer patterns.
-- ⬜ **[UIX-011]** Implement responsive/mobile behavior for activated temporal surfaces.
-- ⬜ **[UIX-012]** Preserve deterministic keyboard/focus/pointer grammar.
-- ⬜ **[UIX-013]** Ensure accessibility labels/state and no color-only semantics.
-- ⬜ **[UIX-014]** Consolidate truthful loading/empty/pending/error/conflict states.
-- ⬜ **[UIX-015]** Preserve F0/T1 governed-operation contracts; no frontend-only canonical success.
-- ⬜ **[UIX-016]** Ensure ViewModel/presentation fields do not become new canonical meaning.
-- ⬜ **[UIX-017]** Reconcile frontend UI registry/component documentation after consolidation.
-- ⬜ **[B07-T01]** Create/editor component regression suite.
-- ⬜ **[B07-T02]** Timeline/Planning Tray interaction regression suite.
-- ⬜ **[B07-T03]** Temporal-form presentation regression suite.
-- ⬜ **[B07-T04]** Responsive/mobile automated checks.
-- ⬜ **[B07-T05]** Accessibility/keyboard/focus automated checks.
-- ⬜ **[B07-T06]** Chromium + Firefox critical interaction pass.
-- ⬜ **[B07-T07]** Manual UI/UX acceptance proving the intended 60–70% quality checkpoint.
+Stable checklist family remains `UIX-001 … UIX-017` and `B07-T01 … B07-T07` as frozen in the prior live-map revision.
 
 ---
 
 # 12. B08 — Session Runtime ⬜
 
-- ⬜ **[SES-001]** Re-open Session Domain/CP6 timing authority.
-- ⬜ **[SES-002]** Resolve typed Session execution-context relation persistence.
-- ⬜ **[SES-003]** Direct manual retrospective Session recording.
-- ⬜ **[SES-004]** Spontaneous Session without fake Activity/Schedule.
-- ⬜ **[SES-005]** Timer start.
-- ⬜ **[SES-006]** Pause as same Session.
-- ⬜ **[SES-007]** Resume.
-- ⬜ **[SES-008]** End/close.
-- ⬜ **[SES-009]** Activity contextual start.
-- ⬜ **[SES-010]** Occurrence contextual start.
-- ⬜ **[SES-011]** Ordinary Event attendance `!= Session`.
-- ⬜ **[SES-012]** Absolute timing.
-- ⬜ **[SES-013]** Elapsed-only/uncertain-boundary timing where required.
-- ⬜ **[SES-014]** Timing precision/provenance.
-- ⬜ **[SES-015]** Derived elapsed/paused/active durations.
-- ⬜ **[SES-016]** Timing correction preserving Session identity.
-- ⬜ **[SES-017]** Context correction preserving lineage.
-- ⬜ **[SES-018]** Session split with lineage.
-- ⬜ **[SES-019]** Session merge with lineage.
-- ⬜ **[SES-020]** False-data deletion/invalidation boundary.
-- ⬜ **[SES-021]** Semantically compatible overlapping Sessions.
-- ⬜ **[SES-022]** One Session related to multiple intentions without duplicate capture.
-- ⬜ **[SES-023]** Stale-running detection/review without fabricated end.
-- ⬜ **[SES-024]** Idempotent Session controls.
-- ⬜ **[SES-025]** Expected-state conflict on concurrent controls.
-- ⬜ **[SES-026]** Session end `!= Activity/Occurrence completion`.
-- ⬜ **[SES-027]** During active execution, explicit changed expectation revises Schedule while mere temporal deviation does not.
-- ⬜ **[B08-T01]** Manual/spontaneous Session tests.
-- ⬜ **[B08-T02]** Start/pause/resume/end tests.
-- ⬜ **[B08-T03]** Session timing/current-state PostgreSQL tests.
-- ⬜ **[B08-T04]** Precision/correction tests.
-- ⬜ **[B08-T05]** Split/merge/lineage tests.
-- ⬜ **[B08-T06]** Overlap/multi-intention tests.
-- ⬜ **[B08-T07]** Stale-running tests.
-- ⬜ **[B08-T08]** Concurrent/idempotent control tests.
-- ⬜ **[B08-T09]** Schedule-vs-actual-deviation boundary tests.
-- ⬜ **[B08-T10]** E2E Activity/Occurrence → Session timer.
-- ⬜ **[B08-T11]** Manual Session lifecycle acceptance.
+Stable checklist family remains `SES-001 … SES-027` and `B08-T01 … B08-T11`. Event attendance remains distinct from Session.
 
 ---
 
 # 13. B09 — Responsibility / Participation / actor relations ⬜
 
-- ⬜ **[REL-001]** Re-open Responsibility/Participation/Actor authority.
-- ⬜ **[REL-002]** Preserve Person/Account/Principal/Actor separation.
-- ⬜ **[REL-003]** Bounded requester relation.
-- ⬜ **[REL-004]** Responsible/accountable Actor relation.
-- ⬜ **[REL-005]** Expected performer separate where required.
-- ⬜ **[REL-006]** Actual performer separate where required.
-- ⬜ **[REL-007]** No ambiguous `assigned_to` persistence.
-- ⬜ **[PAR-001]** Event intended/invited Participation.
-- ⬜ **[PAR-002]** Accepted response.
-- ⬜ **[PAR-003]** Tentative response.
-- ⬜ **[PAR-004]** Declined response.
-- ⬜ **[PAR-005]** No-response remains unknown.
-- ⬜ **[PAR-006]** Actual attendance separately.
-- ⬜ **[PAR-007]** Actual attendance without prior invitation where valid.
-- ⬜ **[PAR-008]** Accepted `!= attended`; declined `!= proven absence`.
-- ⬜ **[ACK-001]** Acknowledgement remains separate common-ground act.
-- ⬜ **[B09-T01]** Responsibility role-separation tests.
-- ⬜ **[B09-T02]** Participation response/history tests.
-- ⬜ **[B09-T03]** Actual attendance independence tests.
-- ⬜ **[B09-T04]** Unexpected participant test.
-- ⬜ **[B09-T05]** No generic-role persistence review/test.
-- ⬜ **[B09-T06]** Manual actor/participant acceptance.
+Stable checklist families remain `REL-*`, `PAR-*`, `ACK-001`, and `B09-T*`. B03 does not activate participants/invitations merely because the prototype Event form displays them.
 
 ---
 
 # 14. B10 — Actual / Outcome / Confirmation / Resolution ⬜
 
-## Actual
-
-- ⬜ **[ACTUAL-001]** Re-open Actual Domain/CP6 realization authority.
-- ⬜ **[ACTUAL-002]** Activity Actual subject path.
-- ⬜ **[ACTUAL-003]** Event Actual subject path.
-- ⬜ **[ACTUAL-004]** Occurrence Actual subject path.
-- ⬜ **[ACTUAL-005]** No Actual remains unknown.
-- ⬜ **[ACTUAL-006]** Known non-realization distinctly.
-- ⬜ **[ACTUAL-007]** Partial realization where required.
-- ⬜ **[ACTUAL-008]** Differently-realized/replacement context.
-- ⬜ **[ACTUAL-009]** 0..N Session basis where applicable.
-- ⬜ **[ACTUAL-010]** Event Actual without Session.
-- ⬜ **[ACTUAL-011]** Observation/Measurement remains external fact semantics.
-- ⬜ **[ACTUAL-012]** Current accepted realization/history/correction.
-- ⬜ **[ACTUAL-013]** Competing assertion/reconciliation boundary.
-- ⬜ **[ACTUAL-014]** Early/late/overrun reality derives from Session/Actual against accepted Schedule and never silently rewrites Schedule.
-
-## Outcome
-
-- ⬜ **[OUT-001]** Re-open Outcome authority and prove first persistence shape.
-- ⬜ **[OUT-002]** Context-specific Activity result vocabulary.
-- ⬜ **[OUT-003]** Context-specific Event result vocabulary.
-- ⬜ **[OUT-004]** Context-specific Occurrence result vocabulary.
-- ⬜ **[OUT-005]** No Outcome `!= negative`.
-- ⬜ **[OUT-006]** Outcome `!= lifecycle status/Observation/Artifact/Milestone`.
-- ⬜ **[OUT-007]** Outcome correction/history.
-
-## Confirmation / Acknowledgement
-
-- ⬜ **[CNF-001]** Re-open Confirmation authority and persistence shape.
-- ⬜ **[CNF-002]** Confirmer Actor.
-- ⬜ **[CNF-003]** Exact target/material-state binding.
-- ⬜ **[CNF-004]** Purpose/context where required.
-- ⬜ **[CNF-005]** Confirmation S1 remains historical after target S2 correction.
-- ⬜ **[CNF-006]** Conflicting actor Confirmations where required.
-- ⬜ **[CNF-007]** Retraction/supersession where required.
-- ⬜ **[CNF-008]** No Confirmation `!= false/rejected/not-performed`.
-- ⬜ **[ACK-002]** Implement Acknowledgement only where real common-ground workflow requires it.
-- ⬜ **[ACK-003]** Sent/delivered/read `!= acknowledged`.
-
-## Resolution Queue
-
-- ⬜ **[RES-001]** Actual unknown reason.
-- ⬜ **[RES-002]** Outcome required/absent reason.
-- ⬜ **[RES-003]** Confirmation required/absent reason.
-- ⬜ **[RES-004]** Session anomaly reason.
-- ⬜ **[RES-005]** Real `Fatto` mapping.
-- ⬜ **[RES-006]** Real `Parziale` mapping.
-- ⬜ **[RES-007]** Real `Saltato` mapping.
-- ⬜ **[RES-008]** Real `Posticipato` mapping.
-- ⬜ **[RES-009]** Real `Sostituito` mapping.
-- ⬜ **[RES-010]** `Conferma` mapping.
-- ⬜ **[RES-011]** `Correggi` path.
-- ⬜ **[RES-012]** Batch/review workflow where activated.
-- ⬜ **[RES-013]** Resolution Queue `!= Notification feed/status table`.
-- ⬜ **[RES-014]** Atomic multi-effect operation where one UX action needs Actual+Outcome+Confirmation.
-
-## Tests
-
-- ⬜ **[B10-T01]** Unknown vs known non-realization.
-- ⬜ **[B10-T02]** Multiple Sessions → one Actual.
-- ⬜ **[B10-T03]** Event Actual without Session.
-- ⬜ **[B10-T04]** Partial/different realization.
-- ⬜ **[B10-T05]** Context-specific Outcome.
-- ⬜ **[B10-T06]** Confirmation exact-state/correction.
-- ⬜ **[B10-T07]** No-response/unresolved.
-- ⬜ **[B10-T08]** Multi-effect transaction atomicity.
-- ⬜ **[B10-T09]** Resolution Queue projection.
-- ⬜ **[B10-T10]** E2E expected item → resolve → history.
-- ⬜ **[B10-T11]** Manual Fatto/Parziale/Saltato/Conferma acceptance.
+Stable checklist families remain `ACTUAL-*`, `OUT-*`, `CNF-*`, `ACK-002/003`, `RES-*`, and `B10-T*`. B03 does not create Actual/Outcome/Confirmation from Event passage or Schedule state.
 
 ---
 
 # 15. B11 — Advanced Recurrence / Conditional Policy / reminders ⬜
 
-- ⬜ **[REC-ADV-001]** Dedicated persistence/runtime need for completion-relative recurrence.
-- ⬜ **[REC-ADV-002]** Completion-relative qualifying Actual anchor.
-- ⬜ **[REC-ADV-003]** Sequential chain/no-future-anchor behavior.
-- ⬜ **[REC-ADV-004]** Dedicated persistence/runtime need for anchor-stream-relative recurrence.
-- ⬜ **[REC-ADV-005]** Qualifying Session/anchor-stream mapping.
-- ⬜ **[REC-ADV-006]** Advanced recurrence `!= generic Trigger/workflow`.
-- ⬜ **[POL-001]** Re-open Conditional Policy authority.
-- ⬜ **[POL-002]** Transition-based activation.
-- ⬜ **[POL-003]** Persistent-state activation where required.
-- ⬜ **[POL-004]** Per-new-qualifying-fact activation where required.
-- ⬜ **[POL-005]** Semantic dedup/idempotency.
-- ⬜ **[POL-006]** Competing policy handling without universal newest-wins.
-- ⬜ **[POL-007]** Loop/cycle safeguards.
-- ⬜ **[POL-008]** Activation `!= response success`.
-- ⬜ **[REM-001]** Immediate review/confirmation policy.
-- ⬜ **[REM-002]** Later/end-of-day review policy.
-- ⬜ **[REM-003]** Weekly review policy.
-- ⬜ **[REM-004]** Silent-unresolved policy.
-- ⬜ **[REM-005]** Explicitly authorized bounded automatic Outcome.
-- ⬜ **[REM-006]** Automatic effect provenance/no fake human Confirmation.
-- ⬜ **[REM-007]** Reminder intent separate from delivery.
-- ⬜ **[REM-008]** Shared Email Platform reuse where configured.
-- ⬜ **[REM-009]** Durable intent/commit-before-provider-I/O.
-- ⬜ **[REM-010]** Ambiguous provider result without blind resend.
-- ⬜ **[REM-011]** Notification controls/quiet hours/repetition.
-- ⬜ **[B11-T01]** Completion-relative anchor tests.
-- ⬜ **[B11-T02]** Anchor-stream duplicate/qualification tests.
-- ⬜ **[B11-T03]** Conditional activation-mode tests.
-- ⬜ **[B11-T04]** Policy conflict/loop safeguards.
-- ⬜ **[B11-T05]** Automatic Outcome provenance tests.
-- ⬜ **[B11-T06]** Reminder intent/outbox/provider ambiguity tests.
-- ⬜ **[B11-T07]** Daily/weekly review aggregation tests.
-- ⬜ **[B11-T08]** Manual review/reminder acceptance.
+Stable checklist families remain `REC-ADV-*`, `POL-*`, `REM-*`, and `B11-T*`. Event reminder/confirmation prototype fields stay fail-closed in B03.
 
 ---
 
 # 16. B12 — Replanning / conflict / solver ⬜
 
-- ⬜ **[RPL-001]** Re-open movement/replanning/solver Physical authority.
-- ⬜ **[RPL-002]** Candidate input from canonical current Schedule/constraints.
-- ⬜ **[RPL-003]** Hard constraints.
-- ⬜ **[RPL-004]** Soft constraints/preferences.
-- ⬜ **[RPL-005]** Movement policy.
-- ⬜ **[RPL-006]** Relevant hidden Life Area commitments under visibility rules.
-- ⬜ **[RPL-007]** Candidate `!= accepted Schedule`.
-- ⬜ **[RPL-008]** Explain affected items/trade-offs without hidden-data leakage.
-- ⬜ **[RPL-009]** Smallest useful replan scope.
-- ⬜ **[RPL-010]** Move fallback.
-- ⬜ **[RPL-011]** Postpone fallback.
-- ⬜ **[RPL-012]** Skip fallback.
-- ⬜ **[RPL-013]** Shorten fallback where valid.
-- ⬜ **[RPL-014]** Split fallback where valid.
-- ⬜ **[RPL-015]** Replacement preserving original intention/history.
-- ⬜ **[RPL-016]** Scope expansion only when required.
-- ⬜ **[RPL-017]** This-occurrence vs future-source scope.
-- ⬜ **[RPL-018]** Expected-state revalidation before apply.
-- ⬜ **[RPL-019]** Solver failure leaves canonical state unchanged.
-- ⬜ **[B12-T01]** Hard/soft solver tests.
-- ⬜ **[B12-T02]** Candidate-vs-accepted.
-- ⬜ **[B12-T03]** Stale candidate conflict.
-- ⬜ **[B12-T04]** Minimal scope/fallback.
-- ⬜ **[B12-T05]** Hidden-conflict privacy/non-interference.
-- ⬜ **[B12-T06]** Manual proposal/explanation/apply acceptance.
+Stable checklist families remain `RPL-*` and `B12-T*`. No solver/replanning candidate becomes accepted Event Schedule without the later governed block.
 
 ---
 
 # 17. B13 — Provider / Offline / Multi-device ⬜
 
-- ⬜ **[EXT-001]** Re-open ExternalRef/provider authority.
-- ⬜ **[EXT-002]** Provider Event identity mapping separate from DANTE Event.
-- ⬜ **[EXT-003]** Provider recurring-series/instance mapping separate from DANTE Occurrence.
-- ⬜ **[EXT-004]** Import/update assertion path.
-- ⬜ **[EXT-005]** Provider deletion/tombstone handling.
-- ⬜ **[EXT-006]** Provider Schedule `!= accepted DANTE Schedule`.
-- ⬜ **[EXT-007]** Detached recurring-instance reconciliation.
-- ⬜ **[EXT-008]** Explicit unsupported/lossy recurrence mapping.
-- ⬜ **[EXT-009]** Preserve user correction against blind provider overwrite.
-- ⬜ **[EXT-010]** Truthful external apply pending/success/failure/ambiguous state.
-- ⬜ **[EXT-011]** Imported Session provider/source/device provenance.
-- ⬜ **[EXT-012]** Duplicate imported Session reconciliation.
-- ⬜ **[SYNC-001]** Activate selected local-sync technology only through Physical gate.
-- ⬜ **[SYNC-002]** Local/synced copy remains noncanonical.
-- ⬜ **[SYNC-003]** Truthful pending/offline mutation state.
-- ⬜ **[SYNC-004]** Reconnect/replay idempotency.
-- ⬜ **[SYNC-005]** Expected-state reconciliation after offline period.
-- ⬜ **[SYNC-006]** Web/Mobile concurrent Session reconciliation.
-- ⬜ **[SYNC-007]** Device clock drift handling.
-- ⬜ **[SYNC-008]** No silent last-write-wins.
-- ⬜ **[B13-T01]** Provider Event/Occurrence identity tests.
-- ⬜ **[B13-T02]** Provider tombstone tests.
-- ⬜ **[B13-T03]** Unsupported recurrence mapping tests.
-- ⬜ **[B13-T04]** User-correction vs provider-update tests.
-- ⬜ **[B13-T05]** Imported Session duplicate/reconciliation tests.
-- ⬜ **[B13-T06]** Offline replay/idempotency tests.
-- ⬜ **[B13-T07]** Concurrent Web/Mobile Session race tests.
-- ⬜ **[B13-T08]** Device clock drift tests.
-- ⬜ **[B13-T09]** Provider ambiguous-result tests.
-- ⬜ **[B13-T10]** Manual provider/offline acceptance.
+Stable checklist families remain `EXT-*`, `SYNC-*`, and `B13-T*`. Event provider identity/conference execution is explicitly deferred.
 
 ---
 
 # 18. B14 — Analytics / Statistics / Signals ⬜
 
-- ⬜ **[ANA-001]** Scheduled-duration metric.
-- ⬜ **[ANA-002]** Session elapsed-duration metric.
-- ⬜ **[ANA-003]** Session active-duration metric.
-- ⬜ **[ANA-004]** Paused-duration metric.
-- ⬜ **[ANA-005]** Early/late start against correct Schedule state.
-- ⬜ **[ANA-006]** Early/late finish.
-- ⬜ **[ANA-007]** Overrun/underrun.
-- ⬜ **[ANA-008]** Schedule revision/reschedule statistics.
-- ⬜ **[ANA-009]** Postpone/cancel/skip patterns without generic status ontology.
-- ⬜ **[ANA-010]** Expected Occurrence counts.
-- ⬜ **[ANA-011]** Actual coverage.
-- ⬜ **[ANA-012]** Context-specific Outcome distributions.
-- ⬜ **[ANA-013]** Confirmation coverage where required.
-- ⬜ **[ANA-014]** Time allocation by Life Area.
-- ⬜ **[ANA-015]** Tag/context aggregation.
-- ⬜ **[ANA-016]** Day/week/month/year trends with correct timezone boundaries.
-- ⬜ **[ANA-017]** Routine adherence from Occurrence+Actual+Outcome+Confirmation basis.
-- ⬜ **[ANA-018]** Streak only as defined derived metric.
-- ⬜ **[ANA-019]** Raw Session sum vs unique wall-clock coverage.
-- ⬜ **[ANA-020]** Intentional overlapping multi-domain contribution.
-- ⬜ **[ANA-021]** Corrected current accepted truth for ordinary analytics.
-- ⬜ **[ANA-022]** Deleted/redacted source cannot survive as hidden undeletable derived copy.
-- ⬜ **[ANA-023]** Product analytics `!=` OTel/Grafana observability.
-- ⬜ **[ANA-024]** No universal productivity/success/performance score without explicit semantics.
-- ⬜ **[B14-T01]** Planned-vs-actual calculations.
-- ⬜ **[B14-T02]** Overlap/unique-wall-clock.
-- ⬜ **[B14-T03]** Routine adherence.
-- ⬜ **[B14-T04]** Corrected-history analytics.
-- ⬜ **[B14-T05]** Timezone/DST period boundaries.
-- ⬜ **[B14-T06]** Life Area/tag aggregation.
-- ⬜ **[B14-T07]** Privacy/deletion/non-interference analytics.
-- ⬜ **[B14-T08]** Manual statistics acceptance.
+Stable checklist families remain `ANA-*` and `B14-T*`. No analytics shortcut is introduced in B03.
 
 ---
 
@@ -741,33 +419,7 @@ These remain global gates and therefore are not marked fully green merely becaus
 
 # 20. B15 — Whole-vertical closure ⬜
 
-- ⬜ **[CLOSE-001]** Full master `!=` sweep.
-- ⬜ **[CLOSE-002]** No generic Task/Status/done/repeat/due_at/assigned_to shortcuts.
-- ⬜ **[CLOSE-003]** No runtime fake Timeline/mock repository.
-- ⬜ **[CLOSE-004]** Every live-ledger item green or explicitly scope-amended.
-- ⬜ **[CLOSE-005]** Re-run final adversarial scenario set.
-- ⬜ **[CLOSE-006]** Full backend suite.
-- ⬜ **[CLOSE-007]** Full PostgreSQL acceptance.
-- ⬜ **[CLOSE-008]** Full API/integration.
-- ⬜ **[CLOSE-009]** Full frontend suite.
-- ⬜ **[CLOSE-010]** Full T1/F0/Create regression.
-- ⬜ **[CLOSE-011]** Full real-backend E2E.
-- ⬜ **[CLOSE-012]** Full timezone/DST.
-- ⬜ **[CLOSE-013]** Full idempotency/concurrency.
-- ⬜ **[CLOSE-014]** Full recurrence/Occurrence history.
-- ⬜ **[CLOSE-015]** Full Session multi-device/offline for activated surfaces.
-- ⬜ **[CLOSE-016]** Full privacy/non-interference.
-- ⬜ **[CLOSE-017]** Full provider/reconciliation for activated providers.
-- ⬜ **[CLOSE-018]** Recovery/PITR anti-resurrection.
-- ⬜ **[CLOSE-019]** Timeline/range/review/analytics performance/query-plan review.
-- ⬜ **[CLOSE-020]** Alembic/SQLAlchemy/Dictionary/live PostgreSQL alignment.
-- ⬜ **[CLOSE-021]** Runtime ACL/owner/migrator/observer proof.
-- ⬜ **[CLOSE-022]** Desktop whole-vertical manual acceptance.
-- ⬜ **[CLOSE-023]** Mobile/responsive whole-vertical manual acceptance.
-- ⬜ **[CLOSE-024]** Accessibility acceptance.
-- ⬜ **[CLOSE-025]** Documentation drift audit.
-- ⬜ **[CLOSE-026]** Branch closure/integration rules satisfied.
-- ⬜ **[CLOSE-027]** Final visual/UI polish after B07/B10 product surfaces have stabilized.
+The full `CLOSE-001 … CLOSE-027` checklist remains unchanged and binding from the preceding live-map revision. B03 PRE-SCOPE does not promote any final closure gate.
 
 ---
 
@@ -786,9 +438,7 @@ old B13 Analytics/Signals                 → B14
 old B14 Whole Vertical Closure            → B15
 ```
 
-Accordingly the not-yet-executed block-prefixed test IDs were renumbered (`B07-T*` old Session → `B08-T*`, etc.). Semantic stable IDs such as `SES-*`, `ACTUAL-*`, `RPL-*`, `EXT-*`, `ANA-*` are unchanged.
-
-Historical files under `docs/workstreams/archive/` preserve the old numbering only as historical evidence and are not current execution authority.
+Semantic stable IDs remain unchanged. Historical files under `docs/workstreams/archive/` preserve old numbering only as historical evidence.
 
 ---
 
@@ -802,12 +452,12 @@ B00 REAL DATA SPINE                             ✅ CLOSED / PROVEN
 B01 ACTIVITY CORE                               ✅ CLOSED / PROVEN
 B02 SCHEDULE CORE                               ✅ CLOSED / PROVEN
 B02 DATABASE / DICTIONARY                       ✅ Alembic _26 reconciled
-B02 MANUAL userTest                             ✅ APPROVED 2026-09-15
-B02-E Chromium                                  ✅ 2 / 2 PASS
-B02-E Firefox                                   ✅ 2 / 2 PASS
-B03 EVENT CORE                                  ⬜ NEXT / NOT STARTED
+B03 EVENT CORE PRE-SCOPE                        ✅ COMPLETE
+B03 EVENT CORE IMPLEMENTATION                   ⬜ NOT AUTHORIZED YET
+B03 EVT-001 AUTHORITY RE-OPEN                   ✅ DONE
+B03 EVT-002+ / B03-T*                           ⬜ PENDING IMPLEMENTATION/PROOF
 B07 UI/UX CONSOLIDATION v1                      ⬜ scheduled after B06
-NEXT EXECUTION GATE                             B03 PRE-SCOPE / authority re-open
+NEXT EXECUTION GATE                             APPROVE B03-A
 ```
 
-Nothing in this reconciliation authorizes B03 implementation by itself.
+No B03 product code, API mutation or DDL is authorized by PRE-SCOPE completion alone.
