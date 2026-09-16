@@ -78,6 +78,9 @@ export function temporalCreateEndDateTime(
   _timeMode: TemporalCreateTimeMode = 'floating',
   _timeZoneId = 'UTC',
 ): Readonly<{ date: string; time: string; dayOffset: number }> {
+  void _timeMode;
+  void _timeZoneId;
+
   const start = plainDateTime(startDate, startTime);
   if (!start) {
     return Object.freeze({ date: startDate, time: '00:00', dayOffset: 0 });
@@ -99,6 +102,9 @@ export function temporalCreateDurationFromEndDateTime(
   _timeMode: TemporalCreateTimeMode = 'floating',
   _timeZoneId = 'UTC',
 ): number | null {
+  void _timeMode;
+  void _timeZoneId;
+
   const start = plainDateTime(startDate, startTime);
   const end = plainDateTime(endDate, endTime);
   if (!start || !end || Temporal.PlainDateTime.compare(end, start) <= 0) {
