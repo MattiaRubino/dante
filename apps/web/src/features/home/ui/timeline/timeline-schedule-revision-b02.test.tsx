@@ -87,15 +87,19 @@ function renderGovernedTimeline(
     .mockImplementationOnce(() => revisedWindow.promise);
   const dataSource: TemporalTimelineDataSource = { loadWindow };
   const reviseSchedule = vi.fn<TemporalScheduleDataSource['reviseSchedule']>(
-    (request) =>
-      Promise.resolve({
+    (request) => {
+      if (request.placement.kind !== 'floating-local-interval') {
+        return Promise.reject(new Error('Expected floating-local placement.'));
+      }
+      return Promise.resolve({
         scheduleRef: request.scheduleRef,
         previousPlacementMaterialStateRef:
           request.expectedPlacementMaterialStateRef,
         placementMaterialStateRef: NEXT_STATE_REF,
         placement: request.placement,
         replayed: false,
-      }),
+      });
+    },
   );
   const scheduleDataSource: TemporalScheduleDataSource = {
     reviseSchedule,
@@ -145,10 +149,13 @@ describe('B02-C governed Schedule revision from Timeline', () => {
       scheduleRef: SCHEDULE_REF,
       expectedPlacementMaterialStateRef: CURRENT_STATE_REF,
     });
-    expect(request?.placement.startsLocalAt.toString()).toBe(
+    if (!request || request.placement.kind !== 'floating-local-interval') {
+      throw new Error('Expected floating-local placement.');
+    }
+    expect(request.placement.startsLocalAt.toString()).toBe(
       '2026-09-09T10:05:00',
     );
-    expect(request?.placement.endsLocalAt.toString()).toBe(
+    expect(request.placement.endsLocalAt.toString()).toBe(
       '2026-09-09T11:05:00',
     );
     expect(card.getAttribute('aria-label')).toContain('10:00–11:00');
@@ -244,10 +251,13 @@ describe('B02-C governed Schedule revision from Timeline', () => {
     await waitFor(() => expect(reviseSchedule).toHaveBeenCalledTimes(1));
     const request = reviseSchedule.mock.calls[0]?.[0];
     expect(request?.expectedPlacementMaterialStateRef).toBe(CURRENT_STATE_REF);
-    expect(request?.placement.startsLocalAt.toString()).toBe(
+    if (!request || request.placement.kind !== 'floating-local-interval') {
+      throw new Error('Expected floating-local placement.');
+    }
+    expect(request.placement.startsLocalAt.toString()).toBe(
       '2026-09-09T10:30:00',
     );
-    expect(request?.placement.endsLocalAt.toString()).toBe(
+    expect(request.placement.endsLocalAt.toString()).toBe(
       '2026-09-09T11:30:00',
     );
     expect(
@@ -282,8 +292,11 @@ describe('B02-C governed Schedule revision from Timeline', () => {
         windowAt('2026-09-09T10:00', '2026-09-09T11:00', restoredStateRef),
       );
     const reviseSchedule = vi.fn<TemporalScheduleDataSource['reviseSchedule']>(
-      (request) =>
-        Promise.resolve({
+      (request) => {
+        if (request.placement.kind !== 'floating-local-interval') {
+          return Promise.reject(new Error('Expected floating-local placement.'));
+        }
+        return Promise.resolve({
           scheduleRef: request.scheduleRef,
           previousPlacementMaterialStateRef:
             request.expectedPlacementMaterialStateRef,
@@ -293,7 +306,8 @@ describe('B02-C governed Schedule revision from Timeline', () => {
               : restoredStateRef,
           placement: request.placement,
           replayed: false,
-        }),
+        });
+      },
     );
 
     const { container } = render(
@@ -339,10 +353,16 @@ describe('B02-C governed Schedule revision from Timeline', () => {
       scheduleRef: SCHEDULE_REF,
       expectedPlacementMaterialStateRef: NEXT_STATE_REF,
     });
-    expect(undoRequest?.placement.startsLocalAt.toString()).toBe(
+    if (
+      !undoRequest ||
+      undoRequest.placement.kind !== 'floating-local-interval'
+    ) {
+      throw new Error('Expected floating-local placement.');
+    }
+    expect(undoRequest.placement.startsLocalAt.toString()).toBe(
       '2026-09-09T10:00:00',
     );
-    expect(undoRequest?.placement.endsLocalAt.toString()).toBe(
+    expect(undoRequest.placement.endsLocalAt.toString()).toBe(
       '2026-09-09T11:00:00',
     );
     await waitFor(() => expect(loadWindow).toHaveBeenCalledTimes(3));
