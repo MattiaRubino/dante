@@ -6,8 +6,8 @@
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
-- **Timeline candidate Alembic head:** `20260915_26`
-- **Timeline candidate topology:** `96|5|28|78|191|111|285|0|0|0`
+- **Timeline candidate Alembic head:** `20260916_27`
+- **Timeline candidate topology:** `98|5|29|78|195|115|288|0|0|0`
 - **Pre-vertical integration:** PR #66 / merge `1ecd58145860aebfaaa3dc1bd356b90f7a8eb19b` is historical context only; protected-main identity remains repository authority
 - **Authenticated DANTE context authority:** `../architecture/authenticated-dante-context.md`
 - **Access/Auth reference:** `access-auth.md`
@@ -17,7 +17,7 @@
 - **Persistence ADR:** `../decisions/ADR-010-postgresql-persistence-constitution.md`
 - **Timeline workstream authority:** `../workstreams/timeline-temporal-operational-map.md`
 - **B02 closure authority:** `../workstreams/timeline-temporal-operational-b02-closure-2026-09-16.md`
-- **B03 pre-scope authority:** `../workstreams/timeline-temporal-operational-b03-execution-plan.md`
+- **B03 authority:** `../workstreams/timeline-temporal-operational-b03-execution-plan.md`
 
 ## 1. Authority model
 
@@ -65,7 +65,9 @@ The Timeline candidate extends the protected-main `20260906_18` only through for
     ↓
 20260915_25 b02_schedule_form_completeness    [B02-E]
     ↓
-20260915_26 b02_named_zone_gap_resolution     [current Timeline candidate head]
+20260915_26 b02_named_zone_gap_resolution     [B02 closure]
+    ↓
+20260916_27 b03_event_core                    [B03-A current candidate head]
 ```
 
 No accepted historical migration was edited, rebased or flattened.
@@ -73,13 +75,13 @@ No accepted historical migration was edited, rebased or flattened.
 ## 3. Current candidate topology
 
 ```text
-96 tables
+98 tables
 5 views
-28 routines
+29 routines
 78 triggers
-191 physical indexes
-111 foreign keys
-285 CHECK constraints
+195 physical indexes
+115 foreign keys
+288 CHECK constraints
 0 enums/domains
 0 sequences
 0 materialized views
@@ -87,9 +89,17 @@ No accepted historical migration was edited, rebased or flattened.
 0 RLS policies
 ```
 
-This topology is the reconciled B02 closure state and matches the current Dictionary `scope.json`, SQLAlchemy metadata, Alembic and the executed PostgreSQL current-catalog proof.
+`_27` adds exactly two Event-owned/control tables and one bounded Event create routine over the B02 closure state:
 
-## 4. Timeline persistence classification through B02
+```text
+event_expectation
+event_create_operation
+create_self_event(...)
+```
+
+No Event-specific Schedule table or scheduling engine was introduced.
+
+## 4. Timeline persistence classification
 
 ### B01 Activity
 
@@ -101,13 +111,9 @@ activity_create_operation
 create_self_activity(...)
 ```
 
-No generic Task/status identity was introduced.
-
 ### B02 Schedule
 
-`dante.schedule` remains the single CP6 Schedule owner. B02 composes the existing Schedule placement MaterialState/current/history machinery and adds bounded operation-control/capability surfaces for establishment, revision, unschedule and guarded Undo.
-
-Accepted placement union at B02 closure:
+`dante.schedule` remains the single CP6 Schedule owner. B02 composes the existing Schedule placement MaterialState/current/history machinery and accepted placement union:
 
 ```text
 date_span
@@ -117,39 +123,45 @@ absolute
 coarse_local_period
 ```
 
-Permanent boundaries:
+The physical Schedule subject family remains `activity | event | occurrence`. B02 product-activated Activity; B03 must reuse the same Schedule owner for Event.
+
+### B03-A Event
+
+`dante.event` remains the CP6 Event NativeRef owner. B03-A adds only the minimum self-scoped expected-occurrence descriptor and technical create receipt:
 
 ```text
-Activity != Schedule
+event_expectation
+event_create_operation
+create_self_event(...)
+```
+
+The Event descriptor contains title/self ownership/creation chronology only. Schedule placement, Recurrence, Participation, Session, Actual, Outcome, provider identity and generic status remain separate owners/capabilities.
+
+Permanent boundaries include:
+
+```text
+Activity != Event
 Event != Schedule
-Schedule != Session != Actual
+Event != Recurrence != Occurrence
+Event != Session != Actual != Outcome
+Event identity != operation identity
+Event identity != provider identity
 Schedule identity != placement MaterialState
 current accepted placement != newest row
-operation receipt != Schedule identity != MaterialState identity
-unscheduled != deleted
-Undo != history rewind
 ```
 
-The Schedule physical subject family remains:
+## 5. Proof state
+
+B02 remains closed/proven at `_26`.
+
+B03-A first real-stack proof executed on 2026-09-16:
 
 ```text
-activity | event | occurrence
+apps/backend/tests/integration/temporal/test_b03_event_core.py
+2 / 2 PASS
 ```
 
-B02 product-activated Activity only. B03 Event must reuse this Schedule owner rather than introduce Event-specific Schedule persistence.
-
-## 5. B02 closure evidence
-
-Executed candidate evidence at `_26`:
-
-```text
-Dictionary / SQLAlchemy / Alembic parity        PASS
-current-catalog + migration PostgreSQL gate     20 / 20 PASS
-repository HEAD → base → HEAD round-trip         1 / 1 PASS
-B02 PostgreSQL proof group                      11 PASS / 2 deselected
-```
-
-The final B02 closure record carries the backend/web/full-stack evidence. This document does not relabel candidate truth as protected-main truth.
+The `_27` Dictionary/current-catalog/migration reconciliation is part of the same B03-A slice and must be green before B03-A is labeled CLOSED/PROVEN.
 
 ## 6. Runtime role model
 
@@ -162,43 +174,12 @@ dante_runtime    LOGIN application runtime identity
 dante_observer   LOGIN statistics-only collector identity
 ```
 
-Runtime receives narrow SELECT/EXECUTE capability only. Operation receipt/current/history tables are not opened to generic runtime DML merely for application convenience. Security-definer routines must keep trusted search paths and exact ACL proof.
+For B03-A, runtime receives `SELECT` on `event_expectation` and bounded `EXECUTE` on `create_self_event(...)`; it receives no generic Event/receipt DML.
 
-## 7. B03 database starting point
+## 7. Recovery boundary
 
-B03 pre-scope begins from `_26 / 96|5|28|78|191|111|285|0|0|0`.
+The accepted recovery doctrine remains unchanged. B03-A adds ordinary canonical/control state only. Whole-vertical recovery/anti-resurrection closure remains B15; no production/cloud recovery claim is implied by local candidate proof.
 
-Verified current Event/Schedule physical facts:
+## 8. Same-change rule
 
-```text
-dante.event                         exists as CP6 LR-01 NativeRef shell
-SQLAlchemy EventRow                 exists
-Schedule subject eligibility        activity | event | occurrence
-Event product descriptor            MISSING
-governed Event create receipt       MISSING
-B02 Schedule self-scope routines    currently Activity-descriptor bound
-```
-
-Therefore B03 has a real narrow persistence gap for Event descriptive/create state, while **no Event-specific Schedule table is justified**.
-
-Any B03 forward DDL must satisfy the same-change rule:
-
-```text
-semantic authority
-+ forward Alembic
-+ SQLAlchemy
-+ Dictionary
-+ this human DB reference
-+ runtime ACL
-+ direct PostgreSQL proof
-```
-
-Historical CP6/B01/B02 migrations remain immutable.
-
-## 8. Recovery boundary
-
-The accepted recovery doctrine remains unchanged. B02 introduces ordinary canonical/control state but no new provider/outbox family. Whole-vertical recovery/anti-resurrection closure remains B15; no production/cloud recovery claim is implied by local candidate proof.
-
-## 9. Same-change rule
-
-No real business object → no ceremonial Dictionary entry. Every real current business object requires matching Dictionary/Alembic/SQLAlchemy/catalog/ACL proof. A candidate branch may carry reconciled candidate documentation before protected-main integration, but the distinction must remain explicit.
+No real business object → no ceremonial Dictionary entry. Every real current business object requires matching Dictionary/Alembic/SQLAlchemy/catalog/ACL proof. Candidate branch truth remains explicitly distinct from protected-main truth until integration.
