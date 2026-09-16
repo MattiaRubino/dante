@@ -8,7 +8,7 @@
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
 - **Timeline candidate Alembic head:** `20260915_26`
 - **Timeline candidate topology:** `96|5|28|78|191|111|285|0|0|0`
-- **Pre-vertical integration:** PR #66 / merge `1ecd58145860aebfaaa3dc78933f4ee42698f33b` is historical context only; protected-main identity remains repository authority
+- **Pre-vertical integration:** PR #66 / merge `1ecd58145860aebfaaa3dc1bd356b90f7a8eb19b` is historical context only; protected-main identity remains repository authority
 - **Authenticated DANTE context authority:** `../architecture/authenticated-dante-context.md`
 - **Access/Auth reference:** `access-auth.md`
 - **Shared Email Platform authority:** `../architecture/email-platform.md`
