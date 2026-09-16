@@ -1,7 +1,7 @@
 # DANTE Workstream Records
 
 - **Status:** CURRENT INDEX
-- **Last reconciled:** 2026-09-06
+- **Last reconciled:** 2026-09-16
 - **Rule:** current subsystem/workstream files describe present truth; Git/PR/archive preserve chronology
 
 ## 1. Current project state
@@ -11,139 +11,117 @@ Product / Domain / Logical / Physical            CLOSED / CURRENT
 Engineering / Frontend / Backend CP1–CP6        CLOSED / ACCEPTED
 PostgreSQL                                       18.6
 
-Access/Auth M1–M5 + Shared Email                 CLOSED / INTEGRATED
+Access/Auth + Shared Email                       CLOSED / INTEGRATED
 PostgreSQL Recovery                              CLOSED / INTEGRATED
 Platform Observability                           CLOSED / INTEGRATED VIA PR #58
 AI deterministic low-level foundation            CLOSED / INTEGRATED VIA PR #63
 Home / World Focus reconciliation                CLOSED / INTEGRATED VIA PR #65
 Pre-vertical foundation                          CLOSED / INTEGRATED VIA PR #66
 
-Protected-main Alembic                           20260906_18
-Protected-main topology                          89|5|18|77|173|91|272|0|0|0
-Pre-vertical integration merge                   1ecd58145860aebfaaa3dc1bd356b90f7a8eb19b
-PV-01                                            CLOSED / PASS
-PV-02                                            CLOSED / PASS
-PV-03 A Scale Harness                            CLOSED / PASS
-PV-03 B Whole-Branch QA                          CLOSED / PASS
-PV-03 C protected-main integration               CLOSED / PASS
+Protected-main baseline at temporal selection    Alembic 20260906_18
+Active candidate workstream                      feature/timeline-temporal-operational
+Candidate temporal DB authority                  Alembic 20260915_26
+
+Timeline / Temporal-Operational:
+B00 Real Data Spine                              ✅ CLOSED / PROVEN
+B01 Activity Core                                ✅ CLOSED / PROVEN
+B02 Schedule Core                                ✅ CLOSED / PROVEN
+B03 Event Core                                   ⬜ NEXT
+B07 UI/UX Consolidation v1                       ⬜ planned after B06
+B15 Whole Vertical Closure                       ⬜ future
 ```
 
-There is no PV-04.
+Candidate branch truth is not protected-main truth until integration. The branch-local roadmap/map are the current authority for temporal sequencing and progress.
 
-AI production/private-data qualification, remote backup-provider recovery and production/cloud recovery remain explicitly unclaimed.
+## 2. Current Timeline / Temporal-Operational authority
 
-## 2. Current authority
+Use these files for the active vertical:
+
+- `timeline-temporal-operational-roadmap.md` — current ordered roadmap B00–B15;
+- `timeline-temporal-operational-map.md` — current semantic map + live green-check ledger;
+- `timeline-temporal-operational-handoff.md` — current handoff/boundary;
+- `timeline-temporal-operational-b02-closure-2026-09-16.md` — B02 closure evidence;
+- `timeline-temporal-operational-b02-execution-plan.md` — closed B02 plan pointer, no longer active execution authority;
+- `timeline-temporal-operational-b02-e-usertest.md` — explicit record that the redundant B02-E manual protocol was not executed and is not an open gate.
+
+Historical snapshots moved under `archive/` preserve the old wording/numbering without competing with current authority:
+
+- `archive/timeline-temporal-operational-roadmap-freeze-2026-09-07.md`;
+- `archive/timeline-temporal-operational-map-ledger-snapshot-2026-09-15.md`;
+- `archive/timeline-temporal-operational-b02-execution-plan-pre-closure.md`;
+- `archive/timeline-temporal-operational-b02-e-usertest-protocol-unexecuted.md`.
+
+### Current temporal numbering
+
+```text
+B00 Real Data Spine
+B01 Activity Core
+B02 Schedule Core
+B03 Event Core
+B04 Temporal Constraints + Movement Policy
+B05 Product Organization
+B06 Routine / Recurrence / Occurrence Baseline
+B07 UI/UX Consolidation v1
+B08 Session Runtime
+B09 Responsibility / Participation
+B10 Actual / Outcome / Confirmation / Resolution
+B11 Advanced Recurrence / Conditional / Reminder
+B12 Replanning / Conflict / Solver
+B13 Provider / Offline / Multi-device
+B14 Analytics / Statistics / Signals
+B15 Whole Vertical Closure
+```
+
+The 2026-09-16 B07 insertion shifted the former B07–B14 blocks by +1. Current canonical docs use only the new numbering; old numbering exists only in explicit historical snapshots.
+
+## 3. Global authority
 
 Global current truth is owned by:
 
-- `../PROJECT-STATUS.md`
-- `../ROADMAP.md`
-- executable repository truth
-- current subsystem references
+- `../PROJECT-STATUS.md`;
+- `../ROADMAP.md`;
+- executable repository truth;
+- current subsystem references;
+- the active bounded workstream authority above while the branch remains unmerged.
 
-### Pre-vertical foundation
+Protected-main integration records remain distinct from branch candidate truth.
 
-The active append-only roadmap `pre-vertical-foundation.md` is retired. The single retained closure/evidence record is:
+## 4. Pre-vertical foundation disposition
 
-- `pre-vertical-foundation-closure-2026-09-06.md`
+The pre-vertical foundation is closed and integrated. Its retained closure/evidence record is:
 
-Durable pre-vertical foundation references are:
+- `pre-vertical-foundation-closure-2026-09-06.md`.
 
-- `../architecture/authenticated-dante-context.md`
-- `../database/README.md`
-- `../development/pre-vertical-dogfood-personas.md`
-- `../development/pre-vertical-scale-harness.md`
-- `../operations/postgres-recovery-runbook.md`
-- executable source/migrations/tests/tooling
+Durable references include authenticated DanteContext, Database README, dogfood personas/scale harness and PostgreSQL recovery runbook.
 
-The final candidate `21353469464f1371f9913dc78933f4ee42698f33` passed exact-head Recovery and required CI, then merged through PR #66 at `1ecd58145860aebfaaa3dc1bd356b90f7a8eb19b`. `feature/pre-vertical-foundation` is retired and is not a continuing development base.
+There is no PV-04.
 
-### AI
-
-The deterministic AI foundation is protected-main truth through PR #63 / merge `431fb34029baeacc9ef9f721e9626b39ca10dd39`.
-
-AI implementation/qualification records may remain as retained design/evidence references, but they are no longer an active protected-main integration workstream. Future real Search/Ask/memory/solver/provider-production work requires a new explicit scope from then-current `main`.
-
-### Home / World Focus
-
-The Home/World Focus reconciliation is protected-main truth through PR #65 / merge `5258452d7bd4e7a2797922b00035a9068ba41167`. Its closed branch history must not be treated as an active continuing workstream.
-
-## 3. Access/Auth and Email disposition
+## 5. Access/Auth and Email disposition
 
 Current subsystem authority includes:
 
-- `../database/access-auth.md`
-- `../architecture/access-auth-architecture.md`
-- `../architecture/access-auth-security-contract.md`
-- `../architecture/access-auth-api-contract.md`
-- `../architecture/access-auth-testing-contract.md`
-- `../architecture/access-auth-m5-contract.md`
-- `../architecture/access-auth-m5-persistence-api-contract.md`
-- `../frontend/access.md`
-- `../architecture/email-platform.md`
-- `../architecture/access-auth-email-delivery.md`
-- `../operations/postgres-recovery-runbook.md`
+- `../database/access-auth.md`;
+- `../architecture/access-auth-architecture.md`;
+- `../architecture/access-auth-security-contract.md`;
+- `../architecture/access-auth-api-contract.md`;
+- `../architecture/access-auth-testing-contract.md`;
+- `../frontend/access.md`;
+- `../architecture/email-platform.md`;
+- `../architecture/access-auth-email-delivery.md`;
+- `../operations/postgres-recovery-runbook.md`.
 
-Historical branch record:
+Retained evidence:
 
-- `../archive/branches/2026-09-feature-access-auth.md` — **NON-AUTHORITATIVE**
+- `access-auth-m5-review-2026-09-02.md`;
+- `access-auth-integration-acceptance-2026-09-04.md`.
 
-Retained dated evidence:
+## 6. Platform / Recovery / AI disposition
 
-- `access-auth-m5-review-2026-09-02.md`
-- `access-auth-integration-acceptance-2026-09-04.md`
+Platform Observability is integrated via PR #58. PostgreSQL Recovery is integrated. The deterministic AI foundation is integrated through PR #63.
 
-## 4. Platform Observability disposition
+AI production/private-data qualification, remote backup-provider recovery and production/cloud recovery remain explicitly unclaimed.
 
-Current/evolving authority:
-
-- `../architecture/observability-runtime-contract.md`
-- `../development/observability-runbook.md`
-- `../../infra/observability/README.md`
-- `../database/dante-postgresql-database-part-12.md`
-- executable backend/Web/Alloy/Grafana/provisioning/test assets
-
-Historical branch record:
-
-- `../archive/branches/2026-09-feature-platform-observability.md` — **NON-AUTHORITATIVE / HISTORICAL / EVIDENCE ONLY**
-
-Protected-main integration is complete via PR #58.
-
-## 5. PostgreSQL Recovery disposition
-
-PostgreSQL Recovery is integrated and has no active source workstream overlay.
-
-Current durable operational authority:
-
-```text
-database contract   ../database/README.md
-operator runbook    ../operations/postgres-recovery-runbook.md
-bootstrap           ../../infra/local/postgres/recovery/bootstrap-local-recovery.sh
-whole rehearsal     ../../infra/local/postgres/recovery/cp07-whole-recovery-rehearsal.sh
-```
-
-Historical branch record:
-
-- `../archive/branches/2026-08-feature-postgres-recovery.md` — **NON-AUTHORITATIVE**
-
-Historical CP07/CP08 proof remains exact-head scoped. The pre-vertical `20260906_18` database-local Recovery contract also has direct exact-head PASS evidence at `21353469464f1371f9913dc78933f4ee42698f33`.
-
-## 6. Pre-vertical closure result
-
-```text
-PV-01 / PV-02 / PV-03 A implementation          CLOSED / PASS
-PV-03 B local whole-branch QA                   CLOSED / PASS
-exact-head Recovery rehearsal                   PASS
-Backend CI Gate                                 PASS
-Dependency Review                               PASS
-Frontend CI Gate                                PASS
-PR #66                                          MERGED
-merge method                                    MERGE COMMIT
-protected-main parentage/tree readback           PASS
-feature/pre-vertical-foundation                  RETIRED
-```
-
-No further foundation expansion is implied by this closure. The next workstream must start from then-current protected `main` under a new bounded real product vertical.
+Future real Search/Ask/memory/solver/provider-production work requires a new explicit scope from then-current authority and must not be inferred from the low-level AI foundation.
 
 ## 7. Documentation lifecycle rule
 
@@ -151,14 +129,14 @@ Before continuing any active workstream:
 
 1. verify exact branch/worktree/remote relation;
 2. read current global/subsystem authority;
-3. read a branch-local workstream record only when one legitimately remains active;
+3. read the active workstream roadmap/map/handoff;
 4. prefer repository/code/tests over conversation memory;
-5. do not write to protected `main` outside the repository integration path;
-6. do not treat selected/unimplemented capability as PASS;
-7. keep current docs aligned with materialized repository truth;
-8. remove live/session/resume handoffs before integration;
-9. retire active workstream authority after protected-main acceptance;
-10. retain only justified closure/evidence records; chronology otherwise belongs to Git/PR history.
+5. keep protected-main and unmerged candidate truth distinct;
+6. do not mark selected/unimplemented capability as PASS;
+7. update the live ledger in the same closure/reconciliation slice;
+8. move superseded detailed planning snapshots to explicit archive paths rather than leaving them as competing current authority;
+9. do not falsify unexecuted manual/CI evidence;
+10. retain only justified closure/evidence records as current references.
 
 ## 8. Permanent rules
 
@@ -172,4 +150,15 @@ NO PASS WITHOUT EXECUTED EVIDENCE
 SEARCH != INTELLIGENCE
 LOCAL DATABASE RECOVERY PASS != APPLICATION TRAFFIC REOPEN PASS
 LOCAL RECOVERY PASS != PRODUCTION/CLOUD RECOVERY PASS
+```
+
+For the active temporal vertical specifically:
+
+```text
+planned != happened
+Schedule != Session != Actual
+Routine != Recurrence != Occurrence
+projection != canonical truth
+current != latest row
+Undo != history rewind
 ```
