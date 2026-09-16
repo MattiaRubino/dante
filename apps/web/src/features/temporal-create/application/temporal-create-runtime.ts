@@ -340,6 +340,39 @@ function activityProjection(
   });
 }
 
+function zonedDisambiguation(
+  placement: Extract<TemporalPlacement, Readonly<{ kind: 'zoned' }>>,
+): 'reject' | 'earlier' | 'later' | null {
+  const zoneId = placement.start.timeZoneId;
+  if (placement.end.timeZoneId !== zoneId) {
+    return null;
+  }
+  const localStart =
+    placement.sourceStartsLocalAt ?? placement.start.toPlainDateTime();
+  const localEnd = placement.sourceEndsLocalAt ?? placement.end.toPlainDateTime();
+  const candidates =
+    placement.disambiguation === undefined
+      ? (['reject', 'earlier', 'later'] as const)
+      : ([placement.disambiguation] as const);
+  for (const disambiguation of candidates) {
+    try {
+      const resolvedStart = localStart.toZonedDateTime(zoneId, {
+        disambiguation,
+      });
+      const resolvedEnd = localEnd.toZonedDateTime(zoneId, { disambiguation });
+      if (
+        resolvedStart.toInstant().equals(placement.start.toInstant()) &&
+        resolvedEnd.toInstant().equals(placement.end.toInstant())
+      ) {
+        return disambiguation;
+      }
+    } catch {
+      // Try the next explicit policy when the accepted placement did not carry one.
+    }
+  }
+  return null;
+}
+
 function acceptedPlacementProjection(
   schedule: TemporalScheduleRecord,
 ): TemporalPlacement {
@@ -357,12 +390,20 @@ function acceptedPlacementProjection(
         start: placement.startsLocalAt,
         end: placement.endsLocalAt,
       });
-    case 'named-zone-local-interval':
-      return Object.freeze({
+    case 'named-zone-local-interval': {
+      const projected = Object.freeze({
         kind: 'zoned' as const,
         start: placement.resolvedStartAt.toZonedDateTimeISO(placement.zoneId),
         end: placement.resolvedEndAt.toZonedDateTimeISO(placement.zoneId),
+        sourceStartsLocalAt: placement.startsLocalAt,
+        sourceEndsLocalAt: placement.endsLocalAt,
       });
+      const disambiguation = zonedDisambiguation(projected);
+      return Object.freeze({
+        ...projected,
+        ...(disambiguation === null ? {} : { disambiguation }),
+      });
+    }
     case 'absolute-interval':
       return Object.freeze({
         kind: 'absolute' as const,
@@ -400,34 +441,6 @@ function scheduledActivityProjection(
   });
 }
 
-function zonedDisambiguation(
-  placement: Extract<TemporalPlacement, Readonly<{ kind: 'zoned' }>>,
-): 'reject' | 'earlier' | 'later' | null {
-  const zoneId = placement.start.timeZoneId;
-  if (placement.end.timeZoneId !== zoneId) {
-    return null;
-  }
-  const localStart = placement.start.toPlainDateTime();
-  const localEnd = placement.end.toPlainDateTime();
-  for (const disambiguation of ['reject', 'earlier', 'later'] as const) {
-    try {
-      const resolvedStart = localStart.toZonedDateTime(zoneId, {
-        disambiguation,
-      });
-      const resolvedEnd = localEnd.toZonedDateTime(zoneId, { disambiguation });
-      if (
-        resolvedStart.toInstant().equals(placement.start.toInstant()) &&
-        resolvedEnd.toInstant().equals(placement.end.toInstant())
-      ) {
-        return disambiguation;
-      }
-    } catch {
-      // Try the next explicit policy.
-    }
-  }
-  return null;
-}
-
 function schedulePlacementInput(
   placement: TemporalPlacement,
 ): TemporalSchedulePlacementInput | null {
@@ -451,8 +464,10 @@ function schedulePlacementInput(
       }
       return Object.freeze({
         kind: 'named-zone-local-interval' as const,
-        startsLocalAt: placement.start.toPlainDateTime(),
-        endsLocalAt: placement.end.toPlainDateTime(),
+        startsLocalAt:
+          placement.sourceStartsLocalAt ?? placement.start.toPlainDateTime(),
+        endsLocalAt:
+          placement.sourceEndsLocalAt ?? placement.end.toPlainDateTime(),
         zoneId: placement.start.timeZoneId,
         disambiguation,
       });
