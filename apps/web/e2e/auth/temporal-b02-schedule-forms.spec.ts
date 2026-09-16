@@ -144,10 +144,10 @@ async function placeFromPlanningTray(
   await expect(tray).toBeVisible();
   const item = tray.locator(`[data-temporal-activity-ref="${activityRef}"]`);
   await expect(item).toHaveCount(1);
-  await item.locator('.timeline-planning-card__main').dblclick();
+  await item.getByRole('button', { name: /^Colloca:/ }).click();
   const form = item.locator('.timeline-planning-quick-place');
   await expect(form).toBeVisible();
-  await form.getByLabel('Ora').fill('10:00');
+  await form.getByLabel('Inizio').fill('10:00');
 
   const responsePromise = page.waitForResponse(
     (response) =>
