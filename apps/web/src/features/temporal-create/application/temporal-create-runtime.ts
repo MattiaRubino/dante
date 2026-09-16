@@ -1,4 +1,4 @@
-import { Temporal, type PlainDate } from '@dante/time';
+import type { PlainDate } from '@dante/time';
 
 import {
   InMemoryTemporalWorkspace,
