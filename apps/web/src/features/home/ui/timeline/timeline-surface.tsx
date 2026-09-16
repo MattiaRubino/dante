@@ -1,8 +1,4 @@
-import {
-  Temporal,
-  type PlainDate,
-  type PlainDateTime,
-} from '@dante/time';
+import type { PlainDate } from '@dante/time';
 import {
   type KeyboardEvent,
   type PointerEvent as ReactPointerEvent,
@@ -18,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 import './timeline.css';
 
 import { TemporalScheduleRemoteError } from '../../../temporal/remote-schedule-data-source';
+import type { TemporalSchedulePlacementInput } from '../../../temporal/schedule-data-source';
 import { useTemporalTimelineRuntime } from '../../../temporal/timeline-runtime-boundary';
 import { useAuthoritativeTimelineHydration } from './timeline-authoritative-hydration';
 import { createTimelineLocalContext } from './model/timeline-context-catalog';
@@ -25,6 +22,7 @@ import {
   TIMELINE_PROTOTYPE_NOW_MINUTE,
   TIMELINE_PROTOTYPE_TODAY,
 } from './model/timeline-fixtures';
+import { timelineCanonicalRevisionForDisplayEdit } from './model/timeline-canonical-revision';
 import {
   timelineEffectiveScrollBehavior,
   timelinePrefersReducedMotion,
@@ -45,6 +43,7 @@ import {
   timelineDateKey,
 } from './model/timeline-temporal';
 import type {
+  TimelineAllDayItem,
   TimelineEvent,
   TimelineGroup,
   TimelineGroupId,
@@ -113,28 +112,13 @@ type CanonicalScheduleUndo =
       kind: 'revision';
       scheduleRef: string;
       expectedPlacementMaterialStateRef: string;
-      placement: Readonly<{
-        kind: 'floating-local-interval';
-        startsLocalAt: PlainDateTime;
-        endsLocalAt: PlainDateTime;
-      }>;
+      placement: TemporalSchedulePlacementInput;
     }>
   | Readonly<{
       kind: 'unschedule';
       scheduleRef: string;
       unscheduleOperationId: string;
     }>;
-
-function localDateTimeAtMinute(dateKey: string, minute: number) {
-  if (!Number.isFinite(minute) || minute < 0 || minute >= 1440) {
-    throw new RangeError(
-      'Canonical Schedule time must remain inside one local day.',
-    );
-  }
-  return Temporal.PlainDate.from(dateKey)
-    .toPlainDateTime()
-    .add({ nanoseconds: Math.round(minute * 60_000_000_000) });
-}
 
 export function TimelineSurface({
   expanded,
@@ -146,10 +130,15 @@ export function TimelineSurface({
 }: TimelineSurfaceProps) {
   const { t, i18n } = useTranslation('common');
   const {
+    state: temporalRuntimeState,
     reviseSchedule,
     undoScheduleUnschedule,
     unscheduleSchedule,
   } = useTemporalTimelineRuntime();
+  const effectiveZoneId =
+    temporalRuntimeState.status === 'ready'
+      ? temporalRuntimeState.effectiveZoneId
+      : null;
   const locale = i18n.resolvedLanguage ?? i18n.language;
   // Phase 1 parity deliberately uses the accepted prototype clock. The mock
   // dataset is built around this instant; using wall-clock time makes the
@@ -220,7 +209,27 @@ export function TimelineSurface({
     },
     [],
   );
-  useAuthoritativeTimelineHydration(reconcileAuthoritativeEvents);
+  const reconcileAuthoritativeDateLane = useCallback(
+    (items: readonly TimelineAllDayItem[]) => {
+      const incomingIds = new Set(items.map((item) => item.id));
+      for (const current of state.allDayItems) {
+        if (
+          current.canonicalBasis !== undefined ||
+          incomingIds.has(current.id)
+        ) {
+          dispatch({ type: 'remove-all-day', itemId: current.id });
+        }
+      }
+      for (const item of items) {
+        dispatch({ type: 'materialize-all-day', item });
+      }
+    },
+    [state.allDayItems],
+  );
+  useAuthoritativeTimelineHydration(
+    reconcileAuthoritativeEvents,
+    reconcileAuthoritativeDateLane,
+  );
 
   const renderedDayInputs = useMemo(
     () => ({
@@ -302,27 +311,23 @@ export function TimelineSurface({
       const basis = event.canonicalBasis;
       if (
         basis === undefined ||
+        effectiveZoneId === null ||
         pendingScheduleRefsRef.current.has(basis.scheduleRef)
       ) {
         return;
       }
 
-      let startsLocalAt: ReturnType<typeof localDateTimeAtMinute>;
-      let endsLocalAt: ReturnType<typeof localDateTimeAtMinute>;
-      let previousStartsLocalAt: ReturnType<typeof localDateTimeAtMinute>;
-      let previousEndsLocalAt: ReturnType<typeof localDateTimeAtMinute>;
-      try {
-        startsLocalAt = localDateTimeAtMinute(toDateKey, startMinute);
-        endsLocalAt = localDateTimeAtMinute(toDateKey, endMinute);
-        previousStartsLocalAt = localDateTimeAtMinute(
-          fromDateKey,
-          event.startMinute,
-        );
-        previousEndsLocalAt = localDateTimeAtMinute(
-          fromDateKey,
-          event.endMinute,
-        );
-      } catch {
+      const revision = timelineCanonicalRevisionForDisplayEdit({
+        basis,
+        fromDateKey,
+        previousStartMinute: event.startMinute,
+        previousEndMinute: event.endMinute,
+        toDateKey,
+        startMinute,
+        endMinute,
+        effectiveZoneId,
+      });
+      if (revision === null) {
         showScheduleNotice({
           kind: 'error',
           message: t(
@@ -337,11 +342,7 @@ export function TimelineSurface({
       void reviseSchedule({
         scheduleRef: basis.scheduleRef,
         expectedPlacementMaterialStateRef: basis.placementMaterialStateRef,
-        placement: {
-          kind: 'floating-local-interval',
-          startsLocalAt,
-          endsLocalAt,
-        },
+        placement: revision.next,
       })
         .then((result) => {
           setCanonicalUndo({
@@ -349,11 +350,7 @@ export function TimelineSurface({
             scheduleRef: result.scheduleRef,
             expectedPlacementMaterialStateRef:
               result.placementMaterialStateRef,
-            placement: {
-              kind: 'floating-local-interval',
-              startsLocalAt: previousStartsLocalAt,
-              endsLocalAt: previousEndsLocalAt,
-            },
+            placement: revision.previous,
           });
           showCanonicalUndo(
             t(($) => $.common.home.timeline.feedback.scheduleUndoAvailable),
@@ -390,7 +387,13 @@ export function TimelineSurface({
           );
         });
     },
-    [reviseSchedule, showCanonicalUndo, showScheduleNotice, t],
+    [
+      effectiveZoneId,
+      reviseSchedule,
+      showCanonicalUndo,
+      showScheduleNotice,
+      t,
+    ],
   );
 
   const unscheduleCanonicalEvent = useCallback(
