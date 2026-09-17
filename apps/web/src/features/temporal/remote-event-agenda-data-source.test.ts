@@ -119,7 +119,7 @@ describe('remote Event Agenda data source', () => {
         expectedRevision: 1,
         agendaParts: ['stale'],
       }),
-    ).rejects.toMatchObject<Partial<TemporalEventAgendaRemoteError>>({
+    ).rejects.toMatchObject({
       kind: 'http',
       status: 409,
       code: 'temporal.event.agenda_revision_conflict',
