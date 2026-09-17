@@ -2,14 +2,20 @@ import type { PlainDateTime } from '@dante/time';
 
 import {
   TemporalEventRemoteError,
+  TemporalScheduleRemoteError,
   createRemoteTemporalEventDataSource,
+  createRemoteTemporalScheduleDataSource,
+  systemTemporalIdFactory,
   temporalProjectionId,
   temporalValidationIssue,
+  type TemporalAcceptedSchedulePlacement,
   type TemporalEventDataSource,
+  type TemporalIdFactory,
   type TemporalOperationId,
   type TemporalOperationResult,
   type TemporalPlacement,
   type TemporalProjectionItem,
+  type TemporalScheduleDataSource,
   type TemporalSchedulePlacementInput,
 } from '../../temporal';
 import {
@@ -20,6 +26,7 @@ import {
   createLocalTemporalCreateRuntime,
   type TemporalCreateAppliedEffect,
   type TemporalCreateExecution,
+  type TemporalCreateMutationEffect,
   type TemporalCreateMutationExecution,
   type TemporalCreatePreparedOperation,
   type TemporalCreatePreparation,
@@ -30,6 +37,8 @@ import {
 export type B03TemporalCreateRuntimeOptions = Readonly<{
   baseRuntime?: TemporalCreateRuntime;
   eventDataSource?: TemporalEventDataSource;
+  scheduleDataSource?: TemporalScheduleDataSource;
+  ids?: TemporalIdFactory;
 }>;
 
 function canonicalJsonValue(value: unknown): unknown {
@@ -142,9 +151,7 @@ function schedulePlacementInput(
 }
 
 function acceptedPlacementProjection(
-  placement: Awaited<
-    ReturnType<TemporalEventDataSource['createScheduledEvent']>
-  >['schedule']['placement'],
+  placement: TemporalAcceptedSchedulePlacement,
 ): TemporalPlacement {
   switch (placement.kind) {
     case 'date-span':
@@ -204,6 +211,106 @@ function unsupportedMutationResult(
     failure: Object.freeze({
       kind: 'unavailable' as const,
       code: 'temporal.event.lifecycle_capability_not_available',
+      retryable: false,
+    }),
+  });
+}
+
+function invalidPlacementMutationResult(
+  operationId: TemporalOperationId,
+): TemporalOperationResult {
+  return Object.freeze({
+    operationId,
+    status: 'rejected' as const,
+    code: 'validation' as const,
+    issues: Object.freeze([
+      temporalValidationIssue('temporal.schedule.invalid_revision', [
+        'payload',
+        'placement',
+      ]),
+    ]),
+  });
+}
+
+function scheduleMutationFailureResult(
+  operationId: TemporalOperationId,
+  error: unknown,
+): TemporalOperationResult {
+  if (error instanceof TemporalScheduleRemoteError) {
+    if (
+      error.status === 409 &&
+      error.code === 'temporal.schedule.operation_id_reused'
+    ) {
+      return operationIdReuseResult(operationId);
+    }
+    if (
+      error.status === 409 &&
+      (error.code === 'temporal.schedule.revision_conflict' ||
+        error.code === 'temporal.schedule.unschedule_conflict')
+    ) {
+      return Object.freeze({
+        operationId,
+        status: 'rejected' as const,
+        code: 'revision-conflict' as const,
+        issues: Object.freeze([
+          temporalValidationIssue('temporal.schedule.expected_state_conflict', [
+            'expectedPlacementMaterialStateRef',
+          ]),
+        ]),
+      });
+    }
+    if (
+      error.status === 409 &&
+      error.code === 'temporal.schedule.undo_conflict'
+    ) {
+      return Object.freeze({
+        operationId,
+        status: 'rejected' as const,
+        code: 'undo-conflict' as const,
+        issues: Object.freeze([
+          temporalValidationIssue('temporal.schedule.undo_conflict', [
+            'undoToken',
+          ]),
+        ]),
+      });
+    }
+    if (error.status === 404) {
+      return Object.freeze({
+        operationId,
+        status: 'rejected' as const,
+        code:
+          error.code === 'temporal.schedule.undo_not_found'
+            ? ('undo-not-found' as const)
+            : ('not-found' as const),
+        issues: Object.freeze([
+          temporalValidationIssue('temporal.schedule.not_found', [
+            'scheduleRef',
+          ]),
+        ]),
+      });
+    }
+    if (error.status === 422) {
+      return invalidPlacementMutationResult(operationId);
+    }
+    return Object.freeze({
+      operationId,
+      status: 'failed' as const,
+      failure: Object.freeze({
+        kind:
+          error.kind === 'transport'
+            ? ('transport' as const)
+            : ('unavailable' as const),
+        code: 'temporal.schedule.remote_unavailable',
+        retryable: error.kind === 'transport' || (error.status ?? 0) >= 500,
+      }),
+    });
+  }
+  return Object.freeze({
+    operationId,
+    status: 'failed' as const,
+    failure: Object.freeze({
+      kind: 'unknown' as const,
+      code: 'temporal.schedule.lifecycle_failed',
       retryable: false,
     }),
   });
@@ -286,6 +393,8 @@ class B03TemporalCreateRuntime implements TemporalCreateRuntime {
   public constructor(
     private readonly base: TemporalCreateRuntime,
     private readonly eventSource: TemporalEventDataSource,
+    private readonly scheduleSource: TemporalScheduleDataSource,
+    private readonly ids: TemporalIdFactory,
   ) {
     this.clock = base.clock;
   }
@@ -350,20 +459,188 @@ class B03TemporalCreateRuntime implements TemporalCreateRuntime {
         snapshotRevision: 0,
         reconciliation: Object.freeze({ status: 'confirmed' as const }),
       });
-      const unavailableMutation = async (): Promise<TemporalCreateMutationExecution> =>
-        Object.freeze({
-          result: unsupportedMutationResult(prepared.operationId),
-          effect: null,
+
+      let currentProjection = projection;
+      let currentMaterialStateRef: string | null =
+        created.schedule.placementMaterialStateRef;
+
+      const replaceProjection = (
+        nextPlacement: TemporalPlacement | null,
+        operationId: TemporalOperationId,
+      ): TemporalProjectionItem => {
+        currentProjection = Object.freeze({
+          ...currentProjection,
+          placement: nextPlacement,
+          revision: currentProjection.revision + 1,
+          updatedAt: this.clock.now(),
+          lastOperationId: operationId,
         });
+        return currentProjection;
+      };
+
+      const appliedMutationResult = (
+        operationId: TemporalOperationId,
+        item: TemporalProjectionItem,
+      ): TemporalOperationResult =>
+        Object.freeze({
+          operationId,
+          status: 'applied' as const,
+          item,
+          snapshotRevision: item.revision,
+          reconciliation: Object.freeze({ status: 'confirmed' as const }),
+        });
+
+      const mutationEffect = (
+        item: TemporalProjectionItem,
+        undo: () => Promise<TemporalOperationResult>,
+      ): TemporalCreateMutationEffect =>
+        Object.freeze({
+          projection: item,
+          metadata: prepared.metadata,
+          undoToken: this.ids.undoToken(),
+          undo,
+        });
+
+      const reviseCurrent = async (
+        nextPlacement: TemporalPlacement,
+      ): Promise<TemporalCreateMutationExecution> => {
+        const operationId = this.ids.operationId();
+        if (
+          currentMaterialStateRef === null ||
+          currentProjection.placement === null
+        ) {
+          return Object.freeze({
+            result: unsupportedMutationResult(operationId),
+            effect: null,
+          });
+        }
+        const requestedPlacement = schedulePlacementInput(nextPlacement);
+        const previousPlacementInput = schedulePlacementInput(
+          currentProjection.placement,
+        );
+        if (requestedPlacement === null || previousPlacementInput === null) {
+          return Object.freeze({
+            result: invalidPlacementMutationResult(operationId),
+            effect: null,
+          });
+        }
+
+        const expectedMaterialStateRef = currentMaterialStateRef;
+        try {
+          const revised = await this.scheduleSource.reviseSchedule({
+            operationId,
+            scheduleRef: created.schedule.scheduleRef,
+            expectedPlacementMaterialStateRef: expectedMaterialStateRef,
+            placement: requestedPlacement,
+          });
+          currentMaterialStateRef = revised.placementMaterialStateRef;
+          const item = replaceProjection(
+            acceptedPlacementProjection(revised.placement),
+            operationId,
+          );
+          const undoExpectedMaterialStateRef = revised.placementMaterialStateRef;
+          const undo = async (): Promise<TemporalOperationResult> => {
+            const undoOperationId = this.ids.operationId();
+            try {
+              const restored = await this.scheduleSource.reviseSchedule({
+                operationId: undoOperationId,
+                scheduleRef: created.schedule.scheduleRef,
+                expectedPlacementMaterialStateRef:
+                  undoExpectedMaterialStateRef,
+                placement: previousPlacementInput,
+              });
+              currentMaterialStateRef = restored.placementMaterialStateRef;
+              return appliedMutationResult(
+                undoOperationId,
+                replaceProjection(
+                  acceptedPlacementProjection(restored.placement),
+                  undoOperationId,
+                ),
+              );
+            } catch (error) {
+              return scheduleMutationFailureResult(undoOperationId, error);
+            }
+          };
+          return Object.freeze({
+            result: appliedMutationResult(operationId, item),
+            effect: mutationEffect(item, undo),
+          });
+        } catch (error) {
+          return Object.freeze({
+            result: scheduleMutationFailureResult(operationId, error),
+            effect: null,
+          });
+        }
+      };
+
+      const postponeCurrent = async (): Promise<TemporalCreateMutationExecution> => {
+        const operationId = this.ids.operationId();
+        if (
+          currentMaterialStateRef === null ||
+          currentProjection.placement === null
+        ) {
+          return Object.freeze({
+            result: unsupportedMutationResult(operationId),
+            effect: null,
+          });
+        }
+        const expectedMaterialStateRef = currentMaterialStateRef;
+        try {
+          const postponed = await this.scheduleSource.unscheduleSchedule({
+            operationId,
+            scheduleRef: created.schedule.scheduleRef,
+            expectedPlacementMaterialStateRef: expectedMaterialStateRef,
+          });
+          currentMaterialStateRef = null;
+          const item = replaceProjection(null, operationId);
+          const undo = async (): Promise<TemporalOperationResult> => {
+            const undoOperationId = this.ids.operationId();
+            try {
+              const restored =
+                await this.scheduleSource.undoScheduleUnschedule({
+                  operationId: undoOperationId,
+                  scheduleRef: created.schedule.scheduleRef,
+                  unscheduleOperationId: postponed.unscheduleOperationId,
+                });
+              currentMaterialStateRef = restored.placementMaterialStateRef;
+              return appliedMutationResult(
+                undoOperationId,
+                replaceProjection(
+                  acceptedPlacementProjection(restored.placement),
+                  undoOperationId,
+                ),
+              );
+            } catch (error) {
+              return scheduleMutationFailureResult(undoOperationId, error);
+            }
+          };
+          return Object.freeze({
+            result: appliedMutationResult(operationId, item),
+            effect: mutationEffect(item, undo),
+          });
+        } catch (error) {
+          return Object.freeze({
+            result: scheduleMutationFailureResult(operationId, error),
+            effect: null,
+          });
+        }
+      };
+
       const effect = Object.freeze({
         projection,
         metadata: prepared.metadata,
         undoToken: null,
         undoAvailable: false,
-        undo: async () => unsupportedMutationResult(prepared.operationId),
-        replacePlacement: async (_placement: TemporalPlacement | null) =>
-          await unavailableMutation(),
-        remove: async () => await unavailableMutation(),
+        undo: async () => unsupportedMutationResult(this.ids.operationId()),
+        replacePlacement: async (nextPlacement: TemporalPlacement | null) =>
+          nextPlacement === null
+            ? await postponeCurrent()
+            : await reviseCurrent(nextPlacement),
+        remove: async () =>
+          Object.freeze({
+            result: unsupportedMutationResult(this.ids.operationId()),
+            effect: null,
+          }),
       }) satisfies TemporalCreateAppliedEffect;
       return Object.freeze({ result, effect });
     } catch (error) {
@@ -393,6 +670,8 @@ export function createB03TemporalCreateRuntime(
   return new B03TemporalCreateRuntime(
     options.baseRuntime ?? createLocalTemporalCreateRuntime(),
     options.eventDataSource ?? createRemoteTemporalEventDataSource(),
+    options.scheduleDataSource ?? createRemoteTemporalScheduleDataSource(),
+    options.ids ?? systemTemporalIdFactory,
   );
 }
 
