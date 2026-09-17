@@ -8,6 +8,7 @@ import type {
 export type TemporalEventRecord = Readonly<{
   eventRef: string;
   title: string;
+  agendaParts: readonly string[];
   createdAt: Instant;
 }>;
 
@@ -20,6 +21,7 @@ export type TemporalEventScheduleRecord = Readonly<{
 export type TemporalScheduledEventCreateRequest = Readonly<{
   operationId: string;
   title: string;
+  agendaParts: readonly string[];
   placement: TemporalSchedulePlacementInput;
 }>;
 
