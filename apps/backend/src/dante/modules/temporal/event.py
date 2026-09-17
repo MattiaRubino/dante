@@ -19,7 +19,7 @@ from dante.modules.temporal.schedule import (
     SchedulePlacement,
     establish_schedule_in_session,
 )
-from dante.platform.database.mappings.event import EventExpectationRow
+from dante.platform.database.mappings.event import EventAgendaPartRow, EventExpectationRow
 from dante.platform.database.references import NativeRef, new_native_ref
 
 
@@ -41,10 +41,11 @@ class EventPersistenceError(RuntimeError):
 
 @dataclass(frozen=True, slots=True)
 class EventView:
-    """Application projection of the minimum Event expectation state."""
+    """Application projection of the accepted Event expectation state."""
 
     event_ref: NativeRef
     title: str
+    agenda_parts: tuple[str, ...]
     created_at: datetime
 
 
@@ -79,9 +80,28 @@ def _normalize_operation_id(value: str) -> str:
     return normalized
 
 
-def _intent_fingerprint(*, title: str) -> str:
+def _normalize_agenda_parts(values: tuple[str, ...] | list[str]) -> tuple[str, ...]:
+    if len(values) > 100:
+        raise EventInputError("Event Agenda may contain at most 100 parts.")
+    normalized: list[str] = []
+    for value in values:
+        part = value.strip()
+        if not part or len(part) > 1000:
+            raise EventInputError(
+                "Event Agenda parts must contain 1 to 1000 non-padding characters."
+            )
+        normalized.append(part)
+    return tuple(normalized)
+
+
+def _intent_fingerprint(*, title: str, agenda_parts: tuple[str, ...]) -> str:
+    # Preserve the exact B03-A/B fingerprint for the empty-Agenda contract so
+    # pre-B03-D create receipts remain replayable after the schema advances.
+    intent: dict[str, object] = {"title": title}
+    if agenda_parts:
+        intent["agenda_parts"] = list(agenda_parts)
     payload = json.dumps(
-        {"title": title},
+        intent,
         ensure_ascii=False,
         separators=(",", ":"),
         sort_keys=True,
@@ -103,9 +123,12 @@ def _constraint_name(exc: IntegrityError) -> str | None:
 
 
 def _event_from_row(row: RowMapping) -> EventView:
+    raw_agenda = row.get("agenda_parts")
+    agenda_parts = () if raw_agenda is None else tuple(str(part) for part in raw_agenda)
     return EventView(
         event_ref=NativeRef(UUID(str(row["event_ref"]))),
         title=str(row["title"]),
+        agenda_parts=agenda_parts,
         created_at=row["created_at"],
     )
 
@@ -123,18 +146,20 @@ class TemporalEventApplication:
         self_person_ref: NativeRef,
         operation_id: str,
         title: str,
+        agenda_parts: tuple[str, ...],
         requested_event_ref: NativeRef,
     ) -> CreateEventResult:
-        fingerprint = _intent_fingerprint(title=title)
+        fingerprint = _intent_fingerprint(title=title, agenda_parts=agenda_parts)
         statement = text(
             """
-            SELECT event_ref, title, created_at, replayed
-            FROM dante.create_self_event(
+            SELECT event_ref, title, created_at, agenda_parts, replayed
+            FROM dante.create_self_event_with_agenda(
                 :self_person_ref,
                 :operation_id,
                 :intent_fingerprint,
                 :event_ref,
-                :title
+                :title,
+                :agenda_parts
             )
             """
         )
@@ -148,6 +173,7 @@ class TemporalEventApplication:
                         "intent_fingerprint": fingerprint,
                         "event_ref": requested_event_ref,
                         "title": title,
+                        "agenda_parts": list(agenda_parts),
                     },
                 )
             )
@@ -165,9 +191,11 @@ class TemporalEventApplication:
         self_person_ref: NativeRef,
         operation_id: str,
         title: str,
+        agenda_parts: tuple[str, ...] | list[str] = (),
     ) -> CreateEventResult:
         """Create one self-owned Event expectation through the bounded DB capability."""
         normalized_title = _normalize_title(title)
+        normalized_agenda = _normalize_agenda_parts(agenda_parts)
         normalized_operation_id = _normalize_operation_id(operation_id)
         event_ref = new_native_ref()
 
@@ -181,6 +209,7 @@ class TemporalEventApplication:
                     self_person_ref=self_person_ref,
                     operation_id=normalized_operation_id,
                     title=normalized_title,
+                    agenda_parts=normalized_agenda,
                     requested_event_ref=event_ref,
                 )
         except IntegrityError as exc:
@@ -199,9 +228,11 @@ class TemporalEventApplication:
         operation_id: str,
         title: str,
         placement: SchedulePlacement,
+        agenda_parts: tuple[str, ...] | list[str] = (),
     ) -> CreateScheduledEventResult:
-        """Create Event identity/expectation and its first shared Schedule atomically."""
+        """Create Event identity/expectation, Agenda and first shared Schedule atomically."""
         normalized_title = _normalize_title(title)
+        normalized_agenda = _normalize_agenda_parts(agenda_parts)
         normalized_operation_id = _normalize_operation_id(operation_id)
         event_ref = new_native_ref()
         schedule_operation_id = _schedule_operation_id(normalized_operation_id)
@@ -216,6 +247,7 @@ class TemporalEventApplication:
                     self_person_ref=self_person_ref,
                     operation_id=normalized_operation_id,
                     title=normalized_title,
+                    agenda_parts=normalized_agenda,
                     requested_event_ref=event_ref,
                 )
                 schedule_result = await establish_schedule_in_session(
@@ -256,10 +288,15 @@ class TemporalEventApplication:
         self_person_ref: NativeRef,
         event_ref: NativeRef,
     ) -> EventView | None:
-        """Read one Event only inside the authenticated self Person scope."""
-        statement = select(EventExpectationRow).where(
+        """Read one Event and its ordered Agenda inside authenticated self scope."""
+        expectation_statement = select(EventExpectationRow).where(
             EventExpectationRow.event_ref == event_ref,
             EventExpectationRow.self_person_ref == self_person_ref,
+        )
+        agenda_statement = (
+            select(EventAgendaPartRow.content)
+            .where(EventAgendaPartRow.event_ref == event_ref)
+            .order_by(EventAgendaPartRow.position)
         )
 
         try:
@@ -267,14 +304,18 @@ class TemporalEventApplication:
                 self._session_factory() as database_session,
                 database_session.begin(),
             ):
-                row = await database_session.scalar(statement)
+                row = await database_session.scalar(expectation_statement)
+                if row is None:
+                    return None
+                agenda_parts = tuple(
+                    (await database_session.scalars(agenda_statement)).all()
+                )
         except SQLAlchemyError as exc:
             raise EventPersistenceError() from exc
 
-        if row is None:
-            return None
         return EventView(
             event_ref=row.event_ref,
             title=row.title,
+            agenda_parts=agenda_parts,
             created_at=row.created_at,
         )
