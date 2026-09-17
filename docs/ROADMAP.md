@@ -10,6 +10,7 @@
 - **Temporal live map/ledger:** `workstreams/timeline-temporal-operational-map.md`
 - **B03-A closure:** `workstreams/timeline-temporal-operational-b03-a-closure-2026-09-16.md`
 - **B03-B closure:** `workstreams/timeline-temporal-operational-b03-b-closure-2026-09-17.md`
+- **B03-C closure:** `workstreams/timeline-temporal-operational-b03-c-closure-2026-09-17.md`
 
 `protected-main baseline` and `candidate branch truth` are deliberately separate. The candidate branch must not be described as protected-main integration until the repository integration gate is actually completed.
 
@@ -32,7 +33,7 @@ TIMELINE / TEMPORAL-OPERATIONAL VERTICAL
         B00 Real Data Spine                         ✅ CLOSED / PROVEN
         B01 Activity Core                           ✅ CLOSED / PROVEN
         B02 Schedule Core                           ✅ CLOSED / PROVEN
-        B03 Event Core                              🟨 B03-A + B03-B CLOSED / B03-C NEXT
+        B03 Event Core                              🟨 B03-A + B03-B + B03-C CLOSED / B03-D NEXT
         B04 Temporal Constraints                    ⬜
         B05 Product Organization                    ⬜
         B06 Routine / Recurrence / Occurrence       ⬜
@@ -75,7 +76,7 @@ Alembic             20260906_18
 Topology            89|5|18|77|173|91|272|0|0|0
 ```
 
-Current candidate truth after B03-B:
+Current candidate truth after B03-C:
 
 ```text
 Alembic             20260917_28
@@ -88,7 +89,7 @@ Foreign keys         115
 Checks               288
 ```
 
-`_28` generalizes governed Schedule routine authorization to explicit Activity OR Event ownership without introducing new tables or a second Event scheduling engine.
+`_28` generalizes governed Schedule routine authorization to explicit Activity OR Event ownership. B03-C required no additional migration because Event lifecycle is expressed by the already-canonical shared Schedule revision/unschedule/Undo machinery.
 
 This is candidate-branch truth, not protected-main truth.
 
@@ -144,37 +145,58 @@ minimal truthful Event Create activation
 Activity Schedule regression proof
 ```
 
-No `event_schedule` was introduced. Event lifecycle mutation remains deferred to B03-C.
+No `event_schedule` was introduced.
+
+### B03-C — Event placement lifecycle ✅
+
+B03-C activates Event lifecycle on the same shared Schedule authority:
+
+```text
+reschedule through shared Schedule revision
+stable EventRef + ScheduleRef
+monotonic placement MaterialState evolution
+postponed/TBD without placeholder date/time
+Event remains readable with no current placement
+stale expected-state conflicts fail closed
+guarded Undo writes a new accepted MaterialState
+Undo replay remains idempotent
+newly-created Event can revise/postpone/undo without reload
+Activity lifecycle remains unchanged
+```
 
 Proof summary:
 
 ```text
-PostgreSQL/API targeted selection      18 PASS / 4 FAIL first run
-single _28 PL/pgSQL regression         fixed; exact failed set 4 PASS
-Event transport/Timeline web           10 PASS
-B03 Create-runtime web                  2 PASS
-@dante/web typecheck                    PASS
+PostgreSQL/backend targeted gate       9 PASS / 2 deselected
+Event lifecycle web gate               5 files / 16 PASS
+@dante/web typecheck                   PASS
 ```
 
-## 5. Next bounded work — B03-C
+The boundary remains explicit: `Event expectation != current Schedule != future Actual`. B03-C proves the first distinction; Actual/Outcome/Confirmation remains B10-owned.
 
-B03-C owns Event placement lifecycle:
+## 5. Next bounded work — B03-D
+
+B03-D owns bounded ordered Event Agenda/internal parts:
 
 ```text
-Event reschedule through shared Schedule revision
-postponed/TBD without placeholder date/time
-stable Event identity while current Schedule may be absent
-truthful detail/read after Schedule absence
-guarded Undo by new accepted MaterialState, never history rewind
-Activity lifecycle path unchanged
+Event
+└── ordered Agenda/internal parts
+
+Agenda part != Activity
+Agenda part != Event
+Agenda part != Occurrence
+Agenda part != Session
+Agenda part != Actual
 ```
 
-B03-C must not activate Agenda persistence, recurrence, constraints, participants, Session, Actual/Outcome/Confirmation, reminders or provider sync early.
+The next slice must inspect Domain/Logical/Physical authority and existing persistence before adding schema, then activate only the minimum durable identity/order/content and frontend behavior required for Event Agenda create/read/edit/reorder/remove/reload.
+
+B03-D must not activate recurrence, constraints, participants, Session, Actual/Outcome/Confirmation, reminders or provider sync early.
 
 The next explicit gate is:
 
 ```text
-APPROVE B03-C
+APPROVE B03-D
 ```
 
 ## 6. UI/UX checkpoint
@@ -210,7 +232,7 @@ PostgreSQL remains canonical persistence authority. Provider/network I/O remains
 
 ```text
 Protected-main integration frontier       PR #66 / Alembic 20260906_18
-Temporal candidate frontier               B03-B ✅ / Alembic 20260917_28
-Next temporal implementation              B03-C ⬜ requires approval
+Temporal candidate frontier               B03-C ✅ / Alembic 20260917_28
+Next temporal implementation              B03-D ⬜ requires approval
 CI                                        not implicitly authorized
 ```
