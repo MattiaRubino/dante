@@ -13,7 +13,7 @@ from sqlalchemy.exc import DBAPIError
 
 pytestmark = pytest.mark.postgres
 
-_EXPECTED_HEAD = "20260917_28"
+_EXPECTED_HEAD = "20260917_29"
 _B02_REVISION_PARENT = "20260909_21"
 _B02_SCHEMA_HEAD = "20260909_20"
 _PRE_B02_HEAD = "20260908_19"
