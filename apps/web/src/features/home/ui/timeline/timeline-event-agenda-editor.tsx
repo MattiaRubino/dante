@@ -160,7 +160,9 @@ export function TimelineEventAgendaEditor({
           role={notice === 'error' ? 'alert' : 'status'}
           className="timeline-event-agenda__notice"
         >
-          {t(($) => $.common.home.timeline.create.failure)}
+          {notice === 'conflict'
+            ? t(($) => $.common.home.timeline.feedback.eventAgendaConflict)
+            : t(($) => $.common.home.timeline.feedback.eventAgendaUnavailable)}
         </div>
       ) : null}
 
