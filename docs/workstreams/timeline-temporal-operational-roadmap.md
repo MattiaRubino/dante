@@ -2,9 +2,9 @@
 
 - **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-17
 - **Branch/workstream:** `feature/timeline-temporal-operational`
-- **Current completed frontier:** B03-B Shared Schedule + Event Timeline ✅ CLOSED / PROVEN
+- **Current completed frontier:** B03-C Event placement lifecycle ✅ CLOSED / PROVEN
 - **Current active block:** B03 Event Core
-- **Next implementation gate:** `APPROVE B03-C`
+- **Next implementation gate:** `APPROVE B03-D`
 - **Current candidate DB authority:** PostgreSQL 18.6 / Alembic `20260917_28`
 - **Current candidate topology:** `98|5|29|78|195|115|288|0|0|0`
 - **Live progress ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
@@ -12,6 +12,7 @@
 - **B03 plan:** `docs/workstreams/timeline-temporal-operational-b03-execution-plan.md`
 - **B03-A closure:** `docs/workstreams/timeline-temporal-operational-b03-a-closure-2026-09-16.md`
 - **B03-B closure:** `docs/workstreams/timeline-temporal-operational-b03-b-closure-2026-09-17.md`
+- **B03-C closure:** `docs/workstreams/timeline-temporal-operational-b03-c-closure-2026-09-17.md`
 - **Detailed semantic freeze:** `docs/workstreams/archive/timeline-temporal-operational-map-ledger-snapshot-2026-09-15.md`
 
 The archived semantic freeze preserves the complete functionality and logic inventory. This document is the current sequencing authority.
@@ -63,7 +64,7 @@ A block closes only after its applicable semantic, persistence, backend, fronten
 B00 Real Data Spine                              ✅ CLOSED / PROVEN
 B01 Activity Core                                ✅ CLOSED / PROVEN
 B02 Schedule Core                                ✅ CLOSED / PROVEN
-B03 Event Core                                   🟨 B03-A + B03-B CLOSED / B03-C NEXT
+B03 Event Core                                   🟨 B03-A + B03-B + B03-C CLOSED / B03-D NEXT
 B04 Temporal Constraints + Movement Policy       ⬜
 B05 Product Organization                         ⬜
 B06 Routine / Recurrence / Occurrence Baseline   ⬜
@@ -181,29 +182,50 @@ B03 Create-runtime web                  2 PASS
 
 Closure authority: `docs/workstreams/timeline-temporal-operational-b03-b-closure-2026-09-17.md`.
 
-## B03-C — Event placement lifecycle ⬜ NEXT
+## B03-C — Event placement lifecycle ✅ CLOSED / PROVEN
 
-Required scope:
+B03-C activates Event placement lifecycle without adding another temporal engine.
+
+Accepted behavior:
 
 ```text
 reschedule through the shared Schedule revision capability
-postponed/TBD with stable Event identity and no fake placeholder Schedule
-current Schedule may be absent while history remains monotonic
-detail/read after Schedule absence
-guarded Undo by new accepted MaterialState, never history rewind
-historical expectation reconstruction where required
-frontend lifecycle actions activated only after backend truth exists
+stable EventRef + ScheduleRef across revisions
+monotonic placement MaterialState evolution
+postponed/TBD = Event alive + Schedule/history retained + no current placement
+no placeholder date/time
+Event remains readable after current placement removal
+stale expected-state changes fail closed
+guarded Undo creates a new accepted MaterialState
+Undo replay remains idempotent
+newly-created Event supports lifecycle immediately without reload
+Activity Schedule lifecycle remains unchanged
 ```
 
-B03-C must preserve:
+No new Alembic revision was needed: `_28` already contains the shared Activity/Event Schedule capability, so B03-C is an application/product activation over established canonical persistence rather than a schema duplication.
+
+Proof summary:
 
 ```text
-postponed/TBD Event != Planning Tray Activity
-original expectation != current Schedule != Actual occurrence
-Event lifecycle != Session/Actual/Outcome lifecycle
+PostgreSQL/backend targeted gate       9 PASS / 2 deselected
+Event lifecycle web gate               5 files / 16 PASS
+@dante/web typecheck                   PASS
 ```
 
-## B03-D — Agenda/internal parts ⬜
+Closure authority: `docs/workstreams/timeline-temporal-operational-b03-c-closure-2026-09-17.md`.
+
+The boundary remains explicit:
+
+```text
+Event expectation != current Schedule
+current Schedule != future Actual
+postponed/TBD Event != Planning Tray Activity
+Undo != history rewind
+```
+
+Actual/Outcome/Confirmation truth remains B10-owned.
+
+## B03-D — Agenda/internal parts ⬜ NEXT
 
 Bounded ordered Event-internal persistence and real frontend create/read/reload. Agenda parts remain internal by default:
 
@@ -214,6 +236,8 @@ Agenda part != Occurrence
 Agenda part != Session
 Agenda part != Actual
 ```
+
+B03-D must prove durable ordering/identity semantics only to the degree required by the accepted Event Agenda product behavior; it must not inflate Agenda parts into generic first-class temporal owners.
 
 ## B03-E — Closure ⬜
 
@@ -291,7 +315,9 @@ Cross-block regression, recovery/anti-resurrection, operational hardening, full 
 ```text
 B03-A  ✅ CLOSED / PROVEN
 B03-B  ✅ CLOSED / PROVEN
-B03-C  ⬜ NEXT / requires explicit approval
+B03-C  ✅ CLOSED / PROVEN
+B03-D  ⬜ NEXT / requires explicit approval
+B03-E  ⬜
 ```
 
 CI remains separate and requires explicit authorization.
