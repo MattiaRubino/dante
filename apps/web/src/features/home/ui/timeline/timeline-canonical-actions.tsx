@@ -1,10 +1,10 @@
 import { createContext, type ReactNode, useContext } from 'react';
 
-import type { TimelineCanonicalScheduledActivityBasis } from './model/timeline-types';
+import type { TimelineCanonicalScheduleBasis } from './model/timeline-types';
 
 export type TimelineCanonicalActions = Readonly<{
   pendingScheduleRef: string | null;
-  unschedule: (basis: TimelineCanonicalScheduledActivityBasis) => void;
+  unschedule: (basis: TimelineCanonicalScheduleBasis) => void;
 }>;
 
 const TimelineCanonicalActionsContext =
