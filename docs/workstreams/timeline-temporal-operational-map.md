@@ -1,11 +1,12 @@
 # Timeline / Temporal-Operational Vertical — Semantic Work Map / Live Ledger
 
-- **Status:** CURRENT SEMANTIC MAP + LIVE IMPLEMENTATION LEDGER — reconciled 2026-09-16
+- **Status:** CURRENT SEMANTIC MAP + LIVE IMPLEMENTATION LEDGER — reconciled 2026-09-17
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **B02 closure:** `docs/workstreams/timeline-temporal-operational-b02-closure-2026-09-16.md`
 - **B03 plan:** `docs/workstreams/timeline-temporal-operational-b03-execution-plan.md`
 - **B03-A closure:** `docs/workstreams/timeline-temporal-operational-b03-a-closure-2026-09-16.md`
+- **B03-B closure:** `docs/workstreams/timeline-temporal-operational-b03-b-closure-2026-09-17.md`
 - **Detailed semantic freeze:** `docs/workstreams/archive/timeline-temporal-operational-map-ledger-snapshot-2026-09-15.md`
 - **Historical roadmap freeze:** `docs/workstreams/archive/timeline-temporal-operational-roadmap-freeze-2026-09-07.md`
 
@@ -123,7 +124,7 @@ A green item means its applicable semantic, persistence/application and proof ob
 B00 Real Data Spine                              ✅ CLOSED / PROVEN
 B01 Activity Core                                ✅ CLOSED / PROVEN
 B02 Schedule Core                                ✅ CLOSED / PROVEN
-B03 Event Core                                   🟨 B03-A CLOSED / B03-B NEXT
+B03 Event Core                                   🟨 B03-A + B03-B CLOSED / B03-C NEXT
 B04 Temporal Constraints + Movement Policy       ⬜
 B05 Product Organization                         ⬜
 B06 Routine / Recurrence / Occurrence Baseline   ⬜
@@ -169,8 +170,6 @@ B02-T01 … B02-T09      ✅
 
 All accepted Schedule forms and lifecycle behavior are proven at B02 scope: date-span, floating-local, named-zone-local, absolute, coarse-local-period, establish, revision, current/history, CAS, idempotency, Planning Tray placement, drag/time editor, unschedule, guarded Undo, range/local-day query, DST behavior and Chromium/Firefox real-stack proof.
 
-The exact item-level evidence remains in `timeline-temporal-operational-b02-closure-2026-09-16.md` and the archived detailed ledger.
-
 ---
 
 # 6. B03 — Event Core 🟨
@@ -198,82 +197,83 @@ Event-as-busy/capacity shortcut
 ## 6.2 Capability ledger
 
 - ✅ **[EVT-001]** Re-open Event Domain/Logical/Physical authority before implementation.
-- ✅ **[EVT-002]** Resolve minimum meaningful Event descriptive persistence. — `event_expectation` is now canonical and self-Person scoped.
-- ✅ **[EVT-003]** Implement idempotent `CreateEvent`. — `event_create_operation` + `create_self_event(...)` + backend/API are proven.
-- ⬜ **[EVT-004]** Activate Event macro-class in `+` Create only when initial Schedule commit is truthful.
-- ⬜ **[EVT-005]** Implement timed Event using shared B02 Schedule.
-- ⬜ **[EVT-006]** Implement all-day/date-span Event in real all-day lane.
-- ⬜ **[EVT-007]** Implement multi-day Event semantics/query/rendering.
-- ⬜ **[EVT-008]** Implement postponed/TBD Event with identity/history and no fake placeholder Schedule.
-- ⬜ **[EVT-009]** Preserve original expectation/current Schedule/Actual separation through Event lifecycle.
-- ⬜ **[EVT-010]** Implement Event Agenda/internal parts at accepted product level.
-- ⬜ **[EVT-011]** Preserve Agenda part `!= Activity/Event/Occurrence/Session/Actual` by default.
-- ⬜ **[EVT-012]** Implement preparation/follow-up Activity relation only when exact relation semantics are activated.
-- ⬜ **[EVT-013]** Implement Place/conference intent only through justified relation/profile semantics.
-- ⬜ **[EVT-014]** Preserve ordinary Event attendance `!= Session`.
-- ⬜ **[EVT-015]** Preserve Event `!= Availability/Capacity Claim`.
+- ✅ **[EVT-002]** Minimum meaningful Event descriptive persistence: `event_expectation` self-Person scoped.
+- ✅ **[EVT-003]** Idempotent `CreateEvent`: `event_create_operation` + `create_self_event(...)` + backend/API.
+- ✅ **[EVT-004]** Event macro-class activated in `+` Create only for the minimal truthful scheduled-Event contract.
+- ✅ **[EVT-005]** Timed Event uses the shared B02 Schedule capability.
+- ✅ **[EVT-006]** All-day/date-span Event projects into the real all-day lane without fabricated clock time.
+- ✅ **[EVT-007]** Multi-day Event semantics/query/rendering preserve date-span truth.
+- ⬜ **[EVT-008]** Postponed/TBD Event with identity/history and no fake placeholder Schedule. → B03-C
+- ⬜ **[EVT-009]** Original expectation/current Schedule/Actual separation through Event lifecycle. → B03-C/B10
+- ⬜ **[EVT-010]** Event Agenda/internal parts at accepted product level. → B03-D
+- ⬜ **[EVT-011]** Agenda part `!= Activity/Event/Occurrence/Session/Actual` by default. → B03-D proof
+- ⬜ **[EVT-012]** Preparation/follow-up Activity relation only when exact relation semantics are activated.
+- ⬜ **[EVT-013]** Place/conference intent only through justified relation/profile semantics.
+- ⬜ **[EVT-014]** Ordinary Event attendance `!= Session`.
+- ⬜ **[EVT-015]** Event `!= Availability/Capacity Claim`.
 
 ## 6.3 B03 proof ledger
 
-- ✅ **[B03-T01]** Event create/application tests. — real PostgreSQL/API `2 passed`; self-scope, CSRF, replay and changed-intent conflict proven.
-- ⬜ **[B03-T02]** Timed/all-day/multi-day PostgreSQL/API tests.
-- ⬜ **[B03-T03]** Postponed/TBD history/query tests.
-- ⬜ **[B03-T04]** Event Agenda semantic/frontend tests.
-- ⬜ **[B03-T05]** Shared Schedule regression suite rerun for Activity + Event.
-- ⬜ **[B03-T06]** E2E Event create/reschedule/all-day/reload test.
-- ⬜ **[B03-T07]** Manual `userTest` Event acceptance.
+- ✅ **[B03-T01]** Event create/application tests — real PostgreSQL/API self-scope, CSRF, replay and changed-intent conflict.
+- ✅ **[B03-T02]** Timed/all-day/multi-day PostgreSQL/API tests — floating, named-zone/DST, date-span, multi-day, mixed Timeline and idempotency proven.
+- ⬜ **[B03-T03]** Postponed/TBD history/query tests. → B03-C
+- ⬜ **[B03-T04]** Event Agenda semantic/frontend tests. → B03-D
+- ✅ **[B03-T05]** Shared Schedule regression suite for Activity + Event — B02 PL/pgSQL hardening preserved through `_28`; exact previously failing regression set rerun `4 passed` after fix.
+- ⬜ **[B03-T06]** E2E Event create/reschedule/all-day/reload test. → B03-E after lifecycle is complete
+- ⬜ **[B03-T07]** Manual `userTest` Event acceptance. → B03-E
 
 ## 6.4 B03-A — Event canonical core ✅ CLOSED / PROVEN
 
 Closure authority:
 
-```text
-docs/workstreams/timeline-temporal-operational-b03-a-closure-2026-09-16.md
-```
+`docs/workstreams/timeline-temporal-operational-b03-a-closure-2026-09-16.md`
 
-Current B03-A persistence:
+B03-A established canonical Event expectation/create identity and self-scope at Alembic `_27`. It did not claim Event Schedule/Timeline/UI/Agenda behavior.
+
+## 6.5 B03-B — Shared Schedule + Event Timeline ✅ CLOSED / PROVEN
+
+Closure authority:
+
+`docs/workstreams/timeline-temporal-operational-b03-b-closure-2026-09-17.md`
+
+Current candidate persistence authority:
 
 ```text
-Alembic head     20260916_27
+Alembic head     20260917_28
 Topology         98|5|29|78|195|115|288|0|0|0
-
-new tables       event_expectation
-                 event_create_operation
-new routine      create_self_event(uuid,text,text,uuid,text)
 ```
 
-Executed proof:
+Accepted result:
 
 ```text
-Event core/API PostgreSQL                         2 PASS
-catalog/Dictionary/migration targeted gate       10 PASS
-initial harness-only privilege defect             1 FAIL
-corrected harness rerun                           1 PASS
-```
-
-The initial failure was not a product/migration defect; it was the new migration test reading `dante.alembic_version` without the accepted migrator/owner role discipline. Commit `8dc423adc8f2cf5cf115061192c603d806e923b3` fixed the harness and the exact failed proof passed.
-
-B03-A does not claim Event Schedule/Timeline/UI/Agenda behavior.
-
-## 6.5 B03-B — Shared Schedule + Event Timeline ⬜ NEXT
-
-Exact scope:
-
-```text
-1. generalize B02 self-subject authorization from Activity-only to typed Activity OR Event
-2. preserve one shared Schedule owner/current/history model
-3. atomic Event + initial Schedule application operation
-4. timed floating-local Event
-5. timed named-zone Event
+1. B02 self-subject authorization generalized to typed Activity OR Event
+2. one shared Schedule identity/current/history model retained
+3. Event + initial Schedule commit atomically
+4. floating-local Event
+5. named-zone Event with source wall-clock + resolved-instant semantics
 6. all-day/date-span Event
 7. multi-day Event
 8. backend Timeline Activity/Event discriminated union
-9. API + TypeScript strict union
-10. activate only the minimal truthful Event Create surface
-11. rerun Activity Schedule regressions to prove no B02 regression
+9. strict API + TypeScript union/parser/hydration
+10. minimal truthful Event Create runtime
+11. Activity Schedule regressions preserved
+12. Event lifecycle mutations remain read-only until B03-C
 ```
 
-No recurrence, constraints, participants, Session, Actual, Outcome, reminder, provider sync or Agenda persistence is smuggled into B03-B.
+Executed closure evidence:
+
+```text
+PostgreSQL/API targeted gate        18 PASS / 4 FAIL on first run
+single _28 PL/pgSQL regression      fixed by af16b700
+exact failed set rerun              4 PASS
+Event transport/Timeline web        10 PASS
+B03 Create-runtime web               2 PASS
+@dante/web typecheck                 PASS
+```
+
+The first-run failures were not accepted as closure evidence; B03-B closed only after the exact failures were fixed and rerun green.
+
+No recurrence, constraints, participants, Session, Actual, Outcome, reminder, provider sync or Agenda persistence was smuggled into B03-B.
 
 ## 6.6 Remaining B03 slices
 
@@ -328,7 +328,8 @@ provider/conference/sync        → B13
 
 ```text
 B03-A  ✅ CLOSED / PROVEN
-B03-B  ⬜ NOT AUTHORIZED YET
+B03-B  ✅ CLOSED / PROVEN
+B03-C  ⬜ NEXT / NOT YET AUTHORIZED
 ```
 
-The next implementation action is explicit approval of B03-B. CI remains a separate authorization.
+The next implementation action requires explicit approval of B03-C. CI remains a separate authorization.
