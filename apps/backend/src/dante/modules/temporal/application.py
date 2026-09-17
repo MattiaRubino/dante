@@ -34,8 +34,18 @@ class _TimelineScheduledActivityBase:
 
 
 @dataclass(frozen=True, slots=True)
+class _TimelineScheduledEventBase:
+    """Identity shared by every current Event Schedule projection."""
+
+    event_ref: NativeRef
+    schedule_ref: ScopedRecordRef
+    placement_material_state_ref: MaterialStateRef
+    title: str
+
+
+@dataclass(frozen=True, slots=True)
 class TimelineDateSpanActivityItem(_TimelineScheduledActivityBase):
-    """Finite half-open civil-date placement with no fabricated instants."""
+    """Finite half-open civil-date Activity placement."""
 
     start_date: date
     end_date_exclusive: date
@@ -43,7 +53,7 @@ class TimelineDateSpanActivityItem(_TimelineScheduledActivityBase):
 
 @dataclass(frozen=True, slots=True)
 class TimelineFloatingLocalActivityItem(_TimelineScheduledActivityBase):
-    """Offset-free local wall-clock interval."""
+    """Offset-free local wall-clock Activity interval."""
 
     starts_local_at: datetime
     ends_local_at: datetime
@@ -51,7 +61,7 @@ class TimelineFloatingLocalActivityItem(_TimelineScheduledActivityBase):
 
 @dataclass(frozen=True, slots=True)
 class TimelineNamedZoneLocalActivityItem(_TimelineScheduledActivityBase):
-    """Named-zone local intent plus retained and viewing-zone projections."""
+    """Named-zone Activity intent plus retained and viewing-zone projections."""
 
     starts_local_at: datetime
     ends_local_at: datetime
@@ -64,7 +74,7 @@ class TimelineNamedZoneLocalActivityItem(_TimelineScheduledActivityBase):
 
 @dataclass(frozen=True, slots=True)
 class TimelineAbsoluteActivityItem(_TimelineScheduledActivityBase):
-    """Absolute interval plus its request-effective-zone projection."""
+    """Absolute Activity interval plus request-effective-zone projection."""
 
     starts_at: datetime
     ends_at: datetime
@@ -74,7 +84,54 @@ class TimelineAbsoluteActivityItem(_TimelineScheduledActivityBase):
 
 @dataclass(frozen=True, slots=True)
 class TimelineCoarseLocalPeriodActivityItem(_TimelineScheduledActivityBase):
-    """Civil date and bounded coarse period without time-grid geometry."""
+    """Activity civil date and bounded coarse period without clock geometry."""
+
+    local_date: date
+    period: CoarseLocalPeriod
+
+
+@dataclass(frozen=True, slots=True)
+class TimelineDateSpanEventItem(_TimelineScheduledEventBase):
+    """Finite half-open civil-date Event placement."""
+
+    start_date: date
+    end_date_exclusive: date
+
+
+@dataclass(frozen=True, slots=True)
+class TimelineFloatingLocalEventItem(_TimelineScheduledEventBase):
+    """Offset-free local wall-clock Event interval."""
+
+    starts_local_at: datetime
+    ends_local_at: datetime
+
+
+@dataclass(frozen=True, slots=True)
+class TimelineNamedZoneLocalEventItem(_TimelineScheduledEventBase):
+    """Named-zone Event intent plus retained and viewing-zone projections."""
+
+    starts_local_at: datetime
+    ends_local_at: datetime
+    zone_id: str
+    resolved_start_at: datetime
+    resolved_end_at: datetime
+    display_starts_local_at: datetime
+    display_ends_local_at: datetime
+
+
+@dataclass(frozen=True, slots=True)
+class TimelineAbsoluteEventItem(_TimelineScheduledEventBase):
+    """Absolute Event interval plus request-effective-zone projection."""
+
+    starts_at: datetime
+    ends_at: datetime
+    display_starts_local_at: datetime
+    display_ends_local_at: datetime
+
+
+@dataclass(frozen=True, slots=True)
+class TimelineCoarseLocalPeriodEventItem(_TimelineScheduledEventBase):
+    """Event civil date and bounded coarse period without clock geometry."""
 
     local_date: date
     period: CoarseLocalPeriod
@@ -88,6 +145,16 @@ type TimelineScheduledActivityItem = (
     | TimelineCoarseLocalPeriodActivityItem
 )
 
+type TimelineScheduledEventItem = (
+    TimelineDateSpanEventItem
+    | TimelineFloatingLocalEventItem
+    | TimelineNamedZoneLocalEventItem
+    | TimelineAbsoluteEventItem
+    | TimelineCoarseLocalPeriodEventItem
+)
+
+type TimelineScheduledItem = TimelineScheduledActivityItem | TimelineScheduledEventItem
+
 
 @dataclass(frozen=True, slots=True)
 class TimelineWindowResult:
@@ -97,7 +164,7 @@ class TimelineWindowResult:
     end_date_exclusive: date
     effective_zone_id: str
     self_person_ref: NativeRef
-    items: tuple[TimelineScheduledActivityItem, ...]
+    items: tuple[TimelineScheduledItem, ...]
 
 
 def empty_timeline_window_result(
@@ -105,7 +172,7 @@ def empty_timeline_window_result(
     query: TimelineWindowQuery,
     context: DanteContext,
 ) -> TimelineWindowResult:
-    """Build the truthful empty projection used by B00 and empty B02 windows."""
+    """Build the truthful empty projection used by empty current windows."""
     return TimelineWindowResult(
         start_date=query.start_date,
         end_date_exclusive=query.end_date_exclusive,
@@ -115,9 +182,8 @@ def empty_timeline_window_result(
     )
 
 
-def _identity(row: RowMapping) -> dict[str, Any]:
+def _schedule_identity(row: RowMapping) -> dict[str, Any]:
     return {
-        "activity_ref": NativeRef(UUID(str(row["activity_ref"]))),
         "schedule_ref": ScopedRecordRef(UUID(str(row["schedule_ref"]))),
         "placement_material_state_ref": MaterialStateRef(UUID(str(row["material_state_ref"]))),
         "title": str(row["title"]),
@@ -134,60 +200,129 @@ def _item_from_row(
     row: RowMapping,
     *,
     effective_zone_id: str,
-) -> TimelineScheduledActivityItem:
-    identity = _identity(row)
+) -> TimelineScheduledItem:
+    owner_kind = str(row["owner_kind"])
+    subject_ref = NativeRef(UUID(str(row["subject_native_ref"])))
+    identity = _schedule_identity(row)
     temporal_form = str(row["temporal_form_code"])
-    if temporal_form == "date_span":
-        return TimelineDateSpanActivityItem(
-            **identity,
-            start_date=row["start_date"],
-            end_date_exclusive=row["end_date_exclusive"],
-        )
-    if temporal_form == "floating_local":
-        return TimelineFloatingLocalActivityItem(
-            **identity,
-            starts_local_at=row["floating_starts_local_at"],
-            ends_local_at=row["floating_ends_local_at"],
-        )
-    if temporal_form == "named_zone_local":
-        resolved_start_at = row["resolved_start_at"]
-        resolved_end_at = row["resolved_end_at"]
-        return TimelineNamedZoneLocalActivityItem(
-            **identity,
-            starts_local_at=row["named_starts_local_at"],
-            ends_local_at=row["named_ends_local_at"],
-            zone_id=str(row["zone_id"]),
-            resolved_start_at=resolved_start_at,
-            resolved_end_at=resolved_end_at,
-            display_starts_local_at=_view_local(
-                resolved_start_at,
-                zone_id=effective_zone_id,
-            ),
-            display_ends_local_at=_view_local(
-                resolved_end_at,
-                zone_id=effective_zone_id,
-            ),
-        )
-    if temporal_form == "absolute":
-        starts_at = row["starts_at"]
-        ends_at = row["ends_at"]
-        return TimelineAbsoluteActivityItem(
-            **identity,
-            starts_at=starts_at,
-            ends_at=ends_at,
-            display_starts_local_at=_view_local(starts_at, zone_id=effective_zone_id),
-            display_ends_local_at=_view_local(ends_at, zone_id=effective_zone_id),
-        )
-    if temporal_form == "coarse_local_period":
-        period = str(row["period_code"])
-        if period not in {"morning", "afternoon", "evening"}:
-            raise ValueError("Timeline coarse local period is outside the activated vocabulary")
-        return TimelineCoarseLocalPeriodActivityItem(
-            **identity,
-            local_date=row["coarse_local_date"],
-            period=cast(CoarseLocalPeriod, period),
-        )
-    raise ValueError("Timeline placement form is outside the activated projection")
+
+    if owner_kind == "activity":
+        if temporal_form == "date_span":
+            return TimelineDateSpanActivityItem(
+                activity_ref=subject_ref,
+                **identity,
+                start_date=row["start_date"],
+                end_date_exclusive=row["end_date_exclusive"],
+            )
+        if temporal_form == "floating_local":
+            return TimelineFloatingLocalActivityItem(
+                activity_ref=subject_ref,
+                **identity,
+                starts_local_at=row["floating_starts_local_at"],
+                ends_local_at=row["floating_ends_local_at"],
+            )
+        if temporal_form == "named_zone_local":
+            resolved_start_at = row["resolved_start_at"]
+            resolved_end_at = row["resolved_end_at"]
+            return TimelineNamedZoneLocalActivityItem(
+                activity_ref=subject_ref,
+                **identity,
+                starts_local_at=row["named_starts_local_at"],
+                ends_local_at=row["named_ends_local_at"],
+                zone_id=str(row["zone_id"]),
+                resolved_start_at=resolved_start_at,
+                resolved_end_at=resolved_end_at,
+                display_starts_local_at=_view_local(
+                    resolved_start_at,
+                    zone_id=effective_zone_id,
+                ),
+                display_ends_local_at=_view_local(
+                    resolved_end_at,
+                    zone_id=effective_zone_id,
+                ),
+            )
+        if temporal_form == "absolute":
+            starts_at = row["starts_at"]
+            ends_at = row["ends_at"]
+            return TimelineAbsoluteActivityItem(
+                activity_ref=subject_ref,
+                **identity,
+                starts_at=starts_at,
+                ends_at=ends_at,
+                display_starts_local_at=_view_local(starts_at, zone_id=effective_zone_id),
+                display_ends_local_at=_view_local(ends_at, zone_id=effective_zone_id),
+            )
+        if temporal_form == "coarse_local_period":
+            period = str(row["period_code"])
+            if period not in {"morning", "afternoon", "evening"}:
+                raise ValueError("Timeline coarse local period is outside the activated vocabulary")
+            return TimelineCoarseLocalPeriodActivityItem(
+                activity_ref=subject_ref,
+                **identity,
+                local_date=row["coarse_local_date"],
+                period=cast(CoarseLocalPeriod, period),
+            )
+        raise ValueError("Timeline Activity placement form is outside the activated projection")
+
+    if owner_kind == "event":
+        if temporal_form == "date_span":
+            return TimelineDateSpanEventItem(
+                event_ref=subject_ref,
+                **identity,
+                start_date=row["start_date"],
+                end_date_exclusive=row["end_date_exclusive"],
+            )
+        if temporal_form == "floating_local":
+            return TimelineFloatingLocalEventItem(
+                event_ref=subject_ref,
+                **identity,
+                starts_local_at=row["floating_starts_local_at"],
+                ends_local_at=row["floating_ends_local_at"],
+            )
+        if temporal_form == "named_zone_local":
+            resolved_start_at = row["resolved_start_at"]
+            resolved_end_at = row["resolved_end_at"]
+            return TimelineNamedZoneLocalEventItem(
+                event_ref=subject_ref,
+                **identity,
+                starts_local_at=row["named_starts_local_at"],
+                ends_local_at=row["named_ends_local_at"],
+                zone_id=str(row["zone_id"]),
+                resolved_start_at=resolved_start_at,
+                resolved_end_at=resolved_end_at,
+                display_starts_local_at=_view_local(
+                    resolved_start_at,
+                    zone_id=effective_zone_id,
+                ),
+                display_ends_local_at=_view_local(
+                    resolved_end_at,
+                    zone_id=effective_zone_id,
+                ),
+            )
+        if temporal_form == "absolute":
+            starts_at = row["starts_at"]
+            ends_at = row["ends_at"]
+            return TimelineAbsoluteEventItem(
+                event_ref=subject_ref,
+                **identity,
+                starts_at=starts_at,
+                ends_at=ends_at,
+                display_starts_local_at=_view_local(starts_at, zone_id=effective_zone_id),
+                display_ends_local_at=_view_local(ends_at, zone_id=effective_zone_id),
+            )
+        if temporal_form == "coarse_local_period":
+            period = str(row["period_code"])
+            if period not in {"morning", "afternoon", "evening"}:
+                raise ValueError("Timeline coarse local period is outside the activated vocabulary")
+            return TimelineCoarseLocalPeriodEventItem(
+                event_ref=subject_ref,
+                **identity,
+                local_date=row["coarse_local_date"],
+                period=cast(CoarseLocalPeriod, period),
+            )
+        raise ValueError("Timeline Event placement form is outside the activated projection")
+
+    raise ValueError("Timeline owner family is outside the activated projection")
 
 
 class TemporalTimelineApplication:
@@ -202,7 +337,7 @@ class TemporalTimelineApplication:
         query: TimelineWindowQuery,
         context: DanteContext,
     ) -> TimelineWindowResult:
-        """Read every activated current Schedule form in one half-open local-date window."""
+        """Read Activity and Event Schedule projections in one local-date window."""
         start_local_at = datetime.combine(query.start_date, time.min)
         end_local_at = datetime.combine(query.end_date_exclusive, time.min)
         start_instant, _ = local_day_utc_bounds(
@@ -215,8 +350,22 @@ class TemporalTimelineApplication:
         )
         statement = text(
             """
-            SELECT intention.activity_ref,
-                   intention.title,
+            WITH self_subject AS (
+                SELECT 'activity'::text AS owner_kind,
+                       intention.activity_ref AS subject_native_ref,
+                       intention.self_person_ref,
+                       intention.title
+                  FROM dante.activity_intention AS intention
+                UNION ALL
+                SELECT 'event'::text AS owner_kind,
+                       expectation.event_ref AS subject_native_ref,
+                       expectation.self_person_ref,
+                       expectation.title
+                  FROM dante.event_expectation AS expectation
+            )
+            SELECT subject.owner_kind,
+                   subject.subject_native_ref,
+                   subject.title,
                    schedule.schedule_ref,
                    current.material_state_ref,
                    placement.temporal_form_code,
@@ -233,9 +382,9 @@ class TemporalTimelineApplication:
                    absolute_payload.ends_at,
                    coarse_payload.local_date AS coarse_local_date,
                    coarse_payload.period_code
-              FROM dante.activity_intention AS intention
+              FROM self_subject AS subject
               JOIN dante.schedule AS schedule
-                ON schedule.subject_native_ref = intention.activity_ref
+                ON schedule.subject_native_ref = subject.subject_native_ref
               JOIN dante.schedule_current_placement AS current
                 ON current.scoped_owner_ref = schedule.schedule_ref
               JOIN dante.schedule_placement_state AS placement
@@ -251,7 +400,7 @@ class TemporalTimelineApplication:
                 ON absolute_payload.material_state_ref = placement.material_state_ref
               LEFT JOIN dante.schedule_placement_coarse_local_period_state AS coarse_payload
                 ON coarse_payload.material_state_ref = placement.material_state_ref
-             WHERE intention.self_person_ref = :self_person_ref
+             WHERE subject.self_person_ref = :self_person_ref
                AND (
                     (
                         placement.temporal_form_code = 'date_span'
