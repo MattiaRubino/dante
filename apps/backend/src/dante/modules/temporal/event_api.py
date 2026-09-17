@@ -27,6 +27,7 @@ from dante.modules.temporal.schedule import (
     DateSpanPlacement,
     FloatingLocalIntervalPlacement,
     NamedZoneLocalIntervalPlacement,
+    ScheduleInputError,
     SchedulePlacement,
 )
 from dante.platform.database.references import NativeRef
@@ -85,6 +86,8 @@ class EventAbsoluteIntervalPlacementRequest(BaseModel):
 
 
 class EventCoarseLocalPeriodPlacementRequest(BaseModel):
+    """Shared Schedule form kept typed but not activated for Event authoring in B03-B."""
+
     model_config = ConfigDict(extra="forbid")
 
     kind: Literal["coarse_local_period"] = "coarse_local_period"
@@ -96,8 +99,7 @@ EventSchedulePlacementRequest = Annotated[
     EventDateSpanPlacementRequest
     | EventFloatingLocalIntervalPlacementRequest
     | EventNamedZoneLocalIntervalPlacementRequest
-    | EventAbsoluteIntervalPlacementRequest
-    | EventCoarseLocalPeriodPlacementRequest,
+    | EventAbsoluteIntervalPlacementRequest,
     Field(discriminator="kind"),
 ]
 
@@ -249,10 +251,7 @@ def _placement_from_request(payload: EventSchedulePlacementRequest) -> ScheduleP
             starts_at=payload.starts_at,
             ends_at=payload.ends_at,
         )
-    return CoarseLocalPeriodPlacement(
-        local_date=payload.local_date,
-        period=payload.period,
-    )
+    raise TypeError("Unsupported Event authoring placement")
 
 
 def _scheduled_event_response(
@@ -372,7 +371,7 @@ async def create_scheduled_event(
             title=payload.title,
             placement=placement,
         )
-    except EventInputError as exc:
+    except (EventInputError, ScheduleInputError) as exc:
         raise ProblemError(
             status=422,
             code="temporal.event.invalid_schedule_create",
