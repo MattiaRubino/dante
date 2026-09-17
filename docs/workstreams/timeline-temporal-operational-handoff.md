@@ -1,14 +1,15 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B03-A ✅ CLOSED / PROVEN → B03-B NEXT
-- **Reconciled:** 2026-09-16
+- **Status:** B03-B ✅ CLOSED / PROVEN → B03-C NEXT
+- **Reconciled:** 2026-09-17
 - **Branch:** `feature/timeline-temporal-operational`
 - **Current roadmap:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Current live map/ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **B02 closure:** `docs/workstreams/timeline-temporal-operational-b02-closure-2026-09-16.md`
 - **B03 plan:** `docs/workstreams/timeline-temporal-operational-b03-execution-plan.md`
 - **B03-A closure:** `docs/workstreams/timeline-temporal-operational-b03-a-closure-2026-09-16.md`
-- **Next implementation gate:** `APPROVE B03-B`
+- **B03-B closure:** `docs/workstreams/timeline-temporal-operational-b03-b-closure-2026-09-17.md`
+- **Next implementation gate:** `APPROVE B03-C`
 - **CI:** no CI launch is implied or authorized
 
 ## 1. Current workstream position
@@ -17,7 +18,7 @@
 B00 Real Data Spine                              ✅ CLOSED / PROVEN
 B01 Activity Core                                ✅ CLOSED / PROVEN
 B02 Schedule Core                                ✅ CLOSED / PROVEN
-B03 Event Core                                   🟨 B03-A CLOSED / B03-B NEXT
+B03 Event Core                                   🟨 B03-A + B03-B CLOSED / B03-C NEXT
 B04 Temporal Constraints + Movement Policy       ⬜
 B05 Product Organization                         ⬜
 B06 Routine / Recurrence / Occurrence Baseline   ⬜
@@ -32,42 +33,74 @@ B14 Analytics / Statistics / Signals             ⬜
 B15 Whole Vertical Closure                       ⬜
 ```
 
-## 2. B03-A accepted result
+## 2. Accepted B03 foundation
 
-B03-A establishes Event as a real canonical self-owned originating owner.
-
-Current Event core:
+B03-A established Event as a real canonical self-owned originating owner:
 
 ```text
-dante.event                               existing Event NativeRef owner
-event_expectation                         canonical typed expectation descriptor
-event_create_operation                    immutable CreateEvent receipt
-create_self_event(...)                    bounded runtime capability
-TemporalEventApplication                  backend application boundary
-POST /api/v1/temporal/events              governed CreateEvent
-GET  /api/v1/temporal/events/{event_ref}  self-scoped detail
+dante.event
+event_expectation
+event_create_operation
+create_self_event(...)
+TemporalEventApplication
+POST /api/v1/temporal/events
+GET  /api/v1/temporal/events/{event_ref}
+```
+
+B03-B then proved Event can use the same Schedule machinery already proven for Activity:
+
+```text
+Activity ─┐
+          ├→ shared ScheduleRef / placement MaterialState / current/history
+Event ────┘
 ```
 
 Current candidate DB:
 
 ```text
 PostgreSQL 18.6
-Alembic     20260916_27
+Alembic     20260917_28
 Topology    98|5|29|78|195|115|288|0|0|0
 ```
 
-B03-A proof:
+`_28` changes governed Schedule routine definitions/authorization but does not create a second Event scheduling schema.
+
+## 3. B03-B accepted result
+
+Implemented and proven:
 
 ```text
-Event core/API PostgreSQL                         2 PASS
-catalog/Dictionary/migration targeted gate       10 PASS
-initial harness-only privilege defect             1 FAIL
-corrected exact harness proof                     1 PASS
+typed Activity OR Event Schedule self-scope
+atomic Event + initial Schedule application
+floating-local Event
+named-zone-local Event with explicit DST disambiguation
+all-day/date-span Event
+multi-day Event
+Timeline scheduled_activity | scheduled_event union
+strict API / TypeScript parser + hydration
+minimal truthful scheduled Event Create runtime
+Activity Schedule regression preservation
+no event_schedule table/current/history engine
 ```
 
-The failed assertion was not product behavior: the new migration test queried `dante.alembic_version` without entering the accepted migrator/owner role discipline. Commit `8dc423adc8f2cf5cf115061192c603d806e923b3` corrected the harness and the exact proof passed.
+Event lifecycle mutation remains intentionally read-only in B03-B. The Timeline can render Event, but reschedule/unschedule/Undo UI capability is not activated for Event until B03-C.
 
-## 3. Semantic boundaries still binding
+## 4. B03-B proof summary
+
+```text
+PostgreSQL/API targeted selection      18 PASS / 4 FAIL first run
+single _28 PL/pgSQL regression         fixed by af16b700
+exact failed selection rerun           4 PASS
+Event transport/Timeline web           10 PASS
+B03 Create-runtime web                  2 PASS
+@dante/web typecheck                    PASS
+```
+
+The first failure set exposed a real `_28` regression: redefining `unschedule_self_schedule(...)` had lost B02 PL/pgSQL strict disambiguation. The fix restored `#variable_conflict error` and qualified history-column references, preserving both runtime behavior and historical migration round-trip expectations.
+
+Frontend closure also caught and fixed an Activity/Event lifecycle narrowing issue: Event projections remain read-only for lifecycle mutation in B03-B rather than accidentally acquiring B03-C semantics.
+
+## 5. Semantic boundaries still binding
 
 ```text
 Activity != Event
@@ -82,65 +115,51 @@ Event != Availability / Capacity Claim
 Event identity != provider identity
 Agenda part != Activity/Event/Occurrence/Session/Actual by default
 original expectation != current Schedule != Actual occurrence
+projection != canonical truth
 ```
 
-B03-A did not weaken any of these boundaries.
+## 6. Exact B03-C target
 
-## 4. Shared Schedule contract for B03-B
+B03-C owns **Event placement lifecycle**.
 
-B03-B must prove:
+Required behavior:
 
 ```text
-Activity ─┐
-          ├→ one Schedule owner/current/history capability
-Event ────┘
+same stable Event identity
++ current Schedule may be revised or absent
++ Schedule history remains monotonic
++ original expectation remains distinct from current placement
 ```
 
-Forbidden:
+Scope:
 
 ```text
-event_schedule table
-Event-specific scheduling engine
-Event-specific current/history model
-generic owner/EAV shortcut that erases Activity/Event meaning
+1. Event reschedule through shared Schedule revision
+2. postponed/TBD Event without placeholder date/time
+3. Event remains readable when no current Schedule exists
+4. detail/read surfaces expose current placement state truthfully
+5. guarded Event Undo creates a new accepted placement MaterialState
+6. no history rewind / resurrection shortcut
+7. frontend lifecycle actions activate only after backend capability is proven
+8. Activity path remains unchanged
 ```
 
-Current Schedule physical eligibility already includes:
+Postponed/TBD must satisfy:
 
 ```text
-activity | event | occurrence
+Event identity retained
+historical Schedule retained
+no current accepted Schedule
+no fabricated placeholder date/time
+postponed/TBD Event != Planning Tray Activity
 ```
 
-The remaining implementation gap is runtime/application/read-model activation, not a second temporal model.
+## 7. Explicit B03-C stop lines
 
-## 5. Exact B03-B scope
-
-```text
-1. generalize self-subject authorization from Activity-only to typed Activity OR Event
-2. preserve Activity path unchanged
-3. reuse existing Schedule identity/current/history machinery
-4. atomic Event + initial Schedule application operation
-5. timed floating-local Event
-6. timed named-zone-local Event
-7. all-day/date-span Event
-8. multi-day Event
-9. Timeline backend/API Activity + Event discriminated union
-10. TypeScript strict union/parser/rendering
-11. activate minimal truthful Event Create surface
-12. rerun B02 Activity Schedule regression proof
-```
-
-B03-B exit condition:
+Do not activate while implementing B03-C:
 
 ```text
-Activity and Event both use the same Schedule owner/current/history machinery
-```
-
-## 6. Explicit B03-B stop lines
-
-Do not activate in B03-B:
-
-```text
+Agenda durable persistence                 → B03-D
 Event recurrence                           → B06
 Temporal Constraints / movement policy     → B04
 Life Area / Calendar / Tags                → B05
@@ -149,35 +168,28 @@ participants / invitation responses        → B09
 Actual / Outcome / Confirmation            → B10
 reminders / conditional policy             → B11
 provider conferencing / sync               → B13
-Agenda durable persistence                 → B03-D
-postponed/TBD lifecycle                    → B03-C
 ```
 
-The existing rich Event frontend prototype must continue to fail closed for unsupported fields. No accepted request may silently discard future-domain intent.
-
-## 7. Remaining B03 slices
+## 8. Remaining B03 slices
 
 ```text
-B03-B  Shared Schedule + Event Timeline
-B03-C  reschedule + postponed/TBD + detail/read + guarded Undo
+B03-C  Event placement lifecycle
 B03-D  bounded ordered Agenda/internal parts
 B03-E  full closure: PG/API/frontend/E2E/manual/Dictionary/docs
 ```
 
-## 8. Detailed semantic authority
+## 9. Detailed semantic authority
 
 The initial full functionality/logic map remains binding at:
 
-```text
-docs/workstreams/archive/timeline-temporal-operational-map-ledger-snapshot-2026-09-15.md
-```
+`docs/workstreams/archive/timeline-temporal-operational-map-ledger-snapshot-2026-09-15.md`
 
 It remains the semantic freeze for functionality, `!=` disambiguations, owner/lifecycle rules and future-block responsibilities. The live map records implementation progress; it does not replace or erase the detailed freeze.
 
-## 9. Next gate
+## 10. Next gate
 
 ```text
-APPROVE B03-B
+APPROVE B03-C
 ```
 
-No B03-C/D/E implementation and no CI run are implied by B03-A closure.
+No B03-C/D/E implementation and no CI run are implied by B03-B closure.
