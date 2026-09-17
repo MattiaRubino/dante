@@ -12,6 +12,8 @@ const homeWithB02D = {
       ...home.timeline.detail,
       unschedule: 'Riporta nel Planning Tray',
       unscheduling: 'Ritorno in corso…',
+      eventPostpone: 'Posticipa / data da definire',
+      eventPostponing: 'Aggiornamento in corso…',
     },
     feedback: {
       ...home.timeline.feedback,
@@ -23,11 +25,11 @@ const homeWithB02D = {
         'Impossibile aggiornare questa pianificazione in sicurezza.',
       scheduleUndoAvailable: 'Modifica salvata.',
       scheduleUnscheduled:
-        'Attività riportata nel Planning Tray. La Timeline si sta aggiornando.',
+        'Collocazione rimossa dalla Timeline. Lo stato corrente si sta aggiornando.',
       scheduleUnscheduleConflict:
         'La pianificazione è cambiata altrove. Non è stata rimossa.',
       scheduleUnscheduleUnavailable:
-        'Impossibile riportare questa pianificazione in sicurezza.',
+        'Impossibile rimuovere questa collocazione in sicurezza.',
       scheduleUndoUpdated: 'Modifica precedente della pianificazione ripristinata.',
       scheduleUndoConflict:
         'Una modifica successiva impedisce l’annullamento. Nulla è stato sovrascritto.',
