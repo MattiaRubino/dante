@@ -103,13 +103,10 @@ export function TimelineAllDayLane({
               ? coarsePeriodLabel(item.coarsePeriod, language)
               : t(($) => $.common.home.timeline.create.timeSemantics.allDay);
           const basis = item.canonicalBasis;
-          const activityBasis =
-            basis?.kind === 'scheduled-activity' ? basis : undefined;
-          const canUnschedule =
-            activityBasis !== undefined && canonicalActions !== null;
+          const canUnschedule = basis !== undefined && canonicalActions !== null;
           const pending =
-            activityBasis !== undefined &&
-            canonicalActions?.pendingScheduleRef === activityBasis.scheduleRef;
+            basis !== undefined &&
+            canonicalActions?.pendingScheduleRef === basis.scheduleRef;
 
           return (
             <div className="timeline-all-day-item-row" key={item.id}>
@@ -151,9 +148,9 @@ export function TimelineAllDayLane({
                   className="timeline-all-day-item__unschedule"
                   type="button"
                   disabled={pending}
-                  data-timeline-unschedule-schedule={activityBasis.scheduleRef}
+                  data-timeline-unschedule-schedule={basis.scheduleRef}
                   aria-label={`${t(($) => $.common.home.timeline.detail.unschedule)} · ${item.title}`}
-                  onClick={() => canonicalActions.unschedule(activityBasis)}
+                  onClick={() => canonicalActions.unschedule(basis)}
                 >
                   {pending
                     ? t(($) => $.common.home.timeline.detail.unscheduling)
