@@ -42,11 +42,13 @@ export function TimelineEventAgendaEditor({
   const [notice, setNotice] = useState<'conflict' | 'error' | null>(null);
 
   const load = useCallback(
-    async (signal?: AbortSignal) => {
+    async (signal?: AbortSignal, clearNotice = true) => {
       try {
         const record = await source.loadEvent(eventRef, signal);
         setState({ status: 'ready', record });
-        setNotice(null);
+        if (clearNotice) {
+          setNotice(null);
+        }
       } catch (error) {
         if (signal?.aborted) {
           return;
@@ -95,7 +97,7 @@ export function TimelineEventAgendaEditor({
           error.status === 409 &&
           error.code === 'temporal.event.agenda_revision_conflict';
         setNotice(conflict ? 'conflict' : 'error');
-        await load();
+        await load(undefined, false);
       } finally {
         setBusy(false);
       }
