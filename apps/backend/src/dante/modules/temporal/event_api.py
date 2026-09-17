@@ -15,7 +15,9 @@ from dante.context.dependencies import (
     require_mutating_dante_context,
 )
 from dante.modules.temporal.event import (
+    EventAgendaRevisionConflictError,
     EventInputError,
+    EventNotFoundError,
     EventOperationIdReuseError,
     EventPersistenceError,
     EventView,
@@ -44,13 +46,21 @@ AgendaPart = Annotated[str, Field(min_length=1, max_length=1000)]
 
 
 class CreateEventRequest(BaseModel):
-    """CreateEvent command with bounded Event-internal Agenda values."""
-
     model_config = ConfigDict(extra="forbid")
 
     operation_id: str = Field(min_length=1, max_length=200)
     title: str = Field(min_length=1, max_length=300)
     agenda_parts: list[AgendaPart] = Field(default_factory=list, max_length=100)
+
+
+class ReplaceEventAgendaRequest(BaseModel):
+    """Whole-Agenda replacement behind explicit aggregate CAS."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    operation_id: str = Field(min_length=1, max_length=200)
+    expected_revision: int = Field(ge=0)
+    agenda_parts: list[AgendaPart] = Field(max_length=100)
 
 
 class EventDateSpanPlacementRequest(BaseModel):
@@ -88,8 +98,6 @@ class EventAbsoluteIntervalPlacementRequest(BaseModel):
 
 
 class EventCoarseLocalPeriodPlacementRequest(BaseModel):
-    """Shared Schedule form kept typed but not activated for Event authoring in B03."""
-
     model_config = ConfigDict(extra="forbid")
 
     kind: Literal["coarse_local_period"] = "coarse_local_period"
@@ -107,8 +115,6 @@ EventSchedulePlacementRequest = Annotated[
 
 
 class CreateScheduledEventRequest(BaseModel):
-    """Atomic Event expectation + Agenda + shared Schedule authoring command."""
-
     model_config = ConfigDict(extra="forbid")
 
     operation_id: str = Field(min_length=1, max_length=200)
@@ -118,14 +124,22 @@ class CreateScheduledEventRequest(BaseModel):
 
 
 class EventResponse(BaseModel):
-    """Canonical Event expectation representation at the activated B03-D scope."""
-
     model_config = ConfigDict(extra="forbid")
 
     event_ref: UUID
     title: str
+    agenda_revision: int = Field(ge=0)
     agenda_parts: list[str]
     created_at: datetime
+    replayed: bool = False
+
+
+class EventAgendaMutationResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    event_ref: UUID
+    agenda_revision: int = Field(ge=1)
+    agenda_parts: list[str]
     replayed: bool = False
 
 
@@ -134,6 +148,7 @@ class ScheduledEventFloatingResponse(BaseModel):
 
     event_ref: UUID
     title: str
+    agenda_revision: int = Field(ge=0)
     agenda_parts: list[str]
     created_at: datetime
     schedule_ref: UUID
@@ -149,6 +164,7 @@ class ScheduledEventDateSpanResponse(BaseModel):
 
     event_ref: UUID
     title: str
+    agenda_revision: int = Field(ge=0)
     agenda_parts: list[str]
     created_at: datetime
     schedule_ref: UUID
@@ -164,6 +180,7 @@ class ScheduledEventNamedZoneResponse(BaseModel):
 
     event_ref: UUID
     title: str
+    agenda_revision: int = Field(ge=0)
     agenda_parts: list[str]
     created_at: datetime
     schedule_ref: UUID
@@ -182,6 +199,7 @@ class ScheduledEventAbsoluteResponse(BaseModel):
 
     event_ref: UUID
     title: str
+    agenda_revision: int = Field(ge=0)
     agenda_parts: list[str]
     created_at: datetime
     schedule_ref: UUID
@@ -197,6 +215,7 @@ class ScheduledEventCoarseResponse(BaseModel):
 
     event_ref: UUID
     title: str
+    agenda_revision: int = Field(ge=0)
     agenda_parts: list[str]
     created_at: datetime
     schedule_ref: UUID
@@ -232,6 +251,7 @@ def _event_response(event: EventView, *, replayed: bool = False) -> EventRespons
     return EventResponse(
         event_ref=event.event_ref,
         title=event.title,
+        agenda_revision=event.agenda_revision,
         agenda_parts=list(event.agenda_parts),
         created_at=event.created_at,
         replayed=replayed,
@@ -275,6 +295,7 @@ def _scheduled_event_response(
     common: dict[str, Any] = {
         "event_ref": event.event_ref,
         "title": event.title,
+        "agenda_revision": event.agenda_revision,
         "agenda_parts": list(event.agenda_parts),
         "created_at": event.created_at,
         "schedule_ref": schedule_ref,
@@ -312,6 +333,17 @@ def _scheduled_event_response(
         **common,
         local_date=placement.local_date,
         period=placement.period,
+    )
+
+
+def _not_found_problem() -> ProblemError:
+    return ProblemError(
+        status=404,
+        code="temporal.event.not_found",
+        category="not_found",
+        title="Event not found",
+        detail="No Event is available at that reference in the current self scope.",
+        retryable=False,
     )
 
 
@@ -423,6 +455,70 @@ async def create_scheduled_event(
     )
 
 
+@router.put("/events/{event_ref}/agenda", response_model=EventAgendaMutationResponse)
+async def replace_event_agenda(
+    event_ref: UUID,
+    payload: ReplaceEventAgendaRequest,
+    context: MutatingDanteContextDependency,
+    application: TemporalEventApplicationDependency,
+    response: Response,
+) -> EventAgendaMutationResponse:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        result = await application.replace_agenda(
+            self_person_ref=context.self_person_ref,
+            event_ref=NativeRef(event_ref),
+            operation_id=payload.operation_id,
+            expected_revision=payload.expected_revision,
+            agenda_parts=payload.agenda_parts,
+        )
+    except EventInputError as exc:
+        raise ProblemError(
+            status=422,
+            code="temporal.event.invalid_agenda",
+            category="validation",
+            title="Invalid Event Agenda",
+            detail=str(exc),
+            retryable=False,
+        ) from exc
+    except EventOperationIdReuseError as exc:
+        raise ProblemError(
+            status=409,
+            code="temporal.event.agenda_operation_id_reused",
+            category="conflict",
+            title="Event Agenda operation conflict",
+            detail="The operation id was already used for a different Agenda mutation.",
+            retryable=False,
+        ) from exc
+    except EventAgendaRevisionConflictError as exc:
+        raise ProblemError(
+            status=409,
+            code="temporal.event.agenda_revision_conflict",
+            category="conflict",
+            title="Event Agenda revision conflict",
+            detail="The Event Agenda changed after the expected revision was read.",
+            retryable=False,
+        ) from exc
+    except EventNotFoundError as exc:
+        raise _not_found_problem() from exc
+    except EventPersistenceError as exc:
+        raise ProblemError(
+            status=503,
+            code="temporal.event.persistence_unavailable",
+            category="service",
+            title="Event unavailable",
+            detail="The Event Agenda could not be persisted safely.",
+            retryable=True,
+        ) from exc
+
+    return EventAgendaMutationResponse(
+        event_ref=result.event_ref,
+        agenda_revision=result.agenda_revision,
+        agenda_parts=list(result.agenda_parts),
+        replayed=result.replayed,
+    )
+
+
 @router.get("/events/{event_ref}", response_model=EventResponse)
 async def get_event(
     event_ref: UUID,
@@ -447,12 +543,5 @@ async def get_event(
         ) from exc
 
     if event is None:
-        raise ProblemError(
-            status=404,
-            code="temporal.event.not_found",
-            category="not_found",
-            title="Event not found",
-            detail="No Event is available at that reference in the current self scope.",
-            retryable=False,
-        )
+        raise _not_found_problem()
     return _event_response(event)
