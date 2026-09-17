@@ -7,6 +7,7 @@
 - **B03 plan:** `docs/workstreams/timeline-temporal-operational-b03-execution-plan.md`
 - **B03-A closure:** `docs/workstreams/timeline-temporal-operational-b03-a-closure-2026-09-16.md`
 - **B03-B closure:** `docs/workstreams/timeline-temporal-operational-b03-b-closure-2026-09-17.md`
+- **B03-C closure:** `docs/workstreams/timeline-temporal-operational-b03-c-closure-2026-09-17.md`
 - **Detailed semantic freeze:** `docs/workstreams/archive/timeline-temporal-operational-map-ledger-snapshot-2026-09-15.md`
 - **Historical roadmap freeze:** `docs/workstreams/archive/timeline-temporal-operational-roadmap-freeze-2026-09-07.md`
 
@@ -124,7 +125,7 @@ A green item means its applicable semantic, persistence/application and proof ob
 B00 Real Data Spine                              ✅ CLOSED / PROVEN
 B01 Activity Core                                ✅ CLOSED / PROVEN
 B02 Schedule Core                                ✅ CLOSED / PROVEN
-B03 Event Core                                   🟨 B03-A + B03-B CLOSED / B03-C NEXT
+B03 Event Core                                   🟨 B03-A + B03-B + B03-C CLOSED / B03-D NEXT
 B04 Temporal Constraints + Movement Policy       ⬜
 B05 Product Organization                         ⬜
 B06 Routine / Recurrence / Occurrence Baseline   ⬜
@@ -203,8 +204,8 @@ Event-as-busy/capacity shortcut
 - ✅ **[EVT-005]** Timed Event uses the shared B02 Schedule capability.
 - ✅ **[EVT-006]** All-day/date-span Event projects into the real all-day lane without fabricated clock time.
 - ✅ **[EVT-007]** Multi-day Event semantics/query/rendering preserve date-span truth.
-- ⬜ **[EVT-008]** Postponed/TBD Event with identity/history and no fake placeholder Schedule. → B03-C
-- ⬜ **[EVT-009]** Original expectation/current Schedule/Actual separation through Event lifecycle. → B03-C/B10
+- ✅ **[EVT-008]** Postponed/TBD Event retains Event identity and Schedule history with no current placement and no fabricated placeholder date/time.
+- 🟨 **[EVT-009]** Event expectation/current Schedule separation is proven through B03-C; future Actual truth remains B10-owned.
 - ⬜ **[EVT-010]** Event Agenda/internal parts at accepted product level. → B03-D
 - ⬜ **[EVT-011]** Agenda part `!= Activity/Event/Occurrence/Session/Actual` by default. → B03-D proof
 - ⬜ **[EVT-012]** Preparation/follow-up Activity relation only when exact relation semantics are activated.
@@ -216,10 +217,10 @@ Event-as-busy/capacity shortcut
 
 - ✅ **[B03-T01]** Event create/application tests — real PostgreSQL/API self-scope, CSRF, replay and changed-intent conflict.
 - ✅ **[B03-T02]** Timed/all-day/multi-day PostgreSQL/API tests — floating, named-zone/DST, date-span, multi-day, mixed Timeline and idempotency proven.
-- ⬜ **[B03-T03]** Postponed/TBD history/query tests. → B03-C
+- ✅ **[B03-T03]** Postponed/TBD history/query tests — stable Event/Schedule identity, no current placement, preserved monotonic history, stale CAS rejection and guarded Undo proven.
 - ⬜ **[B03-T04]** Event Agenda semantic/frontend tests. → B03-D
-- ✅ **[B03-T05]** Shared Schedule regression suite for Activity + Event — B02 PL/pgSQL hardening preserved through `_28`; exact previously failing regression set rerun `4 passed` after fix.
-- ⬜ **[B03-T06]** E2E Event create/reschedule/all-day/reload test. → B03-E after lifecycle is complete
+- ✅ **[B03-T05]** Shared Schedule regression suite for Activity + Event — B02 PL/pgSQL hardening preserved through `_28`; B03-C regression selection remains green.
+- ⬜ **[B03-T06]** E2E Event create/reschedule/all-day/reload test. → B03-E after lifecycle and Agenda are complete
 - ⬜ **[B03-T07]** Manual `userTest` Event acceptance. → B03-E
 
 ## 6.4 B03-A — Event canonical core ✅ CLOSED / PROVEN
@@ -275,12 +276,42 @@ The first-run failures were not accepted as closure evidence; B03-B closed only 
 
 No recurrence, constraints, participants, Session, Actual, Outcome, reminder, provider sync or Agenda persistence was smuggled into B03-B.
 
-## 6.6 Remaining B03 slices
+## 6.6 B03-C — Event placement lifecycle ✅ CLOSED / PROVEN
+
+Closure authority:
+
+`docs/workstreams/timeline-temporal-operational-b03-c-closure-2026-09-17.md`
+
+Accepted result:
 
 ```text
-B03-C  Event placement lifecycle
-       reschedule + postponed/TBD + detail/read + guarded Undo
+1. Event reschedule uses the shared Schedule revision capability
+2. stable EventRef and ScheduleRef across placement revisions
+3. placement MaterialState advances monotonically
+4. postponed/TBD retains Event + Schedule/history but has no current placement
+5. no placeholder date/time and no Event→Activity conversion
+6. Event remains readable while current placement is absent
+7. stale expected-state mutations fail closed
+8. guarded Undo restores through a new MaterialState, never history rewind
+9. Undo replay remains idempotent
+10. Timeline Event lifecycle uses the same canonical Schedule mutation boundary
+11. newly-created Event can revise/postpone/undo without reload
+12. Activity lifecycle regression path remains preserved
+```
 
+Executed closure evidence:
+
+```text
+PostgreSQL/backend targeted gate    9 PASS / 2 deselected
+Event lifecycle web gate            5 files / 16 PASS
+@dante/web typecheck                PASS
+```
+
+B03-C required no new Alembic revision because `_28` already contained the correct shared Schedule lifecycle capability for Event. No duplicate persistence was introduced.
+
+## 6.7 Remaining B03 slices
+
+```text
 B03-D  Agenda/internal parts
        bounded ordered Event-internal persistence + real frontend integration
 
@@ -329,7 +360,9 @@ provider/conference/sync        → B13
 ```text
 B03-A  ✅ CLOSED / PROVEN
 B03-B  ✅ CLOSED / PROVEN
-B03-C  ⬜ NEXT / NOT YET AUTHORIZED
+B03-C  ✅ CLOSED / PROVEN
+B03-D  ⬜ NEXT / NOT YET AUTHORIZED
+B03-E  ⬜
 ```
 
-The next implementation action requires explicit approval of B03-C. CI remains a separate authorization.
+The next implementation action requires explicit approval of B03-D. CI remains a separate authorization.
