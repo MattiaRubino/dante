@@ -137,7 +137,9 @@ describe('B03-D canonical Event Agenda editor', () => {
     await waitFor(() => expect(loadEvent).toHaveBeenCalledTimes(2));
     expect(await screen.findByRole('button', { name: 'Remoto' })).toBeTruthy();
     expect(
-      screen.getByText('Agenda aggiornata altrove: ho ricaricato la versione corrente.'),
+      screen.getByText(
+        'L’Agenda è cambiata altrove. È stata ricaricata la versione corrente senza sovrascrivere nulla.',
+      ),
     ).toBeTruthy();
   });
 });
