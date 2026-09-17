@@ -29,6 +29,11 @@ def upgrade() -> None:
             "accepted_agenda_parts",
             postgresql.ARRAY(sa.Text()),
             nullable=False,
+            # Keep the empty Agenda as the structural default so the already
+            # accepted B03-A create capability can continue inserting its
+            # receipt without knowing about the later B03-D snapshot column.
+            # The B03-D wrapper overwrites this value atomically for newly
+            # created Events whose accepted initial Agenda is non-empty.
             server_default=sa.text("ARRAY[]::text[]"),
         ),
         schema=_SCHEMA,
@@ -37,12 +42,6 @@ def upgrade() -> None:
         op.f("ck_event_create_operation_accepted_agenda_parts"),
         "event_create_operation",
         "cardinality(accepted_agenda_parts) <= 100",
-        schema=_SCHEMA,
-    )
-    op.alter_column(
-        "event_create_operation",
-        "accepted_agenda_parts",
-        server_default=None,
         schema=_SCHEMA,
     )
 
@@ -532,7 +531,6 @@ def downgrade() -> None:
             """
         )
     )
-
     for signature in (
         "dante.replace_self_event_agenda(uuid,text,text,uuid,bigint,text[])",
         "dante.create_self_event_with_agenda(uuid,text,text,uuid,text,text[])",
@@ -554,8 +552,4 @@ def downgrade() -> None:
         schema=_SCHEMA,
         type_="check",
     )
-    op.drop_column(
-        "event_create_operation",
-        "accepted_agenda_parts",
-        schema=_SCHEMA,
-    )
+    op.drop_column("event_create_operation", "accepted_agenda_parts", schema=_SCHEMA)
