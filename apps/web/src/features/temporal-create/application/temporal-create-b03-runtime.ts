@@ -463,6 +463,12 @@ class B03TemporalCreateRuntime implements TemporalCreateRuntime {
       let currentProjection = projection;
       let currentMaterialStateRef: string | null =
         created.schedule.placementMaterialStateRef;
+      // Keep the exact accepted authoring policy alongside the display projection.
+      // In particular, named-zone overlap choices (earlier/later) must survive
+      // revision Undo; reconstructing them from the display projection can silently
+      // collapse an accepted ambiguous wall-clock choice to "reject".
+      let currentPlacementInput: TemporalSchedulePlacementInput | null =
+        schedulePlacement;
 
       const replaceProjection = (
         nextPlacement: TemporalPlacement | null,
@@ -507,7 +513,8 @@ class B03TemporalCreateRuntime implements TemporalCreateRuntime {
         const operationId = this.ids.operationId();
         if (
           currentMaterialStateRef === null ||
-          currentProjection.placement === null
+          currentProjection.placement === null ||
+          currentPlacementInput === null
         ) {
           return Object.freeze({
             result: unsupportedMutationResult(operationId),
@@ -515,10 +522,8 @@ class B03TemporalCreateRuntime implements TemporalCreateRuntime {
           });
         }
         const requestedPlacement = schedulePlacementInput(nextPlacement);
-        const previousPlacementInput = schedulePlacementInput(
-          currentProjection.placement,
-        );
-        if (requestedPlacement === null || previousPlacementInput === null) {
+        const previousPlacementInput = currentPlacementInput;
+        if (requestedPlacement === null) {
           return Object.freeze({
             result: invalidPlacementMutationResult(operationId),
             effect: null,
@@ -534,6 +539,7 @@ class B03TemporalCreateRuntime implements TemporalCreateRuntime {
             placement: requestedPlacement,
           });
           currentMaterialStateRef = revised.placementMaterialStateRef;
+          currentPlacementInput = requestedPlacement;
           const item = replaceProjection(
             acceptedPlacementProjection(revised.placement),
             operationId,
@@ -550,6 +556,7 @@ class B03TemporalCreateRuntime implements TemporalCreateRuntime {
                 placement: previousPlacementInput,
               });
               currentMaterialStateRef = restored.placementMaterialStateRef;
+              currentPlacementInput = previousPlacementInput;
               return appliedMutationResult(
                 undoOperationId,
                 replaceProjection(
@@ -577,7 +584,8 @@ class B03TemporalCreateRuntime implements TemporalCreateRuntime {
         const operationId = this.ids.operationId();
         if (
           currentMaterialStateRef === null ||
-          currentProjection.placement === null
+          currentProjection.placement === null ||
+          currentPlacementInput === null
         ) {
           return Object.freeze({
             result: unsupportedMutationResult(operationId),
@@ -585,6 +593,7 @@ class B03TemporalCreateRuntime implements TemporalCreateRuntime {
           });
         }
         const expectedMaterialStateRef = currentMaterialStateRef;
+        const postponedPlacementInput = currentPlacementInput;
         try {
           const postponed = await this.scheduleSource.unscheduleSchedule({
             operationId,
@@ -592,6 +601,7 @@ class B03TemporalCreateRuntime implements TemporalCreateRuntime {
             expectedPlacementMaterialStateRef: expectedMaterialStateRef,
           });
           currentMaterialStateRef = null;
+          currentPlacementInput = null;
           const item = replaceProjection(null, operationId);
           const undo = async (): Promise<TemporalOperationResult> => {
             const undoOperationId = this.ids.operationId();
@@ -603,6 +613,7 @@ class B03TemporalCreateRuntime implements TemporalCreateRuntime {
                   unscheduleOperationId: postponed.unscheduleOperationId,
                 });
               currentMaterialStateRef = restored.placementMaterialStateRef;
+              currentPlacementInput = postponedPlacementInput;
               return appliedMutationResult(
                 undoOperationId,
                 replaceProjection(
