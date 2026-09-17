@@ -1,16 +1,17 @@
 # Timeline / Temporal-Operational Vertical — Implementation Roadmap
 
-- **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-16
+- **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-17
 - **Branch/workstream:** `feature/timeline-temporal-operational`
-- **Current completed frontier:** B02 Schedule Core ✅ CLOSED / PROVEN
-- **Current active block:** B03 Event Core — B03-A ✅ CLOSED / PROVEN
-- **Next implementation gate:** `APPROVE B03-B`
-- **Current candidate DB authority:** PostgreSQL 18.6 / Alembic `20260916_27`
+- **Current completed frontier:** B03-B Shared Schedule + Event Timeline ✅ CLOSED / PROVEN
+- **Current active block:** B03 Event Core
+- **Next implementation gate:** `APPROVE B03-C`
+- **Current candidate DB authority:** PostgreSQL 18.6 / Alembic `20260917_28`
 - **Current candidate topology:** `98|5|29|78|195|115|288|0|0|0`
 - **Live progress ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **B02 closure evidence:** `docs/workstreams/timeline-temporal-operational-b02-closure-2026-09-16.md`
 - **B03 plan:** `docs/workstreams/timeline-temporal-operational-b03-execution-plan.md`
 - **B03-A closure:** `docs/workstreams/timeline-temporal-operational-b03-a-closure-2026-09-16.md`
+- **B03-B closure:** `docs/workstreams/timeline-temporal-operational-b03-b-closure-2026-09-17.md`
 - **Detailed semantic freeze:** `docs/workstreams/archive/timeline-temporal-operational-map-ledger-snapshot-2026-09-15.md`
 
 The archived semantic freeze preserves the complete functionality and logic inventory. This document is the current sequencing authority.
@@ -62,7 +63,7 @@ A block closes only after its applicable semantic, persistence, backend, fronten
 B00 Real Data Spine                              ✅ CLOSED / PROVEN
 B01 Activity Core                                ✅ CLOSED / PROVEN
 B02 Schedule Core                                ✅ CLOSED / PROVEN
-B03 Event Core                                   🟨 B03-A CLOSED / B03-B NEXT
+B03 Event Core                                   🟨 B03-A + B03-B CLOSED / B03-C NEXT
 B04 Temporal Constraints + Movement Policy       ⬜
 B05 Product Organization                         ⬜
 B06 Routine / Recurrence / Occurrence Baseline   ⬜
@@ -113,17 +114,7 @@ Canonical Activity identity, typed actionable-intention descriptor, governed ide
 
 ## B02 — Schedule Core ✅
 
-One shared Schedule identity/current/history machinery is proven for Activity across:
-
-```text
-date_span
-floating_local
-named_zone_local
-absolute
-coarse_local_period
-```
-
-B02 covers establish, revision, CAS, idempotency, history, Planning Tray placement, move/resize/editor, unschedule, guarded Undo, local-day/range query, DST/source-intent semantics and real Chromium/Firefox proof. Schedule remains distinct from Session/Actual.
+One shared Schedule identity/current/history machinery is proven for Activity across date-span, floating-local, named-zone-local, absolute and coarse-local-period, including establish/revision/CAS/idempotency/history/unschedule/guarded Undo/DST and real-stack proof.
 
 ---
 
@@ -132,8 +123,6 @@ B02 covers establish, revision, CAS, idempotency, history, Planning Tray placeme
 ## Objective
 
 Activate Event as a distinct originating owner and prove that the B02 Schedule engine is truly shared rather than Activity-specific.
-
-Target:
 
 ```text
 Activity ─┐
@@ -156,51 +145,63 @@ POST /api/v1/temporal/events
 GET  /api/v1/temporal/events/{event_ref}
 ```
 
-Proven:
+Stable UUIDv7 Event identity, self-Person ownership, persistence/reload, idempotent replay, changed-intent conflict, CSRF/self-scope, Dictionary/SQLAlchemy/Alembic parity and canonical-data downgrade guard are proven.
+
+## B03-B — Shared Schedule + Event Timeline ✅ CLOSED / PROVEN
+
+Implemented at `_28` without changing physical topology counts.
+
+Accepted result:
 
 ```text
-stable UUIDv7 Event identity          ✅
-self-Person ownership                 ✅
-title persistence/reload              ✅
-idempotent same-intent replay         ✅
-changed-intent conflict               ✅
-CSRF/self-scope isolation             ✅
-Dictionary/SQLAlchemy/Alembic parity  ✅
-canonical-data downgrade guard        ✅
+typed Activity OR Event Schedule self-authorization
+single shared Schedule identity/current/history machinery
+atomic Event + initial Schedule commit
+floating-local Event
+named-zone Event with explicit source/resolution semantics
+all-day/date-span Event
+multi-day Event
+Timeline scheduled_activity | scheduled_event union
+strict API + TypeScript parser/hydration
+minimal truthful scheduled-Event Create surface
+Activity Schedule regression preservation
+Event Timeline remains read-only for lifecycle mutations until B03-C
 ```
 
-B03-A did not activate Event Schedule, Timeline, UI or Agenda behavior.
+Proof summary:
 
-## B03-B — Shared Schedule + Event Timeline ⬜ NEXT
+```text
+PostgreSQL/API targeted selection      18 PASS / 4 FAIL first run
+single _28 PL/pgSQL regression         fixed
+exact failed selection rerun           4 PASS
+Event transport/Timeline web           10 PASS
+B03 Create-runtime web                  2 PASS
+@dante/web typecheck                    PASS
+```
 
-Goal: prove Schedule survives a second semantic owner.
+Closure authority: `docs/workstreams/timeline-temporal-operational-b03-b-closure-2026-09-17.md`.
+
+## B03-C — Event placement lifecycle ⬜ NEXT
 
 Required scope:
 
 ```text
-1. typed self-subject authorization: Activity OR Event
-2. no generic EAV/owner shortcut
-3. no Event-specific Schedule tables
-4. atomic Event + initial Schedule application operation
-5. timed floating-local Event
-6. timed named-zone Event
-7. all-day/date-span Event
-8. multi-day Event
-9. Timeline backend/API Activity/Event discriminated union
-10. strict TypeScript union/parser/rendering
-11. activate minimal truthful Event Create surface
-12. rerun Activity Schedule regressions
+reschedule through the shared Schedule revision capability
+postponed/TBD with stable Event identity and no fake placeholder Schedule
+current Schedule may be absent while history remains monotonic
+detail/read after Schedule absence
+guarded Undo by new accepted MaterialState, never history rewind
+historical expectation reconstruction where required
+frontend lifecycle actions activated only after backend truth exists
 ```
 
-Exit proof:
+B03-C must preserve:
 
 ```text
-Activity and Event both use the same Schedule identity/current/history machinery
+postponed/TBD Event != Planning Tray Activity
+original expectation != current Schedule != Actual occurrence
+Event lifecycle != Session/Actual/Outcome lifecycle
 ```
-
-## B03-C — Event placement lifecycle ⬜
-
-Reschedule through shared Schedule revision, postponed/TBD with no fake placeholder Schedule, stable Event identity, detail/read after Schedule absence, guarded Undo and historical expectation reconstruction.
 
 ## B03-D — Agenda/internal parts ⬜
 
@@ -216,7 +217,7 @@ Agenda part != Actual
 
 ## B03-E — Closure ⬜
 
-PostgreSQL/API/frontend regressions, Activity+Event shared Schedule proof, real-stack Chromium, Firefox where affected, manual Event userTest, Dictionary/SQLAlchemy/Alembic/live-catalog reconciliation and map/roadmap/handoff closure.
+Whole-B03 PostgreSQL/API/frontend regressions, real-stack Chromium, Firefox where affected, manual Event userTest, Dictionary/SQLAlchemy/Alembic/live-catalog reconciliation and final map/roadmap/handoff closure.
 
 Deferred beyond B03 remain explicit:
 
@@ -249,24 +250,7 @@ Activate Routine as originating owner, Recurrence as policy, Occurrence as gener
 
 Dedicated product-quality checkpoint after B06. Target: roughly 60–70% polished planning experience while preserving established contracts.
 
-Focus:
-
-```text
-Create information architecture
-Activity / Event / Routine switching
-Timeline + all-day lane
-Planning Tray
-cards/detail/drawers
-Schedule editor
-Life Area / Tags
-Recurrence UX
-spacing/type/component hierarchy
-responsive/mobile
-keyboard/focus
-empty/loading/error states
-```
-
-This is a UI/application refactor, not permission to rewrite Domain/Persistence semantics.
+Focus: Create IA, Activity/Event/Routine switching, Timeline/all-day lane, Planning Tray, detail/editor surfaces, organization, recurrence UX, responsive/mobile, keyboard/focus and truthful empty/loading/error states.
 
 # 8. B08 — Session Runtime ⬜
 
@@ -278,7 +262,7 @@ Actor relations, responsibility and participation/invitation boundaries. Attenda
 
 # 10. B10 — Actual / Outcome / Confirmation / Resolution ⬜
 
-Record what really happened, resulting Outcome, confirmation/correction and Resolution Queue. This is where truthful product controls such as done/partial/not-done/confirm become canonically meaningful rather than decorative booleans.
+Record what really happened, resulting Outcome, confirmation/correction and Resolution Queue.
 
 # 11. B11 — Advanced Recurrence / Conditional / Reminder ⬜
 
@@ -290,7 +274,7 @@ Conflict detection, candidate generation, solver/replanning explanation and gove
 
 # 13. B13 — Provider / Offline / Multi-device ⬜
 
-Provider identity/mapping, sync and conferencing boundaries plus offline/multi-device reconciliation. Provider state never becomes DANTE identity by convenience.
+Provider identity/mapping, sync and conferencing boundaries plus offline/multi-device reconciliation.
 
 # 14. B14 — Analytics / Statistics / Signals ⬜
 
@@ -306,7 +290,8 @@ Cross-block regression, recovery/anti-resurrection, operational hardening, full 
 
 ```text
 B03-A  ✅ CLOSED / PROVEN
-B03-B  ⬜ requires explicit approval
+B03-B  ✅ CLOSED / PROVEN
+B03-C  ⬜ NEXT / requires explicit approval
 ```
 
 CI remains separate and requires explicit authorization.
