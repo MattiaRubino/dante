@@ -2,9 +2,13 @@ import { Temporal, type PlainDateTime } from '@dante/time';
 import { useEffect, useRef } from 'react';
 
 import { useTemporalTimelineRuntime } from '../../../temporal/timeline-runtime-boundary';
-import type { TemporalTimelineScheduledActivityItem } from '../../../temporal/timeline-read';
+import type {
+  TemporalTimelineScheduledActivityItem,
+  TemporalTimelineScheduledItem,
+} from '../../../temporal/timeline-read';
 import type {
   TimelineAllDayItem,
+  TimelineCanonicalScheduleBasis,
   TimelineCanonicalSchedulePlacement,
   TimelineEvent,
 } from './model/timeline-types';
@@ -21,7 +25,7 @@ function minuteOfLocalDay(value: PlainDateTime): number {
 }
 
 function displayedInterval(
-  item: TemporalTimelineScheduledActivityItem,
+  item: TemporalTimelineScheduledItem,
 ): Readonly<{ start: PlainDateTime; end: PlainDateTime }> | null {
   switch (item.temporalForm) {
     case 'floating-local':
@@ -38,7 +42,7 @@ function displayedInterval(
   }
 }
 
-function eventMeta(item: TemporalTimelineScheduledActivityItem): string | undefined {
+function eventMeta(item: TemporalTimelineScheduledItem): string | undefined {
   if (item.temporalForm === 'named-zone-local') {
     return item.zoneId;
   }
@@ -49,7 +53,7 @@ function eventMeta(item: TemporalTimelineScheduledActivityItem): string | undefi
 }
 
 function canonicalPlacement(
-  item: TemporalTimelineScheduledActivityItem,
+  item: TemporalTimelineScheduledItem,
 ): TimelineCanonicalSchedulePlacement {
   switch (item.temporalForm) {
     case 'date-span':
@@ -88,18 +92,30 @@ function canonicalPlacement(
   }
 }
 
-function canonicalBasis(item: TemporalTimelineScheduledActivityItem) {
-  return Object.freeze({
-    kind: 'scheduled-activity' as const,
-    activityRef: item.activityRef,
+function canonicalBasis(
+  item: TemporalTimelineScheduledItem,
+): TimelineCanonicalScheduleBasis {
+  const shared = {
     scheduleRef: item.scheduleRef,
     placementMaterialStateRef: item.placementMaterialStateRef,
     placement: canonicalPlacement(item),
+  };
+  if (item.kind === 'scheduled_activity') {
+    return Object.freeze({
+      kind: 'scheduled-activity' as const,
+      activityRef: item.activityRef,
+      ...shared,
+    });
+  }
+  return Object.freeze({
+    kind: 'scheduled-event' as const,
+    eventRef: item.eventRef,
+    ...shared,
   });
 }
 
-export function canonicalScheduledActivityDateLaneItem(
-  item: TemporalTimelineScheduledActivityItem,
+export function canonicalScheduledDateLaneItem(
+  item: TemporalTimelineScheduledItem,
 ): TimelineAllDayItem | null {
   if (item.temporalForm === 'date-span') {
     return Object.freeze({
@@ -129,8 +145,8 @@ export function canonicalScheduledActivityDateLaneItem(
   return null;
 }
 
-export function canonicalScheduledActivityTimelineEvents(
-  item: TemporalTimelineScheduledActivityItem,
+export function canonicalScheduledTimelineEvents(
+  item: TemporalTimelineScheduledItem,
 ): readonly Readonly<{ dateKey: string; event: TimelineEvent }>[] {
   const interval = displayedInterval(item);
   if (interval === null) {
@@ -179,15 +195,33 @@ export function canonicalScheduledActivityTimelineEvents(
   return Object.freeze(projections);
 }
 
-/** Compatibility helper retained for existing single-card tests and callers. */
-export function canonicalScheduledActivityTimelineEvent(
-  item: TemporalTimelineScheduledActivityItem,
+export function canonicalScheduledTimelineEvent(
+  item: TemporalTimelineScheduledItem,
 ): Readonly<{ dateKey: string; event: TimelineEvent }> {
-  const [projection] = canonicalScheduledActivityTimelineEvents(item);
+  const [projection] = canonicalScheduledTimelineEvents(item);
   if (projection === undefined) {
     throw new TypeError('Date-lane Schedule placement is not a time-grid event.');
   }
   return projection;
+}
+
+/** Compatibility helpers retained for B02 Activity callers and tests. */
+export function canonicalScheduledActivityDateLaneItem(
+  item: TemporalTimelineScheduledActivityItem,
+): TimelineAllDayItem | null {
+  return canonicalScheduledDateLaneItem(item);
+}
+
+export function canonicalScheduledActivityTimelineEvents(
+  item: TemporalTimelineScheduledActivityItem,
+): readonly Readonly<{ dateKey: string; event: TimelineEvent }>[] {
+  return canonicalScheduledTimelineEvents(item);
+}
+
+export function canonicalScheduledActivityTimelineEvent(
+  item: TemporalTimelineScheduledActivityItem,
+): Readonly<{ dateKey: string; event: TimelineEvent }> {
+  return canonicalScheduledTimelineEvent(item);
 }
 
 /**
@@ -223,12 +257,12 @@ export function useAuthoritativeTimelineHydration(
 
     const items = state.window.kind === 'window' ? state.window.items : [];
     reconcileEventsRef.current(
-      Object.freeze(items.flatMap(canonicalScheduledActivityTimelineEvents)),
+      Object.freeze(items.flatMap(canonicalScheduledTimelineEvents)),
     );
     reconcileDateLaneRef.current(
       Object.freeze(
         items.flatMap((item) => {
-          const projected = canonicalScheduledActivityDateLaneItem(item);
+          const projected = canonicalScheduledDateLaneItem(item);
           return projected === null ? [] : [projected];
         }),
       ),
