@@ -50,10 +50,24 @@ export type TimelineCanonicalSchedulePlacement =
 export type TimelineCanonicalScheduledActivityBasis = Readonly<{
   kind: 'scheduled-activity';
   activityRef: string;
+  eventRef?: never;
   scheduleRef: string;
   placementMaterialStateRef: string;
   placement: TimelineCanonicalSchedulePlacement;
 }>;
+
+export type TimelineCanonicalScheduledEventBasis = Readonly<{
+  kind: 'scheduled-event';
+  eventRef: string;
+  activityRef?: never;
+  scheduleRef: string;
+  placementMaterialStateRef: string;
+  placement: TimelineCanonicalSchedulePlacement;
+}>;
+
+export type TimelineCanonicalScheduleBasis =
+  | TimelineCanonicalScheduledActivityBasis
+  | TimelineCanonicalScheduledEventBasis;
 
 export type TimelineEvent = Readonly<{
   id: TimelineEventId;
@@ -67,7 +81,7 @@ export type TimelineEvent = Readonly<{
    * Exact canonical basis retained by a real Timeline projection. It is not a
    * second owner and does not turn this ViewModel into canonical truth.
    */
-  canonicalBasis?: TimelineCanonicalScheduledActivityBasis;
+  canonicalBasis?: TimelineCanonicalScheduleBasis;
   origin?: 'create';
   meta?: string;
   subitems?: readonly string[];
@@ -85,7 +99,7 @@ export type TimelineAllDayItem = Readonly<{
   /** Presentation-only override; grouping and filters continue to use groupId. */
   appearanceTone?: TimelineSemanticTone;
   /** Canonical Schedule identity retained without inventing a clock interval. */
-  canonicalBasis?: TimelineCanonicalScheduledActivityBasis;
+  canonicalBasis?: TimelineCanonicalScheduleBasis;
   /** Defaults to all-day for legacy/local materialized items. */
   laneKind?: TimelineDateLaneKind;
   /** Present only for accepted coarse-local-period placement. */
