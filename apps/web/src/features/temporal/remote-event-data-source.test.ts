@@ -18,10 +18,11 @@ const EVENT_REF = '0199a8c0-6e71-7bc0-8ad0-a2f403f5617d';
 const SCHEDULE_REF = '0199a8c0-6e72-7bc0-8ad0-a2f403f5617d';
 const STATE_REF = '0199a8c0-6e73-7bc0-8ad0-a2f403f5617d';
 
-function commonResponse() {
+function commonResponse(agendaParts: readonly string[] = []) {
   return {
     event_ref: EVENT_REF,
     title: 'Evento B03-B',
+    agenda_parts: agendaParts,
     created_at: '2026-09-17T10:00:00Z',
     schedule_ref: SCHEDULE_REF,
     placement_material_state_ref: STATE_REF,
@@ -30,11 +31,15 @@ function commonResponse() {
 }
 
 describe('remote temporal Event data source', () => {
-  it('creates a floating-local Event through the governed CSRF boundary and invalidates Timeline', async () => {
+  it('creates a floating-local Event with ordered Agenda through the governed CSRF boundary and invalidates Timeline', async () => {
     let invalidations = 0;
     const unsubscribe = subscribeTemporalTimelineInvalidation(() => {
       invalidations += 1;
     });
+    const agendaParts = Object.freeze([
+      'Confermare decisione',
+      'Assegnare azioni',
+    ]);
     const fetchFn = vi.fn<typeof globalThis.fetch>((input, init) => {
       if (input === '/api/v1/auth/session') {
         return Promise.resolve(
@@ -50,6 +55,7 @@ describe('remote temporal Event data source', () => {
       expect(JSON.parse(String(init?.body))).toEqual({
         operation_id: 'operation:b03-b:web-floating',
         title: 'Evento B03-B',
+        agenda_parts: agendaParts,
         placement: {
           kind: 'floating_local_interval',
           starts_local_at: '2026-09-17T18:30:00',
@@ -59,7 +65,7 @@ describe('remote temporal Event data source', () => {
       return Promise.resolve(
         jsonResponse(
           {
-            ...commonResponse(),
+            ...commonResponse(agendaParts),
             temporal_form: 'floating_local',
             starts_local_at: '2026-09-17T18:30:00',
             ends_local_at: '2026-09-17T20:00:00',
@@ -77,6 +83,10 @@ describe('remote temporal Event data source', () => {
       const result = await source.createScheduledEvent({
         operationId: ' operation:b03-b:web-floating ',
         title: ' Evento B03-B ',
+        agendaParts: Object.freeze([
+          ' Confermare decisione ',
+          'Assegnare azioni',
+        ]),
         placement: {
           kind: 'floating-local-interval',
           startsLocalAt: Temporal.PlainDateTime.from('2026-09-17T18:30:00'),
@@ -87,6 +97,7 @@ describe('remote temporal Event data source', () => {
       expect(result.event).toMatchObject({
         eventRef: EVENT_REF,
         title: 'Evento B03-B',
+        agendaParts,
       });
       expect(result.schedule).toMatchObject({
         scheduleRef: SCHEDULE_REF,
@@ -131,6 +142,7 @@ describe('remote temporal Event data source', () => {
     const result = await source.createScheduledEvent({
       operationId: 'operation:b03-b:web-zone',
       title: 'Evento B03-B',
+      agendaParts: Object.freeze([]),
       placement: {
         kind: 'named-zone-local-interval',
         startsLocalAt: Temporal.PlainDateTime.from('2026-10-25T02:10:00'),
@@ -178,6 +190,7 @@ describe('remote temporal Event data source', () => {
     const result = await source.createScheduledEvent({
       operationId: 'operation:b03-b:web-date-span',
       title: 'Evento B03-B',
+      agendaParts: Object.freeze([]),
       placement: {
         kind: 'date-span',
         startDate: Temporal.PlainDate.from('2026-09-19'),
@@ -216,6 +229,7 @@ describe('remote temporal Event data source', () => {
       source.createScheduledEvent({
         operationId: 'operation:b03-b:web-rejected',
         title: 'Evento B03-B',
+        agendaParts: Object.freeze([]),
         placement: {
           kind: 'coarse-local-period',
           localDate: Temporal.PlainDate.from('2026-09-20'),
@@ -257,6 +271,7 @@ describe('remote temporal Event data source', () => {
       source.createScheduledEvent({
         operationId: 'operation:b03-b:web-hybrid',
         title: 'Evento B03-B',
+        agendaParts: Object.freeze([]),
         placement: {
           kind: 'floating-local-interval',
           startsLocalAt: Temporal.PlainDateTime.from('2026-09-17T18:30:00'),
