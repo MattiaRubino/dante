@@ -6,10 +6,10 @@
 - **PostgreSQL:** 18.6
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
-- **Current candidate Alembic head on `feature/timeline-temporal-operational`:** `20260916_27`
-- **Current candidate topology:** `98|5|29|78|195|115|288|0|0|0`
+- **Current candidate Alembic head on `feature/timeline-temporal-operational`:** `20260917_29`
+- **Current candidate topology:** `101|5|31|78|198|119|297|0|0|0`
 - **Frozen CP6 head:** `20260826_08`
-- **Last reconciled:** 2026-09-16
+- **Last reconciled:** 2026-09-17
 
 ## 1. Purpose
 
@@ -24,21 +24,21 @@ Current checked-out DB Reference
 ≈ direct tests
 ```
 
-A mismatch is a defect. Protected `main` remains integration authority; `_27` is candidate truth on the Timeline branch.
+A mismatch is a defect. Protected `main` remains integration authority; `_29` is candidate truth on the Timeline branch.
 
 ## 2. Current checked-out business-schema inventory
 
 The authoritative machine-readable counts are in `scope.json` and currently equal:
 
 ```text
-tables       98
+tables      101
 views         5
-routines     29
-standalone  132
+routines     31
+standalone  137
 triggers     78
-indexes      195
-FKs          115
-CHECKs       288
+indexes      198
+FKs          119
+CHECKs       297
 ```
 
 No enum/domain, sequence, materialized view, partitioned table or RLS policy exists in the DANTE business-schema inventory.
@@ -55,8 +55,8 @@ Frozen CP6 baseline remains historical evidence:
 Current candidate materialization is:
 
 ```text
-98 tables / 5 views / 29 routines / 132 standalone
-78 triggers / 195 indexes / 115 FKs / 288 CHECKs
+101 tables / 5 views / 31 routines / 137 standalone
+78 triggers / 198 indexes / 119 FKs / 297 CHECKs
 ```
 
 `completed_stages` in `scope.json` remains CP6 provenance only. Post-CP6 provenance belongs on the actual object entries.
@@ -78,6 +78,21 @@ B03-A / 20260916_27
   event_expectation
   event_create_operation
   create_self_event(...)
+
+B03-B / 20260917_28
+  shared Schedule authorization/capability generalized to Event
+  Event + Schedule atomic create/read/Timeline support
+
+B03-C
+  no DDL: Event placement lifecycle reuses the shared Schedule mutation family
+
+B03-D / 20260917_29
+  event_agenda_part
+  event_agenda_current
+  event_agenda_mutation_operation
+  create_self_event_with_agenda(...)
+  replace_self_event_agenda(...)
+  event_create_operation accepted initial Agenda replay snapshot
 ```
 
 The final object tree and `scope.json` counts, not this prose summary, are the structural source of truth.
@@ -96,17 +111,20 @@ The final object tree and `scope.json` counts, not this prose summary, are the s
 activity | event | occurrence
 ```
 
+B03-B activates Event against that same Schedule owner. No `event_schedule` exists.
+
 ### 5.3 Event
 
-`dante.event` remains the CP6 Event NativeRef owner. B03-A adds:
+`dante.event` remains the CP6 Event NativeRef owner. B03-A adds the minimum expectation/create boundary; B03-D adds only ordered internal Agenda truth.
 
 ```text
-event_expectation
-event_create_operation
-create_self_event(...)
+Event
+└── ordered Agenda/internal parts
 ```
 
-This is intentionally not an Event mega-profile. Temporal placement remains Schedule; recurrence remains Recurrence; participation, execution and realized truth remain their own later owners.
+Agenda parts are normalized ordered values owned by Event. They do not receive their own NativeRef and do not become Activity/Event/Occurrence/Session/Actual merely because they are editable or reorderable.
+
+`event_agenda_current` is an aggregate CAS revision boundary for the Event Agenda. `event_agenda_mutation_operation` is technical idempotency/control state. Neither is a second Event identity nor a temporal MaterialState substitute.
 
 Permanent boundaries:
 
@@ -115,20 +133,23 @@ Activity != Event
 Event != Schedule
 Event != Recurrence != Occurrence
 Event != Session != Actual != Outcome
+Agenda part != Activity/Event/Occurrence/Session/Actual
 Event identity != operation/idempotency identity
 provider identity != DANTE Event identity
 ```
 
-## 6. Current B03-A proof state
+## 6. B03-D proof state
 
-Executed application/PostgreSQL proof:
+Executed real PostgreSQL/API Agenda proof:
 
 ```text
-apps/backend/tests/integration/temporal/test_b03_event_core.py
+apps/backend/tests/integration/temporal/test_b03_event_agenda.py
 2 / 2 PASS
 ```
 
-Current-catalog/Dictionary/Alembic/migration gates must also pass before B03-A is promoted to CLOSED/PROVEN.
+The test proves create plus initial Agenda, add/edit/reorder/remove through whole-Agenda CAS replacement, idempotent replay, stale-revision rejection, reload, CSRF and authenticated self-scope isolation.
+
+B03-D is not promoted to CLOSED/PROVEN until current-catalog/Dictionary/Alembic/migration and real frontend gates are also green.
 
 ## 7. Object contract
 
