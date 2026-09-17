@@ -27,7 +27,7 @@ Timeline / Temporal-Operational:
 B00 Real Data Spine                              ✅ CLOSED / PROVEN
 B01 Activity Core                                ✅ CLOSED / PROVEN
 B02 Schedule Core                                ✅ CLOSED / PROVEN
-B03 Event Core                                   🟨 B03-A + B03-B CLOSED / B03-C NEXT
+B03 Event Core                                   🟨 B03-A + B03-B + B03-C CLOSED / B03-D NEXT
 B07 UI/UX Consolidation v1                       ⬜ planned after B06
 B15 Whole Vertical Closure                       ⬜ future
 ```
@@ -44,7 +44,8 @@ Use these files for the active vertical:
 - `timeline-temporal-operational-b02-closure-2026-09-16.md` — B02 closure evidence;
 - `timeline-temporal-operational-b03-execution-plan.md` — current B03 slice plan;
 - `timeline-temporal-operational-b03-a-closure-2026-09-16.md` — B03-A Event canonical-core closure evidence;
-- `timeline-temporal-operational-b03-b-closure-2026-09-17.md` — B03-B shared Schedule + Event Timeline closure evidence.
+- `timeline-temporal-operational-b03-b-closure-2026-09-17.md` — B03-B shared Schedule + Event Timeline closure evidence;
+- `timeline-temporal-operational-b03-c-closure-2026-09-17.md` — B03-C Event placement lifecycle closure evidence.
 
 Historical snapshots under `archive/` preserve old wording/numbering without competing with current authority, including the **full initial temporal semantic/functionality map**:
 
@@ -84,7 +85,9 @@ The 2026-09-16 B07 insertion shifted the former B07–B14 blocks by +1. Current 
 ```text
 B03-A Event canonical core                  ✅ CLOSED / PROVEN
 B03-B Shared Schedule + Event Timeline      ✅ CLOSED / PROVEN
-B03-C Event placement lifecycle             ⬜ NEXT / requires explicit approval
+B03-C Event placement lifecycle             ✅ CLOSED / PROVEN
+B03-D Agenda/internal parts                 ⬜ NEXT / requires explicit approval
+B03-E Whole-B03 closure                     ⬜
 ```
 
 Current candidate persistence authority:
@@ -94,7 +97,7 @@ Alembic  20260917_28
 Topology 98|5|29|78|195|115|288|0|0|0
 ```
 
-B03-B proved Activity and Event use the same Schedule identity/current/history machinery without `event_schedule`. Event Timeline rendering and minimal scheduled Create are active; Event lifecycle mutation remains intentionally deferred to B03-C.
+B03-B proved Activity and Event use the same Schedule identity/current/history machinery without `event_schedule`. B03-C then activated Event reschedule, truthful postponed/TBD, read-after-no-current-placement and guarded Undo on that same shared Schedule capability. The B03-C targeted proof is `9 PASS / 2 deselected` backend/PostgreSQL, `16 PASS` across 5 web files, and clean web typecheck.
 
 CI remains separately authorized.
 
