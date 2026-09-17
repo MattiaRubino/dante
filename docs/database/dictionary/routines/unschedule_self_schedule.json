@@ -8,7 +8,7 @@
     "name": "unschedule_self_schedule",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Bounded SECURITY DEFINER capability that atomically withdraws the exact current placement of one self-owned Activity Schedule, closes its open history episode, records real current absence, and retains Activity, Schedule, MaterialState, and history.",
+  "purpose": "Bounded SECURITY DEFINER capability that atomically withdraws the exact current placement of one self-owned Activity or Event Schedule, closes its open history episode, records real current absence, and retains the semantic owner, Schedule, MaterialState, and history.",
   "classification": {
     "persistence_role": "schedule_unschedule_capability",
     "canonicality": "capability_surface",
@@ -19,11 +19,13 @@
       "docs/workstreams/timeline-temporal-operational-b02-execution-plan.md#4-b02-operation-semantics",
       "docs/workstreams/timeline-temporal-operational-b02-execution-plan.md#5-idempotency-and-concurrency-contract",
       "docs/workstreams/timeline-temporal-operational-b02-execution-plan.md#6-persistence-strategy",
-      "docs/workstreams/timeline-temporal-operational-map.md#10-schedule--full-vertical-surface",
+      "docs/workstreams/timeline-temporal-operational-b03-execution-plan.md",
+      "docs/workstreams/timeline-temporal-operational-map.md",
       "docs/development/backend-cp6-02-postgresql-persistence-constitution.md"
     ],
     "domain_concepts": [
       "Activity",
+      "Event",
       "Schedule"
     ],
     "logical_families": [
@@ -91,7 +93,7 @@
     "retention": null,
     "redaction": null,
     "retirement_tombstone": null,
-    "delete_behavior": "Routine removal is migration-only and downgrade fails closed after B02-D operation receipts exist."
+    "delete_behavior": "Routine removal is migration-only and downgrade fails closed after operation receipts exist."
   },
   "security": {
     "owner_role": "dante_owner",
@@ -109,12 +111,14 @@
     "obligations": [
       "function is dante_owner SECURITY DEFINER with trusted search_path",
       "runtime has EXECUTE only and no direct receipt/current/history DML",
-      "only an Activity Schedule belonging to the authenticated self scope is admitted",
+      "typed self-scope admits only an Activity or Event Schedule belonging to the authenticated self Person",
       "stale exact expected state conflicts before currentness is withdrawn",
-      "accepted unschedule closes history and removes current binding atomically without deleting semantic records"
+      "accepted unschedule closes history and removes current binding atomically without deleting semantic records",
+      "Activity and Event share the same absence/current-history mechanism rather than owner-specific engines"
     ],
     "test_refs": [
       "apps/backend/tests/integration/temporal/test_b02_schedule_unschedule_undo.py",
+      "apps/backend/tests/integration/temporal/test_b03_shared_schedule_event.py",
       "apps/backend/tests/integration/database/test_current_catalog.py",
       "apps/backend/tests/integration/database/test_migrations.py"
     ],
