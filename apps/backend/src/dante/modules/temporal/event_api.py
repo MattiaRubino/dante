@@ -1,4 +1,4 @@
-"""Authenticated B03 API for Event identity and shared Schedule authoring."""
+"""Authenticated B03 API for Event identity, Agenda and shared Schedule authoring."""
 
 from __future__ import annotations
 
@@ -40,15 +40,17 @@ MutatingDanteContextDependency = Annotated[
     DanteContext,
     Depends(require_mutating_dante_context),
 ]
+AgendaPart = Annotated[str, Field(min_length=1, max_length=1000)]
 
 
 class CreateEventRequest(BaseModel):
-    """Minimum B03-A CreateEvent command; Schedule remains a separate capability."""
+    """CreateEvent command with bounded Event-internal Agenda values."""
 
     model_config = ConfigDict(extra="forbid")
 
     operation_id: str = Field(min_length=1, max_length=200)
     title: str = Field(min_length=1, max_length=300)
+    agenda_parts: list[AgendaPart] = Field(default_factory=list, max_length=100)
 
 
 class EventDateSpanPlacementRequest(BaseModel):
@@ -86,7 +88,7 @@ class EventAbsoluteIntervalPlacementRequest(BaseModel):
 
 
 class EventCoarseLocalPeriodPlacementRequest(BaseModel):
-    """Shared Schedule form kept typed but not activated for Event authoring in B03-B."""
+    """Shared Schedule form kept typed but not activated for Event authoring in B03."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -105,22 +107,24 @@ EventSchedulePlacementRequest = Annotated[
 
 
 class CreateScheduledEventRequest(BaseModel):
-    """Atomic Event expectation + shared Schedule authoring command."""
+    """Atomic Event expectation + Agenda + shared Schedule authoring command."""
 
     model_config = ConfigDict(extra="forbid")
 
     operation_id: str = Field(min_length=1, max_length=200)
     title: str = Field(min_length=1, max_length=300)
+    agenda_parts: list[AgendaPart] = Field(default_factory=list, max_length=100)
     placement: EventSchedulePlacementRequest
 
 
 class EventResponse(BaseModel):
-    """Minimum canonical Event expectation representation."""
+    """Canonical Event expectation representation at the activated B03-D scope."""
 
     model_config = ConfigDict(extra="forbid")
 
     event_ref: UUID
     title: str
+    agenda_parts: list[str]
     created_at: datetime
     replayed: bool = False
 
@@ -130,6 +134,7 @@ class ScheduledEventFloatingResponse(BaseModel):
 
     event_ref: UUID
     title: str
+    agenda_parts: list[str]
     created_at: datetime
     schedule_ref: UUID
     placement_material_state_ref: UUID
@@ -144,6 +149,7 @@ class ScheduledEventDateSpanResponse(BaseModel):
 
     event_ref: UUID
     title: str
+    agenda_parts: list[str]
     created_at: datetime
     schedule_ref: UUID
     placement_material_state_ref: UUID
@@ -158,6 +164,7 @@ class ScheduledEventNamedZoneResponse(BaseModel):
 
     event_ref: UUID
     title: str
+    agenda_parts: list[str]
     created_at: datetime
     schedule_ref: UUID
     placement_material_state_ref: UUID
@@ -175,6 +182,7 @@ class ScheduledEventAbsoluteResponse(BaseModel):
 
     event_ref: UUID
     title: str
+    agenda_parts: list[str]
     created_at: datetime
     schedule_ref: UUID
     placement_material_state_ref: UUID
@@ -189,6 +197,7 @@ class ScheduledEventCoarseResponse(BaseModel):
 
     event_ref: UUID
     title: str
+    agenda_parts: list[str]
     created_at: datetime
     schedule_ref: UUID
     placement_material_state_ref: UUID
@@ -223,6 +232,7 @@ def _event_response(event: EventView, *, replayed: bool = False) -> EventRespons
     return EventResponse(
         event_ref=event.event_ref,
         title=event.title,
+        agenda_parts=list(event.agenda_parts),
         created_at=event.created_at,
         replayed=replayed,
     )
@@ -265,6 +275,7 @@ def _scheduled_event_response(
     common: dict[str, Any] = {
         "event_ref": event.event_ref,
         "title": event.title,
+        "agenda_parts": list(event.agenda_parts),
         "created_at": event.created_at,
         "schedule_ref": schedule_ref,
         "placement_material_state_ref": material_state_ref,
@@ -317,6 +328,7 @@ async def create_event(
             self_person_ref=context.self_person_ref,
             operation_id=payload.operation_id,
             title=payload.title,
+            agenda_parts=payload.agenda_parts,
         )
     except EventInputError as exc:
         raise ProblemError(
@@ -369,6 +381,7 @@ async def create_scheduled_event(
             self_person_ref=context.self_person_ref,
             operation_id=payload.operation_id,
             title=payload.title,
+            agenda_parts=payload.agenda_parts,
             placement=placement,
         )
     except (EventInputError, ScheduleInputError) as exc:
@@ -395,7 +408,7 @@ async def create_scheduled_event(
             code="temporal.event.persistence_unavailable",
             category="service",
             title="Event unavailable",
-            detail="The Event and Schedule could not be persisted atomically.",
+            detail="The Event, Agenda and Schedule could not be persisted atomically.",
             retryable=True,
         ) from exc
 
