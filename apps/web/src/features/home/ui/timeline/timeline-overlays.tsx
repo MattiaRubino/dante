@@ -794,6 +794,7 @@ export type TimelineDetail = Readonly<{
   endMinute: number;
   groupLabel: string;
   meta: string;
+  ownerKind?: 'activity' | 'event';
   subitemsCount?: number;
 }>;
 
@@ -856,6 +857,8 @@ export function EventDetailDialog({
     return null;
   }
 
+  const eventPostpone = detail.ownerKind === 'event';
+
   return createPortal(
     <div
       className="timeline-modal-backdrop is-open"
@@ -898,8 +901,12 @@ export function EventDetailDialog({
               onClick={onUnschedule}
             >
               {pending
-                ? t(($) => $.common.home.timeline.detail.unscheduling)
-                : t(($) => $.common.home.timeline.detail.unschedule)}
+                ? eventPostpone
+                  ? t(($) => $.common.home.timeline.detail.eventPostponing)
+                  : t(($) => $.common.home.timeline.detail.unscheduling)
+                : eventPostpone
+                  ? t(($) => $.common.home.timeline.detail.eventPostpone)
+                  : t(($) => $.common.home.timeline.detail.unschedule)}
             </button>
           ) : null}
           <button
@@ -944,12 +951,19 @@ export function detailFromEvent(
   groups: readonly TimelineGroup[],
 ): TimelineDetail {
   const group = groups.find((candidate) => candidate.id === event.groupId);
+  const ownerKind =
+    event.canonicalBasis?.kind === 'scheduled-event'
+      ? ('event' as const)
+      : event.canonicalBasis?.kind === 'scheduled-activity'
+        ? ('activity' as const)
+        : undefined;
   const base: TimelineDetail = {
     title: event.title,
     startMinute: event.startMinute,
     endMinute: event.endMinute,
     groupLabel: group?.label ?? event.groupId,
     meta: event.meta ?? '',
+    ...(ownerKind === undefined ? {} : { ownerKind }),
   };
   return event.subitems?.length
     ? { ...base, subitemsCount: event.subitems.length }
