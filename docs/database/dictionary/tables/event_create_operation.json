@@ -8,7 +8,7 @@
     "name": "event_create_operation",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Immutable self-scoped idempotency receipt for B03-A CreateEvent, binding one operation identifier and normalized intent fingerprint to exactly one canonical Event identity.",
+  "purpose": "Immutable self-scoped idempotency receipt for CreateEvent, binding one operation identifier and normalized intent fingerprint to exactly one canonical Event identity plus the accepted initial Agenda snapshot needed for stable replay after later Agenda edits.",
   "classification": {
     "persistence_role": "operation_idempotency_control",
     "canonicality": "control",
@@ -41,6 +41,7 @@
       {"name":"operation_id","postgres_type":"text","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Caller-supplied idempotency identity for one CreateEvent attempt stream.","semantic_type":null,"value_contract":"Trimmed, non-empty, at most 200 characters; same scope and id may replay only the same immutable intent fingerprint."},
       {"name":"intent_fingerprint","postgres_type":"text","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Canonical lowercase SHA-256 fingerprint of normalized CreateEvent intent.","semantic_type":null,"value_contract":"Exactly 64 lowercase hexadecimal characters; changed intent with the same operation id is a conflict."},
       {"name":"event_ref","postgres_type":"uuid","nullable":false,"default":{"kind":"none","expression":null},"meaning":"The one canonical Event NativeRef created or replayed by this operation.","semantic_type":"NativeRef","value_contract":"References one existing Event and is unique across create-operation receipts."},
+      {"name":"accepted_agenda_parts","postgres_type":"text[]","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Ordered initial Agenda snapshot accepted by this CreateEvent operation.","semantic_type":null,"value_contract":"At most 100 normalized values. Pre-B03-D receipts are truthfully backfilled to the empty Agenda; this typed receipt snapshot is not a second current Agenda store."},
       {"name":"created_at","postgres_type":"timestamp with time zone","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Authoritative receipt creation instant.","semantic_type":null,"value_contract":"Recorded by the bounded PostgreSQL CreateEvent capability in the same transaction as canonical creation."}
     ],
     "primary_key": {"name":"pk_event_create_operation","columns":["self_person_ref","operation_id"],"reason":"The self-Person scope plus operation identifier is the database arbiter for CreateEvent idempotency.","deferrable":false,"initially":"NOT DEFERRABLE","enforced":true},
@@ -53,7 +54,8 @@
     ],
     "check_constraints": [
       {"name":"ck_event_create_operation_operation_id","expression_contract":"operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200","reason":"Require one bounded normalized operation identity.","enforced":true,"validated":true,"no_inherit":false},
-      {"name":"ck_event_create_operation_fingerprint","expression_contract":"intent_fingerprint ~ '^[0-9a-f]{64}$'","reason":"Require the canonical SHA-256 hexadecimal fingerprint representation used by CreateEvent replay comparison.","enforced":true,"validated":true,"no_inherit":false}
+      {"name":"ck_event_create_operation_fingerprint","expression_contract":"intent_fingerprint ~ '^[0-9a-f]{64}$'","reason":"Require the canonical SHA-256 hexadecimal fingerprint representation used by CreateEvent replay comparison.","enforced":true,"validated":true,"no_inherit":false},
+      {"name":"ck_event_create_operation_accepted_agenda_parts","expression_contract":"cardinality(accepted_agenda_parts) <= 100","reason":"Keep the immutable create replay snapshot within the accepted Agenda cardinality bound.","enforced":true,"validated":true,"no_inherit":false}
     ],
     "indexes": [
       {"name":"pk_event_create_operation","method":"btree","unique":true,"keys":["self_person_ref","operation_id"],"predicate":null,"include":[],"source":"primary_key","reason":"Indexed database idempotency arbiter for self-scoped operation lookup and locking.","valid":true,"ready":true,"live":true},
@@ -66,26 +68,28 @@
   },
   "state_history": {
     "material_state_behavior": null,
-    "current_binding": "The receipt is immutable technical control state and never participates in Event, Schedule or MaterialState identity/currentness.",
+    "current_binding": "The receipt is immutable technical control state and never participates in Event, Schedule or MaterialState identity/currentness. accepted_agenda_parts is the initial command response snapshot, not current Agenda truth.",
     "chronology": "created_at records receipt establishment; operation id and UUIDv7 are not chronology substitutes.",
-    "immutability_policy": "The receipt is immutable after insert. Replay compares the stored fingerprint; no runtime UPDATE surface exists."
+    "immutability_policy": "The receipt is immutable after initial B03-D snapshot establishment. Replay compares the stored fingerprint and returns the accepted initial Agenda snapshot; later Agenda mutations never rewrite it."
   },
   "lifecycle": {
     "retention": "Retained while needed to preserve safe CreateEvent replay semantics for canonical Event creation.",
     "redaction": null,
     "retirement_tombstone": null,
-    "delete_behavior": "No runtime DELETE. B03-A downgrade removes receipts only when no canonical event_expectation rows exist; otherwise downgrade fails closed."
+    "delete_behavior": "No runtime DELETE. B03 downgrade remains fail-closed around canonical Event/Agenda truth."
   },
   "security": {"owner_role":"dante_owner","default_deny_non_owner":true,"expected_grants":[]},
   "proof": {
     "obligations": [
-      "same self-Person operation id plus same normalized Event intent replays the original Event",
+      "same self-Person operation id plus same normalized Event intent replays the original Event and initial Agenda snapshot even after later Agenda edits",
       "same self-Person operation id plus changed intent is rejected",
+      "pre-B03-D Event create receipts map truthfully to an empty initial Agenda snapshot",
       "runtime has no generic DML authority on the receipt",
       "one Event identity cannot be claimed by multiple create-operation receipts"
     ],
     "test_refs": [
       "apps/backend/tests/integration/temporal/test_b03_event_core.py",
+      "apps/backend/tests/integration/temporal/test_b03_event_agenda.py",
       "apps/backend/tests/integration/database/test_current_catalog.py",
       "apps/backend/tests/integration/database/test_database_current_catalog.py"
     ],
