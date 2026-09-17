@@ -1,0 +1,23 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {"key":"routine:dante.replace_self_event_agenda","type":"routine","schema":"dante","name":"replace_self_event_agenda","ownership_class":"dante_owned"},
+  "purpose": "Bounded SECURITY DEFINER capability for self-scoped whole-Agenda replacement with aggregate expected-revision CAS, deterministic ordering and idempotent operation replay.",
+  "classification": {"persistence_role":"event_agenda_mutation_capability","canonicality":"capability_surface","family":"temporal_event"},
+  "semantic_traceability": {
+    "authority_sources": ["docs/domain/concepts/event.md","docs/workstreams/timeline-temporal-operational-b03-execution-plan.md","docs/development/backend-cp6-02-postgresql-persistence-constitution.md"],
+    "domain_concepts": ["Event"],
+    "logical_families": ["bounded application operation capability","aggregate optimistic concurrency control"],
+    "reference_families": ["NativeRef"],
+    "material_facets": []
+  },
+  "implementation": {"introducing_stage":"B03-D-EVENT","alembic_revision":"20260917_29","sqlalchemy":{"mode":"none","module":null,"symbol":null},"runtime_acl_stage":"B03-D-EVENT"},
+  "structure": {
+    "columns": [],"primary_key":null,"foreign_keys":[],"unique_constraints":[],"check_constraints":[],"indexes":[],"triggers":[],"table":null,"view":null,
+    "routine": {"routine_kind":"function","language":"plpgsql","argument_types":["uuid","text","text","uuid","bigint","text[]"],"return_type":"TABLE(event_ref uuid, agenda_revision bigint, agenda_parts text[], replayed boolean)","security":"DEFINER","volatility":"VOLATILE","parallel_safety":"UNSAFE","leakproof":false,"function_search_path":["pg_catalog","dante","pg_temp"],"direct_runtime_execute":true}
+  },
+  "state_history": {"material_state_behavior":null,"current_binding":"Accepted whole-list replacement becomes current Event Agenda truth and advances event_agenda_current by exactly one revision.","chronology":"statement_timestamp records acceptance while revision supplies the aggregate CAS sequence; Agenda position remains ordering, not chronology.","immutability_policy":"Operation receipts are immutable. Stale expected revision and operation-id intent reuse fail closed before replacing current Agenda rows."},
+  "lifecycle": {"retention":null,"redaction":null,"retirement_tombstone":null,"delete_behavior":"The capability may remove Agenda values only as part of one accepted whole-Agenda replacement; B03-D downgrade is fail-closed when mutation state exists."},
+  "security": {"owner_role":"dante_owner","default_deny_non_owner":true,"expected_grants":[{"grantee":"dante_runtime","privilege":"EXECUTE","columns":[],"grant_option":false}]},
+  "proof": {"obligations":["self Person must own the Event expectation","expected revision must equal current aggregate Agenda revision","same operation and intent replays exactly once without another revision advance","changed operation intent conflicts","replacement preserves caller order and bounded canonical text","runtime receives no generic Agenda DML authority"],"test_refs":["apps/backend/tests/integration/temporal/test_b03_event_agenda.py","apps/backend/tests/integration/database/test_current_catalog.py"],"staged_evidence":[]}
+}
