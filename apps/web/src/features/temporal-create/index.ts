@@ -52,7 +52,6 @@ export {
   type TemporalCreateEventIntent,
   type TemporalCreateEventQuotaFrame,
   type TemporalCreateEventQuotaPeriodKind,
-  type TemporalCreateEventQuotaPeriodKind,
   type TemporalCreateEventRecurrenceEnd,
   type TemporalCreateEventRecurrenceIntent,
   type TemporalCreateEventRecurrencePatternKind,
