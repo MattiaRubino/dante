@@ -123,16 +123,20 @@ describe('B03 Temporal Create runtime', () => {
     }
   });
 
-  it('fails closed for an unscheduled Event because B03-B only authorizes scheduled Event creation', async () => {
+  it('fails closed for Event intent outside the minimal B03-B create contract', async () => {
     const { runtime, createScheduledEvent } = runtimeWithEventSource();
     const preparation = runtime.prepare(
       createTemporalCreateFields({
-        title: 'Evento senza placement',
+        title: 'Evento arricchito',
         kind: 'event',
         date: '2026-09-17',
-        timeSemantics: 'unscheduled',
+        timeSemantics: 'timed',
+        startTime: '09:00',
+        durationMinutes: 30,
+        timeMode: 'floating',
         contextId: 'personale',
         timeZoneId: 'Europe/Rome',
+        notes: 'Intento non ancora autorizzato dal contratto B03-B',
       }),
     );
     if (preparation.status !== 'ready') {
