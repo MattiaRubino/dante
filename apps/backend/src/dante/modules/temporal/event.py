@@ -1,4 +1,4 @@
-"""B03-A Event application operations over canonical PostgreSQL state."""
+"""B03 Event application operations over canonical PostgreSQL state."""
 
 from __future__ import annotations
 
@@ -13,12 +13,18 @@ from sqlalchemy.engine import RowMapping
 from sqlalchemy.exc import DBAPIError, IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from dante.modules.temporal.schedule import (
+    EstablishedScheduleView,
+    ScheduleInputError,
+    SchedulePlacement,
+    establish_schedule_in_session,
+)
 from dante.platform.database.mappings.event import EventExpectationRow
 from dante.platform.database.references import NativeRef, new_native_ref
 
 
 class EventInputError(ValueError):
-    """The requested Event cannot be admitted by the activated B03-A contract."""
+    """The requested Event cannot be admitted by the activated B03 contract."""
 
 
 class EventOperationIdReuseError(RuntimeError):
@@ -50,6 +56,15 @@ class CreateEventResult:
     replayed: bool
 
 
+@dataclass(frozen=True, slots=True)
+class CreateScheduledEventResult:
+    """Atomic Event expectation plus accepted shared Schedule."""
+
+    event: EventView
+    schedule: EstablishedScheduleView
+    replayed: bool
+
+
 def _normalize_title(value: str) -> str:
     normalized = value.strip()
     if not normalized or len(normalized) > 300:
@@ -72,6 +87,12 @@ def _intent_fingerprint(*, title: str) -> str:
         sort_keys=True,
     ).encode("utf-8")
     return hashlib.sha256(payload).hexdigest()
+
+
+def _schedule_operation_id(event_operation_id: str) -> str:
+    """Derive a stable Schedule command identity without collapsing the two commands."""
+    digest = hashlib.sha256(event_operation_id.encode("utf-8")).hexdigest()
+    return f"event-create-schedule:{digest}"
 
 
 def _constraint_name(exc: IntegrityError) -> str | None:
@@ -164,6 +185,64 @@ class TemporalEventApplication:
                 )
         except IntegrityError as exc:
             if _constraint_name(exc) == "pk_event_create_operation":
+                raise EventOperationIdReuseError() from exc
+            raise EventPersistenceError() from exc
+        except DBAPIError as exc:
+            raise EventPersistenceError() from exc
+        except SQLAlchemyError as exc:
+            raise EventPersistenceError() from exc
+
+    async def create_event_with_schedule(
+        self,
+        *,
+        self_person_ref: NativeRef,
+        operation_id: str,
+        title: str,
+        placement: SchedulePlacement,
+    ) -> CreateScheduledEventResult:
+        """Create Event identity/expectation and its first shared Schedule atomically."""
+        normalized_title = _normalize_title(title)
+        normalized_operation_id = _normalize_operation_id(operation_id)
+        event_ref = new_native_ref()
+        schedule_operation_id = _schedule_operation_id(normalized_operation_id)
+
+        try:
+            async with (
+                self._session_factory() as database_session,
+                database_session.begin(),
+            ):
+                event_result = await self._execute_create_event(
+                    database_session,
+                    self_person_ref=self_person_ref,
+                    operation_id=normalized_operation_id,
+                    title=normalized_title,
+                    requested_event_ref=event_ref,
+                )
+                schedule_result = await establish_schedule_in_session(
+                    database_session,
+                    self_person_ref=self_person_ref,
+                    operation_id=schedule_operation_id,
+                    subject_native_ref=event_result.event.event_ref,
+                    placement=placement,
+                )
+                if event_result.replayed is not schedule_result.replayed:
+                    raise EventOperationIdReuseError(
+                        "Event operation id was reused across incompatible create commands."
+                    )
+                return CreateScheduledEventResult(
+                    event=event_result.event,
+                    schedule=schedule_result,
+                    replayed=event_result.replayed,
+                )
+        except EventOperationIdReuseError:
+            raise
+        except ScheduleInputError as exc:
+            raise EventInputError(str(exc)) from exc
+        except IntegrityError as exc:
+            if _constraint_name(exc) in {
+                "pk_event_create_operation",
+                "pk_schedule_establish_operation",
+            }:
                 raise EventOperationIdReuseError() from exc
             raise EventPersistenceError() from exc
         except DBAPIError as exc:
