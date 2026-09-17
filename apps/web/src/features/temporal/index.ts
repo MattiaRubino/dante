@@ -24,12 +24,24 @@ export type {
   TemporalScheduledActivityCreateRequest,
   TemporalScheduledActivityCreateResult,
 } from './activity-data-source';
+export type {
+  TemporalEventDataSource,
+  TemporalEventRecord,
+  TemporalEventScheduleRecord,
+  TemporalScheduledEventCreateRequest,
+  TemporalScheduledEventCreateResult,
+} from './event-data-source';
 export { InMemoryTemporalWorkspace } from './in-memory-temporal-workspace';
 export {
   TemporalActivityRemoteError,
   createRemoteTemporalActivityDataSource,
   type TemporalActivityRemoteFailureKind,
 } from './remote-activity-data-source';
+export {
+  TemporalEventRemoteError,
+  createRemoteTemporalEventDataSource,
+  type TemporalEventRemoteFailureKind,
+} from './remote-event-data-source';
 export {
   TemporalScheduleRemoteError,
   createRemoteTemporalScheduleDataSource,
@@ -55,15 +67,22 @@ export {
 } from './remote-timeline-read';
 export type {
   TemporalTimelineAbsoluteActivityItem,
+  TemporalTimelineAbsoluteEventItem,
   TemporalTimelineCoarseLocalPeriod,
   TemporalTimelineCoarseLocalPeriodActivityItem,
+  TemporalTimelineCoarseLocalPeriodEventItem,
   TemporalTimelineDataSource,
   TemporalTimelineDateSpanActivityItem,
+  TemporalTimelineDateSpanEventItem,
   TemporalTimelineEmptyWindow,
   TemporalTimelineFloatingLocalActivityItem,
+  TemporalTimelineFloatingLocalEventItem,
   TemporalTimelineItemsWindow,
   TemporalTimelineNamedZoneLocalActivityItem,
+  TemporalTimelineNamedZoneLocalEventItem,
   TemporalTimelineScheduledActivityItem,
+  TemporalTimelineScheduledEventItem,
+  TemporalTimelineScheduledItem,
   TemporalTimelineWindow,
   TemporalTimelineWindowRequest,
 } from './timeline-read';
