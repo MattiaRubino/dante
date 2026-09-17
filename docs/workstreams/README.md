@@ -1,7 +1,7 @@
 # DANTE Workstream Records
 
 - **Status:** CURRENT INDEX
-- **Last reconciled:** 2026-09-16
+- **Last reconciled:** 2026-09-17
 - **Rule:** current subsystem/workstream files describe present truth; Git/PR/archive preserve chronology
 
 ## 1. Current project state
@@ -20,14 +20,14 @@ Pre-vertical foundation                          CLOSED / INTEGRATED VIA PR #66
 
 Protected-main baseline at temporal selection    Alembic 20260906_18
 Active candidate workstream                      feature/timeline-temporal-operational
-Candidate temporal DB authority                  Alembic 20260916_27
+Candidate temporal DB authority                  Alembic 20260917_28
 Candidate temporal topology                      98|5|29|78|195|115|288|0|0|0
 
 Timeline / Temporal-Operational:
 B00 Real Data Spine                              ✅ CLOSED / PROVEN
 B01 Activity Core                                ✅ CLOSED / PROVEN
 B02 Schedule Core                                ✅ CLOSED / PROVEN
-B03 Event Core                                   🟨 B03-A CLOSED / B03-B NEXT
+B03 Event Core                                   🟨 B03-A + B03-B CLOSED / B03-C NEXT
 B07 UI/UX Consolidation v1                       ⬜ planned after B06
 B15 Whole Vertical Closure                       ⬜ future
 ```
@@ -43,7 +43,8 @@ Use these files for the active vertical:
 - `timeline-temporal-operational-handoff.md` — current handoff/boundary;
 - `timeline-temporal-operational-b02-closure-2026-09-16.md` — B02 closure evidence;
 - `timeline-temporal-operational-b03-execution-plan.md` — current B03 slice plan;
-- `timeline-temporal-operational-b03-a-closure-2026-09-16.md` — B03-A Event canonical-core closure evidence.
+- `timeline-temporal-operational-b03-a-closure-2026-09-16.md` — B03-A Event canonical-core closure evidence;
+- `timeline-temporal-operational-b03-b-closure-2026-09-17.md` — B03-B shared Schedule + Event Timeline closure evidence.
 
 Historical snapshots under `archive/` preserve old wording/numbering without competing with current authority, including the **full initial temporal semantic/functionality map**:
 
@@ -82,17 +83,18 @@ The 2026-09-16 B07 insertion shifted the former B07–B14 blocks by +1. Current 
 
 ```text
 B03-A Event canonical core                  ✅ CLOSED / PROVEN
-B03-B Shared Schedule + Event Timeline      ⬜ requires explicit approval
+B03-B Shared Schedule + Event Timeline      ✅ CLOSED / PROVEN
+B03-C Event placement lifecycle             ⬜ NEXT / requires explicit approval
 ```
 
-B03-A current persistence authority:
+Current candidate persistence authority:
 
 ```text
-Alembic  20260916_27
+Alembic  20260917_28
 Topology 98|5|29|78|195|115|288|0|0|0
 ```
 
-B03-B must prove Activity and Event use the same Schedule identity/current/history machinery. It must not create `event_schedule` or activate recurrence/constraints/participants/Session/Actual/provider semantics early.
+B03-B proved Activity and Event use the same Schedule identity/current/history machinery without `event_schedule`. Event Timeline rendering and minimal scheduled Create are active; Event lifecycle mutation remains intentionally deferred to B03-C.
 
 CI remains separately authorized.
 
