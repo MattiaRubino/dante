@@ -25,11 +25,19 @@ from dante.modules.temporal.activity import (
 from dante.modules.temporal.application import (
     TemporalTimelineApplication,
     TimelineAbsoluteActivityItem,
+    TimelineAbsoluteEventItem,
+    TimelineCoarseLocalPeriodActivityItem,
+    TimelineCoarseLocalPeriodEventItem,
     TimelineDateSpanActivityItem,
+    TimelineDateSpanEventItem,
     TimelineFloatingLocalActivityItem,
+    TimelineFloatingLocalEventItem,
     TimelineNamedZoneLocalActivityItem,
+    TimelineNamedZoneLocalEventItem,
     TimelinePersistenceError,
     TimelineScheduledActivityItem,
+    TimelineScheduledEventItem,
+    TimelineScheduledItem,
 )
 from dante.modules.temporal.contracts import (
     TimelineWindowQuery,
@@ -104,7 +112,7 @@ class TimelineScheduledActivityResponse(BaseModel):
 
 
 class TimelineDateSpanActivityResponse(BaseModel):
-    """Current accepted half-open civil-date Schedule projection."""
+    """Current accepted half-open civil-date Activity Schedule projection."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -119,7 +127,7 @@ class TimelineDateSpanActivityResponse(BaseModel):
 
 
 class TimelineNamedZoneLocalActivityResponse(BaseModel):
-    """Current named-zone intent, retained resolution, and viewing projection."""
+    """Current named-zone Activity intent and viewing projection."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -139,7 +147,7 @@ class TimelineNamedZoneLocalActivityResponse(BaseModel):
 
 
 class TimelineAbsoluteActivityResponse(BaseModel):
-    """Current absolute Schedule plus request-effective-zone projection."""
+    """Current absolute Activity Schedule plus request-zone projection."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -156,7 +164,7 @@ class TimelineAbsoluteActivityResponse(BaseModel):
 
 
 class TimelineCoarseLocalPeriodActivityResponse(BaseModel):
-    """Current coarse placement with no manufactured clock boundaries."""
+    """Current coarse Activity placement with no manufactured clock boundaries."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -180,6 +188,102 @@ TimelineScheduledActivityItemResponse = Annotated[
 ]
 
 
+class TimelineScheduledEventResponse(BaseModel):
+    """Current accepted floating-local Schedule projection for one Event."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["scheduled_event"] = "scheduled_event"
+    event_ref: UUID
+    schedule_ref: UUID
+    placement_material_state_ref: UUID
+    title: str
+    temporal_form: Literal["floating_local"] = "floating_local"
+    starts_local_at: LocalDateTimeText
+    ends_local_at: LocalDateTimeText
+
+
+class TimelineDateSpanEventResponse(BaseModel):
+    """Current accepted half-open civil-date Event Schedule projection."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["scheduled_event"] = "scheduled_event"
+    event_ref: UUID
+    schedule_ref: UUID
+    placement_material_state_ref: UUID
+    title: str
+    temporal_form: Literal["date_span"] = "date_span"
+    start_date: date
+    end_date_exclusive: date
+
+
+class TimelineNamedZoneLocalEventResponse(BaseModel):
+    """Current named-zone Event intent and viewing projection."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["scheduled_event"] = "scheduled_event"
+    event_ref: UUID
+    schedule_ref: UUID
+    placement_material_state_ref: UUID
+    title: str
+    temporal_form: Literal["named_zone_local"] = "named_zone_local"
+    starts_local_at: LocalDateTimeText
+    ends_local_at: LocalDateTimeText
+    zone_id: str
+    resolved_start_at: datetime
+    resolved_end_at: datetime
+    display_starts_local_at: LocalDateTimeText
+    display_ends_local_at: LocalDateTimeText
+
+
+class TimelineAbsoluteEventResponse(BaseModel):
+    """Current absolute Event Schedule plus request-zone projection."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["scheduled_event"] = "scheduled_event"
+    event_ref: UUID
+    schedule_ref: UUID
+    placement_material_state_ref: UUID
+    title: str
+    temporal_form: Literal["absolute"] = "absolute"
+    starts_at: datetime
+    ends_at: datetime
+    display_starts_local_at: LocalDateTimeText
+    display_ends_local_at: LocalDateTimeText
+
+
+class TimelineCoarseLocalPeriodEventResponse(BaseModel):
+    """Current coarse Event placement with no manufactured clock boundaries."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["scheduled_event"] = "scheduled_event"
+    event_ref: UUID
+    schedule_ref: UUID
+    placement_material_state_ref: UUID
+    title: str
+    temporal_form: Literal["coarse_local_period"] = "coarse_local_period"
+    local_date: date
+    period: Literal["morning", "afternoon", "evening"]
+
+
+TimelineScheduledEventItemResponse = Annotated[
+    TimelineScheduledEventResponse
+    | TimelineDateSpanEventResponse
+    | TimelineNamedZoneLocalEventResponse
+    | TimelineAbsoluteEventResponse
+    | TimelineCoarseLocalPeriodEventResponse,
+    Field(discriminator="temporal_form"),
+]
+
+TimelineScheduledItemResponse = (
+    TimelineScheduledActivityItemResponse | TimelineScheduledEventItemResponse
+)
+
+
 class TimelineWindowItemsResponse(BaseModel):
     """Populated authenticated Timeline window."""
 
@@ -189,7 +293,7 @@ class TimelineWindowItemsResponse(BaseModel):
     start_date: date
     end_date_exclusive: date
     effective_zone_id: str
-    items: list[TimelineScheduledActivityItemResponse]
+    items: list[TimelineScheduledItemResponse]
 
 
 TimelineWindowResponse = TimelineWindowEmptyResponse | TimelineWindowItemsResponse
@@ -605,7 +709,7 @@ def _local_datetime_text(value: datetime) -> str:
     return value.isoformat()
 
 
-def _timeline_item_response(
+def _timeline_activity_item_response(
     item: TimelineScheduledActivityItem,
 ) -> TimelineScheduledActivityItemResponse:
     common: dict[str, Any] = {
@@ -645,11 +749,77 @@ def _timeline_item_response(
             display_starts_local_at=_local_datetime_text(item.display_starts_local_at),
             display_ends_local_at=_local_datetime_text(item.display_ends_local_at),
         )
-    return TimelineCoarseLocalPeriodActivityResponse(
-        **common,
-        local_date=item.local_date,
-        period=item.period,
-    )
+    if isinstance(item, TimelineCoarseLocalPeriodActivityItem):
+        return TimelineCoarseLocalPeriodActivityResponse(
+            **common,
+            local_date=item.local_date,
+            period=item.period,
+        )
+    raise TypeError("Unsupported Activity Timeline item")
+
+
+def _timeline_event_item_response(
+    item: TimelineScheduledEventItem,
+) -> TimelineScheduledEventItemResponse:
+    common: dict[str, Any] = {
+        "event_ref": item.event_ref,
+        "schedule_ref": item.schedule_ref,
+        "placement_material_state_ref": item.placement_material_state_ref,
+        "title": item.title,
+    }
+    if isinstance(item, TimelineFloatingLocalEventItem):
+        return TimelineScheduledEventResponse(
+            **common,
+            starts_local_at=_local_datetime_text(item.starts_local_at),
+            ends_local_at=_local_datetime_text(item.ends_local_at),
+        )
+    if isinstance(item, TimelineDateSpanEventItem):
+        return TimelineDateSpanEventResponse(
+            **common,
+            start_date=item.start_date,
+            end_date_exclusive=item.end_date_exclusive,
+        )
+    if isinstance(item, TimelineNamedZoneLocalEventItem):
+        return TimelineNamedZoneLocalEventResponse(
+            **common,
+            starts_local_at=_local_datetime_text(item.starts_local_at),
+            ends_local_at=_local_datetime_text(item.ends_local_at),
+            zone_id=item.zone_id,
+            resolved_start_at=item.resolved_start_at,
+            resolved_end_at=item.resolved_end_at,
+            display_starts_local_at=_local_datetime_text(item.display_starts_local_at),
+            display_ends_local_at=_local_datetime_text(item.display_ends_local_at),
+        )
+    if isinstance(item, TimelineAbsoluteEventItem):
+        return TimelineAbsoluteEventResponse(
+            **common,
+            starts_at=item.starts_at,
+            ends_at=item.ends_at,
+            display_starts_local_at=_local_datetime_text(item.display_starts_local_at),
+            display_ends_local_at=_local_datetime_text(item.display_ends_local_at),
+        )
+    if isinstance(item, TimelineCoarseLocalPeriodEventItem):
+        return TimelineCoarseLocalPeriodEventResponse(
+            **common,
+            local_date=item.local_date,
+            period=item.period,
+        )
+    raise TypeError("Unsupported Event Timeline item")
+
+
+def _timeline_item_response(item: TimelineScheduledItem) -> TimelineScheduledItemResponse:
+    if isinstance(
+        item,
+        (
+            TimelineFloatingLocalEventItem,
+            TimelineDateSpanEventItem,
+            TimelineNamedZoneLocalEventItem,
+            TimelineAbsoluteEventItem,
+            TimelineCoarseLocalPeriodEventItem,
+        ),
+    ):
+        return _timeline_event_item_response(item)
+    return _timeline_activity_item_response(cast(TimelineScheduledActivityItem, item))
 
 
 def _placement_from_request(payload: SchedulePlacementRequest) -> SchedulePlacement:
