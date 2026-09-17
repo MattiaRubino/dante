@@ -35,6 +35,10 @@ const homeWithB02D = {
         'Una modifica successiva impedisce l’annullamento. Nulla è stato sovrascritto.',
       scheduleUndoUnavailable:
         'Impossibile annullare questa modifica della pianificazione.',
+      eventAgendaConflict:
+        'L’Agenda è cambiata altrove. È stata ricaricata la versione corrente senza sovrascrivere nulla.',
+      eventAgendaUnavailable:
+        'Impossibile aggiornare l’Agenda in sicurezza. È stata ricaricata la versione corrente.',
     },
   },
 } as const;
