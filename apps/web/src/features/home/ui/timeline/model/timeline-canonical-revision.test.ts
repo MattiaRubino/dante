@@ -2,9 +2,14 @@ import { Temporal } from '@dante/time';
 import { describe, expect, it } from 'vitest';
 
 import { timelineCanonicalRevisionForDisplayEdit } from './timeline-canonical-revision';
-import type { TimelineCanonicalScheduledActivityBasis } from './timeline-types';
+import type {
+  TimelineCanonicalScheduleBasis,
+  TimelineCanonicalScheduledActivityBasis,
+  TimelineCanonicalScheduledEventBasis,
+} from './timeline-types';
 
 const ACTIVITY_REF = '0199a8c0-5e71-7bc0-8ad0-a2f403f5617d';
+const EVENT_REF = '0199a8c0-5e74-7bc0-8ad0-a2f403f5617d';
 const SCHEDULE_REF = '0199a8c0-5e72-7bc0-8ad0-a2f403f5617d';
 const MATERIAL_STATE_REF = '0199a8c0-5e73-7bc0-8ad0-a2f403f5617d';
 
@@ -20,23 +25,64 @@ function basis(
   });
 }
 
-describe('B02-E3 canonical Timeline revision', () => {
+function eventBasis(
+  placement: TimelineCanonicalScheduledEventBasis['placement'],
+): TimelineCanonicalScheduledEventBasis {
+  return Object.freeze({
+    kind: 'scheduled-event',
+    eventRef: EVENT_REF,
+    scheduleRef: SCHEDULE_REF,
+    placementMaterialStateRef: MATERIAL_STATE_REF,
+    placement,
+  });
+}
+
+function reviseFloating(basisValue: TimelineCanonicalScheduleBasis) {
+  return timelineCanonicalRevisionForDisplayEdit({
+    basis: basisValue,
+    fromDateKey: '2026-09-16',
+    previousStartMinute: 600,
+    previousEndMinute: 690,
+    toDateKey: '2026-09-17',
+    startMinute: 780,
+    endMinute: 870,
+    effectiveZoneId: 'Europe/Rome',
+  });
+}
+
+describe('B02-E3 / B03-C canonical Timeline revision', () => {
   it('moves floating-local wall-clock intent without changing form', () => {
-    const revision = timelineCanonicalRevisionForDisplayEdit({
-      basis: basis({
+    const revision = reviseFloating(
+      basis({
         kind: 'floating-local',
         startsLocalAt: Temporal.PlainDateTime.from('2026-09-16T10:00'),
         endsLocalAt: Temporal.PlainDateTime.from('2026-09-16T11:30'),
       }),
-      fromDateKey: '2026-09-16',
-      previousStartMinute: 600,
-      previousEndMinute: 690,
-      toDateKey: '2026-09-17',
-      startMinute: 780,
-      endMinute: 870,
-      effectiveZoneId: 'Europe/Rome',
-    });
+    );
 
+    expect(revision?.previous).toMatchObject({
+      kind: 'floating-local-interval',
+      startsLocalAt: Temporal.PlainDateTime.from('2026-09-16T10:00'),
+      endsLocalAt: Temporal.PlainDateTime.from('2026-09-16T11:30'),
+    });
+    expect(revision?.next).toMatchObject({
+      kind: 'floating-local-interval',
+      startsLocalAt: Temporal.PlainDateTime.from('2026-09-17T13:00'),
+      endsLocalAt: Temporal.PlainDateTime.from('2026-09-17T14:30'),
+    });
+  });
+
+  it('uses the same Schedule revision semantics for Event without collapsing Event identity', () => {
+    const canonicalBasis = eventBasis({
+      kind: 'floating-local',
+      startsLocalAt: Temporal.PlainDateTime.from('2026-09-16T10:00'),
+      endsLocalAt: Temporal.PlainDateTime.from('2026-09-16T11:30'),
+    });
+    const revision = reviseFloating(canonicalBasis);
+
+    expect(canonicalBasis.kind).toBe('scheduled-event');
+    expect(canonicalBasis.eventRef).toBe(EVENT_REF);
+    expect(canonicalBasis.scheduleRef).toBe(SCHEDULE_REF);
     expect(revision?.previous).toMatchObject({
       kind: 'floating-local-interval',
       startsLocalAt: Temporal.PlainDateTime.from('2026-09-16T10:00'),
