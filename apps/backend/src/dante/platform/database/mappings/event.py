@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from sqlalchemy import BigInteger, CheckConstraint, DateTime, ForeignKeyConstraint, Index, Integer, Text
+from sqlalchemy import BigInteger, CheckConstraint, DateTime, ForeignKeyConstraint, Index, Integer, Text, text
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -197,5 +197,9 @@ class EventCreateOperationRow(Base):
     operation_id: Mapped[str] = mapped_column(Text, primary_key=True)
     intent_fingerprint: Mapped[str] = mapped_column(Text, nullable=False)
     event_ref: Mapped[NativeRef] = mapped_column(nullable=False, unique=True)
-    accepted_agenda_parts: Mapped[list[str]] = mapped_column(ARRAY(Text), nullable=False)
+    accepted_agenda_parts: Mapped[list[str]] = mapped_column(
+        ARRAY(Text),
+        nullable=False,
+        server_default=text("ARRAY[]::text[]"),
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
