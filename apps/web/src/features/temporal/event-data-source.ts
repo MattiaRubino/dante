@@ -8,6 +8,13 @@ import type {
 export type TemporalEventRecord = Readonly<{
   eventRef: string;
   title: string;
+  agendaParts: readonly string[];
+  createdAt: Instant;
+}>;
+
+export type TemporalEventDetailRecord = Readonly<{
+  eventRef: string;
+  title: string;
   agendaRevision: number;
   agendaParts: readonly string[];
   createdAt: Instant;
@@ -51,7 +58,10 @@ export interface TemporalEventDataSource {
     request: TemporalScheduledEventCreateRequest,
     signal?: AbortSignal,
   ): Promise<TemporalScheduledEventCreateResult>;
-  loadEvent(eventRef: string, signal?: AbortSignal): Promise<TemporalEventRecord>;
+}
+
+export interface TemporalEventAgendaDataSource {
+  loadEvent(eventRef: string, signal?: AbortSignal): Promise<TemporalEventDetailRecord>;
   replaceAgenda(
     request: TemporalEventAgendaReplaceRequest,
     signal?: AbortSignal,
