@@ -49,7 +49,7 @@ export function TimelineEventAgendaEditor({
         if (clearNotice) {
           setNotice(null);
         }
-      } catch (error) {
+      } catch {
         if (signal?.aborted) {
           return;
         }
@@ -68,9 +68,9 @@ export function TimelineEventAgendaEditor({
   }, [load]);
 
   const replace = useCallback(
-    async (agendaParts: readonly string[]) => {
+    async (agendaParts: readonly string[]): Promise<boolean> => {
       if (state.status !== 'ready' || busy) {
-        return;
+        return false;
       }
       setBusy(true);
       setNotice(null);
@@ -91,13 +91,17 @@ export function TimelineEventAgendaEditor({
         });
         setEditingIndex(null);
         setEditingValue('');
+        return true;
       } catch (error) {
         const conflict =
           error instanceof TemporalEventAgendaRemoteError &&
           error.status === 409 &&
           error.code === 'temporal.event.agenda_revision_conflict';
         setNotice(conflict ? 'conflict' : 'error');
+        setEditingIndex(null);
+        setEditingValue('');
         await load(undefined, false);
+        return false;
       } finally {
         setBusy(false);
       }
@@ -129,32 +133,34 @@ export function TimelineEventAgendaEditor({
   }
 
   const parts = state.record.agendaParts;
-  const add = () => {
+  const add = async () => {
     const value = draft.trim();
     if (!value || busy) {
       return;
     }
-    void replace([...parts, value]);
-    setDraft('');
+    const accepted = await replace([...parts, value]);
+    if (accepted) {
+      setDraft('');
+    }
   };
 
   return (
-    <section className="timeline-event-agenda" aria-busy={busy}>
+    <section
+      className="timeline-event-agenda"
+      aria-busy={busy}
+      data-agenda-revision={state.record.agendaRevision}
+    >
       <div className="timeline-event-agenda__heading">
         <strong>{t(($) => $.common.home.timeline.create.eventDetails.agenda)}</strong>
-        <span aria-label={`revision ${state.record.agendaRevision}`}>
-          r{state.record.agendaRevision}
-        </span>
       </div>
       <p>{t(($) => $.common.home.timeline.create.eventDetails.agendaDescription)}</p>
 
-      {notice === 'conflict' ? (
-        <div role="status" className="timeline-event-agenda__notice">
-          Agenda aggiornata altrove: ho ricaricato la versione corrente.
-        </div>
-      ) : notice === 'error' ? (
-        <div role="alert" className="timeline-event-agenda__notice">
-          Impossibile salvare l’Agenda. Ho ricaricato la versione corrente.
+      {notice !== null ? (
+        <div
+          role={notice === 'error' ? 'alert' : 'status'}
+          className="timeline-event-agenda__notice"
+        >
+          {t(($) => $.common.home.timeline.create.failure)}
         </div>
       ) : null}
 
@@ -273,14 +279,14 @@ export function TimelineEventAgendaEditor({
           onKeyDown={(event) => {
             if (event.key === 'Enter') {
               event.preventDefault();
-              add();
+              void add();
             }
           }}
         />
         <button
           type="button"
           disabled={busy || parts.length >= 100 || draft.trim().length === 0}
-          onClick={add}
+          onClick={() => void add()}
         >
           {t(($) => $.common.home.timeline.create.eventDetails.agendaAdd)}
         </button>
