@@ -436,7 +436,7 @@ def upgrade() -> None:
                 next_revision := current_revision + 1;
                 INSERT INTO dante.event_agenda_current(event_ref, revision, updated_at)
                 VALUES (requested_event_ref, next_revision, recorded_at)
-                ON CONFLICT (event_ref) DO UPDATE
+                ON CONFLICT ON CONSTRAINT pk_event_agenda_current DO UPDATE
                     SET revision = EXCLUDED.revision,
                         updated_at = EXCLUDED.updated_at;
 
