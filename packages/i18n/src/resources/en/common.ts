@@ -13,6 +13,8 @@ const homeWithB02D = {
       ...home.timeline.detail,
       unschedule: 'Return to Planning Tray',
       unscheduling: 'Returning…',
+      eventPostpone: 'Postpone / date TBD',
+      eventPostponing: 'Updating…',
     },
     feedback: {
       ...home.timeline.feedback,
@@ -23,11 +25,11 @@ const homeWithB02D = {
       scheduleRevisionUnavailable: 'This Schedule could not be updated safely.',
       scheduleUndoAvailable: 'Change saved.',
       scheduleUnscheduled:
-        'Activity returned to Planning Tray. Timeline is reloading.',
+        'Placement removed from Timeline. Current state is reloading.',
       scheduleUnscheduleConflict:
         'The Schedule changed elsewhere. It was not removed.',
       scheduleUnscheduleUnavailable:
-        'This Schedule could not be returned safely.',
+        'This placement could not be removed safely.',
       scheduleUndoUpdated: 'Previous Schedule change restored.',
       scheduleUndoConflict:
         'A later Schedule change prevents this undo. Nothing was overwritten.',
