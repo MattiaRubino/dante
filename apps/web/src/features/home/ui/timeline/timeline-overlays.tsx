@@ -31,6 +31,7 @@ import {
   timelineDateKey,
 } from './model/timeline-temporal';
 import type { TimelineEvent, TimelineGroup } from './model/timeline-types';
+import { TimelineEventAgendaEditor } from './timeline-event-agenda-editor';
 
 type PopoverPosition = Readonly<{
   left: number;
@@ -795,6 +796,7 @@ export type TimelineDetail = Readonly<{
   groupLabel: string;
   meta: string;
   ownerKind?: 'activity' | 'event';
+  eventRef?: string;
   subitemsCount?: number;
 }>;
 
@@ -816,6 +818,7 @@ export function EventDetailDialog({
   onClose,
 }: EventDetailDialogProps) {
   const { t } = useTranslation('common');
+  const dialogRef = useRef<HTMLDivElement | null>(null);
   const unscheduleButtonRef = useRef<HTMLButtonElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
 
@@ -829,21 +832,20 @@ export function EventDetailDialog({
         event.preventDefault();
         onClose();
       } else if (event.key === 'Tab') {
-        const buttons = [
-          unscheduleButtonRef.current,
-          closeButtonRef.current,
-        ].filter((button): button is HTMLButtonElement => Boolean(button));
-        if (buttons.length === 0) {
+        const focusable = Array.from(
+          dialogRef.current?.querySelectorAll<HTMLElement>(
+            'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+          ) ?? [],
+        );
+        if (focusable.length === 0) {
           return;
         }
         event.preventDefault();
-        const activeIndex = buttons.indexOf(
-          document.activeElement as HTMLButtonElement,
-        );
+        const activeIndex = focusable.indexOf(document.activeElement as HTMLElement);
         const offset = event.shiftKey ? -1 : 1;
         const nextIndex =
-          (activeIndex + offset + buttons.length) % buttons.length;
-        buttons[nextIndex]?.focus();
+          (activeIndex + offset + focusable.length) % focusable.length;
+        focusable[nextIndex]?.focus();
       }
     };
     document.addEventListener('keydown', keydown, true);
@@ -870,6 +872,7 @@ export function EventDetailDialog({
       }}
     >
       <div
+        ref={dialogRef}
         className="timeline-event-modal"
         role="dialog"
         aria-modal="true"
@@ -887,6 +890,9 @@ export function EventDetailDialog({
               count: detail.subitemsCount,
             })}
           </p>
+        ) : null}
+        {detail.ownerKind === 'event' && detail.eventRef ? (
+          <TimelineEventAgendaEditor eventRef={detail.eventRef} />
         ) : null}
         <div className="timeline-event-ai-note">
           {t(($) => $.common.home.timeline.detail.aiNote)}
@@ -957,6 +963,10 @@ export function detailFromEvent(
       : event.canonicalBasis?.kind === 'scheduled-activity'
         ? ('activity' as const)
         : undefined;
+  const eventRef =
+    event.canonicalBasis?.kind === 'scheduled-event'
+      ? event.canonicalBasis.eventRef
+      : undefined;
   const base: TimelineDetail = {
     title: event.title,
     startMinute: event.startMinute,
@@ -964,6 +974,7 @@ export function detailFromEvent(
     groupLabel: group?.label ?? event.groupId,
     meta: event.meta ?? '',
     ...(ownerKind === undefined ? {} : { ownerKind }),
+    ...(eventRef === undefined ? {} : { eventRef }),
   };
   return event.subitems?.length
     ? { ...base, subitemsCount: event.subitems.length }
