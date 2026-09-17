@@ -33,6 +33,7 @@ function runtimeWithEventSource() {
           event: Object.freeze({
             eventRef: EVENT_REF,
             title: request.title,
+            agendaParts: Object.freeze([...request.agendaParts]),
             createdAt: Temporal.Instant.from('2026-09-17T12:00:00Z'),
           }),
           schedule: Object.freeze({
@@ -162,6 +163,7 @@ describe('B03 Temporal Create runtime', () => {
     expect(createScheduledEvent).toHaveBeenCalledTimes(1);
     const request = createScheduledEvent.mock.calls[0]?.[0];
     expect(request?.title).toBe('Evento B03-C');
+    expect(request?.agendaParts).toEqual([]);
     expect(request?.placement.kind).toBe('floating-local-interval');
     if (request?.placement.kind !== 'floating-local-interval') {
       throw new Error('Expected floating-local Event request.');
@@ -199,6 +201,34 @@ describe('B03 Temporal Create runtime', () => {
         'temporal.event.lifecycle_capability_not_available',
       );
     }
+  });
+
+  it('transports ordered Event Agenda parts without widening unrelated Event semantics', async () => {
+    const { runtime, createScheduledEvent } = runtimeWithEventSource();
+    const baseline = scheduledEventFields();
+    const fields = createTemporalCreateFields({
+      ...baseline,
+      event: Object.freeze({
+        ...baseline.event,
+        agendaParts: Object.freeze([
+          'Confermare decisione architetturale',
+          'Assegnare azioni successive',
+        ]),
+      }),
+    });
+    const preparation = runtime.prepare(fields);
+    if (preparation.status !== 'ready') {
+      throw new Error('Expected B03-D Event Agenda preparation to be ready.');
+    }
+
+    const execution = await runtime.execute(preparation.prepared);
+
+    expect(execution.result.status).toBe('applied');
+    expect(createScheduledEvent).toHaveBeenCalledTimes(1);
+    expect(createScheduledEvent.mock.calls[0]?.[0].agendaParts).toEqual([
+      'Confermare decisione architetturale',
+      'Assegnare azioni successive',
+    ]);
   });
 
   it('reschedules, postpones, and guarded-undoes a freshly created Event on its shared Schedule', async () => {
@@ -309,7 +339,7 @@ describe('B03 Temporal Create runtime', () => {
         timeMode: 'floating',
         contextId: 'personale',
         timeZoneId: 'Europe/Rome',
-        notes: 'Intento non ancora autorizzato dal contratto B03-C',
+        notes: 'Intento non ancora autorizzato dal contratto B03-D',
       }),
     );
     if (preparation.status !== 'ready') {
