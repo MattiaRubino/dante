@@ -25,7 +25,11 @@ export type {
   TemporalScheduledActivityCreateResult,
 } from './activity-data-source';
 export type {
+  TemporalEventAgendaDataSource,
+  TemporalEventAgendaReplaceRequest,
+  TemporalEventAgendaReplaceResult,
   TemporalEventDataSource,
+  TemporalEventDetailRecord,
   TemporalEventRecord,
   TemporalEventScheduleRecord,
   TemporalScheduledEventCreateRequest,
@@ -37,6 +41,11 @@ export {
   createRemoteTemporalActivityDataSource,
   type TemporalActivityRemoteFailureKind,
 } from './remote-activity-data-source';
+export {
+  TemporalEventAgendaRemoteError,
+  createRemoteTemporalEventAgendaDataSource,
+  type TemporalEventAgendaRemoteFailureKind,
+} from './remote-event-agenda-data-source';
 export {
   TemporalEventRemoteError,
   createRemoteTemporalEventDataSource,
