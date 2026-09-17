@@ -333,6 +333,7 @@ def _install_schedule_capabilities(*, include_event: bool) -> None:
         PARALLEL UNSAFE
         SET search_path = pg_catalog, dante, pg_temp
         AS $function$
+        #variable_conflict error
         DECLARE
             normalized_operation_id text := btrim(requested_operation_id);
             recorded_at timestamptz;
@@ -406,11 +407,11 @@ def _install_schedule_capabilities(*, include_event: bool) -> None:
             END IF;
 
             recorded_at := GREATEST(clock_timestamp(), current_from_at + interval '1 microsecond');
-            UPDATE dante.schedule_placement_current_history
+            UPDATE dante.schedule_placement_current_history AS history
                SET current_until_at = recorded_at
-             WHERE schedule_ref = requested_schedule_ref
-               AND material_state_ref = current_material_state_ref
-               AND current_until_at IS NULL;
+             WHERE history.schedule_ref = requested_schedule_ref
+               AND history.material_state_ref = current_material_state_ref
+               AND history.current_until_at IS NULL;
             DELETE FROM dante.scoped_current_material_state
              WHERE scoped_owner_ref = requested_schedule_ref
                AND facet_code = 'schedule.placement'
