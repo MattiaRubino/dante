@@ -1,0 +1,35 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {"key":"table:dante.event_agenda_current","type":"table","schema":"dante","name":"event_agenda_current","ownership_class":"dante_owned"},
+  "purpose": "Current aggregate revision for one Event Agenda, providing an explicit CAS boundary without assigning identity to individual Agenda values.",
+  "classification": {"persistence_role":"event_agenda_current_revision","canonicality":"control","family":"temporal_event"},
+  "semantic_traceability": {
+    "authority_sources": ["docs/domain/concepts/event.md","docs/workstreams/timeline-temporal-operational-b03-execution-plan.md"],
+    "domain_concepts": ["Event"],
+    "logical_families": ["aggregate current-state concurrency control"],
+    "reference_families": ["NativeRef"],
+    "material_facets": []
+  },
+  "implementation": {"introducing_stage":"B03-D-EVENT","alembic_revision":"20260917_29","sqlalchemy":{"mode":"orm_row","module":"dante.platform.database.mappings.event","symbol":"EventAgendaCurrentRow"},"runtime_acl_stage":"B03-D-EVENT"},
+  "structure": {
+    "columns": [
+      {"name":"event_ref","postgres_type":"uuid","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Event whose Agenda aggregate has accepted at least one post-create replacement.","semantic_type":"NativeRef","value_contract":"Existing Event expectation NativeRef; absence means initial Agenda revision 0."},
+      {"name":"revision","postgres_type":"bigint","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Current aggregate Agenda CAS revision.","semantic_type":null,"value_contract":"Positive monotonic integer; initial create state is represented as implicit revision 0 until the first replacement."},
+      {"name":"updated_at","postgres_type":"timestamp with time zone","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Authoritative instant at which this aggregate revision became current.","semantic_type":null,"value_contract":"statement_timestamp recorded by the bounded Agenda replacement capability."}
+    ],
+    "primary_key": {"name":"pk_event_agenda_current","columns":["event_ref"],"reason":"Exactly one explicit current Agenda revision row may exist per Event.","deferrable":false,"initially":"NOT DEFERRABLE","enforced":true},
+    "foreign_keys": [{"name":"fk_event_agenda_current_event_ref_event_expectation","columns":["event_ref"],"target":{"schema":"dante","table":"event_expectation","columns":["event_ref"]},"on_delete":"NO ACTION","on_update":"NO ACTION","match_type":"SIMPLE","deferrable":false,"initially":"NOT DEFERRABLE","enforced":true,"validated":true,"reference_family":"NativeRef","cardinality":"one_to_one_optional","semantic_reason":"Agenda revision control belongs to the existing Event rather than creating another owner identity."}],
+    "unique_constraints": [],
+    "check_constraints": [{"name":"ck_event_agenda_current_revision","expression_contract":"revision >= 1","reason":"Explicit rows exist only after a successful replacement beyond implicit initial revision 0.","enforced":true,"validated":true,"no_inherit":false}],
+    "indexes": [{"name":"pk_event_agenda_current","method":"btree","unique":true,"keys":["event_ref"],"predicate":null,"include":[],"source":"primary_key","reason":"Direct current Agenda revision lookup by Event NativeRef.","valid":true,"ready":true,"live":true}],
+    "triggers": [],
+    "table": {"persistence":"permanent","access_method":"heap","partitioned":false,"row_security":false,"force_row_security":false,"replica_identity":"default","reloptions":[]},
+    "view": null,
+    "routine": null
+  },
+  "state_history": {"material_state_behavior":null,"current_binding":"This row is only aggregate concurrency control. It is not Event MaterialState and does not replace Schedule current/history semantics.","chronology":"revision is a CAS sequence, while updated_at is the authoritative mutation instant.","immutability_policy":"Only the bounded Agenda replacement capability may advance revision; runtime has SELECT only."},
+  "lifecycle": {"retention":"Retained after the first accepted Agenda replacement even when the current Agenda becomes empty.","redaction":null,"retirement_tombstone":null,"delete_behavior":"No generic runtime DELETE; B03-D downgrade refuses while current Agenda revision rows exist."},
+  "security": {"owner_role":"dante_owner","default_deny_non_owner":true,"expected_grants":[{"grantee":"dante_runtime","privilege":"SELECT","columns":[],"grant_option":false}]},
+  "proof": {"obligations":["initial Agenda revision is truthfully 0 without a fabricated row","each accepted replacement advances revision exactly once","stale expected revision conflicts fail closed","runtime cannot directly advance revision"],"test_refs":["apps/backend/tests/integration/temporal/test_b03_event_agenda.py","apps/backend/tests/integration/database/test_current_catalog.py"],"staged_evidence":[]}
+}
