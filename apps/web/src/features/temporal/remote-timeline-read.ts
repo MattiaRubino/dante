@@ -6,7 +6,7 @@ import {
 } from '../../platform/api/web-fetch';
 import type {
   TemporalTimelineDataSource,
-  TemporalTimelineScheduledActivityItem,
+  TemporalTimelineScheduledItem,
   TemporalTimelineWindow,
   TemporalTimelineWindowRequest,
 } from './timeline-read';
@@ -163,35 +163,85 @@ function validateWindowRequest(request: TemporalTimelineWindowRequest): void {
   }
 }
 
-function parseScheduledActivity(
-  payload: unknown,
-): TemporalTimelineScheduledActivityItem {
-  if (!isRecord(payload) || payload.kind !== 'scheduled_activity') {
-    throw new TemporalTimelineRemoteError(
-      'protocol',
-      'Temporal Timeline item has an unsupported representation.',
-    );
-  }
+type ParsedOwnerIdentity =
+  | Readonly<{
+      kind: 'scheduled_activity';
+      activityRef: string;
+      scheduleRef: string;
+      placementMaterialStateRef: string;
+      title: string;
+      wireRefKey: 'activity_ref';
+    }>
+  | Readonly<{
+      kind: 'scheduled_event';
+      eventRef: string;
+      scheduleRef: string;
+      placementMaterialStateRef: string;
+      title: string;
+      wireRefKey: 'event_ref';
+    }>;
+
+function parseOwnerIdentity(payload: Record<string, unknown>): ParsedOwnerIdentity {
   if (typeof payload.title !== 'string' || payload.title.trim().length === 0) {
     throw new TemporalTimelineRemoteError(
       'protocol',
-      'Temporal Timeline Activity title must be a non-empty string.',
+      'Temporal Timeline owner title must be a non-empty string.',
     );
   }
-
-  const identity = Object.freeze({
-    kind: 'scheduled_activity' as const,
-    activityRef: parseUuidV7(payload.activity_ref, 'activity_ref'),
+  const shared = {
     scheduleRef: parseUuidV7(payload.schedule_ref, 'schedule_ref'),
     placementMaterialStateRef: parseUuidV7(
       payload.placement_material_state_ref,
       'placement_material_state_ref',
     ),
     title: payload.title,
-  });
+  };
+
+  if (payload.kind === 'scheduled_activity') {
+    return Object.freeze({
+      kind: 'scheduled_activity' as const,
+      activityRef: parseUuidV7(payload.activity_ref, 'activity_ref'),
+      ...shared,
+      wireRefKey: 'activity_ref' as const,
+    });
+  }
+  if (payload.kind === 'scheduled_event') {
+    return Object.freeze({
+      kind: 'scheduled_event' as const,
+      eventRef: parseUuidV7(payload.event_ref, 'event_ref'),
+      ...shared,
+      wireRefKey: 'event_ref' as const,
+    });
+  }
+  throw new TemporalTimelineRemoteError(
+    'protocol',
+    'Temporal Timeline item has an unsupported owner representation.',
+  );
+}
+
+function publicIdentity(identity: ParsedOwnerIdentity) {
+  if (identity.kind === 'scheduled_activity') {
+    const { wireRefKey: _wireRefKey, ...result } = identity;
+    return result;
+  }
+  const { wireRefKey: _wireRefKey, ...result } = identity;
+  return result;
+}
+
+function parseScheduledItem(payload: unknown): TemporalTimelineScheduledItem {
+  if (!isRecord(payload)) {
+    throw new TemporalTimelineRemoteError(
+      'protocol',
+      'Temporal Timeline item has an unsupported representation.',
+    );
+  }
+
+  const owner = parseOwnerIdentity(payload);
+  const identity = publicIdentity(owner);
+  const ownerLabel = owner.kind === 'scheduled_activity' ? 'Activity' : 'Event';
   const commonKeys = [
     'kind',
-    'activity_ref',
+    owner.wireRefKey,
     'schedule_ref',
     'placement_material_state_ref',
     'title',
@@ -203,7 +253,7 @@ function parseScheduledActivity(
       requireExactKeys(
         payload,
         [...commonKeys, 'start_date', 'end_date_exclusive'],
-        'Temporal Timeline date-span Activity',
+        `Temporal Timeline date-span ${ownerLabel}`,
       );
       const startDate = parsePlainDate(payload.start_date, 'start_date');
       const endDateExclusive = parsePlainDate(
@@ -228,7 +278,7 @@ function parseScheduledActivity(
       requireExactKeys(
         payload,
         [...commonKeys, 'starts_local_at', 'ends_local_at'],
-        'Temporal Timeline floating-local Activity',
+        `Temporal Timeline floating-local ${ownerLabel}`,
       );
       const startsLocalAt = parseLocalDateTime(
         payload.starts_local_at,
@@ -265,7 +315,7 @@ function parseScheduledActivity(
           'display_starts_local_at',
           'display_ends_local_at',
         ],
-        'Temporal Timeline named-zone Activity',
+        `Temporal Timeline named-zone ${ownerLabel}`,
       );
       const startsLocalAt = parseLocalDateTime(
         payload.starts_local_at,
@@ -321,7 +371,7 @@ function parseScheduledActivity(
           'display_starts_local_at',
           'display_ends_local_at',
         ],
-        'Temporal Timeline absolute Activity',
+        `Temporal Timeline absolute ${ownerLabel}`,
       );
       const startsAt = parseInstant(payload.starts_at, 'starts_at');
       const endsAt = parseInstant(payload.ends_at, 'ends_at');
@@ -351,7 +401,7 @@ function parseScheduledActivity(
       requireExactKeys(
         payload,
         [...commonKeys, 'local_date', 'period'],
-        'Temporal Timeline coarse-period Activity',
+        `Temporal Timeline coarse-period ${ownerLabel}`,
       );
       if (
         payload.period !== 'morning' &&
@@ -436,7 +486,7 @@ function parseWindow(payload: unknown): TemporalTimelineWindow {
         payload.effective_zone_id,
         'effective_zone_id',
       ),
-      items: Object.freeze(payload.items.map(parseScheduledActivity)),
+      items: Object.freeze(payload.items.map(parseScheduledItem)),
     });
   }
 
