@@ -20,57 +20,66 @@ type TemporalTimelineScheduledActivityBase = Readonly<{
   title: string;
 }>;
 
-export type TemporalTimelineDateSpanActivityItem =
-  TemporalTimelineScheduledActivityBase &
-    Readonly<{
-      temporalForm: 'date-span';
-      startDate: PlainDate;
-      endDateExclusive: PlainDate;
-    }>;
+type TemporalTimelineScheduledEventBase = Readonly<{
+  kind: 'scheduled_event';
+  eventRef: string;
+  scheduleRef: string;
+  placementMaterialStateRef: string;
+  title: string;
+}>;
 
-export type TemporalTimelineFloatingLocalActivityItem =
-  TemporalTimelineScheduledActivityBase &
-    Readonly<{
-      temporalForm: 'floating-local';
-      startsLocalAt: PlainDateTime;
-      endsLocalAt: PlainDateTime;
-    }>;
+type TemporalTimelineDateSpanFields = Readonly<{
+  temporalForm: 'date-span';
+  startDate: PlainDate;
+  endDateExclusive: PlainDate;
+}>;
 
-export type TemporalTimelineNamedZoneLocalActivityItem =
-  TemporalTimelineScheduledActivityBase &
-    Readonly<{
-      temporalForm: 'named-zone-local';
-      startsLocalAt: PlainDateTime;
-      endsLocalAt: PlainDateTime;
-      zoneId: string;
-      resolvedStartAt: Instant;
-      resolvedEndAt: Instant;
-      displayStartsLocalAt: PlainDateTime;
-      displayEndsLocalAt: PlainDateTime;
-    }>;
+type TemporalTimelineFloatingLocalFields = Readonly<{
+  temporalForm: 'floating-local';
+  startsLocalAt: PlainDateTime;
+  endsLocalAt: PlainDateTime;
+}>;
 
-export type TemporalTimelineAbsoluteActivityItem =
-  TemporalTimelineScheduledActivityBase &
-    Readonly<{
-      temporalForm: 'absolute';
-      startsAt: Instant;
-      endsAt: Instant;
-      displayStartsLocalAt: PlainDateTime;
-      displayEndsLocalAt: PlainDateTime;
-    }>;
+type TemporalTimelineNamedZoneLocalFields = Readonly<{
+  temporalForm: 'named-zone-local';
+  startsLocalAt: PlainDateTime;
+  endsLocalAt: PlainDateTime;
+  zoneId: string;
+  resolvedStartAt: Instant;
+  resolvedEndAt: Instant;
+  displayStartsLocalAt: PlainDateTime;
+  displayEndsLocalAt: PlainDateTime;
+}>;
+
+type TemporalTimelineAbsoluteFields = Readonly<{
+  temporalForm: 'absolute';
+  startsAt: Instant;
+  endsAt: Instant;
+  displayStartsLocalAt: PlainDateTime;
+  displayEndsLocalAt: PlainDateTime;
+}>;
 
 export type TemporalTimelineCoarseLocalPeriod =
   | 'morning'
   | 'afternoon'
   | 'evening';
 
+type TemporalTimelineCoarseLocalPeriodFields = Readonly<{
+  temporalForm: 'coarse-local-period';
+  localDate: PlainDate;
+  period: TemporalTimelineCoarseLocalPeriod;
+}>;
+
+export type TemporalTimelineDateSpanActivityItem =
+  TemporalTimelineScheduledActivityBase & TemporalTimelineDateSpanFields;
+export type TemporalTimelineFloatingLocalActivityItem =
+  TemporalTimelineScheduledActivityBase & TemporalTimelineFloatingLocalFields;
+export type TemporalTimelineNamedZoneLocalActivityItem =
+  TemporalTimelineScheduledActivityBase & TemporalTimelineNamedZoneLocalFields;
+export type TemporalTimelineAbsoluteActivityItem =
+  TemporalTimelineScheduledActivityBase & TemporalTimelineAbsoluteFields;
 export type TemporalTimelineCoarseLocalPeriodActivityItem =
-  TemporalTimelineScheduledActivityBase &
-    Readonly<{
-      temporalForm: 'coarse-local-period';
-      localDate: PlainDate;
-      period: TemporalTimelineCoarseLocalPeriod;
-    }>;
+  TemporalTimelineScheduledActivityBase & TemporalTimelineCoarseLocalPeriodFields;
 
 export type TemporalTimelineScheduledActivityItem =
   | TemporalTimelineDateSpanActivityItem
@@ -79,12 +88,34 @@ export type TemporalTimelineScheduledActivityItem =
   | TemporalTimelineAbsoluteActivityItem
   | TemporalTimelineCoarseLocalPeriodActivityItem;
 
+export type TemporalTimelineDateSpanEventItem =
+  TemporalTimelineScheduledEventBase & TemporalTimelineDateSpanFields;
+export type TemporalTimelineFloatingLocalEventItem =
+  TemporalTimelineScheduledEventBase & TemporalTimelineFloatingLocalFields;
+export type TemporalTimelineNamedZoneLocalEventItem =
+  TemporalTimelineScheduledEventBase & TemporalTimelineNamedZoneLocalFields;
+export type TemporalTimelineAbsoluteEventItem =
+  TemporalTimelineScheduledEventBase & TemporalTimelineAbsoluteFields;
+export type TemporalTimelineCoarseLocalPeriodEventItem =
+  TemporalTimelineScheduledEventBase & TemporalTimelineCoarseLocalPeriodFields;
+
+export type TemporalTimelineScheduledEventItem =
+  | TemporalTimelineDateSpanEventItem
+  | TemporalTimelineFloatingLocalEventItem
+  | TemporalTimelineNamedZoneLocalEventItem
+  | TemporalTimelineAbsoluteEventItem
+  | TemporalTimelineCoarseLocalPeriodEventItem;
+
+export type TemporalTimelineScheduledItem =
+  | TemporalTimelineScheduledActivityItem
+  | TemporalTimelineScheduledEventItem;
+
 export type TemporalTimelineItemsWindow = Readonly<{
   kind: 'window';
   startDate: string;
   endDateExclusive: string;
   effectiveZoneId: string;
-  items: readonly TemporalTimelineScheduledActivityItem[];
+  items: readonly TemporalTimelineScheduledItem[];
 }>;
 
 export type TemporalTimelineWindow =
