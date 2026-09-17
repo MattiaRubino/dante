@@ -45,7 +45,7 @@ import {
 } from './model/timeline-temporal';
 import type {
   TimelineAllDayItem,
-  TimelineCanonicalScheduledActivityBasis,
+  TimelineCanonicalScheduleBasis,
   TimelineEvent,
   TimelineGroup,
   TimelineGroupId,
@@ -313,7 +313,6 @@ export function TimelineSurface({
       const basis = event.canonicalBasis;
       if (
         basis === undefined ||
-        basis.kind !== 'scheduled-activity' ||
         effectiveZoneId === null ||
         pendingScheduleRefsRef.current.has(basis.scheduleRef)
       ) {
@@ -400,7 +399,7 @@ export function TimelineSurface({
   );
 
   const unscheduleCanonicalBasis = useCallback(
-    (basis: TimelineCanonicalScheduledActivityBasis) => {
+    (basis: TimelineCanonicalScheduleBasis) => {
       if (pendingScheduleRefsRef.current.has(basis.scheduleRef)) {
         return;
       }
@@ -1103,8 +1102,7 @@ export function TimelineSurface({
             setDetailState({
               detail: detailFromEvent(event, state.groups),
               event,
-              allowUnschedule:
-                event.canonicalBasis?.kind === 'scheduled-activity',
+              allowUnschedule: event.canonicalBasis !== undefined,
               opener,
             })
           }
@@ -1197,7 +1195,7 @@ export function TimelineSurface({
         viewDate={viewDate}
         triggerRef={calendarTriggerRef}
         onClose={closeCalendar}
-        onDateSelect={(date) => goToDate(date)}
+        onDateSelect={goToDate}
         onGoToday={goNow}
       />
 
@@ -1257,17 +1255,17 @@ export function TimelineSurface({
         opener={detailState?.opener ?? null}
         canUnschedule={
           detailState?.allowUnschedule === true &&
-          detailState.event.canonicalBasis?.kind === 'scheduled-activity'
+          detailState.event.canonicalBasis !== undefined
         }
         pending={
           detailState?.allowUnschedule === true &&
-          detailState.event.canonicalBasis?.kind === 'scheduled-activity' &&
+          detailState.event.canonicalBasis !== undefined &&
           pendingScheduleRef ===
             detailState.event.canonicalBasis.scheduleRef
         }
         onUnschedule={() => {
           const basis = detailState?.event.canonicalBasis;
-          if (basis?.kind === 'scheduled-activity') {
+          if (basis !== undefined) {
             unscheduleCanonicalBasis(basis);
           }
         }}
