@@ -313,6 +313,7 @@ export function TimelineSurface({
       const basis = event.canonicalBasis;
       if (
         basis === undefined ||
+        basis.kind !== 'scheduled-activity' ||
         effectiveZoneId === null ||
         pendingScheduleRefsRef.current.has(basis.scheduleRef)
       ) {
@@ -1102,7 +1103,8 @@ export function TimelineSurface({
             setDetailState({
               detail: detailFromEvent(event, state.groups),
               event,
-              allowUnschedule: true,
+              allowUnschedule:
+                event.canonicalBasis?.kind === 'scheduled-activity',
               opener,
             })
           }
@@ -1255,17 +1257,17 @@ export function TimelineSurface({
         opener={detailState?.opener ?? null}
         canUnschedule={
           detailState?.allowUnschedule === true &&
-          detailState.event.canonicalBasis !== undefined
+          detailState.event.canonicalBasis?.kind === 'scheduled-activity'
         }
         pending={
           detailState?.allowUnschedule === true &&
-          detailState.event.canonicalBasis !== undefined &&
+          detailState.event.canonicalBasis?.kind === 'scheduled-activity' &&
           pendingScheduleRef ===
             detailState.event.canonicalBasis.scheduleRef
         }
         onUnschedule={() => {
           const basis = detailState?.event.canonicalBasis;
-          if (basis !== undefined) {
+          if (basis?.kind === 'scheduled-activity') {
             unscheduleCanonicalBasis(basis);
           }
         }}
