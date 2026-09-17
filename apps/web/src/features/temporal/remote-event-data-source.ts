@@ -156,6 +156,30 @@ function parseZoneId(value: unknown, field: string): string {
   }
 }
 
+function parseAgendaParts(value: unknown): readonly string[] {
+  if (!Array.isArray(value) || value.length > 100) {
+    throw new TemporalEventRemoteError(
+      'protocol',
+      'Scheduled Event agenda_parts must be an array with at most 100 parts.',
+    );
+  }
+  const parts = value.map((part, index) => {
+    if (
+      typeof part !== 'string' ||
+      part.length === 0 ||
+      part.length > 1000 ||
+      part.trim() !== part
+    ) {
+      throw new TemporalEventRemoteError(
+        'protocol',
+        `Scheduled Event agenda_parts[${index}] must be canonical non-empty text.`,
+      );
+    }
+    return part;
+  });
+  return Object.freeze(parts);
+}
+
 function parseAcceptedPlacement(
   payload: Record<string, unknown>,
 ): TemporalAcceptedSchedulePlacement {
@@ -278,6 +302,7 @@ function scheduledResponseKeys(temporalForm: unknown): readonly string[] {
   const common = [
     'event_ref',
     'title',
+    'agenda_parts',
     'created_at',
     'schedule_ref',
     'placement_material_state_ref',
@@ -337,6 +362,7 @@ function parseScheduledEvent(
     event: Object.freeze({
       eventRef: parseUuidV7(payload.event_ref, 'event_ref'),
       title: payload.title,
+      agendaParts: parseAgendaParts(payload.agenda_parts),
       createdAt: parseInstant(payload.created_at, 'created_at'),
     }),
     schedule: Object.freeze({
@@ -505,6 +531,23 @@ async function csrfToken(
   return payload.csrf_token;
 }
 
+function normalizedAgendaParts(parts: readonly string[]): readonly string[] {
+  if (parts.length > 100) {
+    throw new RangeError('Event Agenda may contain at most 100 parts.');
+  }
+  return Object.freeze(
+    parts.map((part) => {
+      const normalized = part.trim();
+      if (!normalized || normalized.length > 1000) {
+        throw new RangeError(
+          'Event Agenda parts must contain 1 to 1000 non-padding characters.',
+        );
+      }
+      return normalized;
+    }),
+  );
+}
+
 function validateRequest(request: TemporalScheduledEventCreateRequest): void {
   const operationId = request.operationId.trim();
   const title = request.title.trim();
@@ -514,6 +557,7 @@ function validateRequest(request: TemporalScheduledEventCreateRequest): void {
   if (!title || title.length > 300) {
     throw new RangeError('Event title must contain 1 to 300 characters.');
   }
+  normalizedAgendaParts(request.agendaParts);
   validatePlacement(request.placement);
 }
 
@@ -529,6 +573,7 @@ export function createRemoteTemporalEventDataSource(
       signal?: AbortSignal,
     ): Promise<TemporalScheduledEventCreateResult> {
       validateRequest(request);
+      const agendaParts = normalizedAgendaParts(request.agendaParts);
       const csrf = await csrfToken(webFetch, signal);
       const response = await fetchResponse(webFetch, SCHEDULED_EVENT_ENDPOINT, {
         method: 'POST',
@@ -539,6 +584,7 @@ export function createRemoteTemporalEventDataSource(
         body: JSON.stringify({
           operation_id: request.operationId.trim(),
           title: request.title.trim(),
+          agenda_parts: agendaParts,
           placement: serializePlacement(request.placement),
         }),
         ...(signal === undefined ? {} : { signal }),
