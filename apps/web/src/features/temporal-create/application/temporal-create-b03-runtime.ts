@@ -62,7 +62,17 @@ function sameStructuredIntent(left: unknown, right: unknown): boolean {
   );
 }
 
-function b03bScheduledEventIntentSupported(
+function eventIntentWithoutAgenda(
+  event: TemporalCreateFields['event'],
+): Readonly<Record<string, unknown>> {
+  return Object.freeze(
+    Object.fromEntries(
+      Object.entries(event).filter(([key]) => key !== 'agendaParts'),
+    ),
+  );
+}
+
+function b03dScheduledEventIntentSupported(
   prepared: TemporalCreatePreparedOperation,
 ): boolean {
   const specification = prepared.metadata.specification;
@@ -100,7 +110,10 @@ function b03bScheduledEventIntentSupported(
       baseline.eventRecurrence,
     ) &&
     sameStructuredIntent(specification.confirmation, baseline.confirmation) &&
-    sameStructuredIntent(specification.event, baseline.event)
+    sameStructuredIntent(
+      eventIntentWithoutAgenda(specification.event),
+      eventIntentWithoutAgenda(baseline.event),
+    )
   );
 }
 
@@ -412,7 +425,7 @@ class B03TemporalCreateRuntime implements TemporalCreateRuntime {
     if (prepared.metadata.kind !== 'event') {
       return await this.base.execute(prepared);
     }
-    if (!b03bScheduledEventIntentSupported(prepared)) {
+    if (!b03dScheduledEventIntentSupported(prepared)) {
       return Object.freeze({
         result: Object.freeze({
           operationId: prepared.operationId,
@@ -449,6 +462,7 @@ class B03TemporalCreateRuntime implements TemporalCreateRuntime {
       const created = await this.eventSource.createScheduledEvent({
         operationId: prepared.operationId,
         title: prepared.command.payload.title,
+        agendaParts: prepared.metadata.specification.event.agendaParts,
         placement: schedulePlacement,
       });
       const projection = scheduledEventProjection(created, prepared.operationId);
