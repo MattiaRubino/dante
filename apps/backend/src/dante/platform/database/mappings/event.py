@@ -1,8 +1,8 @@
-"""SQLAlchemy rows for the minimum B03-A Event persistence surface."""
+"""SQLAlchemy rows for canonical B03 Event persistence."""
 
 from datetime import datetime
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKeyConstraint, Index, Text
+from sqlalchemy import CheckConstraint, DateTime, ForeignKeyConstraint, Index, Integer, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from dante.platform.database.metadata import Base
@@ -48,6 +48,35 @@ class EventExpectationRow(Base):
     self_person_ref: Mapped[NativeRef] = mapped_column(nullable=False)
     title: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class EventAgendaPartRow(Base):
+    """Ordered Event-internal Agenda value; it is not a standalone identity owner."""
+
+    __tablename__ = "event_agenda_part"
+    __table_args__ = (
+        CheckConstraint(
+            "position >= 1 AND position <= 100",
+            name="position",
+        ),
+        CheckConstraint(
+            "content=btrim(content) AND content<>'' AND char_length(content)<=1000",
+            name="content",
+        ),
+        ForeignKeyConstraint(
+            ["event_ref"],
+            ["dante.event_expectation.event_ref"],
+            name="fk_event_agenda_part_event_ref_event_expectation",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
+        ),
+    )
+
+    event_ref: Mapped[NativeRef] = mapped_column(primary_key=True)
+    position: Mapped[int] = mapped_column(Integer, primary_key=True)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
 
 
 class EventCreateOperationRow(Base):
