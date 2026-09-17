@@ -1,6 +1,6 @@
 # Timeline / Temporal-Operational — B03 Event Core Execution Plan
 
-- **Status:** B03-A ✅ CLOSED / PROVEN — B03-B ✅ CLOSED / PROVEN — B03-C NEXT
+- **Status:** B03-A ✅ CLOSED / PROVEN — B03-B ✅ CLOSED / PROVEN — B03-C ✅ CLOSED / PROVEN — B03-D NEXT
 - **Date:** 2026-09-17
 - **Branch:** `feature/timeline-temporal-operational`
 - **Current DB authority:** PostgreSQL 18.6 / Alembic `20260917_28`
@@ -11,7 +11,8 @@
 - **Roadmap:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **B03-A closure:** `docs/workstreams/timeline-temporal-operational-b03-a-closure-2026-09-16.md`
 - **B03-B closure:** `docs/workstreams/timeline-temporal-operational-b03-b-closure-2026-09-17.md`
-- **Next implementation gate:** `APPROVE B03-C`
+- **B03-C closure:** `docs/workstreams/timeline-temporal-operational-b03-c-closure-2026-09-17.md`
+- **Next implementation gate:** `APPROVE B03-D`
 - **CI:** separate authorization required
 
 The detailed archived semantic map remains binding for the complete functionality/logics inventory and all semantic `!=` boundaries. This file is the current B03 execution authority.
@@ -145,13 +146,7 @@ TimelineItem
 
 Activity/Event identity remains explicit in backend DTOs and TypeScript discriminated unions. Timeline is a projection, never canonical owner truth.
 
-## 3.5 Frontend activation
-
-The minimal truthful Event Create path is active for canonically supported B03-B placement intent. Unsupported rich Event prototype intent remains fail-closed.
-
-Event Timeline projections are visible but **read-only for lifecycle mutation** in B03-B. Event reschedule/unschedule/Undo belongs to B03-C.
-
-## 3.6 Executed proof
+## 3.5 Executed proof
 
 ```text
 PostgreSQL/API targeted selection      18 PASS / 4 FAIL first run
@@ -162,110 +157,97 @@ B03 Create-runtime web                  2 PASS
 @dante/web typecheck                    PASS
 ```
 
-The initial four failures exposed one real migration regression: `_28` had redefined `unschedule_self_schedule(...)` without preserving B02 strict PL/pgSQL disambiguation. `af16b700` restored `#variable_conflict error` and qualified the history update, after which the exact four failed proofs passed.
-
-The final frontend gate also verified that the Activity|Event projection union does not accidentally grant Activity-only lifecycle actions to Event before B03-C.
-
 Closure authority: `docs/workstreams/timeline-temporal-operational-b03-b-closure-2026-09-17.md`.
 
 ---
 
-# 4. Current B03 gaps after B03-B
+# 4. B03-C — Event placement lifecycle ✅ CLOSED / PROVEN
 
-```text
-GAP-B03-C01  Event reschedule product lifecycle not active
-GAP-B03-C02  postponed/TBD Event lifecycle not active
-GAP-B03-C03  Event read/detail after current Schedule absence not active
-GAP-B03-C04  Event guarded Undo product path not active
-GAP-B03-D01  Agenda/internal-part canonical persistence absent
-```
-
-B03-B gaps are closed. These remaining gaps belong to later slices and must not be solved by widening B03-B semantics retroactively.
-
----
-
-# 5. B03-C — Event placement lifecycle ⬜ NEXT
-
-## 5.1 Goal
-
-Complete Event placement lifecycle without collapsing Event into Activity semantics.
-
-Required invariant:
+## 4.1 Accepted invariant
 
 ```text
 same Event identity
-+ historical/original expectation retained
-+ current Schedule may change or be absent
++ same Schedule identity
++ current placement may revise or become absent
 + Schedule history remains monotonic
 ```
 
-## 5.2 Reschedule
+B03-C uses the same canonical Schedule mutation family already established by B02/B03-B. No `_29` was required because there was no persistence gap.
 
-Event reschedule must use the existing shared Schedule revision capability. No Event-specific revision engine is allowed.
+## 4.2 Reschedule
 
-Expected-current-state/CAS, idempotency and current/history rules remain identical to the shared Schedule semantics already proven for Activity.
+Event reschedule uses `revise_self_schedule_placement(...)` through the existing backend/API Schedule boundary. `EventRef` and `ScheduleRef` remain stable while placement MaterialState advances.
 
-## 5.3 Postponed / TBD
+Timeline rereads authoritative current truth after mutation; no local optimistic Event-specific state becomes canonical.
+
+## 4.3 Postponed / TBD
+
+Accepted semantics:
 
 ```text
 Event identity retained
-Schedule/history retained
-no current accepted Schedule
+Schedule identity/history retained
+no current accepted placement
 no fabricated placeholder date/time
-```
-
-And:
-
-```text
 postponed/TBD Event != Planning Tray Activity
 ```
 
-A postponed/TBD Event remains an Event whose current accepted Schedule is absent; it is not converted to an Activity and is not deleted.
+The Event remains readable through its Event owner read path while the Timeline correctly omits it because there is no current placement.
 
-## 5.4 Detail/read
+## 4.4 Guarded Undo
 
-Event detail/read must remain truthful when:
-
-- a current Schedule exists;
-- Schedule placement has been revised;
-- no current Schedule exists after postponement/TBD;
-- historical Schedule episodes exist.
-
-Original Event expectation, current Schedule and future Actual truth must remain distinguishable.
-
-## 5.5 Guarded Undo
-
-Undo must create a new accepted Schedule placement MaterialState when the accepted basis is still valid. It must never reopen or rewrite old current-history episodes.
-
-## 5.6 Frontend activation
-
-Only after backend/API lifecycle capabilities are proven may Event Timeline/detail surfaces expose:
+Undo of postponement uses the canonical Schedule unschedule token/operation boundary and writes a **new** accepted placement MaterialState.
 
 ```text
-reschedule
-unschedule/postpone/TBD
-Undo where the exact accepted basis allows it
+old historical MaterialState remains historical
+restored placement gets a fresh MaterialState
+current/history chronology remains monotonic
 ```
 
-Activity lifecycle behavior must remain unchanged.
+Undo replay is idempotent. Stale revision/unschedule attempts fail closed with conflict.
 
-## 5.7 B03-C proof obligations
+## 4.5 Create runtime + Timeline
 
-Required targeted evidence before B03-C closure:
+An Event immediately after Create can revise, postpone and guarded-undo through `TemporalScheduleDataSource` without requiring a reload and without a local fake Event lifecycle.
 
-- Event reschedule with stable EventRef and ScheduleRef;
-- current placement MaterialState advances monotonically;
-- stale expected-state conflict;
-- idempotent replay / changed-intent conflict;
-- postpone/TBD removes current accepted placement without deleting Event/history;
-- Event remains readable/detail-visible while current Schedule is absent;
-- guarded Undo restores by a new MaterialState, never history rewind;
-- Activity Schedule lifecycle regressions remain green;
-- frontend Event lifecycle controls remain typed and truthful.
+Timeline controls retain `scheduled-event` identity while routing Schedule mutations through the same canonical boundary used by Activity.
+
+Owner-aware copy remains distinct: postponed Event is not described as returning to Planning Tray.
+
+## 4.6 Executed proof
+
+```text
+PostgreSQL/backend targeted gate       9 PASS / 2 deselected
+Event lifecycle web gate               5 files / 16 PASS
+@dante/web typecheck                   PASS
+```
+
+The backend proof covers stable identity, MaterialState advance, Timeline relocation, Event read after postponement, no current placement, preserved history, stale CAS conflicts, guarded Undo, monotonic restored history and idempotent Undo replay.
+
+The web proof covers Event Timeline reschedule, Event postpone/Undo, authoritative reload behavior, Create-runtime lifecycle, canonical revision behavior, Event hydration and remote Timeline parsing.
+
+Closure authority: `docs/workstreams/timeline-temporal-operational-b03-c-closure-2026-09-17.md`.
 
 ---
 
-# 6. B03-D — Agenda/internal parts ⬜
+# 5. Current B03 gaps after B03-C
+
+```text
+GAP-B03-D01  Agenda/internal-part canonical persistence absent
+GAP-B03-D02  durable Agenda ordering/edit/reload semantics not activated
+GAP-B03-D03  real Event Agenda frontend integration not activated
+GAP-B03-E01  whole-B03 real-stack/manual/final reconciliation remains
+```
+
+B03-A/B/C gaps are closed. These remaining gaps belong to B03-D/E and must not be solved by widening already-closed slices retroactively.
+
+---
+
+# 6. B03-D — Agenda/internal parts ⬜ NEXT
+
+## 6.1 Goal
+
+Activate a bounded ordered Event Agenda model while preserving Agenda parts as Event-internal structure by default.
 
 Accepted hierarchy:
 
@@ -284,7 +266,61 @@ Agenda part != Session
 Agenda part != Actual
 ```
 
-Candidate persistence remains narrow unless implementation re-read proves a need for a stronger scoped identity.
+## 6.2 Required authority re-open
+
+Before implementation:
+
+1. re-read Event Domain authority and the archived semantic freeze;
+2. inspect Logical/Physical definitions touching Event internal parts;
+3. inspect existing Event prototype fields and frontend interaction semantics;
+4. inspect current persistence to avoid duplicate owner/version/order machinery;
+5. introduce DDL only if a real canonical gap exists.
+
+## 6.3 Persistence/application constraints
+
+The Agenda model must be narrow and explicit:
+
+```text
+Event-owned
+ordered
+durable
+bounded content
+stable identity only if edit/reorder semantics require it
+explicit mutation/idempotency/concurrency semantics where applicable
+no generic JSON blob as canonical substitute
+no generic temporal child mega-entity
+```
+
+Agenda items do not receive Schedule, Recurrence, Session or Actual identity merely because they appear inside a temporal owner.
+
+## 6.4 Product behavior target
+
+B03-D should support the accepted Agenda behavior already represented in the product prototype:
+
+```text
+read ordered Agenda
+add item
+edit item
+move up/down / reorder
+remove item
+reload without order or identity drift
+```
+
+The real frontend must use backend truth; unsupported rich Event metadata remains fail-closed/deferred.
+
+## 6.5 Proof obligations
+
+Before B03-D closure prove at minimum:
+
+- Event self-scope/authorization for Agenda mutation/read;
+- deterministic durable ordering;
+- create/add/edit/reorder/remove behavior;
+- idempotency/concurrency safety appropriate to the chosen mutation contract;
+- Event reload preserves Agenda truth;
+- no Agenda item becomes Activity/Event/Occurrence/Session/Actual;
+- frontend uses real backend data rather than prototype-only local state;
+- Event Schedule lifecycle from B03-C remains green;
+- Activity/Schedule regressions remain green.
 
 ---
 
@@ -342,7 +378,8 @@ R5  Event implies availability/busy capacity                FORBIDDEN
 R6  activating recurrence before B06                        FORBIDDEN
 R7  Agenda identity inflation                               FORBIDDEN
 R8  projection union becoming canonical ontology            FORBIDDEN
-R9  Event lifecycle UI preceding backend truth              FORBIDDEN
+R9  frontend behavior preceding backend truth               FORBIDDEN
+R10 Agenda part acquiring Schedule/Session/Actual by default FORBIDDEN
 ```
 
 ---
@@ -352,13 +389,13 @@ R9  Event lifecycle UI preceding backend truth              FORBIDDEN
 ```text
 B03-A  ✅ CLOSED / PROVEN
 B03-B  ✅ CLOSED / PROVEN
-B03-C  ⬜ NEXT / NOT YET AUTHORIZED
-B03-D  ⬜
+B03-C  ✅ CLOSED / PROVEN
+B03-D  ⬜ NEXT / NOT YET AUTHORIZED
 B03-E  ⬜
 ```
 
 Next action requires explicit:
 
 ```text
-APPROVE B03-C
+APPROVE B03-D
 ```
