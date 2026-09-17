@@ -5,12 +5,12 @@ import type {
   TemporalSchedulePlacementInput,
 } from '../../../../temporal/schedule-data-source';
 import type {
+  TimelineCanonicalScheduleBasis,
   TimelineCanonicalSchedulePlacement,
-  TimelineCanonicalScheduledActivityBasis,
 } from './timeline-types';
 
 export type TimelineCanonicalDisplayEdit = Readonly<{
-  basis: TimelineCanonicalScheduledActivityBasis;
+  basis: TimelineCanonicalScheduleBasis;
   fromDateKey: string;
   previousStartMinute: number;
   previousEndMinute: number;
