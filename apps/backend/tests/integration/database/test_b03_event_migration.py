@@ -43,7 +43,9 @@ def test_b03_event_downgrade_refuses_to_discard_canonical_expectation(
     provisioned_database: Any,
     alembic_config: Config,
 ) -> None:
-    command.upgrade(alembic_config, "head")
+    # This proof belongs specifically to B03-A/_27.  Keep it pinned to that
+    # revision even after later B03 slices advance the repository head.
+    command.upgrade(alembic_config, _HEAD)
     assert _current_revision(provisioned_database) == _HEAD
 
     person_ref = uuid7()
