@@ -19,7 +19,11 @@ from dante.modules.temporal.schedule import (
     SchedulePlacement,
     establish_schedule_in_session,
 )
-from dante.platform.database.mappings.event import EventAgendaPartRow, EventExpectationRow
+from dante.platform.database.mappings.event import (
+    EventAgendaCurrentRow,
+    EventAgendaPartRow,
+    EventExpectationRow,
+)
 from dante.platform.database.references import NativeRef, new_native_ref
 
 
@@ -29,6 +33,10 @@ class EventInputError(ValueError):
 
 class EventOperationIdReuseError(RuntimeError):
     """One operation id was reused for a different canonical Event intent."""
+
+
+class EventAgendaRevisionConflictError(RuntimeError):
+    """An Event Agenda mutation was based on stale canonical Agenda truth."""
 
 
 class EventNotFoundError(LookupError):
@@ -45,6 +53,7 @@ class EventView:
 
     event_ref: NativeRef
     title: str
+    agenda_revision: int
     agenda_parts: tuple[str, ...]
     created_at: datetime
 
@@ -63,6 +72,16 @@ class CreateScheduledEventResult:
 
     event: EventView
     schedule: EstablishedScheduleView
+    replayed: bool
+
+
+@dataclass(frozen=True, slots=True)
+class ReplaceEventAgendaResult:
+    """Accepted whole-Agenda replacement at one aggregate CAS revision."""
+
+    event_ref: NativeRef
+    agenda_revision: int
+    agenda_parts: tuple[str, ...]
     replayed: bool
 
 
@@ -109,13 +128,32 @@ def _intent_fingerprint(*, title: str, agenda_parts: tuple[str, ...]) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
+def _agenda_mutation_fingerprint(
+    *,
+    event_ref: NativeRef,
+    expected_revision: int,
+    agenda_parts: tuple[str, ...],
+) -> str:
+    payload = json.dumps(
+        {
+            "agenda_parts": list(agenda_parts),
+            "event_ref": str(event_ref),
+            "expected_revision": expected_revision,
+        },
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
 def _schedule_operation_id(event_operation_id: str) -> str:
     """Derive a stable Schedule command identity without collapsing the two commands."""
     digest = hashlib.sha256(event_operation_id.encode("utf-8")).hexdigest()
     return f"event-create-schedule:{digest}"
 
 
-def _constraint_name(exc: IntegrityError) -> str | None:
+def _constraint_name(exc: DBAPIError) -> str | None:
     original = exc.orig
     diagnostic = getattr(original, "diag", None)
     value = getattr(diagnostic, "constraint_name", None)
@@ -128,6 +166,7 @@ def _event_from_row(row: RowMapping) -> EventView:
     return EventView(
         event_ref=NativeRef(UUID(str(row["event_ref"]))),
         title=str(row["title"]),
+        agenda_revision=int(row.get("agenda_revision") or 0),
         agenda_parts=agenda_parts,
         created_at=row["created_at"],
     )
@@ -152,7 +191,7 @@ class TemporalEventApplication:
         fingerprint = _intent_fingerprint(title=title, agenda_parts=agenda_parts)
         statement = text(
             """
-            SELECT event_ref, title, created_at, agenda_parts, replayed
+            SELECT event_ref, title, created_at, agenda_revision, agenda_parts, replayed
             FROM dante.create_self_event_with_agenda(
                 :self_person_ref,
                 :operation_id,
@@ -282,6 +321,82 @@ class TemporalEventApplication:
         except SQLAlchemyError as exc:
             raise EventPersistenceError() from exc
 
+    async def replace_agenda(
+        self,
+        *,
+        self_person_ref: NativeRef,
+        event_ref: NativeRef,
+        operation_id: str,
+        expected_revision: int,
+        agenda_parts: tuple[str, ...] | list[str],
+    ) -> ReplaceEventAgendaResult:
+        """Atomically replace one Event's ordered Agenda behind aggregate CAS."""
+        normalized_operation_id = _normalize_operation_id(operation_id)
+        normalized_agenda = _normalize_agenda_parts(agenda_parts)
+        if expected_revision < 0:
+            raise EventInputError("Event Agenda expected revision must be non-negative.")
+        fingerprint = _agenda_mutation_fingerprint(
+            event_ref=event_ref,
+            expected_revision=expected_revision,
+            agenda_parts=normalized_agenda,
+        )
+        statement = text(
+            """
+            SELECT event_ref, agenda_revision, agenda_parts, replayed
+            FROM dante.replace_self_event_agenda(
+                :self_person_ref,
+                :operation_id,
+                :intent_fingerprint,
+                :event_ref,
+                :expected_revision,
+                :agenda_parts
+            )
+            """
+        )
+        try:
+            async with (
+                self._session_factory() as database_session,
+                database_session.begin(),
+            ):
+                row = (
+                    (
+                        await database_session.execute(
+                            statement,
+                            {
+                                "self_person_ref": self_person_ref,
+                                "operation_id": normalized_operation_id,
+                                "intent_fingerprint": fingerprint,
+                                "event_ref": event_ref,
+                                "expected_revision": expected_revision,
+                                "agenda_parts": list(normalized_agenda),
+                            },
+                        )
+                    )
+                    .mappings()
+                    .one()
+                )
+        except IntegrityError as exc:
+            constraint = _constraint_name(exc)
+            if constraint == "pk_event_agenda_mutation_operation":
+                raise EventOperationIdReuseError() from exc
+            if constraint == "event_agenda_revision_conflict":
+                raise EventAgendaRevisionConflictError() from exc
+            if constraint == "fk_event_agenda_mutation_operation_event_ref_event_expectation":
+                raise EventNotFoundError() from exc
+            raise EventPersistenceError() from exc
+        except DBAPIError as exc:
+            raise EventPersistenceError() from exc
+        except SQLAlchemyError as exc:
+            raise EventPersistenceError() from exc
+
+        raw_agenda = row["agenda_parts"]
+        return ReplaceEventAgendaResult(
+            event_ref=NativeRef(UUID(str(row["event_ref"]))),
+            agenda_revision=int(row["agenda_revision"]),
+            agenda_parts=tuple(str(part) for part in raw_agenda),
+            replayed=bool(row["replayed"]),
+        )
+
     async def get_event(
         self,
         *,
@@ -298,6 +413,9 @@ class TemporalEventApplication:
             .where(EventAgendaPartRow.event_ref == event_ref)
             .order_by(EventAgendaPartRow.position)
         )
+        revision_statement = select(EventAgendaCurrentRow.revision).where(
+            EventAgendaCurrentRow.event_ref == event_ref
+        )
 
         try:
             async with (
@@ -310,12 +428,14 @@ class TemporalEventApplication:
                 agenda_parts = tuple(
                     (await database_session.scalars(agenda_statement)).all()
                 )
+                agenda_revision = await database_session.scalar(revision_statement)
         except SQLAlchemyError as exc:
             raise EventPersistenceError() from exc
 
         return EventView(
             event_ref=row.event_ref,
             title=row.title,
+            agenda_revision=0 if agenda_revision is None else int(agenda_revision),
             agenda_parts=agenda_parts,
             created_at=row.created_at,
         )
