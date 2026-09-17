@@ -107,6 +107,14 @@ export function TimelineAllDayLane({
           const pending =
             basis !== undefined &&
             canonicalActions?.pendingScheduleRef === basis.scheduleRef;
+          const eventPostpone = basis?.kind === 'scheduled-event';
+          const withdrawalLabel = pending
+            ? eventPostpone
+              ? t(($) => $.common.home.timeline.detail.eventPostponing)
+              : t(($) => $.common.home.timeline.detail.unscheduling)
+            : eventPostpone
+              ? t(($) => $.common.home.timeline.detail.eventPostpone)
+              : t(($) => $.common.home.timeline.detail.unschedule);
 
           return (
             <div className="timeline-all-day-item-row" key={item.id}>
@@ -149,12 +157,10 @@ export function TimelineAllDayLane({
                   type="button"
                   disabled={pending}
                   data-timeline-unschedule-schedule={basis.scheduleRef}
-                  aria-label={`${t(($) => $.common.home.timeline.detail.unschedule)} · ${item.title}`}
+                  aria-label={`${withdrawalLabel} · ${item.title}`}
                   onClick={() => canonicalActions.unschedule(basis)}
                 >
-                  {pending
-                    ? t(($) => $.common.home.timeline.detail.unscheduling)
-                    : t(($) => $.common.home.timeline.detail.unschedule)}
+                  {withdrawalLabel}
                 </button>
               ) : null}
             </div>
