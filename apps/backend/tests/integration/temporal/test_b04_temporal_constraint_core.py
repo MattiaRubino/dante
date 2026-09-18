@@ -412,3 +412,118 @@ def test_b04_constraint_runtime_cannot_bypass_governed_mutation_function(
     )
     assert created[0] == constraint_ref
     assert created[5] is False
+
+
+@pytest.mark.postgres
+def test_b04_material_state_totality_rejects_cross_family_schedule_and_constraint_payloads(
+    migrated_database: Any,
+) -> None:
+    self_ref, _, activity_ref, _ = _seed_self_subjects(migrated_database)
+    constraint_ref = uuid7()
+    constraint_state_ref = uuid7()
+
+    _mutate(
+        migrated_database,
+        self_person_ref=self_ref,
+        operation_id="operation:b04-a-totality-constraint",
+        fingerprint="8" * 64,
+        mutation_kind="create",
+        subject_native_ref=activity_ref,
+        constraint_ref=constraint_ref,
+        expected_material_state_ref=None,
+        resulting_material_state_ref=constraint_state_ref,
+        strength_code="hard",
+        boundary_at=datetime(2026, 9, 23, 9, 0, tzinfo=UTC),
+    )
+
+    with psycopg.connect(
+        **migrated_database.connection_kwargs(
+            "dante_migrator",
+            migrated_database.cluster.migrator_password,
+        )
+    ) as connection:
+        connection.execute("SET ROLE dante_owner")
+        connection.execute("SET search_path TO pg_catalog,dante,pg_temp")
+        schedule_ref = uuid7()
+        connection.execute(
+            "INSERT INTO dante.schedule(schedule_ref,subject_native_ref) VALUES (%s,%s)",
+            (schedule_ref, activity_ref),
+        )
+        connection.execute(
+            """
+            INSERT INTO dante.schedule_placement_state(
+                material_state_ref,schedule_ref,temporal_form_code
+            ) VALUES (%s,%s,'absolute')
+            """,
+            (constraint_state_ref, schedule_ref),
+        )
+
+        with pytest.raises(psycopg.errors.CheckViolation) as rejected:
+            connection.execute(
+                "SET CONSTRAINTS ctrg_schedule_placement_state_state_totality IMMEDIATE"
+            )
+        assert rejected.value.diag.constraint_name == (
+            "ctrg_schedule_placement_state_state_totality"
+        )
+        assert rejected.value.diag.message_primary == "material state totality rejected"
+        connection.rollback()
+
+    with psycopg.connect(
+        **migrated_database.connection_kwargs(
+            "dante_migrator",
+            migrated_database.cluster.migrator_password,
+        )
+    ) as connection:
+        connection.execute("SET ROLE dante_owner")
+        connection.execute("SET search_path TO pg_catalog,dante,pg_temp")
+        schedule_ref = uuid7()
+        schedule_state_ref = uuid7()
+        foreign_constraint_ref = uuid7()
+
+        connection.execute(
+            "INSERT INTO dante.schedule(schedule_ref,subject_native_ref) VALUES (%s,%s)",
+            (schedule_ref, activity_ref),
+        )
+        connection.execute(
+            "INSERT INTO dante.scoped_address(scoped_ref,scoped_family) VALUES (%s,'schedule')",
+            (schedule_ref,),
+        )
+        connection.execute(
+            """
+            INSERT INTO dante.material_state_address(
+                material_state_ref,native_owner_ref,scoped_owner_ref,facet_code
+            ) VALUES (%s,NULL,%s,'schedule.placement')
+            """,
+            (schedule_state_ref, schedule_ref),
+        )
+        connection.execute(
+            """
+            INSERT INTO dante.schedule_placement_state(
+                material_state_ref,schedule_ref,temporal_form_code
+            ) VALUES (%s,%s,'absolute')
+            """,
+            (schedule_state_ref, schedule_ref),
+        )
+        connection.execute(
+            "INSERT INTO dante.temporal_constraint(constraint_ref,subject_native_ref) VALUES (%s,%s)",
+            (foreign_constraint_ref, activity_ref),
+        )
+        connection.execute(
+            """
+            INSERT INTO dante.temporal_constraint_state(
+                material_state_ref,constraint_ref,family_code,
+                strength_code,constrained_facet_code
+            ) VALUES (%s,%s,'boundary','hard','schedule.start')
+            """,
+            (schedule_state_ref, foreign_constraint_ref),
+        )
+
+        with pytest.raises(psycopg.errors.CheckViolation) as rejected:
+            connection.execute(
+                "SET CONSTRAINTS ctrg_temporal_constraint_state_state_totality IMMEDIATE"
+            )
+        assert rejected.value.diag.constraint_name == (
+            "ctrg_temporal_constraint_state_state_totality"
+        )
+        assert rejected.value.diag.message_primary == "material state totality rejected"
+        connection.rollback()
