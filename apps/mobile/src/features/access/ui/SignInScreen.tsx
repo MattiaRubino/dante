@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
   title: {
     color: accessTheme.colors.ink,
     fontSize: 30,
-    fontWeight: '750',
+    fontWeight: '700',
     letterSpacing: -0.9,
     lineHeight: 36,
   },
