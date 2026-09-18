@@ -23,12 +23,12 @@ class NativeAddressRow(Base):
 
 
 class ScopedAddressRow(Base):
-    """Bounded ScopedRecordRef address dispatcher for Schedule and Actual."""
+    """Bounded ScopedRecordRef dispatcher for Schedule, Actual and Temporal Constraint."""
 
     __tablename__ = "scoped_address"
     __table_args__ = (
         CheckConstraint(
-            "scoped_family IN ('schedule','actual')",
+            "scoped_family IN ('schedule','actual','temporal_constraint')",
             name="scoped_family",
         ),
     )
@@ -51,7 +51,7 @@ class MaterialStateAddressRow(Base):
             name="one_owner",
         ),
         CheckConstraint(
-            "facet_code IN ('schedule.placement','actual.realization','session.timing','routine.recurrence','event.recurrence')",
+            "facet_code IN ('schedule.placement','actual.realization','session.timing','routine.recurrence','event.recurrence','temporal_constraint.rule')",
             name="facet_code",
         ),
         ForeignKeyConstraint(
@@ -140,7 +140,7 @@ class ScopedCurrentMaterialStateRow(Base):
             name="uq_scoped_current_material_state_material_state_ref",
         ),
         CheckConstraint(
-            "facet_code IN ('schedule.placement','actual.realization')",
+            "facet_code IN ('schedule.placement','actual.realization','temporal_constraint.rule')",
             name="facet_code",
         ),
         ForeignKeyConstraint(
