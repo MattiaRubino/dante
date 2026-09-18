@@ -4,13 +4,14 @@
 - **Reconciled:** 2026-09-18
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
-- **Candidate head:** `20260917_29`
-- **Candidate topology:** `101|5|31|78|198|119|297|0|0|0`
+- **Candidate head:** `20260918_32`
+- **Candidate topology:** `107|5|33|85|212|129|309|0|0|0`
 - **Whole-DB SoR:** `README.md`
 - **Machine-readable authority:** `dictionary/`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 - **B03 closure authority:** `../workstreams/timeline-temporal-operational-b03-e-closure-2026-09-18.md`
 - **Pre-B04 governance closure:** `../workstreams/timeline-temporal-operational-pre-b04-governance-2026-09-18.md`
+- **B04-A implementation freeze:** `../workstreams/timeline-temporal-operational-b04-a-implementation-freeze.md`
 
 ## 1. Purpose and authority boundary
 
@@ -45,10 +46,16 @@ Candidate truth becomes protected-main truth only after the applicable integrati
     ↓
 20260917_28 B03-B shared Event/Schedule activation
     ↓
-20260917_29 B03-D Event Agenda; B03 candidate closure head
+20260917_29 B03-D Event Agenda / B03 closure
+    ↓
+20260918_30 B04-A Temporal Constraint canonical core
+    ↓
+20260918_31 B04-A shared MaterialState totality hardening
+    ↓
+20260918_32 B04-A shared current-history dispatch hardening
 ```
 
-B03-C intentionally adds no Event-specific scheduling DDL. Event lifecycle reuses the shared Schedule capability.
+B03-C intentionally adds no Event-specific scheduling DDL. Event lifecycle reuses the shared Schedule capability. B04-A likewise extends the bounded CP6 scoped/material-state controls instead of creating a second generic state engine.
 
 ## 3. Candidate objects/capabilities activated by the vertical
 
@@ -89,6 +96,44 @@ replace_self_event_agenda(...)
 
 Event Schedule authorization is generalized against the existing shared Schedule owner. Agenda values remain Event-internal ordered content and do not receive NativeRef identity.
 
+### Temporal Constraint — B04-A
+
+```text
+temporal_constraint
+temporal_constraint_state
+temporal_constraint_boundary_state
+temporal_constraint_boundary_absolute_state
+temporal_constraint_current_history
+temporal_constraint_mutation_operation
+
+enforce_temporal_constraint_rule_totality()
+mutate_self_absolute_earliest_start_constraint(...)
+```
+
+Temporal Constraint is a stable `ScopedRecordRef` dependent. B04-A supports only one complete typed rule path:
+
+```text
+Activity | Event subject
++ boundary family
++ earliest_start
++ schedule.start
++ hard | soft
++ absolute
++ finite timestamptz
+```
+
+The bounded shared controls are extended with:
+
+```text
+scoped_address                temporal_constraint
+material_state_address        temporal_constraint.rule
+scoped_current_material_state temporal_constraint.rule
+```
+
+`_31` closes the MaterialState exclusivity gap so Temporal Constraint payload cannot coexist with Schedule/Actual/Session/recurrence payload in either direction. `_32` hardens the polymorphic current-history trigger dispatcher and is proven across the legacy history families as well as Temporal Constraint.
+
+Create/revise/retire use immutable receipts, expected-state CAS and retained current-history episodes. Revision never rewrites an existing rule MaterialState. Retirement means no current `temporal_constraint.rule` binding while constraint identity and history remain.
+
 ## 4. Non-collapse invariants
 
 ```text
@@ -96,7 +141,10 @@ Activity != Event
 Activity != Schedule
 Event != Schedule
 Schedule != Temporal Constraint
-Event != Recurrence != Occurrence
+Temporal Constraint != Movement Policy
+Temporal Constraint != Recurrence
+Temporal Constraint != Session / Actual
+constraint revision != Schedule revision
 Schedule != Session != Actual
 Actual != Outcome
 Agenda part != Activity/Event/Occurrence/Schedule/Session/Actual
@@ -113,10 +161,16 @@ provider identity != DANTE identity
 B01 ✅ CLOSED / PROVEN
 B02 ✅ CLOSED / PROVEN
 B03 ✅ CLOSED / PROVEN
-B04 ⬜ NOT STARTED
+B04  🟡 IN PROGRESS
+└─ B04-A Temporal Constraint canonical core
+   ├─ A1 DDL / mappings                  ✅ PROVEN
+   ├─ A2 PostgreSQL / catalog / ACL      ✅ PROVEN
+   ├─ A3 CAS / idempotency               ✅ PROVEN
+   ├─ A4 Dictionary / DB docs            🟡 MATERIALIZED; reconciliation test pending
+   └─ A5 application / API               ⬜ NOT STARTED
 ```
 
-The candidate structural authority is `_29` with topology `101|5|31|78|198|119|297|0|0|0`. B03 closure reconciled Dictionary, Alembic, SQLAlchemy/current catalog, ACL/direct PostgreSQL proof, API/client authority and product acceptance.
+The candidate structural authority is `_32` with topology `107|5|33|85|212|129|309|0|0|0`, measured directly from PostgreSQL 18.6. Focused B04-A behavior is green; shared history dispatch is green; the wider Temporal/CP6 regression is green; the dedicated B04-A catalog/ACL test is green. A4 remains open until the newly reconciled whole-DB Dictionary/current-catalog gates pass.
 
 ## 6. Binding same-change gate for B04+
 
@@ -134,15 +188,18 @@ Domain / Logical / Physical authority when semantics change
 → affected map / roadmap / closure evidence
 ```
 
-No slice can close with a known mismatch. No placeholder table/column/routine is added for future scope. No historical migration is rewritten. No candidate object is promoted in prose before it exists and passes its proof gate.
+No slice can close with a known mismatch. No placeholder table/column/routine is added for future scope. No historical migration is rewritten. No candidate object is promoted to protected-main truth before it exists there.
 
-## 7. B04 entry condition
+## 7. B04-A remaining boundary
 
-B04 has a frozen execution plan but has not started implementation. The entering database authority remains exactly:
+B04-A persistence is materially present and proven through `_32`, but B04-A is not closed. The remaining sequence is:
 
 ```text
-Alembic  20260917_29
-Topology 101|5|31|78|198|119|297|0|0|0
+A4 reconciled whole-DB Dictionary/current-catalog proof
+    ↓
+A5 application/API surface under frozen Temporal operationId/OpenAPI governance
+    ↓
+B04-A closure proof
 ```
 
-The next implementation gate remains explicit: `APPROVE B04`.
+B04-B deadlines/expanded boundaries, B04-C windows/preferences, B04-D Movement Policy, B04-E advanced-family applicability and B04-F whole-B04 closure remain later B04 work. B05 does not begin after A5 until the rest of B04 is complete.
