@@ -7,7 +7,10 @@ const config: ExpoConfig = {
   orientation: 'portrait',
   scheme: 'dante',
   userInterfaceStyle: 'automatic',
-  plugins: ['expo-router'],
+  android: {
+    package: 'com.dantearc.dante',
+  },
+  plugins: ['expo-router', 'expo-system-ui'],
   experiments: {
     typedRoutes: true,
   },
