@@ -9,6 +9,14 @@ const homeWithB02D = {
   ...home,
   timeline: {
     ...home.timeline,
+    create: {
+      ...home.timeline.create,
+      eventDetails: {
+        ...home.timeline.create.eventDetails,
+        agendaSave: 'Save',
+        agendaCancel: 'Cancel',
+      },
+    },
     detail: {
       ...home.timeline.detail,
       unschedule: 'Return to Planning Tray',
