@@ -62,16 +62,13 @@ function sameStructuredIntent(left: unknown, right: unknown): boolean {
   );
 }
 
-function eventIntentForB03dComparison(
+function unsupportedEventIntent(
   event: TemporalCreateFields['event'],
-  timeSemantics: TemporalCreateFields['timeSemantics'],
 ): Readonly<Record<string, unknown>> {
   return Object.freeze(
     Object.fromEntries(
       Object.entries(event).filter(
-        ([key]) =>
-          key !== 'agendaParts' &&
-          (timeSemantics === 'all-day' || key !== 'allDayEndDate'),
+        ([key]) => key !== 'agendaParts' && key !== 'allDayEndDate',
       ),
     ),
   );
@@ -88,7 +85,11 @@ function b03dScheduledEventIntentSupported(
     prepared.metadata.notes.length !== 0 ||
     specification.appearanceTone !== null ||
     specification.eventRecurrence.patternKind !== 'none' ||
-    specification.scheduling.constraintKind !== 'none'
+    (specification.eventRecurrence.owner ?? null) !== null ||
+    specification.scheduling.constraintKind !== 'none' ||
+    specification.scheduling.fallbackPolicy !== 'inherit' ||
+    specification.confirmation.outcomePolicy !== 'inherit' ||
+    specification.confirmation.reminderLeadMinutes !== null
   ) {
     return false;
   }
@@ -108,19 +109,10 @@ function b03dScheduledEventIntentSupported(
   });
 
   return (
-    sameStructuredIntent(specification.scheduling, baseline.scheduling) &&
     sameStructuredIntent(specification.execution, baseline.execution) &&
     sameStructuredIntent(
-      specification.eventRecurrence,
-      baseline.eventRecurrence,
-    ) &&
-    sameStructuredIntent(specification.confirmation, baseline.confirmation) &&
-    sameStructuredIntent(
-      eventIntentForB03dComparison(
-        specification.event,
-        specification.timeSemantics,
-      ),
-      eventIntentForB03dComparison(baseline.event, baseline.timeSemantics),
+      unsupportedEventIntent(specification.event),
+      unsupportedEventIntent(baseline.event),
     )
   );
 }
