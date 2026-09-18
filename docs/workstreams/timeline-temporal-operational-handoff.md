@@ -1,12 +1,13 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B03 ✅ CLOSED / PROVEN + pre-B04 governance ✅ FROZEN → B04 🟡 IN PROGRESS / B04-A A4 PROOF FRONTIER
+- **Status:** B03 ✅ CLOSED / PROVEN + pre-B04 governance ✅ FROZEN + B04-A ✅ CLOSED / PROVEN → B04-B NEXT
 - **Reconciled:** 2026-09-18
 - **Branch:** `feature/timeline-temporal-operational`
 - **Current roadmap:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Current live map/ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **B04 execution authority:** `docs/workstreams/timeline-temporal-operational-b04-execution-plan.md`
 - **B04-A implementation freeze:** `docs/workstreams/timeline-temporal-operational-b04-a-implementation-freeze.md`
+- **B04-A closure:** `docs/workstreams/timeline-temporal-operational-b04-a-closure-2026-09-18.md`
 - **Pre-B04 governance closure:** `docs/workstreams/timeline-temporal-operational-pre-b04-governance-2026-09-18.md`
 - **Timeline candidate DB overlay:** `docs/database/timeline-temporal-operational.md`
 - **CI:** no CI launch is implied or authorized
@@ -20,8 +21,8 @@ B02 Schedule Core                                ✅ CLOSED / PROVEN
 B03 Event Core                                   ✅ CLOSED / PROVEN
 PRE-B04 DB/API GOVERNANCE                        ✅ CLOSED / FROZEN
 B04 Temporal Constraints + Movement Policy       🟡 IN PROGRESS
-├─ B04-A Temporal Constraint canonical core      🟡 IN PROGRESS
-├─ B04-B Boundary / Deadline                     ⬜
+├─ B04-A Temporal Constraint canonical core      ✅ CLOSED / PROVEN
+├─ B04-B Boundary / Deadline                     ⬜ NEXT
 ├─ B04-C Windows / Preferences / Evaluation      ⬜
 ├─ B04-D Movement Policy                         ⬜
 ├─ B04-E Advanced-family applicability           ⬜
@@ -43,7 +44,7 @@ Current candidate DB:
 
 ```text
 PostgreSQL 18.6
-Alembic     20260918_32
+Alembic     20260918_33
 Topology    107|5|33|85|212|129|309|0|0|0
 ```
 
@@ -76,11 +77,11 @@ route/model
 
 The 13 pre-B04 Temporal operationIds remain frozen compatibility baseline.
 
-## 3. B04-A semantic freeze
+## 3. B04-A semantic closure
 
 Temporal Constraint is a stable `ScopedRecordRef` LR-05 dependent, not a NativeRef and not Schedule placement.
 
-Current B04-A complete rule:
+Closed B04-A complete rule:
 
 ```text
 subject             self-owned Activity | Event
@@ -93,7 +94,7 @@ temporal form       absolute
 boundary             finite timestamptz
 ```
 
-Binding non-collapse:
+Binding non-collapse remains:
 
 ```text
 Schedule != Temporal Constraint
@@ -108,9 +109,9 @@ current accepted state != newest row
 idempotency receipt != Domain identity
 ```
 
-No generic `Rule(type,payload)` / JSON semantic escape hatch is accepted.
+No generic `Rule(type,payload)` / JSON semantic escape hatch was introduced.
 
-## 4. B04-A persistence now materialized
+## 4. B04-A persistence authority at closure
 
 Candidate chain:
 
@@ -122,6 +123,8 @@ Candidate chain:
 20260918_31 MaterialState totality hardening
     ↓
 20260918_32 current-history dispatcher hardening
+    ↓
+20260918_33 Temporal Constraint API activation hardening
 ```
 
 Canonical/control surface:
@@ -138,7 +141,7 @@ enforce_temporal_constraint_rule_totality()
 mutate_self_absolute_earliest_start_constraint(...)
 ```
 
-Shared bounded controls now admit:
+Shared bounded controls admit:
 
 ```text
 scoped_address                     temporal_constraint
@@ -146,15 +149,17 @@ material_state_address             temporal_constraint.rule
 scoped_current_material_state      temporal_constraint.rule
 ```
 
-## 5. Proven B04-A behavior
+`_33` does not change structural topology. It makes mutation replay compatible with server-generated replacement UUIDs while returning the originally accepted canonical refs, and grants only the narrow runtime read surface needed by Get/List. History and mutation receipt internals remain non-public and generic direct writes remain governed.
+
+## 5. B04-A proven behavior
 
 ### A1 — DDL / SQLAlchemy ✅
 
-Fresh migration reaches `_32`; the six Temporal Constraint tables have matching registered SQLAlchemy mappings. The historical migrations remain forward-only and accepted revisions were not rewritten to hide defects.
+Fresh migration reaches `_33`; the six Temporal Constraint tables have matching registered SQLAlchemy mappings. Historical migrations remain forward-only.
 
 ### A2 — PostgreSQL / integrity / catalog / ACL ✅
 
-Observed proof:
+Observed proof includes:
 
 ```text
 B04-A focused core                         4 PASS
@@ -163,7 +168,7 @@ Temporal + CP6 final regression           32 PASS / 2 deselected
 B04-A structural catalog / owner / ACL    3 PASS
 ```
 
-Direct live topology from the `_32` structural proof:
+Accepted topology:
 
 ```text
 107 tables
@@ -178,8 +183,6 @@ Direct live topology from the `_32` structural proof:
 0 RLS
 ```
 
-The `_32` dispatcher is proven on Temporal Constraint plus the legacy Schedule, Actual, Session, Routine recurrence and Event recurrence current-history families.
-
 ### A3 — CAS / idempotency ✅
 
 ```text
@@ -193,37 +196,83 @@ retire expected CAS    ✅
 retained history       ✅
 ```
 
-## 6. Current active frontier — A4 🟡
+### A4 — DB / Dictionary / docs ✅
 
-The repository now contains the A4 reconciliation candidate:
+Whole-DB Dictionary/current-catalog reconciliation passed, then `_33` current-catalog/ACL expectations were reconciled. Final DB/current-catalog/API-activation gate: `13 PASS`.
+
+### A5 — application / API / generated contract ✅
+
+Accepted public capability:
 
 ```text
-6 new Temporal Constraint table Dictionary entries
-2 new Temporal Constraint routine Dictionary entries
-3 shared control-table Dictionary updates
-5 shared dispatcher Dictionary updates
-scope counts → 107 / 5 / 33 / 85 / 212 / 129 / 309
-current-catalog Alembic expectation → 20260918_32
-DB SoR → _32
-Timeline DB overlay → _32
-live map / roadmap / this handoff → B04-A active
+Get Temporal Constraint
+List Temporal Constraints by subject
+Create absolute earliest-start constraint
+Revise absolute earliest-start rule
+Retire Temporal Constraint
 ```
 
-A4 is deliberately **not yet marked CLOSED**. The immediate next action is local whole-DB reconciliation proof against PostgreSQL `_32`.
+Every new operation uses an explicit stable semantic `temporal_*` operationId. Existing 13 pre-B04 operationIds remain unchanged.
 
-## 7. A5 remains unopened
+Observed A5 evidence:
 
-No public Temporal Constraint API endpoint exists yet. Do not start A5 until A4 turns green.
+```text
+focused API + Temporal inventory             10 PASS
+B04-A PostgreSQL/application activation       12 PASS
+OpenAPI export/inventory/API parity           18 PASS
+@dante/api-client typecheck                   PASS
+@dante/api-client Vitest                      11 PASS
+pnpm generated:check                          PASS / 159 deterministic files
+```
 
-When A5 opens, inspect current Temporal application/API contracts first, then add only the minimum canonical application/API surface justified by B04-A. Every new public operation requires an explicit stable `temporal_*` operationId and same-change OpenAPI/client reconciliation.
+No frontend product surface was required by the accepted B04-A scope, so no manual frontend userTest is claimed.
 
-No frontend is automatically required merely because A5 begins; frontend scope follows the accepted capability/read-model need, not ceremony.
+## 6. B04-A closure decision
+
+```text
+A1 ✅ CLOSED / PROVEN
+A2 ✅ CLOSED / PROVEN
+A3 ✅ CLOSED / PROVEN
+A4 ✅ CLOSED / PROVEN
+A5 ✅ CLOSED / PROVEN
+
+B04-A Temporal Constraint canonical core ✅ CLOSED / PROVEN
+```
+
+Closure authority: `timeline-temporal-operational-b04-a-closure-2026-09-18.md`.
+
+## 7. Next slice — B04-B Boundary / Deadline
+
+B04-B is the next implementation slice. It must begin with semantic inspection/freeze before any DDL/API write.
+
+Candidate semantic territory:
+
+```text
+earliest-start
+latest-start
+latest-completion / deadline
+hard | soft boundary semantics
+lossless date/floating/named-zone/absolute representation where actually justified
+```
+
+Do not collapse:
+
+```text
+earliest_start != latest_start
+deadline != Schedule end
+passed deadline != Actual
+passed deadline != Outcome / failure
+constraint != placement
+coarse/date precision != invented exact instant
+```
+
+The first B04-B implementation slice should be deliberately narrow and complete rather than activating every candidate family at once.
 
 ## 8. Remaining B04 before B05
 
 ```text
-B04-A canonical core                    current
-B04-B Boundary / Deadline constraints   later
+B04-A canonical core                    ✅ CLOSED / PROVEN
+B04-B Boundary / Deadline constraints   NEXT
 B04-C Windows / Preferences             later
 B04-D Movement Policy                   later
 B04-E advanced-family applicability     later
@@ -235,14 +284,11 @@ B05 Product Organization starts only after B04-F closes.
 ## 9. Current gate
 
 ```text
-B04-A
-├─ A1 ✅
-├─ A2 ✅
-├─ A3 ✅
-├─ A4 🟡 reconciliation candidate materialized
-└─ A5 ⬜
+B04
+├─ B04-A ✅ CLOSED / PROVEN
+└─ B04-B ⬜ NEXT
 ```
 
-**Immediate action:** run A4 Dictionary/current-catalog PostgreSQL reconciliation locally. If green, update the ledger from A4 🟡 to A4 ✅ and then open the separate A5 application/API scope.
+**Immediate action:** re-open the Domain / Logical / Physical / B04 execution authority for Boundary / Deadline semantics, freeze the exact B04-B first slice, then approve its implementation scope.
 
 CI remains separately authorized.
