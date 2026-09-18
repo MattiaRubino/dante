@@ -33,7 +33,7 @@
       "module": "dante.platform.database.mappings.temporal_constraint",
       "symbol": "TemporalConstraintRow"
     },
-    "runtime_acl_stage": "B04-A-CONSTRAINT"
+    "runtime_acl_stage": "B04-A-API"
   },
   "structure": {
     "columns": [
@@ -67,7 +67,7 @@
     "material_state_behavior": "Stable constraint identity owns immutable temporal_constraint.rule MaterialStates; revising the rule appends a new MaterialState instead of rewriting prior state.",
     "current_binding": "Current rule selection is held in scoped_current_material_state and is distinct from newest-row ordering.",
     "chronology": "temporal_constraint_current_history records accepted currentness episodes; constraint identity survives revision and retirement.",
-    "immutability_policy": "No generic runtime DML. Canonical mutation is exposed only through the bounded B04-A mutation capability."
+    "immutability_policy": "Runtime read access is SELECT-only. Canonical mutation remains exposed only through the bounded B04-A mutation capability."
   },
   "lifecycle": {
     "retention": "Retain stable constraint identity and historical rule states after retirement.",
@@ -75,16 +75,17 @@
     "retirement_tombstone": null,
     "delete_behavior": "Retire closes the current rule episode and removes only the current binding; it does not delete constraint identity or history."
   },
-  "security": {"owner_role":"dante_owner","default_deny_non_owner":true,"expected_grants":[]},
+  "security": {"owner_role":"dante_owner","default_deny_non_owner":true,"expected_grants":[{"grantee":"dante_runtime","privilege":"SELECT","columns":[],"grant_option":false}]},
   "proof": {
     "obligations": [
       "Temporal Constraint remains distinct from Schedule placement and NativeRef identity",
       "subject eligibility is bounded to self-owned Activity or Event",
       "owner creation is complete by commit",
-      "runtime has no generic table DML authority"
+      "runtime has read-only table authority while canonical mutation remains governed"
     ],
     "test_refs": [
       "apps/backend/tests/integration/temporal/test_b04_temporal_constraint_core.py",
+      "apps/backend/tests/integration/temporal/test_b04_temporal_constraint_api_activation.py",
       "apps/backend/tests/integration/database/test_b04_temporal_constraint_catalog.py",
       "apps/backend/tests/integration/database/test_current_catalog.py",
       "apps/backend/tests/integration/database/test_database_current_catalog.py"
