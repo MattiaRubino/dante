@@ -1,0 +1,102 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "table:dante.temporal_constraint_mutation_operation",
+    "type": "table",
+    "schema": "dante",
+    "name": "temporal_constraint_mutation_operation",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Immutable self-scoped idempotency receipt for B04-A Temporal Constraint create, revise and retire mutations.",
+  "classification": {
+    "persistence_role": "operation_idempotency_control",
+    "canonicality": "control",
+    "family": "temporal_constraint"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/workstreams/timeline-temporal-operational-b04-a-implementation-freeze.md",
+      "docs/workstreams/timeline-temporal-operational-b04-execution-plan.md",
+      "docs/development/backend-cp6-02-postgresql-persistence-constitution.md"
+    ],
+    "domain_concepts": ["Temporal Constraint"],
+    "logical_families": ["application operation idempotency control", "Temporal Constraint"],
+    "reference_families": ["NativeRef", "ScopedRecordRef", "MaterialStateRef"],
+    "material_facets": ["temporal_constraint.rule"]
+  },
+  "implementation": {
+    "introducing_stage": "B04-A-CONSTRAINT",
+    "alembic_revision": "20260918_30",
+    "sqlalchemy": {
+      "mode": "orm_row",
+      "module": "dante.platform.database.mappings.temporal_constraint",
+      "symbol": "TemporalConstraintMutationOperationRow"
+    },
+    "runtime_acl_stage": "B04-A-CONSTRAINT"
+  },
+  "structure": {
+    "columns": [
+      {"name":"self_person_ref","postgres_type":"uuid","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Authenticated self Person scoping the operation identifier.","semantic_type":"NativeRef","value_contract":"Existing self Person NativeRef; receipt identity remains technical and distinct from Temporal Constraint identity."},
+      {"name":"operation_id","postgres_type":"text","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Caller-supplied idempotency identity for one constraint mutation attempt stream.","semantic_type":null,"value_contract":"Trimmed, non-empty and at most 200 characters."},
+      {"name":"intent_fingerprint","postgres_type":"text","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Canonical SHA-256 fingerprint of the materially relevant mutation intent.","semantic_type":null,"value_contract":"Exactly 64 lowercase hexadecimal characters."},
+      {"name":"mutation_kind","postgres_type":"text","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Lifecycle operation represented by this immutable receipt.","semantic_type":null,"value_contract":"One of create,revise,retire."},
+      {"name":"constraint_ref","postgres_type":"uuid","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Stable Temporal Constraint identity targeted or created by this operation.","semantic_type":"ScopedRecordRef","value_contract":"Existing or atomically created Temporal Constraint identity, depending on mutation_kind."},
+      {"name":"subject_native_ref","postgres_type":"uuid","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Activity/Event subject frozen into the accepted mutation intent.","semantic_type":"NativeRef","value_contract":"Must match the subject of constraint_ref."},
+      {"name":"expected_material_state_ref","postgres_type":"uuid","nullable":true,"default":{"kind":"none","expression":null},"meaning":"Expected current rule state used as CAS precondition for revise/retire.","semantic_type":"MaterialStateRef","value_contract":"Null for create; required and owned by the same constraint for revise/retire."},
+      {"name":"resulting_material_state_ref","postgres_type":"uuid","nullable":true,"default":{"kind":"none","expression":null},"meaning":"New immutable rule MaterialState accepted by create/revise, null for retire.","semantic_type":"MaterialStateRef","value_contract":"Required for create/revise and globally unique among accepted mutation receipts; null for retire."},
+      {"name":"created_at","postgres_type":"timestamp with time zone","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Authoritative instant at which this mutation receipt was accepted.","semantic_type":null,"value_contract":"Recorded in the same database transaction as the canonical mutation effect."}
+    ],
+    "primary_key": {"name":"pk_temporal_constraint_mutation_operation","columns":["self_person_ref","operation_id"],"reason":"Self Person plus operation id is the database arbiter for B04-A mutation idempotency.","deferrable":false,"initially":"NOT DEFERRABLE","enforced":true},
+    "foreign_keys": [
+      {"name":"fk_temporal_constraint_mutation_operation_self_person_person","columns":["self_person_ref"],"target":{"schema":"dante","table":"person","columns":["person_ref"]},"on_delete":"NO ACTION","on_update":"NO ACTION","match_type":"SIMPLE","deferrable":false,"initially":"NOT DEFERRABLE","enforced":true,"validated":true,"reference_family":"NativeRef","cardinality":"many_to_one","semantic_reason":"Scope operation identity to an existing self Person without making the receipt a Domain identity."},
+      {"name":"fk_temporal_constraint_mutation_operation_constraint_subject","columns":["constraint_ref","subject_native_ref"],"target":{"schema":"dante","table":"temporal_constraint","columns":["constraint_ref","subject_native_ref"]},"on_delete":"NO ACTION","on_update":"NO ACTION","match_type":"SIMPLE","deferrable":false,"initially":"NOT DEFERRABLE","enforced":true,"validated":true,"reference_family":"ScopedRecordRef","cardinality":"many_to_one","semantic_reason":"Freeze the exact stable constraint and subject pair accepted by the mutation."},
+      {"name":"fk_temporal_constraint_mutation_operation_expected_state","columns":["constraint_ref","expected_material_state_ref"],"target":{"schema":"dante","table":"temporal_constraint_state","columns":["constraint_ref","material_state_ref"]},"on_delete":"NO ACTION","on_update":"NO ACTION","match_type":"SIMPLE","deferrable":false,"initially":"NOT DEFERRABLE","enforced":true,"validated":true,"reference_family":"MaterialStateRef","cardinality":"many_to_one_optional","semantic_reason":"When present, the CAS expectation must be a rule state of the same stable constraint."},
+      {"name":"fk_temporal_constraint_mutation_operation_resulting_state","columns":["constraint_ref","resulting_material_state_ref"],"target":{"schema":"dante","table":"temporal_constraint_state","columns":["constraint_ref","material_state_ref"]},"on_delete":"NO ACTION","on_update":"NO ACTION","match_type":"SIMPLE","deferrable":false,"initially":"NOT DEFERRABLE","enforced":true,"validated":true,"reference_family":"MaterialStateRef","cardinality":"many_to_one_optional","semantic_reason":"When present, the accepted result state belongs to the same stable constraint."}
+    ],
+    "unique_constraints": [],
+    "check_constraints": [
+      {"name":"ck_temporal_constraint_mutation_operation_operation_id","expression_contract":"operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200","reason":"Require one bounded normalized operation identity.","enforced":true,"validated":true,"no_inherit":false},
+      {"name":"ck_temporal_constraint_mutation_operation_fingerprint","expression_contract":"intent_fingerprint ~ '^[0-9a-f]{64}$'","reason":"Require the canonical SHA-256 hexadecimal fingerprint representation used for replay comparison.","enforced":true,"validated":true,"no_inherit":false},
+      {"name":"ck_temporal_constraint_mutation_operation_kind","expression_contract":"mutation_kind IN ('create','revise','retire')","reason":"Bound the receipt to the three B04-A lifecycle mutations.","enforced":true,"validated":true,"no_inherit":false},
+      {"name":"ck_temporal_constraint_mutation_operation_state_shape","expression_contract":"(mutation_kind='create' AND expected_material_state_ref IS NULL AND resulting_material_state_ref IS NOT NULL) OR (mutation_kind='revise' AND expected_material_state_ref IS NOT NULL AND resulting_material_state_ref IS NOT NULL) OR (mutation_kind='retire' AND expected_material_state_ref IS NOT NULL AND resulting_material_state_ref IS NULL)","reason":"Encode the exact CAS/result shape of create, revise and retire receipts.","enforced":true,"validated":true,"no_inherit":false}
+    ],
+    "indexes": [
+      {"name":"pk_temporal_constraint_mutation_operation","method":"btree","unique":true,"keys":["self_person_ref","operation_id"],"predicate":null,"include":[],"source":"primary_key","reason":"Indexed self-scoped idempotency arbiter.","valid":true,"ready":true,"live":true},
+      {"name":"ix_temporal_constraint_mutation_operation_constraint_ref","method":"btree","unique":false,"keys":["constraint_ref"],"predicate":null,"include":[],"source":"explicit_index","reason":"Mutation audit/replay lookup by stable constraint identity.","valid":true,"ready":true,"live":true},
+      {"name":"ux_temporal_constraint_mutation_operation_resulting_state","method":"btree","unique":true,"keys":["resulting_material_state_ref"],"predicate":"resulting_material_state_ref IS NOT NULL","include":[],"source":"explicit_index","reason":"One accepted mutation receipt owns each newly created rule MaterialState result.","valid":true,"ready":true,"live":true}
+    ],
+    "triggers": [],
+    "table": {"persistence":"permanent","access_method":"heap","partitioned":false,"row_security":false,"force_row_security":false,"replica_identity":"default","reloptions":[]},
+    "view": null,
+    "routine": null
+  },
+  "state_history": {
+    "material_state_behavior": "The receipt records expected/resulting MaterialState identities but is not itself canonical rule state.",
+    "current_binding": "CAS expectation protects accepted currentness; replay returns the previously accepted result and never selects current state by newest-row ordering.",
+    "chronology": "created_at is receipt chronology only; operation_id and UUID identity are not temporal ordering substitutes.",
+    "immutability_policy": "Receipts are immutable. Same self Person plus operation_id may replay only materially identical accepted intent; changed intent is a conflict."
+  },
+  "lifecycle": {
+    "retention": "Retained while required for safe idempotent mutation replay and conflict detection.",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No runtime DELETE; receipt retention is independent from Temporal Constraint retirement."
+  },
+  "security": {"owner_role":"dante_owner","default_deny_non_owner":true,"expected_grants":[]},
+  "proof": {
+    "obligations": [
+      "same self Person and operation_id plus materially identical intent replays the accepted result",
+      "same idempotency key with changed intent is rejected",
+      "revise and retire require exact expected current MaterialStateRef",
+      "stale CAS is rejected",
+      "receipt identity remains distinct from Temporal Constraint and MaterialState identity"
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b04_temporal_constraint_core.py",
+      "apps/backend/tests/integration/database/test_b04_temporal_constraint_catalog.py",
+      "apps/backend/tests/integration/database/test_database_current_catalog.py"
+    ],
+    "staged_evidence": []
+  }
+}
