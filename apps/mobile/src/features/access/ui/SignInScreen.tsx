@@ -21,11 +21,15 @@ export function SignInScreen({ onBack, onSubmit }: SignInScreenProps) {
     <AccessScreen compact>
       <View style={styles.frame}>
         <View style={styles.panel}>
-          <Text style={styles.kicker}>{t(($) => $.common.access.kicker.access)}</Text>
+          <Text style={styles.kicker}>
+            {t(($) => $.common.access.kicker.access)}
+          </Text>
           <Text style={styles.title} accessibilityRole="header">
             {t(($) => $.common.access.signin.title)}
           </Text>
-          <Text style={styles.body}>{t(($) => $.common.access.signin.body)}</Text>
+          <Text style={styles.body}>
+            {t(($) => $.common.access.signin.body)}
+          </Text>
 
           <View style={styles.fields}>
             <AccessTextField
@@ -52,11 +56,9 @@ export function SignInScreen({ onBack, onSubmit }: SignInScreenProps) {
           <View style={styles.actions}>
             <AccessButton
               label={t(($) => $.common.access.action.signin)}
-              onPress={
-                onSubmit === undefined
-                  ? undefined
-                  : () => onSubmit(email.trim(), password)
-              }
+              {...(onSubmit === undefined
+                ? {}
+                : { onPress: () => onSubmit(email.trim(), password) })}
             />
             <AccessButton
               label={t(($) => $.common.access.action.back)}
@@ -67,7 +69,8 @@ export function SignInScreen({ onBack, onSubmit }: SignInScreenProps) {
 
           <Text style={styles.legal}>
             {t(($) => $.common.access.legal.prefix)}{' '}
-            {t(($) => $.common.access.legal.terms)} · {t(($) => $.common.access.legal.privacy)}
+            {t(($) => $.common.access.legal.terms)} ·{' '}
+            {t(($) => $.common.access.legal.privacy)}
           </Text>
         </View>
       </View>

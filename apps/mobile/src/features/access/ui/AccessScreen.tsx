@@ -1,5 +1,11 @@
 import type { PropsWithChildren } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 
@@ -10,8 +16,11 @@ type AccessScreenProps = PropsWithChildren<{ compact?: boolean }>;
 
 export function AccessScreen({ children, compact = false }: AccessScreenProps) {
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'right', 'bottom', 'left']}>
-      <StatusBar style="dark" backgroundColor={accessTheme.colors.background} />
+    <SafeAreaView
+      style={styles.safeArea}
+      edges={['top', 'right', 'bottom', 'left']}
+    >
+      <StatusBar style="dark" />
       <KeyboardAvoidingView
         style={styles.keyboardAvoiding}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
