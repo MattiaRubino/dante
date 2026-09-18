@@ -1,16 +1,14 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B03-D ✅ CLOSED / PROVEN → B03-E NEXT
-- **Reconciled:** 2026-09-17
+- **Status:** B03 Event Core ✅ CLOSED / PROVEN → B04 NEXT
+- **Reconciled:** 2026-09-18
 - **Branch:** `feature/timeline-temporal-operational`
 - **Current roadmap:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Current live map/ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
-- **B03 plan:** `docs/workstreams/timeline-temporal-operational-b03-execution-plan.md`
-- **B03-A closure:** `docs/workstreams/timeline-temporal-operational-b03-a-closure-2026-09-16.md`
-- **B03-B closure:** `docs/workstreams/timeline-temporal-operational-b03-b-closure-2026-09-17.md`
-- **B03-C closure:** `docs/workstreams/timeline-temporal-operational-b03-c-closure-2026-09-17.md`
-- **B03-D closure:** `docs/workstreams/timeline-temporal-operational-b03-d-closure-2026-09-17.md`
-- **Next implementation gate:** `APPROVE B03-E`
+- **B03 closed execution authority:** `docs/workstreams/timeline-temporal-operational-b03-execution-plan.md`
+- **B03-E / whole-B03 closure:** `docs/workstreams/timeline-temporal-operational-b03-e-closure-2026-09-18.md`
+- **Manual B03 userTest:** `docs/workstreams/timeline-temporal-operational-b03-usertest.md` ✅ PASS
+- **Next implementation gate:** `APPROVE B04`
 - **CI:** no CI launch is implied or authorized
 
 ## 1. Current workstream position
@@ -19,8 +17,8 @@
 B00 Real Data Spine                              ✅ CLOSED / PROVEN
 B01 Activity Core                                ✅ CLOSED / PROVEN
 B02 Schedule Core                                ✅ CLOSED / PROVEN
-B03 Event Core                                   🟨 B03-A/B/C/D CLOSED / B03-E NEXT
-B04 Temporal Constraints + Movement Policy       ⬜
+B03 Event Core                                   ✅ CLOSED / PROVEN
+B04 Temporal Constraints + Movement Policy       ⬜ NEXT
 B05 Product Organization                         ⬜
 B06 Routine / Recurrence / Occurrence Baseline   ⬜
 B07 UI/UX Consolidation v1                       ⬜ planned after B06
@@ -42,7 +40,7 @@ Alembic     20260917_29
 Topology    101|5|31|78|198|119|297|0|0|0
 ```
 
-## 2. Accepted B03 foundation
+## 2. Closed B03 foundation
 
 B03-A established canonical Event identity/expectation/create/read.
 
@@ -58,7 +56,9 @@ B03-C activated Event placement lifecycle on that same machinery.
 
 B03-D activated Event-internal Agenda values at `_29` without identity inflation.
 
-## 3. Proven B03 behavior through B03-D
+B03-E proved the entire B03 surface through broad regressions, real-stack Chromium/Firefox and manual product acceptance, then reconciled generated OpenAPI/client authority.
+
+## 3. Proven B03 behavior
 
 ```text
 canonical Event identity + expectation
@@ -83,27 +83,49 @@ ordered bounded Event Agenda values
 Agenda add/edit/reorder/remove/reload
 aggregate Agenda revision/CAS
 Agenda operation-id idempotent replay
+explicit Agenda rename Save/Cancel + Enter/Escape
 real Event-detail Agenda editor backed by backend truth
 Activity Schedule regression preservation
 no event_schedule table/current/history engine
 no NativeRef per Agenda part
 ```
 
-## 4. B03-D proof summary
+## 4. Whole-B03 proof summary
 
 ```text
-focused PostgreSQL/API Agenda               2 PASS
-DB/Alembic/Dictionary gate                 12 PASS
-B03-D affected web gate                     6 files / 19 PASS
-@dante/i18n typecheck                       PASS
-@dante/web typecheck                        PASS
-final B02+B03 backend regression            13 PASS / 2 deselected
-final Activity/Schedule/Event web regression 5 files / 26 PASS
+B03-D focused PostgreSQL/API Agenda          2 PASS
+B03-D DB/Alembic/Dictionary                 12 PASS
+B03-D affected web                           6 files / 19 PASS
+B03-D final B02+B03 backend regression      13 PASS / 2 deselected
+B03-D final Activity/Event web regression    5 files / 26 PASS
+
+B03-E real-stack Chromium + Firefox          2 PASS
+B03-E web broad regression                   158 files / 741 PASS
+B03-E Temporal PostgreSQL broad              24 PASS / 2 deselected
+B03-E backend broad                          494 PASS + sole generated snapshot mismatch
+B03-E OpenAPI gate after regeneration        8 PASS
+B03-E manual userTest A–F                    PASS
 ```
 
-The DB gate proves `_29` migration authority, current catalog/Dictionary parity, fresh single head and head→base→head roundtrip. The final regression gates prove B03-D did not regress B02 or B03-C.
+The broad backend selection was not redundantly rerun after generated-artifact regeneration because its sole failure was the governed OpenAPI snapshot; that exact guard was then rerun green.
 
-## 5. Semantic boundaries still binding
+## 5. Manual-acceptance findings disposition
+
+### Agenda rename — CLOSED in B03
+
+The manual test exposed an ambiguous rename commit interaction. B03 was not closed until the product gained explicit **Salva / Annulla**, retained Enter/Escape, proved cancel sends no backend mutation, and the user manually accepted the corrected behavior.
+
+### Postponed/TBD rediscovery — transferred to B05
+
+B03-C semantics are correct: a postponed Event stays alive with history and has no current Schedule; it is not a Planning Tray Activity.
+
+B05 must provide a discoverable product surface for postponed/TBD Events so they can later be explicitly rescheduled without fabricated temporal truth.
+
+### Agenda vs timed sub-events
+
+Agenda is ordered Event-internal content, not independent temporal ownership. Any future requirement for independently timed internal segments requires a distinct semantic design; do not add Schedule identity to Agenda parts as a shortcut.
+
+## 6. Semantic boundaries still binding
 
 ```text
 Activity != Event
@@ -124,42 +146,33 @@ projection != canonical truth
 Undo != history rewind
 ```
 
-## 6. Exact B03-E target
+## 7. Exact B04 starting target
 
-B03-E is **whole-B03 closure**, not a new feature slice.
+B04 is **Temporal Constraints + Movement Policy**.
 
-Required work:
-
-```text
-1. run relevant whole-B03 backend/PostgreSQL regressions
-2. run relevant broad frontend regressions
-3. execute real-stack Chromium Event acceptance
-4. execute Firefox critical interaction proof where affected
-5. execute manual Event userTest
-6. reconcile final Dictionary / SQLAlchemy / Alembic / live catalog evidence
-7. close final B03 proof ledger
-8. reconcile map / roadmap / handoff / global status docs
-```
-
-Expected real-stack scenarios include Event create, reschedule, all-day/date-span, multi-day, reload and interaction with the real Timeline/read model. Agenda must be represented where the accepted user path reaches it.
-
-If B03-E exposes a concrete defect, fix the defect in the owning B03 capability. Otherwise do not widen B03 semantics.
-
-## 7. Explicit stop lines
-
-Do not activate during B03-E:
+Before implementation:
 
 ```text
-Event recurrence                           → B06
-Temporal Constraints / movement policy     → B04
-Life Area / Calendar / Tags                → B05
-Session/execution                          → B08
-participants / invitation responses        → B09
-Actual / Outcome / Confirmation            → B10
-reminders / conditional policy             → B11
-provider conferencing / sync               → B13
-Agenda part independent Schedule           → not authorized
+1. reopen the relevant Domain authority
+2. inspect Logical + Physical authority
+3. reconcile the archived semantic/functionality map for B04
+4. distinguish constraint truth from Schedule placement
+5. identify current persistence that can be reused
+6. define bounded B04 slices and proof gates
+7. only then implement after explicit approval
 ```
+
+Core non-collapse:
+
+```text
+Schedule != Temporal Constraint
+constraint != placement
+movement policy != solver result
+proposal != accepted effect
+planned/intended != happened
+```
+
+B04 must not prematurely implement B05 organization, B06 recurrence, B08 Session, B10 Actual or B12 solver semantics.
 
 ## 8. Detailed semantic authority
 
@@ -172,7 +185,7 @@ The live map records implementation/proof progress and does not replace the sema
 ## 9. Next gate
 
 ```text
-APPROVE B03-E
+APPROVE B04
 ```
 
-No B03-E implementation and no CI run are implied by B03-D closure.
+No B04 implementation and no CI run are implied by B03 closure.
