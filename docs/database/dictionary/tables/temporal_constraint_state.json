@@ -33,7 +33,7 @@
       "module": "dante.platform.database.mappings.temporal_constraint",
       "symbol": "TemporalConstraintStateRow"
     },
-    "runtime_acl_stage": "B04-A-CONSTRAINT"
+    "runtime_acl_stage": "B04-A-API"
   },
   "structure": {
     "columns": [
@@ -73,7 +73,7 @@
     "material_state_behavior": "Each accepted rule revision is append-only immutable MaterialState truth; old revisions remain reconstructible after current selection moves.",
     "current_binding": "scoped_current_material_state selects at most one accepted current temporal_constraint.rule state per constraint.",
     "chronology": "temporal_constraint_current_history carries currentness episodes; MaterialStateRef order is not chronology.",
-    "immutability_policy": "No generic runtime UPDATE/DELETE. Revision appends a new state and changes currentness through the governed mutation capability."
+    "immutability_policy": "Runtime read access is SELECT-only. Revision still appends a new state and changes currentness through the governed mutation capability."
   },
   "lifecycle": {
     "retention": "Retain rule-state history after revise or retire.",
@@ -81,7 +81,7 @@
     "retirement_tombstone": null,
     "delete_behavior": "No runtime DELETE; retirement closes currentness rather than erasing historical rule state."
   },
-  "security": {"owner_role":"dante_owner","default_deny_non_owner":true,"expected_grants":[]},
+  "security": {"owner_role":"dante_owner","default_deny_non_owner":true,"expected_grants":[{"grantee":"dante_runtime","privilege":"SELECT","columns":[],"grant_option":false}]},
   "proof": {
     "obligations": [
       "one exact temporal_constraint.rule envelope per MaterialStateRef",
@@ -91,6 +91,7 @@
     ],
     "test_refs": [
       "apps/backend/tests/integration/temporal/test_b04_temporal_constraint_core.py",
+      "apps/backend/tests/integration/temporal/test_b04_temporal_constraint_api_activation.py",
       "apps/backend/tests/integration/database/test_b04_temporal_constraint_catalog.py",
       "apps/backend/tests/integration/database/test_current_catalog.py",
       "apps/backend/tests/integration/database/test_database_current_catalog.py"
