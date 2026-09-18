@@ -18,6 +18,7 @@ from . import (
     recurrence,
     schedule,
     session,
+    temporal_constraint,
 )
 
 MAPPED_TABLES: tuple[Table, ...] = cast(
@@ -57,6 +58,12 @@ MAPPED_TABLES: tuple[Table, ...] = cast(
         schedule.ScheduleUnscheduleOperationRow.__table__,
         schedule.ScheduleUnscheduleUndoOperationRow.__table__,
         actual.ActualRow.__table__,
+        temporal_constraint.TemporalConstraintRow.__table__,
+        temporal_constraint.TemporalConstraintStateRow.__table__,
+        temporal_constraint.TemporalConstraintBoundaryStateRow.__table__,
+        temporal_constraint.TemporalConstraintBoundaryAbsoluteStateRow.__table__,
+        temporal_constraint.TemporalConstraintCurrentHistoryRow.__table__,
+        temporal_constraint.TemporalConstraintMutationOperationRow.__table__,
         schedule.SchedulePlacementStateRow.__table__,
         schedule.SchedulePlacementDateStateRow.__table__,
         schedule.SchedulePlacementFloatingLocalStateRow.__table__,
