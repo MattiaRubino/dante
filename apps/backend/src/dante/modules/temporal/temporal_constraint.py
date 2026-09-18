@@ -27,6 +27,7 @@ from dante.platform.time import normalize_utc_instant
 TemporalConstraintSubjectKind = Literal["activity", "event"]
 TemporalConstraintStrength = Literal["hard", "soft"]
 TemporalConstraintStatus = Literal["active", "retired"]
+MutationKind = Literal["create", "revise", "retire"]
 
 
 class TemporalConstraintInputError(ValueError):
@@ -94,7 +95,7 @@ class TemporalConstraintView:
 
 @dataclass(frozen=True, slots=True)
 class CreatedTemporalConstraintView:
-    """Accepted create effect; replay returns this original effect, not a later current state."""
+    """Accepted create effect; replay returns the original accepted effect."""
 
     constraint_ref: ScopedRecordRef
     subject_native_ref: NativeRef
@@ -131,6 +132,55 @@ class RetiredTemporalConstraintView:
     replayed: bool
 
 
+_SUBJECT_KIND_SQL = text(
+    """
+    SELECT address.owner_family
+      FROM dante.native_address AS address
+     WHERE address.native_ref=:subject_native_ref
+       AND (
+            (address.owner_family='activity' AND EXISTS (
+                SELECT 1
+                  FROM dante.activity_intention AS activity
+                 WHERE activity.activity_ref=address.native_ref
+                   AND activity.self_person_ref=:self_person_ref
+            ))
+            OR
+            (address.owner_family='event' AND EXISTS (
+                SELECT 1
+                  FROM dante.event_expectation AS event_row
+                 WHERE event_row.event_ref=address.native_ref
+                   AND event_row.self_person_ref=:self_person_ref
+            ))
+       )
+    """
+)
+
+_CONSTRAINT_IDENTITY_SQL = text(
+    """
+    SELECT constraint_row.subject_native_ref,
+           address.owner_family AS subject_kind
+      FROM dante.temporal_constraint AS constraint_row
+      JOIN dante.native_address AS address
+        ON address.native_ref=constraint_row.subject_native_ref
+     WHERE constraint_row.constraint_ref=:constraint_ref
+       AND (
+            (address.owner_family='activity' AND EXISTS (
+                SELECT 1
+                  FROM dante.activity_intention AS activity
+                 WHERE activity.activity_ref=constraint_row.subject_native_ref
+                   AND activity.self_person_ref=:self_person_ref
+            ))
+            OR
+            (address.owner_family='event' AND EXISTS (
+                SELECT 1
+                  FROM dante.event_expectation AS event_row
+                 WHERE event_row.event_ref=constraint_row.subject_native_ref
+                   AND event_row.self_person_ref=:self_person_ref
+            ))
+       )
+    """
+)
+
 _READ_CONSTRAINT_BASE = """
 SELECT constraint_row.constraint_ref,
        constraint_row.subject_native_ref,
@@ -156,27 +206,44 @@ SELECT constraint_row.constraint_ref,
   LEFT JOIN dante.temporal_constraint_boundary_absolute_state AS payload
     ON payload.material_state_ref=boundary.material_state_ref
  WHERE (
-        (
-            subject_address.owner_family='activity'
-            AND EXISTS (
-                SELECT 1
-                  FROM dante.activity_intention AS activity
-                 WHERE activity.activity_ref=constraint_row.subject_native_ref
-                   AND activity.self_person_ref=:self_person_ref
-            )
-        )
+        (subject_address.owner_family='activity' AND EXISTS (
+            SELECT 1
+              FROM dante.activity_intention AS activity
+             WHERE activity.activity_ref=constraint_row.subject_native_ref
+               AND activity.self_person_ref=:self_person_ref
+        ))
         OR
-        (
-            subject_address.owner_family='event'
-            AND EXISTS (
-                SELECT 1
-                  FROM dante.event_expectation AS event_row
-                 WHERE event_row.event_ref=constraint_row.subject_native_ref
-                   AND event_row.self_person_ref=:self_person_ref
-            )
-        )
+        (subject_address.owner_family='event' AND EXISTS (
+            SELECT 1
+              FROM dante.event_expectation AS event_row
+             WHERE event_row.event_ref=constraint_row.subject_native_ref
+               AND event_row.self_person_ref=:self_person_ref
+        ))
  )
 """
+
+_MUTATE_SQL = text(
+    """
+    SELECT constraint_ref,
+           subject_native_ref,
+           material_state_ref,
+           active,
+           created_at,
+           replayed
+      FROM dante.mutate_self_absolute_earliest_start_constraint(
+           :self_person_ref,
+           :operation_id,
+           :intent_fingerprint,
+           :mutation_kind,
+           :subject_native_ref,
+           :constraint_ref,
+           :expected_material_state_ref,
+           :resulting_material_state_ref,
+           :strength_code,
+           :boundary_at
+      )
+    """
+)
 
 
 def _normalize_operation_id(value: str) -> str:
@@ -266,7 +333,7 @@ def _constraint_name(exc: IntegrityError) -> str | None:
     return value if isinstance(value, str) else None
 
 
-def _subject_kind_from_value(value: object) -> TemporalConstraintSubjectKind:
+def _subject_kind(value: object) -> TemporalConstraintSubjectKind:
     if value not in {"activity", "event"}:
         raise TemporalConstraintPersistenceError(
             "Stored Temporal Constraint subject family is outside B04-A."
@@ -277,7 +344,7 @@ def _subject_kind_from_value(value: object) -> TemporalConstraintSubjectKind:
 def _constraint_from_row(row: RowMapping) -> TemporalConstraintView:
     constraint_ref = ScopedRecordRef(UUID(str(row["constraint_ref"])))
     subject_native_ref = NativeRef(UUID(str(row["subject_native_ref"])))
-    subject_kind = _subject_kind_from_value(row["subject_kind"])
+    subject_kind = _subject_kind(row["subject_kind"])
     material_state_value = row["material_state_ref"]
     if material_state_value is None:
         return TemporalConstraintView(
@@ -294,7 +361,7 @@ def _constraint_from_row(row: RowMapping) -> TemporalConstraintView:
         "boundary_kind_code": "earliest_start",
         "temporal_form_code": "absolute",
     }
-    if any(row[key] != value for key, value in expected.items()):
+    if any(row[key] != expected_value for key, expected_value in expected.items()):
         raise TemporalConstraintPersistenceError(
             "Stored current Temporal Constraint rule is outside the activated B04-A shape."
         )
@@ -304,7 +371,12 @@ def _constraint_from_row(row: RowMapping) -> TemporalConstraintView:
         raise TemporalConstraintPersistenceError(
             "Stored current Temporal Constraint payload is incomplete."
         )
-    boundary_at = normalize_utc_instant(boundary_value)
+    try:
+        boundary_at = normalize_utc_instant(boundary_value)
+    except ValueError as exc:
+        raise TemporalConstraintPersistenceError(
+            "Stored Temporal Constraint absolute boundary is not a valid instant."
+        ) from exc
     return TemporalConstraintView(
         constraint_ref=constraint_ref,
         subject_native_ref=subject_native_ref,
@@ -330,35 +402,14 @@ async def _subject_kind_in_session(
 ) -> TemporalConstraintSubjectKind | None:
     value = (
         await database_session.execute(
-            text(
-                """
-                SELECT address.owner_family
-                  FROM dante.native_address AS address
-                 WHERE address.native_ref=:subject_native_ref
-                   AND (
-                        (address.owner_family='activity' AND EXISTS (
-                            SELECT 1 FROM dante.activity_intention AS activity
-                            WHERE activity.activity_ref=address.native_ref
-                              AND activity.self_person_ref=:self_person_ref
-                        ))
-                        OR
-                        (address.owner_family='event' AND EXISTS (
-                            SELECT 1 FROM dante.event_expectation AS event_row
-                            WHERE event_row.event_ref=address.native_ref
-                              AND event_row.self_person_ref=:self_person_ref
-                        ))
-                   )
-                """
-            ),
+            _SUBJECT_KIND_SQL,
             {
                 "self_person_ref": self_person_ref,
                 "subject_native_ref": subject_native_ref,
             },
         )
     ).scalar_one_or_none()
-    if value is None:
-        return None
-    return _subject_kind_from_value(value)
+    return None if value is None else _subject_kind(value)
 
 
 async def _constraint_identity_in_session(
@@ -370,29 +421,7 @@ async def _constraint_identity_in_session(
     row = (
         (
             await database_session.execute(
-                text(
-                    """
-                    SELECT constraint_row.subject_native_ref,
-                           address.owner_family AS subject_kind
-                      FROM dante.temporal_constraint AS constraint_row
-                      JOIN dante.native_address AS address
-                        ON address.native_ref=constraint_row.subject_native_ref
-                     WHERE constraint_row.constraint_ref=:constraint_ref
-                       AND (
-                            (address.owner_family='activity' AND EXISTS (
-                                SELECT 1 FROM dante.activity_intention AS activity
-                                WHERE activity.activity_ref=constraint_row.subject_native_ref
-                                  AND activity.self_person_ref=:self_person_ref
-                            ))
-                            OR
-                            (address.owner_family='event' AND EXISTS (
-                                SELECT 1 FROM dante.event_expectation AS event_row
-                                WHERE event_row.event_ref=constraint_row.subject_native_ref
-                                  AND event_row.self_person_ref=:self_person_ref
-                            ))
-                       )
-                    """
-                ),
+                _CONSTRAINT_IDENTITY_SQL,
                 {
                     "self_person_ref": self_person_ref,
                     "constraint_ref": constraint_ref,
@@ -406,7 +435,7 @@ async def _constraint_identity_in_session(
         return None
     return (
         NativeRef(UUID(str(row["subject_native_ref"]))),
-        _subject_kind_from_value(row["subject_kind"]),
+        _subject_kind(row["subject_kind"]),
     )
 
 
@@ -416,7 +445,7 @@ async def _mutate_in_session(
     self_person_ref: NativeRef,
     operation_id: str,
     fingerprint: str,
-    mutation_kind: Literal["create", "revise", "retire"],
+    mutation_kind: MutationKind,
     subject_native_ref: NativeRef,
     constraint_ref: ScopedRecordRef,
     expected_material_state_ref: MaterialStateRef | None,
@@ -426,28 +455,7 @@ async def _mutate_in_session(
     return (
         (
             await database_session.execute(
-                text(
-                    """
-                    SELECT constraint_ref,
-                           subject_native_ref,
-                           material_state_ref,
-                           active,
-                           created_at,
-                           replayed
-                      FROM dante.mutate_self_absolute_earliest_start_constraint(
-                           :self_person_ref,
-                           :operation_id,
-                           :intent_fingerprint,
-                           :mutation_kind,
-                           :subject_native_ref,
-                           :constraint_ref,
-                           :expected_material_state_ref,
-                           :resulting_material_state_ref,
-                           :strength_code,
-                           :boundary_at
-                      )
-                    """
-                ),
+                _MUTATE_SQL,
                 {
                     "self_person_ref": self_person_ref,
                     "operation_id": operation_id,
@@ -467,6 +475,15 @@ async def _mutate_in_session(
     )
 
 
+def _raise_integrity(exc: IntegrityError, *, allow_state_conflict: bool) -> None:
+    constraint = _constraint_name(exc)
+    if constraint == "pk_temporal_constraint_mutation_operation":
+        raise TemporalConstraintOperationIdReuseError() from exc
+    if allow_state_conflict and constraint == "temporal_constraint_state_conflict":
+        raise TemporalConstraintStateConflictError() from exc
+    raise TemporalConstraintPersistenceError() from exc
+
+
 class TemporalConstraintApplication:
     """Transaction-owning B04-A Temporal Constraint commands and current-state reads."""
 
@@ -484,7 +501,10 @@ class TemporalConstraintApplication:
         normalized_operation_id = _normalize_operation_id(operation_id)
         _require_uuid7(subject_native_ref, label="Temporal Constraint subject reference")
         try:
-            async with self._session_factory() as database_session, database_session.begin():
+            async with (
+                self._session_factory() as database_session,
+                database_session.begin(),
+            ):
                 subject_kind = await _subject_kind_in_session(
                     database_session,
                     self_person_ref=self_person_ref,
@@ -508,9 +528,7 @@ class TemporalConstraintApplication:
                     rule=rule,
                 )
         except IntegrityError as exc:
-            if _constraint_name(exc) == "pk_temporal_constraint_mutation_operation":
-                raise TemporalConstraintOperationIdReuseError() from exc
-            raise TemporalConstraintPersistenceError() from exc
+            _raise_integrity(exc, allow_state_conflict=False)
         except DBAPIError as exc:
             raise TemporalConstraintPersistenceError() from exc
         except SQLAlchemyError as exc:
@@ -547,7 +565,10 @@ class TemporalConstraintApplication:
             label="Expected Temporal Constraint state reference",
         )
         try:
-            async with self._session_factory() as database_session, database_session.begin():
+            async with (
+                self._session_factory() as database_session,
+                database_session.begin(),
+            ):
                 identity = await _constraint_identity_in_session(
                     database_session,
                     self_person_ref=self_person_ref,
@@ -573,12 +594,7 @@ class TemporalConstraintApplication:
                     rule=rule,
                 )
         except IntegrityError as exc:
-            constraint = _constraint_name(exc)
-            if constraint == "pk_temporal_constraint_mutation_operation":
-                raise TemporalConstraintOperationIdReuseError() from exc
-            if constraint == "temporal_constraint_state_conflict":
-                raise TemporalConstraintStateConflictError() from exc
-            raise TemporalConstraintPersistenceError() from exc
+            _raise_integrity(exc, allow_state_conflict=True)
         except DBAPIError as exc:
             raise TemporalConstraintPersistenceError() from exc
         except SQLAlchemyError as exc:
@@ -615,7 +631,10 @@ class TemporalConstraintApplication:
             label="Expected Temporal Constraint state reference",
         )
         try:
-            async with self._session_factory() as database_session, database_session.begin():
+            async with (
+                self._session_factory() as database_session,
+                database_session.begin(),
+            ):
                 identity = await _constraint_identity_in_session(
                     database_session,
                     self_person_ref=self_person_ref,
@@ -640,12 +659,7 @@ class TemporalConstraintApplication:
                     rule=None,
                 )
         except IntegrityError as exc:
-            constraint = _constraint_name(exc)
-            if constraint == "pk_temporal_constraint_mutation_operation":
-                raise TemporalConstraintOperationIdReuseError() from exc
-            if constraint == "temporal_constraint_state_conflict":
-                raise TemporalConstraintStateConflictError() from exc
-            raise TemporalConstraintPersistenceError() from exc
+            _raise_integrity(exc, allow_state_conflict=True)
         except DBAPIError as exc:
             raise TemporalConstraintPersistenceError() from exc
         except SQLAlchemyError as exc:
@@ -671,15 +685,19 @@ class TemporalConstraintApplication:
         constraint_ref: ScopedRecordRef,
     ) -> TemporalConstraintView:
         _require_uuid7(constraint_ref, label="Temporal Constraint reference")
+        statement = text(
+            _READ_CONSTRAINT_BASE
+            + " AND constraint_row.constraint_ref=:constraint_ref"
+        )
         try:
-            async with self._session_factory() as database_session:
+            async with (
+                self._session_factory() as database_session,
+                database_session.begin(),
+            ):
                 row = (
                     (
                         await database_session.execute(
-                            text(
-                                _READ_CONSTRAINT_BASE
-                                + " AND constraint_row.constraint_ref=:constraint_ref"
-                            ),
+                            statement,
                             {
                                 "self_person_ref": self_person_ref,
                                 "constraint_ref": constraint_ref,
@@ -702,8 +720,16 @@ class TemporalConstraintApplication:
         subject_native_ref: NativeRef,
     ) -> list[TemporalConstraintView]:
         _require_uuid7(subject_native_ref, label="Temporal Constraint subject reference")
+        statement = text(
+            _READ_CONSTRAINT_BASE
+            + " AND constraint_row.subject_native_ref=:subject_native_ref"
+            + " ORDER BY constraint_row.constraint_ref"
+        )
         try:
-            async with self._session_factory() as database_session:
+            async with (
+                self._session_factory() as database_session,
+                database_session.begin(),
+            ):
                 subject_kind = await _subject_kind_in_session(
                     database_session,
                     self_person_ref=self_person_ref,
@@ -714,11 +740,7 @@ class TemporalConstraintApplication:
                 rows = (
                     (
                         await database_session.execute(
-                            text(
-                                _READ_CONSTRAINT_BASE
-                                + " AND constraint_row.subject_native_ref=:subject_native_ref"
-                                + " ORDER BY constraint_row.constraint_ref"
-                            ),
+                            statement,
                             {
                                 "self_person_ref": self_person_ref,
                                 "subject_native_ref": subject_native_ref,
