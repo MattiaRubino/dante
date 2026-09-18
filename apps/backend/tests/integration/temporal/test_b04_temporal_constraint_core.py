@@ -103,11 +103,10 @@ def _mutate(
 ) -> tuple[object, ...]:
     with psycopg.connect(
         **database.connection_kwargs(
-            "dante_migrator",
-            database.cluster.migrator_password,
+            "dante_runtime",
+            database.cluster.runtime_password,
         )
     ) as connection:
-        connection.execute("SET ROLE dante_runtime")
         row = connection.execute(
             _MUTATE_SQL,
             (
@@ -386,11 +385,10 @@ def test_b04_constraint_runtime_cannot_bypass_governed_mutation_function(
 
     with psycopg.connect(
         **migrated_database.connection_kwargs(
-            "dante_migrator",
-            migrated_database.cluster.migrator_password,
+            "dante_runtime",
+            migrated_database.cluster.runtime_password,
         )
     ) as connection:
-        connection.execute("SET ROLE dante_runtime")
         with pytest.raises(psycopg.errors.InsufficientPrivilege):
             connection.execute(
                 "INSERT INTO dante.temporal_constraint(constraint_ref,subject_native_ref) VALUES (%s,%s)",
