@@ -76,13 +76,7 @@ Expo Go remains acceptable only for limited probe convenience. Normal DANTE Mobi
 
 ### Activation
 
-Activated during the Android production-foundation tranche after the Expo 57 compatibility baseline passed and `expo-dev-client` was added to the canonical Mobile dependency set.
-
-### Consequences
-
-- native-capability development targets a DANTE-owned Development Build rather than Expo Go;
-- Development Builds are regenerated when native dependencies or app configuration change;
-- Expo Go may still be used for narrow compatibility probes, but it is not the production-development runtime authority.
+Activated during the Android production-foundation tranche after the Expo 57 compatibility baseline passed. Native Development Builds are compiled from the project configuration rather than treating Expo Go as the production development runtime.
 
 ---
 
@@ -251,6 +245,38 @@ The namespace is based on the project-owned `dantearc.com` domain and represents
 - development and future production builds share a stable product namespace unless an explicit variant strategy is introduced;
 - Play Store publication must preserve this identity once established;
 - alternate development/store variants, if later required, must be introduced deliberately rather than by changing the canonical package ID.
+
+---
+
+## MD-015 — Mobile primary shell is Home / Timeline / Worlds with global AI
+
+**Status:** ACCEPTED  
+**Date:** 2026-09-18
+
+The authenticated Mobile shell is organized around three primary product surfaces:
+
+```text
+Home ⇄ Timeline ⇄ Worlds
+```
+
+DANTE AI is a persistent global action positioned centrally in the lower navigation rather than a fourth peer destination. `More` contains account, profile, settings and other secondary destinations.
+
+Public access routes and authenticated application routes remain structurally separate. A real session guard is not activated until the backend identity/session contract is implemented; the shell must not simulate authentication to make navigation appear complete.
+
+### Interaction consequences
+
+- bottom navigation remains the explicit, discoverable way to move between primary surfaces;
+- horizontal swipe between Home, Timeline and Worlds is an additional shortcut, never the only navigation method;
+- the swipe contract may be narrowed when a vertical introduces legitimate horizontal gestures that would otherwise conflict;
+- Home, Timeline and Worlds may exist as neutral route shells before their dedicated verticals provide real semantics;
+- `Today` is not adopted as a Mobile primary destination merely because it exists in the current Web navigation;
+- AI chat, voice and backend behavior remain out of scope until their real contract is activated.
+
+### Reopen when
+
+- validated product research changes the primary information architecture;
+- a dedicated vertical demonstrates that one of the primary surfaces should no longer be top-level;
+- accessibility or gesture evidence requires a different primary-navigation interaction.
 
 ---
 
