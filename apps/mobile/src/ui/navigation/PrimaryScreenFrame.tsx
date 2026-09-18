@@ -67,7 +67,13 @@ export function PrimaryScreenFrame({
             return;
           }
 
-          onNavigate(PRIMARY_DESTINATIONS[targetIndex]);
+          const target = PRIMARY_DESTINATIONS[targetIndex];
+
+          if (!target) {
+            return;
+          }
+
+          onNavigate(target);
         },
       }),
     [active, onNavigate],
