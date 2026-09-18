@@ -1,28 +1,30 @@
 # Timeline / Temporal-Operational — B03 Event Core Execution Plan
 
-- **Status:** B03-A ✅ — B03-B ✅ — B03-C ✅ — B03-D ✅ CLOSED / PROVEN — B03-E NEXT
-- **Date:** 2026-09-17
+- **Status:** ✅ B03-A/B/C/D/E CLOSED / PROVEN — B03 EVENT CORE CLOSED
+- **Reconciled:** 2026-09-18
 - **Branch:** `feature/timeline-temporal-operational`
-- **Current DB authority:** PostgreSQL 18.6 / Alembic `20260917_29`
-- **Current topology:** `101|5|31|78|198|119|297|0|0|0`
+- **DB authority:** PostgreSQL 18.6 / Alembic `20260917_29`
+- **Topology:** `101|5|31|78|198|119|297|0|0|0`
 - **Primary semantic authority:** `docs/domain/concepts/event.md`
 - **Detailed semantic freeze:** `docs/workstreams/archive/timeline-temporal-operational-map-ledger-snapshot-2026-09-15.md`
 - **Live work map:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **Roadmap:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
-- **B03-A closure:** `docs/workstreams/timeline-temporal-operational-b03-a-closure-2026-09-16.md`
-- **B03-B closure:** `docs/workstreams/timeline-temporal-operational-b03-b-closure-2026-09-17.md`
-- **B03-C closure:** `docs/workstreams/timeline-temporal-operational-b03-c-closure-2026-09-17.md`
-- **B03-D closure:** `docs/workstreams/timeline-temporal-operational-b03-d-closure-2026-09-17.md`
-- **Next implementation gate:** `APPROVE B03-E`
-- **CI:** separate authorization required
+- **B03-A closure:** `timeline-temporal-operational-b03-a-closure-2026-09-16.md`
+- **B03-B closure:** `timeline-temporal-operational-b03-b-closure-2026-09-17.md`
+- **B03-C closure:** `timeline-temporal-operational-b03-c-closure-2026-09-17.md`
+- **B03-D closure:** `timeline-temporal-operational-b03-d-closure-2026-09-17.md`
+- **B03-E / whole-B03 closure:** `timeline-temporal-operational-b03-e-closure-2026-09-18.md`
+- **Manual acceptance:** `timeline-temporal-operational-b03-usertest.md` ✅ PASS
+- **Next implementation gate:** `APPROVE B04`
+- **CI:** no CI launch was required for B03 closure
 
-The archived semantic map remains binding for the complete Event functionality inventory and all semantic `!=` boundaries. This file is the current B03 execution authority.
+The archived semantic map remains binding for the complete Event functionality inventory and all semantic `!=` boundaries. This file records the closed B03 execution result; current sequencing continues in the temporal roadmap.
 
 ---
 
-# 0. Binding objective
+# 0. Binding objective — achieved
 
-B03 activates **Event as a distinct originating owner** and proves the Schedule engine is shared.
+B03 activated **Event as a distinct originating owner** while proving that Activity and Event share one Schedule capability:
 
 ```text
 Activity ─┐
@@ -30,7 +32,7 @@ Activity ─┐
 Event ────┘
 ```
 
-Forbidden:
+Forbidden collapses remain forbidden:
 
 ```text
 activity_schedule + event_schedule split
@@ -39,7 +41,7 @@ Event-as-Activity shortcut
 generic temporal mega-entity
 ```
 
-Permanent boundaries:
+Permanent boundaries retained:
 
 ```text
 Activity != Event
@@ -54,29 +56,12 @@ Event != Availability / Capacity Claim
 Event identity != provider identity
 Agenda part != Activity/Event/Occurrence/Schedule/Session/Actual by default
 original expectation != current Schedule != Actual occurrence
+postponed/TBD Event != Planning Tray Activity
 ```
 
 ---
 
-# 1. Authority result
-
-Re-opened Domain/Logical/Physical authority established:
-
-```text
-Event                      LR-01 native identity owner
-Schedule                   LR-02 dependent scoped record
-dante.event                canonical Event NativeRef shell
-native_address             owner_family='event'
-dante.schedule             shared Schedule owner
-Schedule subject family    activity | event | occurrence
-Event recurrence shell     exists but remains B06-owned
-```
-
-No Event-specific Schedule persistence is justified.
-
----
-
-# 2. B03-A — Event canonical core ✅ CLOSED / PROVEN
+# 1. B03-A — Event canonical core ✅ CLOSED / PROVEN
 
 Established at `_27`:
 
@@ -89,26 +74,17 @@ POST /api/v1/temporal/events
 GET  /api/v1/temporal/events/{event_ref}
 ```
 
-Proved stable Event identity, explicit self-Person scope, canonical title data, idempotent same-intent replay, changed-intent conflict and guarded downgrade.
+Proved stable Event identity, explicit self-Person scope, canonical title data, idempotent replay, changed-intent conflict and guarded migration behavior.
 
 Closure: `timeline-temporal-operational-b03-a-closure-2026-09-16.md`.
 
 ---
 
-# 3. B03-B — Shared Schedule + Event Timeline ✅ CLOSED / PROVEN
+# 2. B03-B — Shared Schedule + Event Timeline ✅ CLOSED / PROVEN
 
-`_28` generalized Schedule self-scope from Activity-only to an explicit Activity/Event typed union while preserving the single Schedule machinery.
+`_28` generalized the existing Schedule self-scope into an explicit Activity/Event typed union while preserving one Schedule machinery.
 
-Governed Schedule capability remains shared:
-
-```text
-establish_self_schedule_placement(...)
-revise_self_schedule_placement(...)
-unschedule_self_schedule(...)
-undo_self_schedule_unschedule_any(...)
-```
-
-Activated Event placement/read forms:
+Activated Event forms:
 
 ```text
 floating-local timed Event
@@ -117,19 +93,19 @@ all-day/date-span Event
 multi-day date-span Event
 ```
 
-Timeline projection is explicitly discriminated:
+Timeline projection remains explicitly discriminated:
 
 ```text
 scheduled_activity | scheduled_event
 ```
 
-Named-zone source wall-clock intent remains distinct from resolved instants; all-day Event does not fabricate exact clock time.
+Named-zone source wall-clock intent remains distinct from resolved instants; all-day Event does not fabricate clock time.
 
 Closure: `timeline-temporal-operational-b03-b-closure-2026-09-17.md`.
 
 ---
 
-# 4. B03-C — Event placement lifecycle ✅ CLOSED / PROVEN
+# 3. B03-C — Event placement lifecycle ✅ CLOSED / PROVEN
 
 Accepted invariant:
 
@@ -140,234 +116,119 @@ same Event identity
 + Schedule history remains monotonic
 ```
 
-B03-C uses the shared Schedule mutation capability; it required no new migration.
+Proven behavior includes reschedule, postponed/TBD with no current placement, stale-CAS fail-closed, read while unplaced, guarded Undo through a new MaterialState and immediate lifecycle after create.
 
-Proven behavior:
-
-```text
-reschedule with stable EventRef/ScheduleRef
-placement MaterialState advances monotonically
-postponed/TBD = Event alive + Schedule/history retained + no current placement
-no placeholder date/time
-Event remains readable after current placement removal
-stale expected-state mutations fail closed
-guarded Undo writes a new accepted MaterialState
-Undo replay is idempotent
-Create-runtime Event can revise/postpone/undo without reload
-Timeline Event routes mutations through canonical Schedule datasource
-Activity lifecycle remains intact
-```
-
-Proof:
-
-```text
-PostgreSQL/backend targeted gate    9 PASS / 2 deselected
-web Event lifecycle gate            5 files / 16 PASS
-@dante/web typecheck                PASS
-```
+Postponed/TBD remains distinct from an Activity Planning Tray item.
 
 Closure: `timeline-temporal-operational-b03-c-closure-2026-09-17.md`.
 
 ---
 
-# 5. B03-D — Agenda/internal parts ✅ CLOSED / PROVEN
+# 4. B03-D — Agenda/internal parts ✅ CLOSED / PROVEN
 
-## 5.1 Accepted semantic model
-
-```text
-Event
-└── ordered bounded Agenda/internal values
-```
-
-Agenda parts remain values internal to Event. They do not receive NativeRef or independent temporal ownership merely to support editing/reordering.
-
-```text
-Agenda part != Activity
-Agenda part != Event
-Agenda part != Occurrence
-Agenda part != Schedule
-Agenda part != Session
-Agenda part != Actual
-```
-
-## 5.2 Persistence at `_29`
+`_29` activated ordered bounded Event-owned Agenda values without identity inflation:
 
 ```text
 event_agenda_part
-  event_ref + position + content
-
 event_agenda_current
-  event_ref + aggregate revision + updated_at
-
 event_agenda_mutation_operation
-  self-scoped operation receipt + expected/resulting revision
-  + accepted ordered text[] snapshot
-```
-
-Capabilities:
-
-```text
 create_self_event_with_agenda(...)
 replace_self_event_agenda(...)
 ```
 
-The wrapper reuses the existing Event create capability rather than duplicating Event identity creation. Empty Agenda remains compatible with pre-B03-D Event create.
+The canonical mutation boundary is aggregate whole-list replacement with EventRef + operation id + expected revision. Add/edit/reorder/remove, CAS, replay and authoritative reload are proven.
 
-## 5.3 Mutation contract
-
-Whole-Agenda replacement is the canonical mutation boundary for add/edit/reorder/remove.
-
-```text
-EventRef
-+ operation_id
-+ expected_revision
-+ complete ordered normalized Agenda list
-```
-
-Proven semantics:
-
-- initial revision `0` is truthful without a fabricated current row;
-- accepted mutation advances revision by exactly one;
-- stale expected revision conflicts;
-- same operation/same intent replays exactly;
-- changed intent under reused operation id conflicts;
-- rows remain normalized and position-ordered;
-- maximum 100 parts; each part bounded canonical text;
-- runtime has no generic direct Agenda DML authority.
-
-## 5.4 API/product
-
-Event read returns canonical Agenda revision + ordered values.
-
-Mutation endpoint:
-
-```text
-PUT /api/v1/temporal/events/{event_ref}/agenda
-```
-
-The Event detail Agenda editor uses real backend read/mutation truth and supports:
-
-```text
-add
-edit
-reorder up/down
-remove
-reload
-stale conflict → authoritative reload
-```
-
-Create activates Agenda as the only B03-D rich Event field; unrelated rich prototype Event fields remain deferred/fail-closed.
-
-## 5.5 Executed proof
-
-```text
-focused PostgreSQL/API Agenda               2 PASS
-DB/Alembic/Dictionary gate                 12 PASS
-B03-D affected web gate                     6 files / 19 PASS
-@dante/i18n typecheck                       PASS
-@dante/web typecheck                        PASS
-final B02+B03 backend regression            13 PASS / 2 deselected
-final Activity/Schedule/Event web regression 5 files / 26 PASS
-```
-
-The DB gate includes `_29` migration proof, current catalog, whole database catalog, fresh single-head proof and head→base→head roundtrip.
+Agenda parts do not receive NativeRef, ScheduleRef, Session identity or Actual identity merely because they are editable or ordered.
 
 Closure: `timeline-temporal-operational-b03-d-closure-2026-09-17.md`.
 
 ---
 
-# 6. Current B03 gaps after B03-D
+# 5. B03-E — Whole-B03 closure ✅ CLOSED / PROVEN
 
-All B03-A/B/C/D implementation gaps are closed.
+B03-E added no new semantics; it executed the closure proof.
 
-Remaining closure-only gaps:
+Accepted evidence:
 
 ```text
-GAP-B03-E01  whole-B03 broad regression gate
-GAP-B03-E02  real-stack Chromium Event create/reschedule/all-day/multi-day/reload
-GAP-B03-E03  Firefox critical interaction proof where affected
-GAP-B03-E04  manual Event userTest
-GAP-B03-E05  final Dictionary/live-catalog/docs reconciliation after all proof
+real-stack Chromium + Firefox Event E2E      2 PASS
+web broad regression                         158 files / 741 PASS
+Temporal PostgreSQL broad regression         24 PASS / 2 deselected
+backend broad run                            494 PASS + sole generated OpenAPI mismatch
+focused OpenAPI governance after generation  8 PASS
+manual Event userTest A–F                    PASS
 ```
 
-B03-E must not widen Event semantics just because prototype controls exist.
+The generated OpenAPI/client mismatch was reconciled through the canonical generator; it was the only failure in the broad non-PostgreSQL backend run.
+
+The manual test exposed and closed the Agenda rename UX defect with explicit **Salva / Annulla**, retaining Enter/Escape behavior and proving cancel causes no backend mutation.
+
+Closure: `timeline-temporal-operational-b03-e-closure-2026-09-18.md`.
+Manual acceptance: `timeline-temporal-operational-b03-usertest.md`.
 
 ---
 
-# 7. B03-E — Whole-B03 closure ⬜ NEXT
+# 6. B03 final persistence authority
 
-B03-E is a closure/proof slice.
-
-Required evidence:
-
-- B03 create/application proof;
-- timed/all-day/multi-day shared Schedule proof;
-- postponed/TBD history/query proof;
-- Agenda semantic/frontend proof;
-- shared Schedule Activity+Event regression;
-- relevant backend/frontend broad regressions;
-- real-stack Chromium Event acceptance;
-- Firefox proof where the affected critical interactions require it;
-- manual Event userTest;
-- final Dictionary/SQLAlchemy/Alembic/live-catalog reconciliation;
-- final map/roadmap/handoff/global status reconciliation.
-
-If a proof exposes a concrete defect, fix that defect in the owning capability. Otherwise B03-E adds no new product semantics.
-
-CI remains separate and requires explicit authorization.
-
----
-
-# 8. Rich Event prototype stop line
-
-Still deferred/fail-closed:
-
-| Intent | Owner/gate |
-| --- | --- |
-| Event recurrence | B06 |
-| Temporal Constraints / movement policy | B04 |
-| Life Area / Calendar / Tags | B05 |
-| participant/invite semantics | B09 |
-| Session/execution | B08 |
-| Actual / Outcome / Confirmation | B10 |
-| reminder / conditional policy | B11 |
-| provider conference / sync | B13 |
-| availability/busy capacity semantics | separate accepted capacity/provider authority |
-| visibility/sharing policy | actor/security/visibility authority |
-| preparation/recovery scheduling rules | B04 / linked Activity relation semantics |
-| rich resources/pre-read metadata | later explicit canonical owner decision |
-
----
-
-# 9. Risk register
+No database change was required by B03-E. Final candidate authority remains:
 
 ```text
-R1  silently accepting unsupported Event fields             FORBIDDEN
-R2  cloning Activity Schedule logic into Event               FORBIDDEN
-R3  generic owner/EAV shortcut erasing owner meaning         FORBIDDEN
-R4  treating postponed Event as unplaced Activity            FORBIDDEN
-R5  Event implies availability/busy capacity                 FORBIDDEN
-R6  activating recurrence before B06                         FORBIDDEN
-R7  Agenda identity inflation                                FORBIDDEN
-R8  projection union becoming canonical ontology             FORBIDDEN
-R9  frontend behavior preceding backend truth                FORBIDDEN
-R10 Agenda part acquiring Schedule/Session/Actual by default  FORBIDDEN
+PostgreSQL 18.6
+Alembic     20260917_29
+Topology    101|5|31|78|198|119|297|0|0|0
+```
+
+B03-D had already reconciled Dictionary, SQLAlchemy mappings, current-catalog expectations and Alembic head to `_29`; B03-E did not alter that materialization.
+
+---
+
+# 7. Transfers and stop lines
+
+Manual acceptance identified one product-organization transfer:
+
+```text
+B05: provide a discoverable surface for postponed/TBD Events
+     so they can later be explicitly rescheduled
+     without converting them into Planning Tray Activities
+     and without fabricating date/time truth.
+```
+
+Agenda remains ordered Event-internal content. Independently timed internal segments/sub-events are not Agenda and require a future explicit semantic model if product requirements justify them.
+
+Deferred ownership remains:
+
+```text
+Temporal Constraints / movement policy     → B04
+Calendar / Life Area / Tags                 → B05
+Event recurrence / Routine / Occurrence     → B06
+Session/execution                           → B08
+participants / invitation responses        → B09
+Actual / Outcome / Confirmation            → B10
+advanced recurrence / reminders             → B11
+provider conferencing / sync               → B13
+Agenda-part independent Schedule            → not authorized by B03
 ```
 
 ---
 
-# 10. Current gate
+# 8. Closure decision
 
 ```text
 B03-A  ✅ CLOSED / PROVEN
 B03-B  ✅ CLOSED / PROVEN
 B03-C  ✅ CLOSED / PROVEN
 B03-D  ✅ CLOSED / PROVEN
-B03-E  ⬜ NEXT / NOT YET AUTHORIZED
+B03-E  ✅ CLOSED / PROVEN
+
+B03 Event Core  ✅ CLOSED / PROVEN
 ```
 
-Next action requires explicit:
+There are no remaining B03 implementation or proof gates.
+
+The next explicit implementation gate is:
 
 ```text
-APPROVE B03-E
+APPROVE B04
 ```
+
+B04 owns Temporal Constraints + Movement Policy and must begin by reopening the relevant Domain/Logical/Physical authority before implementation.
