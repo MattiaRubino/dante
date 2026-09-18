@@ -10,9 +10,9 @@ _HTTP_METHODS = frozenset({"get", "post", "put", "patch", "delete", "options", "
 #
 # These operationIds were originally FastAPI-generated. They are intentionally
 # frozen rather than cosmetically renamed because Orval export names are already
-# a published repository contract. Every new B04+ Temporal endpoint must provide
-# an explicit stable semantic operationId and be added to this inventory.
-_EXPECTED_TEMPORAL_OPERATIONS = {
+# a published repository contract. They are the only legacy exception to the
+# semantic operationId rule below.
+_PRE_B04_TEMPORAL_OPERATIONS = {
     ("/api/v1/temporal/timeline/window", "get"): (
         "get_timeline_window_api_v1_temporal_timeline_window_get"
     ),
@@ -54,6 +54,13 @@ _EXPECTED_TEMPORAL_OPERATIONS = {
     ),
 }
 
+# Current accepted public Temporal inventory. B04+ endpoint additions belong
+# here, while _PRE_B04_TEMPORAL_OPERATIONS remains immutable compatibility
+# history so new operations cannot inherit the legacy implicit-ID exception.
+_EXPECTED_TEMPORAL_OPERATIONS = {
+    **_PRE_B04_TEMPORAL_OPERATIONS,
+}
+
 
 def _temporal_operations(document: dict[str, Any]) -> dict[tuple[str, str], str]:
     paths = cast(dict[str, Any], document["paths"])
@@ -78,8 +85,21 @@ def test_complete_temporal_operation_inventory_and_operation_ids_are_frozen() ->
     actual = _temporal_operations(openapi_document())
 
     assert actual == _EXPECTED_TEMPORAL_OPERATIONS
-    assert len(actual) == 13
     assert len(set(actual.values())) == len(actual)
+
+
+def test_post_b03_temporal_operations_use_explicit_semantic_operation_ids() -> None:
+    """Only the frozen pre-B04 surface may retain implicit FastAPI operationIds."""
+    actual = _temporal_operations(openapi_document())
+
+    for key, operation_id in actual.items():
+        if key in _PRE_B04_TEMPORAL_OPERATIONS:
+            assert operation_id == _PRE_B04_TEMPORAL_OPERATIONS[key]
+            continue
+        assert operation_id.startswith("temporal_"), (
+            f"new Temporal operation {key!r} must define an explicit stable semantic "
+            f"operationId starting with 'temporal_'; got {operation_id!r}"
+        )
 
 
 def test_temporal_inventory_is_only_v1_temporal_surface() -> None:
