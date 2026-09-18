@@ -9,6 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 
 import { accessTheme } from '../theme/accessTheme';
+import { AccessBackgroundMark } from './AccessBackgroundMark';
 
 type AccessScreenProps = PropsWithChildren;
 
@@ -19,6 +20,7 @@ export function AccessScreen({ children }: AccessScreenProps) {
       edges={['top', 'right', 'bottom', 'left']}
     >
       <StatusBar style="dark" />
+      <AccessBackgroundMark />
       <KeyboardAvoidingView
         style={styles.keyboardAvoiding}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -39,7 +41,8 @@ export function AccessScreen({ children }: AccessScreenProps) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: accessTheme.colors.surface,
+    overflow: 'hidden',
+    backgroundColor: accessTheme.colors.background,
   },
   keyboardAvoiding: {
     flex: 1,

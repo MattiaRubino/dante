@@ -26,6 +26,13 @@ export const accessTheme = {
     xl: 32,
     xxl: 48,
   },
+  decorative: {
+    backgroundMarkOpacity: 0.12,
+    backgroundMarkMinSize: 520,
+    backgroundMarkScale: 1.45,
+    backgroundMarkLeftCrop: 0.46,
+    backgroundMarkBottomCrop: 0.38,
+  },
 } as const;
 
 export type AccessTheme = typeof accessTheme;
