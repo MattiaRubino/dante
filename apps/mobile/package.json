@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "main": "expo-router/entry",
   "scripts": {
-    "android": "expo start --android",
+    "android": "expo run:android",
     "dev": "expo start",
     "lint": "eslint .",
     "start": "expo start",
