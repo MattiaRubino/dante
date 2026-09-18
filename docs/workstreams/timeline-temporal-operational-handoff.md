@@ -1,12 +1,14 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B03 Event Core ✅ CLOSED / PROVEN → B04 NEXT
+- **Status:** B03 Event Core ✅ CLOSED / PROVEN + pre-B04 governance ✅ CLOSED / FROZEN → B04 NEXT
 - **Reconciled:** 2026-09-18
 - **Branch:** `feature/timeline-temporal-operational`
 - **Current roadmap:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Current live map/ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **B03 closed execution authority:** `docs/workstreams/timeline-temporal-operational-b03-execution-plan.md`
 - **B03-E / whole-B03 closure:** `docs/workstreams/timeline-temporal-operational-b03-e-closure-2026-09-18.md`
+- **Pre-B04 governance closure:** `docs/workstreams/timeline-temporal-operational-pre-b04-governance-2026-09-18.md`
+- **Timeline candidate DB overlay:** `docs/database/timeline-temporal-operational.md`
 - **Manual B03 userTest:** `docs/workstreams/timeline-temporal-operational-b03-usertest.md` ✅ PASS
 - **Next implementation gate:** `APPROVE B04`
 - **CI:** no CI launch is implied or authorized
@@ -18,6 +20,7 @@ B00 Real Data Spine                              ✅ CLOSED / PROVEN
 B01 Activity Core                                ✅ CLOSED / PROVEN
 B02 Schedule Core                                ✅ CLOSED / PROVEN
 B03 Event Core                                   ✅ CLOSED / PROVEN
+PRE-B04 DB/API GOVERNANCE                        ✅ CLOSED / FROZEN
 B04 Temporal Constraints + Movement Policy       ⬜ NEXT
 B05 Product Organization                         ⬜
 B06 Routine / Recurrence / Occurrence Baseline   ⬜
@@ -58,7 +61,52 @@ B03-D activated Event-internal Agenda values at `_29` without identity inflation
 
 B03-E proved the entire B03 surface through broad regressions, real-stack Chromium/Firefox and manual product acceptance, then reconciled generated OpenAPI/client authority.
 
-## 3. Proven B03 behavior
+## 3. Pre-B04 governance baseline
+
+The pre-B04 audit found and closed two governance gaps before allowing new feature scope:
+
+```text
+1. current human DB references had candidate drift (_27 prose vs _29 reality)
+2. Temporal API lacked an exact complete operation inventory equivalent to Access/Auth governance
+```
+
+Now:
+
+```text
+docs/database/README.md                         current protected-main + _29 candidate summary
+docs/database/dictionary/README.md              current B03 closure prose
+docs/database/timeline-temporal-operational.md  candidate-only DB overlay
+Temporal OpenAPI inventory test                  exact 13-operation baseline
+```
+
+Binding DB gate for B04+:
+
+```text
+Alembic
+≈ SQLAlchemy
+≈ Dictionary + scope
+≈ live catalog / owner / ACL
+≈ current DB SoR
+≈ Timeline DB overlay
+≈ direct PostgreSQL proof
+≈ workstream closure docs
+```
+
+Binding API gate for B04+:
+
+```text
+route/model
+→ explicit stable semantic operationId for every new endpoint
+→ exact Temporal inventory
+→ OpenAPI snapshot
+→ Orval / @dante/api-client
+→ affected API/frontend tests
+→ workstream docs
+```
+
+Existing pre-B04 Temporal operationIds remain frozen compatibility baseline and are not deprecated merely because their original FastAPI-generated names are verbose.
+
+## 4. Proven B03 behavior
 
 ```text
 canonical Event identity + expectation
@@ -90,7 +138,7 @@ no event_schedule table/current/history engine
 no NativeRef per Agenda part
 ```
 
-## 4. Whole-B03 proof summary
+## 5. Whole-B03 proof summary
 
 ```text
 B03-D focused PostgreSQL/API Agenda          2 PASS
@@ -109,7 +157,7 @@ B03-E manual userTest A–F                    PASS
 
 The broad backend selection was not redundantly rerun after generated-artifact regeneration because its sole failure was the governed OpenAPI snapshot; that exact guard was then rerun green.
 
-## 5. Manual-acceptance findings disposition
+## 6. Manual-acceptance findings disposition
 
 ### Agenda rename — CLOSED in B03
 
@@ -125,7 +173,7 @@ B05 must provide a discoverable product surface for postponed/TBD Events so they
 
 Agenda is ordered Event-internal content, not independent temporal ownership. Any future requirement for independently timed internal segments requires a distinct semantic design; do not add Schedule identity to Agenda parts as a shortcut.
 
-## 6. Semantic boundaries still binding
+## 7. Semantic boundaries still binding
 
 ```text
 Activity != Event
@@ -146,21 +194,11 @@ projection != canonical truth
 Undo != history rewind
 ```
 
-## 7. Exact B04 starting target
+EVT-012 through EVT-015 remain explicit future-owner obligations. Their unchecked state is intentional and must not be converted into fake B03 completion.
 
-B04 is **Temporal Constraints + Movement Policy**.
+## 8. Exact B04 starting target
 
-Before implementation:
-
-```text
-1. reopen the relevant Domain authority
-2. inspect Logical + Physical authority
-3. reconcile the archived semantic/functionality map for B04
-4. distinguish constraint truth from Schedule placement
-5. identify current persistence that can be reused
-6. define bounded B04 slices and proof gates
-7. only then implement after explicit approval
-```
+B04 is **Temporal Constraints + Movement Policy**. Its pre-scope/execution plan is already frozen; implementation has not started.
 
 Core non-collapse:
 
@@ -174,7 +212,9 @@ planned/intended != happened
 
 B04 must not prematurely implement B05 organization, B06 recurrence, B08 Session, B10 Actual or B12 solver semantics.
 
-## 8. Detailed semantic authority
+Every B04 slice must obey the pre-B04 DB/API same-change governance closure; no slice may close with known documentation, schema, OpenAPI or generated-client drift.
+
+## 9. Detailed semantic authority
 
 The full initial functionality/logic map remains binding at:
 
@@ -182,10 +222,10 @@ The full initial functionality/logic map remains binding at:
 
 The live map records implementation/proof progress and does not replace the semantic freeze.
 
-## 9. Next gate
+## 10. Next gate
 
 ```text
 APPROVE B04
 ```
 
-No B04 implementation and no CI run are implied by B03 closure.
+No B04 implementation and no CI run are implied by this handoff.

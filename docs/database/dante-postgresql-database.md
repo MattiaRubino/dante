@@ -4,9 +4,11 @@
 - **Product:** DANTE
 - **PostgreSQL:** 18.6
 - **Schema:** `dante`
-- **Current protected-main Alembic head:** `20260904_17`
-- **Access integration merge:** `5f76ec54ad78542f137e8730e904f805d9e59e56`
-- **Accepted implementation proof HEAD:** `81639c61478b476c995652d0060dde8f53aef089`
+- **Current protected-main Alembic head:** `20260906_18`
+- **Current protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
+- **Pre-vertical integration:** PR #66 / merge `1ecd58145860aebfaaa3dc1bd356b90f7a8eb19b`
+- **Access integration merge:** `5f76ec54ad78542f137e8730e904f805d9e59e56` (historical Access/Auth integration evidence)
+- **Accepted CP07 implementation proof HEAD:** `81639c61478b476c995652d0060dde8f53aef089` (historical exact-head recovery evidence)
 - **Database SoR:** `README.md`
 - **Persistence Constitution:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 - **ADR:** `../decisions/ADR-010-postgresql-persistence-constitution.md`
@@ -15,7 +17,7 @@
 
 This is the current human-readable architecture entry point for the protected-main DANTE PostgreSQL database.
 
-It describes the database contract integrated through PR #52 and currently owned by protected `main`. Git and Alembic preserve the earlier Recovery-only and Access/Auth branch chronology as historical evidence; they do not override this current contract.
+Protected `main` currently owns the pre-vertical foundation through Alembic `20260906_18`. Earlier Access/Auth and CP07 exact-head values remain historical integration/recovery evidence and must not be mistaken for the current protected-main head or topology.
 
 The complete current contract is jointly represented by:
 
@@ -26,14 +28,16 @@ this architecture/reference
 + Alembic migrations
 + SQLAlchemy mappings
 + direct PostgreSQL tests
-+ LOCAL recovery acceptance
++ accepted recovery evidence
 ```
 
 A disagreement between those representations is a defect to reconcile, not a historical supersession puzzle for the reader.
 
+Candidate feature-branch persistence is documented separately; it is not promoted here as protected-main materialization before merge/readback.
+
 ## 2. Definition of the whole DANTE database
 
-The database contains the maximum **non-speculative** persistence determined by accepted DANTE semantics and currently materialized capabilities.
+The database contains the maximum **non-speculative** persistence determined by accepted DANTE semantics and currently materialized protected-main capabilities.
 
 It does not mean:
 
@@ -64,15 +68,15 @@ version integer
 ```text
 PostgreSQL          18.6
 schema              dante
-Alembic head        20260904_17
+Alembic head        20260906_18
 
-tables              88
+tables              89
 views                 5
-routines             16
-triggers             76
-indexes             172
-foreign keys          89
-CHECK constraints    270
+routines             18
+triggers             77
+indexes              173
+foreign keys          91
+CHECK constraints    272
 
 enum/domain            0
 sequences              0
@@ -99,11 +103,19 @@ Alembic             20260830_09
 97 indexes / 69 FKs / 123 CHECKs
 ```
 
-That historical topology does not override the current protected-main contract above.
+Historical Access/Auth+Recovery merge contract before the pre-vertical foundation:
+
+```text
+Alembic             20260904_17
+88 tables / 5 views / 16 routines / 76 triggers
+172 indexes / 89 FKs / 270 CHECKs
+```
+
+Neither historical topology overrides the current protected-main contract above.
 
 ### 3.1 Migration convergence
 
-Protected `main` preserves both post-CP6 histories:
+Protected `main` preserves both post-CP6 histories and evolves them forward:
 
 ```text
 20260826_08
@@ -120,13 +132,15 @@ Protected `main` preserves both post-CP6 histories:
 20260830_09 + 20260904_16
             ↓
         20260904_17
+            ↓
+        20260906_18 account_application_context
 ```
 
-`20260904_17` is a forward no-DDL merge revision. Neither accepted history was rebased, renumbered or flattened.
+`20260904_17` is the historical forward no-DDL merge revision that joined Recovery and Access/Auth. `20260906_18` is the current protected-main pre-vertical head. No accepted history was rebased, renumbered or flattened.
 
 ### 3.2 Recovery operational entry points
 
-The database semantics remain independent from the operator tooling, but the current repository owns a reproducible LOCAL recovery procedure:
+The database semantics remain independent from the operator tooling, but the repository owns a reproducible LOCAL recovery procedure:
 
 ```text
 bootstrap  infra/local/postgres/recovery/bootstrap-local-recovery.sh
@@ -136,7 +150,7 @@ runbook    docs/operations/postgres-recovery-runbook.md
 
 The runner is branch-agnostic and fail-closed on Git/upstream alignment. The bootstrap may create missing ignored LOCAL credentials and build the pinned recovery image, but it does not make the suppression ledger or backup repository canonical application state.
 
-### CP07 exact-head proof retained as integration evidence
+### CP07 exact-head proof retained as historical integration evidence
 
 Exact accepted implementation proof:
 
@@ -144,6 +158,7 @@ Exact accepted implementation proof:
 historical branch  integration/access-auth-main-20260904
 proof HEAD         81639c61478b476c995652d0060dde8f53aef089
 recovery image     dante-postgres-recovery:18.6-pgbackrest-2.59.1
+Alembic at proof   20260904_17
 ```
 
 The 2026-09-04 whole LOCAL operator rehearsal proved:
@@ -153,7 +168,7 @@ bootstrap / Compose / pinned recovery image                 PASS
 clean branch + upstream + exact proof HEAD gate            PASS
 PostgreSQL 18.6                                             PASS
 Alembic 20260904_17                                         PASS
-current topology 88|5|16|76|172|89|270|0|0|0              PASS
+proof topology 88|5|16|76|172|89|270|0|0|0                PASS
 A before target / B after target                            PASS
 old protected X physical resurrection                       PROVEN
 PREPARED-only suppression ambiguity                         BLOCKED / PASS
@@ -186,11 +201,7 @@ structural/security acceptance            2.857058 s
 PGDATA loss → database-local reopen       17.679584 s
 ```
 
-These are LOCAL rehearsal observations, not production RPO/RTO targets.
-
-PR #52 later merged the final candidate into protected `main` at `5f76ec54ad78542f137e8730e904f805d9e59e56`; the merge tree is identical to the final candidate tree and post-merge Backend/Frontend CI passed. Therefore the CP07-proven schema/recovery contract is now the protected-main contract.
-
-Historical Recovery-only exact-head evidence remains valid as historical evidence in Git/archive records, but it is not current topology authority.
+These are LOCAL rehearsal observations, not production RPO/RTO targets. The exact CP07 run is historical evidence; current recovery acceptance must reconcile the restored database to the then-current protected-main head/topology before reopen.
 
 ## 4. Semantic/non-collapse architecture
 
@@ -455,6 +466,7 @@ Current roles:
 dante_owner      NOLOGIN ownership identity
 dante_migrator   LOGIN migration identity
 dante_runtime    LOGIN application runtime identity
+dante_observer   LOGIN statistics-only collector identity
 ```
 
 Provisioning owns role/schema/security foundation. Business migrations own exact object ACL changes for the objects they create/change.
@@ -467,6 +479,7 @@ no blanket business-object DML from provisioning
 runtime privilege bounded by object/column contract
 migration history unavailable to runtime
 integrity routines not directly executable by runtime
+observer is statistics-only, not business DML authority
 UUIDv7 semantic identities do not justify blanket sequence privilege
 ```
 
@@ -642,13 +655,13 @@ Direct negative testing established that PostgreSQL can accept read-only connect
 
 Therefore `pg_isready` alone is insufficient.
 
-For the current protected-main contract, at minimum database-local reopen requires:
+For the current protected-main contract, database-local reopen must reconcile at minimum:
 
 ```text
 pg_is_in_recovery() = false
 PostgreSQL 18.6
-Alembic 20260904_17
-current topology 88|5|16|76|172|89|270|0|0|0
+Alembic 20260906_18
+current topology 89|5|18|77|173|91|272|0|0|0
 owners / roles / ACL
 required extension versions
 semantic state checks
@@ -659,7 +672,7 @@ derived/object reconciliation gate
 
 A physically bootable but structurally/semantically stale target is rejected.
 
-The 2026-09-04 exact-head CP07 rehearsal proved this enriched contract and earned `DATABASE LOCAL REOPEN = PASS`.
+The 2026-09-04 exact-head CP07 rehearsal proved the recovery mechanism at the historical `_17 / 88|5|16|76|172|89|270` contract. It remains valid recovery evidence, but it is not a claim that the later `_18` topology was the exact head exercised by that historical run.
 
 ## 20. Provider, Email and derived boundaries
 
@@ -671,7 +684,7 @@ Derived/search/vector/sync state must never override restored PostgreSQL. A stal
 
 Object-store consistency is separate: a PostgreSQL restore does not prove referenced R2/object availability or correctness.
 
-The current CP07 correctly reports inactive derived/object gates as `NOT_ACTIVATED / NO FALSE PASS` rather than inventing recovery success for capabilities not yet activated.
+The historical CP07 correctly reported inactive derived/object gates as `NOT_ACTIVATED / NO FALSE PASS` rather than inventing recovery success for capabilities not yet activated.
 
 ## 21. Current exact proof obligations
 
@@ -692,13 +705,13 @@ recovery harnesses
 Current protected-main topology:
 
 ```text
-88|5|16|76|172|89|270|0|0|0
+89|5|18|77|173|91|272|0|0|0
 ```
 
 Current protected-main head:
 
 ```text
-20260904_17
+20260906_18
 ```
 
 Recovery-specific proof additionally requires:
@@ -713,27 +726,26 @@ old B0 can physically resurrect X
 recovery reconciliation suppresses X before reopen
 ```
 
-Combined integration proof additionally requires:
+Current integration proof additionally requires:
 
 ```text
-fresh DB → 20260904_17
-20260904_16 → 20260904_17
-20260830_09 → 20260904_17
+fresh DB → 20260906_18
+accepted predecessor → 20260906_18
 head → base → head
 Alembic drift check
 Dictionary ↔ SQLAlchemy ↔ live PostgreSQL
 Access/Auth regression
 Email Platform regression
 backend/frontend generated-client/build regression
-CP07 enriched-baseline recovery acceptance
-post-merge protected-main Backend/Frontend CI
+applicable recovery acceptance
+protected-main Backend/Frontend CI
 ```
 
-The pre-merge implementation gates were accepted on proof HEAD `81639c61478b476c995652d0060dde8f53aef089`; PR #52 merged the final candidate without tree delta and the exact merge commit `5f76ec54ad78542f137e8730e904f805d9e59e56` passed post-merge Backend and Frontend CI.
+The historical Access/Auth/Recovery pre-merge implementation gates were accepted on proof HEAD `81639c61478b476c995652d0060dde8f53aef089`; PR #52 merged that candidate without tree delta. The pre-vertical foundation later advanced protected main to `_18` under its own accepted integration evidence.
 
 ## 22. Detailed current reference map
 
-This document deliberately does not retain the former chronological candidate/checkpoint narrative as current status.
+This document deliberately does not retain a chronological candidate/checkpoint narrative as current status.
 
 Current detail is distributed by responsibility:
 
@@ -759,6 +771,8 @@ Alembic + SQLAlchemy
 
 Historical phase banners/counts inside older Parts are evidence of their checkpoint, not current topology authority. If a Part or Dictionary object conflicts with this current architecture or the materialized schema, it must be reconciled; historical ordering is not an override rule.
 
+Candidate vertical overlays may extend the protected-main baseline on a feature branch; those overlays are candidate authority only until merged.
+
 ## 23. Same-change rule
 
 A database evolution is incomplete unless the same reviewed change updates all affected current representations:
@@ -768,17 +782,18 @@ Alembic
 SQLAlchemy
 Database Dictionary
 human-readable database reference
+active feature overlay when candidate-only truth exists
 recovery/operational tooling affected by topology/head
 executable tests
 current workstream documentation
 ```
 
-The Access/Auth + Email + Recovery protected-main integration is complete. Future database changes must repeat this same-change discipline against the then-current protected-main contract.
+Historical proof documents keep their exact historical values when clearly labeled. Current-state banners/counts must track the actual current authority and must not remain frozen at an earlier proof head.
 
 ## 24. Acceptance bar
 
 A new engineer must be able to derive the same present protected-main database contract from repository documentation, migrations, mappings, Dictionary and live PostgreSQL without conversation memory.
 
-Current protected-main documentation exposes the `20260904_17 / 88|5|16|76|172|89|270` contract without requiring knowledge of the former integration branch.
+Current protected-main documentation exposes the `20260906_18 / 89|5|18|77|173|91|272` contract. Feature-branch candidate state is documented separately until integration.
 
 The goal is not maximum prose. The goal is full current knowledge coverage with no stale/deprecated contract left masquerading as current truth.

@@ -6,6 +6,8 @@
 - **B03 closed execution authority:** `docs/workstreams/timeline-temporal-operational-b03-execution-plan.md`
 - **B03-E / whole-B03 closure:** `docs/workstreams/timeline-temporal-operational-b03-e-closure-2026-09-18.md`
 - **B03 manual acceptance:** `docs/workstreams/timeline-temporal-operational-b03-usertest.md` ✅ PASS
+- **Pre-B04 governance closure:** `docs/workstreams/timeline-temporal-operational-pre-b04-governance-2026-09-18.md` ✅ CLOSED / FROZEN
+- **Timeline candidate DB overlay:** `docs/database/timeline-temporal-operational.md`
 - **Detailed semantic freeze:** `docs/workstreams/archive/timeline-temporal-operational-map-ledger-snapshot-2026-09-15.md`
 
 The archived semantic freeze remains the binding detailed inventory for the full vertical. This file is the current implementation/proof ledger; compacting it does not weaken that archived semantic contract.
@@ -59,6 +61,7 @@ B00 Real Data Spine                              ✅ CLOSED / PROVEN
 B01 Activity Core                                ✅ CLOSED / PROVEN
 B02 Schedule Core                                ✅ CLOSED / PROVEN
 B03 Event Core                                   ✅ CLOSED / PROVEN
+PRE-B04 DB/API GOVERNANCE                        ✅ CLOSED / FROZEN
 B04 Temporal Constraints + Movement Policy       ⬜ NEXT
 B05 Product Organization                         ⬜
 B06 Routine / Recurrence / Occurrence Baseline   ⬜
@@ -78,6 +81,16 @@ Current candidate persistence authority:
 ```text
 Alembic head     20260917_29
 Topology         101|5|31|78|198|119|297|0|0|0
+```
+
+Governance baseline entering B04:
+
+```text
+DB same-change gate          ✅ FROZEN
+candidate DB overlay         ✅ ESTABLISHED
+Temporal exact API inventory ✅ 13 operations frozen
+new API operationId rule     ✅ explicit stable semantic IDs required
+OpenAPI → Orval/client gate  ✅ BINDING
 ```
 
 ---
@@ -136,7 +149,7 @@ Event-as-busy/capacity shortcut
 - ⬜ **[EVT-014]** Ordinary Event attendance `!= Session`; later actor/execution blocks own the relevant behavior.
 - ⬜ **[EVT-015]** Event `!= Availability/Capacity Claim`; future availability semantics must remain distinct.
 
-Items 012–015 remain future-owner semantic obligations, not unfinished B03 implementation.
+Items 012–015 remain future-owner semantic obligations, not unfinished B03 implementation. Their unchecked state is deliberate and must not be changed to fabricate completeness.
 
 ## 4.2 Proof ledger
 
@@ -191,7 +204,27 @@ Agenda remains internal Event content. If independently timed sub-events/segment
 
 ---
 
-# 5. B04 — Temporal Constraints + Movement Policy ⬜ NEXT
+# 5. Pre-B04 DB/API governance ✅ CLOSED / FROZEN
+
+This gate fixes current-state drift before any B04 feature implementation.
+
+- ✅ **[GOV-DB-001]** Whole DB SoR reconciled to protected-main `_18` and Timeline candidate `_29` without collapsing the two authorities.
+- ✅ **[GOV-DB-002]** Dictionary README reconciled to whole-B03 closure; stale B03-D pre-closure wording removed.
+- ✅ **[GOV-DB-003]** Timeline candidate-specific DB overlay established.
+- ✅ **[GOV-DB-004]** Protected-main architecture banner/topology reconciled to `_18`; historical `_17` CP07 evidence remains explicitly historical.
+- ✅ **[GOV-DB-005]** DB same-change closure rule frozen for all B04+ persistence slices.
+- ✅ **[GOV-API-001]** Exact pre-B04 Temporal public API inventory frozen at 13 operations.
+- ✅ **[GOV-API-002]** `(path, method) -> operationId` exact-set and uniqueness test added.
+- ✅ **[GOV-API-003]** Existing verbose pre-B04 operationIds retained as compatibility contract rather than renamed/deprecated.
+- ✅ **[GOV-API-004]** Every new B04+ Temporal endpoint must use an explicit stable semantic operationId and reconcile OpenAPI/Orval/client/tests in the same change.
+
+Authority: `timeline-temporal-operational-pre-b04-governance-2026-09-18.md`.
+
+This governance gate does not mark any B04 product capability complete.
+
+---
+
+# 6. B04 — Temporal Constraints + Movement Policy ⬜ NEXT
 
 B04 must begin from the archived functionality map and current Domain/Logical/Physical authority, then establish Temporal Constraint truth as distinct from Schedule placement.
 
@@ -205,11 +238,11 @@ proposal != accepted effect
 solver candidate != canonical truth
 ```
 
-No B04 code is authorized merely by this ledger; the explicit next gate is `APPROVE B04`.
+Every B04 slice must obey the frozen DB/API same-change gates. No B04 code is authorized merely by this ledger; the explicit next gate is `APPROVE B04`.
 
 ---
 
-# 6. B05–B15 ownership register
+# 7. B05–B15 ownership register
 
 The detailed functionality lists remain binding in the archived semantic freeze.
 
@@ -230,11 +263,12 @@ B15  whole-vertical closure/recovery/cross-cutting proof
 
 ---
 
-# 7. Current gate
+# 8. Current gate
 
 ```text
-B03 Event Core  ✅ CLOSED / PROVEN
-B04             ⬜ NEXT
+B03 Event Core             ✅ CLOSED / PROVEN
+Pre-B04 DB/API governance  ✅ CLOSED / FROZEN
+B04                        ⬜ NEXT
 
 Next explicit gate: APPROVE B04
 ```

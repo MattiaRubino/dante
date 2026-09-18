@@ -9,7 +9,7 @@
 - **Current candidate Alembic head on `feature/timeline-temporal-operational`:** `20260917_29`
 - **Current candidate topology:** `101|5|31|78|198|119|297|0|0|0`
 - **Frozen CP6 head:** `20260826_08`
-- **Last reconciled:** 2026-09-17
+- **Last reconciled:** 2026-09-18
 
 ## 1. Purpose
 
@@ -105,13 +105,7 @@ The final object tree and `scope.json` counts, not this prose summary, are the s
 
 ### 5.2 Schedule
 
-`dante.schedule` remains the single shared CP6 Schedule owner. B02 reuses the CP6 placement MaterialState/current/history machinery. Physical subject eligibility remains:
-
-```text
-activity | event | occurrence
-```
-
-B03-B activates Event against that same Schedule owner. No `event_schedule` exists.
+`dante.schedule` remains the single shared CP6 Schedule owner. B02 reuses the CP6 placement MaterialState/current/history machinery. Physical subject eligibility remains bounded and B03-B activates Event against that same Schedule owner. No `event_schedule` exists.
 
 ### 5.3 Event
 
@@ -138,18 +132,18 @@ Event identity != operation/idempotency identity
 provider identity != DANTE Event identity
 ```
 
-## 6. B03-D proof state
+## 6. B03 proof state
 
-Executed real PostgreSQL/API Agenda proof:
+B03-A through B03-E are CLOSED / PROVEN. The `_29` candidate has completed the B03 Dictionary/current-catalog/Alembic/API/frontend/manual reconciliation required by the workstream closure.
+
+Focused Agenda proof includes:
 
 ```text
 apps/backend/tests/integration/temporal/test_b03_event_agenda.py
 2 / 2 PASS
 ```
 
-The test proves create plus initial Agenda, add/edit/reorder/remove through whole-Agenda CAS replacement, idempotent replay, stale-revision rejection, reload, CSRF and authenticated self-scope isolation.
-
-B03-D is not promoted to CLOSED/PROVEN until current-catalog/Dictionary/Alembic/migration and real frontend gates are also green.
+The broader B03 closure evidence is owned by `docs/workstreams/timeline-temporal-operational-b03-e-closure-2026-09-18.md` and the live workstream ledger. This Dictionary README no longer carries the stale pre-closure statement that B03-D is awaiting promotion.
 
 ## 7. Object contract
 
@@ -174,3 +168,5 @@ observer technical-role/provisioning/live-ACL parity
 ## 9. Same-change rule
 
 No real object → no ceremonial Dictionary entry. Every real current DANTE business object requires matching Dictionary/Alembic/SQLAlchemy/current-human-reference/direct-PostgreSQL proof in the same reviewed slice.
+
+For Timeline B04+, a DB-affecting slice cannot close while `docs/database/README.md`, `docs/database/timeline-temporal-operational.md`, the Dictionary tree/scope, SQLAlchemy, Alembic, catalog/ACL proof or affected workstream closure evidence disagree.
