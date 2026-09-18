@@ -186,7 +186,7 @@ class TemporalConstraintMutationOperationRow(Base):
         ForeignKeyConstraint(
             ["self_person_ref"],
             ["dante.person.person_ref"],
-            name="fk_temporal_constraint_mutation_operation_self_person_ref_person",
+            name="fk_temporal_constraint_mutation_operation_self_person_person",
             match="SIMPLE",
             onupdate="NO ACTION",
             ondelete="NO ACTION",
