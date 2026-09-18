@@ -1,0 +1,84 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "routine:dante.enforce_temporal_constraint_rule_totality",
+    "type": "routine",
+    "schema": "dante",
+    "name": "enforce_temporal_constraint_rule_totality",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Enforce the complete typed B04-A Temporal Constraint rule payload: one boundary discriminator, earliest-start kind, absolute temporal form and one absolute value.",
+  "classification": {
+    "persistence_role": "integrity_trigger_function",
+    "canonicality": "integrity",
+    "family": "temporal_constraint_integrity"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/workstreams/timeline-temporal-operational-b04-a-implementation-freeze.md",
+      "docs/workstreams/timeline-temporal-operational-b04-execution-plan.md",
+      "docs/development/backend-cp6-02-postgresql-persistence-constitution.md"
+    ],
+    "domain_concepts": ["Temporal Constraint"],
+    "logical_families": ["Temporal Constraint", "Boundary Rule", "LR-05"],
+    "reference_families": ["MaterialStateRef"],
+    "material_facets": ["temporal_constraint.rule"]
+  },
+  "implementation": {
+    "introducing_stage": "B04-A-CONSTRAINT",
+    "alembic_revision": "20260918_30",
+    "sqlalchemy": {"mode":"none","module":null,"symbol":null},
+    "runtime_acl_stage": "B04-A-CONSTRAINT"
+  },
+  "structure": {
+    "columns": [],
+    "primary_key": null,
+    "foreign_keys": [],
+    "unique_constraints": [],
+    "check_constraints": [],
+    "indexes": [],
+    "triggers": [],
+    "table": null,
+    "view": null,
+    "routine": {
+      "routine_kind": "function",
+      "language": "plpgsql",
+      "argument_types": [],
+      "return_type": "trigger",
+      "security": "INVOKER",
+      "volatility": "VOLATILE",
+      "parallel_safety": "UNSAFE",
+      "leakproof": false,
+      "function_search_path": ["pg_catalog", "dante", "pg_temp"],
+      "direct_runtime_execute": false
+    }
+  },
+  "state_history": {
+    "material_state_behavior": "Deferred validator for the complete immutable temporal_constraint.rule payload; it does not create or select states.",
+    "current_binding": null,
+    "chronology": null,
+    "immutability_policy": "Integrity-only routine; incomplete or mismatched typed rule payload is rejected rather than repaired or inferred."
+  },
+  "lifecycle": {
+    "retention": null,
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "Owned integrity routine evolves only through reviewed forward migration."
+  },
+  "security": {"owner_role":"dante_owner","default_deny_non_owner":true,"expected_grants":[]},
+  "proof": {
+    "obligations": [
+      "canonical B04-A rule state cannot remain incomplete",
+      "exactly one earliest-start absolute boundary payload is required",
+      "unsupported typed shapes fail closed",
+      "runtime cannot execute the validator directly"
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b04_temporal_constraint_core.py",
+      "apps/backend/tests/integration/database/test_b04_temporal_constraint_catalog.py",
+      "apps/backend/tests/integration/database/test_database_current_catalog.py"
+    ],
+    "staged_evidence": []
+  }
+}
