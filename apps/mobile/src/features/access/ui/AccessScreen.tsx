@@ -4,17 +4,15 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
-  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 
 import { accessTheme } from '../theme/accessTheme';
-import { AccessBrandLockup } from './AccessBrandLockup';
 
-type AccessScreenProps = PropsWithChildren<{ compact?: boolean }>;
+type AccessScreenProps = PropsWithChildren;
 
-export function AccessScreen({ children, compact = false }: AccessScreenProps) {
+export function AccessScreen({ children }: AccessScreenProps) {
   return (
     <SafeAreaView
       style={styles.safeArea}
@@ -25,15 +23,9 @@ export function AccessScreen({ children, compact = false }: AccessScreenProps) {
         style={styles.keyboardAvoiding}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <View style={styles.topBar}>
-          <AccessBrandLockup />
-        </View>
         <ScrollView
           style={styles.scroll}
-          contentContainerStyle={[
-            styles.scrollContent,
-            compact ? styles.scrollContentCompact : null,
-          ]}
+          contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
@@ -47,17 +39,10 @@ export function AccessScreen({ children, compact = false }: AccessScreenProps) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: accessTheme.colors.background,
+    backgroundColor: accessTheme.colors.surface,
   },
   keyboardAvoiding: {
     flex: 1,
-  },
-  topBar: {
-    minHeight: 68,
-    justifyContent: 'center',
-    paddingHorizontal: accessTheme.spacing.lg,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: accessTheme.colors.divider,
   },
   scroll: {
     flex: 1,
@@ -66,10 +51,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center',
     paddingHorizontal: accessTheme.spacing.lg,
-    paddingTop: accessTheme.spacing.xl,
-    paddingBottom: accessTheme.spacing.xxl,
-  },
-  scrollContentCompact: {
-    justifyContent: 'flex-start',
+    paddingTop: accessTheme.spacing.lg,
+    paddingBottom: accessTheme.spacing.xl,
   },
 });

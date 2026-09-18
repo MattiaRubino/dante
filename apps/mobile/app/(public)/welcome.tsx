@@ -1,9 +1,5 @@
-import { useRouter } from 'expo-router';
-
-import { WelcomeScreen } from '../../src/features/access/ui/WelcomeScreen';
+import { Redirect } from 'expo-router';
 
 export default function WelcomeRoute() {
-  const router = useRouter();
-
-  return <WelcomeScreen onContinue={() => router.push('/sign-in')} />;
+  return <Redirect href="/sign-in" />;
 }

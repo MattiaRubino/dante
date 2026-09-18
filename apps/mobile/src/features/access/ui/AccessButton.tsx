@@ -30,25 +30,30 @@ export function AccessButton({
   disabled = false,
   loading = false,
 }: AccessButtonProps) {
-  const inactive = disabled || loading || onPress === undefined;
+  const isUnavailable = disabled || loading || onPress === undefined;
+  const shouldDim = disabled || loading;
 
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityState={{ disabled: inactive, busy: loading }}
-      disabled={inactive}
+      accessibilityState={{ disabled: isUnavailable, busy: loading }}
+      disabled={isUnavailable}
       onPress={onPress}
       style={({ pressed }) => [
         styles.base,
         styles[variant],
-        pressed && !inactive ? styles.pressed : null,
-        inactive ? styles.disabled : null,
+        pressed && !isUnavailable ? styles.pressed : null,
+        shouldDim ? styles.disabled : null,
       ]}
     >
       {loading ? (
         <ActivityIndicator
           size="small"
-          color={variant === 'primary' ? accessTheme.colors.onInk : accessTheme.colors.ink}
+          color={
+            variant === 'primary'
+              ? accessTheme.colors.onInk
+              : accessTheme.colors.ink
+          }
         />
       ) : (
         <Text style={[styles.label, labelStyleFor(variant)]}>{label}</Text>
@@ -59,6 +64,7 @@ export function AccessButton({
 
 const styles = StyleSheet.create({
   base: {
+    width: '100%',
     minHeight: 52,
     alignItems: 'center',
     justifyContent: 'center',
@@ -70,7 +76,7 @@ const styles = StyleSheet.create({
   },
   secondary: {
     borderWidth: 1,
-    borderColor: accessTheme.colors.border,
+    borderColor: accessTheme.colors.divider,
     backgroundColor: accessTheme.colors.surface,
   },
   text: {
