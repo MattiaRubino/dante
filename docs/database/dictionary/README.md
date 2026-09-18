@@ -6,7 +6,7 @@
 - **PostgreSQL:** 18.6
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
-- **Current candidate Alembic head on `feature/timeline-temporal-operational`:** `20260918_32`
+- **Current candidate Alembic head on `feature/timeline-temporal-operational`:** `20260918_33`
 - **Current candidate topology:** `107|5|33|85|212|129|309|0|0|0`
 - **Frozen CP6 head:** `20260826_08`
 - **Last reconciled:** 2026-09-18
@@ -24,7 +24,7 @@ Current checked-out DB Reference
 ≈ direct tests
 ```
 
-A mismatch is a defect. Protected `main` remains integration authority; `_32` is candidate truth on the Timeline branch and must not be relabeled as protected-main truth before integration.
+A mismatch is a defect. Protected `main` remains integration authority; `_33` is candidate truth on the Timeline branch and must not be relabeled as protected-main truth before integration.
 
 ## 2. Current checked-out business-schema inventory
 
@@ -43,7 +43,7 @@ CHECKs       309
 
 No enum/domain, sequence, materialized view, partitioned table or RLS policy exists in the DANTE business-schema inventory.
 
-The `_32` counts above are not arithmetic projections: they were read directly from a PostgreSQL 18.6 database migrated to the candidate head by `test_b04_temporal_constraint_catalog.py`.
+These counts are not arithmetic projections: they were read directly from PostgreSQL 18.6 by the B04-A structural catalog proof. `_33` changes accepted routine replay behavior and runtime ACL only, introduces no structural object, and therefore retains the `_32` measured topology unchanged.
 
 ## 3. Frozen CP6 baseline vs current materialization
 
@@ -95,7 +95,7 @@ B03-D / 20260917_29
   create_self_event_with_agenda(...)
   replace_self_event_agenda(...)
 
-B04-A / 20260918_30 → 20260918_32
+B04-A / 20260918_30 → 20260918_33
   temporal_constraint
   temporal_constraint_state
   temporal_constraint_boundary_state
@@ -107,6 +107,8 @@ B04-A / 20260918_30 → 20260918_32
   bounded shared dispatcher extension for temporal_constraint.rule
   MaterialState cross-family totality hardening
   current-history table-first dispatch hardening
+  API-activation replay hardening
+  narrow runtime current-rule read ACL
 ```
 
 The final object tree and `scope.json` counts, not this prose summary, are the structural source of truth.
@@ -125,9 +127,9 @@ The final object tree and `scope.json` counts, not this prose summary, are the s
 
 `dante.event` remains the CP6 Event NativeRef owner. B03-A adds the minimum expectation/create boundary; B03-D adds only ordered internal Agenda truth. Agenda values do not gain NativeRef/Schedule identity by convenience.
 
-### 5.4 Temporal Constraint — B04-A candidate core
+### 5.4 Temporal Constraint — B04-A ✅ CLOSED / PROVEN
 
-Temporal Constraint is now materialized as a stable `ScopedRecordRef` LR-05 dependent, not as a NativeRef root and not as Schedule placement.
+Temporal Constraint is materialized as a stable `ScopedRecordRef` LR-05 dependent, not as a NativeRef root and not as Schedule placement.
 
 B04-A activates one complete typed rule path:
 
@@ -159,6 +161,8 @@ temporal_constraint_mutation_operation        technical idempotency/CAS receipt
 
 Create/revise/retire are governed by `mutate_self_absolute_earliest_start_constraint(...)`. Revision appends a new MaterialState; retirement closes currentness and preserves constraint/history. Operation identity is not Domain identity.
 
+`_33` preserves the same object tree while making application replay safe with server-generated retry UUIDs and granting only the current-rule reads required by Get/List. History and mutation-operation receipts remain internal, and runtime direct writes remain denied.
+
 Permanent non-collapse remains:
 
 ```text
@@ -179,15 +183,18 @@ B04-B+ boundary forms, deadlines, windows/preferences, movement policy, duration
 B01 Activity Core                    CLOSED / PROVEN
 B02 Schedule Core                    CLOSED / PROVEN
 B03 Event Core                       CLOSED / PROVEN
-B04-A A1 DDL / mappings              PROVEN
-B04-A A2 PostgreSQL / catalog / ACL  PROVEN
-B04-A A3 CAS / idempotency           PROVEN
-B04-A A4 Dictionary/docs             MATERIALIZED; current-catalog proof pending
-B04-A A5 application / API           NOT STARTED
-B04-A overall                        IN PROGRESS
+B04-A A1 DDL / mappings              CLOSED / PROVEN
+B04-A A2 PostgreSQL / catalog / ACL  CLOSED / PROVEN
+B04-A A3 CAS / idempotency           CLOSED / PROVEN
+B04-A A4 Dictionary/docs             CLOSED / PROVEN
+B04-A A5 application / API           CLOSED / PROVEN
+B04-A overall                        CLOSED / PROVEN at 20260918_33
+B04 overall                          IN PROGRESS
 ```
 
-Current B04-A evidence includes the focused Temporal Constraint PostgreSQL suite, shared current-history dispatch regression, broad Temporal/CP6 regression and the dedicated `_32` catalog/ACL proof. A4 is not marked closed until the reconciled Dictionary/current-catalog tests run green against this object tree.
+Current B04-A evidence includes the focused Temporal Constraint PostgreSQL suite, shared current-history dispatch regression, broad Temporal/CP6 regression, direct catalog/ACL proof, whole-DB Dictionary/current-catalog reconciliation, API activation, governed OpenAPI/client generation and deterministic generated-source proof.
+
+Final reconciliation includes the `_33` current catalog/DB/API activation gate at `13 PASS` and `pnpm generated:check` reporting `PASS: generated sources are deterministic and current (159 files)`.
 
 ## 7. Object contract
 
