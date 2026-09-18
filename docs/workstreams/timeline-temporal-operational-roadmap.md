@@ -2,15 +2,16 @@
 
 - **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-18
 - **Branch/workstream:** `feature/timeline-temporal-operational`
-- **Current completed frontier:** B03 Event Core ✅ CLOSED / PROVEN
+- **Current completed frontier:** B04-A Temporal Constraint canonical core ✅ CLOSED / PROVEN
 - **Pre-B04 governance gate:** ✅ CLOSED / BASELINE FROZEN
 - **Current active block:** B04 Temporal Constraints + Movement Policy
-- **Current active slice:** B04-A Temporal Constraint canonical core — A4 reconciliation proof pending
-- **Current candidate DB authority:** PostgreSQL 18.6 / Alembic `20260918_32`
+- **Current next slice:** B04-B Boundary / Deadline constraints
+- **Current candidate DB authority:** PostgreSQL 18.6 / Alembic `20260918_33`
 - **Current candidate topology:** `107|5|33|85|212|129|309|0|0|0`
 - **Live progress ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **B04 execution authority:** `docs/workstreams/timeline-temporal-operational-b04-execution-plan.md`
 - **B04-A implementation freeze:** `docs/workstreams/timeline-temporal-operational-b04-a-implementation-freeze.md`
+- **B04-A closure:** `docs/workstreams/timeline-temporal-operational-b04-a-closure-2026-09-18.md`
 - **Pre-B04 governance closure:** `docs/workstreams/timeline-temporal-operational-pre-b04-governance-2026-09-18.md`
 - **Timeline candidate DB overlay:** `docs/database/timeline-temporal-operational.md`
 - **Detailed semantic freeze:** `docs/workstreams/archive/timeline-temporal-operational-map-ledger-snapshot-2026-09-15.md`
@@ -27,7 +28,7 @@ semantic capability
 → DDL only if a real gap exists
 → backend/application operation/query
 → API/transport
-→ frontend integration
+→ frontend integration when applicable
 → read model/projection
 → automated tests
 → manual userTest where applicable
@@ -74,8 +75,8 @@ B02 Schedule Core                                ✅ CLOSED / PROVEN
 B03 Event Core                                   ✅ CLOSED / PROVEN
 PRE-B04 DB/API GOVERNANCE                        ✅ CLOSED / FROZEN
 B04 Temporal Constraints + Movement Policy       🟡 IN PROGRESS
-├─ B04-A Temporal Constraint canonical core      🟡 IN PROGRESS
-├─ B04-B Boundary / Deadline constraints         ⬜
+├─ B04-A Temporal Constraint canonical core      ✅ CLOSED / PROVEN
+├─ B04-B Boundary / Deadline constraints         ⬜ NEXT
 ├─ B04-C Windows / Preferences / Evaluation      ⬜
 ├─ B04-D Movement Policy                         ⬜
 ├─ B04-E Advanced-family applicability           ⬜
@@ -165,37 +166,39 @@ hard planning violation != impossible reality
 planned/intended != happened
 ```
 
-## B04-A — Temporal Constraint canonical core 🟡
+## B04-A — Temporal Constraint canonical core ✅ CLOSED / PROVEN
 
-Frozen scope activates a stable self-owned Activity/Event constraint identity and the first complete typed `absolute earliest-start` rule.
+B04-A activated a stable self-owned Activity/Event Temporal Constraint identity and the first complete typed `absolute earliest-start` rule.
 
-Execution order and current state:
+Closure state:
 
 ```text
 A1 exact DDL + SQLAlchemy                         ✅ PROVEN
 A2 direct PostgreSQL structural/integrity proof   ✅ PROVEN
 A3 create/revise/retire CAS + idempotency         ✅ PROVEN
-A4 Dictionary/current-catalog/DB docs             🟡 MATERIALIZED; proof pending
-A5 application/API                                ⬜ NOT STARTED
-B04-A closure proof                               ⬜
+A4 Dictionary/current-catalog/DB docs             ✅ PROVEN
+A5 application/API/OpenAPI/generated client       ✅ PROVEN
+B04-A closure proof                               ✅ CLOSED / PROVEN
 ```
 
-Candidate persistence authority after A1-A3:
+Current persistence authority:
 
 ```text
-Alembic   20260918_32
+Alembic   20260918_33
 Topology  107|5|33|85|212|129|309|0|0|0
 ```
 
-The A2/A3 evidence includes focused B04-A behavior `4 PASS`, shared current-history dispatch `4 PASS`, wider Temporal+CP6 final regression `32 PASS / 2 deselected`, and catalog/owner/ACL proof `3 PASS`.
+`_33` is the API-activation hardening revision: replay is compatible with server-generated UUIDs and runtime receives only the narrow read surface required by Get/List; structural topology is unchanged.
 
-A4 is now represented in Dictionary/current DB references, but it does not become ✅ until the reconciled whole-DB current-catalog gates pass against `_32`.
+Accepted B04-A API surface provides Get/List/Create/Revise/Retire with stable explicit `temporal_*` operationIds. OpenAPI snapshot, Orval-generated `@dante/api-client`, TypeScript/Vitest gates and deterministic generation are reconciled. The final determinism proof is `PASS: generated sources are deterministic and current (159 files)`.
 
-A5 must begin only after A4 is green. Every new public Temporal endpoint in A5 requires an explicit stable `temporal_*` operationId; the existing 13 pre-B04 operationIds are frozen compatibility baseline.
+Closure authority: `timeline-temporal-operational-b04-a-closure-2026-09-18.md`.
 
-## B04-B — Boundary / Deadline constraints ⬜
+## B04-B — Boundary / Deadline constraints ⬜ NEXT
 
-Expand truthful boundary semantics beyond the B04-A earliest-start absolute prototype, including earliest-start, latest-start and latest-completion/deadline while preserving date/floating/named-zone/absolute precision. Passing a deadline does not create Outcome truth.
+Expand truthful boundary semantics beyond the B04-A earliest-start absolute prototype. Candidate families include earliest-start, latest-start and latest-completion/deadline, while preserving the distinction between boundary semantics and placement truth.
+
+Before implementation, B04-B must re-open the binding Domain/Logical/Physical authority and freeze the exact first slice. It must not assume all date/floating/named-zone/absolute forms or all deadline meanings are interchangeable. A passed deadline must not fabricate Actual, Outcome, failure or completion truth.
 
 ## B04-C — Windows / Preferences / Evaluation ⬜
 
@@ -280,14 +283,10 @@ Cross-block regression, recovery/anti-resurrection, operational hardening and fi
 B03 Event Core             ✅ CLOSED / PROVEN
 Pre-B04 governance         ✅ CLOSED / FROZEN
 B04                        🟡 IN PROGRESS
-└─ B04-A
-   ├─ A1                   ✅
-   ├─ A2                   ✅
-   ├─ A3                   ✅
-   ├─ A4                   🟡 reconciliation proof pending
-   └─ A5                   ⬜
+├─ B04-A                   ✅ CLOSED / PROVEN
+└─ B04-B                   ⬜ NEXT
 ```
 
-Immediate next gate: prove A4 Dictionary/current-catalog reconciliation locally. After A4 turns green, open a separate B04-A5 application/API scope.
+Immediate next gate: freeze the exact B04-B semantic/physical/API scope before implementation. No B04-C/D/E/F or B05 work is implied.
 
 CI remains separate and is not implicitly authorized.
