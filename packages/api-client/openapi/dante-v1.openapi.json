@@ -1,6 +1,49 @@
 {
   "components": {
     "schemas": {
+      "AbsoluteEarliestStartRuleRequest": {
+        "additionalProperties": false,
+        "description": "First public typed Temporal Constraint rule activated by B04-A.",
+        "properties": {
+          "boundary_at": {
+            "format": "date-time",
+            "title": "Boundary At",
+            "type": "string"
+          },
+          "boundary_kind": {
+            "const": "earliest_start",
+            "default": "earliest_start",
+            "title": "Boundary Kind",
+            "type": "string"
+          },
+          "constrained_facet": {
+            "const": "schedule.start",
+            "default": "schedule.start",
+            "title": "Constrained Facet",
+            "type": "string"
+          },
+          "family": {
+            "const": "boundary",
+            "default": "boundary",
+            "title": "Family",
+            "type": "string"
+          },
+          "strength": {
+            "enum": ["hard", "soft"],
+            "title": "Strength",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "absolute",
+            "default": "absolute",
+            "title": "Temporal Form",
+            "type": "string"
+          }
+        },
+        "required": ["strength", "boundary_at"],
+        "title": "AbsoluteEarliestStartRuleRequest",
+        "type": "object"
+      },
       "AbsoluteIntervalPlacementRequest": {
         "additionalProperties": false,
         "properties": {
@@ -493,6 +536,76 @@
         },
         "required": ["operation_id", "title", "placement"],
         "title": "CreateScheduledEventRequest",
+        "type": "object"
+      },
+      "CreateTemporalConstraintRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "rule": {
+            "$ref": "#/components/schemas/AbsoluteEarliestStartRuleRequest"
+          },
+          "subject_ref": {
+            "format": "uuid",
+            "title": "Subject Ref",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "subject_ref", "rule"],
+        "title": "CreateTemporalConstraintRequest",
+        "type": "object"
+      },
+      "CreatedTemporalConstraintResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "constraint_ref": {
+            "format": "uuid",
+            "title": "Constraint Ref",
+            "type": "string"
+          },
+          "material_state_ref": {
+            "format": "uuid",
+            "title": "Material State Ref",
+            "type": "string"
+          },
+          "recorded_at": {
+            "format": "date-time",
+            "title": "Recorded At",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "rule": {
+            "$ref": "#/components/schemas/AbsoluteEarliestStartRuleRequest"
+          },
+          "subject_kind": {
+            "enum": ["activity", "event"],
+            "title": "Subject Kind",
+            "type": "string"
+          },
+          "subject_ref": {
+            "format": "uuid",
+            "title": "Subject Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "constraint_ref",
+          "subject_ref",
+          "subject_kind",
+          "material_state_ref",
+          "rule",
+          "recorded_at"
+        ],
+        "title": "CreatedTemporalConstraintResponse",
         "type": "object"
       },
       "DateSpanPlacementRequest": {
@@ -1879,6 +1992,69 @@
         "title": "RestoredScheduleResponse",
         "type": "object"
       },
+      "RetireTemporalConstraintRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_material_state_ref": {
+            "format": "uuid",
+            "title": "Expected Material State Ref",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "expected_material_state_ref"],
+        "title": "RetireTemporalConstraintRequest",
+        "type": "object"
+      },
+      "RetiredTemporalConstraintResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "constraint_ref": {
+            "format": "uuid",
+            "title": "Constraint Ref",
+            "type": "string"
+          },
+          "previous_material_state_ref": {
+            "format": "uuid",
+            "title": "Previous Material State Ref",
+            "type": "string"
+          },
+          "recorded_at": {
+            "format": "date-time",
+            "title": "Recorded At",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "subject_kind": {
+            "enum": ["activity", "event"],
+            "title": "Subject Kind",
+            "type": "string"
+          },
+          "subject_ref": {
+            "format": "uuid",
+            "title": "Subject Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "constraint_ref",
+          "subject_ref",
+          "subject_kind",
+          "previous_material_state_ref",
+          "recorded_at"
+        ],
+        "title": "RetiredTemporalConstraintResponse",
+        "type": "object"
+      },
       "ReviseScheduleRequest": {
         "additionalProperties": false,
         "description": "Revise one current Schedule from an exact accepted placement basis.",
@@ -1931,6 +2107,28 @@
           "placement"
         ],
         "title": "ReviseScheduleRequest",
+        "type": "object"
+      },
+      "ReviseTemporalConstraintRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_material_state_ref": {
+            "format": "uuid",
+            "title": "Expected Material State Ref",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "rule": {
+            "$ref": "#/components/schemas/AbsoluteEarliestStartRuleRequest"
+          }
+        },
+        "required": ["operation_id", "expected_material_state_ref", "rule"],
+        "title": "ReviseTemporalConstraintRequest",
         "type": "object"
       },
       "RevisedScheduleAbsoluteResponse": {
@@ -2198,6 +2396,60 @@
           "ends_local_at"
         ],
         "title": "RevisedScheduleResponse",
+        "type": "object"
+      },
+      "RevisedTemporalConstraintResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "constraint_ref": {
+            "format": "uuid",
+            "title": "Constraint Ref",
+            "type": "string"
+          },
+          "material_state_ref": {
+            "format": "uuid",
+            "title": "Material State Ref",
+            "type": "string"
+          },
+          "previous_material_state_ref": {
+            "format": "uuid",
+            "title": "Previous Material State Ref",
+            "type": "string"
+          },
+          "recorded_at": {
+            "format": "date-time",
+            "title": "Recorded At",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "rule": {
+            "$ref": "#/components/schemas/AbsoluteEarliestStartRuleRequest"
+          },
+          "subject_kind": {
+            "enum": ["activity", "event"],
+            "title": "Subject Kind",
+            "type": "string"
+          },
+          "subject_ref": {
+            "format": "uuid",
+            "title": "Subject Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "constraint_ref",
+          "subject_ref",
+          "subject_kind",
+          "previous_material_state_ref",
+          "material_state_ref",
+          "rule",
+          "recorded_at"
+        ],
+        "title": "RevisedTemporalConstraintResponse",
         "type": "object"
       },
       "ScheduledActivityAbsoluteResponse": {
@@ -3072,6 +3324,112 @@
         },
         "required": ["signup_ref", "code"],
         "title": "SignupVerificationRequest",
+        "type": "object"
+      },
+      "TemporalConstraintCurrentRuleResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "boundary_at": {
+            "format": "date-time",
+            "title": "Boundary At",
+            "type": "string"
+          },
+          "boundary_kind": {
+            "const": "earliest_start",
+            "default": "earliest_start",
+            "title": "Boundary Kind",
+            "type": "string"
+          },
+          "constrained_facet": {
+            "const": "schedule.start",
+            "default": "schedule.start",
+            "title": "Constrained Facet",
+            "type": "string"
+          },
+          "family": {
+            "const": "boundary",
+            "default": "boundary",
+            "title": "Family",
+            "type": "string"
+          },
+          "material_state_ref": {
+            "format": "uuid",
+            "title": "Material State Ref",
+            "type": "string"
+          },
+          "strength": {
+            "enum": ["hard", "soft"],
+            "title": "Strength",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "absolute",
+            "default": "absolute",
+            "title": "Temporal Form",
+            "type": "string"
+          }
+        },
+        "required": ["material_state_ref", "strength", "boundary_at"],
+        "title": "TemporalConstraintCurrentRuleResponse",
+        "type": "object"
+      },
+      "TemporalConstraintListResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TemporalConstraintResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": ["items"],
+        "title": "TemporalConstraintListResponse",
+        "type": "object"
+      },
+      "TemporalConstraintResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "constraint_ref": {
+            "format": "uuid",
+            "title": "Constraint Ref",
+            "type": "string"
+          },
+          "current_rule": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TemporalConstraintCurrentRuleResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "enum": ["active", "retired"],
+            "title": "Status",
+            "type": "string"
+          },
+          "subject_kind": {
+            "enum": ["activity", "event"],
+            "title": "Subject Kind",
+            "type": "string"
+          },
+          "subject_ref": {
+            "format": "uuid",
+            "title": "Subject Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "constraint_ref",
+          "subject_ref",
+          "subject_kind",
+          "status",
+          "current_rule"
+        ],
+        "title": "TemporalConstraintResponse",
         "type": "object"
       },
       "TimelineAbsoluteActivityResponse": {
@@ -13425,6 +13783,227 @@
           }
         },
         "summary": "Establish Activity Schedule",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/constraints": {
+      "get": {
+        "operationId": "temporal_list_constraints_by_subject",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "subject_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Subject Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemporalConstraintListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Temporal Constraints By Subject",
+        "tags": ["temporal"]
+      },
+      "post": {
+        "operationId": "temporal_create_constraint",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTemporalConstraintRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatedTemporalConstraintResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Temporal Constraint",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/constraints/{constraint_ref}": {
+      "get": {
+        "operationId": "temporal_get_constraint",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "constraint_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Constraint Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemporalConstraintResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Temporal Constraint",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/constraints/{constraint_ref}/retire": {
+      "post": {
+        "operationId": "temporal_retire_constraint",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "constraint_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Constraint Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RetireTemporalConstraintRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetiredTemporalConstraintResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Retire Temporal Constraint",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/constraints/{constraint_ref}/rule": {
+      "patch": {
+        "operationId": "temporal_revise_constraint_rule",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "constraint_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Constraint Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviseTemporalConstraintRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevisedTemporalConstraintResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Revise Temporal Constraint Rule",
         "tags": ["temporal"]
       }
     },

@@ -15,6 +15,8 @@ import type {
   CreateEventRequest,
   CreateScheduledActivityRequest,
   CreateScheduledEventRequest,
+  CreateTemporalConstraintRequest,
+  CreatedTemporalConstraintResponse,
   EstablishActivityScheduleRequest,
   EventAgendaMutationResponse,
   EventResponse,
@@ -52,12 +54,16 @@ import type {
   RestoredScheduleDateSpanResponse,
   RestoredScheduleNamedZoneResponse,
   RestoredScheduleResponse,
+  RetireTemporalConstraintRequest,
+  RetiredTemporalConstraintResponse,
   ReviseScheduleRequest,
+  ReviseTemporalConstraintRequest,
   RevisedScheduleAbsoluteResponse,
   RevisedScheduleCoarseResponse,
   RevisedScheduleDateSpanResponse,
   RevisedScheduleNamedZoneResponse,
   RevisedScheduleResponse,
+  RevisedTemporalConstraintResponse,
   ScheduledActivityAbsoluteResponse,
   ScheduledActivityCoarseResponse,
   ScheduledActivityDateSpanResponse,
@@ -74,6 +80,9 @@ import type {
   SignupRequest,
   SignupResendRequest,
   SignupVerificationRequest,
+  TemporalConstraintListResponse,
+  TemporalConstraintResponse,
+  TemporalListConstraintsBySubjectParams,
   TimelineWindowEmptyResponse,
   TimelineWindowItemsResponse,
   UnauthenticatedSessionResponse,
@@ -3895,6 +3904,332 @@ export const establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedule
       headers: res.headers,
     } as establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostResponse;
   };
+
+export type temporalListConstraintsBySubjectResponse200 = {
+  data: TemporalConstraintListResponse;
+  status: 200;
+};
+
+export type temporalListConstraintsBySubjectResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalListConstraintsBySubjectResponseSuccess =
+  temporalListConstraintsBySubjectResponse200 & {
+    headers: Headers;
+  };
+export type temporalListConstraintsBySubjectResponseError =
+  temporalListConstraintsBySubjectResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalListConstraintsBySubjectResponse =
+  | temporalListConstraintsBySubjectResponseSuccess
+  | temporalListConstraintsBySubjectResponseError;
+
+export const getTemporalListConstraintsBySubjectUrl = (
+  params: TemporalListConstraintsBySubjectParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value));
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/v1/temporal/constraints?${stringifiedParams}`
+    : `/api/v1/temporal/constraints`;
+};
+
+/**
+ * @summary List Temporal Constraints By Subject
+ */
+export const temporalListConstraintsBySubject = async (
+  params: TemporalListConstraintsBySubjectParams,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListConstraintsBySubjectResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalListConstraintsBySubjectUrl(params),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListConstraintsBySubjectResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListConstraintsBySubjectResponse;
+};
+
+export type temporalCreateConstraintResponse201 = {
+  data: CreatedTemporalConstraintResponse;
+  status: 201;
+};
+
+export type temporalCreateConstraintResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalCreateConstraintResponseSuccess =
+  temporalCreateConstraintResponse201 & {
+    headers: Headers;
+  };
+export type temporalCreateConstraintResponseError =
+  temporalCreateConstraintResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalCreateConstraintResponse =
+  | temporalCreateConstraintResponseSuccess
+  | temporalCreateConstraintResponseError;
+
+export const getTemporalCreateConstraintUrl = () => {
+  return `/api/v1/temporal/constraints`;
+};
+
+/**
+ * @summary Create Temporal Constraint
+ */
+export const temporalCreateConstraint = async (
+  createTemporalConstraintRequest: CreateTemporalConstraintRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalCreateConstraintResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(getTemporalCreateConstraintUrl(), {
+    ...options,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(createTemporalConstraintRequest),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalCreateConstraintResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalCreateConstraintResponse;
+};
+
+export type temporalGetConstraintResponse200 = {
+  data: TemporalConstraintResponse;
+  status: 200;
+};
+
+export type temporalGetConstraintResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetConstraintResponseSuccess =
+  temporalGetConstraintResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetConstraintResponseError =
+  temporalGetConstraintResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalGetConstraintResponse =
+  temporalGetConstraintResponseSuccess | temporalGetConstraintResponseError;
+
+export const getTemporalGetConstraintUrl = (constraintRef: string) => {
+  return `/api/v1/temporal/constraints/${constraintRef}`;
+};
+
+/**
+ * @summary Get Temporal Constraint
+ */
+export const temporalGetConstraint = async (
+  constraintRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetConstraintResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetConstraintUrl(constraintRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetConstraintResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetConstraintResponse;
+};
+
+export type temporalRetireConstraintResponse200 = {
+  data: RetiredTemporalConstraintResponse;
+  status: 200;
+};
+
+export type temporalRetireConstraintResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalRetireConstraintResponseSuccess =
+  temporalRetireConstraintResponse200 & {
+    headers: Headers;
+  };
+export type temporalRetireConstraintResponseError =
+  temporalRetireConstraintResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalRetireConstraintResponse =
+  | temporalRetireConstraintResponseSuccess
+  | temporalRetireConstraintResponseError;
+
+export const getTemporalRetireConstraintUrl = (constraintRef: string) => {
+  return `/api/v1/temporal/constraints/${constraintRef}/retire`;
+};
+
+/**
+ * @summary Retire Temporal Constraint
+ */
+export const temporalRetireConstraint = async (
+  constraintRef: string,
+  retireTemporalConstraintRequest: RetireTemporalConstraintRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalRetireConstraintResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalRetireConstraintUrl(constraintRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(retireTemporalConstraintRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalRetireConstraintResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalRetireConstraintResponse;
+};
+
+export type temporalReviseConstraintRuleResponse200 = {
+  data: RevisedTemporalConstraintResponse;
+  status: 200;
+};
+
+export type temporalReviseConstraintRuleResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalReviseConstraintRuleResponseSuccess =
+  temporalReviseConstraintRuleResponse200 & {
+    headers: Headers;
+  };
+export type temporalReviseConstraintRuleResponseError =
+  temporalReviseConstraintRuleResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalReviseConstraintRuleResponse =
+  | temporalReviseConstraintRuleResponseSuccess
+  | temporalReviseConstraintRuleResponseError;
+
+export const getTemporalReviseConstraintRuleUrl = (constraintRef: string) => {
+  return `/api/v1/temporal/constraints/${constraintRef}/rule`;
+};
+
+/**
+ * @summary Revise Temporal Constraint Rule
+ */
+export const temporalReviseConstraintRule = async (
+  constraintRef: string,
+  reviseTemporalConstraintRequest: ReviseTemporalConstraintRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalReviseConstraintRuleResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalReviseConstraintRuleUrl(constraintRef),
+    {
+      ...options,
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(reviseTemporalConstraintRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalReviseConstraintRuleResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalReviseConstraintRuleResponse;
+};
 
 export type createEventApiV1TemporalEventsPostResponse201 = {
   data: EventResponse;
