@@ -10,7 +10,7 @@ const config: ExpoConfig = {
   android: {
     package: 'com.dantearc.dante',
   },
-  plugins: ['expo-router', 'expo-system-ui'],
+  plugins: ['expo-router'],
   experiments: {
     typedRoutes: true,
   },
