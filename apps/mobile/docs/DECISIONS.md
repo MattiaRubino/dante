@@ -67,16 +67,16 @@ Expo 58 is currently beta and includes a React Native release candidate. Current
 
 ---
 
-## MD-004 — Production development moves toward a DANTE Development Build
+## MD-004 — Production development uses a DANTE Development Build
 
-**Status:** ACCEPTED DIRECTION / NOT YET ACTIVATED  
+**Status:** ACCEPTED / ACTIVATED  
 **Date:** 2026-09-18
 
-Expo Go remains acceptable for legacy probe convenience but is not the long-term production development environment. Activate a DANTE development build in a dedicated approved scope.
+Expo Go remains acceptable only for limited probe convenience. Normal DANTE Mobile development uses a project-owned Development Build with `expo-dev-client`.
 
-### Activation trigger
+### Activation
 
-M00 compatibility baseline is green and the required dependency/build-file scope is approved.
+Activated during the Android production-foundation tranche after the Expo 57 compatibility baseline passed. Native Development Builds are compiled from the project configuration rather than treating Expo Go as the production development runtime.
 
 ---
 
@@ -204,6 +204,47 @@ Evidence shows repeated cross-tree state cannot be cleanly handled by compositio
 Mobile work proceeds through bounded roadmap steps with scope, direct validation and closure evidence before opening the next step.
 
 This rule is specifically intended to prevent broad speculative implementation while the product and Temporal vertical continue evolving.
+
+---
+
+## MD-013 — Continuous Native Generation owns native project generation
+
+**Status:** ACCEPTED  
+**Date:** 2026-09-18
+
+DANTE Mobile uses Expo Continuous Native Generation (CNG). Native `android/` and `ios/` projects are generated from application configuration and dependencies rather than maintained as canonical source directories.
+
+### Consequences
+
+- `apps/mobile/android/` and `apps/mobile/ios/` are ignored by Git;
+- native changes must be represented through app config, config plugins or an explicitly approved exception;
+- `expo prebuild --clean` may regenerate native projects when native dependencies or application configuration change;
+- generated native code must not silently become a second configuration authority.
+
+### Reopen when
+
+A real native capability cannot be represented safely through CNG/config plugins and requires maintained native source ownership.
+
+---
+
+## MD-014 — Android application identity belongs to dantearc.com
+
+**Status:** ACCEPTED  
+**Date:** 2026-09-18
+
+The canonical Android application ID is:
+
+```text
+com.dantearc.dante
+```
+
+The namespace is based on the project-owned `dantearc.com` domain and represents the DANTE product independently of an individual development machine or repository username.
+
+### Consequences
+
+- development and future production builds share a stable product namespace unless an explicit variant strategy is introduced;
+- Play Store publication must preserve this identity once established;
+- alternate development/store variants, if later required, must be introduced deliberately rather than by changing the canonical package ID.
 
 ---
 
