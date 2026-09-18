@@ -20,7 +20,7 @@ from dante.platform.database.metadata import Base
 
 pytestmark = pytest.mark.postgres
 
-_CURRENT_REVISION = "20260918_32"
+_CURRENT_REVISION = "20260918_33"
 _REPO_ROOT = Path(__file__).resolve().parents[5]
 _DICTIONARY_ROOT = _REPO_ROOT / "docs" / "database" / "dictionary"
 _RUNTIME_ROLE = "dante_runtime"
@@ -364,7 +364,7 @@ def test_create_self_activity_capability_is_exact(migrated_database: Any) -> Non
                 WHERE acl.grantee = 0 AND acl.privilege_type = 'EXECUTE'
               )
             FROM pg_proc p
-            JOIN pg_namespace n ON n.oid = p.pronamespace
+            JOIN pg_namespace n ON n.oid=p.pronamespace
             WHERE n.nspname = 'dante'
               AND p.oid = to_regprocedure(
                 'dante.create_self_activity(uuid,text,text,uuid,text)'
@@ -411,7 +411,7 @@ def test_create_self_event_capability_is_exact(migrated_database: Any) -> None:
                 WHERE acl.grantee = 0 AND acl.privilege_type = 'EXECUTE'
               )
             FROM pg_proc p
-            JOIN pg_namespace n ON n.oid = p.pronamespace
+            JOIN pg_namespace n ON n.oid=p.pronamespace
             WHERE n.nspname = 'dante'
               AND p.oid = to_regprocedure(
                 'dante.create_self_event(uuid,text,text,uuid,text)'
@@ -456,7 +456,7 @@ def test_establish_self_floating_schedule_capability_is_exact(
                 WHERE acl.grantee = 0 AND acl.privilege_type = 'EXECUTE'
               )
             FROM pg_proc p
-            JOIN pg_namespace n ON n.oid = p.pronamespace
+            JOIN pg_namespace n ON n.oid=p.pronamespace
             WHERE n.nspname = 'dante'
               AND p.oid = to_regprocedure(%s)
             """,
