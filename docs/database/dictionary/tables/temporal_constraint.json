@@ -1,0 +1,94 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "table:dante.temporal_constraint",
+    "type": "table",
+    "schema": "dante",
+    "name": "temporal_constraint",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Stable scoped identity for one independently revisable Temporal Constraint bound to a self-owned Activity or Event subject.",
+  "classification": {
+    "persistence_role": "scoped_owner",
+    "canonicality": "canonical",
+    "family": "temporal_constraint"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/workstreams/timeline-temporal-operational-b04-a-implementation-freeze.md",
+      "docs/workstreams/timeline-temporal-operational-b04-execution-plan.md",
+      "docs/development/backend-cp6-02-postgresql-persistence-constitution.md"
+    ],
+    "domain_concepts": ["Temporal Constraint", "Activity", "Event"],
+    "logical_families": ["Temporal Constraint", "LR-05"],
+    "reference_families": ["ScopedRecordRef", "NativeRef"],
+    "material_facets": ["temporal_constraint.rule"]
+  },
+  "implementation": {
+    "introducing_stage": "B04-A-CONSTRAINT",
+    "alembic_revision": "20260918_30",
+    "sqlalchemy": {
+      "mode": "orm_row",
+      "module": "dante.platform.database.mappings.temporal_constraint",
+      "symbol": "TemporalConstraintRow"
+    },
+    "runtime_acl_stage": "B04-A-CONSTRAINT"
+  },
+  "structure": {
+    "columns": [
+      {"name":"constraint_ref","postgres_type":"uuid","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Stable Temporal Constraint identity.","semantic_type":"ScopedRecordRef","value_contract":"Application-issued UUIDv7. The constraint is a scoped LR-05 dependent, not a NativeRef root."},
+      {"name":"subject_native_ref","postgres_type":"uuid","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Activity or Event NativeRef constrained by this rule.","semantic_type":"NativeRef","value_contract":"B04-A admits only a self-owned Activity or Event subject; database trigger dispatch rejects other NativeRef families."}
+    ],
+    "primary_key": {"name":"pk_temporal_constraint","columns":["constraint_ref"],"reason":"Stable identity of the independently revisable constraint owner.","deferrable":false,"initially":"NOT DEFERRABLE","enforced":true},
+    "foreign_keys": [
+      {"name":"fk_temporal_constraint_subject_native_ref_native_address","columns":["subject_native_ref"],"target":{"schema":"dante","table":"native_address","columns":["native_ref"]},"on_delete":"NO ACTION","on_update":"NO ACTION","match_type":"SIMPLE","deferrable":false,"initially":"NOT DEFERRABLE","enforced":true,"validated":true,"reference_family":"NativeRef","cardinality":"many_to_one","semantic_reason":"Anchor the heterogeneous Activity/Event subject in the bounded NativeRef address space."}
+    ],
+    "unique_constraints": [
+      {"name":"uq_temporal_constraint_ref_subject","columns":["constraint_ref","subject_native_ref"],"reason":"Support exact owner+subject integrity for immutable mutation receipts without collapsing subject identity into constraint identity.","deferrable":false,"initially":"NOT DEFERRABLE","enforced":true}
+    ],
+    "check_constraints": [
+      {"name":"ck_temporal_constraint_uuidv7","expression_contract":"uuid_extract_version(constraint_ref) IS NOT DISTINCT FROM 7","reason":"Reject non-UUIDv7 Temporal Constraint identities.","enforced":true,"validated":true,"no_inherit":false}
+    ],
+    "indexes": [
+      {"name":"pk_temporal_constraint","method":"btree","unique":true,"keys":["constraint_ref"],"predicate":null,"include":[],"source":"primary_key","reason":"Primary Temporal Constraint lookup.","valid":true,"ready":true,"live":true},
+      {"name":"uq_temporal_constraint_ref_subject","method":"btree","unique":true,"keys":["constraint_ref","subject_native_ref"],"predicate":null,"include":[],"source":"unique_constraint","reason":"Exact constraint+subject receipt target lookup.","valid":true,"ready":true,"live":true},
+      {"name":"ix_temporal_constraint_subject_native_ref","method":"btree","unique":false,"keys":["subject_native_ref"],"predicate":null,"include":[],"source":"explicit_index","reason":"Subject-to-constraint lookup and bounded subject integrity path.","valid":true,"ready":true,"live":true}
+    ],
+    "triggers": [
+      {"name":"trg_temporal_constraint_native_ref","routine":"dante.enforce_native_ref_eligibility","events":["INSERT","UPDATE"],"timing":"BEFORE","orientation":"ROW","constraint_trigger":false,"deferrable":false,"initially_deferred":false,"enabled_mode":"ORIGIN","update_columns":["subject_native_ref"],"when_condition":null,"arguments":[],"invariant_role":"native_ref_eligibility","reason":"Restrict B04-A Temporal Constraint subjects to the frozen Activity/Event NativeRef families."},
+      {"name":"ctrg_temporal_constraint_owner_complete","routine":"dante.enforce_owner_creation_completeness","events":["INSERT"],"timing":"AFTER","orientation":"ROW","constraint_trigger":true,"deferrable":true,"initially_deferred":true,"enabled_mode":"ORIGIN","update_columns":[],"when_condition":null,"arguments":[],"invariant_role":"owner_creation_completeness","reason":"Require the scoped owner, rule MaterialState and current binding to become complete atomically by commit."}
+    ],
+    "table": {"persistence":"permanent","access_method":"heap","partitioned":false,"row_security":false,"force_row_security":false,"replica_identity":"default","reloptions":[]},
+    "view": null,
+    "routine": null
+  },
+  "state_history": {
+    "material_state_behavior": "Stable constraint identity owns immutable temporal_constraint.rule MaterialStates; revising the rule appends a new MaterialState instead of rewriting prior state.",
+    "current_binding": "Current rule selection is held in scoped_current_material_state and is distinct from newest-row ordering.",
+    "chronology": "temporal_constraint_current_history records accepted currentness episodes; constraint identity survives revision and retirement.",
+    "immutability_policy": "No generic runtime DML. Canonical mutation is exposed only through the bounded B04-A mutation capability."
+  },
+  "lifecycle": {
+    "retention": "Retain stable constraint identity and historical rule states after retirement.",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "Retire closes the current rule episode and removes only the current binding; it does not delete constraint identity or history."
+  },
+  "security": {"owner_role":"dante_owner","default_deny_non_owner":true,"expected_grants":[]},
+  "proof": {
+    "obligations": [
+      "Temporal Constraint remains distinct from Schedule placement and NativeRef identity",
+      "subject eligibility is bounded to self-owned Activity or Event",
+      "owner creation is complete by commit",
+      "runtime has no generic table DML authority"
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b04_temporal_constraint_core.py",
+      "apps/backend/tests/integration/database/test_b04_temporal_constraint_catalog.py",
+      "apps/backend/tests/integration/database/test_current_catalog.py",
+      "apps/backend/tests/integration/database/test_database_current_catalog.py"
+    ],
+    "staged_evidence": []
+  }
+}
