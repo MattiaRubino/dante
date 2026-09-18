@@ -67,16 +67,16 @@ Expo 58 is currently beta and includes a React Native release candidate. Current
 
 ---
 
-## MD-004 — Production development uses a DANTE Development Build
+## MD-004 — Production development moves toward a DANTE Development Build
 
-**Status:** ACCEPTED / ACTIVATED  
+**Status:** ACCEPTED DIRECTION / NOT YET ACTIVATED  
 **Date:** 2026-09-18
 
-Expo Go remains acceptable only for limited probe convenience. Normal DANTE Mobile development uses a project-owned Development Build with `expo-dev-client`.
+Expo Go remains acceptable for legacy probe convenience but is not the long-term production development environment. Activate a DANTE development build in a dedicated approved scope.
 
-### Activation
+### Activation trigger
 
-Activated during the Android production-foundation tranche after the Expo 57 compatibility baseline passed. Native Development Builds are compiled from the project configuration rather than treating Expo Go as the production development runtime.
+M00 compatibility baseline is green and the required dependency/build-file scope is approved.
 
 ---
 
