@@ -358,6 +358,36 @@
         "title": "CreateActivityRequest",
         "type": "object"
       },
+      "CreateEventRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "agenda_parts": {
+            "items": {
+              "maxLength": 1000,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 100,
+            "title": "Agenda Parts",
+            "type": "array"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "title"],
+        "title": "CreateEventRequest",
+        "type": "object"
+      },
       "CreateScheduledActivityRequest": {
         "additionalProperties": false,
         "description": "Atomic Activity + accepted Schedule authoring command.",
@@ -407,6 +437,62 @@
         },
         "required": ["operation_id", "title", "placement"],
         "title": "CreateScheduledActivityRequest",
+        "type": "object"
+      },
+      "CreateScheduledEventRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "agenda_parts": {
+            "items": {
+              "maxLength": 1000,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 100,
+            "title": "Agenda Parts",
+            "type": "array"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "placement": {
+            "discriminator": {
+              "mapping": {
+                "absolute_interval": "#/components/schemas/EventAbsoluteIntervalPlacementRequest",
+                "date_span": "#/components/schemas/EventDateSpanPlacementRequest",
+                "floating_local_interval": "#/components/schemas/EventFloatingLocalIntervalPlacementRequest",
+                "named_zone_local_interval": "#/components/schemas/EventNamedZoneLocalIntervalPlacementRequest"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/EventDateSpanPlacementRequest"
+              },
+              {
+                "$ref": "#/components/schemas/EventFloatingLocalIntervalPlacementRequest"
+              },
+              {
+                "$ref": "#/components/schemas/EventNamedZoneLocalIntervalPlacementRequest"
+              },
+              {
+                "$ref": "#/components/schemas/EventAbsoluteIntervalPlacementRequest"
+              }
+            ],
+            "title": "Placement"
+          },
+          "title": {
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "title", "placement"],
+        "title": "CreateScheduledEventRequest",
         "type": "object"
       },
       "DateSpanPlacementRequest": {
@@ -476,6 +562,189 @@
         },
         "required": ["operation_id", "placement"],
         "title": "EstablishActivityScheduleRequest",
+        "type": "object"
+      },
+      "EventAbsoluteIntervalPlacementRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "ends_at": {
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "kind": {
+            "const": "absolute_interval",
+            "default": "absolute_interval",
+            "title": "Kind",
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          }
+        },
+        "required": ["starts_at", "ends_at"],
+        "title": "EventAbsoluteIntervalPlacementRequest",
+        "type": "object"
+      },
+      "EventAgendaMutationResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "agenda_parts": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Agenda Parts",
+            "type": "array"
+          },
+          "agenda_revision": {
+            "minimum": 1.0,
+            "title": "Agenda Revision",
+            "type": "integer"
+          },
+          "event_ref": {
+            "format": "uuid",
+            "title": "Event Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          }
+        },
+        "required": ["event_ref", "agenda_revision", "agenda_parts"],
+        "title": "EventAgendaMutationResponse",
+        "type": "object"
+      },
+      "EventDateSpanPlacementRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "end_date_exclusive": {
+            "format": "date",
+            "title": "End Date Exclusive",
+            "type": "string"
+          },
+          "kind": {
+            "const": "date_span",
+            "default": "date_span",
+            "title": "Kind",
+            "type": "string"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          }
+        },
+        "required": ["start_date", "end_date_exclusive"],
+        "title": "EventDateSpanPlacementRequest",
+        "type": "object"
+      },
+      "EventFloatingLocalIntervalPlacementRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "ends_local_at": {
+            "format": "date-time",
+            "title": "Ends Local At",
+            "type": "string"
+          },
+          "kind": {
+            "const": "floating_local_interval",
+            "default": "floating_local_interval",
+            "title": "Kind",
+            "type": "string"
+          },
+          "starts_local_at": {
+            "format": "date-time",
+            "title": "Starts Local At",
+            "type": "string"
+          }
+        },
+        "required": ["starts_local_at", "ends_local_at"],
+        "title": "EventFloatingLocalIntervalPlacementRequest",
+        "type": "object"
+      },
+      "EventNamedZoneLocalIntervalPlacementRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "disambiguation": {
+            "default": "reject",
+            "enum": ["reject", "earlier", "later"],
+            "title": "Disambiguation",
+            "type": "string"
+          },
+          "ends_local_at": {
+            "format": "date-time",
+            "title": "Ends Local At",
+            "type": "string"
+          },
+          "kind": {
+            "const": "named_zone_local_interval",
+            "default": "named_zone_local_interval",
+            "title": "Kind",
+            "type": "string"
+          },
+          "starts_local_at": {
+            "format": "date-time",
+            "title": "Starts Local At",
+            "type": "string"
+          },
+          "zone_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Zone Id",
+            "type": "string"
+          }
+        },
+        "required": ["starts_local_at", "ends_local_at", "zone_id"],
+        "title": "EventNamedZoneLocalIntervalPlacementRequest",
+        "type": "object"
+      },
+      "EventResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "agenda_parts": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Agenda Parts",
+            "type": "array"
+          },
+          "agenda_revision": {
+            "minimum": 0.0,
+            "title": "Agenda Revision",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "event_ref": {
+            "format": "uuid",
+            "title": "Event Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "event_ref",
+          "title",
+          "agenda_revision",
+          "agenda_parts",
+          "created_at"
+        ],
+        "title": "EventResponse",
         "type": "object"
       },
       "ExistingAccountSignupResponse": {
@@ -1311,6 +1580,36 @@
         },
         "required": ["id", "rawId", "type", "response"],
         "title": "RegistrationCredential",
+        "type": "object"
+      },
+      "ReplaceEventAgendaRequest": {
+        "additionalProperties": false,
+        "description": "Whole-Agenda replacement behind explicit aggregate CAS.",
+        "properties": {
+          "agenda_parts": {
+            "items": {
+              "maxLength": 1000,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 100,
+            "title": "Agenda Parts",
+            "type": "array"
+          },
+          "expected_revision": {
+            "minimum": 0.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "expected_revision", "agenda_parts"],
+        "title": "ReplaceEventAgendaRequest",
         "type": "object"
       },
       "RestoredScheduleAbsoluteResponse": {
@@ -2223,6 +2522,398 @@
         "title": "ScheduledActivityResponse",
         "type": "object"
       },
+      "ScheduledEventAbsoluteResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "agenda_parts": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Agenda Parts",
+            "type": "array"
+          },
+          "agenda_revision": {
+            "minimum": 0.0,
+            "title": "Agenda Revision",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "ends_at": {
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "event_ref": {
+            "format": "uuid",
+            "title": "Event Ref",
+            "type": "string"
+          },
+          "placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Placement Material State Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "absolute",
+            "default": "absolute",
+            "title": "Temporal Form",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "event_ref",
+          "title",
+          "agenda_revision",
+          "agenda_parts",
+          "created_at",
+          "schedule_ref",
+          "placement_material_state_ref",
+          "starts_at",
+          "ends_at"
+        ],
+        "title": "ScheduledEventAbsoluteResponse",
+        "type": "object"
+      },
+      "ScheduledEventCoarseResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "agenda_parts": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Agenda Parts",
+            "type": "array"
+          },
+          "agenda_revision": {
+            "minimum": 0.0,
+            "title": "Agenda Revision",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "event_ref": {
+            "format": "uuid",
+            "title": "Event Ref",
+            "type": "string"
+          },
+          "local_date": {
+            "format": "date",
+            "title": "Local Date",
+            "type": "string"
+          },
+          "period": {
+            "enum": ["morning", "afternoon", "evening"],
+            "title": "Period",
+            "type": "string"
+          },
+          "placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Placement Material State Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "coarse_local_period",
+            "default": "coarse_local_period",
+            "title": "Temporal Form",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "event_ref",
+          "title",
+          "agenda_revision",
+          "agenda_parts",
+          "created_at",
+          "schedule_ref",
+          "placement_material_state_ref",
+          "local_date",
+          "period"
+        ],
+        "title": "ScheduledEventCoarseResponse",
+        "type": "object"
+      },
+      "ScheduledEventDateSpanResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "agenda_parts": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Agenda Parts",
+            "type": "array"
+          },
+          "agenda_revision": {
+            "minimum": 0.0,
+            "title": "Agenda Revision",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "end_date_exclusive": {
+            "format": "date",
+            "title": "End Date Exclusive",
+            "type": "string"
+          },
+          "event_ref": {
+            "format": "uuid",
+            "title": "Event Ref",
+            "type": "string"
+          },
+          "placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Placement Material State Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "date_span",
+            "default": "date_span",
+            "title": "Temporal Form",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "event_ref",
+          "title",
+          "agenda_revision",
+          "agenda_parts",
+          "created_at",
+          "schedule_ref",
+          "placement_material_state_ref",
+          "start_date",
+          "end_date_exclusive"
+        ],
+        "title": "ScheduledEventDateSpanResponse",
+        "type": "object"
+      },
+      "ScheduledEventFloatingResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "agenda_parts": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Agenda Parts",
+            "type": "array"
+          },
+          "agenda_revision": {
+            "minimum": 0.0,
+            "title": "Agenda Revision",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "ends_local_at": {
+            "format": "date-time",
+            "title": "Ends Local At",
+            "type": "string"
+          },
+          "event_ref": {
+            "format": "uuid",
+            "title": "Event Ref",
+            "type": "string"
+          },
+          "placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Placement Material State Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "starts_local_at": {
+            "format": "date-time",
+            "title": "Starts Local At",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "floating_local",
+            "default": "floating_local",
+            "title": "Temporal Form",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "event_ref",
+          "title",
+          "agenda_revision",
+          "agenda_parts",
+          "created_at",
+          "schedule_ref",
+          "placement_material_state_ref",
+          "starts_local_at",
+          "ends_local_at"
+        ],
+        "title": "ScheduledEventFloatingResponse",
+        "type": "object"
+      },
+      "ScheduledEventNamedZoneResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "agenda_parts": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Agenda Parts",
+            "type": "array"
+          },
+          "agenda_revision": {
+            "minimum": 0.0,
+            "title": "Agenda Revision",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "ends_local_at": {
+            "format": "date-time",
+            "title": "Ends Local At",
+            "type": "string"
+          },
+          "event_ref": {
+            "format": "uuid",
+            "title": "Event Ref",
+            "type": "string"
+          },
+          "placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Placement Material State Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "resolved_end_at": {
+            "format": "date-time",
+            "title": "Resolved End At",
+            "type": "string"
+          },
+          "resolved_start_at": {
+            "format": "date-time",
+            "title": "Resolved Start At",
+            "type": "string"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "starts_local_at": {
+            "format": "date-time",
+            "title": "Starts Local At",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "named_zone_local",
+            "default": "named_zone_local",
+            "title": "Temporal Form",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "zone_id": {
+            "title": "Zone Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "event_ref",
+          "title",
+          "agenda_revision",
+          "agenda_parts",
+          "created_at",
+          "schedule_ref",
+          "placement_material_state_ref",
+          "starts_local_at",
+          "ends_local_at",
+          "zone_id",
+          "resolved_start_at",
+          "resolved_end_at"
+        ],
+        "title": "ScheduledEventNamedZoneResponse",
+        "type": "object"
+      },
       "SignInRequest": {
         "additionalProperties": false,
         "description": "Bounded first-party email/password signin request.",
@@ -2385,7 +3076,7 @@
       },
       "TimelineAbsoluteActivityResponse": {
         "additionalProperties": false,
-        "description": "Current absolute Schedule plus request-effective-zone projection.",
+        "description": "Current absolute Activity Schedule plus request-zone projection.",
         "properties": {
           "activity_ref": {
             "format": "uuid",
@@ -2454,9 +3145,80 @@
         "title": "TimelineAbsoluteActivityResponse",
         "type": "object"
       },
+      "TimelineAbsoluteEventResponse": {
+        "additionalProperties": false,
+        "description": "Current absolute Event Schedule plus request-zone projection.",
+        "properties": {
+          "display_ends_local_at": {
+            "examples": ["2026-03-29T01:50:00"],
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
+            "title": "Display Ends Local At",
+            "type": "string"
+          },
+          "display_starts_local_at": {
+            "examples": ["2026-03-29T01:50:00"],
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
+            "title": "Display Starts Local At",
+            "type": "string"
+          },
+          "ends_at": {
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "event_ref": {
+            "format": "uuid",
+            "title": "Event Ref",
+            "type": "string"
+          },
+          "kind": {
+            "const": "scheduled_event",
+            "default": "scheduled_event",
+            "title": "Kind",
+            "type": "string"
+          },
+          "placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Placement Material State Ref",
+            "type": "string"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "absolute",
+            "default": "absolute",
+            "title": "Temporal Form",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "event_ref",
+          "schedule_ref",
+          "placement_material_state_ref",
+          "title",
+          "starts_at",
+          "ends_at",
+          "display_starts_local_at",
+          "display_ends_local_at"
+        ],
+        "title": "TimelineAbsoluteEventResponse",
+        "type": "object"
+      },
       "TimelineCoarseLocalPeriodActivityResponse": {
         "additionalProperties": false,
-        "description": "Current coarse placement with no manufactured clock boundaries.",
+        "description": "Current coarse Activity placement with no manufactured clock boundaries.",
         "properties": {
           "activity_ref": {
             "format": "uuid",
@@ -2511,9 +3273,66 @@
         "title": "TimelineCoarseLocalPeriodActivityResponse",
         "type": "object"
       },
+      "TimelineCoarseLocalPeriodEventResponse": {
+        "additionalProperties": false,
+        "description": "Current coarse Event placement with no manufactured clock boundaries.",
+        "properties": {
+          "event_ref": {
+            "format": "uuid",
+            "title": "Event Ref",
+            "type": "string"
+          },
+          "kind": {
+            "const": "scheduled_event",
+            "default": "scheduled_event",
+            "title": "Kind",
+            "type": "string"
+          },
+          "local_date": {
+            "format": "date",
+            "title": "Local Date",
+            "type": "string"
+          },
+          "period": {
+            "enum": ["morning", "afternoon", "evening"],
+            "title": "Period",
+            "type": "string"
+          },
+          "placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Placement Material State Ref",
+            "type": "string"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "coarse_local_period",
+            "default": "coarse_local_period",
+            "title": "Temporal Form",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "event_ref",
+          "schedule_ref",
+          "placement_material_state_ref",
+          "title",
+          "local_date",
+          "period"
+        ],
+        "title": "TimelineCoarseLocalPeriodEventResponse",
+        "type": "object"
+      },
       "TimelineDateSpanActivityResponse": {
         "additionalProperties": false,
-        "description": "Current accepted half-open civil-date Schedule projection.",
+        "description": "Current accepted half-open civil-date Activity Schedule projection.",
         "properties": {
           "activity_ref": {
             "format": "uuid",
@@ -2568,9 +3387,66 @@
         "title": "TimelineDateSpanActivityResponse",
         "type": "object"
       },
+      "TimelineDateSpanEventResponse": {
+        "additionalProperties": false,
+        "description": "Current accepted half-open civil-date Event Schedule projection.",
+        "properties": {
+          "end_date_exclusive": {
+            "format": "date",
+            "title": "End Date Exclusive",
+            "type": "string"
+          },
+          "event_ref": {
+            "format": "uuid",
+            "title": "Event Ref",
+            "type": "string"
+          },
+          "kind": {
+            "const": "scheduled_event",
+            "default": "scheduled_event",
+            "title": "Kind",
+            "type": "string"
+          },
+          "placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Placement Material State Ref",
+            "type": "string"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "date_span",
+            "default": "date_span",
+            "title": "Temporal Form",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "event_ref",
+          "schedule_ref",
+          "placement_material_state_ref",
+          "title",
+          "start_date",
+          "end_date_exclusive"
+        ],
+        "title": "TimelineDateSpanEventResponse",
+        "type": "object"
+      },
       "TimelineNamedZoneLocalActivityResponse": {
         "additionalProperties": false,
-        "description": "Current named-zone intent, retained resolution, and viewing projection.",
+        "description": "Current named-zone Activity intent and viewing projection.",
         "properties": {
           "activity_ref": {
             "format": "uuid",
@@ -2658,6 +3534,96 @@
         "title": "TimelineNamedZoneLocalActivityResponse",
         "type": "object"
       },
+      "TimelineNamedZoneLocalEventResponse": {
+        "additionalProperties": false,
+        "description": "Current named-zone Event intent and viewing projection.",
+        "properties": {
+          "display_ends_local_at": {
+            "examples": ["2026-03-29T01:50:00"],
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
+            "title": "Display Ends Local At",
+            "type": "string"
+          },
+          "display_starts_local_at": {
+            "examples": ["2026-03-29T01:50:00"],
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
+            "title": "Display Starts Local At",
+            "type": "string"
+          },
+          "ends_local_at": {
+            "examples": ["2026-03-29T01:50:00"],
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
+            "title": "Ends Local At",
+            "type": "string"
+          },
+          "event_ref": {
+            "format": "uuid",
+            "title": "Event Ref",
+            "type": "string"
+          },
+          "kind": {
+            "const": "scheduled_event",
+            "default": "scheduled_event",
+            "title": "Kind",
+            "type": "string"
+          },
+          "placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Placement Material State Ref",
+            "type": "string"
+          },
+          "resolved_end_at": {
+            "format": "date-time",
+            "title": "Resolved End At",
+            "type": "string"
+          },
+          "resolved_start_at": {
+            "format": "date-time",
+            "title": "Resolved Start At",
+            "type": "string"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "starts_local_at": {
+            "examples": ["2026-03-29T01:50:00"],
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
+            "title": "Starts Local At",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "named_zone_local",
+            "default": "named_zone_local",
+            "title": "Temporal Form",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "zone_id": {
+            "title": "Zone Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "event_ref",
+          "schedule_ref",
+          "placement_material_state_ref",
+          "title",
+          "starts_local_at",
+          "ends_local_at",
+          "zone_id",
+          "resolved_start_at",
+          "resolved_end_at",
+          "display_starts_local_at",
+          "display_ends_local_at"
+        ],
+        "title": "TimelineNamedZoneLocalEventResponse",
+        "type": "object"
+      },
       "TimelineScheduledActivityResponse": {
         "additionalProperties": false,
         "description": "Current accepted floating-local Schedule projection for one Activity.",
@@ -2717,6 +3683,65 @@
         "title": "TimelineScheduledActivityResponse",
         "type": "object"
       },
+      "TimelineScheduledEventResponse": {
+        "additionalProperties": false,
+        "description": "Current accepted floating-local Schedule projection for one Event.",
+        "properties": {
+          "ends_local_at": {
+            "examples": ["2026-03-29T01:50:00"],
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
+            "title": "Ends Local At",
+            "type": "string"
+          },
+          "event_ref": {
+            "format": "uuid",
+            "title": "Event Ref",
+            "type": "string"
+          },
+          "kind": {
+            "const": "scheduled_event",
+            "default": "scheduled_event",
+            "title": "Kind",
+            "type": "string"
+          },
+          "placement_material_state_ref": {
+            "format": "uuid",
+            "title": "Placement Material State Ref",
+            "type": "string"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "starts_local_at": {
+            "examples": ["2026-03-29T01:50:00"],
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
+            "title": "Starts Local At",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "floating_local",
+            "default": "floating_local",
+            "title": "Temporal Form",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "event_ref",
+          "schedule_ref",
+          "placement_material_state_ref",
+          "title",
+          "starts_local_at",
+          "ends_local_at"
+        ],
+        "title": "TimelineScheduledEventResponse",
+        "type": "object"
+      },
       "TimelineWindowEmptyResponse": {
         "additionalProperties": false,
         "description": "Truthful authenticated Timeline window with no activated current items.",
@@ -2761,31 +3786,64 @@
           },
           "items": {
             "items": {
-              "discriminator": {
-                "mapping": {
-                  "absolute": "#/components/schemas/TimelineAbsoluteActivityResponse",
-                  "coarse_local_period": "#/components/schemas/TimelineCoarseLocalPeriodActivityResponse",
-                  "date_span": "#/components/schemas/TimelineDateSpanActivityResponse",
-                  "floating_local": "#/components/schemas/TimelineScheduledActivityResponse",
-                  "named_zone_local": "#/components/schemas/TimelineNamedZoneLocalActivityResponse"
-                },
-                "propertyName": "temporal_form"
-              },
-              "oneOf": [
+              "anyOf": [
                 {
-                  "$ref": "#/components/schemas/TimelineScheduledActivityResponse"
+                  "discriminator": {
+                    "mapping": {
+                      "absolute": "#/components/schemas/TimelineAbsoluteActivityResponse",
+                      "coarse_local_period": "#/components/schemas/TimelineCoarseLocalPeriodActivityResponse",
+                      "date_span": "#/components/schemas/TimelineDateSpanActivityResponse",
+                      "floating_local": "#/components/schemas/TimelineScheduledActivityResponse",
+                      "named_zone_local": "#/components/schemas/TimelineNamedZoneLocalActivityResponse"
+                    },
+                    "propertyName": "temporal_form"
+                  },
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/TimelineScheduledActivityResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/TimelineDateSpanActivityResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/TimelineNamedZoneLocalActivityResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/TimelineAbsoluteActivityResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/TimelineCoarseLocalPeriodActivityResponse"
+                    }
+                  ]
                 },
                 {
-                  "$ref": "#/components/schemas/TimelineDateSpanActivityResponse"
-                },
-                {
-                  "$ref": "#/components/schemas/TimelineNamedZoneLocalActivityResponse"
-                },
-                {
-                  "$ref": "#/components/schemas/TimelineAbsoluteActivityResponse"
-                },
-                {
-                  "$ref": "#/components/schemas/TimelineCoarseLocalPeriodActivityResponse"
+                  "discriminator": {
+                    "mapping": {
+                      "absolute": "#/components/schemas/TimelineAbsoluteEventResponse",
+                      "coarse_local_period": "#/components/schemas/TimelineCoarseLocalPeriodEventResponse",
+                      "date_span": "#/components/schemas/TimelineDateSpanEventResponse",
+                      "floating_local": "#/components/schemas/TimelineScheduledEventResponse",
+                      "named_zone_local": "#/components/schemas/TimelineNamedZoneLocalEventResponse"
+                    },
+                    "propertyName": "temporal_form"
+                  },
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/TimelineScheduledEventResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/TimelineDateSpanEventResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/TimelineNamedZoneLocalEventResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/TimelineAbsoluteEventResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/TimelineCoarseLocalPeriodEventResponse"
+                    }
+                  ]
                 }
               ]
             },
@@ -12367,6 +13425,203 @@
           }
         },
         "summary": "Establish Activity Schedule",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/events": {
+      "post": {
+        "operationId": "create_event_api_v1_temporal_events_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEventRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Event",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/events/scheduled": {
+      "post": {
+        "operationId": "create_scheduled_event_api_v1_temporal_events_scheduled_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateScheduledEventRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "discriminator": {
+                    "mapping": {
+                      "absolute": "#/components/schemas/ScheduledEventAbsoluteResponse",
+                      "coarse_local_period": "#/components/schemas/ScheduledEventCoarseResponse",
+                      "date_span": "#/components/schemas/ScheduledEventDateSpanResponse",
+                      "floating_local": "#/components/schemas/ScheduledEventFloatingResponse",
+                      "named_zone_local": "#/components/schemas/ScheduledEventNamedZoneResponse"
+                    },
+                    "propertyName": "temporal_form"
+                  },
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ScheduledEventFloatingResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ScheduledEventDateSpanResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ScheduledEventNamedZoneResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ScheduledEventAbsoluteResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ScheduledEventCoarseResponse"
+                    }
+                  ],
+                  "title": "Response Create Scheduled Event Api V1 Temporal Events Scheduled Post"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Scheduled Event",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/events/{event_ref}": {
+      "get": {
+        "operationId": "get_event_api_v1_temporal_events__event_ref__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Event",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/events/{event_ref}/agenda": {
+      "put": {
+        "operationId": "replace_event_agenda_api_v1_temporal_events__event_ref__agenda_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReplaceEventAgendaRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventAgendaMutationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Replace Event Agenda",
         "tags": ["temporal"]
       }
     },

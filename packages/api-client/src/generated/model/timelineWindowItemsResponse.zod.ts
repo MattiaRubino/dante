@@ -6,32 +6,58 @@
  */
 import * as zod from 'zod/mini';
 
-export const timelineWindowItemsResponseItemsItemOneEndsLocalAtRegExp =
+export const timelineWindowItemsResponseItemsItemOneOneEndsLocalAtRegExp =
   new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
-export const timelineWindowItemsResponseItemsItemOneKindDefault = `scheduled_activity`;
-export const timelineWindowItemsResponseItemsItemOneStartsLocalAtRegExp =
+export const timelineWindowItemsResponseItemsItemOneOneKindDefault = `scheduled_activity`;
+export const timelineWindowItemsResponseItemsItemOneOneStartsLocalAtRegExp =
   new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
-export const timelineWindowItemsResponseItemsItemOneTemporalFormDefault = `floating_local`;
-export const timelineWindowItemsResponseItemsItemTwoKindDefault = `scheduled_activity`;
-export const timelineWindowItemsResponseItemsItemTwoTemporalFormDefault = `date_span`;
-export const timelineWindowItemsResponseItemsItemThreeDisplayEndsLocalAtRegExp =
+export const timelineWindowItemsResponseItemsItemOneOneTemporalFormDefault = `floating_local`;
+export const timelineWindowItemsResponseItemsItemOneTwoKindDefault = `scheduled_activity`;
+export const timelineWindowItemsResponseItemsItemOneTwoTemporalFormDefault = `date_span`;
+export const timelineWindowItemsResponseItemsItemOneThreeDisplayEndsLocalAtRegExp =
   new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
-export const timelineWindowItemsResponseItemsItemThreeDisplayStartsLocalAtRegExp =
+export const timelineWindowItemsResponseItemsItemOneThreeDisplayStartsLocalAtRegExp =
   new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
-export const timelineWindowItemsResponseItemsItemThreeEndsLocalAtRegExp =
+export const timelineWindowItemsResponseItemsItemOneThreeEndsLocalAtRegExp =
   new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
-export const timelineWindowItemsResponseItemsItemThreeKindDefault = `scheduled_activity`;
-export const timelineWindowItemsResponseItemsItemThreeStartsLocalAtRegExp =
+export const timelineWindowItemsResponseItemsItemOneThreeKindDefault = `scheduled_activity`;
+export const timelineWindowItemsResponseItemsItemOneThreeStartsLocalAtRegExp =
   new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
-export const timelineWindowItemsResponseItemsItemThreeTemporalFormDefault = `named_zone_local`;
-export const timelineWindowItemsResponseItemsItemFourDisplayEndsLocalAtRegExp =
+export const timelineWindowItemsResponseItemsItemOneThreeTemporalFormDefault = `named_zone_local`;
+export const timelineWindowItemsResponseItemsItemOneFourDisplayEndsLocalAtRegExp =
   new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
-export const timelineWindowItemsResponseItemsItemFourDisplayStartsLocalAtRegExp =
+export const timelineWindowItemsResponseItemsItemOneFourDisplayStartsLocalAtRegExp =
   new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
-export const timelineWindowItemsResponseItemsItemFourKindDefault = `scheduled_activity`;
-export const timelineWindowItemsResponseItemsItemFourTemporalFormDefault = `absolute`;
-export const timelineWindowItemsResponseItemsItemFiveKindDefault = `scheduled_activity`;
-export const timelineWindowItemsResponseItemsItemFiveTemporalFormDefault = `coarse_local_period`;
+export const timelineWindowItemsResponseItemsItemOneFourKindDefault = `scheduled_activity`;
+export const timelineWindowItemsResponseItemsItemOneFourTemporalFormDefault = `absolute`;
+export const timelineWindowItemsResponseItemsItemOneFiveKindDefault = `scheduled_activity`;
+export const timelineWindowItemsResponseItemsItemOneFiveTemporalFormDefault = `coarse_local_period`;
+export const timelineWindowItemsResponseItemsItemTwoOneEndsLocalAtRegExp =
+  new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
+export const timelineWindowItemsResponseItemsItemTwoOneKindDefault = `scheduled_event`;
+export const timelineWindowItemsResponseItemsItemTwoOneStartsLocalAtRegExp =
+  new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
+export const timelineWindowItemsResponseItemsItemTwoOneTemporalFormDefault = `floating_local`;
+export const timelineWindowItemsResponseItemsItemTwoTwoKindDefault = `scheduled_event`;
+export const timelineWindowItemsResponseItemsItemTwoTwoTemporalFormDefault = `date_span`;
+export const timelineWindowItemsResponseItemsItemTwoThreeDisplayEndsLocalAtRegExp =
+  new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
+export const timelineWindowItemsResponseItemsItemTwoThreeDisplayStartsLocalAtRegExp =
+  new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
+export const timelineWindowItemsResponseItemsItemTwoThreeEndsLocalAtRegExp =
+  new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
+export const timelineWindowItemsResponseItemsItemTwoThreeKindDefault = `scheduled_event`;
+export const timelineWindowItemsResponseItemsItemTwoThreeStartsLocalAtRegExp =
+  new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
+export const timelineWindowItemsResponseItemsItemTwoThreeTemporalFormDefault = `named_zone_local`;
+export const timelineWindowItemsResponseItemsItemTwoFourDisplayEndsLocalAtRegExp =
+  new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
+export const timelineWindowItemsResponseItemsItemTwoFourDisplayStartsLocalAtRegExp =
+  new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
+export const timelineWindowItemsResponseItemsItemTwoFourKindDefault = `scheduled_event`;
+export const timelineWindowItemsResponseItemsItemTwoFourTemporalFormDefault = `absolute`;
+export const timelineWindowItemsResponseItemsItemTwoFiveKindDefault = `scheduled_event`;
+export const timelineWindowItemsResponseItemsItemTwoFiveTemporalFormDefault = `coarse_local_period`;
 export const timelineWindowItemsResponseKindDefault = `window`;
 export const TimelineWindowItemsResponse = /*#__PURE__*/ zod
   .object({
@@ -39,191 +65,392 @@ export const TimelineWindowItemsResponse = /*#__PURE__*/ zod
     end_date_exclusive: /*#__PURE__*/ zod.iso.date(),
     items: /*#__PURE__*/ zod.array(
       /*#__PURE__*/ zod.union([
-        /*#__PURE__*/ zod
-          .object({
-            activity_ref: /*#__PURE__*/ zod.uuid(),
-            ends_local_at: /*#__PURE__*/ zod
-              .string()
-              .check(
-                /*#__PURE__*/ zod.regex(
-                  timelineWindowItemsResponseItemsItemOneEndsLocalAtRegExp,
+        /*#__PURE__*/ zod.union([
+          /*#__PURE__*/ zod
+            .object({
+              activity_ref: /*#__PURE__*/ zod.uuid(),
+              ends_local_at: /*#__PURE__*/ zod
+                .string()
+                .check(
+                  /*#__PURE__*/ zod.regex(
+                    timelineWindowItemsResponseItemsItemOneOneEndsLocalAtRegExp,
+                  ),
                 ),
-              ),
-            kind: /*#__PURE__*/ zod
-              ._default(
-                /*#__PURE__*/ zod.literal('scheduled_activity'),
-                timelineWindowItemsResponseItemsItemOneKindDefault,
-              )
-              .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
-            placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
-            schedule_ref: /*#__PURE__*/ zod.uuid(),
-            starts_local_at: /*#__PURE__*/ zod
-              .string()
-              .check(
-                /*#__PURE__*/ zod.regex(
-                  timelineWindowItemsResponseItemsItemOneStartsLocalAtRegExp,
+              kind: /*#__PURE__*/ zod
+                ._default(
+                  /*#__PURE__*/ zod.literal('scheduled_activity'),
+                  timelineWindowItemsResponseItemsItemOneOneKindDefault,
+                )
+                .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+              placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
+              schedule_ref: /*#__PURE__*/ zod.uuid(),
+              starts_local_at: /*#__PURE__*/ zod
+                .string()
+                .check(
+                  /*#__PURE__*/ zod.regex(
+                    timelineWindowItemsResponseItemsItemOneOneStartsLocalAtRegExp,
+                  ),
                 ),
+              temporal_form: /*#__PURE__*/ zod
+                ._default(
+                  /*#__PURE__*/ zod.literal('floating_local'),
+                  timelineWindowItemsResponseItemsItemOneOneTemporalFormDefault,
+                )
+                .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
+              title: /*#__PURE__*/ zod.string(),
+            })
+            .check(
+              /*#__PURE__*/ zod.describe(
+                'Current accepted floating-local Schedule projection for one Activity.',
               ),
-            temporal_form: /*#__PURE__*/ zod
-              ._default(
-                /*#__PURE__*/ zod.literal('floating_local'),
-                timelineWindowItemsResponseItemsItemOneTemporalFormDefault,
-              )
-              .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
-            title: /*#__PURE__*/ zod.string(),
-          })
-          .check(
-            /*#__PURE__*/ zod.describe(
-              'Current accepted floating-local Schedule projection for one Activity.',
             ),
-          ),
-        /*#__PURE__*/ zod
-          .object({
-            activity_ref: /*#__PURE__*/ zod.uuid(),
-            end_date_exclusive: /*#__PURE__*/ zod.iso.date(),
-            kind: /*#__PURE__*/ zod
-              ._default(
-                /*#__PURE__*/ zod.literal('scheduled_activity'),
-                timelineWindowItemsResponseItemsItemTwoKindDefault,
-              )
-              .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
-            placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
-            schedule_ref: /*#__PURE__*/ zod.uuid(),
-            start_date: /*#__PURE__*/ zod.iso.date(),
-            temporal_form: /*#__PURE__*/ zod
-              ._default(
-                /*#__PURE__*/ zod.literal('date_span'),
-                timelineWindowItemsResponseItemsItemTwoTemporalFormDefault,
-              )
-              .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
-            title: /*#__PURE__*/ zod.string(),
-          })
-          .check(
-            /*#__PURE__*/ zod.describe(
-              'Current accepted half-open civil-date Schedule projection.',
+          /*#__PURE__*/ zod
+            .object({
+              activity_ref: /*#__PURE__*/ zod.uuid(),
+              end_date_exclusive: /*#__PURE__*/ zod.iso.date(),
+              kind: /*#__PURE__*/ zod
+                ._default(
+                  /*#__PURE__*/ zod.literal('scheduled_activity'),
+                  timelineWindowItemsResponseItemsItemOneTwoKindDefault,
+                )
+                .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+              placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
+              schedule_ref: /*#__PURE__*/ zod.uuid(),
+              start_date: /*#__PURE__*/ zod.iso.date(),
+              temporal_form: /*#__PURE__*/ zod
+                ._default(
+                  /*#__PURE__*/ zod.literal('date_span'),
+                  timelineWindowItemsResponseItemsItemOneTwoTemporalFormDefault,
+                )
+                .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
+              title: /*#__PURE__*/ zod.string(),
+            })
+            .check(
+              /*#__PURE__*/ zod.describe(
+                'Current accepted half-open civil-date Activity Schedule projection.',
+              ),
             ),
-          ),
-        /*#__PURE__*/ zod
-          .object({
-            activity_ref: /*#__PURE__*/ zod.uuid(),
-            display_ends_local_at: /*#__PURE__*/ zod
-              .string()
-              .check(
-                /*#__PURE__*/ zod.regex(
-                  timelineWindowItemsResponseItemsItemThreeDisplayEndsLocalAtRegExp,
+          /*#__PURE__*/ zod
+            .object({
+              activity_ref: /*#__PURE__*/ zod.uuid(),
+              display_ends_local_at: /*#__PURE__*/ zod
+                .string()
+                .check(
+                  /*#__PURE__*/ zod.regex(
+                    timelineWindowItemsResponseItemsItemOneThreeDisplayEndsLocalAtRegExp,
+                  ),
                 ),
-              ),
-            display_starts_local_at: /*#__PURE__*/ zod
-              .string()
-              .check(
-                /*#__PURE__*/ zod.regex(
-                  timelineWindowItemsResponseItemsItemThreeDisplayStartsLocalAtRegExp,
+              display_starts_local_at: /*#__PURE__*/ zod
+                .string()
+                .check(
+                  /*#__PURE__*/ zod.regex(
+                    timelineWindowItemsResponseItemsItemOneThreeDisplayStartsLocalAtRegExp,
+                  ),
                 ),
-              ),
-            ends_local_at: /*#__PURE__*/ zod
-              .string()
-              .check(
-                /*#__PURE__*/ zod.regex(
-                  timelineWindowItemsResponseItemsItemThreeEndsLocalAtRegExp,
+              ends_local_at: /*#__PURE__*/ zod
+                .string()
+                .check(
+                  /*#__PURE__*/ zod.regex(
+                    timelineWindowItemsResponseItemsItemOneThreeEndsLocalAtRegExp,
+                  ),
                 ),
-              ),
-            kind: /*#__PURE__*/ zod
-              ._default(
-                /*#__PURE__*/ zod.literal('scheduled_activity'),
-                timelineWindowItemsResponseItemsItemThreeKindDefault,
-              )
-              .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
-            placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
-            resolved_end_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-            resolved_start_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-            schedule_ref: /*#__PURE__*/ zod.uuid(),
-            starts_local_at: /*#__PURE__*/ zod
-              .string()
-              .check(
-                /*#__PURE__*/ zod.regex(
-                  timelineWindowItemsResponseItemsItemThreeStartsLocalAtRegExp,
+              kind: /*#__PURE__*/ zod
+                ._default(
+                  /*#__PURE__*/ zod.literal('scheduled_activity'),
+                  timelineWindowItemsResponseItemsItemOneThreeKindDefault,
+                )
+                .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+              placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
+              resolved_end_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+              resolved_start_at: /*#__PURE__*/ zod.iso.datetime({
+                offset: true,
+              }),
+              schedule_ref: /*#__PURE__*/ zod.uuid(),
+              starts_local_at: /*#__PURE__*/ zod
+                .string()
+                .check(
+                  /*#__PURE__*/ zod.regex(
+                    timelineWindowItemsResponseItemsItemOneThreeStartsLocalAtRegExp,
+                  ),
                 ),
+              temporal_form: /*#__PURE__*/ zod
+                ._default(
+                  /*#__PURE__*/ zod.literal('named_zone_local'),
+                  timelineWindowItemsResponseItemsItemOneThreeTemporalFormDefault,
+                )
+                .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
+              title: /*#__PURE__*/ zod.string(),
+              zone_id: /*#__PURE__*/ zod.string(),
+            })
+            .check(
+              /*#__PURE__*/ zod.describe(
+                'Current named-zone Activity intent and viewing projection.',
               ),
-            temporal_form: /*#__PURE__*/ zod
-              ._default(
-                /*#__PURE__*/ zod.literal('named_zone_local'),
-                timelineWindowItemsResponseItemsItemThreeTemporalFormDefault,
-              )
-              .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
-            title: /*#__PURE__*/ zod.string(),
-            zone_id: /*#__PURE__*/ zod.string(),
-          })
-          .check(
-            /*#__PURE__*/ zod.describe(
-              'Current named-zone intent, retained resolution, and viewing projection.',
             ),
-          ),
-        /*#__PURE__*/ zod
-          .object({
-            activity_ref: /*#__PURE__*/ zod.uuid(),
-            display_ends_local_at: /*#__PURE__*/ zod
-              .string()
-              .check(
-                /*#__PURE__*/ zod.regex(
-                  timelineWindowItemsResponseItemsItemFourDisplayEndsLocalAtRegExp,
+          /*#__PURE__*/ zod
+            .object({
+              activity_ref: /*#__PURE__*/ zod.uuid(),
+              display_ends_local_at: /*#__PURE__*/ zod
+                .string()
+                .check(
+                  /*#__PURE__*/ zod.regex(
+                    timelineWindowItemsResponseItemsItemOneFourDisplayEndsLocalAtRegExp,
+                  ),
                 ),
-              ),
-            display_starts_local_at: /*#__PURE__*/ zod
-              .string()
-              .check(
-                /*#__PURE__*/ zod.regex(
-                  timelineWindowItemsResponseItemsItemFourDisplayStartsLocalAtRegExp,
+              display_starts_local_at: /*#__PURE__*/ zod
+                .string()
+                .check(
+                  /*#__PURE__*/ zod.regex(
+                    timelineWindowItemsResponseItemsItemOneFourDisplayStartsLocalAtRegExp,
+                  ),
                 ),
+              ends_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+              kind: /*#__PURE__*/ zod
+                ._default(
+                  /*#__PURE__*/ zod.literal('scheduled_activity'),
+                  timelineWindowItemsResponseItemsItemOneFourKindDefault,
+                )
+                .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+              placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
+              schedule_ref: /*#__PURE__*/ zod.uuid(),
+              starts_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+              temporal_form: /*#__PURE__*/ zod
+                ._default(
+                  /*#__PURE__*/ zod.literal('absolute'),
+                  timelineWindowItemsResponseItemsItemOneFourTemporalFormDefault,
+                )
+                .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
+              title: /*#__PURE__*/ zod.string(),
+            })
+            .check(
+              /*#__PURE__*/ zod.describe(
+                'Current absolute Activity Schedule plus request-zone projection.',
               ),
-            ends_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-            kind: /*#__PURE__*/ zod
-              ._default(
-                /*#__PURE__*/ zod.literal('scheduled_activity'),
-                timelineWindowItemsResponseItemsItemFourKindDefault,
-              )
-              .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
-            placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
-            schedule_ref: /*#__PURE__*/ zod.uuid(),
-            starts_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-            temporal_form: /*#__PURE__*/ zod
-              ._default(
-                /*#__PURE__*/ zod.literal('absolute'),
-                timelineWindowItemsResponseItemsItemFourTemporalFormDefault,
-              )
-              .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
-            title: /*#__PURE__*/ zod.string(),
-          })
-          .check(
-            /*#__PURE__*/ zod.describe(
-              'Current absolute Schedule plus request-effective-zone projection.',
             ),
-          ),
-        /*#__PURE__*/ zod
-          .object({
-            activity_ref: /*#__PURE__*/ zod.uuid(),
-            kind: /*#__PURE__*/ zod
-              ._default(
-                /*#__PURE__*/ zod.literal('scheduled_activity'),
-                timelineWindowItemsResponseItemsItemFiveKindDefault,
-              )
-              .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
-            local_date: /*#__PURE__*/ zod.iso.date(),
-            period: /*#__PURE__*/ zod.enum(['morning', 'afternoon', 'evening']),
-            placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
-            schedule_ref: /*#__PURE__*/ zod.uuid(),
-            temporal_form: /*#__PURE__*/ zod
-              ._default(
-                /*#__PURE__*/ zod.literal('coarse_local_period'),
-                timelineWindowItemsResponseItemsItemFiveTemporalFormDefault,
-              )
-              .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
-            title: /*#__PURE__*/ zod.string(),
-          })
-          .check(
-            /*#__PURE__*/ zod.describe(
-              'Current coarse placement with no manufactured clock boundaries.',
+          /*#__PURE__*/ zod
+            .object({
+              activity_ref: /*#__PURE__*/ zod.uuid(),
+              kind: /*#__PURE__*/ zod
+                ._default(
+                  /*#__PURE__*/ zod.literal('scheduled_activity'),
+                  timelineWindowItemsResponseItemsItemOneFiveKindDefault,
+                )
+                .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+              local_date: /*#__PURE__*/ zod.iso.date(),
+              period: /*#__PURE__*/ zod.enum([
+                'morning',
+                'afternoon',
+                'evening',
+              ]),
+              placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
+              schedule_ref: /*#__PURE__*/ zod.uuid(),
+              temporal_form: /*#__PURE__*/ zod
+                ._default(
+                  /*#__PURE__*/ zod.literal('coarse_local_period'),
+                  timelineWindowItemsResponseItemsItemOneFiveTemporalFormDefault,
+                )
+                .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
+              title: /*#__PURE__*/ zod.string(),
+            })
+            .check(
+              /*#__PURE__*/ zod.describe(
+                'Current coarse Activity placement with no manufactured clock boundaries.',
+              ),
             ),
-          ),
+        ]),
+        /*#__PURE__*/ zod.union([
+          /*#__PURE__*/ zod
+            .object({
+              ends_local_at: /*#__PURE__*/ zod
+                .string()
+                .check(
+                  /*#__PURE__*/ zod.regex(
+                    timelineWindowItemsResponseItemsItemTwoOneEndsLocalAtRegExp,
+                  ),
+                ),
+              event_ref: /*#__PURE__*/ zod.uuid(),
+              kind: /*#__PURE__*/ zod
+                ._default(
+                  /*#__PURE__*/ zod.literal('scheduled_event'),
+                  timelineWindowItemsResponseItemsItemTwoOneKindDefault,
+                )
+                .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+              placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
+              schedule_ref: /*#__PURE__*/ zod.uuid(),
+              starts_local_at: /*#__PURE__*/ zod
+                .string()
+                .check(
+                  /*#__PURE__*/ zod.regex(
+                    timelineWindowItemsResponseItemsItemTwoOneStartsLocalAtRegExp,
+                  ),
+                ),
+              temporal_form: /*#__PURE__*/ zod
+                ._default(
+                  /*#__PURE__*/ zod.literal('floating_local'),
+                  timelineWindowItemsResponseItemsItemTwoOneTemporalFormDefault,
+                )
+                .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
+              title: /*#__PURE__*/ zod.string(),
+            })
+            .check(
+              /*#__PURE__*/ zod.describe(
+                'Current accepted floating-local Schedule projection for one Event.',
+              ),
+            ),
+          /*#__PURE__*/ zod
+            .object({
+              end_date_exclusive: /*#__PURE__*/ zod.iso.date(),
+              event_ref: /*#__PURE__*/ zod.uuid(),
+              kind: /*#__PURE__*/ zod
+                ._default(
+                  /*#__PURE__*/ zod.literal('scheduled_event'),
+                  timelineWindowItemsResponseItemsItemTwoTwoKindDefault,
+                )
+                .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+              placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
+              schedule_ref: /*#__PURE__*/ zod.uuid(),
+              start_date: /*#__PURE__*/ zod.iso.date(),
+              temporal_form: /*#__PURE__*/ zod
+                ._default(
+                  /*#__PURE__*/ zod.literal('date_span'),
+                  timelineWindowItemsResponseItemsItemTwoTwoTemporalFormDefault,
+                )
+                .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
+              title: /*#__PURE__*/ zod.string(),
+            })
+            .check(
+              /*#__PURE__*/ zod.describe(
+                'Current accepted half-open civil-date Event Schedule projection.',
+              ),
+            ),
+          /*#__PURE__*/ zod
+            .object({
+              display_ends_local_at: /*#__PURE__*/ zod
+                .string()
+                .check(
+                  /*#__PURE__*/ zod.regex(
+                    timelineWindowItemsResponseItemsItemTwoThreeDisplayEndsLocalAtRegExp,
+                  ),
+                ),
+              display_starts_local_at: /*#__PURE__*/ zod
+                .string()
+                .check(
+                  /*#__PURE__*/ zod.regex(
+                    timelineWindowItemsResponseItemsItemTwoThreeDisplayStartsLocalAtRegExp,
+                  ),
+                ),
+              ends_local_at: /*#__PURE__*/ zod
+                .string()
+                .check(
+                  /*#__PURE__*/ zod.regex(
+                    timelineWindowItemsResponseItemsItemTwoThreeEndsLocalAtRegExp,
+                  ),
+                ),
+              event_ref: /*#__PURE__*/ zod.uuid(),
+              kind: /*#__PURE__*/ zod
+                ._default(
+                  /*#__PURE__*/ zod.literal('scheduled_event'),
+                  timelineWindowItemsResponseItemsItemTwoThreeKindDefault,
+                )
+                .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+              placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
+              resolved_end_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+              resolved_start_at: /*#__PURE__*/ zod.iso.datetime({
+                offset: true,
+              }),
+              schedule_ref: /*#__PURE__*/ zod.uuid(),
+              starts_local_at: /*#__PURE__*/ zod
+                .string()
+                .check(
+                  /*#__PURE__*/ zod.regex(
+                    timelineWindowItemsResponseItemsItemTwoThreeStartsLocalAtRegExp,
+                  ),
+                ),
+              temporal_form: /*#__PURE__*/ zod
+                ._default(
+                  /*#__PURE__*/ zod.literal('named_zone_local'),
+                  timelineWindowItemsResponseItemsItemTwoThreeTemporalFormDefault,
+                )
+                .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
+              title: /*#__PURE__*/ zod.string(),
+              zone_id: /*#__PURE__*/ zod.string(),
+            })
+            .check(
+              /*#__PURE__*/ zod.describe(
+                'Current named-zone Event intent and viewing projection.',
+              ),
+            ),
+          /*#__PURE__*/ zod
+            .object({
+              display_ends_local_at: /*#__PURE__*/ zod
+                .string()
+                .check(
+                  /*#__PURE__*/ zod.regex(
+                    timelineWindowItemsResponseItemsItemTwoFourDisplayEndsLocalAtRegExp,
+                  ),
+                ),
+              display_starts_local_at: /*#__PURE__*/ zod
+                .string()
+                .check(
+                  /*#__PURE__*/ zod.regex(
+                    timelineWindowItemsResponseItemsItemTwoFourDisplayStartsLocalAtRegExp,
+                  ),
+                ),
+              ends_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+              event_ref: /*#__PURE__*/ zod.uuid(),
+              kind: /*#__PURE__*/ zod
+                ._default(
+                  /*#__PURE__*/ zod.literal('scheduled_event'),
+                  timelineWindowItemsResponseItemsItemTwoFourKindDefault,
+                )
+                .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+              placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
+              schedule_ref: /*#__PURE__*/ zod.uuid(),
+              starts_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+              temporal_form: /*#__PURE__*/ zod
+                ._default(
+                  /*#__PURE__*/ zod.literal('absolute'),
+                  timelineWindowItemsResponseItemsItemTwoFourTemporalFormDefault,
+                )
+                .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
+              title: /*#__PURE__*/ zod.string(),
+            })
+            .check(
+              /*#__PURE__*/ zod.describe(
+                'Current absolute Event Schedule plus request-zone projection.',
+              ),
+            ),
+          /*#__PURE__*/ zod
+            .object({
+              event_ref: /*#__PURE__*/ zod.uuid(),
+              kind: /*#__PURE__*/ zod
+                ._default(
+                  /*#__PURE__*/ zod.literal('scheduled_event'),
+                  timelineWindowItemsResponseItemsItemTwoFiveKindDefault,
+                )
+                .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+              local_date: /*#__PURE__*/ zod.iso.date(),
+              period: /*#__PURE__*/ zod.enum([
+                'morning',
+                'afternoon',
+                'evening',
+              ]),
+              placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
+              schedule_ref: /*#__PURE__*/ zod.uuid(),
+              temporal_form: /*#__PURE__*/ zod
+                ._default(
+                  /*#__PURE__*/ zod.literal('coarse_local_period'),
+                  timelineWindowItemsResponseItemsItemTwoFiveTemporalFormDefault,
+                )
+                .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
+              title: /*#__PURE__*/ zod.string(),
+            })
+            .check(
+              /*#__PURE__*/ zod.describe(
+                'Current coarse Event placement with no manufactured clock boundaries.',
+              ),
+            ),
+        ]),
       ]),
     ),
     kind: /*#__PURE__*/ zod

@@ -6,34 +6,35 @@
  */
 import * as zod from 'zod/mini';
 
-export const timelineAbsoluteActivityResponseDisplayEndsLocalAtRegExp =
+export const timelineAbsoluteEventResponseDisplayEndsLocalAtRegExp = new RegExp(
+  '^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$',
+);
+export const timelineAbsoluteEventResponseDisplayStartsLocalAtRegExp =
   new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
-export const timelineAbsoluteActivityResponseDisplayStartsLocalAtRegExp =
-  new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
-export const timelineAbsoluteActivityResponseKindDefault = `scheduled_activity`;
-export const timelineAbsoluteActivityResponseTemporalFormDefault = `absolute`;
-export const TimelineAbsoluteActivityResponse = /*#__PURE__*/ zod
+export const timelineAbsoluteEventResponseKindDefault = `scheduled_event`;
+export const timelineAbsoluteEventResponseTemporalFormDefault = `absolute`;
+export const TimelineAbsoluteEventResponse = /*#__PURE__*/ zod
   .object({
-    activity_ref: /*#__PURE__*/ zod.uuid(),
     display_ends_local_at: /*#__PURE__*/ zod
       .string()
       .check(
         /*#__PURE__*/ zod.regex(
-          timelineAbsoluteActivityResponseDisplayEndsLocalAtRegExp,
+          timelineAbsoluteEventResponseDisplayEndsLocalAtRegExp,
         ),
       ),
     display_starts_local_at: /*#__PURE__*/ zod
       .string()
       .check(
         /*#__PURE__*/ zod.regex(
-          timelineAbsoluteActivityResponseDisplayStartsLocalAtRegExp,
+          timelineAbsoluteEventResponseDisplayStartsLocalAtRegExp,
         ),
       ),
     ends_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+    event_ref: /*#__PURE__*/ zod.uuid(),
     kind: /*#__PURE__*/ zod
       ._default(
-        /*#__PURE__*/ zod.literal('scheduled_activity'),
-        timelineAbsoluteActivityResponseKindDefault,
+        /*#__PURE__*/ zod.literal('scheduled_event'),
+        timelineAbsoluteEventResponseKindDefault,
       )
       .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
     placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
@@ -42,20 +43,20 @@ export const TimelineAbsoluteActivityResponse = /*#__PURE__*/ zod
     temporal_form: /*#__PURE__*/ zod
       ._default(
         /*#__PURE__*/ zod.literal('absolute'),
-        timelineAbsoluteActivityResponseTemporalFormDefault,
+        timelineAbsoluteEventResponseTemporalFormDefault,
       )
       .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
     title: /*#__PURE__*/ zod.string(),
   })
   .check(
     /*#__PURE__*/ zod.describe(
-      'Current absolute Activity Schedule plus request-zone projection.',
+      'Current absolute Event Schedule plus request-zone projection.',
     ),
   );
 
-export type TimelineAbsoluteActivityResponse = zod.input<
-  typeof TimelineAbsoluteActivityResponse
+export type TimelineAbsoluteEventResponse = zod.input<
+  typeof TimelineAbsoluteEventResponse
 >;
-export type TimelineAbsoluteActivityResponseOutput = zod.output<
-  typeof TimelineAbsoluteActivityResponse
+export type TimelineAbsoluteEventResponseOutput = zod.output<
+  typeof TimelineAbsoluteEventResponse
 >;

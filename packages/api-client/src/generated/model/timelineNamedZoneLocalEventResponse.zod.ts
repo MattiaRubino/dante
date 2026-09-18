@@ -6,44 +6,45 @@
  */
 import * as zod from 'zod/mini';
 
-export const timelineNamedZoneLocalActivityResponseDisplayEndsLocalAtRegExp =
+export const timelineNamedZoneLocalEventResponseDisplayEndsLocalAtRegExp =
   new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
-export const timelineNamedZoneLocalActivityResponseDisplayStartsLocalAtRegExp =
+export const timelineNamedZoneLocalEventResponseDisplayStartsLocalAtRegExp =
   new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
-export const timelineNamedZoneLocalActivityResponseEndsLocalAtRegExp =
+export const timelineNamedZoneLocalEventResponseEndsLocalAtRegExp = new RegExp(
+  '^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$',
+);
+export const timelineNamedZoneLocalEventResponseKindDefault = `scheduled_event`;
+export const timelineNamedZoneLocalEventResponseStartsLocalAtRegExp =
   new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
-export const timelineNamedZoneLocalActivityResponseKindDefault = `scheduled_activity`;
-export const timelineNamedZoneLocalActivityResponseStartsLocalAtRegExp =
-  new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
-export const timelineNamedZoneLocalActivityResponseTemporalFormDefault = `named_zone_local`;
-export const TimelineNamedZoneLocalActivityResponse = /*#__PURE__*/ zod
+export const timelineNamedZoneLocalEventResponseTemporalFormDefault = `named_zone_local`;
+export const TimelineNamedZoneLocalEventResponse = /*#__PURE__*/ zod
   .object({
-    activity_ref: /*#__PURE__*/ zod.uuid(),
     display_ends_local_at: /*#__PURE__*/ zod
       .string()
       .check(
         /*#__PURE__*/ zod.regex(
-          timelineNamedZoneLocalActivityResponseDisplayEndsLocalAtRegExp,
+          timelineNamedZoneLocalEventResponseDisplayEndsLocalAtRegExp,
         ),
       ),
     display_starts_local_at: /*#__PURE__*/ zod
       .string()
       .check(
         /*#__PURE__*/ zod.regex(
-          timelineNamedZoneLocalActivityResponseDisplayStartsLocalAtRegExp,
+          timelineNamedZoneLocalEventResponseDisplayStartsLocalAtRegExp,
         ),
       ),
     ends_local_at: /*#__PURE__*/ zod
       .string()
       .check(
         /*#__PURE__*/ zod.regex(
-          timelineNamedZoneLocalActivityResponseEndsLocalAtRegExp,
+          timelineNamedZoneLocalEventResponseEndsLocalAtRegExp,
         ),
       ),
+    event_ref: /*#__PURE__*/ zod.uuid(),
     kind: /*#__PURE__*/ zod
       ._default(
-        /*#__PURE__*/ zod.literal('scheduled_activity'),
-        timelineNamedZoneLocalActivityResponseKindDefault,
+        /*#__PURE__*/ zod.literal('scheduled_event'),
+        timelineNamedZoneLocalEventResponseKindDefault,
       )
       .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
     placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
@@ -54,13 +55,13 @@ export const TimelineNamedZoneLocalActivityResponse = /*#__PURE__*/ zod
       .string()
       .check(
         /*#__PURE__*/ zod.regex(
-          timelineNamedZoneLocalActivityResponseStartsLocalAtRegExp,
+          timelineNamedZoneLocalEventResponseStartsLocalAtRegExp,
         ),
       ),
     temporal_form: /*#__PURE__*/ zod
       ._default(
         /*#__PURE__*/ zod.literal('named_zone_local'),
-        timelineNamedZoneLocalActivityResponseTemporalFormDefault,
+        timelineNamedZoneLocalEventResponseTemporalFormDefault,
       )
       .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
     title: /*#__PURE__*/ zod.string(),
@@ -68,13 +69,13 @@ export const TimelineNamedZoneLocalActivityResponse = /*#__PURE__*/ zod
   })
   .check(
     /*#__PURE__*/ zod.describe(
-      'Current named-zone Activity intent and viewing projection.',
+      'Current named-zone Event intent and viewing projection.',
     ),
   );
 
-export type TimelineNamedZoneLocalActivityResponse = zod.input<
-  typeof TimelineNamedZoneLocalActivityResponse
+export type TimelineNamedZoneLocalEventResponse = zod.input<
+  typeof TimelineNamedZoneLocalEventResponse
 >;
-export type TimelineNamedZoneLocalActivityResponseOutput = zod.output<
-  typeof TimelineNamedZoneLocalActivityResponse
+export type TimelineNamedZoneLocalEventResponseOutput = zod.output<
+  typeof TimelineNamedZoneLocalEventResponse
 >;

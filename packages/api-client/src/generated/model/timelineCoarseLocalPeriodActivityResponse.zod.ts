@@ -31,7 +31,7 @@ export const TimelineCoarseLocalPeriodActivityResponse = /*#__PURE__*/ zod
   })
   .check(
     /*#__PURE__*/ zod.describe(
-      'Current coarse placement with no manufactured clock boundaries.',
+      'Current coarse Activity placement with no manufactured clock boundaries.',
     ),
   );
 

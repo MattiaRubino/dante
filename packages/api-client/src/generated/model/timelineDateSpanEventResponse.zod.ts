@@ -6,16 +6,16 @@
  */
 import * as zod from 'zod/mini';
 
-export const timelineDateSpanActivityResponseKindDefault = `scheduled_activity`;
-export const timelineDateSpanActivityResponseTemporalFormDefault = `date_span`;
-export const TimelineDateSpanActivityResponse = /*#__PURE__*/ zod
+export const timelineDateSpanEventResponseKindDefault = `scheduled_event`;
+export const timelineDateSpanEventResponseTemporalFormDefault = `date_span`;
+export const TimelineDateSpanEventResponse = /*#__PURE__*/ zod
   .object({
-    activity_ref: /*#__PURE__*/ zod.uuid(),
     end_date_exclusive: /*#__PURE__*/ zod.iso.date(),
+    event_ref: /*#__PURE__*/ zod.uuid(),
     kind: /*#__PURE__*/ zod
       ._default(
-        /*#__PURE__*/ zod.literal('scheduled_activity'),
-        timelineDateSpanActivityResponseKindDefault,
+        /*#__PURE__*/ zod.literal('scheduled_event'),
+        timelineDateSpanEventResponseKindDefault,
       )
       .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
     placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
@@ -24,20 +24,20 @@ export const TimelineDateSpanActivityResponse = /*#__PURE__*/ zod
     temporal_form: /*#__PURE__*/ zod
       ._default(
         /*#__PURE__*/ zod.literal('date_span'),
-        timelineDateSpanActivityResponseTemporalFormDefault,
+        timelineDateSpanEventResponseTemporalFormDefault,
       )
       .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
     title: /*#__PURE__*/ zod.string(),
   })
   .check(
     /*#__PURE__*/ zod.describe(
-      'Current accepted half-open civil-date Activity Schedule projection.',
+      'Current accepted half-open civil-date Event Schedule projection.',
     ),
   );
 
-export type TimelineDateSpanActivityResponse = zod.input<
-  typeof TimelineDateSpanActivityResponse
+export type TimelineDateSpanEventResponse = zod.input<
+  typeof TimelineDateSpanEventResponse
 >;
-export type TimelineDateSpanActivityResponseOutput = zod.output<
-  typeof TimelineDateSpanActivityResponse
+export type TimelineDateSpanEventResponseOutput = zod.output<
+  typeof TimelineDateSpanEventResponse
 >;

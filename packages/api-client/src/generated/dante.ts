@@ -12,8 +12,12 @@ import type {
   AuthenticatedSessionResponse,
   AuthenticationMethodsResponse,
   CreateActivityRequest,
+  CreateEventRequest,
   CreateScheduledActivityRequest,
+  CreateScheduledEventRequest,
   EstablishActivityScheduleRequest,
+  EventAgendaMutationResponse,
+  EventResponse,
   ExistingAccountSignupResponse,
   GetTimelineWindowApiV1TemporalTimelineWindowGetParams,
   GoogleAuthenticationBegunResponse,
@@ -42,6 +46,7 @@ import type {
   ReauthenticateRequest,
   RecoveryAcceptedResponse,
   RecoveryValidationResponse,
+  ReplaceEventAgendaRequest,
   RestoredScheduleAbsoluteResponse,
   RestoredScheduleCoarseResponse,
   RestoredScheduleDateSpanResponse,
@@ -58,6 +63,11 @@ import type {
   ScheduledActivityDateSpanResponse,
   ScheduledActivityNamedZoneResponse,
   ScheduledActivityResponse,
+  ScheduledEventAbsoluteResponse,
+  ScheduledEventCoarseResponse,
+  ScheduledEventDateSpanResponse,
+  ScheduledEventFloatingResponse,
+  ScheduledEventNamedZoneResponse,
   SignInRequest,
   SignupAuthenticatedResponse,
   SignupCreatedResponse,
@@ -3885,6 +3895,276 @@ export const establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedule
       headers: res.headers,
     } as establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostResponse;
   };
+
+export type createEventApiV1TemporalEventsPostResponse201 = {
+  data: EventResponse;
+  status: 201;
+};
+
+export type createEventApiV1TemporalEventsPostResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type createEventApiV1TemporalEventsPostResponseSuccess =
+  createEventApiV1TemporalEventsPostResponse201 & {
+    headers: Headers;
+  };
+export type createEventApiV1TemporalEventsPostResponseError =
+  createEventApiV1TemporalEventsPostResponse422 & {
+    headers: Headers;
+  };
+
+export type createEventApiV1TemporalEventsPostResponse =
+  | createEventApiV1TemporalEventsPostResponseSuccess
+  | createEventApiV1TemporalEventsPostResponseError;
+
+export const getCreateEventApiV1TemporalEventsPostUrl = () => {
+  return `/api/v1/temporal/events`;
+};
+
+/**
+ * @summary Create Event
+ */
+export const createEventApiV1TemporalEventsPost = async (
+  createEventRequest: CreateEventRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<createEventApiV1TemporalEventsPostResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getCreateEventApiV1TemporalEventsPostUrl(),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(createEventRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: createEventApiV1TemporalEventsPostResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as createEventApiV1TemporalEventsPostResponse;
+};
+
+export type createScheduledEventApiV1TemporalEventsScheduledPostResponse201 = {
+  data:
+    | ScheduledEventFloatingResponse
+    | ScheduledEventDateSpanResponse
+    | ScheduledEventNamedZoneResponse
+    | ScheduledEventAbsoluteResponse
+    | ScheduledEventCoarseResponse;
+  status: 201;
+};
+
+export type createScheduledEventApiV1TemporalEventsScheduledPostResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type createScheduledEventApiV1TemporalEventsScheduledPostResponseSuccess =
+  createScheduledEventApiV1TemporalEventsScheduledPostResponse201 & {
+    headers: Headers;
+  };
+export type createScheduledEventApiV1TemporalEventsScheduledPostResponseError =
+  createScheduledEventApiV1TemporalEventsScheduledPostResponse422 & {
+    headers: Headers;
+  };
+
+export type createScheduledEventApiV1TemporalEventsScheduledPostResponse =
+  | createScheduledEventApiV1TemporalEventsScheduledPostResponseSuccess
+  | createScheduledEventApiV1TemporalEventsScheduledPostResponseError;
+
+export const getCreateScheduledEventApiV1TemporalEventsScheduledPostUrl =
+  () => {
+    return `/api/v1/temporal/events/scheduled`;
+  };
+
+/**
+ * @summary Create Scheduled Event
+ */
+export const createScheduledEventApiV1TemporalEventsScheduledPost = async (
+  createScheduledEventRequest: CreateScheduledEventRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<createScheduledEventApiV1TemporalEventsScheduledPostResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getCreateScheduledEventApiV1TemporalEventsScheduledPostUrl(),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(createScheduledEventRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: createScheduledEventApiV1TemporalEventsScheduledPostResponse['data'] =
+    body ? JSON.parse(body) : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as createScheduledEventApiV1TemporalEventsScheduledPostResponse;
+};
+
+export type getEventApiV1TemporalEventsEventRefGetResponse200 = {
+  data: EventResponse;
+  status: 200;
+};
+
+export type getEventApiV1TemporalEventsEventRefGetResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type getEventApiV1TemporalEventsEventRefGetResponseSuccess =
+  getEventApiV1TemporalEventsEventRefGetResponse200 & {
+    headers: Headers;
+  };
+export type getEventApiV1TemporalEventsEventRefGetResponseError =
+  getEventApiV1TemporalEventsEventRefGetResponse422 & {
+    headers: Headers;
+  };
+
+export type getEventApiV1TemporalEventsEventRefGetResponse =
+  | getEventApiV1TemporalEventsEventRefGetResponseSuccess
+  | getEventApiV1TemporalEventsEventRefGetResponseError;
+
+export const getGetEventApiV1TemporalEventsEventRefGetUrl = (
+  eventRef: string,
+) => {
+  return `/api/v1/temporal/events/${eventRef}`;
+};
+
+/**
+ * @summary Get Event
+ */
+export const getEventApiV1TemporalEventsEventRefGet = async (
+  eventRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<getEventApiV1TemporalEventsEventRefGetResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getGetEventApiV1TemporalEventsEventRefGetUrl(eventRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: getEventApiV1TemporalEventsEventRefGetResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as getEventApiV1TemporalEventsEventRefGetResponse;
+};
+
+export type replaceEventAgendaApiV1TemporalEventsEventRefAgendaPutResponse200 =
+  {
+    data: EventAgendaMutationResponse;
+    status: 200;
+  };
+
+export type replaceEventAgendaApiV1TemporalEventsEventRefAgendaPutResponse422 =
+  {
+    data: HTTPValidationError;
+    status: 422;
+  };
+
+export type replaceEventAgendaApiV1TemporalEventsEventRefAgendaPutResponseSuccess =
+  replaceEventAgendaApiV1TemporalEventsEventRefAgendaPutResponse200 & {
+    headers: Headers;
+  };
+export type replaceEventAgendaApiV1TemporalEventsEventRefAgendaPutResponseError =
+  replaceEventAgendaApiV1TemporalEventsEventRefAgendaPutResponse422 & {
+    headers: Headers;
+  };
+
+export type replaceEventAgendaApiV1TemporalEventsEventRefAgendaPutResponse =
+  | replaceEventAgendaApiV1TemporalEventsEventRefAgendaPutResponseSuccess
+  | replaceEventAgendaApiV1TemporalEventsEventRefAgendaPutResponseError;
+
+export const getReplaceEventAgendaApiV1TemporalEventsEventRefAgendaPutUrl = (
+  eventRef: string,
+) => {
+  return `/api/v1/temporal/events/${eventRef}/agenda`;
+};
+
+/**
+ * @summary Replace Event Agenda
+ */
+export const replaceEventAgendaApiV1TemporalEventsEventRefAgendaPut = async (
+  eventRef: string,
+  replaceEventAgendaRequest: ReplaceEventAgendaRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<replaceEventAgendaApiV1TemporalEventsEventRefAgendaPutResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getReplaceEventAgendaApiV1TemporalEventsEventRefAgendaPutUrl(eventRef),
+    {
+      ...options,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(replaceEventAgendaRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: replaceEventAgendaApiV1TemporalEventsEventRefAgendaPutResponse['data'] =
+    body ? JSON.parse(body) : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as replaceEventAgendaApiV1TemporalEventsEventRefAgendaPutResponse;
+};
 
 export type reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchResponse200 =
   {
