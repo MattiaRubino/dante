@@ -14,7 +14,7 @@ from dante.platform.database.mappings import MAPPED_TABLES
 
 pytestmark = pytest.mark.postgres
 
-_CURRENT_REVISION = "20260918_32"
+_CURRENT_REVISION = "20260918_33"
 _REPO_ROOT = Path(__file__).resolve().parents[5]
 _B04_TABLES = {
     "temporal_constraint",
@@ -23,6 +23,12 @@ _B04_TABLES = {
     "temporal_constraint_boundary_absolute_state",
     "temporal_constraint_current_history",
     "temporal_constraint_mutation_operation",
+}
+_B04_RUNTIME_READ_TABLES = {
+    "temporal_constraint",
+    "temporal_constraint_state",
+    "temporal_constraint_boundary_state",
+    "temporal_constraint_boundary_absolute_state",
 }
 _B04_TRIGGERS = {
     "trg_temporal_constraint_native_ref": (False, False, False, "enforce_native_ref_eligibility"),
@@ -168,8 +174,9 @@ def test_b04_a_triggers_and_routine_acl_are_exact(migrated_database: Any) -> Non
             )
         }
 
-        direct_acl = list(
-            connection.execute(
+        direct_acl = {
+            (str(row[0]), str(row[1]), str(row[2]))
+            for row in connection.execute(
                 """
                 SELECT c.relname,COALESCE(r.rolname,'PUBLIC'),acl.privilege_type
                 FROM pg_class c
@@ -184,7 +191,7 @@ def test_b04_a_triggers_and_routine_acl_are_exact(migrated_database: Any) -> Non
                 """,
                 (sorted(_B04_TABLES),),
             )
-        )
+        }
 
         mutation_security = _routine_security(connection, _MUTATE_SIGNATURE)
         shared_security = {
@@ -193,7 +200,9 @@ def test_b04_a_triggers_and_routine_acl_are_exact(migrated_database: Any) -> Non
         }
 
     assert trigger_rows == _B04_TRIGGERS
-    assert direct_acl == []
+    assert direct_acl == {
+        (table, "dante_runtime", "SELECT") for table in _B04_RUNTIME_READ_TABLES
+    }
     assert mutation_security == (
         "dante_owner",
         True,
