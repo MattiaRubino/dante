@@ -13,6 +13,9 @@ from dante.auth.m5_provider_api import router as auth_m5_provider_router
 from dante.bootstrap.lifespan import lifespan
 from dante.modules.temporal.api import router as temporal_router
 from dante.modules.temporal.event_api import router as temporal_event_router
+from dante.modules.temporal.temporal_constraint_api import (
+    router as temporal_constraint_router,
+)
 from dante.platform.config.settings import Environment, Settings
 from dante.platform.database.runtime import DatabaseRuntime
 from dante.platform.http.problem import RequestContextMiddleware, install_problem_handlers
@@ -61,6 +64,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(auth_m5_passkey_router)
     app.include_router(temporal_router)
     app.include_router(temporal_event_router)
+    app.include_router(temporal_constraint_router)
 
     @app.get("/health/live", include_in_schema=False)
     def health_live() -> dict[str, str]:

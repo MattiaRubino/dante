@@ -59,6 +59,19 @@ _PRE_B04_TEMPORAL_OPERATIONS = {
 # history so new operations cannot inherit the legacy implicit-ID exception.
 _EXPECTED_TEMPORAL_OPERATIONS = {
     **_PRE_B04_TEMPORAL_OPERATIONS,
+    ("/api/v1/temporal/constraints", "post"): "temporal_create_constraint",
+    ("/api/v1/temporal/constraints", "get"): (
+        "temporal_list_constraints_by_subject"
+    ),
+    ("/api/v1/temporal/constraints/{constraint_ref}", "get"): (
+        "temporal_get_constraint"
+    ),
+    ("/api/v1/temporal/constraints/{constraint_ref}/rule", "patch"): (
+        "temporal_revise_constraint_rule"
+    ),
+    ("/api/v1/temporal/constraints/{constraint_ref}/retire", "post"): (
+        "temporal_retire_constraint"
+    ),
 }
 
 
