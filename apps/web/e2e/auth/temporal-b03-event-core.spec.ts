@@ -114,6 +114,7 @@ async function createScheduledEvent(
   await dialog.getByRole('textbox', { name: 'Titolo' }).fill(title);
   await configure(dialog);
 
+  const timelineRefreshPromise = waitForTimelineRead(page);
   const responsePromise = page.waitForResponse(
     (response) =>
       response.url().endsWith('/api/v1/temporal/events/scheduled') &&
@@ -123,6 +124,7 @@ async function createScheduledEvent(
   await dialog.getByRole('button', { name: 'Aggiungi', exact: true }).click();
   const response = await responsePromise;
   expect(response.status()).toBe(201);
+  expect((await timelineRefreshPromise).status()).toBe(200);
   await expect(dialog).toHaveCount(0);
   return (await response.json()) as Record<string, unknown>;
 }
@@ -167,6 +169,7 @@ test.describe('Timeline B03-E real-stack Event closure', () => {
       await timedCard.scrollIntoViewIfNeeded();
       await expect(timedCard).toBeVisible();
 
+      const revisionTimelineRefresh = waitForTimelineRead(page);
       const revisionResponsePromise = page.waitForResponse(
         (response) =>
           response.url().endsWith(
@@ -177,6 +180,7 @@ test.describe('Timeline B03-E real-stack Event closure', () => {
       await timedCard.press('Alt+ArrowDown');
       const revisionResponse = await revisionResponsePromise;
       expect(revisionResponse.status()).toBe(200);
+      expect((await revisionTimelineRefresh).status()).toBe(200);
       const revised = (await revisionResponse.json()) as Record<string, unknown>;
       expect(revised.schedule_ref).toBe(timedScheduleRef);
       expect(revised.previous_placement_material_state_ref).toBe(initialStateRef);
@@ -225,6 +229,7 @@ test.describe('Timeline B03-E real-stack Event closure', () => {
       const multiDayEventRef = uuidField(multiDay, 'event_ref');
       const multiDayScheduleRef = uuidField(multiDay, 'schedule_ref');
 
+      await page.waitForLoadState('networkidle');
       const reloadTimeline = waitForTimelineRead(page);
       const reloadUnplaced = waitForUnplacedRead(page);
       await page.reload({
