@@ -6,8 +6,8 @@
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
-- **Timeline candidate Alembic head:** `20260917_29`
-- **Timeline candidate topology:** `101|5|31|78|198|119|297|0|0|0`
+- **Timeline candidate Alembic head:** `20260918_32`
+- **Timeline candidate topology:** `107|5|33|85|212|129|309|0|0|0`
 - **Pre-vertical integration:** PR #66 / merge `1ecd58145860aebfaaa3dc1bd356b90f7a8eb19b` is protected-main historical context
 - **Authenticated DANTE context authority:** `../architecture/authenticated-dante-context.md`
 - **Access/Auth reference:** `access-auth.md`
@@ -18,6 +18,7 @@
 - **Persistence ADR:** `../decisions/ADR-010-postgresql-persistence-constitution.md`
 - **Timeline workstream authority:** `../workstreams/timeline-temporal-operational-map.md`
 - **Pre-B04 governance closure:** `../workstreams/timeline-temporal-operational-pre-b04-governance-2026-09-18.md`
+- **B04-A implementation freeze:** `../workstreams/timeline-temporal-operational-b04-a-implementation-freeze.md`
 
 ## 1. Authority model
 
@@ -49,43 +50,49 @@ Protected `main` remains integration authority. Candidate truth is never relabel
 The Timeline candidate extends protected-main `20260906_18` only through forward revisions:
 
 ```text
-20260906_18 account_application_context        [protected-main authority]
+20260906_18 account_application_context          [protected-main authority]
     ↓
-20260908_19 activity_core                      [B01]
+20260908_19 activity_core                        [B01]
     ↓
-20260909_20 b02_schedule_establish             [B02-A]
+20260909_20 b02_schedule_establish               [B02-A]
     ↓
 20260909_21 b02_schedule_acl_hardening
     ↓
-20260913_22 b02_schedule_revision              [B02-C]
+20260913_22 b02_schedule_revision                [B02-C]
     ↓
-20260914_23 b02_schedule_unschedule_undo       [B02-D]
+20260914_23 b02_schedule_unschedule_undo         [B02-D]
     ↓
 20260914_24 b02_schedule_plpgsql_disambiguation
     ↓
-20260915_25 b02_schedule_form_completeness     [B02-E]
+20260915_25 b02_schedule_form_completeness       [B02-E]
     ↓
-20260915_26 b02_named_zone_gap_resolution      [B02 closure]
+20260915_26 b02_named_zone_gap_resolution        [B02 closure]
     ↓
-20260916_27 b03_event_core                     [B03-A]
+20260916_27 b03_event_core                       [B03-A]
     ↓
-20260917_28 b03 shared Event/Schedule activation [B03-B; B03-C reuses shared lifecycle]
+20260917_28 b03 shared Event/Schedule activation [B03-B]
     ↓
-20260917_29 b03_event_agenda                   [B03-D / B03 closure candidate head]
+20260917_29 b03_event_agenda                     [B03-D / B03 closure]
+    ↓
+20260918_30 b04_temporal_constraint_core         [B04-A canonical core]
+    ↓
+20260918_31 b04_temporal_constraint_totality_hardening
+    ↓
+20260918_32 b04_current_history_dispatch_hardening [current candidate head]
 ```
 
-No accepted historical migration was edited, rebased, renumbered or flattened.
+No accepted historical migration was edited, rebased, renumbered or flattened. `_31` and `_32` are forward hardening revisions because already-materialized candidate databases must converge to the same accepted B04-A behavior as a fresh migration.
 
 ## 3. Current candidate topology
 
 ```text
-101 tables
+107 tables
 5 views
-31 routines
-78 triggers
-198 physical indexes
-119 foreign keys
-297 CHECK constraints
+33 routines
+85 triggers
+212 physical indexes
+129 foreign keys
+309 CHECK constraints
 0 enums/domains
 0 sequences
 0 materialized views
@@ -93,7 +100,7 @@ No accepted historical migration was edited, rebased, renumbered or flattened.
 0 RLS policies
 ```
 
-The exact machine-readable inventory is `dictionary/scope.json` plus the per-object Dictionary tree. Prose counts are a convenience view and must never override that inventory or the live PostgreSQL catalog.
+This topology was read directly from PostgreSQL 18.6 migrated through `_32` by the B04-A catalog/ACL proof. The exact machine-readable inventory is `dictionary/scope.json` plus the per-object Dictionary tree. Prose counts are a convenience view and must never override that inventory or the live PostgreSQL catalog.
 
 ## 4. Timeline persistence classification
 
@@ -138,30 +145,82 @@ replace_self_event_agenda(...)
 
 B03-B generalizes the shared Schedule authorization/capability to Event. B03-C introduces no separate Event scheduling engine or DDL; it reuses shared Schedule revision/unschedule/Undo. B03-D adds ordered Event-internal Agenda truth with aggregate CAS/idempotency control.
 
+### B04-A Temporal Constraint canonical core
+
+Temporal Constraint is a stable `ScopedRecordRef` LR-05 dependent. It is not a NativeRef root, Schedule placement, Movement Policy, Recurrence or evidence of Actual realization.
+
+B04-A materializes:
+
+```text
+temporal_constraint
+temporal_constraint_state
+temporal_constraint_boundary_state
+temporal_constraint_boundary_absolute_state
+temporal_constraint_current_history
+temporal_constraint_mutation_operation
+
+enforce_temporal_constraint_rule_totality()
+mutate_self_absolute_earliest_start_constraint(...)
+```
+
+The first complete typed rule path is deliberately narrow and real rather than placeholder-shaped:
+
+```text
+subject             self-owned Activity | Event
+family              boundary
+boundary kind       earliest_start
+constrained facet   schedule.start
+strength            hard | soft
+temporal form       absolute
+boundary value      finite timestamptz
+```
+
+The existing bounded control engine is extended rather than duplicated:
+
+```text
+scoped_address                     + temporal_constraint
+material_state_address             + temporal_constraint.rule
+scoped_current_material_state      + temporal_constraint.rule
+shared owner/ref/totality/history dispatchers extended
+```
+
+`_31` closes cross-family MaterialState totality in both directions. `_32` hardens the shared current-history dispatcher so each owner-specific history table dereferences only its own identity column.
+
+Create/revise/retire use expected-state CAS and immutable idempotency receipts. Revision appends a new rule MaterialState and moves currentness; retire closes the open current-history episode and removes only the current binding. Stable constraint identity and history remain.
+
 Permanent boundaries include:
 
 ```text
 Activity != Event
 Event != Schedule
-Event != Recurrence != Occurrence
-Event != Session != Actual != Outcome
-Agenda part != Activity/Event/Occurrence/Schedule/Session/Actual
-Event identity != operation/idempotency identity
-provider identity != DANTE Event identity
-Schedule identity != placement MaterialState
-current accepted placement != newest row
+Schedule != Temporal Constraint
+Temporal Constraint != Movement Policy
+Temporal Constraint != Recurrence
+Temporal Constraint != Session / Actual
+constraint revision != Schedule revision
+current accepted state != newest row
+idempotency key != Domain identity
+provider identity != DANTE identity
 ```
+
+B04-B+ deadline/boundary expansion, windows/preferences, Movement Policy, advanced duration/spacing/relative families and solver semantics remain outside B04-A.
 
 ## 5. Proof state
 
 ```text
-B01 Activity Core     CLOSED / PROVEN
-B02 Schedule Core     CLOSED / PROVEN at 20260915_26
-B03 Event Core        CLOSED / PROVEN at candidate 20260917_29
-B04                   NOT STARTED; explicit gate remains APPROVE B04
+B01 Activity Core                    CLOSED / PROVEN
+B02 Schedule Core                    CLOSED / PROVEN at 20260915_26
+B03 Event Core                       CLOSED / PROVEN at 20260917_29
+B04-A A1 DDL / SQLAlchemy            PROVEN
+B04-A A2 PostgreSQL / catalog / ACL  PROVEN at 20260918_32
+B04-A A3 CAS / idempotency           PROVEN
+B04-A A4 DB / Dictionary / docs      MATERIALIZED; reconciliation tests pending
+B04-A A5 application / API           NOT STARTED
+B04-A overall                        IN PROGRESS
+B04 overall                          IN PROGRESS
 ```
 
-B03 closure includes real PostgreSQL/API proof, Dictionary/Alembic/current-catalog reconciliation, shared Activity/Event Schedule regression, frontend/browser proof, manual acceptance and governed OpenAPI/client regeneration. Detailed proof authority remains in the B03 closure documents under `docs/workstreams/`.
+Current B04-A proof already includes focused create/revise/retire/CAS/idempotency tests, Activity/Event subject integrity, runtime direct-bypass rejection, MaterialState exclusivity, shared current-history dispatch regression, broad Temporal/CP6 regression, and direct `_32` topology/owner/ACL proof. A4 is not closed merely because these references were edited; current-catalog/Dictionary parity must run green on the reconciled tree.
 
 ## 6. Runtime role model
 
@@ -174,11 +233,11 @@ dante_runtime    LOGIN application runtime identity
 dante_observer   LOGIN statistics-only collector identity
 ```
 
-Business migrations own the exact ACL delta for the objects/capabilities they create or alter. Runtime does not receive blanket business-object DML merely because a table exists.
+Business migrations own the exact ACL delta for the objects/capabilities they create or alter. B04-A tables expose no generic runtime DML; runtime receives EXECUTE only on the governed mutation function. Runtime does not receive blanket business-object DML merely because a table exists.
 
 ## 7. Recovery boundary
 
-The accepted recovery doctrine is unchanged by B01-B03. Timeline candidate state is ordinary canonical/control state and must participate in the same recovery/anti-resurrection discipline when the whole vertical reaches its recovery closure. No local candidate proof is represented as production/cloud recovery proof.
+The accepted recovery doctrine is unchanged. Timeline candidate state is ordinary canonical/control state and must participate in the same recovery/anti-resurrection discipline when the whole vertical reaches its applicable recovery closure. No local B04-A candidate proof is represented as production/cloud recovery proof.
 
 ## 8. Same-change rule — binding
 
@@ -206,4 +265,4 @@ Rules:
 - a mismatch between Dictionary, SQLAlchemy, Alembic, catalog, ACL or current human references is a defect, not acceptable lag;
 - a slice cannot be marked CLOSED/PROVEN while a known affected current representation is stale.
 
-The pre-B04 governance closure makes this gate explicit for all B04+ Timeline work.
+The pre-B04 governance closure remains binding for all B04+ Timeline work.
