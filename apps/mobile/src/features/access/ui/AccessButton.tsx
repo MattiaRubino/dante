@@ -31,19 +31,22 @@ export function AccessButton({
   loading = false,
 }: AccessButtonProps) {
   const isUnavailable = disabled || loading || onPress === undefined;
-  const shouldDim = disabled || loading;
+  const rippleColor =
+    variant === 'primary' ? 'rgba(255,255,255,0.14)' : 'rgba(34,47,55,0.08)';
 
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityLabel={label}
       accessibilityState={{ disabled: isUnavailable, busy: loading }}
+      android_ripple={{ color: rippleColor }}
       disabled={isUnavailable}
       onPress={onPress}
       style={({ pressed }) => [
         styles.base,
         styles[variant],
         pressed && !isUnavailable ? styles.pressed : null,
-        shouldDim ? styles.disabled : null,
+        isUnavailable ? styles.disabled : null,
       ]}
     >
       {loading ? (
@@ -66,6 +69,7 @@ const styles = StyleSheet.create({
   base: {
     width: '100%',
     minHeight: 52,
+    overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: accessTheme.radii.control,
@@ -84,7 +88,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   pressed: {
-    opacity: 0.82,
+    opacity: 0.86,
     transform: [{ scale: 0.995 }],
   },
   disabled: {

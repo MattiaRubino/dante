@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type Ref } from 'react';
 import {
   Pressable,
   StyleSheet,
@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 
 import { accessTheme } from '../theme/accessTheme';
+import { AccessFieldError } from './AccessFieldError';
 
 type AccessTextFieldProps = Readonly<{
   label: string;
@@ -21,6 +22,12 @@ type AccessTextFieldProps = Readonly<{
   autoComplete?: TextInputProps['autoComplete'];
   keyboardType?: TextInputProps['keyboardType'];
   textContentType?: TextInputProps['textContentType'];
+  returnKeyType?: TextInputProps['returnKeyType'];
+  onBlur?: TextInputProps['onBlur'];
+  onSubmitEditing?: TextInputProps['onSubmitEditing'];
+  inputRef?: Ref<TextInput>;
+  error?: string;
+  editable?: boolean;
 }>;
 
 export function AccessTextField({
@@ -34,15 +41,24 @@ export function AccessTextField({
   autoComplete,
   keyboardType,
   textContentType,
+  returnKeyType,
+  onBlur,
+  onSubmitEditing,
+  inputRef,
+  error,
+  editable = true,
 }: AccessTextFieldProps) {
   const [revealed, setRevealed] = useState(false);
+  const [focused, setFocused] = useState(false);
   const obscured = secure && !revealed;
+  const hasError = error !== undefined;
 
   return (
     <View style={styles.field}>
       <Text style={styles.label}>{label}</Text>
       <View style={styles.inputWrap}>
         <TextInput
+          {...(inputRef === undefined ? {} : { ref: inputRef })}
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
@@ -53,25 +69,43 @@ export function AccessTextField({
           autoComplete={autoComplete}
           keyboardType={keyboardType}
           textContentType={textContentType}
-          style={[styles.input, secure ? styles.secureInput : null]}
+          returnKeyType={returnKeyType}
+          editable={editable}
+          accessibilityLabel={hasError ? `${label}. ${error}` : label}
+          accessibilityState={{ disabled: !editable }}
+          onFocus={() => setFocused(true)}
+          onBlur={(event) => {
+            setFocused(false);
+            onBlur?.(event);
+          }}
+          onSubmitEditing={onSubmitEditing}
+          style={[
+            styles.input,
+            secure ? styles.secureInput : null,
+            focused ? styles.inputFocused : null,
+            hasError ? styles.inputError : null,
+            !editable ? styles.inputDisabled : null,
+          ]}
           selectionColor={accessTheme.colors.accent}
         />
         {secure ? (
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={revealed ? hideLabel : showLabel}
-            accessibilityState={{ expanded: revealed }}
+            accessibilityState={{ expanded: revealed, disabled: !editable }}
+            disabled={!editable}
             hitSlop={8}
             onPress={() => setRevealed((current) => !current)}
             style={({ pressed }) => [
               styles.reveal,
-              pressed ? styles.revealPressed : null,
+              pressed && editable ? styles.revealPressed : null,
             ]}
           >
             <Text style={styles.revealText}>{revealed ? hideLabel : showLabel}</Text>
           </Pressable>
         ) : null}
       </View>
+      {hasError ? <AccessFieldError message={error} /> : null}
     </View>
   );
 }
@@ -98,18 +132,30 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     fontSize: 16,
   },
+  inputFocused: {
+    borderWidth: 1.5,
+    borderColor: accessTheme.colors.ink,
+  },
+  inputError: {
+    borderWidth: 1.5,
+    borderColor: accessTheme.colors.accentText,
+  },
+  inputDisabled: {
+    opacity: 0.64,
+  },
   secureInput: {
-    paddingRight: 74,
+    paddingRight: 118,
   },
   reveal: {
     position: 'absolute',
     top: 4,
     right: 4,
-    minWidth: 62,
+    minWidth: 104,
     minHeight: 44,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 10,
+    paddingHorizontal: 10,
   },
   revealPressed: {
     backgroundColor: accessTheme.colors.surfaceMuted,
