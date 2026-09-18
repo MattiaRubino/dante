@@ -156,6 +156,16 @@ function parseZoneId(value: unknown, field: string): string {
   }
 }
 
+function parseAgendaRevision(value: unknown): number {
+  if (typeof value !== 'number' || !Number.isInteger(value) || value < 0) {
+    throw new TemporalEventRemoteError(
+      'protocol',
+      'Scheduled Event agenda_revision must be a non-negative integer.',
+    );
+  }
+  return value;
+}
+
 function parseAgendaParts(value: unknown): readonly string[] {
   if (!Array.isArray(value) || value.length > 100) {
     throw new TemporalEventRemoteError(
@@ -302,6 +312,7 @@ function scheduledResponseKeys(temporalForm: unknown): readonly string[] {
   const common = [
     'event_ref',
     'title',
+    'agenda_revision',
     'agenda_parts',
     'created_at',
     'schedule_ref',
@@ -352,6 +363,7 @@ function parseScheduledEvent(
       'Scheduled Event title must be a non-empty string.',
     );
   }
+  parseAgendaRevision(payload.agenda_revision);
   if (typeof payload.replayed !== 'boolean') {
     throw new TemporalEventRemoteError(
       'protocol',
