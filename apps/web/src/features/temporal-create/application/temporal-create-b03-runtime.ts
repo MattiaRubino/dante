@@ -62,12 +62,17 @@ function sameStructuredIntent(left: unknown, right: unknown): boolean {
   );
 }
 
-function eventIntentWithoutAgenda(
+function eventIntentForB03dComparison(
   event: TemporalCreateFields['event'],
+  timeSemantics: TemporalCreateFields['timeSemantics'],
 ): Readonly<Record<string, unknown>> {
   return Object.freeze(
     Object.fromEntries(
-      Object.entries(event).filter(([key]) => key !== 'agendaParts'),
+      Object.entries(event).filter(
+        ([key]) =>
+          key !== 'agendaParts' &&
+          (timeSemantics === 'all-day' || key !== 'allDayEndDate'),
+      ),
     ),
   );
 }
@@ -111,8 +116,11 @@ function b03dScheduledEventIntentSupported(
     ) &&
     sameStructuredIntent(specification.confirmation, baseline.confirmation) &&
     sameStructuredIntent(
-      eventIntentWithoutAgenda(specification.event),
-      eventIntentWithoutAgenda(baseline.event),
+      eventIntentForB03dComparison(
+        specification.event,
+        specification.timeSemantics,
+      ),
+      eventIntentForB03dComparison(baseline.event, baseline.timeSemantics),
     )
   );
 }
