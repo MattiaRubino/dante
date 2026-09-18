@@ -1,7 +1,24 @@
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import {
+  Keyboard,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import {
+  EMPTY_SIGN_IN_FORM_ERRORS,
+  hasSignInFormErrors,
+  normalizeSignInEmail,
+  validateSignInEmail,
+  validateSignInForm,
+  validateSignInPassword,
+  type SignInFormErrors,
+} from '../model/signInForm';
 import { accessTheme } from '../theme/accessTheme';
 import { AccessBrandLockup } from './AccessBrandLockup';
 import { AccessButton } from './AccessButton';
@@ -10,12 +27,22 @@ import { AccessScreen } from './AccessScreen';
 import { AccessTextField } from './AccessTextField';
 
 type SignInScreenProps = Readonly<{
-  onSubmit?: (email: string, password: string) => void;
+  onSubmit?: (email: string, password: string) => void | Promise<void>;
   onGooglePress?: () => void;
   onApplePress?: () => void;
   onForgotPassword?: () => void;
   onCreateAccount?: () => void;
 }>;
+
+type TouchedState = Readonly<{
+  email: boolean;
+  password: boolean;
+}>;
+
+const EMPTY_TOUCHED: TouchedState = {
+  email: false,
+  password: false,
+};
 
 export function SignInScreen({
   onSubmit,
@@ -25,8 +52,100 @@ export function SignInScreen({
   onCreateAccount,
 }: SignInScreenProps) {
   const { t } = useTranslation('common');
+  const passwordInputRef = useRef<TextInput>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState<SignInFormErrors>(
+    EMPTY_SIGN_IN_FORM_ERRORS,
+  );
+  const [touched, setTouched] = useState<TouchedState>(EMPTY_TOUCHED);
+  const [submitting, setSubmitting] = useState(false);
+
+  const emailErrorMessage =
+    errors.email === 'email'
+      ? t(($) => $.common.access.validation.email)
+      : undefined;
+  const passwordErrorMessage =
+    errors.password === 'passwordRequired'
+      ? t(($) => $.common.access.validation.passwordRequired)
+      : undefined;
+
+  function handleEmailChange(value: string) {
+    setEmail(value);
+    if (touched.email) {
+      setErrors((current) => ({
+        ...current,
+        email: validateSignInEmail(value),
+      }));
+    }
+  }
+
+  function handleEmailBlur() {
+    const normalized = normalizeSignInEmail(email);
+    setEmail(normalized);
+    setTouched((current) => ({ ...current, email: true }));
+    setErrors((current) => ({
+      ...current,
+      email: validateSignInEmail(normalized),
+    }));
+  }
+
+  function handlePasswordChange(value: string) {
+    setPassword(value);
+    if (touched.password) {
+      setErrors((current) => ({
+        ...current,
+        password: validateSignInPassword(value),
+      }));
+    }
+  }
+
+  function handlePasswordBlur() {
+    setTouched((current) => ({ ...current, password: true }));
+    setErrors((current) => ({
+      ...current,
+      password: validateSignInPassword(password),
+    }));
+  }
+
+  async function handleSubmit() {
+    if (submitting) {
+      return;
+    }
+
+    const normalizedEmail = normalizeSignInEmail(email);
+    const nextErrors = validateSignInForm(normalizedEmail, password);
+
+    setEmail(normalizedEmail);
+    setTouched({ email: true, password: true });
+    setErrors(nextErrors);
+
+    if (hasSignInFormErrors(nextErrors)) {
+      return;
+    }
+
+    Keyboard.dismiss();
+
+    if (onSubmit === undefined) {
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await onSubmit(normalizedEmail, password);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  function triggerSubmit() {
+    void handleSubmit();
+  }
+
+  const googlePress = submitting ? undefined : onGooglePress;
+  const applePress = submitting ? undefined : onApplePress;
+  const forgotPasswordPress = submitting ? undefined : onForgotPassword;
+  const createAccountPress = submitting ? undefined : onCreateAccount;
 
   return (
     <AccessScreen>
@@ -48,13 +167,13 @@ export function SignInScreen({
           <AccessProviderButton
             provider="google"
             label={t(($) => $.common.access.provider.google)}
-            {...(onGooglePress === undefined ? {} : { onPress: onGooglePress })}
+            {...(googlePress === undefined ? {} : { onPress: googlePress })}
           />
           {Platform.OS === 'ios' ? (
             <AccessProviderButton
               provider="apple"
               label={t(($) => $.common.access.provider.apple)}
-              {...(onApplePress === undefined ? {} : { onPress: onApplePress })}
+              {...(applePress === undefined ? {} : { onPress: applePress })}
             />
           ) : null}
         </View>
@@ -71,31 +190,46 @@ export function SignInScreen({
           <AccessTextField
             label={t(($) => $.common.access.field.email)}
             value={email}
-            onChangeText={setEmail}
+            onChangeText={handleEmailChange}
+            onBlur={handleEmailBlur}
+            onSubmitEditing={() => passwordInputRef.current?.focus()}
             placeholder={t(($) => $.common.access.field.emailPlaceholder)}
             autoComplete="email"
             keyboardType="email-address"
             textContentType="emailAddress"
+            returnKeyType="next"
+            editable={!submitting}
+            {...(emailErrorMessage === undefined
+              ? {}
+              : { error: emailErrorMessage })}
           />
           <AccessTextField
             label={t(($) => $.common.access.field.password)}
             value={password}
-            onChangeText={setPassword}
+            onChangeText={handlePasswordChange}
+            onBlur={handlePasswordBlur}
+            onSubmitEditing={triggerSubmit}
+            inputRef={passwordInputRef}
             secure
             showLabel={t(($) => $.common.access.action.showPassword)}
             hideLabel={t(($) => $.common.access.action.hidePassword)}
             autoComplete="current-password"
             textContentType="password"
+            returnKeyType="done"
+            editable={!submitting}
+            {...(passwordErrorMessage === undefined
+              ? {}
+              : { error: passwordErrorMessage })}
           />
         </View>
 
         <Pressable
           accessibilityRole="button"
-          accessibilityState={{ disabled: onForgotPassword === undefined }}
-          disabled={onForgotPassword === undefined}
-          {...(onForgotPassword === undefined
+          accessibilityState={{ disabled: forgotPasswordPress === undefined }}
+          disabled={forgotPasswordPress === undefined}
+          {...(forgotPasswordPress === undefined
             ? {}
-            : { onPress: onForgotPassword })}
+            : { onPress: forgotPasswordPress })}
           style={({ pressed }) => [
             styles.forgot,
             pressed ? styles.inlinePressed : null,
@@ -109,9 +243,8 @@ export function SignInScreen({
         <View style={styles.primaryAction}>
           <AccessButton
             label={t(($) => $.common.access.action.signin)}
-            {...(onSubmit === undefined
-              ? {}
-              : { onPress: () => onSubmit(email.trim(), password) })}
+            onPress={triggerSubmit}
+            loading={submitting}
           />
         </View>
 
@@ -121,11 +254,11 @@ export function SignInScreen({
           </Text>
           <Pressable
             accessibilityRole="button"
-            accessibilityState={{ disabled: onCreateAccount === undefined }}
-            disabled={onCreateAccount === undefined}
-            {...(onCreateAccount === undefined
+            accessibilityState={{ disabled: createAccountPress === undefined }}
+            disabled={createAccountPress === undefined}
+            {...(createAccountPress === undefined
               ? {}
-              : { onPress: onCreateAccount })}
+              : { onPress: createAccountPress })}
             style={({ pressed }) => [
               styles.signupActionWrap,
               pressed ? styles.inlinePressed : null,
