@@ -35,7 +35,7 @@ function record(revision: number, agendaParts: readonly string[]) {
 }
 
 describe('B03-D canonical Event Agenda editor', () => {
-  it('reads backend truth and persists add, edit, reorder and remove through CAS', async () => {
+  it('reads backend truth and persists add, explicit edit, reorder and remove through CAS', async () => {
     let serverRevision = 0;
     let serverParts: readonly string[] = ['Apertura', 'Decisione'];
     const loadEvent = vi.fn<TemporalEventAgendaDataSource['loadEvent']>(() =>
@@ -79,9 +79,16 @@ describe('B03-D canonical Event Agenda editor', () => {
     expect(await screen.findByRole('button', { name: 'Chiusura' })).toBeTruthy();
 
     fireEvent.click(screen.getByRole('button', { name: 'Decisione' }));
-    const editor = screen.getByRole('textbox', { name: 'Voce agenda 2' });
+    let editor = screen.getByRole('textbox', { name: 'Voce agenda 2' });
+    fireEvent.change(editor, { target: { value: 'Da annullare' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Annulla' }));
+    expect(replaceAgenda).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('button', { name: 'Decisione' })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Decisione' }));
+    editor = screen.getByRole('textbox', { name: 'Voce agenda 2' });
     fireEvent.change(editor, { target: { value: 'Decisione finale' } });
-    fireEvent.keyDown(editor, { key: 'Enter' });
+    fireEvent.click(screen.getByRole('button', { name: 'Salva' }));
     await waitFor(() => expect(replaceAgenda).toHaveBeenCalledTimes(2));
     expect(replaceAgenda.mock.calls[1]?.[0]).toMatchObject({
       operationId: 'b03-d-agenda:operation:2',
