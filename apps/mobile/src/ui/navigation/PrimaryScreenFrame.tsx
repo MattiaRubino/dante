@@ -1,20 +1,23 @@
 import type { PropsWithChildren } from 'react';
 import { useMemo } from 'react';
-import { useRouter } from 'expo-router';
 import { PanResponder, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppBottomBar, type AppShellDestination } from './AppBottomBar';
 import { AppTopBar } from './AppTopBar';
 
+export type { AppShellDestination } from './AppBottomBar';
+
 const PRIMARY_DESTINATIONS = ['home', 'timeline', 'worlds'] as const;
-const PRIMARY_PATHS = ['/home', '/timeline', '/worlds'] as const;
 
 type PrimaryDestination = (typeof PRIMARY_DESTINATIONS)[number];
 
 type PrimaryScreenFrameProps = PropsWithChildren<{
   active: AppShellDestination;
   title: string;
+  onNavigate: (destination: AppShellDestination) => void;
+  onAi: () => void;
+  onMore: () => void;
 }>;
 
 function isPrimaryDestination(
@@ -26,10 +29,11 @@ function isPrimaryDestination(
 export function PrimaryScreenFrame({
   active,
   children,
+  onAi,
+  onMore,
+  onNavigate,
   title,
 }: PrimaryScreenFrameProps) {
-  const router = useRouter();
-
   const panResponder = useMemo(
     () =>
       PanResponder.create({
@@ -59,23 +63,23 @@ export function PrimaryScreenFrame({
           const direction = gestureState.dx < 0 ? 1 : -1;
           const targetIndex = currentIndex + direction;
 
-          if (targetIndex < 0 || targetIndex >= PRIMARY_PATHS.length) {
+          if (targetIndex < 0 || targetIndex >= PRIMARY_DESTINATIONS.length) {
             return;
           }
 
-          router.replace(PRIMARY_PATHS[targetIndex]);
+          onNavigate(PRIMARY_DESTINATIONS[targetIndex]);
         },
       }),
-    [active, router],
+    [active, onNavigate],
   );
 
   return (
     <SafeAreaView edges={['top', 'bottom']} style={styles.safeArea}>
-      <AppTopBar title={title} />
+      <AppTopBar title={title} onMore={onMore} />
       <View style={styles.content} {...panResponder.panHandlers}>
         {children}
       </View>
-      <AppBottomBar active={active} />
+      <AppBottomBar active={active} onNavigate={onNavigate} onAi={onAi} />
     </SafeAreaView>
   );
 }
@@ -87,8 +91,6 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 24,
+    backgroundColor: '#0b1020',
   },
 });

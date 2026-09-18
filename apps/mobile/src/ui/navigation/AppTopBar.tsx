@@ -1,13 +1,11 @@
-import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 type AppTopBarProps = {
   title: string;
+  onMore: () => void;
 };
 
-export function AppTopBar({ title }: AppTopBarProps) {
-  const router = useRouter();
-
+export function AppTopBar({ onMore, title }: AppTopBarProps) {
   return (
     <View style={styles.container}>
       <View style={styles.identity}>
@@ -19,7 +17,7 @@ export function AppTopBar({ title }: AppTopBarProps) {
         accessibilityRole="button"
         accessibilityLabel="Open more options"
         hitSlop={12}
-        onPress={() => router.replace('/more')}
+        onPress={onMore}
         style={({ pressed }) => [styles.action, pressed && styles.actionPressed]}
       >
         <Text style={styles.actionText}>•••</Text>

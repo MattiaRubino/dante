@@ -1,32 +1,33 @@
-import type { Href } from 'expo-router';
-import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 export type AppShellDestination = 'home' | 'timeline' | 'worlds' | 'more';
 
 type AppBottomBarProps = {
   active: AppShellDestination;
+  onNavigate: (destination: AppShellDestination) => void;
+  onAi: () => void;
 };
 
 type NavDestination = {
   id: AppShellDestination;
   label: string;
-  href: Href;
 };
 
 const LEFT_DESTINATIONS: readonly NavDestination[] = [
-  { id: 'home', label: 'Home', href: '/home' },
-  { id: 'timeline', label: 'Timeline', href: '/timeline' },
+  { id: 'home', label: 'Home' },
+  { id: 'timeline', label: 'Timeline' },
 ];
 
 const RIGHT_DESTINATIONS: readonly NavDestination[] = [
-  { id: 'worlds', label: 'Worlds', href: '/worlds' },
-  { id: 'more', label: 'More', href: '/more' },
+  { id: 'worlds', label: 'Worlds' },
+  { id: 'more', label: 'More' },
 ];
 
-export function AppBottomBar({ active }: AppBottomBarProps) {
-  const router = useRouter();
-
+export function AppBottomBar({
+  active,
+  onAi,
+  onNavigate,
+}: AppBottomBarProps) {
   const renderDestination = (destination: NavDestination) => {
     const isActive = destination.id === active;
 
@@ -35,7 +36,7 @@ export function AppBottomBar({ active }: AppBottomBarProps) {
         key={destination.id}
         accessibilityRole="tab"
         accessibilityState={{ selected: isActive }}
-        onPress={() => router.replace(destination.href)}
+        onPress={() => onNavigate(destination.id)}
         style={({ pressed }) => [styles.destination, pressed && styles.pressed]}
       >
         <View style={[styles.marker, isActive && styles.markerActive]} />
@@ -53,7 +54,7 @@ export function AppBottomBar({ active }: AppBottomBarProps) {
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Open DANTE AI"
-        onPress={() => router.push('/ai')}
+        onPress={onAi}
         style={({ pressed }) => [styles.aiButton, pressed && styles.aiButtonPressed]}
       >
         <Text style={styles.aiText}>AI</Text>

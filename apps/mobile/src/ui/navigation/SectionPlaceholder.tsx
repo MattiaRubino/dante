@@ -16,25 +16,37 @@ export function SectionPlaceholder({
   title,
 }: SectionPlaceholderProps) {
   return (
-    <View style={styles.container}>
-      {eyebrow ? <Text style={styles.eyebrow}>{eyebrow}</Text> : null}
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.copy}>{copy}</Text>
+    <View style={styles.screen}>
+      <View style={styles.container}>
+        {eyebrow ? <Text style={styles.eyebrow}>{eyebrow}</Text> : null}
+        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.copy}>{copy}</Text>
 
-      {actionLabel && onAction ? (
-        <Pressable
-          accessibilityRole="button"
-          onPress={onAction}
-          style={({ pressed }) => [styles.action, pressed && styles.actionPressed]}
-        >
-          <Text style={styles.actionText}>{actionLabel}</Text>
-        </Pressable>
-      ) : null}
+        {actionLabel && onAction ? (
+          <Pressable
+            accessibilityRole="button"
+            onPress={onAction}
+            style={({ pressed }) => [
+              styles.action,
+              pressed && styles.actionPressed,
+            ]}
+          >
+            <Text style={styles.actionText}>{actionLabel}</Text>
+          </Pressable>
+        ) : null}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: '#0b1020',
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+  },
   container: {
     width: '100%',
     maxWidth: 620,
