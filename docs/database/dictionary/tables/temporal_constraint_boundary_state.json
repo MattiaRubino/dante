@@ -33,7 +33,7 @@
       "module": "dante.platform.database.mappings.temporal_constraint",
       "symbol": "TemporalConstraintBoundaryStateRow"
     },
-    "runtime_acl_stage": "B04-A-CONSTRAINT"
+    "runtime_acl_stage": "B04-A-API"
   },
   "structure": {
     "columns": [
@@ -64,7 +64,7 @@
     "material_state_behavior": "Immutable typed payload metadata owned one-to-one by the Temporal Constraint rule MaterialState.",
     "current_binding": "Currentness is inherited from the owning temporal_constraint_state through the shared scoped current binding; this row is not currentness authority.",
     "chronology": "No chronology is inferred from this discriminator; current-history episodes remain authoritative for accepted currentness.",
-    "immutability_policy": "No generic runtime DML; a changed boundary rule produces a new MaterialState."
+    "immutability_policy": "Runtime read access is SELECT-only; a changed boundary rule still produces a new MaterialState."
   },
   "lifecycle": {
     "retention": "Retained with the owning historical rule MaterialState.",
@@ -72,7 +72,7 @@
     "retirement_tombstone": null,
     "delete_behavior": "No runtime DELETE; retirement changes currentness rather than erasing typed historical payload."
   },
-  "security": {"owner_role":"dante_owner","default_deny_non_owner":true,"expected_grants":[]},
+  "security": {"owner_role":"dante_owner","default_deny_non_owner":true,"expected_grants":[{"grantee":"dante_runtime","privilege":"SELECT","columns":[],"grant_option":false}]},
   "proof": {
     "obligations": [
       "boundary kind is exactly earliest_start in B04-A",
@@ -82,6 +82,7 @@
     ],
     "test_refs": [
       "apps/backend/tests/integration/temporal/test_b04_temporal_constraint_core.py",
+      "apps/backend/tests/integration/temporal/test_b04_temporal_constraint_api_activation.py",
       "apps/backend/tests/integration/database/test_b04_temporal_constraint_catalog.py",
       "apps/backend/tests/integration/database/test_database_current_catalog.py"
     ],
