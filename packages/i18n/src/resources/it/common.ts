@@ -8,6 +8,14 @@ const homeWithB02D = {
   ...home,
   timeline: {
     ...home.timeline,
+    create: {
+      ...home.timeline.create,
+      eventDetails: {
+        ...home.timeline.create.eventDetails,
+        agendaSave: 'Salva',
+        agendaCancel: 'Annulla',
+      },
+    },
     detail: {
       ...home.timeline.detail,
       unschedule: 'Riporta nel Planning Tray',
