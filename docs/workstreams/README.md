@@ -1,7 +1,7 @@
 # DANTE Workstream Records
 
 - **Status:** CURRENT INDEX
-- **Last reconciled:** 2026-09-17
+- **Last reconciled:** 2026-09-18
 - **Rule:** current subsystem/workstream files describe present truth; Git/PR/archive preserve chronology
 
 ## 1. Current project state
@@ -27,7 +27,8 @@ Timeline / Temporal-Operational:
 B00 Real Data Spine                              ✅ CLOSED / PROVEN
 B01 Activity Core                                ✅ CLOSED / PROVEN
 B02 Schedule Core                                ✅ CLOSED / PROVEN
-B03 Event Core                                   🟨 B03-A/B/C/D CLOSED / B03-E NEXT
+B03 Event Core                                   ✅ CLOSED / PROVEN
+B04 Temporal Constraints + Movement Policy       ⬜ NEXT
 B07 UI/UX Consolidation v1                       ⬜ planned after B06
 B15 Whole Vertical Closure                       ⬜ future
 ```
@@ -40,12 +41,14 @@ Use these files for the active vertical:
 
 - `timeline-temporal-operational-roadmap.md` — current ordered roadmap B00–B15;
 - `timeline-temporal-operational-map.md` — current semantic map + live proof ledger;
-- `timeline-temporal-operational-handoff.md` — current handoff/boundary;
-- `timeline-temporal-operational-b03-execution-plan.md` — current B03 slice plan;
+- `timeline-temporal-operational-handoff.md` — current handoff/boundary into B04;
+- `timeline-temporal-operational-b03-execution-plan.md` — closed B03 execution authority;
 - `timeline-temporal-operational-b03-a-closure-2026-09-16.md` — B03-A closure;
 - `timeline-temporal-operational-b03-b-closure-2026-09-17.md` — B03-B closure;
 - `timeline-temporal-operational-b03-c-closure-2026-09-17.md` — B03-C closure;
-- `timeline-temporal-operational-b03-d-closure-2026-09-17.md` — B03-D Event Agenda closure.
+- `timeline-temporal-operational-b03-d-closure-2026-09-17.md` — B03-D Event Agenda closure;
+- `timeline-temporal-operational-b03-e-closure-2026-09-18.md` — B03-E / whole-B03 closure;
+- `timeline-temporal-operational-b03-usertest.md` — executed manual B03 acceptance, PASS.
 
 Historical snapshots under `archive/` preserve old wording/numbering without competing with current authority, including the complete initial temporal semantic/functionality map:
 
@@ -83,7 +86,9 @@ B03-A Event canonical core                  ✅ CLOSED / PROVEN
 B03-B Shared Schedule + Event Timeline      ✅ CLOSED / PROVEN
 B03-C Event placement lifecycle             ✅ CLOSED / PROVEN
 B03-D Agenda/internal parts                 ✅ CLOSED / PROVEN
-B03-E Whole-B03 closure                     ⬜ NEXT / requires explicit approval
+B03-E Whole-B03 closure                     ✅ CLOSED / PROVEN
+B03 Event Core                              ✅ CLOSED / PROVEN
+B04 Temporal Constraints + Movement Policy  ⬜ NEXT
 ```
 
 Current candidate persistence authority:
@@ -93,21 +98,20 @@ Alembic  20260917_29
 Topology 101|5|31|78|198|119|297|0|0|0
 ```
 
-B03-D adds normalized Event Agenda values plus aggregate revision/CAS and idempotent operation receipts without NativeRef identity for individual parts. The accepted proof is:
+Whole-B03 closure evidence includes:
 
 ```text
-focused PostgreSQL/API Agenda               2 PASS
-DB/Alembic/Dictionary gate                 12 PASS
-B03-D affected web gate                     6 files / 19 PASS
-@dante/i18n typecheck                       PASS
-@dante/web typecheck                        PASS
-final B02+B03 backend regression            13 PASS / 2 deselected
-final Activity/Schedule/Event web regression 5 files / 26 PASS
+real-stack Chromium + Firefox                 2 PASS
+web broad regression                          158 files / 741 PASS
+Temporal PostgreSQL broad regression          24 PASS / 2 deselected
+backend broad                                 494 PASS + sole generated OpenAPI mismatch
+OpenAPI governance after canonical generation 8 PASS
+manual Event userTest A–F                     PASS
 ```
 
-B03-E is closure/proof only: broad regressions, real-stack browser acceptance, manual Event userTest and final reconciliation. It must not widen Event semantics without a concrete defect or later owning block.
+The manual acceptance Agenda rename defect was closed before B03 closure with explicit Save/Cancel behavior and regression coverage. The postponed/TBD rediscovery need is transferred to B05 Product Organization; it does not change B03's correct no-current-Schedule semantics.
 
-CI remains separately authorized.
+The next explicit gate is `APPROVE B04`. CI remains separately authorized.
 
 ## 4. Global authority
 
@@ -155,6 +159,7 @@ Schedule != Session != Actual
 Routine != Recurrence != Occurrence
 Activity != Event != Routine
 Agenda part != Activity/Event/Occurrence/Schedule/Session/Actual by default
+postponed/TBD Event != Planning Tray Activity
 projection != canonical truth
 current accepted state != latest row
 Undo != history rewind
