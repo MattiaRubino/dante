@@ -1,309 +1,258 @@
 # DANTE Mobile — Roadmap
 
-Status: **EXECUTION ROADMAP**  
-Principle: one bounded milestone at a time; no milestone is closed without evidence.
+Status: **EXECUTION ROADMAP — FIRST MOBILE TRANCHE**  
+Execution rule: work in a small number of complete blocks, not hundreds of micro-milestones. Validate each block before opening the next one.
 
-This roadmap deliberately separates platform/application foundations from product verticals so Mobile can advance in parallel without inventing unstable Temporal semantics.
+The objective of this tranche is concrete: reach a real Android DANTE application with production-oriented runtime foundation, app shell/navigation, a coherent Mobile design system, a polished access flow shell, and a first Home v0. Then stop and reassess before entering the moving Temporal vertical.
 
-## Global rules
+## Scope policy
 
-For every milestone:
+Default write boundary remains:
 
-1. define exact scope and non-scope;
-2. inspect current branch HEAD and relevant authorities;
-3. implement the smallest complete slice;
-4. validate behavior and quality with direct evidence;
-5. record any changed decision;
-6. close before opening the next slice.
+```text
+apps/mobile/**
+```
 
-A milestone may be split into numbered substeps (`M00.1`, `M00.2`, ...) and those substeps should be executed sequentially unless independence is proven.
+Small cross-boundary changes are allowed when they are mechanical, low-risk and easy to reconcile, but they must be explicitly scoped before the write. Typical acceptable examples are:
 
-Current default write boundary remains `apps/mobile/**`. Any required change outside it triggers a new scope decision.
+- `pnpm-lock.yaml` after Mobile dependency changes;
+- version/pin files required by the Mobile toolchain;
+- narrowly bounded Mobile CI/tooling changes.
 
----
-
-## M00 — Baseline and production development posture
-
-### Objective
-
-Turn the already-proven Mobile runtime skeleton into a trustworthy starting baseline without changing product UX yet.
-
-### Planned concerns
-
-- verify exact resolved Expo/React Native dependency compatibility;
-- evaluate patch-only Expo 57 alignment to the current stable patch set;
-- run Expo dependency/doctor checks as applicable;
-- confirm TypeScript strict coverage for `app/**` and `src/**`;
-- confirm Android emulator runtime still works;
-- confirm Gesture Handler/Reanimated/Hermes probe still works before replacing it;
-- decide/activate Development Build only through an explicitly approved dependency/build scope;
-- define Android device/emulator validation baseline;
-- review current portrait lock against adaptive-layout posture before changing it.
-
-### Explicit non-scope
-
-- product navigation design;
-- login implementation;
-- Home implementation;
-- Temporal feature UI;
-- offline runtime;
-- iOS release pipeline.
-
-### Exit gate
-
-- dependency/runtime baseline documented and directly verified;
-- no unexplained Expo compatibility errors;
-- Android launch evidence exists;
-- no accidental files outside approved scope;
-- any required cross-boundary dependency changes separately approved.
+Shared packages, root architecture rules, backend, Web, migrations and Temporal semantics are not modified implicitly. A need to change them becomes an integration checkpoint.
 
 ---
 
-## M01 — Application lifecycle and navigation architecture
+## MA — Android production foundation
 
-### Objective
+### Goal
 
-Define and materialize how a user enters and moves through DANTE before feature screens proliferate.
+Turn the existing proven Expo/React Native skeleton into the stable development baseline for the real app.
 
-### Sequence
+### Work
 
-1. product-level navigation discussion;
-2. identify truly primary destinations;
-3. choose route-group topology;
-4. define public vs authenticated lifecycle shape without faking auth;
-5. define stack/tab responsibilities;
-6. materialize thin route adapters;
-7. verify Android Back, deep-link readiness and navigation state behavior.
+Perform this as one coordinated foundation pass:
 
-### Decisions required before coding
+- verify the existing local Android toolchain and repository baseline quickly rather than creating a long audit workstream;
+- inspect the exact versions resolved by the workspace lockfile;
+- align the current Expo SDK 57 line to the latest compatible stable patch set using Expo-supported tooling rather than hand-picking package versions;
+- keep Expo 58 or other prerelease lines out of scope until stable adoption is justified;
+- update `apps/mobile/package.json` and `pnpm-lock.yaml` where required;
+- preserve TypeScript strictness and the accepted New Architecture/Hermes baseline;
+- move from Expo Go as a probe environment toward a DANTE Development Build when justified;
+- add `expo-dev-client` only if required by that Development Build step;
+- define Android application identity, package/application id, deep-link scheme and versioning posture before they become expensive to change;
+- ensure native-generated output is treated correctly and does not accidentally become canonical source;
+- establish safe-area, edge-to-edge, keyboard and adaptive-layout behavior suitable for modern Android;
+- review the current portrait lock rather than assuming it is permanent;
+- validate emulator/device launch, navigation runtime dependencies, Gesture Handler, Reanimated, Hermes, i18n and time support;
+- run the relevant repository gates: compatibility, typecheck, lint, architecture and bundle/runtime checks.
 
-- primary destinations (normally 3–5, not arbitrarily fixed);
-- whether primary navigation is bottom tabs or another evidence-backed pattern;
-- role of a global create/action affordance, if any;
-- onboarding entry model;
+### Exit
+
+MA is complete when DANTE can be launched as a trustworthy Android development application, the dependency graph is aligned and reproducible, the repository is clean relative to the approved scope, and the baseline is ready for product work.
+
+### Non-scope
+
+No product navigation design, login backend integration, Home product semantics, Temporal features, offline/sync or iOS release work.
+
+---
+
+## MB — App shell and navigation
+
+### Goal
+
+Define and build the real application structure a user will move through.
+
+### First decide
+
+Before coding the final shell, determine at product level:
+
+- the truly primary destinations of DANTE;
+- what deserves permanent navigation;
+- the role of Home;
+- the future role of Timeline;
+- whether there is a global create/action affordance;
+- where Profile/Settings belong;
+- whether bottom tabs are actually the best primary-navigation pattern for DANTE;
 - startup/splash behavior;
-- treatment of unauthenticated state before real backend AuthN activation.
+- unauthenticated versus authenticated route topology.
 
-### Exit gate
+### Build
 
-A user can navigate the approved application shell predictably with correct system Back behavior, no feature logic in route files and no dead placeholder architecture presented as finished product.
+Then materialize:
 
----
+```text
+Root application shell
+├── Public area
+│   ├── Welcome
+│   ├── Sign in
+│   └── other access routes only when justified
+└── Authenticated area
+    ├── primary navigation
+    ├── detail stacks
+    └── modal flows where appropriate
+```
 
-## M02 — DANTE Mobile UI foundation
+Expo Router route files remain thin adapters. Product logic lives under `src/features/**`; assembly belongs to bootstrap.
 
-### Objective
+Validate Android Back/predictive-Back behavior, deep-link readiness and clean transitions between startup/public/authenticated states.
 
-Create the smallest reusable visual/interaction system needed by the first real surfaces.
+### Exit
 
-### Build only from real usage
-
-Likely primitives include typography, spacing/layout helpers, surface/card, button/icon button, app header and loading/empty/error states. Inputs, dialogs, bottom sheets and more advanced primitives wait until a real screen requires them.
-
-### Quality dimensions
-
-- light/dark appearance strategy;
-- shared semantic design-token consumption;
-- touch target/accessibility semantics;
-- dynamic text/readability;
-- safe area and keyboard behavior;
-- responsive width/max-width behavior;
-- motion guidelines;
-- Android native feel without losing DANTE identity.
-
-### Exit gate
-
-The first product screens can be assembled without one-off visual constants everywhere, while the UI layer remains small and capability-independent.
+The app has an intentional, scalable navigation shell and lifecycle structure even though real backend authentication is not yet wired.
 
 ---
 
-## M03 — Authentication shell and contract checkpoint
+## MC — DANTE Mobile design system
 
-### Objective
+### Goal
 
-Design the real unauthenticated/authenticated app lifecycle and determine what is required for production authentication.
+Make the application look and behave like DANTE rather than a technical Expo prototype.
 
-### First step is inspection, not coding
+### Build from real needs
 
-Inspect repository/backend AuthN truth and determine:
+Create the smallest coherent system required by the shell, access screens and Home:
 
-- existing identity/account/session model;
-- supported login methods;
-- token/session transport;
-- refresh/revocation/expiry semantics;
-- secure-storage requirements;
-- account creation/recovery needs;
-- backend AuthZ boundary.
+- light/dark theme strategy;
+- semantic color usage;
+- typography hierarchy;
+- spacing/layout rules;
+- responsive containers and max-width behavior;
+- screen/surface/card primitives;
+- buttons and icon actions;
+- app header/navigation chrome;
+- loading, skeleton, empty, error and retry states;
+- touch feedback and motion rules;
+- accessibility semantics, target sizes, contrast and text scaling;
+- keyboard and safe-area behavior.
 
-### Possible Mobile surfaces
+Use shared semantic design tokens where appropriate, but keep the actual React Native UI implementation Mobile-local. Do not create a giant internal UI framework or generic dumping-ground folders.
 
-Only after contract truth is known:
+Additional packages such as `expo-font` are introduced only if a real visual decision requires them.
 
-- welcome/onboarding entry;
-- sign in;
-- sign up if supported;
-- recovery if supported;
-- session-restoration state;
-- logout/session-expired UX.
+### Exit
 
-### Cross-boundary warning
-
-Real auth will likely require secure native storage and possibly backend/shared changes. Those changes are not implied by this roadmap and require their own scope approval.
-
-### Exit gate
-
-No fake production auth. Real session lifecycle, storage and route protection are backed by the actual backend contract and direct validation.
+The first real screens can be built consistently without one-off styling everywhere, while the UI layer remains small, native-feeling and recognizably DANTE.
 
 ---
 
-## M04 — Home v0
+## MD — Welcome / Login / access shell
 
-### Objective
+### Goal
 
-Build the first true DANTE product surface.
+Build the complete user-facing entry experience up to the point where real backend authentication begins.
 
-Home must answer product questions rather than merely display decorative cards:
+### Product flow
+
+Target shape:
+
+```text
+DANTE icon
+   ↓
+Splash / bootstrap
+   ↓
+Welcome
+   ↓
+Sign in
+   ├── Registration, if the product/backend supports it
+   └── Recovery, if the product/backend supports it
+```
+
+The UI and route architecture should already support the future authenticated state, session restoration and protected application area.
+
+### Important boundary
+
+Do not fake production authentication or invent token semantics.
+
+Before real AuthN integration, inspect the actual backend/account/session model and determine login, registration, refresh, expiry, revocation, recovery and passkey/credential capabilities. Secure native storage such as `expo-secure-store` is added when real session material exists.
+
+For this first tranche, it is acceptable to stop with a polished access shell and a clearly separated adapter/contract boundary ready for the real backend.
+
+### Exit
+
+Welcome/Login are production-quality screens and the application lifecycle is structurally ready for real authentication without encoding a fake backend contract.
+
+---
+
+## ME — Home v0
+
+### Goal
+
+Build the first real DANTE product surface and establish the visual direction of the application.
+
+### Product questions
+
+Home should be designed to answer, at minimum:
 
 - where am I in DANTE now;
-- what matters now/today;
+- what matters now or today;
 - what requires attention;
 - what meaningful action can I take;
 - how do I reach the rest of DANTE quickly.
 
-### Constraints
+### Work
 
-- do not invent canonical data not supplied by the backend/product model;
-- placeholder/skeleton data must be visibly noncanonical development state;
-- visual identity can advance here, but behavior/hierarchy comes first;
-- responsive/adaptive layout is required from first implementation.
+- define information hierarchy before decorative layout;
+- create the Home wireframe/structure;
+- apply the DANTE Mobile design system;
+- begin integrating the established DANTE visual identity where it improves the product;
+- keep responsive/adaptive behavior from the first implementation;
+- use only real stable data contracts when available;
+- if placeholder/development content is needed, make it explicitly noncanonical and do not let it define future domain semantics.
 
-### Exit gate
+Temporal concepts may be represented visually only to the extent that their semantics are already stable enough; this tranche does not implement the real Temporal vertical.
 
-Home is coherent, navigable and visually intentional even if some future data modules are not yet connected.
+### Exit
 
----
-
-## M05 — Stable supporting surfaces
-
-### Objective
-
-Advance product areas whose contracts are stable and do not depend on the moving Temporal vertical.
-
-Candidates are selected at execution time, potentially including settings, profile/account surfaces, appearance/preferences, application information or stable global navigation/search infrastructure.
-
-Do not build a screen solely because it appears in this candidate list.
-
-### Exit gate
-
-Each selected surface is end-to-end coherent and meets the Mobile quality bar before another is opened.
+Opening DANTE produces a coherent, polished application experience from icon/startup through navigation/access shell to a first intentional Home v0.
 
 ---
 
-## M06 — Temporal integration checkpoint
+# STOP / CHECKPOINT AFTER ME
 
-### Objective
+After ME, stop the first Mobile tranche.
 
-Reconcile Mobile against the then-current Temporal vertical before implementing Timeline/Create/Planning semantics.
+Do **not** automatically continue into:
 
-### Required review
-
-- Activity/Event/Routine distinctions;
-- Schedule semantics;
-- recurrence/occurrence state;
+- real Timeline integration;
+- Create Activity/Event/Routine;
+- Schedule editing;
+- Planning Tray;
+- recurrence/occurrence;
 - temporal constraints;
-- product organization/life areas/tags as applicable;
-- API/read-model stability;
-- Web implementation as evidence, not as a UI template;
-- current branch/main integration state.
+- Temporal mutations;
+- PowerSync/offline write paths.
 
-### Output
+At that point review the current state of the parallel Temporal workstream and decide the next Mobile vertical from the then-current canonical product/API truth.
 
-Select the first Mobile Temporal slice and define its exact product contract.
+## What success looks like for this tranche
 
-### Exit gate
+At the checkpoint we should have:
 
-The chosen Temporal slice depends on stable enough canonical semantics that Mobile will not knowingly encode obsolete distinctions.
+```text
+real Android DANTE development app
++ stable Expo/RN foundation
++ app identity/startup
++ scalable navigation shell
++ DANTE Mobile design system
++ polished Welcome/Login access shell
++ Home v0
+```
 
----
+The goal is not to maximize screen count. The goal is to arrive quickly at a credible, production-oriented application foundation that can continue once the relevant product contracts are stable.
 
-## M07 — First real Mobile vertical
+## iOS posture
 
-### Objective
+iOS remains dormant as a release target but supported by architecture. Avoid unnecessary Android-only product design. Future iOS activation should be an adaptation/validation track, not a second application rewrite.
 
-Deliver one complete capability instead of many partial screens.
+## Definition of completion
 
-A vertical must cover, as applicable:
+A block counts as complete only when:
 
-- navigation entry;
-- real backend data/operation boundary;
-- loading/content/empty/error states;
-- mutation feedback;
-- session/auth behavior;
-- offline/degraded-network truth where relevant;
-- accessibility;
-- responsive behavior;
-- device validation;
-- tests appropriate to risk.
-
-Candidate selection occurs at M06; no capability is precommitted here.
-
-### Exit gate
-
-A real user flow can be demonstrated end-to-end with truthful data semantics and production-quality interaction states.
-
----
-
-## M08 — Release-quality hardening
-
-### Objective
-
-Raise the accumulated Mobile app from development-complete to release-candidate quality.
-
-### Areas
-
-- crash/error observability;
-- cold/warm startup;
-- rendering/jank/memory profiling;
-- Android system Back/predictive Back;
-- accessibility pass;
-- keyboard/input behavior;
-- deep links;
-- session expiry/revocation;
-- slow/degraded network;
-- background/foreground lifecycle;
-- responsive phone/tablet/foldable windows;
-- real-device matrix;
-- E2E critical flows;
-- icon/splash/application identity;
-- build/signing/release configuration;
-- store-readiness checks.
-
-This milestone can begin partial quality work earlier; it is listed separately because final release evidence is broader than feature completion.
-
----
-
-## iOS activation — separate release track
-
-iOS is intentionally not a current milestone. When activated:
-
-1. review all platform adapters and native dependencies;
-2. add/configure bundle identity and signing;
-3. validate layout/navigation against iOS conventions;
-4. validate secure storage, deep links, keyboard, safe areas, permissions and lifecycle;
-5. perform iOS-specific accessibility/performance QA;
-6. activate TestFlight/App Store release gates.
-
-The target is adaptation and validation, not a second application rewrite.
-
-## Definition of progress
-
-Progress is not lines of code, screen count or installed libraries.
-
-A milestone counts as complete only when:
-
-- its scope is implemented;
-- direct validation evidence exists;
+- the intended behavior exists;
+- direct validation evidence is available;
 - known failures are explicit;
-- architecture remains within agreed boundaries;
-- documentation reflects changed decisions;
-- repository state is clean relative to the approved scope.
+- repository changes remain inside approved scope or approved low-risk exceptions;
+- architecture remains consistent with repository ADRs;
+- documentation is updated when a decision materially changes.
