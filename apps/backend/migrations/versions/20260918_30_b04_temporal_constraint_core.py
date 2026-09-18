@@ -276,7 +276,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["self_person_ref"],
             [f"{_SCHEMA}.person.person_ref"],
-            name="fk_temporal_constraint_mutation_operation_self_person_ref_person",
+            name="fk_temporal_constraint_mutation_operation_self_person_person",
             onupdate="NO ACTION",
             ondelete="NO ACTION",
             deferrable=False,
