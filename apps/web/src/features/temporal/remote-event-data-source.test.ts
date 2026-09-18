@@ -22,6 +22,7 @@ function commonResponse(agendaParts: readonly string[] = []) {
   return {
     event_ref: EVENT_REF,
     title: 'Evento B03-B',
+    agenda_revision: 0,
     agenda_parts: agendaParts,
     created_at: '2026-09-17T10:00:00Z',
     schedule_ref: SCHEDULE_REF,
