@@ -133,6 +133,10 @@ export function TimelineEventAgendaEditor({
   }
 
   const parts = state.record.agendaParts;
+  const cancelEditing = () => {
+    setEditingIndex(null);
+    setEditingValue('');
+  };
   const add = async () => {
     const value = draft.trim();
     if (!value || busy) {
@@ -173,6 +177,21 @@ export function TimelineEventAgendaEditor({
           {parts.map((part, index) => {
             const position = index + 1;
             const editing = editingIndex === index;
+            const normalizedEditingValue = editingValue.trim();
+            const saveEditedPart = () => {
+              if (!editing || busy || !normalizedEditingValue) {
+                return;
+              }
+              if (normalizedEditingValue === part) {
+                cancelEditing();
+                return;
+              }
+              void replace(
+                parts.map((candidate, candidateIndex) =>
+                  candidateIndex === index ? normalizedEditingValue : candidate,
+                ),
+              );
+            };
             return (
               <li key={`${position}:${part}`}>
                 {editing ? (
@@ -188,17 +207,9 @@ export function TimelineEventAgendaEditor({
                     onKeyDown={(event) => {
                       if (event.key === 'Enter') {
                         event.preventDefault();
-                        const next = editingValue.trim();
-                        if (next) {
-                          void replace(
-                            parts.map((candidate, candidateIndex) =>
-                              candidateIndex === index ? next : candidate,
-                            ),
-                          );
-                        }
+                        saveEditedPart();
                       } else if (event.key === 'Escape') {
-                        setEditingIndex(null);
-                        setEditingValue('');
+                        cancelEditing();
                       }
                     }}
                   />
@@ -216,51 +227,74 @@ export function TimelineEventAgendaEditor({
                   </button>
                 )}
                 <div className="timeline-event-agenda__actions">
-                  <button
-                    type="button"
-                    disabled={busy || index === 0}
-                    aria-label={t(
-                      ($) => $.common.home.timeline.create.eventDetails.agendaMoveUp,
-                      { position },
-                    )}
-                    onClick={() => {
-                      if (index === 0) return;
-                      const next = [...parts];
-                      [next[index - 1], next[index]] = [next[index]!, next[index - 1]!];
-                      void replace(next);
-                    }}
-                  >
-                    ↑
-                  </button>
-                  <button
-                    type="button"
-                    disabled={busy || index === parts.length - 1}
-                    aria-label={t(
-                      ($) => $.common.home.timeline.create.eventDetails.agendaMoveDown,
-                      { position },
-                    )}
-                    onClick={() => {
-                      if (index >= parts.length - 1) return;
-                      const next = [...parts];
-                      [next[index], next[index + 1]] = [next[index + 1]!, next[index]!];
-                      void replace(next);
-                    }}
-                  >
-                    ↓
-                  </button>
-                  <button
-                    type="button"
-                    disabled={busy}
-                    aria-label={t(
-                      ($) => $.common.home.timeline.create.eventDetails.agendaRemove,
-                      { position },
-                    )}
-                    onClick={() =>
-                      void replace(parts.filter((_, candidateIndex) => candidateIndex !== index))
-                    }
-                  >
-                    ×
-                  </button>
+                  {editing ? (
+                    <>
+                      <button
+                        type="button"
+                        disabled={
+                          busy ||
+                          normalizedEditingValue.length === 0 ||
+                          normalizedEditingValue === part
+                        }
+                        onClick={saveEditedPart}
+                      >
+                        {t(($) => $.common.home.timeline.create.eventDetails.agendaSave)}
+                      </button>
+                      <button type="button" disabled={busy} onClick={cancelEditing}>
+                        {t(($) => $.common.home.timeline.create.eventDetails.agendaCancel)}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        disabled={busy || index === 0}
+                        aria-label={t(
+                          ($) => $.common.home.timeline.create.eventDetails.agendaMoveUp,
+                          { position },
+                        )}
+                        onClick={() => {
+                          if (index === 0) return;
+                          const next = [...parts];
+                          [next[index - 1], next[index]] = [next[index]!, next[index - 1]!];
+                          void replace(next);
+                        }}
+                      >
+                        ↑
+                      </button>
+                      <button
+                        type="button"
+                        disabled={busy || index === parts.length - 1}
+                        aria-label={t(
+                          ($) => $.common.home.timeline.create.eventDetails.agendaMoveDown,
+                          { position },
+                        )}
+                        onClick={() => {
+                          if (index >= parts.length - 1) return;
+                          const next = [...parts];
+                          [next[index], next[index + 1]] = [next[index + 1]!, next[index]!];
+                          void replace(next);
+                        }}
+                      >
+                        ↓
+                      </button>
+                      <button
+                        type="button"
+                        disabled={busy}
+                        aria-label={t(
+                          ($) => $.common.home.timeline.create.eventDetails.agendaRemove,
+                          { position },
+                        )}
+                        onClick={() =>
+                          void replace(
+                            parts.filter((_, candidateIndex) => candidateIndex !== index),
+                          )
+                        }
+                      >
+                        ×
+                      </button>
+                    </>
+                  )}
                 </div>
               </li>
             );
