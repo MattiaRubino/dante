@@ -4,3 +4,7 @@
 
 expo-env.d.ts
 # @end expo-cli
+
+# Expo Continuous Native Generation (generated native projects)
+/android
+/ios
