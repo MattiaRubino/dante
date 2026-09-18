@@ -34,26 +34,26 @@ def upgrade() -> None:
     # Extend the bounded scoped/material dispatchers. Temporal Constraint remains
     # a ScopedRecordRef family; it does not become a NativeRef root.
     op.drop_constraint(
-        "ck_scoped_address_scoped_family",
+        op.f("ck_scoped_address_scoped_family"),
         "scoped_address",
         schema=_SCHEMA,
         type_="check",
     )
     op.create_check_constraint(
-        "ck_scoped_address_scoped_family",
+        op.f("ck_scoped_address_scoped_family"),
         "scoped_address",
         "scoped_family IN ('schedule','actual','temporal_constraint')",
         schema=_SCHEMA,
     )
 
     op.drop_constraint(
-        "ck_material_state_address_facet_code",
+        op.f("ck_material_state_address_facet_code"),
         "material_state_address",
         schema=_SCHEMA,
         type_="check",
     )
     op.create_check_constraint(
-        "ck_material_state_address_facet_code",
+        op.f("ck_material_state_address_facet_code"),
         "material_state_address",
         "facet_code IN ("
         "'schedule.placement','actual.realization','session.timing',"
@@ -62,13 +62,13 @@ def upgrade() -> None:
     )
 
     op.drop_constraint(
-        "ck_scoped_current_material_state_facet_code",
+        op.f("ck_scoped_current_material_state_facet_code"),
         "scoped_current_material_state",
         schema=_SCHEMA,
         type_="check",
     )
     op.create_check_constraint(
-        "ck_scoped_current_material_state_facet_code",
+        op.f("ck_scoped_current_material_state_facet_code"),
         "scoped_current_material_state",
         "facet_code IN ("
         "'schedule.placement','actual.realization','temporal_constraint.rule')",
