@@ -76,7 +76,13 @@ Expo Go remains acceptable only for limited probe convenience. Normal DANTE Mobi
 
 ### Activation
 
-Activated during the Android production-foundation tranche after the Expo 57 compatibility baseline passed. Native Development Builds are compiled from the project configuration rather than treating Expo Go as the production development runtime.
+Activated during the Android production-foundation tranche after the Expo 57 compatibility baseline passed and `expo-dev-client` was added to the canonical Mobile dependency set.
+
+### Consequences
+
+- native-capability development targets a DANTE-owned Development Build rather than Expo Go;
+- Development Builds are regenerated when native dependencies or app configuration change;
+- Expo Go may still be used for narrow compatibility probes, but it is not the production-development runtime authority.
 
 ---
 
