@@ -185,20 +185,26 @@ def test_b04_a5_replay_returns_accepted_refs_when_retry_supplies_fresh_generated
 def test_b04_a5_runtime_can_read_current_rule_tables_but_not_history_or_receipts(
     migrated_database: Any,
 ) -> None:
-    with psycopg.connect(
-        **migrated_database.connection_kwargs(
-            "dante_migrator",
-            migrated_database.cluster.migrator_password,
-        )
-    ) as connection:
-        privileges = connection.execute(
-            """
-            SELECT has_table_privilege('dante_runtime','dante.temporal_constraint','SELECT'),
-                   has_table_privilege('dante_runtime','dante.temporal_constraint_state','SELECT'),
-                   has_table_privilege('dante_runtime','dante.temporal_constraint_boundary_state','SELECT'),
-                   has_table_privilege('dante_runtime','dante.temporal_constraint_boundary_absolute_state','SELECT'),
-                   has_table_privilege('dante_runtime','dante.temporal_constraint_current_history','SELECT'),
-                   has_table_privilege('dante_runtime','dante.temporal_constraint_mutation_operation','SELECT')
-            """
-        ).fetchone()
-    assert privileges == (True, True, True, True, False, False)
+    runtime_kwargs = migrated_database.connection_kwargs(
+        "dante_runtime",
+        migrated_database.cluster.runtime_password,
+    )
+    readable_tables = (
+        "temporal_constraint",
+        "temporal_constraint_state",
+        "temporal_constraint_boundary_state",
+        "temporal_constraint_boundary_absolute_state",
+    )
+    private_tables = (
+        "temporal_constraint_current_history",
+        "temporal_constraint_mutation_operation",
+    )
+
+    with psycopg.connect(**runtime_kwargs) as connection:
+        for table in readable_tables:
+            connection.execute(f"SELECT 1 FROM dante.{table} LIMIT 1").fetchone()
+
+    for table in private_tables:
+        with psycopg.connect(**runtime_kwargs) as connection:
+            with pytest.raises(psycopg.errors.InsufficientPrivilege):
+                connection.execute(f"SELECT 1 FROM dante.{table} LIMIT 1").fetchone()
