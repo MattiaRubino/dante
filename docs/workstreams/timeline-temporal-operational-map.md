@@ -3,12 +3,12 @@
 - **Status:** CURRENT SEMANTIC MAP + LIVE IMPLEMENTATION LEDGER — reconciled 2026-09-18
 - **Branch:** `feature/timeline-temporal-operational`
 - **Roadmap:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
-- **B03 closed execution authority:** `docs/workstreams/timeline-temporal-operational-b03-execution-plan.md`
-- **B03-E / whole-B03 closure:** `docs/workstreams/timeline-temporal-operational-b03-e-closure-2026-09-18.md`
+- **B03 closure:** `docs/workstreams/timeline-temporal-operational-b03-e-closure-2026-09-18.md` ✅ CLOSED / PROVEN
 - **B03 manual acceptance:** `docs/workstreams/timeline-temporal-operational-b03-usertest.md` ✅ PASS
 - **Pre-B04 governance closure:** `docs/workstreams/timeline-temporal-operational-pre-b04-governance-2026-09-18.md` ✅ CLOSED / FROZEN
 - **B04 execution plan:** `docs/workstreams/timeline-temporal-operational-b04-execution-plan.md`
 - **B04-A implementation freeze:** `docs/workstreams/timeline-temporal-operational-b04-a-implementation-freeze.md`
+- **B04-A closure:** `docs/workstreams/timeline-temporal-operational-b04-a-closure-2026-09-18.md` ✅ CLOSED / PROVEN
 - **Timeline candidate DB overlay:** `docs/database/timeline-temporal-operational.md`
 - **Detailed semantic freeze:** `docs/workstreams/archive/timeline-temporal-operational-map-ledger-snapshot-2026-09-15.md`
 
@@ -67,8 +67,8 @@ B02 Schedule Core                                ✅ CLOSED / PROVEN
 B03 Event Core                                   ✅ CLOSED / PROVEN
 PRE-B04 DB/API GOVERNANCE                        ✅ CLOSED / FROZEN
 B04 Temporal Constraints + Movement Policy       🟡 IN PROGRESS
-├─ B04-A Temporal Constraint canonical core      🟡 IN PROGRESS
-├─ B04-B Boundary / Deadline constraints         ⬜
+├─ B04-A Temporal Constraint canonical core      ✅ CLOSED / PROVEN
+├─ B04-B Boundary / Deadline constraints         ⬜ NEXT
 ├─ B04-C Windows / Preferences / Evaluation      ⬜
 ├─ B04-D Movement Policy                         ⬜
 ├─ B04-E Advanced-family applicability           ⬜
@@ -89,7 +89,8 @@ B15 Whole Vertical Closure                       ⬜
 Current candidate persistence authority:
 
 ```text
-Alembic head     20260918_32
+PostgreSQL       18.6
+Alembic head     20260918_33
 Topology         107|5|33|85|212|129|309|0|0|0
 ```
 
@@ -98,7 +99,7 @@ Governance baseline remains binding:
 ```text
 DB same-change gate          ✅ FROZEN
 candidate DB overlay         ✅ ESTABLISHED
-Temporal exact API inventory ✅ 13 pre-B04 operations frozen
+pre-B04 Temporal inventory   ✅ 13 operations frozen
 new API operationId rule     ✅ explicit stable semantic IDs required
 OpenAPI → Orval/client gate  ✅ BINDING
 ```
@@ -119,9 +120,7 @@ Canonical Activity identity, self-owned actionable-intention descriptor, idempot
 
 All accepted Schedule forms and lifecycle behavior are proven at B02 scope: date-span, floating-local, named-zone-local, absolute, coarse-local-period, establish/revision/current/history/CAS/idempotency/unschedule/guarded Undo/DST and product integration.
 
----
-
-# 4. B03 — Event Core ✅ CLOSED / PROVEN
+## B03 — Event Core ✅ CLOSED / PROVEN
 
 B03 activates Event as a distinct originating owner while keeping one shared Schedule engine:
 
@@ -131,96 +130,38 @@ Activity ─┐
 Event ────┘
 ```
 
-Forbidden:
+Accepted Event behavior includes canonical Event expectation, idempotent self create/read, shared Schedule placement/lifecycle, all-day and multi-day truth, postponed/TBD history retention, Timeline projection and bounded ordered Agenda/internal values.
+
+Still-deferred B03 semantic obligations remain owned by later blocks rather than fabricated as B03 completeness:
 
 ```text
-event_schedule
-Event-specific temporal engine
-Event-specific Schedule current/history model
-Event-as-Activity shortcut
-Event-as-busy/capacity shortcut
+preparation/follow-up Activity relation   later exact relation semantics
+place/conference intent                   later relation/profile semantics
+ordinary attendance != Session            B08/B09 owners
+Event != Availability/Capacity Claim       later availability semantics
 ```
 
-## 4.1 Capability ledger
-
-- ✅ **[EVT-001]** Event Domain/Logical/Physical authority re-opened before implementation.
-- ✅ **[EVT-002]** Canonical Event expectation persistence activated.
-- ✅ **[EVT-003]** Idempotent governed Event create activated.
-- ✅ **[EVT-004]** Event macro-class activated in Create for truthful supported scope.
-- ✅ **[EVT-005]** Timed Event uses shared Schedule capability.
-- ✅ **[EVT-006]** All-day/date-span Event preserves non-timed truth.
-- ✅ **[EVT-007]** Multi-day Event semantics/query/rendering preserve date-span truth.
-- ✅ **[EVT-008]** Postponed/TBD retains Event and Schedule history with no current placement.
-- ✅ **[EVT-009]** Event expectation/current Schedule separation proven; Actual remains B10-owned.
-- ✅ **[EVT-010]** Event Agenda/internal parts activated at accepted product level.
-- ✅ **[EVT-011]** Agenda part remains Event-internal value: `!= Activity/Event/Occurrence/Schedule/Session/Actual` by default.
-- ⬜ **[EVT-012]** Preparation/follow-up Activity relation only when exact relation semantics are activated.
-- ⬜ **[EVT-013]** Place/conference intent only through justified relation/profile semantics.
-- ⬜ **[EVT-014]** Ordinary Event attendance `!= Session`; later actor/execution blocks own the relevant behavior.
-- ⬜ **[EVT-015]** Event `!= Availability/Capacity Claim`; future availability semantics must remain distinct.
-
-Items 012–015 remain future-owner semantic obligations, not unfinished B03 implementation. Their unchecked state is deliberate and must not be changed to fabricate completeness.
-
-## 4.2 Proof ledger
-
-- ✅ **[B03-T01]** Event create/application PostgreSQL/API proof.
-- ✅ **[B03-T02]** Timed/all-day/multi-day shared-Schedule proof.
-- ✅ **[B03-T03]** Postponed/TBD history/query/CAS/guarded-Undo proof.
-- ✅ **[B03-T04]** Event Agenda persistence/API/frontend/add-edit-reorder-remove/reload/CAS proof.
-- ✅ **[B03-T05]** Shared Schedule Activity + Event regression remains green through `_29`.
-- ✅ **[B03-T06]** Real-stack Event create/reschedule/all-day/multi-day/reload acceptance in Chromium + Firefox.
-- ✅ **[B03-T07]** Manual Event userTest A–F accepted after closing the Agenda rename UX defect.
-- ✅ **[B03-T08]** Broad web regression: 158 files / 741 tests PASS.
-- ✅ **[B03-T09]** Broad Temporal PostgreSQL regression: 24 PASS / 2 deselected.
-- ✅ **[B03-T10]** Broad backend reached 494 PASS with sole generated OpenAPI mismatch; canonical regeneration followed by focused OpenAPI gate 8 PASS.
-
-## 4.3 Slice closures
-
-```text
-B03-A Event canonical core                  ✅ CLOSED / PROVEN
-B03-B Shared Schedule + Event Timeline      ✅ CLOSED / PROVEN
-B03-C Event placement lifecycle             ✅ CLOSED / PROVEN
-B03-D Agenda/internal parts                 ✅ CLOSED / PROVEN
-B03-E Whole-B03 closure                     ✅ CLOSED / PROVEN
-```
-
-## 4.4 B03 manual-acceptance transfer
-
-Postponed/TBD semantics remain:
-
-```text
-Event alive
-+ Schedule/history retained
-+ no current placement
-```
-
-Transferred to B05:
-
-- ⬜ **[ORG-EVT-TBD-001]** Surface postponed/TBD Events for rediscovery and explicit replanning without converting them into Activity Planning Tray items or fabricating date/time truth.
+Postponed/TBD Event rediscovery remains transferred to B05 without converting Event into Activity Planning Tray truth.
 
 ---
 
-# 5. Pre-B04 DB/API governance ✅ CLOSED / FROZEN
+# 4. Pre-B04 DB/API governance ✅ CLOSED / FROZEN
 
-- ✅ **[GOV-DB-001]** Whole DB SoR reconciled to protected-main `_18` and entering Timeline candidate `_29` without collapsing the two authorities.
-- ✅ **[GOV-DB-002]** Dictionary README reconciled to whole-B03 closure.
-- ✅ **[GOV-DB-003]** Timeline candidate-specific DB overlay established.
-- ✅ **[GOV-DB-004]** Protected-main architecture banner/topology reconciled to `_18` while historical phase evidence remains historical.
-- ✅ **[GOV-DB-005]** DB same-change closure rule frozen for all B04+ persistence slices.
-- ✅ **[GOV-API-001]** Exact pre-B04 Temporal public API inventory frozen at 13 operations.
-- ✅ **[GOV-API-002]** `(path, method) -> operationId` exact-set and uniqueness test added.
-- ✅ **[GOV-API-003]** Existing verbose pre-B04 operationIds retained as compatibility contract.
-- ✅ **[GOV-API-004]** Every new B04+ Temporal endpoint must use an explicit stable semantic operationId and reconcile OpenAPI/Orval/client/tests in the same change.
+- ✅ Whole DB SoR and Timeline candidate overlay separated from protected-main truth.
+- ✅ Dictionary/current-catalog same-change closure rule frozen for B04+.
+- ✅ Exact pre-B04 Temporal public API inventory frozen at 13 operations.
+- ✅ Existing verbose operationIds retained as compatibility contract.
+- ✅ Every new B04+ Temporal endpoint requires explicit stable semantic `temporal_*` operationId plus same-change OpenAPI/Orval/client/tests reconciliation.
 
 Authority: `timeline-temporal-operational-pre-b04-governance-2026-09-18.md`.
 
 ---
 
-# 6. B04 — Temporal Constraints + Movement Policy 🟡 IN PROGRESS
+# 5. B04 — Temporal Constraints + Movement Policy 🟡 IN PROGRESS
 
 B04 establishes Temporal Constraint truth distinct from Schedule placement and later activates Movement Policy without collapsing policy, proposal, solver result or accepted effect.
 
-## 6.1 B04-A — Temporal Constraint canonical core 🟡 IN PROGRESS
+## 5.1 B04-A — Temporal Constraint canonical core ✅ CLOSED / PROVEN
 
 Frozen first complete rule:
 
@@ -252,15 +193,16 @@ idempotency receipt != constraint identity != MaterialState identity
 
 ### A1 — DDL / mappings ✅ PROVEN
 
-Candidate migrations:
+Candidate migration chain:
 
 ```text
 20260918_30 temporal_constraint_core
 20260918_31 temporal_constraint_totality_hardening
 20260918_32 current_history_dispatch_hardening
+20260918_33 temporal_constraint_api_activation
 ```
 
-Six canonical/control tables and two new routines are materialized; SQLAlchemy registers exactly the six Temporal Constraint mappings. Shared CP6 dispatchers are extended rather than duplicated.
+Six canonical/control tables and the governed rule/mutation routines are materialized. SQLAlchemy registers the B04-A persistence surface and shared CP6 dispatchers are extended rather than duplicated.
 
 ### A2 — direct PostgreSQL structural/integrity proof ✅ PROVEN
 
@@ -270,79 +212,127 @@ Evidence includes:
 focused B04-A core                            4 PASS
 shared current-history legacy-family proof    4 PASS
 Temporal + CP6 final regression              32 PASS / 2 deselected
-B04-A catalog / owner / ACL                   3 PASS
+B04-A structural catalog / owner / ACL        3 PASS
 ```
 
-Direct `_32` topology:
+Accepted structural topology remains:
 
 ```text
 107|5|33|85|212|129|309|0|0|0
 ```
 
-A2 proves Activity/Event ownership boundaries, runtime no-direct-bypass, typed rule totality, MaterialState exclusivity and correct shared current-history dispatch.
-
 ### A3 — create / revise / retire CAS + idempotency ✅ PROVEN
-
-Proven behavior:
 
 ```text
 create establishes stable constraint + scoped address + immutable complete rule state
-same operation id + same material intent replays accepted result
+same operation id + same material intent replays accepted canonical result
 same key + changed intent conflicts
 revise requires expected current MaterialStateRef
 stale expected state conflicts
-revise appends state and closes/opens history
+revision appends state and moves currentness
 retire requires expected current state
 retire removes only current binding and closes history
-stable constraint/history survive retirement
+stable constraint identity/history survive retirement
 ```
 
-### A4 — DB / Dictionary / docs 🟡 MATERIALIZED, PROOF PENDING
+### A4 — DB / Dictionary / docs ✅ PROVEN
 
-Current A4 change reconciles:
+Dictionary object entries/scope, Alembic/SQLAlchemy, live catalog, owners/ACL, DB SoR and Timeline overlay are reconciled. The whole-DB A4 gate passed locally, and the later `_33` activation expectations were reconciled again.
+
+Final current-catalog/DB/B04 activation reconciliation:
 
 ```text
-Dictionary 107 tables / 5 views / 33 routines
-scope 145 standalone / 85 triggers / 212 indexes / 129 FK / 309 CHECK
-current-catalog expectations → 20260918_32
-DB SoR + Timeline DB overlay
-live map / roadmap / handoff
+13 PASS
 ```
 
-A4 remains open until the whole-DB Dictionary/current-catalog tests run green against PostgreSQL `_32`.
+### A5 — application / API ✅ PROVEN
 
-### A5 — application / API ⬜ NOT STARTED
-
-No public Temporal Constraint endpoint has been activated yet. A5 must obey the frozen API governance chain:
+Public B04-A operations:
 
 ```text
-application operation/query
-→ explicit stable temporal_* operationId
-→ exact Temporal inventory
-→ OpenAPI snapshot
-→ pnpm api:generate
-→ @dante/api-client
-→ affected API/frontend tests
-→ docs
+Get Temporal Constraint by TemporalConstraintRef
+List Temporal Constraints by self-owned subject
+Create absolute earliest-start constraint
+Revise current absolute earliest-start rule
+Retire Temporal Constraint
 ```
 
-Existing 13 pre-B04 Temporal operationIds remain frozen compatibility baseline.
+A5 preserves accepted-current semantics, expected-state CAS, operation-id idempotency, retired-not-deleted semantics and Activity/Event subject scope. `_33` makes mutation replay safe with server-generated UUIDs and grants only the narrow runtime read surface needed by Get/List; history/receipt internals remain private and direct writes remain governed.
 
-## 6.2 Remaining B04 slices
+API governance evidence includes:
 
 ```text
-B04-B Boundary / Deadline constraints          ⬜
-B04-C Windows / Preferences / Evaluation       ⬜
-B04-D Movement Policy                          ⬜
-B04-E Advanced-family applicability            ⬜
-B04-F Whole-B04 closure                        ⬜
+focused API + Temporal inventory             10 PASS
+B04-A PostgreSQL/application activation       12 PASS
+OpenAPI export/inventory/API parity           18 PASS
+@dante/api-client typecheck                   PASS
+@dante/api-client Vitest                      11 PASS
+pnpm generated:check                          PASS / 159 files deterministic
 ```
 
-B04-A completion does not transition directly to B05.
+No frontend product surface was part of the accepted A5 scope, so no manual frontend acceptance is claimed.
+
+### B04-A closure decision
+
+```text
+A1 ✅ CLOSED / PROVEN
+A2 ✅ CLOSED / PROVEN
+A3 ✅ CLOSED / PROVEN
+A4 ✅ CLOSED / PROVEN
+A5 ✅ CLOSED / PROVEN
+
+B04-A Temporal Constraint canonical core ✅ CLOSED / PROVEN
+```
+
+Closure authority: `timeline-temporal-operational-b04-a-closure-2026-09-18.md`.
+
+## 5.2 B04-B — Boundary / Deadline constraints ⬜ NEXT
+
+B04-B expands truthful boundary semantics beyond the B04-A earliest-start absolute rule. Before implementation, the exact slice must be frozen from Domain/Logical/Physical authority.
+
+Candidate semantic territory includes:
+
+```text
+earliest-start
+latest-start
+latest-completion / deadline
+hard | soft boundary semantics
+lossless temporal representation appropriate to each accepted rule
+```
+
+Do not assume these are aliases. In particular:
+
+```text
+deadline != Schedule end
+passed deadline != Actual
+passed deadline != Outcome/failure
+constraint != placement
+coarse/date precision != fabricated exact instant
+```
+
+The first B04-B implementation slice must be explicitly selected rather than materializing every candidate family at once.
+
+## 5.3 B04-C — Windows / Preferences / Evaluation ⬜
+
+Hard windows, soft preferred windows and explicit relation semantics such as start-within, completion-within, full-contained and overlaps. Evaluation/explanation is allowed; solver ownership remains B12.
+
+## 5.4 B04-D — Movement Policy ⬜
+
+Activate movement policy separately from constraint truth and solver output. Accepted movement/override remains explicit and governed.
+
+## 5.5 B04-E — Advanced-family applicability ⬜
+
+Min/max duration, spacing and relative constraints only where truthful anchors already exist. Dependencies on Routine/Session/Actual/Solver remain deferred to their owning blocks where semantics are not yet available.
+
+## 5.6 B04-F — Whole-B04 closure ⬜
+
+Whole-B04 regression, DB/docs/API consistency, applicable product/manual acceptance and final closure evidence.
+
+B05 begins only after B04-F closes.
 
 ---
 
-# 7. B05–B15 ownership register
+# 6. B05–B15 ownership register
 
 ```text
 B05  Calendar / Life Area / Tags / product organization
@@ -363,20 +353,16 @@ The detailed functionality lists remain binding in the archived semantic freeze.
 
 ---
 
-# 8. Current gate
+# 7. Current gate
 
 ```text
 B03 Event Core             ✅ CLOSED / PROVEN
 Pre-B04 governance         ✅ CLOSED / FROZEN
 B04                        🟡 IN PROGRESS
-└─ B04-A
-   ├─ A1                   ✅
-   ├─ A2                   ✅
-   ├─ A3                   ✅
-   ├─ A4                   🟡 reconciliation materialized; proof pending
-   └─ A5                   ⬜
+├─ B04-A                   ✅ CLOSED / PROVEN
+└─ B04-B                   ⬜ NEXT
 ```
 
-Immediate gate: run the reconciled A4 Dictionary/current-catalog PostgreSQL proof. Only after A4 is green does the workstream move to the separate B04-A5 application/API scope.
+Immediate gate: freeze the exact B04-B Boundary / Deadline semantic and implementation scope before any B04-B write.
 
 CI remains separately authorized and is not implicitly launched.
