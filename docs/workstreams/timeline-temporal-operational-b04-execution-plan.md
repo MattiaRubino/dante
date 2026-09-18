@@ -11,6 +11,8 @@
 - **Physical authority:** accepted PostgreSQL Physical Model + explicit owner-specific typed relational LR-05 mapping
 - **Detailed capability freeze:** `docs/workstreams/archive/timeline-temporal-operational-map-ledger-snapshot-2026-09-15.md`
 - **Live map:** `docs/workstreams/timeline-temporal-operational-map.md`
+- **Pre-B04 governance authority:** `docs/workstreams/timeline-temporal-operational-pre-b04-governance-2026-09-18.md`
+- **Candidate DB overlay:** `docs/database/timeline-temporal-operational.md`
 - **CI:** not implicitly authorized
 
 B04 activates Temporal Constraint truth and the first bounded Movement Policy capability without collapsing either into Schedule, Actual, Availability or future solver semantics.
@@ -148,6 +150,43 @@ B04-F  Whole-B04 closure
 
 Each slice must preserve B00–B03 regressions and update the live ledger in the same change.
 
+## 3.1 Binding same-change governance gates
+
+The pre-B04 governance closure is normative for every B04 slice. A slice is not `CLOSED / PROVEN` while an affected representation is known stale.
+
+For every persistence-affecting slice, the reviewed change must reconcile all affected layers together:
+
+```text
+semantic authority when changed
+→ forward-only Alembic revision
+→ SQLAlchemy mappings / MetaData
+→ Database Dictionary object files + scope counts
+→ live PostgreSQL catalog / owner / ACL proof
+→ docs/database/README.md current candidate summary
+→ docs/database/timeline-temporal-operational.md candidate overlay
+→ direct PostgreSQL/current-catalog/migration proof
+→ live map / roadmap / closure evidence
+```
+
+Accepted historical migrations are never edited, rebased, flattened or renumbered to make B04 fit. Protected-main truth is never relabeled from candidate-only state.
+
+For every public Temporal API change:
+
+```text
+FastAPI route/model
+→ explicit stable operation_id in temporal_* namespace for every new B04+ operation
+→ apps/backend/tests/test_temporal_openapi_inventory.py exact inventory update
+→ apps/backend/tests/test_openapi_export.py snapshot-parity proof
+→ pnpm api:generate
+→ committed OpenAPI snapshot + Orval/@dante/api-client output
+→ affected backend/frontend contract tests
+→ workstream documentation in the same change
+```
+
+The exact 13 pre-B04 `(path, method) -> operationId` pairs are a frozen compatibility exception and must not be cosmetically renamed. New B04+ operations do **not** inherit that exception: relying on FastAPI's implicit generated operationId must fail the machine-enforced inventory gate.
+
+Generated client/OpenAPI files are never hand-edited to hide backend drift. If a B04 slice does not change the public API, it must not churn generated API artifacts.
+
 ---
 
 # 4. B04-A — Temporal Constraint canonical core
@@ -226,7 +265,8 @@ self-Person scope
 - Activity/Event self-scope isolation;
 - no generic JSON rule payload;
 - downgrade guard where canonical B04 state would otherwise be discarded;
-- Dictionary / SQLAlchemy / Alembic / current-catalog reconciliation.
+- Dictionary / SQLAlchemy / Alembic / current-catalog reconciliation;
+- if any public API is exposed in this slice: explicit `temporal_*` operationId, exact Temporal inventory update, OpenAPI snapshot parity and generated client reconciliation in the same change.
 
 ---
 
@@ -477,6 +517,8 @@ real-stack browser proof for accepted product slice
 manual userTest constraint/explanation/movement acceptance
 broad affected backend/frontend regressions
 Dictionary / SQLAlchemy / Alembic / OpenAPI/client reconciliation
+Temporal exact API inventory + post-B03 semantic operationId gate
+DB README + Timeline candidate overlay reconciliation
 map / roadmap / handoff / closure record reconciliation
 ```
 
@@ -543,8 +585,9 @@ Before writing migration code:
 4. define the first material state envelope without a generic rule JSON payload;
 5. define create/revise/remove operation receipts and fingerprints;
 6. define downgrade fail-closed behavior;
-7. define Dictionary/SQLAlchemy topology delta;
+7. define Dictionary/SQLAlchemy topology delta and same-change DB documentation updates;
 8. write migration + direct PostgreSQL proof together;
-9. only then expose application/API/frontend paths.
+9. if exposing public API, define explicit `temporal_*` operationIds and update inventory/OpenAPI/generated client in the same slice;
+10. only then expose/consume frontend paths.
 
 The first implementation target is **B04-A Temporal Constraint canonical core**.
