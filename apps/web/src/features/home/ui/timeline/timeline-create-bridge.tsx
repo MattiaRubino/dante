@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next';
 
 import type { TemporalPlacement } from '../../../temporal';
 import {
-  createLocalTemporalCreateRuntime,
+  createB03TemporalCreateRuntime,
   TemporalCreateContextCatalogProvider,
   TemporalCreateEntry,
   temporalCreateTimelineProjectionFromEffect,
@@ -319,7 +319,7 @@ export function TimelineCreateBridge({
 }: TimelineCreateBridgeProps) {
   const { t } = useTranslation('common');
   const [runtime] = useState(
-    () => runtimeOverride ?? createLocalTemporalCreateRuntime(),
+    () => runtimeOverride ?? createB03TemporalCreateRuntime(),
   );
   const [effects, setEffects] = useState<
     readonly TemporalCreateAppliedEffect[]
