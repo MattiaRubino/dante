@@ -1,119 +1,106 @@
 # Timeline / Temporal-Operational — B03 Event Core manual userTest
 
-- **Status:** READY / NOT EXECUTED
+- **Status:** ✅ EXECUTED / PASS
 - **Prepared:** 2026-09-17
+- **Executed/accepted:** 2026-09-18
 - **Branch:** `feature/timeline-temporal-operational`
-- **Scope:** B03-A through B03-D product acceptance before B03-E closure
+- **Scope:** B03-A through B03-D product acceptance for B03-E closure
 - **CI:** not required by this protocol
+- **Closure:** `timeline-temporal-operational-b03-e-closure-2026-09-18.md`
 
-This is a manual product acceptance protocol. It is **not evidence of PASS until the user executes it and explicitly accepts the result**.
+This is the executed manual product acceptance record for B03 Event Core.
 
-## Preconditions
+## Preconditions used
 
-1. Pull the current `feature/timeline-temporal-operational` branch.
-2. Run DANTE through the normal local authenticated stack used for manual testing.
-3. Use the Italian UI.
-4. Start from a disposable/test account or otherwise use uniquely identifiable Event titles.
-
-The protocol checks product semantics, not implementation details. Do not inspect or edit PostgreSQL manually during the flow.
+The test was executed through the authenticated local real stack with PostgreSQL/backend/frontend truth. The product semantics were tested through the UI; PostgreSQL was not manually edited during the flow.
 
 ---
 
-## A — Timed Event create + reload
+## A — Timed Event create + reload ✅ PASS
 
-1. Open Home / Timeline.
-2. Click **Aggiungi alla timeline**.
-3. Select **Evento**.
-4. Create a timed Event for today with a clear title, for example `B03 manual timed`.
-5. Confirm it appears in the Timeline as an Event at the chosen time.
-6. Reload the page.
+Acceptance criteria:
 
-**PASS if:**
-
-- the Event is still present after reload;
+- Event remains present after reload;
 - title and placement remain correct;
-- it is not shown in the Planning Tray;
+- it is not shown in the Activity Planning Tray;
 - the UI does not present it as an Activity.
 
+Result: **PASS**.
+
 ---
 
-## B — Event reschedule + reload
+## B — Event reschedule + reload ✅ PASS
 
-Using the Event from A:
+Acceptance criteria:
 
-1. Move/reschedule it with the Timeline interaction already exposed by the product (drag, keyboard move, or time edit).
-2. Confirm the visible placement changes.
-3. Reload the page.
-
-**PASS if:**
-
-- the Event remains the same logical item;
-- the new placement survives reload;
-- there is no duplicate old Event left behind;
+- same logical Event survives reschedule;
+- new placement survives reload;
+- no duplicate old Event remains;
 - no Activity is created as a side effect.
 
+Result: **PASS**.
+
 ---
 
-## C — Postpone/TBD + guarded Undo
+## C — Postpone/TBD + guarded Undo ✅ PASS
 
-Using the same timed Event:
-
-1. Open its Event detail.
-2. Use **Posticipa / data da definire**.
-3. Confirm the Event disappears from the placed Timeline.
-4. Reload the page if useful to confirm no fake date/time appears.
-5. Use the offered **Annulla** guarded Undo.
-6. Reload again.
-
-**PASS if:**
+Acceptance criteria:
 
 - postponing does not delete or convert the Event;
 - no placeholder date/time is fabricated;
 - Undo restores a real placement;
-- the restored Event survives reload;
-- the wording never says the Event was returned to the Planning Tray.
+- restored placement survives reload;
+- wording does not claim a Planning Tray transition.
+
+Result: **PASS**.
+
+Manual acceptance also identified a future product-organization need: a postponed/TBD Event with no current Schedule is canonically alive but, after the immediate Undo affordance is gone, needs a discoverable product surface for later rescheduling. It must **not** be converted into a Planning Tray Activity. This is transferred to **B05 Product Organization** and is non-blocking for B03 closure.
 
 ---
 
-## D — All-day and multi-day Event
+## D — All-day and multi-day Event ✅ PASS
 
-1. Create a second Event with **Tutto il giorno** for one day.
-2. Create a third Event with **Tutto il giorno** spanning at least three calendar days.
-3. Confirm the single-day Event appears only on its intended day.
-4. Confirm the multi-day Event spans each intended date without becoming a timed midnight block.
-5. Reload the page.
-
-**PASS if:**
+Acceptance criteria:
 
 - single-day and multi-day placement survive reload;
-- multi-day ordering/span is unchanged;
-- the UI preserves all-day semantics rather than inventing exact clock times.
+- multi-day ordering/span remains correct;
+- all-day semantics remain date-span truth rather than fabricated midnight clock time.
+
+Result: **PASS**.
 
 ---
 
-## E — Agenda/internal parts
+## E — Agenda/internal parts ✅ PASS after defect correction
 
-Open the detail of one Event and exercise the real Agenda editor:
+The manual flow exercised real Agenda add/edit/reorder/remove/reload behavior.
 
-1. Add three Agenda parts, for example `Rischi`, `Decisioni`, `Prossimi passi`.
-2. Edit one part.
-3. Move one part up/down so the order changes.
-4. Remove one part.
-5. Close and reopen the Event detail.
-6. Reload the whole page and reopen the Event detail again.
+An initial manual run exposed a real UX defect: rename persistence depended on pressing Enter and did not provide an explicit product commit/cancel affordance. Before closure this was corrected with:
 
-**PASS if:**
+```text
+Salva     explicit accepted rename
+Annulla   discard draft without backend mutation
+Enter     save
+Escape    cancel
+```
 
-- the accepted ordered Agenda survives close/reopen and full reload;
+The correction was covered by the Agenda editor test and manually retested successfully.
+
+Acceptance criteria after correction:
+
+- accepted ordered Agenda survives close/reopen and full reload;
 - edit/reorder/remove results are exact;
-- stale/local UI state does not overwrite backend truth;
-- Agenda parts are presented as internal ordered parts, not independent Activities/Events or schedulable items.
+- local draft/cancel does not overwrite backend truth;
+- Agenda parts remain internal ordered values, not independent Activities/Events or schedulable items.
+
+Result: **PASS**.
+
+Agenda remains explicitly distinct from independently scheduled sub-events. A future need for timed internal segments requires its own semantic design and is not implemented by giving Agenda parts Schedule identity.
 
 ---
 
-## F — Boundary sanity
+## F — Boundary sanity ✅ PASS
 
-During A–E verify there is no accidental exposure of deferred B03 concepts:
+B03 does not claim the deferred concepts below as implemented behavior:
 
 ```text
 Event recurrence execution/provider sync
@@ -124,28 +111,24 @@ availability/busy capacity claims
 Agenda-part independent scheduling
 ```
 
-Those concepts belong to later blocks and must not be claimed as completed behavior by B03.
-
-**PASS if:** the B03 product surface remains bounded to Event expectation + shared Schedule lifecycle + Agenda/internal parts.
+Result: **PASS**.
 
 ---
 
 # Acceptance record
 
-Fill only after execution:
-
 ```text
-A Timed Event create + reload        NOT RUN
-B Reschedule + reload                NOT RUN
-C Postpone/TBD + Undo                NOT RUN
-D All-day + multi-day                NOT RUN
-E Agenda/internal parts              NOT RUN
-F Boundary sanity                    NOT RUN
+A Timed Event create + reload        PASS
+B Reschedule + reload                PASS
+C Postpone/TBD + Undo                PASS
+D All-day + multi-day                PASS
+E Agenda/internal parts              PASS
+F Boundary sanity                    PASS
 
-Overall B03 manual userTest          NOT RUN
-Executed by                          —
-Executed at                          —
-Notes                                —
+Overall B03 manual userTest          PASS
+Executed/accepted at                 2026-09-18
+Notes                                Agenda explicit rename UX defect fixed and retested;
+                                     postponed/TBD rediscovery transferred to B05.
 ```
 
-B03-E must not cite this file as manual PASS until the user explicitly reports successful execution/acceptance.
+This record is valid evidence for B03-E / whole-B03 closure.
