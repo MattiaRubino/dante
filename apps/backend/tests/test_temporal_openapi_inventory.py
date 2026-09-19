@@ -63,6 +63,9 @@ _EXPECTED_TEMPORAL_OPERATIONS = {
     ("/api/v1/temporal/constraints", "get"): (
         "temporal_list_constraints_by_subject"
     ),
+    ("/api/v1/temporal/constraints/evaluate", "post"): (
+        "temporal_evaluate_constraints"
+    ),
     ("/api/v1/temporal/constraints/{constraint_ref}", "get"): (
         "temporal_get_constraint"
     ),
