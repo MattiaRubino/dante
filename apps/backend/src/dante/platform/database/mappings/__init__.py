@@ -62,6 +62,8 @@ MAPPED_TABLES: tuple[Table, ...] = cast(
         temporal_constraint.TemporalConstraintStateRow.__table__,
         temporal_constraint.TemporalConstraintBoundaryStateRow.__table__,
         temporal_constraint.TemporalConstraintBoundaryAbsoluteStateRow.__table__,
+        temporal_constraint.TemporalConstraintWindowStateRow.__table__,
+        temporal_constraint.TemporalConstraintWindowAbsoluteStateRow.__table__,
         temporal_constraint.TemporalConstraintCurrentHistoryRow.__table__,
         temporal_constraint.TemporalConstraintMutationOperationRow.__table__,
         schedule.SchedulePlacementStateRow.__table__,
