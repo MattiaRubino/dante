@@ -38,12 +38,13 @@ TemporalConstraintWindowRelationship = Literal[
     "full_placement_contained",
     "placement_overlaps",
 ]
+TemporalConstraintDurationKind = Literal["minimum", "maximum"]
 TemporalConstraintFacet = Literal[
     "schedule.start",
     "schedule.completion",
     "schedule.placement",
 ]
-TemporalConstraintFamily = Literal["boundary", "window"]
+TemporalConstraintFamily = Literal["boundary", "window", "duration"]
 MutationKind = Literal["create", "revise", "retire"]
 ConstraintEvaluationStatus = Literal["satisfied", "violated", "not_evaluable"]
 ConstraintSetEvaluationStatus = Literal[
@@ -179,7 +180,33 @@ class AbsoluteWindowRule:
         object.__setattr__(self, "ends_at", ends_at)
 
 
-TemporalConstraintRule = AbsoluteBoundaryRule | AbsoluteEarliestStartRule | AbsoluteWindowRule
+@dataclass(frozen=True, slots=True)
+class ScheduleDurationRule:
+    """B04-E exact duration rule over planned Schedule placement."""
+
+    duration_kind: TemporalConstraintDurationKind
+    strength: TemporalConstraintStrength
+    duration_microseconds: int
+    constrained_facet: Literal["schedule.placement"] = "schedule.placement"
+
+    def __post_init__(self) -> None:
+        _validate_strength(self.strength)
+        if self.duration_kind not in {"minimum", "maximum"}:
+            raise TemporalConstraintInputError(
+                "Temporal Constraint duration kind must be minimum or maximum."
+            )
+        if self.duration_microseconds <= 0:
+            raise TemporalConstraintInputError(
+                "Temporal Constraint duration must be a positive exact duration."
+            )
+
+
+TemporalConstraintRule = (
+    AbsoluteBoundaryRule
+    | AbsoluteEarliestStartRule
+    | AbsoluteWindowRule
+    | ScheduleDurationRule
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -205,8 +232,20 @@ class TemporalConstraintCurrentWindowRuleView:
     ends_at: datetime
 
 
+@dataclass(frozen=True, slots=True)
+class TemporalConstraintCurrentDurationRuleView:
+    material_state_ref: MaterialStateRef
+    family: Literal["duration"]
+    duration_kind: TemporalConstraintDurationKind
+    constrained_facet: Literal["schedule.placement"]
+    strength: TemporalConstraintStrength
+    duration_microseconds: int
+
+
 TemporalConstraintCurrentRuleView = (
-    TemporalConstraintCurrentBoundaryRuleView | TemporalConstraintCurrentWindowRuleView
+    TemporalConstraintCurrentBoundaryRuleView
+    | TemporalConstraintCurrentWindowRuleView
+    | TemporalConstraintCurrentDurationRuleView
 )
 
 
@@ -357,7 +396,9 @@ SELECT constraint_row.constraint_ref,
        window_state.relationship_code,
        window_state.temporal_form_code AS window_temporal_form_code,
        window_payload.starts_at,
-       window_payload.ends_at
+       window_payload.ends_at,
+       duration_state.duration_kind_code,
+       duration_state.duration_microseconds
   FROM dante.temporal_constraint AS constraint_row
   JOIN dante.native_address AS subject_address
     ON subject_address.native_ref=constraint_row.subject_native_ref
@@ -375,6 +416,8 @@ SELECT constraint_row.constraint_ref,
     ON window_state.material_state_ref=state.material_state_ref
   LEFT JOIN dante.temporal_constraint_window_absolute_state AS window_payload
     ON window_payload.material_state_ref=window_state.material_state_ref
+  LEFT JOIN dante.temporal_constraint_duration_state AS duration_state
+    ON duration_state.material_state_ref=state.material_state_ref
  WHERE (
         (subject_address.owner_family='activity' AND EXISTS (
             SELECT 1 FROM dante.activity_intention AS activity
@@ -414,6 +457,18 @@ _MUTATE_WINDOW_SQL = text(
     """
 )
 
+_MUTATE_DURATION_SQL = text(
+    """
+    SELECT constraint_ref, subject_native_ref, material_state_ref, active, created_at, replayed
+      FROM dante.mutate_self_schedule_duration_constraint(
+           :self_person_ref,:operation_id,:intent_fingerprint,:mutation_kind,
+           :subject_native_ref,:constraint_ref,:expected_material_state_ref,
+           :resulting_material_state_ref,:duration_kind_code,:constrained_facet_code,
+           :strength_code,:duration_microseconds
+      )
+    """
+)
+
 
 def _normalize_operation_id(value: str) -> str:
     normalized = value.strip()
@@ -441,7 +496,11 @@ def _hash(payload: Mapping[str, str]) -> str:
 
 
 def _rule_family(rule: TemporalConstraintRule) -> TemporalConstraintFamily:
-    return "window" if isinstance(rule, AbsoluteWindowRule) else "boundary"
+    if isinstance(rule, AbsoluteWindowRule):
+        return "window"
+    if isinstance(rule, ScheduleDurationRule):
+        return "duration"
+    return "boundary"
 
 
 def _rule_payload(rule: TemporalConstraintRule) -> dict[str, str]:
@@ -454,6 +513,14 @@ def _rule_payload(rule: TemporalConstraintRule) -> dict[str, str]:
             "temporal_form": "absolute",
             "starts_at": rule.starts_at.isoformat(timespec="microseconds"),
             "ends_at": rule.ends_at.isoformat(timespec="microseconds"),
+        }
+    if isinstance(rule, ScheduleDurationRule):
+        return {
+            "family": "duration",
+            "duration_kind": rule.duration_kind,
+            "constrained_facet": rule.constrained_facet,
+            "strength": rule.strength,
+            "duration_microseconds": str(rule.duration_microseconds),
         }
     return {
         "family": "boundary",
@@ -612,9 +679,29 @@ def _constraint_from_row(row: RowMapping) -> TemporalConstraintView:
             starts_at=starts_at,
             ends_at=ends_at,
         )
+    elif family_value == "duration":
+        duration_kind_value = row["duration_kind_code"]
+        duration_microseconds_value = row["duration_microseconds"]
+        if (
+            duration_kind_value not in {"minimum", "maximum"}
+            or facet_value != "schedule.placement"
+            or not isinstance(duration_microseconds_value, int)
+            or duration_microseconds_value <= 0
+        ):
+            raise TemporalConstraintPersistenceError(
+                "Stored current duration rule is outside the activated B04-E shape."
+            )
+        current_rule = TemporalConstraintCurrentDurationRuleView(
+            material_state_ref=material_state_ref,
+            family="duration",
+            duration_kind=cast(TemporalConstraintDurationKind, str(duration_kind_value)),
+            constrained_facet="schedule.placement",
+            strength=cast(TemporalConstraintStrength, str(strength_value)),
+            duration_microseconds=duration_microseconds_value,
+        )
     else:
         raise TemporalConstraintPersistenceError(
-            "Stored current Temporal Constraint family is outside the activated B04-C shape."
+            "Stored current Temporal Constraint family is outside the activated B04-E shape."
         )
 
     return TemporalConstraintView(
@@ -680,7 +767,7 @@ async def _expected_family_in_session(
             },
         )
     ).scalar_one_or_none()
-    if value in {"boundary", "window"}:
+    if value in {"boundary", "window", "duration"}:
         return cast(TemporalConstraintFamily, str(value))
     return None
 
@@ -720,8 +807,24 @@ async def _mutate_in_session(
             "starts_at": None if window_rule is None else window_rule.starts_at,
             "ends_at": None if window_rule is None else window_rule.ends_at,
         }
+    elif family == "duration":
+        duration_rule = rule if isinstance(rule, ScheduleDurationRule) else None
+        statement = _MUTATE_DURATION_SQL
+        parameters = {
+            **common,
+            "duration_kind_code": None if duration_rule is None else duration_rule.duration_kind,
+            "constrained_facet_code": None if duration_rule is None else duration_rule.constrained_facet,
+            "strength_code": None if duration_rule is None else duration_rule.strength,
+            "duration_microseconds": (
+                None if duration_rule is None else duration_rule.duration_microseconds
+            ),
+        }
     else:
-        boundary_rule = None if isinstance(rule, AbsoluteWindowRule) else rule
+        boundary_rule = (
+            rule
+            if isinstance(rule, (AbsoluteBoundaryRule, AbsoluteEarliestStartRule))
+            else None
+        )
         statement = _MUTATE_BOUNDARY_SQL
         parameters = {
             **common,
@@ -768,6 +871,35 @@ def _evaluate_current_rule(
             material_state_ref=rule.material_state_ref,
             family="boundary",
             rule_code=rule.boundary_kind,
+            constrained_facet=rule.constrained_facet,
+            strength=rule.strength,
+            evaluation="satisfied" if satisfied else "violated",
+            reason_code=reason,
+        )
+
+    if isinstance(rule, TemporalConstraintCurrentDurationRuleView):
+        duration_microseconds = int(
+            (placement.ends_at - placement.starts_at).total_seconds() * 1_000_000
+        )
+        if rule.duration_kind == "minimum":
+            satisfied = duration_microseconds >= rule.duration_microseconds
+            reason = (
+                "schedule_duration_at_or_above_minimum"
+                if satisfied
+                else "schedule_duration_below_minimum"
+            )
+        else:
+            satisfied = duration_microseconds <= rule.duration_microseconds
+            reason = (
+                "schedule_duration_at_or_below_maximum"
+                if satisfied
+                else "schedule_duration_above_maximum"
+            )
+        return TemporalConstraintEvaluationItem(
+            constraint_ref=constraint.constraint_ref,
+            material_state_ref=rule.material_state_ref,
+            family="duration",
+            rule_code=rule.duration_kind,
             constrained_facet=rule.constrained_facet,
             strength=rule.strength,
             evaluation="satisfied" if satisfied else "violated",
@@ -833,6 +965,9 @@ def _hard_set_status(constraints: list[TemporalConstraintView]) -> HardSetStatus
     start_upper = _Bound()
     completion_lower = _Bound()
     completion_upper = _Bound()
+    minimum_duration_microseconds: int | None = None
+    maximum_duration_microseconds: int | None = None
+
     for constraint in constraints:
         rule = constraint.current_rule
         if rule is None or rule.strength != "hard":
@@ -861,6 +996,21 @@ def _hard_set_status(constraints: list[TemporalConstraintView]) -> HardSetStatus
                 _raise_lower(completion_lower, rule.starts_at, strict=True)
             else:
                 return "undetermined"
+        elif isinstance(rule, TemporalConstraintCurrentDurationRuleView):
+            if rule.duration_kind == "minimum":
+                minimum_duration_microseconds = max(
+                    minimum_duration_microseconds or 0,
+                    rule.duration_microseconds,
+                )
+            elif rule.duration_kind == "maximum":
+                maximum_duration_microseconds = min(
+                    maximum_duration_microseconds
+                    if maximum_duration_microseconds is not None
+                    else rule.duration_microseconds,
+                    rule.duration_microseconds,
+                )
+            else:
+                return "undetermined"
         else:
             return "undetermined"
 
@@ -874,6 +1024,36 @@ def _hard_set_status(constraints: list[TemporalConstraintView]) -> HardSetStatus
         and start_lower.value >= completion_upper.value
     ):
         return "infeasible"
+    if (
+        minimum_duration_microseconds is not None
+        and maximum_duration_microseconds is not None
+        and minimum_duration_microseconds > maximum_duration_microseconds
+    ):
+        return "infeasible"
+
+    if (
+        minimum_duration_microseconds is not None
+        and start_lower.value is not None
+        and completion_upper.value is not None
+    ):
+        available = int(
+            (completion_upper.value - start_lower.value).total_seconds() * 1_000_000
+        )
+        if available < minimum_duration_microseconds:
+            return "infeasible"
+
+    if (
+        maximum_duration_microseconds is not None
+        and start_upper.value is not None
+        and completion_lower.value is not None
+        and completion_lower.value > start_upper.value
+    ):
+        required = int(
+            (completion_lower.value - start_upper.value).total_seconds() * 1_000_000
+        )
+        if required > maximum_duration_microseconds:
+            return "infeasible"
+
     return "feasible"
 
 
