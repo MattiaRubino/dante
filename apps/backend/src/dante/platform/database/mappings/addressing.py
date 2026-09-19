@@ -51,7 +51,7 @@ class MaterialStateAddressRow(Base):
             name="one_owner",
         ),
         CheckConstraint(
-            "facet_code IN ('schedule.placement','actual.realization','session.timing','routine.recurrence','event.recurrence','temporal_constraint.rule')",
+            "facet_code IN ('schedule.placement','schedule.movement_policy','actual.realization','session.timing','routine.recurrence','event.recurrence','temporal_constraint.rule')",
             name="facet_code",
         ),
         ForeignKeyConstraint(
