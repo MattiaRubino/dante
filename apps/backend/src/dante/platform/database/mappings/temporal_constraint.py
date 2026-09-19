@@ -75,10 +75,10 @@ class TemporalConstraintStateRow(Base):
             "material_state_ref",
             name="uq_temporal_constraint_state_constraint_material",
         ),
-        CheckConstraint("family_code='boundary'", name="family"),
+        CheckConstraint("family_code IN ('boundary','window')", name="family"),
         CheckConstraint("strength_code IN ('hard','soft')", name="strength"),
         CheckConstraint(
-            "constrained_facet_code IN ('schedule.start','schedule.completion')",
+            "constrained_facet_code IN ('schedule.start','schedule.completion','schedule.placement')",
             name="constrained_facet",
         ),
         Index("ix_temporal_constraint_state_constraint_ref", "constraint_ref"),
@@ -136,6 +136,57 @@ class TemporalConstraintBoundaryAbsoluteStateRow(Base):
 
     material_state_ref: Mapped[MaterialStateRef] = mapped_column(primary_key=True)
     boundary_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class TemporalConstraintWindowStateRow(Base):
+    """Typed B04-C window relation over a Schedule facet."""
+
+    __tablename__ = "temporal_constraint_window_state"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["material_state_ref"],
+            ["dante.temporal_constraint_state.material_state_ref"],
+            name="fk_temporal_constraint_window_state_constraint_state",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
+        ),
+        CheckConstraint(
+            "relationship_code IN ('start_within','completion_within','full_placement_contained','placement_overlaps')",
+            name="relationship",
+        ),
+        CheckConstraint("temporal_form_code='absolute'", name="temporal_form"),
+    )
+
+    material_state_ref: Mapped[MaterialStateRef] = mapped_column(primary_key=True)
+    relationship_code: Mapped[str] = mapped_column(Text, nullable=False)
+    temporal_form_code: Mapped[str] = mapped_column(Text, nullable=False)
+
+
+class TemporalConstraintWindowAbsoluteStateRow(Base):
+    """Finite absolute B04-C window geometry with explicit endpoints."""
+
+    __tablename__ = "temporal_constraint_window_absolute_state"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["material_state_ref"],
+            ["dante.temporal_constraint_window_state.material_state_ref"],
+            name="fk_temporal_constraint_window_absolute_state_window_state",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
+        ),
+        CheckConstraint(
+            "isfinite(starts_at) AND isfinite(ends_at) AND ends_at > starts_at",
+            name="interval",
+        ),
+    )
+
+    material_state_ref: Mapped[MaterialStateRef] = mapped_column(primary_key=True)
+    starts_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    ends_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
 
 class TemporalConstraintCurrentHistoryRow(Base):
