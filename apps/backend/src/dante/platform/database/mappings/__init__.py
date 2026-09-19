@@ -21,6 +21,7 @@ from . import (
     schedule_move,
     session,
     temporal_constraint,
+    temporal_constraint_duration,
 )
 
 MAPPED_TABLES: tuple[Table, ...] = cast(
@@ -72,6 +73,7 @@ MAPPED_TABLES: tuple[Table, ...] = cast(
         temporal_constraint.TemporalConstraintBoundaryAbsoluteStateRow.__table__,
         temporal_constraint.TemporalConstraintWindowStateRow.__table__,
         temporal_constraint.TemporalConstraintWindowAbsoluteStateRow.__table__,
+        temporal_constraint_duration.TemporalConstraintDurationStateRow.__table__,
         temporal_constraint.TemporalConstraintCurrentHistoryRow.__table__,
         temporal_constraint.TemporalConstraintMutationOperationRow.__table__,
         schedule.SchedulePlacementStateRow.__table__,
