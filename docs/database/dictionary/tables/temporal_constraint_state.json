@@ -17,6 +17,7 @@
   "semantic_traceability": {
     "authority_sources": [
       "docs/workstreams/timeline-temporal-operational-b04-a-implementation-freeze.md",
+      "docs/workstreams/timeline-temporal-operational-b04-b-implementation-freeze.md",
       "docs/workstreams/timeline-temporal-operational-b04-execution-plan.md",
       "docs/development/backend-cp6-02-postgresql-persistence-constitution.md"
     ],
@@ -39,9 +40,9 @@
     "columns": [
       {"name":"material_state_ref","postgres_type":"uuid","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Immutable identity of this Temporal Constraint rule revision.","semantic_type":"MaterialStateRef","value_contract":"Application-issued UUIDv7 represented in material_state_address under facet temporal_constraint.rule."},
       {"name":"constraint_ref","postgres_type":"uuid","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Stable Temporal Constraint owner of this rule revision.","semantic_type":"ScopedRecordRef","value_contract":"Existing temporal_constraint.constraint_ref."},
-      {"name":"family_code","postgres_type":"text","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Typed rule-family discriminator.","semantic_type":null,"value_contract":"B04-A admits exactly boundary."},
+      {"name":"family_code","postgres_type":"text","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Typed rule-family discriminator.","semantic_type":null,"value_contract":"B04-A/B admits exactly boundary."},
       {"name":"strength_code","postgres_type":"text","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Whether the rule is hard or soft.","semantic_type":null,"value_contract":"One of hard,soft."},
-      {"name":"constrained_facet_code","postgres_type":"text","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Temporal facet constrained by this B04-A rule.","semantic_type":null,"value_contract":"B04-A admits exactly schedule.start."}
+      {"name":"constrained_facet_code","postgres_type":"text","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Temporal Schedule facet constrained by this rule.","semantic_type":null,"value_contract":"B04-B admits schedule.start or schedule.completion; the deferred typed-rule totality validator restricts which facet is legal for each boundary kind."}
     ],
     "primary_key": {"name":"pk_temporal_constraint_state","columns":["material_state_ref"],"reason":"One Temporal Constraint rule envelope per immutable MaterialStateRef.","deferrable":false,"initially":"NOT DEFERRABLE","enforced":true},
     "foreign_keys": [
@@ -52,9 +53,9 @@
       {"name":"uq_temporal_constraint_state_constraint_material","columns":["constraint_ref","material_state_ref"],"reason":"Provide the exact owner+state key used by current-history and mutation-receipt integrity.","deferrable":false,"initially":"NOT DEFERRABLE","enforced":true}
     ],
     "check_constraints": [
-      {"name":"ck_temporal_constraint_state_family","expression_contract":"family_code='boundary'","reason":"B04-A activates only the boundary rule family.","enforced":true,"validated":true,"no_inherit":false},
+      {"name":"ck_temporal_constraint_state_family","expression_contract":"family_code='boundary'","reason":"B04-A/B activates only the boundary rule family.","enforced":true,"validated":true,"no_inherit":false},
       {"name":"ck_temporal_constraint_state_strength","expression_contract":"strength_code IN ('hard','soft')","reason":"Strength is explicit and bounded; no untyped fallback is accepted.","enforced":true,"validated":true,"no_inherit":false},
-      {"name":"ck_temporal_constraint_state_constrained_facet","expression_contract":"constrained_facet_code='schedule.start'","reason":"B04-A constrains only Schedule start; broader facets belong to later B04 slices.","enforced":true,"validated":true,"no_inherit":false}
+      {"name":"ck_temporal_constraint_state_constrained_facet","expression_contract":"constrained_facet_code IN ('schedule.start','schedule.completion')","reason":"B04-B admits only the Schedule facts needed for earliest/latest start and latest-completion/deadline semantics.","enforced":true,"validated":true,"no_inherit":false}
     ],
     "indexes": [
       {"name":"pk_temporal_constraint_state","method":"btree","unique":true,"keys":["material_state_ref"],"predicate":null,"include":[],"source":"primary_key","reason":"MaterialState rule lookup.","valid":true,"ready":true,"live":true},
@@ -63,7 +64,7 @@
     ],
     "triggers": [
       {"name":"ctrg_temporal_constraint_state_state_totality","routine":"dante.enforce_material_state_totality","events":["INSERT","UPDATE","DELETE"],"timing":"AFTER","orientation":"ROW","constraint_trigger":true,"deferrable":true,"initially_deferred":true,"enabled_mode":"ORIGIN","update_columns":[],"when_condition":null,"arguments":[],"invariant_role":"material_state_totality","reason":"Require exactly one Temporal Constraint rule envelope for a temporal_constraint.rule MaterialState and exclude cross-family payloads."},
-      {"name":"ctrg_temporal_constraint_state_rule_totality","routine":"dante.enforce_temporal_constraint_rule_totality","events":["INSERT","UPDATE","DELETE"],"timing":"AFTER","orientation":"ROW","constraint_trigger":true,"deferrable":true,"initially_deferred":true,"enabled_mode":"ORIGIN","update_columns":[],"when_condition":null,"arguments":[],"invariant_role":"temporal_constraint_rule_totality","reason":"Require the complete typed B04-A boundary payload by transaction end; incomplete canonical rule states are rejected."}
+      {"name":"ctrg_temporal_constraint_state_rule_totality","routine":"dante.enforce_temporal_constraint_rule_totality","events":["INSERT","UPDATE","DELETE"],"timing":"AFTER","orientation":"ROW","constraint_trigger":true,"deferrable":true,"initially_deferred":true,"enabled_mode":"ORIGIN","update_columns":[],"when_condition":null,"arguments":[],"invariant_role":"temporal_constraint_rule_totality","reason":"Require one complete admitted B04-A/B absolute boundary payload and an exact boundary-kind / constrained-facet pair by transaction end."}
     ],
     "table": {"persistence":"permanent","access_method":"heap","partitioned":false,"row_security":false,"force_row_security":false,"replica_identity":"default","reloptions":[]},
     "view": null,
@@ -85,12 +86,14 @@
   "proof": {
     "obligations": [
       "one exact temporal_constraint.rule envelope per MaterialStateRef",
-      "hard/soft strength and schedule.start facet remain typed and bounded",
+      "hard/soft strength and the schedule.start/schedule.completion facet union remain typed and bounded",
+      "boundary kind and constrained facet form only an admitted B04-B pair",
       "revision is append-only rather than in-place mutation",
       "cross-family MaterialState payload combinations are rejected"
     ],
     "test_refs": [
       "apps/backend/tests/integration/temporal/test_b04_temporal_constraint_core.py",
+      "apps/backend/tests/integration/temporal/test_b04_absolute_boundary_deadline.py",
       "apps/backend/tests/integration/temporal/test_b04_temporal_constraint_api_activation.py",
       "apps/backend/tests/integration/database/test_b04_temporal_constraint_catalog.py",
       "apps/backend/tests/integration/database/test_current_catalog.py",
