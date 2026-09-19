@@ -17,7 +17,7 @@ from dante.modules.temporal.temporal_constraint import (
     RevisedTemporalConstraintView,
     RetiredTemporalConstraintView,
     TemporalConstraintApplication,
-    TemporalConstraintCurrentRuleView,
+    TemporalConstraintCurrentBoundaryRuleView,
     TemporalConstraintNotFoundError,
     TemporalConstraintOperationIdReuseError,
     TemporalConstraintStateConflictError,
@@ -218,7 +218,7 @@ async def test_constraint_get_and_list_make_active_vs_retired_explicit() -> None
         subject_native_ref=_SUBJECT_REF,
         subject_kind="event",
         status="active",
-        current_rule=TemporalConstraintCurrentRuleView(
+        current_rule=TemporalConstraintCurrentBoundaryRuleView(
             material_state_ref=_STATE_REF,
             family="boundary",
             boundary_kind="earliest_start",
