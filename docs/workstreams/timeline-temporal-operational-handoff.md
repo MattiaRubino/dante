@@ -1,15 +1,12 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-- **Status:** B03 ✅ CLOSED / PROVEN + pre-B04 governance ✅ FROZEN + B04-A/B/C ✅ CLOSED / PROVEN → B04-D NEXT
+- **Status:** B03 ✅ CLOSED / PROVEN + pre-B04 governance ✅ FROZEN + B04-A/B/C/D ✅ CLOSED / PROVEN → B04-E NEXT
 - **Reconciled:** 2026-09-19
 - **Branch:** `feature/timeline-temporal-operational`
 - **Current roadmap:** `docs/workstreams/timeline-temporal-operational-roadmap.md`
 - **Current live map/ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **B04 execution authority:** `docs/workstreams/timeline-temporal-operational-b04-execution-plan.md`
-- **B04-A closure:** `docs/workstreams/timeline-temporal-operational-b04-a-closure-2026-09-18.md`
-- **B04-B closure:** `docs/workstreams/timeline-temporal-operational-b04-b-closure-2026-09-19.md`
-- **B04-C freeze:** `docs/workstreams/timeline-temporal-operational-b04-c-implementation-freeze.md`
-- **B04-C closure:** `docs/workstreams/timeline-temporal-operational-b04-c-closure-2026-09-19.md`
+- **B04-D closure:** `docs/workstreams/timeline-temporal-operational-b04-d-closure-2026-09-19.md`
 - **Timeline candidate DB overlay:** `docs/database/timeline-temporal-operational.md`
 - **CI:** no CI launch is implied or authorized
 
@@ -25,19 +22,11 @@ B04 Temporal Constraints + Movement Policy       🟡 IN PROGRESS
 ├─ B04-A Temporal Constraint canonical core      ✅ CLOSED / PROVEN
 ├─ B04-B Boundary / Deadline                     ✅ CLOSED / PROVEN
 ├─ B04-C Windows / Preferences / Evaluation      ✅ CLOSED / PROVEN
-├─ B04-D Movement Policy                         ⬜ NEXT
-├─ B04-E Advanced-family applicability           ⬜
+├─ B04-D Movement Policy                         ✅ CLOSED / PROVEN
+├─ B04-E Advanced-family applicability           ⬜ NEXT
 └─ B04-F Whole-B04 closure                       ⬜
 B05 Product Organization                         ⬜
-B06 Routine / Recurrence / Occurrence Baseline   ⬜
-B07 UI/UX Consolidation v1                       ⬜
-B08 Session Runtime                              ⬜
-B09 Responsibility / Participation               ⬜
-B10 Actual / Outcome / Confirmation / Resolution ⬜
-B11 Advanced Recurrence / Conditional / Reminder ⬜
-B12 Replanning / Conflict / Solver               ⬜
-B13 Provider / Offline / Multi-device             ⬜
-B14 Analytics / Statistics / Signals             ⬜
+...
 B15 Whole Vertical Closure                       ⬜
 ```
 
@@ -45,60 +34,35 @@ Current candidate DB:
 
 ```text
 PostgreSQL 18.6
-Alembic     20260919_36
-Topology    109|5|35|87|214|131|312|0|0|0
+Alembic     20260919_39
+Topology    115|5|42|89|232|152|329|0|0|0
 ```
 
-## 2. Binding foundation
+## 2. Binding foundation carried forward
 
-B03 remains CLOSED / PROVEN. Event is distinct from Activity and reuses the shared Schedule authority. Agenda remains Event-internal value truth. Postponed/TBD Event rediscovery remains transferred to B05.
-
-Pre-B04 governance remains binding:
+Permanent distinctions remain:
 
 ```text
-DB:
-Alembic
-≈ SQLAlchemy
-≈ Dictionary + scope
-≈ live catalog / owner / ACL
-≈ current DB SoR
-≈ Timeline DB overlay
-≈ direct PostgreSQL proof
-≈ workstream closure docs
-
-API:
-route/model
-→ explicit stable semantic operationId for every new Temporal endpoint
-→ exact Temporal inventory
-→ OpenAPI snapshot
-→ Orval / @dante/api-client
-→ affected API/frontend tests
-→ workstream docs
+Schedule != Temporal Constraint
+Schedule != Movement Policy
+Temporal Constraint != Movement Policy
+Movement Policy != Authority itself
+Movement Policy != solver result
+proposal != accepted effect
+policy revision != Schedule revision
+constraint revision != Schedule revision
+hard planning violation != impossible reality
+Schedule != Session != Actual
+Actual != Outcome
 ```
 
-The 13 pre-B04 Temporal operationIds remain the frozen compatibility baseline.
+Pre-B04 DB/API same-change governance remains binding for B04-E/F and later blocks.
 
-## 3. B04-A carried forward
+## 3. B04-A/B/C carried forward
 
-B04-A established Temporal Constraint as a stable `ScopedRecordRef` dependent with immutable rule MaterialState history, explicit current state, expected-state CAS and idempotent create/revise/retire.
+Temporal Constraint is a stable self-owned Activity/Event `ScopedRecordRef` dependent with immutable rule MaterialState/current/history, CAS/idempotency and typed boundary/window semantics.
 
-First complete rule:
-
-```text
-subject             self-owned Activity | Event
-family              boundary
-boundary kind       earliest_start
-constrained facet   schedule.start
-strength            hard | soft
-temporal form       absolute
-boundary             finite timestamptz
-```
-
-Closure authority: `timeline-temporal-operational-b04-a-closure-2026-09-18.md`.
-
-## 4. B04-B closure carried forward
-
-Closed absolute boundary matrix:
+Accepted boundary matrix:
 
 ```text
 earliest_start     → schedule.start
@@ -106,31 +70,7 @@ latest_start       → schedule.start
 latest_completion  → schedule.completion
 ```
 
-Binding non-collapse:
-
-```text
-earliest_start != latest_start
-latest_completion/deadline != Schedule end
-passed deadline != Actual
-passed deadline != Outcome / failure
-constraint != placement
-Temporal Constraint != Movement Policy
-```
-
-Persistence authority through B04-B:
-
-```text
-20260919_34 b04_absolute_boundary_deadline
-107|5|34|85|212|129|309|0|0|0
-```
-
-Closure authority: `timeline-temporal-operational-b04-b-closure-2026-09-19.md`.
-
-## 5. B04-C semantic closure
-
-B04-C activates absolute windows and deterministic derived evaluation without collapsing constraint truth into Schedule placement or solver behavior.
-
-Closed window relation matrix:
+Accepted window matrix:
 
 ```text
 start_within              → schedule.start
@@ -139,198 +79,159 @@ full_placement_contained  → schedule.placement
 placement_overlaps        → schedule.placement
 ```
 
-All window variants require:
+B04-C evaluation is derived/non-persistent and does not mutate Schedule.
+
+## 4. B04-D semantic closure
+
+Movement Policy is a Schedule-owned governance facet, not a generic domain root.
+
+Canonical state:
 
 ```text
-subject        self-owned Activity | Event
-family         window
-strength       hard | soft
-temporal form  absolute
-starts_at      finite timestamptz
-ends_at        finite timestamptz
-ends_at        > starts_at
+facet                     schedule.movement_policy
+automatic_movement_code   blocked | automatic
+acceptance_path_code      direct | confirmation_required
 ```
 
-Relation semantics:
+This decomposition intentionally does not copy the prototype `locked | window | confirm | free` enum into kernel truth. Temporal windows stay Temporal Constraints; broad candidate search/replanning stays B12.
+
+## 5. B04-D persistence authority
+
+Candidate chain:
 
 ```text
-start_within / completion_within use inclusive point membership
-full_placement_contained requires full interval containment
-placement_overlaps requires positive overlap; endpoint-only touching is not overlap
-```
-
-Soft is preference, not accepted placement. Hard is a validity constraint, not Actual/Outcome truth.
-
-## 6. B04-C persistence authority
-
-Candidate chain continues:
-
-```text
-20260917_29 B03 closure
+20260919_36 B04-C closure
     ↓
-20260918_30 B04-A Temporal Constraint core
+20260919_37 B04-D Movement Policy core
     ↓
-20260918_31 MaterialState totality hardening
+20260919_38 B04-D governed absolute Schedule move
     ↓
-20260918_32 current-history dispatcher hardening
-    ↓
-20260918_33 Temporal Constraint API activation hardening
-    ↓
-20260919_34 B04-B absolute boundary / deadline
-    ↓
-20260919_35 B04-C absolute window constraints
-    ↓
-20260919_36 B04-C runtime window read ACL
+20260919_39 B04-D proposal-accept replay fix
 ```
 
-B04-C adds:
+Canonical objects:
 
 ```text
-temporal_constraint_window_state
-temporal_constraint_window_absolute_state
-mutate_self_absolute_window_constraint(...)
+schedule_movement_policy_state
+schedule_movement_policy_current_history
+schedule_movement_policy_mutation_operation
+schedule_move_proposal
+schedule_move_request_operation
+schedule_move_accept_operation
 ```
 
-The exact family/relation/facet matrix is enforced by deferred DB totality. Runtime receives SELECT only on the current window payload tables required by the canonical read model.
-
-Accepted topology:
+Capability/integrity routines:
 
 ```text
-109 tables
-5 views
-35 routines
-87 triggers
-214 indexes
-131 FK
-312 CHECK
-0 enums/domains
-0 sequence/materialized/partitioned
-0 RLS
+enforce_schedule_movement_policy_history()
+mutate_self_schedule_movement_policy(...)
+resolve_self_schedule_movement_policy(...)
+assert_absolute_schedule_move_hard_admissible(...)
+apply_governed_absolute_schedule_move(...)
+request_self_absolute_schedule_move(...)
+accept_self_absolute_schedule_move_proposal(...)
 ```
 
-## 7. B04-C application / evaluation / API
+`material_state_address` now admits `schedule.movement_policy`; shared MaterialState totality enforces exact owner/facet/payload exclusivity.
 
-Current rule reads now cover typed boundary and window variants through one canonical Temporal Constraint application surface.
-
-Create/revise dispatch on the new rule family. Retire dispatches from the expected current rule family so boundary/window identity remains stable and retirement remains idempotent.
-
-Evaluation is derived from current effective constraints plus a candidate absolute interval.
-
-Per-rule:
+## 6. B04-D governed behavior
 
 ```text
-satisfied | violated | not_evaluable
+blocked
+  → automatic movement rejected
+
+automatic + direct
+  → current placement CAS checked
+  → current policy checked
+  → all current hard Temporal Constraints checked
+  → only then may a new placement MaterialState become current
+
+automatic + confirmation_required
+  → request produces persistent proposal only
+  → no accepted Schedule mutation yet
+  → explicit acceptance rechecks placement basis, policy basis and hard constraints
+  → accepted effect then appends a new placement MaterialState/current-history episode
 ```
 
-Overall:
+Soft Temporal Constraint violations do not block an otherwise authorized automatic move. Non-evaluable current hard constraints fail closed.
 
-```text
-admissible
-admissible_with_soft_violations
-inadmissible
-not_evaluable
-```
+Proposal creation is not accepted Schedule truth. Proposal acceptance has its own immutable idempotency receipt.
 
-Hard set:
+B04-D does not implement candidate search, fallback strategy, optimizer or whole multi-actor Authority semantics.
 
-```text
-feasible | infeasible | undetermined
-```
-
-Evaluation persists no violation state, creates no Actual/Outcome truth and performs no solver search or automatic movement.
-
-Public API adds exactly:
-
-```text
-POST /api/v1/temporal/constraints/evaluate
-temporal_evaluate_constraints
-```
-
-Existing five Temporal Constraint CRUD operationIds remain stable.
-
-Generated OpenAPI/client commit:
-
-```text
-5268d9dd239ab344337cadd1dfdf312dd46ffe42
-feat(temporal): generate B04-C window evaluation client
-```
-
-## 8. B04-C proof
+## 7. B04-D proof
 
 Observed local proof:
 
 ```text
-PostgreSQL / application evaluation             9 PASS / 2 deselected
-current catalog / Dictionary / ACL             12 PASS
-OpenAPI / Temporal API contract                24 PASS
-@dante/api-client typecheck                    PASS
-@dante/api-client Vitest                       11 PASS
-pnpm generated:check                           PASS / 177 deterministic files
+Movement Policy + governed move + ACL              7 PASS
+whole catalog + Dictionary/SQLAlchemy/Alembic/DB   3 PASS
+DATABASE_CURRENT_TOPOLOGY                           115|5|42|89|232|152|329|0|0|0
 ```
 
-Observed PostgreSQL topology:
+Proof covers:
 
 ```text
-B04_C_LIVE_TOPOLOGY=109|5|35|87|214|131|312|0|0|0
-B04_LIVE_TOPOLOGY=109|5|35|87|214|131|312|0|0|0
-DATABASE_CURRENT_TOPOLOGY=109|5|35|87|214|131|312|0|0|0
+blocked automation
+admissible direct auto-move
+confirmation proposal without Schedule mutation
+explicit proposal acceptance
+stale placement CAS
+stale Movement Policy basis
+hard constraint rejection
+soft preference non-blocking behavior
+request/accept replay
+history monotonicity
+runtime capability ACL
+dictionary/catalog/mapping exact parity
 ```
 
-No full B04 product UX was part of B04-C, so no manual frontend userTest is claimed for this slice.
+No public Temporal HTTP endpoint was added, so no OpenAPI/client regeneration is claimed or required for D.
 
 Closure decision:
 
 ```text
-B04-C Windows / Preferences / Evaluation ✅ CLOSED / PROVEN
+B04-D Movement Policy ✅ CLOSED / PROVEN
 ```
 
-Closure authority: `timeline-temporal-operational-b04-c-closure-2026-09-19.md`.
+## 8. Unsupported / later-owned semantics
 
-## 9. Unsupported / later-owned semantics
-
-B04-C does not activate:
+B04-D does not activate:
 
 ```text
-date-span window constraints
-floating-local window constraints
-named-zone-local window constraints
-coarse-local-period window constraints
-persisted evaluation/violation state
-Movement Policy
-automatic movement
-advanced duration / spacing / relative families
-solver / optimization / candidate search
-Actual / Outcome inference
-full constraint-management product UX
+solver candidate generation
+optimization/replanning search
+fallback strategy
+multi-actor grants / complete Authority model
+Session/Actual/Outcome inference
+date-span/floating/named-zone/coarse automatic move candidates
+advanced duration/spacing/relative constraint families
 ```
 
-These remain fail-closed or owned by later blocks.
+## 9. Immediate next gate — B04-E
 
-## 10. Remaining B04 before B05
+B04-E must classify and activate only the remaining advanced Temporal Constraint families that are truthful against currently canonical facts/anchors:
 
 ```text
-B04-A canonical core                    ✅ CLOSED / PROVEN
-B04-B Boundary / Deadline constraints   ✅ CLOSED / PROVEN
-B04-C Windows / Preferences             ✅ CLOSED / PROVEN
-B04-D Movement Policy                   NEXT
-B04-E advanced-family applicability     later
-B04-F whole-B04 closure                 later
+TC-008 minimum/maximum planned placement duration
+TC-009 minimum contiguous Session duration
+TC-010 spacing/recovery
+TC-011 relative-before/after
 ```
 
-B05 Product Organization starts only after B04-F closes.
+Expected discipline:
 
-## 11. Current gate
+- planned Schedule duration may be implementable now if constrained specifically to placement duration;
+- Session-duration runtime belongs to B08 unless a non-runtime semantic seam is all that can be truthfully closed now;
+- spacing anchored on prior Session/Actual/Occurrence must not fabricate a `last_at` field;
+- relative constraints require a safe typed reference contract, not generic IDs/JSON;
+- each item must close as implemented or explicitly deferred with owner/reopening trigger.
+
+## 10. Current gate
 
 ```text
-B04
-├─ B04-A ✅ CLOSED / PROVEN
-├─ B04-B ✅ CLOSED / PROVEN
-├─ B04-C ✅ CLOSED / PROVEN
-└─ B04-D ⬜ NEXT
+B04-D ✅ CLOSED / PROVEN
+B04-E ⬜ NEXT
 ```
 
-**Immediate action:** re-open Domain / Logical / Physical / B04 execution authority for Movement Policy and freeze the exact B04-D scope before any B04-D write.
-
-B04-C closure does not pre-authorize B04-D persistence, enums, mutation semantics, API, frontend behavior or solver coupling.
-
-CI remains separately authorized.
+Proceed with B04-E applicability freeze. CI remains separately authorized and should not replace faster local gates.
