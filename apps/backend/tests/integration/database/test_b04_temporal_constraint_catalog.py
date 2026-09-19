@@ -1,4 +1,4 @@
-"""HEAD-level PostgreSQL structural proof for the B04-A Temporal Constraint core."""
+"""HEAD-level PostgreSQL structural proof for the B04 Temporal Constraint core."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ from dante.platform.database.mappings import MAPPED_TABLES
 
 pytestmark = pytest.mark.postgres
 
-_CURRENT_REVISION = "20260918_33"
+_CURRENT_REVISION = "20260919_34"
 _REPO_ROOT = Path(__file__).resolve().parents[5]
 _B04_TABLES = {
     "temporal_constraint",
@@ -39,9 +39,11 @@ _B04_TRIGGERS = {
     "ctrg_temporal_constraint_boundary_absolute_state_rule_totality": (True, True, True, "enforce_temporal_constraint_rule_totality"),
     "ctrg_temporal_constraint_current_history_equivalence": (True, True, True, "enforce_current_history_equivalence"),
 }
-_MUTATE_SIGNATURE = (
+_MUTATE_SIGNATURES = (
     "dante.mutate_self_absolute_earliest_start_constraint("
-    "uuid,text,text,text,uuid,uuid,uuid,uuid,text,timestamptz)"
+    "uuid,text,text,text,uuid,uuid,uuid,uuid,text,timestamptz)",
+    "dante.mutate_self_absolute_boundary_constraint("
+    "uuid,text,text,text,uuid,uuid,uuid,uuid,text,text,text,timestamptz)",
 )
 _SHARED_ROUTINES = (
     "dante.enforce_scoped_address_owner()",
@@ -91,7 +93,7 @@ def _routine_security(
     ).fetchone()
 
 
-def test_b04_a_catalog_surface_and_live_topology(migrated_database: Any) -> None:
+def test_b04_catalog_surface_and_live_topology(migrated_database: Any) -> None:
     with _admin(migrated_database) as connection:
         revision = connection.execute(
             "SELECT version_num FROM dante.alembic_version"
@@ -142,15 +144,15 @@ def test_b04_a_catalog_surface_and_live_topology(migrated_database: Any) -> None
     assert b04_tables == _B04_TABLES
     assert owners == {(table, "dante_owner") for table in _B04_TABLES}
     assert topology is not None
-    assert topology[7:] == (0, 0, 0)
-    print("B04_A_LIVE_TOPOLOGY=" + ",".join(str(value) for value in topology))
+    assert topology == (107, 5, 34, 85, 212, 129, 309, 0, 0, 0)
+    print("B04_LIVE_TOPOLOGY=" + ",".join(str(value) for value in topology))
 
     config = Config(toml_file=str(_REPO_ROOT / "apps" / "backend" / "pyproject.toml"))
     scripts = ScriptDirectory.from_config(config)
     assert scripts.get_heads() == [_CURRENT_REVISION]
 
 
-def test_b04_a_triggers_and_routine_acl_are_exact(migrated_database: Any) -> None:
+def test_b04_triggers_and_routine_acl_are_exact(migrated_database: Any) -> None:
     with _admin(migrated_database) as connection:
         trigger_rows = {
             str(row[0]): (bool(row[1]), bool(row[2]), bool(row[3]), str(row[4]))
@@ -193,7 +195,10 @@ def test_b04_a_triggers_and_routine_acl_are_exact(migrated_database: Any) -> Non
             )
         }
 
-        mutation_security = _routine_security(connection, _MUTATE_SIGNATURE)
+        mutation_security = {
+            signature: _routine_security(connection, signature)
+            for signature in _MUTATE_SIGNATURES
+        }
         shared_security = {
             signature: _routine_security(connection, signature)
             for signature in _SHARED_ROUTINES
@@ -203,16 +208,20 @@ def test_b04_a_triggers_and_routine_acl_are_exact(migrated_database: Any) -> Non
     assert direct_acl == {
         (table, "dante_runtime", "SELECT") for table in _B04_RUNTIME_READ_TABLES
     }
-    assert mutation_security == (
-        "dante_owner",
-        True,
-        "v",
-        "u",
-        False,
-        ["search_path=pg_catalog, dante, pg_temp"],
-        True,
-        False,
-        False,
+    assert all(
+        security
+        == (
+            "dante_owner",
+            True,
+            "v",
+            "u",
+            False,
+            ["search_path=pg_catalog, dante, pg_temp"],
+            True,
+            False,
+            False,
+        )
+        for security in mutation_security.values()
     )
     assert all(
         security
@@ -231,7 +240,7 @@ def test_b04_a_triggers_and_routine_acl_are_exact(migrated_database: Any) -> Non
     )
 
 
-def test_b04_a_sqlalchemy_registration_is_exact() -> None:
+def test_b04_sqlalchemy_registration_is_exact() -> None:
     mapped = {table.name: table for table in MAPPED_TABLES}
     assert _B04_TABLES <= set(mapped)
     assert {name for name in mapped if name.startswith("temporal_constraint")} == _B04_TABLES
