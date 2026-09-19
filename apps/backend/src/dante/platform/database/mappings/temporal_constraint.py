@@ -1,4 +1,4 @@
-"""SQLAlchemy row mappings for the B04-A Temporal Constraint canonical core."""
+"""SQLAlchemy row mappings for the B04 Temporal Constraint canonical core."""
 
 from datetime import datetime
 
@@ -78,7 +78,7 @@ class TemporalConstraintStateRow(Base):
         CheckConstraint("family_code='boundary'", name="family"),
         CheckConstraint("strength_code IN ('hard','soft')", name="strength"),
         CheckConstraint(
-            "constrained_facet_code='schedule.start'",
+            "constrained_facet_code IN ('schedule.start','schedule.completion')",
             name="constrained_facet",
         ),
         Index("ix_temporal_constraint_state_constraint_ref", "constraint_ref"),
@@ -92,7 +92,7 @@ class TemporalConstraintStateRow(Base):
 
 
 class TemporalConstraintBoundaryStateRow(Base):
-    """Typed B04-A boundary-rule discriminator."""
+    """Typed absolute boundary discriminator for the B04-A/B boundary matrix."""
 
     __tablename__ = "temporal_constraint_boundary_state"
     __table_args__ = (
@@ -105,7 +105,10 @@ class TemporalConstraintBoundaryStateRow(Base):
             ondelete="NO ACTION",
             deferrable=False,
         ),
-        CheckConstraint("boundary_kind_code='earliest_start'", name="kind"),
+        CheckConstraint(
+            "boundary_kind_code IN ('earliest_start','latest_start','latest_completion')",
+            name="kind",
+        ),
         CheckConstraint("temporal_form_code='absolute'", name="temporal_form"),
     )
 
@@ -115,7 +118,7 @@ class TemporalConstraintBoundaryStateRow(Base):
 
 
 class TemporalConstraintBoundaryAbsoluteStateRow(Base):
-    """Absolute-instant value for the first complete B04-A boundary rule."""
+    """Absolute-instant value shared by the activated boundary rule kinds."""
 
     __tablename__ = "temporal_constraint_boundary_absolute_state"
     __table_args__ = (
@@ -179,7 +182,7 @@ class TemporalConstraintCurrentHistoryRow(Base):
 
 
 class TemporalConstraintMutationOperationRow(Base):
-    """Immutable idempotency receipt for B04-A create/revise/retire effects."""
+    """Immutable idempotency receipt for create/revise/retire effects."""
 
     __tablename__ = "temporal_constraint_mutation_operation"
     __table_args__ = (
