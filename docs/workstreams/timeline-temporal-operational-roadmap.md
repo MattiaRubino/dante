@@ -2,14 +2,14 @@
 
 - **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-19
 - **Branch/workstream:** `feature/timeline-temporal-operational`
-- **Current completed frontier:** B04-D Movement Policy ✅ CLOSED / PROVEN
+- **Current completed frontier:** B04-E Advanced-family applicability ✅ CLOSED / PROVEN
 - **Current active block:** B04 Temporal Constraints + Movement Policy
-- **Current next slice:** B04-E Advanced-family applicability
-- **Current candidate DB authority:** PostgreSQL 18.6 / Alembic `20260919_39`
-- **Current candidate topology:** `115|5|42|89|232|152|329|0|0|0`
+- **Current active slice:** B04-F Whole-B04 closure
+- **Current candidate DB authority:** PostgreSQL 18.6 / Alembic `20260919_41`
+- **Current candidate topology:** `116|5|43|90|233|153|331|0|0|0`
 - **Live progress ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **B04 execution authority:** `docs/workstreams/timeline-temporal-operational-b04-execution-plan.md`
-- **B04-D closure:** `docs/workstreams/timeline-temporal-operational-b04-d-closure-2026-09-19.md`
+- **B04-E closure:** `docs/workstreams/timeline-temporal-operational-b04-e-closure-2026-09-19.md`
 
 The archived semantic freeze preserves the complete functionality/non-collapse inventory. This document is the current sequencing authority.
 
@@ -45,6 +45,8 @@ Movement Policy != solver result
 Schedule != Session != Actual
 Session != Actual != Outcome
 Routine != Recurrence != Occurrence
+planned Schedule duration != Activity estimated effort
+planned Schedule duration != Session / Actual duration
 proposal != accepted effect
 pending != success
 idempotency key != Domain identity
@@ -69,8 +71,8 @@ B04 Temporal Constraints + Movement Policy       🟡 IN PROGRESS
 ├─ B04-B Boundary / Deadline constraints         ✅ CLOSED / PROVEN
 ├─ B04-C Windows / Preferences / Evaluation      ✅ CLOSED / PROVEN
 ├─ B04-D Movement Policy                         ✅ CLOSED / PROVEN
-├─ B04-E Advanced-family applicability           ⬜ NEXT
-└─ B04-F Whole-B04 closure                       ⬜
+├─ B04-E Advanced-family applicability           ✅ CLOSED / PROVEN
+└─ B04-F Whole-B04 closure                       🟡 ACTIVE
 B05 Product Organization                         ⬜
 B06 Routine / Recurrence / Occurrence Baseline   ⬜
 B07 UI/UX Consolidation v1                       ⬜
@@ -79,12 +81,12 @@ B09 Responsibility / Participation               ⬜
 B10 Actual / Outcome / Confirmation / Resolution ⬜
 B11 Advanced Recurrence / Conditional / Reminder ⬜
 B12 Replanning / Conflict / Solver               ⬜
-B13 Provider / Offline / Multi-device             ⬜
+B13 Provider / Offline / Multi-device            ⬜
 B14 Analytics / Statistics / Signals             ⬜
 B15 Whole Vertical Closure                       ⬜
 ```
 
-Dependency chain remains unchanged through B15; B05 starts only after B04-F.
+B05 starts only after B04-F closes the whole B04 block.
 
 ---
 
@@ -96,8 +98,6 @@ Stable self-owned Activity/Event Temporal Constraint identity, immutable `tempor
 
 ## B04-B ✅ CLOSED / PROVEN
 
-Absolute boundary matrix:
-
 ```text
 earliest_start     + schedule.start
 latest_start       + schedule.start
@@ -105,8 +105,6 @@ latest_completion  + schedule.completion
 ```
 
 ## B04-C ✅ CLOSED / PROVEN
-
-Absolute window matrix:
 
 ```text
 start_within              + schedule.start
@@ -119,20 +117,7 @@ Derived evaluation distinguishes hard validity, soft preference and not-evaluabl
 
 ## B04-D ✅ CLOSED / PROVEN
 
-Movement Policy is separately materialized as `schedule.movement_policy` and decomposes policy into:
-
-```text
-automatic_movement_code  blocked | automatic
-acceptance_path_code     direct | confirmation_required
-```
-
-Governed automatic movement:
-
-```text
-blocked                      → reject automation
-automatic + direct           → commit only if hard-admissible and placement CAS still matches
-automatic + confirmation     → proposal first; accepted Schedule changes only after explicit acceptance
-```
+Movement Policy is separately materialized as `schedule.movement_policy`. Governed automatic movement supports `blocked | automatic` and `direct | confirmation_required`, with proposal distinct from accepted effect. Current hard Temporal Constraints are re-evaluated before automatic commit/accept.
 
 Persistence authority:
 
@@ -140,54 +125,84 @@ Persistence authority:
 20260919_37 Movement Policy core
 20260919_38 governed absolute Schedule move
 20260919_39 proposal-accept replay fix
-115|5|42|89|232|152|329|0|0|0
 ```
 
-B04-D does not search for a candidate placement and does not implement B12 solver/replanning semantics. It does not implement the full future multi-actor Authority model.
+## B04-E ✅ CLOSED / PROVEN
 
-No public Temporal HTTP endpoint was added, so no OpenAPI/client regeneration was required.
+TC-008 is activated as exact planned Schedule placement duration:
+
+```text
+minimum | maximum
+schedule.placement
+hard | soft
+positive exact duration
+```
+
+The canonical application evaluator composes boundary/window/duration. The governed automatic-move guard also enforces hard duration rules.
+
+Explicit dispositions:
+
+```text
+TC-009 contiguous Session duration  → B08 runtime
+TC-010 spacing/recovery             → B06/B08/B10 by anchor
+TC-011 relative before/after        → deferred until reviewed bounded relation/reference persistence exists
+```
+
+Persistence authority:
+
+```text
+20260919_40 planned Schedule duration constraints
+20260919_41 duration runtime read ACL
+116|5|43|90|233|153|331|0|0|0
+```
 
 Observed proof:
 
 ```text
-Movement Policy / governed move / ACL            7 PASS
-whole catalog / Dictionary / SQLAlchemy / DB     3 PASS
+4 PASS core/movement
+13 PASS / 3 deselected application/regression
+3 PASS whole catalog/Dictionary/ACL
 ```
 
-Closure authority: `timeline-temporal-operational-b04-d-closure-2026-09-19.md`.
+Closure authority: `timeline-temporal-operational-b04-e-closure-2026-09-19.md`.
 
 ---
 
-# 3. B04-E — Advanced-family applicability ⬜ NEXT
+# 3. B04-F — Whole-B04 closure 🟡 ACTIVE
 
-B04-E owns explicit applicability and bounded activation for the remaining frozen families:
+B04-F is a closure/proof slice, not a new semantic-family implementation slice.
+
+Required evidence from the frozen B04 execution plan:
 
 ```text
-TC-008 minimum / maximum planned Schedule duration
-TC-009 minimum contiguous Session duration
-TC-010 spacing / recovery
-TC-011 relative-before / relative-after
+B04 typed/domain validation
+real PostgreSQL migration/current/history/CAS/idempotency
+Schedule integration and Activity/Event regression
+hard vs soft evaluation
+Deadline passage != Outcome
+Movement Policy enforcement
+frontend Create/edit/read explanation paths actually backed by backend truth
+real-stack browser proof for accepted product slice
+manual userTest constraint/explanation/movement acceptance
+broad affected backend/frontend regressions
+Dictionary / SQLAlchemy / Alembic / OpenAPI/client reconciliation
+Temporal exact API inventory + post-B03 semantic operationId gate
+DB README + Timeline candidate overlay reconciliation
+map / roadmap / handoff / final B04 closure record
 ```
 
-Rules for B04-E:
+Execution discipline for B04-F:
 
-- activate only semantics whose constrained facts and reference anchors already exist canonically;
-- do not fabricate Session/Actual/Occurrence history on Activity/Event;
-- do not use generic `related_id + type` or JSON relation payloads;
-- preserve extension seams where runtime ownership belongs to B06/B08/B10/B12;
-- close each frozen-map item either as implemented or as an explicit applicability deferral with owner/reopening trigger.
-
-Likely truthful subset to assess first: planned Schedule placement duration. Session-contiguous, prior-realization spacing and heterogeneous relative anchors require stricter owner/reference review.
-
----
-
-# 4. B04-F — Whole-B04 closure ⬜
-
-Whole-B04 regression, DB/docs/API consistency, applicable product/manual acceptance and final closure evidence. B05 starts only after B04-F.
+- first inventory what is already proven by B04-A..E and do not rerun redundant micro-tests;
+- run compact whole-B04 backend/PostgreSQL regressions locally;
+- run exact Temporal OpenAPI/inventory and generated-client parity only where required by the already-public B04-A/B/C contract;
+- inspect current frontend Create/edit/read/explanation behavior and distinguish prototype-only fields from backend-backed truth;
+- request manual userTest only for product behavior that cannot be proven in the connector/runtime environment;
+- close B04 only after every frozen ledger item is implemented, explicitly deferred, or proven out-of-scope with an owner/reopening trigger.
 
 ---
 
-# 5. B05–B15
+# 4. B05–B15
 
 ```text
 B05 Product Organization
@@ -203,11 +218,11 @@ B14 Analytics / Statistics / Signals
 B15 Whole Vertical Closure
 ```
 
-# 6. Current gate
+# 5. Current gate
 
 ```text
-B04-D ✅ CLOSED / PROVEN
-B04-E ⬜ NEXT
+B04-E ✅ CLOSED / PROVEN
+B04-F 🟡 ACTIVE
 ```
 
-Immediate action: freeze the B04-E applicability matrix against current Domain / Logical / Physical authority, then implement only the truthful subset. CI remains separate and is not implicitly authorized.
+Immediate action: perform the compact whole-B04 proof/reconciliation matrix. CI remains separate and is not implicitly authorized.
