@@ -6,13 +6,13 @@
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
-- **Timeline candidate Alembic head:** `20260919_39`
-- **Timeline candidate topology:** `115|5|42|89|232|152|329|0|0|0`
+- **Timeline candidate Alembic head:** `20260919_41`
+- **Timeline candidate topology:** `116|5|43|90|233|153|331|0|0|0`
 - **Timeline candidate DB overlay:** `timeline-temporal-operational.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 - **Persistence ADR:** `../decisions/ADR-010-postgresql-persistence-constitution.md`
 - **Timeline workstream authority:** `../workstreams/timeline-temporal-operational-map.md`
-- **B04-D closure:** `../workstreams/timeline-temporal-operational-b04-d-closure-2026-09-19.md`
+- **B04-E closure:** `../workstreams/timeline-temporal-operational-b04-e-closure-2026-09-19.md`
 
 ## 1. Authority model
 
@@ -60,7 +60,11 @@ Protected `main` remains integration authority. Candidate truth is never relabel
     ↓
 20260919_38 B04-D governed Schedule move + confirmation proposal/acceptance
     ↓
-20260919_39 B04-D proposal-accept replay fix [current candidate head]
+20260919_39 B04-D proposal-accept replay fix
+    ↓
+20260919_40 B04-E planned Schedule duration constraints
+    ↓
+20260919_41 B04-E duration runtime-read ACL [current candidate head]
 ```
 
 No accepted historical migration was edited, rebased, renumbered or flattened.
@@ -68,13 +72,13 @@ No accepted historical migration was edited, rebased, renumbered or flattened.
 ## 3. Current candidate topology
 
 ```text
-115 tables
+116 tables
 5 views
-42 routines
-89 triggers
-232 physical indexes
-152 foreign keys
-329 CHECK constraints
+43 routines
+90 triggers
+233 physical indexes
+153 foreign keys
+331 CHECK constraints
 0 enums/domains
 0 sequences
 0 materialized views
@@ -82,7 +86,7 @@ No accepted historical migration was edited, rebased, renumbered or flattened.
 0 RLS policies
 ```
 
-This topology was read directly from PostgreSQL 18.6 at `_39` and reconciled with `dictionary/scope.json`, SQLAlchemy mappings, Alembic and whole-catalog tests.
+This topology was read directly from PostgreSQL 18.6 at `_41` and reconciled with `dictionary/scope.json`, SQLAlchemy mappings, Alembic and whole-catalog tests.
 
 ## 4. Timeline persistence classification
 
@@ -125,8 +129,6 @@ Rules retain independent immutable MaterialState/current/history and expected-st
 
 Movement Policy is a typed Schedule-owned rule facet, not a new generic entity and not a Temporal Constraint.
 
-Canonical policy state:
-
 ```text
 facet                  schedule.movement_policy
 automatic_movement     blocked | automatic
@@ -135,7 +137,7 @@ owner                  accepted Schedule
 scope                  self-Person Activity/Event schedules
 ```
 
-Persistence/control:
+Canonical objects:
 
 ```text
 schedule_movement_policy_state
@@ -144,37 +146,65 @@ schedule_movement_policy_mutation_operation
 schedule_move_proposal
 schedule_move_request_operation
 schedule_move_accept_operation
-
-enforce_schedule_movement_policy_history()
-mutate_self_schedule_movement_policy(...)
-resolve_self_schedule_movement_policy(...)
-assert_absolute_schedule_move_hard_admissible(...)
-apply_governed_absolute_schedule_move(...)
-request_self_absolute_schedule_move(...)
-accept_self_absolute_schedule_move_proposal(...)
 ```
 
-B04-D preserves the following operational distinction:
+Every automatic commit/accept path checks current placement CAS, current Movement Policy basis and current hard Temporal Constraint admissibility before accepted Schedule mutation.
+
+`proposal != accepted effect` remains structural truth.
+
+### B04-E Advanced-family applicability ✅ CLOSED / PROVEN
+
+B04-E activates only **TC-008 planned Schedule duration** and explicitly closes applicability for the remaining advanced families without inventing later-owned truth.
+
+Canonical duration rule:
 
 ```text
-blocked
-  → automatic movement rejected
-
-automatic + direct
-  → admissible absolute candidate may commit immediately
-
-automatic + confirmation_required
-  → request creates proposal only
-  → accepted Schedule changes only after explicit proposal acceptance
+subject              Activity | Event
+family               duration
+constrained facet    schedule.placement
+kind                  minimum | maximum
+strength              hard | soft
+value                 positive exact microseconds
+first evaluable form exact absolute Schedule interval
 ```
 
-Every automatic commit/accept path re-checks current placement CAS, current Movement Policy basis and hard Temporal Constraint admissibility before accepted Schedule mutation.
+New canonical object/capability:
 
-`proposal != accepted effect` remains structural truth: `schedule_move_proposal` does not create a new current placement MaterialState by itself.
+```text
+temporal_constraint_duration_state
+mutate_self_schedule_duration_constraint(...)
+```
 
-Soft Temporal Constraint violations do not block an otherwise authorized automatic move. Hard violations or non-evaluable hard rules fail closed.
+Existing shared integrity/evaluation seams are extended rather than duplicated:
 
-B04-D exposes no new public Temporal HTTP endpoint, so OpenAPI/client artifacts intentionally do not churn in this slice.
+```text
+enforce_temporal_constraint_rule_totality()
+assert_absolute_schedule_move_hard_admissible(...)
+TemporalConstraintApplication
+```
+
+Therefore hard duration rules participate in both canonical evaluation and B04-D automatic-move enforcement.
+
+Permanent distinction:
+
+```text
+planned Schedule duration
+!= Activity estimated effort
+!= Session elapsed/active duration
+!= Actual duration
+```
+
+Applicability dispositions:
+
+```text
+TC-009 contiguous Session duration  → runtime deferred B08
+TC-010 spacing/recovery             → deferred B06/B08/B10 by anchor
+TC-011 relative before/after        → deferred until reviewed bounded reference/relation persistence exists
+```
+
+No fake Activity/Event `last_at`, no generic `related_id + type`, and no generic JSON rule payload were introduced.
+
+B04-E exposes no new public Temporal HTTP endpoint, so OpenAPI/client artifacts intentionally do not churn in this slice. B04-F still owns whole-block public API inventory/snapshot regression.
 
 ## 5. Permanent non-collapse invariants
 
@@ -189,6 +219,9 @@ Movement Policy != solver result
 proposal != accepted effect
 policy revision != Schedule revision
 constraint revision != Schedule revision
+planned duration != estimated effort
+planned duration != Session duration
+planned duration != Actual duration
 hard planning violation != impossible reality
 window != placement
 preference != accepted Schedule
@@ -200,7 +233,7 @@ current accepted state != newest row
 idempotency key != Domain identity
 ```
 
-B12 still owns broad candidate generation / optimization / solver semantics. B04-D only governs whether a supplied candidate may alter accepted Schedule truth.
+B12 still owns broad candidate generation / optimization / solver semantics.
 
 ## 6. Proof state
 
@@ -212,21 +245,23 @@ B04-A                                CLOSED / PROVEN at 20260918_33
 B04-B                                CLOSED / PROVEN at 20260919_34
 B04-C                                CLOSED / PROVEN at 20260919_36
 B04-D Movement Policy                CLOSED / PROVEN at 20260919_39
-B04 overall                          IN PROGRESS
+B04-E Advanced-family applicability  CLOSED / PROVEN at 20260919_41
+B04 overall                          IN PROGRESS — B04-F NEXT
 ```
 
-Observed B04-D local evidence:
+Observed B04-E local evidence:
 
 ```text
-Movement Policy + governed move + ACL proof       7 PASS
-whole catalog + B04-D catalog/ACL reconciliation  3 PASS
-DATABASE_CURRENT_TOPOLOGY                         115|5|42|89|232|152|329|0|0|0
+core duration + movement integration             4 PASS
+application/evaluator/regression                13 PASS / 3 deselected
+whole catalog + B04-E catalog/ACL                3 PASS
+DATABASE_CURRENT_TOPOLOGY                        116|5|43|90|233|153|331|0|0|0
 ```
 
-Proof covers blocked automation, direct admissible move, confirmation proposal/accept, stale placement/policy state, idempotent replay, hard rejection, soft non-blocking behavior, history monotonicity, runtime capability ACL and exact Dictionary/SQLAlchemy/Alembic/PostgreSQL parity.
+Proof covers duration lifecycle/current/history/CAS/idempotency, hard minimum/maximum behavior, soft violation explanation, boundary/window/duration composition, duration/window infeasibility, automatic-move enforcement, runtime least-privilege ACL and exact Dictionary/SQLAlchemy/Alembic/PostgreSQL parity.
 
 ## 7. Current next boundary
 
-B04-D is closed. Next is **B04-E Advanced-family applicability**. Duration/spacing/relative families must activate only where current canonical owners/anchors permit truthful semantics; Session/Actual/Occurrence/Solver-dependent behavior remains deferred to its owning block.
+B04-E is closed. Next is **B04-F Whole-B04 closure**.
 
-B04-F whole-B04 closure remains required before B05 begins.
+B04-F owns broad B04 regression, exact public Temporal API/OpenAPI inventory verification, applicable product/manual acceptance, final database/docs reconciliation and the final B04 closure decision before B05 begins.
