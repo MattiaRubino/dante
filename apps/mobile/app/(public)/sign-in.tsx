@@ -6,6 +6,6 @@ export default function SignInRoute() {
   const router = useRouter();
 
   return (
-    <SignInScreen onCreateAccount={() => router.push('/create-account')} />
+    <SignInScreen onCreateAccount={() => router.push('./create-account')} />
   );
 }
