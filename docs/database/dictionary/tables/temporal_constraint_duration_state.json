@@ -1,0 +1,196 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "table:dante.temporal_constraint_duration_state",
+    "type": "table",
+    "schema": "dante",
+    "name": "temporal_constraint_duration_state",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Typed payload for B04-E planned Schedule duration Temporal Constraints, recording an exact positive minimum or maximum duration for schedule.placement without collapsing planned duration into estimated effort, Session, or Actual time.",
+  "classification": {
+    "persistence_role": "typed_material_state_payload",
+    "canonicality": "canonical",
+    "family": "temporal_constraint"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/workstreams/timeline-temporal-operational-b04-e-implementation-freeze.md",
+      "docs/workstreams/timeline-temporal-operational-b04-execution-plan.md",
+      "docs/domain/concepts/temporal-constraint.md",
+      "docs/logical-model/slices/time-reality-v1.md",
+      "docs/development/backend-cp6-02-postgresql-persistence-constitution.md"
+    ],
+    "domain_concepts": ["Temporal Constraint", "Schedule", "Duration"],
+    "logical_families": ["Temporal Constraint", "Duration Rule", "LR-05"],
+    "reference_families": ["MaterialStateRef"],
+    "material_facets": ["temporal_constraint.rule"]
+  },
+  "implementation": {
+    "introducing_stage": "B04-E-DURATION",
+    "alembic_revision": "20260919_40",
+    "sqlalchemy": {
+      "mode": "orm_row",
+      "module": "dante.platform.database.mappings.temporal_constraint_duration",
+      "symbol": "TemporalConstraintDurationStateRow"
+    },
+    "runtime_acl_stage": "B04-E-DURATION-READ"
+  },
+  "structure": {
+    "columns": [
+      {
+        "name": "material_state_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {"kind": "none", "expression": null},
+        "meaning": "MaterialStateRef of the Temporal Constraint rule revision owning this duration payload.",
+        "semantic_type": "MaterialStateRef",
+        "value_contract": "Exactly one duration payload row for every activated duration rule state."
+      },
+      {
+        "name": "duration_kind_code",
+        "postgres_type": "text",
+        "nullable": false,
+        "default": {"kind": "none", "expression": null},
+        "meaning": "Whether the exact planned Schedule placement duration is bounded from below or above.",
+        "semantic_type": null,
+        "value_contract": "One of minimum or maximum."
+      },
+      {
+        "name": "duration_microseconds",
+        "postgres_type": "bigint",
+        "nullable": false,
+        "default": {"kind": "none", "expression": null},
+        "meaning": "Positive exact elapsed duration threshold for the planned Schedule placement.",
+        "semantic_type": null,
+        "value_contract": "Positive integer microseconds; no fabricated precision for coarse/date placement forms."
+      }
+    ],
+    "primary_key": {
+      "name": "pk_temporal_constraint_duration_state",
+      "columns": ["material_state_ref"],
+      "reason": "At most one duration payload per Temporal Constraint rule MaterialState.",
+      "deferrable": false,
+      "initially": "NOT DEFERRABLE",
+      "enforced": true
+    },
+    "foreign_keys": [
+      {
+        "name": "fk_temporal_constraint_duration_state_constraint_state",
+        "columns": ["material_state_ref"],
+        "target": {"schema": "dante", "table": "temporal_constraint_state", "columns": ["material_state_ref"]},
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "MaterialStateRef",
+        "cardinality": "one_to_one_required",
+        "semantic_reason": "A duration payload cannot exist without the owning Temporal Constraint rule envelope."
+      }
+    ],
+    "unique_constraints": [],
+    "check_constraints": [
+      {
+        "name": "ck_temporal_constraint_duration_state_kind",
+        "expression_contract": "duration_kind_code IN ('minimum','maximum')",
+        "reason": "B04-E activates only explicit minimum and maximum planned Schedule duration semantics.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_temporal_constraint_duration_state_positive",
+        "expression_contract": "duration_microseconds > 0",
+        "reason": "A duration threshold must be strictly positive.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "pk_temporal_constraint_duration_state",
+        "method": "btree",
+        "unique": true,
+        "keys": ["material_state_ref"],
+        "predicate": null,
+        "include": [],
+        "source": "primary_key",
+        "reason": "Duration payload lookup by rule MaterialStateRef.",
+        "valid": true,
+        "ready": true,
+        "live": true
+      }
+    ],
+    "triggers": [
+      {
+        "name": "ctrg_temporal_constraint_duration_state_rule_totality",
+        "routine": "dante.enforce_temporal_constraint_rule_totality",
+        "events": ["INSERT", "UPDATE", "DELETE"],
+        "timing": "AFTER",
+        "orientation": "ROW",
+        "constraint_trigger": true,
+        "deferrable": true,
+        "initially_deferred": true,
+        "enabled_mode": "ORIGIN",
+        "update_columns": [],
+        "when_condition": null,
+        "arguments": [],
+        "invariant_role": "temporal_constraint_rule_totality",
+        "reason": "Require exactly one duration payload, no boundary/window payload, and schedule.placement as the constrained facet."
+      }
+    ],
+    "table": {
+      "persistence": "permanent",
+      "access_method": "heap",
+      "partitioned": false,
+      "row_security": false,
+      "force_row_security": false,
+      "replica_identity": "default",
+      "reloptions": []
+    },
+    "view": null,
+    "routine": null
+  },
+  "state_history": {
+    "material_state_behavior": "Immutable typed payload owned one-to-one by the Temporal Constraint rule MaterialState.",
+    "current_binding": "Currentness is inherited from the owning temporal_constraint_state through the shared scoped current binding.",
+    "chronology": "No chronology is inferred from the duration value; current-history episodes remain authoritative.",
+    "immutability_policy": "Runtime has SELECT-only read access after B04-E read activation; changed duration rules append a new MaterialState."
+  },
+  "lifecycle": {
+    "retention": "Retained with the owning historical rule MaterialState.",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No runtime DELETE; retirement changes currentness rather than erasing typed historical payload."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": [
+      {"grantee": "dante_runtime", "privilege": "SELECT", "columns": [], "grant_option": false}
+    ]
+  },
+  "proof": {
+    "obligations": [
+      "duration kind is minimum or maximum",
+      "duration threshold is strictly positive",
+      "duration family constrains schedule.placement only",
+      "typed payload totality excludes simultaneous boundary/window payloads",
+      "runtime direct DML remains forbidden while SELECT supports canonical current-rule reads",
+      "automatic movement cannot bypass current hard duration rules"
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b04_duration_constraint_core.py",
+      "apps/backend/tests/integration/temporal/test_b04_duration_evaluation_application.py",
+      "apps/backend/tests/integration/temporal/test_b04_duration_runtime_acl.py",
+      "apps/backend/tests/integration/database/test_b04_e_duration_catalog_probe.py",
+      "apps/backend/tests/integration/database/test_database_current_catalog.py"
+    ],
+    "staged_evidence": []
+  }
+}
