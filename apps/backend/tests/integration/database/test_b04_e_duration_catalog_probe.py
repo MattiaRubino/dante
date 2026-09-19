@@ -9,7 +9,7 @@ import pytest
 
 pytestmark = pytest.mark.postgres
 
-_EXPECTED_REVISION = "20260919_40"
+_EXPECTED_REVISION = "20260919_41"
 _EXPECTED_TOPOLOGY = (116, 5, 43, 90, 233, 153, 331, 0, 0, 0)
 
 
@@ -88,6 +88,12 @@ def test_b04_e_duration_catalog_and_acl(migrated_database: Any) -> None:
                    has_table_privilege('dante_runtime','dante.temporal_constraint_duration_state','DELETE')
             """
         ).fetchone()
+        private_acl = connection.execute(
+            """
+            SELECT has_table_privilege('dante_runtime','dante.temporal_constraint_current_history','SELECT'),
+                   has_table_privilege('dante_runtime','dante.temporal_constraint_mutation_operation','SELECT')
+            """
+        ).fetchone()
         runtime_mutate = connection.execute(
             """
             SELECT has_function_privilege(
@@ -115,6 +121,7 @@ def test_b04_e_duration_catalog_and_acl(migrated_database: Any) -> None:
     assert "assert_absolute_schedule_move_hard_admissible" in routines
     assert "ctrg_temporal_constraint_duration_state_rule_totality" in triggers
     assert family_check is not None and "duration" in family_check[0]
-    assert runtime_table_acl == (False, False, False, False)
+    assert runtime_table_acl == (True, False, False, False)
+    assert private_acl == (False, False)
     assert runtime_mutate == (True,)
     assert runtime_assert == (False,)
