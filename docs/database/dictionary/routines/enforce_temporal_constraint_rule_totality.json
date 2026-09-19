@@ -8,7 +8,7 @@
     "name": "enforce_temporal_constraint_rule_totality",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Enforce the complete typed B04-A Temporal Constraint rule payload: one boundary discriminator, earliest-start kind, absolute temporal form and one absolute value.",
+  "purpose": "Enforce one complete typed absolute Temporal Constraint boundary payload and the exact B04-B boundary-kind / constrained-facet matrix.",
   "classification": {
     "persistence_role": "integrity_trigger_function",
     "canonicality": "integrity",
@@ -17,10 +17,11 @@
   "semantic_traceability": {
     "authority_sources": [
       "docs/workstreams/timeline-temporal-operational-b04-a-implementation-freeze.md",
+      "docs/workstreams/timeline-temporal-operational-b04-b-implementation-freeze.md",
       "docs/workstreams/timeline-temporal-operational-b04-execution-plan.md",
       "docs/development/backend-cp6-02-postgresql-persistence-constitution.md"
     ],
-    "domain_concepts": ["Temporal Constraint"],
+    "domain_concepts": ["Temporal Constraint", "Deadline"],
     "logical_families": ["Temporal Constraint", "Boundary Rule", "LR-05"],
     "reference_families": ["MaterialStateRef"],
     "material_facets": ["temporal_constraint.rule"]
@@ -69,13 +70,17 @@
   "security": {"owner_role":"dante_owner","default_deny_non_owner":true,"expected_grants":[]},
   "proof": {
     "obligations": [
-      "canonical B04-A rule state cannot remain incomplete",
-      "exactly one earliest-start absolute boundary payload is required",
-      "unsupported typed shapes fail closed",
+      "canonical rule state cannot remain incomplete",
+      "exactly one absolute boundary discriminator/value pair is required",
+      "earliest_start + schedule.start is admitted",
+      "latest_start + schedule.start is admitted",
+      "latest_completion + schedule.completion is admitted",
+      "every other kind/facet combination fails closed",
       "runtime cannot execute the validator directly"
     ],
     "test_refs": [
       "apps/backend/tests/integration/temporal/test_b04_temporal_constraint_core.py",
+      "apps/backend/tests/integration/temporal/test_b04_absolute_boundary_deadline.py",
       "apps/backend/tests/integration/database/test_b04_temporal_constraint_catalog.py",
       "apps/backend/tests/integration/database/test_database_current_catalog.py"
     ],
