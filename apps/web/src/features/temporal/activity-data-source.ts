@@ -21,6 +21,47 @@ export type TemporalActivityCreateResult = Readonly<{
   replayed: boolean;
 }>;
 
+export type TemporalActivityConstraintRuleInput =
+  | Readonly<{
+      family: 'boundary';
+      boundaryKind: 'earliest_start';
+      constrainedFacet: 'schedule.start';
+      strength: 'hard' | 'soft';
+      boundaryAt: Instant;
+    }>
+  | Readonly<{
+      family: 'boundary';
+      boundaryKind: 'latest_completion';
+      constrainedFacet: 'schedule.completion';
+      strength: 'hard' | 'soft';
+      boundaryAt: Instant;
+    }>
+  | Readonly<{
+      family: 'window';
+      relationship: 'full_placement_contained';
+      constrainedFacet: 'schedule.placement';
+      strength: 'hard' | 'soft';
+      startsAt: Instant;
+      endsAt: Instant;
+    }>;
+
+export type TemporalConstrainedActivityCreateRequest = Readonly<{
+  operationId: string;
+  title: string;
+  rules: readonly TemporalActivityConstraintRuleInput[];
+}>;
+
+export type TemporalCreatedActivityConstraint = Readonly<{
+  constraintRef: string;
+  materialStateRef: string;
+}>;
+
+export type TemporalConstrainedActivityCreateResult = Readonly<{
+  activity: TemporalActivityRecord;
+  constraints: readonly TemporalCreatedActivityConstraint[];
+  replayed: boolean;
+}>;
+
 export type TemporalScheduleRecord = Readonly<{
   scheduleRef: string;
   placementMaterialStateRef: string;
@@ -59,6 +100,10 @@ export interface TemporalActivityDataSource {
     request: TemporalActivityCreateRequest,
     signal?: AbortSignal,
   ): Promise<TemporalActivityCreateResult>;
+  createConstrainedActivity(
+    request: TemporalConstrainedActivityCreateRequest,
+    signal?: AbortSignal,
+  ): Promise<TemporalConstrainedActivityCreateResult>;
   createScheduledActivity(
     request: TemporalScheduledActivityCreateRequest,
     signal?: AbortSignal,
