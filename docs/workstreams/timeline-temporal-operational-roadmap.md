@@ -2,17 +2,18 @@
 
 - **Status:** CURRENT EXECUTION ROADMAP — reconciled 2026-09-19
 - **Branch/workstream:** `feature/timeline-temporal-operational`
-- **Current completed frontier:** B04-B Boundary / Deadline constraints ✅ CLOSED / PROVEN
+- **Current completed frontier:** B04-C Windows / Preferences / Evaluation ✅ CLOSED / PROVEN
 - **Pre-B04 governance gate:** ✅ CLOSED / BASELINE FROZEN
 - **Current active block:** B04 Temporal Constraints + Movement Policy
-- **Current next slice:** B04-C Windows / Preferences / Evaluation
-- **Current candidate DB authority:** PostgreSQL 18.6 / Alembic `20260919_34`
-- **Current candidate topology:** `107|5|34|85|212|129|309|0|0|0`
+- **Current next slice:** B04-D Movement Policy
+- **Current candidate DB authority:** PostgreSQL 18.6 / Alembic `20260919_36`
+- **Current candidate topology:** `109|5|35|87|214|131|312|0|0|0`
 - **Live progress ledger:** `docs/workstreams/timeline-temporal-operational-map.md`
 - **B04 execution authority:** `docs/workstreams/timeline-temporal-operational-b04-execution-plan.md`
 - **B04-A closure:** `docs/workstreams/timeline-temporal-operational-b04-a-closure-2026-09-18.md`
-- **B04-B implementation freeze:** `docs/workstreams/timeline-temporal-operational-b04-b-implementation-freeze.md`
 - **B04-B closure:** `docs/workstreams/timeline-temporal-operational-b04-b-closure-2026-09-19.md`
+- **B04-C implementation freeze:** `docs/workstreams/timeline-temporal-operational-b04-c-implementation-freeze.md`
+- **B04-C closure:** `docs/workstreams/timeline-temporal-operational-b04-c-closure-2026-09-19.md`
 - **Timeline candidate DB overlay:** `docs/database/timeline-temporal-operational.md`
 - **Detailed semantic freeze:** `docs/workstreams/archive/timeline-temporal-operational-map-ledger-snapshot-2026-09-15.md`
 
@@ -77,8 +78,8 @@ PRE-B04 DB/API GOVERNANCE                        ✅ CLOSED / FROZEN
 B04 Temporal Constraints + Movement Policy       🟡 IN PROGRESS
 ├─ B04-A Temporal Constraint canonical core      ✅ CLOSED / PROVEN
 ├─ B04-B Boundary / Deadline constraints         ✅ CLOSED / PROVEN
-├─ B04-C Windows / Preferences / Evaluation      ⬜ NEXT
-├─ B04-D Movement Policy                         ⬜
+├─ B04-C Windows / Preferences / Evaluation      ✅ CLOSED / PROVEN
+├─ B04-D Movement Policy                         ⬜ NEXT
 ├─ B04-E Advanced-family applicability           ⬜
 └─ B04-F Whole-B04 closure                       ⬜
 B05 Product Organization                         ⬜
@@ -203,48 +204,92 @@ passed deadline != Outcome / failure
 constraint != placement
 ```
 
-Persistence authority:
+Persistence authority through B04-B:
 
 ```text
 Alembic   20260919_34
 Topology  107|5|34|85|212|129|309|0|0|0
 ```
 
-`_34` widens the accepted kind/facet discriminators, enforces the exact kind↔facet matrix in deferred DB totality and adds the governed `mutate_self_absolute_boundary_constraint(...)` routine while preserving the B04-A earliest-start routine for compatibility. No new table/trigger/index/FK/CHECK count is introduced; routine count becomes 34.
+Closure authority: `timeline-temporal-operational-b04-b-closure-2026-09-19.md`.
 
-The existing five public Temporal Constraint operations remain stable. Their rule payload is now a typed discriminated union for earliest-start, latest-start and latest-completion. OpenAPI/Orval is reconciled without changing the existing explicit `temporal_*` operationIds.
+## B04-C — Windows / Preferences / Evaluation ✅ CLOSED / PROVEN
+
+B04-C activates the typed absolute-window family plus deterministic derived evaluation/explanation.
+
+Closed relationship matrix:
+
+```text
+start_within              + schedule.start
+completion_within         + schedule.completion
+full_placement_contained  + schedule.placement
+placement_overlaps        + schedule.placement
+```
+
+Shared rule bounds:
+
+```text
+subject        self-owned Activity | Event
+family         window
+strength       hard | soft
+temporal form  absolute
+range          finite starts_at < ends_at
+```
+
+Frozen semantics:
+
+```text
+start_within / completion_within use inclusive point membership
+full_placement_contained requires full interval containment
+placement_overlaps requires positive overlap; endpoint-only touching is not overlap
+hard = validity constraint
+soft = preference
+```
+
+Derived evaluation distinguishes:
+
+```text
+per rule: satisfied | violated | not_evaluable
+overall:  admissible | admissible_with_soft_violations | inadmissible | not_evaluable
+hard set: feasible | infeasible | undetermined
+```
+
+Evaluation creates no persisted violation/reality state and performs no solver search or automatic mutation.
+
+Persistence authority:
+
+```text
+Alembic   20260919_36
+Topology  109|5|35|87|214|131|312|0|0|0
+```
+
+Public API adds exactly:
+
+```text
+POST /api/v1/temporal/constraints/evaluate
+temporal_evaluate_constraints
+```
+
+Current Temporal public inventory is 19 operations: 13 frozen pre-B04 + 5 prior Temporal Constraint operations + this evaluation operation.
 
 Closure evidence:
 
 ```text
-API / typed union / inventory                 13 PASS
-PostgreSQL/application/catalog                22 PASS / 1 deselected
-OpenAPI export/inventory/API                  21 PASS
-@dante/api-client typecheck                   PASS
-@dante/api-client Vitest                      11 PASS
-pnpm generated:check                          PASS / 163 deterministic files
+PostgreSQL / application evaluation             9 PASS / 2 deselected
+current catalog / Dictionary / ACL             12 PASS
+OpenAPI / Temporal API contract                24 PASS
+@dante/api-client typecheck                    PASS
+@dante/api-client Vitest                       11 PASS
+pnpm generated:check                           PASS / 177 deterministic files
 ```
 
-Closure authority: `timeline-temporal-operational-b04-b-closure-2026-09-19.md`.
+Closure authority: `timeline-temporal-operational-b04-c-closure-2026-09-19.md`.
 
-## B04-C — Windows / Preferences / Evaluation ⬜ NEXT
-
-B04-C must be separately frozen before implementation. Candidate territory is hard windows, soft preferred windows and explicit evaluation/relation semantics such as start-within, completion-within, full-contained and overlaps.
-
-Binding boundary:
-
-```text
-window != placement
-preference != accepted schedule
-constraint evaluation != solver decision
-violation explanation != automatic mutation
-```
-
-Evaluation/explanation is allowed where semantics are exact; solver ownership remains B12. B04-C must not silently pull in Movement Policy, advanced duration/spacing/relative semantics or unsupported temporal representations.
-
-## B04-D — Movement Policy ⬜
+## B04-D — Movement Policy ⬜ NEXT
 
 Activate movement policy separately from constraint truth and solver output. Accepted movement/override must remain explicit and governed.
+
+B04-D requires its own semantic/implementation freeze before any write. B04-C closure does not pre-authorize B04-D state, enum shape, enforcement path or frontend behavior.
 
 ## B04-E — Advanced-family applicability ⬜
 
@@ -254,7 +299,7 @@ Min/max duration, spacing and relative constraints only where truthful anchors a
 
 Whole-B04 regression, DB/docs/API contract consistency, applicable product/manual acceptance and final closure evidence.
 
-**B05 begins only after B04-F, not after B04-B.**
+**B05 begins only after B04-F, not after B04-C.**
 
 ---
 
@@ -314,9 +359,10 @@ Pre-B04 governance         ✅ CLOSED / FROZEN
 B04                        🟡 IN PROGRESS
 ├─ B04-A                   ✅ CLOSED / PROVEN
 ├─ B04-B                   ✅ CLOSED / PROVEN
-└─ B04-C                   ⬜ NEXT
+├─ B04-C                   ✅ CLOSED / PROVEN
+└─ B04-D                   ⬜ NEXT
 ```
 
-Immediate next gate: re-open Domain / Logical / Physical / B04 execution authority and freeze the exact B04-C Windows / Preferences / Evaluation scope before implementation. No B04-D/E/F or B05 work is implied.
+Immediate next gate: re-open Domain / Logical / Physical / B04 execution authority and freeze the exact B04-D Movement Policy scope before implementation. No B04-D/E/F or B05 write is implied by B04-C closure.
 
 CI remains separate and is not implicitly authorized.
