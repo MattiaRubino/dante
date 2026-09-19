@@ -7,10 +7,18 @@
 import * as zod from 'zod/mini';
 
 export const createdTemporalConstraintResponseReplayedDefault = false;
-export const createdTemporalConstraintResponseRuleBoundaryKindDefault = `earliest_start`;
-export const createdTemporalConstraintResponseRuleConstrainedFacetDefault = `schedule.start`;
-export const createdTemporalConstraintResponseRuleFamilyDefault = `boundary`;
-export const createdTemporalConstraintResponseRuleTemporalFormDefault = `absolute`;
+export const createdTemporalConstraintResponseRuleOneBoundaryKindDefault = `earliest_start`;
+export const createdTemporalConstraintResponseRuleOneConstrainedFacetDefault = `schedule.start`;
+export const createdTemporalConstraintResponseRuleOneFamilyDefault = `boundary`;
+export const createdTemporalConstraintResponseRuleOneTemporalFormDefault = `absolute`;
+export const createdTemporalConstraintResponseRuleTwoBoundaryKindDefault = `latest_start`;
+export const createdTemporalConstraintResponseRuleTwoConstrainedFacetDefault = `schedule.start`;
+export const createdTemporalConstraintResponseRuleTwoFamilyDefault = `boundary`;
+export const createdTemporalConstraintResponseRuleTwoTemporalFormDefault = `absolute`;
+export const createdTemporalConstraintResponseRuleThreeBoundaryKindDefault = `latest_completion`;
+export const createdTemporalConstraintResponseRuleThreeConstrainedFacetDefault = `schedule.completion`;
+export const createdTemporalConstraintResponseRuleThreeFamilyDefault = `boundary`;
+export const createdTemporalConstraintResponseRuleThreeTemporalFormDefault = `absolute`;
 export const CreatedTemporalConstraintResponse = /*#__PURE__*/ zod.object({
   constraint_ref: /*#__PURE__*/ zod.uuid(),
   material_state_ref: /*#__PURE__*/ zod.uuid(),
@@ -19,40 +27,110 @@ export const CreatedTemporalConstraintResponse = /*#__PURE__*/ zod.object({
     /*#__PURE__*/ zod.boolean(),
     createdTemporalConstraintResponseReplayedDefault,
   ),
-  rule: /*#__PURE__*/ zod
-    .object({
-      boundary_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-      boundary_kind: /*#__PURE__*/ zod
-        ._default(
-          /*#__PURE__*/ zod.literal('earliest_start'),
-          createdTemporalConstraintResponseRuleBoundaryKindDefault,
-        )
-        .check(/*#__PURE__*/ zod.meta({ title: 'Boundary Kind' })),
-      constrained_facet: /*#__PURE__*/ zod
-        ._default(
-          /*#__PURE__*/ zod.literal('schedule.start'),
-          createdTemporalConstraintResponseRuleConstrainedFacetDefault,
-        )
-        .check(/*#__PURE__*/ zod.meta({ title: 'Constrained Facet' })),
-      family: /*#__PURE__*/ zod
-        ._default(
-          /*#__PURE__*/ zod.literal('boundary'),
-          createdTemporalConstraintResponseRuleFamilyDefault,
-        )
-        .check(/*#__PURE__*/ zod.meta({ title: 'Family' })),
-      strength: /*#__PURE__*/ zod.enum(['hard', 'soft']),
-      temporal_form: /*#__PURE__*/ zod
-        ._default(
-          /*#__PURE__*/ zod.literal('absolute'),
-          createdTemporalConstraintResponseRuleTemporalFormDefault,
-        )
-        .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
-    })
-    .check(
-      /*#__PURE__*/ zod.describe(
-        'First public typed Temporal Constraint rule activated by B04-A.',
+  rule: /*#__PURE__*/ zod.union([
+    /*#__PURE__*/ zod
+      .object({
+        boundary_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+        boundary_kind: /*#__PURE__*/ zod
+          ._default(
+            /*#__PURE__*/ zod.literal('earliest_start'),
+            createdTemporalConstraintResponseRuleOneBoundaryKindDefault,
+          )
+          .check(/*#__PURE__*/ zod.meta({ title: 'Boundary Kind' })),
+        constrained_facet: /*#__PURE__*/ zod
+          ._default(
+            /*#__PURE__*/ zod.literal('schedule.start'),
+            createdTemporalConstraintResponseRuleOneConstrainedFacetDefault,
+          )
+          .check(/*#__PURE__*/ zod.meta({ title: 'Constrained Facet' })),
+        family: /*#__PURE__*/ zod
+          ._default(
+            /*#__PURE__*/ zod.literal('boundary'),
+            createdTemporalConstraintResponseRuleOneFamilyDefault,
+          )
+          .check(/*#__PURE__*/ zod.meta({ title: 'Family' })),
+        strength: /*#__PURE__*/ zod.enum(['hard', 'soft']),
+        temporal_form: /*#__PURE__*/ zod
+          ._default(
+            /*#__PURE__*/ zod.literal('absolute'),
+            createdTemporalConstraintResponseRuleOneTemporalFormDefault,
+          )
+          .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
+      })
+      .check(
+        /*#__PURE__*/ zod.describe(
+          'Absolute lower bound on accepted Schedule start.',
+        ),
       ),
-    ),
+    /*#__PURE__*/ zod
+      .object({
+        boundary_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+        boundary_kind: /*#__PURE__*/ zod
+          ._default(
+            /*#__PURE__*/ zod.literal('latest_start'),
+            createdTemporalConstraintResponseRuleTwoBoundaryKindDefault,
+          )
+          .check(/*#__PURE__*/ zod.meta({ title: 'Boundary Kind' })),
+        constrained_facet: /*#__PURE__*/ zod
+          ._default(
+            /*#__PURE__*/ zod.literal('schedule.start'),
+            createdTemporalConstraintResponseRuleTwoConstrainedFacetDefault,
+          )
+          .check(/*#__PURE__*/ zod.meta({ title: 'Constrained Facet' })),
+        family: /*#__PURE__*/ zod
+          ._default(
+            /*#__PURE__*/ zod.literal('boundary'),
+            createdTemporalConstraintResponseRuleTwoFamilyDefault,
+          )
+          .check(/*#__PURE__*/ zod.meta({ title: 'Family' })),
+        strength: /*#__PURE__*/ zod.enum(['hard', 'soft']),
+        temporal_form: /*#__PURE__*/ zod
+          ._default(
+            /*#__PURE__*/ zod.literal('absolute'),
+            createdTemporalConstraintResponseRuleTwoTemporalFormDefault,
+          )
+          .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
+      })
+      .check(
+        /*#__PURE__*/ zod.describe(
+          'Absolute upper bound on accepted Schedule start.',
+        ),
+      ),
+    /*#__PURE__*/ zod
+      .object({
+        boundary_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+        boundary_kind: /*#__PURE__*/ zod
+          ._default(
+            /*#__PURE__*/ zod.literal('latest_completion'),
+            createdTemporalConstraintResponseRuleThreeBoundaryKindDefault,
+          )
+          .check(/*#__PURE__*/ zod.meta({ title: 'Boundary Kind' })),
+        constrained_facet: /*#__PURE__*/ zod
+          ._default(
+            /*#__PURE__*/ zod.literal('schedule.completion'),
+            createdTemporalConstraintResponseRuleThreeConstrainedFacetDefault,
+          )
+          .check(/*#__PURE__*/ zod.meta({ title: 'Constrained Facet' })),
+        family: /*#__PURE__*/ zod
+          ._default(
+            /*#__PURE__*/ zod.literal('boundary'),
+            createdTemporalConstraintResponseRuleThreeFamilyDefault,
+          )
+          .check(/*#__PURE__*/ zod.meta({ title: 'Family' })),
+        strength: /*#__PURE__*/ zod.enum(['hard', 'soft']),
+        temporal_form: /*#__PURE__*/ zod
+          ._default(
+            /*#__PURE__*/ zod.literal('absolute'),
+            createdTemporalConstraintResponseRuleThreeTemporalFormDefault,
+          )
+          .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
+      })
+      .check(
+        /*#__PURE__*/ zod.describe(
+          'Absolute upper bound on Schedule completion; product vocabulary may call it a deadline.',
+        ),
+      ),
+  ]),
   subject_kind: /*#__PURE__*/ zod.enum(['activity', 'event']),
   subject_ref: /*#__PURE__*/ zod.uuid(),
 });

@@ -6,48 +6,48 @@
  */
 import * as zod from 'zod/mini';
 
-export const absoluteEarliestStartRuleRequestBoundaryKindDefault = `earliest_start`;
-export const absoluteEarliestStartRuleRequestConstrainedFacetDefault = `schedule.start`;
-export const absoluteEarliestStartRuleRequestFamilyDefault = `boundary`;
-export const absoluteEarliestStartRuleRequestTemporalFormDefault = `absolute`;
-export const AbsoluteEarliestStartRuleRequest = /*#__PURE__*/ zod
+export const absoluteLatestStartRuleRequestBoundaryKindDefault = `latest_start`;
+export const absoluteLatestStartRuleRequestConstrainedFacetDefault = `schedule.start`;
+export const absoluteLatestStartRuleRequestFamilyDefault = `boundary`;
+export const absoluteLatestStartRuleRequestTemporalFormDefault = `absolute`;
+export const AbsoluteLatestStartRuleRequest = /*#__PURE__*/ zod
   .object({
     boundary_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
     boundary_kind: /*#__PURE__*/ zod
       ._default(
-        /*#__PURE__*/ zod.literal('earliest_start'),
-        absoluteEarliestStartRuleRequestBoundaryKindDefault,
+        /*#__PURE__*/ zod.literal('latest_start'),
+        absoluteLatestStartRuleRequestBoundaryKindDefault,
       )
       .check(/*#__PURE__*/ zod.meta({ title: 'Boundary Kind' })),
     constrained_facet: /*#__PURE__*/ zod
       ._default(
         /*#__PURE__*/ zod.literal('schedule.start'),
-        absoluteEarliestStartRuleRequestConstrainedFacetDefault,
+        absoluteLatestStartRuleRequestConstrainedFacetDefault,
       )
       .check(/*#__PURE__*/ zod.meta({ title: 'Constrained Facet' })),
     family: /*#__PURE__*/ zod
       ._default(
         /*#__PURE__*/ zod.literal('boundary'),
-        absoluteEarliestStartRuleRequestFamilyDefault,
+        absoluteLatestStartRuleRequestFamilyDefault,
       )
       .check(/*#__PURE__*/ zod.meta({ title: 'Family' })),
     strength: /*#__PURE__*/ zod.enum(['hard', 'soft']),
     temporal_form: /*#__PURE__*/ zod
       ._default(
         /*#__PURE__*/ zod.literal('absolute'),
-        absoluteEarliestStartRuleRequestTemporalFormDefault,
+        absoluteLatestStartRuleRequestTemporalFormDefault,
       )
       .check(/*#__PURE__*/ zod.meta({ title: 'Temporal Form' })),
   })
   .check(
     /*#__PURE__*/ zod.describe(
-      'Absolute lower bound on accepted Schedule start.',
+      'Absolute upper bound on accepted Schedule start.',
     ),
   );
 
-export type AbsoluteEarliestStartRuleRequest = zod.input<
-  typeof AbsoluteEarliestStartRuleRequest
+export type AbsoluteLatestStartRuleRequest = zod.input<
+  typeof AbsoluteLatestStartRuleRequest
 >;
-export type AbsoluteEarliestStartRuleRequestOutput = zod.output<
-  typeof AbsoluteEarliestStartRuleRequest
+export type AbsoluteLatestStartRuleRequestOutput = zod.output<
+  typeof AbsoluteLatestStartRuleRequest
 >;

@@ -1,9 +1,56 @@
 {
   "components": {
     "schemas": {
+      "AbsoluteEarliestStartCurrentRuleResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "boundary_at": {
+            "format": "date-time",
+            "title": "Boundary At",
+            "type": "string"
+          },
+          "boundary_kind": {
+            "const": "earliest_start",
+            "default": "earliest_start",
+            "title": "Boundary Kind",
+            "type": "string"
+          },
+          "constrained_facet": {
+            "const": "schedule.start",
+            "default": "schedule.start",
+            "title": "Constrained Facet",
+            "type": "string"
+          },
+          "family": {
+            "const": "boundary",
+            "default": "boundary",
+            "title": "Family",
+            "type": "string"
+          },
+          "material_state_ref": {
+            "format": "uuid",
+            "title": "Material State Ref",
+            "type": "string"
+          },
+          "strength": {
+            "enum": ["hard", "soft"],
+            "title": "Strength",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "absolute",
+            "default": "absolute",
+            "title": "Temporal Form",
+            "type": "string"
+          }
+        },
+        "required": ["strength", "boundary_at", "material_state_ref"],
+        "title": "AbsoluteEarliestStartCurrentRuleResponse",
+        "type": "object"
+      },
       "AbsoluteEarliestStartRuleRequest": {
         "additionalProperties": false,
-        "description": "First public typed Temporal Constraint rule activated by B04-A.",
+        "description": "Absolute lower bound on accepted Schedule start.",
         "properties": {
           "boundary_at": {
             "format": "date-time",
@@ -66,6 +113,186 @@
         },
         "required": ["starts_at", "ends_at"],
         "title": "AbsoluteIntervalPlacementRequest",
+        "type": "object"
+      },
+      "AbsoluteLatestCompletionCurrentRuleResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "boundary_at": {
+            "format": "date-time",
+            "title": "Boundary At",
+            "type": "string"
+          },
+          "boundary_kind": {
+            "const": "latest_completion",
+            "default": "latest_completion",
+            "title": "Boundary Kind",
+            "type": "string"
+          },
+          "constrained_facet": {
+            "const": "schedule.completion",
+            "default": "schedule.completion",
+            "title": "Constrained Facet",
+            "type": "string"
+          },
+          "family": {
+            "const": "boundary",
+            "default": "boundary",
+            "title": "Family",
+            "type": "string"
+          },
+          "material_state_ref": {
+            "format": "uuid",
+            "title": "Material State Ref",
+            "type": "string"
+          },
+          "strength": {
+            "enum": ["hard", "soft"],
+            "title": "Strength",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "absolute",
+            "default": "absolute",
+            "title": "Temporal Form",
+            "type": "string"
+          }
+        },
+        "required": ["strength", "boundary_at", "material_state_ref"],
+        "title": "AbsoluteLatestCompletionCurrentRuleResponse",
+        "type": "object"
+      },
+      "AbsoluteLatestCompletionRuleRequest": {
+        "additionalProperties": false,
+        "description": "Absolute upper bound on Schedule completion; product vocabulary may call it a deadline.",
+        "properties": {
+          "boundary_at": {
+            "format": "date-time",
+            "title": "Boundary At",
+            "type": "string"
+          },
+          "boundary_kind": {
+            "const": "latest_completion",
+            "default": "latest_completion",
+            "title": "Boundary Kind",
+            "type": "string"
+          },
+          "constrained_facet": {
+            "const": "schedule.completion",
+            "default": "schedule.completion",
+            "title": "Constrained Facet",
+            "type": "string"
+          },
+          "family": {
+            "const": "boundary",
+            "default": "boundary",
+            "title": "Family",
+            "type": "string"
+          },
+          "strength": {
+            "enum": ["hard", "soft"],
+            "title": "Strength",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "absolute",
+            "default": "absolute",
+            "title": "Temporal Form",
+            "type": "string"
+          }
+        },
+        "required": ["strength", "boundary_at"],
+        "title": "AbsoluteLatestCompletionRuleRequest",
+        "type": "object"
+      },
+      "AbsoluteLatestStartCurrentRuleResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "boundary_at": {
+            "format": "date-time",
+            "title": "Boundary At",
+            "type": "string"
+          },
+          "boundary_kind": {
+            "const": "latest_start",
+            "default": "latest_start",
+            "title": "Boundary Kind",
+            "type": "string"
+          },
+          "constrained_facet": {
+            "const": "schedule.start",
+            "default": "schedule.start",
+            "title": "Constrained Facet",
+            "type": "string"
+          },
+          "family": {
+            "const": "boundary",
+            "default": "boundary",
+            "title": "Family",
+            "type": "string"
+          },
+          "material_state_ref": {
+            "format": "uuid",
+            "title": "Material State Ref",
+            "type": "string"
+          },
+          "strength": {
+            "enum": ["hard", "soft"],
+            "title": "Strength",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "absolute",
+            "default": "absolute",
+            "title": "Temporal Form",
+            "type": "string"
+          }
+        },
+        "required": ["strength", "boundary_at", "material_state_ref"],
+        "title": "AbsoluteLatestStartCurrentRuleResponse",
+        "type": "object"
+      },
+      "AbsoluteLatestStartRuleRequest": {
+        "additionalProperties": false,
+        "description": "Absolute upper bound on accepted Schedule start.",
+        "properties": {
+          "boundary_at": {
+            "format": "date-time",
+            "title": "Boundary At",
+            "type": "string"
+          },
+          "boundary_kind": {
+            "const": "latest_start",
+            "default": "latest_start",
+            "title": "Boundary Kind",
+            "type": "string"
+          },
+          "constrained_facet": {
+            "const": "schedule.start",
+            "default": "schedule.start",
+            "title": "Constrained Facet",
+            "type": "string"
+          },
+          "family": {
+            "const": "boundary",
+            "default": "boundary",
+            "title": "Family",
+            "type": "string"
+          },
+          "strength": {
+            "enum": ["hard", "soft"],
+            "title": "Strength",
+            "type": "string"
+          },
+          "temporal_form": {
+            "const": "absolute",
+            "default": "absolute",
+            "title": "Temporal Form",
+            "type": "string"
+          }
+        },
+        "required": ["strength", "boundary_at"],
+        "title": "AbsoluteLatestStartRuleRequest",
         "type": "object"
       },
       "ActivityResponse": {
@@ -548,7 +775,26 @@
             "type": "string"
           },
           "rule": {
-            "$ref": "#/components/schemas/AbsoluteEarliestStartRuleRequest"
+            "discriminator": {
+              "mapping": {
+                "earliest_start": "#/components/schemas/AbsoluteEarliestStartRuleRequest",
+                "latest_completion": "#/components/schemas/AbsoluteLatestCompletionRuleRequest",
+                "latest_start": "#/components/schemas/AbsoluteLatestStartRuleRequest"
+              },
+              "propertyName": "boundary_kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AbsoluteEarliestStartRuleRequest"
+              },
+              {
+                "$ref": "#/components/schemas/AbsoluteLatestStartRuleRequest"
+              },
+              {
+                "$ref": "#/components/schemas/AbsoluteLatestCompletionRuleRequest"
+              }
+            ],
+            "title": "Rule"
           },
           "subject_ref": {
             "format": "uuid",
@@ -584,7 +830,26 @@
             "type": "boolean"
           },
           "rule": {
-            "$ref": "#/components/schemas/AbsoluteEarliestStartRuleRequest"
+            "discriminator": {
+              "mapping": {
+                "earliest_start": "#/components/schemas/AbsoluteEarliestStartRuleRequest",
+                "latest_completion": "#/components/schemas/AbsoluteLatestCompletionRuleRequest",
+                "latest_start": "#/components/schemas/AbsoluteLatestStartRuleRequest"
+              },
+              "propertyName": "boundary_kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AbsoluteEarliestStartRuleRequest"
+              },
+              {
+                "$ref": "#/components/schemas/AbsoluteLatestStartRuleRequest"
+              },
+              {
+                "$ref": "#/components/schemas/AbsoluteLatestCompletionRuleRequest"
+              }
+            ],
+            "title": "Rule"
           },
           "subject_kind": {
             "enum": ["activity", "event"],
@@ -2124,7 +2389,26 @@
             "type": "string"
           },
           "rule": {
-            "$ref": "#/components/schemas/AbsoluteEarliestStartRuleRequest"
+            "discriminator": {
+              "mapping": {
+                "earliest_start": "#/components/schemas/AbsoluteEarliestStartRuleRequest",
+                "latest_completion": "#/components/schemas/AbsoluteLatestCompletionRuleRequest",
+                "latest_start": "#/components/schemas/AbsoluteLatestStartRuleRequest"
+              },
+              "propertyName": "boundary_kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AbsoluteEarliestStartRuleRequest"
+              },
+              {
+                "$ref": "#/components/schemas/AbsoluteLatestStartRuleRequest"
+              },
+              {
+                "$ref": "#/components/schemas/AbsoluteLatestCompletionRuleRequest"
+              }
+            ],
+            "title": "Rule"
           }
         },
         "required": ["operation_id", "expected_material_state_ref", "rule"],
@@ -2427,7 +2711,26 @@
             "type": "boolean"
           },
           "rule": {
-            "$ref": "#/components/schemas/AbsoluteEarliestStartRuleRequest"
+            "discriminator": {
+              "mapping": {
+                "earliest_start": "#/components/schemas/AbsoluteEarliestStartRuleRequest",
+                "latest_completion": "#/components/schemas/AbsoluteLatestCompletionRuleRequest",
+                "latest_start": "#/components/schemas/AbsoluteLatestStartRuleRequest"
+              },
+              "propertyName": "boundary_kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AbsoluteEarliestStartRuleRequest"
+              },
+              {
+                "$ref": "#/components/schemas/AbsoluteLatestStartRuleRequest"
+              },
+              {
+                "$ref": "#/components/schemas/AbsoluteLatestCompletionRuleRequest"
+              }
+            ],
+            "title": "Rule"
           },
           "subject_kind": {
             "enum": ["activity", "event"],
@@ -3326,53 +3629,6 @@
         "title": "SignupVerificationRequest",
         "type": "object"
       },
-      "TemporalConstraintCurrentRuleResponse": {
-        "additionalProperties": false,
-        "properties": {
-          "boundary_at": {
-            "format": "date-time",
-            "title": "Boundary At",
-            "type": "string"
-          },
-          "boundary_kind": {
-            "const": "earliest_start",
-            "default": "earliest_start",
-            "title": "Boundary Kind",
-            "type": "string"
-          },
-          "constrained_facet": {
-            "const": "schedule.start",
-            "default": "schedule.start",
-            "title": "Constrained Facet",
-            "type": "string"
-          },
-          "family": {
-            "const": "boundary",
-            "default": "boundary",
-            "title": "Family",
-            "type": "string"
-          },
-          "material_state_ref": {
-            "format": "uuid",
-            "title": "Material State Ref",
-            "type": "string"
-          },
-          "strength": {
-            "enum": ["hard", "soft"],
-            "title": "Strength",
-            "type": "string"
-          },
-          "temporal_form": {
-            "const": "absolute",
-            "default": "absolute",
-            "title": "Temporal Form",
-            "type": "string"
-          }
-        },
-        "required": ["material_state_ref", "strength", "boundary_at"],
-        "title": "TemporalConstraintCurrentRuleResponse",
-        "type": "object"
-      },
       "TemporalConstraintListResponse": {
         "additionalProperties": false,
         "properties": {
@@ -3399,12 +3655,31 @@
           "current_rule": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/TemporalConstraintCurrentRuleResponse"
+                "discriminator": {
+                  "mapping": {
+                    "earliest_start": "#/components/schemas/AbsoluteEarliestStartCurrentRuleResponse",
+                    "latest_completion": "#/components/schemas/AbsoluteLatestCompletionCurrentRuleResponse",
+                    "latest_start": "#/components/schemas/AbsoluteLatestStartCurrentRuleResponse"
+                  },
+                  "propertyName": "boundary_kind"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/AbsoluteEarliestStartCurrentRuleResponse"
+                  },
+                  {
+                    "$ref": "#/components/schemas/AbsoluteLatestStartCurrentRuleResponse"
+                  },
+                  {
+                    "$ref": "#/components/schemas/AbsoluteLatestCompletionCurrentRuleResponse"
+                  }
+                ]
               },
               {
                 "type": "null"
               }
-            ]
+            ],
+            "title": "Current Rule"
           },
           "status": {
             "enum": ["active", "retired"],
