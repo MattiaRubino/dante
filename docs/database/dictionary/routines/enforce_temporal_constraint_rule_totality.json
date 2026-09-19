@@ -8,7 +8,7 @@
     "name": "enforce_temporal_constraint_rule_totality",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Enforce one complete typed absolute Temporal Constraint boundary payload and the exact B04-B boundary-kind / constrained-facet matrix.",
+  "purpose": "Enforce one complete typed absolute Temporal Constraint payload, selecting exactly one boundary or window family and the exact family-specific kind/relationship to constrained-facet matrix.",
   "classification": {
     "persistence_role": "integrity_trigger_function",
     "canonicality": "integrity",
@@ -18,18 +18,20 @@
     "authority_sources": [
       "docs/workstreams/timeline-temporal-operational-b04-a-implementation-freeze.md",
       "docs/workstreams/timeline-temporal-operational-b04-b-implementation-freeze.md",
+      "docs/workstreams/timeline-temporal-operational-b04-c-implementation-freeze.md",
       "docs/workstreams/timeline-temporal-operational-b04-execution-plan.md",
+      "docs/domain/concepts/temporal-constraint.md",
       "docs/development/backend-cp6-02-postgresql-persistence-constitution.md"
     ],
-    "domain_concepts": ["Temporal Constraint", "Deadline"],
-    "logical_families": ["Temporal Constraint", "Boundary Rule", "LR-05"],
+    "domain_concepts": ["Temporal Constraint", "Deadline", "Window", "Preference"],
+    "logical_families": ["Temporal Constraint", "Boundary Rule", "Window Rule", "LR-05"],
     "reference_families": ["MaterialStateRef"],
     "material_facets": ["temporal_constraint.rule"]
   },
   "implementation": {
     "introducing_stage": "B04-A-CONSTRAINT",
     "alembic_revision": "20260918_30",
-    "sqlalchemy": {"mode":"none","module":null,"symbol":null},
+    "sqlalchemy": {"mode": "none", "module": null, "symbol": null},
     "runtime_acl_stage": "B04-A-CONSTRAINT"
   },
   "structure": {
@@ -56,10 +58,10 @@
     }
   },
   "state_history": {
-    "material_state_behavior": "Deferred validator for the complete immutable temporal_constraint.rule payload; it does not create or select states.",
+    "material_state_behavior": "Deferred validator for the complete immutable temporal_constraint.rule payload; it does not create, mutate or select states.",
     "current_binding": null,
     "chronology": null,
-    "immutability_policy": "Integrity-only routine; incomplete or mismatched typed rule payload is rejected rather than repaired or inferred."
+    "immutability_policy": "Integrity-only routine; incomplete, mixed-family or mismatched typed rule payload is rejected rather than repaired or inferred."
   },
   "lifecycle": {
     "retention": null,
@@ -67,20 +69,31 @@
     "retirement_tombstone": null,
     "delete_behavior": "Owned integrity routine evolves only through reviewed forward migration."
   },
-  "security": {"owner_role":"dante_owner","default_deny_non_owner":true,"expected_grants":[]},
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": []
+  },
   "proof": {
     "obligations": [
       "canonical rule state cannot remain incomplete",
-      "exactly one absolute boundary discriminator/value pair is required",
+      "boundary family requires exactly one boundary discriminator/value pair and no window payload",
       "earliest_start + schedule.start is admitted",
       "latest_start + schedule.start is admitted",
       "latest_completion + schedule.completion is admitted",
-      "every other kind/facet combination fails closed",
+      "window family requires exactly one window discriminator/geometry pair and no boundary payload",
+      "start_within + schedule.start is admitted",
+      "completion_within + schedule.completion is admitted",
+      "full_placement_contained + schedule.placement is admitted",
+      "placement_overlaps + schedule.placement is admitted",
+      "every other family/kind-or-relationship/facet combination fails closed",
       "runtime cannot execute the validator directly"
     ],
     "test_refs": [
       "apps/backend/tests/integration/temporal/test_b04_temporal_constraint_core.py",
       "apps/backend/tests/integration/temporal/test_b04_absolute_boundary_deadline.py",
+      "apps/backend/tests/integration/temporal/test_b04_absolute_window_core.py",
+      "apps/backend/tests/integration/database/test_b04_c_window_catalog_probe.py",
       "apps/backend/tests/integration/database/test_b04_temporal_constraint_catalog.py",
       "apps/backend/tests/integration/database/test_database_current_catalog.py"
     ],
