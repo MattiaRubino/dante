@@ -1,0 +1,99 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "routine:dante.mutate_self_schedule_duration_constraint",
+    "type": "routine",
+    "schema": "dante",
+    "name": "mutate_self_schedule_duration_constraint",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Governed B04-E capability for idempotent self-scoped create, revise and retire of exact planned Schedule duration Temporal Constraints with expected-state CAS.",
+  "classification": {
+    "persistence_role": "canonical_mutation_capability",
+    "canonicality": "capability_surface",
+    "family": "temporal_constraint"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/workstreams/timeline-temporal-operational-b04-e-implementation-freeze.md",
+      "docs/workstreams/timeline-temporal-operational-b04-execution-plan.md",
+      "docs/domain/concepts/temporal-constraint.md",
+      "docs/logical-model/slices/time-reality-v1.md",
+      "docs/development/backend-cp6-02-postgresql-persistence-constitution.md"
+    ],
+    "domain_concepts": ["Temporal Constraint", "Schedule", "Duration", "Activity", "Event"],
+    "logical_families": ["Temporal Constraint", "Duration Rule", "LR-05", "application operation idempotency control"],
+    "reference_families": ["NativeRef", "ScopedRecordRef", "MaterialStateRef"],
+    "material_facets": ["temporal_constraint.rule"]
+  },
+  "implementation": {
+    "introducing_stage": "B04-E-DURATION",
+    "alembic_revision": "20260919_40",
+    "sqlalchemy": {"mode": "none", "module": null, "symbol": null},
+    "runtime_acl_stage": "B04-E-DURATION"
+  },
+  "structure": {
+    "columns": [],
+    "primary_key": null,
+    "foreign_keys": [],
+    "unique_constraints": [],
+    "check_constraints": [],
+    "indexes": [],
+    "triggers": [],
+    "table": null,
+    "view": null,
+    "routine": {
+      "routine_kind": "function",
+      "language": "plpgsql",
+      "argument_types": [
+        "uuid", "text", "text", "text", "uuid", "uuid", "uuid", "uuid",
+        "text", "text", "text", "bigint"
+      ],
+      "return_type": "TABLE(constraint_ref uuid, subject_native_ref uuid, material_state_ref uuid, active boolean, created_at timestamp with time zone, replayed boolean)",
+      "security": "DEFINER",
+      "volatility": "VOLATILE",
+      "parallel_safety": "UNSAFE",
+      "leakproof": false,
+      "function_search_path": ["pg_catalog", "dante", "pg_temp"],
+      "direct_runtime_execute": true
+    }
+  },
+  "state_history": {
+    "material_state_behavior": "Create/revise append complete immutable duration rule MaterialStates; retire removes currentness without deleting historical states.",
+    "current_binding": "Create establishes current binding/history, revise performs expected-state CAS then advances current selection, retire performs CAS then closes currentness.",
+    "chronology": "Accepted mutation time establishes current-history episodes; idempotent replay returns the originally accepted effect.",
+    "immutability_policy": "The routine never rewrites an existing duration MaterialState. Same operation id plus changed material intent conflicts."
+  },
+  "lifecycle": {
+    "retention": "Mutation receipts and historical canonical states are retained for replay and reconstructible history.",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "Retire closes currentness only; no canonical constraint/history delete path is exposed."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": [
+      {"grantee": "dante_runtime", "privilege": "EXECUTE", "columns": [], "grant_option": false}
+    ]
+  },
+  "proof": {
+    "obligations": [
+      "only self-owned Activity or Event subjects are admitted",
+      "only minimum or maximum schedule.placement duration rules are admitted",
+      "duration threshold is a positive exact microsecond value",
+      "create/revise/retire are atomic and idempotent",
+      "revise/retire enforce exact expected-state CAS",
+      "stale expected state and operation-id changed intent are rejected",
+      "runtime executes only the governed capability rather than direct canonical table DML"
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b04_duration_constraint_core.py",
+      "apps/backend/tests/integration/temporal/test_b04_duration_evaluation_application.py",
+      "apps/backend/tests/integration/database/test_b04_e_duration_catalog_probe.py",
+      "apps/backend/tests/integration/database/test_database_current_catalog.py"
+    ],
+    "staged_evidence": []
+  }
+}
