@@ -6,8 +6,8 @@
 - **PostgreSQL:** 18.6
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
-- **Current candidate Alembic head on `feature/timeline-temporal-operational`:** `20260919_39`
-- **Current candidate topology:** `115|5|42|89|232|152|329|0|0|0`
+- **Current candidate Alembic head on `feature/timeline-temporal-operational`:** `20260919_41`
+- **Current candidate topology:** `116|5|43|90|233|153|331|0|0|0`
 - **Frozen CP6 head:** `20260826_08`
 - **Last reconciled:** 2026-09-19
 
@@ -24,21 +24,21 @@ Current checked-out DB Reference
 ≈ direct tests
 ```
 
-A mismatch is a defect. Protected `main` remains integration authority; `_39` is candidate truth on the Timeline branch and is not protected-main truth before integration.
+A mismatch is a defect. Protected `main` remains integration authority; `_41` is candidate truth on the Timeline branch and is not protected-main truth before integration.
 
 ## 2. Current checked-out business-schema inventory
 
 Authoritative counts are in `scope.json`:
 
 ```text
-tables      115
+tables      116
 views         5
-routines     42
-standalone  162
-triggers     89
-indexes      232
-FKs          152
-CHECKs       329
+routines     43
+standalone  164
+triggers     90
+indexes      233
+FKs          153
+CHECKs       331
 ```
 
 No enum/domain, sequence, materialized view, partitioned table or RLS policy exists in the DANTE business-schema inventory.
@@ -68,11 +68,12 @@ B04-C / 20260919_35 → 20260919_36
   absolute windows + deterministic evaluation + runtime read ACL
 
 B04-D / 20260919_37 → 20260919_39
-  Schedule Movement Policy MaterialState/current/history
-  governed automatic move
-  confirmation proposal/acceptance
-  hard Temporal Constraint enforcement
-  replay hardening
+  Schedule Movement Policy + governed automatic move + proposal/acceptance
+
+B04-E / 20260919_40 → 20260919_41
+  planned Schedule duration constraints + runtime read ACL
+  boundary/window/duration evaluation composition
+  hard-duration integration into governed automatic movement
 ```
 
 The object tree and `scope.json`, not this prose summary, are structural source of truth.
@@ -83,11 +84,11 @@ The object tree and `scope.json`, not this prose summary, are structural source 
 
 Existing B01–B03 ownership remains unchanged. `dante.schedule` remains the single shared accepted-placement owner.
 
-### 4.2 Temporal Constraint — B04-A/B/C ✅ CLOSED / PROVEN
+### 4.2 Temporal Constraint — B04-A/B/C/E ✅ CLOSED / PROVEN
 
-Temporal Constraint is a stable `ScopedRecordRef` LR-05 dependent. Boundary and window rule MaterialStates remain independently revisable from Schedule.
+Temporal Constraint is a stable `ScopedRecordRef` LR-05 dependent. Boundary, window and duration rule MaterialStates remain independently revisable from Schedule.
 
-Accepted absolute boundary variants:
+Accepted boundary variants:
 
 ```text
 earliest_start     + schedule.start
@@ -95,7 +96,7 @@ latest_start       + schedule.start
 latest_completion  + schedule.completion
 ```
 
-Accepted absolute window variants:
+Accepted window variants:
 
 ```text
 start_within              + schedule.start
@@ -104,49 +105,39 @@ full_placement_contained  + schedule.placement
 placement_overlaps        + schedule.placement
 ```
 
+Accepted duration variants:
+
+```text
+minimum + schedule.placement
+maximum + schedule.placement
+```
+
+`temporal_constraint_duration_state` is the typed MaterialState payload for TC-008. It stores only exact positive planned placement duration; no generic JSON rule payload exists.
+
+`mutate_self_schedule_duration_constraint(...)` reuses the common Temporal Constraint identity/current/history/idempotency engine. `enforce_temporal_constraint_rule_totality()` now enforces exact family exclusivity across boundary/window/duration payloads.
+
+Runtime SELECT on the duration payload is least privilege and exists only to support the canonical application read/evaluation surface.
+
 ### 4.3 Movement Policy — B04-D ✅ CLOSED / PROVEN
 
-Movement Policy is a typed Schedule-owned material facet:
+Movement Policy remains a typed Schedule-owned material facet:
 
 ```text
 schedule.movement_policy
 ```
 
-Canonical object family:
+`assert_absolute_schedule_move_hard_admissible(...)` now evaluates current hard boundary, window **and duration** rules. Thus B04-D automation cannot bypass B04-E hard duration constraints.
+
+### 4.4 Advanced-family applicability — B04-E ✅ CLOSED / PROVEN
 
 ```text
-schedule_movement_policy_state
-schedule_movement_policy_current_history
-schedule_movement_policy_mutation_operation
-schedule_move_proposal
-schedule_move_request_operation
-schedule_move_accept_operation
+TC-008 implemented
+TC-009 runtime deferred B08
+TC-010 runtime deferred B06/B08/B10 by anchor
+TC-011 runtime persistence deferred until reviewed bounded relation/reference support exists
 ```
 
-Capability/integrity routines:
-
-```text
-enforce_schedule_movement_policy_history()
-mutate_self_schedule_movement_policy(...)
-resolve_self_schedule_movement_policy(...)
-assert_absolute_schedule_move_hard_admissible(...)
-apply_governed_absolute_schedule_move(...)
-request_self_absolute_schedule_move(...)
-accept_self_absolute_schedule_move_proposal(...)
-```
-
-The policy value space is deliberately decomposed rather than copied from prototype UI enum:
-
-```text
-automatic_movement_code  blocked | automatic
-acceptance_path_code     direct | confirmation_required
-```
-
-`material_state_address` now admits `schedule.movement_policy`, and `enforce_material_state_totality()` enforces exact Movement Policy owner/facet/payload exclusivity alongside the previously materialized families.
-
-Movement Policy revision has its own immutable MaterialState/current-history chronology and does not revise Schedule placement.
-
-A confirmation proposal is retained separately from accepted placement truth. Acceptance rechecks current placement, current policy basis and hard Temporal Constraint admissibility before committing a new Schedule placement MaterialState.
+No fake prior-time field, generic relation root, `related_id + type`, or opaque JSON relation payload was introduced.
 
 ## 5. Permanent non-collapse
 
@@ -154,6 +145,9 @@ A confirmation proposal is retained separately from accepted placement truth. Ac
 Schedule != Temporal Constraint
 Schedule != Movement Policy
 Temporal Constraint != Movement Policy
+planned Schedule duration != Activity estimated effort
+planned Schedule duration != Session duration
+planned Schedule duration != Actual duration
 Movement Policy != Authority itself
 Movement Policy != solver result
 proposal != accepted effect
@@ -177,22 +171,24 @@ B04-A                                CLOSED / PROVEN at 20260918_33
 B04-B                                CLOSED / PROVEN at 20260919_34
 B04-C                                CLOSED / PROVEN at 20260919_36
 B04-D Movement Policy                CLOSED / PROVEN at 20260919_39
-B04 overall                          IN PROGRESS
+B04-E Advanced-family applicability  CLOSED / PROVEN at 20260919_41
+B04 overall                          IN PROGRESS — B04-F NEXT
 ```
 
-Observed B04-D evidence:
+Observed B04-E evidence:
 
 ```text
-Movement Policy / governed move / ACL tests       7 PASS
-whole catalog + B04-D catalog reconciliation      3 PASS
-DATABASE_CURRENT_TOPOLOGY                         115|5|42|89|232|152|329|0|0|0
+core duration + movement integration             4 PASS
+application/evaluator/regression                13 PASS / 3 deselected
+whole catalog + B04-E catalog reconciliation     3 PASS
+DATABASE_CURRENT_TOPOLOGY                         116|5|43|90|233|153|331|0|0|0
 ```
 
 ## 7. Object contract
 
 Every standalone business-schema object records semantic traceability, implementation provenance, exact structure, lifecycle/currentness semantics, ACL and proof obligations. Embedded indexes/FKs/CHECKs/triggers remain attached to their owning tables; routines remain standalone because signature/security/search-path/ACL are independently governed.
 
-Shared CP6 entries retain original introducing provenance even when later slices extend bounded dispatchers. Later semantics/proof are updated without falsifying historical provenance.
+Shared entries retain original introducing provenance even when later slices extend bounded dispatchers. Later semantics/proof are updated without falsifying historical provenance.
 
 ## 8. Validation
 
@@ -213,4 +209,4 @@ extension-owned objects excluded correctly
 
 No real object → no ceremonial Dictionary entry. Every real current DANTE business object requires matching Dictionary/Alembic/SQLAlchemy/current-human-reference/direct-PostgreSQL proof in the same reviewed slice.
 
-B04-E is the next candidate slice; B04-F remains required before B05.
+B04-F is the next slice; B05 remains blocked until whole-B04 closure.
