@@ -1,0 +1,197 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "table:dante.temporal_constraint_window_state",
+    "type": "table",
+    "schema": "dante",
+    "name": "temporal_constraint_window_state",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Typed discriminator for the B04-C absolute-window Temporal Constraint family, separating the required Schedule relationship and temporal representation from the common rule envelope.",
+  "classification": {
+    "persistence_role": "typed_material_state_payload",
+    "canonicality": "canonical",
+    "family": "temporal_constraint"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/workstreams/timeline-temporal-operational-b04-c-implementation-freeze.md",
+      "docs/workstreams/timeline-temporal-operational-b04-execution-plan.md",
+      "docs/domain/concepts/temporal-constraint.md",
+      "docs/logical-model/slices/time-reality-v1.md",
+      "docs/development/backend-cp6-02-postgresql-persistence-constitution.md"
+    ],
+    "domain_concepts": ["Temporal Constraint", "Window", "Preference"],
+    "logical_families": ["Temporal Constraint", "Window Rule", "LR-05"],
+    "reference_families": ["MaterialStateRef"],
+    "material_facets": ["temporal_constraint.rule"]
+  },
+  "implementation": {
+    "introducing_stage": "B04-C-WINDOW",
+    "alembic_revision": "20260919_35",
+    "sqlalchemy": {
+      "mode": "orm_row",
+      "module": "dante.platform.database.mappings.temporal_constraint",
+      "symbol": "TemporalConstraintWindowStateRow"
+    },
+    "runtime_acl_stage": "B04-C-WINDOW-READ"
+  },
+  "structure": {
+    "columns": [
+      {
+        "name": "material_state_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {"kind": "none", "expression": null},
+        "meaning": "MaterialStateRef of the Temporal Constraint rule revision owning this typed window discriminator.",
+        "semantic_type": "MaterialStateRef",
+        "value_contract": "Exactly one row for every activated window rule state."
+      },
+      {
+        "name": "relationship_code",
+        "postgres_type": "text",
+        "nullable": false,
+        "default": {"kind": "none", "expression": null},
+        "meaning": "Required relationship between the candidate Schedule placement and this window geometry.",
+        "semantic_type": null,
+        "value_contract": "One of start_within, completion_within, full_placement_contained, placement_overlaps; deferred totality enforces the matching constrained Schedule facet."
+      },
+      {
+        "name": "temporal_form_code",
+        "postgres_type": "text",
+        "nullable": false,
+        "default": {"kind": "none", "expression": null},
+        "meaning": "Truthful temporal representation of the window geometry.",
+        "semantic_type": null,
+        "value_contract": "B04-C admits exactly absolute; date-span, floating-local, named-zone-local and coarse-local forms fail closed."
+      }
+    ],
+    "primary_key": {
+      "name": "pk_temporal_constraint_window_state",
+      "columns": ["material_state_ref"],
+      "reason": "At most one typed window discriminator per Temporal Constraint rule MaterialState.",
+      "deferrable": false,
+      "initially": "NOT DEFERRABLE",
+      "enforced": true
+    },
+    "foreign_keys": [
+      {
+        "name": "fk_temporal_constraint_window_state_constraint_state",
+        "columns": ["material_state_ref"],
+        "target": {"schema": "dante", "table": "temporal_constraint_state", "columns": ["material_state_ref"]},
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "MaterialStateRef",
+        "cardinality": "one_to_one_required",
+        "semantic_reason": "A window discriminator cannot exist without the owning Temporal Constraint rule envelope."
+      }
+    ],
+    "unique_constraints": [],
+    "check_constraints": [
+      {
+        "name": "ck_temporal_constraint_window_state_relationship",
+        "expression_contract": "relationship_code IN ('start_within','completion_within','full_placement_contained','placement_overlaps')",
+        "reason": "B04-C activates four explicit Schedule/window relationship semantics; no generic interval relation fallback exists.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_temporal_constraint_window_state_temporal_form",
+        "expression_contract": "temporal_form_code='absolute'",
+        "reason": "B04-C remains exact absolute-window truth and fails closed for unsupported temporal forms.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "pk_temporal_constraint_window_state",
+        "method": "btree",
+        "unique": true,
+        "keys": ["material_state_ref"],
+        "predicate": null,
+        "include": [],
+        "source": "primary_key",
+        "reason": "Window discriminator lookup by rule MaterialStateRef.",
+        "valid": true,
+        "ready": true,
+        "live": true
+      }
+    ],
+    "triggers": [
+      {
+        "name": "ctrg_temporal_constraint_window_state_rule_totality",
+        "routine": "dante.enforce_temporal_constraint_rule_totality",
+        "events": ["INSERT", "UPDATE", "DELETE"],
+        "timing": "AFTER",
+        "orientation": "ROW",
+        "constraint_trigger": true,
+        "deferrable": true,
+        "initially_deferred": true,
+        "enabled_mode": "ORIGIN",
+        "update_columns": [],
+        "when_condition": null,
+        "arguments": [],
+        "invariant_role": "temporal_constraint_rule_totality",
+        "reason": "Require exactly one matching absolute window geometry, no boundary payload, and an admitted relationship/facet pair for every accepted window rule state."
+      }
+    ],
+    "table": {
+      "persistence": "permanent",
+      "access_method": "heap",
+      "partitioned": false,
+      "row_security": false,
+      "force_row_security": false,
+      "replica_identity": "default",
+      "reloptions": []
+    },
+    "view": null,
+    "routine": null
+  },
+  "state_history": {
+    "material_state_behavior": "Immutable typed payload metadata owned one-to-one by the Temporal Constraint rule MaterialState.",
+    "current_binding": "Currentness is inherited from the owning temporal_constraint_state through the shared scoped current binding; this row is not currentness authority.",
+    "chronology": "No chronology is inferred from this discriminator; current-history episodes remain authoritative for accepted currentness.",
+    "immutability_policy": "Runtime read access is SELECT-only; a changed window rule produces a new MaterialState."
+  },
+  "lifecycle": {
+    "retention": "Retained with the owning historical rule MaterialState.",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No runtime DELETE; retirement changes currentness rather than erasing typed historical payload."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": [
+      {"grantee": "dante_runtime", "privilege": "SELECT", "columns": [], "grant_option": false}
+    ]
+  },
+  "proof": {
+    "obligations": [
+      "relationship is one of the four frozen B04-C relationship kinds",
+      "start_within constrains schedule.start",
+      "completion_within constrains schedule.completion",
+      "full_placement_contained and placement_overlaps constrain schedule.placement",
+      "temporal form remains exactly absolute in B04-C",
+      "typed payload totality excludes simultaneous boundary payload",
+      "runtime has only read access required by the canonical application read model"
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_b04_absolute_window_core.py",
+      "apps/backend/tests/integration/temporal/test_b04_window_runtime_acl.py",
+      "apps/backend/tests/integration/database/test_b04_c_window_catalog_probe.py",
+      "apps/backend/tests/integration/database/test_b04_temporal_constraint_catalog.py",
+      "apps/backend/tests/integration/database/test_database_current_catalog.py"
+    ],
+    "staged_evidence": []
+  }
+}
