@@ -9,7 +9,7 @@ import pytest
 
 pytestmark = pytest.mark.postgres
 
-_EXPECTED_REVISION = "20260919_38"
+_EXPECTED_REVISION = "20260919_39"
 _EXPECTED_TOPOLOGY = (115, 5, 42, 89, 232, 152, 329, 0, 0, 0)
 
 _B04_D_TABLES = {
@@ -49,7 +49,9 @@ def _admin(database: Any) -> psycopg.Connection[Any]:
 @pytest.mark.postgres
 def test_b04_d_revision_and_topology(migrated_database: Any) -> None:
     with _admin(migrated_database) as connection:
-        revision = connection.execute("SELECT version_num FROM alembic_version").fetchone()
+        revision = connection.execute(
+            "SELECT version_num FROM dante.alembic_version"
+        ).fetchone()
         topology = connection.execute(
             """
             SELECT
