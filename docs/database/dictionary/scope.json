@@ -35,8 +35,8 @@
     "standalone_entries": {
       "tables": 107,
       "views": 5,
-      "routines": 33,
-      "total": 145
+      "routines": 34,
+      "total": 146
     },
     "embedded_objects": {
       "triggers": 85,
