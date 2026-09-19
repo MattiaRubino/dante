@@ -6,8 +6,8 @@
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
-- **Timeline candidate Alembic head:** `20260919_34`
-- **Timeline candidate topology:** `107|5|34|85|212|129|309|0|0|0`
+- **Timeline candidate Alembic head:** `20260919_36`
+- **Timeline candidate topology:** `109|5|35|87|214|131|312|0|0|0`
 - **Pre-vertical integration:** PR #66 / merge `1ecd58145860aebfaaa3dc1bd356b90f7a8eb19b` is protected-main historical context
 - **Authenticated DANTE context authority:** `../architecture/authenticated-dante-context.md`
 - **Timeline candidate DB overlay:** `timeline-temporal-operational.md`
@@ -17,6 +17,7 @@
 - **Pre-B04 governance closure:** `../workstreams/timeline-temporal-operational-pre-b04-governance-2026-09-18.md`
 - **B04-A closure:** `../workstreams/timeline-temporal-operational-b04-a-closure-2026-09-18.md`
 - **B04-B closure:** `../workstreams/timeline-temporal-operational-b04-b-closure-2026-09-19.md`
+- **B04-C closure:** `../workstreams/timeline-temporal-operational-b04-c-closure-2026-09-19.md`
 
 ## 1. Authority model
 
@@ -80,23 +81,27 @@ The Timeline candidate extends protected-main `20260906_18` only through forward
     ↓
 20260918_33 b04_temporal_constraint_api_activation [B04-A closure]
     ↓
-20260919_34 b04_absolute_boundary_deadline       [B04-B closure / current candidate head]
+20260919_34 b04_absolute_boundary_deadline       [B04-B closure]
+    ↓
+20260919_35 b04_absolute_window_constraints      [B04-C]
+    ↓
+20260919_36 b04_window_runtime_read_acl          [B04-C closure / current candidate head]
 ```
 
 No accepted historical migration was edited, rebased, renumbered or flattened.
 
-`_34` is a forward semantic expansion of the existing Temporal Constraint boundary payload. It adds one governed mutation routine but no table/view/trigger/index/FK/CHECK object count.
+`_35` activates typed absolute windows and one governed window mutation routine. `_36` grants only the runtime SELECT surface required by canonical current window reads.
 
 ## 3. Current candidate topology
 
 ```text
-107 tables
+109 tables
 5 views
-34 routines
-85 triggers
-212 physical indexes
-129 foreign keys
-309 CHECK constraints
+35 routines
+87 triggers
+214 physical indexes
+131 foreign keys
+312 CHECK constraints
 0 enums/domains
 0 sequences
 0 materialized views
@@ -104,7 +109,7 @@ No accepted historical migration was edited, rebased, renumbered or flattened.
 0 RLS policies
 ```
 
-This topology was read directly from PostgreSQL 18.6 and is the accepted Timeline candidate topology through `_34`. The exact machine-readable inventory is `dictionary/scope.json` plus the per-object Dictionary tree.
+This topology was read directly from PostgreSQL 18.6 and is the accepted Timeline candidate topology through `_36`. The exact machine-readable inventory is `dictionary/scope.json` plus the per-object Dictionary tree.
 
 ## 4. Timeline persistence classification
 
@@ -138,19 +143,22 @@ coarse_local_period
 
 Temporal Constraint is a stable `ScopedRecordRef` LR-05 dependent. It is not a NativeRef root, Schedule placement, Movement Policy, Recurrence or evidence of Actual realization.
 
-Canonical/control surface:
+Canonical/control surface through B04-C:
 
 ```text
 temporal_constraint
 temporal_constraint_state
 temporal_constraint_boundary_state
 temporal_constraint_boundary_absolute_state
+temporal_constraint_window_state
+temporal_constraint_window_absolute_state
 temporal_constraint_current_history
 temporal_constraint_mutation_operation
 
 enforce_temporal_constraint_rule_totality()
 mutate_self_absolute_earliest_start_constraint(...)
 mutate_self_absolute_boundary_constraint(...)
+mutate_self_absolute_window_constraint(...)
 ```
 
 The bounded control engine remains shared:
@@ -164,7 +172,7 @@ shared owner/ref/totality/history dispatchers extended
 
 #### B04-A ✅ CLOSED / PROVEN
 
-B04-A established the first complete rule:
+First complete rule:
 
 ```text
 subject             self-owned Activity | Event
@@ -176,8 +184,6 @@ temporal form       absolute
 boundary value      finite timestamptz
 ```
 
-`_33` closed the application/API activation gap: replay accepts replacement server-generated UUIDs while returning the originally accepted refs, and runtime receives only the narrow current-rule SELECT surface needed by Get/List.
-
 #### B04-B ✅ CLOSED / PROVEN
 
 `_34` expands the exact absolute boundary matrix to:
@@ -188,9 +194,33 @@ latest_start       + schedule.start
 latest_completion  + schedule.completion
 ```
 
-Database invariants require those exact pairings. Unsupported pairings fail at deferred totality. `temporal_form_code` remains exactly `absolute` for B04-B.
+Database invariants require those exact pairings. `temporal_form_code` remains exactly `absolute` for B04-B.
 
-The generic B04-B capability is `mutate_self_absolute_boundary_constraint(...)`. The B04-A `mutate_self_absolute_earliest_start_constraint(...)` routine remains present for compatibility.
+#### B04-C ✅ CLOSED / PROVEN
+
+`_35/_36` activate the exact absolute-window matrix:
+
+```text
+start_within              + schedule.start
+completion_within         + schedule.completion
+full_placement_contained  + schedule.placement
+placement_overlaps        + schedule.placement
+```
+
+All require:
+
+```text
+family         window
+strength       hard | soft
+temporal form  absolute
+starts_at      finite timestamptz
+ends_at        finite timestamptz
+ends_at        > starts_at
+```
+
+`temporal_constraint_window_state` stores relation/form discrimination; `temporal_constraint_window_absolute_state` stores explicit endpoints. The deferred totality dispatcher rejects invalid family/payload or relation/facet combinations.
+
+`_36` grants `dante_runtime` SELECT only on the two current window payload tables needed by the canonical current-rule query. Mutation remains governed by `mutate_self_absolute_window_constraint(...)`; direct business writes are not opened to runtime.
 
 Permanent boundaries include:
 
@@ -205,11 +235,15 @@ constraint revision != Schedule revision
 deadline != Schedule end
 passed deadline != Actual
 passed deadline != Outcome / failure
+window != placement
+preference != accepted Schedule
+evaluation != solver decision
+violation != automatic mutation
 current accepted state != newest row
 idempotency key != Domain identity
 ```
 
-B04-C+ windows/preferences/evaluation, Movement Policy, advanced duration/spacing/relative families and solver semantics remain outside current persistence authority.
+B04-D Movement Policy, B04-E advanced duration/spacing/relative families and B12 solver semantics remain outside current persistence authority.
 
 ## 5. Proof state
 
@@ -219,21 +253,28 @@ B02 Schedule Core                    CLOSED / PROVEN at 20260915_26
 B03 Event Core                       CLOSED / PROVEN at 20260917_29
 B04-A overall                        CLOSED / PROVEN at 20260918_33
 B04-B overall                        CLOSED / PROVEN at 20260919_34
+B04-C overall                        CLOSED / PROVEN at 20260919_36
 B04 overall                          IN PROGRESS
 ```
 
-B04-B local evidence:
+B04-C local evidence:
 
 ```text
-API / typed union / inventory                 13 PASS
-PostgreSQL/application/catalog                22 PASS / 1 deselected
-OpenAPI export/inventory/API                  21 PASS
-@dante/api-client typecheck                   PASS
-@dante/api-client Vitest                      11 PASS
-pnpm generated:check                          PASS / 163 files deterministic
+PostgreSQL / application evaluation             9 PASS / 2 deselected
+current catalog / Dictionary / ACL             12 PASS
+OpenAPI / Temporal API contract                24 PASS
+@dante/api-client typecheck                    PASS
+@dante/api-client Vitest                       11 PASS
+pnpm generated:check                           PASS / 177 deterministic files
 ```
 
-The next persistence slice is B04-C Windows / Preferences / Evaluation. No B04-C object or schema change is pre-authorized by B04-B closure.
+Observed topology:
+
+```text
+109|5|35|87|214|131|312|0|0|0
+```
+
+The next persistence slice is not pre-authorized. B04-D Movement Policy requires its own semantic/implementation freeze before any DB write.
 
 ## 6. Runtime role model
 

@@ -6,8 +6,8 @@
 - **PostgreSQL:** 18.6
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
-- **Current candidate Alembic head on `feature/timeline-temporal-operational`:** `20260919_34`
-- **Current candidate topology:** `107|5|34|85|212|129|309|0|0|0`
+- **Current candidate Alembic head on `feature/timeline-temporal-operational`:** `20260919_36`
+- **Current candidate topology:** `109|5|35|87|214|131|312|0|0|0`
 - **Frozen CP6 head:** `20260826_08`
 - **Last reconciled:** 2026-09-19
 
@@ -24,26 +24,26 @@ Current checked-out DB Reference
 ≈ direct tests
 ```
 
-A mismatch is a defect. Protected `main` remains integration authority; `_34` is candidate truth on the Timeline branch and must not be relabeled as protected-main truth before integration.
+A mismatch is a defect. Protected `main` remains integration authority; `_36` is candidate truth on the Timeline branch and must not be relabeled as protected-main truth before integration.
 
 ## 2. Current checked-out business-schema inventory
 
 The authoritative machine-readable counts are in `scope.json` and currently equal:
 
 ```text
-tables      107
+tables      109
 views         5
-routines     34
-standalone  146
-triggers     85
-indexes      212
-FKs          129
-CHECKs       309
+routines     35
+standalone  149
+triggers     87
+indexes      214
+FKs          131
+CHECKs       312
 ```
 
 No enum/domain, sequence, materialized view, partitioned table or RLS policy exists in the DANTE business-schema inventory.
 
-These counts are live PostgreSQL-backed candidate truth. `_34` adds `mutate_self_absolute_boundary_constraint(...)`; all other structural counts remain unchanged from `_33`.
+These counts are live PostgreSQL-backed candidate truth through `_36`. B04-C adds two typed window tables, one governed mutation routine, two deferred totality triggers, their indexes/FKs/CHECKs, and runtime read ACL hardening without adding a new business-schema object in `_36`.
 
 ## 3. Frozen CP6 baseline vs current materialization
 
@@ -57,8 +57,8 @@ Frozen CP6 baseline remains historical evidence:
 Current candidate materialization is:
 
 ```text
-107 tables / 5 views / 34 routines / 146 standalone
-85 triggers / 212 indexes / 129 FKs / 309 CHECKs
+109 tables / 5 views / 35 routines / 149 standalone
+87 triggers / 214 indexes / 131 FKs / 312 CHECKs
 ```
 
 `completed_stages` in `scope.json` remains CP6 provenance only. Post-CP6 provenance belongs on the actual object entries; B04 does not rewrite CP6 history.
@@ -108,6 +108,17 @@ B04-B / 20260919_34
   latest_completion + schedule.completion
   exact deferred kind↔facet totality
   mutate_self_absolute_boundary_constraint(...)
+
+B04-C / 20260919_35 → 20260919_36
+  temporal_constraint_window_state
+  temporal_constraint_window_absolute_state
+  start_within + schedule.start
+  completion_within + schedule.completion
+  full_placement_contained + schedule.placement
+  placement_overlaps + schedule.placement
+  exact deferred relation↔facet totality
+  mutate_self_absolute_window_constraint(...)
+  narrow dante_runtime current-window SELECT ACL
 ```
 
 The final object tree and `scope.json` counts, not this prose summary, are the structural source of truth.
@@ -126,26 +137,28 @@ The final object tree and `scope.json` counts, not this prose summary, are the s
 
 `dante.event` remains the CP6 Event NativeRef owner. B03-A adds the minimum expectation/create boundary; B03-D adds ordered internal Agenda truth. Agenda values do not gain NativeRef/Schedule identity by convenience.
 
-### 5.4 Temporal Constraint — B04-A/B04-B ✅ CLOSED / PROVEN
+### 5.4 Temporal Constraint — B04-A/B/C ✅ CLOSED / PROVEN
 
 Temporal Constraint is materialized as a stable `ScopedRecordRef` LR-05 dependent, not as a NativeRef root and not as Schedule placement.
 
-Canonical shape:
+Canonical shape through B04-C:
 
 ```text
 temporal_constraint
-  └─ temporal_constraint_state                immutable MaterialState revision
-      └─ temporal_constraint_boundary_state   boundary kind / temporal form
-          └─ temporal_constraint_boundary_absolute_state
+  └─ temporal_constraint_state
+      ├─ temporal_constraint_boundary_state
+      │   └─ temporal_constraint_boundary_absolute_state
+      └─ temporal_constraint_window_state
+          └─ temporal_constraint_window_absolute_state
 
-scoped_current_material_state                 accepted current rule
+scoped_current_material_state
        ≈
-temporal_constraint_current_history           retained currentness chronology
+temporal_constraint_current_history
 
-temporal_constraint_mutation_operation        technical idempotency/CAS receipt
+temporal_constraint_mutation_operation
 ```
 
-Accepted B04-B absolute variants:
+Accepted absolute boundary variants:
 
 ```text
 earliest_start     + schedule.start
@@ -153,11 +166,20 @@ latest_start       + schedule.start
 latest_completion  + schedule.completion
 ```
 
-All require hard|soft strength, `absolute` temporal form and finite `timestamptz` payload.
+Accepted absolute window variants:
 
-Create/revise/retire are governed by `mutate_self_absolute_boundary_constraint(...)` for the B04-B union. `mutate_self_absolute_earliest_start_constraint(...)` remains present for B04-A compatibility. Revision appends a new MaterialState; retirement closes currentness and preserves identity/history. Operation identity is not Domain identity.
+```text
+start_within              + schedule.start
+completion_within         + schedule.completion
+full_placement_contained  + schedule.placement
+placement_overlaps        + schedule.placement
+```
 
-`enforce_temporal_constraint_rule_totality()` now validates the exact kind↔facet matrix, so widened column CHECKs do not permit semantically invalid combinations.
+All require hard|soft strength and exact typed payload totality. Boundary values are finite absolute instants. Window values are finite explicit endpoints with `ends_at > starts_at`.
+
+Create/revise/retire remain governed by typed mutation routines. Revision appends a new MaterialState; retirement closes currentness and preserves identity/history. Operation identity is not Domain identity.
+
+`enforce_temporal_constraint_rule_totality()` validates the exact family/payload and relation/facet matrix so widened envelope CHECKs do not admit invalid semantic combinations.
 
 Permanent non-collapse remains:
 
@@ -170,11 +192,15 @@ constraint revision != Schedule revision
 deadline != Schedule end
 passed deadline != Actual
 passed deadline != Outcome / failure
+window != placement
+preference != accepted Schedule
+evaluation != solver decision
+violation != automatic mutation
 current accepted state != newest row
 idempotency key != Domain identity
 ```
 
-B04-C+ windows/preferences/evaluation, Movement Policy, duration/spacing/relative families and solver behavior are not represented as complete by current materialization.
+B04-D Movement Policy, B04-E duration/spacing/relative families and B12 solver behavior are not represented as complete by current materialization.
 
 ## 6. Proof state
 
@@ -184,18 +210,25 @@ B02 Schedule Core                    CLOSED / PROVEN
 B03 Event Core                       CLOSED / PROVEN
 B04-A overall                        CLOSED / PROVEN at 20260918_33
 B04-B overall                        CLOSED / PROVEN at 20260919_34
+B04-C overall                        CLOSED / PROVEN at 20260919_36
 B04 overall                          IN PROGRESS
 ```
 
-B04-B final reconciliation evidence:
+B04-C final reconciliation evidence:
 
 ```text
-API / typed union / inventory                 13 PASS
-PostgreSQL/application/catalog                22 PASS / 1 deselected
-OpenAPI export/inventory/API                  21 PASS
-@dante/api-client typecheck                   PASS
-@dante/api-client Vitest                      11 PASS
-pnpm generated:check                          PASS / 163 deterministic files
+PostgreSQL / application evaluation             9 PASS / 2 deselected
+current catalog / Dictionary / ACL             12 PASS
+OpenAPI / Temporal API contract                24 PASS
+@dante/api-client typecheck                    PASS
+@dante/api-client Vitest                       11 PASS
+pnpm generated:check                           PASS / 177 deterministic files
+```
+
+Observed current topology:
+
+```text
+109|5|35|87|214|131|312|0|0|0
 ```
 
 ## 7. Object contract

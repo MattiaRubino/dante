@@ -4,14 +4,15 @@
 - **Reconciled:** 2026-09-19
 - **Branch:** `feature/timeline-temporal-operational`
 - **Protected-main baseline:** `20260906_18` / `89|5|18|77|173|91|272|0|0|0`
-- **Candidate head:** `20260919_34`
-- **Candidate topology:** `107|5|34|85|212|129|309|0|0|0`
+- **Candidate head:** `20260919_36`
+- **Candidate topology:** `109|5|35|87|214|131|312|0|0|0`
 - **Whole-DB SoR:** `README.md`
 - **Machine-readable authority:** `dictionary/`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 - **Pre-B04 governance closure:** `../workstreams/timeline-temporal-operational-pre-b04-governance-2026-09-18.md`
 - **B04-A closure authority:** `../workstreams/timeline-temporal-operational-b04-a-closure-2026-09-18.md`
 - **B04-B closure authority:** `../workstreams/timeline-temporal-operational-b04-b-closure-2026-09-19.md`
+- **B04-C closure authority:** `../workstreams/timeline-temporal-operational-b04-c-closure-2026-09-19.md`
 
 ## 1. Purpose and authority boundary
 
@@ -57,9 +58,15 @@ Candidate truth becomes protected-main truth only after applicable integration g
 20260918_33 B04-A API activation replay / runtime-read hardening
     ↓
 20260919_34 B04-B absolute boundary / deadline
+    ↓
+20260919_35 B04-C absolute window constraints
+    ↓
+20260919_36 B04-C window runtime-read ACL
 ```
 
-`_34` adds one governed routine and widens the existing boundary/facet discriminators; it adds no table/view/trigger/index/FK/CHECK object count.
+`_35` adds the typed window payload tables, widens family/facet discrimination only to the admitted B04-C algebra and adds `mutate_self_absolute_window_constraint(...)`.
+
+`_36` grants runtime SELECT only on the two current window payload tables required by the canonical read model.
 
 ## 3. Candidate objects/capabilities activated by the vertical
 
@@ -98,24 +105,27 @@ replace_self_event_agenda(...)
 
 Event Schedule authorization is generalized against the existing shared Schedule owner. Agenda values remain Event-internal ordered content.
 
-### Temporal Constraint — B04-A/B04-B ✅ CLOSED / PROVEN
+### Temporal Constraint — B04-A/B/C ✅ CLOSED / PROVEN
 
 ```text
 temporal_constraint
 temporal_constraint_state
 temporal_constraint_boundary_state
 temporal_constraint_boundary_absolute_state
+temporal_constraint_window_state
+temporal_constraint_window_absolute_state
 temporal_constraint_current_history
 temporal_constraint_mutation_operation
 
 enforce_temporal_constraint_rule_totality()
 mutate_self_absolute_earliest_start_constraint(...)
 mutate_self_absolute_boundary_constraint(...)
+mutate_self_absolute_window_constraint(...)
 ```
 
 Temporal Constraint remains a stable `ScopedRecordRef` dependent.
 
-Accepted B04-B absolute rule matrix:
+Accepted absolute boundary matrix:
 
 ```text
 earliest_start     + schedule.start
@@ -123,15 +133,16 @@ latest_start       + schedule.start
 latest_completion  + schedule.completion
 ```
 
-Each accepted rule also requires:
+Accepted absolute window matrix:
 
 ```text
-Activity | Event self-owned subject
-boundary family
-hard | soft
-absolute temporal form
-finite timestamptz
+start_within              + schedule.start
+completion_within         + schedule.completion
+full_placement_contained  + schedule.placement
+placement_overlaps        + schedule.placement
 ```
+
+Each accepted rule also requires self-owned Activity/Event subject plus hard|soft strength. Boundary/window temporal form remains `absolute` for the activated B04-A/B/C slices.
 
 The bounded shared controls remain:
 
@@ -141,11 +152,21 @@ material_state_address        temporal_constraint.rule
 scoped_current_material_state temporal_constraint.rule
 ```
 
-`_34` makes kind/facet compatibility a deferred DB invariant and adds the generic absolute-boundary mutation routine. The B04-A earliest-start routine remains available for compatibility.
-
 Create/revise/retire continue to use immutable receipts, expected-state CAS and retained current-history episodes. Revision never rewrites an existing rule MaterialState. Retirement means no current `temporal_constraint.rule` binding while identity/history remain.
 
-## 4. Non-collapse invariants
+## 4. B04-C evaluation boundary
+
+B04-C evaluation is derived application/API behavior over current effective Temporal Constraints plus a candidate absolute interval.
+
+```text
+per rule  satisfied | violated | not_evaluable
+overall   admissible | admissible_with_soft_violations | inadmissible | not_evaluable
+hard set  feasible | infeasible | undetermined
+```
+
+Evaluation is not persisted as canonical DB state. It performs no solver search, automatic movement, Actual inference or Outcome creation.
+
+## 5. Non-collapse invariants
 
 ```text
 Activity != Event
@@ -159,6 +180,10 @@ constraint revision != Schedule revision
 deadline != Schedule end
 passed deadline != Actual
 passed deadline != Outcome / failure
+window != placement
+preference != accepted Schedule
+evaluation != solver decision
+violation != automatic mutation
 Schedule != Session != Actual
 Actual != Outcome
 NativeRef != ScopedRecordRef != MaterialStateRef != ExternalRef
@@ -168,7 +193,7 @@ operation/idempotency identity != Domain identity
 provider identity != DANTE identity
 ```
 
-## 5. Current proof state
+## 6. Current proof state
 
 ```text
 B01 ✅ CLOSED / PROVEN
@@ -177,28 +202,29 @@ B03 ✅ CLOSED / PROVEN
 B04  🟡 IN PROGRESS
 ├─ B04-A Temporal Constraint canonical core  ✅ CLOSED / PROVEN
 ├─ B04-B Boundary / Deadline                 ✅ CLOSED / PROVEN
-└─ B04-C Windows / Preferences / Evaluation  ⬜ NEXT
+├─ B04-C Windows / Preferences / Evaluation  ✅ CLOSED / PROVEN
+└─ B04-D Movement Policy                     ⬜ NEXT
 ```
 
 Current candidate structural authority:
 
 ```text
-Alembic  20260919_34
-Topology 107|5|34|85|212|129|309|0|0|0
+Alembic  20260919_36
+Topology 109|5|35|87|214|131|312|0|0|0
 ```
 
-B04-B proof includes:
+B04-C proof includes:
 
 ```text
-API / typed union / inventory                 13 PASS
-PostgreSQL/application/catalog                22 PASS / 1 deselected
-OpenAPI export/inventory/API                  21 PASS
-@dante/api-client typecheck                   PASS
-@dante/api-client Vitest                      11 PASS
-pnpm generated:check                          PASS / 163 deterministic files
+PostgreSQL / application evaluation             9 PASS / 2 deselected
+current catalog / Dictionary / ACL             12 PASS
+OpenAPI / Temporal API contract                24 PASS
+@dante/api-client typecheck                    PASS
+@dante/api-client Vitest                       11 PASS
+pnpm generated:check                           PASS / 177 deterministic files
 ```
 
-## 6. Binding same-change gate for B04+
+## 7. Binding same-change gate for B04+
 
 Any Timeline change that affects persistence must update, in one reviewed slice, every affected representation:
 
@@ -216,17 +242,10 @@ Domain / Logical / Physical authority when semantics change
 
 No slice can close with a known mismatch. No placeholder object is added for future scope. No historical migration is rewritten. No candidate object is promoted to protected-main truth before it exists there.
 
-## 7. Next persistence boundary
+## 8. Next persistence boundary
 
-B04-B is closed at `_34`. B04-C Windows / Preferences / Evaluation is next and must be frozen before any persistence change is authorized.
+B04-C is closed at `_36`.
 
-B04-C must preserve:
+B04-D Movement Policy is next only as a PRE-SCOPE gate. No B04-D persistence, enum, mutation routine, API shape, frontend behavior or solver coupling is authorized by B04-C closure.
 
-```text
-window != placement
-preference != accepted Schedule
-evaluation != solver decision
-violation != automatic mutation
-```
-
-B04-D Movement Policy, B04-E advanced-family applicability and B04-F whole-B04 closure remain later work. B05 does not begin until B04-F is closed.
+B04-E advanced-family applicability and B04-F whole-B04 closure remain later work. B05 does not begin until B04-F is closed.
